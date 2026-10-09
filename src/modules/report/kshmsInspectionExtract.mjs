@@ -1,3 +1,4 @@
+import {readLegacyProjectRows,legacyProjectDocument} from './kshmsLegacyProjectExtract.mjs';
 import {sameRunValue} from '../checklist/checklistRuns.mjs';
 import {routinePdfDocument,checklistTemplatePdfDocument,checklistRunPdfDocument} from './kshmsDocumentPdf.mjs';
 import {sjaPdfDocument} from './kshmsSjaPdf.mjs';
@@ -7,7 +8,7 @@ import {appendBoxedPdf} from './kshmsBoxedPdf.mjs';
 import {formatDeviationDateTime,formatDeviationDate} from '../deviations/deviationDates.mjs';
 import {routineNumber} from '../kshms/kshmsJobChoices.mjs';
 
-export const EXTRACT_GROUPS={routines:'Godkjente rutineutgaver',templates:'Publiserte sjekklistemaler',reviews:'Signerte håndbokrevisjoner',sjas:'SJA',ruhs:'RUH med historikk og bilder',deviations:'Kvalitets- og HMS-avvik med historikk og bilder',rounds:'Vernerunder / kontroller',risks:'Risikovurderinger 5×5',runs:'Lagrede prosjektkontroller'};
+export const EXTRACT_GROUPS={routines:'Godkjente rutineutgaver',templates:'Publiserte sjekklistemaler',reviews:'Signerte håndbokrevisjoner',sjas:'SJA',ruhs:'RUH med historikk og bilder',deviations:'Kvalitets- og HMS-avvik med historikk og bilder',rounds:'Vernerunder / kontroller',risks:'Risikovurderinger 5×5',runs:'Lagrede prosjektkontroller',legacy:'Eldre ukoblede prosjektavvik'};
 export const extractKey=row=>`${row.kind}:${row.id}`;
 const when=value=>formatDeviationDateTime(value)||'Ikke oppgitt';
 const changed=()=>Error('Et valgt dokument er endret eller ikke lenger tilgjengelig. Oppdater listen og velg på nytt.');
@@ -38,13 +39,17 @@ export async function loadExtractChoices({rpc,companyId,userId,query='',isCurren
  const [handbook,central,jobs,...pages]=results;for(const state of [handbook,central,jobs])checkContext(state?.context,companyId,userId);
  const routines=unique(handbook.routines),templates=unique(central.templates);
  const fixed=(rows,kind,parent)=>unique(rows).map(row=>{if(row.company_id!==companyId)throw changed();const entry=parent?.find(r=>r.id===row[kind==='routines'?'routine_id':'template_id']);if(parent&&!entry)throw changed();return choice(kind,row,kind==='routines'?`${routineNumber(entry.reference_number)} · ${row.content.title} · v${row.number}`:kind==='templates'?`${row.content.title} · v${row.number}`:`Revisjon ${when(row.signed_at)}`);});
- return {query,groups:{routines:{rows:fixed(handbook.versions,'routines',routines)},templates:{rows:fixed(central.versions,'templates',templates)},reviews:{rows:fixed(handbook.reviews,'reviews')},...Object.fromEntries(kinds.map((kind,i)=>[kind,pages[i]])),runs:{rows:[]}},projects:unique(jobs.projects),projectTotal:jobs.project_total};
+ return {query,groups:{routines:{rows:fixed(handbook.versions,'routines',routines)},templates:{rows:fixed(central.versions,'templates',templates)},reviews:{rows:fixed(handbook.reviews,'reviews')},...Object.fromEntries(kinds.map((kind,i)=>[kind,pages[i]])),runs:{rows:[]},legacy:{rows:[]}},projects:unique(jobs.projects),projectTotal:jobs.project_total};
 }
 
 export async function loadExtractRuns({rpc,companyId,userId,projectId,isCurrent=()=>true}){
  const result=await rpc('project_checklist_state',{p_company_id:companyId,p_project_id:projectId});if(!isCurrent())return null;
  const x=result?.context;if(x?.company_id!==companyId||x.user_id!==userId||x.project_id!==projectId)throw changed();
  return unique(result.runs).map(row=>{if(row.company_id!==companyId||row.project_id!==projectId)throw changed();return choice('runs',row,`${row.definition.category} · kontroll ${row.sequence}`);});
+}
+
+export async function loadExtractProjectDeviations(options){
+ const rows=await readLegacyProjectRows(options);if(!rows)return null;return rows.map(row=>({...choice('legacy',row,row.content.title||'Prosjektavvik uten tittel'),hash:row.content_hash}));
 }
 
 function reviewDocument(row){
@@ -58,13 +63,16 @@ export function validateInspectionSelection(selection){
 export async function checkInspectionContext({rpc,companyId,userId,isCurrent=()=>true}){
  const x=await rpc('get_kshms_context');if(!isCurrent())return false;checkContext(x,companyId,userId);return true;
 }
-export async function readInspectionSnapshots({selection,rpc,companyId,userId,isCurrent=()=>true}){
+export async function readInspectionSnapshots({selection,rpc,readProject,companyId,userId,isCurrent=()=>true}){
  validateInspectionSelection(selection);
   const cache=new Map();const state=name=>{if(!cache.has(name))cache.set(name,rpc(name,{p_company_id:companyId}));return cache.get(name);};
   const saved=[];
   for(const expected of selection){
    if(!isCurrent())return null;const kind=expected.kind;let bundle;
-   if(['routines','reviews','templates'].includes(kind)){
+   if(kind==='legacy'){
+    const key='legacy:'+expected.projectId;if(!cache.has(key))cache.set(key,readLegacyProjectRows({rpc,readProject,companyId,userId,projectId:expected.projectId,isCurrent}));
+    const rows=await cache.get(key);if(!rows||!isCurrent())return null;const row=rows.find(r=>r.id===expected.id);if(!row||row.content_hash!==expected.hash||row.status!==expected.status)throw changed();bundle={kind,row};
+   }else if(['routines','reviews','templates'].includes(kind)){
     const result=await state(kind==='templates'?'kshms_checklist_state':'kshms_get_state');if(!isCurrent())return null;checkContext(result?.context,companyId,userId);
     const row=unique(result[kind==='reviews'?'reviews':'versions']).find(v=>v.id===expected.id);if(!row||row.company_id!==companyId)throw changed();
     if(kind==='reviews')bundle={kind,row};
@@ -86,18 +94,21 @@ export async function readInspectionSnapshots({selection,rpc,companyId,userId,is
 
 // All selected rows are read twice. Slow image/PDF loads cannot turn a mixed
 // revision or a revoked permission into a partial or apparently complete file.
-export async function downloadInspectionExtract({selection,scopeText,rpc,companyId,userId,downloadFile,resolveFileUrl=file=>file.url,isCurrent=()=>true,loadImage=loadCompanyLogo,loadPrivateImage=loadRuhImage,loadPdf=()=>import('https://esm.sh/jspdf@2.5.1')}){
+export async function downloadInspectionExtract({selection,scopeText,rpc,companyId,userId,readProject,downloadProject,downloadFile,resolveFileUrl=file=>file.url,isCurrent=()=>true,loadImage=loadCompanyLogo,loadPrivateImage=loadRuhImage,loadPdf=()=>import('https://esm.sh/jspdf@2.5.1')}){
  if(!Array.isArray(selection)||!selection.length||selection.length>50||new Set(selection.map(extractKey)).size!==selection.length||selection.some(v=>!EXTRACT_GROUPS[v.kind]||!v.id)||!scopeText?.trim()||scopeText.length>2000)throw Error('Beskriv omfanget og velg mellom 1 og 50 dokumenter.');
  const check=async()=>{const x=await rpc('get_kshms_context');if(!isCurrent())return false;checkContext(x,companyId,userId);return true;};
- const read=()=>readInspectionSnapshots({selection,rpc,companyId,userId,isCurrent});
+ const read=()=>readInspectionSnapshots({selection,rpc,readProject,companyId,userId,isCurrent});
  if(!await check())return null;const saved=await read();if(!saved)return null;
  const profile=await rpc('work_profile_company_profile',{p_company_id:companyId});if(!isCurrent())return null;if(profile?.companyId!==companyId)throw Error('Firmaprofilen kunne ikke bekreftes.');
- const documents=saved.map(({kind,row,parent,snapshot})=>kind==='routines'?routinePdfDocument(row,parent):kind==='templates'?checklistTemplatePdfDocument(row,parent):kind==='reviews'?reviewDocument(row):kind==='sjas'?sjaPdfDocument(row):kind==='ruhs'?ruhPdfDocument(snapshot):kind==='deviations'?deviationPdfDocument(snapshot):kind==='runs'?checklistRunPdfDocument(row):executionReportDocument(row));
+ const documents=saved.map(({kind,row,parent,snapshot})=>kind==='routines'?routinePdfDocument(row,parent):kind==='templates'?checklistTemplatePdfDocument(row,parent):kind==='reviews'?reviewDocument(row):kind==='sjas'?sjaPdfDocument(row):kind==='ruhs'?ruhPdfDocument(snapshot):kind==='deviations'?deviationPdfDocument(snapshot):kind==='runs'?checklistRunPdfDocument(row):kind==='legacy'?legacyProjectDocument(row):executionReportDocument(row));
  for(const [index,document] of documents.entries())for(const block of document.blocks||[])for(const photo of block.photos||[]){
   if(!photo.file)continue;const file=photo.file;let data;
   if(['ruhs','deviations'].includes(saved[index].kind)){
    const blob=await downloadFile(file);if(!isCurrent())return null;if(blob?.size!==file.size_bytes||blob?.type!==file.mime_type)throw Error('Et valgt avviksbilde mangler eller er endret. Uttrekket er ikke laget.');
    data=await loadPrivateImage(blob);
+  }else if(saved[index].kind==='legacy'){
+   const blob=await downloadProject(file);if(!isCurrent())return null;
+   if(!blob?.size||blob.size>10485760||file.size&&blob.size!==file.size||blob.type!==file.type)throw Error('Et prosjektavviksbilde mangler eller er endret. Uttrekket er ikke laget.');data=await loadPrivateImage(blob);
   }else{const url=resolveFileUrl(file);if(!url)throw Error('Et valgt kontrollbilde mangler. Uttrekket er ikke laget.');data=await loadImage(url);}
   if(!isCurrent())return null;if(!reportPhoto({data}))throw Error('Et valgt bilde kunne ikke hentes. Uttrekket er ikke laget.');photo.data=data;delete photo.file;
  }
@@ -110,7 +121,7 @@ export async function downloadInspectionExtract({selection,scopeText,rpc,company
  const manifest=[];
  documents.forEach((document,i)=>{
   const start=doc.internal.getNumberOfPages()+1;appendBoxedPdf(doc,document,{...options,newPage:true});
-  const {kind,row}=saved[i];manifest.push({title:`${i+1}. ${document.type}: ${document.title}`,fields:[['Dokument-ID',row.id],['Dokumentgruppe',EXTRACT_GROUPS[kind]],['Utgave / lagret revisjon',row.number??row.revision??'Signert revisjonssnapshot'],['Lagret innholdskontroll',row.content_hash||'Dokument-ID og revisjon / signert snapshot'],['Status',document.fields.find(([key])=>key==='Status')?.[1]||'Signert håndbokrevisjon'],['Prosjekt-ID',row.project_id||'Uten prosjekt'],['Sider i dette uttrekket',`${start}-${doc.internal.getNumberOfPages()}`]],photos:[]});
+  const {kind,row}=saved[i];manifest.push({title:`${i+1}. ${document.type}: ${document.title}`,fields:[['Dokument-ID',row.id],['Dokumentgruppe',EXTRACT_GROUPS[kind]],['Utgave / lagret revisjon',row.number??row.revision??(kind==='legacy'?'Lagret prosjektinnhold - uten versjonsnummer':'Signert revisjonssnapshot')],['Lagret innholdskontroll',row.content_hash||'Dokument-ID og revisjon / signert snapshot'],['Status',document.fields.find(([key])=>key==='Status')?.[1]||'Signert håndbokrevisjon'],['Prosjekt-ID',row.project_id||'Uten prosjekt'],['Sider i dette uttrekket',`${start}-${doc.internal.getNumberOfPages()}`]],photos:[]});
  });
  appendBoxedPdf(doc,{type:'Manifest - valgte dokumenter',title:scopeText.trim(),fields:[['Uttrekks-ID',extractId],['Firma-ID',companyId],['Laget tidspunkt',when(extractedAt)]],blocks:manifest,closing:[['Deling','Ingen e-post, portalpublisering eller lagring av saker er utført. Originalfiler må hentes separat før eventuell utlevering.']]},{...options,newPage:true});
  const count=doc.internal.getNumberOfPages();for(let i=1;i<=count;i++){doc.setPage(i);doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(71,85,105);doc.text(`${String(profile.companyName||'').slice(0,65)} · Expo ProffDok`,14,285);doc.text(`Side ${i} av ${count}`,196,285,{align:'right'});}

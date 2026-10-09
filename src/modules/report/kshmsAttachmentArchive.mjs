@@ -14,7 +14,7 @@ export function projectAttachmentObject(file,storageUrl){
  const prefix='/storage/v1/object/public/project-images/';
  if(url.origin!==base.origin||!url.pathname.startsWith(prefix)||url.username||url.password)throw Error('Prosjektvedlegget må ligge i appens prosjektlager. Hent andre originaler separat.');
  const object=decodeURIComponent(url.pathname.slice(prefix.length));
- if(!/^(sjekklister|photos|vedlegg)\//.test(object)||object.split('/').some(part=>!part||part==='.'||part==='..')||object.includes('\\')||/[\x00-\x1f]/.test(object)||(file.path&&file.path!==object)||(file.storagePath&&file.storagePath!==object))throw Error('Prosjektvedleggets lagringssted kunne ikke bekreftes.');
+ if(!/^(sjekklister|photos|vedlegg|avvik)\//.test(object)||object.split('/').some(part=>!part||part==='.'||part==='..')||object.includes('\\')||/[\x00-\x1f]/.test(object)||(file.path&&file.path!==object)||(file.storagePath&&file.storagePath!==object))throw Error('Prosjektvedleggets lagringssted kunne ikke bekreftes.');
  return object;
 }
 
@@ -29,6 +29,7 @@ export function inspectionAttachmentEntries(snapshots){
   };
   if(['ruhs','deviations'].includes(kind))for(const file of snapshot.files)add('private',file);
   if(kind==='rounds')for(const point of row.content.points||[])for(const file of row.content.answers?.[point.id]?.photos||[])add('embedded',file,point.title||point.id);
+  if(kind==='legacy')for(const file of row.content.photos)add('project',file);
   if(kind==='runs')for(const point of row.definition.items||[])for(const file of row.answers?.[point]?.photos||[])add('project',file,point);
  }
  if(entries.length>100||entries.reduce((sum,e)=>sum+(e.size||0),0)>TOTAL_LIMIT)throw Error('Velg færre dokumenter: maksimalt 100 vedlegg og 50 MB per pakke.');
@@ -78,7 +79,7 @@ export async function downloadInspectionAttachmentArchive({preview,scopeText,dow
   if(options.isCurrent&&!options.isCurrent())return null;total+=bytes.length;if(total>TOTAL_LIMIT)throw Error('Vedleggspakken overstiger 50 MB. Velg færre dokumenter.');
   const digest=await crypto.subtle.digest('SHA-256',bytes);if(options.isCurrent&&!options.isCurrent())return null;
   const path=`vedlegg/${String(index+1).padStart(3,'0')}-${safeName(entry.name)}`;files.push({name:path,data:bytes});
-  manifest.push({documentId:entry.documentId,documentGroup:EXTRACT_GROUPS[entry.kind],documentTitle:entry.documentTitle,revision:entry.revision,projectId:entry.projectId,fileId:entry.fileId,originalName:entry.name,point:entry.point,type,bytes:bytes.length,sha256:Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,'0')).join(''),path});
+  manifest.push({documentId:entry.documentId,documentGroup:EXTRACT_GROUPS[entry.kind],documentTitle:entry.documentTitle,revision:entry.revision,...(entry.kind==='legacy'?{contentHash:before.find(s=>s.row.id===entry.documentId).row.content_hash}:{}),projectId:entry.projectId,fileId:entry.fileId,originalName:entry.name,point:entry.point,type,bytes:bytes.length,sha256:Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,'0')).join(''),path});
  }
  const final=await readInspectionSnapshots(options);if(!final)return null;if(!sameRunValue(before,final))throw changed();if(!await checkInspectionContext(options))return null;
  const data={format:'expo-kshms-attachments-v1',archiveId:crypto.randomUUID(),createdAt:now,companyId:options.companyId,scope:scopeText.trim(),notice:'Valgte vedlegg. Lagrede kontrollbilder kan være komprimert i appen. Ingen rapport-PDF, HR, ansattbekreftelser eller automatisk deling. ZIP-filen er ikke kryptert. Kontroller innhold og mottaker før deling.',files:manifest};

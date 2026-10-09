@@ -1,3 +1,15 @@
+## Ny avgrenset prøve – eldre ukoblede prosjektavvik
+
+Leveransen 9. oktober er utviklerverifisert, men har ikke Kenneths TEST OK. Tidligere godkjenninger kl. 00:59 / 01:29 / 01:55 / 02:28 9. oktober beholdes; de skal ikke gjentas uten konkret feil/relevant regresjon.
+
+1. I samme Sandbox Preview: KS/HMS → Dokumentuttrekk → Hent dokumentlisten. Beskriv omfang, velg et eksisterende testprosjekt og trykk **Hent eldre prosjektavvik**. Gruppen **Eldre ukoblede prosjektavvik** skal starte uten avkrysninger; allerede koblede KS/HMS-saker skal ikke dupliseres.
+2. Velg én allerede lagret åpen og én lukket eldre testsak. Bekreft og last ned samlet PDF. Se riktig lagret tekst/status/lukking og manifest; dokumentet skal forklare at dette er eldre lagret tilstand uten versjonsnummer, historikk eller KS/HMS-signatur. Ingenting skal endres på prosjektet.
+3. Bare hvis en allerede lagret testsak har vedlegg: vis vedleggslisten, bekreft og last ned ZIP. Kontroller originaler/manifest. Uten filer skal listen være tom og ZIP sperret. Ikke opprett/signér/lukk en reell sak for testdata. Fjerning/omfangsendring skal tømme bekreftelse og vedleggsliste.
+
+Lokale faktiske React/PDF/ZIP-prøver bruker syntetisk transport; faktisk fil fra eldre prosjektavvik, private avviks-/prosjektkontrollfiler, mobil/flere brukere og øvrig vedleggsdekning er egne åpne prøver. [Scope/bevis](LEGACY_ATTACHMENTS_20261009.md). E-post forblir deaktivert.
+
+---
+
 ## TEST OK – kvalitets-/HMS-avvik, 9. oktober kl. 02:28
 
 Kenneth ga **TEST OK 9. oktober 2026 kl. 02:28 Europe/Oslo** for den avgrensede kvalitets-/HMS-leveransen på publisert head **f9e0f7b52a0573cf662fce07f8158c47576c8598** (funksjonskode **0e2de193164dad2342206cac1e2a7610f3c265d0**). Godkjenningen gjelder den nye avviksdekningen i Dokumentuttrekk og den fremlagte korte brukerprøven. Utviklers innloggede bevis omfatter seks lagrede avvik, 23-siders PDF med begge kategorier/historikk/manifest, tom vedleggsliste med sperret ZIP og nullstilling ved fjerning. Bevishead f9e0f7b5 var READY **dpl_3DB6k8cwp3K1eBvzMcG8Ludc8JFk**, grønn Core Safety **37864641901** / full critical build **113608347101** completed/success.

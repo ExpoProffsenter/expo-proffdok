@@ -1,3 +1,4 @@
+import './critical-kshms-legacy-extract-check.mjs';
 import './critical-kshms-attachment-archive-check.mjs';
 import './critical-kshms-deviation-extract-check.mjs';
 import fs from 'node:fs';

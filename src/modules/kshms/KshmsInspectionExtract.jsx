@@ -1,10 +1,10 @@
 import {useEffect,useRef,useState} from 'react';
 import {kshmsRpc} from './kshmsAccess.js';
 import {getAppSupabaseClient} from '../access/appSupabaseClientRegistry.js';
-import {EXTRACT_GROUPS,extractKey,loadExtractChoices,loadExtractPage,loadExtractRuns,downloadInspectionExtract} from '../report/kshmsInspectionExtract.mjs';
+import {EXTRACT_GROUPS,extractKey,loadExtractChoices,loadExtractPage,loadExtractRuns,loadExtractProjectDeviations,downloadInspectionExtract} from '../report/kshmsInspectionExtract.mjs';
 import {loadInspectionAttachmentPreview,downloadInspectionAttachmentArchive,projectAttachmentObject} from '../report/kshmsAttachmentArchive.mjs';
 
-const status=row=>row.kind==='reviews'?'Signert revisjon':row.number?`Publisert utgave ${row.number}`:({signed:'Signert',completed:'Fullført',closed:'Lukket',open:'Åpen',in_progress:'Under behandling',draft:row.kind==='sjas'?'Utkast - ikke signert':'Under arbeid - ikke fullført'})[row.status]||row.status;
+const status=row=>row.kind==='legacy'?`${row.status} · eldre lagret tilstand`: row.kind==='reviews'?'Signert revisjon':row.number?`Publisert utgave ${row.number}`:({signed:'Signert',completed:'Fullført',closed:'Lukket',open:'Åpen',in_progress:'Under behandling',draft:row.kind==='sjas'?'Utkast - ikke signert':'Under arbeid - ikke fullført'})[row.status]||row.status;
 
 export default function KshmsInspectionExtract({context}){
  const companyId=context.company_id,userId=context.user_id;
@@ -41,20 +41,34 @@ export default function KshmsInspectionExtract({context}){
   const rows=await loadExtractRuns({rpc:kshmsRpc,companyId,userId,projectId,isCurrent:current});if(!rows||!current())return;
   setCatalog(previous=>({...previous,groups:{...previous.groups,runs:{rows}}}));
  });
+ const readProject=async id=>{
+  const client=getAppSupabaseClient();if(!client)throw Error('Appens innlogging er ikke klar.');
+  const {data,error}=await client.from('projects').select('id,company_scope_id,deviations:data->project->projectDeviations').eq('id',id).eq('company_scope_id',companyId).maybeSingle();
+  if(error||!data)throw Error('Prosjektavvikene kunne ikke hentes i aktivt firma.');return data;
+ };
+ const downloadProject=async file=>{
+  const client=getAppSupabaseClient();if(!client)throw Error('Appens innlogging er ikke klar.');
+  const object=projectAttachmentObject(file,client.supabaseUrl);const {data,error}=await client.storage.from('project-images').download(object);
+  if(error)throw Error('Et prosjektvedlegg kunne ikke hentes. Ingen fil er laget.');return data;
+ };
+ const loadLegacy=()=>run(async current=>{
+  const rows=await loadExtractProjectDeviations({rpc:kshmsRpc,readProject,companyId,userId,projectId,isCurrent:current});if(!rows||!current())return;
+  setCatalog(previous=>({...previous,groups:{...previous.groups,legacy:{rows}}}));
+ });
  const toggle=row=>{clearAttachments();setConfirmed(false);setNotice('');setSelected(previous=>previous.some(value=>extractKey(value)===extractKey(row))?previous.filter(value=>extractKey(value)!==extractKey(row)):[...previous,row]);};
  const download=()=>run(async current=>{
   const client=getAppSupabaseClient();if(!client)throw Error('Appens innlogging er ikke klar.');
-  const result=await downloadInspectionExtract({selection:selected,scopeText,rpc:kshmsRpc,companyId,userId,isCurrent:current,downloadFile:async file=>{const {data,error:failure}=await client.storage.from('kshms-private').download(file.object_name);if(failure)throw Error('Et valgt avviksbilde kunne ikke hentes. Uttrekket er ikke laget.');return data;}});
+  const result=await downloadInspectionExtract({selection:selected,scopeText,rpc:kshmsRpc,readProject,downloadProject,companyId,userId,isCurrent:current,downloadFile:async file=>{const {data,error:failure}=await client.storage.from('kshms-private').download(file.object_name);if(failure)throw Error('Et valgt avviksbilde kunne ikke hentes. Uttrekket er ikke laget.');return data;}});
   if(result&&current())setNotice(`PDF er laget med ${result.documents} valgte dokumenter og manifest (${result.pages} sider).${result.logoMissing?' Logoen kunne ikke hentes. Firmanavnet er brukt.':''}`);
  });
  const previewAttachments=()=>run(async current=>{
   const client=getAppSupabaseClient();if(!client)throw Error('Appens innlogging er ikke klar.');
-  const preview=await loadInspectionAttachmentPreview({selection:selected,rpc:kshmsRpc,companyId,userId,isCurrent:current,storageUrl:client.supabaseUrl});
+  const preview=await loadInspectionAttachmentPreview({selection:selected,rpc:kshmsRpc,readProject,companyId,userId,isCurrent:current,storageUrl:client.supabaseUrl});
   if(preview&&current()){setAttachmentPreview(preview);setAttachmentConfirmed(false);}
  });
  const downloadAttachments=()=>run(async current=>{
   const client=getAppSupabaseClient();if(!client)throw Error('Appens innlogging er ikke klar.');
-  const result=await downloadInspectionAttachmentArchive({preview:attachmentPreview,selection:selected,scopeText,rpc:kshmsRpc,companyId,userId,isCurrent:current,
+  const result=await downloadInspectionAttachmentArchive({preview:attachmentPreview,selection:selected,scopeText,rpc:kshmsRpc,readProject,companyId,userId,isCurrent:current,
    downloadPrivate:async file=>{const {data,error:failure}=await client.storage.from('kshms-private').download(file.object_name);if(failure)throw Error('Et avviksvedlegg kunne ikke hentes. Ingen vedleggspakke er laget.');return data;},
    downloadProject:async file=>{const object=projectAttachmentObject(file,client.supabaseUrl);const {data,error:failure}=await client.storage.from('project-images').download(object);if(failure)throw Error('Et prosjektvedlegg kunne ikke hentes. Ingen vedleggspakke er laget.');return data;}
   });
@@ -64,15 +78,16 @@ export default function KshmsInspectionExtract({context}){
  return <section className="ks-card" aria-label="Dokumentuttrekk">
   <h3>Samlet dokument- og tilsynsuttrekk</h3>
   <p>Beskriv hva du vil dokumentere. Hent listen og huk av dokumentene du trenger. Du kan laste ned en PDF med dokumentene, en ZIP-pakke med vedleggene, eller begge. Bruk «Last ned samlet PDF» for rapporten. For bilder og originalfiler: trykk «Vis vedleggslisten» lenger ned, bekreft listen og trykk «Last ned vedlegg (ZIP)».</p>
-  <p className="ks-field-hint">Du får lagret dokumentasjon. Ulagrede endringer følger ikke med. RUH, kvalitet- og HMS-avvik inkluderer hele historikken og lagrede bilder. Bare saker lagret i KS/HMS-avvikssentralen vises; ukoblede eldre prosjektavvik tas ikke med. Andre originalfiler følger ikke PDF-en. Bruk vedleggslisten nedenfor for en egen ZIP-pakke. HR, fortrolige varslinger, ansattes lesebekreftelser og opplæringsbevis tas ikke med. Uttrekket er ingen tilsynsgodkjenning.</p>
+  <p className="ks-field-hint">Du får lagret dokumentasjon. Ulagrede endringer følger ikke med. RUH, kvalitet- og HMS-avvik inkluderer hele historikken og lagrede bilder. Disse gruppene viser saker fra KS/HMS-avvikssentralen. Ukoblede eldre prosjektavvik kan hentes for valgt prosjekt. De viser lagret tilstand uten versjonert historikk eller KS/HMS-signatur. Andre originalfiler følger ikke PDF-en. Bruk vedleggslisten nedenfor for en egen ZIP-pakke. HR, fortrolige varslinger, ansattes lesebekreftelser og opplæringsbevis tas ikke med. Uttrekket er ingen tilsynsgodkjenning.</p>
   <label className="ks-field"><span>Omfang / hva skal dokumenteres?</span><textarea value={scopeText} disabled={busy} maxLength={2000} rows={2} onChange={event=>{clearAttachments();setScopeText(event.target.value);setConfirmed(false);setNotice('');}} placeholder="For eksempel: Kontroll av arbeid på testprosjekt, oktober 2026"/></label>
   <label className="ks-field"><span>Søk etter SJA, avvik, RUH, kontroller og risiko</span><input value={query} disabled={busy} maxLength={160} onChange={event=>setQuery(event.target.value)}/></label>
   <button type="button" disabled={busy} onClick={load}>{catalog?'Oppdater dokumentlisten':'Hent dokumentlisten'}</button>
   {catalog&&<>
    <p>Ingen dokumenter velges automatisk. Oppdatering av listen tømmer valget. Rutine- og malutgaver vises også når de er historiske; kontroller status i PDF-en.</p>
-   <label className="ks-field"><span>Prosjekt for lagrede sjekklistekontroller</span><select value={projectId} disabled={busy} onChange={event=>{setProjectId(event.target.value);setCatalog(previous=>({...previous,groups:{...previous.groups,runs:{rows:[]}}}));}}><option value="">Velg et tilgjengelig prosjekt</option>{catalog.projects.map(project=><option value={project.id} key={project.id}>{project.name||project.id}</option>)}</select></label>
+   <label className="ks-field"><span>Prosjekt for lagrede kontroller og eldre avvik</span><select value={projectId} disabled={busy} onChange={event=>{setProjectId(event.target.value);setCatalog(previous=>({...previous,groups:{...previous.groups,runs:{rows:[]},legacy:{rows:[]}}}));}}><option value="">Velg et tilgjengelig prosjekt</option>{catalog.projects.map(project=><option value={project.id} key={project.id}>{project.name||project.id}</option>)}</select></label>
    {catalog.projectTotal>catalog.projects.length&&<p className="ks-field-hint">Viser de {catalog.projects.length} senest tilgjengelige prosjektene av {catalog.projectTotal}. Prosjektlisten er avgrenset.</p>}
    <button type="button" className="secondary" disabled={busy||!projectId} onClick={loadProject}>Hent prosjektkontroller</button>
+   <button type="button" className="secondary" disabled={busy||!projectId} onClick={loadLegacy}>Hent eldre prosjektavvik</button>
    {Object.entries(EXTRACT_GROUPS).map(([kind,label])=><details className="ks-followup-section" key={kind}>
     <summary>{label} ({catalog.groups[kind].rows.length})</summary>
     <fieldset disabled={busy}><legend>Velg {label.toLowerCase()}</legend>
@@ -88,7 +103,7 @@ export default function KshmsInspectionExtract({context}){
    <div className="ks-actions"><button type="button" disabled={busy||!confirmed||!scopeText.trim()||!selected.length||selected.length>50} onClick={download}>{busy?'Arbeider …':'Last ned samlet PDF'}</button><button type="button" className="secondary" disabled={busy||!selected.length} onClick={()=>{clearAttachments();setSelected([]);setConfirmed(false);setNotice('');}}>Tøm dokumentvalget</button></div>
    {selected.length>50&&<p role="alert">Velg maksimalt 50 dokumenter per uttrekk.</p>}
    <h4>Vedlegg til valgte dokumenter</h4>
-   <p>Trykk «Vis vedleggslisten» først. Deretter vises bekreftelsen og knappen «Last ned vedlegg (ZIP)». ZIP samler bildene og originalfilene i én pakke, så du slipper å hente dem enkeltvis. Bruk pakken når du trenger filene separat til eget arkiv eller sammen med rapporten. Pakken kan inneholde lagrede kvalitet-/HMS-/RUH-filer, vernerunde-bilder og prosjektkontrollvedlegg. Rapporten følger bare PDF-nedlastingen. Bilder følger slik de er lagret i appen. ZIP er ikke kryptert.</p>
+   <p>Trykk «Vis vedleggslisten» først. Deretter vises bekreftelsen og knappen «Last ned vedlegg (ZIP)». ZIP samler bildene og originalfilene i én pakke, så du slipper å hente dem enkeltvis. Bruk pakken når du trenger filene separat til eget arkiv eller sammen med rapporten. Pakken kan inneholde lagrede kvalitet-/HMS-/RUH-filer, vernerunde-bilder, prosjektkontrollvedlegg og vedlegg til valgte eldre prosjektavvik. Rapporten følger bare PDF-nedlastingen. Bilder følger slik de er lagret i appen. ZIP er ikke kryptert.</p>
    <button type="button" className="secondary" disabled={busy||!selected.length||selected.length>50} onClick={previewAttachments}>Vis vedleggslisten</button>
    {attachmentPreview&&<>
     <p>{attachmentPreview.entries.length} vedlegg. Maksimalt 100 vedlegg, 10 MB per fil og 50 MB per pakke. Pakken inneholder mappen «vedlegg» og filen «manifest.json». Manifestet er en filoversikt som viser hvilket dokument og punkt hver fil hører til, og en kontrollsum for filinnholdet. Behold filoversikten sammen med vedleggene.</p>
