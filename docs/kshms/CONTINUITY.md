@@ -1,3 +1,13 @@
+## Gjeldende fortsettelsespunkt – SJA-bilder og Sandbox-validator verifisert
+
+Kontrollert 9. oktober 2026 fra ren `feat-kshms-foundation` på `7a68293c8ad3aae4191a1e766b1dbf278ab54eef`; main `155f6c4ac01f126c1db0c65da385cfd9305587d5`; PR #216 draft. Eksplisitt scope: `KshmsSja.jsx`/CSS, SJA-/bildevalidering, SJA PDF/samle-PDF/ZIP, én privat validator-migrering, relevante critical-/React-prøver og HJELP/README/architecture/statusdokumenter. Ingen HR, risiko-bilder, generell navigasjon, ny Storage/tabell/RLS/policy, e-post, Production/main/demo.
+
+Lokalt PASS: faktisk React-fil/canvas-preview og readback; permanent SJA/PDF/ZIP/uttrekksvern; tre faktiske SJA-PDF-er; 15-siders åtte-type samle-PDF; faktisk ZIP med seks filer/manifest/CRC32/SHA-256; full `EXPO_BACKEND_TARGET=sandbox npm run build`. SJA-PDF side 1–2 og samle-PDF SJA/manifest er rendret og visuelt kontrollert uten klipp/overlapp. Supabase CLI mangler; ingen lokal database-PASS hevdes. Migrasjon `20261009022028 kshms_sja_photos` er anvendt bare på `demo-sandbox` (`ppvircenkjizeiqdxphj`) og direkte funksjonsprøvd: ett JPEG-bilde/legacy PASS; fire bilder, PNG og duplikat-ID avvises; privat ACL består. Neste sikre steg: diff/guards, publiser med expected-head, verifiser blob/tree/CI/READY/Sandbox, og gjør kun sikker innlogget lesekontroll hvis eksisterende økt finnes.
+
+Bevar TEST OK 00:59 / 01:29 / 01:55 / 02:28. Ny SJA-bildeprøve er ikke godkjent ennå. Ikke opprett/signér en reell SJA for data. Åpne restpunkter: faktisk innlogget SJA-bilde/kamera, risikofiltilknytning, faktiske private avviks-/prosjektkontroll-/legacyfiler, mobil/flere brukere; deretter versjonerte underskjema, påminnelser og kildeoppdatering. HR starter ikke i natt. [Detaljert scope](SJA_ATTACHMENTS_20261009.md).
+
+---
+
 ## Publisert eldre prosjektavviksuttrekk – utviklerbevis 9. oktober 2026
 
 Funksjonshead **37cd906b697763c4865650d9393a33d05fb78303**, tree **bf3c2e0ee256eb2cb9dddcc052b07aaf4490c8a2**, identisk med lokal testcommit 4316675cb99a3d1a004494eac2bb376df5c878c3. Alle 18 blobber opprettet/hashkontrollert og lest tilbake byte-/tekstidentisk; faktisk publisert git-commit rekonstruert og SHA-verifisert, 668 recursive tree-oppføringer kontrollert med korrekt tree og alle endrede filer. Lokal feature-head følger eksakt publisert kode. Publisert expected-head bd506a65 uten force; main fortsatt **155f6c4ac01f126c1db0c65da385cfd9305587d5**. Vercel READY **dpl_8kaLkrvrwtiBGmksLnSRLFaUGUmi**, riktig SHA/feature-ref/prosjekt/faste alias, EXPO_BACKEND_TARGET=sandbox direkte lest. PR Core Safety **37868239123**, jobb **113620009941** med full critical build: completed/success. Final lokal full Sandbox build, scope/docs-guard og diff-check PASS.

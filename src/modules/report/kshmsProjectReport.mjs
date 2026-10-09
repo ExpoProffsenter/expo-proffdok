@@ -1,4 +1,4 @@
-import {executionReportDocument,appendExecutionPdf} from './kshmsExecutionReport.mjs';
+import {executionReportDocument,appendExecutionPdf,reportPhoto} from './kshmsExecutionReport.mjs';
 import { formatDeviationDate, formatDeviationDateTime } from '../deviations/deviationDates.mjs';
 
 export const emptyKshmsReport = () => ({ sjas: [], ruhs: [], rounds: [], risks: [] });
@@ -26,7 +26,8 @@ export function kshmsReportDocuments(data) {
       (c.participants || []).forEach((person, i) => fields.push([`Deltaker ${i + 1}`, person.name], ['Rolle i jobben', person.role], ['Firma', person.company], ['Bidrag / gjennomgang', person.involvement]));
       if (row.status === 'signed') fields.push(['Prosjektleders elektroniske signatur', identity(row.signed_identity)], ['Signert dato', when(row.signed_at)], ['Signert bekreftelse', row.statement]);
       else fields.push(['Signatur', 'Ikke signert. Dette utkastet dokumenterer ikke godkjenning før arbeid.']);
-      return { id: row.id, type: 'SJA – sikker jobbanalyse', title: c.title || 'Uten navn', fields };
+      const photos=(c.photos||[]).map(photo=>{const data=reportPhoto(photo);if(!data||!data.startsWith('data:image/jpeg;base64,'))throw Error('Et lagret SJA-bilde er ugyldig. PDF er ikke laget.');return {data,id:photo.id};});
+      return { id: row.id, type: 'SJA – sikker jobbanalyse', title: c.title || 'Uten navn', fields, blocks:photos.length?[{title:'Bilder fra arbeidsstedet',fields:[['Antall lagrede bilder',String(photos.length)],['Dokumentasjon','Bildene er komprimerte snapshots lagret i denne SJA-revisjonen.']],photos}]:[] };
     }),
     ...(data?.ruhs || []).map(row => ({ id: row.id, type: 'RUH – rapport om uønsket hendelse', title: row.title, fields: [
       ['Status', status(row.status)], ['Registrert av', identity(row.creator_identity)], ['Registrert dato', when(row.created_at)],

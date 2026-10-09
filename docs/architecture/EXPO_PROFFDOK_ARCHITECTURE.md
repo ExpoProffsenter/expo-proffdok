@@ -866,6 +866,12 @@ ZIP-nedlasting/innhold er Kenneths TEST OK 9. oktober kl. 01:55 på head 359dac0
 
 Dokumentuttrekket har en niende gruppe for kvalitet/HMS fra eksisterende kshms_deviation_state. Kategori er del av det eksplisitte valget og valideres igjen ved detaljlesing. readDeviationPdfSnapshot/deviationPdfDocument i eksisterende kshmsRuhPdf.mjs gjenbruker hele historikken og private filer for de tre serverkategoriene; readRuhPdfSnapshot/ruhPdfDocument/downloadRuhPdf beholder RUH-only-sperren. ZIP bruker de samme snapshotfilene. Ingen backend-/RLS-/Storage-/skrivemodellendring. Ukoblede legacy-prosjektavvik og nye filtilknytninger på SJA/risiko er ikke lagt til. Permanent ny kategori-/historikk-/privatfil-/finalkontroll i critical-kshms-deviation-extract-check.mjs; gamle kontroller består. React/PDF/ZIP har en ekstra KSHMS_DEVIATION_QA=1-modus, mens opprinnelig åtte-gruppe-test beholdes.
 
+### SJA-bilder i versjonert snapshot (2026-10-09)
+
+SJA-vedlegg bruker `content.photos` i den eksisterende versjonerte `kshms_sjas.content`-snapshoten. Klienten gjør JPG/PNG/WebP om til hvitbakgrunns-JPEG (maks 1280 px, 400 000 tegn), og både klient og privat `kshms_private.sja_content` begrenser listen til tre unike UUID-er, kun JPEG-data-URI og 1,35 MB samlet innhold. Dette gir samme revisjonskontroll, readback, konflikthåndtering og signert-uforanderlighet som øvrig SJA-innhold, uten ny tabell, Storage-bucket, RLS eller policy.
+
+`kshmsProjectReport` lager PDF-blokkene; `kshmsAttachmentArchive` lager separate JPG-filer og manifestposter fra de samme endelig gjenleste snapshotene. Eldre SJA-er normaliseres til tom bildeliste. Risikovurderingsbilder er fortsatt et separat modellpunkt. [Scope og QA](../kshms/SJA_ATTACHMENTS_20261009.md).
+
 
 ## Eldre ukoblede prosjektavvik i dokumentuttrekk, 9. oktober 2026
 

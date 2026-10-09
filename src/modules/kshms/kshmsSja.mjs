@@ -65,7 +65,7 @@ export function blankSjaParticipant(makeId = () => crypto.randomUUID()) {
 }
 export function newSjaRequests(makeId = () => crypto.randomUUID()) { return { save: makeId(), sign: makeId() }; }
 export function blankSja(makeId = () => crypto.randomUUID(), projectId = null) {
-  return { id: makeId(), project_id: projectId, revision: 0, requests: newSjaRequests(makeId), content: { ...Object.fromEntries(textFields.map(key => [key, ''])), leader_id: '', steps: [blankSjaStep(makeId)], participants: [blankSjaParticipant(makeId)] } };
+  return { id: makeId(), project_id: projectId, revision: 0, requests: newSjaRequests(makeId), content: { ...Object.fromEntries(textFields.map(key => [key, ''])), leader_id: '', steps: [blankSjaStep(makeId)], participants: [blankSjaParticipant(makeId)], photos: [] } };
 }
 function cleanText(value, max = 4000) {
   if (value != null && typeof value !== 'string') throw new Error('SJA-feltene må inneholde tekst.');
@@ -90,7 +90,14 @@ export function sjaContent(value) {
       return { id, ...Object.fromEntries(fields.map(field => [field, cleanText(row[field], 2000)])) };
     });
   }
-  if (new TextEncoder().encode(JSON.stringify(clean)).length > 150000) throw new Error('SJA-en er for stor. Kort ned teksten eller del arbeidet i flere analyser.');
+  if (value.photos != null && !Array.isArray(value.photos) || (value.photos?.length || 0) > 3) throw new Error('Bruk inntil tre bilder i SJA-en.');
+  const photoIds = new Set();
+  clean.photos = (value.photos || []).map(photo => {
+    const id = cleanText(photo?.id, 36).toLowerCase(), data = cleanText(photo?.data, 400000);
+    if (!uuid(id) || photoIds.has(id) || !/^data:image\/jpeg;base64,(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(data)) throw new Error('SJA-bildet må være et gyldig, komprimert JPG-bilde.');
+    photoIds.add(id); return { id, data };
+  });
+  if (new TextEncoder().encode(JSON.stringify(clean)).length > 1350000) throw new Error('SJA-en er for stor. Bruk færre eller mindre bilder, eller del arbeidet i flere analyser.');
   return clean;
 }
 export function sjaSigningIssues(value) {

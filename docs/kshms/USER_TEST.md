@@ -1,3 +1,15 @@
+## Ny kort Preview-prøve – SJA-bilde
+
+Dette gjelder bare nye SJA-bilder. Tidligere TEST OK 9. oktober kl. 00:59 / 01:29 / 01:55 / 02:28 beholdes og skal ikke gjentas uten konkret regresjon.
+
+1. Åpne en eksisterende **SJA-utkast** i samme Sandbox Preview. Ikke opprett eller signer en reell analyse bare for prøven. Under **Bilder fra arbeidsstedet** velger du ett ufarlig testbilde uten unødvendige personopplysninger. Se komprimert forhåndsvisning og trykk **Lagre utkast**.
+2. Lukk og åpne samme utkast. Bildet skal være bevart. Last ned egen SJA-PDF: bildet skal stå i en egen ramme. I **Dokumentuttrekk**, velg bare denne SJA-en; samlet PDF skal vise samme bilde.
+3. Trykk **Vis vedleggslisten**. Listen skal vise `SJA-bilde-1.jpg` knyttet til SJA-en og arbeidsstedet. Bekreft og last ned ZIP; JPG og `manifest.json` skal følge. Fjern SJA-en eller endre omfanget: liste og bekreftelse skal nullstilles.
+
+Dette er ikke signeringsprøve. Fjern testbildet og lagre utkastet igjen dersom det ikke skal beholdes. Faktisk mobilkamera, flere brukere og risikovurderingsbilder er separate restprøver. Lokale utviklerprøver er PASS, men er ikke Kenneths TEST OK eller faktisk innlogget bevis. [Scope/QA](SJA_ATTACHMENTS_20261009.md).
+
+---
+
 ## Publisert eldre prosjektavviksuttrekk – utviklerbevis 9. oktober 2026
 
 Funksjonshead **37cd906b697763c4865650d9393a33d05fb78303**, tree **bf3c2e0ee256eb2cb9dddcc052b07aaf4490c8a2**, identisk med lokal testcommit 4316675cb99a3d1a004494eac2bb376df5c878c3. Alle 18 blobber opprettet/hashkontrollert og lest tilbake byte-/tekstidentisk; faktisk publisert git-commit rekonstruert og SHA-verifisert, 668 recursive tree-oppføringer kontrollert med korrekt tree og alle endrede filer. Lokal feature-head følger eksakt publisert kode. Publisert expected-head bd506a65 uten force; main fortsatt **155f6c4ac01f126c1db0c65da385cfd9305587d5**. Vercel READY **dpl_8kaLkrvrwtiBGmksLnSRLFaUGUmi**, riktig SHA/feature-ref/prosjekt/faste alias, EXPO_BACKEND_TARGET=sandbox direkte lest. PR Core Safety **37868239123**, jobb **113620009941** med full critical build: completed/success. Final lokal full Sandbox build, scope/docs-guard og diff-check PASS.

@@ -1,3 +1,13 @@
+## SJA-bilder – avgrenset vedleggsleveranse 9. oktober 2026
+
+Miljømål **BEGGE**; bare feature/Sandbox publiseres. Kontrollert start-head `7a68293c8ad3aae4191a1e766b1dbf278ab54eef`, main `155f6c4ac01f126c1db0c65da385cfd9305587d5`, draft PR #216. SJA-utkast kan få inntil tre komprimerte bilder fra arbeidsstedet. Bildene lagres i samme revisjonssnapshot som teksten og følger egen SJA-PDF, valgt SJA i samlet PDF og bekreftet vedleggs-ZIP med egne JPG-filer/SHA-256-manifest. Gamle SJA-er forblir gyldige uten bilder.
+
+Avgrensningen bruker eksisterende private SJA-JSON/RPC og signert-uforanderlighet. Én privat validator-migrering; ingen ny tabell, Storage-bucket, RLS eller policy. Faktisk React-opplasting, tre SJA-PDF-er, 15-siders åtte-type samle-PDF, ZIP med seks filer, visuell PDF-kontroll og full Sandbox-build PASS lokalt. Migrasjon `20261009022028 kshms_sja_photos` er anvendt og positivt/negativt prøvd direkte bare på `demo-sandbox`; apppublisering/CI/READY føres før leveransen erklæres publisert. [Scope og QA](SJA_ATTACHMENTS_20261009.md).
+
+Tidligere TEST OK 9. oktober **00:59 / 01:29 / 01:55 / 02:28** beholdes. Dette er ikke ny TEST OK for SJA-bilder. Faktisk innlogget bilde/kamera, risikovurderingsfiltilknytning, faktiske private avviks-/prosjektkontroll-/legacyfiler, mobil og flere brukere gjenstår. Deretter følger versjonerte underskjema, påminnelser og kildeoppdatering. HR starter ikke i natt. Ingen e-post, Production/main/demo-merge eller branchsletting.
+
+---
+
 ## Publisert eldre prosjektavviksuttrekk – utviklerbevis 9. oktober 2026
 
 Funksjonshead **37cd906b697763c4865650d9393a33d05fb78303**, tree **bf3c2e0ee256eb2cb9dddcc052b07aaf4490c8a2**, identisk med lokal testcommit 4316675cb99a3d1a004494eac2bb376df5c878c3. Alle 18 blobber opprettet/hashkontrollert og lest tilbake byte-/tekstidentisk; faktisk publisert git-commit rekonstruert og SHA-verifisert, 668 recursive tree-oppføringer kontrollert med korrekt tree og alle endrede filer. Lokal feature-head følger eksakt publisert kode. Publisert expected-head bd506a65 uten force; main fortsatt **155f6c4ac01f126c1db0c65da385cfd9305587d5**. Vercel READY **dpl_8kaLkrvrwtiBGmksLnSRLFaUGUmi**, riktig SHA/feature-ref/prosjekt/faste alias, EXPO_BACKEND_TARGET=sandbox direkte lest. PR Core Safety **37868239123**, jobb **113620009941** med full critical build: completed/success. Final lokal full Sandbox build, scope/docs-guard og diff-check PASS.

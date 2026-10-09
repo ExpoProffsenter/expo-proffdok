@@ -1,3 +1,11 @@
+## SJA-bilder – gjeldende avgrensede B/C-punkt
+
+Inntil tre komprimerte arbeidsstedsbilder er implementert i SJA-revisjonen og koblet til egen PDF, samlet PDF og vedleggs-ZIP. Eksisterende privat SJA-kontrakt, revisjonskontroll og signert-uforanderlighet beholdes; ingen ny Storage/tabell/RLS/policy. Lokale faktiske React/PDF/ZIP-prøver, visuell kontroll og full Sandbox-build er PASS. Privat validator-migrasjon `20261009022028 kshms_sja_photos` er anvendt og funksjonsprøvd bare på Sandbox. Publiserings-/CI-/READY-bevis gjenstår før leveransen er ferdig publisert.
+
+Etter denne leveransen står risikovurderingsfiltilknytning og faktiske filprøver fortsatt som øvrig vedleggsdekning. Deretter: versjonerte underskjema, påminnelser og kildeoppdatering. HR starter ikke i natt. Tidligere TEST OK beholdes; ny kort prøve gjelder bare SJA-bilder. [Scope/QA](SJA_ATTACHMENTS_20261009.md).
+
+---
+
 ## Publisert eldre prosjektavviksuttrekk – utviklerbevis 9. oktober 2026
 
 Funksjonshead **37cd906b697763c4865650d9393a33d05fb78303**, tree **bf3c2e0ee256eb2cb9dddcc052b07aaf4490c8a2**, identisk med lokal testcommit 4316675cb99a3d1a004494eac2bb376df5c878c3. Alle 18 blobber opprettet/hashkontrollert og lest tilbake byte-/tekstidentisk; faktisk publisert git-commit rekonstruert og SHA-verifisert, 668 recursive tree-oppføringer kontrollert med korrekt tree og alle endrede filer. Lokal feature-head følger eksakt publisert kode. Publisert expected-head bd506a65 uten force; main fortsatt **155f6c4ac01f126c1db0c65da385cfd9305587d5**. Vercel READY **dpl_8kaLkrvrwtiBGmksLnSRLFaUGUmi**, riktig SHA/feature-ref/prosjekt/faste alias, EXPO_BACKEND_TARGET=sandbox direkte lest. PR Core Safety **37868239123**, jobb **113620009941** med full critical build: completed/success. Final lokal full Sandbox build, scope/docs-guard og diff-check PASS.

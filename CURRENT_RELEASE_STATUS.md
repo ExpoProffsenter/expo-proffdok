@@ -1,3 +1,11 @@
+## SJA-bilder – Sandbox-validator og lokal leveransekandidat 9. oktober 2026
+
+Start `7a68293c8ad3aae4191a1e766b1dbf278ab54eef`, main `155f6c4ac01f126c1db0c65da385cfd9305587d5`, draft PR #216. Ny avgrenset del av vedleggsdekning: inntil tre komprimerte SJA-bilder i samme revisjonssnapshot; egen PDF, samlet PDF og bekreftet ZIP/manifest. Ingen ny tabell, Storage, RLS eller policy. Lokal faktisk React/PDF/ZIP, visuell kontroll og full Sandbox-build PASS. Privat validator-migrasjon `20261009022028 kshms_sja_photos` er anvendt bare på `demo-sandbox` (`ppvircenkjizeiqdxphj`): ett JPEG-bilde og legacy uten `photos` PASS; fire bilder, PNG og duplikat-ID avvises; PUBLIC/anon/authenticated har ingen EXECUTE. Apppublisering/CI/READY gjenstår.
+
+Tidligere TEST OK **00:59 / 01:29 / 01:55 / 02:28** beholdes; dette er ikke ny SJA-bilde-TEST OK. Faktisk innlogget SJA-bilde/kamera, risikovurderingsfiltilknytning, faktiske private filer, mobil/flere brukere og annen vedleggsdekning gjenstår. Deretter versjonerte underskjema, påminnelser og kildeoppdatering; ingen HR i natt. Ingen e-post, Production/main/demo-merge. [Scope/QA](docs/kshms/SJA_ATTACHMENTS_20261009.md).
+
+---
+
 ## Publisert eldre prosjektavviksuttrekk – utviklerbevis 9. oktober 2026
 
 Funksjonshead **37cd906b697763c4865650d9393a33d05fb78303**, tree **bf3c2e0ee256eb2cb9dddcc052b07aaf4490c8a2**, identisk med lokal testcommit 4316675cb99a3d1a004494eac2bb376df5c878c3. Alle 18 blobber opprettet/hashkontrollert og lest tilbake byte-/tekstidentisk; faktisk publisert git-commit rekonstruert og SHA-verifisert, 668 recursive tree-oppføringer kontrollert med korrekt tree og alle endrede filer. Lokal feature-head følger eksakt publisert kode. Publisert expected-head bd506a65 uten force; main fortsatt **155f6c4ac01f126c1db0c65da385cfd9305587d5**. Vercel READY **dpl_8kaLkrvrwtiBGmksLnSRLFaUGUmi**, riktig SHA/feature-ref/prosjekt/faste alias, EXPO_BACKEND_TARGET=sandbox direkte lest. PR Core Safety **37868239123**, jobb **113620009941** med full critical build: completed/success. Final lokal full Sandbox build, scope/docs-guard og diff-check PASS.

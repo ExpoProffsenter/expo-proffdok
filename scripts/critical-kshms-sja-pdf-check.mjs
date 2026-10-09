@@ -1,14 +1,17 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import {blankSja,SJA_STATEMENT} from '../src/modules/kshms/kshmsSja.mjs';
 import {sjaPdfDocument,downloadSjaPdf} from '../src/modules/report/kshmsSjaPdf.mjs';
 
 export const company='11111111-1111-4111-8111-111111111111',user='22222222-2222-4222-8222-222222222222',project='33333333-3333-4333-8333-333333333333';
 const blank=blankSja();
-export const signed={id:blank.id,company_id:company,project_id:null,revision:2,status:'signed',leader_id:user,leader_identity:{id:user,name:'Lagret prosjektleder'},signed_by:user,signed_identity:{id:user,name:'Lagret signatur'},signed_at:'2026-10-08T18:00:00Z',statement:SJA_STATEMENT,extra:'PRIVATE IKKE RAPPORTFELT',content:{...blank.content,title:'QA sikker jobbanalyse',workplace:'Lager',project_reference:'Ekstern ordre 77038',leader_id:user,planned_on:'2026-10-09',task:'Bytte kupling',routines:'R-007 utgave 2',equipment:'Trykk kontrollert',ppe:'Vernebriller',emergency:'Førstehjelp tilgjengelig',stop_conditions:'Stans ved trykk',reviewed_on:'2026-10-08',communication:'Felles gjennomgang',steps:[{...blank.content.steps[0],activity:'Steng ventil',hazard:'Resttrykk',consequence:'Personskade',measures:'Avlast trykk',owner:'Historisk ansvarlig',check:'Kontroller manometer'}],participants:[{...blank.content.participants[0],name:'Lagret deltaker',role:'Utfører',company:'Lagret firma',involvement:'Deltok i vurderingen'}]}};
+export const sjaPhoto='data:image/jpeg;base64,'+fs.readFileSync('docs/kshms/auto-next-phone-proof.jpg').toString('base64');
+export const signed={id:blank.id,company_id:company,project_id:null,revision:2,status:'signed',leader_id:user,leader_identity:{id:user,name:'Lagret prosjektleder'},signed_by:user,signed_identity:{id:user,name:'Lagret signatur'},signed_at:'2026-10-08T18:00:00Z',statement:SJA_STATEMENT,extra:'PRIVATE IKKE RAPPORTFELT',content:{...blank.content,title:'QA sikker jobbanalyse',workplace:'Lager',project_reference:'Ekstern ordre 77038',leader_id:user,planned_on:'2026-10-09',task:'Bytte kupling',routines:'R-007 utgave 2',equipment:'Trykk kontrollert',ppe:'Vernebriller',emergency:'Førstehjelp tilgjengelig',stop_conditions:'Stans ved trykk',reviewed_on:'2026-10-08',communication:'Felles gjennomgang',steps:[{...blank.content.steps[0],activity:'Steng ventil',hazard:'Resttrykk',consequence:'Personskade',measures:'Avlast trykk',owner:'Historisk ansvarlig',check:'Kontroller manometer'}],participants:[{...blank.content.participants[0],name:'Lagret deltaker',role:'Utfører',company:'Lagret firma',involvement:'Deltok i vurderingen'}],photos:[{id:crypto.randomUUID(),data:sjaPhoto}]}};
 export const draft={...signed,id:crypto.randomUUID(),status:'draft',signed_by:null,signed_identity:null,signed_at:null,statement:null,revision:1};
 const before=JSON.stringify({signed,draft});
 const document=sjaPdfDocument(signed),text=JSON.stringify(document);
 for(const value of ['Signert','Lagret signatur','Lagret deltaker','Deltok i vurderingen','R-007 utgave 2',signed.id,'20:00:00'])assert(text.includes(value),value);
+assert.equal(document.blocks[0].photos[0].data,sjaPhoto);assert(text.includes('Bilder fra arbeidsstedet'));
 assert(!text.includes('PRIVATE'));
 const draftText=JSON.stringify(sjaPdfDocument({...draft,signed_identity:{name:'PHANTOM SIGNATURE'},statement:'PHANTOM CONSENT'}));
 assert(draftText.includes('IKKE SIGNERT'));assert(!draftText.includes('PHANTOM'));
