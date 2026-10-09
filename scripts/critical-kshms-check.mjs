@@ -2,6 +2,7 @@ import './critical-people-module-access-check.mjs';
 import './critical-hr-foundation-check.mjs';
 import './critical-hr-navigation-check.mjs';
 import './critical-hr-purge-check.mjs';
+import './critical-hr-deletion-ledger-check.mjs';
 import './critical-kshms-task-reminders-check.mjs';
 import './critical-kshms-review-reminders-check.mjs';
 import './critical-kshms-legacy-extract-check.mjs';

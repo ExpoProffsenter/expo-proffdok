@@ -1,3 +1,7 @@
+## HR H4 – manifestverktøy og isolert fysisk restore, 9. oktober 2026
+
+HR ser foreløpig tom ut fordi bare medarbeider-/leder-/leserregisteret er åpnet. Samtalereferater, egne forberedelser, sykefraværsoppfølging og private vedlegg er kommende innhold. H4 gir privat HMAC-/prosjektbundet operator-manifest med holdbar skriving og komplette snapshots, samt konkret retting av orphan-filer ved restore uten medarbeiderrad. **39 lokale fysiske PostgreSQL-/filrestore-kontroller PASS**, **11 nye Sandbox-assertions og berørte H3 61 PASS**, permanent critical/full build PASS. Dette er fysisk PGlite-restore og lokale faktiske bytefiler, **ikke full Supabase-cloud-restore**. Varig ekstern driftsbinding/ack og full isolert Supabase-restore gjenstår; sensitivt innhold fortsatt stengt. 1 eksisterende HR-firma/medarbeider beholdt. Ingen UI-/B/C-omtest, e-post, merge eller Production. [Scope, bevis, operatorløp og grenser](HR_RESTORE_LEDGER_20261009.md). Neste synlige produktdel er medarbeidersamtalen etter gjenstående åpningskrav. Tidligere TEST OK beholdes.
+
 # KS/HMS – gjeldende samlet status
 
 ### Endelig Preview-kontroll av Hjelp og tilgang
