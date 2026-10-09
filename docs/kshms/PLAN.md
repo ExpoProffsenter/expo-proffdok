@@ -1,6 +1,6 @@
 ## SJA-bilder – gjeldende avgrensede B/C-punkt
 
-Inntil tre komprimerte arbeidsstedsbilder er implementert i SJA-revisjonen og koblet til egen PDF, samlet PDF og vedleggs-ZIP. Eksisterende privat SJA-kontrakt, revisjonskontroll og signert-uforanderlighet beholdes; ingen ny Storage/tabell/RLS/policy. Lokale faktiske React/PDF/ZIP-prøver, visuell kontroll og full Sandbox-build er PASS. Privat validator-migrasjon `20261009022028 kshms_sja_photos` er anvendt og funksjonsprøvd bare på Sandbox. Publiserings-/CI-/READY-bevis gjenstår før leveransen er ferdig publisert.
+Inntil tre komprimerte arbeidsstedsbilder er implementert i SJA-revisjonen og koblet til egen PDF, samlet PDF og vedleggs-ZIP. Eksisterende privat SJA-kontrakt, revisjonskontroll og signert-uforanderlighet beholdes; ingen ny Storage/tabell/RLS/policy. Faktiske React/PDF/ZIP-prøver, visuell kontroll og full Sandbox-build er PASS. Privat validator-migrasjon `20261009022028 kshms_sja_photos` er anvendt og funksjonsprøvd bare på Sandbox. Funksjonshead `785d01389d2059026711ea1a8af12762e75fc4b9` er publisert med grønn full CI og READY Sandbox Preview; innlogget read-only regresjonskontroll PASS. Leveransen er utviklerferdig, men ikke bruker-TEST OK.
 
 Etter denne leveransen står risikovurderingsfiltilknytning og faktiske filprøver fortsatt som øvrig vedleggsdekning. Deretter: versjonerte underskjema, påminnelser og kildeoppdatering. HR starter ikke i natt. Tidligere TEST OK beholdes; ny kort prøve gjelder bare SJA-bilder. [Scope/QA](SJA_ATTACHMENTS_20261009.md).
 

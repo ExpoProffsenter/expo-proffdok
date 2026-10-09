@@ -1,4 +1,4 @@
-## SJA-bilder – lokal QA og Sandbox-validator før apppublisering
+## SJA-bilder – QA, Sandbox-validator og publiseringsbevis
 
 - `critical-kshms-sja-check`, SJA-PDF, inspeksjonsuttrekk og vedleggsarkiv: PASS, inkludert maks tre, JPEG-only snapshot, duplikat/ugyldig data, readback/retry/signatur, final access/change og migrasjonsscope.
 - Faktisk React SJA: filinput → Image/canvas → komprimert JPEG → preview → lokal kladd → save/readback → signert syntetisk snapshot: PASS.
@@ -6,7 +6,9 @@
 - Faktisk React/ZIP: seks filer, inkludert `SJA-bilde-1.jpg`; åpning, CRC32, byteantall og SHA-256 mot manifest PASS. Tom/reset/file/access/late-scope-sperrer PASS.
 - Visuell PDF: SJA side 1–2, samlet SJA side 5–6 og manifest side 14–15 uten klipp, overlapp eller uleselig bilde.
 
-Supabase CLI mangler; ingen lokal SQL-kjøring hevdes. Full Sandbox-build PASS. Migrasjon `20261009022028 kshms_sja_photos` er anvendt bare på `demo-sandbox` (`ppvircenkjizeiqdxphj`); direkte funksjonsprøve PASS for ett JPEG-bilde og legacy uten `photos`, og forventet avslag for fire bilder, PNG og duplikat-ID. Funksjonen er `IMMUTABLE`, har tomt `search_path` og ingen EXECUTE for PUBLIC/anon/authenticated. Scope/docs-guard, endelig diff-check og apppublisering/CI/READY gjenstår. Ingen bruker-TEST OK, innlogget SJA-bilde, mobilkamera eller flerbruker hevdes. [Detaljer](SJA_ATTACHMENTS_20261009.md).
+Supabase CLI mangler; ingen lokal SQL-kjøring hevdes. Full Sandbox-build, scope/docs-guard og diff-check PASS. Migrasjon `20261009022028 kshms_sja_photos` er anvendt bare på `demo-sandbox` (`ppvircenkjizeiqdxphj`); direkte funksjonsprøve PASS for ett JPEG-bilde og legacy uten `photos`, og forventet avslag for fire bilder, PNG og duplikat-ID. Funksjonen er `IMMUTABLE`, har tomt `search_path` og ingen EXECUTE for PUBLIC/anon/authenticated.
+
+Funksjonshead **785d01389d2059026711ea1a8af12762e75fc4b9**, tree **cd5257609f1a3e2c375b9faf7d9146bc561ed429**; 25 blobber/tree byte-/hashkontrollert, expected-head uten force. Core Safety **37874352426**, jobb **113639379783**, inkludert full critical build success. Vercel **dpl_Dd3VioNsdD4idRkMGodqfpTamDqG** READY på riktig branch/SHA/alias og direkte lest Sandbox-env. Innlogget eksisterende signert SJA etter reload viser ny bildeseksjon read-only; ingen fil/dataendring, popup lukket. Ingen bruker-TEST OK, faktisk innlogget bilde, mobilkamera eller flerbruker hevdes. [Detaljer](SJA_ATTACHMENTS_20261009.md).
 
 ---
 

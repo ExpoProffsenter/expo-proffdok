@@ -2,6 +2,8 @@
 
 Dette gjelder bare nye SJA-bilder. Tidligere TEST OK 9. oktober kl. 00:59 / 01:29 / 01:55 / 02:28 beholdes og skal ikke gjentas uten konkret regresjon.
 
+Funksjonshead `785d01389d2059026711ea1a8af12762e75fc4b9` er READY med grønn full critical build på samme faste Sandbox Preview. Utviklers innloggede lesekontroll viser bildeseksjonen på en eksisterende signert SJA, uten dataendring; faktisk opplasting/readback/PDF/ZIP er fortsatt denne nye avgrensede brukerprøven.
+
 1. Åpne en eksisterende **SJA-utkast** i samme Sandbox Preview. Ikke opprett eller signer en reell analyse bare for prøven. Under **Bilder fra arbeidsstedet** velger du ett ufarlig testbilde uten unødvendige personopplysninger. Se komprimert forhåndsvisning og trykk **Lagre utkast**.
 2. Lukk og åpne samme utkast. Bildet skal være bevart. Last ned egen SJA-PDF: bildet skal stå i en egen ramme. I **Dokumentuttrekk**, velg bare denne SJA-en; samlet PDF skal vise samme bilde.
 3. Trykk **Vis vedleggslisten**. Listen skal vise `SJA-bilde-1.jpg` knyttet til SJA-en og arbeidsstedet. Bekreft og last ned ZIP; JPG og `manifest.json` skal følge. Fjern SJA-en eller endre omfanget: liste og bekreftelse skal nullstilles.

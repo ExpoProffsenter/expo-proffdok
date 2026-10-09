@@ -20,7 +20,13 @@ Risikovurderingsbilder, nye opplastingslagre, faktiske private avviks-/prosjektk
 - Samlet faktisk React/jsPDF/PDF.js: åtte dokumenttyper, 15 sider, SJA-bilde, øvrige bilder, manifest og sluttkontroll. Alle sider maskinelt kontrollert; SJA-sider og manifest visuelt kontrollert uten klipp/overlapp.
 - Faktisk React/ZIP: seks filer, inkludert `SJA-bilde-1.jpg`; ZIP kan åpnes, CRC32, byteantall og SHA-256 stemmer mot `manifest.json`. Tom pakke, endret valg/scope, manglende fil, tilgang og sent firma-/brukerbytte sperres.
 
-Supabase CLI finnes ikke i checkout-miljøet; lokal databasekjøring hevdes derfor ikke. Migrasjon `20261009022028 kshms_sja_photos` er anvendt bare på autorisert Supabase-utviklingsgren `demo-sandbox` (`ppvircenkjizeiqdxphj`). Direkte Sandbox-prøve bekrefter ett lagret JPEG-bilde og legacy-normalisering til `photos: []`; fire bilder, PNG-data og duplikat-ID avvises. Funksjonen er `IMMUTABLE`, har tomt `search_path`, og PUBLIC/anon/authenticated har ikke EXECUTE. Ingen tabell-, Storage-, RLS-, policy- eller produksjonsendring er gjort. Full `EXPO_BACKEND_TARGET=sandbox npm run build` er grønn; scope/docs-guard og endelig diff-check skal være grønne før apppublisering.
+Supabase CLI finnes ikke i checkout-miljøet; lokal databasekjøring hevdes derfor ikke. Migrasjon `20261009022028 kshms_sja_photos` er anvendt bare på autorisert Supabase-utviklingsgren `demo-sandbox` (`ppvircenkjizeiqdxphj`). Direkte Sandbox-prøve bekrefter ett lagret JPEG-bilde og legacy-normalisering til `photos: []`; fire bilder, PNG-data og duplikat-ID avvises. Funksjonen er `IMMUTABLE`, har tomt `search_path`, og PUBLIC/anon/authenticated har ikke EXECUTE. Ingen tabell-, Storage-, RLS-, policy- eller produksjonsendring er gjort. Full `EXPO_BACKEND_TARGET=sandbox npm run build`, scope/docs-guard og diff-check var grønne før apppublisering.
+
+## Publisering og innlogget lesekontroll
+
+Funksjonshead `785d01389d2059026711ea1a8af12762e75fc4b9`, tree `cd5257609f1a3e2c375b9faf7d9146bc561ed429`. Alle 25 endrede blobber og samlet tree er hash-/byteidentiske med lokal testet kilde. Publisert med expected-head `7a68293c8ad3aae4191a1e766b1dbf278ab54eef`, uten force; main uendret. PR Core Safety `37874352426`, jobb `113639379783`, full critical build completed/success. Vercel `dpl_Dd3VioNsdD4idRkMGodqfpTamDqG` er READY på eksakt commit, `feat-kshms-foundation` og fast alias; branchvariabelen `EXPO_BACKEND_TARGET=sandbox` er lest direkte.
+
+Eksisterende innlogget demoøkt ble gjenbrukt i én fane. Etter eksplisitt reload åpnet eksisterende signert «Test sja» i read-only modus og viste ny **Bilder fra arbeidsstedet (inntil tre)**-seksjon med personvernstekst. Ingen fil ble valgt, og ingen SJA ble opprettet, lagret, signert eller endret; ingen PDF/ZIP ble lastet ned. Popupen ble lukket. Dette er regresjons-/publiseringsbevis, ikke faktisk bildeopplasting eller Kenneths TEST OK.
 
 ## Godkjenninger og restprøve
 
