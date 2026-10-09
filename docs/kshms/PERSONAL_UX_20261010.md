@@ -39,3 +39,26 @@ Publisert eksakt SHA, grønn Core Safety, READY Preview og direkte Sandbox-bindi
 Kort relevant brukerprøve: **Meny → Min side → Mine oppfølginger**, åpne **Min medarbeideroppføring**, bytt nettleserfane og gå tilbake. Samme interne fane og autorisert oppføring skal komme tilbake; gamle persondata skal ikke vises under kontroll. Visuelt vurder velkomst/kort og personlig HR. Ingen gjentatt B/C-test.
 
 Privat innhold fortsatt stengt; varig ekstern driftsbinding/ack og full isolert Supabase database-/Storage-restore gjenstår. Ingen Production, main/demo-merge eller testmail sendt.
+
+## Faktisk innlogget sluttkontroll
+
+Rettet kode **5e2be88b1bee67963027ddd9d578fe7de2a20d4d**, tree **dee6bbe4a6df012a5d3f62c440c57b0481d99967**, parent **ce059e8dec61019784ef6b9eca96c31e01257cde**. Core Safety **37997879229 SUCCESS**, jobb **114048436996**, scope guard/fullcritical grønne. Vercel **dpl_3cam6F9TVUS2nqHWebsRm4ZHGX6L READY Preview**, eksakt SHA/ref/prosjekt/fast alias, direkte branch-env **EXPO_BACKEND_TARGET=sandbox**. Første UX-kode ce059e8 hadde grønn CI **37997723212** / jobb **114047910028**, men faktisk browser viste mørk global h2-farge på mørk hero. Rettet med eksplisitt scoped hvit h2-farge og permanent critical-vern, deretter faktisk ny reload og visuell kontroll. Ingen visuell PASS på den første kontrastfeilen.
+
+**Faktisk Skynett-desktop PASS** på rettet kode, innlogget eksisterende demokonto, én fane og vanlig reload uten ny innlogging. Oversikt ved **1363×936**: tre kort i én rad, ca. **349×384 px**, pageWidth=1363/pageHeight=936, ingen side-/høydescroll. Målt h2-farge **rgb(255,255,255)**; hele skjermbildet visuelt kontrollert.
+
+Personlig HR: egen **Min medarbeideroppføring** med demo-kontoens e-post og Leder registrert, ingen dobbel header eller unødvendig søk ved én oppføring, ingen scrolling på denne oversikten. Egen detalj åpnet. **F6 → Escape** (nettleserens fokusbytte og retur) beholdt Mine oppfølginger og åpen egen oppføring; dette er ikke faktisk Windows screenshotverktøy, separat nettleserfane/annen konto eller mobil-dvale. Pending/revokering og selve dobbelget-kontrakten er bevist i faktisk React med syntetisk transport, ikke målt som live HTTP-sekvens.
+
+Adresse og nærmeste pårørende åpnet og viste ærlig lukket port/riktige lesere, uten private inputs. Profil og e-post viste uendret fullt navn, mobilfelt, lesbar konto-e-post og deaktivert kontaktlagring. Rapportopplysninger og e-postvalg åpnet med eksisterende rapportnavn/-rolle, frivillig avkrysning false og deaktivert e-postlagring. **Ingen profil, e-postvalg, HR-oppsett, personer eller rettigheter lagret/endrede i browseren**. Ingen database-/fil-/mailhandling. UI står igjen på Min side Oversikt, meny lukket, én fane.
+
+To originale JPEG-er kopiert uendret til repoet:
+
+| Fil | Byte | SHA-256 |
+|---|---:|---|
+| [Skjermbilde](screenshots/min-side-design-verified-20261010.jpg) | 109216 | `b65a0f27b9515e362df8d100a7e3cb2013298610a86ba25b8de18c4eb10ec6c0` |
+| [Skjermbilde](screenshots/min-side-hr-verified-20261010.jpg) | 89384 | `6484a3d7c92cd6a6b9f594e3fb6d003a1951455b184182c2e6f0d9705ed07ba4` |
+
+![Min side](screenshots/min-side-design-verified-20261010.jpg)
+
+![Personlig HR](screenshots/min-side-hr-verified-20261010.jpg)
+
+Siste bevis-/statuscommit endrer bare dokumentasjon og lagrer disse originalene; appkode/database uendret. Eksakt slutt-head/CI/READY-SHA føres i draft PR #216. Tidligere Kenneth TEST OK beholdes; ingen B/C/PDF/ZIP-omtest eller ny Production-godkjenning.

@@ -1,3 +1,7 @@
+### Min side: faktisk ny utforming kontrollert
+
+Kode **5e2be88b1bee67963027ddd9d578fe7de2a20d4d**, Core Safety **37997879229** / jobb **114048436996 SUCCESS**, **dpl_3cam6F9TVUS2nqHWebsRm4ZHGX6L READY** eksakt SHA/Sandbox. Innlogget Skynett: velkomst/tre kort og kompakt egen HR uten scrolling ved 1363×936, hvit overskrift, egen detalj/fokusretur, bevart profil/rapport/e-post og fortsatt lukket privat kontaktport PASS. Første kontrastfeil funnet og rettet før sluttkontroll. F6/Escape er konkret browser-fokusprøve; Windows screenshotverktøy/mobil/separate kontoer ikke påstått. Ingen data/rettigheter lagret. [To originale skjermbilder og eksakt bevis](PERSONAL_UX_20261010.md#faktisk-innlogget-sluttkontroll). Tidligere TEST OK beholdes.
+
 ## Min side: mer personlig og stabil ved faneretur – 10. oktober 2026
 
 Personlig velkomst, tre tydeligere kort og kompakt egen/delt HR-visning. Valgt fane/oppførings-ID beholdes ved screenshot/fokus, mens gamle HR-data fortsatt fjernes og først kommer tilbake etter fersk listetilgang/dobbel get. Ingen privat innholdsport eller database endret. Faktiske nye og berørte React-/critical-prøver samt full Sandbox build PASS. Bare feature/Preview; tidligere Kenneth TEST OK beholdes. [Scope, rotårsak, sikkerhetskontrakt og aktuelt bevis](PERSONAL_UX_20261010.md). Publisert SHA/CI/Preview føres i draft PR #216.
