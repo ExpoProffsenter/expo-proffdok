@@ -31,3 +31,5 @@ Eksakt publisert SHA, Core Safety, READY Preview og Sandbox-binding føres etter
 Relevant brukerprøve er utformingen under **Meny → KS/HMS** og **Meny → HR**, samt HRs tre snarveier. Ikke gjenta tidligere B/C-prøver uten konkret feil.
 
 Privat HR fortsatt stengt; varig ekstern driftsbinding/ack og full isolert Supabase database-/Storage-restore gjenstår før åpning. Ingen Production, main/demo-merge eller e-postsending.
+
+Første faktisk browservisning fant unødvendig høyde: HR-kort med ikon over tittel og store lukkede details skjøv medarbeiderlisten under skjermen. Konkret rettet til ikon/tittel på én rad, mindre lokal luft og kompakte lukkede sections; ny publisering og faktisk sluttkontroll følger. Ingen PASS påstås for første HR-registerplassering.
