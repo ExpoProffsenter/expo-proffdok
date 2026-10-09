@@ -1,3 +1,4 @@
+import './critical-hr-foundation-check.mjs';
 import './critical-kshms-task-reminders-check.mjs';
 import './critical-kshms-review-reminders-check.mjs';
 import './critical-kshms-legacy-extract-check.mjs';

@@ -1,3 +1,9 @@
+## HR H1 – første sikkerhetsfundament, 9. oktober 2026
+
+Firmabundet medarbeider-/lederregister, eksplisitte ekstra lesere, fersk tilgang og fysisk sletting av register/tildelinger er levert i feature/Sandbox. **75 faktiske rollback-assertions PASS**, permanent klientprøve og full critical build PASS; alle ti live funksjoner byteidentiske. HR er deaktivert for alle firmaer, private filer stengt og tomme. Dette er backend uten ny HR-meny, referat, fravær eller eksport. Full sletting av fremtidig HR-innhold/filbytes og restore er ikke levert. Neste: HR-registerets brukerflate, deretter privat fil-/innholdspurge før sensitivt innhold. Tidligere TEST OK beholdes; ingen ny Kenneth-prøve eller browser-PASS. Miljømål **BEGGE**, bare feature/Preview; KS-e-post fortsatt disabled. [Scope, QA og grenser](HR_FOUNDATION_20261009.md). Publisert SHA/CI/Preview føres i draft PR #216.
+
+---
+
 ## B/C-sluttkontroll og drift – 9. oktober 2026
 
 Samlet B/C-utviklerreview er gjennomført; alle seks påminnelsestyper er levert. Ny lesende Sandbox-kontroll bekrefter 20/20 offentlige KS-tabeller med RLS, worker disabled og en liten eksisterende kø. Avgrensede SQL-planer er dokumentert; ingen 100-firma-kapasitet eller browser-/fil-/leveringsbevis påstås. Håndbok-/malhistorikk og store eksporter er konkrete vekstpunkter før større utrulling. Bare dokumentasjon endret, ingen ny obligatorisk Kenneth-prøve; tidligere TEST OK beholdes. Neste utviklingspunkt er avklart HR-tilgang/private filer/sletting før sensitivt innhold. Releasebevis og ekte e-postaktivering/mottak følger egne konkrete punkter. [Sluttstatus, scope og målinger](BC_CLOSEOUT_20261009.md). Miljømål **BEGGE**, bare feature/Preview; ingen merge/Production. Publisert SHA og grønn CI/READY Preview føres i draft PR #216.

@@ -1,3 +1,9 @@
+## HR H1 – isolert tilgangsregister
+
+Fem smale authenticated RPC-er bruker privat schema med fire RLS-tabeller og fem stengte hjelpere. HR har egen firmainnstilling; fersk arbeidsprofil/medlemskap/profil og medarbeider-/leder-/leserrelasjoner gir innsyn uten KS-/supportbypass. Firmalås og forventet revisjon beskytter endringer. Fratredelse sletter register/grants og rydder egne leder-/leserrelasjoner hos andre; minimal separat slettesperre hindrer reaktivering. Ingen innholds-/versjons-/kladd-/fil-/eksport-API eller HR-meny finnes ennå. Ny hr-private er privat og tom uten klientpolicy; API-purge/restore må leveres før filer åpnes. Den nye flyktige transporttjenesten er foreløpig frakoblet React/global events. 75 Sandbox-assertions, permanent runtime og byteidentisk funksjonsreadback PASS. [Scope og neste gate](../kshms/HR_FOUNDATION_20261009.md). KS-kode/roller/worker og hovednavigasjon er uendret.
+
+---
+
 ## KS/HMS – samlet B/C-gjennomgang
 
 Gjeldende avgrensning står i [OVERSIKT](../kshms/OVERSIKT.md), med [kravkart/runtimebevis](../kshms/BC_REVIEW_20261009.md). Kombinert ti-gruppe React/PDF og ZIP med kvalitet/HMS og legacy samtidig er verifisert; prosjekt-/rolle-RPC er kontrollert etter senere migrasjoner. Denne endringen berører bare status/hjelp og én vedleggstekst, ikke eksporthandler eller backend. Tall/dato finnes i faste skjemaer, men ikke som egendefinerte svarfelt i firmamalen. Generell originalfilopplasting i selvstendig kontroll er ikke implementert, men er heller ikke innført som nytt obligatorisk scope. Håndbokrevisjonspåminnelser er neste konkrete C-scope.

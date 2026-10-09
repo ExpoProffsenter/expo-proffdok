@@ -1,3 +1,9 @@
+## HR H1 – første sikkerhetsfundament, 9. oktober 2026
+
+Firmabundet medarbeider-/lederregister, eksplisitte ekstra lesere, fersk tilgang og fysisk sletting av register/tildelinger er levert i feature/Sandbox. **75 faktiske rollback-assertions PASS**, permanent klientprøve og full critical build PASS; alle ti live funksjoner byteidentiske. HR er deaktivert for alle firmaer, private filer stengt og tomme. Dette er backend uten ny HR-meny, referat, fravær eller eksport. Full sletting av fremtidig HR-innhold/filbytes og restore er ikke levert. Neste: HR-registerets brukerflate, deretter privat fil-/innholdspurge før sensitivt innhold. Tidligere TEST OK beholdes; ingen ny Kenneth-prøve eller browser-PASS. Miljømål **BEGGE**, bare feature/Preview; KS-e-post fortsatt disabled. [Scope, QA og grenser](docs/kshms/HR_FOUNDATION_20261009.md). Publisert SHA/CI/Preview føres i draft PR #216.
+
+---
+
 ## KS/HMS – B/C-sluttkontroll og drift
 
 Samlet B/C-utviklerreview er gjennomført, med påminnelser for alle seks typer. [Sluttstatus og lesende driftsmålinger](docs/kshms/BC_CLOSEOUT_20261009.md) viser hva som er levert og hvilke konkrete bevis som gjenstår før release/større utrulling. Tidligere TEST OK beholdes. Neste utviklingspunkt er det avklarte HR-fundamentet. E-post skal aktiveres og mottak verifiseres ved senere godkjent Production-release.
