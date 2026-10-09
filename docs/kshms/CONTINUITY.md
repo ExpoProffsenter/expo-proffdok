@@ -1,3 +1,7 @@
+## Hjelp: håndbok først og anbefalt HR-bruk – 9. oktober 2026
+
+Kenneths avgrensede rettelser: **Bygg firmaets håndbok** er første KS/HMS-kapittel; **Anbefalt bruk** under HR har tre konkrete råd. Faktisk React-prøve for første kapittel, bevart kildeforslagsflyt og ikke-tom HR-anbefaling PASS; eksisterende HR/Hjelp-critical PASS. Bare hjelpeinnhold/prøve/status endret. HR-portene og neste manifest/restore-scope består. Tidligere tester/TEST OK beholdes. [Scope, QA og sluttbevis](HELP_ORDER_20261009.md).
+
 ## Faktisk Hjelp-Preview kontrollert – 9. oktober 2026
 
 Ett KS/HMS-punkt med 11 kapitler og ett HR-punkt, riktig åpning/bytte/innhold og oppdateringsdato **09.10.2026** sett i én eksisterende innlogget Skynett-fane. Ingen HR-data endret. Kode-SHA `dd511f7577baa145836bfdb23bdcae283f1fa866`; Core Safety 37985178018 / jobb 114005274294 SUCCESS; Vercel `dpl_Dyv4mSiaEWNEi18BbidjqhXCcerD` READY Preview på eksakt SHA og Sandbox-binding. [Originalt skjermbevis og H3-kontrakt](HR_PURGE_FILES_20261009.md#faktisk-innlogget-hjelp-kontroll-etter-publisering). Historiske tester/TEST OK beholdes. Sensitivt HR-innhold fortsatt stengt; uavhengig manifest og full isolert restore gjenstår.
