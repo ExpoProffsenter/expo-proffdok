@@ -1,3 +1,15 @@
+## Testarbeid – avklart med Kenneth 9. oktober 2026
+
+Kenneth påpekte kl. 15:17 at gjentatte like brukerprøver skaper en testsløyfe, og ba om at agenten tester i skynettleseren. Agenten tar teknisk QA: felles PDF-/ZIP-flyter regresjonstestes samlet, med målrettede tester for hver dokumenttypes datakobling. En ny variant blir ikke automatisk en ny obligatorisk Kenneth-prøve. Brukerprøver samles til en kort helhetlig gjennomgang når det finnes en vesentlig ny arbeidsflyt eller et konkret hull som agenten ikke kan dekke. Kritiske regresjonsvern og krav til eksplisitt godkjenning før eventuell merge består. Ingen eksisterende TEST OK skal gjentas uten konkret feil/relevant regresjon.
+
+Tidligere åpne lister nedenfor er testgrunnlag for agenten og dokumenterte bevisgap; de er ikke en automatisk kø av oppgaver for Kenneth. Skill utviklerverifisering, brukerens faktiske TEST OK og udekket bevis. Ikke merk risikobilder, underskjema eller flerbruker som bruker-TEST OK uten en slik godkjenning. Neste utviklingspunkt er fortsatt påminnelser, deretter kildeoppdatering; det skal ikke blokkeres av flere like PDF-/ZIP-brukerprøver. Production-release, main/demo-merge og ekte e-post er fortsatt ikke godkjent.
+
+### Skynettleserforsøk i denne runden
+
+Fast Sandbox Preview på funksjonskode/head `b4986bcf72b19e2bdef471a907e5f5c4393b150a`. Sikker innlogging ga synlig innlogget demo@expo-proffdok.no, Expo Proffsenter og KS/HMS. Risikolisten var tom. Et nytt ulagret skjema viste bildefeltet; lokal tekst ble fylt med «TEST SKY 20261009 – risikobilde – ikke reell vurdering». Ingen Lagre/fullføring/publisering/filopplasting ble utført. Før neste handling avviste nettleserverktøyet styring: `retained_data_restricted`; forsøket på ny testfane ble avvist med `native credential state cannot be safely resumed`. Stoppet ved innloggings-/verktøygrensen. Dette er ikke bildeopplasting, readback, PDF-/ZIP- eller underskjemabevis. En lokal ulagret kladd kan stå igjen; kontroller/lukk den ved neste fungerende browserøkt. Ingen ny brukerprøve er gitt som erstatning for denne verktøyfeilen.
+
+---
+
 ## TEST OK – SJA-bilder, 9. oktober 2026 kl. 15:01
 
 Kenneth svarte «test ok» etter den avgrensede SJA-bildeprøven i samme Sandbox Preview. Godkjenningen gjelder ett testbilde i SJA-utkast med lagring/gjenåpning, egen og samlet PDF, og bilde/manifest.json i vedleggs-ZIP på head `65655dea4a220352075b3c50dd0530a53aab758f`. Dette er brukerens godkjenning, ikke en ny utviklerdrevet nettleserprøve. Ingen bestemt sak, enhet eller antall filer utover prøven er dokumentert.
