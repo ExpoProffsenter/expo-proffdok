@@ -33,3 +33,5 @@ Relevant brukerprøve er utformingen under **Meny → KS/HMS** og **Meny → HR*
 Privat HR fortsatt stengt; varig ekstern driftsbinding/ack og full isolert Supabase database-/Storage-restore gjenstår før åpning. Ingen Production, main/demo-merge eller e-postsending.
 
 Første faktisk browservisning fant unødvendig høyde: HR-kort med ikon over tittel og store lukkede details skjøv medarbeiderlisten under skjermen. Konkret rettet til ikon/tittel på én rad, mindre lokal luft og kompakte lukkede sections; ny publisering og faktisk sluttkontroll følger. Ingen PASS påstås for første HR-registerplassering.
+
+Faktisk KS/HMS-kontroll fant i tillegg uheldig linjebryting i to lange navigasjonsnavn ved desktopbredden. Justert lokal knappepadding/gap/skriftvekt for mer tekstplass uten å endre navn, ID-er, rekkefølge eller min44px høyde. Ny faktisk kontroll følger rettingen.
