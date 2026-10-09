@@ -1,3 +1,11 @@
+## Publisert PDF-/ZIP-forklaring – innlogget kontroll
+
+Tekst-/TEST OK-oppfølging publisert på **085336ade9be3a9778a3c5d00ad7c58c7dc0a98a**, tree **ecbbd5aa8be7fd6ccdc72e6eb254da104cc724ba**, identisk med lokal testcommit 496c73e25026d070bf38e2b8f72da7acc03d30f4 (bevart). Alle 11 blobber/tree og faktisk publisert git-objekt hashkontrollert, expected-head 359dac0e og uten force. READY **dpl_8wuuYDCorLQwMaZde1QL39pihcCs**, eksakt SHA og samme faste Sandbox-alias; Core Safety **37862362107**, jobb/full critical build **113600849615** completed/success. Lokal full Sandbox build og faktisk React/ZIP PASS. PR #216 fortsatt draft/main uendret 155f6c4ac01f126c1db0c65da385cfd9305587d5. Bare to apptekstfiler og ni dokumenter i denne slice; ingen handler/format/backend-endring. Etterfølgende beviscommit er bare dokumentasjon/skjermbilde.
+
+Innlogget samme skyfane (4), bevart demoøkt etter reload: Dokumentuttrekk forklarer nå PDF og ZIP før valg. Valgt eksisterende Voldsløkka-vernerunde ga begge vedlegg (178896/200131 byte), hensiktstekst for separate filer/arkiv og forklaring av mappen vedlegg/manifest.json. ZIP-knappen er sperret før egen bekreftelse og aktiv etter. Det ble ikke lastet ned eller skrevet noen ny sak i denne tekstkontrollen. [Skjermbevis](zip-clarity-proof.jpg). Valg/omfang deretter tømt, null dialoger; én fane beholdt. Godkjent ZIP-nedlasting skal ikke gjentas bare fordi teksten er presisert. Hensikt og manifest er forklart direkte i chatten; TEST OK 9. oktober kl. 01:55 gjelder to-bilders nedlasting/innhold, øvrige åpne prøver består.
+
+---
+
 ## TEST OK – ZIP med to bilder og filoversikt, 9. oktober kl. 01:55
 
 Kenneths TEST OK er presisert **9. oktober 2026 kl. 01:55 Europe/Oslo**: ZIP fra Voldsløkka-vernerunden er lastet ned og åpnet, med **to bilder i vedlegg og én JSON-fil**. Skjermbildet viser åpnet «KS-HMS vedlegg – test omfang», mappen «vedlegg» og «manifest.json». Dette bekrefter innlogget ZIP-nedlasting/innhold på publisert head **359dac0ed2df86ab43cb545ece6716161f9bdc87** (funksjon 42a38e91), etter PDF-/ZIP-avklaringen kl. 01:51–01:53. Tidligere TEST OK beholdes. Ingen ny mobil-, flerbruker-, privat RUH-original-/prosjektkontrollfil- eller Production-/merge-/e-postgodkjenning følger.
