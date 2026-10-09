@@ -7,7 +7,7 @@ export default function KshmsNavigation({screen,canManage,pendingCount,onNavigat
  return <nav className={personalOnly?'ks-navigation ks-navigation-personal':'ks-navigation'} aria-label="KS/HMS visning">
   {kshmsNavigationGroups({canManage,pendingCount,personalOnly}).map(group=>{const GroupIcon=groupIcons[group.label];return <div className="ks-navigation-group" key={group.label} role="group" aria-label={group.label}>
    <span className="ks-navigation-label"><span className="ks-navigation-icon"><GroupIcon aria-hidden="true"/></span>{group.label}</span>
-   <div className="ks-tabs">{group.items.map(([key,label])=>{const Icon=icons[key];return <button type="button" key={key} className={screen===key?'active':'secondary'} aria-pressed={screen===key} onClick={()=>onNavigate(key)}><Icon aria-hidden="true"/><span>{label}</span></button>;})}</div>
+   <div className="ks-tabs">{group.items.map(([key,label])=>{const Icon=icons[key];return <button type="button" key={key} className={screen===key?'active':'secondary'} aria-pressed={screen===key} onClick={()=>onNavigate(key)}><Icon aria-hidden="true"/><span>{label.split('/').map((part,index)=><React.Fragment key={index}>{index>0&&<>/<wbr/></>}{part}</React.Fragment>)}</span></button>;})}</div>
   </div>;})}
  </nav>;
 }
