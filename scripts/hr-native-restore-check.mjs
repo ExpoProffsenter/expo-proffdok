@@ -17,9 +17,11 @@ const root=await fs.mkdtemp(path.join(os.tmpdir(),'hr-native-restore-'));
 await fs.chmod(root,0o700);
 const ledger=path.join(root,'independent-ledger'),snapshots=path.join(root,'snapshots');
 await fs.mkdir(snapshots,{mode:0o700});
+await fs.mkdir(ledger,{mode:0o700});
 const signingKey=randomBytes(32).toString('hex'),workerToken=randomBytes(32).toString('hex');
+let failedCheck=null;
 let phase='preflight',assertions=0,started=false,containers=[],dbContainer,image,api,anon,service;
-const check=(ok,label)=>{assert(ok,label);assertions++;};
+const check=(ok,label)=>{if(!ok)failedCheck=label;assert(ok,label);assertions++;};
 const stage=value=>{phase=value;console.log(JSON.stringify({mode:'ISOLATED_NATIVE_QA',stage:phase}));};
 // Never emit CLI status, SQL, Auth responses, Docker environment or stderr.
 function command(binary,args,input,timeout=60000){
@@ -139,6 +141,7 @@ try{
  check(!(await request('/storage/v1/object/authenticated/hr-private/'+files[0].object,{bearer:user.jwt,key:anon})).ok,'actual user cannot bypass file endpoint through Storage');
  check(!(await fetch(api+'/storage/v1/object/public/hr-private/'+files[0].object)).ok,'native private bucket rejects anonymous read');
  check(!(await request('/rest/v1/rpc/hr_purge_worker_reserve',{method:'POST',body:{},bearer:user.jwt,key:anon})).ok,'actual user cannot reserve worker job');
+ stage('independent_test_ledger_initialize');
  await initializeLedger(ledger,project,signingKey);
  stage('native_volume_identity');
  const mounts=volumes();
@@ -202,7 +205,7 @@ try{
  console.log(JSON.stringify({ok:true,mode:'ISOLATED_NATIVE_QA',assertions,cli:'2.120.0',images,physicalDatabaseAuthRestore:true,storageByteRestore:true,actualAuthUsers:4,restoredFamilies:5,restoredRegisteredFiles:2,deletedPaths:3,unrelatedEmployeePreserved:true,companyProfileFixture:true,productionAnchor:false,databaseAck:false,managedCloudRestore:false}));
 }catch(e){
  const code=/^native_(?:sqlstate_[0-9A-Z]{5}|rpc_rejected_[0-9]{3}|command_failed)$/.test(e.message)?e.message:'native_check_failed';
- console.error(JSON.stringify({ok:false,mode:'ISOLATED_NATIVE_QA',stage:phase,code,assertions,productionAnchor:false,databaseAck:false,managedCloudRestore:false}));process.exitCode=1;
+ console.error(JSON.stringify({ok:false,mode:'ISOLATED_NATIVE_QA',stage:phase,code,failedCheck,assertions,productionAnchor:false,databaseAck:false,managedCloudRestore:false}));process.exitCode=1;
 }finally{
  stage('cleanup');
  if(started){try{supabase(['stop','--project-id',stack,'--no-backup']);}catch{console.error(JSON.stringify({ok:false,code:'isolated_cleanup_failed'}));process.exitCode=1;}}
