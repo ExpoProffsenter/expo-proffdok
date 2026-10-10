@@ -2,9 +2,17 @@
 
 ## Gjeldende status 10. oktober 2026
 
-Kenneth har nå godkjent Production-release og main → demo. Production har alle 54 migrasjoner og `kshms-assignment-mailer` v1 ACTIVE. Autentisert check-mode ga HTTP 200 med alle fire konfigurasjonsflagg sanne. Eksisterende Resend-hemmeligheter er brukt server-side. Production-transport er aktivert etter kontroll av tom kø, med origin `https://expo-proffdok.app`; ingen test-/Sandbox-kø er kopiert. Én autorisert admin-test til Kenneth er fortsatt ikke sendt fordi den eksisterende testflyten krever aktiv innlogget adminøkt. Mottak i innboks er derfor ikke attestert. Se [releasekontrollen](RELEASE_20261010.md).
+Kenneth har nå godkjent Production-release og main → demo. Production har alle 54 migrasjoner og `kshms-assignment-mailer` v1 ACTIVE. Autentisert check-mode ga HTTP 200 med alle fire konfigurasjonsflagg sanne. Eksisterende Resend-hemmeligheter er brukt server-side. Production-transport er aktivert etter kontroll av tom kø, med origin `https://expo-proffdok.app`; ingen test-/Sandbox-kø er kopiert. Én autorisert systemadmin-testmail til `kenneth@ringside.no` er nå sendt; innboksmottak er ikke bekreftet. Dette verifiserer ikke KS/HMS-tildelingsarbeiderens fullstendige flyt. Se [releasekontrollen](RELEASE_20261010.md).
 
 Sandbox holdes fortsatt `enabled=false`. Historiske godkjenningsnotater nedenfor beskriver situasjonen før brukerens «Kjør».
+
+## Faktisk testmail, 10. oktober ca. 21:08 Europe/Oslo
+
+Én tidligere autorisert test til `kenneth@ringside.no` ble sendt **én gang** 10. oktober ca. 21:08 Europe/Oslo i den eksisterende innloggede Production-flyten **Systemadmin → Send e-post til brukere → 1. Kontroller mottakere → 2. Send test**. Kenneth meldte «innlogget» før handlingen; synlig økt viste riktig konto. Emne: «Expo ProffDok – avtalt test av e-post 10.10.2026». Meldingen inneholdt bare ufølsom testtekst.
+
+Appen bekreftet **«Test er sendt kun til kenneth@ringside.no.»** Mottakerpreview viste 37 kvalifiserte brukere, men **3. Send til mottakergruppen ble ikke klikket**. Ingen masseutsending eller nytt sendeforsøk. Etter skjermbevis gikk fanen tilbake til Startside. Den ene sendeautorisasjonen er brukt.
+
+[Originalt skjermbevis](evidence/TESTMAIL_SENT_20261010.jpg). Dette er faktisk innlogget appbekreftelse for `systemadmin-broadcast-email` sin testhandling. **Mottak i innboksen er ikke bekreftet**, og dette beviser ikke KS/HMS-tildelingskøens fullstendige leverings-/lenke-/retryflyt. Ingen credentials, JWT, cookies eller intern auth-state ble lest; ingen SQL/service-role-omgåelse av innlogging.
 
 ## Status 9. oktober 2026 (historisk)
 
