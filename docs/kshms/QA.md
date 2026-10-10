@@ -1,3 +1,9 @@
+## HR: samtalemaler i menyen og sykefraværsoppsett – 10. oktober 2026
+
+**Åpne samtalemaler** og **Åpne sykefravær** ligger i HR-snarveiene øverst. Firmaadmin kan klargjøre en generell sykefraværsmal med 11 spørsmål om arbeid, kontakt, tilrettelegging og oppfølging. Eksisterende admin-/firmagater, utgaver, CAS og kladdbevaring gjelder. Fristveiledning med NHO/NAV-kilder og et avgrenset regneeksempel for 4/7/8/26 uker; fullt og gradert fravær forklares ulikt. Ingen personlig sak, fraværsdata, påminnelse eller innsending opprettes.
+
+**94 faktiske Sandbox-rollback-assertions og 94 PostgreSQL/PGlite-assertions PASS**, berørte faktiske mal-/register-/Hjelp-React-prøver og full critical/build PASS. Ingen nye sikkerhetsråd ved sammenligning uten observasjonstidsstempler. Privat innhold forblir stengt med restore quarantine. Miljømål BEGGE, levering bare feature/Preview/Sandbox. Tidligere TEST OK består. [Scope, kilder, leveranse og grenser](HR_SICK_LEAVE_SETUP_20261010.md).
+
 ## HR: tydelig hjelp der du arbeider – 10. oktober 2026
 
 Synlig **Start her** viser oppsett → medarbeider/leder → samtalemal for firmaadmin, og relevant lesehjelp for leder/personlig bruker. Malbyggeren forklarer velg → tilpass → forhåndsvis/lagre, navn/tema/spørsmål, forberedelse/felles møte, kladd/Forkast og utgave/arkiv. En lagret mal starter ingen samtale og sender ingenting til ansatte. Bare presentasjon/hjelp; handlinger, roller, SQL og privat innholdsport beholdes.

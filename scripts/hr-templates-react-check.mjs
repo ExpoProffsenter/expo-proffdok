@@ -42,7 +42,7 @@ try{
   const tick=async text=>act(async()=>{const l=[...w.document.querySelectorAll('label')].find(l=>l.textContent.includes(text));assert(l,text);l.querySelector('input[type=checkbox]').click();});
   const newWrites=()=>calls.filter(c=>c.name==='hr_template_save').length;
   await act(async()=>w.__render({context}));assert.equal(calls.length,0,'Collapsed builder must not query');
-  await act(async()=>{w.document.querySelector('summary').click();await new Promise(resolve=>setTimeout(resolve,10));});assert.equal(w.document.querySelectorAll('.hr-template-starters button').length,3);
+  await act(async()=>{w.document.querySelector('summary').click();await new Promise(resolve=>setTimeout(resolve,10));});assert.equal(w.document.querySelectorAll('.hr-template-starters button').length,4);
   await act(async()=>w.document.querySelector('.hr-template-starters button').click());assert.equal(newWrites(),0);assert(w.document.body.textContent.includes('Ulagrede endringer'));
   await write('Malnavn','Firmaets årlige samtale');await write('Spørsmålstekst','Hvilken støtte trenger du i arbeidshverdagen?');
   await click('Legg til spørsmål');await write('Tema','Eget tema');await write('Spørsmålstekst','Hva ønsker vi å følge opp?');
@@ -63,8 +63,13 @@ try{
   await click('Behold kladd som neste utgave');await click('Lagre mal');assert.equal(record.versions.at(-1).content.title,'Min samtidige kladd');assert(record.versions.some(v=>v.content.title==='En annen admins utgave'));
   await click('Lag egen mal');await write('Malnavn','Lagring med tapt svar');loseWrite=true;await click('Lagre mal');assert.equal(records.length,2);assert(w.document.querySelector('[role=alert]').textContent.includes('Tapt svar'));
   await click('Oppdater maler');assert(w.document.body.textContent.includes('Tidligere lagring er bekreftet'));assert(button('Lagre mal').disabled);assert.equal(records.length,2,'Lost response produced duplicate');
+  let handled=0;const beforeShortcut=newWrites();await act(async()=>w.__render({context,startRequest:{token:1,kind:'sickleave'},onStartHandled:()=>handled++}));
+  assert.equal(handled,1);assert.equal(newWrites(),beforeShortcut,'Shortcut wrote without save');
+  assert(w.document.body.textContent.includes('Sykefraværsoppfølging'));await click('Lagre mal');assert.equal(records.length,3);assert.equal(records[2].versions[0].content.kind,'sickleave');assert.equal(records[2].versions[0].content.questions.length,11);
+  await click('Rediger mal');await write('Malnavn','Behold sykefraværskladd');const beforeSwitch=newWrites();await act(async()=>w.__render({context,startRequest:{token:2,kind:'sickleave'},onStartHandled:()=>handled++}));assert(w.document.querySelector('.hr-template-choice'));await click('Behold kladden');assert(w.document.body.textContent.includes('Behold sykefraværskladd'));assert.equal(newWrites(),beforeSwitch);
+  await click('Forkast endringer');
   lateGet={};await act(async()=>w.dispatchEvent(new w.Event('focus')));assert(!w.document.querySelector('.hr-template-workbench'),'Must hide before fresh authorization');const resolve=lateGet.resolve;assert(resolve);lateGet=null;
-  await act(async()=>w.__unmount());await act(async()=>resolve({data:{context,template:{id:records[1].id,revision:1,archived:false},version:records[1].versions[0]}}));assert(!w.document.querySelector('.hr-template-workbench'));
+  await act(async()=>w.__unmount());await act(async()=>resolve({data:{context,template:{id:records[2].id,revision:1,archived:false},version:records[2].versions[0]}}));assert(!w.document.querySelector('.hr-template-workbench'));
   await act(async()=>w.__render({context}));revoked=true;await act(async()=>w.dispatchEvent(new w.Event('focus')));assert(!w.document.querySelector('.hr-template-workbench'));assert(!w.document.querySelector('.hr-template-starters'));assert(w.document.querySelector('[role=alert]'));
   await act(async()=>w.__unmount());await act(async()=>w.__render({context:{...context,user_id:'employee',administer:false}}));assert.equal(w.document.body.textContent,'');
   assert.equal(w.localStorage.length,0);assert.equal(w.sessionStorage.length,0);await act(async()=>w.__unmount());

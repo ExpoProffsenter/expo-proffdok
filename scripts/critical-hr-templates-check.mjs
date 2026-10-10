@@ -4,7 +4,8 @@ import {suggestedHrTemplate,blankHrTemplate,validateHrTemplate} from '../src/mod
 import {createHrTemplateSession} from '../src/modules/hr/hrTemplateSession.mjs';
 const uuid=n=>`10000000-0000-4000-8000-${String(n).padStart(12,'0')}`;let seq=0;
 const content=suggestedHrTemplate('annual',()=>uuid(++seq));
-for(const kind of ['annual','probation','followup'])validateHrTemplate(suggestedHrTemplate(kind,()=>uuid(++seq)));
+for(const kind of ['annual','probation','followup','sickleave'])validateHrTemplate(suggestedHrTemplate(kind,()=>uuid(++seq)));
+const sickness=suggestedHrTemplate('sickleave',()=>uuid(++seq));assert.equal(sickness.questions.length,11);assert.equal(sickness.questions.filter(q=>q.phase==='preparation').length,4);assert(sickness.questions.some(q=>q.topic==='Tiltak og oppfølging'));assert(sickness.questions.some(q=>q.topic==='Kontaktavtale'));
 validateHrTemplate(blankHrTemplate(()=>uuid(++seq)));
 for(const patch of [{answer:'secret'},{employee_id:uuid(99)},{questions:[]},{kind:'diagnosis'},{title:'ab'}])assert.throws(()=>validateHrTemplate({...content,...patch}));
 for(const patch of [{answer:'secret'},{required:'false'},{phase:'private'},{prompt:''},{topic:''},{id:'bad'}])assert.throws(()=>validateHrTemplate({...content,questions:[{...content.questions[0],...patch}]}));

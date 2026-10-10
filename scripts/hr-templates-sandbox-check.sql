@@ -51,9 +51,12 @@ begin
  perform pg_temp.hr_assert(jsonb_array_length(public.hr_template_list(c)->'templates')=1,'scoped catalogue');
  perform pg_temp.hr_reject(format('select public.hr_template_save(%L,%L,0,%L,false)',c,tid,v),'40001');
  perform pg_temp.hr_assert(public.hr_template_save(c,tid,1,v,false)#>>'{template,revision}'='1','unchanged save does not invent version');
- v:=jsonb_set(v,'{title}','"Ny syntetisk malutgave"');
+ v:=jsonb_set(jsonb_set(v,'{title}','"Ny syntetisk malutgave"'),'{kind}','"sickleave"');
  r:=public.hr_template_save(c,tid,1,v,false);
  perform pg_temp.hr_assert(r#>>'{template,revision}'='2','changed creates version two');
+ perform pg_temp.hr_assert(r#>>'{version,content,kind}'='sickleave','sick leave kind persists');
+ perform pg_temp.hr_assert(public.hr_template_list(c)#>>'{templates,0,kind}'='sickleave','sick leave catalogue');
+ perform pg_temp.hr_assert(public.hr_template_get(c,tid,1)#>>'{version,content,kind}'='annual','new kind does not alter old annual snapshot');
  perform pg_temp.hr_assert(public.hr_template_get(c,tid,1)#>'{version,content}'=old_v,'historical snapshot unchanged');
  perform pg_temp.hr_reject(format('select public.hr_template_save(%L,%L,1,%L,false)',c,tid,old_v),'40001');
  perform pg_temp.hr_assert(public.hr_template_get(c,tid)#>'{version,content}'=v,'stale writer cannot overwrite');

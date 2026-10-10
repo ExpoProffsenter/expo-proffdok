@@ -1,4 +1,4 @@
-export const HR_TEMPLATE_KINDS={annual:'Årlig medarbeidersamtale',probation:'Prøvetidssamtale',followup:'Oppfølgingssamtale',custom:'Egen samtaletype'};
+export const HR_TEMPLATE_KINDS={annual:'Årlig medarbeidersamtale',probation:'Prøvetidssamtale',followup:'Oppfølgingssamtale',sickleave:'Sykefraværsoppfølging',custom:'Egen samtaletype'};
 export const HR_TEMPLATE_PHASES={preparation:'Medarbeiderens forberedelse',meeting:'Felles møte'};
 const annual=[
  ['Trivsel','Hva fungerer godt i arbeidshverdagen, og hva ønsker du å endre?'],
@@ -17,12 +17,26 @@ const meeting=[
 const variants={
  annual:{title:'Årlig medarbeidersamtale',intro:'Forbered noen korte refleksjoner. I møtet går medarbeider og leder gjennom temaene sammen og avtaler eventuell oppfølging.',preparation:annual},
  probation:{title:'Prøvetidssamtale',intro:'Se på forventninger, opplæring og støtte. Bruk konkrete eksempler og avtal hva som hjelper medarbeideren videre.',preparation:[['Forventninger','Er oppgavene og forventningene tydelige?'],['Opplæring','Hvilken opplæring har fungert, og hva mangler du?'],['Støtte og samarbeid','Hvem kan hjelpe deg, og hva trenger du fra leder eller kolleger?'],['Arbeidshverdag','Hva fungerer godt, og hvilke oppgaver er krevende?'],['Videre utvikling','Hva vil du øve på eller lære fremover?']]},
- followup:{title:'Oppfølgingssamtale',intro:'Ta utgangspunkt i tidligere avtaler. Se på det som er gjort, det som gjenstår og hvilken støtte som trengs.',preparation:[['Tidligere avtaler','Hvordan har arbeidet med de avtalte tiltakene gått?'],['Resultat og hindringer','Hva har fungert, og hva har gjort fremdriften vanskelig?'],['Støtte','Hvilken hjelp eller tilrettelegging trenger du videre?'],['Neste steg','Hva bør vi prioritere frem til neste oppfølging?']]}
+ followup:{title:'Oppfølgingssamtale',intro:'Ta utgangspunkt i tidligere avtaler. Se på det som er gjort, det som gjenstår og hvilken støtte som trengs.',preparation:[['Tidligere avtaler','Hvordan har arbeidet med de avtalte tiltakene gått?'],['Resultat og hindringer','Hva har fungert, og hva har gjort fremdriften vanskelig?'],['Støtte','Hvilken hjelp eller tilrettelegging trenger du videre?'],['Neste steg','Hva bør vi prioritere frem til neste oppfølging?']]},
+ sickleave:{title:'Sykefraværsoppfølging',intro:'Snakk om arbeid og muligheter for tilrettelegging. Forbered egne innspill, og lag planen sammen. Ikke ta med diagnose eller medisinske opplysninger. Malen er et utgangspunkt; den er ikke en innsendt oppfølgingsplan.',preparation:[
+  ['Kontakt','Hvordan ønsker du at vi holder kontakten, og hva gjør kontakten nyttig for deg?'],
+  ['Arbeidsoppgaver','Hvilke oppgaver kan du utføre eller prøve nå? Hvilke oppgaver er vanskelige?'],
+  ['Muligheter','Kan andre oppgaver, hjelpemidler, arbeid med en kollega eller endret arbeidstid hjelpe?'],
+  ['Støtte','Hva trenger du fra leder og bedriften for å komme tilbake eller fortsette i arbeid?']
+ ],meeting:[
+  ['Kontaktavtale','Avtal kontaktform, hvem som tar kontakt og når dere snakker sammen neste gang.'],
+  ['Tilrettelegging','Vurder firmaets muligheter sammen. Hva skal prøves, og hva er foreløpig ikke mulig? Forklar vurderingen.'],
+  ['Felles oppfølgingsplan','Oppsummer aktuelle oppgaver, hva som kan prøves og planen videre. Se over innholdet sammen.'],
+  ['Tiltak og oppfølging','For hvert avtalt tiltak: hva skal gjøres, hvem har ansvar, hvilken frist gjelder og når vurderer dere resultatet?'],
+  ['Behov for bistand','Trenger dere hjelp fra bedriftshelsetjenesten, sykmelder eller NAV? Avtal hvem som følger opp.',false],
+  ['Tilbake i arbeid','Hva kan være et godt neste steg mot arbeid? Avtal eventuell opptrapping og ny gjennomgang.',false],
+  ['Kommentarer og uenighet','Hvilke egne kommentarer eller ulike syn skal følge planen? Begge skal få lese og bekrefte sin gjennomgang.',false]
+ ]}
 };
 export function suggestedHrTemplate(kind,uuid=()=>crypto.randomUUID()) {
  const v=variants[kind];if(!v)throw Error('Ukjent malforslag.');
  const rows=(items,phase)=>items.map(([topic,prompt,required=true])=>({id:uuid(),topic,prompt,phase,required}));
- return {title:v.title,kind,intro:v.intro,questions:[...rows(v.preparation,'preparation'),...rows(meeting,'meeting')]};
+ return {title:v.title,kind,intro:v.intro,questions:[...rows(v.preparation,'preparation'),...rows(v.meeting||meeting,'meeting')]};
 }
 export function blankHrTemplate(uuid=()=>crypto.randomUUID()) {
  return {title:'Min samtalemal',kind:'custom',intro:'',questions:[{id:uuid(),topic:'Arbeidshverdag',prompt:'Hva fungerer godt i arbeidshverdagen?',phase:'preparation',required:true}]};

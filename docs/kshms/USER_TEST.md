@@ -1,3 +1,13 @@
+## Ny HR-prøve – snarveier og sykefravær
+
+Bare denne nye delen skal prøves på [fast Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe). Tidligere TEST OK består. Innlogget visuell/mobil prøve gjenstår; utviklerens React-/SQL-/critical-prøver er grønne.
+
+1. I HR: trykk **Åpne samtalemaler** øverst. Samtalemaler skal åpnes og de fire forslagene vises.
+2. Trykk **Åpne sykefravær**, deretter **Tilpass sykefraværsmal** som firmaadmin. En mal med 11 spørsmål skal vises. Hvis du har en ulagret mal, skal du få velge **Behold kladden** eller **Forkast og fortsett**.
+3. Tilpass et generelt spørsmål og trykk **Lagre mal**. Du skal få lagret utgave. Ikke skriv personopplysninger. Eksempeldatoene under Sykefravær lagres ikke og gir ingen påminnelser.
+
+Personlige sykefraværssaker er fortsatt stengt. Dette er firmaets mal og veiledning, ikke ferdig saksbehandling.
+
 ## Kort prøve: tydelig HR-hjelp – 10. oktober 2026
 
 1. Åpne **HR** på [samme Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe). **Start her** skal vise hva du gjør først og hvilken knapp du bruker videre.

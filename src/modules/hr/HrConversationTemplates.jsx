@@ -19,13 +19,13 @@ function Preview({content}) {
   })}<p className="hr-hint">Dette er en tom mal. Ansattes svar og referater kan ikke registreres her ennå.</p>
  </div>;
 }
-export default function HrConversationTemplates({context}) {
+export default function HrConversationTemplates({context,targetRef,startRequest,onStartHandled}) {
  const {company_id:companyId,user_id:userId}=context,scope=companyId+':'+userId;
  const [open,setOpen]=useState(()=>workspace.get(scope)?.open||false);
  const [data,setData]=useState(null),[draft,setDraft]=useState(null),[view,setView]=useState(null),[history,setHistory]=useState(null);
  const [mode,setMode]=useState('preview'),[questionId,setQuestionId]=useState(null),[pending,setPending]=useState(null),[archiveConfirmed,setArchiveConfirmed]=useState(false);
  const [busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState(''),[conflict,setConflict]=useState(false),[showArchived,setShowArchived]=useState(false);
- const sessionRef=useRef(null),refreshRef=useRef(null),epoch=useRef(0),locked=useRef(false),region=useRef(null);
+ const sessionRef=useRef(null),refreshRef=useRef(null),epoch=useRef(0),locked=useRef(false),region=useRef(null),handledRequest=useRef(null);
  const dirty=Boolean(draft&&(draft.revision===0||!sameHrTemplate(draft.content,draft.base)));
  const keep=next=>{remember(scope,{open:true,draft:next});setDraft(next);};
  const clear=()=>{setData(null);setDraft(null);setView(null);setHistory(null);setPending(null);setArchiveConfirmed(false);};
@@ -78,6 +78,12 @@ export default function HrConversationTemplates({context}) {
   keep({id:crypto.randomUUID(),revision:0,archived:false,content,base:null});setView(null);setMode('edit');setQuestionId(content.questions[0].id);region.current?.focus();
  };
  const choose=intent=>{if(dirty)setPending(intent);else start(intent);};
+ // A shortcut opens the same authorized editor, with the same dirty-draft choice.
+ useEffect(()=>{if(startRequest?.kind==='sickleave'&&context.administer===true)setOpen(true);},[startRequest,context.administer]);
+ useEffect(()=>{
+  if(!startRequest||startRequest.kind!=='sickleave'||handledRequest.current===startRequest.token||!data||busy||!sessionRef.current)return;
+  handledRequest.current=startRequest.token;choose({type:'suggestion',kind:'sickleave'});onStartHandled?.();
+ },[startRequest,data,busy]);
  const change=patch=>keep({...draft,content:{...draft.content,...patch}});
  const question=draft?.content.questions.find(q=>q.id===questionId);
  const changeQuestion=patch=>change({questions:draft.content.questions.map(q=>q.id===questionId?{...q,...patch}:q)});
@@ -99,17 +105,17 @@ export default function HrConversationTemplates({context}) {
  };
  const rows=data?.templates.filter(t=>showArchived||!t.archived)||[];
  if(context.administer!==true)return null;
- return <details className="hr-card hr-templates" open={open} onToggle={e=>{const value=e.currentTarget.open;setOpen(value);remember(scope,{open:value,draft:workspace.get(scope)?.draft});}}>
+ return <details ref={targetRef} tabIndex={-1} className="hr-card hr-templates" open={open} onToggle={e=>{const value=e.currentTarget.open;setOpen(value);remember(scope,{open:value,draft:workspace.get(scope)?.draft});}}>
   <summary><BookOpen size={18} aria-hidden="true"/>Samtalemaler <small>Forbered spørsmålene til samtalen</small></summary>
   {open&&<><p className="hr-hint">Lag generelle spørsmål for firmaet. Ikke skriv navn, personreferater eller fraværsopplysninger. Samtaler med ansattes svar åpnes senere.</p>
    <section className="hr-step-guide" aria-label="Slik lager du en samtalemal"><h3>Slik lager du en mal</h3><ol>
-    <li><strong>1. Velg utgangspunkt</strong><span>Trykk Årlig medarbeidersamtale, Prøvetidssamtale eller Oppfølgingssamtale. Lag egen mal starter med ett spørsmål. Ingen av valgene lagrer noe ennå.</span></li>
+    <li><strong>1. Velg utgangspunkt</strong><span>Velg et av malforslagene nedenfor. Lag egen mal starter med ett spørsmål. Ingen av valgene lagrer noe ennå.</span></li>
     <li><strong>2. Tilpass spørsmålene</strong><span>Gi malen et navn. Velg et spørsmål i listen, endre teksten og velg når det skal besvares. Legg til, fjern eller flytt spørsmål ved behov.</span></li>
     <li><strong>3. Se over og lagre</strong><span>Forhåndsvis mal viser spørsmålene slik de er satt opp. Bruk Rediger mal for å endre videre, og Lagre mal når du er fornøyd.</span></li>
    </ol><p className="hr-hint">Lagre mal lagrer spørsmålene for firmaet. Det starter ingen samtale og sender ingenting til ansatte. Velg en lagret mal i listen for å se eller endre den senere.</p></section>
    {error&&<p className="hr-error" role="alert">{error}</p>}{notice&&<p className="hr-notice" role="status">{notice}</p>}{busy&&<p role="status">Kontrollerer maltilgang …</p>}
    <div className="hr-template-toolbar"><button type="button" className="secondary" disabled={busy} onClick={refresh}><RotateCcw size={16} aria-hidden="true"/>Oppdater maler</button>{data&&<button type="button" disabled={busy} onClick={()=>choose({type:'blank'})}><Plus size={16} aria-hidden="true"/>Lag egen mal</button>}</div>
-   {data&&<><div className="hr-template-starters" aria-label="Generelle malforslag">{['annual','probation','followup'].map(kind=><button className="secondary" type="button" key={kind} disabled={busy} onClick={()=>choose({type:'suggestion',kind})}><BookOpen size={18} aria-hidden="true"/><strong>{HR_TEMPLATE_KINDS[kind]}</strong><small>Bruk forslag og tilpass</small></button>)}</div>
+   {data&&<><div className="hr-template-starters" aria-label="Generelle malforslag">{['annual','probation','followup','sickleave'].map(kind=><button className="secondary" type="button" key={kind} disabled={busy} onClick={()=>choose({type:'suggestion',kind})}><BookOpen size={18} aria-hidden="true"/><strong>{HR_TEMPLATE_KINDS[kind]}</strong><small>Bruk forslag og tilpass</small></button>)}</div>
     {pending&&<div className="hr-template-choice" role="alert"><strong>Du har ulagrede endringer.</strong><p>Forkast kladden for å bytte mal, eller behold arbeidet.</p><button type="button" onClick={()=>start(pending)}>Forkast og fortsett</button><button type="button" className="secondary" onClick={()=>setPending(null)}>Behold kladden</button></div>}
     <label className="hr-check"><input type="checkbox" checked={showArchived} onChange={e=>setShowArchived(e.target.checked)}/>Vis arkiverte maler</label>
     <div className="hr-template-catalog">{rows.map(t=><button type="button" key={t.id} className="secondary" disabled={busy} aria-pressed={draft?.id===t.id} onClick={()=>choose({type:'saved',id:t.id})}><span><strong>{t.title}</strong><small>{HR_TEMPLATE_KINDS[t.kind]} · {t.question_count} spørsmål</small></span><span>Utgave {t.revision}{t.archived?' · arkivert':''}</span></button>)}</div>

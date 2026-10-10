@@ -5,11 +5,12 @@ import {MANAGED_ACCESS_EVENT,MODULE_ACCESS_EVENT,publishManagedAccessChange} fro
 import {WORK_PROFILE_EVENT} from '../access/workProfileClient.js';
 import './hr.css';
 import ModuleHeading from '../ui/ModuleHeading.jsx';
-import {UserRound,ShieldCheck,ChevronRight,UsersRound,Settings,FileCheck2,Info,ArrowRight,HeartPulse} from 'lucide-react';
+import {UserRound,ShieldCheck,ChevronRight,UsersRound,Settings,FileCheck2,Info,ArrowRight,HeartPulse,BookOpen} from 'lucide-react';
 import HrTextSuggestion from './HrTextSuggestion.jsx';
 import PrivateContact from './PrivateContact.jsx';
 import {HR_SETUP_SUGGESTIONS,suggestedReviewDate} from './hrSetupSuggestions.mjs';
 import HrConversationTemplates from './HrConversationTemplates.jsx';
+import HrSickLeaveSetup from './HrSickLeaveSetup.jsx';
 
 const emptyConfig={purpose:'',legalBasis:'',reviewOn:'',enabled:false};
 function Field({label,children}) {return <label className="hr-field"><span>{label}</span>{children}</label>;}
@@ -29,7 +30,8 @@ export default function HrModule({context,audience='legacy',initialEmployeeId=nu
  const [config,setConfig]=useState(emptyConfig),[employeeUser,setEmployeeUser]=useState(''),[newLeader,setNewLeader]=useState('');
  const [leader,setLeader]=useState(''),[clearOld,setClearOld]=useState(false),[reader,setReader]=useState(''),[reason,setReason]=useState(''),[ending,setEnding]=useState(false),[endConfirmed,setEndConfirmed]=useState(false);
  const [query,setQuery]=useState('');
- const registerRef=useRef(null),setupCardRef=useRef(null),purgeCardRef=useRef(null);
+ const registerRef=useRef(null),setupCardRef=useRef(null),purgeCardRef=useRef(null),templatesRef=useRef(null),sickLeaveRef=useRef(null),templateToken=useRef(0);
+ const [templateRequest,setTemplateRequest]=useState(null);
  const goTo=target=>{const element=target.current;if(!element)return;if(element.tagName==='DETAILS')element.open=true;element.focus();element.scrollIntoView({block:'start'});};
  const sessionRef=useRef(null),revision=useRef(0),busyRef=useRef(false),detailRef=useRef(null),regionRef=useRef(null);
  // This ref holds only the chosen record ID. Every return performs a new scoped list + double read.
@@ -113,13 +115,15 @@ export default function HrModule({context,audience='legacy',initialEmployeeId=nu
    {administer?<><p>Her klargjør du medarbeiderregisteret og spørsmålene til senere samtaler.</p><ol>
     <li><strong>1. Kontroller oppsettet</strong><span>{data.enabled?'Registeret er aktivt. Bruk Åpne oppsett hvis formål, kontrollfrist eller aktivering skal endres.':'Trykk Åpne oppsett. Se over tekstfeltene, velg kontrollfrist, huk av Aktiver medarbeiderregisteret og trykk Lagre HR-oppsett.'}</span></li>
     <li><strong>2. Registrer medarbeider og leder</strong><span>Åpne Legg til medarbeider og trykk Legg til i registeret. Finn deretter medarbeideren i listen og åpne raden for å kontrollere leder og lesetilgang.</span></li>
-    <li><strong>3. Lag spørsmålene</strong><span>Åpne Samtalemaler nedenfor. Velg et forslag, tilpass spørsmålene og trykk Lagre mal. Malen kan brukes som grunnlag når samtalefunksjonen åpnes.</span></li>
+    <li><strong>3. Klargjør oppfølgingen</strong><span>Trykk Åpne samtalemaler for å tilpasse og lagre spørsmål. Åpne sykefravær viser rutiner, tilrettelegging og frister. Personlige saker åpnes senere.</span></li>
    </ol><p className="hr-hint">En mal er bare spørsmålene. Å lagre en mal starter ingen samtale og sender ingenting til ansatte. Ansattes svar, referater og sykefravær kan ikke registreres ennå.</p></>:<><p>{audience==='management'?'Trykk Se medarbeidere og åpne en rad. Kontroller at personens nærmeste leder er registrert. Firmaadmin retter leder og lesetilgang.':'Trykk Se medarbeidere og åpne egen oppføring eller en oppføring som er delt med deg. Firmaadmin retter leder og lesetilgang.'}</p><p className="hr-hint">Du kan se tilgjengelige registeroppføringer nå. Egne oppfølginger ligger på Min side. Ansattes svar, referater og sykefravær kan ikke registreres ennå.</p></>}
   </section>}
   {audience!=='personal'&&data&&<nav className="hr-workspace-cards" aria-label="HR snarveier">
    <article className="hr-workspace-card"><span className="hr-workspace-icon"><UsersRound aria-hidden="true"/></span><h3>{administer?'Medarbeiderregister':audience==='management'?'Dine medarbeidere':'Dine oppføringer'}</h3><p>{administer?'Finn medarbeideren og kontroller leder og lesetilgang.':audience==='management'?'Åpne en medarbeider du er registrert som nærmeste leder for.':'Se egen oppføring og medarbeidere du har fått lesetilgang til.'}</p><button type="button" className="secondary" onClick={()=>goTo(registerRef)}>Se medarbeidere <ArrowRight aria-hidden="true"/></button></article>
-   {administer&&<><article className="hr-workspace-card"><span className="hr-workspace-icon"><Settings aria-hidden="true"/></span><h3>Oppsett og kontrollfrist</h3><p>Se over firmaets formål, grunnlag og neste kontroll av tilgangen.</p><button type="button" className="secondary" onClick={()=>goTo(setupCardRef)}>Åpne oppsett <ArrowRight aria-hidden="true"/></button></article>
-   <article className="hr-workspace-card"><span className="hr-workspace-icon"><FileCheck2 aria-hidden="true"/></span><h3>Slettekvitteringer</h3><p>Kontroller om en avslutning er ferdig slettet eller om filsletting pågår.</p><button type="button" className="secondary" onClick={()=>goTo(purgeCardRef)}>Se slettekvitteringer <ArrowRight aria-hidden="true"/></button></article></>}
+   {administer&&<article className="hr-workspace-card hr-workspace-templates"><span className="hr-workspace-icon"><BookOpen aria-hidden="true"/></span><h3>Samtalemaler</h3><p>{data.enabled?'Velg et forslag, tilpass spørsmålene og lagre firmaets mal.':'Aktiver medarbeiderregisteret under Oppsett og kontrollfrist først.'}</p><button type="button" className="secondary" disabled={!data.enabled} onClick={()=>goTo(templatesRef)}>Åpne samtalemaler <ArrowRight aria-hidden="true"/></button></article>}
+   <article className="hr-workspace-card hr-workspace-sick"><span className="hr-workspace-icon"><HeartPulse aria-hidden="true"/></span><h3>Sykefravær</h3><p>Klargjør oppfølgingen og se hva som skal gjøres underveis.</p><button type="button" className="secondary" onClick={()=>goTo(sickLeaveRef)}>Åpne sykefravær <ArrowRight aria-hidden="true"/></button></article>
+   {administer&&<><article className="hr-workspace-card hr-workspace-setup"><span className="hr-workspace-icon"><Settings aria-hidden="true"/></span><h3>Oppsett og kontrollfrist</h3><p>Se over firmaets formål, grunnlag og neste kontroll av tilgangen.</p><button type="button" className="secondary" onClick={()=>goTo(setupCardRef)}>Åpne oppsett <ArrowRight aria-hidden="true"/></button></article>
+   <article className="hr-workspace-card hr-workspace-purge"><span className="hr-workspace-icon"><FileCheck2 aria-hidden="true"/></span><h3>Slettekvitteringer</h3><p>Kontroller om en avslutning er ferdig slettet eller om filsletting pågår.</p><button type="button" className="secondary" onClick={()=>goTo(purgeCardRef)}>Se slettekvitteringer <ArrowRight aria-hidden="true"/></button></article></>}
   </nav>}
   <div className="hr-toolbar hr-register-target" ref={registerRef} tabIndex={-1}><h3>{administer?'Medarbeiderregister':audience==='personal'?'Dine oppføringer':'Mine oppfølginger'}</h3><button type="button" className="secondary" disabled={busy} onClick={refresh}>Oppdater registeret</button></div>
   {error&&<p className="hr-error" role="alert">{error}</p>}{notice&&<p className="hr-notice" role="status">{notice}</p>}
@@ -138,7 +142,8 @@ export default function HrModule({context,audience='legacy',initialEmployeeId=nu
    {!shown.length&&<div className="hr-empty"><h4>{employees.length?'Ingen treff':'Ingen medarbeidere å vise'}</h4><p>{employees.length?'Prøv et annet søk.':administer?'Start med «Legg til medarbeider». Deretter velger du leder og kontrollerer tilgangen.':'Firmaadmin registrerer medarbeider og nærmeste leder. Oppfølgingene vises her når de er tilgjengelige for deg.'}</p></div>}
    {data.next&&<button type="button" className="secondary" disabled={busy} onClick={()=>run(async(session,current)=>{const page=await list(session,data.next);if(current())setData(previous=>({...previous,employees:[...previous.employees,...page.employees.filter(employee=>!previous.employees.some(p=>p.id===employee.id))],next:page.next}));})}>Hent flere medarbeidere</button>}
   </>}
-  {administer&&data?.enabled&&<HrConversationTemplates key={companyId+':'+userId} context={context}/>}
+  {administer&&data?.enabled&&<HrConversationTemplates key={companyId+':'+userId} context={context} targetRef={templatesRef} startRequest={templateRequest?.scope===companyId+':'+userId?templateRequest:null} onStartHandled={()=>setTemplateRequest(null)}/>}
+  {audience!=='personal'&&data&&<HrSickLeaveSetup key={'sick:'+companyId+':'+userId} targetRef={sickLeaveRef} administer={administer} enabled={data.enabled} onRegister={()=>goTo(registerRef)} onTemplates={()=>{setTemplateRequest({scope:companyId+':'+userId,token:++templateToken.current,kind:'sickleave'});goTo(templatesRef);}}/>}
   {administer&&data&&<details className="hr-card" ref={setupCardRef} tabIndex={-1} open={!data.settings}>
    <summary>Oppsett og kontrollfrist{!data.enabled?' · registeret er avslått':''}</summary>
    <p>Beskriv hvorfor firmaet trenger registeret, hvilket grunnlag dere bruker, og når dere skal kontrollere behov og tilgang igjen. Hold private opplysninger om enkeltansatte utenfor disse feltene.</p><p className="hr-hint"><strong>Formål</strong> er hva dere skal bruke registeret til. <strong>Behandlingsgrunnlag</strong> er firmaets egen vurdering av grunnlaget for å bruke personopplysningene. Åpne tekstforslagene ved behov, tilpass dem og fyll ut tekst i klammer. Velg dato for neste gjennomgang, se over aktiveringen og trykk Lagre HR-oppsett.</p>
