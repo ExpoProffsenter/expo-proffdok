@@ -1,7 +1,6 @@
-## HR H5b – isolert slettekvittering, 10. oktober 2026
+## Gjeldende status – 10. oktober 2026 ca. 21:00 Europe/Oslo
 
-Full eksport → skyunion → varig anker → fersk verifisert readback → service-only DB-ack er utviklerverifisert; «Slettet» krever også ferdige filjobber. **20 feil-/samtidighetsscenarioer, 42 PostgreSQL-assertions, berørt faktisk React og full Sandbox critical/build PASS.** Sandbox-migrasjon installert, binding deaktivert og privat HR fortsatt stengt. Faktisk permanent sky/scheduler og isolert Supabase/Auth/Storage-restore gjenstår; live rollback-prøven fikk connectorfeil og er ikke PASS. Production/main uendret. Innlogget demo preflight grønn; testmail ikke sendt. [Avgrenset scope, bevis og blokkeringer](HR_LEDGER_ACK_20261010.md).
-
+PR #216 er merged; Production/main `c3d873e0` og demo `11f1b45d` er levert og ferskt kontrollert READY. Ny H5b er **bare draft PR #217**, head `ecd700ac`, grønn Core Safety/READY Preview med direkte Sandbox-binding; ingen merge eller privat HR-åpning. Den tidligere blokkerte, uendrede **live Sandbox rollback-SQL-prøven bestod nå**; etterkontroll: 1 bevart medarbeider, 0 receipts/acks/innhold/filer/jobber, deaktivert binding og privat HR false/quarantined=true. Dette er faktisk DB-prøve med syntetisk filjobbflag, ikke ekte skylager-/Storage-byte-/restore-/browser-PASS. Ny sikker Production-innlogging meldte submitted, men viste fortsatt innlogging; automatiske forsøk stoppet og **testmailen er ikke sendt**. Privat uavhengig lager, varig operator/scheduler og full isolert Supabase/Auth/Storage-restore gjenstår. [Eksakte miljøer, nye bevis og neste konkrete driftshandling](HR_LEDGER_ACK_20261010.md). Eldre avsnitt nedenfor er leveringshistorikk og overstyrer ikke denne statusen. Tidligere TEST OK beholdes uten omtest.
 
 ## Ny HR-prøve – snarveier og sykefravær
 

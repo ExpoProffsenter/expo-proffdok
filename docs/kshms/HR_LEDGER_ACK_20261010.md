@@ -24,7 +24,7 @@ En prosesskrasj kan etterlate lås. Et sky-skriv som lyktes før ankerfeil kan k
 3. Berørt faktisk HR/register/KS-meny/Hjelp-React PASS, inkludert honest pending/complete, tilgang/revisjon/fokus/remount/late-response. Ingen ny live browser-PASS for H5b påstås.
 4. Full `EXPO_BACKEND_TARGET=sandbox npm run build` PASS med alle eksisterende kritiske kontroller. Emittert app er utelukkende bundet til Sandbox.
 5. Sandbox-migrasjon **20261010161625** installert. Fire funksjonskropper matcher lokale MD5-er; tomt search_path; public snapshot/ack bare service_role, private helper ingen klient-/serverrolle-execute. Binding fortsatt `enabled=false`; privat innhold `false` / quarantine `true`; **0 receipts/acks/artifacts/filer**, eksisterende **1 medarbeider** beholdt.
-6. Forsøk på ekstra live rollback-prøve fikk connectorfeilen `Invalid or expired requestState`. Det er **ikke PASS**. Etterkontroll fant 0 receipts/acks, deaktivert binding og lukket innhold. Prøven er lagret for senere gjennomføring; uendret feilforsøk er ikke gjentatt.
+6. Det første forsøket på live rollback-prøve fikk `Invalid or expired requestState` og er historisk **ikke PASS**. I ny sesjon 10. oktober ca. 21:00 Europe/Oslo fungerte lesende connector igjen; deretter bestod den uendrede `scripts/hr-ledger-ack-sandbox-check.sql` på faktisk Sandbox: **HR ledger acknowledgment rollback PASS**. Dette prøver minimal eksport, binding, ekstra felt/identitets-/tidsfeil, duplikat/ukjent receipt, atomisk avslag, generation/digest, retry, ack/filjobb-rekkefølge, replay og ACL. Filjobben avsluttes gjennom DB-funksjonen med syntetisk suksessflag; ingen faktisk Storage-bytefil eller ekstern skykvittering inngår. Alle fixture-rader og midlertidige bindingsinnstillinger ble rullet tilbake. Etterkontroll: **1 medarbeider; 0 receipts/acks/artifacts/filer/filjobber/HR Storage-objekter; ledger enabled=false; content=false/quarantine=true**. Ikke full sky-/restore- eller browser-PASS.
 7. Production/main fortsatt eksakt `c3d873e0`; ny ack-tabell finnes **ikke** i Production; privat HR fortsatt stengt. Ingen Production-migrasjon, merge, e-post, reell ansattsletting eller aktivering gjort i denne leveransen.
 
 ## Gjenstår før privat HR kan åpnes
@@ -39,7 +39,27 @@ Innlogget permanent demo preflight er grønn på `main c3d873e0`, inkludert 2/2 
 
 [Originalt skjermbevis for innlogget demo](evidence/PREFLIGHT_20261010.jpg). Bildet gjelder den eksisterende demoen, ikke H5b-Preview.
 
-Testmail til `kenneth@ringside.no` er fortsatt **ikke sendt**. Production secure login meldte submitted, men fersk side og ny fane viste fortsatt innlogging. Brukeren ba om nettleserreset; en frisk fane ble startet og gammel fane lukket. Ingen credentials, JWT eller cookies lest/eksponert eller omgått.
+Testmail til `kenneth@ringside.no` er fortsatt **ikke sendt**. I ny sesjon ca. 20:56–20:59 åpnet én produksjonsfane uten den tidligere guard-feilen. Gjeldende browserAuth-dokumentasjon ble lest; sikker e-post-/passordinnlogging meldte `submitted`, men synlig side viste fortsatt innlogging. Én eksplisitt navigasjon til beholdt kanonisk origin lyktes, men viste også innlogging. Ingen ny guard-feil eller full browserprosess-restart er attestert. Automatiske innloggingsforsøk stoppet. Ingen credentials, JWT, cookies eller intern auth-state lest/eksponert; ingen SQL/service-role-omgåelse av admin-testflyten.
+
+## Fersk miljøkontroll, 10. oktober ca. 21:00 Europe/Oslo
+
+| Miljø | Faktisk observert |
+| --- | --- |
+| Remote main / Production | `c3d873e0e5bd2677f0205143de6edc1fbd95ae4c`, tree `75e07665d71047e187111eb7476949fa7902688b`; fast produksjonsalias READY på `dpl_BHpnnv8bnyo8wU3oLUE9NEsgixd5`. |
+| Remote demo / fast demoalias | `11f1b45dac4daa08efc850ba87ad5e28522dad4c`; alias READY på **dpl_3uegJLq87zotYZFvFQQpfLM5vEsw** med samme SHA. Dette er nyere aliasbevis enn deploy-ID-en i handoffen, ingen ny deploy utført. Gammelt innlogget preflight-bevis beholdes; ikke ny innlogget demo-/H5b-prøve. |
+| PR #217 | Open/draft, ikke merged, head `ecd700acc72951303cc59647a7089eaf09fffbd7`, tree `2c26427a35732ee047238a9bc6ec7c38dc26bd87`, én commit foran faktisk main. Core Safety **38076078790 completed/success**. |
+| H5b Preview | `dpl_GAB5Qpjwn4AcmjfcAM7y9dF6aiF7` READY på eksakt PR-SHA; direkte branch-env `EXPO_BACKEND_TARGET=sandbox` for `feature/hr-ledger-ack-gate-20261010`. Ingen innlogget H5b-browser-PASS. |
+| Backend / e-post | Begge private HR-porter fortsatt false/true. Ack-tabellen finnes ikke i Production. Production e-post enabled=true, Sandbox enabled=false. Dette er konfigurasjonsbevis; ingen sending/mottak. Sandbox-branchmetadata har fortsatt historisk MIGRATIONS_FAILED fra september, mens SQL er tilgjengelig og preview_project_status ACTIVE_HEALTHY; ingen blind branch-reset/merge. |
+| Lokal checkout | `/workspace/scratch/16c991cab440/expo-proffdok-hr-ledger`; syntetisk/detached `ca0b7ff3` med tre eksakt likt PR-head. Lokal base `f0ac2f7d` har tre eksakt likt remote main. Dokumentasjon publiseres via GitHub med faktisk remote PR-head som forelder og expected-head lease; aldri push av syntetisk historie eller demo → main. |
+
+Bare dokumentasjon endres i denne oppfølgingen. Tidligere 20/42/React/build-bevis og Kenneth TEST OK beholdes; ingen ombygging, svekkede tester eller ny app-/Production-/demo-release.
+
+## Neste konkrete driftshandling
+
+1. Få lageret provisionert gjennom en tilkobling med faktisk Blob-opprettelsestilgang i team `team_Yvcnc6KRYfVB1W2LQjCffZGT`, eller av lagereier: separat **privat** `expo-hr-ledger-sandbox-ppvircenkjizeiqdxphj`, fra1, uten Production-/prosjekttilkobling. Den avviste opprettelsen gjentas ikke før tilgang er endret. Store-ID, origin og begrenset token bindes server-only; ingen token sendes i chat/git/VITE.
+2. Etabler uavhengig varig operatorvert og anker utenfor alle restorevolumer. Deretter utfør faktisk bootstrap, anonym avvisning, skriv/readback, ETag-konflikt og kontrollert recovery før binding/scheduler. Lokal scratch eller en Vercel Functions midlertidig filkatalog er ikke et varig uavhengig anker.
+3. Klargjør isolert Supabase testkilde/mål med syntetiske Auth-brukere og bytefiler; aldri restore Production eller aktiv kurs-Sandbox. [Supabase restore til nytt prosjekt](https://supabase.com/docs/guides/platform/clone-project) og [CLI backup/restore](https://supabase.com/docs/guides/platform/migrating-within-supabase/backup-restore) er kontrollert via leverandørens dokumentasjon i denne sesjonen: database/Auth kan kopieres, men Storage-bytefiler og innstillinger må håndteres separat. Ingen ny isolert instans eller full restore er utført. Tilgjengelige connectorressurser er Production og dens eksisterende demo-sandbox; lokalt Docker/psql er ikke tilgjengelig.
+4. Verifiser gjenopprettet tilgang, bytehash, revokering og purge med ekstern skyunion/ferskt uavhengig anker. Hold content_enabled=false/restore_quarantined=true til hele kjeden har faktisk bevis. Ingen H5b-merge til main er autorisert av PR #216-godkjenningen.
 
 ## Reproduserbare utviklerprøver
 
