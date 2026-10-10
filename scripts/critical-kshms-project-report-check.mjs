@@ -1,0 +1,26 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import { kshmsReportDocuments, appendKshmsPdfReport, emptyKshmsReport } from '../src/modules/report/kshmsProjectReport.mjs';
+
+const signed = { id: 'signed', revision: 2, status: 'signed', content: { title: 'Kapping av flis', workplace: 'QA byggeplass', planned_on: '2026-10-08', reviewed_on: '2026-10-08', routines: 'R-012 – Støv (versjon 3)', steps: [{ activity: 'Kapping', hazard: 'Støv', consequence: 'Skade', measures: 'Avsug', owner: 'Ola', check: 'Prøvd' }], participants: [{ name: 'Kari', role: 'Flislegger', company: 'QA', involvement: 'Vurderte støv' }] }, signed_identity: { name: 'Historisk prosjektleder' }, signed_at: '2026-10-07T22:00:00Z', statement: 'Lagret bekreftelse' };
+const closed = { id: 'closed', title: 'Nestenulykke', status: 'closed', event: 'Hendelse på stedet', due_on: '2026-10-10', routines: 'R-007 – Løft (versjon 2)', closed_identity: { name: 'Historisk ansvarlig' }, closed_at: '2026-10-08T10:30:00Z', cause: 'Årsak', improvement_action: 'Tiltak', control_note: 'Egen kontroll' };
+const input = { sjas: [signed], ruhs: [closed] }, before = JSON.stringify(input);
+const documents = kshmsReportDocuments(input), text = JSON.stringify(documents);
+assert.equal(documents.length, 2); assert(text.includes('R-012')); assert(text.includes('versjon 3')); assert(text.includes('Historisk prosjektleder')); assert(text.includes('Historisk ansvarlig')); assert(text.includes('Kari')); assert(text.includes('Lagret bekreftelse')); assert(text.includes('08.10.2026 kl. 00:00:00')); assert(text.includes('10.10.2026')); assert(text.includes('Egen kontroll'));
+assert.equal(JSON.stringify(input), before, 'Rendering mutated frozen content');
+assert.deepEqual(kshmsReportDocuments(emptyKshmsReport()), []);
+assert(JSON.stringify(kshmsReportDocuments({ sjas: [{ ...signed, status: 'draft' }], ruhs: [] })).includes('UTKAST – IKKE SIGNERT'));
+assert(!JSON.stringify(kshmsReportDocuments({ sjas: [{ ...signed, status: 'draft' }], ruhs: [] })).includes('Historisk prosjektleder'));
+assert(JSON.stringify(kshmsReportDocuments({ sjas: [], ruhs: [{ ...closed, status: 'open' }] })).includes('Oppfølging gjenstår'));
+const printed = []; let pages = 1;
+const pdf = { internal: { pageSize: { getWidth: () => 210, getHeight: () => 297 } }, addPage() { pages++; }, setFont() {}, setFontSize() {}, setTextColor() {}, setLineWidth() {}, setFillColor() {}, setDrawColor() {}, rect() {}, splitTextToSize: value => String(value).match(/[\s\S]{1,90}/g) || [''], text(line, x, y) { printed.push({ line, x, y }); } };
+appendKshmsPdfReport(pdf, { sjas: [], ruhs: [{ ...closed, event: 'Lang beskrivelse '.repeat(1200) + 'SLUTT PÅ HENDELSEN' }] });
+assert(pages > 3); assert(printed.every(row => row.y >= 16 && row.y <= 277)); assert(printed.map(row => row.line).join('').includes('SLUTT PÅ HENDELSEN'));
+const main = fs.readFileSync('src/main.jsx', 'utf8'), tools = fs.readFileSync('src/modules/report/reportTools.js', 'utf8'), view = fs.readFileSync('src/modules/report/reportViewTools.js', 'utf8');
+assert(main.includes('prepareKshmsReport: kshmsProjectReport.prepareExport'));
+assert(main.includes('KshmsProjectReportDialog, { chooser: kshmsProjectReport.chooser }'));
+assert(main.includes('kshmsReport: kshmsProjectReport.reportData'));
+assert(tools.includes("await prepareKshmsReport('pdf')")); assert.equal((tools.match(/await prepareKshmsReport\('print'\)/g) || []).length, 2);
+assert(tools.indexOf('!isKshmsReportCurrent(kshmsReport)', tools.indexOf('const generatedFileName')) < tools.indexOf('doc.save(generatedFileName)'));
+assert(!view.slice(view.indexOf('function CustomerReport(')).includes('KshmsReportDocuments'), 'Private documents entered the public portal');
+console.log('✅ KS/HMS project report check OK – active selection, complete frozen SJA/RUH fields, Norwegian dates, draft/open markers, pagination and all export gates');

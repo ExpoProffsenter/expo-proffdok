@@ -1,6 +1,8 @@
 // FASE 25B AVTALESUM I RAPPORT: Rapport og kunderapport viser opprinnelig og gjeldende avtalesum inkl. mva. basert på strukturerte tillegg/fradrag. Eksisterende vedlegg og legacy-sammendrag beholdes.
 // FASE 24Q RAPPORTVISNING FAG/UTSTYR-BILDER: Viser eksisterende bilder fra Fag, deler og utstyr også direkte i Rapport-fanen. PDF-logikk, bildeopplasting, lagring og øvrig rapportinnhold er uendret.
 import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
+import KshmsReportDocuments from './KshmsReportDocuments.jsx';
+import { kshmsReportSelectionKey } from './kshmsProjectReport.mjs';
 
 const import_jsx_runtime = { jsx, jsxs, Fragment };
 
@@ -224,11 +226,11 @@ function BathroomEquipmentReportSection({ surf, bathroomEquipment }) {
     };
   };
 
-  function Report({ company, name, project, selected, manualProducts, other, surf, bathroomEquipment, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog }) {
+  function Report({ company, name, project, selected, manualProducts, other, surf, bathroomEquipment, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog, kshmsReport }) {
     const agreementTotals = contractTotals(project, tilbud);
     const projectFields = { Prosjektansvarlig: project.responsible, Prosjektnavn: project.projectName, Adresse: project.address, "Postnr.": project.postnr, "Poststed / by": project.city, Kunde: project.customer, "Kunde e-post": project.customerEmail, "Kunde telefon": project.customerPhone, Dato: project.date, Status: project.locked ? "Avsluttet / l\xE5st" : "Aktivt", Notater: project.notes };
     const cats = [...new Set(photos.map((p) => p.cat))];
-    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "report", children: [
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "report", "data-kshms-report-selection": kshmsReportSelectionKey(kshmsReport), children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "reportTop", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Brand, { logo: company.logoUrl, name }),
@@ -380,7 +382,8 @@ function BathroomEquipmentReportSection({ surf, bathroomEquipment }) {
           ] }) })
         ] }, m.id))
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChecklistReportSection, { checklist, projectDeviations: project?.projectDeviations || [] }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChecklistReportSection, { checklist, projectDeviations: (Array.isArray(project?.projectDeviations) ? project.projectDeviations : []).filter(row => !(kshmsReport?.ruhs || []).some(ruh => ruh.id === row.ks_deviation_id)) }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(KshmsReportDocuments, { data: kshmsReport }),
       tilbud?.enabled && (hasValue(tilbud.tillegg) || hasValue(tilbud.fradrag) || hasValue(tilbud.kommentar) || (tilbud.files || []).length > 0 || (tilbud.changes || []).length > 0) && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Tilbud / kontrakt" }),
         agreementTotals.originalInclVat > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [

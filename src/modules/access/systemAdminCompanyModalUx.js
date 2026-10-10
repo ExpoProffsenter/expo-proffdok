@@ -62,16 +62,16 @@ function buttonBelongsToVisibleUserCard(button) {
 
 function dirtyAccessButtons(panel) {
   return Array.from(panel?.querySelectorAll("button") || []).filter((button) =>
-    buttonBelongsToVisibleUserCard(button) &&
+    (buttonBelongsToVisibleUserCard(button) || (button.hasAttribute("data-people-module-save") && visibleElement(button))) &&
     !button.disabled &&
-    compactText(button.textContent) === "Lagre tilganger"
+    (compactText(button.textContent) === "Lagre tilganger" || button.hasAttribute("data-people-module-save"))
   );
 }
 
 function accessSaveBusy(panel) {
   return Array.from(panel?.querySelectorAll("button") || []).some((button) =>
-    buttonBelongsToVisibleUserCard(button) &&
-    compactText(button.textContent) === "Lagrer tilganger..."
+    (buttonBelongsToVisibleUserCard(button) || (button.hasAttribute("data-people-module-save") && visibleElement(button))) &&
+    (compactText(button.textContent) === "Lagrer tilganger..." || button.getAttribute("data-access-saving") === "true")
   );
 }
 
@@ -79,7 +79,7 @@ function visibleSaveError(panel) {
   return Array.from(panel?.querySelectorAll("p,small") || []).some((node) => {
     if (!(node instanceof HTMLElement) || !visibleElement(node)) return false;
     const text = compactText(node.textContent).toLocaleLowerCase("nb-NO");
-    return text.startsWith("kunne ikke lagre") || text.startsWith("kunne ikke endre") || text.startsWith("kunne ikke hente");
+    return (node.getAttribute("role") === "alert" && node.closest(".people-module-access")) || text.startsWith("kunne ikke lagre") || text.startsWith("kunne ikke endre") || text.startsWith("kunne ikke hente");
   });
 }
 

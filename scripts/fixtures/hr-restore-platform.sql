@@ -1,0 +1,22 @@
+-- Synthetic local platform adapter. These are NOT Supabase Auth/Storage/Vault implementations.
+create role anon; create role authenticated; create role service_role;
+create schema auth; create schema storage; create schema vault;
+create schema extensions; create schema net; create schema cron; create schema kshms_private;
+create table auth.users(id uuid primary key);
+create function auth.uid() returns uuid language sql as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
+create table public.sales_company_scopes(id uuid primary key);
+create table public.profiles(id uuid primary key,email text,approved boolean,deactivated boolean,role text,system_role text);
+create table public.sales_company_memberships(company_id uuid,user_id uuid,workspace_role text,primary key(company_id,user_id));
+create function public.current_active_company_scope_id() returns uuid language sql as $$select current_setting('hr.fixture.company')::uuid$$;
+create function public.current_profile_is_systemadmin() returns boolean language sql as $$select false$$;
+create table public.company_module_access(company_id uuid,module_key text,enabled boolean,changed_by uuid,changed_at timestamptz default now(),primary key(company_id,module_key),constraint company_module_access_supported_key check(module_key in ('store_offers','kshms')));
+create table public.kshms_member_access(company_id uuid,user_id uuid,role text,enabled boolean,changed_by uuid,changed_at timestamptz default now(),primary key(company_id,user_id));
+create table public.kshms_settings(company_id uuid,responsible_user_id uuid);
+create table public.kshms_audit(company_id uuid,actor_id uuid,action text,object_id uuid);
+create table storage.buckets(id text primary key,name text,public boolean,file_size_limit integer);
+create table storage.objects(bucket_id text,name text,primary key(bucket_id,name));
+create table vault.decrypted_secrets(id uuid primary key,decrypted_secret text);
+create function vault.create_secret(secret text,label text,description text) returns uuid language plpgsql as $$declare id uuid:=gen_random_uuid();begin insert into vault.decrypted_secrets values(id,secret);return id;end$$;
+create function extensions.gen_random_bytes(n integer) returns bytea language sql as $$select decode(repeat('aa',n),'hex')$$;
+create function net.http_post(url text,headers jsonb,body jsonb,timeout_milliseconds integer) returns bigint language sql as $$select 1::bigint$$;
+create function cron.schedule(name text,schedule text,command text) returns bigint language sql as $$select 1::bigint$$;

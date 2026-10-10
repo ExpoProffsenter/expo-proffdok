@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import * as jsxRuntime from "react/jsx-runtime";
 
 const failures = [];
 const requireCheck = (condition, message) => {
@@ -13,13 +14,45 @@ const index = fs.readFileSync("index.html", "utf8");
 const workflowUx = fs.readFileSync("src/modules/project/projectWorkflowUx.js", "utf8");
 const overviewTools = fs.readFileSync("src/modules/project/projectOverviewTools.js", "utf8");
 const main = fs.readFileSync("src/main.jsx", "utf8");
+// User-reported removeChild crash, 7 Oct 2026: the legacy workflow adapter
+// replaces button.textContent. React must own one host text value, not several
+// conditional Text fibers which it later tries to remove when opening KS/HMS.
+const bottomStart = main.indexOf('(0, import_jsx_runtime.jsxs)("div", { className: "bottomPrevNext"');
+const bottomEnd = main.indexOf('\n    ] });', bottomStart);
+requireCheck(bottomStart >= 0 && bottomEnd > bottomStart, 'Fant ikke faktisk Forrige/Neste-renderer for krasjkontroll.');
+if (bottomStart >= 0 && bottomEnd > bottomStart) {
+  const renderBottom = new Function('import_jsx_runtime', 'previousTab', 'nextTab', 'goToTab', `return ${main.slice(bottomStart, bottomEnd)}`);
+  for (const [previous, next] of [[['sjekklister', 'Sjekklister'], ['chat', 'Chat (2 ulest)']], [null, null]]) {
+    const rendered = renderBottom(jsxRuntime, previous, next, () => {});
+    requireCheck(rendered.props.children.every(button => typeof button.props.children === 'string'), 'Forrige/Neste bruker betingede tekstnoder som kan gi removeChild-krasj ved KS/HMS-overgangen.');
+    requireCheck(rendered.props.children[0].props.children === (previous ? `← Forrige: ${previous[1]}` : '← Forrige'), 'Forrige mistet faktisk prosjektnavn/etikett.');
+    requireCheck(rendered.props.children[1].props.children === (next ? `Neste: ${next[1]} →` : 'Neste →'), 'Neste mistet faktisk prosjektnavn/etikett.');
+  }
+}
 const { resolveProjectFlowNeighbors } = await import(
   "../src/modules/project/projectWorkflowNeighbors.mjs"
 );
 const {
   createGlobalAppTabs,
   createProjectWorkspaceTabs,
+  isProjectDeviationNavLabel,
 } = await import("../src/modules/project/projectNavigationTabs.mjs");
+
+// Reported missing desktop entry, 8 Oct 2026: test the actual header matcher,
+// including its dynamic label, rather than only checking the native tab array.
+const shortcutDefinitions = guide.slice(guide.indexOf('const clean ='), guide.indexOf('function findSourceNav()'));
+const actualShortcuts = new Function('isProjectDeviationNavLabel', `${shortcutDefinitions}; return PROJECT_SHORTCUTS;`)(isProjectDeviationNavLabel);
+const actualDeviationShortcut = actualShortcuts.find(item => item.key === 'deviations');
+for (const label of ['Avvik', 'Avvik (4)', 'Avvik/SJA/RUH', 'Avvik/SJA/RUH (4)']) {
+  requireCheck(actualDeviationShortcut?.matches(label) && actualDeviationShortcut.dynamicLabel, `Toppmenyen skjuler eller forkorter ${label}.`);
+}
+for (const label of ['Avvikssentral', 'Avvik/RUH', 'SJA', 'RUH', 'Avvik/SJA/RUH annet']) {
+  requireCheck(!isProjectDeviationNavLabel(label), `Prosjektmenyen matcher feil funksjon: ${label}.`);
+}
+const bootstrap = fs.readFileSync('src/bootstrap.jsx', 'utf8');
+requireCheck(bootstrap.includes('return isProjectDeviationNavLabel(label);') &&
+  workflowUx.includes('setFlowTarget(button, cleanText(destination.textContent),'),
+  'Åpne Avvik bruker fortsatt det gamle navnet i stedet for faktisk prosjektnavigasjon.');
 const { acceptedOfferTotalInclVat } = await import(
   "../src/modules/project/projectSalesOriginTotals.mjs"
 );

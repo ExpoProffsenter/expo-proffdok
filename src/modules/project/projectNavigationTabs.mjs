@@ -1,17 +1,26 @@
 // Felles navigasjonskontrakt for startsiden og prosjektarbeidsflaten.
 // Globale appfunksjoner skal ikke blandes inn i et aktivt eller nytt prosjekt.
 
+export function isProjectDeviationNavLabel(label = '') {
+  return /^Avvik(?:\/SJA\/RUH)?(?:\s*\(\d+\))?$/.test(String(label).trim());
+}
+
 export function createGlobalAppTabs({
   isCompanyAdminUser = false,
   canUseAdminProjectSync = false,
+  canUseKshms = false,
+  canUseHr = false,
+  personalPage = false,
 } = {}) {
   return [
     ["prosjekt", "Startside"],
     ["sales", "Befaring/Tilbud"],
     ["firma", "Firmaprofil"],
-    ["innlogging", "Min profil / e-postvalg"],
+    ...(personalPage ? [["innlogging", "Min side"]] : [["innlogging", "Min profil / e-postvalg"]]),
     ...(isCompanyAdminUser ? [["firmaadmin", "Firma"]] : []),
     ["prosjektliste", "Prosjektliste"],
+    ...(canUseKshms ? [["kshms", "KS/HMS"]] : []),
+    ...(canUseHr ? [["hr", "HR"]] : []),
     ["hjelp", "Hjelp"],
     ...(canUseAdminProjectSync ? [["admin", "Systemadmin"]] : []),
   ];
@@ -24,6 +33,7 @@ export function createProjectWorkspaceTabs({
   openDeviationCount = 0,
   unreadForAdmin = 0,
   totalChatCount = 0,
+  canUseKshms = false,
 } = {}) {
   return [
     ["prosjekt", isNewProject ? "Nytt prosjekt" : "Prosjektoversikt"],
@@ -38,7 +48,7 @@ export function createProjectWorkspaceTabs({
     ["tilgang", "Tilgang"],
     ["installasjoner", "Fag/utstyr"],
     ["sjekklister", "Sjekklister"],
-    ["avvik", openDeviationCount > 0 ? `Avvik (${openDeviationCount})` : "Avvik"],
+    ["avvik", `${canUseKshms ? 'Avvik/SJA/RUH' : 'Avvik'}${openDeviationCount > 0 ? ` (${openDeviationCount})` : ''}`],
     [
       "chat",
       unreadForAdmin > 0

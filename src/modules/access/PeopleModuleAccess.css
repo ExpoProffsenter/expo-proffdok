@@ -1,0 +1,11 @@
+/* Keep access checkboxes beside their text despite global text-input widths. */
+.people-module-access label input[type="checkbox"],
+.company-store-offers-access label input[type="checkbox"] {
+ width:24px !important;height:24px !important;min-width:24px !important;
+ flex:0 0 24px !important;margin:2px 0 0 !important;accent-color:#087f88;
+}
+.people-module-access label>span,
+.company-store-offers-access label>span {flex:1;min-width:0;}
+.people-module-access small {font-size:12px;line-height:1.45;}
+.people-module-access .people-module-role {display:grid;gap:6px;min-width:0;}
+.people-module-access .people-module-role select {width:100%;min-width:0;}

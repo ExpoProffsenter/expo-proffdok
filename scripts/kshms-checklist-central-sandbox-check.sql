@@ -1,0 +1,84 @@
+-- Bounded Sandbox regression. Synthetic firm/users/projects only; all roll back.
+begin;
+set local statement_timeout='10s';
+set local lock_timeout='2s';
+do $$ declare company uuid:=gen_random_uuid(); uid uuid; sys uuid; kind text; pid uuid;begin
+ insert into public.sales_company_scopes(id,normalized_name,display_name) values(company,public.sales_normalize_company_name('ks-checklist-qa-'||company),'ks-checklist-qa-'||company);
+ perform set_config('ks.checklist.company',company::text,true);
+ select id into sys from public.profiles where system_role='systemadmin' and approved and not coalesce(deactivated,false) limit 1;assert sys is not null;
+ perform set_config('ks.checklist.sys',sys::text,true);
+ foreach kind in array array['admin','employee','responsible'] loop
+  uid:=gen_random_uuid();perform set_config('ks.checklist.'||kind,uid::text,true);
+  insert into auth.users(id,aud,role,email,created_at,updated_at,raw_app_meta_data,raw_user_meta_data) values(uid,'authenticated','authenticated','ks-checklist-qa-'||uid||'@example.invalid',now(),now(),'{}',jsonb_build_object('full_name','Checklist QA '||kind));
+  insert into public.profiles(id,email,company_name,approved,deactivated,role,company_role) values(uid,'ks-checklist-qa-'||uid||'@example.invalid','ks-checklist-qa-'||company,true,false,case when kind='admin' then 'admin' else 'member' end,case when kind='admin' then 'firmaadmin' else 'ansatt' end)
+  on conflict(id) do update set company_name=excluded.company_name,approved=true,deactivated=false,role=excluded.role,company_role=excluded.company_role,system_role=null;
+  insert into public.sales_company_memberships(company_id,user_id,is_primary,workspace_role) values(company,uid,true,case when kind='admin' then 'firmaadmin' else 'ansatt' end) on conflict(company_id,user_id) do update set workspace_role=excluded.workspace_role;
+  insert into public.user_active_company_scope(user_id,company_id) values(uid,company) on conflict(user_id) do update set company_id=excluded.company_id;
+  insert into public.user_module_access(user_id,module_key) values(uid,'projects') on conflict do nothing;
+  if kind='employee' then
+   pid:=gen_random_uuid();perform set_config('ks.checklist.project',pid::text,true);
+   insert into public.projects(id,user_id,company_scope_id,title,data) values(pid,uid,company,'Checklist QA project','{"project":{"projectName":"Checklist QA","projectDeviations":[{"id":"legacy","status":"Åpent"}]},"checklist":{"Legacy":{"Point":{"status":"Avvik","comment":"keep"}}},"overtagelse":{"signKunde":"keep"}}');
+  end if;
+ end loop;
+end $$;
+set local role authenticated;
+do $$ declare company uuid:=current_setting('ks.checklist.company')::uuid;admin_id uuid:=current_setting('ks.checklist.admin')::uuid;employee uuid:=current_setting('ks.checklist.employee')::uuid;responsible uuid:=current_setting('ks.checklist.responsible')::uuid;pid uuid:=current_setting('ks.checklist.project')::uuid;
+ tid uuid:=gen_random_uuid();req uuid:=gen_random_uuid();point uuid:=gen_random_uuid();content jsonb;payload jsonb;r jsonb;again jsonb;catalogue jsonb;v1 jsonb;v2 jsonb;n integer:=0;begin
+ perform set_config('request.jwt.claim.sub',current_setting('ks.checklist.sys'),true);perform public.kshms_activate(company,true);
+ perform set_config('request.jwt.claim.sub',admin_id::text,true);
+ perform public.kshms_command(company,'access',jsonb_build_object('user_id',responsible,'role','responsible','enabled',true));
+ content:=jsonb_build_object('title','QA rørsjekkliste','trade','Rørlegger','instructions','Før innbygging','points',jsonb_build_array(jsonb_build_object('id',point,'title','Kontroller rør','guidance','Kontroller koblinger','image_required',true,'comment_required',false)));
+ payload:=jsonb_build_object('id',tid,'revision',0,'content',content);
+ r:=public.kshms_checklist_command(company,'save',req,payload);assert r->'template'->>'revision'='1';n:=n+1;
+ again:=public.kshms_checklist_command(company,'save',req,payload);assert again=r,'Lost response retry changed draft';n:=n+1;
+ perform set_config('request.jwt.claim.sub',employee::text,true);
+ assert not (public.get_kshms_context()->>'enabled')::boolean,'No-grant fixture gained KS/HMS access';n:=n+1;
+ catalogue:=public.kshms_project_checklists(company,pid);assert (catalogue->'context'->>'enabled')::boolean and jsonb_array_length(catalogue->'versions')=0,'Draft leaked to project user';n:=n+1;
+ begin perform public.kshms_checklist_state(company);raise exception 'No-grant user read central drafts';exception when insufficient_privilege then n:=n+1;end;
+ begin perform public.kshms_checklist_command(company,'publish',gen_random_uuid(),payload);raise exception 'No-grant user published';exception when insufficient_privilege then n:=n+1;end;
+ begin perform public.kshms_project_checklists(gen_random_uuid(),pid);raise exception 'Foreign company catalogue exposed';exception when insufficient_privilege then n:=n+1;end;
+ begin perform public.kshms_project_checklists(company,gen_random_uuid());raise exception 'Foreign project catalogue exposed';exception when insufficient_privilege then n:=n+1;end;
+ perform set_config('request.jwt.claim.sub',responsible::text,true);
+ payload:=payload||jsonb_build_object('revision',1);req:=gen_random_uuid();r:=public.kshms_checklist_command(company,'publish',req,payload);v1:=r->'version';assert v1->>'number'='1';n:=n+1;
+ assert public.kshms_checklist_command(company,'publish',req,payload)=r,'Retry duplicated publication';n:=n+1;
+ begin perform public.kshms_checklist_command(company,'save',gen_random_uuid(),payload);raise exception 'Stale draft overwrote latest';exception when serialization_failure then n:=n+1;end;
+ perform set_config('request.jwt.claim.sub',employee::text,true);
+ catalogue:=public.kshms_project_checklists(company,pid,(v1->>'id')::uuid);assert catalogue->'versions'->0=v1,'No-grant project user could not retrieve published content';n:=n+1;
+ update public.projects set data=jsonb_set(data,'{project,kshmsChecklistInstances}',jsonb_build_array(jsonb_build_object('version_id',v1->>'id','content',v1->'content'))) where id=pid;
+ assert found,'Existing project rights could not persist copy';n:=n+1;
+ perform set_config('request.jwt.claim.sub',responsible::text,true);
+ content:=jsonb_set(content,'{points,0,title}','"Nytt sjekkpunkt"');payload:=payload||jsonb_build_object('revision',r->'template'->'revision','content',content);
+ r:=public.kshms_checklist_command(company,'publish',gen_random_uuid(),payload);v2:=r->'version';assert v2->>'number'='2';n:=n+1;
+ perform set_config('request.jwt.claim.sub',employee::text,true);
+ catalogue:=public.kshms_project_checklists(company,pid);assert catalogue->'versions'->0=v2 and jsonb_array_length(catalogue->'versions')=1,'Catalogue did not select latest version';n:=n+1;
+ assert (select data->'project'->'kshmsChecklistInstances'->0->'content' from public.projects where id=pid)=v1->'content','Template edit changed project copy';n:=n+1;
+ assert (select data->'checklist'->'Legacy'->'Point'->>'comment' from public.projects where id=pid)='keep';n:=n+1;
+ assert (select data->'project'->'projectDeviations'->0->>'status' from public.projects where id=pid)='Åpent';n:=n+1;
+ begin perform public.kshms_project_checklists(company,pid,(v1->>'id')::uuid);raise exception 'Stale intake accepted';exception when others then if sqlerrm='Stale intake accepted' then raise;end if;n:=n+1;end;
+ perform set_config('request.jwt.claim.sub',responsible::text,true);
+ r:=public.kshms_checklist_command(company,'archive',gen_random_uuid(),jsonb_build_object('id',tid,'revision',r->'template'->'revision'));
+ perform set_config('request.jwt.claim.sub',employee::text,true);
+ assert jsonb_array_length(public.kshms_project_checklists(company,pid)->'versions')=0,'Archived template offered for intake';n:=n+1;
+ assert (select data->'project'->'kshmsChecklistInstances'->0->'content' from public.projects where id=pid)=v1->'content','Archive changed project copy';n:=n+1;
+ perform set_config('ks.checklist.version',v1->>'id',true);perform set_config('ks.checklist.count',n::text,true);
+end $$;
+reset role;
+do $$ declare company uuid:=current_setting('ks.checklist.company')::uuid;employee uuid:=current_setting('ks.checklist.employee')::uuid;pid uuid:=current_setting('ks.checklist.project')::uuid;n integer:=current_setting('ks.checklist.count')::integer;begin
+ begin update public.kshms_checklist_versions set content='{}' where id=current_setting('ks.checklist.version')::uuid;raise exception 'Published version mutated';exception when insufficient_privilege then n:=n+1;end;
+ assert not has_function_privilege('anon','public.kshms_checklist_state(uuid)','execute') and not has_function_privilege('anon','public.kshms_project_checklists(uuid,uuid,uuid)','execute');n:=n+1;
+ assert not has_table_privilege('authenticated','public.kshms_checklist_templates','select') and not has_table_privilege('authenticated','public.kshms_checklist_versions','update');n:=n+1;
+ perform set_config('request.jwt.claim.sub',current_setting('ks.checklist.sys'),true);
+ update public.profiles set deactivated=true where id=employee;perform set_config('request.jwt.claim.sub',employee::text,true);
+ begin perform public.kshms_project_checklists(company,pid);raise exception 'Deactivated user read catalogue';exception when insufficient_privilege then n:=n+1;end;
+ perform set_config('request.jwt.claim.sub',current_setting('ks.checklist.sys'),true);
+ update public.profiles set deactivated=false where id=employee;
+ perform set_config('request.jwt.claim.sub',employee::text,true);
+ delete from public.user_module_access where user_id=employee and module_key='projects';
+ begin perform public.kshms_project_checklists(company,pid);raise exception 'User without projects read catalogue';exception when insufficient_privilege then n:=n+1;end;
+ insert into public.user_module_access(user_id,module_key) values(employee,'projects');
+ update public.company_module_access set enabled=false where company_id=company and module_key='kshms';
+ assert not (public.kshms_project_checklists(company,pid)->'context'->>'enabled')::boolean and jsonb_array_length(public.kshms_project_checklists(company,pid)->'versions')=0,'Inactive company exposed catalogue';n:=n+1;
+ perform set_config('ks.checklist.count',n::text,true);
+end $$;
+select 'PASS: '||current_setting('ks.checklist.count')||' checklist access, publication, copy and legacy regression assertions; all fixtures rolled back' as result;
+rollback;

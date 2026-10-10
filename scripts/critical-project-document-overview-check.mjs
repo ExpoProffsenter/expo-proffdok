@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {readProjectDocumentOverview,documentCountText} from '../src/modules/kshms/projectDocumentOverview.mjs';
+const context={company_id:'company',user_id:'user',project_id:'project',enabled:true};
+const legacy={context,choices:{sjas:[{id:'s1',status:'draft'},{id:'s2',status:'signed'}],ruhs:[{id:'r1',status:'open'},{id:'r2',status:'in_progress'},{id:'r3',status:'closed'}]}};
+const execution={context,choices:{rounds:[{id:'c1',status:'completed'}],risks:[]}};
+const original=JSON.stringify([legacy,execution]);
+const options={companyId:'company',userId:'user',projectId:'project',rpc:async(name,args)=>{assert.equal(args.p_project_id,'project');assert.equal(args.p_company_id,'company');assert(name==='kshms_project_report'||name==='kshms_project_execution_report');return name==='kshms_project_report'?legacy:execution;}};
+const counts=await readProjectDocumentOverview(options);assert.equal(documentCountText('sja',counts.sja),'1 utkast · 1 signerte');assert.equal(documentCountText('ruh',counts.ruh),'2 åpne · 1 lukkede');assert.equal(documentCountText('round',counts.round),'0 under arbeid · 1 fullførte');assert.equal(documentCountText('risk',counts.risk),'Ingen registrerte');assert.equal(JSON.stringify([legacy,execution]),original);
+for(const patch of [{company_id:'other'},{user_id:'other'},{project_id:'other'},{enabled:false}])await assert.rejects(readProjectDocumentOverview({...options,rpc:async()=>({...legacy,context:{...context,...patch}})}),error=>error.code==='42501');
+for(const rows of [undefined,[{id:'bad',status:'other'}],[{id:'a',status:'draft'},{id:'a',status:'signed'}]])await assert.rejects(readProjectDocumentOverview({...options,rpc:async()=>({...legacy,choices:{...legacy.choices,sjas:rows}})}));
+assert.equal(await readProjectDocumentOverview({...options,isCurrent:()=>false}),null,'Late result replaced the new scope');
+await assert.rejects(readProjectDocumentOverview({...options,rpc:async()=>{throw Error('Offline');}}),/Offline/);
+console.log('critical-project-document-overview-check: PASS — exact status counts, read-only metadata, unchanged snapshots, malformed/revoked/foreign and late scope gates');

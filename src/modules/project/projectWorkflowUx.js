@@ -4,6 +4,7 @@
 // Supabase, Storage, rapport eller kundevisning endres.
 
 import { resolveProjectFlowNeighbors } from './projectWorkflowNeighbors.mjs';
+import { isProjectDeviationNavLabel } from './projectNavigationTabs.mjs';
 
 const HELP_ID = 'expo-project-flow-help';
 const STATUS_TOGGLE_ID = 'expo-project-status-toggle';
@@ -240,10 +241,13 @@ function adaptPrimaryProjectStatus(activeProject) {
 
 function adaptDeviationNavigation(activeProject) {
   if (!activeProject) return;
+  const destination = Array.from(getAppNav()?.querySelectorAll('button') || [])
+    .find((button) => isProjectDeviationNavLabel(cleanText(button.textContent)));
+  if (!destination) return;
   Array.from(document.querySelectorAll('button')).forEach((button) => {
     const text = cleanText(button.textContent);
     if (text !== 'Se aktive avvik' && text !== 'Åpne Avvik') return;
-    setFlowTarget(button, 'Avvik', 'Åpne Avvik');
+    setFlowTarget(button, cleanText(destination.textContent), 'Åpne Avvik');
     button.title = 'Åpner Avvikssentralen med prosjektets avvik.';
   });
 }
