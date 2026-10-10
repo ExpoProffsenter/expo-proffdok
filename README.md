@@ -1,3 +1,8 @@
+## HR H5b – isolert slettekvittering, 10. oktober 2026
+
+Full eksport → skyunion → varig anker → fersk verifisert readback → service-only DB-ack er kontrakten; «Slettet» krever også ferdige filjobber. Eksisterende 20 operatørfeilscenarioer og 42 PostgreSQL/PGlite-assertions med syntetisk Auth/Storage-adapter PASS. Den uendrede live Sandbox rollback-prøven består med syntetisk filjobbflag; dette er ikke ekte Storage-byte-/restorebevis. H5b-binding deaktivert og privat HR fortsatt stengt i begge appmiljøer. Ett separat **expo-hr-control** er opprettet til senere Production-vern; privat kontrollpunkt/lås og service-only RPC-er er installert bare der. **37 faktiske kontroll-DB-assertions og 21 nye adapterfeilscenarioer med syntetiske transporter PASS**, full Sandbox critical/build PASS. Ingen aktive ankere eller Edge-jobber; ekte token/origin/runtime/sky/scheduler/isolert database/Auth/Storage-restore gjenstår. Ingen permanent kursjobb, H5b-merge eller Production-installasjon. Den ene autoriserte testmailen er allerede sendt og mottak dokumentert. [H5b-bevis](docs/kshms/HR_LEDGER_ACK_20261010.md), [kontrollprosjekt og faktisk QA](ops/hr-control/README.md).
+
+
 ## HR: sykefraværsoppsett – 10. oktober 2026
 
 HR-menyen har nå egne snarveier til Samtalemaler og Sykefravær. Generell sykefraværsmal bruker eksisterende private malregister/RPC, versjoner, CAS og firmaadmin-gater. Additiv validator-migration tillater `sickleave`; ingen personlig innholdsport eller privilegier åpnes. Kildebasert veiledning og et datoregneksempel uten lagring/påminnelser. BEGGE, foreløpig bare feature/Preview/Sandbox. [Scope og bevis](docs/kshms/HR_SICK_LEAVE_SETUP_20261010.md).

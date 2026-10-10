@@ -45,5 +45,5 @@ export function createHrFoundationSession({rpc,companyId,userId,onClear=()=>{}})
 export function hrClosureMessage(result) {
  return result.deleted===true
   ? 'Arbeidsforholdet er avsluttet i HR. Register, tildelinger og registrert HR-innhold er slettet.'
-  : 'Arbeidsforholdet er avsluttet i HR, og tilgangen er sperret. Innhold er fjernet fra databasen. Filsletting pågår; se Slettekvitteringer.';
+  : 'Arbeidsforholdet er avsluttet i HR, og tilgangen er sperret. Innhold er fjernet fra databasen. Kontroll av filsletting og uavhengig slettekvittering pågår; se Slettekvitteringer.';
 }

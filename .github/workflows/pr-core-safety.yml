@@ -42,3 +42,9 @@ jobs:
 
       - name: Run full critical build
         run: npm run build
+
+      - name: Verify isolated HR control cycle
+        run: node scripts/critical-hr-control-cycle-check.mjs
+
+      - name: Verify isolated HR cloud probe
+        run: node scripts/critical-hr-cloud-probe-check.mjs

@@ -1,5 +1,6 @@
 // Operator-only. Not imported by the app. The store/key/trusted anchor live outside DB restore.
 import {normalizeReceipts,sealLedger,verifyLedger} from './hr-deletion-ledger.mjs';
+import {Buffer} from 'node:buffer';
 
 const limit=40000000;
 const fail=()=>{throw Error('untrusted_hr_cloud_ledger');};
@@ -10,9 +11,10 @@ function configuration(config,anchor) {
   if(!exact(config,['project','storeId','origin','token','key'])
     || !/^[a-z]{20}$/.test(config.project) || !/^store_[a-z0-9]+$/.test(config.storeId)
     || !/^https:\/\/[a-z0-9-]+\.private\.blob\.vercel-storage\.com$/.test(config.origin)
-    || typeof config.token!=='string' || !/^vercel_blob_rw_[a-z0-9]+_.+$/.test(config.token)
+    || typeof config.token!=='string' || !/^vercel_blob_rw_[A-Za-z0-9]+_.+$/.test(config.token)
     // Explicit tokens override storeId in audited SDK 2.8.1. Bind before any network call.
-    || config.token.split('_')[3]!==config.storeId.slice(6)
+    // Catalog/token identifiers may use mixed case; DNS and DB binding use canonical lower case.
+    || config.token.split('_')[3].toLowerCase()!==config.storeId.slice(6)
     || config.origin!==`https://${config.storeId.slice(6)}.private.blob.vercel-storage.com`
     || !/^[a-f0-9]{64}$/.test(config.key)
     || !exact(anchor,['project','storeId','generation','hmac'])

@@ -1,0 +1,63 @@
+# Independent HR control project
+
+Target: **expo-hr-control / amduqhmgmeetaatwlmmt**, organization `oolmxqndmldzpylahcjl`, Micro, eu-west-1. Future Production protection; no permanent course job. Never restore this project with the application, and never use it as a database/Auth/Storage restore test target.
+
+This directory deliberately sits outside the application's `supabase/migrations`. Apply its SQL only to the control project, using an explicit verified project ID. No generic app migration/deploy command may include it. The original Sandbox operator is unchanged.
+
+| Canonical CLI migration | Installed control-project migration |
+| --- | --- |
+| `20261010203756_hr_control_checkpoint.sql` | `20261010204017_hr_control_checkpoint` |
+| `20261010204058_hr_control_auto_rls_acl.sql` | `20261010204144_hr_control_auto_rls_acl` |
+
+The private checkpoint table has RLS, no public policies, no schema/table access for anon/authenticated/service_role, and only four narrowly scoped service-role RPCs. Public SECURITY DEFINER RPCs have an empty search_path and explicit execution revocations. The separate ACL migration revokes public execution of the dashboard's auto-RLS event trigger; an actual rollback table-creation probe confirmed auto-RLS still works. The remaining advisor INFO `rls_enabled_no_policy` is intentional deny-all, not a request to grant a policy: [Supabase advisor explanation](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy).
+
+No rows are installed by migrations. Initial state is **0 checkpoints, 0 enabled bindings, 0 locks, 0 Edge Functions**. The store-limited Blob token was saved manually in Edge Secrets as HR_LEDGER_BLOB_TOKEN and its name verified without reading its value. No persistent HMAC key, trusted anchor, scheduler or alert transport is provisioned. A missing/disabled checkpoint refuses a claim rather than silently bootstrapping.
+
+## Checkpoint and failure contract
+
+Each binding records target project, store resource ID, private origin, monotonic revision/generation, HMAC, and durable run ownership. Claim/commit/read/finish lock the row transactionally. A run has no expiration and no automatic takeover. CAS requires the exact revision, next generation and new digest. Fresh reads check the same owner and binding.
+
+`scripts/lib/hr-control-ack-cycle.mjs` reuses existing minimal receipt validation, HMAC and cloud CAS logic. Sequence: claim → verify old cloud/anchor → full snapshot → signed cloud union/readback → durable control commit → separate control read → fresh cloud read → exact service-only ack batches → finish. Before each ack and finish, ownership/revision is read again. Unknown cloud/commit/read/ack/finish outcomes retain the durable lock and refuse success. No catch/finally unlock is provided.
+
+The new adapter requires **ISOLATED_QA** and rejects the active Production, course Sandbox and control project as application sources. It is not an installed Edge worker or a Production operator. Its HTTP client is pinned to the actual control project, accepts only the four RPC names, refuses redirects, uses a 30-second timeout, bounds replies to 16 KiB, and never prints credentials/provider errors.
+
+No recovery/unlock RPC exists. A manual recovery must first establish that the old worker cannot still acknowledge, then verify remote signed generation and independent checkpoint before any privileged change. Do not clear an old run merely because it is old. A future lease/takeover design needs fencing at the application's ack endpoint; the current H5b ack RPC has no such fence. Restoring/recreating the control table or losing a signing key is not a bootstrap shortcut.
+
+## Actual QA and remaining work
+
+`check.sql` exercises the installed SQL using synthetic bindings inside one rollback transaction. **37 assertions PASS** both in PostgreSQL/PGlite and the actual control project, including actual anon/authenticated denial, actual service-role invocation, binding mismatch, durable ownership, old lock refusal, stale revision/generation, exact readback and rollback. PGlite only declares platform roles synthetically; it is not Auth/Storage restore evidence.
+
+The real cycle adapter passes **21 fault/order/concurrency scenarios with synthetic transports**, including JSONB key-order differences, response loss after a committed checkpoint, stale reads, changed ownership, ack/finish failures and concurrent claims. The existing filesystem operator's **20 scenarios remain unchanged and PASS**. The new cycle check is an additional required step in PR Core Safety. Full `EXPO_BACKEND_TARGET=sandbox npm run build` PASS.
+
+Run from repository root:
+
+```sh
+node scripts/critical-hr-control-cycle-check.mjs
+HR_PGLITE_PATH=/absolute/pinned/pglite/dist/index.js node scripts/hr-control-db-check.mjs
+```
+
+Actual owner-dashboard metadata confirms catalog ID `store_feUEeykOyyvZVMca` and private origin `https://feueeykoyyvzvmca.private.blob.vercel-storage.com`. SDK 2.8.1 source derives the storage identifier from the token; DNS hostnames normalize case. The existing adapter wrongly refused mixed-case token identifiers. The narrow fix retains canonical lower-case DB/anchor binding `store_feueeykoyyvzvmca`, compares the token identifier after case normalization, and still rejects different stores before networking. Two added regressions extend the existing 38 cloud scenarios to **40 PASS**; no original test is removed. The actual pinned SDK passes private/cache=0/token/ifMatch/fresh-readback/412 checks with a mixed-case synthetic token and networking disabled. This proves the code/SDK case contract, not real token authentication or cloud operations.
+
+Token provisioning and actual Edge/private-cloud QA were subsequently verified as described below. Durable bootstrap, control ack, scheduler/alerts and full isolated database/Auth/Storage-byte restore remain unverified. The actual token must match the verified origin before binding. No private HR opening or PR #217 merge is authorized by these results.
+
+## Isolated cloud probe
+
+`supabase/functions/hr-cloud-probe` is deployed only to the control project. It never connects to an application database, calls ack or seeds the checkpoint table. Each invocation creates a UUID-named `hr-ledger-qa` object with synthetic receipt IDs and an ephemeral in-memory HMAC key. It reuses the actual ledger signature/CAS code; explicit node:buffer imports support the Edge runtime without changing its algorithms.
+
+The handler accepts only POST with exactly `{"mode":"ISOLATED_CLOUD_QA"}`, maximum 256 request bytes, the pinned control-project URL, the exact `hr_cloud_probe` server secret on `apikey`, and the token matching the single verified private store. Supabase's documented service-to-service authentication requires `verify_jwt=false` for `sb_secret_` keys; mandatory constant-time server-secret comparison occurs before every cloud operation. Default/anon/publishable/user JWT/other named keys are rejected. No secret values/provider error text/signatures/receipts are returned or logged. [Supabase service-to-service auth](https://supabase.com/docs/guides/functions/auth#service-to-service-calls).
+
+`node scripts/critical-hr-cloud-probe-check.mjs` exercises 52 actual handler/isolation/failure scenarios with synthetic cloud transports, including rejection of the retired default binding, malformed runtime bindings and combined apikey headers. This is additional Core Safety coverage; existing checks are preserved. The live probe result must be recorded separately: deployment ACTIVE and a listed secret name do not prove authenticated Blob access. Recovery with this probe's known in-memory synthetic anchor does not prove durable checkpoint recovery, application ack or database/Auth/Storage-byte restore.
+
+Actual live v3 bundle `40c66c4ef33c8a1db5899c31e67a23588314a0f5b2492c28ac7030eb4e8d40b4` returned HTTP 200/ok=true for run `d51b7230-933e-4bd8-abc2-f40d0903f47a`, all nine cloud checks and cleanup of its own object. Before this PASS, the actual Deno/Undici runtime crashed in BrotliDecompress with HTTP 503/no body. The Edge-only dispatcher requests accept-encoding=identity and limits HTTPS origins to the Vercel API and verified private store. The original SDK contract assertions remain; the HTTP fixture now handles flat dispatcher header pairs and async upload bodies, with new identity assertions. No TLS/auth/CAS bypass.
+
+One orphan from the failed invocation remains at `hr-ledger-qa/c798691e-4249-4670-934b-3eb40bc183d8/ledger.json`; successful cleanup is not a claim that the whole store is empty. Browser AX unexpectedly returned the control default server key while the test panel was closing. Its value is not in repository/artifact files. Kenneth created the named replacement `hr_cloud_probe` manually. Deployed v5 accepts that name only; Dashboard's automatic Add secret key still inserts default and actually returned 403/service_only. New-key live verification and manual retirement of the old default are pending; never use full AX or screenshots of an open header panel. See CURRENT_RELEASE_STATUS and docs/kshms/CONTINUITY for the exact boundary.
+
+Runtime v6 distinguishes missing/invalid named binding (403/control_key_not_configured) from a rejected caller (403/service_only), without returning/logging credentials. Kenneth's later response image reaches ISOLATED_CLOUD_QA with stage:create, passed:[] and cleaned:true: named-key authentication passed, the initial object was written and cleanup verified, but metadata or first fresh readback failed. No HTTP status or complete run ID was visible. This is not a new cloud PASS; the old default is not yet retired.
+
+Runtime v7 adds create/initial_write_metadata/initial_fresh_read stages, a created flag and fixed errorCode classifications on failure. It never returns/logs provider messages, stacks, URLs, headers, secrets or payloads. All auth, signature/CAS/readback and cleanup requirements remain unchanged. Seven added write/metadata/readback/provider failure regressions bring the handler suite to **45 synthetic scenarios PASS**, retaining all previous assertions. Full Sandbox build PASS. All five deployed source files match the intended v7 bundle cb4d94d88c3cfc1723b4eaddd3c5ef102f995d3a7f6926cff305063722f97247. Actual unauthenticated GET still returns 403/service_only. One authenticated diagnostic retry is pending; no durable anchor, database ack, scheduler or isolated byte restore has passed.
+
+Runtime v8 fixes the conflict probe's error masking. A v7 user result f420e625-7e0c-4675-9646-a3e4468c0b9e passed private write/fresh read, anonymous denial and signed union/readback, then failed at conflict with cleanup verified. No HTTP status was supplied; no full cloud PASS is claimed. Unexpected errors now preserve their fixed errorCode classification. Conflict PASS requires fresh signed readback of a completed competing write, BlobPreconditionFailedError on the stale write specifically, then a fresh verified winner readback. Accepted stale writes fail with conditional_write_not_rejected. A failed competing write never counts as a passed conflict. Provider text/credentials remain hidden.
+
+All prior 45 scenarios retained plus seven conflict failure regressions: **52 synthetic scenarios PASS**. The actual pinned SDK contract now requires the exact BlobPreconditionFailedError for simulated HTTP 412, preserving every old assertion with network disabled; PASS. Full Sandbox build PASS. v8 ACTIVE bundle 34c386676f46f0ba3fbc2c25b4d9fb01021aabd5a49773f228f4fe5c571152b7 matches all five installed source files. Actual unauthenticated GET remains 403/service_only. Authenticated v8 conflict/recovery verification, default-key retirement and all durable anchor/ack/scheduler/byte-restore requirements remain pending.
+
+Actual v8 user response run 7d3853e3-c6d3-40c0-a208-24a8e3d7a71b returned ok:true, all nine checks and cleaned:true using the named replacement key. Live source downloaded afterward matches all five intended v8 files; control remains 0 checkpoints/enabled/locks. This is actual Edge/private-Blob evidence with a known synthetic in-memory anchor, not a durable Production checkpoint, database ack or byte restore. Only its own test object is verified missing; the historical orphan remains. Safe response: docs/kshms/evidence/HR_CONTROL_CLOUD_PASS_20261011.json. No further generic user retest is required absent a concrete regression. Manually retire only the old control default key, keeping hr_cloud_probe; this already approved credential replacement remains unfinished until revocation is verified.
