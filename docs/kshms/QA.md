@@ -1,5 +1,10 @@
 ## Bootstrap-grunnlag og isolert SQL-integrasjon – 11. oktober 2026 ca. 01:35 Europe/Oslo
 
+## Isolert Edge-serverjobb – 11. oktober 2026
+
+Miljømål SANDBOX/DEMO, draft PR #217. `hr-ledger-worker` v1 er installert kun i control, kildeverifisert (7 filer) og stengt med faktisk 403 når egen nøkkel mangler. 108 worker/nøkkelassertions + 243 HTTP→to PostgreSQL-motorer assertions og full critical build PASS. Ingen permanent nøkkel, faktisk skybootstrap/source-ack, binding, scheduler eller privat HR åpnet. Control0; begge aktive HR-porter lukket. Ingen gamle keys hentet/rotert, ny kostnad, merge eller ny Kenneth-brukerprøve. [Kontrakt og konkret operatøroppsett](HR_EDGE_WORKER_20261011.md), safe evidence `docs/kshms/evidence/HR_EDGE_WORKER_QA_20261011.json`.
+
+
 Miljømål **SANDBOX/DEMO**, bare draft PR #217. Kontrollprosjektets tomme bootstrap-utvidelse er installert som **20261010233316**; faktisk rollback-SQL **29 PASS**, etterkontroll **0 checkpoints/aktive bindinger/låser**. Eksplisitt forhåndsopprettet digest, create-only privat logg, separate kontroll-/skyreadbacks; både success og ukjent resultat beholder deaktivert låst binding. Ingen automatisk bootstrap/recovery/aktivering.
 
 Nytt: **26** syntetiske feil-/samtidighetsscenarioer; **48** PostgreSQL-bootstrapassertions + **29** rollback-kontroller; alle **37** opprinnelige kontrollassertions uendret; **87** integrasjonsassertions over to separate PostgreSQL-instanser med faktisk H5b snapshot/ack og kontroll-SQL. Cloud/Auth/Storage er syntetiske i den nye integrasjonen. Faktisk pinned SDK 2.8.1 med syntetisk HTTP/nettverk av PASS, full Sandbox critical/build PASS. Nytt permanent CI-tillegg. Første fixture-filbane feilet 23514 og er dokumentert som FAIL; rettet til eksisterende UUID-kontrakt uten svekket SQL/QA.

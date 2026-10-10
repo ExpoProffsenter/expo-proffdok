@@ -1,5 +1,9 @@
 ## Bootstrap-grunnlag – 11. oktober 2026
 
+## Isolert serverjobb v1
+
+`hr-ledger-worker` er installert, men ikke konfigurert eller aktivert. Faktisk 403 når egen nøkkel mangler; 108 handler/key-oppsett + 243 HTTP/SQL assertions PASS. [Detaljer og nøkkeloppsett](../../docs/kshms/HR_EDGE_WORKER_20261011.md). Ingen permanent nøkkel provisionert, faktisk skybootstrap, cycle, scheduler, unlock eller HR-åpning.
+
 Ny kanonisk kontrollmigrasjon `20261010232752_hr_control_bootstrap.sql`, live kun her som `20261010233316`. Tre ekstra service-only RPC-er; eksplisitt pre-staging, create-only cloud, separate reads. Både success og feil forblir disabled/locked; ingen aktivering/unlock. Faktisk `bootstrap-check.sql` 29 rollback assertions PASS; kontroll etterpå 0/0/0, funksjoner/ACL verifisert. Dette er ikke utført bootstrap. [Filer, 26/48/87 utviklerprøver, bevisgrenser og neste arbeid](../../docs/kshms/HR_CONTROL_BOOTSTRAP_20261011.md). Tidligere status nedenfor er historikk.
 
 # Independent HR control project

@@ -5,3 +5,8 @@ project_id = "expo-hr-control"
 # Mandatory hr_cloud_probe server-secret validation is in createProbeHandler before any cloud call.
 # The gateway's JWT-only mode cannot authenticate sb_secret_ keys.
 verify_jwt = false
+
+[functions.hr-ledger-worker]
+# Only named hr_ledger_worker on apikey is accepted by createWorkerHandler.
+# No configuration or cloud/source call occurs before that custom authentication.
+verify_jwt = false
