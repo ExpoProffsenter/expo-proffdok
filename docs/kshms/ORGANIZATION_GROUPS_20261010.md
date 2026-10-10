@@ -37,3 +37,20 @@ Disse stegene beskriver de faktiske knappene. Dette krever ingen nye brukerkonto
 - Supabase Postgres breaking-changes/changelog kontrollert før DDL; ltree/legacy PGP/btree_gist NaN/egne operators brukes ikke.
 
 Innlogget Preview-kontroll utføres først etter eksakt READY/Sandbox. Ingen utvidelse av aktiv demo-brukers firmaroller/avtaler for å skape et browserbevis. Mobilkamera, separate samtidige browserøkter, restore og lasttest er fortsatt egne åpne bevis. HR-innholdsporten og KS-e-posttransport beholdes stengt.
+
+## Faktisk innlogget Preview og kodepublisering
+
+Kode **d4b5270e916dc06a764fbd35af36a8db6f238470**, tree **4acc8a01954ac7a8435aa8f0c60da98193612899**, parent **bd4fde6cca608f6a14240807ad451b162e13b0a7**. Alle 21 blobs og remote tree identiske med lokal Git-tree; annen lokal historie ikke pushet. Fersk feature/main/draft verifisert før expected-head lease/force=false. Main **155f6c4ac01f126c1db0c65da385cfd9305587d5**. PR draft/unmerged.
+
+[PR Core Safety 38009716896](https://github.com/ExpoProffsenter/expo-proffdok/actions/runs/38009716896) **SUCCESS**, jobb **114086648809**, scope guard og full critical build grønne. **dpl_GKkbK6sdQd5si4yqYpeEd44NomJx READY Preview**, eksakt kode-SHA/feature-ref/prosjekt/fast alias. Direkte branch-env **EXPO_BACKEND_TARGET=sandbox** kontrollert. Bare Sandbox-migrasjon; ingen Production/main/demo eller e-post.
+
+Faktisk Skynett på eksakt READY kode-SHA, eksisterende demo-innlogging og én fane:
+- **KS/HMS → Mine rutiner → Organisasjonskart** og den nye **Velg kart** virker. Vanlig firmakart laster eksisterende to kort og fire personer/to plasserte. Ingen aktive kart-/person-/rettighetsdata lagret eller slettet.
+- **Nytt felles kart** er riktig skjult i den eksisterende demokontoen uten minst to kvalifiserte firmaer. Ingen modulavtaler eller medlemskap ble utvidet for prøven. Faktisk innlogget flerfirma-oppretting/redigering/sletting er derfor **ikke** et browserbevis; disse flytene er SQL/React-verifisert ovenfor.
+- 1363×936 desktop, 44px kartvelger, petrol/lyse kort/ikoner, ingen horisontal side-overflow. KS-header krever fortsatt noe vertikal scrolling, kartet har egen rulleflate. Ingen mobil- eller Windows screenshotverktøy-PASS.
+- F6/Escape beholder valgt organisasjonsfane/kart uten fanehopp. Popup lukket. Ny oppdatering krever ikke ny innlogging.
+- Faktisk **Last ned PDF** gir 18 888 bytes/**to A3-sider**, alle fire demonavn og gjeldende to plasseringer bevart. Begge sider tekst- og visuelt kontrollert, SHA-256 **b7f2b07ab6f5904989c0c11745503ce775ddda8ec95f7970835b87f7ac89eebd**. Det er firmakart-PDF, ikke innlogget flerfirma-PDF.
+
+![Original O3 Preview, kartvelger og bevart firmakart](evidence/organization/o3-preview-original.jpg)
+
+Sluttbevis-/statusoppdateringen endrer bare dokumentasjon og dette originale JPEG-et etter kodekontrollen; appkode/DB uendret. Eksakt siste remote head/CI/Preview kontrolleres ved publisering og registreres i PR #216. Tidligere O2/O1/Kenneth TEST OK/B/C-bevis beholdes som historikk.
