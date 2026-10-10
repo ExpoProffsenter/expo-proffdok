@@ -1,3 +1,7 @@
+## Gjeldende status – produksjon og kursdemo publisert 10. oktober 2026
+
+KS/HMS og HR-grunnlag fra PR #216 er på Production. Main → demo er publisert med tre generelle HR-kursmaler og SJA/vernerunde/risiko/sjekkliste/RUH. Full critical/Sandbox build, 22 server-preflightpunkter og kursreset med bevart historikk er grønne. Produksjon er uendret under sluttkontrollen. Innlogget klient-preflight/lokal Badskisse, fysisk mobil og kontrollmail er fortsatt uverifisert. Personlig HR-samtale/fraværsinnhold er fortsatt stengt; slettemanifest og full isolert restore gjenstår. [Sluttstatus og bevis](RELEASE_CLOSEOUT_20261010.md). Nye funksjoner er fryst; tidligere statuser nedenfor er historiske.
+
 ## HR: tydelig hjelp der du arbeider – 10. oktober 2026
 
 Synlig **Start her** viser oppsett → medarbeider/leder → samtalemal for firmaadmin, og relevant lesehjelp for leder/personlig bruker. Malbyggeren forklarer velg → tilpass → forhåndsvis/lagre, navn/tema/spørsmål, forberedelse/felles møte, kladd/Forkast og utgave/arkiv. En lagret mal starter ingen samtale og sender ingenting til ansatte. Bare presentasjon/hjelp; handlinger, roller, SQL og privat innholdsport beholdes.

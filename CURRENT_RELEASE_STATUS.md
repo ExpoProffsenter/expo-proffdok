@@ -1,6 +1,6 @@
 # Gjeldende release og kursdemo – 10. oktober 2026
 
-PR #216 merged. Production READY/verifisert på main `c3d873e0e5bd2677f0205143de6edc1fbd95ae4c`. Demo synkroniseres main → demo med fiktivt kursinnhold, veiledning, fersk SJA-PDF og separat reset. Se [kursbevis](docs/DEMO_KSHMS_HR_COURSE_20261010.md). Fysisk mobil/ny innlogget kursrunde/kontrollmail gjenstår som egne bevis. Personlig HR-port forblir lukket. Nye funksjoner fryses etter releasen.
+PR #216 merged. Production READY/verifisert på main `c3d873e0e5bd2677f0205143de6edc1fbd95ae4c`. Main → demo er publisert som `d959b970a32331844bb502e3e7dd088bdcafa74e`, READY med fiktivt kursinnhold, veiledning, fersk SJA-PDF og separat reset. Ny kontroll: full Sandbox critical/build PASS, 19 eksisterende + 3 kurs-serverpunkter grønne, faktisk rollback-reset-QA PASS, alle 782 main-filer beholdt. Se [sluttstatus og bevis](docs/kshms/RELEASE_CLOSEOUT_20261010.md) og [kursinnhold](docs/DEMO_KSHMS_HR_COURSE_20261010.md). Innlogget full klient-preflight/lokal Badskisse, fysisk mobil og kontrollmail er ikke attestert. Personlig HR-port forblir lukket. Nye funksjoner er fryst.
 
 Følgende tidligere statuser er historiske:
 

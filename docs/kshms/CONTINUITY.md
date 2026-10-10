@@ -1,3 +1,7 @@
+## Gjeldende fortsettelsespunkt: produksjon og kursdemo publisert – 10. oktober 2026
+
+PR #216 merged; Production READY på `c3d873e0`. Main → demo er publisert på `d959b970`, Demo READY `dpl_27Ze7uN3i9e9CwFkwXSQcHfuHZto`. Fiktive kursmaler og KS/HMS-eksempler finnes. Gjenopptatt kontroll: full critical/Sandbox build PASS, 19 + 3 server-preflightpunkter grønne, faktisk rollback-reset-QA PASS og ingen main-filer fjernet fra demo. Produksjon er bare lest i denne økten. Innlogget full klient-preflight/lokal Badskisse, fysisk mobil og kontrollmail er ikke attestert; personlig HR fortsatt stengt. Ikke gjenta ferdig synk/seed eller tidligere TEST OK. Freeze for nye funksjoner gjelder. [Presis sluttstatus og videre arbeid](RELEASE_CLOSEOUT_20261010.md). Eldre avsnitt om draft/ingen Production er historikk.
+
 ## HR: samtalemaler i menyen og sykefraværsoppsett – 10. oktober 2026
 
 **Åpne samtalemaler** og **Åpne sykefravær** ligger i HR-snarveiene øverst. Firmaadmin kan klargjøre en generell sykefraværsmal med 11 spørsmål om arbeid, kontakt, tilrettelegging og oppfølging. Eksisterende admin-/firmagater, utgaver, CAS og kladdbevaring gjelder. Fristveiledning med NHO/NAV-kilder og et avgrenset regneeksempel for 4/7/8/26 uker; fullt og gradert fravær forklares ulikt. Ingen personlig sak, fraværsdata, påminnelse eller innsending opprettes.
