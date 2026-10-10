@@ -1,5 +1,11 @@
 # H5b med separat Supabase-kontrollprosjekt
 
+## Konkret lager-ID-regresjon kontrollert og rettet
+
+Ny lesende eier-UI-kontroll bekreftet katalog-ID **store_feUEeykOyyvZVMca** og faktisk privat Base URL **https://feueeykoyyvzvmca.private.blob.vercel-storage.com**, fortsatt tomt lager uten prosjekttilkobling. Ingen token eller credentials ble vist/lest/rotert. Faktisk installert, pinnet SDK 2.8.1-kilde henter lageridentifikator fra tokenen. Den gamle validatoren godtok bare små bokstaver i token-ID og ville avvise faktisk mixed-case-identifikator. Avgrenset retting normaliserer denne sammenligningen mot kanonisk DB-/ankerbinding **store_feueeykoyyvzvmca**; feil lager/origin avvises fortsatt før nettverkskall. Ingen endring av eksisterende appmigrasjoner eller aktive DB-bindinger.
+
+To nye konkrete regresjonsprøver er lagt til, uten fjerning/svekkelse av de eksisterende 38 skyadapterprøvene: **40 PASS**. Faktisk **@vercel/blob 2.8.1** med mixed-case syntetisk token bestod ukachet privat lesing, token-/ifMatch-headere, fersk readback og 412-avvisning med ekstern nettverking sperret. Kontrolladapterens 21 og filoperatorens 20 scenarioer består fortsatt. Dette er faktisk kilde-/SDK-kontrakt, **ikke autentisert skylager-/token-/restore-PASS**. Betrodd bootstrap, Edge/runtime, ekte skyprøver, scheduler/varsling og isolert byte-restore gjenstår. [Gjeldende kontrakt](../../ops/hr-control/README.md).
+
 ## Faktisk opprettet og første kontrollgrunnlag levert ca. 22:43 Europe/Oslo
 
 Kenneth fullførte opprettelsen. API og oppdatert eier-UI viser **expo-hr-control / amduqhmgmeetaatwlmmt**, organisasjon `oolmxqndmldzpylahcjl`, **ACTIVE_HEALTHY**, **Micro**, **eu-west-1 / West EU Ireland**, ingen GitHub-kobling. Dette er ett separat prosjekt til senere produksjonsvern, ingen permanent kontrolljobb for kursdemoen. Avtalt ekstra grunnkostnad er $10/måned uten betalte tillegg. Ingen passord, JWT, token eller intern auth-state er lest eller publisert.

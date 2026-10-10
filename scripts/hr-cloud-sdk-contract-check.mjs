@@ -17,7 +17,7 @@ const {MockAgent,setGlobalDispatcher,getGlobalDispatcher}=await import(
 const prior=getGlobalDispatcher(),agent=new MockAgent();agent.disableNetConnect();setGlobalDispatcher(agent);
 const project='ppvircenkjizeiqdxphj';
 const config={project,storeId:'store_synthetic',origin:'https://synthetic.private.blob.vercel-storage.com',
-  token:'vercel_blob_rw_synthetic_not-a-real-token',key:randomBytes(32).toString('hex')};
+  token:'vercel_blob_rw_SyNtHeTiC_not-a-real-token',key:randomBytes(32).toString('hex')};
 const initial=sealLedger({format:1,project,generation:0,receipts:[]},project,config.key);
 const anchor={project,storeId:config.storeId,generation:0,hmac:initial.hmac};
 const pathname=`hr-ledger/${project}/ledger.json`,url=`${config.origin}/${pathname}`;
