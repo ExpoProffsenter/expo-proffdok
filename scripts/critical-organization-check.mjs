@@ -47,3 +47,16 @@ await ls.command(copy(),'layout',orgLayoutPayload(data,orgLayout(data)));assert.
 console.log('✅ Organization layout: real save endpoint, root fingerprint, strict snapshot, deletion set, parent options and preserved HR boundary PASS');
 
 const collisionFix=fs.readdirSync('supabase/migrations').find(n=>n.endsWith('_organization_layout_collision_guard.sql'));const collisionSql=fs.readFileSync('supabase/migrations/'+collisionFix,'utf8');assert(collisionSql.includes('color=excluded.color where org_private.units.company_id=p_company_id')&&collisionSql.includes('written<>jsonb_array_length(items)'),'Concurrent foreign UUID insert cannot become an unscoped UPSERT');
+
+// Group charts preserve one identity across firm-specific placements without widening HR rights.
+const group={...copy(),context:{...data.context,group_id:'g'},companies:[{id:'c'},{id:'b'}],units:[{id:'one',name:'One',company_id:'c',color:'teal',parent_id:null},{id:'two',name:'Two',company_id:'b',color:'blue',parent_id:null}],people:[{id:'c:a',user_id:'a',company_id:'c',unit_id:'one',kind:'leader',name:'Anne'},{id:'b:a',user_id:'a',company_id:'b',unit_id:'two',kind:'middle',name:'Anne'}]};
+assert.equal(orgBranches(group).roots.length,2);assert.notEqual(orgFingerprint(group),orgFingerprint({...group,companies:[{id:'c'},{id:'other'}]}));
+assert.throws(()=>orgBranches({...group,people:[{...group.people[0],unit_id:'two'}]}),/firmaplassering/);
+assert.throws(()=>orgBranches({...group,units:[group.units[0],{...group.units[1],parent_id:'one'}]}),/blande firmaer/);
+let groupCall;const gs=createOrgSession({companyId:'c',userId:'u',groupId:'g',rpc:async(name,args)=>{groupCall={name,args};return structuredClone(group);}});
+await gs.command(group,'layout',orgLayoutPayload(group,orgLayout(group)));assert.equal(groupCall.name,'organization_group_state');assert.equal(groupCall.args.p_group_id,'g');gs.dispose();
+const forged=createOrgSession({companyId:'c',userId:'u',groupId:'wrong',rpc:async()=>structuredClone(group)});await assert.rejects(forged.read(),/tilgang/);forged.dispose();
+const groupMigration=fs.readdirSync('supabase/migrations').find(n=>n.endsWith('_organization_groups.sql'));const groupSql=fs.readFileSync('supabase/migrations/'+groupMigration,'utf8');
+for(const guard of ['group_access','org_private.group_context(p_company_id,p_group_id,true)','org_private.group_lock','p_revision is distinct','removed is distinct from confirmed','org_private.group_units.group_id=p_group_id','written<>jsonb_array_length(items)','from public,anon,authenticated,service_role'])assert(groupSql.includes(guard));
+assert(!groupSql.includes('public.hr_employee_command'));assert(!groupSql.includes('insert into public.sales_company_memberships'));
+console.log('✅ Group organization: same identity/multi-firm rows, branch boundary, group fingerprint, exact group RPC, spoofed group refusal and no HR/membership mutations PASS');

@@ -16,9 +16,18 @@ try{
   window.MessageChannel=class{constructor(){this.port1={onmessage:null};this.port2={postMessage:()=>setImmediate(()=>this.port1.onmessage?.())};}};
   const context={company_id:'c',user_id:'admin',company_name:'Syntetisk firma',administer:true};
   const baseline={context,revision:1,units:[{id:'service',name:'Service',parent_id:null,manager_id:'head',manager_name:'Leder',color:'teal',editable:true},{id:'store',name:'Butikk',parent_id:null,color:'blue',editable:true},{id:'project',name:'Prosjekt',parent_id:'service',color:'amber',editable:true}],people:[{id:'employee',user_id:'employee',name:'Anne Bjørnstad',revision:2,hr_registered:true,unit_id:'service',title:'Rørleggerlærling',kind:'apprentice',leader_id:'head'},{id:'head',user_id:'head',name:'Leder',revision:0,hr_registered:false,unit_id:'service',title:'Avdelingsleder',kind:'leader',leader_id:null},{id:'new',user_id:'new',name:'Ny leder',revision:0,hr_registered:false,unit_id:null,title:'Medarbeider',kind:'employee',leader_id:null}],members:[{id:'head',name:'Leder',can_edit_chart:true,can_lead_hr:true},{id:'new',name:'Ny leder',can_edit_chart:true,can_lead_hr:true}]};
-  let state=structuredClone(baseline),revoked=false,late=null;const commands=[];
+  let state=structuredClone(baseline),revoked=false,late=null,groupState=null;let groupOptions={context:structuredClone(baseline.context),groups:[],companies:[]};const commands=[],groupCommands=[];
   window.__client={rpc:async(name,args)=>{
    assert.equal(args.p_company_id,'c');
+   if(name==='organization_group_options')return revoked?{error:{code:'42501',message:'Felleskart trukket tilbake'}}:{data:{...structuredClone(groupOptions),context:structuredClone(state.context)}};
+   if(name==='organization_group_create'){groupCommands.push({name,args});groupState.context.group_id=args.p_payload.id;groupState.chart_name=args.p_payload.name;groupOptions.groups=[{id:args.p_payload.id,name:args.p_payload.name,administer:true}];return {data:structuredClone(groupState)};}
+   if(name==='organization_group_state')return revoked?{error:{code:'42501',message:'Felleskart trukket tilbake'}}:{data:structuredClone(groupState)};
+   if(name==='organization_group_command'){
+    groupCommands.push({name,args});assert.equal(args.p_revision,groupState.revision);groupState.revision++;
+    if(args.p_action==='place')Object.assign(groupState.people.find(p=>p.id===args.p_payload.employee_id),{title:args.p_payload.title,kind:args.p_payload.kind,unit_id:args.p_payload.unit_id});
+    if(args.p_action==='layout'){groupState.chart_name=args.p_payload.chart_name;groupState.units=args.p_payload.units.map(u=>({...u,editable:true}));}
+    return {data:structuredClone(groupState)};
+   }
    if(name==='kshms_get_state')return {data:{context:{...state.context,enabled:true,manage:false,publish:false,responsible:false},settings:null,routines:[],versions:[],assignments:[],acknowledgments:[],reviews:[],members:[]}};
    if(name==='kshms_assignment_reminder_tasks')return {data:{company_id:'c',user_id:state.context.user_id,groups:[]}};
    if(revoked)return {error:{code:'42501',message:'KS-tilgang trukket tilbake'}};
@@ -72,6 +81,26 @@ try{
   state=structuredClone(baseline);await act(async()=>window.__render({context,kind:'ks'}));await click('Organisasjonskart');assert(window.document.querySelector('.org-workspace'));
   await act(async()=>window.__unmount());await act(async()=>window.__render({context,kind:'ks'}));assert(window.document.querySelector('.org-workspace'),'Organization screen survives rights-remount only after fresh KS + organization reads');
   await click('Min personalhåndbok');await act(async()=>window.__unmount());await act(async()=>window.__render({context,kind:'ks'}));assert(!window.document.querySelector('.org-workspace'),'Deliberate navigation away clears new screen memory');await act(async()=>window.__unmount());
+  // New actual group UI; same account in three firm-specific placements.
+  state=structuredClone(baseline);groupOptions.companies=[{id:'c',name:'Ringside Rørleggerbedrift'},{id:'b',name:'Bademiljø Expo'},{id:'d',name:'Expo Proffsenter'}];
+  groupState={context:{...context,group_id:'pending'},revision:1,chart_name:'Ringside',companies:structuredClone(groupOptions.companies),units:[{id:'board',name:'Styret',color:'violet',parent_id:null,editable:true},...groupOptions.companies.map(c=>({id:'unit-'+c.id,name:c.name,company_id:c.id,parent_id:'board',color:'teal',editable:true}))],people:groupOptions.companies.map(c=>({id:c.id+':employee',user_id:'employee',company_id:c.id,company_name:c.name,name:'Anne Bjørnstad',unit_id:null,title:'Medarbeider',kind:'employee',leader_id:null,revision:0})),members:[{id:'employee',name:'Anne Bjørnstad',can_edit_chart:true,company_ids:['c','b','d']}]};
+  await act(async()=>window.__render({context}));await click('Nytt felles kart');
+  await write('Navn på felles kart','Ringside');
+  for(const box of [...window.document.querySelectorAll('.org-group-companies input')].filter(n=>!n.disabled))await act(async()=>box.click());
+  assert(button('Opprett felles kart').disabled,'Creation needs explicit confirmation');await act(async()=>window.document.querySelector('.org-group-confirm input').click());await click('Opprett felles kart');
+  assert.equal(groupCommands[0].args.p_payload.company_ids.length,3);assert.equal(groupCommands[0].args.p_payload.confirm,true);assert.equal(window.document.querySelector('.org-company-node strong').textContent,'Ringside');assert.equal(window.document.querySelectorAll('.org-branch').length,4);
+  await act(async()=>window.document.querySelector('.org-unplaced').open=true);
+  assert.equal(window.document.querySelectorAll('.org-person').length,3,'Same identity visible in each firm');assert.equal(window.document.querySelector('.org-stats strong:nth-of-type(1)')?.textContent,'4');
+  await act(async()=>window.document.querySelector('.org-person').click());assert(!window.document.body.textContent.includes('Jeg bekrefter ny nærmeste leder'));
+  assert.equal(field('Avdeling').options.length,2,'Only own firm branch is a valid placement');await write('Avdeling','unit-c');await write('Stilling','Prosjektleder');await submit();
+  assert.equal(groupCommands.at(-1).args.p_payload.company_id,'c');assert.equal(groupCommands.at(-1).args.p_payload.user_id,'employee');assert(!Object.hasOwn(groupCommands.at(-1).args.p_payload,'leader_id'),'Group placement cannot change HR');
+  await click('Rediger kart');await click('Ny avdeling');await write('Avdelingsnavn','Lærlinger');await write('Plasser under','unit-c');await submit();
+  assert(window.document.querySelector('[aria-label="Velg kart"]').disabled,'Dirty draft prevents silent chart switch');await act(async()=>window.dispatchEvent(new window.Event('focus')));
+  assert(window.document.body.textContent.includes('Lærlinger'),'Fresh remount retains group draft');await click('Lagre kart');assert(groupCommands.at(-1).args.p_payload.units.some(u=>u.name==='Lærlinger'));
+  await click('Rediger kart');await click('Ny avdeling');await write('Avdelingsnavn','Forkastes');await submit();await click('Forkast endringer');
+  assert(!window.document.body.textContent.includes('Forkastes'));revoked=true;await act(async()=>window.dispatchEvent(new window.Event('focus')));assert(!window.document.body.textContent.includes('Anne Bjørnstad'),'Group revoke clears every company person');assert(!window.document.querySelector('dialog'));
+  await act(async()=>window.__unmount());revoked=false;
+  console.log('Actual group React PASS: explicit creation, same account three firms, scoped placement/no HR, structure save/readback, dirty switch lock, focus/remount, discard and group revoke. Synthetic transport.');
   console.log('Actual organization React PASS: departments/subdepartment, apprenticeship, create/readback, HR confirmation, branch scope/readonly, revoke/focus/late reply and honest empty onboarding. Synthetic transport.');
  }finally{dom.window.close();}
 }finally{fs.rmSync(temp,{recursive:true,force:true});}

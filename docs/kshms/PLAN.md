@@ -1,3 +1,13 @@
+## Organisasjonskart O3 – felles kart for flere firmaer, 10. oktober 2026
+
+Miljømål **BEGGE**, leveres bare feature/Preview og Sandbox. Et separat felles organisasjonskart kan knytte **2–10 firmaer** sammen. Én brukerkonto kan ha forskjellig stilling og plassering i hver firmagren. Opprettelse lager Styret og sideordnede firmagrener; toppnavn og struktur kan redigeres med **Lagre kart**, og hele kartet kan slettes med uttrykkelig bekreftelse. Firmautvalget er fast i denne første versjonen. Eksisterende firmakart, brukere og HR beholdes.
+
+**Hele felleskartet krever fersk KS/HMS i alle firmaene; redigering krever firmaadmin i alle.** En kartleder gir ingen ekstra redigering eller HR-innsyn. En bruker med ett firma ser sitt vanlige firmakart. Firmamedlemskap, avsluttet arbeidsforhold, tilbakekalling, firmagrense og revisjon kontrolleres på serveren ved hver handling. Ingen automatisk konto-/medlemskapsopprettelse eller modulaktivering.
+
+**64 nye faktiske rollback Sandbox-assertions PASS**; fysisk PostgreSQL/PGlite **63 + 33 + 64 PASS**, faktiske nye/berørte React-flyter, permanent critical og full Sandbox build PASS. Felles PDF: **49 syntetiske personer / 51 firmaplasseringer / fire A3-sider**, alle tekst- og visuelt kontrollert. Samme person har tre ulike stillinger i tre firmaer. Dette er utviklerbevis, ikke nytt innlogget flerfirma-browserbevis. Sandbox-migrasjon **20261010002710** (CLI 20261010001921), ni live funksjonskropper/ACL/tomt search_path verifisert mot kilden. Ingen aktive felleskart opprettet, rettigheter utvidet eller HR-innhold åpnet.
+
+[Scope, knapper, sikkerhetsprøver og presise bevis](ORGANIZATION_GROUPS_20261010.md). Kenneths tidligere TEST OK/B/C/PDF/ZIP/SJA-bevis beholdes uten gjentatt omtest. Ingen main/demo/Production eller e-post. Privat HR-kontakt/samtale/fravær fortsatt stengt; uavhengig driftsmanifest/ack og isolert Supabase-restore gjenstår før åpning. Mobil, separate samtidige browserøkter og belastningstest på isolert database gjenstår som egne bevis.
+
 ## Organisasjonskart O2: tydelig lagring og struktur – 10. oktober 2026
 
 **Vis kart / Rediger kart**, frie toppnavn og nivåer. Firmaadmin kladder strukturen med synlige **Rediger / flytt / Slett**, deretter **Lagre kart**. Sletting forklares og flytter personer til Ikke plassert, med bevart stilling/nærmeste leder/HR. Tre like grener vises ved siden av hverandre under felles forelder; stor innvendig boksnesting er fjernet. Medarbeidere lagres separat etter strukturen. Faktiske Sandbox **33 nye + 63 berørte assertions PASS**, React/HR-Hjelp og fire syntetiske PDF-sider kontrollert. Kladd/fokus/remount/konflikt og fersk tilgang beholdes. Bare feature/Preview/Sandbox; brukerens to eksisterende testkort og plassering er ikke flyttet/slettet.

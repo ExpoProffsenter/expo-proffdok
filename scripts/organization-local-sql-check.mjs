@@ -20,8 +20,10 @@ try{
  for(const name of (await fs.readdir('supabase/migrations')).filter(name=>name.endsWith('_organization_hr_trigger_scope_fix.sql')))await db.exec(await fs.readFile('supabase/migrations/'+name,'utf8'));
  await db.exec(await fs.readFile('supabase/migrations/20261009235538_organization_layout_editor.sql','utf8'));
  for(const name of (await fs.readdir('supabase/migrations')).filter(n=>n.endsWith('_organization_layout_collision_guard.sql')))await db.exec(await fs.readFile('supabase/migrations/'+name,'utf8'));
+ for(const name of (await fs.readdir('supabase/migrations')).filter(n=>n.endsWith('_organization_groups.sql')))await db.exec(await fs.readFile('supabase/migrations/'+name,'utf8'));
  const result=await db.exec(await fs.readFile('scripts/organization-sandbox-check.sql','utf8'));
  for(const part of result)if(part.rows?.length)console.log(part.rows);
  const layoutResults=await db.exec(await fs.readFile('scripts/organization-layout-sandbox-check.sql','utf8'));for(const part of layoutResults)if(part.rows?.length)console.log(part.rows);
+ if(process.env.ORG_GROUP_QA){const results=await db.exec(await fs.readFile('scripts/organization-groups-sandbox-check.sql','utf8'));for(const part of results)if(part.rows?.length)console.log(part.rows);}
  console.log('Organization actual PostgreSQL/PGlite DDL + rollback scenarios PASS (synthetic platform adapter).');
 }finally{await db.close();}

@@ -22,3 +22,12 @@ reads=0;await assert.rejects(downloadOrgPdf({session:{...session,read:async()=>{
 await assert.rejects(downloadOrgPdf({session,expected:data,isCurrent:()=>false,load,save,now}),/endret/);assert.equal(saves,1);
 await assert.rejects(downloadOrgPdf({session,expected:data,isCurrent:()=>true,load:async()=>{throw Error('library offline');},save,now}),/offline/);assert.equal(saves,1);
 console.log(`Actual jsPDF export PASS: ${pdf.getNumberOfPages()} A3 pages / 48 staff / board and three peer businesses /  long names and titles. Fresh-before/after, changed revision, revoke, navigation and failed loader prevent delivery. Visual verification separate. File: ${output}`);
+
+const grouped=structuredClone(data);grouped.context.group_id='synthetic-group';grouped.companies=[{id:'c',name:'Ringside Rørleggerbedrift'},{id:'b',name:'Bademiljø Expo'},{id:'d',name:'Expo Proffsenter'}];
+for(const unit of grouped.units)unit.company_id=unit.id==='service'?'c':unit.id==='store'?'b':['project','apprentices'].includes(unit.id)?'d':null;
+for(const person of grouped.people){const firm=grouped.companies.find(c=>c.id===(person.unit_id==='service'?'c':person.unit_id==='store'?'b':'d'));person.company_id=firm.id;person.company_name=firm.name;person.id=firm.id+':'+person.user_id;}
+for(const [i,c] of grouped.companies.entries())grouped.people.push({id:c.id+':shared',user_id:'shared',company_id:c.id,company_name:c.name,name:'Syntetisk felles leder',title:['Prosjektleder','Butikksjef','Faglig leder'][i],kind:'leader',unit_id:['service','store','project'][i]});
+const groupPdf=await buildOrgPdf({data:grouped,companyName:'Ringside',JsPDF:jsPDF,now});const groupOutput=output.replace(/\.pdf$/,'-group.pdf');fs.writeFileSync(groupOutput,new Uint8Array(groupPdf.output('arraybuffer')));
+let groupSaves=0;await downloadOrgPdf({session:{read:async()=>structuredClone(grouped),invalidate(){}},expected:grouped,isCurrent:()=>true,load,save:()=>groupSaves++,now});assert.equal(groupSaves,1);
+let groupReads=0;await assert.rejects(downloadOrgPdf({session:{read:async()=>++groupReads===1?structuredClone(grouped):{...structuredClone(grouped),companies:[grouped.companies[0],{id:'other',name:'Changed'}]},invalidate(){}},expected:grouped,isCurrent:()=>true,load,save:()=>groupSaves++,now}),/endret/);assert.equal(groupSaves,1);
+console.log(`Group jsPDF PASS: ${groupPdf.getNumberOfPages()} A3 pages, 49 unique identities / 51 firm placements; same leader three titles, firm labels and fresh company fingerprint. File: ${groupOutput}`);

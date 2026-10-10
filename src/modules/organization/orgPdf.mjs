@@ -14,7 +14,7 @@ export async function buildOrgPdf({data,companyName,JsPDF,now=new Date()}) {
   pdf.setFillColor(...petrol);pdf.rect(0,0,width,45,'F');
   text('ORGANISASJONSKART',margin,15,10,[196,226,221],'bold');
   text(lines(company,23,width-2*margin,'bold').slice(0,2),margin,27,23,[255,255,255],'bold');
-  text(`${data.units.length} avdelinger  /  ${data.people.length} medarbeidere  /  ${data.people.filter(p=>p.kind==='apprentice').length} lærlinger`,margin,54,10,muted);
+  text(`${data.units.length} avdelinger  /  ${data.context.group_id?new Set(data.people.map(p=>p.user_id)).size+' personer / '+data.people.length+' firmaplasseringer':data.people.length+' medarbeidere'}  /  ${data.people.filter(p=>p.kind==='apprentice').length} lærlinger`,margin,54,10,muted);
  };
  const footer=()=>{pdf.setDrawColor(216,230,226);pdf.line(margin,height-14,width-margin,height-14);text(`Uttrekk ${date}  /  Navn, stillinger og organisasjon. Kontroller mottaker før deling.`,margin,height-8,8,muted);text(`Side ${page}`,width-margin-16,height-8,8,muted);};
  const nextColumn=()=>{column++;y=64;if(column===3){footer();pdf.addPage();page++;column=0;header();}};
@@ -82,7 +82,7 @@ export async function buildOrgPdf({data,companyName,JsPDF,now=new Date()}) {
  for(const {unit,path} of nodes){
   const rows=orgPersonRows(unit.people).map(person=>{
    const indent=Math.min(person.depth,5)*3;
-   const names=lines(person.name,10,cardWidth-16-indent,'bold'),titles=lines(person.title,8.5,cardWidth-16-indent);
+   const names=lines(person.name,10,cardWidth-16-indent,'bold'),titles=lines(data.context.group_id?`${person.title} · ${person.company_name}`:person.title,8.5,cardWidth-16-indent);
    return {person,indent,names,titles,height:Math.max(19,names.length*4.4+titles.length*3.7+9)};
   });
   const headings=lines(unit.name,13,cardWidth-14,'bold'),parents=lines(path.length?`Under ${path.join(' / ')}`:'Direkte under firmaet',8,cardWidth-14);
