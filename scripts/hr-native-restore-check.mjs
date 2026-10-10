@@ -68,8 +68,8 @@ const storage={
  }
 };
 function volumes(){
- const mounts=[inspect(dbContainer).Mounts.find(m=>m.Type==='volume'&&m.Destination==='/var/lib/postgresql/data'),inspect('supabase_storage_'+stack).Mounts.find(m=>m.Type==='volume'&&m.Destination==='/var/lib/storage')];
- check(mounts.every(m=>m&&/^[a-zA-Z0-9_-]+$/.test(m.Name)&&m.Name.endsWith('_'+stack)),'only own database/storage volumes');
+ const mounts=[inspect(dbContainer).Mounts.find(m=>m.Type==='volume'&&m.Destination==='/var/lib/postgresql/data'),inspect('supabase_storage_'+stack).Mounts.find(m=>m.Type==='volume'&&m.Destination==='/mnt')];
+ check(mounts.every((m,i)=>m&&m.Name===(i===0?'supabase_db_':'supabase_storage_')+stack),'exact own database/storage volumes');
  return mounts.map((m,i)=>({name:m.Name,file:i===0?'database.tgz':'storage.tgz'}));
 }
 function snapshotVolume(v,restore=false){
@@ -110,6 +110,7 @@ try{
  sql(await fs.readFile('scripts/fixtures/hr-native-company.sql','utf8'));
  for(const file of ['20261009182551_hr_access_foundation.sql','20261009193953_hr_content_purge_foundation.sql','20261009203431_people_module_entitlements.sql','20261009203950_people_module_access_closure.sql','20261009211209_hr_restore_reconcile_orphans.sql']){stage('load_'+file);sql(await fs.readFile('supabase/migrations/'+file,'utf8'));}
  sql("notify pgrst,'reload schema';");
+ stage('native_auth_users');
  const users=[];
  for(const role of ['firmaadmin','ansatt','ansatt','ansatt']){
   const user={email:randomUUID()+'@example.invalid',password:randomBytes(32).toString('hex'),role};
@@ -121,6 +122,7 @@ try{
  sql(`insert into public.sales_company_scopes values(${quote(c)}),(${quote(otherCompany)});`);
  for(const u of users){const company=u===outsider?otherCompany:c;sql(`insert into public.profiles values(${quote(u.id)},${quote(u.email)},true,false,${quote(u.role)},null);insert into public.sales_company_memberships values(${quote(company)},${quote(u.id)},${quote(u.role)});insert into hr_private.module_access(company_id,user_id,enabled) values(${quote(company)},${quote(u.id)},true);`);}
  sql(`insert into public.company_module_access(company_id,module_key,enabled) values(${quote(c)},'hr',true),(${quote(otherCompany)},'hr',true);insert into hr_private.firms values(${quote(c)},true,'Synthetic purpose','Synthetic legal basis',current_date+30,1);insert into hr_private.employees(id,company_id,user_id,leader_id) values(${quote(employee)},${quote(c)},${quote(user.id)},${quote(admin.id)}),(${quote(retained)},${quote(c)},${quote(other.id)},${quote(admin.id)});insert into hr_private.readers(company_id,employee_id,user_id,granted_by,reason) values(${quote(c)},${quote(employee)},${quote(other.id)},${quote(admin.id)},'Synthetic reader reason');update hr_private.runtime_state set content_enabled=true,restore_quarantined=false;update hr_private.purge_worker_settings set enabled=true;select vault.update_secret(secret_id,${quote(workerToken)}) from hr_private.purge_worker_settings;`);
+ stage('native_files_and_access');
  const files=[];
  for(const kind of ['content','version','draft','search','export']){
   const aid=randomUUID();sql(`insert into hr_private.artifacts values(${quote(aid)},${quote(c)},${quote(employee)},1,${quote(kind)},'{"synthetic":true}',current_date+30);`);
@@ -138,6 +140,7 @@ try{
  check(!(await fetch(api+'/storage/v1/object/public/hr-private/'+files[0].object)).ok,'native private bucket rejects anonymous read');
  check(!(await request('/rest/v1/rpc/hr_purge_worker_reserve',{method:'POST',body:{},bearer:user.jwt,key:anon})).ok,'actual user cannot reserve worker job');
  await initializeLedger(ledger,project,signingKey);
+ stage('native_volume_identity');
  const mounts=volumes();
  stage('cold_physical_database_auth_storage_backup');
  docker(['stop',...containers.filter(c=>c!==dbContainer)]);docker(['stop',dbContainer]);for(const v of mounts)snapshotVolume(v);
