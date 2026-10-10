@@ -1,5 +1,15 @@
 # H5b med separat Supabase-kontrollprosjekt
 
+## Gjeldende formål: produksjonsvern, ikke permanent kursressurs
+
+Kenneth presiserte at Sandbox brukes til kurs. Den varige kontrolltjenesten trengs før **Production** kan åpne private HR-samtaler, svar og sykefraværssaker. Kursdemoen trenger ingen egen permanent kontrolljobb så lenge privat HR forblir stengt. Main er kodegrenen, Production er den aktive appen/backend med reelle data, og demo/Sandbox er kursmiljøet.
+
+Tidligere navn `expo-hr-control-sandbox` og beskrivelse av Sandbox som varig miljømål var uklare og er erstattet av forslag om **ett selvstendig `expo-hr-control`**, beregnet for senere produksjonsdrift. Eksisterende godkjente organisasjon, Micro/EU og ramme opptil $10/måned uten betalte tillegg beholdes. Et nytt list_projects-oppslag etter avklaringen viser bare eksisterende Production-prosjekt; kontrollprosjektet er fortsatt **ikke opprettet**. Det klargjorte skjemaet er satt på vent; agenten har ikke lest eller endret et eventuelt påbegynt manuelt passordsteg.
+
+Før drift må kontrolladapteren verifiseres mot isolerte syntetiske testdata med egne prosjekt-/lagerbindinger, nøkler og kontrollpunkter. Testtilstand skal aldri godtas som produksjonsanker. Full database/Auth/Storage-byte-restore skal skje i eget isolert testmiljø, aldri aktiv kurs-Sandbox, Production eller kontrollprosjektet. En eventuell ekstra betalt restoretestressurs inngår ikke automatisk i kontrollprosjektets kostnadsramme.
+
+Dette er en presisering av fremtidig driftsformål, ingen Production-installering, automatisk ombinding av eksisterende Sandbox-operator eller tillatelse til merge av PR #217/åpning av privat HR. Eksisterende private Blob med sandbox-navn er en testressurs uten token/sky-PASS; navnet alene gjør den ikke produksjonsklar. Produksjonsbinding, avgrenset token, bootstrap og eget betrodd anker krever konkret verifikasjon før bruk. Tidligere QA og Kenneth TEST OK beholdes. Tekniske sky-/restoreprøver er utviklerens ansvar.
+
 ## Faktisk kontokontroll og klargjort opprettelse ca. 22:22 Europe/Oslo
 
 Kenneth bekreftet valgt eksisterende organisasjon og opptil **10 USD/måned i ekstra grunnkostnad**, uten betalte tillegg. Sikker GitHub-innlogging til Supabase i samme cloud-fane gav faktisk eierøkt. Team-/fakturakontroll stemmer med Kenneths oppgitte Ringside-fakturakonto; arbeidsområdenavnet **ExpoProffsenter's Org** er ikke fakturamottakerens selskapsnavn. Ingen fakturanavn, adresse, MVA-nummer, betalingsmiddel, eierrolle eller spend cap er endret. Private faktura-/betalingsdetaljer og fakturabilder publiseres ikke i repoet.
@@ -24,7 +34,7 @@ Supabase kan kjøre den automatiske kontrolljobben. Et separat prosjekt lagrer s
 | --- | --- |
 | App | Eksisterende Production `dqffxflaoyarbxyiyhop` og aktiv Sandbox `ppvircenkjizeiqdxphj`; ingen restore eller ny kode her i dette steget. |
 | Signert slettelogg | Eksisterende private Vercel Blob `store_feUEeykOyyvZVMca`, FRA1, team ringside. Ingen private referater/svar/diagnoser. |
-| Kontrollprosjekt | Foreslått nytt selvstendig `expo-hr-control-sandbox`, Micro, EU/Ireland (`eu-west-1`). Organisasjon og faktisk kontopris må bekreftes før opprettelse; foreslått eksisterende `ExpoProffsenter's Org`. Ingen PITR-/domene-/loggtillegg foreslås. |
+| Kontrollprosjekt | Foreslått ett selvstendig `expo-hr-control`, Micro, EU/Ireland (`eu-west-1`), til senere produksjonsvern. Eksisterende organisasjon og faktisk $10/m-pris er kontrollert og kostnadsrammen godkjent; prosjektet er ikke opprettet. Ingen separat permanent kursressurs eller PITR-/domene-/loggtillegg foreslås. |
 | Varig kontrollpunkt | Privat Postgres-tabell i kontrollprosjektet, med eksplisitt project/store/origin-binding, revisjon, generasjon og HMAC. Utenfor alle applikasjonens database/Auth/Storage-backuper og restorekommandoer. |
 | Kjøring | Edge Function i kontrollprosjektet, kalt av samme kontrollprosjekts pg_cron/pg_net; foreslått hvert femte minutt etter reell QA. Autentisert serverkall og egne hemmeligheter, ingen offentlig kjøreknapp eller browsernøkkel. |
 | Restoreprøve | Eget isolert testmiljø med syntetiske Auth-brukere og Storage-bytes. Kontrollprosjektet skal aldri brukes som restoretestmål. Ressurs/pris for dette miljøet er separat og uavklart. |
@@ -39,7 +49,7 @@ Foreslått neste kodearbeid er en separat kontrollprosjektadapter og Edge-inngan
 
 Følgende må gjennomføres og testes før drift:
 
-1. Service-only tabeller/funksjoner: ingen anon/authenticated-lesing, skriving eller kjøring; tomt search_path og minste nødvendige rettigheter. Hemmeligheter server-only, aldri i frontend, git, chat eller logger. Separate Sandbox-, kontrollprosjekt- og lagerbindinger.
+1. Service-only tabeller/funksjoner: ingen anon/authenticated-lesing, skriving eller kjøring; tomt search_path og minste nødvendige rettigheter. Hemmeligheter server-only, aldri i frontend, git, chat eller logger. Separate syntetiske test- og fremtidige Production-bindinger, nøkler, lagerområder og kontrollpunkter. Ingen permanent jobb for kursdemoen i dette omfanget.
 2. Varig kjøringslås med unik kjørings-ID og kontrollpunktsrevisjon. Start/oppdatering/avslutning skal kontrolleres transaksjonelt. Ingen automatisk låsovertakelse etter timeout: en forsinket gammel operatør må ikke kunne kvittere etter at en ny har tatt over. Recovery krever kontroll av kjøring og sky-/ankertilstand; en eventuell senere lease-modell krever bevist sperre også ved selve DB-ack.
 3. Bevar full eksport → signert ekstern union → varig kontrollpunktscommit → fersk ukachet Blob-readback → service-only ack. Kontrollpunktsoppdatering skal sammenligne forventet revisjon, binding og innhold, og skal aldri gå bakover. Etter commit må en ny lesing bevises, ikke bare stol på SQL-svar eller egen cache.
 4. Tapt respons, ukjent commitutfall, samtidighet, gammel revisjon, filjobb ikke ferdig, feil før/etter Blob-skriv og feil før/etter kontrollpunktscommit skal sperre utrygg ack. Ny instans må ikke automatisk bootstrappe når kontrollpunktet mangler. Fysiske Storage-jobber må fortsatt fullføres før «Slettet».
