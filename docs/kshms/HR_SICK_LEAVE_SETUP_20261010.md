@@ -32,4 +32,10 @@ Før-basis: remote feature `86d3cf7961cee758642909f5f289b15b6865c50a`, main `155
 - Fast branch-env `EXPO_BACKEND_TARGET=sandbox`, target preview, ref `feat-kshms-foundation` verifisert direkte før publisering.
 - Skynettleserens eksisterende fane viser ordinær innlogging; ingen credentials/session/JWT lest eller ny innlogging krevd. Ingen innlogget visuell/mobil PASS påstås. Ingen aktiv HR-post eller mal endret gjennom browser. Ny kort brukerprøve er i USER_TEST; gamle prøver skal ikke gjentas.
 
-Publiserings-SHA, CI og deployment føres etter eksakt ref-oppdatering.
+## Faktisk kodepublisering
+
+Kode **60012bf96fc645e4e89b911c66ee393a57aedfdb**, tree **ad02447792b6fc956144ea3a9643f8715ea9f95c**. 23 blobs og hele treet er kontrollert mot lokale Git-hasher. Remote parent `86d3cf7961cee758642909f5f289b15b6865c50a` beholdt ved expected_sha/force=false. Avgrenset ny delta: 23 filer, 243 inn/24 ut; bare avtalt HR/mal/veiledning, SQL-validator, tester og dokumentasjon. Samlet feature mot uendret main er nå 402 filer, inkl. eldre leveranser.
+
+**PR Core Safety 38047209069 / jobb 114199037566 SUCCESS**: scope guard og full critical build bestod på eksakt kode-SHA. **dpl_2d7iLosUZdG5LL24T63smtgkGuNh READY Preview**, eksakt kode-SHA/ref og fast feature-alias. Automatisk Git-deploy fungerte denne gangen; ingen manuell deployment eller endring av Vercel-konfigurasjon.
+
+Main **155f6c4ac01f126c1db0c65da385cfd9305587d5** kontrollert uendret etter levering. PR #216 fortsatt draft/open; ingen Production/main/demo/e-post. Bare denne bevisfilen endres i siste dokumentasjonscommit; endelig head/CI/Preview føres i PR-metadata. Innlogget/mobil visuell prøve står fortsatt åpen, ikke et innloggingskrav for Kenneth ved hver publisering.
