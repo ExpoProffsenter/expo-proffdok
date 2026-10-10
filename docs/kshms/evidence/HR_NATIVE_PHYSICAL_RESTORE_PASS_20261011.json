@@ -1,0 +1,91 @@
+{
+  "source": "actual completed GitHub Actions native job with direct read-only own Storage volume hash inspection",
+  "runId": 38094197667,
+  "jobId": 114336643030,
+  "commit": "2eb194d9e1c886e1054699bf2566f7209722d3b6",
+  "tree": "97844a03dc24c175206c7f4257341a89b4a3d766",
+  "completedAt": "2026-10-10T23:14:37Z",
+  "conclusion": "success",
+  "cleanup": "completed successful job without cleanup failure",
+  "result": {
+    "ok": true,
+    "mode": "ISOLATED_NATIVE_QA",
+    "assertions": 233,
+    "cli": "2.120.0",
+    "images": [
+      {
+        "service": "supabase_storage",
+        "image": "sha256:12afd2170c5ca80880a4af472bcb89d28e090e3155a8bcee4246c1fb3991dcdd"
+      },
+      {
+        "service": "supabase_rest",
+        "image": "sha256:1ad5f2ea5501150ec9c7953ae9bf04111ced39a53ca01fc0f08af6d0b7ba67be"
+      },
+      {
+        "service": "supabase_inbucket",
+        "image": "sha256:1ce65b9a2daa2a01cf4f226dbd4b3758b5b9fe686c2f471cf979273a389aab91"
+      },
+      {
+        "service": "supabase_auth",
+        "image": "sha256:1181bff5ba4ce440013a63cef9f4cf13024c432d705c9b1fbc9e5b949e852f48"
+      },
+      {
+        "service": "supabase_kong",
+        "image": "sha256:3cefb958bcd694597b65adc00053a762b1f9a6df3c6031af528d052d75a64e1a"
+      },
+      {
+        "service": "supabase_db",
+        "image": "sha256:4d5fe06292c269ef2729c2629efeaa9ce780bd33c0910e807aef19989ca07527"
+      }
+    ],
+    "physicalDatabaseAuthRestore": true,
+    "storageByteRestore": true,
+    "physicalPayloadAbsenceVerified": true,
+    "actualAuthUsers": 4,
+    "restoredFamilies": 5,
+    "restoredRegisteredFiles": 2,
+    "deletedPaths": 3,
+    "unrelatedEmployeePreserved": true,
+    "companyProfileFixture": true,
+    "productionAnchor": false,
+    "databaseAck": false,
+    "managedCloudRestore": false
+  },
+  "historical201AssertionRun": {
+    "runId": 38093742515,
+    "conclusion": "success",
+    "evidence": "HR_NATIVE_RESTORE_PASS_20261011.json"
+  },
+  "restartFailure": {
+    "runId": 38093967843,
+    "commit": "6fd8b9151c9bce634784659485beac673f11a3b7",
+    "conclusion": "failure",
+    "result": {
+      "ok": false,
+      "mode": "ISOLATED_NATIVE_QA",
+      "stage": "source_closure_and_actual_byte_purge",
+      "code": "native_check_failed",
+      "failedCheck": "actual production worker module succeeds against native RPC and Storage",
+      "assertions": 51,
+      "productionAnchor": false,
+      "databaseAck": false,
+      "managedCloudRestore": false
+    },
+    "finding": "Only Auth readiness was awaited after cold restart; worker transport check failed. Require native Auth/Storage Docker health and pinned CLI gateway HEAD readiness for shell-less PostgREST; do not convert failed purge to PASS."
+  },
+  "superseded": [
+    {
+      "runId": 38094067824,
+      "conclusion": "cancelled"
+    },
+    {
+      "runId": 38094158551,
+      "conclusion": "cancelled"
+    }
+  ],
+  "limits": [
+    "Synthetic company/work-profile substrate; native Auth/Storage/Vault/Cron/pg_net unchanged",
+    "Same-version physical volume restore in same disposable Docker stack",
+    "No managed-cloud PITR, complete production profile, durable production anchor or H5b ack integration"
+  ]
+}
