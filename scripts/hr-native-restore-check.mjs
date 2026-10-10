@@ -19,7 +19,7 @@ const ledger=path.join(root,'independent-ledger'),snapshots=path.join(root,'snap
 await fs.mkdir(snapshots,{mode:0o700});
 await fs.mkdir(ledger,{mode:0o700});
 const signingKey=randomBytes(32).toString('hex'),workerToken=randomBytes(32).toString('hex');
-let failedCheck=null;
+let failedCheck=null,workerError=null;
 let phase='preflight',assertions=0,started=false,containers=[],dbContainer,image,api,anon,service;
 const check=(ok,label)=>{if(!ok)failedCheck=label;assert(ok,label);assertions++;};
 const stage=value=>{phase=value;console.log(JSON.stringify({mode:'ISOLATED_NATIVE_QA',stage:phase}));};
@@ -38,6 +38,14 @@ const inspect=name=>JSON.parse(docker(['inspect',name]))[0];
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 async function dbReady(){
  for(let i=0;i<60;i++){try{if(sql('select 1;').trim()==='1')return;}catch{}await wait(1000);}throw Error('database_not_ready');
+}
+async function nativeServicesHealthy(){
+ const required=['supabase_auth_','supabase_storage_','supabase_rest_'].map(prefix=>prefix+stack);
+ for(let i=0;i<60;i++){
+  if(required.every(c=>inspect(c).State.Health?.Status==='healthy'))return;
+  await wait(1000);
+ }
+ throw Error('native_services_not_healthy');
 }
 async function apiReady(){
  for(let i=0;i<60;i++){try{if((await fetch(api+'/auth/v1/health',{signal:AbortSignal.timeout(2000)})).ok)return;}catch{}await wait(1000);}throw Error('auth_not_ready');
@@ -93,7 +101,7 @@ async function resume(quarantine=false){
   check(scalar('select content_enabled and not restore_quarantined as value from hr_private.runtime_state')===true,'old database really restores unsafe flag');
   sql('update hr_private.runtime_state set content_enabled=false,restore_quarantined=true;');
  }
- docker(['start',...containers.filter(c=>c!==dbContainer)]);await apiReady();
+ docker(['start',...containers.filter(c=>c!==dbContainer)]);await nativeServicesHealthy();await apiReady();
 }
 try{
  check(command(cli,['--version']).trim()==='2.120.0','pinned CLI');
@@ -169,7 +177,8 @@ try{
  }});
  const runWorker=async()=>{
   const r=await worker(new Request('http://127.0.0.1/purge',{method:'POST',headers:{'x-hr-purge-token':workerToken},body:'{}'}));
-  check(r.status===200,'actual production worker module succeeds against native RPC and Storage');const report=await r.json();check(report.retry===0,'no hidden worker retries');return report;
+  const report=await r.json();workerError=['unauthorized','transport_not_verified','purge_unavailable'].includes(report.error)?report.error:null;
+  check(r.status===200,'actual production worker module succeeds against native RPC and Storage');check(report.retry===0,'no hidden worker retries');return report;
  };
  check((await runWorker()).removed===3,'source purges both registrations and orphan');
  for(const object of [...files.map(f=>f.object),orphan])check(await storage.missing(object),'source file bytes absent');
@@ -227,7 +236,7 @@ try{
  console.log(JSON.stringify({ok:true,mode:'ISOLATED_NATIVE_QA',assertions,cli:'2.120.0',images,physicalDatabaseAuthRestore:true,storageByteRestore:true,physicalPayloadAbsenceVerified:true,actualAuthUsers:4,restoredFamilies:5,restoredRegisteredFiles:2,deletedPaths:3,unrelatedEmployeePreserved:true,companyProfileFixture:true,productionAnchor:false,databaseAck:false,managedCloudRestore:false}));
 }catch(e){
  const code=/^native_(?:sqlstate_[0-9A-Z]{5}|rpc_rejected_[0-9]{3}|command_failed)$/.test(e.message)?e.message:'native_check_failed';
- console.error(JSON.stringify({ok:false,mode:'ISOLATED_NATIVE_QA',stage:phase,code,failedCheck,assertions,productionAnchor:false,databaseAck:false,managedCloudRestore:false}));process.exitCode=1;
+ console.error(JSON.stringify({ok:false,mode:'ISOLATED_NATIVE_QA',stage:phase,code,failedCheck,workerError,assertions,productionAnchor:false,databaseAck:false,managedCloudRestore:false}));process.exitCode=1;
 }finally{
  stage('cleanup');
  if(started){try{supabase(['stop','--project-id',stack,'--no-backup']);}catch{console.error(JSON.stringify({ok:false,code:'isolated_cleanup_failed'}));process.exitCode=1;}}
