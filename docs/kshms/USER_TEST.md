@@ -1,3 +1,10 @@
+## Kort prøve: tydelig HR-hjelp – 10. oktober 2026
+
+1. Åpne **HR** på [samme Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe). **Start her** skal vise hva du gjør først og hvilken knapp du bruker videre.
+2. Åpne **Samtalemaler → Årlig medarbeidersamtale**. Les **Slik lager du en mal** og felthjelpen. **Forhåndsvis mal** viser bare spørsmålene; **Forkast endringer** avslutter prøven uten å lagre.
+
+Faktiske berørte HR-/mal-/Hjelp-React-prøver og full critical/build PASS. Dette gjelder hjelpetekst; ingen gammel lagrings-/slette-/PDF-/ZIP-prøve kreves. Innlogget visuell kontroll føres i [scope/bevis](HR_HELP_20261010.md).
+
 ## Ny kort prøve: samtalemaler – 10. oktober 2026
 
 Firmaadmin i aktivert HR-register: **HR → Samtalemaler** på [samme Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe).
