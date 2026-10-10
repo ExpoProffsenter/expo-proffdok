@@ -2,7 +2,19 @@
 
 Miljømål **SANDBOX/DEMO** for operator-/restorekontroll. Ingen endring av Production, permanent kursdemo, appkode, SQL-migrasjoner, tester eller privat HR-port. Dette er en klargjort driftsoppskrift, **ikke utført sky-/restore-PASS**. Autorisert testmail er allerede sendt én gang; Kenneths skjermbilde dokumenterer mottak. Ingen ny mail sendes som del av denne klargjøringen.
 
-## Git-sikkerhet, opprydding og Vercel-varsel ca. 21:56 Europe/Oslo
+## Main beskyttet og Supabase-alternativ klargjort ca. 22:05 Europe/Oslo
+
+Kenneth autoriserte neste arbeid. Faktisk GitHub-eierøkt opprettet én klassisk branch-regel for **main**, ID **84605695**. Lagret regel er gjenåpnet og kontrollert: Require a pull request before merging; obligatorisk **Core safety + critical build** fra **GitHub Actions**; branches up to date; Do not allow bypassing (også administratorer); force-push og sletting ikke tillatt. Ingen obligatorisk ekstra GitHub-reviewer er satt, for å bevare eksisterende enkeltbruker-/TEST OK-flyt uten selvreview-deadlock. Brukerens relevante Preview/TEST OK er fortsatt påkrevd før agentmerge; regelen erstatter ikke dette. Lock branch er av. Ingen appkode, main-commit, deploy, rettighetsutvidelse eller betalt GitHub-plan endret.
+
+Faktisk branch API bekrefter **protected=true**, enforcement **everyone**, context `Core safety + critical build`, app_id **15368**; main fortsatt `c3d873e0`. UI-beviset viser alle øvrige lagrede valg. Detaljadmin-API var tidligere 403 og brukes ikke som bevis for feltene det ikke eksponerer. [Lagret regel](https://github.com/ExpoProffsenter/expo-proffdok/settings/branch_protection_rules/84605695).
+
+![Lagrede main-krav og vern mot force-push/sletting](evidence/MAIN_PROTECTION_20261010.jpg)
+
+Supabase kan være serverløs operatorvert; egen VPS er ikke et absolutt krav. Et **separat kontrollprosjekt** med varig transaksjonelt kontrollpunkt/lås og Edge/pg_cron er foreslått. Dagens filoperator kan ikke bare flyttes til midlertidig Edge `/tmp`; kontrakten må tilpasses og faktisk testes uten å svekke eksisterende H5b. Organisasjonen er bekreftet Pro; offentlig ekstrakostnad fra $10/måned er bare listepris, ikke bekreftet kontopris/utgiftsgodkjenning. Ingen nytt prosjekt/adapter/scheduler/nøkkel eller sky-/restore-PASS. [Konkret scope, restoregrense, låsekontrakt og kostnad](HR_SUPABASE_CONTROL_20261010.md).
+
+Lesende etterkontroll: main/Production `c3d873e0`, READY `dpl_BHpnnv8bnyo8wU3oLUE9NEsgixd5`; demo `11f1b45d`, READY `dpl_3uegJLq87zotYZFvFQQpfLM5vEsw`; PR #217 før denne dokumentasjonspubliseringen `bdd0b83c`, open/draft, Core Safety 38081733839 SUCCESS, READY `dpl_58A2cfghU9Ti1waM4WjM734ahoAW`. Funksjonskode fortsatt `ecd700ac`. Ingen Production/demo-deploy eller HR-åpning. Påminnelsen om branch-opprydding 11. oktober består, ingen branch slettet. Vercel-retention er ikke endret. De følgende kontrollene er historikk.
+
+## Historisk Git-sikkerhet, opprydding og Vercel-varsel ca. 21:56 Europe/Oslo
 
 Kenneth ba om videre arbeid, branch-påminnelse og vurdering av vedlagt GitHub-varsel/Vercel-e-post. Vedlegget ble faktisk åpnet fra scratch. GitHub branch API bekrefter **main protected=false**, og repo-rulesets returnerte []; detaljoppslag på branch-protection fikk **403 Resource not accessible by integration**. Varslet gjelder manglende branch-beskyttelse, ikke bevist angrep eller tapt data. Før neste release bør main ha PR-krav, obligatorisk faktisk Core Safety-jobb og vern mot force-push/sletting, også uten rutinemessig adminbypass. Vern for permanent demo må bevare kontrollert main → demo. Ingen beskyttelsesregel, rettighet, retention eller branch er endret i denne kontrollen. Ikke kall grønn CI en serverhåndhevet merge-sperre når main fortsatt er ubeskyttet.
 
