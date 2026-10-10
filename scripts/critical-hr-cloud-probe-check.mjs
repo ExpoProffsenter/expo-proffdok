@@ -60,10 +60,11 @@ await scenario(async()=>{
  assert.deepEqual(await result.json(),{ok:false,code:'probe_failed'});
 });
 class Conflict extends Error{}
+class AccessDenied extends Error{}
 function cloud(fault){
  const objects=new Map();let serial=0,gets=0,puts=0;
  return {
-  objects,BlobPreconditionFailedError:Conflict,
+  objects,BlobPreconditionFailedError:Conflict,BlobAccessError:AccessDenied,
   async put(path,value,o){
    assert.match(path,/^hr-ledger-qa\/[a-f0-9-]{36}\/ledger.json$/);
    assert.equal(o.token,token);assert.equal(o.access,'private');assert.equal(o.addRandomSuffix,false);
@@ -71,16 +72,21 @@ function cloud(fault){
    const old=objects.get(path);
    if((old && !o.allowOverwrite) || (o.ifMatch && old?.etag!==o.ifMatch))throw new Conflict();
    puts++;objects.set(path,{value,etag:'v'+(++serial)});
-   return {pathname:path,url:'https://feueeykoyyvzvmca.private.blob.vercel-storage.com/'+path};
+   const origin=fault==='wrong-write-origin'?'https://other.private.blob.vercel-storage.com':
+    'https://feueeykoyyvzvmca.private.blob.vercel-storage.com';
+   return {pathname:path,url:origin+'/'+path};
   },
   async get(path,o){
    assert.equal(o.useCache,false);assert.equal(o.token,token);gets++;
    const value=objects.get(path);if(!value)return null;
    const bytes=Buffer.from(value.value);
+   if(fault==='provider-read-error' && gets===1)throw new AccessDenied(token);
+   if(fault==='unknown-read-error' && gets===1)throw Error(token);
    if(fault==='missing-read' && gets===1)return null;
    const origin=fault==='wrong-origin'?'https://other.private.blob.vercel-storage.com':
     'https://feueeykoyyvzvmca.private.blob.vercel-storage.com';
-   return {statusCode:200,blob:{pathname:path,url:origin+'/'+path,size:bytes.length,etag:value.etag},
+   return {statusCode:200,blob:{pathname:path,url:origin+'/'+path,size:bytes.length,
+    etag:fault==='invalid-read-etag' && gets===1?'':value.etag},
     stream:new ReadableStream({start(c){c.enqueue(bytes);c.close();}})};
   },
   async del(path,o){
@@ -90,6 +96,26 @@ function cloud(fault){
   }
  };
 }
+// The actual new-key run wrote/cleaned an object but failed before its first readback PASS.
+// Distinguish write, metadata and readback without weakening validation or returning errors.
+for(const [fault,stage,errorCode,created] of [
+ ['write-error','create','provider_or_runtime_error',false],
+ ['wrong-write-origin','initial_write_metadata','probe_check_rejected',true],
+ ['missing-read','initial_fresh_read','ledger_readback_rejected',true],
+ ['wrong-origin','initial_fresh_read','probe_check_rejected',true],
+ ['invalid-read-etag','initial_fresh_read','ledger_readback_rejected',true],
+ ['provider-read-error','initial_fresh_read','provider_access_denied',true],
+ ['unknown-read-error','initial_fresh_read','provider_or_runtime_error',true]
+])await scenario(async()=>{
+ const sdk=cloud(fault);const result=await runCloudProbe(sdk,token,
+  async()=>new Response('denied',{status:403}));
+ assert.equal(result.ok,false);assert.equal(result.stage,stage);
+ assert.equal(result.errorCode,errorCode);assert.equal(result.created,created);
+ assert.equal(result.cleaned,created);assert.deepEqual(result.passed,[]);
+ assert.equal(sdk.objects.size,0);assert(!JSON.stringify(result).includes(token));
+ assert.equal(result.databaseAck,false);assert.equal(result.productionAnchor,false);
+ assert.equal(result.byteRestore,false);
+});
 await scenario(async()=>{
  const sdk=cloud();const result=await runCloudProbe(sdk,token,async(url,o)=>{
   assert.match(url,/^https:\/\/feueeykoyyvzvmca\.private\.blob\.vercel-storage\.com\/hr-ledger-qa\//);

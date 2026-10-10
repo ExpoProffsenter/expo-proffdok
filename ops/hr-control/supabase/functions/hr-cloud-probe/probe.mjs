@@ -15,6 +15,27 @@ const validToken=token=>typeof token==='string' && /^vercel_blob_rw_[A-Za-z0-9]+
  && token.split('_')[3].toLowerCase()===storeId.slice(6);
 const sameIds=(rows,ids)=>JSON.stringify(rows.map(r=>r.id))===JSON.stringify(ids.map(id));
 
+// Fixed classifications only. Never serialize a provider message, URL, header or stack.
+function failureCode(error,sdk){
+ for(const [name,code] of [
+  ['BlobAccessError','provider_access_denied'],
+  ['BlobNotFoundError','provider_not_found'],
+  ['BlobStoreNotFoundError','provider_store_not_found'],
+  ['BlobStoreSuspendedError','provider_store_suspended'],
+  ['BlobServiceNotAvailable','provider_unavailable'],
+  ['BlobServiceRateLimited','provider_rate_limited'],
+  ['BlobRequestAbortedError','provider_aborted'],
+  ['BlobPreconditionFailedError','provider_precondition_failed'],
+  ['BlobUnknownError','provider_unknown']
+ ])if(typeof sdk[name]==='function' && error instanceof sdk[name])return code;
+ if(error instanceof Error){
+  if(error.message==='untrusted_hr_cloud_ledger')return 'ledger_readback_rejected';
+  if(error.message==='hr_cloud_probe_failed')return 'probe_check_rejected';
+  if(error.message==='hr_cloud_ledger_timeout')return 'ledger_timeout';
+ }
+ return 'provider_or_runtime_error';
+}
+
 // Every invocation gets a server-generated unique QA path and ephemeral synthetic signing key.
 // The path adapter reuses the actual ledger validation/CAS code without writing its real path.
 export async function runCloudProbe(sdk,token,anonymousFetch=fetch) {
@@ -54,7 +75,8 @@ export async function runCloudProbe(sdk,token,anonymousFetch=fetch) {
   const initial=make(0,[]);
   const written=await sdk.put(qaPath,JSON.stringify(initial)+'\n',options({
    addRandomSuffix:false,allowOverwrite:false,contentType:'application/json'}));
-  created=true;checkMeta(written,qaPath);
+  created=true;stage='initial_write_metadata';checkMeta(written,qaPath);
+  stage='initial_fresh_read';
   await readCloudLedger(isolated,config,anchor(initial));passed.push('private_write_fresh_read');
   stage='anonymous';
   const denied=await anonymousFetch(`${origin}/${qaPath}?cache=0`,{
@@ -103,13 +125,14 @@ export async function runCloudProbe(sdk,token,anonymousFetch=fetch) {
   cleaned=true;passed.push('synthetic_object_deleted_and_missing');
   return {ok:true,mode:'ISOLATED_CLOUD_QA',runId,passed,cleaned,
    productionAnchor:false,databaseAck:false,byteRestore:false};
- }catch{
+ }catch(error){
+  const errorCode=failureCode(error,sdk);
   // Never expose provider error text, secrets, signed payloads or private data.
   if(created && !cleaned){
    try{await sdk.del(qaPath,{token,storeId,abortSignal:AbortSignal.timeout(10000)});
     cleaned=await sdk.get(qaPath,options({useCache:false}))===null;}catch{}
   }
-  return {ok:false,mode:'ISOLATED_CLOUD_QA',runId,stage,passed,cleaned,
+  return {ok:false,mode:'ISOLATED_CLOUD_QA',runId,stage,errorCode,created,passed,cleaned,
    productionAnchor:false,databaseAck:false,byteRestore:false};
  }
 }
