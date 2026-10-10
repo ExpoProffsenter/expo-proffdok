@@ -2,7 +2,19 @@
 
 Miljømål **SANDBOX/DEMO** for operator-/restorekontroll. Ingen endring av Production, permanent kursdemo, appkode, SQL-migrasjoner, tester eller privat HR-port. Dette er en klargjort driftsoppskrift, **ikke utført sky-/restore-PASS**. Autorisert testmail er allerede sendt én gang; Kenneths skjermbilde dokumenterer mottak. Ingen ny mail sendes som del av denne klargjøringen.
 
-## Faktisk kontroll ca. 21:17–21:33 Europe/Oslo
+## Ny faktisk lagertilgang ca. 21:48 Europe/Oslo
+
+Kenneth opplyste at han hadde Vercel-engangskode. Sikker browserAuth-handoff endte med user_took_over; etterkontroll viste faktisk innlogging som **kenneth-6719** i team **ringside**. Ingen kode eller innloggingshemmelighet hentet i chat, git eller intern auth-state. Samme fane ble brukt; opprettelsesdialogen er lukket etter handlingen.
+
+Eierøkten opprettet **expo-hr-ledger-sandbox**, ID **store_feUEeykOyyvZVMca**, **Private**, **FRA1**. Første lengre foreslåtte navn ble avvist av skjemaets 32-tegnsgrense før opprettelse; kortere navn ble brukt. Lageret er synlig og tomt (0 B/0 operasjoner), uten prosjekttilkobling eller automatisk env-kopiering. Dette er faktisk ressursoppretting gjennom ny eiertilgang; det tidligere 403-avviste connector-opprettelseskallet ble ikke gjentatt. [Verifisert lageroversikt](https://vercel.com/ringside/~/stores/blob/store_feUEeykOyyvZVMca/manage-blobs).
+
+![Faktisk privat lager i riktig team, FRA1 og tomt](evidence/HR_LEDGER_PRIVATE_STORE_20261010.jpg)
+
+**Fortsatt konkrete blokkeringer:** Lagerbegrenset token er ikke hentet eller sikkert provisionert på en varig operatorvert. Privat origin/tokenbinding er ikke verifisert. Et lesende connector-oppslag på eksakt lager-ID og riktig team returnerte **404 not_found: Blob not found**; dette opphever ikke synlig UI-opprettelse og er ikke ny opprettelsesautorisasjon. Ingen tokenvisning/kopiering, credential-uttrekk eller blind retry. Varig vert/anker/nøkkel, bootstrap, faktisk anonym avvisning mot et eksisterende privat objekt, skriv/readback/konflikt/recovery, ekstern scheduler/varsling og full isolert database/Auth/Storage-byte-restore gjenstår. Et tomt lager beviser ikke disse prøvene. Supabase kostnadsoppslag og native artifact-download er fortsatt blokkert som dokumentert nedenfor.
+
+Fersk lesende etterkontroll: remote main/Production `c3d873e0`, READY `dpl_BHpnnv8bnyo8wU3oLUE9NEsgixd5`; demo `11f1b45d`, READY `dpl_3uegJLq87zotYZFvFQQpfLM5vEsw`. PR #217 open/draft, head før denne dokumentasjonspubliseringen `4de4fe7fa3d031f4d72a8c2de7ba962851919566`. Production content=false/quarantined=true/ingen ack-tabell; Sandbox content=false/quarantined=true/ledger disabled/1 medarbeider/0 receipts/acks/artifacts/filer/jobber. Ingen endring av aktive data eller HR-port. Eldre status nedenfor beholdes som historikk.
+
+## Historisk kontroll ca. 21:17–21:33 Europe/Oslo
 
 - Remote main/Production `c3d873e0`, READY `dpl_BHpnnv8bnyo8wU3oLUE9NEsgixd5`. Remote demo `11f1b45d`, fast alias READY `dpl_3uegJLq87zotYZFvFQQpfLM5vEsw`. PR #217 open/draft, head før denne dokumentasjonsoppdateringen `f057da4d720f7e9416c0694ac80b3338571f90c7`; funksjonskode fortsatt `ecd700ac`. Ingen merge/deploy til Production/demo.
 - Vercel team `team_Yvcnc6KRYfVB1W2LQjCffZGT`, slug `ringside`, har én bekreftet OWNER, Kenneth. Eierrollen beviser ikke endrede connectorrettigheter. Det tidligere 403-avviste opprettelseskallet ble **ikke gjentatt**. Ingen nytt lager/token; lageroversikten ble ikke tilgjengelig.
@@ -15,7 +27,7 @@ Miljømål **SANDBOX/DEMO** for operator-/restorekontroll. Ingen endring av Prod
 
 | Ressurs | Konkret klargjøring |
 | --- | --- |
-| Privat Blob | Separat `expo-hr-ledger-sandbox-ppvircenkjizeiqdxphj`, region fra1, access private, team ringside. Ingen prosjekttilkobling eller automatisk env-kopiering. Opprett først gjennom faktisk autorisert tilgang; ikke gjenta avvist connectorhandling uten endret tilgang. |
+| Privat Blob | Faktisk opprettet `expo-hr-ledger-sandbox`, ID `store_feUEeykOyyvZVMca`, region fra1, access private, team ringside. Tomt; ingen prosjekttilkobling eller automatisk env-kopiering. Ikke opprett en kopi gjennom den avviste connectoren. |
 | Store-token | Begrenset til det separate lageret; server-only hemmelighet på operatorverten. Store-ID og privat origin skal verifiseres mot tokenbindingen uten å logge token. Ingen token i chat/git/VITE/browser. |
 | Operatorvert | Varig separat vert og beskyttet volum utenfor database-/Storage-/apprestore. Scratch og Vercel Functions midlertidige filer er ikke et varig anker. Eier, tilgang og backup-/restoregrenser må registreres. |
 | Anker/nøkkel | Absolutt operatorroot 0700; anchor.json 0600 og uavhengig 32-byte HMAC-nøkkel. Gjenoppretting av applikasjonen må aldri gjenopprette nøkkel/anker til eldre tidspunkt. |
@@ -61,6 +73,6 @@ node scripts/hr-ledger-run-once.mjs
 6. Kjør eksisterende reconcile-SQL fra ferskt eksternt verifisert manifest med fail-stop ved SQL-feil. Kjør faktisk Storage-API-worker, kontroller bytefravær og nye ack-krav. Prøv fil-only restore der medarbeiderraden allerede mangler, tapt respons/retry og stale anker.
 7. Bruk ekte isolerte Auth-økter for medarbeider/leder/leser/uvedkommende, firmabytte og revokering. Kontroller beskyttet filtilgang, bevart annen medarbeider/fil og fysisk purge. Registrer faktisk resultat per trinn. Plattformlokal PASS er fortsatt ikke en Supabase-cloud-backup/PITR-PASS.
 
-Ingen HR-åpning eller PR #217-merge før faktisk uavhengig drift og hele nødvendige restorekjeden er dokumentert. Første hindring er nå konkret tilgang til Vercel-lager og en vert med tillatte leverandørnedlastinger, eller godkjent isolert skyressurs med faktisk kostnadsavklaring. Appkode skal ikke endres for å kompensere for tilgangs-/nettverksfeil.
+Ingen HR-åpning eller PR #217-merge før faktisk uavhengig drift og hele nødvendige restorekjeden er dokumentert. Første hindring er nå sikker serverprovisionering av lagerbegrenset token til en varig operatorvert, samt en vert med tillatte leverandørnedlastinger eller godkjent isolert skyressurs med faktisk kostnadsavklaring. Selve tomme private Vercel-lageret er opprettet. Appkode skal ikke endres for å kompensere for tilgangs-/nettverksfeil.
 
 Kontrollerte primærkilder: [Supabase native runtime](https://supabase.com/docs/guides/local-development/docker-and-native-runtimes), [flere lokale prosjekter](https://supabase.com/docs/guides/local-development/running-multiple-local-projects), [database/Auth/Storage restore](https://supabase.com/docs/guides/platform/migrating-within-supabase/backup-restore). Kildeinnhold og CLI-help ble kontrollert i denne sesjonen; eksperimentelle flagg skal kontrolleres på nytt ved senere installasjon.
