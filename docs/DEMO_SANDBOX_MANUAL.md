@@ -10,8 +10,9 @@ Bruk denne regelen hver gang:
 
 1. Åpne `/demo-control.html`.
 2. Trykk **Tilbakestill demo** hvis forrige visning kan ha endret DEMO-saker/prosjekter.
-3. Trykk **Kjør preflight**.
-4. Start opplæringen først når kontrollene er grønne.
+3. For HR/KS/HMS: velg firma **Expo Proffsenter** og bruk **Tilbakestill kurseksempler** hvis dere har øvd.
+4. Trykk **Kjør preflight**.
+5. Start opplæringen først når kontrollene er grønne.
 
 Husk forskjellen:
 
@@ -20,6 +21,14 @@ Husk forskjellen:
 - **Oppdater Golden Demo** erstatter selve fasiten med dagens DEMO Sales/prosjektdata. Dette er ikke en vanlig kursknapp og skal bare brukes etter bevisst QA av ny starttilstand.
 - **Refresh/appbytte nullstiller ikke sandboxen.** Endringer blir liggende til de resettes eller endres igjen.
 - **HOVED** er normal sammenhengende demo. **RESERVE** er ferdige checkpoints/sluttresultat når du vil hoppe frem.
+
+## HR og KS/HMS – nytt kursoppsett
+
+Åpne `/demo-course.html` for konkrete kurssteg med de faktiske fanenavnene. Demoen har tre generelle HR-samtalemaler og fiktive KS/HMS-eksempler for SJA, vernerunde, risiko, sjekkliste og RUH. Bruk firma **Expo Proffsenter** og HOVED-prosjektet. Det ferske SJA-eksempelet ligger under `/demo-documents/DEMO-kurs-SJA.pdf`.
+
+**Tilbakestill kurseksempler** gjenoppretter maler og utkast. Signert/fullført historikk beholdes og får nye arbeidsutkast. En lukket kurs-RUH får en ny åpen kopi; åpen RUH beholder oppfølgingshistorikk. **Tilbakestill demo** gjelder fortsatt Sales/Prosjekt separat. Ingen e-post sendes fra Sandbox. Personlige HR-svar og sykefraværssaker er sperret; bruk generelle spørsmål og veiledning i kurset.
+
+[Innhold, avgrensning, reset og utviklerbevis](DEMO_KSHMS_HR_COURSE_20261010.md).
 
 ## 1. Før du starter
 
@@ -380,3 +389,4 @@ Etter synk må sandbox-preflight bekrefte at builden bruker Sandbox-Supabase og 
 ## 23. Kjøreregel
 
 Demo-funksjonalitet skal aldri være begrunnelse for å svekke eller endre eksisterende Production-recovery, autosave, firmascoping, navigasjon eller historikk uten at samme feil først er bevist i ren `main` og behandlet som en separat produktendring.
+

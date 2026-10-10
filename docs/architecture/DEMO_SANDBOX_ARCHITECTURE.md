@@ -153,3 +153,11 @@ Endringer som oppdages under sandbox-demo skal vurderes som vanlige produktendri
 7. synk deretter Production-kode main → demo dersom endringen også skal finnes i demo
 
 En feil som bare skyldes sandbox-seed, grants, Auth, Storage eller Golden skal **ikke** repareres ved å endre ordinær Sales/recovery/autosave i Production-koden.
+
+
+
+## HR/KS/HMS-kurs, 10. oktober 2026
+
+Main-baseline `c3d873e0e5bd2677f0205143de6edc1fbd95ae4c` er verifisert i Production før main → demo-synk. Produktets nye HR/KS/HMS-tabeller/RPC-er bruker samme kanoniske migrasjoner og produktets ferske tilgangskontroller, også i Sandbox. De historiske forenklingene ovenfor gjelder eldre Sandbox-bootstrap og er ikke en erstatning for HR-/KS/HMS-rettigheter.
+
+Demo-only RPC-er `demo_kshms_hr_course_preflight` og `demo_kshms_hr_course_reset` krever aktiv godkjent dedikert demobruker og riktig aktivt demofirma. Registry `people-course-v1` i eksisterende snapshot-tabell er adskilt fra Golden Sales/Prosjekt. Reset går gjennom produkt-RPC-er og bevarer uforanderlig signert/fullført historikk; ingen trigger eller guard deaktiveres. HR-porten for personlige data forblir lukket, og Sandbox mail-worker avslått. Se [kursoppsett](../DEMO_KSHMS_HR_COURSE_20261010.md).

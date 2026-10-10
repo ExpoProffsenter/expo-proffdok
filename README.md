@@ -1,10 +1,135 @@
+## HR: sykefraværsoppsett – 10. oktober 2026
+
+
+**Release 10. oktober 2026:** PR #216 er merged og Production READY på main `c3d873e0`. Denne demo-branchen synkroniserer godkjent main og legger til [fiktive HR-/KS/HMS-kurseksempler](docs/DEMO_KSHMS_HR_COURSE_20261010.md) med egen veiledning og reset. Personlige HR-svar/sykefraværssaker forblir sperret. Tidligere «ingen main/demo/Production»-notater nedenfor er historiske fasebevis.
+HR-menyen har nå egne snarveier til Samtalemaler og Sykefravær. Generell sykefraværsmal bruker eksisterende private malregister/RPC, versjoner, CAS og firmaadmin-gater. Additiv validator-migration tillater `sickleave`; ingen personlig innholdsport eller privilegier åpnes. Kildebasert veiledning og et datoregneksempel uten lagring/påminnelser. BEGGE, foreløpig bare feature/Preview/Sandbox. [Scope og bevis](docs/kshms/HR_SICK_LEAVE_SETUP_20261010.md).
+
+## HR: tydelig hjelp der du arbeider – 10. oktober 2026
+
+Synlig **Start her** viser oppsett → medarbeider/leder → samtalemal for firmaadmin, og relevant lesehjelp for leder/personlig bruker. Malbyggeren forklarer velg → tilpass → forhåndsvis/lagre, navn/tema/spørsmål, forberedelse/felles møte, kladd/Forkast og utgave/arkiv. En lagret mal starter ingen samtale og sender ingenting til ansatte. Bare presentasjon/hjelp; handlinger, roller, SQL og privat innholdsport beholdes.
+
+Berørte faktiske HR-/mal-/Hjelp-React-prøver og full Sandbox critical/build PASS. Eksisterende tester beholdt uten nye speiltester. Miljømål BEGGE, bare feature/Preview; tidligere TEST OK beholdes. [Scope og bevis](docs/kshms/HR_HELP_20261010.md). CI/innlogget visuell Preview kontrolleres etter publisering.
+
+## HR: versjonerte samtalemaler – 10. oktober 2026
+
+Firmaadmin får **HR → Samtalemaler**: årlig medarbeidersamtale, prøvetid og oppfølging, egne tema/spørsmål, medarbeiderforberedelse/felles møte, forhåndsvisning og tydelig **Lagre mal**. Immutable malutgaver, historikk, gjenbruk som ny kladd, arkivering/gjenåpning, paginering og avvisning av samtidige revisjoner. Kladd beholdes i midlertidig aktør-/firmabundet minne over fokus/remount, først etter fersk admin-tilgang. Ingen ansattes svar, personreferater, signaturer eller fraværsinnhold åpnes.
+
+**91 nye faktiske rollback Sandbox-assertions PASS**, samme 91 i fysisk PostgreSQL/PGlite med syntetisk plattformadapter. Faktisk ny mal-React og berørt HR/register/KS-meny/Hjelp-React PASS; permanent critical og full Sandbox build PASS. Fem live funksjonskropper matcher lokale MD5-er, tomt search_path og riktige ACL. Sandbox-migrasjon **20261010005833**, CLI **20261010004928**. Eksisterende 1 HR-firma/1 medarbeider beholdt; 0 aktive utviklermaler/utgaver/artifacts/filer/receipts. Privat innhold fortsatt content=false/restore quarantined. Første live prøving ble korrekt avvist av eksisterende profile-guard under endring av egen syntetisk aktør; fixtureoppsettet ble korrigert til eksisterende systemaktør, uten endret guard eller produktkode. Hele første prøve rullet tilbake.
+
+Miljømål **BEGGE**, bare feature/Preview/Sandbox, draft PR #216. Tidligere O3/B/C/PDF/ZIP og Kenneth TEST OK beholdes; ingen Production/main/demo/e-post. Uavhengig varig manifest/automatisk eksport og DB-ack/full isolert Supabase database- og Storage-restore gjenstår før privat HR-kontakt og individuelle samtaler/fravær åpnes. [Scope, kontrakt og nye bevis](docs/kshms/HR_TEMPLATES_20261010.md).
+
+**Faktisk mal-Preview-kontroll:** kode `70f12015b616e8e9b4c6e0efc06d82ab4e6df1ef`, Core Safety **38011669656 / jobb 114092844672 SUCCESS**, `dpl_6QTL7UM5H55ek25V7mrsqkEdyPys` READY med eksakt SHA/ref/prosjekt/fast alias. Direkte branch-env `EXPO_BACKEND_TARGET=sandbox`. Innlogget desktop: HR/admin, tre forslag, generisk kladd/redigering, tom forhåndsvisning, dirty bytte/Behold kladden, Oppdater maler med bevart kladd og Forkast PASS. Ingen testmal lagret. Ingen horisontal overflow; Lagre mal 44px. Lagret historikk/arkiv/CAS har SQL og React-bevis; mobil og separate samtidige browserøkter gjenstår. [Originalbilde og presise bevis](docs/kshms/HR_TEMPLATES_20261010.md#faktisk-innlogget-preview-og-kodepublisering).
+
+**Faktisk O3 Preview-kontroll:** kode d4b5270e916dc06a764fbd35af36a8db6f238470, Core Safety 38009716896/jobb114086648809 SUCCESS, dpl_GKkbK6sdQd5si4yqYpeEd44NomJx READY eksakt SHA/Sandbox. Innlogget Skynett: ny kartvelger/bevart enkeltfirmakart/fokusretur/PDF to sider/fire demonavn PASS. Nytt felles kart er riktig skjult for demo uten to kvalifiserte firmaer; flerfirmahandlinger har SQL/React-bevis, ikke nytt browserbevis. Ingen aktiv rettighets-/kartendring. [Originalbilde og presise bevis](docs/kshms/ORGANIZATION_GROUPS_20261010.md#faktisk-innlogget-preview-og-kodepublisering).
+
+## Organisasjonskart O3 – felles kart for flere firmaer, 10. oktober 2026
+
+Miljømål **BEGGE**, leveres bare feature/Preview og Sandbox. Et separat felles organisasjonskart kan knytte **2–10 firmaer** sammen. Én brukerkonto kan ha forskjellig stilling og plassering i hver firmagren. Opprettelse lager Styret og sideordnede firmagrener; toppnavn og struktur kan redigeres med **Lagre kart**, og hele kartet kan slettes med uttrykkelig bekreftelse. Firmautvalget er fast i denne første versjonen. Eksisterende firmakart, brukere og HR beholdes.
+
+**Hele felleskartet krever fersk KS/HMS i alle firmaene; redigering krever firmaadmin i alle.** En kartleder gir ingen ekstra redigering eller HR-innsyn. En bruker med ett firma ser sitt vanlige firmakart. Firmamedlemskap, avsluttet arbeidsforhold, tilbakekalling, firmagrense og revisjon kontrolleres på serveren ved hver handling. Ingen automatisk konto-/medlemskapsopprettelse eller modulaktivering.
+
+**64 nye faktiske rollback Sandbox-assertions PASS**; fysisk PostgreSQL/PGlite **63 + 33 + 64 PASS**, faktiske nye/berørte React-flyter, permanent critical og full Sandbox build PASS. Felles PDF: **49 syntetiske personer / 51 firmaplasseringer / fire A3-sider**, alle tekst- og visuelt kontrollert. Samme person har tre ulike stillinger i tre firmaer. Dette er utviklerbevis, ikke nytt innlogget flerfirma-browserbevis. Sandbox-migrasjon **20261010002710** (CLI 20261010001921), ni live funksjonskropper/ACL/tomt search_path verifisert mot kilden. Ingen aktive felleskart opprettet, rettigheter utvidet eller HR-innhold åpnet.
+
+[Scope, knapper, sikkerhetsprøver og presise bevis](docs/kshms/ORGANIZATION_GROUPS_20261010.md). Kenneths tidligere TEST OK/B/C/PDF/ZIP/SJA-bevis beholdes uten gjentatt omtest. Ingen main/demo/Production eller e-post. Privat HR-kontakt/samtale/fravær fortsatt stengt; uavhengig driftsmanifest/ack og isolert Supabase-restore gjenstår før åpning. Mobil, separate samtidige browserøkter og belastningstest på isolert database gjenstår som egne bevis.
+
+**Feature/Preview 10. oktober – kartredigering:** eksplisitt Lagre kart, synlig redigering/flytting/sletting, frie toppnavn og tydelig tre. 33 nye + 63 berørte Sandbox assertions, faktisk React og fire syntetiske PDF-sider kontrollert. Flerfirma-Ringside-kart er avklart eget neste scope før deres Production. [Scope og bevis](docs/kshms/ORGANIZATION_EDITOR_20261010.md). Ingen Production/main/demo/e-post.
+
+**Feature/Preview 10. oktober:** Organisasjonskart under KS/HMS, også uten HR-avtale: avdelinger, stillinger, lærlinger og egen PDF. 63 Sandbox assertions, berørt H1/H3 75/61, faktisk React og visuelt kontrollert syntetisk PDF PASS. Privat HR fortsatt stengt; ingen mail/merge/Production. [Scope og bevis](docs/kshms/ORGANIZATION_SCOPE_20261010.md). Skynett: faktisk kartvisning/dialog/fokusretur og PDF-nedlasting kontrollert på kode 0b638fc27d0b987cb61a54fc439727b4d03b5325; Core Safety 38005156679 SUCCESS, eksakt READY Preview/Sandbox. Originalbilder og kontrollgrenser er lagret i scope-dokumentet.
+
+**Feature/Preview 10. oktober:** Kenneth TEST OK for KS/HMS-/HR-layout er mottatt. H5a gir privat slettemanifest-adapter med 38 lokale feil-/samtidighetsscenarioer og faktisk versjonslåst SDK på syntetisk HTTP; full Sandbox build PASS. Eksternt lager ikke opprettet: Vercel 403 forbidden. Privat HR fortsatt stengt; driftsbinding/DB-ack og isolert Supabase-restore gjenstår. [Scope og konkret blokkering](docs/kshms/HR_CLOUD_LEDGER_20261010.md). Ingen main/demo/Production eller e-post.
+
+**Feature/Preview 9. oktober:** Min side og HR-tekstforslag er utviklerverifisert; privat adresse/pårørende fortsatt bak lukket HR-port. [Avgrenset scope og bevis](docs/kshms/PERSONAL_PAGE_20261009.md). Ingen Production/main/demo-release.
+
+## H3 og samlet Hjelp – 9. oktober 2026
+
+Miljømål **BEGGE**, bare feature/Preview og Sandbox, draft PR #216. Hjelp har nå ett **KS/HMS**-punkt med 11 kapitler og ett **HR**-punkt; tidligere hjelpeinnhold beholdes. HR-slettefundamentet omfatter registrert innhold, versjoner, kladder, søkeuttrekk, eksporter og private filer. Tilgang sperres straks; **Slettekvitteringer** viser pågående filsletting og ferdig sletting korrekt.
+
+**61 nye faktiske Sandbox-assertions PASS**, faktisk privat Storage-opplasting/hashkontroll/API-sletting av én syntetisk 62-bytes fil PASS, faktisk HR/Hjelp-React og full critical build PASS. Alle 16 live SQL-funksjoner og Edge v3 er lest tilbake mot kilden. Sensitivt HR-innhold og filnedlasting er fortsatt stengt, både i databasen og i Edge-koden. Uavhengig slettemanifest og full isolert backup-restore er neste sikkerhetsbevis før åpning. Sandbox har nå én firmaoppføring og én medarbeider; eksisterende oppføring beholdes, ingen sensitive data eller testrester finnes. Ingen e-post, merge eller Production. Kenneths **TEST OK for H2-menyen** er mottatt; eldre B/C/PDF/ZIP-bevis beholdes. [Scope, kontrakt og QA](docs/kshms/HR_PURGE_FILES_20261009.md).
+
+## HR-register og smartere KS/HMS-meny – 9. oktober 2026
+
+Miljømål **BEGGE**, levering bare feature/Preview/Sandbox, draft PR #216. H2 gir eget HR-hovedvalg med firmaadmins medarbeider-/leder-/leserregister og medarbeiderens Mine oppfølginger. HR har fortsatt ingen samtale-/fraværsinnhold, filer eller eksport; full innholdspurge/restore må leveres før sensitivt innhold åpnes. Ingen firma aktivert av leveransen. KS/HMS-menyen er gruppert i Daglig arbeid, Mine rutiner og Forvaltning; eksisterende faner, snarveier og utkastbevaring beholdes.
+
+**16 nye faktiske Sandbox-assertions PASS**, faktisk HR/meny-React og berørt håndbok/kildeforslag-React PASS, permanent hook/tilgang/revisjon/late-response-prøve og full critical build PASS. Fem HR-FK-indekser forbedrer slettestien. Skynettleseren fungerer igjen; faktisk ny layout etter publisering og eksakt SHA/CI/Preview føres i PR #216. Tidligere Kenneth TEST OK og B/C/PDF/ZIP-bevis beholdes uten ny obligatorisk omtest. Ingen mail/merge/Production. Neste: privat fil-/full slettekontrakt. [Scope og QA](docs/kshms/HR_UI_MENU_20261009.md).
+
+---
+
+## HR H1 – første sikkerhetsfundament, 9. oktober 2026
+
+Firmabundet medarbeider-/lederregister, eksplisitte ekstra lesere, fersk tilgang og fysisk sletting av register/tildelinger er levert i feature/Sandbox. **75 faktiske rollback-assertions PASS**, permanent klientprøve og full critical build PASS; alle ti live funksjoner byteidentiske. HR er deaktivert for alle firmaer, private filer stengt og tomme. Dette er backend uten ny HR-meny, referat, fravær eller eksport. Full sletting av fremtidig HR-innhold/filbytes og restore er ikke levert. Neste: HR-registerets brukerflate, deretter privat fil-/innholdspurge før sensitivt innhold. Tidligere TEST OK beholdes; ingen ny Kenneth-prøve eller browser-PASS. Miljømål **BEGGE**, bare feature/Preview; KS-e-post fortsatt disabled. [Scope, QA og grenser](docs/kshms/HR_FOUNDATION_20261009.md). Publisert SHA/CI/Preview føres i draft PR #216.
+
+---
+
+## KS/HMS – B/C-sluttkontroll og drift
+
+Samlet B/C-utviklerreview er gjennomført, med påminnelser for alle seks typer. [Sluttstatus og lesende driftsmålinger](docs/kshms/BC_CLOSEOUT_20261009.md) viser hva som er levert og hvilke konkrete bevis som gjenstår før release/større utrulling. Tidligere TEST OK beholdes. Neste utviklingspunkt er det avklarte HR-fundamentet. E-post skal aktiveres og mottak verifiseres ved senere godkjent Production-release.
+
+---
+
+## Oppgavepåminnelser – feature/Sandbox
+
+KS/HMS følger opp dine ufullførte vernerunder, risikovurderinger, SJA og lesebekreftelser etter minst sju dager. Snarveier åpner eksisterende arbeidsflater; fullføring og egen bekreftelse/signering lagres fortsatt av deg. Styrt ukentlig e-postoppfølging er klar i privat kø; Sandbox-transport er fortsatt deaktivert. [Scope og QA](docs/kshms/TASK_REMINDERS_20261009.md). Tidligere TEST OK beholdes.
+
+---
+
+## Håndbokrevisjonspåminnelse – feature/Sandbox
+
+Utpekt ansvarlig ser nær/passert revisjonsdato og åpner eksisterende skjema med **Åpne håndbokrevisjon**. Egen vurdering og **Signer revisjon** lagrer gjennomgangen. Styrte ukentlige påminnelser er klare i privat kø; e-posttransport er fortsatt deaktivert. [Scope og utviklerbevis](docs/kshms/REVIEW_REMINDERS_20261009.md). Tidligere TEST OK beholdes.
+
+---
+
+## KS/HMS – samlet B/C-status
+
+Den [samlede planoversikten](docs/kshms/OVERSIKT.md) viser faktisk leveranse og gjenstående funksjoner/bevis. Ti dokumentgrupper er kontrollert sammen i PDF og ZIP; underskjema, avvik/RUH-påminnelser og kildeoppdatering er levert i feature/Sandbox. Tidligere TEST OK beholdes. [Gjennomgang og testbevis](docs/kshms/BC_REVIEW_20261009.md). Ingen Production-release eller generell e-postaktivering.
+
+---
+
+## Kildeoppdateringsforslag – feature/Sandbox
+
+Oppfølging og revisjon viser nyere sentrale tekstforslag og vurderte utkast som fortsatt må godkjennes. Sammenlign firmaets tekst med forslaget; velg bare feltene dere trenger. Ett felt markerer ikke hele forslaget som vurdert. **Jeg har vurdert hele tekstforslaget**, **Lagre utkast** og firmagodkjenning er separate handlinger. Gamle godkjente utgaver og ansattbekreftelser beholdes. Nettkilder kontrolleres manuelt. [Scope og QA](docs/kshms/SOURCE_UPDATES_20261009.md).
+
+---
+
+## Fristpåminnelser for avvik/RUH – feature/Sandbox
+
+Oppgavelisten skiller passert frist, frist i dag og frist innen tre dager i norsk tid. Åpne avvik/RUH får styrte ukespåminnelser via eksisterende privat leveringskø når e-post senere aktiveres. Kø og leveringskontroll følger ansvarlig, frist og gjeldende tilgang; gamle perioder og reaktiverte køer spilles ikke av. Transport forblir deaktivert i Sandbox. [Scope og QA](docs/kshms/DEVIATION_REMINDERS_20261009.md).
+
+---
+
+# KS/HMS – versjonerte underskjema i Sandbox
+
+Sjekklistesentral kan feste en eksakt publisert underskjemaversjon etter et punkt. Publisering lagrer rotpunkter, ferdig utføringsliste og komplett dependency-ID/hash/snapshot. Syklus, fremmed/arkivert mal og mer enn 100 ferdige punkter stoppes server-side. Eksisterende prosjekt- og selvstendige kontroller bruker samme utførelsesmodell; gamle publiserte utgaver omskrives ikke. Tom mal-PDF viser child-versjonene. [Scope/testbevis](docs/kshms/CHECKLIST_SUBFORMS_20261009.md), [kort prøve](docs/kshms/USER_TEST.md). Bare feature/Sandbox; Production er ikke godkjent.
+
+---
+
+# KS/HMS – egne rutine- og sjekkliste-PDF-er
+
+Godkjente rutineutgaver og publiserte sjekklistemaler kan lastes ned. Lagrede prosjektkontroller har egen PDF med svar, bilder og eventuell fullføring. Utkast/maler og historikk merkes; tilgang og lagret innhold leses på nytt. Ingen automatisk deling eller egen ansattbekreftelse. [Omfang/testbevis](docs/kshms/DOCUMENT_PDF_20261008.md), [kort prøve](docs/kshms/USER_TEST.md). Samme feature/Sandbox; Production er ikke godkjent.
+
+---
+
+# KS/HMS – kompakt prosjektoversikt
+
+Avvik/SJA/RUH starter med lukkede SJA-, RUH-, kontroll- og risikogrupper med antall/status. Sjekkpunkt- og prosjektavvik vises som lukkede rader med åpne saker først. Eksisterende redigering og oppfølging består. [Omfang og tester](docs/kshms/PROJECT_OVERVIEW_20261008.md), [kort brukerprøve](docs/kshms/USER_TEST.md). Samme feature/Sandbox før Production-godkjenning.
+
+---
+
+# KS/HMS – kontroll-/risiko-PDF i Sandbox
+
+Lagrede vernerunder/kontroller og 5×5-risikovurderinger har **Last ned PDF**, med firmaprofil, lagrede bilder, farget matrise, tiltak og lagret fullføringsinformasjon. Utkast merkes under arbeid; ulagret tekst må lagres først. Prosjektets **Velg KS/HMS til rapport** inkluderer nå uttrykkelig valgte kontroller og risiko sammen med SJA/RUH. Ingen dokumenter tas automatisk med eller legges i portal. Ny lesende Sandbox-RPC; Production er uendret. [Omfang og testbevis](docs/kshms/EXECUTION_PDF_20261008.md), [gjeldende planstatus](docs/kshms/OVERSIKT.md).
+---
+
 # Expo ProffDok
+
+KS/HMS har prosjektkoblede SJA-er og RUH-er. I Rapport/PDF/utskrift velger brukere med modultilgang hvilke dokumenter som skal følge rapporten. SJA viser lagret rutinehenvisning, deltakere og prosjektleders signatur; RUH viser tiltak, ansvarlig, status og eventuell dokumentert lukking. Utkast og åpne saker merkes tydelig. Rapportvalget tømmes helt ved prosjekt-, firma-, bruker- eller rollebytte. Samme feature/Sandbox Preview, før produksjonsgodkjenning. [Rapportomfang og testbevis](docs/kshms/PROJECT_REPORT_20261008.md). Tidligere TEST OK for SJA-utkast/RUH-oppfølging består.
+
+Preview 07.10.2026: Retur fra generell ordre bevarer Reacts gjeldende menynavn, slik at Startsiden fortsatt bruker den kompakte Meny-knappen. Den faktiske returfeilen er gjenskapt og har fast runtime-regresjonsvern samt en React-prøve med appens menyadaptere. Se [menyprøven](docs/kshms/MENU_RETURN_20261007.md). KS/HMS er fortsatt kun feature/Preview.
 
 Expo ProffDok er en produksjonsapp for håndverks- og prosjektbedrifter. Løsningen støtter prosjektstyring, dokumentasjon, sjekklister, bilder, avvik, kunde-/UE-portal, garanti, befaring, Badskisse, ordinære tilbud, Generelt tilbud, digital aksept, kontrakt og rapport/PDF.
 
 Produksjon: https://expo-proffdok.app
 
-**Produksjonsbaseline:** `main` inkluderer godkjent PR #207: antall, nye plukklister og separate plukkliste-/prisutskrifter i Prissøk på PC. Kameraskanning er fortsatt på mobil. Tidligere rettelser for tilbudsrecovery (PR #206), små strekkoder (PR #203) og serverlagrede plukklister (PR #205) er bevart. Se [gjeldende release-status](CURRENT_RELEASE_STATUS.md) for Production-verifisering og kontrollert `main → demo`-synk/preflight.
+**Produksjonsbaseline:** kontrollert 2026-10-05: `main` er `155f6c4`, Vercel Production er READY på samme SHA. Godkjent PR #214 gir firmakunder og mva.-visning, og tidligere Cordel-/prosjekt-/tilbudsfunksjoner er bevart. KS/HMS trinn A er fortsatt feature/Preview og ikke produksjonsgodkjent. Se [gjeldende release-status](CURRENT_RELEASE_STATUS.md).
 
 ## Cordel-eksport
 
@@ -195,3 +320,58 @@ Begge tilbudstyper starter inkl. mva. **Vis priser eks. mva.** velges per tilbud
 I Generelt tilbud velges prisvisningen i den aktive grupperte tilbudsbyggeren under «Prisvisning til kunden». Forhåndsvisning og editorens grunnsum følger valget.
 
 Kunderegisteret har nedtrekksmeny og søk på navn/e-post i egen ramme. Frivillig kundelagring ligger nederst i kunde-/tilbudsskjemaet, før Opprett tilbud, med avkrysning av som standard og egen Lagre kunde-knapp. Eks. mva. brukes vanligvis for bedriftskunder.
+# KS/HMS – håndbokfundament i Preview/Sandbox
+
+KS/HMS videreutvikler eksisterende ProffDok. [Plan og faktisk gap-analyse](docs/kshms/PLAN.md), [full kapittel-/rutinedekning](docs/kshms/COVERAGE.md) og [QA-status](docs/kshms/QA.md) beskriver hele minimumsomfanget. Trinn A gir firmaktivering, firmabundet ansattilgang, flerfaglig oppstart, 73 selvstendige tilpasningsutkast, blank/kopi, kapitler, kladd/godkjent versjon, ansattbekreftelse og signert årlig revisjon. Det er ikke et komplett KS/HMS-system; utførelse/SJA/risiko, samlet firmavvik, varsler/PDF og begrenset personal/stoffkartotek gjenstår i registrerte trinn.
+
+I håndboken kan flere standardrutiner hukes av samtidig. Kortene viser «Valgt», og «Disse rutinene legges inn» viser hele utvalget før **Legg inn** lagrer hver rutine som en firmakladd. «Utkast – må godkjennes» og **Rediger her** viser hvor den enkelte rutinen tilpasses. Godkjente utgaver viser «Godkjent vN». Firmaets rutiner er hovedlisten; forslag ligger under **Legg til flere rutiner**. «Anbefalte» og «Alle forslag» deler samme utvalg. Allerede aktive rutiner beholdes ved ny innlegging; eksisterende tilpasninger overskrives ikke. Firmaadmin eller KS/HMS-ansvarlig godkjenner publisering separat. De 73 forslagene dekker temaene i begge håndbøkene, også personal/HR og VVS. Kapittelvalg og søk bevarer avkrysninger. Firmaets utgaver og bekreftelser endres ikke automatisk.
+
+Systemadmin aktiverer firmaets modul, firmaadmin styrer ansattes tilgang; firmaadmin og KS/HMS-ansvarlig kan publisere, og utpekt KS/HMS-ansvarlig signerer revisjon. Firmaadmin kan velge seg selv som ansvarlig uten et ekstra grant; signering krever fortsatt eksplisitt utpeking i oppstart. De tre oppstartsfeltene får redigerbare fagtilpassede tekstforslag; lagret eller egen tekst beholdes. Fagvalget heter VVS. Samme arbeidsfirma ved faneretur beholder visning og ulagrede felt, i tråd med eksisterende Sales-kontroll for arbeidsprofil. Alle API-operasjoner kontrollerer aktivt firma og rolle. Ingen pris-/betalingsintegrasjon innføres. Production er ikke endret, og ny TEST OK kreves før merge. Preview-branchen må ha eksplisitt `EXPO_BACKEND_TARGET=sandbox`.
+
+Alle KS/HMS-faner forklarer hva brukeren gjør der og hva som kommer etterpå. Utkast, versjon og revisjon forklares med korte setninger; rutinefeltene har konkrete skrivehjelper. Grensesnittet bruker **Lagre utkast**, **Les forslag** og **Alle forslag**. [Brukertestlisten](docs/kshms/USER_TEST.md) gir handling og forventet resultat. Den faste branch-Preview-adressen oppdateres ved nye deployer; samme nettleser/adresse skal normalt beholde aktiv innlogging. Tekstendringen innfører ingen ny innlogging eller endring i auth-/firmascope.
+
+**Åpne godkjenning** viser og fokuserer riktig rutine; dette publiserer ikke. Firmaadmin eller KS/HMS-ansvarlig leser teksten og fyller ut **Hva er vurdert eller endret?** før **Godkjenn og publiser** blir aktiv. Etter bekreftet lagring åpnes neste rutine som trenger godkjenning, med tomt vurderingsfelt. Antall faktisk godkjente rutiner vises. Etter siste godkjenning forsvinner godkjenningspanelet, og **Håndboken er klar** med **Neste: Ansattes gjennomgang** vises både øverst og nederst. Siden fokuserer kortet nederst; knappen åpner oppfølgingen. Allerede fullførte håndbøker får også knappen nederst. En grå publiseringsknapp betyr at vurderingen mangler, ikke at rutinen er godkjent. Gjentatt åpning av samme rutine beholder vurderingsteksten. Manglende vurdering og serverfeil vises ved godkjenningen; en feil går ikke videre.
+
+Ansatte åpner KS/HMS direkte i **Les og bekreft**, med antall rutiner som gjenstår og egen versjons-/bekreftelsesstatus. Etter lagret egen bekreftelse åpnes neste tildelte utgave som krever bekreftelse, med avkrysningen avslått. Hver utgave må leses og bekreftes separat. Etter den siste vises **Du er ferdig med gjennomgangen** nederst. En feil beholder den åpne teksten og avkrysningen. Tidligere identitet, tidspunkt og eksakt utgave beholdes. De får ikke verktøy for oppstart, tilganger, utkast, godkjenning eller oppfølging av andre ansatte.
+
+**Oppfølging og revisjon** viser én sammenfoldet rad per medarbeider med bekreftet-antall og hva som gjenstår. Fire medarbeidere med ti rutiner hver gir fire rader og 40 bekreftelser. Åpne en rad for eksakte utgaver og tidspunkter; **Søk etter medarbeider** avgrenser listen. **Gi godkjente rutiner til nye medarbeidere** viser bare utgaver noen faktisk mangler. Revisjonsdatoen er synlig, mens **Gjennomfør revisjon** åpner det eksisterende skjemaet. Neste steg etter publisering er ansattes gjennomgang; en ny revisjon er ikke nødvendig bare for å gå videre.
+
+**Min personalhåndbok** er et søkbart oppslagsverk over egne tildelte, publiserte rutiner for både medarbeidere og firmaadmin. Bekreftede utgaver blir liggende; tidligere tildelte utgaver har egen historikk. Hver utgave viser **Godkjent for firmaet av** og **Din egen gjennomgang**, med navn, tidspunkt og eksakt versjon. Godkjenneren er den faktiske firmaadminen eller KS/HMS-ansvarlige, ikke automatisk systemadmin. Egen gjennomgang er påkrevd etter firmaets arbeidsregel, også for firmaadmin og KS/HMS-ansvarlig. Ved publisering kan vedkommende huke av **Jeg bekrefter også egen gjennomgang av denne utgaven.** for å utføre den samtidig, eller bekrefte påkrevde utgaver etterpå i **Les og bekreft** før arbeidet starter. Da lagres firmagodkjenning og egen bekreftelse samlet; samme utgave trenger ingen andre egen bekreftelse. Valget er avslått for neste rutine, og andre ansatte bekrefter selv. Gamle godkjenninger omskrives ikke til bekreftelser. Felles HR-rutiner inngår i håndboken; individuelle medarbeidersamtaler og kompetansedokumenter følger senere separat personaltilgang.
+
+Oppstarten begynner med **1. Velg KS/HMS-ansvarlig**. Firmaadmin velger blant alle aktive interne brukere i gjeldende firma. **Lagre og gå videre** gir ved behov den valgte medarbeideren eksisterende responsible-grant før oppstart lagres; deretter åpnes håndboken. De to kallene er ikke atomiske: ved feil etter grant vises at tilgang er gitt, mens oppstart må lagres på nytt. Verneombud og firmaets KS/HMS-ansvarlig er ulike roller; lenket offentlig veiledning og kontrolldato inngår i oppstarten. Ny redigering av en godkjent rutine vises som **Endringer må godkjennes · vN gjelder fortsatt**; lagring åpner godkjenningen av den lagrede teksten. Ulagret tekst stopper publisering/neste steg. Eksisterende fanereturløsning og versjons-/signeringsgrunnlag beholdes.
+
+Oppdatering 2026-10-06: Tilgangsvalg for andre ansatte bruker eksisterende målrettet managed-access-hendelse og bevarer ulagret oppstart, rutineeditor og vurdering; egen/uavgrenset tilgangsendring og reelt firmabytte kontrolleres fortsatt. Oppstart og nye rutiner kan begynne med redigerbare tekstforslag. Skrivehjelp ligger utenfor rutineinnhold og signerte versjoner. Fire standardforslag har fått renset tekst, source_revision 2 og manuell vurdering; tidligere firmatekst overskrives ikke. Søk finnes i firmaets rutiner, ProffDoks forslag og ansattens tildelte publiserte utgaver. [Innholdsstatus for alle 125 kildereferanser](docs/kshms/CONTENT_STATUS.md) viser kobling fra alle innholdstemaer til de 73 egne forslagene og nødvendig firmatilpasning. [Planen](docs/kshms/PLAN.md) presiserer tilsynsuttrekk, samlet avvik med aktive ansvarlige og app-/e-postoppgaver, og senere avgrenset supportmodus. [Kapasitetsplanen](docs/kshms/CAPACITY.md) beskriver Supabase for 100 firmaer uten å hevde utført belastningstest.
+
+## KS/HMS A2 – rutiner og Avvikssentral
+
+A2 oppdatert 6. oktober 2026: Biblioteket har 73 egne forslag med sporbar dekning av alle 121 innholdstemaer + fire metadatarader fra kvalitetshåndboken (148 sider) og personalhåndboken (127 sider). Avvikssentral gir ansvarlig/frister, åpne/lukkede saker, tiltak/egen kontroll, private vedlegg og hendelseshistorikk. Bare valgt ansvarlig får fast varsel i interne faner og lukker selv. Prosjekt-/sjekkpunktavvik som kobles inn har serverbeskyttet status; ukoblet legacy-flyt består. 73 Sandbox-kontroller PASS med rollback; ingen ekte e-post eller produksjonsendring. Full-app-brukerprøve og e-postmottak gjenstår. Sandbox mangler RESEND_API_KEY og CHAT_FROM_EMAIL; utsending er derfor deaktivert. Gammel TEST OK for 6dfb74d dekker håndbokversjonen, ikke A2.
+
+Melder velger en kvalifisert ansvarlig og frist. Ansvarlig dokumenterer årsak, utførte tiltak og egen kontroll og trykker **Kontroller og lukk avvik**. Først bekreftet command + fersk detail installerer lukket snapshot og oppdaterer oppgaven. En feil beholder felt/avkrysning og lokal kladd. **Lukkede** viser kontroll og historikk. [Brukersteg](docs/kshms/USER_TEST.md), [QA](docs/kshms/QA.md) og [e-postoppsett](docs/kshms/EMAIL_SETUP.md) beskriver det som er prøvd og det som gjenstår. SJA/risiko/utførelsesmaler, PDF/tilsynsuttrekk, individuell HR og stoffkartotek følger fortsatt planen.
+
+
+## Prosjektsjekklister – popup og gjennomføringer i Preview
+
+Generelle ordrer starter uten våtromsstandarder og tillater egne punkter uavhengig av KS/HMS. Publiserte firmamaler hentes ved aktiv firmamodul. Interne prosjektlister åpner i popup: Lagre viderefører pågående kontroll; Sjekkliste fullført lagrer et uforanderlig snapshot med identitet/tid; neste kontroll bevarer historikken. Serverens revisjonsvern og lokale kladder beskytter samtidige endringer. Dette er prøvd i Sandbox, ikke produksjonsgodkjent. Se docs/kshms/CONTINUITY.md, QA.md og USER_TEST.md.
+
+Oppfølging 8. oktober 2026: Prosjektets Avvik/SJA/RUH har Opprett SJA og Registrer RUH bare ved personlig KS/HMS-tilgang. SJA/RUH har faktisk firmaprosjektvalg og fortsatt manuell ekstern referanse. Godkjente firmarutiner kan leses og velges med fast R-nummer og eksakt versjon. Forslag dekker mur, flis, tømrerarbeid og VVS. RUH bruker eksisterende ansvar, appvarsel, egen kontroll og historikk. Testbevis: [SJA/RUH-prosjektoppfølging](docs/kshms/SJA_RUH_PROJECT_20261008.md). Samme Sandbox Preview; Production er ikke oppdatert.
+
+Rettelse 8. oktober 2026: Desktopmenyen og Åpne Avvik gjenkjenner Avvik/SJA/RUH. KS/HMS har Avvik/RUH → Registrer RUH. Frister vises norsk, og avvikshistorikk bruker Oslo-tid. Testbevis: [meny/RUH/dato](docs/kshms/NAV_RUH_DATE_20261008.md). Ingen SQL-endringer i denne rettelsen.
+
+
+KS/HMS-utførelse 8. oktober 2026: **Vernerunder/kontroller** bruker egne punkter eller en fast publisert firmamal, med valgfri prosjektkobling, utkast, egen fullføring og bevart historikk. Hvert avvik får én ansvarlig/frist-sak i Avvik/RUH; kontrollens fullføring lukker ingen saker. **Risikovurdering** har en jobbspesifikk 5×5-matrise, risiko før/etter tiltak, firmaets dokumenterte grenser, medvirkning, ansvar/frist og uttrykkelig beslutning. Forventet effekt kan ikke godtas som kontrollert effekt. Se [scope og testbevis](docs/kshms/EXECUTIONS_20261008.md) og [kort brukerprøve](docs/kshms/USER_TEST.md). Rapportens TEST OK 8. oktober kl. 14:48 består.
+
+Prosjektoppfølging 8. oktober: **Avvik/SJA/RUH** har også **Opprett vernerunde** og **Opprett risikovurdering 5×5**, med oversikter for bare dette prosjektet. Begge krever personlig KS/HMS-tilgang. Valgt ansvarlig får et fast appvarsel frem til bekreftet lagret fullføring; lesing fjerner det ikke, og omfordeling flytter oppgaven. Godkjente firmarutiner velges med R-nummer og eksakt utgave. En stor avkrysning for egen gjennomgang står ved **Kontroll fullført** / **Vurdering fullført**. Se [tilleggets testbevis](docs/kshms/PROJECT_EXECUTIONS_20261008.md). Publiseringsstatus står i CURRENT_RELEASE_STATUS.md.
+
+Oppfølging etter TEST OK 8. oktober kl. 21:04: gjennomføringspopupen lukkes etter bekreftet lagret fullføring. Ansvarse-post omfatter Avvik/RUH, vernerunder, risiko, SJA, pliktig rutinegjennomgang og forfalt revisjon; køen dedupliserer tildelinger og stopper inaktivt ansvar. Sandbox-mailer v4 er publisert, men kontrollert HTTP 503 viser manglende Resend-nøkkel og avsender. Faktisk utsending er derfor fortsatt av. Se [varsler og popup](docs/kshms/NOTIFICATIONS_20261008.md).
+
+KS/HMS har nå et valgt **Dokumentuttrekk** for firmaadmin/KS/HMS-ansvarlig: beskriv omfang, velg lagrede dokumenter og last ned én PDF med RUH-historikk/private bilder og manifest. Ingen dokumenter velges automatisk. Samlet PDF er Kenneths TEST OK 9. oktober kl. 01:29; ZIP-nedlasting med to bilder og manifest er TEST OK kl. 01:55. PDF og ZIP har separate knapper; ZIP-knappen vises etter Vis vedleggslisten. En separat **Vis vedleggslisten → Last ned vedlegg (ZIP)** samler valgte kvalitet-/HMS-/RUH-originaler, vernerunde-bilder og prosjektkontrollvedlegg etter egen bekreftelse. Manifest gir dokument/revisjon, filstørrelse og SHA-256. Maks 100 vedlegg/50 MB, 10 MB per fil; ZIP er ikke kryptert. [PDF-scope](docs/kshms/INSPECTION_EXTRACT_20261009.md) og [ZIP-scope/QA](docs/kshms/ATTACHMENT_ARCHIVE_20261009.md). Feature/Sandbox først; tidligere TEST OK beholdes, e-post forblir deaktivert.
+
+Vedleggsdekning 9. oktober: Dokumentuttrekk har også **Kvalitets- og HMS-avvik med historikk og bilder**. Eksplisitt valgt lagret sak gir full historikk/private bilder i samlet PDF og private originalfiler i ZIP. Eldre ukoblede prosjektavvik kan nå hentes for valgt prosjekt i en egen gruppe. Lagret innhold og bilder følger PDF, originalfiler følger bekreftet ZIP. Ingen versjonsnummer eller signatur konstrueres; SHA-256 binder valget til innholdet. Se [ny avgrenset leveranse](docs/kshms/LEGACY_ATTACHMENTS_20261009.md). Egen RUH-PDF beholder sitt avgrensede scope. [Ny leveranse/QA](docs/kshms/DEVIATION_ATTACHMENTS_20261009.md). Tidligere TEST OK beholdes; ny avgrenset brukerprøve og øvrig B/C-scope består.
+
+SJA kan lagre inntil tre komprimerte arbeidsstedsbilder i den samme versjonerte innholdssnapshoten som tekst og deltakere. Bildene følger egen SJA-PDF og valgt SJA i samlet PDF, og blir egne JPG-filer i bekreftet vedleggs-ZIP med manifestkontroll. Gamle SJA-er er bakoverkompatible uten bilder. Ingen ny Storage-bucket, tabell, RLS eller policy; eksisterende private SJA-RPC og signert-uforanderlighet består. [Avgrensning og QA](docs/kshms/SJA_ATTACHMENTS_20261009.md).
+
+Risikovurderinger kan lagre inntil tre komprimerte bilder per fare i den samme private, versjonerte gjennomføringssnapshoten som risikoteksten. Bildene følger egen PDF, prosjektrapport og samlet dokumentuttrekk, og blir egne originalfiler i bekreftet vedleggs-ZIP med fare og SHA-256 i manifestet. Eldre vurderinger virker uten bilder, og «Ny vurdering med samme farer» arver ikke bilder. Ingen ny Storage-bucket, tabell, RLS eller policy er innført. [Avgrensning og QA](docs/kshms/RISK_ATTACHMENTS_20261009.md).
+
+### KS/HMS og HR – firmaavtale og brukerkort (feature, 9. oktober 2026)
+
+Systemadmin aktiverer KS/HMS/HR i **Firmaer, brukere og tilganger → firma → Firmaets KS/HMS- og HR-avtale**. Firmaadmin bruker **Firmaadmin → Brukere og tilganger → brukerkort → KS/HMS og HR**; systemadmin bruker samme brukerkort i sin firmaoversikt. HR-modultilgang er ikke en personlig leserett. Firmaadmin har administrasjon i eget aktiverte firma; systemadmin/KS-rolle gir ikke automatisk individuelt HR-innsyn. Hjelp har ikon på alle punkter og følger arbeidsflyt og fersk faktisk tilgang. Bare feature/Preview/Sandbox; sensitivt HR-innhold fortsatt stengt. [Scope og QA](docs/kshms/HELP_ACCESS_20261009.md).

@@ -2,6 +2,7 @@ import {
   createReportGenerationStamp,
   resolveReportWarrantyReceipt,
 } from "./reportFinalizationState.mjs";
+import { emptyKshmsReport, kshmsReportSelectionKey, appendKshmsPdfReport } from './kshmsProjectReport.mjs';
 
 // FASE 24A RAPPORTFRAGMENTERING
 // Eksisterende rapport-/PDF-kode flyttet mekanisk ut av src/main.jsx.
@@ -9,6 +10,8 @@ import {
 
 export function createReportTools(deps = {}) {
   const {
+    prepareKshmsReport,
+    isKshmsReportCurrent,
     DEFAULT_REPORT_HERO_IMAGE_URL,
     access,
     activeChecklistTemplate,
@@ -47,9 +50,9 @@ export function createReportTools(deps = {}) {
     warrantyReadiness
   } = deps;
 
-    const writePrintableReport = (printWindow, title = "Expo ProffDok rapport") => {
+    const writePrintableReport = (printWindow, kshmsReport = emptyKshmsReport(), title = "Expo ProffDok rapport") => {
       const reportNode = document.querySelector(".report");
-      if (!reportNode) {
+      if (!reportNode || (isKshmsReportCurrent && !isKshmsReportCurrent(kshmsReport)) || (kshmsReport.checkSelection && reportNode.dataset.kshmsReportSelection !== kshmsReportSelectionKey(kshmsReport))) {
         if (printWindow && !printWindow.closed) printWindow.close();
         alert("Rapporten er ikke klar ennå. Prøv igjen om et øyeblikk.");
         return;
@@ -188,23 +191,27 @@ export function createReportTools(deps = {}) {
       printWindow.document.close();
     };
 
-    const printVisibleReport = () => {
+    const printVisibleReport = async () => {
+      const kshmsReport = prepareKshmsReport ? await prepareKshmsReport('print') : emptyKshmsReport();
+      if (!kshmsReport) return;
       const printWindow = window.open("", "_blank");
       if (!printWindow) {
         alert("Nettleseren blokkerte utskriftsvinduet. Tillat popup-vinduer og prøv igjen.");
         return;
       }
-      setTimeout(() => writePrintableReport(printWindow), 150);
+      setTimeout(() => writePrintableReport(printWindow, kshmsReport), 150);
     };
 
-    const printReport = () => {
+    const printReport = async () => {
+      const kshmsReport = prepareKshmsReport ? await prepareKshmsReport('print') : emptyKshmsReport();
+      if (!kshmsReport) return;
       const printWindow = window.open("", "_blank");
       if (!printWindow) {
         alert("Nettleseren blokkerte utskriftsvinduet. Tillat popup-vinduer og prøv igjen.");
         return;
       }
       setTab("rapport");
-      setTimeout(() => writePrintableReport(printWindow), 650);
+      setTimeout(() => writePrintableReport(printWindow, kshmsReport), 650);
     };
 
     const setPdfProgress = (message = "Genererer rapport…", subMessage = "") => {
@@ -245,6 +252,8 @@ export function createReportTools(deps = {}) {
 
     const downloadClickablePdfReport = async () => {
       try {
+        const kshmsReport = prepareKshmsReport ? await prepareKshmsReport('pdf') : emptyKshmsReport();
+        if (!kshmsReport) return;
         const archiveConfirmed = window.confirm("Viktig før nedlasting:\n\nNår prosjektet er ferdig skal komplett PDF-rapport lagres lokalt hos utførende firma, og gjerne også oversendes kunde. Expo ProffDok benytter skylagring, men kan ikke garantere ubegrenset lagringstid eller tilgjengelighet av prosjektdata i hele garanti- eller byggets levetid.\n\nVil du fortsette og generere komplett PDF-rapport nå?");
         if (!archiveConfirmed) return;
         setPdfProgress("Genererer rapport…", "Starter PDF-motor og klargjør rapporten.");
@@ -1932,7 +1941,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         const hasPhotoContent = (photos || []).some((photo) => hasValue(photo?.url));
         const hasInstallContent = (inst || []).length > 0;
         const hasChecklistContent = Object.values(checklist || {}).some((items) => Object.keys(items || {}).length > 0);
-        const hasDeviationContent = Object.values(checklist || {}).some((items) => Object.values(items || {}).some((value) => value?.status === "Avvik" || value?.status === "Lukket avvik")) || (Array.isArray(project?.projectDeviations) && project.projectDeviations.some((entry) => !!entry?.includeInReport));
+        const hasDeviationContent = Object.values(checklist || {}).some((items) => Object.values(items || {}).some((value) => value?.status === "Avvik" || value?.status === "Lukket avvik")) || (Array.isArray(project?.projectDeviations) && project.projectDeviations.some((entry) => !!entry?.includeInReport && !kshmsReport.ruhs.some(ruh => ruh.id === entry.ks_deviation_id)));
         const hasOfferContent = !!tilbud?.enabled && (hasValue(tilbud?.tillegg) || hasValue(tilbud?.fradrag) || hasValue(tilbud?.kommentar) || (tilbud?.files || []).length > 0);
         const hasAttachmentContent = countReportAttachments() > 0;
         const hasAccessContent = (access || []).some((entry) => hasValue(entry?.name) || hasValue(entry?.email));
@@ -1945,6 +1954,8 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         addTocSection("Fag, deler og utstyr", hasInstallContent);
         addTocSection("Sjekkliste / utførte kontroller", hasChecklistContent);
         addTocSection("Avviksliste", hasDeviationContent);
+        addTocSection("SJA – sikker jobbanalyse", kshmsReport.sjas.length > 0);
+        addTocSection("RUH – rapport om uønsket hendelse", kshmsReport.ruhs.length > 0);
         addTocSection("Tilbud / kontrakt", hasOfferContent);
         addTocSection("Overtagelse", projectHasOvertagelse(overtagelse));
         addTocSection("Vedlegg", hasAttachmentContent);
@@ -2085,7 +2096,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             if (value?.status === "Avvik" || value?.status === "Lukket avvik") deviations.push({ category, item, status: value?.status || "", comment: value?.comment || "", closeComment: value?.closeComment || "", closedBy: value?.closedBy || "", closedAt: value?.closedAt || "" });
           });
         });
-        const projectDeviationsForReport = (Array.isArray(project?.projectDeviations) ? project.projectDeviations : []).filter((entry) => !!entry?.includeInReport);
+        const projectDeviationsForReport = (Array.isArray(project?.projectDeviations) ? project.projectDeviations : []).filter((entry) => !!entry?.includeInReport && !kshmsReport.ruhs.some(ruh => ruh.id === entry.ks_deviation_id));
         if (deviations.length || projectDeviationsForReport.length) {
           addSectionTitle("Avviksliste");
           const openDeviationTotal = deviations.filter((d) => d.status === "Avvik").length + projectDeviationsForReport.filter((d) => (d?.status || "Åpent") !== "Lukket").length;
@@ -2124,6 +2135,9 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             addDivider();
           });
         }
+
+        const kshmsReportEndY = appendKshmsPdfReport(doc, kshmsReport, { margin });
+        if (kshmsReportEndY !== null) { y = kshmsReportEndY; addDivider(); }
 
         if (tilbud?.enabled && (hasValue(tilbud.tillegg) || hasValue(tilbud.fradrag) || hasValue(tilbud.kommentar) || (tilbud.files || []).length > 0)) {
           const descriptionComparable = normalizeReportComparable(project.projectDescription || "");
@@ -2397,6 +2411,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         }
 
         const generatedFileName = `${filenameSafe(project.projectName || project.address || project.customer || "FDV-rapport")}.pdf`;
+        if (isKshmsReportCurrent && !isKshmsReportCurrent(kshmsReport)) throw new Error('Prosjekt eller tilgang er endret. PDF-en ble ikke lastet ned. Åpne rapporten på nytt.');
         doc.save(generatedFileName);
         setPdfProgress("✅ Rapport klar", "PDF-en er generert og lastes ned.");
         clearPdfProgress(1400);

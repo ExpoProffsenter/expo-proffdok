@@ -8,7 +8,7 @@ const DEMO_EMAIL = "demo@expo-proffdok.no";
 const PRODUCTION_REPO = "ExpoProffsenter/expo-proffdok";
 // Oppdateres til main-committen som faktisk er merget inn i demo ved hver synk.
 // Golden reset påvirker data, ikke denne kodebaselinen.
-const SANDBOX_PRODUCTION_BASELINE = "155f6c4ac01f126c1db0c65da385cfd9305587d5";
+const SANDBOX_PRODUCTION_BASELINE = "c3d873e0e5bd2677f0205143de6edc1fbd95ae4c";
 const DEMO_SKETCH_REQUEST_IDS = ["DEMO-01-FORESPORSEL", "DEMO-02-BEFARING"];
 const DEMO_BATHROOM_SKETCH = {
   version: 15,
@@ -48,6 +48,12 @@ const primaryButton = { ...button, background: "#18c4cf", borderColor: "#18c4cf"
 const dangerButton = { ...button, background: "#fff4f2", borderColor: "#f2b8ae", color: "#9b2c22" };
 
 const LABELS = {
+  demo_media: "Demo-bilder og Badskisse",
+  contract_backend: "Kontraktgrunnlag og tilgang",
+  sales_projection_backend: "Sales-listegrunnlag",
+  course_hr_templates: "HR-kursmaler",
+  course_safety_examples: "KS/HMS-kurseksempler",
+  course_privacy_transport: "Trygg kursavgrensning",
   production_baseline: "Produksjonskode synkron",
   local_sketch: "Redigerbar Badskisse på denne enheten",
   sales: "Fem demo-stopp",
@@ -164,17 +170,19 @@ async function checkProductionBaseline() {
 }
 
 async function runFullPreflight() {
-  const [serverResult, baselineCheck] = await Promise.all([
+  const [serverResult, baselineCheck, courseResult] = await Promise.all([
     callRpc("demo_sandbox_preflight"),
     checkProductionBaseline(),
+    callRpc("demo_kshms_hr_course_preflight"),
   ]);
   const serverChecks = Array.isArray(serverResult?.checks) ? serverResult.checks : [];
   const localSketchCheck = checkLocalDemoAssets();
-  const checks = [baselineCheck, localSketchCheck, ...serverChecks.filter((item) => item?.key !== "production_baseline" && item?.key !== "local_sketch")];
+  const courseChecks = Array.isArray(courseResult?.checks) ? courseResult.checks : [];
+  const checks = [baselineCheck, localSketchCheck, ...courseChecks, ...serverChecks.filter((item) => item?.key !== "production_baseline" && item?.key !== "local_sketch")];
   return {
     ...serverResult,
     checks,
-    ok: Boolean(serverResult?.ok) && checks.every((item) => item?.ok),
+    ok: Boolean(serverResult?.ok) && Boolean(courseResult?.ok) && courseChecks.length === 3 && checks.every((item) => item?.ok),
     productionBaseline: {
       sandboxMainSha: SANDBOX_PRODUCTION_BASELINE,
       repository: PRODUCTION_REPO,
@@ -237,6 +245,20 @@ function App() {
     } finally { setBusy(""); }
   };
 
+  const resetCourse = async () => {
+    if (!window.confirm("Gjenopprette de fiktive HR-kursmalene og KS/HMS-utkastene? Signert og ferdigstilt historikk beholdes. Bare dedikert Demo Sandbox påvirkes.")) return;
+    setBusy("course"); setMessage("");
+    try {
+      await callRpc("demo_kshms_hr_course_reset");
+      const checked = await runFullPreflight();
+      setPreflight(checked);
+      setMessage(checked.ok
+        ? "✅ Kurseksemplene er klare. Tidligere signert og ferdigstilt historikk er beholdt."
+        : "⚠️ Kurseksemplene er gjenopprettet. Avklar røde preflight-punkter før kurset.");
+    } catch (error) { setMessage(`Kursreset stoppet: ${error.message}`); }
+    finally { setBusy(""); }
+  };
+
   const captureGolden = async () => {
     if (!window.confirm("Dette erstatter Golden Demo-fasiten for DEMO Sales/prosjekter. Bruk bare når dagens sandbox er kontrollert og bevisst skal bli ny starttilstand. Fortsette?")) return;
     setBusy("capture"); setMessage("");
@@ -293,6 +315,7 @@ function App() {
         <p style={{ marginTop: -4 }}><b>Enkel regel:</b> Tilbakestill demo → kjør preflight → start opplæringen når alt er grønt.</p>
         <ol style={{ lineHeight: 1.7, marginBottom: 14 }}>
           <li>Trykk <b>Tilbakestill demo</b> hvis forrige visning har endret DEMO-saker eller prosjekter.</li>
+          <li>Trykk <b>Tilbakestill kurseksempler</b> hvis dere har øvd i HR eller KS/HMS.</li>
           <li>Trykk <b>Kjør preflight</b>. Alle kontroller skal være grønne.</li>
           <li>Åpne sandbox-appen og start i <b>HOVED</b>.</li>
         </ol>
@@ -319,6 +342,17 @@ function App() {
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
           <a href="/" style={{ ...primaryButton, display: "inline-block", textDecoration: "none" }}>Åpne sandbox-app</a>
           <a href="/demo-showcase.html" style={{ ...button, display: "inline-block", textDecoration: "none" }}>Nød-demo uten backend</a>
+        </div>
+      </div>
+
+      <div style={card}>
+        <h2 style={{ marginTop: 0 }}>Kurs i HR og KS/HMS</h2>
+        <p>Velg firmaet <b>Expo Proffsenter</b>. Kurset har tre generelle samtalemaler, SJA, vernerunde, risikovurdering, sjekkliste og RUH. Alle eksemplene er fiktive og merket DEMO. Personlige HR-svar og sykefraværssaker er fortsatt sperret; bruk malene til å vise spørsmål og planlegging.</p>
+        <p>Kursreset gjenoppretter maler og utkast. Hvis en SJA er signert eller en kontroll er ferdigstilt, opprettes et nytt utkast. Historikken beholdes. En lukket kurs-RUH får en ny åpen kurskopi.</p>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <a href="/demo-course.html" style={{ ...primaryButton, display: "inline-block", textDecoration: "none" }}>Åpne kursveiledning</a>
+          <a href="/demo-documents/DEMO-kurs-SJA.pdf" style={{ ...button, display: "inline-block", textDecoration: "none" }}>Fiktivt SJA-eksempel (PDF)</a>
+          <button style={button} disabled={!!busy} onClick={resetCourse}>{busy === "course" ? "Gjenoppretter kurs…" : "Tilbakestill kurseksempler"}</button>
         </div>
       </div>
 
@@ -351,3 +385,4 @@ function App() {
 }
 
 createRoot(document.getElementById("root")).render(<App />);
+

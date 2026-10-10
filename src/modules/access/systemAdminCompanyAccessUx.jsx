@@ -34,6 +34,8 @@ const STATUS_FILTERS = [
   { key: "all", label: "Alle" },
 ];
 
+import PeopleModuleAccess from './PeopleModuleAccess.jsx';
+
 function compactText(value = "") {
   return String(value || "").replace(/\s+/g, " ").trim();
 }
@@ -379,6 +381,7 @@ function CompanyNavigator({
 
               {open ? (
                 <div className="company-access-body">
+                  <PeopleModuleAccess companyId={row.companyId} />
                   {row.companyId && !row.internalCompany ? (
                     <>
                       <CompanyStoreOffersAccess row={row} />

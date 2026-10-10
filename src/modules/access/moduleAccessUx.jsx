@@ -18,6 +18,8 @@ import {
   setManagedModuleAccess,
 } from "./moduleAccessClient.js";
 
+import PeopleModuleAccess from './PeopleModuleAccess.jsx';
+
 const PANEL_MOUNT_ID = "expo-module-access-manager";
 const ADMIN_ACCESS_HELP_DATASET = "moduleAccessAdminHelp";
 
@@ -115,7 +117,7 @@ function UserAccessRow({
           </small>
         </div>
         {targetIsSystemAdmin ? (
-          <small style={{ fontWeight: 800, color: "#087f88" }}>Har alltid alle moduler</small>
+          <small style={{ fontWeight: 800, color: "#087f88" }}>Har ordinære hovedmoduler</small>
         ) : null}
       </div>
 
@@ -164,6 +166,8 @@ function UserAccessRow({
           );
         })}
       </div>
+
+      <PeopleModuleAccess companyId={user.company_scope_id} userId={user.user_id} />
 
       {firmAdminOwnRowLocked ? (
         <p style={{ margin: "9px 0 0", fontSize: 12, color: "#64748b" }}>

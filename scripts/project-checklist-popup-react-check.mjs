@@ -1,0 +1,65 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {build} from 'vite';
+import react from '@vitejs/plugin-react';
+import os from 'node:os';
+import path from 'node:path';
+const {JSDOM}=await import(process.env.KSHMS_JSDOM_PATH||'jsdom');
+const dir=process.cwd(),temporary=fs.mkdtempSync(path.join(os.tmpdir(),'project-checklist-popup-')),entry=path.join(temporary,'entry.jsx');
+fs.writeFileSync(entry,`import React,{act} from '${dir}/node_modules/react/index.js';import {createRoot} from '${dir}/node_modules/react-dom/client.js';import Workspace from '${dir}/src/modules/checklist/ProjectChecklistWorkspace.jsx';import {createChecklistEditor} from '${dir}/src/modules/checklist/checklistTools.js';import {installDesktopSideMenu} from '${dir}/src/modules/app/desktopSideMenu.js';import {installProjectWorkspaceHeaderGuide} from '${dir}/src/modules/app/projectWorkspaceHeaderGuide.js';
+const Editor=createChecklistEditor({Section:p=>React.createElement('section',{},p.children),Grid:p=>React.createElement('div',{},p.children),Textarea:p=>React.createElement('label',{},p.label,React.createElement('textarea',{value:p.value||'',onChange:e=>p.onChange(e.target.value)})),getActiveChecklistTemplate:()=>[],getWarrantyYears:()=>5,canUseCustomChecklistForWarranty:()=>false,customChecklistTradeOptions:['Rørlegger'],customChecklistCategoryFromTrade:trade=>'Egne sjekkpunkter – '+trade,customChecklistTradeFromCategory:category=>category.split(' – ').at(-1),customChecklistTradeIconUrl:()=>'/icon.svg',hasValue:value=>String(value||'').trim().length>0,customChecklistCategoryPrefix:'Egne sjekkpunkter',checklistPointAnchor:(group,item)=>group+item,isWarrantyCheckpoint:()=>false,isSoproWarrantyPoint:()=>false,isSoproWarrantyCategory:()=>false,checklistAttachmentTradeOptions:[],checklistAttachmentDocumentTypeOptions:[],publicProjectFileUrl:()=>''});
+const root=createRoot(document.getElementById('app'));globalThis.__act=act;globalThis.__render=props=>root.render(React.createElement(Workspace,{...props,Editor}));globalThis.__unmount=()=>root.render(null);globalThis.__menus=()=>{installDesktopSideMenu();installProjectWorkspaceHeaderGuide();};`);
+const bundled=await build({root:dir,configFile:false,logLevel:'silent',define:{'process.env.NODE_ENV':'"development"'},build:{write:false,minify:false,lib:{entry,formats:['iife'],name:'PopupProof',fileName:'popup-proof'}},plugins:[react(),{name:'scoped-rpc',enforce:'pre',resolveId(id){if(/kshmsAccess\.js$/.test(id))return '\0rpc';},load(id){if(id==='\0rpc')return 'export const kshmsRpc=(...args)=>globalThis.__rpc(...args);';}}]});
+const dom=new JSDOM('<div id="app"></div>',{url:'https://example.invalid',runScripts:'outside-only',pretendToBeVisual:true});
+const {window}=dom;window.IS_REACT_ACT_ENVIRONMENT=true;window.confirm=()=>true;window.alert=()=>{};window.HTMLElement.prototype.scrollIntoView=function(){};
+window.MessageChannel=class{constructor(){this.port1={onmessage:null};this.port2={postMessage:()=>setImmediate(()=>this.port1.onmessage?.())};}};
+const company='11111111-1111-4111-8111-111111111111',projectId='99999999-9999-4999-8999-999999999999',category='Egne sjekkpunkter – Rørlegger';
+let userId='employee',answers={},runs=[],loseResponse=true,readonly=false,lateResolve;
+let groups=[{category,items:['Kontroller rør']}];const commands=[],receipts=new Map();
+const state=()=>structuredClone({context:{company_id:company,project_id:projectId,user_id:userId},runs,checklist:answers});
+window.__rpc=async(name,args)=>{
+ if(name==='project_checklist_state'){if(lateResolve)return await new Promise(resolve=>{lateResolve.resolve=()=>resolve(state());});return state();}
+ if(name!=='project_checklist_command')throw Error(name);
+ commands.push(structuredClone(args));if(receipts.has(args.p_request_id))return structuredClone(receipts.get(args.p_request_id));
+ const p=args.p_payload,previous=runs.find(run=>run.id===p.id);
+ if(previous&&(previous.revision!==p.revision||previous.status==='completed'))throw Object.assign(Error('En annen person har lagret kontrollen.'),{code:'40001'});
+ const now=new Date().toISOString(),identity={id:userId,name:userId,email:userId+'@example.invalid'};
+ const row={...p,category:p.definition.category,company_id:company,project_id:projectId,revision:(previous?.revision||0)+1,status:args.p_action==='complete'?'completed':'draft',updated_at:now,updated_identity:identity,...(args.p_action==='complete'?{completed_at:now,completed_identity:identity}:{})};
+ runs=[row,...runs.filter(run=>run.id!==row.id)];answers={...answers,[category]:row.answers};
+ const result={context:state().context,run:row,answers:row.answers};receipts.set(args.p_request_id,structuredClone(result));
+ if(loseResponse){loseResponse=false;throw Error('Response lost after commit');}return structuredClone(result);
+};
+window.eval((Array.isArray(bundled)?bundled[0]:bundled).output.find(item=>item.type==='chunk').code);
+const act=window.__act,button=text=>[...window.document.querySelectorAll('button')].find(node=>node.textContent.trim()===text),dialog=()=>window.document.querySelector('[role="dialog"]');
+const click=async node=>{assert(node,'Missing button');await act(async()=>node.click());};
+const write=async(field,value)=>{assert(field,'Missing input');await act(async()=>{const proto=field.tagName==='TEXTAREA'?window.HTMLTextAreaElement.prototype:window.HTMLInputElement.prototype;Object.getOwnPropertyDescriptor(proto,'value').set.call(field,value);field.dispatchEvent(new window.Event('input',{bubbles:true}));});};
+let adopted={};const props=()=>({companyId:company,userId,projectId,checklist:adopted,activeChecklistTemplate:groups,readOnly:readonly,customChecklistAllowed:true,files:[],setFiles:()=>{},addFiles:()=>{},addChecklistPhoto:()=>{},customChecklistGroups:[],onAddCustomChecklistPoint:(trade,text)=>{groups=[{category,items:[...groups[0].items,text]}];window.__render(props());},uploadImages:async()=>[{id:'photo',url:'https://example.invalid/photo.png',name:'bevis'}],onSaved:(group,value)=>{adopted={...adopted,[group]:value};window.__render(props());}});
+await act(async()=>window.__render(props()));assert.equal(dialog(),null);assert.equal(window.document.querySelector('.project-checklist-heading').getAttribute('aria-expanded'),'false');assert(!button('Ok'),'Initial overview expanded fields');
+await click(button('Åpne sjekkliste'));assert(dialog());assert(button('Lagre'));await click(button('Sjekkliste fullført'));assert(window.document.querySelector('[role="alert"]').textContent.includes('Vurder punktet'));
+await click(button('Ok'));await write(dialog().querySelector('textarea'),'Sikret før fanebytte');assert.deepEqual(adopted,{},'Popup draft triggered old autosave');
+await click(button('Lukk'));await act(async()=>window.__unmount());await act(async()=>window.__render(props()));await click(button('Åpne sjekkliste'));assert.equal(dialog().querySelector('textarea').value,'Sikret før fanebytte');
+await click(button('Lagre'));assert(dialog(),'Failed response discarded draft');assert(button('Prøv lagring igjen'));assert(button('Ok').matches(':disabled'),'Unknown save allowed a changed retry');
+await click(button('Prøv lagring igjen'));assert.equal(commands[0].p_request_id,commands[1].p_request_id);assert.deepEqual(commands[0].p_payload,commands[1].p_payload);assert.equal(adopted[category]['Kontroller rør'].comment,'Sikret før fanebytte');
+await click(button('Lukk'));userId='colleague';await act(async()=>window.__render(props()));await click(button('Åpne sjekkliste'));assert.equal(dialog().querySelector('textarea').value,'Sikret før fanebytte','Colleague did not see saved draft');
+await write(dialog().querySelector('textarea'),'Kollega fortsatte');await click(button('Lagre'));assert.equal(runs[0].updated_identity.id,'colleague');
+// A new own point joins an unfinished control, without requiring warranty/KS.
+await click(button('Lukk'));const custom=window.document.querySelector('details');custom.open=true;await write(custom.querySelector('input'),'Kontroller merking');await click(button('+ Legg til eget sjekkpunkt'));await click(button('Åpne sjekkliste'));assert.equal(dialog().querySelectorAll('.checklistPoint').length,2);
+const statuses=[...dialog().querySelectorAll('.checklistStatusButtons button')].filter(node=>node.textContent==='Ok');await click(statuses[1]);await click(button('Sjekkliste fullført'));assert.equal(runs[0].status,'completed');assert.equal(runs[0].definition.items.length,2);assert(button('Ok').matches(':disabled'));const frozen=structuredClone(runs[0]);
+await click(button('Start ny kontroll'));assert.equal(dialog().querySelector('textarea').value,'','New control reused ordinary answers');
+await click(button('Avvik'));await write(dialog().querySelector('textarea'),'Ny kontroll fant avvik');const upload=dialog().querySelector('input[type="file"]');await act(async()=>{Object.defineProperty(upload,'files',{configurable:true,value:[new window.File(['x'],'proof.png',{type:'image/png'})]});upload.dispatchEvent(new window.Event('change',{bubbles:true}));});
+const secondOk=[...dialog().querySelectorAll('.checklistStatusButtons button')].filter(node=>node.textContent==='Ok')[1];await click(secondOk);await click(button('Sjekkliste fullført'));assert.equal(runs.length,2);assert.deepEqual(structuredClone(runs[1]),frozen,'Second completion changed old control');assert.equal(runs[0].answers['Kontroller rør'].status,'Avvik');assert.equal(runs[0].answers['Kontroller rør'].photos[0].name,'bevis');
+await click(button('Start ny kontroll'));assert.equal(dialog().querySelector('textarea').value,'Ny kontroll fant avvik','Next control lost open deviation');await click(button('Lagre'));
+await write(dialog().querySelector('textarea'),'Min lokale kladd');runs[0]={...runs[0],revision:runs[0].revision+1,answers:{...runs[0].answers,'Kontroller rør':{...runs[0].answers['Kontroller rør'],comment:'Serverens kollega'}}};answers[category]=runs[0].answers;
+await click(button('Lagre'));assert(window.document.querySelector('[role="alert"]').textContent.includes('annen person'));assert.equal(dialog().querySelector('textarea').value,'Min lokale kladd');await click(button('Vis lagret kontroll'));assert.equal(dialog().querySelector('textarea').value,'Serverens kollega');await click(button('Tilbake til kladden'));assert.equal(dialog().querySelector('textarea').value,'Min lokale kladd');
+await click(button('Lukk'));readonly=true;await act(async()=>window.__render(props()));await click(button('Åpne sjekkliste'));assert(button('Ok').matches(':disabled'));assert.equal(button('Lagre'),undefined);await click(button('Lukk'));
+// Scope loss dismisses portals and invalidates an in-flight server response.
+readonly=false;lateResolve={};let pending;
+await act(async()=>{pending=button('Åpne sjekkliste').click();});await act(async()=>window.dispatchEvent(new window.CustomEvent('expo-proffdok-work-profile',{detail:{active_company_id:'other'}})));
+if(lateResolve.resolve)await act(async()=>lateResolve.resolve());assert.equal(dialog(),null,'Late firm response reopened checklist');lateResolve=null;
+await act(async()=>window.__unmount());
+// Both compact adapters use native order buttons and omit hidden wetroom tabs.
+const nav=window.document.createElement('nav');nav.innerHTML='<button class="on">Ordreoversikt</button><button>Tilbudsgrunnlag</button><button>Ordrebeskrivelse</button><button>Avtalegrunnlag</button><button>Produkter / FDV</button><button>Bilder</button><button>UE-tilgang</button><button>Sjekklister</button><button>Avvik</button><button>Sluttdokumentasjon</button><button style="display:none">Fag/utstyr</button><button style="display:none">Garanti</button><button>Hjelp</button>';
+window.document.body.append(nav);const frames=[];window.requestAnimationFrame=fn=>{frames.push(fn);return frames.length;};window.matchMedia=()=>({matches:true,addEventListener(){},removeEventListener(){}});let navigated=false;nav.children[7].addEventListener('click',()=>{navigated=true;});window.__menus();
+for(let i=0;i<12&&frames.length;i++)await act(async()=>frames.shift()());
+assert(nav.classList.contains('expoDesktopSourceNavHidden'));assert(window.document.querySelector('.expoProjectWorkspaceHint').textContent==='Ordremeny');const shortcuts=[...window.document.querySelectorAll('.expoProjectWorkspaceQuickButton')];assert(shortcuts.some(node=>node.textContent==='Ordrebeskrivelse'));assert(!shortcuts.some(node=>['Fag/utstyr','Garanti'].includes(node.textContent)));await click(shortcuts.find(node=>node.textContent==='Sjekklister'));assert(navigated,'Compact order menu bypassed native navigation');
+dom.window.close();fs.rmSync(temporary,{recursive:true,force:true});console.log('Project checklist React flow: PASS — collapsed menu/lists, popup draft retention, retry, colleague continuation, own points, immutable completions, photos, repeated controls and conflict comparison.');

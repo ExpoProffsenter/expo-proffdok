@@ -16,18 +16,21 @@ import "../app/agreementBasisTerminology.js";
 import { createHelpCenter as createHelpCenterCore } from "./helpToolsCore.js";
 import { createHelp45BSection } from "./help45b.js";
 
+import {useHelpModuleAccess} from './useHelpModuleAccess.js';
+
 export function createHelpCenter(config) {
   const CoreHelpCenter = createHelpCenterCore(config);
   const Help45BSection = createHelp45BSection(config);
   return function HelpCenter45B(props) {
+    const helpAccess=useHelpModuleAccess(props?.authUser?.id);
     return React.createElement(
       React.Fragment,
       null,
-      React.createElement(CoreHelpCenter, props),
-      React.createElement(Help45BSection, {
-        isSystemAdmin: props?.isSystemAdmin === true,
-        isCompanyAdmin: props?.isCompanyAdmin === true,
-      })
+      React.createElement(CoreHelpCenter, {...props,helpAccess}),
+      helpAccess?.moduleKeys.includes("store_offers") ? React.createElement(Help45BSection, {
+        isSystemAdmin: helpAccess?.isSystemAdmin === true,
+        isCompanyAdmin: helpAccess?.isCompanyAdmin === true,
+      }) : null
     );
   };
 }

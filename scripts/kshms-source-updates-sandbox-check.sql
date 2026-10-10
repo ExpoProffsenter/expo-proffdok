@@ -1,0 +1,71 @@
+-- Only synthetic handbook data; all changes are rolled back, no transport.
+begin;
+set local statement_timeout='25s';
+set local lock_timeout='2s';
+create function pg_temp.source_assert(ok boolean,label text) returns void language plpgsql as $$begin if ok is distinct from true then raise exception 'SOURCE QA: %',label;end if;perform set_config('ks.source.checks',(coalesce(nullif(current_setting('ks.source.checks',true),''),'0')::integer+1)::text,true);end$$;
+create function pg_temp.source_reject(query text,code text default null) returns void language plpgsql as $$declare failed boolean:=false;got text;begin begin execute query;exception when others then failed:=true;get stacked diagnostics got=returned_sqlstate;end;perform pg_temp.source_assert(failed and (code is null or code=got),'rejected request: '||coalesce(code,'any error'));end$$;
+do $$declare c uuid:=gen_random_uuid();u uuid;sys uuid;k text;begin
+ insert into public.sales_company_scopes(id,normalized_name,display_name) values(c,public.sales_normalize_company_name('SOURCE UPDATE QA '||c),'SOURCE UPDATE QA '||c);perform set_config('ks.source.company',c::text,true);
+ select id into sys from public.profiles where system_role='systemadmin' and approved and not coalesce(deactivated,false) limit 1;assert sys is not null;perform set_config('ks.source.sys',sys::text,true);
+ foreach k in array array['admin','reader'] loop
+  u:=gen_random_uuid();perform set_config('ks.source.'||k,u::text,true);
+  insert into auth.users(id,aud,role,email,created_at,updated_at,raw_app_meta_data,raw_user_meta_data) values(u,'authenticated','authenticated','source-update-qa-'||u||'@example.invalid',now(),now(),'{}',jsonb_build_object('full_name','SOURCE UPDATE QA '||k));
+  insert into public.profiles(id,email,company_name,approved,deactivated,role,company_role) values(u,'source-update-qa-'||u||'@example.invalid','SOURCE UPDATE QA '||c,true,false,case when k='admin' then 'admin' else 'member' end,case when k='admin' then 'firmaadmin' else 'ansatt' end) on conflict(id) do update set company_name=excluded.company_name,approved=true,deactivated=false,role=excluded.role,company_role=excluded.company_role,system_role=null;
+  insert into public.sales_company_memberships(company_id,user_id,is_primary,workspace_role) values(c,u,true,case when k='admin' then 'firmaadmin' else 'ansatt' end) on conflict(company_id,user_id) do update set workspace_role=excluded.workspace_role;
+  insert into public.user_active_company_scope(user_id,company_id) values(u,c) on conflict(user_id) do update set company_id=excluded.company_id;
+ end loop;
+end$$;
+set local role authenticated;
+do $$declare c uuid:=current_setting('ks.source.company')::uuid;a uuid:=current_setting('ks.source.admin')::uuid;reader uuid:=current_setting('ks.source.reader')::uuid;draft jsonb;r jsonb;v jsonb;state jsonb;begin
+ perform set_config('request.jwt.claim.sub',current_setting('ks.source.sys'),true);perform public.kshms_activate(c,true);
+ perform set_config('request.jwt.claim.sub',a::text,true);perform public.kshms_command(c,'access',jsonb_build_object('user_id',reader,'role','reader','enabled',true));
+ perform public.kshms_command(c,'settings',jsonb_build_object('revision',0,'trades',jsonb_build_array('vvs'),'responsible_user_id',a));
+ draft:=jsonb_build_object('title','SOURCE UPDATE QA routine','chapter','Firmaets eget kapittel','goal','Firmaets mål','responsibility','Firmaets ansvar','procedure','Firmaets egne arbeidssteg','documentation','Firmaets dokumentasjon','confirmation','Firmaets egen gjennomgang','source_key','leadership','source_revision',1,'references',jsonb_build_array(jsonb_build_object('title','Firmaets kilde','url','https://example.invalid/company','kind','company','checked_on','2026-10-05')));
+ r:=public.kshms_command(c,'save',jsonb_build_object('draft',draft));perform set_config('ks.source.routine',r->>'id',true);
+ v:=public.kshms_command(c,'publish',jsonb_build_object('id',r->'id','revision',r->'revision','change_summary','Synthetic first publication','requires_ack',true));perform set_config('ks.source.v1',v->>'id',true);perform set_config('ks.source.v1.hash',v->>'content_hash',true);
+ perform public.kshms_command(c,'ack',jsonb_build_object('version_id',v->'id','statement','Jeg har gjennomgått denne rutineversjonen, forstår mitt ansvar og vil følge rutinen. Jeg ber om forklaring eller nødvendig opplæring dersom noe er uklart, og melder fra om farlige forhold og avvik. Bekreftelsen dokumenterer gjennomgang; den erstatter ikke opplæring eller faktisk utførelse.'));
+ state:=public.kshms_get_state(c);r:=(select value from jsonb_array_elements(state->'routines') where value->>'id'=current_setting('ks.source.routine'));
+ draft:=draft||jsonb_build_object('goal','Nytt eksplisitt valgt mål');
+ r:=public.kshms_command(c,'save',jsonb_build_object('id',r->'id','revision',r->'revision','draft',draft));
+ perform pg_temp.source_assert(r->'draft'->>'source_revision'='1','one selected field retains old reviewed proposal basis');
+ perform pg_temp.source_assert(r->'draft'->>'procedure'='Firmaets egne arbeidssteg' and r->'draft'->>'chapter'='Firmaets eget kapittel','firm adaptations retained');
+ perform pg_temp.source_assert(r->'draft'#>>'{references,0,checked_on}'='2026-10-05','field adoption did not forge source control date');
+ draft:=draft||jsonb_build_object('source_revision',2);
+ r:=public.kshms_command(c,'save',jsonb_build_object('id',r->'id','revision',r->'revision','draft',draft));
+ perform set_config('ks.source.reviewed.revision',r->>'revision',true);perform set_config('ks.source.reviewed.draft',draft::text,true);
+ perform pg_temp.source_assert(r->'draft'->>'source_revision'='2','explicitly reviewed proposal basis saved');
+ state:=public.kshms_get_state(c);
+ perform pg_temp.source_assert(jsonb_array_length(state->'versions')=1,'saving review did not publish');
+ perform pg_temp.source_assert((select value->'content'->>'source_revision'='1' and value->>'content_hash'=current_setting('ks.source.v1.hash') from jsonb_array_elements(state->'versions') where value->>'id'=current_setting('ks.source.v1')),'original signed source basis/hash immutable');
+ perform pg_temp.source_assert(jsonb_array_length(state->'acknowledgments')=1,'old own acknowledgment retained');
+ perform pg_temp.source_reject(format('select public.kshms_command(%L::uuid,%L,jsonb_build_object(%L,%L::uuid,%L,0,%L,%L::jsonb))',c,'save','id',r->>'id','revision','draft',draft::text),'40001');
+ perform pg_temp.source_reject(format('select public.kshms_command(gen_random_uuid(),%L,jsonb_build_object(%L,%L::jsonb))','save','draft',draft::text),'42501');
+ perform pg_temp.source_reject(format('select public.kshms_command(%L::uuid,%L,jsonb_build_object(%L,%L::jsonb))',c,'save','draft',jsonb_set(draft,'{references,0,checked_on}',to_jsonb((current_date+1)::text))::text));
+ perform set_config('request.jwt.claim.sub',reader::text,true);
+ perform pg_temp.source_reject(format('select public.kshms_command(%L::uuid,%L,jsonb_build_object(%L,%L::jsonb))',c,'save','draft',draft::text),'42501');
+ state:=public.kshms_get_state(c);
+ perform pg_temp.source_assert((select value->'content'->>'source_revision'='1' from jsonb_array_elements(state->'versions') where value->>'id'=current_setting('ks.source.v1')),'reader still sees published v1 source basis');
+ perform set_config('request.jwt.claim.sub',a::text,true);
+ v:=public.kshms_command(c,'publish',jsonb_build_object('id',current_setting('ks.source.routine'),'revision',current_setting('ks.source.reviewed.revision')::bigint,'change_summary','Synthetic source proposal reviewed, firm text retained','requires_ack',true));perform set_config('ks.source.v2',v->>'id',true);
+ perform pg_temp.source_assert(v->>'number'='2' and v->'content'->>'source_revision'='2','own explicit approval creates v2 source basis');
+ perform pg_temp.source_assert(v->'content'->>'procedure'='Firmaets egne arbeidssteg' and v->'content'#>>'{references,0,checked_on}'='2026-10-05','new publication preserves firm text and actual source date');
+end$$;
+reset role;
+do $$declare c uuid:=current_setting('ks.source.company')::uuid;begin
+ perform pg_temp.source_assert((select count(*)=2 from public.kshms_versions where company_id=c),'two immutable editions retained');
+ perform pg_temp.source_assert((select content->>'source_revision'='1' and content_hash=current_setting('ks.source.v1.hash') from public.kshms_versions where id=current_setting('ks.source.v1')::uuid),'v1 unchanged after v2 publication');
+ perform pg_temp.source_assert((select count(*)=2 from public.kshms_assignments where company_id=c and version_id=current_setting('ks.source.v2')::uuid),'fresh edition assigned to both real fixture members');
+ perform pg_temp.source_assert((select count(*)=1 from public.kshms_acknowledgments where company_id=c and version_id=current_setting('ks.source.v1')::uuid),'historical acknowledgment retained');
+ perform pg_temp.source_assert(not exists(select 1 from public.kshms_acknowledgments where company_id=c and version_id=current_setting('ks.source.v2')::uuid),'new edition forged no employee confirmations');
+ perform pg_temp.source_reject(format('update public.kshms_versions set content=%L::jsonb where id=%L::uuid','{}',current_setting('ks.source.v1')));
+ perform pg_temp.source_assert((select not enabled from kshms_private.email_worker_settings where singleton),'mail delivery still disabled');
+end$$;
+set local role authenticated;
+do $$declare c uuid:=current_setting('ks.source.company')::uuid;begin
+ perform set_config('request.jwt.claim.sub',current_setting('ks.source.sys'),true);perform public.kshms_activate(c,false);
+ perform set_config('request.jwt.claim.sub',current_setting('ks.source.admin'),true);
+ perform pg_temp.source_reject(format('select public.kshms_command(%L::uuid,%L,jsonb_build_object(%L,%L::jsonb))',c,'save','draft',current_setting('ks.source.reviewed.draft')),'42501');
+end$$;
+reset role;
+select current_setting('ks.source.checks')::integer as source_update_assertions;
+rollback;
