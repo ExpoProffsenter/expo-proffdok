@@ -1,3 +1,13 @@
+## Navngitt kontrollnøkkel opprettet; default avvist – 10. oktober 2026 ca. 23:56 Europe/Oslo
+
+Kenneth godkjente manuell utskifting av kontrollprosjektets servernøkkel og opprettet **hr_cloud_probe**. Navnet og riktig prosjekt **expo-hr-control / amduqhmgmeetaatwlmmt** er verifisert med målrettet DOM uten å lese nøkkelverdien. Bindestreker i første foreslåtte navn ble avvist av UI; korrekt navn bruker understrek. Den tidligere default-nøkkelen er fortsatt aktiv i Supabase og **ikke tilbakekalt**. Blob-tokenen er ikke lest eller endret.
+
+Kontrollfunksjonen **hr-cloud-probe v5 ACTIVE**, bundle SHA256 **a3ef9becdf845ce02c141395bbb41d8f738988cec517335e015dbd49ba3b7a2b**, godtar nå bare `SUPABASE_SECRET_KEYS.hr_cloud_probe` på apikey med samme konstant-tid-sammenligning. Ingen generell aksept av alle servernøkler. Eksisterende assertions er bevart; to nye regresjonsprøver avviser default-only-oppsett og den gamle default-verdien når begge navngitte nøkler finnes. **31 handler-/isolasjons-/feilscenarioer PASS**, faktisk pinnet SDK-kontrakt PASS med syntetisk HTTP og ekstern nettverking sperret, full **EXPO_BACKEND_TARGET=sandbox npm run build PASS**.
+
+Supabases automatiske **Add secret key** setter fortsatt default i testpanelet. Faktisk POST med isolert testbody fikk **HTTP 403 / service_only** etter bindingen ble endret. Kun responsdelen ble observert og fotografert; ingen full AX/header-screenshot. Dette beviser avvisning av den automatiske gamle nøkkelen, **ikke** vellykket autentisering eller skyprøve med den nye. Faktisk ny nøkkel må legges inn manuelt av Kenneth og kontrolleres før default fjernes. Hele utskiftingen er derfor **ikke ferdig**. Den tidligere faktiske ni-punkts Blob-kjøringen med d51b7230 er historisk gyldig bevis; ingen ny full sky-/ack-/restore-PASS hevdes.
+
+Faktisk remote main **c3d873e0**, demo **11f1b45d**, PR #217 open/draft head **19630a88** og eksakt READY Preview **dpl_3GskR2C6QCrawwdDAPNYGDmtAkay** ble kontrollert før endringen. App-/migrasjons-/schedulerkode er ikke endret. Privat HR skal fortsatt være stengt. Én tidligere syntetisk restfil og betrodd bootstrap, varig anker, isolert kontroll-ack, scheduler/varsling og database/Auth/Storage-byte-restore gjenstår. Ingen merge eller Production-overføring.
+
 ## Lagerbinding rettet; credential-UI blokkert av automatisk review – 10. oktober 2026 ca. 22:52 Europe/Oslo
 
 ## Faktiske skyprøver PASS; kontrollnøkkel må byttes manuelt – 10. oktober 2026 ca. 23:27 Europe/Oslo

@@ -4,7 +4,8 @@ import {createProbeHandler,runCloudProbe,controlUrl} from '../ops/hr-control/sup
 import {createIdentityDispatcher} from '../ops/hr-control/supabase/functions/hr-cloud-probe/identity-dispatcher.mjs';
 const token='vercel_blob_rw_feUEeykOyyvZVMca_synthetic-not-a-real-token';
 const serverKey='sb_secret_synthetic-key-with-no-real-access';
-const settings={SUPABASE_URL:controlUrl,SUPABASE_SECRET_KEYS:JSON.stringify({default:serverKey}),HR_LEDGER_BLOB_TOKEN:token};
+const oldServerKey='sb_secret_synthetic-old-key-with-no-real-access';
+const settings={SUPABASE_URL:controlUrl,SUPABASE_SECRET_KEYS:JSON.stringify({hr_cloud_probe:serverKey,default:oldServerKey}),HR_LEDGER_BLOB_TOKEN:token};
 let scenarios=0;
 async function scenario(fn){await fn();scenarios++;}
 const request=(body={mode:'ISOLATED_CLOUD_QA'},key=serverKey,method='POST')=>new Request('https://example.invalid',{
@@ -14,8 +15,10 @@ for(const [env,req,status] of [
  [{...settings,SUPABASE_URL:'https://ppvircenkjizeiqdxphj.supabase.co'},request(),503],
  [settings,request(undefined,'anon'),403],
  [{...settings,SUPABASE_SECRET_KEYS:''},request(),403],
- [{...settings,SUPABASE_SECRET_KEYS:'{"default":"anon"}'},request(),403],
+ [{...settings,SUPABASE_SECRET_KEYS:'{"hr_cloud_probe":"anon"}'},request(),403],
  [{...settings,SUPABASE_SECRET_KEYS:JSON.stringify({other:serverKey})},request(),403],
+ [{...settings,SUPABASE_SECRET_KEYS:JSON.stringify({default:serverKey})},request(),403],
+ [settings,request(undefined,oldServerKey),403],
  [settings,new Request('https://example.invalid',{method:'POST',headers:{authorization:'Bearer '+serverKey}}),403],
  [settings,new Request('https://example.invalid',{method:'POST'}),403],
  [settings,request(undefined,serverKey,'GET'),405],

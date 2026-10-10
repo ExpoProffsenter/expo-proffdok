@@ -115,9 +115,9 @@ export async function runCloudProbe(sdk,token,anonymousFetch=fetch) {
 }
 
 function authorized(header,encodedKeys){
- // Supabase's documented service-to-service mode: only the named default secret on apikey.
+ // Supabase's documented service-to-service mode: only hr_cloud_probe on apikey.
  // No user JWT, anon/publishable key or arbitrary named key can invoke this QA function.
- let key;try{key=JSON.parse(encodedKeys).default;}catch{return false;}
+ let key;try{key=JSON.parse(encodedKeys).hr_cloud_probe;}catch{return false;}
  if(typeof key!=='string' || !key.startsWith('sb_secret_') || key.length<32 || typeof header!=='string')return false;
  const a=Buffer.from(header),b=Buffer.from(key);
  return a.length===b.length && timingSafeEqual(a,b);
