@@ -1,0 +1,35 @@
+{
+  "ok": true,
+  "mode": "ISOLATED_BOOTSTRAP_DEVELOPMENT_QA",
+  "canonicalMigration": "20261010232752_hr_control_bootstrap",
+  "installedControlMigration": "20261010233316",
+  "controlProject": "amduqhmgmeetaatwlmmt",
+  "syntheticBootstrapScenarios": 26,
+  "postgresBootstrapAssertions": 48,
+  "controlRollbackSQLAssertions": 29,
+  "actualControlRollbackSQLPassed": true,
+  "originalControlAssertionsPreserved": 37,
+  "twoEngineSQLIntegrationAssertions": 87,
+  "actualPinnedSDKVersion": "2.8.1",
+  "sdkHTTP": "synthetic_network_disabled",
+  "controlAfter": {
+    "checkpoints": 0,
+    "enabled": 0,
+    "locks": 0
+  },
+  "actualBootstrap": false,
+  "productionAnchor": false,
+  "actualCloudDatabaseAckIntegration": false,
+  "nativeIntegration": false,
+  "managedCloudRestore": false,
+  "privateHROpen": false,
+  "failureHistory": [
+    {
+      "result": "FAIL",
+      "phase": "synthetic_source_file_fixture",
+      "sqlstate": "23514",
+      "constraint": "purge_objects_object_path_check",
+      "resolution": "Use UUID last path segment; original SQL guards unchanged"
+    }
+  ]
+}

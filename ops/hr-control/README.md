@@ -1,3 +1,7 @@
+## Bootstrap-grunnlag – 11. oktober 2026
+
+Ny kanonisk kontrollmigrasjon `20261010232752_hr_control_bootstrap.sql`, live kun her som `20261010233316`. Tre ekstra service-only RPC-er; eksplisitt pre-staging, create-only cloud, separate reads. Både success og feil forblir disabled/locked; ingen aktivering/unlock. Faktisk `bootstrap-check.sql` 29 rollback assertions PASS; kontroll etterpå 0/0/0, funksjoner/ACL verifisert. Dette er ikke utført bootstrap. [Filer, 26/48/87 utviklerprøver, bevisgrenser og neste arbeid](../../docs/kshms/HR_CONTROL_BOOTSTRAP_20261011.md). Tidligere status nedenfor er historikk.
+
 # Independent HR control project
 
 Target: **expo-hr-control / amduqhmgmeetaatwlmmt**, organization `oolmxqndmldzpylahcjl`, Micro, eu-west-1. Future Production protection; no permanent course job. Never restore this project with the application, and never use it as a database/Auth/Storage restore test target.

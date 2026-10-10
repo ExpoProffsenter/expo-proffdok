@@ -48,3 +48,14 @@ jobs:
 
       - name: Verify isolated HR cloud probe
         run: node scripts/critical-hr-cloud-probe-check.mjs
+
+      - name: Verify explicit isolated HR bootstrap
+        run: node scripts/critical-hr-control-bootstrap-check.mjs
+
+      - name: Verify isolated HR bootstrap SQL
+        shell: bash
+        run: |
+          npm install --prefix "$RUNNER_TEMP/hr-bootstrap-sql" --no-audit --no-fund --ignore-scripts @electric-sql/pglite@0.5.8 @vercel/blob@2.8.1 undici@6.29.0
+          HR_PGLITE_PATH="$RUNNER_TEMP/hr-bootstrap-sql/node_modules/@electric-sql/pglite/dist/index.js" node scripts/hr-control-bootstrap-db-check.mjs
+          HR_PGLITE_PATH="$RUNNER_TEMP/hr-bootstrap-sql/node_modules/@electric-sql/pglite/dist/index.js" node scripts/hr-control-integration-db-check.mjs
+          HR_LEDGER_BLOB_SDK_ROOT="$RUNNER_TEMP/hr-bootstrap-sql/node_modules/@vercel/blob" node scripts/hr-bootstrap-sdk-contract-check.mjs
