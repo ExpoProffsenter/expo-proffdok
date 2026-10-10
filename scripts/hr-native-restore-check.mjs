@@ -40,9 +40,12 @@ async function dbReady(){
  for(let i=0;i<60;i++){try{if(sql('select 1;').trim()==='1')return;}catch{}await wait(1000);}throw Error('database_not_ready');
 }
 async function nativeServicesHealthy(){
- const required=['supabase_auth_','supabase_storage_','supabase_rest_'].map(prefix=>prefix+stack);
+ const required=['supabase_auth_','supabase_storage_'].map(prefix=>prefix+stack);
  for(let i=0;i<60;i++){
-  if(required.every(c=>inspect(c).State.Health?.Status==='healthy'))return;
+  if(required.every(c=>inspect(c).State.Health?.Status==='healthy')){
+   // Pinned CLI's PostgREST image has no shell/Docker healthcheck; use its gateway HEAD readiness.
+   try{if((await request('/rest/v1/',{method:'HEAD'})).ok)return;}catch{}
+  }
   await wait(1000);
  }
  throw Error('native_services_not_healthy');
