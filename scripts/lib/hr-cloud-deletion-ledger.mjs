@@ -1,5 +1,6 @@
 // Operator-only. Not imported by the app. The store/key/trusted anchor live outside DB restore.
 import {normalizeReceipts,sealLedger,verifyLedger} from './hr-deletion-ledger.mjs';
+import {Buffer} from 'node:buffer';
 
 const limit=40000000;
 const fail=()=>{throw Error('untrusted_hr_cloud_ledger');};

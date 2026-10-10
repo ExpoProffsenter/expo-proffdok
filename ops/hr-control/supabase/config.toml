@@ -1,0 +1,7 @@
+# Independent control project only; never deploy this config to the application.
+project_id = "expo-hr-control"
+
+[functions.hr-cloud-probe]
+# Mandatory default server-secret validation is in createProbeHandler before any cloud call.
+# The gateway's JWT-only mode cannot authenticate sb_secret_ keys.
+verify_jwt = false
