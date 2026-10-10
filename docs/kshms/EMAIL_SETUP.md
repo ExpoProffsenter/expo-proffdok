@@ -2,7 +2,7 @@
 
 ## Gjeldende status 10. oktober 2026
 
-Kenneth har nå godkjent Production-release og main → demo. Production har alle 54 migrasjoner og `kshms-assignment-mailer` v1 ACTIVE. Autentisert check-mode ga HTTP 200 med alle fire konfigurasjonsflagg sanne. Eksisterende Resend-hemmeligheter er brukt server-side. Production-transport er aktivert etter kontroll av tom kø, med origin `https://expo-proffdok.app`; ingen test-/Sandbox-kø er kopiert. Én autorisert systemadmin-testmail til `kenneth@ringside.no` er nå sendt; innboksmottak er ikke bekreftet. Dette verifiserer ikke KS/HMS-tildelingsarbeiderens fullstendige flyt. Se [releasekontrollen](RELEASE_20261010.md).
+Kenneth har nå godkjent Production-release og main → demo. Production har alle 54 migrasjoner og `kshms-assignment-mailer` v1 ACTIVE. Autentisert check-mode ga HTTP 200 med alle fire konfigurasjonsflagg sanne. Eksisterende Resend-hemmeligheter er brukt server-side. Production-transport er aktivert etter kontroll av tom kø, med origin `https://expo-proffdok.app`; ingen test-/Sandbox-kø er kopiert. Én autorisert systemadmin-testmail til `kenneth@ringside.no` er sendt, og mottak er dokumentert med Kenneths vedlagte skjermbilde. Dette verifiserer ikke KS/HMS-tildelingsarbeiderens fullstendige flyt. Se [releasekontrollen](RELEASE_20261010.md).
 
 Sandbox holdes fortsatt `enabled=false`. Historiske godkjenningsnotater nedenfor beskriver situasjonen før brukerens «Kjør».
 
@@ -12,7 +12,7 @@ Sandbox holdes fortsatt `enabled=false`. Historiske godkjenningsnotater nedenfor
 
 Appen bekreftet **«Test er sendt kun til kenneth@ringside.no.»** Mottakerpreview viste 37 kvalifiserte brukere, men **3. Send til mottakergruppen ble ikke klikket**. Ingen masseutsending eller nytt sendeforsøk. Etter skjermbevis gikk fanen tilbake til Startside. Den ene sendeautorisasjonen er brukt.
 
-[Originalt skjermbevis](evidence/TESTMAIL_SENT_20261010.jpg). Dette er faktisk innlogget appbekreftelse for `systemadmin-broadcast-email` sin testhandling. **Mottak i innboksen er ikke bekreftet**, og dette beviser ikke KS/HMS-tildelingskøens fullstendige leverings-/lenke-/retryflyt. Ingen credentials, JWT, cookies eller intern auth-state ble lest; ingen SQL/service-role-omgåelse av innlogging.
+[Originalt skjermbevis](evidence/TESTMAIL_SENT_20261010.jpg). Dette er faktisk innlogget appbekreftelse for `systemadmin-broadcast-email` sin testhandling. **Mottak er dokumentert med Kenneths vedlagte skjermbilde** av den åpnete e-posten med eksakt `[TEST]`-emne, testmerke og melding; [originalt mottaksbevis](evidence/TESTMAIL_RECEIVED_20261010.png). Bildet kom i denne samtalen ca. 21:13 Europe/Oslo. Dette beviser ikke KS/HMS-tildelingskøens fullstendige leverings-/lenke-/retryflyt eller at e-postlenken er åpnet. Ingen credentials, JWT, cookies eller intern auth-state ble lest; ingen SQL/service-role-omgåelse av innlogging.
 
 ## Status 9. oktober 2026 (historisk)
 
