@@ -35,3 +35,15 @@ Utviklerbevis og publisering føres her etter kontroll. Privat kontakt/samtale/f
 - Før/etter: 1 HR-firma, 1 medarbeider, 0 aktive maler/utgaver/artifacts/filer/receipts, ingen QA-firmaer. content_enabled=false / restore_quarantined=true. Eksisterende testdata beholdes.
 
 Grønn lokal build er ikke CI-/Preview-/browserbevis. Nøyaktig publiseringskontroll føres nedenfor etter utførelse.
+
+## Faktisk innlogget Preview og kodepublisering
+
+**Faktisk mal-Preview-kontroll:** kode `70f12015b616e8e9b4c6e0efc06d82ab4e6df1ef`, Core Safety **38011669656 / jobb 114092844672 SUCCESS**, `dpl_6QTL7UM5H55ek25V7mrsqkEdyPys` READY med eksakt SHA/ref/prosjekt/fast alias. Direkte branch-env `EXPO_BACKEND_TARGET=sandbox`. Innlogget desktop: HR/admin, tre forslag, generisk kladd/redigering, tom forhåndsvisning, dirty bytte/Behold kladden, Oppdater maler med bevart kladd og Forkast PASS. Ingen testmal lagret. Ingen horisontal overflow; Lagre mal 44px. Lagret historikk/arkiv/CAS har SQL og React-bevis; mobil og separate samtidige browserøkter gjenstår.
+
+Kodecommit er publisert på faktisk remote parent `50a27601ec716bfb261ed306b1410259466a79bd` med forventet head og force=false. Alle 21 blob-SHA-er er kontrollert mot lokalt Git-innhold; tree `d8126519e24b96f66f824e89f8273cb4df0ca2d1` er identisk. CI-jobben har grønn scope guard og full critical build. Fast Preview er [verifisert i samme innloggede økt](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe). Ingen credentials/JWT lest eller ny innlogging nødvendig. Main fortsatt `155f6c4ac01f126c1db0c65da385cfd9305587d5`, PR #216 draft/åpen/umerget.
+
+Originalt skjermbilde viser ulagringsstatus, redigering og sticky Lagre/Forkast. Etter bildet ble kladden forkastet; ny read-only Sandbox-kontroll viser **0 maler/0 utgaver, 1 firma/1 medarbeider**. Dette browserbeviset dekker generisk malutkast, ikke serverlagret brukerhistorikk eller mobil.
+
+![Faktisk malbygger i innlogget Preview](evidence/hr-templates-preview-20261010.jpg)
+
+Sluttbevis-commiten endrer bare statusdokumenter og lagrer dette originale JPEG-bildet. Ingen ny appkode eller SQL. Endelig head/CI/Preview kontrolleres etter publisering og føres i PR #216; ingen main/demo/Production-release.
