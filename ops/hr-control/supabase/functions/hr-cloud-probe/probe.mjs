@@ -32,6 +32,7 @@ function failureCode(error,sdk){
   if(error.message==='untrusted_hr_cloud_ledger')return 'ledger_readback_rejected';
   if(error.message==='hr_cloud_probe_failed')return 'probe_check_rejected';
   if(error.message==='hr_cloud_ledger_timeout')return 'ledger_timeout';
+  if(error.message==='hr_probe_conditional_write_not_rejected')return 'conditional_write_not_rejected';
  }
  return 'provider_or_runtime_error';
 }
@@ -87,18 +88,27 @@ export async function runCloudProbe(sdk,token,anonymousFetch=fetch) {
   const first=await syncCloudLedger(isolated,config,anchor(initial),snapshot([row(1)]));
   requireTrue(first.payload.generation===1 && sameIds(first.payload.receipts,[1]));
   passed.push('signed_union_fresh_readback');
-  stage='conflict';
+  stage='conflict_fresh_read';
   const winning=make(2,[row(1),row(2)]);
-  let conflict=false;
+  let conflict=false,staleWriteAttempted=false;
   try {
    await syncCloudLedger({...isolated,async put(path,encoded,o){
+    stage='conflict_competing_write';
     await isolated.put(path,JSON.stringify(winning)+'\n',o);
+    stage='conflict_competing_read';
+    await readCloudLedger(isolated,config,anchor(winning));
+    stage='conflict_stale_write';staleWriteAttempted=true;
     return isolated.put(path,encoded,o);
    }},config,first.anchor,snapshot([row(3)]));
-  }catch(error){conflict=error instanceof sdk.BlobPreconditionFailedError;}
-  requireTrue(conflict);passed.push('actual_stale_etag_conflict');
+  }catch(error){
+   if(!staleWriteAttempted || !(error instanceof sdk.BlobPreconditionFailedError))throw error;
+   conflict=true;
+  }
+  if(!conflict)throw Error('hr_probe_conditional_write_not_rejected');
+  stage='conflict_winner_readback';
   const recovered=await readCloudLedger(isolated,config,anchor(winning));
   requireTrue(sameIds(recovered.receipts,[1,2]));
+  passed.push('actual_stale_etag_conflict');
   stage='restore_union';
   const second=await syncCloudLedger(isolated,config,anchor(winning),snapshot([]));
   requireTrue(second.payload.generation===3 && sameIds(second.payload.receipts,[1,2]));

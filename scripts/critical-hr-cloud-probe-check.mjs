@@ -69,8 +69,13 @@ function cloud(fault){
    assert.match(path,/^hr-ledger-qa\/[a-f0-9-]{36}\/ledger.json$/);
    assert.equal(o.token,token);assert.equal(o.access,'private');assert.equal(o.addRandomSuffix,false);
    if(fault==='write-error')throw Error(token);
+   if(fault==='competing-write-error' && puts===2)throw new AccessDenied(token);
+   if(fault==='competing-precondition-error' && puts===2)throw new Conflict();
+   if(fault==='stale-write-error' && puts===3)throw new AccessDenied(token);
+   if(fault==='stale-write-unknown-error' && puts===3)throw Error(token);
    const old=objects.get(path);
-   if((old && !o.allowOverwrite) || (o.ifMatch && old?.etag!==o.ifMatch))throw new Conflict();
+   if((old && !o.allowOverwrite) || (o.ifMatch && old?.etag!==o.ifMatch
+    && !(fault==='ignore-stale-if-match' && puts===3)))throw new Conflict();
    puts++;objects.set(path,{value,etag:'v'+(++serial)});
    const origin=fault==='wrong-write-origin'?'https://other.private.blob.vercel-storage.com':
     'https://feueeykoyyvzvmca.private.blob.vercel-storage.com';
@@ -83,6 +88,8 @@ function cloud(fault){
    if(fault==='provider-read-error' && gets===1)throw new AccessDenied(token);
    if(fault==='unknown-read-error' && gets===1)throw Error(token);
    if(fault==='missing-read' && gets===1)return null;
+   if(fault==='competing-read-missing' && gets===5)return null;
+   if(fault==='winner-read-missing' && gets===6)return null;
    const origin=fault==='wrong-origin'?'https://other.private.blob.vercel-storage.com':
     'https://feueeykoyyvzvmca.private.blob.vercel-storage.com';
    return {statusCode:200,blob:{pathname:path,url:origin+'/'+path,size:bytes.length,
@@ -113,6 +120,27 @@ for(const [fault,stage,errorCode,created] of [
  assert.equal(result.errorCode,errorCode);assert.equal(result.created,created);
  assert.equal(result.cleaned,created);assert.deepEqual(result.passed,[]);
  assert.equal(sdk.objects.size,0);assert(!JSON.stringify(result).includes(token));
+ assert.equal(result.databaseAck,false);assert.equal(result.productionAnchor,false);
+ assert.equal(result.byteRestore,false);
+});
+// A competing-write rejection, unrelated provider error or accepted stale overwrite is not CAS proof.
+for(const [fault,stage,errorCode] of [
+ ['competing-write-error','conflict_competing_write','provider_access_denied'],
+ ['competing-precondition-error','conflict_competing_write','provider_precondition_failed'],
+ ['competing-read-missing','conflict_competing_read','ledger_readback_rejected'],
+ ['stale-write-error','conflict_stale_write','provider_access_denied'],
+ ['stale-write-unknown-error','conflict_stale_write','provider_or_runtime_error'],
+ ['ignore-stale-if-match','conflict_stale_write','conditional_write_not_rejected'],
+ ['winner-read-missing','conflict_winner_readback','ledger_readback_rejected']
+])await scenario(async()=>{
+ const sdk=cloud(fault);const result=await runCloudProbe(sdk,token,
+  async()=>new Response('denied',{status:403}));
+ assert.equal(result.ok,false);assert.equal(result.stage,stage);
+ assert.equal(result.errorCode,errorCode);assert.equal(result.created,true);
+ assert.equal(result.cleaned,true);assert.equal(sdk.objects.size,0);
+ assert.deepEqual(result.passed,['private_write_fresh_read','anonymous_read_denied',
+  'signed_union_fresh_readback']);
+ assert(!JSON.stringify(result).includes(token));
  assert.equal(result.databaseAck,false);assert.equal(result.productionAnchor,false);
  assert.equal(result.byteRestore,false);
 });

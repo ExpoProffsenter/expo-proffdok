@@ -60,7 +60,8 @@ try {
   privateRead('"v1"');
   api.intercept({path:`/api/blob/?pathname=${encodeURIComponent(pathname)}`,method:'PUT'})
     .reply(412,{error:{code:'precondition_failed',message:'synthetic CAS conflict'}});
-  await assert.rejects(syncCloudLedger(sdk,config,result.anchor,{format:1,project,receipts:[]}));
+  await assert.rejects(syncCloudLedger(sdk,config,result.anchor,{format:1,project,receipts:[]}),
+    sdk.BlobPreconditionFailedError);
   agent.assertNoPendingInterceptors();
   console.log('✅ Real @vercel/blob 2.8.1: private/cache=0/token/ifMatch headers, fresh readback and 412 rejection PASS (synthetic HTTP, network disabled)');
 } finally {setGlobalDispatcher(prior);await agent.close();}
