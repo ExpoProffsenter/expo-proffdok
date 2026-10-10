@@ -74,6 +74,13 @@ function volumes(){
  check(mounts.every((m,i)=>m&&m.Name===(i===0?'supabase_db_':'supabase_storage_')+stack),'exact own database/storage volumes');
  return mounts.map((m,i)=>({name:m.Name,file:i===0?'database.tgz':'storage.tgz'}));
 }
+function physicalStorageHashes(v){
+ check(v.name==='supabase_storage_'+stack,'scan only exact own native Storage volume');
+ const text=docker(['run','--rm','--network','none','--user','0','--entrypoint','sh','--mount',`type=volume,src=${v.name},dst=/data,readonly`,image,'-ec','find /data -type f -exec sha256sum {} +']);
+ const hashes=text.trim()?text.trim().split('\n').map(line=>line.slice(0,64)):[];
+ check(hashes.length<=100&&hashes.every(h=>/^[0-9a-f]{64}$/.test(h)),'bounded native filesystem hash inventory');
+ return hashes;
+}
 function snapshotVolume(v,restore=false){
  check(containers.every(c=>inspect(c).State.Running===false),'all own containers stopped for cold snapshot');
  const script=restore?'find /data -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +; tar -xzpf /snapshot/'+v.file+' -C /data':'tar -czpf /snapshot/'+v.file+' -C /data .';
@@ -135,7 +142,8 @@ try{
   }
  }
  const orphan=`${c}/${employee}/${randomUUID()}`,keep=`${c}/${retained}/${randomUUID()}`,keepBytes=Buffer.from('SYNTHETIC retained');
- await upload(orphan,Buffer.from('SYNTHETIC orphan'));await upload(keep,keepBytes);
+ const orphanBytes=Buffer.from('SYNTHETIC orphan');
+ await upload(orphan,orphanBytes);await upload(keep,keepBytes);
  check((await request('/rest/v1/rpc/hr_file_authorize',{method:'POST',body:{p_company_id:c,p_file_id:files[0].fid},bearer:user.jwt,key:anon})).ok,'actual user HR file grant before closure');
  check(!(await request('/rest/v1/rpc/hr_file_authorize',{method:'POST',body:{p_company_id:c,p_file_id:files[0].fid},bearer:outsider.jwt,key:anon})).ok,'actual cross-company user rejected');
  check(!(await request('/storage/v1/object/authenticated/hr-private/'+files[0].object,{bearer:user.jwt,key:anon})).ok,'actual user cannot bypass file endpoint through Storage');
@@ -145,6 +153,8 @@ try{
  await initializeLedger(ledger,project,signingKey);
  stage('native_volume_identity');
  const mounts=volumes();
+ const beforeHashes=physicalStorageHashes(mounts[1]);
+ for(const expected of [...files.map(f=>f.hash),hash(orphanBytes),hash(keepBytes)])check(beforeHashes.includes(expected),'uploaded bytes physically exist in native volume');
  stage('cold_physical_database_auth_storage_backup');
  docker(['stop',...containers.filter(c=>c!==dbContainer)]);docker(['stop',dbContainer]);for(const v of mounts)snapshotVolume(v);
  for(const v of mounts)check((await fs.stat(path.join(snapshots,v.file))).size>0,'physical snapshot exists');
@@ -164,6 +174,9 @@ try{
  check((await runWorker()).removed===3,'source purges both registrations and orphan');
  for(const object of [...files.map(f=>f.object),orphan])check(await storage.missing(object),'source file bytes absent');
  check(scalar(`select count(*)::int as value from hr_private.artifacts where employee_id=${quote(employee)}`)===0,'source five families deleted');
+ const sourceHashes=physicalStorageHashes(mounts[1]);
+ for(const expected of [...files.map(f=>f.hash),hash(orphanBytes)])check(!sourceHashes.includes(expected),'source payload bytes physically absent from native volume');
+ check(sourceHashes.includes(hash(keepBytes)),'source retained bytes physically present');
  // Remove the native Auth user AFTER closure/backup, without SQL deletion or token forgery.
  check((await request('/auth/v1/admin/users/'+user.id,{method:'DELETE'})).ok,'source native Auth identity deleted');
  check(!(await request('/auth/v1/token?grant_type=password',{method:'POST',key:anon,bearer:anon,body:{email:user.email,password:user.password}})).ok,'source deleted identity cannot sign in');
@@ -176,6 +189,8 @@ try{
  user.jwt=await login(user);admin.jwt=await login(admin);other.jwt=await login(other);outsider.jwt=await login(outsider);
  check((await request('/auth/v1/user',{bearer:user.jwt,key:anon})).ok,'restored real Auth session validated by native Auth');
  for(const f of files){const r=await storage.download(f.object);check(r.ok&&hash(Buffer.from(await r.arrayBuffer()))===f.hash,'restored physical file has original byte hash');}
+ const restoredHashes=physicalStorageHashes(mounts[1]);
+ for(const expected of [...files.map(f=>f.hash),hash(orphanBytes),hash(keepBytes)])check(restoredHashes.includes(expected),'physical restored native payload matches original hash');
  check((await readLedger(ledger,project,signingKey)).receipts.length===1,'independent ledger survives both volume restores');
  const closed=createHrFileAccess({authenticate:async authorization=>{
   const r=await request('/auth/v1/user',{bearer:authorization.slice(7),key:anon});if(!r.ok)throw Error('denied');return (await r.json()).id;
@@ -190,19 +205,26 @@ try{
  check((await runWorker()).removed===3,'restored physical bytes purged through native Storage API');
  for(const object of [...files.map(f=>f.object),orphan])check(await storage.missing(object),'restored deleted byte paths absent');
  const retainedResponse=await storage.download(keep);check(retainedResponse.ok&&hash(Buffer.from(await retainedResponse.arrayBuffer()))===hash(keepBytes),'unrelated employee bytes unchanged');
+ const purgedHashes=physicalStorageHashes(mounts[1]);
+ for(const expected of [...files.map(f=>f.hash),hash(orphanBytes)])check(!purgedHashes.includes(expected),'restored payload bytes physically absent from native volume');
+ check(purgedHashes.includes(hash(keepBytes)),'retained payload physically present after replay');
  check(scalar(`select state='complete' as value from hr_private.purge_receipts where id=${quote(employee)}`),'complete only after physical bytes removed');
  check((await rpc('hr_employee_get',{p_company_id:c,p_employee_id:retained},other.jwt)).employee.id===retained,'unrelated actual employee access preserved');
  for(const actor of [admin,user,other,outsider])check(!(await request('/rest/v1/rpc/hr_employee_get',{method:'POST',body:{p_company_id:c,p_employee_id:employee},bearer:actor.jwt,key:anon})).ok,'departed employee inaccessible to actual actor');
  stage('file_only_restore_regression');
- await upload(orphan,Buffer.from('SYNTHETIC returned orphan'));
+ const returnedBytes=Buffer.from('SYNTHETIC returned orphan');
+ await upload(orphan,returnedBytes);
+ check(physicalStorageHashes(mounts[1]).includes(hash(returnedBytes)),'file-only returned payload physically exists');
  sql(reconcileSql(await readLedger(ledger,project,signingKey)));
  check(scalar('select count(*)::int as value from hr_private.purge_objects')===1,'file-only return queues new deletion');
  check(scalar(`select state='pending' as value from hr_private.purge_receipts where id=${quote(employee)}`),'file-only return never falsely complete');
  check((await runWorker()).removed===1&&await storage.missing(orphan),'returned file physically deleted');
+ const finalHashes=physicalStorageHashes(mounts[1]);
+ check(!finalHashes.includes(hash(returnedBytes))&&finalHashes.includes(hash(keepBytes)),'returned payload physically absent and retained bytes present');
  sql(reconcileSql(await readLedger(ledger,project,signingKey)));
  check(scalar('select count(*)::int as value from hr_private.purge_objects')===0,'empty replay idempotent');
  check(scalar('select not content_enabled and restore_quarantined as value from hr_private.runtime_state'),'private content stays quarantined');
- console.log(JSON.stringify({ok:true,mode:'ISOLATED_NATIVE_QA',assertions,cli:'2.120.0',images,physicalDatabaseAuthRestore:true,storageByteRestore:true,actualAuthUsers:4,restoredFamilies:5,restoredRegisteredFiles:2,deletedPaths:3,unrelatedEmployeePreserved:true,companyProfileFixture:true,productionAnchor:false,databaseAck:false,managedCloudRestore:false}));
+ console.log(JSON.stringify({ok:true,mode:'ISOLATED_NATIVE_QA',assertions,cli:'2.120.0',images,physicalDatabaseAuthRestore:true,storageByteRestore:true,physicalPayloadAbsenceVerified:true,actualAuthUsers:4,restoredFamilies:5,restoredRegisteredFiles:2,deletedPaths:3,unrelatedEmployeePreserved:true,companyProfileFixture:true,productionAnchor:false,databaseAck:false,managedCloudRestore:false}));
 }catch(e){
  const code=/^native_(?:sqlstate_[0-9A-Z]{5}|rpc_rejected_[0-9]{3}|command_failed)$/.test(e.message)?e.message:'native_check_failed';
  console.error(JSON.stringify({ok:false,mode:'ISOLATED_NATIVE_QA',stage:phase,code,failedCheck,assertions,productionAnchor:false,databaseAck:false,managedCloudRestore:false}));process.exitCode=1;
