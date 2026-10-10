@@ -5,7 +5,7 @@ const safe=value=>String(value||'').replace(/[\u0000-\u001f\u007f]/g,' ').trim()
 export async function buildOrgPdf({data,companyName,JsPDF,now=new Date()}) {
  const model=orgBranches(data),pdf=new JsPDF({orientation:'landscape',unit:'mm',format:'a3'});
  const width=420,height=297,margin=15,gap=8,cardWidth=(width-margin*2-gap*2)/3,bottom=height-19;
- const date=now.toLocaleDateString('nb-NO'),company=safe(companyName)||'Firmaets organisasjon';
+ const date=now.toLocaleDateString('nb-NO'),company=safe(data.chart_name||companyName)||'Firmaets organisasjon';
  const ink=[35,67,71],muted=[99,121,125],petrol=[18,79,85];
  let column=0,y=64,page=1;
  const text=(value,x,top,size=10,color=ink,style='normal')=>{pdf.setFont('helvetica',style);pdf.setFontSize(size);pdf.setTextColor(...color);pdf.text(value,x,top);};
@@ -26,7 +26,24 @@ export async function buildOrgPdf({data,companyName,JsPDF,now=new Date()}) {
  // A true hierarchy overview precedes the paginated staff cards. Large or deep
  // structures continue by branch; no unit is dropped or shrunk to unreadability.
  if(model.roots.length){
-  const graphHeader=()=>{
+  const leaves=unit=>unit.children.length?unit.children.reduce((n,child)=>n+leaves(child),0):1;
+ const leafCount=model.roots.reduce((n,u)=>n+leaves(u),0);
+ const positioned=[];let leaf=0;
+ const place=(unit,depth)=>{const start=leaf;unit.children.forEach(child=>place(child,depth+1));if(!unit.children.length)leaf++;positioned.push({unit,depth,center:(start+leaf)/2});};
+ model.roots.forEach(unit=>place(unit,0));
+ const cardW=Math.min(120,(width-margin*2)/leafCount-8),levelHeights=[];
+ for(const item of positioned){item.names=lines(item.unit.name,11,cardW-12,'bold');item.info=lines(`${item.unit.manager_name||'Leder ikke valgt'} / ${item.unit.people.length} medarbeidere`,8,cardW-12);item.boxHeight=12+item.names.length*4.5+item.info.length*3.6;levelHeights[item.depth]=Math.max(levelHeights[item.depth]||0,item.boxHeight);}
+ const levelY=[];let nextY=97;for(const h of levelHeights){levelY.push(nextY);nextY+=h+14;}
+ if(leafCount<=3&&levelHeights.length<=4&&nextY<bottom){
+  const centers=new Map(positioned.map(item=>[item.unit.id,{x:margin+item.center*(width-margin*2)/leafCount,y:levelY[item.depth],height:item.boxHeight}]));
+  pdf.setFillColor(...petrol);pdf.roundedRect(width/2-55,62,110,20,3,3,'F');text(lines(company,12,98,'bold'),width/2-49,70,12,[255,255,255],'bold');
+  for(const item of positioned){const point=centers.get(item.unit.id),parent=centers.get(item.unit.parent_id)||{x:width/2,y:62,height:20};const midway=point.y-7;
+   pdf.setDrawColor(174,203,195);pdf.line(parent.x,parent.y+parent.height,parent.x,midway);pdf.line(parent.x,midway,point.x,midway);pdf.line(point.x,midway,point.x,point.y);}
+  for(const item of positioned){const point=centers.get(item.unit.id),left=point.x-cardW/2;
+   const color=rgb(ORG_COLORS[item.unit.color]?.[1]||ORG_COLORS.teal[1]);pdf.setFillColor(...rgb(ORG_COLORS[item.unit.color]?.[0]||ORG_COLORS.teal[0]));pdf.roundedRect(left,point.y,cardW,item.boxHeight,3,3,'F');text(item.names,left+6,point.y+7,11,color,'bold');text(item.info,left+6,point.y+7+item.names.length*4.5,8,color);
+  }
+ }else{
+ const graphHeader=()=>{
    pdf.setFillColor(...petrol);pdf.roundedRect(width/2-55,62,110,20,3,3,'F');
    text('Firmaets avdelinger',width/2-48,71,12,[255,255,255],'bold');
    text('Les hver gren ovenfra og ned',width/2-48,78,8,[204,230,223]);
@@ -57,6 +74,7 @@ export async function buildOrgPdf({data,companyName,JsPDF,now=new Date()}) {
     ancestors.set(item.unit.id,{x:x+3,y:y+boxHeight});y+=boxHeight+8;
    }
    if(root!==model.roots.at(-1))graphNext();
+  }
   }
   footer();pdf.addPage();page++;column=0;y=64;header();
  }
@@ -113,7 +131,7 @@ export async function downloadOrgPdf({session,expected,companyName,isCurrent,loa
  if(!isCurrent())throw Error('Eksporten ble avbrutt ved bytte av arbeidsflate.');
  const pdf=await buildOrgPdf({data:fresh,companyName:fresh.context.company_name||companyName,JsPDF:module.jsPDF||module.default,now});
  await verify();
- const slug=safe(fresh.context.company_name||companyName||'firma').normalize('NFKD').replace(/[^a-zA-Z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,70)||'firma';
+ const slug=safe(fresh.chart_name||fresh.context.company_name||companyName||'firma').normalize('NFKD').replace(/[^a-zA-Z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,70)||'firma';
  await save(pdf,`${slug}-organisasjonskart-${now.toISOString().slice(0,10)}.pdf`);
  return pdf;
 }

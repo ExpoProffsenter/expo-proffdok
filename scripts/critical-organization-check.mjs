@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {createOrgSession,orgBranches,orgPersonRows,orgFingerprint} from '../src/modules/organization/orgModel.mjs';
+import {createOrgSession,orgBranches,orgPersonRows,orgFingerprint,orgLayout,orgSubtree,orgLayoutPayload} from '../src/modules/organization/orgModel.mjs';
 import {kshmsNavigationGroups} from '../src/modules/kshms/kshmsNavigation.mjs';
-const data={context:{company_id:'c',user_id:'u',administer:true},revision:1,units:[{id:'root',parent_id:null,name:'Service'},{id:'child',parent_id:'root',name:'Montasje'}],people:[{id:'a',user_id:'a',unit_id:'child',name:'Anne',kind:'leader'},{id:'b',user_id:'b',unit_id:'child',name:'Bjørn',leader_id:'a',kind:'apprentice'}],members:[]};
+const data={context:{company_id:'c',user_id:'u',administer:true},revision:1,units:[{id:'root',parent_id:null,name:'Service',color:'teal'},{id:'child',parent_id:'root',name:'Montasje',color:'blue'}],people:[{id:'a',user_id:'a',unit_id:'child',name:'Anne',kind:'leader'},{id:'b',user_id:'b',unit_id:'child',name:'Bjørn',leader_id:'a',kind:'apprentice'}],members:[]};
 const copy=()=>structuredClone(data);
 assert.equal(orgBranches(copy()).roots[0].children[0].people.length,2);
 assert.deepEqual(orgPersonRows(data.people).map(p=>[p.id,p.depth]),[['a',0],['b',1]]);
@@ -32,3 +32,18 @@ assert(!/signedUrl|localStorage|sessionStorage|indexedDB|\.storage\./.test(fs.re
 assert(sql.includes('from public,anon,authenticated,service_role'));
 const fix=fs.readFileSync('supabase/migrations/20261009232920_organization_hr_trigger_scope_fix.sql','utf8');assert(fix.includes('exists(select 1 from org_private.settings where company_id=new.company_id)'),'Do not impose organization validation on existing HR-only companies');
 console.log('✅ Organization: KS-only route, tree validation, fresh actor/rights, stale/CAS, failed writes/readback/late replies/dispose and private SQL boundary PASS');
+
+assert.equal(orgSubtree(data.units,null).size,0,'New units retain every valid parent option');
+assert.deepEqual([...orgSubtree(data.units,'root')],['root','child']);
+const layout=orgLayout(data);layout.chart_name='Ringside';layout.units=layout.units.filter(u=>u.id!=='child');
+assert.deepEqual(orgLayoutPayload(data,layout).removed_ids,['child']);assert.equal(orgLayoutPayload(data,layout).confirm_removal,true);
+assert.throws(()=>orgLayoutPayload(data,{...layout,chart_name:'x'}));
+assert.notEqual(orgFingerprint(data),orgFingerprint({...data,chart_name:'Ringside'}));
+const layoutSql=fs.readFileSync('supabase/migrations/20261009235538_organization_layout_editor.sql','utf8');
+for(const guard of ['organization_save_layout','org_private.require_context','p_revision is distinct','removed is distinct from confirmed','cardinality(path)>12','u.company_id<>p_company_id','from public,anon,authenticated,service_role'])assert(layoutSql.includes(guard));
+assert(!layoutSql.includes('perform public.hr_employee_command'),'Layout never changes individual HR');
+let endpoint;const ls=createOrgSession({companyId:'c',userId:'u',rpc:async(name,args)=>{if(name!=='organization_state'){endpoint={name,args};}return copy();}});
+await ls.command(copy(),'layout',orgLayoutPayload(data,orgLayout(data)));assert.equal(endpoint.name,'organization_save_layout');assert(!Object.hasOwn(endpoint.args,'p_action'));ls.dispose();
+console.log('✅ Organization layout: real save endpoint, root fingerprint, strict snapshot, deletion set, parent options and preserved HR boundary PASS');
+
+const collisionFix=fs.readdirSync('supabase/migrations').find(n=>n.endsWith('_organization_layout_collision_guard.sql'));const collisionSql=fs.readFileSync('supabase/migrations/'+collisionFix,'utf8');assert(collisionSql.includes('color=excluded.color where org_private.units.company_id=p_company_id')&&collisionSql.includes('written<>jsonb_array_length(items)'),'Concurrent foreign UUID insert cannot become an unscoped UPSERT');

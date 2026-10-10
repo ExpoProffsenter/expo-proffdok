@@ -23,7 +23,8 @@ try{
    if(name==='kshms_assignment_reminder_tasks')return {data:{company_id:'c',user_id:state.context.user_id,groups:[]}};
    if(revoked)return {error:{code:'42501',message:'KS-tilgang trukket tilbake'}};
    if(name==='organization_state'){if(late)return new Promise(resolve=>late.resolve=resolve);return {data:structuredClone(state)};}
-   assert.equal(name,'organization_command');commands.push(structuredClone(args));assert.equal(args.p_revision,state.revision);state.revision++;
+   assert(['organization_command','organization_save_layout'].includes(name));commands.push(structuredClone(args));assert.equal(args.p_revision,state.revision);state.revision++;
+   if(name==='organization_save_layout'){state.chart_name=args.p_payload.chart_name;state.units=args.p_payload.units.map(u=>({...u,editable:true}));for(const person of state.people)if(!state.units.some(u=>u.id===person.unit_id))person.unit_id=null;}
    if(args.p_action==='unit'){const p=args.p_payload;state.units.push({id:'created',...p,editable:true});}
    if(args.p_action==='place'){const p=args.p_payload;Object.assign(state.people.find(person=>person.id===p.employee_id),{unit_id:p.unit_id,title:p.title,kind:p.kind,leader_id:p.leader_id});}
    return {data:structuredClone(state)};
@@ -41,16 +42,26 @@ try{
   await expandService();
   assert(window.document.querySelector('.org-person-apprentice svg'));
   await click('Ny avdeling');await write('Avdelingsnavn','Teknisk prosjektavdeling');await write('Plasser under','service');await submit();
-  assert.equal(commands[0].p_payload.parent_id,'service');assert(window.document.body.textContent.includes('Avdelingen er lagret.'));assert.equal(window.document.querySelector('dialog'),null);
+  assert.equal(commands.length,0,'Applying structure only stages it');assert(window.document.body.textContent.includes('Trykk Lagre kart'));assert.equal(window.document.querySelector('dialog'),null);
+  assert(button('Last ned PDF').disabled);assert(window.document.body.textContent.includes('Ulagrede endringer'));
+  const rootName=window.document.querySelector('[aria-label="Navn øverst i kartet"]');await act(async()=>{Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype,'value').set.call(rootName,'Ringside');rootName.dispatchEvent(new window.Event('input',{bubbles:true}));});
+  await act(async()=>window.dispatchEvent(new window.Event('focus')));assert.equal(window.document.querySelector('[aria-label="Navn øverst i kartet"]').value,'Ringside','Draft survives fresh focus');
+  await act(async()=>window.__unmount());await act(async()=>window.__render({context}));assert.equal(window.document.querySelector('[aria-label="Navn øverst i kartet"]').value,'Ringside','Volatile scoped draft survives rights remount after fresh read');
+  await click('Lagre kart');assert.equal(commands[0].p_payload.units.find(u=>u.name==='Teknisk prosjektavdeling').parent_id,'service');assert.equal(commands[0].p_payload.chart_name,'Ringside');assert(window.document.body.textContent.includes('Kartet er lagret.'));assert(!button('Last ned PDF').disabled);
+  await expandService();
   await act(async()=>window.document.querySelector('.org-person-apprentice').click());await write('Nærmeste leder','new');
   assert(window.document.body.textContent.includes('Ny leder får HR-historikken'));
   assert(button('Lagre plassering').disabled);
   await act(async()=>window.document.querySelector('.org-access-change input').click());assert(!button('Lagre plassering').disabled);await submit();
   assert.equal(commands.at(-1).p_payload.confirm_leader_change,true);assert.equal(commands.at(-1).p_payload.leader_id,'new');
+  await click('Rediger kart');const remove=buttons().find(b=>b.getAttribute('aria-label')==='Slett Service');await act(async()=>remove.click());
+  assert(window.document.body.textContent.includes('Stillinger, nærmeste leder og HR beholdes'));await click('Slett fra kladden');assert.equal(state.units.length,4,'Deletion staged, server unchanged');await click('Lagre kart');assert.equal(state.units.length,1);assert.equal(state.people[0].unit_id,null);assert.equal(state.people[0].leader_id,'new');assert(commands.at(-1).p_payload.confirm_removal);assert.equal(commands.at(-1).p_payload.removed_ids.length,3);
+  await click('Rediger kart');await click('Ny avdeling');await write('Avdelingsnavn','Kladd beholdes');await submit();state.revision++;
+  await act(async()=>window.dispatchEvent(new window.Event('focus')));assert(window.document.body.textContent.includes('Kladd beholdes'));assert(button('Lagre kart').disabled,'Fresh conflict cannot overwrite');await click('Forkast endringer');assert(!window.document.body.textContent.includes('Kladd beholdes'));
   // Real focus handlers clear old payload and reject late re-appearance after revoke.
   revoked=true;await act(async()=>window.dispatchEvent(new window.Event('focus')));assert(!window.document.querySelector('.org-canvas'));assert(!window.document.body.textContent.includes('Anne Bjørnstad'));assert(window.document.body.textContent.includes('KS-tilgang trukket tilbake'));
   revoked=false;state=structuredClone(baseline);state.context={...context,user_id:'head',administer:false};state.units.forEach(unit=>unit.editable=unit.id!=='store');
-  await act(async()=>window.__render({context:state.context}));await expandService();
+  await act(async()=>window.__render({context:state.context}));await click('Rediger kart');await expandService();
   const edit=buttons().find(b=>b.getAttribute('aria-label')==='Rediger Service');await act(async()=>edit.click());assert(field('Avdelingsleder med redigeringstilgang').disabled);assert(field('Plasser under').disabled);await click('Lukk');
   const apprentice=window.document.querySelector('.org-person-apprentice');assert(apprentice);await act(async()=>apprentice.click());assert(field('Nærmeste leder').disabled);assert(![...field('Avdeling').options].some(o=>o.value==='store'));await click('Lukk');
   await act(async()=>window.__unmount());state=structuredClone(baseline);state.context={...context,user_id:'employee',administer:false};state.units.forEach(unit=>unit.editable=false);

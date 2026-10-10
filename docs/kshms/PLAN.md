@@ -1,3 +1,9 @@
+## Organisasjonskart O2: tydelig lagring og struktur – 10. oktober 2026
+
+**Vis kart / Rediger kart**, frie toppnavn og nivåer. Firmaadmin kladder strukturen med synlige **Rediger / flytt / Slett**, deretter **Lagre kart**. Sletting forklares og flytter personer til Ikke plassert, med bevart stilling/nærmeste leder/HR. Tre like grener vises ved siden av hverandre under felles forelder; stor innvendig boksnesting er fjernet. Medarbeidere lagres separat etter strukturen. Faktiske Sandbox **33 nye + 63 berørte assertions PASS**, React/HR-Hjelp og fire syntetiske PDF-sider kontrollert. Kladd/fokus/remount/konflikt og fersk tilgang beholdes. Bare feature/Preview/Sandbox; brukerens to eksisterende testkort og plassering er ikke flyttet/slettet.
+
+**Nytt krav før deres Production-kart:** ett Ringside-konsernkart med uttrykkelige koblinger til tre firmaer og én konto per bruker, også ved flere firmatilganger/roller. Dagens valgte-firma-RPC samler ikke firmabrukere på tvers. Flerfirma-kartet er eget neste scope; HR fortsatt separat per firma/person. Ingen Production/main/demo/e-post eller generell tilgangsutvidelse. [Avklart O2-scope, bevis og knapper](ORGANIZATION_EDITOR_20261010.md). Tidligere TEST OK og B/C-bevis beholdes.
+
 ## Organisasjonskart under KS/HMS – 10. oktober 2026
 
 Kenneth plasserer byggeren under **KS/HMS**, tilgjengelig også uten HR-avtale. Avdelinger/underavdelinger, frie stillinger, ledere/mellomledere/ansatte/lærlinger, søk/filter/zoom og egen PDF. Firmaadmin bygger hele kartet; avdelingsledere sin gren; kartroller gir ingen automatisk HR-innsyn. Nærmeste leder deles kontrollert med eksisterende HR-register etter uttrykkelig firmaadminbekreftelse.

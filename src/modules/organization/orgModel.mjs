@@ -1,6 +1,6 @@
 export const ORG_KINDS={leader:'Leder',middle:'Mellomleder',employee:'Ansatt',apprentice:'Lærling'};
 export const ORG_COLORS={teal:['#e2f4ee','#096457'],blue:['#e8f1ff','#285998'],amber:['#fff3d8','#805719'],violet:['#f0eaff','#6b46a0'],rose:['#fcebef','#9a4057']};
-export function orgFingerprint(data){return JSON.stringify([data.context,data.revision,data.units,data.people,data.members]);}
+export function orgFingerprint(data){return JSON.stringify([data.context,data.revision,data.chart_name??null,data.units,data.people,data.members]);}
 export function orgBranches(data) {
  const units=new Map(data.units.map(unit=>[unit.id,{...unit,children:[],people:[]}]));
  if(units.size!==data.units.length)throw Error('Kartet har dupliserte avdelinger.');
@@ -54,11 +54,22 @@ export function createOrgSession({rpc,companyId,userId,onClear=()=>{}}) {
   async command(expected,action,payload){
    const ticket=generation;try {const fresh=await read();
    if(orgFingerprint(fresh)!==orgFingerprint(expected)){invalidate();throw Error('Kartet eller medarbeiderne er endret. Hent på nytt før lagring.');}
-   const result=await rpc('organization_command',{p_company_id:companyId,p_revision:fresh.revision,p_action:action,p_payload:payload});
+   const result=await rpc(action==='layout'?'organization_save_layout':'organization_command',{p_company_id:companyId,p_revision:fresh.revision,...(action==='layout'?{}:{p_action:action}),p_payload:payload});
    if(disposed||ticket!==generation)throw Error('Kartforespørselen er utløpt.');
    if(result?.context?.company_id!==companyId||result.context.user_id!==userId){invalidate();throw Error('Arbeidsprofilen er endret.');}
    return await read();
    }catch(error){if(!disposed&&ticket===generation)invalidate();throw error;}
   }
  };
+}
+
+export const orgLayout=data=>({chart_name:data.chart_name||data.context.company_name||'Ditt firma',units:data.units.map(({id,parent_id,name,manager_id,color})=>({id,parent_id:parent_id||null,name,manager_id:manager_id||null,color}))});
+export function orgSubtree(units,id){if(!id)return new Set();const found=new Set([id]);let changed=true;while(changed){changed=false;for(const unit of units)if(found.has(unit.parent_id)&&!found.has(unit.id)){found.add(unit.id);changed=true;}}return found;}
+export function orgLayoutPayload(data,layout){
+ const units=layout.units.map(({id,parent_id,name,manager_id,color})=>({id,parent_id:parent_id||null,name:name.trim(),manager_id:manager_id||null,color}));
+ if(units.length>100||layout.chart_name.trim().length<2||layout.chart_name.trim().length>100)throw Error('Kontroller toppnavnet og antall avdelinger.');
+ orgBranches({units,people:[]});
+ if(units.some(u=>u.name.length<2||u.name.length>80||!ORG_COLORS[u.color]))throw Error('Kontroller avdelingsnavn og farge.');
+ const ids=new Set(units.map(u=>u.id)),removed_ids=data.units.filter(u=>!ids.has(u.id)).map(u=>u.id).sort();
+ return {chart_name:layout.chart_name.trim(),units,removed_ids,confirm_removal:removed_ids.length>0};
 }
