@@ -1,3 +1,8 @@
+## HR H5b – isolert slettekvittering, 10. oktober 2026
+
+Full eksport → skyunion → varig anker → fersk verifisert readback → service-only DB-ack er utviklerverifisert; «Slettet» krever også ferdige filjobber. **20 feil-/samtidighetsscenarioer, 42 PostgreSQL-assertions, berørt faktisk React og full Sandbox critical/build PASS.** Sandbox-migrasjon installert, binding deaktivert og privat HR fortsatt stengt. Faktisk permanent sky/scheduler og isolert Supabase/Auth/Storage-restore gjenstår; live rollback-prøven fikk connectorfeil og er ikke PASS. Production/main uendret. Innlogget demo preflight grønn; testmail ikke sendt. [Avgrenset scope, bevis og blokkeringer](HR_LEDGER_ACK_20261010.md).
+
+
 ## HR: samtalemaler i menyen og sykefraværsoppsett – 10. oktober 2026
 
 **Åpne samtalemaler** og **Åpne sykefravær** ligger i HR-snarveiene øverst. Firmaadmin kan klargjøre en generell sykefraværsmal med 11 spørsmål om arbeid, kontakt, tilrettelegging og oppfølging. Eksisterende admin-/firmagater, utgaver, CAS og kladdbevaring gjelder. Fristveiledning med NHO/NAV-kilder og et avgrenset regneeksempel for 4/7/8/26 uker; fullt og gradert fravær forklares ulikt. Ingen personlig sak, fraværsdata, påminnelse eller innsending opprettes.

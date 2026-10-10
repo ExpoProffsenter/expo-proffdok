@@ -1,3 +1,8 @@
+## HR H5b – isolert slettekvittering, 10. oktober 2026
+
+Full eksport → skyunion → varig anker → fersk verifisert readback → service-only DB-ack er utviklerverifisert; «Slettet» krever også ferdige filjobber. **20 feil-/samtidighetsscenarioer, 42 PostgreSQL-assertions, berørt faktisk React og full Sandbox critical/build PASS.** Sandbox-migrasjon installert, binding deaktivert og privat HR fortsatt stengt. Faktisk permanent sky/scheduler og isolert Supabase/Auth/Storage-restore gjenstår; live rollback-prøven fikk connectorfeil og er ikke PASS. Production/main uendret. Innlogget demo preflight grønn; testmail ikke sendt. [Avgrenset scope, bevis og blokkeringer](HR_LEDGER_ACK_20261010.md).
+
+
 ## HR: tydelig hjelp der du arbeider – 10. oktober 2026
 
 Synlig **Start her** viser oppsett → medarbeider/leder → samtalemal for firmaadmin, og relevant lesehjelp for leder/personlig bruker. Malbyggeren forklarer velg → tilpass → forhåndsvis/lagre, navn/tema/spørsmål, forberedelse/felles møte, kladd/Forkast og utgave/arkiv. En lagret mal starter ingen samtale og sender ingenting til ansatte. Bare presentasjon/hjelp; handlinger, roller, SQL og privat innholdsport beholdes.
