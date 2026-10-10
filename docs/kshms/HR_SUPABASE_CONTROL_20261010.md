@@ -1,5 +1,21 @@
 # H5b med separat Supabase-kontrollprosjekt
 
+## Faktisk opprettet og første kontrollgrunnlag levert ca. 22:43 Europe/Oslo
+
+Kenneth fullførte opprettelsen. API og oppdatert eier-UI viser **expo-hr-control / amduqhmgmeetaatwlmmt**, organisasjon `oolmxqndmldzpylahcjl`, **ACTIVE_HEALTHY**, **Micro**, **eu-west-1 / West EU Ireland**, ingen GitHub-kobling. Dette er ett separat prosjekt til senere produksjonsvern, ingen permanent kontrolljobb for kursdemoen. Avtalt ekstra grunnkostnad er $10/måned uten betalte tillegg. Ingen passord, JWT, token eller intern auth-state er lest eller publisert.
+
+Varig privat kontrollpunkt og kjøringslås er implementert separat i `ops/hr-control/supabase/migrations`, aldri i appens migrasjonsmappe, og installert **bare i kontrollprosjektet**. CLI-kanoniske migrasjoner `20261010203756_hr_control_checkpoint.sql` og `20261010204058_hr_control_auto_rls_acl.sql` er faktisk installert som `20261010204017` og `20261010204144`. Ingen seed/aktivering/automatisk bootstrap. Etterkontroll: **0 checkpoints, 0 enabled bindings, 0 locks, 0 Edge Functions**.
+
+**37 PostgreSQL-assertions PASS**, både PGlite og faktisk kontrollprosjekt, med alle syntetiske bindinger rullet tilbake. Ny faktisk adapter `scripts/lib/hr-control-ack-cycle.mjs` har **21 feil-/rekkefølge-/samtidighetsscenarioer PASS med syntetiske transporter**. Den krever ISOLATED_QA og avviser aktive Production/kurs-Sandbox/kontrollprosjekt som appkilde. Eksisterende filoperator og dens 20 feilscenarioer er uendret og PASS. Full Sandbox critical/build PASS; ny cycle-check er lagt til PR Core Safety uten å fjerne eller svekke eksisterende sjekker.
+
+Supabase Security Advisor fant offentlig kjørerett på dashboardets `public.rls_auto_enable()`-eventtrigger. Den er eksplisitt tilbakekalt bare her; faktisk rollback-tabellprøve bekreftet automatisk RLS fortsatt på. Ingen WARN/ERROR etter kontrollen. Én forventet INFO gjenstår: privat checkpoint med RLS uten offentlig policy, tilsiktet deny-all. Ingen anon/authenticated/service_role-tabell-/schemaadgang; fire avgrensede service-only RPC-er med tomt search_path. [Eksakt operatørkontrakt, QA og advisor-lenke](../../ops/hr-control/README.md).
+
+![Faktisk kontrollprosjekt med Micro, Ireland og installert ACL-migrasjon](evidence/SUPABASE_CONTROL_READY_20261010.jpg)
+
+Skjermens «main PRODUCTION» gjelder kontrollprosjektets egen primærdatabase, ikke Expo ProffDoks appbranch/main eller en H5b-produksjonsrelease. Privat HR er fortsatt false/quarantined=true i begge aktive appmiljøer, og main/demo-SHA er uendret. Ingen appkode, aktive data, Production-ack-tabell eller demo-overlay endret. PR #217 forblir draft.
+
+Begrenset Blob-token og faktisk origin/SDK-binding, betrodd bootstrap, Edge-inngang/runtime, scheduler/varsling, ekte skytester og full isolert database/Auth/Storage-byte-restore gjenstår. Kontrolltabellen er et installert grunnlag, **ikke et etablert betrodd produksjonsanker eller full sky-/restore-PASS**. Eksisterende lagerets mixed-case ressurs-ID må ikke blindt likestilles med tokenavledet SDK-ID/origin eller omgås ved svekket validator. Tidligere avsnitt om «ikke opprettet» er historikk.
+
 ## Gjeldende formål: produksjonsvern, ikke permanent kursressurs
 
 Kenneth presiserte at Sandbox brukes til kurs. Den varige kontrolltjenesten trengs før **Production** kan åpne private HR-samtaler, svar og sykefraværssaker. Kursdemoen trenger ingen egen permanent kontrolljobb så lenge privat HR forblir stengt. Main er kodegrenen, Production er den aktive appen/backend med reelle data, og demo/Sandbox er kursmiljøet.

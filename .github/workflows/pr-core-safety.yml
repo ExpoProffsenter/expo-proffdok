@@ -42,3 +42,6 @@ jobs:
 
       - name: Run full critical build
         run: npm run build
+
+      - name: Verify isolated HR control cycle
+        run: node scripts/critical-hr-control-cycle-check.mjs
