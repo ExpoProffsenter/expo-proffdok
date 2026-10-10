@@ -36,6 +36,18 @@ Utviklerreview fant et konkret konkurransehull i ny snapshot-upsert: UUID kan ko
 2. **Rediger kart → Slett** viser berørte kort/medarbeidere. **Slett fra kladden** kladder slettingen; **Forkast endringer** lar lagret struktur stå. Lagre kart fullfører bare når du ønsker slettingen.
 3. Kort som skal stå ved siden av hverandre får samme **Plasser under**, for eksempel Styret. Etter lagring kan medarbeidere plasseres separat med **Lagre plassering**, og **Last ned PDF** gir lagret struktur.
 
-Skynett-kontroll utføres på publisert SHA/READY/Sandbox etter CI. Dette avsnittet er foreløpig utviklerbevis; browser-bevis føres først når faktisk utført. Ikke nye B/C/Kenneth-omtester.
+## Faktisk innlogget Preview-kontroll
 
-Full Sandbox critical/build PASS og scope guard/diff-check grønne før kodepublisering. Remote/main kontrollert igjen uendret. Publisert SHA/tree/CI/READY føres i draft PR #216; Skynett-bevis lagres etter kontroll av publisert kode.
+Kode **512860dcfd8e2753789b97790e682a8003b10de9**, tree **fd6f9d9138ff875f7a9ae0469ab036da6f670f13**. PR Core Safety **38007754728 SUCCESS**, jobb **114080388321 SUCCESS**, scope guard og full critical build grønne. **dpl_3Z5PxtjxnXpi9P6geUP1iJuiKUSq READY Preview**, eksakt SHA/branch/prosjekt og fast alias. Direkte branch-env **EXPO_BACKEND_TARGET=sandbox**, target preview. Main ferskt uendret **155f6c4ac01f126c1db0c65da385cfd9305587d5**, PR #216 draft/unmerged. Ingen Production.
+
+Faktisk innlogget Skynett, demo@expo-proffdok.no / Expo Proffsenter, én fane og lukket popup. Rediger kart viser Lagre kart (disabled uten endring), Forkast, toppnavn og synlige Rediger/flytt/Slett. Endret toppnavn og flyttet Bademiljø Expo til samme forelder som Ringside Rørleggerbedrift **bare i lokal kladd**: Ulagrede endringer, Lagre kart enabled, PDF disabled, peer-kort ved siden av hverandre. Dialogens første navnefelt får fokus. F6/Escape beholdt kladd og aktiv redigering. Slett-dialog forklarte ett berørt kort/én person; Slett fra kladden viste én avdeling/firetallet Ikke plassert. Forkast gjenopprettet eksakt tidligere to kort/én plassering/tre ikke plassert og Expo Proffsenter-toppen. Ingen browser-RPC med strukturskriving eller sletting, ingen endring i faktisk firmatilgang/HR/leder; live lagring/rollback dekkes av SQL, ikke ny aktiv browser-lagring.
+
+Lagre kart/Forkast var 44 px høye og begge synlige samtidig med kompakt kortliste, viewport **1363×936**, sidebredde **1348** (ingen horisontal sidescroll). Noe vertikal scrolling og egen kartscroll er fortsatt nødvendig. Faktisk PDF lastet ned etter Forkast: **to A3-sider**, begge tekstkontrollert og rendret/visuelt kontrollert. Alle fire demonavn, faktisk gammel parent-relasjon og uendrede plasseringer med. Den er lokal QA; den syntetiske Ringside-PDFen er repo-bevis. Mobil, Windows screenshotverktøy, separate samtidige browserøkter og faktisk lagret tre-firma-kart er ikke påstått.
+
+Originale skjermbilder, ingen rekonstruksjon:
+
+![Synlig lagring og strukturkladd](evidence/organization/org2-editor-preview-20261010.jpg)
+
+![Forkastet kladd og uendret lagret struktur](evidence/organization/org2-saved-preview-20261010.jpg)
+
+Full lokal Sandbox critical/build PASS og scope guard/diff-check grønne før kodepublisering. Lokal historie avviker, alle 21 kodepubliseringsblobs og hele remote tree kontrollert identiske; force=false og forventet-head lease. Etterfølgende dokumentasjons-head/CI/READY føres i draft PR #216. Tidligere TEST OK og B/C-bevis beholdt.
