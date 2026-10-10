@@ -1,5 +1,17 @@
 # H5b med separat Supabase-kontrollprosjekt
 
+## Faktisk kontokontroll og klargjort opprettelse ca. 22:22 Europe/Oslo
+
+Kenneth bekreftet valgt eksisterende organisasjon og opptil **10 USD/måned i ekstra grunnkostnad**, uten betalte tillegg. Sikker GitHub-innlogging til Supabase i samme cloud-fane gav faktisk eierøkt. Team-/fakturakontroll stemmer med Kenneths oppgitte Ringside-fakturakonto; arbeidsområdenavnet **ExpoProffsenter's Org** er ikke fakturamottakerens selskapsnavn. Ingen fakturanavn, adresse, MVA-nummer, betalingsmiddel, eierrolle eller spend cap er endret. Private faktura-/betalingsdetaljer og fakturabilder publiseres ikke i repoet.
+
+Faktisk opprettelsesskjema for organisasjon `oolmxqndmldzpylahcjl` viser **Additional costs $10/m** med **Micro / 1 GB Shared compute**. Navn **expo-hr-control-sandbox**, konkret region **West EU (Ireland) / eu-west-1**, ingen GitHub-kobling, Enable Data API på, Automatically expose new tables av og Enable automatic RLS på. Nytt passord er ikke angitt, generert, lest eller lagret av agenten. Create new project er ikke trykket. Dette er ikke et opprettet prosjekt, kontrollanker eller operator-PASS. Seneste list_projects viser fortsatt bare eksisterende Production-prosjekt; aktiv Sandbox er dets eksisterende branch.
+
+Det tidligere utilgjengelige get_cost ble ikke blindt gjentatt. Et nytt, separat `confirm_cost`-kall med den faktisk kontobekreftede prisen 10 USD/month/project fikk **UNAVAILABLE: MCP tool confirm_cost was not returned by tools/list**. Ingen gyldig confirm_cost_id finnes; create_project-API kalles ikke med oppdiktet ID. Nettleserskjemaet er ferdig klargjort for manuell overtakelse, fordi nye databasecredentials må angis av brukeren selv etter nettleserens credential-regel. Kenneth trenger å angi/generere og beholde databasepassordet i sin egen passordbehandling, deretter fullføre Create new project i dette skjemaet. Ingen hemmelighet i chat, git, clipboard-uttrekk eller intern auth-state.
+
+![Klargjort kontrollprosjekt, valgt EU-region, sikkerhetsvalg og faktisk kontopris](evidence/SUPABASE_CONTROL_COST_20261010.jpg)
+
+Etter opprettelse må faktisk ny project-ref, organisasjon, region/compute, sikkerhetsvalg og ACTIVE_HEALTHY verifiseres før noen kontrollprosjekt-SQL/Edge-jobb. Bootstrap, Blob-token/originbinding, adapter, scheduler/varsling og isolert database/Auth/Storage-byte-restore gjenstår. Privat HR holdes fortsatt stengt; ingen Production/demo-appkode eller data endres. Tidligere pris-/scopeavsnitt nedenfor er historikk.
+
 Status 10. oktober 2026 ca. 22:05 Europe/Oslo. Miljømål **SANDBOX/DEMO**. Kenneth ba om videre arbeid og spurte om Supabase kan brukes i stedet for egen server. Dette er et konkret driftsforslag, **ikke implementert eller skytestet**. Eksisterende H5b-operator, app, migrasjoner og tester er uendret. Ingen ressurs, nøkkel, scheduler eller HR-port er opprettet/aktivert av denne avklaringen.
 
 ## Enkel forklaring
