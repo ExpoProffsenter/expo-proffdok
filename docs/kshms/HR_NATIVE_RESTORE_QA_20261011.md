@@ -21,3 +21,9 @@ PASS kan bare hevdes fra en faktisk fullført native-jobb med alle assertions og
 Dette er samme-versjons kald fysisk restore i en disponibel native Docker-stack med syntetiske data. Det er **ikke** managed-cloud Supabase backup/PITR, full produksjonsprofil/onboarding-QA, varig produksjonsanker eller H5b service-only DB-ack. Fem eksisterende H1/H3/H4-migrasjoner prøves; H5b-ack-migrasjonen er ikke installert i denne testen. De tidligere PGlite-prøvene har syntetiske plattformadaptere og er fortsatt merket separat.
 
 Før privat HR kan åpnes gjenstår betrodd bootstrap/varig uavhengig anker/signing key, faktisk isolert kilde/kontroll/ack-flyt, ekstern scheduler med varsling og full managed-cloud database/Auth/Storage-byte-restore med komplett appgrunnlag og etterfølgende tilgangs-/fil-/purgeprøver. Production, kurs-Sandbox og kontrollprosjekt skal aldri restores som test.
+
+## Faktisk kjørt resultat – 11. oktober 2026 01:06 Europe/Oslo
+
+GitHub Actions **38093742515 SUCCESS**, jobb **114335254717**, kodehead **709b421b6ca72cfa32ac516f411545a8817e5c1a**: **201 assertions PASS**. Faktisk kald native PostgreSQL/Auth- og Storage-byte-restore, native innlogging/bytehash/tilgangsavvisning, uendret filarbeider, uavhengig testledger, replay/purge/file-only-regresjon og beholdt annen medarbeider/fil; opprydding fullført. Eksakte image-ID-er/resultat og begge tidligere feil før backup er lagret i `evidence/HR_NATIVE_RESTORE_PASS_20261011.json`.
+
+Verktøyfeil rettet: privat ledger-mappe opprettes før initializeLedger; pinned CLI Storage ligger på **/mnt**. Kun eksakte egne DB/Storage-volumnavn godtas. Alle gamle assertions beholdt; ingen appkode eller migrasjon endret. Firmafixture, samme-versjons/samme-stack restore, Production-anker/DB-ack/managed-cloud-grensene over gjelder fortsatt. **Privat HR kan fortsatt ikke åpnes.**
