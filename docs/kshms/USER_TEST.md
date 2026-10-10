@@ -1,3 +1,13 @@
+## Ny kort prøve: samtalemaler – 10. oktober 2026
+
+Firmaadmin i aktivert HR-register: **HR → Samtalemaler** på [samme Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe).
+
+1. Velg **Årlig medarbeidersamtale**, **Prøvetidssamtale** eller **Oppfølgingssamtale**. Endre **Malnavn**, velg et spørsmål, og tilpass **Tema**, **Spørsmålstekst** og **Når besvares spørsmålet?**. **Forhåndsvis mal** viser den tomme malen; forslag og redigering er ikke lagret ennå.
+2. Trykk **Lagre mal**. Det skal stå **Malen er lagret · utgave 1.**. **Rediger mal → Lagre mal** lager neste utgave. **Forkast endringer** beholder den lagrede malen. **Malhistorikk og arkivering → Hent malhistorikk → Se utgave 1** viser den gamle utgaven.
+3. **Arkiver mal** krever avkryssing og beholder historikken. **Vis arkiverte maler** og **Gjenåpne mal** gjør den tilgjengelig igjen. Ved en annen admins nyere utgave beholdes kladden, men lagring sperres til du uttrykkelig velger den nyeste malen eller kladden som neste utgave.
+
+Utvikler har utført 91 faktiske Sandbox rollback-assertions, faktisk ny/berørt React, permanent critical/full Sandbox build og verifisert de fem live funksjonskroppene/ACL. Ingen gammel O3/B/C/PDF/ZIP/Kenneth TEST OK kreves igjen. Ny innlogget browserkontroll føres i [scope/bevis](HR_TEMPLATES_20261010.md) når faktisk utført; mobil og separate samtidige brukere er ikke påstått. Bare generelle spørsmål; ingen navn/personreferater/fravær i malene. Ansattes svar og individuelle samtaler er fortsatt stengt. Ingen Production eller e-post.
+
 **Faktisk O3 Preview-kontroll:** kode d4b5270e916dc06a764fbd35af36a8db6f238470, Core Safety 38009716896/jobb114086648809 SUCCESS, dpl_GKkbK6sdQd5si4yqYpeEd44NomJx READY eksakt SHA/Sandbox. Innlogget Skynett: ny kartvelger/bevart enkeltfirmakart/fokusretur/PDF to sider/fire demonavn PASS. Nytt felles kart er riktig skjult for demo uten to kvalifiserte firmaer; flerfirmahandlinger har SQL/React-bevis, ikke nytt browserbevis. Ingen aktiv rettighets-/kartendring. [Originalbilde og presise bevis](ORGANIZATION_GROUPS_20261010.md#faktisk-innlogget-preview-og-kodepublisering).
 
 ## Organisasjonskart O3 – felles kart for flere firmaer, 10. oktober 2026

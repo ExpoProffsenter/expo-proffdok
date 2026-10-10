@@ -9,6 +9,7 @@ import {UserRound,ShieldCheck,ChevronRight,UsersRound,Settings,FileCheck2,Info,A
 import HrTextSuggestion from './HrTextSuggestion.jsx';
 import PrivateContact from './PrivateContact.jsx';
 import {HR_SETUP_SUGGESTIONS,suggestedReviewDate} from './hrSetupSuggestions.mjs';
+import HrConversationTemplates from './HrConversationTemplates.jsx';
 
 const emptyConfig={purpose:'',legalBasis:'',reviewOn:'',enabled:false};
 function Field({label,children}) {return <label className="hr-field"><span>{label}</span>{children}</label>;}
@@ -129,6 +130,7 @@ export default function HrModule({context,audience='legacy',initialEmployeeId=nu
    {!shown.length&&<div className="hr-empty"><h4>{employees.length?'Ingen treff':'Ingen medarbeidere å vise'}</h4><p>{employees.length?'Prøv et annet søk.':administer?'Start med «Legg til medarbeider». Deretter velger du leder og kontrollerer tilgangen.':'Firmaadmin registrerer medarbeider og nærmeste leder. Oppfølgingene vises her når de er tilgjengelige for deg.'}</p></div>}
    {data.next&&<button type="button" className="secondary" disabled={busy} onClick={()=>run(async(session,current)=>{const page=await list(session,data.next);if(current())setData(previous=>({...previous,employees:[...previous.employees,...page.employees.filter(employee=>!previous.employees.some(p=>p.id===employee.id))],next:page.next}));})}>Hent flere medarbeidere</button>}
   </>}
+  {administer&&data?.enabled&&<HrConversationTemplates key={companyId+':'+userId} context={context}/>}
   {administer&&data&&<details className="hr-card" ref={setupCardRef} tabIndex={-1} open={!data.settings}>
    <summary>Oppsett og kontrollfrist{!data.enabled?' · registeret er avslått':''}</summary>
    <p>Beskriv hvorfor firmaet trenger registeret, hvilket grunnlag dere bruker, og når dere skal kontrollere behov og tilgang igjen. Hold private opplysninger om enkeltansatte utenfor disse feltene.</p>
