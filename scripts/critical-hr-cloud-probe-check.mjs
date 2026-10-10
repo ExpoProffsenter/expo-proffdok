@@ -30,7 +30,23 @@ for(const [env,req,status] of [
 ])await scenario(async()=>{
  let calls=0;const handler=createProbeHandler({sdk:{},env:n=>env[n],probe:async()=>{calls++;throw Error('unexpected');}});
  const result=await handler(req);assert.equal(result.status,status);assert.equal(calls,0);
- assert(!await result.text().then(t=>t.includes(token)||t.includes(serverKey)));
+ assert(!await result.text().then(t=>t.includes(token)||t.includes(serverKey)||t.includes(oldServerKey)));
+});
+// Distinguish missing runtime binding from rejected input without exposing any credentials.
+for(const encoded of ['', 'not_json', 'null', JSON.stringify({default:serverKey}),
+ JSON.stringify({hr_cloud_probe:'anon'})])await scenario(async()=>{
+ let calls=0;const handler=createProbeHandler({sdk:{},
+  env:n=>n==='SUPABASE_SECRET_KEYS'?encoded:settings[n],probe:async()=>{calls++;}});
+ const result=await handler(request());assert.equal(result.status,403);assert.equal(calls,0);
+ assert.deepEqual(await result.json(),{ok:false,code:'control_key_not_configured'});
+});
+for(const headers of [new Headers({apikey:oldServerKey}),
+ new Headers([['apikey',serverKey],['apikey',oldServerKey]])])await scenario(async()=>{
+ let calls=0;const handler=createProbeHandler({sdk:{},env:n=>settings[n],probe:async()=>{calls++;}});
+ const result=await handler(new Request('https://example.invalid',{
+  method:'POST',headers,body:JSON.stringify({mode:'ISOLATED_CLOUD_QA'})}));
+ assert.equal(result.status,403);assert.equal(calls,0);
+ assert.deepEqual(await result.json(),{ok:false,code:'service_only'});
 });
 await scenario(async()=>{
  const handler=createProbeHandler({sdk:{},env:n=>settings[n],probe:async(_,t)=>{

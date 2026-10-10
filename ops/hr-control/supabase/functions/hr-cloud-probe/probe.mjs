@@ -114,11 +114,14 @@ export async function runCloudProbe(sdk,token,anonymousFetch=fetch) {
  }
 }
 
-function authorized(header,encodedKeys){
+function configuredServerKey(encodedKeys){
  // Supabase's documented service-to-service mode: only hr_cloud_probe on apikey.
  // No user JWT, anon/publishable key or arbitrary named key can invoke this QA function.
- let key;try{key=JSON.parse(encodedKeys).hr_cloud_probe;}catch{return false;}
- if(typeof key!=='string' || !key.startsWith('sb_secret_') || key.length<32 || typeof header!=='string')return false;
+ let key;try{key=JSON.parse(encodedKeys).hr_cloud_probe;}catch{return null;}
+ return typeof key==='string' && key.startsWith('sb_secret_') && key.length>=32 ? key : null;
+}
+function authorized(header,key){
+ if(typeof header!=='string')return false;
  const a=Buffer.from(header),b=Buffer.from(key);
  return a.length===b.length && timingSafeEqual(a,b);
 }
@@ -136,7 +139,10 @@ async function requestMode(req){
 export function createProbeHandler({sdk,env,probe=runCloudProbe}) {
  return async req=>{
   if(env('SUPABASE_URL')!==controlUrl)return reply(503,{ok:false,code:'wrong_control_project'});
-  if(!authorized(req.headers.get('apikey'),env('SUPABASE_SECRET_KEYS')))
+  const key=configuredServerKey(env('SUPABASE_SECRET_KEYS'));
+  // Configuration status only: never return key values, key lists or request headers.
+  if(!key)return reply(403,{ok:false,code:'control_key_not_configured'});
+  if(!authorized(req.headers.get('apikey'),key))
    return reply(403,{ok:false,code:'service_only'});
   if(req.method!=='POST')return reply(405,{ok:false,code:'post_required'});
   if(!await requestMode(req))return reply(400,{ok:false,code:'isolated_mode_required'});
