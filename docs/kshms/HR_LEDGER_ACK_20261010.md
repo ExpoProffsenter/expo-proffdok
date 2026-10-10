@@ -81,3 +81,7 @@ Operatoren trenger eksisterende H5a servervariabler, eksakt `@vercel/blob 2.8.1`
 ## Dokumentasjonspublisering før testmail
 
 Dokumentasjonshead `287a80aaaeae21162735ad8a5187b88bae312618`, tree `ddba94c3864bc2c71b584354ccbac09f360b8787`, hadde Core Safety **38078311463 SUCCESS** og Preview **dpl_55TUJy7U58CGdj7fv2TrZuNUS4yS READY** på eksakt SHA. Funksjonskoden er fortsatt `ecd700ac`. Den etterfølgende mailoppfølgingen endrer bare statusnotater og originalt skjermbevis på samme draft PR, uten merge.
+
+## Driftsoppfølging ca. 21:33 Europe/Oslo
+
+Kenneth autoriserte videre arbeid. Lagertilgang er undersøkt, men ingen endret connectorrettighet eller nytt lager/token er bekreftet. Vercel-browserinnlogging kom etter GitHub device-verifisering til eget authenticator/recovery-steg, som ble avbrutt; Kenneth opplyser at han ikke finner denne kontoen i sin autentiseringsapp. Supabase kostnadsoppslag er utilgjengelig, ingen ny skyinstans opprettet. Ny pinnet Supabase CLI 2.120.0 kan bruke native runtime, men faktisk isolert oppstart feilet før database/Auth/Storage på DNS-timeout mot begge offisielle artifact-hostene. Ingen restore eller cloud-PASS påstås. Fersk lesende etterkontroll bevarer begge HR-porter, Production uten ack-tabell og Sandbox med deaktivert binding/1 medarbeider/0 receipts/acks/innhold/filer/jobber. [Konkrete ressurser, serverkonfigurasjon, scheduler og restoreprotokoll](HR_LEDGER_OPERATIONS_20261010.md).
