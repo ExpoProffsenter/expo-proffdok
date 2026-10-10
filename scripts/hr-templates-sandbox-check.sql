@@ -147,9 +147,15 @@ do $$begin perform set_config('request.jwt.claim.sub',current_setting('hr.qa.adm
 reset role;
 select set_config('request.jwt.claim.sub',current_setting('hr.qa.system'),true);
 update public.profiles set deactivated=false where id=current_setting('hr.qa.admin')::uuid;
+-- A real work-profile switch requires membership. Production correctly ignores
+-- an unowned active-company selection and falls back to the primary company.
+insert into public.sales_company_memberships(company_id,user_id,is_primary,workspace_role)
+ values(current_setting('hr.qa.foreign_company')::uuid,current_setting('hr.qa.admin')::uuid,false,'ansatt') on conflict do nothing;
 update public.user_active_company_scope set company_id=current_setting('hr.qa.foreign_company')::uuid where user_id=current_setting('hr.qa.admin')::uuid;
 set local role authenticated;
-do $$begin perform set_config('request.jwt.claim.sub',current_setting('hr.qa.admin'),true); perform pg_temp.hr_reject(format('select public.hr_template_list(%L)',current_setting('hr.qa.company')),'42501');end$$;
+do $$begin perform set_config('request.jwt.claim.sub',current_setting('hr.qa.admin'),true);
+ perform pg_temp.hr_assert(public.current_active_company_scope_id()=current_setting('hr.qa.foreign_company')::uuid,'valid work profile switched before stale-company rejection');
+ perform pg_temp.hr_reject(format('select public.hr_template_list(%L)',current_setting('hr.qa.company')),'42501');end$$;
 reset role;
 select current_setting('hr.qa.count')::integer as assertions;
 rollback;

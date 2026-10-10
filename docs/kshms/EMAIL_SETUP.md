@@ -1,6 +1,12 @@
 # Ansvarlig-e-post – eksisterende Resend gjenbrukes
 
-## Gjeldende status 9. oktober 2026
+## Gjeldende status 10. oktober 2026
+
+Kenneth har nå godkjent Production-release og main → demo. Production har alle 54 migrasjoner og `kshms-assignment-mailer` v1 ACTIVE. Autentisert check-mode ga HTTP 200 med alle fire konfigurasjonsflagg sanne. Eksisterende Resend-hemmeligheter er brukt server-side. Production-transport er aktivert etter kontroll av tom kø, med origin `https://expo-proffdok.app`; ingen test-/Sandbox-kø er kopiert. Én autorisert admin-test til Kenneth er fortsatt ikke sendt fordi den eksisterende testflyten krever aktiv innlogget adminøkt. Mottak i innboks er derfor ikke attestert. Se [releasekontrollen](RELEASE_20261010.md).
+
+Sandbox holdes fortsatt `enabled=false`. Historiske godkjenningsnotater nedenfor beskriver situasjonen før brukerens «Kjør».
+
+## Status 9. oktober 2026 (historisk)
 
 Sandbox KS/HMS-worker er v7 ACTIVE, med tildeling og påminnelse for alle seks typer. Transport er fortsatt direkte kontrollert **enabled=false**; appoppgavene virker. Provider-stub dekker de tolv type/fase-kombinasjonene, ikke mottak i innboks. Ekte levering er et krav ved senere godkjent Production-release. Én separat kontrollert test til Kenneths valgte adresse er autorisert, men ikke sendt; den krever fungerende innlogget adminøkt. Den skal ikke dupliseres eller brukes som generell aktivering.
 
@@ -17,7 +23,7 @@ Lesende kontroll i denne runden bekrefter:
 - KS/HMS `kshms_private.email_worker_settings.enabled=false` er lest direkte i Sandbox. Tidligere autentisert check kl. 21:27 viste `transport_safe=true`, men manglende nøkkel/avsender. Dette er forventet når reell utsending ikke brukes der.
 - KS/HMS sin permanente critical-test bruker simulert Resend-svar (`provider-stub`). Den kontrollerer seks meldingstyper, beskyttede lenker, minimalt innhold, avslått worker, konfigurasjonsfeil og idempotens. Den beviser ikke mottak i innboks.
 
-## Før senere godkjent Production-release
+## Plan før godkjenningen 10. oktober (historisk)
 
 1. Fullfør relevant Preview-QA og innhent eksplisitt Production-godkjenning for PR #216. Ingen merge, Production-DDL, deploy eller generell sending er autorisert nå. Den ene allerede autoriserte admin-testmailen er et separat punkt.
 2. Følg migrasjonene i korrekt rekkefølge og deploy KS/HMS-arbeideren med utsending fortsatt avslått. Production har foreløpig ingen KS/HMS-arbeider.

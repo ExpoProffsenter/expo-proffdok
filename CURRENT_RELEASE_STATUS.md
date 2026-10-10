@@ -1,3 +1,13 @@
+## Godkjent release til Production og kursdemo – 10. oktober 2026
+
+Kenneth har godkjent releaseløpet med «Kjør», mobiltilpasning og eksempelinnhold for kurs. Miljømål: **BEGGE**. Eldre avsnitt om manglende Production-godkjenning er historiske.
+
+Production har alle 54 migrasjoner og begge nye serverarbeidere. 146 relevante funksjonsdefinisjoner samsvarer med Sandbox. Faktiske Production SQL-prøver består: håndbok, 73 avvikskontroller, 93 SJA/RUH, 27 sjekkliste, 54 utførelse, 95 samtalemal og 64 organisasjonsgruppekontroller. Alle syntetiske rader er rullet tilbake. Reelle profiler/prosjekter/Sales-saker er uendret i antall. Ingen automatisk modulaktivering for reelle firmaer.
+
+Production-transport er konfigurert og aktivert fra tom kø; Sandbox-transport forblir avslått. Personlig HR-innhold er fortsatt sperret. Mobiltilpasning inkluderer én kolonne på smal skjerm og lagringsfelt i vanlig dokumentflyt under 500 px skjermhøyde. Fysisk mobil-/kameraprøve og faktisk mottak av én autorisert testmail er ikke attestert.
+
+Merge og main → demo pågår etter grønn CI. Se [releasekontrollen](docs/kshms/RELEASE_20261010.md) for installasjon, QA og konkrete begrensninger. Demoens kursdata holdes på demo/Sandbox.
+
 ## HR: tydelig hjelp der du arbeider – 10. oktober 2026
 
 Synlig **Start her** viser oppsett → medarbeider/leder → samtalemal for firmaadmin, og relevant lesehjelp for leder/personlig bruker. Malbyggeren forklarer velg → tilpass → forhåndsvis/lagre, navn/tema/spørsmål, forberedelse/felles møte, kladd/Forkast og utgave/arkiv. En lagret mal starter ingen samtale og sender ingenting til ansatte. Bare presentasjon/hjelp; handlinger, roller, SQL og privat innholdsport beholdes.
