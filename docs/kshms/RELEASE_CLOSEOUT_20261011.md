@@ -1,3 +1,13 @@
+## Sluttført HR-release og demo-synk – 11. oktober 2026
+
+Kenneth TEST OK kl. 17:10 Europe/Oslo gjelder #220 og skal ikke gjentas. Production funksjonsmerge 6b557c71f97cfecd7114b61883c964a3aaa88c25 READY, dokumentasjons-main 61a42e6c7d996a6abc6c5146de45e3759e682b4d etter grønn #221 Core Safety 38151822834/114506673049. Demo synkretning kun main → demo; appfunksjonene matcher godkjent kilde. Demoens main-baseline er nøyaktig 61a42e6c7d996a6abc6c5146de45e3759e682b4d.
+
+Sandbox-migrasjon demo_hr_conversation_course er installert: bevisst ny kontrakt med åpen samtaleport, men både KS/HMS- og HR-varselmail AV og ingen HR-filer. Syntetisk demo.ansatt2@expo-proffdok.invalid har dedikert demo@expo-proffdok.no som leder; eksempelet er delt og har lagret møtekladd uten bekreftelser. Vanlige RPC-er er brukt. Eksisterende brukerutfylt kontaktpost er ikke overskrevet. Et første seedforsøk på demo.ansatt1 ble avvist av eksisterende ledersirkel-guard og rullet tilbake; guarden er uendret.
+
+19 eksisterende demo-preflight + 4 HR/KS-kurskontroller PASS. Samlet Sandbox critical/build PASS, faktisk samtale-React 38 assertions PASS. Kursens rollback-QA bevarer signert/fullført historikk og avviser aktiv KS-mail, aktiv HR-mail, restore-karantene, tilbakekalt syntetisk medarbeider og feil eksempel-leder. Ingen ekte signering eller fullføring er seedet. Kursreset bevarer personlig samtalehistorikk; arbeidsutkast for KS/HMS resettes som før. Publiserings-SHA, READY-deploy og innlogget sluttkontroll føres i #220 etter kontrollert oppdatering av demo-ref.
+
+Production er kontrollert innlogget. Ringsides register ble etter åpningen observert aktivt med medarbeidere; agenten har ikke fylt ut virkelige personalposter eller bestemt behandlingsgrunnlag. Den autoriserte Kenneth-testmailen er akseptert av Resend. Ingen ny betalt Supabase-ressurs. #217 ekstern ledger er fortsatt separat draft.
+
 # HR og navigasjon – godkjent release 11. oktober 2026
 
 Kenneth ga «test ok» 11. oktober 2026 kl. 14:17 Europe/Oslo. Dette godkjenner popup-/navigasjonsrettelsene i PR #219 og Sandbox-prøvesamtalen i PR #218. Eldre «draft», «ingen merge» og «TEST OK gjenstår» i daterte arbeidsnotater er historikk.

@@ -1,3 +1,5 @@
+> Oppdatert 11. oktober 2026 etter TEST OK for #220: personlige kontaktsvar og medarbeidersamtaler er tilgjengelige i Sandbox. Det nye samtaleeksempelet gjelder en syntetisk medarbeider, med dedikert demobruker som leder. E-post er avslått. Filer og individuell sykefraværsplan er ikke åpnet. Tilbakestilling av kurseksempler beholder samtalehistorikk; det nye møtereferatet er en ubekreftet kladd. Tidligere omtale av lukket samtaleport nedenfor er historisk.
+
 # HR og KS/HMS – fiktivt kursoppsett 10. oktober 2026
 
 Miljømål: **SANDBOX/DEMO**. Main → demo fra verifisert Production-commit `c3d873e0e5bd2677f0205143de6edc1fbd95ae4c`. Ingen demoendringer skal merges tilbake til main.

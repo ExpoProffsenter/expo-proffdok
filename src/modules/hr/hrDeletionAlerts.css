@@ -1,0 +1,5 @@
+.hr-deletion-alerts{margin-top:1rem;padding:1rem;border:1px solid #cbd5e1;border-radius:12px;background:#f8fafc;color:#0f172a}
+.hr-deletion-alerts>summary{font-weight:700;cursor:pointer}
+.hr-deletion-alerts article{margin-top:1rem;padding:1rem;border:1px solid #cbd5e1;border-radius:8px;background:white}
+.hr-deletion-alerts small{display:block;overflow-wrap:anywhere;margin-bottom:.6rem}
+.hr-deletion-alerts button{margin:.3rem 0}

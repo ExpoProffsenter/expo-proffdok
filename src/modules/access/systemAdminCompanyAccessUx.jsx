@@ -35,6 +35,7 @@ const STATUS_FILTERS = [
 ];
 
 import PeopleModuleAccess from './PeopleModuleAccess.jsx';
+import HrDeletionAlerts from '../hr/HrDeletionAlerts.jsx';
 
 function compactText(value = "") {
   return String(value || "").replace(/\s+/g, " ").trim();
@@ -321,6 +322,7 @@ function CompanyNavigator({
 
   return (
     <div className="company-access-navigator" data-company-admin-navigator="1">
+      <HrDeletionAlerts />
       <div className="company-access-intro">
         <div>
           <strong>Firmaer og brukere</strong>

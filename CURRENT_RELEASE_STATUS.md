@@ -1,4 +1,16 @@
-## Godkjent release – 11. oktober 2026
+## Gjeldende HR-release – 11. oktober 2026
+
+Kenneth fylte ut egen post og ga **TEST OK 11. oktober kl. 17:10 Europe/Oslo** for PR #220. Godkjenningen er fullført; gamle testkrav nedenfor er historikk og skal ikke gjentas. PR #220 er merget til main **6b557c71f97cfecd7114b61883c964a3aaa88c25**. Production **dpl_99mBYYt27bMJiSZ4KSyPcGVTB9Ad READY** på expo-proffdok.app er kontrollert innlogget som Kenneth: Startside, eksisterende meny og HR laster.
+
+**HR-kontakt og individuelle medarbeidersamtaler er åpne i Production**, med versjoner, medarbeiderens private forberedelse, uttrykkelig deling, leders møtereferat, personlige bekreftelser og PDF. Systemadministrator får et minimalt varsel når arbeidsforhold avsluttes. HR-varselmail er aktiv. Ringside må selv fylle ut formål, behandlingsgrunnlag og kontrollfrist under HR → Oppsett og kontrollfrist og aktivere sitt register før virkelige medarbeidere legges til. Ingen reelle personalposter er opprettet av agenten.
+
+Den godkjente leveransen bruker eksisterende Supabase. Ingen ny betalt ressurs. Automatisk ekstern sletteloggbok i draft #217 er separat og ikke aktivert. Individuelle sykefraværsplaner og HR-filopplasting er ikke levert i #220. Restore krever manuell lukket rutine beskrevet i [HR_CONVERSATIONS_20261011.md](docs/kshms/HR_CONVERSATIONS_20261011.md); fysisk PGlite-restore er ikke attestasjon av managed cloud-restore.
+
+Production: begge migrasjoner og hr-deletion-alerts-worker er installert og lest tilbake mot godkjent kilde/ACL/search_path. Alle 17 nye funksjoner matcher. De beskyttede eksisterende funksjonene, RLS-policyene og triggerne har identiske før/etter-fingeravtrykk. 32 nye rollback-kontroller PASS; syntetiske SQL-fixtures er borte. Core Safety **38150427087 / 114502564630 SUCCESS**. Servertransport gir HTTP 200. Én autorisert syntetisk testmail til **kenneth@ringside.no** er godkjent av Resend (sent, ett forsøk); mottak i innboks er ikke uavhengig attestert. Ingen virkelig medarbeider ble avsluttet. Den syntetiske varsel-/leveringsraden beholdes i audit og er markert lest; ingen ventende jobb.
+
+Miljømål **BEGGE**. Kontrollert main → demo følger samme godkjente funksjon. Sandbox-kurskontrakten er bevisst oppdatert fra stengt samtaleport til åpne samtaler, med separat kontroll av begge avslåtte e-posttransportene og syntetisk medarbeider/leder. 19 eksisterende demokontroller + 4 kurskontroller PASS, ny negativ rollback-QA og faktisk samtale-React (38 assertions) PASS. Demoens fiktive møtekladd har ingen forhåndsbekreftelser. Eksisterende kontaktutfylling beholdes. Endelig demo-head/deploy føres i demoens releaseavslutning og PR #220. Demo-overlay og syntetiske migrasjoner skal aldri til main.
+
+## Historikk: godkjent release – 11. oktober 2026
 
 Kenneth ga TEST OK. PR #219 og #218 er merget. Production er READY på main `f6a74d828fb4c0110b4eae8c6e453d2a55ee9038`; dette er også kodebaselinen for main → demo-synken. Bygg/CI, samlet React-/Chromium-kontroll og read-only kontroll av eksisterende demodata er grønne. [Releasebevis og verifikasjonsgrenser](docs/kshms/RELEASE_CLOSEOUT_20261011.md). Eldre daterte avsnitt nedenfor er historikk, ikke gjeldende godkjenningskrav.
 

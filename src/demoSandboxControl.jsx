@@ -8,7 +8,7 @@ const DEMO_EMAIL = "demo@expo-proffdok.no";
 const PRODUCTION_REPO = "ExpoProffsenter/expo-proffdok";
 // Oppdateres til main-committen som faktisk er merget inn i demo ved hver synk.
 // Golden reset påvirker data, ikke denne kodebaselinen.
-const SANDBOX_PRODUCTION_BASELINE = "f6a74d828fb4c0110b4eae8c6e453d2a55ee9038";
+const SANDBOX_PRODUCTION_BASELINE = "61a42e6c7d996a6abc6c5146de45e3759e682b4d";
 const DEMO_SKETCH_REQUEST_IDS = ["DEMO-01-FORESPORSEL", "DEMO-02-BEFARING"];
 const DEMO_BATHROOM_SKETCH = {
   version: 15,
@@ -347,7 +347,7 @@ function App() {
 
       <div style={card}>
         <h2 style={{ marginTop: 0 }}>Kurs i HR og KS/HMS</h2>
-        <p>Velg firmaet <b>Expo Proffsenter</b>. Kurset har tre generelle samtalemaler, SJA, vernerunde, risikovurdering, sjekkliste og RUH. Alle eksemplene er fiktive og merket DEMO. Personlige HR-svar og sykefraværssaker er fortsatt sperret; bruk malene til å vise spørsmål og planlegging.</p>
+        <p>Velg firmaet <b>Expo Proffsenter</b>. Kurset har tre generelle samtalemaler, SJA, vernerunde, risikovurdering, sjekkliste og RUH. Alle eksemplene er fiktive og merket DEMO. Åpne HR-registeret og velg den fiktive medarbeideren demo.ansatt2@expo-proffdok.invalid for et delt samtaleeksempel. Referatet er en kladd uten bekreftelser. E-post er avslått. Sykefravær-fanen viser fortsatt maler og veiledning.</p>
         <p>Kursreset gjenoppretter maler og utkast. Hvis en SJA er signert eller en kontroll er ferdigstilt, opprettes et nytt utkast. Historikken beholdes. En lukket kurs-RUH får en ny åpen kurskopi.</p>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
           <a href="/demo-course.html" style={{ ...primaryButton, display: "inline-block", textDecoration: "none" }}>Åpne kursveiledning</a>

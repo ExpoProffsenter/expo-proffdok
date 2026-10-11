@@ -1,3 +1,5 @@
+> Oppdatert 11. oktober 2026 etter TEST OK for #220: personlige kontaktsvar og medarbeidersamtaler er tilgjengelige i Sandbox. Det nye samtaleeksempelet gjelder en syntetisk medarbeider, med dedikert demobruker som leder. E-post er avslått. Filer og individuell sykefraværsplan er ikke åpnet. Tilbakestilling av kurseksempler beholder samtalehistorikk; det nye møtereferatet er en ubekreftet kladd. Tidligere omtale av lukket samtaleport nedenfor er historisk.
+
 # Expo ProffDok – Demo Sandbox A–Å
 
 Denne manualen er laget for presentasjon, opplæring og intern QA i det permanente isolerte demo-miljøet.

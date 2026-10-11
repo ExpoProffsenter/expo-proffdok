@@ -66,3 +66,13 @@ jobs:
           node scripts/hr-register-react-check.mjs
           node scripts/critical-hr-templates-check.mjs
           node scripts/critical-hr-purge-check.mjs
+
+      - name: Verify personal HR conversations and deletion alerts
+        run: |
+          npm install --prefix "$RUNNER_TEMP/hr-conversations-qa" --no-audit --no-fund --ignore-scripts @electric-sql/pglite@0.5.8 jsdom@26.1.0 jspdf@2.5.1
+          export HR_PGLITE_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/@electric-sql/pglite/dist/index.js"
+          export KSHMS_JSDOM_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/jsdom/lib/api.js"
+          export HR_PRACTICE_JSPDF_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/jspdf/dist/jspdf.node.min.js"
+          node scripts/hr-conversations-db-check.mjs
+          node scripts/hr-conversations-runtime-check.mjs
+          node scripts/hr-conversations-react-check.mjs
