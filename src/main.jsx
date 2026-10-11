@@ -85,6 +85,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
 const KshmsModule = React.lazy(() => import('./modules/kshms/KshmsModule.jsx'));
 const PersonalPage = React.lazy(() => import('./modules/personal/PersonalPage.jsx'));
 const HrModule = React.lazy(() => import('./modules/hr/HrModule.jsx'));
+const HrFollowupNotice = React.lazy(() => import('./modules/hr/HrFollowupNotice.jsx'));
 const KshmsTasks = React.lazy(() => import('./modules/kshms/KshmsTasks.jsx'));
   var supabase = getAppSupabaseClient() || (0, import_supabase_js.createClient)(
     "https://dqffxflaoyarbxyiyhop.supabase.co",
@@ -6371,6 +6372,7 @@ ${appLink}`;
           if (!projectId && mobileCreatingProject) newProjectTouchedRef.current = true;
         },
         children: [
+        tab === "prosjekt" && !hasActiveProjectWorkspace && !mobileCreatingProject && !isProjectSupportReadOnly && (0, import_jsx_runtime.jsx)(React.Suspense, { fallback: null, children: (0, import_jsx_runtime.jsx)(HrFollowupNotice, { context: ownRights.hr ? hrContext : null, userId: authUser?.id, onSetup: () => goToTab("hr") }) }),
         !projectId && !mobileCreatingProject && tab !== "sales" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { className: "mobileProjectChooser", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileHomeHero", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "mobileHomeEyebrow", children: "Expo ProffDok" }),
@@ -6716,7 +6718,7 @@ ${appLink}`;
           canEdit: isCompanyAdminUser,
           loginEmail: authUser?.email || ""
         }),
-        tab === "innlogging" && (0, import_jsx_runtime.jsx)(React.Suspense, { fallback: "Henter profil …", children: (0, import_jsx_runtime.jsx)(PersonalPage, { context: !isProjectSupportReadOnly && !hasActiveProjectWorkspace ? personalContext : null, kshmsContext, hrContext, userId: authUser?.id, authUser: !isProjectSupportReadOnly && !hasActiveProjectWorkspace ? authUser : null, supabaseClient: supabase, children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: isProjectSupportReadOnly ? "Prosjektets rapportopplysninger" : "Innlogging og brukerprofil", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
+        tab === "innlogging" && (0, import_jsx_runtime.jsx)(React.Suspense, { fallback: "Henter profil …", children: (0, import_jsx_runtime.jsx)(PersonalPage, { context: !isProjectSupportReadOnly && !hasActiveProjectWorkspace ? personalContext : null, kshmsContext, hrContext, userId: authUser?.id, authUser: !isProjectSupportReadOnly && !hasActiveProjectWorkspace ? authUser : null, supabaseClient: supabase, onOpenHrSetup: () => goToTab("hr"), children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: isProjectSupportReadOnly ? "Prosjektets rapportopplysninger" : "Innlogging og brukerprofil", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
           isProjectSupportReadOnly ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { marginBottom: "14px", background: "#fff7ed", borderColor: "#fed7aa" }, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { style: { marginTop: 0 }, children: "Supportmodus – prosjektets rapportopplysninger" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginBottom: 0 }, children: `Du er logget inn som ${authenticatedFullName || authUser?.email || "systemadministrator"}${authenticatedFullName && authUser?.email ? ` (${authUser.email})` : ""}. Opplysningene nedenfor er lagret i prosjektet${supportProjectCompanyName ? ` hos ${supportProjectCompanyName}` : ""} og tilhører ikke din personlige profil.` })

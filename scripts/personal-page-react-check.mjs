@@ -28,6 +28,7 @@ try{
     return {data:contact()};
    }
    if(name==='hr_contact_save'){assert.equal(args.p_contact_revision,contactRev);assert.equal(args.p_employee_revision,employeeRev);contactData=structuredClone(args.p_data);contactRev++;return {data:{context,employee:{id:'e',revision:employeeRev},revision:contactRev}};}
+   if(name==='hr_followup_tasks')return {data:{context,tasks:[],next:null,email_enabled:false}};
    if(name==='hr_personal_list'){if(revoked)return {error:{code:'42501',message:'revoked'}};if(lateList)return new Promise(resolve=>lateList.resolve=resolve);return {data:{context,employees:structuredClone(employees),next:null}};}
    if(name==='hr_employee_get')return {data:{context,employee:structuredClone(employees.find(e=>e.id===args.p_employee_id))}};
    throw new Error('Unexpected RPC '+name);
@@ -45,8 +46,9 @@ try{
   assert(!doc.querySelector('.personal-page'),'anonymous loading must not crash or expose Min side');
   await act(async()=>w.__render('page',props()));
   assert.equal(doc.querySelectorAll('.personal-card').length,3,'compact overview has three cards');
-  assert.equal(doc.querySelectorAll('.personal-upcoming').length,2,'upcoming HR types are grouped');
+  assert.equal(doc.querySelectorAll('.personal-upcoming').length,2,'available HR types are grouped');
   assert.equal(doc.querySelectorAll('.personal-status').length,2);
+  assert(!doc.body.textContent.includes('Kommer')&&!doc.body.textContent.includes('ikke åpnet ennå'),'live HR must not claim it is coming later');
   await click('Mine oppfølginger');assert.equal(doc.querySelectorAll('.hr-employee').length,2);assert(doc.body.textContent.includes('Min medarbeideroppføring'));assert(doc.body.textContent.includes('Delt med deg · ekstra lesetilgang'));assert(!doc.querySelector('.hr-heading'),'personal HR must not repeat the page heading');
   await act(async()=>doc.querySelector('.hr-employee').click());assert(doc.querySelector('.hr-detail'));
   await act(async()=>w.__render('page',{...props(),context:null,kshmsContext:null,hrContext:null}));

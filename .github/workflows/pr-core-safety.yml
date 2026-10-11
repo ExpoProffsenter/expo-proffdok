@@ -50,6 +50,7 @@ jobs:
           node scripts/module-navigation-resume-react-check.mjs
           node scripts/hr-register-react-check.mjs
           node scripts/personal-page-react-check.mjs
+          node scripts/hr-followup-notice-react-check.mjs
           node scripts/hr-templates-react-check.mjs
           node scripts/critical-people-module-access-check.mjs
           node scripts/people-module-access-react-check.mjs
