@@ -43,6 +43,18 @@ jobs:
       - name: Run full critical build
         run: npm run build
 
+      - name: Verify KS/HMS and HR navigation recovery
+        run: |
+          npm install --prefix "$RUNNER_TEMP/module-navigation-qa" --no-audit --no-fund --ignore-scripts jsdom@26.1.0
+          export KSHMS_JSDOM_PATH="$RUNNER_TEMP/module-navigation-qa/node_modules/jsdom/lib/api.js"
+          node scripts/module-navigation-resume-react-check.mjs
+          node scripts/hr-register-react-check.mjs
+          node scripts/personal-page-react-check.mjs
+          node scripts/hr-templates-react-check.mjs
+          node scripts/kshms-sja-parent-react-check.mjs
+          node scripts/kshms-executions-react-check.mjs
+          node scripts/kshms-review-reminders-react-check.mjs
+
       - name: Verify HR practice and existing HR React flows
         run: |
           npm install --prefix "$RUNNER_TEMP/hr-practice-qa" --no-audit --no-fund --ignore-scripts jsdom@26.1.0 jspdf@2.5.1

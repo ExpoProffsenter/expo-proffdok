@@ -12,6 +12,10 @@ Kanonisk main/Production er `c3d873e0e5bd2677f0205143de6edc1fbd95ae4c` (READY), 
 
 ## Godkjent release til Production og kursdemo – 10. oktober 2026
 
+## Separat navigasjonsretting – 11. oktober 2026
+
+Miljømål **BEGGE**. Ren core-branch `fase45b-core-navigation-resume-20261011`, baseline main `c3d873e0e5bd2677f0205143de6edc1fbd95ae4c`. HR-ID/tillatt KS/HMS-fane bevares over tilgangsremount; uttrekksarbeidsflate bevares over interne fanebytter med gamle eksporter avbrutt. Ingen samtaleøvelse fra PR #218, backend/mail/SQL eller main/demo-endring. [Scope og QA](docs/kshms/NAVIGATION_RECOVERY_20261011.md). Eksakt publisert kode/CI/Preview føres i den nye core-PR-en; innlogget Preview og eksplisitt TEST OK gjenstår før merge.
+
 Kenneth har godkjent releaseløpet med «Kjør», mobiltilpasning og eksempelinnhold for kurs. Miljømål: **BEGGE**. Eldre avsnitt om manglende Production-godkjenning er historiske.
 
 Production har alle 54 migrasjoner og begge nye serverarbeidere. 146 relevante funksjonsdefinisjoner samsvarer med Sandbox. Faktiske Production SQL-prøver består: håndbok, 73 avvikskontroller, 93 SJA/RUH, 27 sjekkliste, 54 utførelse, 95 samtalemal og 64 organisasjonsgruppekontroller. Alle syntetiske rader er rullet tilbake. Reelle profiler/prosjekter/Sales-saker er uendret i antall. Ingen automatisk modulaktivering for reelle firmaer.
@@ -336,5 +340,7 @@ Bare de nye vernerunde-/risikoflytene i USER_TEST.md skal prøves nå; godkjente
 Vedleggs-/øvrige rapportuttrekk, separat HR/kompetanse/medarbeidersamtaler og fristpåminnelser gjenstår før Ringside-pilot som avtalt. Sandbox-e-postsending er deaktivert; avsenderoppsett/faktisk mottaksprøve gjenstår. Utførelse før HR; leder bare tildelte ansatte, firmaadmin alle/tildele ansvar. Relevant TEST OK og eksplisitt PRODUCTION GODKJENT for PR #216 kreves før Production-migrering/merge. Senere synkretning main → demo.
 
 Fortsettelsespunkt: [OVERSIKT.md](docs/kshms/OVERSIKT.md) og [CONTINUITY.md](docs/kshms/CONTINUITY.md). Eldre release-status er bevart i [arkivet](docs/kshms/archive/CURRENT_RELEASE_STATUS_before_TEST_OK_20261008.md).
+
+HR-popup 11.10: medarbeiderraden åpner eksisterende appdialog, med leder/tilgang, paginerte brukervalg og resultatmeldinger inne i vinduet. Dialog, Escape/kryss, fokusretur og fersk autorisering kontrollert i React og Chromium ved 1280/360/740. Tilgang/backend/privat HR uendret. Samme core-PR #219/Preview; ingen merge.
 
 HR-prøveoppdatering 11.10: første åpning viser skjemaets topp; tom/ulagret/redigert samtale bevares gjennom ekte HR-tilgangsremount. Konto-/firmabundet sideminne, ingen ulagret browserlagring. Faktisk useHrAccess/JSDOM og Chromium 1280/360/740 grønne, inkludert konflikt og uendrede PDF-/neste-steg-løp. Samme PR #218/Preview; ingen merge.
