@@ -1,3 +1,15 @@
+## Synlige HR-varsler og direkte åpning – 12. oktober 2026
+
+Miljømål **BEGGE**. Kenneth ba kl.00:54 Europe/Oslo uttrykkelig om direkte Production-leveranse. Dine varsler og oppfølginger vises øverst på Startsiden og Min side i aktivt firma. Invitasjonen viser dato, klokkeslett, sted og om forberedelsen er delt. Åpne samtalen/Åpne oppfølgingen åpner riktig privat sak i dialog, med eksisterende redigering, lagring, kalender, PDF og historikk. Lederens eksisterende åpne tiltak og sykefraværsfrister bruker samme inngang. Kontroll av HR-oppsett åpnes fra eget varsel. Ingen oppgave oppdiktes når listen er tom. «Kommer» og «ikke åpnet ennå» er rettet til aktuell funksjon.
+
+Avgrenset frontend: én Startside-render i main, Min side, nytt varselkort/minimal lesetransport og initialt saksvalg i de to HR-editorene. Dagens hr_followup_tasks og dobbel fersk medarbeider-/sakslesing gjenbrukes. Ingen SQL/RLS/grants/membership/e-post/worker/cron-endring. Ingen private svar, navn eller journalinnhold legges i varselkortet, URL eller nettleserlager. Kun de første seks invitasjonene per side får møtefelter hentet; øvrige viser oppgavefrist og kan åpnes direkte. Paginerte oppgaver kontrolleres mot samme servermarkør før åpning.
+
+Snarveien autoriserer på nytt og nekter foreldet/ferdig oppgave. Min side beholder konto- og e-postkladd. Samme saks private RAM-kladd og valgte steg beholdes ved fokus/ny autorisasjon. En annen sak bytter ikke automatisk over en ulagret kladd; eksplisitt bytte bruker eksisterende avbryt/bekreftelse. Feil firma/aktør, tilbakekalt tilgang, skjult side og sene svar kan ikke vise gammelt innhold. Eksplisitt lukking respekteres.
+
+QA: faktisk nytt varselkort/direkte editor/Min side React 56 assertions PASS, eksisterende Min side/kontakt og modulnavigasjon PASS, medarbeidersamtale React 88 og sykefravær React 48 PASS. Ny permanent test kjøres i PR Core Safety. Hjelp/README/architecture oppdatert; publisert SHA/CI/assetkontroll og main → demo-preflight føres i release-PR. Faktisk Outlook/innboks eller ny innlogget nettleserprøve attesteres ikke. Brukeren ba om direkte Production uten ny TEST OK-runde.
+
+Kort kontroll i Production: Logg inn som invitert medarbeider, velg riktig Arbeidsprofil og se Dine varsler og oppfølginger på Startsiden/øverst på Min side. Trykk Åpne samtalen og se korrekt samtale, møtested og Forberedelse. Åpne oppfølgingen på en eksisterende lederfrist og se riktig plan/frist. Ingen ny registrering eller e-postsend kreves for å åpne. Dette er frivillig innlogget kontroll; tidligere tester skal ikke gjentas som ny release-gate.
+
 ## Sted og firmaprofil i medarbeidersamtale-invitasjon – 12. oktober 2026
 
 Miljømål BEGGE. Kenneth bestilte sted i invitasjonen kl.00:01:32 og sa uttrykkelig «gjør det rett i produksjon» kl.00:01:51 Europe/Oslo. Tillegg kl.00:05 om samme logo/profil som tilbudsmailene inngår i samme avgrensede leveranse. Direkte Production etter grønn QA/CI/sourcekontroll; ingen ny TEST OK eller faktisk medarbeidermail attesteres.
