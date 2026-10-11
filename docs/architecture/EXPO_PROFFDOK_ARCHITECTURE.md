@@ -1,5 +1,9 @@
 ## HR: sykefraværsoppsett – 10. oktober 2026
 
+## Scoped navigasjon i KS/HMS og HR – 11. oktober 2026
+
+`moduleNavigationMemory.mjs` gir avgrenset per-side minne for tillatte skjerm-ID-er og HR-medarbeider-ID-er, bundet til firma, aktør og audience. Høyest åtte pekere per modul; ingen payload, myndighet eller browserlagring. Eksisterende tilgangshooks er uendret, og HR gjenåpner bare etter fersk liste og dobbel lesing. Personlig HR beholder sitt foreldrestyrte valg. Dokumentuttrekk holdes skjult ved internt fanebytte; aktiv-status og operasjonsgenerasjon stanser gamle eksport-/listesvar. Rolle-, firma- og aktørendring bruker eksisterende sperrer og nullstilling. Full appreload, globale ruter, Sales, databaser og privat HR-innhold er utenfor scope. [Detaljert kontrakt og QA](../kshms/NAVIGATION_RECOVERY_20261011.md).
+
 HR-menyen har nå egne snarveier til Samtalemaler og Sykefravær. Generell sykefraværsmal bruker eksisterende private malregister/RPC, versjoner, CAS og firmaadmin-gater. Additiv validator-migration tillater `sickleave`; ingen personlig innholdsport eller privilegier åpnes. Kildebasert veiledning og et datoregneksempel uten lagring/påminnelser. BEGGE, foreløpig bare feature/Preview/Sandbox. [Scope og bevis](../kshms/HR_SICK_LEAVE_SETUP_20261010.md).
 
 ## HR: tydelig hjelp der du arbeider – 10. oktober 2026

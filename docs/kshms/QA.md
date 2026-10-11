@@ -1,5 +1,9 @@
 ## HR: samtalemaler i menyen og sykefraværsoppsett – 10. oktober 2026
 
+## Navigasjonsregresjon 11. oktober 2026
+
+Ny `module-navigation-resume-react-check.mjs` tester ekte komponenter + tilgangshooks med forsinket autorisasjon, alle tillatte KS/HMS-faner etter remount, personlig håndbok/HR, scoped HR-ID og uttrykkelig lukking, dokumentvalg/omfang over fanebytte og gamle eksporters avbrudd, samt redusert rolle/ny aktør/firma. Ny test er rød på tidligere kode og grønn med rettelsen. CI kjører den i tillegg til uendret full critical build og eksisterende HR/register, Min side, mal-, SJA-, gjennomførings- og revisjons-React. Én struktursjekk er endret for autorisert skjult uttrekk med aktiv-status; alle innholdskontroller beholdes. [Presis kontrakt og begrensninger](NAVIGATION_RECOVERY_20261011.md).
+
 **Åpne samtalemaler** og **Åpne sykefravær** ligger i HR-snarveiene øverst. Firmaadmin kan klargjøre en generell sykefraværsmal med 11 spørsmål om arbeid, kontakt, tilrettelegging og oppfølging. Eksisterende admin-/firmagater, utgaver, CAS og kladdbevaring gjelder. Fristveiledning med NHO/NAV-kilder og et avgrenset regneeksempel for 4/7/8/26 uker; fullt og gradert fravær forklares ulikt. Ingen personlig sak, fraværsdata, påminnelse eller innsending opprettes.
 
 **94 faktiske Sandbox-rollback-assertions og 94 PostgreSQL/PGlite-assertions PASS**, berørte faktiske mal-/register-/Hjelp-React-prøver og full critical/build PASS. Ingen nye sikkerhetsråd ved sammenligning uten observasjonstidsstempler. Privat innhold forblir stengt med restore quarantine. Miljømål BEGGE, levering bare feature/Preview/Sandbox. Tidligere TEST OK består. [Scope, kilder, leveranse og grenser](HR_SICK_LEAVE_SETUP_20261010.md).

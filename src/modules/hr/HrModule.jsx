@@ -11,8 +11,10 @@ import PrivateContact from './PrivateContact.jsx';
 import {HR_SETUP_SUGGESTIONS,suggestedReviewDate} from './hrSetupSuggestions.mjs';
 import HrConversationTemplates from './HrConversationTemplates.jsx';
 import HrSickLeaveSetup from './HrSickLeaveSetup.jsx';
+import {createModuleNavigationMemory} from '../ui/moduleNavigationMemory.mjs';
 
 const emptyConfig={purpose:'',legalBasis:'',reviewOn:'',enabled:false};
+const selectionMemory=createModuleNavigationMemory(id=>typeof id==='string'&&id.length>0&&id.length<=80);
 function Field({label,children}) {return <label className="hr-field"><span>{label}</span>{children}</label>;}
 function UserSelect({label,value,onChange,members,exclude=[],required=false}) {
  return <Field label={label}><select value={value} onChange={event=>onChange(event.target.value)} required={required}>
@@ -35,9 +37,11 @@ export default function HrModule({context,audience='legacy',initialEmployeeId=nu
  const goTo=target=>{const element=target.current;if(!element)return;if(element.tagName==='DETAILS')element.open=true;element.focus();element.scrollIntoView({block:'start'});};
  const sessionRef=useRef(null),revision=useRef(0),busyRef=useRef(false),detailRef=useRef(null),regionRef=useRef(null);
  // This ref holds only the chosen record ID. Every return performs a new scoped list + double read.
- const selectedId=useRef(initialEmployeeId),selectionScope=useRef(companyId+':'+userId),selectionCallback=useRef(onEmployeeSelect);selectionCallback.current=onEmployeeSelect;
+ const navigationScope=JSON.stringify([companyId,userId,audience]);
+ // Min side owns its explicit selection; management has only a bounded ID pointer.
+ const selectedId=useRef(onEmployeeSelect?initialEmployeeId:initialEmployeeId||selectionMemory.read(navigationScope)),selectionScope=useRef(companyId+':'+userId),selectionCallback=useRef(onEmployeeSelect);selectionCallback.current=onEmployeeSelect;
  if(selectionScope.current!==companyId+':'+userId){selectionScope.current=companyId+':'+userId;selectedId.current=null;}
- const selectId=id=>{selectedId.current=id;selectionCallback.current?.(id);};
+ const selectId=id=>{selectedId.current=id;if(id)selectionMemory.remember(navigationScope,id);else selectionMemory.forget(navigationScope);selectionCallback.current?.(id);};
  const clear=useCallback(()=>{setData(null);setMembers([]);setMemberNext(null);setDetail(null);detailRef.current=null;setLeader('');setReader('');setReason('');setClearOld(false);setEnding(false);setEndConfirmed(false);},[]);
  const installDetail=employee=>{setDetail(employee);detailRef.current=employee;setLeader(employee?.leader_id||'');setClearOld(false);setReader('');setReason('');setEnding(false);setEndConfirmed(false);};
  const load=useCallback(async(session)=>{
@@ -59,7 +63,7 @@ export default function HrModule({context,audience='legacy',initialEmployeeId=nu
   const refresh=async()=>{
    const ticket=++revision.current;session.invalidate();setError('');setNotice('');setBusy(true);busyRef.current=true;
    try{if(document.visibilityState!=='hidden'){const result=await load(session);const id=selectedId.current;const fresh=id&&result.listing.employees.some(employee=>employee.id===id)?await session.get(id):null;if(alive&&ticket===revision.current){install(result);if(fresh)installDetail(fresh.employee);else selectId(null);}}}
-   catch(e){if(alive&&ticket===revision.current)setError(e.code==='42501'?'HR-tilgangen er endret. Kontroller aktivt firma eller kontakt firmaadmin.':e.message);}
+   catch(e){if(alive&&ticket===revision.current){if(e.code==='42501')selectId(null);setError(e.code==='42501'?'HR-tilgangen er endret. Kontroller aktivt firma eller kontakt firmaadmin.':e.message);}}
    finally{if(alive&&ticket===revision.current){setBusy(false);busyRef.current=false;}}
   };
   refresh();

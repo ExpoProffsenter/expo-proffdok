@@ -1,5 +1,9 @@
 ## Godkjent release til Production og kursdemo – 10. oktober 2026
 
+## Separat navigasjonsretting – 11. oktober 2026
+
+Miljømål **BEGGE**. Ren core-branch `fase45b-core-navigation-resume-20261011`, baseline main `c3d873e0e5bd2677f0205143de6edc1fbd95ae4c`. HR-ID/tillatt KS/HMS-fane bevares over tilgangsremount; uttrekksarbeidsflate bevares over interne fanebytter med gamle eksporter avbrutt. Ingen samtaleøvelse fra PR #218, backend/mail/SQL eller main/demo-endring. [Scope og QA](docs/kshms/NAVIGATION_RECOVERY_20261011.md). Eksakt publisert kode/CI/Preview føres i den nye core-PR-en; innlogget Preview og eksplisitt TEST OK gjenstår før merge.
+
 Kenneth har godkjent releaseløpet med «Kjør», mobiltilpasning og eksempelinnhold for kurs. Miljømål: **BEGGE**. Eldre avsnitt om manglende Production-godkjenning er historiske.
 
 Production har alle 54 migrasjoner og begge nye serverarbeidere. 146 relevante funksjonsdefinisjoner samsvarer med Sandbox. Faktiske Production SQL-prøver består: håndbok, 73 avvikskontroller, 93 SJA/RUH, 27 sjekkliste, 54 utførelse, 95 samtalemal og 64 organisasjonsgruppekontroller. Alle syntetiske rader er rullet tilbake. Reelle profiler/prosjekter/Sales-saker er uendret i antall. Ingen automatisk modulaktivering for reelle firmaer.

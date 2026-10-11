@@ -1,5 +1,9 @@
 ## HR: sykefraværsoppsett – 10. oktober 2026
 
+## Retur til samme KS/HMS-/HR-visning – 11. oktober 2026
+
+Separat core-retting fra ren main: HR husker valgt medarbeider gjennom fersk tilgangskontroll; KS/HMS husker tillatt fane, også Les og bekreft på Min side. Dokumentuttrekk beholder omfang og dokumentvalg over interne fanebytter, og gamle eksporter avbrytes. Navigasjonsminnet har bare scoped skjerm-/post-ID-er; innhold hentes på nytt. Ingen full reload-recovery, backendendring eller samtaleøvelse følger denne rettelsen. Miljømål **BEGGE**, bare feature/Preview frem til TEST OK. [Kontrakt, regresjonstest og kort prøve](docs/kshms/NAVIGATION_RECOVERY_20261011.md).
+
 HR-menyen har nå egne snarveier til Samtalemaler og Sykefravær. Generell sykefraværsmal bruker eksisterende private malregister/RPC, versjoner, CAS og firmaadmin-gater. Additiv validator-migration tillater `sickleave`; ingen personlig innholdsport eller privilegier åpnes. Kildebasert veiledning og et datoregneksempel uten lagring/påminnelser. BEGGE, foreløpig bare feature/Preview/Sandbox. [Scope og bevis](docs/kshms/HR_SICK_LEAVE_SETUP_20261010.md).
 
 ## HR: tydelig hjelp der du arbeider – 10. oktober 2026

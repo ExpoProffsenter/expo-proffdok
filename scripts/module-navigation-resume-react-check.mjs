@@ -1,0 +1,72 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {build} from 'vite';
+import react from '@vitejs/plugin-react';
+const {JSDOM}=await import(process.env.KSHMS_JSDOM_PATH||'jsdom');
+const dir=process.env.MODULE_NAVIGATION_SOURCE||process.cwd();
+const entry='/tmp/expo-navigation-resume-entry-'+process.pid+'.jsx';
+fs.writeFileSync(entry,`import React,{act} from '${dir}/node_modules/react/index.js';import {createRoot} from '${dir}/node_modules/react-dom/client.js';import Hr from '${dir}/src/modules/hr/HrModule.jsx';import Ks from '${dir}/src/modules/kshms/KshmsModule.jsx';import {useHrAccess} from '${dir}/src/modules/hr/hrAccess.js';import {useKshmsAccess} from '${dir}/src/modules/kshms/kshmsAccess.js';import Personal from '${dir}/src/modules/personal/PersonalPage.jsx';import {usePersonalAccess} from '${dir}/src/modules/personal/personalAccess.js';const root=createRoot(document.getElementById('app'));function Harness({kind,visible=true}){const hr=useHrAccess(globalThis.__context.user_id),ks=useKshmsAccess(globalThis.__context.user_id),personal=usePersonalAccess(globalThis.__context.user_id);if(!visible)return null;if(kind==='hr')return hr?.available?React.createElement(Hr,{context:hr,audience:'management',key:hr.company_id+':'+hr.user_id+':'+hr.administer}):null;if(kind==='personal')return React.createElement(Personal,{context:personal,kshmsContext:ks,hrContext:hr,userId:globalThis.__context.user_id,authUser:{id:globalThis.__context.user_id}});return ks?.enabled?React.createElement(Ks,{context:ks,key:ks.company_id+':'+ks.user_id}):null;}globalThis.__act=act;globalThis.__render=p=>root.render(React.createElement(Harness,{...p,key:p.kind}));globalThis.__unmount=()=>root.render(null);`);
+const bundled=await build({root:dir,configFile:false,logLevel:'silent',define:{'process.env.NODE_ENV':'"development"','import.meta.env.VITE_EXPO_BACKEND_TARGET':'"production"'},build:{write:false,minify:false,lib:{entry,formats:['iife'],name:'Audit',cssFileName:'audit'}},plugins:[react(),{name:'synthetic-transport',enforce:'pre',resolveId(id){if(/appSupabaseClientRegistry\.js$/.test(id))return '\0client';},load(id){if(id==='\0client')return 'export const getAppSupabaseClient=()=>globalThis.__client;';}}]});
+const dom=new JSDOM('<div id="app"></div>',{url:'https://example.invalid',runScripts:'outside-only',pretendToBeVisual:true});
+const w=dom.window,d=w.document;
+w.IS_REACT_ACT_ENVIRONMENT=true;w.structuredClone=structuredClone;w.TextEncoder=TextEncoder;w.TextDecoder=TextDecoder;
+w.HTMLElement.prototype.scrollIntoView=function(){};
+w.MessageChannel=class{constructor(){this.port1={onmessage:null};this.port2={postMessage:()=>setImmediate(()=>this.port1.onmessage?.())};}};
+const context={company_id:'11111111-1111-4111-8111-111111111111',user_id:'22222222-2222-4222-8222-222222222222',company_name:'Audit synthetic',available:true,enabled:true,manage:true,publish:true,administer:true,responsible:true};w.__context=context;
+const employee={id:'33333333-3333-4333-8333-333333333333',user_id:context.user_id,email:'synthetic@example.invalid',leader_id:null,revision:1,readers:[]};
+let deferredHr=null,deferredKs=null,deferredExport=null,failKs=false,employeeVisible=true,employeeGets=0;
+w.__client={rpc:async(name,args={})=>{
+ if(name==='get_my_personal_context')return {data:{...context,personal_page:true,company_kshms:true,company_hr:true}};
+ if(name==='get_hr_context'){if(deferredHr)return new Promise(resolve=>{deferredHr.resolve=()=>resolve({data:{...context}});});return {data:{...context}};}
+ if(name==='get_kshms_context'){if(deferredExport)return new Promise(resolve=>{deferredExport.resolve=()=>resolve({data:{...context}});});if(deferredKs)return new Promise(resolve=>{deferredKs.resolve=()=>resolve({data:{...context}});});if(failKs)return {error:{message:'Synthetic unavailable'}};return {data:{...context}};}
+ const value={context:{...context},content_enabled:false};
+ if(name==='hr_foundation_state')return {data:{...value,settings:{enabled:true,revision:1,purpose:'synthetic purpose',legal_basis:'synthetic basis',review_on:'2026-12-01'},members:[],next:null}};
+ if(name==='hr_management_list'||name==='hr_personal_list'||name==='hr_employee_list')return {data:{...value,employees:employeeVisible?[employee]:[],next:null}};
+ if(name==='hr_employee_get'){employeeGets++;return {data:{...value,employee}};}
+ if(name==='hr_contact_get')return {data:{...value,registered:true,available:false,employee:{id:employee.id,revision:1}}};
+ if(name==='hr_purge_status')return {data:{...value,receipts:[],next:null}};
+ if(name==='hr_template_list')return {data:{...value,templates:[],next:null}};
+ if(name==='kshms_get_state')return {data:{context:{...context},settings:{trades:[],revision:1,responsible_user_id:context.user_id,next_review_on:'2026-12-01'},routines:[],versions:[],members:[],assignments:[],acknowledgments:[],reviews:[]}};
+ if(name==='kshms_assignment_reminder_tasks')return {data:{company_id:context.company_id,user_id:context.user_id,groups:[]}};
+ if(name==='kshms_review_task')return {data:{company_id:context.company_id,user_id:context.user_id,task:null}};
+ if(name==='kshms_sja_state')return {data:{...value,items:[{id:'44444444-4444-4444-8444-444444444444',title:'Syntetisk lagret SJA',revision:1,status:'draft'}],total:1,next:null,members:[]}};
+ if(name==='kshms_job_choices')return {data:{...value,projects:[],routines:[],project_total:0}};
+ return {data:{...value,items:[],total:0,templates:[],versions:[],members:[],cases:[],records:[],groups:{},next:null}};
+}};
+w.eval((Array.isArray(bundled)?bundled[0]:bundled).output.find(o=>o.type==='chunk'&&o.isEntry).code);
+const act=w.__act,render=async p=>act(async()=>{w.__render(p);await new Promise(r=>setTimeout(r,30));});
+const button=text=>{const b=[...d.querySelectorAll('button')].find(n=>n.textContent.trim()===text);assert(b,'Missing '+text);return b;};
+const click=async text=>act(async()=>{button(text).click();await new Promise(r=>setTimeout(r,10));});
+const selected=()=>[...d.querySelectorAll('.ks-module nav button')].find(b=>b.getAttribute('aria-pressed')==='true')?.textContent.trim();
+const evidence=[];
+try{
+ await render({kind:'hr'});assert(d.querySelector('.hr-employee'),d.body.textContent);
+ await act(async()=>d.querySelector('.hr-employee').click());assert(d.querySelector('.hr-detail'));
+ deferredHr={};await act(async()=>w.dispatchEvent(new w.Event('focus')));assert(!d.querySelector('.hr-detail'));
+ await act(async()=>deferredHr.resolve());deferredHr=null;assert(d.querySelector('.hr-employee'));assert(d.querySelector('.hr-detail'));
+ evidence.push('HR management: focus with delayed authorization retains selected employee after successful same-company authorization.');
+ const freshGets=employeeGets;await act(async()=>d.querySelector('.hr-employee').click());await render({kind:'hr',visible:false});await render({kind:'hr'});assert(d.querySelector('.hr-detail'));
+ assert(employeeGets>=freshGets+4,'Remount did not perform fresh double reads');evidence.push('HR management: leave main module and return retains selected employee.');
+ await click('Lukk medarbeider');await render({kind:'hr',visible:false});await render({kind:'hr'});assert(!d.querySelector('.hr-detail'),'Explicit close was reversed by recovery');
+ await act(async()=>d.querySelector('.hr-employee').click());employeeVisible=false;await act(async()=>w.dispatchEvent(new w.Event('focus')));assert(!d.querySelector('.hr-detail'));employeeVisible=true;await render({kind:'hr',visible:false});await render({kind:'hr'});assert(!d.querySelector('.hr-detail'),'Removed record pointer survived fresh scoped list');
+ await render({kind:'personal'});await click('Mine oppfølginger');await act(async()=>d.querySelector('.hr-employee').click());assert(d.querySelector('.hr-detail'));
+ deferredHr={};await act(async()=>w.dispatchEvent(new w.Event('focus')));assert(!d.querySelector('.hr-detail'));await act(async()=>deferredHr.resolve());deferredHr=null;assert(d.querySelector('.hr-detail'));
+ evidence.push('Min side/HR: selected employee survives delayed authorization through parent ID callback.');
+ await click('Personalhåndbok');await click('Les og bekreft (0)');assert.equal(selected(),'Les og bekreft (0)');await click('Oversikt');await click('Personalhåndbok');assert.equal(selected(),'Les og bekreft (0)');
+ evidence.push('Min side/handbook: leave for Overview and return retains Reading.');
+ await render({kind:'ks'});await click('SJA');assert.equal(selected(),'SJA');deferredKs={};await act(async()=>w.dispatchEvent(new w.Event('focus')));assert.equal(selected(),'SJA');await act(async()=>deferredKs.resolve());deferredKs=null;assert.equal(selected(),'SJA');
+ evidence.push('KS/HMS: ordinary delayed focus authorization preserves SJA tab.');
+ deferredKs={};await act(async()=>w.dispatchEvent(new w.CustomEvent('expo-proffdok-managed-access-changed',{detail:{userId:context.user_id,companyId:context.company_id}})));assert(!d.querySelector('.ks-module'));await act(async()=>deferredKs.resolve());deferredKs=null;assert.equal(selected(),'SJA');
+ evidence.push('KS/HMS: own rights-refresh unmount restores SJA even when permission unchanged.');
+ await click('SJA');failKs=true;await act(async()=>w.dispatchEvent(new w.Event('focus')));assert(!d.querySelector('.ks-module'));failKs=false;await act(async()=>w.dispatchEvent(new w.Event('focus')));assert.equal(selected(),'SJA');
+ evidence.push('KS/HMS: failed authorization then successful focus restores SJA.');
+ await click('Dokumentuttrekk');const textarea=d.querySelector('.ks-module textarea');assert(textarea);
+ await act(async()=>{Object.getOwnPropertyDescriptor(w.HTMLTextAreaElement.prototype,'value').set.call(textarea,'Syntetisk avgrensning');textarea.dispatchEvent(new w.Event('input',{bubbles:true}));});assert.equal(textarea.value,'Syntetisk avgrensning');await click('Håndbok');await click('Dokumentuttrekk');assert.equal(d.querySelector('.ks-module textarea').value,'Syntetisk avgrensning');
+ evidence.push('KS/HMS Document extract: internal tab switch retains typed scope text.');
+ await click('Hent dokumentlisten');const choice=d.querySelector('[aria-label=\"Dokumentuttrekk\"] fieldset input');assert(choice);await act(async()=>choice.click());const confirmation=[...d.querySelectorAll('[aria-label=\"Dokumentuttrekk\"] label')].find(node=>node.textContent.includes('Jeg har kontrollert omfanget')).querySelector('input');await act(async()=>confirmation.click());assert(!button('Last ned samlet PDF').disabled);
+ deferredExport={};await click('Last ned samlet PDF');assert(deferredExport.resolve);const oldExport=deferredExport;await click('Håndbok');assert(d.querySelector('[aria-label=\"Dokumentuttrekk\"]').parentElement.hidden);await click('Dokumentuttrekk');assert(choice.checked,'Chosen document was lost');assert(confirmation.checked,'Cart confirmation was lost');assert.equal(d.querySelector('[aria-label=\"Dokumentuttrekk\"] textarea').value,'Syntetisk avgrensning');deferredExport={};await click('Last ned samlet PDF');const newerExport=deferredExport;assert(newerExport.resolve);await act(async()=>oldExport.resolve());assert(button('Arbeider …').disabled,'Old finally unlocked the newer export');await click('Håndbok');await click('Dokumentuttrekk');await act(async()=>newerExport.resolve());deferredExport=null;assert(!d.querySelector('[aria-label=\"Dokumentuttrekk\"] [role=\"alert\"]'),'Canceled export continued after return');assert(!button('Last ned samlet PDF').disabled);
+ evidence.push('Document cart survives tab switch; old export stays canceled after return.');
+ const tabResults=[];for(const tab of ['Avvik/RUH','SJA','Vernerunder/kontroller','Risikovurdering','Les og bekreft (0)','Min personalhåndbok','Organisasjonskart','Sjekklistesentral','Oppfølging og revisjon','Dokumentuttrekk','Oppstart og tilgang']){await click(tab);assert.equal(selected(),tab);deferredKs={};await act(async()=>w.dispatchEvent(new w.CustomEvent('expo-proffdok-managed-access-changed',{detail:{userId:context.user_id}})));await act(async()=>deferredKs.resolve());deferredKs=null;tabResults.push({before:tab,after:selected()});assert.equal(selected(),tab);}evidence.push({ownRightsRefresh:tabResults});
+ context.manage=false;context.publish=false;context.administer=false;await act(async()=>w.dispatchEvent(new w.Event('focus')));assert.equal(selected(),'Les og bekreft (0)');assert(!d.querySelector('[aria-label=\"Dokumentuttrekk\"]'));
+ context.company_id='55555555-5555-4555-8555-555555555555';await act(async()=>w.dispatchEvent(new w.CustomEvent('expo-proffdok-work-profile',{detail:{active_company_id:context.company_id}})));assert.equal(selected(),'Les og bekreft (0)');await render({kind:'hr'});assert(!d.querySelector('.hr-detail'),'Prior firm record pointer crossed firm switch');context.user_id='66666666-6666-4666-8666-666666666666';await render({kind:'hr'});assert(!d.querySelector('.hr-detail'),'Prior actor record pointer crossed sign-in switch');assert.equal(w.sessionStorage.length,0);assert.equal(w.localStorage.length,0);evidence.push('Role downgrade, new firm/user and explicit close cannot restore unauthorized content; no browser data cache.');if(process.env.MODULE_NAVIGATION_VERBOSE)console.log(JSON.stringify(evidence,null,2));console.log('Actual KS/HMS + HR + Min side navigation PASS: fresh selected employee, explicit close/missing record, delayed access and offline remount, all 12 scoped tabs, role/actor/company gates, personal handbook, retained extract text/cart, canceled exports and old-finally fence; synthetic transport, no live writes.');
+}finally{await act(async()=>w.__unmount());dom.window.close();fs.rmSync(entry,{force:true});}

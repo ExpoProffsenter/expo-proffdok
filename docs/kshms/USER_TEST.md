@@ -1,5 +1,9 @@
 ## Ny HR-prøve – snarveier og sykefravær
 
+## Samme visning etter retur – 11. oktober 2026
+
+Separat core-Preview, uten ny database eller testbruker. Utvikleren tester tekniske overgangsfeil selv. Den innloggede sluttprøven er kort: HR → eksisterende medarbeider → nettleserfanebytte → samme medarbeider; KS/HMS → SJA → tilbake → samme fane; Dokumentuttrekk → skriv omfang → Håndbok → Dokumentuttrekk → teksten beholdt; Min side → Les og bekreft → Oversikt → Personalhåndbok → Les og bekreft beholdt. Lukk medarbeider skal holde posten lukket. [Full kontrakt](NAVIGATION_RECOVERY_20261011.md). TEST OK gjelder denne rettelsen; ingen gjentakelse av gamle PDF/ZIP-/B/C-tester kreves.
+
 Bare denne nye delen skal prøves på [fast Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe). Tidligere TEST OK består. Innlogget visuell/mobil prøve gjenstår; utviklerens React-/SQL-/critical-prøver er grønne.
 
 1. I HR: trykk **Åpne samtalemaler** øverst. Samtalemaler skal åpnes og de fire forslagene vises.
