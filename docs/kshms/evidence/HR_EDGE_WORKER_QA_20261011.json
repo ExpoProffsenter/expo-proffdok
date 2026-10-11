@@ -1,0 +1,43 @@
+{
+  "mode": "ISOLATED_EDGE_SQL_QA",
+  "worker": {
+    "project": "amduqhmgmeetaatwlmmt",
+    "name": "hr-ledger-worker",
+    "version": 1,
+    "bundleSha256": "4626918f2b2895a26ac460a209c79b744162cb34d255732ca456083f45bfe7c6",
+    "sourceFilesMatched": 7,
+    "configured": false,
+    "anonymousPostStatus": 403,
+    "publishablePostStatus": 401,
+    "code": "worker_key_not_configured",
+    "publishableHeaderWasSynthetic": true,
+    "publishableRequestRejectedAt": "platform gateway"
+  },
+  "workerAssertions": 108,
+  "httpSqlIntegrationAssertions": 243,
+  "fullCriticalBuild": "PASS",
+  "liveControl": {
+    "checkpoints": 0,
+    "enabled": 0,
+    "locks": 0
+  },
+  "permanentKeyProvisioned": false,
+  "actualBootstrap": false,
+  "actualCloudDatabaseAckIntegration": false,
+  "schedulerInstalled": false,
+  "managedCloudRestore": false,
+  "privateHROpen": false,
+  "synthetic": [
+    "HTTP QA transports",
+    "CLI provisioning transport",
+    "Auth/Storage platform roles",
+    "Blob adapter",
+    "file-job completion flag"
+  ],
+  "unchanged": [
+    "Production",
+    "course Sandbox",
+    "original operators/checkers",
+    "browser credential-protection STOP"
+  ]
+}

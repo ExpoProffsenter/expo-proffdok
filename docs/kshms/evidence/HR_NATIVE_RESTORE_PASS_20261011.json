@@ -1,0 +1,90 @@
+{
+  "source": "actual GitHub Actions completed native job",
+  "runId": 38093742515,
+  "jobId": 114335254717,
+  "commit": "709b421b6ca72cfa32ac516f411545a8817e5c1a",
+  "tree": "df28d65c840970d5636eb63f43681edfef055efc",
+  "completedAt": "2026-10-10T23:06:22Z",
+  "conclusion": "success",
+  "cleanup": "completed; successful job with no cleanup failure",
+  "result": {
+    "ok": true,
+    "mode": "ISOLATED_NATIVE_QA",
+    "assertions": 201,
+    "cli": "2.120.0",
+    "images": [
+      {
+        "service": "supabase_storage",
+        "image": "sha256:12afd2170c5ca80880a4af472bcb89d28e090e3155a8bcee4246c1fb3991dcdd"
+      },
+      {
+        "service": "supabase_rest",
+        "image": "sha256:1ad5f2ea5501150ec9c7953ae9bf04111ced39a53ca01fc0f08af6d0b7ba67be"
+      },
+      {
+        "service": "supabase_inbucket",
+        "image": "sha256:1ce65b9a2daa2a01cf4f226dbd4b3758b5b9fe686c2f471cf979273a389aab91"
+      },
+      {
+        "service": "supabase_auth",
+        "image": "sha256:1181bff5ba4ce440013a63cef9f4cf13024c432d705c9b1fbc9e5b949e852f48"
+      },
+      {
+        "service": "supabase_kong",
+        "image": "sha256:3cefb958bcd694597b65adc00053a762b1f9a6df3c6031af528d052d75a64e1a"
+      },
+      {
+        "service": "supabase_db",
+        "image": "sha256:4d5fe06292c269ef2729c2629efeaa9ce780bd33c0910e807aef19989ca07527"
+      }
+    ],
+    "physicalDatabaseAuthRestore": true,
+    "storageByteRestore": true,
+    "actualAuthUsers": 4,
+    "restoredFamilies": 5,
+    "restoredRegisteredFiles": 2,
+    "deletedPaths": 3,
+    "unrelatedEmployeePreserved": true,
+    "companyProfileFixture": true,
+    "productionAnchor": false,
+    "databaseAck": false,
+    "managedCloudRestore": false
+  },
+  "previousRuns": [
+    {
+      "runId": 38093432229,
+      "commit": "6b69a13deb415cca827c0368182279a0148588c4",
+      "conclusion": "failure",
+      "result": {
+        "ok": false,
+        "mode": "ISOLATED_NATIVE_QA",
+        "stage": "load_20261009211209_hr_restore_reconcile_orphans.sql",
+        "code": "native_check_failed",
+        "assertions": 42,
+        "productionAnchor": false,
+        "databaseAck": false,
+        "managedCloudRestore": false
+      }
+    },
+    {
+      "runId": 38093627987,
+      "commit": "d4d242475d872901a376be89b6b5c0f4ef7b43a4",
+      "conclusion": "failure",
+      "result": {
+        "ok": false,
+        "mode": "ISOLATED_NATIVE_QA",
+        "stage": "native_files_and_access",
+        "code": "native_check_failed",
+        "assertions": 42,
+        "productionAnchor": false,
+        "databaseAck": false,
+        "managedCloudRestore": false
+      }
+    }
+  ],
+  "limits": [
+    "Synthetic company/work-profile substrate; native Auth/Storage/Vault/Cron/pg_net unchanged",
+    "Same-version physical volume restore in same disposable Docker stack",
+    "Not managed-cloud PITR, complete production profiles, durable production anchor or H5b ack integration"
+  ]
+}

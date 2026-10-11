@@ -1,0 +1,36 @@
+name: HR Native Restore QA
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - .github/workflows/hr-native-restore.yml
+      - scripts/hr-native-restore-check.mjs
+      - scripts/fixtures/hr-native-company.sql
+      - scripts/lib/hr-deletion-ledger.mjs
+      - supabase/functions/_shared/hr-file-access.mjs
+      - supabase/migrations/*hr*.sql
+      - supabase/migrations/*people_module*.sql
+permissions:
+  contents: read
+concurrency:
+  group: hr-native-restore-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  native-restore:
+    name: Isolated native Database Auth Storage restore
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.120.0
+      - name: Synthetic native platform restore and purge
+        run: node scripts/hr-native-restore-check.mjs
+        # No cloud credentials, linked project, remote backup or artifact upload.

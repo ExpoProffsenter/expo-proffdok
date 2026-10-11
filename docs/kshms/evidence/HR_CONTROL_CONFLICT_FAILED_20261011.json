@@ -1,0 +1,17 @@
+{
+  "ok": false,
+  "mode": "ISOLATED_CLOUD_QA",
+  "runId": "f420e625-7e0c-4675-9646-a3e4468c0b9e",
+  "stage": "conflict",
+  "errorCode": "probe_check_rejected",
+  "created": true,
+  "passed": [
+    "private_write_fresh_read",
+    "anonymous_read_denied",
+    "signed_union_fresh_readback"
+  ],
+  "cleaned": true,
+  "productionAnchor": false,
+  "databaseAck": false,
+  "byteRestore": false
+}

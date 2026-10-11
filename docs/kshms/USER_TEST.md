@@ -1,3 +1,11 @@
+## Gjeldende bootstrap-oppfølging – 11. oktober 2026
+
+Draft PR #217 har kontrollert bootstrap-grunnlag og isolert SQL-integrasjon. Privat HR fortsatt stengt; ingen ny manuell Kenneth-prøve. Faktisk sky/kilde/control/ack-drift og managed-cloud restore gjenstår. [Nyeste scope, kontroller og bevisgrenser](HR_CONTROL_BOOTSTRAP_20261011.md). Tidligere TEST OK beholdes.
+
+## Gjeldende status – 10. oktober 2026 ca. 21:14 Europe/Oslo
+
+PR #216 er merged; Production/main `c3d873e0` og demo `11f1b45d` er levert og ferskt kontrollert READY. Ny H5b er **bare draft PR #217**, funksjonscommit `ecd700ac`, siste kontrollerte dokumentasjonshead `287a80aa`, grønn Core Safety/READY Preview med direkte Sandbox-binding; ingen merge eller privat HR-åpning. Den tidligere blokkerte, uendrede **live Sandbox rollback-SQL-prøven bestod nå**; etterkontroll: 1 bevart medarbeider, 0 receipts/acks/innhold/filer/jobber, deaktivert binding og privat HR false/quarantined=true. Dette er faktisk DB-prøve med syntetisk filjobbflag, ikke ekte skylager-/Storage-byte-/restore-/browser-PASS. Kenneth fullførte manuell Production-innlogging; **én autorisert testmail til kenneth@ringside.no er sendt gjennom eksisterende systemadmin-testflyt** 10. oktober ca. 21:08 Europe/Oslo. Synlig bekreftelse: «Test er sendt kun til kenneth@ringside.no.» Ingen gruppesending; Kenneths vedlagte skjermbilde av åpnet e-post dokumenterer mottak med eksakt emne og melding. Dette er ikke ende-til-ende-bevis for KS/HMS-tildelingsarbeideren. Privat uavhengig lager, varig operator/scheduler og full isolert Supabase/Auth/Storage-restore gjenstår. [Eksakte miljøer, nye bevis og neste konkrete driftshandling](HR_LEDGER_ACK_20261010.md). Eldre avsnitt nedenfor er leveringshistorikk og overstyrer ikke denne statusen. Tidligere TEST OK beholdes uten omtest.
+
 ## Retting: neste steg og tilbake fra PDF
 
 På samme faste Preview: Åpne en lagret prøvesamtale og trykk Rediger som ny utgave hvis nødvendig. Neste lagringsknapp skal vise toppen av neste stegs innhold. Last ned referat (PDF) fra en lagret utgave: du skal komme tilbake til samme samtale, utgave og fane. Utvikleren tester begge feilene; øvrige tidligere godkjente prøver skal ikke gjentas.

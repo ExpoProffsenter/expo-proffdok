@@ -140,4 +140,26 @@ await scenario(async()=>{
   await assert.rejects(syncCloudLedger(sdk,config,{...anchor,generation:Number.MAX_SAFE_INTEGER,hmac:max.hmac},snapshot([])));
   assert.equal(sdk.puts,0);
 });
+// Actual dashboard metadata: mixed-case catalog ID, lower-case private origin.
+// Token suffix is synthetic; this is a binding regression, not authenticated cloud evidence.
+const bound={...config,storeId:'store_feueeykoyyvzvmca',
+ origin:'https://feueeykoyyvzvmca.private.blob.vercel-storage.com',
+ token:'vercel_blob_rw_feUEeykOyyvZVMca_synthetic-not-a-real-token'};
+const boundAnchor={...anchor,storeId:bound.storeId};
+await scenario(async()=>{
+ let calls=0;
+ const sdk={async get(pathname,options){
+  calls++;assert.equal(options.token,bound.token);assert.equal(options.useCache,false);
+  const bytes=Buffer.from(JSON.stringify(initial));
+  return {statusCode:200,blob:{pathname,url:bound.origin+'/'+pathname,etag:'v7',size:bytes.length},
+   stream:new ReadableStream({start(c){c.enqueue(bytes);c.close();}})};
+ }};
+ assert.equal((await readCloudLedger(sdk,bound,boundAnchor)).generation,7);assert.equal(calls,1);
+});
+await scenario(async()=>{
+ let calls=0;
+ const sdk={async get(){calls++;throw Error('unexpected network');}};
+ await assert.rejects(readCloudLedger(sdk,{...bound,token:'vercel_blob_rw_oThEr_synthetic-not-a-real-token'},boundAnchor));
+ assert.equal(calls,0,'mixed-case wrong store still rejected before networking');
+});
 console.log(`✅ HR H5a cloud adapter: ${scenarios} fault/concurrency/fresh-readback scenarios PASS (synthetic SDK; no cloud-store/DB ack/restore proof)`);

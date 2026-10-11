@@ -1,5 +1,6 @@
 // Operator-only. Keep this directory AND its key outside database/file restore volumes.
 import fs from 'node:fs/promises';
+import {Buffer} from 'node:buffer';
 import path from 'node:path';
 import {createHmac, timingSafeEqual, randomUUID} from 'node:crypto';
 

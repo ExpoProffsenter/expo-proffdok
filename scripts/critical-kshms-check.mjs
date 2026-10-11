@@ -5,6 +5,7 @@ import './critical-hr-navigation-check.mjs';
 import './critical-hr-purge-check.mjs';
 import './critical-hr-deletion-ledger-check.mjs';
 import './critical-hr-cloud-deletion-ledger-check.mjs';
+import './critical-hr-ledger-ack-cycle-check.mjs';
 import './critical-hr-templates-check.mjs';
 import './critical-hr-sick-leave-check.mjs';
 import './critical-personal-page-check.mjs';

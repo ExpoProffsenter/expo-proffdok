@@ -1,0 +1,20 @@
+{
+  "ok": true,
+  "mode": "ISOLATED_CLOUD_QA",
+  "runId": "7d3853e3-c6d3-40c0-a208-24a8e3d7a71b",
+  "passed": [
+    "private_write_fresh_read",
+    "anonymous_read_denied",
+    "signed_union_fresh_readback",
+    "actual_stale_etag_conflict",
+    "empty_source_preserves_cloud_receipts",
+    "actual_write_with_injected_response_loss_refuses_success",
+    "previous_anchor_rejected",
+    "fresh_cloud_recovery_with_known_synthetic_anchor",
+    "synthetic_object_deleted_and_missing"
+  ],
+  "cleaned": true,
+  "productionAnchor": false,
+  "databaseAck": false,
+  "byteRestore": false
+}
