@@ -75,8 +75,8 @@ export function OrganizationEditor({context,groupId=null,onDirtyChange=()=>{}}) 
  });
  const download=()=>work(async(current,isCurrent)=>{
   const {downloadOrgPdf}=await import('./orgPdf.mjs');
-  await downloadOrgPdf({session:current,expected:data,companyName:context.company_name,isCurrent});
-  if(isCurrent())setNotice('PDF er lastet ned. Kontroller innholdet før du sender den videre.');
+  const pdf=await downloadOrgPdf({session:current,expected:data,companyName:context.company_name,isCurrent,rpc:kshmsRpc});
+  if(isCurrent())setNotice(pdf.logoMissing?'PDF er lastet ned uten logo. Firmalogoen kunne ikke hentes. Kontroller Firmaprofil og prøv igjen.':'PDF er lastet ned. Kontroller innholdet før du sender den videre.');
  });
  const admin=data?.context.administer===true;
  const shown=data&&layout?{...data,chart_name:layout.chart_name,units:layout.units.map(u=>({...u,editable:true,manager_name:data.members.find(m=>m.id===u.manager_id)?.name||null})),people:data.people.map(p=>({...p,unit_id:layout.units.some(u=>u.id===p.unit_id)?p.unit_id:null}))}:data;

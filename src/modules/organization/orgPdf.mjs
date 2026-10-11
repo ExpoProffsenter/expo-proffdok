@@ -1,8 +1,9 @@
 import {ORG_COLORS,ORG_KINDS,orgBranches,orgPersonRows,orgFingerprint} from './orgModel.mjs';
+import {loadCompanyLogo} from '../report/kshmsExecutionReport.mjs';
 const loadPdf=()=>import('https://esm.sh/jspdf@2.5.1');
 const rgb=hex=>[1,3,5].map(start=>parseInt(hex.slice(start,start+2),16));
 const safe=value=>String(value||'').replace(/[\u0000-\u001f\u007f]/g,' ').trim();
-export async function buildOrgPdf({data,companyName,JsPDF,now=new Date()}) {
+export async function buildOrgPdf({data,companyName,JsPDF,logo=null,now=new Date()}) {
  const model=orgBranches(data),pdf=new JsPDF({orientation:'landscape',unit:'mm',format:'a3'});
  const width=420,height=297,margin=15,gap=8,cardWidth=(width-margin*2-gap*2)/3,bottom=height-19;
  const date=now.toLocaleDateString('nb-NO'),company=safe(data.chart_name||companyName)||'Firmaets organisasjon';
@@ -13,7 +14,14 @@ export async function buildOrgPdf({data,companyName,JsPDF,now=new Date()}) {
  const header=()=>{
   pdf.setFillColor(...petrol);pdf.rect(0,0,width,45,'F');
   text('ORGANISASJONSKART',margin,15,10,[196,226,221],'bold');
-  text(lines(company,23,width-2*margin,'bold').slice(0,2),margin,27,23,[255,255,255],'bold');
+  text(lines(company,23,width-2*margin-(logo?82:0),'bold').slice(0,2),margin,27,23,[255,255,255],'bold');
+  if(logo){
+   const image=pdf.getImageProperties(logo),scale=Math.min(60/image.width,22/image.height);
+   const w=image.width*scale,h=image.height*scale;
+   if(!Number.isFinite(w)||!Number.isFinite(h)||w<=0||h<=0)throw Error('Firmalogoen har ugyldig størrelse.');
+   pdf.setFillColor(255,255,255);pdf.roundedRect(width-margin-68,7,68,30,2,2,'F');
+   pdf.addImage(logo,'PNG',width-margin-34-w/2,22-h/2,w,h);
+  }
   text(`${data.units.length} avdelinger  /  ${data.context.group_id?new Set(data.people.map(p=>p.user_id)).size+' personer / '+data.people.length+' firmaplasseringer':data.people.length+' medarbeidere'}  /  ${data.people.filter(p=>p.kind==='apprentice').length} lærlinger`,margin,54,10,muted);
  };
  const footer=()=>{pdf.setDrawColor(216,230,226);pdf.line(margin,height-14,width-margin,height-14);text(`Uttrekk ${date}  /  Navn, stillinger og organisasjon. Kontroller mottaker før deling.`,margin,height-8,8,muted);text(`Side ${page}`,width-margin-16,height-8,8,muted);};
@@ -128,7 +136,7 @@ export async function buildOrgPdf({data,companyName,JsPDF,now=new Date()}) {
  pdf.setProperties({title:`Organisasjonskart – ${company}`,subject:'Firmaets avdelinger, medarbeidere og stillinger',creator:'Expo ProffDok'});
  return pdf;
 }
-export async function downloadOrgPdf({session,expected,companyName,isCurrent,load=loadPdf,save=(pdf,name)=>pdf.save(name),now=new Date()}) {
+export async function downloadOrgPdf({session,expected,companyName,isCurrent,rpc,loadLogo=loadCompanyLogo,load=loadPdf,save=(pdf,name)=>pdf.save(name),now=new Date()}) {
  const fingerprint=orgFingerprint(expected);
  const verify=async()=>{
   const fresh=await session.read();
@@ -136,10 +144,21 @@ export async function downloadOrgPdf({session,expected,companyName,isCurrent,loa
   return fresh;
  };
  const fresh=await verify();
+ const readProfile=async()=>{
+  const profile=await rpc('work_profile_company_profile',{p_company_id:fresh.context.company_id});
+  if(!isCurrent()||profile?.companyId!==fresh.context.company_id){session.invalidate();throw Error('Firmatilgangen er endret. Hent kartet på nytt før eksport.');}
+  return profile;
+ };
+ const profile=await readProfile();
  const module=await load();
  if(!isCurrent())throw Error('Eksporten ble avbrutt ved bytte av arbeidsflate.');
- const pdf=await buildOrgPdf({data:fresh,companyName:fresh.context.company_name||companyName,JsPDF:module.jsPDF||module.default,now});
+ const logo=profile.logoUrl?await loadLogo(profile.logoUrl):null;
+ if(!isCurrent())throw Error('Eksporten ble avbrutt ved bytte av arbeidsflate.');
+ const pdf=await buildOrgPdf({data:fresh,companyName:fresh.context.company_name||companyName,JsPDF:module.jsPDF||module.default,logo,now});
+ const latestProfile=await readProfile();
+ if((latestProfile.logoUrl||'')!==(profile.logoUrl||'')){session.invalidate();throw Error('Firmalogoen er endret. Last ned PDF på nytt.');}
  await verify();
+ pdf.logoMissing=Boolean(profile.logoUrl&&!logo);
  const slug=safe(fresh.chart_name||fresh.context.company_name||companyName||'firma').normalize('NFKD').replace(/[^a-zA-Z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,70)||'firma';
  await save(pdf,`${slug}-organisasjonskart-${now.toISOString().slice(0,10)}.pdf`);
  return pdf;

@@ -71,3 +71,8 @@ const sharedSql=fs.readFileSync('supabase/migrations/20261011170849_organization
 for(const guard of ['shared_visibility boolean not null default false','not editing','org_private.group_context(p_company_id,p_group_id,true)','org_private.units.company_id=p_company_id','org_private.group_units.group_id=p_group_id','written<>jsonb_array_length(items)','p_revision is distinct',"set search_path=''"])assert(sharedSql.includes(guard));
 assert(!/insert into public.sales_company_memberships|public.hr_employee_command/.test(sharedSql));
 console.log('✅ Shared organization: opt-in/strict edit ACL, sorted siblings, visibility/order fingerprint, validated layout and collision/CAS guards PASS');
+
+const orgUi=fs.readFileSync('src/modules/organization/OrganizationChart.jsx','utf8');
+assert(/downloadOrgPdf\(\{[^}]*rpc:kshmsRpc/.test(orgUi),'Published download action supplies the existing authenticated RPC client');
+assert(orgUi.includes('pdf.logoMissing')&&orgUi.includes('PDF er lastet ned uten logo'),'Missing-image warning reaches the actual UI');
+console.log('✅ Organization PDF: authenticated firm-profile wiring and unavailable-logo feedback PASS');

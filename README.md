@@ -1,3 +1,12 @@
+## Firmalogo i organisasjonskartets PDF – 11. oktober 2026
+
+Miljømål **BEGGE**, først samme feature/Preview. Kenneths siste **TEST OK** gjelder linjer og lederplassering og beholdes. Nytt tillegg: **Last ned PDF** bruker eksisterende `work_profile_company_profile` for aktivt firma, også ved felleskart. Logoen gjentas i et hvitt felt øverst på hver A3-side med bevarte proporsjoner. Kartets toppnavn beholdes. Ingen nytt logo-register eller backendendring.
+
+Profilens firma og logo kontrolleres på nytt, og kart-/tilgangskontrollen etter lasting beholdes. Endret logo/firma, navigasjon eller tilbakekalt karttilgang stopper levering. En utilgjengelig logo gir lesbar PDF og en tydelig melding om at logoen mangler. Hjelp beskriver samme kontrakt uten kundespesifikke navn. Ny brukerprøve gjelder bare **Last ned PDF** og logoen; tidligere HR-, kart- og tilgangsprøver skal ikke gjentas. Release av dette nye tillegget venter på relevant Preview-prøve etter AGENTS.md punkt 10.
+
+Faktisk jsPDF med eksisterende Ringside-PNG: logo på alle sider, proporsjoner og headergrenser PASS; ferske PDF-sider er visuelt kontrollert. Endret/fremmed/offline firmaprofil, navigasjon, tilbakekalt tilgang og manglende logo er prøvd. Faktisk kart-React, permanent kart-critical og full Sandbox critical/build PASS. Dette er utviklerprøver med syntetisk kart, ikke en attestasjon av innlogget nedlasting. CI/READY og eksakt publisert SHA føres i PR #222.
+
+
 ## Organisasjonskart – renere forbindelser og sentrerte ledere (11.10.2026)
 
 Skjermkartets forbindelser går bare mellom kortenes midtakser: én gren får en rett stamme, og tverrlinjer stopper ved ytterste gren. Linjene er 3 px; PDF bruker 0,65 mm. Leder og mellomleder har sentrerte navn/stillinger uten dybdeinnrykk. Vanlige medarbeideres innrykk og all lagrings-/tilgangslogikk beholdes. Faktisk React, jsPDF og full Sandbox critical/build PASS; Preview-visning kreves for dette kosmetiske tillegget. Tidligere TEST OK skal ikke gjentas. Se [omfang og QA](docs/kshms/ORGANIZATION_SHARED_20261011.md).
