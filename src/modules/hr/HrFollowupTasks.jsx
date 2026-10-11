@@ -4,7 +4,7 @@ import {MANAGED_ACCESS_EVENT,MODULE_ACCESS_EVENT} from '../access/moduleAccessCl
 import {WORK_PROFILE_EVENT} from '../access/workProfileClient.js';
 import {osloToday} from './hrPracticeConversation.mjs';
 import './hrSickLeaveCases.css';
-const titles={'hr-review':'Kontroll av HR-oppsett og tilgang',plan:'Oppfølgingsplan',meeting1:'Dialogmøte 1 – vurdering og oppfølging',activity:'Underlag til NAVs aktivitetsvurdering',meeting2:'Forberedelse til NAVs dialogmøte 2',next:'Neste oppfølging'};
+const titles={'hr-review':'Kontroll av HR-oppsett og tilgang',preparation:'Forbered medarbeidersamtalen',plan:'Oppfølgingsplan',meeting1:'Dialogmøte 1 – vurdering og oppfølging',activity:'Underlag til NAVs aktivitetsvurdering',meeting2:'Forberedelse til NAVs dialogmøte 2',next:'Neste oppfølging'};
 export default function HrFollowupTasks({context,onOpen,onSetup}){
  const {company_id:companyId,user_id:userId}=context;
  const [value,setValue]=useState(null),[error,setError]=useState(''),[busy,setBusy]=useState(false);
