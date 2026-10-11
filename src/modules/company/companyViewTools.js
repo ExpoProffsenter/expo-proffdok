@@ -1,6 +1,7 @@
 // FASE 27E FIRMA: Mekanisk uttrekk av eksisterende Firmaprofil- og Firmaadministrasjon-visninger fra main.jsx.
 // FASE 41B.3E: Tydeliggjør forskjellen mellom brukerens primære firmaprofil og systemadmins Representerer-scope.
 import React, * as ReactNS from 'react';
+import CompanyNameEditor from './CompanyNameEditor.jsx';
 import { Building2, Plus } from 'lucide-react';
 import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
 
@@ -44,6 +45,7 @@ export function createCompanyViewTools({
     uploadLogo,
     saveProfile,
     canEdit = false,
+    onCompanyNameSaved,
     loginEmail = ""
   }) {
     const representation = getSystemAdminRepresentationContext(company?.companyName);
@@ -153,6 +155,7 @@ export function createCompanyViewTools({
             ]
           })
         }),
+        canEdit && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CompanyNameEditor, {onSaved:onCompanyNameSaved}),
         canEdit ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
             className: "note",

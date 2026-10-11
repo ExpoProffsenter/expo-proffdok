@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {companyProjectMatches as matches} from '../src/modules/company/companyProjectIdentity.mjs';
+const c='92000000-0000-4000-8000-000000000001',other='92000000-0000-4000-8000-000000000002';
+let checks=0;const eq=(a,b)=>{assert.equal(a,b);checks++;};
+for(const label of ['Old Firm AS','Ringside AS','Second renamed label'])eq(matches({company_scope_id:c,data:{company:{companyName:label}}},c,'Old Firm AS'),true);
+eq(matches({company_scope_id:other,data:{company:{companyName:'Old Firm AS'}}},c,'Old Firm AS'),false);
+eq(matches({data:{company:{companyName:' Old Firm AS '}}},c,'old firm as'),true);
+eq(matches({data:{company:{companyName:'Other'}}},c,'Old Firm AS'),false);
+eq(matches({company_scope_id:c,data:{company:{companyName:'Old Firm AS'}}},'','Old Firm AS'),true);
+eq(matches({},c,''),false);
+const main=fs.readFileSync('src/main.jsx','utf8');
+eq((main.match(/return companyProjectMatches\(row,/g)||[]).length,4);
+assert(main.includes('const effectiveCompanyId = (await getMyCompanyProfile().catch(() => null))?.companyId || "";'));checks++;
+assert(main.includes('if (row.user_id === currentUser.id) return true;'));checks++;
+console.log(`Company/project identity: ${checks} assertions PASS, current UUID, repeated renames, foreign same-label rejection, historical fallback and existing owner checks.`);

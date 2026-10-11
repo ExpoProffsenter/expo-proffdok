@@ -1,6 +1,6 @@
 export const ORG_KINDS={leader:'Leder',middle:'Mellomleder',employee:'Ansatt',apprentice:'Lærling'};
 export const ORG_COLORS={teal:['#e2f4ee','#096457'],blue:['#e8f1ff','#285998'],amber:['#fff3d8','#805719'],violet:['#f0eaff','#6b46a0'],rose:['#fcebef','#9a4057']};
-export function orgFingerprint(data){return JSON.stringify([data.context,data.revision,data.chart_name??null,data.companies??null,data.units,data.people,data.members]);}
+export function orgFingerprint(data){return JSON.stringify([data.context,data.revision,data.chart_name??null,data.shared_visibility??false,data.companies??null,data.units,data.people,data.members]);}
 export function orgBranches(data) {
  const units=new Map(data.units.map(unit=>[unit.id,{...unit,children:[],people:[]}]));
  if(units.size!==data.units.length)throw Error('Kartet har dupliserte avdelinger.');
@@ -25,7 +25,7 @@ export function orgBranches(data) {
   if(person.unit_id){if(!units.has(person.unit_id))throw Error('Medarbeiderens avdeling mangler.');units.get(person.unit_id).people.push(person);}
   else unplaced.push(person);
  }
- const sort=nodes=>{nodes.sort((a,b)=>a.name.localeCompare(b.name,'nb'));for(const node of nodes)sort(node.children);};sort(roots);
+ const sort=nodes=>{nodes.sort((a,b)=>(a.sort_order??0)-(b.sort_order??0)||a.name.localeCompare(b.name,'nb'));for(const node of nodes)sort(node.children);};sort(roots);
  return {roots,units,unplaced};
 }
 export function orgPersonRows(people) {
@@ -67,15 +67,15 @@ export function createOrgSession({rpc,companyId,userId,groupId=null,onClear=()=>
  };
 }
 
-export const orgLayout=data=>({chart_name:data.chart_name||data.context.company_name||'Ditt firma',units:data.units.map(({id,parent_id,name,manager_id,color,company_id})=>({id,parent_id:parent_id||null,name,manager_id:manager_id||null,color,...(data.context.group_id?{company_id:company_id||null}:{})}))});
+export const orgLayout=data=>({chart_name:data.chart_name||data.context.company_name||'Ditt firma',...(data.context.group_id?{shared_visibility:data.shared_visibility===true}:{}),units:data.units.map(({id,parent_id,name,manager_id,color,company_id,sort_order})=>({id,parent_id:parent_id||null,name,manager_id:manager_id||null,color,sort_order:sort_order??0,...(data.context.group_id?{company_id:company_id||null}:{})}))});
 export function orgSubtree(units,id){if(!id)return new Set();const found=new Set([id]);let changed=true;while(changed){changed=false;for(const unit of units)if(found.has(unit.parent_id)&&!found.has(unit.id)){found.add(unit.id);changed=true;}}return found;}
 export function orgLayoutPayload(data,layout){
- const units=layout.units.map(({id,parent_id,name,manager_id,color,company_id})=>({id,parent_id:parent_id||null,name:name.trim(),manager_id:manager_id||null,color,...(data.context.group_id?{company_id:company_id||null}:{})}));
+ const units=layout.units.map(({id,parent_id,name,manager_id,color,company_id,sort_order})=>({id,parent_id:parent_id||null,name:name.trim(),manager_id:manager_id||null,color,sort_order:sort_order??0,...(data.context.group_id?{company_id:company_id||null}:{})}));
  if(units.length>100||layout.chart_name.trim().length<2||layout.chart_name.trim().length>100)throw Error('Kontroller toppnavnet og antall avdelinger.');
  orgBranches({context:data.context,companies:data.companies,units,people:[]});
- if(units.some(u=>u.name.length<2||u.name.length>80||!ORG_COLORS[u.color]))throw Error('Kontroller avdelingsnavn og farge.');
+ if(units.some(u=>u.name.length<2||u.name.length>80||!ORG_COLORS[u.color]||!Number.isInteger(u.sort_order)||u.sort_order<0||u.sort_order>100))throw Error('Kontroller avdelingsnavn, farge og rekkefølge.');
  const ids=new Set(units.map(u=>u.id)),removed_ids=data.units.filter(u=>!ids.has(u.id)).map(u=>u.id).sort();
- return {chart_name:layout.chart_name.trim(),units,removed_ids,confirm_removal:removed_ids.length>0};
+ return {chart_name:layout.chart_name.trim(),...(data.context.group_id?{shared_visibility:layout.shared_visibility===true}:{}),units,removed_ids,confirm_removal:removed_ids.length>0};
 }
 
 export function orgUnitCompany(units,id){const seen=new Set();let unit=units.find(u=>u.id===id);while(unit&&!seen.has(unit.id)){seen.add(unit.id);if(unit.company_id)return unit.company_id;unit=units.find(u=>u.id===unit.parent_id);}return null;}

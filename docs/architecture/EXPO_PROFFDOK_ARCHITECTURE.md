@@ -1,3 +1,65 @@
+## Godkjent Production-release #222 – 11. oktober 2026
+
+Kenneths «flott test ok» kl. 20:49 Europe/Oslo godkjenner også logo og midtstilt, tilpasset PDF-tekst. Tidligere TEST OK for HR, firmanavn, felles kart og linjer/lederplassering beholdes. Eldre «venter», «draft» og prøvekrav nedenfor er daterte arbeidsnotater.
+
+Godkjent feature `2d0ae997797f3f737e30778c2d6d4910ff3bedf9` er merget som `e466c5603f745081d00a8964e752bb4f6f76b36b`. Production `dpl_5uuswoKpL4NYvVkMH94Hjrq2eALT` er READY på https://expo-proffdok.app. Obligatorisk Core Safety etter ready-for-review: run `38166319985`, job `114549510315`, alle steg SUCCESS. Ingen ny innlogget Production-prøve attesteres; Kenneths Preview-prøve og utviklernes backend-/assetkontroller er separate bevis.
+
+Alle seks godkjente migrasjoner er installert i Production: sykefraværssaker, fristvarsler, referanseindeks, worker-scope, firmavisningsnavn og felleskart/rekkefølge. 22 + 12 + 36 faktiske rollback-prøver PASS. Alle 23 funksjonskropper matcher godkjent SQL. Bare åtte avtalte eksisterende org-funksjoner er endret; 15 funksjoner og tre private RLS-tabeller er lagt til. Eksisterende policies, triggere, medlemskap, profiler, modulrettigheter og andre worker-innstillinger er uendret. Nye advisor-notiser gjelder tilsiktede private RLS-tabeller uten direkte klienttilgang, tilgangskontrollerte definer-RPC-er og to nye foreløpig ubrukte indekser; ingen nye manglende FK-indekser.
+
+HR-fristworker `hr-followup-reminders` v1 er ACTIVE og aktivert med egen Vault-autentisering og minutt-cron. Utsending skjer i Oslo-kontortid, tre dager før, på frist og ukentlig etterpå for aktuelle åpne oppgaver; endret ansvar/tilgang kontrolleres på nytt. Anonym GET=405/POST=403. Serverautentisert tom-kø-prøve ga 200 `{idle:true}`, uten testmail eller providerkall. Dette er ikke bevis på mottatt fristmail. Tidligere mottatt slettevarsel skal ikke gjentas.
+
+Kenneth, Tom og Kim har hver firmaadmin i de tre avtalte firmaene, med eksisterende kontoer og primærfirma beholdt. KS/HMS er aktivert i Expo Proffsenter. Ingen ny registrering eller invitasjon. Faktiske firmavisningsnavn og organisasjonskart bygges av brukeren i Production; utvikleren har ikke skrevet et virkelig personal-/kartoppsett.
+
+Miljømål BEGGE. Permanent demo synkroniseres kontrollert kun main → demo, med egen Sandbox og bevart overlegg. Kurs-/preflight- og endelig demo-publisering dokumenteres separat på demo-branch og i PR #222. Ingen demoressurs eller syntetisk identitet skal tilbake til main.
+
+## Midtstilt og tilpasset PDF-tekst – 11. oktober 2026
+
+Miljømål **BEGGE**, først samme feature/Preview. Nytt kosmetisk tillegg gjelder organisasjonskartets PDF: firma-/avdelingskort, avdelingsoverskrifter, ledertekst og alle medarbeiderkort har midtstilt tekst. Navn/avdeling bruker inntil 18–20 pt, medarbeidernavn inntil 15 pt og tilhørende tekst inntil 12 pt. Brede/korte tekster vokser til feltets maks; lange tekster reduseres til en lesbar minste størrelse og brytes deretter fullstendig. Kort-/rad-/nivåhøyde beregnes fra faktisk tekst og skriftstørrelse. Rapporteringens eksisterende innrykk beholdes, med tekst sentrert i sitt kort. Logo og ferske profil-/kart-/tilgangskontroller beholdes.
+
+Den gamle PDF-posisjonsprøven forventet tekst på kortets venstrekant +6 mm. Ny forventning er den uendrede midtkortaksen x=210 mm med align=center. Ordens-/linje-/tilgangs-/logoassertions beholdes. Nye faktiske jsPDF-prøver kontrollerer større korte navn, mindre lange navn, full tekstbryting, sentrum/bredde/høyde mot tegnede kort og bevaring av alle medarbeidere/dype grener. Ny brukerprøve er kun **Last ned PDF** og tekst/logo; tidligere godkjente HR-/kart-/tilgangsprøver skal ikke gjentas. Preview/CI-bevis og eksakt SHA føres i PR #222. Ingen ny backendendring. Production/main/demo venter på relevant TEST OK etter AGENTS.md punkt 10.
+
+Faktisk jsPDF med små/store og dype kart PASS: tekstens senter og mål er kontrollert mot faktiske tegnede kort, alle navn/grener beholdes, og flersidige dokumenter beholder logo. Nye PDF-sider med kart, medarbeiderkolonner og smale/dype grener er visuelt kontrollert. Faktisk kart-React, permanente eksisterende guards og full Sandbox critical/build PASS. Dette er utviklerprøver med syntetisk innhold; innlogget ny eksport venter på brukerens korte Preview-prøve.
+
+
+## Firmalogo i organisasjonskartets PDF – 11. oktober 2026
+
+Miljømål **BEGGE**, først samme feature/Preview. Kenneths siste **TEST OK** gjelder linjer og lederplassering og beholdes. Nytt tillegg: **Last ned PDF** bruker eksisterende `work_profile_company_profile` for aktivt firma, også ved felleskart. Logoen gjentas i et hvitt felt øverst på hver A3-side med bevarte proporsjoner. Kartets toppnavn beholdes. Ingen nytt logo-register eller backendendring.
+
+Profilens firma og logo kontrolleres på nytt, og kart-/tilgangskontrollen etter lasting beholdes. Endret logo/firma, navigasjon eller tilbakekalt karttilgang stopper levering. En utilgjengelig logo gir lesbar PDF og en tydelig melding om at logoen mangler. Hjelp beskriver samme kontrakt uten kundespesifikke navn. Ny brukerprøve gjelder bare **Last ned PDF** og logoen; tidligere HR-, kart- og tilgangsprøver skal ikke gjentas. Release av dette nye tillegget venter på relevant Preview-prøve etter AGENTS.md punkt 10.
+
+Faktisk jsPDF med eksisterende Ringside-PNG: logo på alle sider, proporsjoner og headergrenser PASS; ferske PDF-sider er visuelt kontrollert. Endret/fremmed/offline firmaprofil, navigasjon, tilbakekalt tilgang og manglende logo er prøvd. Faktisk kart-React, permanent kart-critical og full Sandbox critical/build PASS. Dette er utviklerprøver med syntetisk kart, ikke en attestasjon av innlogget nedlasting. CI/READY og eksakt publisert SHA føres i PR #222.
+
+
+## Organisasjonskart – renere forbindelser og sentrerte ledere (11.10.2026)
+
+Skjermkartets forbindelser går bare mellom kortenes midtakser: én gren får en rett stamme, og tverrlinjer stopper ved ytterste gren. Linjene er 3 px; PDF bruker 0,65 mm. Leder og mellomleder har sentrerte navn/stillinger uten dybdeinnrykk. Vanlige medarbeideres innrykk og all lagrings-/tilgangslogikk beholdes. Faktisk React, jsPDF og full Sandbox critical/build PASS; Preview-visning kreves for dette kosmetiske tillegget. Tidligere TEST OK skal ikke gjentas. Se [omfang og QA](../kshms/ORGANIZATION_SHARED_20261011.md).
+
+## TEST OK og generell veiledning – 11. oktober 2026 kl. 19:42 Europe/Oslo
+
+Miljømål **BEGGE**. Kenneth har gitt **TEST OK** også for felles lesetilgang og sentrert kart. Tidligere HR/navn/kart-prøver er godkjent og skal ikke gjentas. Spørsmålet om hvem som ser eksemplene avdekket at Ringside-navn var lagt inn i felles veiledning og organisasjonskapittelet i Hjelp uten firmabegrensning. Disse eksemplene er erstattet med generelle navn/nivåer og venstre/midt/høyre. Hjelps oppdateringsdato er satt til 11.10.2026. Ingen kartnavn, avdelingsnavn, firmadata, tilgang eller lagringsflyt endres.
+
+Rettelsen er tekst/placeholder og har ingen ny obligatorisk brukerprøve. Eksisterende faktisk React-kontroll krever nå generisk veiledning og fravær av andre firmas eksempler på et urelatert firmakart; alle eksisterende dataplasserings-/rettighetsprøver beholdes. Brukerens egne kartnavn vises fortsatt fra den autoriserte kartresponsen. Øvrige Hjelp-kapitlers omtale av leverandør/vareregister/produktmerke er utenfor denne kartrettelsen.
+
+## Felles kart og sentrerte grener – 11. oktober 2026
+
+Miljømål **BEGGE**, feature/Preview + Sandbox. Kenneths **TEST OK** på HR, firmavisningsnavn og forrige kartleveranse er registrert og beholdes. Nytt scope gjelder bare kartets felles lesetilgang og plassering.
+
+Ett kart opprettes for de tilknyttede firmaene. **Vis hele kartet for brukere i hvert tilknyttet firma** åpner hele kartet for aktive brukere med KS/HMS i ett tilknyttet firma. Dette er uttrykkelig opt-in: eksisterende kart har uendret begrenset visning. Redigering/opprettelse krever fortsatt firmaadmin og KS/HMS i alle firmaene. Én tilgjengelig delt organisasjon åpnes automatisk; et bevisst valg av firmakart huskes. Ingen HR- eller medlemskapsrettigheter endres.
+
+**Rekkefølge fra venstre** lagres på kortene: Expo Proffsenter 1, Ringside Rørleggerbedrift 2, Bademiljø Expo 3. Alle tre legges under Styret. Like brede grenfelt sentrerer det midterste kortet under Styret/Ringside AS. PDF bruker samme rekkefølge. Hjelp forklarer både oppsett og tilgang.
+
+QA: 36 nye faktiske Sandbox-rollback-assertions PASS, også med én firmatilgang i hvert av de tre firmaene. 340 eksisterende funksjoner uendret; bare de åtte godkjente org-funksjonene endret. Ingen nye security-advisor-funn. Lokal PostgreSQL: 63 + 33 + 64 eksisterende og 36 nye PASS. Faktisk React, faktisk PDF-drawing/fersk tilgang og full Sandbox critical/build PASS. Nettleserinnlogging til flerfirmaflyt er ikke attestert. Ingen aktive kart, Production-innstillinger eller ekte medarbeiderdata er endret.
+
+Fast Preview: https://expo-proffdok-git-fase45c-hr-sickleave-20261011-ringside.vercel.app/?progressTest=safe . Bare ny kartprøve: **Rediger kart → Vis hele kartet … → Lagre kart**, og rekkefølge 1/2/3 via **Rediger / flytt → Bruk endring → Lagre kart**. Kontroller samme felleskart med en konto som har bare ett tilknyttet firma. Tidligere HR/navn/mail-prøver gjentas ikke. [Kontrakt og QA](../kshms/ORGANIZATION_SHARED_20261011.md).
+
+## Gjeldende HR-status og ny sykefraværsoppfølging – 11. oktober 2026
+
+Eksisterende private kontaktopplysninger, medarbeidersamtaler og slettevarsler er godkjent og åpnet i Production fra main `61a42e6c7d996a6abc6c5146de45e3759e682b4d`. Kenneth har bekreftet faktisk mottatt slettevarselmail med receipt `544cd046-7e92-4ea0-a10c-6a6940bb67ec`. Disse testene skal ikke kreves på nytt som brukerprøve.
+
+Ny funksjon har miljømål **BEGGE** og egen feature/Preview fra denne main: personlig sykefraværsoppfølging, felles plan/tiltak, kalenderfrister, dokumenterte vurderinger, egne bekreftelser, faktisk delingsjournal, avslutning og PDF. Nærmeste leder får påminnelser om frister og medarbeiderens åpne tiltak. Samme HR-arbeider dekker avtalte frister i vanlige medarbeidersamtaler og firmaadmins HR-kontrollfrist. Utsending er avslått i Preview; produksjonsaktivering følger ny relevant `TEST OK`. [Kontrakt, QA, kilder og release](../kshms/HR_SICK_LEAVE_CASES_20261011.md).
+
+De tidligere kapitlene nedenfor er historiske fasebeskrivelser. Formuleringer om stengt HR-port eller fremtidige samtaler gjelder ikke gjeldende Production-status. Ny sykefraværsfunksjon er foreløpig ikke releaset til Production. Eksisterende KS/HMS-varsling er aktiv i Production; dette er ikke en attestasjon av alle øvrige frister i appen.
+
 ## HR: serverlagrede medarbeidersamtaler og slettevarsler – 11. oktober 2026
 
 Miljømål **BEGGE**. Ny produksjonsfunksjon fra ren main, foreløpig feature/Preview: nærmeste leder starter en samtale på en registrert medarbeider; medarbeiderens private forberedelse deles uttrykkelig, felles referat/tiltak versjoneres, hver part kommenterer og bekrefter selv. Samtalen ligger i medarbeider-popupen og beholdes ved fanebytte og PDF. Alle snapshots inngår i eksisterende private purge-/restore-domene. Systemadmin får en minimal driftsmelding uten tilgang til samtaletekst. Ingen ny betalt testressurs. [Scope, QA og manuell gjenopprettingsrutine](../kshms/HR_CONVERSATIONS_20261011.md).
@@ -986,3 +1048,9 @@ Dette er en lokal prøve av arbeidsflyten; data følger ikke brukeren til en ny 
 Prøvesamtalens neste steg ruller nå til innholdets start. PDF-retur og ny tilgangskontroll beholder valgt samtale, lagret utgave og fane via en scoped sessionStorage-peker; innhold leses fra ferskt validert lokal historikk. Bevisst lukk/ny/slett rydder valget. PDF-format, tilgangskjerne og global navigasjon er uendret.
 
 Prøv medarbeidersamtale viser nå toppen av skjemaet. Tomme og ulagrede prøvekladder beholdes i et avgrenset konto-/firmabundet sideminne gjennom tilgangsremount etter fanebytte. Fersk lokal historikk leses før gjenåpning; en eldre ulagret revisjon får ikke overskrive endringer fra en annen fane. Full oppfriskning gjenåpner fortsatt bare lagrede utgaver. Bevisst Lukk rydder kladden og valget.
+
+## Firmavisningsnavn, kartledelse og HR-veiledning – 11. oktober 2026
+
+Firmaprofil → Endre firmanavn bruker egen authenticated-RPC med fersk aktiv profil, låst firmaadmin-medlemskap eller systemadmin, primærfirmabinding, forventet navn og navnekollisjon. Bare sales_company_scopes.display_name endres; stable UUID/normalized identity, profiles, memberships, contact profile and existing snapshots are preserved. Original profile RPCs unchanged. Main applies acknowledged display name to the profile draft and, only outside an open project, the current company; contact drafts are preserved. Four existing project presentation filters now use the stable company_scope_id when available and retain historical-name fallback. Fresh primary-company ID is read when projects load; existing owner/systemadmin/support branches and database RLS are preserved. Work-profile metadata refreshes separately.
+
+Organisasjonskart forklarer at Nytt felles kart krever minst to kvalifiserte registrerte firmaer. Ett firma kan ha Styret og valgfri underavdelingsstruktur. Leader/middle placements show names and free job titles even when staff details are collapsed. No new organization or HR rights. Hjelp now has separate A–Å chapters for conversations and sick-leave, and distinguishes explicit employee sharing, meeting readiness, own confirmation, deadlines and actual external sharing.

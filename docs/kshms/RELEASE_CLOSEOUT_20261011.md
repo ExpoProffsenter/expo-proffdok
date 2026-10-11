@@ -1,3 +1,15 @@
+## HR, firmanavn, felleskart og PDF – godkjent synk 11. oktober 2026
+
+Miljømål SANDBOX/DEMO for kursinnholdet; godkjent appkode fra #222 er synkronisert kun main → demo. Gjeldende main-baseline er `ce3f4d0f23e56e8e2ec283ac8d02aca2f8d193e1`, etter Production READY og dokumentasjonsrelease #223. Ordinær HR-/kart-/main-kode matcher main. Eksisterende demo-overlegg, medier, Sales, prosjektdata og historikk er bevart.
+
+Ny Sandbox-only migrasjon `demo_sick_leave_course` legger til én fiktiv sykefraværsplan hos eksisterende demo.ansatt2 med demobrukeren som leder. Delte innspill, møtekladd, ett åpent tiltak og beregnede frister. Ingen persondiagnose, bekreftelse, fullført oppfølging eller NAV-/sykmelderdeling seedes. Eksisterende sykefraværssak og brukerutfylt kontakt-/samtaleinnhold beholdes. Idempotent snapshot `sick-leave-course-v1`; egne kurs-/resetkontroller. Alle tre mailtransporter forblir AV.
+
+Faktisk Sandbox-preflight: 19 eksisterende infrastrukturpunkter + fem kurspunkter grønne. Gamle fire kurspunkter og nytt sykefraværspunkt kommer fra samme tilgangskontrollerte kurs-RPC. Kontrollsidens gamle tre-punktskrav er rettet til den nye fem-punktskontrakten. Faktisk kontrollfunksjon er prøvd med riktig payload og avviser gammel/uventet kontrakt, mailfeil, backendfeil, gammel main-baseline, manglende lokal skisse og offline-RPC. Lokal skisse og innlogget klient må fortsatt kontrolleres i kursoperatørens nettleser; dette er ikke attestert som ny innlogget prøve.
+
+Full Sandbox critical/build PASS. Eksisterende kurs-rollback-QA PASS: ordinær SJA-signering/fullføring, reset beholder uforanderlig historikk, revokasjon/karantene/mail stopper kurset. Ny sykefraværs-rollback-QA PASS: leder/medarbeidertilgang, fire milepæloppgaver, ubekreftet plan, ingen delingsregistreringer, aktiv fristmail stopper preflight, feil leder avvises og kursreset bevarer alle personlige sykefraværssaker. Bare `demo_kshms_hr_course_preflight` endres i Sandbox; alle øvrige funksjoner, policies, triggere, profiler, medlemskap, modulrettigheter og beskyttede worker-innstillinger er identiske før/etter.
+
+Fersk tre-siders sykefraværs-PDF er generert fra den autoriserte, lagrede Sandbox-utgaven og visuelt kontrollert på alle sider. Ingen gammel PDF brukes som bevis. Ingen testmail er sendt. Endelig demo-commit, READY-deployment og HTTP-/assetkontroll føres i PR #222 etter oppdatering av demo-ref. Fast host: https://expo-proffdok-git-demo-ringside.vercel.app . Produksjonens endelige docs-release: `dpl_H5egSh65ssneoQWYM3NWTCYvzxdx` READY på siste main; godkjent appkode uendret fra #222.
+
 ## Sluttført HR-release og demo-synk – 11. oktober 2026
 
 Kenneth TEST OK kl. 17:10 Europe/Oslo gjelder #220 og skal ikke gjentas. Production funksjonsmerge 6b557c71f97cfecd7114b61883c964a3aaa88c25 READY, dokumentasjons-main 61a42e6c7d996a6abc6c5146de45e3759e682b4d etter grønn #221 Core Safety 38151822834/114506673049. Demo synkretning kun main → demo; appfunksjonene matcher godkjent kilde. Demoens main-baseline er nøyaktig 61a42e6c7d996a6abc6c5146de45e3759e682b4d.
