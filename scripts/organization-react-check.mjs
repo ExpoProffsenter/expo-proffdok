@@ -50,7 +50,7 @@ try{
   assert.equal(window.document.querySelectorAll('.org-stats>div').length,4);
   assert(!buttons().some(b=>b.textContent.includes('Nytt felles kart')));assert(window.document.body.textContent.includes('minst to registrerte firmaer'));
   assert(window.document.querySelector('[aria-label="Ledere i Service"]')?.textContent.includes('Avdelingsleder'),'Leader name/title visible without expanding employees');
-  assert(window.document.body.textContent.includes('Ringside Rørleggerbedrift, Bademiljø Expo og Expo Proffsenter'));assert.equal(window.document.querySelectorAll('.org-branch').length,3);
+  assert(window.document.body.textContent.includes('Avdelingen med 2 står da sentrert under Styret og hovedfirmaet.'));assert(!/Ringside|Bademiljø|Proffsenter/.test(window.document.body.textContent),'An unrelated firm gets generic chart guidance, never Ringside examples');assert.equal(window.document.querySelectorAll('.org-branch').length,3);
   await expandService();
   assert(window.document.querySelector('.org-person-apprentice svg'));
   await click('Ny avdeling');await write('Avdelingsnavn','Teknisk prosjektavdeling');await write('Rekkefølge fra venstre','2');await write('Plasser under','service');await submit();
