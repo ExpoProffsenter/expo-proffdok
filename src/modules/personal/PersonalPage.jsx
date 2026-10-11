@@ -3,12 +3,13 @@ import {BookOpen,UserRound,MessageSquare,HeartPulse,Settings,ArrowRight,LayoutDa
 import {personalRights} from './personalAccess.js';
 import AccountContact from './AccountContact.jsx';
 import PrivateContact from '../hr/PrivateContact.jsx';
+import HrFollowupNotice from '../hr/HrFollowupNotice.jsx';
 import './personal.css';
 const KshmsModule=React.lazy(()=>import('../kshms/KshmsModule.jsx'));
 const HrModule=React.lazy(()=>import('../hr/HrModule.jsx'));
 const sections={overview:'Oversikt',handbook:'Personalhåndbok',hr:'Mine oppfølginger',profile:'Profil og e-post'};
 const sectionIcons={overview:LayoutDashboard,handbook:BookOpen,hr:UserRound,profile:Settings};
-export default function PersonalPage({context,kshmsContext,hrContext,userId,authUser,supabaseClient,children}){
+export default function PersonalPage({context,kshmsContext,hrContext,userId,authUser,supabaseClient,onOpenHrSetup,children}){
  const rights=personalRights(context,kshmsContext,hrContext,userId);
  // Remember only navigation, never an access context or HR payload. Fresh rights still gate every module.
  const [navigation,setNavigation]=useState(null),[selection,setSelection]=useState({scope:null,screen:'overview',employeeId:null});
@@ -26,14 +27,15 @@ export default function PersonalPage({context,kshmsContext,hrContext,userId,auth
  const firstName=fullName.split(/\s+/)[0];
  return <section className={nav?.enabled?'personal-page':undefined} aria-label={nav?.enabled?'Min side':'Min profil / e-postvalg'} aria-busy={pending}>
   {nav?.enabled&&<header className="personal-heading"><div><span className="personal-eyebrow"><ShieldCheck size={16} aria-hidden="true"/> DIN ARBEIDSHVERDAG</span><h2>{firstName?'Hei, '+firstName:'Min side'}<span>Dette er din plass.</span></h2><p>Håndboka, oppfølgingene og profilen din – enkelt å finne, lett å bruke.</p></div><div className="personal-avatar" aria-hidden="true">{fullName?fullName.split(/\s+/).slice(0,2).map(part=>part[0]).join('').toLocaleUpperCase('nb-NO'):<UserRound/>}</div></header>}
+  <HrFollowupNotice context={rights.hr?hrContext:null} userId={userId} onSetup={onOpenHrSetup}/>
   {nav?.enabled&&<nav className="personal-tabs" aria-label="Min side visning">{visible.map(id=>{const Icon=sectionIcons[id];return <button key={id} type="button" className={screen===id?'active':'secondary'} aria-pressed={screen===id} disabled={pending} onClick={()=>choose(id)}><Icon size={18} aria-hidden="true"/>{sections[id]}</button>;})}</nav>}
   {pending&&<div className="personal-checking" role="status"><ShieldCheck aria-hidden="true"/><div><strong>Kontrollerer tilgangen din …</strong><p>Du kommer tilbake til samme visning når kontrollen er ferdig.</p></div></div>}
   {screen==='overview'&&!pending&&<div className="personal-cards">
    {rights.kshms&&<article className="personal-card personal-card-handbook"><div className="personal-card-icon"><BookOpen aria-hidden="true"/></div><span className="personal-card-eyebrow">TRYGG I JOBBEN</span><h3>Personalhåndboka</h3><p>Finn rutinene du har fått. Les, bekreft og slå opp tidligere utgaver når du trenger dem.</p><button type="button" className="secondary" onClick={()=>choose('handbook')}>Åpne personalhåndboka <ArrowRight aria-hidden="true"/></button></article>}
    {rights.hr&&<article className="personal-card personal-card-hr"><div className="personal-card-icon"><UserRound aria-hidden="true"/></div><span className="personal-card-eyebrow">DEG OG DIN LEDER</span><h3>Mine oppfølginger</h3>
-    <div className="personal-upcoming"><MessageSquare aria-hidden="true"/><div><strong>Medarbeidersamtale <span className="personal-status">Kommer</span></strong><p>Du forbereder. Du og leder fullfører sammen.</p></div></div>
-    <div className="personal-upcoming"><HeartPulse aria-hidden="true"/><div><strong>Sykefraværsoppfølging <span className="personal-status">Kommer</span></strong><p>Nærmeste leder starter saken.</p></div></div>
-    <p className="personal-note">Kontroller egen registeroppføring og særskilt delt tilgang nå. Samtaler og fravær er ikke åpnet ennå.</p><button type="button" className="secondary" onClick={()=>choose('hr')}>Se mine oppfølginger <ArrowRight aria-hidden="true"/></button></article>}
+    <div className="personal-upcoming"><MessageSquare aria-hidden="true"/><div><strong>Medarbeidersamtale <span className="personal-status">Tilgjengelig</span></strong><p>Du forbereder. Du og leder fullfører sammen.</p></div></div>
+    <div className="personal-upcoming"><HeartPulse aria-hidden="true"/><div><strong>Sykefraværsoppfølging <span className="personal-status">Tilgjengelig</span></strong><p>Nærmeste leder starter saken.</p></div></div>
+    <p className="personal-note">Åpne en invitasjon eller frist i varsler øverst. Her finner du også egne oppfølginger og opplysninger som er delt med deg.</p><button type="button" className="secondary" onClick={()=>choose('hr')}>Se mine oppfølginger <ArrowRight aria-hidden="true"/></button></article>}
    {!rights.kshms&&!rights.hr&&<article className="personal-card"><UserRound aria-hidden="true"/><h3>Dine modulvalg</h3><p>Firmaet har KS/HMS eller HR. Firmaadmin gir deg personlig tilgang. Inntil da finner du profil og e-postvalg her.</p></article>}
    <article className="personal-card personal-card-profile"><div className="personal-card-icon"><Settings aria-hidden="true"/></div><span className="personal-card-eyebrow">OPPDATERT OG TILGJENGELIG</span><h3>Profil og e-post</h3><p>Kontroller profilopplysningene dine og velg om du ønsker nyheter og tilbud på e-post.</p><button type="button" className="secondary" onClick={()=>choose('profile')}>Åpne profil og e-post <ArrowRight aria-hidden="true"/></button></article>
   </div>}

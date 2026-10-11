@@ -9,12 +9,12 @@ import './hrPracticeConversation.css';
 import './hrConversations.css';
 // Only volatile navigation/drafts, scoped to actor/company/employee. Never browser storage.
 const workspaces=new Map();
-const remember=(scope,v)=>{workspaces.delete(scope);workspaces.set(scope,v);if(workspaces.size>4)workspaces.delete(workspaces.keys().next().value);};
+const remember=(scope,v)=>{const entryKey=v.entryKey??workspaces.get(scope)?.entryKey;workspaces.delete(scope);workspaces.set(scope,{...v,entryKey});if(workspaces.size>4)workspaces.delete(workspaces.keys().next().value);};
 const editable=c=>({preparation:c.preparation,meeting:c.meeting,actions:c.actions,next_on:c.next_on,comments:c.comments,on:c.on,meeting_time:c.meeting_time||'',meeting_location:c.meeting_location||''});
 const copy=v=>JSON.parse(JSON.stringify(v));
 const emailText={disabled:'E-postutsending er avslått i dette miljøet.',not_queued:'E-postinvitasjonen er ikke sendt.',pending:'E-post er lagt i kø for utsending.',sending:'E-post sendes …',sent:'E-post er sendt. Utsendingen er bekreftet av e-posttjenesten.',failed:'E-post kunne ikke sendes. Kontakt firmaadmin.',suppressed:'E-postutsendingen er stoppet fordi tidspunkt eller tilgang er endret.'};
 function Field({label,children}){return <label className="hrp-field"><span>{label}</span>{children}</label>;}
-export default function HrConversations({context,employee}){
+export default function HrConversations({context,employee,initialCaseId=null,initialEntryKey=null,initialStep=0}){
  const companyId=context.company_id,userId=context.user_id,employeeId=employee.id,scope=companyId+':'+userId+':'+employeeId;
  const [listing,setListing]=useState(null),[value,setValue]=useState(null),[draft,setDraft]=useState(null);
  const [templates,setTemplates]=useState(null),[templateId,setTemplateId]=useState(''),[on,setOn]=useState(osloToday);
@@ -25,6 +25,7 @@ export default function HrConversations({context,employee}){
  const [busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState(''),[conflict,setConflict]=useState(false);
  const [step,setStep]=useState(()=>workspaces.get(scope)?.step||0),[historyVersion,setHistoryVersion]=useState('');
  const session=useRef(null),epoch=useRef(0),busyRef=useRef(false),body=useRef(null),latest=useRef(null),alive=useRef(false);
+ const entryHandled=useRef(false);
  const dirty=Boolean(value&&draft&&!sameHrTemplate(editable(value.conversation),draft));
  const keep=(next,valueOverride=value)=>{remember(scope,{id:valueOverride?.conversation.id,revision:valueOverride?.current_revision,
   employeeRevision:valueOverride?.employee.revision,version:valueOverride?.historical?valueOverride.conversation.revision:null,draft:copy(next),dirty:!sameHrTemplate(next,editable(valueOverride.conversation)),step});setDraft(next);};
@@ -50,8 +51,11 @@ export default function HrConversations({context,employee}){
     if(document.visibilityState==='hidden')return;
     const rows=await s.list();if(!alive.current||ticket!==epoch.current)return;setListing(rows);
     const saved=workspaces.get(scope);
-    if(saved?.id&&rows.conversations.some(c=>c.id===saved.id)){
-     const result=await s.get(saved.id,saved.version??null);if(alive.current&&ticket===epoch.current){install(result,true);setStep(saved.step||0);}
+    const requested=initialCaseId&&!entryHandled.current;entryHandled.current=true;
+    if(requested&&(!saved?.dirty||saved.id===initialCaseId)&&!saved?.startAttempt){
+     const result=await s.get(initialCaseId);if(alive.current&&ticket===epoch.current){install(result,true);setStep(saved?.id===initialCaseId&&saved.entryKey===initialEntryKey?saved.step||0:initialStep);remember(scope,{...workspaces.get(scope),entryKey:initialEntryKey});}
+    }else if(saved?.id&&(rows.conversations.some(c=>c.id===saved.id)||initialCaseId)){
+     const result=await s.get(saved.id,saved.version??null);if(alive.current&&ticket===epoch.current){install(result,true);setStep(saved.step||0);if(requested&&saved.id!==initialCaseId)setNotice('Du har en ulagret kladd. Lagre den eller velg Åpne valgt samtale før du bytter.');}
     }else if(saved?.id)workspaces.delete(scope);
    }catch(e){if(alive.current&&ticket===epoch.current){setError(e.code==='42501'?'Samtaler er ikke tilgjengelige for denne medarbeideren ennå.':e.message);if(e.code==='42501')denied();}}
    finally{if(alive.current&&ticket===epoch.current){setBusy(false);busyRef.current=false;}}
@@ -152,6 +156,7 @@ export default function HrConversations({context,employee}){
    <button type="button" className="secondary" disabled={busy} onClick={()=>run(async(s,current)=>{const status=await s.invitationStatus(c.id);if(current())setDelivery(previous=>({...previous,id:c.id,status,error:''}));})}>Oppdater varslingsstatus</button>
    {delivery.status?.can_notify&&value.employee.leader_id===userId&&<button type="button" disabled={busy||dirty} onClick={()=>run(async(s,current)=>{const status=await s.notify(value);if(current())setDelivery(previous=>({...previous,id:c.id,status,error:''}));})}>Send e-postinvitasjon</button>}
   </div>}
+  {initialCaseId&&value&&value.conversation.id!==initialCaseId&&<button type="button" className="secondary" disabled={busy||startPending} onClick={()=>open(initialCaseId)}>Åpne valgt samtale</button>}
   {listing?.can_start&&<details className="hrp-saved" open={createOpen} onToggle={e=>setCreateOpen(e.currentTarget.open)}><summary onClick={()=>{if(!templates)run(async(s,current)=>{const r=await s.templates();if(current())setTemplates(r.templates);});}}>Start medarbeidersamtale</summary>
    <form onSubmit={e=>{e.preventDefault();run(async(s,current)=>{if(!leave())return;const t=templates?.find(t=>t.id===templateId);if(!t&&!startAttempt.current)return;
     const args=startAttempt.current||{id:crypto.randomUUID(),employeeRevision:listing.employee.revision,templateId:t.id,templateRevision:t.revision,on,time,location};
