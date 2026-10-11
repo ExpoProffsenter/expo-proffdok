@@ -59,7 +59,7 @@ export default function PrivateContact({context,employee}) {
   <p>Medarbeideren selv, registrert nærmeste leder, firmaadmin og uttrykkelige lesere har tilgang. Pårørende brukes som kontakt ved en ulykke. Bare medarbeideren kan redigere her.</p>
   {busy&&<p role="status">Kontrollerer privat tilgang …</p>}{error&&<p role="alert">{error}</p>}{notice&&<p role="status">{notice}</p>}
   {value&&!value.registered&&<p>Firmaadmin må registrere deg som medarbeider først.</p>}
-  {value?.registered&&!value.available&&<p>Privat lagring er ikke åpnet ennå. Adresse og pårørende kan fylles ut når slette- og gjenopprettingskontrollen er ferdig. Ingen pårørendeopplysninger lagres nå.</p>}
+  {value?.registered&&!value.available&&<p>Privat lagring er ikke åpnet ennå. Adresse og pårørende kan fylles ut når HR-lagring er aktivert for dette miljøet. Ingen pårørendeopplysninger lagres nå.</p>}
   {value?.available&&<form onSubmit={save}><fieldset disabled={busy}><div className="hr-fields">{fields.map(([key,label,autoComplete,maxLength])=><label className="hr-field" key={key}><span>{label}</span><input autoComplete={autoComplete} maxLength={maxLength} type={key.endsWith('phone')?'tel':key.endsWith('email')?'email':'text'} readOnly={!value.editable} value={draft[key]} onChange={e=>{setDraft(previous=>({...previous,[key]:e.target.value}));setNotice('');}}/></label>)}</div>
    {value.editable&&<><p className="hr-hint">Bruk kontaktopplysninger personen har avtalt med deg. Lagre før du forlater siden. Feltene er valgfrie. Tomt felt fjerner opplysningen ved lagring.</p><button>Lagre adresse og pårørende</button></>}
   </fieldset></form>}

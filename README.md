@@ -1,3 +1,9 @@
+## HR: serverlagrede medarbeidersamtaler og slettevarsler – 11. oktober 2026
+
+Miljømål **BEGGE**. Ny produksjonsfunksjon fra ren main, foreløpig feature/Preview: nærmeste leder starter en samtale på en registrert medarbeider; medarbeiderens private forberedelse deles uttrykkelig, felles referat/tiltak versjoneres, hver part kommenterer og bekrefter selv. Samtalen ligger i medarbeider-popupen og beholdes ved fanebytte og PDF. Alle snapshots inngår i eksisterende private purge-/restore-domene. Systemadmin får en minimal driftsmelding uten tilgang til samtaletekst. Ingen ny betalt testressurs. [Scope, QA og manuell gjenopprettingsrutine](docs/kshms/HR_CONVERSATIONS_20261011.md).
+
+Migrasjonene åpner ingen innholds- eller e-postport. Ekte opplysninger er produksjonsmålet; dette er ikke en pilotbegrensning. Preview/TEST OK, konkret driftsoppsett og kontrollert release gjenstår. Tidligere kapitler nedenfor beskriver tidligere leveranser og kan omtale samtaler som fremtidig arbeid.
+
 ## HR: sykefraværsoppsett – 10. oktober 2026
 
 ## Retur til samme KS/HMS-/HR-visning – 11. oktober 2026

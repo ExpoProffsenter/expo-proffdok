@@ -1,0 +1,47 @@
+# HR: ekte medarbeideropplysninger, samtaler og slettevarsel
+
+Miljømål **BEGGE**. Scope: HR-modulen, samtaletransport/PDF, to additive HR-migrasjoner, egen serverbasert slettevarsel-worker og ett integrasjonspunkt i eksisterende systemadmin-firmaoversikt. Relevante tester, Hjelp og driftsdokumentasjon følger. Baseline main `f6a74d828fb4c0110b4eae8c6e453d2a55ee9038`, tree `dfe6b1c478f31d9746bdda04ecb94233f6a55f1e`. Ingen Sales-, main/bootstrap-, global navigasjons-, KS/HMS- eller demo-overlay-endring.
+
+Kenneths beslutning: ekte medarbeideropplysninger og ordinær produksjonsrelease. Ingen pilotbegrensning eller nytt betalt Supabase-prosjekt. Tidligere TEST OK gjelder popup/prøvesamtale og navigasjon; ny samtalefunksjon er en ny avgrenset brukerprøve før merge. Branch `fase45b-hr-conversations-20261011` bruker eksisterende Sandbox-binding i Preview og ordinær Production-binding ved senere main-release.
+
+## Brukerflyt og lagring
+
+Firmaadmin registrerer medarbeider og nærmeste leder. Bare nærmeste leder kan starte en samtale fra firmaets lagrede, aktive mal. Malutgaven låses inn i samtalen. Medarbeideren skriver private forberedelser; leder, firmaadmin og ekstra lesere ser ikke disse før medarbeideren deler dem. Opprinnelige delte svar beholdes når leder skriver referat. Leder avtaler tiltak med ansvarlig og frist. Begge kommenterer fra egen konto og bekrefter akkurat det lagrede innholdet. Bekreftelse betyr lest, ikke nødvendigvis enighet. Endret tekst krever nye bekreftelser. Ny leder arver ikke gammel leders bekreftelse.
+
+Alle reelle samtaleutgaver lagres på serveren som private immutable HR-artefakter, ikke i browser storage. Tilgang kontrolleres fra gjeldende profil, firma, modul og medarbeiderrelasjon ved hver RPC. Firmaadmin/uttrykkelig leser kan lese delte samtaler, men kan ikke skrive på vegne av partene. Systemadmin alene får ikke HR-innsyn. CAS beskytter samtidige endringer og leder-/leserbytte.
+
+Flyktig kladd og valgt samtale/steg beholdes i avgrenset minne gjennom fanebytte/foreldremount. Ny autorisasjon og serverutgave leses før gjenåpning. Kun en virkelig ulagret kladd gir konflikt ved endret serverutgave; en gammel ren snapshot skal oppdateres. Denied rydder minnet. Full appreload gjenåpner ikke ulagret personinnhold: trykk Lagre samtale først. PDF henter fersk, autorisert lagret utgave og stopper sene svar. Eksporten endrer ingen rute eller popup.
+
+Privat kontaktprofil bruker eksisterende RPC og samme innholdsport. Bare medarbeideren redigerer kontaktprofilen. Sykefraværssaker, medisinske dokumenter og private vedleggsopplastinger inngår ikke i denne leveransen. Gjeldende uavhengige fil-Edge-port holdes stengt.
+
+## Avslutning og systemadminvarsel
+
+Avslutt arbeidsforhold sperrer eksisterende HR-tilgang og fysisk purger register, lesere og alle samtaleutgaver gjennom den eksisterende slettedomenen. En ny trigger oppretter én minimal slettehendelse og varseljobb i samme transaksjon som kvitteringen. Varsel beholdes selv når person/firma fjernes. Systemadmin-panelet viser firma, hendelsestid, ID-er, faktisk purge-status, e-poststatus og egen lesemarkering. Markering som lest erklærer ingen sletting fullført.
+
+E-post-worker bruker privat Vault-transport, service-only worker-RPC, fersk mottakerrolle/e-post og avgrenset request. Jobb-ID gir stabil provider-idempotency; lease/forsøk hindrer gamle kvitteringer. Feil har 15-minutters backoff, høyst ti forsøk og 23-timers vindu. Varselmail har kun syv receipt-felt og driftsinstruks, ingen navn/samtale/pårørende/fravær. E-post krever eksisterende RESEND_API_KEY og CHAT_FROM_EMAIL på samme backend. Secret innføres av migrasjonen uten å skrives til Git eller vises til agent/bruker. Worker/settings er disabled ved installasjon. Ingen mail er sendt som del av lokal QA.
+
+**E-post er et varsel og en mulig ekstern operatørjournal, ikke en automatisk backup-/slettegaranti.** Queue og in-app-varsel ligger i appdatabasen; en gammel backup kan derfor mangle nyere hendelser. En ikke-levert mail kan ikke regnes som journalført. Status og feilede jobber må følges opp.
+
+## Manuell drift og gjenoppretting uten ny betalt ressurs
+
+Dette er valgt enklere driftsløp, ikke påstand om H5b-ack eller gjennomført Supabase-cloud-restore. Ingen betaling/provisionering behøves for den lokale restore-prøven. Den separate automatiserte kontroll-/Blob-løsningen i draft #217 åpnes ikke av denne PR-en.
+
+1. Ved release: verifiser eksakt Preview/CI/head, eksisterende private ACL, faktisk sletteworker og systemadmin-mottakere. Sett opp og kontroller slettevarsel på eksisterende backend. Ingen innholdsport åpnes av migrasjon eller scheduler.
+2. Driftsansvarlig bevarer minimale slettekvitteringer utenfor databasebackupen i en tilgangsbegrenset journal. Bruk eksisterende `scripts/hr-deletion-snapshot.sql` og `hr-deletion-ledger.mjs` med egen prosjektbundet nøkkel og privat katalog; ingen ekte journal/nøkkel i Git. Slettevarsel følges opp ved manglende e-post. HMAC beskytter journalidentitet/innhold, ikke mot at hele journalen byttes til en eldre utgave.
+3. **Før enhver restore stoppes klient-/Data API-tilgangen på plattformnivå.** Dette må skje uavhengig av flagg i databasen som skal erstattes. Eksporter og verifiser nyeste tilgjengelige slettejournal før planlagt restore. Hold e-postschedulers av under replay. Restore av aktiv Production eller kurs-Sandbox er ikke autorisert QA i denne leveransen.
+4. Etter restore, før klienttilgang åpnes: sett innholdsport false og quarantine true, replay verifiserte minimale receipts med eksisterende operator-only restore-verktøy, kjør eventuell Storage API-purge til bytes er borte, kontroller alle register-/innholds-/filfamilier og behold andre medarbeidere. Replay åpner aldri innhold.
+5. Ved katastrofe der journalens ferskhet ikke kan bevises: **hold HR stengt**. Firmaadmin og driftsansvarlig må avstemme alle gjenopprettede arbeidsforhold og oppbevaringsbehov mot ferske uavhengige personalopplysninger, og slette avsluttede/utgåtte opplysninger på nytt. Ingen automatisk gjenåpning bare fordi databaserestore lyktes eller mail finnes. Først dokumentert kontroll kan tillate gjenåpning.
+
+Dette manuelle løpet legger ansvar på driftsansvarlig ved restore og er svakere enn automatisert ferskhets-/ack-håndheving. Automatisk drift bør overta før skala eller driftsmodell gjør full manuell kontroll upraktisk. Kontrollrutinen er et teknisk/operativt valg; ny betalt testdatabase eller spesifikk skyprøve fremstilles ikke som personvernregel. Eksisterende innholdsporter er fortsatt stengt frem til konkret releaseoppsett og avgrenset godkjenning.
+
+## QA
+
+- 78 faktiske PostgreSQL/PGlite assertions: tilgang, privat forberedelse, delt original, CAS, immutable historikk, eget kommentarfelt/begge bekreftelser, lederbytte, revoked leser, cross-firma, quarantine, purge, minimal varsel, role-revocation, provider attempt-fencing/backoff/idempotencygrense. Fysisk datadir-backup til separat instans gjenoppretter samtalen; ekstern receipt-replay fjerner alle snapshots og holder porten stengt. Plattformadapteren er syntetisk; ingen managed-cloud-restore-PASS.
+- 64 runtime assertions: scoped transport, fersk doblet readback, sene svar, ukjent writeutfall uten automatisk retry, faktisk jsPDF med lange norske tekster og sideskift, sen PDF-avbrytelse, avgrenset mailbody/mottaker/receipt, providerfeil og ukjent kvittering. Provider og transport er syntetiske.
+- 38 faktiske React assertions: start → medarbeiderforberedelse → lederreferat/tiltak → egne bekreftelser → PDF uten navigasjon; ulagret/lagret/historisk foreldremount, multistegslagring, ekte konflikt uten stille tap, ingen falsk konflikt fra ren snapshot, denied og firmaskille, minimal systemadminvisning.
+- Faktisk Chromium 1280×900 og 360×740: start/delt forberedelse/lederbytte mellom syntetiske økter, fokus og synlig første punkt ved Neste, ingen horisontal overflow eller falsk kladd-dialog PASS.
+- Berørt eksisterende HR-register, Min side/kontaktprofil, malbygger og hele KS/HMS/HR-navigasjonsregresjonen PASS. Full critical/build PASS.
+- Eksisterende Supabase Sandbox: 33 faktiske rollback-assertions PASS. Ingen testrester. Alle 17 nye funksjonskropper matcher lokale MD5-er; SECURITY DEFINER/tomt search_path og hver authenticated/service/private ACL er kontrollert. Ny hr-deletion-alerts Edge v1 er ACTIVE med egen Vault-token-autentisering; faktisk source-readback matcher koden. Scheduler/settings er disabled, ingen mail sendt. Sandbox har også tidligere H5b-completion-trigger; kvitteringen forblir korrekt pending inntil uavhengig ack, selv om selve personinnholdet er fjernet. Den kontrollen er ikke omgått.
+- Før Preview-aktivering: eksisterende 1 firma/1 medarbeider og 0 artefakter/filer/receipts/varsler beholdt etter rollback. Production har 0 HR-firma/medarbeider/artefakt/fil/receipt. Production-porten holdes stengt før avgrenset TEST OK og release. CI/Preview/SHA føres ved publisering.
+
+Innlogget prøve som fortsatt krever Kenneth: åpne en registrert medarbeider på den publiserte Preview og kontroller den nye samtaleflyten. Utviklertestene dekker feil-/rolle-/slette-/restoretilfellene; tidligere godkjent prøve-PDF og navigasjon skal ikke gjentas som eget brukerkrav.
