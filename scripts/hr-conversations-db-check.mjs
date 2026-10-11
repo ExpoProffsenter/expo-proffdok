@@ -22,8 +22,10 @@ try{
  const migrations=['20261009182551_hr_access_foundation.sql','20261009193953_hr_content_purge_foundation.sql',
  '20261009203431_people_module_entitlements.sql','20261009203950_people_module_access_closure.sql',
  '20261010004928_hr_conversation_templates.sql','20261010105649_hr_sick_leave_template_kind.sql',
- '20261009211209_hr_restore_reconcile_orphans.sql','20261011134804_hr_personal_conversations.sql','20261011140130_hr_deletion_admin_alerts.sql','20261011155003_hr_sick_leave_cases.sql','20261011155506_hr_followup_reminders.sql','20261011162527_hr_followup_worker_scope.sql','20261011192456_hr_conversation_meeting_time.sql','20261011195555_hr_conversation_creation_notice.sql','20261011203859_hr_conversation_reminder_feedback.sql'];
+ '20261009211209_hr_restore_reconcile_orphans.sql','20261011134804_hr_personal_conversations.sql','20261011140130_hr_deletion_admin_alerts.sql','20261011155003_hr_sick_leave_cases.sql','20261011155506_hr_followup_reminders.sql','20261011162527_hr_followup_worker_scope.sql','20261011192456_hr_conversation_meeting_time.sql','20261011195555_hr_conversation_creation_notice.sql','20261011203859_hr_conversation_reminder_feedback.sql','20261011205907_hr_targeted_transport_test.sql'];
  for(const f of migrations)await db.exec(await fs.readFile('supabase/migrations/'+f,'utf8'));
+ eq((await sql("select has_function_privilege('authenticated','public.hr_followup_test_reserve(uuid)','execute') as v"))[0].v,false,'test reserve is server-only');
+ eq((await sql("select public.hr_followup_test_reserve('70000000-0000-4000-8000-000000009999') as v"))[0].v,null,'unknown test cannot take queue job');
  await db.exec(`insert into public.sales_company_scopes values(${q(company)},'synthetic','Synthetic'),(${q(foreign)},'other','Other');
  insert into public.company_module_access(company_id,module_key,enabled) values(${q(company)},'hr',true),(${q(foreign)},'hr',true);`);
  for(const u of [admin,self,leader,next,reader,outsider,system])await db.exec(`
@@ -91,6 +93,17 @@ try{
  await db.exec('reset role;set role service_role;');eq(await rpc('hr_conversation_invitation_validate',[inviteJob.id,inviteJob.attempt,inviteJob.on,inviteJob.time]),false,'changed clock stops old invitation before provider');
  await actor(leader);eq((await status()).email_status,'sent','original appointment sent history retained');
  await reject(()=>rpc('hr_conversation_invitation_reserve'),'42501','worker is server only');
+ // Exact test ID, current authorized admin and stable provider identity; ordinary queue stays isolated.
+ await db.exec('reset role;');
+ const testId=(await sql(`insert into hr_private.followup_deliveries(case_id,company_id,task_key,due_on,bucket,recipient_id) select case_id,company_id,task_key,due_on,-9000000,recipient_id from hr_private.sick_leave_tasks(${q(company)},${q(company)}) where recipient_id=${q(admin)} and task_key='hr-review' returning id`))[0].id;
+ await actor(admin);await reject(()=>rpc('hr_followup_test_reserve',[testId]),'42501');
+ await db.exec('reset role;set role service_role;');eq(await rpc('hr_followup_test_reserve',[conversation]),null,'wrong ID cannot select test');
+ const testJob=await rpc('hr_followup_test_reserve',[testId]);eq(testJob.id,testId);eq(testJob.to,'synthetic@example.invalid');eq(await rpc('hr_followup_worker_validate',[testJob.id,testJob.attempt]),true);
+ eq(await rpc('hr_followup_test_reserve',[testId]),null,'active lease cannot duplicate');
+ await db.exec(`reset role;update public.profiles set deactivated=true where id=${q(admin)};set role service_role;`);eq(await rpc('hr_followup_worker_validate',[testJob.id,testJob.attempt]),false,'access revocation stops targeted test');
+ await db.exec(`reset role;update public.profiles set deactivated=false where id=${q(admin)};set role service_role;`);
+ eq(await rpc('hr_followup_worker_finish',[testJob.id,testJob.attempt,true]),true);eq(await rpc('hr_followup_test_reserve',[testId]),null,'sent test cannot send twice');
+ await db.exec(`reset role;delete from hr_private.followup_deliveries where id=${q(testId)};`);
  await db.exec('reset role;update hr_private.followup_settings set enabled=false;');
  await actor(leader);
  const reminder=(enabled,rev=state.current_revision)=>rpc('hr_conversation_reminder',[company,employee.id,1,conversation,rev,enabled]);

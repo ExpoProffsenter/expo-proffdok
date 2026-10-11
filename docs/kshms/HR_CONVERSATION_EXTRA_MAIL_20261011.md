@@ -12,3 +12,7 @@ Scope: HrConversations/session/CSS, ny kalenderformatter, avgrenset utvidelse av
 
 QA: PostgreSQL 161, faktisk React 63, samtale/session/kalender/PDF/mail 100 og sykefravær/session/PDF/mail 114 assertions PASS. Full critical/build PASS. Faktisk Sandbox rollback-QA 22 PASS, uten network/provider-dispatch. Production får samme kilde-/rollback-/fingerprintkontroll før merge. Eksakt CI/READY/SHA og main → demo-preflight føres i PR. Faktisk mottak i innboks og kalenderimport i brukerens kalender må bekreftes av bruker; ingen virkelig testmail sendes av utvikleren. Tidligere TEST OK beholdes.
 
+
+## User-authorized transport test
+
+Kenneth requested a test to his own address at 22:49 Oslo and selected his work account explicitly. The server-only `hr_followup_test_reserve(uuid)` reserves only the supplied HR-review delivery with bucket -9000000. The normal cron queue excludes it. `{test: uuid}` sends a clearly marked generic test, checks the exact returned ID, current access, current email, lease and stable provider idempotency. No employee case is created or changed. Sandbox remains disabled. Provider acceptance is not proof of inbox receipt.

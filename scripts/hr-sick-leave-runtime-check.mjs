@@ -37,7 +37,7 @@ let current=true;eq(await downloadSickLeavePdf({value:sample,isCurrent:()=>curre
 const receipt={id:id(10),company_id:id(4),employee_id:id(1),user_id:id(2),kind:'employment',through_revision:3,requested_at:'2026-10-11T12:00:00Z'};
 function mailFixture({authorize=true,transport=true,valid=true,provider=200,extraJob={},finish=true,configured=true}={}){
  const calls=[],requests=[];const handler=createHrFollowupReminders({apiKey:configured?'synthetic-provider-key':null,from:'qa@example.invalid',verifyTransport:async()=>transport,
- rpc:async(n,a)=>{calls.push({n,a});if(n==='hr_followup_worker_authorize')return authorize;if(n==='hr_conversation_mail_reserve')return {id:id(11),attempt:id(12),to:'leader@example.invalid',...(a.p_kind==='meeting-reminder'?{on:'2026-10-21',time:'12:00'}:{}),...extraJob};if(n==='hr_conversation_invitation_reserve')return {id:id(11),attempt:id(12),to:'operator@example.invalid',on:'2026-10-21',time:'12:00',...extraJob};if(n==='hr_followup_worker_reserve')return {id:id(11),attempt:id(12),to:'operator@example.invalid',...extraJob};if(['hr_followup_worker_validate','hr_conversation_invitation_validate','hr_conversation_mail_validate'].includes(n))return valid;if(n==='hr_followup_worker_finish')return finish;throw Error(n);},
+ rpc:async(n,a)=>{calls.push({n,a});if(n==='hr_followup_worker_authorize')return authorize;if(n==='hr_conversation_mail_reserve')return {id:id(11),attempt:id(12),to:'leader@example.invalid',...(a.p_kind==='meeting-reminder'?{on:'2026-10-21',time:'12:00'}:{}),...extraJob};if(n==='hr_conversation_invitation_reserve')return {id:id(11),attempt:id(12),to:'operator@example.invalid',on:'2026-10-21',time:'12:00',...extraJob};if(n==='hr_followup_test_reserve')return {id:a.p_id,attempt:id(12),to:'operator@example.invalid',...extraJob};if(n==='hr_followup_worker_reserve')return {id:id(11),attempt:id(12),to:'operator@example.invalid',...extraJob};if(['hr_followup_worker_validate','hr_conversation_invitation_validate','hr_conversation_mail_validate'].includes(n))return valid;if(n==='hr_followup_worker_finish')return finish;throw Error(n);},
  fetchImpl:async(url,opts)=>{requests.push({url,opts});if(provider==='unknown')throw Error('provider timeout');return new Response(null,{status:provider});}});
  return {handler,calls,requests};
 }
@@ -68,4 +68,12 @@ for(const [body,kind,subject] of [['{"reminder":true}','meeting-reminder','påmi
  f=mailFixture({valid:false});eq((await f.handler(req(body))).status,200);eq(f.requests.length,0,'revoked leader/event is not mailed');
  f=mailFixture({extraJob:{comments:'forbidden private text'}});eq((await f.handler(req(body))).status,503);eq(f.requests.length,0);
 }
+const testReq=()=>req(JSON.stringify({test:id(11)}));
+f=mailFixture();eq((await f.handler(testReq())).status,200);eq(f.requests.length,1);
+const testMail=JSON.parse(f.requests[0].opts.body);eq(testMail.to,['operator@example.invalid']);eq(testMail.subject,'Expo ProffDok – test av HR-varsling');eq(testMail.text.includes('Ingen faktisk medarbeidersamtale'),true);
+eq(f.calls.find(c=>c.n==='hr_followup_test_reserve').a,{p_id:id(11)});eq(f.calls.some(c=>c.n==='hr_followup_worker_reserve'||c.n==='hr_conversation_mail_reserve'||c.n==='hr_conversation_invitation_reserve'),false,'targeted test never drains queues');
+for(const body of ['{"test":"bad"}',JSON.stringify({test:id(11),invitation:true}),JSON.stringify({test:id(11),to:'other@example.invalid'})]){f=mailFixture();eq((await f.handler(req(body))).status,400);eq(f.requests.length,0);}
+f=mailFixture({extraJob:{id:id(99)}});eq((await f.handler(testReq())).status,503);eq(f.requests.length,0,'wrong delivery ID stops test');
+f=mailFixture({valid:false});eq((await f.handler(testReq())).status,200);eq(f.requests.length,0,'fresh access check stops test');
+f=mailFixture({provider:500});eq((await f.handler(testReq())).status,503);eq(f.calls.at(-1).a.p_sent,false);
 console.log(`Sick-leave session/PDF and generic reminder mail: ${checks} runtime assertions PASS; synthetic transport/provider, actual jsPDF.`);
