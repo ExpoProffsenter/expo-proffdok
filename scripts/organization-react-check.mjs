@@ -47,7 +47,10 @@ try{
   const write=async(label,value)=>act(async()=>{const node=field(label);const proto=node.tagName==='SELECT'?window.HTMLSelectElement.prototype:window.HTMLInputElement.prototype;Object.getOwnPropertyDescriptor(proto,'value').set.call(node,value);node.dispatchEvent(new window.Event(node.tagName==='SELECT'?'change':'input',{bubbles:true}));});
   const submit=async()=>act(async()=>window.document.querySelector('dialog form').dispatchEvent(new window.Event('submit',{bubbles:true,cancelable:true})));
   await act(async()=>window.__render({context}));
-  assert.equal(window.document.querySelectorAll('.org-stats>div').length,4);assert.equal(window.document.querySelectorAll('.org-branch').length,3);
+  assert.equal(window.document.querySelectorAll('.org-stats>div').length,4);
+  assert(!buttons().some(b=>b.textContent.includes('Nytt felles kart')));assert(window.document.body.textContent.includes('minst to registrerte firmaer'));
+  assert(window.document.querySelector('[aria-label="Ledere i Service"]')?.textContent.includes('Avdelingsleder'),'Leader name/title visible without expanding employees');
+  assert(window.document.body.textContent.includes('Ringside Rørleggerbedrift, Bademiljø Expo og Expo Proffsenter'));assert.equal(window.document.querySelectorAll('.org-branch').length,3);
   await expandService();
   assert(window.document.querySelector('.org-person-apprentice svg'));
   await click('Ny avdeling');await write('Avdelingsnavn','Teknisk prosjektavdeling');await write('Plasser under','service');await submit();

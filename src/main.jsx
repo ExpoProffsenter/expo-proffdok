@@ -48,6 +48,7 @@ import { createContractViewTools } from './modules/contract/contractViewTools.js
 import { createWarrantyViewTools } from './modules/warranty/warrantyViewTools.js';
 import { createCompanyViewTools } from './modules/company/companyViewTools.js';
 import { getMyCompanyProfile, setMyCompanyProfile } from './modules/company/companyProfileClient.js';
+import {companyProjectMatches} from './modules/company/companyProjectIdentity.mjs';
 import { createCommunicationViewTools } from './modules/chat/chatViewTools.js';
 import { ensureExpoProffDokAppBranding, warrantyArchiveNotice, userGuidePdfPath, adminGuidePdfPath, EXPO_PROFFDOK_TERMS_VERSION, EXPO_PROFFDOK_TERMS_TITLE, expoProffDokTermsSections } from './modules/app/appStaticTools.js';
 import AppErrorBoundary from './modules/app/AppErrorBoundary.jsx';
@@ -1358,14 +1359,14 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       if (isSystemAdminUser) return true;
       if (row.user_id === currentUser?.id) return true;
       if (!isCompanyAdminUser || !currentCompanyName) return false;
-      return normalizeCompanyName(projectCompanyNameFromRow(row)) === normalizeCompanyName(currentCompanyName);
+      return companyProjectMatches(row, companyProfileDraft.companyId, currentCompanyName);
     };
     const projectBelongsToCurrentCompanyForProjectList = (row = {}, currentUser = authUser) => {
       if (!row) return false;
       if (row.user_id === currentUser?.id) return true;
       const ownCompanyName = String(profile?.company_name || currentCompanyName || "").trim();
       if (!ownCompanyName) return false;
-      return normalizeCompanyName(projectCompanyNameFromRow(row)) === normalizeCompanyName(ownCompanyName);
+      return companyProjectMatches(row, companyProfileDraft.companyId, ownCompanyName);
     };
     const isAdminUser = isSystemAdminUser;
     const canUseAdminProjectSync = !!authUser && !!profile?.approved && isSystemAdminUser && !isReadOnly && !isProjectSupportReadOnly;
@@ -1923,7 +1924,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
         return (projectListRows || []).filter((item) => String(item?.row?.company_scope_id || "").trim() === activeSupportCompanyScopeId);
       }
       return (projectListRows || []).filter((item) => projectBelongsToCurrentCompanyForProjectList(item?.row));
-    }, [projectListRows, isSystemAdminUser, supportModeExplicit, projectId, currentProjectOwnerId, authUser?.id, profile?.company_name, currentCompanyName]);
+    }, [projectListRows, isSystemAdminUser, supportModeExplicit, projectId, currentProjectOwnerId, authUser?.id, profile?.company_name, currentCompanyName, companyProfileDraft.companyId]);
     const filteredProjectListRows = (0, import_react.useMemo)(() => {
       return ordinaryProjectListRows.filter((item) => {
         if (!projectMatchesSearch(item.searchable, projectSearch)) return false;
@@ -2726,7 +2727,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       const effectiveSystemAdmin = effectiveProfile?.system_role === "systemadmin";
       const effectiveCompanyAdmin = !!effectiveProfile?.approved && !effectiveProfile?.deactivated && (effectiveProfile?.company_role === "firmaadmin" || effectiveSystemAdmin);
       const effectiveCompanyName = String(effectiveProfile?.company_name || "").trim();
-      const normalizeCompanyForLoad = (value = "") => String(value || "").trim().toLowerCase();
+      const effectiveCompanyId = (await getMyCompanyProfile().catch(() => null))?.companyId || "";
 
       let query = supabase.from("projects").select("*").order("updated_at", { ascending: false });
       if (effectiveSystemAdmin && options.supportMode) {
@@ -2749,8 +2750,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
           ? rows.filter((row) => {
               if (row.user_id === currentUser.id) return true;
               if (!effectiveCompanyName) return false;
-              const rowCompanyName = projectCompanyNameFromRow(row);
-              return normalizeCompanyForLoad(rowCompanyName) === normalizeCompanyForLoad(effectiveCompanyName);
+              return companyProjectMatches(row, effectiveCompanyId, effectiveCompanyName);
             })
           : rows.filter((row) => row.user_id === currentUser.id);
 
@@ -2765,8 +2765,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
           ? filteredRows.filter((row) => {
               if (row.user_id === currentUser.id) return true;
               if (!effectiveCompanyName) return false;
-              const rowCompanyName = projectCompanyNameFromRow(row);
-              return normalizeCompanyForLoad(rowCompanyName) === normalizeCompanyForLoad(effectiveCompanyName);
+              return companyProjectMatches(row, effectiveCompanyId, effectiveCompanyName);
             })
           : filteredRows;
         const companyText = effectiveCompanyAdmin && effectiveCompanyName ? ` i ${effectiveCompanyName}` : "";
@@ -2895,6 +2894,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       if (!silent) alert("Prosjektdata oppdatert.");
     };
     const companyStateFromPayload = (payload = {}, fallback = {}) => ({
+      companyId: String(payload?.companyId || fallback?.companyId || "").trim(),
       companyName: String(payload?.companyName || fallback?.companyName || "Expo Proffsenter").trim() || "Expo Proffsenter",
       orgNumber: String(payload?.orgNumber ?? fallback?.orgNumber ?? "").trim(),
       address: String(payload?.address ?? fallback?.address ?? "").trim(),
@@ -6709,6 +6709,10 @@ ${appLink}`;
           name: companyProfileDraft.companyName || name,
           uploadLogo,
           saveProfile,
+          onCompanyNameSaved: (saved) => {
+            setCompanyProfileDraft((current) => ({...current, companyName: saved.companyName}));
+            if (!projectId) setCompany((current) => ({...current, companyName: saved.companyName}));
+          },
           canEdit: isCompanyAdminUser,
           loginEmail: authUser?.email || ""
         }),

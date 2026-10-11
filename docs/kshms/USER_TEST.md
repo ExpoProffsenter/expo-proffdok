@@ -1,3 +1,13 @@
+## Ny Preview: HR-oppfølging, firmavisningsnavn og organisasjonskart – 11. oktober 2026
+
+Miljømål **BEGGE**. Draft PR #222 viderefører sykefraværsoppfølging og ansvarliges HR-frister. Kenneth ba også om redigerbart firmanavn, Ringside AS øverst, Styret med daglig leder/driftssjef/andre stillinger og tre underavdelinger. Firmaprofil får **Endre firmanavn → Lagre firmanavn**. Stabil firma-ID, medlemskap, kontakter og historiske dokumenter beholdes. Prosjektlisten bruker firma-ID for å tåle navnebytte. Karttopp og avdelingsnavn lagres separat med **Rediger kart → Lagre kart**; lederplasseringer vises også på lukkede kort.
+
+**Hjelp er oppdatert i denne Preview**, med egne A–Å-kapitler for medarbeidersamtale og sykefravær. Nytt felles kart krever firmaadmin og KS/HMS i minst to registrerte firmaer. Kenneth har ett kvalifisert firma i Production; tre underavdelinger kan bygges i firmakartet. Personnavn krever aktive registrerte appbrukere; kartstillinger gir ikke HR-tilgang.
+
+Full Sandbox/Production critical/build PASS. Navn: 22 DB + 14 faktiske React + 11 prosjektidentitetsprøver PASS, berørte kart-React PASS. 12 faktiske Sandbox-rollback-kontroller inkludert prosjekt-trigger/RLS PASS; fixtures rullet tilbake. Skynettleseren viste innlogging, så ingen ny innlogget browserprøve påstås. Production-navn og kart er ikke endret. Tidligere TEST OK og mottatt slettevarsel beholdes; ingen gamle tester eller mail skal gjentas.
+
+Fast Preview: https://expo-proffdok-git-fase45c-hr-sickleave-20261011-ringside.vercel.app/?progressTest=safe . Ny, kort prøve: åpne **Firmaprofil**, prøv navneknappene i Sandbox; åpne **KS/HMS → Organisasjonskart**, les opprettelsesvilkåret og kontroller lederstillinger; åpne **Hjelp → HR** og de to nye kapitlene. Personlig sykefravær prøves bare med syntetisk innhold og riktig leder/medarbeider. Kenneths Hotmail-testkonto finnes bare i Production og skal ikke kopieres. Relevant ny **TEST OK** følger AGENTS.md før merge/Production; dette er ikke omtest av #220. Scope, arbeidsflyt, brukerprøve og bevis: [HR_SICK_LEAVE_CASES_20261011.md](HR_SICK_LEAVE_CASES_20261011.md).
+
 ## Gjeldende HR-release – 11. oktober 2026
 
 Kenneth fylte ut egen post og ga **TEST OK 11. oktober kl. 17:10 Europe/Oslo** for PR #220. Godkjenningen er fullført; gamle testkrav nedenfor er historikk og skal ikke gjentas. PR #220 er merget til main **6b557c71f97cfecd7114b61883c964a3aaa88c25**. Production **dpl_99mBYYt27bMJiSZ4KSyPcGVTB9Ad READY** på expo-proffdok.app er kontrollert innlogget som Kenneth: Startside, eksisterende meny og HR laster.

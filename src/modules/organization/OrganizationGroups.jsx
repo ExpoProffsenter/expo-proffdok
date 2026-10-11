@@ -52,6 +52,7 @@ export default function OrganizationGroups({context,Editor}){
  return <><section className="org-group-switch" aria-label="Velg organisasjonskart">
   <span className="org-row-icon"><Network size={22} aria-hidden="true"/></span><div><strong>{selected?'Felles organisasjon':'Firmaets organisasjon'}</strong><small>{selected?'Én konto kan ha egen plassering i hvert firma.':'Firmakartet gjelder valgt firma. Et felles kart kan knytte flere firmaer sammen.'}</small></div>
   {available&&<><select aria-label="Velg kart" value={selected} disabled={busy||dirty} onChange={e=>select(e.target.value)}><option value="">{context.company_name} – firmakart</option>{available.groups.map(g=><option key={g.id} value={g.id}>{g.name} – felles kart</option>)}</select>
+   {available.companies.length<2&&<p className="org-hint">Nytt felles kart krever at du er firmaadmin og har KS/HMS i minst to registrerte firmaer. Har firmaet flere underavdelinger, bygger du dem i firmakartet med Rediger kart → Ny avdeling.</p>}
    {available.companies.length>=2&&<button type="button" className="secondary" disabled={busy||dirty} onClick={()=>open('create')}><Plus size={17} aria-hidden="true"/>Nytt felles kart</button>}
    {selected&&available.groups.find(g=>g.id===selected)?.administer&&<button type="button" className="secondary org-danger" disabled={busy||dirty} onClick={()=>open('remove')} aria-label="Slett felles kart"><Trash2 size={17} aria-hidden="true"/></button>}
   </>}

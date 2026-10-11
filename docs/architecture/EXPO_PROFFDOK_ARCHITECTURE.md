@@ -994,3 +994,9 @@ Dette er en lokal prøve av arbeidsflyten; data følger ikke brukeren til en ny 
 Prøvesamtalens neste steg ruller nå til innholdets start. PDF-retur og ny tilgangskontroll beholder valgt samtale, lagret utgave og fane via en scoped sessionStorage-peker; innhold leses fra ferskt validert lokal historikk. Bevisst lukk/ny/slett rydder valget. PDF-format, tilgangskjerne og global navigasjon er uendret.
 
 Prøv medarbeidersamtale viser nå toppen av skjemaet. Tomme og ulagrede prøvekladder beholdes i et avgrenset konto-/firmabundet sideminne gjennom tilgangsremount etter fanebytte. Fersk lokal historikk leses før gjenåpning; en eldre ulagret revisjon får ikke overskrive endringer fra en annen fane. Full oppfriskning gjenåpner fortsatt bare lagrede utgaver. Bevisst Lukk rydder kladden og valget.
+
+## Firmavisningsnavn, kartledelse og HR-veiledning – 11. oktober 2026
+
+Firmaprofil → Endre firmanavn bruker egen authenticated-RPC med fersk aktiv profil, låst firmaadmin-medlemskap eller systemadmin, primærfirmabinding, forventet navn og navnekollisjon. Bare sales_company_scopes.display_name endres; stable UUID/normalized identity, profiles, memberships, contact profile and existing snapshots are preserved. Original profile RPCs unchanged. Main integration is restricted to applying acknowledged display name to the profile draft and, only outside an open project, the current company; contact drafts are preserved. Work-profile metadata refreshes separately.
+
+Organisasjonskart forklarer at Nytt felles kart krever minst to kvalifiserte registrerte firmaer. Ett firma kan ha Styret og valgfri underavdelingsstruktur. Leader/middle placements show names and free job titles even when staff details are collapsed. No new organization or HR rights. Hjelp now has separate A–Å chapters for conversations and sick-leave, and distinguishes explicit employee sharing, meeting readiness, own confirmation, deadlines and actual external sharing.
