@@ -1,5 +1,9 @@
 ## HR: sykefraværsoppsett – 10. oktober 2026
 
+## Scoped navigasjon i KS/HMS og HR – 11. oktober 2026
+
+`moduleNavigationMemory.mjs` gir avgrenset per-side minne for tillatte skjerm-ID-er og HR-medarbeider-ID-er, bundet til firma, aktør og audience. Høyest åtte pekere per modul; ingen payload, myndighet eller browserlagring. Eksisterende tilgangshooks er uendret, og HR gjenåpner bare etter fersk liste og dobbel lesing. Personlig HR beholder sitt foreldrestyrte valg. Dokumentuttrekk holdes skjult ved internt fanebytte; aktiv-status og operasjonsgenerasjon stanser gamle eksport-/listesvar. Rolle-, firma- og aktørendring bruker eksisterende sperrer og nullstilling. Full appreload, globale ruter, Sales, databaser og privat HR-innhold er utenfor scope. [Detaljert kontrakt og QA](../kshms/NAVIGATION_RECOVERY_20261011.md).
+
 HR-menyen har nå egne snarveier til Samtalemaler og Sykefravær. Generell sykefraværsmal bruker eksisterende private malregister/RPC, versjoner, CAS og firmaadmin-gater. Additiv validator-migration tillater `sickleave`; ingen personlig innholdsport eller privilegier åpnes. Kildebasert veiledning og et datoregneksempel uten lagring/påminnelser. BEGGE, foreløpig bare feature/Preview/Sandbox. [Scope og bevis](../kshms/HR_SICK_LEAVE_SETUP_20261010.md).
 
 ## HR: tydelig hjelp der du arbeider – 10. oktober 2026
@@ -962,3 +966,5 @@ Lagrede prosjektbilder lastes autentisert fra samme Supabase-origin/bucket proje
 `useHelpModuleAccess` bruker appklienten og fersk serverrespons, rydder ved bruker-/firma-/tilgang-/bakgrunnsbytte og nekter sene svar. Main sender eksisterende ferske KS/HR-kontekster til React-Hjelp. `helpPresentation.mjs` filtrerer alle modultemaer og ordner global/prosjektflyt; separate Proff-veiledninger følger også store_offers. Alle toppvalg får 20 px dekorativt Lucide-ikon. [Scope/bevis](../kshms/HELP_ACCESS_20261009.md).
 
 Firmamodalens «Lagre og lukk» følger også `data-people-module-save` / `data-access-saving` for de nye modulvalgene; synlige RPC-feil holder firmaet åpent. Felles signal fra en annen selvstendig people-user-grant nullstiller ikke pågående valg på dette kortet. `PeopleModuleAccess.css` retter kun checkbox-bredde/tekstplassering i de nye feltene og tilstøtende company-store-offers-feltet.
+
+Medarbeiderraden åpner nå leder, lesetilgang og eksisterende kontaktflate i appens etablerte popup-vindu. Desktop viser et sentrert vindu, mobil en full skjerm. Tab/fokus, Escape og tilbakeføring til raden følger den eksisterende dialogkomponenten. Lukking rydder HR-valget, og fanebytte viser oppføringen igjen først etter fersk autorisering. Paginering av appbrukere og resultat-/feilmeldinger er tilgjengelige inne i vinduet. Tilgangsmodell, skrivekall og private innholdsporter er uendret.

@@ -1,5 +1,9 @@
 ## HR: samtalemaler i menyen og sykefraværsoppsett – 10. oktober 2026
 
+## Navigasjonsregresjon 11. oktober 2026
+
+Ny `module-navigation-resume-react-check.mjs` tester ekte komponenter + tilgangshooks med forsinket autorisasjon, alle tillatte KS/HMS-faner etter remount, personlig håndbok/HR, scoped HR-ID og uttrykkelig lukking, dokumentvalg/omfang over fanebytte og gamle eksporters avbrudd, samt redusert rolle/ny aktør/firma. Ny test er rød på tidligere kode og grønn med rettelsen. CI kjører den i tillegg til uendret full critical build og eksisterende HR/register, Min side, mal-, SJA-, gjennomførings- og revisjons-React. Én struktursjekk er endret for autorisert skjult uttrekk med aktiv-status; alle innholdskontroller beholdes. [Presis kontrakt og begrensninger](NAVIGATION_RECOVERY_20261011.md).
+
 **Åpne samtalemaler** og **Åpne sykefravær** ligger i HR-snarveiene øverst. Firmaadmin kan klargjøre en generell sykefraværsmal med 11 spørsmål om arbeid, kontakt, tilrettelegging og oppfølging. Eksisterende admin-/firmagater, utgaver, CAS og kladdbevaring gjelder. Fristveiledning med NHO/NAV-kilder og et avgrenset regneeksempel for 4/7/8/26 uker; fullt og gradert fravær forklares ulikt. Ingen personlig sak, fraværsdata, påminnelse eller innsending opprettes.
 
 **94 faktiske Sandbox-rollback-assertions og 94 PostgreSQL/PGlite-assertions PASS**, berørte faktiske mal-/register-/Hjelp-React-prøver og full critical/build PASS. Ingen nye sikkerhetsråd ved sammenligning uten observasjonstidsstempler. Privat innhold forblir stengt med restore quarantine. Miljømål BEGGE, levering bare feature/Preview/Sandbox. Tidligere TEST OK består. [Scope, kilder, leveranse og grenser](HR_SICK_LEAVE_SETUP_20261010.md).
@@ -664,3 +668,5 @@ Funksjonskode cdac7cf1 er READY på samme faste Preview, deployment dpl_7ViZBuSk
 ZIP-leveransens endelige lokale full `EXPO_BACKEND_TARGET=sandbox npm run build` PASS exit 0. PR-scope/release-docs-guard PASS mot faktisk main. Berørt eksisterende samle-PDF React/Storage/jsPDF PASS: begge faktiske PDF-er, innhold/signaturer/bilder/manifest, fjerning av valgt dokument og sent kontekstbytte. QA-foto er større enn forrige testfoto, så sideantallet endret seg; dette er ingen tap av felter. Innlogget ny ZIP/nedlasting vurderes etter publisering, ikke gradert PASS her.
 
 Tekstoppfølging: faktisk React/ZIP med fem syntetiske vedlegg, eksisterende permanent ZIP/PDF-check og full Sandbox critical/build PASS. Transport/filformat uendret; ingen ny brukernedlasting kreves for å beholde allerede godkjent ZIP-prøve. Publisert tekst/eksakt head følges opp i PR #216 og innlogget nettleser.
+
+HR-popup 11.10: medarbeiderraden åpner eksisterende appdialog, med leder/tilgang, paginerte brukervalg og resultatmeldinger inne i vinduet. Dialog, Escape/kryss, fokusretur og fersk autorisering kontrollert i React og Chromium ved 1280/360/740. Tilgang/backend/privat HR uendret. Samme core-PR #219/Preview; ingen merge.
