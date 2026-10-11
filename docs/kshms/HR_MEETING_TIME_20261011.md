@@ -1,3 +1,11 @@
+## Klokkeslett publisert – godkjent TEST OK 11. oktober 2026
+
+Kenneth TEST OK kl. 21:39 Europe/Oslo godkjenner klokkeslett i medarbeidersamtaler. Feature `03bec590f3bd0396c63fc6b347e33c3428d13a04` er merget i #224 som `eaeb06d475d3134869505c4f12ea56f96c855f2f`. Ready-for-review Core Safety run `38168965204`, job `114557343986`: alle steg SUCCESS. Production `dpl_Aa7RUMwwmsgwuA9HitLEyeidnpWx` READY på https://expo-proffdok.app. Ingen ny innlogget Production-prøve attesteres; Kenneths Preview-prøve og live backend-/assetkontroller er separate bevis.
+
+Nye samtaler krever Klokkeslett i norsk tid; nærmeste leder kan endre dato/tid i forberedelse/felles møte. Tidspunktet vises for begge parter og i PDF. Eldre samtaler har ingen oppdiktet tid. Hjelp er oppdatert. Ingen kalender-/e-postinvitasjon innføres.
+
+Migrasjon `hr_conversation_meeting_time` er installert i Sandbox og Production. 21 faktiske rollback-assertions PASS i hvert miljø; alle tre funksjonskilder matcher eksakt. Bare listekroppen er endret og start_at/schedule lagt til. Øvrige funksjoner, profiler, medlemskap, policies, triggere, modulrettigheter og beskyttede worker-innstillinger er identiske før/etter. QA: PostgreSQL 100, React 44, session/PDF/mail 73, sykefravær 68 samt register/Min side og full critical/build PASS. Fersk PDF visuelt kontrollert. Kontrollert main → demo-synk, gjeldende main-baseline og 24 faktiske Sandbox-preflightpunkter føres i PR #224 etter ferdig publisering. Tidligere TEST OK beholdes.
+
 ## Klokkeslett for medarbeidersamtale – 11. oktober 2026
 
 Miljømål BEGGE, først feature/Preview med eksisterende faste adresse. Kenneths skjermbilde viser bare Samtaledato i Start medarbeidersamtale. Nye samtaler krever også Klokkeslett, lagret som HH:MM i norsk tid. Dato/klokkeslett vises i samtalelisten, hos leder/medarbeider og i referat-PDF. Eldre samtaler får ingen oppdiktet tid. Leder kan bruke Endre tidspunkt og Lagre samtale i åpen forberedelse/felles møte. Historiske utgaver er skrivebeskyttet; tidspunktet er låst mens referatet gjennomgås. Etter ferdig referat kan leder åpne ny referatutgave.
