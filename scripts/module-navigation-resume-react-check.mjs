@@ -41,18 +41,19 @@ const selected=()=>[...d.querySelectorAll('.ks-module nav button')].find(b=>b.ge
 const evidence=[];
 try{
  await render({kind:'hr'});assert(d.querySelector('.hr-employee'),d.body.textContent);
- await act(async()=>d.querySelector('.hr-employee').click());assert(d.querySelector('.hr-detail'));
+ await act(async()=>d.querySelector('.hr-employee').click());assert(d.querySelector('.hr-detail'));assert.equal(d.querySelector('[role=dialog]')?.getAttribute('aria-modal'),'true','Selected employee must open in a popup');
  deferredHr={};await act(async()=>w.dispatchEvent(new w.Event('focus')));assert(!d.querySelector('.hr-detail'));
  await act(async()=>deferredHr.resolve());deferredHr=null;assert(d.querySelector('.hr-employee'));assert(d.querySelector('.hr-detail'));
+ assert(d.querySelector('[role=dialog] .hr-detail'));assert.equal(d.body.style.overflow,'hidden');
  evidence.push('HR management: focus with delayed authorization retains selected employee after successful same-company authorization.');
  const freshGets=employeeGets;await act(async()=>d.querySelector('.hr-employee').click());await render({kind:'hr',visible:false});await render({kind:'hr'});assert(d.querySelector('.hr-detail'));
  assert(employeeGets>=freshGets+4,'Remount did not perform fresh double reads');evidence.push('HR management: leave main module and return retains selected employee.');
- await click('Lukk medarbeider');await render({kind:'hr',visible:false});await render({kind:'hr'});assert(!d.querySelector('.hr-detail'),'Explicit close was reversed by recovery');
+ await act(async()=>d.querySelector('[role=dialog]').dispatchEvent(new w.KeyboardEvent('keydown',{key:'Escape',bubbles:true})));assert(!d.querySelector('[role=dialog]'));assert.equal(d.body.style.overflow,'');await render({kind:'hr',visible:false});await render({kind:'hr'});assert(!d.querySelector('.hr-detail'),'Explicit close was reversed by recovery');
  await act(async()=>d.querySelector('.hr-employee').click());employeeVisible=false;await act(async()=>w.dispatchEvent(new w.Event('focus')));assert(!d.querySelector('.hr-detail'));employeeVisible=true;await render({kind:'hr',visible:false});await render({kind:'hr'});assert(!d.querySelector('.hr-detail'),'Removed record pointer survived fresh scoped list');
  await render({kind:'personal'});await click('Mine oppfølginger');await act(async()=>d.querySelector('.hr-employee').click());assert(d.querySelector('.hr-detail'));
  deferredHr={};await act(async()=>w.dispatchEvent(new w.Event('focus')));assert(!d.querySelector('.hr-detail'));await act(async()=>deferredHr.resolve());deferredHr=null;assert(d.querySelector('.hr-detail'));
  evidence.push('Min side/HR: selected employee survives delayed authorization through parent ID callback.');
- await click('Personalhåndbok');await click('Les og bekreft (0)');assert.equal(selected(),'Les og bekreft (0)');await click('Oversikt');await click('Personalhåndbok');assert.equal(selected(),'Les og bekreft (0)');
+ await act(async()=>d.querySelector('[aria-label="Lukk medarbeidervindu"]').click());assert(!d.querySelector('[role=dialog]'));await click('Personalhåndbok');await click('Les og bekreft (0)');assert.equal(selected(),'Les og bekreft (0)');await click('Oversikt');await click('Personalhåndbok');assert.equal(selected(),'Les og bekreft (0)');
  evidence.push('Min side/handbook: leave for Overview and return retains Reading.');
  await render({kind:'ks'});await click('SJA');assert.equal(selected(),'SJA');deferredKs={};await act(async()=>w.dispatchEvent(new w.Event('focus')));assert.equal(selected(),'SJA');await act(async()=>deferredKs.resolve());deferredKs=null;assert.equal(selected(),'SJA');
  evidence.push('KS/HMS: ordinary delayed focus authorization preserves SJA tab.');

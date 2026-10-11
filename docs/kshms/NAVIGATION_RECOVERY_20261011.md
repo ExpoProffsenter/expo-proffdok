@@ -9,6 +9,7 @@ Samtaleøvelsen i PR #218 er en separat leveranse og følger ikke denne diffen.
 
 | Overgang | Før | Etter |
 | --- | --- | --- |
+| Klikk på medarbeiderrad | Detaljer langt nede i HR-siden | Eksisterende tilgjengelig popup-vindu viser valgt medarbeider straks |
 | HR i hovedmenyen → fokus/tilgangskontroll → tilbake | Valgt medarbeider borte | Samme ID åpnes etter ny scoped liste og dobbel autorisert lesing |
 | HR → annen hovedvisning → HR | Valgt medarbeider borte | Samme autoriserte medarbeider; Lukk medarbeider rydder valget |
 | KS/HMS → kontroll av egne rettigheter eller transportfeil → tilbake | Ti andre faner gikk til Håndbok; bare Organisasjonskart ble husket | Alle tillatte faner huskes, separat fra personalhåndbok på Min side |
@@ -66,7 +67,7 @@ importerte organisasjonskomponenten krever; produktets tilgangskjerne endres ikk
 ## Kort innlogget prøve
 
 1. HR → åpne en eksisterende medarbeider → bytt nettleserfane → tilbake.
-   Samme medarbeider skal komme tilbake. Lukk medarbeider skal holde den lukket.
+   Medarbeideren skal åpnes i popup-vinduet og samme vindu skal komme tilbake etter fanebytte. Lukk medarbeider, krysset og Escape skal holde det lukket.
 2. KS/HMS → SJA → bytt nettleserfane → tilbake. SJA skal fortsatt være valgt.
 3. Dokumentuttrekk → skriv omfang → Håndbok → Dokumentuttrekk.
    Samme tekst skal stå der. Velg gjerne et dokument for å se at valget beholdes.
@@ -78,3 +79,9 @@ Skynettleserens eksisterende innloggingssperre omgås ikke. Ny database eller ny
 testbrukere kreves ikke. Publisering, eksakt CI/Preview og sluttstatus føres i
 den separate core-PR-en. Ingen merge før grønn QA, relevant Preview-prøve og
 Kenneths eksplisitte TEST OK; deretter produksjonsverifisering og main → demo.
+
+## Popup etter Kenneths prøve
+
+Medarbeiderraden åpner nå leder, lesetilgang og eksisterende kontaktflate i appens etablerte popup-vindu. Desktop viser et sentrert vindu, mobil en full skjerm. Tab/fokus, Escape og tilbakeføring til raden følger den eksisterende dialogkomponenten. Lukking rydder HR-valget, og fanebytte viser oppføringen igjen først etter fersk autorisering. Paginering av appbrukere og resultat-/feilmeldinger er tilgjengelige inne i vinduet. Tilgangsmodell, skrivekall og private innholdsporter er uendret.
+
+Den additive React-regresjonen var rød før popup-omslaget, og tester nå dialog, body-scrollås, tilgangsfjerning/retur, Escape og krysset på Min side. Uendrede eksisterende HR/register-tester verifiserer oppsett, paginering, leder/leser, avslutning og revisjonsvern. Chromium ved 1280×900, 360×780 og 740×360 verifiserer synlig vindu, tastaturfokus, Tab, Escape, fokus tilbake til raden og tilgangsretur; mobilskjermbildet er visuelt kontrollert. Shared DeviationDialog er gjenbrukt uendret, øvrige modaler og globale menyer er utenfor scope.
