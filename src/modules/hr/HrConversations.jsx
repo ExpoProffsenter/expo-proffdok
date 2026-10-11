@@ -12,7 +12,7 @@ const workspaces=new Map();
 const remember=(scope,v)=>{workspaces.delete(scope);workspaces.set(scope,v);if(workspaces.size>4)workspaces.delete(workspaces.keys().next().value);};
 const editable=c=>({preparation:c.preparation,meeting:c.meeting,actions:c.actions,next_on:c.next_on,comments:c.comments,on:c.on,meeting_time:c.meeting_time||''});
 const copy=v=>JSON.parse(JSON.stringify(v));
-const emailText={disabled:'E-postutsending er avslått i dette miljøet.',not_queued:'E-postinvitasjonen er ikke sendt. Trykk «Send e-postinvitasjon» når du er klar.',pending:'E-post er lagt i kø for utsending.',sending:'E-post sendes …',sent:'E-post er sendt. Utsendingen er bekreftet av e-posttjenesten.',failed:'E-post kunne ikke sendes. Kontakt firmaadmin.',suppressed:'E-postutsendingen er stoppet fordi tidspunkt eller tilgang er endret.'};
+const emailText={disabled:'E-postutsending er avslått i dette miljøet.',not_queued:'E-postinvitasjonen er ikke sendt.',pending:'E-post er lagt i kø for utsending.',sending:'E-post sendes …',sent:'E-post er sendt. Utsendingen er bekreftet av e-posttjenesten.',failed:'E-post kunne ikke sendes. Kontakt firmaadmin.',suppressed:'E-postutsendingen er stoppet fordi tidspunkt eller tilgang er endret.'};
 function Field({label,children}){return <label className="hrp-field"><span>{label}</span>{children}</label>;}
 export default function HrConversations({context,employee}){
  const companyId=context.company_id,userId=context.user_id,employeeId=employee.id,scope=companyId+':'+userId+':'+employeeId;
@@ -113,10 +113,30 @@ export default function HrConversations({context,employee}){
  const calendar=()=>run(async(s,current)=>{
   if(dirty){setError('Lagre endringene før kalenderavtalen.');return;}
   const fresh=await s.get(value.conversation.id);if(!current())return;
+    if(![fresh.employee.user_id,fresh.employee.leader_id].includes(userId))throw Error('Kalenderavtalen er bare tilgjengelig for medarbeideren og gjeldende nærmeste leder.');
   if(fresh.current_revision!==value.current_revision){setError('Samtalen er endret. Hent ny utgave før kalenderavtalen.');return;}
   const {downloadConversationCalendar}=await import('./hrConversationCalendar.mjs');
   if(await downloadConversationCalendar({value:fresh,minutes:calendarMinutes,isCurrent:current})&&current())setNotice('Kalenderfilen er lastet ned. Åpne den og bekreft avtalen i kalenderen din.');
  });
+ const outlook=()=>{
+  if(busyRef.current||dirty)return;
+  // Open synchronously on the click, before the two fresh authorized server reads.
+  const popup=window.open('about:blank','_blank');
+  if(!popup){setError('Nettleseren blokkerte Outlook-vinduet. Tillat nytt vindu, eller bruk Last ned kalenderfil (.ics).');return;}
+  popup.opener=null;
+  run(async(s,current)=>{
+   let opened=false;
+   try{
+    const fresh=await s.get(value.conversation.id);if(!current())return;
+    if(![fresh.employee.user_id,fresh.employee.leader_id].includes(userId))throw Error('Kalenderavtalen er bare tilgjengelig for medarbeideren og gjeldende nærmeste leder.');
+    if(fresh.current_revision!==value.current_revision)throw Error('Samtalen er endret. Hent ny utgave før kalenderavtalen.');
+    const {conversationOutlookUrl}=await import('./hrConversationCalendar.mjs');if(!current())return;
+    if(popup.closed)throw Error('Outlook-vinduet ble lukket. Trykk Åpne i Outlook / Office 365 igjen.');
+    popup.location.replace(conversationOutlookUrl(fresh,{minutes:calendarMinutes}));opened=true;
+    setNotice('Outlook er åpnet. Kontroller jobbkonto, kalender og tidspunkt, og lagre avtalen der.');
+   }finally{if(!opened)popup.close();}
+  });
+ };
  const c=value?.conversation,permitted=value&&!value.historical&&!conflict,prep=permitted&&value.permissions.prepare,meeting=permitted&&value.permissions.meeting;
  const schedule=permitted&&value.employee.leader_id===userId&&['preparation','meeting'].includes(c.stage);
  const stages=['Forberedelse','Felles møte','Tiltak','Referat'];
@@ -127,7 +147,7 @@ export default function HrConversations({context,employee}){
   {delivery&&c?.id===delivery.id&&!value.historical&&<div ref={receipt} tabIndex={-1} className="hrp-creation-receipt" role="status" aria-live="polite">
    <h4>{delivery.created?'Samtalen er opprettet':'Varsling til medarbeideren'}</h4>
    <p>{c.template.title} · {c.on?.split('-').reverse().join('.')} · {c.meeting_time?'kl. '+c.meeting_time:'Klokkeslett ikke avtalt'}</p>
-   {delivery.status?<><p>{delivery.status.app_notification?'Varsel om forberedelse er opprettet på medarbeiderens Min side.':'Medarbeideren har ingen åpen forberedelsesoppgave. Kontroller HR-tilgangen hvis forberedelsen ikke er delt.'}</p><p>{emailText[delivery.status.email_status]}</p></>:<p>{delivery.error||'Kontrollerer varslingsstatus …'}</p>}
+   {delivery.status?<><p>{delivery.status.app_notification?'Varsel om forberedelse er opprettet på medarbeiderens Min side.':c.stage==='preparation'?'Medarbeideren mangler HR-tilgang. Kontroller HR-tilgang i firmaet samtalen tilhører. Firmaadmin bruker Firmaadmin → Brukere og tilganger. Systemadmin bruker Systemadmin → Firmaer, brukere og tilganger. Velg HR på riktig brukerkort og lagre tilgangen. Trykk deretter Oppdater varslingsstatus her.':'Medarbeideren har ingen åpen forberedelsesoppgave.'}</p><p>{emailText[delivery.status.email_status]}</p></>:<p>{delivery.error||'Kontrollerer varslingsstatus …'}</p>}
    <button type="button" className="secondary" disabled={busy} onClick={()=>run(async(s,current)=>{const status=await s.invitationStatus(c.id);if(current())setDelivery(previous=>({...previous,id:c.id,status,error:''}));})}>Oppdater varslingsstatus</button>
    {delivery.status?.can_notify&&value.employee.leader_id===userId&&<button type="button" disabled={busy||dirty} onClick={()=>run(async(s,current)=>{const status=await s.notify(value);if(current())setDelivery(previous=>({...previous,id:c.id,status,error:''}));})}>Send e-postinvitasjon</button>}
   </div>}
@@ -156,8 +176,11 @@ export default function HrConversations({context,employee}){
   <p><strong>Avtalt tidspunkt:</strong> {c.on?.split('-').reverse().join('.')} · {c.meeting_time?'kl. '+c.meeting_time+' (norsk tid)':'Klokkeslett ikke avtalt'}</p>
   {!value.historical&&[value.employee.user_id,value.employee.leader_id].includes(userId)&&c.meeting_time&&<div className="hrp-calendar">
    <Field label="Varighet i kalenderen"><select value={calendarMinutes} disabled={busy} onChange={e=>setCalendarMinutes(Number(e.target.value))}>{[30,45,60,90,120].map(n=><option key={n} value={n}>{n} minutter</option>)}</select></Field>
-   <button type="button" className="secondary" disabled={busy||dirty} onClick={calendar}>Legg til i kalender</button>
-   <p>Last ned kalenderfilen, åpne den og bekreft avtalen i din egen kalender. Ved endret tidspunkt må kalenderavtalen oppdateres av deg.</p>
+   <button type="button" disabled={busy||dirty} onClick={outlook}>Åpne i Outlook / Office 365</button>
+   <button type="button" className="secondary" disabled={busy||dirty} onClick={calendar}>Last ned kalenderfil (.ics)</button>
+   <p>Outlook åpner en ny avtale med lagret dato, klokkeslett og valgt varighet. Kontroller at du bruker riktig jobbkonto og velg kalender i Outlook før du lagrer. Avtalen er først lagt i kalenderen når du har lagret den der.</p>
+   <details><summary>Bruke kalenderfil i Office 365 eller annen kalender</summary><p>Last ned kalenderfilen. I Outlook på nettet: Kalender → Legg til kalender → Last opp fra fil. Velg filen, velg riktig kalender og trykk Importer. Andre kalenderprogrammer kan åpne filen direkte.</p></details>
+   <p>Ved endret tidspunkt må du oppdatere avtalen i kalenderen. Gjentatt åpning i Outlook kan lage en ny avtale.</p>
   </div>}
   {schedule&&<div className="hrp-leader-reminder"><label><input type="checkbox" checked={c.leader_email_reminder===true&&c.leader_reminder_user_id===userId} disabled={busy||dirty} onChange={e=>{const enabled=e.target.checked;run(async(s,current)=>{const result=await s.reminder(value,enabled);if(current()){install(result);setNotice(enabled?'E-postpåminnelse til deg er valgt.':'E-postpåminnelse til deg er slått av.');}});}}/> Send meg e-postpåminnelse dagen før</label><p>Påminnelsen sendes 24 timer før avtalen. Velger du den senere, sendes den så snart som mulig før møtet. E-post må være aktivert i miljøet.</p></div>}
   {schedule&&<details className="hrp-saved"><summary>Endre tidspunkt</summary><fieldset disabled={busy}>
