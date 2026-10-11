@@ -14,7 +14,9 @@ const sql=fs.readFileSync('supabase/migrations/20261009203431_people_module_enti
 for(const needle of ['alter table hr_private.module_access enable row level security','p_expected','is distinct from p_expected','current_active_company_scope_id() is distinct from c','hr_private.has_module_access(c,u)','closed_employments','from public,anon,authenticated,service_role'])assert(sql.includes(needle),needle);
 assert(!/create policy|auth\.jwt|user_metadata/i.test(sql));
 assert(fs.readFileSync('supabase/migrations/20261009203950_people_module_access_closure.sql','utf8').includes('delete from hr_private.module_access'));
-for(const file of ['moduleAccessUx.jsx','systemAdminUnifiedUserAccessUx.jsx','systemAdminCompanyAccessUx.jsx'])assert(fs.readFileSync('src/modules/access/'+file,'utf8').includes('PeopleModuleAccess companyId='));
+for(const file of ['moduleAccessUx.jsx','systemAdminCompanyAccessUx.jsx'])assert(fs.readFileSync('src/modules/access/'+file,'utf8').includes('PeopleModuleAccess companyId='));
+assert(fs.readFileSync('src/modules/access/systemAdminUnifiedUserAccessUx.jsx','utf8').includes('PeopleWorkspaceModuleAccess companyId={user.company_scope_id} userId={user.user_id}'));
+const workspace=fs.readFileSync('src/modules/access/PeopleWorkspaceModuleAccess.jsx','utf8');assert(/<PeopleModuleAccess\b[^>]*companyId=\{selected\}[^>]*userId=\{userId\}/.test(workspace),'workspace selector retains the existing scoped CAS grant component');
 const main=fs.readFileSync('src/main.jsx','utf8');assert(main.includes('formatTermsAcceptedAt, kshmsContext, hrContext'));assert(!main.includes('jsx)(KshmsActivation'));
 const css=fs.readFileSync('src/modules/access/PeopleModuleAccess.css','utf8');assert(css.includes('.people-module-access label input[type="checkbox"]'));assert(css.includes('flex:0 0 24px !important'));assert(css.includes('.company-store-offers-access label input[type="checkbox"]'));
 const modal=fs.readFileSync('src/modules/access/systemAdminCompanyModalUx.js','utf8');
