@@ -1,5 +1,7 @@
 # Prøvbar HR-samtale – 11. oktober 2026
 
+Lagrede prøvesamtaler vises nå som en tydelig blå boks med ramme, større klikkflate og synlig tastaturfokus. Åpning og historikk er uendret.
+
 Miljømål: **SANDBOX/DEMO**. Avgrenset lokal prøve av medarbeidersamtalen, fra ren main `c3d873e0e5bd2677f0205143de6edc1fbd95ae4c` (tre `75e07665d71047e187111eb7476949fa7902688b`). Branch `fase45b-hr-conversation-practice-20261011`; bare isolert Preview. Ikke merge uten relevant brukerprøve og uttrykkelig TEST OK. Ingen endring av produksjons- eller kursdemogren.
 
 ## Hva brukeren får
