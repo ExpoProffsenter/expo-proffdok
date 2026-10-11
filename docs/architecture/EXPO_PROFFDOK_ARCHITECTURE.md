@@ -1,3 +1,11 @@
+## Gjeldende HR-status og ny sykefraværsoppfølging – 11. oktober 2026
+
+Eksisterende private kontaktopplysninger, medarbeidersamtaler og slettevarsler er godkjent og åpnet i Production fra main `61a42e6c7d996a6abc6c5146de45e3759e682b4d`. Kenneth har bekreftet faktisk mottatt slettevarselmail med receipt `544cd046-7e92-4ea0-a10c-6a6940bb67ec`. Disse testene skal ikke kreves på nytt som brukerprøve.
+
+Ny funksjon har miljømål **BEGGE** og egen feature/Preview fra denne main: personlig sykefraværsoppfølging, felles plan/tiltak, kalenderfrister, dokumenterte vurderinger, egne bekreftelser, faktisk delingsjournal, avslutning og PDF. Nærmeste leder får påminnelser om frister og medarbeiderens åpne tiltak. Samme HR-arbeider dekker avtalte frister i vanlige medarbeidersamtaler og firmaadmins HR-kontrollfrist. Utsending er avslått i Preview; produksjonsaktivering følger ny relevant `TEST OK`. [Kontrakt, QA, kilder og release](../kshms/HR_SICK_LEAVE_CASES_20261011.md).
+
+De tidligere kapitlene nedenfor er historiske fasebeskrivelser. Formuleringer om stengt HR-port eller fremtidige samtaler gjelder ikke gjeldende Production-status. Ny sykefraværsfunksjon er foreløpig ikke releaset til Production. Eksisterende KS/HMS-varsling er aktiv i Production; dette er ikke en attestasjon av alle øvrige frister i appen.
+
 ## HR: serverlagrede medarbeidersamtaler og slettevarsler – 11. oktober 2026
 
 Miljømål **BEGGE**. Ny produksjonsfunksjon fra ren main, foreløpig feature/Preview: nærmeste leder starter en samtale på en registrert medarbeider; medarbeiderens private forberedelse deles uttrykkelig, felles referat/tiltak versjoneres, hver part kommenterer og bekrefter selv. Samtalen ligger i medarbeider-popupen og beholdes ved fanebytte og PDF. Alle snapshots inngår i eksisterende private purge-/restore-domene. Systemadmin får en minimal driftsmelding uten tilgang til samtaletekst. Ingen ny betalt testressurs. [Scope, QA og manuell gjenopprettingsrutine](../kshms/HR_CONVERSATIONS_20261011.md).

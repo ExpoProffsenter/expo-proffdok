@@ -76,3 +76,12 @@ jobs:
           node scripts/hr-conversations-db-check.mjs
           node scripts/hr-conversations-runtime-check.mjs
           node scripts/hr-conversations-react-check.mjs
+
+      - name: Verify private sick-leave followup and reminder transport
+        run: |
+          export HR_PGLITE_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/@electric-sql/pglite/dist/index.js"
+          export KSHMS_JSDOM_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/jsdom/lib/api.js"
+          export HR_PRACTICE_JSPDF_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/jspdf/dist/jspdf.node.min.js"
+          node scripts/hr-sick-leave-db-check.mjs
+          node scripts/hr-sick-leave-runtime-check.mjs
+          node scripts/hr-sick-leave-react-check.mjs

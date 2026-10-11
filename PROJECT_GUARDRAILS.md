@@ -110,3 +110,14 @@ Ny chat skal starte med å lese:
 6. ved demoarbeid: permanent `demo`-baseline og siste sandbox-preflight
 
 Gamle muntlige løfter eller chatminne er ikke nok. Repoets guardrails og tester er den varige kontrakten.
+
+## 8. Ansvarlige skal få fristvarsler
+
+Kenneths krav 11. oktober 2026: ansvarlig leder skal også få e-postvarsling på frister og åpne oppfølginger. Dette gjelder overalt i appen der en oppgave har utpekt ansvarlig.
+
+- Appvarsel og e-post skal gå til den faktisk registrerte ansvarlige. HR-leder får også oppfølging av medarbeiderens åpne tiltak.
+- Planlagte, aktuelle og passerte frister skal ha en dokumentert varslingsregel. Innhold som mangler arbeidsfrist, skal ikke gis en oppdiktet lovfrist.
+- Ny ansvarlig og gjeldende tilgang kontrolleres ved utsending. Ferdige/avsluttede oppgaver, endrede frister og bortfalt tilgang stopper ventende varsler.
+- Særskilt HR-innhold skal leses i appen. E-post skal ikke avsløre navn, diagnose, fravær eller planinnhold.
+- Sandbox-utsending og produksjonsutsending har egne tilstander. En kodeimplementering, køstatus eller provider-aksept er ikke bevis på mottatt e-post.
+- Senere modulendringer skal vise hva som dekkes av eksisterende varslingsmotor, og håndtere dokumenterte hull i eget avgrenset scope. Ingen skal påstå full appdekning uten å kontrollere de aktuelle brukerreisene.
