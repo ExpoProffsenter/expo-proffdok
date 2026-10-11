@@ -54,3 +54,15 @@ jobs:
           node scripts/kshms-sja-parent-react-check.mjs
           node scripts/kshms-executions-react-check.mjs
           node scripts/kshms-review-reminders-react-check.mjs
+
+      - name: Verify HR practice and existing HR React flows
+        run: |
+          npm install --prefix "$RUNNER_TEMP/hr-practice-qa" --no-audit --no-fund --ignore-scripts jsdom@26.1.0 jspdf@2.5.1
+          export KSHMS_JSDOM_PATH="$RUNNER_TEMP/hr-practice-qa/node_modules/jsdom/lib/api.js"
+          export HR_PRACTICE_JSPDF_PATH="$RUNNER_TEMP/hr-practice-qa/node_modules/jspdf/dist/jspdf.node.min.js"
+          node scripts/hr-practice-check.mjs
+          node scripts/hr-practice-react-check.mjs
+          HR_PRACTICE_TARGET=production node scripts/hr-practice-react-check.mjs
+          node scripts/hr-register-react-check.mjs
+          node scripts/critical-hr-templates-check.mjs
+          node scripts/critical-hr-purge-check.mjs

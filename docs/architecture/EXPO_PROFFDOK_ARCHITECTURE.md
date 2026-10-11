@@ -4,6 +4,8 @@
 
 `moduleNavigationMemory.mjs` gir avgrenset per-side minne for tillatte skjerm-ID-er og HR-medarbeider-ID-er, bundet til firma, aktør og audience. Høyest åtte pekere per modul; ingen payload, myndighet eller browserlagring. Eksisterende tilgangshooks er uendret, og HR gjenåpner bare etter fersk liste og dobbel lesing. Personlig HR beholder sitt foreldrestyrte valg. Dokumentuttrekk holdes skjult ved internt fanebytte; aktiv-status og operasjonsgenerasjon stanser gamle eksport-/listesvar. Rolle-, firma- og aktørendring bruker eksisterende sperrer og nullstilling. Full appreload, globale ruter, Sales, databaser og privat HR-innhold er utenfor scope. [Detaljert kontrakt og QA](../kshms/NAVIGATION_RECOVERY_20261011.md).
 
+Lagrede prøvesamtaler vises nå som en tydelig blå boks med ramme, større klikkflate og synlig tastaturfokus. Åpning og historikk er uendret.
+
 HR-menyen har nå egne snarveier til Samtalemaler og Sykefravær. Generell sykefraværsmal bruker eksisterende private malregister/RPC, versjoner, CAS og firmaadmin-gater. Additiv validator-migration tillater `sickleave`; ingen personlig innholdsport eller privilegier åpnes. Kildebasert veiledning og et datoregneksempel uten lagring/påminnelser. BEGGE, foreløpig bare feature/Preview/Sandbox. [Scope og bevis](../kshms/HR_SICK_LEAVE_SETUP_20261010.md).
 
 ## HR: tydelig hjelp der du arbeider – 10. oktober 2026
@@ -968,3 +970,13 @@ Lagrede prosjektbilder lastes autentisert fra samme Supabase-origin/bucket proje
 Firmamodalens «Lagre og lukk» følger også `data-people-module-save` / `data-access-saving` for de nye modulvalgene; synlige RPC-feil holder firmaet åpent. Felles signal fra en annen selvstendig people-user-grant nullstiller ikke pågående valg på dette kortet. `PeopleModuleAccess.css` retter kun checkbox-bredde/tekstplassering i de nye feltene og tilstøtende company-store-offers-feltet.
 
 Medarbeiderraden åpner nå leder, lesetilgang og eksisterende kontaktflate i appens etablerte popup-vindu. Desktop viser et sentrert vindu, mobil en full skjerm. Tab/fokus, Escape og tilbakeføring til raden følger den eksisterende dialogkomponenten. Lukking rydder HR-valget, og fanebytte viser oppføringen igjen først etter fersk autorisering. Paginering av appbrukere og resultat-/feilmeldinger er tilgjengelige inne i vinduet. Tilgangsmodell, skrivekall og private innholdsporter er uendret.
+
+## HR: prøvesamtale i Sandbox – 11. oktober 2026
+
+Eksisterende HR får en tydelig merket, oppdiktet medarbeidersamtale når byggets backendmål er `sandbox` og HR-konteksten er tilgjengelig. Forberedelse → felles samtale → tiltak → referat kan prøves med samme konto. Eksempeltekster fyller bare tomme felt. Lokal lagring er skilt per firma og bruker, med Web Locks, revisjonskontroll og uforanderlige tidligere utgaver. PDF bruker lagret utgave og merkes som prøve/utkast. Ingen medarbeiderkobling, HR-RPC, utsending, signatur, backendendring eller åpning av privat HR.
+
+Dette er en lokal prøve av arbeidsflyten; data følger ikke brukeren til en ny nettleser eller enhet. Maksimum 10 prøvesamtaler og 20 utgaver per samtale; sletting gjelder bare eget prøveinnhold i nettleseren. Isolert Preview fra ren main, uten å merge tidligere HR-workerarbeid. Se [scope og verifisering](../kshms/HR_PRACTICE_20261011.md).
+
+Prøvesamtalens neste steg ruller nå til innholdets start. PDF-retur og ny tilgangskontroll beholder valgt samtale, lagret utgave og fane via en scoped sessionStorage-peker; innhold leses fra ferskt validert lokal historikk. Bevisst lukk/ny/slett rydder valget. PDF-format, tilgangskjerne og global navigasjon er uendret.
+
+Prøv medarbeidersamtale viser nå toppen av skjemaet. Tomme og ulagrede prøvekladder beholdes i et avgrenset konto-/firmabundet sideminne gjennom tilgangsremount etter fanebytte. Fersk lokal historikk leses før gjenåpning; en eldre ulagret revisjon får ikke overskrive endringer fra en annen fane. Full oppfriskning gjenåpner fortsatt bare lagrede utgaver. Bevisst Lukk rydder kladden og valget.

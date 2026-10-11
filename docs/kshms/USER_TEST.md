@@ -1,3 +1,17 @@
+## Retting: neste steg og tilbake fra PDF
+
+På samme faste Preview: Åpne en lagret prøvesamtale og trykk Rediger som ny utgave hvis nødvendig. Neste lagringsknapp skal vise toppen av neste stegs innhold. Last ned referat (PDF) fra en lagret utgave: du skal komme tilbake til samme samtale, utgave og fane. Utvikleren tester begge feilene; øvrige tidligere godkjente prøver skal ikke gjentas.
+
+## Bare én ny kort prøve: medarbeidersamtale med eksempelinnhold
+
+Bruk den faste branch-Preview-en for `fase45b-hr-conversation-practice-20261011`, med eksisterende Sandbox-konto. Ingen nye nøkler eller nytt testfirma er nødvendig. Tidligere godkjente områder skal ikke testes igjen.
+
+1. Åpne **HR → Prøv medarbeidersamtale** (også i **Min side → Mine oppfølginger**). Trykk **Legg eksempeltekster i tomme felt** og endre gjerne ett svar.
+2. Følg de tre knappene **Lagre forberedelse og gå til samtalen**, **Lagre samtalen og gå til tiltak**, **Lagre tiltak og gå til referat**. Huk av **Jeg har gjennomgått prøvereferatet** og trykk **Lagre ferdig prøvereferat**. Det skal stå at utgaven er lagret i denne nettleseren.
+3. **Last ned referat (PDF)** skal gi tydelig merket prøveinnhold. Etter oppfriskning: **Prøv medarbeidersamtale → Lagrede prøvesamtaler → Åpne lagret samtale** skal vise samme innhold.
+
+Utvikleren har allerede testet lagring, gjenåpning, PDF, fanebytte, konflikter og smal skjerm. Din oppgave er å vurdere om flyten og knappene er forståelige. Bruk bare oppdiktet innhold. Dette er ikke en reell eller signert medarbeidersamtale. [Utviklerbevis og grenser](HR_PRACTICE_20261011.md).
+
 ## Ny HR-prøve – snarveier og sykefravær
 
 ## Samme visning etter retur – 11. oktober 2026
@@ -713,3 +727,5 @@ Firmaadmin: **Meny → Firmaadmin → Brukere og tilganger**, finn brukeren og �
 Dette er ny, avgrenset tilgangsflate, ikke ny B/C-/PDF-/ZIP-testliste. Agentens faktiske desktopkontroll er lesende; skrive-/negative prøver er SQL/React med syntetiske data. Tidligere Kenneth TEST OK beholdes.
 
 HR-popup: Klikk på medarbeiderraden. Personen skal vises i popup-vinduet uten scrolling nedover HR-siden. Etter nettleserfanebytte skal samme medarbeider vises igjen. Lukk medarbeider eller krysset lukker vinduet. Ingen reell leder-/tilgangsendring behøves i prøven.
+
+HR-prøveoppdatering: Trykk Prøv medarbeidersamtale. Toppen skal vises. Skriv én prøvesetning før lagring, bytt nettleserfane og returner. Samme prøvesamtale, tekst og steg skal være beholdt. Tidligere godkjente PDF-/øvelsessteg trenger ikke gjentas.
