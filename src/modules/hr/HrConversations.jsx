@@ -18,7 +18,7 @@ export default function HrConversations({context,employee}){
  const companyId=context.company_id,userId=context.user_id,employeeId=employee.id,scope=companyId+':'+userId+':'+employeeId;
  const [listing,setListing]=useState(null),[value,setValue]=useState(null),[draft,setDraft]=useState(null);
  const [templates,setTemplates]=useState(null),[templateId,setTemplateId]=useState(''),[on,setOn]=useState(osloToday);
- const [time,setTime]=useState('');
+ const [time,setTime]=useState(''),[calendarMinutes,setCalendarMinutes]=useState(60);
  const [createOpen,setCreateOpen]=useState(()=>Boolean(workspaces.get(scope)?.startAttempt)),[startPending,setStartPending]=useState(()=>Boolean(workspaces.get(scope)?.startAttempt)),[delivery,setDelivery]=useState(null);
  const startAttempt=useRef(workspaces.get(scope)?.startAttempt||null),creationFocus=useRef(false),receipt=useRef(null);
  const [busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState(''),[conflict,setConflict]=useState(false);
@@ -110,6 +110,13 @@ export default function HrConversations({context,employee}){
   const {downloadConversationPdf}=await import('./hrConversationPdf.mjs');
   const result=await downloadConversationPdf({value:fresh,companyName:context.company_name,isCurrent:current});if(result&&current())setNotice('Referatet er lastet ned. Samtalen står fortsatt åpen.');
  });
+ const calendar=()=>run(async(s,current)=>{
+  if(dirty){setError('Lagre endringene før kalenderavtalen.');return;}
+  const fresh=await s.get(value.conversation.id);if(!current())return;
+  if(fresh.current_revision!==value.current_revision){setError('Samtalen er endret. Hent ny utgave før kalenderavtalen.');return;}
+  const {downloadConversationCalendar}=await import('./hrConversationCalendar.mjs');
+  if(await downloadConversationCalendar({value:fresh,minutes:calendarMinutes,isCurrent:current})&&current())setNotice('Kalenderfilen er lastet ned. Åpne den og bekreft avtalen i kalenderen din.');
+ });
  const c=value?.conversation,permitted=value&&!value.historical&&!conflict,prep=permitted&&value.permissions.prepare,meeting=permitted&&value.permissions.meeting;
  const schedule=permitted&&value.employee.leader_id===userId&&['preparation','meeting'].includes(c.stage);
  const stages=['Forberedelse','Felles møte','Tiltak','Referat'];
@@ -147,6 +154,12 @@ export default function HrConversations({context,employee}){
    {conflict&&<button type="button" disabled={busy} onClick={()=>{if(window.confirm('Vil du forkaste kladden og bruke den lagrede utgaven?')){workspaces.delete(scope);install(value);}}}>Bruk lagret utgave</button>}
   </div>
   <p><strong>Avtalt tidspunkt:</strong> {c.on?.split('-').reverse().join('.')} · {c.meeting_time?'kl. '+c.meeting_time+' (norsk tid)':'Klokkeslett ikke avtalt'}</p>
+  {!value.historical&&[value.employee.user_id,value.employee.leader_id].includes(userId)&&c.meeting_time&&<div className="hrp-calendar">
+   <Field label="Varighet i kalenderen"><select value={calendarMinutes} disabled={busy} onChange={e=>setCalendarMinutes(Number(e.target.value))}>{[30,45,60,90,120].map(n=><option key={n} value={n}>{n} minutter</option>)}</select></Field>
+   <button type="button" className="secondary" disabled={busy||dirty} onClick={calendar}>Legg til i kalender</button>
+   <p>Last ned kalenderfilen, åpne den og bekreft avtalen i din egen kalender. Ved endret tidspunkt må kalenderavtalen oppdateres av deg.</p>
+  </div>}
+  {schedule&&<div className="hrp-leader-reminder"><label><input type="checkbox" checked={c.leader_email_reminder===true&&c.leader_reminder_user_id===userId} disabled={busy||dirty} onChange={e=>{const enabled=e.target.checked;run(async(s,current)=>{const result=await s.reminder(value,enabled);if(current()){install(result);setNotice(enabled?'E-postpåminnelse til deg er valgt.':'E-postpåminnelse til deg er slått av.');}});}}/> Send meg e-postpåminnelse dagen før</label><p>Påminnelsen sendes 24 timer før avtalen. Velger du den senere, sendes den så snart som mulig før møtet. E-post må være aktivert i miljøet.</p></div>}
   {schedule&&<details className="hrp-saved"><summary>Endre tidspunkt</summary><fieldset disabled={busy}>
    <Field label="Ny samtaledato"><input required type="date" value={draft.on} onChange={e=>change({on:e.target.value})}/></Field>
    <Field label="Nytt klokkeslett"><input required type="time" step="60" value={draft.meeting_time} onChange={e=>change({meeting_time:e.target.value})}/></Field>

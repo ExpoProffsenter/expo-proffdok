@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {createConversationSession} from '../src/modules/hr/hrConversationSession.mjs';
+import {conversationCalendar,downloadConversationCalendar} from '../src/modules/hr/hrConversationCalendar.mjs';
 import {conversationPdfDocument,downloadConversationPdf} from '../src/modules/hr/hrConversationPdf.mjs';
 import {createHrDeletionAlerts} from '../supabase/functions/_shared/hr-deletion-alerts.mjs';
 const clone=v=>structuredClone(v),id=n=>`71000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
@@ -30,6 +31,17 @@ const invitationStatus={context:value.context,employee:{id:employee.id},conversa
 x=fixture(()=>clone(invitationStatus));eq((await x.session.invitationStatus(id(5))).email_status,'not_queued');await x.session.notify(value);eq(x.calls.at(-1).a.p_employee_revision,1);eq(x.calls.at(-1).a.p_revision,1);
 x=fixture(()=>clone(invitationStatus));await assert.rejects(x.session.notify({...value,historical:true}),/historisk/);eq(x.calls.length,0);
 for(const change of [{conversation_id:id(99)},{email_status:'delivered'},{can_notify:'yes'},{app_notification:null}]){x=fixture(()=>({...clone(invitationStatus),...change}));await assert.rejects(x.session.invitationStatus(id(5)),/kunne ikke bekreftes/);checks++;}
+x=fixture(()=>clone(value));await x.session.reminder(value,true);eq(x.calls[0].n,'hr_conversation_reminder');eq(x.calls[0].a.p_enabled,true);eq(x.calls[0].a.p_revision,1);
+x=fixture(()=>clone(value));await assert.rejects(x.session.reminder({...value,historical:true},true),/historisk/);eq(x.calls.length,0);
+const event=(on,time='12:00',minutes=60)=>conversationCalendar({...clone(value),conversation:{...clone(value.conversation),on,meeting_time:time}},{minutes,now:new Date('2026-10-11T12:00:00Z')});
+eq(event('2026-10-21').includes('DTSTART:20261021T100000Z'),true,'summer Oslo UTC conversion');eq(event('2026-12-21').includes('DTSTART:20261221T110000Z'),true,'winter Oslo UTC conversion');
+eq(event('2026-10-25','02:30').includes('DTSTART:20261025T003000Z'),true,'autumn duplicate uses first occurrence');
+assert.throws(()=>event('2026-03-29','02:30'),/sommertid/);checks++;assert.throws(()=>event('2026-02-30'),/ugyldig/);checks++;
+eq(event('2026-12-31','23:45',30).includes('DTEND:20261231T231500Z'),true,'event duration crosses Oslo midnight');
+const calendar=event('2026-10-21');eq(calendar.includes('UID:'+value.conversation.id+'@expo-proffdok.app'),true);eq(calendar.includes('SUMMARY:Medarbeidersamtale'),true);
+eq(calendar.includes(employee.email),false);eq(calendar.includes('Trivsel'),false);eq(calendar.split('\r\n').every(line=>new TextEncoder().encode(line).length<=75),true,'UTF-8 folding limit');
+let calendars=0;eq(await downloadConversationCalendar({value,save:()=>calendars++,isCurrent:()=>false}),false);eq(calendars,0);
+const currentEvent={...clone(value),conversation:{...clone(value.conversation),meeting_time:'12:00'}};eq(await downloadConversationCalendar({value:currentEvent,save:()=>calendars++}),true);eq(calendars,1);
 let sends=0;
 eq(await downloadConversationPdf({value,loadPdf:()=>{throw Error('should not load');},isCurrent:()=>false}),null);
 const sample=clone(value);sample.conversation.meeting_time='14:45';sample.conversation.shared=true;sample.conversation.stage='completed';sample.conversation.preparation[id(6)]='Opprinnelig medarbeidersvar. '.repeat(150);

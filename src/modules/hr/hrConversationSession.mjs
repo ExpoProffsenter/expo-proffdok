@@ -17,7 +17,7 @@ export function createConversationSession({rpc,companyId,userId,employeeId,onDen
     ||['hr_conversation_invitation_status','hr_conversation_notify'].includes(name)&&(
      v.conversation_id!==args.p_conversation_id||typeof v.app_notification!=='boolean'||typeof v.can_notify!=='boolean'
      ||!['disabled','not_queued','pending','sending','sent','failed','suppressed'].includes(v.email_status))
-    ||['hr_conversation_get','hr_conversation_start','hr_conversation_start_at','hr_conversation_schedule','hr_conversation_command'].includes(name)&&(
+    ||['hr_conversation_get','hr_conversation_start','hr_conversation_start_at','hr_conversation_schedule','hr_conversation_reminder','hr_conversation_command'].includes(name)&&(
      !Number.isInteger(v.current_revision)||v.current_revision<1||!Number.isInteger(v.conversation?.revision)
      ||!Array.isArray(v.conversation?.actions)||!Array.isArray(v.conversation?.template?.questions)||!v.permissions||v.employee?.id!==employeeId))
     throw Error('Serverens samtalesvar kunne ikke bekreftes. Hent på nytt.');
@@ -57,6 +57,11 @@ export function createConversationSession({rpc,companyId,userId,employeeId,onDen
    if(!on||!/^([01][0-9]|2[0-3]):[0-5][0-9]$/.test(time||''))throw Error('Velg dato og klokkeslett med timer og minutter.');
    return readback(await call('hr_conversation_schedule',{p_conversation_id:value.conversation.id,
     p_employee_revision:value.employee.revision,p_revision:value.current_revision,p_on:on,p_time:time}));
+  },
+  async reminder(value,enabled){
+   if(value.historical)throw Error('En historisk utgave kan bare leses.');
+   if(typeof enabled!=='boolean')throw Error('Velg om du vil ha en e-postpåminnelse.');
+   return readback(await call('hr_conversation_reminder',{p_conversation_id:value.conversation.id,p_employee_revision:value.employee.revision,p_revision:value.current_revision,p_enabled:enabled}));
   },
   async command(value,action,data={}){
    if(value.historical)throw Error('En historisk utgave kan bare leses.');

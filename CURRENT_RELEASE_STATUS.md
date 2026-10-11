@@ -1,3 +1,134 @@
+## Lederpåminnelse, kalender og medarbeiderinnspill – 11. oktober 2026
+
+Kenneths Production-instruksjon kl.22:24 gjelder aktiv leveranse; tillegg kl.22:35–22:36 om egen lederpåminnelse, kalender for begge og e-post ved medarbeiderkommentar er innarbeidet. Invitasjonsknappen fra #226 er allerede publisert. Disse tilleggene får egen avgrenset PR, grønn critical QA/CI og Production-verifisering; ingen innlogget Preview-mailprøve eller mottatt e-post attesteres.
+
+Nærmeste leder velger **Send meg e-postpåminnelse dagen før** i den gjeldende samtalen. Valget lagres straks på serveren, krever gjeldende leder, fersk medarbeider-/samtalerevisjon og et fremtidig gyldig norsk tidspunkt. Det gjelder bare den lederen som valgte det. Utsending skjer 24 timer før, eller snarest før møtet ved senere valg. Avslått valg, leder-/tilgangsbytte, endret tid, ferdig referat eller sletting stopper ventende utsending. Samme avtale varsles én gang. Privat outbox, token og cron gjenbrukes; ingen nye tabeller/innstillinger.
+
+Begge parter har **Varighet i kalenderen** og **Legg til i kalender**. Kalenderfil (.ics) bruker dobbel fersk autorisert serverlesing, lagret tidspunkt i Europe/Oslo konvertert til UTC, stabil samtale-UID og valgt varighet (standard 60 minutter). Bruker åpner filen og bekrefter avtalen i egen kalender. Ved endret tidspunkt må kalenderavtalen oppdateres av bruker. Ingen kalenderkonto tilkobles eller automatisk kalenderbooking. Filen inneholder generell møtetittel og applenke, ingen private innspill/personnavn/firma. Sommer-/vintertid, første gjentatte høstklokkeslett, ugyldig vårklokkeslett, dato, varighet, CRLF/UTF-8-linjebryting og sen tilgangsendring er testet. RFC 5545 brukes for formatet.
+
+Når medarbeideren deler forberedelsen eller lagrer en endret egen kommentar til referatet, får gjeldende HR-leder en generell e-post når transport er aktivert. Private ikke delte forberedelser og lederens egne kommentarer varsler ikke. Nyere usendt innspill erstatter behovet for et eldre usendt varsel. Kommentar/svar leses i appen; ingen tekst/personnavn/firma/diagnose tas med i e-posten. Fersk mottaker, HR-rettighet, aktivt arbeidsforhold, lease og idempotency kontrolleres før provider-kall. Sandbox-mail forblir AV.
+
+Scope: HrConversations/session/CSS, ny kalenderformatter, avgrenset utvidelse av eksisterende HR-mailworker, én migrasjon og HR-QA/Hjelp/docs. To eksisterende funksjoner endres: samtalekommandoens etterlagringsvarsel og eksisterende cron-invoker. Åtte funksjoner legges til; møte-/kommentarinnhold, originale CAS/rolle-/delings-/bekreftelses-/slettekrav og gammel fristworker beholdes. Påminnelsesvalget endrer ingen innholdsbetinget bekreftelse. Ingen meny/Sales/konto/firmaendring.
+
+QA: PostgreSQL 172, faktisk React 63, samtale/session/kalender/PDF/mail 100 og sykefravær/session/PDF/mail 134 assertions PASS. Full critical/build PASS. Faktisk Sandbox rollback-QA 22 PASS, uten network/provider-dispatch. Production får samme kilde-/rollback-/fingerprintkontroll før merge. Eksakt CI/READY/SHA og main → demo-preflight føres i PR. Faktisk mottak i innboks og kalenderimport i brukerens kalender må bekreftes av bruker; Kenneth ba deretter uttrykkelig om en test til egen adresse og valgte jobbkontoen. Én tydelig merket test er provider-akseptert kl.23:02 Oslo (HTTP 200, attempts=1); ingen samtale opprettet eller endret. Testen bruker service-only exact-ID-reservering og egen negativ outbox-bucket som vanlig cron ikke kan hente. Inbox-mottak er ikke bekreftet av utvikleren. Tidligere TEST OK beholdes.
+
+## Produksjonspublisering uttrykkelig godkjent – 11. oktober 2026 kl. 22:24 Europe/Oslo
+
+Kenneth: «får ikke testet epost på preview så send det til produksjon». Dette er eksplisitt autorisasjon til Production uten ny innlogget Preview-e-postprøve og overstyrer tidligere prøvekrav for denne invitasjonsendringen. Ingen faktisk invitasjon sendes av utvikleren: bruker klikker Send e-postinvitasjon på sin lagrede samtale når publiseringen er verifisert. Critical QA/CI, Production-migrasjon/worker, publiserte assets og kontrollert main → demo gjennomføres før oppgaven regnes som publisert. Faktisk mottak i innboks bekreftes bare av bruker.
+
+## Bekreftelse og manuell e-postinvitasjon – 11. oktober 2026
+
+Miljømål BEGGE; ny kort Preview-prøve kreves før Production og main → demo. Tidligere TEST OK for klokkeslett/HR/kart beholdes. Etter Opprett samtale lukkes og tømmes opprettingsskjemaet, og Samtalen er opprettet får fokus med lagret dato/klokkeslett og separat app-/e-poststatus. Mistet opprettingssvar gjenbruker samme samtale-ID, også ved intern remount. Samtalen slettes ikke ved feil i e-poststatus.
+
+Nærmeste leder bruker **Send e-postinvitasjon** på en lagret samtale i forberedelse, også en tidligere opprettet samtale. Opprettelse alene sender ingen invitasjon. Medarbeideren får en åpen forberedelsesoppgave på Min side. Invitasjonen har faktisk dato/klokkeslett i norsk tid og forklarer hvordan medarbeideren åpner og deler forberedelsen. Ingen svar, personnavn, firmanavn eller diagnose følger e-posten. Ingen kalenderbooking. Eldre samtale må ha klokkeslett før sending. Gjentatte klikk for samme medarbeider/samtale/dato/klokkeslett bruker samme private leveringsrad og provider-idempotency. Nytt tidspunkt får separat invitasjon; endret tidspunkt/tilgang eller delt forberedelse stopper gammel ventende utsending.
+
+Status skiller disabled/not_queued/pending/sending/sent/failed/suppressed. «Sendt» er provider-aksept lagret på serveren, ikke attestert mottak i innboksen. Sandbox-mail forblir deaktivert; der vises knappen og tydelig avslått-status. Ingen ekte samtale eller virkelig mottaker er endret/sendttestet.
+
+Scope: HrConversations, samtale-session/CSS, HR-forberedelsesoppgave, eksisterende hr-followup-reminders-transport, Hjelp, én additiv migrasjon og relevante QA/docs. Ingen nye tabeller/tokens/cron, ingen andre moduler, navigasjon, kontoer eller firmatilganger. Tre eksisterende HR-funksjoner endres og seks tilgangskontrollerte funksjoner legges til. Fristworker beholder kontortid; eksplisitt invitasjon kan sendes når leder klikker. Ingen Production-endring før relevant TEST OK.
+
+QA: 136 PostgreSQL-assertions, 55 faktiske React-assertions, 81 samtale/session/PDF/slettemail og 94 sykefravær/session/PDF/frist-/invitasjonmail PASS. Eksisterende sykefravær SQL 83 PASS. Faktisk Sandbox rollback-prøve: 31 assertions PASS, uten network/provider-dispatch. Alle ni funksjonskilder matcher migrasjonen. Øvrige funksjoner, policies, triggere, tabeller, profiler, medlemskap, modulrettigheter og beskyttede worker-innstillinger er uendret før/etter. Bare to forventede advisor-notiser for eksplisitt autoriserte authenticated-definer-RPC-er legges til; performance-notiser uendret. Register/Min side og full critical/build verifiseres før publisering. Innlogget brukerprøve, faktisk Production-utsending og mottak i innboks attesteres ikke av disse testene.
+
+Kort brukerprøve på fast Preview: Åpne lagret samtale som nærmeste leder → Send e-postinvitasjon. I Sandbox skal utsending være tydelig avslått. Ved ny samtale skal opprettingsskjemaet lukkes og Samtalen er opprettet vises med tidspunkt. Eksakt CI/READY/SHA og status føres i PR.
+
+## Klokkeslett publisert – godkjent TEST OK 11. oktober 2026
+
+Kenneth TEST OK kl. 21:39 Europe/Oslo godkjenner klokkeslett i medarbeidersamtaler. Feature `03bec590f3bd0396c63fc6b347e33c3428d13a04` er merget i #224 som `eaeb06d475d3134869505c4f12ea56f96c855f2f`. Ready-for-review Core Safety run `38168965204`, job `114557343986`: alle steg SUCCESS. Production `dpl_Aa7RUMwwmsgwuA9HitLEyeidnpWx` READY på https://expo-proffdok.app. Ingen ny innlogget Production-prøve attesteres; Kenneths Preview-prøve og live backend-/assetkontroller er separate bevis.
+
+Nye samtaler krever Klokkeslett i norsk tid; nærmeste leder kan endre dato/tid i forberedelse/felles møte. Tidspunktet vises for begge parter og i PDF. Eldre samtaler har ingen oppdiktet tid. Hjelp er oppdatert. Ingen kalender-/e-postinvitasjon innføres.
+
+Migrasjon `hr_conversation_meeting_time` er installert i Sandbox og Production. 21 faktiske rollback-assertions PASS i hvert miljø; alle tre funksjonskilder matcher eksakt. Bare listekroppen er endret og start_at/schedule lagt til. Øvrige funksjoner, profiler, medlemskap, policies, triggere, modulrettigheter og beskyttede worker-innstillinger er identiske før/etter. QA: PostgreSQL 100, React 44, session/PDF/mail 73, sykefravær 68 samt register/Min side og full critical/build PASS. Fersk PDF visuelt kontrollert. Kontrollert main → demo-synk, gjeldende main-baseline og 24 faktiske Sandbox-preflightpunkter føres i PR #224 etter ferdig publisering. Tidligere TEST OK beholdes.
+
+## Godkjent Production-release #222 – 11. oktober 2026
+
+Kenneths «flott test ok» kl. 20:49 Europe/Oslo godkjenner også logo og midtstilt, tilpasset PDF-tekst. Tidligere TEST OK for HR, firmanavn, felles kart og linjer/lederplassering beholdes. Eldre «venter», «draft» og prøvekrav nedenfor er daterte arbeidsnotater.
+
+Godkjent feature `2d0ae997797f3f737e30778c2d6d4910ff3bedf9` er merget som `e466c5603f745081d00a8964e752bb4f6f76b36b`. Production `dpl_5uuswoKpL4NYvVkMH94Hjrq2eALT` er READY på https://expo-proffdok.app. Obligatorisk Core Safety etter ready-for-review: run `38166319985`, job `114549510315`, alle steg SUCCESS. Ingen ny innlogget Production-prøve attesteres; Kenneths Preview-prøve og utviklernes backend-/assetkontroller er separate bevis.
+
+Alle seks godkjente migrasjoner er installert i Production: sykefraværssaker, fristvarsler, referanseindeks, worker-scope, firmavisningsnavn og felleskart/rekkefølge. 22 + 12 + 36 faktiske rollback-prøver PASS. Alle 23 funksjonskropper matcher godkjent SQL. Bare åtte avtalte eksisterende org-funksjoner er endret; 15 funksjoner og tre private RLS-tabeller er lagt til. Eksisterende policies, triggere, medlemskap, profiler, modulrettigheter og andre worker-innstillinger er uendret. Nye advisor-notiser gjelder tilsiktede private RLS-tabeller uten direkte klienttilgang, tilgangskontrollerte definer-RPC-er og to nye foreløpig ubrukte indekser; ingen nye manglende FK-indekser.
+
+HR-fristworker `hr-followup-reminders` v1 er ACTIVE og aktivert med egen Vault-autentisering og minutt-cron. Utsending skjer i Oslo-kontortid, tre dager før, på frist og ukentlig etterpå for aktuelle åpne oppgaver; endret ansvar/tilgang kontrolleres på nytt. Anonym GET=405/POST=403. Serverautentisert tom-kø-prøve ga 200 `{idle:true}`, uten testmail eller providerkall. Dette er ikke bevis på mottatt fristmail. Tidligere mottatt slettevarsel skal ikke gjentas.
+
+Kenneth, Tom og Kim har hver firmaadmin i de tre avtalte firmaene, med eksisterende kontoer og primærfirma beholdt. KS/HMS er aktivert i Expo Proffsenter. Ingen ny registrering eller invitasjon. Faktiske firmavisningsnavn og organisasjonskart bygges av brukeren i Production; utvikleren har ikke skrevet et virkelig personal-/kartoppsett.
+
+Miljømål BEGGE. Permanent demo synkroniseres kontrollert kun main → demo, med egen Sandbox og bevart overlegg. Kurs-/preflight- og endelig demo-publisering dokumenteres separat på demo-branch og i PR #222. Ingen demoressurs eller syntetisk identitet skal tilbake til main.
+
+## Midtstilt og tilpasset PDF-tekst – 11. oktober 2026
+
+Miljømål **BEGGE**, først samme feature/Preview. Nytt kosmetisk tillegg gjelder organisasjonskartets PDF: firma-/avdelingskort, avdelingsoverskrifter, ledertekst og alle medarbeiderkort har midtstilt tekst. Navn/avdeling bruker inntil 18–20 pt, medarbeidernavn inntil 15 pt og tilhørende tekst inntil 12 pt. Brede/korte tekster vokser til feltets maks; lange tekster reduseres til en lesbar minste størrelse og brytes deretter fullstendig. Kort-/rad-/nivåhøyde beregnes fra faktisk tekst og skriftstørrelse. Rapporteringens eksisterende innrykk beholdes, med tekst sentrert i sitt kort. Logo og ferske profil-/kart-/tilgangskontroller beholdes.
+
+Den gamle PDF-posisjonsprøven forventet tekst på kortets venstrekant +6 mm. Ny forventning er den uendrede midtkortaksen x=210 mm med align=center. Ordens-/linje-/tilgangs-/logoassertions beholdes. Nye faktiske jsPDF-prøver kontrollerer større korte navn, mindre lange navn, full tekstbryting, sentrum/bredde/høyde mot tegnede kort og bevaring av alle medarbeidere/dype grener. Ny brukerprøve er kun **Last ned PDF** og tekst/logo; tidligere godkjente HR-/kart-/tilgangsprøver skal ikke gjentas. Preview/CI-bevis og eksakt SHA føres i PR #222. Ingen ny backendendring. Production/main/demo venter på relevant TEST OK etter AGENTS.md punkt 10.
+
+Faktisk jsPDF med små/store og dype kart PASS: tekstens senter og mål er kontrollert mot faktiske tegnede kort, alle navn/grener beholdes, og flersidige dokumenter beholder logo. Nye PDF-sider med kart, medarbeiderkolonner og smale/dype grener er visuelt kontrollert. Faktisk kart-React, permanente eksisterende guards og full Sandbox critical/build PASS. Dette er utviklerprøver med syntetisk innhold; innlogget ny eksport venter på brukerens korte Preview-prøve.
+
+
+## Firmalogo i organisasjonskartets PDF – 11. oktober 2026
+
+Miljømål **BEGGE**, først samme feature/Preview. Kenneths siste **TEST OK** gjelder linjer og lederplassering og beholdes. Nytt tillegg: **Last ned PDF** bruker eksisterende `work_profile_company_profile` for aktivt firma, også ved felleskart. Logoen gjentas i et hvitt felt øverst på hver A3-side med bevarte proporsjoner. Kartets toppnavn beholdes. Ingen nytt logo-register eller backendendring.
+
+Profilens firma og logo kontrolleres på nytt, og kart-/tilgangskontrollen etter lasting beholdes. Endret logo/firma, navigasjon eller tilbakekalt karttilgang stopper levering. En utilgjengelig logo gir lesbar PDF og en tydelig melding om at logoen mangler. Hjelp beskriver samme kontrakt uten kundespesifikke navn. Ny brukerprøve gjelder bare **Last ned PDF** og logoen; tidligere HR-, kart- og tilgangsprøver skal ikke gjentas. Release av dette nye tillegget venter på relevant Preview-prøve etter AGENTS.md punkt 10.
+
+Faktisk jsPDF med eksisterende Ringside-PNG: logo på alle sider, proporsjoner og headergrenser PASS; ferske PDF-sider er visuelt kontrollert. Endret/fremmed/offline firmaprofil, navigasjon, tilbakekalt tilgang og manglende logo er prøvd. Faktisk kart-React, permanent kart-critical og full Sandbox critical/build PASS. Dette er utviklerprøver med syntetisk kart, ikke en attestasjon av innlogget nedlasting. CI/READY og eksakt publisert SHA føres i PR #222.
+
+
+## Kartets linjer og lederplassering – 11. oktober 2026
+
+Miljømål **BEGGE**, først samme feature/Preview. Kenneth ga **TEST OK** for eksisterende løsning og ba deretter om å fjerne markerte overflødige streker, gjøre forbindelsene tykkere og sentrere ledere. En enkelt gren får bare loddrett forbindelse. Felles tverrlinje stopper på midten av første/siste kort; ingen strek går utenfor grenene. Skjerm bruker 3 px og PDF 0,65 mm. Leder/mellomleder-kort har felles midtakse uten dybdeinnrykk, og navn/stilling er sentrert. Ordinære medarbeideres rapporteringsinnrykk beholdes. Kortrekkefølge, HR-leder, lagring og tilgang følger uendret kontrakt.
+
+Faktisk React med syntetisk RPC, eksisterende kart-critical og full Sandbox critical/build PASS. Faktisk jsPDF/paginering/fersk tilgang PASS; tegnede forbindelser bekrefter én tverrlinje mellom de tre ytteraksene, ingen horisontal strek for Styret alene og felles midtakse for leder/mellomleder. Fersk PDF-side er visuelt kontrollert. Skynettleseren viser innlogging; lokal syntetisk nettleserprøve kunne ikke åpnes, så ingen innlogget/visuell browser-PASS påstås. Tidligere TEST OK beholdes. Ny brukerprøve er kun å se linjene/lederkortene i **KS/HMS → Organisasjonskart**, gjerne også **Last ned PDF**; gamle HR-/tilgangsprøver skal ikke gjentas. Production/main/demo er ennå ikke oppdatert med disse kosmetiske kodeendringene.
+
+Separat, uttrykkelig autorisert Production-tilgang er utført for Kenneth, Tom og Kim: eksisterende kontoer har firmaadmin i Ringside, Bademiljø Expo og Expo Proffsenter. KS/HMS er aktivert for Expo Proffsenter. Alle ni tilganger og appens faktiske kartvalg fra Ringside er kontrollert. Primærfirma Ringside, profiler og andre brukeres medlemskap er bevart. Dette er vanlig firmaadmin, ikke en ny delegert kartrolle. Ingen ny kartadmin-migrasjon, invitasjon eller duplisert konto er laget.
+
+## TEST OK og generell veiledning – 11. oktober 2026 kl. 19:42 Europe/Oslo
+
+Miljømål **BEGGE**. Kenneth har gitt **TEST OK** også for felles lesetilgang og sentrert kart. Tidligere HR/navn/kart-prøver er godkjent og skal ikke gjentas. Spørsmålet om hvem som ser eksemplene avdekket at Ringside-navn var lagt inn i felles veiledning og organisasjonskapittelet i Hjelp uten firmabegrensning. Disse eksemplene er erstattet med generelle navn/nivåer og venstre/midt/høyre. Hjelps oppdateringsdato er satt til 11.10.2026. Ingen kartnavn, avdelingsnavn, firmadata, tilgang eller lagringsflyt endres.
+
+Rettelsen er tekst/placeholder og har ingen ny obligatorisk brukerprøve. Eksisterende faktisk React-kontroll krever nå generisk veiledning og fravær av andre firmas eksempler på et urelatert firmakart; alle eksisterende dataplasserings-/rettighetsprøver beholdes. Brukerens egne kartnavn vises fortsatt fra den autoriserte kartresponsen. Øvrige Hjelp-kapitlers omtale av leverandør/vareregister/produktmerke er utenfor denne kartrettelsen.
+
+## Felles kart og sentrerte grener – 11. oktober 2026
+
+Miljømål **BEGGE**, feature/Preview + Sandbox. Kenneths **TEST OK** på HR, firmavisningsnavn og forrige kartleveranse er registrert og beholdes. Nytt scope gjelder bare kartets felles lesetilgang og plassering.
+
+Ett kart opprettes for de tilknyttede firmaene. **Vis hele kartet for brukere i hvert tilknyttet firma** åpner hele kartet for aktive brukere med KS/HMS i ett tilknyttet firma. Dette er uttrykkelig opt-in: eksisterende kart har uendret begrenset visning. Redigering/opprettelse krever fortsatt firmaadmin og KS/HMS i alle firmaene. Én tilgjengelig delt organisasjon åpnes automatisk; et bevisst valg av firmakart huskes. Ingen HR- eller medlemskapsrettigheter endres.
+
+**Rekkefølge fra venstre** lagres på kortene: Expo Proffsenter 1, Ringside Rørleggerbedrift 2, Bademiljø Expo 3. Alle tre legges under Styret. Like brede grenfelt sentrerer det midterste kortet under Styret/Ringside AS. PDF bruker samme rekkefølge. Hjelp forklarer både oppsett og tilgang.
+
+QA: 36 nye faktiske Sandbox-rollback-assertions PASS, også med én firmatilgang i hvert av de tre firmaene. 340 eksisterende funksjoner uendret; bare de åtte godkjente org-funksjonene endret. Ingen nye security-advisor-funn. Lokal PostgreSQL: 63 + 33 + 64 eksisterende og 36 nye PASS. Faktisk React, faktisk PDF-drawing/fersk tilgang og full Sandbox critical/build PASS. Nettleserinnlogging til flerfirmaflyt er ikke attestert. Ingen aktive kart, Production-innstillinger eller ekte medarbeiderdata er endret.
+
+Fast Preview: https://expo-proffdok-git-fase45c-hr-sickleave-20261011-ringside.vercel.app/?progressTest=safe . Bare ny kartprøve: **Rediger kart → Vis hele kartet … → Lagre kart**, og rekkefølge 1/2/3 via **Rediger / flytt → Bruk endring → Lagre kart**. Kontroller samme felleskart med en konto som har bare ett tilknyttet firma. Tidligere HR/navn/mail-prøver gjentas ikke. [Kontrakt og QA](docs/kshms/ORGANIZATION_SHARED_20261011.md).
+
+## Ny Preview: HR-oppfølging, firmavisningsnavn og organisasjonskart – 11. oktober 2026
+
+Miljømål **BEGGE**. Draft PR #222 viderefører sykefraværsoppfølging og ansvarliges HR-frister. Kenneth ba også om redigerbart firmanavn, Ringside AS øverst, Styret med daglig leder/driftssjef/andre stillinger og tre underavdelinger. Firmaprofil får **Endre firmanavn → Lagre firmanavn**. Stabil firma-ID, medlemskap, kontakter og historiske dokumenter beholdes. Prosjektlisten bruker firma-ID for å tåle navnebytte. Karttopp og avdelingsnavn lagres separat med **Rediger kart → Lagre kart**; lederplasseringer vises også på lukkede kort.
+
+**Hjelp er oppdatert i denne Preview**, med egne A–Å-kapitler for medarbeidersamtale og sykefravær. Nytt felles kart krever firmaadmin og KS/HMS i minst to registrerte firmaer. Kenneth har ett kvalifisert firma i Production; tre underavdelinger kan bygges i firmakartet. Personnavn krever aktive registrerte appbrukere; kartstillinger gir ikke HR-tilgang.
+
+Full Sandbox/Production critical/build PASS. Navn: 22 DB + 14 faktiske React + 11 prosjektidentitetsprøver PASS, berørte kart-React PASS. 12 faktiske Sandbox-rollback-kontroller inkludert prosjekt-trigger/RLS PASS; fixtures rullet tilbake. Skynettleseren viste innlogging, så ingen ny innlogget browserprøve påstås. Production-navn og kart er ikke endret. Tidligere TEST OK og mottatt slettevarsel beholdes; ingen gamle tester eller mail skal gjentas.
+
+Fast Preview: https://expo-proffdok-git-fase45c-hr-sickleave-20261011-ringside.vercel.app/?progressTest=safe . Ny, kort prøve: åpne **Firmaprofil**, prøv navneknappene i Sandbox; åpne **KS/HMS → Organisasjonskart**, les opprettelsesvilkåret og kontroller lederstillinger; åpne **Hjelp → HR** og de to nye kapitlene. Personlig sykefravær prøves bare med syntetisk innhold og riktig leder/medarbeider. Kenneths Hotmail-testkonto finnes bare i Production og skal ikke kopieres. Relevant ny **TEST OK** følger AGENTS.md før merge/Production; dette er ikke omtest av #220. Scope, arbeidsflyt, brukerprøve og bevis: [HR_SICK_LEAVE_CASES_20261011.md](docs/kshms/HR_SICK_LEAVE_CASES_20261011.md).
+
+## Gjeldende HR-release – 11. oktober 2026
+
+Kenneth fylte ut egen post og ga **TEST OK 11. oktober kl. 17:10 Europe/Oslo** for PR #220. Godkjenningen er fullført; gamle testkrav nedenfor er historikk og skal ikke gjentas. PR #220 er merget til main **6b557c71f97cfecd7114b61883c964a3aaa88c25**. Production **dpl_99mBYYt27bMJiSZ4KSyPcGVTB9Ad READY** på expo-proffdok.app er kontrollert innlogget som Kenneth: Startside, eksisterende meny og HR laster.
+
+**HR-kontakt og individuelle medarbeidersamtaler er åpne i Production**, med versjoner, medarbeiderens private forberedelse, uttrykkelig deling, leders møtereferat, personlige bekreftelser og PDF. Systemadministrator får et minimalt varsel når arbeidsforhold avsluttes. HR-varselmail er aktiv. Ringside må selv fylle ut formål, behandlingsgrunnlag og kontrollfrist under HR → Oppsett og kontrollfrist og aktivere sitt register før virkelige medarbeidere legges til. Ingen reelle personalposter er opprettet av agenten.
+
+Den godkjente leveransen bruker eksisterende Supabase. Ingen ny betalt ressurs. Automatisk ekstern sletteloggbok i draft #217 er separat og ikke aktivert. Individuelle sykefraværsplaner og HR-filopplasting er ikke levert i #220. Restore krever manuell lukket rutine beskrevet i [HR_CONVERSATIONS_20261011.md](docs/kshms/HR_CONVERSATIONS_20261011.md); fysisk PGlite-restore er ikke attestasjon av managed cloud-restore.
+
+Production: begge migrasjoner og hr-deletion-alerts-worker er installert og lest tilbake mot godkjent kilde/ACL/search_path. Alle 17 nye funksjoner matcher. De beskyttede eksisterende funksjonene, RLS-policyene og triggerne har identiske før/etter-fingeravtrykk. 32 nye rollback-kontroller PASS; syntetiske SQL-fixtures er borte. Core Safety **38150427087 / 114502564630 SUCCESS**. Servertransport gir HTTP 200. Én autorisert syntetisk testmail til **kenneth@ringside.no** er godkjent av Resend (sent, ett forsøk); mottak i innboks er ikke uavhengig attestert. Ingen virkelig medarbeider ble avsluttet. Den syntetiske varsel-/leveringsraden beholdes i audit og er markert lest; ingen ventende jobb.
+
+Miljømål **BEGGE**. Kontrollert main → demo følger samme godkjente funksjon. Sandbox-kurskontrakten er bevisst oppdatert fra stengt samtaleport til åpne samtaler, med separat kontroll av begge avslåtte e-posttransportene og syntetisk medarbeider/leder. 19 eksisterende demokontroller + 4 kurskontroller PASS, ny negativ rollback-QA og faktisk samtale-React (38 assertions) PASS. Demoens fiktive møtekladd har ingen forhåndsbekreftelser. Eksisterende kontaktutfylling beholdes. Endelig demo-head/deploy føres i demoens releaseavslutning og PR #220. Demo-overlay og syntetiske migrasjoner skal aldri til main.
+
+## Rettet HR-prøveflyt – 11. oktober 2026
+
+Kenneth meldte behov for scrolling ved neste steg og tap av åpen samtale etter PDF. Neste steg fokuseres og rulles til starten. Etter tilgangskontroll/PDF-retur gjenåpnes samme lagrede samtale, utgave og fane fra scoped navigasjon i denne nettleserfanen. Ny/lukk/slett respekteres. Faktisk React og Chromium-regresjon PASS; PDF-format og beskyttet kjerne uendret. Publiseres på samme PR #218 / faste Preview, uten ny godkjenningsrunde for tidligere områder. [Bevis](docs/kshms/HR_PRACTICE_20261011.md).
+
+## HR-prøvesamtale i eksisterende Sandbox – 11. oktober 2026
+
+Ny isolert branch `fase45b-hr-conversation-practice-20261011` fra ren main. Brukeren kan prøve eksempeltekster, fire samtalesteg, lokal lagring/gjenåpning og PDF med egen konto. Ingen nye nøkler eller testmiljøer. Production viser ikke prøveflaten. Personlig HR forblir stengt. Tidligere ledger/workerarbeid står separat i draft PR #217.
+
+Ny faktisk React-/Chromium-/PDF-/samtidighetskontroll, berørte eksisterende HR-flyter og full Sandbox/Production critical/build PASS. Bare ny kort vurdering av arbeidsflyten gjenstår hos Kenneth. Ingen gammel godkjenning eller testmail skal gjentas. [Scope, bevis og grenser](docs/kshms/HR_PRACTICE_20261011.md).
+
+Kanonisk main/Production er `c3d873e0e5bd2677f0205143de6edc1fbd95ae4c` (READY), demo `11f1b45dac4daa08efc850ba87ad5e28522dad4c`. Ingen merge eller endring av disse i denne leveransen. Eldre daterte avsnitt nedenfor er historikk, ikke nye utestående krav.
 ## Invitasjon – kontrollert main → demo 11. oktober 2026
 
 Kenneth godkjente Production-publisering kl.22:24 uten Preview-e-postprøve. #226 er merget som `90561cbc60827128eee66ac50dfa32f2b3e61a71`; Production `dpl_DHzTseXMf1fBT5inhdwD8DybrBRL` READY. Demo synkroniseres fra denne gjeldende main-committen. Kontrollsidens main-baseline oppdateres; eksisterende demo-overlegg, Sales, skisser, medier og kurs-/personalhistorikk beholdes. Ingen seed/reset eller virkelig e-post sendes. Sandbox-mail forblir AV. Faktisk backend-preflight 19+5 punkter grønn før synk; build/React/HTTP-bevis og endelig demo-head føres i #226.

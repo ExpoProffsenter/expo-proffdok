@@ -6,3 +6,9 @@
 .hr-real-conversation .hrp-creation-receipt h4{margin:0 0 10px;font-size:1.15rem}
 .hr-real-conversation .hrp-creation-receipt button{margin:6px 8px 0 0}
 .hr-real-conversation .hrp-creation-receipt:focus{outline:3px solid #f3b645;outline-offset:3px}
+
+.hr-real-conversation .hrp-calendar{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;margin:16px 0;padding:14px;border:1px solid #ccd8e4;border-radius:10px}
+.hr-real-conversation .hrp-calendar p{flex-basis:100%;margin:0}
+.hr-real-conversation .hrp-leader-reminder{margin:14px 0}
+.hr-real-conversation .hrp-leader-reminder label{display:flex;align-items:center;gap:10px}
+.hr-real-conversation .hrp-leader-reminder input{width:22px;height:22px;flex:none}
