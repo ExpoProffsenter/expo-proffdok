@@ -5,7 +5,7 @@ const request=(path:string,options:RequestInit={})=>{
  return fetch(url+path,{...options,headers:{apikey:service,authorization:`Bearer ${service}`,...options.headers},redirect:'error',signal:AbortSignal.timeout(10000)});
 };
 const rpc=async(name:string,args:Record<string,unknown>={})=>{
- if(!['hr_followup_worker_authorize','hr_followup_worker_reserve','hr_conversation_invitation_reserve','hr_conversation_invitation_validate','hr_conversation_mail_reserve','hr_conversation_mail_validate','hr_followup_worker_validate','hr_followup_worker_finish'].includes(name))throw Error('rpc_denied');
+ if(!['hr_followup_worker_authorize','hr_followup_worker_reserve','hr_followup_test_reserve','hr_conversation_invitation_reserve','hr_conversation_invitation_validate','hr_conversation_mail_reserve','hr_conversation_mail_validate','hr_followup_worker_validate','hr_followup_worker_finish'].includes(name))throw Error('rpc_denied');
  const r=await request('/rest/v1/rpc/'+name,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(args)});
  if(!r.ok)throw Error('rpc_unavailable');return r.status===204?null:r.json();
 };

@@ -68,6 +68,7 @@ for(const [body,kind,subject] of [['{"reminder":true}','meeting-reminder','påmi
  f=mailFixture({valid:false});eq((await f.handler(req(body))).status,200);eq(f.requests.length,0,'revoked leader/event is not mailed');
  f=mailFixture({extraJob:{comments:'forbidden private text'}});eq((await f.handler(req(body))).status,503);eq(f.requests.length,0);
 }
+eq((await fs.readFile('supabase/functions/hr-followup-reminders/index.ts','utf8')).includes("'hr_followup_test_reserve'"),true,'deployed adapter permits targeted test RPC');
 const testReq=()=>req(JSON.stringify({test:id(11)}));
 f=mailFixture();eq((await f.handler(testReq())).status,200);eq(f.requests.length,1);
 const testMail=JSON.parse(f.requests[0].opts.body);eq(testMail.to,['operator@example.invalid']);eq(testMail.subject,'Expo ProffDok – test av HR-varsling');eq(testMail.text.includes('Ingen faktisk medarbeidersamtale'),true);
