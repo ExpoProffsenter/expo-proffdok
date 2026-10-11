@@ -12,3 +12,6 @@
 .hr-real-conversation .hrp-leader-reminder{margin:14px 0}
 .hr-real-conversation .hrp-leader-reminder label{display:flex;align-items:center;gap:10px}
 .hr-real-conversation .hrp-leader-reminder input{width:22px;height:22px;flex:none}
+
+.hr-real-conversation .hrp-calendar>details{flex-basis:100%}
+.hr-real-conversation .hrp-calendar>details>summary{cursor:pointer;font-weight:600}
