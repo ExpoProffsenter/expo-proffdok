@@ -1,3 +1,15 @@
+## Outlook / Office 365 og tydelig invitasjonsstatus – 11. oktober 2026
+
+Miljømål BEGGE. Kenneth ba kl.23:18 om å oppdatere kalenderknappen i den aktive Production-leveransen. **Åpne i Outlook / Office 365** åpner en ny avtale i Outlook på nettet med fersk lagret dato, norsk klokkeslett og valgt varighet. Brukeren kontrollerer jobbkonto og kalender og lagrer i Outlook. Ingen kalenderkonto kobles til, og appen bekrefter ikke lagring i Outlook. **Last ned kalenderfil (.ics)** beholdes med konkret veiledning for Kalender → Legg til kalender → Last opp fra fil → velg kalender → Importer. Tidspunktendringer må oppdateres av brukeren. Gjentatt åpning kan lage en ny Outlook-avtale.
+
+Begge kalenderformater bruker samme validering og Oslo → UTC-konvertering. To ferske autoriserte samtalelesinger og revisjonskontroll før eksport beholdes. Gjeldende medarbeider/leder kontrolleres på nytt før begge kalenderformater. Nytt vindu åpnes synkront på brukerklikk; opener fjernes straks, og et tomt vindu lukkes ved feil eller foreldet svar. Bare generell møtetittel, dato/tid/varighet og generell applenke sendes til Outlook. Ingen medarbeider, firma, samtale-ID, svar, referat eller kommentar følger nettadressen.
+
+Camillas manglende sendeknapp skyldtes avslått individuell HR-modultilgang; aktiv brukerkonto og valgt nærmeste leder var korrekte. Det er kun lest tilgangsmetadata. Ingen virkelig tilgang, samtale eller e-post er endret/sendttestet i denne runden. UI forklarer nå riktig adminmeny og firmascope når forberedelsesoppgaven mangler, og sier ikke lenger at brukeren skal trykke på en skjult knapp. Sendebetingelser og eksisterende tilgangskontroll beholdes.
+
+Avgrenset scope: samtale-React/CSS, kalenderformatter, Hjelp og relevant runtime/React/docs. Ingen backend, migrasjon, RLS, kontoendring eller annen modul. Tidligere TEST OK og Kenneths bekreftede test-e-post kl.23:11 beholdes. Faktisk innlogget Outlook-lagring/kalendervalg må bekreftes av bruker. QA: faktisk React 83 og samtale/session/kalender/PDF/mail 113 assertions PASS, full critical/build PASS. Eksakt QA/CI/Preview/Production/main → demo-bevis føres i PR.
+
+Kort ny prøve: Åpne Camillas eksisterende samtale → velg Varighet i kalenderen → Åpne i Outlook / Office 365. Kontroller dato/klokkeslett, jobbkonto og riktig kalender, og lagre der. Alternativt Last ned kalenderfil (.ics) og importer i valgt kalender. For invitasjonen må firmaadmin først aktivere HR på medarbeiderens brukerkort; deretter Oppdater varslingsstatus → Send e-postinvitasjon. Opprett ikke samtalen på nytt. Tidligere skjema-/PDF-/kartprøver skal ikke gjentas.
+
 ## Lederpåminnelse, kalender og medarbeiderinnspill – 11. oktober 2026
 
 Kenneths Production-instruksjon kl.22:24 gjelder aktiv leveranse; tillegg kl.22:35–22:36 om egen lederpåminnelse, kalender for begge og e-post ved medarbeiderkommentar er innarbeidet. Invitasjonsknappen fra #226 er allerede publisert. Disse tilleggene får egen avgrenset PR, grønn critical QA/CI og Production-verifisering; ingen innlogget Preview-mailprøve eller mottatt e-post attesteres.

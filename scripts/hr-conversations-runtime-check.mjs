@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {createConversationSession} from '../src/modules/hr/hrConversationSession.mjs';
-import {conversationCalendar,downloadConversationCalendar} from '../src/modules/hr/hrConversationCalendar.mjs';
+import {conversationCalendar,conversationOutlookUrl,downloadConversationCalendar} from '../src/modules/hr/hrConversationCalendar.mjs';
 import {conversationPdfDocument,downloadConversationPdf} from '../src/modules/hr/hrConversationPdf.mjs';
 import {createHrDeletionAlerts} from '../supabase/functions/_shared/hr-deletion-alerts.mjs';
 const clone=v=>structuredClone(v),id=n=>`71000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
@@ -42,6 +42,13 @@ const calendar=event('2026-10-21');eq(calendar.includes('UID:'+value.conversatio
 eq(calendar.includes(employee.email),false);eq(calendar.includes('Trivsel'),false);eq(calendar.split('\r\n').every(line=>new TextEncoder().encode(line).length<=75),true,'UTF-8 folding limit');
 let calendars=0;eq(await downloadConversationCalendar({value,save:()=>calendars++,isCurrent:()=>false}),false);eq(calendars,0);
 const currentEvent={...clone(value),conversation:{...clone(value.conversation),meeting_time:'12:00'}};eq(await downloadConversationCalendar({value:currentEvent,save:()=>calendars++}),true);eq(calendars,1);
+const outlookValue={...clone(currentEvent),conversation:{...clone(currentEvent.conversation),on:'2026-10-21'}};
+const outlookUrl=new URL(conversationOutlookUrl(outlookValue,{minutes:45}));
+eq(outlookUrl.origin,'https://outlook.office.com');eq(outlookUrl.pathname,'/calendar/deeplink/compose');eq(outlookUrl.searchParams.get('startdt'),'2026-10-21T10:00:00.000Z');eq(outlookUrl.searchParams.get('enddt'),'2026-10-21T10:45:00.000Z');eq(outlookUrl.searchParams.get('subject'),'Medarbeidersamtale');
+for(const text of [employee.email,value.conversation.id,'Trivsel','preparation',value.context.company_id])eq(outlookUrl.href.includes(text),false,'private HR metadata/content is not in external URL');
+eq(new URL(conversationOutlookUrl({...clone(currentEvent),conversation:{...clone(currentEvent.conversation),on:'2026-12-21'}},{minutes:30})).searchParams.get('startdt'),'2026-12-21T11:00:00.000Z','Outlook shares ICS winter conversion');
+assert.throws(()=>conversationOutlookUrl({...outlookValue,historical:true}),/gjeldende/);checks++;
+assert.throws(()=>conversationOutlookUrl({...outlookValue,conversation:{...outlookValue.conversation,on:'2026-03-29',meeting_time:'02:30'}}),/sommertid/);checks++;
 let sends=0;
 eq(await downloadConversationPdf({value,loadPdf:()=>{throw Error('should not load');},isCurrent:()=>false}),null);
 const sample=clone(value);sample.conversation.meeting_time='14:45';sample.conversation.shared=true;sample.conversation.stage='completed';sample.conversation.preparation[id(6)]='Opprinnelig medarbeidersvar. '.repeat(150);
