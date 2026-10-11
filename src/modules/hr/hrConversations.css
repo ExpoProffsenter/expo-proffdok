@@ -2,3 +2,7 @@
 .hr-real-conversation select{box-sizing:border-box;width:100%;max-width:100%;min-height:44px;padding:11px;border:1px solid #b6c5da;border-radius:8px;background:white;color:#172b46;font:inherit}
 .hr-real-conversation fieldset{border:0;padding:0;margin:0;min-width:0}
 .hr-real-conversation select:focus-visible{outline:3px solid #f3b645;outline-offset:3px}
+.hr-real-conversation .hrp-creation-receipt{margin:16px 0;padding:18px;border:2px solid #19835b;border-radius:12px;background:#edf9f2;color:#173d2b;scroll-margin-top:24px}
+.hr-real-conversation .hrp-creation-receipt h4{margin:0 0 10px;font-size:1.15rem}
+.hr-real-conversation .hrp-creation-receipt button{margin:6px 8px 0 0}
+.hr-real-conversation .hrp-creation-receipt:focus{outline:3px solid #f3b645;outline-offset:3px}

@@ -22,7 +22,7 @@ try{
  const migrations=['20261009182551_hr_access_foundation.sql','20261009193953_hr_content_purge_foundation.sql',
  '20261009203431_people_module_entitlements.sql','20261009203950_people_module_access_closure.sql',
  '20261010004928_hr_conversation_templates.sql','20261010105649_hr_sick_leave_template_kind.sql',
- '20261009211209_hr_restore_reconcile_orphans.sql','20261011134804_hr_personal_conversations.sql','20261011140130_hr_deletion_admin_alerts.sql','20261011192456_hr_conversation_meeting_time.sql'];
+ '20261009211209_hr_restore_reconcile_orphans.sql','20261011134804_hr_personal_conversations.sql','20261011140130_hr_deletion_admin_alerts.sql','20261011155003_hr_sick_leave_cases.sql','20261011155506_hr_followup_reminders.sql','20261011162527_hr_followup_worker_scope.sql','20261011192456_hr_conversation_meeting_time.sql','20261011195555_hr_conversation_creation_notice.sql'];
  for(const f of migrations)await db.exec(await fs.readFile('supabase/migrations/'+f,'utf8'));
  await db.exec(`insert into public.sales_company_scopes values(${q(company)},'synthetic','Synthetic'),(${q(foreign)},'other','Other');
  insert into public.company_module_access(company_id,module_key,enabled) values(${q(company)},'hr',true),(${q(foreign)},'hr',true);`);
@@ -59,6 +59,39 @@ try{
  eq((await rpc('hr_conversation_get',[company,employee.id,conversation,1])).conversation.meeting_time,'13:30','original time remains in immutable history');
  await actor(self);eq((await rpc('hr_conversation_get',[company,employee.id,conversation])).conversation.meeting_time,'14:45','employee reads agreed time');
  eq((await rpc('hr_conversation_list',[company,employee.id])).conversations[0].meeting_time,'14:45');
+ // Manual invitation uses the saved clock and existing private outbox, never creation mail.
+ const status=()=>rpc('hr_conversation_invitation_status',[company,employee.id,conversation]);
+ const notify=()=>rpc('hr_conversation_notify',[company,employee.id,1,conversation,2]);
+ await actor(leader);eq((await status()).app_notification,true);eq((await status()).email_status,'disabled');eq((await status()).can_notify,true);
+ eq((await notify()).email_status,'disabled','disabled transport remains truthful');
+ await db.exec('reset role;');eq((await sql('select count(*)::int n from hr_private.followup_deliveries'))[0].n,0,'no delivery from creation or disabled click');
+ await db.exec("update hr_private.followup_settings set enabled=true,endpoint='';");
+ await actor(leader);eq((await status()).email_status,'not_queued');
+ await reject(()=>rpc('hr_conversation_notify',[company,employee.id,1,conversation,1]),'40001');
+ for(const u of [self,admin]){await actor(u);eq((await status()).can_notify,false);await reject(notify,'42501');}
+ await actor(leader);eq((await notify()).email_status,'pending');eq((await notify()).email_status,'pending','same appointment retries deduplicate');
+ await db.exec('reset role;');eq((await sql('select count(*)::int n from hr_private.followup_deliveries'))[0].n,1);
+ await db.exec('set role service_role;');eq(await rpc('hr_followup_worker_reserve'),null,'deadline worker cannot take invitation');
+ let inviteJob=await rpc('hr_conversation_invitation_reserve');eq(Object.keys(inviteJob).sort(),['attempt','id','on','time','to']);eq(inviteJob.on,'2026-11-02');eq(inviteJob.time,'14:45');
+ eq(await rpc('hr_conversation_invitation_validate',[inviteJob.id,inviteJob.attempt,inviteJob.on,inviteJob.time]),true);
+ eq(await rpc('hr_conversation_invitation_validate',[inviteJob.id,inviteJob.attempt,inviteJob.on,'14:46']),false);
+ eq(await rpc('hr_conversation_invitation_validate',[inviteJob.id,inviteJob.attempt,'2026-11-03',inviteJob.time]),false);
+ eq(await rpc('hr_followup_worker_finish',[inviteJob.id,id(999),true]),false);
+ eq(await rpc('hr_followup_worker_finish',[inviteJob.id,inviteJob.attempt,false]),true);
+ eq(await rpc('hr_conversation_invitation_reserve'),null,'failed transport backs off');
+ await db.exec('reset role;update hr_private.followup_deliveries set available_at=now();set role service_role;');
+ const retryInvite=await rpc('hr_conversation_invitation_reserve');eq(retryInvite.id,inviteJob.id);eq(retryInvite.attempt===inviteJob.attempt,false);
+ eq(await rpc('hr_followup_worker_finish',[retryInvite.id,retryInvite.attempt,true]),true);
+ await actor(leader);eq((await status()).email_status,'sent');eq((await status()).can_notify,false);
+ // A clock change must not claim the new invitation has been sent.
+ state=await schedule(2,'2026-11-02','15:00');eq((await status()).email_status,'not_queued');
+ await rpc('hr_conversation_notify',[company,employee.id,1,conversation,3]);
+ await db.exec('reset role;set role service_role;');inviteJob=await rpc('hr_conversation_invitation_reserve');eq(inviteJob.time,'15:00');
+ await actor(leader);state=await schedule(3,'2026-11-02','14:45');
+ await db.exec('reset role;set role service_role;');eq(await rpc('hr_conversation_invitation_validate',[inviteJob.id,inviteJob.attempt,inviteJob.on,inviteJob.time]),false,'changed clock stops old invitation before provider');
+ await actor(leader);eq((await status()).email_status,'sent','original appointment sent history retained');
+ await reject(()=>rpc('hr_conversation_invitation_reserve'),'42501','worker is server only');
+ await db.exec('reset role;update hr_private.followup_settings set enabled=false;');
  await actor(leader);
  let revision=state.current_revision,employeeRevision=1;
  const command=async(action,data={})=>{
@@ -75,7 +108,7 @@ try{
  await actor(admin);await rpc('hr_employee_command',[company,'reader',{id:employee.id,revision:1,reader_id:reader,reason:'Synthetic explicit reader'}]);employeeRevision=2;
  await actor(reader);eq((await get()).conversation.preparation,{});await reject(()=>command('comment',{text:'Not a participant'}),'42501');
  await actor(self);await reject(()=>command('preparation',{answers:{unrelated:'invalid'}}),'22023');
- await command('share');eq(state.conversation.stage,'meeting');
+ await command('share');eq(state.conversation.stage,'meeting');eq((await status()).app_notification,false,'shared preparation closes app task');await actor(leader);await reject(()=>rpc('hr_conversation_notify',[company,employee.id,employeeRevision,conversation,revision]),'22023');
  await actor(leader);eq((await get()).conversation.preparation[question],'Private preparation','shared preparation retained');
  await command('meeting',{answers:{[meeting]:'Shared summary'},actions:[],next_on:''});
  eq(state.conversation.preparation[question],'Private preparation','manager cannot erase original answers');

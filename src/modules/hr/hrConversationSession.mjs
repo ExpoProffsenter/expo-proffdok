@@ -14,6 +14,9 @@ export function createConversationSession({rpc,companyId,userId,employeeId,onDen
    const v=check(await rpc(name,{...args,p_company_id:companyId,p_employee_id:employeeId}),ticket);
    if(name==='hr_conversation_list'&&(!Array.isArray(v.conversations)||v.employee?.id!==employeeId)
     ||name==='hr_conversation_templates'&&!Array.isArray(v.templates)
+    ||['hr_conversation_invitation_status','hr_conversation_notify'].includes(name)&&(
+     v.conversation_id!==args.p_conversation_id||typeof v.app_notification!=='boolean'||typeof v.can_notify!=='boolean'
+     ||!['disabled','not_queued','pending','sending','sent','failed','suppressed'].includes(v.email_status))
     ||['hr_conversation_get','hr_conversation_start','hr_conversation_start_at','hr_conversation_schedule','hr_conversation_command'].includes(name)&&(
      !Number.isInteger(v.current_revision)||v.current_revision<1||!Number.isInteger(v.conversation?.revision)
      ||!Array.isArray(v.conversation?.actions)||!Array.isArray(v.conversation?.template?.questions)||!v.permissions||v.employee?.id!==employeeId))
@@ -39,6 +42,11 @@ export function createConversationSession({rpc,companyId,userId,employeeId,onDen
  return {get,invalidate(){epoch++;},dispose(){disposed=true;epoch++;},
   list(after=null){return call('hr_conversation_list',{p_after:after});},
   templates(){return call('hr_conversation_templates');},
+  invitationStatus(id){return call('hr_conversation_invitation_status',{p_conversation_id:id});},
+  async notify(value){
+   if(value.historical)throw Error('En historisk utgave kan bare leses.');
+   return call('hr_conversation_notify',{p_conversation_id:value.conversation.id,p_employee_revision:value.employee.revision,p_revision:value.current_revision});
+  },
   async start({id,employeeRevision,templateId,templateRevision,on,time}){
    if(!/^([01][0-9]|2[0-3]):[0-5][0-9]$/.test(time||''))throw Error('Velg klokkeslett med timer og minutter.');
    return readback(await call('hr_conversation_start_at',{p_conversation_id:id,p_employee_revision:employeeRevision,

@@ -26,6 +26,10 @@ x=fixture(()=>clone(value));await assert.rejects(x.session.start({id:id(5),emplo
 x=fixture(()=>clone(value));await x.session.start({id:id(5),employeeRevision:1,templateId:id(6),templateRevision:1,on:'2026-11-01',time:'09:15'});eq(x.calls[0].n,'hr_conversation_start_at');eq(x.calls[0].a.p_time,'09:15','clock is passed unchanged, no browser timezone conversion');
 x=fixture(()=>clone(value));await x.session.schedule(value,{on:'2026-11-02',time:'00:00'});eq(x.calls[0].n,'hr_conversation_schedule');eq(x.calls[0].a.p_revision,1);eq(x.calls[0].a.p_time,'00:00');
 x=fixture(()=>clone(value));await assert.rejects(x.session.schedule({...value,historical:true},{on:'2026-11-02',time:'14:00'}),/historisk/);eq(x.calls.length,0);
+const invitationStatus={context:value.context,employee:{id:employee.id},conversation_id:id(5),app_notification:true,email_status:'not_queued',can_notify:true,sent_at:null};
+x=fixture(()=>clone(invitationStatus));eq((await x.session.invitationStatus(id(5))).email_status,'not_queued');await x.session.notify(value);eq(x.calls.at(-1).a.p_employee_revision,1);eq(x.calls.at(-1).a.p_revision,1);
+x=fixture(()=>clone(invitationStatus));await assert.rejects(x.session.notify({...value,historical:true}),/historisk/);eq(x.calls.length,0);
+for(const change of [{conversation_id:id(99)},{email_status:'delivered'},{can_notify:'yes'},{app_notification:null}]){x=fixture(()=>({...clone(invitationStatus),...change}));await assert.rejects(x.session.invitationStatus(id(5)),/kunne ikke bekreftes/);checks++;}
 let sends=0;
 eq(await downloadConversationPdf({value,loadPdf:()=>{throw Error('should not load');},isCurrent:()=>false}),null);
 const sample=clone(value);sample.conversation.meeting_time='14:45';sample.conversation.shared=true;sample.conversation.stage='completed';sample.conversation.preparation[id(6)]='Opprinnelig medarbeidersvar. '.repeat(150);
