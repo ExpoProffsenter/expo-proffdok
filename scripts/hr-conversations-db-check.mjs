@@ -22,7 +22,7 @@ try{
  const migrations=['20261009182551_hr_access_foundation.sql','20261009193953_hr_content_purge_foundation.sql',
  '20261009203431_people_module_entitlements.sql','20261009203950_people_module_access_closure.sql',
  '20261010004928_hr_conversation_templates.sql','20261010105649_hr_sick_leave_template_kind.sql',
- '20261009211209_hr_restore_reconcile_orphans.sql','20261011134804_hr_personal_conversations.sql','20261011140130_hr_deletion_admin_alerts.sql'];
+ '20261009211209_hr_restore_reconcile_orphans.sql','20261011134804_hr_personal_conversations.sql','20261011140130_hr_deletion_admin_alerts.sql','20261011192456_hr_conversation_meeting_time.sql'];
  for(const f of migrations)await db.exec(await fs.readFile('supabase/migrations/'+f,'utf8'));
  await db.exec(`insert into public.sales_company_scopes values(${q(company)},'synthetic','Synthetic'),(${q(foreign)},'other','Other');
  insert into public.company_module_access(company_id,module_key,enabled) values(${q(company)},'hr',true),(${q(foreign)},'hr',true);`);
@@ -44,10 +44,23 @@ try{
  await db.exec('reset role;update hr_private.runtime_state set content_enabled=true,restore_quarantined=false;');
  await actor(admin);await reject(()=>rpc('hr_conversation_start',[company,employee.id,1,conversation,template,1,'2026-11-01']),'42501');
  await actor(leader);
- let state=await rpc('hr_conversation_start',[company,employee.id,1,conversation,template,1,'2026-11-01']);
+ for(const time of [null,'','9:00','24:00','12:60','09:00:00','09:00Z'])await reject(()=>rpc('hr_conversation_start_at',[company,employee.id,1,conversation,template,1,'2026-11-01',time]),'22023');
+ let state=await rpc('hr_conversation_start_at',[company,employee.id,1,conversation,template,1,'2026-11-01','13:30']);
+ eq(state.conversation.meeting_time,'13:30');eq(state.conversation.meeting_timezone,'Europe/Oslo');
+ eq((await rpc('hr_conversation_start_at',[company,employee.id,1,conversation,template,1,'2026-11-02','14:45'])).conversation.meeting_time,'13:30','same ID retry cannot silently reschedule');
  eq(state.conversation.revision,1,'server case created');
  eq((await rpc('hr_conversation_start',[company,employee.id,1,conversation,template,1,'2026-11-01'])).conversation.revision,1,'same ID retry does not create duplicate');
- let revision=1,employeeRevision=1;
+ const schedule=(revision,on='2026-11-02',time='14:45')=>rpc('hr_conversation_schedule',[company,employee.id,1,conversation,revision,on,time]);
+ await actor(self);await reject(()=>schedule(1),'42501');
+ await actor(admin);await reject(()=>schedule(1),'42501');
+ await actor(leader);await reject(()=>schedule(0),'40001');await reject(()=>schedule(1,'2026-11-02','24:00'),'22023');
+ state=await schedule(1);eq(state.current_revision,2);eq(state.conversation.on,'2026-11-02');eq(state.conversation.meeting_time,'14:45');
+ eq((await schedule(2)).current_revision,2,'unchanged time is idempotent');
+ eq((await rpc('hr_conversation_get',[company,employee.id,conversation,1])).conversation.meeting_time,'13:30','original time remains in immutable history');
+ await actor(self);eq((await rpc('hr_conversation_get',[company,employee.id,conversation])).conversation.meeting_time,'14:45','employee reads agreed time');
+ eq((await rpc('hr_conversation_list',[company,employee.id])).conversations[0].meeting_time,'14:45');
+ await actor(leader);
+ let revision=state.current_revision,employeeRevision=1;
  const command=async(action,data={})=>{
   state=await rpc('hr_conversation_command',[company,employee.id,employeeRevision,conversation,revision,action,data]);
   revision=state.current_revision;return state;
@@ -76,6 +89,7 @@ try{
  eq(state.conversation.confirmations.leader,null,'comment changes require renewed confirmation');
  await command('confirm');eq(state.conversation.stage,'awaiting');
  await actor(leader);await command('confirm');eq(state.conversation.stage,'completed');
+ await reject(()=>rpc('hr_conversation_schedule',[company,employee.id,employeeRevision,conversation,revision,'2026-11-03','15:00']),'22023');
  const finalVersion=revision;
  eq((await command('confirm')).current_revision,finalVersion,'confirmation retry idempotent');
  await actor(admin);const changed=await rpc('hr_employee_command',[company,'leader',{id:employee.id,revision:employeeRevision,leader_id:next,clear_old_leader_reader:false}]);employeeRevision=changed.employee.revision;

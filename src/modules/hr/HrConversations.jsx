@@ -10,13 +10,14 @@ import './hrConversations.css';
 // Only volatile navigation/drafts, scoped to actor/company/employee. Never browser storage.
 const workspaces=new Map();
 const remember=(scope,v)=>{workspaces.delete(scope);workspaces.set(scope,v);if(workspaces.size>4)workspaces.delete(workspaces.keys().next().value);};
-const editable=c=>({preparation:c.preparation,meeting:c.meeting,actions:c.actions,next_on:c.next_on,comments:c.comments});
+const editable=c=>({preparation:c.preparation,meeting:c.meeting,actions:c.actions,next_on:c.next_on,comments:c.comments,on:c.on,meeting_time:c.meeting_time||''});
 const copy=v=>JSON.parse(JSON.stringify(v));
 function Field({label,children}){return <label className="hrp-field"><span>{label}</span>{children}</label>;}
 export default function HrConversations({context,employee}){
  const companyId=context.company_id,userId=context.user_id,employeeId=employee.id,scope=companyId+':'+userId+':'+employeeId;
  const [listing,setListing]=useState(null),[value,setValue]=useState(null),[draft,setDraft]=useState(null);
  const [templates,setTemplates]=useState(null),[templateId,setTemplateId]=useState(''),[on,setOn]=useState(osloToday);
+ const [time,setTime]=useState('');
  const [busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState(''),[conflict,setConflict]=useState(false);
  const [step,setStep]=useState(()=>workspaces.get(scope)?.step||0),[historyVersion,setHistoryVersion]=useState('');
  const session=useRef(null),epoch=useRef(0),busyRef=useRef(false),body=useRef(null),latest=useRef(null),alive=useRef(false);
@@ -68,6 +69,10 @@ export default function HrConversations({context,employee}){
  });
  const save=()=>run(async(s,current)=>{
   if(conflict||value?.historical)return;const wanted=copy(draft);let result=value;
+  if(value.employee.leader_id===userId&&['preparation','meeting'].includes(value.conversation.stage)
+   &&!sameHrTemplate([wanted.on,wanted.meeting_time],[value.conversation.on,value.conversation.meeting_time||'']))
+   result=await s.schedule(result,{on:wanted.on,time:wanted.meeting_time});
+  if(!current())return;
   if(value.permissions.prepare&&!sameHrTemplate(wanted.preparation,value.conversation.preparation))
    result=await s.command(result,'preparation',{answers:wanted.preparation});
   if(!current())return;
@@ -87,6 +92,7 @@ export default function HrConversations({context,employee}){
   const result=await downloadConversationPdf({value:fresh,companyName:context.company_name,isCurrent:current});if(result&&current())setNotice('Referatet er lastet ned. Samtalen står fortsatt åpen.');
  });
  const c=value?.conversation,permitted=value&&!value.historical&&!conflict,prep=permitted&&value.permissions.prepare,meeting=permitted&&value.permissions.meeting;
+ const schedule=permitted&&value.employee.leader_id===userId&&['preparation','meeting'].includes(c.stage);
  const stages=['Forberedelse','Felles møte','Tiltak','Referat'];
  const ownSide=value?.employee.user_id===userId?'employee':'leader';
  return <section className="hrp hr-real-conversation" aria-label="Medarbeidersamtaler">
@@ -95,21 +101,28 @@ export default function HrConversations({context,employee}){
   {listing?.can_start&&<details className="hrp-saved"><summary onClick={()=>{if(!templates)run(async(s,current)=>{const r=await s.templates();if(current())setTemplates(r.templates);});}}>Start medarbeidersamtale</summary>
    <form onSubmit={e=>{e.preventDefault();run(async(s,current)=>{if(!leave())return;const t=templates?.find(t=>t.id===templateId);if(!t)return;
     const id=crypto.randomUUID();remember(scope,{id,revision:0,employeeRevision:listing.employee.revision,draft:null,step:0});
-    const r=await s.start({id,employeeRevision:listing.employee.revision,templateId:t.id,templateRevision:t.revision,on});
-    if(current()){install(r);setListing(previous=>({...previous,conversations:[...previous.conversations,{id,title:r.conversation.template.title,revision:1,stage:'preparation',on}]}));setStep(0);setNotice('Samtalen er opprettet. Medarbeideren finner den på Min side.');}
+    const r=await s.start({id,employeeRevision:listing.employee.revision,templateId:t.id,templateRevision:t.revision,on,time});
+    if(current()){install(r);setListing(previous=>({...previous,conversations:[...previous.conversations,{id,title:r.conversation.template.title,revision:r.current_revision,stage:r.conversation.stage,on:r.conversation.on,meeting_time:r.conversation.meeting_time}]}));setStep(0);setNotice('Samtalen er opprettet med tidspunkt. Medarbeideren finner den på Min side.');}
    });}}><Field label="Samtalemal"><select required value={templateId} onChange={e=>setTemplateId(e.target.value)}><option value="">Velg mal</option>{templates?.map(t=><option key={t.id} value={t.id}>{t.title}</option>)}</select></Field>
    {templates?.length===0&&<p>Firmaadmin lager og lagrer en samtalemal under HR → Samtalemaler først.</p>}
-   <Field label="Samtaledato"><input required type="date" value={on} onChange={e=>setOn(e.target.value)}/></Field><button disabled={busy||!templateId}>Opprett samtale</button></form>
+   <Field label="Samtaledato"><input required type="date" value={on} onChange={e=>setOn(e.target.value)}/></Field>
+   <Field label="Klokkeslett"><input required type="time" step="60" value={time} onChange={e=>setTime(e.target.value)}/></Field><p>Klokkeslettet er norsk tid.</p>
+   <button disabled={busy||!templateId||!time}>Opprett samtale</button></form>
   </details>}
   {listing&&<details className="hrp-saved" open><summary>Lagrede samtaler og historikk ({listing.conversations.length})</summary>
    {!listing.conversations.length&&<p>Ingen samtaler er opprettet. Nærmeste leder starter samtalen.</p>}
-   {listing.conversations.map(row=><button type="button" className="secondary" key={row.id} disabled={busy} onClick={()=>open(row.id)}>{row.title} · {row.on} · {CONVERSATION_STAGES[row.id===c?.id?c.stage:row.stage]}</button>)}
+   {listing.conversations.map(row=>{const saved=row.id===c?.id&&!value.historical?c:row;return <button type="button" className="secondary" key={row.id} disabled={busy} onClick={()=>open(row.id)}>{row.title} · {saved.on} · {saved.meeting_time?'kl. '+saved.meeting_time:'Klokkeslett ikke avtalt'} · {CONVERSATION_STAGES[row.id===c?.id?c.stage:row.stage]}</button>;})}
    {listing.next&&<button disabled={busy} onClick={()=>run(async(s,current)=>{const r=await s.list(listing.next);if(current())setListing(previous=>({...r,conversations:[...previous.conversations,...r.conversations]}));})}>Hent flere samtaler</button>}
   </details>}
   {value&&draft&&<><div className="hrp-toolbar"><strong>{c.template.title}</strong><span>{CONVERSATION_STAGES[c.stage]} · utgave {c.revision} · {dirty?'Ulagrede endringer':'Lagret på serveren'}</span>
    <button type="button" className="secondary" disabled={busy} onClick={()=>run(async(s,current)=>{const r=await s.get(c.id);if(current()){install(r,true);setNotice('Lagret utgave er hentet.');}})}>Hent lagret utgave</button>
    {conflict&&<button type="button" disabled={busy} onClick={()=>{if(window.confirm('Vil du forkaste kladden og bruke den lagrede utgaven?')){workspaces.delete(scope);install(value);}}}>Bruk lagret utgave</button>}
   </div>
+  <p><strong>Avtalt tidspunkt:</strong> {c.on?.split('-').reverse().join('.')} · {c.meeting_time?'kl. '+c.meeting_time+' (norsk tid)':'Klokkeslett ikke avtalt'}</p>
+  {schedule&&<details className="hrp-saved"><summary>Endre tidspunkt</summary><fieldset disabled={busy}>
+   <Field label="Ny samtaledato"><input required type="date" value={draft.on} onChange={e=>change({on:e.target.value})}/></Field>
+   <Field label="Nytt klokkeslett"><input required type="time" step="60" value={draft.meeting_time} onChange={e=>change({meeting_time:e.target.value})}/></Field>
+   <p>Bruk norsk tid. Trykk «Lagre samtale» for å lagre endringen.</p></fieldset></details>}
   {value.historical&&<p className="hrp-readonly">Historisk utgave. Denne kan bare leses. <button className="secondary" disabled={busy} onClick={()=>open(c.id)}>Åpne gjeldende utgave</button></p>}
   <nav className="hrp-steps" aria-label="Steg i medarbeidersamtalen">{stages.map((title,i)=><button key={title} disabled={busy} aria-current={step===i?'step':undefined} onClick={()=>setStep(i)}><span>{i+1}</span>{title}</button>)}</nav>
   <div ref={body} tabIndex={-1} className="hrp-step-body">
@@ -143,7 +156,7 @@ export default function HrConversations({context,employee}){
    <Field label="Åpne historisk utgave"><input type="number" min="1" max={value.current_revision} value={historyVersion} onChange={e=>setHistoryVersion(e.target.value)}/></Field>
    <button className="secondary" disabled={busy||!historyVersion} onClick={()=>open(c.id,Number(historyVersion))}>Åpne utgave</button>
   </>}
-  <div className="hrp-toolbar">{permitted&&(prep||meeting||value.permissions.comment)&&<button disabled={busy||!dirty} onClick={save}>Lagre samtale</button>}
+  <div className="hrp-toolbar">{permitted&&(prep||meeting||schedule||value.permissions.comment)&&<button disabled={busy||!dirty} onClick={save}>Lagre samtale</button>}
    {step>0&&<button className="secondary" disabled={busy} onClick={()=>setStep(step-1)}>Forrige</button>}{step<3&&<button className="secondary" disabled={busy} onClick={()=>setStep(step+1)}>Neste</button>}
   </div></div></>}
  </section>;
