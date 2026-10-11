@@ -6,6 +6,7 @@ export function conversationPdfDocument(value){
  const employee=value.employee.email||'Medarbeider',leader=value.leader_email||'Nærmeste leder';
  return {id:c.id,type:'MEDARBEIDERSAMTALE',title:c.template.title,
   fields:[['Medarbeider',employee],['Nærmeste leder',leader],['Samtaledato',date(c.on)],
+   ...(c.type==='sickleave'?[]:[['Klokkeslett',c.meeting_time?c.meeting_time+' (norsk tid)':'Ikke avtalt']]),
    ['Status',CONVERSATION_STAGES[c.stage]||'Utkast'],['Lagret utgave',String(c.revision)],['Malutgave',String(c.template_revision)]],
   blocks:[...c.template.questions.map(q=>({title:q.topic,fields:[['Spørsmål',q.prompt],
    [q.phase==='preparation'?'Medarbeiderens forberedelse':'Felles møtereferat',
