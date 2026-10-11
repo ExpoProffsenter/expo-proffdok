@@ -3,50 +3,74 @@ import {PRACTICE_QUESTIONS,createPracticeStore,createPracticeView,newPracticeCon
 import './hrPracticeConversation.css';
 const steps=['Forberedelse','Samtale','Tiltak','Referat'];
 const fingerprint=JSON.stringify;
+// Volatile synthetic draft/UI only. Authorized mounts still re-read the local book.
+// Nothing here changes the HR gate or persists unsaved content across page reloads.
+const openPracticeViews=new Map();
+function rememberOpenPractice(scope,snapshot){openPracticeViews.delete(scope);openPracticeViews.set(scope,snapshot);if(openPracticeViews.size>8)openPracticeViews.delete(openPracticeViews.keys().next().value);}
 function Field({label,children}){return <label className="hrp-field"><span>{label}</span>{React.Children.map(children,child=>React.isValidElement(child)&&['input','textarea'].includes(child.type)?React.cloneElement(child,{'aria-label':label}):child)}</label>;}
 export default function HrPracticeConversation({context}){
  const [opened,setOpened]=useState(false),[book,setBook]=useState(null),[id,setId]=useState(null);
  const [draft,setDraft]=useState(()=>newPracticeConversation()),[baseline,setBaseline]=useState('');
  const [version,setVersion]=useState(null),[step,setStep]=useState(0),[readonly,setReadonly]=useState(false);
  const [busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState(''),[confirmed,setConfirmed]=useState(false);
- const store=useRef(null),view=useRef(null),stepBody=useRef(null),alive=useRef(true),running=useRef(false),current=useRef('');
+ const scope=JSON.stringify([context.company_id,context.user_id]);
+ const store=useRef(null),view=useRef(null),formTop=useRef(null),scrollTarget=useRef(null),stepBody=useRef(null),alive=useRef(true),running=useRef(false),current=useRef('');
  const dirty=opened&&baseline!==fingerprint(draft);
  current.current=fingerprint({id,version,draft});
  useEffect(()=>{alive.current=true;return ()=>{alive.current=false;current.current='';};},[]);
  useEffect(()=>{
   try{
    view.current=createPracticeView({storage:window.sessionStorage,companyId:context.company_id,userId:context.user_id});
-   if(!view.current.read())return;
+   const cached=openPracticeViews.get(scope);
+   if(!cached&&!view.current.read())return;
    store.current=createPracticeStore({storage:window.localStorage,locks:navigator.locks,companyId:context.company_id,userId:context.user_id});
-   const loaded=store.current.read(),restored=view.current.resolve(loaded);
+   const loaded=store.current.read();
+   if(cached){
+    const changed=loaded.revision!==cached.book.revision;
+    const saved=cached.id?loaded.records.find(r=>r.id===cached.id)?.versions.find(v=>v.number===cached.version?.number):null;
+    const wasDirty=cached.baseline!==fingerprint(cached.draft);
+    if(!wasDirty&&cached.id&&(!saved||fingerprint(saved.content)!==cached.baseline)){
+     openPracticeViews.delete(scope);view.current.clear();setError('Prøvesamtalen finnes ikke lenger i den lagrede historikken.');return;
+    }
+    setBook(wasDirty?cached.book:loaded);setOpened(true);setId(cached.id);setVersion(saved||cached.version);
+    setDraft(wasDirty?cached.draft:saved?.content||cached.draft);setBaseline(cached.baseline);
+    setStep(cached.step);setReadonly(cached.readonly);setConfirmed(cached.confirmed);scrollTarget.current='step';
+    if(wasDirty&&changed)setError('Prøvesamtalene er endret i en annen fane. Kladden er beholdt. Åpne lagret samtale før du lagrer videre.');
+    return;
+   }
+   const restored=view.current.resolve(loaded);
    if(restored){setBook(loaded);setOpened(true);select(restored.record,restored.version);setStep(restored.step);}
   }catch(e){setError(e.message);}
- },[context.company_id,context.user_id]);
+ },[scope]);
  useEffect(()=>{if(opened&&id&&version&&!dirty)view.current?.remember({id,number:version.number,step});},[opened,id,version,dirty,step]);
  const focusStep=()=>{stepBody.current?.focus({preventScroll:true});stepBody.current?.scrollIntoView({block:'start',behavior:'auto'});};
- useLayoutEffect(()=>{if(opened)focusStep();},[opened,step]);
+ useLayoutEffect(()=>{
+  if(!opened)return;
+  if(scrollTarget.current){const target=scrollTarget.current;scrollTarget.current=null;if(target==='step')focusStep();else{formTop.current?.focus({preventScroll:true});formTop.current?.scrollIntoView({block:'start',behavior:'auto'});}}
+  if(book)rememberOpenPractice(scope,{book,id,version,draft,baseline,step,readonly,confirmed});
+ });
  useEffect(()=>{if(!dirty)return;const warn=e=>{e.preventDefault();e.returnValue='';};window.addEventListener('beforeunload',warn);return ()=>window.removeEventListener('beforeunload',warn);},[dirty]);
  useEffect(()=>{if(!opened)return;const changed=e=>{if(e.key===null||e.key===store.current?.key)setError('Prøvesamtalene er endret i en annen fane. Kladden er beholdt. Åpne lagret samtale før du lagrer videre.');};window.addEventListener('storage',changed);return ()=>window.removeEventListener('storage',changed);},[opened]);
  const update=patch=>{setDraft(previous=>({...previous,...patch}));setNotice('');setConfirmed(false);};
  const answer=(i,key,value)=>{setDraft(previous=>({...previous,answers:previous.answers.map((a,n)=>n===i?{...a,[key]:value}:a)}));setConfirmed(false);setNotice('');};
  const canLeave=()=>!dirty||window.confirm('Du har ulagrede endringer. Forkaste dem og fortsette?');
- const start=()=>{try{store.current=createPracticeStore({storage:window.localStorage,locks:navigator.locks,companyId:context.company_id,userId:context.user_id});setBook(store.current.read());setOpened(true);setBaseline(fingerprint(draft));setError('');}catch(e){setError(e.message);}};
- const select=(record,selected=record.versions.at(-1))=>{setId(record.id);setVersion(selected);setDraft(selected.content);setBaseline(fingerprint(selected.content));setReadonly(true);setStep(selected.content.stage==='completed'?3:0);setConfirmed(false);setError('');setNotice('Lagret utgave '+selected.number+' er åpnet.');};
+ const start=()=>{try{store.current=createPracticeStore({storage:window.localStorage,locks:navigator.locks,companyId:context.company_id,userId:context.user_id});setBook(store.current.read());scrollTarget.current='top';setOpened(true);setBaseline(fingerprint(draft));setError('');}catch(e){setError(e.message);}};
+ const select=(record,selected=record.versions.at(-1))=>{scrollTarget.current='step';setId(record.id);setVersion(selected);setDraft(selected.content);setBaseline(fingerprint(selected.content));setReadonly(true);setStep(selected.content.stage==='completed'?3:0);setConfirmed(false);setError('');setNotice('Lagret utgave '+selected.number+' er åpnet.');};
  const reopen=idToOpen=>{if(!canLeave())return;try{const loaded=store.current.read();const record=loaded.records.find(r=>r.id===idToOpen);if(!record)throw Error('Prøvesamtalen finnes ikke lenger.');setBook(loaded);select(record);}catch(e){setError(e.message);}};
- const fresh=()=>{if(!canLeave())return;try{setBook(store.current.read());view.current?.clear();const value=newPracticeConversation();setId(null);setVersion(null);setDraft(value);setBaseline(fingerprint(value));setReadonly(false);setStep(0);setConfirmed(false);setError('');setNotice('');}catch(e){setError(e.message);}};
+ const fresh=()=>{if(!canLeave())return;try{setBook(store.current.read());view.current?.clear();openPracticeViews.delete(scope);scrollTarget.current='top';const value=newPracticeConversation();setId(null);setVersion(null);setDraft(value);setBaseline(fingerprint(value));setReadonly(false);setStep(0);setConfirmed(false);setError('');setNotice('');}catch(e){setError(e.message);}};
  const run=async job=>{if(running.current)return;running.current=true;setBusy(true);setError('');setNotice('');try{await job();}catch(e){if(alive.current)setError(e.message);}finally{running.current=false;if(alive.current)setBusy(false);}};
- const save=async(stage=draft.stage,nextStep=step)=>{const result=await store.current.save({id,expectedRevision:book.revision,content:{...draft,stage}});if(!alive.current)return;setBook(result.book);setId(result.id);setVersion(result.version);setDraft(result.version.content);setBaseline(fingerprint(result.version.content));setStep(nextStep);setReadonly(stage==='completed');setNotice('Lagret i denne nettleseren · utgave '+result.version.number+'.');};
+ const save=async(stage=draft.stage,nextStep=step)=>{const result=await store.current.save({id,expectedRevision:book.revision,content:{...draft,stage}});if(!alive.current)return;setBook(result.book);setId(result.id);setVersion(result.version);setDraft(result.version.content);setBaseline(fingerprint(result.version.content));if(nextStep!==step)scrollTarget.current='step';setStep(nextStep);setReadonly(stage==='completed');setNotice('Lagret i denne nettleseren · utgave '+result.version.number+'.');};
  const examples=()=>{try{const example=examplePracticeConversation(draft.on);update({answers:draft.answers.map((a,i)=>({employee:a.employee||example.answers[i].employee,meeting:a.meeting||example.answers[i].meeting})),actions:draft.actions.length?draft.actions:example.actions,summary:draft.summary||example.summary,nextOn:draft.nextOn||example.nextOn});setNotice('Eksempeltekster er lagt i tomme felt. Du kan redigere dem.');}catch{setError('Velg en gyldig samtaledato før du legger inn eksempler.');}};
  const exportPdf=()=>run(async()=>{view.current?.remember({id,number:version.number,step});const token=current.current;const {downloadPracticePdf}=await import('./hrPracticePdf.mjs');const result=await downloadPracticePdf({version,companyName:context.company_name,isCurrent:()=>alive.current&&current.current===token});if(result&&alive.current)setNotice('Prøvereferatet er lastet ned som PDF.');});
  const action=(i,patch)=>update({actions:draft.actions.map((a,n)=>n===i?{...a,...patch}:a)});
  const record=book?.records.find(r=>r.id===id);
- return <section className="hrp" aria-label="Prøvesamtale">
+ return <section ref={formTop} tabIndex={-1} className="hrp" aria-label="Prøvesamtale">
   <div className="hrp-banner"><div><span className="hrp-badge">PRØVESAMTALE · SANDBOX</span><h3>Prøv en medarbeidersamtale med deg selv</h3><p>Bruk eksempeltekster og prøv begge sider av samtalen. Bare prøveinnhold: lagres i denne nettleseren for din konto og ditt firma. Ingen medarbeider kontaktes.</p></div>{!opened&&<button type="button" onClick={start}>Prøv medarbeidersamtale</button>}</div>
   {error&&<p role="alert" className="hrp-error">{error}</p>}{notice&&<p role="status" className="hrp-notice">{notice}</p>}
   {opened&&<>
-   <div className="hrp-toolbar"><button disabled={busy} onClick={fresh}>Ny prøvesamtale</button><button disabled={busy} className="secondary" onClick={()=>{if(canLeave()){view.current?.clear();setOpened(false);setError('');setNotice('');}}}>Lukk prøvesamtalen</button><span>{dirty?'Ulagrede endringer':version?'Lagret utgave '+version.number:'Ny kladd'}</span></div>
+   <div className="hrp-toolbar"><button disabled={busy} onClick={fresh}>Ny prøvesamtale</button><button disabled={busy} className="secondary" onClick={()=>{if(canLeave()){view.current?.clear();openPracticeViews.delete(scope);setOpened(false);setId(null);setVersion(null);const value=newPracticeConversation();setDraft(value);setBaseline(fingerprint(value));setReadonly(false);setStep(0);setConfirmed(false);setError('');setNotice('');}}}>Lukk prøvesamtalen</button><span>{dirty?'Ulagrede endringer':version?'Lagret utgave '+version.number:'Ny kladd'}</span></div>
    {book.records.length>0&&<details className="hrp-history hrp-saved"><summary>Lagrede prøvesamtaler ({book.records.length})</summary>{book.records.map(r=><button disabled={busy} key={r.id} onClick={()=>reopen(r.id)}>Åpne lagret samtale: {r.versions.at(-1).content.title} · {r.versions.at(-1).content.on} · utgave {r.versions.length}</button>)}</details>}
-   <nav className="hrp-steps" aria-label="Steg i prøvesamtalen">{steps.map((label,i)=><button key={label} type="button" aria-current={step===i?'step':undefined} disabled={busy} onClick={()=>{if(i===step)focusStep();else setStep(i);}}><span>{i+1}</span>{label}</button>)}</nav>
+   <nav className="hrp-steps" aria-label="Steg i prøvesamtalen">{steps.map((label,i)=><button key={label} type="button" aria-current={step===i?'step':undefined} disabled={busy} onClick={()=>{if(i===step)focusStep();else{scrollTarget.current='step';setStep(i);}}}><span>{i+1}</span>{label}</button>)}</nav>
    {readonly&&<div className="hrp-readonly"><strong>Du ser en lagret utgave.</strong><p>Tidligere utgaver beholdes når du redigerer videre.</p><button disabled={busy} onClick={()=>{update({stage:version.content.stage==='completed'?'follow_up':version.content.stage});setReadonly(false);}}>Rediger som ny utgave</button></div>}
    <fieldset disabled={busy||readonly} className="hrp-editor">
     <div className="hrp-meta"><Field label="Navn på samtalen"><input maxLength={120} value={draft.title} onChange={e=>update({title:e.target.value})}/></Field><Field label="Samtaledato"><input type="date" value={draft.on} onChange={e=>update({on:e.target.value})}/></Field><Field label="Medarbeider (test)"><input maxLength={100} value={draft.employee} onChange={e=>update({employee:e.target.value})}/></Field><Field label="Leder (test)"><input maxLength={100} value={draft.leader} onChange={e=>update({leader:e.target.value})}/></Field></div>
@@ -58,7 +82,7 @@ export default function HrPracticeConversation({context}){
    </fieldset>
    <div className="hrp-toolbar">{!readonly&&<button disabled={busy} onClick={()=>run(()=>save())}>Lagre utkast</button>}<button disabled={busy||dirty||!version} className="secondary" onClick={exportPdf}>Last ned referat (PDF)</button><small>PDF bruker den lagrede utgaven. Utkast merkes som utkast.</small></div>
    {record&&<details className="hrp-history"><summary>Tidligere utgaver ({record.versions.length})</summary>{record.versions.map(v=><button key={v.number} disabled={busy} onClick={()=>{if(canLeave())select(record,v);}}>Vis utgave {v.number} · {new Date(v.at).toLocaleString('nb-NO')}</button>)}</details>}
-   <details className="hrp-history"><summary>Fjern prøveinnhold</summary><p>Sletter bare disse prøvesamtalene for din konto og dette firmaet i denne nettleseren.</p><button disabled={busy} className="secondary" onClick={()=>{if(window.confirm('Slette alle disse prøvesamtalene og kladden?'))run(async()=>{const empty=await store.current.clear(book.revision);if(!alive.current)return;view.current?.clear();setBook(empty);setId(null);setVersion(null);const value=newPracticeConversation();setDraft(value);setBaseline(fingerprint(value));setReadonly(false);setStep(0);setNotice('Prøvesamtalene er slettet fra denne nettleseren.');});}}>Slett prøvesamtaler</button></details>
+   <details className="hrp-history"><summary>Fjern prøveinnhold</summary><p>Sletter bare disse prøvesamtalene for din konto og dette firmaet i denne nettleseren.</p><button disabled={busy} className="secondary" onClick={()=>{if(window.confirm('Slette alle disse prøvesamtalene og kladden?'))run(async()=>{const empty=await store.current.clear(book.revision);if(!alive.current)return;view.current?.clear();openPracticeViews.delete(scope);setBook(empty);setId(null);setVersion(null);const value=newPracticeConversation();setDraft(value);setBaseline(fingerprint(value));setReadonly(false);setStep(0);setNotice('Prøvesamtalene er slettet fra denne nettleseren.');});}}>Slett prøvesamtaler</button></details>
   </>}
  </section>;
 }

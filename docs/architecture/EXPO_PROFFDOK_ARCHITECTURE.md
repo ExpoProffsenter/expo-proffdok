@@ -972,3 +972,5 @@ Eksisterende HR får en tydelig merket, oppdiktet medarbeidersamtale når bygget
 Dette er en lokal prøve av arbeidsflyten; data følger ikke brukeren til en ny nettleser eller enhet. Maksimum 10 prøvesamtaler og 20 utgaver per samtale; sletting gjelder bare eget prøveinnhold i nettleseren. Isolert Preview fra ren main, uten å merge tidligere HR-workerarbeid. Se [scope og verifisering](../kshms/HR_PRACTICE_20261011.md).
 
 Prøvesamtalens neste steg ruller nå til innholdets start. PDF-retur og ny tilgangskontroll beholder valgt samtale, lagret utgave og fane via en scoped sessionStorage-peker; innhold leses fra ferskt validert lokal historikk. Bevisst lukk/ny/slett rydder valget. PDF-format, tilgangskjerne og global navigasjon er uendret.
+
+Prøv medarbeidersamtale viser nå toppen av skjemaet. Tomme og ulagrede prøvekladder beholdes i et avgrenset konto-/firmabundet sideminne gjennom tilgangsremount etter fanebytte. Fersk lokal historikk leses før gjenåpning; en eldre ulagret revisjon får ikke overskrive endringer fra en annen fane. Full oppfriskning gjenåpner fortsatt bare lagrede utgaver. Bevisst Lukk rydder kladden og valget.

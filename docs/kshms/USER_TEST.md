@@ -721,3 +721,5 @@ Det er fortsatt bare de valgte rutinene i håndboken som er klare når neste-kna
 Firmaadmin: **Meny → Firmaadmin → Brukere og tilganger**, finn brukeren og åpne **KS/HMS og HR**. Velg modulene og trykk **Lagre KS/HMS- og HR-tilgang**. Systemadmin: **Firmaer, brukere og tilganger**, åpne firmaet, aktiver firmaets avtalte moduler under **Firmaets KS/HMS- og HR-avtale** først. Velg deretter brukere på kortene i samme dialog; **Lagre og lukk** omfatter også nye modulvalg. HR-grant gir ikke automatisk innsyn i andre medarbeidere. **Hjelp** viser relevante moduler med ikon og følger arbeidsflyten.
 
 Dette er ny, avgrenset tilgangsflate, ikke ny B/C-/PDF-/ZIP-testliste. Agentens faktiske desktopkontroll er lesende; skrive-/negative prøver er SQL/React med syntetiske data. Tidligere Kenneth TEST OK beholdes.
+
+HR-prøveoppdatering: Trykk Prøv medarbeidersamtale. Toppen skal vises. Skriv én prøvesetning før lagring, bytt nettleserfane og returner. Samme prøvesamtale, tekst og steg skal være beholdt. Tidligere godkjente PDF-/øvelsessteg trenger ikke gjentas.
