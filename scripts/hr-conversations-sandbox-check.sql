@@ -34,6 +34,8 @@ end$$;
 -- Fixture setup is the same isolated random-firm/identity contract as H1.
 -- The harness prepends H1's setup before the first authenticated-role statement.
 
+-- Close this transaction's gate for the negative readiness case; rollback restores the prior committed gate.
+update hr_private.runtime_state set content_enabled=false,restore_quarantined=true where singleton;
 set local role authenticated;
 do $$declare c uuid:=current_setting('hr.qa.company')::uuid;e jsonb;t uuid:=gen_random_uuid();p uuid:=gen_random_uuid();m uuid:=gen_random_uuid();begin
  perform set_config('request.jwt.claim.sub',current_setting('hr.qa.admin'),true);

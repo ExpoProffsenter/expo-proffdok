@@ -32,7 +32,7 @@ try{
  insert into public.sales_company_memberships(company_id,user_id,workspace_role) values(${q(company)},${q(u)},${q(u===admin?'firmaadmin':'ansatt')});
  insert into public.user_active_company_scope values(${q(u)},${q(company)});
  insert into hr_private.module_access(company_id,user_id,enabled) values(${q(company)},${q(u)},true);`);
- await actor(admin);await rpc('hr_foundation_configure',[company,0,true,'Synthetic QA purpose','Synthetic QA basis','2026-11-11']);
+ await actor(admin);await rpc('hr_foundation_configure',[company,0,true,'Synthetic QA purpose','Synthetic QA basis',new Date(Date.now()+30*86400000).toISOString().slice(0,10)]);
  const employee=(await rpc('hr_employee_command',[company,'create',{user_id:self,leader_id:leader}])).employee;
  const template=id(20),question=id(21),meeting=id(22),conversation=id(30);
  const tpl={title:'Årlig samtale',kind:'annual',intro:'Syntetisk test',questions:[
