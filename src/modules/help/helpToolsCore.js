@@ -32,7 +32,7 @@ const BASE_SECTIONS = [
       "Opprett prosjekt direkte når tilbudsprosessen ikke er nødvendig, eller åpne et eksisterende prosjekt fra prosjektlisten.",
       "På PC åpner Meny appens funksjoner. Fra et prosjekt eller en generell ordre bruker du ← Startside for å gå tilbake. Da viser Meny igjen appens funksjoner.",
       "Når et prosjekt er åpnet på PC, viser topplinjen anbefalt prosjektløp: Oversikt, Avtalegrunnlag, Prosjektering og Fremdrift. Velg Meny for Bilder, Sjekklister, Produkter, Chat og øvrig prosjektinnhold.",
-      "Dine varsler og oppfølginger vises øverst på Startsiden og Min side når du har åpne HR-oppgaver i valgt firma. Åpne samtalen går rett til samtalen. Åpne oppfølgingen går til riktig plan eller frist. Kontroller Arbeidsprofil hvis du følger opp flere firmaer.",
+      "Dine varsler og oppfølginger vises øverst på Startsiden og Min side når du har åpne HR-oppgaver i valgt firma. Åpne samtalen går rett til samtalen. Åpne oppfølgingen går til riktig plan eller frist. Kontroller Arbeidsprofil hvis du følger opp flere firmaer. Kontroll av HR-oppsett og tilgang vises her fra 30 dager før kontrollfristen, på fristen og når den har passert. Invitasjoner vises med en gang. Generelle HR-e-poster har en tydelig Åpne Expo ProffDok-knapp. Nærmeste leder får e-post når medarbeideren trykker Klar til samtale eller endrer sin delte kommentar. Vanlig lagring av privat forberedelse varsler ikke leder.",
       "Bruk Krever oppfølging for prosjekter med ulest kundemelding, åpne avvik eller status Klar for kunde.",
       "Bruk Tilbud som bør følges opp for sendte tilbud som trenger manuell oppfølging."
     ],
