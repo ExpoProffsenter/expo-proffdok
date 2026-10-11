@@ -20,12 +20,12 @@ try{
   window.__client={rpc:async(name,args)=>{
    assert.equal(args.p_company_id,'c');
    if(name==='organization_group_options')return revoked?{error:{code:'42501',message:'Felleskart trukket tilbake'}}:{data:{...structuredClone(groupOptions),context:structuredClone(state.context)}};
-   if(name==='organization_group_create'){groupCommands.push({name,args});groupState.context.group_id=args.p_payload.id;groupState.chart_name=args.p_payload.name;groupOptions.groups=[{id:args.p_payload.id,name:args.p_payload.name,administer:true}];return {data:structuredClone(groupState)};}
+   if(name==='organization_group_create'){groupCommands.push({name,args});groupState.context.group_id=args.p_payload.id;groupState.chart_name=args.p_payload.name;groupState.shared_visibility=args.p_payload.shared_visibility;groupOptions.groups=[{shared_visibility:args.p_payload.shared_visibility,id:args.p_payload.id,name:args.p_payload.name,administer:true}];return {data:structuredClone(groupState)};}
    if(name==='organization_group_state')return revoked?{error:{code:'42501',message:'Felleskart trukket tilbake'}}:{data:structuredClone(groupState)};
    if(name==='organization_group_command'){
     groupCommands.push({name,args});assert.equal(args.p_revision,groupState.revision);groupState.revision++;
     if(args.p_action==='place')Object.assign(groupState.people.find(p=>p.id===args.p_payload.employee_id),{title:args.p_payload.title,kind:args.p_payload.kind,unit_id:args.p_payload.unit_id});
-    if(args.p_action==='layout'){groupState.chart_name=args.p_payload.chart_name;groupState.units=args.p_payload.units.map(u=>({...u,editable:true}));}
+    if(args.p_action==='layout'){groupState.chart_name=args.p_payload.chart_name;groupState.shared_visibility=args.p_payload.shared_visibility;groupState.units=args.p_payload.units.map(u=>({...u,editable:true}));}
     return {data:structuredClone(groupState)};
    }
    if(name==='kshms_get_state')return {data:{context:{...state.context,enabled:true,manage:false,publish:false,responsible:false},settings:null,routines:[],versions:[],assignments:[],acknowledgments:[],reviews:[],members:[]}};
@@ -53,13 +53,13 @@ try{
   assert(window.document.body.textContent.includes('Ringside Rørleggerbedrift, Bademiljø Expo og Expo Proffsenter'));assert.equal(window.document.querySelectorAll('.org-branch').length,3);
   await expandService();
   assert(window.document.querySelector('.org-person-apprentice svg'));
-  await click('Ny avdeling');await write('Avdelingsnavn','Teknisk prosjektavdeling');await write('Plasser under','service');await submit();
+  await click('Ny avdeling');await write('Avdelingsnavn','Teknisk prosjektavdeling');await write('Rekkefølge fra venstre','2');await write('Plasser under','service');await submit();
   assert.equal(commands.length,0,'Applying structure only stages it');assert(window.document.body.textContent.includes('Trykk Lagre kart'));assert.equal(window.document.querySelector('dialog'),null);
   assert(button('Last ned PDF').disabled);assert(window.document.body.textContent.includes('Ulagrede endringer'));
   const rootName=window.document.querySelector('[aria-label="Navn øverst i kartet"]');await act(async()=>{Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype,'value').set.call(rootName,'Ringside');rootName.dispatchEvent(new window.Event('input',{bubbles:true}));});
   await act(async()=>window.dispatchEvent(new window.Event('focus')));assert.equal(window.document.querySelector('[aria-label="Navn øverst i kartet"]').value,'Ringside','Draft survives fresh focus');
   await act(async()=>window.__unmount());await act(async()=>window.__render({context}));assert.equal(window.document.querySelector('[aria-label="Navn øverst i kartet"]').value,'Ringside','Volatile scoped draft survives rights remount after fresh read');
-  await click('Lagre kart');assert.equal(commands[0].p_payload.units.find(u=>u.name==='Teknisk prosjektavdeling').parent_id,'service');assert.equal(commands[0].p_payload.chart_name,'Ringside');assert(window.document.body.textContent.includes('Kartet er lagret.'));assert(!button('Last ned PDF').disabled);
+  await click('Lagre kart');assert.equal(commands[0].p_payload.units.find(u=>u.name==='Teknisk prosjektavdeling').parent_id,'service');assert.equal(commands[0].p_payload.chart_name,'Ringside');assert.equal(commands[0].p_payload.units.find(u=>u.name==='Teknisk prosjektavdeling').sort_order,2);assert(window.document.body.textContent.includes('Kartet er lagret.'));assert(!button('Last ned PDF').disabled);
   await expandService();
   await act(async()=>window.document.querySelector('.org-person-apprentice').click());await write('Nærmeste leder','new');
   assert(window.document.body.textContent.includes('Ny leder får HR-historikken'));
@@ -71,7 +71,7 @@ try{
   await click('Rediger kart');await click('Ny avdeling');await write('Avdelingsnavn','Kladd beholdes');await submit();state.revision++;
   await act(async()=>window.dispatchEvent(new window.Event('focus')));assert(window.document.body.textContent.includes('Kladd beholdes'));assert(button('Lagre kart').disabled,'Fresh conflict cannot overwrite');await click('Forkast endringer');assert(!window.document.body.textContent.includes('Kladd beholdes'));
   // Real focus handlers clear old payload and reject late re-appearance after revoke.
-  revoked=true;await act(async()=>window.dispatchEvent(new window.Event('focus')));assert(!window.document.querySelector('.org-canvas'));assert(!window.document.body.textContent.includes('Anne Bjørnstad'));assert(window.document.body.textContent.includes('KS-tilgang trukket tilbake'));
+  revoked=true;await act(async()=>window.dispatchEvent(new window.Event('focus')));assert(!window.document.querySelector('.org-canvas'));assert(!window.document.body.textContent.includes('Anne Bjørnstad'));assert(window.document.body.textContent.includes('Felleskart trukket tilbake'));
   revoked=false;state=structuredClone(baseline);state.context={...context,user_id:'head',administer:false};state.units.forEach(unit=>unit.editable=unit.id!=='store');
   await act(async()=>window.__render({context:state.context}));await click('Rediger kart');await expandService();
   const edit=buttons().find(b=>b.getAttribute('aria-label')==='Rediger Service');await act(async()=>edit.click());assert(field('Avdelingsleder med redigeringstilgang').disabled);assert(field('Plasser under').disabled);await click('Lukk');
@@ -91,7 +91,7 @@ try{
   await write('Navn på felles kart','Ringside');
   for(const box of [...window.document.querySelectorAll('.org-group-companies input')].filter(n=>!n.disabled))await act(async()=>box.click());
   assert(button('Opprett felles kart').disabled,'Creation needs explicit confirmation');await act(async()=>window.document.querySelector('.org-group-confirm input').click());await click('Opprett felles kart');
-  assert.equal(groupCommands[0].args.p_payload.company_ids.length,3);assert.equal(groupCommands[0].args.p_payload.confirm,true);assert.equal(window.document.querySelector('.org-company-node strong').textContent,'Ringside');assert.equal(window.document.querySelectorAll('.org-branch').length,4);
+  assert.equal(groupCommands[0].args.p_payload.company_ids.length,3);assert.equal(groupCommands[0].args.p_payload.confirm,true);assert.equal(groupCommands[0].args.p_payload.shared_visibility,true,'Explicit shared visibility sent with create confirmation');assert.equal(window.document.querySelector('.org-company-node strong').textContent,'Ringside');assert.equal(window.document.querySelectorAll('.org-branch').length,4);
   await act(async()=>window.document.querySelector('.org-unplaced').open=true);
   assert.equal(window.document.querySelectorAll('.org-person').length,3,'Same identity visible in each firm');assert.equal(window.document.querySelector('.org-stats strong:nth-of-type(1)')?.textContent,'4');
   await act(async()=>window.document.querySelector('.org-person').click());assert(!window.document.body.textContent.includes('Jeg bekrefter ny nærmeste leder'));
@@ -100,9 +100,23 @@ try{
   await click('Rediger kart');await click('Ny avdeling');await write('Avdelingsnavn','Lærlinger');await write('Plasser under','unit-c');await submit();
   assert(window.document.querySelector('[aria-label="Velg kart"]').disabled,'Dirty draft prevents silent chart switch');await act(async()=>window.dispatchEvent(new window.Event('focus')));
   assert(window.document.body.textContent.includes('Lærlinger'),'Fresh remount retains group draft');await click('Lagre kart');assert(groupCommands.at(-1).args.p_payload.units.some(u=>u.name==='Lærlinger'));
+  await click('Rediger kart');assert(window.document.querySelector('.org-builder .org-group-visibility input').checked);await act(async()=>window.document.querySelector('.org-builder .org-group-visibility input').click());await click('Lagre kart');assert.equal(groupCommands.at(-1).args.p_payload.shared_visibility,false,'Existing chart sharing explicitly saved off');await click('Rediger kart');await act(async()=>window.document.querySelector('.org-builder .org-group-visibility input').click());await click('Lagre kart');assert.equal(groupCommands.at(-1).args.p_payload.shared_visibility,true,'Existing chart sharing explicitly saved on');
   await click('Rediger kart');await click('Ny avdeling');await write('Avdelingsnavn','Forkastes');await submit();await click('Forkast endringer');
   assert(!window.document.body.textContent.includes('Forkastes'));revoked=true;await act(async()=>window.dispatchEvent(new window.Event('focus')));assert(!window.document.body.textContent.includes('Anne Bjørnstad'),'Group revoke clears every company person');assert(!window.document.querySelector('dialog'));
   await act(async()=>window.__unmount());revoked=false;
+  // Shared chart is the default for a fresh actor with only one linked company.
+  groupOptions.companies=[];state.context={...context,user_id:'single',administer:false};groupState.context={...state.context,group_id:groupState.context.group_id};groupState.units.forEach(u=>u.editable=false);groupOptions.groups[0].administer=false;
+  groupState.units.forEach(u=>{u.sort_order=u.company_id==='d'?1:u.company_id==='c'?2:u.company_id==='b'?3:0;});
+  await act(async()=>window.__render({context:state.context}));
+  assert.equal(window.document.querySelector('[aria-label="Velg kart"]').value,groupState.context.group_id,'Sole shared chart automatically selected for single-firm actor');
+  assert.equal(window.document.querySelector('.org-company-node strong').textContent,'Ringside');
+  assert.deepEqual([...window.document.querySelectorAll('.org-subunits>.org-branch>.org-unit-card .org-unit-head h4')].filter(n=>groupState.companies.some(c=>c.name===n.textContent)).map(n=>n.textContent),['Expo Proffsenter','Ringside Rørleggerbedrift','Bademiljø Expo']);
+  assert(!buttons().some(b=>b.textContent==='Rediger kart'),'Shared view cannot edit');
+  await act(async()=>{const select=window.document.querySelector('[aria-label="Velg kart"]');Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype,'value').set.call(select,'');select.dispatchEvent(new window.Event('change',{bubbles:true}));});
+  await act(async()=>window.dispatchEvent(new window.Event('focus')));assert.equal(window.document.querySelector('[aria-label="Velg kart"]').value,'','Intentional firm-chart choice retained');
+  await act(async()=>window.__unmount());
+  console.log('Shared organization React PASS: explicit create visibility, default shared selection for single-company viewer, left/center/right order, read-only rights and intentional firm selection retained.');
+
   console.log('Actual group React PASS: explicit creation, same account three firms, scoped placement/no HR, structure save/readback, dirty switch lock, focus/remount, discard and group revoke. Synthetic transport.');
   console.log('Actual organization React PASS: departments/subdepartment, apprenticeship, create/readback, HR confirmation, branch scope/readonly, revoke/focus/late reply and honest empty onboarding. Synthetic transport.');
  }finally{dom.window.close();}

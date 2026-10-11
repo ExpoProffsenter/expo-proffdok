@@ -94,3 +94,11 @@ jobs:
           node scripts/company-display-name-react-check.mjs
           node scripts/company-project-identity-check.mjs
           node scripts/organization-react-check.mjs
+
+      - name: Verify shared organization chart access and persisted order
+        run: |
+          export ORG_PGLITE_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/@electric-sql/pglite/dist/index.js"
+          export ORG_JSPDF_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/jspdf/dist/jspdf.node.min.js"
+          node scripts/critical-organization-check.mjs
+          ORG_GROUP_QA=1 node scripts/organization-local-sql-check.mjs
+          node scripts/organization-pdf-check.mjs

@@ -31,3 +31,16 @@ const groupPdf=await buildOrgPdf({data:grouped,companyName:'Ringside',JsPDF:jsPD
 let groupSaves=0;await downloadOrgPdf({session:{read:async()=>structuredClone(grouped),invalidate(){}},expected:grouped,isCurrent:()=>true,load,save:()=>groupSaves++,now});assert.equal(groupSaves,1);
 let groupReads=0;await assert.rejects(downloadOrgPdf({session:{read:async()=>++groupReads===1?structuredClone(grouped):{...structuredClone(grouped),companies:[grouped.companies[0],{id:'other',name:'Changed'}]},invalidate(){}},expected:grouped,isCurrent:()=>true,load,save:()=>groupSaves++,now}),/endret/);assert.equal(groupSaves,1);
 console.log(`Group jsPDF PASS: ${groupPdf.getNumberOfPages()} A3 pages, 49 unique identities / 51 firm placements; same leader three titles, firm labels and fresh company fingerprint. File: ${groupOutput}`);
+
+const sharedPdfData={...structuredClone(grouped),shared_visibility:true};
+let visibilityReads=0;
+await assert.rejects(downloadOrgPdf({session:{read:async()=>++visibilityReads===1?structuredClone(sharedPdfData):{...structuredClone(sharedPdfData),shared_visibility:false},invalidate(){}},expected:sharedPdfData,isCurrent:()=>true,load,save:()=>groupSaves++,now}),/endret/);assert.equal(groupSaves,1,'Visibility change prevents delivery of stale PDF');
+const three=structuredClone(sharedPdfData);three.chart_name='Ringside AS';three.units=three.units.filter(u=>u.id!=='apprentices');three.people=[];
+for(const u of three.units)u.sort_order=u.id==='project'?1:u.id==='service'?2:u.id==='store'?3:0;
+const labels=[];class RecordedPdf extends jsPDF{constructor(...args){super(...args);const original=this.text;this.text=(value,x,y,...rest)=>{labels.push({value,x,y});return original.call(this,value,x,y,...rest);};}}
+const centered=await buildOrgPdf({data:three,companyName:'Ringside AS',JsPDF:RecordedPdf,now});
+const head=name=>labels.find(p=>Array.isArray(p.value)&&p.value.join(' ')===name&&p.y>100&&p.y<200);
+assert(head('Expo Proffsenter').x<head('Ringside Rørleggerbedrift').x&&head('Ringside Rørleggerbedrift').x<head('Bademiljø Expo').x,'Actual PDF drawing preserves left/middle/right');
+assert.equal(head('Ringside Rørleggerbedrift').x,156,'Middle card starts at centered card left+6, with center x=210mm on A3');
+fs.writeFileSync(output.replace(/\.pdf$/,'-centered.pdf'),new Uint8Array(centered.output('arraybuffer')));
+console.log('Shared PDF PASS: visibility changes block delivery; actual drawing centers plumbing between Proffsenter/Bademiljø.');
