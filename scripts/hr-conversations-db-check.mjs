@@ -22,7 +22,7 @@ try{
  const migrations=['20261009182551_hr_access_foundation.sql','20261009193953_hr_content_purge_foundation.sql',
  '20261009203431_people_module_entitlements.sql','20261009203950_people_module_access_closure.sql',
  '20261010004928_hr_conversation_templates.sql','20261010105649_hr_sick_leave_template_kind.sql',
- '20261009211209_hr_restore_reconcile_orphans.sql','20261011134804_hr_personal_conversations.sql','20261011140130_hr_deletion_admin_alerts.sql','20261011155003_hr_sick_leave_cases.sql','20261011155506_hr_followup_reminders.sql','20261011162527_hr_followup_worker_scope.sql','20261011192456_hr_conversation_meeting_time.sql','20261011195555_hr_conversation_creation_notice.sql'];
+ '20261009211209_hr_restore_reconcile_orphans.sql','20261011134804_hr_personal_conversations.sql','20261011140130_hr_deletion_admin_alerts.sql','20261011155003_hr_sick_leave_cases.sql','20261011155506_hr_followup_reminders.sql','20261011162527_hr_followup_worker_scope.sql','20261011192456_hr_conversation_meeting_time.sql','20261011195555_hr_conversation_creation_notice.sql','20261011203859_hr_conversation_reminder_feedback.sql'];
  for(const f of migrations)await db.exec(await fs.readFile('supabase/migrations/'+f,'utf8'));
  await db.exec(`insert into public.sales_company_scopes values(${q(company)},'synthetic','Synthetic'),(${q(foreign)},'other','Other');
  insert into public.company_module_access(company_id,module_key,enabled) values(${q(company)},'hr',true),(${q(foreign)},'hr',true);`);
@@ -93,6 +93,24 @@ try{
  await reject(()=>rpc('hr_conversation_invitation_reserve'),'42501','worker is server only');
  await db.exec('reset role;update hr_private.followup_settings set enabled=false;');
  await actor(leader);
+ const reminder=(enabled,rev=state.current_revision)=>rpc('hr_conversation_reminder',[company,employee.id,1,conversation,rev,enabled]);
+ await reject(()=>reminder(true,state.current_revision-1),'40001');await actor(self);await reject(()=>reminder(true),'42501');await actor(admin);await reject(()=>reminder(true),'42501');await actor(leader);
+ const content=state.conversation.content_version;state=await reminder(true);eq(state.conversation.leader_email_reminder,true);eq(state.conversation.leader_reminder_user_id,leader);eq(state.conversation.content_version,content,'notification choice does not change meeting contents/confirmations');
+ eq((await reminder(true)).current_revision,state.current_revision,'same preference is idempotent');
+ await db.exec("reset role;update hr_private.followup_settings set enabled=true,endpoint='';select hr_private.queue_conversation_reminders();");
+ eq((await sql("select count(*)::int n from hr_private.followup_deliveries where task_key='meeting-reminder'"))[0].n,1);
+ eq((await sql("select available_at=((due_on::text||' 14:45')::timestamp at time zone 'Europe/Oslo')-interval '24 hours' as ok from hr_private.followup_deliveries where task_key='meeting-reminder'"))[0].ok,true);
+ await db.exec('set role service_role;');eq(await rpc('hr_conversation_mail_reserve',['meeting-reminder']),null,'reminder cannot send early');
+ await db.exec("reset role;update hr_private.followup_deliveries set available_at='1900-01-01' where task_key='meeting-reminder';set role service_role;");
+ const reminderJob=await rpc('hr_conversation_mail_reserve',['meeting-reminder']);eq(reminderJob.time,'14:45');eq(reminderJob.to,'synthetic@example.invalid');eq(await rpc('hr_conversation_mail_validate',[reminderJob.id,reminderJob.attempt,'meeting-reminder',reminderJob.on,reminderJob.time]),true);
+ await db.exec(`reset role;update hr_private.employees set leader_id=${q(next)} where id=${q(employee.id)};set role service_role;`);eq(await rpc('hr_conversation_mail_validate',[reminderJob.id,reminderJob.attempt,'meeting-reminder',reminderJob.on,reminderJob.time]),false,'leader change never transfers opt-in');
+ await db.exec(`reset role;update hr_private.employees set leader_id=${q(leader)} where id=${q(employee.id)};`);
+ eq((await sql("select hr_private.conversation_meeting_at('2026-03-29','02:30') is null as ok"))[0].ok,true,'nonexistent Oslo clock rejected');eq((await sql("select hr_private.conversation_meeting_at('2026-10-25','02:30')='2026-10-25 00:30Z'::timestamptz as ok"))[0].ok,true,'SQL/ICS autumn first instant agrees');
+ await actor(leader);state=await reminder(false);
+ await db.exec('reset role;set role service_role;');eq(await rpc('hr_conversation_mail_validate',[reminderJob.id,reminderJob.attempt,'meeting-reminder',reminderJob.on,reminderJob.time]),false,'opt-out stops reserved send');
+ await rpc('hr_followup_worker_finish',[reminderJob.id,reminderJob.attempt,false]);
+ await db.exec("reset role;update hr_private.followup_settings set enabled=false;");
+ await actor(leader);
  let revision=state.current_revision,employeeRevision=1;
  const command=async(action,data={})=>{
   state=await rpc('hr_conversation_command',[company,employee.id,employeeRevision,conversation,revision,action,data]);
@@ -101,14 +119,22 @@ try{
  const get=(version=null)=>rpc('hr_conversation_get',[company,employee.id,conversation,version]);
  await reject(()=>command('preparation',{answers:{[question]:'Cannot impersonate'}}),'42501');
  await actor(self);await reject(()=>command('share'),'22023');
- await command('preparation',{answers:{[question]:'Private preparation'}});
+ await db.exec("reset role;update hr_private.followup_settings set enabled=true,endpoint='';");await actor(self);await command('preparation',{answers:{[question]:'Private preparation'}});await db.exec('reset role;');eq((await sql("select count(*)::int n from hr_private.followup_deliveries where task_key='employee-feedback'"))[0].n,0,'private preparation never mails leader');await actor(self);
  eq(state.conversation.preparation[question],'Private preparation');
  for(const u of [leader,admin]){await actor(u);eq((await get()).conversation.preparation,{},'unshared preparation redacted');}
  for(const u of [reader,outsider,system]){await actor(u);await reject(()=>get(),'42501');}
  await actor(admin);await rpc('hr_employee_command',[company,'reader',{id:employee.id,revision:1,reader_id:reader,reason:'Synthetic explicit reader'}]);employeeRevision=2;
  await actor(reader);eq((await get()).conversation.preparation,{});await reject(()=>command('comment',{text:'Not a participant'}),'42501');
  await actor(self);await reject(()=>command('preparation',{answers:{unrelated:'invalid'}}),'22023');
+ await db.exec("reset role;update hr_private.followup_settings set enabled=true,endpoint='';");await actor(self);
  await command('share');eq(state.conversation.stage,'meeting');eq((await status()).app_notification,false,'shared preparation closes app task');await actor(leader);await reject(()=>rpc('hr_conversation_notify',[company,employee.id,employeeRevision,conversation,revision]),'22023');
+ await db.exec('reset role;set role service_role;');
+ let feedback=await rpc('hr_conversation_mail_reserve',['employee-feedback']);eq(Object.keys(feedback).sort(),['attempt','id','to'],'feedback has no answers/date/person/firm');eq(await rpc('hr_conversation_mail_validate',[feedback.id,feedback.attempt,'employee-feedback']),true);
+ await rpc('hr_followup_worker_finish',[feedback.id,feedback.attempt,true]);
+ await actor(self);await command('comment',{text:'A new employee comment'});
+ await db.exec('reset role;set role service_role;');feedback=await rpc('hr_conversation_mail_reserve',['employee-feedback']);eq(Boolean(feedback.id),true,'saved employee comment mails leader');await actor(self);await command('comment',{text:'A newer employee comment'});await db.exec('reset role;set role service_role;');eq(await rpc('hr_conversation_mail_validate',[feedback.id,feedback.attempt,'employee-feedback']),false,'superseded unsent feedback is coalesced');feedback=await rpc('hr_conversation_mail_reserve',['employee-feedback']);eq(Boolean(feedback.id),true);
+ await db.exec(`reset role;update hr_private.module_access set enabled=false where company_id=${q(company)} and user_id=${q(leader)};set role service_role;`);eq(await rpc('hr_conversation_mail_validate',[feedback.id,feedback.attempt,'employee-feedback']),false,'current HR entitlement required for leader mail');
+ await db.exec(`reset role;update hr_private.module_access set enabled=true where company_id=${q(company)} and user_id=${q(leader)};update hr_private.followup_settings set enabled=false;`);
  await actor(leader);eq((await get()).conversation.preparation[question],'Private preparation','shared preparation retained');
  await command('meeting',{answers:{[meeting]:'Shared summary'},actions:[],next_on:''});
  eq(state.conversation.preparation[question],'Private preparation','manager cannot erase original answers');
@@ -143,7 +169,7 @@ try{
  await actor(admin);const receipt=await rpc('hr_employee_command',[company,'end',{id:employee.id,revision:employeeRevision,confirm:'END_AND_DELETE'}]);eq(receipt.deleted,true);
  await db.exec('reset role;');
  eq((await sql('select count(*)::int as n from hr_private.conversations'))[0].n,0,'purge removes conversation pointer');
- eq((await sql('select count(*)::int as n from hr_private.artifacts'))[0].n,0,'purge removes all versions/comments/preparation');
+ eq((await sql('select count(*)::int as n from hr_private.artifacts'))[0].n,0,'purge removes all versions/comments/preparation');eq((await sql('select count(*)::int n from hr_private.followup_deliveries'))[0].n,0,'purge removes all invitation/reminder/feedback rows');
  eq((await sql('select count(*)::int as n from hr_private.deletion_alerts'))[0].n,1,'employment deletion creates exactly one notice');
  eq((await sql('select count(*)::int as n from hr_private.deletion_alert_deliveries'))[0].n,1,'only active systemadmin receives delivery');
  await actor(admin);await reject(()=>rpc('hr_deletion_alert_list'),'42501');
