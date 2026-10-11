@@ -1,3 +1,17 @@
+## Godkjent Production-release #222 – 11. oktober 2026
+
+Kenneths «flott test ok» kl. 20:49 Europe/Oslo godkjenner også logo og midtstilt, tilpasset PDF-tekst. Tidligere TEST OK for HR, firmanavn, felles kart og linjer/lederplassering beholdes. Eldre «venter», «draft» og prøvekrav nedenfor er daterte arbeidsnotater.
+
+Godkjent feature `2d0ae997797f3f737e30778c2d6d4910ff3bedf9` er merget som `e466c5603f745081d00a8964e752bb4f6f76b36b`. Production `dpl_5uuswoKpL4NYvVkMH94Hjrq2eALT` er READY på https://expo-proffdok.app. Obligatorisk Core Safety etter ready-for-review: run `38166319985`, job `114549510315`, alle steg SUCCESS. Ingen ny innlogget Production-prøve attesteres; Kenneths Preview-prøve og utviklernes backend-/assetkontroller er separate bevis.
+
+Alle seks godkjente migrasjoner er installert i Production: sykefraværssaker, fristvarsler, referanseindeks, worker-scope, firmavisningsnavn og felleskart/rekkefølge. 22 + 12 + 36 faktiske rollback-prøver PASS. Alle 23 funksjonskropper matcher godkjent SQL. Bare åtte avtalte eksisterende org-funksjoner er endret; 15 funksjoner og tre private RLS-tabeller er lagt til. Eksisterende policies, triggere, medlemskap, profiler, modulrettigheter og andre worker-innstillinger er uendret. Nye advisor-notiser gjelder tilsiktede private RLS-tabeller uten direkte klienttilgang, tilgangskontrollerte definer-RPC-er og to nye foreløpig ubrukte indekser; ingen nye manglende FK-indekser.
+
+HR-fristworker `hr-followup-reminders` v1 er ACTIVE og aktivert med egen Vault-autentisering og minutt-cron. Utsending skjer i Oslo-kontortid, tre dager før, på frist og ukentlig etterpå for aktuelle åpne oppgaver; endret ansvar/tilgang kontrolleres på nytt. Anonym GET=405/POST=403. Serverautentisert tom-kø-prøve ga 200 `{idle:true}`, uten testmail eller providerkall. Dette er ikke bevis på mottatt fristmail. Tidligere mottatt slettevarsel skal ikke gjentas.
+
+Kenneth, Tom og Kim har hver firmaadmin i de tre avtalte firmaene, med eksisterende kontoer og primærfirma beholdt. KS/HMS er aktivert i Expo Proffsenter. Ingen ny registrering eller invitasjon. Faktiske firmavisningsnavn og organisasjonskart bygges av brukeren i Production; utvikleren har ikke skrevet et virkelig personal-/kartoppsett.
+
+Miljømål BEGGE. Permanent demo synkroniseres kontrollert kun main → demo, med egen Sandbox og bevart overlegg. Kurs-/preflight- og endelig demo-publisering dokumenteres separat på demo-branch og i PR #222. Ingen demoressurs eller syntetisk identitet skal tilbake til main.
+
 ## Midtstilt og tilpasset PDF-tekst – 11. oktober 2026
 
 Miljømål **BEGGE**, først samme feature/Preview. Nytt kosmetisk tillegg gjelder organisasjonskartets PDF: firma-/avdelingskort, avdelingsoverskrifter, ledertekst og alle medarbeiderkort har midtstilt tekst. Navn/avdeling bruker inntil 18–20 pt, medarbeidernavn inntil 15 pt og tilhørende tekst inntil 12 pt. Brede/korte tekster vokser til feltets maks; lange tekster reduseres til en lesbar minste størrelse og brytes deretter fullstendig. Kort-/rad-/nivåhøyde beregnes fra faktisk tekst og skriftstørrelse. Rapporteringens eksisterende innrykk beholdes, med tekst sentrert i sitt kort. Logo og ferske profil-/kart-/tilgangskontroller beholdes.
