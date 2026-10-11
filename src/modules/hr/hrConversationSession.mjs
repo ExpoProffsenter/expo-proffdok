@@ -1,3 +1,4 @@
+export function meetingLocation(value){const location=typeof value==='string'?value.trim():'';if(!location||Array.from(location).length>200||/[\u0000-\u001f\u007f]/.test(location))throw Object.assign(Error('Velg sted eller adresse, maksimalt 200 tegn på én linje.'),{code:'22023'});return location;}
 import {sameHrTemplate} from './hrConversationTemplates.mjs';
 export const CONVERSATION_STAGES={preparation:'Medarbeideren forbereder seg',meeting:'Felles møte',awaiting:'Venter på begge bekreftelser',completed:'Ferdig'};
 export function createConversationSession({rpc,companyId,userId,employeeId,onDenied=()=>{}}){
@@ -17,7 +18,7 @@ export function createConversationSession({rpc,companyId,userId,employeeId,onDen
     ||['hr_conversation_invitation_status','hr_conversation_notify'].includes(name)&&(
      v.conversation_id!==args.p_conversation_id||typeof v.app_notification!=='boolean'||typeof v.can_notify!=='boolean'
      ||!['disabled','not_queued','pending','sending','sent','failed','suppressed'].includes(v.email_status))
-    ||['hr_conversation_get','hr_conversation_start','hr_conversation_start_at','hr_conversation_schedule','hr_conversation_reminder','hr_conversation_command'].includes(name)&&(
+    ||['hr_conversation_get','hr_conversation_start','hr_conversation_start_at','hr_conversation_start_at_place','hr_conversation_schedule','hr_conversation_schedule_at_place','hr_conversation_reminder','hr_conversation_command'].includes(name)&&(
      !Number.isInteger(v.current_revision)||v.current_revision<1||!Number.isInteger(v.conversation?.revision)
      ||!Array.isArray(v.conversation?.actions)||!Array.isArray(v.conversation?.template?.questions)||!v.permissions||v.employee?.id!==employeeId))
     throw Error('Serverens samtalesvar kunne ikke bekreftes. Hent på nytt.');
@@ -47,16 +48,18 @@ export function createConversationSession({rpc,companyId,userId,employeeId,onDen
    if(value.historical)throw Error('En historisk utgave kan bare leses.');
    return call('hr_conversation_notify',{p_conversation_id:value.conversation.id,p_employee_revision:value.employee.revision,p_revision:value.current_revision});
   },
-  async start({id,employeeRevision,templateId,templateRevision,on,time}){
+  async start({id,employeeRevision,templateId,templateRevision,on,time,location}){
    if(!/^([01][0-9]|2[0-3]):[0-5][0-9]$/.test(time||''))throw Error('Velg klokkeslett med timer og minutter.');
-   return readback(await call('hr_conversation_start_at',{p_conversation_id:id,p_employee_revision:employeeRevision,
-    p_template_id:templateId,p_template_revision:templateRevision,p_on:on,p_time:time}));
+   location=meetingLocation(location);
+   return readback(await call('hr_conversation_start_at_place',{p_conversation_id:id,p_employee_revision:employeeRevision,
+    p_template_id:templateId,p_template_revision:templateRevision,p_on:on,p_time:time,p_location:location}));
   },
-  async schedule(value,{on,time}){
+  async schedule(value,{on,time,location}){
    if(value.historical)throw Error('En historisk utgave kan bare leses.');
    if(!on||!/^([01][0-9]|2[0-3]):[0-5][0-9]$/.test(time||''))throw Error('Velg dato og klokkeslett med timer og minutter.');
-   return readback(await call('hr_conversation_schedule',{p_conversation_id:value.conversation.id,
-    p_employee_revision:value.employee.revision,p_revision:value.current_revision,p_on:on,p_time:time}));
+   location=meetingLocation(location);
+   return readback(await call('hr_conversation_schedule_at_place',{p_conversation_id:value.conversation.id,
+    p_employee_revision:value.employee.revision,p_revision:value.current_revision,p_on:on,p_time:time,p_location:location}));
   },
   async reminder(value,enabled){
    if(value.historical)throw Error('En historisk utgave kan bare leses.');

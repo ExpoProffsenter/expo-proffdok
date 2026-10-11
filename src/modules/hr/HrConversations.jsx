@@ -10,7 +10,7 @@ import './hrConversations.css';
 // Only volatile navigation/drafts, scoped to actor/company/employee. Never browser storage.
 const workspaces=new Map();
 const remember=(scope,v)=>{workspaces.delete(scope);workspaces.set(scope,v);if(workspaces.size>4)workspaces.delete(workspaces.keys().next().value);};
-const editable=c=>({preparation:c.preparation,meeting:c.meeting,actions:c.actions,next_on:c.next_on,comments:c.comments,on:c.on,meeting_time:c.meeting_time||''});
+const editable=c=>({preparation:c.preparation,meeting:c.meeting,actions:c.actions,next_on:c.next_on,comments:c.comments,on:c.on,meeting_time:c.meeting_time||'',meeting_location:c.meeting_location||''});
 const copy=v=>JSON.parse(JSON.stringify(v));
 const emailText={disabled:'E-postutsending er avslått i dette miljøet.',not_queued:'E-postinvitasjonen er ikke sendt.',pending:'E-post er lagt i kø for utsending.',sending:'E-post sendes …',sent:'E-post er sendt. Utsendingen er bekreftet av e-posttjenesten.',failed:'E-post kunne ikke sendes. Kontakt firmaadmin.',suppressed:'E-postutsendingen er stoppet fordi tidspunkt eller tilgang er endret.'};
 function Field({label,children}){return <label className="hrp-field"><span>{label}</span>{children}</label>;}
@@ -18,6 +18,7 @@ export default function HrConversations({context,employee}){
  const companyId=context.company_id,userId=context.user_id,employeeId=employee.id,scope=companyId+':'+userId+':'+employeeId;
  const [listing,setListing]=useState(null),[value,setValue]=useState(null),[draft,setDraft]=useState(null);
  const [templates,setTemplates]=useState(null),[templateId,setTemplateId]=useState(''),[on,setOn]=useState(osloToday);
+ const [location,setLocation]=useState('');
  const [time,setTime]=useState(''),[calendarMinutes,setCalendarMinutes]=useState(60);
  const [createOpen,setCreateOpen]=useState(()=>Boolean(workspaces.get(scope)?.startAttempt)),[startPending,setStartPending]=useState(()=>Boolean(workspaces.get(scope)?.startAttempt)),[delivery,setDelivery]=useState(null);
  const startAttempt=useRef(workspaces.get(scope)?.startAttempt||null),creationFocus=useRef(false),receipt=useRef(null);
@@ -32,7 +33,7 @@ export default function HrConversations({context,employee}){
   const unchanged=Boolean(saved?.draft&&saved.id===result.conversation.id&&saved.revision===result.current_revision&&saved.employeeRevision===result.employee.revision);
   setValue(result);latest.current=result;setDraft(unchanged?saved.draft:editable(result.conversation));setConflict(false);
   if(startAttempt.current?.id===result.conversation.id){
-   startAttempt.current=null;setStartPending(false);setCreateOpen(false);setTemplateId('');setTime('');
+   startAttempt.current=null;setStartPending(false);setCreateOpen(false);setTemplateId('');setTime('');setLocation('');
    creationFocus.current=true;setDelivery({id:result.conversation.id,created:true,status:null});
   }
   if(saved?.dirty&&saved.id===result.conversation.id&&!unchanged&&!sameHrTemplate(saved.draft,editable(result.conversation))){setDraft(saved.draft);setConflict(true);setError('Samtalen eller tilgangen er endret. Kladden din er beholdt, men kan ikke lagres over den nye utgaven.');}
@@ -89,8 +90,8 @@ export default function HrConversations({context,employee}){
  const save=()=>run(async(s,current)=>{
   if(conflict||value?.historical)return;const wanted=copy(draft);let result=value;
   if(value.employee.leader_id===userId&&['preparation','meeting'].includes(value.conversation.stage)
-   &&!sameHrTemplate([wanted.on,wanted.meeting_time],[value.conversation.on,value.conversation.meeting_time||'']))
-   result=await s.schedule(result,{on:wanted.on,time:wanted.meeting_time});
+   &&!sameHrTemplate([wanted.on,wanted.meeting_time,wanted.meeting_location],[value.conversation.on,value.conversation.meeting_time||'',value.conversation.meeting_location||'']))
+   result=await s.schedule(result,{on:wanted.on,time:wanted.meeting_time,location:wanted.meeting_location});
   if(!current())return;
   if(value.permissions.prepare&&!sameHrTemplate(wanted.preparation,value.conversation.preparation))
    result=await s.command(result,'preparation',{answers:wanted.preparation});
@@ -146,23 +147,23 @@ export default function HrConversations({context,employee}){
   {busy&&<p role="status">Kontrollerer tilgang og lagring …</p>}{error&&<p role="alert" className="hrp-error">{error}</p>}{notice&&<p role="status" className="hrp-notice">{notice}</p>}
   {delivery&&c?.id===delivery.id&&!value.historical&&<div ref={receipt} tabIndex={-1} className="hrp-creation-receipt" role="status" aria-live="polite">
    <h4>{delivery.created?'Samtalen er opprettet':'Varsling til medarbeideren'}</h4>
-   <p>{c.template.title} · {c.on?.split('-').reverse().join('.')} · {c.meeting_time?'kl. '+c.meeting_time:'Klokkeslett ikke avtalt'}</p>
-   {delivery.status?<><p>{delivery.status.app_notification?'Varsel om forberedelse er opprettet på medarbeiderens Min side.':c.stage==='preparation'?'Medarbeideren mangler HR-tilgang. Kontroller HR-tilgang i firmaet samtalen tilhører. Firmaadmin bruker Firmaadmin → Brukere og tilganger. Systemadmin bruker Systemadmin → Firmaer, brukere og tilganger. Velg HR på riktig brukerkort og lagre tilgangen. Trykk deretter Oppdater varslingsstatus her.':'Medarbeideren har ingen åpen forberedelsesoppgave.'}</p><p>{emailText[delivery.status.email_status]}</p></>:<p>{delivery.error||'Kontrollerer varslingsstatus …'}</p>}
+   <p>{c.template.title} · {c.on?.split('-').reverse().join('.')} · {c.meeting_time?'kl. '+c.meeting_time:'Klokkeslett ikke avtalt'}</p><p>Sted: {c.meeting_location||'Ikke avtalt'}</p>
+   {delivery.status?<><p>{delivery.status.app_notification?'Varsel om forberedelse er opprettet på medarbeiderens Min side.':c.stage==='preparation'?'Medarbeideren mangler HR-tilgang. Kontroller HR-tilgang i firmaet samtalen tilhører. Firmaadmin bruker Firmaadmin → Brukere og tilganger. Systemadmin bruker Systemadmin → Firmaer, brukere og tilganger. Velg HR på riktig brukerkort og lagre tilgangen. Trykk deretter Oppdater varslingsstatus her.':'Medarbeideren har ingen åpen forberedelsesoppgave.'}</p><p>{emailText[delivery.status.email_status]}</p>{delivery.status.location_required&&value.employee.leader_id===userId&&<p>Åpne Endre tidspunkt og sted, fyll ut stedet og trykk Lagre samtale før du sender invitasjonen.</p>}</>:<p>{delivery.error||'Kontrollerer varslingsstatus …'}</p>}
    <button type="button" className="secondary" disabled={busy} onClick={()=>run(async(s,current)=>{const status=await s.invitationStatus(c.id);if(current())setDelivery(previous=>({...previous,id:c.id,status,error:''}));})}>Oppdater varslingsstatus</button>
    {delivery.status?.can_notify&&value.employee.leader_id===userId&&<button type="button" disabled={busy||dirty} onClick={()=>run(async(s,current)=>{const status=await s.notify(value);if(current())setDelivery(previous=>({...previous,id:c.id,status,error:''}));})}>Send e-postinvitasjon</button>}
   </div>}
   {listing?.can_start&&<details className="hrp-saved" open={createOpen} onToggle={e=>setCreateOpen(e.currentTarget.open)}><summary onClick={()=>{if(!templates)run(async(s,current)=>{const r=await s.templates();if(current())setTemplates(r.templates);});}}>Start medarbeidersamtale</summary>
    <form onSubmit={e=>{e.preventDefault();run(async(s,current)=>{if(!leave())return;const t=templates?.find(t=>t.id===templateId);if(!t&&!startAttempt.current)return;
-    const args=startAttempt.current||{id:crypto.randomUUID(),employeeRevision:listing.employee.revision,templateId:t.id,templateRevision:t.revision,on,time};
+    const args=startAttempt.current||{id:crypto.randomUUID(),employeeRevision:listing.employee.revision,templateId:t.id,templateRevision:t.revision,on,time,location};
     startAttempt.current=args;setStartPending(true);remember(scope,{id:args.id,revision:0,employeeRevision:args.employeeRevision,draft:null,step:0,startAttempt:args});
     let r;try{r=await s.start(args);}catch(e){if(['22023','40001','42501'].includes(e.code)){startAttempt.current=null;setStartPending(false);}throw e;}
     if(current()){install(r);setListing(previous=>({...previous,conversations:[...previous.conversations.filter(row=>row.id!==r.conversation.id),{id:r.conversation.id,title:r.conversation.template.title,revision:r.current_revision,stage:r.conversation.stage,on:r.conversation.on,meeting_time:r.conversation.meeting_time}]}));setStep(0);}
    });}}><fieldset disabled={busy||startPending}><Field label="Samtalemal"><select required value={templateId} onChange={e=>setTemplateId(e.target.value)}><option value="">Velg mal</option>{templates?.map(t=><option key={t.id} value={t.id}>{t.title}</option>)}</select></Field>
    {templates?.length===0&&<p>Firmaadmin lager og lagrer en samtalemal under HR → Samtalemaler først.</p>}
    <Field label="Samtaledato"><input required type="date" value={on} onChange={e=>setOn(e.target.value)}/></Field>
-   <Field label="Klokkeslett"><input required type="time" step="60" value={time} onChange={e=>setTime(e.target.value)}/></Field><p>Klokkeslettet er norsk tid.</p>
+   <Field label="Klokkeslett"><input required type="time" step="60" value={time} onChange={e=>setTime(e.target.value)}/></Field><p>Klokkeslettet er norsk tid.</p><Field label="Sted"><input required maxLength={200} value={location} placeholder="Møterom eller adresse" onChange={e=>setLocation(e.target.value)}/></Field><p>Skriv hvor dere skal møtes. Stedet følger invitasjonen og kalenderavtalen.</p>
    </fieldset>{startPending&&<p>Oppretting er sendt. Kontroller samme oppretting før du prøver en ny samtale.</p>}
-   <button disabled={busy||(!startPending&&(!templateId||!time))}>{startPending?'Kontroller oppretting':'Opprett samtale'}</button></form>
+   <button disabled={busy||(!startPending&&(!templateId||!time||!location.trim()))}>{startPending?'Kontroller oppretting':'Opprett samtale'}</button></form>
   </details>}
   {listing&&<details className="hrp-saved" open><summary>Lagrede samtaler og historikk ({listing.conversations.length})</summary>
    {!listing.conversations.length&&<p>Ingen samtaler er opprettet. Nærmeste leder starter samtalen.</p>}
@@ -173,6 +174,7 @@ export default function HrConversations({context,employee}){
    <button type="button" className="secondary" disabled={busy} onClick={()=>run(async(s,current)=>{const r=await s.get(c.id);if(current()){install(r,true);setNotice('Lagret utgave er hentet.');}})}>Hent lagret utgave</button>
    {conflict&&<button type="button" disabled={busy} onClick={()=>{if(window.confirm('Vil du forkaste kladden og bruke den lagrede utgaven?')){workspaces.delete(scope);install(value);}}}>Bruk lagret utgave</button>}
   </div>
+  <p><strong>Sted:</strong> {c.meeting_location||'Ikke avtalt'}</p>
   <p><strong>Avtalt tidspunkt:</strong> {c.on?.split('-').reverse().join('.')} · {c.meeting_time?'kl. '+c.meeting_time+' (norsk tid)':'Klokkeslett ikke avtalt'}</p>
   {!value.historical&&[value.employee.user_id,value.employee.leader_id].includes(userId)&&c.meeting_time&&<div className="hrp-calendar">
    <Field label="Varighet i kalenderen"><select value={calendarMinutes} disabled={busy} onChange={e=>setCalendarMinutes(Number(e.target.value))}>{[30,45,60,90,120].map(n=><option key={n} value={n}>{n} minutter</option>)}</select></Field>
@@ -183,10 +185,10 @@ export default function HrConversations({context,employee}){
    <p>Ved endret tidspunkt må du oppdatere avtalen i kalenderen. Gjentatt åpning i Outlook kan lage en ny avtale.</p>
   </div>}
   {schedule&&<div className="hrp-leader-reminder"><label><input type="checkbox" checked={c.leader_email_reminder===true&&c.leader_reminder_user_id===userId} disabled={busy||dirty} onChange={e=>{const enabled=e.target.checked;run(async(s,current)=>{const result=await s.reminder(value,enabled);if(current()){install(result);setNotice(enabled?'E-postpåminnelse til deg er valgt.':'E-postpåminnelse til deg er slått av.');}});}}/> Send meg e-postpåminnelse dagen før</label><p>Påminnelsen sendes 24 timer før avtalen. Velger du den senere, sendes den så snart som mulig før møtet. E-post må være aktivert i miljøet.</p></div>}
-  {schedule&&<details className="hrp-saved"><summary>Endre tidspunkt</summary><fieldset disabled={busy}>
+  {schedule&&<details className="hrp-saved"><summary>Endre tidspunkt og sted</summary><fieldset disabled={busy}>
    <Field label="Ny samtaledato"><input required type="date" value={draft.on} onChange={e=>change({on:e.target.value})}/></Field>
    <Field label="Nytt klokkeslett"><input required type="time" step="60" value={draft.meeting_time} onChange={e=>change({meeting_time:e.target.value})}/></Field>
-   <p>Bruk norsk tid. Trykk «Lagre samtale» for å lagre endringen.</p></fieldset></details>}
+   <Field label="Nytt sted"><input required maxLength={200} value={draft.meeting_location} placeholder="Møterom eller adresse" onChange={e=>change({meeting_location:e.target.value})}/></Field><p>Trykk «Lagre samtale» for å lagre tidspunkt og sted. Endret sted eller tidspunkt krever ny invitasjon og oppdatering av kalenderavtalen.</p></fieldset></details>}
   {value.historical&&<p className="hrp-readonly">Historisk utgave. Denne kan bare leses. <button className="secondary" disabled={busy} onClick={()=>open(c.id)}>Åpne gjeldende utgave</button></p>}
   <nav className="hrp-steps" aria-label="Steg i medarbeidersamtalen">{stages.map((title,i)=><button key={title} disabled={busy} aria-current={step===i?'step':undefined} onClick={()=>setStep(i)}><span>{i+1}</span>{title}</button>)}</nav>
   <div ref={body} tabIndex={-1} className="hrp-step-body">

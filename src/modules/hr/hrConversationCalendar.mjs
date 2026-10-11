@@ -1,3 +1,4 @@
+import {meetingLocation} from './hrConversationSession.mjs';
 // RFC 5545 UTC events; Oslo wall time is independent of the device time zone.
 const clock=/^([01][0-9]|2[0-3]):[0-5][0-9]$/;
 const stamp=date=>date.toISOString().replace(/[-:]/g,'').replace(/\.\d{3}Z$/,'Z');
@@ -14,20 +15,21 @@ function calendarEvent(value,{minutes=60}={}){
  const candidates=[120,60].map(offset=>new Date(nominal.getTime()-offset*60000)).filter(date=>format.format(date)===wanted).sort((a,b)=>a-b);
  const start=candidates[0];if(!start)throw Error('Klokkeslettet finnes ikke ved overgangen til sommertid. Velg et annet tidspunkt.');
  const end=new Date(start.getTime()+minutes*60000);
- return {c,start,end};
+ const location=c.meeting_location?meetingLocation(c.meeting_location):'';
+ return {c,start,end,location};
 }
 const description='Åpne samtalen i Expo ProffDok. Logg inn på https://expo-proffdok.app/ og velg riktig firma. Ved endret tidspunkt må du oppdatere avtalen i kalenderen.';
 export function conversationOutlookUrl(value,{minutes=60}={}){
- const {start,end}=calendarEvent(value,{minutes});
+ const {start,end,location}=calendarEvent(value,{minutes});
  const url=new URL('https://outlook.office.com/calendar/deeplink/compose');
- for(const [key,text] of Object.entries({path:'/calendar/action/compose',rru:'addevent',allday:'false',subject:'Medarbeidersamtale',startdt:start.toISOString(),enddt:end.toISOString(),body:description}))url.searchParams.set(key,text);
+ for(const [key,text] of Object.entries({path:'/calendar/action/compose',rru:'addevent',allday:'false',subject:'Medarbeidersamtale',startdt:start.toISOString(),enddt:end.toISOString(),body:description,...(location?{location}:{})}))url.searchParams.set(key,text);
  return url.href;
 }
 export function conversationCalendar(value,{minutes=60,now=new Date()}={}){
- const {c,start,end}=calendarEvent(value,{minutes});
+ const {c,start,end,location}=calendarEvent(value,{minutes});
  return ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Expo ProffDok//Medarbeidersamtale//NB','CALSCALE:GREGORIAN','METHOD:PUBLISH','BEGIN:VEVENT',
   'UID:'+c.id+'@expo-proffdok.app','DTSTAMP:'+stamp(now),'SEQUENCE:'+c.revision,'DTSTART:'+stamp(start),'DTEND:'+stamp(end),
-  'SUMMARY:Medarbeidersamtale','DESCRIPTION:'+escapeText(description),
+  'SUMMARY:Medarbeidersamtale',...(location?['LOCATION:'+escapeText(location)]:[]),'DESCRIPTION:'+escapeText(description),
   'URL:https://expo-proffdok.app/','END:VEVENT','END:VCALENDAR'].map(fold).join('\r\n')+'\r\n';
 }
 export async function downloadConversationCalendar({value,minutes=60,isCurrent=()=>true,save}){
