@@ -22,13 +22,18 @@ x=fixture(()=>clone(value));x.session.dispose();await assert.rejects(x.session.l
 x=fixture(()=>clone(value));await assert.rejects(x.session.command({...value,historical:true},'confirm'),/historisk/);eq(x.calls.length,0);
 x=fixture((n)=>{if(n==='hr_conversation_command')return {...clone(value),current_revision:2,conversation:{...clone(value.conversation),revision:2}};return clone(value);});
 await assert.rejects(x.session.command(value,'preparation',{answers:{}}),/kunne ikke bekreftes/);eq(x.calls.filter(c=>c.n==='hr_conversation_command').length,1,'unknown write outcome is not retried automatically');
+x=fixture(()=>clone(value));await assert.rejects(x.session.start({id:id(5),employeeRevision:1,templateId:id(6),templateRevision:1,on:'2026-11-01',time:'24:00'}),/klokkeslett/);eq(x.calls.length,0,'invalid clock never sends an RPC');
+x=fixture(()=>clone(value));await x.session.start({id:id(5),employeeRevision:1,templateId:id(6),templateRevision:1,on:'2026-11-01',time:'09:15'});eq(x.calls[0].n,'hr_conversation_start_at');eq(x.calls[0].a.p_time,'09:15','clock is passed unchanged, no browser timezone conversion');
+x=fixture(()=>clone(value));await x.session.schedule(value,{on:'2026-11-02',time:'00:00'});eq(x.calls[0].n,'hr_conversation_schedule');eq(x.calls[0].a.p_revision,1);eq(x.calls[0].a.p_time,'00:00');
+x=fixture(()=>clone(value));await assert.rejects(x.session.schedule({...value,historical:true},{on:'2026-11-02',time:'14:00'}),/historisk/);eq(x.calls.length,0);
 let sends=0;
 eq(await downloadConversationPdf({value,loadPdf:()=>{throw Error('should not load');},isCurrent:()=>false}),null);
-const sample=clone(value);sample.conversation.shared=true;sample.conversation.stage='completed';sample.conversation.preparation[id(6)]='Opprinnelig medarbeidersvar. '.repeat(150);
+const sample=clone(value);sample.conversation.meeting_time='14:45';sample.conversation.shared=true;sample.conversation.stage='completed';sample.conversation.preparation[id(6)]='Opprinnelig medarbeidersvar. '.repeat(150);
 sample.conversation.meeting[id(7)]='Avtalt møtereferat med æøå. '.repeat(150);sample.conversation.comments.employee='Egen uenighet beholdes.';
 sample.conversation.actions=[{id:id(8),task:'Avtalt oppfølging',owner_id:id(2),due_on:'2026-11-20',done:false}];
 sample.conversation.confirmations.employee={at:'2026-10-11T12:00:00Z'};
 eq(conversationPdfDocument(sample).fields.find(f=>f[0]==='Medarbeider')[1],'Syntetisk medarbeider');
+eq(conversationPdfDocument(sample).fields.find(f=>f[0]==='Klokkeslett')[1],'14:45 (norsk tid)');eq(conversationPdfDocument(value).fields.find(f=>f[0]==='Klokkeslett')[1],'Ikke avtalt','old records never get an invented meeting time');
 const jspdf=await import(process.env.HR_PRACTICE_JSPDF_PATH||'/tmp/hr-practice-qa/node_modules/jspdf/dist/jspdf.node.min.js');
 const pdf=await downloadConversationPdf({value:sample,companyName:'Syntetisk firma',loadPdf:async()=>jspdf,save:async doc=>{
  sends++;const bytes=new Uint8Array(doc.output('arraybuffer'));assert(bytes.length>2000);if(process.env.HR_CONVERSATION_PDF_PATH)await fs.writeFile(process.env.HR_CONVERSATION_PDF_PATH,bytes);

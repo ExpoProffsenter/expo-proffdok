@@ -14,7 +14,7 @@ export function createConversationSession({rpc,companyId,userId,employeeId,onDen
    const v=check(await rpc(name,{...args,p_company_id:companyId,p_employee_id:employeeId}),ticket);
    if(name==='hr_conversation_list'&&(!Array.isArray(v.conversations)||v.employee?.id!==employeeId)
     ||name==='hr_conversation_templates'&&!Array.isArray(v.templates)
-    ||['hr_conversation_get','hr_conversation_start','hr_conversation_command'].includes(name)&&(
+    ||['hr_conversation_get','hr_conversation_start','hr_conversation_start_at','hr_conversation_schedule','hr_conversation_command'].includes(name)&&(
      !Number.isInteger(v.current_revision)||v.current_revision<1||!Number.isInteger(v.conversation?.revision)
      ||!Array.isArray(v.conversation?.actions)||!Array.isArray(v.conversation?.template?.questions)||!v.permissions||v.employee?.id!==employeeId))
     throw Error('Serverens samtalesvar kunne ikke bekreftes. Hent på nytt.');
@@ -39,9 +39,16 @@ export function createConversationSession({rpc,companyId,userId,employeeId,onDen
  return {get,invalidate(){epoch++;},dispose(){disposed=true;epoch++;},
   list(after=null){return call('hr_conversation_list',{p_after:after});},
   templates(){return call('hr_conversation_templates');},
-  async start({id,employeeRevision,templateId,templateRevision,on}){
-   return readback(await call('hr_conversation_start',{p_conversation_id:id,p_employee_revision:employeeRevision,
-    p_template_id:templateId,p_template_revision:templateRevision,p_on:on}));
+  async start({id,employeeRevision,templateId,templateRevision,on,time}){
+   if(!/^([01][0-9]|2[0-3]):[0-5][0-9]$/.test(time||''))throw Error('Velg klokkeslett med timer og minutter.');
+   return readback(await call('hr_conversation_start_at',{p_conversation_id:id,p_employee_revision:employeeRevision,
+    p_template_id:templateId,p_template_revision:templateRevision,p_on:on,p_time:time}));
+  },
+  async schedule(value,{on,time}){
+   if(value.historical)throw Error('En historisk utgave kan bare leses.');
+   if(!on||!/^([01][0-9]|2[0-3]):[0-5][0-9]$/.test(time||''))throw Error('Velg dato og klokkeslett med timer og minutter.');
+   return readback(await call('hr_conversation_schedule',{p_conversation_id:value.conversation.id,
+    p_employee_revision:value.employee.revision,p_revision:value.current_revision,p_on:on,p_time:time}));
   },
   async command(value,action,data={}){
    if(value.historical)throw Error('En historisk utgave kan bare leses.');

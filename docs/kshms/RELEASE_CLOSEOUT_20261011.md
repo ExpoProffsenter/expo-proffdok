@@ -1,3 +1,9 @@
+## Klokkeslett – godkjent main → demo-synk 11. oktober 2026
+
+Kenneth TEST OK kl. 21:39 gjelder #224. Demo er synkronisert fra gjeldende main `5a08ce29181ffe4bf4c86959e03dfc9a840f58ae`, etter funksjonsrelease #224 og dokumentasjonsrelease #225. Ordinær HR-/Hjelp-/PDF-kode og migrasjon matcher main. Kontrollsidens main-baseline er oppdatert til denne eksakte committen. Eksisterende demo-overlegg, Sales, skisser, medier og personlige casehistorikker beholdes. Ingen seed/reset eller ny bekreftelse/deling utføres.
+
+Nye samtaler krever norsk klokkeslett. Eldre kurseksempler viser Ikke avtalt til leder selv velger tidspunkt. Faktisk Sandbox-preflight har 19 infrastruktur- og fem kurspunkter grønne, begge kurs-rollback-kontroller PASS og alle tre e-posttransporter AV. Fersk PDF fra lagret syntetisk samtale kontrolleres med ny formatter. Build-/PDF-/READY-/HTTP-bevis og eksakt demo-head føres i #224 ved sluttføring. Lokal Badskisse og innlogget klient-preflight må fortsatt kontrolleres i kursoperatørens nettleser; ingen ny klientprøve attesteres.
+
 ## HR, firmanavn, felleskart og PDF – godkjent synk 11. oktober 2026
 
 Miljømål SANDBOX/DEMO for kursinnholdet; godkjent appkode fra #222 er synkronisert kun main → demo. Gjeldende main-baseline er `ce3f4d0f23e56e8e2ec283ac8d02aca2f8d193e1`, etter Production READY og dokumentasjonsrelease #223. Ordinær HR-/kart-/main-kode matcher main. Eksisterende demo-overlegg, medier, Sales, prosjektdata og historikk er bevart.
