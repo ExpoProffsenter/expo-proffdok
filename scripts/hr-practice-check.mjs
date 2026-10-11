@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {createPracticeStore,newPracticeConversation,examplePracticeConversation,validatePracticeConversation,practiceAvailable} from '../src/modules/hr/hrPracticeConversation.mjs';
+import {createPracticeStore,createPracticeView,newPracticeConversation,examplePracticeConversation,validatePracticeConversation,practiceAvailable} from '../src/modules/hr/hrPracticeConversation.mjs';
 import {practicePdfDocument,downloadPracticePdf} from '../src/modules/hr/hrPracticePdf.mjs';
 const uuid=n=>'00000000-0000-4000-8000-'+String(n).padStart(12,'0');
 const values=new Map(),storage={getItem:k=>values.get(k)??null,setItem:(k,v)=>values.set(k,v),removeItem:k=>values.delete(k)};
@@ -19,6 +19,7 @@ let result=await store.save({expectedRevision:0,content:c});const id=result.id,f
 result.version.content.summary='mutated return';assert.equal(store.read().records[0].versions[0].content.summary,c.summary);
 result=await store.save({id,expectedRevision:1,content:{...c,stage:'completed'}});
 assert.deepEqual(result.book.records[0].versions[0],first);assert.equal(result.version.number,2);
+const view=createPracticeView({storage,companyId:'firm',userId:'self'});assert.equal(view.read(),null);assert(view.remember({id,number:1,step:2}));assert.equal(view.resolve(result.book).version.number,1);assert.equal(view.resolve(result.book).step,2);assert.equal(view.resolve({...result.book,userId:'other'}),null);assert.equal(view.resolve({...result.book,records:[]}),null);assert(!view.remember({id,number:99,step:2}));view.clear();assert.equal(view.read(),null);storage.setItem(view.key,'{bad');assert.equal(view.read(),null);view.clear();
 const other=createPracticeStore({storage,locks,companyId:'firm',userId:'other'});assert.equal(other.read().records.length,0);
 const otherFirm=createPracticeStore({storage,locks,companyId:'other',userId:'self'});assert.equal(otherFirm.read().records.length,0);
 const concurrent=await Promise.allSettled([store.save({id,expectedRevision:2,content:c}),store.save({id,expectedRevision:2,content:c})]);

@@ -92,3 +92,16 @@ export function createPracticeStore({storage,locks,companyId,userId,uuid=()=>cry
  }
  return {key,read,save,clear};
 }
+
+// Per-tab navigation only; content is always read afresh from the validated book.
+export function createPracticeView({storage,companyId,userId}){
+ if(!/^[A-Za-z0-9_-]{1,128}$/.test(companyId)||!/^[A-Za-z0-9_-]{1,128}$/.test(userId))fail('Prøvesamtalens firma og bruker mangler.');
+ const key=`expo.hr.practice.view.v1:${companyId}:${userId}`;
+ const valid=v=>exact(v,['format','id','number','step'])&&v.format===1&&typeof v.id==='string'&&/^[a-f0-9-]{36}$/.test(v.id)
+  &&Number.isInteger(v.number)&&v.number>=1&&v.number<=20&&Number.isInteger(v.step)&&v.step>=0&&v.step<=3;
+ function read(){try{const encoded=storage.getItem(key);if(!encoded||encoded.length>256)return null;const value=JSON.parse(encoded);return valid(value)?value:null;}catch{return null;}}
+ function resolve(book){const value=read();if(!value||book.companyId!==companyId||book.userId!==userId)return null;const record=book.records.find(r=>r.id===value.id),version=record?.versions.find(v=>v.number===value.number);return version?{record,version,step:value.step}:null;}
+ function remember({id,number,step}){const value={format:1,id,number,step};if(!valid(value))return false;try{storage.setItem(key,JSON.stringify(value));return true;}catch{return false;}}
+ function clear(){try{storage.removeItem(key);}catch{/* Navigation storage must not block content operations. */}}
+ return {key,read,resolve,remember,clear};
+}

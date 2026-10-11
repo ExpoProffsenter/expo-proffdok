@@ -27,3 +27,9 @@ I HR eller Min side → Mine oppfølginger: **Prøv medarbeidersamtale**. Samme 
 - CI har fått additive model-/React-/ekte-PDF- og eksisterende HR-kontroller. Eksisterende full build, scope-/release-docs-guard og alle tidligere critical checks er beholdt.
 
 Dette er teknisk bevis på prøveflyten, ikke innlogget cloud/flerbruker/privat HR-bevis. Ingen autentiseringsstopp er omgått. Publisert innlogget Preview og fysisk enhet vurderes av brukeren; tidligere godkjente QA-områder skal ikke testes på nytt.
+
+## Retting etter Kenneths prøve – 11. oktober 2026
+
+Neste lagrede steg og valg av fane setter fokus og ruller til starten av det valgte stegets innhold. PDF-format og innhold er uendret (Kenneth bekreftet at PDF var bra). `useHrAccess` fjerner konteksten kort under kontroll etter focus/visibilitychange, slik at HR-visningen monteres på nytt. Prøvesamtalen husker derfor bare samtale-ID, lagret utgavenummer og steg i en konto-/firmabundet sessionStorage-nøkkel per nettleserfane. Ved ny gyldig HR-kontekst leses innholdet fra ferskt validert lokal historikk. Ingen tilgangskontroll holdes tilbake eller omgås. Lukk prøvesamtalen, Ny prøvesamtale og sletting rydder valget; ingen automatisk omdirigering til HR eller annen global navigasjon.
+
+Nye permanente regresjoner: faktisk React tester scroll/fokus, samme lagrede utgave og fane etter unmount/remount, historisk utgave, eksplisitt lukking og bruker-/firmagrense. Chromium tester stegenes skjermposisjon og faktisk PDF-nedlasting med påfølgende tilgangslignende unmount/remount samt oppfriskning. Tidligere forventning om manuell gjenåpning etter remount er endret i prøvetestene fordi nettopp denne adferden var brukerens rapporterte feil; eksisterende guards og øvrige kontroller beholdes. Prøven er fortsatt bare Sandbox og oppdiktet innhold.

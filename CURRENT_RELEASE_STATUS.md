@@ -1,3 +1,7 @@
+## Rettet HR-prøveflyt – 11. oktober 2026
+
+Kenneth meldte behov for scrolling ved neste steg og tap av åpen samtale etter PDF. Neste steg fokuseres og rulles til starten. Etter tilgangskontroll/PDF-retur gjenåpnes samme lagrede samtale, utgave og fane fra scoped navigasjon i denne nettleserfanen. Ny/lukk/slett respekteres. Faktisk React og Chromium-regresjon PASS; PDF-format og beskyttet kjerne uendret. Publiseres på samme PR #218 / faste Preview, uten ny godkjenningsrunde for tidligere områder. [Bevis](docs/kshms/HR_PRACTICE_20261011.md).
+
 ## HR-prøvesamtale i eksisterende Sandbox – 11. oktober 2026
 
 Ny isolert branch `fase45b-hr-conversation-practice-20261011` fra ren main. Brukeren kan prøve eksempeltekster, fire samtalesteg, lokal lagring/gjenåpning og PDF med egen konto. Ingen nye nøkler eller testmiljøer. Production viser ikke prøveflaten. Personlig HR forblir stengt. Tidligere ledger/workerarbeid står separat i draft PR #217.

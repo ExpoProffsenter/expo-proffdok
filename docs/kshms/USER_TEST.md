@@ -1,3 +1,7 @@
+## Retting: neste steg og tilbake fra PDF
+
+På samme faste Preview: Åpne en lagret prøvesamtale og trykk Rediger som ny utgave hvis nødvendig. Neste lagringsknapp skal vise toppen av neste stegs innhold. Last ned referat (PDF) fra en lagret utgave: du skal komme tilbake til samme samtale, utgave og fane. Utvikleren tester begge feilene; øvrige tidligere godkjente prøver skal ikke gjentas.
+
 ## Bare én ny kort prøve: medarbeidersamtale med eksempelinnhold
 
 Bruk den faste branch-Preview-en for `fase45b-hr-conversation-practice-20261011`, med eksisterende Sandbox-konto. Ingen nye nøkler eller nytt testfirma er nødvendig. Tidligere godkjente områder skal ikke testes igjen.
