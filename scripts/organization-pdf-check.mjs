@@ -42,11 +42,12 @@ let visibilityReads=0;
 await assert.rejects(downloadOrgPdf({session:{read:async()=>++visibilityReads===1?structuredClone(sharedPdfData):{...structuredClone(sharedPdfData),shared_visibility:false},invalidate(){}},expected:sharedPdfData,isCurrent:()=>true,load,save:()=>groupSaves++,now}),/endret/);assert.equal(groupSaves,1,'Visibility change prevents delivery of stale PDF');
 const three=structuredClone(sharedPdfData);three.chart_name='Ringside AS';three.units=three.units.filter(u=>u.id!=='apprentices');three.people=[];
 for(const u of three.units)u.sort_order=u.id==='project'?1:u.id==='service'?2:u.id==='store'?3:0;
-const labels=[],connectors=[];class RecordedPdf extends jsPDF{constructor(...args){super(...args);const original=this.text,line=this.line;this.text=(value,x,y,...rest)=>{labels.push({value,x,y,options:rest[0]});return original.call(this,value,x,y,...rest);};this.line=(x1,y1,x2,y2,...rest)=>{connectors.push({x1,y1,x2,y2,width:this.getLineWidth(),page:this.getCurrentPageInfo().pageNumber});return line.call(this,x1,y1,x2,y2,...rest);};}}
+const labels=[],connectors=[],boxes=[];class RecordedPdf extends jsPDF{constructor(...args){super(...args);const original=this.text,line=this.line,box=this.roundedRect;this.text=(value,x,y,...rest)=>{labels.push({value,x,y,options:rest[0],size:this.getFontSize(),font:this.getFont().fontStyle,page:this.getCurrentPageInfo().pageNumber});return original.call(this,value,x,y,...rest);};this.line=(x1,y1,x2,y2,...rest)=>{connectors.push({x1,y1,x2,y2,width:this.getLineWidth(),page:this.getCurrentPageInfo().pageNumber});return line.call(this,x1,y1,x2,y2,...rest);};this.roundedRect=(x,y,w,h,...rest)=>{boxes.push({x,y,w,h,page:this.getCurrentPageInfo().pageNumber});return box.call(this,x,y,w,h,...rest);};}}
 const centered=await buildOrgPdf({data:three,companyName:'Ringside AS',JsPDF:RecordedPdf,now});
 const head=name=>labels.find(p=>Array.isArray(p.value)&&p.value.join(' ')===name&&p.y>100&&p.y<200);
 assert(head('Expo Proffsenter').x<head('Ringside Rørleggerbedrift').x&&head('Ringside Rørleggerbedrift').x<head('Bademiljø Expo').x,'Actual PDF drawing preserves left/middle/right');
-assert.equal(head('Ringside Rørleggerbedrift').x,156,'Middle card starts at centered card left+6, with center x=210mm on A3');
+assert.equal(head('Ringside Rørleggerbedrift').x,210,'Middle card text is centered at x=210mm on A3');
+assert.equal(head('Ringside Rørleggerbedrift').options.align,'center');assert(head('Ringside Rørleggerbedrift').size>11,'Use spare width for larger department text');
 const hierarchyLines=connectors.filter(l=>l.page===1&&l.width===.65);
 assert.equal(hierarchyLines.filter(l=>l.y1===l.y2).length,1,'Single Styret branch has no horizontal bar; peers share one crossbar');
 const crossbar=hierarchyLines.find(l=>l.y1===l.y2);assert.equal(crossbar.x1,80);assert.equal(crossbar.x2,340,'Crossbar stops at the outer card centers');
@@ -78,3 +79,33 @@ await assert.rejects(downloadOrgPdf({session,expected:data,isCurrent:()=>true,lo
 const missing=await downloadOrgPdf({session,expected:data,isCurrent:()=>true,load,save:saveLogo,loadLogo:async()=>null,now});assert.equal(missing.logoMissing,true);assert.equal(logoSaves,1,'Unavailable logo retains readable chart with explicit UI warning');
 const noLogo=await downloadOrgPdf({session,expected:data,isCurrent:()=>true,load,save:saveLogo,rpc:async()=>({companyId:'synthetic',logoUrl:null}),loadLogo:async()=>{throw Error('No image should be fetched');},now});assert.equal(noLogo.logoMissing,false);assert.equal(logoSaves,2);
 console.log('Logo PDF PASS: actual PNG on every page, original proportions, long title, scoped firm profile, foreign/offline profile, late navigation/revoke/profile change and explicit unavailable-logo status.');
+
+labels.length=0;boxes.length=0;
+const adaptive=structuredClone(data);adaptive.chart_name='Syntetisk organisasjon';
+adaptive.units=[{id:'root',name:'Service',parent_id:null,color:'teal',manager_name:'Syntetisk leder'},...Array.from({length:8},(_,i)=>({id:`deep-${i}`,name:`Avdeling ${i+1} ${'W'.repeat(60)}`,parent_id:i?`deep-${i-1}`:'root',color:'blue',manager_name:'Et svært langt syntetisk ledernavn som må passe i et smalere kort'}))];
+adaptive.people=[...data.people.map(p=>({...p,unit_id:'root'})),{id:'short',user_id:'short',name:'Anne',title:'Rørlegger',kind:'employee',unit_id:'deep-7'}, {id:'long',user_id:'long',name:'Syntetisk '+ 'W'.repeat(80),title:'En lang stilling med ansvar for installasjon, prosjektering, kvalitet og teknisk oppfølging',kind:'apprentice',unit_id:'deep-7',leader_id:'short'}];
+const adaptivePdf=await buildOrgPdf({data:adaptive,JsPDF:RecordedPdf,logo,now});
+const named=value=>labels.find(l=>Array.isArray(l.value)&&l.value.join('').replace(/\s/g,'')===value.replace(/\s/g,''));
+const short=named('Anne'),long=named(adaptive.people.at(-1).name);
+assert(short&&long&&short.options.align==='center'&&long.options.align==='center','Center employee and apprentice, in addition to leadership');
+assert(short.size>10&&long.size<short.size&&long.size>=11,'Short names grow; long names shrink to a readable floor');
+assert(long.value.length>1,'Wrap rather than truncate when the minimum font still needs more space');
+const measure=new jsPDF({unit:'mm'});
+for(const label of labels.filter(l=>l.options?.align==='center'&&l.y>62&&!String(l.value).startsWith('Fortsetter under'))){
+ assert(label.size>=8,'Readable floor for hierarchy paths');
+ measure.setFont('helvetica',label.font);measure.setFontSize(label.size);
+ const lineCount=Array.isArray(label.value)?label.value.length:1;
+ const matching=boxes.filter(b=>b.page===label.page&&Math.abs(b.x+b.w/2-label.x)<1e-7&&label.y>b.y&&label.y+(lineCount-1)*label.size*1.15*25.4/72+label.size*.25*25.4/72<=b.y+b.h);
+ assert(matching.length,`Centered text stays vertically inside its card: ${label.value}`);
+ const box=matching.sort((a,b)=>a.w-b.w)[0];
+ for(const line of Array.isArray(label.value)?label.value:[label.value])assert(measure.getTextWidth(line)<=box.w-6+.01,`Text fits its actual column at ${label.size}pt: ${line}`);
+}
+for(const label of labels.filter(l=>String(l.value).startsWith('Fortsetter under'))){
+ const last=label.y+(label.value.length-1)*label.size*1.15*25.4/72;
+ assert(label.y-label.size*25.4/72>=82,'Wrapped continuation label stays below the hierarchy header');
+ assert(boxes.some(b=>b.page===label.page&&Math.abs(b.x+b.w/2-label.x)<1e-7&&b.y>last+1&&b.y-last<10),'Continuation label finishes before the next card');
+}
+for(const person of adaptive.people)assert(named(person.name),`Every staff member remains in the paginated document: ${person.id}`);
+for(const unit of adaptive.units)assert(named(unit.name),`Every deep/wide branch remains in the document: ${unit.id}`);
+fs.writeFileSync(output.replace(/\.pdf$/,'-adaptive-deep.pdf'),new Uint8Array(adaptivePdf.output('arraybuffer')));
+console.log('Adaptive text PDF PASS: centered hierarchy/headers/employee/apprentice, larger short labels, smaller long labels, full wrapping, real card bounds and all staff/deep branches retained.');

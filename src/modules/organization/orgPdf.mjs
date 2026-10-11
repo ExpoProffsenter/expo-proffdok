@@ -11,6 +11,20 @@ export async function buildOrgPdf({data,companyName,JsPDF,logo=null,now=new Date
  let column=0,y=64,page=1;
  const text=(value,x,top,size=10,color=ink,style='normal',align='left')=>{pdf.setFont('helvetica',style);pdf.setFontSize(size);pdf.setTextColor(...color);pdf.text(value,x,top,{align});};
  const lines=(value,size,maxWidth,style='normal')=>{pdf.setFont('helvetica',style);pdf.setFontSize(size);return pdf.splitTextToSize(safe(value),maxWidth);};
+ // Prefer one readable line. Reduce only to the field's floor, then wrap all
+ // remaining text and grow the card; never truncate names or shrink endlessly.
+ const fit=(value,maxWidth,maxSize,minSize,style='normal')=>{
+  const label=safe(value);let size=maxSize;pdf.setFont('helvetica',style);pdf.setFontSize(size);
+  while(size>minSize&&pdf.getTextWidth(label)>maxWidth){size=Math.max(minSize,size-.5);pdf.setFontSize(size);}
+  const valueLines=pdf.splitTextToSize(label,maxWidth),step=size*1.15*25.4/72;
+  return {lines:valueLines,size,step,height:valueLines.length*step};
+ };
+ const draw=(field,x,top,color=ink,style='normal')=>text(field.lines,x,top,field.size,color,style,'center');
+ const unitText=(unit,w,parent='')=>({
+  name:fit(unit.name,w,18,12,'bold'),
+  info:fit(`${unit.manager_name||'Leder ikke valgt'} / ${unit.people.length} medarbeidere`,w,12,9),
+  parent:parent?fit(parent,w,10,8):null
+ });
  const header=()=>{
   pdf.setFillColor(...petrol);pdf.rect(0,0,width,45,'F');
   text('ORGANISASJONSKART',margin,15,10,[196,226,221],'bold');
@@ -39,15 +53,16 @@ export async function buildOrgPdf({data,companyName,JsPDF,logo=null,now=new Date
  const positioned=[];let leaf=0;
  const place=(unit,depth)=>{const start=leaf;unit.children.forEach(child=>place(child,depth+1));if(!unit.children.length)leaf++;positioned.push({unit,depth,center:(start+leaf)/2});};
  model.roots.forEach(unit=>place(unit,0));
- const cardW=Math.min(120,(width-margin*2)/leafCount-8),levelHeights=[];
- for(const item of positioned){item.names=lines(item.unit.name,11,cardW-12,'bold');item.info=lines(`${item.unit.manager_name||'Leder ikke valgt'} / ${item.unit.people.length} medarbeidere`,8,cardW-12);item.boxHeight=12+item.names.length*4.5+item.info.length*3.6;levelHeights[item.depth]=Math.max(levelHeights[item.depth]||0,item.boxHeight);}
- const levelY=[];let nextY=97;for(const h of levelHeights){levelY.push(nextY);nextY+=h+14;}
+ const cardW=Math.min(120,(width-margin*2)/Math.min(leafCount,3)-8),levelHeights=[];
+ for(const item of positioned){item.fields=unitText(item.unit,cardW-12);item.boxHeight=12+item.fields.name.height+item.fields.info.height;levelHeights[item.depth]=Math.max(levelHeights[item.depth]||0,item.boxHeight);}
+ const root=fit(company,98,20,12,'bold'),rootHeight=Math.max(20,root.height+8),rootY=62;
+ const levelY=[];let nextY=rootY+rootHeight+15;for(const h of levelHeights){levelY.push(nextY);nextY+=h+14;}
  if(leafCount<=3&&levelHeights.length<=4&&nextY<bottom){
   const centers=new Map(positioned.map(item=>[item.unit.id,{x:margin+item.center*(width-margin*2)/leafCount,y:levelY[item.depth],height:item.boxHeight}]));
-  pdf.setFillColor(...petrol);pdf.roundedRect(width/2-55,62,110,20,3,3,'F');text(lines(company,12,98,'bold'),width/2-49,70,12,[255,255,255],'bold');
+  pdf.setFillColor(...petrol);pdf.roundedRect(width/2-55,rootY,110,rootHeight,3,3,'F');draw(root,width/2,rootY+5+root.size*25.4/72,[255,255,255],'bold');
   const siblings=new Map();for(const item of positioned){const key=item.unit.parent_id||null;if(!siblings.has(key))siblings.set(key,[]);siblings.get(key).push(item);}
   pdf.setDrawColor(120,159,152);pdf.setLineWidth(.65);
-  for(const [parentId,items] of siblings){const parent=centers.get(parentId)||{x:width/2,y:62,height:20};const midway=centers.get(items[0].unit.id).y-7;
+  for(const [parentId,items] of siblings){const parent=centers.get(parentId)||{x:width/2,y:rootY,height:rootHeight};const midway=centers.get(items[0].unit.id).y-7;
    const points=items.map(item=>centers.get(item.unit.id));
    pdf.line(parent.x,parent.y+parent.height,parent.x,midway);
    const left=Math.min(...points.map(p=>p.x)),right=Math.max(...points.map(p=>p.x));
@@ -56,13 +71,15 @@ export async function buildOrgPdf({data,companyName,JsPDF,logo=null,now=new Date
   }
   pdf.setLineWidth(.2);
   for(const item of positioned){const point=centers.get(item.unit.id),left=point.x-cardW/2;
-   const color=rgb(ORG_COLORS[item.unit.color]?.[1]||ORG_COLORS.teal[1]);pdf.setFillColor(...rgb(ORG_COLORS[item.unit.color]?.[0]||ORG_COLORS.teal[0]));pdf.roundedRect(left,point.y,cardW,item.boxHeight,3,3,'F');text(item.names,left+6,point.y+7,11,color,'bold');text(item.info,left+6,point.y+7+item.names.length*4.5,8,color);
+   const color=rgb(ORG_COLORS[item.unit.color]?.[1]||ORG_COLORS.teal[1]);pdf.setFillColor(...rgb(ORG_COLORS[item.unit.color]?.[0]||ORG_COLORS.teal[0]));pdf.roundedRect(left,point.y,cardW,item.boxHeight,3,3,'F');
+   draw(item.fields.name,point.x,point.y+4+item.fields.name.size*25.4/72,color,'bold');
+   draw(item.fields.info,point.x,point.y+6+item.fields.name.height+item.fields.info.size*25.4/72,color);
   }
  }else{
  const graphHeader=()=>{
    pdf.setFillColor(...petrol);pdf.roundedRect(width/2-55,62,110,20,3,3,'F');
-   text('Firmaets avdelinger',width/2-48,71,12,[255,255,255],'bold');
-   text('Les hver gren ovenfra og ned',width/2-48,78,8,[204,230,223]);
+   text('Firmaets avdelinger',width/2,71,16,[255,255,255],'bold','center');
+   text('Les hver gren ovenfra og ned',width/2,78,10,[204,230,223],'normal','center');
   };
   graphHeader();column=0;y=100;
   const graphNext=()=>{column++;y=100;if(column===3){footer();pdf.addPage();page++;column=0;header();graphHeader();}};
@@ -71,22 +88,20 @@ export async function buildOrgPdf({data,companyName,JsPDF,logo=null,now=new Date
    const ancestors=new Map();
    for(const item of branch){
     const indent=Math.min(item.depth,6)*6,w=cardWidth-indent;let x=margin+column*(cardWidth+gap)+indent;
-    const names=lines(item.unit.name,11,w-12,'bold');
-    const info=lines(`${item.unit.manager_name||'Avdelingsleder ikke valgt'} / ${item.unit.people.length} medarbeidere`,8,w-12);
-    const parentText=item.depth>6?lines(`Under ${item.path.join(' / ')}`,7,w-12):[];
-    const boxHeight=12+names.length*4.5+info.length*3.6+parentText.length*3;
+    const fields=unitText(item.unit,w-12,item.depth>6?`Under ${item.path.join(' / ')}`:'');
+    const boxHeight=12+fields.name.height+fields.info.height+(fields.parent?.height||0);
     if(y+boxHeight>bottom){graphNext();ancestors.clear();x=margin+column*(cardWidth+gap)+indent;}
     pdf.setDrawColor(120,159,152);pdf.setLineWidth(.65);
     if(item.depth===0){pdf.line(width/2,82,width/2,88);pdf.line(width/2,88,x+w/2,88);pdf.line(x+w/2,88,x+w/2,y);}
     else{
      const parentPoint=ancestors.get(item.unit.parent_id);
      if(parentPoint){pdf.line(parentPoint.x,parentPoint.y,parentPoint.x,y+boxHeight/2);pdf.line(parentPoint.x,y+boxHeight/2,x,y+boxHeight/2);}
-     else text(`Fortsetter under ${item.path.at(-1)}`,x,y-3,7,muted);
+     else {const continued=fit(`Fortsetter under ${item.path.at(-1)}`,w-12,10,8);draw(continued,x+w/2,y-3-(continued.lines.length-1)*continued.step,muted);}
     }
     pdf.setLineWidth(.2);pdf.setFillColor(...rgb(ORG_COLORS[item.unit.color]?.[0]||ORG_COLORS.teal[0]));pdf.roundedRect(x,y,w,boxHeight,3,3,'F');
-    const color=rgb(ORG_COLORS[item.unit.color]?.[1]||ORG_COLORS.teal[1]);text(names,x+6,y+7,11,color,'bold');
-    text(info,x+6,y+7+names.length*4.5,8,color);
-    if(parentText.length)text(parentText,x+6,y+7+names.length*4.5+info.length*3.6,7,color);
+    const color=rgb(ORG_COLORS[item.unit.color]?.[1]||ORG_COLORS.teal[1]);draw(fields.name,x+w/2,y+4+fields.name.size*25.4/72,color,'bold');
+    draw(fields.info,x+w/2,y+6+fields.name.height+fields.info.size*25.4/72,color);
+    if(fields.parent)draw(fields.parent,x+w/2,y+8+fields.name.height+fields.info.height+fields.parent.size*25.4/72,color);
     ancestors.set(item.unit.id,{x:x+3,y:y+boxHeight});y+=boxHeight+8;
    }
    if(root!==model.roots.at(-1))graphNext();
@@ -98,12 +113,12 @@ export async function buildOrgPdf({data,companyName,JsPDF,logo=null,now=new Date
  for(const {unit,path} of nodes){
   const rows=orgPersonRows(unit.people).map(person=>{
    const leadership=person.kind==='leader'||person.kind==='middle',indent=leadership?0:Math.min(person.depth,5)*3;
-   const names=lines(person.name,10,cardWidth-16-indent,'bold'),titles=lines(data.context.group_id?`${person.title} · ${person.company_name}`:person.title,8.5,cardWidth-16-indent);
-   return {person,indent,leadership,names,titles,height:Math.max(19,names.length*4.4+titles.length*3.7+9)};
+   const names=fit(person.name,cardWidth-18-indent,15,11,'bold'),titles=fit(data.context.group_id?`${person.title} · ${person.company_name}`:person.title,cardWidth-18-indent,12,9.5);
+   return {person,indent,names,titles,height:Math.max(24,names.height+titles.height+13)};
   });
-  const headings=lines(unit.name,13,cardWidth-14,'bold'),parents=lines(path.length?`Under ${path.join(' / ')}`:'Direkte under firmaet',8,cardWidth-14);
-  const manager=unit.manager_name?lines(`Avdelingsleder: ${unit.manager_name}`,9,cardWidth-14):[];
-  const headingHeight=10+headings.length*5.2+parents.length*3.6+manager.length*4;
+  const headings=fit(unit.name,cardWidth-14,18,12,'bold'),parents=fit(path.length?`Under ${path.join(' / ')}`:'Direkte under firmaet',cardWidth-14,11,8.5);
+  const manager=unit.manager_name?fit(`Avdelingsleder: ${unit.manager_name}`,cardWidth-14,12,9):null;
+  const headingHeight=12+headings.height+parents.height+(manager?.height||0);
   let index=0,continued=false;
   do {
    const minRow=rows[index]?.height||12;
@@ -111,21 +126,21 @@ export async function buildOrgPdf({data,companyName,JsPDF,logo=null,now=new Date
    const x=margin+column*(cardWidth+gap),start=y;
    const background=rgb(ORG_COLORS[unit.color]?.[0]||ORG_COLORS.teal[0]),color=rgb(ORG_COLORS[unit.color]?.[1]||ORG_COLORS.teal[1]);
    pdf.setFillColor(...background);pdf.roundedRect(x,y,cardWidth,headingHeight,3,3,'F');
-   text(headings,x+7,y+8,13,color,'bold');
-   let lineY=y+8+headings.length*5.2;
-   text(parents,x+7,lineY,8,color);lineY+=parents.length*3.6;
-   if(manager.length)text(manager,x+7,lineY,9,color);
+   draw(headings,x+cardWidth/2,y+4+headings.size*25.4/72,color,'bold');
+   let lineY=y+6+headings.height;
+   draw(parents,x+cardWidth/2,lineY+parents.size*25.4/72,color);lineY+=parents.height;
+   if(manager)draw(manager,x+cardWidth/2,lineY+2+manager.size*25.4/72,color);
    if(continued)text('fortsetter',x+cardWidth-23,y+5,6,color);
    y+=headingHeight+3;
-   if(!rows.length){text('Ingen medarbeidere plassert her ennå.',x+7,y+7,9,muted);y+=14;}
+   if(!rows.length){const empty=fit('Ingen medarbeidere plassert her ennå.',cardWidth-14,12,9);draw(empty,x+cardWidth/2,y+4+empty.size*25.4/72,muted);y+=empty.height+8;}
    while(index<rows.length&&y+rows[index].height<=bottom-4){
     const row=rows[index],left=x+5+row.indent,w=cardWidth-10-row.indent;
     pdf.setFillColor(250,252,251);pdf.setDrawColor(219,232,228);pdf.roundedRect(left,y,w,row.height-2,2,2,'FD');
     pdf.setFillColor(...(row.person.kind==='apprentice'?[220,166,66]:row.person.kind==='leader'?[50,106,162]:row.person.kind==='middle'?[141,110,189]:[151,189,176]));pdf.rect(left,y,1.3,row.height-2,'F');
-    const textX=row.leadership?left+w/2:left+4,align=row.leadership?'center':'left';
-    text(row.names,textX,y+5,10,ink,'bold',align);
-    const titleY=y+5+row.names.length*4.4;text(row.titles,textX,titleY,8.5,muted,'normal',align);
-    text(ORG_KINDS[row.person.kind],textX,y+row.height-5,7,muted,'normal',align);
+    const textX=left+w/2;
+    draw(row.names,textX,y+3+row.names.size*25.4/72,ink,'bold');
+    draw(row.titles,textX,y+5+row.names.height+row.titles.size*25.4/72,muted);
+    text(ORG_KINDS[row.person.kind],textX,y+row.height-5,9,muted,'normal','center');
     y+=row.height;index++;
    }
    pdf.setDrawColor(213,230,225);pdf.roundedRect(x,start,cardWidth,y-start+2,3,3,'S');y+=10;
