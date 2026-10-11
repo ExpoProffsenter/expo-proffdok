@@ -37,10 +37,18 @@ let visibilityReads=0;
 await assert.rejects(downloadOrgPdf({session:{read:async()=>++visibilityReads===1?structuredClone(sharedPdfData):{...structuredClone(sharedPdfData),shared_visibility:false},invalidate(){}},expected:sharedPdfData,isCurrent:()=>true,load,save:()=>groupSaves++,now}),/endret/);assert.equal(groupSaves,1,'Visibility change prevents delivery of stale PDF');
 const three=structuredClone(sharedPdfData);three.chart_name='Ringside AS';three.units=three.units.filter(u=>u.id!=='apprentices');three.people=[];
 for(const u of three.units)u.sort_order=u.id==='project'?1:u.id==='service'?2:u.id==='store'?3:0;
-const labels=[];class RecordedPdf extends jsPDF{constructor(...args){super(...args);const original=this.text;this.text=(value,x,y,...rest)=>{labels.push({value,x,y});return original.call(this,value,x,y,...rest);};}}
+const labels=[],connectors=[];class RecordedPdf extends jsPDF{constructor(...args){super(...args);const original=this.text,line=this.line;this.text=(value,x,y,...rest)=>{labels.push({value,x,y,options:rest[0]});return original.call(this,value,x,y,...rest);};this.line=(x1,y1,x2,y2,...rest)=>{connectors.push({x1,y1,x2,y2,width:this.getLineWidth(),page:this.getCurrentPageInfo().pageNumber});return line.call(this,x1,y1,x2,y2,...rest);};}}
 const centered=await buildOrgPdf({data:three,companyName:'Ringside AS',JsPDF:RecordedPdf,now});
 const head=name=>labels.find(p=>Array.isArray(p.value)&&p.value.join(' ')===name&&p.y>100&&p.y<200);
 assert(head('Expo Proffsenter').x<head('Ringside Rørleggerbedrift').x&&head('Ringside Rørleggerbedrift').x<head('Bademiljø Expo').x,'Actual PDF drawing preserves left/middle/right');
 assert.equal(head('Ringside Rørleggerbedrift').x,156,'Middle card starts at centered card left+6, with center x=210mm on A3');
+const hierarchyLines=connectors.filter(l=>l.page===1&&l.width===.65);
+assert.equal(hierarchyLines.filter(l=>l.y1===l.y2).length,1,'Single Styret branch has no horizontal bar; peers share one crossbar');
+const crossbar=hierarchyLines.find(l=>l.y1===l.y2);assert.equal(crossbar.x1,80);assert.equal(crossbar.x2,340,'Crossbar stops at the outer card centers');
+assert(hierarchyLines.every(l=>l.x1!==l.x2||l.y1!==l.y2),'No zero-length connectors');
+labels.length=0;const twoLeaders={...structuredClone(data),units:[{...data.units.find(u=>u.id==='service'),parent_id:null}],people:data.people.slice(0,2)};await buildOrgPdf({data:twoLeaders,companyName:data.context.company_name,JsPDF:RecordedPdf,now});
+const leader=labels.find(l=>Array.isArray(l.value)&&l.value.join(' ')==='Syntetisk medarbeider 01'&&l.options?.align==='center');
+const middle=labels.find(l=>Array.isArray(l.value)&&l.value.join(' ')==='Alexandra Marie Kristoffersen-Bjørnstad med langt etternavn'&&l.options?.align==='center');
+assert(leader&&middle,'Actual PDF centers both leader and middle-leader names');assert.equal(leader.x,middle.x,'Leader rows share the same department axis despite their HR depth');
 fs.writeFileSync(output.replace(/\.pdf$/,'-centered.pdf'),new Uint8Array(centered.output('arraybuffer')));
-console.log('Shared PDF PASS: visibility changes block delivery; actual drawing centers plumbing between Proffsenter/Bademiljø.');
+console.log('Shared PDF PASS: visibility changes block delivery; centered plumbing, trimmed/thicker connectors and aligned leader rows.');

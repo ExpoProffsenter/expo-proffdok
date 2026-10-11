@@ -20,3 +20,21 @@
 /* Equal sibling columns keep the middle branch on the parent axis, also with unequal subtrees. */
 .org-root-branches,.org-subunits{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(260px,1fr);align-items:start;width:max-content;min-width:100%;justify-content:center}
 .org-branch{width:100%;max-width:none;box-sizing:border-box}.org-unit-card{box-sizing:border-box}.org-group-visibility{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:14px 0;font-size:14px}.org-group-visibility input{width:20px;height:20px;accent-color:#08766d;flex-shrink:0}.org-group-visibility small{flex-basis:100%;color:#647b78}
+
+/* Connect sibling centers only. A single branch gets one straight stem. */
+.org-map{--org-line:#789f98;--org-line-width:3px;--org-branch-gap:24px}
+.org-root-branches,.org-subunits{border-top:0;gap:var(--org-branch-gap);padding-top:26px}
+.org-company-node:after,.org-subunits:before,.org-root-branches>.org-branch:before,.org-subunits>.org-branch:before{width:var(--org-line-width);background:var(--org-line);left:50%;transform:translateX(-50%)}
+.org-company-node:after{height:39.5px;bottom:-39.5px}
+.org-subunits:before{top:-34px;height:35.5px}
+.org-root-branches>.org-branch:before,.org-subunits>.org-branch:before{top:-26px;height:26px}
+.org-root-branches>.org-branch:after,.org-subunits>.org-branch:after{content:'';position:absolute;top:-27.5px;left:calc(var(--org-branch-gap)/-2);width:calc(100% + var(--org-branch-gap));height:var(--org-line-width);background:var(--org-line);pointer-events:none}
+.org-root-branches>.org-branch:first-child:after,.org-subunits>.org-branch:first-child:after{left:50%;width:calc(50% + var(--org-branch-gap)/2)}
+.org-root-branches>.org-branch:last-child:after,.org-subunits>.org-branch:last-child:after{width:calc(50% + var(--org-branch-gap)/2)}
+.org-root-branches>.org-branch:only-child:after,.org-subunits>.org-branch:only-child:after{display:none}
+.org-unit-head{display:grid;grid-template-columns:34px minmax(0,1fr) 34px;position:relative}
+.org-unit-head>div{text-align:center}
+.org-unit-head>.org-edit-icon{grid-column:3;width:34px}
+.org-unit-card .org-person-leader,.org-unit-card .org-person-middle{margin-left:0;width:100%;box-sizing:border-box;flex-direction:column;text-align:center;gap:5px}
+.org-unit-card .org-person-leader>span:nth-child(2),.org-unit-card .org-person-middle>span:nth-child(2){width:100%}
+@media(max-width:760px){.org-map{--org-branch-gap:16px}}

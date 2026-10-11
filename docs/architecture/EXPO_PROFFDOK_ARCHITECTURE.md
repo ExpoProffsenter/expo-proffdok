@@ -1,3 +1,7 @@
+## Organisasjonskart – renere forbindelser og sentrerte ledere (11.10.2026)
+
+Skjermkartets forbindelser går bare mellom kortenes midtakser: én gren får en rett stamme, og tverrlinjer stopper ved ytterste gren. Linjene er 3 px; PDF bruker 0,65 mm. Leder og mellomleder har sentrerte navn/stillinger uten dybdeinnrykk. Vanlige medarbeideres innrykk og all lagrings-/tilgangslogikk beholdes. Faktisk React, jsPDF og full Sandbox critical/build PASS; Preview-visning kreves for dette kosmetiske tillegget. Tidligere TEST OK skal ikke gjentas. Se [omfang og QA](../kshms/ORGANIZATION_SHARED_20261011.md).
+
 ## TEST OK og generell veiledning – 11. oktober 2026 kl. 19:42 Europe/Oslo
 
 Miljømål **BEGGE**. Kenneth har gitt **TEST OK** også for felles lesetilgang og sentrert kart. Tidligere HR/navn/kart-prøver er godkjent og skal ikke gjentas. Spørsmålet om hvem som ser eksemplene avdekket at Ringside-navn var lagt inn i felles veiledning og organisasjonskapittelet i Hjelp uten firmabegrensning. Disse eksemplene er erstattet med generelle navn/nivåer og venstre/midt/høyre. Hjelps oppdateringsdato er satt til 11.10.2026. Ingen kartnavn, avdelingsnavn, firmadata, tilgang eller lagringsflyt endres.
