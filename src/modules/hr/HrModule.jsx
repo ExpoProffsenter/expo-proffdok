@@ -5,14 +5,19 @@ import {MANAGED_ACCESS_EVENT,MODULE_ACCESS_EVENT,publishManagedAccessChange} fro
 import {WORK_PROFILE_EVENT} from '../access/workProfileClient.js';
 import './hr.css';
 import ModuleHeading from '../ui/ModuleHeading.jsx';
+import DeviationDialog from '../deviations/DeviationDialog.jsx';
 import {UserRound,ShieldCheck,ChevronRight,UsersRound,Settings,FileCheck2,Info,ArrowRight,HeartPulse,BookOpen} from 'lucide-react';
 import HrTextSuggestion from './HrTextSuggestion.jsx';
 import PrivateContact from './PrivateContact.jsx';
 import {HR_SETUP_SUGGESTIONS,suggestedReviewDate} from './hrSetupSuggestions.mjs';
 import HrConversationTemplates from './HrConversationTemplates.jsx';
 import HrSickLeaveSetup from './HrSickLeaveSetup.jsx';
+import HrPracticeConversation from './HrPracticeConversation.jsx';
+import {practiceAvailable} from './hrPracticeConversation.mjs';
+import {createModuleNavigationMemory} from '../ui/moduleNavigationMemory.mjs';
 
 const emptyConfig={purpose:'',legalBasis:'',reviewOn:'',enabled:false};
+const selectionMemory=createModuleNavigationMemory(id=>typeof id==='string'&&id.length>0&&id.length<=80);
 function Field({label,children}) {return <label className="hr-field"><span>{label}</span>{children}</label>;}
 function UserSelect({label,value,onChange,members,exclude=[],required=false}) {
  return <Field label={label}><select value={value} onChange={event=>onChange(event.target.value)} required={required}>
@@ -33,11 +38,13 @@ export default function HrModule({context,audience='legacy',initialEmployeeId=nu
  const registerRef=useRef(null),setupCardRef=useRef(null),purgeCardRef=useRef(null),templatesRef=useRef(null),sickLeaveRef=useRef(null),templateToken=useRef(0);
  const [templateRequest,setTemplateRequest]=useState(null);
  const goTo=target=>{const element=target.current;if(!element)return;if(element.tagName==='DETAILS')element.open=true;element.focus();element.scrollIntoView({block:'start'});};
- const sessionRef=useRef(null),revision=useRef(0),busyRef=useRef(false),detailRef=useRef(null),regionRef=useRef(null);
+ const sessionRef=useRef(null),revision=useRef(0),busyRef=useRef(false),detailRef=useRef(null);
  // This ref holds only the chosen record ID. Every return performs a new scoped list + double read.
- const selectedId=useRef(initialEmployeeId),selectionScope=useRef(companyId+':'+userId),selectionCallback=useRef(onEmployeeSelect);selectionCallback.current=onEmployeeSelect;
+ const navigationScope=JSON.stringify([companyId,userId,audience]);
+ // Min side owns its explicit selection; management has only a bounded ID pointer.
+ const selectedId=useRef(onEmployeeSelect?initialEmployeeId:initialEmployeeId||selectionMemory.read(navigationScope)),selectionScope=useRef(companyId+':'+userId),selectionCallback=useRef(onEmployeeSelect);selectionCallback.current=onEmployeeSelect;
  if(selectionScope.current!==companyId+':'+userId){selectionScope.current=companyId+':'+userId;selectedId.current=null;}
- const selectId=id=>{selectedId.current=id;selectionCallback.current?.(id);};
+ const selectId=id=>{selectedId.current=id;if(id)selectionMemory.remember(navigationScope,id);else selectionMemory.forget(navigationScope);selectionCallback.current?.(id);};
  const clear=useCallback(()=>{setData(null);setMembers([]);setMemberNext(null);setDetail(null);detailRef.current=null;setLeader('');setReader('');setReason('');setClearOld(false);setEnding(false);setEndConfirmed(false);},[]);
  const installDetail=employee=>{setDetail(employee);detailRef.current=employee;setLeader(employee?.leader_id||'');setClearOld(false);setReader('');setReason('');setEnding(false);setEndConfirmed(false);};
  const load=useCallback(async(session)=>{
@@ -59,7 +66,7 @@ export default function HrModule({context,audience='legacy',initialEmployeeId=nu
   const refresh=async()=>{
    const ticket=++revision.current;session.invalidate();setError('');setNotice('');setBusy(true);busyRef.current=true;
    try{if(document.visibilityState!=='hidden'){const result=await load(session);const id=selectedId.current;const fresh=id&&result.listing.employees.some(employee=>employee.id===id)?await session.get(id):null;if(alive&&ticket===revision.current){install(result);if(fresh)installDetail(fresh.employee);else selectId(null);}}}
-   catch(e){if(alive&&ticket===revision.current)setError(e.code==='42501'?'HR-tilgangen er endret. Kontroller aktivt firma eller kontakt firmaadmin.':e.message);}
+   catch(e){if(alive&&ticket===revision.current){if(e.code==='42501')selectId(null);setError(e.code==='42501'?'HR-tilgangen er endret. Kontroller aktivt firma eller kontakt firmaadmin.':e.message);}}
    finally{if(alive&&ticket===revision.current){setBusy(false);busyRef.current=false;}}
   };
   refresh();
@@ -92,7 +99,8 @@ export default function HrModule({context,audience='legacy',initialEmployeeId=nu
   catch(e){if(current())setError(e.code==='40001'?'En annen bruker har endret registeret. Trykk «Oppdater registeret» og se over endringen.':e.message);}
   finally{if(current()){setBusy(false);busyRef.current=false;}}
  };
- const open=id=>run(async(session,current)=>{installDetail(null);const result=await session.get(id);if(current()){installDetail(result.employee);selectId(result.employee.id);regionRef.current?.focus();}});
+ const open=id=>run(async(session,current)=>{installDetail(null);const result=await session.get(id);if(current()){installDetail(result.employee);selectId(result.employee.id);}});
+ const closeEmployee=()=>{if(busyRef.current)return;installDetail(null);selectId(null);};
  const command=(action,payload,message)=>run(async(session,current)=>{
   // Fresh detail before every edit; expected revision still protects the write.
   if(action!=='create'){const fresh=await session.get(payload.id);if(fresh.employee.revision!==payload.revision){session.invalidate();throw new Error('Medarbeideren er endret. Oppdater registeret før du fortsetter.');}}
@@ -108,7 +116,9 @@ export default function HrModule({context,audience='legacy',initialEmployeeId=nu
  const employees=data?.employees||[],shown=employees.filter(employee=>(employee.email||'').toLocaleLowerCase('nb-NO').includes(query.trim().toLocaleLowerCase('nb-NO')));
  const oldHasReader=Boolean(detail?.leader_id&&detail.readers?.some(grant=>grant.user_id===detail.leader_id));
  const selectedLeaderMissing=Boolean(leader&&!members.some(member=>member.id===leader));
+ const moreMembersButton=administer&&memberNext&&<button type="button" className="secondary" disabled={busy} onClick={()=>run(async(session,current)=>{const page=await session.state(memberNext);if(current()){setMembers(previous=>[...previous,...page.members.filter(member=>!previous.some(p=>p.id===member.id))]);setMemberNext(page.next);}})}>Hent flere appbrukere til valgene</button>;
  return <section className={audience==='personal'?'hr-module hr-personal':'hr-module'} aria-label={audience==='personal'?'Mine oppfølginger':'HR'}>
+  {practiceAvailable(context,import.meta.env.VITE_EXPO_BACKEND_TARGET)&&<HrPracticeConversation key={'practice:'+companyId+':'+userId} context={context}/>}
   {audience!=='personal'&&<ModuleHeading className="hr-heading" companyName={context.company_name} title="HR" description={administer?'Medarbeidere, nærmeste leder og trygg tilgang.':audience==='management'?'Medarbeiderne du følger opp som nærmeste leder.':'Dine tilgjengelige oppføringer og oppfølginger.'} role={administer?'Firmaadmin':audience==='management'?'Nærmeste leder':'Personlig tilgang'} icon={UsersRound}/>}
   {audience==='personal'?<div className="hr-personal-intro"><ShieldCheck aria-hidden="true"/><div><strong>Din oppføring. Din tilgang.</strong><p>Åpne raden nedenfor for å se egen medarbeideroppføring eller en oppføring som er delt med deg. Kontakt firmaadmin hvis leder eller tilgang er feil. Ansattes svar og referater kan ikke registreres ennå.</p></div></div>:<><p className="hr-coming"><HeartPulse size={16} aria-hidden="true"/>Samtaler og sykefraværsoppfølging kommer i neste del.</p><details className="module-guide"><summary><Info aria-hidden="true"/>Slik bruker du HR</summary><div className="hr-intro"><strong>Riktig leder. Riktig tilgang.</strong><p>{administer?'Registrer medarbeidere og velg nærmeste leder. Se over hvem som får lese før dere begynner med oppfølging.':audience==='management'?'Her ser du medarbeiderne du er registrert som nærmeste leder for. Egne oppfølginger ligger på Min side.':'Her ser du egen registeroppføring og medarbeidere du har fått uttrykkelig lesetilgang til.'}</p><p>Samtaler og sykefraværsoppfølging kommer i neste del. Du kan foreløpig ikke lagre referat, fraværsopplysninger eller filer her.</p></div></details></>}
   {audience!=='personal'&&data&&<section className="hr-step-guide" aria-label="Kom i gang med HR"><h3>Start her</h3>
@@ -126,7 +136,7 @@ export default function HrModule({context,audience='legacy',initialEmployeeId=nu
    <article className="hr-workspace-card hr-workspace-purge"><span className="hr-workspace-icon"><FileCheck2 aria-hidden="true"/></span><h3>Slettekvitteringer</h3><p>Kontroller om innhold, filer og slettekvittering er ferdig kontrollert.</p><button type="button" className="secondary" onClick={()=>goTo(purgeCardRef)}>Se slettekvitteringer <ArrowRight aria-hidden="true"/></button></article></>}
   </nav>}
   <div className="hr-toolbar hr-register-target" ref={registerRef} tabIndex={-1}><h3>{administer?'Medarbeiderregister':audience==='personal'?'Dine oppføringer':'Mine oppfølginger'}</h3><button type="button" className="secondary" disabled={busy} onClick={refresh}>Oppdater registeret</button></div>
-  {error&&<p className="hr-error" role="alert">{error}</p>}{notice&&<p className="hr-notice" role="status">{notice}</p>}
+  {!detail&&error&&<p className="hr-error" role="alert">{error}</p>}{!detail&&notice&&<p className="hr-notice" role="status">{notice}</p>}
   {busy&&<p role="status">Kontrollerer tilgang og register …</p>}
   {data?.enabled&&<>
    {administer&&<p className="hr-hint">Registeret er listen over medarbeidere som skal følges opp i HR. Mangler noen? Bruk Legg til medarbeider. Personen må først være en aktiv appbruker i dette firmaet. Åpne en medarbeiderrad for å kontrollere leder og lesetilgang.</p>}
@@ -136,7 +146,7 @@ export default function HrModule({context,audience='legacy',initialEmployeeId=nu
      <UserSelect label="Nærmeste leder for ny medarbeider" value={newLeader} onChange={setNewLeader} members={members} exclude={[employeeUser]}/></div><button disabled={!employeeUser}>Legg til i registeret</button>
     </fieldset></form>
    </details>}
-   {administer&&memberNext&&<button type="button" className="secondary" disabled={busy} onClick={()=>run(async(session,current)=>{const page=await session.state(memberNext);if(current()){setMembers(previous=>[...previous,...page.members.filter(member=>!previous.some(p=>p.id===member.id))]);setMemberNext(page.next);}})}>Hent flere appbrukere til valgene</button>}
+   {!detail&&moreMembersButton}
    {employees.length>(audience==='personal'?1:0)&&<Field label="Søk etter medarbeider"><input type="search" value={query} onChange={e=>setQuery(e.target.value)}/></Field>}
    <div className="hr-list">{shown.map(employee=><button type="button" className="hr-employee secondary" key={employee.id} disabled={busy} aria-pressed={detail?.id===employee.id} onClick={()=>open(employee.id)}><span className="hr-personal-avatar" aria-hidden="true"><UserRound/></span><span className="hr-employee-label"><strong>{audience==='personal'&&employee.user_id===userId?'Min medarbeideroppføring':employee.email||'Medarbeider'}</strong><small>{audience==='personal'&&employee.user_id===userId?employee.email:employee.user_id===userId?'Din medarbeidertilgang':audience==='personal'?'Delt med deg · ekstra lesetilgang':employee.leader_id===userId?'Du er nærmeste leder':administer?'Firmaregister':'Ekstra lesetilgang'}</small></span><span className="hr-employee-state">{employee.leader_id?'Leder registrert':'Leder mangler'} {audience==='personal'?<ChevronRight size={18} aria-hidden="true"/>:'→'}</span></button>)}</div>
    {!shown.length&&<div className="hr-empty"><h4>{employees.length?'Ingen treff':'Ingen medarbeidere å vise'}</h4><p>{employees.length?'Prøv et annet søk.':administer?'Start med «Legg til medarbeider». Deretter velger du leder og kontrollerer tilgangen.':'Firmaadmin registrerer medarbeider og nærmeste leder. Oppfølgingene vises her når de er tilgjengelige for deg.'}</p></div>}
@@ -165,8 +175,10 @@ export default function HrModule({context,audience='legacy',initialEmployeeId=nu
    {data.purges.next&&<button type="button" className="secondary" disabled={busy} onClick={()=>run(async(session,current)=>{const page=await session.purgeStatus(data.purges.next);if(current())setData(previous=>({...previous,purges:{receipts:[...previous.purges.receipts,...page.receipts.filter(receipt=>!previous.purges.receipts.some(p=>p.id===receipt.id))],next:page.next}}));})}>Hent flere slettekvitteringer</button>}
   </details>}
   {audience==='personal'&&<details className="hr-personal-roadmap"><summary><UserRound size={18} aria-hidden="true"/>Hva kommer her?</summary><p>Medarbeidersamtaler og sykefraværsoppfølging kommer i neste del. Da forbereder du samtalen, og du og leder fullfører sammen. Nærmeste leder starter sykefraværsoppfølging. Du kan ikke lagre referat, fraværsopplysninger eller filer ennå.</p></details>}
-  {detail&&<article className="hr-card hr-detail" ref={regionRef} tabIndex={-1} aria-label="Medarbeiderens tilgang"><div className="hr-toolbar"><h3>{detail.email||'Medarbeider'}</h3><button type="button" className="secondary" onClick={()=>{installDetail(null);selectId(null);}}>Lukk medarbeider</button></div>
+  {detail&&<DeviationDialog title={detail.email||'Medarbeider'} context={'HR · '+(context.company_name||'Medarbeiderregister')} closeLabel="Lukk medarbeidervindu" busy={busy} onClose={closeEmployee}><div className="hr-module hr-employee-dialog"><article className="hr-detail" aria-label="Medarbeiderens tilgang"><div className="hr-toolbar"><h3>Leder og tilgang</h3><button type="button" className="secondary" disabled={busy} onClick={closeEmployee}>Lukk medarbeider</button></div>
+   {error&&<p role="alert" className="hr-error">{error}</p>}{notice&&<p role="status" className="hr-notice">{notice}</p>}
    <p>{administer?'Kontroller leder og ekstra lesere. Endringen lagres først når du trykker knappen.':'Dette er din tilgjengelige registeroppføring. Firmaadmin styrer leder og ekstra lesetilgang.'}</p>
+   {moreMembersButton}
    <PrivateContact key={detail.id+':'+detail.revision} context={context} employee={detail}/>
    {!administer&&<p>{detail.leader_id?'Nærmeste leder er registrert.':'Nærmeste leder er ikke registrert. Kontakt firmaadmin.'}</p>}
    {administer&&<><form onSubmit={event=>{event.preventDefault();command('leader',{id:detail.id,revision:detail.revision,leader_id:leader||null,clear_old_leader_reader:clearOld},'Nærmeste leder er oppdatert.');}}><fieldset disabled={busy}>
@@ -185,6 +197,6 @@ export default function HrModule({context,audience='legacy',initialEmployeeId=nu
     <label className="hr-check"><input type="checkbox" checked={endConfirmed} disabled={busy} onChange={e=>setEndConfirmed(e.target.checked)}/>Jeg bekrefter at arbeidsforholdet er avsluttet og at HR-registeroppføringen skal slettes.</label>
     <button type="button" className="hr-danger" disabled={busy||!endConfirmed} onClick={()=>command('end',{id:detail.id,revision:detail.revision,confirm:'END_AND_DELETE'},'Arbeidsforholdet er avsluttet i HR. Registeroppføring og tildelinger er slettet.')}>Avslutt og slett HR-registeroppføring</button>
    </details></>}
-  </article>}
+  </article></div></DeviationDialog>}
  </section>;
 }

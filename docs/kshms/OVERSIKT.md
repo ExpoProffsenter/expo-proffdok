@@ -1,3 +1,7 @@
+## HR-skyoppsett mot dagens main – 11. oktober 2026
+
+Kenneth har bedt om videre arbeid med trygg lagring/gjenoppretting. PR #217 beholder dagens godkjente popup-/navigasjons-/prøveflyt fra main `f6a74d8` og alle eksisterende ledgerkontroller. Fersk lesende kontroll viser manglende navngitt worker-nøkkel, 0 checkpoint/aktiveringer/låser og fortsatt stengte private HR-porter. Faktisk skyoppsett mangler; ny ressurs er ikke opprettet eller prisantatt. [Presis status og engangsoppsett](HR_CLOUD_READINESS_20261011.md). Eldre main/demo-SHA-er i daterte notater er historikk. Ingen ny brukerprøve av ferdig skjema/PDF/navigasjon.
+
 ## Gjeldende bootstrap-oppfølging – 11. oktober 2026
 
 Draft PR #217 har kontrollert bootstrap-grunnlag og isolert SQL-integrasjon. Privat HR fortsatt stengt; ingen ny manuell Kenneth-prøve. Faktisk sky/kilde/control/ack-drift og managed-cloud restore gjenstår. [Nyeste scope, kontroller og bevisgrenser](HR_CONTROL_BOOTSTRAP_20261011.md). Tidligere TEST OK beholdes.

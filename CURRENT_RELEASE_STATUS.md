@@ -1,3 +1,7 @@
+## HR-skyoppsett mot dagens main – 11. oktober 2026
+
+Kenneth har bedt om videre arbeid med trygg lagring/gjenoppretting. PR #217 beholder dagens godkjente popup-/navigasjons-/prøveflyt fra main `f6a74d8` og alle eksisterende ledgerkontroller. Fersk lesende kontroll viser manglende navngitt worker-nøkkel, 0 checkpoint/aktiveringer/låser og fortsatt stengte private HR-porter. Faktisk skyoppsett mangler; ny ressurs er ikke opprettet eller prisantatt. [Presis status og engangsoppsett](docs/kshms/HR_CLOUD_READINESS_20261011.md). Eldre main/demo-SHA-er i daterte notater er historikk. Ingen ny brukerprøve av ferdig skjema/PDF/navigasjon.
+
 ## Bootstrap-grunnlag og isolert SQL-integrasjon – 11. oktober 2026 ca. 01:35 Europe/Oslo
 
 ## Isolert Edge-serverjobb – 11. oktober 2026
@@ -173,7 +177,23 @@ Den ene testmailen er sendt og mottak dokumentert. H5b er fortsatt bare draft PR
 
 PR #216 er merged; Production/main `c3d873e0` og demo `11f1b45d` er levert og ferskt kontrollert READY. Ny H5b er **bare draft PR #217**, funksjonscommit `ecd700ac`, siste kontrollerte dokumentasjonshead `287a80aa`, grønn Core Safety/READY Preview med direkte Sandbox-binding; ingen merge eller privat HR-åpning. Den tidligere blokkerte, uendrede **live Sandbox rollback-SQL-prøven bestod nå**; etterkontroll: 1 bevart medarbeider, 0 receipts/acks/innhold/filer/jobber, deaktivert binding og privat HR false/quarantined=true. Dette er faktisk DB-prøve med syntetisk filjobbflag, ikke ekte skylager-/Storage-byte-/restore-/browser-PASS. Kenneth fullførte manuell Production-innlogging; **én autorisert testmail til kenneth@ringside.no er sendt gjennom eksisterende systemadmin-testflyt** 10. oktober ca. 21:08 Europe/Oslo. Synlig bekreftelse: «Test er sendt kun til kenneth@ringside.no.» Ingen gruppesending; Kenneths vedlagte skjermbilde av åpnet e-post dokumenterer mottak med eksakt emne og melding. Dette er ikke ende-til-ende-bevis for KS/HMS-tildelingsarbeideren. Privat uavhengig lager, varig operator/scheduler og full isolert Supabase/Auth/Storage-restore gjenstår. [Eksakte miljøer, nye bevis og neste konkrete driftshandling](docs/kshms/HR_LEDGER_ACK_20261010.md). Eldre avsnitt nedenfor er leveringshistorikk og overstyrer ikke denne statusen. Tidligere TEST OK beholdes uten omtest.
 
+## Rettet HR-prøveflyt – 11. oktober 2026
+
+Kenneth meldte behov for scrolling ved neste steg og tap av åpen samtale etter PDF. Neste steg fokuseres og rulles til starten. Etter tilgangskontroll/PDF-retur gjenåpnes samme lagrede samtale, utgave og fane fra scoped navigasjon i denne nettleserfanen. Ny/lukk/slett respekteres. Faktisk React og Chromium-regresjon PASS; PDF-format og beskyttet kjerne uendret. Publiseres på samme PR #218 / faste Preview, uten ny godkjenningsrunde for tidligere områder. [Bevis](docs/kshms/HR_PRACTICE_20261011.md).
+
+## HR-prøvesamtale i eksisterende Sandbox – 11. oktober 2026
+
+Ny isolert branch `fase45b-hr-conversation-practice-20261011` fra ren main. Brukeren kan prøve eksempeltekster, fire samtalesteg, lokal lagring/gjenåpning og PDF med egen konto. Ingen nye nøkler eller testmiljøer. Production viser ikke prøveflaten. Personlig HR forblir stengt. Tidligere ledger/workerarbeid står separat i draft PR #217.
+
+Ny faktisk React-/Chromium-/PDF-/samtidighetskontroll, berørte eksisterende HR-flyter og full Sandbox/Production critical/build PASS. Bare ny kort vurdering av arbeidsflyten gjenstår hos Kenneth. Ingen gammel godkjenning eller testmail skal gjentas. [Scope, bevis og grenser](docs/kshms/HR_PRACTICE_20261011.md).
+
+Kanonisk main/Production er `c3d873e0e5bd2677f0205143de6edc1fbd95ae4c` (READY), demo `11f1b45dac4daa08efc850ba87ad5e28522dad4c`. Ingen merge eller endring av disse i denne leveransen. Eldre daterte avsnitt nedenfor er historikk, ikke nye utestående krav.
+
 ## Godkjent release til Production og kursdemo – 10. oktober 2026
+
+## Separat navigasjonsretting – 11. oktober 2026
+
+Miljømål **BEGGE**. Ren core-branch `fase45b-core-navigation-resume-20261011`, baseline main `c3d873e0e5bd2677f0205143de6edc1fbd95ae4c`. HR-ID/tillatt KS/HMS-fane bevares over tilgangsremount; uttrekksarbeidsflate bevares over interne fanebytter med gamle eksporter avbrutt. Ingen samtaleøvelse fra PR #218, backend/mail/SQL eller main/demo-endring. [Scope og QA](docs/kshms/NAVIGATION_RECOVERY_20261011.md). Eksakt publisert kode/CI/Preview føres i den nye core-PR-en; innlogget Preview og eksplisitt TEST OK gjenstår før merge.
 
 Kenneth har godkjent releaseløpet med «Kjør», mobiltilpasning og eksempelinnhold for kurs. Miljømål: **BEGGE**. Eldre avsnitt om manglende Production-godkjenning er historiske.
 
@@ -499,3 +519,7 @@ Bare de nye vernerunde-/risikoflytene i USER_TEST.md skal prøves nå; godkjente
 Vedleggs-/øvrige rapportuttrekk, separat HR/kompetanse/medarbeidersamtaler og fristpåminnelser gjenstår før Ringside-pilot som avtalt. Sandbox-e-postsending er deaktivert; avsenderoppsett/faktisk mottaksprøve gjenstår. Utførelse før HR; leder bare tildelte ansatte, firmaadmin alle/tildele ansvar. Relevant TEST OK og eksplisitt PRODUCTION GODKJENT for PR #216 kreves før Production-migrering/merge. Senere synkretning main → demo.
 
 Fortsettelsespunkt: [OVERSIKT.md](docs/kshms/OVERSIKT.md) og [CONTINUITY.md](docs/kshms/CONTINUITY.md). Eldre release-status er bevart i [arkivet](docs/kshms/archive/CURRENT_RELEASE_STATUS_before_TEST_OK_20261008.md).
+
+HR-popup 11.10: medarbeiderraden åpner eksisterende appdialog, med leder/tilgang, paginerte brukervalg og resultatmeldinger inne i vinduet. Dialog, Escape/kryss, fokusretur og fersk autorisering kontrollert i React og Chromium ved 1280/360/740. Tilgang/backend/privat HR uendret. Samme core-PR #219/Preview; ingen merge.
+
+HR-prøveoppdatering 11.10: første åpning viser skjemaets topp; tom/ulagret/redigert samtale bevares gjennom ekte HR-tilgangsremount. Konto-/firmabundet sideminne, ingen ulagret browserlagring. Faktisk useHrAccess/JSDOM og Chromium 1280/360/740 grønne, inkludert konflikt og uendrede PDF-/neste-steg-løp. Samme PR #218/Preview; ingen merge.

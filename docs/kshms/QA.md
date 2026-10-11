@@ -147,7 +147,23 @@ Begrenset Blob-token og faktisk resource-ID/token-ID/origin/SDK-binding, betrodd
 
 PR #216 er merged; Production/main `c3d873e0` og demo `11f1b45d` er levert og ferskt kontrollert READY. Ny H5b er **bare draft PR #217**, funksjonscommit `ecd700ac`, siste kontrollerte dokumentasjonshead `287a80aa`, grønn Core Safety/READY Preview med direkte Sandbox-binding; ingen merge eller privat HR-åpning. Den tidligere blokkerte, uendrede **live Sandbox rollback-SQL-prøven bestod nå**; etterkontroll: 1 bevart medarbeider, 0 receipts/acks/innhold/filer/jobber, deaktivert binding og privat HR false/quarantined=true. Dette er faktisk DB-prøve med syntetisk filjobbflag, ikke ekte skylager-/Storage-byte-/restore-/browser-PASS. Kenneth fullførte manuell Production-innlogging; **én autorisert testmail til kenneth@ringside.no er sendt gjennom eksisterende systemadmin-testflyt** 10. oktober ca. 21:08 Europe/Oslo. Synlig bekreftelse: «Test er sendt kun til kenneth@ringside.no.» Ingen gruppesending; Kenneths vedlagte skjermbilde av åpnet e-post dokumenterer mottak med eksakt emne og melding. Dette er ikke ende-til-ende-bevis for KS/HMS-tildelingsarbeideren. Privat uavhengig lager, varig operator/scheduler og full isolert Supabase/Auth/Storage-restore gjenstår. [Eksakte miljøer, nye bevis og neste konkrete driftshandling](HR_LEDGER_ACK_20261010.md). Eldre avsnitt nedenfor er leveringshistorikk og overstyrer ikke denne statusen. Tidligere TEST OK beholdes uten omtest.
 
+## Rettet HR-prøveflyt – 11. oktober 2026
+
+Kenneth meldte behov for scrolling ved neste steg og tap av åpen samtale etter PDF. Neste steg fokuseres og rulles til starten. Etter tilgangskontroll/PDF-retur gjenåpnes samme lagrede samtale, utgave og fane fra scoped navigasjon i denne nettleserfanen. Ny/lukk/slett respekteres. Faktisk React og Chromium-regresjon PASS; PDF-format og beskyttet kjerne uendret. Publiseres på samme PR #218 / faste Preview, uten ny godkjenningsrunde for tidligere områder. [Bevis](HR_PRACTICE_20261011.md).
+
+## HR-prøvesamtale i eksisterende Sandbox – 11. oktober 2026
+
+Ny isolert branch `fase45b-hr-conversation-practice-20261011` fra ren main. Brukeren kan prøve eksempeltekster, fire samtalesteg, lokal lagring/gjenåpning og PDF med egen konto. Ingen nye nøkler eller testmiljøer. Production viser ikke prøveflaten. Personlig HR forblir stengt. Tidligere ledger/workerarbeid står separat i draft PR #217.
+
+Ny faktisk React-/Chromium-/PDF-/samtidighetskontroll, berørte eksisterende HR-flyter og full Sandbox/Production critical/build PASS. Bare ny kort vurdering av arbeidsflyten gjenstår hos Kenneth. Ingen gammel godkjenning eller testmail skal gjentas. [Scope, bevis og grenser](HR_PRACTICE_20261011.md).
+
+Kanonisk main/Production er `c3d873e0e5bd2677f0205143de6edc1fbd95ae4c` (READY), demo `11f1b45dac4daa08efc850ba87ad5e28522dad4c`. Ingen merge eller endring av disse i denne leveransen. Eldre daterte avsnitt nedenfor er historikk, ikke nye utestående krav.
+
 ## HR: samtalemaler i menyen og sykefraværsoppsett – 10. oktober 2026
+
+## Navigasjonsregresjon 11. oktober 2026
+
+Ny `module-navigation-resume-react-check.mjs` tester ekte komponenter + tilgangshooks med forsinket autorisasjon, alle tillatte KS/HMS-faner etter remount, personlig håndbok/HR, scoped HR-ID og uttrykkelig lukking, dokumentvalg/omfang over fanebytte og gamle eksporters avbrudd, samt redusert rolle/ny aktør/firma. Ny test er rød på tidligere kode og grønn med rettelsen. CI kjører den i tillegg til uendret full critical build og eksisterende HR/register, Min side, mal-, SJA-, gjennomførings- og revisjons-React. Én struktursjekk er endret for autorisert skjult uttrekk med aktiv-status; alle innholdskontroller beholdes. [Presis kontrakt og begrensninger](NAVIGATION_RECOVERY_20261011.md).
 
 **Åpne samtalemaler** og **Åpne sykefravær** ligger i HR-snarveiene øverst. Firmaadmin kan klargjøre en generell sykefraværsmal med 11 spørsmål om arbeid, kontakt, tilrettelegging og oppfølging. Eksisterende admin-/firmagater, utgaver, CAS og kladdbevaring gjelder. Fristveiledning med NHO/NAV-kilder og et avgrenset regneeksempel for 4/7/8/26 uker; fullt og gradert fravær forklares ulikt. Ingen personlig sak, fraværsdata, påminnelse eller innsending opprettes.
 
@@ -813,3 +829,7 @@ Funksjonskode cdac7cf1 er READY på samme faste Preview, deployment dpl_7ViZBuSk
 ZIP-leveransens endelige lokale full `EXPO_BACKEND_TARGET=sandbox npm run build` PASS exit 0. PR-scope/release-docs-guard PASS mot faktisk main. Berørt eksisterende samle-PDF React/Storage/jsPDF PASS: begge faktiske PDF-er, innhold/signaturer/bilder/manifest, fjerning av valgt dokument og sent kontekstbytte. QA-foto er større enn forrige testfoto, så sideantallet endret seg; dette er ingen tap av felter. Innlogget ny ZIP/nedlasting vurderes etter publisering, ikke gradert PASS her.
 
 Tekstoppfølging: faktisk React/ZIP med fem syntetiske vedlegg, eksisterende permanent ZIP/PDF-check og full Sandbox critical/build PASS. Transport/filformat uendret; ingen ny brukernedlasting kreves for å beholde allerede godkjent ZIP-prøve. Publisert tekst/eksakt head følges opp i PR #216 og innlogget nettleser.
+
+HR-popup 11.10: medarbeiderraden åpner eksisterende appdialog, med leder/tilgang, paginerte brukervalg og resultatmeldinger inne i vinduet. Dialog, Escape/kryss, fokusretur og fersk autorisering kontrollert i React og Chromium ved 1280/360/740. Tilgang/backend/privat HR uendret. Samme core-PR #219/Preview; ingen merge.
+
+HR-prøveoppdatering 11.10: første åpning viser skjemaets topp; tom/ulagret/redigert samtale bevares gjennom ekte HR-tilgangsremount. Konto-/firmabundet sideminne, ingen ulagret browserlagring. Faktisk useHrAccess/JSDOM og Chromium 1280/360/740 grønne, inkludert konflikt og uendrede PDF-/neste-steg-løp. Samme PR #218/Preview; ingen merge.

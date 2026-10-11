@@ -61,6 +61,10 @@ await downloadInspectionExtract({selection:selection.filter(r=>r.kind==='ruhs'),
 },downloadFile:async()=>new Blob(['four'],{type:'image/png'}),loadPrivateImage:async()=>photo,loadImage:async()=>photo,loadPdf:async()=>({jsPDF:Pdf})});assert.equal(historyPages,6);
 for(const mode of ['wrong-context','duplicate','cycle','invalid'])await assert.rejects(loadExtractPage({kind:'rounds',companyId:company,userId:user,cursor:{updated_at:'now',id:'id'},rpc:async()=>({context:mode==='wrong-context'?{...context,manage:false}:context,records:mode==='duplicate'?[{id:'a'},{id:'a'}]:[{id:'a'}],next:mode==='cycle'?{updated_at:'now',id:'id'}:mode==='invalid'?{id:'a'}:null})}));
 const source=fs.readFileSync('src/modules/kshms/KshmsInspectionExtract.jsx','utf8');assert(source.includes(".from('kshms-private').download(file.object_name)"));assert(source.includes('latest.current===snapshot'));assert(source.includes('token.active=false'));assert(source.includes('!confirmed'));assert(!source.includes('createSignedUrl'));
-const module=fs.readFileSync('src/modules/kshms/KshmsModule.jsx','utf8');assert(module.includes("canManage&&screen==='extract'"));
+const module=fs.readFileSync('src/modules/kshms/KshmsModule.jsx','utf8');
+// Authorized extraction now remains mounted while hidden to retain the cart.
+assert(module.includes("canManage&&(screen==='extract'||extractOpened)"));
+assert(module.includes("hidden={screen!=='extract'}")&&module.includes("active={screen==='extract'}"));
+assert(source.includes('!active||!context.enabled||!context.manage')&&source.includes('sequence.current++'));
 assert.equal(new Set(selection.map(extractKey)).size,8);
 console.log('critical-kshms-inspection-extract-check: PASS - explicit eight-type selection/manifest, exhaustive RUH history/private images, exact final snapshots and role/access, no mutation or staff/draft/token leak');

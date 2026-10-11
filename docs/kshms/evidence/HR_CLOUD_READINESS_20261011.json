@@ -1,0 +1,18 @@
+{
+  "mode": "READ_ONLY_CLOUD_READINESS",
+  "date": "2026-10-11",
+  "controlProject": "amduqhmgmeetaatwlmmt",
+  "productionMain": "f6a74d828fb4c0110b4eae8c6e453d2a55ee9038",
+  "permanentDemo": "b0a9a17a0bed99f70cfee16d1e65ebc3bb67c7f0",
+  "control": {"checkpoints": 0, "enabled": 0, "locked": 0},
+  "anonymousWorkerPlan": {"status": 403, "code": "worker_key_not_configured"},
+  "productionHR": {"content_enabled": false, "restore_quarantined": true},
+  "courseSandboxHR": {"content_enabled": false, "restore_quarantined": true},
+  "identifiedIsolatedCloudSource": false,
+  "costLookup": {"status": "UNAVAILABLE", "verifiedAccountPrice": false},
+  "writesPerformed": false,
+  "keysReadOrProvisioned": false,
+  "resourcesCreated": false,
+  "managedCloudIntegrationPassed": false,
+  "privateHROpen": false
+}
