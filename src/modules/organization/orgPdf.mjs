@@ -1,19 +1,41 @@
 import {ORG_COLORS,ORG_KINDS,orgBranches,orgPersonRows,orgFingerprint} from './orgModel.mjs';
+import {loadCompanyLogo} from '../report/kshmsExecutionReport.mjs';
 const loadPdf=()=>import('https://esm.sh/jspdf@2.5.1');
 const rgb=hex=>[1,3,5].map(start=>parseInt(hex.slice(start,start+2),16));
 const safe=value=>String(value||'').replace(/[\u0000-\u001f\u007f]/g,' ').trim();
-export async function buildOrgPdf({data,companyName,JsPDF,now=new Date()}) {
+export async function buildOrgPdf({data,companyName,JsPDF,logo=null,now=new Date()}) {
  const model=orgBranches(data),pdf=new JsPDF({orientation:'landscape',unit:'mm',format:'a3'});
  const width=420,height=297,margin=15,gap=8,cardWidth=(width-margin*2-gap*2)/3,bottom=height-19;
  const date=now.toLocaleDateString('nb-NO'),company=safe(data.chart_name||companyName)||'Firmaets organisasjon';
  const ink=[35,67,71],muted=[99,121,125],petrol=[18,79,85];
  let column=0,y=64,page=1;
- const text=(value,x,top,size=10,color=ink,style='normal')=>{pdf.setFont('helvetica',style);pdf.setFontSize(size);pdf.setTextColor(...color);pdf.text(value,x,top);};
+ const text=(value,x,top,size=10,color=ink,style='normal',align='left')=>{pdf.setFont('helvetica',style);pdf.setFontSize(size);pdf.setTextColor(...color);pdf.text(value,x,top,{align});};
  const lines=(value,size,maxWidth,style='normal')=>{pdf.setFont('helvetica',style);pdf.setFontSize(size);return pdf.splitTextToSize(safe(value),maxWidth);};
+ // Prefer one readable line. Reduce only to the field's floor, then wrap all
+ // remaining text and grow the card; never truncate names or shrink endlessly.
+ const fit=(value,maxWidth,maxSize,minSize,style='normal')=>{
+  const label=safe(value);let size=maxSize;pdf.setFont('helvetica',style);pdf.setFontSize(size);
+  while(size>minSize&&pdf.getTextWidth(label)>maxWidth){size=Math.max(minSize,size-.5);pdf.setFontSize(size);}
+  const valueLines=pdf.splitTextToSize(label,maxWidth),step=size*1.15*25.4/72;
+  return {lines:valueLines,size,step,height:valueLines.length*step};
+ };
+ const draw=(field,x,top,color=ink,style='normal')=>text(field.lines,x,top,field.size,color,style,'center');
+ const unitText=(unit,w,parent='')=>({
+  name:fit(unit.name,w,18,12,'bold'),
+  info:fit(`${unit.manager_name||'Leder ikke valgt'} / ${unit.people.length} medarbeidere`,w,12,9),
+  parent:parent?fit(parent,w,10,8):null
+ });
  const header=()=>{
   pdf.setFillColor(...petrol);pdf.rect(0,0,width,45,'F');
   text('ORGANISASJONSKART',margin,15,10,[196,226,221],'bold');
-  text(lines(company,23,width-2*margin,'bold').slice(0,2),margin,27,23,[255,255,255],'bold');
+  text(lines(company,23,width-2*margin-(logo?82:0),'bold').slice(0,2),margin,27,23,[255,255,255],'bold');
+  if(logo){
+   const image=pdf.getImageProperties(logo),scale=Math.min(60/image.width,22/image.height);
+   const w=image.width*scale,h=image.height*scale;
+   if(!Number.isFinite(w)||!Number.isFinite(h)||w<=0||h<=0)throw Error('Firmalogoen har ugyldig størrelse.');
+   pdf.setFillColor(255,255,255);pdf.roundedRect(width-margin-68,7,68,30,2,2,'F');
+   pdf.addImage(logo,'PNG',width-margin-34-w/2,22-h/2,w,h);
+  }
   text(`${data.units.length} avdelinger  /  ${data.context.group_id?new Set(data.people.map(p=>p.user_id)).size+' personer / '+data.people.length+' firmaplasseringer':data.people.length+' medarbeidere'}  /  ${data.people.filter(p=>p.kind==='apprentice').length} lærlinger`,margin,54,10,muted);
  };
  const footer=()=>{pdf.setDrawColor(216,230,226);pdf.line(margin,height-14,width-margin,height-14);text(`Uttrekk ${date}  /  Navn, stillinger og organisasjon. Kontroller mottaker før deling.`,margin,height-8,8,muted);text(`Side ${page}`,width-margin-16,height-8,8,muted);};
@@ -31,22 +53,33 @@ export async function buildOrgPdf({data,companyName,JsPDF,now=new Date()}) {
  const positioned=[];let leaf=0;
  const place=(unit,depth)=>{const start=leaf;unit.children.forEach(child=>place(child,depth+1));if(!unit.children.length)leaf++;positioned.push({unit,depth,center:(start+leaf)/2});};
  model.roots.forEach(unit=>place(unit,0));
- const cardW=Math.min(120,(width-margin*2)/leafCount-8),levelHeights=[];
- for(const item of positioned){item.names=lines(item.unit.name,11,cardW-12,'bold');item.info=lines(`${item.unit.manager_name||'Leder ikke valgt'} / ${item.unit.people.length} medarbeidere`,8,cardW-12);item.boxHeight=12+item.names.length*4.5+item.info.length*3.6;levelHeights[item.depth]=Math.max(levelHeights[item.depth]||0,item.boxHeight);}
- const levelY=[];let nextY=97;for(const h of levelHeights){levelY.push(nextY);nextY+=h+14;}
+ const cardW=Math.min(120,(width-margin*2)/Math.min(leafCount,3)-8),levelHeights=[];
+ for(const item of positioned){item.fields=unitText(item.unit,cardW-12);item.boxHeight=12+item.fields.name.height+item.fields.info.height;levelHeights[item.depth]=Math.max(levelHeights[item.depth]||0,item.boxHeight);}
+ const root=fit(company,98,20,12,'bold'),rootHeight=Math.max(20,root.height+8),rootY=62;
+ const levelY=[];let nextY=rootY+rootHeight+15;for(const h of levelHeights){levelY.push(nextY);nextY+=h+14;}
  if(leafCount<=3&&levelHeights.length<=4&&nextY<bottom){
   const centers=new Map(positioned.map(item=>[item.unit.id,{x:margin+item.center*(width-margin*2)/leafCount,y:levelY[item.depth],height:item.boxHeight}]));
-  pdf.setFillColor(...petrol);pdf.roundedRect(width/2-55,62,110,20,3,3,'F');text(lines(company,12,98,'bold'),width/2-49,70,12,[255,255,255],'bold');
-  for(const item of positioned){const point=centers.get(item.unit.id),parent=centers.get(item.unit.parent_id)||{x:width/2,y:62,height:20};const midway=point.y-7;
-   pdf.setDrawColor(174,203,195);pdf.line(parent.x,parent.y+parent.height,parent.x,midway);pdf.line(parent.x,midway,point.x,midway);pdf.line(point.x,midway,point.x,point.y);}
+  pdf.setFillColor(...petrol);pdf.roundedRect(width/2-55,rootY,110,rootHeight,3,3,'F');draw(root,width/2,rootY+5+root.size*25.4/72,[255,255,255],'bold');
+  const siblings=new Map();for(const item of positioned){const key=item.unit.parent_id||null;if(!siblings.has(key))siblings.set(key,[]);siblings.get(key).push(item);}
+  pdf.setDrawColor(120,159,152);pdf.setLineWidth(.65);
+  for(const [parentId,items] of siblings){const parent=centers.get(parentId)||{x:width/2,y:rootY,height:rootHeight};const midway=centers.get(items[0].unit.id).y-7;
+   const points=items.map(item=>centers.get(item.unit.id));
+   pdf.line(parent.x,parent.y+parent.height,parent.x,midway);
+   const left=Math.min(...points.map(p=>p.x)),right=Math.max(...points.map(p=>p.x));
+   if(left!==right)pdf.line(left,midway,right,midway);
+   for(const point of points)pdf.line(point.x,midway,point.x,point.y);
+  }
+  pdf.setLineWidth(.2);
   for(const item of positioned){const point=centers.get(item.unit.id),left=point.x-cardW/2;
-   const color=rgb(ORG_COLORS[item.unit.color]?.[1]||ORG_COLORS.teal[1]);pdf.setFillColor(...rgb(ORG_COLORS[item.unit.color]?.[0]||ORG_COLORS.teal[0]));pdf.roundedRect(left,point.y,cardW,item.boxHeight,3,3,'F');text(item.names,left+6,point.y+7,11,color,'bold');text(item.info,left+6,point.y+7+item.names.length*4.5,8,color);
+   const color=rgb(ORG_COLORS[item.unit.color]?.[1]||ORG_COLORS.teal[1]);pdf.setFillColor(...rgb(ORG_COLORS[item.unit.color]?.[0]||ORG_COLORS.teal[0]));pdf.roundedRect(left,point.y,cardW,item.boxHeight,3,3,'F');
+   draw(item.fields.name,point.x,point.y+4+item.fields.name.size*25.4/72,color,'bold');
+   draw(item.fields.info,point.x,point.y+6+item.fields.name.height+item.fields.info.size*25.4/72,color);
   }
  }else{
  const graphHeader=()=>{
    pdf.setFillColor(...petrol);pdf.roundedRect(width/2-55,62,110,20,3,3,'F');
-   text('Firmaets avdelinger',width/2-48,71,12,[255,255,255],'bold');
-   text('Les hver gren ovenfra og ned',width/2-48,78,8,[204,230,223]);
+   text('Firmaets avdelinger',width/2,71,16,[255,255,255],'bold','center');
+   text('Les hver gren ovenfra og ned',width/2,78,10,[204,230,223],'normal','center');
   };
   graphHeader();column=0;y=100;
   const graphNext=()=>{column++;y=100;if(column===3){footer();pdf.addPage();page++;column=0;header();graphHeader();}};
@@ -55,22 +88,20 @@ export async function buildOrgPdf({data,companyName,JsPDF,now=new Date()}) {
    const ancestors=new Map();
    for(const item of branch){
     const indent=Math.min(item.depth,6)*6,w=cardWidth-indent;let x=margin+column*(cardWidth+gap)+indent;
-    const names=lines(item.unit.name,11,w-12,'bold');
-    const info=lines(`${item.unit.manager_name||'Avdelingsleder ikke valgt'} / ${item.unit.people.length} medarbeidere`,8,w-12);
-    const parentText=item.depth>6?lines(`Under ${item.path.join(' / ')}`,7,w-12):[];
-    const boxHeight=12+names.length*4.5+info.length*3.6+parentText.length*3;
+    const fields=unitText(item.unit,w-12,item.depth>6?`Under ${item.path.join(' / ')}`:'');
+    const boxHeight=12+fields.name.height+fields.info.height+(fields.parent?.height||0);
     if(y+boxHeight>bottom){graphNext();ancestors.clear();x=margin+column*(cardWidth+gap)+indent;}
-    pdf.setDrawColor(174,203,195);
+    pdf.setDrawColor(120,159,152);pdf.setLineWidth(.65);
     if(item.depth===0){pdf.line(width/2,82,width/2,88);pdf.line(width/2,88,x+w/2,88);pdf.line(x+w/2,88,x+w/2,y);}
     else{
      const parentPoint=ancestors.get(item.unit.parent_id);
      if(parentPoint){pdf.line(parentPoint.x,parentPoint.y,parentPoint.x,y+boxHeight/2);pdf.line(parentPoint.x,y+boxHeight/2,x,y+boxHeight/2);}
-     else text(`Fortsetter under ${item.path.at(-1)}`,x,y-3,7,muted);
+     else {const continued=fit(`Fortsetter under ${item.path.at(-1)}`,w-12,10,8);draw(continued,x+w/2,y-3-(continued.lines.length-1)*continued.step,muted);}
     }
-    pdf.setFillColor(...rgb(ORG_COLORS[item.unit.color]?.[0]||ORG_COLORS.teal[0]));pdf.roundedRect(x,y,w,boxHeight,3,3,'F');
-    const color=rgb(ORG_COLORS[item.unit.color]?.[1]||ORG_COLORS.teal[1]);text(names,x+6,y+7,11,color,'bold');
-    text(info,x+6,y+7+names.length*4.5,8,color);
-    if(parentText.length)text(parentText,x+6,y+7+names.length*4.5+info.length*3.6,7,color);
+    pdf.setLineWidth(.2);pdf.setFillColor(...rgb(ORG_COLORS[item.unit.color]?.[0]||ORG_COLORS.teal[0]));pdf.roundedRect(x,y,w,boxHeight,3,3,'F');
+    const color=rgb(ORG_COLORS[item.unit.color]?.[1]||ORG_COLORS.teal[1]);draw(fields.name,x+w/2,y+4+fields.name.size*25.4/72,color,'bold');
+    draw(fields.info,x+w/2,y+6+fields.name.height+fields.info.size*25.4/72,color);
+    if(fields.parent)draw(fields.parent,x+w/2,y+8+fields.name.height+fields.info.height+fields.parent.size*25.4/72,color);
     ancestors.set(item.unit.id,{x:x+3,y:y+boxHeight});y+=boxHeight+8;
    }
    if(root!==model.roots.at(-1))graphNext();
@@ -81,13 +112,13 @@ export async function buildOrgPdf({data,companyName,JsPDF,now=new Date()}) {
  if(!nodes.length){text('Ingen avdelinger eller medarbeidere er registrert ennå.',margin,75,12,muted);}
  for(const {unit,path} of nodes){
   const rows=orgPersonRows(unit.people).map(person=>{
-   const indent=Math.min(person.depth,5)*3;
-   const names=lines(person.name,10,cardWidth-16-indent,'bold'),titles=lines(data.context.group_id?`${person.title} · ${person.company_name}`:person.title,8.5,cardWidth-16-indent);
-   return {person,indent,names,titles,height:Math.max(19,names.length*4.4+titles.length*3.7+9)};
+   const leadership=person.kind==='leader'||person.kind==='middle',indent=leadership?0:Math.min(person.depth,5)*3;
+   const names=fit(person.name,cardWidth-18-indent,15,11,'bold'),titles=fit(data.context.group_id?`${person.title} · ${person.company_name}`:person.title,cardWidth-18-indent,12,9.5);
+   return {person,indent,names,titles,height:Math.max(24,names.height+titles.height+13)};
   });
-  const headings=lines(unit.name,13,cardWidth-14,'bold'),parents=lines(path.length?`Under ${path.join(' / ')}`:'Direkte under firmaet',8,cardWidth-14);
-  const manager=unit.manager_name?lines(`Avdelingsleder: ${unit.manager_name}`,9,cardWidth-14):[];
-  const headingHeight=10+headings.length*5.2+parents.length*3.6+manager.length*4;
+  const headings=fit(unit.name,cardWidth-14,18,12,'bold'),parents=fit(path.length?`Under ${path.join(' / ')}`:'Direkte under firmaet',cardWidth-14,11,8.5);
+  const manager=unit.manager_name?fit(`Avdelingsleder: ${unit.manager_name}`,cardWidth-14,12,9):null;
+  const headingHeight=12+headings.height+parents.height+(manager?.height||0);
   let index=0,continued=false;
   do {
    const minRow=rows[index]?.height||12;
@@ -95,20 +126,21 @@ export async function buildOrgPdf({data,companyName,JsPDF,now=new Date()}) {
    const x=margin+column*(cardWidth+gap),start=y;
    const background=rgb(ORG_COLORS[unit.color]?.[0]||ORG_COLORS.teal[0]),color=rgb(ORG_COLORS[unit.color]?.[1]||ORG_COLORS.teal[1]);
    pdf.setFillColor(...background);pdf.roundedRect(x,y,cardWidth,headingHeight,3,3,'F');
-   text(headings,x+7,y+8,13,color,'bold');
-   let lineY=y+8+headings.length*5.2;
-   text(parents,x+7,lineY,8,color);lineY+=parents.length*3.6;
-   if(manager.length)text(manager,x+7,lineY,9,color);
+   draw(headings,x+cardWidth/2,y+4+headings.size*25.4/72,color,'bold');
+   let lineY=y+6+headings.height;
+   draw(parents,x+cardWidth/2,lineY+parents.size*25.4/72,color);lineY+=parents.height;
+   if(manager)draw(manager,x+cardWidth/2,lineY+2+manager.size*25.4/72,color);
    if(continued)text('fortsetter',x+cardWidth-23,y+5,6,color);
    y+=headingHeight+3;
-   if(!rows.length){text('Ingen medarbeidere plassert her ennå.',x+7,y+7,9,muted);y+=14;}
+   if(!rows.length){const empty=fit('Ingen medarbeidere plassert her ennå.',cardWidth-14,12,9);draw(empty,x+cardWidth/2,y+4+empty.size*25.4/72,muted);y+=empty.height+8;}
    while(index<rows.length&&y+rows[index].height<=bottom-4){
     const row=rows[index],left=x+5+row.indent,w=cardWidth-10-row.indent;
     pdf.setFillColor(250,252,251);pdf.setDrawColor(219,232,228);pdf.roundedRect(left,y,w,row.height-2,2,2,'FD');
     pdf.setFillColor(...(row.person.kind==='apprentice'?[220,166,66]:row.person.kind==='leader'?[50,106,162]:row.person.kind==='middle'?[141,110,189]:[151,189,176]));pdf.rect(left,y,1.3,row.height-2,'F');
-    text(row.names,left+4,y+5,10,ink,'bold');
-    const titleY=y+5+row.names.length*4.4;text(row.titles,left+4,titleY,8.5,muted);
-    text(ORG_KINDS[row.person.kind],left+4,y+row.height-5,7,muted);
+    const textX=left+w/2;
+    draw(row.names,textX,y+3+row.names.size*25.4/72,ink,'bold');
+    draw(row.titles,textX,y+5+row.names.height+row.titles.size*25.4/72,muted);
+    text(ORG_KINDS[row.person.kind],textX,y+row.height-5,9,muted,'normal','center');
     y+=row.height;index++;
    }
    pdf.setDrawColor(213,230,225);pdf.roundedRect(x,start,cardWidth,y-start+2,3,3,'S');y+=10;
@@ -119,7 +151,7 @@ export async function buildOrgPdf({data,companyName,JsPDF,now=new Date()}) {
  pdf.setProperties({title:`Organisasjonskart – ${company}`,subject:'Firmaets avdelinger, medarbeidere og stillinger',creator:'Expo ProffDok'});
  return pdf;
 }
-export async function downloadOrgPdf({session,expected,companyName,isCurrent,load=loadPdf,save=(pdf,name)=>pdf.save(name),now=new Date()}) {
+export async function downloadOrgPdf({session,expected,companyName,isCurrent,rpc,loadLogo=loadCompanyLogo,load=loadPdf,save=(pdf,name)=>pdf.save(name),now=new Date()}) {
  const fingerprint=orgFingerprint(expected);
  const verify=async()=>{
   const fresh=await session.read();
@@ -127,10 +159,21 @@ export async function downloadOrgPdf({session,expected,companyName,isCurrent,loa
   return fresh;
  };
  const fresh=await verify();
+ const readProfile=async()=>{
+  const profile=await rpc('work_profile_company_profile',{p_company_id:fresh.context.company_id});
+  if(!isCurrent()||profile?.companyId!==fresh.context.company_id){session.invalidate();throw Error('Firmatilgangen er endret. Hent kartet på nytt før eksport.');}
+  return profile;
+ };
+ const profile=await readProfile();
  const module=await load();
  if(!isCurrent())throw Error('Eksporten ble avbrutt ved bytte av arbeidsflate.');
- const pdf=await buildOrgPdf({data:fresh,companyName:fresh.context.company_name||companyName,JsPDF:module.jsPDF||module.default,now});
+ const logo=profile.logoUrl?await loadLogo(profile.logoUrl):null;
+ if(!isCurrent())throw Error('Eksporten ble avbrutt ved bytte av arbeidsflate.');
+ const pdf=await buildOrgPdf({data:fresh,companyName:fresh.context.company_name||companyName,JsPDF:module.jsPDF||module.default,logo,now});
+ const latestProfile=await readProfile();
+ if((latestProfile.logoUrl||'')!==(profile.logoUrl||'')){session.invalidate();throw Error('Firmalogoen er endret. Last ned PDF på nytt.');}
  await verify();
+ pdf.logoMissing=Boolean(profile.logoUrl&&!logo);
  const slug=safe(fresh.chart_name||fresh.context.company_name||companyName||'firma').normalize('NFKD').replace(/[^a-zA-Z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,70)||'firma';
  await save(pdf,`${slug}-organisasjonskart-${now.toISOString().slice(0,10)}.pdf`);
  return pdf;

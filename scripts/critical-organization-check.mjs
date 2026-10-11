@@ -60,3 +60,19 @@ const groupMigration=fs.readdirSync('supabase/migrations').find(n=>n.endsWith('_
 for(const guard of ['group_access','org_private.group_context(p_company_id,p_group_id,true)','org_private.group_lock','p_revision is distinct','removed is distinct from confirmed','org_private.group_units.group_id=p_group_id','written<>jsonb_array_length(items)','from public,anon,authenticated,service_role'])assert(groupSql.includes(guard));
 assert(!groupSql.includes('public.hr_employee_command'));assert(!groupSql.includes('insert into public.sales_company_memberships'));
 console.log('✅ Group organization: same identity/multi-firm rows, branch boundary, group fingerprint, exact group RPC, spoofed group refusal and no HR/membership mutations PASS');
+
+const ordered={...group,units:[{...group.units[0],name:'Ringside Rørleggerbedrift',sort_order:2},{...group.units[1],name:'Bademiljø Expo',sort_order:3},{id:'three',name:'Expo Proffsenter',company_id:'b',color:'teal',sort_order:1}],shared_visibility:true};
+assert.deepEqual(orgBranches(ordered).roots.map(u=>u.sort_order),[1,2,3]);
+assert.notEqual(orgFingerprint(ordered),orgFingerprint({...ordered,shared_visibility:false}));
+assert.notEqual(orgFingerprint(ordered),orgFingerprint({...ordered,units:ordered.units.map(u=>({...u,sort_order:0}))}));
+assert.equal(orgLayoutPayload(ordered,orgLayout(ordered)).shared_visibility,true);
+for(const rank of [-1,101,1.5,'2'])assert.throws(()=>orgLayoutPayload(ordered,{...orgLayout(ordered),units:ordered.units.map(u=>({...u,sort_order:rank}))}));
+const sharedSql=fs.readFileSync('supabase/migrations/20261011170849_organization_shared_visibility_order.sql','utf8');
+for(const guard of ['shared_visibility boolean not null default false','not editing','org_private.group_context(p_company_id,p_group_id,true)','org_private.units.company_id=p_company_id','org_private.group_units.group_id=p_group_id','written<>jsonb_array_length(items)','p_revision is distinct',"set search_path=''"])assert(sharedSql.includes(guard));
+assert(!/insert into public.sales_company_memberships|public.hr_employee_command/.test(sharedSql));
+console.log('✅ Shared organization: opt-in/strict edit ACL, sorted siblings, visibility/order fingerprint, validated layout and collision/CAS guards PASS');
+
+const orgUi=fs.readFileSync('src/modules/organization/OrganizationChart.jsx','utf8');
+assert(/downloadOrgPdf\(\{[^}]*rpc:kshmsRpc/.test(orgUi),'Published download action supplies the existing authenticated RPC client');
+assert(orgUi.includes('pdf.logoMissing')&&orgUi.includes('PDF er lastet ned uten logo'),'Missing-image warning reaches the actual UI');
+console.log('✅ Organization PDF: authenticated firm-profile wiring and unavailable-logo feedback PASS');

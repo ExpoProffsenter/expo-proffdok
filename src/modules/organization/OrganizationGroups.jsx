@@ -9,7 +9,7 @@ export default function OrganizationGroups({context,Editor}){
  const scope=`${context.company_id}:${context.user_id}`;
  const [options,setOptions]=useState(null),[selection,setSelection]=useState({scope,id:remembered?.scope===scope?remembered.id:''});
  const selected=selection.scope===scope?selection.id:'';
- const [dirty,setDirty]=useState(false),[modal,setModal]=useState(null),[name,setName]=useState(''),[chosen,setChosen]=useState([]),[confirmed,setConfirmed]=useState(false),[error,setError]=useState(''),[busy,setBusy]=useState(false);
+ const [dirty,setDirty]=useState(false),[modal,setModal]=useState(null),[name,setName]=useState(''),[chosen,setChosen]=useState([]),[sharedVisibility,setSharedVisibility]=useState(true),[confirmed,setConfirmed]=useState(false),[error,setError]=useState(''),[busy,setBusy]=useState(false);
  const dialog=useRef(null),generation=useRef(0),refreshRef=useRef(null),lock=useRef(false),attempt=useRef(null);
  const select=id=>{remembered={scope,id};setSelection({scope,id});setDirty(false);};
  const available=options?.context.company_id===context.company_id&&options.context.user_id===context.user_id?options:null;
@@ -20,7 +20,8 @@ export default function OrganizationGroups({context,Editor}){
     if(!alive||ticket!==generation.current)return;
     if(value?.context?.company_id!==context.company_id||value.context.user_id!==context.user_id||!Array.isArray(value.groups)||!Array.isArray(value.companies)||value.groups.length>20||value.companies.length>10)throw Error('Kartlisten har feil tilgang eller omfang.');
     setOptions(value);setError('');
-    if(remembered?.scope===scope&&!value.groups.some(g=>g.id===remembered.id)){remembered=null;setSelection({scope,id:''});}
+    if(remembered?.scope===scope&&remembered.id&&!value.groups.some(g=>g.id===remembered.id)){remembered=null;setSelection({scope,id:''});}
+    if(remembered?.scope!==scope){const shared=value.groups.filter(g=>g.shared_visibility===true);if(shared.length===1){remembered={scope,id:shared[0].id};setSelection(remembered);}}
    }catch(cause){if(alive&&ticket===generation.current){setError(cause.message);}}
   };
   refreshRef.current=refresh;void refresh();const events=['focus',MANAGED_ACCESS_EVENT,MODULE_ACCESS_EVENT,WORK_PROFILE_EVENT];events.forEach(e=>window.addEventListener(e,refresh));document.addEventListener('visibilitychange',refresh);
@@ -32,7 +33,7 @@ export default function OrganizationGroups({context,Editor}){
   try{
    const fresh=await kshmsRpc('organization_group_options',{p_company_id:context.company_id});
    if(ticket!==generation.current||fresh.context?.user_id!==context.user_id||fresh.context.company_id!==context.company_id||chosen.some(id=>!fresh.companies.some(c=>c.id===id)))throw Error('Firmatilgangen er endret. Hent kartlisten på nytt.');
-   const payload={id:attempt.current,name:name.trim(),company_ids:chosen,confirm:confirmed};
+   const payload={id:attempt.current,name:name.trim(),company_ids:chosen,confirm:confirmed,shared_visibility:sharedVisibility};
    const state=await kshmsRpc('organization_group_create',{p_company_id:context.company_id,p_payload:payload});
    if(ticket!==generation.current)return;
    if(state?.context?.group_id!==payload.id||state.context.user_id!==context.user_id||state.context.company_id!==context.company_id)throw Error('Kartets identitet er endret.');
@@ -48,20 +49,22 @@ export default function OrganizationGroups({context,Editor}){
    setModal(null);select('');await refreshRef.current();
   }catch(cause){if(ticket===generation.current){setError(cause.message);setOptions(null);}}finally{session.dispose();lock.current=false;setBusy(false);}
  };
- const open=type=>{setError('');setConfirmed(false);setName('');setChosen([context.company_id]);attempt.current=crypto.randomUUID();setModal(type);};
+ const open=type=>{setError('');setConfirmed(false);setSharedVisibility(true);setName('');setChosen([context.company_id]);attempt.current=crypto.randomUUID();setModal(type);};
  return <><section className="org-group-switch" aria-label="Velg organisasjonskart">
   <span className="org-row-icon"><Network size={22} aria-hidden="true"/></span><div><strong>{selected?'Felles organisasjon':'Firmaets organisasjon'}</strong><small>{selected?'Én konto kan ha egen plassering i hvert firma.':'Firmakartet gjelder valgt firma. Et felles kart kan knytte flere firmaer sammen.'}</small></div>
   {available&&<><select aria-label="Velg kart" value={selected} disabled={busy||dirty} onChange={e=>select(e.target.value)}><option value="">{context.company_name} – firmakart</option>{available.groups.map(g=><option key={g.id} value={g.id}>{g.name} – felles kart</option>)}</select>
+   {available.companies.length<2&&<p className="org-hint">En firmaadmin med KS/HMS i minst to registrerte firmaer kan opprette felleskartet én gang. Med felles visning kan du se dette kartet med tilgang i bare ditt firma. Underavdelinger i samme firma bygges med Rediger kart → Ny avdeling.</p>}
    {available.companies.length>=2&&<button type="button" className="secondary" disabled={busy||dirty} onClick={()=>open('create')}><Plus size={17} aria-hidden="true"/>Nytt felles kart</button>}
    {selected&&available.groups.find(g=>g.id===selected)?.administer&&<button type="button" className="secondary org-danger" disabled={busy||dirty} onClick={()=>open('remove')} aria-label="Slett felles kart"><Trash2 size={17} aria-hidden="true"/></button>}
   </>}
+  {!available&&!error&&<p role="status">Henter kartlisten …</p>}
   {dirty&&<p className="org-hint">Lagre eller forkast endringene før du bytter kart.</p>}
   {error&&<p role="alert" className="org-error">{error} <button type="button" onClick={()=>void refreshRef.current?.()}>Hent kartlisten på nytt</button></p>}
  </section>
- {(!selected||available?.groups.some(g=>g.id===selected))&&<Editor key={`${scope}:${selected}`} context={context} groupId={selected||null} onDirtyChange={setDirty}/>}
+ {available&&(!selected||available.groups.some(g=>g.id===selected))&&<Editor key={`${scope}:${selected}`} context={context} groupId={selected||null} onDirtyChange={setDirty}/>}
  {modal&&available&&<dialog ref={dialog} className="org-dialog" onCancel={e=>{e.preventDefault();if(!busy)setModal(null);}}><form onSubmit={e=>{e.preventDefault();void(modal==='create'?create():remove());}}>
   <div className="org-dialog-title"><div><small>Organisasjonskart</small><h3>{modal==='create'?'Knytt firmaer til et felles kart':'Slett felles kart?'}</h3></div><button type="button" aria-label="Lukk felleskart" className="secondary" disabled={busy} onClick={()=>setModal(null)}><X size={18} aria-hidden="true"/></button></div>
-  <fieldset disabled={busy}>{modal==='create'?<><label className="org-field"><span>Navn på felles kart</span><input required minLength={2} maxLength={100} placeholder="For eksempel Ringside" value={name} onChange={e=>setName(e.target.value)}/></label><p className="org-hint">Velg 2–10 firmaer. Du må være firmaadmin og ha KS/HMS i alle. Vi lager Styret og én gren per firma; du kan tilpasse strukturen etterpå.</p><div className="org-group-companies">{available.companies.map(c=><label key={c.id}><input type="checkbox" disabled={c.id===context.company_id} checked={chosen.includes(c.id)} onChange={e=>setChosen(e.target.checked?[...chosen,c.id]:chosen.filter(id=>id!==c.id))}/><Building2 size={17} aria-hidden="true"/><span>{c.name}</span></label>)}</div><label className="org-group-confirm"><input type="checkbox" checked={confirmed} onChange={e=>setConfirmed(e.target.checked)}/>Jeg vil opprette et separat felles kart for disse firmaene.</label><p className="org-hint">Alle som ser hele kartet må ha KS/HMS i alle firmaene. Eksisterende firmakart og HR-tilgang beholdes.</p></>:<><p>Dette sletter hele felleskartets struktur og plasseringer. Firmaer, brukerkontoer, firmakart og HR beholdes.</p><label className="org-group-confirm"><input type="checkbox" checked={confirmed} onChange={e=>setConfirmed(e.target.checked)}/>Jeg vil slette hele dette felleskartet.</label></>}</fieldset>
+  <fieldset disabled={busy}>{modal==='create'?<><label className="org-field"><span>Navn på felles kart</span><input required minLength={2} maxLength={100} placeholder="Navn på hovedfirma eller organisasjon" value={name} onChange={e=>setName(e.target.value)}/></label><p className="org-hint">Velg 2–10 firmaer. Du må være firmaadmin og ha KS/HMS i alle. Vi lager Styret og én gren per firma; du kan tilpasse strukturen etterpå.</p><div className="org-group-companies">{available.companies.map(c=><label key={c.id}><input type="checkbox" disabled={c.id===context.company_id} checked={chosen.includes(c.id)} onChange={e=>setChosen(e.target.checked?[...chosen,c.id]:chosen.filter(id=>id!==c.id))}/><Building2 size={17} aria-hidden="true"/><span>{c.name}</span></label>)}</div><label className="org-group-visibility"><input type="checkbox" checked={sharedVisibility} onChange={e=>setSharedVisibility(e.target.checked)}/>Vis hele kartet for brukere i hvert tilknyttet firma</label><label className="org-group-confirm"><input type="checkbox" checked={confirmed} onChange={e=>setConfirmed(e.target.checked)}/>Jeg vil opprette et separat felles kart for disse firmaene.</label><p className="org-hint">Med felles visning er KS/HMS i ett tilknyttet firma nok for å se hele kartet. Uten dette valget kreves alle firmaene. HR-tilgang følger egne rettigheter.</p></>:<><p>Dette sletter hele felleskartets struktur og plasseringer. Firmaer, brukerkontoer, firmakart og HR beholdes.</p><label className="org-group-confirm"><input type="checkbox" checked={confirmed} onChange={e=>setConfirmed(e.target.checked)}/>Jeg vil slette hele dette felleskartet.</label></>}</fieldset>
   {error&&<p role="alert" className="org-error">{error}</p>}<div className="org-dialog-actions"><button type="button" className="secondary" disabled={busy} onClick={()=>setModal(null)}>Lukk</button><button disabled={busy||!confirmed||modal==='create'&&(chosen.length<2||name.trim().length<2)}>{busy?'Lagrer …':modal==='create'?'Opprett felles kart':'Slett felles kart'}</button></div>
  </form></dialog>}
  </>;

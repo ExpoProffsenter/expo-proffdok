@@ -10,7 +10,7 @@ export default function HrSickLeaveSetup({targetRef,administer,enabled,onTemplat
   <summary><HeartPulse size={18} aria-hidden="true"/>Sykefravær <small>Rutiner, tilrettelegging og frister</small></summary>
   <p>Start med hvem som følger opp, hvilke oppgaver dere kan tilby og hvordan dere holder kontakt. Under finner du hjelp til hvert trinn.</p>
   <section className="hr-sick-next" aria-label="Neste steg i sykefraværsoppsettet"><strong>{administer?'Neste steg: klargjør firmaets mal':'Neste steg: kontroller nærmeste leder'}</strong>
-   <p>{administer?'Åpne sykefraværsmalen, tilpass spørsmålene til firmaets arbeid og trykk Lagre mal. Bruk spørsmålene som grunnlag for senere oppfølging.':'Åpne medarbeiderregisteret. Firmaadmin retter leder hvis noe er feil. Se deretter gjennom oppfølgingstrinnene nedenfor.'}</p>
+   <p>{administer?'Åpne sykefraværsmalen, tilpass spørsmålene til firmaets arbeid og trykk Lagre mal. Nærmeste leder åpner deretter medarbeideren og starter Sykefraværsoppfølging.':'Åpne medarbeiderregisteret. Firmaadmin retter leder hvis noe er feil. Se deretter gjennom oppfølgingstrinnene nedenfor.'}</p>
    {administer?<><button type="button" disabled={!enabled} onClick={onTemplates}>Tilpass sykefraværsmal <ArrowRight size={16} aria-hidden="true"/></button>{!enabled&&<p className="hr-hint">Aktiver medarbeiderregisteret under Oppsett og kontrollfrist for å lage maler.</p>}</>:<button type="button" onClick={onRegister}>Se medarbeidere <ArrowRight size={16} aria-hidden="true"/></button>}
   </section>
   <div className="hr-sick-preparation">
@@ -26,7 +26,7 @@ export default function HrSickLeaveSetup({targetRef,administer,enabled,onTemplat
   </section>
   <div className="hr-sick-followthrough"><section><h4>Lengre fravær og retur</h4><p>Fortsett kontakten og vurder tiltak underveis. Bruk NAVs faktiske maksdato når den er kjent. Ett år i kalenderen er ikke et vedtak om sykepenger eller oppsigelse. Avtal opptrapping og oppfølging ved retur til arbeid.</p></section>
    <section><h4>Deling må skje faktisk</h4><p>Oppfølgingsplanen skal deles med sykmelder og NAV etter gjeldende krav. En lagret mal er ikke en innsendt plan. Bruk NAVs veiledning nedenfor om hvordan planen deles.</p></section></div>
-  <aside className="hr-sick-boundary"><strong>Personlige saker åpnes senere</strong><p>Du kan lagre firmaets spørsmål nå. Du kan foreløpig ikke starte en sak, lagre ansattes fravær eller svar, bekrefte en felles plan eller sende noe til NAV her.</p></aside>
-  <div className="hr-sick-sources"><strong>Kilder – kontrollert 10. oktober 2026</strong>{HR_SICK_LEAVE_SOURCES.map(source=><a key={source.url} href={source.url} target="_blank" rel="noopener noreferrer">{source.label} <ExternalLink size={14} aria-hidden="true"/></a>)}</div>
+  <aside className="hr-sick-boundary"><strong>Start en personlig oppfølging hos medarbeideren</strong><p>Nærmeste leder åpner medarbeideren i registeret og trykker Start sykefraværsoppfølging. Velg firmaets mal og første fraværsdag. Medarbeideren fyller ut egne svar på Min side. Lag planen sammen, lagre tiltak og frister og bekreft hver for dere. Last ned PDF og registrer faktisk deling med NAV eller sykmelder etterpå.</p></aside>
+  <div className="hr-sick-sources"><strong>Kilder – kontrollert 11. oktober 2026</strong>{HR_SICK_LEAVE_SOURCES.map(source=><a key={source.url} href={source.url} target="_blank" rel="noopener noreferrer">{source.label} <ExternalLink size={14} aria-hidden="true"/></a>)}</div>
  </details>;
 }

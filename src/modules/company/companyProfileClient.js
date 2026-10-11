@@ -28,3 +28,9 @@ export async function setMyCompanyProfile(company = {}) {
     p_logo_url: String(company?.logoUrl || "").trim(),
   });
 }
+
+export async function renameMyCompanyDisplayName({companyId,expectedName,name}) {
+ return rpcWithAppSession("rename_my_company_display_name", {
+  p_company_id:companyId,p_expected_name:expectedName,p_name:String(name||"").trim()
+ });
+}
