@@ -1,3 +1,11 @@
+## HR-prøvesamtale i eksisterende Sandbox – 11. oktober 2026
+
+Ny isolert branch `fase45b-hr-conversation-practice-20261011` fra ren main. Brukeren kan prøve eksempeltekster, fire samtalesteg, lokal lagring/gjenåpning og PDF med egen konto. Ingen nye nøkler eller testmiljøer. Production viser ikke prøveflaten. Personlig HR forblir stengt. Tidligere ledger/workerarbeid står separat i draft PR #217.
+
+Ny faktisk React-/Chromium-/PDF-/samtidighetskontroll, berørte eksisterende HR-flyter og full Sandbox/Production critical/build PASS. Bare ny kort vurdering av arbeidsflyten gjenstår hos Kenneth. Ingen gammel godkjenning eller testmail skal gjentas. [Scope, bevis og grenser](docs/kshms/HR_PRACTICE_20261011.md).
+
+Kanonisk main/Production er `c3d873e0e5bd2677f0205143de6edc1fbd95ae4c` (READY), demo `11f1b45dac4daa08efc850ba87ad5e28522dad4c`. Ingen merge eller endring av disse i denne leveransen. Eldre daterte avsnitt nedenfor er historikk, ikke nye utestående krav.
+
 ## Godkjent release til Production og kursdemo – 10. oktober 2026
 
 Kenneth har godkjent releaseløpet med «Kjør», mobiltilpasning og eksempelinnhold for kurs. Miljømål: **BEGGE**. Eldre avsnitt om manglende Production-godkjenning er historiske.

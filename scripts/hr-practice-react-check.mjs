@@ -1,0 +1,40 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import {build} from 'vite';
+import react from '@vitejs/plugin-react';
+const {JSDOM}=await import(process.env.KSHMS_JSDOM_PATH||'jsdom');
+const target=process.env.HR_PRACTICE_TARGET||'sandbox';
+const rootDir=process.cwd(),temp=fs.mkdtempSync(path.join(os.tmpdir(),'hr-practice-'));
+try{
+ const entry=path.join(temp,'entry.jsx');
+ fs.writeFileSync(entry,`import React,{act} from '${rootDir}/node_modules/react/index.js';import {createRoot} from '${rootDir}/node_modules/react-dom/client.js';import Hr from '${rootDir}/src/modules/hr/HrModule.jsx';const root=createRoot(document.getElementById('app'));globalThis.__act=act;globalThis.__render=(user='self',company='firm')=>root.render(React.createElement(Hr,{key:company+':'+user,audience:'personal',context:{available:true,enabled:false,administer:false,user_id:user,company_id:company,company_name:'Syntetisk prøvefirma'}}));globalThis.__unmount=()=>root.render(null);`);
+ const bundle=await build({root:rootDir,configFile:false,logLevel:'silent',define:{'process.env.NODE_ENV':'"development"','import.meta.env.VITE_EXPO_BACKEND_TARGET':JSON.stringify(target)},build:{write:false,minify:false,lib:{entry,formats:['iife'],name:'PracticeProof',cssFileName:'practice-proof'}},plugins:[react(),{name:'synthetic-client',enforce:'pre',resolveId(id){if(/appSupabaseClientRegistry\.js$/.test(id))return '\0client';},load(id){if(id==='\0client')return 'export const getAppSupabaseClient=()=>({rpc:async()=>{throw Error("Practice must not call backend");}});';}}]});
+ const output=(Array.isArray(bundle)?bundle[0]:bundle).output,code=output.find(f=>f.type==='chunk').code,css=output.filter(f=>f.type==='asset'&&f.fileName.endsWith('.css')).map(f=>f.source).join('\n');
+ if(process.env.HR_PRACTICE_BROWSER_DIR){fs.mkdirSync(process.env.HR_PRACTICE_BROWSER_DIR,{recursive:true});fs.writeFileSync(path.join(process.env.HR_PRACTICE_BROWSER_DIR,'app.js'),code);fs.writeFileSync(path.join(process.env.HR_PRACTICE_BROWSER_DIR,'app.css'),css);fs.writeFileSync(path.join(process.env.HR_PRACTICE_BROWSER_DIR,'index.html'),'<!doctype html><html lang="nb"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="app.css"><style>body{margin:0;font-family:Arial,sans-serif;background:#edf1f6}#app{max-width:1000px;margin:auto;padding:16px}button{padding:10px 16px;background:#163d70;color:white;border:0;border-radius:8px;font:inherit}</style><div id="app"></div><script src="app.js"></script><script>__render()</script></html>');}
+ const dom=new JSDOM('<div id="app"></div>',{url:'https://example.invalid',runScripts:'outside-only',pretendToBeVisual:true});
+ try{
+  const w=dom.window;w.IS_REACT_ACT_ENVIRONMENT=true;w.MessageChannel=class{constructor(){this.port1={onmessage:null};this.port2={postMessage:()=>setImmediate(()=>this.port1.onmessage?.())};}};w.confirm=()=>true;w.HTMLElement.prototype.scrollIntoView=function(){};
+  let q=Promise.resolve();Object.defineProperty(w.navigator,'locks',{value:{request:(_k,job)=>{const p=q.then(job);q=p.catch(()=>{});return p;}}});w.eval(code);
+  const act=w.__act,buttons=()=>[...w.document.querySelectorAll('.hrp button')],button=text=>{const b=buttons().find(b=>b.textContent.trim()===text);assert(b,'Missing '+text);return b;};
+  const click=async text=>act(async()=>button(text).click());
+  const field=label=>{const f=[...w.document.querySelectorAll('.hrp label')].find(l=>l.querySelector('span')?.textContent===label)?.querySelector('input,textarea');assert(f,label);return f;};
+  const write=async(label,value)=>act(async()=>{const f=field(label);Object.getOwnPropertyDescriptor(f.tagName==='TEXTAREA'?w.HTMLTextAreaElement.prototype:w.HTMLInputElement.prototype,'value').set.call(f,value);f.dispatchEvent(new w.Event('input',{bubbles:true}));});
+  await act(async()=>w.__render());assert.equal(w.localStorage.length,0);
+  if(target==='production'){assert.equal(w.document.querySelectorAll('.hrp').length,0);console.log('Actual Production-target HR React: no practice UI or local writes PASS');}else{
+  await click('Prøv medarbeidersamtale');await click('Lagre forberedelse og gå til samtalen');assert(w.document.querySelector('[role=alert]').textContent.includes('alle fire'));assert.equal(w.localStorage.length,0);
+  await write('Trivsel og samarbeid','Min egen prøvetekst');await click('Legg eksempeltekster i tomme felt');assert.equal(field('Trivsel og samarbeid').value,'Min egen prøvetekst');assert(button('Last ned referat (PDF)').disabled);
+  await click('Lagre forberedelse og gå til samtalen');assert(w.document.querySelector('[role=status]').textContent.includes('Lagret i denne nettleseren'));assert(w.document.querySelector('[aria-current=step]').textContent.includes('Samtale'));
+  await click('Lagre samtalen og gå til tiltak');await click('Lagre tiltak og gå til referat');assert(button('Lagre ferdig prøvereferat').disabled);
+  await act(async()=>[...w.document.querySelectorAll('.hrp label')].find(l=>l.textContent.includes('Jeg har gjennomgått')).querySelector('input').click());await click('Lagre ferdig prøvereferat');assert(w.document.querySelector('.hrp-editor').disabled);assert(!button('Last ned referat (PDF)').disabled);
+  const key='expo.hr.practice.v1:firm:self';let book=JSON.parse(w.localStorage.getItem(key));assert.equal(book.records.length,1);assert.equal(book.records[0].versions.length,4);assert.equal(book.records[0].versions.at(-1).content.stage,'completed');
+  await act(async()=>w.__unmount());await act(async()=>w.__render());await click('Prøv medarbeidersamtale');await act(async()=>buttons().find(b=>b.textContent.startsWith('Åpne lagret samtale:')).click());assert(field('Oppsummering').value.includes('Vi er enige'));
+  await click('Rediger som ny utgave');await write('Oppsummering','Min reviderte prøveoppsummering');assert(button('Last ned referat (PDF)').disabled);
+  const external=JSON.parse(w.localStorage.getItem(key));external.revision++;w.localStorage.setItem(key,JSON.stringify(external));await click('Lagre utkast');assert(w.document.querySelector('[role=alert]').textContent.includes('annen fane'));assert.equal(field('Oppsummering').value,'Min reviderte prøveoppsummering');
+  await act(async()=>w.__render('other'));await click('Prøv medarbeidersamtale');assert(!w.document.querySelector('.hrp-history')?.textContent.includes('Lagrede prøvesamtaler'));assert(w.localStorage.getItem(key));
+  await act(async()=>w.__render('self','other'));await click('Prøv medarbeidersamtale');assert.equal(w.document.querySelectorAll('.hrp-history button').length,1);assert(w.localStorage.getItem(key));
+  console.log('Actual HR React: examples preserve edits → all four steps → completion → remount/reopen → conflict keeps draft → user/company separation PASS');
+  }
+ }finally{dom.window.close();}
+}finally{fs.rmSync(temp,{recursive:true,force:true});}

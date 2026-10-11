@@ -1,3 +1,13 @@
+## Bare én ny kort prøve: medarbeidersamtale med eksempelinnhold
+
+Bruk den faste branch-Preview-en for `fase45b-hr-conversation-practice-20261011`, med eksisterende Sandbox-konto. Ingen nye nøkler eller nytt testfirma er nødvendig. Tidligere godkjente områder skal ikke testes igjen.
+
+1. Åpne **HR → Prøv medarbeidersamtale** (også i **Min side → Mine oppfølginger**). Trykk **Legg eksempeltekster i tomme felt** og endre gjerne ett svar.
+2. Følg de tre knappene **Lagre forberedelse og gå til samtalen**, **Lagre samtalen og gå til tiltak**, **Lagre tiltak og gå til referat**. Huk av **Jeg har gjennomgått prøvereferatet** og trykk **Lagre ferdig prøvereferat**. Det skal stå at utgaven er lagret i denne nettleseren.
+3. **Last ned referat (PDF)** skal gi tydelig merket prøveinnhold. Etter oppfriskning: **Prøv medarbeidersamtale → Lagrede prøvesamtaler → Åpne lagret samtale** skal vise samme innhold.
+
+Utvikleren har allerede testet lagring, gjenåpning, PDF, fanebytte, konflikter og smal skjerm. Din oppgave er å vurdere om flyten og knappene er forståelige. Bruk bare oppdiktet innhold. Dette er ikke en reell eller signert medarbeidersamtale. [Utviklerbevis og grenser](HR_PRACTICE_20261011.md).
+
 ## Ny HR-prøve – snarveier og sykefravær
 
 Bare denne nye delen skal prøves på [fast Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe). Tidligere TEST OK består. Innlogget visuell/mobil prøve gjenstår; utviklerens React-/SQL-/critical-prøver er grønne.

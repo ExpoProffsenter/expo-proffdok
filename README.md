@@ -373,3 +373,9 @@ Risikovurderinger kan lagre inntil tre komprimerte bilder per fare i den samme p
 ### KS/HMS og HR – firmaavtale og brukerkort (feature, 9. oktober 2026)
 
 Systemadmin aktiverer KS/HMS/HR i **Firmaer, brukere og tilganger → firma → Firmaets KS/HMS- og HR-avtale**. Firmaadmin bruker **Firmaadmin → Brukere og tilganger → brukerkort → KS/HMS og HR**; systemadmin bruker samme brukerkort i sin firmaoversikt. HR-modultilgang er ikke en personlig leserett. Firmaadmin har administrasjon i eget aktiverte firma; systemadmin/KS-rolle gir ikke automatisk individuelt HR-innsyn. Hjelp har ikon på alle punkter og følger arbeidsflyt og fersk faktisk tilgang. Bare feature/Preview/Sandbox; sensitivt HR-innhold fortsatt stengt. [Scope og QA](docs/kshms/HELP_ACCESS_20261009.md).
+
+## HR: prøvesamtale i Sandbox – 11. oktober 2026
+
+Eksisterende HR får en tydelig merket, oppdiktet medarbeidersamtale når byggets backendmål er `sandbox` og HR-konteksten er tilgjengelig. Forberedelse → felles samtale → tiltak → referat kan prøves med samme konto. Eksempeltekster fyller bare tomme felt. Lokal lagring er skilt per firma og bruker, med Web Locks, revisjonskontroll og uforanderlige tidligere utgaver. PDF bruker lagret utgave og merkes som prøve/utkast. Ingen medarbeiderkobling, HR-RPC, utsending, signatur, backendendring eller åpning av privat HR.
+
+Dette er en lokal prøve av arbeidsflyten; data følger ikke brukeren til en ny nettleser eller enhet. Maksimum 10 prøvesamtaler og 20 utgaver per samtale; sletting gjelder bare eget prøveinnhold i nettleseren. Isolert Preview fra ren main, uten å merge tidligere HR-workerarbeid. Se [scope og verifisering](docs/kshms/HR_PRACTICE_20261011.md).

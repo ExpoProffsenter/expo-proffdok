@@ -962,3 +962,9 @@ Lagrede prosjektbilder lastes autentisert fra samme Supabase-origin/bucket proje
 `useHelpModuleAccess` bruker appklienten og fersk serverrespons, rydder ved bruker-/firma-/tilgang-/bakgrunnsbytte og nekter sene svar. Main sender eksisterende ferske KS/HR-kontekster til React-Hjelp. `helpPresentation.mjs` filtrerer alle modultemaer og ordner global/prosjektflyt; separate Proff-veiledninger følger også store_offers. Alle toppvalg får 20 px dekorativt Lucide-ikon. [Scope/bevis](../kshms/HELP_ACCESS_20261009.md).
 
 Firmamodalens «Lagre og lukk» følger også `data-people-module-save` / `data-access-saving` for de nye modulvalgene; synlige RPC-feil holder firmaet åpent. Felles signal fra en annen selvstendig people-user-grant nullstiller ikke pågående valg på dette kortet. `PeopleModuleAccess.css` retter kun checkbox-bredde/tekstplassering i de nye feltene og tilstøtende company-store-offers-feltet.
+
+## HR: prøvesamtale i Sandbox – 11. oktober 2026
+
+Eksisterende HR får en tydelig merket, oppdiktet medarbeidersamtale når byggets backendmål er `sandbox` og HR-konteksten er tilgjengelig. Forberedelse → felles samtale → tiltak → referat kan prøves med samme konto. Eksempeltekster fyller bare tomme felt. Lokal lagring er skilt per firma og bruker, med Web Locks, revisjonskontroll og uforanderlige tidligere utgaver. PDF bruker lagret utgave og merkes som prøve/utkast. Ingen medarbeiderkobling, HR-RPC, utsending, signatur, backendendring eller åpning av privat HR.
+
+Dette er en lokal prøve av arbeidsflyten; data følger ikke brukeren til en ny nettleser eller enhet. Maksimum 10 prøvesamtaler og 20 utgaver per samtale; sletting gjelder bare eget prøveinnhold i nettleseren. Isolert Preview fra ren main, uten å merge tidligere HR-workerarbeid. Se [scope og verifisering](../kshms/HR_PRACTICE_20261011.md).

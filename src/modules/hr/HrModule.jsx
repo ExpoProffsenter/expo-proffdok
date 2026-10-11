@@ -11,6 +11,8 @@ import PrivateContact from './PrivateContact.jsx';
 import {HR_SETUP_SUGGESTIONS,suggestedReviewDate} from './hrSetupSuggestions.mjs';
 import HrConversationTemplates from './HrConversationTemplates.jsx';
 import HrSickLeaveSetup from './HrSickLeaveSetup.jsx';
+import HrPracticeConversation from './HrPracticeConversation.jsx';
+import {practiceAvailable} from './hrPracticeConversation.mjs';
 
 const emptyConfig={purpose:'',legalBasis:'',reviewOn:'',enabled:false};
 function Field({label,children}) {return <label className="hr-field"><span>{label}</span>{children}</label>;}
@@ -109,6 +111,7 @@ export default function HrModule({context,audience='legacy',initialEmployeeId=nu
  const oldHasReader=Boolean(detail?.leader_id&&detail.readers?.some(grant=>grant.user_id===detail.leader_id));
  const selectedLeaderMissing=Boolean(leader&&!members.some(member=>member.id===leader));
  return <section className={audience==='personal'?'hr-module hr-personal':'hr-module'} aria-label={audience==='personal'?'Mine oppfølginger':'HR'}>
+  {practiceAvailable(context,import.meta.env.VITE_EXPO_BACKEND_TARGET)&&<HrPracticeConversation key={'practice:'+companyId+':'+userId} context={context}/>}
   {audience!=='personal'&&<ModuleHeading className="hr-heading" companyName={context.company_name} title="HR" description={administer?'Medarbeidere, nærmeste leder og trygg tilgang.':audience==='management'?'Medarbeiderne du følger opp som nærmeste leder.':'Dine tilgjengelige oppføringer og oppfølginger.'} role={administer?'Firmaadmin':audience==='management'?'Nærmeste leder':'Personlig tilgang'} icon={UsersRound}/>}
   {audience==='personal'?<div className="hr-personal-intro"><ShieldCheck aria-hidden="true"/><div><strong>Din oppføring. Din tilgang.</strong><p>Åpne raden nedenfor for å se egen medarbeideroppføring eller en oppføring som er delt med deg. Kontakt firmaadmin hvis leder eller tilgang er feil. Ansattes svar og referater kan ikke registreres ennå.</p></div></div>:<><p className="hr-coming"><HeartPulse size={16} aria-hidden="true"/>Samtaler og sykefraværsoppfølging kommer i neste del.</p><details className="module-guide"><summary><Info aria-hidden="true"/>Slik bruker du HR</summary><div className="hr-intro"><strong>Riktig leder. Riktig tilgang.</strong><p>{administer?'Registrer medarbeidere og velg nærmeste leder. Se over hvem som får lese før dere begynner med oppfølging.':audience==='management'?'Her ser du medarbeiderne du er registrert som nærmeste leder for. Egne oppfølginger ligger på Min side.':'Her ser du egen registeroppføring og medarbeidere du har fått uttrykkelig lesetilgang til.'}</p><p>Samtaler og sykefraværsoppfølging kommer i neste del. Du kan foreløpig ikke lagre referat, fraværsopplysninger eller filer her.</p></div></details></>}
   {audience!=='personal'&&data&&<section className="hr-step-guide" aria-label="Kom i gang med HR"><h3>Start her</h3>
