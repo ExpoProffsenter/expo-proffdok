@@ -1,0 +1,4 @@
+.hr-real-conversation .hrp-saved>form{padding:16px}
+.hr-real-conversation select{box-sizing:border-box;width:100%;max-width:100%;min-height:44px;padding:11px;border:1px solid #b6c5da;border-radius:8px;background:white;color:#172b46;font:inherit}
+.hr-real-conversation fieldset{border:0;padding:0;margin:0;min-width:0}
+.hr-real-conversation select:focus-visible{outline:3px solid #f3b645;outline-offset:3px}
