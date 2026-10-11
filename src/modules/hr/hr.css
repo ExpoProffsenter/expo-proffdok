@@ -15,3 +15,6 @@
 .hr-step-guide{padding:14px 16px;margin:12px 0 16px;border:1px solid #c4dfe3;border-radius:12px;background:#f3fbfc}.hr-step-guide h3{font-size:17px;margin:0 0 8px;color:#075961}.hr-step-guide p{font-size:14px;line-height:1.55;margin:8px 0}.hr-step-guide ol{list-style:none;padding:0;margin:12px 0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.hr-step-guide li{min-width:0;font-size:14px;line-height:1.55;overflow-wrap:anywhere}.hr-step-guide li strong,.hr-step-guide li span{display:block}.hr-step-guide li strong{margin-bottom:4px;color:#075961}.hr-step-guide .hr-hint{margin-bottom:0}@media(max-width:760px){.hr-step-guide ol{grid-template-columns:1fr;gap:12px}}
 
 .hr-workspace-card.hr-workspace-templates{border-color:#d5e2f8;background:linear-gradient(155deg,#eff5ff,#fff 80%)}.hr-workspace-templates .hr-workspace-icon{background:#e1ebfc;color:#385c9a}.hr-workspace-card.hr-workspace-sick{border-color:#cce5dc;background:linear-gradient(155deg,#edf8f2,#fff 80%)}.hr-workspace-sick .hr-workspace-icon{background:#dbefe4;color:#276448}
+
+/* Selected employee uses the existing accessible app dialog. */
+.hr-employee-dialog{padding:0;max-width:none}.hr-employee-dialog .hr-detail{margin:0;min-width:0}.hr-employee-dialog .hr-toolbar h3{font-size:18px;margin:0}.hr-employee-dialog p,.hr-employee-dialog li{overflow-wrap:anywhere}

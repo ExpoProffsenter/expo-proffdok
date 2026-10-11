@@ -1,8 +1,24 @@
+## Rettet HR-prøveflyt – 11. oktober 2026
+
+Kenneth meldte behov for scrolling ved neste steg og tap av åpen samtale etter PDF. Neste steg fokuseres og rulles til starten. Etter tilgangskontroll/PDF-retur gjenåpnes samme lagrede samtale, utgave og fane fra scoped navigasjon i denne nettleserfanen. Ny/lukk/slett respekteres. Faktisk React og Chromium-regresjon PASS; PDF-format og beskyttet kjerne uendret. Publiseres på samme PR #218 / faste Preview, uten ny godkjenningsrunde for tidligere områder. [Bevis](HR_PRACTICE_20261011.md).
+
+## HR-prøvesamtale i eksisterende Sandbox – 11. oktober 2026
+
+Ny isolert branch `fase45b-hr-conversation-practice-20261011` fra ren main. Brukeren kan prøve eksempeltekster, fire samtalesteg, lokal lagring/gjenåpning og PDF med egen konto. Ingen nye nøkler eller testmiljøer. Production viser ikke prøveflaten. Personlig HR forblir stengt. Tidligere ledger/workerarbeid står separat i draft PR #217.
+
+Ny faktisk React-/Chromium-/PDF-/samtidighetskontroll, berørte eksisterende HR-flyter og full Sandbox/Production critical/build PASS. Bare ny kort vurdering av arbeidsflyten gjenstår hos Kenneth. Ingen gammel godkjenning eller testmail skal gjentas. [Scope, bevis og grenser](HR_PRACTICE_20261011.md).
+
+Kanonisk main/Production er `c3d873e0e5bd2677f0205143de6edc1fbd95ae4c` (READY), demo `11f1b45dac4daa08efc850ba87ad5e28522dad4c`. Ingen merge eller endring av disse i denne leveransen. Eldre daterte avsnitt nedenfor er historikk, ikke nye utestående krav.
+
 ## Gjeldende fortsettelsespunkt: produksjon og kursdemo publisert – 10. oktober 2026
 
 PR #216 merged; Production READY på `c3d873e0`. Main → demo er publisert på `d959b970`, Demo READY `dpl_27Ze7uN3i9e9CwFkwXSQcHfuHZto`. Fiktive kursmaler og KS/HMS-eksempler finnes. Gjenopptatt kontroll: full critical/Sandbox build PASS, 19 + 3 server-preflightpunkter grønne, faktisk rollback-reset-QA PASS og ingen main-filer fjernet fra demo. Produksjon er bare lest i denne økten. Innlogget full klient-preflight/lokal Badskisse, fysisk mobil og kontrollmail er ikke attestert; personlig HR fortsatt stengt. Ikke gjenta ferdig synk/seed eller tidligere TEST OK. Freeze for nye funksjoner gjelder. [Presis sluttstatus og videre arbeid](RELEASE_CLOSEOUT_20261010.md). Eldre avsnitt om draft/ingen Production er historikk.
 
 ## HR: samtalemaler i menyen og sykefraværsoppsett – 10. oktober 2026
+
+## Ny separat core-retting: samme visning – 11. oktober 2026
+
+Branch `fase45b-core-navigation-resume-20261011` fra main `c3d873e0`; miljømål **BEGGE**. Avdekking og gjentakbare tester viste at HR-registerets valgte ID forsvant ved fokus/remount, KS/HMS husket bare organisasjonsfanen, Min side mistet Les og bekreft, og dokumentuttrekk mistet omfang/kurv ved internt fanebytte. Rettelsen bevarer avgrenset navigasjon gjennom fersk tilgang, og bevarer uttrekksarbeidsflaten skjult med eksplisitt avbrudd. PR #218/samtaleøvelsen forblir separat. Se [scope, permanent React-test og kort prøve](NAVIGATION_RECOVERY_20261011.md). Ingen main/demo/DB/mail-endring utført; TEST OK/merge gjenstår.
 
 **Åpne samtalemaler** og **Åpne sykefravær** ligger i HR-snarveiene øverst. Firmaadmin kan klargjøre en generell sykefraværsmal med 11 spørsmål om arbeid, kontakt, tilrettelegging og oppfølging. Eksisterende admin-/firmagater, utgaver, CAS og kladdbevaring gjelder. Fristveiledning med NHO/NAV-kilder og et avgrenset regneeksempel for 4/7/8/26 uker; fullt og gradert fravær forklares ulikt. Ingen personlig sak, fraværsdata, påminnelse eller innsending opprettes.
 
@@ -962,3 +978,7 @@ Kort brukertest på samme faste Preview: Åpne testordren → Sjekklister. Menye
 ZIP-leveransens endelige lokale full `EXPO_BACKEND_TARGET=sandbox npm run build` PASS exit 0. PR-scope/release-docs-guard PASS mot faktisk main. Berørt eksisterende samle-PDF React/Storage/jsPDF PASS: begge faktiske PDF-er, innhold/signaturer/bilder/manifest, fjerning av valgt dokument og sent kontekstbytte. QA-foto er større enn forrige testfoto, så sideantallet endret seg; dette er ingen tap av felter. Innlogget ny ZIP/nedlasting vurderes etter publisering, ikke gradert PASS her.
 
 Tekstoppfølging: faktisk React/ZIP med fem syntetiske vedlegg, eksisterende permanent ZIP/PDF-check og full Sandbox critical/build PASS. Transport/filformat uendret; ingen ny brukernedlasting kreves for å beholde allerede godkjent ZIP-prøve. Publisert tekst/eksakt head følges opp i PR #216 og innlogget nettleser.
+
+HR-popup 11.10: medarbeiderraden åpner eksisterende appdialog, med leder/tilgang, paginerte brukervalg og resultatmeldinger inne i vinduet. Dialog, Escape/kryss, fokusretur og fersk autorisering kontrollert i React og Chromium ved 1280/360/740. Tilgang/backend/privat HR uendret. Samme core-PR #219/Preview; ingen merge.
+
+HR-prøveoppdatering 11.10: første åpning viser skjemaets topp; tom/ulagret/redigert samtale bevares gjennom ekte HR-tilgangsremount. Konto-/firmabundet sideminne, ingen ulagret browserlagring. Faktisk useHrAccess/JSDOM og Chromium 1280/360/740 grønne, inkludert konflikt og uendrede PDF-/neste-steg-løp. Samme PR #218/Preview; ingen merge.

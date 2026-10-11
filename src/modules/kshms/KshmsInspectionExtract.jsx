@@ -6,25 +6,30 @@ import {loadInspectionAttachmentPreview,downloadInspectionAttachmentArchive,proj
 
 const status=row=>row.kind==='legacy'?`${row.status} · eldre lagret tilstand`: row.kind==='reviews'?'Signert revisjon':row.number?`Publisert utgave ${row.number}`:({signed:'Signert',completed:'Fullført',closed:'Lukket',open:'Åpen',in_progress:'Under behandling',draft:row.kind==='sjas'?'Utkast - ikke signert':'Under arbeid - ikke fullført'})[row.status]||row.status;
 
-export default function KshmsInspectionExtract({context}){
+export default function KshmsInspectionExtract({context,active=true}){
  const companyId=context.company_id,userId=context.user_id;
  const [catalog,setCatalog]=useState(null),[selected,setSelected]=useState([]),[scopeText,setScopeText]=useState(''),[query,setQuery]=useState(''),[projectId,setProjectId]=useState('');
  const [busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState(''),[confirmed,setConfirmed]=useState(false);
  const [attachmentPreview,setAttachmentPreview]=useState(null),[attachmentConfirmed,setAttachmentConfirmed]=useState(false);
  const clearAttachments=()=>{setAttachmentPreview(null);setAttachmentConfirmed(false);};
  const owner=useRef(null),sequence=useRef(0),locked=useRef(false),latest=useRef(''),cursors=useRef(new Set());
- const fingerprint=JSON.stringify([companyId,userId,context.enabled,context.manage,selected,scopeText,confirmed,attachmentConfirmed]);latest.current=fingerprint;
+ const fingerprint=JSON.stringify([companyId,userId,context.enabled,context.manage,active,selected,scopeText,confirmed,attachmentConfirmed]);latest.current=fingerprint;
  useEffect(()=>{
   const token={active:true};owner.current=token;
   clearAttachments();setBusy(false);setError('');setNotice('');setCatalog(null);setSelected([]);setProjectId('');setConfirmed(false);setScopeText('');setQuery('');cursors.current.clear();
   return()=>{token.active=false;sequence.current++;};
  },[companyId,userId,context.enabled,context.manage]);
+ useEffect(()=>{
+  if(active)return;
+  // Keep the cart and text while hidden, but retire every in-flight operation.
+  sequence.current++;locked.current=false;setBusy(false);clearAttachments();
+ },[active]);
  const run=async(action)=>{
-  if(locked.current||!context.enabled||!context.manage)return;
+  if(locked.current||!active||!context.enabled||!context.manage)return;
   const token=owner.current,id=++sequence.current,snapshot=fingerprint;
   const current=()=>token?.active&&owner.current===token&&id===sequence.current&&latest.current===snapshot;
   locked.current=true;setBusy(true);setError('');setNotice('');
-  try{await action(current);}catch(cause){if(current())setError(cause.message);}finally{locked.current=false;if(token?.active&&owner.current===token)setBusy(false);}
+  try{await action(current);}catch(cause){if(current())setError(cause.message);}finally{if(id===sequence.current){locked.current=false;if(token?.active&&owner.current===token)setBusy(false);}}
  };
  const load=()=>run(async current=>{
   const next=await loadExtractChoices({rpc:kshmsRpc,companyId,userId,query:query.trim(),isCurrent:current});if(!next||!current())return;

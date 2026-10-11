@@ -1,5 +1,12 @@
 ## HR: sykefraværsoppsett – 10. oktober 2026
 
+## Retur til samme KS/HMS-/HR-visning – 11. oktober 2026
+
+Separat core-retting fra ren main: HR husker valgt medarbeider gjennom fersk tilgangskontroll; KS/HMS husker tillatt fane, også Les og bekreft på Min side. Dokumentuttrekk beholder omfang og dokumentvalg over interne fanebytter, og gamle eksporter avbrytes. Navigasjonsminnet har bare scoped skjerm-/post-ID-er; innhold hentes på nytt. Ingen full reload-recovery, backendendring eller samtaleøvelse følger denne rettelsen. Miljømål **BEGGE**, bare feature/Preview frem til TEST OK. [Kontrakt, regresjonstest og kort prøve](docs/kshms/NAVIGATION_RECOVERY_20261011.md).
+
+Lagrede prøvesamtaler vises nå som en tydelig blå boks med ramme, større klikkflate og synlig tastaturfokus. Åpning og historikk er uendret.
+
+
 
 **Release 10. oktober 2026:** PR #216 er merged og Production READY på main `c3d873e0`. Denne demo-branchen synkroniserer godkjent main og legger til [fiktive HR-/KS/HMS-kurseksempler](docs/DEMO_KSHMS_HR_COURSE_20261010.md) med egen veiledning og reset. Personlige HR-svar/sykefraværssaker forblir sperret. Tidligere «ingen main/demo/Production»-notater nedenfor er historiske fasebevis.
 HR-menyen har nå egne snarveier til Samtalemaler og Sykefravær. Generell sykefraværsmal bruker eksisterende private malregister/RPC, versjoner, CAS og firmaadmin-gater. Additiv validator-migration tillater `sickleave`; ingen personlig innholdsport eller privilegier åpnes. Kildebasert veiledning og et datoregneksempel uten lagring/påminnelser. BEGGE, foreløpig bare feature/Preview/Sandbox. [Scope og bevis](docs/kshms/HR_SICK_LEAVE_SETUP_20261010.md).
@@ -375,3 +382,15 @@ Risikovurderinger kan lagre inntil tre komprimerte bilder per fare i den samme p
 ### KS/HMS og HR – firmaavtale og brukerkort (feature, 9. oktober 2026)
 
 Systemadmin aktiverer KS/HMS/HR i **Firmaer, brukere og tilganger → firma → Firmaets KS/HMS- og HR-avtale**. Firmaadmin bruker **Firmaadmin → Brukere og tilganger → brukerkort → KS/HMS og HR**; systemadmin bruker samme brukerkort i sin firmaoversikt. HR-modultilgang er ikke en personlig leserett. Firmaadmin har administrasjon i eget aktiverte firma; systemadmin/KS-rolle gir ikke automatisk individuelt HR-innsyn. Hjelp har ikon på alle punkter og følger arbeidsflyt og fersk faktisk tilgang. Bare feature/Preview/Sandbox; sensitivt HR-innhold fortsatt stengt. [Scope og QA](docs/kshms/HELP_ACCESS_20261009.md).
+
+Medarbeiderraden åpner nå leder, lesetilgang og eksisterende kontaktflate i appens etablerte popup-vindu. Desktop viser et sentrert vindu, mobil en full skjerm. Tab/fokus, Escape og tilbakeføring til raden følger den eksisterende dialogkomponenten. Lukking rydder HR-valget, og fanebytte viser oppføringen igjen først etter fersk autorisering. Paginering av appbrukere og resultat-/feilmeldinger er tilgjengelige inne i vinduet. Tilgangsmodell, skrivekall og private innholdsporter er uendret.
+
+## HR: prøvesamtale i Sandbox – 11. oktober 2026
+
+Eksisterende HR får en tydelig merket, oppdiktet medarbeidersamtale når byggets backendmål er `sandbox` og HR-konteksten er tilgjengelig. Forberedelse → felles samtale → tiltak → referat kan prøves med samme konto. Eksempeltekster fyller bare tomme felt. Lokal lagring er skilt per firma og bruker, med Web Locks, revisjonskontroll og uforanderlige tidligere utgaver. PDF bruker lagret utgave og merkes som prøve/utkast. Ingen medarbeiderkobling, HR-RPC, utsending, signatur, backendendring eller åpning av privat HR.
+
+Dette er en lokal prøve av arbeidsflyten; data følger ikke brukeren til en ny nettleser eller enhet. Maksimum 10 prøvesamtaler og 20 utgaver per samtale; sletting gjelder bare eget prøveinnhold i nettleseren. Isolert Preview fra ren main, uten å merge tidligere HR-workerarbeid. Se [scope og verifisering](docs/kshms/HR_PRACTICE_20261011.md).
+
+Prøvesamtalens neste steg ruller nå til innholdets start. PDF-retur og ny tilgangskontroll beholder valgt samtale, lagret utgave og fane via en scoped sessionStorage-peker; innhold leses fra ferskt validert lokal historikk. Bevisst lukk/ny/slett rydder valget. PDF-format, tilgangskjerne og global navigasjon er uendret.
+
+Prøv medarbeidersamtale viser nå toppen av skjemaet. Tomme og ulagrede prøvekladder beholdes i et avgrenset konto-/firmabundet sideminne gjennom tilgangsremount etter fanebytte. Fersk lokal historikk leses før gjenåpning; en eldre ulagret revisjon får ikke overskrive endringer fra en annen fane. Full oppfriskning gjenåpner fortsatt bare lagrede utgaver. Bevisst Lukk rydder kladden og valget.
