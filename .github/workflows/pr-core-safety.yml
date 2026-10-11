@@ -51,6 +51,9 @@ jobs:
           node scripts/hr-register-react-check.mjs
           node scripts/personal-page-react-check.mjs
           node scripts/hr-templates-react-check.mjs
+          node scripts/critical-people-module-access-check.mjs
+          node scripts/people-module-access-react-check.mjs
+          node scripts/people-workspace-module-access-react-check.mjs
           node scripts/kshms-sja-parent-react-check.mjs
           node scripts/kshms-executions-react-check.mjs
           node scripts/kshms-review-reminders-react-check.mjs

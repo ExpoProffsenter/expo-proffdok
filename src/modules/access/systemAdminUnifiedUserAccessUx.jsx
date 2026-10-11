@@ -20,7 +20,7 @@ import { setManagedProCatalogNetPriceAccess } from "./proUserAccessClient.js";
 
 import { readCordelAccess, setCordelAccess } from "../cordel/cordelAccess.js";
 
-import PeopleModuleAccess from './PeopleModuleAccess.jsx';
+import PeopleWorkspaceModuleAccess from './PeopleWorkspaceModuleAccess.jsx';
 
 const MOUNT_ATTR = "data-systemadmin-unified-access";
 const INTERNAL_COMMERCE_COMPANIES = new Set([
@@ -189,7 +189,7 @@ function UnifiedAccessControls({ user, onReload }) {
         ) : null}
       </div>
 
-      <PeopleModuleAccess companyId={user.company_scope_id} userId={user.user_id} />
+      <PeopleWorkspaceModuleAccess companyId={user.company_scope_id} userId={user.user_id} />
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(190px,1fr))", gap: 8, marginTop: 10 }}>
         {MODULE_CATALOG.map((module) => {
