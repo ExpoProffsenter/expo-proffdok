@@ -1,7 +1,14 @@
 import {createConversationSession} from './hrConversationSession.mjs';
 import {createHrFoundationSession} from './hrFoundation.mjs';
+import {osloToday} from './hrPracticeConversation.mjs';
 
 const titles={preparation:'Du er invitert til medarbeidersamtale',plan:'Oppfølgingsplan',meeting1:'Dialogmøte 1 – vurdering og oppfølging',activity:'Underlag til NAVs aktivitetsvurdering',meeting2:'Forberedelse til NAVs dialogmøte 2',next:'Neste oppfølging','hr-review':'Kontroll av HR-oppsett og tilgang'};
+export function followupVisible(task,today=osloToday()){
+ // Annual administration should not compete with invitations and work that can start now.
+ if(task.task_key!=='hr-review')return true;
+ const days=(Date.parse(task.due_on+'T12:00:00Z')-Date.parse(today+'T12:00:00Z'))/86400000;
+ return Number.isFinite(days)&&days<=30;
+}
 export const followupTitle=task=>titles[task.task_key]||'Avtalt tiltak';
 export const followupStep=task=>task.kind==='conversation'?(task.task_key==='preparation'?0:2):task.task_key==='plan'?1:task.task_key.startsWith('action:')||task.task_key==='next'?2:4;
 export function checkFollowupTasks(value,companyId,userId){
@@ -23,7 +30,7 @@ export async function readFollowupNotice({rpc,companyId,userId,after=null}){
   }finally{session.dispose();}
  }));
  const byId=new Map(meeting);
- return {...value,tasks:value.tasks.filter(t=>t.task_key!=='preparation'||!byId.has(t.case_id)||byId.get(t.case_id)!==null).map(t=>({...t,page_after:after,meeting:t.task_key==='preparation'?byId.get(t.case_id)||null:null}))};
+ return {...value,tasks:value.tasks.filter(t=>followupVisible(t)&&(t.task_key!=='preparation'||!byId.has(t.case_id)||byId.get(t.case_id)!==null)).map(t=>({...t,page_after:after,meeting:t.task_key==='preparation'?byId.get(t.case_id)||null:null}))};
 }
 export async function readFollowupEmployee({rpc,companyId,userId,task}){
  const session=createHrFoundationSession({rpc,companyId,userId});

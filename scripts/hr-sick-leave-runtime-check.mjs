@@ -51,7 +51,7 @@ let f=mailFixture({extraJob:{preparation:'Forbidden HR contents'}});eq((await f.
 f=mailFixture({valid:false});eq((await f.handler(req())).status,200);eq(f.requests.length,0,'fresh recipient revocation stops provider send');
 f=mailFixture();eq((await f.handler(req())).status,200);eq(f.requests.length,1);
 eq(f.requests[0].url,'https://api.resend.com/emails');eq(f.requests[0].opts.redirect,'error');eq(f.requests[0].opts.headers['Idempotency-Key'],'hr-followup-'+id(11));
-const mail=JSON.parse(f.requests[0].opts.body);eq(mail.to,['operator@example.invalid']);eq(mail.subject,'Expo ProffDok – HR-oppfølging');eq(mail.text.includes('sykefravær'),false);eq(mail.text.includes(employee.email),false);eq(mail.text.includes('example.invalid'),false);eq(mail.text.includes(id(1)),false);eq(mail.text.includes('Forbidden'),false);
+const mail=JSON.parse(f.requests[0].opts.body);eq(mail.to,['operator@example.invalid']);eq(mail.subject,'Expo ProffDok – HR-oppfølging');eq(mail.text.includes('sykefravær'),false);eq(mail.text.includes(employee.email),false);eq(mail.text.includes('example.invalid'),false);eq(mail.text.includes(id(1)),false);eq(mail.text.includes('Forbidden'),false);eq(mail.html.includes('Åpne Expo ProffDok'),true);eq(mail.html.includes('aria-label="Expo ProffDok"'),true);eq(mail.html.includes(employee.email),false);eq(mail.html.includes(id(1)),false);
 eq(f.calls.at(-1).a.p_sent,true);
 for(const provider of [500,'unknown']){f=mailFixture({provider});eq((await f.handler(req())).status,503);eq(f.calls.at(-1).a.p_sent,false);}
 f=mailFixture({finish:false});eq((await f.handler(req())).status,503,'unknown database acknowledgement is not reported as confirmed');
@@ -65,17 +65,23 @@ f=mailFixture({valid:false});eq((await f.handler(inviteReq())).status,200);eq(f.
 for(const provider of [500,'unknown']){f=mailFixture({provider});eq((await f.handler(inviteReq())).status,503);eq(f.calls.at(-1).a.p_sent,false);eq(f.requests[0].opts.headers['Idempotency-Key'],'hr-followup-'+id(11));}
 f=mailFixture({finish:false});eq((await f.handler(inviteReq())).status,503,'unconfirmed invitation acknowledgement');
 for(const [body,kind,subject] of [['{"reminder":true}','meeting-reminder','påminnelse om medarbeidersamtale'],['{"feedback":true}','employee-feedback','nytt innspill til medarbeidersamtale']]){
- f=mailFixture();eq((await f.handler(req(body))).status,200);const msg=JSON.parse(f.requests[0].opts.body);eq(msg.to,['leader@example.invalid']);eq(msg.subject,'Expo ProffDok – '+subject);eq(f.calls.find(c=>c.n==='hr_conversation_mail_reserve').a.p_kind,kind);eq(f.calls.find(c=>c.n==='hr_conversation_mail_validate').a.p_kind,kind);eq(msg.text.includes(employee.email),false);
+ f=mailFixture();eq((await f.handler(req(body))).status,200);const msg=JSON.parse(f.requests[0].opts.body);eq(msg.to,['leader@example.invalid']);eq(msg.subject,'Expo ProffDok – '+subject);eq(f.calls.find(c=>c.n==='hr_conversation_mail_reserve').a.p_kind,kind);eq(f.calls.find(c=>c.n==='hr_conversation_mail_validate').a.p_kind,kind);eq(msg.text.includes(employee.email),false);eq(msg.html.includes('aria-label="Expo ProffDok"'),true);eq(msg.html.includes('Åpne Expo ProffDok'),true);eq(msg.html.includes('href="https://expo-proffdok.app/"'),true);eq(msg.html.includes('safelinks'),false);eq(msg.html.includes(employee.email),false);eq(msg.html.includes(id(1)),false);eq(msg.html.includes('sykefravær'),false);eq(msg.html.includes('Nytt innspill til medarbeidersamtale')||msg.html.includes('Påminnelse om medarbeidersamtale'),true);
  f=mailFixture({valid:false});eq((await f.handler(req(body))).status,200);eq(f.requests.length,0,'revoked leader/event is not mailed');
  f=mailFixture({extraJob:{comments:'forbidden private text'}});eq((await f.handler(req(body))).status,503);eq(f.requests.length,0);
 }
 eq((await fs.readFile('supabase/functions/hr-followup-reminders/index.ts','utf8')).includes("'hr_followup_test_reserve'"),true,'deployed adapter permits targeted test RPC');
 const testReq=()=>req(JSON.stringify({test:id(11)}));
 f=mailFixture();eq((await f.handler(testReq())).status,200);eq(f.requests.length,1);
-const testMail=JSON.parse(f.requests[0].opts.body);eq(testMail.to,['operator@example.invalid']);eq(testMail.subject,'Expo ProffDok – test av HR-varsling');eq(testMail.text.includes('Ingen faktisk medarbeidersamtale'),true);
+const testMail=JSON.parse(f.requests[0].opts.body);eq(testMail.to,['operator@example.invalid']);eq(testMail.subject,'Expo ProffDok – test av HR-varsling');eq(testMail.text.includes('Ingen faktisk medarbeidersamtale'),true);eq(testMail.html,undefined,'isolated test transport remains unchanged');
 eq(f.calls.find(c=>c.n==='hr_followup_test_reserve').a,{p_id:id(11)});eq(f.calls.some(c=>c.n==='hr_followup_worker_reserve'||c.n==='hr_conversation_mail_reserve'||c.n==='hr_conversation_invitation_reserve'),false,'targeted test never drains queues');
 for(const body of ['{"test":"bad"}',JSON.stringify({test:id(11),invitation:true}),JSON.stringify({test:id(11),to:'other@example.invalid'})]){f=mailFixture();eq((await f.handler(req(body))).status,400);eq(f.requests.length,0);}
 f=mailFixture({extraJob:{id:id(99)}});eq((await f.handler(testReq())).status,503);eq(f.requests.length,0,'wrong delivery ID stops test');
 f=mailFixture({valid:false});eq((await f.handler(testReq())).status,200);eq(f.requests.length,0,'fresh access check stops test');
 f=mailFixture({provider:500});eq((await f.handler(testReq())).status,503);eq(f.calls.at(-1).a.p_sent,false);
+
+
+const {hrNotificationHtml}=await import('../supabase/functions/_shared/hr-notification-mail.mjs');
+eq(hrNotificationHtml({kind:'reminder',on:'2026-10-21',time:'<script>'}).includes('&lt;script&gt;'),true,'dynamic meeting metadata escaped in HTML');
+assert.throws(()=>hrNotificationHtml({kind:'unknown'}));checks++;
+eq(hrNotificationHtml({kind:'feedback'}).includes('Proffsenter'),false,'generic app branding must not impersonate a customer company');
 console.log(`Sick-leave session/PDF and generic reminder mail: ${checks} runtime assertions PASS; synthetic transport/provider, actual jsPDF.`);
