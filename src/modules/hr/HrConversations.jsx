@@ -7,6 +7,7 @@ import {MANAGED_ACCESS_EVENT,MODULE_ACCESS_EVENT} from '../access/moduleAccessCl
 import {WORK_PROFILE_EVENT} from '../access/workProfileClient.js';
 import './hrPracticeConversation.css';
 import './hrConversations.css';
+import HrConversationFeedback from './HrConversationFeedback.jsx';
 // Only volatile navigation/drafts, scoped to actor/company/employee. Never browser storage.
 const workspaces=new Map();
 const remember=(scope,v)=>{const entryKey=v.entryKey??workspaces.get(scope)?.entryKey;workspaces.delete(scope);workspaces.set(scope,{...v,entryKey});if(workspaces.size>4)workspaces.delete(workspaces.keys().next().value);};
@@ -14,7 +15,7 @@ const editable=c=>({preparation:c.preparation,meeting:c.meeting,actions:c.action
 const copy=v=>JSON.parse(JSON.stringify(v));
 const emailText={disabled:'E-postutsending er avslått i dette miljøet.',not_queued:'E-postinvitasjonen er ikke sendt.',pending:'E-post er lagt i kø for utsending.',sending:'E-post sendes …',sent:'E-post er sendt. Utsendingen er bekreftet av e-posttjenesten.',failed:'E-post kunne ikke sendes. Kontakt firmaadmin.',suppressed:'E-postutsendingen er stoppet fordi tidspunkt eller tilgang er endret.'};
 function Field({label,children}){return <label className="hrp-field"><span>{label}</span>{children}</label>;}
-export default function HrConversations({context,employee,initialCaseId=null,initialEntryKey=null,initialStep=0}){
+export default function HrConversations({context,employee,initialCaseId=null,initialEntryKey=null,initialStep=0,feedbackNotice=null,onFeedbackHandled=null}){
  const companyId=context.company_id,userId=context.user_id,employeeId=employee.id,scope=companyId+':'+userId+':'+employeeId;
  const [listing,setListing]=useState(null),[value,setValue]=useState(null),[draft,setDraft]=useState(null);
  const [templates,setTemplates]=useState(null),[templateId,setTemplateId]=useState(''),[on,setOn]=useState(osloToday);
@@ -195,6 +196,7 @@ export default function HrConversations({context,employee,initialCaseId=null,ini
    <Field label="Nytt klokkeslett"><input required type="time" step="60" value={draft.meeting_time} onChange={e=>change({meeting_time:e.target.value})}/></Field>
    <Field label="Nytt sted"><input required maxLength={200} value={draft.meeting_location} placeholder="Møterom eller adresse" onChange={e=>change({meeting_location:e.target.value})}/></Field><p>Trykk «Lagre samtale» for å lagre tidspunkt og sted. Endret sted eller tidspunkt krever ny invitasjon og oppdatering av kalenderavtalen.</p></fieldset></details>}
   {value.historical&&<p className="hrp-readonly">Historisk utgave. Denne kan bare leses. <button className="secondary" disabled={busy} onClick={()=>open(c.id)}>Åpne gjeldende utgave</button></p>}
+  <HrConversationFeedback value={value} context={context} feedback={feedbackNotice} blocked={busy||dirty||conflict} onHandled={onFeedbackHandled}/>
   <nav className="hrp-steps" aria-label="Steg i medarbeidersamtalen">{stages.map((title,i)=><button key={title} disabled={busy} aria-current={step===i?'step':undefined} onClick={()=>setStep(i)}><span>{i+1}</span>{title}</button>)}</nav>
   <div ref={body} tabIndex={-1} className="hrp-step-body">
   <h4>{stages[step]}</h4>
