@@ -1,3 +1,4 @@
+import {openMobileCustomerPreview} from "../services/salesMobilePreview.mjs";
 // Expo ProffDok – FASE 45B
 // Tynn wrapper rundt verifisert SalesDetailViewLegacy. Ordinær/våtroms-/legacy
 // Butikktilbud-logikk er uendret og delegert til legacy-komponenten.
@@ -77,7 +78,7 @@ function openDraftCustomerPreview(requestId = "") {
   const currentParams = new URLSearchParams(window.location.search);
   const vercelShare = currentParams.get("_vercel_share");
   if (vercelShare) url.searchParams.set("_vercel_share", vercelShare);
-  window.open(url.toString(), "_blank", "noopener,noreferrer");
+  if (!openMobileCustomerPreview(url.toString())) window.open(url.toString(), "_blank", "noopener,noreferrer");
 }
 
 function productNumber(item = {}) {

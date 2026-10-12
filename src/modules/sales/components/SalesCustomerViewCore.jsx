@@ -1,3 +1,4 @@
+import SalesOfferGroup from "./SalesOfferGroup.jsx";
 import { offerVatPresentation } from "../utils/salesOfferVatPresentation.js";
 // Expo ProffDok – FASE 31B
 // Kundetilbudets hovedposter sorteres etter fast arbeidsgang uavhengig av
@@ -431,7 +432,7 @@ export default function SalesCustomerView({
                       groupBaseTotal + groupSelectedOptionsTotal;
 
                     return (
-                      <section className="sales-customer-main-post" key={group.id}>
+                      <SalesOfferGroup className="sales-customer-main-post" key={`${selectedRequest.id}-${group.id}`} heading={
                         <div className="sales-customer-main-post-heading">
                           <div>
                             <span className="sales-customer-main-post-number">
@@ -453,6 +454,7 @@ export default function SalesCustomerView({
                           </div>
                         </div>
 
+                      }>
                         {group.lines.length ? (
                           <div className="sales-customer-lines">
                             {group.lines.map((line, lineIndex) => {
@@ -686,7 +688,7 @@ export default function SalesCustomerView({
                             </div>
                           </div>
                         ) : null}
-                      </section>
+                      </SalesOfferGroup>
                     );
                   })}
                 </div>

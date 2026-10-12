@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import './critical-sales-mobile-offer-check.mjs';
 import assert from "node:assert/strict";
 import {
   buildSalesStorageScopedProfile,

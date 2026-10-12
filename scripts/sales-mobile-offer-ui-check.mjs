@@ -1,0 +1,34 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';import path from 'node:path';import os from 'node:os';
+import {build} from 'vite';import react from '@vitejs/plugin-react';
+const {chromium}=await import(process.env.MOBILE_PLAYWRIGHT_PATH||'playwright');
+const root=process.cwd(),temp=fs.mkdtempSync(path.join(os.tmpdir(),'mobile-offer-'));
+const fixtures=process.env.MOBILE_OFFER_FIXTURE?JSON.parse(fs.readFileSync(process.env.MOBILE_OFFER_FIXTURE,'utf8')):[{ref:'SYNTHETIC',lines:[{id:'l',description:'Lang beskrivelse av rørleggerarbeid og utstyr som skal brytes riktig på en smal mobilskjerm.',amount:'92000',mainPostId:'rorlegger',mainPostTitle:'Rørlegger'}],options:[{id:'o',title:'Ekstra stikkontakt, strømopplegg for varmtvannsbereder eller toalett',description:'Lang opsjonstekst som må være lesbar uten overlapp.',amount:'1900',mainPostId:'rorlegger',mainPostTitle:'Rørlegger'}]}];
+try{
+const entry=path.join(temp,'entry.jsx');
+fs.writeFileSync(entry,`import React,{useState}from'${root}/node_modules/react/index.js';import{createRoot}from'${root}/node_modules/react-dom/client.js';import Detail from'${root}/src/modules/sales/components/SalesDetailViewLegacy.jsx';import Customer from'${root}/src/modules/sales/components/SalesCustomerViewCore.jsx';import Tools from'${root}/src/modules/sales/components/SalesMobileTools.jsx';import{openMobileCustomerPreview}from'${root}/src/modules/sales/services/salesMobilePreview.mjs';import'${root}/src/modules/sales/sales.css';const fixture=${JSON.stringify(fixtures)};function App(){const[i,setI]=useState(0),[form,setForm]=useState({selectedOptionIds:[],name:'',confirmed:false});const f=fixture[i],request={id:f.ref,status:'Tilbud',offerTitle:'Syntetisk mobilkontroll',offerIntro:'Gjennomgå tilbudet.',offerLines:f.lines,offerOptions:f.options,offerTotal:200000,offerVersions:[],inspectionPhotos:[],isPublicOffer:true,publicToken:'synthetic'};return <><Tools/><button id="test-preview" onClick={()=>openMobileCustomerPreview(location.origin+'/?publicOffer=synthetic')}>Test kundevisning</button><button id="fixture-next" onClick={()=>setI(1)}>Neste testtilbud</button><div id="internal"><Detail selectedRequest={request} summary={{}} loggedInResponsible={{name:'QA'}}/></div><div id="customer"><Customer mode="customer-offer" selectedRequest={request} companyProfile={{companyName:'QA firma'}} acceptanceForm={form} setAcceptanceForm={setForm} toggleAcceptedOption={id=>setForm({...form,selectedOptionIds:form.selectedOptionIds.includes(id)?[]:[id]})} handleAcceptOffer={e=>e.preventDefault()} hideDecisionControls/></div></>;}createRoot(document.getElementById('app')).render(<App/>);`);
+const bundle=await build({root,configFile:false,logLevel:'silent',resolve:{alias:{react:path.join(root,'node_modules/react'),'react-dom':path.join(root,'node_modules/react-dom')}},define:{'process.env.NODE_ENV':'"production"'},plugins:[react(),{name:'isolate-external-surfaces',enforce:'pre',resolveId(id){if(/\/(CordelOfferExport|SalesContractActions|SalesContractWizard|SalesWetroomFollowUpActions)\.jsx$/.test(id))return '\0surface';},load(id){if(id==='\0surface')return 'export default function(){return null;}';}}],build:{write:false,minify:false,lib:{entry,formats:['iife'],name:'MobileProof',cssFileName:'mobile-proof'}}});
+const out=(Array.isArray(bundle)?bundle[0]:bundle).output,js=out.find(x=>x.type==='chunk'&&x.isEntry).code,css=out.filter(x=>x.type==='asset'&&x.fileName.endsWith('.css')).map(x=>x.source).join('\n');
+fs.writeFileSync(path.join(temp,'debug.js'),js);
+const browser=await chromium.launch({headless:true,executablePath:process.env.MOBILE_CHROMIUM_PATH,args:['--no-sandbox']});
+try{
+for(const width of [320,360,390,760,1280]){
+const page=await browser.newPage({viewport:{width,height:820}});const errors=[];page.on('pageerror',e=>errors.push(e.stack||e.message));
+await page.route('**/*',route=>route.request().url()==='https://qa.example.invalid/bundle.js'?route.fulfill({contentType:'text/javascript; charset=utf-8',body:js}):route.request().url()==='https://qa.example.invalid/'?route.fulfill({contentType:'text/html',body:`<!doctype html><meta charset="utf-8"><div id="app"></div><style>${css}</style><script src="/bundle.js"></script>`}):route.fulfill({contentType:'text/html',body:'<p>Isolert kundevisning</p>'}));
+await page.goto('https://qa.example.invalid/');await page.waitForTimeout(150);assert.deepEqual(errors,[]);await page.locator('.sales-internal-offer-group').first().waitFor({timeout:3000});
+for(let i=0;i<fixtures.length;i++){
+if(i)await page.locator('#fixture-next').click();
+const groups=page.locator('.sales-expandable-offer-group');assert(await groups.count()>0);
+if(width<=760){assert.equal(await groups.first().getAttribute('open'),null,'mobile groups start closed');await groups.first().locator('summary').click();assert.notEqual(await groups.first().getAttribute('open'),null);await groups.first().locator('summary').click();}
+await groups.evaluateAll(nodes=>nodes.forEach(n=>n.open=true));
+await page.waitForTimeout(50);
+const problems=await page.locator('.sales-internal-offer-row').evaluateAll(rows=>rows.flatMap(row=>{const [n,t,p]=row.children,b=t.getBoundingClientRect(),c=p.getBoundingClientRect();return b.right>row.getBoundingClientRect().right+2||c.top<b.bottom-1&&c.right>b.left&&c.left<b.right?['overlap']:[];}));assert.deepEqual(problems,[],`${width}/${fixtures[i].ref}`);
+assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2),true,'no horizontal overflow');
+}
+if(width<=760){await page.locator('#test-preview').click();assert(await page.getByRole('dialog').isVisible());assert.equal(await page.locator('iframe').getAttribute('src'),'https://qa.example.invalid/?publicOffer=synthetic');await page.getByRole('button',{name:'Tilbake til tilbudet',exact:true}).click();assert.equal(await page.getByRole('dialog').count(),0);assert(await page.locator('#internal').isVisible());await page.getByRole('button',{name:'Til bunnen',exact:true}).click();await page.waitForTimeout(700);assert(await page.evaluate(()=>scrollY>100));await page.getByRole('button',{name:'Til toppen',exact:true}).click();await page.waitForTimeout(700);assert(await page.evaluate(()=>scrollY<10));}
+if(process.env.MOBILE_QA_OUTPUT&&[360,1280].includes(width)){fs.mkdirSync(process.env.MOBILE_QA_OUTPUT,{recursive:true});await page.locator('#internal .sales-internal-offer-group').first().screenshot({path:path.join(process.env.MOBILE_QA_OUTPUT,`offer-${width}.png`)});}
+assert.deepEqual(errors,[]);await page.close();
+}
+console.log('Mobile actual Chromium PASS: 320/360/390/760/1280, grouped expand/collapse, lines/options without overlap, no horizontal overflow, customer modal back, top/bottom and desktop preserved.');
+}finally{await browser.close();}
+}finally{if(process.env.MOBILE_KEEP_QA_TEMP)console.log(temp);else fs.rmSync(temp,{recursive:true,force:true});}

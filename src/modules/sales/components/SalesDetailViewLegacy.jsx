@@ -1,3 +1,4 @@
+import SalesOfferGroup from "./SalesOfferGroup.jsx";
 // Expo ProffDok – FASE 42M / FASE 37D2 / FASE 33B.5 / FASE 33B.4 / FASE 33B.3 / FASE 32A / FASE 31C / FASE 31A2B / FASE 31B / FASE 30C2 UX / FASE 39B.2C
 // HOTFIX 25.09.2026: Beholder eksisterende kontraktflyt også etter at en akseptert sak er aktivert som prosjekt.
 // FASE 42M viser versjonslåst oppfølgingsplan for ordinære Våtromstilbud og
@@ -505,15 +506,17 @@ function rewriteInternalOfferPresentation(node, request) {
         let pricedLineIndex = 0;
 
         return (
-          <section
-            key={`internal-offer-group-${group.id}`}
+          <SalesOfferGroup
+            key={`internal-offer-group-${request?.id}-${group.id}`}
+            className="sales-internal-offer-group"
             style={{
               border: "1px solid #d7e4ea",
               borderRadius: 16,
               overflow: "hidden",
               background: "#ffffff",
             }}
-          >
+
+            heading={
             <div
               style={{
                 display: "flex",
@@ -582,6 +585,8 @@ function rewriteInternalOfferPresentation(node, request) {
               </div>
             </div>
 
+            }
+          >
             {group.lines.length ? (
               <div style={{ display: "grid", gap: 8, padding: "12px 16px" }}>
                 {group.lines.map((line, lineIndex) => {
@@ -618,6 +623,7 @@ function rewriteInternalOfferPresentation(node, request) {
                   return (
                     <div
                       key={line.id || `${group.id}-${lineIndex}`}
+                      className="sales-internal-offer-row"
                       style={{
                         display: "grid",
                         gridTemplateColumns: "64px 1fr minmax(140px, auto)",
@@ -669,6 +675,7 @@ function rewriteInternalOfferPresentation(node, request) {
                   return (
                     <div
                       key={option.id || `${group.id}-option-${optionIndex}`}
+                      className="sales-internal-offer-option"
                       style={{
                         display: "grid",
                         gridTemplateColumns: "minmax(0, 1fr) minmax(150px, auto)",
@@ -725,7 +732,7 @@ function rewriteInternalOfferPresentation(node, request) {
                 })}
               </div>
             ) : null}
-          </section>
+          </SalesOfferGroup>
         );
       })
     );

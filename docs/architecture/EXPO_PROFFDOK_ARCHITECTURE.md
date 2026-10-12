@@ -1203,3 +1203,11 @@ QA/status og Preview føres i `docs/kshms/HANDBOOK_PDF_20261012.md`. Ingen tidli
 ## Rutiner sender ikke e-post – 12. oktober 2026
 
 Etter Kenneths eksplisitte akuttinstruks er rutinetildelinger og lesepåminnelser bare i appen. Ny køtrigger blokkerer reading ved insert/retry; 670 ventende rutine-e-poster stanset i produksjon, ingen gjeldende rutinepost sendbar. 200 allerede sendte beholdes i loggen. Rutiner, tildelinger og egne bekreftelser beholdes. Andre oppgaver og frister beholder e-post. Produksjon og Sandbox installert, faktisk insert/retry-test rullet tilbake. Se docs/kshms/ROUTINE_EMAIL_STOP_20261012.md.
+
+## Mobil tilbudslesing – 13. oktober 2026
+
+Miljømål BEGGE, fra main 59682a0902615437677c129fb18fe154350b127e. Intern tilbudsvisning og kundevisning får hovedposter med Åpne hovedpost/Lukk hovedpost, lukket som utgangspunkt på mobil og åpent på desktop. Nummer/tekst/pris i grupperte rader får avgrenset mobil-layout; priser ligger under teksten. Små Til toppen/Til bunnen-knapper på lange tilbudssider skjules under tekstinntasting og ligger over eksisterende mobil Lagre-knapp. Se kundens tilbud/Forhåndsvis som kunde åpner mobil kundepreview i en native modal med fast Tilbake til tilbudet; samme interne saks-/editorinstans beholdes. Desktop og visninger uten modal-lytter beholder egen fane. Modaladresse må være same-origin og en kunde-/kladdvisning; ingen return-token eller ny offentlig tilganger.
+
+Scope er presentasjon/CSS, isolert modal/scroll-komponent og to eksisterende open-handlinger. Ingen lagring, publisering, pristall, aksept, e-post, server-hydrering/recovery eller SQL/RLS endres. E-postsperren for rutiner beholdes. Lesende produksjonskontroll av Andreas' F-2026-0087 og F-2026-0080 ga 23/13 linjer og 25/21 opsjoner. Tester bruker kun linje-/opsjonstekster, uten kundedata eller tokens; alle firma-/kunde-/brukerdata er uendret.
+
+Actual Chromium QA PASS ved 320/360/390/760/1280: åpne/lukke, interne grupperte tekster uten prisoverlapp, ingen horisontal overflow, mobil modal-retur og topp/bunn. Gamle draft-preview/recovery/tab-resume/server-hydration/entry-resume og Befaring → Generelt tilbud passerer. Full critical/build/CI og innlogget Preview følger i release-PR før TEST OK/merge.
