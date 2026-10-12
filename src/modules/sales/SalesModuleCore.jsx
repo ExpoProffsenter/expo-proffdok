@@ -1,3 +1,4 @@
+import {openMobileCustomerPreview} from "./services/salesMobilePreview.mjs";
 // FASE 28C2 STARTSIDE-TILBUD: Tillater direkte åpning av en konkret salgssak fra Startsiden via signal. Ingen SQL/RLS/Storage/e-postendring.
 // FASE 28A3 TILBUDSMALER: Henter, bruker og sletter firmadelte tilbudsmaler. Malbruk kopierer kun tilbudsinnhold til redigerbar kladd; kunde/befaring/publisert historikk berøres ikke.
 // FASE 28A2 TILBUDSMALER: Eksisterende tilbud kan lagres som firmadelt mal via sales_offer_templates. Kundedata, PDF-vedlegg, publisering og historikk kopieres ikke til malen. Varige tilbudsbilder kan gjenbrukes i malen.
@@ -3181,7 +3182,7 @@ export default function SalesModule({
 
       // Se kundens tilbud er en egen handling og åpner kundevisningen i ny fane.
       const link = buildCustomerOfferLink(window.location.href, request.publicToken);
-      window.open(link, "_blank", "noopener,noreferrer");
+      if (!openMobileCustomerPreview(link)) window.open(link, "_blank", "noopener,noreferrer");
     } catch (error) {
       alert(
         error.message ||
