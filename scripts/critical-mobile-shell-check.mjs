@@ -1,3 +1,4 @@
+import './critical-mobile-app-shortcuts-check.mjs';
 import fs from "node:fs";
 
 function read(path) {
