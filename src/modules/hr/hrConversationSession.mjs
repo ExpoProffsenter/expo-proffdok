@@ -1,6 +1,7 @@
 export function meetingLocation(value){const location=typeof value==='string'?value.trim():'';if(!location||Array.from(location).length>200||/[\u0000-\u001f\u007f]/.test(location))throw Object.assign(Error('Velg sted eller adresse, maksimalt 200 tegn på én linje.'),{code:'22023'});return location;}
 import {sameHrTemplate} from './hrConversationTemplates.mjs';
 export const CONVERSATION_STAGES={preparation:'Medarbeideren forbereder seg',meeting:'Felles møte',awaiting:'Venter på begge bekreftelser',completed:'Ferdig'};
+export const conversationOpeningStep=conversation=>conversation.stage==='preparation'?0:['awaiting','completed'].includes(conversation.stage)?3:1;
 export function createConversationSession({rpc,companyId,userId,employeeId,onDenied=()=>{}}){
  let epoch=0,disposed=false;
  const check=(v,ticket)=>{

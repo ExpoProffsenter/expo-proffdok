@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
-import {createConversationSession} from '../src/modules/hr/hrConversationSession.mjs';
+import {createConversationSession,conversationOpeningStep} from '../src/modules/hr/hrConversationSession.mjs';
 import {conversationCalendar,conversationOutlookUrl,downloadConversationCalendar} from '../src/modules/hr/hrConversationCalendar.mjs';
 import {conversationPdfDocument,downloadConversationPdf} from '../src/modules/hr/hrConversationPdf.mjs';
 import {createHrDeletionAlerts} from '../supabase/functions/_shared/hr-deletion-alerts.mjs';
@@ -11,6 +11,7 @@ const value={context:{company_id:id(4),user_id:id(2)},employee,leader_email:'Syn
  template_revision:1,template:{title:'Årlig samtale',questions:[{id:id(6),phase:'preparation',topic:'Trivsel',prompt:'Hvordan fungerer arbeidet?'},{id:id(7),phase:'meeting',topic:'Oppfølging',prompt:'Hva er avtalt?'}]},
  on:'2026-11-01',stage:'preparation',shared:false,preparation:{},meeting:{},actions:[],next_on:'',comments:{employee:'',leader:''},confirmations:{employee:null,leader:null}}};
 let checks=0;const eq=(a,b,label)=>{assert.deepEqual(a,b,label);checks++;};
+for(const [stage,step] of [['preparation',0],['meeting',1],['awaiting',3],['completed',3]])eq(conversationOpeningStep({stage}),step,'open current workflow step');
 function fixture(fn){let calls=[],denied=0;return {calls,get denied(){return denied;},session:createConversationSession({companyId:id(4),userId:id(2),employeeId:id(1),onDenied:()=>denied++,rpc:async(n,a)=>{calls.push({n,a});return fn(n,a,calls.length);}})};}
 let x=fixture(()=>clone(value));eq((await x.session.get(id(5))).current_revision,1);eq(x.calls.length,2,'fresh authorization and final readback');
 eq(x.calls.every(c=>c.a.p_company_id===id(4)&&c.a.p_employee_id===id(1)),true,'every call pins actor scope');

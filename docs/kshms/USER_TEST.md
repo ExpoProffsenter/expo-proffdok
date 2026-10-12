@@ -1,3 +1,17 @@
+## Tydelig gjennomføring og trygg referatgjennomgang – 12. oktober 2026
+
+Miljømål **BEGGE**, fra ferdig publisert PR #234/main `c0f3a015d8a47b81d0d2a0f0a9ed7b18aa06da12`. Kenneth ba om faktisk UX-test og retting. Innlogget Preview med eksisterende syntetisk kursmedarbeider bekrefter uklar opprettingsinngang etter deling. Faktisk React og lokal PostgreSQL reproduserte at gjentatt Send til begge for gjennomgang nullstilte gitt bekreftelse.
+
+Opprettingsinngangen heter **Opprett ny medarbeidersamtale** og forklarer at eksisterende samtaler fortsettes nedenfor. Status og neste steg forklares. Nytt lederinnspill åpner Felles møte mens møtet pågår, med delte svar og medarbeiderens delte kommentar; sendte/ferdige referater åpnes i Referat. Eksisterende RAM-kladd og valgt steg ved ny autorisasjon beholdes. Referat samler delt forberedelse, møtenotater, tiltak, ansvarlig, frist og neste oppfølging. Ulagret forhåndsvisning merkes tydelig og kan ikke sendes/bekreftes. Privat, ikke delt forberedelse tas ikke inn i oversikten.
+
+**Lagre samtale** lagrer arbeidet. **Send til begge for gjennomgang** vises bare før sending. Begge bekrefter selv med **Jeg har lest referatet**. En ferdig samtale lukker ikke åpne tiltak. Forrige/Neste bytter steg uten å lagre. Endret referat eller delt kommentar krever fortsatt nye bekreftelser.
+
+Scope: HrConversations, ny ren HrConversationReview, samtale-sessionens åpningssteg, scoped CSS, én migrasjon som bare gjør ready på samme awaiting-utgave til en lesende no-op, utvidet eksisterende React/PostgreSQL/session-QA og Hjelp/docs. Alle opprinnelige firma-/rolle-/medarbeider-/CAS-/required-field-kontroller beholdes før no-op. Ingen ny RPC/tabell, grants/RLS/tilgang, medlemskap, worker/cron/mail eller annen modul. Retry lager ingen revisjon, historikk, kvittering eller mail; faktisk innholdsendring beholder tidligere bekreftelsesregel.
+
+QA, CI, eksakt Preview-kilde og innlogget ny visning føres i release-PR. Sandbox-mail beholdes AV; ingen kurssamtale resettes, og ingen ekte medarbeider/profil/leder/tilgang endres som QA. Tidligere TEST OK beholdes; godkjenningen for #234 gjelder ikke automatisk denne nye UX-/retry-rettingen. Production/main → demo venter på ny avgrenset TEST OK etter grønn Preview.
+
+Ny avgrenset prøve (agenten gjør innlogget kontroll; gamle tester skal ikke gjentas): Åpne en delt samtale. Se Opprett ny medarbeidersamtale som separat inngang, fortsett i Felles møte og åpne Referat. Kontroller at delte svar, møtenotater og tiltak vises samlet. Ulagrede endringer merkes og må lagres før sending. Etter sending vises ventestatus og hver persons egen lesebekreftelse; sendeknappen er borte. Backend-retry/begge bekreftelser og negativ tilgang prøves automatisk med syntetiske data, uten faktisk medarbeidermail.
+
 ## Navn i åpnet medarbeidersamtale – 12. oktober 2026
 
 Miljømål **BEGGE**, avgrenset feilretting etter ferdig publisert #233/main `a5be1c976ceb4c4ab19e326647dcf79c7b63e99e`. Kenneth viste en direkte åpnet samtale uten medarbeideridentitet. Dialogtittelen viser nå Medarbeidersamtale – navn, og selve samtalen viser Medarbeider: navn med e-post. E-post brukes som reserve hvis profilnavnet mangler. Navnet kommer fra den samme autoriserte medarbeiderens profil, aldri innlogget leder, e-postgjetting eller samtaletittel. Bare den åpne private samtalen viser navnet; generelle kort på Startsiden/Min side og e-post beholder eksisterende innhold.

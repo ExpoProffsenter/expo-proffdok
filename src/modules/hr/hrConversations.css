@@ -17,3 +17,9 @@
 .hr-real-conversation .hrp-calendar>details>summary{cursor:pointer;font-weight:600}
 
 .hr-real-conversation .hrp-employee-identity{margin:12px 0 16px;padding:12px 14px;border:1px solid #94b7db;border-left:4px solid #007f89;border-radius:10px;background:#eaf3ff;color:#172b46;overflow-wrap:anywhere}
+.hr-real-conversation .hrp-stage-guide{padding:14px;border-left:4px solid #007f89;background:#eaf3ff;border-radius:8px}
+.hr-real-conversation .hrp-review{margin:16px 0;padding:16px;border:1px solid #ccd8e4;border-radius:10px;background:#f5f8fc;overflow-wrap:anywhere}
+.hr-real-conversation .hrp-review h5{margin:20px 0 10px;font-size:1rem}
+.hr-real-conversation .hrp-review h5:first-child{margin-top:0}
+.hr-real-conversation .hrp-review article{margin:12px 0}
+.hr-real-conversation .hrp-review blockquote{white-space:pre-wrap;margin:8px 0;padding:10px;border-left:3px solid #94b7db;background:white}
