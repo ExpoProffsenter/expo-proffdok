@@ -1,0 +1,11 @@
+# Stopp rutine-e-post – produksjonshendelse
+
+Kenneth instruerte eksplisitt 12. oktober 2026 ca.18:44 Europe/Oslo: «vi trenger da ikke sende epost pga rutiner? Det har jeg aldri ment er nødvendig? Det må stanses asap». All rutinetildeling og lesepåminnelse skal bare vises i appen. Ingen samlet rutine-e-post skal innføres. Andre oppgaver/frister beholder varsling.
+
+Samlet firmapublisering kl.18:18:52 opprettet 957 outbox-rader (87 utgaver × 11 mottakere). 87 ble suppressed av eksisterende regler; 200 registrert sent etter provider-aksept, 670 pending. Ingen systemadmin-epostkampanje den dagen. HR-loggen viste fem leveranser. Det er ikke PDF eller lesebekreftelse som utløste de 957; gammel per-assignment trigger ble bevart ved samlet publisering. Manglende samlet e-postvurdering var en feil i #237. Resend-varsler 100%/200% stemmer med 200 aksepterte rutine-e-poster, men mottak hos alle er ikke verifisert.
+
+Akutt først holdt de konkrete 670 pending-radene tilbake med available_at=2099-01-01 uten sletting. Brukerens permanente stopp erstatter dette: ny trigger blokkerer alle reading pending/sending ved insert/update med status=suppressed og last_error_code=routine_email_disabled. Både tildelinger, påminnelser og retry stoppes ved køgrensen; eksisterende notification_assignments, appens oppgaver, firmautgaver og egne lesebekreftelser beholdes. Andre mailtyper, settings, worker/cron og SQL/RLS/ACL for eksisterende relasjoner endres ikke. Funksjonen er SECURITY INVOKER med tomt search_path og uten direkte klientgrants.
+
+Produksjon migrasjon 20261012164505 installert. Readback: guard enabled=true, 670 blocked_existing, 0 eligible_routine_emails, 200 sent_unchanged. Reelt syntetisk insert og retry-update i produksjon transaksjon blokkert; full rollback, ingen testmail. Sandbox samme migrasjonsinnhold installert med sending fortsatt AV. Ingen ekstra TEST OK kreves for akutt stans; bruker instruerte direkte produksjonsstopp. Migrasjonen allerede anvendt skal aldri kjøres dobbelt. Permanent repo/check/help og demo følger i avgrenset hotfix.
+
+PDF #238 er godkjent separat med «test ok pdf», merget til main b76ad284a20ce55f716a74726eb1f70701f9768e. Preview CI SUCCESS og 52 byteeksakte filer/innlogget faktisk nedlasting med logo. Produksjon/Demo-verifisering gjenstår under samme aktive oppgave.

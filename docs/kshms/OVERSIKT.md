@@ -1,3 +1,7 @@
+## Rutiner sender ikke e-post – 12. oktober 2026
+
+Etter Kenneths eksplisitte akuttinstruks er rutinetildelinger og lesepåminnelser bare i appen. Ny køtrigger blokkerer reading ved insert/retry; 670 ventende rutine-e-poster stanset i produksjon, ingen gjeldende rutinepost sendbar. 200 allerede sendte beholdes i loggen. Rutiner, tildelinger og egne bekreftelser beholdes. Andre oppgaver og frister beholder e-post. Produksjon og Sandbox installert, faktisk insert/retry-test rullet tilbake. Se docs/kshms/ROUTINE_EMAIL_STOP_20261012.md.
+
 ## Hele personalhåndboka som PDF – 12. oktober 2026
 
 Miljømål **BEGGE**, fra verifisert main `55d43947b0bd991d282959ace41fdefc489984b2` (#237). Kenneth ba om at ansatte kan laste ned hele personalhåndboka med firmalogo. Ny knapp øverst i Min personalhåndbok bruker eksisterende lesende KS/HMS-state og firmaprofil. Alle egne tildelte rutiner med full tekst, kilder, godkjenning og egne bekreftelser med sekunder/norsk tid; søk begrenser ikke PDF. Gjeldende tildelte utgaver først, tidligere/utgåtte tildelte utgaver i merket historikkdel. Innholdsfortegnelse med faktiske sider og felles kompakt ramme-layout. Ingen bekreftelse registreres ved nedlasting.
