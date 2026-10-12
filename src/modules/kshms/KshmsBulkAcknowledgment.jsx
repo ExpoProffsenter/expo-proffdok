@@ -12,7 +12,15 @@ export default function KshmsBulkAcknowledgment({data,companyId,userId,busy,onBu
  useEffect(()=>{
   if(snapshot&&!saving&&(!scopeValid||batchVersionKey(snapshot)!==pendingKey)){setSnapshot(null);setChecked(false);setFeedback({error:true,message:'Listen over rutineutgaver er endret. Åpne samlet bekreftelse igjen og kontroller den nye listen.'});}
  },[pendingKey,scopeValid,snapshot,saving]);
- useEffect(()=>{if(snapshot)confirmationRef.current?.focus();},[snapshot]);
+ useEffect(()=>{
+  const target=confirmationRef.current;
+  if(!snapshot||!target)return;
+  target.focus({preventScroll:true});
+  // The sticky app header can also contain several task banners. Keep the
+  // exact-list heading visible without changing any other module's scrolling.
+  target.style.scrollMarginTop=`${Math.max(90,document.querySelector('header')?.getBoundingClientRect().bottom||0)+16}px`;
+  target.scrollIntoView({block:'start'});
+ },[snapshot]);
  const reset=()=>{setSnapshot(null);setChecked(false);};
  const open=()=>{if(busy||!pending.length)return;setFeedback(null);setChecked(false);setSnapshot(structuredClone(pending));};
  const confirm=async()=>{
