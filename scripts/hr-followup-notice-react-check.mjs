@@ -4,9 +4,11 @@ import os from 'node:os';
 import path from 'node:path';
 import {build} from 'vite';
 import react from '@vitejs/plugin-react';
+import {hrEmployeeLabel} from '../src/modules/hr/hrEmployeeLabel.mjs';
 import {checkFollowupTasks,followupStep,followupVisible} from '../src/modules/hr/hrFollowupNotice.mjs';
 const {JSDOM}=await import(process.env.KSHMS_JSDOM_PATH||'jsdom');
 let checks=0;const eq=(a,b,label)=>{assert.deepEqual(a,b,label);checks++;};
+for(const [employee,label] of [[{full_name:'  Kari Nordmann ',email:'kari@example.invalid'},'Kari Nordmann'],[{full_name:'',email:'kari@example.invalid'},'kari@example.invalid'],[{full_name:'   ',email:'kari@example.invalid'},'kari@example.invalid'],[{full_name:42,email:'kari@example.invalid'},'kari@example.invalid'],[{},'Medarbeider'],[null,'Medarbeider']])eq(hrEmployeeLabel(employee),label);
 for(const value of [null,{}, {context:{company_id:'other',user_id:'self'},tasks:[]}]){assert.throws(()=>checkFollowupTasks(value,'firm','self'));checks++;}
 eq(followupStep({kind:'conversation',task_key:'preparation'}),0);eq(followupStep({kind:'conversation',task_key:'action:a'}),2);eq(followupStep({kind:'sickleave',task_key:'plan'}),1);eq(followupStep({kind:'sickleave',task_key:'meeting1'}),4);
 const review={task_key:'hr-review',due_on:'2027-10-11'};
@@ -22,7 +24,7 @@ try{
   const clone=v=>JSON.parse(JSON.stringify(v));
   const state=w.__state={actor:'self',company:'firm',setup:0,denied:false,wrongEmployee:false,pending:null,tasks:[],feedback:[],feedbackMore:false,ackHold:null,calls:[]};
   const context=()=>({company_id:state.company,user_id:state.actor,company_name:'Syntetisk firma',available:true,enabled:true});
-  const employee={id:'employee',user_id:'self',email:'synthetic@example.invalid',leader_id:'leader',revision:1};
+  const employee={id:'employee',user_id:'self',full_name:'Syntetisk medarbeider',email:'synthetic@example.invalid',leader_id:'leader',revision:1};
   const make=(id,type='conversation')=>({id,type,revision:1,content_version:1,template_revision:1,template:{title:'Syntetisk '+id,questions:[{id:'q',phase:'preparation',topic:'Arbeid',prompt:'Syntetisk spørsmål',required:true}]},on:'2026-10-13',meeting_time:'13:30',meeting_location:'Sted A',stage:'preparation',shared:false,preparation:{},meeting:{},actions:[],next_on:'',comments:{employee:'',leader:''},confirmations:{employee:null,leader:null},case_status:'active',absence_mode:'full',returned_on:'',sharing:{sykmelder:[],nav:[]},milestones:{plan:{status:'open',on:'',note:''},meeting1:{status:'open',on:'',note:''},activity:{status:'open',on:'',note:''},meeting2:{status:'open',on:'',note:''}}});
   const cases={a:make('a'),b:make('b'),sick:make('sick','sickleave')};
   const task=(case_id,task_key,kind='conversation')=>({case_id,employee_id:'employee',task_key,due_on:'2026-10-13',kind});
@@ -59,7 +61,7 @@ try{
   await render(null);eq(d.querySelector('.hr-followup-notice'),null);eq(state.calls.length,0,'no scope means no RPC');
   await render();eq(d.querySelector('.hr-followup-notice'),null,'empty tasks do not invent notification');
   state.tasks=[invitation];await focus();eq(d.querySelectorAll('.hr-followup-notice li').length,1);eq(d.body.textContent.includes('13.10.2026 · kl. 13:30'),true);eq(d.body.textContent.includes('Sted: Sted A'),true);eq(d.body.textContent.includes('Forberedelsen er ikke levert'),true);
-  await click('Åpne samtalen');eq(d.querySelector('[role=dialog]')?.getAttribute('aria-modal'),'true');eq(d.querySelector('.hrp-step-body h4')?.textContent,'Forberedelse');eq(d.querySelector('.hrp-toolbar')!==null,true);eq(state.calls.filter(x=>x.name==='hr_employee_get').length>=2,true,'direct opening freshly authorizes employee twice');eq(d.body.textContent.includes('Syntetisk a'),true,'exact invited case opens even outside first list page');
+  await click('Åpne samtalen');eq(d.querySelector('[role=dialog]')?.getAttribute('aria-modal'),'true');eq(d.querySelector('[role=dialog]').textContent.includes('Medarbeidersamtale – Syntetisk medarbeider'),true,'direct dialog identifies authorized employee');eq(d.querySelector('.hrp-employee-identity')?.textContent,'Medarbeider: Syntetisk medarbeider · synthetic@example.invalid');eq(d.querySelector('.hrp-step-body h4')?.textContent,'Forberedelse');eq(d.querySelector('.hrp-toolbar')!==null,true);eq(state.calls.filter(x=>x.name==='hr_employee_get').length>=2,true,'direct opening freshly authorizes employee twice');eq(d.body.textContent.includes('Syntetisk a'),true,'exact invited case opens even outside first list page');
   await write('Ulagret svar');await render(null);eq(d.querySelector('[role=dialog]'),null,'access refresh hides private content');await render();eq(field().value,'Ulagret svar','same-scope fresh reauthorization restores draft');
   await click('Tiltak');await focus();eq(d.querySelector('.hrp-step-body h4').textContent,'Tiltak','foreground refresh respects chosen step');await click('Forberedelse');eq(field().value,'Ulagret svar');
   await click('Lagre samtale');eq(cases.a.preparation.q,'Ulagret svar');eq(button('Lagre samtale').disabled,true,'direct editor retains existing confirmed save');
@@ -79,7 +81,7 @@ try{
   cases.b.shared=true;cases.b.stage='meeting';cases.b.employee_feedback_revision=7;cases.b.revision=7;cases.b.preparation.q='Private shared answer';cases.b.comments.employee='Private shared comment';
   const feedbackTask=()=>({...task('b','employee-feedback'),feedback_revision:cases.b.employee_feedback_revision});
   state.feedback=[feedbackTask()];await render();
-  eq(d.body.textContent.includes('Nytt innspill til medarbeidersamtalen'),true);eq(d.querySelector('.hr-followup-notice').textContent.includes('Private shared'),false,'card never exposes private answers/comments');
+  eq(d.body.textContent.includes('Nytt innspill til medarbeidersamtalen'),true);eq(d.querySelector('.hr-followup-notice').textContent.includes('Syntetisk medarbeider'),false,'employee name stays within authorized dialog');eq(d.querySelector('.hr-followup-notice').textContent.includes('Private shared'),false,'card never exposes private answers/comments');
   const ackCount=()=>state.calls.filter(x=>x.name==='hr_conversation_feedback_handle').length;
   eq(ackCount(),0,'reading does not handle');await click('Åpne samtalen');eq(d.body.textContent.includes('Syntetisk b'),true);eq(d.querySelector('.hrp-step-body h4').textContent,'Referat');eq(d.querySelector('.hrp-step-body textarea').value,'Private shared comment');eq(ackCount(),0,'opening does not acknowledge or dispatch mail');
   eq(Boolean(button('Marker innspillet som håndtert')),true);

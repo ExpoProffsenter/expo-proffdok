@@ -23,7 +23,7 @@ try{
  const migrations=['20261009182551_hr_access_foundation.sql','20261009193953_hr_content_purge_foundation.sql',
  '20261009203431_people_module_entitlements.sql','20261009203950_people_module_access_closure.sql',
  '20261010004928_hr_conversation_templates.sql','20261010105649_hr_sick_leave_template_kind.sql',
- '20261009211209_hr_restore_reconcile_orphans.sql','20261011134804_hr_personal_conversations.sql','20261011140130_hr_deletion_admin_alerts.sql','20261011155003_hr_sick_leave_cases.sql','20261011155506_hr_followup_reminders.sql','20261011162527_hr_followup_worker_scope.sql','20261011192456_hr_conversation_meeting_time.sql','20261011195555_hr_conversation_creation_notice.sql','20261011203859_hr_conversation_reminder_feedback.sql','20261011205907_hr_targeted_transport_test.sql','20261011220405_hr_conversation_meeting_location.sql','20261012050658_hr_conversation_feedback_notice.sql'];
+ '20261009211209_hr_restore_reconcile_orphans.sql','20261011134804_hr_personal_conversations.sql','20261011140130_hr_deletion_admin_alerts.sql','20261011155003_hr_sick_leave_cases.sql','20261011155506_hr_followup_reminders.sql','20261011162527_hr_followup_worker_scope.sql','20261011192456_hr_conversation_meeting_time.sql','20261011195555_hr_conversation_creation_notice.sql','20261011203859_hr_conversation_reminder_feedback.sql','20261011205907_hr_targeted_transport_test.sql','20261011220405_hr_conversation_meeting_location.sql','20261012050658_hr_conversation_feedback_notice.sql','20261012061931_hr_employee_display_name.sql'];
  for(const f of migrations)await db.exec(await fs.readFile('supabase/migrations/'+f,'utf8'));
  for(const role of ['anon','service_role'])for(const signature of ['public.hr_conversation_feedback_notices(uuid,uuid)','public.hr_conversation_feedback_handle(uuid,uuid,integer,uuid,integer)'])eq((await sql(`select has_function_privilege('${role}','${signature}','execute') v`))[0].v,false,'feedback RPCs are authenticated-only');
  eq((await sql("select has_table_privilege('authenticated','hr_private.conversation_feedback_receipts','select,insert,update,delete') v"))[0].v,false,'receipt table is private');
@@ -39,6 +39,17 @@ try{
  insert into hr_private.module_access(company_id,user_id,enabled) values(${q(company)},${q(u)},true);`);
  await actor(admin);await rpc('hr_foundation_configure',[company,0,true,'Synthetic QA purpose','Synthetic QA basis',new Date(Date.now()+30*86400000).toISOString().slice(0,10)]);
  const employee=(await rpc('hr_employee_command',[company,'create',{user_id:self,leader_id:leader}])).employee;
+ // Name comes from the authorized employee's profile, never the leader/actor.
+ await db.exec(`reset role;update auth.users set raw_user_meta_data=jsonb_build_object('full_name','  Syntetisk medarbeider  ') where id=${q(self)};update auth.users set raw_user_meta_data=jsonb_build_object('full_name','Wrong leader name') where id=${q(leader)};`);
+ await actor(leader);let identity=await rpc('hr_employee_get',[company,employee.id]);eq(identity.employee.full_name,'Syntetisk medarbeider');eq(identity.employee.user_id,self);eq(identity.employee.revision,employee.revision,'display-name read never changes employee');
+ for(const name of [null,42,{},'   ','']){
+  await db.exec(`reset role;update auth.users set raw_user_meta_data=jsonb_build_object('full_name',${q(JSON.stringify(name))}::jsonb) where id=${q(self)};`);await actor(leader);eq((await rpc('hr_employee_get',[company,employee.id])).employee.full_name,null,'invalid/empty name keeps email fallback');
+ }
+ await db.exec(`reset role;update auth.users set raw_user_meta_data=jsonb_build_object('full_name',repeat('Ø',150)) where id=${q(self)};`);await actor(leader);eq((await rpc('hr_employee_get',[company,employee.id])).employee.full_name.length,120,'bounded display name');
+ await db.exec(`reset role;update auth.users set raw_user_meta_data=jsonb_build_object('full_name','Syntetisk medarbeider') where id=${q(self)};`);
+ for(const role of ['anon','authenticated','service_role'])eq((await sql(`select has_function_privilege('${role}','hr_private.employee_json(hr_private.employees)','execute') v`))[0].v,false,'name helper remains private');
+ for(const user of [outsider,system]){await actor(user);await reject(()=>rpc('hr_employee_get',[company,employee.id]),'42501');}
+ await actor(admin);
  const template=id(20),question=id(21),meeting=id(22),conversation=id(30);
  const tpl={title:'Årlig samtale',kind:'annual',intro:'Syntetisk test',questions:[
  {id:question,topic:'Trivsel',prompt:'Hvordan fungerer arbeidet?',phase:'preparation',required:true},
@@ -51,6 +62,7 @@ try{
  await actor(leader);
  for(const time of [null,'','9:00','24:00','12:60','09:00:00','09:00Z'])await reject(()=>rpc('hr_conversation_start_at',[company,employee.id,1,conversation,template,1,'2026-11-01',time]),'22023');
  let state=await rpc('hr_conversation_start_at_place',[company,employee.id,1,conversation,template,1,'2026-11-01','13:30',' Sted A ']);eq(state.conversation.meeting_location,'Sted A');
+ eq(state.employee.full_name,'Syntetisk medarbeider','conversation returns correct named employee');
  eq(state.conversation.meeting_time,'13:30');eq(state.conversation.meeting_timezone,'Europe/Oslo');
  eq((await rpc('hr_conversation_start_at',[company,employee.id,1,conversation,template,1,'2026-11-02','14:45'])).conversation.meeting_time,'13:30','same ID retry cannot silently reschedule');
  eq(state.conversation.revision,1,'server case created');
