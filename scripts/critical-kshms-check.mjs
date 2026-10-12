@@ -17,6 +17,7 @@ import fs from 'node:fs';
 import './critical-kshms-inspection-extract-check.mjs';
 import assert from 'node:assert/strict';
 import './critical-kshms-bulk-check.mjs';
+import './critical-kshms-publication-check.mjs';
 import './critical-kshms-source-updates-check.mjs';
 import {readDraft,persistDraft,routineApprovalState,handbookProgress,sameRoutineContent,pendingReadingVersions} from '../src/modules/kshms/kshmsDraft.mjs';
 import {ROUTINE_CATALOG,suggestedRoutines,currentVersionSnapshot,ACK_STATEMENT} from '../src/modules/kshms/kshmsCatalog.mjs';

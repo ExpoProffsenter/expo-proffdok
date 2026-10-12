@@ -6,6 +6,7 @@ import { ACK_STATEMENT,CHAPTERS,ROUTINE_CATALOG,TRADES,blankRoutine,currentVersi
 import { draftKey,persistDraft,readDraft,routineApprovalState,handbookProgress,pendingReadingVersions } from './kshmsDraft.mjs';
 import { kshmsRpc } from './kshmsAccess.js';
 import KshmsBulkAcknowledgment from './KshmsBulkAcknowledgment.jsx';
+import KshmsBulkPublication from './KshmsBulkPublication.jsx';
 import { acknowledgmentTime } from './kshmsAcknowledgmentTime.mjs';
 import { publishManagedAccessChange } from '../access/moduleAccessClient.js';
 import { addLibraryRoutines } from './kshmsLibrary.mjs';
@@ -253,6 +254,7 @@ export default function KshmsModule({context,deviationRequest,personalOnly=false
   </>}
   {screen==='handbook'&&<>
    {canManage&&<KshmsHandbookProgress progress={progress} dirty={dirty} busy={busy} canPublish={canPublish} onNext={nextStep} targetRef={flowRef} feedback={publication?'':publicationFeedback}/>}
+   {canPublish&&<KshmsBulkPublication key={`publication:${companyId}:${userId}`} data={data} companyId={companyId} userId={userId} dirty={dirty||Boolean(cached)} busy={busy} onBusy={setBusy} ContentComponent={Content} onEdit={routine=>chooseEditor(routine.draft,routine)} onState={value=>{if(value?.context.company_id===companyId&&value.context.user_id===userId&&requestScope.current?.active)setData(value);else if(value===null){setData(null);setError('Arbeidsprofil eller rett til godkjenning er endret. Last håndboka på nytt.');}}} onPublished={ids=>{if(publication&&ids.includes(publication.id)){setPublication(null);setSummary('');setSelfAcknowledgment(false);}if(editor&&ids.includes(editor.id)){setEditor(null);setDirty(false);}}}/>}
    {canManage&&<div className="ks-card"><h3>Her bygger du firmaets KS/HMS-håndbok</h3><p>Firmaets rutiner ligger under. «Utkast» er tekst som må vurderes. «Godkjent» er en utgave ansatte kan lese. Redigerer du en godkjent rutine, må endringene godkjennes før ansatte får dem.</p>
     <ol className="ks-steps"><li><strong>Velg rutiner</strong><span>Huk av rutinene firmaet trenger.</span></li><li><strong>Legg dem inn</strong><span>Se over listen og trykk «Legg inn».</span></li><li><strong>Tilpass teksten</strong><span>Trykk «Rediger her» og lagre utkastet.</span></li><li><strong>Godkjenn</strong><span>Firmaadmin eller KS/HMS-ansvarlig godkjenner. Ansatte leser og bekrefter.</span></li></ol>
     <p className="ks-field-hint">Det finnes {ROUTINE_CATALOG.length} forslag foreløpig. Flere rutiner og verktøy kommer etter hvert. Du kan også skrive en egen rutine.</p>
