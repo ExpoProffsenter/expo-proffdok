@@ -1,6 +1,7 @@
 import React,{useEffect,useRef,useState} from 'react';
 import {hrRpc} from './hrAccess.js';
 import {createConversationSession} from './hrConversationSession.mjs';
+import {MANAGED_ACCESS_EVENT} from '../access/moduleAccessClient.js';
 
 // Render only after the editor has freshly loaded the exact current case.
 // Opening, polling and private drafts never acknowledge an employee's input.
@@ -30,7 +31,7 @@ export default function HrConversationFeedback({value,context,feedback,onHandled
     ||result.employee_id!==value.employee.id||result.conversation_id!==feedback.case_id
     ||result.feedback_revision!==feedback.feedback_revision||result.handled!==true)throw Error('Håndteringen kunne ikke bekreftes. Prøv igjen.');
    setHandled(true);onHandled?.(feedback);
-  }catch(e){if(current())setError(e.message);}
+  }catch(e){if(current()){setError(e.message);if(e.code==='42501')window.dispatchEvent(new Event(MANAGED_ACCESS_EVENT));}}
   finally{session.dispose();if(current()){running.current=false;setBusy(false);}}
  };
  if(!eligible)return null;
