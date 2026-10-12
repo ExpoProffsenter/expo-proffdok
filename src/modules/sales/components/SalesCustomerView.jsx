@@ -1,3 +1,4 @@
+import {SalesScrollShortcuts} from "./SalesMobileTools.jsx";
 import { offerVatPresentation } from "../utils/salesOfferVatPresentation.js";
 // Expo ProffDok – FASE 42M / FASE 37A2 / FASE 37D2 / FASE 37D1 / FASE 34B / FASE 39B.2
 // Digital avvisning gjenbrukes nå også for ordinære Våtromstilbud. Butikktilbudets
@@ -418,6 +419,7 @@ export default function SalesCustomerView(props) {
         {isStoreOffer && (storeExpired || readOnlyDeclined) ? ".sales-customer-accept-form{display:none!important}" : ""}
         {!isStoreOffer && readOnlyDeclined ? ".sales-customer-accept-form{display:none!important}" : ""}
       </style>
+      {props.mode === "customer-offer" ? <SalesScrollShortcuts/> : null}
       <SalesCustomerViewCore
         {...props}
         selectedRequest={brandedRequest}

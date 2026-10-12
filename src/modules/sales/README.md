@@ -275,3 +275,15 @@ Firmakunderegisteret er frivillig, og kundeinformasjon kopieres ved eksplisitt v
 Generelt tilbud: Prisvisning til kunden ligger øverst i aktive SalesStoreOfferBuilderGrouped. Valget følger lokal kundetilbud-forhåndsvisning og grunnsumfeltet, uten å konvertere de lagrede prislinjene.
 
 Kunderegister: velg kunde i nedtrekksmenyen eller søk. Lagring ligger i egen ramme nederst før opprett tilbud og må velges aktivt. Prisvisningsteksten presiserer bedriftskunder.
+
+## Mobil tilbudslesing – 13. oktober 2026
+
+Miljømål BEGGE, fra main 59682a0902615437677c129fb18fe154350b127e. Intern tilbudsvisning og kundevisning får hovedposter med Åpne hovedpost/Lukk hovedpost, lukket som utgangspunkt på mobil og åpent på desktop. Nummer/tekst/pris i grupperte rader får avgrenset mobil-layout; priser ligger under teksten. Små Til toppen/Til bunnen-knapper på lange tilbudssider skjules under tekstinntasting og ligger over eksisterende mobil Lagre-knapp. Se kundens tilbud/Forhåndsvis som kunde åpner mobil kundepreview i en native modal med fast Tilbake til tilbudet; samme interne saks-/editorinstans beholdes. Desktop og visninger uten modal-lytter beholder egen fane. Modaladresse må være same-origin og en kunde-/kladdvisning; ingen return-token eller ny offentlig tilganger.
+
+Scope er presentasjon/CSS, isolert modal/scroll-komponent og to eksisterende open-handlinger. Ingen lagring, publisering, pristall, aksept, e-post, server-hydrering/recovery eller SQL/RLS endres. E-postsperren for rutiner beholdes. Lesende produksjonskontroll av Andreas' F-2026-0087 og F-2026-0080 ga 23/13 linjer og 25/21 opsjoner. Tester bruker kun linje-/opsjonstekster, uten kundedata eller tokens; alle firma-/kunde-/brukerdata er uendret.
+
+Actual Chromium QA PASS ved 320/360/390/760/1280: åpne/lukke, interne grupperte tekster uten prisoverlapp, ingen horisontal overflow, mobil modal-retur og topp/bunn. Gamle draft-preview/recovery/tab-resume/server-hydration/entry-resume og Befaring → Generelt tilbud passerer. Full critical/build/CI og innlogget Preview følger i release-PR før TEST OK/merge.
+
+Mobilpiler: plasseres midt på høyre side, over innholdets lag og utenfor det flytende kundepreview-kortet. Synlighet følger faktisk scrollflate og mobilens synlige skjerm; kundevisning og interne tilbud får samme kontroll. Runtime-QA dekker kort over knappene og scrolling i en egen container.
+
+Pilkontrollene har egen enkolonnet meny-layout og ruller dokumentet via window.scrollTo. Hvis Vercels Preview-verktøy finnes, trekkes pilene litt inn fra høyrekanten så begge kan trykkes. Runtime-QA bruker nå også appens faktiske globale mobil-/menystiler og en overlappende Preview-knapp.

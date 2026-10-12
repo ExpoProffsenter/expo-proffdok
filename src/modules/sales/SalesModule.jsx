@@ -1,3 +1,4 @@
+import SalesMobileTools from "./components/SalesMobileTools.jsx";
 // Expo ProffDok – FASE 45B / FASE 44C / FASE 42I / FASE 42F / FASE 42A / FASE 39B.2C / FASE 38A1
 // FASE 45B lar lokal Sales-cache/recovery følge aktivt Representerer uten å endre database/RLS.
 // FASE 44C tvinger tilbuds-recovery gjennom server-first-gaten før SalesCore remountes.
@@ -723,6 +724,8 @@ export default function SalesModule(props) {
           onClose={() => setOfferTypePickerOpen(false)}
         />
       ) : null}
+
+      {props.integrationMode === "app" && canUseSales ? <SalesMobileTools key={`mobile-tools-${instanceKey}`}/> : null}
 
       <SalesModuleCore
         key={instanceKey}
