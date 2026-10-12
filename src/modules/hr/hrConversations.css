@@ -15,3 +15,5 @@
 
 .hr-real-conversation .hrp-calendar>details{flex-basis:100%}
 .hr-real-conversation .hrp-calendar>details>summary{cursor:pointer;font-weight:600}
+
+.hr-real-conversation .hrp-employee-identity{margin:12px 0 16px;padding:12px 14px;border:1px solid #94b7db;border-left:4px solid #007f89;border-radius:10px;background:#eaf3ff;color:#172b46;overflow-wrap:anywhere}

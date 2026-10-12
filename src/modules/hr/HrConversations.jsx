@@ -8,6 +8,7 @@ import {WORK_PROFILE_EVENT} from '../access/workProfileClient.js';
 import './hrPracticeConversation.css';
 import './hrConversations.css';
 import HrConversationFeedback from './HrConversationFeedback.jsx';
+import {hrEmployeeLabel} from './hrEmployeeLabel.mjs';
 // Only volatile navigation/drafts, scoped to actor/company/employee. Never browser storage.
 const workspaces=new Map();
 const remember=(scope,v)=>{const entryKey=v.entryKey??workspaces.get(scope)?.entryKey;workspaces.delete(scope);workspaces.set(scope,{...v,entryKey});if(workspaces.size>4)workspaces.delete(workspaces.keys().next().value);};
@@ -148,7 +149,9 @@ export default function HrConversations({context,employee,initialCaseId=null,ini
  const stages=['Forberedelse','Felles møte','Tiltak','Referat'];
  const ownSide=value?.employee.user_id===userId?'employee':'leader';
  return <section className="hrp hr-real-conversation" aria-label="Medarbeidersamtaler">
-  <h3>Medarbeidersamtaler</h3><p>Forbered samtalen, gå gjennom temaene sammen og avtal oppfølging. Lagre underveis. Begge bekrefter selv når referatet er lest.</p>
+  <h3>Medarbeidersamtaler</h3>
+  {value&&<p className="hrp-employee-identity"><strong>Medarbeider: {hrEmployeeLabel(value.employee)}</strong>{value.employee.full_name&&value.employee.email&&<span> · {value.employee.email}</span>}</p>}
+  <p>Forbered samtalen, gå gjennom temaene sammen og avtal oppfølging. Lagre underveis. Begge bekrefter selv når referatet er lest.</p>
   {busy&&<p role="status">Kontrollerer tilgang og lagring …</p>}{error&&<p role="alert" className="hrp-error">{error}</p>}{notice&&<p role="status" className="hrp-notice">{notice}</p>}
   {delivery&&c?.id===delivery.id&&!value.historical&&<div ref={receipt} tabIndex={-1} className="hrp-creation-receipt" role="status" aria-live="polite">
    <h4>{delivery.created?'Samtalen er opprettet':'Varsling til medarbeideren'}</h4>
