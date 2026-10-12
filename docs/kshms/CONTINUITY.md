@@ -1,3 +1,7 @@
+## Butikk/lager/truck og samlet egen bekreftelse – 12. oktober 2026
+
+Miljømål **BEGGE**, etter ferdig #235/main `0ccedfe03f4e03c9ec19bde7a9f4077470141bcd`. Kenneth har autorisert produksjon hvis endringen isoleres; ny egen KS/HMS-lesebekreftelse gjelder medarbeider, KS/HMS-ansvarlig og firmaadmin, hver på egen bruker. Komplett utgaveliste, uttrykkelig lest-og-forstått-avkrysning og én atomisk RPC gir separate immutable kvitteringer med dato/klokkeslett på hver utgave. Enkeltbekreftelse og gammel historikk beholdes. 14 nye butikk-/lager-/truckforslag gir 87 forslag totalt uten automatisk publisering/tildeling. Opprinnelige 73 utkast verifiseres eksakt. Ingen øvrige funksjoner/tilganger/RPC/tabeller/arbeidere endres. Ny QA/Preview og kontrollert main → demo før endelig publiseringsmelding. [Kontrakt, forslag og bevis](BULK_ACK_STORE_20261012.md).
+
 ## Tydelig gjennomføring og trygg referatgjennomgang – 12. oktober 2026
 
 Miljømål **BEGGE**, fra ferdig publisert PR #234/main `c0f3a015d8a47b81d0d2a0f0a9ed7b18aa06da12`. Kenneth ba om faktisk UX-test og retting. Innlogget Preview med eksisterende syntetisk kursmedarbeider bekrefter uklar opprettingsinngang etter deling. Faktisk React og lokal PostgreSQL reproduserte at gjentatt Send til begge for gjennomgang nullstilte gitt bekreftelse.

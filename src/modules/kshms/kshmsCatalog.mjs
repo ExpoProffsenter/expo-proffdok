@@ -1,4 +1,5 @@
 import { extendedCatalog } from './kshmsExtendedCatalog.mjs';
+import { storeCatalog } from './kshmsStoreCatalog.mjs';
 export const SOURCE_CHECKED_ON = '2026-10-05';
 export const TRADES = { mur_flis: 'Mur / flis', tomrer: 'Tømrer', maler: 'Maler', vvs: 'VVS' };
 export const CHAPTERS = ['Virksomhet og kvalitetsledelse', 'Personal, kompetanse og arbeidsmiljø', 'Sikker utførelse og beredskap', 'Fag og kvalitet', 'Ytre miljø og bærekraft', 'Personvern og informasjonssikkerhet'];
@@ -78,6 +79,7 @@ export const ROUTINE_CATALOG = [
   'Vurder hva dokumentasjonen skal brukes til før innsamling. Unngå unødvendige personer i bilder og fritekst. Kontroller mottakere og vedlegg før rapportdeling. Legg individuelle personalsaker i avgrenset område. Avtal hvem som håndterer innsyn, retting og sletting. Ved fratredelse sperres tilgang og videre oppbevaring vurderes per dokumenttype.',
   'Formål og tilgangsoversikt, avtaler med databehandlere og dokumentert bevarings-/slettevurdering. Ikke lagre personopplysninger på ubestemt tid bare fordi historikk er nyttig.',[source('Personopplysningsloven','https://lovdata.no/lov/2018-06-15-38'),PV],['K036','K093','K094','K096','K097','K102','K104','U06','U14']),
  ...extendedCatalog({make,IK,SAK,AML,UTF,PV,source}),
+ ...storeCatalog({make,IK,UTF}),
 ];
 export function suggestedRoutines(trades = [], activities = '', responsibilities = '', risks = '') {
  const context = `${activities} ${responsibilities} ${risks}`.toLocaleLowerCase('nb');

@@ -1,3 +1,7 @@
+## Butikk/lager/truck og samlet egen bekreftelse – 12. oktober 2026
+
+Miljømål **BEGGE**, etter ferdig #235/main `0ccedfe03f4e03c9ec19bde7a9f4077470141bcd`. Kenneth har autorisert produksjon hvis endringen isoleres; ny egen KS/HMS-lesebekreftelse gjelder medarbeider, KS/HMS-ansvarlig og firmaadmin, hver på egen bruker. Komplett utgaveliste, uttrykkelig lest-og-forstått-avkrysning og én atomisk RPC gir separate immutable kvitteringer med dato/klokkeslett på hver utgave. Enkeltbekreftelse og gammel historikk beholdes. 14 nye butikk-/lager-/truckforslag gir 87 forslag totalt uten automatisk publisering/tildeling. Opprinnelige 73 utkast verifiseres eksakt. Ingen øvrige funksjoner/tilganger/RPC/tabeller/arbeidere endres. Ny QA/Preview og kontrollert main → demo før endelig publiseringsmelding. [Kontrakt, forslag og bevis](BULK_ACK_STORE_20261012.md).
+
 ## HR: tydelig hjelp der du arbeider – 10. oktober 2026
 
 Synlig **Start her** viser oppsett → medarbeider/leder → samtalemal for firmaadmin, og relevant lesehjelp for leder/personlig bruker. Malbyggeren forklarer velg → tilpass → forhåndsvis/lagre, navn/tema/spørsmål, forberedelse/felles møte, kladd/Forkast og utgave/arkiv. En lagret mal starter ingen samtale og sender ingenting til ansatte. Bare presentasjon/hjelp; handlinger, roller, SQL og privat innholdsport beholdes.

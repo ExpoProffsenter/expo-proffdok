@@ -26,3 +26,5 @@
 
 /* Preserve full words in two-column workspace navigation. */
 .ks-navigation .ks-tabs button{padding:9px 6px;gap:5px;font-weight:650}
+
+.ks-bulk-ack .ks-selected-list{max-height:24rem;overflow:auto;padding-right:12px}.ks-bulk-ack .ks-selected-list button{max-width:100%;white-space:normal;text-align:left;overflow-wrap:anywhere}.ks-bulk-ack>button{max-width:100%;white-space:normal}.ks-bulk-ack .ks-check{align-items:flex-start}
