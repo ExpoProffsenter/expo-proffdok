@@ -2370,7 +2370,7 @@ a:hover {
  .sales-internal-offer-option > div{grid-column:1!important;overflow-wrap:anywhere}
  .sales-customer-line-body,.sales-customer-option-content{overflow-wrap:anywhere}
  .sales-customer-line-price{white-space:normal;overflow-wrap:anywhere;min-width:0}
- .sales-scroll-shortcuts{position:fixed;right:max(6px,env(safe-area-inset-right));z-index:9100;display:grid;gap:3px;padding:3px;border:1px solid #cad9dd;border-radius:24px;background:rgba(255,255,255,.92);box-shadow:0 2px 8px #10212b18}
+ .sales-scroll-shortcuts{position:fixed;right:max(6px,env(safe-area-inset-right));transform:translateY(-50%);z-index:24000;display:grid;gap:3px;padding:3px;border:1px solid #cad9dd;border-radius:24px;background:rgba(255,255,255,.92);box-shadow:0 2px 8px #10212b18}
  .sales-scroll-shortcuts button{display:grid;place-items:center;width:36px;height:36px;padding:0;border:0;border-radius:50%;background:transparent;color:#526975}
  .sales-scroll-shortcuts button:focus-visible{outline:2px solid #0e9aa3;outline-offset:1px}
  .sales-mobile-customer-preview{margin:0;padding:0;border:0;max-width:none;max-height:none;width:100vw;position:fixed;inset:0;z-index:31000;background:white;display:flex;flex-direction:column;height:100dvh}

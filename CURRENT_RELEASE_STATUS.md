@@ -1,3 +1,5 @@
+Mobiltilbud oppfølging: topp/bunnpiler var dekket av flytende kundepreview-kort. Rettet til midt på høyre side etter brukerens ønske, med skjerm-/scrollflatekontroll. Avventer oppdatert Preview-test og eksplisitt TEST OK.
+
 ## Mobiltilbud – arbeid 13. oktober 2026
 
 Miljømål BEGGE. Fra main 59682a0902615437677c129fb18fe154350b127e, egen lokal arbeidsmappe/branch fix-mobile-offer-reading. Kenneth meldte overlapping på mobil i Andreas sine tilbud, lang scrolling og manglende retur fra ny kunde-fane; ønsket også tydelig åpne/lukke. Ny avgrenset presentasjon: mobile hovedposter starter lukket; tekst/pris får riktig kolonne; små topp/bunnknapper; mobil modal med fast retur til samme sak. Desktop beholder egen fane. Ingen datalagring/publisering/mail/SQL/recoveryendring. Faktiske linjestrukturer fra F-2026-0087 og F-2026-0080 kontrollert lesende. Actual Chromium 320/360/390/760/1280 PASS. Gamle relevante critical PASS. Full critical/build og CI/Preview verifiseres før eksplisitt TEST OK. Tidligere PDF-TEST OK gjelder ikke denne nye mobil-UX-en.

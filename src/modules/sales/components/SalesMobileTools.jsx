@@ -1,29 +1,35 @@
 import {useEffect,useRef,useState} from 'react';
+import {createPortal} from 'react-dom';
 import {ArrowUp,ArrowDown,ArrowLeft} from 'lucide-react';
 import {MOBILE_PREVIEW_EVENT} from '../services/salesMobilePreview.mjs';
 
 export function SalesScrollShortcuts(){
- const ref=useRef(null),[visible,setVisible]=useState(false),[bottom,setBottom]=useState(12);
+ const anchor=useRef(null),[visible,setVisible]=useState(false),[middle,setMiddle]=useState(null);
+ const scrollTarget=()=>{
+  let target=anchor.current?.parentElement;
+  while(target&&target!==document.body){
+   if(/auto|scroll/.test(getComputedStyle(target).overflowY)&&target.scrollHeight>target.clientHeight+40)return target;
+   target=target.parentElement;
+  }
+  return document.scrollingElement||document.documentElement;
+ };
  useEffect(()=>{
   const media=window.matchMedia('(max-width: 760px)');
   const update=()=>{
-   const root=document.scrollingElement||document.documentElement;
+   const root=scrollTarget();
    const editing=document.activeElement?.matches('input,textarea,select,[contenteditable="true"]');
-   setVisible(media.matches&&!editing&&root.scrollHeight>window.innerHeight*1.5);
-   const save=document.querySelector('.sales-offer-mobile-save');
-   setBottom(save&&getComputedStyle(save).display!=='none'?Math.max(12,window.innerHeight-save.getBoundingClientRect().top+8):12);
+   const viewport=window.visualViewport;
+   const height=root===document.scrollingElement||root===document.documentElement?Math.max(root.scrollHeight,document.body.scrollHeight):root.scrollHeight;
+   setVisible(media.matches&&!editing&&height>Math.min(root.clientHeight||window.innerHeight,window.innerHeight)+40);
+   setMiddle(viewport?viewport.offsetTop+viewport.height/2:window.innerHeight/2);
   };
-  update();const observer=new ResizeObserver(update);observer.observe(document.body);
-  window.addEventListener('resize',update);document.addEventListener('focusin',update);document.addEventListener('focusout',update);
-  return()=>{observer.disconnect();window.removeEventListener('resize',update);document.removeEventListener('focusin',update);document.removeEventListener('focusout',update);};
+  update();const observer=new ResizeObserver(update);observer.observe(document.body);observer.observe(document.documentElement);
+  const mutations=new MutationObserver(update);mutations.observe(document.body,{childList:true,subtree:true});
+  window.addEventListener('resize',update);window.addEventListener('scroll',update,{passive:true});document.addEventListener('toggle',update,true);document.addEventListener('focusin',update);document.addEventListener('focusout',update);window.visualViewport?.addEventListener('resize',update);window.visualViewport?.addEventListener('scroll',update);
+  return()=>{observer.disconnect();mutations.disconnect();window.removeEventListener('resize',update);window.removeEventListener('scroll',update);document.removeEventListener('toggle',update,true);document.removeEventListener('focusin',update);document.removeEventListener('focusout',update);window.visualViewport?.removeEventListener('resize',update);window.visualViewport?.removeEventListener('scroll',update);};
  },[]);
- const jump=end=>{
-  let target=ref.current?.parentElement;
-  while(target&&target!==document.body){if(/auto|scroll/.test(getComputedStyle(target).overflowY)&&target.scrollHeight>target.clientHeight)break;target=target.parentElement;}
-  const scroll=target&&target!==document.body?target:(document.scrollingElement||document.documentElement);
-  scroll.scrollTo({top:end?scroll.scrollHeight:0,behavior:'instant'});
- };
- return visible?<nav ref={ref} className="sales-scroll-shortcuts" style={{bottom}} aria-label="Snarveier for scrolling"><button type="button" aria-label="Til toppen" title="Til toppen" onClick={()=>jump(false)}><ArrowUp size={16}/></button><button type="button" aria-label="Til bunnen" title="Til bunnen" onClick={()=>jump(true)}><ArrowDown size={16}/></button></nav>:null;
+ const jump=end=>{const scroll=scrollTarget();scroll.scrollTo({top:end?scroll.scrollHeight:0,behavior:'instant'});};
+ return <><span ref={anchor} hidden/>{visible?createPortal(<nav className="sales-scroll-shortcuts" style={{top:middle??"50%"}} aria-label="Snarveier for scrolling"><button type="button" aria-label="Til toppen" title="Til toppen" onClick={()=>jump(false)}><ArrowUp size={16}/></button><button type="button" aria-label="Til bunnen" title="Til bunnen" onClick={()=>jump(true)}><ArrowDown size={16}/></button></nav>,document.body):null}</>;
 }
 
 export default function SalesMobileTools(){
