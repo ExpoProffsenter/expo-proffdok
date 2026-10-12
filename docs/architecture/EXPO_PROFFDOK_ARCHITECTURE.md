@@ -1213,3 +1213,5 @@ Scope er presentasjon/CSS, isolert modal/scroll-komponent og to eksisterende ope
 Actual Chromium QA PASS ved 320/360/390/760/1280: åpne/lukke, interne grupperte tekster uten prisoverlapp, ingen horisontal overflow, mobil modal-retur og topp/bunn. Gamle draft-preview/recovery/tab-resume/server-hydration/entry-resume og Befaring → Generelt tilbud passerer. Full critical/build/CI og innlogget Preview følger i release-PR før TEST OK/merge.
 
 Mobilpiler: plasseres midt på høyre side, over innholdets lag og utenfor det flytende kundepreview-kortet. Synlighet følger faktisk scrollflate og mobilens synlige skjerm; kundevisning og interne tilbud får samme kontroll. Runtime-QA dekker kort over knappene og scrolling i en egen container.
+
+Pilkontrollene har egen enkolonnet meny-layout og ruller dokumentet via window.scrollTo. Hvis Vercels Preview-verktøy finnes, trekkes pilene litt inn fra høyrekanten så begge kan trykkes. Runtime-QA bruker nå også appens faktiske globale mobil-/menystiler og en overlappende Preview-knapp.
