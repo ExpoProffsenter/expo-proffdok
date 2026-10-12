@@ -7,6 +7,7 @@ import {MANAGED_ACCESS_EVENT,MODULE_ACCESS_EVENT} from '../access/moduleAccessCl
 import {WORK_PROFILE_EVENT} from '../access/workProfileClient.js';
 import DeviationDialog from '../deviations/DeviationDialog.jsx';
 import './hrFollowupNotice.css';
+import {hrEmployeeLabel} from './hrEmployeeLabel.mjs';
 const Conversations=React.lazy(()=>import('./HrConversations.jsx'));
 const SickLeave=React.lazy(()=>import('./HrSickLeaveCases.jsx'));
 const date=value=>value.split('-').reverse().join('.');
@@ -74,7 +75,7 @@ export default function HrFollowupNotice({context,userId,onSetup}){
    </li>)}</ul>
    {(value?.next||value?.feedbackNext)&&<button type="button" className="secondary" disabled={busy} onClick={more}>Hent flere oppfølginger</button>}
   </section>}
-  {target&&employee&&<DeviationDialog title={target.kind==='conversation'?'Medarbeidersamtale':'Sykefraværsoppfølging'} context={context.company_name||'HR'} onClose={resetSelection} closeLabel="Lukk oppfølgingen"><div className="hr-module hr-direct-followup"><Suspense fallback={<p role="status">Henter oppfølgingen …</p>}>
+  {target&&employee&&<DeviationDialog title={target.kind==='conversation'?'Medarbeidersamtale – '+hrEmployeeLabel(employee):'Sykefraværsoppfølging'} context={context.company_name||'HR'} onClose={resetSelection} closeLabel="Lukk oppfølgingen"><div className="hr-module hr-direct-followup"><Suspense fallback={<p role="status">Henter oppfølgingen …</p>}>
    {target.kind==='conversation'?<Conversations key={scope+':'+employee.id+':'+employee.revision} context={context} employee={employee} initialCaseId={target.case_id} initialEntryKey={selected.entryKey} initialStep={followupStep(target)} feedbackNotice={target.task_key==='employee-feedback'?target:null} onFeedbackHandled={feedbackHandled}/>:<SickLeave key={scope+':'+employee.id+':'+employee.revision} context={context} employee={employee} initialCaseId={target.case_id} initialEntryKey={selected.entryKey} initialStep={followupStep(target)}/>}</Suspense></div></DeviationDialog>}
  </>;
 }
