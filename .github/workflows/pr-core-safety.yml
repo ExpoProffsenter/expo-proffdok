@@ -80,6 +80,7 @@ jobs:
           node scripts/hr-conversations-db-check.mjs
           node scripts/hr-conversations-runtime-check.mjs
           node scripts/hr-conversations-react-check.mjs
+          KSHMS_JSPDF_PATH="$HR_PRACTICE_JSPDF_PATH" node scripts/kshms-handbook-pdf-react-check.mjs
 
       - name: Verify private sick-leave followup and reminder transport
         run: |

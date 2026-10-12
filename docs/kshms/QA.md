@@ -732,3 +732,16 @@ Tekstoppfølging: faktisk React/ZIP med fem syntetiske vedlegg, eksisterende per
 HR-popup 11.10: medarbeiderraden åpner eksisterende appdialog, med leder/tilgang, paginerte brukervalg og resultatmeldinger inne i vinduet. Dialog, Escape/kryss, fokusretur og fersk autorisering kontrollert i React og Chromium ved 1280/360/740. Tilgang/backend/privat HR uendret. Samme core-PR #219/Preview; ingen merge.
 
 HR-prøveoppdatering 11.10: første åpning viser skjemaets topp; tom/ulagret/redigert samtale bevares gjennom ekte HR-tilgangsremount. Konto-/firmabundet sideminne, ingen ulagret browserlagring. Faktisk useHrAccess/JSDOM og Chromium 1280/360/740 grønne, inkludert konflikt og uendrede PDF-/neste-steg-løp. Samme PR #218/Preview; ingen merge.
+
+
+## Hele personalhåndboka som PDF – 12. oktober 2026
+
+Miljømål **BEGGE**, fra verifisert main `55d43947b0bd991d282959ace41fdefc489984b2` (#237). Kenneth ba om at ansatte kan laste ned hele personalhåndboka med firmalogo. Ny knapp øverst i Min personalhåndbok bruker eksisterende lesende KS/HMS-state og firmaprofil. Alle egne tildelte rutiner med full tekst, kilder, godkjenning og egne bekreftelser med sekunder/norsk tid; søk begrenser ikke PDF. Gjeldende tildelte utgaver først, tidligere/utgåtte tildelte utgaver i merket historikkdel. Innholdsfortegnelse med faktiske sider og felles kompakt ramme-layout. Ingen bekreftelse registreres ved nedlasting.
+
+Scope: PersonalHandbook integrasjon, ny egen PDF-knapp/renderer, permanent critical og React/jsPDF-QA, Hjelp og release-dokumentasjon. Eksisterende enkelt-PDF/samlet lesebekreftelse/firmapublisering beholdes. Ingen SQL/RLS/tilgang/worker/mail/meny/salg/HR-endring. Egen tildeling brukes også for admin og KS/HMS-ansvarlig. Fersk aktør-/firma-/tilgangskontroll før/etter PDF-motor og logo; endrede tildelinger/tekst/kvitteringer stopper nedlasting. Sent svar etter unmount eller scopeswitch forkastes. Manglende registrert logo stopper eksport; profil uten logo gir firmanavn og ærlig beskjed.
+
+QA/status og Preview føres i `docs/kshms/HANDBOOK_PDF_20261012.md`. Ingen tidligere TEST OK påstås å dekke denne nye PDF-funksjonen. Ingen produksjonspublisering før relevant godkjenning.
+
+## Rutiner sender ikke e-post – 12. oktober 2026
+
+Etter Kenneths eksplisitte akuttinstruks er rutinetildelinger og lesepåminnelser bare i appen. Ny køtrigger blokkerer reading ved insert/retry; 670 ventende rutine-e-poster stanset i produksjon, ingen gjeldende rutinepost sendbar. 200 allerede sendte beholdes i loggen. Rutiner, tildelinger og egne bekreftelser beholdes. Andre oppgaver og frister beholder e-post. Produksjon og Sandbox installert, faktisk insert/retry-test rullet tilbake. Se docs/kshms/ROUTINE_EMAIL_STOP_20261012.md.

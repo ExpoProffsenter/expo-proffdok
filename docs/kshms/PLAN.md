@@ -467,3 +467,16 @@ Fagspesifikke firmamaler, utkast/publisering, faste utgaver og innhenting under 
 Kenneth 23:02: begge delprøver (meny/sjekklistepopup) TEST OK. Fullfør utførelsesdelen før HR. Bygg avtalt minimum først; Ringside tester etterpå. Ingen tidlig begrenset pilot. Ved individuell HR får ledere bare tildelte medarbeidere, firmaadmin ser/behandler alle og tildeler ansvar; KS-rollen gir ikke slik tilgang automatisk.
 
 SJA starter tom for hver jobb med hjelpetekst over feltene og eksplisitt valgbare forslag. Egen PL-signatur og dokumentert medvirkning består. Den avgrensede SJA-form-/utkast-/signaturleveransen er bygget og utviklerverifisert i Sandbox, med egen brukerprøve etter READY-publisering. Se SJA_20261007.md. Det betyr ikke at hele B er ferdig: vernerunder, selvstendige sjekklistegjennomføringer, 5×5 risiko, vedlegg/PDF og øvrige C–E-krav gjenstår. Historisk opprinnelig gap-tabell ovenfor beskriver tilstanden før implementering.
+
+
+## Hele personalhåndboka som PDF – 12. oktober 2026
+
+Miljømål **BEGGE**, fra verifisert main `55d43947b0bd991d282959ace41fdefc489984b2` (#237). Kenneth ba om at ansatte kan laste ned hele personalhåndboka med firmalogo. Ny knapp øverst i Min personalhåndbok bruker eksisterende lesende KS/HMS-state og firmaprofil. Alle egne tildelte rutiner med full tekst, kilder, godkjenning og egne bekreftelser med sekunder/norsk tid; søk begrenser ikke PDF. Gjeldende tildelte utgaver først, tidligere/utgåtte tildelte utgaver i merket historikkdel. Innholdsfortegnelse med faktiske sider og felles kompakt ramme-layout. Ingen bekreftelse registreres ved nedlasting.
+
+Scope: PersonalHandbook integrasjon, ny egen PDF-knapp/renderer, permanent critical og React/jsPDF-QA, Hjelp og release-dokumentasjon. Eksisterende enkelt-PDF/samlet lesebekreftelse/firmapublisering beholdes. Ingen SQL/RLS/tilgang/worker/mail/meny/salg/HR-endring. Egen tildeling brukes også for admin og KS/HMS-ansvarlig. Fersk aktør-/firma-/tilgangskontroll før/etter PDF-motor og logo; endrede tildelinger/tekst/kvitteringer stopper nedlasting. Sent svar etter unmount eller scopeswitch forkastes. Manglende registrert logo stopper eksport; profil uten logo gir firmanavn og ærlig beskjed.
+
+QA/status og Preview føres i `docs/kshms/HANDBOOK_PDF_20261012.md`. Ingen tidligere TEST OK påstås å dekke denne nye PDF-funksjonen. Ingen produksjonspublisering før relevant godkjenning.
+
+## Rutiner sender ikke e-post – 12. oktober 2026
+
+Etter Kenneths eksplisitte akuttinstruks er rutinetildelinger og lesepåminnelser bare i appen. Ny køtrigger blokkerer reading ved insert/retry; 670 ventende rutine-e-poster stanset i produksjon, ingen gjeldende rutinepost sendbar. 200 allerede sendte beholdes i loggen. Rutiner, tildelinger og egne bekreftelser beholdes. Andre oppgaver og frister beholder e-post. Produksjon og Sandbox installert, faktisk insert/retry-test rullet tilbake. Se docs/kshms/ROUTINE_EMAIL_STOP_20261012.md.

@@ -1,0 +1,14 @@
+# Hele personalhåndboka som PDF
+
+Miljømål BEGGE. Baseline main 55d43947b0bd991d282959ace41fdefc489984b2. Før endring ble samtlige 951 tree entries lest; alle lokale blobber samsvarer med main. Egen arbeidskopi, tidligere mapper beholdt.
+
+Ansatte, KS/HMS-ansvarlig og firmaadmin eksporterer egne tildelinger fra Min personalhåndbok. Alle rutinetekster/kilder, utgave-ID/innholdskontroll, godkjenner/vurdering/tid og egne lesebekreftelser med norsk tid og sekunder følger med. Aktuelle tildelte utgaver først, tidligere/utgåtte utgaver i tydelig historikk. Søk begrenser ikke PDF. Innholdsfortegnelse med faktiske sider; nummerering og firmaets logo. Ingen lagring/publisering/ny lesebekreftelse. Ingen databaseendring eller nye tilganger.
+
+Eksisterende kshms_get_state og work_profile_company_profile brukes lesende. Firma-/aktør-/enabled kontrolleres på ferske svar. Eksportprojeksjonen inkluderer bare egne tildelte utgaver og egne kvitteringer, også ved bred managerstate. Utkast og andre brukeres kvitteringer følger ikke med. Etter logo/motor sjekkes samme projeksjon igjen; bortfalt tilgang eller endret innhold/tildeling/kvittering krever ny nedlasting. Unmount/firmabytte/brukerbytte stopper sene svar. Dobbeltklikk låses. Registrert logo som ikke kan hentes gir feil; profil uten logo gir firmanavn og forklaring.
+
+QA: permanent critical med 87 egne rutiner + tidligere utgave, andre brukeres tildelinger/kvitteringer, utkast, feil firma/aktør/profil, endret siste state, manglende logo og sene svar PASS. Eksisterende enkelt-dokument-PDF critical PASS. Faktisk React/jsPDF, visuell PDF, berørt regresjonskontroll og full build føres videre før Preview/godkjenning. Ingen produksjon eller manuell Kenneth-test påstås før gjennomføring.
+
+
+Faktisk React/jsPDF PASS på ansatt og manager med søk som skjuler 86 rutiner. Eksporten inneholder 87 gjeldende + én historisk utgave, 96 sider inkludert flere sider med lang rutinetekst. Alle 87 titler, sluttmarkøren for lang tekst, egen dato/tid, sidehenvisninger og fravær av private utkast/andre kvitteringer kontrollert fra faktisk PDF. Logo og rammer kontrollert visuelt på forside/innholdsfortegnelse, første rutine, langtekst/fortsettelse og historikk. Poppler bekrefter logo og full header på første rutine; enkelte FitZ-previewbilder skjulte header selv om innhold/posisjoner er korrekt. Ingen app- eller testlogikk endret for rendererforskjellen.
+
+Tom håndbok, feil/retry, dobbeltklikk og unmount av nedlasting PASS. Eksisterende samlet lesebekreftelse (87 utgaver/tre roller), samlet firmapublisering/enkeltgodkjenning (87 utkast/begge roller) og enkelt-PDF critical PASS. Full critical/build Production og Sandbox PASS. Hjelp utvides i eksisterende håndbokguide; de 12 eksisterende KS/HMS-guidefamiliene beholdes. CI kjører ny critical og faktisk React/jsPDF. Ingen SQL/backend/firmadata endres.
