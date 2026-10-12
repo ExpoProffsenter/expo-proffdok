@@ -23,8 +23,10 @@ try{
  const migrations=['20261009182551_hr_access_foundation.sql','20261009193953_hr_content_purge_foundation.sql',
  '20261009203431_people_module_entitlements.sql','20261009203950_people_module_access_closure.sql',
  '20261010004928_hr_conversation_templates.sql','20261010105649_hr_sick_leave_template_kind.sql',
- '20261009211209_hr_restore_reconcile_orphans.sql','20261011134804_hr_personal_conversations.sql','20261011140130_hr_deletion_admin_alerts.sql','20261011155003_hr_sick_leave_cases.sql','20261011155506_hr_followup_reminders.sql','20261011162527_hr_followup_worker_scope.sql','20261011192456_hr_conversation_meeting_time.sql','20261011195555_hr_conversation_creation_notice.sql','20261011203859_hr_conversation_reminder_feedback.sql','20261011205907_hr_targeted_transport_test.sql','20261011220405_hr_conversation_meeting_location.sql'];
+ '20261009211209_hr_restore_reconcile_orphans.sql','20261011134804_hr_personal_conversations.sql','20261011140130_hr_deletion_admin_alerts.sql','20261011155003_hr_sick_leave_cases.sql','20261011155506_hr_followup_reminders.sql','20261011162527_hr_followup_worker_scope.sql','20261011192456_hr_conversation_meeting_time.sql','20261011195555_hr_conversation_creation_notice.sql','20261011203859_hr_conversation_reminder_feedback.sql','20261011205907_hr_targeted_transport_test.sql','20261011220405_hr_conversation_meeting_location.sql','20261012050658_hr_conversation_feedback_notice.sql'];
  for(const f of migrations)await db.exec(await fs.readFile('supabase/migrations/'+f,'utf8'));
+ for(const role of ['anon','service_role'])for(const signature of ['public.hr_conversation_feedback_notices(uuid,uuid)','public.hr_conversation_feedback_handle(uuid,uuid,integer,uuid,integer)'])eq((await sql(`select has_function_privilege('${role}','${signature}','execute') v`))[0].v,false,'feedback RPCs are authenticated-only');
+ eq((await sql("select has_table_privilege('authenticated','hr_private.conversation_feedback_receipts','select,insert,update,delete') v"))[0].v,false,'receipt table is private');
  eq((await sql("select has_function_privilege('authenticated','public.hr_followup_test_reserve(uuid)','execute') as v"))[0].v,false,'test reserve is server-only');
  eq((await sql("select public.hr_followup_test_reserve('70000000-0000-4000-8000-000000009999') as v"))[0].v,null,'unknown test cannot take queue job');
  await db.exec(`insert into public.sales_company_scopes values(${q(company)},'synthetic','Synthetic'),(${q(foreign)},'other','Other');
@@ -134,6 +136,7 @@ try{
  await reject(()=>command('preparation',{answers:{[question]:'Cannot impersonate'}}),'42501');
  await actor(self);await reject(()=>command('share'),'22023');
  await db.exec("reset role;update hr_private.followup_settings set enabled=true,endpoint='';");await actor(self);await command('preparation',{answers:{[question]:'Private preparation'}});await db.exec('reset role;');eq((await sql("select count(*)::int n from hr_private.followup_deliveries where task_key='employee-feedback'"))[0].n,0,'private preparation never mails leader');await actor(self);
+ await actor(leader);eq((await rpc('hr_conversation_feedback_notices',[company])).tasks,[],'private preparation is never announced');await actor(self);
  eq(state.conversation.preparation[question],'Private preparation');
  for(const u of [leader,admin]){await actor(u);eq((await get()).conversation.preparation,{},'unshared preparation redacted');}
  for(const u of [reader,outsider,system]){await actor(u);await reject(()=>get(),'42501');}
@@ -142,12 +145,34 @@ try{
  await actor(self);await reject(()=>command('preparation',{answers:{unrelated:'invalid'}}),'22023');
  await db.exec("reset role;update hr_private.followup_settings set enabled=true,endpoint='';");await actor(self);
  await command('share');eq(state.conversation.stage,'meeting');eq((await status()).app_notification,false,'shared preparation closes app task');await actor(leader);await reject(()=>rpc('hr_conversation_notify',[company,employee.id,employeeRevision,conversation,revision]),'22023');
+ const feedbackNotices=()=>rpc('hr_conversation_feedback_notices',[company]);
+ const handleInput=(rev=state.conversation.employee_feedback_revision,empRev=employeeRevision)=>rpc('hr_conversation_feedback_handle',[company,employee.id,empRev,conversation,rev]);
+ await actor(leader);const sharedRevision=state.conversation.employee_feedback_revision;const sharedNotices=(await feedbackNotices()).tasks;eq(sharedNotices.length,1);eq(Object.keys(sharedNotices[0]).sort(),['case_id','employee_id','task_key','due_on','kind','feedback_revision'].sort(),'notice has pointers only, no answers/name/comment');
+ await db.exec(`reset role;
+ insert into hr_private.artifacts(id,company_id,employee_id,employee_revision,kind,payload,review_on)
+ select ('71000000-0000-4000-8000-'||lpad(n::text,12,'0'))::uuid,company_id,employee_id,employee_revision,kind,
+ payload||jsonb_build_object('id',('72000000-0000-4000-8000-'||lpad(n::text,12,'0'))::uuid),review_on
+ from hr_private.artifacts cross join generate_series(1,52)n where id=(select current_artifact_id from hr_private.conversations where id=${q(conversation)});
+ insert into hr_private.conversations(id,company_id,employee_id,revision,current_artifact_id)
+ select ('72000000-0000-4000-8000-'||lpad(n::text,12,'0'))::uuid,${q(company)},${q(employee.id)},${revision},('71000000-0000-4000-8000-'||lpad(n::text,12,'0'))::uuid from generate_series(1,52)n;`);
+ await actor(leader);const page1=await feedbackNotices(),page2=await rpc('hr_conversation_feedback_notices',[company,page1.next]);eq(page1.tasks.length,50,'bounded feedback page');eq(page2.tasks.length,3);eq(page2.next,null,'no invented extra page');eq(new Set([...page1.tasks,...page2.tasks].map(t=>t.case_id)).size,53,'cursor neither loses nor duplicates feedback');
+ await db.exec("reset role;delete from hr_private.artifacts where id::text like '71000000-%';");await actor(leader);
+ for(const u of [self,admin,reader,outsider,system]){await actor(u);eq((await feedbackNotices()).tasks,[],'only current leader sees card');await reject(()=>handleInput(),'42501');}
+ await actor(leader);await reject(()=>handleInput(sharedRevision,employeeRevision-1),'40001');await reject(()=>rpc('hr_conversation_feedback_notices',[foreign]),'42501');
+ await db.exec('reset role;');const mailBefore=await sql('select * from hr_private.followup_deliveries order by id');await actor(leader);
+ eq((await handleInput()).handled,true);eq((await feedbackNotices()).tasks,[],'explicit acknowledgement removes input');eq((await handleInput()).handled,true,'response-loss retry is idempotent');eq((await get()).current_revision,revision,'handling never changes conversation');
+ await db.exec('reset role;');eq(await sql('select * from hr_private.followup_deliveries order by id'),mailBefore,'handling does not touch or resend mail');await actor(leader);
  await db.exec('reset role;set role service_role;');
  let feedback=await rpc('hr_conversation_mail_reserve',['employee-feedback']);eq(Object.keys(feedback).sort(),['attempt','id','to'],'feedback has no answers/date/person/firm');eq(await rpc('hr_conversation_mail_validate',[feedback.id,feedback.attempt,'employee-feedback']),true);
  await rpc('hr_followup_worker_finish',[feedback.id,feedback.attempt,true]);
  await actor(self);await command('comment',{text:'A new employee comment'});
+ await actor(leader);eq((await feedbackNotices()).tasks.length,1,'new comment alerts after handling');await reject(()=>handleInput(sharedRevision),'40001','old acknowledgement cannot swallow new input');await actor(self);
  await db.exec('reset role;set role service_role;');feedback=await rpc('hr_conversation_mail_reserve',['employee-feedback']);eq(Boolean(feedback.id),true,'saved employee comment mails leader');await actor(self);await command('comment',{text:'A newer employee comment'});await db.exec('reset role;set role service_role;');eq(await rpc('hr_conversation_mail_validate',[feedback.id,feedback.attempt,'employee-feedback']),false,'superseded unsent feedback is coalesced');feedback=await rpc('hr_conversation_mail_reserve',['employee-feedback']);eq(Boolean(feedback.id),true);
  await db.exec(`reset role;update hr_private.module_access set enabled=false where company_id=${q(company)} and user_id=${q(leader)};set role service_role;`);eq(await rpc('hr_conversation_mail_validate',[feedback.id,feedback.attempt,'employee-feedback']),false,'current HR entitlement required for leader mail');
+ await actor(leader);await reject(()=>feedbackNotices(),'42501');await reject(()=>handleInput(),'42501');
+ await db.exec(`reset role;update hr_private.module_access set enabled=true where company_id=${q(company)} and user_id=${q(leader)};update hr_private.module_access set enabled=false where company_id=${q(company)} and user_id=${q(self)};`);
+ await actor(leader);eq((await feedbackNotices()).tasks,[],'employee entitlement revoked hides input');await reject(()=>handleInput(),'42501');
+ await db.exec(`reset role;update hr_private.module_access set enabled=true where company_id=${q(company)} and user_id=${q(self)};`);
  await db.exec(`reset role;update hr_private.module_access set enabled=true where company_id=${q(company)} and user_id=${q(leader)};update hr_private.followup_settings set enabled=false;`);
  await actor(leader);eq((await get()).conversation.preparation[question],'Private preparation','shared preparation retained');
  await command('meeting',{answers:{[meeting]:'Shared summary'},actions:[],next_on:''});
@@ -166,8 +191,8 @@ try{
  const finalVersion=revision;
  eq((await command('confirm')).current_revision,finalVersion,'confirmation retry idempotent');
  await actor(admin);const changed=await rpc('hr_employee_command',[company,'leader',{id:employee.id,revision:employeeRevision,leader_id:next,clear_old_leader_reader:false}]);employeeRevision=changed.employee.revision;
- await actor(leader);await reject(()=>get(),'42501');
- await actor(next);state=await get();eq(state.conversation.stage,'awaiting','new leader must personally confirm');eq(state.conversation.confirmations.leader,null);
+ await actor(leader);await reject(()=>get(),'42501');eq((await feedbackNotices()).tasks,[],'old leader loses feedback notices');await reject(()=>handleInput(),'42501');
+ await actor(next);eq((await feedbackNotices()).tasks.length,1,'new leader sees unread input without old leader receipt');state=await get();eq(state.conversation.stage,'awaiting','new leader must personally confirm');eq(state.conversation.confirmations.leader,null);
  await command('confirm');eq(state.conversation.stage,'completed');
  await command('revise');eq(state.conversation.confirmations.employee,null);eq(state.conversation.stage,'meeting');
  const history=await get(finalVersion);eq(history.conversation.meeting[meeting],'Shared summary');eq(history.historical,true);
@@ -222,6 +247,7 @@ try{
  eq(await rpc('hr_alert_worker_authorize',['aa'.repeat(32)]),false,'disabled token cannot authorize');
  await db.exec('reset role;update hr_private.deletion_alert_settings set enabled=true;set role service_role;');
  eq(await rpc('hr_alert_worker_authorize',['aa'.repeat(32)]),true,'synthetic fixture token authorizes enabled worker');
+ await db.exec('reset role;');eq((await sql('select count(*)::int n from hr_private.conversation_feedback_receipts'))[0].n,0,'private purge cascades feedback receipts');
  eq(await rpc('hr_alert_worker_authorize',['bb'.repeat(32)]),false);
  const job=await rpc('hr_alert_worker_reserve');eq(job.receipt.employee_id,employee.id);
  eq(Object.keys(job.receipt).sort(),['id','company_id','employee_id','user_id','kind','through_revision','requested_at'].sort(),'mail receipt contains no HR contents');
