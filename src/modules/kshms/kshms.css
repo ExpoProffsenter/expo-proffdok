@@ -28,3 +28,4 @@
 .ks-navigation .ks-tabs button{padding:9px 6px;gap:5px;font-weight:650}
 
 .ks-bulk-ack .ks-selected-list{max-height:24rem;overflow:auto;padding-right:12px}.ks-bulk-ack .ks-selected-list button{max-width:100%;white-space:normal;text-align:left;overflow-wrap:anywhere}.ks-bulk-ack>button{max-width:100%;white-space:normal}.ks-bulk-ack .ks-check{align-items:flex-start}
+.ks-bulk-publication-list{list-style:none;padding:0;max-height:32rem;overflow:auto}.ks-bulk-publication-list>li{padding:14px 12px;border:1px solid #cbd5e1;border-radius:10px;margin:10px 0;overflow-wrap:anywhere}.ks-bulk-publication-list details{margin:10px 0}.ks-bulk-publication-list .ks-check{align-items:flex-start}.ks-bulk-publication .ks-actions{flex-wrap:wrap}.ks-bulk-publication button{max-width:100%;white-space:normal}
