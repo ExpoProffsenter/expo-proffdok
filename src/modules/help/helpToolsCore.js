@@ -49,7 +49,9 @@ const BASE_SECTIONS = [
     [
       "Bruk hurtigvalgene til Befaring/Tilbud, Bilder, Sjekklister og Fag/utstyr.",
       "Åpne Status ved behov for full prosjektstatus og manglende dokumentasjon.",
-      "Bruk Alle funksjoner når du trenger øvrige prosjektfaner."
+      "Bruk Alle funksjoner når du trenger øvrige prosjektfaner.",
+      "På lange sider viser pilene midt på høyre side veien til toppen og bunnen. De finnes også i HR, KS/HMS, Min profil og øvrige moduler. Pilene skjules mens du skriver.",
+      "Velg HR eller en annen modul i menyen for å åpne den direkte. Hva vil du jobbe med vises bare på Startsiden."
     ],
     ["Ingen funksjoner er fjernet fra mobil; mindre brukte funksjoner er bare samlet."],
     ["Bruk mobilvisningen aktivt ute på prosjekt og registrer bilder/sjekkpunkter fortløpende."]
