@@ -1,3 +1,5 @@
+Mobil oppfølging 13. oktober: felles topp/bunnpiler i alle innloggede moduler; startboks bare på Startsiden. BEGGE, egen PR etter publisert main 5debd835. Relevant QA/Preview og ny TEST OK før publisering.
+
 Mobilpiler oppfølging 2: global nav-grid gjorde pilene horisontale og Vercel-knappen dekket ned. Egen vertikal kolonne + Preview-avstand + window.scrollTo. Før-fiks runtime-test feilet på global menystil; ny kontroll av begge trykk og scroll kjøres. Ikke publisert til main/demo.
 
 Mobiltilbud oppfølging: topp/bunnpiler var dekket av flytende kundepreview-kort. Rettet til midt på høyre side etter brukerens ønske, med skjerm-/scrollflatekontroll. Avventer oppdatert Preview-test og eksplisitt TEST OK.
