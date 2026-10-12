@@ -23,7 +23,7 @@ try{
  const migrations=['20261009182551_hr_access_foundation.sql','20261009193953_hr_content_purge_foundation.sql',
  '20261009203431_people_module_entitlements.sql','20261009203950_people_module_access_closure.sql',
  '20261010004928_hr_conversation_templates.sql','20261010105649_hr_sick_leave_template_kind.sql',
- '20261009211209_hr_restore_reconcile_orphans.sql','20261011134804_hr_personal_conversations.sql','20261011140130_hr_deletion_admin_alerts.sql','20261011155003_hr_sick_leave_cases.sql','20261011155506_hr_followup_reminders.sql','20261011162527_hr_followup_worker_scope.sql','20261011192456_hr_conversation_meeting_time.sql','20261011195555_hr_conversation_creation_notice.sql','20261011203859_hr_conversation_reminder_feedback.sql','20261011205907_hr_targeted_transport_test.sql','20261011220405_hr_conversation_meeting_location.sql','20261012050658_hr_conversation_feedback_notice.sql','20261012061931_hr_employee_display_name.sql'];
+ '20261009211209_hr_restore_reconcile_orphans.sql','20261011134804_hr_personal_conversations.sql','20261011140130_hr_deletion_admin_alerts.sql','20261011155003_hr_sick_leave_cases.sql','20261011155506_hr_followup_reminders.sql','20261011162527_hr_followup_worker_scope.sql','20261011192456_hr_conversation_meeting_time.sql','20261011195555_hr_conversation_creation_notice.sql','20261011203859_hr_conversation_reminder_feedback.sql','20261011205907_hr_targeted_transport_test.sql','20261011220405_hr_conversation_meeting_location.sql','20261012050658_hr_conversation_feedback_notice.sql','20261012061931_hr_employee_display_name.sql','20261012080426_hr_conversation_review_retry.sql'];
  for(const f of migrations)await db.exec(await fs.readFile('supabase/migrations/'+f,'utf8'));
  for(const role of ['anon','service_role'])for(const signature of ['public.hr_conversation_feedback_notices(uuid,uuid)','public.hr_conversation_feedback_handle(uuid,uuid,integer,uuid,integer)'])eq((await sql(`select has_function_privilege('${role}','${signature}','execute') v`))[0].v,false,'feedback RPCs are authenticated-only');
  eq((await sql("select has_table_privilege('authenticated','hr_private.conversation_feedback_receipts','select,insert,update,delete') v"))[0].v,false,'receipt table is private');
@@ -195,10 +195,16 @@ try{
  await reject(()=>command('meeting',{answers:{[meeting]:'summary'},actions:[{id:id(40),task:'Do it',owner_id:outsider,due_on:'2026-11-20',done:false}],next_on:'2026-11-21'}),'22023');
  await command('meeting',{answers:{[meeting]:'Shared summary'},actions:[{id:id(40),task:'Follow up',owner_id:self,due_on:'2026-11-20',done:false}],next_on:'2026-11-21'});
  await command('ready');await command('confirm');eq(state.conversation.stage,'awaiting','one confirmation is insufficient');
+ const reviewSnapshot=structuredClone(state);await db.exec('reset role;');const reviewCounts=(await sql('select (select count(*) from hr_private.artifacts)::int history,(select count(*) from hr_private.followup_deliveries)::int mail,(select count(*) from hr_private.conversation_feedback_receipts)::int receipts'))[0];await actor(leader);
+ await command('ready');eq(state,reviewSnapshot,'same awaiting review keeps revision/content/confirmation/feedback/saved fields byte-for-byte');
+ await db.exec('reset role;');eq((await sql('select (select count(*) from hr_private.artifacts)::int history,(select count(*) from hr_private.followup_deliveries)::int mail,(select count(*) from hr_private.conversation_feedback_receipts)::int receipts'))[0],reviewCounts,'repeated review makes no history, email or receipt');await actor(leader);
+ await actor(self);await reject(()=>command('ready'),'42501');await actor(admin);await reject(()=>command('ready'),'42501');await actor(leader);
+ await reject(()=>rpc('hr_conversation_command',[company,employee.id,employeeRevision,conversation,revision-1,'ready',{}]),'40001');
+
  await actor(self);await command('comment',{text:'My disagreement remains part of the record'});
  eq(state.conversation.confirmations.leader,null,'comment changes require renewed confirmation');
  await command('confirm');eq(state.conversation.stage,'awaiting');
- await actor(leader);await command('confirm');eq(state.conversation.stage,'completed');
+ await actor(leader);const employeeConfirmed=structuredClone(state);await command('ready');eq(state.conversation,employeeConfirmed.conversation,'review retry preserves employee confirmation too');await command('confirm');eq(state.conversation.stage,'completed');await reject(()=>command('ready'),'22023');
  await reject(()=>rpc('hr_conversation_schedule',[company,employee.id,employeeRevision,conversation,revision,'2026-11-03','15:00']),'22023');
  const finalVersion=revision;
  eq((await command('confirm')).current_revision,finalVersion,'confirmation retry idempotent');
