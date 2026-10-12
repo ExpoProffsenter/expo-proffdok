@@ -9,20 +9,23 @@ export default function KshmsRoutineLibrary({routines,versions,recommended,selec
  const id=useId(),[query,setQuery]=useState(''),[chapter,setChapter]=useState(''),existing=routinesBySource(routines);
  const selected=selectedCatalogRoutines(selectedKeys).filter(routine=>!existing.has(routine.key));
  const selectedSet=new Set(selected.map(routine=>routine.key));
- const available=filter==='all'?ROUTINE_CATALOG:recommended;
+ const storeRoutines=ROUTINE_CATALOG.filter(routine=>routine.key.startsWith('store_'));
+ const available=filter==='all'?ROUTINE_CATALOG:filter==='store'?storeRoutines:recommended;
  const visible=available.filter(routine=>(!chapter||routine.chapter===chapter)&&matchesRoutineSearch(routine,query));
  const selectable=visible.filter(routine=>!existing.has(routine.key));
  const toggle=(key,checked)=>onSelectionChange(previous=>checked?[...new Set([...previous,key])]:previous.filter(value=>value!==key));
  return <section className="ks-routine-library" aria-label="Velg standardrutiner">
   <h4>Velg rutinene firmaet trenger</h4>
-  <p>Huk av én eller flere rutiner. «Anbefalte» viser forslag som passer det du skrev i oppstarten. «Alle forslag» viser hele listen. Velg bare rutiner som passer firmaets arbeid.</p>
+  <p>Huk av én eller flere rutiner. «Anbefalte» viser forslag som passer det du skrev i oppstarten. «Alle forslag» viser hele listen. «Butikk, lager og truck» samler forslag for VVS-butikk med utstilling og lager. Velg bare rutiner som passer firmaets arbeid.</p>
   <div className="ks-library-toolbar">
    <div className="ks-actions" role="group" aria-label="Vis standardutkast">
     <button type="button" className={filter==='recommended'?'active':'secondary'} aria-pressed={filter==='recommended'} disabled={busy} onClick={()=>onFilterChange('recommended')}>Anbefalte ({recommended.length})</button>
     <button type="button" className={filter==='all'?'active':'secondary'} aria-pressed={filter==='all'} disabled={busy} onClick={()=>onFilterChange('all')}>Alle forslag ({ROUTINE_CATALOG.length})</button>
+    <button type="button" className={filter==='store'?'active':'secondary'} aria-pressed={filter==='store'} disabled={busy} onClick={()=>{setChapter('');setQuery('');onFilterChange('store');}}>Butikk, lager og truck ({storeRoutines.length})</button>
    </div>
    <div className="ks-library-counts"><span className="ks-badge" role="status">{selected.length} valgt</span><span>{ROUTINE_CATALOG.filter(routine=>existing.has(routine.key)).length} av {ROUTINE_CATALOG.length} forslag lagt til</span></div>
   </div>
+  {filter==='store'&&<p className="ks-notice">Tilpass forslagene til deres lokaler, trafikkplan, trucker, hjelpemidler og ansvarsfordeling før godkjenning. Lesebekreftelse dokumenterer gjennomgang; truckkompetanse, utstyrsspesifikk opplæring og kontroller dokumenteres særskilt.</p>}
   <KshmsRoutineSearch label="Søk i ProffDoks forslag" query={query} onChange={setQuery} count={visible.length} total={available.length}/>
   <label className="ks-field"><span>Vis kapittel</span><select value={chapter} onChange={event=>setChapter(event.target.value)}><option value="">Alle kapitler</option>{CHAPTERS.map(value=><option key={value} value={value}>{value}</option>)}</select></label>
   {query.trim()&&!visible.length&&<p>Ingen forslag passer søket. Prøv «Alle forslag», et annet ord eller tøm søket.</p>}

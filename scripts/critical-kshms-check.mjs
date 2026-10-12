@@ -16,6 +16,7 @@ import './critical-kshms-deviation-extract-check.mjs';
 import fs from 'node:fs';
 import './critical-kshms-inspection-extract-check.mjs';
 import assert from 'node:assert/strict';
+import './critical-kshms-bulk-check.mjs';
 import './critical-kshms-source-updates-check.mjs';
 import {readDraft,persistDraft,routineApprovalState,handbookProgress,sameRoutineContent,pendingReadingVersions} from '../src/modules/kshms/kshmsDraft.mjs';
 import {ROUTINE_CATALOG,suggestedRoutines,currentVersionSnapshot,ACK_STATEMENT} from '../src/modules/kshms/kshmsCatalog.mjs';
@@ -108,10 +109,10 @@ assert(!createProjectWorkspaceTabs().some(([id])=>id==='kshms'));
 assert(suggestedRoutines(['maler'],'våtrom').some(r=>r.key==='wetroom'));
 assert(!suggestedRoutines(['maler'],'fasade').some(r=>r.key==='wetroom'));
 assert(!suggestedRoutines(['tomrer'],'montering').some(r=>r.key==='chemicals'));
-assert.equal(ROUTINE_CATALOG.length,73,'A2 contains the 12 stable starting keys and 61 specific additional drafts');
+assert.equal(ROUTINE_CATALOG.length,87,'The 73 original drafts and 14 shop/warehouse/forklift proposals');
 assert.equal(new Set(ROUTINE_CATALOG.map(r=>r.source_key)).size,ROUTINE_CATALOG.length);
 assert.equal(new Set(ROUTINE_CATALOG.map(r=>r.procedure)).size,ROUTINE_CATALOG.length,'Generic repeated bodies do not cover independent topics');
-for(const routine of ROUTINE_CATALOG){assert(routine.procedure && routine.references.length);assert(!/fyll inn/i.test(routine.procedure),'Writing instructions belong outside routine content');for(const tip of Object.values(ROUTINE_WRITING_TIPS))assert(!JSON.stringify(routine).includes(tip));for(const ref of routine.references)assert(ref.checked_on===((Object.hasOwn(routine,'recommendation')||['leadership','leave','deviations','emergency'].includes(routine.key))?'2026-10-06':'2026-10-05')&&/^https:\/\//.test(ref.url));}
+for(const routine of ROUTINE_CATALOG){assert(routine.procedure && routine.references.length);assert(!/fyll inn/i.test(routine.procedure),'Writing instructions belong outside routine content');for(const tip of Object.values(ROUTINE_WRITING_TIPS))assert(!JSON.stringify(routine).includes(tip));for(const ref of routine.references)assert(ref.checked_on===(routine.key.startsWith('store_')?'2026-10-12':(Object.hasOwn(routine,'recommendation')||['leadership','leave','deviations','emergency'].includes(routine.key))?'2026-10-06':'2026-10-05')&&/^https:\/\//.test(ref.url));}
 assert.deepEqual(currentVersionSnapshot({routines:[{id:'r1'},{id:'r2',archived:true}],versions:[{routine_id:'r1',id:'v2',content_hash:'new'},{routine_id:'r1',id:'v1',content_hash:'old'}]}),[{id:'v2',hash:'new'}]);
 const coverage=JSON.parse(fs.readFileSync('docs/kshms/coverage.json','utf8'));
 assert.equal(coverage.topics.filter(r=>r.id.startsWith('K')).length,105);assert.equal(coverage.topics.filter(r=>r.id.startsWith('K')&&r.personal_pages!=='—').length,88);
