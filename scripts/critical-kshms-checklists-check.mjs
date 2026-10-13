@@ -1,3 +1,4 @@
+import './critical-existing-checklist-catalog-check.mjs';
 import {kshmsNavigationGroups} from '../src/modules/kshms/kshmsNavigation.mjs';
 const actualMenu=kshmsNavigationGroups({canManage:true}).flatMap(group=>group.items);
 import assert from 'node:assert/strict';
@@ -73,7 +74,7 @@ const pickers=[...main.matchAll(/\(ProjectChecklistPicker,/g)].map(match=>match.
 const checklistPanel=main.indexOf('tab === "sjekklister"',panels[1]);
 assert(pickers[0]>panels[1]&&pickers[0]<checklistPanel&&pickers[1]>checklistPanel,'Template intake leaked into the external project surface');
 assert(main.slice(panels[1],pickers[0]).includes('!isSimpleOrderProject(project)'),'General orders exposed equipment intake');
-assert(main.slice(checklistPanel,pickers[1]).includes('isSimpleOrderProject(project) && authUser'),'General orders need intake directly in Sjekklister');
+assert(main.slice(checklistPanel,pickers[1]).includes('authUser && kshmsContext?.company_id')&&!main.slice(checklistPanel,pickers[1]).includes('isSimpleOrderProject(project) && authUser'),'Both orders and wetrooms need intake directly in Sjekklister');
 assert(main.includes('...firmChecklistTemplate'),'Imported copies omitted from checklist/progress/report');
 const central=fs.readFileSync('src/modules/kshms/KshmsModule.jsx','utf8');assert(central.includes('<KshmsNavigation screen={screen} canManage={canManage}')&&actualMenu.some(([key,label])=>key==='checklists'&&label==='Sjekklistesentral')&&central.includes("screen==='checklists'||checklistsOpened"));
 const migration=fs.readFileSync('supabase/migrations/20261009040633_kshms_checklist_subforms.sql','utf8');

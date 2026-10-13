@@ -1,3 +1,5 @@
+import KshmsExistingChecklists from './KshmsExistingChecklists.jsx';
+import {existingChecklistDraft} from './kshmsExistingChecklists.mjs';
 import { useEffect,useId,useRef,useState } from 'react';
 import { kshmsRpc } from './kshmsAccess.js';
 import DeviationDialog from '../deviations/DeviationDialog.jsx';
@@ -39,6 +41,11 @@ export default function KshmsChecklistCentral({context,active=true}) {
   setEditor(recovered||(row?{id:row.id,revision:row.revision,requestId:crypto.randomUUID(),content:row.draft}:blankChecklist()));
   setDirty(Boolean(recovered));setError('');setNotice('');
  };
+ const useExisting=(rows,id)=>{
+  if(busy)return;
+  if(cached&&!window.confirm("Åpne en firmaversjon av prosjektlisten? Det lokale utkastet erstattes først når du redigerer eller lagrer den nye."))return;
+  try{setEditor(existingChecklistDraft(rows,id));setDirty(false);setError("");setNotice("Dette er en ny firmaversjon. Originalen og eksisterende prosjekter beholdes.");}catch(cause){setError(cause.message);}
+ };
  const save=async action=>{
   if(locked.current||!editor)return;
   const scope=scopeRef.current;if(!current(scope))return;
@@ -74,6 +81,8 @@ export default function KshmsChecklistCentral({context,active=true}) {
   {error&&!editor&&<p role="alert" className="ks-error">{error}</p>}{notice&&<p role="status" className="ks-notice">{notice}</p>}
   {!data?<p role="status">Henter sjekklister …</p>:<>
    <div className="ks-checklist-filters"><Field label="Søk i sjekklister" value={query} onChange={setQuery}/><label className="ks-field"><span>Fag</span><select value={trade} onChange={e=>setTrade(e.target.value)}><option value="">Alle fag</option>{CHECKLIST_TRADES.map(value=><option key={value}>{value}</option>)}</select></label></div>
+   <KshmsExistingChecklists context={data.context} active={active} onUse={useExisting} query={query} trade={trade} busy={busy}/>
+   <h3>Firmaets egne sjekklister</h3>
    {!visible.length&&<p>Ingen sjekklister i dette utvalget. Bruk «Ny sjekkliste» for å bygge en.</p>}
    <div className="ks-checklist-grid">{visible.map(row=>{const version=data.versions.find(item=>item.template_id===row.id);const published=version&&sameChecklistContent(row.draft,version.content);return <article className="ks-card" key={row.id}><span className="ks-badge">{row.draft.trade}</span><h4>{row.draft.title}</h4><p>{`${row.draft.points.length} sjekkpunkter · ${version?published?`Publisert · v${version.number}`:`Endret utkast · v${version.number} er publisert`:'Utkast'}`}</p><div className="ks-checklist-actions"><button type="button" className="secondary" disabled={busy} onClick={()=>choose(row)}>Rediger sjekkliste</button><button type="button" className="secondary" disabled={busy} onClick={()=>archive(row)}>Arkiver sjekkliste</button></div>{version&&<details><summary>Publisert sjekklistemal · v{version.number}</summary><p>{version.content.title} · {version.content.trade}. PDF-en er en tom mal. Endringer i utkastet følger ikke med.</p><KshmsDocumentPdfButton kind="template" row={version} companyId={companyId} userId={userId} active={active}/></details>}</article>;})}</div>
   </>}
