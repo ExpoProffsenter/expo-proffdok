@@ -1,7 +1,7 @@
 import {checklistTemplate} from '../config/projectConfig.js';
 import {SOPRO_SYSTEM_CHECKLIST_TEMPLATES} from '../config/soproChecklistTemplates.mjs';
 import {PROJECT_DESIGN_CHECKLIST} from '../config/projectDesignChecklist.mjs';
-export const controllerCode=()=>crypto.randomUUID().replaceAll('-','').toUpperCase();
+export const controllerCode=()=>Array.from(crypto.getRandomValues(new Uint8Array(16)),value=>value.toString(16).padStart(2,'0')).join('').toUpperCase();
 export const controllerLink=(id,origin=window.location.origin)=>`${origin}/?controller=${encodeURIComponent(id)}`;
 export function controllerExpiry(value){const d=new Date(value);if(!value||!Number.isFinite(d.getTime())||d.getTime()<=Date.now())throw Error('Velg en gyldig utløpsdato og tid i fremtiden.');return d.toISOString();}
 export function controllerGroups(data={}){
