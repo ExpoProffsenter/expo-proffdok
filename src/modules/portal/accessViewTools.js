@@ -1,3 +1,4 @@
+import ControllerAccessPanel from '../controller/ControllerAccessPanel.jsx';
 // FASE 27F TILGANG: Mekanisk uttrekk av intern Tilgang og deling-visning fra main.jsx.
 // Portal-/tilgangslogikk, prosjektlagring, Supabase, RLS, Storage og e-postfunksjoner forblir eid av main/eksisterende portalverktøy.
 import React from 'react';
@@ -30,9 +31,12 @@ export function createAccessViewTools({
     portalAccessPolicyText,
     ensurePortalAccessForProject,
     copyAccessLink,
-    sendAccessEmail
+    sendAccessEmail,
+    supabaseClient,
+    controllerReadOnly
   }) {
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Tilgang og deling", children: [
+      supabaseClient && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ControllerAccessPanel, { client: supabaseClient, projectId, readOnly: controllerReadOnly }, projectId),
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Administrer tilgang til prosjektet. Kunde får egen kundelink og egen tilgangskode. Underentreprenører får separat link og separat tilgangskode for dokumentasjon innenfor relevante deler av prosjektet. Kodene følger e-postene, ligger ikke i URL-en og gjenbrukes ved senere chatvarsler. Tilgangene er gyldige så lenge prosjektet er aktivt, og i 30 dager etter låsing/arkivering." }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "cards", style: { marginTop: "12px" }, children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "tile", children: [

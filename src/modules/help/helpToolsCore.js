@@ -207,8 +207,8 @@ const BASE_SECTIONS = [
   section(
     "tilgang",
     "🔑 Tilgang",
-    "Tilgang brukes til å dele prosjektet med kunde og underentreprenører gjennom separate portaler.",
-    ["Send riktig portaltilgang til mottakeren og kontroller e-postadressen før utsending."],
+    "Tilgang brukes til å dele prosjektet med kunde, underentreprenører og en uavhengig kontrollør gjennom separate portaler.",
+    ["For kontrollør: åpne prosjektets Tilgang. Under Uavhengig kontrollør skriver du navn/firma og velger Gyldig til – dato og klokkeslett. Trykk Lag kontrollørlenke og deretter Kopier kontrollørlenke og kode. Del begge med kontrolløren.", "Kontrolløren åpner lenken og skriver koden. Han kan lese prosjektering, tegninger, bilder, registrerte sjekklister og lagret kontrollhistorikk. Han kan ikke endre prosjektet.", "Bruk Endre utløpsdato for å forlenge eller forkorte. Bruk Trekk tilbake tilgang for å stoppe tilgangen tidligere. Lag ny kode stopper bruk av den gamle koden. Koden lagres ikke i lenken og vises bare når den lages.", "Send riktig kunde-/UE-portaltilgang til mottakeren og kontroller e-postadressen før utsending."],
     ["Tilgangskode skal ikke ligge i URL, og kunder skal ikke se interne notater."],
     ["Hold tilgangslisten ryddig og fjern tilganger som ikke lenger er nødvendige." ]
   ),
