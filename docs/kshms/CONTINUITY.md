@@ -1210,3 +1210,6 @@ Tekstoppfølging: faktisk React/ZIP med fem syntetiske vedlegg, eksisterende per
 HR-popup 11.10: medarbeiderraden åpner eksisterende appdialog, med leder/tilgang, paginerte brukervalg og resultatmeldinger inne i vinduet. Dialog, Escape/kryss, fokusretur og fersk autorisering kontrollert i React og Chromium ved 1280/360/740. Tilgang/backend/privat HR uendret. Samme core-PR #219/Preview; ingen merge.
 
 HR-prøveoppdatering 11.10: første åpning viser skjemaets topp; tom/ulagret/redigert samtale bevares gjennom ekte HR-tilgangsremount. Konto-/firmabundet sideminne, ingen ulagret browserlagring. Faktisk useHrAccess/JSDOM og Chromium 1280/360/740 grønne, inkludert konflikt og uendrede PDF-/neste-steg-løp. Samme PR #218/Preview; ingen merge.
+
+
+13.10.2026 – Godkjent TEST OK: main f0e74ce4 / PR #242 synkronisert kontrollert main→demo. Sjekklistesentralen viser én samlet våtromsliste (33 punkter), separate faglister og prosjekteringsmal (13 punkter). Vanlige kilder kan redigeres som firmaversjoner; garantikilder er låst uten redigering/sletting/kopiering. Prosjekteringssjekklisten fylles ut nederst i Prosjektering. Alle prosjekttyper har + Legg til sjekkliste under Sjekklister. Eksisterende svar/historikk og demo-overlay beholdes; ingen DB-/e-postendring. Full critical/build, React kladd/retry/konflikt/historikk og faktisk render-rekkefølge grønne.

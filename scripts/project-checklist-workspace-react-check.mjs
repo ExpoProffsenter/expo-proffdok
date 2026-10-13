@@ -29,8 +29,8 @@ window.__rpc=async(name,args)=>{
  if(receipts.has(args.p_request_id))return receipts.get(args.p_request_id);
  const old=runs.find(row=>row.id===args.p_payload.id);
  if(old&&old.revision!==args.p_payload.revision){const error=Error('En annen person har lagret. Kladden er beholdt.');error.code='40001';throw error;}
- const row={...structuredClone(args.p_payload),category,company_id:company,project_id:project,revision:(old?.revision||0)+1,status:args.p_action==='complete'?'completed':'draft',updated_at:'2026-10-07T19:00:00Z',updated_identity:identity,...(args.p_action==='complete'?{completed_at:'2026-10-07T19:00:00Z',completed_identity:identity}:{})};
- runs=[row,...runs.filter(value=>value.id!==row.id)];checklist={...checklist,[category]:row.answers};
+ const row={...structuredClone(args.p_payload),category:args.p_payload.definition.category,company_id:company,project_id:project,revision:(old?.revision||0)+1,status:args.p_action==='complete'?'completed':'draft',updated_at:'2026-10-07T19:00:00Z',updated_identity:identity,...(args.p_action==='complete'?{completed_at:'2026-10-07T19:00:00Z',completed_identity:identity}:{})};
+ runs=[row,...runs.filter(value=>value.id!==row.id)];checklist={...checklist,[row.category]:row.answers};
  const result={context:{company_id:company,project_id:project,user_id:'user'},run:row,answers:row.answers};receipts.set(args.p_request_id,result);
  if(failAfterCommit){failAfterCommit=false;throw Error('Svaret ble borte etter lagring');}return result;
 };
@@ -66,5 +66,16 @@ await click(button('Lukk'));await act(async()=>window.__unmount());
 lateResolve={};await act(async()=>window.__render(props()));await act(async()=>window.__unmount());await act(async()=>lateResolve.resolve());lateResolve=null;assert.equal(window.document.querySelector('[role="dialog"]'),null);
 window.__menus();for(let index=0;index<4&&frames.length;index++)frames.shift()();
 assert(window.document.body.textContent.includes('Ordremeny'));assert(!window.document.querySelector('.expoProjectWorkspaceQuickActions')?.textContent.includes('Garanti'));
+const {PROJECT_DESIGN_CHECKLIST:design}=await import('../src/modules/config/projectDesignChecklist.mjs');
+const beforeDesign=structuredClone(runs);
+const designProps=()=>({...props(),activeChecklistTemplate:[design],showTools:false,showPrevious:false,customChecklistAllowed:false});
+await act(async()=>window.__render(designProps()));assert(!window.document.body.textContent.includes('Egne sjekkpunkter og vedlegg'));assert(!window.document.body.textContent.includes('Tidligere dokumentasjon'));
+await click(button('Åpne sjekkliste'));assert(window.document.body.textContent.includes(design.category));assert.equal(window.document.querySelectorAll('button.statusOn').length,0);
+await choose('Ok');await click(button('Lagre'));assert.equal(runs[0].category,design.category);assert.equal(runs[0].answers[design.items[0]].status,'Ok');assert.deepEqual(runs.slice(1),beforeDesign);
+await click(button('Lukk'));await act(async()=>window.__unmount());await act(async()=>window.__render(designProps()));await click(button('Åpne sjekkliste'));assert.equal([...window.document.querySelectorAll('button')].filter(b=>b.textContent.trim()==='Ok'&&!b.classList.contains('secondary')).length,1);assert.equal(runs[0].answers[design.items[0]].status,'Ok');
+for(let n=1;n<design.items.length;n++)await choose('Ikke aktuelt',n);
+await click(button('Sjekkliste fullført'));assert.equal(runs[0].status,'completed');assert.deepEqual(runs.slice(1),beforeDesign);await click(button('Lukk'));await act(async()=>window.__unmount());
+await act(async()=>window.__render({...designProps(),readOnly:true}));await click(button('Åpne fullført sjekkliste'));assert(window.document.querySelector('fieldset:disabled'));assert(!button('Start ny kontroll'));assert(!button('Lagre'));await click(button('Lukk'));await act(async()=>window.__unmount());
+console.log('Design checklist real React PASS: shared save/reopen/full completion/read-only, no cross-category answers or overwritten execution history.');
 dom.window.close();fs.rmSync(temporary,{recursive:true,force:true});
 console.log('Project checklist real React flow: PASS — collapsed lists, popup, save/reopen, immutable history, lost response, concurrent colleague, retained draft, legacy deviation follow-up and compact order menu');

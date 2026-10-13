@@ -745,3 +745,6 @@ QA/status og Preview føres i `docs/kshms/HANDBOOK_PDF_20261012.md`. Ingen tidli
 ## Rutiner sender ikke e-post – 12. oktober 2026
 
 Etter Kenneths eksplisitte akuttinstruks er rutinetildelinger og lesepåminnelser bare i appen. Ny køtrigger blokkerer reading ved insert/retry; 670 ventende rutine-e-poster stanset i produksjon, ingen gjeldende rutinepost sendbar. 200 allerede sendte beholdes i loggen. Rutiner, tildelinger og egne bekreftelser beholdes. Andre oppgaver og frister beholder e-post. Produksjon og Sandbox installert, faktisk insert/retry-test rullet tilbake. Se docs/kshms/ROUTINE_EMAIL_STOP_20261012.md.
+
+
+13.10.2026 – Godkjent TEST OK: main f0e74ce4 / PR #242 synkronisert kontrollert main→demo. Sjekklistesentralen viser én samlet våtromsliste (33 punkter), separate faglister og prosjekteringsmal (13 punkter). Vanlige kilder kan redigeres som firmaversjoner; garantikilder er låst uten redigering/sletting/kopiering. Prosjekteringssjekklisten fylles ut nederst i Prosjektering. Alle prosjekttyper har + Legg til sjekkliste under Sjekklister. Eksisterende svar/historikk og demo-overlay beholdes; ingen DB-/e-postendring. Full critical/build, React kladd/retry/konflikt/historikk og faktisk render-rekkefølge grønne.

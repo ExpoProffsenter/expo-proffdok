@@ -174,3 +174,6 @@ Samlet B/C-utviklerreview og driftsvurdering er gjennomført. [Sluttstatus og ko
 2. Før større utrulling: smal håndbok-/malhistorikk, store eksporter og representativ isolert belastningstest/restore etter [CAPACITY](CAPACITY.md).
 3. Agenten følger opp faktiske filer/mobil/flere økter og den ene testmailen i fungerende innlogget runtime, uten å gjenåpne B/C-gjennomgangen. Tidligere TEST OK beholdes.
 4. Ved godkjent release: faktisk e-postaktivering/mottak, Production-verifisering og kontrollert main → demo. Grønn build alene erklærer ikke hele KS/HMS ferdig.
+
+
+13.10.2026 – Godkjent TEST OK: main f0e74ce4 / PR #242 synkronisert kontrollert main→demo. Sjekklistesentralen viser én samlet våtromsliste (33 punkter), separate faglister og prosjekteringsmal (13 punkter). Vanlige kilder kan redigeres som firmaversjoner; garantikilder er låst uten redigering/sletting/kopiering. Prosjekteringssjekklisten fylles ut nederst i Prosjektering. Alle prosjekttyper har + Legg til sjekkliste under Sjekklister. Eksisterende svar/historikk og demo-overlay beholdes; ingen DB-/e-postendring. Full critical/build, React kladd/retry/konflikt/historikk og faktisk render-rekkefølge grønne.

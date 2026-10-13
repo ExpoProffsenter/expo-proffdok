@@ -8,7 +8,7 @@ import {answersForDefinition,checklistRunDraftKey,commitChecklistRun,completionP
 import './projectChecklistWorkspace.css';
 import KshmsDocumentPdfButton from '../kshms/KshmsDocumentPdfButton.jsx';
 
-export default function ProjectChecklistWorkspace({Editor,companyId,userId,projectId,checklist,activeChecklistTemplate,instances=[],readOnly=false,customChecklistAllowed=false,isWarrantyPoint=()=>false,onSaved,uploadImages,resolveFileUrl,...editorProps}) {
+export default function ProjectChecklistWorkspace({Editor,companyId,userId,projectId,checklist,activeChecklistTemplate,instances=[],readOnly=false,showTools=true,showPrevious=true,customChecklistAllowed=false,isWarrantyPoint=()=>false,onSaved,uploadImages,resolveFileUrl,...editorProps}) {
  const [data,setData]=useState(null),[selected,setSelected]=useState(null),[expanded,setExpanded]=useState({}),[error,setError]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false),[uploads,setUploads]=useState(0);
  const owner=useRef(null),locked=useRef(false),selection=useRef(null),cached=useRef(new Map());
  selection.current=selected;
@@ -144,7 +144,7 @@ export default function ProjectChecklistWorkspace({Editor,companyId,userId,proje
  return <div className="project-checklist-workspace">
   <p className="note">Åpne en sjekkliste for å fylle den ut. «Lagre» lar deg eller en kollega fortsette senere. «Sjekkliste fullført» lagrer en ferdig kontroll.</p>
   {!selected&&error&&<p role="alert" className="ks-error">{error}</p>}
-  <details className="item"><summary>Egne sjekkpunkter og vedlegg</summary><fieldset disabled={readOnly}><Editor {...editorProps} checklist={checklist} activeChecklistTemplate={[]} customChecklistEnabled={customChecklistAllowed} toolsOnly consumeChecklistJump={false}/></fieldset></details>
+  {showTools&&<details className="item"><summary>Egne sjekkpunkter og vedlegg</summary><fieldset disabled={readOnly}><Editor {...editorProps} checklist={checklist} activeChecklistTemplate={[]} customChecklistEnabled={customChecklistAllowed} toolsOnly consumeChecklistJump={false}/></fieldset></details>}
   {!groups.length&&<p>Ingen sjekklister er lagt til. Legg til egne sjekkpunkter, eller hent en publisert liste fra KS/HMS når firmaet har tilgang.</p>}
   {groups.map(group=>{
    const latest=data?.runs?.find(run=>run.category===group.category),answers=latest?.answers||checklist?.[group.category]||{},done=group.items.filter(item=>answers[item]?.status).length;
@@ -159,7 +159,7 @@ export default function ProjectChecklistWorkspace({Editor,companyId,userId,proje
     </div>}
    </article>;
   })}
-  {!!previousGroups.length&&<details className="item"><summary>Tidligere dokumentasjon</summary><p>Lagrede svar fra lister som ikke brukes her nå, er beholdt.</p>{previousGroups.map(([category,answers])=><button type="button" className="secondary" key={category} onClick={()=>select({id:`legacy:${category}`,definition:{category,items:Object.keys(answers)},answers,readOnly:true})}>{category}</button>)}</details>}
+  {showPrevious&&!!previousGroups.length&&<details className="item"><summary>Tidligere dokumentasjon</summary><p>Lagrede svar fra lister som ikke brukes her nå, er beholdt.</p>{previousGroups.map(([category,answers])=><button type="button" className="secondary" key={category} onClick={()=>select({id:`legacy:${category}`,definition:{category,items:Object.keys(answers)},answers,readOnly:true})}>{category}</button>)}</details>}
   {selected&&<DeviationDialog title={title(selected.definition)} context={selected.readOnly?'Lagret kontroll':`Kontroll under arbeid${selected.revision?' · lagret versjon '+selected.revision:''}`} onClose={dismiss} busy={busy||uploads>0} closeLabel="Lukk sjekklistedialog">
    {error&&<p role="alert" className="ks-error">{error}</p>}{notice&&<p role="status" className="ks-notice">{notice}</p>}
    {selected.completed_identity&&<p>Fullført av {identityText(selected.completed_identity)} · {new Date(selected.completed_at).toLocaleString('nb-NO')}</p>}
