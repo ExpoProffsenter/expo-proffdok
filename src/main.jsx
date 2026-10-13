@@ -1,3 +1,4 @@
+import {PROJECT_DESIGN_CHECKLIST_TEMPLATE} from './modules/config/projectDesignChecklist.mjs';
 import {SOPRO_SYSTEM_CHECKLIST_TEMPLATES} from "./modules/config/soproChecklistTemplates.mjs";
 import MobileScrollShortcuts from "./modules/app/MobileScrollShortcuts.jsx";
 import CompanyCustomerPicker from "./modules/customers/CompanyCustomerPicker.jsx";
@@ -6663,6 +6664,30 @@ ${appLink}`;
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: signOut, children: "Logg ut" })
         ] }) }) }),
         tab === "prosjektering" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Prosjektering", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Sjekkliste for prosjektering" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Vurder grunnlaget og løsningene før utførelsen starter. Åpne sjekklisten, velg Ok, Avvik eller Ikke aktuelt og legg til kommentar eller dokumentasjon. Lagre underveis. Tegninger og øvrige prosjekteringsfelt ligger under." }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProjectChecklistWorkspace, {
+            Editor: ChecklistEditor,
+            companyId: kshmsContext?.company_id,
+            userId: authUser?.id,
+            projectId,
+            readOnly: isProjectLocked || isReadOnly || isProjectSupportReadOnly,
+            showTools: false,
+            showPrevious: false,
+            onSaved: applySavedChecklistControl,
+            resolveFileUrl: publicProjectFileUrl,
+            uploadImages,
+            checklist,
+            setChecklistValue,
+            onOpenKshmsDeviation: kshmsContext?.enabled ? openKshmsDeviation : null,
+            addChecklistPhoto,
+            addFiles,
+            files,
+            setFiles,
+            closedByName: user.name || authUser?.email || "Prosjekterende",
+            activeChecklistTemplate: PROJECT_DESIGN_CHECKLIST_TEMPLATE,
+            warranty
+          }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Beskriv hva som skal utføres, hvor arbeidet utføres, hvilket underlag løsningen bygges på og hvilken løsning som er valgt. Angi fall som forholdstall, for eksempel 1:50 i dusjsone og 1:100 utenfor dusjsone." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Hva bør dokumenteres her?" }),
