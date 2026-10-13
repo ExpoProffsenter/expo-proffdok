@@ -1,3 +1,5 @@
+Sjekklistebibliotek / prosjektinngang 13. oktober: eksisterende lister samlet, garantipunkter låst, + Legg til sjekkliste under Sjekklister i alle prosjekttyper. Fra main f57f93b6; BEGGE. Avventer critical/Preview og ny TEST OK. Ingen prosjektbesvarelser eller database endret.
+
 Mobil oppfølging 13. oktober: felles topp/bunnpiler i alle innloggede moduler; startboks bare på Startsiden. BEGGE, egen PR etter publisert main 5debd835. Relevant QA/Preview og ny TEST OK før publisering.
 
 Mobilpiler oppfølging 2: global nav-grid gjorde pilene horisontale og Vercel-knappen dekket ned. Egen vertikal kolonne + Preview-avstand + window.scrollTo. Før-fiks runtime-test feilet på global menystil; ny kontroll av begge trykk og scroll kjøres. Ikke publisert til main/demo.
@@ -582,3 +584,9 @@ Fortsettelsespunkt: [OVERSIKT.md](docs/kshms/OVERSIKT.md) og [CONTINUITY.md](doc
 HR-popup 11.10: medarbeiderraden åpner eksisterende appdialog, med leder/tilgang, paginerte brukervalg og resultatmeldinger inne i vinduet. Dialog, Escape/kryss, fokusretur og fersk autorisering kontrollert i React og Chromium ved 1280/360/740. Tilgang/backend/privat HR uendret. Samme core-PR #219/Preview; ingen merge.
 
 HR-prøveoppdatering 11.10: første åpning viser skjemaets topp; tom/ulagret/redigert samtale bevares gjennom ekte HR-tilgangsremount. Konto-/firmabundet sideminne, ingen ulagret browserlagring. Faktisk useHrAccess/JSDOM og Chromium 1280/360/740 grønne, inkludert konflikt og uendrede PDF-/neste-steg-løp. Samme PR #218/Preview; ingen merge.
+
+
+13.10.2026 – Preview-korrigering: Våtrom har én samlet redigerbar firmaversjon med alle sju arbeidsområder; øvrige fag har hver sin liste. Arbeidsområdet følger punktets hjelpetekst i byggeren. Ingen punkter fjernes. Garantipunkter er fortsatt uforanderlige og kan ikke kopieres til redigerbare firmaversjoner. Redigeringsinngangen heter «Rediger som firmaversjon». Eksisterende prosjektutfyllinger beholdes. Avventer ny TEST OK.
+
+
+13.10.2026 – Prosjektering Preview: egen samlet kontroll med 13 prosjekteringspunkter nederst i Prosjektering. Gjenbruker ProjectChecklistWorkspace og eksisterende bekreftet serverlagring, lokal kladd, historikk, Ok/Avvik/Ikke aktuelt og egen PDF. Stabil egen kategori skiller svar fra utførelses-/garantikontroller. Låste/lesetilgang/support får samme sperrer. Eksisterende prosjekteringsfelt, egne punkter og tegninger beholdes. Ingen database-/e-postendring. Avventer TEST OK.

@@ -745,3 +745,11 @@ QA/status og Preview føres i `docs/kshms/HANDBOOK_PDF_20261012.md`. Ingen tidli
 ## Rutiner sender ikke e-post – 12. oktober 2026
 
 Etter Kenneths eksplisitte akuttinstruks er rutinetildelinger og lesepåminnelser bare i appen. Ny køtrigger blokkerer reading ved insert/retry; 670 ventende rutine-e-poster stanset i produksjon, ingen gjeldende rutinepost sendbar. 200 allerede sendte beholdes i loggen. Rutiner, tildelinger og egne bekreftelser beholdes. Andre oppgaver og frister beholder e-post. Produksjon og Sandbox installert, faktisk insert/retry-test rullet tilbake. Se docs/kshms/ROUTINE_EMAIL_STOP_20261012.md.
+
+Sjekklistesentral 13. oktober: eksisterende prosjektmaler/fagpunkter/Sopro-garantipunkter, produktmasterens kontrollpunkter og egne lister fra firmaets tilgjengelige prosjekter vises i et felles bibliotek. Kun definisjoner hentes, ingen prosjektbesvarelser/kundedata. Firmatilgang kontrolleres før/etter lesing, RLS/firmascope beholdes, paginering og sene svar beskyttes. Vanlige kilder åpnes som en separat firmaversjon via eksisterende bygger/publisering. Garantikilder har ingen redigering, sletting eller kopiering, og garantimalene deles med Prosjekt som samme frosne kildedata. Eksisterende prosjektsvar og garantilogikk er uendret. «+ Legg til sjekkliste» ligger under Sjekklister for både små og våtromsprosjekter; våtrom beholder også inngang fra Fag/utstyr. Full QA og Preview før ny TEST OK; BEGGE.
+
+
+13.10.2026 – Preview-korrigering: Våtrom har én samlet redigerbar firmaversjon med alle sju arbeidsområder; øvrige fag har hver sin liste. Arbeidsområdet følger punktets hjelpetekst i byggeren. Ingen punkter fjernes. Garantipunkter er fortsatt uforanderlige og kan ikke kopieres til redigerbare firmaversjoner. Redigeringsinngangen heter «Rediger som firmaversjon». Eksisterende prosjektutfyllinger beholdes. Avventer ny TEST OK.
+
+
+13.10.2026 – Prosjektering Preview: egen samlet kontroll med 13 prosjekteringspunkter nederst i Prosjektering. Gjenbruker ProjectChecklistWorkspace og eksisterende bekreftet serverlagring, lokal kladd, historikk, Ok/Avvik/Ikke aktuelt og egen PDF. Stabil egen kategori skiller svar fra utførelses-/garantikontroller. Låste/lesetilgang/support får samme sperrer. Eksisterende prosjekteringsfelt, egne punkter og tegninger beholdes. Ingen database-/e-postendring. Avventer TEST OK.
