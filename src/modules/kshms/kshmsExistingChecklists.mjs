@@ -4,7 +4,7 @@ import {blankChecklist,CHECKLIST_TRADES,checklistContent} from './kshmsChecklist
 const freeze=value=>{if(value&&typeof value==='object'){Object.values(value).forEach(freeze);Object.freeze(value);}return value;};
 const row=(id,title,trade,groups,kind='standard',instructions='')=>freeze({id,title,trade,groups,kind,locked:kind==='warranty',instructions});
 export function existingChecklistCatalog({projects=[],checkpoints=[]}={}){
- const rows=checklistTemplate.map((group,index)=>row(`standard:${index}`,group.category,'Murer/flislegger',[structuredClone(group)]));
+ const rows=[row('standard:wetroom','Våtrom – samlet sjekkliste','Murer/flislegger',structuredClone(checklistTemplate))];
  for(const [trade,items] of Object.entries(STANDARD_WETROOM_TEMPLATE_POINTS))rows.push(row(`trade:${trade}`,`Fagpunkter – ${trade}`,trade,[{category:trade,items:[...items]}]));
  for(const [system,groups] of Object.entries(SOPRO_SYSTEM_CHECKLIST_TEMPLATES))rows.push(row(`warranty:${system}`,system==='sopro-aeb-815'?'Sopro AEB 815 – garantipunkter':'Sopro FDF 525/527 – garantipunkter','Murer/flislegger',structuredClone(groups),'warranty'));
  const products=new Map();
@@ -21,7 +21,7 @@ export function existingChecklistCatalog({projects=[],checkpoints=[]}={}){
 export function existingChecklistDraft(rows,id,makeId=()=>crypto.randomUUID()){
  const source=rows.find(row=>row.id===id);if(!source||source.locked||source.kind==='warranty'||/^warranty/.test(source.id))throw new Error('Garantipunkter er låst og kan ikke kopieres til en redigerbar sjekkliste.');
  const draft=blankChecklist(makeId),titles=new Set(),points=[];
- for(const group of source.groups)for(const title of group.items){if(titles.has(title))continue;titles.add(title);const r=group.requirements?.[title]||{};points.push({id:makeId(),title,guidance:r.guidance||'',image_required:r.image_required===true,comment_required:r.comment_required===true,subform_version_id:null});}
+ for(const group of source.groups)for(const title of group.items){if(titles.has(title))continue;titles.add(title);const r=group.requirements?.[title]||{};points.push({id:makeId(),title,guidance:[source.id==='standard:wetroom'?group.category:'',r.guidance||''].filter(Boolean).join(' · '),image_required:r.image_required===true,comment_required:r.comment_required===true,subform_version_id:null});}
  draft.content=checklistContent({title:source.title,trade:source.trade,instructions:source.instructions||'Tilpasset fra eksisterende prosjektmal. Prosjektenes originale lister og svar beholdes.',points});return draft;
 }
 export async function loadExistingChecklists({client,companyId,userId,checkContext,isCurrent=()=>true}){

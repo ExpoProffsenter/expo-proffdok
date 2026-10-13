@@ -584,3 +584,6 @@ Fortsettelsespunkt: [OVERSIKT.md](docs/kshms/OVERSIKT.md) og [CONTINUITY.md](doc
 HR-popup 11.10: medarbeiderraden åpner eksisterende appdialog, med leder/tilgang, paginerte brukervalg og resultatmeldinger inne i vinduet. Dialog, Escape/kryss, fokusretur og fersk autorisering kontrollert i React og Chromium ved 1280/360/740. Tilgang/backend/privat HR uendret. Samme core-PR #219/Preview; ingen merge.
 
 HR-prøveoppdatering 11.10: første åpning viser skjemaets topp; tom/ulagret/redigert samtale bevares gjennom ekte HR-tilgangsremount. Konto-/firmabundet sideminne, ingen ulagret browserlagring. Faktisk useHrAccess/JSDOM og Chromium 1280/360/740 grønne, inkludert konflikt og uendrede PDF-/neste-steg-løp. Samme PR #218/Preview; ingen merge.
+
+
+13.10.2026 – Preview-korrigering: Våtrom har én samlet redigerbar firmaversjon med alle sju arbeidsområder; øvrige fag har hver sin liste. Arbeidsområdet følger punktets hjelpetekst i byggeren. Ingen punkter fjernes. Garantipunkter er fortsatt uforanderlige og kan ikke kopieres til redigerbare firmaversjoner. Redigeringsinngangen heter «Rediger som firmaversjon». Eksisterende prosjektutfyllinger beholdes. Avventer ny TEST OK.
