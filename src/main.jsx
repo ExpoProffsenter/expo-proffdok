@@ -6784,7 +6784,9 @@ ${appLink}`;
           copyAccessLink,
           sendAccessEmail,
           supabaseClient: supabase,
-          controllerReadOnly: isReadOnly || isProjectSupportReadOnly
+          controllerReadOnly: isReadOnly || isProjectSupportReadOnly,
+          controllerEmailBrand: emailBrandPayload(),
+          controllerFromName: user.name || authUser?.email || "Prosjektleder"
         }),
         tab === "installasjoner" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [renderInstallationPanel({
           inst,

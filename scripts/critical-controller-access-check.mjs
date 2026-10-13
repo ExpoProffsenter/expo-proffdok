@@ -9,3 +9,5 @@ const read=sql.slice(sql.indexOf('create function public.controller_project_read
 assert(!/update public.projects|insert into public.projects|tilbud|internalNotes|projectLog/.test(read));
 const view=fs.readFileSync('src/modules/controller/ControllerPortal.jsx','utf8');assert(!/\.from\(|controller_access_command|save_underleverandor|setChecklistValue/.test(view));assert(view.includes('clearTimeout')&&view.includes('setInterval(refresh,30000)'));assert(view.includes('setData(null);setBusy(false)'));
 console.log('Controller access PASS: separate read-only endpoint, hashed capability, server expiry/revoke, exact project/firm guards, all checklist categories, no commercial/HR/portal codes, safe file links and expiry retry.');
+
+await import('./controller-access-email-check.mjs');
