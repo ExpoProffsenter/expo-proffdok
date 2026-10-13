@@ -6707,7 +6707,8 @@ ${appLink}`;
               " Last opp tegning / bilde",
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", accept: "image/*", multiple: true, onChange: (e) => addPhoto("Prosjektering", e.target.files) })
             ] })
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Sjekkliste for prosjektering" }),
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Sjekkliste for prosjektering" }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Vurder grunnlaget og løsningene før utførelsen starter. Åpne sjekklisten, velg Ok, Avvik eller Ikke aktuelt og legg til kommentar eller dokumentasjon. Lagre underveis. Se grunnlaget, tegningene og øvrige prosjekteringsfelt over." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProjectChecklistWorkspace, {
             Editor: ChecklistEditor,
@@ -6731,7 +6732,6 @@ ${appLink}`;
             activeChecklistTemplate: PROJECT_DESIGN_CHECKLIST_TEMPLATE,
             warranty
           })
-        ] }),
         ] }),
         tab === "fremdrift" && projectId && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProgressPlanProjectTab, {
           projectId,

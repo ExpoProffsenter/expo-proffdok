@@ -100,3 +100,11 @@ assert(fs.readFileSync('src/modules/checklist/ProjectChecklistWorkspace.jsx','ut
 console.log('Project design checklist PASS: isolated definition, all 13 answers required, non-applicable allowed, shared verified persistence, read-only gates and original design fields preserved.');
 
 assert(designPanel.indexOf('Sjekkliste for prosjektering')>designPanel.indexOf('Tegninger og prosjekteringsgrunnlag'),'Design checklist must appear last in Prosjektering');
+
+const renderElement=(type,props)=>({type,props});
+const designEnvironment=new Proxy({Array,project:{},user:{},authUser:{},kshmsContext:{},import_jsx_runtime:{jsx:renderElement,jsxs:renderElement},import_lucide_react:{Plus:'Plus'},Section:'section',ProjectChecklistWorkspace:'workspace',PROJECT_DESIGN_CHECKLIST_TEMPLATE:[design]}, {has:()=>true,get:(target,key)=>key===Symbol.unscopables?undefined:key in target?target[key]:()=>{}});
+const designExpression=designPanel.slice(designPanel.indexOf('&&')+2).trim().replace(/,$/,'');
+const renderedDesign=new Function('env',`with(env){return ${designExpression};}`)(designEnvironment);
+assert.equal(renderedDesign.props.children.at(-1).type,'workspace');assert.equal(renderedDesign.props.children.at(-2).props.className,'note');
+assert.equal(renderedDesign.props.children.at(-3).props.children,'Sjekkliste for prosjektering');
+console.log('Actual design panel render PASS: all original fields and drawings precede final checklist.');

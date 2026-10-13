@@ -1,10 +1,11 @@
+import {PROJECT_DESIGN_CHECKLIST} from '../config/projectDesignChecklist.mjs';
 import {checklistTemplate,STANDARD_WETROOM_TEMPLATE_POINTS} from '../config/projectConfig.js';
 import {SOPRO_SYSTEM_CHECKLIST_TEMPLATES} from '../config/soproChecklistTemplates.mjs';
 import {blankChecklist,CHECKLIST_TRADES,checklistContent} from './kshmsChecklists.mjs';
 const freeze=value=>{if(value&&typeof value==='object'){Object.values(value).forEach(freeze);Object.freeze(value);}return value;};
 const row=(id,title,trade,groups,kind='standard',instructions='')=>freeze({id,title,trade,groups,kind,locked:kind==='warranty',instructions});
 export function existingChecklistCatalog({projects=[],checkpoints=[]}={}){
- const rows=[row('standard:wetroom','Våtrom – samlet sjekkliste','Murer/flislegger',structuredClone(checklistTemplate))];
+ const rows=[row('standard:wetroom','Våtrom – samlet sjekkliste','Murer/flislegger',structuredClone(checklistTemplate)),row('planning:design',PROJECT_DESIGN_CHECKLIST.category,'Annet fag',[{category:PROJECT_DESIGN_CHECKLIST.category,items:[...PROJECT_DESIGN_CHECKLIST.items]}],'standard',PROJECT_DESIGN_CHECKLIST.instructions)];
  for(const [trade,items] of Object.entries(STANDARD_WETROOM_TEMPLATE_POINTS))rows.push(row(`trade:${trade}`,`Fagpunkter – ${trade}`,trade,[{category:trade,items:[...items]}]));
  for(const [system,groups] of Object.entries(SOPRO_SYSTEM_CHECKLIST_TEMPLATES))rows.push(row(`warranty:${system}`,system==='sopro-aeb-815'?'Sopro AEB 815 – garantipunkter':'Sopro FDF 525/527 – garantipunkter','Murer/flislegger',structuredClone(groups),'warranty'));
  const products=new Map();

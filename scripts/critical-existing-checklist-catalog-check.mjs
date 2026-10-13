@@ -3,7 +3,7 @@ import {existingChecklistCatalog,existingChecklistDraft,loadExistingChecklists} 
 import {checklistTemplate,STANDARD_WETROOM_TEMPLATE_POINTS} from '../src/modules/config/projectConfig.js';
 import {SOPRO_SYSTEM_CHECKLIST_TEMPLATES} from '../src/modules/config/soproChecklistTemplates.mjs';
 assert.equal(crypto.createHash('sha256').update(JSON.stringify(SOPRO_SYSTEM_CHECKLIST_TEMPLATES)).digest('hex'),'d95362b21187a3e38eab527340d8110fa77728c11aa05b0a87adfbed6c6bc73a','Project warranty definitions must remain byte-equivalent to the approved source');
-const base=existingChecklistCatalog();assert.equal(base.length,9);
+const base=existingChecklistCatalog();assert.equal(base.length,10);
 assert.deepEqual(base.filter(x=>x.id.startsWith('standard:')).flatMap(x=>x.groups),checklistTemplate);
 assert.equal(base.filter(x=>x.id.startsWith('trade:')).length,Object.keys(STANDARD_WETROOM_TEMPLATE_POINTS).length);
 for(const [system,groups] of Object.entries(SOPRO_SYSTEM_CHECKLIST_TEMPLATES)){const r=base.find(x=>x.id==='warranty:'+system);assert.deepEqual(r.groups,groups);assert(r.locked);assert(Object.isFrozen(groups)&&Object.isFrozen(groups[0].items));assert.throws(()=>existingChecklistDraft(base,r.id),/låst/);}
@@ -16,3 +16,5 @@ for(const mode of ['foreign','revoked','late']){let verify=0;const attempt=loadE
 const main=fs.readFileSync('src/main.jsx','utf8');assert(main.includes('var soproSystemChecklistTemplates = SOPRO_SYSTEM_CHECKLIST_TEMPLATES;'));assert(main.includes('isSimpleOrderProject(project) ? [] : getActiveChecklistTemplate'));assert(main.includes('isWarrantyPoint: isSoproWarrantyPoint'));
 const view=fs.readFileSync('src/modules/kshms/KshmsExistingChecklists.jsx','utf8');assert(view.includes('!row.locked&&'));assert(view.includes('Garantipunkter er låst'));assert(!/\.update\(|\.insert\(|\.delete\(/.test(view));
 console.log('Existing checklist catalog PASS: same source definitions, frozen warranty text and no edit/copy, separate editable ordinary versions, own project definitions only, pagination, late/foreign/revoked gates and unchanged project warranty contract.');
+
+const planning=existingChecklistDraft(base,'planning:design',()=>crypto.randomUUID());assert.equal(planning.content.points.length,13);assert.equal(planning.content.title,'Prosjektering – kontroll av grunnlag og løsninger');
