@@ -36,8 +36,7 @@ export function createAccessViewTools({
     controllerReadOnly
   }) {
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Tilgang og deling", children: [
-      supabaseClient && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ControllerAccessPanel, { client: supabaseClient, projectId, readOnly: controllerReadOnly }, projectId),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Administrer tilgang til prosjektet. Kunde får egen kundelink og egen tilgangskode. Underentreprenører får separat link og separat tilgangskode for dokumentasjon innenfor relevante deler av prosjektet. Kodene følger e-postene, ligger ikke i URL-en og gjenbrukes ved senere chatvarsler. Tilgangene er gyldige så lenge prosjektet er aktivt, og i 30 dager etter låsing/arkivering." }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Velg kunde-, UE- eller kontrollørtilgang. Hver portal har separat kode. Kunde og UE har tilgang mens prosjektet er aktivt og i 30 dager etter låsing. For kontrollør velger du utløpsdato og klokkeslett." }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "cards", style: { marginTop: "12px" }, children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "tile", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Kundeportal" }),
@@ -66,7 +65,8 @@ export function createAccessViewTools({
             const rec = await ensurePortalAccessForProject({ roleParam: "underleverandor", forceNew: true });
             if (rec?.code) alert("Ny underentreprenørkode er generert. Send underentreprenørlenke på nytt for å dele koden.");
           }, children: "Generer ny tilgangskode" })
-        ] })
+        ] }),
+        supabaseClient && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ControllerAccessPanel, { client: supabaseClient, projectId, readOnly: controllerReadOnly }, projectId),
       ] }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Melding i e-post med tilgangslink", value: accessEmailMessage, onChange: setAccessEmailMessage }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "cards", children: accessRoleInfo.map((r) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "tile", children: [
