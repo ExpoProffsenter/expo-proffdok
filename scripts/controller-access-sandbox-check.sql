@@ -1,0 +1,33 @@
+-- Sandbox only; every fixture and access link is rolled back.
+begin;
+select set_config('request.jwt.claim.sub',(select payload->>'user_id' from public.demo_sandbox_snapshots where snapshot_key='sick-leave-course-v1'),true);
+do $$declare pid uuid:='a0000000-0000-4000-8000-000000000001';lid uuid:=gen_random_uuid();code text:=upper(replace(gen_random_uuid()::text,'-',''));newcode text:=upper(replace(gen_random_uuid()::text,'-',''));company uuid;actor uuid;until_at timestamptz:=now()+interval '1 hour';r jsonb;begin
+ r:=public.controller_access_command(pid,'create',lid,code,'QA KONTROLLØR – IKKE REELL',until_at,0);
+ if (r->>'revision')::int<>1 then raise exception 'create';end if;
+ r:=public.controller_access_command(pid,'create',lid,code,'QA KONTROLLØR – IKKE REELL',until_at,0);
+ if (select count(*) from controller_private.links where id=lid)<>1 then raise exception 'retry duplicated';end if;
+ select company_id,created_by into company,actor from controller_private.links where id=lid;
+ update controller_private.links set company_id=gen_random_uuid() where id=lid;
+ if (public.controller_project_read(lid,code)->>'ok')::boolean then raise exception 'foreign company link';end if;
+ update controller_private.links set company_id=company where id=lid;
+ perform set_config('request.jwt.claim.sub',gen_random_uuid()::text,true);
+ begin perform public.controller_access_list(pid);raise exception 'foreign user manager';exception when insufficient_privilege then null;end;
+ perform set_config('request.jwt.claim.sub',actor::text,true);
+ r:=public.controller_project_read(lid,code);
+ if not (r->>'ok')::boolean or r#>'{data,project,prosjekteringPunkter}' is null or r#>'{data,checklist}' is null or r#>'{data,runs}' is null then raise exception 'read';end if;
+ if r#>'{data,internalNotes}' is not null or r#>'{data,access}' is not null or r#>'{data,tilbud}' is not null or r#>'{data,project,portalAccess}' is not null or r#>'{data,project,customerEmail}' is not null then raise exception 'privacy';end if;
+ if (public.controller_project_read(lid,'WRONG')->>'ok')::boolean then raise exception 'wrong code';end if;
+ perform public.controller_access_command(pid,'extend',lid,null,null,now()+interval '2 hours',1);
+ begin perform public.controller_access_command(pid,'revoke',lid,null,null,null,1);raise exception 'stale revision accepted';exception when serialization_failure then null;end;
+ perform public.controller_access_command(pid,'rotate',lid,newcode,null,null,2);
+ if (public.controller_project_read(lid,code)->>'ok')::boolean or not (public.controller_project_read(lid,newcode)->>'ok')::boolean then raise exception 'rotation';end if;
+ update controller_private.links set expires_at=now()-interval '1 second' where id=lid;
+ if (public.controller_project_read(lid,newcode)->>'ok')::boolean then raise exception 'expired accepted';end if;
+ update controller_private.links set expires_at=now()+interval '1 hour' where id=lid;
+ perform public.controller_access_command(pid,'revoke',lid,null,null,null,3);
+ if (public.controller_project_read(lid,newcode)->>'ok')::boolean then raise exception 'revoke';end if;
+ if has_table_privilege('anon','controller_private.links','select') or has_function_privilege('anon','public.controller_access_list(uuid)','execute') or has_function_privilege('anon','public.controller_access_command(uuid,text,uuid,text,text,timestamptz,bigint)','execute') then raise exception 'ACL';end if;
+ perform set_config('request.jwt.claim.sub','',true);
+ begin perform public.controller_access_list(pid);raise exception 'anonymous manager';exception when insufficient_privilege then null;end;
+end;$$;
+rollback;
