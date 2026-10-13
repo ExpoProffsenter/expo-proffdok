@@ -98,3 +98,5 @@ assert(designPanel.includes('activeChecklistTemplate: PROJECT_DESIGN_CHECKLIST_T
 assert(designPanel.includes('showTools: false')&&designPanel.includes('showPrevious: false'));
 assert(fs.readFileSync('src/modules/checklist/ProjectChecklistWorkspace.jsx','utf8').includes('showTools=true,showPrevious=true'));assert(designPanel.includes('Tegninger og prosjekteringsgrunnlag'));
 console.log('Project design checklist PASS: isolated definition, all 13 answers required, non-applicable allowed, shared verified persistence, read-only gates and original design fields preserved.');
+
+assert(designPanel.indexOf('Sjekkliste for prosjektering')>designPanel.indexOf('Tegninger og prosjekteringsgrunnlag'),'Design checklist must appear last in Prosjektering');
