@@ -1,3 +1,4 @@
+import ControllerPortal from './modules/controller/ControllerPortal.jsx';
 import {PROJECT_DESIGN_CHECKLIST_TEMPLATE} from './modules/config/projectDesignChecklist.mjs';
 import {SOPRO_SYSTEM_CHECKLIST_TEMPLATES} from "./modules/config/soproChecklistTemplates.mjs";
 import MobileScrollShortcuts from "./modules/app/MobileScrollShortcuts.jsx";
@@ -6781,7 +6782,11 @@ ${appLink}`;
           portalAccessPolicyText,
           ensurePortalAccessForProject,
           copyAccessLink,
-          sendAccessEmail
+          sendAccessEmail,
+          supabaseClient: supabase,
+          controllerReadOnly: isReadOnly || isProjectSupportReadOnly,
+          controllerEmailBrand: emailBrandPayload(),
+          controllerFromName: user.name || authUser?.email || "Prosjektleder"
         }),
         tab === "installasjoner" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [renderInstallationPanel({
           inst,
@@ -7746,7 +7751,7 @@ ${appLink}`;
     /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AppErrorBoundary, {
       children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, {
         children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(App, {}),
+          new URLSearchParams(window.location.search).has("controller") ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ControllerPortal, {client: supabase, linkId: new URLSearchParams(window.location.search).get("controller")}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(App, {}),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AppUpdateNotice, {})
         ]
       })

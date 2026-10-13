@@ -133,3 +133,5 @@ requireNeedles("src/modules/app/mobileResponsive41A.css", [
 requireNeedles("index.html", ["installSystemAdminUserPolicyGuard"]);
 
 console.log("✅ Expo ProffDok samlet brukeradgang / mobil Prissøk / portal-opprydding check OK");
+
+await import("./critical-controller-access-check.mjs");
