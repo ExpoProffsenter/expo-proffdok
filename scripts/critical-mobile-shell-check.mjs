@@ -38,3 +38,5 @@ requireNeedles("src/modules/access/workProfileUx.jsx", [
 ]);
 
 console.log("✅ Expo ProffDok mobil shell / Representerer / appoppdatering check OK");
+
+await import("./page-scroll-memory-check.mjs");

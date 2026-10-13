@@ -596,3 +596,6 @@ HR-prøveoppdatering 11.10: første åpning viser skjemaets topp; tom/ulagret/re
 
 
 Kontrollør-e-post (13. oktober 2026, Preview): Under Administrer kontrollørtilgang kan en nylaget/rotert kode sendes manuelt til kontrollørens e-postadresse. E-posten bruker samme HTML-layout og emailBrandPayload som tilbud, med firmalogo, lenke, kode og norsk utløpstid. Isolert controller-access-email validerer innlogget prosjekt-/firmatilgang samt gjeldende kode og utløp før Resend. Ingen automatisk utsending ved opprettelse/endring; rutine-e-postforbud og smart-worker er urørt. Mock-baserte ende-til-ende-tester sender ingen ekte e-poster. Sandbox-funksjon først, produksjonsfunksjon/migrasjon og main→demo etter nytt TEST OK.
+
+
+Scrollrettelse 13. oktober 2026 (BEGGE, Preview): Felles scrollminne flyttet til pageScrollMemory. Synlig fokusendring, inkludert Windows + Shift + S, skal ikke gjenopprette en gammel posisjon. Gjenoppretting skjer kun etter faktisk skjult side; tastatur/mus/touch/hjul, blur og unmount avbryter ventende gjentakelser. Nullposisjon er gyldig. Tester dekker seks faner, skjult/tilbake, brukerinteraksjon og rydding. Ingen endring i autosave, serverhydrering, Sales workspace-recovery, backend eller e-post. Ny TEST OK kreves før main/Production og kontrollert demo-synk.
