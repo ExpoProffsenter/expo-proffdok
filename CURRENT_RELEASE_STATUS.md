@@ -737,3 +737,6 @@ HR-prøveoppdatering 11.10: første åpning viser skjemaets topp; tom/ulagret/re
 
 
 Kontrollørtilgang godkjent TEST OK 13. oktober 2026 kl. 16:39 norsk tid, PR #243 main 308e5813a3074e86f5947dd314a28501890a7539. Separat leselenke med valgt utløp, tilbakekalling, alle tekniske sjekklister/prosjektering og manuell e-post med samme tilbudslayout/firmalogo. Ingen automatisk sending ved opprettelse/endring. controller-access-email krever JWT og gyldig intern prosjekt-/firmatilgang samt aktiv kode. Produktionsmigrasjon og mailer aktivert; Core Safety 38414228613 SUCCESS og critical/React/mail QA grønne uten ekte e-postutsending. Kontrollert main→demo-delta med demo-overlay bevart; sandbox-mailer og controller-RPC-er allerede deployet. Rutine-e-post forblir deaktivert.
+
+
+Scrollrettelse godkjent TEST OK 13.10.2026 kl. 17:02 norsk tid, PR #244 main d95f14c80e2a87bd4fed4e31cf47f712c3c2ca48. Vanlig fokus/Windows-utklipp gjenoppretter ikke stale scroll; faktisk skjult side kan gjenopprette posisjonen, og tastatur/mus/touch/hjul/blur/unmount avbryter gjentakelser. Full critical/build og Core Safety 38418142446 SUCCESS; seks runtime-scenariofaner grønne. Kun scroll-effekt, ny helper og test/docs; autosave, Sales recovery, backend og e-post urørt. main→demo, overlay bevart og kontrollsidens baseline oppdatert.

@@ -1,3 +1,4 @@
+import {installPageScrollMemory} from './modules/app/pageScrollMemory.mjs';
 import ControllerPortal from './modules/controller/ControllerPortal.jsx';
 import {PROJECT_DESIGN_CHECKLIST_TEMPLATE} from './modules/config/projectDesignChecklist.mjs';
 import {SOPRO_SYSTEM_CHECKLIST_TEMPLATES} from "./modules/config/soproChecklistTemplates.mjs";
@@ -1640,73 +1641,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
     const suggestedWorkflowStatus = projectGuideStats.openDeviationCount > 0 ? "Avvik åpent" : projectReadyForFinishedStatus ? "Ferdigstilt" : projectGuideStats.productCount > 0 && projectGuideStats.photoCount > 0 && projectGuideStats.checklistDone > 0 ? "Klar for kunde" : projectGuideStats.hasProjectBasics ? "Pågår" : "Utkast";
     (0, import_react.useEffect)(() => {
       if (typeof window === "undefined" || typeof document === "undefined") return undefined;
-      const key = `expoProffDokScroll:${projectId || "global"}:${tab || ""}`;
-      const activeKey = `expoProffDokActiveScroll:${projectId || "global"}`;
-      let scrollSaveTimer = null;
-      let lastKnownScrollY = window.scrollY || 0;
-      const saveScroll = () => {
-        try {
-          const y = window.scrollY || lastKnownScrollY || 0;
-          lastKnownScrollY = y;
-          window.sessionStorage.setItem(key, String(y));
-          window.sessionStorage.setItem(activeKey, JSON.stringify({ tab: tab || "", y, savedAt: Date.now() }));
-        } catch (error) {}
-      };
-      const saveScrollSoon = () => {
-        try {
-          lastKnownScrollY = window.scrollY || 0;
-          if (scrollSaveTimer) window.clearTimeout(scrollSaveTimer);
-          scrollSaveTimer = window.setTimeout(saveScroll, 80);
-        } catch (error) {}
-      };
-      const getSavedScrollY = () => {
-        try {
-          const raw = window.sessionStorage.getItem(key);
-          const y = raw ? Number(raw) : 0;
-          if (Number.isFinite(y) && y > 0) return y;
-          const activeRaw = window.sessionStorage.getItem(activeKey);
-          const active = activeRaw ? JSON.parse(activeRaw) : null;
-          if (active?.tab === (tab || "") && Number.isFinite(Number(active.y)) && Number(active.y) > 0) return Number(active.y);
-        } catch (error) {}
-        return 0;
-      };
-      const restoreScroll = () => {
-        try {
-          const y = getSavedScrollY();
-          if (!Number.isFinite(y) || y <= 0) return;
-          const apply = () => window.scrollTo({ top: y, behavior: "auto" });
-          window.requestAnimationFrame(apply);
-          window.setTimeout(apply, 80);
-          window.setTimeout(apply, 250);
-          window.setTimeout(apply, 650);
-        } catch (error) {}
-      };
-      const handleClick = (event) => {
-        const link = event.target?.closest?.('a[target="_blank"], a[href^="http"]');
-        if (link) saveScroll();
-      };
-      const handlePointerOrKey = () => saveScrollSoon();
-      const handleVisibility = () => {
-        if (document.hidden) saveScroll();
-        else restoreScroll();
-      };
-      document.addEventListener("click", handleClick, true);
-      document.addEventListener("pointerdown", handlePointerOrKey, true);
-      document.addEventListener("keydown", handlePointerOrKey, true);
-      window.addEventListener("scroll", saveScrollSoon, { passive: true });
-      window.addEventListener("blur", saveScroll);
-      window.addEventListener("focus", restoreScroll);
-      document.addEventListener("visibilitychange", handleVisibility);
-      return () => {
-        if (scrollSaveTimer) window.clearTimeout(scrollSaveTimer);
-        document.removeEventListener("click", handleClick, true);
-        document.removeEventListener("pointerdown", handlePointerOrKey, true);
-        document.removeEventListener("keydown", handlePointerOrKey, true);
-        window.removeEventListener("scroll", saveScrollSoon);
-        window.removeEventListener("blur", saveScroll);
-        window.removeEventListener("focus", restoreScroll);
-        document.removeEventListener("visibilitychange", handleVisibility);
-      };
+      return installPageScrollMemory({projectId,tab});
     }, [projectId, tab]);
     const openActiveDeviations = () => {
       setShowOpenDeviationsOnly(true);
