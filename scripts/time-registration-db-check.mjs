@@ -16,7 +16,7 @@ try{
  create table public.user_active_company_scope(user_id uuid primary key,company_id uuid);create or replace function public.current_active_company_scope_id() returns uuid language sql as $$select company_id from public.user_active_company_scope where user_id=auth.uid()$$;
  create table public.projects(id uuid primary key,company_scope_id uuid,user_id uuid,data jsonb);create function public.project_row_access_allowed(c uuid,u uuid) returns boolean language sql as $$select c=public.current_active_company_scope_id()$$;
  grant usage on schema auth,storage to authenticated;grant execute on function auth.uid() to authenticated;`);
- for(const f of ['20261009182551_hr_access_foundation.sql','20261009193953_hr_content_purge_foundation.sql','20261009203431_people_module_entitlements.sql','20261009203950_people_module_access_closure.sql','20261014144538_time_registration.sql'])await db.exec(await fs.readFile('supabase/migrations/'+f,'utf8'));
+ for(const f of ['20261009182551_hr_access_foundation.sql','20261009193953_hr_content_purge_foundation.sql','20261009203431_people_module_entitlements.sql','20261009203950_people_module_access_closure.sql','20261014144538_time_registration.sql','20261014160424_time_timer_existing_rows.sql'])await db.exec(await fs.readFile('supabase/migrations/'+f,'utf8'));
  await db.exec(`insert into public.sales_company_scopes values(${q(company)},'qa','QA'),(${q(foreign)},'other','Other');insert into public.company_module_access(company_id,module_key,enabled) values(${q(company)},'hr',true),(${q(foreign)},'hr',true);`);
  for(const u of [admin,self,leader,reader,outsider,next])await db.exec(`insert into auth.users(id,raw_user_meta_data) values(${q(u)},'{}');insert into public.profiles(id,email,approved,deactivated,role) values(${q(u)},'qa-${u}@example.invalid',true,false,'member');insert into public.sales_company_memberships values(${q(company)},${q(u)},${q(u===admin?'firmaadmin':'ansatt')});insert into public.user_active_company_scope values(${q(u)},${q(company)});insert into hr_private.module_access(company_id,user_id,enabled) values(${q(company)},${q(u)},true);`);
  await actor(admin);await rpc('hr_foundation_configure',[company,0,true,'Timekontroll i syntetisk firma','Syntetisk vurdert grunnlag','2027-01-01']);
@@ -69,13 +69,13 @@ try{
  await actor(admin);settings={...settings,managers:[reader]};setup=await rpc('time_setup_save',[company,1,settings]);eq(setup.revision,2);await actor(reader);eq((await rpc('time_setup_get',[company])).revision,2,'delegated time responsible setup');
  await reject(()=>rpc('time_setup_save',[company,2,{...settings,managers:[reader,self]}]),'42501');
  // A real server timer survives repeated reads and cannot double-register on stop.
- await actor(admin);const timerId=id(70);let timer=await rpc('time_timer_command',[company,'start',timerId,internal.id,null,'QA tidtaking',0]);eq(timer.timer.id,timerId);
+ await actor(admin);const beforeTimer=await rpc('time_sheet_get',[company,week,null]);await rpc('time_sheet_command',[company,week,beforeTimer.employee.id,0,crypto.randomUUID(),'save',[{...row,id:id(72),category_id:internal.id,project_id:null,mode:'quantity',quantity:'1.25'}],false,'']);const timerId=id(70);let timer=await rpc('time_timer_command',[company,'start',timerId,internal.id,null,'QA tidtaking',0]);eq(timer.timer.id,timerId);
  eq((await rpc('time_timer_get',[company])).timer.id,timerId,'timer survives a fresh server read');
  await reject(()=>rpc('time_timer_command',[company,'start',id(71),internal.id,null,'',0]),'22023');
  await db.exec(`reset role;update time_private.timers set started_at=now()-interval '2 hours' where id=${q(timerId)};`);await actor(admin);
  timer=await rpc('time_timer_command',[company,'stop',timerId,null,null,'',15]);eq(timer.timer,null,'stop saves and clears server timer');
  eq((await rpc('time_timer_command',[company,'stop',timerId,null,null,'',15])).timer,null,'stop retry cannot duplicate line');
- eq((await rpc('time_sheet_get',[company,week,null])).sheet.entries.filter(r=>r.id===timerId).length,1);
+ eq((await rpc('time_sheet_get',[company,week,null])).sheet.entries.filter(r=>r.id===timerId).length,1);eq((await rpc('time_sheet_get',[company,week,null])).sheet.entries.length,2,'stopping timer preserves an existing saved line and its server snapshots');
  // Measure a representative 10-line week including each save, approval and immutable export.
  await db.exec('reset role;begin;');await actor(self);const sizedWeek='2026-11-02';let sized=null;const sizedRows=[];
  for(let n=0;n<10;n++){sizedRows.push({...row,id:id(100+n),on:'2026-11-0'+(2+Math.floor(n/2)),category_id:internal.id,project_id:null,mode:'quantity',quantity:'3.75',note:'Montering og kontroll på syntetisk prosjekt '+n});sized=await rpc('time_sheet_command',[company,sizedWeek,employee.id,sized?.sheet.revision||0,crypto.randomUUID(),'save',sizedRows,false,'']);}
