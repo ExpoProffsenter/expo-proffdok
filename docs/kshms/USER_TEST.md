@@ -1,3 +1,9 @@
+## Bare det nye: valgfri mobilsnarvei
+
+1. **HR → Timer og utlegg → Timeoppsett**: kryss av **Vis snarvei til timeføring på mobilforsiden** og trykk **Lagre timeoppsett**. Timeregistrering må også være aktivert.
+2. Åpne **Startsiden** på mobil med samme firma. Kortet **Før timer** skal vises øverst og åpne **Mine timer og utlegg** med ett trykk. Lukkekrysset går tilbake til samme forside. Slår firmaet valget av og lagrer, skal kortet forsvinne.
+3. Hjelp → HR beskriver mobilvalget. Bruker/firma uten HR skal ikke få kortet eller timekapitlet i Hjelp. Utviklerens React-/databaseprøver dekker tilgang, av/på og firmabytte; tidligere tester trenger ikke gjentas.
+
 ## Bare det nye: avbryt uten ekstra spørsmål
 
 I **Ny registrering** kan du trykke **Avbryt**, krysset eller Escape. Vinduet skal lukkes direkte. Ulagrede endringer forkastes; lagrede timer beholdes. Utviklerens React-test dekker alle tre lukkemåter, ingen lagring og at forkastet kladd ikke kommer tilbake.

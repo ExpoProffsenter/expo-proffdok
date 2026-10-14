@@ -1,3 +1,15 @@
+## Valgfri snarvei til timeføring på mobil – 14. oktober 2026
+
+**HR → Timer og utlegg → Timeoppsett** har valget **Vis snarvei til timeføring på mobilforsiden**. Det er avslått som standard, også for eksisterende oppsett uten feltet. Trykk **Lagre timeoppsett** for å ta valget i bruk per firma. Når både timeregistrering og snarveien er slått på, vises et mørkt kort med turkis klokke og **Før timer** øverst på mobilforsiden (til og med 700 px). Ett trykk åpner den eksisterende personlige timeføringen; lukkekrysset tar deg tilbake til samme forside.
+
+Kortet krever fersk HR-tilgang i aktivt firma og egen registrert medarbeider. Det vises ikke i prosjektarbeidsflaten, support eller på desktop. Ingen privat timeuke hentes før kortet åpnes. Firma-/brukerbytte, bortfalt tilgang og lagret avslag skjuler kort og åpne data. Ved midlertidig tilgangskontroll huskes bare navigasjon; private data skjules, og samme arbeidsbilde/ulagrede kladd gjenopprettes bare etter fersk, samsvarende tilgang. Bevisst lukking vinner over kontrollen. Lagret oppsettsendring oppdaterer snarveien i samme firma uten å endre andre modulers tilgang.
+
+Mobilveiledningen ligger bare under HR-kapitlet i Hjelp, bak eksisterende tilgangsfilter. Regresjonstesten krever at hele time-/lønnskapitlet forsvinner ved manglende HR, feil bruker og tilbakekalt HR, også når systemadmin eller en generell modulliste er oppgitt. Firmaets mobilvalg skjuler bare snarveien; HR-brukere beholder Min side → Mine timer og relevant veiledning.
+
+Scope: ny mobilkomponent/CSS, to linjer i main (lazy import og eksplisitt mobilforsideplassering), Timeoppsett, to eksisterende time-RPC-er via additiv migrasjon `20261014165602_time_mobile_shortcut_setting.sql`, firmabundet innstillingshendelse, Hjelp, tester og dokumentasjon. Backendens eksisterende autorisasjon, CAS, øvrige HR-funksjoner, policies, menyer og produksjon er uendret. Sandbox-migrasjon installert; standardvalget er fortsatt av i eksisterende firmaer.
+
+QA: 123 lokale PostgreSQL-kontroller, 87 faktiske React-kontroller for mobilkort/timer/oppsett, eksisterende HR/Hjelp, Min side og KS/HMS-/HR-navigasjon består. Ekte Sandbox består 26 kontroller med full rollback. Full critical/Sandbox-build består. Fingeravtrykk av ikke-timefunksjoner/policies og lagrede demotimer/timere/mail er uendret. Security advisors viser eksisterende autentiserte og internt autoriserte time-RPC-er, ingen ny anonym tilgang eller mutable search path i endringen. Ingen innlogget skjerm-/mobilprøve attesteres; kjent nettlesersperre er ikke forsøkt omgått. Publisert head/CI/READY føres i PR #245.
+
 ## Avbryt timeføring uten ekstra varsel – 14. oktober 2026
 
 Etter brukerens ønske lukker **Avbryt**, krysset og Escape timeeditoren direkte. Ulagret endring forkastes, lagrede timer beholdes og forkastet kladd gjenåpnes ikke ved remount. Endringen gjelder bare timeeditorens lukking; ingen backendendring. Faktiske React-scenarioer dekker de tre lukkemåtene, manglende lagringskall, forkastet kladd og bevaring av lagret prosjekt/timetall. 54 faktiske React-kontroller og full critical/Sandbox-build PASS. Samme Preview/PR #245; Production uendret.

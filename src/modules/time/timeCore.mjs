@@ -1,3 +1,4 @@
+export const TIME_SETTINGS_EVENT='expo:time-settings-updated';
 export const TIME_KINDS={work:'Arbeid',overtime:'Overtid',absence:'Fravær',travel:'Reise',allowance:'Tillegg',expense:'Utlegg'};
 export const TIME_UNITS={hours:'timer',km:'km',nok:'kr',count:'antall'};
 export const TIME_STATES={draft:'Utkast',submitted:'Sendt til godkjenning',returned:'Returnert',approved:'Godkjent'};

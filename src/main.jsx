@@ -89,6 +89,7 @@ const import_lucide_react = { Camera, FileText, Plus, Trash2, Download, Building
 const import_jsx_runtime = { jsx, jsxs, Fragment };
 const KshmsModule = React.lazy(() => import('./modules/kshms/KshmsModule.jsx'));
 const PersonalPage = React.lazy(() => import('./modules/personal/PersonalPage.jsx'));
+const MobileTimeShortcut = React.lazy(() => import('./modules/time/MobileTimeShortcut.jsx'));
 const HrModule = React.lazy(() => import('./modules/hr/HrModule.jsx'));
 const HrFollowupNotice = React.lazy(() => import('./modules/hr/HrFollowupNotice.jsx'));
 const KshmsTasks = React.lazy(() => import('./modules/kshms/KshmsTasks.jsx'));
@@ -6236,6 +6237,7 @@ ${appLink}`;
         children: [
         tab === "prosjekt" && !hasActiveProjectWorkspace && !mobileCreatingProject && !isProjectSupportReadOnly && (0, import_jsx_runtime.jsx)(React.Suspense, { fallback: null, children: (0, import_jsx_runtime.jsx)(HrFollowupNotice, { context: ownRights.hr ? hrContext : null, userId: authUser?.id, onSetup: () => goToTab("hr") }) }),
         !projectId && !mobileCreatingProject && tab === "prosjekt" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { className: "mobileProjectChooser", children: [
+          authUser?.id && !hasActiveProjectWorkspace && !isProjectSupportReadOnly && (0, import_jsx_runtime.jsx)(React.Suspense, { fallback: null, children: (0, import_jsx_runtime.jsx)(MobileTimeShortcut, { personalContext, hrContext, userId: authUser?.id }) }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileHomeHero", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "mobileHomeEyebrow", children: "Expo ProffDok" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Hva vil du jobbe med?" }),

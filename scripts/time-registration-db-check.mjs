@@ -16,7 +16,7 @@ try{
  create table public.user_active_company_scope(user_id uuid primary key,company_id uuid);create or replace function public.current_active_company_scope_id() returns uuid language sql as $$select company_id from public.user_active_company_scope where user_id=auth.uid()$$;
  create table public.projects(id uuid primary key,company_scope_id uuid,user_id uuid,data jsonb);create function public.project_row_access_allowed(c uuid,u uuid) returns boolean language sql as $$select c=public.current_active_company_scope_id()$$;
  grant usage on schema auth,storage to authenticated;grant execute on function auth.uid() to authenticated;`);
- for(const f of ['20261009182551_hr_access_foundation.sql','20261009193953_hr_content_purge_foundation.sql','20261009203431_people_module_entitlements.sql','20261009203950_people_module_access_closure.sql','20261014144538_time_registration.sql','20261014160424_time_timer_existing_rows.sql','20261014161822_time_external_project_reference.sql'])await db.exec(await fs.readFile('supabase/migrations/'+f,'utf8'));
+ for(const f of ['20261009182551_hr_access_foundation.sql','20261009193953_hr_content_purge_foundation.sql','20261009203431_people_module_entitlements.sql','20261009203950_people_module_access_closure.sql','20261014144538_time_registration.sql','20261014160424_time_timer_existing_rows.sql','20261014161822_time_external_project_reference.sql','20261014165602_time_mobile_shortcut_setting.sql'])await db.exec(await fs.readFile('supabase/migrations/'+f,'utf8'));
  await db.exec(`insert into public.sales_company_scopes values(${q(company)},'qa','QA'),(${q(foreign)},'other','Other');insert into public.company_module_access(company_id,module_key,enabled) values(${q(company)},'hr',true),(${q(foreign)},'hr',true);`);
  for(const u of [admin,self,leader,reader,outsider,next])await db.exec(`insert into auth.users(id,raw_user_meta_data) values(${q(u)},'{}');insert into public.profiles(id,email,approved,deactivated,role) values(${q(u)},'qa-${u}@example.invalid',true,false,'member');insert into public.sales_company_memberships values(${q(company)},${q(u)},${q(u===admin?'firmaadmin':'ansatt')});insert into public.user_active_company_scope values(${q(u)},${q(company)});insert into hr_private.module_access(company_id,user_id,enabled) values(${q(company)},${q(u)},true);`);
  await actor(admin);await rpc('hr_foundation_configure',[company,0,true,'Timekontroll i syntetisk firma','Syntetisk vurdert grunnlag','2027-01-01']);
@@ -29,6 +29,16 @@ try{
  let setup=await rpc('time_setup_save',[company,0,settings]);eq(setup.revision,1,'settings persisted');
  await reject(()=>rpc('time_setup_save',[company,0,settings]),'40001');
  let bad={...settings,employee_numbers:{[self]:'1',[admin]:'1'}};await reject(()=>rpc('time_setup_save',[company,1,bad]),'22023');
+ eq((await rpc('time_tasks_get',[company])).mobile_shortcut,false,'missing shortcut preference defaults off');
+ await db.exec('reset role;begin;');await actor(admin);
+ const shortcutReject=async(fn,code)=>{await db.exec('savepoint shortcut_negative');try{await reject(fn,code);}finally{await db.exec('rollback to savepoint shortcut_negative;release savepoint shortcut_negative');}};
+ for(const value of ['true',1,null])await shortcutReject(()=>rpc('time_setup_save',[company,1,{...settings,mobile_shortcut:value}]),'22023');
+ let mobileSetup=await rpc('time_setup_save',[company,1,{...settings,mobile_shortcut:true}]);eq(mobileSetup.content.mobile_shortcut,true,'admin persists company shortcut preference');
+ await actor(self);eq((await rpc('time_tasks_get',[company])).mobile_shortcut,true,'enrolled HR employee sees enabled shortcut');await shortcutReject(()=>rpc('time_setup_save',[company,2,{...settings,mobile_shortcut:false}]),'42501');
+ await actor(reader);eq((await rpc('time_tasks_get',[company])).mobile_shortcut,false,'HR reader without own employee record has no shortcut');
+ await actor(admin);await rpc('time_setup_save',[company,2,{...settings,mobile_shortcut:false}]);await actor(self);eq((await rpc('time_tasks_get',[company])).mobile_shortcut,false,'saved opt-out removes shortcut');
+ await actor(admin);await rpc('time_setup_save',[company,3,{...settings,mobile_shortcut:true,enabled:false}]);await actor(self);eq((await rpc('time_tasks_get',[company])).mobile_shortcut,false,'disabled time registration hides opted-in shortcut');
+ await db.exec('reset role;rollback;');await actor(admin);
  await actor(self);await reject(()=>rpc('time_setup_get',[company]),'42501');await reject(()=>rpc('time_setup_save',[company,1,settings]),'42501');
  const week='2026-10-12',work=settings.categories[0],internal=settings.categories[1],expense=settings.categories.at(-1);
  let state=await rpc('time_sheet_get',[company,week,null]);eq(state.employee.id,employee.id);eq(state.sheet,null);eq(state.settings.employee_numbers,undefined,'personal settings exclude employee numbers');

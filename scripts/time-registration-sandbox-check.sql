@@ -43,11 +43,14 @@ do $$declare c uuid:=current_setting('hr.qa.company')::uuid;e uuid;cat uuid:=gen
  e:=(public.hr_employee_command(c,'create',jsonb_build_object('user_id',current_setting('hr.qa.self'),'leader_id',current_setting('hr.qa.old')))#>>'{employee,id}')::uuid;
  perform public.hr_employee_command(c,'create',jsonb_build_object('user_id',current_setting('hr.qa.admin'),'leader_id',current_setting('hr.qa.old')));
  cfg:=jsonb_build_object('enabled',true,'categories',jsonb_build_array(jsonb_build_object('id',cat,'name','Syntetisk arbeid','kind','work','unit','hours','payroll_code','001','active',true,'project_required',false,'receipt_required',false)),'employee_numbers',jsonb_build_object(current_setting('hr.qa.self'),'004'),'project_numbers','{}'::jsonb,'managers','[]'::jsonb,'deadline_day',0,'deadline_time','12:00','export',jsonb_build_object('separator',';','decimal',',','date_format','yyyy-mm-dd','columns',jsonb_build_array(jsonb_build_object('key','employee_number','label','Ansattnummer'),jsonb_build_object('key','on','label','Dato'),jsonb_build_object('key','payroll_code','label','Kode'),jsonb_build_object('key','quantity','label','Antall'))));
+ perform pg_temp.hr_assert(not (public.time_tasks_get(c)->>'mobile_shortcut')::boolean,'cloud mobile shortcut defaults off');
+ cfg:=cfg||'{"mobile_shortcut":true}'::jsonb;
  r:=public.time_setup_save(c,0,cfg);perform pg_temp.hr_assert((r->>'revision')::int=1,'cloud setup saved');
  perform set_config('request.jwt.claim.sub',current_setting('hr.qa.self'),true);
  perform pg_temp.hr_reject(format('select public.time_setup_get(%L)',c),'42501');
  rows:=jsonb_build_array(jsonb_build_object('id',gen_random_uuid(),'on',wk,'category_id',cat,'project_id',null,'external_project','00458','mode','quantity','quantity','7.5','start','07:00','end','15:00','pause',30,'next_day',false,'note','Synthetic QA only','files','[]'::jsonb));
  rows:=rows||jsonb_build_array(rows->0||jsonb_build_object('id',gen_random_uuid(),'external_project','Solsiden byggetrinn 2'),rows->0||jsonb_build_object('id',gen_random_uuid(),'external_project','Storgata 12, Oslo'));
+ perform pg_temp.hr_assert((public.time_tasks_get(c)->>'mobile_shortcut')::boolean,'cloud registered employee sees enabled mobile shortcut');
  r:=public.time_sheet_command(c,wk,e,0,gen_random_uuid(),'save',rows,false,'');perform pg_temp.hr_assert((r#>>'{sheet,entries,0,quantity}')::numeric=7.5,'cloud quantity saved');
  perform set_config('hr.qa.sheet',r#>>'{sheet,id}',true);
  perform pg_temp.hr_reject(format('select public.time_sheet_command(%L,%L,%L,0,%L,''save'',%L,false,'''')',c,wk,e,gen_random_uuid(),rows),'40001');
@@ -66,6 +69,7 @@ do $$declare c uuid:=current_setting('hr.qa.company')::uuid;e uuid;cat uuid:=gen
  r:=public.time_timer_command_v2(c,'start',tid,cat,null,'Syntetisk QA',0,'00078 – Tidtaking');perform pg_temp.hr_assert(r#>>'{timer,id}'=tid::text,'cloud timer started');perform pg_temp.hr_assert(r#>>'{timer,external_project}'='00078 – Tidtaking','cloud timer retains manual reference');
  perform pg_temp.hr_assert(public.time_timer_get(c)#>>'{timer,id}'=tid::text,'cloud fresh timer read');
  r:=public.time_timer_command(c,'cancel',tid);perform pg_temp.hr_assert(r->'timer'='null'::jsonb,'cloud timer canceled');
+ perform set_config('request.jwt.claim.sub',current_setting('hr.qa.admin'),true);r:=public.time_setup_get(c);perform public.time_setup_save(c,(r->>'revision')::int,(r->'content')||'{"mobile_shortcut":false}'::jsonb);perform set_config('request.jwt.claim.sub',current_setting('hr.qa.self'),true);perform pg_temp.hr_assert(not (public.time_tasks_get(c)->>'mobile_shortcut')::boolean,'cloud saved opt-out hides mobile shortcut');
  perform set_config('hr.qa.batch',bid::text,true);
 end$$;
 reset role;

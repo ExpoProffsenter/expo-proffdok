@@ -62,6 +62,12 @@ try{
   assert(hrChapters.some(c=>c.querySelector('summary').textContent.toLowerCase().includes('sykefravær')&&c.textContent.includes('Del forberedelsen med leder')));
   const hrChapter=hrChapters.find(c=>c.querySelector('summary').textContent.toLowerCase().includes('medarbeidere og tilgang'));await act(async()=>hrChapter.querySelector('summary').click());assert(hrChapter.open);
   const recommended=[...hrChapter.querySelectorAll('h4')].find(h=>h.textContent==='Anbefalt bruk');assert(recommended);assert.equal(recommended.nextElementSibling.tagName,'UL');const recommendations=[...recommended.nextElementSibling.querySelectorAll('li')];assert(recommendations.length>0);assert(recommendations.every(item=>item.textContent.trim()));assert(recommendations.some(item=>item.textContent.includes('nærmeste leder')));
+  assert(hrChapters.some(c=>c.textContent.includes('Før timer øverst på Startsiden')),'mobile time guidance stays inside HR chapter');
+  for(const missing of [null,{user_id:'other',available:true},{user_id:'admin',available:false}]){
+   await act(async()=>window.__render('help',{isSystemAdmin:true,authUser:{id:'admin'},helpAccess:{userId:'admin',isSystemAdmin:true,isCompanyAdmin:true,moduleKeys:['projects','sales','store_offers','hr']},hrContext:missing}));
+   assert(!helpRoot('HR'),'systemadmin/module label must not bypass fresh HR access');assert(!window.document.body.textContent.includes('Før timer'),'time guidance must disappear without fresh HR access');assert(!window.document.body.textContent.includes('lønnseksport'),'no time/payroll chapter leaks outside HR');
+  }
+  await act(async()=>window.__render('help',{authUser:{id:'admin'},helpAccess:{userId:'admin',moduleKeys:['sales']},hrContext:{user_id:'admin',available:true}}));if(helpRoot('HR').getAttribute('aria-expanded')!=='true')await act(async()=>helpRoot('HR').click());assert(window.document.body.textContent.includes('Før timer øverst på Startsiden'),'ordinary authorized HR user receives mobile time guidance');
   const salesHelp=buttons().find(b=>b.querySelector('b')?.textContent.includes('Befaring / Våtromstilbud'));assert(salesHelp);await act(async()=>salesHelp.click());assert(window.document.body.textContent.includes('Publiserte og aksepterte tilbudsversjoner'));assert.equal(window.document.querySelectorAll('.help-topic-chapter').length,0);
   await act(async()=>window.__render('nav',{}));
   assert.deepEqual([...window.document.querySelectorAll('[role=group]')].map(g=>g.getAttribute('aria-label')),['Daglig arbeid','Mine rutiner','Forvaltning']);

@@ -1,3 +1,9 @@
+## Valgfri snarvei til timeføring på mobil – 14. oktober 2026
+
+I **HR → Timer og utlegg → Timeoppsett** kan firmaet slå på **Vis snarvei til timeføring på mobilforsiden** og trykke **Lagre timeoppsett**. Valget er avslått som standard. Et mørkt kort med turkis klokke og **Før timer** åpner den personlige timeføringen direkte fra mobilforsiden.
+
+Kortet krever aktiv timeregistrering, firmaets lagrede valg og registrert medarbeider med HR-tilgang i aktivt firma. Timeveiledningen i Hjelp er også avgrenset til HR. Desktop og eksisterende prosjektmenyer beholdes. Av/på, firmabytte, fersk tilgangskontroll og bevaring av ulagret timekladd er testet. Full kontrakt/QA: `docs/kshms/TIME_REGISTRATION_20261014.md`.
+
 ## Avbryt timeføring uten ekstra varsel – 14. oktober 2026
 
 Etter brukerens ønske lukker **Avbryt**, krysset og Escape timeeditoren direkte. Ulagret endring forkastes, lagrede timer beholdes og forkastet kladd gjenåpnes ikke ved remount. Endringen gjelder bare timeeditorens lukking; ingen backendendring. Faktiske React-scenarioer dekker de tre lukkemåtene, manglende lagringskall, forkastet kladd og bevaring av lagret prosjekt/timetall. Samme Preview/PR #245; Production uendret.
