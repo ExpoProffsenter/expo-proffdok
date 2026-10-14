@@ -91,6 +91,14 @@ jobs:
           node scripts/hr-sick-leave-runtime-check.mjs
           node scripts/hr-sick-leave-react-check.mjs
 
+      - name: Verify private time registration and existing payroll boundaries
+        run: |
+          export HR_PGLITE_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/@electric-sql/pglite/dist/index.js"
+          export KSHMS_JSDOM_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/jsdom/lib/api.js"
+          node scripts/time-registration-db-check.mjs
+          node scripts/time-registration-react-check.mjs
+          node scripts/time-notifications-check.mjs
+
       - name: Verify company display-name identity and chart guidance
         run: |
           export HR_PGLITE_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/@electric-sql/pglite/dist/index.js"
