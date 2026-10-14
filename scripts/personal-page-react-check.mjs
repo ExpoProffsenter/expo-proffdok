@@ -29,6 +29,7 @@ try{
    }
    if(name==='hr_contact_save'){assert.equal(args.p_contact_revision,contactRev);assert.equal(args.p_employee_revision,employeeRev);contactData=structuredClone(args.p_data);contactRev++;return {data:{context,employee:{id:'e',revision:employeeRev},revision:contactRev}};}
    if(name==='hr_followup_tasks')return {data:{context,tasks:[],next:null,email_enabled:false}};
+   if(name==='time_tasks_get')return {data:{context,enabled:false,missing_week:null,returned_count:0,review_count:0,can_manage:false}};
    if(name==='hr_personal_list'){if(revoked)return {error:{code:'42501',message:'revoked'}};if(lateList)return new Promise(resolve=>lateList.resolve=resolve);return {data:{context,employees:structuredClone(employees),next:null}};}
    if(name==='hr_employee_get')return {data:{context,employee:structuredClone(employees.find(e=>e.id===args.p_employee_id))}};
    throw new Error('Unexpected RPC '+name);
@@ -45,7 +46,8 @@ try{
   await act(async()=>w.__render('page',{context:null,userId:undefined,authUser:null,supabaseClient:w.__client}));
   assert(!doc.querySelector('.personal-page'),'anonymous loading must not crash or expose Min side');
   await act(async()=>w.__render('page',props()));
-  assert.equal(doc.querySelectorAll('.personal-card').length,3,'compact overview has three cards');
+  assert.equal(doc.querySelectorAll('.personal-card').length,4,'time entry card joins all three preserved overview cards');
+  assert(button('Mine timer'),'employee time entry is a personal route');
   assert.equal(doc.querySelectorAll('.personal-upcoming').length,2,'available HR types are grouped');
   assert.equal(doc.querySelectorAll('.personal-status').length,2);
   assert(!doc.body.textContent.includes('Kommer')&&!doc.body.textContent.includes('ikke åpnet ennå'),'live HR must not claim it is coming later');
@@ -82,6 +84,6 @@ try{
   let suggestionWrites=[];await act(async()=>w.__render('suggestion',{label:'formål',text:'Forslag',value:'Min tekst',onUse:value=>suggestionWrites.push(value)}));assert.equal(suggestionWrites.length,0,'never replace existing text on mount');await click('Bruk forslag til formål');assert.equal(suggestionWrites.length,0);await click('Behold min tekst');assert.equal(suggestionWrites.length,0);await click('Bruk forslag til formål');await click('Erstatt teksten');assert.deepEqual(suggestionWrites,['Forslag']);
   assert.equal(w.localStorage.length,0);assert.equal(w.sessionStorage.length,0);
   await act(async()=>w.__unmount());
-  console.log('Actual Min side/contacts/suggestions/email React PASS: three compact cards, own account save, fresh wrong-actor rejection, preserved account/email drafts, personal handbook route, closed private gate, contact CAS save, revocation and late unmount, explicit suggestion replacement. Synthetic transport; handbook body stubbed. No live user/profile changes.');
+ console.log('Actual Min side/contacts/suggestions/email React PASS: time card plus three preserved compact cards, own account save, fresh wrong-actor rejection, preserved account/email drafts, personal handbook route, closed private gate, contact CAS save, revocation and late unmount, explicit suggestion replacement. Synthetic transport; handbook body stubbed. No live user/profile changes.');
  }finally{dom.window.close();}
 }finally{fs.rmSync(temp,{recursive:true,force:true});}

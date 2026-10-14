@@ -1,3 +1,14 @@
+## Ny avgrenset prøve – timer og utlegg
+
+Tidligere TEST OK beholdes. Denne prøven gjelder bare den nye timemodulen, først på samme faste Preview.
+
+1. HR → Åpne timer og utlegg → Timeoppsett: velg standardforslag, tilpass ett kategorinavn, legg inn test-lønnskoder og eget ansattnummer, aktiver og Lagre timeoppsett.
+2. Min side → Mine timer → Ny registrering: før timer først som antall, deretter som Fra–til med pause. Lagre registrering skal gi bekreftelse og lukke dialogen. Fanebytte skal beholde en ulagret registrering etter fersk tilgangskontroll.
+3. Før et utlegg og legg ved en ufølsom testkvittering. Kvitteringen skal vises på registreringen. Send uken til godkjenning; uken blir skrivebeskyttet. Egen godkjenning er sperret.
+4. Leder/timeansvarlig: HR → Timer og utlegg → hent perioden → åpne medarbeiderens uke, kontroller/returner/godkjenn. Lønnseksport tar bare godkjente linjer og lager en nedlastbar CSV. Samme fil kan lastes ned fra arkivet. En eksportert uke kan ikke redigeres.
+
+Ingen produksjonsmedarbeider, lønn eller ekte e-post brukes som QA. Konkret programimport og fysisk mobilkamera er ikke attestert ennå. Innlogget utviklerprøve/publisert SHA/CI føres i TIME_REGISTRATION_20261014.md før TEST OK. Ingen repetisjon av tidligere PDF/ZIP/kontrollør-/scrollbrukerprøver kreves.
+
 ## Tydelig gjennomføring og trygg referatgjennomgang – 12. oktober 2026
 
 Miljømål **BEGGE**, fra ferdig publisert PR #234/main `c0f3a015d8a47b81d0d2a0f0a9ed7b18aa06da12`. Kenneth ba om faktisk UX-test og retting. Innlogget Preview med eksisterende syntetisk kursmedarbeider bekrefter uklar opprettingsinngang etter deling. Faktisk React og lokal PostgreSQL reproduserte at gjentatt Send til begge for gjennomgang nullstilte gitt bekreftelse.

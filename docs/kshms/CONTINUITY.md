@@ -1,3 +1,9 @@
+## Gjeldende fortsettelsespunkt – timer og utlegg 14. oktober 2026
+
+Ny feature/Preview fra fersk main `d95f14c80e2a87bd4fed4e31cf47f712c3c2ca48`; permanent demo `9f4f2ec062fd1a5e75fbb7926a086258264f732d` beholdes. PR #243 kontrollørtilgang og #244 scrollrettelse er allerede TEST OK, merget og verifisert i Production/demo. Eldre avventingsformuleringer nedenfor er historikk for disse leveransene. Parkert #217/HR-ledger beholdes, fase45c er allerede slettet.
+
+Kenneth har avklart begge registreringsmåter, arbeid/overtid/fravær/reise/kilometer/tillegg og utlegg med kvittering, samt firmastyrt HR-oppsett for kategorier/lønnskoder. Lønnssystem ikke valgt. [Aktivt scope, brukerreise og QA](TIME_REGISTRATION_20261014.md). Ny kode og additiv database følger Preview → critical/CI → ny avgrenset TEST OK. Ingen Production-/demo-merge eller ekte e-post i denne utviklerrunden. Rutine-e-postforbudet er uendret. Ingen tidligere TEST OK gjenbrukes som generell releasegodkjenning eller nye tester pålegges uten relevant regresjon.
+
 ## Rutiner sender ikke e-post – 12. oktober 2026
 
 Etter Kenneths eksplisitte akuttinstruks er rutinetildelinger og lesepåminnelser bare i appen. Ny køtrigger blokkerer reading ved insert/retry; 670 ventende rutine-e-poster stanset i produksjon, ingen gjeldende rutinepost sendbar. 200 allerede sendte beholdes i loggen. Rutiner, tildelinger og egne bekreftelser beholdes. Andre oppgaver og frister beholder e-post. Produksjon og Sandbox installert, faktisk insert/retry-test rullet tilbake. Se docs/kshms/ROUTINE_EMAIL_STOP_20261012.md.

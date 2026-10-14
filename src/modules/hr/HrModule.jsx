@@ -18,6 +18,7 @@ import HrSickLeaveCases from './HrSickLeaveCases.jsx';
 import HrFollowupTasks from './HrFollowupTasks.jsx';
 import {practiceAvailable} from './hrPracticeConversation.mjs';
 import {createModuleNavigationMemory} from '../ui/moduleNavigationMemory.mjs';
+import {HrTimeEntry} from '../time/TimeEntryPoint.jsx';
 
 const emptyConfig={purpose:'',legalBasis:'',reviewOn:'',enabled:false};
 const selectionMemory=createModuleNavigationMemory(id=>typeof id==='string'&&id.length>0&&id.length<=80);
@@ -132,6 +133,7 @@ export default function HrModule({context,audience='legacy',initialEmployeeId=nu
    </ol><p className="hr-hint">En mal er bare spørsmålene. Å lagre en mal starter ingen samtale og sender ingenting til ansatte. Nærmeste leder starter en medarbeidersamtale inne i medarbeidervinduet. Nærmeste leder kan også starte sykefraværsoppfølging her. Vedlegg kommer senere.</p></>:<><p>{audience==='management'?'Trykk Se medarbeidere og åpne en rad. Kontroller at personens nærmeste leder er registrert. Firmaadmin retter leder og lesetilgang.':'Trykk Se medarbeidere og åpne egen oppføring eller en oppføring som er delt med deg. Firmaadmin retter leder og lesetilgang.'}</p><p className="hr-hint">Du kan se tilgjengelige registeroppføringer nå. Egne oppfølginger ligger på Min side. Nærmeste leder starter en medarbeidersamtale inne i medarbeidervinduet. Nærmeste leder kan også starte sykefraværsoppfølging her. Vedlegg kommer senere.</p></>}
   </section>}
   {audience!=='personal'&&data&&<nav className="hr-workspace-cards" aria-label="HR snarveier">
+   {data.enabled&&<HrTimeEntry context={context}/>}
    <article className="hr-workspace-card"><span className="hr-workspace-icon"><UsersRound aria-hidden="true"/></span><h3>{administer?'Medarbeiderregister':audience==='management'?'Dine medarbeidere':'Dine oppføringer'}</h3><p>{administer?'Finn medarbeideren og kontroller leder og lesetilgang.':audience==='management'?'Åpne en medarbeider du er registrert som nærmeste leder for.':'Se egen oppføring og medarbeidere du har fått lesetilgang til.'}</p><button type="button" className="secondary" onClick={()=>goTo(registerRef)}>Se medarbeidere <ArrowRight aria-hidden="true"/></button></article>
    {administer&&<article className="hr-workspace-card hr-workspace-templates"><span className="hr-workspace-icon"><BookOpen aria-hidden="true"/></span><h3>Samtalemaler</h3><p>{data.enabled?'Velg et forslag, tilpass spørsmålene og lagre firmaets mal.':'Aktiver medarbeiderregisteret under Oppsett og kontrollfrist først.'}</p><button type="button" className="secondary" disabled={!data.enabled} onClick={()=>goTo(templatesRef)}>Åpne samtalemaler <ArrowRight aria-hidden="true"/></button></article>}
    <article className="hr-workspace-card hr-workspace-sick"><span className="hr-workspace-icon"><HeartPulse aria-hidden="true"/></span><h3>Sykefravær</h3><p>Klargjør oppfølgingen og se hva som skal gjøres underveis.</p><button type="button" className="secondary" onClick={()=>goTo(sickLeaveRef)}>Åpne sykefravær <ArrowRight aria-hidden="true"/></button></article>

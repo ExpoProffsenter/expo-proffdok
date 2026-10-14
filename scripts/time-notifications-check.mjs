@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import {createTimeNotifications} from '../supabase/functions/_shared/time-notifications.mjs';
+let calls=[],sends=[],authorize=true,live=true,provider=true,confirmed=true,available=true;
+const job={id:'81000000-0000-4000-8000-000000000100',attempt:'81000000-0000-4000-8000-000000000101',to:'qa@example.invalid'};
+const worker=createTimeNotifications({apiKey:'synthetic',from:'qa@example.invalid',verifyTransport:async()=>true,rpc:async(name,args)=>{calls.push({name,args});if(name==='time_mail_authorize')return authorize;if(name==='time_mail_reserve'){if(!available)return null;available=false;return job;}if(name==='time_mail_validate')return live;if(name==='time_mail_finish')return confirmed;throw Error(name);},fetchImpl:async(url,args)=>{sends.push({url,args});return new Response(JSON.stringify(provider?{id:'provider-id'}:{}),{status:200});}});
+const request=(headers={},body='{}')=>new Request('https://example.invalid',{method:'POST',headers:{'x-time-token':'a'.repeat(64),...headers},body});
+assert.equal((await worker(new Request('https://example.invalid'))).status,405);
+for(const headers of [{origin:'https://example.invalid'},{authorization:'Bearer bad'},{'x-time-token':'bad'}]){calls=[];assert.equal((await worker(request(headers))).status,403);assert.equal(calls.length,0);}
+authorize=false;calls=[];assert.equal((await worker(request())).status,403);assert.deepEqual(calls.map(c=>c.name),['time_mail_authorize']);authorize=true;
+assert.equal((await worker(request({},'{"to":"bad"}'))).status,400);assert.equal(sends.length,0);
+live=false;assert.deepEqual(await(await worker(request())).json(),{suppressed:true});assert.equal(sends.length,0);live=true;available=true;
+const result=await worker(request());assert.equal(result.status,200);assert.deepEqual(await result.json(),{sent:true,count:1});assert.equal(sends.length,1);assert.deepEqual(JSON.parse(sends[0].args.body).to,[job.to]);assert.equal(sends[0].args.headers['Idempotency-Key'],'time-notice-'+job.id);assert.equal(calls.filter(c=>c.name==='time_mail_finish').at(-1).args.p_provider_id,'provider-id');
+const payload=JSON.parse(sends[0].args.body);assert(payload.html.includes('https://expo-proffdok.app/'));assert(!payload.html.includes('qa@example.invalid'));assert(!payload.html.includes('81000000'));assert(payload.text.includes('Ingen personnavn'));
+provider=false;available=true;const fail=await worker(request());assert.equal(fail.status,503);assert.deepEqual(await fail.json(),{sent:false});assert.equal(calls.filter(c=>c.name==='time_mail_finish').at(-1).args.p_provider_id,null,'provider-OK without ID is not confirmed sending');confirmed=false;available=true;assert.deepEqual(await(await worker(request())).json(),{error:'result_not_confirmed'});
+console.log('Time mail runtime PASS: method/custom auth before effects, body size/schema, fresh revoked-task check, generic private text/HTML, exact recipient, stable idempotency, provider-ID and database confirmation; no real emails.');
