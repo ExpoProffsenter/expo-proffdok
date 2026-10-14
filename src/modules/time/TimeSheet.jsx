@@ -51,7 +51,7 @@ export default function TimeSheet({context,employeeId=null,initialWeek=null,onBa
  const editable=own&&enabled&&(!sheet||['draft','returned'].includes(sheet.state))&&!sheet?.export_locked&&!conflict;
  const category=categories.find(c=>c.id===editor?.category_id),sum=totals(rows,categories);
  const changeWeek=next=>{if(editorRef.current&&!window.confirm('Registreringen er ikke lagret. Vil du bytte uke?'))return;changeEditor(null);setWeek(next);};
- const closeEditor=()=>{if(editorRef.current&&!window.confirm('Registreringen er ikke lagret. Vil du lukke den?'))return;changeEditor(null);};
+ const closeEditor=()=>changeEditor(null);
  const download=id=>run(async(session,current)=>{const file=await downloadTimeReceipt(session,id);if(current())saveTimeDownload(file.blob,file.name);});
  const fileLabel=id=>sheet?.files?.find(f=>f.id===id)?.name||'Lagret vedlegg';
  return <section className="time-workspace" aria-label={own?'Mine timer og utlegg':'Medarbeiderens timer og utlegg'} aria-busy={busy}>

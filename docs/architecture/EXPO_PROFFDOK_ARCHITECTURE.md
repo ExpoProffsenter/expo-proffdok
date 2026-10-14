@@ -1,3 +1,7 @@
+## Avbryt timeføring uten ekstra varsel – 14. oktober 2026
+
+Etter brukerens ønske lukker **Avbryt**, krysset og Escape timeeditoren direkte. Ulagret endring forkastes, lagrede timer beholdes og forkastet kladd gjenåpnes ikke ved remount. Endringen gjelder bare timeeditorens lukking; ingen backendendring. Faktiske React-scenarioer dekker de tre lukkemåtene, manglende lagringskall, forkastet kladd og bevaring av lagret prosjekt/timetall. Samme Preview/PR #245; Production uendret.
+
 ## Manuelt prosjekt fra annet ERP – 14. oktober 2026
 
 Samme Preview og PR #245. I **Min side → Mine timer → Ny registrering** kan ansatte skrive direkte i **Prosjektnummer, navn eller adresse** uten å velge noe i prosjektlisten først. Feltet vises når ingen ProffDok-prosjekt er valgt. **Manuelt prosjekt / annet ERP** finnes også i prosjektlisten. Ett felt på høyst 240 tegn tar nummer, navn, adresse eller en kombinasjon. Omgivende blanktegn fjernes; ledende nuller og øvrig tekst beholdes. Referansen vises i kontroll/historikk og følger uendret i CSV-feltet `project_number` (standardoverskrift Prosjektnummer). Ved import må referansen stemme med mottakersystemets forventning. CSV-oppsett og valgt kolonnerekkefølge endres ikke.

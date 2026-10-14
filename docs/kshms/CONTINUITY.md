@@ -1,3 +1,7 @@
+## Avbryt timeføring uten ekstra varsel – 14. oktober 2026
+
+Etter brukerens ønske lukker **Avbryt**, krysset og Escape timeeditoren direkte. Ulagret endring forkastes, lagrede timer beholdes og forkastet kladd gjenåpnes ikke ved remount. Endringen gjelder bare timeeditorens lukking; ingen backendendring. Faktiske React-scenarioer dekker de tre lukkemåtene, manglende lagringskall, forkastet kladd og bevaring av lagret prosjekt/timetall. 54 faktiske React-kontroller og full critical/Sandbox-build PASS. Samme Preview/PR #245; Production uendret.
+
 ## Synlig manuell prosjektføring – 14. oktober 2026
 
 Brukerbildet viste at manuelt felt var skjult bak prosjektvalget. Feltet **Prosjektnummer, navn eller adresse** vises nå straks når ingen intern prosjekt-ID er valgt. Skriving velger automatisk manuell referanse. Tomt felt ved internt arbeid og eksisterende ProffDok-valg beholdes. Avgrenset UI-/hjelperettelse, ingen databaseendring. 47 faktiske React-kontroller og full critical/Sandbox-build PASS; ny dekning krever synlig felt og direkte skriving uten valg i nedtrekkslisten. Samme Preview/PR; Production uendret.

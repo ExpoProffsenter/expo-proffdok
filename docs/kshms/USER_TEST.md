@@ -1,3 +1,7 @@
+## Bare det nye: avbryt uten ekstra spørsmål
+
+I **Ny registrering** kan du trykke **Avbryt**, krysset eller Escape. Vinduet skal lukkes direkte. Ulagrede endringer forkastes; lagrede timer beholdes. Utviklerens React-test dekker alle tre lukkemåter, ingen lagring og at forkastet kladd ikke kommer tilbake.
+
 ## Bare det nye: manuell prosjektreferanse
 
 Bruk samme Preview. Tidligere time- og HR-tester trenger ikke gjentas.
