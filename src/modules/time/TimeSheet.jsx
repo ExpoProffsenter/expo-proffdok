@@ -22,9 +22,9 @@ export default function TimeSheet({context,employeeId=null,initialWeek=null,onBa
  };
  const changeEditor=row=>{editorRef.current=row;setEditor(row);if(row)rememberTimeDraft(key,{employee_id:valueRef.current?.employee?.id,revision:valueRef.current?.sheet?.revision||0,editor:row});else forgetTimeDraft(key);};
  useEffect(()=>{
-  let alive=true;const session=createTimeSession(context);sessionRef.current=session;setValue(null);valueRef.current=null;setEditor(null);setHistory(null);setError('');setNotice('');setConflict(false);
+  let alive=true;const session=createTimeSession(context);sessionRef.current=session;setProjects([]);setProjectNext(null);setProjectQuery('');setValue(null);valueRef.current=null;setEditor(null);setHistory(null);setError('');setNotice('');setConflict(false);
   const refresh=async()=>{
-   const id=++ticket.current;session.invalidate();setValue(null);setHistory(null);setTimer(null);setBusy(true);busyRef.current=true;
+   const id=++ticket.current;session.invalidate();setValue(null);setHistory(null);setTimer(null);setProjects([]);setProjectNext(null);setBusy(true);busyRef.current=true;
    try{if(document.visibilityState!=='hidden'){const result=await session.call('time_sheet_get',{p_week:week,p_employee_id:employeeId});const timerResult=employeeId?null:await session.call('time_timer_get');if(alive&&id===ticket.current){install(result);setTimer(timerResult?.timer||null);}}}
    catch(e){if(alive&&id===ticket.current){setError(e.message);setEditor(null);}}
    finally{if(alive&&id===ticket.current){setBusy(false);busyRef.current=false;}}
