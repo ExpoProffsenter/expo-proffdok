@@ -1,3 +1,11 @@
+## Manuelt prosjekt fra annet ERP – 14. oktober 2026
+
+Samme Preview og PR #245. I **Min side → Mine timer → Ny registrering** kan ansatte velge **Manuelt prosjekt / annet ERP** i prosjektlisten og skrive **Prosjektnummer, navn eller adresse**. Ett felt på høyst 240 tegn tar nummer, navn, adresse eller en kombinasjon. Omgivende blanktegn fjernes; ledende nuller og øvrig tekst beholdes. Referansen vises i kontroll/historikk og følger uendret i CSV-feltet `project_number` (standardoverskrift Prosjektnummer). Ved import må referansen stemme med mottakersystemets forventning. CSV-oppsett og valgt kolonnerekkefølge endres ikke.
+
+Eksisterende ProffDok-prosjekter velges som før. Manuell referanse oppretter ingen prosjekt-/tilgangsrad. Påkrevd prosjekt kan oppfylles med en manuell referanse; kombinasjon av intern prosjekt-ID og manuell tekst avvises. `time_timer_command_v2` tar samme manuelle referanse, mens gammel RPC-signatur er bevart som wrapper. Timerens lagrede manuelle referanse følger stopp og lagret ukelinje. Eksport-, godkjennings-, CAS-, rolle-, fil- og tomånedersregler beholdes.
+
+Avgrenset scope: timeeditor/oppsett/core, additiv migrasjon `20261014161822_time_external_project_reference.sql`, ny timerkolonne og v2-RPC, uendret ekstern eksportkontrakt, tester og hjelp/docs. Ingen endring i prosjekter, prosjektmeny, ERP-integrasjon, medlemskap, andre moduler eller Production. Lokal PostgreSQL 113 og faktisk React 44 assertions PASS; alle tidligere kontroller beholdes. Full critical/Sandbox-build PASS. Sandbox-migrasjon installert; eksisterende HR/KS-funksjoner, gamle policies, runtime, lagrede demotimer og mailinnstillinger er uendret. Ekte Sandbox-regresjon består 23 assertions med full rollback. Preview/CI føres i PR. Den kjente sperren i skynettleserens native credential state omgås ikke; ingen ny brukerinnlogging kreves av en deploy.
+
 ## Timer og utlegg – 14. oktober 2026
 
 Miljømål **BEGGE**, fra main `d95f14c80e2a87bd4fed4e31cf47f712c3c2ca48`. Ansatte fører i **Min side → Mine timer**. **HR → Timer og utlegg** samler kontroll, firmaets timeoppsett og konfigurerbar CSV-eksport. Antall timer, fra–til med pause og serverlagret start/stopp støttes, sammen med fravær, overtid, reise/km, tillegg og utlegg med private PDF/JPG/PNG-kvitteringer. Overtid beregnes ikke automatisk. Importformat må prøves når lønnsprogram er valgt.

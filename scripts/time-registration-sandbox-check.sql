@@ -46,7 +46,8 @@ do $$declare c uuid:=current_setting('hr.qa.company')::uuid;e uuid;cat uuid:=gen
  r:=public.time_setup_save(c,0,cfg);perform pg_temp.hr_assert((r->>'revision')::int=1,'cloud setup saved');
  perform set_config('request.jwt.claim.sub',current_setting('hr.qa.self'),true);
  perform pg_temp.hr_reject(format('select public.time_setup_get(%L)',c),'42501');
- rows:=jsonb_build_array(jsonb_build_object('id',gen_random_uuid(),'on',wk,'category_id',cat,'project_id',null,'mode','quantity','quantity','7.5','start','07:00','end','15:00','pause',30,'next_day',false,'note','Synthetic QA only','files','[]'::jsonb));
+ rows:=jsonb_build_array(jsonb_build_object('id',gen_random_uuid(),'on',wk,'category_id',cat,'project_id',null,'external_project','00458','mode','quantity','quantity','7.5','start','07:00','end','15:00','pause',30,'next_day',false,'note','Synthetic QA only','files','[]'::jsonb));
+ rows:=rows||jsonb_build_array(rows->0||jsonb_build_object('id',gen_random_uuid(),'external_project','Solsiden byggetrinn 2'),rows->0||jsonb_build_object('id',gen_random_uuid(),'external_project','Storgata 12, Oslo'));
  r:=public.time_sheet_command(c,wk,e,0,gen_random_uuid(),'save',rows,false,'');perform pg_temp.hr_assert((r#>>'{sheet,entries,0,quantity}')::numeric=7.5,'cloud quantity saved');
  perform set_config('hr.qa.sheet',r#>>'{sheet,id}',true);
  perform pg_temp.hr_reject(format('select public.time_sheet_command(%L,%L,%L,0,%L,''save'',%L,false,'''')',c,wk,e,gen_random_uuid(),rows),'40001');
@@ -57,9 +58,12 @@ do $$declare c uuid:=current_setting('hr.qa.company')::uuid;e uuid;cat uuid:=gen
  perform set_config('request.jwt.claim.sub',current_setting('hr.qa.old'),true);r:=public.time_sheet_command(c,wk,e,2,gen_random_uuid(),'approve',rows,false,'');perform pg_temp.hr_assert(r#>>'{sheet,state}'='approved','cloud leader approval');
  perform set_config('request.jwt.claim.sub',current_setting('hr.qa.admin'),true);r:=public.time_export_create(c,bid,wk,wk+6,1);
  perform pg_temp.hr_assert(r#>>'{batch,rows,0,employee_number}'='004','cloud export keeps text employee number');
+ perform pg_temp.hr_assert(r#>>'{batch,rows,0,project_number}'='00458','cloud manual project number preserves zeroes');
+ perform pg_temp.hr_assert(r#>>'{batch,rows,1,project_number}'='Solsiden byggetrinn 2','cloud manual project name exported');
+ perform pg_temp.hr_assert(r#>>'{batch,rows,2,project_number}'='Storgata 12, Oslo','cloud manual address exported');
  perform pg_temp.hr_assert((public.time_sheet_get(c,wk,e)#>>'{sheet,export_locked}')::boolean,'cloud export locks week');
  perform pg_temp.hr_reject(format('select public.time_export_create(%L,%L,%L,%L,1)',c,gen_random_uuid(),wk,wk+6),'22023');
- r:=public.time_timer_command(c,'start',tid,cat,null,'Syntetisk QA',0);perform pg_temp.hr_assert(r#>>'{timer,id}'=tid::text,'cloud timer started');
+ r:=public.time_timer_command_v2(c,'start',tid,cat,null,'Syntetisk QA',0,'00078 – Tidtaking');perform pg_temp.hr_assert(r#>>'{timer,id}'=tid::text,'cloud timer started');perform pg_temp.hr_assert(r#>>'{timer,external_project}'='00078 – Tidtaking','cloud timer retains manual reference');
  perform pg_temp.hr_assert(public.time_timer_get(c)#>>'{timer,id}'=tid::text,'cloud fresh timer read');
  r:=public.time_timer_command(c,'cancel',tid);perform pg_temp.hr_assert(r->'timer'='null'::jsonb,'cloud timer canceled');
  perform set_config('hr.qa.batch',bid::text,true);

@@ -34,7 +34,7 @@ export function defaultCategories(){return [
  ['Ferie','absence','hours',false,false],['Sykefravær','absence','hours',false,false],['Annet fravær','absence','hours',false,false],
  ['Reisetid','travel','hours',false,false],['Kilometer','travel','km',false,false],['Tillegg','allowance','count',false,false],['Utlegg','expense','nok',false,true]
  ].map(([name,kind,unit,project_required,receipt_required])=>({id:crypto.randomUUID(),name,kind,unit,payroll_code:'',active:true,project_required,receipt_required}));}
-export function emptyRow(on=osloToday(),category_id=''){return {id:crypto.randomUUID(),on,category_id,project_id:null,mode:'quantity',quantity:'',start:'07:00',end:'15:00',pause:30,next_day:false,note:'',files:[]};}
+export function emptyRow(on=osloToday(),category_id=''){return {id:crypto.randomUUID(),on,category_id,project_id:null,external_project:null,mode:'quantity',quantity:'',start:'07:00',end:'15:00',pause:30,next_day:false,note:'',files:[]};}
 export function totals(rows,categories){const result={hours:0,km:0,nok:0,count:0};for(const row of rows){const c=categories.find(c=>c.id===row.category_id)||row.category;try{if(c)result[c.unit]+=entryQuantity(row,c);}catch{/* incomplete rows have no total */}}return result;}
 // A spreadsheet must treat identifiers/notes as text, never executable formulas.
 export function csvCell(value,separator=';'){

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
-import {defaultCategories,EXPORT_COLUMNS} from '../src/modules/time/timeCore.mjs';
+import {defaultCategories,EXPORT_COLUMNS,payrollCsv} from '../src/modules/time/timeCore.mjs';
 const {PGlite}=await import(process.env.HR_PGLITE_PATH||'/workspace/scratch/8cad950ed5ad/hr-release-qa/node_modules/@electric-sql/pglite/dist/index.js');
 const db=await PGlite.create();let checks=0;const id=n=>`81000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
 const [company,foreign,admin,self,leader,reader,outsider,next,project]=[1,2,3,4,5,6,7,8,9].map(id);
@@ -16,7 +16,7 @@ try{
  create table public.user_active_company_scope(user_id uuid primary key,company_id uuid);create or replace function public.current_active_company_scope_id() returns uuid language sql as $$select company_id from public.user_active_company_scope where user_id=auth.uid()$$;
  create table public.projects(id uuid primary key,company_scope_id uuid,user_id uuid,data jsonb);create function public.project_row_access_allowed(c uuid,u uuid) returns boolean language sql as $$select c=public.current_active_company_scope_id()$$;
  grant usage on schema auth,storage to authenticated;grant execute on function auth.uid() to authenticated;`);
- for(const f of ['20261009182551_hr_access_foundation.sql','20261009193953_hr_content_purge_foundation.sql','20261009203431_people_module_entitlements.sql','20261009203950_people_module_access_closure.sql','20261014144538_time_registration.sql','20261014160424_time_timer_existing_rows.sql'])await db.exec(await fs.readFile('supabase/migrations/'+f,'utf8'));
+ for(const f of ['20261009182551_hr_access_foundation.sql','20261009193953_hr_content_purge_foundation.sql','20261009203431_people_module_entitlements.sql','20261009203950_people_module_access_closure.sql','20261014144538_time_registration.sql','20261014160424_time_timer_existing_rows.sql','20261014161822_time_external_project_reference.sql'])await db.exec(await fs.readFile('supabase/migrations/'+f,'utf8'));
  await db.exec(`insert into public.sales_company_scopes values(${q(company)},'qa','QA'),(${q(foreign)},'other','Other');insert into public.company_module_access(company_id,module_key,enabled) values(${q(company)},'hr',true),(${q(foreign)},'hr',true);`);
  for(const u of [admin,self,leader,reader,outsider,next])await db.exec(`insert into auth.users(id,raw_user_meta_data) values(${q(u)},'{}');insert into public.profiles(id,email,approved,deactivated,role) values(${q(u)},'qa-${u}@example.invalid',true,false,'member');insert into public.sales_company_memberships values(${q(company)},${q(u)},${q(u===admin?'firmaadmin':'ansatt')});insert into public.user_active_company_scope values(${q(u)},${q(company)});insert into hr_private.module_access(company_id,user_id,enabled) values(${q(company)},${q(u)},true);`);
  await actor(admin);await rpc('hr_foundation_configure',[company,0,true,'Timekontroll i syntetisk firma','Syntetisk vurdert grunnlag','2027-01-01']);
@@ -34,6 +34,27 @@ try{
  let state=await rpc('time_sheet_get',[company,week,null]);eq(state.employee.id,employee.id);eq(state.sheet,null);eq(state.settings.employee_numbers,undefined,'personal settings exclude employee numbers');
  const row={id:id(20),on:week,category_id:work.id,project_id:project,mode:'clock',quantity:'',start:'07:00',end:'15:30',pause:30,next_day:false,note:'QA arbeid',files:[]};
  const command=(action,rows=[row],revision=state.sheet?.revision||0,who=employee.id,op=crypto.randomUUID(),empty=false,note='')=>rpc('time_sheet_command',[company,week,who,revision,op,action,rows,empty,note]);
+ // External ERP references require no project row, and preserve exact text in review/history/export.
+ await db.exec('reset role;begin;');await actor(self);
+ const externalReject=async(fn,code)=>{await db.exec('savepoint external_negative');try{await reject(fn,code);}finally{await db.exec('rollback to savepoint external_negative;release savepoint external_negative');}};
+ const externalWeek='2026-11-09',refs=['00458','Solsiden byggetrinn 2','Storgata 12, Oslo'];
+ const externalRows=refs.map((ref,n)=>({...row,id:id(180+n),on:externalWeek,project_id:null,external_project:'  '+ref+'  ',mode:'quantity',quantity:'2.50'}));
+ let external=await rpc('time_sheet_command',[company,externalWeek,employee.id,0,crypto.randomUUID(),'save',externalRows,false,'']);
+ eq(external.sheet.entries.map(r=>r.external_project),refs,'number, name and address accepted and trimmed');eq(external.sheet.entries.map(r=>r.project_number),refs,'export project reference is exact manual text');
+ eq(external.sheet.entries.every(r=>r.project_id===null),true,'manual references never create a ProffDok project');
+ for(const bad of [{...externalRows[0],project_id:project},{...externalRows[0],external_project:'  '},{...externalRows[0],external_project:'x'.repeat(241)},{...externalRows[0],external_project:{name:'Wrong type'}},{...externalRows[0],external_project:'Invalid\nreference'}])await externalReject(()=>rpc('time_sheet_command',[company,externalWeek,employee.id,external.sheet.revision,crypto.randomUUID(),'save',[bad],false,'']),'22023');
+ external=await rpc('time_sheet_command',[company,externalWeek,employee.id,external.sheet.revision,crypto.randomUUID(),'submit',externalRows,false,'']);await actor(leader);
+ external=await rpc('time_sheet_command',[company,externalWeek,employee.id,external.sheet.revision,crypto.randomUUID(),'approve',externalRows,false,'']);await actor(admin);
+ const externalBatch=await rpc('time_export_create',[company,id(190),externalWeek,'2026-11-15',1]);eq(externalBatch.batch.rows.map(r=>r.project_number),refs,'all three reference types survive actual approved export');
+ eq((await rpc('time_history',[company,external.sheet.id])).history[0].snapshot.entries.map(r=>r.external_project),refs,'immutable history retains references');
+ eq(payrollCsv(externalBatch.batch).includes('00458'),true,'CSV preserves leading zeros');
+ const timerExternal=id(191);let currentAdmin=await rpc('time_sheet_get',[company,week,null]);
+ await rpc('time_sheet_command',[company,week,currentAdmin.employee.id,0,crypto.randomUUID(),'save',[{...row,id:id(192),category_id:internal.id,project_id:null,mode:'quantity',quantity:'1.00'}],false,'']);
+ let manualTimer=await rpc('time_timer_command_v2',[company,'start',timerExternal,work.id,null,'ERP tidtaking',0,'00078 – Solsiden']);eq(manualTimer.timer.external_project,'00078 – Solsiden','manual timer starts with required project');
+ await db.exec(`reset role;update time_private.timers set started_at=now()-interval '2 hours' where id=${q(timerExternal)};`);await actor(admin);
+ await rpc('time_timer_command',[company,'stop',timerExternal]);currentAdmin=await rpc('time_sheet_get',[company,week,null]);eq(currentAdmin.sheet.entries.find(r=>r.id===timerExternal).project_number,'00078 – Solsiden','legacy stop also keeps external timer reference');
+ await db.exec('reset role;');eq((await sql("select has_function_privilege('anon','public.time_timer_command_v2(uuid,text,uuid,uuid,uuid,text,integer,text)','execute') v"))[0].v,false,'no anonymous timer v2');
+ await db.exec('rollback;');await actor(self);
  const operation=crypto.randomUUID();state=await command('save',[row],0,employee.id,operation);eq(state.sheet.revision,1);eq(state.sheet.entries[0].quantity,8,'server clock arithmetic');
  eq((await command('save',[row],0,employee.id,operation)).sheet.revision,1,'retry is idempotent');
  await reject(()=>command('save',[{...row,note:'changed'}],0,employee.id,operation),'40001');await reject(()=>command('save',[row],0),'40001');
