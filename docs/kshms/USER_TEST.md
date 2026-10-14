@@ -2,7 +2,7 @@
 
 Bruk samme Preview. Tidligere time- og HR-tester trenger ikke gjentas.
 
-1. **Min side → Mine timer → Ny registrering.** Velg **Manuelt prosjekt / annet ERP** i prosjektlisten. Feltet **Prosjektnummer, navn eller adresse** skal vises.
+1. **Min side → Mine timer → Ny registrering.** Feltet **Prosjektnummer, navn eller adresse** skal vises med én gang når ingen ProffDok-prosjekt er valgt. Du trenger ikke åpne prosjektlisten først.
 2. Skriv for eksempel **00458 – Solsiden – Storgata 12**, før et antall timer og trykk **Lagre registrering**. Dialogen lukkes, og samme referanse skal vises på linjen. Åpne **Rediger**; teksten skal være beholdt. Velg et eksisterende ProffDok-prosjekt for å kontrollere at det fortsatt kan brukes.
 3. Utviklerens databaseprøver dekker at referansen også beholdes ved start/stopp, ledergodkjenning, historikk og lønnseksport. Om prosjektkolonnen er valgt i firmaets CSV-oppsett følger referansen med der. Bruk nummeret alene hvis lønnssystemet krever en prosjektkode ved import.
 
