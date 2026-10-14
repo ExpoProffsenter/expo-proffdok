@@ -1,3 +1,16 @@
+## Ny avgrenset prøve: timer og utlegg – 14. oktober 2026
+
+Tidligere godkjente tester skal ikke gjentas. Denne prøven gjelder bare ny timefunksjon, i Preview/Sandbox.
+
+1. Firmaadmin: **HR → Timer og utlegg → Åpne timer og utlegg → Timeoppsett**. Legg til standardforslag, tilpass en kategori/lønnskode og ansattnummer, aktiver timeregistrering og trykk **Lagre timeoppsett**. Nærmeste leder må være registrert. Andre aktive HR-brukere kan velges som timeansvarlige.
+2. Ansatt: **Min side → Mine timer → Ny registrering**. Før timer som antall eller fra–til. Prøv **Start tidtaking nå**, lukk/åpne arbeidsflaten og kontroller at tidtakingen fortsatt pågår. **Stopp og lagre tiden** lagrer med angitt pause; stopp etter minst ett minutt. **Avbryt tidtaking** lagrer ingen tidslinje.
+3. Velg **Utlegg**, skriv beløp og last opp PDF/JPG/PNG. Trykk **Lagre registrering**, deretter **Send uken til godkjenning**. Leder åpner samme uke i HR og bruker **Godkjenn uken** eller **Returner uken** med begrunnelse. Egen godkjenning skal ikke være mulig.
+4. Timeansvarlig: **Lønnseksport**, velg periode og **Hent uker i perioden**. Kontroller grunnlaget, kryss av bekreftelsen og velg **Opprett og last ned lønnsfil**. Prøv **Last ned samme fil** fra arkivet. Denne eksporten skal ikke importeres til ekte lønn som test.
+
+Ferdig eksportert innhold ryddes etter to måneder. Åpne og delvis eksporterte uker beholdes til ferdig behandling. Import i lønnssystemet må valideres separat når programmet er valgt.
+
+Utviklerens React-/PostgreSQL-/regresjonstester er bestått. Faktisk innlogget full-app-prøve og TEST OK gjenstår. Ingen ekte e-post er sendt fra timefunksjonen.
+
 ## Tydelig gjennomføring og trygg referatgjennomgang – 12. oktober 2026
 
 Miljømål **BEGGE**, fra ferdig publisert PR #234/main `c0f3a015d8a47b81d0d2a0f0a9ed7b18aa06da12`. Kenneth ba om faktisk UX-test og retting. Innlogget Preview med eksisterende syntetisk kursmedarbeider bekrefter uklar opprettingsinngang etter deling. Faktisk React og lokal PostgreSQL reproduserte at gjentatt Send til begge for gjennomgang nullstilte gitt bekreftelse.

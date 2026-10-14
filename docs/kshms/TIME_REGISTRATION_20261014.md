@@ -1,0 +1,21 @@
+## Timer og utlegg – 14. oktober 2026
+
+Miljømål **BEGGE**, fra main `d95f14c80e2a87bd4fed4e31cf47f712c3c2ca48`. Ansatte fører i **Min side → Mine timer**. **HR → Timer og utlegg** samler kontroll, firmaets timeoppsett og konfigurerbar CSV-eksport. Antall timer, fra–til med pause og serverlagret start/stopp støttes, sammen med fravær, overtid, reise/km, tillegg og utlegg med private PDF/JPG/PNG-kvitteringer. Overtid beregnes ikke automatisk. Importformat må prøves når lønnsprogram er valgt.
+
+Firmaadmin velger timeansvarlige. Egen ansatt fører; aktuell nærmeste leder eller timeansvarlig kontrollerer. Egne timer kan ikke godkjennes av samme bruker. Innsendte uker er låst til tilbaketrekking/retur. Eksport omfatter bare godkjente, ikke tidligere eksporterte linjer og krever ansattnummer/lønnskode/prosjektnummer der påkrevd. Eksportarkivet lar samme fil lastes ned igjen; nedlasting er ingen bekreftelse på import eller utbetaling.
+
+Kenneths avklaring: ferdig eksporterte uker, endringshistorikk og kvitteringer ryddes etter **to kalendermåneder fra siste eksport for uken**. Åpne/ufullstendig eksporterte uker beholdes til ferdigbehandling. Daglig databasejobb rydder innhold; egen tokenbeskyttet Edge-worker fjerner kvitteringer via Storage API og bekrefter fravær før køen kvitteres. Minimale firma-/medarbeider-/ukemarkører uten navn, timer eller beløp hindrer falske manglende-oppgaver og ny innlegging i ryddet uke. Eldre lønnsgrunnlag finnes i lønnssystemet. Utdatert idempotens og historiske, ikke eksportrefererte utgaver ryddes også etter to måneder.
+
+Avgrenset scope: ny time-modul, to innganger i HR/Min side, additiv privat database/storage/RPC/cron, egne mail-/cleanup-workers, Hjelp, dokumentasjon og permanent QA. Eksisterende HR-/KS-funksjonskilder og gamle policies er identiske i Sandbox; ny enrollment-trigger er eneste integrasjon i HR-tabell. Sales, globale menyer, profil, medlemskap og eksisterende mail-workers endres ikke. Time-e-post er implementert, men fortsatt AV i Sandbox; produksjonsaktivering inngår i senere release.
+
+QA: 98 lokale PostgreSQL-assertions og 37 faktiske React-assertions PASS. 19 faktiske Sandbox-assertions PASS, alle random syntetiske fixtures rullet tilbake. Min side, eksisterende HR-register/Hjelp og modulnavigasjon PASS. Full critical/Sandbox-build PASS. Hjelpetester er utvidet fra tre til fire HR-kapitler; alle tidligere kapitler/innholdskontroller beholdes. Representative 10-linjers uke med hver lagring/godkjenning/eksport målte ~52 kB lagrede radbytes; 40 ansatte × 9 uker ~19 MB før indekser/ledig plass. Vedlegg kommer i tillegg. Praktisk anslag 30–60 MB for dette mønsteret, ikke en øvre kvote.
+
+Sandbox `ppvircenkjizeiqdxphj`: migrasjon installert, egne workers ACTIVE, cleanup-endepunkt konfigurert; ny time-mail fortsatt AV. Standard migreringsverktøy feilet to ganger med `Invalid or expired requestState`; samme autoriserte migrasjon ble installert via én eksplisitt SQL-transaksjon og registrert med versjon `20261014144538`. Ingen Production-migrering/merge er gjort. Preview, CI og innlogget brukerprøve føres nedenfor. TEST OK gjelder denne nye funksjonen separat.
+
+### Release og gjenværende kontroller
+
+- Branch: `fase45b-time-registration-20261014`, egen bevart arbeidskopi etter avbrutt chat. Original `fase45b-main-preview-20261014` beholdes urørt.
+- Før merge: grønn PR Core Safety, READY Preview, faktisk innlogget avgrenset prøve og Kenneths TEST OK.
+- Production: installer migrasjon og de to egne workers; sett cleanup endpoint til Production; aktiver time-e-post med korrekt endpoint når transportkonfigurasjon er verifisert. Ingen tidligere mail-innstillinger endres.
+- Etter Production-verifisering: kontroller main → demo-synk og preflight; demo skal aldri merges tilbake.
+- Security advisors legger bare til tilsiktede private deny-all RLS-tabeller (14) og 17 autentiserte, internt autoriserte SECURITY DEFINER-RPC-er. Ingen anonym execute eller nye mutable search paths. Tilhørende lints: https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy og https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable .
