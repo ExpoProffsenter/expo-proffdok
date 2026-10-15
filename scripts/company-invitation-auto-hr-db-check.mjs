@@ -39,7 +39,7 @@ export async function checkInvitationAutoHr({db,id,a,b,sys,admin,worker,secondar
  const invite=async(email,access=opts,c=b,role='ansatt')=>{await actor(c===a?sys:admin,c);return rpc('company_admin_invite_with_access',[c,email,role,access]);};
  const signup=async(n,email,c=b)=>{const u=id(n);await owner(`insert into auth.users values(${q(u)});insert into public.profiles(id,email,company_name,approved) values(${q(u)},${q(email)},'',false)`);await actor(u,c);return u;};
  const accept=()=>rpc('accept_company_user_invite');
- const configure=async(c,enabled)=>{await actor(c===a?sys:admin,c);const f=(await read(`select revision from hr_private.firms where company_id=${q(c)}`))[0];await actor(c===a?sys:admin,c);return rpc('hr_foundation_configure',[c,f?.revision||0,enabled,'Synthetic QA purpose','Synthetic QA basis','2027-01-01']);};
+ const configure=async(c,enabled)=>{await actor(c===a?sys:admin,c);const f=(await read(`select revision from hr_private.firms where company_id=${q(c)}`))[0];await actor(c===a?sys:admin,c);return rpc('hr_foundation_configure',[c,f?.revision||0,enabled,'Synthetic QA purpose','Synthetic QA basis',new Date(Date.now()+30*86400000).toISOString().slice(0,10)]);};
 
  await invite('auto-hr@example.invalid');const fresh=await signup(80,'auto-hr@example.invalid');
  eq((await employees(b,fresh)).length,0,'pending invitation creates no HR employee');
