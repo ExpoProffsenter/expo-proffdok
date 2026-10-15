@@ -1,3 +1,9 @@
+## Send invitasjon på nytt – 15. oktober 2026
+
+Firmaadmin får **Send invitasjon på nytt** ved hver ventende invitasjon. Den bruker opprinnelig registreringsidentitet og fersk logo/firmanavn. Ny, lesende manager-RPC kontrollerer valgt firma, invitasjons-ID, ventende status og deaktivert konto. Den omskriver aldri invitasjonen, inviter, tidspunkt, rolle, lagrede tilgangsvalg eller aksept-fingeravtrykk. Klienten kontrollerer firma/aktør/ID på nytt før eksisterende e-posttjeneste brukes. Dobbeltklikk blokkeres; brukt invitasjon, bortfalt tilgang og firmaswitch stopper sending. Feil viser prøv igjen ved invitasjonen; suksess sier at e-posttjenesten har bekreftet utsending, uten å påstå mottak.
+
+Miljømål BEGGE fra main 736d5ce7. Scope: Firmaadmin-panel/klient, én additiv read-RPC, utvidet eksisterende QA og dokumentasjon. 89 PostgreSQL- og 52 Chromium-kontroller består, inkludert alle tidligere modultilganger, firmaskille og Systemadmin-isolasjon. Ingen ekte e-post sendes under QA. Samme faste Preview og videre publiseringsløp som pågående firma-/invitasjonsleveranse. Ingen andre rettigheter, data eller e-postarbeidere endres. Detaljer: docs/qa/COMPANY_INVITATION_RESEND_20261015.md.
+
 ## Firmaadmin og Systemadmin holdes i hver sin flate – 15. oktober 2026
 
 Etter publisering av PR #249 viste Kenneth at Firmaadmin i Bademiljø Expo fikk den globale firmaoversikten. Rotårsaken var eldre DOM-adaptere som søkte etter «Brukere og tilganger» i hele dokumentet og monterte systemadmins firmavelger i den nye, avgrensede React-flaten. Serverens Firmaadmin-snapshot var riktig avgrenset til 10 medlemmer i Bademiljø Expo; ordinær proffadmin ble fortsatt nektet tilgang til andre firmaer i faktisk Production-SQL-prøve med rollback.

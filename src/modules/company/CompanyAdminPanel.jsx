@@ -52,15 +52,16 @@ export default function CompanyAdminPanel({authUser}) {
   const [snapshot,setSnapshot]=useState(null),[loading,setLoading]=useState(true),[error,setError]=useState(''),[message,setMessage]=useState('');
   const [email,setEmail]=useState(''),[role,setRole]=useState('ansatt'),[busy,setBusy]=useState(false),[search,setSearch]=useState('');
   const [accessDraft,setAccessDraft]=useState(null);
+  const [resendFeedback,setResendFeedback]=useState(null);
   const generation=useRef(0),scope=useRef(null),alive=useRef(true),operation=useRef(false);
   const load=async(clear=false)=>{
     const ticket=++generation.current;setLoading(true);setError('');
-    if(clear){scope.current=null;setSnapshot(null);setEmail('');setRole('ansatt');setAccessDraft(null);setMessage('');}
+    if(clear){scope.current=null;setSnapshot(null);setEmail('');setRole('ansatt');setAccessDraft(null);setMessage('');setResendFeedback(null);}
     try{
       const result=await companyAdminRpc('snapshot');
       if(!alive.current||ticket!==generation.current)return;
       if(result?.caller_id!==authUser?.id||!result.company_id)throw Error('Innlogging eller firma er endret. Hent på nytt.');
-      if(scope.current&&scope.current!==result.company_id){setEmail('');setRole('ansatt');setAccessDraft(null);setMessage('');}
+      if(scope.current&&scope.current!==result.company_id){setEmail('');setRole('ansatt');setAccessDraft(null);setMessage('');setResendFeedback(null);}
       scope.current=result.company_id;setSnapshot(result);
     }catch(err){if(alive.current&&ticket===generation.current){scope.current=null;setSnapshot(null);setError(err.message);}}
     finally{if(alive.current&&ticket===generation.current)setLoading(false);}
@@ -80,17 +81,17 @@ export default function CompanyAdminPanel({authUser}) {
 
   const current=snapshot?.caller_id===authUser?.id?snapshot:null;
   const inviteAccess=accessDraft&&accessDraft.companyId===current?.company_id?accessDraft.value:defaultInviteAccess(current?.invite_options);
-  const run=async(action,success)=>{
+  const run=async(action,success,onFailure)=>{
     if(operation.current||!current||loading)return;
     operation.current=true;setBusy(true);setError('');setMessage('');
     const ticket=generation.current,companyId=current.company_id;
     try{
-      const result=await action(companyId);
+      const result=await action(companyId,()=>alive.current&&ticket===generation.current&&scope.current===companyId);
       if(!alive.current||ticket!==generation.current||scope.current!==companyId)return;
       setMessage(typeof success==='function'?success(result):success);
       await load();
       publishManagedAccessChange({source:'company-admin',companyId});
-    }catch(err){if(alive.current&&ticket===generation.current)setError(err.message);}
+    }catch(err){if(alive.current&&ticket===generation.current){setError(err.message);onFailure?.(err);}}
     finally{operation.current=false;if(alive.current)setBusy(false);}
   };
   const controls=user=><div className="company-admin-controls">
@@ -114,12 +115,12 @@ export default function CompanyAdminPanel({authUser}) {
     {current&&<fieldset disabled={loading||busy} key={current.company_id}>
       <form className="item" onSubmit={e=>{
         e.preventDefault();const wanted=email.trim();
-        run(async c=>{
+        run(async (c,stillCurrent)=>{
           const chosen={...inviteAccess,...(role==='firmaadmin'?{kshms:!!current.invite_options?.kshms,hr:!!current.invite_options?.hr}:{})};
           const invitation=await companyAdminRpc('invite_with_access',{p_company_id:c,p_email:wanted,p_role:role,p_access:chosen});
           if(invitation.company_id!==c)throw Error('Firmaet er endret. Hent på nytt.');
           if(!invitation.accepted){
-            try{await sendCompanyInvitation(invitation,current.caller_id);return 'Invitasjonen er registrert og sendt.';}
+            try{await sendCompanyInvitation(invitation,current.caller_id,stillCurrent);return 'Invitasjonen er registrert og sendt.';}
             catch(err){return `Invitasjonen er registrert, men e-posten ble ikke sendt: ${err.message} Be den ansatte registrere seg med samme e-postadresse.`;}
           }
           return 'Brukeren er lagt til med valgte firmatilganger. Eksisterende hovedmoduler, primærfirma og historikk er beholdt.';
@@ -144,7 +145,17 @@ export default function CompanyAdminPanel({authUser}) {
           </div>;
         })}{!users.length&&<p>Ingen brukere funnet i dette firmaet.</p>}</div>
       </div>
-      {!!current.invites?.length&&<div className="item"><h3>Inviterte brukere</h3><p>Disse venter på registrering. De valgte tilgangene vises under hver invitasjon.</p>{current.invites.map(i=><div key={i.id}><p><b>{i.email}</b> · {i.company_role==='firmaadmin'?'Firmaadmin':'Ansatt'} · Venter på registrering</p><p className="note">{invitationSummary(i.access)}{i.company_role==='firmaadmin'?' · Firmaadmin arver firmaets aktiverte KS/HMS og HR.':''}</p></div>)}</div>}
+      {!!current.invites?.length&&<div className="item"><h3>Inviterte brukere</h3><p>Disse venter på registrering. Send invitasjonen på nytt hvis den ansatte ikke har kommet i gang. Rolle og tilganger beholdes.</p>{current.invites.map(i=><div key={i.id}><p><b>{i.email}</b> · {i.company_role==='firmaadmin'?'Firmaadmin':'Ansatt'} · Venter på registrering</p><p className="note">{invitationSummary(i.access)}{i.company_role==='firmaadmin'?' · Firmaadmin arver firmaets aktiverte KS/HMS og HR.':''}</p>
+        <button type="button" className="secondary" disabled={busy||loading} aria-label={`Send invitasjon på nytt til ${i.email}`} onClick={()=>{
+          setResendFeedback(null);
+          run(async(c,stillCurrent)=>{
+            const invitation=await companyAdminRpc('resend_invite',{p_company_id:c,p_invite_id:i.id});
+            if(invitation.company_id!==c||invitation.invitation_id!==i.id)throw Error('Firmaet eller invitasjonen er endret. Oppdater firmaoversikten.');
+            await sendCompanyInvitation(invitation,current.caller_id,stillCurrent);
+          },()=>{const text=`Invitasjonen til ${i.email} er sendt på nytt. Utsendingen er bekreftet av e-posttjenesten.`;setResendFeedback({id:i.id,text});return text;},err=>setResendFeedback({id:i.id,text:`E-posten ble ikke sendt: ${err.message} Du kan prøve igjen.`}));
+        }}>Send invitasjon på nytt</button>
+        {resendFeedback?.id===i.id&&<p className="note" aria-live="polite">{resendFeedback.text}</p>}
+      </div>)}</div>}
     </fieldset>}
   </div>;
 }
