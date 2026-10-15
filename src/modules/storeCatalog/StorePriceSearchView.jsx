@@ -12,6 +12,7 @@ import { getStoredSupabaseSession, rpcWithStoredSession } from "../access/module
 import { WORK_PROFILE_EVENT, getMyWorkProfileState, readCachedWorkProfileState } from "../access/workProfileClient.js";
 import { deleteMobilePicklist, listMobilePicklists, saveMobilePicklist } from "./mobilePicklistClient.js";
 import CordelPicklistExport from "../cordel/CordelPicklistExport.jsx";
+import SupplierOrder from "./SupplierOrder.jsx";
 import {
   MAX_PICKLIST_ITEMS, MAX_SAVED_PICKLISTS, deleteLegacyPicklist, normalizePickQuantity,
   picklistReferences, readLegacyPicklist, samePicklistContents, toPicklistReference,
@@ -1026,6 +1027,7 @@ export default function StorePriceSearchView({ onClose }) {
               </button>
             </div>
           </div>
+          <SupplierOrder key={identityScope} items={selectedProducts} companyId={picklistIdentity.companyId} orderNumber={orderNumber} disabled={restoreIncomplete || restoreFailed || restoringSelected || !profileResolved || Boolean(serverError)} />
           <label className="priceSearchOrderNumber">
             <span>Ordrenummer i Cordel (valgfritt)</span>
             <input

@@ -1266,3 +1266,11 @@ Kontrollør-e-post (13. oktober 2026, Preview): Under Administrer kontrollørtil
 
 
 Scrollrettelse 13. oktober 2026 (BEGGE, Preview): Felles scrollminne flyttet til pageScrollMemory. Synlig fokusendring, inkludert Windows + Shift + S, skal ikke gjenopprette en gammel posisjon. Gjenoppretting skjer kun etter faktisk skjult side; tastatur/mus/touch/hjul, blur og unmount avbryter ventende gjentakelser. Nullposisjon er gyldig. Tester dekker seks faner, skjult/tilbake, brukerinteraksjon og rydding. Ingen endring i autosave, serverhydrering, Sales workspace-recovery, backend eller e-post. Ny TEST OK kreves før main/Production og kontrollert demo-synk.
+
+### Plukkliste til leverandør (Preview, 15.10.2026)
+
+Prissøk har «Send bestilling til leverandør». Brukeren kan skrive leverandørnavn og én valgfri e-postadresse, velge varer (også fra en blandet plukkliste), angi referanse, leveringsadresse og melding. Forhåndsvisningen hentes fra aktive katalogvarer på serveren; ingen priser sendes eller lagres i bestillingen. Svar går til innlogget brukers e-post. «Husk leverandør og e-post» lagrer kontakten for det aktive firmaet etter bekreftet sending. Lagrede kontakter kan velges eller slettes; plukklisten beholdes.
+
+Avgrenset implementasjon: `SupplierOrder.jsx`, `supplierOrderClient.js`, `supplierOrder.css`, RPC-ene `supplier_order_context`, `supplier_order_prepare`, `supplier_order_contact_delete` og worker `supplier-order-email`. Kontakter og uforanderlige sendekvitteringer ligger i `supplier_order_private` med RLS og uten direkte klienttilgang. Hvert brukerkall kontrollerer fersk Prissøk-tilgang, firma og medlemskap. Kun service_role kan fullføre sending og lagre kontakt. E-post bygger utelukkende på serverens feltutvalg. Stabile Resend-nøkler tillater samme forsøk på nytt i 23 timer; daglig egen cron sletter sendekvitteringer eldre enn to dager. Dette oppretter ingen ordre i Cordel/ERP eller langvarig ordrehistorikk.
+
+QA: `node scripts/supplier-order-db-check.mjs`, `node scripts/supplier-order-email-check.mjs`, `node scripts/supplier-order-react-check.mjs`, full critical-suite og bygg. Sandbox først; ny TEST OK kreves før produksjonssetting og deretter kontrollert main → demo.
