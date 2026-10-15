@@ -1,0 +1,69 @@
+import assert from 'node:assert/strict';import fs from 'node:fs';import os from 'node:os';import path from 'node:path';import http from 'node:http';import {build} from 'vite';import react from '@vitejs/plugin-react';
+const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
+const cwd=process.cwd(),temp=fs.mkdtempSync(path.join(os.tmpdir(),'company-admin-')),entry=path.join(temp,'entry.jsx');
+fs.writeFileSync(entry,`import React from '${cwd}/node_modules/react/index.js';import {createRoot} from '${cwd}/node_modules/react-dom/client.js';import Panel from '${cwd}/src/modules/company/CompanyAdminPanel.jsx';const root=createRoot(document.getElementById('app'));window.render=(id='admin')=>root.render(React.createElement(Panel,{authUser:{id}}));window.render();`);
+const result=await build({root:cwd,configFile:false,logLevel:'silent',plugins:[react(),{name:'synthetic-transport',enforce:'pre',resolveId(id){if(id.endsWith('/appSupabaseClientRegistry.js'))return '\0client';},load(id){if(id==='\0client')return 'export const getAppSupabaseClient=()=>window.client;';},transform(code,id){if(id.endsWith('/moduleAccessClient.js')){const a=code.indexOf('export async function rpcWithStoredSession('),b=code.indexOf('function normalizeMyAccess',a);return code.slice(0,a)+'export async function rpcWithStoredSession(functionName,args={}){return window.api(functionName,args);}\n'+code.slice(b);}}}],build:{write:false,minify:false,cssCodeSplit:false,rollupOptions:{input:entry,output:{inlineDynamicImports:true}}}});
+const js=result.output.find(x=>x.type==='chunk').code,css=result.output.filter(x=>x.fileName.endsWith('.css')).map(x=>x.source).join('\n');
+const server=http.createServer((req,res)=>{res.setHeader('Content-Type','text/html; charset=utf-8');res.end(`<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font:15px Arial;margin:12px}label{display:grid;gap:6px}input,select,button{box-sizing:border-box;max-width:100%;min-height:40px}button{padding:8px}input,select{padding:8px} .item{padding:14px;border:1px solid #ddd;margin:12px 0;border-radius:12px}${css}</style><div id="app"></div><script type="module">${js.replaceAll('</script','<\\/script')}</script>`);});await new Promise(r=>server.listen(0,'127.0.0.1',r));
+let browser,checks=0;const eq=(a,b,n)=>{assert.deepEqual(a,b,n);checks++;};
+try{
+ browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_PATH||undefined,args:['--no-sandbox']});
+ const page=await browser.newPage({viewport:{width:1280,height:950}}),errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('dialog',d=>d.accept());page.setDefaultTimeout(7000);
+ await page.addInitScript(()=>{
+  window.calls=[];window.mail=[];window.scope='b';window.fail=false;window.mailFail=false;window.hold=false;window.waiters=[];window.actor='admin';window.system=true;
+  window.users=[{id:'employee',email:'employee@example.invalid',name:'Ansatt Expo',company_name:'Bademiljø Expo',company_role:'ansatt',is_primary:true,approved:true,deactivated:false,can_edit_role:true,core_access:{user_id:'employee',email:'employee@example.invalid',company_name:'Bademiljø Expo',company_scope_id:'b',approved:true,module_keys:['sales','store_offers'],company_store_offers_enabled:true}},
+    {id:'shared',email:'shared@example.invalid',company_name:'Ringside Original',company_role:'ansatt',is_primary:false,approved:true,deactivated:false,can_edit_role:true,core_access:{user_id:'shared',email:'shared@example.invalid',company_name:'Ringside Original',company_scope_id:'a',approved:true,module_keys:['projects']}}];
+  window.invites=[];window.people={};window.inviteOptions={store_offers:true,kshms:true,hr:true,allowed_modules:['projects','sales','store_offers']};
+  window.snapshot=()=>({company_id:window.scope,company_name:window.scope==='b'?'Bademiljø Expo':'Ringside AS',company_profile:{logoUrl:'/'+window.scope+'.png'},caller_id:window.actor,is_systemadmin:window.system,can_switch_company:window.system,invite_options:structuredClone(window.inviteOptions),caller_module_keys:['projects','sales','store_offers'],users:structuredClone(window.users),invites:structuredClone(window.invites)});
+  window.api=async(n,a={})=>{
+   window.calls.push({n,a:structuredClone(a)});
+   if(n==='company_admin_snapshot'){
+    if(window.hold){const saved=window.snapshot();return new Promise(resolve=>window.waiters.push(()=>resolve(saved)));}
+    if(window.fail)throw Error('Tilgangen er tilbakekalt');
+    if(a.p_company_id&&a.p_company_id!==window.scope)throw Error('Arbeidsfirmaet er endret');
+    return window.snapshot();
+   }
+   if(n==='company_admin_set_role'){if(a.p_company_id!==window.scope)throw Error('Feil firma');window.users.find(u=>u.id===a.p_user_id).company_role=a.p_role;return window.snapshot();}
+   if(n==='company_admin_set_status'){window.users.find(u=>u.id===a.p_user_id).deactivated=a.p_deactivated;return window.snapshot();}
+   if(n==='company_admin_invite_with_access'){window.invites=[{id:'invite',email:a.p_email,company_role:a.p_role,access:a.p_access}];return {company_id:window.scope,company_name:window.snapshot().company_name,invite_company_name:'Canonical '+window.scope,email:a.p_email,accepted:false};}
+   if(n==='people_modules_user_get'){const key=a.p_company_id+':'+a.p_user_id;return window.people[key]||{company_id:a.p_company_id,user_id:a.p_user_id,company:{kshms:true,hr:true},kshms:false,hr:false,kshms_role:'reader',firmaadmin:false};}
+   if(n==='people_modules_user_set'){const v={...a.p_expected,kshms:a.p_kshms,hr:a.p_hr,kshms_role:a.p_kshms_role};window.people[a.p_company_id+':'+a.p_user_id]=v;return v;}
+   if(n==='set_managed_module_access'){window.users.find(u=>u.id===a.target_user_id).core_access.module_keys=a.requested_module_keys;return {module_keys:a.requested_module_keys};}
+   if(n==='get_my_module_access')return {module_keys:['projects'],is_systemadmin:window.system,is_firmaadmin:true};
+   throw Error('Unexpected API '+n);
+  };
+  window.client={rpc:async(n,a)=>{try{return {data:await window.api(n,a)};}catch(e){return {error:{message:e.message}};}},functions:{invoke:async(n,a)=>{window.mail.push(a.body);return window.mailFail?{error:{message:'Transport utilgjengelig'}}:{data:{ok:true}};}}};
+ });
+ await page.goto('http://127.0.0.1:'+server.address().port+'/');await page.getByRole('heading',{name:'Legg til ansatt i Bademiljø Expo'}).waitFor();checks++;
+ const employee=page.locator('article').filter({has:page.locator('strong',{hasText:'employee@example.invalid'})});
+ const shared=page.locator('article').filter({has:page.locator('strong',{hasText:'shared@example.invalid'})});
+ eq(await employee.count(),1,'single card for role and grants');eq(await shared.count(),1);
+ await employee.getByLabel('Rolle for employee@example.invalid').selectOption('firmaadmin');await page.waitForFunction(()=>window.calls.some(x=>x.n==='company_admin_set_role'));eq((await page.evaluate(()=>window.calls.find(x=>x.n==='company_admin_set_role'))).a.p_company_id,'b');
+ const hr=shared.locator('label').filter({has:page.locator('b',{hasText:/^HR$/})}).locator('input');await hr.check();await shared.getByRole('button',{name:'Lagre KS/HMS- og HR-tilgang',exact:true}).click();await shared.getByRole('status').waitFor();eq((await page.evaluate(()=>window.calls.find(x=>x.n==='people_modules_user_set'))).a.p_company_id,'b','shared employee grant belongs to selected company');
+ await employee.locator('label').filter({has:page.locator('b',{hasText:'Prosjekter og dokumentasjon'})}).locator('input').check();await employee.getByRole('button',{name:'Lagre tilgang',exact:true}).click();await page.waitForFunction(()=>window.calls.some(x=>x.n==='set_managed_module_access'));eq((await page.evaluate(()=>window.calls.find(x=>x.n==='set_managed_module_access'))).a.target_user_id,'employee');
+ const inviteForm=page.locator('form');
+ const inviteCheck=name=>inviteForm.getByRole('checkbox',{name:new RegExp('^'+name)});
+ await inviteCheck('Prosjekter og dokumentasjon').check();await inviteCheck('KS/HMS').check();await inviteCheck('HR').check();
+ await inviteForm.getByLabel('KS/HMS-rolle ved invitasjon').selectOption('responsible');
+ eq(await inviteCheck('Generelle tilbud').isDisabled(),true,'company-wide entitlement locked');
+ await page.getByLabel('E-post',{exact:true}).fill('new@example.invalid');await page.getByRole('button',{name:'Inviter ansatt',exact:true}).click();await page.getByRole('status').filter({hasText:'Invitasjonen er registrert og sendt.'}).waitFor();
+ const chosen=await page.evaluate(()=>window.calls.find(x=>x.n==='company_admin_invite_with_access').a.p_access);
+ eq(chosen,{module_keys:['sales','store_offers','projects'],kshms:true,hr:true,kshms_role:'responsible'},'invitation carries explicit chosen access');
+ eq(await page.locator('.item').filter({has:page.getByRole('heading',{name:'Inviterte brukere',exact:true})}).getByText('KS/HMS-ansvarlig',{exact:false}).count()>0,true,'pending invitation shows saved choices');
+ eq(await inviteCheck('HR').isChecked(),false,'successful invite resets form choices');
+ let mail=await page.evaluate(()=>window.mail[0]);eq(mail.companyName,'Bademiljø Expo');eq(mail.logoUrl,'/b.png');eq(mail.toEmail,'new@example.invalid');eq(new URL(mail.projectLink).searchParams.get('company'),'Canonical b');eq(await page.evaluate(()=>window.mail.length),1,'manual submit sends once');
+ await page.evaluate(()=>window.mailFail=true);await page.getByLabel('E-post',{exact:true}).fill('unsent@example.invalid');await page.getByRole('button',{name:'Inviter ansatt',exact:true}).click();await page.getByRole('status').filter({hasText:'e-posten ble ikke sendt'}).waitFor();checks++;
+ await page.getByLabel('E-post',{exact:true}).fill('draft@example.invalid');await page.evaluate(()=>{window.scope='a';window.dispatchEvent(new CustomEvent('expo-proffdok-work-profile',{detail:{active_company_id:'a'}}));});await page.getByRole('heading',{name:'Legg til ansatt i Ringside AS'}).waitFor();eq(await page.getByLabel('E-post',{exact:true}).inputValue(),'','switch clears old invite');
+ await page.evaluate(()=>{window.hold=true;window.dispatchEvent(new Event('focus'));});await page.waitForFunction(()=>window.waiters.length>0);
+ await page.evaluate(()=>{window.hold=false;window.scope='b';window.dispatchEvent(new CustomEvent('expo-proffdok-work-profile',{detail:{active_company_id:'b'}}));});await page.getByRole('heading',{name:'Legg til ansatt i Bademiljø Expo'}).waitFor();await page.evaluate(()=>window.waiters.splice(0).forEach(f=>f()));eq(await page.getByRole('heading',{name:'Legg til ansatt i Ringside AS'}).count(),0,'late old-company read ignored');
+ await page.evaluate(()=>{window.fail=true;window.dispatchEvent(new Event('focus'));});await page.getByRole('alert').filter({hasText:'tilbakekalt'}).waitFor();eq(await page.locator('input').count(),0,'revoked manager loses controls');
+ await page.evaluate(()=>{window.fail=false;window.system=false;window.users[1].core_access=null;window.dispatchEvent(new Event('focus'));});await page.getByRole('heading',{name:'Brukere og tilganger',exact:true}).waitFor();eq(await page.getByRole('button',{name:'Deaktiver konto'}).count(),0);eq(await employee.locator('label').filter({has:page.locator('b',{hasText:/^Generelle tilbud$/})}).locator('input').isDisabled(),true,'company-controlled module stays locked');
+ eq(await page.getByText('Du administrerer bare ditt eget firma.',{exact:false}).count(),1,'ordinary admin gets own-company text');
+ await inviteForm.getByLabel('Rolle ved invitasjon',{exact:true}).selectOption('firmaadmin');eq(await inviteCheck('HR').isChecked(),true);eq(await inviteCheck('HR').isDisabled(),true,'firmaadmin inherits licensed HR');
+ await inviteForm.getByLabel('Rolle ved invitasjon',{exact:true}).selectOption('ansatt');
+ await page.evaluate(()=>{window.inviteOptions.hr=false;window.inviteOptions.allowed_modules=['sales','store_offers'];window.dispatchEvent(new Event('focus'));});await page.waitForFunction(()=>document.querySelector('form input[type=email]')&&!document.querySelector('fieldset').disabled);
+ eq(await inviteCheck('HR').isDisabled(),true,'unlicensed HR unavailable');eq(await inviteCheck('Prosjekter og dokumentasjon').isDisabled(),true,'cannot delegate an absent own module');
+ for(const width of [1280,390,320]){await page.setViewportSize({width,height:900});eq(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),true,'no horizontal overflow at '+width);if(process.env.COMPANY_ADMIN_SCREENSHOTS){fs.mkdirSync(process.env.COMPANY_ADMIN_SCREENSHOTS,{recursive:true});await page.screenshot({path:path.join(process.env.COMPANY_ADMIN_SCREENSHOTS,'company-admin-'+width+'.png'),fullPage:true});}}
+ await page.evaluate(()=>{window.hold=true;window.dispatchEvent(new Event('focus'));});await page.waitForFunction(()=>window.waiters.length>0);await page.evaluate(()=>window.render('different-actor'));await page.evaluate(()=>{window.hold=false;window.waiters.splice(0).forEach(f=>f());});await page.getByRole('alert').filter({hasText:'Innlogging eller firma er endret'}).waitFor();eq(await page.locator('input').count(),0,'old actor cannot restore cards');eq(errors,[]);
+ console.log(`company-admin-react-check: ${checks} Chromium assertions PASS; actual React, selected scope, combined cards, roles/core/people grants, scoped mail payload/failure, switch, late/revoked reads, actor change and 320/390/1280 layout; synthetic transport only.`);
+}finally{await browser?.close();await new Promise(r=>server.close(r));fs.rmSync(temp,{recursive:true,force:true});}

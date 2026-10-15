@@ -53,12 +53,15 @@ function toggleModule(keys, key, checked) {
   return normalizeModuleKeys([...next]);
 }
 
-function UserAccessRow({
+export function UserAccessRow({
   user,
   callerModuleKeys,
   isSystemAdmin,
   currentUserId,
   onSaved,
+  peopleCompanyId,
+  headerContent,
+  children,
 }) {
   const effectiveInitial = user.system_role === "systemadmin"
     ? MODULE_CATALOG.map((module) => module.key)
@@ -121,6 +124,7 @@ function UserAccessRow({
         ) : null}
       </div>
 
+      {headerContent}
       <div
         style={{
           display: "grid",
@@ -131,7 +135,8 @@ function UserAccessRow({
       >
         {MODULE_CATALOG.map((module) => {
           const callerCanGrant = isSystemAdmin || callerModuleKeys.includes(module.key);
-          const disabled = targetIsSystemAdmin || firmAdminOwnRowLocked || !callerCanGrant;
+          const companyControlled = module.key === "store_offers" || (module.key === "sales" && user.company_store_offers_enabled);
+          const disabled = targetIsSystemAdmin || firmAdminOwnRowLocked || !callerCanGrant || (!isSystemAdmin && companyControlled);
           return (
             <label
               key={module.key}
@@ -167,7 +172,8 @@ function UserAccessRow({
         })}
       </div>
 
-      <PeopleModuleAccess companyId={user.company_scope_id} userId={user.user_id} />
+      <PeopleModuleAccess companyId={peopleCompanyId || user.company_scope_id} userId={user.user_id} />
+      {children}
 
       {firmAdminOwnRowLocked ? (
         <p style={{ margin: "9px 0 0", fontSize: 12, color: "#64748b" }}>
@@ -502,6 +508,8 @@ let managerMount = null;
 
 function findManagerTarget(access) {
   if (!access?.loaded || (!access.isSystemAdmin && !access.isFirmaAdmin)) return null;
+  // The React company panel owns its complete, scoped user cards.
+  if (document.querySelector('[data-company-admin="unified"]')) return null;
   const headings = Array.from(document.querySelectorAll("h2,h3"));
 
   if (access.isSystemAdmin) {

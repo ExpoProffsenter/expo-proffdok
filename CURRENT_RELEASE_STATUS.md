@@ -1,3 +1,15 @@
+## Tilgangsvalg ved invitasjon – 15. oktober 2026
+
+Firmaadmin velger nå rolle, hovedmoduler, KS/HMS, HR og eventuell KS/HMS-rolle før **Inviter ansatt**. Valgene vises på ventende invitasjoner og brukes atomisk når en ny bruker bekrefter registreringen. Firmaavtale, inviterens gjeldende delegasjonsrett og rett firmamedlemskap kontrolleres på nytt. Eksisterende kontoer beholder hovedmoduler/primærfirma/historikk; valgte firmatilganger oppdateres. Vanlige proffkunder administrerer bare eget firma. Ekstra arbeidsprofiler krever systemadmin og er begrenset til den interne Ringside/Expo-gruppen.
+
+Miljømål BEGGE, samme Preview og PR #249, fortsatt ingen Production-/demo-release. 72 PostgreSQL- og 31 Chromium-kontroller, full critical/build og faktisk ny registrering/tilgangsvalg/proffkundeskille med full rollback består. En eldre Sandbox-variant av arbeidsprofilhjelperne er gjenopprettet til eksisterende main-kontrakt; Production hadde allerede riktige sperrer og er bare lest. Detaljer: `docs/qa/COMPANY_ADMIN_20261015.md`.
+
+## Firmaadministrasjon i aktivt firma – 15. oktober 2026
+
+Firmaadmin bruker serverens aktive firma til brukerlisten, invitasjoner og firmaroller, også når systemadmin representerer Bademiljø Expo. Brukerkortet samler rolle, hovedmoduler, KS/HMS og HR. Hovedmoduler gjelder kontoen; KS/HMS og HR gjelder firmaet som vises. Kontostatus gjelder alle firmaer og styres av systemadministrator. En systemadmin kan legge til et ekstra internt arbeidsfirma uten å flytte primærfirma eller historikk. Registrering bruker firmaets stabile identitet også etter navneendring.
+
+Miljømål BEGGE, feature/Preview først. Ingen Production-/demo-release før ny relevant TEST OK. Scope, tilgangsgrenser og bevis: `docs/qa/COMPANY_ADMIN_20261015.md`.
+
 Sjekklistebibliotek / prosjektinngang 13. oktober: eksisterende lister samlet, garantipunkter låst, + Legg til sjekkliste under Sjekklister i alle prosjekttyper. Fra main f57f93b6; BEGGE. Avventer critical/Preview og ny TEST OK. Ingen prosjektbesvarelser eller database endret.
 
 Mobil oppfølging 13. oktober: felles topp/bunnpiler i alle innloggede moduler; startboks bare på Startsiden. BEGGE, egen PR etter publisert main 5debd835. Relevant QA/Preview og ny TEST OK før publisering.

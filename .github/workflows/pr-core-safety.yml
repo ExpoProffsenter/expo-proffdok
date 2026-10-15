@@ -123,3 +123,12 @@ jobs:
           export KSHMS_PGLITE_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/@electric-sql/pglite/dist/index.js"
           node scripts/supplier-order-db-check.mjs
           node scripts/supplier-order-email-check.mjs
+
+      - name: Verify active company administration and unified cards
+        run: |
+          export HR_PGLITE_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/@electric-sql/pglite/dist/index.js"
+          node scripts/company-admin-db-check.mjs
+          npm install --prefix "$RUNNER_TEMP/company-admin-browser-qa" --no-audit --no-fund --ignore-scripts playwright@1.58.2
+          node "$RUNNER_TEMP/company-admin-browser-qa/node_modules/playwright/cli.js" install --with-deps chromium
+          export PLAYWRIGHT_MODULE="$RUNNER_TEMP/company-admin-browser-qa/node_modules/playwright/index.mjs"
+          node scripts/company-admin-react-check.mjs
