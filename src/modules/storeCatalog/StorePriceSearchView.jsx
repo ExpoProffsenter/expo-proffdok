@@ -12,12 +12,14 @@ import { getStoredSupabaseSession, rpcWithStoredSession } from "../access/module
 import { WORK_PROFILE_EVENT, getMyWorkProfileState, readCachedWorkProfileState } from "../access/workProfileClient.js";
 import { deleteMobilePicklist, listMobilePicklists, saveMobilePicklist } from "./mobilePicklistClient.js";
 import CordelPicklistExport from "../cordel/CordelPicklistExport.jsx";
+import SupplierOrder from "./SupplierOrder.jsx";
 import {
   MAX_PICKLIST_ITEMS, MAX_SAVED_PICKLISTS, deleteLegacyPicklist, normalizePickQuantity,
   picklistReferences, readLegacyPicklist, samePicklistContents, toPicklistReference,
 } from "./mobilePicklistStorage.mjs";
 
 const PriceSearchBarcodeScanner = lazy(() => import("./PriceSearchBarcodeScanner.jsx"));
+const StocktakeEntry = lazy(() => import("../stocktake/StocktakeEntry.jsx"));
 const WORKLIST_SESSION_KEY = "expo-proffdok:price-search:worklist:v1";
 const ORDER_SESSION_KEY = "expo-proffdok:price-search:order:v1";
 const ACTIVE_PICKLIST_SESSION_KEY = "expo-proffdok:price-search:active-picklist:v1";
@@ -492,8 +494,8 @@ export default function StorePriceSearchView({ onClose }) {
   const handleScan = useCallback((code) => {
     setQuery(code);
     setScanning(false);
-    window.requestAnimationFrame(() => searchInputRef.current?.focus?.());
-  }, []);
+    if (!isMobile) window.requestAnimationFrame(() => searchInputRef.current?.focus?.());
+  }, [isMobile]);
   const handleScanError = useCallback((text) => {
     setScanning(false);
     setScanMessage(text);
@@ -686,7 +688,7 @@ export default function StorePriceSearchView({ onClose }) {
     setResults([]);
     setTotalResults(0);
     setMessage("");
-    window.requestAnimationFrame(() => searchInputRef.current?.focus?.());
+    if (!isMobile) window.requestAnimationFrame(() => searchInputRef.current?.focus?.());
   };
 
   const removeSelectedProduct = (itemId) => {
@@ -825,7 +827,7 @@ export default function StorePriceSearchView({ onClose }) {
       ? "Du har tre lagrede plukklister. Slett én før du kan lagre en ny."
       : isMobile ? "Ny plukkliste er klar. Skann eller søk etter varer."
         : "Ny plukkliste er klar. Søk etter varer og angi antall.");
-    window.requestAnimationFrame(() => searchInputRef.current?.focus?.());
+    if (!isMobile) window.requestAnimationFrame(() => searchInputRef.current?.focus?.());
   };
 
   const deletePicklist = async (id) => {
@@ -883,7 +885,7 @@ export default function StorePriceSearchView({ onClose }) {
     setSelectedExpanded(true);
     setIncludeInternalPrint(false);
     setPicklistMessage(isMobile ? "Kladden er tømt." : "");
-    window.requestAnimationFrame(() => searchInputRef.current?.focus?.());
+    if (!isMobile) window.requestAnimationFrame(() => searchInputRef.current?.focus?.());
   };
 
   const printSelectedProducts = (picklist = true) => {
@@ -906,146 +908,8 @@ export default function StorePriceSearchView({ onClose }) {
       )
     : null;
 
-  return (
-    <div className="priceSearchInlineView" aria-label="Prissøk">
-      <section className="priceSearchIntro">
-        {isMobile ? (
-          <button type="button" className="secondary priceSearchHome" onClick={onClose}>
-            ← Startside
-          </button>
-        ) : null}
-        <small>Expo ProffDok</small>
-        <h2>Prissøk</h2>
-        <p>{isMobile
-          ? "Skann eller søk varer, angi antall og lagre en midlertidig plukkliste til senere registrering i Cordel."
-          : "Søk varer og priser, angi antall og lagre en plukkliste til senere manuell registrering i Cordel."}</p>
-      </section>
-
-      <section className="priceSearchSavedLists" aria-label="Lagrede plukklister">
-        <div className="priceSearchSavedHead">
-          <div>
-            <h3>Lagrede plukklister ({picklists.length}/{MAX_SAVED_PICKLISTS})</h3>
-            <p>Tilgjengelige for deg på PC og mobil. Slett en liste når den er registrert i Cordel.</p>
-          </div>
-          {activePicklistId || selectedProducts.length || orderNumber ? (
-            <button type="button" className="secondary" onClick={startNewPicklist} disabled={saveBusy || restoringSelected}>
-              {confirmNew ? "Forkast endringer og start ny" : "Ny plukkliste"}
-            </button>
-          ) : null}
-        </div>
-        {serverLoading ? <p>Henter plukklister …</p> : null}
-        {!serverLoading && !serverError && !picklists.length ? <p>Du har ingen lagrede plukklister ennå.</p> : null}
-        {picklists.length ? <div className="priceSearchSavedRows">{picklists.map((row) => (
-          <div className="priceSearchSavedRow" key={row.id}>
-            <div>
-              <strong>{row.order_number ? `Ordre ${row.order_number}` : "Uten ordrenummer"}</strong>
-              <small>{Array.isArray(row.items) ? row.items.length : 0} varer · lagret {row.updated_at ? formatDate(row.updated_at) : "–"}</small>
-            </div>
-            <div className="priceSearchSavedActions">
-              <button type="button" onClick={() => void openSavedPicklist(row.id)} disabled={saveBusy || restoringSelected || Boolean(serverError)}>
-                {confirmOpenId === row.id ? "Forkast endringer og åpne" : activePicklistId === row.id ? "Åpne på nytt" : "Åpne"}
-              </button>
-              <button type="button" className="secondary" onClick={() => void deletePicklist(row.id)} disabled={saveBusy}>
-                {confirmDeleteId === row.id ? "Bekreft sletting" : "Slett"}
-              </button>
-            </div>
-          </div>
-        ))}</div> : null}
-        {picklists.length >= MAX_SAVED_PICKLISTS ? (
-          <p className="priceSearchLimit">Du har nå tre plukklister. Slett en før du lagrer en ny.</p>
-        ) : null}
-      </section>
-
-      {serverError ? <div className="priceSearchMessage isError" role="alert">
-        {serverError} <button type="button" className="secondary" onClick={() => setRestoreRevision((current) => current + 1)}>Prøv igjen</button>
-      </div> : null}
-      {picklistMessage ? <div className="priceSearchMessage" role="status">
-        {picklistMessage}
-        {restoreIncomplete || restoreFailed ? (
-          <button type="button" className="secondary" onClick={() => setRestoreRevision((current) => current + 1)}>Prøv igjen</button>
-        ) : null}
-      </div> : null}
-
-      {restoringSelected && !selectedProducts.length ? (
-        <div className="priceSearchMessage">Gjenoppretter midlertidig arbeidsliste …</div>
-      ) : null}
-
-      {selectedProducts.length ? (
-        <section className="priceSearchSelected" aria-label="Valgte varer">
-          <div className="priceSearchSelectedHeader">
-            <div>
-              <small>Midlertidig arbeidsliste</small>
-              <h3>Plukkliste ({selectedProducts.length})</h3>
-              <p>{activePicklistId
-                ? listDirty ? "Ulagrede endringer. Trykk Lagre endringer før du bytter enhet." : "Lagret på serveren. Du finner listen på PC og mobil med samme bruker."
-                : "Kladden ligger i denne fanen. Trykk Lagre plukkliste for å finne den igjen på PC og mobil."}</p>
-            </div>
-            <div className="priceSearchSelectedHeaderActions">
-              {listDirty || !activePicklistId ? (
-                <button type="button" onClick={() => void saveCurrentPicklist()} disabled={saveBusy || serverLoading || Boolean(serverError) || restoreIncomplete || restoreFailed || (!activePicklistId && picklists.length >= MAX_SAVED_PICKLISTS)}>
-                  {saveBusy ? "Lagrer …" : activePicklistId ? "Lagre endringer" : "Lagre plukkliste"}
-                </button>
-              ) : null}
-              <button type="button" className="secondary" onClick={() => printSelectedProducts(true)} disabled={restoreIncomplete || restoreFailed || restoringSelected}>
-                <Printer size={16} /> Skriv ut plukkliste
-              </button>
-              <CordelPicklistExport items={selectedProducts} orderNumber={orderNumber} disabled={restoreIncomplete || restoreFailed || restoringSelected || !profileResolved || Boolean(serverError)} />
-              {!isMobile ? (
-                <>
-                  <button type="button" className="secondary" onClick={() => printSelectedProducts(false)} disabled={restoreIncomplete || restoreFailed || restoringSelected}>
-                    <Printer size={16} /> Skriv ut priser
-                  </button>
-                  {canPrintInternal ? (
-                    <label className="priceSearchPrintOption">
-                      <input
-                        type="checkbox"
-                        checked={includeInternalPrint}
-                        onChange={(event) => setIncludeInternalPrint(event.target.checked)}
-                      />
-                      Inkluder interne priser i prisutskrift
-                    </label>
-                  ) : null}
-                </>
-              ) : null}
-              <button
-                type="button"
-                className="secondary"
-                onClick={() => setSelectedExpanded((current) => !current)}
-                aria-expanded={selectedExpanded}
-              >
-                {selectedExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                {selectedExpanded ? "Skjul valgte varer" : "Vis valgte varer"}
-              </button>
-              <button
-                type="button" className="secondary"
-                onClick={clearSelectedProducts} disabled={saveBusy}
-              >
-                <Trash2 size={16} /> {activePicklistId
-                  ? confirmDeleteId === activePicklistId ? "Bekreft sletting" : "Slett plukkliste"
-                  : isMobile ? confirmDeleteId === "draft" ? "Bekreft sletting" : "Slett kladd" : "Tøm liste"}
-              </button>
-            </div>
-          </div>
-          <label className="priceSearchOrderNumber">
-            <span>Ordrenummer i Cordel (valgfritt)</span>
-            <input
-              value={orderNumber} maxLength={64} autoComplete="off" disabled={restoreIncomplete || saveBusy}
-              onChange={(event) => { setOrderNumber(event.target.value); setListDirty(true); }}
-              placeholder="Skriv inn ordrenummer manuelt"
-            />
-          </label>
-          <div className={`priceSearchSelectedList${selectedExpanded ? "" : " isCollapsed"}`}>
-            {selectedProducts.map((item) => (
-              <SelectedProduct
-                key={item.id} item={item} onRemove={removeSelectedProduct}
-                onQuantityChange={updateSelectedQuantity} picklistMode
-                readOnly={restoreIncomplete || saveBusy}
-              />
-            ))}
-          </div>
-        </section>
-      ) : null}
-
+  const priceSearchLookup = (
+    <>
       <section className={`priceSearchCard${selectedProducts.length ? " hasSelectedProducts" : ""}`}>
         <label htmlFor="expo-price-search-input">Søk i vareregisteret</label>
         <div className="priceSearchInputWrap">
@@ -1053,7 +917,7 @@ export default function StorePriceSearchView({ onClose }) {
           <input
             ref={searchInputRef}
             id="expo-price-search-input"
-            autoFocus
+            autoFocus={!isMobile}
             autoComplete="off"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
@@ -1117,6 +981,158 @@ export default function StorePriceSearchView({ onClose }) {
           ) : null}
         </>
       ) : null}
+    </>
+  );
+
+  return (
+    <div className="priceSearchInlineView" aria-label="Prissøk">
+      <section className="priceSearchIntro">
+        {isMobile ? (
+          <button type="button" className="secondary priceSearchHome" onClick={onClose}>
+            ← Startside
+          </button>
+        ) : null}
+        <small>Expo ProffDok</small>
+        <h2>Prissøk</h2>
+        <p>{isMobile
+          ? "Skann eller søk varer, angi antall og lagre en midlertidig plukkliste til senere registrering i Cordel."
+          : "Søk varer og priser, angi antall og lagre en plukkliste til senere manuell registrering i Cordel."}</p>
+      </section>
+
+      {isMobile ? priceSearchLookup : null}
+
+      <Suspense fallback={null}><StocktakeEntry /></Suspense>
+
+      <section className="priceSearchSavedLists" aria-label="Lagrede plukklister">
+        <div className="priceSearchSavedHead">
+          <div>
+            <h3>Lagrede plukklister ({picklists.length}/{MAX_SAVED_PICKLISTS})</h3>
+            <p>Tilgjengelige for deg på PC og mobil. Slett en liste når den er registrert i Cordel.</p>
+          </div>
+          {activePicklistId || selectedProducts.length || orderNumber ? (
+            <button type="button" className="secondary" onClick={startNewPicklist} disabled={saveBusy || restoringSelected}>
+              {confirmNew ? "Forkast endringer og start ny" : "Ny plukkliste"}
+            </button>
+          ) : null}
+        </div>
+        {serverLoading ? <p>Henter plukklister …</p> : null}
+        {!serverLoading && !serverError && !picklists.length ? <p>Du har ingen lagrede plukklister ennå.</p> : null}
+        {picklists.length ? <div className="priceSearchSavedRows">{picklists.map((row) => (
+          <div className="priceSearchSavedRow" key={row.id}>
+            <div>
+              <strong>{row.order_number ? `Ordre ${row.order_number}` : "Uten ordrenummer"}</strong>
+              <small>{Array.isArray(row.items) ? row.items.length : 0} varer · lagret {row.updated_at ? formatDate(row.updated_at) : "–"}</small>
+            </div>
+            <div className="priceSearchSavedActions">
+              <button type="button" onClick={() => void openSavedPicklist(row.id)} disabled={saveBusy || restoringSelected || Boolean(serverError)}>
+                {confirmOpenId === row.id ? "Forkast endringer og åpne" : activePicklistId === row.id ? "Åpne på nytt" : "Åpne"}
+              </button>
+              <button type="button" className="secondary" onClick={() => void deletePicklist(row.id)} disabled={saveBusy}>
+                {confirmDeleteId === row.id ? "Bekreft sletting" : "Slett"}
+              </button>
+            </div>
+          </div>
+        ))}</div> : null}
+        {picklists.length >= MAX_SAVED_PICKLISTS ? (
+          <p className="priceSearchLimit">Du har nå tre plukklister. Slett en før du lagrer en ny.</p>
+        ) : null}
+      </section>
+
+      {serverError ? <div className="priceSearchMessage isError" role="alert">
+        {serverError} <button type="button" className="secondary" onClick={() => setRestoreRevision((current) => current + 1)}>Prøv igjen</button>
+      </div> : null}
+      {picklistMessage ? <div className="priceSearchMessage" role="status">
+        {picklistMessage}
+        {restoreIncomplete || restoreFailed ? (
+          <button type="button" className="secondary" onClick={() => setRestoreRevision((current) => current + 1)}>Prøv igjen</button>
+        ) : null}
+      </div> : null}
+
+      {restoringSelected && !selectedProducts.length ? (
+        <div className="priceSearchMessage">Gjenoppretter midlertidig arbeidsliste …</div>
+      ) : null}
+
+      {selectedProducts.length ? (
+        <section className="priceSearchSelected" aria-label="Valgte varer">
+          <div className="priceSearchSelectedHeader">
+            <div>
+              <small>Midlertidig arbeidsliste</small>
+              <h3>Plukkliste ({selectedProducts.length})</h3>
+              <p>{activePicklistId
+                ? listDirty ? "Ulagrede endringer. Trykk Lagre endringer før du bytter enhet." : "Lagret på serveren. Du finner listen på PC og mobil med samme bruker."
+                : "Kladden ligger i denne fanen. Trykk Lagre plukkliste for å finne den igjen på PC og mobil."}</p>
+            </div>
+            <div className="priceSearchSelectedHeaderActions">
+              {listDirty || !activePicklistId ? (
+                <button type="button" className="priceSearchSavePicklist" onClick={() => void saveCurrentPicklist()} disabled={saveBusy || serverLoading || Boolean(serverError) || restoreIncomplete || restoreFailed || (!activePicklistId && picklists.length >= MAX_SAVED_PICKLISTS)}>
+                  {saveBusy ? "Lagrer …" : activePicklistId ? "Lagre endringer" : "Lagre plukkliste"}
+                </button>
+              ) : null}
+              <button
+                type="button" className="secondary"
+                onClick={() => setSelectedExpanded((current) => !current)}
+                aria-expanded={selectedExpanded}
+              >
+                {selectedExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                {selectedExpanded ? "Skjul valgte varer" : "Vis valgte varer"}
+              </button>
+              <button
+                type="button" className="secondary priceSearchDeletePicklist"
+                onClick={clearSelectedProducts} disabled={saveBusy}
+              >
+                <Trash2 size={16} /> {activePicklistId
+                  ? confirmDeleteId === activePicklistId ? "Bekreft sletting" : "Slett plukkliste"
+                  : isMobile ? confirmDeleteId === "draft" ? "Bekreft sletting" : "Slett kladd" : "Tøm liste"}
+              </button>
+            </div>
+          </div>
+          <SupplierOrder
+            key={identityScope} items={selectedProducts} companyId={picklistIdentity.companyId} orderNumber={orderNumber}
+            disabled={restoreIncomplete || restoreFailed || restoringSelected || !profileResolved || Boolean(serverError)}
+            renderActions={(orderButton) => (
+              <div className="priceSearchPicklistActions" aria-label="Bruk plukklisten">
+                {orderButton}
+                <button type="button" className="secondary" onClick={() => printSelectedProducts(true)} disabled={restoreIncomplete || restoreFailed || restoringSelected}>
+                  <Printer size={16} /> Skriv ut plukkliste
+                </button>
+                <CordelPicklistExport items={selectedProducts} orderNumber={orderNumber} disabled={restoreIncomplete || restoreFailed || restoringSelected || !profileResolved || Boolean(serverError)} />
+                {!isMobile ? (
+                  <div className="priceSearchPricePrint">
+                    <button type="button" className="secondary" onClick={() => printSelectedProducts(false)} disabled={restoreIncomplete || restoreFailed || restoringSelected}>
+                      <Printer size={16} /> Skriv ut priser
+                    </button>
+                    {canPrintInternal ? (
+                      <label className="priceSearchPrintOption">
+                        <input type="checkbox" checked={includeInternalPrint} onChange={(event) => setIncludeInternalPrint(event.target.checked)} />
+                        Inkluder interne priser i prisutskrift
+                      </label>
+                    ) : null}
+                  </div>
+                ) : null}
+              </div>
+            )}
+          />
+          <label className="priceSearchOrderNumber">
+            <span>Ordrenummer i Cordel (valgfritt)</span>
+            <input
+              value={orderNumber} maxLength={64} autoComplete="off" disabled={restoreIncomplete || saveBusy}
+              onChange={(event) => { setOrderNumber(event.target.value); setListDirty(true); }}
+              placeholder="Skriv inn ordrenummer manuelt"
+            />
+          </label>
+          <div className={`priceSearchSelectedList${selectedExpanded ? "" : " isCollapsed"}`}>
+            {selectedProducts.map((item) => (
+              <SelectedProduct
+                key={item.id} item={item} onRemove={removeSelectedProduct}
+                onQuantityChange={updateSelectedQuantity} picklistMode
+                readOnly={restoreIncomplete || saveBusy}
+              />
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {!isMobile ? priceSearchLookup : null}
 
       {printPortal}
 
@@ -1147,7 +1163,17 @@ export default function StorePriceSearchView({ onClose }) {
         .priceSearchSelected{padding:18px;border:1px solid #bcdde1;border-radius:18px;background:#f9ffff;box-shadow:0 10px 28px rgba(15,23,42,.04)}
         .priceSearchSelectedHeader{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}
         .priceSearchSelectedHeader h3{margin:3px 0 5px;font-size:21px}
-        .priceSearchSelectedHeaderActions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+        .priceSearchSelectedHeaderActions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;flex-shrink:0}
+        .priceSearchSelectedHeaderActions button{min-height:42px;font-size:13px}
+        .priceSearchSelectedHeaderActions .priceSearchDeletePicklist{color:#a53737;border-color:#e3bcbc}
+        .priceSearchPicklistActions{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;align-items:start;margin-top:18px;padding-top:16px;border-top:1px solid #d6e4e8}
+        .priceSearchPicklistActions>button,.priceSearchPicklistActions>div>button{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;height:56px;box-sizing:border-box;padding:10px 12px;font-size:14px;line-height:1.3;white-space:normal}
+        .priceSearchPicklistActions svg{flex-shrink:0}
+        .priceSearchPicklistActions>div{min-width:0}
+        .priceSearchPicklistActions .priceSearchPrintOption{display:flex;align-items:flex-start;gap:7px;min-height:0;box-sizing:border-box;max-width:100%;margin-top:6px;padding:8px;font-size:12px;line-height:1.4;white-space:normal}
+        .priceSearchPicklistActions .priceSearchPrintOption input{flex:0 0 17px;margin-top:1px}
+        @media(max-width:1000px){.priceSearchSelectedHeader{flex-direction:column}.priceSearchSelectedHeaderActions{justify-content:flex-start}.priceSearchPicklistActions{grid-template-columns:repeat(2,minmax(0,1fr))}}
+        @media(max-width:700px){.priceSearchPicklistActions>.supplierOrderTrigger{grid-column:1/-1}}
         .priceSearchSelectedHeader button,.priceSearchResultActions button,.priceSearchRemove{display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap}
         .priceSearchPrintOption{display:inline-flex;align-items:center;gap:7px;min-height:42px;padding:0 10px;border:1px solid #f0cd83;border-radius:11px;background:#fff8e8;color:#7b5314;font-size:13px;font-weight:800;white-space:nowrap}
         .priceSearchPrintOption input{width:17px;height:17px;margin:0}
@@ -1217,7 +1243,7 @@ export default function StorePriceSearchView({ onClose }) {
           .priceSearchCard,.priceSearchSelected{padding:14px}
           .priceSearchInputWrap input{font-size:16px;min-height:52px}
           .priceSearchMeta,.priceSearchSelectedHeader,.priceSearchSelectedHeading{align-items:stretch;flex-direction:column}
-          .priceSearchSelectedHeaderActions{justify-content:stretch}
+          .priceSearchSelectedHeaderActions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;width:100%}.priceSearchSelectedHeaderActions .priceSearchSavePicklist{grid-column:1/-1}.priceSearchSelectedHeaderActions button{white-space:normal}
           .priceSearchPrintOption,.priceSearchSelectedHeaderActions button{width:100%;box-sizing:border-box;justify-content:center}
           .priceSearchSelectedProduct{grid-template-columns:1fr;padding:14px}
           .priceSearchPickQuantity,.priceSearchPickQuantity input,.priceSearchOrderNumber{width:100%;max-width:none}

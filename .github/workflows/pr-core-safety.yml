@@ -95,6 +95,7 @@ jobs:
         run: |
           export HR_PGLITE_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/@electric-sql/pglite/dist/index.js"
           export KSHMS_JSDOM_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/jsdom/lib/api.js"
+          node scripts/stocktake-db-check.mjs
           node scripts/time-registration-db-check.mjs
           node scripts/time-registration-react-check.mjs
           node scripts/time-notifications-check.mjs
@@ -116,3 +117,9 @@ jobs:
           node scripts/critical-organization-check.mjs
           ORG_GROUP_QA=1 node scripts/organization-local-sql-check.mjs
           node scripts/organization-pdf-check.mjs
+
+      - name: Verify supplier-order isolation and email retry contract
+        run: |
+          export KSHMS_PGLITE_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/@electric-sql/pglite/dist/index.js"
+          node scripts/supplier-order-db-check.mjs
+          node scripts/supplier-order-email-check.mjs

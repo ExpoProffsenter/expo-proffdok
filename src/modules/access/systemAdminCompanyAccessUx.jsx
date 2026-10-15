@@ -36,6 +36,7 @@ const STATUS_FILTERS = [
 
 import PeopleModuleAccess from './PeopleModuleAccess.jsx';
 import HrDeletionAlerts from '../hr/HrDeletionAlerts.jsx';
+import StocktakeCompanyAccess from '../stocktake/StocktakeCompanyAccess.jsx';
 
 function compactText(value = "") {
   return String(value || "").replace(/\s+/g, " ").trim();
@@ -384,6 +385,7 @@ function CompanyNavigator({
               {open ? (
                 <div className="company-access-body">
                   <PeopleModuleAccess companyId={row.companyId} />
+                  {row.companyId ? <StocktakeCompanyAccess key={row.companyId} companyId={row.companyId} /> : null}
                   {row.companyId && !row.internalCompany ? (
                     <>
                       <CompanyStoreOffersAccess row={row} />
