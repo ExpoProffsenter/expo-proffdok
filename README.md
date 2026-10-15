@@ -685,3 +685,13 @@ Systemadmin kan aktivere **Varetelling** per firma. I Prissøk får godkjente te
 
 
 Mobil Prissøk 15.10: Søk, kamera og treff vises rett under overskriften på mobil, før varetelling og lagrede/valgte plukklister. Tastaturet åpnes ved eget trykk i feltet; verken åpning, skanning eller valg av vare setter mobilfokus automatisk. PC-oppsettet beholdes. Kenneth ga «test ok på alt» kl. 13:18, inkludert denne avgrensede mobilrettingen.
+
+### Plukkliste til leverandør (Preview, 15.10.2026)
+
+Prissøk har «Send bestilling til leverandør». Brukeren kan skrive leverandørnavn og én valgfri e-postadresse, velge varer (også fra en blandet plukkliste), angi referanse, leveringsadresse og melding. Forhåndsvisningen hentes fra aktive katalogvarer på serveren; varenummer, netto-pris, linjesum og varesum eks. mva. følger bestillingen. Prisene hentes på serveren med fersk netto-tilgang. «Ordrebekreftelse sendes til» viser tydelig innlogget brukers e-postadresse med klikkbar lenke. Bestillingen bruker appens faste e-postformat med Expo ProffDok-toppfelt og firmalogo. «Husk leverandør og e-post» lagrer kontakten for det aktive firmaet etter bekreftet sending. Lagrede kontakter kan velges eller slettes; plukklisten beholdes.
+
+Avgrenset implementasjon: `SupplierOrder.jsx`, `supplierOrderClient.js`, `supplierOrder.css`, RPC-ene `supplier_order_context`, `supplier_order_prepare`, `supplier_order_contact_delete` og worker `supplier-order-email`. Kontakter og uforanderlige sendekvitteringer ligger i `supplier_order_private` med RLS og uten direkte klienttilgang. Hvert brukerkall kontrollerer fersk Prissøk-tilgang, firma og medlemskap. Kun service_role kan fullføre sending og lagre kontakt. E-post bygger utelukkende på serverens feltutvalg, inkluderer avsenderens firmainfo og teksten «Ved utkjøring tilkommer leveringsomkostninger». Intern dispatch bruker et eget Vault-token og sjekker opprinnelig brukers tilgang på nytt. Stabile Resend-nøkler tillater samme forsøk på nytt i 23 timer; daglig egen cron sletter sendekvitteringer eldre enn to dager. Dette oppretter ingen ordre i Cordel/ERP eller langvarig ordrehistorikk.
+
+QA: `node scripts/supplier-order-db-check.mjs`, `node scripts/supplier-order-email-check.mjs`, `node scripts/supplier-order-react-check.mjs`, full critical-suite og bygg. Sandbox først; ny TEST OK kreves før produksjonssetting og deretter kontrollert main → demo.
+
+Plukklisten har en samlet handlingsrad: bestilling, utskrift av plukkliste, Cordel og prisutskrift. Internt prisvalg står under prisutskriften. Lagre, vis/skjul og slett står ved overskriften. På mobil står bestilling øverst i full bredde, med utskrift og Cordel under.
