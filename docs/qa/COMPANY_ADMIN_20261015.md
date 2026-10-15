@@ -1,3 +1,23 @@
+## Oppdatert leveranse: tilgangsvalg før invitasjon
+
+Kenneth ba 15.10 kl. 14:40 også om å velge tilganger i selve invitasjonen og bekrefte vanlig proffkundes firmagrense. Samme BEGGE-scope/Preview/PR #249. `company_admin_invite_with_access` validerer gjeldende manager, aktivt firma, firmaavtale og inviterens hovedmoduler før eksisterende invitasjons-RPC kalles. Valgene lagres i privat RLS-tabell uten klientgrants og vises på invitasjonsraden gjennom autorisert snapshot.
+
+Ny konto får eksakte valgte hovedmoduler og firmaets valgte People-grants i samme transaksjon som invitasjonsaksepten. Uvalgt Projects blir ikke hengende igjen fra tidligere approval-seeding. Nye valg for eksisterende konto endrer People-tilgang i valgt firma; eksisterende hovedmoduler, primærfirma og historikk beholdes og dette forklares i skjemaet. Firmaadmin arver lisensierte People-moduler gjennom rollen. Ingen personlig HR-lesetilgang eller medarbeideropplysning opprettes. Ansvarligvern og avsluttet arbeidsforhold beholdes.
+
+Privat aksept-trigger låser riktig invitasjon og rettighetsrad, sammenligner lagret inviter/e-post/firma/rolle/opprettelsestid, og gjenkontrollerer aktiv inviterende manager, gjeldende delegerbare moduler og firmaets lisenser. Falske/tilbakekalte/lisensløse valg stopper hele aksepten uten delvis godkjenning. Applied-markør hindrer gjentatt innlogging fra å overstyre senere tilgangsendringer. Resending erstatter gamle valg i samme transaksjon. Gamle invitasjoner uten valg følger eksisterende aksept. `accept_company_user_invite`, eksisterende hovedmodul-/People-RPC-er og eksisterende policies er uendret i denne oppfølgingen.
+
+QA: **72 PostgreSQL**-assertions (39 tidligere + 33 nye), **31 Chromium**-assertions (22 tidligere + 9 nye) og full critical/build består. Nye scenarioer i `company-invitation-db-check.mjs` importeres av eksisterende Firmaadmin-CI-test. Ny registrering/eksakte moduler, bevaring av eksisterende konto, frakoblet lisens og endret inviterrett ved aksept, ansvarlig/avsluttet arbeidsforhold, resending, private ACL og ordinær proffkunde mot fremmed firma/arbeidsprofil er dekket. Faktisk `company-invitation-sandbox-check.sql` består med `clean=true`, random auth.users/profil/aksept/grants og alle data rullet tilbake; ingen mail. 320/390/1280 har ingen horisontal overflow, og mobilskjemaet er sett visuelt.
+
+Før særskilt Sandbox-reparasjon beholdt invitasjonsmigrasjonen alle 319 øvrige public-funksjoner byteidentisk (`fb26326702e264ecea4f5139b0831dac`); bare firma-snapshot ble utvidet og ett nytt public-endepunkt lagt til. Security-advisors kontrollert: ny privat RLS-tabell uten klientpolicies/grants og tilsiktet autentisert, internt autorisert SECURITY DEFINER-endepunkt. Ingen anon-grants.
+
+Den faktiske proffprøven fant en **allerede eksisterende avvikende Sandbox-baseline**: demoens set_active_work_profile manglet medlemskapskontroll, current_active_company_scope_id brukte usjekket valg, get_my_work_profile_state projiserte alle ordinære firmaroller som firmaadmin, og set_managed_work_profiles manglet. Production ble lest og hadde riktige sperrer. Bare Sandbox er gjenopprettet fra repoets eksisterende 20260910161200 og 20260910152200 gjennom `company-workspace-sandbox-restore.sql`. Ingen firma-/medlemskaps-/kursdata ble endret av reparasjonen. Full faktisk nyregistrering og proffkundes avslag på fremmed firma, intern firmabytte og egen tildeling består etter reparasjonen. Dette er Sandbox-vedlikehold, ikke en ny Production-migrasjon eller svekkelse av grensene.
+
+Supabase apply_migration svarte to ganger Invalid/expired requestState uten installert objekt eller historikk (verifisert før neste forsøk). Den eksakte prøvde DDL-en ble derfor installert gjennom ferdighetens execute_sql-fallback i én transaksjon med kort lock_timeout, eksakt CLI-versjon `20261015124223`, historikk og schema-reload. Ingen delvis/ukjent installasjon ble gjenforsøkt.
+
+Prøv samme Preview: Firmaadmin → Legg til ansatt → kontroller rolle og Tilganger ved invitasjon. Velg ønskede moduler før en faktisk ønsket invitasjon. Vanlig proffkunde får teksten «Du administrerer bare ditt eget firma». Tidligere TEST OK for andre funksjoner dekker ikke denne nye delen. Production og permanent demo er uendret; gjeldende head/READY/CI føres i PR #249.
+
+---
+
 # Aktivt firma og samlet Firmaadmin
 
 Miljømål **BEGGE**, fra main `143d78cec139eb79b8adc941210d31c501a43baf`, branch `fix-company-admin-scope-20261015`. Kenneth ba 15. oktober om retting av Ringside-tekst ved administrasjon av Bademiljø Expo og samlet valg av tilganger. Tidligere TEST OK for timer/varetelling dekker ikke denne endringen.

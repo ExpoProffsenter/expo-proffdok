@@ -10,4 +10,7 @@
 .company-admin-panel [role=alert] {color:#991b1b;font-weight:700;}
 .company-admin-panel [role=status] {color:#087f88;font-weight:700;}
 .company-admin-panel h4 {font-size:1.15rem;margin:8px 0;}
+.company-admin-panel .company-invite-access {padding:14px;margin:14px 0;border:1px solid #b9dfe3;border-radius:12px;background:#f5fcfd;}
+.company-admin-panel .company-invite-modules {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:10px;}
+.company-admin-panel .company-invite-modules .company-admin-check {margin:0;padding:10px;border:1px solid #dbe5ea;border-radius:10px;background:white;}
 @media(max-width:480px){.company-admin-panel .company-admin-controls button {width:100%;}.company-admin-panel article {padding:10px!important;}}
