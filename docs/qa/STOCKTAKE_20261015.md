@@ -20,17 +20,17 @@ Brukerbildet viser Import → ASCII-Tekstfil, ikke feltdefinisjonen. Cordels pri
 - https://kundesider.cordel.no/hc/no/articles/19956139893521-Generelt
 - https://kundesider.cordel.no/hc/no/articles/19571629736593-Varetelling-med-h%C3%A5ndterminal
 
-Tekstfilen er derfor en tilpassbar eksport, ikke en verifisert Cordel-integrasjon: varenummer/antall/leverandør, leverandør/varenummer/antall eller varenummer/antall; semikolon/tabulator; komma/punktum; Windows-1252/UTF-8. Ingen overskriftsrad. Områder summeres per leverandør og varenummer. Samme varenummer hos flere leverandører blokkerer format uten leverandør. Ingen tvetydig automatisk sammenslåing på GTIN.
+Kenneth bekreftet 15.10 kl. 13:10 at vareimporten følger samme oppsett som ved tilbud. UI bruker derfor det eksisterende vare-ASCII-formatet: NR = 1, Mengde = 2, Fagområde/leverandør = 3; semikolon, desimalkomma, Windows-1252, CRLF og ingen overskrift/BOM. Fast filnavn ProffDok_Cordel_Varetelling.txt gjør at importdefinisjonen kan gjenbrukes. Byte-likhet med eksisterende plukklisteeksport er testet for felles gyldige antall; varetelling støtter i tillegg 0 og større antall. Områder summeres per leverandør og varenummer. Ingen tvetydig automatisk sammenslåing på GTIN. Cordel-knappen følger eksisterende brukerrettighet «Eksport til Cordel», også med fersk kontroll før nedlasting. Ingen avansert formatvelger kreves av tellerne.
 
 Kontrollfil er UTF-8 CSV med firma, dato, lager, område, leverandør, varenummer, GTIN, beskrivelse og antall. Formelfelt sikres for regneark. Ingen prisfelt. Begge filer leser alle sider og stopper hvis tellingens revisjon endres under eksport. Ingen direkte lageroppdatering eller ERP-sending.
 
-**Før produksjonsgodkjenning:** få skjermbilde av neste dialog etter «ASCII-Tekstfil» eller eksempel på importfil. Bekreft feltmapping og om import erstatter/legger til beholdning. Prøveimport med en liten telling i Cordel gjenstår.
+**Før produksjonsgodkjenning:** liten prøveimport av den nye varetellingsfilen i Cordel gjenstår. Kundens bekreftelse av samme importoppsett legges til grunn; det bes ikke om nye skjermbilder for allerede kjent vareformat. Kontroller at riktig lager er valgt og om import erstatter/legger til beholdning.
 
 ## Verifisering
 
 - `stocktake-check.mjs`: eksakte eksportbytes, ledende nuller, antall 0/desimaler, leverandørskille, områdesummering, ugyldige tegn og CSV-formelfelt.
 - `stocktake-db-check.mjs`: **51 assertions**, reell PostgreSQL-migration og RPC-kall i PGlite, default av, admin-CAS, firmaskille, samarbeid, katalogidentitet, 117+ rader, nulltelling, nettverksreplay, stale edit/delete, deaktivert bruker/firma, anon-avslag og avslutning.
-- `stocktake-react-check.mjs`: **24 assertions**, reelle React-komponenter/CSS i Chromium med kontrollert API-grense, PC/mobil, to leverandører på samme strekkode, manuell vare, 0/desimaler, reload-kladd, tapt svar og samme kommando-ID, konfliktbevaring, 122 linjer og eksport av alle sider, avslutning og firmabytte/tilbakekalling. Skannerens kameraavlesning er simulert; fysisk kamera må brukerprøves.
+- `stocktake-react-check.mjs`: **25 assertions**, reelle React-komponenter/CSS i Chromium med kontrollert API-grense, PC/mobil, to leverandører på samme strekkode, manuell vare, 0/desimaler, reload-kladd, tapt svar og samme kommando-ID, konfliktbevaring, 122 linjer og eksport av alle sider, avslutning og firmabytte/tilbakekalling. Skannerens kameraavlesning er simulert; fysisk kamera må brukerprøves.
 - Full `npm run build` inklusive eksisterende critical-suite grønn. Eksisterende Prissøk/plukkliste, Cordel-eksport, tilgang og firmaprofil er kontrollert uten endring av tidligere kontrakter.
 - Faktisk Sandbox-smoke (`stocktake-sandbox-smoke.sql`) opprettet 106 syntetiske linjer, testet sider, replay, firmscope og avslutning; alle syntetiske rader rullet tilbake. Etterpå 0 sessions/0 lines.
 - Sandbox-migrering anvendt og migreringsversjon justert til CLI-fil `20261015105313`. Bare Expo Proffsenter er aktivert i Sandbox for Preview-prøven. Ingen produksjonsmigrering eller firmaaktivering utført.

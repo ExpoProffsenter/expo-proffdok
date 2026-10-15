@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict';import fs from 'node:fs';
+import {createCordelPicklist} from '../src/modules/cordel/picklistCordel.mjs';
 import {countQuantity,aggregateStocktake,stocktakeCordel,stocktakeCsv} from '../src/modules/stocktake/stocktakeModel.mjs';
 const a={supplier:'Rørgrossist A',number:'00123',description:'Rør',quantity:'2.5',gtin:'07000000000001',location:'A'},b={...a,location:'B',quantity:'0.5'};const decode=bytes=>new TextDecoder('windows-1252').decode(bytes);
 assert.equal(countQuantity('0'),'0');assert.equal(countQuantity('2,125'),'2.125');for(const v of ['','-1','1.0001','NaN','Infinity','1e3','9999999999'])assert.throws(()=>countQuantity(v));
 assert.equal(aggregateStocktake([a,b])[0].quantity,3);assert.equal(aggregateStocktake([a,{...a,supplier:'Grossist B'}]).length,2);
+assert.deepEqual(stocktakeCordel([a]),createCordelPicklist([{supplier_product_number:a.number,supplier_name:a.supplier,pickQuantity:a.quantity}]),'same established item ASCII bytes');
 assert.equal(decode(stocktakeCordel([a,b])),'00123;3;Rørgrossist A\r\n');assert.equal(decode(stocktakeCordel([{...a,quantity:0}])),'00123;0;Rørgrossist A\r\n');
 assert.equal(decode(stocktakeCordel([a],{columns:'number,quantity',delimiter:'\t',decimal:'.'})),'00123\t2.5\r\n');
 assert.throws(()=>stocktakeCordel([a,{...a,supplier:'Grossist B'}],{columns:'number,quantity'}),/flere leverandører/);
