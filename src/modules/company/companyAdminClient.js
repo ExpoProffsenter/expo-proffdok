@@ -3,9 +3,10 @@ import {kshmsRpc} from '../kshms/kshmsAccess.js';
 
 export const companyAdminRpc = (name, args = {}) => kshmsRpc(`company_admin_${name}`, args);
 
-export async function sendCompanyInvitation(invitation, callerId) {
+export async function sendCompanyInvitation(invitation, callerId, stillCurrent = () => true) {
   const fresh = await companyAdminRpc('snapshot', {p_company_id: invitation.company_id});
-  if (fresh.caller_id !== callerId || !fresh.invites.some(i => i.email === invitation.email)) {
+  if (!stillCurrent() || fresh.company_id !== invitation.company_id || fresh.caller_id !== callerId ||
+      !fresh.invites.some(i => i.email === invitation.email && (!invitation.invitation_id || i.id === invitation.invitation_id))) {
     throw Error('Firma, innlogging eller invitasjon er endret. Hent oversikten på nytt.');
   }
   const client = getAppSupabaseClient();
