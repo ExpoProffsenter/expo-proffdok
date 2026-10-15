@@ -1,3 +1,15 @@
+## Ny sending av invitasjon – publisert 15. oktober 2026
+
+PR #251 / main `657a430fac538275f024205f2263c3f65016e610`, Production `dpl_6pASJjJ6QEBUKybbjaWzKzpgnrth` READY på eksakt SHA og fast alias. Firmaadmin → Inviterte brukere → Send invitasjon på nytt beholder opprinnelig invitasjon, rolle og tilgangsvalg. CI 38746563907 /116461650514 er grønn med 89 PostgreSQL- og 52 Chromium-kontroller. HTTP200 og tre relevante JS-assets bekrefter ny knapp/RPC og Production-backend uten Sandbox-URL. Migrasjon 20261015134724 er installert i Production/Sandbox. Autentisert SQL med gjentatt klargjøring bevarer metadata byteidentisk og gir full rollback/clean=true begge steder. 301 øvrige Production-funksjoner og 322 øvrige Sandbox-funksjoner er uendret. Ingen ekte e-post under QA; mottak prøves av brukeren når han velger en faktisk invitasjon.
+
+Kontrollert main→demo-synk til samme baseline. Demo-overlay og kursdata beholdes; ingen rutine-e-post eller workers endret. Tidligere status nedenfor er historikk. Detaljer: docs/qa/COMPANY_INVITATION_RESEND_20261015.md og PR #251.
+
+## Send invitasjon på nytt – 15. oktober 2026
+
+Firmaadmin får **Send invitasjon på nytt** ved hver ventende invitasjon. Den bruker opprinnelig registreringsidentitet og fersk logo/firmanavn. Ny, lesende manager-RPC kontrollerer valgt firma, invitasjons-ID, ventende status og deaktivert konto. Den omskriver aldri invitasjonen, inviter, tidspunkt, rolle, lagrede tilgangsvalg eller aksept-fingeravtrykk. Klienten kontrollerer firma/aktør/ID på nytt før eksisterende e-posttjeneste brukes. Dobbeltklikk blokkeres; brukt invitasjon, bortfalt tilgang og firmaswitch stopper sending. Feil viser prøv igjen ved invitasjonen; suksess sier at e-posttjenesten har bekreftet utsending, uten å påstå mottak.
+
+Miljømål BEGGE fra main 736d5ce7. Scope: Firmaadmin-panel/klient, én additiv read-RPC, utvidet eksisterende QA og dokumentasjon. 89 PostgreSQL- og 52 Chromium-kontroller består, inkludert alle tidligere modultilganger, firmaskille og Systemadmin-isolasjon. Ingen ekte e-post sendes under QA. Samme faste Preview og videre publiseringsløp som pågående firma-/invitasjonsleveranse. Ingen andre rettigheter, data eller e-postarbeidere endres. Detaljer: docs/qa/COMPANY_INVITATION_RESEND_20261015.md.
+
 ## Firmaadmin-isolasjon – produksjonsrettelse 15. oktober 2026
 
 PR #250 retter at gamle systemadmin-adaptere monterte global firmaliste inne i Firmaadmin. Main `736d5ce73697874da17b4f3e50a7f36528cc0e2a`, Production `dpl_7vnLbp2eZGqSZKGxHF8eufnvPbsT` READY på eksakt SHA/fast alias. HTTP 200 og publisert main-Dq3laL0R.js inneholder seksjonsavgrensningen med H2 Systemadmin og eksplisitt Firmaadmin-unntak, Production-URL og ingen Sandbox-URL. CI 38743456772 /116450809944 består alle steg, inkludert 40 Chromium- og 72 PostgreSQL-kontroller. Dette er rettelse av samme Production-prøve Kenneth godkjente; ingen separat manuell test av denne SHA-en påstås.
