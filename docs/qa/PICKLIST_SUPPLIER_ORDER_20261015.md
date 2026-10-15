@@ -16,7 +16,7 @@ Retry-kvitteringer lagres i privat schema i omtrent to døgn, med en egen daglig
 - `supplier-order-email-check.mjs`: 31 assertions; faktiske handler-/e-postfunksjoner med mock provider. Ingen reelle e-poster sendt.
 - `supplier-order-react-check.mjs`: 19 assertions i Chromium på desktop og 390px mobil. Manuell e-post, lagret kontakt, blandet plukkliste, serverens forhåndsvisning, dobbelklikk, usikkert svar/retry, stille Avbryt, firmabytte, deaktivert tilgang og ingen horisontal mobiloverflow. Mock API; dette er ikke en innlogget sandbox-prøve.
 - Hele eksisterende `npm run build` med critical checks er grønn, inkludert Prissøk, plukkliste, Cordel, recovery, firmaprofil og tilgang. Skjermbilder av skjemaet er visuelt kontrollert.
-- Avgrenset diff: plukklisteintegrasjon, ny bestillingskomponent/klient/stil, ny privat database/RPC/worker, egne tester og påkrevd dokumentasjon. Ingen endringer i main.jsx, navigasjon, HR, eksisterende RLS eller andre e-postfunksjoner.
+- Avgrenset diff: plukklisteintegrasjon, ny bestillingskomponent/klient/stil, ny privat database/RPC/worker, egne tester og påkrevd dokumentasjon. Database- og e-posttestene kjøres også i PR Core Safety. Ingen endringer i main.jsx, navigasjon, HR, eksisterende RLS eller andre e-postfunksjoner.
 
 ## Blokkert før full Preview-test
 
