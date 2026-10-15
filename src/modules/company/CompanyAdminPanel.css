@@ -1,0 +1,13 @@
+.company-admin-panel fieldset {border:0;padding:0;margin:0;min-width:0;}
+.company-admin-panel .company-admin-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px;margin-bottom:12px;}
+.company-admin-panel .company-admin-users {display:grid;gap:16px;margin-top:16px;}
+.company-admin-panel .company-admin-controls {display:flex;flex-wrap:wrap;gap:12px;align-items:end;margin:12px 0;}
+.company-admin-panel .company-admin-controls label {flex:1 1 220px;}
+.company-admin-panel input[type=checkbox] {width:24px!important;height:24px!important;flex:0 0 24px!important;}
+.company-admin-panel .company-admin-check {display:flex;align-items:start;gap:10px;margin-top:12px;}
+.company-admin-panel small {display:block;}
+.company-admin-panel article {min-width:0;overflow-wrap:anywhere;}
+.company-admin-panel [role=alert] {color:#991b1b;font-weight:700;}
+.company-admin-panel [role=status] {color:#087f88;font-weight:700;}
+.company-admin-panel h4 {font-size:1.15rem;margin:8px 0;}
+@media(max-width:480px){.company-admin-panel .company-admin-controls button {width:100%;}.company-admin-panel article {padding:10px!important;}}

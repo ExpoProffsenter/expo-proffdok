@@ -1,3 +1,9 @@
+## Firmaadministrasjon i aktivt firma – 15. oktober 2026
+
+Firmaadmin bruker serverens aktive firma til brukerlisten, invitasjoner og firmaroller, også når systemadmin representerer Bademiljø Expo. Brukerkortet samler rolle, hovedmoduler, KS/HMS og HR. Hovedmoduler gjelder kontoen; KS/HMS og HR gjelder firmaet som vises. Kontostatus gjelder alle firmaer og styres av systemadministrator. En systemadmin kan legge til et ekstra internt arbeidsfirma uten å flytte primærfirma eller historikk. Registrering bruker firmaets stabile identitet også etter navneendring.
+
+Miljømål BEGGE, feature/Preview først. Ingen Production-/demo-release før ny relevant TEST OK. Scope, tilgangsgrenser og bevis: `docs/qa/COMPANY_ADMIN_20261015.md`.
+
 Sjekklistebibliotek / prosjektinngang 13. oktober: eksisterende lister samlet, garantipunkter låst, + Legg til sjekkliste under Sjekklister i alle prosjekttyper. Fra main f57f93b6; BEGGE. Avventer critical/Preview og ny TEST OK. Ingen prosjektbesvarelser eller database endret.
 
 Mobil oppfølging 13. oktober: felles topp/bunnpiler i alle innloggede moduler; startboks bare på Startsiden. BEGGE, egen PR etter publisert main 5debd835. Relevant QA/Preview og ny TEST OK før publisering.

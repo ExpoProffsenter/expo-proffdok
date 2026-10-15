@@ -1,3 +1,9 @@
+## Firmaadministrasjon i aktivt firma – 15. oktober 2026
+
+Firmaadmin bruker serverens aktive firma til brukerlisten, invitasjoner og firmaroller, også når systemadmin representerer Bademiljø Expo. Brukerkortet samler rolle, hovedmoduler, KS/HMS og HR. Hovedmoduler gjelder kontoen; KS/HMS og HR gjelder firmaet som vises. Kontostatus gjelder alle firmaer og styres av systemadministrator. En systemadmin kan legge til et ekstra internt arbeidsfirma uten å flytte primærfirma eller historikk. Registrering bruker firmaets stabile identitet også etter navneendring.
+
+Miljømål BEGGE, feature/Preview først. Ingen Production-/demo-release før ny relevant TEST OK. Scope, tilgangsgrenser og bevis: `docs/qa/COMPANY_ADMIN_20261015.md`.
+
 ## Valgfri snarvei til timeføring på mobil – 14. oktober 2026
 
 **HR → Timer og utlegg → Timeoppsett** har valget **Vis snarvei til timeføring på mobilforsiden**. Det er avslått som standard, også for eksisterende oppsett uten feltet. Trykk **Lagre timeoppsett** for å ta valget i bruk per firma. Når både timeregistrering og snarveien er slått på, vises et mørkt kort med turkis klokke og **Før timer** øverst på mobilforsiden (til og med 700 px). Ett trykk åpner den eksisterende personlige timeføringen; lukkekrysset tar deg tilbake til samme forside.
