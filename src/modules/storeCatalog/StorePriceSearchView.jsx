@@ -12,6 +12,7 @@ import { getStoredSupabaseSession, rpcWithStoredSession } from "../access/module
 import { WORK_PROFILE_EVENT, getMyWorkProfileState, readCachedWorkProfileState } from "../access/workProfileClient.js";
 import { deleteMobilePicklist, listMobilePicklists, saveMobilePicklist } from "./mobilePicklistClient.js";
 import CordelPicklistExport from "../cordel/CordelPicklistExport.jsx";
+import SupplierOrder from "./SupplierOrder.jsx";
 import {
   MAX_PICKLIST_ITEMS, MAX_SAVED_PICKLISTS, deleteLegacyPicklist, normalizePickQuantity,
   picklistReferences, readLegacyPicklist, samePicklistContents, toPicklistReference,
@@ -982,34 +983,12 @@ export default function StorePriceSearchView({ onClose }) {
             </div>
             <div className="priceSearchSelectedHeaderActions">
               {listDirty || !activePicklistId ? (
-                <button type="button" onClick={() => void saveCurrentPicklist()} disabled={saveBusy || serverLoading || Boolean(serverError) || restoreIncomplete || restoreFailed || (!activePicklistId && picklists.length >= MAX_SAVED_PICKLISTS)}>
+                <button type="button" className="priceSearchSavePicklist" onClick={() => void saveCurrentPicklist()} disabled={saveBusy || serverLoading || Boolean(serverError) || restoreIncomplete || restoreFailed || (!activePicklistId && picklists.length >= MAX_SAVED_PICKLISTS)}>
                   {saveBusy ? "Lagrer …" : activePicklistId ? "Lagre endringer" : "Lagre plukkliste"}
                 </button>
               ) : null}
-              <button type="button" className="secondary" onClick={() => printSelectedProducts(true)} disabled={restoreIncomplete || restoreFailed || restoringSelected}>
-                <Printer size={16} /> Skriv ut plukkliste
-              </button>
-              <CordelPicklistExport items={selectedProducts} orderNumber={orderNumber} disabled={restoreIncomplete || restoreFailed || restoringSelected || !profileResolved || Boolean(serverError)} />
-              {!isMobile ? (
-                <>
-                  <button type="button" className="secondary" onClick={() => printSelectedProducts(false)} disabled={restoreIncomplete || restoreFailed || restoringSelected}>
-                    <Printer size={16} /> Skriv ut priser
-                  </button>
-                  {canPrintInternal ? (
-                    <label className="priceSearchPrintOption">
-                      <input
-                        type="checkbox"
-                        checked={includeInternalPrint}
-                        onChange={(event) => setIncludeInternalPrint(event.target.checked)}
-                      />
-                      Inkluder interne priser i prisutskrift
-                    </label>
-                  ) : null}
-                </>
-              ) : null}
               <button
-                type="button"
-                className="secondary"
+                type="button" className="secondary"
                 onClick={() => setSelectedExpanded((current) => !current)}
                 aria-expanded={selectedExpanded}
               >
@@ -1017,7 +996,7 @@ export default function StorePriceSearchView({ onClose }) {
                 {selectedExpanded ? "Skjul valgte varer" : "Vis valgte varer"}
               </button>
               <button
-                type="button" className="secondary"
+                type="button" className="secondary priceSearchDeletePicklist"
                 onClick={clearSelectedProducts} disabled={saveBusy}
               >
                 <Trash2 size={16} /> {activePicklistId
@@ -1026,6 +1005,32 @@ export default function StorePriceSearchView({ onClose }) {
               </button>
             </div>
           </div>
+          <SupplierOrder
+            key={identityScope} items={selectedProducts} companyId={picklistIdentity.companyId} orderNumber={orderNumber}
+            disabled={restoreIncomplete || restoreFailed || restoringSelected || !profileResolved || Boolean(serverError)}
+            renderActions={(orderButton) => (
+              <div className="priceSearchPicklistActions" aria-label="Bruk plukklisten">
+                {orderButton}
+                <button type="button" className="secondary" onClick={() => printSelectedProducts(true)} disabled={restoreIncomplete || restoreFailed || restoringSelected}>
+                  <Printer size={16} /> Skriv ut plukkliste
+                </button>
+                <CordelPicklistExport items={selectedProducts} orderNumber={orderNumber} disabled={restoreIncomplete || restoreFailed || restoringSelected || !profileResolved || Boolean(serverError)} />
+                {!isMobile ? (
+                  <div className="priceSearchPricePrint">
+                    <button type="button" className="secondary" onClick={() => printSelectedProducts(false)} disabled={restoreIncomplete || restoreFailed || restoringSelected}>
+                      <Printer size={16} /> Skriv ut priser
+                    </button>
+                    {canPrintInternal ? (
+                      <label className="priceSearchPrintOption">
+                        <input type="checkbox" checked={includeInternalPrint} onChange={(event) => setIncludeInternalPrint(event.target.checked)} />
+                        Inkluder interne priser i prisutskrift
+                      </label>
+                    ) : null}
+                  </div>
+                ) : null}
+              </div>
+            )}
+          />
           <label className="priceSearchOrderNumber">
             <span>Ordrenummer i Cordel (valgfritt)</span>
             <input
@@ -1147,7 +1152,17 @@ export default function StorePriceSearchView({ onClose }) {
         .priceSearchSelected{padding:18px;border:1px solid #bcdde1;border-radius:18px;background:#f9ffff;box-shadow:0 10px 28px rgba(15,23,42,.04)}
         .priceSearchSelectedHeader{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}
         .priceSearchSelectedHeader h3{margin:3px 0 5px;font-size:21px}
-        .priceSearchSelectedHeaderActions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+        .priceSearchSelectedHeaderActions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;flex-shrink:0}
+        .priceSearchSelectedHeaderActions button{min-height:42px;font-size:13px}
+        .priceSearchSelectedHeaderActions .priceSearchDeletePicklist{color:#a53737;border-color:#e3bcbc}
+        .priceSearchPicklistActions{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;align-items:start;margin-top:18px;padding-top:16px;border-top:1px solid #d6e4e8}
+        .priceSearchPicklistActions>button,.priceSearchPicklistActions>div>button{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;height:56px;box-sizing:border-box;padding:10px 12px;font-size:14px;line-height:1.3;white-space:normal}
+        .priceSearchPicklistActions svg{flex-shrink:0}
+        .priceSearchPicklistActions>div{min-width:0}
+        .priceSearchPicklistActions .priceSearchPrintOption{display:flex;align-items:flex-start;gap:7px;min-height:0;box-sizing:border-box;max-width:100%;margin-top:6px;padding:8px;font-size:12px;line-height:1.4;white-space:normal}
+        .priceSearchPicklistActions .priceSearchPrintOption input{flex:0 0 17px;margin-top:1px}
+        @media(max-width:1000px){.priceSearchSelectedHeader{flex-direction:column}.priceSearchSelectedHeaderActions{justify-content:flex-start}.priceSearchPicklistActions{grid-template-columns:repeat(2,minmax(0,1fr))}}
+        @media(max-width:700px){.priceSearchPicklistActions>.supplierOrderTrigger{grid-column:1/-1}}
         .priceSearchSelectedHeader button,.priceSearchResultActions button,.priceSearchRemove{display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap}
         .priceSearchPrintOption{display:inline-flex;align-items:center;gap:7px;min-height:42px;padding:0 10px;border:1px solid #f0cd83;border-radius:11px;background:#fff8e8;color:#7b5314;font-size:13px;font-weight:800;white-space:nowrap}
         .priceSearchPrintOption input{width:17px;height:17px;margin:0}
@@ -1217,7 +1232,7 @@ export default function StorePriceSearchView({ onClose }) {
           .priceSearchCard,.priceSearchSelected{padding:14px}
           .priceSearchInputWrap input{font-size:16px;min-height:52px}
           .priceSearchMeta,.priceSearchSelectedHeader,.priceSearchSelectedHeading{align-items:stretch;flex-direction:column}
-          .priceSearchSelectedHeaderActions{justify-content:stretch}
+          .priceSearchSelectedHeaderActions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;width:100%}.priceSearchSelectedHeaderActions .priceSearchSavePicklist{grid-column:1/-1}.priceSearchSelectedHeaderActions button{white-space:normal}
           .priceSearchPrintOption,.priceSearchSelectedHeaderActions button{width:100%;box-sizing:border-box;justify-content:center}
           .priceSearchSelectedProduct{grid-template-columns:1fr;padding:14px}
           .priceSearchPickQuantity,.priceSearchPickQuantity input,.priceSearchOrderNumber{width:100%;max-width:none}

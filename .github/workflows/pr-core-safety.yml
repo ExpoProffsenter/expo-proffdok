@@ -116,3 +116,9 @@ jobs:
           node scripts/critical-organization-check.mjs
           ORG_GROUP_QA=1 node scripts/organization-local-sql-check.mjs
           node scripts/organization-pdf-check.mjs
+
+      - name: Verify supplier-order isolation and email retry contract
+        run: |
+          export KSHMS_PGLITE_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/@electric-sql/pglite/dist/index.js"
+          node scripts/supplier-order-db-check.mjs
+          node scripts/supplier-order-email-check.mjs
