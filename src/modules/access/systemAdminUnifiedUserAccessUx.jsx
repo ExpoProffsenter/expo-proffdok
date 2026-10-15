@@ -21,6 +21,7 @@ import { setManagedProCatalogNetPriceAccess } from "./proUserAccessClient.js";
 import { readCordelAccess, setCordelAccess } from "../cordel/cordelAccess.js";
 
 import PeopleWorkspaceModuleAccess from './PeopleWorkspaceModuleAccess.jsx';
+import { findSystemAdminElements } from './systemAdminSurface.js';
 
 const MOUNT_ATTR = "data-systemadmin-unified-access";
 const INTERNAL_COMMERCE_COMPANIES = new Set([
@@ -281,7 +282,7 @@ function UnifiedAccessControls({ user, onReload }) {
 }
 
 function findLegacyUserPanel() {
-  const headings = Array.from(document.querySelectorAll("h3"));
+  const headings = findSystemAdminElements('h3');
   const heading = headings.find((node) => {
     const text = compactText(node.textContent);
     return text === "Brukergodkjenning" || text === "Brukere og tilganger";
@@ -312,7 +313,7 @@ function renameLegacyPanel(panel) {
     intro.textContent = "Behandle brukerstatus, firma, rolle og alle brukertilganger på samme brukerkort. Leverandør/rabatt settes separat per firma under Proff vareregister.";
   }
 
-  const accordionButton = Array.from(document.querySelectorAll("button.secondary")).find((button) =>
+  const accordionButton = findSystemAdminElements('button.secondary').find((button) =>
     compactText(button.textContent).includes("Brukere og roller") || compactText(button.textContent).includes("Brukere og tilganger")
   );
   if (accordionButton) {

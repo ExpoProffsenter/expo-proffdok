@@ -1,3 +1,9 @@
+## Firmaadmin og Systemadmin holdes i hver sin flate – 15. oktober 2026
+
+Etter publisering av PR #249 viste Kenneth at Firmaadmin i Bademiljø Expo fikk den globale firmaoversikten. Rotårsaken var eldre DOM-adaptere som søkte etter «Brukere og tilganger» i hele dokumentet og monterte systemadmins firmavelger i den nye, avgrensede React-flaten. Serverens Firmaadmin-snapshot var riktig avgrenset til 10 medlemmer i Bademiljø Expo; ordinær proffadmin ble fortsatt nektet tilgang til andre firmaer i faktisk Production-SQL-prøve med rollback.
+
+Fire systemadmin-adaptere finner nå bare elementer i den dedikerte Systemadmin-seksjonen og utelukker den avgrensede Firmaadmin-flaten. Regresjonstesten installerer de fire faktiske adapterne sammen med Firmaadmin: feilen reproduseres på publisert kode; rettelsen består 40 Chromium-kontroller, inkludert fortsatt global firmaliste og bruker-/arbeidsprofilkontroller under Systemadmin, samtidig visning og navigasjon bort. Ingen SQL, brukerrettigheter, medlemskap eller e-postendring. Miljømål BEGGE; rettelse av samme godkjente leveranse som brukeren prøver i Production. Full critical/build grønn. Releasebevis føres i oppfølgings-PR og `docs/qa/COMPANY_ADMIN_ISOLATION_20261015.md`.
+
 ## Tilgangsvalg ved invitasjon – 15. oktober 2026
 
 Firmaadmin velger nå rolle, hovedmoduler, KS/HMS, HR og eventuell KS/HMS-rolle før **Inviter ansatt**. Valgene vises på ventende invitasjoner og brukes atomisk når en ny bruker bekrefter registreringen. Firmaavtale, inviterens gjeldende delegasjonsrett og rett firmamedlemskap kontrolleres på nytt. Eksisterende kontoer beholder hovedmoduler/primærfirma/historikk; valgte firmatilganger oppdateres. Vanlige proffkunder administrerer bare eget firma. Ekstra arbeidsprofiler krever systemadmin og er begrenset til den interne Ringside/Expo-gruppen.
