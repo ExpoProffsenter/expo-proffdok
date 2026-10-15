@@ -1,3 +1,21 @@
+## Firmaadmin og invitasjonstilganger – publisert 15. oktober 2026
+
+Kenneth ga eksplisitt TEST OK og godkjente publisering for å prøve faktiske brukere i Production; ingen manuell Preview-prøve påstås. PR #249 er merget til main `a5b27fd61630ec878a244c2aab6ad76b6f6efa62`. Nyeste Core Safety `38741622077` er grønn. Production `dpl_3vijpAoc9T4pc6w4AXApgegBd3oK` er READY på denne SHA-en og `expo-proffdok.app` svarer 200 med ny Firmaadmin/invitasjonskode og bare Production-backend i de 34 kontrollerte JS-filene. Begge migrasjoner er installert med kanonisk historikk. Autentisert SQL-prøve av aktivt firma og lagrede invitasjonsvalg består med full rollback; en faktisk ordinær proffadmin får bare eget firma og nektes tverrfirma-lesing/bytte/egentildeling. 295 øvrige public-funksjoner og eksisterende policies er byteidentiske. Ingen ekte invitasjon/e-post er sendt. Kenneth tester selv innlogget med virkelige brukere.
+
+Kontrollert main→demo-synk til samme main-baseline; demo-overlay, kursdata og e-postsperrer beholdes. Ingen Sandbox-reparasjon kjøres i Production. Tidligere arbeid/status nedenfor er historikk. Detaljer og regresjonsbevis: `docs/qa/COMPANY_ADMIN_20261015.md` og PR #249.
+
+## Tilgangsvalg ved invitasjon – 15. oktober 2026
+
+Firmaadmin velger nå rolle, hovedmoduler, KS/HMS, HR og eventuell KS/HMS-rolle før **Inviter ansatt**. Valgene vises på ventende invitasjoner og brukes atomisk når en ny bruker bekrefter registreringen. Firmaavtale, inviterens gjeldende delegasjonsrett og rett firmamedlemskap kontrolleres på nytt. Eksisterende kontoer beholder hovedmoduler/primærfirma/historikk; valgte firmatilganger oppdateres. Vanlige proffkunder administrerer bare eget firma. Ekstra arbeidsprofiler krever systemadmin og er begrenset til den interne Ringside/Expo-gruppen.
+
+Miljømål BEGGE, samme Preview og PR #249, fortsatt ingen Production-/demo-release. 72 PostgreSQL- og 31 Chromium-kontroller, full critical/build og faktisk ny registrering/tilgangsvalg/proffkundeskille med full rollback består. En eldre Sandbox-variant av arbeidsprofilhjelperne er gjenopprettet til eksisterende main-kontrakt; Production hadde allerede riktige sperrer og er bare lest. Detaljer: `docs/qa/COMPANY_ADMIN_20261015.md`.
+
+## Firmaadministrasjon i aktivt firma – 15. oktober 2026
+
+Firmaadmin bruker serverens aktive firma til brukerlisten, invitasjoner og firmaroller, også når systemadmin representerer Bademiljø Expo. Brukerkortet samler rolle, hovedmoduler, KS/HMS og HR. Hovedmoduler gjelder kontoen; KS/HMS og HR gjelder firmaet som vises. Kontostatus gjelder alle firmaer og styres av systemadministrator. En systemadmin kan legge til et ekstra internt arbeidsfirma uten å flytte primærfirma eller historikk. Registrering bruker firmaets stabile identitet også etter navneendring.
+
+Miljømål BEGGE, feature/Preview først. Ingen Production-/demo-release før ny relevant TEST OK. Scope, tilgangsgrenser og bevis: `docs/qa/COMPANY_ADMIN_20261015.md`.
+
 ## Timer og utlegg – publisert 15. oktober 2026
 
 Kenneth ga TEST OK for `b50f3090`. PR #245 er merget til main `f65a9768db342687caff220a3081b65a2ab732f2`; Production er READY og HTTP-/asset-/backendkontroll består. Egen time-mail er aktivert i Production, egne workers svarer 200 uten sending/sletting i tom kø. Fire time-migrasjoner er installert. Firmaene aktiverer selv timeføring og valgfri mobilforsidesnarvei. Main synkroniseres bare inn i demo; demo-overlay/demodata beholdes og alle demo-e-poster forblir AV. Detaljer: docs/kshms/TIME_RELEASE_20261015.md.
