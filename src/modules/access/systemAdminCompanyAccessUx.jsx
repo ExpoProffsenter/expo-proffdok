@@ -37,6 +37,7 @@ const STATUS_FILTERS = [
 import PeopleModuleAccess from './PeopleModuleAccess.jsx';
 import HrDeletionAlerts from '../hr/HrDeletionAlerts.jsx';
 import StocktakeCompanyAccess from '../stocktake/StocktakeCompanyAccess.jsx';
+import { findSystemAdminElements } from './systemAdminSurface.js';
 
 function compactText(value = "") {
   return String(value || "").replace(/\s+/g, " ").trim();
@@ -78,7 +79,7 @@ function userMatchesQuery(user, query = "") {
 }
 
 function findLegacyPanel() {
-  const headings = Array.from(document.querySelectorAll("h3"));
+  const headings = findSystemAdminElements('h3');
   const heading = headings.find((node) => {
     const text = compactText(node.textContent);
     return text === "Brukergodkjenning" || text === "Brukere og tilganger" || text === PANEL_TITLE;
@@ -109,7 +110,7 @@ function ensureLegacyMarker(panel) {
 }
 
 function renameAccordionButton() {
-  const button = Array.from(document.querySelectorAll("button.secondary")).find((candidate) => {
+  const button = findSystemAdminElements('button.secondary').find((candidate) => {
     const text = compactText(candidate.textContent);
     return text.includes("Brukere og roller") || text.includes("Brukere og tilganger") || text.includes(PANEL_TITLE);
   });

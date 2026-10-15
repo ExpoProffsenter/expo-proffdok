@@ -44,7 +44,7 @@ export function createHelp45BSection({ Section }) {
           "Godkjenning, deaktivering, firma, rolle, øvrige moduler og «Din nto pris» beholdes på brukerens eksisterende brukerkort. Leverandør/rabatt og Generelle tilbud er firmaegenskaper i samme samlede seksjon."
         ]
       : isCompanyAdmin
-        ? [companyAdminGuide, "Firmaadmin kan styre hvilke andre brukere i eget firma som får se «Din nto pris», men kan ikke gi seg selv tilgang. Leverandørtilgang og firmarabatt styres av Systemadmin."]
+        ? [companyAdminGuide, "Firmaadmin viser bare ansatte i valgt firma. Oversikten over alle firmaer hører til Systemadmin. Firmaadmin kan styre hvilke andre brukere i eget firma som får se «Din nto pris», men kan ikke gi seg selv tilgang. Leverandørtilgang og firmarabatt styres av Systemadmin."]
         : [];
 
     return React.createElement(
