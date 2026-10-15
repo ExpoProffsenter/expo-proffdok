@@ -6,14 +6,17 @@ const rpc=async(n,args=[])=>(await db.query(`select public.${n}(${args.map(q).jo
 const actor=async(u=user)=>db.exec(`reset role;select set_config('request.jwt.claim.sub',${q(u)},false);set role authenticated;`);
 const rejects=async(fn,code)=>{await assert.rejects(fn,e=>e.code===code);checks++;};
 try{
- await db.exec(`create role anon;create role authenticated;create role service_role;create schema auth;create schema cron;
+ await db.exec(`create role anon;create role authenticated;create role service_role;create schema auth;create schema cron;create schema vault;
+ create table vault.decrypted_secrets(id uuid primary key default gen_random_uuid(),decrypted_secret text);
+ create function vault.create_secret(text,text,text) returns uuid language sql as $$insert into vault.decrypted_secrets(decrypted_secret) values($1) returning id$$;
  create function auth.uid() returns uuid language sql as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
- create table auth.users(id uuid primary key,email text);create table public.profiles(id uuid primary key,approved boolean default true);
+ create table auth.users(id uuid primary key,email text);create table public.profiles(id uuid primary key,approved boolean default true,net boolean default true);
  create table public.sales_company_scopes(id uuid primary key);create table public.sales_company_memberships(user_id uuid,company_id uuid);
  create table public.user_active_company_scope(user_id uuid,company_id uuid);
  create function public.current_active_company_scope_id() returns uuid language sql as $$select company_id from public.user_active_company_scope where user_id=auth.uid()$$;
  create function public.current_profile_is_systemadmin() returns boolean language sql as $$select false$$;
  create function public.current_user_has_internal_store_price_search_access() returns boolean language sql as $$select approved from public.profiles where id=auth.uid()$$;
+ create function public.current_user_has_feature_access(text) returns boolean language sql as $$select net from public.profiles where id=auth.uid()$$;
  create function public.work_profile_company_profile(uuid) returns jsonb language sql as $$select '{"companyName":"QA Firma"}'::jsonb$$;
  create function cron.schedule(text,text,text) returns bigint language sql as $$select 1::bigint$$;
  create table public.internal_store_catalog_imports(id uuid primary key,status text);
@@ -28,8 +31,17 @@ try{
  insert into public.internal_store_catalog_items values(${q(product)},'QA Vare','QA Grossist','0012','07000000000001',${q(imp)},true,987654);`);
  await db.exec(await fs.readFile('supabase/migrations/20261015094130_picklist_supplier_order.sql','utf8'));
  await actor();const input={to:' QA@example.invalid ',supplierName:' QA Grossist ',reference:'00458',deliveryAddress:'QA gate',message:'Lever på fredag',remember:true,items:[{id:product,quantity:'2.5'}]};
- let result=await rpc('supplier_order_prepare',[company,id(10),input]);eq(result.snapshot.to,'qa@example.invalid');eq(result.snapshot.reference,'00458');eq(result.snapshot.items[0].number,'0012');eq(JSON.stringify(result).includes('987654'),false,'no net price');eq(result.sent,false);
+ let result=await rpc('supplier_order_prepare',[company,id(10),input]);eq(result.snapshot.to,'qa@example.invalid');eq(result.snapshot.reference,'00458');eq(result.snapshot.items[0].number,'0012');eq(result.snapshot.items[0].unitNet,987654,'canonical net unit price');eq(result.snapshot.items[0].lineNet,2469135);eq(result.snapshot.totalNet,2469135);eq(result.sent,false);
  eq((await rpc('supplier_order_prepare',[company,id(10),input])).snapshot,result.snapshot,'immutable replay');
+ await rejects(()=>rpc('supplier_order_worker_get',['bad',id(10)]),'42501');
+ await db.exec('reset role;');const workerToken=(await db.query('select decrypted_secret from vault.decrypted_secrets limit 1')).rows[0].decrypted_secret;
+ await db.exec('set role service_role;');await rejects(()=>rpc('supplier_order_worker_get',['bad',id(10)]),'42501');
+ eq((await rpc('supplier_order_worker_get',[workerToken,id(10)])).snapshot,result.snapshot,'internal dispatch uses exact immutable order');
+ await db.exec(`reset role;update public.profiles set net=false where id=${q(user)};`);await actor();
+ await rejects(()=>rpc('supplier_order_prepare',[company,id(10),input]),'42501');
+ await db.exec('reset role;set role service_role;');await rejects(()=>rpc('supplier_order_worker_get',[workerToken,id(10)]),'42501');
+ await db.exec(`reset role;update public.profiles set net=true;`);await actor();
+
  await rejects(()=>rpc('supplier_order_prepare',[company,id(10),{...input,to:'other@example.invalid'}]),'22023');
  await rejects(()=>rpc('supplier_order_context',[foreign]),'42501');
  await rejects(()=>db.query('select * from supplier_order_private.contacts'),'42501');
@@ -44,6 +56,9 @@ try{
  await rpc('supplier_order_prepare',[company,id(11),noRemember]);
  await db.exec('reset role;set role service_role;');await rpc('supplier_order_complete',[id(11),'provider-2']);
  await actor();eq((await rpc('supplier_order_context',[company])).contacts.length,1,'opt-out never saves');
+ await db.exec('reset role;update public.internal_store_catalog_items set purchase_net_ex_vat=null;');await actor();
+ await rejects(()=>rpc('supplier_order_prepare',[company,id(12),input]),'22023');
+ await db.exec('reset role;update public.internal_store_catalog_items set purchase_net_ex_vat=987654;');await actor();
  await db.exec(`reset role;update public.internal_store_catalog_items set is_active=false;`);await actor();
  await rejects(()=>rpc('supplier_order_prepare',[company,id(12),input]),'22023');
  await db.exec(`reset role;update public.internal_store_catalog_items set is_active=true;update public.internal_store_catalog_imports set status='loading';`);await actor();
@@ -52,7 +67,7 @@ try{
  await rejects(()=>rpc('supplier_order_context',[company]),'42501');
  await db.exec(`reset role;insert into public.sales_company_memberships values(${q(user)},${q(company)});set role anon;`);
  await rejects(()=>rpc('supplier_order_context',[company]),'42501');await actor();
- let n=20;for(const bad of [{...input,items:[]},{...input,to:'x@example.invalid\r\nbcc:bad@bad.invalid'},{...input,items:[{id:product,quantity:'0'}]},{...input,items:[{id:product,quantity:'1',price:5}]},{...input,company:{companyName:'fake'}},{...input,remember:'true'},{...input,items:[{id:product,quantity:'1'},{id:product,quantity:'1'}]},{...input,reference:'x'.repeat(121)},{...input,items:[{id:id(999),quantity:'1'}]}])await rejects(()=>rpc('supplier_order_prepare',[company,id(n++),bad]),'22023');
+ let n=20;for(const bad of [{...input,deliveryAddress:''},{...input,items:[]},{...input,to:'x@example.invalid\r\nbcc:bad@bad.invalid'},{...input,items:[{id:product,quantity:'0'}]},{...input,items:[{id:product,quantity:'1',price:5}]},{...input,company:{companyName:'fake'}},{...input,remember:'true'},{...input,items:[{id:product,quantity:'1'},{id:product,quantity:'1'}]},{...input,reference:'x'.repeat(121)},{...input,items:[{id:id(999),quantity:'1'}]}])await rejects(()=>rpc('supplier_order_prepare',[company,id(n++),bad]),'22023');
  await db.exec(`reset role;update public.profiles set approved=false where id=${q(user)};`);await actor();await rejects(()=>rpc('supplier_order_prepare',[company,id(10),input]),'42501');
  await db.exec(`reset role;update public.profiles set approved=true;update supplier_order_private.deliveries set created_at=now()-interval '24 hours';`);await actor();await rejects(()=>rpc('supplier_order_prepare',[company,id(10),input]),'22023');
  eq(await rpc('supplier_order_contact_delete',[company,contacts[0].id]),true);eq((await rpc('supplier_order_context',[company])).contacts.length,0);

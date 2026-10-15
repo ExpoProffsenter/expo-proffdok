@@ -1,5 +1,6 @@
 -- Company address book and short-lived, immutable email retry receipts.
--- No prices are accepted or persisted. Existing catalog/access functions are unchanged.
+-- Prices are read only from the catalog after a fresh sensitive-access check.
+-- Existing catalog/access functions are unchanged.
 create schema if not exists supplier_order_private;
 revoke all on schema supplier_order_private from public, anon, authenticated;
 create table supplier_order_private.contacts (
@@ -59,9 +60,11 @@ language plpgsql security definer set search_path='' as $$
 declare
  v_row supplier_order_private.deliveries%rowtype;
  v_item jsonb; v_items jsonb:='[]'; v_seen uuid[]:='{}'; v_id uuid;
- v_product record; v_snapshot jsonb; v_email text; v_name text;
+ v_product record; v_snapshot jsonb; v_email text; v_name text; v_total numeric:=0; v_unit numeric; v_line numeric;
 begin
  perform supplier_order_private.check_actor(p_company_id);
+ if not coalesce(public.current_user_has_feature_access('view_internal_net_prices'),false)
+ then raise exception 'Bestilling med netto-pris krever tilgang til interne nettopriser.' using errcode='42501'; end if;
  if p_request_id is null or jsonb_typeof(p_order) is distinct from 'object'
  or p_order - array['to','supplierName','reference','deliveryAddress','message','items','remember'] <> '{}'::jsonb
  then raise exception 'Ugyldig bestilling.' using errcode='22023'; end if;
@@ -85,7 +88,7 @@ begin
  if length(v_email)>254 or v_email !~ '^[^[:space:]@,;<>]+@[^[:space:]@,;<>]+[.][^[:space:]@,;<>]+$'
  or length(v_name) not between 1 and 120 or v_name ~ '[[:cntrl:]]'
  or length(p_order->>'reference')>120 or (p_order->>'reference') ~ '[[:cntrl:]]'
- or length(p_order->>'deliveryAddress')>500 or length(p_order->>'message')>2000
+ or length(btrim(p_order->>'deliveryAddress')) not between 1 and 500 or length(p_order->>'message')>2000
  or jsonb_typeof(p_order->'remember') is distinct from 'boolean'
  or jsonb_typeof(p_order->'items') is distinct from 'array'
  then raise exception 'Kontroller mottaker, navn og bestillingsfelt.' using errcode='22023'; end if;
@@ -101,19 +104,23 @@ begin
    v_id:=(v_item->>'id')::uuid;
    if v_id=any(v_seen) or (v_item->>'quantity')::numeric not between 0.001 and 99999
    then raise exception 'Ugyldig vare eller antall.' using errcode='22023'; end if;
-   select i.id,i.description,i.supplier_name,i.supplier_product_number,i.gtin into v_product
+   select i.id,i.description,i.supplier_name,i.supplier_product_number,i.gtin,i.purchase_net_ex_vat into v_product
    from public.internal_store_catalog_items i join public.internal_store_catalog_imports imp
    on imp.id=i.last_import_id and imp.status='active' where i.id=v_id and i.is_active;
    if not found then raise exception 'En vare er ikke lenger aktiv. Oppdater plukklisten.' using errcode='22023'; end if;
+   if nullif(btrim(v_product.supplier_product_number),'') is null or v_product.purchase_net_ex_vat is null
+   or v_product.purchase_net_ex_vat::text !~ '^[0-9]+([.][0-9]+)?$'
+   then raise exception 'En vare mangler varenummer eller netto-pris. Kontroller vareregisteret.' using errcode='22023'; end if;
+   v_unit:=round(v_product.purchase_net_ex_vat,2);v_line:=round(v_unit*(v_item->>'quantity')::numeric,2);v_total:=v_total+v_line;
    v_seen:=array_append(v_seen,v_id);
    v_items:=v_items || jsonb_build_array(jsonb_build_object('id',v_product.id,'description',v_product.description,
      'supplier',v_product.supplier_name,'number',v_product.supplier_product_number,'gtin',v_product.gtin,
-     'quantity',v_item->>'quantity'));
+     'quantity',v_item->>'quantity','unitNet',v_unit,'lineNet',v_line));
  end loop;
  v_snapshot:=jsonb_build_object('to',v_email,'supplierName',v_name,'reference',btrim(p_order->>'reference'),
  'deliveryAddress',btrim(p_order->>'deliveryAddress'),'message',btrim(p_order->>'message'),'items',v_items,
  'company',public.work_profile_company_profile(p_company_id),'replyTo',(select email from auth.users where id=auth.uid()),
- 'remember',(p_order->>'remember')::boolean);
+ 'remember',(p_order->>'remember')::boolean,'totalNet',v_total,'deliveryTerms','Ved utkjøring tilkommer leveringsomkostninger.');
  if nullif(v_snapshot->'company'->>'companyName','') is null or nullif(v_snapshot->>'replyTo','') is null
  then raise exception 'Avsender mangler. Kontroller firmaprofilen.' using errcode='22023'; end if;
  insert into supplier_order_private.deliveries(id,user_id,company_id,input,snapshot)
@@ -148,3 +155,33 @@ grant execute on function public.supplier_order_complete(uuid,text) to service_r
 -- Retry receipts are not order history. Only the saved address book is retained.
 select cron.schedule('supplier-order-receipt-cleanup','20 3 * * *',
  $$delete from supplier_order_private.deliveries where created_at < now()-interval '2 days'$$);
+
+-- Internal dispatch uses a dedicated Vault token; it cannot choose recipients or contents.
+-- Both normal UI sends and explicitly requested test dispatches share the same mail transport.
+create table supplier_order_private.worker_settings (
+ singleton boolean primary key default true check(singleton), secret_id uuid not null
+);
+alter table supplier_order_private.worker_settings enable row level security;
+revoke all on table supplier_order_private.worker_settings from public,anon,authenticated;
+insert into supplier_order_private.worker_settings(secret_id)
+values(vault.create_secret(replace(gen_random_uuid()::text||gen_random_uuid()::text,'-',''),'supplier_order_worker','Internal supplier-order dispatch authentication'));
+create function public.supplier_order_worker_get(p_token text,p_id uuid) returns jsonb
+language plpgsql security definer set search_path='' as $$
+declare v_row supplier_order_private.deliveries%rowtype;v_previous text;
+begin
+ if not exists(select 1 from supplier_order_private.worker_settings c join vault.decrypted_secrets s on s.id=c.secret_id
+   where c.singleton and length(coalesce(p_token,''))=64 and s.decrypted_secret=p_token)
+ then raise exception 'Ugyldig worker-tilgang.' using errcode='42501'; end if;
+ select * into v_row from supplier_order_private.deliveries where id=p_id;
+ if not found or v_row.created_at<now()-interval '23 hours' then raise exception 'Bestillingen finnes ikke eller er utløpt.' using errcode='22023'; end if;
+ -- Re-evaluate the original actor's current rights. No JWT claims supplied by a caller are trusted.
+ v_previous:=current_setting('request.jwt.claim.sub',true);
+ perform set_config('request.jwt.claim.sub',v_row.user_id::text,true);
+ perform supplier_order_private.check_actor(v_row.company_id);
+ if not coalesce(public.current_user_has_feature_access('view_internal_net_prices'),false)
+ then raise exception 'Netto-tilgang er trukket tilbake.' using errcode='42501'; end if;
+ perform set_config('request.jwt.claim.sub',coalesce(v_previous,''),true);
+ return jsonb_build_object('id',v_row.id,'snapshot',v_row.snapshot,'sent',v_row.provider_id is not null);
+end; $$;
+revoke all on function public.supplier_order_worker_get(text,uuid) from public,anon,authenticated;
+grant execute on function public.supplier_order_worker_get(text,uuid) to service_role;

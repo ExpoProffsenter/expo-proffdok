@@ -3,6 +3,8 @@ import { Mail } from 'lucide-react';
 import { supplierOrderContext, deleteSupplierOrderContact, prepareSupplierOrder, sendSupplierOrder } from './supplierOrderClient.js';
 import './supplierOrder.css';
 
+const money=value=>new Intl.NumberFormat('nb-NO',{style:'currency',currency:'NOK',minimumFractionDigits:2,maximumFractionDigits:2}).format(Number(value));
+
 export default function SupplierOrder({items,companyId,orderNumber='',disabled=false}) {
  const [open,setOpen]=useState(false),[context,setContext]=useState(null),[loadError,setLoadError]=useState('');
  const [contact,setContact]=useState(''),[name,setName]=useState(''),[email,setEmail]=useState('');
@@ -62,17 +64,17 @@ export default function SupplierOrder({items,companyId,orderNumber='',disabled=f
     <p>Varene er fortsatt i plukklisten.</p><button type="button" className="secondary" onClick={newOrder}>Ny bestilling</button>
    </>:preview?<>
     <p><strong>Til:</strong> {preview.supplierName} · {preview.to}</p>
-    <p><strong>Fra:</strong> {preview.company.companyName} · {preview.replyTo}</p>
+    <p><strong>Fra:</strong> {preview.company.companyName} · {preview.replyTo}</p><p>{[preview.company.orgNumber&&`Org.nr. ${preview.company.orgNumber}`,preview.company.address,preview.company.phone,preview.company.email,preview.company.website].filter(Boolean).join(" · ")}</p>
     <p><strong>Referanse:</strong> {preview.reference||'Ikke oppgitt'}</p>
     {preview.deliveryAddress?<p className="supplierOrderText"><strong>Leveringsadresse:</strong> {preview.deliveryAddress}</p>:null}
     {preview.message?<p className="supplierOrderText"><strong>Melding:</strong> {preview.message}</p>:null}
-    <div className="supplierOrderTable"><table><thead><tr>{['Vare','Vareleverandør','Varenummer','GTIN/EAN','Antall'].map(t=><th key={t}>{t}</th>)}</tr></thead><tbody>{preview.items.map(i=><tr key={i.id}><td>{i.description}</td><td>{i.supplier}</td><td>{i.number||'–'}</td><td>{i.gtin||'–'}</td><td>{i.quantity}</td></tr>)}</tbody></table></div>
-    <p>Bestillingen sendes uten priser. Leverandøren kan svare direkte til {preview.replyTo}.</p>
+    <div className="supplierOrderTable"><table><thead><tr>{['Vare','Vareleverandør','Varenummer','GTIN/EAN','Antall','Netto eks. mva.','Linjesum eks. mva.'].map(t=><th key={t}>{t}</th>)}</tr></thead><tbody>{preview.items.map(i=><tr key={i.id}><td>{i.description}</td><td>{i.supplier}</td><td>{i.number||'–'}</td><td>{i.gtin||'–'}</td><td>{i.quantity}</td><td>{money(i.unitNet)}</td><td>{money(i.lineNet)}</td></tr>)}</tbody></table></div>
+    <p><strong>Sum varer eks. mva.: {money(preview.totalNet)}</strong></p><p>Ved utkjøring tilkommer leveringsomkostninger.</p><p>Ordrebekreftelse sendes til: <strong>{preview.replyTo}</strong>.</p>
     {preview.remember?<p>Leverandør og e-post lagres for firmaet når sendingen er bekreftet.</p>:null}
     <div className="supplierOrderActions"><button type="button" onClick={()=>void send()} disabled={busy||!allowed}>{busy?'Sender …':uncertain?'Prøv sending igjen':'Send bestilling'}</button>
     {!uncertain?<button type="button" className="secondary" disabled={busy} onClick={()=>{setPreview(null);setError('');}}>Rediger bestilling</button>:<p>Prøv samme sending igjen for å unngå dobbeltbestilling.</p>}</div>
    </>:!context?<div>{loadError?<><p role="alert">{loadError}</p><button type="button" className="secondary" onClick={()=>{setLoadError('');setOpen(false);}}>Lukk og prøv igjen</button></>:<p role="status">Henter leverandører og avsender …</p>}</div>:<form onSubmit={review}>
-    <p>Velg varene som skal sendes til denne leverandøren. Bestillingen sendes uten priser.</p>
+    <p>Velg varene som skal sendes til denne leverandøren. Varenummer og netto-pris eks. mva. følger bestillingen. Ved utkjøring tilkommer leveringsomkostninger.</p>
     <fieldset disabled={busy||!allowed}>
      <div className="supplierOrderFields">
       <label>Lagret leverandør<select aria-label="Lagret leverandør" value={contact} onChange={e=>chooseContact(e.target.value)}><option value="">Skriv inn leverandør selv</option>{context.contacts.map(c=><option key={c.id} value={c.id}>{c.name} – {c.email}</option>)}</select></label>
@@ -80,7 +82,7 @@ export default function SupplierOrder({items,companyId,orderNumber='',disabled=f
       <label>Leverandørnavn<input required maxLength={120} value={name} onChange={e=>setName(e.target.value)} autoComplete="off"/></label>
       <label>E-post til leverandør<input required type="email" maxLength={254} value={email} onChange={e=>setEmail(e.target.value)} autoComplete="off"/></label>
       <label>Bestillingsreferanse (valgfritt)<input maxLength={120} value={reference} onChange={e=>{referenceTouched.current=true;setReference(e.target.value);}} placeholder="Prosjektnummer, navn eller adresse"/></label>
-      <label>Leveringsadresse (valgfritt)<textarea rows={2} maxLength={500} value={address} onChange={e=>setAddress(e.target.value)}/></label>
+      <label>Leveringsadresse<textarea required rows={2} maxLength={500} value={address} onChange={e=>setAddress(e.target.value)}/></label>
       <label>Melding til leverandør (valgfritt)<textarea rows={3} maxLength={2000} value={message} onChange={e=>setMessage(e.target.value)}/></label>
      </div>
      <label className="supplierOrderCheck"><input type="checkbox" checked={remember} onChange={e=>setRemember(e.target.checked)}/> Husk leverandør og e-post for senere bestillinger i firmaet</label>
@@ -88,7 +90,7 @@ export default function SupplierOrder({items,companyId,orderNumber='',disabled=f
       {new Set(items.map(i=>i.supplier_name)).size>1?<label>Velg varer fra vareleverandør<select aria-label="Velg varer fra vareleverandør" defaultValue="*" onChange={e=>setExcluded(items.filter(i=>e.target.value!=='*'&&(i.supplier_name||'')!==e.target.value).map(i=>i.id))}><option value="*">Alle varer</option>{[...new Set(items.map(i=>i.supplier_name||''))].map(s=><option key={s} value={s}>{s||'Ukjent leverandør'}</option>)}</select></label>:null}
       {items.map(i=><label className="supplierOrderCheck" key={i.id}><input type="checkbox" checked={selected.includes(i.id)} onChange={e=>setExcluded(ids=>e.target.checked?ids.filter(id=>id!==i.id):[...ids,i.id])}/><span>{i.pickQuantity||i.quantity||1} × {i.description} <small>{i.supplier_name} · Varenr. {i.supplier_product_number||'–'}</small></span></label>)}
      </div>
-     <p>Avsender: {context.company?.companyName}. Svar går til {context.replyTo}.</p>
+     <p>Avsender: {context.company?.companyName}. Ordrebekreftelse sendes til {context.replyTo}.</p>
      <button type="submit" disabled={!selected.length}>{busy?'Henter forhåndsvisning …':'Forhåndsvis bestilling'}</button>
     </fieldset>
    </form>}
