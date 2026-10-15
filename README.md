@@ -682,3 +682,6 @@ Scrollrettelse 13. oktober 2026 (BEGGE, Preview): Felles scrollminne flyttet til
 ### Varetelling – Preview 15.10.2026
 
 Systemadmin kan aktivere **Varetelling** per firma. I Prissøk får godkjente tellere egne delte tellelister med lager, dato og område, skanning/søk med eksplisitt leverandørvalg og manuell innlegging uten strekkode. Antall 0, desimaler, idempotent lagring, revisjonsvern og låst avslutning støttes. Listene bruker ikke plukklistens grense på 30 varer. Eksport henter alle sider, summerer områder per leverandør/varenummer til samme etablerte Cordel-vareformat med fast filnavn og gir separat CSV-kontrollfil. Ingen prisfelt eller direkte oppdatering av Cordel. Kenneth bekrefter samme vareimportoppsett som ved tilbud; faktisk prøveimport av tellefilen gjenstår; se `docs/qa/STOCKTAKE_20261015.md`. Bare Sandbox er migrert/aktivert for Preview, ikke produksjon.
+
+
+Mobil Prissøk 15.10: Søk, kamera og treff vises rett under overskriften på mobil, før varetelling og lagrede/valgte plukklister. Tastaturet åpnes ved eget trykk i feltet; verken åpning, skanning eller valg av vare setter mobilfokus automatisk. PC-oppsettet beholdes. Kenneth ga «test ok på alt» kl. 13:18, inkludert denne avgrensede mobilrettingen.

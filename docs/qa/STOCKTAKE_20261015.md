@@ -37,4 +37,4 @@ Kontrollfil er UTF-8 CSV med firma, dato, lager, område, leverandør, varenumme
 - Fingeravtrykk for alle tidligere public-funksjoner før/etter: `ed4f8cf1aff9743801bd12cab19bd9e6`, uendret.
 - Security-advisors kontrollert: egne fire private RLS-tabeller uten direkte klientgrants (forventet INFO), syv bevisst autentiserte SECURITY DEFINER-RPC-er med intern aktør-/scopekontroll (forventet WARN). Ingen anon-grants eller prisfelt. https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy
 
-Ny Preview-prøve og TEST OK for varetelling kreves før merge. Leverandørbestilling har separat TEST OK og separat kjent Sandbox-epostbegrensning.
+Kenneth godkjente alt 15.10 kl. 13:18 og godkjente samtidig den avgrensede mobilflyttingen. Ny manuell godkjenningsrunde kreves ikke for denne rettingen. `price-search-mobile-check.mjs`: 9 Chromium-kontroller av mobilrekkefølge, kamera/treff, ingen automatisk tastaturåpning ved åpning/skann/valg og uendret PC-rekkefølge. Produksjon og demo publiseres kontrollert etter samlet grønn QA. Sandbox-epostbegrensningen beholdes; ingen hemmeligheter er kopiert dit.
