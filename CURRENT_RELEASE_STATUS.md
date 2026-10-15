@@ -1,3 +1,15 @@
+## Firmaadmin-isolasjon – produksjonsrettelse 15. oktober 2026
+
+PR #250 retter at gamle systemadmin-adaptere monterte global firmaliste inne i Firmaadmin. Main `736d5ce73697874da17b4f3e50a7f36528cc0e2a`, Production `dpl_7vnLbp2eZGqSZKGxHF8eufnvPbsT` READY på eksakt SHA/fast alias. HTTP 200 og publisert main-Dq3laL0R.js inneholder seksjonsavgrensningen med H2 Systemadmin og eksplisitt Firmaadmin-unntak, Production-URL og ingen Sandbox-URL. CI 38743456772 /116450809944 består alle steg, inkludert 40 Chromium- og 72 PostgreSQL-kontroller. Dette er rettelse av samme Production-prøve Kenneth godkjente; ingen separat manuell test av denne SHA-en påstås.
+
+Main synkroniseres kontrollert til demo med samme baseline. Demo-overlay, data og e-postsperrer beholdes; ingen SQL eller tildelte rettigheter endres i denne rettelsen. Tidligere status nedenfor er historikk. Detaljer: docs/qa/COMPANY_ADMIN_ISOLATION_20261015.md og PR #250.
+
+## Firmaadmin og Systemadmin holdes i hver sin flate – 15. oktober 2026
+
+Etter publisering av PR #249 viste Kenneth at Firmaadmin i Bademiljø Expo fikk den globale firmaoversikten. Rotårsaken var eldre DOM-adaptere som søkte etter «Brukere og tilganger» i hele dokumentet og monterte systemadmins firmavelger i den nye, avgrensede React-flaten. Serverens Firmaadmin-snapshot var riktig avgrenset til 10 medlemmer i Bademiljø Expo; ordinær proffadmin ble fortsatt nektet tilgang til andre firmaer i faktisk Production-SQL-prøve med rollback.
+
+Fire systemadmin-adaptere finner nå bare elementer i den dedikerte Systemadmin-seksjonen og utelukker den avgrensede Firmaadmin-flaten. Regresjonstesten installerer de fire faktiske adapterne sammen med Firmaadmin: feilen reproduseres på publisert kode; rettelsen består 40 Chromium-kontroller, inkludert fortsatt global firmaliste og bruker-/arbeidsprofilkontroller under Systemadmin, samtidig visning og navigasjon bort. Ingen SQL, brukerrettigheter, medlemskap eller e-postendring. Miljømål BEGGE; rettelse av samme godkjente leveranse som brukeren prøver i Production. Full critical/build grønn. Releasebevis føres i oppfølgings-PR og `docs/qa/COMPANY_ADMIN_ISOLATION_20261015.md`.
+
 ## Firmaadmin og invitasjonstilganger – publisert 15. oktober 2026
 
 Kenneth ga eksplisitt TEST OK og godkjente publisering for å prøve faktiske brukere i Production; ingen manuell Preview-prøve påstås. PR #249 er merget til main `a5b27fd61630ec878a244c2aab6ad76b6f6efa62`. Nyeste Core Safety `38741622077` er grønn. Production `dpl_3vijpAoc9T4pc6w4AXApgegBd3oK` er READY på denne SHA-en og `expo-proffdok.app` svarer 200 med ny Firmaadmin/invitasjonskode og bare Production-backend i de 34 kontrollerte JS-filene. Begge migrasjoner er installert med kanonisk historikk. Autentisert SQL-prøve av aktivt firma og lagrede invitasjonsvalg består med full rollback; en faktisk ordinær proffadmin får bare eget firma og nektes tverrfirma-lesing/bytte/egentildeling. 295 øvrige public-funksjoner og eksisterende policies er byteidentiske. Ingen ekte invitasjon/e-post er sendt. Kenneth tester selv innlogget med virkelige brukere.

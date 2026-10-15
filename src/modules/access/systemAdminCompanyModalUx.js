@@ -3,6 +3,8 @@
 // eksisterende brukerhandlinger. Legacy-kort og 45B-tilgangskontroller beholder eierskap
 // til lagring/sikkerhet; denne adapteren håndterer kun fokus, modalramme og kontrollert lukking.
 
+import { findSystemAdminElements } from './systemAdminSurface.js';
+
 const MODAL_BACKDROP_ID = "expo-systemadmin-company-modal-backdrop";
 const MODAL_HEADER_ID = "expo-systemadmin-company-modal-header";
 const MODAL_FOOTER_ID = "expo-systemadmin-company-modal-footer";
@@ -30,7 +32,7 @@ function setAttributeIfChanged(element, name, nextValue = "") {
 }
 
 function findCompanyPanel() {
-  const heading = Array.from(document.querySelectorAll("h3")).find((node) =>
+  const heading = findSystemAdminElements('h3').find((node) =>
     compactText(node.textContent) === PANEL_TITLE
   );
   return heading?.closest(".item") || null;

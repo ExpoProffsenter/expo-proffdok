@@ -5,6 +5,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { MANAGED_ACCESS_EVENT } from "./moduleAccessClient.js";
+import { findSystemAdminElements } from './systemAdminSurface.js';
 import {
   listManagedWorkProfiles,
   setManagedWorkProfiles,
@@ -22,7 +23,7 @@ function compactText(value = "") {
 }
 
 function findUserPanel() {
-  return Array.from(document.querySelectorAll("h3"))
+  return findSystemAdminElements('h3')
     .find((node) => compactText(node.textContent) === "Brukere og tilganger")
     ?.closest(".item") || null;
 }
