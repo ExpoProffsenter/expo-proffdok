@@ -8,6 +8,7 @@ import {WORK_PROFILE_EVENT} from '../access/workProfileClient.js';
 import DeviationDialog from '../deviations/DeviationDialog.jsx';
 import './hrFollowupNotice.css';
 import {hrEmployeeLabel} from './hrEmployeeLabel.mjs';
+import HrContactReminder from './HrContactReminder.jsx';
 const Conversations=React.lazy(()=>import('./HrConversations.jsx'));
 const SickLeave=React.lazy(()=>import('./HrSickLeaveCases.jsx'));
 const date=value=>value.split('-').reverse().join('.');
@@ -64,6 +65,7 @@ export default function HrFollowupNotice({context,userId,onSetup}){
  };
  const tasks=value?.scope===scope?value.tasks:[],target=selected?.scope===scope?selected.task:null;
  return <>
+  <HrContactReminder context={context} userId={userId}/>
   {(tasks.length>0||error)&&<section className="hr-followup-notice" aria-label="Dine varsler og oppfølginger" aria-busy={busy}>
    <div className="hr-followup-notice-heading"><Bell aria-hidden="true"/><div><h2>Dine varsler og oppfølginger <span>{tasks.length}{value?.next||value?.feedbackNext?'+':''}</span></h2><p>Dette venter på deg i {context.company_name||'aktivt firma'}.</p></div></div>
    {error&&<><p role="alert">{error}</p><button type="button" className="secondary" disabled={busy} onClick={()=>setRetry(n=>n+1)}>Oppdater varsler</button></>}
