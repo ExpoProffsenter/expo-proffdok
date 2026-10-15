@@ -1,3 +1,7 @@
+## Timer og utlegg – publisert 15. oktober 2026
+
+Kenneth ga TEST OK for `b50f3090`. PR #245 er merget til main `f65a9768db342687caff220a3081b65a2ab732f2`; Production er READY og HTTP-/asset-/backendkontroll består. Egen time-mail er aktivert i Production, egne workers svarer 200 uten sending/sletting i tom kø. Fire time-migrasjoner er installert. Firmaene aktiverer selv timeføring og valgfri mobilforsidesnarvei. Main synkroniseres bare inn i demo; demo-overlay/demodata beholdes og alle demo-e-poster forblir AV. Detaljer: docs/kshms/TIME_RELEASE_20261015.md.
+
 Mobil oppfølging 13. oktober: felles topp/bunnpiler i alle innloggede moduler; startboks bare på Startsiden. BEGGE, egen PR etter publisert main 5debd835. Relevant QA/Preview og ny TEST OK før publisering.
 
 Mobilpiler oppfølging 2: global nav-grid gjorde pilene horisontale og Vercel-knappen dekket ned. Egen vertikal kolonne + Preview-avstand + window.scrollTo. Før-fiks runtime-test feilet på global menystil; ny kontroll av begge trykk og scroll kjøres. Ikke publisert til main/demo.

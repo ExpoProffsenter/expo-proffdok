@@ -1,3 +1,34 @@
+## Valgfri snarvei til timeføring på mobil – 14. oktober 2026
+
+I **HR → Timer og utlegg → Timeoppsett** kan firmaet slå på **Vis snarvei til timeføring på mobilforsiden** og trykke **Lagre timeoppsett**. Valget er avslått som standard. Et mørkt kort med turkis klokke og **Før timer** åpner den personlige timeføringen direkte fra mobilforsiden.
+
+Kortet krever aktiv timeregistrering, firmaets lagrede valg og registrert medarbeider med HR-tilgang i aktivt firma. Timeveiledningen i Hjelp er også avgrenset til HR. Desktop og eksisterende prosjektmenyer beholdes. Av/på, firmabytte, fersk tilgangskontroll og bevaring av ulagret timekladd er testet. Full kontrakt/QA: `docs/kshms/TIME_REGISTRATION_20261014.md`.
+
+## Avbryt timeføring uten ekstra varsel – 14. oktober 2026
+
+Etter brukerens ønske lukker **Avbryt**, krysset og Escape timeeditoren direkte. Ulagret endring forkastes, lagrede timer beholdes og forkastet kladd gjenåpnes ikke ved remount. Endringen gjelder bare timeeditorens lukking; ingen backendendring. Faktiske React-scenarioer dekker de tre lukkemåtene, manglende lagringskall, forkastet kladd og bevaring av lagret prosjekt/timetall. Samme Preview/PR #245; Production uendret.
+
+## Manuelt prosjekt fra annet ERP – 14. oktober 2026
+
+Samme Preview og PR #245. I **Min side → Mine timer → Ny registrering** kan ansatte skrive direkte i **Prosjektnummer, navn eller adresse** uten å velge noe i prosjektlisten først. Feltet vises når ingen ProffDok-prosjekt er valgt. **Manuelt prosjekt / annet ERP** finnes også i prosjektlisten. Ett felt på høyst 240 tegn tar nummer, navn, adresse eller en kombinasjon. Omgivende blanktegn fjernes; ledende nuller og øvrig tekst beholdes. Referansen vises i kontroll/historikk og følger uendret i CSV-feltet `project_number` (standardoverskrift Prosjektnummer). Ved import må referansen stemme med mottakersystemets forventning. CSV-oppsett og valgt kolonnerekkefølge endres ikke.
+
+Eksisterende ProffDok-prosjekter velges som før. Manuell referanse oppretter ingen prosjekt-/tilgangsrad. Påkrevd prosjekt kan oppfylles med en manuell referanse; kombinasjon av intern prosjekt-ID og manuell tekst avvises. `time_timer_command_v2` tar samme manuelle referanse, mens gammel RPC-signatur er bevart som wrapper. Timerens lagrede manuelle referanse følger stopp og lagret ukelinje. Eksport-, godkjennings-, CAS-, rolle-, fil- og tomånedersregler beholdes.
+
+Avgrenset scope: timeeditor/oppsett/core, additiv migrasjon `20261014161822_time_external_project_reference.sql`, ny timerkolonne og v2-RPC, uendret ekstern eksportkontrakt, tester og hjelp/docs. Ingen endring i prosjekter, prosjektmeny, ERP-integrasjon, medlemskap, andre moduler eller Production. Lokal PostgreSQL 113 og faktisk React 44 assertions PASS; alle tidligere kontroller beholdes. Full critical/Sandbox-build PASS. Sandbox-migrasjon installert; eksisterende HR/KS-funksjoner, gamle policies, runtime, lagrede demotimer og mailinnstillinger er uendret. Ekte Sandbox-regresjon består 23 assertions med full rollback. Preview/CI føres i PR. Den kjente sperren i skynettleserens native credential state omgås ikke; ingen ny brukerinnlogging kreves av en deploy.
+
+## Timer og utlegg – 14. oktober 2026
+
+Miljømål **BEGGE**, fra main `d95f14c80e2a87bd4fed4e31cf47f712c3c2ca48`. Ansatte fører i **Min side → Mine timer**. **HR → Timer og utlegg** samler kontroll, firmaets timeoppsett og konfigurerbar CSV-eksport. Antall timer, fra–til med pause og serverlagret start/stopp støttes, sammen med fravær, overtid, reise/km, tillegg og utlegg med private PDF/JPG/PNG-kvitteringer. Overtid beregnes ikke automatisk. Importformat må prøves når lønnsprogram er valgt.
+
+Firmaadmin velger timeansvarlige. Egen ansatt fører; aktuell nærmeste leder eller timeansvarlig kontrollerer. Egne timer kan ikke godkjennes av samme bruker. Innsendte uker er låst til tilbaketrekking/retur. Eksport omfatter bare godkjente, ikke tidligere eksporterte linjer og krever ansattnummer/lønnskode/prosjektnummer der påkrevd. Eksportarkivet lar samme fil lastes ned igjen; nedlasting er ingen bekreftelse på import eller utbetaling.
+
+Kenneths avklaring: ferdig eksporterte uker, endringshistorikk og kvitteringer ryddes etter **to kalendermåneder fra siste eksport for uken**. Åpne/ufullstendig eksporterte uker beholdes til ferdigbehandling. Daglig databasejobb rydder innhold; egen tokenbeskyttet Edge-worker fjerner kvitteringer via Storage API og bekrefter fravær før køen kvitteres. Minimale firma-/medarbeider-/ukemarkører uten navn, timer eller beløp hindrer falske manglende-oppgaver og ny innlegging i ryddet uke. Eldre lønnsgrunnlag finnes i lønnssystemet. Utdatert idempotens og historiske, ikke eksportrefererte utgaver ryddes også etter to måneder.
+
+Avgrenset scope: ny time-modul, to innganger i HR/Min side, additiv privat database/storage/RPC/cron, egne mail-/cleanup-workers, Hjelp, dokumentasjon og permanent QA. Eksisterende HR-/KS-funksjonskilder og gamle policies er identiske i Sandbox; ny enrollment-trigger er eneste integrasjon i HR-tabell. Sales, globale menyer, profil, medlemskap og eksisterende mail-workers endres ikke. Time-e-post er implementert, men fortsatt AV i Sandbox; produksjonsaktivering inngår i senere release.
+
+QA: 98 lokale PostgreSQL-assertions og 37 faktiske React-assertions PASS. 19 faktiske Sandbox-assertions PASS, alle random syntetiske fixtures rullet tilbake. Min side, eksisterende HR-register/Hjelp og modulnavigasjon PASS. Full critical/Sandbox-build PASS. Hjelpetester er utvidet fra tre til fire HR-kapitler; alle tidligere kapitler/innholdskontroller beholdes. Representative 10-linjers uke med hver lagring/godkjenning/eksport målte ~52 kB lagrede radbytes; 40 ansatte × 9 uker ~19 MB før indekser/ledig plass. Vedlegg kommer i tillegg. Praktisk anslag 30–60 MB for dette mønsteret, ikke en øvre kvote.
+
+Sandbox `ppvircenkjizeiqdxphj`: migrasjon installert, egne workers ACTIVE, cleanup-endepunkt konfigurert; ny time-mail fortsatt AV. Standard migreringsverktøy feilet to ganger med `Invalid or expired requestState`; samme autoriserte migrasjon ble installert via én eksplisitt SQL-transaksjon og registrert med versjon `20261014144538`. Ingen Production-migrering/merge er gjort. Preview, CI og innlogget brukerprøve føres nedenfor. TEST OK gjelder denne nye funksjonen separat.
 ## Rutiner sender ikke e-post – 12. oktober 2026
 
 Etter Kenneths eksplisitte akuttinstruks er rutinetildelinger og lesepåminnelser bare i appen. Ny køtrigger blokkerer reading ved insert/retry; 670 ventende rutine-e-poster stanset i produksjon, ingen gjeldende rutinepost sendbar. 200 allerede sendte beholdes i loggen. Rutiner, tildelinger og egne bekreftelser beholdes. Andre oppgaver og frister beholder e-post. Produksjon og Sandbox installert, faktisk insert/retry-test rullet tilbake. Se docs/kshms/ROUTINE_EMAIL_STOP_20261012.md.
