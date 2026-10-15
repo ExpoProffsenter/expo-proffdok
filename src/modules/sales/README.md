@@ -289,3 +289,8 @@ Mobilpiler: plasseres midt på høyre side, over innholdets lag og utenfor det f
 Pilkontrollene har egen enkolonnet meny-layout og ruller dokumentet via window.scrollTo. Hvis Vercels Preview-verktøy finnes, trekkes pilene litt inn fra høyrekanten så begge kan trykkes. Runtime-QA bruker nå også appens faktiske globale mobil-/menystiler og en overlappende Preview-knapp.
 
 Mobil 13. oktober: topp/bunn-kontrollen er flyttet til felles MobileScrollShortcuts i den autentiserte appskallet; én kontroll uansett valgt modul, mens isolert kundevisning har sin egen. SalesMobileTools beholder bare kundevisningsdialogen. Mobil startboks er avgrenset til tab=prosjekt uten valgt/nytt prosjekt, slik at HR/KS/HMS/profil/øvrige moduler åpner uten startboksen. Kun presentasjon, ingen endring i navigasjonshandlere, recovery, lagring, tilgang eller e-post. Permanent sjekk bruker faktisk rendererbetingelse; touch-QA på modulbytte/HR/KS/HMS/profil/Startsiden og eksisterende tilbudskontroller.
+
+
+### Varetelling – Preview 15.10.2026
+
+Systemadmin kan aktivere **Varetelling** per firma. I Prissøk får godkjente tellere egne delte tellelister med lager, dato og område, skanning/søk med eksplisitt leverandørvalg og manuell innlegging uten strekkode. Antall 0, desimaler, idempotent lagring, revisjonsvern og låst avslutning støttes. Listene bruker ikke plukklistens grense på 30 varer. Eksport henter alle sider, summerer områder per leverandør/varenummer til tilpassbar tekstfil og gir separat CSV-kontrollfil. Ingen prisfelt eller direkte oppdatering av Cordel. Kundens ASCII-feltmapping og faktisk prøveimport gjenstår; se `docs/qa/STOCKTAKE_20261015.md`. Bare Sandbox er migrert/aktivert for Preview, ikke produksjon.

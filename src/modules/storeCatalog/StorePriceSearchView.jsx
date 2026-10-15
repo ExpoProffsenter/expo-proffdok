@@ -18,6 +18,7 @@ import {
 } from "./mobilePicklistStorage.mjs";
 
 const PriceSearchBarcodeScanner = lazy(() => import("./PriceSearchBarcodeScanner.jsx"));
+const StocktakeEntry = lazy(() => import("../stocktake/StocktakeEntry.jsx"));
 const WORKLIST_SESSION_KEY = "expo-proffdok:price-search:worklist:v1";
 const ORDER_SESSION_KEY = "expo-proffdok:price-search:order:v1";
 const ACTIVE_PICKLIST_SESSION_KEY = "expo-proffdok:price-search:active-picklist:v1";
@@ -920,6 +921,8 @@ export default function StorePriceSearchView({ onClose }) {
           ? "Skann eller søk varer, angi antall og lagre en midlertidig plukkliste til senere registrering i Cordel."
           : "Søk varer og priser, angi antall og lagre en plukkliste til senere manuell registrering i Cordel."}</p>
       </section>
+
+      <Suspense fallback={null}><StocktakeEntry /></Suspense>
 
       <section className="priceSearchSavedLists" aria-label="Lagrede plukklister">
         <div className="priceSearchSavedHead">

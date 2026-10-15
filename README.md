@@ -677,3 +677,8 @@ Kontrollør-e-post (13. oktober 2026, Preview): Under Administrer kontrollørtil
 
 
 Scrollrettelse 13. oktober 2026 (BEGGE, Preview): Felles scrollminne flyttet til pageScrollMemory. Synlig fokusendring, inkludert Windows + Shift + S, skal ikke gjenopprette en gammel posisjon. Gjenoppretting skjer kun etter faktisk skjult side; tastatur/mus/touch/hjul, blur og unmount avbryter ventende gjentakelser. Nullposisjon er gyldig. Tester dekker seks faner, skjult/tilbake, brukerinteraksjon og rydding. Ingen endring i autosave, serverhydrering, Sales workspace-recovery, backend eller e-post. Ny TEST OK kreves før main/Production og kontrollert demo-synk.
+
+
+### Varetelling – Preview 15.10.2026
+
+Systemadmin kan aktivere **Varetelling** per firma. I Prissøk får godkjente tellere egne delte tellelister med lager, dato og område, skanning/søk med eksplisitt leverandørvalg og manuell innlegging uten strekkode. Antall 0, desimaler, idempotent lagring, revisjonsvern og låst avslutning støttes. Listene bruker ikke plukklistens grense på 30 varer. Eksport henter alle sider, summerer områder per leverandør/varenummer til tilpassbar tekstfil og gir separat CSV-kontrollfil. Ingen prisfelt eller direkte oppdatering av Cordel. Kundens ASCII-feltmapping og faktisk prøveimport gjenstår; se `docs/qa/STOCKTAKE_20261015.md`. Bare Sandbox er migrert/aktivert for Preview, ikke produksjon.
