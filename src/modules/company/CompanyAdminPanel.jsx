@@ -23,7 +23,7 @@ function InviteAccessChoices({options,role,value,onChange}) {
     })}
     {['kshms','hr'].map(k=><label className="company-admin-check" key={k}><input type="checkbox" checked={inherited?!!options[k]:value[k]} disabled={inherited||(!options[k]&&!value[k])} onChange={e=>onChange({...value,[k]:e.target.checked})}/><span>{k==='hr'?'HR':'KS/HMS'}<small>{!options[k]?'Ikke aktivert på firmaet.':inherited?'Firmaadmin har tilgang gjennom rollen.':'Tilgang i dette firmaet.'}</small></span></label>)}</div>
     {!inherited&&value.kshms&&<label>KS/HMS-rolle ved invitasjon<select value={value.kshms_role} onChange={e=>onChange({...value,kshms_role:e.target.value})}><option value="reader">Medarbeider – lese og utføre</option><option value="responsible">KS/HMS-ansvarlig – forvalte og godkjenne</option></select></label>}
-    <p className="note">KS/HMS og HR gjelder dette firmaet. HR-innsyn krever også riktig medarbeider- eller ledertilknytning. Hvis kontoen finnes fra før, beholdes eksisterende hovedmoduler; KS/HMS og HR følger valgene her.</p>
+    <p className="note">KS/HMS og HR gjelder dette firmaet. Med HR valgt opprettes medarbeideren automatisk i firmaets HR-register når brukeren er aktiv og registeret er satt opp. En registrert leder i firmakartet beholdes; ellers velger du nærmeste leder i HR etterpå. HR-innsyn følger medarbeider- og ledertilknytningen. Hvis kontoen finnes fra før, beholdes eksisterende hovedmoduler; KS/HMS og HR følger valgene her.</p>
   </div>;
 }
 

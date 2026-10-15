@@ -39,6 +39,11 @@ do $$declare result jsonb;begin
  assert result->>'hr'='true' and result->>'kshms'='true','Chosen people grants absent';
 end $$;
 reset role;
+do $$declare u uuid:=current_setting('company.invitation.qa.user')::uuid;begin
+ assert (select count(*) from hr_private.employees where user_id=u and company_id='e0000000-0000-4000-8000-000000000001')=1,'Automatic HR employee missing or duplicated';
+ assert (select count(*) from hr_private.employees where user_id=u)=1,'HR entry crossed company boundary';
+ assert (select leader_id is null from hr_private.employees where user_id=u),'Manager was invented';
+end $$;
 select set_config('request.jwt.claim.sub','a1000000-0000-4000-8000-000000000001',true);
 set local role authenticated;
 do $$declare own uuid;result jsonb;begin

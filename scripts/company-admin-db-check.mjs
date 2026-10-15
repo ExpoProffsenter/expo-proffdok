@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {checkInvitationAccess} from './company-invitation-db-check.mjs';
 import {checkInvitationResend} from './company-invitation-resend-db-check.mjs';
+import {checkInvitationAutoHr} from './company-invitation-auto-hr-db-check.mjs';
 const {PGlite}=await import(process.env.HR_PGLITE_PATH||'@electric-sql/pglite');
 const db=new PGlite();let checks=0;
 const id=n=>`97000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
@@ -73,5 +74,6 @@ try{
  await db.exec('reset role');eq((await db.query("select has_function_privilege('anon','public.company_admin_invite(uuid,text,text)','execute') a,has_schema_privilege('authenticated','company_admin_private','usage') b")).rows[0],{a:false,b:false});
  await checkInvitationAccess({db,id,a,b,outside,sys,admin,worker,other,secondary,q,rpc,actor,eq,rejects});
  await checkInvitationResend({db,id,a,b,sys,admin,worker,other,secondary,q,rpc,actor,eq,rejects});
+ await checkInvitationAutoHr({db,id,a,b,sys,admin,worker,secondary,q,rpc,actor,eq,rejects});
  console.log(`company-admin-db-check: ${checks} PostgreSQL assertions PASS; real migration, existing profile guard and module-manager authorization; synthetic fixtures.`);
 }finally{await db.close();}
