@@ -55,3 +55,5 @@ Nye firma-RPC-er bruker serverens aktive firma og forventet company_id ved alle 
 3. Bytt til Ringside/Expo Proffsenter. Firmaoverskriften og brukerlisten skal følge valget. Delte ansatte beholder oppgitt primærfirma.
 
 Inviter bare en faktisk ønsket bruker: Inviter ansatt er en virkelig sending i miljøer med aktiv transport. Sandbox kan fortsatt ha utilgjengelig e-posttransport, da vises dette tydelig. Ny TEST OK kreves før Production/main→demo. Publisert SHA/CI/Preview føres under når bekreftet.
+
+Faktisk Sandbox-registrering og proffprøve etter baseline-reparasjon: `clean=true`. Permanent demo-infrastruktur **19/19** og KS/HMS-/HR-kurs **5/5** består etter reparasjonen. Ingen testkontoer/invitasjoner ble beholdt og ingen e-post ble sendt. Invitasjonsmigrasjonens historikk er registrert på eksakt CLI-versjon 20261015124223. Publiseringsbevis for gjeldende head og CI finnes i [PR #249](https://github.com/ExpoProffsenter/expo-proffdok/pull/249).

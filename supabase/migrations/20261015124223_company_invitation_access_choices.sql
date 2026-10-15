@@ -156,4 +156,3 @@ begin
    'hr',coalesce((select enabled from public.company_module_access where company_id=c and module_key='hr'),false),
    'allowed_modules',case when public.current_profile_is_systemadmin() then '["projects","sales","store_offers"]'::jsonb else to_jsonb(public.current_user_module_keys()) end));
 end $$;
-
