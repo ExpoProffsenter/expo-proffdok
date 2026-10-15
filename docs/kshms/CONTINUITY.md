@@ -1,3 +1,13 @@
+## Kontaktpåminnelse – publisert 15. oktober 2026
+
+TEST OK fra Kenneth 15.10 kl. 21:00 norsk tid. PR #253 / main `a7bd4795e78e0ba1cbdc747960384bbf01338581`, Production `dpl_EACuFPif1pTyiKz4xCiSDaTZK1KW` READY med fast alias. CI 38789906124 /116611462588 PASS, inkludert 55 nye Chromium-kontroller. HTTP200 og seks publiserte JS-assets bekrefter påminnelsestittel, knapp, save-event og kun Production-backend. Startsiden og Min side viser påminnelse ved manglende gateadresse, postnummer, poststed eller pårørendes navn/telefon. Relasjon og e-post er valgfrie. Eksisterende privat skjema åpnes direkte. Ingen database-, e-post- eller medlemskapsendringer.
+
+Main → demo-synk til samme baseline beholder de 51 overlay-filene. Full critical/build og kontrollsidens regresjonsvern skal bestå før demo-ref flyttes. Sandbox 19/19 infrastruktur- og 5/5 kurspunkter er grønne før synk; sluttbevis føres på PR #253. Tidligere status nedenfor er historikk.
+
+## Kontaktopplysninger – påminnelse i appen, 15. oktober 2026
+
+Miljømål BEGGE. Fra main `6d7a6dc2899f941f23bea33e4cdf1c9458670216`, egen feature `feat-contact-reminder-20261015`. Startsiden og Min side viser påminnelse ved manglende gateadresse, postnummer, poststed eller pårørendes navn/telefon. Fyll ut kontaktopplysninger åpner eksisterende privat skjema direkte. Relasjon og pårørendes e-post er valgfrie. Fersk dobbel egenlesing kreves før visning; bare fullføringsmetadata beholdes i påminnelsen. Bekreftet kontaktlagring utløser ny lesing og fjerner fullført påminnelse. Eksisterende kladd, tilgang og lagring beholdes. Ingen SQL, migrasjon, e-post, hovedmeny, main.jsx eller annen datalagring endres. 55 Chromium-kontroller og eksisterende kontakt-/Min side- og 108 HR-varselkontroller PASS. Full critical/build, CI og fast Preview verifiseres før relevant TEST OK og publisering. Tidligere TEST OK for invitasjonsleveransen attesterer ikke manuell test av denne nye påminnelsen. Detaljer: docs/qa/HR_CONTACT_REMINDER_20261015.md.
+
 ## Automatisk HR fra invitasjon – publisert 15. oktober 2026
 
 PR #252 / main `6d7a6dc2899f941f23bea33e4cdf1c9458670216`, Production `dpl_C1tsNVsVySmqPukheTU9hP4UMzrJ` READY på eksakt SHA og fast alias. CI 38785925129 PASS med 121 databasekontroller og 52 Chromium-kontroller. HTTP200 og publiserte JS-assets bekrefter automatisk HR-tekst og Production-backend uten Sandbox-URL. Migrasjon 20261015175511 finnes i begge miljøer med identisk SQL-MD5 `6a0e457ba7a1ba78927a6f6e519ba6af`. Faktisk Production invitasjon → aktivering → én HR-rad → gjentatt aksept består med full rollback og clean=true. De 13 eksisterende medarbeiderne, 82 policies og offentlige funksjoner er uendret. Ingen e-post ble sendt under prøven.
