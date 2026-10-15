@@ -290,6 +290,14 @@ Pilkontrollene har egen enkolonnet meny-layout og ruller dokumentet via window.s
 
 Mobil 13. oktober: topp/bunn-kontrollen er flyttet til felles MobileScrollShortcuts i den autentiserte appskallet; én kontroll uansett valgt modul, mens isolert kundevisning har sin egen. SalesMobileTools beholder bare kundevisningsdialogen. Mobil startboks er avgrenset til tab=prosjekt uten valgt/nytt prosjekt, slik at HR/KS/HMS/profil/øvrige moduler åpner uten startboksen. Kun presentasjon, ingen endring i navigasjonshandlere, recovery, lagring, tilgang eller e-post. Permanent sjekk bruker faktisk rendererbetingelse; touch-QA på modulbytte/HR/KS/HMS/profil/Startsiden og eksisterende tilbudskontroller.
 
+
+### Varetelling – Preview 15.10.2026
+
+Systemadmin kan aktivere **Varetelling** per firma. I Prissøk får godkjente tellere egne delte tellelister med lager, dato og område, skanning/søk med eksplisitt leverandørvalg og manuell innlegging uten strekkode. Antall 0, desimaler, idempotent lagring, revisjonsvern og låst avslutning støttes. Listene bruker ikke plukklistens grense på 30 varer. Eksport henter alle sider, summerer områder per leverandør/varenummer til samme etablerte Cordel-vareformat med fast filnavn og gir separat CSV-kontrollfil. Ingen prisfelt eller direkte oppdatering av Cordel. Kenneth bekrefter samme vareimportoppsett som ved tilbud; faktisk prøveimport av tellefilen gjenstår; se `docs/qa/STOCKTAKE_20261015.md`. Bare Sandbox er migrert/aktivert for Preview, ikke produksjon.
+
+
+Mobil Prissøk 15.10: Søk, kamera og treff vises rett under overskriften på mobil, før varetelling og lagrede/valgte plukklister. Tastaturet åpnes ved eget trykk i feltet; verken åpning, skanning eller valg av vare setter mobilfokus automatisk. PC-oppsettet beholdes. Kenneth ga «test ok på alt» kl. 13:18, inkludert denne avgrensede mobilrettingen.
+
 ### Plukkliste til leverandør (Preview, 15.10.2026)
 
 Prissøk har «Send bestilling til leverandør». Brukeren kan skrive leverandørnavn og én valgfri e-postadresse, velge varer (også fra en blandet plukkliste), angi referanse, leveringsadresse og melding. Forhåndsvisningen hentes fra aktive katalogvarer på serveren; varenummer, netto-pris, linjesum og varesum eks. mva. følger bestillingen. Prisene hentes på serveren med fersk netto-tilgang. «Ordrebekreftelse sendes til» viser tydelig innlogget brukers e-postadresse med klikkbar lenke. Bestillingen bruker appens faste e-postformat med Expo ProffDok-toppfelt og firmalogo. «Husk leverandør og e-post» lagrer kontakten for det aktive firmaet etter bekreftet sending. Lagrede kontakter kan velges eller slettes; plukklisten beholdes.

@@ -19,6 +19,7 @@ import {
 } from "./mobilePicklistStorage.mjs";
 
 const PriceSearchBarcodeScanner = lazy(() => import("./PriceSearchBarcodeScanner.jsx"));
+const StocktakeEntry = lazy(() => import("../stocktake/StocktakeEntry.jsx"));
 const WORKLIST_SESSION_KEY = "expo-proffdok:price-search:worklist:v1";
 const ORDER_SESSION_KEY = "expo-proffdok:price-search:order:v1";
 const ACTIVE_PICKLIST_SESSION_KEY = "expo-proffdok:price-search:active-picklist:v1";
@@ -493,8 +494,8 @@ export default function StorePriceSearchView({ onClose }) {
   const handleScan = useCallback((code) => {
     setQuery(code);
     setScanning(false);
-    window.requestAnimationFrame(() => searchInputRef.current?.focus?.());
-  }, []);
+    if (!isMobile) window.requestAnimationFrame(() => searchInputRef.current?.focus?.());
+  }, [isMobile]);
   const handleScanError = useCallback((text) => {
     setScanning(false);
     setScanMessage(text);
@@ -687,7 +688,7 @@ export default function StorePriceSearchView({ onClose }) {
     setResults([]);
     setTotalResults(0);
     setMessage("");
-    window.requestAnimationFrame(() => searchInputRef.current?.focus?.());
+    if (!isMobile) window.requestAnimationFrame(() => searchInputRef.current?.focus?.());
   };
 
   const removeSelectedProduct = (itemId) => {
@@ -826,7 +827,7 @@ export default function StorePriceSearchView({ onClose }) {
       ? "Du har tre lagrede plukklister. Slett én før du kan lagre en ny."
       : isMobile ? "Ny plukkliste er klar. Skann eller søk etter varer."
         : "Ny plukkliste er klar. Søk etter varer og angi antall.");
-    window.requestAnimationFrame(() => searchInputRef.current?.focus?.());
+    if (!isMobile) window.requestAnimationFrame(() => searchInputRef.current?.focus?.());
   };
 
   const deletePicklist = async (id) => {
@@ -884,7 +885,7 @@ export default function StorePriceSearchView({ onClose }) {
     setSelectedExpanded(true);
     setIncludeInternalPrint(false);
     setPicklistMessage(isMobile ? "Kladden er tømt." : "");
-    window.requestAnimationFrame(() => searchInputRef.current?.focus?.());
+    if (!isMobile) window.requestAnimationFrame(() => searchInputRef.current?.focus?.());
   };
 
   const printSelectedProducts = (picklist = true) => {
@@ -907,6 +908,82 @@ export default function StorePriceSearchView({ onClose }) {
       )
     : null;
 
+  const priceSearchLookup = (
+    <>
+      <section className={`priceSearchCard${selectedProducts.length ? " hasSelectedProducts" : ""}`}>
+        <label htmlFor="expo-price-search-input">Søk i vareregisteret</label>
+        <div className="priceSearchInputWrap">
+          <Search size={20} />
+          <input
+            ref={searchInputRef}
+            id="expo-price-search-input"
+            autoFocus={!isMobile}
+            autoComplete="off"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Søk varenavn, leverandør, varenummer eller GTIN/EAN"
+          />
+        </div>
+        {isMobile ? (
+          <>
+            <button
+              type="button"
+              className="secondary priceSearchScanButton"
+              onClick={() => { setScanMessage(""); setScanning(true); }}
+              disabled={scanning || saveBusy || restoreIncomplete}
+            >
+              <Camera size={18} /> Skann strekkode
+            </button>
+            {scanning ? (
+              <Suspense fallback={<div className="priceSearchMessage">Åpner kamera …</div>}>
+                <PriceSearchBarcodeScanner
+                  onScan={handleScan}
+                  onCancel={stopScanning}
+                  onError={handleScanError}
+                />
+              </Suspense>
+            ) : null}
+            {scanMessage ? <div className="priceSearchMessage isError" role="alert">{scanMessage}</div> : null}
+          </>
+        ) : null}
+        <div className="priceSearchMeta" aria-live="polite">
+          <span>{resultLabel}</span>
+          <small>Lagrede plukklister er tilgjengelige på PC og mobil. Ingen priser lagres i plukklisten. Intern nto-pris vises bare for brukere med egen tilgang.</small>
+        </div>
+      </section>
+
+      {message ? <div className="priceSearchMessage isError">{message}</div> : null}
+      {!message && cleanQuery.length >= 2 && !searching && results.length === 0 ? (
+        <div className="priceSearchMessage">Ingen varer matcher søket.</div>
+      ) : null}
+
+      {results.length ? (
+        <>
+          <section className="priceSearchResults" aria-label="Søkeresultater">
+            {results.map((item) => (
+              <PriceResult
+                key={item.id}
+                item={item}
+                selected={selectedIds.has(String(item.id))}
+                disabled={restoringSelected || restoreFailed || restoreIncomplete || saveBusy}
+                onSelect={addSelectedProduct}
+              />
+            ))}
+          </section>
+          {results.length < totalResults ? (
+            <div className="priceSearchLoadMore">
+              <button type="button" className="secondary" onClick={loadMoreResults} disabled={loadingMore}>
+                {loadingMore
+                  ? "Henter flere …"
+                  : `Vis ${Math.min(PRICE_SEARCH_PAGE_SIZE, totalResults - results.length)} flere`}
+              </button>
+            </div>
+          ) : null}
+        </>
+      ) : null}
+    </>
+  );
+
   return (
     <div className="priceSearchInlineView" aria-label="Prissøk">
       <section className="priceSearchIntro">
@@ -921,6 +998,10 @@ export default function StorePriceSearchView({ onClose }) {
           ? "Skann eller søk varer, angi antall og lagre en midlertidig plukkliste til senere registrering i Cordel."
           : "Søk varer og priser, angi antall og lagre en plukkliste til senere manuell registrering i Cordel."}</p>
       </section>
+
+      {isMobile ? priceSearchLookup : null}
+
+      <Suspense fallback={null}><StocktakeEntry /></Suspense>
 
       <section className="priceSearchSavedLists" aria-label="Lagrede plukklister">
         <div className="priceSearchSavedHead">
@@ -1051,77 +1132,7 @@ export default function StorePriceSearchView({ onClose }) {
         </section>
       ) : null}
 
-      <section className={`priceSearchCard${selectedProducts.length ? " hasSelectedProducts" : ""}`}>
-        <label htmlFor="expo-price-search-input">Søk i vareregisteret</label>
-        <div className="priceSearchInputWrap">
-          <Search size={20} />
-          <input
-            ref={searchInputRef}
-            id="expo-price-search-input"
-            autoFocus
-            autoComplete="off"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Søk varenavn, leverandør, varenummer eller GTIN/EAN"
-          />
-        </div>
-        {isMobile ? (
-          <>
-            <button
-              type="button"
-              className="secondary priceSearchScanButton"
-              onClick={() => { setScanMessage(""); setScanning(true); }}
-              disabled={scanning || saveBusy || restoreIncomplete}
-            >
-              <Camera size={18} /> Skann strekkode
-            </button>
-            {scanning ? (
-              <Suspense fallback={<div className="priceSearchMessage">Åpner kamera …</div>}>
-                <PriceSearchBarcodeScanner
-                  onScan={handleScan}
-                  onCancel={stopScanning}
-                  onError={handleScanError}
-                />
-              </Suspense>
-            ) : null}
-            {scanMessage ? <div className="priceSearchMessage isError" role="alert">{scanMessage}</div> : null}
-          </>
-        ) : null}
-        <div className="priceSearchMeta" aria-live="polite">
-          <span>{resultLabel}</span>
-          <small>Lagrede plukklister er tilgjengelige på PC og mobil. Ingen priser lagres i plukklisten. Intern nto-pris vises bare for brukere med egen tilgang.</small>
-        </div>
-      </section>
-
-      {message ? <div className="priceSearchMessage isError">{message}</div> : null}
-      {!message && cleanQuery.length >= 2 && !searching && results.length === 0 ? (
-        <div className="priceSearchMessage">Ingen varer matcher søket.</div>
-      ) : null}
-
-      {results.length ? (
-        <>
-          <section className="priceSearchResults" aria-label="Søkeresultater">
-            {results.map((item) => (
-              <PriceResult
-                key={item.id}
-                item={item}
-                selected={selectedIds.has(String(item.id))}
-                disabled={restoringSelected || restoreFailed || restoreIncomplete || saveBusy}
-                onSelect={addSelectedProduct}
-              />
-            ))}
-          </section>
-          {results.length < totalResults ? (
-            <div className="priceSearchLoadMore">
-              <button type="button" className="secondary" onClick={loadMoreResults} disabled={loadingMore}>
-                {loadingMore
-                  ? "Henter flere …"
-                  : `Vis ${Math.min(PRICE_SEARCH_PAGE_SIZE, totalResults - results.length)} flere`}
-              </button>
-            </div>
-          ) : null}
-        </>
-      ) : null}
+      {!isMobile ? priceSearchLookup : null}
 
       {printPortal}
 

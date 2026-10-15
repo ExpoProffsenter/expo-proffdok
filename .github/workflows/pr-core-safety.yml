@@ -95,6 +95,7 @@ jobs:
         run: |
           export HR_PGLITE_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/@electric-sql/pglite/dist/index.js"
           export KSHMS_JSDOM_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/jsdom/lib/api.js"
+          node scripts/stocktake-db-check.mjs
           node scripts/time-registration-db-check.mjs
           node scripts/time-registration-react-check.mjs
           node scripts/time-notifications-check.mjs
