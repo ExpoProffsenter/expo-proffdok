@@ -5,7 +5,7 @@ import './supplierOrder.css';
 
 const money=value=>new Intl.NumberFormat('nb-NO',{style:'currency',currency:'NOK',minimumFractionDigits:2,maximumFractionDigits:2}).format(Number(value));
 
-export default function SupplierOrder({items,companyId,orderNumber='',disabled=false}) {
+export default function SupplierOrder({items,companyId,orderNumber='',disabled=false,renderActions=null}) {
  const [open,setOpen]=useState(false),[context,setContext]=useState(null),[loadError,setLoadError]=useState('');
  const [contact,setContact]=useState(''),[name,setName]=useState(''),[email,setEmail]=useState('');
  const [reference,setReference]=useState(orderNumber),[address,setAddress]=useState(''),[message,setMessage]=useState('');
@@ -54,8 +54,9 @@ export default function SupplierOrder({items,companyId,orderNumber='',disabled=f
   finally{busyRef.current=false;setBusy(false);}
  };
  const newOrder=()=>{setPreview(null);setSent(false);setError('');setRemember(false);attempt.current=null;setExcluded([]);};
+ const orderButton=<button type="button" className="supplierOrderTrigger" disabled={!allowed||!items.length||busy} aria-expanded={open} onClick={()=>{if(!open&&!referenceTouched.current&&!preview)setReference(orderNumber);setOpen(v=>!v);}}><Mail size={16}/> Send bestilling til leverandør</button>;
  return <div className="supplierOrder">
-  <button type="button" className="secondary" disabled={!allowed||!items.length||busy} aria-expanded={open} onClick={()=>{if(!open&&!referenceTouched.current&&!preview)setReference(orderNumber);setOpen(v=>!v);}}><Mail size={16}/> Send bestilling til leverandør</button>
+  {renderActions?renderActions(orderButton):orderButton}
   {open?<section className="supplierOrderPanel" ref={panel} tabIndex={-1} aria-label="Bestilling til leverandør">
    <h3>{sent?'Bestillingen er sendt':preview?'Se over bestillingen':'Send plukkliste som bestilling'}</h3>
    {sent?<>

@@ -14,7 +14,7 @@ Retry-kvitteringer lagres i privat schema i omtrent to døgn, med en egen daglig
 
 - `supplier-order-db-check.mjs`: 44 assertions med faktisk PostgreSQL/PGlite og hele migreringen; autentisering, firmaskille, medlemskap, tilbakekalt tilgang, service-only kvittering, nettopriser fra serveren, aktive/importerte varer, replay, ugyldige felt/antall, opt-out, lagring og sletting.
 - `supplier-order-email-check.mjs`: 47 assertions; faktiske handler-/e-postfunksjoner med mock provider. Dette er mock-tester; de to uttrykkelig bestilte test-e-postene er dokumentert nedenfor.
-- `supplier-order-react-check.mjs`: 22 assertions i Chromium på desktop og 390px mobil. Manuell e-post, lagret kontakt, blandet plukkliste, serverens forhåndsvisning, dobbelklikk, usikkert svar/retry, stille Avbryt, firmabytte, deaktivert tilgang og ingen horisontal mobiloverflow. Mock API; dette er ikke en innlogget sandbox-prøve.
+- `supplier-order-react-check.mjs`: 34 assertions i Chromium på desktop og 390px mobil. Manuell e-post, lagret kontakt, blandet plukkliste, serverens forhåndsvisning, dobbelklikk, usikkert svar/retry, stille Avbryt, firmabytte, deaktivert tilgang og ingen horisontal mobiloverflow. Mock API; dette er ikke en innlogget sandbox-prøve.
 - Hele eksisterende `npm run build` med critical checks er grønn, inkludert Prissøk, plukkliste, Cordel, recovery, firmaprofil og tilgang. Skjermbilder av skjemaet er visuelt kontrollert.
 - Avgrenset diff: plukklisteintegrasjon, ny bestillingskomponent/klient/stil, ny privat database/RPC/worker, egne tester og påkrevd dokumentasjon. Database- og e-posttestene kjøres også i PR Core Safety. Ingen endringer i main.jsx, navigasjon, HR, eksisterende RLS eller andre e-postfunksjoner.
 
@@ -29,7 +29,7 @@ Sandbox-transporten returnerer kontrollert HTTP 503 «E-posttjenesten er ikke ko
 Kenneth ba uttrykkelig om en test til kenneth@ringside.no. En midlertidig fast-mottaker-probe brukte den samme `supplierOrderMail`-funksjonen og den eksisterende ordinære e-posttjenesten. Den tok ikke imot dynamisk mottaker/innhold, krevde et tilfeldig SHA-256-verifisert token, utløp etter 15 minutter og brukte stabil provider-nøkkel. Ingen produksjonsordre eller bestillingsbackend ble opprettet. Testen brukte Kenneths kontrollerte firmaprofil (Ringside), én katalogvare med varenummer/netto og firmadressen som tydelig testlevering.
 
 - Første test: provider aksepterte med ID `01a13f0a-0646-7815-b0cf-933776e3c82c`. Kenneth viste deretter skjermbilde av mottatt melding og ba om tydeligere bekreftelsesadresse og appens vanlige layout.
-- Oppdatert test: provider aksepterte med ID `01a13f11-3ebb-7dc7-9e61-1980f6d540f1`. Innboksmottak for denne siste meldingen må bekreftes av Kenneth.
+- Oppdatert test: provider aksepterte med ID `01a13f11-3ebb-7dc7-9e61-1980f6d540f1`. Kenneth bekreftet mottatt og OK 15.10.2026 kl. 12:26 norsk tid.
 - Proben `supplier-order-test` er etterpå erstattet med v4 som alltid svarer 410, med JWT-krav aktivert. Midlertidige lokale tokenfiler er slettet. Dette er ingen åpen produksjonsutsendingsfunksjon.
 
 ## Gjeldende e-postkontrakt og manuell prøve
@@ -39,3 +39,9 @@ Ordrebekreftelse og forventet leveringsdato skal sendes til en **uttrykkelig opp
 Fast Preview: https://expo-proffdok-git-fase45b-picklist-order-ringside.vercel.app . Prøv Prissøk → legg til vare/antall → Send bestilling til leverandør → skriv mottaker og leveringsadresse → Forhåndsvis bestilling. Kontroller varene, netto og «Ordrebekreftelse sendes til». Lagret kontakt krever faktisk bekreftet sending; ingen kontakt lagres ved Preview/503.
 
 Ny **TEST OK** kreves før merge/produksjonssetting av bestillingsfunksjonen, deretter main → demo med preflight. Sandbox trenger eget e-postoppsett før full ende-til-ende-sending kan prøves der. Draft-PR #247 er ikke en produksjonsaktivering.
+
+## Ryddigere knapper etter brukerprøve
+
+Kenneth viste 15.10.2026 et skjermbilde der utskrift, Cordel, internt prisvalg, sletting og leverandørbestilling stod på ulike linjer. Oppsettet er nå samlet: lagre/vis/slett ved overskriften og en fast handlingsrad under med bestilling, utskrift av plukkliste, Cordel og prisutskrift. Alle fire handlingsknapper er 56 px høye og står på samme linje på desktop. Prisvalget står under prisutskrift og importveiledningen under Cordel. På mobil står bestilling i full bredde, med utskrift/Cordel på raden under.
+
+`SupplierOrder` tar en ren `renderActions`-prop for å plassere triggeren sammen med de andre handlingene; bestillingspanelet ligger fortsatt nedenfor og beholder samme state/firmakey. Ingen backend-, e-post-, lagrings- eller eksportlogikk er endret. Den utvidede Chromium-testen monterer nå også faktisk `StorePriceSearchView`, med ekte interne komponenter/Cordel-hook og mock RPC. Den verifiserer synlig handlingsrad, like høyder og vertikal plassering, riktig plassering av prisvalget, vis/skjul, mobilbredde og at en åpen bestillingskladd beholdes ved endring av vareantall. Nye desktop-/mobilbilder er visuelt kontrollert. Hele critical/build er grønn.

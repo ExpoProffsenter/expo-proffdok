@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';import fs from 'node:fs';import os from 'node:os';import path from 'node:path';import http from 'node:http';import {build} from 'vite';import react from '@vitejs/plugin-react';
 const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
 const root=process.cwd(),tmp=fs.mkdtempSync(path.join(os.tmpdir(),'supplier-order-')),entry=path.join(tmp,'entry.jsx');
-fs.writeFileSync(entry,`import React from '${root}/node_modules/react/index.js';import {createRoot} from '${root}/node_modules/react-dom/client.js';import Order from '${root}/src/modules/storeCatalog/SupplierOrder.jsx';const root=createRoot(document.getElementById('app'));globalThis.renderOrder=props=>root.render(React.createElement(Order,{key:props.companyId,...props}));`);
-const result=await build({root,configFile:false,logLevel:'silent',define:{'process.env.NODE_ENV':'"development"'},plugins:[react(),{name:'order-api-boundary',enforce:'pre',resolveId(id){if(id.endsWith('/supplierOrderClient.js')||id==='./supplierOrderClient.js')return '\0order-test-api';},load(id){if(id==='\0order-test-api')return `export const supplierOrderContext=(...a)=>window.mock.context(...a);export const deleteSupplierOrderContact=(...a)=>window.mock.remove(...a);export const prepareSupplierOrder=(...a)=>window.mock.prepare(...a);export const sendSupplierOrder=(...a)=>window.mock.send(...a);`;}}],build:{write:false,minify:false,lib:{entry,formats:['iife'],name:'OrderQa',cssFileName:'order-qa'}}});
+fs.writeFileSync(entry,`import React from '${root}/node_modules/react/index.js';import {createRoot} from '${root}/node_modules/react-dom/client.js';import Order from '${root}/src/modules/storeCatalog/SupplierOrder.jsx';import PriceSearch from '${root}/src/modules/storeCatalog/StorePriceSearchView.jsx';const root=createRoot(document.getElementById('app'));globalThis.renderOrder=props=>root.render(React.createElement(Order,{key:props.companyId,...props}));globalThis.renderPicklist=()=>root.render(React.createElement(PriceSearch));`);
+const result=await build({root,configFile:false,logLevel:'silent',define:{'process.env.NODE_ENV':'"development"'},plugins:[react(),{name:'order-api-boundary',enforce:'pre',resolveId(id){if(id.endsWith('/supplierOrderClient.js')||id==='./supplierOrderClient.js')return '\0order-test-api';if(id.endsWith('moduleAccessClient.js'))return '\0order-access';if(id.endsWith('workProfileClient.js'))return '\0order-profile';},load(id){if(id==='\0order-access')return `export const getStoredSupabaseSession=()=>({userId:'user',accessToken:'qa'});export const rpcWithStoredSession=(...a)=>window.catalogRpc(...a);export const MANAGED_ACCESS_EVENT='qa-managed';export const MODULE_ACCESS_EVENT='qa-module';`;if(id==='\0order-profile')return `export const WORK_PROFILE_EVENT='qa-profile';export const readCachedWorkProfileState=()=>({active_company_id:'company'});export const getMyWorkProfileState=async()=>({active_company_id:'company'});`;if(id==='\0order-test-api')return `export const supplierOrderContext=(...a)=>window.mock.context(...a);export const deleteSupplierOrderContact=(...a)=>window.mock.remove(...a);export const prepareSupplierOrder=(...a)=>window.mock.prepare(...a);export const sendSupplierOrder=(...a)=>window.mock.send(...a);`;}}],build:{write:false,minify:false,lib:{entry,formats:['iife'],name:'OrderQa',cssFileName:'order-qa'}}});
 const output=(Array.isArray(result)?result[0]:result).output,js=output.find(f=>f.type==='chunk'&&f.isEntry).code,css=output.filter(f=>f.type==='asset'&&f.fileName.endsWith('.css')).map(f=>f.source).join('\n');
-const html=`<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><style>body{font:16px Arial;background:#fff;color:#152733;margin:16px}button{padding:12px;background:#087c89;color:white;border:0;border-radius:8px;cursor:pointer;margin:3px}button:disabled{opacity:.5}button.secondary{background:#e2eeee;color:#173139}${css}</style><div id="app"></div><script src="/qa.js"></script>`;
+const html=`<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><style>body{font:16px Arial;background:#fff;color:#152733;margin:16px}button{padding:12px;background:#087c89;color:white;border:0;border-radius:8px;cursor:pointer;margin:0}button:disabled{opacity:.5}button.secondary{background:#e2eeee;color:#173139}${css}</style><div id="app"></div><script src="/qa.js"></script>`;
 const server=http.createServer((req,res)=>{res.writeHead(200,{'Content-Type':req.url==='/qa.js'?'text/javascript':'text/html'});res.end(req.url==='/qa.js'?js:html);});await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 let browser,checks=0;const eq=(a,b,label)=>{assert.deepEqual(a,b,label);checks++;};
 try{
@@ -32,5 +32,37 @@ try{
  await page.setViewportSize({width:390,height:844});eq(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),true,'mobile form has no horizontal overflow');await page.screenshot({path:path.join(shots,'mobile.png'),fullPage:true});
  await page.evaluate(()=>{window.props={...window.props,companyId:'other-company'};window.renderOrder(window.props);});await button('Send bestilling til leverandør').click();await page.getByLabel('Leverandørnavn',{exact:true}).waitFor();eq(await page.getByLabel('Leverandørnavn',{exact:true}).inputValue(),'','company change clears recipient');
  await page.evaluate(()=>window.renderOrder({...window.props,disabled:true}));eq(await button('Forhåndsvis bestilling').isDisabled(),true);eq(await button('Send bestilling til leverandør').isDisabled(),true);eq(errors,[],'no runtime React errors');
+ // Exercise the real Prissøk view, including its styles and actual Cordel hook.
+ await page.setViewportSize({width:1200,height:1000});
+ await page.evaluate(()=>{
+  window.catalogProduct={...window.props.items[0],supplier_product_number:'0012',gtin:'07000000000001',purchase_net_ex_vat:123.45,customer_price_ex_vat:200};
+  const refs=[{id:'a',supplier_product_number:'0012',gtin:'07000000000001',quantity:'2.5'}];
+  window.sessionStorage.setItem('expo-proffdok:price-search:worklist:v1',JSON.stringify(refs));
+  window.sessionStorage.setItem('expo-proffdok:price-search:active-picklist:v1',JSON.stringify({id:'saved-list',revision:1,userId:'user',companyId:'company'}));
+  window.catalogRpc=async n=>{
+   if(n==='list_mobile_store_picklists')return [{id:'saved-list',revision:1,order_number:'00458',items:refs}];
+   if(n==='get_cordel_export_access')return true;
+   if(n==='search_internal_store_catalog_prices')return [window.catalogProduct];
+   throw Error('Unexpected catalog RPC: '+n);
+  };
+  window.renderPicklist();
+ });
+ await page.getByRole('heading',{name:'Plukkliste (1)',exact:true}).waitFor();await button('Last ned til Cordel').waitFor();
+ const actions=page.locator('.priceSearchPicklistActions');
+ eq(await actions.getByRole('button').allTextContents(),[' Send bestilling til leverandør',' Skriv ut plukkliste',' Last ned til Cordel',' Skriv ut priser'],'one stable action row');
+ const boxes=await actions.getByRole('button').evaluateAll(nodes=>nodes.map(n=>({top:n.getBoundingClientRect().top,height:n.getBoundingClientRect().height})));
+ eq(boxes.every(b=>Math.abs(b.top-boxes[0].top)<1),true,'desktop actions align on one row');eq(boxes.every(b=>b.height===56),true,'all action buttons have the same height');
+ eq(await page.locator('.priceSearchPricePrint').getByLabel('Inkluder interne priser i prisutskrift').count(),1,'sensitive print option belongs to price printing');
+ await button('Skjul valgte varer').click();eq(await page.locator('.priceSearchSelected .priceSearchSelectedProduct').isVisible(),false);eq(await actions.isVisible(),true);await button('Vis valgte varer').click();
+ await button('Send bestilling til leverandør').click();await page.getByLabel('Leverandørnavn',{exact:true}).fill('Behold denne kladden');
+ await page.locator('.priceSearchSelected .priceSearchPickQuantity input').fill('3');await button('Lagre endringer').waitFor();eq(await page.getByLabel('Leverandørnavn',{exact:true}).inputValue(),'Behold denne kladden','quantity edits retain the open supplier form');
+ await button('Avbryt').click();
+ if(process.env.SUPPLIER_ORDER_QA_DIR)await page.screenshot({path:path.join(process.env.SUPPLIER_ORDER_QA_DIR,'picklist-desktop.png'),fullPage:true});
+ await page.setViewportSize({width:390,height:844});await button('Skriv ut priser').waitFor({state:'hidden'});
+ eq(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),true,'full picklist has no mobile page overflow');
+ const mobileBoxes=await actions.getByRole('button').evaluateAll(nodes=>nodes.map(n=>({top:n.getBoundingClientRect().top,left:n.getBoundingClientRect().left,height:n.getBoundingClientRect().height,width:n.getBoundingClientRect().width})));
+ eq(mobileBoxes.length,3);eq(mobileBoxes[0].width>mobileBoxes[1].width,true,'mobile primary action spans both columns');eq(Math.abs(mobileBoxes[1].top-mobileBoxes[2].top)<1,true,'mobile print and Cordel share one row');
+ if(process.env.SUPPLIER_ORDER_QA_DIR)await page.screenshot({path:path.join(process.env.SUPPLIER_ORDER_QA_DIR,'picklist-mobile.png'),fullPage:true});
+ eq(errors,[],'full Prissøk integration has no runtime errors');
  console.log(`supplier-order-react-check: ${checks} assertions OK (Chromium desktop/mobile, mock API, no email sent); screenshots: ${shots}`);
 }finally{await browser?.close();await new Promise(resolve=>server.close(resolve));fs.rmSync(tmp,{recursive:true,force:true});}
