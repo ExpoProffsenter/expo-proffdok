@@ -1,3 +1,13 @@
+## Oppfølging: Nytt tilbud i toppfeltet
+
+Miljømål BEGGE, Preview først fra ren main 1e6052f7, etter Kenneths godkjenning av salgsrunden kl. 20:21. Nytt skjermbilde viser Nytt tilbud på egen rad over overskriften. Samme eksisterende callback startDirectOffer sendes som onCreateOffer fra SalesModule via SalesCore til SalesListView. Oversikten viser Nytt tilbud og Ny forespørsel i samme toppfelt; den opprinnelige raden skjules med lokal CSS bare når oversikten er montert. Andre arbeidsbilder beholder opprinnelig snarvei. Tilbudstypevalg, canUseSales, support-sperre og eksisterende opprettelsesflyt beholdes. Ingen main eller tjenester endres.
+
+Faktisk Chromium-test er utvidet fra 46 til 57 kontroller; alle tidligere krav beholdt. Nytt: én synlig Nytt tilbud, samme callback, handlingsfelt inne i overskriften ved 320/390/768/1363, ingen separat rad og original snarvei fortsatt synlig i saksvisning. Full critical/build PASS. CI/Vercel og innlogget åpning/lukking av tilbudstypevalg føres i PR. Ingen live sak opprettes eller e-post sendes. Ny relevant TEST OK kreves for denne oppfølgingen.
+
+Kort prøve: Åpne Befaring/Tilbud. Nytt tilbud og Ny forespørsel skal stå sammen i toppfeltet uten egen rad over. Trykk Nytt tilbud: samme valg av tilbudstype skal åpnes. Velg Avbryt og prøv på PC/mobil; begge knapper skal være synlige og lette å treffe.
+
+---
+
 # Befaring/Tilbud – kompakt oversikt og saksvisning
 
 Miljømål BEGGE, Preview først. Baseline: main bcac550f etter Kenneths TEST OK for #256. Arbeid på ren branch ux-sales-overview-20261016. Fast Preview-branch/adresse beholdes ved publisering.

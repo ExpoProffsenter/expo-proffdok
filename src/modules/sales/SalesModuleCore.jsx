@@ -245,6 +245,7 @@ export default function SalesModule({
   onStartNewRequestHandled = null,
   onStartNewOfferHandled = null,
   onOpenRequestHandled = null,
+  onCreateOffer,
 } = {}) {
   const activeSupabase = supabaseClient || supabase;
   const salesStorageKey = useMemo(
@@ -3510,6 +3511,7 @@ if (mode === "survey-plan" && selectedRequest) {
 
   return (
     <SalesListView
+      onCreateOffer={onCreateOffer}
       viewStateRef={listViewStateRef}
       viewScope={salesStorageKey}
       activeRequests={activeRequests}
