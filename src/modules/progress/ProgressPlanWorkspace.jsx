@@ -83,6 +83,7 @@ function normalizeActivity(activity = {}) {
     title: clean(activity.title || 'Arbeidsoperasjon'),
     trade: clean(activity.trade || ''),
     resource: clean(activity.resource || ''),
+    ...(activity.crewSize != null ? { crewSize: activity.crewSize } : {}),
     status: STATUS_OPTIONS.includes(activity.status) ? activity.status : 'Ikke startet',
     ...(activity.nsCode ? { nsCode: clean(activity.nsCode), nsKind: activity.nsKind === 'system' ? 'system' : 'building' } : {}),
     sessions: (Array.isArray(activity.sessions) ? activity.sessions : []).map((session) => ({
@@ -173,7 +174,7 @@ export function ProgressPlanWorkspace({ mode, identity, requestRef, projectId: p
           const value = await standalone.load();
           if (cancelled) return;
           setProjectMeta({ ...standalone.meta, locked: value.locked ?? standalone.meta.locked });
-          setPlan({ version: 1, activities: (value.activities || []).map(normalizeActivity), source: null });
+          setPlan({ version: 1, activities: (value.activities || []).map(normalizeActivity), source: null, ...(typeof value.excludeSundays === 'boolean' ? { excludeSundays: value.excludeSundays } : {}) });
           setDirty(Boolean(value.dirty));
           setShowOperationPicker(!value.activities?.length);
           setLoading(false);
@@ -409,8 +410,10 @@ export function ProgressPlanWorkspace({ mode, identity, requestRef, projectId: p
     const missingTitle = activities.find((activity) => !clean(activity.title));
     if (missingTitle) return 'Alle arbeidsoperasjoner må ha navn før planen kan lagres.';
     for (const activity of activities) {
+      if (standalone && activity.crewSize != null && (!Number.isInteger(activity.crewSize) || activity.crewSize < 1 || activity.crewSize > 999)) return 'Antall personer må være et heltall fra 1 til 999, eller stå tomt.';
       if (standalone && activity.nsCode && !/^[2-7]\d{1,3}$/.test(activity.nsCode)) return 'NS-koden må ha 2–4 siffer og begynne med 2–7.';
       for (const session of activity.sessions || []) {
+        if (standalone && plan.excludeSundays && new Date(session.date + 'T12:00:00Z').getUTCDay() === 0) return 'Fjern søndagsøktene før du lagrer en plan uten søndager.';
         if (!session.date || !session.startTime || !session.endTime) {
           return `Planlagt tid på «${activity.title}» må ha dato, fra- og til-tid.`;
         }
@@ -438,6 +441,7 @@ export function ProgressPlanWorkspace({ mode, identity, requestRef, projectId: p
         version: 1,
         activities: (saved.activities || []).map(normalizeActivity),
         source: saved.source || null,
+        ...(standalone && typeof saved.excludeSundays === 'boolean' ? { excludeSundays: saved.excludeSundays } : {}),
       });
       setCustomerVisible(!!saved.customerVisible);
       setDirty(false);

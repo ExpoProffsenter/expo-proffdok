@@ -1,3 +1,13 @@
+## KS/HMS-planbygger: popup, bemanning og flere underkoder – 16. oktober 2026
+
+Miljømål BEGGE, Preview først i PR #254. Åpning/opprettelse viser planbyggeren direkte i en stor popup over appen. Tilbake lukker popupen; Åpne planbygger og Åpne bemanningsplan åpner igjen. Fokus/dvale respekterer bevisst lukking og bevarer kladd og valgt visning etter fersk tilgangskontroll.
+
+Kodeutvalget er utvidet fra 57 til 256 kontrollerte valg i 25 hovedgrupper fra Bergen kommunes offentlige NS 3451:2022-grunnlag (FDVU v3.0/2025, tabell 4, s18–23). Tre-/firesifferkoder vises under hovedgruppen, systemkode merkes separat. Fagfilter bruker alle relevante fagkoblinger, slik at blant annet overflatekoder finnes for både mur/flis, maler og tømrer. Korte navn og fagkoblinger er appens egne. Utvalget er ikke den komplette standarden; oppgaver og egne kodevalg kan fortsatt tilpasses.
+
+Antall personer per oppgave er valgfritt (1–999; tomt betyr ukjent). Bemanningsplan viser høyeste samtidige personbehov og persontimer for valgt dag/uke/måned. Samtidig behov beregnes fra klokkeslett, og overlapp innen samme oppgave dobbelttelles ikke. Ukjent antall og oppgaver uten tider gjør grunnlaget ufullstendig. Eksport → Bemanning / PDF og Last ned bemanning (.csv) bruker hele den bekreftede, lagrede planen; ulagret kladd blokkerer eksport.
+
+Nye planer utelater søndager, men inkluderer lørdager. Flytting/strekk følger synlige arbeidsdager. Eksisterende planer endres først når brukeren velger Utelat søndager, bekrefter antall økter som fjernes fra kladden, og lagrer. Angre kan gjenopprette før lagring. Privat additiv migrasjon `20261016125012_kshms_progress_staffing` validerer feltene uten nye RPC-er eller rettigheter. Bare Sandbox migreres før TEST OK. Prosjektets tilbudsimport og portal følger fortsatt opprinnelig flyt. Se `docs/qa/KSHMS_PROGRESS_20261016.md` for test-/releasebevis.
+
 ## KS/HMS-plan: tidslinje og underkoder – 16. oktober 2026
 
 Samme leveranse/PR #254, fortsatt Preview før ny TEST OK. Kenneth ønsket mindre scrolling og direkte planlegging. KS/HMS har nå søkbart hierarki med 57 utvalgte hoved-/under-/systemkoder, Dag/Uke/Måned, direkte flytting og strekk fra begge ender, Angre, kompakte rader, fag-/tekstsøk og Utvid-visning. Sidepanel erstatter lange skjemaer i oversikten. Planvalg og eksport og planlisten er sammenfoldet under arbeid.

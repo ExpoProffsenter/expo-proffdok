@@ -9,12 +9,14 @@ import {WORK_PROFILE_EVENT} from '../access/workProfileClient.js';
 import {MANAGED_ACCESS_EVENT,MODULE_ACCESS_EVENT} from '../access/moduleAccessClient.js';
 import './kshmsProgressPlans.css';
 import {progressDrafts as drafts} from './kshmsProgressDraft.mjs';
+import {downloadStaffingCsv,staffingHtml} from './kshmsProgressStaffing.mjs';
 import KshmsProgressBoard from './KshmsProgressBoard.jsx';
 const empty={title:'',address:'',reference:''};
 export default function KshmsProgressPlans({context,active=true}){
  const companyId=context.company_id,userId=context.user_id,scope=companyId+':'+userId;
  const session=useMemo(()=>progressSession({rpc:kshmsRpc,companyId,userId}),[scope]);
- const [list,setList]=useState(null),[selected,setSelected]=useState(null),[archived,setArchived]=useState(false),[query,setQuery]=useState(''),[form,setForm]=useState(empty),[creating,setCreating]=useState(false),[editing,setEditing]=useState(false),[dirty,setDirty]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState(''),[reload,setReload]=useState(0),[choosing,setChoosing]=useState(true);
+ const [list,setList]=useState(null),[selected,setSelected]=useState(null),[archived,setArchived]=useState(false),[query,setQuery]=useState(''),[form,setForm]=useState(empty),[creating,setCreating]=useState(false),[editing,setEditing]=useState(false),[dirty,setDirty]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState(''),[reload,setReload]=useState(()=>crypto.randomUUID()),[choosing,setChoosing]=useState(true);
+ const exportRef=useRef(null);
  const epoch=useRef(0),alive=useRef(false),recordRef=useRef(null),busyRef=useRef(false),detailsRevision=useRef(null);
  const refresh=useCallback(async()=>{
   const ticket=++epoch.current;setError('');
@@ -35,14 +37,14 @@ export default function KshmsProgressPlans({context,active=true}){
   if(busyRef.current)return;
   if(dirty&&!discard&&!window.confirm('Du har ulagrede endringer. Behold kladden og åpne en annen plan?'))return;
   busyRef.current=true;setBusy(true);setError('');const ticket=++epoch.current;
-  try{const value=await session.get(id);if(current()&&ticket===epoch.current){setSelected(value.record);recordRef.current=value.record;setDirty(false);setEditing(false);setCreating(false);setChoosing(false);setReload(n=>n+1);}}
+  try{const value=await session.get(id);if(current()&&ticket===epoch.current){setSelected(value.record);recordRef.current=value.record;setDirty(false);setEditing(false);setCreating(false);setChoosing(false);setReload(()=>crypto.randomUUID());}}
   catch(e){if(current()&&ticket===epoch.current)setError(e.message);}
   finally{if(current()){busyRef.current=false;setBusy(false);}}
  };
  const adapter=useMemo(()=>!selected?null:{
   meta:{id:selected.id,title:selected.title,address:selected.address,locked:!manage||selected.archived},
   operations:KSHMS_PROGRESS_OPERATIONS,
-  renderWorkspace:props=><KshmsProgressBoard {...props} operations={KSHMS_PROGRESS_OPERATIONS} stateKey={scope+':'+selected.id}/>,
+  renderWorkspace:props=><KshmsProgressBoard {...props} operations={KSHMS_PROGRESS_OPERATIONS} stateKey={scope+':'+selected.id} launchToken={reload} onExport={kind=>exportRef.current(kind)}/>,
   load:async()=>{
    const value=await session.get(selected.id);if(!current())throw Error('Planen er lukket.');recordRef.current=value.record;
    const draft=drafts.get(scope+':'+selected.id);
@@ -68,9 +70,9 @@ export default function KshmsProgressPlans({context,active=true}){
    if(dirty)throw Error('Lagre fremdriftsplanen før du endrer planopplysninger.');
    const fresh=editing?(await session.get(selected.id)).record:null;
    if(editing&&fresh.revision!==detailsRevision.current)throw Error('Planopplysningene er endret av en annen. Hent lagret plan og prøv igjen.');
-   const record=editing?{...fresh,...form}:{id:crypto.randomUUID(),revision:0,...form,plan:{version:1,activities:[],source:null},archived:false};
+   const record=editing?{...fresh,...form}:{id:crypto.randomUUID(),revision:0,...form,plan:{version:1,activities:[],source:null,excludeSundays:true},archived:false};
    const value=await session.save(record);if(!current())return;
-   recordRef.current=value.record;setSelected(value.record);setForm(empty);setCreating(false);setEditing(false);setChoosing(false);setReload(n=>n+1);await refresh();
+   recordRef.current=value.record;setSelected(value.record);setForm(empty);setCreating(false);setEditing(false);setChoosing(false);setReload(()=>crypto.randomUUID());await refresh();
   });
  };
  const changeArchive=()=>command(async()=>{
@@ -83,16 +85,20 @@ export default function KshmsProgressPlans({context,active=true}){
  });
  const exportPlan=async kind=>{
   if(dirty||busyRef.current)return;
-  const printWindow=kind==='pdf'?window.open('','_blank'):null;
-  if(kind==='pdf'&&!printWindow){setError('Tillat utskriftsvinduet i nettleseren og prøv igjen.');return;}
+  const printing=['pdf','staffing-pdf'].includes(kind);
+  const printWindow=printing?window.open('','_blank'):null;
+  if(printing&&!printWindow){setError('Tillat utskriftsvinduet i nettleseren og prøv igjen.');return 'Tillat utskriftsvinduet i nettleseren og prøv igjen.';}
   busyRef.current=true;setBusy(true);setError('');
   try{
    const value=await session.get(selected.id);if(!current())throw Error('Arbeidsprofilen er endret.');
-   const record=value.record,plan=classifiedExportPlan(record.plan),meta={id:record.id,title:record.title,address:record.address,requestRef:record.reference,planReference:record.reference,row:{data:{company:{name:context.company_name}}}};
-   if(kind==='pdf'){printWindow.document.open();printWindow.document.write(buildPrintableHtml(meta,plan));printWindow.document.close();}
+   const record=value.record,plan=classifiedExportPlan(record.plan),meta={companyName:context.company_name,id:record.id,title:record.title,address:record.address,requestRef:record.reference,planReference:record.reference,row:{data:{company:{name:context.company_name}}}};
+   if(kind==='staffing-pdf'){printWindow.document.open();printWindow.document.write(staffingHtml(meta,record.plan));printWindow.document.close();}
+   else if(kind==='staffing-csv')downloadStaffingCsv(meta,record.plan);
+   else if(kind==='pdf'){printWindow.document.open();printWindow.document.write(buildPrintableHtml(meta,plan));printWindow.document.close();}
    else downloadProgressPlanIcs({projectId:record.id,meta,plan});
-  }catch(e){printWindow?.close();if(current())setError(e.message);}finally{if(current()){busyRef.current=false;setBusy(false);}}
+  }catch(e){printWindow?.close();if(current())setError(e.message);return e.message;}finally{if(current()){busyRef.current=false;setBusy(false);}}
  };
+ exportRef.current=exportPlan;
  const dirtyChanged=useCallback(value=>setDirty(value),[]);
  if(!active)return null;
  return <section className="ks-progress" aria-label="Fremdriftsplaner i KS/HMS">
