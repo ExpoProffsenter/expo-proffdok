@@ -43,7 +43,7 @@ export default function KshmsBulkPublication({data,companyId,userId,busy,dirty,o
  if(!allowed)return null;
  return <section className="ks-card ks-bulk-publication" aria-label="Samlet firmagodkjenning">
   <h3>Godkjenn flere rutiner</h3>
-  <p>Firmaadmin og KS/HMS-ansvarlig kan godkjenne flere ferdige rutiner samlet. Les og tilpass teksten først. Velg bare utkast som er klare for firmaets arbeid. Hver rutine får sin egen godkjente utgave.</p>
+  <details className="module-guide ux-reference"><summary>Vis veiledning for samlet godkjenning</summary><p>Firmaadmin og KS/HMS-ansvarlig kan godkjenne flere ferdige rutiner samlet. Les og tilpass teksten først. Velg bare utkast som er klare for firmaets arbeid. Hver rutine får sin egen godkjente utgave.</p></details>
   {dirty&&<p className="ks-notice">Du har ulagret rutinetekst. Lagre utkastet, eller fjern det ulagrede utkastet på enheten, før samlet godkjenning. Ulagret tekst blir ikke publisert her.</p>}
   {!data.settings&&<p className="ks-notice">Fullfør «Oppstart og tilgang» før rutiner godkjennes for firmaet.</p>}
   {!open&&<button type="button" disabled={busy||dirty||!data.settings||!waiting.length} onClick={begin}>{waiting.length?`Godkjenn flere rutiner (${waiting.length})`:'Alle lagrede rutiner er godkjent'}</button>}

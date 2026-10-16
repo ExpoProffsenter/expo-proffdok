@@ -58,6 +58,7 @@ jobs:
           node scripts/kshms-sja-parent-react-check.mjs
           node scripts/kshms-executions-react-check.mjs
           node scripts/kshms-review-reminders-react-check.mjs
+          node scripts/kshms-publication-react-check.mjs
 
       - name: Verify HR practice and existing HR React flows
         run: |
@@ -137,6 +138,7 @@ jobs:
           node scripts/hr-contact-reminder-react-check.mjs
           node scripts/home-followups-react-check.mjs
           node scripts/app-ux-review-browser-check.mjs
+          node scripts/compact-reference-browser-check.mjs
           node scripts/personal-project-layout-browser-check.mjs
           node scripts/sales-overview-ux-browser-check.mjs
           node scripts/sales-editor-ux-browser-check.mjs
