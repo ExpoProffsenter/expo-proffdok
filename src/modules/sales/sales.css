@@ -2393,3 +2393,66 @@ a:hover {
 @media print{.sales-expandable-offer-group > :not(summary){display:block!important}.sales-offer-group-toggle{display:none!important}}
 
 @media(max-width:760px){.sales-customer-offer-app,.sales-app:has(.sales-offer-detail-lines-list){padding-bottom:calc(96px + env(safe-area-inset-bottom))}}
+
+/* Internal overview/case only. Editors and public customer/PDF layouts keep their rules. */
+section.sales-workspace-intro { padding: 12px 18px; margin-bottom: 8px; }
+.sales-workspace-intro > h2 { font-size: 19px; margin: 0 0 5px; }
+.sales-workspace-intro > .note { margin: 0; line-height: 1.4; font-size: 14px; }
+.sales-module-actions { padding-top: 0 !important; }
+.sales-overview-app .sales-shell, .sales-case-app .sales-shell { padding-top: 8px; }
+.sales-overview-app .sales-header, .sales-case-app .sales-header {
+  position: static; min-height: 44px; margin-bottom: 12px;
+  padding: 0; background: transparent; border: 0; box-shadow: none;
+}
+.sales-overview-app .sales-brand { display: none; }
+.sales-overview-app .sales-header { display: none; }
+.sales-overview-app .sales-main, .sales-case-app .sales-main { gap: 14px; }
+.sales-overview-app .sales-title, .sales-case-app .sales-title { font-size: clamp(27px, 3.2vw, 38px); letter-spacing: -.025em; }
+.sales-overview-app .sales-hero, .sales-case-app .sales-detail-hero { gap: 12px; padding: 16px 20px; border-radius: 20px; }
+.sales-overview-app .sales-subtitle { margin-top: 7px; font-size: 14px; line-height: 1.45; }
+.sales-overview-app section[aria-label="Søk og filtrering"] { padding: 16px 20px; margin-bottom: 0 !important; }
+.sales-status-overview > button { flex: 1 1 calc(25% - 8px); min-height: 48px !important; border-radius: 13px !important; justify-content: space-between; }
+.sales-status-overview > button[aria-selected="false"] { background: #eff8fc !important; color: #17313a !important; border-color: #c7e0ea !important; }
+.sales-status-overview > .sales-status-tile-follow-up[aria-selected="false"] { background: #fff5e7 !important; border-color: #f2d3a6 !important; }
+.sales-status-overview > .sales-status-tile-accepted[aria-selected="false"] { background: #eaf8ef !important; border-color: #bde0c9 !important; }
+.sales-status-overview > .sales-status-tile-declined[aria-selected="false"] { background: #fff0ee !important; border-color: #efccc6 !important; }
+.sales-status-overview > .sales-status-tile-archive[aria-selected="false"] { background: #f3f0fa !important; border-color: #d9d0eb !important; }
+.sales-status-overview > button[aria-selected="true"] { background: #0f5265 !important; color: white !important; border-color: #0f5265 !important; }
+.sales-case-app .sales-detail-hero .sales-hero-actions { padding-top: 12px; }
+.sales-case-app .sales-detail-hero .sales-subtitle { margin-top: 8px; }
+.sales-case-app .sales-detail-grid { gap: 12px; }
+.sales-case-app .sales-detail-card { padding: 14px 18px; border-radius: 18px; }
+.sales-case-app .sales-detail-card h2 { margin-top: 0; margin-bottom: 8px; }
+.sales-case-app .sales-detail-lines { gap: 6px; }
+.sales-case-app .sales-note-empty { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.sales-case-app .sales-note-empty h2, .sales-case-app .sales-note-empty p { margin: 0; }
+.sales-case-app .sales-next-card { border-radius: 20px; }
+@media (max-width: 620px) {
+  section.sales-workspace-intro { padding: 10px 12px; }
+  .sales-overview-app .sales-shell, .sales-case-app .sales-shell { padding-left: 8px; padding-right: 8px; }
+  .sales-overview-app .sales-hero, .sales-case-app .sales-detail-hero,
+  .sales-overview-app section[aria-label="Søk og filtrering"] { padding: 13px; }
+  .sales-status-overview > button { flex-basis: calc(50% - 8px); padding: 8px 10px !important; }
+  .sales-case-app .sales-detail-hero .sales-hero-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sales-case-app .sales-hero-actions > .sales-primary-button { grid-column: 1 / -1; }
+  .sales-case-app .sales-brand-copy { display: none; }
+}
+.sales-overview-app .sales-main, .sales-case-app .sales-main { padding: 0; margin: 0; max-width: none; }
+.sales-overview-app .sales-main > section, .sales-case-app .sales-main > section { margin: 0; }
+@media (max-width: 620px) {
+  .sales-overview-app .sales-title { font-size: 24px; }
+  .sales-overview-app main.sales-main > .sales-panel {
+    border: 1px solid #d7e4ea !important; border-radius: 18px !important;
+    background: rgba(255,255,255,.94) !important; padding: 12px !important;
+  }
+  .sales-overview-app .sales-panel-header { padding: 8px 0 12px; }
+}
+/* The overview/case already has its own title and instructions. Keep the intro for editors. */
+section.sales-workspace-intro:has(+ [data-sales-resume-workspace] .sales-overview-app),
+section.sales-workspace-intro:has(+ [data-sales-resume-workspace] .sales-case-app) { display: none; }
+.sales-status-overview > button { min-width: 0; }
+@media (max-width: 620px) {
+  .sales-status-overview > button { font-size: 14px !important; gap: 4px !important; padding: 8px !important; }
+  .sales-status-overview > button > span { min-width: 20px !important; padding: 0 4px !important; flex-shrink: 0; }
+  .sales-overview-app [aria-label="Tilbudstype"] > button { font-size: 14px !important; padding: 7px 10px !important; }
+}

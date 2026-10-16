@@ -261,15 +261,31 @@ function getDisplayedIcon(request, { storeOffer }) {
 export default function SalesListView({
   activeRequests = [],
   activatedRequests = [],
+  viewStateRef,
+  viewScope = "",
   onCreateRequest,
   onOpenRequest,
 }) {
   const supportMode = Boolean(getSalesSupportCompanyId());
   const [loadState, setLoadState] = useState(() => getSalesRequestsLoadState());
   const [longWait, setLongWait] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [activeOfferType, setActiveOfferType] = useState("all");
-  const [activeTab, setActiveTab] = useState("requests");
+  const previousView = viewStateRef?.current?.scope === viewScope ? viewStateRef.current : null;
+  const [searchQuery, setSearchQuery] = useState(() => previousView?.searchQuery || "");
+  const [activeOfferType, setActiveOfferType] = useState(() => previousView?.activeOfferType || "all");
+  const [activeTab, setActiveTab] = useState(() => previousView?.activeTab || "requests");
+
+  useEffect(() => {
+    if (!previousView) return undefined;
+    const frame = window.requestAnimationFrame(() => window.scrollTo(0, previousView.scrollY || 0));
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
+
+  function openFromList(requestId) {
+    if (viewStateRef) viewStateRef.current = {
+      scope: viewScope, searchQuery, activeOfferType, activeTab, scrollY: window.scrollY,
+    };
+    onOpenRequest?.(requestId);
+  }
   const [archiveBusyId, setArchiveBusyId] = useState("");
   const [openBusyId, setOpenBusyId] = useState("");
   const salesClient = useMemo(() => createDefaultSalesSupabaseClient(), []);
@@ -321,18 +337,6 @@ export default function SalesListView({
     return counts;
   }, [activeRequests, activeOfferType]);
 
-  const overviewSummary = useMemo(
-    () => [
-      { label: "Forespørsler", value: requestCounts.requests },
-      { label: "Under arbeid", value: requestCounts.work },
-      { label: "Må følges opp", value: requestCounts["follow-up"] },
-      { label: "Akseptert", value: requestCounts.accepted },
-      { label: "Avvist", value: requestCounts.declined },
-      { label: "Arkiv", value: requestCounts.archive },
-    ],
-    [requestCounts]
-  );
-
   const filteredRequests = useMemo(
     () =>
       activeRequests.filter(
@@ -364,7 +368,7 @@ export default function SalesListView({
   async function openRequest(request) {
     if (!request?.id || openBusyId) return;
     if (!request.__summaryOnly) {
-      onOpenRequest?.(request.id);
+      openFromList(request.id);
       return;
     }
     if (!salesClient) {
@@ -396,7 +400,7 @@ export default function SalesListView({
         __summaryOnly: false,
         __detailLoaded: true,
       });
-      onOpenRequest?.(request.id);
+      openFromList(request.id);
     } catch (error) {
       alert(error?.message || "Kunne ikke hente saken fra serveren.");
     } finally {
@@ -466,7 +470,7 @@ export default function SalesListView({
     OFFER_TYPE_TABS.find((tab) => tab.id === activeOfferType)?.label || "Alle tilbud";
 
   return (
-    <div className="sales-app">
+    <div className="sales-app sales-overview-app">
       <div className="sales-shell">
         <div className="sales-header">
           <div className="sales-brand">
@@ -487,8 +491,7 @@ export default function SalesListView({
             <div>
               <h1 className="sales-title">Forespørsler og tilbud</h1>
               <p className="sales-subtitle">
-                Våtromstilbud og Generelle tilbud ligger i samme sikre tilbudsmotor,
-                men kan filtreres separat under.
+                Våtromstilbud og Generelle tilbud. Finn saken med søk eller status.
               </p>
             </div>
 
@@ -544,17 +547,6 @@ export default function SalesListView({
               </div>
             </div>
           ) : null}
-
-          <section className="sales-summary-grid" aria-label="Oversikt">
-            {overviewSummary.map((item) => (
-              <article className="sales-summary-card" key={item.label}>
-                <span className="sales-summary-label">{item.label}</span>
-                <strong className="sales-summary-value">
-                  {requestsLoading ? "…" : requestsLoadFailed ? "–" : item.value}
-                </strong>
-              </article>
-            ))}
-          </section>
 
           <section className="sales-panel" aria-label="Søk og filtrering" style={{ marginBottom: 18 }}>
             <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
@@ -643,6 +635,7 @@ export default function SalesListView({
             <div
               role="tablist"
               aria-label="Arbeidsstatus"
+              className="sales-status-overview"
               style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 14 }}
             >
               {WORK_TABS.map((tab) => {
@@ -650,6 +643,7 @@ export default function SalesListView({
                 return (
                   <button
                     key={tab.id}
+                    className={`sales-status-tile sales-status-tile-${tab.id}`}
                     type="button"
                     role="tab"
                     aria-selected={selected}
@@ -670,7 +664,7 @@ export default function SalesListView({
                   >
                     {tab.label}
                     <span
-                      aria-label={`${requestCounts[tab.id] || 0} saker`}
+                      aria-label={`${requestsLoading ? "…" : requestsLoadFailed ? "–" : requestCounts[tab.id] || 0} saker`}
                       style={{
                         display: "inline-flex",
                         alignItems: "center",
@@ -683,7 +677,7 @@ export default function SalesListView({
                         fontSize: 12,
                       }}
                     >
-                      {requestCounts[tab.id] || 0}
+                      {requestsLoading ? "…" : requestsLoadFailed ? "–" : requestCounts[tab.id] || 0}
                     </span>
                   </button>
                 );

@@ -105,6 +105,8 @@ try{
  }
  await page.getByRole('region',{name:'Fra ProffDok-prosjekter',exact:true}).locator('.ks-progress-list button').click();await page.locator('dialog.ks-plan-expanded[open]').waitFor();
  await page.evaluate(()=>{Object.defineProperty(document,'visibilityState',{value:'hidden',configurable:true});document.dispatchEvent(new Event('visibilitychange'));});
+ // React commits the visibility handler asynchronously; await that render, not the event dispatch.
+ await page.waitForFunction(()=>!document.querySelector('dialog.ks-plan-expanded[open]'),{},{timeout:2000});
  eq(await page.locator('dialog.ks-plan-expanded[open]').count(),0,'real hidden page clears own payload');
  await page.evaluate(()=>{window.denied=true;Object.defineProperty(document,'visibilityState',{value:'visible',configurable:true});document.dispatchEvent(new Event('visibilitychange'));});
  eq(await page.locator('dialog.ks-plan-expanded[open]').count(),0,'denied return never restores own payload');
