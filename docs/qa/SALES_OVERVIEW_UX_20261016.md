@@ -1,3 +1,11 @@
+## Publisert: samlet Nytt tilbud / Ny forespørsel – 16. oktober 2026
+
+Kenneth ga TEST PC OK kl. 20:31 og ba utvikler kontrollere mobil. Utvikler kjørte samme faktiske komponent-/CSS-scenario med isMobile:true, hasTouch:true og tap i stedet for click: 57 kontroller PASS, inkludert smale 320/390-visninger, knapper, filter, scrolling, retur og callback. Vanlig nettlesertest har også 57 PASS, Core Safety #493 SUCCESS og fast Preview dpl_Ff3zFXLT9Zg2UNUdPQu1PiSfU3xZ READY på godkjent head b235ea58450a9dcbc2be93ecc22430f28f37bdbe / tre 3c71249eaba2945b2c299a9f459f7ab9bd5bf084. Fysisk iPhone/Android er ikke prøvd. Ingen ekstra mobilgodkjenning fra brukeren kreves for denne avgrensede knappflyttingen.
+
+PR #258 er merget til funksjons-main 99a22578335155031593842af5d45843f3e2f9f1. Production dpl_5bPkkqp5XTViTZtt5c2okLJ9okZi READY på riktig SHA, HTTP og Production-binding kontrollert uten Sandbox-binding. Ingen innlogget Production-prøve i utviklernettleseren i denne runden; samme apptre er funksjonstestet i Preview. Ingen database-, data-, e-post-, tilgangs- eller lagringsendring.
+
+Main → demo er kontrollert synkronisert i 04357fbe6118b551b0917aed41289ac39ba736ed med bevart demo-overlay, full critical/build PASS og oppdatert baseline. Faktisk preflight føres i PR #258. Ingen reset/seed eller nye kurseksempler. Denne avsluttende dokumentasjonsoppfølgingen endrer bare status/QA; appkoden er identisk med godkjent release. Siste main/demo-SHA og preflight føres i PR. Eldre Preview-/ventende TEST OK-notater nedenfor er historikk.
+
 ## Oppfølging: Nytt tilbud i toppfeltet
 
 Miljømål BEGGE, Preview først fra ren main 1e6052f7, etter Kenneths godkjenning av salgsrunden kl. 20:21. Nytt skjermbilde viser Nytt tilbud på egen rad over overskriften. Samme eksisterende callback startDirectOffer sendes som onCreateOffer fra SalesModule via SalesCore til SalesListView. Oversikten viser Nytt tilbud og Ny forespørsel i samme toppfelt; den opprinnelige raden skjules med lokal CSS bare når oversikten er montert. Andre arbeidsbilder beholder opprinnelig snarvei. Tilbudstypevalg, canUseSales, support-sperre og eksisterende opprettelsesflyt beholdes. Ingen main eller tjenester endres.
