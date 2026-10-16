@@ -4,6 +4,32 @@ Miljømål BEGGE. Kenneth ba om å fjerne Ansvarlig, sikre felles tilgang for al
 systemadministratorer, rette utklippshopp og gi en samlet endringsoversikt.
 Han spurte også når/hvor en sak meldes ferdig.
 
+## Oppfølging etter Kenneths Windows-prøve kl. 01:16
+
+Selve utklippet fungerte, men ferdig utklipp lukket saken. Ny rotårsak var at
+SupportWorkspace økte session-key på hvert WORK_PROFILE/MODULE/MANAGED-varsel,
+også når de eksisterende publisherne bare republiserte uendret tilgang etter
+fokus. Hele SupportSession ble montert på nytt og mistet sak/kladd. Den forrige
+fokusprøven dekket ikke disse appvarslene. Ny faktisk Chromium-prøve med de ekte
+publishWorkProfileState/publishModuleAccess-funksjonene feilet før rettingen:
+Skriv svar forsvant og sakslisten ble vist.
+
+SupportSession håndterer nå disse varslene med fersk support_context-validering.
+Uendret bruker/firma/rolle beholder samme sak, DOM, kladd, markering og høyde.
+Privat innhold skjermes under et uavklart tilgangsvarsel; sending er låst.
+Bare et bekreftet kontekstbytte monterer ny tom session. Reelt skjult dokument
+fjerner fortsatt historie fra DOM; tilgangstap fjerner historien og svarfeltet.
+Ingen endring i de globale publisherne, navigasjonen eller backend.
+
+60 support-Chromium-assertions PASS, inkludert ekte publiserte profil-/modul- og
+administrasjonsvarsler etter utklipp på 1280/390 px. Reelt firma-/rollebytte prøves
+separat og må tømme kladd/historie. Eksisterende 30 layoutkontroller og full lokal
+critical/build PASS. Eksakt CI og Preview-status føres i PR #263.
+
+Ny brukertest: Systemadmin → Supportsaker → åpne samme sak, skriv et ulagret svar,
+ta Windows-utklipp og gå tilbake. Samme sak og svartekst skal stå åpen. Trykk så
+Tilbake til saker bevisst; senere fokus skal beholde sakslisten.
+
 ## Scope
 
 Bare SupportWorkspace.jsx, support.css, additive support-browser-/DB-tester og

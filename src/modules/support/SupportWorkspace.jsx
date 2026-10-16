@@ -1,4 +1,4 @@
-import React,{useEffect,useRef,useState} from 'react';
+import React,{useCallback,useEffect,useRef,useState} from 'react';
 import {getAppSupabaseClient} from '../access/appSupabaseClientRegistry.js';
 import {WORK_PROFILE_EVENT} from '../access/workProfileClient.js';
 import {MANAGED_ACCESS_EVENT,MODULE_ACCESS_EVENT} from '../access/moduleAccessClient.js';
@@ -14,25 +14,21 @@ export default function SupportWorkspace({authUser,admin=false,supabaseClient,st
  const client=supabaseClient||getAppSupabaseClient();
  const [open,setOpen]=useState(()=>new URL(window.location.href).searchParams.has('supportCase'));
  const [epoch,setEpoch]=useState(0);
- // Every account/company/access invalidation immediately unmounts private content.
- // No support data or drafts are written to browser storage.
- useEffect(()=>{
-  const clear=()=>setEpoch(n=>n+1);
-  const events=[WORK_PROFILE_EVENT,MANAGED_ACCESS_EVENT,MODULE_ACCESS_EVENT];
-  events.forEach(e=>window.addEventListener(e,clear));
-  return()=>{events.forEach(e=>window.removeEventListener(e,clear));};
- },[]);
+ // Refresh notifications are not necessarily identity/company changes.
+ // Keep the session until server revalidation proves a context change.
+ const resetSession=useCallback(()=>setEpoch(n=>n+1),[]);
  return <section className="pd-support" aria-label={admin?'Supportinnboks':'Kontakt support'}>
   {standalone?<header className="pd-support-page-heading"><span className="pd-support-eyebrow">{admin?'OPPFØLGING':'VI HJELPER DEG'}</span><h2>{admin?'Supportinnboks':'Support'}</h2><p>{admin?'Les nye henvendelser og fortsett dialogen i én sak om gangen.':'Send en henvendelse eller åpne en av sakene dine. Svar i appen og på e-post samles i samme samtale når e-post er aktivert.'}</p></header>:<button type="button" className="pd-support-launch" aria-expanded={open} onClick={()=>setOpen(v=>!v)}>
    <span><strong>{admin?'Support · innboks og svar':'Kontakt support'}</strong><small>{admin?'Følg opp henvendelser og svar i ProffDok.':'Send en henvendelse og følg dialogen her.'}</small></span><span aria-hidden="true">{open?'−':'+'}</span>
   </button>}
-  {(standalone||open)&&<SupportSession key={`${authUser?.id}:${epoch}:${admin}`} client={client} userId={authUser?.id} admin={admin} requestedTicket={requestedTicket}/>}
+  {(standalone||open)&&<SupportSession key={`${authUser?.id}:${epoch}:${admin}`} client={client} userId={authUser?.id} admin={admin} requestedTicket={requestedTicket} onContextChange={resetSession}/>}
  </section>;
 }
-export function SupportSession({client,userId,admin,requestedTicket}){
+export function SupportSession({client,userId,admin,requestedTicket,onContextChange}){
  const [context,setContext]=useState(null),[items,setItems]=useState([]),[total,setTotal]=useState(0);
  const [offset,setOffset]=useState(0),[filter,setFilter]=useState(''),[detail,setDetail]=useState(null),[creating,setCreating]=useState(false);
  const [subject,setSubject]=useState(''),[category,setCategory]=useState('question'),[body,setBody]=useState(''),[reply,setReply]=useState(''),[internal,setInternal]=useState(false);
+ const [checkingAccess,setCheckingAccess]=useState(false);
  const [locked,setLocked]=useState(false),[suspended,setSuspended]=useState(false),[reservedHeight,setReservedHeight]=useState(0);
  const contentRef=useRef(null),lockedRef=useRef(false),replyRef=useRef(null),bodyRef=useRef(null),editorHeights=useRef({}),suspendedRef=useRef(false);
  const [busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState(''),[mail,setMail]=useState(null);
@@ -65,7 +61,9 @@ export function SupportSession({client,userId,admin,requestedTicket}){
  useEffect(()=>{
   if(!context)return;
   let active=true,revision=0;
-  const revalidate=async()=>{
+  const accessEvents=[WORK_PROFILE_EVENT,MANAGED_ACCESS_EVENT,MODULE_ACCESS_EVENT];
+  const revalidate=async event=>{
+   if(accessEvents.includes(event?.type))setCheckingAccess(true);
    const version=++revision;lockedRef.current=true;setLocked(true);
    if(document.visibilityState==='hidden'){
     // Remove private content in the background, but retain its physical space.
@@ -77,14 +75,17 @@ export function SupportSession({client,userId,admin,requestedTicket}){
    }
    try{
     const fresh=await rpc('support_context');
-    if(fresh.user_id!==userId||fresh.company_id!==context.company_id||admin&&!fresh.is_admin)throw Error('Tilgangen er endret. Åpne support på nytt.');
+    if(fresh.user_id!==userId||fresh.company_id!==context.company_id||admin&&!fresh.is_admin){
+     if(accessEvents.includes(event?.type)&&onContextChange){if(active&&version===revision)onContextChange();return;}
+     throw Error('Tilgangen er endret. Åpne support på nytt.');
+    }
     await refresh(context,offset,filter,selection.current,()=>active&&version===revision);
-    if(active&&version===revision){lockedRef.current=false;suspendedRef.current=false;setLocked(false);setSuspended(false);}
-   }catch{if(active&&version===revision){suspendedRef.current=false;setSuspended(false);setContext(null);setItems([]);setDetail(null);setReply('');setBody('');setSubject('');setError('Tilgangen er endret. Lukk og åpne support på nytt.');}}
+    if(active&&version===revision){lockedRef.current=false;suspendedRef.current=false;setLocked(false);setSuspended(false);setCheckingAccess(false);}
+   }catch{if(active&&version===revision){suspendedRef.current=false;setSuspended(false);setCheckingAccess(false);setContext(null);setItems([]);setDetail(null);setReply('');setBody('');setSubject('');setError('Tilgangen er endret. Lukk og åpne support på nytt.');}}
   };
-  window.addEventListener('focus',revalidate);document.addEventListener('visibilitychange',revalidate);
-  return()=>{active=false;revision++;window.removeEventListener('focus',revalidate);document.removeEventListener('visibilitychange',revalidate);};
- },[context,client,userId,admin,offset,filter]);
+  const events=['focus',...accessEvents];events.forEach(name=>window.addEventListener(name,revalidate));document.addEventListener('visibilitychange',revalidate);
+  return()=>{active=false;revision++;events.forEach(name=>window.removeEventListener(name,revalidate));document.removeEventListener('visibilitychange',revalidate);};
+ },[context,client,userId,admin,offset,filter,onContextChange]);
  async function task(fn){if(busyRef.current||lockedRef.current)return;busyRef.current=true;setBusy(true);setError('');setNotice('');try{await fn();}catch(e){if(alive.current){if(e.code==='42501'){setContext(null);setItems([]);setDetail(null);setReply('');setBody('');setSubject('');}setError(e.message||'Kunne ikke lagre. Prøv igjen.');}}finally{busyRef.current=false;if(alive.current)setBusy(false);}}
  async function refresh(ctx=context,page=offset,status=filter,ticket=selection.current,isCurrent=()=>true){
   const data=await list(ctx,page,status);
@@ -121,7 +122,7 @@ export function SupportSession({client,userId,admin,requestedTicket}){
  async function retry(id){await task(async()=>{const text=await sendEmail(id);await refresh();if(alive.current)setNotice(text);});}
  const leave=()=>{selection.current=null;setDetail(null);setCreating(false);setReply('');replyRequest.current=null;setError('');setNotice('');};
  // A visible window focus must not unmount the conversation or its textarea.
- return <div ref={contentRef} className="pd-support-content" aria-busy={busy||locked} style={suspended&&context?{minHeight:reservedHeight,boxSizing:'border-box'}:undefined}>
+ return <div ref={contentRef} className="pd-support-content" aria-busy={busy||locked} style={{...(suspended&&context?{minHeight:reservedHeight,boxSizing:'border-box'}:{}),...(checkingAccess&&context?{visibility:'hidden'}:{})}}>
   {suspended&&context?<p role="status">Kontrollerer supporttilgang …</p>:<>
   {error&&<p role="alert" className="pd-support-error">{error}</p>}{notice&&<p role="status" className="pd-support-notice">{notice}</p>}
   {!context&&!error&&<p role="status">Henter support …</p>}
