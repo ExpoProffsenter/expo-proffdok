@@ -18,6 +18,10 @@ Fast Preview/branch beholdes. Release og supportplan er separate.
 - helpToolsCore.js: gjeldende vilkårstekst og AppInstallGuide beholdes montert
   inne i native details. Vilkårsversjon og godkjenningsstatus er alltid synlige.
   Rollefiltrering, søk, samtykke og eksisterende innloggingskrav er uendret.
+- Etter innlogget QA er også updateHelp i projectWorkflowUx.js og referansepanelet
+  i help45b.js omfattet. Kun wrapper/overskrift er endret til native details/summary.
+  Navigasjon, tekstinnhold og rollebetingelser beholdes. Faktiske hjelpeinnslag
+  testes med lukk/åpne og firmaadmin uten Systemadmin-innhold.
 - appUxReview.css: lokal referansestil og kompakt KS/HMS-status/handling.
   Ingen globale navigasjons-/skjemaregler legges til.
 - Tester, README, architecture, release-status, supportplan og overlevering.
@@ -28,7 +32,7 @@ lagring eller garantikrav endres. Support er kun dokumentasjon i denne runden.
 ## Verifisering
 
 - Full critical/build PASS.
-- Ny faktisk Chromium-test compact-reference-browser-check.mjs: 21 assertions
+- Ny faktisk Chromium-test compact-reference-browser-check.mjs: 27 assertions
   PASS. Garantikrav/lås blokkerer fortsatt; original utstedelses-/PDF-/tilbakekall-
   callback, signerings-/sjekklisteinngang og KS/HMS neste steg er beholdt.
   Vilkårsstatus er synlig, teksten kan åpnes/lukkes med tastatur og native
