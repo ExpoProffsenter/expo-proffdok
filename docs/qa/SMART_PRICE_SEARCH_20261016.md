@@ -1,3 +1,11 @@
+## Sluttkontroll og CI-venting
+
+Innlogget Preview finner DEMO-ORA-002 ved «termostat oras dusj» og merket DEMO-HG-001 ved «krom hansgrohe servantkran». Samme sistnevnte søk gir null treff med Smartere søk av, som forventet med den opprinnelige RPC-en. Ingen vare ble lagt til/lagret og ingen bestilling sendt. Eksisterende lagret plukkliste ble fortsatt vist. Preview bruker Sandbox-demovarer.
+
+Core Safety #498 hadde grønn build, 128 editor-/valg-kontroller og 70 smartsøk-kontroller, men den eksisterende mobiltesten traff null boundingBox etter responsive modusbytte. Den rehydrerer plukklistene asynkront ved mobil → PC. Testen venter nå også på at eksisterende .priceSearchSavedLists er synlig før de samme uendrede ni kravene måles. Ingen appkode eller forventning er endret for denne CI-justeringen. Slutt-CI føres i PR #260.
+
+Security-advisor før/etter har uendrede øvrige antall. Én ekstra tilsiktet authenticated SECURITY DEFINER-RPC er flagget (225 → 226), manuelt kontrollert med uid/gate/maskering, fast search_path og ingen anon-execute. Ingen annen ny linterkategori/funn i dette scopet. Veiledning: https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable.
+
 # Smartere Prissøk – 16.10.2026
 
 Miljømål: BEGGE. Preview først, ny TEST OK før migrasjon/merge til Production, deretter main → demo og preflight. Samme faste Preview/branch som editorleveransen, separate commits. Endelig SHA/CI/deploy føres i PR #260.

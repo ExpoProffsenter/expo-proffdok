@@ -1,3 +1,9 @@
+## Faktisk innlogget etterkontroll
+
+På head a63d941e05e935f28dc3228a432a830dec85b20e / Preview dpl_937oLJ5iAeA9WDgAGsajn5L1BFrh READY vises alle fire opprinnelige tekstfelt i DEMO-02-BEFARING etter full reload. Bildet og lagret Badskisse er bevart. Ingen serverlagring eller manuell tekstkopiering ble utført. Dette bekrefter summary → full-sak-gaten i faktisk app; den tidligere initializeren alene ble ikke godkjent som tilstrekkelig. Den eksplisitte tekstvelgeren er i tillegg testet med syntetisk meningsfull mediekladd i 128 Chromium-kontroller.
+
+Slutt-CI/head og ekstra reload/fokus/utgangskontroll føres i PR #260. Production er urørt.
+
 ## Befaring: vent på komplett sak før skjema/kladd – Preview
 
 Innlogget etterkontroll avdekket også at wrapperens prefetch holdes i minnet til Core sin eksisterende asynkrone listehenting bruker den. Lokal requests-cache kan derfor fortsatt være summary ved første Core-render. Den nye initializeren alene var ikke tilstrekkelig. Befaringsnotatet har nå en saksspesifikk ready-state: ingen editor, lokal kladdlagring eller submit før komplett sak er tilgjengelig og skjemaet er hydrert. Meningsfull lokal/offline-kladd beholdes. Sen serveroppdatering kan ikke nullstille et ferdig hydrert skjema. Ingen endring av innlastingskall, recovery-timere, wrapper, tilbudseditor, serverlagring eller øvrige moduler.
