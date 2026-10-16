@@ -132,7 +132,7 @@ export default function KshmsProgressBoard({plan,meta,readOnly,dirty,saving,load
    container.scrollTo({left:view==='day'?0:Math.max(0,index*track.getBoundingClientRect().width/window.dates.length-available/2)});
   });};
   align();let width=scroll.current?.clientWidth||0;
-  const observer=typeof ResizeObserver==='function'?new ResizeObserver(entries=>{const next=entries[0]?.contentRect.width;if(next!==width){width=next;align();}}):null;
+  const observer=typeof ResizeObserver==='function'?new ResizeObserver(entries=>{const next=entries[0]?.contentRect.width;if(Math.abs(next-width)>1){width=next;align();}}):null;
   if(scroll.current)observer?.observe(scroll.current);
   window.addEventListener('resize',align);
   return()=>{cancelAnimationFrame(frame);observer?.disconnect();window.removeEventListener('resize',align);};
