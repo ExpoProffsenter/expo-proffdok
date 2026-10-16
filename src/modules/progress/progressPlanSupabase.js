@@ -29,6 +29,8 @@ const SAFE_PREVIEW_BADGE_ID = 'expo-progress-safe-preview-badge';
 const clean = (value = '') => String(value || '').replace(/\s+/g, ' ').trim();
 
 export function isProgressSafePreviewMode() {
+  // A bound Sandbox persists course plans in its own database; legacy unbound previews remain local.
+  if(import.meta.env?.VITE_EXPO_BACKEND_TARGET==='sandbox')return false;
   if (typeof window === 'undefined') return false;
   const host = String(window.location.hostname || '').toLowerCase();
   const isPreviewHost = host === 'localhost' || host === '127.0.0.1' || host.endsWith('.vercel.app');
@@ -115,6 +117,7 @@ export function normalizeProgressPlan(value = {}) {
     version: 1,
     activities: Array.isArray(plan.activities) ? plan.activities : [],
     source: plan.source && typeof plan.source === 'object' ? plan.source : null,
+    ...(typeof plan.excludeSundays==='boolean'?{excludeSundays:plan.excludeSundays}:{}),
   };
 }
 
@@ -269,7 +272,7 @@ export async function loadPortalProgressPlan(client, projectId, role) {
   });
   if (!result?.ok) return unavailable;
 
-  if (isProgressSafePreviewMode() || hasSafePreviewLocalPlan(projectId)) {
+  if (isProgressSafePreviewMode() || (import.meta.env?.VITE_EXPO_BACKEND_TARGET!=='sandbox'&&hasSafePreviewLocalPlan(projectId))) {
     const local = readSafePreviewPlan(projectId);
     if (!local) return unavailable;
     return {

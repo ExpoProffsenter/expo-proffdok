@@ -2,6 +2,8 @@
 // Stabil inngang for fremdriftsmodulen. Selve brukerflyten ligger i V2-modulen,
 // mens eksport, deling og kalender holdes som egne naturlige ansvar.
 import React, { memo, useCallback, useState } from 'react';
+import ProjectProgressPlanner from './ProjectProgressPlanner.jsx';
+import {isProgressSafePreviewMode} from './progressPlanSupabase.js';
 import './progressPlanLayout.css';
 import './progressPlanExport.css';
 import { ensureSafePreviewModeFromHost } from '../app/previewSafetyBootstrap.js';
@@ -29,6 +31,7 @@ function ProgressPlanProjectTabInner({ projectId, onDirtyChange }) {
     onDirtyChange?.(next);
   }, [onDirtyChange]);
 
+  if(!isProgressSafePreviewMode())return <div className="progress-module-frame"><ProjectProgressPlanner key={projectId} projectId={projectId} onDirtyChange={onDirtyChange}/></div>;
   return (
     <div className="progress-module-frame">
       <ProgressPlanExportActions projectId={projectId} dirty={dirty} />

@@ -1,3 +1,97 @@
+## Godkjent produksjonsløp og kun Startside-varsler – 16. oktober 2026
+
+Miljømål BEGGE. Kenneth ga TEST OK for leveransen frem til 6aa06ba9 og ba om at de to KS/HMS-bannerne bare vises på Startsiden. Deretter ga han uttrykkelig «etter dette er test ok for produksjon» og autoriserte videre arbeid mens han er borte. Tidligere notater om ventende TEST OK er dermed erstattet for denne releasen; grønn QA/Preview kreves fortsatt før merge.
+
+Siste appendring fjerner bare global KshmsTasks-lazyimport og banner-montering i headeren i main.jsx. Eksisterende HomeFollowups-gate beholdes. Samlet oversikt finnes på Startsiden ved innlogging og bevisst retur; ingen engangsflagg skjuler åpne oppgaver. KS/HMS sine vanlige oppgaveinnganger, fristregler, tilgang, e-post, data, lagring og planbygger beholdes. Hjelp følger plasseringen. Førtest med faktisk app-shell-montering fant to bannere i Befaring/Tilbud; etter rettelse 128 Home-Chromium-kontroller PASS, full critical/build og faktisk modulnavigasjon PASS. Ny commit/CI/Preview, produksjonsmigrasjoner, main/deploy og kontrollert demo-synk føres i releasenotat/PR.
+
+## Tydelige åpneknapper for planer – 16. oktober 2026
+
+Miljømål BEGGE, Preview først i PR #254. Etter Kenneths presisering heter venstre knapp nå «Åpne fremdriftsplan» og høyre fortsatt «Åpne bemanningsplan». Felles inngang i Prosjekt, KS/HMS og Min side, med samsvarende kort hjelpetekst. Bare tekst i KshmsProgressBoard.jsx/Hjelp og eksakte knappselektorer i tre eksisterende QA-skript endres. Ingen callbacks, tilgang, datalagring eller andre flyter endres. Førkontroll b0c8813b / Core Safety #483 SUCCESS / dpl_DcrACJFk4EX1deicZVqtxKi4HwRQ READY. Ny head/CI/deploy føres i PR. Relevant TEST OK gjenstår; ingen merge/Production/demo-synk.
+
+## Planpopup: avbryt-hendelse og ramme – 16. oktober 2026
+
+Miljømål BEGGE, Preview først, fortsatt umerget PR #254. Førkontroll: bc9e42892cf7a22fbd1d57843e87eed270bf9bb7, main a7bd4795e78e0ba1cbdc747960384bbf01338581, Core Safety #482 SUCCESS og fast Preview READY på samme head. Kenneth melder at vanlig utklipp fortsatt går ut av popupen, mens egen hurtigtast fungerer. Fysisk Windows-forløp er ikke observert av utvikler. En separat utgang er gjenskapt: nettleserens native cancel/Escape lukker hovedplanen selv om fokus/scroll gjenopprettes riktig.
+
+Hovedplanen lukkes nå bare med Tilbake. Native cancel/Escape og klikk utenfor rammen lukker ikke arbeidsflaten. Mindre oppgave-/kodevinduer beholder Escape og sin egen lukking; cancel stoppes ved det aktuelle undervinduet. Prosjektvalg, tilbud og deling får synlig avrundet ramme, hover og tastaturfokus. Appscope er bare KshmsProgressBoard.jsx/CSS og Hjelp; ingen main, global recovery, wrapper-/tilgangslogikk, planlagring, e-post, SQL eller dataendring.
+
+Førtesten feiler med 0 åpne hovedpopup etter ekte Chromium-Escape; etter rettelse består 28 fokus-/delingskontroller (tidligere 15 beholdt), 39 Prosjekt, 128 KS/HMS og 52 layoutkontroller. Full critical/build PASS. Ramme visuelt kontrollert ved 1280/390 px. QA: docs/qa/PROGRESS_FOCUS_20261016.md. Fysisk Windows-utklipp krever ny innlogget prøve; ingen påstand om at brukerens OS-verktøy er testet. Samme faste Preview-adresse; eksakt ny SHA/tre/CI/Vercel føres i PR #254. Ingen TEST OK/merge/Production eller demo-synk.
+
+## Prosjektvalg og fokus/utklipp i planpopup – 16. oktober 2026
+
+Miljømål BEGGE, Preview først i umerget PR #254 fra a624453f. Åpne Prosjektvalg, tilbud og deling har normal avkryssing og samlet prosjektinfo/handlinger med kompakt delingskort. Generisk dialog-/mobil-CSS hadde gitt avkryssingen tekstfeltbredde og minst 40 px høyde. Lokale regler gir 18 × 18 px med stor klikkbar etikett. Tilbudsimport, Hent lagret plan, kundedelingsvalg og eksisterende prosjektmail er beholdt.
+
+Planpopupens fokusvalidering remonterte arbeidsflaten og nullstilte åpne prosjektvalg samt vertikal/horizontal scrolling. Gjenskapt i faktisk Chromium før rettelse. Den eksisterende, firma-/bruker-/planavgrensede UI-cachen beholder nå bare posisjoner og åpne/lukkede verktøy. Disse brukes etter uendret fersk tilgangs-/planlesing. Synlig fokus, skjult/tilbake, bevisst lukking, nullposisjon, kladd og tilgangstap er kontrollert. Ingen privat planpayload caches av den nye løsningen. Gammel felles pageScrollMemory-rettelse er urørt og består.
+
+Appscope er KshmsProgressBoard.jsx/CSS og bare presentasjonsmarkup for prosjektverktøy i ProjectProgressPlanner.jsx. Ingen main/Startside, global recovery, lagring, tilgang, SQL, e-postarbeider eller demodata endres. QA og konkret Windows-prøve: docs/qa/PROGRESS_FOCUS_20261016.md. Relevant TEST OK gjenstår før merge/Production og kontrollert main → demo-synk.
+
+## Mer plass til oppgavene i begge planbyggere – 16. oktober 2026
+
+Miljømål BEGGE, Preview først i umerget PR #254, fra 21210b32. Prosjekt → Fremdrift, KS/HMS → Fremdriftsplaner og egne planer på Min side bruker samme justerte planflate. Planvisning/handlinger/eksport og prosjektvalg er samlet øverst; Dag/Uke/Måned står sammen med perioden; søk/fag/visningsvalg deler filterlinje. Normal oppgaveradhøyde og farger beholdes. Ingen nye sammenfoldbare oppgaver. Popupens ekstra kortpadding fjernes lokalt, og tidslinjen fyller resten av høyden.
+
+Bare KshmsProgressBoard.jsx og tilhørende CSS endrer appkode. Ingen main/Startside, planlagring, tilbudsimport, deling, eksport, tilgang, SQL, varsling eller demodata endres. Alle eksisterende handlinger og datofelter beholdes. Mobil bryter verktøyene over flere linjer, og kort skjerm kan scrolle verktøyområdet. Drahjelpen har fortsatt fast plass og fanger ingen pekerhendelser. Scope, faktisk skjermmåling og tester: docs/qa/PROGRESS_LAYOUT_20261016.md. Relevant TEST OK for denne og tidligere plan-/Startsideleveranse gjenstår før merge/Production og kontrollert main → demo-synk.
+
+## Kompakt varseloversikt på Startsiden – 16. oktober 2026
+
+Miljømål BEGGE, Preview først i fortsatt umerget PR #254, fra head 614c2562/main a7bd4795. Startsiden samler Avvik, Kontroller, HR og Kontakt i én lukket oversikt med antall, pagineringspluss og tydelige markeringer for passerte frister, i dag, avvik innen tre dager og kontroller etter planlagt dato. Kontakt er én påminnelse med alle manglende felter i detaljene. Eksisterende oppgaver, frister, direktehandlinger, flere oppgaver, e-postlenker, kontaktlagring og egne dialoger beholdes.
+
+HomeFollowups er bare presentasjon. De eksisterende controllerne henter/validerer fortsatt selv og leverer metadata gjennom valgfrie renderere; ingen ny datakilde eller varslingsregel. main.jsx har tre avgrensede endringspunkter: lazy import, utelat global KS/HMS-banner akkurat når Startside-oversikten monteres, og erstatt Startsiden sin HR-montering med samlet oversikt. Alle andre monteringsflater beholder gammel presentasjon. Ingen endring av backend, e-post, tilgang, prosjekt/tilbud eller planbygger. Lokal CSS fjerner sticky/absolutt overlegg bare inne i oversikten. React-state for åpne/lukke beholdes ved fersk lesing; ingen ny nettleserlagring.
+
+QA og brukerprøve: docs/qa/HOME_FOLLOWUPS_20261016.md. Ingen TEST OK for denne eller siste planleveranse er gitt. Ingen merge, Production-endring, migrasjon, nye eksempler eller demo-synk i denne runden. Etter relevant godkjenning gjelder fortsatt kontrollert Production-verifisering og main → demo med preflight.
+
+## Prosjekt får felles planbygger, egne aktive prosjektplaner og firmalogo – 16. oktober 2026
+
+Miljømål BEGGE, Preview først i PR #254. Prosjekt → Fremdrift bruker samme popup/tidslinje som KS/HMS: Dag/Uke/Måned, flytt/strekk/Angre, periodepanel, søk/fagfilter/kompakte rader, standardoppgaver og NS-underkoder, valgfritt personantall og bemanning, direkte PDF, forhåndsvisning, CSV og kalender. Prosjektvalg, tilbud og deling samler tilbudsimport med bevarte opsjoner/dedup og eksisterende kunde-/prosjektmailvalg. Enkel ordre tilbyr ikke kundedeling. Ingen nye fristansvarlige, varsler eller automatiske e-poster. Milepæler/avhengigheter er ikke del av denne leveransen.
+
+Ny ProjectProgressPlanner bruker prosjektets eksisterende tilgang, låsing og separate public.project_progress_plans. Additiv revision og trigger gir CAS også ved eldre direkte skriving. project_progress_editor leser/lagrer med fersk aktiv firma-/aktørkontroll, prosjektets eksisterende access/write-helper, revisjon og bekreftet readback. Kladd er avgrenset til firma/aktør/prosjekt i lokal lagring. Fersk lesing kommer før gjenoppretting; konflikt krever et synlig valg. Fokus/dvale rydder payload og leser på nytt; eksplisitt lukking respekteres. Låst prosjekt er historikk.
+
+Deltakere er aktive interne medlemmer i prosjektets firma og lagres i progress_private.assignments med RLS og uten direkte klientrettigheter. Offentlig plan-JSON og uendret kunde-/UE-RPC inneholder ikke deltaker-ID-er. Nye authenticated project_progress_mine returnerer bare egne oppgaver i aktiv periode etter norsk dato, uten kollegaoppgaver/deltaker-ID-er eller tilbudskilde. Min side viser Mine aktive prosjektplaner når slike finnes; eksisterende KS/HMS-kort beholdes. Tildelte prosjektbrukere kan få Min side uten HR/KS-lisens, uten ekstra prosjekt-/HR-/KS-rettigheter. Eksisterende øvrige personal-context-felter og regler beholdes.
+
+Firmaprofilen leses ferskt for aktivt firma ved eksport i Prosjekt, KS/HMS og Min side. Navn/logo følger nedlastet PDF og forhåndsvisning av fremdrift/bemanning. PDF rasteriserer eksisterende logo og kontrollerer profil/tilgang igjen etter motor-/bildelast. Feil ved logo som er konfigurert stopper nedlastingen med tydelig beskjed; et firma uten logo kan fortsatt eksportere. Historisk prosjektfirma brukes ikke som eksportmerke. Eksisterende prosjektmail og serverens vedleggsrenderer beholdes i denne leveransen.
+
+Knyttet Sandbox bruker varig egen databaselagring også når eldre progressTest=safe-parameter finnes i URL-en; gammel uknyttet trygg Preview beholder lokal editor/eksport/kalender. Sandbox blokkerer ekte prosjektmail i delingsflaten. Production-binding og andre modulflyter endres ikke. Sandbox-migrasjon 20261016142124_project_progress_workspace har kilde-MD5 (ett avsluttende linjeskift) 399e53ac4ed95cfe24f7cf1022baa282, lik migrasjonsloggen. Production er ikke migrert.
+
+Kurseksempel er separat Sandbox-data i Expo Proffsenter: DEMO – VVS – fremdrift og bemanning 3 måneder, prosjekt-ID 5ea8d503-e38c-43d4-94ce-7fab7df525e9, revisjon 1, 16.10.2026–15.01.2027, 21 oppgaver/282 dagsøkter, 1–5 personer, topp 23 og 6408 persontimer, uten søndager. Kenneth Demo er deltaker på fire oppgaver. Opprettet og verifisert gjennom authenticated prosjekt-/planlagring; tidligere arbeidsprofil er gjenopprettet. Ingen kursdata/seed i produksjonsmigrasjon eller demo-overlay i core-PR. Eksemplet ligger i Sandbox klar for kurs når godkjent appkode synkroniseres main → demo. Eksakt QA/CI/deploy føres i docs/qa/PROJECT_PROGRESS_20261016.md og PR #254.
+
+## PDF lastes ned direkte, og bemanning bruker norske ukenavn – 16. oktober 2026
+
+Miljømål BEGGE, Preview først i PR #254. KS/HMS og Mine aktive fremdriftsplaner har Last ned fremdriftsplan (PDF) og Last ned bemanningsplan (PDF). De lager faktiske PDF-filer med appens eksisterende jsPDF 2.5.1-motor. Forhåndsvis fremdriftsplan / Forhåndsvis bemanningsplan beholdes med separate Last ned PDF og Skriv ut. Nedlasting åpner ikke utskriftsdialog. Den delte Prosjekt-eksportens standardvisning endres ikke.
+
+Ny paginert vektor-PDF har firma, referanse, adresse, sidetall, Gantt per uke og fulle grupperte arbeidsperioder med merknader, eller bemanning per uke/dag med summer og tydelig ufullstendig grunnlag. Fersk plan- og tilgangslesing gjentas etter PDF-motorlast, før nedlasting. Min side bruker bare egen plan via mine-RPC. Ulagret kladd og bortfalt tilgang stopper eksport. Intern ISO-ukenøkkel beholdes for beregning/sortering, mens HTML, CSV og PDF viser for eksempel Uke 42 · 2026, også korrekt ISO-ukeår rundt nyttår. Ingen database-, rutinevarsling- eller eksempeldataendring. QA/releasebevis: docs/qa/KSHMS_PROGRESS_20261016.md og PR #254.
+
+## Mine aktive fremdriftsplaner og deltakerlag – 16. oktober 2026
+
+Miljømål BEGGE, Preview først i samme PR #254. Hver KS/HMS-oppgave kan ha valgte appbrukere fra aktivt firma med gjeldende KS/HMS-tilgang. IDs lagres i planens assigneeIds. Antall personer er et separat, valgfritt bemanningstall som også kan dekke innleide. Ingen medlemskap/modultilganger opprettes. Deltakere er planlagt arbeidslag, ikke nye fristansvarlige; ingen e-post sendes.
+
+Min side → Oversikt viser Mine aktive fremdriftsplaner. Serveren bruker norsk dato og første/siste økt på brukerens egne oppgaver som ikke er Ferdig. Perioden inkluderer mellomliggende fridager. Udaterte, fremtidige, utløpte og arkiverte planer vises ikke. Planvinduet og eksporten inneholder bare brukerens egne oppgaver i planen. Datoperioden kontrolleres igjen ved åpning, eksport, fokus/dvale og datobytte. Bare UI-valg beholdes mellom visninger; payload leses på nytt. Bevisst lukking respekteres.
+
+Nye avgrensede RPC-er: kshms_progress_people og kshms_progress_mine. Privat trigger validerer unike kanoniske bruker-ID-er, høyst 50 per oppgave, aktivt firmamedlemskap og KS/HMS-tilgang ved nye valg. Eksisterende deltakere som senere mister tilgang kan beholdes som historikk eller fjernes, men kan ikke velges på nytt; bortfalt tilgang gir ingen personlig lesetilgang. Eksisterende save/CAS/readback og privat RLS-tabell beholdes. Additiv migrasjon 20261016132206_kshms_progress_participants, først Sandbox.
+
+Drahjelpen har nå en fast høyde over tidslinjen. Drag starter uten å legge inn et nytt bunnfelt eller krympe arbeidsområdet, og hjelpen fanger ingen pekerhendelser. Min side-popuper ligger utenfor oversiktskortets CSS slik at tidslinjens knapper beholder layout. 3-måneders VVS-eksempel opprettes separat som Sandbox-data, aldri som produksjonsmigrasjon. Verifikasjon og eksakt releasebevis: docs/qa/KSHMS_PROGRESS_20261016.md og PR #254.
+
+## KS/HMS-planbygger: popup, bemanning og flere underkoder – 16. oktober 2026
+
+Miljømål BEGGE, Preview først i PR #254. Åpning/opprettelse viser planbyggeren direkte i en stor popup over appen. Tilbake lukker popupen; Åpne planbygger og Åpne bemanningsplan åpner igjen. Fokus/dvale respekterer bevisst lukking og bevarer kladd og valgt visning etter fersk tilgangskontroll.
+
+Kodeutvalget er utvidet fra 57 til 256 kontrollerte valg i 25 hovedgrupper fra Bergen kommunes offentlige NS 3451:2022-grunnlag (FDVU v3.0/2025, tabell 4, s18–23). Tre-/firesifferkoder vises under hovedgruppen, systemkode merkes separat. Fagfilter bruker alle relevante fagkoblinger, slik at blant annet overflatekoder finnes for både mur/flis, maler og tømrer. Korte navn og fagkoblinger er appens egne. Utvalget er ikke den komplette standarden; oppgaver og egne kodevalg kan fortsatt tilpasses.
+
+Antall personer per oppgave er valgfritt (1–999; tomt betyr ukjent). Bemanningsplan viser høyeste samtidige personbehov og persontimer for valgt dag/uke/måned. Samtidig behov beregnes fra klokkeslett, og overlapp innen samme oppgave dobbelttelles ikke. Ukjent antall og oppgaver uten tider gjør grunnlaget ufullstendig. Eksport → Bemanning / PDF og Last ned bemanning (.csv) bruker hele den bekreftede, lagrede planen; ulagret kladd blokkerer eksport.
+
+Nye planer utelater søndager, men inkluderer lørdager. Flytting/strekk følger synlige arbeidsdager. Eksisterende planer endres først når brukeren velger Utelat søndager, bekrefter antall økter som fjernes fra kladden, og lagrer. Angre kan gjenopprette før lagring. Privat additiv migrasjon `20261016125012_kshms_progress_staffing` validerer feltene uten nye RPC-er eller rettigheter. Bare Sandbox migreres før TEST OK. Prosjektets tilbudsimport og portal følger fortsatt opprinnelig flyt. Se `docs/qa/KSHMS_PROGRESS_20261016.md` for test-/releasebevis.
+
+## KS/HMS-plan: tidslinje og underkoder – 16. oktober 2026
+
+Samme leveranse/PR #254, fortsatt Preview før ny TEST OK. Kenneth ønsket mindre scrolling og direkte planlegging. KS/HMS har nå søkbart hierarki med 57 utvalgte hoved-/under-/systemkoder, Dag/Uke/Måned, direkte flytting og strekk fra begge ender, Angre, kompakte rader, fag-/tekstsøk og Utvid-visning. Sidepanel erstatter lange skjemaer i oversikten. Planvalg og eksport og planlisten er sammenfoldet under arbeid.
+
+Datoer/klokkeslett lagres fortsatt som eksisterende separate dagsøkter. Uke/måned bruker hele kalenderdager, Dag bruker 30-minutters trinn. Sammenhengende perioder inkluderer helg; opphold blir egne perioder. Endringer krever Lagre fremdriftsplan; eksport bruker lagret serverutgave. Visning/åpent sidepanel beholdes i samme firma/bruker/plan ved fersk tilgangskontroll. Dra avbrytes ved Escape, skjult vindu eller bortfalt tilgang. Ingen ny backend eller databaseendring i denne UX-oppfølgingen. Prosjekt og portal bruker fortsatt eksisterende visning. Detaljer og QA: `docs/qa/KSHMS_PROGRESS_20261016.md`.
+
+## Egne fremdriftsplaner i KS/HMS – 16. oktober 2026
+
+Miljømål BEGGE, først fast Preview med Sandbox. Fra main `a7bd4795e78e0ba1cbdc747960384bbf01338581`. KS/HMS → Fremdriftsplaner lar firmaet opprette uavhengige planer med navn, adresse og valgfritt eksternt prosjektnummer. Samme planeditor, ukevisning, mobilkort, Gantt/PDF og kalender som Prosjekt; ingen tilbudsimport eller kundedeling i KS/HMS. Firmaadmin og KS/HMS-ansvarlig redigerer; øvrige med KS/HMS-tilgang leser. Planene kan arkiveres og gjenopprettes.
+
+Egen privat tabell og tre RPC-er bruker eksisterende aktiv firma-/KS-autorisasjon og revisjonskontroll. Bekreftet serverlesing før åpning og eksport; lagring leses tilbake før suksess. Lokal kladd er avgrenset til firma, bruker og plan og gjenbrukes bare mot samme serverrevisjon. Ingen prosjektplan, portal, tilbud, HR-opplysning eller e-post endres. Person/firma er fritekst for planlegging, ikke tildelt oppfølgingsoppgave eller fristvarsel.
+
+NS 3451:2022: 24 utvalgte faktiske kodekoblinger fra Bergen kommunes offentlige FDVU-grunnlag (2025), med egne korte visningsnavn. Skiller bygningsdel/system; manuelt kodevalg er mulig. Ikke komplett standard eller automatisk kontroll av at manuelt kodevalg passer jobben. Detaljer, tester og releasebevis: `docs/qa/KSHMS_PROGRESS_20261016.md`. Ny TEST OK kreves før main/Production og kontrollert main → demo-synk.
+
 ## Kontaktopplysninger – påminnelse i appen, 15. oktober 2026
 
 Miljømål BEGGE. Fra main `6d7a6dc2899f941f23bea33e4cdf1c9458670216`, egen feature `feat-contact-reminder-20261015`. Startsiden og Min side viser påminnelse ved manglende gateadresse, postnummer, poststed eller pårørendes navn/telefon. Fyll ut kontaktopplysninger åpner eksisterende privat skjema direkte. Relasjon og pårørendes e-post er valgfrie. Fersk dobbel egenlesing kreves før visning; bare fullføringsmetadata beholdes i påminnelsen. Bekreftet kontaktlagring utløser ny lesing og fjerner fullført påminnelse. Eksisterende kladd, tilgang og lagring beholdes. Ingen SQL, migrasjon, e-post, hovedmeny, main.jsx eller annen datalagring endres. 55 Chromium-kontroller og eksisterende kontakt-/Min side- og 108 HR-varselkontroller PASS. Full critical/build, CI og fast Preview verifiseres før relevant TEST OK og publisering. Tidligere TEST OK for invitasjonsleveransen attesterer ikke manuell test av denne nye påminnelsen. Detaljer: docs/qa/HR_CONTACT_REMINDER_20261015.md.

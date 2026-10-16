@@ -6,6 +6,7 @@ import PrivateContact from '../hr/PrivateContact.jsx';
 import HrFollowupNotice from '../hr/HrFollowupNotice.jsx';
 import './personal.css';
 import {PersonalTimeCard} from '../time/TimeEntryPoint.jsx';
+const KshmsMyProgressPlans=React.lazy(()=>import('../kshms/KshmsMyProgressPlans.jsx'));
 const PersonalTimeWorkspace=React.lazy(()=>import('../time/TimeEntryPoint.jsx'));
 const KshmsModule=React.lazy(()=>import('../kshms/KshmsModule.jsx'));
 const HrModule=React.lazy(()=>import('../hr/HrModule.jsx'));
@@ -33,13 +34,15 @@ export default function PersonalPage({context,kshmsContext,hrContext,userId,auth
   {nav?.enabled&&<nav className="personal-tabs" aria-label="Min side visning">{visible.map(id=>{const Icon=sectionIcons[id];return <button key={id} type="button" className={screen===id?'active':'secondary'} aria-pressed={screen===id} disabled={pending} onClick={()=>choose(id)}><Icon size={18} aria-hidden="true"/>{sections[id]}</button>;})}</nav>}
   {pending&&<div className="personal-checking" role="status"><ShieldCheck aria-hidden="true"/><div><strong>Kontrollerer tilgangen din …</strong><p>Du kommer tilbake til samme visning når kontrollen er ferdig.</p></div></div>}
   {screen==='overview'&&!pending&&<div className="personal-cards">
+   {rights.enabled&&<Suspense fallback={null}><KshmsMyProgressPlans key={'project:'+scope} source="project" context={context}/></Suspense>}
+   {rights.kshms&&<Suspense fallback={<p role="status">Henter fremdriftsplaner …</p>}><KshmsMyProgressPlans key={scope} context={kshmsContext}/></Suspense>}
    {rights.hr&&<PersonalTimeCard context={hrContext} onOpen={()=>choose('time')}/>}
    {rights.kshms&&<article className="personal-card personal-card-handbook"><div className="personal-card-icon"><BookOpen aria-hidden="true"/></div><span className="personal-card-eyebrow">TRYGG I JOBBEN</span><h3>Personalhåndboka</h3><p>Finn rutinene du har fått. Les, bekreft og slå opp tidligere utgaver når du trenger dem.</p><button type="button" className="secondary" onClick={()=>choose('handbook')}>Åpne personalhåndboka <ArrowRight aria-hidden="true"/></button></article>}
    {rights.hr&&<article className="personal-card personal-card-hr"><div className="personal-card-icon"><UserRound aria-hidden="true"/></div><span className="personal-card-eyebrow">DEG OG DIN LEDER</span><h3>Mine oppfølginger</h3>
     <div className="personal-upcoming"><MessageSquare aria-hidden="true"/><div><strong>Medarbeidersamtale <span className="personal-status">Tilgjengelig</span></strong><p>Du forbereder. Du og leder fullfører sammen.</p></div></div>
     <div className="personal-upcoming"><HeartPulse aria-hidden="true"/><div><strong>Sykefraværsoppfølging <span className="personal-status">Tilgjengelig</span></strong><p>Nærmeste leder starter saken.</p></div></div>
     <p className="personal-note">Åpne en invitasjon eller frist i varsler øverst. Her finner du også egne oppfølginger og opplysninger som er delt med deg.</p><button type="button" className="secondary" onClick={()=>choose('hr')}>Se mine oppfølginger <ArrowRight aria-hidden="true"/></button></article>}
-   {!rights.kshms&&!rights.hr&&<article className="personal-card"><UserRound aria-hidden="true"/><h3>Dine modulvalg</h3><p>Firmaet har KS/HMS eller HR. Firmaadmin gir deg personlig tilgang. Inntil da finner du profil og e-postvalg her.</p></article>}
+   {!rights.kshms&&!rights.hr&&<article className="personal-card"><UserRound aria-hidden="true"/><h3>Dine modulvalg</h3><p>Her finner du profilen din og eventuelle egne prosjektplaner. Firmaadmin styrer tilgangen til andre moduler.</p></article>}
    <article className="personal-card personal-card-profile"><div className="personal-card-icon"><Settings aria-hidden="true"/></div><span className="personal-card-eyebrow">OPPDATERT OG TILGJENGELIG</span><h3>Profil og e-post</h3><p>Kontroller profilopplysningene dine og velg om du ønsker nyheter og tilbud på e-post.</p><button type="button" className="secondary" onClick={()=>choose('profile')}>Åpne profil og e-post <ArrowRight aria-hidden="true"/></button></article>
   </div>}
   {screen==='time'&&rights.hr&&<Suspense fallback={<p role="status">Henter mine timer …</p>}><PersonalTimeWorkspace key={scope} context={hrContext}/></Suspense>}

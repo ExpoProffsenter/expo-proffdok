@@ -13,7 +13,7 @@ const Conversations=React.lazy(()=>import('./HrConversations.jsx'));
 const SickLeave=React.lazy(()=>import('./HrSickLeaveCases.jsx'));
 const date=value=>value.split('-').reverse().join('.');
 
-export default function HrFollowupNotice({context,userId,onSetup}){
+export default function HrFollowupNotice({context,userId,onSetup,heading='Dine varsler og oppfølginger',renderNotice=node=>node,renderContactNotice}){
  const companyId=Boolean(userId)&&context?.user_id===userId&&context?.available&&context?.enabled?context.company_id:null;
  const scope=companyId&&userId?companyId+':'+userId:null;
  const [value,setValue]=useState(null),[error,setError]=useState(''),[busy,setBusy]=useState(false),[employee,setEmployee]=useState(null),[selected,setSelected]=useState(null),[retry,setRetry]=useState(0);
@@ -65,9 +65,9 @@ export default function HrFollowupNotice({context,userId,onSetup}){
  };
  const tasks=value?.scope===scope?value.tasks:[],target=selected?.scope===scope?selected.task:null;
  return <>
-  <HrContactReminder context={context} userId={userId}/>
-  {(tasks.length>0||error)&&<section className="hr-followup-notice" aria-label="Dine varsler og oppfølginger" aria-busy={busy}>
-   <div className="hr-followup-notice-heading"><Bell aria-hidden="true"/><div><h2>Dine varsler og oppfølginger <span>{tasks.length}{value?.next||value?.feedbackNext?'+':''}</span></h2><p>Dette venter på deg i {context.company_name||'aktivt firma'}.</p></div></div>
+  <HrContactReminder context={context} userId={userId} renderNotice={renderContactNotice}/>
+  {renderNotice((tasks.length>0||error)?<section className="hr-followup-notice" aria-label={heading} aria-busy={busy}>
+   <div className="hr-followup-notice-heading"><Bell aria-hidden="true"/><div><h2>{heading} <span>{tasks.length}{value?.next||value?.feedbackNext?'+':''}</span></h2><p>Dette venter på deg i {context.company_name||'aktivt firma'}.</p></div></div>
    {error&&<><p role="alert">{error}</p><button type="button" className="secondary" disabled={busy} onClick={()=>setRetry(n=>n+1)}>Oppdater varsler</button></>}
    <ul>{tasks.map(t=><li key={t.case_id+':'+t.task_key}>
     <div><h3>{followupTitle(t)}</h3>
@@ -76,7 +76,7 @@ export default function HrFollowupNotice({context,userId,onSetup}){
     {t.kind==='review'?(onSetup?<button type="button" disabled={busy} onClick={onSetup}>Åpne HR-oppsett <ArrowRight size={17} aria-hidden="true"/></button>:<p>Åpne HR → Oppsett og kontrollfrist.</p>):<button type="button" disabled={busy} onClick={()=>open(t)}>{t.kind==='conversation'?'Åpne samtalen':'Åpne oppfølgingen'} <ArrowRight size={17} aria-hidden="true"/></button>}
    </li>)}</ul>
    {(value?.next||value?.feedbackNext)&&<button type="button" className="secondary" disabled={busy} onClick={more}>Hent flere oppfølginger</button>}
-  </section>}
+  </section>:null,{count:tasks.length,more:Boolean(value?.next||value?.feedbackNext),error:Boolean(error),overdue:tasks.filter(t=>t.task_key!=='employee-feedback'&&!t.meeting&&t.due_on<osloToday()).length,today:tasks.filter(t=>t.task_key!=='employee-feedback'&&t.due_on===osloToday()).length,nextDate:tasks.filter(t=>t.task_key!=='employee-feedback').map(t=>t.due_on).sort()[0]||''})}
   {target&&employee&&<DeviationDialog title={target.kind==='conversation'?'Medarbeidersamtale – '+hrEmployeeLabel(employee):'Sykefraværsoppfølging'} context={context.company_name||'HR'} onClose={resetSelection} closeLabel="Lukk oppfølgingen"><div className="hr-module hr-direct-followup"><Suspense fallback={<p role="status">Henter oppfølgingen …</p>}>
    {target.kind==='conversation'?<Conversations key={scope+':'+employee.id+':'+employee.revision} context={context} employee={employee} initialCaseId={target.case_id} initialEntryKey={selected.entryKey} initialStep={followupStep(target)} feedbackNotice={target.task_key==='employee-feedback'?target:null} onFeedbackHandled={feedbackHandled}/>:<SickLeave key={scope+':'+employee.id+':'+employee.revision} context={context} employee={employee} initialCaseId={target.case_id} initialEntryKey={selected.entryKey} initialStep={followupStep(target)}/>}</Suspense></div></DeviationDialog>}
  </>;

@@ -2,6 +2,7 @@ import { routineNumber } from './kshmsJobChoices.mjs';
 import { useEffect,useId,useRef,useState } from 'react';
 import KshmsNavigation from './KshmsNavigation.jsx';
 import OrganizationChart from '../organization/OrganizationChart.jsx';
+import KshmsProgressPlans from './KshmsProgressPlans.jsx';
 import { ACK_STATEMENT,CHAPTERS,ROUTINE_CATALOG,TRADES,blankRoutine,currentVersionSnapshot,suggestedRoutines } from './kshmsCatalog.mjs';
 import { draftKey,persistDraft,readDraft,routineApprovalState,handbookProgress,pendingReadingVersions } from './kshmsDraft.mjs';
 import { kshmsRpc } from './kshmsAccess.js';
@@ -225,6 +226,7 @@ export default function KshmsModule({context,deviationRequest,personalOnly=false
   {!personalOnly&&<KshmsAssignmentReminders key={`assignment-reminders:${companyId}:${userId}`} context={data.context} refreshKey={data.acknowledgments.length} busy={busy} onOpen={target=>setScreen(target)}/>}
   {!personalOnly&&<KshmsReviewReminder key={`${companyId}:${userId}`} context={data.context} settingsRevision={data.settings?.revision} busy={busy} onOpen={openReview}/>}
   {!personalOnly&&screen==='organization'&&<OrganizationChart key={`organization:${companyId}:${userId}`} context={data.context}/>}
+  {!personalOnly&&screen==='progress'&&<KshmsProgressPlans key={`progress:${companyId}:${userId}`} context={data.context}/>}
   {canManage&&(screen==='extract'||extractOpened)&&<div hidden={screen!=='extract'}><KshmsInspectionExtract key={`extract:${companyId}:${userId}`} context={data.context} active={screen==='extract'}/></div>}
   <ExecutionSurfaces screen={screen} companyId={companyId} userId={userId} context={context}/>
   {canManage&&(screen==='checklists'||checklistsOpened)&&<div hidden={screen!=='checklists'}><KshmsChecklistCentral key={`${companyId}:${userId}`} context={data.context} active={screen==='checklists'}/></div>}

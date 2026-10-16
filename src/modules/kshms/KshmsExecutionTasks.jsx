@@ -7,7 +7,7 @@ import { readNotificationLink } from './kshmsNotificationLinks.mjs';
 
 const taskLabel = kind => kind === 'round' ? 'Vernerunde' : 'Risikovurdering 5×5';
 
-export default function KshmsExecutionTasks({ context }) {
+export default function KshmsExecutionTasks({ context, renderNotice=node=>node }) {
   const { company_id: companyId, user_id: userId, enabled } = context;
   const [tasks, setTasks] = useState(null), [error, setError] = useState(''), [opened, setOpened] = useState(null);
   const refreshRef = useRef(null);
@@ -62,7 +62,7 @@ export default function KshmsExecutionTasks({ context }) {
   const firstAvailable = tasks?.items.find(row => row.accessible !== false);
   if (!enabled) return null;
   return <>
-    {(tasks?.count > 0 || error || showEmail) && <aside className="ks-task-banner" aria-label="Dine vernerunder og risikovurderinger">
+    {renderNotice((tasks?.count > 0 || error || showEmail) ? <aside className="ks-task-banner" aria-label="Dine vernerunder og risikovurderinger">
       {tasks?.count > 0 && <>
         <div className="ks-task-heading"><strong>Du har {tasks.count} {tasks.count === 1 ? 'gjennomføring' : 'gjennomføringer'} å fullføre</strong>{tasks.overdue > 0 && <span> · {tasks.overdue} etter planlagt dato</span>}</div>
         <details className="ks-task-details"><summary aria-label={`Vis gjennomføringer (${tasks.count})`}>Vis oppgaver</summary><div className="ks-task-content">
@@ -76,7 +76,7 @@ export default function KshmsExecutionTasks({ context }) {
       </>}
       {error && <p className="ks-task-message" role="status">{error} <button type="button" className="secondary" onClick={() => refreshRef.current?.()}>Prøv igjen</button></p>}
       {showEmail && <div className="ks-task-message"><p>{emailLink.matchingCompany ? 'Du har åpnet en lenke til en vernerunde eller risikovurdering.' : 'Lenken gjelder et annet firma. Bytt til riktig arbeidsprofil før du åpner gjennomføringen.'}</p>{emailLink.matchingCompany && <button type="button" disabled={emailBusy} onClick={openEmail}>Åpne gjennomføringen fra e-posten</button>}</div>}
-    </aside>}
+    </aside>:null,{count:tasks?.count||0,plannedOverdue:tasks?.overdue||0,error:Boolean(error),email:showEmail})}
     {opened?.companyId === companyId && opened.userId === userId && <KshmsExecutions key={`${companyId}:${userId}:${opened.id}`} context={context} kind={opened.kind} projectId={opened.projectId} openRequest={opened} dialogOnly onClose={() => setOpened(null)} />}
   </>;
 }

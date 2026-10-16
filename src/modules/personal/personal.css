@@ -10,3 +10,5 @@
 @media(max-width:600px){.personal-page>header.personal-heading{padding:22px 18px;gap:12px;border-radius:18px}.personal-heading h2{font-size:28px}.personal-heading h2>span{font-size:16px}.personal-heading p{font-size:13px}.personal-avatar{width:52px;height:52px;border-radius:16px;font-size:20px}.personal-page .personal-tabs button{flex:1 1 40%;font-size:13px}.personal-card{padding:20px}}
 
 .personal-page .personal-heading h2{color:#fff}
+
+.personal-progress-card{grid-column:1/-1}.personal-progress-card .ks-progress-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:10px}.personal-progress-card .ks-progress-list button{display:grid;gap:6px;text-align:left;white-space:normal}.personal-progress-card .ks-progress-list span{font-size:12px}

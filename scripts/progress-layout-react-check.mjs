@@ -1,0 +1,47 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import http from 'node:http';
+import {execFileSync} from 'node:child_process';
+import {build} from 'vite';
+import react from '@vitejs/plugin-react';
+const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
+let checks=0;const eq=(a,b,label)=>{assert.deepEqual(a,b,label);checks++;};
+const cwd=process.cwd(),temp=fs.mkdtempSync(path.join(os.tmpdir(),'progress-layout-')),entry=path.join(temp,'entry.jsx');
+fs.writeFileSync(entry,`import React,{useState} from '${cwd}/node_modules/react/index.js';import {createRoot} from '${cwd}/node_modules/react-dom/client.js';import Board from '${cwd}/src/modules/kshms/KshmsProgressBoard.jsx';import {KSHMS_PROGRESS_OPERATIONS} from '${cwd}/src/modules/kshms/kshmsProgressCodes.mjs';import '${cwd}/src/style.css';import {APP_RUNTIME_STYLES} from '${cwd}/src/modules/app/appRuntimeStyles.js';document.head.insertAdjacentHTML('beforeend','<style>'+APP_RUNTIME_STYLES+'</style>');const seed={version:1,excludeSundays:true,activities:Array.from({length:21},(_,i)=>({id:'task-'+i,title:['Oppstart, rigg og logistikk','VVS-prosjektering og tverrfaglig samordning','Bunnledninger og sluk','Stigeledninger'][i%4]+' '+(i+1),status:'Ikke startet',trade:i%2?'Rørlegger':'Elektriker',crewSize:i%5+1,resource:'Kursfirma',sessions:[{id:'session-'+i,date:'2026-11-02',startTime:'08:00',endTime:'16:00',note:''}]}))};function App(){const [plan,setPlan]=useState(seed),[dirty,setDirty]=useState(false);return React.createElement(Board,{plan,meta:{title:'DEMO – VVS – fremdrift og bemanning 3 måneder'},dirty,readOnly:false,loading:false,saving:false,onPlanChange:p=>{setPlan(p);setDirty(true);window.changed++},onSave:()=>{setDirty(false);window.saved++;return true},onExport:async()=>'',operations:KSHMS_PROGRESS_OPERATIONS,stateKey:'layout',launchToken:0,tools:React.createElement('details',{className:'module-guide'},React.createElement('summary',null,'Prosjektvalg, tilbud og deling'),React.createElement('p',null,'Bevarte prosjektvalg og tilbud'),React.createElement('button',{type:'button',onClick:()=>window.imported++},'Hent arbeidsoperasjoner fra tilbud'))})};window.changed=0;window.saved=0;window.imported=0;createRoot(document.getElementById('app')).render(React.createElement(App));`);
+const targetFiles=['src/modules/kshms/KshmsProgressBoard.jsx','src/modules/kshms/kshmsProgressBoard.css'];
+const baseRef=process.env.PROGRESS_LAYOUT_BASE;
+const baseline=baseRef?Object.fromEntries(targetFiles.map(file=>[path.join(cwd,file),execFileSync('git',['show',baseRef+':'+file],{encoding:'utf8'})])):null;
+const bundles={};
+for(const mode of baseline?['before','after']:['after']){
+ const result=await build({root:cwd,configFile:false,logLevel:'silent',plugins:[{name:'baseline',enforce:'pre',load(id){if(mode==='before'&&baseline[id])return baseline[id];}},react()],build:{write:false,minify:false,cssCodeSplit:false,rollupOptions:{input:entry,output:{inlineDynamicImports:true}}}});
+ bundles[mode]={js:result.output.find(x=>x.type==='chunk').code,css:result.output.filter(x=>x.fileName.endsWith('.css')).map(x=>x.source).join('\n')};
+}
+const server=http.createServer((req,res)=>{const b=bundles[req.url.slice(1)]||bundles.after;res.setHeader('Content-Type','text/html; charset=utf-8');res.end(`<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>${b.css}</style><main><div id="app"></div></main><script type="module">${b.js.replaceAll('</script','<\\/script')}</script>`);});
+await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));let browser;
+try{
+ browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_PATH||undefined,args:['--no-sandbox']});
+ const page=await browser.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));page.setDefaultTimeout(7000);page.on('dialog',d=>d.accept());
+ const measure=()=>page.evaluate(()=>{const box=n=>n.getBoundingClientRect(),d=box(document.querySelector('.ks-plan-expanded')),t=box(document.querySelector('.ks-timeline-scroll')),rows=[...document.querySelectorAll('.ks-timeline-row')].map(box);return {timelineTop:t.top,timelineHeight:t.height,bottomGap:d.bottom-t.bottom,rowHeight:rows[0].height,visibleRows:rows.filter(r=>r.top>=t.top&&r.bottom<=t.bottom).length,dialogFits:d.width<=innerWidth&&d.height<=innerHeight,horizontalOverflow:document.querySelector('.ks-plan-board').scrollWidth>document.querySelector('.ks-plan-board').clientWidth+1};});
+ for(const [width,height] of [[1768,1002],[1440,900],[1280,800],[1024,768],[390,844],[320,740],[844,390]]){
+  await page.setViewportSize({width,height});let before;
+  if(baseline){await page.goto('http://127.0.0.1:'+server.address().port+'/before');await page.locator('dialog[open]').waitFor();await page.getByRole('button',{name:'Måned',exact:true}).click();before=await measure();}
+  await page.goto('http://127.0.0.1:'+server.address().port+'/after');await page.locator('dialog[open]').waitFor();await page.getByRole('button',{name:'Måned',exact:true}).click();
+  if(process.env.PROGRESS_LAYOUT_SCREENSHOTS){fs.mkdirSync(process.env.PROGRESS_LAYOUT_SCREENSHOTS,{recursive:true});await page.screenshot({path:path.join(process.env.PROGRESS_LAYOUT_SCREENSHOTS,'layout-'+width+'x'+height+'.png')});}
+  const after=await measure();console.log(JSON.stringify({width,height,before,after}));
+  eq(after.dialogFits,true,'popup fits '+width);eq(after.horizontalOverflow,false,'controls fit '+width);eq(await page.locator('.ks-timeline-row').count(),21,'all rows remain at '+width);eq(after.rowHeight>=66,true,'readable row height '+width);
+  if(width>=1280){eq(after.timelineTop<310,true,'timeline starts near top '+width);eq(after.visibleRows>=Math.floor((height-380)/70),true,'more full task rows '+width);eq(after.bottomGap<=20,true,'timeline uses remaining height '+width);}
+  if(width<1280){await page.locator('.ks-plan-board').evaluate(e=>e.scrollTop=e.scrollHeight);const t=await page.locator('.ks-timeline-scroll').boundingBox();eq(t.y+t.height<=height-8,true,'timeline reachable in short/mobile viewport '+width);await page.locator('.ks-plan-board').evaluate(e=>e.scrollTop=0);}
+  if(before&&width>=1280){eq(after.timelineTop<before.timelineTop-120,true,'toolbar saves vertical space '+width);eq(after.rowHeight,before.rowHeight,'task row size unchanged '+width);}
+ }
+ await page.setViewportSize({width:1440,height:900});await page.goto('http://127.0.0.1:'+server.address().port+'/after');await page.locator('dialog[open]').waitFor();
+ await page.getByRole('button',{name:'Neste periode',exact:true}).click();await page.getByLabel('Vis dato',{exact:true}).fill('2026-11-10');eq(await page.getByLabel('Vis dato',{exact:true}).inputValue(),'2026-11-10');await page.getByRole('button',{name:'Til planen',exact:true}).click();eq(await page.getByLabel('Vis dato',{exact:true}).inputValue(),'2026-11-02');
+ await page.getByLabel('Søk i oppgavene',{exact:true}).fill('Bunnledninger');eq(await page.locator('.ks-timeline-row').count(),5);await page.getByLabel('Søk i oppgavene',{exact:true}).fill('');await page.getByLabel('Vis fag',{exact:true}).selectOption('Elektriker');eq(await page.locator('.ks-timeline-row').count(),11);await page.getByLabel('Vis fag',{exact:true}).selectOption('');
+ eq(await page.getByLabel('Kompakte rader',{exact:true}).isChecked(),false,'normal rows remain default');eq(await page.evaluate(()=>window.changed),0,'view controls never change data');
+ await page.getByRole('button',{name:'Bemanningsplan',exact:true}).click();await page.getByRole('region',{name:'Bemanningsoversikt'}).waitFor();eq(await page.getByLabel('Utelat søndager',{exact:true}).isVisible(),true,'Sunday toggle retained in staffing');await page.getByRole('button',{name:'Fremdriftsplan',exact:true}).click();
+ await page.locator('.module-guide summary').click();await page.getByRole('button',{name:'Hent arbeidsoperasjoner fra tilbud'}).click();eq(await page.evaluate(()=>window.imported),1);await page.locator('.module-guide summary').click();
+ await page.locator('.ks-timeline-scroll').evaluate(e=>e.scrollTop=e.scrollHeight);const scroll=await page.locator('.ks-timeline-scroll').boundingBox(),row=page.locator('.ks-timeline-row').last();const rowBox=await row.boundingBox();console.log('last row',{scroll,rowBox,metrics:await page.locator('.ks-timeline-scroll').evaluate(e=>({scrollTop:e.scrollTop,scrollHeight:e.scrollHeight,clientHeight:e.clientHeight}))});eq(rowBox.y+rowBox.height<=scroll.y+scroll.height+1,true,'last row reachable');
+ await row.locator('.ks-timeline-label').click();await page.getByRole('dialog',{name:'Rediger arbeidsoperasjon'}).waitFor();await page.getByRole('button',{name:'Tilbake til oversikten'}).click();eq(await page.getByRole('dialog',{name:'Rediger arbeidsoperasjon'}).count(),0,'drawer close preserved');
+ eq(errors,[],'no runtime errors');console.log(`Planner layout: ${checks} assertions PASS, real app CSS, 21 readable task rows, responsive controls, view/filter/date actions, staffing, project tools and drawer.`);
+}finally{await browser?.close();await new Promise(r=>server.close(r));fs.rmSync(temp,{recursive:true,force:true});}

@@ -8,7 +8,7 @@ import DeviationDialog from '../deviations/DeviationDialog.jsx';
 import PrivateContact from './PrivateContact.jsx';
 import './hrContactReminder.css';
 
-export default function HrContactReminder({context,userId}){
+export default function HrContactReminder({context,userId,renderNotice=node=>node}){
  const companyId=userId&&context?.user_id===userId&&context.available&&context.enabled?context.company_id:null;
  const scope=companyId&&userId?companyId+':'+userId:null;
  const [value,setValue]=useState(null),[opened,setOpened]=useState(null);
@@ -37,10 +37,10 @@ export default function HrContactReminder({context,userId}){
  },[scope,companyId,userId]);
  if(!scope||value?.scope!==scope||!value.available)return null;
  return <>
-  {value.missing.length>0&&<section className="hr-contact-reminder" aria-label="Påminnelse om kontaktopplysninger">
+  {renderNotice(value.missing.length>0?<section className="hr-contact-reminder" aria-label="Påminnelse om kontaktopplysninger">
    <Bell aria-hidden="true"/><div><h2>Fullfør kontaktopplysningene dine</h2><p>Registrer adressen din og hvem vi kan kontakte ved en ulykke.</p><p className="hr-contact-missing">Mangler: {value.missing.join(', ')}.</p></div>
    <button type="button" onClick={()=>setOpened(scope)}>Fyll ut kontaktopplysninger <ArrowRight size={17} aria-hidden="true"/></button>
-  </section>}
+  </section>:null,{count:value.missing.length>0?1:0})}
   {opened===scope&&<DeviationDialog title="Adresse og nærmeste pårørende" context={context.company_name||'Min side'} onClose={()=>setOpened(null)} closeLabel="Lukk kontaktopplysninger"><div className="hr-module"><PrivateContact context={context} initiallyOpen/></div></DeviationDialog>}
  </>;
 }
