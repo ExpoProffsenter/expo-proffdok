@@ -1,3 +1,9 @@
+> 17.10 kl. 01:23 Europe/Oslo: Kenneth ga TEST OK for app/UX/utklipp. PR #263 er
+> merget og Production-databasen/funksjonene er installert. Ansvarlig er fjernet;
+> alle systemadministratorer har felles innboks. Merk som løst avslutter saken.
+> Support-e-post og køarbeider står avslått. Faktisk toveis e-postprøve gjenstår.
+> Se CHAT_HANDOFF_20261017.md og siste PR-status for publiseringsbevis.
+
 # Support – avtalt plan 16. oktober 2026
 
 UX-oppfølging godkjent 17.10: eget Support-menypunkt ved Hjelp; Min side viser
@@ -46,7 +52,7 @@ Miljømål ved implementering: BEGGE, med Preview og ny TEST OK før produksjon.
    serverkontekst. Skjermbilde kan være valgfritt dersom vedlegg inngår i scope.
 2. Send henvendelse oppretter en varig supportsak før e-post varsles. Brukeren
    får saksnummer og kan se egne saker med status Ny, Under behandling og Løst.
-3. Systemadmin → Support viser innboks med uleste saker, status og ansvarlig.
+3. Systemadmin → Support viser innboks med uleste saker og status.
    Inne i saken: historikk, Svar, intern merknad (aldri kundesynlig), løs/gjenåpne.
    Firmaadmin får ikke automatisk tilgang til andre ansattes private supportsaker.
 4. Svar lagres først. Deretter sendes én e-post med ProffDok-logo, saksnummer,
