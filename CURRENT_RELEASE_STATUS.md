@@ -17,6 +17,12 @@ må serverhemmeligheter, mottaksunderdomene, Resend-webhook og egen scheduler
 konfigureres og faktisk mottak prøves. Ingen merge uten ny TEST OK.
 
 Scope, QA og brukertest: docs/qa/SUPPORT_20261016.md.
+Oppfølging 17.10: riktig eksisterende Resend-konto er gjenfunnet via vanlig
+innlogging. Offentlig From er noreply@expoproffsenter.no; kontoens ferdige
+mottaksdomene kan brukes uten DNS-endring. Etter Kenneths uttrykkelige
+godkjenning er en separat mottaksnøkkel lagret som RESEND_RECEIVING_API_KEY i
+Production Secrets. Det er eneste Production-endring; support er ikke releaset
+eller aktivert. Webhook, køjobb, faktisk prøve og relevant TEST OK gjenstår.
 Aktivering og gjenstående kontroll: docs/SUPPORT_OPERATIONS_20261016.md.
 Fast Preview beholdes på fix-company-admin-scope-20261015; ny separat PR følger
 supportleveransen. Baseline/commit/CI/deploy bevisføres i den nye PR-en.

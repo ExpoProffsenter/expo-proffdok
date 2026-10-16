@@ -66,8 +66,17 @@ De to eksisterende nøklene har bare Sending access; den brukte nøkkelens siste
 logg peker på den kontrollerte ProffDok-invitasjonen. Eksisterende nøkkel skal
 beholdes. Resends Receiving API trenger Full access. En separat mottaksnøkkel
 krever derfor godkjenning av den bredere tilgangen før oppretting; nøkkelverdien
-skal bare lagres server-side. Skjema er klargjort, ingen ny nøkkel er opprettet.
-Webhook/scheduler og faktisk prøve gjenstår. Production er ikke endret.
+skal bare lagres server-side.
+
+17.10 kl. 00:03 Europe/Oslo godkjente Kenneth denne separate nøkkelen. Den er
+opprettet som `ProffDok Support Inbound – Production` og lagret kun som
+`RESEND_RECEIVING_API_KEY` i Production-prosjektets Edge Function Secrets.
+Lagret SHA256 matcher den opprettede verdien. Ingen nøkkelverdi er skrevet til
+chat, repo eller klient; midlertidig overføringskopi og utklippstavle er tømt.
+De to eksisterende Sending access-nøklene, RESEND_API_KEY og CHAT_FROM_EMAIL er
+beholdt. Dette er eneste Production-konfigurasjonsendring og er ikke en
+releasegodkjenning. Supportens Production-funksjoner/migrasjoner er ikke deployet,
+og ingen supportmail er sendt. Webhook/scheduler og faktisk prøve gjenstår.
 
 ## Kø og retry
 

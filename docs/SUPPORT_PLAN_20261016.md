@@ -11,6 +11,10 @@ innlogging. Avsenderdomenet er `expoproffsenter.no`, og kontoens ferdige
 `ualoomorai.resend.app` kan brukes til svarmottak uten DNS-endring. Eksisterende
 Sending access beholdes; separat Receiving API-tilgang, signert webhook og
 faktisk prøve gjenstår. Ingen nøkkelverdier eller intern mottaker lagres her.
+Oppfølging 17.10: Kenneth har godkjent separat mottaksnøkkel med Full access;
+den er opprettet og lagret i Production Secrets som RESEND_RECEIVING_API_KEY.
+Eksisterende sendetilgang er beholdt. Webhook, køjobb, faktisk prøve og TEST OK
+gjenstår; nøkkelgodkjenningen aktiverer ikke support i Production.
 
 Opprinnelig planstatus: Planlagt som egen leveranse etter pågående UX-runde. Ingen supportkode,
 SQL, mottaksadresse, DNS eller e-postutsending er endret i UX-runden.
