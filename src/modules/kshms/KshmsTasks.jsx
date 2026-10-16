@@ -6,12 +6,12 @@ import KshmsExecutionTasks from './KshmsExecutionTasks.jsx';
 import { deviationDeadlineLabel } from './kshmsReminders.mjs';
 import './kshms.css';
 
-export default function KshmsTasks({context,onOpen}) {
+export default function KshmsTasks({context,onOpen,renderDeviationNotice,renderExecutionNotice}) {
  if(!context?.enabled)return null;
- return <><DeviationTasks context={context} onOpen={onOpen}/><KshmsExecutionTasks context={context}/></>;
+ return <><DeviationTasks context={context} onOpen={onOpen} renderNotice={renderDeviationNotice}/><KshmsExecutionTasks context={context} renderNotice={renderExecutionNotice}/></>;
 }
 
-function DeviationTasks({context,onOpen}) {
+function DeviationTasks({context,onOpen,renderNotice=node=>node}) {
  const {company_id:companyId,user_id:userId}=context;
  const [tasks,setTasks]=useState(null),[error,setError]=useState(''),refreshRef=useRef(null);
  const [emailLink,setEmailLink]=useState(()=>readDeviationLink(window.location.search,companyId));
@@ -31,11 +31,11 @@ function DeviationTasks({context,onOpen}) {
  },[companyId,userId]);
  const open=async id=>{if(await onOpen(id))setEmailLink(null);};
  if(!tasks?.count&&!error&&!emailLink)return null;
- return <aside className="ks-task-banner" aria-label="Dine åpne KS/HMS-avvik">
+ return renderNotice(<aside className="ks-task-banner" aria-label="Dine åpne KS/HMS-avvik">
   {tasks?.count>0&&<><div className="ks-task-heading"><strong>Du er ansvarlig for {tasks.count} {tasks.count===1?'åpent avvik':'åpne avvik'}</strong>{tasks.overdue>0&&<span> · {tasks.overdue} etter fristen</span>}{tasks.due_today>0&&<span> · {tasks.due_today} med frist i dag</span>}{tasks.due_soon>0&&<span> · {tasks.due_soon} med frist innen tre dager</span>}</div>
   <details className="ks-task-details"><summary aria-label={`Vis oppgaver (${tasks.count})`}><span className="ks-task-long-label">Vis oppgaver</span><span className="ks-task-short-label">Vis</span></summary><div className="ks-task-content"><p>Dokumenter tiltak og egen kontroll i KS/HMS. Varselet står til lukkingen er lagret.</p><ul>{tasks.items.map(row=><li key={row.id}><button type="button" className="secondary" onClick={()=>open(row.id)}>{row.title} · frist {formatDeviationDate(row.due_on)}{deviationDeadlineLabel(row.deadline_status)&&` · ${deviationDeadlineLabel(row.deadline_status)}`}</button></li>)}</ul>{tasks.count>tasks.items.length&&<button type="button" className="secondary" onClick={()=>open(null)}>Se alle i Avvikssentral</button>}</div></details>
   <button type="button" className="ks-task-open" aria-label="Åpne avvik" onClick={()=>open(tasks.items[0]?.id||null)}><span className="ks-task-long-label">Åpne avvik</span><span className="ks-task-short-label">Åpne</span></button></>}
   {error&&<p className="ks-task-message" role="status">{error} <button type="button" className="secondary" onClick={()=>refreshRef.current?.()}>Prøv igjen</button></p>}
   {emailLink&&<div className="ks-task-message"><p>{emailLink.matchingCompany?'Du har åpnet en lenke til et KS/HMS-avvik.':'Lenken gjelder et annet firma. Bytt til riktig arbeidsprofil før du åpner saken.'}</p>{emailLink.matchingCompany&&<button type="button" onClick={()=>open(emailLink.id)}>Åpne saken fra e-posten</button>}</div>}
- </aside>;
+ </aside>,{count:tasks?.count||0,overdue:tasks?.overdue||0,today:tasks?.due_today||0,soon:tasks?.due_soon||0,error:Boolean(error),email:Boolean(emailLink)});
 }

@@ -1,3 +1,11 @@
+## Kompakt varseloversikt på Startsiden – 16. oktober 2026
+
+Miljømål BEGGE, Preview først i fortsatt umerget PR #254, fra head 614c2562/main a7bd4795. Startsiden samler Avvik, Kontroller, HR og Kontakt i én lukket oversikt med antall, pagineringspluss og tydelige markeringer for passerte frister, i dag, avvik innen tre dager og kontroller etter planlagt dato. Kontakt er én påminnelse med alle manglende felter i detaljene. Eksisterende oppgaver, frister, direktehandlinger, flere oppgaver, e-postlenker, kontaktlagring og egne dialoger beholdes.
+
+HomeFollowups er bare presentasjon. De eksisterende controllerne henter/validerer fortsatt selv og leverer metadata gjennom valgfrie renderere; ingen ny datakilde eller varslingsregel. main.jsx har tre avgrensede endringspunkter: lazy import, utelat global KS/HMS-banner akkurat når Startside-oversikten monteres, og erstatt Startsiden sin HR-montering med samlet oversikt. Alle andre monteringsflater beholder gammel presentasjon. Ingen endring av backend, e-post, tilgang, prosjekt/tilbud eller planbygger. Lokal CSS fjerner sticky/absolutt overlegg bare inne i oversikten. React-state for åpne/lukke beholdes ved fersk lesing; ingen ny nettleserlagring.
+
+QA og brukerprøve: docs/qa/HOME_FOLLOWUPS_20261016.md. Ingen TEST OK for denne eller siste planleveranse er gitt. Ingen merge, Production-endring, migrasjon, nye eksempler eller demo-synk i denne runden. Etter relevant godkjenning gjelder fortsatt kontrollert Production-verifisering og main → demo med preflight.
+
 ## Prosjekt får felles planbygger, egne aktive prosjektplaner og firmalogo – 16. oktober 2026
 
 Miljømål BEGGE, Preview først i PR #254. Prosjekt → Fremdrift bruker samme popup/tidslinje som KS/HMS: Dag/Uke/Måned, flytt/strekk/Angre, periodepanel, søk/fagfilter/kompakte rader, standardoppgaver og NS-underkoder, valgfritt personantall og bemanning, direkte PDF, forhåndsvisning, CSV og kalender. Prosjektvalg, tilbud og deling samler tilbudsimport med bevarte opsjoner/dedup og eksisterende kunde-/prosjektmailvalg. Enkel ordre tilbyr ikke kundedeling. Ingen nye fristansvarlige, varsler eller automatiske e-poster. Milepæler/avhengigheter er ikke del av denne leveransen.

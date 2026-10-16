@@ -134,6 +134,7 @@ jobs:
           export PLAYWRIGHT_MODULE="$RUNNER_TEMP/company-admin-browser-qa/node_modules/playwright/index.mjs"
           node scripts/company-admin-react-check.mjs
           node scripts/hr-contact-reminder-react-check.mjs
+          node scripts/home-followups-react-check.mjs
           export KSHMS_JSPDF_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/jspdf/dist/jspdf.es.min.js"
           export KSHMS_JSPDF_NODE_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/jspdf/dist/jspdf.node.min.js"
           node scripts/project-progress-db-check.mjs
