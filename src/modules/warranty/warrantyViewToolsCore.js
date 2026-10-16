@@ -196,6 +196,7 @@ export function createWarrantyViewTools({
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Garantiperiode", value: String(warrantyYears), disabled: !warrantyCanEdit, options: WARRANTY_YEAR_OPTIONS.map(String), optionLabels: Object.fromEntries(WARRANTY_YEAR_OPTIONS.map((year) => [String(year), `${year} år`])), onChange: (value) => setWarranty({ ...emptyWarranty(), ...warranty, enabled: true, durationYears: Number(value) }) }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Status", value: warrantyStatusText, onChange: () => {}, disabled: true })
         ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note ux-scope-note", children: "Avvikstall her gjelder sjekklistepunkter. Prosjektstatus viser også egne prosjektavvik. Kontroller begge i Avvik før overlevering. Garantikravene er uendret." }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: warranty?.termsAccepted ? { borderColor: "#bbf7d0", background: "#ecfdf5" } : { borderColor: "#fde68a", background: "#fffbeb" }, children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: `📑 Garantivilkår ${warrantyYears} år` }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Garantivilkår aksepteres automatisk når kunden signerer overtagelsen og prosjektet fullføres. Kunden trenger ikke signere eller bekrefte vilkår et eget sted." }),
@@ -269,7 +270,7 @@ export function createWarrantyViewTools({
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: readiness?.ready ? "Klar til garanti" : "Ikke klar til garanti" }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "checklistSummaryBadges", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: readiness?.overtagelseSigned ? "✅ Overtagelse signert" : "⚠️ Overtagelse mangler" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: readiness?.openDeviationCount === 0 ? "✅ Ingen åpne avvik" : `⚠️ ${readiness?.openDeviationCount || 0} åpne avvik` }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: readiness?.openDeviationCount === 0 ? "✅ Ingen åpne sjekklisteavvik" : `⚠️ ${readiness?.openDeviationCount || 0} åpne sjekklisteavvik` }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: readiness?.checklistComplete ? "✅ Sjekklister fullført" : `⚠️ ${readiness?.checklistDone || 0}/${readiness?.checklistTotal || 0} sjekklistepunkter` }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: readiness?.hasPhotos ? "✅ Bilder lastet opp" : "⚠️ Bilder mangler" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: issued ? readiness?.reportGenerated ? "✅ Komplett PDF generert" : "⚠️ Last ned komplett PDF nå" : "ℹ️ PDF lages etter garanti" }),

@@ -113,6 +113,27 @@ function syncShortcutButtons(guide) {
 
   actions.dataset.signature = signature;
   actions.replaceChildren();
+  const groups = [
+    ['Oppstart', ['overview','sales','description','agreement','design','progress']],
+    ['Gjennomføring', ['products','surfaces','images','access','installations','checklists','deviations','chat','internal']],
+    ['Overlevering', ['handover','warranty','report']],
+  ];
+  const active = activeProjectLabel();
+  const containers = new Map();
+  groups.forEach(([label, keys]) => {
+    const entries = available.filter(item => keys.includes(item.key));
+    if (!entries.length) return;
+    const group = document.createElement('details');
+    group.className = 'expoProjectMenuGroup';
+    group.open = entries.some(item => item.matches(active));
+    const summary = document.createElement('summary');
+    summary.textContent = label;
+    const content = document.createElement('div');
+    content.className = 'expoProjectMenuGroupActions';
+    group.append(summary, content);
+    actions.append(group);
+    keys.forEach(key => containers.set(key, content));
+  });
   available.forEach(({ key, visibleLabel }) => {
     const button = document.createElement("button");
     button.type = "button";
@@ -124,7 +145,7 @@ function syncShortcutButtons(guide) {
       const target = sourceButton(key);
       if (target instanceof HTMLButtonElement) target.click();
     });
-    actions.append(button);
+    (containers.get(key) || actions).append(button);
   });
 }
 
@@ -149,6 +170,8 @@ function syncGuide() {
   }
 
   const active = activeProjectLabel();
+  const activeChanged = guide.dataset.activeLabel !== active;
+  guide.dataset.activeLabel = active;
   guide.querySelectorAll(".expoProjectWorkspaceQuickButton").forEach((button) => {
     if (!(button instanceof HTMLButtonElement)) return;
     const shortcut = PROJECT_SHORTCUTS.find(
@@ -156,7 +179,10 @@ function syncGuide() {
     );
     const isActive = Boolean(shortcut?.matches(active));
     button.classList.toggle("isActive", isActive);
-    if (isActive) button.setAttribute("aria-current", "page");
+    if (isActive) {
+      button.setAttribute("aria-current", "page");
+      if (activeChanged) { const group = button.closest("details"); if (group) group.open = true; }
+    }
     else button.removeAttribute("aria-current");
   });
 }

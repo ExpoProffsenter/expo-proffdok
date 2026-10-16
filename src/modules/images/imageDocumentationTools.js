@@ -1,3 +1,4 @@
+import PhotoOverview from './PhotoOverview.jsx';
 // FASE 24G BILDEDOKUMENTASJON: Flytter kun Bilder-fanens presentasjonskomponenter og PhotoGrid ut av main.jsx.
 // Ingen endring i bildeopplasting, autolagring, Storage, prosjektdata, rapport, garanti eller tilgangslogikk.
 import { Camera, Plus, Trash2 } from 'lucide-react';
@@ -68,9 +69,12 @@ export function createImageDocumentationTools({
     addPhoto,
     stopFileDragNavigation,
     handlePhotoTileDrop,
-    photoSaveStatus
+    photoSaveStatus,
+    checklist = {},
+    onChecklist
   }) {
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Bildedokumentasjon", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Camera, {}), children: [
+      (0, import_jsx_runtime.jsx)(PhotoOverview,{photos,checklist,onChecklist}),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "item", style: { display: "flex", alignItems: "flex-start", gap: "10px", cursor: isProjectLocked ? "not-allowed" : "pointer" }, onClick: (e) => e.stopPropagation(), children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", checked: !!project.checklistPhotosNote, disabled: isProjectLocked, onClick: (e) => e.stopPropagation(), onChange: (e) => {
           if (!canEditProject()) return;

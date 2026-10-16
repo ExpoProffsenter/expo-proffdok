@@ -1,3 +1,4 @@
+import CompanyBrandPreview from './CompanyBrandPreview.jsx';
 // FASE 27E FIRMA: Mekanisk uttrekk av eksisterende Firmaprofil- og Firmaadministrasjon-visninger fra main.jsx.
 // FASE 41B.3E: Tydeliggjør forskjellen mellom brukerens primære firmaprofil og systemadmins Representerer-scope.
 import React, * as ReactNS from 'react';
@@ -63,6 +64,7 @@ export function createCompanyViewTools({
       title: "Firmaprofil",
       icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Building2, {}),
       children: [
+        (0, import_jsx_runtime.jsx)(CompanyBrandPreview,{company}),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
           className: "note",
           children: profileNote

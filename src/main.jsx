@@ -1,3 +1,7 @@
+import WorkdayShortcuts from './modules/home/WorkdayShortcuts.jsx';
+import DeliverySummary from './modules/report/DeliverySummary.jsx';
+import {isActiveProjectStatus, isArchivedProjectStatus, matchesProjectStatus} from './modules/project/projectListStatus.mjs';
+import './modules/ui/appUxReview.css';
 import {installPageScrollMemory} from './modules/app/pageScrollMemory.mjs';
 import ControllerPortal from './modules/controller/ControllerPortal.jsx';
 import {PROJECT_DESIGN_CHECKLIST_TEMPLATE} from './modules/config/projectDesignChecklist.mjs';
@@ -1482,7 +1486,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       const reportGenerated = !!warranty?.reportGeneratedAt;
       const termsAccepted = !!warranty?.termsAccepted || (!!warranty?.enabled && overtagelseSigned);
       const missing = [];
-      if (!termsAccepted) missing.push(`Kunde må bekrefte mottak og aksept av garantivilkår ${getWarrantyYears(warranty)} år.`);
+      if (!termsAccepted) missing.push(`Garantivilkår ${getWarrantyYears(warranty)} år bekreftes sammen med signert overtagelse.`);
       if (!overtagelseSigned) missing.push("Overtagelse må være aktivert og signert av både utførende og kunde.");
       if (openDeviationCount > 0) missing.push("Alle åpne avvik må lukkes før garanti kan utstedes.");
       if (!checklistComplete) missing.push("Alle ordinære sjekklister og systemspesifikke Sopro-punkter må ha status.");
@@ -1791,7 +1795,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       return ordinaryProjectListRows.filter((item) => {
         if (!projectMatchesSearch(item.searchable, projectSearch)) return false;
         if (projectUnreadOnly && item.unreadForAdminInList <= 0) return false;
-        if (projectStatusFilter !== "alle" && item.listStatus.tone !== projectStatusFilter) return false;
+        if (!matchesProjectStatus(item.listStatus.tone, projectStatusFilter)) return false;
         return true;
       });
     }, [ordinaryProjectListRows, projectSearch, projectStatusFilter, projectUnreadOnly]);
@@ -1801,8 +1805,8 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
     const projectListStats = (0, import_react.useMemo)(() => {
       const total = ordinaryProjectListRows.length;
       const unread = ordinaryProjectListRows.reduce((sum, item) => sum + item.unreadForAdminInList, 0);
-      const active = ordinaryProjectListRows.filter((item) => item.listStatus.tone === "progress" || item.listStatus.tone === "open").length;
-      const finished = ordinaryProjectListRows.filter((item) => item.listStatus.tone === "done" || item.listStatus.tone === "locked").length;
+      const active = ordinaryProjectListRows.filter((item) => isActiveProjectStatus(item.listStatus.tone)).length;
+      const finished = ordinaryProjectListRows.filter((item) => isArchivedProjectStatus(item.listStatus.tone)).length;
       return { total, unread, active, finished, visible: filteredProjectListRows.length };
     }, [ordinaryProjectListRows, filteredProjectListRows]);
     const warrantyTemplateProjectRows = (0, import_react.useMemo)(() => {
@@ -6233,6 +6237,7 @@ ${appLink}`;
           if (!projectId && mobileCreatingProject) newProjectTouchedRef.current = true;
         },
         children: [
+        tab === "prosjekt" && !hasActiveProjectWorkspace && !mobileCreatingProject && !isProjectSupportReadOnly && (0, import_jsx_runtime.jsx)(WorkdayShortcuts,{canPersonal:ownRights.enabled,canHr:ownRights.hr,canKshms:ownRights.kshms,onPersonal:()=>goToTab("innlogging"),onHr:()=>goToTab("hr"),onKshms:()=>goToTab("kshms")}),
         tab === "prosjekt" && !hasActiveProjectWorkspace && !mobileCreatingProject && !isProjectSupportReadOnly && (0, import_jsx_runtime.jsx)(React.Suspense, { fallback: null, children: (0, import_jsx_runtime.jsx)(HomeFollowups, { hrContext: ownRights.hr ? hrContext : null, kshmsContext, userId: authUser?.id, onOpenDeviation: openKshmsDeviation, onSetup: () => goToTab("hr") }, authUser?.id) }),
         !projectId && !mobileCreatingProject && tab === "prosjekt" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { className: "mobileProjectChooser", children: [
           authUser?.id && !hasActiveProjectWorkspace && !isProjectSupportReadOnly && (0, import_jsx_runtime.jsx)(React.Suspense, { fallback: null, children: (0, import_jsx_runtime.jsx)(MobileTimeShortcut, { personalContext, hrContext, userId: authUser?.id }) }),
@@ -6372,6 +6377,8 @@ ${appLink}`;
         ] }),
         projectId && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { className: mobileStatusOpen ? "projectStatusSection mobileStatusOpen" : "projectStatusSection", title: `${currentStatus.icon} Prosjektstatus: ${currentStatus.label}`, icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary mobileStatusClose", onClick: () => setMobileStatusOpen(false), children: "✕ Lukk status" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("details", { className: "project-status-details", key: projectId+":"+tab, open: mobileStatusOpen, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("summary", { children: `Status og oppfølging · ${projectGuideStats.openDeviationCount} åpne avvik · ${unreadForAdmin} uleste meldinger` }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: `statusBadge status-${currentStatus.tone}`, style: { display: "inline-flex", alignItems: "center", gap: "8px", padding: "8px 12px", borderRadius: "999px", fontWeight: 700, marginBottom: "10px", border: "1px solid #dbe7ec", ...statusStyle(currentStatus.tone) }, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: currentStatus.icon }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: currentStatus.label })
@@ -6409,6 +6416,7 @@ ${appLink}`;
             unreadForAdmin > 0 ? ` \xB7 ${unreadForAdmin} ulest` : "",
             latestChatMessage?.created ? ` \xB7 siste ${new Date(latestChatMessage.created).toLocaleString("no-NO")}` : "",
             "."
+          ] })
           ] })
         ] }),
         projectId && !isProjectLocked && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { className: mobileStatusOpen ? "projectGuideSection mobileStatusOpen" : "projectGuideSection", title: "Hva mangler på prosjektet?", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: [
@@ -6488,7 +6496,7 @@ ${appLink}`;
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "guideCard", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: mobileHomeStats.unreadProjects }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "uleste chat" })
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "prosjekter med ulest chat" })
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "guideCard", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: mobileHomeStats.deviations }),
@@ -6673,6 +6681,7 @@ ${appLink}`;
           projectId,
           onDirtyChange: (value) => { progressPlanDirtyRef.current = !!value; }
         }),
+          ["overtagelse","garanti","rapport"].includes(tab) && (0, import_jsx_runtime.jsx)(DeliverySummary,{items:projectGuideItems,onOpen:openProjectGuideItem,warrantyEnabled:warranty?.enabled,warrantyMissing:warrantyReadiness.missing,onWarranty:()=>goToTab("garanti")}),
         tab === "produkter" && renderProductSections({
           effectiveProductSections,
           getManualProductsForSection,
@@ -6691,6 +6700,8 @@ ${appLink}`;
         }),
         tab === "overflater" && renderOverflaterOgInnredning({ surf, setSurf, bathroomEquipment, setBathroomEquipment }),
         tab === "bilder" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProjectImagesPanel, {
+          checklist,
+          onChecklist: () => goToTab("sjekklister"),
           project,
           setProject,
           canEditProject,

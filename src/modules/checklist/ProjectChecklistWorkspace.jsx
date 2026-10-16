@@ -1,3 +1,4 @@
+import {checklistDisplayState} from './checklistDisplay.mjs';
 import {useEffect,useRef,useState} from 'react';
 import DeviationDialog from '../deviations/DeviationDialog.jsx';
 import {kshmsRpc} from '../kshms/kshmsAccess.js';
@@ -9,6 +10,7 @@ import './projectChecklistWorkspace.css';
 import KshmsDocumentPdfButton from '../kshms/KshmsDocumentPdfButton.jsx';
 
 export default function ProjectChecklistWorkspace({Editor,companyId,userId,projectId,checklist,activeChecklistTemplate,instances=[],readOnly=false,showTools=true,showPrevious=true,customChecklistAllowed=false,isWarrantyPoint=()=>false,onSaved,uploadImages,resolveFileUrl,...editorProps}) {
+ const [displayFilter,setDisplayFilter]=useState('all');
  const [data,setData]=useState(null),[selected,setSelected]=useState(null),[expanded,setExpanded]=useState({}),[error,setError]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false),[uploads,setUploads]=useState(0);
  const owner=useRef(null),locked=useRef(false),selection=useRef(null),cached=useRef(new Map());
  selection.current=selected;
@@ -146,11 +148,14 @@ export default function ProjectChecklistWorkspace({Editor,companyId,userId,proje
   {!selected&&error&&<p role="alert" className="ks-error">{error}</p>}
   {showTools&&<details className="item"><summary>Egne sjekkpunkter og vedlegg</summary><fieldset disabled={readOnly}><Editor {...editorProps} checklist={checklist} activeChecklistTemplate={[]} customChecklistEnabled={customChecklistAllowed} toolsOnly consumeChecklistJump={false}/></fieldset></details>}
   {!groups.length&&<p>Ingen sjekklister er lagt til. Legg til egne sjekkpunkter, eller hent en publisert liste fra KS/HMS når firmaet har tilgang.</p>}
+  <div className="ux-toolbar"><label>Vis sjekklister<select value={displayFilter} onChange={e=>setDisplayFilter(e.target.value)}><option value="all">Alle</option><option value="unfinished">Uferdige</option><option value="deviations">Med åpne avvik</option><option value="images">Mangler påkrevd bilde eller dokumentasjon</option></select></label><span className="ux-inline-note">Filtrering endrer ingen svar. Lagring og rapport bruker fortsatt hele kontrollen.</span></div>
   {groups.map(group=>{
    const latest=data?.runs?.find(run=>run.category===group.category),answers=latest?.answers||checklist?.[group.category]||{},done=group.items.filter(item=>answers[item]?.status).length;
-   return <article className="item project-checklist-card" key={group.category}>
+   const display=checklistDisplayState(latest?.definition||runDefinition(group,instances,isWarrantyPoint(group.category)),answers,latest?.status==='completed');
+   const visible=displayFilter==='all'||(displayFilter==='unfinished'&&!display.complete)||(displayFilter==='deviations'&&display.deviations>0)||(displayFilter==='images'&&display.missingImages>0);
+   return <article className="item project-checklist-card" key={group.category} hidden={!visible}>
     <button type="button" className="secondary project-checklist-heading" aria-expanded={!!expanded[group.category]} onClick={()=>setExpanded(value=>({...value,[group.category]:!value[group.category]}))}>
-     <span aria-hidden="true">{expanded[group.category]?'▾':'▸'}</span><b>{title(group)}</b><span>{done}/{group.items.length} vurdert · {latest?.status==='completed'?'Fullført':done?'Pågår':'Ikke påbegynt'}</span>
+     <span aria-hidden="true">{expanded[group.category]?'▾':'▸'}</span><b>{title(group)}</b><span>{done}/{group.items.length} vurdert · {latest?.status==='completed'?'Fullført':display.ready?'Alle punkter vurdert – kontroller og fullfør':done?'Pågår':'Ikke påbegynt'}</span>
     </button>
     <div className="project-checklist-card-actions"><button type="button" disabled={busy} onClick={()=>begin(group)}>{latest?.status==='completed'?'Åpne fullført sjekkliste':'Åpne sjekkliste'}</button></div>
     {expanded[group.category]&&<div><p>{group.instructions||'Kontroller punktene og legg til dokumentasjon der det trengs.'}</p><ul>{group.items.map(item=><li key={item}>{item}</li>)}</ul>
