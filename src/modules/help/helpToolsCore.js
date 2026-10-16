@@ -499,7 +499,7 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Hjelp og dokumentasjon", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.FileText, {}), children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item helpQuickStart", style: { background: "linear-gradient(135deg,#0f172a,#164e63)", color: "#ffffff", borderColor: "#0f766e" }, children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { style: { marginTop: 0, color: "#ffffff" }, children: "📘 Digital brukerveiledning" }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { style: { color: "#dbeafe", lineHeight: 1.6 }, children: "Søk etter det du vil gjøre. Åpne et tema og følg trinnene. Innholdet følger rollen og tilgangen din. Prosjektmenyen er gruppert i Oppstart, Gjennomføring og Overlevering. Åpne Status og oppfølging for detaljene." }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { style: { color: "#dbeafe", lineHeight: 1.6 }, children: "Søk etter det du vil gjøre. Åpne et tema og følg trinnene. Brukervilkår og installasjonsveiledning kan åpnes nederst. Innholdet følger rollen og tilgangen din. Prosjektmenyen er gruppert i Oppstart, Gjennomføring og Overlevering. Åpne Status og oppfølging for detaljene." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", flexWrap: "wrap", gap: "10px", marginTop: "12px" }, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { style: { padding: "8px 12px", borderRadius: "999px", background: "rgba(255,255,255,.14)", fontWeight: 900 }, children: ["Rolle: ", guideRoleLabel] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("time", { dateTime: "2026-10-16", style: { padding: "8px 12px", borderRadius: "999px", background: "rgba(255,255,255,.14)", fontWeight: 900 }, children: HELP_UPDATED_LABEL })
@@ -512,16 +512,18 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "📄 Brukervilkår og personvern" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: ["Gjeldende versjon: ", EXPO_PROFFDOK_TERMS_VERSION, ". Brukeren må godkjenne disse ved første innlogging eller når vilkårene oppdateres."] }),
+            (0, import_jsx_runtime.jsxs)("details", {className:"module-guide ux-reference",children:[(0, import_jsx_runtime.jsx)("summary",{children:"Les brukervilkår og personvern"}),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "item", style: { maxHeight: "280px", overflowY: "auto", background: "#f8fafc" }, children: expoProffDokTermsSections.map((termsSection) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { marginBottom: "12px" }, children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: termsSection.title }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "4px" }, children: termsSection.text })
-            ] }, termsSection.title)) }),
+            ] }, termsSection.title)) })
+            ]}),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { background: termsAccepted ? "#ecfdf5" : "#fff7ed", borderColor: termsAccepted ? "#bbf7d0" : "#fed7aa" }, children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: termsAccepted ? "✅ Godkjent av innlogget bruker" : "⚠️ Ikke godkjent i denne økten" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { style: { display: "block", marginTop: "6px" }, children: ["Bruker: ", authUser?.email || termsAcceptanceRecord?.email || "Ukjent", " · Versjon: ", termsAcceptanceRecord?.version || EXPO_PROFFDOK_TERMS_VERSION, termsAcceptanceRecord?.accepted_at ? ` · Godkjent: ${formatTermsAcceptedAt(termsAcceptanceRecord.accepted_at)}` : ""] })
             ] })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AppInstallGuide, {})
+          (0, import_jsx_runtime.jsxs)("details", {className:"module-guide ux-reference helpInstallGuide",children:[(0, import_jsx_runtime.jsx)("summary",{children:"Legg ProffDok på hjemskjermen"}),(0, import_jsx_runtime.jsx)(AppInstallGuide,{})]})
         ] })
       ] })
     ] });

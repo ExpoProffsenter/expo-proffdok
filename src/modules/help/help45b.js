@@ -51,8 +51,9 @@ export function createHelp45BSection({ Section }) {
       Section,
       { title: "🛒 Proff vareregister, Generelt tilbud og Enkel ordre" },
       React.createElement(
-        "div",
-        { className: "item", style: { borderColor: "#b9dde2", background: "#f8feff" } },
+        "details",
+        { className: "module-guide ux-reference helpCommerceReference", style: { borderColor: "#b9dde2", background: "#f8feff" } },
+        React.createElement("summary", null, "Vis Proff-veiledning og rolleinformasjon"),
         React.createElement("small", { style: { display: "block", marginBottom: 8, color: "#52616b", fontWeight: 800 } }, UPDATED),
         React.createElement("p", { className: "note", style: { marginTop: 0 } }, "Proffløsningen bruker den samme tilbudsmotoren som øvrige tilbud, men begrenser varesøk og prisinnsyn etter firmaets avtalte leverandører og brukerrettigheter."),
         React.createElement("h4", null, "Arbeidsflyt"),

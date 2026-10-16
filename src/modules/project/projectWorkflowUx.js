@@ -466,9 +466,9 @@ function updateHelp(nav) {
   if (!(quickStart instanceof HTMLElement)) return;
   if (existing) return;
 
-  const card = document.createElement('section');
+  const card = document.createElement('details');
   card.id = HELP_ID;
-  card.className = 'item';
+  card.className = 'module-guide ux-reference';
   Object.assign(card.style, {
     marginTop: '14px',
     marginBottom: '16px',
@@ -476,7 +476,7 @@ function updateHelp(nav) {
     background: '#f0f9ff'
   });
   card.innerHTML = `
-    <h3 style="margin-top:0">🔄 Prosjektflyt etter aktivering</h3>
+    <summary>Prosjektflyt etter aktivering</summary>
     <p class="note">Når forespørsel, befaring, tilbud og kundeaksept er ferdig og saken aktiveres som prosjekt, går ProffDok over til gjennomføringsflyt.</p>
     <ul style="margin:10px 0 0;padding-left:22px;line-height:1.55">
       <li><strong>Prosjektoversikt → Prosjektbeskrivelse</strong> er starten på den ordinære prosjektflyten.</li>

@@ -28,3 +28,20 @@
 .stocktakeSmart input{width:auto}
 @media(max-width:700px){.projectStatusSection{padding:10px 12px!important}.ux-toolbar>*{max-width:100%}}
 @media(max-width:700px){.ux-workday-shortcuts{display:none}.time-today-actions button{flex:1 1 100%;min-height:46px}}
+
+/* Compact reference panels: native details retain fields and existing handlers. */
+.module-guide.ux-reference{margin:8px 0 12px!important;padding:0 16px;border:1px solid #dce8eb;border-radius:12px;background:#f7fafb}
+.module-guide.ux-reference>summary{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:650;color:#425466;line-height:1.4;padding:8px 0;box-sizing:border-box;min-height:44px;cursor:pointer;list-style:none}
+.module-guide.ux-reference>summary::-webkit-details-marker{display:none}
+.module-guide.ux-reference>summary:after{content:"+";font-size:20px;font-weight:400;margin-left:auto}
+.module-guide.ux-reference[open]>summary:after{content:"−"}
+.module-guide.ux-reference>summary:focus-visible{outline:3px solid #08b9c3;outline-offset:3px}
+.module-guide.ux-reference[open]{padding-bottom:12px}
+.ks-handbook-progress{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:20px;padding:16px 20px!important}
+.ks-handbook-progress>h3,.ks-handbook-progress>p{grid-column:1;margin:0 0 7px!important}
+.ks-handbook-progress>button{grid-column:2;grid-row:1/4;align-self:center;margin:0!important;max-width:280px}
+.ks-handbook-progress>.ks-notice{grid-column:1/-1}
+.ks-bulk-publication{padding:14px 20px!important}
+.ks-bulk-publication>h3{margin-top:0!important}
+.helpInstallGuide{align-self:start}
+@media(max-width:700px){.ks-handbook-progress{grid-template-columns:minmax(0,1fr);padding:14px!important}.ks-handbook-progress>button{grid-column:1;grid-row:auto;max-width:100%;justify-self:start}.ks-bulk-publication{padding:14px!important}}
