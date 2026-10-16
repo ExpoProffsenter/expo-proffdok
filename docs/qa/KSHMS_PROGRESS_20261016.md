@@ -47,3 +47,30 @@ Lokal full critical/build PASS. Databasecheck: 56 kontrollpunkter PASS. Chromium
 Sandbox har migrasjon `20261016114708_kshms_standalone_progress_plans`, kildens MD5 (ett avsluttende linjeskift) `96def739efaddd02ebb004cc1ec92912`. Faktisk authenticated create/get/archive/list med syntetisk firmadmin besto i full rollback; null testrader etterpå. RLS og ingen direkte tabellprivilegier bekreftet. Bare authenticated kan utføre de tre avgrensede RPC-ene. Advisor INFO for privat tabell uten policy og SECURITY DEFINER er tilsiktet RPC-arkitektur; eksisterende øvrige advisories endres ikke. Sandbox-preflight 19/19 og kurs-preflight 5/5 grønne, ingen nye plandata.
 
 Preview/CI-bevis føres i PR etter publisering. Ingen Production-skjemaendring før relevant TEST OK.
+
+
+## UX-oppfølging etter Kenneths Preview-prøve, 16. oktober
+
+Kenneth ønsket underkoder, dag/uke/måned, dra/strekk og mindre scrolling. UX-scope er KS/HMS-planflaten, det faktiske kodeutvalget og en valgfri renderWorkspace-kobling i den delte editoren. Tidligere planlagring, private RPC-er, SQL, autorisasjon og Prosjekt/portal-visning endres ikke av denne oppfølgingen. Ingen TEST OK for den nye funksjonen er gitt ennå. Miljømål fortsatt BEGGE.
+
+Ny ren KshmsProgressBoard bruker eksisterende server-first-hydrering, normalisering, kladd, validering og save/readback fra ProgressPlanWorkspace. Den delte save-funksjonen returnerer nå suksess/feil slik at sidepanelet bare lukkes etter bekreftet lagring. KS/HMS blokkerer planvalg/eksport mens save pågår. Ingen tilbudsimport i KS/HMS.
+
+57 faktiske kodekoblinger med egne korte navn, kontrollert mot samme offentlige tabell s19–23. Hierarkiet grupperer 3-/4-sifferkoder under 2-sifferoverskriften, og merker systemkode eksplisitt. Eksempel: 32 → 321/322/324/325/326 og separat system 3200. Egen arbeidsoperasjon tillater flere oppgaver på samme bygningsdel.
+
+Tidslinjen har Dag/Uke/Måned, periodepiler, I dag, Til planen og valgfri Vis dato. Dag har klokkeslett; uke/måned har kalenderdatoer. Periode uten opphold tegnes som én strek, med bevart separat dagsøkt for hver dato. Ulike tider/notater og opphold forblir egne perioder. Dra flytter perioden; begge ender kan strekkes. Klokkeslett flyttes 30 minutter i dagvisning, datoer én dag i uke/måned. Overlapp på samme oppgave og ugyldig varighet nektes. Muse-/berøringsslipp oppdaterer bare kladd. Escape/blur/skjult vindu avbryter gesten. Ingen automatisk serverlagring. Angre gjelder de siste 30 endringene i den åpne arbeidsflaten; det er ikke versjonshistorikk etter omlasting.
+
+Sidepanelet lar brukeren endre feltene direkte og legge til/fjerne flere perioder. Perioder inkluderer helg; teksten forklarer dette. Separate opphold planlegges med separate perioder. Utvid viser tidslinjen i en dialog over appen; nested redigering har fokus-/scrollstyring og begge visningene gjenopprettes bare etter fersk firmatilgang. Tilbake minimerer; planvalg/eksport er tilgjengelig i normalvisning. Sticky oppgavenavn/kolonneoverskrift og begrenset intern scrolling hindrer at 30+ oppgaver forlenger siden.
+
+Den tidligere 40-punkts Chromium-testen er tilpasset den uttrykkelig ønskede nye UI-kontrakten og utvidet. Samme opprettelse/readback/NS-kode/PDF/ICS/metadata/feil/kladd/reload/kollegakonflikt/arkiv/leser/tilbakekalling/sene firmasvar/Prosjekt-kontroller er beholdt. Tillegg kontrollerer faktisk museflytting, begge håndtak, Angre, klokkeslett, tastatur, berøring, zoom, kompaktfilter, intern scrolling, sticky navn, Utvid og nestede dialoger. Ny ren tidslinjecheck dekker DST/skuddår, flytting med bevarte ID-er, utvidelse/krymping, grense/overlapp, opphold/laneplass og kodehierarki. Begge kjører i CI.
+
+### Oppdatert brukerprøve
+
+1. Åpne KS/HMS → Fremdriftsplaner og en plan. Velg + Arbeidsoperasjoner, søk 32 og åpne Varme for underkoder.
+2. Velg en underkode, gi oppgaven navn og en periode. Lagre fremdriftsplan.
+3. Prøv Dag/Uke/Måned. Flytt perioden og dra i begge ender. Kontroller dato/tid i sidepanelet. Prøv Angre og lagre ønsket resultat.
+4. Prøv Utvid, Kompakte rader og Søk i oppgavene. Tilbake går til normalvisning. Under Planvalg og eksport kan lagret Gantt/PDF og kalender kontrolleres.
+
+Eksakt testresultat og oppdatert Preview-/CI-bevis føres i PR #254 før brukerprøven.
+
+
+Utviklerkontroll etter UX-oppfølging: 40 tidslinje-/kodekontroller, 61 PostgreSQL-kontroller og 72 Chromium-kontroller PASS. PostgreSQL-checken lagrer også faktiske data generert av flytting, strekk og klokkeslettsendring gjennom uendret save-RPC, med rollback av testplanen. Chromium bruker faktisk mus, berøringshendelser og tastatur; ingen cloud-klient eller ekte brukerdata brukes i nettleserharnessen. Ingen nye databaseendringer i denne oppfølgingen. Full critical/build, faktisk KS/HMS/HR/Min side-navigasjon, Hjelp og kontaktflate PASS. Mobil ved 320/390 px og desktop ved 1280 px er visuelt kontrollert, inkludert kodevalg og Utvid. Nytt publisert tre/CI/deploy føres i PR #254.

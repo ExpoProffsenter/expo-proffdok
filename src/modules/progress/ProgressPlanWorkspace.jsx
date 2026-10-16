@@ -423,11 +423,11 @@ export function ProgressPlanWorkspace({ mode, identity, requestRef, projectId: p
   };
 
   const save = async () => {
-    if (!projectMeta?.id || readOnly) return;
+    if (!projectMeta?.id || readOnly || saving) return false;
     const validationError = validatePlan();
     if (validationError) {
       setError(validationError);
-      return;
+      return false;
     }
     setSaving(true);
     setError('');
@@ -442,8 +442,10 @@ export function ProgressPlanWorkspace({ mode, identity, requestRef, projectId: p
       setCustomerVisible(!!saved.customerVisible);
       setDirty(false);
       setNotice(saved.localOnly ? 'Testkopien er lagret lokalt i denne nettleseren.' : 'Fremdriftsplanen er lagret.');
+      return true;
     } catch (saveError) {
       setError(saveError?.message || 'Kunne ikke lagre fremdriftsplanen.');
+      return false;
     } finally {
       setSaving(false);
     }
@@ -564,6 +566,11 @@ export function ProgressPlanWorkspace({ mode, identity, requestRef, projectId: p
       </div>
     );
   }
+
+  if (standalone?.renderWorkspace) return standalone.renderWorkspace({
+    plan, meta: projectMeta, readOnly, dirty, saving, loading, error, notice,
+    onPlanChange: markPlan, onSave: save,
+  });
 
   return (
     <div className="progress-shell">

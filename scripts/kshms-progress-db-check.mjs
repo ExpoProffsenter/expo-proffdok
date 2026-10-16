@@ -1,4 +1,5 @@
 import fs from 'node:fs/promises';import assert from 'node:assert/strict';
+import {moveBand,plannedBands} from '../src/modules/kshms/kshmsProgressTimeline.mjs';
 const {PGlite}=await import(process.env.HR_PGLITE_PATH||'@electric-sql/pglite');const db=await PGlite.create();let count=0;
 const q=v=>"'"+String(v).replaceAll("'","''")+"'";
 const id=n=>'10000000-0000-4000-8000-'+String(n).padStart(12,'0');const firm=id(1),other=id(2),manager=id(3),reader=id(4),foreign=id(5),planId=id(10);
@@ -13,6 +14,9 @@ try{
  const source=await fs.readFile('supabase/migrations/20261005195941_kshms_handbook_foundation.sql','utf8');const start=source.indexOf('create function kshms_private.require_context');await db.exec(source.slice(start,source.indexOf('end $$;',start)+7));
  await db.exec(await fs.readFile('supabase/migrations/20261016114708_kshms_standalone_progress_plans.sql','utf8'));
  await actor(manager);let saved=await save();eq(saved.record.revision,1);eq(saved.record.company_id,firm);eq(saved.record.plan,plan);eq((await rpc('kshms_progress_list',[firm,false,null])).plans.length,1);
+ await db.exec('begin');
+ let generated=moveBand(plan.activities[0],plannedBands(plan.activities[0].sessions)[0],'end',3);generated=moveBand(generated,plannedBands(generated.sessions)[0],'move',2);generated=moveBand(generated,plannedBands(generated.sessions)[0],'move',30,'minute');generated={...generated,nsCode:'312'};
+ const verified=await save(0,{...plan,activities:[generated]},id(11));eq(verified.record.plan.activities[0].sessions.length,4,'stretched dates accepted by actual RPC');eq(verified.record.plan.activities[0].sessions[0].date,'2026-10-22');eq(verified.record.plan.activities[0].sessions[0].startTime,'08:30');eq(verified.record.plan.activities[0].nsCode,'312');await db.exec('rollback');eq((await rpc('kshms_progress_list',[firm,false,null])).plans.length,1,'generated-plan transaction rolled back');
  await reject(()=>save(0),'40001');eq((await rpc('kshms_progress_get',[firm,planId])).record.revision,1);
  await save(1,{...plan,activities:[{...plan.activities[0],status:'Pågår'}]});eq((await rpc('kshms_progress_get',[firm,planId])).record.revision,2);
  await actor(reader);eq((await rpc('kshms_progress_get',[firm,planId])).record.plan.activities[0].status,'Pågår');await reject(()=>save(2),'42501');await reject(()=>db.query('select * from kshms_private.progress_plans'),'42501');

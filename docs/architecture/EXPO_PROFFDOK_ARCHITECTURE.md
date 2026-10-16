@@ -1,3 +1,9 @@
+## KS/HMS-plan: tidslinje og underkoder – 16. oktober 2026
+
+Samme leveranse/PR #254, fortsatt Preview før ny TEST OK. Kenneth ønsket mindre scrolling og direkte planlegging. KS/HMS har nå søkbart hierarki med 57 utvalgte hoved-/under-/systemkoder, Dag/Uke/Måned, direkte flytting og strekk fra begge ender, Angre, kompakte rader, fag-/tekstsøk og Utvid-visning. Sidepanel erstatter lange skjemaer i oversikten. Planvalg og eksport og planlisten er sammenfoldet under arbeid.
+
+Datoer/klokkeslett lagres fortsatt som eksisterende separate dagsøkter. Uke/måned bruker hele kalenderdager, Dag bruker 30-minutters trinn. Sammenhengende perioder inkluderer helg; opphold blir egne perioder. Endringer krever Lagre fremdriftsplan; eksport bruker lagret serverutgave. Visning/åpent sidepanel beholdes i samme firma/bruker/plan ved fersk tilgangskontroll. Dra avbrytes ved Escape, skjult vindu eller bortfalt tilgang. Ingen ny backend eller databaseendring i denne UX-oppfølgingen. Prosjekt og portal bruker fortsatt eksisterende visning. Detaljer og QA: `docs/qa/KSHMS_PROGRESS_20261016.md`.
+
 ## Egne fremdriftsplaner i KS/HMS – 16. oktober 2026
 
 Miljømål BEGGE, først fast Preview med Sandbox. Fra main `a7bd4795e78e0ba1cbdc747960384bbf01338581`. KS/HMS → Fremdriftsplaner lar firmaet opprette uavhengige planer med navn, adresse og valgfritt eksternt prosjektnummer. Samme planeditor, ukevisning, mobilkort, Gantt/PDF og kalender som Prosjekt; ingen tilbudsimport eller kundedeling i KS/HMS. Firmaadmin og KS/HMS-ansvarlig redigerer; øvrige med KS/HMS-tilgang leser. Planene kan arkiveres og gjenopprettes.
