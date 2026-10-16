@@ -25,7 +25,7 @@ Utgangspunkt 3907837f i PR #263, main fortsatt publisert #262.
    Chromium-prøve før retting: scroll 2971 → 0, sidehøyde 3871 → 900. Dette forklarer
    hoppet ved utklipp/fokus. Synlig fokus beholder nå samme DOM, tekstarealhøyde,
    tekstmarkering og rulleposisjon mens tilgang fortsatt valideres. Lagring stoppes
-   synkront under kontrollen. Det er ingen ny scrollTo/recovery-timer.
+   synkront under kontrollen. Filter/sidebytte venter på kontrollen. Det er ingen ny scrollTo/recovery-timer.
 4. Reelt skjult dokument fjerner fortsatt privat historie fra DOM. En tom flate
    beholder målt høyde og slår av scrollankring; manuelt endret tekstarealhøyde
    huskes i komponentminnet ved retur. Ingen støtteinnhold legges i browserlagring.
@@ -38,7 +38,7 @@ Utgangspunkt 3907837f i PR #263, main fortsatt publisert #262.
 - 109 PostgreSQL-assertions PASS, inklusive ny systemadmin i annet aktivt firma:
   samme tildelte sak, interne merknader, offentlig svar og status. Første admin
   ser samme svar. Tilbakekalt systemrolle avvises. Nye fixture-prøver rulles tilbake.
-- 52 Chromium-assertions PASS i utvidet eksisterende supporttest. De opprinnelige
+- 53 Chromium-assertions PASS i utvidet eksisterende supporttest. De opprinnelige
   scenarioene består: idempotent lagring, privat intern merknad, mobilbredder,
   bakgrunnsskjuling, kladd, statusfilter, tilgangstap og e-postdialog. Testen av
   løst-status forventer den nye, tydeligere kvitteringsteksten; ingen garanti svekkes.
