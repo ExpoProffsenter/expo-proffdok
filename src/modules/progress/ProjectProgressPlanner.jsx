@@ -56,11 +56,18 @@ export default function ProjectProgressPlanner({projectId,onDirtyChange}){
  if(checking)return <p role="status">Kontrollerer tilgang og henter fremdriftsplanen …</p>;
  if(!value||!plan||!meta)return <div role="alert">{error||'Planen er ikke tilgjengelig.'}<button type="button" onClick={refresh}>Prøv igjen</button></div>;
  if(conflict)return <section role="alert"><h3>Du har en annen ulagret kladd</h3><p>Planen er endret på serveren. Velg hvilken versjon du vil arbeide videre med.</p><button type="button" onClick={()=>{drafts.delete(draftKey(value));setConflict(null);setDirty(false);}}>Bruk lagret plan</button><button type="button" onClick={()=>{drafts.set(draftKey(value),{...conflict,revision:value.record.revision});setPlan(conflict.plan);setCustomerVisible(conflict.customerVisible);setDirty(true);setConflict(null);}}>Fortsett med min kladd</button></section>;
- const tools=<details className="module-guide"><summary>Prosjektvalg, tilbud og deling</summary><p><strong>{meta.title}</strong>{meta.address?' · '+meta.address:''}</p>
-  {!value.record.locked&&<>{meta.publicToken&&<button type="button" className="secondary" disabled={busy} onClick={importOffer}>Hent arbeidsoperasjoner fra tilbud</button>}{!meta.simpleOrder&&<label><input type="checkbox" checked={customerVisible} disabled={busy} onChange={e=>change(plan,e.target.checked)}/>Vis lagret fremdriftsplan i kundeportalen</label>}</>}
-  <p>{value.record.locked?'Prosjektet er låst. Planen vises som historikk.':'Velg arbeidsoperasjoner, planlegg periodene og lagre. Endringer i oversikten er kladd til du lagrer.'}</p>
-  <button type="button" className="secondary" disabled={busy} onClick={()=>{if(!dirty||window.confirm('Forkast ulagret kladd og hent lagret plan?')){drafts.delete(draftKey(value));refresh();}}}>Hent lagret plan</button>
-  <ProgressPlanExportActions projectId={projectId} dirty={dirty||busy} shareOnly/>
+ const tools=<details className="module-guide"><summary>Prosjektvalg, tilbud og deling</summary>
+  <div className="ks-plan-project-tools-content">
+   <div className="ks-plan-project-identity"><p><strong>{meta.title}</strong>{meta.address?' · '+meta.address:''}</p>
+    {!value.record.locked&&!meta.simpleOrder&&<label><input type="checkbox" checked={customerVisible} disabled={busy} onChange={e=>change(plan,e.target.checked)}/>Vis lagret fremdriftsplan i kundeportalen</label>}
+   </div>
+   <p>{value.record.locked?'Prosjektet er låst. Planen vises som historikk.':'Velg arbeidsoperasjoner, planlegg periodene og lagre. Endringer i oversikten er kladd til du lagrer.'}</p>
+   <div className="ks-plan-project-buttons">
+    {!value.record.locked&&meta.publicToken&&<button type="button" className="secondary" disabled={busy} onClick={importOffer}>Hent arbeidsoperasjoner fra tilbud</button>}
+    <button type="button" className="secondary" disabled={busy} onClick={()=>{if(!dirty||window.confirm('Forkast ulagret kladd og hent lagret plan?')){drafts.delete(draftKey(value));refresh();}}}>Hent lagret plan</button>
+   </div>
+   <ProgressPlanExportActions projectId={projectId} dirty={dirty||busy} shareOnly/>
+  </div>
  </details>;
  return <KshmsProgressBoard key={draftKey(value)} plan={plan} meta={{...meta,title:meta.title}} readOnly={value.record.locked} dirty={dirty} saving={busy} loading={false} error={error} notice={notice} onPlanChange={change} onSave={save} operations={KSHMS_PROGRESS_OPERATIONS} standardOperations={STANDARD_PROGRESS_OPERATIONS} people={value.people||[]} stateKey={'project:'+draftKey(value)} launchToken={0} tools={tools} onExport={exportPlan} participantHint="Deltakerne hentes fra prosjektets firma. Valget gir tilgang til egne aktive oppgaver på Min side, og gir ikke redigeringstilgang til prosjektet."/>;
 }

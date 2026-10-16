@@ -1,3 +1,11 @@
+## Prosjektvalg og fokus/utklipp i planpopup – 16. oktober 2026
+
+Miljømål BEGGE, Preview først i umerget PR #254 fra a624453f. Åpne Prosjektvalg, tilbud og deling har normal avkryssing og samlet prosjektinfo/handlinger med kompakt delingskort. Generisk dialog-/mobil-CSS hadde gitt avkryssingen tekstfeltbredde og minst 40 px høyde. Lokale regler gir 18 × 18 px med stor klikkbar etikett. Tilbudsimport, Hent lagret plan, kundedelingsvalg og eksisterende prosjektmail er beholdt.
+
+Planpopupens fokusvalidering remonterte arbeidsflaten og nullstilte åpne prosjektvalg samt vertikal/horizontal scrolling. Gjenskapt i faktisk Chromium før rettelse. Den eksisterende, firma-/bruker-/planavgrensede UI-cachen beholder nå bare posisjoner og åpne/lukkede verktøy. Disse brukes etter uendret fersk tilgangs-/planlesing. Synlig fokus, skjult/tilbake, bevisst lukking, nullposisjon, kladd og tilgangstap er kontrollert. Ingen privat planpayload caches av den nye løsningen. Gammel felles pageScrollMemory-rettelse er urørt og består.
+
+Appscope er KshmsProgressBoard.jsx/CSS og bare presentasjonsmarkup for prosjektverktøy i ProjectProgressPlanner.jsx. Ingen main/Startside, global recovery, lagring, tilgang, SQL, e-postarbeider eller demodata endres. QA og konkret Windows-prøve: docs/qa/PROGRESS_FOCUS_20261016.md. Relevant TEST OK gjenstår før merge/Production og kontrollert main → demo-synk.
+
 ## Mer plass til oppgavene i begge planbyggere – 16. oktober 2026
 
 Miljømål BEGGE, Preview først i umerget PR #254, fra 21210b32. Prosjekt → Fremdrift, KS/HMS → Fremdriftsplaner og egne planer på Min side bruker samme justerte planflate. Planvisning/handlinger/eksport og prosjektvalg er samlet øverst; Dag/Uke/Måned står sammen med perioden; søk/fag/visningsvalg deler filterlinje. Normal oppgaveradhøyde og farger beholdes. Ingen nye sammenfoldbare oppgaver. Popupens ekstra kortpadding fjernes lokalt, og tidslinjen fyller resten av høyden.

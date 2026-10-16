@@ -78,3 +78,21 @@
  .ks-plan-date input{flex:1;width:0;min-width:0}
 }
 @media(max-width:350px){.ks-plan-topline>.ks-plan-surface>button{font-size:12px!important;padding:7px!important}}
+
+/* The project sharing checkbox is a choice, not a full-width text field. */
+.ks-plan-project-identity>label{display:flex;align-items:center;gap:8px;min-height:44px;font-size:13px}
+.ks-plan-topline>.module-guide input[type=checkbox]{width:18px;height:18px!important;min-height:18px!important;max-height:18px;max-width:18px;flex:none;padding:0;margin:0}
+.ks-plan-project-tools-content p{margin:0;font-size:13px;line-height:1.45}
+.ks-plan-topline>.module-guide .progress-export-toolbar{margin:8px 0 0;padding:9px 12px;gap:8px;border-radius:10px;box-shadow:none}
+.ks-plan-topline>.module-guide .progress-export-toolbar span{font-size:10px;margin:0}
+.ks-plan-topline>.module-guide .progress-export-toolbar strong{font-size:14px}
+.ks-plan-topline>.module-guide .progress-export-toolbar small{font-size:12px;line-height:1.4}
+@media(max-width:700px){.ks-plan-topline>.module-guide .progress-export-toolbar{margin:8px 0 0;padding:9px;grid-template-columns:1fr}.ks-plan-topline>.module-guide .progress-export-toolbar button{white-space:normal}}
+
+.ks-plan-project-tools-content{display:grid;gap:8px;padding:4px 2px 2px}
+.ks-plan-project-identity{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.ks-plan-project-identity>p{flex:1 1 300px;min-width:0}
+.ks-plan-project-identity>label{flex:0 1 auto;font-weight:600}
+.ks-plan-project-buttons{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ks-plan-project-tools-content .progress-export-toolbar{margin:0}
+@media(max-width:700px){.ks-plan-project-identity{gap:4px}.ks-plan-project-tools-content{gap:6px}.ks-plan-project-buttons>button{flex:1;min-width:130px;white-space:normal}}

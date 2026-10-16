@@ -140,6 +140,8 @@ jobs:
           export KSHMS_JSPDF_NODE_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/jspdf/dist/jspdf.node.min.js"
           node scripts/project-progress-db-check.mjs
           node scripts/project-progress-react-check.mjs
+          node scripts/progress-focus-react-check.mjs
+          node scripts/page-scroll-memory-check.mjs
           node scripts/kshms-progress-pdf-check.mjs
           node scripts/kshms-progress-timeline-check.mjs
           node scripts/kshms-progress-react-check.mjs

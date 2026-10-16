@@ -1,4 +1,4 @@
-import React, {useEffect,useId,useMemo,useRef,useState} from 'react';
+import React, {useEffect,useId,useLayoutEffect,useMemo,useRef,useState} from 'react';
 import {progressCodeGroups,PROGRESS_CODE_SOURCE} from './kshmsProgressCodes.mjs';
 import KshmsProgressStaffing from './KshmsProgressStaffing.jsx';
 import {calendarWindow,isSunday,shiftWorkday,clock,dayNumber,dayString,laneBands,minutes,moveBand,newPlanId,nextAnchor,periodSessions,plannedBands,replaceBand,shortDate,shiftDay,todayOslo,visibleBands} from './kshmsProgressTimeline.mjs';
@@ -12,12 +12,12 @@ const bandLabel=band=>`${shortDate(band.from)}${band.to!==band.from?'–'+shortD
 const views=new Map();
 let bodyLocks=0,originalOverflow='';
 
-function PlanDialog({title,onClose,children,side=false,expanded=false}){
- const ref=useRef(null),id=useId();
+function PlanDialog({title,onClose,onOpen,children,side=false,expanded=false}){
+ const ref=useRef(null),id=useId(),opened=useRef(onOpen);opened.current=onOpen;
  useEffect(()=>{
   const previous=document.activeElement;
   let frame,locked=false;
-  const open=()=>{ref.current.showModal();locked=true;if(bodyLocks++===0)originalOverflow=document.body.style.overflow;document.body.style.overflow='hidden';};
+  const open=()=>{ref.current.showModal();locked=true;if(bodyLocks++===0)originalOverflow=document.body.style.overflow;document.body.style.overflow='hidden';opened.current?.(ref.current);};
   const parent=ref.current.parentElement.closest('dialog');
   if(parent&&!parent.open)frame=requestAnimationFrame(open);else open();
   return()=>{cancelAnimationFrame(frame);if(locked&&--bodyLocks===0)document.body.style.overflow=originalOverflow;if(previous?.isConnected)previous.focus({preventScroll:true});};
@@ -95,8 +95,30 @@ export default function KshmsProgressBoard({plan,meta,readOnly,dirty,saving,load
  const firstDate=()=>plan.activities.flatMap(a=>a.sessions).map(s=>s.date).sort()[0]||todayOslo();
  const initial=views.get(stateKey)||{},excludeSundays=plan.excludeSundays===true;
  const [view,setView]=useState(initial.view||'week'),[anchor,setAnchor]=useState(initial.anchor||firstDate),[query,setQuery]=useState(initial.query||''),[trade,setTrade]=useState(initial.trade||''),[compact,setCompact]=useState(initial.compact||false),[picker,setPicker]=useState(false),[editing,setEditing]=useState(initial.editing||''),[drag,setDrag]=useState(null),[localError,setLocalError]=useState(''),[undoCount,setUndoCount]=useState(0),[expanded,setExpanded]=useState(initial.launchToken===launchToken?(initial.expanded??true):true),[surface,setSurface]=useState(initial.surface||'schedule'),[exporting,setExporting]=useState(false);
- useEffect(()=>{if(stateKey)views.set(stateKey,{view,anchor,query,trade,compact,editing,expanded,surface,launchToken});},[stateKey,view,anchor,query,trade,compact,editing,expanded,surface,launchToken]);
- const history=useRef([]),dragRef=useRef(null),scroll=useRef(null);
+ useEffect(()=>{if(stateKey)views.set(stateKey,{...views.get(stateKey),view,anchor,query,trade,compact,editing,expanded,surface,launchToken});},[stateKey,view,anchor,query,trade,compact,editing,expanded,surface,launchToken]);
+ const history=useRef([]),dragRef=useRef(null),scroll=useRef(null),board=useRef(null);
+ // Geometry only; owners still discard payload and reauthorize on every focus.
+ const viewport=useRef(initial.launchToken===launchToken?initial.viewport:null),restoration=useRef(viewport.current?{value:viewport.current,canceled:false}:null);
+ const [toolsOpen,setToolsOpen]=useState(Boolean(viewport.current?.toolsOpen)),[exportOpen,setExportOpen]=useState(Boolean(viewport.current?.exportOpen));
+ const restoreViewport=dialog=>{
+  const pending=restoration.current;if(!pending||pending.canceled)return;
+  const v=pending.value;
+  if(board.current)board.current.scrollTop=v.boardY;
+  if(scroll.current){scroll.current.scrollTop=v.timelineY;scroll.current.scrollLeft=v.timelineX;}
+  if(dialog)dialog.scrollTop=v.dialogY;
+ };
+ useLayoutEffect(()=>{
+  if(!stateKey||!expanded)return;
+  const remember=()=>{
+   const root=board.current;if(!root?.isConnected||!root.getClientRects().length)return;
+   views.set(stateKey,{...views.get(stateKey),viewport:{boardY:root.scrollTop,timelineY:scroll.current?.scrollTop||0,timelineX:scroll.current?.scrollLeft||0,dialogY:root.closest('dialog')?.scrollTop||0,toolsOpen:Boolean(root.querySelector('.module-guide')?.open),exportOpen:Boolean(root.querySelector('.ks-plan-surface>details')?.open)}});
+  };
+  const interact=()=>{if(restoration.current)restoration.current.canceled=true;};
+  // Capture before the owner's focus listener removes the native dialog.
+  window.addEventListener('blur',remember,true);window.addEventListener('focus',remember,true);document.addEventListener('visibilitychange',remember,true);
+  const events=['pointerdown','keydown','wheel','touchstart'];events.forEach(name=>document.addEventListener(name,interact,{capture:true,passive:true}));
+  return()=>{remember();window.removeEventListener('blur',remember,true);window.removeEventListener('focus',remember,true);document.removeEventListener('visibilitychange',remember,true);events.forEach(name=>document.removeEventListener(name,interact,true));};
+ },[stateKey,expanded]);
  const editable=!readOnly&&!saving&&!loading&&!exporting,windowRange=calendarWindow(anchor,view,excludeSundays);
  useEffect(()=>{if(excludeSundays&&isSunday(anchor))setAnchor(shiftWorkday(anchor));},[anchor,excludeSundays]);
  useEffect(()=>{
@@ -104,11 +126,12 @@ export default function KshmsProgressBoard({plan,meta,readOnly,dirty,saving,load
   const align=()=>{cancelAnimationFrame(frame);frame=requestAnimationFrame(()=>{
    const container=scroll.current,track=container?.querySelector('.ks-timeline-track'),label=container?.querySelector('.ks-timeline-label');
    if(!container||!track||!label)return;
+   if(restoration.current){restoreViewport(container.closest('dialog'));restoration.current=null;return;}
    const window=calendarWindow(anchor,view,excludeSundays),index=view==='day'?0:Math.max(0,window.dates.findIndex(d=>d>=anchor));
    const available=container.clientWidth-label.getBoundingClientRect().width;
    container.scrollTo({left:view==='day'?0:Math.max(0,index*track.getBoundingClientRect().width/window.dates.length-available/2)});
   });};
-  align();let width=0;
+  align();let width=scroll.current?.clientWidth||0;
   const observer=typeof ResizeObserver==='function'?new ResizeObserver(entries=>{const next=entries[0]?.contentRect.width;if(next!==width){width=next;align();}}):null;
   if(scroll.current)observer?.observe(scroll.current);
   window.addEventListener('resize',align);
@@ -167,10 +190,10 @@ export default function KshmsProgressBoard({plan,meta,readOnly,dirty,saving,load
   if(checked&&count&&!window.confirm(`Fjern ${count} søndagsøkter fra kladden? Lagre planen for å bekrefte fjerningen.`))return;
   changed({...plan,excludeSundays:checked,activities:checked?plan.activities.map(a=>({...a,sessions:a.sessions.filter(s=>!isSunday(s.date))})):plan.activities});
  };
- const content=<section className="ks-plan-board" aria-label="Planoversikt">
+ const content=<section ref={board} className="ks-plan-board" aria-label="Planoversikt">
   <div className="ks-plan-topline">
-  <div className="ks-plan-surface" role="group" aria-label="Planvisning"><button type="button" aria-pressed={surface==='schedule'} onClick={()=>setSurface('schedule')}>Fremdriftsplan</button><button type="button" aria-pressed={surface==='staffing'} onClick={()=>setSurface('staffing')}>Bemanningsplan</button><div className="ks-plan-actions">{!readOnly&&<><button type="button" className="secondary" disabled={!editable||!undoCount} onClick={()=>{const previous=history.current.pop();if(previous){onPlanChange(previous);setUndoCount(history.current.length);}}}>Angre</button><button type="button" className="secondary" disabled={!editable} onClick={()=>setPicker(true)}>+ Arbeidsoperasjoner</button><button type="button" disabled={!editable||!dirty} onClick={onSave}>{saving?'Lagrer …':dirty?'Lagre fremdriftsplan':'Lagret'}</button></>}{readOnly&&<strong>Kun visning</strong>}</div><details><summary>Eksport</summary><div>{[['pdf-download','Last ned fremdriftsplan (PDF)'],['staffing-download','Last ned bemanningsplan (PDF)'],['pdf','Forhåndsvis fremdriftsplan'],['staffing-pdf','Forhåndsvis bemanningsplan'],['ics','Last ned kalender (.ics)'],['staffing-csv','Last ned bemanning (.csv)']].map(([key,label])=><button type="button" className="secondary" key={key} disabled={dirty||saving||exporting||loading} onClick={()=>exportSaved(key)}>{label}</button>)}</div></details></div>
-  {tools}
+  <div className="ks-plan-surface" role="group" aria-label="Planvisning"><button type="button" aria-pressed={surface==='schedule'} onClick={()=>setSurface('schedule')}>Fremdriftsplan</button><button type="button" aria-pressed={surface==='staffing'} onClick={()=>setSurface('staffing')}>Bemanningsplan</button><div className="ks-plan-actions">{!readOnly&&<><button type="button" className="secondary" disabled={!editable||!undoCount} onClick={()=>{const previous=history.current.pop();if(previous){onPlanChange(previous);setUndoCount(history.current.length);}}}>Angre</button><button type="button" className="secondary" disabled={!editable} onClick={()=>setPicker(true)}>+ Arbeidsoperasjoner</button><button type="button" disabled={!editable||!dirty} onClick={onSave}>{saving?'Lagrer …':dirty?'Lagre fremdriftsplan':'Lagret'}</button></>}{readOnly&&<strong>Kun visning</strong>}</div><details open={exportOpen} onToggle={e=>setExportOpen(e.currentTarget.open)}><summary>Eksport</summary><div>{[['pdf-download','Last ned fremdriftsplan (PDF)'],['staffing-download','Last ned bemanningsplan (PDF)'],['pdf','Forhåndsvis fremdriftsplan'],['staffing-pdf','Forhåndsvis bemanningsplan'],['ics','Last ned kalender (.ics)'],['staffing-csv','Last ned bemanning (.csv)']].map(([key,label])=><button type="button" className="secondary" key={key} disabled={dirty||saving||exporting||loading} onClick={()=>exportSaved(key)}>{label}</button>)}</div></details></div>
+  {React.isValidElement(tools)?React.cloneElement(tools,{open:toolsOpen,onToggle:e=>{setToolsOpen(e.currentTarget.open);tools.props.onToggle?.(e);}}):tools}
   </div>
   <div className="ks-plan-toolbar"><div className="ks-plan-view-controls"><div className="ks-plan-view" role="group" aria-label="Tidsvisning">{[['day','Dag'],['week','Uke'],['month','Måned']].map(([key,label])=><button type="button" key={key} aria-pressed={view===key} onClick={()=>{setView(key);dragRef.current=null;setDrag(null);scroll.current?.scrollTo({left:0});}}>{label}</button>)}</div>{!expanded&&<button type="button" className="secondary" aria-label="Utvid planen" onClick={()=>setExpanded(true)}>Utvid</button>}</div>
   <div className="ks-plan-nav"><div><button type="button" className="secondary" aria-label="Forrige periode" onClick={()=>setAnchor(nextAnchor(anchor,view,-1,excludeSundays))}>‹</button><strong aria-live="polite">{title}</strong><button type="button" className="secondary" aria-label="Neste periode" onClick={()=>setAnchor(nextAnchor(anchor,view,1,excludeSundays))}>›</button></div><div><button type="button" className="secondary" onClick={()=>setAnchor(today)}>I dag</button><button type="button" className="secondary" onClick={()=>setAnchor(firstDate())}>Til planen</button><label className="ks-plan-date"><span>Vis dato</span><input type="date" value={anchor} onChange={e=>{if(e.target.value)setAnchor(e.target.value);}}/></label></div></div>
@@ -212,5 +235,5 @@ export default function KshmsProgressBoard({plan,meta,readOnly,dirty,saving,load
   {picker&&editable&&<OperationPicker standardOperations={standardOperations} operations={operations} onAdd={add} onClose={()=>setPicker(false)}/>}
   {activity&&<ActivityDrawer participantHint={participantHint} key={activity.id} activity={activity} excludeSundays={excludeSundays} people={people} readOnly={readOnly} saving={saving} error={error} notice={notice} onChange={changeActivity} onClose={()=>setEditing('')} onSave={onSave} onRemove={()=>{changed({...plan,activities:plan.activities.filter(a=>a.id!==activity.id)});setEditing('');}} onMove={direction=>{const rows=[...plan.activities],index=rows.findIndex(a=>a.id===activity.id),to=index+direction;if(to>=0&&to<rows.length){[rows[index],rows[to]]=[rows[to],rows[index]];changed({...plan,activities:rows});}}}/>}
  </section>;
- return expanded?<PlanDialog title={meta.title||'Fremdriftsplan'} expanded onClose={()=>{setExpanded(false);onDismiss?.();}}>{content}</PlanDialog>:<div className="ks-plan-launcher"><p>Åpne planbyggeren for å arbeide med tidslinjen eller bemanningen.</p><button type="button" onClick={()=>{setSurface('schedule');setExpanded(true);}}>Åpne planbygger</button> <button type="button" className="secondary" onClick={()=>{setSurface('staffing');setExpanded(true);}}>Åpne bemanningsplan</button>{dirty&&<p>Du har ulagrede endringer i kladden.</p>}</div>;
+ return expanded?<PlanDialog title={meta.title||'Fremdriftsplan'} onOpen={restoreViewport} expanded onClose={()=>{setExpanded(false);onDismiss?.();}}>{content}</PlanDialog>:<div className="ks-plan-launcher"><p>Åpne planbyggeren for å arbeide med tidslinjen eller bemanningen.</p><button type="button" onClick={()=>{setSurface('schedule');setExpanded(true);}}>Åpne planbygger</button> <button type="button" className="secondary" onClick={()=>{setSurface('staffing');setExpanded(true);}}>Åpne bemanningsplan</button>{dirty&&<p>Du har ulagrede endringer i kladden.</p>}</div>;
 }
