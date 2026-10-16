@@ -49,7 +49,7 @@ Status og konkret brukerprøve kompletteres før leveranse.
 ## Utført lokal QA
 
 - Full `npm run build` med uendrede sikkerhets-/forretningsasserts: PASS.
-- Ny `app-ux-review-browser-check`: 54 asserts, alle 18 native prosjektmål,
+- Ny `app-ux-review-browser-check`: 55 asserts, alle 18 native prosjektmål,
   aktiv menygruppe, rettighetstilbakekall, uendrede svar, bildekilder/deduplisering,
   dokumentlenker og 1363/768/390/320 px. Syntetisk transport, ingen reelle writes.
 - Time React: 91 asserts, inkludert dagens snarveier, valgfri visning av hele uken,
@@ -60,7 +60,7 @@ Status og konkret brukerprøve kompletteres før leveranse.
   firmabytte og sen/tilbakekalt tilgang. Kun mock av e-posttransport.
 - Prosjekt/Min side: 83 Chromium-asserts; sjekkliste og prosjektmeny: PASS.
 - Salgseditor: 128 Chromium-asserts; salgsoversikt/sak: 57 asserts.
-- Smartere prissøk: 70 Chromium-asserts; mobil varesøk: 13 asserts.
+- Smartere prissøk: 70 Chromium-asserts; mobil varesøk: 17 asserts.
 - Fremdrift: 128 Chromium-asserts; layout: 54 asserts med alle 21 oppgaver ved
   1768/1440/1280/1024/390/320/844 px. Opprinnelige rad-/høydekrav beholdes.
 - HR register/praksis, Min side, modulnavigasjon, håndbok-PDF: PASS.
@@ -95,3 +95,20 @@ endrer ikke firmaets eksisterende innstilling for mobil timeknapp.
 Ny TEST OK kreves etter Preview-prøven. Automatisk QA dekker syntetiske
 reiser og skjermbredder; fysisk mobilkamera og faktisk brukervurdering
 krever brukerprøve. Production og demo er ikke oppdatert i denne runden.
+
+## Innlogget etterkontroll
+
+Fast Preview på første runde viste riktig 3 aktive prosjekter både på Startside og
+Prosjektliste, og egne chatmål (2 prosjekter / 4 meldinger). Alle native prosjektmål
+var tilgjengelige. Sjekklistefilter skjulte/viste de samme kortene uten lagring.
+Garantien var fortsatt sperret av eksisterende mangler. Bildeoversikten viste 6
+unike bilder med 4 av dem også knyttet til sjekklister; referansene er beholdt.
+Oversikten viser nå alle opprinnelige plasseringer når samme bildefil er brukt flere
+steder. Det endrer ikke eksisterende prosjektkort, dokumentasjon eller rapporttall.
+
+Innlogget kontroll fant en konflikt mellom den nye lokale varemenyen og appens
+bevarte capture-lytter for native `nav > button`: lokalt visningsbytte lukket
+Prissøk. Løst lokalt ved `div role="group"` for varevisninger. Den eksisterende
+navigasjons-/recovery-kjernen er urørt. Mobiltesten monterer nå den faktiske
+`installStorePriceSearchUx`, bytter mellom alle visninger og kontrollerer at
+arbeidsflaten består, mens native Startside fortsatt lukker den bevisst.

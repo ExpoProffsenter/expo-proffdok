@@ -1011,11 +1011,11 @@ export default function StorePriceSearchView({ onClose }) {
           : "Søk varer og priser, angi antall og lagre en plukkliste til senere manuell registrering i Cordel."}</p>
       </section>
 
-      <nav className="priceSearchSurfaces" aria-label="Varearbeid">
+      <div className="priceSearchSurfaces" role="group" aria-label="Varearbeid">
         <button type="button" className={surface==='search'?'':'secondary'} aria-pressed={surface==='search'} onClick={()=>setSurface('search')}>Søk varer</button>
         <button type="button" className={surface==='lists'?'':'secondary'} aria-pressed={surface==='lists'} onClick={()=>setSurface('lists')}>Plukklister ({selectedProducts.length})</button>
         {stocktakeAvailable&&<button type="button" className={surface==='stocktake'?'':'secondary'} aria-pressed={surface==='stocktake'} onClick={()=>setSurface('stocktake')}>Varetelling</button>}
-      </nav>
+      </div>
       <div hidden={surface!=='search'}>{isMobile ? priceSearchLookup : null}</div>
 
       <div hidden={surface!=='stocktake'}><Suspense fallback={null}><StocktakeEntry onAvailable={setStocktakeAvailable} visible={surface==='stocktake'} /></Suspense></div>
