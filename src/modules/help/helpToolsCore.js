@@ -78,6 +78,7 @@ const BASE_SECTIONS = [
     "🧾 Befaring / Våtromstilbud",
     "Befaring / Våtromstilbud samler forespørsel, befaring, ordinære våtromstilbud, kundeaksept og videreføring til kontrakt og ProffDok-prosjekt. Generelle tilbud vises bare for brukere med slik tilgang.",
     [
+      "Velg en statusboks for å se saker i den arbeidskøen. Antallet står i samme boks. Når du åpner en sak og velger Tilbake, beholdes søk, filter og plass i listen så lenge du er i samme arbeidsøkt i Befaring/Tilbud.",
       "Bruk søkefeltet for å finne saker på blant annet kunde, adresse, e-post, telefon, saksreferanse, ansvarlig, tilbudstype og innhold. Statusfaner og eget Befaring-filter snevrer inn resultatet.",
       "Bruk fanen Forespørsler for nye saker som er registrert, men hvor befaring ennå ikke er planlagt. Saken blir liggende der til befaring bookes.",
       "Registrer kunde, kontaktinformasjon, adresse, ansvarlig og neste steg i forespørselen.",

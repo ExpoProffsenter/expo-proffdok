@@ -273,9 +273,9 @@ export default function SalesDetailView({
     })();
 
     return (
-      <div className="sales-app">
+      <div className="sales-app sales-case-app">
         <div className="sales-shell">
-          <header className="sales-header">
+          <div className="sales-header">
             <button className="sales-back-button" type="button" onClick={goToList}>
               <ArrowLeft size={18} />
               Tilbake
@@ -290,7 +290,7 @@ export default function SalesDetailView({
                 <span>Befaring / Tilbud / Aksept</span>
               </div>
             </div>
-          </header>
+          </div>
 
           <main className="sales-main">
             <section className="sales-detail-hero">
@@ -470,7 +470,7 @@ export default function SalesDetailView({
                 </div>
               </article>
 
-              <article className="sales-detail-card sales-detail-card-wide">
+              <article className={`sales-detail-card sales-detail-card-wide ${selectedRequest.note ? "" : "sales-note-empty"}`}>
                 <h2>Notat</h2>
                 <p>{selectedRequest.note || "Ingen notat registrert ennå."}</p>
               </article>
@@ -599,27 +599,6 @@ export default function SalesDetailView({
                               : "Send befaringsbekreftelse"}
                         </button>
                       ) : null}
-                    </>
-                  ) : null}
-
-                  {selectedRequest.status === "Tilbud" ? (
-                    <>
-                      <button
-                        className={hasUnpublishedOfferChanges ? "sales-primary-button" : "sales-secondary-button"}
-                        type="button"
-                        onClick={handlePrimaryCustomerOfferAction}
-                      >
-                        <Send size={18} />
-                        {customerOfferActionLabel}
-                      </button>
-                      <button className="sales-secondary-button" type="button" onClick={openOfferBuilder}>
-                        <ClipboardList size={18} />
-                        Rediger tilbud
-                      </button>
-                      <button className="sales-secondary-button" type="button" onClick={openInspectionNote}>
-                        <Ruler size={18} />
-                        {hasInspectionContent ? "Se befaringsnotat" : "Legg til befaringsnotat"}
-                      </button>
                     </>
                   ) : null}
 
@@ -1116,18 +1095,6 @@ export default function SalesDetailView({
                       ) : null}
 
                       <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                        {!hasUnpublishedOfferChanges ? (
-                          <button
-                            className="sales-secondary-button"
-                            type="button"
-                            onClick={() =>
-                              openCustomerOfferFromRequestId(selectedRequest.id)
-                            }
-                          >
-                            <Send size={18} />
-                            Se kundens tilbud
-                          </button>
-                        ) : null}
                         <button
                           className="sales-secondary-button"
                           type="button"

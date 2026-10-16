@@ -6535,7 +6535,7 @@ ${appLink}`;
           ] })
         ] }) }) }) })),
         tab === "sales" && projectId && isSimpleOrderProject(project) ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SimpleOrderOfferBasis, { project, tilbud: projectScopedTilbud }) : tab === "sales" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Befaring / Tilbud / Aksept", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { className: "sales-workspace-intro", title: "Befaring / Tilbud / Aksept", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Opprett og følg en forespørsel gjennom befaring, tilbud, kundeaksept og aktivering som ProffDok-prosjekt. Saker og tilbudskladder lagres sikkert og er avgrenset til innlogget bruker og firma." })
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
