@@ -4,9 +4,9 @@ import {progressSession} from './kshmsProgressClient.mjs';
 import KshmsProgressBoard from './KshmsProgressBoard.jsx';
 import {KSHMS_PROGRESS_OPERATIONS,classifiedExportPlan} from './kshmsProgressCodes.mjs';
 import {todayOslo,shortDate} from './kshmsProgressTimeline.mjs';
-import {buildPrintableHtml} from '../progress/progressPlanPrintCore.mjs';
+import {downloadProgressPdf,openProgressPreview} from './kshmsProgressPdf.mjs';
 import {downloadProgressPlanIcs} from '../progress/progressPlanCalendarExport.js';
-import {downloadStaffingCsv,staffingHtml} from './kshmsProgressStaffing.mjs';
+import {downloadStaffingCsv} from './kshmsProgressStaffing.mjs';
 import {WORK_PROFILE_EVENT} from '../access/workProfileClient.js';
 import {MANAGED_ACCESS_EVENT,MODULE_ACCESS_EVENT} from '../access/moduleAccessClient.js';
 // Navigation pointers only. Every mount/focus reauthorizes and rereads the data.
@@ -32,8 +32,10 @@ export default function KshmsMyProgressPlans({context}){
  const exportOwn=async kind=>{
   const printing=kind==='pdf'||kind==='staffing-pdf',target=printing?window.open('','_blank'):null,ticket=epoch.current;
   if(printing&&!target)return 'Tillat utskriftsvinduet og prøv igjen.';
-  try{const fresh=await session.mine(record.id);if(!alive.current||ticket!==epoch.current)throw Error('Arbeidsprofilen er endret.');const r=fresh.record,meta={id:r.id,title:r.title+' – mine oppgaver',address:r.address,planReference:r.reference,companyName:context.company_name},plan=classifiedExportPlan(r.plan);
-   if(printing){target.document.open();target.document.write(kind==='pdf'?buildPrintableHtml(meta,plan):staffingHtml(meta,r.plan));target.document.close();}
+  try{const load=async()=>{const fresh=await session.mine(record.id);if(!alive.current||ticket!==epoch.current)throw Error('Arbeidsprofilen er endret.');const r=fresh.record;return {plan:r.plan,meta:{id:r.id,title:r.title+' – mine oppgaver',address:r.address,planReference:r.reference,companyName:context.company_name}};};
+   if(kind.endsWith('-download')){await downloadProgressPdf({kind:kind==='staffing-download'?'staffing':'schedule',load,isCurrent:()=>alive.current&&ticket===epoch.current});return;}
+   const fresh=await session.mine(record.id);if(!alive.current||ticket!==epoch.current)throw Error('Arbeidsprofilen er endret.');const r=fresh.record,meta={id:r.id,title:r.title+' – mine oppgaver',address:r.address,planReference:r.reference,companyName:context.company_name},plan=classifiedExportPlan(r.plan);
+   if(printing)openProgressPreview({target,kind:kind==='pdf'?'schedule':'staffing',meta,plan:r.plan,onDownload:()=>exportOwn(kind==='pdf'?'pdf-download':'staffing-download')});
    else if(kind==='staffing-csv')downloadStaffingCsv(meta,r.plan);else downloadProgressPlanIcs({projectId:r.id,meta,plan});
   }catch(e){target?.close();return e.message;}
  };

@@ -1,3 +1,9 @@
+## PDF lastes ned direkte, og bemanning bruker norske ukenavn – 16. oktober 2026
+
+Miljømål BEGGE, Preview først i PR #254. KS/HMS og Mine aktive fremdriftsplaner har Last ned fremdriftsplan (PDF) og Last ned bemanningsplan (PDF). De lager faktiske PDF-filer med appens eksisterende jsPDF 2.5.1-motor. Forhåndsvis fremdriftsplan / Forhåndsvis bemanningsplan beholdes med separate Last ned PDF og Skriv ut. Nedlasting åpner ikke utskriftsdialog. Den delte Prosjekt-eksportens standardvisning endres ikke.
+
+Ny paginert vektor-PDF har firma, referanse, adresse, sidetall, Gantt per uke og fulle grupperte arbeidsperioder med merknader, eller bemanning per uke/dag med summer og tydelig ufullstendig grunnlag. Fersk plan- og tilgangslesing gjentas etter PDF-motorlast, før nedlasting. Min side bruker bare egen plan via mine-RPC. Ulagret kladd og bortfalt tilgang stopper eksport. Intern ISO-ukenøkkel beholdes for beregning/sortering, mens HTML, CSV og PDF viser for eksempel Uke 42 · 2026, også korrekt ISO-ukeår rundt nyttår. Ingen database-, rutinevarsling- eller eksempeldataendring. QA/releasebevis: docs/qa/KSHMS_PROGRESS_20261016.md og PR #254.
+
 ## Mine aktive fremdriftsplaner og deltakerlag – 16. oktober 2026
 
 Miljømål BEGGE, Preview først i samme PR #254. Hver KS/HMS-oppgave kan ha valgte appbrukere fra aktivt firma med gjeldende KS/HMS-tilgang. IDs lagres i planens assigneeIds. Antall personer er et separat, valgfritt bemanningstall som også kan dekke innleide. Ingen medlemskap/modultilganger opprettes. Deltakere er planlagt arbeidslag, ikke nye fristansvarlige; ingen e-post sendes.

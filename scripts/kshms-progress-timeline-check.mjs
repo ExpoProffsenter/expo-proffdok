@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {calendarWindow,isSunday,shiftWorkday,dayNumber,moveBand,nextAnchor,periodSessions,plannedBands,replaceBand,shiftDay,visibleBands,laneBands} from '../src/modules/kshms/kshmsProgressTimeline.mjs';
 import {KSHMS_PROGRESS_OPERATIONS,progressCodeGroups} from '../src/modules/kshms/kshmsProgressCodes.mjs';
-import {staffingPlan,staffingCsv,staffingHtml,weekKey,validCrew} from '../src/modules/kshms/kshmsProgressStaffing.mjs';
+import {staffingPlan,staffingCsv,staffingHtml,weekKey,weekLabel,validCrew} from '../src/modules/kshms/kshmsProgressStaffing.mjs';
 let checks=0;
 const eq=(a,b,label)=>{assert.deepEqual(a,b,label);checks++;};
 const bad=fn=>{assert.throws(fn);checks++;};
@@ -29,6 +29,6 @@ const task=(id,crewSize,startTime,endTime,extra=[])=>({id,title:id,crewSize,sess
 const sequential={activities:[task('a',3,'08:00','12:00'),task('b',2,'12:00','16:00')]};let staffing=staffingPlan(sequential);eq(staffing.peak,3,'sequential crews are not added');eq(staffing.personHours,20);eq(staffing.weeks[0].peak,3);eq(staffing.complete,true);
 const concurrent={activities:[task('a',3,'08:00','16:00'),task('b',2,'10:00','14:00')]},serialized=JSON.stringify(concurrent);staffing=staffingPlan(concurrent);eq(staffing.peak,5);eq(staffing.personHours,32);eq(JSON.stringify(concurrent),serialized,'staffing pure');
 staffing=staffingPlan({activities:[task('union',3,'08:00','12:00',[{date:'2026-10-24',startTime:'10:00',endTime:'16:00'}])]});eq(staffing.peak,3);eq(staffing.personHours,24,'overlap on same task counted once');
-staffing=staffingPlan({activities:[task('unknown',null,'08:00','16:00'),{id:'untimed',title:'Untimed',crewSize:2,sessions:[]}]});eq(staffing.missingCount,1);eq(staffing.unplannedCount,1);eq(staffing.days[0].known,0);eq(staffing.complete,false);eq(staffingCsv({title:'=SUM(1)'},{activities:[task('u',null,'08:00','16:00')]}).includes('"\'=SUM(1)"'),true,'CSV formula neutralized');eq(staffingHtml({title:'<script>bad</script>'},concurrent).includes('<script>bad'),false,'escaped report metadata');eq(weekKey('2027-01-01'),'2026-W53');eq(weekKey('2027-01-04'),'2027-W01');
+staffing=staffingPlan({activities:[task('unknown',null,'08:00','16:00'),{id:'untimed',title:'Untimed',crewSize:2,sessions:[]}]});eq(staffing.missingCount,1);eq(staffing.unplannedCount,1);eq(staffing.days[0].known,0);eq(staffing.complete,false);eq(staffingCsv({title:'=SUM(1)'},{activities:[task('u',null,'08:00','16:00')]}).includes('"\'=SUM(1)"'),true,'CSV formula neutralized');eq(staffingHtml({title:'<script>bad</script>'},concurrent).includes('<script>bad'),false,'escaped report metadata');eq(weekKey('2027-01-01'),'2026-W53');eq(weekKey('2027-01-04'),'2027-W01');eq(weekLabel(weekKey('2027-01-01')),'Uke 53 · 2026');eq(weekLabel(weekKey('2027-01-04')),'Uke 1 · 2027');
 for(const crew of [null,0,-1,1.1,1000,'3',NaN])eq(validCrew(crew),false);eq(validCrew(999),true);
 console.log(`KS/HMS timeline core: ${checks} assertions PASS: calendar/DST/leap year, stable move IDs, left/right/date/time resize, no mutation, bounds/overlap/gaps/lanes, and hierarchical NS codes.`);

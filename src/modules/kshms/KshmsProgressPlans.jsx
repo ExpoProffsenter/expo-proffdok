@@ -3,13 +3,13 @@ import {kshmsRpc} from './kshmsAccess.js';
 import {progressSession} from './kshmsProgressClient.mjs';
 import {KSHMS_PROGRESS_OPERATIONS,PROGRESS_CODE_SOURCE,classifiedExportPlan} from './kshmsProgressCodes.mjs';
 import {ProgressPlanWorkspace} from '../progress/ProgressPlanWorkspace.jsx';
-import {buildPrintableHtml} from '../progress/progressPlanPrintCore.mjs';
+import {downloadProgressPdf,openProgressPreview} from './kshmsProgressPdf.mjs';
 import {downloadProgressPlanIcs} from '../progress/progressPlanCalendarExport.js';
 import {WORK_PROFILE_EVENT} from '../access/workProfileClient.js';
 import {MANAGED_ACCESS_EVENT,MODULE_ACCESS_EVENT} from '../access/moduleAccessClient.js';
 import './kshmsProgressPlans.css';
 import {progressDrafts as drafts} from './kshmsProgressDraft.mjs';
-import {downloadStaffingCsv,staffingHtml} from './kshmsProgressStaffing.mjs';
+import {downloadStaffingCsv} from './kshmsProgressStaffing.mjs';
 import KshmsProgressBoard from './KshmsProgressBoard.jsx';
 const empty={title:'',address:'',reference:''};
 export default function KshmsProgressPlans({context,active=true}){
@@ -85,17 +85,19 @@ export default function KshmsProgressPlans({context,active=true}){
   if(current()){setSelected(null);setChoosing(true);recordRef.current=null;await refresh();}
  });
  const exportPlan=async kind=>{
-  if(dirty||busyRef.current)return;
+  if(dirty||drafts.has(scope+':'+selected.id)||busyRef.current)return 'Lagre planen og vent til pågående arbeid er ferdig før eksport.';
   const printing=['pdf','staffing-pdf'].includes(kind);
   const printWindow=printing?window.open('','_blank'):null;
   if(printing&&!printWindow){setError('Tillat utskriftsvinduet i nettleseren og prøv igjen.');return 'Tillat utskriftsvinduet i nettleseren og prøv igjen.';}
   busyRef.current=true;setBusy(true);setError('');
   try{
+   const load=async()=>{if(!current()||drafts.has(scope+':'+selected.id))throw Error('Planvisningen er endret eller har ulagret kladd.');const fresh=await session.get(selected.id);if(!current())throw Error('Arbeidsprofilen er endret.');const record=fresh.record;return {plan:record.plan,meta:{companyName:context.company_name,id:record.id,title:record.title,address:record.address,requestRef:record.reference,planReference:record.reference,row:{data:{company:{name:context.company_name}}}}};};
+   if(kind.endsWith('-download')){await downloadProgressPdf({kind:kind==='staffing-download'?'staffing':'schedule',load,isCurrent:current});return;}
    const value=await session.get(selected.id);if(!current())throw Error('Arbeidsprofilen er endret.');
    const record=value.record,plan=classifiedExportPlan(record.plan),meta={companyName:context.company_name,id:record.id,title:record.title,address:record.address,requestRef:record.reference,planReference:record.reference,row:{data:{company:{name:context.company_name}}}};
-   if(kind==='staffing-pdf'){printWindow.document.open();printWindow.document.write(staffingHtml(meta,record.plan));printWindow.document.close();}
+   if(kind==='staffing-pdf')openProgressPreview({target:printWindow,kind:'staffing',meta,plan:record.plan,onDownload:()=>exportRef.current('staffing-download')});
    else if(kind==='staffing-csv')downloadStaffingCsv(meta,record.plan);
-   else if(kind==='pdf'){printWindow.document.open();printWindow.document.write(buildPrintableHtml(meta,plan));printWindow.document.close();}
+   else if(kind==='pdf')openProgressPreview({target:printWindow,kind:'schedule',meta,plan:record.plan,onDownload:()=>exportRef.current('pdf-download')});
    else downloadProgressPlanIcs({projectId:record.id,meta,plan});
   }catch(e){printWindow?.close();if(current())setError(e.message);return e.message;}finally{if(current()){busyRef.current=false;setBusy(false);}}
  };
@@ -112,7 +114,7 @@ export default function KshmsProgressPlans({context,active=true}){
   </details>
   {selected&&!ownList&&<p role="status">{error?'Planen er ikke tilgjengelig.':'Kontrollerer tilgang og henter planen …'}</p>}
   {selected&&ownList&&<>
-   <details className="ks-progress-plan-options"><summary>Planvalg og eksport</summary><div className="ks-progress-tools"><button className="secondary" disabled={dirty||busy} onClick={()=>exportPlan('pdf')}>Åpne Gantt / PDF</button><button className="secondary" disabled={dirty||busy} onClick={()=>exportPlan('ics')}>Last ned kalender (.ics)</button>{manage&&<><button className="secondary" disabled={dirty||busy} onClick={()=>{detailsRevision.current=recordRef.current.revision;setEditing(true);setCreating(false);setForm({title:recordRef.current.title,address:recordRef.current.address,reference:recordRef.current.reference});}}>Endre planopplysninger</button><button className="secondary" disabled={dirty||busy} onClick={changeArchive}>{selected.archived?'Gjenopprett plan':'Arkiver plan'}</button></>}<button className="secondary" disabled={busy} onClick={()=>{if(!(dirty||drafts.has(scope+':'+selected.id))||window.confirm('Forkast ulagret kladd og hent siste lagrede plan?')){drafts.delete(scope+':'+selected.id);open(selected.id,{discard:true});}}}>Hent lagret plan</button></div>
+   <details className="ks-progress-plan-options"><summary>Planvalg og eksport</summary><div className="ks-progress-tools"><button className="secondary" disabled={dirty||busy} onClick={()=>exportPlan('pdf')}>Forhåndsvis fremdriftsplan</button><button className="secondary" disabled={dirty||busy} onClick={()=>exportPlan('pdf-download')}>Last ned fremdriftsplan (PDF)</button><button className="secondary" disabled={dirty||busy} onClick={()=>exportPlan('staffing-download')}>Last ned bemanningsplan (PDF)</button><button className="secondary" disabled={dirty||busy} onClick={()=>exportPlan('ics')}>Last ned kalender (.ics)</button>{manage&&<><button className="secondary" disabled={dirty||busy} onClick={()=>{detailsRevision.current=recordRef.current.revision;setEditing(true);setCreating(false);setForm({title:recordRef.current.title,address:recordRef.current.address,reference:recordRef.current.reference});}}>Endre planopplysninger</button><button className="secondary" disabled={dirty||busy} onClick={changeArchive}>{selected.archived?'Gjenopprett plan':'Arkiver plan'}</button></>}<button className="secondary" disabled={busy} onClick={()=>{if(!(dirty||drafts.has(scope+':'+selected.id))||window.confirm('Forkast ulagret kladd og hent siste lagrede plan?')){drafts.delete(scope+':'+selected.id);open(selected.id,{discard:true});}}}>Hent lagret plan</button></div>
    <details className="module-guide"><summary>Fag og NS 3451-koder</summary><p>Velg bygningsdelen arbeidet gjelder. Mur/flis og maler kan bruke samme bygningsdel. Arbeidsoperasjonen beskriver selve jobben, for eksempel membran eller maling. Rigg og drift kan legges inn uten bygningsdelskode.</p><p>Utvalget viser bygningsdeler og noen systemkoder fra NS 3451:2022. Du kan skrive en annen kode selv og velge kodetype. Dette er et begrenset utvalg, ikke den komplette standarden.</p><a href={PROGRESS_CODE_SOURCE} target="_blank" rel="noreferrer">Se offentlig kodegrunnlag fra Bergen kommune (2025)</a></details>
    </details>
    <div id="kshms-progress-workspace"><ProgressPlanWorkspace key={scope+':'+selected.id+':'+reload} mode="kshms" standalone={adapter} onDirtyChange={dirtyChanged}/></div>
