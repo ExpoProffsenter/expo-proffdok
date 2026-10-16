@@ -286,6 +286,8 @@ export default function SalesModule({
     );
   });
   const [inspectionDraftDirty, setInspectionDraftDirty] = useState(false);
+  const [inspectionFormReady, setInspectionFormReady] = useState("");
+  const inspectionFormHydratedRequestIdRef = useRef("");
   const [offerForm, setOfferForm] = useState(createInitialOfferForm);
   const offerFormRef = useRef(offerForm);
   const offerModeRef = useRef(mode);
@@ -851,12 +853,25 @@ export default function SalesModule({
     saveSalesNavigation(salesStorageKey, mode, selectedRequestId);
   }, [mode, salesStorageKey, selectedRequestId]);
 
+  // Inspection hydration follows the same summary/full boundary as the offer editor.
+  useEffect(() => {
+    if (mode !== "inspection-note" || !selectedRequestId || !selectedRequest) return;
+    if (integrationMode === "app" && selectedRequest.__summaryOnly) return;
+    if (inspectionFormHydratedRequestIdRef.current === selectedRequestId) return;
+    const draft = loadInspectionDraft(buildInspectionDraftKey(salesStorageKey, selectedRequestId));
+    setInspectionForm(inspectionInitialForm(selectedRequest, draft));
+    setInspectionDraftDirty(Boolean(draft));
+    inspectionFormHydratedRequestIdRef.current = selectedRequestId;
+    setInspectionFormReady(selectedRequestId);
+  }, [integrationMode, mode, selectedRequest, selectedRequestId, salesStorageKey]);
+
   useEffect(() => {
     if (mode !== "inspection-note" || !selectedRequestId) return;
+    if (inspectionFormReady !== selectedRequestId || inspectionFormHydratedRequestIdRef.current !== selectedRequestId) return;
     saveInspectionDraft(inspectionForm);
     // Lokal feature-kladd skal følge alle endringer i befaringsskjemaet.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [inspectionForm, mode, selectedRequestId]);
+  }, [inspectionForm, inspectionFormReady, mode, selectedRequestId]);
 
 
   async function refreshCompanyProfile() {
@@ -2701,6 +2716,8 @@ export default function SalesModule({
 
     setInspectionForm(nextForm);
     setInspectionDraftDirty(Boolean(draft));
+    inspectionFormHydratedRequestIdRef.current = selectedRequest.id;
+    setInspectionFormReady(selectedRequestId);
     setMode("inspection-note");
   }
 
@@ -2746,6 +2763,8 @@ export default function SalesModule({
 
   async function handleSaveInspectionNote(event) {
     event.preventDefault();
+    if (inspectionFormReady !== selectedRequestId || inspectionFormHydratedRequestIdRef.current !== selectedRequestId ||
+        (integrationMode === "app" && selectedRequest?.__summaryOnly)) return;
 
     if (integrationMode === "app" && (!activeSupabase || !salesCompanyId)) {
       alert(
@@ -3442,6 +3461,10 @@ export default function SalesModule({
   }
 
   if (mode === "inspection-note" && selectedRequest) {
+    if (inspectionFormReady !== selectedRequestId || inspectionFormHydratedRequestIdRef.current !== selectedRequestId ||
+        (integrationMode === "app" && selectedRequest.__summaryOnly)) {
+      return <div className="sales-app" role="status">Henter befaringsnotatet fra saken …</div>;
+    }
     return (
       <SalesInspectionNote
         selectedRequest={selectedRequest}

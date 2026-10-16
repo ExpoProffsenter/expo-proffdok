@@ -1,3 +1,9 @@
+## Befaring: vent på komplett sak før skjema/kladd – Preview
+
+Innlogget etterkontroll avdekket også at wrapperens prefetch holdes i minnet til Core sin eksisterende asynkrone listehenting bruker den. Lokal requests-cache kan derfor fortsatt være summary ved første Core-render. Den nye initializeren alene var ikke tilstrekkelig. Befaringsnotatet har nå en saksspesifikk ready-state: ingen editor, lokal kladdlagring eller submit før komplett sak er tilgjengelig og skjemaet er hydrert. Meningsfull lokal/offline-kladd beholdes. Sen serveroppdatering kan ikke nullstille et ferdig hydrert skjema. Ingen endring av innlastingskall, recovery-timere, wrapper, tilbudseditor, serverlagring eller øvrige moduler.
+
+21 permanente kontroller kjører faktisk Core-initializer og faktiske hydration-/lokallagringseffekter i React-rekkefølge, inkludert summary → full sak, utsatt state-commit, saksskifte og bevisst exit. Full critical/Sandbox build PASS. 128 editor-/tekstvalg-kontroller er fortsatt grønne; ingen UI-endring siden de ble kjørt. Endelig innlogget kontroll og ny SHA/CI føres i PR #260. Ny TEST OK gjenstår; Production urørt.
+
 ## 16.10.2026 – bevar gamle lokale mediekladder ved tom tekst
 
 inspectionNeedsTextChoice oppdager ved notatets mount når serveren har tekst og lokal form ikke har tekst. SalesInspectionNote holder valget i komponentstate uten ny lagring, sperrer tekstfelter/submit og viser to eksplisitte valg. Bruk teksten fra saken oppdaterer bare tekstnøklene gjennom eksisterende onUpdateInspectionForm; Behold tom lokal tekst gir aktiv bekreftelse. Bilder/skisse påvirkes ikke. Ingen endring i globale recovery-timere/serverlagring eller andre moduler. Bevisst senere tømming i et normalt åpnet notat krever ikke dette mount-valget. 128 faktiske editor-/valg-kontroller og elleve initializer/helper-scenarier PASS.

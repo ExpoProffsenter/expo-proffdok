@@ -1,3 +1,9 @@
+## Befaring: vent på komplett sak før skjema/kladd – Preview
+
+Innlogget etterkontroll avdekket også at wrapperens prefetch holdes i minnet til Core sin eksisterende asynkrone listehenting bruker den. Lokal requests-cache kan derfor fortsatt være summary ved første Core-render. Den nye initializeren alene var ikke tilstrekkelig. Befaringsnotatet har nå en saksspesifikk ready-state: ingen editor, lokal kladdlagring eller submit før komplett sak er tilgjengelig og skjemaet er hydrert. Meningsfull lokal/offline-kladd beholdes. Sen serveroppdatering kan ikke nullstille et ferdig hydrert skjema. Ingen endring av innlastingskall, recovery-timere, wrapper, tilbudseditor, serverlagring eller øvrige moduler.
+
+21 permanente kontroller kjører faktisk Core-initializer og faktiske hydration-/lokallagringseffekter i React-rekkefølge, inkludert summary → full sak, utsatt state-commit, saksskifte og bevisst exit. Full critical/Sandbox build PASS. 128 editor-/tekstvalg-kontroller er fortsatt grønne; ingen UI-endring siden de ble kjørt. Endelig innlogget kontroll og ny SHA/CI føres i PR #260. Ny TEST OK gjenstår; Production urørt.
+
 ## Befaring: eksplisitt valg for tidligere tom lokal tekst – Preview
 
 Innlogget etterkontroll viste at den gamle feilen også kan ha etterlatt en lokal kladd med bilder, men uten tekst, mens serveren fortsatt har tekst. Slike lokale medier regnes med rette som meningsfullt arbeid. Notatet viser derfor et synlig valg: Bruk teksten fra saken eller Behold tom lokal tekst. Tekstfelter og Lagre er sperret til valget er tatt, og submit har samme sperre. Servervalget kopierer bare de fire tekstfeltene; lokale bilder/Badskisse og alle lagrings-/recovery-regler beholdes. Ingen ny browserlagring, automatisk serveroverskriving eller generell konflikthåndtering innføres. Bevisst tømming etter normal åpning fungerer som før.

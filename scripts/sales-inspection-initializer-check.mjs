@@ -28,4 +28,26 @@ eq(inspectionNeedsTextChoice(request,{photos:request.inspectionPhotos}),true,'ol
 eq(inspectionNeedsTextChoice(request,{customerWishes:'Lokal tekst'}),false,'meaningful local text does not trigger choice');
 eq(inspectionNeedsTextChoice({},{}),false,'truly new empty note needs no recovery choice');
 eq(Object.keys(inspectionServerText(request)).includes('photos'),false,'text recovery never replaces local photos');
+// Execute the actual hydration/local-autosave effects in their React order.
+// Pending state commits deliberately lag refs, reproducing the dangerous first-render window.
+const hydrationStart=source.indexOf('  // Inspection hydration follows');
+const hydrationEnd=source.indexOf('\n  useEffect(() => {\n    if (mode !== "inspection-note" || !selectedRequestId) return;',hydrationStart);
+assert(hydrationStart>=0&&hydrationEnd>hydrationStart);
+const saveEnd=source.indexOf('\n\n',hydrationEnd+2);
+const args=['useEffect','mode','selectedRequestId','selectedRequest','integrationMode','inspectionFormHydratedRequestIdRef','loadInspectionDraft','buildInspectionDraftKey','salesStorageKey','setInspectionForm','setInspectionDraftDirty','inspectionInitialForm','setInspectionFormReady','inspectionFormReady','inspectionForm','saveInspectionDraft'];
+const hydrate=new Function(...args,source.slice(hydrationStart,hydrationEnd));
+const autoSave=new Function(...args,source.slice(hydrationEnd,saveEnd));
+let currentForm={customerWishes:'',existingConditions:'',measurements:'',observations:'',photos:[]},ready='',pendingForm,pendingReady;
+const ref={current:''},saved=[];let reads=0,localDraft=null;
+const effectArgs=(selected,mode='inspection-note')=>[fn=>fn(),mode,selected.id,selected,'app',ref,()=>{reads++;return localDraft;},(scope,id)=>scope+':'+id,'qa-scope',value=>{pendingForm=value;},()=>{},inspectionInitialForm,value=>{pendingReady=value;},ready,currentForm,value=>saved.push(value)];
+const summary={id:request.id,__summaryOnly:true};hydrate(...effectArgs(summary));autoSave(...effectArgs(summary));
+eq(reads,0,'summary cannot initialize draft');eq(saved.length,0,'summary mount cannot autosave empty form');eq(ready,'','summary remains gated');
+hydrate(...effectArgs(request));autoSave(...effectArgs(request));eq(saved.length,0,'first hydration render cannot save before state commit');
+currentForm=pendingForm;ready=pendingReady;autoSave(...effectArgs(request));eq(saved.at(-1),expected,'first permitted local save contains server text and photos');
+currentForm={...currentForm,customerWishes:'Unsent user edit'};hydrate(...effectArgs({...request,inspectionCustomerWishes:'Late server text'}));eq(pendingForm.customerWishes,'Serverønske','same-case late refresh does not overwrite user form');
+autoSave(...effectArgs(request,'detail'));eq(saved.length,1,'intentional exit cannot save stale inspection state');
+ref.current='another-case';autoSave(...effectArgs(summary));eq(saved.length,1,'another case cannot inherit ready flag for local save');
+const another={...request,id:'QA-OTHER',inspectionCustomerWishes:'Other case text'};
+ref.current=request.id;hydrate(...effectArgs(another));autoSave(...effectArgs(another));eq(saved.length,1,'new complete case cannot save previous form while state commit is pending');
+currentForm=pendingForm;ready=pendingReady;autoSave(...effectArgs(another));eq(saved.at(-1).customerWishes,'Other case text','first save in new case has its own text');
 console.log('sales-inspection-initializer-check: '+checks+' PASS – actual Core initial state, server fields, meaningful offline draft, empty draft, scope and ordinary navigation.');
