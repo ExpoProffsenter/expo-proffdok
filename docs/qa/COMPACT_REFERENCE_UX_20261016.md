@@ -23,6 +23,8 @@ Fast Preview/branch beholdes. Release og supportplan er separate.
   Navigasjon, tekstinnhold og rollebetingelser beholdes. Faktiske hjelpeinnslag
   testes med lukk/åpne og firmaadmin uten Systemadmin-innhold.
 - appUxReview.css: lokal referansestil og kompakt KS/HMS-status/handling.
+  Referansestilen virker også før HR/andre modulers CSS er lastet, kontrollert
+  etter fersk Preview-innlasting og med isolert stiltest.
   Ingen globale navigasjons-/skjemaregler legges til.
 - Tester, README, architecture, release-status, supportplan og overlevering.
 
@@ -32,7 +34,7 @@ lagring eller garantikrav endres. Support er kun dokumentasjon i denne runden.
 ## Verifisering
 
 - Full critical/build PASS.
-- Ny faktisk Chromium-test compact-reference-browser-check.mjs: 27 assertions
+- Ny faktisk Chromium-test compact-reference-browser-check.mjs: 28 assertions
   PASS. Garantikrav/lås blokkerer fortsatt; original utstedelses-/PDF-/tilbakekall-
   callback, signerings-/sjekklisteinngang og KS/HMS neste steg er beholdt.
   Vilkårsstatus er synlig, teksten kan åpnes/lukkes med tastatur og native
