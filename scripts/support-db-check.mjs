@@ -80,6 +80,15 @@ try{
  view=await rpc('support_get',[c,ticket,true]);eq(view.messages.length,3);eq(view.ticket.status,'working');
  await rejects(()=>rpc('support_update',[c,ticket,1,'solved',admin]),'40001');
  await rpc('support_update',[c,ticket,view.ticket.revision,'solved',admin]);
+ // A shared inbox is independent of the optional legacy assignee and company.
+ await db.exec(`begin;reset role;insert into auth.users(id,email) values(${q(id(90))},'second-admin@example.invalid');insert into profiles(id,system_role) values(${q(id(90))},'systemadmin');insert into sales_company_memberships values(${q(id(90))},${q(d)});insert into active_scope values(${q(id(90))},${q(d)});`);
+ await actor(id(90),d);eq((await rpc('support_list',[d,true])).items[0].id,ticket,'second admin in another company sees shared case');eq((await rpc('support_overview',[true])).total,1);
+ const shared=await rpc('support_get',[d,ticket,true]);eq(shared.ticket.assigned_id,admin,'assignment to a different admin does not restrict access');eq(shared.messages.some(m=>m.body==='INTERNT'),true,'internal notes visible to every systemadmin');
+ await rpc('support_reply',[d,ticket,id(91),'Svar fra annen systemadmin',true,false]);eq((await rpc('support_get',[d,ticket,true])).messages.some(m=>m.body==='Svar fra annen systemadmin'),true);
+ const sharedRevision=(await rpc('support_get',[d,ticket,true])).ticket.revision;await rpc('support_update',[d,ticket,sharedRevision,'solved',admin]);eq((await rpc('support_get',[d,ticket,true])).ticket.status,'solved','second admin can update status');
+ await actor(admin);eq((await rpc('support_get',[c,ticket,true])).messages.some(m=>m.body==='Svar fra annen systemadmin'),true,'original admin sees the same reply');
+ await db.exec(`reset role;update profiles set system_role=null where id=${q(id(90))};`);await actor(id(90),d);await db.exec('savepoint access_check;');await rejects(()=>rpc('support_list',[d,true]));await db.exec('rollback to access_check;');await rejects(()=>rpc('support_get',[d,ticket,true]));
+ await db.exec('rollback;');await actor(admin);
  const answerBox=await rpc('support_delivery_authorize',[c,answer,true]);
  await actor();eq((await rpc('support_overview')).unread,1);eq((await rpc('support_list',[c,false,0,'unread'])).total,1);
  await actor();view=await rpc('support_get',[c,ticket]);eq(view.messages.length,2);eq(JSON.stringify(view).includes('INTERNT'),false);eq(view.ticket.owner,null);
