@@ -1,3 +1,9 @@
+## Mer plass til oppgavene i begge planbyggere – 16. oktober 2026
+
+Miljømål BEGGE, Preview først i umerget PR #254, fra 21210b32. Prosjekt → Fremdrift, KS/HMS → Fremdriftsplaner og egne planer på Min side bruker samme justerte planflate. Planvisning/handlinger/eksport og prosjektvalg er samlet øverst; Dag/Uke/Måned står sammen med perioden; søk/fag/visningsvalg deler filterlinje. Normal oppgaveradhøyde og farger beholdes. Ingen nye sammenfoldbare oppgaver. Popupens ekstra kortpadding fjernes lokalt, og tidslinjen fyller resten av høyden.
+
+Bare KshmsProgressBoard.jsx og tilhørende CSS endrer appkode. Ingen main/Startside, planlagring, tilbudsimport, deling, eksport, tilgang, SQL, varsling eller demodata endres. Alle eksisterende handlinger og datofelter beholdes. Mobil bryter verktøyene over flere linjer, og kort skjerm kan scrolle verktøyområdet. Drahjelpen har fortsatt fast plass og fanger ingen pekerhendelser. Scope, faktisk skjermmåling og tester: docs/qa/PROGRESS_LAYOUT_20261016.md. Relevant TEST OK for denne og tidligere plan-/Startsideleveranse gjenstår før merge/Production og kontrollert main → demo-synk.
+
 ## Kompakt varseloversikt på Startsiden – 16. oktober 2026
 
 Miljømål BEGGE, Preview først i fortsatt umerget PR #254, fra head 614c2562/main a7bd4795. Startsiden samler Avvik, Kontroller, HR og Kontakt i én lukket oversikt med antall, pagineringspluss og tydelige markeringer for passerte frister, i dag, avvik innen tre dager og kontroller etter planlagt dato. Kontakt er én påminnelse med alle manglende felter i detaljene. Eksisterende oppgaver, frister, direktehandlinger, flere oppgaver, e-postlenker, kontaktlagring og egne dialoger beholdes.
