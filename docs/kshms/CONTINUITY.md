@@ -1,3 +1,7 @@
+## Tydelige åpneknapper for planer – 16. oktober 2026
+
+Miljømål BEGGE, Preview først i PR #254. Etter Kenneths presisering heter venstre knapp nå «Åpne fremdriftsplan» og høyre fortsatt «Åpne bemanningsplan». Felles inngang i Prosjekt, KS/HMS og Min side, med samsvarende kort hjelpetekst. Bare tekst i KshmsProgressBoard.jsx/Hjelp og eksakte knappselektorer i tre eksisterende QA-skript endres. Ingen callbacks, tilgang, datalagring eller andre flyter endres. Førkontroll b0c8813b / Core Safety #483 SUCCESS / dpl_DcrACJFk4EX1deicZVqtxKi4HwRQ READY. Ny head/CI/deploy føres i PR. Relevant TEST OK gjenstår; ingen merge/Production/demo-synk.
+
 ## Planpopup: avbryt-hendelse og ramme – 16. oktober 2026
 
 Miljømål BEGGE, Preview først, fortsatt umerget PR #254. Førkontroll: bc9e42892cf7a22fbd1d57843e87eed270bf9bb7, main a7bd4795e78e0ba1cbdc747960384bbf01338581, Core Safety #482 SUCCESS og fast Preview READY på samme head. Kenneth melder at vanlig utklipp fortsatt går ut av popupen, mens egen hurtigtast fungerer. Fysisk Windows-forløp er ikke observert av utvikler. En separat utgang er gjenskapt: nettleserens native cancel/Escape lukker hovedplanen selv om fokus/scroll gjenopprettes riktig.

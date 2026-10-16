@@ -52,3 +52,9 @@ Innlogget prøve på samme faste Preview:
 3. Escape i hovedplanen skal beholde planen. Åpne en oppgave: Escape lukker bare oppgaven. Tilbake skal lukke hovedplanen og fortsatt respekteres etter appbytte.
 
 Fysisk Windows-prøve og relevant TEST OK gjenstår. Production og permanent demo er ikke endret. Nytt head/tre/CI/deploy føres i PR etter publisering.
+
+## Tekstpresisering av åpneknappene
+
+Kenneth bekreftet at venstre knapp skulle hete Åpne fremdriftsplan (tidligere Åpne planbygger); høyre er fortsatt Åpne bemanningsplan. Felles Board/launcher og Hjelp oppdateres. Tre eksisterende QA-skript får bare ny eksakt knapptekst i selektorene. Ingen test fjernes eller svekkes; ingen nye tester for tekstendringen. Kontroller Tilbake → Åpne fremdriftsplan → tidslinjen og Tilbake → Åpne bemanningsplan → personbehov. Eksisterende funksjonsbevis fra forrige head beholdes, ny build/CI/release føres i PR.
+
+Tekstpresiseringen: full critical/build og eksisterende 39 Prosjekt-Chromium-kontroller PASS, inkludert bevisst lukking og gjenåpning med ny knapptekst. Øvrige tidligere funksjonstester gjentas i uendret CI-suite.
