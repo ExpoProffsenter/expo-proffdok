@@ -41,7 +41,7 @@ assert(!requestForm.includes('"Opprett butikktilbud"'), "Opprett-knapp skal bruk
 
 for (const needle of [
   '{ id: "store", label: "Generelle tilbud" }',
-  "Våtromstilbud og Generelle tilbud ligger i samme sikre tilbudsmotor",
+  "Våtromstilbud og Generelle tilbud. Finn saken med søk eller status",
   '{storeOffer ? "Generelt tilbud" : "Våtromstilbud"}',
 ]) {
   assert(salesList.includes(needle), `Tilbudsoversikten mangler direkte Generelt tilbud-tekst: ${needle}`);

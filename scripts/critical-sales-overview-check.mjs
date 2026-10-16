@@ -81,7 +81,9 @@ const salesList = requireNeedles("src/modules/sales/components/SalesListView.jsx
   '{ id: "requests", label: "Forespørsler" }',
   'if (request?.status === "Forespørsel") return "requests";',
   "requests: 0,",
-  '{ label: "Forespørsler", value: requestCounts.requests }',
+  'className="sales-status-overview"',
+  'sales-status-tile-${tab.id}',
+  'requestCounts[tab.id]',
   'activeTab === "requests"',
   "Ingen ubokede forespørsler. Nye forespørsler vises her til befaring er planlagt.",
 ]);

@@ -697,6 +697,7 @@ export default function SalesModule(props) {
     <>
       {canUseSales ? (
         <div
+          className="sales-module-actions"
           style={{
             maxWidth: 1180,
             margin: "0 auto",

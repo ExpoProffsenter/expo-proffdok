@@ -1,3 +1,9 @@
+## UX-oppfølging 16. oktober 2026 – Preview
+
+Salgsoversikten bruker én farget, klikkbar statusoversikt med eksisterende antall/buckets, søk og tilbudstypefilter. Befaring-hurtigfilteret bruker fortsatt eksisterende adapter/søk. Tilbake fra sak gjenoppretter søk, tilbudstype, status og scroll fra en UI-ref i den fortsatt monterte SalesCore, avgrenset med eksisterende salesStorageKey. Ingen saksdata eller ny browserlagring; remount starter vanlig eksisterende navigasjon/recovery. Intern saksvisning har et normalt tilbakefelt, tettere kunde-/notatkort og én visnings-/redigeringshandling per tilbud. Callback, publisert versjon, oppfølgingsplan og kundedata er uendret.
+
+Scope: SalesListView, SalesDetailViewCore, lokal CSS, én klasse på direkte tilbud-knappraden i SalesModule, fire linjer for UI-ref/props i SalesCore og én klasse på Sales-introen i main.jsx. Ingen endring av editor eller tjenester. QA/testliste: docs/qa/SALES_OVERVIEW_UX_20261016.md. Ny TEST OK kreves.
+
 # Expo ProffDok – Sales / Befaring / Tilbud / Generelt tilbud / Aksept / Kontrakt
 
 **Status:** Production inkluderer godkjent PR #207 med antall, nye serverlagrede plukklister og separate utskriftsvalg i Prissøk på PC, i tillegg til PR #206 og de tidligere mobil-/plukklisteendringene. Sales-flyten og mobil tilbudsskanning er bevart.

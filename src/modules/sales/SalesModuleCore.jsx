@@ -262,6 +262,8 @@ export default function SalesModule({
   );
   const [requests, setRequests] = useState(() => loadRequests(salesStorageKey));
   const [mode, setMode] = useState(initialNavigation.mode);
+  // UI only; scoped to this mounted company/user workspace, never persisted with case data.
+  const listViewStateRef = useRef(null);
   const [selectedRequestId, setSelectedRequestId] = useState(
     initialNavigation.selectedRequestId
   );
@@ -3508,6 +3510,8 @@ if (mode === "survey-plan" && selectedRequest) {
 
   return (
     <SalesListView
+      viewStateRef={listViewStateRef}
+      viewScope={salesStorageKey}
       activeRequests={activeRequests}
       activatedRequests={activatedRequests}
       summary={summary}
