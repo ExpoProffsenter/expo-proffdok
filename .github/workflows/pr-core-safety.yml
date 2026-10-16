@@ -154,3 +154,12 @@ jobs:
           node scripts/kshms-progress-pdf-check.mjs
           node scripts/kshms-progress-timeline-check.mjs
           node scripts/kshms-progress-react-check.mjs
+
+      - name: Verify private support cases and two-way mail boundaries
+        run: |
+          export HR_PGLITE_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/@electric-sql/pglite/dist/index.js"
+          export PLAYWRIGHT_MODULE="$RUNNER_TEMP/company-admin-browser-qa/node_modules/playwright/index.mjs"
+          node scripts/support-db-check.mjs
+          node scripts/support-mail-check.mjs
+          node scripts/support-browser-check.mjs
+          node scripts/support-layout-browser-check.mjs

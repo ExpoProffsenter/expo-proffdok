@@ -1,3 +1,68 @@
+# Support – TEST OK og Production 17.10.2026
+
+Kenneth ga eksplisitt TEST OK kl. 01:23 Europe/Oslo på siste Preview-head
+1c8338f6129d0683a39bfbdb8a56864cc3b0e1ec. PR #263 er merget til main
+e50504b41c701728561ec47fa210ffb16f38e06b etter grønn Core Safety #521/#522.
+Production dpl_3xd24np1sbrXRsD64SSNG5PswHks er READY på riktig main/domene.
+Seks supportmigrasjoner og to nye Edge Functions er installert i Production.
+Alle 19 supportfunksjoner/ACL har samme fingerprint som Sandbox; Edge-kilden er
+lest tilbake identisk. Eksisterende bakgrunnsjobber er uendret. Ingen supportmail
+sendes: SUPPORT_MAIL_MODE=disabled, SUPPORT_INBOUND_ENABLED=false, køarbeider
+enabled=false og tom endpoint. Mottaker er bare i serverhemmeligheter.
+
+Kontrollert main → demo med bevart overlay og grønn preflight fullføres som del av
+samme publisering; eksakt slutt-SHA/deploy/preflight føres i PR #263. Appkoden er
+uendret fra Kenneths godkjente Preview. Toveis e-post er fortsatt uferdig og skal
+ikke omtales som aktivert. Neste etappe er en eksplisitt avtalt sending/mottaksprøve.
+Overlevering: docs/CHAT_HANDOFF_20261017.md. Eldre ventende TEST OK-/Production-
+ikke-migrert-notater nedenfor er historikk, erstattet av denne statusen.
+
+## Support-meny, Min side og gruppert Systemadmin – Preview 17.10.2026
+
+Kenneth har godkjent implementeringen av egen Support ved Hjelp, eget kort for
+uleste supportsvar på Min side og Systemadmin i samme grupperte stil som KS/HMS.
+Hjelp har igjen bare veiledning. Samme samtale åpnes fra Min side og Support.
+Besøkte adminpaneler bevarer søk/utkast; eksisterende handlinger og serverkontroller
+beholdes. Dette er en uttrykkelig utvidelse av UI-/navigasjonsscopet i PR #263.
+
+Miljømål BEGGE; bare Preview/Sandbox foreløpig. Additiv read-only oppsummering og
+ulest-filter er installert i Sandbox. Ingen Production-, e-post- eller demoendring.
+QA, scope og ny brukertest: docs/qa/SUPPORT_LAYOUT_20261017.md. Eksakt head/CI/deploy
+føres i PR #263. Ny relevant TEST OK kreves før merge og senere main → demo.
+
+## Support – separat Preview-leveranse etter PR #262
+
+Miljømål BEGGE. Faktisk baseline main 824245e8c25e3a7d83febefe1b116a1a3fd108a1;
+PR #262 er ferdig publisert (inkludert main → demo), slik PR-ens siste status viser.
+De ventende #262-notatene lenger nede er historikk.
+
+Support er implementert i egen PR fra ren main: Hjelp → Kontakt support/egne
+saker, Systemadmin-innboks/svar/interne merknader/status/ansvarlig, privat database,
+sikker utgående kø og signert mottaksintegrasjon. Server bestemmer eier/firma og
+mottakere. Den interne mottakeradressen finnes ikke i klientkode eller repo.
+Appen lover ikke fungerende e-post før serveroppsett og faktisk prøve er fullført.
+
+Kun Sandbox er migrert. De to nye Edge Functions er deployet med utsending
+avslått som standard. Ingen scheduler, DNS-endring eller ekte e-postsending er
+utført. Production og permanent demo er uendret. For komplett e-postdialog
+må serverhemmeligheter, mottaksunderdomene, Resend-webhook og egen scheduler
+konfigureres og faktisk mottak prøves. Ingen merge uten ny TEST OK.
+
+Scope, QA og brukertest: docs/qa/SUPPORT_20261016.md.
+Oppfølging 17.10: riktig eksisterende Resend-konto er gjenfunnet via vanlig
+innlogging. Offentlig From er noreply@expoproffsenter.no; kontoens ferdige
+mottaksdomene kan brukes uten DNS-endring. Etter Kenneths uttrykkelige
+godkjenning er en separat mottaksnøkkel lagret som RESEND_RECEIVING_API_KEY i
+Production Secrets. Det er eneste Production-endring; support er ikke releaset
+eller aktivert. Webhook, køjobb, faktisk prøve og relevant TEST OK gjenstår.
+Køjobb-oppfølging: separat support-cron og Vault-token er nå implementert og
+installert avslått bare i Sandbox. 86 PostgreSQL- og 55 transportkontroller samt
+full lokal critical/build PASS. Ny slutt-CI/Preview føres i PR #263. Webhook-
+aktivering, faktisk e-postprøve og relevant TEST OK gjenstår før Production.
+Aktivering og gjenstående kontroll: docs/SUPPORT_OPERATIONS_20261016.md.
+Fast Preview beholdes på fix-company-admin-scope-20261015; ny separat PR følger
+supportleveransen. Baseline/commit/CI/deploy bevisføres i den nye PR-en.
+
 ## Prosjektlisten: mindre luft og valgfri detaljvisning – Preview 16.10.2026
 
 ## Kompakt referansevisning og supportplan – 16. oktober 2026

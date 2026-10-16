@@ -2,3 +2,11 @@
 [functions.supplier-order-email]
 # The handler validates the user's token through Auth, then rechecks company/access via RPC.
 verify_jwt = false
+
+[functions.support-mail]
+# Handler validates Auth token and per-message/active-company authorization.
+verify_jwt = false
+
+[functions.support-inbound]
+# Provider webhook uses raw-body HMAC, timestamp window and durable deduplication.
+verify_jwt = false

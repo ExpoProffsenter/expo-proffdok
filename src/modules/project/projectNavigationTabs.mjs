@@ -22,6 +22,7 @@ export function createGlobalAppTabs({
     ...(canUseKshms ? [["kshms", "KS/HMS"]] : []),
     ...(canUseHr ? [["hr", "HR"]] : []),
     ["hjelp", "Hjelp"],
+    ["support", "Support"],
     ...(canUseAdminProjectSync ? [["admin", "Systemadmin"]] : []),
   ];
 }
@@ -62,6 +63,7 @@ export function createProjectWorkspaceTabs({
     ["rapport", "Rapport"],
     // Hjelp beholdes som skjult kilde for den faste ? Hjelp-knappen i desktoplinjen.
     ["hjelp", "Hjelp"],
+    ["support", "Support"],
   ];
 }
 

@@ -24,7 +24,7 @@ function formatAdminNewsDate(value) {
   }).format(date);
 }
 
-export default function AppNewsAdmin({ supabaseClient, authUser } = {}) {
+export default function AppNewsAdmin({ supabaseClient, authUser, area = "all" } = {}) {
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState("");
   const [items, setItems] = useState([]);
@@ -52,9 +52,9 @@ export default function AppNewsAdmin({ supabaseClient, authUser } = {}) {
   }
 
   useEffect(() => {
-    void loadNews();
+    if (area === "all" || area === "news") void loadNews();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [supabaseClient, authUser?.id]);
+  }, [supabaseClient, authUser?.id, area]);
 
   async function handlePublish(event) {
     event.preventDefault();
@@ -122,11 +122,11 @@ export default function AppNewsAdmin({ supabaseClient, authUser } = {}) {
 
   return (
     <>
-      <details className="ux-admin-area"><summary className="ux-readable-summary">Support · Befaring/Tilbud</summary><SystemAdminSalesSupport supabaseClient={supabaseClient} authUser={authUser}/></details>
+      {area === "all" && <details className="ux-admin-area"><summary className="ux-readable-summary">Support · Befaring/Tilbud</summary><SystemAdminSalesSupport supabaseClient={supabaseClient} authUser={authUser}/></details>}
 
-      <details className="ux-admin-area"><summary className="ux-readable-summary">Utsending · e-post til brukere</summary><SystemAdminBroadcastEmail supabaseClient={supabaseClient} authUser={authUser}/></details>
+      {(area === "all" || area === "broadcast") && <details open={area === "broadcast"} className="ux-admin-area"><summary hidden={area === "broadcast"} className="ux-readable-summary">Utsending · e-post til brukere</summary><SystemAdminBroadcastEmail supabaseClient={supabaseClient} authUser={authUser}/></details>}
 
-      <details className="item adminAccordionItem"><summary className="ux-readable-summary">Informasjon · nyheter i appen</summary>
+      {(area === "all" || area === "news") && <details open={area === "news"} className="item adminAccordionItem"><summary hidden={area === "news"} className="ux-readable-summary">Informasjon · nyheter i appen</summary>
         <h3 style={{ marginTop: 0 }}>Nyheter i appen</h3>
         <p className="note">
           Publiser en kort beskjed som vises til innloggede brukere. Nyeste aktive
@@ -280,7 +280,7 @@ export default function AppNewsAdmin({ supabaseClient, authUser } = {}) {
             </div>
           )}
         </div>
-      </details>
+      </details>}
     </>
   );
 }
