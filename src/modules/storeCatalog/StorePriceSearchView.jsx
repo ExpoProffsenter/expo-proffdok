@@ -72,8 +72,8 @@ async function searchPrices(query, limit = 30) {
   return Array.isArray(payload) ? payload : [];
 }
 
-async function searchPricePage(query, offset = 0, limit = PRICE_SEARCH_PAGE_SIZE) {
-  const payload = await rpcWithStoredSession("search_internal_store_catalog_prices_page", {
+async function searchPricePage(query, offset = 0, limit = PRICE_SEARCH_PAGE_SIZE, smart = true) {
+  const payload = await rpcWithStoredSession(smart ? "search_internal_store_catalog_prices_smart" : "search_internal_store_catalog_prices_page", {
     p_query: query,
     p_limit: limit,
     p_offset: offset,
@@ -220,6 +220,7 @@ function PriceResult({ item, selected, disabled = false, onSelect }) {
     >
       <div className="priceSearchIdentity">
         <strong>{item.description || "Vare uten beskrivelse"}</strong>
+        {item.match_kind === "related" ? <small>Treff via tilsvarende fagord eller forkortelse</small> : null}
         <span>{item.supplier_name || "Ukjent leverandør"} · varenr. {item.supplier_product_number || "–"}</span>
         <small>
           {item.gtin ? `GTIN/EAN ${item.gtin}` : "Uten GTIN/EAN"}
@@ -385,6 +386,7 @@ function PrintDocument({ items, includeInternal, picklistMode = false, orderNumb
 
 export default function StorePriceSearchView({ onClose }) {
   const [query, setQuery] = useState("");
+  const [smartSearch, setSmartSearch] = useState(true);
   const [isMobile, setIsMobile] = useState(() =>
     typeof window !== "undefined" && window.matchMedia("(max-width: 700px)").matches
   );
@@ -423,6 +425,7 @@ export default function StorePriceSearchView({ onClose }) {
   const hydratedScopeRef = useRef("");
   const hydrationGenerationRef = useRef(0);
   const activeQueryRef = useRef("");
+  const searchGenerationRef = useRef(0);
   const activeScopeRef = useRef(`${picklistIdentity.userId}:${picklistIdentity.companyId}`);
 
   const identityScope = `${picklistIdentity.userId}:${picklistIdentity.companyId}`;
@@ -610,7 +613,7 @@ export default function StorePriceSearchView({ onClose }) {
   }, [canPrintInternal, includeInternalPrint]);
 
   useEffect(() => {
-    activeQueryRef.current = cleanQuery;
+    activeQueryRef.current = `${++searchGenerationRef.current}:${cleanQuery}`;
     if (cleanQuery.length < 2) {
       setResults([]);
       setTotalResults(0);
@@ -627,7 +630,7 @@ export default function StorePriceSearchView({ onClose }) {
     setTotalResults(0);
     setMessage("");
     const timer = window.setTimeout(() => {
-      searchPricePage(cleanQuery)
+      searchPricePage(cleanQuery, 0, PRICE_SEARCH_PAGE_SIZE, smartSearch)
         .then(({ items, totalCount }) => {
           if (!active) return;
           setResults(items);
@@ -648,17 +651,18 @@ export default function StorePriceSearchView({ onClose }) {
       active = false;
       window.clearTimeout(timer);
     };
-  }, [cleanQuery]);
+  }, [cleanQuery, smartSearch, identityScope]);
 
   const loadMoreResults = () => {
     if (loadingMore || searching || results.length >= totalResults) return;
     const requestedQuery = cleanQuery;
+    const requestedSearch = activeQueryRef.current;
     const offset = results.length;
     setLoadingMore(true);
     setMessage("");
-    void searchPricePage(requestedQuery, offset)
+    void searchPricePage(requestedQuery, offset, PRICE_SEARCH_PAGE_SIZE, smartSearch)
       .then(({ items, totalCount }) => {
-        if (activeQueryRef.current !== requestedQuery) return;
+        if (activeQueryRef.current !== requestedSearch) return;
         setResults((current) => {
           const knownIds = new Set(current.map((item) => String(item.id)));
           return [...current, ...items.filter((item) => !knownIds.has(String(item.id)))];
@@ -666,11 +670,11 @@ export default function StorePriceSearchView({ onClose }) {
         setTotalResults(totalCount);
       })
       .catch((error) => {
-        if (activeQueryRef.current !== requestedQuery) return;
+        if (activeQueryRef.current !== requestedSearch) return;
         setMessage(error?.message || "Kunne ikke hente flere varer.");
       })
       .finally(() => {
-        if (activeQueryRef.current === requestedQuery) setLoadingMore(false);
+        if (activeQueryRef.current === requestedSearch) setLoadingMore(false);
       });
   };
 
@@ -923,6 +927,10 @@ export default function StorePriceSearchView({ onClose }) {
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Søk varenavn, leverandør, varenummer eller GTIN/EAN"
           />
+        </div>
+        <div className="priceSearchSmartOptions">
+          <label><input type="checkbox" checked={smartSearch} onChange={(event) => setSmartSearch(event.target.checked)} /> Smartere søk</label>
+          <span>{smartSearch ? "Skriv flere ord i valgfri rekkefølge. Vanlige fagord og forkortelser tas med." : "Vanlig søk: ordene må stå i samme rekkefølge som i varenavnet."}</span>
         </div>
         {isMobile ? (
           <>
@@ -1199,6 +1207,10 @@ export default function StorePriceSearchView({ onClose }) {
         .priceSearchSelectedPrices .priceSearchPrimaryPrice{background:#e8f9fa}
         .priceSearchSelectedPrices .priceSearchPrimaryPrice strong{color:#087b82;font-size:16px}
         .priceSearchSelectedPrices .priceSearchSensitivePrice{background:#fff8e8;border:1px solid #f5d69a}
+        .priceSearchSmartOptions{display:flex;align-items:center;flex-wrap:wrap;gap:6px 16px;margin-top:8px;color:#526b76;font-size:13px}
+        .priceSearchSmartOptions label{display:flex;align-items:center;gap:8px;margin:0;min-height:44px;cursor:pointer;font-size:14px;font-weight:750}
+        .priceSearchSmartOptions input[type=checkbox]{width:18px;min-height:18px;height:18px;margin:0;accent-color:#087b82}
+        .priceSearchSmartOptions span{flex:1;min-width:min(220px,100%)}
         .priceSearchResults{display:grid;gap:10px;margin-top:16px;padding:0;background:transparent;border:0;box-shadow:none}
         .priceSearchResult{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,auto) auto;gap:20px;align-items:center;padding:16px 18px;border:1px solid #d6e4e8;border-radius:15px;background:#fff;cursor:pointer}
         .priceSearchResult:hover{border-color:#9fd1d6;box-shadow:0 6px 18px rgba(15,23,42,.05)}

@@ -1,3 +1,27 @@
+## Befaring: vent på komplett sak før skjema/kladd – Preview
+
+Innlogget etterkontroll avdekket også at wrapperens prefetch holdes i minnet til Core sin eksisterende asynkrone listehenting bruker den. Lokal requests-cache kan derfor fortsatt være summary ved første Core-render. Den nye initializeren alene var ikke tilstrekkelig. Befaringsnotatet har nå en saksspesifikk ready-state: ingen editor, lokal kladdlagring eller submit før komplett sak er tilgjengelig og skjemaet er hydrert. Meningsfull lokal/offline-kladd beholdes. Sen serveroppdatering kan ikke nullstille et ferdig hydrert skjema. Ingen endring av innlastingskall, recovery-timere, wrapper, tilbudseditor, serverlagring eller øvrige moduler.
+
+21 permanente kontroller kjører faktisk Core-initializer og faktiske hydration-/lokallagringseffekter i React-rekkefølge, inkludert summary → full sak, utsatt state-commit, saksskifte og bevisst exit. Full critical/Sandbox build PASS. 128 editor-/tekstvalg-kontroller er fortsatt grønne; ingen UI-endring siden de ble kjørt. Endelig innlogget kontroll og ny SHA/CI føres i PR #260. Ny TEST OK gjenstår; Production urørt.
+
+## Befaring: eksplisitt valg for tidligere tom lokal tekst – Preview
+
+Innlogget etterkontroll viste at den gamle feilen også kan ha etterlatt en lokal kladd med bilder, men uten tekst, mens serveren fortsatt har tekst. Slike lokale medier regnes med rette som meningsfullt arbeid. Notatet viser derfor et synlig valg: Bruk teksten fra saken eller Behold tom lokal tekst. Tekstfelter og Lagre er sperret til valget er tatt, og submit har samme sperre. Servervalget kopierer bare de fire tekstfeltene; lokale bilder/Badskisse og alle lagrings-/recovery-regler beholdes. Ingen ny browserlagring, automatisk serveroverskriving eller generell konflikthåndtering innføres. Bevisst tømming etter normal åpning fungerer som før.
+
+128 faktiske editor-Chromium-kontroller og elleve actual-Core/helper-scenarier PASS, inkl. begge valg, sperret lagring før valg og bevarte bilder/skisse. Første søke-/initialstate-head b3cfeeee har Core Safety #497 SUCCESS og Preview dpl_E4VJKMMdVkZn9g9Ha7TU3UAKfCUy READY. Denne oppfølgingens endelige SHA/CI/innloggede kontroll føres i PR #260. Ingen TEST OK/merge/Production.
+
+## Smartere Prissøk og sikker befarings-retur – Preview 16.10.2026
+
+Miljømål BEGGE. Smartere søk finner alle ordene i fri rekkefølge og tar med avgrensede fagaliaser (servantkran/servantbatteri/servbatt, dusj-/kjøkkenkran, WC/klosett/toalett, sort/svart, krom/chrome). Eksakte varenummer/EAN kommer først; alias-treff merkes. Slå av Smartere søk for uendret vanlig søk. Ingen KI-tjeneste eller ekstern utsending; dette er et avgrenset katalogoppslag, ikke generell stave-/betydningsforståelse. Alle farge-/dimensjons-/merkeord beholdes som krav.
+
+Ny lesende `search_internal_store_catalog_prices_smart` med samme tilgang/nettomaskering og aktiv-importfilter. Gamle søk/RPC-er, tilbudsoppslag, varetelling, plukklistelagring/eksport og varedata er uendret. Migrasjon 20261016190242 er installert bare i Sandbox, ikke Production. 41 PostgreSQL- og 70 Chromium-kontroller PASS; eksisterende mobilskann-QA kontrolleres også.
+
+Etterkontroll av editorleveransen avdekket eksisterende tom initialstate ved direkte remount i befaringsnotat. Test mot uendret main feiler. Core initialiserer nå kun dette arbeidsbildet fra meningsfull scoped lokal kladd eller ferdiglastet servergrunnlag; ordinær detaljflyt er uendret. Ingen recovery-timere, nettlagring, server-autosave, navigasjon eller andre moduler endres. Sju permanente initialstate-kontroller kjøres i full critical. Servertekst og bilder på DEMO-02 er kontrollert intakte; skjemaet ble ikke lagret i feilsøkingen. QA: docs/qa/SALES_EDITOR_UX_20261016.md og docs/qa/SMART_PRICE_SEARCH_20261016.md. Ny TEST OK kreves før merge/Production/demo-synk.
+
+## Editorflate – Preview 16.10.2026
+
+Befaringsnotat: tekstfeltene samlet i to kolonner på PC, én på mobil, før uendret Badskisse og bilder. Våtromstilbud: fire leveranse-/forbeholdsfelt i samme kortoppsett, kompakt topp/malvelger og ikke-sticky tilbakefelt. Scope er bare SalesInspectionNote.jsx, SalesOfferBuilderCore.jsx og lokal CSS. Server-first, kladd, recovery, bilde-/skissehåndtering, kalkulasjon, malhandlinger og alle callbacks er uendret. Generelt tilbud sin editor er urørt. QA: docs/qa/SALES_EDITOR_UX_20261016.md. Ny TEST OK kreves.
+
 ## Knappoppfølging 16. oktober 2026 – Preview
 
 Den godkjente kompakte salgsrunden er publisert via PR #257. Nytt tilbud flyttes nå inn ved siden av Ny forespørsel i oversiktens toppfelt. Samme eksisterende startDirectOffer åpner samme tilbudstypevalg; SalesCore sender bare callbacken videre. Den gamle snarveien beholdes utenfor oversikten. Ingen editor-/lagrings-/tilbudslogikk endres. Ny TEST OK kreves.

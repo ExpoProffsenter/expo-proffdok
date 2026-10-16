@@ -97,6 +97,7 @@ jobs:
           export KSHMS_JSDOM_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/jsdom/lib/api.js"
           node scripts/kshms-progress-db-check.mjs
           node scripts/stocktake-db-check.mjs
+          node scripts/smart-price-search-db-check.mjs
           node scripts/time-registration-db-check.mjs
           node scripts/time-registration-react-check.mjs
           node scripts/time-notifications-check.mjs
@@ -137,6 +138,9 @@ jobs:
           node scripts/home-followups-react-check.mjs
           node scripts/personal-project-layout-browser-check.mjs
           node scripts/sales-overview-ux-browser-check.mjs
+          node scripts/sales-editor-ux-browser-check.mjs
+          node scripts/smart-price-search-browser-check.mjs
+          node scripts/price-search-mobile-check.mjs
           node scripts/progress-layout-react-check.mjs
           export KSHMS_JSPDF_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/jspdf/dist/jspdf.es.min.js"
           export KSHMS_JSPDF_NODE_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/jspdf/dist/jspdf.node.min.js"

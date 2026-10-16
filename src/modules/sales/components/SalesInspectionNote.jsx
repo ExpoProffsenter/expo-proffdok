@@ -7,6 +7,7 @@
 // Eksisterende Supabase-opplasting ved «Lagre befaringsnotat» beholdes uendret.
 
 import { useEffect, useRef, useState } from "react";
+import { inspectionNeedsTextChoice, inspectionServerText } from "../services/salesInspectionInitialForm.mjs";
 import {
   ArrowLeft,
   CalendarDays,
@@ -87,6 +88,7 @@ export default function SalesInspectionNote({
   onUpdateInspectionForm,
   onRemoveInspectionPhoto,
 }) {
+  const [needsTextChoice, setNeedsTextChoice] = useState(() => inspectionNeedsTextChoice(selectedRequest, inspectionForm));
   const [photoReadBusy, setPhotoReadBusy] = useState(false);
   const [photoReadCount, setPhotoReadCount] = useState(0);
   const [photoReadError, setPhotoReadError] = useState("");
@@ -440,6 +442,7 @@ export default function SalesInspectionNote({
 
   async function handleSubmit(event) {
     event.preventDefault();
+    if (needsTextChoice) return;
     if (photoReadBusy || photoRestoreBusy || saveBusy) return;
 
     if (
@@ -465,9 +468,9 @@ export default function SalesInspectionNote({
   const hasSavedSketchImage = Boolean(sketchPhoto?.dataUrl);
 
   return (
-    <div className="sales-app">
+    <div className="sales-app sales-editor-app sales-inspection-app">
       <div className="sales-shell">
-        <header className="sales-header">
+        <div className="sales-header">
           <button
             className="sales-back-button"
             type="button"
@@ -487,7 +490,7 @@ export default function SalesInspectionNote({
               <span>Befaring / Tilbud / Aksept</span>
             </div>
           </div>
-        </header>
+        </div>
 
         <main className="sales-main">
           <section className="sales-form-hero">
@@ -526,12 +529,26 @@ export default function SalesInspectionNote({
               </div>
             ) : null}
 
+            {needsTextChoice ? (
+              <div className="sales-inspection-text-choice" role="alert">
+                <strong>Saken har lagret tekst. Den lokale kladden er tom for tekst.</strong>
+                <p>Velg teksten du vil bruke før du lagrer. Bilder og Badskisse beholdes.</p>
+                <div>
+                  <button type="button" className="sales-primary-button" disabled={busy} onClick={() => {
+                    Object.entries(inspectionServerText(selectedRequest)).forEach(([key, value]) => onUpdateInspectionForm(key, value));
+                    setNeedsTextChoice(false);
+                  }}>Bruk teksten fra saken</button>
+                  <button type="button" className="sales-secondary-button" disabled={busy} onClick={() => setNeedsTextChoice(false)}>Behold tom lokal tekst</button>
+                </div>
+              </div>
+            ) : null}
+
             <div className="sales-form-grid">
-              <label className="sales-field sales-field-full">
+              <label className="sales-field sales-note-field">
                 <span>Kundens ønsker</span>
                 <textarea
                   value={inspectionForm.customerWishes}
-                  disabled={photoRestoreBusy}
+                  disabled={photoRestoreBusy || needsTextChoice}
                   onChange={(event) =>
                     onUpdateInspectionForm("customerWishes", event.target.value)
                   }
@@ -540,11 +557,11 @@ export default function SalesInspectionNote({
                 />
               </label>
 
-              <label className="sales-field sales-field-full">
+              <label className="sales-field sales-note-field">
                 <span>Eksisterende forhold</span>
                 <textarea
                   value={inspectionForm.existingConditions}
-                  disabled={photoRestoreBusy}
+                  disabled={photoRestoreBusy || needsTextChoice}
                   onChange={(event) =>
                     onUpdateInspectionForm("existingConditions", event.target.value)
                   }
@@ -553,16 +570,29 @@ export default function SalesInspectionNote({
                 />
               </label>
 
-              <label className="sales-field sales-field-full">
+              <label className="sales-field sales-note-field">
                 <span>Målinger</span>
                 <textarea
                   value={inspectionForm.measurements}
-                  disabled={photoRestoreBusy}
+                  disabled={photoRestoreBusy || needsTextChoice}
                   onChange={(event) =>
                     onUpdateInspectionForm("measurements", event.target.value)
                   }
                   placeholder="Eksempel: Rom 2,40 x 2,15 m. Takhøyde 2,42 m. Sluk 82 cm fra vegg."
                   rows={4}
+                />
+              </label>
+
+              <label className="sales-field sales-note-field">
+                <span>Faglige observasjoner</span>
+                <textarea
+                  value={inspectionForm.observations}
+                  disabled={photoRestoreBusy || needsTextChoice}
+                  onChange={(event) =>
+                    onUpdateInspectionForm("observations", event.target.value)
+                  }
+                  placeholder="Forhold som må vurderes, avklares eller tas med videre i tilbudet."
+                  rows={5}
                 />
               </label>
 
@@ -595,19 +625,6 @@ export default function SalesInspectionNote({
                   disabled={busy}
                 />
               </div>
-
-              <label className="sales-field sales-field-full">
-                <span>Faglige observasjoner</span>
-                <textarea
-                  value={inspectionForm.observations}
-                  disabled={photoRestoreBusy}
-                  onChange={(event) =>
-                    onUpdateInspectionForm("observations", event.target.value)
-                  }
-                  placeholder="Forhold som må vurderes, avklares eller tas med videre i tilbudet."
-                  rows={5}
-                />
-              </label>
 
               <div className="sales-field sales-field-full">
                 <span>Bilder fra befaring</span>
@@ -719,7 +736,7 @@ export default function SalesInspectionNote({
                 Avbryt
               </button>
 
-              <button className="sales-primary-button" type="submit" disabled={busy}>
+              <button className="sales-primary-button" type="submit" disabled={busy || needsTextChoice}>
                 <Save size={18} />
                 {photoRestoreBusy
                   ? "Vent – gjenoppretter bilder …"

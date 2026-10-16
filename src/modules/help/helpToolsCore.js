@@ -84,6 +84,9 @@ const BASE_SECTIONS = [
       "Bruk fanen Forespørsler for nye saker som er registrert, men hvor befaring ennå ikke er planlagt. Saken blir liggende der til befaring bookes.",
       "Registrer kunde, kontaktinformasjon, adresse, ansvarlig og neste steg i forespørselen.",
       "Planlegg befaring og samle notater, bilder og nødvendige avklaringer i samme sak.",
+      "I befaringsnotatet står tekstfeltene samlet før Badskisse og bilder. På PC står feltene to og to; på mobil står de under hverandre. Dra i nederste hjørne hvis du trenger større skrivefelt. Velg Lagre befaringsnotat når du er ferdig.",
+      "Hvis saken har lagret tekst og den lokale kladden er tom for tekst, velger du Bruk teksten fra saken eller Behold tom lokal tekst før du lagrer. Bilder og Badskisse beholdes i begge tilfeller.",
+      "I Våtromstilbud står forbehold, inkludert, ikke inkludert og kundens leveranser samlet i fire kort. Vilkår og betalingsbetingelser står fortsatt nedenfor. Kontroller oppsummeringen og velg Lagre tilbud.",
       "En registrert befaring kan videreføres i samme sak som ordinært Våtromstilbud eller som Generelt tilbud når brukeren har slik tilgang.",
       "Opprett tilbudsutkast, forhåndsvis og publiser riktig versjon til kunden.",
       "Publiserte og aksepterte tilbudsversjoner beholdes som historikk og overskrives ikke.",
@@ -350,6 +353,8 @@ const INTERNAL_COMMERCE_SECTIONS = [
     "Prissøk brukes til å slå opp aktive ERP-varer og gjeldende kundepris uten å opprette et tilbud.",
     [
       "Søk på varenavn, leverandør, varenummer eller GTIN/EAN.",
+      "Smartere søk er på fra start. Skriv for eksempel oras krom servantbatteri; ordene kan stå i valgfri rekkefølge. Søket tar med vanlige fagord som servantkran og servantbatteri, og forkortelsen servbatt. Alle søkeordene må passe varen.",
+      "Treff via et tilsvarende fagord eller en forkortelse merkes i listen. Eksakte varenumre og strekkoder kommer først. Slå av Smartere søk for å bruke det vanlige søket. Kontroller alltid varenummer, farge og dimensjon før du velger en vare.",
       "På mobil: trykk Skann strekkode, gi kameratilgang og hold varens strekkode skarp i kamerabildet. For små etiketter holder du telefonen litt unna og bruker zoom eller velger et annet kamera hvis valgene vises. Koden settes i søkefeltet og søkes i Prissøk.",
       "Trykk Avbryt skanning for å lukke kameraet. Ved avvist eller manglende kameratilgang kan du alltid skrive EAN/GTIN manuelt i søkefeltet.",
       "Trykk ← Startside øverst i Prissøk for å gå tilbake til Startsiden. Da avsluttes aktivt Prissøk uten automatisk gjenåpning; den midlertidige arbeidslisten beholdes i samme nettleserfane.",
