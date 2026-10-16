@@ -30,8 +30,9 @@ document.visibilityState='visible';document.dispatchEvent(new Event('visibilityc
 window.dispatchEvent(new Event('focus'));const disposed=pending.shift();cleanup.forEach(fn=>fn());disposed.resolve(context);await Promise.resolve();assert.equal(state,null);
 const ui=fs.readFileSync('src/modules/hr/HrModule.jsx','utf8'),main=fs.readFileSync('src/main.jsx','utf8');
 assert(!/localStorage|sessionStorage|indexedDB|signedUrl|\.storage\./.test(ui+source));
+assert(source.includes('preserveVisibleMetadata=false'),'Standard HR must still clear metadata on focus; Min side is the explicit opt-in');
 assert(ui.includes('session.get(payload.id)')&&ui.includes('payload.revision'));
-assert(main.includes('useHrAccess(authUser?.id)')&&main.includes('tab === "hr"')&&main.includes('!hasActiveProjectWorkspace'));
+assert(main.includes('useHrAccess(authUser?.id, tab === "innlogging")')&&main.includes('tab === "hr"')&&main.includes('!hasActiveProjectWorkspace'));
 const migration=fs.readFileSync('supabase/migrations/20261009185827_hr_navigation_context.sql','utf8');
 assert(migration.includes('hr_private.require_actor(c)')&&migration.includes('content_enabled\',false'));
 assert(migration.includes('from public,anon,authenticated,service_role'));

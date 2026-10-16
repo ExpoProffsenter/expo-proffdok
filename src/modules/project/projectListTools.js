@@ -1,6 +1,7 @@
 // Expo ProffDok – FASE 39A
 // Prosjektlistesøk skjer lokalt på allerede hentede prosjektdata uten nye databasefelt.
 import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
+import './projectList.css';
 
 const import_jsx_runtime = { jsx, jsxs, Fragment };
 
@@ -63,8 +64,8 @@ export function createProjectListTools({
     openProjectById,
     deleteProject
   }) {
-    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Prosjektliste", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Her får du rask oversikt over aktive prosjekter, uleste kundemeldinger, bildedokumentasjon og snarveier til de vanligste arbeidsflatene." }),
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Prosjektliste", className: "projectListUx", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Finn prosjektet og åpne det du skal jobbe med." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "cards projectListHeaderCards", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "tile", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: projectListStats.total }),
@@ -88,7 +89,7 @@ export function createProjectListTools({
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Søk i prosjektlisten", value: projectSearch, onChange: setProjectSearch }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Statusfilter", value: projectStatusFilter, onChange: setProjectStatusFilter, options: ["alle", "draft", "progress", "waiting", "customer_ready", "deviation", "done", "locked"], optionLabels: { alle: "Alle", draft: "Utkast", progress: "Pågår", waiting: "Avventer", customer_ready: "Klar for kunde", deviation: "Avvik åpent", done: "Ferdigstilt", locked: "Arkivert / låst" } })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "6px" }, children: "Treffene oppdateres mens du skriver. Søk på prosjektnavn, kunde, adresse, e-post, telefon, ansvarlig, garanti eller produkt." }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "6px" }, children: "Søk på prosjekt, kunde eller adresse. Listen oppdateres mens du skriver." }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "projectListToolbar", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => loadProjects(authUser, true), children: "Oppdater liste" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: projectUnreadOnly ? "" : "secondary", onClick: () => setProjectUnreadOnly((v) => !v), children: projectUnreadOnly ? "Vis alle" : "Kun uleste" }),
@@ -140,26 +141,7 @@ export function createProjectListTools({
                     listWarranty?.issued ? `🛡️ Garanti ${getWarrantyYears(listWarranty)} år` : "🛡️ Garanti aktiv",
                     listWarranty?.guaranteeNumber ? ` · ${listWarranty.guaranteeNumber}` : ""
                   ] }),
-                  unreadForAdminInList > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", onClick: () => openProjectById(p.id, "chat"), style: { display: "inline-flex", alignItems: "center", gap: "6px", padding: "6px 10px", borderRadius: "999px", fontWeight: 800, border: "1px solid #fecaca", background: "#fef2f2", color: "#991b1b", width: "fit-content", minHeight: "auto", boxShadow: "none" }, children: [
-                    "💬 ",
-                    unreadForAdminInList,
-                    " ulest"
-                  ] }),
-                  openDeviationCount > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", onClick: () => openProjectById(p.id, "sjekklister", { showOpenDeviationsOnly: true }), style: { display: "inline-flex", alignItems: "center", gap: "6px", padding: "6px 10px", borderRadius: "999px", fontWeight: 800, border: "1px solid #fecaca", background: "#fef2f2", color: "#991b1b", width: "fit-content", minHeight: "auto", boxShadow: "none" }, children: [
-                    "⚠️ ",
-                    openDeviationCount,
-                    " åpne avvik"
-                  ] }),
-                  productSummary.total > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "projectMiniBadge", children: [
-                    "📦 ",
-                    productSummary.total,
-                    " produkter"
-                  ] }),
-                  imageSummary.total > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "projectMiniBadge", children: [
-                    "📷 ",
-                    imageSummary.total,
-                    " bilder"
-                  ] })
+
                 ] })
               ] }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "projectImageCounts", style: { marginTop: "12px" }, children: [
