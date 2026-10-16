@@ -1,3 +1,4 @@
+import "./sales-inspection-initializer-check.mjs";
 import { readFileSync } from "node:fs";
 import {
   buildServerInspectionForm,

@@ -1,3 +1,4 @@
+import { inspectionInitialForm } from "./services/salesInspectionInitialForm.mjs";
 import {openMobileCustomerPreview} from "./services/salesMobilePreview.mjs";
 // FASE 28C2 STARTSIDE-TILBUD: Tillater direkte åpning av en konkret salgssak fra Startsiden via signal. Ingen SQL/RLS/Storage/e-postendring.
 // FASE 28A3 TILBUDSMALER: Henter, bruker og sletter firmadelte tilbudsmaler. Malbruk kopierer kun tilbudsinnhold til redigerbar kladd; kunde/befaring/publisert historikk berøres ikke.
@@ -276,12 +277,13 @@ export default function SalesModule({
     note: "",
     sendConfirmation: true,
   });
-  const [inspectionForm, setInspectionForm] = useState({
-    customerWishes: "",
-    existingConditions: "",
-    measurements: "",
-    observations: "",
-    photos: [],
+  const [inspectionForm, setInspectionForm] = useState(() => {
+    if (initialNavigation.mode !== "inspection-note") return inspectionInitialForm();
+    const requestId = initialNavigation.selectedRequestId;
+    return inspectionInitialForm(
+      requests.find((request) => request.id === requestId),
+      loadInspectionDraft(buildInspectionDraftKey(salesStorageKey, requestId))
+    );
   });
   const [inspectionDraftDirty, setInspectionDraftDirty] = useState(false);
   const [offerForm, setOfferForm] = useState(createInitialOfferForm);
