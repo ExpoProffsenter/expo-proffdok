@@ -1,5 +1,14 @@
 ## Prosjektlisten: mindre luft og valgfri detaljvisning – Preview 16.10.2026
 
+## Kompakt referansevisning og supportplan – 16. oktober 2026
+
+PR #261 er publisert etter Kenneths TEST OK: main 688d7f63990bde408a8a49d876343ae778022f63, Production READY med korrekt miljøbinding. Kontrollert main → demo 19b48a95276afabbba6463afdcc260bab987475a; full build og faktisk preflight grønne. Ingen migrasjon eller e-post. Publiseringsbevis og overlevering: docs/CHAT_HANDOFF_20261016.md. Eldre ventende notater for #261 er historikk.
+
+Neste avtalte UX-runde (BEGGE, foreløpig bare Preview): KS/HMS-veiledning foldes, status/neste handling beholdes; Garanti viser krav og original utstedelseshandling før innstillingene, lange referanser kan åpnes; Hjelp folder vilkårstekst/installasjonsveiledning mens gjeldende versjon og godkjenningsstatus fortsatt vises. Ingen endring i tilgang, lagring, recovery, garantikrav, signering, samtykke eller utsending. Ny TEST OK kreves. QA: docs/qa/COMPACT_REFERENCE_UX_20261016.md.
+
+Support er lagt til som egen planlagt leveranse: innloggede brukere, dialog i app og e-post, Systemadmin-svar i ProffDok-layout og serverstyrt intern mottaker. Ingen supportfunksjon er implementert her. Avklarte valg og mottakskrav: docs/SUPPORT_PLAN_20261016.md. Ny chat anbefales ved overgangen til support, etter denne UX-runden.
+
+
 Oppfølging av brukerens to skjermbilder: kompakte nøkkeltall, synlige Alle/Aktive/Arkiv, sammenfoldbart Søk og filtre og prosjektkort med Åpne alltid synlig. Vis detaljer åpner opprinnelig kontaktinfo, ansvarlig, bilder og snarveier; Vis alle detaljer åpner alle kort. Alle eksisterende handlinger er beholdt. Felleslistens visningsfilter støtter også de allerede avtalte active/archive-valgene. Ingen endring i tilgang, RPC, prosjektdata, main.jsx eller lagring. Samme Preview/PR #261, ny TEST OK kreves. QA og neste visuelle forslag finnes i docs/qa/APP_UX_REVIEW_20261016.md.
 
 ## Samlet UX-runde 16.10.2026 – Preview før ny TEST OK
