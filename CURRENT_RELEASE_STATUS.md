@@ -1,3 +1,15 @@
+## Prosjektlisten: mindre luft og valgfri detaljvisning – Preview 16.10.2026
+
+Oppfølging av brukerens to skjermbilder: kompakte nøkkeltall, synlige Alle/Aktive/Arkiv, sammenfoldbart Søk og filtre og prosjektkort med Åpne alltid synlig. Vis detaljer åpner opprinnelig kontaktinfo, ansvarlig, bilder og snarveier; Vis alle detaljer åpner alle kort. Alle eksisterende handlinger er beholdt. Felleslistens visningsfilter støtter også de allerede avtalte active/archive-valgene. Ingen endring i tilgang, RPC, prosjektdata, main.jsx eller lagring. Samme Preview/PR #261, ny TEST OK kreves. QA og neste visuelle forslag finnes i docs/qa/APP_UX_REVIEW_20261016.md.
+
+## Samlet UX-runde 16.10.2026 – Preview før ny TEST OK
+
+Miljømål: BEGGE. Baseline er publisert main `5cc7e530685a48f4f59b403357e654e93c724578` (PR #260, godkjent og publisert). Eldre Preview-statuser lenger nede er historikk.
+
+Brukeren har bestilt alle forslagene fra appgjennomgangen, med bevaring av eksisterende funksjoner. Denne runden samler prosjektstatus og meny, daglig timeføring, varevisninger, HR/håndbok, sjekkliste-/bilde-/produktoversikter, bemanningsgrunnlag, kundekladd-forhåndsvisning, admin og Hjelp. Visningsvalg bruker de opprinnelige handlingene. Smartere varesøk i telling bruker allerede publisert RPC; klassisk søk er tilgjengelig. Ingen migrasjoner, tilgangsregler, priser, e-posttransport, signering, autosave eller server-first-hydrering endres.
+
+Scope, verifikasjon og teststeg: `docs/qa/APP_UX_REVIEW_20261016.md`. Fast Preview: https://expo-proffdok-git-fix-company-admin-scope-20261015-ringside.vercel.app/ . Denne runden er ikke godkjent for merge. Production og permanent demo beholder eksisterende versjon til ny TEST OK og vanlig releasekontroll er gjennomført.
+
 ## Befaring: vent på komplett sak før skjema/kladd – Preview
 
 Innlogget etterkontroll avdekket også at wrapperens prefetch holdes i minnet til Core sin eksisterende asynkrone listehenting bruker den. Lokal requests-cache kan derfor fortsatt være summary ved første Core-render. Den nye initializeren alene var ikke tilstrekkelig. Befaringsnotatet har nå en saksspesifikk ready-state: ingen editor, lokal kladdlagring eller submit før komplett sak er tilgjengelig og skjemaet er hydrert. Meningsfull lokal/offline-kladd beholdes. Sen serveroppdatering kan ikke nullstille et ferdig hydrert skjema. Ingen endring av innlastingskall, recovery-timere, wrapper, tilbudseditor, serverlagring eller øvrige moduler.

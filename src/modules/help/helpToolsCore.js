@@ -1,3 +1,4 @@
+import {filterHelpSections} from './helpSearch.mjs';
 // Expo ProffDok – FASE 42M / FASE 42K / FASE 42J / FASE 42H / FASE 42D HJELP
 // Én React-basert hjelpestruktur. Ingen DOM-innsprøyting, timere eller programmatisk åpning/lukking.
 // Brukerrettede funksjonsendringer skal oppdateres her når arbeidsflyt, begreper eller tilgang påvirkes.
@@ -15,7 +16,7 @@ const import_lucide_react = { FileText };
 const import_jsx_runtime = { jsx, jsxs, Fragment };
 import {presentHelpTopics,plainHelpTitle} from './helpPresentation.mjs';
 const HELP_ICONS={start:Home,mobil:Smartphone,sales:BriefcaseBusiness,badskisse:Ruler,firmaProfil:Building2,epostvalg:Mail,firma:Users,prosjektliste:FolderOpen,kshms:ShieldCheck,hr:UserRound,hjelp:CircleHelp,systemadmin:Settings,bilder:Camera,chat:MessageSquare,tilgang:KeyRound,produkter:Package,sjekklister:ClipboardList,avvik:TriangleAlert};
-const HELP_UPDATED_LABEL = "Sist oppdatert: 11.10.2026";
+const HELP_UPDATED_LABEL = "Sist oppdatert: 16.10.2026";
 
 function section(key, title, purpose, workflow = [], important = [], best = []) {
   return { key, title, purpose, workflow, important, best };
@@ -286,9 +287,10 @@ const BASE_SECTIONS = [
   section(
     "prosjektliste",
     "📑 Prosjektliste",
-    "Prosjektlisten viser aktive og ferdige/låste prosjekter. Nøkkeltall og søk ligger over prosjektkortene. Kortene samler status, antall, ansvarlig og snarveier.",
+    "Prosjektlisten starter med kompakte prosjektkort. Prosjektnavn, kunde, status, avvik og uleste meldinger vises med en gang. Åpne går rett inn i prosjektet.",
     [
-      "Søk på kunde, adresse, prosjekt, telefon, e-post eller garantinummer og bruk relevante filtre.",
+      "Trykk Vis detaljer på et kort for kontaktinfo, ansvarlig, bilder og alle snarveiene. Vis alle detaljer åpner innholdet på alle kort. Kollaps alle detaljer gir den korte oversikten igjen.",
+      "Alle, Aktive og Arkiv står alltid fremme. Åpne Søk og filtre for søk, eksakte statusvalg, kun uleste, oppdatering og nullstilling. Gjeldende filtre vises også når feltet er lukket.",
       "Åpne prosjektet for å starte i Prosjektoversikt. På PC viser den kollapsede topplinjen anbefalt prosjektløp, mens Meny gir tilgang til alt prosjektinnhold."
     ],
     ["Låste prosjekter må låses opp før de redigeres."],
@@ -424,6 +426,7 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
     const effectiveSystemAdmin=helpAccess?.userId===authUser?.id&&helpAccess?.isSystemAdmin===true;
     const effectiveCompanyAdmin=helpAccess?.userId===authUser?.id&&helpAccess?.isCompanyAdmin===true;
     const canExportCordel = useCordelAccess();
+    const [helpQuery,setHelpQuery] = (0, import_react.useState)("");
     const [openGuideKey, setOpenGuideKey] = (0, import_react.useState)("");
     const [canUseInternalCommerce, setCanUseInternalCommerce] = (0, import_react.useState)(Boolean(effectiveSystemAdmin));
 
@@ -496,13 +499,15 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Hjelp og dokumentasjon", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.FileText, {}), children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item helpQuickStart", style: { background: "linear-gradient(135deg,#0f172a,#164e63)", color: "#ffffff", borderColor: "#0f766e" }, children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { style: { marginTop: 0, color: "#ffffff" }, children: "📘 Digital brukerveiledning" }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { style: { color: "#dbeafe", lineHeight: 1.6 }, children: "Gjeldende brukerveiledning for Expo ProffDok. Alle tema bruker samme åpne/lukk-mønster og viser bare innhold som er relevant for rolle og tilgang." }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { style: { color: "#dbeafe", lineHeight: 1.6 }, children: "Søk etter det du vil gjøre. Åpne et tema og følg trinnene. Innholdet følger rollen og tilgangen din. Prosjektmenyen er gruppert i Oppstart, Gjennomføring og Overlevering. Åpne Status og oppfølging for detaljene." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", flexWrap: "wrap", gap: "10px", marginTop: "12px" }, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { style: { padding: "8px 12px", borderRadius: "999px", background: "rgba(255,255,255,.14)", fontWeight: 900 }, children: ["Rolle: ", guideRoleLabel] }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("time", { dateTime: "2026-10-09", style: { padding: "8px 12px", borderRadius: "999px", background: "rgba(255,255,255,.14)", fontWeight: 900 }, children: HELP_UPDATED_LABEL })
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("time", { dateTime: "2026-10-16", style: { padding: "8px 12px", borderRadius: "999px", background: "rgba(255,255,255,.14)", fontWeight: 900 }, children: HELP_UPDATED_LABEL })
           ] })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { display: "grid", gap: "12px" }, children: visibleGuideSections.map(renderGuideSection) }),
+        (0, import_jsx_runtime.jsxs)("label",{className:"ux-toolbar",children:["Søk i hjelpen",(0, import_jsx_runtime.jsx)("input",{type:"search",value:helpQuery,placeholder:"For eksempel timer, garanti eller Cordel",onChange:e=>setHelpQuery(e.target.value)})]}),
+        !filterHelpSections(visibleGuideSections,helpQuery).length && (0, import_jsx_runtime.jsx)("p",{role:"status",children:"Ingen hjelpetema passer søket. Prøv et kortere søkeord."}),
+        (0, import_jsx_runtime.jsx)("div", { style: { display: "grid", gap: "12px" }, children: filterHelpSections(visibleGuideSections,helpQuery).map(renderGuideSection) }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "📄 Brukervilkår og personvern" }),

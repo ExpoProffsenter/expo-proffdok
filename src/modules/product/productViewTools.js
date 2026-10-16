@@ -1,3 +1,4 @@
+import ProductDocumentationSummary from './ProductDocumentationSummary.jsx';
 import { Plus } from 'lucide-react';
 import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
 
@@ -48,7 +49,7 @@ export function createProductViewTools({
     removeManualProduct,
     showReportSelectorWhenLocked = false
   }) {
-    return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_jsx_runtime.Fragment, { children: effectiveProductSections.map((s) => {
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [(0, import_jsx_runtime.jsx)(ProductDocumentationSummary,{sections:effectiveProductSections,checked,docs:productDocs,getManual:getManualProductsForSection,onOpen:title=>setOpenProductSections(prev=>({...prev,[title]:true}))}), ...effectiveProductSections.map((s) => {
       const manualForSection = getManualProductsForSection(s.title);
       const visibleStandardItems = isProjectLocked ? (s.items || []).filter((i) => !!checked[i]) : s.items || [];
       const visibleManualItems = isProjectLocked ? manualForSection.filter((p) => hasValue(p?.name) || hasValue(p?.fdvUrl) || hasValue(p?.comment)) : manualForSection;
@@ -128,7 +129,7 @@ export function createProductViewTools({
           ] })
         ] })
       ] }, s.title);
-    }) });
+    })] });
   }
 
   return { ProductReportDocumentSelector, renderProductSections };

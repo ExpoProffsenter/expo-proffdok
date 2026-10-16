@@ -19,7 +19,7 @@ try{
    if(n==='stocktake_admin_set'){window.enabled=a.p_enabled;return {company_id:a.p_company_id,enabled:window.enabled,revision:1};}
    if(n==='get_cordel_export_access')return true;
    if(n==='stocktake_context')return {company_id:window.scope,user_id:'user',company_name:window.scope==='company'?'QA Firma':'Annet firma',enabled:window.enabled};
-   if(n==='search_internal_store_catalog_prices_page')return [product('A'),product('B')];
+   if(n==='search_internal_store_catalog_prices_page'||n==='search_internal_store_catalog_prices_smart')return [product('A'),product('B')];
    if(a.p_company_id!==window.scope||!window.enabled)throw Error('Ingen tilgang');
    if(n==='stocktake_list')return window.scope==='company'?window.sessions.map(s=>({...s,line_count:window.rows.length})):[];
    if(n==='stocktake_create'){let s=window.sessions.find(x=>x.id===a.p_id);if(!s){s={id:a.p_id,title:a.p_title,warehouse:a.p_warehouse,count_date:a.p_date,company_id:window.scope,closed:false,revision:1};window.sessions.push(s);}return structuredClone(s);}
@@ -46,6 +46,8 @@ try{
  await page.getByLabel('Aktiver varetelling',{exact:false}).waitFor();eq(await button('Åpne varetelling').count(),0,'disabled firm has no entry or help');eq(await page.getByText('Slik bruker du varetelling',{exact:true}).count(),0);
  await page.getByLabel('Aktiver varetelling',{exact:false}).check();await button('Åpne varetelling').click();await page.getByLabel('Lager i Cordel',{exact:true}).fill('1 – Expo lager');await button('Opprett telling').click();await page.getByRole('heading',{name:'Finn varen du teller',exact:true}).waitFor();
  await button('Skann strekkode').click();await button('QA camera scan').click();await page.getByText('Leverandør B · Varenr. 00123',{exact:true}).waitFor();eq(await page.locator('.stocktakeResult').count(),2,'shared barcode offers both suppliers, no automatic selection');
+ eq((await page.evaluate(()=>window.calls.filter(c=>c.n.startsWith('search_internal_store_catalog_prices')).at(-1))).n,'search_internal_store_catalog_prices_smart');
+ await page.getByLabel('Smartere søk',{exact:false}).uncheck();await button('Søk vare').click();await page.getByText('Leverandør B · Varenr. 00123',{exact:true}).waitFor();eq((await page.evaluate(()=>window.calls.filter(c=>c.n.startsWith('search_internal_store_catalog_prices')).at(-1))).n,'search_internal_store_catalog_prices_page','classic lookup remains available');await page.getByLabel('Smartere søk',{exact:false}).check();await button('Søk vare').click();await page.getByText('Leverandør B · Varenr. 00123',{exact:true}).waitFor();
  await page.locator('.stocktakeResult').nth(1).click();eq(await page.getByLabel('Leverandør',{exact:true}).inputValue(),'Leverandør B');await page.getByLabel('Antall du har telt',{exact:true}).fill('0');await button('Registrer antall').click();await page.getByText('Antallet er lagret i firmaet.',{exact:true}).waitFor();eq((await page.evaluate(()=>window.rows))[0].quantity,0);
  await button('Legg inn vare manuelt').click();await page.getByLabel('Leverandør',{exact:true}).fill('Manuell grossist');await page.getByLabel('Varenummer i Cordel',{exact:true}).fill('00045');await page.getByLabel('Beskrivelse',{exact:true}).fill('Uten strekkode');await page.getByLabel('Område / hylle (valgfritt)',{exact:true}).fill('Reol B');await page.getByLabel('Antall du har telt',{exact:true}).fill('2,5');
  eq(await button('Ny telling').isDisabled(),true,'unsaved line cannot be silently replaced by another count');

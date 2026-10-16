@@ -19,6 +19,7 @@ import {useHrAccess} from '${cwd}/src/modules/hr/hrAccess.js';
 import {useKshmsAccess} from '${cwd}/src/modules/kshms/kshmsAccess.js';
 import {installWorkProfileProjectListUx} from '${cwd}/src/modules/access/workProfileProjectListUx.jsx';
 import {createProjectListTools,projectMatchesSearch} from '${cwd}/src/modules/project/projectListTools.js';
+import {matchesProjectStatus} from '${cwd}/src/modules/project/projectListStatus.mjs';
 import '${cwd}/src/style.css';
 import {APP_RUNTIME_STYLES} from '${cwd}/src/modules/app/appRuntimeStyles.js';
 document.head.insertAdjacentHTML('beforeend','<style>'+APP_RUNTIME_STYLES+'</style>');
@@ -30,14 +31,14 @@ const Select=({label,value,onChange,options,optionLabels})=><label>{label}<selec
 const tools=createProjectListTools({Section,Grid,Input,Select,getWarrantyYears:()=>10});
 const rows=['Pågående prosjekt','Arkivprosjekt'].map((title,i)=>({row:{id:'p'+i,title,updated_at:'2026-10-16T12:00:00Z'},listProject:{customer:'QA Kunde',address:'Testveien 1',responsible:'QA Leder'},listStatus:{tone:i?'done':'progress',label:i?'Ferdigstilt':'Pågår',icon:'●'},unreadForAdminInList:i?0:2,latestMessage:null,imageSummary:{total:0,previews:[]},openDeviationCount:i?0:3,productSummary:{total:4},listWarranty:{enabled:true,issued:true},projectCompanyName:'QA firma'}));
 function Projects(){const [q,setQ]=useState(''),[status,setStatus]=useState('alle'),[unread,setUnread]=useState(false);
- const filtered=rows.filter(r=>projectMatchesSearch(r.row.title,q)&&(status==='alle'||r.listStatus.tone===status)&&(!unread||r.unreadForAdminInList));
+ const filtered=rows.filter(r=>projectMatchesSearch(r.row.title,q)&&matchesProjectStatus(r.listStatus.tone,status)&&(!unread||r.unreadForAdminInList));
  return tools.renderProjectListPanel({projectListStats:{total:2,active:1,unread:2,finished:1,visible:filtered.length},projectSearch:q,setProjectSearch:setQ,projectStatusFilter:status,setProjectStatusFilter:setStatus,projectUnreadOnly:unread,setProjectUnreadOnly:setUnread,loadProjects:()=>window.refreshes++,authUser:{id:'self'},projects:rows,filteredProjectListRows:filtered,isSystemAdminUser:false,statusStyle:()=>({}),openProjectById:(...args)=>window.opened.push(args),deleteProject:id=>window.deleted.push(id)});}
 const root=createRoot(document.getElementById('app'));
 function PersonalHarness(){const personal=usePersonalAccess('self'),hr=useHrAccess('self',true),ks=useKshmsAccess('self');return <Personal context={personal} hrContext={hr} kshmsContext={ks} userId="self" authUser={{id:'self',email:'qa@example.invalid',user_metadata:{full_name:'QA Medarbeider'}}} supabaseClient={window.client}/>;}
 window.render=(kind='personal')=>root.render(kind==='projects'?<Projects/>:<PersonalHarness/>);
 window.render();installWorkProfileProjectListUx();
 `);
-const result=await build({root:cwd,configFile:false,logLevel:'silent',resolve:{alias:{'react/jsx-runtime':cwd+'/node_modules/react/jsx-runtime.js'}},plugins:[react(),{name:'synthetic-transport',enforce:'pre',resolveId(id,importer){if(importer?.endsWith('/workProfileProjectListUx.jsx')&&id.endsWith('/moduleAccessClient.js'))return '\0shared-client';if(importer?.endsWith('/workProfileProjectListUx.jsx')&&id.endsWith('/workProfileClient.js'))return '\0shared-profile';if(id.endsWith('/appSupabaseClientRegistry.js'))return '\0client';},load(id){if(id==='\0shared-client')return 'export const getStoredSupabaseSession=()=>({userId:"self"});export const rpcWithStoredSession=()=>{window.sharedReads++;return Promise.resolve({company_id:"a",company_name:"QA Firma",projects:[]});};';if(id==='\0shared-profile')return 'export const WORK_PROFILE_EVENT="qa-work-profile";export const readCachedWorkProfileState=()=>({can_switch:true,active_company_id:"a"});export const getMyWorkProfileState=async()=>readCachedWorkProfileState();';if(id==='\0client')return 'export const getAppSupabaseClient=()=>window.client;';}}],build:{write:false,minify:false,cssCodeSplit:false,rollupOptions:{input:path.join(temp,'entry.jsx'),output:{inlineDynamicImports:true}}}});
+const result=await build({root:cwd,configFile:false,logLevel:'silent',resolve:{alias:{'react/jsx-runtime':cwd+'/node_modules/react/jsx-runtime.js'}},plugins:[react(),{name:'synthetic-transport',enforce:'pre',resolveId(id,importer){if(importer?.endsWith('/workProfileProjectListUx.jsx')&&id.endsWith('/moduleAccessClient.js'))return '\0shared-client';if(importer?.endsWith('/workProfileProjectListUx.jsx')&&id.endsWith('/workProfileClient.js'))return '\0shared-profile';if(id.endsWith('/appSupabaseClientRegistry.js'))return '\0client';},load(id){if(id==='\0shared-client')return 'export const getStoredSupabaseSession=()=>({userId:"self"});export const rpcWithStoredSession=()=>{window.sharedReads++;return Promise.resolve({company_id:"a",company_name:"QA Firma",projects:window.sharedFixtures||[]});};';if(id==='\0shared-profile')return 'export const WORK_PROFILE_EVENT="qa-work-profile";export const readCachedWorkProfileState=()=>({can_switch:true,active_company_id:"a"});export const getMyWorkProfileState=async()=>readCachedWorkProfileState();';if(id==='\0client')return 'export const getAppSupabaseClient=()=>window.client;';}}],build:{write:false,minify:false,cssCodeSplit:false,rollupOptions:{input:path.join(temp,'entry.jsx'),output:{inlineDynamicImports:true}}}});
 const js=result.output.find(x=>x.type==='chunk').code,css=result.output.filter(x=>x.fileName.endsWith('.css')).map(x=>x.source).join('\n');
 const server=http.createServer((req,res)=>{res.setHeader('Content-Type','text/html; charset=utf-8');res.end(`<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>${css}</style><header style="height:156px;display:block">Expo ProffDok</header><main><div id="app"></div></main><script type="module">${js.replaceAll('</script','<\\/script')}</script>`);});
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
@@ -138,12 +139,22 @@ try{
  eq(await page.locator('.workProfileSharedProjects').isVisible(),true,'actual shared project adapter remains visible');
  await page.evaluate(()=>new Promise(resolve=>{let frames=0;const next=()=>++frames===15?resolve():requestAnimationFrame(next);requestAnimationFrame(next);}));
  eq(await page.evaluate(()=>window.sharedReads),1,'adapter is stable without repeated remount/reads');
+ eq(await page.locator('.projectListDisclosureCard>details[open]').count(),0,'project cards start compact');eq(await page.getByLabel('Søk i prosjektlisten',{exact:true}).isVisible(),false,'advanced filters start collapsed');
+ eq(await page.locator('.projectListCard').first().getByRole('button',{name:'📂 Åpne',exact:true}).isVisible(),true,'primary open stays visible');
+ await page.locator('.projectListCard').first().getByRole('button',{name:'📂 Åpne',exact:true}).click();eq(await page.evaluate(()=>window.opened.at(-1)),['p0','prosjekt'],'compact primary uses same project callback');eq(await page.locator('.projectListDisclosureCard>details[open]').count(),0,'opening project does not toggle presentation');
+ await page.locator('.projectListCard').first().locator('summary').click();eq(await page.locator('.projectListCard').first().getByText('QA Leder',{exact:true}).isVisible(),true,'one card reveals original metadata');await page.locator('.projectListCard').first().locator('summary').press('Enter');eq(await page.locator('.projectListDisclosureCard>details[open]').count(),0,'keyboard collapses card');
+ await page.getByRole('button',{name:'Vis alle detaljer',exact:true}).click();await page.waitForFunction(()=>document.querySelectorAll('.projectListDisclosureCard>details[open]').length===2);checks++;
  for(const width of [1363,768,390,320]){
   await page.setViewportSize({width,height:936});await page.evaluate(()=>scrollTo(0,0));
+  await page.getByRole('button',{name:'Kollaps alle detaljer',exact:true}).click();await page.waitForFunction(()=>document.querySelectorAll('.projectListDisclosureCard>details[open]').length===0);eq(await page.locator('.projectListCard').first().getByRole('button',{name:'📂 Åpne',exact:true}).isVisible(),true,'compact primary stays available '+width);
+  const bounds=await page.locator('.projectListCard').first().evaluate(card=>{const b=card.querySelector('.projectListPrimaryOpen').getBoundingClientRect(),t=card.querySelector('.projectListTitleBlock>b').getBoundingClientRect();return b.left>=t.right-1||b.top>=t.bottom||b.bottom<=t.top;});eq(bounds,true,'compact open never overlays title '+width);
+  if(width<760)eq((await page.locator('.projectListHeaderCards').boundingBox()).height<85,true,'mobile stats stay in two compact rows '+width);
+  const compactBox=await page.locator('.projectListCard').first().boundingBox();console.log('Compact project card',{width,height:compactBox.height,top:compactBox.y});if(width===1363)eq(compactBox.height<150,true,'desktop card avoids excess air');if(process.env.UX_LAYOUT_SCREENSHOTS)await page.screenshot({path:path.join(process.env.UX_LAYOUT_SCREENSHOTS,'projects-compact-'+width+'.png'),fullPage:true});
+  await page.getByRole('button',{name:'Vis alle detaljer',exact:true}).click();await page.waitForFunction(()=>document.querySelectorAll('.projectListDisclosureCard>details[open]').length===2);
   eq(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'project list fits '+width);
   eq(await page.locator('.projectListCard').count(),2,'all project cards remain '+width);
   eq(await page.locator('.projectListCard').first().getByText('QA Leder',{exact:true}).isVisible(),true,'responsible remains visible '+width);
-  eq(await page.locator('.projectListActions').first().getByRole('button').count(),8,'all shortcuts retained '+width);
+  eq(await page.locator('.projectListCard').first().locator('.projectListActions>button,.projectListPrimaryOpen').count(),8,'all shortcuts retained '+width);
   if(width===1363)eq((await page.locator('.projectListCard').first().boundingBox()).y<850,true,'first project above desktop fold');
   if(process.env.UX_LAYOUT_SCREENSHOTS)await page.screenshot({path:path.join(process.env.UX_LAYOUT_SCREENSHOTS,'projects-'+width+'.png'),fullPage:true});
  }
@@ -152,11 +163,18 @@ try{
   await card.getByRole('button',{name:label,exact:true}).click();eq(await page.evaluate(()=>window.opened.at(-1)),args,'same shortcut '+label);
  }
  await card.getByRole('button',{name:'⚠️ Åpne avvik: 3',exact:true}).click();eq(await page.evaluate(()=>window.opened.at(-1)),['p0','sjekklister',{showOpenDeviationsOnly:true}],'count opens existing filtered deviations');
+ await page.getByRole('button',{name:'Kollaps alle detaljer',exact:true}).click();eq(await page.locator('.projectListDisclosureCard>details[open]').count(),0,'all cards collapse without losing content');await page.locator('.projectListAdvancedFilters>summary').click();
  await page.getByRole('button',{name:'Arkiv',exact:true}).click();eq(await page.locator('.projectListCard').count(),1,'archive filter');
  await page.getByRole('button',{name:'Nullstill',exact:true}).click();eq(await page.locator('.projectListCard').count(),2,'reset');
  await page.getByLabel('Søk i prosjektlisten',{exact:true}).fill('pågående');eq(await page.locator('.projectListCard').count(),1,'search');
  await page.getByRole('button',{name:'Nullstill',exact:true}).click();await page.getByRole('button',{name:'Kun uleste',exact:true}).click();eq(await page.locator('.projectListCard').count(),1,'unread filter');
  await page.getByRole('button',{name:'Oppdater liste',exact:true}).click();eq(await page.evaluate(()=>window.refreshes),1,'refresh retained');
+ await page.getByRole('button',{name:'Nullstill',exact:true}).click();await page.locator('.projectListAdvancedFilters>summary').click();
+ await page.evaluate(()=>{window.sharedFixtures=[{id:'shared-p',user_id:'colleague',title:'Felles pågår',project:{status:'Pågår'}},{id:'shared-d',user_id:'colleague',title:'Felles avvik',project:{workflowStatus:'Avvik åpent'}},{id:'shared-a',user_id:'colleague',title:'Felles arkiv',locked:true,project:{status:'Ferdigstilt'}}];});await page.getByRole('button',{name:'Oppdater felles',exact:true}).click();await page.waitForFunction(()=>document.querySelectorAll('.workProfileSharedCard').length===3);checks++;
+ await page.getByRole('button',{name:'Aktive',exact:true}).click();await page.waitForFunction(()=>document.querySelectorAll('.workProfileSharedCard').length===2);checks++;
+ await page.getByRole('button',{name:'Arkiv',exact:true}).click();await page.waitForFunction(()=>document.querySelectorAll('.workProfileSharedCard').length===1);eq(await page.locator('.workProfileSharedCard').getByText('Felles arkiv',{exact:true}).count(),1,'shared archive filter');
+ await page.getByRole('button',{name:'Alle',exact:true}).click();await page.waitForFunction(()=>document.querySelectorAll('.workProfileSharedCard').length===3);eq(await page.locator('.projectListAdvancedFilters>summary').innerText(),'Søk og filtre\nAlle statuser','active filter is visible when collapsed');
+ eq(await page.evaluate(()=>window.sharedReads),2,'presentation and filter changes never reload shared projects');
  eq(await page.evaluate(()=>window.deleted),[],'no accidental delete from navigation');
  eq(errors,[],'no browser errors');
  console.log('Personal/project layout: '+checks+' Chromium checks PASS. Actual components/CSS; synthetic transport, no live writes.');

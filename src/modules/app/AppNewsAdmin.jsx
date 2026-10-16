@@ -122,17 +122,11 @@ export default function AppNewsAdmin({ supabaseClient, authUser } = {}) {
 
   return (
     <>
-      <SystemAdminSalesSupport
-        supabaseClient={supabaseClient}
-        authUser={authUser}
-      />
+      <details className="ux-admin-area"><summary className="ux-readable-summary">Support · Befaring/Tilbud</summary><SystemAdminSalesSupport supabaseClient={supabaseClient} authUser={authUser}/></details>
 
-      <SystemAdminBroadcastEmail
-        supabaseClient={supabaseClient}
-        authUser={authUser}
-      />
+      <details className="ux-admin-area"><summary className="ux-readable-summary">Utsending · e-post til brukere</summary><SystemAdminBroadcastEmail supabaseClient={supabaseClient} authUser={authUser}/></details>
 
-      <div className="item adminAccordionItem" style={{ marginTop: "12px" }}>
+      <details className="item adminAccordionItem"><summary className="ux-readable-summary">Informasjon · nyheter i appen</summary>
         <h3 style={{ marginTop: 0 }}>Nyheter i appen</h3>
         <p className="note">
           Publiser en kort beskjed som vises til innloggede brukere. Nyeste aktive
@@ -286,7 +280,7 @@ export default function AppNewsAdmin({ supabaseClient, authUser } = {}) {
             </div>
           )}
         </div>
-      </div>
+      </details>
     </>
   );
 }

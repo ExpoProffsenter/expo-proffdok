@@ -113,7 +113,7 @@ export default function CompanyAdminPanel({authUser}) {
     </div>
     {error&&<p role="alert">{error}</p>}{message&&<p role="status">{message}</p>}
     {current&&<fieldset disabled={loading||busy} key={current.company_id}>
-      <form className="item" onSubmit={e=>{
+      <details className="company-invite-disclosure"><summary className="ux-readable-summary">Inviter en ansatt · velg rolle og tilganger</summary><form className="item" onSubmit={e=>{
         e.preventDefault();const wanted=email.trim();
         run(async (c,stillCurrent)=>{
           const chosen={...inviteAccess,...(role==='firmaadmin'?{kshms:!!current.invite_options?.kshms,hr:!!current.invite_options?.hr}:{})};
@@ -131,18 +131,18 @@ export default function CompanyAdminPanel({authUser}) {
           <label>Rolle<select aria-label="Rolle ved invitasjon" value={role} onChange={e=>setRole(e.target.value)}><option value="ansatt">Ansatt</option><option value="firmaadmin">Firmaadmin</option></select></label></div>
         <InviteAccessChoices options={current.invite_options} role={role} value={inviteAccess} onChange={value=>setAccessDraft({companyId:current.company_id,value})}/>
         <button disabled={!email.trim()||busy||!current.invite_options} type="submit">{busy?'Behandler …':'Inviter ansatt'}</button>
-      </form>
+      </form></details>
       <div className="item"><h3>Brukere og tilganger</h3><p>Velg rolle og moduler på den ansatte. Rolle lagres når du bekrefter. Modulvalg lagres med knappen under valgene. KS/HMS og HR må først være aktivert på firmaet.</p>
         <label>Søk etter ansatt<input type="search" value={search} onChange={e=>setSearch(e.target.value)} placeholder="Navn eller e-post"/></label>
         <div className="company-admin-users">{users.map(user=>{
           const core=user.core_access;
           const content=<><p className="note">{user.name&&<b>{user.name} · </b>}{user.is_primary?'Primærfirma':'Ekstra arbeidsfirma'}: {current.company_name}{!user.is_primary?` · Primærfirma: ${user.company_name}`:''}</p>{controls(user)}</>;
-          return <div key={current.company_id+':'+user.id}>
+          return <details className="company-user-disclosure" key={current.company_id+':'+user.id}><summary className="ux-readable-summary"><strong>{user.name||user.email}</strong> · {user.company_role==='firmaadmin'?'Firmaadmin':'Ansatt'} · {user.deactivated?'Deaktivert':user.approved?'Aktiv':'Venter på godkjenning'}</summary>
             {core?<><p className="note">Hovedmodulene gjelder brukerkontoen. KS/HMS og HR nedenfor gjelder {current.company_name}.</p>
               <UserAccessRow user={core} isSystemAdmin={current.is_systemadmin} currentUserId={current.caller_id} callerModuleKeys={current.caller_module_keys} peopleCompanyId={current.company_id} headerContent={content} onSaved={()=>load()}>
                 {core.company_scope_id===current.company_id&&<NetPriceAccess user={core} callerId={current.caller_id}/>}</UserAccessRow></>:
               <article className="item"><strong>{user.email}</strong><p>{user.deactivated?'Deaktivert':user.approved?'Aktiv':'Venter på godkjenning'}</p>{content}<PeopleModuleAccess companyId={current.company_id} userId={user.id}/><p className="note">Hovedmoduler og kontostatus administreres fra primærfirmaet eller av systemadministrator.</p></article>}
-          </div>;
+          </details>;
         })}{!users.length&&<p>Ingen brukere funnet i dette firmaet.</p>}</div>
       </div>
       {!!current.invites?.length&&<div className="item"><h3>Inviterte brukere</h3><p>Disse venter på registrering. Send invitasjonen på nytt hvis den ansatte ikke har kommet i gang. Rolle og tilganger beholdes.</p>{current.invites.map(i=><div key={i.id}><p><b>{i.email}</b> · {i.company_role==='firmaadmin'?'Firmaadmin':'Ansatt'} · Venter på registrering</p><p className="note">{invitationSummary(i.access)}{i.company_role==='firmaadmin'?' · Firmaadmin arver firmaets aktiverte KS/HMS og HR.':''}</p>

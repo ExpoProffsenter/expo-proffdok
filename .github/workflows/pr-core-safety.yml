@@ -136,6 +136,7 @@ jobs:
           node scripts/company-admin-react-check.mjs
           node scripts/hr-contact-reminder-react-check.mjs
           node scripts/home-followups-react-check.mjs
+          node scripts/app-ux-review-browser-check.mjs
           node scripts/personal-project-layout-browser-check.mjs
           node scripts/sales-overview-ux-browser-check.mjs
           node scripts/sales-editor-ux-browser-check.mjs

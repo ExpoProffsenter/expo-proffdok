@@ -1,3 +1,4 @@
+import {matchesProjectStatus} from '../project/projectListStatus.mjs';
 // Expo ProffDok – FASE 41B.3
 // Tilleggsvisning i eksisterende Prosjektliste for flerfirma-brukere.
 // Viser kollegaenes prosjekter i aktiv arbeidsprofil. Eksisterende prosjektmotor
@@ -125,6 +126,7 @@ function matchesStatus(item, status) {
   const clean = String(status || "alle");
   if (clean === "alle") return true;
   const tone = projectTone(item);
+  if (clean === "active" || clean === "archive") return matchesProjectStatus(tone,clean);
   if (clean === "open" || clean === "progress") return tone === "progress";
   if (clean === "done") return tone === "done" || tone === "locked";
   return tone === clean;
