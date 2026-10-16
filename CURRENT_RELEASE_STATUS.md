@@ -1,3 +1,11 @@
+## Planpopup: avbryt-hendelse og ramme – 16. oktober 2026
+
+Miljømål BEGGE, Preview først, fortsatt umerget PR #254. Førkontroll: bc9e42892cf7a22fbd1d57843e87eed270bf9bb7, main a7bd4795e78e0ba1cbdc747960384bbf01338581, Core Safety #482 SUCCESS og fast Preview READY på samme head. Kenneth melder at vanlig utklipp fortsatt går ut av popupen, mens egen hurtigtast fungerer. Fysisk Windows-forløp er ikke observert av utvikler. En separat utgang er gjenskapt: nettleserens native cancel/Escape lukker hovedplanen selv om fokus/scroll gjenopprettes riktig.
+
+Hovedplanen lukkes nå bare med Tilbake. Native cancel/Escape og klikk utenfor rammen lukker ikke arbeidsflaten. Mindre oppgave-/kodevinduer beholder Escape og sin egen lukking; cancel stoppes ved det aktuelle undervinduet. Prosjektvalg, tilbud og deling får synlig avrundet ramme, hover og tastaturfokus. Appscope er bare KshmsProgressBoard.jsx/CSS og Hjelp; ingen main, global recovery, wrapper-/tilgangslogikk, planlagring, e-post, SQL eller dataendring.
+
+Førtesten feiler med 0 åpne hovedpopup etter ekte Chromium-Escape; etter rettelse består 28 fokus-/delingskontroller (tidligere 15 beholdt), 39 Prosjekt, 128 KS/HMS og 52 layoutkontroller. Full critical/build PASS. Ramme visuelt kontrollert ved 1280/390 px. QA: docs/qa/PROGRESS_FOCUS_20261016.md. Fysisk Windows-utklipp krever ny innlogget prøve; ingen påstand om at brukerens OS-verktøy er testet. Samme faste Preview-adresse; eksakt ny SHA/tre/CI/Vercel føres i PR #254. Ingen TEST OK/merge/Production eller demo-synk.
+
 ## Prosjektvalg og fokus/utklipp i planpopup – 16. oktober 2026
 
 Miljømål BEGGE, Preview først i umerget PR #254 fra a624453f. Åpne Prosjektvalg, tilbud og deling har normal avkryssing og samlet prosjektinfo/handlinger med kompakt delingskort. Generisk dialog-/mobil-CSS hadde gitt avkryssingen tekstfeltbredde og minst 40 px høyde. Lokale regler gir 18 × 18 px med stor klikkbar etikett. Tilbudsimport, Hent lagret plan, kundedelingsvalg og eksisterende prosjektmail er beholdt.

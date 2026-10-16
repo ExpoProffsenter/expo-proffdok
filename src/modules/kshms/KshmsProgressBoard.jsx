@@ -22,7 +22,8 @@ function PlanDialog({title,onClose,onOpen,children,side=false,expanded=false}){
   if(parent&&!parent.open)frame=requestAnimationFrame(open);else open();
   return()=>{cancelAnimationFrame(frame);if(locked&&--bodyLocks===0)document.body.style.overflow=originalOverflow;if(previous?.isConnected)previous.focus({preventScroll:true});};
  },[]);
- return <dialog ref={ref} className={'ks-plan-dialog'+(side?' ks-plan-drawer':'')+(expanded?' ks-plan-expanded':'')} aria-labelledby={id} onCancel={e=>{e.preventDefault();onClose();}} onClick={e=>{if(e.target===e.currentTarget){const r=e.currentTarget.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)onClose();}}}>
+ // The main workspace closes only via Tilbake; OS capture cancel must not dismiss it.
+ return <dialog ref={ref} className={'ks-plan-dialog'+(side?' ks-plan-drawer':'')+(expanded?' ks-plan-expanded':'')} aria-labelledby={id} onCancel={e=>{e.preventDefault();e.stopPropagation();if(!expanded)onClose();}} onClick={e=>{if(!expanded&&e.target===e.currentTarget){const r=e.currentTarget.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)onClose();}}}>
   <div className="ks-plan-dialog-head"><h3 id={id}>{title}</h3><button type="button" className="secondary" aria-label={expanded?'Lukk planbygger':'Lukk planvindu'} onClick={onClose}>{expanded?'Tilbake':'Lukk'}</button></div>{children}
  </dialog>;
 }

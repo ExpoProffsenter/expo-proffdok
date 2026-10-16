@@ -39,7 +39,9 @@
 .ks-plan-topline{display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0;min-width:0}
 .ks-plan-topline>.ks-plan-surface{flex:1 1 760px;margin:0;gap:6px;min-width:0}
 .ks-plan-topline>.module-guide{flex:0 1 auto;margin:0;padding:0;border:0;background:transparent;font-size:12px;min-width:0}
-.ks-plan-topline>.module-guide>summary{box-sizing:border-box;min-height:44px;padding:12px 8px;font-size:12px;cursor:pointer}
+.ks-plan-topline>.module-guide>summary{box-sizing:border-box;min-height:44px;padding:12px 10px;border:1px solid #cbdce2;border-radius:8px;background:#fff;font-size:12px;cursor:pointer}
+.ks-plan-topline>.module-guide>summary:hover{background:#edf7f8;border-color:#90bbc4}
+.ks-plan-topline>.module-guide>summary:focus-visible{outline:3px solid #1bb7c2;outline-offset:2px}
 .ks-plan-topline>.module-guide[open]{flex-basis:100%;padding:8px;border:1px solid #d1e5e8;border-radius:10px;background:#f4f9fa}
 .ks-plan-surface .ks-plan-actions{margin-left:auto;gap:6px}
 .ks-plan-surface>details{margin-left:0}
