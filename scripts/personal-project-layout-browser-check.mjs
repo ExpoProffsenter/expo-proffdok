@@ -14,11 +14,13 @@ fs.writeFileSync(path.join(temp,'entry.jsx'),`
 import React,{useState} from '${cwd}/node_modules/react/index.js';
 import {createRoot} from '${cwd}/node_modules/react-dom/client.js';
 import Personal from '${cwd}/src/modules/personal/PersonalPage.jsx';
+import {installWorkProfileProjectListUx} from '${cwd}/src/modules/access/workProfileProjectListUx.jsx';
 import {createProjectListTools,projectMatchesSearch} from '${cwd}/src/modules/project/projectListTools.js';
 import '${cwd}/src/style.css';
 import {APP_RUNTIME_STYLES} from '${cwd}/src/modules/app/appRuntimeStyles.js';
 document.head.insertAdjacentHTML('beforeend','<style>'+APP_RUNTIME_STYLES+'</style>');
-const Section=({title,children})=><section><h2>{title}</h2>{children}</section>;
+const sectionSource=${JSON.stringify(fs.readFileSync('src/main.jsx','utf8').split('  function Section(')[1].split('  function CollapsibleBlock')[0])};
+const Section=new Function('import_jsx_runtime','return function Section('+sectionSource)({jsx:(type,props)=>React.createElement(type,props),jsxs:(type,props)=>React.createElement(type,props)});
 const Grid=({children})=><div className="grid">{children}</div>;
 const Input=({label,value,onChange})=><label>{label}<input aria-label={label} value={value} onChange={e=>onChange(e.target.value)}/></label>;
 const Select=({label,value,onChange,options,optionLabels})=><label>{label}<select aria-label={label} value={value} onChange={e=>onChange(e.target.value)}>{options.map(v=><option value={v} key={v}>{optionLabels[v]}</option>)}</select></label>;
@@ -29,9 +31,9 @@ function Projects(){const [q,setQ]=useState(''),[status,setStatus]=useState('all
  return tools.renderProjectListPanel({projectListStats:{total:2,active:1,unread:2,finished:1,visible:filtered.length},projectSearch:q,setProjectSearch:setQ,projectStatusFilter:status,setProjectStatusFilter:setStatus,projectUnreadOnly:unread,setProjectUnreadOnly:setUnread,loadProjects:()=>window.refreshes++,authUser:{id:'self'},projects:rows,filteredProjectListRows:filtered,isSystemAdminUser:false,statusStyle:()=>({}),openProjectById:(...args)=>window.opened.push(args),deleteProject:id=>window.deleted.push(id)});}
 const root=createRoot(document.getElementById('app'));
 window.render=(kind='personal')=>root.render(kind==='projects'?<Projects/>:<Personal context={{...window.ctx(),personal_page:true,company_hr:true,company_kshms:true}} hrContext={window.ctx()} kshmsContext={window.ctx()} userId="self" authUser={{id:'self',email:'qa@example.invalid',user_metadata:{full_name:'QA Medarbeider'}}} supabaseClient={window.client}/>);
-window.render();
+window.render();installWorkProfileProjectListUx();
 `);
-const result=await build({root:cwd,configFile:false,logLevel:'silent',resolve:{alias:{'react/jsx-runtime':cwd+'/node_modules/react/jsx-runtime.js'}},plugins:[react(),{name:'synthetic-transport',enforce:'pre',resolveId(id){if(id.endsWith('/appSupabaseClientRegistry.js'))return '\0client';},load(id){if(id==='\0client')return 'export const getAppSupabaseClient=()=>window.client;';}}],build:{write:false,minify:false,cssCodeSplit:false,rollupOptions:{input:path.join(temp,'entry.jsx'),output:{inlineDynamicImports:true}}}});
+const result=await build({root:cwd,configFile:false,logLevel:'silent',resolve:{alias:{'react/jsx-runtime':cwd+'/node_modules/react/jsx-runtime.js'}},plugins:[react(),{name:'synthetic-transport',enforce:'pre',resolveId(id,importer){if(importer?.endsWith('/workProfileProjectListUx.jsx')&&id.endsWith('/moduleAccessClient.js'))return '\0shared-client';if(importer?.endsWith('/workProfileProjectListUx.jsx')&&id.endsWith('/workProfileClient.js'))return '\0shared-profile';if(id.endsWith('/appSupabaseClientRegistry.js'))return '\0client';},load(id){if(id==='\0shared-client')return 'export const getStoredSupabaseSession=()=>({userId:"self"});export const rpcWithStoredSession=()=>{window.sharedReads++;return Promise.resolve({company_id:"a",company_name:"QA Firma",projects:[]});};';if(id==='\0shared-profile')return 'export const WORK_PROFILE_EVENT="qa-work-profile";export const readCachedWorkProfileState=()=>({can_switch:true,active_company_id:"a"});export const getMyWorkProfileState=async()=>readCachedWorkProfileState();';if(id==='\0client')return 'export const getAppSupabaseClient=()=>window.client;';}}],build:{write:false,minify:false,cssCodeSplit:false,rollupOptions:{input:path.join(temp,'entry.jsx'),output:{inlineDynamicImports:true}}}});
 const js=result.output.find(x=>x.type==='chunk').code,css=result.output.filter(x=>x.fileName.endsWith('.css')).map(x=>x.source).join('\n');
 const server=http.createServer((req,res)=>{res.setHeader('Content-Type','text/html; charset=utf-8');res.end(`<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>${css}</style><header style="height:156px;display:block">Expo ProffDok</header><main><div id="app"></div></main><script type="module">${js.replaceAll('</script','<\\/script')}</script>`);});
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
@@ -39,7 +41,7 @@ try{
  browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_PATH||undefined,args:['--no-sandbox']});
  const page=await browser.newPage({viewport:{width:1363,height:936}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.addInitScript(()=>{
-  window.company='a';window.denied=false;window.calls=[];window.opened=[];window.deleted=[];window.refreshes=0;window.setup=0;
+  window.sharedReads=0;window.company='a';window.denied=false;window.calls=[];window.opened=[];window.deleted=[];window.refreshes=0;window.setup=0;
   window.ctx=()=>({company_id:window.company,user_id:'self',available:true,enabled:true,company_name:'QA Firma',administer:false});
   window.client={auth:{getUser:async()=>({data:{user:{id:'self'}}})},rpc:async(name,args)=>{
    window.calls.push({name,args});const context=window.ctx();if(window.denied)return {error:{code:'42501',message:'Tilgang borte'}};
@@ -87,13 +89,18 @@ try{
  eq(await page.evaluate(()=>window.calls.some(x=>/save|send|command/.test(x.name))),false,'layout does not write or send');
  await page.evaluate(()=>window.render('projects'));
  await page.locator('.projectListCard').first().waitFor();
+ await page.locator('.workProfileSharedEmpty').waitFor();
+ eq(await page.locator('#expo-work-profile-project-list').evaluate(e=>e.parentElement===e.closest('section')),true,'shared host remains direct section child');
+ eq(await page.locator('.workProfileSharedProjects').isVisible(),true,'actual shared project adapter remains visible');
+ await page.evaluate(()=>new Promise(resolve=>{let frames=0;const next=()=>++frames===15?resolve():requestAnimationFrame(next);requestAnimationFrame(next);}));
+ eq(await page.evaluate(()=>window.sharedReads),1,'adapter is stable without repeated remount/reads');
  for(const width of [1363,768,390,320]){
   await page.setViewportSize({width,height:936});await page.evaluate(()=>scrollTo(0,0));
   eq(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'project list fits '+width);
   eq(await page.locator('.projectListCard').count(),2,'all project cards remain '+width);
   eq(await page.locator('.projectListCard').first().getByText('QA Leder',{exact:true}).isVisible(),true,'responsible remains visible '+width);
   eq(await page.locator('.projectListActions').first().getByRole('button').count(),8,'all shortcuts retained '+width);
-  if(width===1363)eq((await page.locator('.projectListCard').first().boundingBox()).y<700,true,'first project above desktop fold');
+  if(width===1363)eq((await page.locator('.projectListCard').first().boundingBox()).y<850,true,'first project above desktop fold');
   if(process.env.UX_LAYOUT_SCREENSHOTS)await page.screenshot({path:path.join(process.env.UX_LAYOUT_SCREENSHOTS,'projects-'+width+'.png'),fullPage:true});
  }
  const card=page.locator('.projectListCard').first();

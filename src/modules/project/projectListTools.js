@@ -64,7 +64,7 @@ export function createProjectListTools({
     openProjectById,
     deleteProject
   }) {
-    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Prosjektliste", children: (0, import_jsx_runtime.jsxs)("div", { className: "projectListUx", children: [
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Prosjektliste", className: "projectListUx", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Finn prosjektet og åpne det du skal jobbe med." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "cards projectListHeaderCards", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "tile", children: [
@@ -194,7 +194,7 @@ export function createProjectListTools({
               ] })
             ] }, p.id);
           })
-        ] }) });
+        ] });
   }
 
 
