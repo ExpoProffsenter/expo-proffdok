@@ -1,3 +1,9 @@
+## Preview-oppfølging: én planboks og utklipp – 16. oktober 2026
+
+Miljømål BEGGE, samme umergede PR #256/faste Preview. Kenneths skjermbilde viser at Min side erstattes av «Kontrollerer tilgangen din …» ved utklipp. Synlig fokus/visibility-kontroll beholder nå verifiserte visningsmetadata mens nye serverkall pågår. Faktisk skjult side, rolle-/firmabytte, feil, avslag og feil aktør rydder fortsatt. HR beholder tidligere streng oppførsel som standard; én avgrenset main.jsx-linje aktiverer metadata-valget bare for Min side. Private HR-kontrollere og autoriserte serverhandlinger er urørt. Egne planpopup-er beholdes under synlig kontroll, eksport er sperret til fersk lesing er ferdig, og bevisst lukking vinner over sene svar.
+
+Min side har én boks «Mine aktive planer», med «Fra ProffDok-prosjekter» og «Andre fremdriftsplaner». Kilder, egne oppgaver, aktive datoer og oppdatering er fortsatt separate. Ny relevant TEST OK kreves; ingen merge/Production/demoendring. Førtest og QA: docs/qa/PERSONAL_PROJECT_UX_20261016.md.
+
 ## Preview: Min side og prosjektlisten – 16. oktober 2026
 
 Miljømål BEGGE, Preview først. Avgrenset UX etter godkjent planrelease: Min side gjenbruker eksisterende sammenfoldede HR-/kontaktoversikt, med faner først og varsler bare i Oversikt. Egne prosjekt-/KS-planer bruker samme autoriserte kilder og vises ved siden av hverandre på PC. Prosjektlisten bruker lokale fargede kort, fire nøkkeltall i én PC-rad, kompakt tomt samarbeidsfelt, mindre metadatafelt og én samlet tellerrad. Alle eksisterende snarveier er beholdt. Ingen main.jsx, global CSS, lagring, tilgang, varslingsregler, e-post, database, prosjekt-/tilbudsflyt eller planbygger endres.

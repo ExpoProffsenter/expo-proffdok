@@ -2,6 +2,22 @@
 
 Miljømål BEGGE. Preview først. Kenneth prioriterer ansatte på mobil og prosjektleder på PC likt, og liker fargede bokser i KS/HMS/HR. Denne leveransen gjenbruker formspråket uten å endre disse modulenes layout eller funksjoner.
 
+## Oppfølging 19:33: samlet planboks og synlig fokuskontroll
+
+Baseline før denne oppfølgingen: PR #256 fortsatt åpen på 05cfb850f3f620ce3cd805ceffb86ae51939f2a0, main e492816350cc0d7ce38232645599c505e943090e. Fast Preview dpl_J3aq8DLdqWtzXXnQXiWP5aDZiuDp READY, Core Safety #489 SUCCESS. Ingen TEST OK for ny UX. Kenneths vedlagte bilde er faktisk lest: Min side står i Kontrollerer tilgangen din ved klipping.
+
+Ny kontrakt/scope erstatter tidligere beskrivelse om to separate plankort og ingen main-endring: PersonalPage.jsx/personal.css samler de to eksisterende own-plan-kontrollerne i én boks med kildeoverskrifter. KshmsMyProgressPlans.jsx får valgfri grouped-presentasjon, kort oppdateringsknapp per kilde og kildespesifikk tomtekst. Separate mine-RPC-er, egne oppgaver, aktive datoer, lesemodus og eksport beholdes. Ingen nye oppgaver, varslingsregler, e-post, datamodell eller migrasjon.
+
+personalAccess.js beholder kun allerede verifiserte scope-/modulmetadata ved fokus og synlig visibilitychange, mens samme ferske RPC fortsatt kjøres. useHrAccess får et valgfritt preserveVisibleMetadata, false som standard. main.jsx har nøyaktig én begrunnet linje: useHrAccess(authUser?.id, tab === "innlogging"). Bare Min side velger dette. Forsøk på generell HR-endring ble fanget av den eksisterende navigation-testens krav om at HR-medarbeiderdialogen skjules mens tilgang sjekkes; generell HR-oppførsel er derfor bevart, og testen består uendret. Private HR-payloadkontrollere, RLS, serverautorisasjon og alle skrivefunksjoner er urørt.
+
+Egne planers refresh beholder den åpne read-only popupen under en synlig fokuskontroll. loading/busy sperrer eksport og åpning til listen og eventuell dobbel detaljlesing er bekreftet. Skjult dokument rydder data/record straks. Feil/avslag rydder data/record/valg; epoch og synkron valgt-ID hindrer sent svar i å gjenåpne etter bevisst lukking. Ingen nye payload-cacher eller browserlagring.
+
+Førtest: faktisk usePersonalAccess + useHrAccess + useKshmsAccess og PersonalPage med forsinkede metadata gir 1 Kontrollerer tilgangen din-panel under synlig fokus, forventet 0. Etter: 83 faktiske Chromium-kontroller PASS, inkludert alle tidligere 65; én planboks/to merkede kilder, 320/390/768/1363, synlig blur/focus med tre forsinkede metadata-svar, begge plan-kilders uavbrutte popup-node/Måned-visning, eksport sperret under kontroll, oppdatering etter ferske svar, lukking før sent svar, skjult/avvist retur og ingen live writes. Den faktiske app-hookens Min side-opt-in kontrolleres strukturelt. Ekte Windows-klipp er ikke kjørt av utvikler.
+
+Tidligere KS/Prosjekt-browserchecks endrer bare selektorer for de ønskede nye kildeoverskriftene. Alle oppgave-, eksport-, lagrings-, kladd-, lås-, frist-/datoperiode- og tilgangskontroller beholdes. Prosjekt 39 assertions PASS; personlig profil/kontakt/e-post og HR-varsler 110 PASS; eksisterende modulnavigasjon PASS. KS/HMS 128 og full Sandbox critical/build PASS. Den strukturelle HR-testen følger den eksakte nye main-signaturen og krever eksplisitt false som standard; alle tidligere livssyklus-/avslagstester beholdes. Endelig CI og innlogget ny Preview føres i PR.
+
+Kort ny prøve: Min side → Oversikt. Kontroller én Mine aktive planer-boks med Fra ProffDok-prosjekter og Andre fremdriftsplaner. Prøv Windows-utklipp på oversikten, åpne deretter en egen plan, velg Måned og prøv utklipp igjen. Bildet og planen skal bli stående ved synlig fokus. Prøv også å lukke planen, bytte nettleserfane og komme tilbake; bevisst lukket plan skal forbli lukket. Faktisk dvale kan fortsatt vise kort tilgangskontroll ved retur.
+
 ## Baseline og scope
 
 Fersk GitHub-kontroll: main e492816350cc0d7ce38232645599c505e943090e, Production dpl_F6nPqQjmJBgYq3LQuJa7nsTpo5U3 READY. PR #254 er merget. Feature-branch fix-company-admin-scope-20261015 står fortsatt på 450743401024a4e5be9e9e25e9867feb16f8338d, som er ancestor til main. Ny PR bygger på main og viderefører samme branch/Preview med vanlig fast-forward. Ingen historikk slettes, ingen reset/demo → main.

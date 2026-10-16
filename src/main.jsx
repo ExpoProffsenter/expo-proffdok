@@ -770,7 +770,7 @@ const HomeFollowups = React.lazy(() => import('./modules/home/HomeFollowups.jsx'
     const [mobileCreatingProject, setMobileCreatingProject] = (0, import_react.useState)(false);
     const [authUser, setAuthUser] = (0, import_react.useState)(null);
     const kshmsContext = useKshmsAccess(authUser?.id);
-    const hrContext = useHrAccess(authUser?.id);
+    const hrContext = useHrAccess(authUser?.id, tab === "innlogging");
     const personalContext = usePersonalAccess(authUser?.id);
     const [openedKshmsScope, setOpenedKshmsScope] = (0, import_react.useState)(null);
     const [kshmsDeviationRequest, setKshmsDeviationRequest] = (0, import_react.useState)(null);
