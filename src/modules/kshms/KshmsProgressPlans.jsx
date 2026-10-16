@@ -3,7 +3,7 @@ import {kshmsRpc} from './kshmsAccess.js';
 import {progressSession} from './kshmsProgressClient.mjs';
 import {KSHMS_PROGRESS_OPERATIONS,PROGRESS_CODE_SOURCE,classifiedExportPlan} from './kshmsProgressCodes.mjs';
 import {ProgressPlanWorkspace} from '../progress/ProgressPlanWorkspace.jsx';
-import {downloadProgressPdf,openProgressPreview} from './kshmsProgressPdf.mjs';
+import {downloadProgressPdf,openProgressPreview,progressBrandMeta} from './kshmsProgressPdf.mjs';
 import {downloadProgressPlanIcs} from '../progress/progressPlanCalendarExport.js';
 import {WORK_PROFILE_EVENT} from '../access/workProfileClient.js';
 import {MANAGED_ACCESS_EVENT,MODULE_ACCESS_EVENT} from '../access/moduleAccessClient.js';
@@ -91,10 +91,10 @@ export default function KshmsProgressPlans({context,active=true}){
   if(printing&&!printWindow){setError('Tillat utskriftsvinduet i nettleseren og prøv igjen.');return 'Tillat utskriftsvinduet i nettleseren og prøv igjen.';}
   busyRef.current=true;setBusy(true);setError('');
   try{
-   const load=async()=>{if(!current()||drafts.has(scope+':'+selected.id))throw Error('Planvisningen er endret eller har ulagret kladd.');const fresh=await session.get(selected.id);if(!current())throw Error('Arbeidsprofilen er endret.');const record=fresh.record;return {plan:record.plan,meta:{companyName:context.company_name,id:record.id,title:record.title,address:record.address,requestRef:record.reference,planReference:record.reference,row:{data:{company:{name:context.company_name}}}}};};
+   const load=async()=>{if(!current()||drafts.has(scope+':'+selected.id))throw Error('Planvisningen er endret eller har ulagret kladd.');const fresh=await session.get(selected.id);if(!current())throw Error('Arbeidsprofilen er endret.');const record=fresh.record;return {plan:record.plan,meta:await progressBrandMeta({rpc:kshmsRpc,companyId,meta:{companyName:context.company_name,id:record.id,title:record.title,address:record.address,requestRef:record.reference,planReference:record.reference,row:{data:{company:{name:context.company_name}}}}})};};
    if(kind.endsWith('-download')){await downloadProgressPdf({kind:kind==='staffing-download'?'staffing':'schedule',load,isCurrent:current});return;}
    const value=await session.get(selected.id);if(!current())throw Error('Arbeidsprofilen er endret.');
-   const record=value.record,plan=classifiedExportPlan(record.plan),meta={companyName:context.company_name,id:record.id,title:record.title,address:record.address,requestRef:record.reference,planReference:record.reference,row:{data:{company:{name:context.company_name}}}};
+   const record=value.record,plan=classifiedExportPlan(record.plan),meta=await progressBrandMeta({rpc:kshmsRpc,companyId,meta:{companyName:context.company_name,id:record.id,title:record.title,address:record.address,requestRef:record.reference,planReference:record.reference,row:{data:{company:{name:context.company_name}}}}});if(!current())throw Error('Arbeidsprofilen er endret.');
    if(kind==='staffing-pdf')openProgressPreview({target:printWindow,kind:'staffing',meta,plan:record.plan,onDownload:()=>exportRef.current('staffing-download')});
    else if(kind==='staffing-csv')downloadStaffingCsv(meta,record.plan);
    else if(kind==='pdf')openProgressPreview({target:printWindow,kind:'schedule',meta,plan:record.plan,onDownload:()=>exportRef.current('pdf-download')});

@@ -1,3 +1,4 @@
+import {loadCompanyLogo} from '../report/kshmsExecutionReport.mjs';
 import {calendarWindow,dayNumber,dayString,plannedBands,shortDate} from './kshmsProgressTimeline.mjs';
 import {staffingPlan,staffingNumber,weekLabel,weekKey} from './kshmsProgressStaffing.mjs';
 import {classifiedExportPlan} from './kshmsProgressCodes.mjs';
@@ -7,7 +8,12 @@ const text=value=>String(value??'').replace(/[\u2010-\u2015\u2212]/g,'-').replac
 const fullDate=value=>value?value.split('-').reverse().join('.'):'Ikke oppgitt';
 const tones={'Ikke startet':[208,225,231],'Pågår':[249,207,107],'Avventer':[167,196,244],'Ferdig':[142,219,174]};
 export const progressPdfName=(meta,kind)=>text(meta.title||'plan').replace(/[\\/:*?"<>|\x00-\x1f]/g,'-').slice(0,100)+(kind==='staffing'?'-bemanningsplan.pdf':'-fremdriftsplan.pdf');
-export function buildProgressPdf({JsPDF,meta,plan,kind='schedule'}){
+export async function progressBrandMeta({rpc,companyId,meta}){
+ const p=await rpc('work_profile_company_profile',{p_company_id:companyId});
+ if(p?.companyId!==companyId)throw Error('Firmaprofilen eller arbeidsprofilen er endret.');
+ return {...meta,companyName:p.companyName||meta.companyName,logoUrl:p.logoUrl||'',row:{...meta.row,data:{...meta.row?.data,company:{name:p.companyName||meta.companyName,logoUrl:p.logoUrl||''}}}};
+}
+export function buildProgressPdf({JsPDF,meta,plan,kind='schedule',logo=null}){
  const doc=new JsPDF({unit:'mm',format:'a4',orientation:'landscape',compress:true}),W=297,H=210,M=12,bottom=H-15;
  doc.setProperties({title:text(meta.title),author:text(meta.companyName),creator:'Expo ProffDok',subject:kind==='staffing'?'Bemanningsplan':'Fremdriftsplan'});
  let page=0,y=0;
@@ -15,8 +21,9 @@ export function buildProgressPdf({JsPDF,meta,plan,kind='schedule'}){
  const lines=(value,width,size=9)=>{doc.setFont('helvetica','normal');doc.setFontSize(size);return doc.splitTextToSize(text(value)||'-',width);};
  const newPage=(section,subtitle='')=>{
   if(page++)doc.addPage();doc.setFillColor(18,58,68);doc.rect(0,0,W,39,'F');
-  write(meta.companyName||'Expo ProffDok',M,10,9,true,[207,238,239]);write(kind==='staffing'?'BEMANNINGSPLAN':'FREMDRIFTSPLAN',W-M,10,9,true,[207,238,239],{align:'right'});
-  let titleSize=15,title=lines(meta.title||'Plan',W-2*M,titleSize);while(title.length>2&&titleSize>9)title=lines(meta.title||'Plan',W-2*M,--titleSize);write(title.slice(0,2),M,20,titleSize,true,[255,255,255]);
+  if(logo){const prop=doc.getImageProperties(logo),scale=Math.min(38/prop.width,13/prop.height);doc.setFillColor(255,255,255);doc.roundedRect(M,3,40,15,1,1,'F');doc.addImage(logo,'PNG',M+1,4,prop.width*scale,prop.height*scale);}
+  write(meta.companyName||'Expo ProffDok',logo?M+44:M,10,9,true,[207,238,239]);write(kind==='staffing'?'BEMANNINGSPLAN':'FREMDRIFTSPLAN',W-M,10,9,true,[207,238,239],{align:'right'});
+  let titleSize=15,title=lines(meta.title||'Plan',W-2*M,titleSize);while(title.length>2&&titleSize>9)title=lines(meta.title||'Plan',W-2*M,--titleSize);write(title.slice(0,2),M,logo?26:20,titleSize,true,[255,255,255]);
   write(lines([meta.planReference,meta.address].filter(Boolean).join(' | '),W-2*M,8).slice(0,2),M,45,8);
   write(section,M,56,12,true);if(subtitle)write(subtitle,W-M,56,8,false,[82,111,122],{align:'right'});y=62;
  };
@@ -68,11 +75,11 @@ export function buildProgressPdf({JsPDF,meta,plan,kind='schedule'}){
  const count=doc.internal.getNumberOfPages();for(let i=1;i<=count;i++){doc.setPage(i);write('Expo ProffDok | '+(meta.planReference||''),M,H-7,8);write(`Side ${i} av ${count}`,W-M,H-7,8,false,[82,111,122],{align:'right'});}
  return doc;
 }
-export async function downloadProgressPdf({kind='schedule',load,isCurrent=()=>true,loadPdf=()=>import('https://esm.sh/jspdf@2.5.1'),save}){
+export async function downloadProgressPdf({kind='schedule',load,isCurrent=()=>true,loadPdf=()=>import('https://esm.sh/jspdf@2.5.1'),loadLogo=loadCompanyLogo,save}){
  const check=()=>{if(!isCurrent())throw Error('Arbeidsprofilen eller planvisningen er endret.');};
- check();await load();check();const engine=await loadPdf();check();const fresh=await load();check();
+ check();const first=await load();check();const engine=await loadPdf();check();const logo=first.meta.logoUrl?await loadLogo(first.meta.logoUrl):null;check();if(first.meta.logoUrl&&!logo)throw Error('Firmalogoen kunne ikke hentes. Prøv igjen før du laster ned PDF.');const fresh=await load();check();if((fresh.meta.logoUrl||'')!==(first.meta.logoUrl||''))throw Error('Firmalogoen er endret. Last ned PDF på nytt.');
  const JsPDF=engine.jsPDF||engine.default?.jsPDF;if(!JsPDF)throw Error('PDF-motoren kunne ikke lastes.');
- const doc=buildProgressPdf({JsPDF,meta:fresh.meta,plan:fresh.plan,kind});check();
+ const doc=buildProgressPdf({JsPDF,meta:fresh.meta,plan:fresh.plan,kind,logo});check();
  const name=progressPdfName(fresh.meta,kind);if(save)await save(doc,name);else doc.save(name);
  return {name,pages:doc.internal.getNumberOfPages()};
 }

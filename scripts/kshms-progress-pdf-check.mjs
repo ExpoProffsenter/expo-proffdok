@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {buildProgressPdf,downloadProgressPdf,progressPdfName} from '../src/modules/kshms/kshmsProgressPdf.mjs';
+import {buildProgressPdf,downloadProgressPdf,progressPdfName,progressBrandMeta} from '../src/modules/kshms/kshmsProgressPdf.mjs';
 import {periodSessions} from '../src/modules/kshms/kshmsProgressTimeline.mjs';
 import {weekLabel,staffingHtml,staffingCsv} from '../src/modules/kshms/kshmsProgressStaffing.mjs';
 const engine=await import(process.env.KSHMS_JSPDF_NODE_PATH||process.env.HR_PRACTICE_JSPDF_PATH||'jspdf');const JsPDF=engine.jsPDF||engine.default?.jsPDF;
@@ -15,4 +15,9 @@ const long={activities:[{id:'long',title:'L'.repeat(200),trade:'Rørlegger',reso
 let live=true,saves=0,reads=0;const load=async()=>{reads++;return {meta,plan};};const options={load,loadPdf:async()=>({jsPDF:JsPDF}),isCurrent:()=>live,save:async()=>{saves++;}};
 await downloadProgressPdf(options);eq(reads,2,'fresh read before and after engine');eq(saves,1);
 await assert.rejects(()=>downloadProgressPdf({...options,loadPdf:async()=>{live=false;return {jsPDF:JsPDF};}}));checks++;eq(saves,1,'late engine cannot download after scope change');live=true;let count=0;await assert.rejects(()=>downloadProgressPdf({...options,load:async()=>{if(++count===2)throw Error('Access revoked');return {meta,plan};}}));checks++;eq(saves,1,'revoked fresh read cannot download');
+const logo='data:image/png;base64,'+fs.readFileSync('public/brands/ringside-rorleggerbedrift.png').toString('base64');
+for(const kind of ['schedule','staffing']){const doc=buildProgressPdf({JsPDF,meta,plan,kind,logo});eq(Buffer.from(doc.output('arraybuffer')).includes(Buffer.from('/Subtype /Image')),true,'real logo embedded on report');}
+eq((await progressBrandMeta({rpc:async()=>({companyId:'a',companyName:'Current firm',logoUrl:'current.png'}),companyId:'a',meta:{companyName:'Old'}})).companyName,'Current firm');
+await assert.rejects(()=>progressBrandMeta({rpc:async()=>({companyId:'b'}),companyId:'a',meta}));checks++;
+await assert.rejects(()=>downloadProgressPdf({...options,load:async()=>({meta:{...meta,logoUrl:'missing.png'},plan}),loadLogo:async()=>null}));checks++;
 console.log(`KS/HMS direct PDF: ${checks} assertions PASS: real multi-page PDF bytes, long note pagination, Norwegian ISO weeks, fresh post-engine authorization, canceled and revoked downloads.`);

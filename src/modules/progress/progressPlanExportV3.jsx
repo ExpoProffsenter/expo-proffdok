@@ -88,9 +88,9 @@ function defaultShareMessage(meta, plan) {
   return `Fremdriftsplanen for ${meta?.title || 'prosjektet'} er oppdatert.\n\nPlanlagt periode: ${period}\nProsjektuker: ${weeks}\nArbeidsoperasjoner: ${activities.length}\n\nÅpne Expo ProffDok for å se siste fremdriftsplan.`;
 }
 
-export function ProgressPlanExportActions({ projectId, dirty = false }) {
+export function ProgressPlanExportActions({ projectId, dirty = false, shareOnly = false }) {
   const client = useMemo(() => getProgressSupabaseClient(), []);
-  const safePreview = isProgressSafePreviewMode();
+  const safePreview = isProgressSafePreviewMode() || import.meta.env.VITE_EXPO_BACKEND_TARGET==='sandbox';
   const [working, setWorking] = useState(false);
   const [error, setError] = useState('');
   const [status, setStatus] = useState('');
@@ -177,14 +177,14 @@ export function ProgressPlanExportActions({ projectId, dirty = false }) {
     <div className="progress-export-shell">
       <div className="progress-export-toolbar" aria-label="Fremdrift eksport">
         <div>
-          <span>Fase 35B · Deling og eksport</span>
+          <span>Deling og eksport</span>
           <strong>Fremdriftsplan</strong>
           <small>{dirty ? 'Lagre endringene før eksport eller sending.' : 'Gantt med dynamiske prosjektuker, PDF/utskrift og prosjektmail.'}</small>
         </div>
         <div className="progress-export-buttons">
-          <button type="button" onClick={openPreview} disabled={!projectId || working || dirty}>
+          {!shareOnly&&<button type="button" onClick={openPreview} disabled={!projectId || working || dirty}>
             {working ? 'Klargjør…' : 'Åpne Gantt / PDF'}
-          </button>
+          </button>}
           <button type="button" className="progress-export-secondary" onClick={openShare} disabled={!projectId || working || dirty}>
             Send til prosjektinvolverte
           </button>

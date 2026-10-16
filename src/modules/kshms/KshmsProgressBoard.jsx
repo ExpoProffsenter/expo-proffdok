@@ -27,11 +27,12 @@ function PlanDialog({title,onClose,children,side=false,expanded=false}){
  </dialog>;
 }
 
-function OperationPicker({onAdd,onClose,operations}){
+function OperationPicker({onAdd,onClose,operations,standardOperations=[]}){
  const [search,setSearch]=useState(''),[trade,setTrade]=useState('');
  const groups=useMemo(()=>progressCodeGroups(search,trade),[search,trade]);
  const choice=o=><button type="button" key={o.id} className="secondary ks-code-choice" onClick={()=>onAdd({...o,trade:trade||o.trade})}><b>{o.nsCode}</b><span>{o.title.split(' · ').slice(1).join(' · ')}<small>{o.nsKind==='system'?'Systemkode':'Bygningsdel'} · {o.trades.join(', ')}</small></span><span aria-hidden="true">+</span></button>;
  return <PlanDialog title="Legg til arbeidsoperasjon" onClose={onClose}>
+  <div className="ks-plan-standard-choices">{standardOperations.length>0&&<details open><summary>Standardoppgaver fra tilbudsbyggeren</summary><div className="ks-plan-more">{standardOperations.map(o=><button type="button" className="secondary" key={o.id} onClick={()=>onAdd(o)}>{o.title}</button>)}</div></details>}</div>
   <p className="ks-plan-hint">Søk etter kode eller navn. Åpne en hovedkode for å velge underkode. Du kan tilpasse navn og fag etterpå.</p>
   <div className="ks-plan-picker-filters"><label>Søk i NS 3451<input type="search" autoFocus value={search} onChange={e=>setSearch(e.target.value)} placeholder="F.eks. 322, rørnett eller belysning"/></label><label>Fag<select aria-label="Fag" value={trade} onChange={e=>setTrade(e.target.value)}><option value="">Alle fag</option>{[...new Set(operations.flatMap(o=>o.trades||[o.trade]))].map(t=><option key={t}>{t}</option>)}</select></label></div>
   <div className="ks-code-tree">{groups.map(({root,rootMatches,children})=><details key={root.id} open={search.trim()?true:undefined}>
@@ -43,7 +44,7 @@ function OperationPicker({onAdd,onClose,operations}){
  </PlanDialog>;
 }
 
-function ActivityDrawer({people=[],excludeSundays,activity,readOnly,saving,onChange,onRemove,onMove,onClose,onSave,error,notice}){
+function ActivityDrawer({participantHint,people=[],excludeSundays,activity,readOnly,saving,onChange,onRemove,onMove,onClose,onSave,error,notice}){
  const [periodId,setPeriodId]=useState(''),[localError,setLocalError]=useState(''),[peopleQuery,setPeopleQuery]=useState('');
  const bands=plannedBands(activity.sessions,excludeSundays),band=bands.find(b=>b.sessions.some(s=>s.id===periodId))||bands[0];
  const patch=values=>onChange({...activity,...values});
@@ -65,6 +66,8 @@ function ActivityDrawer({people=[],excludeSundays,activity,readOnly,saving,onCha
  return <PlanDialog title={readOnly?'Se arbeidsoperasjon':'Rediger arbeidsoperasjon'} side onClose={onClose}>
   <p className="ks-plan-hint">Endringene følger kladden. Lagre planen når den er klar.</p>
   {(localError||error)&&<p role="alert" className="ks-plan-error">{localError||error}</p>}{notice&&<p role="status">{notice}</p>}
+  {participantHint&&<p className="ks-plan-hint">{participantHint}</p>}
+  {activity.sourceOptionTitles?.length>0&&<details><summary>Valgte opsjoner fra tilbudet</summary>{activity.sourceOptionTitles.map((t,i)=><p key={i}>{t}</p>)}</details>}
   <fieldset disabled={readOnly||saving} className="ks-plan-editor">
    <label>Arbeidsoperasjon<input maxLength={200} value={activity.title} onChange={e=>patch({title:e.target.value})}/></label>
    <div className="ks-plan-editor-pair"><label>Fag<input maxLength={160} value={activity.trade} onChange={e=>patch({trade:e.target.value})}/></label><label>Person / firma<input maxLength={250} value={activity.resource} onChange={e=>patch({resource:e.target.value})}/></label></div>
@@ -88,7 +91,7 @@ function ActivityDrawer({people=[],excludeSundays,activity,readOnly,saving,onCha
  </PlanDialog>;
 }
 
-export default function KshmsProgressBoard({plan,meta,readOnly,dirty,saving,loading,error,notice,onPlanChange,onSave,operations,stateKey,launchToken,onExport,people=[],onDismiss}){
+export default function KshmsProgressBoard({plan,meta,readOnly,dirty,saving,loading,error,notice,onPlanChange,onSave,operations,stateKey,launchToken,onExport,people=[],onDismiss,tools=null,standardOperations=[],participantHint=null}){
  const firstDate=()=>plan.activities.flatMap(a=>a.sessions).map(s=>s.date).sort()[0]||todayOslo();
  const initial=views.get(stateKey)||{},excludeSundays=plan.excludeSundays===true;
  const [view,setView]=useState(initial.view||'week'),[anchor,setAnchor]=useState(initial.anchor||firstDate),[query,setQuery]=useState(initial.query||''),[trade,setTrade]=useState(initial.trade||''),[compact,setCompact]=useState(initial.compact||false),[picker,setPicker]=useState(false),[editing,setEditing]=useState(initial.editing||''),[drag,setDrag]=useState(null),[localError,setLocalError]=useState(''),[undoCount,setUndoCount]=useState(0),[expanded,setExpanded]=useState(initial.launchToken===launchToken?(initial.expanded??true):true),[surface,setSurface]=useState(initial.surface||'schedule'),[exporting,setExporting]=useState(false);
@@ -165,6 +168,7 @@ export default function KshmsProgressBoard({plan,meta,readOnly,dirty,saving,load
   changed({...plan,excludeSundays:checked,activities:checked?plan.activities.map(a=>({...a,sessions:a.sessions.filter(s=>!isSunday(s.date))})):plan.activities});
  };
  const content=<section className="ks-plan-board" aria-label="Planoversikt">
+  {tools}
   <div className="ks-plan-surface" role="group" aria-label="Planvisning"><button type="button" aria-pressed={surface==='schedule'} onClick={()=>setSurface('schedule')}>Fremdriftsplan</button><button type="button" aria-pressed={surface==='staffing'} onClick={()=>setSurface('staffing')}>Bemanningsplan</button><details><summary>Eksport</summary><div>{[['pdf-download','Last ned fremdriftsplan (PDF)'],['staffing-download','Last ned bemanningsplan (PDF)'],['pdf','Forhåndsvis fremdriftsplan'],['staffing-pdf','Forhåndsvis bemanningsplan'],['ics','Last ned kalender (.ics)'],['staffing-csv','Last ned bemanning (.csv)']].map(([key,label])=><button type="button" className="secondary" key={key} disabled={dirty||saving||exporting||loading} onClick={()=>exportSaved(key)}>{label}</button>)}</div></details></div>
   <div className="ks-plan-toolbar"><div className="ks-plan-view-controls"><div className="ks-plan-view" role="group" aria-label="Tidsvisning">{[['day','Dag'],['week','Uke'],['month','Måned']].map(([key,label])=><button type="button" key={key} aria-pressed={view===key} onClick={()=>{setView(key);dragRef.current=null;setDrag(null);scroll.current?.scrollTo({left:0});}}>{label}</button>)}</div>{!expanded&&<button type="button" className="secondary" aria-label="Utvid planen" onClick={()=>setExpanded(true)}>Utvid</button>}</div>
    <div className="ks-plan-actions">{!readOnly&&<><button type="button" className="secondary" disabled={!editable||!undoCount} onClick={()=>{const previous=history.current.pop();if(previous){onPlanChange(previous);setUndoCount(history.current.length);}}}>Angre</button><button type="button" className="secondary" disabled={!editable} onClick={()=>setPicker(true)}>+ Arbeidsoperasjoner</button><button type="button" disabled={!editable||!dirty} onClick={onSave}>{saving?'Lagrer …':dirty?'Lagre fremdriftsplan':'Lagret'}</button></>}{readOnly&&<strong>Kun visning</strong>}</div>
@@ -205,8 +209,8 @@ export default function KshmsProgressBoard({plan,meta,readOnly,dirty,saving,load
   </div>
   </>}
 
-  {picker&&editable&&<OperationPicker operations={operations} onAdd={add} onClose={()=>setPicker(false)}/>}
-  {activity&&<ActivityDrawer key={activity.id} activity={activity} excludeSundays={excludeSundays} people={people} readOnly={readOnly} saving={saving} error={error} notice={notice} onChange={changeActivity} onClose={()=>setEditing('')} onSave={onSave} onRemove={()=>{changed({...plan,activities:plan.activities.filter(a=>a.id!==activity.id)});setEditing('');}} onMove={direction=>{const rows=[...plan.activities],index=rows.findIndex(a=>a.id===activity.id),to=index+direction;if(to>=0&&to<rows.length){[rows[index],rows[to]]=[rows[to],rows[index]];changed({...plan,activities:rows});}}}/>}
+  {picker&&editable&&<OperationPicker standardOperations={standardOperations} operations={operations} onAdd={add} onClose={()=>setPicker(false)}/>}
+  {activity&&<ActivityDrawer participantHint={participantHint} key={activity.id} activity={activity} excludeSundays={excludeSundays} people={people} readOnly={readOnly} saving={saving} error={error} notice={notice} onChange={changeActivity} onClose={()=>setEditing('')} onSave={onSave} onRemove={()=>{changed({...plan,activities:plan.activities.filter(a=>a.id!==activity.id)});setEditing('');}} onMove={direction=>{const rows=[...plan.activities],index=rows.findIndex(a=>a.id===activity.id),to=index+direction;if(to>=0&&to<rows.length){[rows[index],rows[to]]=[rows[to],rows[index]];changed({...plan,activities:rows});}}}/>}
  </section>;
  return expanded?<PlanDialog title={meta.title||'Fremdriftsplan'} expanded onClose={()=>{setExpanded(false);onDismiss?.();}}>{content}</PlanDialog>:<div className="ks-plan-launcher"><p>Åpne planbyggeren for å arbeide med tidslinjen eller bemanningen.</p><button type="button" onClick={()=>{setSurface('schedule');setExpanded(true);}}>Åpne planbygger</button> <button type="button" className="secondary" onClick={()=>{setSurface('staffing');setExpanded(true);}}>Åpne bemanningsplan</button>{dirty&&<p>Du har ulagrede endringer i kladden.</p>}</div>;
 }
