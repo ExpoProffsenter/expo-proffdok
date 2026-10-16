@@ -1,3 +1,9 @@
+## Preview: Min side og prosjektlisten – 16. oktober 2026
+
+Miljømål BEGGE, Preview først. Avgrenset UX etter godkjent planrelease: Min side gjenbruker eksisterende sammenfoldede HR-/kontaktoversikt, med faner først og varsler bare i Oversikt. Egne prosjekt-/KS-planer bruker samme autoriserte kilder og vises ved siden av hverandre på PC. Prosjektlisten bruker lokale fargede kort, fire nøkkeltall i én PC-rad, kompakt tomt samarbeidsfelt, mindre metadatafelt og én samlet tellerrad. Alle eksisterende snarveier er beholdt. Ingen main.jsx, global CSS, lagring, tilgang, varslingsregler, e-post, database, prosjekt-/tilbudsflyt eller planbygger endres.
+
+Ny relevant TEST OK kreves; tidligere godkjenning gjelder forrige release. Production og demo er foreløpig uendret. Scope, QA og testliste: docs/qa/PERSONAL_PROJECT_UX_20261016.md.
+
 ## Publisert: fremdrift, bemanning og Startside – 16. oktober 2026
 
 Kenneths TEST OK og uttrykkelige produksjonsgodkjenning er gjennomført. PR #254 er merget; funksjons-main e7363f8a37cf84caebf829a27bc8c25c71559a00, Core Safety #485 SUCCESS, Production dpl_G2NWYyXfjqDbinnzQYy9U8KN3fZV READY med korrekt databasebinding. Alle fire planmigrasjoner er installert og kontrollert i Production, med uendrede eksisterende prosjektplaner og faktisk lagring/lesing i rollback. Varseloversikten finnes bare på Startsiden; globale avvik-/gjennomføringsbannere er fjernet fra øvrige faner.

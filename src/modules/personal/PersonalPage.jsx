@@ -3,7 +3,7 @@ import {BookOpen,UserRound,MessageSquare,HeartPulse,Settings,ArrowRight,LayoutDa
 import {personalRights} from './personalAccess.js';
 import AccountContact from './AccountContact.jsx';
 import PrivateContact from '../hr/PrivateContact.jsx';
-import HrFollowupNotice from '../hr/HrFollowupNotice.jsx';
+import HomeFollowups from '../home/HomeFollowups.jsx';
 import './personal.css';
 import {PersonalTimeCard} from '../time/TimeEntryPoint.jsx';
 const KshmsMyProgressPlans=React.lazy(()=>import('../kshms/KshmsMyProgressPlans.jsx'));
@@ -30,8 +30,8 @@ export default function PersonalPage({context,kshmsContext,hrContext,userId,auth
  const firstName=fullName.split(/\s+/)[0];
  return <section className={nav?.enabled?'personal-page':undefined} aria-label={nav?.enabled?'Min side':'Min profil / e-postvalg'} aria-busy={pending}>
   {nav?.enabled&&<header className="personal-heading"><div><span className="personal-eyebrow"><ShieldCheck size={16} aria-hidden="true"/> DIN ARBEIDSHVERDAG</span><h2>{firstName?'Hei, '+firstName:'Min side'}<span>Dette er din plass.</span></h2><p>Håndboka, oppfølgingene og profilen din – enkelt å finne, lett å bruke.</p></div><div className="personal-avatar" aria-hidden="true">{fullName?fullName.split(/\s+/).slice(0,2).map(part=>part[0]).join('').toLocaleUpperCase('nb-NO'):<UserRound/>}</div></header>}
-  <HrFollowupNotice context={rights.hr?hrContext:null} userId={userId} onSetup={onOpenHrSetup}/>
   {nav?.enabled&&<nav className="personal-tabs" aria-label="Min side visning">{visible.map(id=>{const Icon=sectionIcons[id];return <button key={id} type="button" className={screen===id?'active':'secondary'} aria-pressed={screen===id} disabled={pending} onClick={()=>choose(id)}><Icon size={18} aria-hidden="true"/>{sections[id]}</button>;})}</nav>}
+  <div className="personal-notices" hidden={screen!=='overview'||pending}><HomeFollowups key={nav?.scope||'personal'} hrContext={rights.hr?hrContext:null} userId={userId} onSetup={onOpenHrSetup}/></div>
   {pending&&<div className="personal-checking" role="status"><ShieldCheck aria-hidden="true"/><div><strong>Kontrollerer tilgangen din …</strong><p>Du kommer tilbake til samme visning når kontrollen er ferdig.</p></div></div>}
   {screen==='overview'&&!pending&&<div className="personal-cards">
    {rights.enabled&&<Suspense fallback={null}><KshmsMyProgressPlans key={'project:'+scope} source="project" context={context}/></Suspense>}
