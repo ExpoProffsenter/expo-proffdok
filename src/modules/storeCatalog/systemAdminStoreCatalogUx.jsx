@@ -40,13 +40,14 @@ export function installSystemAdminStoreCatalogUx() {
       return false;
     }
 
-    if (existing && section.contains(existing)) return true;
+    const target = section.querySelector('[data-systemadmin-store-catalog-slot]') || section;
+    if (existing && target.contains(existing)) return true;
     if (existing) unmount();
 
     const mount = document.createElement("div");
     mount.id = MOUNT_ID;
     mount.style.marginTop = "16px";
-    section.appendChild(mount);
+    target.appendChild(mount);
 
     root = createRoot(mount);
     root.render(

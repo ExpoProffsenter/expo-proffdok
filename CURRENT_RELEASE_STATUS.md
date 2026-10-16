@@ -1,3 +1,49 @@
+## Support-meny, Min side og gruppert Systemadmin – Preview 17.10.2026
+
+Kenneth har godkjent implementeringen av egen Support ved Hjelp, eget kort for
+uleste supportsvar på Min side og Systemadmin i samme grupperte stil som KS/HMS.
+Hjelp har igjen bare veiledning. Samme samtale åpnes fra Min side og Support.
+Besøkte adminpaneler bevarer søk/utkast; eksisterende handlinger og serverkontroller
+beholdes. Dette er en uttrykkelig utvidelse av UI-/navigasjonsscopet i PR #263.
+
+Miljømål BEGGE; bare Preview/Sandbox foreløpig. Additiv read-only oppsummering og
+ulest-filter er installert i Sandbox. Ingen Production-, e-post- eller demoendring.
+QA, scope og ny brukertest: docs/qa/SUPPORT_LAYOUT_20261017.md. Eksakt head/CI/deploy
+føres i PR #263. Ny relevant TEST OK kreves før merge og senere main → demo.
+
+## Support – separat Preview-leveranse etter PR #262
+
+Miljømål BEGGE. Faktisk baseline main 824245e8c25e3a7d83febefe1b116a1a3fd108a1;
+PR #262 er ferdig publisert (inkludert main → demo), slik PR-ens siste status viser.
+De ventende #262-notatene lenger nede er historikk.
+
+Support er implementert i egen PR fra ren main: Hjelp → Kontakt support/egne
+saker, Systemadmin-innboks/svar/interne merknader/status/ansvarlig, privat database,
+sikker utgående kø og signert mottaksintegrasjon. Server bestemmer eier/firma og
+mottakere. Den interne mottakeradressen finnes ikke i klientkode eller repo.
+Appen lover ikke fungerende e-post før serveroppsett og faktisk prøve er fullført.
+
+Kun Sandbox er migrert. De to nye Edge Functions er deployet med utsending
+avslått som standard. Ingen scheduler, DNS-endring eller ekte e-postsending er
+utført. Production og permanent demo er uendret. For komplett e-postdialog
+må serverhemmeligheter, mottaksunderdomene, Resend-webhook og egen scheduler
+konfigureres og faktisk mottak prøves. Ingen merge uten ny TEST OK.
+
+Scope, QA og brukertest: docs/qa/SUPPORT_20261016.md.
+Oppfølging 17.10: riktig eksisterende Resend-konto er gjenfunnet via vanlig
+innlogging. Offentlig From er noreply@expoproffsenter.no; kontoens ferdige
+mottaksdomene kan brukes uten DNS-endring. Etter Kenneths uttrykkelige
+godkjenning er en separat mottaksnøkkel lagret som RESEND_RECEIVING_API_KEY i
+Production Secrets. Det er eneste Production-endring; support er ikke releaset
+eller aktivert. Webhook, køjobb, faktisk prøve og relevant TEST OK gjenstår.
+Køjobb-oppfølging: separat support-cron og Vault-token er nå implementert og
+installert avslått bare i Sandbox. 86 PostgreSQL- og 55 transportkontroller samt
+full lokal critical/build PASS. Ny slutt-CI/Preview føres i PR #263. Webhook-
+aktivering, faktisk e-postprøve og relevant TEST OK gjenstår før Production.
+Aktivering og gjenstående kontroll: docs/SUPPORT_OPERATIONS_20261016.md.
+Fast Preview beholdes på fix-company-admin-scope-20261015; ny separat PR følger
+supportleveransen. Baseline/commit/CI/deploy bevisføres i den nye PR-en.
+
 ## Prosjektlisten: mindre luft og valgfri detaljvisning – Preview 16.10.2026
 
 ## Kompakt referansevisning og supportplan – 16. oktober 2026

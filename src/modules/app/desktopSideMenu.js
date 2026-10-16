@@ -4,6 +4,7 @@ const DESKTOP_QUERY = '(min-width: 1181px)';
 const BAR_ID = 'expo-desktop-menu-bar';
 const HOME_ID = 'expo-desktop-home-button';
 const HELP_ID = 'expo-desktop-help-button';
+const SUPPORT_ID = 'expo-desktop-support-button';
 const DRAWER_ID = 'expo-desktop-menu-drawer';
 const BACKDROP_ID = 'expo-desktop-menu-backdrop';
 const NATIVE_HOME_MARKER = 'data-expo-native-home-source';
@@ -55,7 +56,7 @@ function findNativeHeaderButton(labels = []) {
   );
   return Array.from(document.querySelectorAll('button')).find((button) => {
     if (!(button instanceof HTMLButtonElement)) return false;
-    if (button.id === HOME_ID || button.id === HELP_ID) return false;
+    if (button.id === HOME_ID || button.id === HELP_ID || button.id === SUPPORT_ID) return false;
     return accepted.has(cleanLabel(button.textContent).toLowerCase());
   }) || null;
 }
@@ -141,6 +142,17 @@ function goToHelp() {
   if (nativeHelp instanceof HTMLButtonElement) nativeHelp.click();
 }
 
+function goToSupport() {
+  findSourceNavButton(['Support'])?.click();
+}
+
+function styleBarSupportButton(button) {
+  styleBarHelpButton(button);
+  button.textContent = 'Support';
+  button.style.margin = '0';
+  button.hidden = !findSourceNavButton(['Support']);
+}
+
 function styleBarHomeButton(homeButton) {
   if (!(homeButton instanceof HTMLButtonElement)) return;
   const supportProjectOpen = Boolean(findNativeHeaderButton('← Supportoversikt'));
@@ -186,23 +198,27 @@ function buildMenuShell() {
   let bar = document.getElementById(BAR_ID);
   let homeButton = document.getElementById(HOME_ID);
   let helpButton = document.getElementById(HELP_ID);
+  let supportButton = document.getElementById(SUPPORT_ID);
   let drawer = document.getElementById(DRAWER_ID);
   let backdrop = document.getElementById(BACKDROP_ID);
 
-  if (bar && homeButton && helpButton && drawer && backdrop) {
+  if (bar && homeButton && helpButton && supportButton && drawer && backdrop) {
     const toggle = bar.querySelector('.expoDesktopMenuToggle');
     const current = bar.querySelector('.expoDesktopMenuCurrent');
     if (toggle && homeButton.parentElement !== bar) toggle.after(homeButton);
     if (current && homeButton.nextElementSibling !== current) current.before(homeButton);
     if (helpButton.parentElement !== bar) bar.append(helpButton);
+    if (supportButton.parentElement !== bar) bar.append(supportButton);
     styleBarHomeButton(homeButton);
     styleBarHelpButton(helpButton);
-    return { bar, homeButton, helpButton, drawer, backdrop };
+    styleBarSupportButton(supportButton);
+    return { bar, homeButton, helpButton, supportButton, drawer, backdrop };
   }
 
   bar?.remove();
   homeButton?.remove();
   helpButton?.remove();
+  supportButton?.remove();
   drawer?.remove();
   backdrop?.remove();
 
@@ -240,7 +256,14 @@ function buildMenuShell() {
   current.className = 'expoDesktopMenuCurrent';
   current.setAttribute('aria-live', 'polite');
 
+  supportButton = document.createElement('button');
+  supportButton.id = SUPPORT_ID;
+  supportButton.type = 'button';
+  supportButton.className = 'secondary expoDesktopHeaderShortcut';
+  supportButton.addEventListener('click', goToSupport);
+  styleBarSupportButton(supportButton);
   bar.append(toggle, homeButton, current, helpButton);
+  bar.append(supportButton);
 
   backdrop = document.createElement('div');
   backdrop.id = BACKDROP_ID;
@@ -307,7 +330,7 @@ function buildMenuShell() {
   });
 
   drawer._expoSetOpen = setOpen;
-  return { bar, homeButton, helpButton, drawer, backdrop };
+  return { bar, homeButton, helpButton, supportButton, drawer, backdrop };
 }
 
 function syncDrawerWithSource(sourceNav, shell) {
@@ -324,7 +347,7 @@ function syncDrawerWithSource(sourceNav, shell) {
   const sourceLabels = sourceButtons.map((button) => cleanLabel(button.textContent));
   const projectWorkspaceNav = isProjectWorkspaceLabels(sourceLabels);
   const drawerSourceButtons = projectWorkspaceNav
-    ? sourceButtons.filter((button) => cleanLabel(button.textContent) !== 'Hjelp')
+    ? sourceButtons.filter((button) => !['Hjelp','Support'].includes(cleanLabel(button.textContent)))
     : sourceButtons;
   const drawerNav = shell.drawer.querySelector('.expoDesktopDrawerNav');
   const current = shell.bar.querySelector('.expoDesktopMenuCurrent');
@@ -333,6 +356,7 @@ function syncDrawerWithSource(sourceNav, shell) {
   hideNativeWorkspaceHomeButton();
   styleBarHomeButton(shell.homeButton);
   styleBarHelpButton(shell.helpButton);
+  styleBarSupportButton(shell.supportButton);
 
   const activeSourceButton = sourceButtons.find((button) => button.classList.contains('on')) || null;
   const activeLabel = cleanLabel(activeSourceButton?.textContent || '');
@@ -394,6 +418,7 @@ export function installDesktopSideMenu() {
     document.getElementById(BAR_ID)?.remove();
     document.getElementById(HOME_ID)?.remove();
     document.getElementById(HELP_ID)?.remove();
+    document.getElementById(SUPPORT_ID)?.remove();
     document.getElementById(DRAWER_ID)?.remove();
     document.getElementById(BACKDROP_ID)?.remove();
   };

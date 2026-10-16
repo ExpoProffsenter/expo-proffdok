@@ -1,6 +1,31 @@
 # Support – avtalt plan 16. oktober 2026
 
-Status: Planlagt som egen leveranse etter pågående UX-runde. Ingen supportkode,
+UX-oppfølging godkjent 17.10: eget Support-menypunkt ved Hjelp; Min side viser
+uleste supportsvar og åpner den samme saken. Systemadmin grupperes som KS/HMS,
+med én arbeidsflate om gangen. Den tidligere innebygde listen i Hjelp flyttes.
+Eksisterende handlinger og e-postkontrakt beholdes. Scope/QA/brukerprøve:
+qa/SUPPORT_LAYOUT_20261017.md. Ny TEST OK gjelder denne Preview-versjonen.
+
+Statusoppdatering: Implementert i separat Preview-leveranse etter publisert PR #262.
+App/database/transport er skrevet og Sandbox er migrert. Faktisk toveis e-post
+er ikke aktivert eller prøvd; serverhemmeligheter, Resend-/DNS-oppsett og egen
+scheduler gjenstår. Se SUPPORT_OPERATIONS_20261016.md og qa/SUPPORT_20261016.md.
+Planen nedenfor beskriver fortsatt kontrakten.
+
+Kontrollert senere 16.10: eksisterende konto er gjenfunnet med Kenneths vanlige
+innlogging. Avsenderdomenet er `expoproffsenter.no`, og kontoens ferdige
+`ualoomorai.resend.app` kan brukes til svarmottak uten DNS-endring. Eksisterende
+Sending access beholdes; separat Receiving API-tilgang, signert webhook og
+faktisk prøve gjenstår. Ingen nøkkelverdier eller intern mottaker lagres her.
+Oppfølging 17.10: Kenneth har godkjent separat mottaksnøkkel med Full access;
+den er opprettet og lagret i Production Secrets som RESEND_RECEIVING_API_KEY.
+Eksisterende sendetilgang er beholdt. Webhook, køjobb, faktisk prøve og TEST OK
+gjenstår; nøkkelgodkjenningen aktiverer ikke support i Production.
+Køjobben er deretter implementert med privat Vault-token og separat */5-cron.
+Den er installert avslått bare i Sandbox, med 86 SQL- og 55 transportkontroller.
+Production-aktivering og faktisk e-postprøve krever fortsatt egen godkjenning.
+
+Opprinnelig planstatus: Planlagt som egen leveranse etter pågående UX-runde. Ingen supportkode,
 SQL, mottaksadresse, DNS eller e-postutsending er endret i UX-runden.
 Miljømål ved implementering: BEGGE, med Preview og ny TEST OK før produksjon.
 
