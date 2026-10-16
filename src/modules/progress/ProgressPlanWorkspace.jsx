@@ -83,6 +83,7 @@ function normalizeActivity(activity = {}) {
     title: clean(activity.title || 'Arbeidsoperasjon'),
     trade: clean(activity.trade || ''),
     resource: clean(activity.resource || ''),
+    ...(Array.isArray(activity.assigneeIds) ? { assigneeIds: [...activity.assigneeIds] } : {}),
     ...(activity.crewSize != null ? { crewSize: activity.crewSize } : {}),
     status: STATUS_OPTIONS.includes(activity.status) ? activity.status : 'Ikke startet',
     ...(activity.nsCode ? { nsCode: clean(activity.nsCode), nsKind: activity.nsKind === 'system' ? 'system' : 'building' } : {}),

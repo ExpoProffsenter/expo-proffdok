@@ -26,6 +26,7 @@ w.__client={rpc:async(name,args={})=>{
  if(name==='hr_contact_get')return {data:{...value,registered:true,available:false,employee:{id:employee.id,revision:1}}};
  if(name==='hr_purge_status')return {data:{...value,receipts:[],next:null}};
  if(name==='hr_template_list')return {data:{...value,templates:[],next:null}};
+ if(name==='kshms_progress_mine')return {data:{context:{...context},active_date:new Date().toISOString().slice(0,10),plans:[],next:null}};
  if(name==='kshms_progress_list')return {data:{context:{...context},plans:[],next:null}};
  if(name==='kshms_get_state')return {data:{context:{...context},settings:{trades:[],revision:1,responsible_user_id:context.user_id,next_review_on:'2026-12-01'},routines:[],versions:[],members:[],assignments:[],acknowledgments:[],reviews:[]}};
  if(name==='kshms_assignment_reminder_tasks')return {data:{company_id:context.company_id,user_id:context.user_id,groups:[]}};

@@ -20,6 +20,7 @@ try{
   let contactData={address:'QA Gate',relative_name:'QA Pårørende',relative_phone:'87654321'};
   const contact=()=>({context,registered:true,available:contactAvailable,editable:true,employee:{id:'e',revision:employeeRev},revision:contactRev,data:contactAvailable?structuredClone(contactData):null});
   w.__client={auth:{getUser:async()=>({data:{user:structuredClone(account)}}),updateUser:async p=>{updates.push(structuredClone(p));account={...account,user_metadata:p.data};return {data:{user:structuredClone(account)}};}},rpc:async(name,args)=>{
+   if(name==='kshms_progress_mine')return {data:{context,active_date:new Date().toISOString().slice(0,10),plans:[],next:null}};
    if(name==='get_my_marketing_email_preference')return {data:{email_opt_in:pref}};
    if(name==='set_my_marketing_email_preference'){pref=args.p_opt_in;prefWrites.push(pref);return {data:{email_opt_in:pref}};}
    if(name==='hr_contact_get'){
@@ -46,7 +47,7 @@ try{
   await act(async()=>w.__render('page',{context:null,userId:undefined,authUser:null,supabaseClient:w.__client}));
   assert(!doc.querySelector('.personal-page'),'anonymous loading must not crash or expose Min side');
   await act(async()=>w.__render('page',props()));
-  assert.equal(doc.querySelectorAll('.personal-card').length,4,'time entry card joins all three preserved overview cards');
+  assert.equal(doc.querySelectorAll('.personal-card').length,5,'progress plan card joins time and all three preserved overview cards');
   assert(button('Mine timer'),'employee time entry is a personal route');
   assert.equal(doc.querySelectorAll('.personal-upcoming').length,2,'available HR types are grouped');
   assert.equal(doc.querySelectorAll('.personal-status').length,2);

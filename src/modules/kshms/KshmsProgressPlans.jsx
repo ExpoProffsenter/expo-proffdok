@@ -16,11 +16,11 @@ export default function KshmsProgressPlans({context,active=true}){
  const companyId=context.company_id,userId=context.user_id,scope=companyId+':'+userId;
  const session=useMemo(()=>progressSession({rpc:kshmsRpc,companyId,userId}),[scope]);
  const [list,setList]=useState(null),[selected,setSelected]=useState(null),[archived,setArchived]=useState(false),[query,setQuery]=useState(''),[form,setForm]=useState(empty),[creating,setCreating]=useState(false),[editing,setEditing]=useState(false),[dirty,setDirty]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState(''),[reload,setReload]=useState(()=>crypto.randomUUID()),[choosing,setChoosing]=useState(true);
- const exportRef=useRef(null);
+ const exportRef=useRef(null),peopleRef=useRef([]);
  const epoch=useRef(0),alive=useRef(false),recordRef=useRef(null),busyRef=useRef(false),detailsRevision=useRef(null);
  const refresh=useCallback(async()=>{
   const ticket=++epoch.current;setError('');
-  try{const value=await session.list(archived);if(alive.current&&ticket===epoch.current)setList(value);}
+  try{const [value,roster]=await Promise.all([session.list(archived),session.people()]);value.people=roster.people;if(alive.current&&ticket===epoch.current)setList(value);}
   catch(e){if(alive.current&&ticket===epoch.current){setList(null);setError(e.message);}}
  },[session,archived]);
  useEffect(()=>{
@@ -31,6 +31,7 @@ export default function KshmsProgressPlans({context,active=true}){
   return()=>{alive.current=false;++epoch.current;events.forEach(name=>window.removeEventListener(name,invalidate));document.removeEventListener('visibilitychange',invalidate);};
  },[scope,active,refresh,context.manage]);
  const ownList=list?.context?.company_id===companyId&&list.context.user_id===userId?list:null;
+ peopleRef.current=ownList?.people||[];
  const manage=Boolean(context.manage&&ownList?.context.manage);
  const current=()=>alive.current&&active;
  const open=async (id,{discard=false}={})=>{
@@ -44,7 +45,7 @@ export default function KshmsProgressPlans({context,active=true}){
  const adapter=useMemo(()=>!selected?null:{
   meta:{id:selected.id,title:selected.title,address:selected.address,locked:!manage||selected.archived},
   operations:KSHMS_PROGRESS_OPERATIONS,
-  renderWorkspace:props=><KshmsProgressBoard {...props} operations={KSHMS_PROGRESS_OPERATIONS} stateKey={scope+':'+selected.id} launchToken={reload} onExport={kind=>exportRef.current(kind)}/>,
+  renderWorkspace:props=><KshmsProgressBoard {...props} operations={KSHMS_PROGRESS_OPERATIONS} stateKey={scope+':'+selected.id} launchToken={reload} people={peopleRef.current} onExport={kind=>exportRef.current(kind)}/>,
   load:async()=>{
    const value=await session.get(selected.id);if(!current())throw Error('Planen er lukket.');recordRef.current=value.record;
    const draft=drafts.get(scope+':'+selected.id);

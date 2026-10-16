@@ -6,6 +6,7 @@ import PrivateContact from '../hr/PrivateContact.jsx';
 import HrFollowupNotice from '../hr/HrFollowupNotice.jsx';
 import './personal.css';
 import {PersonalTimeCard} from '../time/TimeEntryPoint.jsx';
+const KshmsMyProgressPlans=React.lazy(()=>import('../kshms/KshmsMyProgressPlans.jsx'));
 const PersonalTimeWorkspace=React.lazy(()=>import('../time/TimeEntryPoint.jsx'));
 const KshmsModule=React.lazy(()=>import('../kshms/KshmsModule.jsx'));
 const HrModule=React.lazy(()=>import('../hr/HrModule.jsx'));
@@ -33,6 +34,7 @@ export default function PersonalPage({context,kshmsContext,hrContext,userId,auth
   {nav?.enabled&&<nav className="personal-tabs" aria-label="Min side visning">{visible.map(id=>{const Icon=sectionIcons[id];return <button key={id} type="button" className={screen===id?'active':'secondary'} aria-pressed={screen===id} disabled={pending} onClick={()=>choose(id)}><Icon size={18} aria-hidden="true"/>{sections[id]}</button>;})}</nav>}
   {pending&&<div className="personal-checking" role="status"><ShieldCheck aria-hidden="true"/><div><strong>Kontrollerer tilgangen din …</strong><p>Du kommer tilbake til samme visning når kontrollen er ferdig.</p></div></div>}
   {screen==='overview'&&!pending&&<div className="personal-cards">
+   {rights.kshms&&<Suspense fallback={<p role="status">Henter fremdriftsplaner …</p>}><KshmsMyProgressPlans key={scope} context={kshmsContext}/></Suspense>}
    {rights.hr&&<PersonalTimeCard context={hrContext} onOpen={()=>choose('time')}/>}
    {rights.kshms&&<article className="personal-card personal-card-handbook"><div className="personal-card-icon"><BookOpen aria-hidden="true"/></div><span className="personal-card-eyebrow">TRYGG I JOBBEN</span><h3>Personalhåndboka</h3><p>Finn rutinene du har fått. Les, bekreft og slå opp tidligere utgaver når du trenger dem.</p><button type="button" className="secondary" onClick={()=>choose('handbook')}>Åpne personalhåndboka <ArrowRight aria-hidden="true"/></button></article>}
    {rights.hr&&<article className="personal-card personal-card-hr"><div className="personal-card-icon"><UserRound aria-hidden="true"/></div><span className="personal-card-eyebrow">DEG OG DIN LEDER</span><h3>Mine oppfølginger</h3>

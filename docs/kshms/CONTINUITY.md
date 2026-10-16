@@ -1,3 +1,13 @@
+## Mine aktive fremdriftsplaner og deltakerlag – 16. oktober 2026
+
+Miljømål BEGGE, Preview først i samme PR #254. Hver KS/HMS-oppgave kan ha valgte appbrukere fra aktivt firma med gjeldende KS/HMS-tilgang. IDs lagres i planens assigneeIds. Antall personer er et separat, valgfritt bemanningstall som også kan dekke innleide. Ingen medlemskap/modultilganger opprettes. Deltakere er planlagt arbeidslag, ikke nye fristansvarlige; ingen e-post sendes.
+
+Min side → Oversikt viser Mine aktive fremdriftsplaner. Serveren bruker norsk dato og første/siste økt på brukerens egne oppgaver som ikke er Ferdig. Perioden inkluderer mellomliggende fridager. Udaterte, fremtidige, utløpte og arkiverte planer vises ikke. Planvinduet og eksporten inneholder bare brukerens egne oppgaver i planen. Datoperioden kontrolleres igjen ved åpning, eksport, fokus/dvale og datobytte. Bare UI-valg beholdes mellom visninger; payload leses på nytt. Bevisst lukking respekteres.
+
+Nye avgrensede RPC-er: kshms_progress_people og kshms_progress_mine. Privat trigger validerer unike kanoniske bruker-ID-er, høyst 50 per oppgave, aktivt firmamedlemskap og KS/HMS-tilgang ved nye valg. Eksisterende deltakere som senere mister tilgang kan beholdes som historikk eller fjernes, men kan ikke velges på nytt; bortfalt tilgang gir ingen personlig lesetilgang. Eksisterende save/CAS/readback og privat RLS-tabell beholdes. Additiv migrasjon 20261016132206_kshms_progress_participants, først Sandbox.
+
+Drahjelpen har nå en fast høyde over tidslinjen. Drag starter uten å legge inn et nytt bunnfelt eller krympe arbeidsområdet, og hjelpen fanger ingen pekerhendelser. Min side-popuper ligger utenfor oversiktskortets CSS slik at tidslinjens knapper beholder layout. 3-måneders VVS-eksempel opprettes separat som Sandbox-data, aldri som produksjonsmigrasjon. Verifikasjon og eksakt releasebevis: docs/qa/KSHMS_PROGRESS_20261016.md og PR #254.
+
 ## KS/HMS-planbygger: popup, bemanning og flere underkoder – 16. oktober 2026
 
 Miljømål BEGGE, Preview først i PR #254. Åpning/opprettelse viser planbyggeren direkte i en stor popup over appen. Tilbake lukker popupen; Åpne planbygger og Åpne bemanningsplan åpner igjen. Fokus/dvale respekterer bevisst lukking og bevarer kladd og valgt visning etter fersk tilgangskontroll.

@@ -26,3 +26,7 @@
 @media(max-width:700px){.ks-plan-surface{gap:5px}.ks-plan-surface>button{font-size:12px;padding:8px}.ks-plan-surface summary{padding:9px 6px;font-size:12px}.ks-staffing-cards{gap:6px;grid-template-columns:repeat(2,minmax(0,1fr))}.ks-staffing-cards>div{padding:10px}.ks-staffing-cards>div:last-child{grid-column:1/-1}.ks-staffing-cards strong{font-size:23px}.ks-staffing th,.ks-staffing td{padding:8px;font-size:12px}.ks-plan-expanded .ks-plan-board>.ks-plan-hint{display:none}}
 
 .ks-plan-surface>button[aria-pressed=false]{background:#edf6f8;color:#245660;border-color:#c7dde3}
+
+.ks-plan-people{display:grid;gap:7px;max-height:200px;overflow:auto;margin-top:10px}.ks-plan-dialog .ks-plan-people label{display:flex;align-items:center;gap:8px;font-weight:500;padding:6px}.ks-plan-dialog .ks-plan-people input{width:18px;height:18px;min-height:18px;padding:0;flex:none}.ks-plan-participants{border:1px solid #d7e5e9;border-radius:9px;padding:10px}.ks-plan-participants p{font-size:12px;color:#587580}.ks-plan-gesture-help{height:36px;min-height:36px;max-height:36px;overflow:auto;box-sizing:border-box;flex-shrink:0;pointer-events:none}.ks-plan-gesture-help[role=status]{color:#236675}
+
+@media(max-width:700px){.ks-plan-expanded .ks-plan-board>.ks-plan-gesture-help{display:block;font-size:11px}}
