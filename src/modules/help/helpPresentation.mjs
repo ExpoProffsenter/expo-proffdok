@@ -1,6 +1,6 @@
 // Global app flow, followed by the project workspace flow and administration.
-export const HELP_FLOW=['start','mobil','sales','badskisse','butikktilbud','company-customers-vat','cordel','prissok','firmaProfil','epostvalg','arbeidsprofil','firma','prosjektliste','info','tilbud','prosjektering','quality','produkter','overflater','bilder','tilgang','fagUtstyr','sjekklister','avvik','project-document-overview','chat','interne','overtagelse','garanti','rapport','kshms','hr','hjelp','systemadmin'];
-const PROJECT_HELP=new Set(['quality','info','tilbud','prosjektering','produkter','overflater','bilder','tilgang','fagUtstyr','sjekklister','avvik','project-document-overview','chat','interne','overtagelse','garanti','rapport','prosjektliste']);
+export const HELP_FLOW=['start','mobil','sales','badskisse','butikktilbud','company-customers-vat','cordel','prissok','firmaProfil','epostvalg','arbeidsprofil','firma','prosjektliste','info','tilbud','prosjektering','project-progress','quality','produkter','overflater','bilder','tilgang','fagUtstyr','sjekklister','avvik','project-document-overview','chat','interne','overtagelse','garanti','rapport','kshms','hr','hjelp','systemadmin'];
+const PROJECT_HELP=new Set(['project-progress','quality','info','tilbud','prosjektering','produkter','overflater','bilder','tilgang','fagUtstyr','sjekklister','avvik','project-document-overview','chat','interne','overtagelse','garanti','rapport','prosjektliste']);
 export function presentHelpTopics(sections,{moduleKeys=[],canUseKshms=false,canUseHr=false,isCompanyAdmin=false,isSystemAdmin=false,canExportCordel=false,canUseInternalCommerce=false}={}){
  const keys=new Set(moduleKeys);
  return sections.filter(item=>{

@@ -95,6 +95,7 @@ jobs:
         run: |
           export HR_PGLITE_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/@electric-sql/pglite/dist/index.js"
           export KSHMS_JSDOM_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/jsdom/lib/api.js"
+          node scripts/kshms-progress-db-check.mjs
           node scripts/stocktake-db-check.mjs
           node scripts/time-registration-db-check.mjs
           node scripts/time-registration-react-check.mjs
@@ -133,3 +134,14 @@ jobs:
           export PLAYWRIGHT_MODULE="$RUNNER_TEMP/company-admin-browser-qa/node_modules/playwright/index.mjs"
           node scripts/company-admin-react-check.mjs
           node scripts/hr-contact-reminder-react-check.mjs
+          node scripts/home-followups-react-check.mjs
+          node scripts/progress-layout-react-check.mjs
+          export KSHMS_JSPDF_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/jspdf/dist/jspdf.es.min.js"
+          export KSHMS_JSPDF_NODE_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/jspdf/dist/jspdf.node.min.js"
+          node scripts/project-progress-db-check.mjs
+          node scripts/project-progress-react-check.mjs
+          node scripts/progress-focus-react-check.mjs
+          node scripts/page-scroll-memory-check.mjs
+          node scripts/kshms-progress-pdf-check.mjs
+          node scripts/kshms-progress-timeline-check.mjs
+          node scripts/kshms-progress-react-check.mjs
