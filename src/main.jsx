@@ -64,7 +64,8 @@ import { ensureExpoProffDokAppBranding, warrantyArchiveNotice, userGuidePdfPath,
 import AppErrorBoundary from './modules/app/AppErrorBoundary.jsx';
 import AppUpdateNotice from './modules/app/AppUpdateNotice.jsx';
 import AppNewsNotice from './modules/app/AppNewsNotice.jsx';
-import AppNewsAdmin from './modules/app/AppNewsAdmin.jsx';
+import SystemAdminWorkspace from './modules/app/SystemAdminWorkspace.jsx';
+import SupportWorkspace from './modules/support/SupportWorkspace.jsx';
 import MarketingEmailPreference from './modules/app/MarketingEmailPreference.jsx';
 import { shouldRebootstrapAuthState } from './modules/auth/authStateRefreshPolicy.mjs';
 import { markSystemAdminProjectSupportQuery } from './modules/access/systemAdminProjectScopeGuard.js';
@@ -691,6 +692,8 @@ const HomeFollowups = React.lazy(() => import('./modules/home/HomeFollowups.jsx'
       };
     }, []);
     const [tab, setTab] = (0, import_react.useState)("prosjekt");
+    const [adminArea, setAdminArea] = (0, import_react.useState)("overview");
+    const [supportRequest, setSupportRequest] = (0, import_react.useState)(null);
     const [salesStartNewRequestSignal, setSalesStartNewRequestSignal] = (0, import_react.useState)(0);
     const [salesStartNewOfferSignal, setSalesStartNewOfferSignal] = (0, import_react.useState)(0);
     const [salesOpenRequestSignal, setSalesOpenRequestSignal] = (0, import_react.useState)("");
@@ -854,6 +857,7 @@ const HomeFollowups = React.lazy(() => import('./modules/home/HomeFollowups.jsx'
     const adminSectionIsOpen = (key) => key === "produktmaster" && hasValue(productMasterSearch) ? true : !!openAdminSections?.[key];
     const adminAccordionButton = (key, title, subtitle = "") => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
       type: "button",
+      "data-admin-accordion-heading": true,
       className: "secondary",
       style: { width: "100%", justifyContent: "space-between", textAlign: "left", fontWeight: 900, fontSize: "18px", marginBottom: adminSectionIsOpen(key) ? "12px" : "0" },
       onClick: () => toggleAdminSection(key),
@@ -1911,6 +1915,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       setShowOpenDeviationsOnly(false);
       if (profile) applyProfile(profile);
       setOpenAdminSections((prev) => ({ ...prev || {}, support: true }));
+      setAdminArea("projects");
       setTab("admin");
       setTimeout(() => scrollToMobileTabTarget("admin"), 120);
     };
@@ -2064,6 +2069,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
         setSupportSelectedCompany(supportCompanyForOverview);
         setOpenSupportCompany(supportCompanyForOverview);
         setOpenAdminSections((prev) => ({ ...prev || {}, support: true }));
+      setAdminArea("projects");
         setTab("admin");
         setMobileMenuOpen(false);
         const supportUrl = new URL(window.location.href);
@@ -6590,7 +6596,7 @@ ${appLink}`;
           canEdit: isCompanyAdminUser,
           loginEmail: authUser?.email || ""
         }),
-        tab === "innlogging" && (0, import_jsx_runtime.jsx)(React.Suspense, { fallback: "Henter profil …", children: (0, import_jsx_runtime.jsx)(PersonalPage, { context: !isProjectSupportReadOnly && !hasActiveProjectWorkspace ? personalContext : null, kshmsContext, hrContext, userId: authUser?.id, authUser: !isProjectSupportReadOnly && !hasActiveProjectWorkspace ? authUser : null, supabaseClient: supabase, onOpenHrSetup: () => goToTab("hr"), children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: isProjectSupportReadOnly ? "Prosjektets rapportopplysninger" : "Innlogging og brukerprofil", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
+        tab === "innlogging" && (0, import_jsx_runtime.jsx)(React.Suspense, { fallback: "Henter profil …", children: (0, import_jsx_runtime.jsx)(PersonalPage, { context: !isProjectSupportReadOnly && !hasActiveProjectWorkspace ? personalContext : null, kshmsContext, hrContext, userId: authUser?.id, authUser: !isProjectSupportReadOnly && !hasActiveProjectWorkspace ? authUser : null, supabaseClient: supabase, onOpenHrSetup: () => goToTab("hr"), onOpenSupport: async (id) => { if (await goToTab("support")) setSupportRequest({id: id || null, nonce: Date.now()}); }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: isProjectSupportReadOnly ? "Prosjektets rapportopplysninger" : "Innlogging og brukerprofil", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
           isProjectSupportReadOnly ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { marginBottom: "14px", background: "#fff7ed", borderColor: "#fed7aa" }, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { style: { marginTop: 0 }, children: "Supportmodus – prosjektets rapportopplysninger" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginBottom: 0 }, children: `Du er logget inn som ${authenticatedFullName || authUser?.email || "systemadministrator"}${authenticatedFullName && authUser?.email ? ` (${authUser.email})` : ""}. Opplysningene nedenfor er lagret i prosjektet${supportProjectCompanyName ? ` hos ${supportProjectCompanyName}` : ""} og tilhører ikke din personlige profil.` })
@@ -6908,10 +6914,10 @@ ${appLink}`;
         tab === "hr" && ownRights.hrManagement && !hasActiveProjectWorkspace && (0, import_jsx_runtime.jsx)(React.Suspense, { fallback: "Henter HR …", children: (0, import_jsx_runtime.jsx)(HrModule, { context: hrContext, audience: "management" }, `${hrContext.user_id}:${hrContext.company_id}:${hrContext.administer}`) }),
         tab === "hr" && !ownRights.hrManagement && (0, import_jsx_runtime.jsx)("p", { role: "status", children: "HR i hovedmenyen er for firmaadmin og registrerte nærmeste ledere. Egne oppfølginger finner du på Min side. Kontroller arbeidsprofilen eller kontakt firmaadmin hvis tilgangen er feil." }),
                 tab === "hjelp" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(HelpCenter, { isAdmin: isAdminUser, isCompanyAdmin: isCompanyAdminUser, isSystemAdmin: isSystemAdminUser, termsAccepted, termsAcceptanceRecord, authUser, formatTermsAcceptedAt, kshmsContext, hrContext }),
-        tab === "admin" && canUseAdminProjectSync && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Systemadmin", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: isAdminUser ? "Her kan systemadministrator godkjenne brukere, vedlikeholde Produktmaster og synke aktive prosjekter mot Produktmaster. Låste prosjekter røres ikke." : "Her kan du synke åpnet prosjekt mot Produktmaster." }),
-          isSystemAdminUser && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AppNewsAdmin, { supabaseClient: supabase, authUser }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item adminAccordionItem", children: [
+        tab === "support" && !isProjectSupportReadOnly && (0, import_jsx_runtime.jsx)(SupportWorkspace, { supabaseClient: supabase, authUser, standalone: true, requestedTicket: supportRequest }, authUser?.id),
+        tab === "support" && isProjectSupportReadOnly && (0, import_jsx_runtime.jsx)("p", { role: "status", children: "Avslutt prosjektets supportmodus for å åpne dine egne supportsaker." }),
+        tab === "admin" && canUseAdminProjectSync && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Systemadmin", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: (0, import_jsx_runtime.jsx)(SystemAdminWorkspace, { supabaseClient: supabase, authUser, area: adminArea, onAreaChange: (area) => { setAdminArea(area); const key = {sync: "dokument", projects: "support", users: "brukere", products: "produktmaster"}[area]; if (key) setOpenAdminSections(prev => ({...prev, [key]: true})); }, children: [(0, import_jsx_runtime.jsx)("p", { className: "note", children: isAdminUser ? "Her kan systemadministrator godkjenne brukere, vedlikeholde Produktmaster og synke aktive prosjekter mot Produktmaster. Låste prosjekter røres ikke." : "Her kan du synke åpnet prosjekt mot Produktmaster." }),
+          (0, import_jsx_runtime.jsxs)("div", { className: "item adminAccordionItem", "data-admin-area": "sync", children: [
             adminAccordionButton("dokument", "Synk produktdokumenter", "Aktive prosjekter"),
             adminSectionIsOpen("dokument") && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Synk produktdokumenter" }),
@@ -6922,7 +6928,7 @@ ${appLink}`;
             ] })
           ] })
           ] }),
-          isAdminUser && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item adminAccordionItem", children: [
+          isAdminUser && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item adminAccordionItem", "data-admin-area": "projects", children: [
             adminAccordionButton("support", "Supportmodus", `${supportCompanies.length} firma · ${supportProjects.length} prosjekter`),
             adminSectionIsOpen("support") && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Supportmodus" }),
@@ -7015,7 +7021,7 @@ ${appLink}`;
             }),
           ] })
           ] }),
-          isAdminUser && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item adminAccordionItem", children: [
+          isAdminUser && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item adminAccordionItem", "data-admin-area": "users", children: [
             adminAccordionButton("brukere", "Brukere og roller", `${visibleAdminUsers.length} vises`),
             adminSectionIsOpen("brukere") && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Brukergodkjenning" }),
@@ -7074,7 +7080,7 @@ ${appLink}`;
             ] }, u.id))
           ] })
           ] }),
-          isAdminUser && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item adminAccordionItem", children: [
+          isAdminUser && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item adminAccordionItem", "data-admin-area": "products", children: [
             adminAccordionButton("produktmaster", "Produktmaster", `${visibleProductMasterRows.length} / ${productMasterStats.total || 0}`),
             adminSectionIsOpen("produktmaster") && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Admin Produktmaster" }),
@@ -7230,8 +7236,7 @@ ${appLink}`;
               ] })
             ] }, "pm-" + row.product_no))
           ] })
-          ] })
-        ] })
+          ] })] }, authUser?.id) })
       ] }),
       projectId && tab !== "chat" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", className: unreadForAdmin > 0 ? "mobileChatFab hasUnread" : "mobileChatFab", onClick: () => goToTab("chat"), children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "💬" }),

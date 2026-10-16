@@ -12,7 +12,6 @@
 // "Befaringsbildene lastes fortsatt til server når du trykker Lagre befaringsnotat."
 // "Ved full reload fra Befaring/Tilbud åpner appen salgfanen og aktuell sak igjen."
 import React from "react";
-import SupportWorkspace from "../support/SupportWorkspace.jsx";
 import "../app/agreementBasisTerminology.js";
 import { createHelpCenter as createHelpCenterCore } from "./helpToolsCore.js";
 import { createHelp45BSection } from "./help45b.js";
@@ -27,7 +26,6 @@ export function createHelpCenter(config) {
     return React.createElement(
       React.Fragment,
       null,
-      React.createElement(SupportWorkspace, {authUser:props.authUser}),
       React.createElement(CoreHelpCenter, {...props,helpAccess}),
       helpAccess?.moduleKeys.includes("store_offers") ? React.createElement(Help45BSection, {
         isSystemAdmin: helpAccess?.isSystemAdmin === true,

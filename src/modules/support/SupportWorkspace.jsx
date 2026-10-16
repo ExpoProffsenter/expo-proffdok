@@ -2,6 +2,7 @@ import React,{useEffect,useRef,useState} from 'react';
 import {getAppSupabaseClient} from '../access/appSupabaseClientRegistry.js';
 import {WORK_PROFILE_EVENT} from '../access/workProfileClient.js';
 import {MANAGED_ACCESS_EVENT,MODULE_ACCESS_EVENT} from '../access/moduleAccessClient.js';
+import {SUPPORT_CHANGED_EVENT} from './supportOverview.js';
 import './support.css';
 const statusLabels={new:'Ny',working:'Under behandling',solved:'Løst'};
 const categoryLabels={question:'Spørsmål',error:'Feil i appen',suggestion:'Forslag'};
@@ -9,7 +10,7 @@ const deliveryLabels={pending:'Lagret · e-post venter',sending:'Lagret · utsen
 const date=value=>new Intl.DateTimeFormat('nb-NO',{dateStyle:'short',timeStyle:'short'}).format(new Date(value));
 const uuid=()=>crypto.randomUUID();
 
-export default function SupportWorkspace({authUser,admin=false,supabaseClient}){
+export default function SupportWorkspace({authUser,admin=false,supabaseClient,standalone=false,requestedTicket=null}){
  const client=supabaseClient||getAppSupabaseClient();
  const [open,setOpen]=useState(()=>new URL(window.location.href).searchParams.has('supportCase'));
  const [epoch,setEpoch]=useState(0);
@@ -22,13 +23,13 @@ export default function SupportWorkspace({authUser,admin=false,supabaseClient}){
   return()=>{events.forEach(e=>window.removeEventListener(e,clear));};
  },[]);
  return <section className="pd-support" aria-label={admin?'Supportinnboks':'Kontakt support'}>
-  <button type="button" className="pd-support-launch" aria-expanded={open} onClick={()=>setOpen(v=>!v)}>
+  {standalone?<header className="pd-support-page-heading"><span className="pd-support-eyebrow">{admin?'OPPFØLGING':'VI HJELPER DEG'}</span><h2>{admin?'Supportinnboks':'Support'}</h2><p>{admin?'Les nye henvendelser og fortsett dialogen i én sak om gangen.':'Send en henvendelse eller åpne en av sakene dine. Svar i appen og på e-post samles i samme samtale når e-post er aktivert.'}</p></header>:<button type="button" className="pd-support-launch" aria-expanded={open} onClick={()=>setOpen(v=>!v)}>
    <span><strong>{admin?'Support · innboks og svar':'Kontakt support'}</strong><small>{admin?'Følg opp henvendelser og svar i ProffDok.':'Send en henvendelse og følg dialogen her.'}</small></span><span aria-hidden="true">{open?'−':'+'}</span>
-  </button>
-  {open&&<SupportSession key={`${authUser?.id}:${epoch}:${admin}`} client={client} userId={authUser?.id} admin={admin}/>}
+  </button>}
+  {(standalone||open)&&<SupportSession key={`${authUser?.id}:${epoch}:${admin}`} client={client} userId={authUser?.id} admin={admin} requestedTicket={requestedTicket}/>}
  </section>;
 }
-export function SupportSession({client,userId,admin}){
+export function SupportSession({client,userId,admin,requestedTicket}){
  const [context,setContext]=useState(null),[items,setItems]=useState([]),[total,setTotal]=useState(0);
  const [offset,setOffset]=useState(0),[filter,setFilter]=useState(''),[detail,setDetail]=useState(null),[creating,setCreating]=useState(false);
  const [subject,setSubject]=useState(''),[category,setCategory]=useState('question'),[body,setBody]=useState(''),[reply,setReply]=useState(''),[internal,setInternal]=useState(false);
@@ -52,14 +53,14 @@ export function SupportSession({client,userId,admin}){
    if(!alive.current||rev!==generation.current)return;
    setContext(ctx);setItems(data.items);setTotal(data.total);
    invoke({action:'status'}).then(info=>{if(alive.current&&rev===generation.current)setMail(info);}).catch(()=>{});
-   const requested=new URL(window.location.href).searchParams.get('supportCase');
+   const requested=requestedTicket?.id||new URL(window.location.href).searchParams.get('supportCase');
    if(/^[a-f0-9-]{36}$/i.test(requested||'')){
     const result=await rpc('support_get',{p_company_id:ctx.company_id,p_ticket_id:requested,p_admin:admin});
     if(alive.current&&rev===generation.current){selection.current=requested;setDetail(result);}
    }
   }catch(e){if(alive.current&&rev===generation.current)setError(e.code==='PGRST202'?'Support er ikke aktivert i dette miljøet ennå.':e.message||'Kunne ikke hente support.');}}
   void load();return()=>{alive.current=false;generation.current++;};
- },[client,userId,admin]);
+ },[client,userId,admin,requestedTicket?.id,requestedTicket?.nonce]);
  useEffect(()=>{
   if(!context)return;
   let active=true,revision=0;
@@ -84,7 +85,7 @@ export function SupportSession({client,userId,admin}){
  }
  async function openTicket(id){await task(async()=>{
   const result=await rpc('support_get',{p_company_id:context.company_id,p_ticket_id:id,p_admin:admin});
-  if(!alive.current)return;selection.current=id;setDetail(result);setItems(rows=>rows.map(t=>t.id===id?{...t,unread:false}:t));setCreating(false);setReply('');replyRequest.current=null;setInternal(false);
+  if(!alive.current)return;selection.current=id;setDetail(result);setItems(rows=>rows.map(t=>t.id===id?{...t,unread:false}:t));setCreating(false);setReply('');replyRequest.current=null;setInternal(false);window.dispatchEvent(new Event(SUPPORT_CHANGED_EVENT));
  });}
  async function sendEmail(messageId){
   const result=await invoke({companyId:context.company_id,messageId,admin});
@@ -95,7 +96,7 @@ export function SupportSession({client,userId,admin}){
   if(!saveRequest.current||JSON.stringify(saveRequest.current.input)!==JSON.stringify(input))saveRequest.current={id:uuid(),input};
   const id=await rpc('support_create',{p_company_id:context.company_id,p_id:saveRequest.current.id,p_subject:input.subject,p_category:category,p_body:input.body});
   if(!alive.current)return;selection.current=id;setCreating(false);setSubject('');setBody('');saveRequest.current=null;
-  setNotice('Henvendelsen er lagret.');await refresh(context,0,filter,id);setOffset(0);
+  setNotice('Henvendelsen er lagret.');await refresh(context,0,filter,id);setOffset(0);window.dispatchEvent(new Event(SUPPORT_CHANGED_EVENT));
   try{const text=await sendEmail(id);if(alive.current)setNotice(text);}catch(e){if(alive.current)setError(e.message);}
   await refresh(context,0,filter,id);
  });}
@@ -105,6 +106,7 @@ export function SupportSession({client,userId,admin}){
   const id=await rpc('support_reply',{p_company_id:context.company_id,p_ticket_id:input.ticket,p_id:replyRequest.current.id,p_body:input.body,p_admin:admin,p_internal:input.internal});
   if(!alive.current)return;setReply('');replyRequest.current=null;setNotice(input.internal?'Intern merknad er lagret.':'Svaret er lagret.');
   await refresh();
+  window.dispatchEvent(new Event(SUPPORT_CHANGED_EVENT));
   if(!input.internal){try{const text=await sendEmail(id);if(alive.current)setNotice(text);}catch(e){if(alive.current)setError(e.message);}await refresh();}
  });}
  async function update(status,assigned){await task(async()=>{await rpc('support_update',{p_company_id:context.company_id,p_ticket_id:detail.ticket.id,p_revision:detail.ticket.revision,p_status:status,p_assigned_id:assigned||null});await refresh();if(alive.current)setNotice('Saken er oppdatert.');});}
@@ -143,7 +145,7 @@ export function SupportSession({client,userId,admin}){
      <button disabled={busy||!reply.trim()}>{busy?'Lagrer …':admin&&internal?'Lagre intern merknad':'Send svar'}</button>
     </form>
    </div>:<>
-    <div className="pd-support-toolbar"><label>Vis status<select aria-label="Vis status" value={filter} disabled={busy} onChange={e=>{const v=e.target.value;setFilter(v);setOffset(0);task(()=>refresh(context,0,v,null));}}><option value="">Alle saker</option>{Object.entries(statusLabels).map(([v,t])=><option key={v} value={v}>{t}</option>)}</select></label><span className="note">{total} saker{items.some(t=>t.unread)?' · uleste er merket':''}</span></div>
+    <div className="pd-support-toolbar"><label>Vis status<select aria-label="Vis status" value={filter} disabled={busy} onChange={e=>{const v=e.target.value;setFilter(v);setOffset(0);task(()=>refresh(context,v===filter?offset:0,v,null));}}><option value="">Alle saker</option><option value="unread">{admin?'Uleste henvendelser':'Uleste svar'}</option>{Object.entries(statusLabels).map(([v,t])=><option key={v} value={v}>{t}</option>)}</select></label><span className="note">{total} saker{items.some(t=>t.unread)?' · uleste er merket':''}</span></div>
     <div className="pd-support-list">{items.map(t=><button type="button" key={t.id} className="pd-support-ticket" disabled={busy} onClick={()=>openTicket(t.id)}><span className="pd-support-ticket-main"><strong>{t.unread&&<span className="pd-support-unread">Ulest · </span>}#{t.number} {t.subject}</strong><small>{admin?`${t.company} · ${t.owner}`:categoryLabels[t.category]} · {date(t.updated_at)}</small></span><span className={`pd-support-badge pd-support-${t.status}`}>{statusLabels[t.status]}</span></button>)}</div>
     {!items.length&&<div className="pd-support-empty"><strong>{filter?'Ingen saker med denne statusen.':'Ingen supportsaker ennå.'}</strong><p>{admin?'Nye henvendelser vises her.':'Trykk Ny henvendelse når du trenger hjelp.'}</p></div>}
     {total>40&&<div className="pd-support-actions"><button type="button" className="secondary" disabled={busy||offset===0} onClick={()=>{const v=offset-40;setOffset(v);task(()=>refresh(context,v,filter,null));}}>Forrige</button><span>{offset+1}–{Math.min(offset+40,total)} av {total}</span><button type="button" className="secondary" disabled={busy||offset+40>=total} onClick={()=>{const v=offset+40;setOffset(v);task(()=>refresh(context,v,filter,null));}}>Neste</button></div>}

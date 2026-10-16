@@ -162,3 +162,4 @@ jobs:
           node scripts/support-db-check.mjs
           node scripts/support-mail-check.mjs
           node scripts/support-browser-check.mjs
+          node scripts/support-layout-browser-check.mjs

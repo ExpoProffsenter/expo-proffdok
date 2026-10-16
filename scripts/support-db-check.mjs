@@ -38,6 +38,7 @@ try{
  await db.exec(await fs.readFile('supabase/migrations/20261016215024_support_deletion_compatibility.sql','utf8'));
  await db.exec(await fs.readFile('supabase/migrations/20261016221008_support_scheduler.sql','utf8'));
  await db.exec(await fs.readFile('supabase/migrations/20261016221255_support_queue_eligibility.sql','utf8'));
+ await db.exec(await fs.readFile('supabase/migrations/20261016223601_support_overview.sql','utf8'));
  eq((await db.query('select enabled from support_private.worker_settings')).rows[0].enabled,false,'schedule starts disabled');
  eq((await db.query("select command from cron.job where jobname='existing-worker'")).rows[0].command,'select existing_worker()','old schedule untouched');
  eq((await db.query("select schedule from cron.job where jobname='support-queue-worker'")).rows[0].schedule,'*/5 * * * *');
@@ -53,12 +54,14 @@ try{
  const scheduled=(await db.query('select * from net.calls')).rows[0];eq(scheduled.headers['x-support-worker-token'],workerToken);eq(scheduled.body,{});eq(scheduled.timeout_milliseconds,120000);
  await db.exec('update support_private.worker_settings set enabled=false;');await service();eq(await rpc('support_worker_authorize',[workerToken]),false,'disable revokes token immediately');
  await actor();eq((await rpc('support_context')).company_id,c);eq((await rpc('support_context')).is_admin,false);
+ eq((await rpc('support_overview')).total,0);
  eq((await rpc('support_list',[c])).total,0);
  const ticket=id(10),reply=id(11),note=id(12),answer=id(13);
  eq(await rpc('support_create',[c,ticket,'Hjelp','error','Beskrivelse']),ticket);
  eq(await rpc('support_create',[c,ticket,'Hjelp','error','Beskrivelse']),ticket,'replay does not duplicate');
  await rejects(()=>rpc('support_create',[c,ticket,'Endret','error','Beskrivelse']),'22023');
  eq((await rpc('support_list',[c])).total,1);
+ eq((await rpc('support_overview')).new,1);await rejects(()=>rpc('support_overview',[true]));
  await rejects(()=>rpc('support_list',[d]));await rejects(()=>rpc('support_list',[c,true]));await rejects(()=>rpc('support_reply',[c,ticket,note,'Hemmelige ting',false,true]),'22023');
  await rejects(()=>db.query('select * from support_private.tickets'));await rejects(()=>rpc('support_mail_claim',[id(15)]));
  const outbox=await rpc('support_delivery_authorize',[c,ticket]);
@@ -66,8 +69,10 @@ try{
  let view=await rpc('support_get',[c,ticket]);eq(view.messages.length,1);eq(view.ticket.subject,'Hjelp');
  const safe=JSON.stringify(view);eq(safe.includes('reply_token'),false);eq(safe.includes('provider_id'),false);
  await actor(peer);eq((await rpc('support_list',[c])).total,0,'firmaadmin has no implicit access');await rejects(()=>rpc('support_get',[c,ticket]));await rejects(()=>rpc('support_delivery_authorize',[c,ticket]));
+ eq((await rpc('support_overview')).total,0,'company admin summary is own-only');
  await actor(other,d);eq((await rpc('support_list',[d])).total,0);await rejects(()=>rpc('support_get',[d,ticket]));
  await actor(admin);eq((await rpc('support_list',[c,true])).total,1);eq((await rpc('support_list',[c,true])).items[0].unread,true);
+ eq((await rpc('support_overview',[true])).unread,1);eq((await rpc('support_overview')).total,0,'systemadmin own summary is not the inbox');
  view=await rpc('support_get',[c,ticket,true]);eq(view.ticket.owner,'user@example.invalid');eq((await rpc('support_list',[c,true])).items[0].unread,false);
  await rpc('support_reply',[c,ticket,note,'INTERNT',true,true]);
  await rpc('support_reply',[c,ticket,answer,'Svaret fra support',true,false]);
@@ -76,7 +81,14 @@ try{
  await rejects(()=>rpc('support_update',[c,ticket,1,'solved',admin]),'40001');
  await rpc('support_update',[c,ticket,view.ticket.revision,'solved',admin]);
  const answerBox=await rpc('support_delivery_authorize',[c,answer,true]);
+ await actor();eq((await rpc('support_overview')).unread,1);eq((await rpc('support_list',[c,false,0,'unread'])).total,1);
  await actor();view=await rpc('support_get',[c,ticket]);eq(view.messages.length,2);eq(JSON.stringify(view).includes('INTERNT'),false);eq(view.ticket.owner,null);
+ eq((await rpc('support_overview')).unread,0,'opening a case clears unread summary');
+ await db.exec(`reset role;insert into support_private.tickets(id,company_id,owner_id,subject,category) select gen_random_uuid(),${q(c)},${q(u)},'Summary fixture','question' from generate_series(1,45);
+ insert into support_private.messages(id,ticket_id,author_id,kind,body) select gen_random_uuid(),id,${q(admin)},'support','Unread fixture' from support_private.tickets where subject='Summary fixture';`);
+ await actor();eq((await rpc('support_overview')).unread,45,'summary counts beyond first page');eq((await rpc('support_list',[c,false,0,'unread'])).items.length,40);eq((await rpc('support_list',[c,false,40,'unread'])).items.length,5);
+ eq(JSON.stringify(await rpc('support_overview')).includes('Unread fixture'),false,'summary returns no conversation bodies');
+ await db.exec("reset role;delete from support_private.tickets where subject='Summary fixture';");await actor();
  await rejects(()=>rpc('support_delivery_authorize',[c,answer]));await rejects(()=>rpc('support_update',[c,ticket,4,'solved',admin]));
  await rpc('support_reply',[c,ticket,reply,'Mer hjelp']);eq((await rpc('support_get',[c,ticket])).ticket.status,'new','user reply reopens');
  await service();let job=await rpc('support_mail_claim',[outbox]);eq(job.audience,'internal');eq(job.body,null);eq(job.reply_token,null);eq(await rpc('support_mail_claim',[outbox]),null,'lease excludes concurrent send');eq((await rpc('support_mail_pending')).includes(outbox),false,'leased queue is not scheduled twice');
@@ -104,6 +116,7 @@ try{
  await db.exec(`reset role;delete from support_private.outbox where message_id=${q(peerTicket)};delete from support_private.messages where ticket_id=${q(peerTicket)};delete from support_private.tickets where id=${q(peerTicket)};`);
  await db.exec(`reset role;update profiles set deactivated=false;delete from sales_company_memberships where user_id=${q(u)};`);await actor();await rejects(()=>rpc('support_get',[c,ticket]));
  await db.exec(`reset role;select set_config('request.jwt.claim.sub','',false);set role anon;`);await rejects(()=>rpc('support_context'));await rejects(()=>rpc('support_inbound_store',['x','y',token,'a','b']));
+ await rejects(()=>rpc('support_overview'));
  await db.exec('reset role;');
  eq((await db.query("select has_schema_privilege('authenticated','support_private','usage') ok")).rows[0].ok,false);
  eq((await db.query("select count(*)::int n from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname like 'support_%' and has_function_privilege('anon',p.oid,'execute')")).rows[0].n,0);

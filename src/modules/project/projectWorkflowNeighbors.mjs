@@ -7,6 +7,7 @@ const GLOBAL_ONLY_LABELS = new Set([
   'Firma',
   'Prosjektliste',
   'Hjelp',
+  'Support',
   'Systemadmin',
 ]);
 

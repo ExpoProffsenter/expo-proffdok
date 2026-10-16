@@ -1,5 +1,11 @@
 # Support – avtalt plan 16. oktober 2026
 
+UX-oppfølging godkjent 17.10: eget Support-menypunkt ved Hjelp; Min side viser
+uleste supportsvar og åpner den samme saken. Systemadmin grupperes som KS/HMS,
+med én arbeidsflate om gangen. Den tidligere innebygde listen i Hjelp flyttes.
+Eksisterende handlinger og e-postkontrakt beholdes. Scope/QA/brukerprøve:
+qa/SUPPORT_LAYOUT_20261017.md. Ny TEST OK gjelder denne Preview-versjonen.
+
 Statusoppdatering: Implementert i separat Preview-leveranse etter publisert PR #262.
 App/database/transport er skrevet og Sandbox er migrert. Faktisk toveis e-post
 er ikke aktivert eller prøvd; serverhemmeligheter, Resend-/DNS-oppsett og egen

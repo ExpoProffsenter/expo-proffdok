@@ -1,3 +1,16 @@
+## Support-meny, Min side og gruppert Systemadmin – Preview 17.10.2026
+
+Kenneth har godkjent implementeringen av egen Support ved Hjelp, eget kort for
+uleste supportsvar på Min side og Systemadmin i samme grupperte stil som KS/HMS.
+Hjelp har igjen bare veiledning. Samme samtale åpnes fra Min side og Support.
+Besøkte adminpaneler bevarer søk/utkast; eksisterende handlinger og serverkontroller
+beholdes. Dette er en uttrykkelig utvidelse av UI-/navigasjonsscopet i PR #263.
+
+Miljømål BEGGE; bare Preview/Sandbox foreløpig. Additiv read-only oppsummering og
+ulest-filter er installert i Sandbox. Ingen Production-, e-post- eller demoendring.
+QA, scope og ny brukertest: docs/qa/SUPPORT_LAYOUT_20261017.md. Eksakt head/CI/deploy
+føres i PR #263. Ny relevant TEST OK kreves før merge og senere main → demo.
+
 ## Support – separat Preview-leveranse etter PR #262
 
 Miljømål BEGGE. Faktisk baseline main 824245e8c25e3a7d83febefe1b116a1a3fd108a1;
