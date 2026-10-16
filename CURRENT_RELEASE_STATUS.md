@@ -1,3 +1,9 @@
+## Publisert: fremdrift, bemanning og Startside – 16. oktober 2026
+
+Kenneths TEST OK og uttrykkelige produksjonsgodkjenning er gjennomført. PR #254 er merget; funksjons-main e7363f8a37cf84caebf829a27bc8c25c71559a00, Core Safety #485 SUCCESS, Production dpl_G2NWYyXfjqDbinnzQYy9U8KN3fZV READY med korrekt databasebinding. Alle fire planmigrasjoner er installert og kontrollert i Production, med uendrede eksisterende prosjektplaner og faktisk lagring/lesing i rollback. Varseloversikten finnes bare på Startsiden; globale avvik-/gjennomføringsbannere er fjernet fra øvrige faner.
+
+Main → demo er synkronisert, demo-overlay og kurseksempler beholdt, full build/berørte nettlesertester grønne og faktisk preflight 19 + 5 PASS. Fullt releasebevis og begrensninger: docs/kshms/PROGRESS_HOME_RELEASE_20261016.md og PR #254. Avsluttende dokumentasjonscommitter endrer ikke appfunksjonene; siste main/demo-SHA og Vercel-status føres i PR. Eldre ventende TEST OK-/umerget-/Production-ikke-migrert-notater under er historikk, erstattet av denne release-statusen.
+
 ## Godkjent produksjonsløp og kun Startside-varsler – 16. oktober 2026
 
 Miljømål BEGGE. Kenneth ga TEST OK for leveransen frem til 6aa06ba9 og ba om at de to KS/HMS-bannerne bare vises på Startsiden. Deretter ga han uttrykkelig «etter dette er test ok for produksjon» og autoriserte videre arbeid mens han er borte. Tidligere notater om ventende TEST OK er dermed erstattet for denne releasen; grønn QA/Preview kreves fortsatt før merge.
