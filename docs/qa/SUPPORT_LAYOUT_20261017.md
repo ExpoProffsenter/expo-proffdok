@@ -17,6 +17,8 @@ Dette utvider uttrykkelig navigasjons-/presentasjonsscopet i PR #263.
 - PersonalPage: lite kort for egne svar. Ingen egen kopiert samtalehistorikk.
 - Én additiv migrasjon support_overview og utvidelse av den nye support_list med
   ulest-filter. Ingen gamle autorisasjoner/RPC-er, profiler eller RLS endres.
+- systemAdminStoreCatalogUx: eksisterende ERP-panel monteres i et eget skjult/valgt
+  område. Original serverkontroll og vareverktøy er uendret.
 - Nye og utvidede supporttester, additiv CI og dokumentasjon.
 
 Sales, autosave/recovery/hydrering, bootstrap, prosjektdata, HR/KS/HMS-innhold,
@@ -30,7 +32,7 @@ bare veiledning. Support viser kompakt sideinndelt liste, status/ulest-filter og
 autoriserte sak. Det fungerer også uten HR-/KS/HMS-lisens.
 
 Systemadmin har Oppfølging, Forvaltning og Informasjon og drift, med Oversikt,
-Supportsaker, Firmaer og prosjekter, Brukere og roller, Produktmaster, Nyheter i
+Supportsaker, Firmaer og prosjekter, Brukere og roller, Produktmaster, Internt vareregister, Nyheter i
 appen, E-postutsending og Dokumentsynk. Bare valgt arbeidsflate vises. Besøkte
 paneler holdes montert for å bevare søk/utkast ved internt visningsbytte. Originale
 handlinger gjør fortsatt faktisk lagring/utsending; navigasjon gjør ingen slik
@@ -49,16 +51,21 @@ Ingen nye data eller kladder legges i browserlagring.
 - 100 faktiske PostgreSQL-assertions PASS på hele supportmigrasjonssekvensen.
   Nye prøver dekker egne/admin-tall, intern merknad, lest-kvittering, 45 uleste
   saker over to sider, kryssrolle og anon uten tilgang.
-- 25 faktiske Chromium-assertions for ny layout PASS: header/native meny,
+- 30 faktiske Chromium-assertions for ny layout PASS: header/native meny,
   Min side til nøyaktig sak, grupper/enkeltpanel, bevarte søk/nyhetsutkast,
   originale handlinger, ingen implisitt mail/publisering og sen/falsk identitet.
+  Faktisk ERP-monteringsadapter prøves i gruppen, skjult på oversikten og med
+  samme monterte rot ved visningsbytte. Tilgangsgaten gir ingen varetilgang i fixture.
 - Eksisterende Support 23 Chromium-assertions PASS, inklusive private merknader,
   lagringsreplay, fokus/dvale, firmaendring og e-postlenkens sikre dialog.
 - Eksisterende faktisk Min side/HR/profil/e-postvalg og modulnavigasjon PASS.
   Ingen ekte bruker/profil, e-post eller nyhet endres av testene.
 - Faktisk Sandbox-migrasjon 20261016223601 er installert. Rollback-prøve med
   eksisterende syntetisk eier bekrefter egne tellinger, uten å markere saker lest.
-  Sluttbuild, eksakt CI og innlogget ny Preview-prøve føres i PR #263.
+  Innlogget Preview cba86: Support ved Hjelp, Min side åpnet nøyaktig ulest
+  sak #3, Hjelp uten sakslist og gruppert Systemadmin bekreftet. Ingen ny
+  sak, svar, nyhet eller e-post ble sendt av denne prøven. CI #516 grønn.
+  Sluttbuild, eksakt siste CI og ERP-plassering i oppdatert Preview føres i PR #263.
 
 ## Konkret brukertest
 
@@ -71,7 +78,7 @@ https://expo-proffdok-git-fix-company-admin-scope-20261015-ringside.vercel.app/
    Intern merknad skal fortsatt bare finnes i innboksen.
 3. Min side → Åpne nyeste svar: samme sak skal åpnes i Support. E-post er fortsatt
    avslått i Preview; ingen levering loves av denne prøven.
-4. Systemadmin: bytt mellom Brukere og roller, Produktmaster, Nyheter i appen og
+4. Systemadmin: bytt mellom Brukere og roller, Produktmaster, Internt vareregister, Nyheter i appen og
    Dokumentsynk. Bare valgt område vises. Et skrevet nyhetsutkast skal være der
    når du kommer tilbake, uten at noe publiseres.
 
