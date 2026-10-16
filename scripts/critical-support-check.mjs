@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';import fs from 'node:fs';
 import './support-mail-check.mjs';
 const read=p=>fs.readFileSync(p,'utf8');
-const files=['src/modules/support/SupportWorkspace.jsx','src/modules/support/SupportLinkEntry.jsx','supabase/functions/_shared/support-mail.mjs','supabase/functions/_shared/support-inbound.mjs',...fs.readdirSync('supabase/migrations').filter(n=>/_support_(cases|queue_worker)\.sql$/.test(n)).map(n=>'supabase/migrations/'+n)];
+const files=['src/modules/support/SupportWorkspace.jsx','src/modules/support/SupportLinkEntry.jsx','supabase/functions/_shared/support-mail.mjs','supabase/functions/_shared/support-inbound.mjs',...fs.readdirSync('supabase/migrations').filter(n=>/_support_(cases|queue_worker|deletion_compatibility)\.sql$/.test(n)).map(n=>'supabase/migrations/'+n)];
 for(const file of files)assert(!/\b(?:to|reply_to)\s*:\s*(?:\[\s*)?['\"][^'\"]+@/i.test(read(file)),`${file}: recipient addresses must come from authorized server context or secrets`);
 assert(read('supabase/functions/_shared/support-mail.mjs').includes("mailbox(env('SUPPORT_INTERNAL_TO'))"),'internal recipient must be supplied only through server secrets');
 const ui=read(files[0]);assert(!/localStorage|sessionStorage/.test(ui),'support content must not be cached in browser storage');

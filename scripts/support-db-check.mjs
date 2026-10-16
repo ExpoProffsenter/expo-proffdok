@@ -25,6 +25,7 @@ try{
  insert into active_scope values(${q(u)},${q(c)}),(${q(peer)},${q(c)}),(${q(other)},${q(d)}),(${q(admin)},${q(c)});`);
  await db.exec(await fs.readFile('supabase/migrations/20261016212201_support_cases.sql','utf8'));
  await db.exec(await fs.readFile('supabase/migrations/20261016212328_support_queue_worker.sql','utf8'));
+ await db.exec(await fs.readFile('supabase/migrations/20261016215024_support_deletion_compatibility.sql','utf8'));
  await actor();eq((await rpc('support_context')).company_id,c);eq((await rpc('support_context')).is_admin,false);
  eq((await rpc('support_list',[c])).total,0);
  const ticket=id(10),reply=id(11),note=id(12),answer=id(13);
@@ -74,5 +75,14 @@ try{
  await db.exec('reset role;');
  eq((await db.query("select has_schema_privilege('authenticated','support_private','usage') ok")).rows[0].ok,false);
  eq((await db.query("select count(*)::int n from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname like 'support_%' and has_function_privilege('anon',p.oid,'execute')")).rows[0].n,0);
+ // Existing account deletion must not fail because support was introduced.
+ await db.exec(`reset role;delete from auth.users where id=${q(admin)};`);
+ eq((await db.query(`select assigned_id from support_private.tickets where id=${q(ticket)}`)).rows[0].assigned_id,null,'deleted agent is unassigned');
+ eq((await db.query(`select count(*)::int n from support_private.messages where ticket_id=${q(ticket)} and author_id is null`)).rows[0].n,2,'other owner keeps saved replies and internal history');
+ await db.exec(`delete from auth.users where id=${q(u)};`);
+ eq((await db.query('select count(*)::int n from support_private.tickets')).rows[0].n,0,'owner erase does not block existing deletion');
+ eq((await db.query('select count(*)::int n from support_private.messages')).rows[0].n,0,'owner messages erased');
+ eq((await db.query('select count(*)::int n from support_private.outbox')).rows[0].n,0,'no orphan send queue');
+ eq((await db.query('select count(*)::int n from support_private.inbound_events')).rows[0].n,0,'inbound identifiers erased with owner');
  console.log(`support-db-check: ${checks} assertions PASS (actual PostgreSQL migration, RPCs, ACLs)`);
 }catch(e){console.error(e.message,e.code,e.where);process.exitCode=1;}finally{await db.close();}
