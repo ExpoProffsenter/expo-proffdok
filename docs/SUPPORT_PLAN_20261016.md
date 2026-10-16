@@ -15,6 +15,9 @@ Oppfølging 17.10: Kenneth har godkjent separat mottaksnøkkel med Full access;
 den er opprettet og lagret i Production Secrets som RESEND_RECEIVING_API_KEY.
 Eksisterende sendetilgang er beholdt. Webhook, køjobb, faktisk prøve og TEST OK
 gjenstår; nøkkelgodkjenningen aktiverer ikke support i Production.
+Køjobben er deretter implementert med privat Vault-token og separat */5-cron.
+Den er installert avslått bare i Sandbox, med 86 SQL- og 55 transportkontroller.
+Production-aktivering og faktisk e-postprøve krever fortsatt egen godkjenning.
 
 Opprinnelig planstatus: Planlagt som egen leveranse etter pågående UX-runde. Ingen supportkode,
 SQL, mottaksadresse, DNS eller e-postutsending er endret i UX-runden.

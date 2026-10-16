@@ -23,9 +23,35 @@ try{
  insert into sales_company_scopes values(${q(c)},'Firma A'),(${q(d)},'Firma B');
  insert into sales_company_memberships values(${q(u)},${q(c)}),(${q(peer)},${q(c)}),(${q(other)},${q(d)}),(${q(admin)},${q(c)});
  insert into active_scope values(${q(u)},${q(c)}),(${q(peer)},${q(c)}),(${q(other)},${q(d)}),(${q(admin)},${q(c)});`);
+ // PostgreSQL exercises the real schedule SQL; only external Vault/HTTP/cron
+ // extension boundaries are stubbed. No test HTTP can leave this process.
+ await db.exec(`create schema vault;create schema net;create schema cron;
+ create table vault.decrypted_secrets(id uuid primary key default gen_random_uuid(),decrypted_secret text,name text);
+ create function vault.create_secret(secret text,name text,description text) returns uuid language sql as $$insert into vault.decrypted_secrets(decrypted_secret,name) values(secret,name) returning id$$;
+ create table net.calls(id bigserial primary key,url text,headers jsonb,body jsonb,timeout_milliseconds int);
+ create function net.http_post(url text,headers jsonb,body jsonb,timeout_milliseconds int) returns bigint language sql as $$insert into net.calls(url,headers,body,timeout_milliseconds) values(url,headers,body,timeout_milliseconds) returning id$$;
+ create table cron.job(jobname text primary key,schedule text,command text);
+ create function cron.schedule(jobname text,schedule text,command text) returns bigint language sql as $$insert into cron.job values(jobname,schedule,command) returning 1::bigint$$;
+ insert into cron.job values('existing-worker','* * * * *','select existing_worker()');`);
  await db.exec(await fs.readFile('supabase/migrations/20261016212201_support_cases.sql','utf8'));
  await db.exec(await fs.readFile('supabase/migrations/20261016212328_support_queue_worker.sql','utf8'));
  await db.exec(await fs.readFile('supabase/migrations/20261016215024_support_deletion_compatibility.sql','utf8'));
+ await db.exec(await fs.readFile('supabase/migrations/20261016221008_support_scheduler.sql','utf8'));
+ await db.exec(await fs.readFile('supabase/migrations/20261016221255_support_queue_eligibility.sql','utf8'));
+ eq((await db.query('select enabled from support_private.worker_settings')).rows[0].enabled,false,'schedule starts disabled');
+ eq((await db.query("select command from cron.job where jobname='existing-worker'")).rows[0].command,'select existing_worker()','old schedule untouched');
+ eq((await db.query("select schedule from cron.job where jobname='support-queue-worker'")).rows[0].schedule,'*/5 * * * *');
+ eq((await db.query('select support_private.dispatch_queue() result')).rows[0].result,null,'disabled schedule has no HTTP');
+ eq((await db.query('select count(*)::int n from net.calls')).rows[0].n,0);
+ const workerToken=(await db.query('select decrypted_secret from vault.decrypted_secrets')).rows[0].decrypted_secret;
+ await service();eq(await rpc('support_worker_authorize',[workerToken]),false,'disabled rejects even real token');
+ await rejects(()=>db.query('select * from support_private.worker_settings'));await rejects(()=>db.query('select support_private.dispatch_queue()'));
+ await db.exec('reset role;');await rejects(()=>db.exec("update support_private.worker_settings set endpoint='https://foreign.invalid'"),'23514');
+ await db.exec("update support_private.worker_settings set endpoint='https://ppvircenkjizeiqdxphj.supabase.co/functions/v1/support-mail',enabled=true;");
+ await service();eq(await rpc('support_worker_authorize',['x'.repeat(64)]),false);eq(await rpc('support_worker_authorize',[workerToken]),true,'Vault authentication');
+ await db.exec('reset role;');eq(Number((await db.query('select support_private.dispatch_queue() result')).rows[0].result),1);
+ const scheduled=(await db.query('select * from net.calls')).rows[0];eq(scheduled.headers['x-support-worker-token'],workerToken);eq(scheduled.body,{});eq(scheduled.timeout_milliseconds,120000);
+ await db.exec('update support_private.worker_settings set enabled=false;');await service();eq(await rpc('support_worker_authorize',[workerToken]),false,'disable revokes token immediately');
  await actor();eq((await rpc('support_context')).company_id,c);eq((await rpc('support_context')).is_admin,false);
  eq((await rpc('support_list',[c])).total,0);
  const ticket=id(10),reply=id(11),note=id(12),answer=id(13);
@@ -70,6 +96,12 @@ try{
  await actor();view=await rpc('support_get',[c,ticket]);eq(view.messages.filter(m=>m.source==='email').length,1);
  await db.exec(`reset role;update profiles set deactivated=true where id=${q(u)};`);await service();eq(await rpc('support_mail_claim',[inbound]),null,'revoked owner cannot receive or send');
  eq(await rpc('support_inbound_store',['in3','<in3@example.invalid>',token,'user@example.invalid','Revoked']),null);await actor();await rejects(()=>rpc('support_context'));
+ await service();eq((await rpc('support_mail_pending')).includes(inbound),false,'revoked owner does not occupy retry batch');
+ await actor(peer);const peerTicket=id(80);await rpc('support_create',[c,peerTicket,'Tillatt sak','question','Melding']);const peerQueue=await rpc('support_delivery_authorize',[c,peerTicket]);
+ await db.exec(`reset role;insert into support_private.messages(id,ticket_id,author_id,kind,body) select gen_random_uuid(),${q(ticket)},${q(u)},'user','Tilbakekalt' from generate_series(1,20);
+ insert into support_private.outbox(message_id,audience) select id,'internal' from support_private.messages where body='Tilbakekalt';`);
+ await service();eq(await rpc('support_mail_pending'),[peerQueue],'many revoked jobs cannot starve a current owner');
+ await db.exec(`reset role;delete from support_private.outbox where message_id=${q(peerTicket)};delete from support_private.messages where ticket_id=${q(peerTicket)};delete from support_private.tickets where id=${q(peerTicket)};`);
  await db.exec(`reset role;update profiles set deactivated=false;delete from sales_company_memberships where user_id=${q(u)};`);await actor();await rejects(()=>rpc('support_get',[c,ticket]));
  await db.exec(`reset role;select set_config('request.jwt.claim.sub','',false);set role anon;`);await rejects(()=>rpc('support_context'));await rejects(()=>rpc('support_inbound_store',['x','y',token,'a','b']));
  await db.exec('reset role;');

@@ -37,4 +37,9 @@ const workerRequest=token=>new Request('https://edge.invalid',{method:'POST',hea
 res=await handleSupportMail(workerRequest('wrong'),deps);eq(res.status,401);
 const workerEnv=k=>k==='SUPPORT_WORKER_SECRET'?'a'.repeat(32):env(k);
 res=await handleSupportMail(workerRequest('a'.repeat(32)),{...deps,env:workerEnv,adminClient:()=>({rpc:async()=>({data:[]})})});eq(res.status,200);eq((await res.json()).processed,0);
+let workerCalls=[];const vaultDeps={...deps,adminClient:()=>({rpc:async(name,args)=>{workerCalls.push({name,args});if(name==='support_worker_authorize')return {data:args.p_token==='b'.repeat(64)};if(name==='support_mail_pending')return {data:Array(10).fill('queue')};return {data:null};}})};
+res=await handleSupportMail(workerRequest('b'.repeat(64)),vaultDeps);eq(res.status,200);eq((await res.json()).processed,5,'worker fits bounded HTTP deadline');eq(workerCalls[0].name,'support_worker_authorize');eq(workerCalls.filter(x=>x.name==='support_mail_claim').length,5);
+workerCalls=[];res=await handleSupportMail(workerRequest('c'.repeat(64)),vaultDeps);eq(res.status,401);eq(workerCalls.some(x=>x.name==='support_mail_pending'),false,'bad Vault token never reads queue');
+res=await handleSupportMail(workerRequest('b'.repeat(64)),{...vaultDeps,env:workerEnv});eq(res.status,401,'bad explicit secret does not fall back to Vault');
+res=await handleSupportMail(workerRequest('b'.repeat(64)),{...vaultDeps,adminClient:()=>({rpc:async()=>({error:true,data:true})})});eq(res.status,401,'Vault errors fail closed');
 console.log(`support-mail-check: ${n} assertions PASS (templates, recipients, delivery, raw HMAC, inbound gates)`);

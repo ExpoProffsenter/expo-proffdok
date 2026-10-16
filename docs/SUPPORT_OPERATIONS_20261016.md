@@ -21,7 +21,7 @@ klientkonfigurasjon, offentlig firmaprofil eller RPC-retur til nettleseren:
 | `SUPPORT_REPLY_DOMAIN` | Kontoens ferdige mottaksdomene `ualoomorai.resend.app`, eller et separat verifisert mottaksunderdomene. |
 | `SUPPORT_INBOUND_ENABLED` | `true` først etter kontrollert MX/webhook-oppsett og avtalt mottaksprøve. |
 | `SUPPORT_WEBHOOK_SECRET` | Resends separate signeringshemmelighet for akkurat dette miljøets mottakswebhook. |
-| `SUPPORT_WORKER_SECRET` | Separat tilfeldig hemmelighet, minst 32 tegn, for køarbeideren. |
+| `SUPPORT_WORKER_SECRET` | Valgfri alternativ arbeiderhemmelighet. La den være usatt når den medfølgende Vault-/cron-jobben brukes. En eksplisitt verdi overstyrer Vault og skal ikke blandes med cron-oppsettet. |
 
 Ikke bruk Kenneths private mottaker som From/Reply-To. Arbeideren stanser ved en
 slik feilkonfigurasjon. Svaradresser inneholder 128-bit tilfeldig sakstoken, som
@@ -81,18 +81,30 @@ og ingen supportmail er sendt. Webhook/scheduler og faktisk prøve gjenstår.
 ## Kø og retry
 
 Sak/melding og outbox opprettes i samme transaksjon. Nettleseren forsøker varsling
-etter bekreftet lagring. For autonom oppfølging av en avbrutt nettleserforespørsel,
-registrer en egen serverjobb hvert femte minutt som gjør POST til `support-mail`
-med header `x-support-worker-token` fra en sikker serverhemmelighet. Bruk separat
-jobb per miljø. Ingen scheduler er aktivert av migrasjonene i denne leveransen.
-Ikke bruk ChatGPT Automations som appens driftsarbeider.
+etter bekreftet lagring. Migrasjonen `20261016221008_support_scheduler.sql`
+installerer den separate cron-jobben `support-queue-worker` hvert femte minutt.
+Den kaller kun `support_private.dispatch_queue()`. Innstillingen `enabled=false`
+og tom endpoint gjør at jobben ikke sender noen HTTP-forespørsel etter installasjon.
+Eksisterende cron-jobber endres ikke. Token genereres i Vault og ligger aldri i
+cron-tekst, klient eller repo. Bare service_role kan validere det gjennom RPC;
+avslag/konfigurasjonsfeil stanser før kølesing.
 
-Arbeideren tar maksimalt ti meldinger, har 45-sekunders lease, fem minutters
+Etter godkjent Preview/TEST OK og kontroll av miljøets kø: sett riktig prosjekt-URL
+som endpoint i den private worker_settings-raden, og sett enabled=true først når
+Edge-konfigurasjon, mottakeromfang og transport er kontrollert. La
+SUPPORT_WORKER_SECRET være usatt for dette Vault-oppsettet. Deaktivering skjer
+med enabled=false; da stopper både HTTP-dispatch og tokenvalidering umiddelbart.
+Jobben er installert bare i Sandbox og er fortsatt avslått. Ingen scheduler er
+installert i Production. Ikke bruk ChatGPT Automations som appens driftsarbeider.
+
+Arbeideren tar maksimalt fem meldinger, har 45-sekunders lease, fem minutters
 ventetid og inntil seks automatiske forsøk. Stabil Resend-idempotensnøkkel bevares.
 Ukjent sendestatus eldre enn 23 timer går til manuell kontroll for å unngå ny
 utsending etter leverandørens idempotensvindu. Systemadmin skal da kontrollere
 Resend-loggen; opprett ikke blindt en ny melding. Aksepterte meldinger sendes ikke
 på nytt. Tilbakekalt brukertilgang/firmamedlemskap stanser ventende utsending.
+Fem sekvensielle leverandørkall på maksimalt 20 sekunder passer innenfor cron-
+forespørselens 120-sekunders frist. Resterende jobber ligger varig til neste runde.
 
 Statuser: pending (lagret/venter), sending (lease), accepted (provider-aksept),
 failed (avvist/ikke tilgang), uncertain (ukjent), review (manuell kontroll).

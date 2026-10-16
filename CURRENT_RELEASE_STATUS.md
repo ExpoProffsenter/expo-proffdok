@@ -23,6 +23,10 @@ mottaksdomene kan brukes uten DNS-endring. Etter Kenneths uttrykkelige
 godkjenning er en separat mottaksnøkkel lagret som RESEND_RECEIVING_API_KEY i
 Production Secrets. Det er eneste Production-endring; support er ikke releaset
 eller aktivert. Webhook, køjobb, faktisk prøve og relevant TEST OK gjenstår.
+Køjobb-oppfølging: separat support-cron og Vault-token er nå implementert og
+installert avslått bare i Sandbox. 86 PostgreSQL- og 55 transportkontroller samt
+full lokal critical/build PASS. Ny slutt-CI/Preview føres i PR #263. Webhook-
+aktivering, faktisk e-postprøve og relevant TEST OK gjenstår før Production.
 Aktivering og gjenstående kontroll: docs/SUPPORT_OPERATIONS_20261016.md.
 Fast Preview beholdes på fix-company-admin-scope-20261015; ny separat PR følger
 supportleveransen. Baseline/commit/CI/deploy bevisføres i den nye PR-en.

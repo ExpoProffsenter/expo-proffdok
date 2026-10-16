@@ -65,10 +65,18 @@ export async function handleSupportMail(req,deps){
   if(worker){
    const secret=deps.env('SUPPORT_WORKER_SECRET');
    const equal=(a,b)=>{let diff=a.length^b.length;for(let i=0;i<Math.max(a.length,b.length);i++)diff|=(a.charCodeAt(i)||0)^(b.charCodeAt(i)||0);return diff===0;};
-   if(secret.length<32||!equal(secret,worker))return response({error:'Invalid worker authentication'},401);
+   // Scheduled invocations use an isolated Vault token. A separately configured
+   // worker secret remains supported; a bad explicit secret never falls back.
+   let authorized=false;
+   if(secret){authorized=secret.length>=32&&equal(secret,worker);}
+   else if(worker.length>=32&&worker.length<=256){
+    const {data:valid,error:authError}=await deps.adminClient().rpc('support_worker_authorize',{p_token:worker});
+    authorized=!authError&&valid===true;
+   }
+   if(!authorized)return response({error:'Invalid worker authentication'},401);
    if(supportConfig(deps.env).mode==='disabled')return response({ok:true,state:'disabled'});
    const {data:ids,error:queueError}=await deps.adminClient().rpc('support_mail_pending');if(queueError)throw Error('Queue unavailable');
-   const states=[];for(const id of (ids||[]).slice(0,10))states.push((await dispatchSupport(id,deps)).state);
+   const states=[];for(const id of (ids||[]).slice(0,5))states.push((await dispatchSupport(id,deps)).state);
    return response({ok:true,processed:states.length});
   }
   const client=deps.userClient(req.headers.get('Authorization')||'');const {data,error}=await client.auth.getUser();
