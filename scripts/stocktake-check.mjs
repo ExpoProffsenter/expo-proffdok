@@ -11,7 +11,7 @@ assert.throws(()=>stocktakeCordel([a,{...a,supplier:'Grossist B'}],{columns:'num
 assert.throws(()=>stocktakeCordel([{...a,number:'bad;code'}]),/skilletegn/);assert.throws(()=>stocktakeCordel([{...a,supplier:'😀'}]),/støtter ikke/);
 const csv=new TextDecoder().decode(stocktakeCsv({warehouse:'1',count_date:'2026-10-15'},[{...a,number:'=CMD()'}],'QA Firma'));
 assert(csv.includes('"\'=CMD()"'));assert(csv.includes('"07000000000001"'));assert(!csv.includes('netto'));
-const view=fs.readFileSync('src/modules/storeCatalog/StorePriceSearchView.jsx','utf8');assert(view.includes('<StocktakeEntry />'));
+const view=fs.readFileSync('src/modules/storeCatalog/StorePriceSearchView.jsx','utf8');assert(view.includes("<StocktakeEntry onAvailable={setStocktakeAvailable} visible={surface==='stocktake'} />"));assert(view.includes('aria-label="Varearbeid"'));assert(view.includes("hidden={surface!=='stocktake'}"));
 const admin=fs.readFileSync('src/modules/access/systemAdminCompanyAccessUx.jsx','utf8');assert(admin.includes('<StocktakeCompanyAccess'));
 const source=fs.readFileSync('src/modules/stocktake/StocktakeEntry.jsx','utf8');assert(source.includes('if(!context)return null'));assert(source.includes('t!==version.current'));assert(source.includes('WORK_PROFILE_EVENT'));
 console.log('stocktake-check: OK – zero/decimal counts, supplier identity, area aggregation, exact text bytes, no prices, gated entry and admin integration');

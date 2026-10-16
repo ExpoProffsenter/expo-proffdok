@@ -1,0 +1,30 @@
+/* Scoped presentation only; original controls and their callbacks remain mounted. */
+.projectStatusSection {padding:12px 18px!important; margin-bottom:12px!important}
+.projectStatusSection>h2 {font-size:16px!important;margin:0 0 6px!important}
+.project-status-details>summary {cursor:pointer;min-height:44px;display:flex;align-items:center;gap:8px;font-weight:700}
+.project-status-details[open]>summary {border-bottom:1px solid #dbe7ec;margin-bottom:12px}
+.ux-scope-note {border-left:3px solid #1597a6;padding:10px 14px;background:#f0fafb;border-radius:8px}
+.ux-toolbar {display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:12px 0}
+.ux-toolbar>label {display:flex;align-items:center;gap:8px}
+.ux-toolbar select,.ux-toolbar button {min-height:44px}
+.ux-inline-note {font-size:13px;color:#4b6370}
+.ux-readable-summary {cursor:pointer;min-height:44px;font-weight:750;padding:10px 0}
+.ux-empty {padding:18px;background:#f4fafb;border:1px solid #d9e9ed;border-radius:14px}
+.ux-preview {background:#f1fafb;border:1px solid #cce4e8;border-radius:16px;padding:16px;margin:14px 0}
+.ux-preview img {max-width:220px;max-height:90px;object-fit:contain}
+.ux-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:12px}
+.time-today-actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:16px 0;padding:14px;border-radius:14px;background:#eaf9fa;border:1px solid #bddfe3}
+.time-day[hidden],.project-checklist-card[hidden]{display:none!important}
+.time-upload>summary{min-height:44px;cursor:pointer;font-weight:750}
+.company-user-disclosure,.company-invite-disclosure,.ux-admin-area{border:1px solid #d3e5e8;border-radius:14px;padding:0 14px;margin:10px 0;background:#fff}
+.company-user-disclosure>summary{overflow-wrap:anywhere}
+.ks-chapter>summary{border-bottom:1px solid #dbe8eb;margin:8px 0}
+.ks-plan-quality{margin:8px 0;padding:0 12px;background:#f1f8fa;border:1px solid #d1e4e9;border-radius:12px}
+.sales-customer-preview-callout{position:static!important;width:auto!important;max-width:1100px;margin:0 auto 14px!important;box-shadow:none!important;background:#f0fafb!important;display:flex;align-items:center;flex-wrap:wrap;gap:10px!important}
+.sales-customer-preview-callout p{flex:1 1 320px;margin:0!important}
+.ux-access-portals>.tile{display:flex;flex-direction:column;gap:8px}
+.ux-access-portals>.tile>button{margin-top:auto;min-height:44px}
+.stocktakeSmart{display:flex;align-items:center;gap:8px;margin:10px 0}
+.stocktakeSmart input{width:auto}
+@media(max-width:700px){.projectStatusSection{padding:10px 12px!important}.ux-toolbar>*{max-width:100%}}
+@media(max-width:700px){.ux-workday-shortcuts{display:none}.time-today-actions button{flex:1 1 100%;min-height:46px}}

@@ -94,6 +94,7 @@ export default function KshmsModule({context,deviationRequest,personalOnly=false
  const publicationHeadingId=useId();
  const [reading,setReading]=useState(null),[checked,setChecked]=useState(false);
  const readingRef=useRef(null),readingDoneRef=useRef(null),completionRef=useRef(null),[readingFocus,setReadingFocus]=useState(0),[completionFocus,setCompletionFocus]=useState(0),[readingFeedback,setReadingFeedback]=useState('');
+ const [routineStatus,setRoutineStatus]=useState('all');
  const [handbookQuery,setHandbookQuery]=useState(''),[readingQuery,setReadingQuery]=useState(''),[personalQuery,setPersonalQuery]=useState('');
  const setupSuggestionFields=useRef(new Set());
  const reviewRef=useRef(null),[reviewFocus,setReviewFocus]=useState(0);
@@ -140,7 +141,7 @@ export default function KshmsModule({context,deviationRequest,personalOnly=false
   if(confirmSelf&&!savedState.acknowledgments.some(row=>row.user_id===userId&&row.version_id===result.id&&row.statement===ACK_STATEMENT)){setError('Rutinen er publisert, men vi kunne ikke kontrollere din egen bekreftelse. Kontroller utgaven i «Les og bekreft» før du prøver igjen.');return;}
   const progress=handbookProgress(savedState),next=progress.waiting[0];
   const feedback=`«${routine.draft.title}» er godkjent og publisert som versjon ${result.number}.${confirmSelf?' Din egen gjennomgang er også bekreftet.':''}`;
-  if(next){choosePublication(next);if(!matchesRoutineSearch(next.draft,handbookQuery))setHandbookQuery('');setPublicationFeedback(`${feedback} Neste rutine som trenger godkjenning, er åpnet under.`);}
+  if(next){choosePublication(next);if(!matchesRoutineSearch(next.draft,handbookQuery))setHandbookQuery('');setRoutineStatus('all');setPublicationFeedback(`${feedback} Neste rutine som trenger godkjenning, er åpnet under.`);}
   else{setPublication(null);setSummary('');setFreshAck(true);setSelfAcknowledgment(false);setPublicationFeedback(`${feedback} Ansatte med KS/HMS-tilgang finner utgaven i «Les og bekreft».`);if(progress.step==='followup')setCompletionFocus(previous=>previous+1);else setFlowFocus(previous=>previous+1);}
  };
  const chooseReading=version=>{
@@ -215,7 +216,11 @@ export default function KshmsModule({context,deviationRequest,personalOnly=false
  const followup=canManage?acknowledgmentOverview(data):null;
  const assignmentOptions=canManage?pendingAssignmentOptions(data,latest):[];
  const overdue=data.settings && new Date(`${data.settings.next_review_on}T23:59:59`) < new Date();
- const visibleRoutines=filterFirmRoutines(data,handbookQuery);
+ const visibleRoutines=filterFirmRoutines(data,handbookQuery).filter(r=>{
+  const approval=routineApprovalState(r,data.versions.filter(v=>v.routine_id===r.id));
+  const newer=ROUTINE_CATALOG.some(t=>t.key===r.draft?.source_key&&t.source_revision>r.draft?.source_revision);
+  return routineStatus==='all'||(routineStatus==='draft'&&approval.status==='draft')||(routineStatus==='approved'&&approval.status==='approved')||(routineStatus==='review'&&(approval.status==='changed'||newer));
+ });
  const ownAssignments=data.assignments.filter(assignment=>assignment.user_id===userId&&data.versions.some(version=>version.id===assignment.version_id));
  const visibleAssignments=ownAssignments.filter(assignment=>matchesRoutineSearch(data.versions.find(version=>version.id===assignment.version_id)?.content,readingQuery));
  const changeSetupText=(field,value)=>{setupSuggestionFields.current.delete(field);setSetup(previous=>({...previous,[field]:value}));};
@@ -290,10 +295,10 @@ export default function KshmsModule({context,deviationRequest,personalOnly=false
     {error&&<p role="alert" className="ks-error">{error}</p>}
     <div className="ks-actions"><button type="button" className="ks-publish-button" disabled={busy||dirty||summary.trim().length<5} onClick={publishRoutine}>{busy?'Godkjenner …':'Godkjenn og publiser'}</button><button type="button" className="secondary" disabled={busy} onClick={()=>{setPublication(null);setOverviewFocus(previous=>previous+1)}}>Avbryt</button></div>
    </div>}
-   <div className="ks-routine-overview" ref={overviewRef} tabIndex={-1}><h3>Firmaets rutiner ({data.routines.filter(routine=>!routine.archived).length})</h3>{canManage&&<p>Se statusen ved hver rutine. «Rediger her» åpner teksten. «Åpne godkjenning» og «Godkjenn endringene» åpner vurderingen. Knappen «Godkjenn og publiser» lagrer godkjenningen.</p>}<KshmsRoutineSearch label="Søk i firmaets rutiner" query={handbookQuery} onChange={setHandbookQuery} count={visibleRoutines.length} total={filterFirmRoutines(data,'').length}/></div>
+   <div className="ks-routine-overview" ref={overviewRef} tabIndex={-1}><h3>Firmaets rutiner ({data.routines.filter(routine=>!routine.archived).length})</h3>{canManage&&<p>Se statusen ved hver rutine. «Rediger her» åpner teksten. «Åpne godkjenning» og «Godkjenn endringene» åpner vurderingen. Knappen «Godkjenn og publiser» lagrer godkjenningen.</p>}<div className="ux-toolbar"><label>Vis rutinestatus<select value={routineStatus} onChange={e=>setRoutineStatus(e.target.value)}><option value="all">Alle rutiner</option><option value="draft">Utkast</option><option value="approved">Godkjent</option><option value="review">Trenger revisjon</option></select></label></div><KshmsRoutineSearch label="Søk i firmaets rutiner" query={handbookQuery} onChange={setHandbookQuery} count={visibleRoutines.length} total={filterFirmRoutines(data,'').length}/></div>
    {handbookQuery.trim()&&!visibleRoutines.length&&<p className="ks-notice">Ingen rutiner passer søket. Prøv et annet ord eller tøm søket.</p>}
    {!data.routines.length&&<div className="ks-card"><h3>{canManage?'Ingen rutiner ennå':'Ingen rutiner tildelt'}</h3><p>{canManage?'Huk av standardrutiner over og trykk «Legg inn», eller lag en rutine fra blank mal.':'Du får rutiner her når firmaets ansvarlige har gitt deg dem.'}</p></div>}
-   {[...new Set(visibleRoutines.map(r=>r.draft?.chapter||data.versions.find(v=>v.routine_id===r.id)?.content.chapter||'Historikk'))].map(chapter=><div className="ks-chapter" key={chapter}><h3>{chapter}</h3>{visibleRoutines.filter(r=>(r.draft?.chapter||data.versions.find(v=>v.routine_id===r.id)?.content.chapter||'Historikk')===chapter).map(r=>{
+   {[...new Set(visibleRoutines.map(r=>r.draft?.chapter||data.versions.find(v=>v.routine_id===r.id)?.content.chapter||'Historikk'))].map(chapter=><details className="ks-chapter" key={chapter} open={Boolean(handbookQuery.trim())}><summary className="ux-readable-summary">{chapter} · {visibleRoutines.filter(r=>(r.draft?.chapter||data.versions.find(v=>v.routine_id===r.id)?.content.chapter||'Historikk')===chapter).length} rutiner</summary>{visibleRoutines.filter(r=>(r.draft?.chapter||data.versions.find(v=>v.routine_id===r.id)?.content.chapter||'Historikk')===chapter).map(r=>{
     const versions=data.versions.filter(v=>v.routine_id===r.id),approval=routineApprovalState(r,versions),current=approval.current;
     const newerProposal=canManage&&ROUTINE_CATALOG.find(template=>template.key===r.draft?.source_key&&template.source_revision>r.draft.source_revision);
     return <article className="ks-card" key={r.id}><div className="ks-row"><h4>{routineNumber(r.reference_number)&&`${routineNumber(r.reference_number)} · `}{r.draft?.title||current?.content.title}</h4><span className={`ks-badge ks-status-${approval.status}`}>{approval.label}</span></div>
@@ -302,7 +307,7 @@ export default function KshmsModule({context,deviationRequest,personalOnly=false
      {canManage&&<div className="ks-actions">{!r.archived&&<button type="button" className="secondary" disabled={busy} aria-label={`Rediger her: ${r.draft.title}`} onClick={()=>chooseEditor(r.draft,r)}>Rediger her</button>}<button type="button" className="secondary" onClick={()=>chooseEditor({...r.draft,title:`${r.draft.title} (kopi)`})}>Kopier</button>{!r.archived&&canPublish&&approval.status!=='approved'&&<button type="button" disabled={busy||dirty||progress.step==='setup'} aria-label={`Åpne godkjenning: ${r.draft.title}`} onClick={()=>choosePublication(r)}>{approval.status==='changed'?'Godkjenn endringene':'Åpne godkjenning'}</button>}{!r.archived&&canAdmin&&<button type="button" className="secondary" disabled={busy} onClick={()=>{if(window.confirm('Arkiver rutinen? Publiserte versjoner og bekreftelser beholdes.'))run('archive',{id:r.id,revision:r.revision},'Rutinen er arkivert; historikken er bevart.')}}>Arkiver</button>}</div>}
      {versions.length>0&&<details><summary>Versjonshistorikk ({versions.length})</summary>{versions.map(v=><details key={v.id}><summary>Versjon {v.number} · {dateTime(v.published_at)} · {v.change_summary}</summary><Content content={v.content}/><KshmsDocumentPdfButton kind="routine" row={v} companyId={companyId} userId={userId}/><p>Godkjenner: {data.members.find(m=>m.id===v.published_by)?.email||v.published_by} · innholdskontroll: {v.content_hash}</p></details>)}</details>}
     </article>;
-   })}</div>)}
+   })}</details>)}
    {canManage&&progress.step==='followup'&&!dirty&&<KshmsHandbookProgress progress={progress} dirty={dirty} busy={busy} canPublish={canPublish} onNext={nextStep} targetRef={completionRef} feedback={publicationFeedback} label="Neste steg etter siste godkjenning" announce={false}/>}
   </>}
   {(screen==='personal'||screen==='reading')&&<KshmsBulkAcknowledgment key={`batch:${companyId}:${userId}:${screen}`} data={data} companyId={companyId} userId={userId} busy={busy} onBusy={setBusy} onState={value=>{if(value?.context.company_id===companyId&&value.context.user_id===userId&&requestScope.current?.active){setData(value);setReading(null);setChecked(false);}else if(value===null){setData(null);setError('Arbeidsprofil eller tilgang er endret. Last personalhåndboka på nytt.');}}} onRead={version=>{setScreen('reading');chooseReading(version);}}/>}

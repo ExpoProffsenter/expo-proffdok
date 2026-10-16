@@ -77,7 +77,7 @@ export function createProjectListTools({
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "tile", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: projectListStats.unread }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Ulest chat" })
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Uleste meldinger" })
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "tile", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: projectListStats.finished }),
@@ -87,15 +87,15 @@ export function createProjectListTools({
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item projectListSearchPanel", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Søk i prosjektlisten", value: projectSearch, onChange: setProjectSearch }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Statusfilter", value: projectStatusFilter, onChange: setProjectStatusFilter, options: ["alle", "draft", "progress", "waiting", "customer_ready", "deviation", "done", "locked"], optionLabels: { alle: "Alle", draft: "Utkast", progress: "Pågår", waiting: "Avventer", customer_ready: "Klar for kunde", deviation: "Avvik åpent", done: "Ferdigstilt", locked: "Arkivert / låst" } })
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Statusfilter", value: projectStatusFilter, onChange: setProjectStatusFilter, options: ["alle", "active", "archive", "draft", "progress", "waiting", "customer_ready", "deviation", "done", "locked"], optionLabels: { alle: "Alle", active: "Alle aktive", archive: "Hele arkivet", draft: "Utkast", progress: "Pågår", waiting: "Avventer", customer_ready: "Klar for kunde", deviation: "Avvik åpent", done: "Ferdigstilt", locked: "Arkivert / låst" } })
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "6px" }, children: "Søk på prosjekt, kunde eller adresse. Listen oppdateres mens du skriver." }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "projectListToolbar", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => loadProjects(authUser, true), children: "Oppdater liste" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: projectUnreadOnly ? "" : "secondary", onClick: () => setProjectUnreadOnly((v) => !v), children: projectUnreadOnly ? "Vis alle" : "Kun uleste" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: projectStatusFilter === "alle" ? "secondary" : "", onClick: () => setProjectStatusFilter("alle"), children: "Alle" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: projectStatusFilter === "progress" || projectStatusFilter === "open" ? "" : "secondary", onClick: () => setProjectStatusFilter(projectStatusFilter === "progress" || projectStatusFilter === "open" ? "alle" : "progress"), children: "Aktive" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: projectStatusFilter === "done" || projectStatusFilter === "locked" ? "" : "secondary", onClick: () => setProjectStatusFilter(projectStatusFilter === "done" || projectStatusFilter === "locked" ? "alle" : "done"), children: "Arkiv" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: projectStatusFilter === "active" ? "" : "secondary", onClick: () => setProjectStatusFilter(projectStatusFilter === "active" ? "alle" : "active"), children: "Aktive" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: projectStatusFilter === "archive" ? "" : "secondary", onClick: () => setProjectStatusFilter(projectStatusFilter === "archive" ? "alle" : "archive"), children: "Arkiv" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => {
                 setProjectSearch("");
                 setProjectStatusFilter("alle");

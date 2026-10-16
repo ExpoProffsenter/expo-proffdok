@@ -39,7 +39,7 @@ export function createAccessViewTools({
   }) {
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Tilgang og deling", children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Velg kunde-, UE- eller kontrollørtilgang. Hver portal har separat kode. Kunde og UE har tilgang mens prosjektet er aktivt og i 30 dager etter låsing. For kontrollør velger du utløpsdato og klokkeslett." }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "cards", style: { marginTop: "12px" }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "cards ux-access-portals", style: { marginTop: "12px" }, children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "tile", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Kundeportal" }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: portalAccessRecordIsValid(getPortalAccessRecord(project, "kunde"), project) ? "🟢 Aktiv kode" : "⚪ Ingen aktiv kode" }),
@@ -71,10 +71,12 @@ export function createAccessViewTools({
         supabaseClient && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ControllerAccessPanel, { client: supabaseClient, projectId, readOnly: controllerReadOnly, emailBrand: controllerEmailBrand, fromName: controllerFromName }, projectId),
       ] }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Melding i e-post med tilgangslink", value: accessEmailMessage, onChange: setAccessEmailMessage }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("details", { className:"ux-access-roles",children:[(0, import_jsx_runtime.jsx)("summary",{className:"ux-readable-summary",children:"Hvem kan se og gjøre hva?"}),
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "cards", children: accessRoleInfo.map((r) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "tile", children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: r.role }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: r.text })
       ] }, r.role)) }),
+      ] }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", marginTop: "16px", flexWrap: "wrap" }, children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { onClick: () => setAccess([...access, { id: uid(), name: "", email: "", role: "Underleverandør" }]), children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Plus, { size: 18 }),

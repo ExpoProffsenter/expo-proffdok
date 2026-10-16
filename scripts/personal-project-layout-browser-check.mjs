@@ -19,6 +19,7 @@ import {useHrAccess} from '${cwd}/src/modules/hr/hrAccess.js';
 import {useKshmsAccess} from '${cwd}/src/modules/kshms/kshmsAccess.js';
 import {installWorkProfileProjectListUx} from '${cwd}/src/modules/access/workProfileProjectListUx.jsx';
 import {createProjectListTools,projectMatchesSearch} from '${cwd}/src/modules/project/projectListTools.js';
+import {matchesProjectStatus} from '${cwd}/src/modules/project/projectListStatus.mjs';
 import '${cwd}/src/style.css';
 import {APP_RUNTIME_STYLES} from '${cwd}/src/modules/app/appRuntimeStyles.js';
 document.head.insertAdjacentHTML('beforeend','<style>'+APP_RUNTIME_STYLES+'</style>');
@@ -30,7 +31,7 @@ const Select=({label,value,onChange,options,optionLabels})=><label>{label}<selec
 const tools=createProjectListTools({Section,Grid,Input,Select,getWarrantyYears:()=>10});
 const rows=['Pågående prosjekt','Arkivprosjekt'].map((title,i)=>({row:{id:'p'+i,title,updated_at:'2026-10-16T12:00:00Z'},listProject:{customer:'QA Kunde',address:'Testveien 1',responsible:'QA Leder'},listStatus:{tone:i?'done':'progress',label:i?'Ferdigstilt':'Pågår',icon:'●'},unreadForAdminInList:i?0:2,latestMessage:null,imageSummary:{total:0,previews:[]},openDeviationCount:i?0:3,productSummary:{total:4},listWarranty:{enabled:true,issued:true},projectCompanyName:'QA firma'}));
 function Projects(){const [q,setQ]=useState(''),[status,setStatus]=useState('alle'),[unread,setUnread]=useState(false);
- const filtered=rows.filter(r=>projectMatchesSearch(r.row.title,q)&&(status==='alle'||r.listStatus.tone===status)&&(!unread||r.unreadForAdminInList));
+ const filtered=rows.filter(r=>projectMatchesSearch(r.row.title,q)&&matchesProjectStatus(r.listStatus.tone,status)&&(!unread||r.unreadForAdminInList));
  return tools.renderProjectListPanel({projectListStats:{total:2,active:1,unread:2,finished:1,visible:filtered.length},projectSearch:q,setProjectSearch:setQ,projectStatusFilter:status,setProjectStatusFilter:setStatus,projectUnreadOnly:unread,setProjectUnreadOnly:setUnread,loadProjects:()=>window.refreshes++,authUser:{id:'self'},projects:rows,filteredProjectListRows:filtered,isSystemAdminUser:false,statusStyle:()=>({}),openProjectById:(...args)=>window.opened.push(args),deleteProject:id=>window.deleted.push(id)});}
 const root=createRoot(document.getElementById('app'));
 function PersonalHarness(){const personal=usePersonalAccess('self'),hr=useHrAccess('self',true),ks=useKshmsAccess('self');return <Personal context={personal} hrContext={hr} kshmsContext={ks} userId="self" authUser={{id:'self',email:'qa@example.invalid',user_metadata:{full_name:'QA Medarbeider'}}} supabaseClient={window.client}/>;}

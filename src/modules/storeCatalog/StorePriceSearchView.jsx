@@ -386,6 +386,8 @@ function PrintDocument({ items, includeInternal, picklistMode = false, orderNumb
 
 export default function StorePriceSearchView({ onClose }) {
   const [query, setQuery] = useState("");
+  const [surface, setSurface] = useState("search");
+  const [stocktakeAvailable, setStocktakeAvailable] = useState(false);
   const [smartSearch, setSmartSearch] = useState(true);
   const [isMobile, setIsMobile] = useState(() =>
     typeof window !== "undefined" && window.matchMedia("(max-width: 700px)").matches
@@ -494,6 +496,8 @@ export default function StorePriceSearchView({ onClose }) {
   }, []);
 
   const stopScanning = useCallback(() => setScanning(false), []);
+  useEffect(() => { if (surface !== "search") setScanning(false); }, [surface]);
+  useEffect(() => { if (!stocktakeAvailable && surface === "stocktake") setSurface("search"); }, [stocktakeAvailable, surface]);
   const handleScan = useCallback((code) => {
     setQuery(code);
     setScanning(false);
@@ -1007,11 +1011,16 @@ export default function StorePriceSearchView({ onClose }) {
           : "Søk varer og priser, angi antall og lagre en plukkliste til senere manuell registrering i Cordel."}</p>
       </section>
 
-      {isMobile ? priceSearchLookup : null}
+      <nav className="priceSearchSurfaces" aria-label="Varearbeid">
+        <button type="button" className={surface==='search'?'':'secondary'} aria-pressed={surface==='search'} onClick={()=>setSurface('search')}>Søk varer</button>
+        <button type="button" className={surface==='lists'?'':'secondary'} aria-pressed={surface==='lists'} onClick={()=>setSurface('lists')}>Plukklister ({selectedProducts.length})</button>
+        {stocktakeAvailable&&<button type="button" className={surface==='stocktake'?'':'secondary'} aria-pressed={surface==='stocktake'} onClick={()=>setSurface('stocktake')}>Varetelling</button>}
+      </nav>
+      <div hidden={surface!=='search'}>{isMobile ? priceSearchLookup : null}</div>
 
-      <Suspense fallback={null}><StocktakeEntry /></Suspense>
+      <div hidden={surface!=='stocktake'}><Suspense fallback={null}><StocktakeEntry onAvailable={setStocktakeAvailable} visible={surface==='stocktake'} /></Suspense></div>
 
-      <section className="priceSearchSavedLists" aria-label="Lagrede plukklister">
+      <section hidden={surface!=='lists'} className="priceSearchSavedLists" aria-label="Lagrede plukklister">
         <div className="priceSearchSavedHead">
           <div>
             <h3>Lagrede plukklister ({picklists.length}/{MAX_SAVED_PICKLISTS})</h3>
@@ -1061,7 +1070,7 @@ export default function StorePriceSearchView({ onClose }) {
       ) : null}
 
       {selectedProducts.length ? (
-        <section className="priceSearchSelected" aria-label="Valgte varer">
+        <section hidden={surface==='stocktake'} className="priceSearchSelected" aria-label="Valgte varer">
           <div className="priceSearchSelectedHeader">
             <div>
               <small>Midlertidig arbeidsliste</small>
@@ -1140,7 +1149,7 @@ export default function StorePriceSearchView({ onClose }) {
         </section>
       ) : null}
 
-      {!isMobile ? priceSearchLookup : null}
+      <div hidden={surface!=='search'}>{!isMobile ? priceSearchLookup : null}</div>
 
       {printPortal}
 
@@ -1151,6 +1160,7 @@ export default function StorePriceSearchView({ onClose }) {
         .priceSearchIntro{margin-bottom:18px}
         .priceSearchHome{display:none}
         .priceSearchScanButton{display:none}
+        .priceSearchSurfaces{display:flex;gap:8px;flex-wrap:wrap}.priceSearchSurfaces button{min-height:44px}.priceSearchSelected[hidden],.priceSearchSavedLists[hidden]{display:none!important}
         .priceSearchIntro small,.priceSearchSelectedHeader small{font-weight:800;color:#159aa3}
         .priceSearchIntro h2{margin:4px 0 6px;font-size:34px}
         .priceSearchIntro p,.priceSearchSelectedHeader p{margin:0;color:#60737b;max-width:780px}
