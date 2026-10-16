@@ -12,3 +12,35 @@
 .personal-page .personal-heading h2{color:#fff}
 
 .personal-progress-card{grid-column:1/-1}.personal-progress-card .ks-progress-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:10px}.personal-progress-card .ks-progress-list button{display:grid;gap:6px;text-align:left;white-space:normal}.personal-progress-card .ks-progress-list span{font-size:12px}
+
+/* Keep the coloured workspace cards; bring navigation and daily work above notices. */
+.personal-page>header.personal-heading{padding:18px 24px;gap:18px;margin-bottom:14px}
+.personal-page .personal-heading h2{font-size:29px;margin:8px 0}
+.personal-page .personal-heading h2>span{display:inline;font-size:17px;margin-left:10px}
+.personal-page .personal-avatar{width:60px;height:60px;border-radius:18px;font-size:23px}
+.personal-page .personal-tabs{margin-bottom:14px}
+.personal-notices[hidden]{display:none!important}
+.personal-page .personal-progress-card{grid-column:auto;background:linear-gradient(155deg,#edfafa,#fff 75%);border-color:#c4e5e7}
+.personal-page .personal-progress-card .ks-progress-list{width:100%;grid-template-columns:1fr}
+.personal-page .personal-progress-card>p{font-size:13px;line-height:1.45}
+.personal-page .personal-plans-card{grid-column:1/-1;background:linear-gradient(155deg,#edfafa,#fff 75%);border-color:#c4e5e7}
+.personal-plans-heading{display:flex;align-items:center;gap:12px}
+.personal-plans-heading .personal-card-icon{margin:0;width:36px;height:36px;border-radius:11px}
+.personal-plans-heading h3{margin-top:4px}
+.personal-plan-sources{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:14px;width:100%}
+.personal-page .personal-plan-source{position:static;min-width:0;padding:0;border:0;border-radius:0;box-shadow:none;display:flex;flex-direction:column;gap:8px;background:transparent;margin:0}
+.personal-page .personal-plan-source:nth-child(2) h4{color:#57459a}
+.personal-plan-source h4{margin:0;font-size:16px;color:#17323b}
+.personal-plan-source>p{margin:0;font-size:13px;color:#526772}
+.personal-page .personal-plan-source button{width:100%;min-height:44px;white-space:normal}
+@media(min-width:761px){.personal-page .personal-cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){
+ .personal-page>header.personal-heading{padding:16px;gap:10px}
+ .personal-page .personal-heading h2{font-size:25px}
+ .personal-page .personal-heading h2>span{display:block;margin:5px 0 0;font-size:15px}
+ .personal-page .personal-avatar{width:44px;height:44px;border-radius:14px;font-size:18px}
+ .personal-page .personal-card{padding:18px}
+}
+
+.personal-plan-source-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.personal-page .personal-plan-source .personal-plan-refresh{width:auto;flex-shrink:0;margin:0;min-height:44px;padding:8px 10px;font-size:12px}

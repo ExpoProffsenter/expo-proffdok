@@ -11,17 +11,22 @@ import {WORK_PROFILE_EVENT} from '../access/workProfileClient.js';
 import {MANAGED_ACCESS_EVENT,MODULE_ACCESS_EVENT} from '../access/moduleAccessClient.js';
 // Navigation pointers only. Every mount/focus reauthorizes and rereads the data.
 const selections=new Map();
-export default function KshmsMyProgressPlans({context,source='kshms'}){
+export default function KshmsMyProgressPlans({context,source='kshms',grouped=false}){
  const scope=source+':'+context.company_id+':'+context.user_id,session=useMemo(()=>progressSession({rpc:source==='project'?async(name,args)=>{const v=await kshmsRpc('project_progress_mine',args);if(!args.p_id&&!Array.isArray(v?.plans))throw Error('Prosjektplanene kunne ikke bekreftes.');return v;}:kshmsRpc,companyId:context.company_id,userId:context.user_id}),[scope]);
  const [data,setData]=useState(null),[record,setRecord]=useState(null),[selected,setSelected]=useState(()=>selections.get(scope)||null),[error,setError]=useState(''),[busy,setBusy]=useState(false),[nonce,setNonce]=useState(0);
  const epoch=useRef(0),alive=useRef(false),selectedRef=useRef(selected),dateRef=useRef('');
  selectedRef.current=selected;
- const refresh=async()=>{
-  const ticket=++epoch.current;setData(null);setRecord(null);setBusy(false);setError('');
-  if(document.visibilityState==='hidden')return;
+ const refresh=async event=>{
+  const ticket=++epoch.current,visibleCheck=['focus','visibilitychange'].includes(event?.type)&&document.visibilityState!=='hidden';
+  if(!visibleCheck){setData(null);setRecord(null);}setError('');
+  if(document.visibilityState==='hidden'){setBusy(false);return;}
+  setBusy(true);
   try{const value=await session.mine();if(!alive.current||ticket!==epoch.current)return;dateRef.current=value.active_date;setData(value);
-   if(selectedRef.current){try{const detail=await session.mine(selectedRef.current);if(alive.current&&ticket===epoch.current)setRecord(detail.record);}catch(e){if(alive.current&&ticket===epoch.current){setSelected(null);selections.delete(scope);setError(e.message);}}}
-  }catch(e){if(alive.current&&ticket===epoch.current)setError(e.message);}
+   const id=selectedRef.current;
+   if(id&&!value.next&&!value.plans.some(p=>p.id===id)){setRecord(null);selectedRef.current=null;setSelected(null);selections.delete(scope);return;}
+   if(id){const detail=await session.mine(id);if(alive.current&&ticket===epoch.current&&selectedRef.current===id)setRecord(detail.record);}
+  }catch(e){if(alive.current&&ticket===epoch.current){setData(null);setRecord(null);selectedRef.current=null;setSelected(null);selections.delete(scope);setError(e.message);}}
+  finally{if(alive.current&&ticket===epoch.current)setBusy(false);}
  };
  useEffect(()=>{
   alive.current=true;refresh();const events=[WORK_PROFILE_EVENT,MANAGED_ACCESS_EVENT,MODULE_ACCESS_EVENT,'focus'];events.forEach(name=>window.addEventListener(name,refresh));document.addEventListener('visibilitychange',refresh);
@@ -40,13 +45,17 @@ export default function KshmsMyProgressPlans({context,source='kshms'}){
    else if(kind==='staffing-csv')downloadStaffingCsv(meta,r.plan);else downloadProgressPlanIcs({projectId:r.id,meta,plan});
   }catch(e){target?.close();return e.message;}
  };
- if(source==='project'&&(!data||!data.plans.length)&&!record)return error?<p role="status">Prosjektplaner kunne ikke hentes. <button type="button" onClick={refresh}>Prøv igjen</button></p>:null;
- return <><article className="personal-card personal-progress-card" aria-label={source==='project'?'Mine aktive prosjektplaner':'Mine aktive fremdriftsplaner'}>
-  <span className="personal-card-eyebrow">DITT PLANLAGTE ARBEID</span><h3>{source==='project'?'Mine aktive prosjektplaner':'Mine aktive fremdriftsplaner'}</h3><p>Her ser du planer du er deltaker i. Planen vises fra første til siste planlagte dato på dine oppgaver som ikke er ferdige. Datoen følger norsk tid. Åpne planen for å se dine oppgaver.</p>
+ if(!grouped&&source==='project'&&(!data||!data.plans.length)&&!record)return error?<p role="status">Prosjektplaner kunne ikke hentes. <button type="button" onClick={refresh}>Prøv igjen</button></p>:null;
+ const Container=grouped?'section':'article',Heading=grouped?'h4':'h3';
+ const heading=grouped?(source==='project'?'Fra ProffDok-prosjekter':'Andre fremdriftsplaner'):(source==='project'?'Mine aktive prosjektplaner':'Mine aktive fremdriftsplaner');
+ const close=()=>{++epoch.current;selectedRef.current=null;setRecord(null);setSelected(null);setBusy(false);selections.delete(scope);};
+ return <><Container className={(grouped?'personal-plan-source':'personal-card')+' personal-progress-card'} aria-label={heading} aria-busy={busy}>
+  {!grouped&&<span className="personal-card-eyebrow">DITT PLANLAGTE ARBEID</span>}{grouped?<div className="personal-plan-source-heading"><Heading>{heading}</Heading><button type="button" className="secondary personal-plan-refresh" aria-label={source==='project'?'Oppdater prosjektplaner':'Oppdater andre planer'} disabled={busy} onClick={refresh}>Oppdater</button></div>:<Heading>{heading}</Heading>}
+  <p>{grouped?(source==='project'?'Planer fra prosjekter i ProffDok.':'Selvstendige planer fra KS/HMS.'):'Her ser du planer du er deltaker i. Planen vises fra første til siste planlagte dato på dine oppgaver som ikke er ferdige. Datoen følger norsk tid. Åpne planen for å se dine oppgaver.'}</p>
   {error&&<p role="alert">{error}</p>}{!data&&!error&&<p role="status">Henter aktive fremdriftsplaner …</p>}
-  {data&&<><div className="ks-progress-list">{data.plans.map(p=><button type="button" className="secondary" disabled={busy} key={p.id} onClick={()=>open(p.id)}><strong>{p.title}</strong><span>{[p.reference,p.address].filter(Boolean).join(' · ')} · {shortDate(p.first_date)}–{shortDate(p.last_date)}</span></button>)}</div>{!data.plans.length&&<p>Du har ingen aktive fremdriftsplaner nå.</p>}{data.next&&<button type="button" className="secondary" disabled={busy} onClick={async()=>{const ticket=epoch.current;try{const next=await session.mine(null,data.next);if(alive.current&&ticket===epoch.current)setData(old=>({...next,plans:[...old.plans,...next.plans]}));}catch(e){if(alive.current&&ticket===epoch.current)setError(e.message);}}}>Hent flere aktive planer</button>}</>}
-  <button type="button" className="secondary" disabled={busy} onClick={refresh}>Oppdater mine planer</button>
- </article>
-  {record&&data&&<KshmsProgressBoard key={scope+':'+record.id+':'+nonce} plan={record.plan} meta={record} readOnly dirty={false} saving={false} loading={false} error="" notice={'Viser bare dine oppgaver. Planen redigeres under '+(source==='project'?'Prosjekt.':'KS/HMS.')} onPlanChange={()=>{}} onSave={async()=>false} operations={KSHMS_PROGRESS_OPERATIONS} people={[{id:context.user_id,name:'Deg'}]} stateKey={'personal:'+scope+':'+record.id} launchToken={nonce} onDismiss={()=>{setRecord(null);setSelected(null);selections.delete(scope);}} onExport={exportOwn}/>}
+  {data&&<><div className="ks-progress-list">{data.plans.map(p=><button type="button" className="secondary" disabled={busy} key={p.id} onClick={()=>open(p.id)}><strong>{p.title}</strong><span>{[p.reference,p.address].filter(Boolean).join(' · ')} · {shortDate(p.first_date)}–{shortDate(p.last_date)}</span></button>)}</div>{!data.plans.length&&<p>{source==='project'?'Du har ingen aktive prosjektplaner nå.':'Du har ingen aktive fremdriftsplaner nå.'}</p>}{data.next&&<button type="button" className="secondary" disabled={busy} onClick={async()=>{const ticket=epoch.current;try{const next=await session.mine(null,data.next);if(alive.current&&ticket===epoch.current)setData(old=>({...next,plans:[...old.plans,...next.plans]}));}catch(e){if(alive.current&&ticket===epoch.current)setError(e.message);}}}>Hent flere aktive planer</button>}</>}
+  {!grouped&&<button type="button" className="secondary" disabled={busy} onClick={refresh}>Oppdater mine planer</button>}
+ </Container>
+  {record&&data&&<KshmsProgressBoard key={scope+':'+record.id+':'+nonce} plan={record.plan} meta={record} readOnly dirty={false} saving={false} loading={busy} error="" notice={'Viser bare dine oppgaver. Planen redigeres under '+(source==='project'?'Prosjekt.':'KS/HMS.')} onPlanChange={()=>{}} onSave={async()=>false} operations={KSHMS_PROGRESS_OPERATIONS} people={[{id:context.user_id,name:'Deg'}]} stateKey={'personal:'+scope+':'+record.id} launchToken={nonce} onDismiss={close} onExport={exportOwn}/>}
  </>;
 }

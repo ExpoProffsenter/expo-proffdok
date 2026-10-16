@@ -6,8 +6,12 @@ export function usePersonalAccess(userId){
  const [context,setContext]=useState(null);
  useEffect(()=>{
   let alive=true,revision=0;
-  const refresh=async()=>{
-   const ticket=++revision;setContext(null);
+  const refresh=async event=>{
+   const ticket=++revision;
+   // Keep verified display metadata during a visible focus check (for example screen capture).
+   // Hidden pages, scope/access events, failed reads and wrong actors still clear immediately.
+   const visibleCheck=['focus','visibilitychange'].includes(event?.type)&&document.visibilityState!=='hidden';
+   if(!visibleCheck)setContext(null);
    if(!userId||document.visibilityState==='hidden')return;
    try{const value=await hrRpc('get_my_personal_context');
     if(alive&&ticket===revision)setContext(value?.user_id===userId&&value.company_id?value:null);

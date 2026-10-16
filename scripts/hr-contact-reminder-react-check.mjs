@@ -88,8 +88,9 @@ try{
  await page.evaluate(()=>{window.fields.relative_phone=' ';window.dispatchEvent(new Event('focus'));});await banner.waitFor();
  eq(await banner.locator('.hr-contact-missing').textContent(),'Mangler: pårørendes telefon.');
  eq((await banner.textContent()).includes('Private'),false,'banner never shows contact values');
- await page.evaluate(()=>window.render('page'));await page.locator('.personal-tabs').waitFor();await banner.waitFor();
- eq(await page.evaluate(()=>Boolean(document.querySelector('.hr-contact-reminder').compareDocumentPosition(document.querySelector('.personal-tabs'))&Node.DOCUMENT_POSITION_FOLLOWING)),true,'Min side reminder above tabs');
+ await page.evaluate(()=>window.render('page'));await page.locator('.personal-tabs').waitFor();const compact=page.locator('.home-followups-toggle');await compact.waitFor();
+ eq(await compact.getAttribute('aria-expanded'),'false','Min side contact starts in collapsed summary');eq(await banner.isVisible(),false,'contact reminder does not push personal tabs down');await compact.click();await banner.waitFor();
+ eq(await page.evaluate(()=>Boolean(document.querySelector('.personal-tabs').compareDocumentPosition(document.querySelector('.hr-contact-reminder'))&Node.DOCUMENT_POSITION_FOLLOWING)),true,'Min side tabs precede contact details');
  await banner.getByRole('button').click();await dialog.getByLabel('Pårørendes telefon',{exact:true}).waitFor();await page.keyboard.press('Escape');await dialog.waitFor({state:'detached'});
  eq(await banner.count(),1,'closing reminder editor does not dismiss incomplete status');
  for(const key of ['registered','available','editable']){

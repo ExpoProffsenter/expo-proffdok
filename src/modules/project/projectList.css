@@ -1,0 +1,49 @@
+/* Only the ordinary project list. Keep the shared shell and project workspaces intact. */
+.projectListUx{min-width:0;color:#17323b}
+.projectListUx>.note{margin:6px 0 12px;line-height:1.45}
+.projectListUx .projectListHeaderCards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:12px}
+.projectListUx .projectListHeaderCards .tile{min-height:0;padding:12px 16px;border-color:#c4e5e7;border-radius:14px;background:linear-gradient(145deg,#edfafa,#fff)}
+.projectListUx .projectListHeaderCards .tile:nth-child(3){border-color:#dfddf1;background:linear-gradient(145deg,#f1f0fc,#fff)}
+.projectListUx .projectListHeaderCards .tile:nth-child(4){border-color:#eee0c9;background:linear-gradient(145deg,#fff7e9,#fff)}
+.projectListUx .projectListSearchPanel{padding:14px 16px;border-radius:18px;background:#f8fbfc;margin:0 0 12px}
+.projectListUx .projectListSearchPanel .note{font-size:13px;line-height:1.4;margin:6px 0 0}
+.projectListUx .projectListToolbar{gap:8px;margin:10px 0}
+.projectListUx .projectListToolbar button{min-height:44px;box-shadow:none;padding:8px 13px}
+.projectListUx .projectListCard{padding:18px 20px;border-color:#c4e5e7;border-radius:18px;background:linear-gradient(135deg,#effafa,#fff 65%);box-shadow:0 4px 18px #0f172a05;margin:12px 0}
+.projectListUx .projectListTitleBlock{min-width:0;flex:1;display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline}
+.projectListUx .projectListTitleBlock>b,.projectListUx .projectListTitleBlock>p{flex-basis:100%;overflow-wrap:anywhere}
+.projectListUx .projectListTitleBlock>small{font-size:13px;color:#526772;overflow-wrap:anywhere}
+.projectListUx .projectListBadges{max-width:100%;align-items:center}
+.projectListUx .projectListMetaCards{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:10px!important;margin-top:10px!important}
+.projectListUx .projectListMetaCards .tile{min-height:0!important;padding:0!important;border:0;background:transparent;box-shadow:none;gap:3px}
+.projectListUx .projectListMetaCards .tile b{font-size:12px;color:#526772}
+.projectListUx .projectListMetaCards .tile span{font-size:13px;line-height:1.4;overflow-wrap:anywhere}
+.projectListUx .projectListActions{gap:8px;margin-top:12px}
+.projectListUx .projectListActions button{min-height:44px;padding:8px 13px;box-shadow:none}
+.projectListUx .projectListActions button:last-child{margin-left:auto;background:transparent;border-color:#dbe5ea;color:#64748b}
+.projectListUx .projectImageCounts button{min-height:36px!important}
+.projectListUx .projectImageStrip{margin-top:8px;padding-bottom:0}
+.projectListUx .workProfileSharedProjects:has(>.workProfileSharedEmpty){padding:12px 16px;margin:12px 0;border-radius:16px}
+.projectListUx .workProfileSharedProjects:has(>.workProfileSharedEmpty) .workProfileSharedHeader{align-items:center;gap:10px}
+.projectListUx .workProfileSharedProjects:has(>.workProfileSharedEmpty) .workProfileSharedHeader p,
+.projectListUx .workProfileSharedProjects:has(>.workProfileSharedEmpty)>.note,
+.projectListUx .workProfileSharedProjects:has(>.workProfileSharedEmpty)>.workProfileSharedList{display:none}
+.projectListUx .workProfileSharedProjects>.workProfileSharedEmpty{padding:0;margin-top:6px;background:transparent;font-size:13px}
+.projectListUx button:focus-visible{outline:3px solid #007f89;outline-offset:3px}
+@media(max-width:760px){
+ .projectListUx .projectListHeaderCards{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+ .projectListUx .projectListHeaderCards .tile{padding:10px 12px!important;text-align:left!important}
+ .projectListUx .projectListHeaderCards .tile b{font-size:21px!important}
+ .projectListUx .projectListHeaderCards .tile span{font-size:12px!important}
+ .projectListUx .projectListSearchPanel{padding:12px!important}
+ .projectListUx .projectListCard{padding:16px!important;border-radius:18px!important}
+ .projectListUx .projectListBadges{justify-content:flex-start;margin-top:8px}
+ .projectListUx .projectListMetaCards{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .projectListUx .projectListMetaCards .tile:nth-child(3){display:flex!important;grid-column:1/-1}
+ .projectListUx .projectImageCounts>button{width:auto!important;flex:1 1 calc(50% - 6px);min-height:44px!important;font-size:12px!important;justify-content:flex-start}
+ .projectListUx .projectListActionsV2{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .projectListUx .projectListActionsV2 button{width:100%;margin:0;min-height:44px!important;font-size:13px!important}
+ .projectListUx .workProfileSharedProjects:has(>.workProfileSharedEmpty){padding:12px}
+}
+
+@media(min-width:360px) and (max-width:760px){.projectListUx .projectListHeaderCards{grid-template-columns:repeat(4,minmax(0,1fr))!important}.projectListUx .projectListHeaderCards .tile{padding:9px 7px!important}.projectListUx .projectListHeaderCards .tile span{font-size:11px!important}}
