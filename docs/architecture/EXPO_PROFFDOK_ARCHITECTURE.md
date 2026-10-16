@@ -1,3 +1,9 @@
+## Godkjent produksjonsløp og kun Startside-varsler – 16. oktober 2026
+
+Miljømål BEGGE. Kenneth ga TEST OK for leveransen frem til 6aa06ba9 og ba om at de to KS/HMS-bannerne bare vises på Startsiden. Deretter ga han uttrykkelig «etter dette er test ok for produksjon» og autoriserte videre arbeid mens han er borte. Tidligere notater om ventende TEST OK er dermed erstattet for denne releasen; grønn QA/Preview kreves fortsatt før merge.
+
+Siste appendring fjerner bare global KshmsTasks-lazyimport og banner-montering i headeren i main.jsx. Eksisterende HomeFollowups-gate beholdes. Samlet oversikt finnes på Startsiden ved innlogging og bevisst retur; ingen engangsflagg skjuler åpne oppgaver. KS/HMS sine vanlige oppgaveinnganger, fristregler, tilgang, e-post, data, lagring og planbygger beholdes. Hjelp følger plasseringen. Førtest med faktisk app-shell-montering fant to bannere i Befaring/Tilbud; etter rettelse 128 Home-Chromium-kontroller PASS, full critical/build og faktisk modulnavigasjon PASS. Ny commit/CI/Preview, produksjonsmigrasjoner, main/deploy og kontrollert demo-synk føres i releasenotat/PR.
+
 ## Planpopup: avbryt-hendelse og ramme – 16. oktober 2026
 
 Miljømål BEGGE, Preview først, fortsatt umerget PR #254. Førkontroll: bc9e42892cf7a22fbd1d57843e87eed270bf9bb7, main a7bd4795e78e0ba1cbdc747960384bbf01338581, Core Safety #482 SUCCESS og fast Preview READY på samme head. Kenneth melder at vanlig utklipp fortsatt går ut av popupen, mens egen hurtigtast fungerer. Fysisk Windows-forløp er ikke observert av utvikler. En separat utgang er gjenskapt: nettleserens native cancel/Escape lukker hovedplanen selv om fokus/scroll gjenopprettes riktig.

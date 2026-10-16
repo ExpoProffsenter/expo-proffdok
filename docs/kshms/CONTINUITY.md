@@ -1,3 +1,9 @@
+## Godkjent produksjonsløp og kun Startside-varsler – 16. oktober 2026
+
+Miljømål BEGGE. Kenneth ga TEST OK for leveransen frem til 6aa06ba9 og ba om at de to KS/HMS-bannerne bare vises på Startsiden. Deretter ga han uttrykkelig «etter dette er test ok for produksjon» og autoriserte videre arbeid mens han er borte. Tidligere notater om ventende TEST OK er dermed erstattet for denne releasen; grønn QA/Preview kreves fortsatt før merge.
+
+Siste appendring fjerner bare global KshmsTasks-lazyimport og banner-montering i headeren i main.jsx. Eksisterende HomeFollowups-gate beholdes. Samlet oversikt finnes på Startsiden ved innlogging og bevisst retur; ingen engangsflagg skjuler åpne oppgaver. KS/HMS sine vanlige oppgaveinnganger, fristregler, tilgang, e-post, data, lagring og planbygger beholdes. Hjelp følger plasseringen. Førtest med faktisk app-shell-montering fant to bannere i Befaring/Tilbud; etter rettelse 128 Home-Chromium-kontroller PASS, full critical/build og faktisk modulnavigasjon PASS. Ny commit/CI/Preview, produksjonsmigrasjoner, main/deploy og kontrollert demo-synk føres i releasenotat/PR.
+
 ## Tydelige åpneknapper for planer – 16. oktober 2026
 
 Miljømål BEGGE, Preview først i PR #254. Etter Kenneths presisering heter venstre knapp nå «Åpne fremdriftsplan» og høyre fortsatt «Åpne bemanningsplan». Felles inngang i Prosjekt, KS/HMS og Min side, med samsvarende kort hjelpetekst. Bare tekst i KshmsProgressBoard.jsx/Hjelp og eksakte knappselektorer i tre eksisterende QA-skript endres. Ingen callbacks, tilgang, datalagring eller andre flyter endres. Førkontroll b0c8813b / Core Safety #483 SUCCESS / dpl_DcrACJFk4EX1deicZVqtxKi4HwRQ READY. Ny head/CI/deploy føres i PR. Relevant TEST OK gjenstår; ingen merge/Production/demo-synk.

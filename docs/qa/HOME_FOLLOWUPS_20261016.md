@@ -36,3 +36,13 @@ Fast adresse: https://expo-proffdok-git-fix-company-admin-scope-20261015-ringsid
 4. Prøv mobil og PC: åpne Vis oppgaver, scroll forbi oversikten og kontroller at detaljer ikke dekker snarveiene under. Prøv en eksisterende snarvei og tilbake til Startsiden.
 
 Brukerens innloggede prøve og relevant TEST OK gjenstår. Ingen merge/Production/demo-synk. Siste planleveranse i PR #254 er også fortsatt umerget uten TEST OK. Sandbox-migrasjonene og kurseksemplene bevares uendret.
+
+## Oppfølging: bannere bare på Startsiden
+
+Kenneth ga TEST OK, men viste at de gamle KS/HMS-bannerne fortsatt fulgte med i alle faner. Han autoriserte produksjonsløpet etter denne rettelsen. Tidligere beskrivelse av global banner-montering og ventende TEST OK over er historikk, erstattet av dette avsnittet.
+
+Scope i main.jsx er nøyaktig to slettede linjer: global KshmsTasks-import og montering i header. HomeFollowups-gaten er uendret. Ingen modul-, navigasjons-, auto-save-, prosjekt-, tilgangs- eller varslingslogikk endres. Varsler kan åpnes på Startsiden ved innlogging og retur; oppgavene forblir tilgjengelige i sine moduler. E-postlenker leses av de samme controllerne i Startside-oversikten.
+
+Eksisterende Home-test er utvidet med faktiske renderuttrykk hentet fra main.jsx, ikke en kopiert route-gate. Menymatrisen bruker reelle globale/prosjektfaner og inkluderer ny mobilprosjektflate og support. Før rettelse feiler faktisk Befaring/Tilbud med 2 bannere mot forventet 0. Etter rettelse: 128 assertions PASS (tidligere 62 beholdes), ved 1280/390 px, null banner/oversikt på andre faner, én sammenfoldet oversikt på Startsiden, begge oppgavetyper ved retur, begge e-posthandlinger gjennom faktisk app-shell-gate og alle tidligere frist-/handling-/dialog-/kontakt-/rolle-/offline-kontroller. Standalone-standardrendereren beholdes og testes fortsatt; dette betyr ikke at den monteres globalt. Ingen gamle sjekker svekkes. Full critical/build og faktisk KS/HMS/HR/Min side-navigasjon (13 faner) PASS. Tidligere plan-/PDF-/databasebevis beholdes uten unødig lokal repetisjon; CI-suite er uendret.
+
+Godkjent produksjonsløp: ny Preview/CI kontrolleres før merge, planmigrasjoner installeres i Production i dokumentert rekkefølge, produksjon verifiseres og main → demo synkroniseres med bevart overlay og kursdata. Ingen seed-data eller ny migrasjon i denne bannerrettelsen.
