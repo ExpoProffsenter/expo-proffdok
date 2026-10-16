@@ -47,3 +47,64 @@
 }
 
 @media(min-width:360px) and (max-width:760px){.projectListUx .projectListHeaderCards{grid-template-columns:repeat(4,minmax(0,1fr))!important}.projectListUx .projectListHeaderCards .tile{padding:9px 7px!important}.projectListUx .projectListHeaderCards .tile span{font-size:11px!important}}
+
+/* Compact list: quiet summaries first, the complete existing card on demand. */
+.projectListUx>.note{font-size:13px;margin:3px 0 10px}
+.projectListUx .projectListHeaderCards{display:flex!important;flex-wrap:wrap;gap:6px!important;margin:0 0 10px}
+.projectListUx .projectListHeaderCards .tile{display:flex!important;flex-direction:row!important;align-items:baseline;gap:7px!important;padding:6px 11px!important;border-radius:9px!important;flex:0 1 auto;width:auto!important;min-width:0!important;background:#f5fafb;box-shadow:none}
+.projectListUx .projectListHeaderCards .tile b{font-size:16px!important;line-height:1.2!important}
+.projectListUx .projectListHeaderCards .tile span{font-size:12px!important;line-height:1.2!important}
+.projectListViewControls{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin:0 0 10px}
+.projectListQuickFilters{display:flex;gap:3px;padding:3px;background:#edf5f7;border:1px solid #d4e6e9;border-radius:12px}
+.projectListUx .projectListQuickFilters button{min-height:40px;padding:7px 15px;box-shadow:none;border-radius:9px;font-size:13px!important;width:auto!important}
+.projectListVisibleCount{font-size:12px;color:#607580;white-space:nowrap}
+.projectListUx .projectListExpandAll{margin-left:auto;display:inline-flex;align-items:center;gap:6px;min-height:44px;font-size:12px!important;padding:8px 11px;box-shadow:none;width:auto!important}
+.projectListUx .projectListSearchPanel{padding:0!important;margin:0 0 10px!important;border:0;background:transparent}
+.projectListAdvancedFilters{border:1px solid #d4e5e9;background:#f8fbfc;border-radius:13px}
+.projectListAdvancedFilters>summary{list-style:none;display:flex;align-items:center;gap:10px;cursor:pointer;min-height:44px;padding:0 13px;font-size:13px}
+.projectListAdvancedFilters>summary::-webkit-details-marker,.projectListDisclosureCard>details>summary::-webkit-details-marker{display:none}
+.projectListAdvancedFilters>summary>span{display:inline-flex;align-items:center;gap:7px;font-weight:750;white-space:nowrap}
+.projectListAdvancedFilters>summary>small{margin-left:auto;font-size:12px;color:#607580;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.projectListChevron{flex:none;transition:transform .15s ease;transform:none!important}
+.projectListAdvancedFilters[open]>summary>.projectListChevron,.projectListDisclosureCard>details[open]>summary .projectListChevron{transform:rotate(180deg)!important}
+.projectListFilterContent{padding:10px 13px 13px;border-top:1px solid #deebee}
+.projectListUx .projectListDisclosureCard{padding:14px 16px!important;margin:8px 0!important;background:linear-gradient(120deg,#f7fcfd,#fff 65%);border-radius:15px!important;box-shadow:0 2px 10px #13334204}
+.projectListDisclosureCard>details>summary{list-style:none;cursor:pointer;min-height:48px}
+.projectListUx .projectListDisclosureCard .projectListCardTop{padding-right:99px;gap:9px;display:flex;align-items:flex-start}
+.projectListUx .projectListDisclosureCard .projectListTitleBlock>b{font-size:16px!important;line-height:1.3!important;font-weight:750}
+.projectListUx .projectListDisclosureCard .projectListTitleBlock>p{font-size:13px!important;line-height:1.3!important;margin:3px 0 0!important;font-weight:400;color:#526772}
+.projectListUx .projectListDisclosureCard .projectListTitleBlock>p>b{font-weight:550}
+.projectListDisclosureCard>details:not([open]) .projectListTitleBlock>small{display:none}
+.projectListUx .projectListDisclosureCard .projectListBadges{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:5px;flex:0 1 auto;margin:0}
+.projectListDisclosureCard .projectListBadges>span{font-size:11px!important;padding:4px 7px!important;line-height:1.25;white-space:normal}
+.projectListUx .projectListPrimaryOpen{position:absolute;right:16px;top:14px;min-height:44px;min-width:82px;padding:8px 12px;border-radius:11px;font-size:13px!important;box-shadow:none;width:auto!important}
+.projectListDisclosureLine{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:7px;font-size:12px}
+.projectListDisclosureLabel{display:inline-flex;align-items:center;gap:4px;color:#365c68;font-weight:650}
+.projectListAttention{color:#a13b2c;font-size:11px;font-weight:650}
+.projectListDetailContent{padding-top:11px;margin-top:11px;border-top:1px solid #dbe9ed}
+.projectListUx .projectListDetailContent .projectListActions{margin-bottom:0}
+.projectListUx .workProfileSharedProjects:has(>.workProfileSharedEmpty){margin:8px 0;padding:10px 13px!important;border-radius:13px}
+.projectListUx .workProfileSharedProjects:has(>.workProfileSharedEmpty) .workProfileSharedHeader h3{font-size:14px;margin:0}
+.projectListUx .workProfileSharedProjects:has(>.workProfileSharedEmpty) .workProfileSharedHeader small{display:none}
+.projectListUx .workProfileSharedProjects>.workProfileSharedEmpty{font-size:12px;margin-top:2px}
+.projectListUx .workProfileSharedProjects:has(>.workProfileSharedEmpty) .workProfileSharedHeader button{font-size:12px;min-height:36px;padding:6px 10px;box-shadow:none}
+.projectListAdvancedFilters>summary:focus-visible,.projectListDisclosureCard>details>summary:focus-visible{outline:3px solid #007f89;outline-offset:4px;border-radius:7px}
+@media(max-width:760px){
+ .projectListViewControls{gap:6px}
+ .projectListUx .projectListExpandAll{font-size:11px;padding:6px 8px}
+ .projectListVisibleCount{order:3;flex-basis:100%;margin:0 2px}
+ .projectListUx .projectListQuickFilters button{padding:6px 10px;min-height:44px}
+ .projectListUx .projectListDisclosureCard .projectListCardTop{display:flex!important;flex-direction:column;padding-right:86px;gap:6px}
+ .projectListUx .projectListPrimaryOpen{right:12px;top:14px;min-width:76px;padding:7px 9px}
+ .projectListUx .projectListDisclosureCard .projectListBadges{justify-content:flex-start;margin:0!important}
+ .projectListDisclosureLine{gap:5px 10px}
+ .projectListUx .projectListHeaderCards .tile{padding:5px 8px!important;gap:5px!important}
+ .projectListUx .projectListHeaderCards{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .projectListUx .workProfileSharedProjects:has(>.workProfileSharedEmpty) .workProfileSharedHeader{display:flex!important;flex-direction:row!important;align-items:center;gap:7px;text-align:left}
+ .projectListUx .workProfileSharedProjects:has(>.workProfileSharedEmpty) .workProfileSharedHeader>div{min-width:0;flex:1}
+ .projectListUx .workProfileSharedProjects:has(>.workProfileSharedEmpty) .workProfileSharedHeader h3{font-size:13px!important;line-height:1.3;text-align:left}
+ .projectListUx .workProfileSharedProjects:has(>.workProfileSharedEmpty) .workProfileSharedHeader button{width:auto!important;font-size:11px!important;flex:none}
+ .projectListAdvancedFilters>summary{gap:6px;padding:0 10px}
+ .projectListAdvancedFilters>summary>small{font-size:11px}
+}
+@media(prefers-reduced-motion:reduce){.projectListChevron{transition:none}}

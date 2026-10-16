@@ -112,3 +112,43 @@ Prissøk. Løst lokalt ved `div role="group"` for varevisninger. Den eksisterend
 navigasjons-/recovery-kjernen er urørt. Mobiltesten monterer nå den faktiske
 `installStorePriceSearchUx`, bytter mellom alle visninger og kontrollerer at
 arbeidsflaten består, mens native Startside fortsatt lukker den bevisst.
+
+## Oppfølging etter brukerbilder: kompakt prosjektliste
+
+Miljømål BEGGE, samme feature/Preview. Innenfor scope: prosjektlistens
+presentasjon i projectListTools.js/projectList.css/ProjectListDisclosure.jsx,
+layoutregresjonen, Hjelp og release-dokumentasjon. Ingen main.jsx, tilgangsregler, transport eller data endres. Felleslistens
+visningsfilter matchesStatus tas med for å gjenbruke de allerede avtalte
+active/archive-filtrene; tidligere eksakte filtre beholdes. Tom fellesliste strammes bare
+med CSS. Prosjektkort starter kollapset. «Åpne» er alltid synlig; kontaktinfo,
+ansvarlig, bildestripe og alle øvrige eksisterende snarveier finnes i «Vis detaljer».
+«Vis alle detaljer» åpner samme innhold for alle kort. Søk/filterfeltene er fortsatt
+montert og kan åpnes via «Søk og filtre». Aktive filtre vises også når panelet er
+lukket. Presentasjonstesten åpner nå detaljer før den kontrollerer de samme gamle
+feltene/handlingene. Alle opprinnelige callback-, filter-, avslag- og kladdasserts
+beholdes. Nye kontroller skal dekke kollaps, samlet visning, tastatur og alle bredder.
+
+Scopejustering før kode: Felleslistens to nye samlingsfiltre må forstå active/archive,
+slik den ordinære listen gjør. Bare matchesStatus i workProfileProjectListUx.jsx
+endres; RPC, rolle-/firmagater, kjerne og åpning av prosjekt er fredet.
+
+Visuell oppfølging: PC-kort med samme innhold er ca. 97 px kollapset i den
+syntetiske reelle komponent-/CSS-testen. Mobil kontrolleres også for overlapp
+mellom Åpne og tittel, maks to rader med nøkkeltall, ingen horisontal scrolling,
+alle gamle felter etter åpning og alle åtte opprinnelige handlinger.
+
+Forslag etter ny gjennomgang (ikke implementert som sideeffekt):
+1. KS/HMS Håndbok: samle «Neste steg», massepublisering og introduksjonen i en
+   kompakt arbeidslinje. Hold neste handling synlig, flytt veiledning under «Vis veiledning».
+2. Garanti: la mangler og neste nødvendige handling stå først; samle TG-, vilkårs-
+   og grunnlagsforklaringer i tydelige detaljer. Behold signering/utstedelse og alle sperrer.
+3. Hjelp: samle de lange referanse-/vilkårsblokkene under overskrifter med åpne/lukk,
+   slik at søket og relevante veiledningstemaer kommer først. Ingen endring av akseptstatus.
+
+Oppfølgingens lokale QA: full critical build PASS. Utvidet eksisterende
+personal-project-layout-browser-check: 108 asserts PASS ved 1363/768/390/320 px,
+med både lukket og full visning, originalmetadata, åtte opprinnelige handlinger,
+søk/nullstilling/uleste/oppdatering, aktivt fellesfilter og stabil delt lesing.
+Kollapset PC-kort 96,7 px; 390 px-kort 123,3 px. Faktiske CSS-skjermbilder er
+inspisert. Arbeidsprofil-critical, prosjektmeny/ordre-retur og HR/Hjelp React PASS.
+Ingen live skriveroperasjoner eller utsendinger utføres som del av QA.

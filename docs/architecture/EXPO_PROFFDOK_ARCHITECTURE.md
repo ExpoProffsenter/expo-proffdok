@@ -1,3 +1,7 @@
+## Prosjektlisten: mindre luft og valgfri detaljvisning – Preview 16.10.2026
+
+Oppfølging av brukerens to skjermbilder: kompakte nøkkeltall, synlige Alle/Aktive/Arkiv, sammenfoldbart Søk og filtre og prosjektkort med Åpne alltid synlig. Vis detaljer åpner opprinnelig kontaktinfo, ansvarlig, bilder og snarveier; Vis alle detaljer åpner alle kort. Alle eksisterende handlinger er beholdt. Felleslistens visningsfilter støtter også de allerede avtalte active/archive-valgene. Ingen endring i tilgang, RPC, prosjektdata, main.jsx eller lagring. Samme Preview/PR #261, ny TEST OK kreves. QA og neste visuelle forslag finnes i docs/qa/APP_UX_REVIEW_20261016.md.
+
 ## Samlet UX-runde 16.10.2026 – Preview før ny TEST OK
 
 Miljømål: BEGGE. Baseline er publisert main `5cc7e530685a48f4f59b403357e654e93c724578` (PR #260, godkjent og publisert). Eldre Preview-statuser lenger nede er historikk.

@@ -1,3 +1,4 @@
+import {ProjectListLayout,ProjectListViewControls,ProjectListFilters,ProjectListCardDisclosure} from './ProjectListDisclosure.jsx';
 // Expo ProffDok – FASE 39A
 // Prosjektlistesøk skjer lokalt på allerede hentede prosjektdata uten nye databasefelt.
 import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
@@ -64,7 +65,7 @@ export function createProjectListTools({
     openProjectById,
     deleteProject
   }) {
-    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Prosjektliste", className: "projectListUx", children: [
+    return (0, import_jsx_runtime.jsx)(ProjectListLayout,{children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Prosjektliste", className: "projectListUx", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Finn prosjektet og åpne det du skal jobbe med." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "cards projectListHeaderCards", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "tile", children: [
@@ -84,7 +85,11 @@ export function createProjectListTools({
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Arkiv" })
             ] })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item projectListSearchPanel", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(ProjectListFilters, { controls: (0, import_jsx_runtime.jsxs)(ProjectListViewControls,{visible:projectListStats.visible,total:projectListStats.total,children:[
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: projectStatusFilter === "alle" ? "" : "secondary", onClick: () => setProjectStatusFilter("alle"), children: "Alle" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: projectStatusFilter === "active" ? "" : "secondary", onClick: () => setProjectStatusFilter(projectStatusFilter === "active" ? "alle" : "active"), children: "Aktive" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: projectStatusFilter === "archive" ? "" : "secondary", onClick: () => setProjectStatusFilter(projectStatusFilter === "archive" ? "alle" : "archive"), children: "Arkiv" }),
+          ]}),activeLabel: [projectSearch?`Søk: ${projectSearch}`:"",projectStatusFilter === "alle"?"Alle statuser":projectStatusFilter === "active"?"Alle aktive":projectStatusFilter === "archive"?"Hele arkivet":({draft:"Utkast",progress:"Pågår",waiting:"Avventer",customer_ready:"Klar for kunde",deviation:"Avvik åpent",done:"Ferdigstilt",locked:"Arkivert / låst"})[projectStatusFilter],projectUnreadOnly?"Kun uleste":""].filter(Boolean).join(" · "),children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Søk i prosjektlisten", value: projectSearch, onChange: setProjectSearch }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Statusfilter", value: projectStatusFilter, onChange: setProjectStatusFilter, options: ["alle", "active", "archive", "draft", "progress", "waiting", "customer_ready", "deviation", "done", "locked"], optionLabels: { alle: "Alle", active: "Alle aktive", archive: "Hele arkivet", draft: "Utkast", progress: "Pågår", waiting: "Avventer", customer_ready: "Klar for kunde", deviation: "Avvik åpent", done: "Ferdigstilt", locked: "Arkivert / låst" } })
@@ -93,9 +98,6 @@ export function createProjectListTools({
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "projectListToolbar", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => loadProjects(authUser, true), children: "Oppdater liste" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: projectUnreadOnly ? "" : "secondary", onClick: () => setProjectUnreadOnly((v) => !v), children: projectUnreadOnly ? "Vis alle" : "Kun uleste" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: projectStatusFilter === "alle" ? "secondary" : "", onClick: () => setProjectStatusFilter("alle"), children: "Alle" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: projectStatusFilter === "active" ? "" : "secondary", onClick: () => setProjectStatusFilter(projectStatusFilter === "active" ? "alle" : "active"), children: "Aktive" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: projectStatusFilter === "archive" ? "" : "secondary", onClick: () => setProjectStatusFilter(projectStatusFilter === "archive" ? "alle" : "archive"), children: "Arkiv" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => {
                 setProjectSearch("");
                 setProjectStatusFilter("alle");
@@ -116,8 +118,7 @@ export function createProjectListTools({
             const locationLine = [listProject.address, listProject.postnr, listProject.city].filter(Boolean).join(", ");
             const updatedLabel = p.updated_at || p.created_at ? new Date(p.updated_at || p.created_at).toLocaleString("no-NO") : "Ukjent";
             const latestChatLabel = latestMessage?.created ? new Date(latestMessage.created).toLocaleString("no-NO") : "Ingen meldinger";
-            return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item projectListCard", style: unreadForAdminInList > 0 ? { borderColor: "#fecaca", background: "#fff7f7" } : void 0, children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "projectListCardTop", children: [
+            const heading=/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "projectListCardTop", children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "projectListTitleBlock", children: [
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { style: { fontSize: "19px" }, children: p.title || listProject.projectName || "Uten navn" }),
                   listProject.customer && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { style: { margin: "6px 0 0" }, children: [
@@ -143,7 +144,8 @@ export function createProjectListTools({
                   ] }),
 
                 ] })
-              ] }),
+              ] });
+            return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(ProjectListCardDisclosure, { heading,onOpen:()=>openProjectById(p.id,"prosjekt"),attention:[openDeviationCount>0?`${openDeviationCount} åpne avvik`:"",unreadForAdminInList>0?`${unreadForAdminInList} uleste meldinger`:""].filter(Boolean).join(" · "),className: "item projectListCard", style: unreadForAdminInList > 0 ? { borderColor: "#fecaca", background: "#fff7f7" } : void 0, children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "projectImageCounts", style: { marginTop: "12px" }, children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", className: "projectMiniBadge", onClick: () => openProjectById(p.id, "produkter"), style: { cursor: "pointer", minHeight: "auto", boxShadow: "none" }, children: ["📦 Produkter: ", productSummary.total] }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", className: "projectMiniBadge", onClick: () => openProjectById(p.id, "sjekklister", { showOpenDeviationsOnly: openDeviationCount > 0 }), style: { cursor: "pointer", minHeight: "auto", boxShadow: "none", ...(openDeviationCount > 0 ? { borderColor: "#fecaca", background: "#fef2f2", color: "#991b1b" } : {}) }, children: ["⚠️ Åpne avvik: ", openDeviationCount] }),
@@ -183,7 +185,6 @@ export function createProjectListTools({
                 ] })
               ] }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "projectListActions projectListActionsV2", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: () => openProjectById(p.id, "prosjekt"), children: "📂 Åpne" }),
                 openDeviationCount > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { onClick: () => openProjectById(p.id, "sjekklister", { showOpenDeviationsOnly: true }), children: ["⚠️ Avvik (", openDeviationCount, ")"] }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => openProjectById(p.id, "produkter"), children: "📦 Produkter" }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => openProjectById(p.id, "bilder"), children: "📷 Bilder" }),
@@ -194,7 +195,7 @@ export function createProjectListTools({
               ] })
             ] }, p.id);
           })
-        ] });
+        ] })});
   }
 
 

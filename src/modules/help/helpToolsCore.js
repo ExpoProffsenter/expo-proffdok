@@ -287,9 +287,10 @@ const BASE_SECTIONS = [
   section(
     "prosjektliste",
     "📑 Prosjektliste",
-    "Prosjektlisten viser aktive og ferdige/låste prosjekter. Nøkkeltall og søk ligger over prosjektkortene. Kortene samler status, antall, ansvarlig og snarveier.",
+    "Prosjektlisten starter med kompakte prosjektkort. Prosjektnavn, kunde, status, avvik og uleste meldinger vises med en gang. Åpne går rett inn i prosjektet.",
     [
-      "Søk på kunde, adresse, prosjekt, telefon, e-post eller garantinummer og bruk relevante filtre.",
+      "Trykk Vis detaljer på et kort for kontaktinfo, ansvarlig, bilder og alle snarveiene. Vis alle detaljer åpner innholdet på alle kort. Kollaps alle detaljer gir den korte oversikten igjen.",
+      "Alle, Aktive og Arkiv står alltid fremme. Åpne Søk og filtre for søk, eksakte statusvalg, kun uleste, oppdatering og nullstilling. Gjeldende filtre vises også når feltet er lukket.",
       "Åpne prosjektet for å starte i Prosjektoversikt. På PC viser den kollapsede topplinjen anbefalt prosjektløp, mens Meny gir tilgang til alt prosjektinnhold."
     ],
     ["Låste prosjekter må låses opp før de redigeres."],
