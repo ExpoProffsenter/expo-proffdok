@@ -465,9 +465,9 @@ export default function SalesInspectionNote({
   const hasSavedSketchImage = Boolean(sketchPhoto?.dataUrl);
 
   return (
-    <div className="sales-app">
+    <div className="sales-app sales-editor-app sales-inspection-app">
       <div className="sales-shell">
-        <header className="sales-header">
+        <div className="sales-header">
           <button
             className="sales-back-button"
             type="button"
@@ -487,7 +487,7 @@ export default function SalesInspectionNote({
               <span>Befaring / Tilbud / Aksept</span>
             </div>
           </div>
-        </header>
+        </div>
 
         <main className="sales-main">
           <section className="sales-form-hero">
@@ -527,7 +527,7 @@ export default function SalesInspectionNote({
             ) : null}
 
             <div className="sales-form-grid">
-              <label className="sales-field sales-field-full">
+              <label className="sales-field sales-note-field">
                 <span>Kundens ønsker</span>
                 <textarea
                   value={inspectionForm.customerWishes}
@@ -540,7 +540,7 @@ export default function SalesInspectionNote({
                 />
               </label>
 
-              <label className="sales-field sales-field-full">
+              <label className="sales-field sales-note-field">
                 <span>Eksisterende forhold</span>
                 <textarea
                   value={inspectionForm.existingConditions}
@@ -553,7 +553,7 @@ export default function SalesInspectionNote({
                 />
               </label>
 
-              <label className="sales-field sales-field-full">
+              <label className="sales-field sales-note-field">
                 <span>Målinger</span>
                 <textarea
                   value={inspectionForm.measurements}
@@ -563,6 +563,19 @@ export default function SalesInspectionNote({
                   }
                   placeholder="Eksempel: Rom 2,40 x 2,15 m. Takhøyde 2,42 m. Sluk 82 cm fra vegg."
                   rows={4}
+                />
+              </label>
+
+              <label className="sales-field sales-note-field">
+                <span>Faglige observasjoner</span>
+                <textarea
+                  value={inspectionForm.observations}
+                  disabled={photoRestoreBusy}
+                  onChange={(event) =>
+                    onUpdateInspectionForm("observations", event.target.value)
+                  }
+                  placeholder="Forhold som må vurderes, avklares eller tas med videre i tilbudet."
+                  rows={5}
                 />
               </label>
 
@@ -595,19 +608,6 @@ export default function SalesInspectionNote({
                   disabled={busy}
                 />
               </div>
-
-              <label className="sales-field sales-field-full">
-                <span>Faglige observasjoner</span>
-                <textarea
-                  value={inspectionForm.observations}
-                  disabled={photoRestoreBusy}
-                  onChange={(event) =>
-                    onUpdateInspectionForm("observations", event.target.value)
-                  }
-                  placeholder="Forhold som må vurderes, avklares eller tas med videre i tilbudet."
-                  rows={5}
-                />
-              </label>
 
               <div className="sales-field sales-field-full">
                 <span>Bilder fra befaring</span>

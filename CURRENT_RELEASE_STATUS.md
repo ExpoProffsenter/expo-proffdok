@@ -1,3 +1,7 @@
+## Editorflate – Preview 16.10.2026
+
+Miljømål BEGGE. Befaringsnotat/Våtromstilbud får avgrenset kompakt kortlayout, PC-kolonner/mobilstabling og statisk tilbakefelt. Ingen main-, controller-, lagrings-, recovery-, pris-, backend- eller dataendring. 100 faktiske Chromium-kontroller og full critical/build PASS. QA: docs/qa/SALES_EDITOR_UX_20261016.md. Ny TEST OK kreves; Production/demo uendret. Smartere varesøk kartlegges som egen avgrenset del av samme bestilling.
+
 ## Publisert: samlet Nytt tilbud / Ny forespørsel – 16. oktober 2026
 
 Kenneth ga TEST PC OK kl. 20:31 og ba utvikler kontrollere mobil. Utvikler kjørte samme faktiske komponent-/CSS-scenario med isMobile:true, hasTouch:true og tap i stedet for click: 57 kontroller PASS, inkludert smale 320/390-visninger, knapper, filter, scrolling, retur og callback. Vanlig nettlesertest har også 57 PASS, Core Safety #493 SUCCESS og fast Preview dpl_Ff3zFXLT9Zg2UNUdPQu1PiSfU3xZ READY på godkjent head b235ea58450a9dcbc2be93ecc22430f28f37bdbe / tre 3c71249eaba2945b2c299a9f459f7ab9bd5bf084. Fysisk iPhone/Android er ikke prøvd. Ingen ekstra mobilgodkjenning fra brukeren kreves for denne avgrensede knappflyttingen.

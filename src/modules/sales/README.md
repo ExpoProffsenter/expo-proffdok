@@ -1,3 +1,7 @@
+## Editorflate – Preview 16.10.2026
+
+Befaringsnotat: tekstfeltene samlet i to kolonner på PC, én på mobil, før uendret Badskisse og bilder. Våtromstilbud: fire leveranse-/forbeholdsfelt i samme kortoppsett, kompakt topp/malvelger og ikke-sticky tilbakefelt. Scope er bare SalesInspectionNote.jsx, SalesOfferBuilderCore.jsx og lokal CSS. Server-first, kladd, recovery, bilde-/skissehåndtering, kalkulasjon, malhandlinger og alle callbacks er uendret. Generelt tilbud sin editor er urørt. QA: docs/qa/SALES_EDITOR_UX_20261016.md. Ny TEST OK kreves.
+
 ## Knappoppfølging 16. oktober 2026 – Preview
 
 Den godkjente kompakte salgsrunden er publisert via PR #257. Nytt tilbud flyttes nå inn ved siden av Ny forespørsel i oversiktens toppfelt. Samme eksisterende startDirectOffer åpner samme tilbudstypevalg; SalesCore sender bare callbacken videre. Den gamle snarveien beholdes utenfor oversikten. Ingen editor-/lagrings-/tilbudslogikk endres. Ny TEST OK kreves.

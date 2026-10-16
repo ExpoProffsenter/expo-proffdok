@@ -1,3 +1,7 @@
+## 16.10.2026 – avgrenset editorpresentasjon (Preview)
+
+SalesInspectionNote/SalesOfferBuilderCore bruker isolert sales-editor-app. Fire eksisterende tekstfelt får lokal sales-note-field og to PC-kolonner, én mobilkolonne. Befaringens observasjoner står før Badskisse. Tilbakefelt er div med statisk plassering, for å unngå global header-sticky. Malvalg får egen klasse og sideordnet kontrollfelt på PC. Ingen controller-, lagrings-, tilgangs-, pris-, server- eller main-endring. Runtime-QA: scripts/sales-editor-ux-browser-check.mjs og docs/qa/SALES_EDITOR_UX_20261016.md.
+
 ## Publisert salgsrunde og knappoppfølging – 16. oktober 2026
 
 Kenneth ga TEST OK kl. 20:21 norsk tid for PR #257. Godkjent head 8e54ae35ab7f3689a896a14d2d7319074e10d437 / tre dac65c83f146f9c5eb3c05d63522c2f402842c46 har Core Safety #492 SUCCESS. Merget main 1e6052f7a325f6b2d7e8213852f5c65d5604c511, Production dpl_9J14YR8AwwC94n85vGNDg4ULa4TG READY på korrekt domene/SHA; HTTP og vanlig innloggingsflate fungerer, publisert bundle har Production-binding og ingen Sandbox-binding. Innlogget funksjonsprøve er gjort i godkjent Preview, ikke på Production i denne runden. Kontrollert main → demo 7f2c5b29b76270d15d4395e54d5e62878ebd6997 / dpl_8LhnUWfc4owEJKuywYkPc32KympC READY med bevart overlay og full critical/build PASS. Ingen migrasjon, seed/reset eller e-post. Faktisk innlogget preflight er grønn, inkludert baseline mot main og bevarte kurs-/Golden-punkter. Eldre ventende TEST OK-notater nedenfor er historikk for denne releasen.

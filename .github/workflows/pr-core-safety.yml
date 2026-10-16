@@ -137,6 +137,7 @@ jobs:
           node scripts/home-followups-react-check.mjs
           node scripts/personal-project-layout-browser-check.mjs
           node scripts/sales-overview-ux-browser-check.mjs
+          node scripts/sales-editor-ux-browser-check.mjs
           node scripts/progress-layout-react-check.mjs
           export KSHMS_JSPDF_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/jspdf/dist/jspdf.es.min.js"
           export KSHMS_JSPDF_NODE_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/jspdf/dist/jspdf.node.min.js"
