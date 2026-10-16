@@ -194,7 +194,7 @@ export default function SalesOfferBuilder({
     .join(", ");
 
   return (
-    <div className="sales-app sales-offer-builder-app">
+    <div className="sales-app sales-offer-builder-app sales-editor-app">
       {offerValidationJump?.optionId ? (
         <div
           role="dialog"
@@ -242,7 +242,7 @@ export default function SalesOfferBuilder({
       ) : null}
 
       <div className="sales-shell">
-        <header className="sales-header">
+        <div className="sales-header">
           <button
             className="sales-back-button"
             type="button"
@@ -261,7 +261,7 @@ export default function SalesOfferBuilder({
               <span>Befaring / Tilbud / Aksept</span>
             </div>
           </div>
-        </header>
+        </div>
 
         <main className="sales-main">
           <section className="sales-form-hero">
@@ -295,7 +295,7 @@ export default function SalesOfferBuilder({
               }
             }}
           >
-            <div className="sales-form-preview" style={{ marginBottom: 18 }}>
+            <div className="sales-form-preview sales-offer-template-panel" style={{ marginBottom: 18 }}>
               <p className="sales-eyebrow" style={{ marginBottom: 4 }}>
                 Tilbudsmaler
               </p>
@@ -312,6 +312,7 @@ export default function SalesOfferBuilder({
                 </p>
               ) : offerTemplates.length ? (
                 <div
+                  className="sales-template-controls"
                   style={{
                     display: "grid",
                     gap: 12,
@@ -1326,7 +1327,7 @@ export default function SalesOfferBuilder({
                 </button>
               </div>
 
-              <label className="sales-field sales-field-full">
+              <label className="sales-field sales-note-field">
                 <span>Forutsetninger og forbehold</span>
                 <textarea
                   value={offerForm.reservations}
@@ -1338,7 +1339,7 @@ export default function SalesOfferBuilder({
                 />
               </label>
 
-              <label className="sales-field sales-field-full">
+              <label className="sales-field sales-note-field">
                 <span>Dette er inkludert</span>
                 <textarea
                   value={offerForm.included}
@@ -1350,7 +1351,7 @@ export default function SalesOfferBuilder({
                 />
               </label>
 
-              <label className="sales-field sales-field-full">
+              <label className="sales-field sales-note-field">
                 <span>Dette er ikke inkludert</span>
                 <textarea
                   value={offerForm.excluded}
@@ -1362,7 +1363,7 @@ export default function SalesOfferBuilder({
                 />
               </label>
 
-              <label className="sales-field sales-field-full">
+              <label className="sales-field sales-note-field">
                 <span>Dette sørger kunden for</span>
                 <textarea
                   value={offerForm.customerSupplied}

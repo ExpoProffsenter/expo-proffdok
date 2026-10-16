@@ -1,3 +1,27 @@
+## Befaring: vent på komplett sak før skjema/kladd – Preview
+
+Innlogget etterkontroll avdekket også at wrapperens prefetch holdes i minnet til Core sin eksisterende asynkrone listehenting bruker den. Lokal requests-cache kan derfor fortsatt være summary ved første Core-render. Den nye initializeren alene var ikke tilstrekkelig. Befaringsnotatet har nå en saksspesifikk ready-state: ingen editor, lokal kladdlagring eller submit før komplett sak er tilgjengelig og skjemaet er hydrert. Meningsfull lokal/offline-kladd beholdes. Sen serveroppdatering kan ikke nullstille et ferdig hydrert skjema. Ingen endring av innlastingskall, recovery-timere, wrapper, tilbudseditor, serverlagring eller øvrige moduler.
+
+21 permanente kontroller kjører faktisk Core-initializer og faktiske hydration-/lokallagringseffekter i React-rekkefølge, inkludert summary → full sak, utsatt state-commit, saksskifte og bevisst exit. Full critical/Sandbox build PASS. 128 editor-/tekstvalg-kontroller er fortsatt grønne; ingen UI-endring siden de ble kjørt. Endelig innlogget kontroll og ny SHA/CI føres i PR #260. Ny TEST OK gjenstår; Production urørt.
+
+## Befaring: eksplisitt valg for tidligere tom lokal tekst – Preview
+
+Innlogget etterkontroll viste at den gamle feilen også kan ha etterlatt en lokal kladd med bilder, men uten tekst, mens serveren fortsatt har tekst. Slike lokale medier regnes med rette som meningsfullt arbeid. Notatet viser derfor et synlig valg: Bruk teksten fra saken eller Behold tom lokal tekst. Tekstfelter og Lagre er sperret til valget er tatt, og submit har samme sperre. Servervalget kopierer bare de fire tekstfeltene; lokale bilder/Badskisse og alle lagrings-/recovery-regler beholdes. Ingen ny browserlagring, automatisk serveroverskriving eller generell konflikthåndtering innføres. Bevisst tømming etter normal åpning fungerer som før.
+
+128 faktiske editor-Chromium-kontroller og elleve actual-Core/helper-scenarier PASS, inkl. begge valg, sperret lagring før valg og bevarte bilder/skisse. Første søke-/initialstate-head b3cfeeee har Core Safety #497 SUCCESS og Preview dpl_E4VJKMMdVkZn9g9Ha7TU3UAKfCUy READY. Denne oppfølgingens endelige SHA/CI/innloggede kontroll føres i PR #260. Ingen TEST OK/merge/Production.
+
+## Smartere Prissøk og sikker befarings-retur – Preview 16.10.2026
+
+Miljømål BEGGE. Smartere søk finner alle ordene i fri rekkefølge og tar med avgrensede fagaliaser (servantkran/servantbatteri/servbatt, dusj-/kjøkkenkran, WC/klosett/toalett, sort/svart, krom/chrome). Eksakte varenummer/EAN kommer først; alias-treff merkes. Slå av Smartere søk for uendret vanlig søk. Ingen KI-tjeneste eller ekstern utsending; dette er et avgrenset katalogoppslag, ikke generell stave-/betydningsforståelse. Alle farge-/dimensjons-/merkeord beholdes som krav.
+
+Ny lesende `search_internal_store_catalog_prices_smart` med samme tilgang/nettomaskering og aktiv-importfilter. Gamle søk/RPC-er, tilbudsoppslag, varetelling, plukklistelagring/eksport og varedata er uendret. Migrasjon 20261016190242 er installert bare i Sandbox, ikke Production. 41 PostgreSQL- og 70 Chromium-kontroller PASS; eksisterende mobilskann-QA kontrolleres også.
+
+Etterkontroll av editorleveransen avdekket eksisterende tom initialstate ved direkte remount i befaringsnotat. Test mot uendret main feiler. Core initialiserer nå kun dette arbeidsbildet fra meningsfull scoped lokal kladd eller ferdiglastet servergrunnlag; ordinær detaljflyt er uendret. Ingen recovery-timere, nettlagring, server-autosave, navigasjon eller andre moduler endres. Sju permanente initialstate-kontroller kjøres i full critical. Servertekst og bilder på DEMO-02 er kontrollert intakte; skjemaet ble ikke lagret i feilsøkingen. QA: docs/qa/SALES_EDITOR_UX_20261016.md og docs/qa/SMART_PRICE_SEARCH_20261016.md. Ny TEST OK kreves før merge/Production/demo-synk.
+
+## Editorflate – Preview 16.10.2026
+
+Miljømål BEGGE. Befaringsnotat/Våtromstilbud får avgrenset kompakt kortlayout, PC-kolonner/mobilstabling og statisk tilbakefelt. Ingen main-, controller-, lagrings-, recovery-, pris-, backend- eller dataendring. 100 faktiske Chromium-kontroller og full critical/build PASS. QA: docs/qa/SALES_EDITOR_UX_20261016.md. Ny TEST OK kreves; Production/demo uendret. Smartere varesøk kartlegges som egen avgrenset del av samme bestilling.
+
 ## Publisert: samlet Nytt tilbud / Ny forespørsel – 16. oktober 2026
 
 Kenneth ga TEST PC OK kl. 20:31 og ba utvikler kontrollere mobil. Utvikler kjørte samme faktiske komponent-/CSS-scenario med isMobile:true, hasTouch:true og tap i stedet for click: 57 kontroller PASS, inkludert smale 320/390-visninger, knapper, filter, scrolling, retur og callback. Vanlig nettlesertest har også 57 PASS, Core Safety #493 SUCCESS og fast Preview dpl_Ff3zFXLT9Zg2UNUdPQu1PiSfU3xZ READY på godkjent head b235ea58450a9dcbc2be93ecc22430f28f37bdbe / tre 3c71249eaba2945b2c299a9f459f7ab9bd5bf084. Fysisk iPhone/Android er ikke prøvd. Ingen ekstra mobilgodkjenning fra brukeren kreves for denne avgrensede knappflyttingen.

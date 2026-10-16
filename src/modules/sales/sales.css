@@ -2468,3 +2468,45 @@ section.sales-workspace-intro:has(+ [data-sales-resume-workspace] .sales-case-ap
 @media (max-width: 390px) {
   .sales-create-actions > button { font-size: 14px; }
 }
+
+/* Scoped editor presentation. Keep input handlers, media and draft safety intact. */
+section.sales-workspace-intro:has(+ [data-sales-resume-workspace] .sales-editor-app) { display: none; }
+.sales-editor-app .sales-shell { padding-top: 8px; }
+.sales-editor-app .sales-header {
+  position: static; top: auto; min-height: 44px; margin-bottom: 12px;
+  padding: 0; background: transparent; border: 0; box-shadow: none;
+}
+.sales-editor-app .sales-brand { display: none; }
+.sales-editor-app .sales-main { gap: 14px; padding: 0; margin: 0; max-width: none; }
+.sales-editor-app .sales-form-hero {
+  margin: 0; padding: 16px 18px; border: 1px solid #cce3e8;
+  border-radius: 20px; background: linear-gradient(120deg, #eef9fa, #f3f7fd);
+}
+.sales-editor-app .sales-title { font-size: clamp(27px, 3.2vw, 38px); letter-spacing: -.025em; overflow-wrap: anywhere; }
+.sales-editor-app .sales-subtitle { margin-top: 6px; font-size: 14px; line-height: 1.45; }
+.sales-editor-app .sales-form-panel { margin: 0; padding: 18px; }
+.sales-editor-app .sales-form-grid { gap: 14px; }
+.sales-editor-app .sales-note-field {
+  min-width: 0; padding: 14px; border: 1px solid #d0e3e8; border-radius: 16px; background: #f0f9fb;
+}
+.sales-editor-app .sales-note-field:nth-of-type(even) { background: #f4f2fa; border-color: #ddd6eb; }
+.sales-editor-app .sales-note-field textarea { min-height: 116px; resize: vertical; }
+.sales-editor-app .sales-offer-template-panel { margin-top: 0; padding: 14px; }
+.sales-editor-app .sales-template-controls { grid-template-columns: minmax(180px, 1fr) auto; align-items: end; }
+@media (max-width: 760px) {
+  .sales-editor-app .sales-shell { padding-left: 8px; padding-right: 8px; }
+  .sales-editor-app .sales-title { font-size: 26px; }
+  .sales-editor-app .sales-form-hero { padding: 13px; }
+  .sales-editor-app form.sales-form-panel {
+    padding: 12px !important; border: 1px solid #d7e4ea !important;
+    border-radius: 18px !important; background: #fff !important;
+  }
+  .sales-editor-app .sales-form-grid { grid-template-columns: minmax(0, 1fr); }
+  .sales-editor-app .sales-note-field { padding: 12px; }
+  .sales-editor-app .sales-template-controls { grid-template-columns: minmax(0, 1fr); }
+}
+
+.sales-inspection-app .sales-inspection-text-choice { padding: 14px; margin-bottom: 16px; border: 1px solid #dfbd72; border-radius: 16px; background: #fff8e8; color: #5d461c; }
+.sales-inspection-app .sales-inspection-text-choice p { margin: 6px 0 12px; }
+.sales-inspection-app .sales-inspection-text-choice > div { display: flex; flex-wrap: wrap; gap: 10px; }
+.sales-inspection-app .sales-inspection-text-choice button { min-height: 44px; white-space: normal; }
