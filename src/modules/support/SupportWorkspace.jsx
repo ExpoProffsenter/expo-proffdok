@@ -75,7 +75,7 @@ export function SupportSession({client,userId,admin}){
   };
   window.addEventListener('focus',revalidate);document.addEventListener('visibilitychange',revalidate);
   return()=>{active=false;revision++;window.removeEventListener('focus',revalidate);document.removeEventListener('visibilitychange',revalidate);};
- },[context,client,userId,admin]);
+ },[context,client,userId,admin,offset,filter]);
  async function task(fn){if(busyRef.current||locked)return;busyRef.current=true;setBusy(true);setError('');setNotice('');try{await fn();}catch(e){if(alive.current){if(e.code==='42501'){setContext(null);setItems([]);setDetail(null);setReply('');setBody('');setSubject('');}setError(e.message||'Kunne ikke lagre. Prøv igjen.');}}finally{busyRef.current=false;if(alive.current)setBusy(false);}}
  async function refresh(ctx=context,page=offset,status=filter,ticket=selection.current){
   const data=await list(ctx,page,status);
