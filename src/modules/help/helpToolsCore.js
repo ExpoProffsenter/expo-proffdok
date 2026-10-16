@@ -352,6 +352,8 @@ const INTERNAL_COMMERCE_SECTIONS = [
     "Prissøk brukes til å slå opp aktive ERP-varer og gjeldende kundepris uten å opprette et tilbud.",
     [
       "Søk på varenavn, leverandør, varenummer eller GTIN/EAN.",
+      "Smartere søk er på fra start. Skriv for eksempel oras krom servantbatteri; ordene kan stå i valgfri rekkefølge. Søket tar med vanlige fagord som servantkran og servantbatteri, og forkortelsen servbatt. Alle søkeordene må passe varen.",
+      "Treff via et tilsvarende fagord eller en forkortelse merkes i listen. Eksakte varenumre og strekkoder kommer først. Slå av Smartere søk for å bruke det vanlige søket. Kontroller alltid varenummer, farge og dimensjon før du velger en vare.",
       "På mobil: trykk Skann strekkode, gi kameratilgang og hold varens strekkode skarp i kamerabildet. For små etiketter holder du telefonen litt unna og bruker zoom eller velger et annet kamera hvis valgene vises. Koden settes i søkefeltet og søkes i Prissøk.",
       "Trykk Avbryt skanning for å lukke kameraet. Ved avvist eller manglende kameratilgang kan du alltid skrive EAN/GTIN manuelt i søkefeltet.",
       "Trykk ← Startside øverst i Prissøk for å gå tilbake til Startsiden. Da avsluttes aktivt Prissøk uten automatisk gjenåpning; den midlertidige arbeidslisten beholdes i samme nettleserfane.",

@@ -301,3 +301,24 @@ requireNeedles("index.html", [
   "installPriceSearchHelpUx",
 ]);
 console.log("✅ Expo ProffDok Prissøk / sensitiv tilgang / samlet brukerkort / portal-opprydding check OK");
+
+// Additive smart search must preserve the old restore lookup and selectable classic RPC.
+requireNeedles("src/modules/storeCatalog/StorePriceSearchView.jsx", [
+  "search_internal_store_catalog_prices_smart", "Smartere søk", "requestedSearch",
+  "searchGenerationRef", "smartSearch, identityScope", "Treff via tilsvarende fagord",
+]);
+const smartMigration = requireNeedles("supabase/migrations/20261016190242_smart_price_search.sql", [
+  "auth.uid() is null", "current_user_has_internal_store_price_search_access()",
+  "current_user_has_feature_access('view_internal_net_prices')",
+  "imp.status = 'active'", "i.is_active = true", "set search_path = ''",
+  "case when $3 then i.purchase_net_ex_vat else null end",
+  "case when $3 then i.purchase_discount_percent else null end",
+  "case when $3 then i.gross_margin_percent else null end",
+  "count(*) over()::bigint", "from public, anon", "to authenticated",
+]);
+if (/\b(insert|update|delete|truncate)\b/i.test(smartMigration.replace(/--.*$/gm, ""))) {
+  throw new Error("Smartere varesøk skal aldri skrive katalogdata.");
+}
+if (/create or replace function public.search_internal_store_catalog_prices(?:_page)?\(/.test(smartMigration)) {
+  throw new Error("Smartere varesøk skal ikke erstatte tidligere søke-/gjenopprettingsfunksjoner.");
+}

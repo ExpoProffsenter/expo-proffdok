@@ -1,3 +1,11 @@
+## Smartere Prissøk og sikker befarings-retur – Preview 16.10.2026
+
+Miljømål BEGGE. Smartere søk finner alle ordene i fri rekkefølge og tar med avgrensede fagaliaser (servantkran/servantbatteri/servbatt, dusj-/kjøkkenkran, WC/klosett/toalett, sort/svart, krom/chrome). Eksakte varenummer/EAN kommer først; alias-treff merkes. Slå av Smartere søk for uendret vanlig søk. Ingen KI-tjeneste eller ekstern utsending; dette er et avgrenset katalogoppslag, ikke generell stave-/betydningsforståelse. Alle farge-/dimensjons-/merkeord beholdes som krav.
+
+Ny lesende `search_internal_store_catalog_prices_smart` med samme tilgang/nettomaskering og aktiv-importfilter. Gamle søk/RPC-er, tilbudsoppslag, varetelling, plukklistelagring/eksport og varedata er uendret. Migrasjon 20261016190242 er installert bare i Sandbox, ikke Production. 41 PostgreSQL- og 70 Chromium-kontroller PASS; eksisterende mobilskann-QA kontrolleres også.
+
+Etterkontroll av editorleveransen avdekket eksisterende tom initialstate ved direkte remount i befaringsnotat. Test mot uendret main feiler. Core initialiserer nå kun dette arbeidsbildet fra meningsfull scoped lokal kladd eller ferdiglastet servergrunnlag; ordinær detaljflyt er uendret. Ingen recovery-timere, nettlagring, server-autosave, navigasjon eller andre moduler endres. Sju permanente initialstate-kontroller kjøres i full critical. Servertekst og bilder på DEMO-02 er kontrollert intakte; skjemaet ble ikke lagret i feilsøkingen. QA: docs/qa/SALES_EDITOR_UX_20261016.md og docs/qa/SMART_PRICE_SEARCH_20261016.md. Ny TEST OK kreves før merge/Production/demo-synk.
+
 ## Editorflate – Preview 16.10.2026
 
 Befaringsnotat: tekstfeltene samlet i to kolonner på PC, én på mobil, før uendret Badskisse og bilder. Våtromstilbud: fire leveranse-/forbeholdsfelt i samme kortoppsett, kompakt topp/malvelger og ikke-sticky tilbakefelt. Scope er bare SalesInspectionNote.jsx, SalesOfferBuilderCore.jsx og lokal CSS. Server-first, kladd, recovery, bilde-/skissehåndtering, kalkulasjon, malhandlinger og alle callbacks er uendret. Generelt tilbud sin editor er urørt. QA: docs/qa/SALES_EDITOR_UX_20261016.md. Ny TEST OK kreves.

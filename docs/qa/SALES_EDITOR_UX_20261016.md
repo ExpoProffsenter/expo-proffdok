@@ -1,3 +1,13 @@
+## Etterkontroll: direkte remount i befaringsnotat
+
+Editorlayout-head a0d705f720a75b5315fa7e6c8993422d6ae98a85 har Core Safety #496 SUCCESS og Preview dpl_BkbQ6Ppdn6bpQv7arqT3KEb2BU8f READY. Faktisk innlogget full reload i DEMO-02-BEFARING viste tomme tekstfelt og bevarte bilder. Ingen lagring ble utført. Lesende Sandbox-kontroll bekreftet at serveren fortsatt har 67/55/31/65 tegn i de fire tekstfeltene og to bilder. Bevisst Startside ble respektert.
+
+Rotårsak i uendret main: Core kan remounte direkte i inspection-note med en tom inspectionForm-initializer. Vanlig openInspectionNote fyller skjemaet, men ble ikke kjørt før dette arbeidsbildet og den lokale kladdeffekten startet. Test med faktisk initializer fra origin/main feiler med tomme felt. Rettelsen er én import og en lazy useState-initializer i SalesModuleCore, pluss ren helper. Ingen endring i recovery-timere, wrapper, server-first-gate, serverlagring eller andre moduler. Dette er et dokumentert unntak til den opprinnelige rene presentasjonsscopingen nedenfor.
+
+`sales-inspection-initializer-check.mjs`: sju PASS, faktiske Core-initializer med serverfelter/bilder, meningsfull offline-kladd inkl. bevisst tomme delfelt, strukturelt tom kladd, riktig bruker/firma/sak, ny sak og vanlig detail-mount. Kjøres additivt fra uendret øvrig serverhydrering-check i hver critical/build. Ingen eksisterende krav er fjernet/svekket. Eksisterende lokale kladder overskrives ikke stille for å reparere mulig tidligere tom tekst; slik kladd må vurderes som brukerarbeid.
+
+Ny brukerprøve inkluderer full reload og vanlig fanebytte i en eksisterende befaring. Ny TEST OK kreves. Endelig innlogget etterkontroll og gjeldende SHA/CI føres i PR #260.
+
 # Befaringsnotat og Våtromstilbud – UX 16.10.2026
 
 Miljømål: BEGGE. Preview først, ny relevant TEST OK før merge/Production, deretter main → demo og preflight.
