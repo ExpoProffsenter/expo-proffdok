@@ -2505,3 +2505,8 @@ section.sales-workspace-intro:has(+ [data-sales-resume-workspace] .sales-editor-
   .sales-editor-app .sales-note-field { padding: 12px; }
   .sales-editor-app .sales-template-controls { grid-template-columns: minmax(0, 1fr); }
 }
+
+.sales-inspection-app .sales-inspection-text-choice { padding: 14px; margin-bottom: 16px; border: 1px solid #dfbd72; border-radius: 16px; background: #fff8e8; color: #5d461c; }
+.sales-inspection-app .sales-inspection-text-choice p { margin: 6px 0 12px; }
+.sales-inspection-app .sales-inspection-text-choice > div { display: flex; flex-wrap: wrap; gap: 10px; }
+.sales-inspection-app .sales-inspection-text-choice button { min-height: 44px; white-space: normal; }

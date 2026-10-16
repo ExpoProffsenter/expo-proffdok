@@ -85,6 +85,7 @@ const BASE_SECTIONS = [
       "Registrer kunde, kontaktinformasjon, adresse, ansvarlig og neste steg i forespørselen.",
       "Planlegg befaring og samle notater, bilder og nødvendige avklaringer i samme sak.",
       "I befaringsnotatet står tekstfeltene samlet før Badskisse og bilder. På PC står feltene to og to; på mobil står de under hverandre. Dra i nederste hjørne hvis du trenger større skrivefelt. Velg Lagre befaringsnotat når du er ferdig.",
+      "Hvis saken har lagret tekst og den lokale kladden er tom for tekst, velger du Bruk teksten fra saken eller Behold tom lokal tekst før du lagrer. Bilder og Badskisse beholdes i begge tilfeller.",
       "I Våtromstilbud står forbehold, inkludert, ikke inkludert og kundens leveranser samlet i fire kort. Vilkår og betalingsbetingelser står fortsatt nedenfor. Kontroller oppsummeringen og velg Lagre tilbud.",
       "En registrert befaring kan videreføres i samme sak som ordinært Våtromstilbud eller som Generelt tilbud når brukeren har slik tilgang.",
       "Opprett tilbudsutkast, forhåndsvis og publiser riktig versjon til kunden.",

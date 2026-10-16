@@ -7,3 +7,15 @@ export function inspectionInitialForm(request, draft) {
     ? draft.form
     : buildServerInspectionForm(request);
 }
+
+const TEXT_FIELDS = ['customerWishes', 'existingConditions', 'measurements', 'observations'];
+export function inspectionNeedsTextChoice(request, form) {
+  const server = buildServerInspectionForm(request);
+  return TEXT_FIELDS.some(key => String(server[key] || '').trim())
+    && !TEXT_FIELDS.some(key => String(form?.[key] || '').trim());
+}
+
+export function inspectionServerText(request) {
+  const server = buildServerInspectionForm(request);
+  return Object.fromEntries(TEXT_FIELDS.map(key => [key, server[key]]));
+}

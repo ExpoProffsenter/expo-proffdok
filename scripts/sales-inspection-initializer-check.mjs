@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {execFileSync} from 'node:child_process';
-import {inspectionInitialForm} from '../src/modules/sales/services/salesInspectionInitialForm.mjs';
+import {inspectionInitialForm,inspectionNeedsTextChoice,inspectionServerText} from '../src/modules/sales/services/salesInspectionInitialForm.mjs';
 const source=process.env.INSPECTION_INITIALIZER_BASELINE
   ? execFileSync('git',['show',process.env.INSPECTION_INITIALIZER_BASELINE+':src/modules/sales/SalesModuleCore.jsx'],{encoding:'utf8'})
   : fs.readFileSync('src/modules/sales/SalesModuleCore.jsx','utf8');
@@ -24,4 +24,8 @@ draft={form:{customerWishes:'',existingConditions:'',measurements:'',observation
 eq(run(),expected,'structurally empty initial draft cannot blank existing server case');
 draft=null;eq(run({...initialNavigation,selectedRequestId:'missing'},[]),{customerWishes:'',existingConditions:'',measurements:'',observations:'',photos:[]},'new case remains empty');
 const before=calls.length;eq(run({mode:'detail',selectedRequestId:request.id}),{customerWishes:'',existingConditions:'',measurements:'',observations:'',photos:[]},'ordinary detail mount keeps existing empty non-editor state');eq(calls.length,before,'ordinary case does not read an inspection draft prematurely');
+eq(inspectionNeedsTextChoice(request,{photos:request.inspectionPhotos}),true,'old media-only local draft requires explicit text choice');
+eq(inspectionNeedsTextChoice(request,{customerWishes:'Lokal tekst'}),false,'meaningful local text does not trigger choice');
+eq(inspectionNeedsTextChoice({},{}),false,'truly new empty note needs no recovery choice');
+eq(Object.keys(inspectionServerText(request)).includes('photos'),false,'text recovery never replaces local photos');
 console.log('sales-inspection-initializer-check: '+checks+' PASS – actual Core initial state, server fields, meaningful offline draft, empty draft, scope and ordinary navigation.');

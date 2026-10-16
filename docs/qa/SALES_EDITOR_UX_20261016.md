@@ -1,3 +1,9 @@
+## Befaring: eksplisitt valg for tidligere tom lokal tekst – Preview
+
+Innlogget etterkontroll viste at den gamle feilen også kan ha etterlatt en lokal kladd med bilder, men uten tekst, mens serveren fortsatt har tekst. Slike lokale medier regnes med rette som meningsfullt arbeid. Notatet viser derfor et synlig valg: Bruk teksten fra saken eller Behold tom lokal tekst. Tekstfelter og Lagre er sperret til valget er tatt, og submit har samme sperre. Servervalget kopierer bare de fire tekstfeltene; lokale bilder/Badskisse og alle lagrings-/recovery-regler beholdes. Ingen ny browserlagring, automatisk serveroverskriving eller generell konflikthåndtering innføres. Bevisst tømming etter normal åpning fungerer som før.
+
+128 faktiske editor-Chromium-kontroller og elleve actual-Core/helper-scenarier PASS, inkl. begge valg, sperret lagring før valg og bevarte bilder/skisse. Første søke-/initialstate-head b3cfeeee har Core Safety #497 SUCCESS og Preview dpl_E4VJKMMdVkZn9g9Ha7TU3UAKfCUy READY. Denne oppfølgingens endelige SHA/CI/innloggede kontroll føres i PR #260. Ingen TEST OK/merge/Production.
+
 ## Etterkontroll: direkte remount i befaringsnotat
 
 Editorlayout-head a0d705f720a75b5315fa7e6c8993422d6ae98a85 har Core Safety #496 SUCCESS og Preview dpl_BkbQ6Ppdn6bpQv7arqT3KEb2BU8f READY. Faktisk innlogget full reload i DEMO-02-BEFARING viste tomme tekstfelt og bevarte bilder. Ingen lagring ble utført. Lesende Sandbox-kontroll bekreftet at serveren fortsatt har 67/55/31/65 tegn i de fire tekstfeltene og to bilder. Bevisst Startside ble respektert.

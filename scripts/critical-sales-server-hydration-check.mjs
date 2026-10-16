@@ -377,6 +377,9 @@ requireText(
   `${inspectionNotePath}: åpent befaringsnotat kan ikke ta imot ferske signerte server-URL-er for bilder/Badskisse.`
 );
 
+requireText(inspectionNote, "if (needsTextChoice) return;", "Tom lokal tekst må velges eksplisitt før den kan lagres over servertekst.");
+requireText(inspectionNote, "disabled={busy || needsTextChoice}", "Lagring må være sperret mens tekstvalget er uavklart.");
+
 if (failures.length) {
   console.error("❌ Expo ProffDok Sales server hydration check feilet:");
   failures.forEach((failure) => console.error(` - ${failure}`));
