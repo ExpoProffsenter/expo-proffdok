@@ -1,3 +1,10 @@
+> Production 17.10 etter TEST OK: PR #263 er merget og app/database er publisert.
+> Seks identiske supportmigrasjoner og support-mail/support-inbound v1 er installert.
+> Intern mottaker, app-URL, disabled mail-modus og false inbound er satt bare i
+> Production Secrets. Vault-/cron-jobben er installert med enabled=false og tom
+> endpoint. Ingen supportmail er sendt; webhook og faktisk toveis prøve gjenstår.
+> Tidligere omtale av «bare Sandbox installert» nedenfor er historikk.
+
 # Support – drift og aktivering
 
 Status: app, database og transport er implementert for Preview. Faktisk e-post er

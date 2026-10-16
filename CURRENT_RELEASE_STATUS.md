@@ -1,3 +1,22 @@
+# Support – TEST OK og Production 17.10.2026
+
+Kenneth ga eksplisitt TEST OK kl. 01:23 Europe/Oslo på siste Preview-head
+1c8338f6129d0683a39bfbdb8a56864cc3b0e1ec. PR #263 er merget til main
+e50504b41c701728561ec47fa210ffb16f38e06b etter grønn Core Safety #521/#522.
+Production dpl_3xd24np1sbrXRsD64SSNG5PswHks er READY på riktig main/domene.
+Seks supportmigrasjoner og to nye Edge Functions er installert i Production.
+Alle 19 supportfunksjoner/ACL har samme fingerprint som Sandbox; Edge-kilden er
+lest tilbake identisk. Eksisterende bakgrunnsjobber er uendret. Ingen supportmail
+sendes: SUPPORT_MAIL_MODE=disabled, SUPPORT_INBOUND_ENABLED=false, køarbeider
+enabled=false og tom endpoint. Mottaker er bare i serverhemmeligheter.
+
+Kontrollert main → demo med bevart overlay og grønn preflight fullføres som del av
+samme publisering; eksakt slutt-SHA/deploy/preflight føres i PR #263. Appkoden er
+uendret fra Kenneths godkjente Preview. Toveis e-post er fortsatt uferdig og skal
+ikke omtales som aktivert. Neste etappe er en eksplisitt avtalt sending/mottaksprøve.
+Overlevering: docs/CHAT_HANDOFF_20261017.md. Eldre ventende TEST OK-/Production-
+ikke-migrert-notater nedenfor er historikk, erstattet av denne statusen.
+
 ## Support-meny, Min side og gruppert Systemadmin – Preview 17.10.2026
 
 Kenneth har godkjent implementeringen av egen Support ved Hjelp, eget kort for
