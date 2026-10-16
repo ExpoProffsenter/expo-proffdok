@@ -18,7 +18,7 @@ klientkonfigurasjon, offentlig firmaprofil eller RPC-retur til nettleseren:
 | `SUPPORT_APP_URL` | Production: https://expo-proffdok.app. Sandbox: fast Preview-adresse. |
 | `SUPPORT_MAIL_MODE` | `disabled` som standard. Production krever `production`. Andre prosjekter kan bare bruke `sandbox-test`. |
 | `SUPPORT_TEST_TO` | Bare Sandbox. Alle utgående meldinger tvinges til denne eksplisitt avtalte prøveadressen. |
-| `SUPPORT_REPLY_DOMAIN` | Verifisert dedikert mottaksunderdomene, for eksempel et support-underdomene på kontrollert domene. |
+| `SUPPORT_REPLY_DOMAIN` | Kontoens ferdige mottaksdomene `ualoomorai.resend.app`, eller et separat verifisert mottaksunderdomene. |
 | `SUPPORT_INBOUND_ENABLED` | `true` først etter kontrollert MX/webhook-oppsett og avtalt mottaksprøve. |
 | `SUPPORT_WEBHOOK_SECRET` | Resends separate signeringshemmelighet for akkurat dette miljøets mottakswebhook. |
 | `SUPPORT_WORKER_SECRET` | Separat tilfeldig hemmelighet, minst 32 tegn, for køarbeideren. |
@@ -31,7 +31,9 @@ prøveadressen sende inn e-post. Production-modus på Sandbox hard-feiler.
 ## Resend og DNS
 
 1. Kontroller eksisterende From-domene i Resend. Bruk avsendernavn ProffDok Support.
-2. Legg til eget mottaksunderdomene og de eksakte MX-postene Resend oppgir.
+2. Kontoens ferdige mottaksdomene `ualoomorai.resend.app` er kontrollert i Emails →
+   Receiving. Det krever ingen DNS-endring. Et eget profilert mottaksunderdomene
+   kan eventuelt erstatte dette senere med de eksakte MX-postene Resend oppgir.
    Ikke endre MX for eksisterende Ringside-/andre postbokser.
 3. Opprett miljøspesifikk `email.received`-webhook til
    `https://<prosjekt>.supabase.co/functions/v1/support-inbound`.
@@ -50,6 +52,22 @@ autosvar ignoreres uten å sende en e-post tilbake. Signaturvindu er fem minutte
 Provider-ID og Message-ID dedupliseres atomisk. HTML omgjøres til ren tekst; ingen
 innkommende HTML, fjernbilder eller vedlegg rendres/lastes ned. Maks 12 000 tegn i
 ny melding. Vedlegg er uttrykkelig ikke med i første versjon.
+
+### Eksisterende konto kontrollert 16.10
+
+Kenneths vanlige e-post-/passordinnlogging åpner den eksisterende kontoen, team
+`ringside`. Faktiske ProffDok-invitasjoner fra 15.10 har providerstatus delivered
+og From `Expo ProffDok <noreply@expoproffsenter.no>`. Domenet `expoproffsenter.no`
+er verified, sending er aktivert og mottak på hoveddomenet er avslått. Den
+tidligere tomme GitHub-kontoen skal ikke brukes. Innloggingsadresse og intern
+supportmottaker lagres ikke i repoet.
+
+De to eksisterende nøklene har bare Sending access; den brukte nøkkelens siste
+logg peker på den kontrollerte ProffDok-invitasjonen. Eksisterende nøkkel skal
+beholdes. Resends Receiving API trenger Full access. En separat mottaksnøkkel
+krever derfor godkjenning av den bredere tilgangen før oppretting; nøkkelverdien
+skal bare lagres server-side. Skjema er klargjort, ingen ny nøkkel er opprettet.
+Webhook/scheduler og faktisk prøve gjenstår. Production er ikke endret.
 
 ## Kø og retry
 

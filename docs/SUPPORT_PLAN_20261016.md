@@ -6,6 +6,12 @@ er ikke aktivert eller prøvd; serverhemmeligheter, Resend-/DNS-oppsett og egen
 scheduler gjenstår. Se SUPPORT_OPERATIONS_20261016.md og qa/SUPPORT_20261016.md.
 Planen nedenfor beskriver fortsatt kontrakten.
 
+Kontrollert senere 16.10: eksisterende konto er gjenfunnet med Kenneths vanlige
+innlogging. Avsenderdomenet er `expoproffsenter.no`, og kontoens ferdige
+`ualoomorai.resend.app` kan brukes til svarmottak uten DNS-endring. Eksisterende
+Sending access beholdes; separat Receiving API-tilgang, signert webhook og
+faktisk prøve gjenstår. Ingen nøkkelverdier eller intern mottaker lagres her.
+
 Opprinnelig planstatus: Planlagt som egen leveranse etter pågående UX-runde. Ingen supportkode,
 SQL, mottaksadresse, DNS eller e-postutsending er endret i UX-runden.
 Miljømål ved implementering: BEGGE, med Preview og ny TEST OK før produksjon.
