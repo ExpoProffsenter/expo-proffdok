@@ -65,7 +65,12 @@ Ingen nye data eller kladder legges i browserlagring.
   Innlogget Preview cba86: Support ved Hjelp, Min side åpnet nøyaktig ulest
   sak #3, Hjelp uten sakslist og gruppert Systemadmin bekreftet. Ingen ny
   sak, svar, nyhet eller e-post ble sendt av denne prøven. CI #516 grønn.
-  Sluttbuild, eksakt siste CI og ERP-plassering i oppdatert Preview føres i PR #263.
+  Oppdatert Preview 01fc304: ERP-panelet er skjult på Oversikt og vises bare
+  under Internt vareregister. Faktisk samlet firma-/brukerflate lastet, søket
+  «Proffkunde» overlevde bytte til Produktmaster og tilbake. Produktmaster og
+  Dokumentsynk viste eksisterende kontroller. Ingen lagring eller synk ble kjørt.
+  Full lokal critical/build PASS; siste CI-status føres i PR #263.
+- Skjermbilde: support-admin-overview-20261017.jpg, faktisk innlogget Preview.
 
 ## Konkret brukertest
 
