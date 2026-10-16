@@ -3,6 +3,7 @@
 // RLS/RPC validerer at utvidet supporttilgang kun brukes av systemadministrator.
 
 import { useEffect, useState } from "react";
+import SupportWorkspace from "../support/SupportWorkspace.jsx";
 import SystemAdminSalesSupport from "./SystemAdminSalesSupport.jsx";
 import SystemAdminBroadcastEmail from "./SystemAdminBroadcastEmail.jsx";
 import {
@@ -122,6 +123,7 @@ export default function AppNewsAdmin({ supabaseClient, authUser } = {}) {
 
   return (
     <>
+      <SupportWorkspace supabaseClient={supabaseClient} authUser={authUser} admin/>
       <details className="ux-admin-area"><summary className="ux-readable-summary">Support · Befaring/Tilbud</summary><SystemAdminSalesSupport supabaseClient={supabaseClient} authUser={authUser}/></details>
 
       <details className="ux-admin-area"><summary className="ux-readable-summary">Utsending · e-post til brukere</summary><SystemAdminBroadcastEmail supabaseClient={supabaseClient} authUser={authUser}/></details>

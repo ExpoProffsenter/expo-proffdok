@@ -1,3 +1,26 @@
+## Support – separat Preview-leveranse etter PR #262
+
+Miljømål BEGGE. Faktisk baseline main 824245e8c25e3a7d83febefe1b116a1a3fd108a1;
+PR #262 er ferdig publisert (inkludert main → demo), slik PR-ens siste status viser.
+De ventende #262-notatene lenger nede er historikk.
+
+Support er implementert i egen PR fra ren main: Hjelp → Kontakt support/egne
+saker, Systemadmin-innboks/svar/interne merknader/status/ansvarlig, privat database,
+sikker utgående kø og signert mottaksintegrasjon. Server bestemmer eier/firma og
+mottakere. Den interne mottakeradressen finnes ikke i klientkode eller repo.
+Appen lover ikke fungerende e-post før serveroppsett og faktisk prøve er fullført.
+
+Kun Sandbox er migrert. De to nye Edge Functions er deployet med utsending
+avslått som standard. Ingen scheduler, DNS-endring eller ekte e-postsending er
+utført. Production og permanent demo er uendret. For komplett e-postdialog
+må serverhemmeligheter, mottaksunderdomene, Resend-webhook og egen scheduler
+konfigureres og faktisk mottak prøves. Ingen merge uten ny TEST OK.
+
+Scope, QA og brukertest: docs/qa/SUPPORT_20261016.md.
+Aktivering og gjenstående kontroll: docs/SUPPORT_OPERATIONS_20261016.md.
+Fast Preview beholdes på fix-company-admin-scope-20261015; ny separat PR følger
+supportleveransen. Baseline/commit/CI/deploy bevisføres i den nye PR-en.
+
 ## Prosjektlisten: mindre luft og valgfri detaljvisning – Preview 16.10.2026
 
 ## Kompakt referansevisning og supportplan – 16. oktober 2026

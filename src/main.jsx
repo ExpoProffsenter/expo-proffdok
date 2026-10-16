@@ -1,3 +1,4 @@
+import SupportLinkEntry from './modules/support/SupportLinkEntry.jsx';
 import WorkdayShortcuts from './modules/home/WorkdayShortcuts.jsx';
 import DeliverySummary from './modules/report/DeliverySummary.jsx';
 import {isActiveProjectStatus, isArchivedProjectStatus, matchesProjectStatus} from './modules/project/projectListStatus.mjs';
@@ -6100,6 +6101,7 @@ ${appLink}`;
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "imageLightboxTop", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "imageLightboxClose", onClick: () => setLightboxImage(null), children: "Lukk bilde" }) }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { className: "imageLightboxImage", src: lightboxImage.src, alt: lightboxImage.alt })
       ] }) }),
+      (0, import_jsx_runtime.jsx)(SupportLinkEntry, { authUser, supabaseClient: supabase }, authUser?.id),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("header", { children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "head", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Brand, { logo: company.logoUrl, name }),

@@ -1,6 +1,12 @@
 # Support – avtalt plan 16. oktober 2026
 
-Status: Planlagt som egen leveranse etter pågående UX-runde. Ingen supportkode,
+Statusoppdatering: Implementert i separat Preview-leveranse etter publisert PR #262.
+App/database/transport er skrevet og Sandbox er migrert. Faktisk toveis e-post
+er ikke aktivert eller prøvd; serverhemmeligheter, Resend-/DNS-oppsett og egen
+scheduler gjenstår. Se SUPPORT_OPERATIONS_20261016.md og qa/SUPPORT_20261016.md.
+Planen nedenfor beskriver fortsatt kontrakten.
+
+Opprinnelig planstatus: Planlagt som egen leveranse etter pågående UX-runde. Ingen supportkode,
 SQL, mottaksadresse, DNS eller e-postutsending er endret i UX-runden.
 Miljømål ved implementering: BEGGE, med Preview og ny TEST OK før produksjon.
 
