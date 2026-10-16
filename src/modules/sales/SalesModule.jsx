@@ -732,6 +732,7 @@ export default function SalesModule(props) {
         key={instanceKey}
         {...props}
         profile={coreProfile}
+        onCreateOffer={canUseSales ? startDirectOffer : undefined}
         startNewOfferSignal={forwardedStartNewOfferSignal}
         onStartNewOfferHandled={handleStartNewOfferHandled}
       />

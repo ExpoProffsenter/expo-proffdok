@@ -1,3 +1,7 @@
+## Knappoppfølging 16. oktober 2026 – Preview
+
+Den godkjente kompakte salgsrunden er publisert via PR #257. Nytt tilbud flyttes nå inn ved siden av Ny forespørsel i oversiktens toppfelt. Samme eksisterende startDirectOffer åpner samme tilbudstypevalg; SalesCore sender bare callbacken videre. Den gamle snarveien beholdes utenfor oversikten. Ingen editor-/lagrings-/tilbudslogikk endres. Ny TEST OK kreves.
+
 ## UX-oppfølging 16. oktober 2026 – Preview
 
 Salgsoversikten bruker én farget, klikkbar statusoversikt med eksisterende antall/buckets, søk og tilbudstypefilter. Befaring-hurtigfilteret bruker fortsatt eksisterende adapter/søk. Tilbake fra sak gjenoppretter søk, tilbudstype, status og scroll fra en UI-ref i den fortsatt monterte SalesCore, avgrenset med eksisterende salesStorageKey. Ingen saksdata eller ny browserlagring; remount starter vanlig eksisterende navigasjon/recovery. Intern saksvisning har et normalt tilbakefelt, tettere kunde-/notatkort og én visnings-/redigeringshandling per tilbud. Callback, publisert versjon, oppfølgingsplan og kundedata er uendret.

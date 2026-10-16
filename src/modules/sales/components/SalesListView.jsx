@@ -264,6 +264,7 @@ export default function SalesListView({
   viewStateRef,
   viewScope = "",
   onCreateRequest,
+  onCreateOffer,
   onOpenRequest,
 }) {
   const supportMode = Boolean(getSalesSupportCompanyId());
@@ -495,6 +496,13 @@ export default function SalesListView({
               </p>
             </div>
 
+            <div className="sales-create-actions">
+              {onCreateOffer && <button
+                className="sales-secondary-button"
+                type="button"
+                onClick={supportMode ? undefined : onCreateOffer}
+                disabled={supportMode}
+              >+ Nytt tilbud</button>}
             <button
               className="sales-primary-button"
               type="button"
@@ -509,6 +517,7 @@ export default function SalesListView({
               <Plus size={19} />
               {supportMode ? "Ny forespørsel sperret" : "Ny forespørsel"}
             </button>
+            </div>
           </section>
 
           {supportMode ? (
