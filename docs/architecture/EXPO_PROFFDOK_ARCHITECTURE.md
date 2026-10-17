@@ -1,3 +1,7 @@
+## Support-e-post: bevart meldings-ID – Preview 17.10.2026
+
+Ekte toveis prøve er gjennomført med Kenneth: svaret ble mottatt i samme sak, og webhook-gjentakelse lagret ingen duplikat. Testoppsettet er tilbakeført; ordinær e-post er AV. En påvist feil der interne varsler overskrev mottatt Message-ID rettes med en avgrenset migrasjon. Bare offentlige support-svar får utgående ID i samtalen. Feil lease, retry, tilgang og øvrige arbeidere beholdes. Ny TEST OK kreves før rettelsen publiseres og vanlig e-post aktiveres. Scope/bevis: docs/qa/SUPPORT_EMAIL_THREADING_20261017.md. Eldre supportplanstatuser nedenfor er historikk.
+
 ## Prosjektlisten: mindre luft og valgfri detaljvisning – Preview 16.10.2026
 
 ## Kompakt referansevisning og supportplan – 16. oktober 2026
