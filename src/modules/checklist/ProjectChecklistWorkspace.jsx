@@ -1,4 +1,4 @@
-import {checklistResumeEntries} from './checklistResume.mjs';
+import {checklistResumeEntries,firstUnfinishedChecklist} from './checklistResume.mjs';
 import {checklistDisplayState} from './checklistDisplay.mjs';
 import {useEffect,useRef,useState} from 'react';
 import DeviationDialog from '../deviations/DeviationDialog.jsx';
@@ -10,7 +10,7 @@ import {answersForDefinition,checklistRunDraftKey,commitChecklistRun,completionP
 import './projectChecklistWorkspace.css';
 import KshmsDocumentPdfButton from '../kshms/KshmsDocumentPdfButton.jsx';
 
-export default function ProjectChecklistWorkspace({Editor,companyId,userId,projectId,checklist,activeChecklistTemplate,instances=[],readOnly=false,showTools=true,showPrevious=true,customChecklistAllowed=false,isWarrantyPoint=()=>false,onSaved,uploadImages,resolveFileUrl,...editorProps}) {
+export default function ProjectChecklistWorkspace({Editor,companyId,userId,projectId,checklist,activeChecklistTemplate,instances=[],readOnly=false,showTools=true,showPrevious=true,customChecklistAllowed=false,isWarrantyPoint=()=>false,onSaved,uploadImages,resolveFileUrl,entryRequest=null,onEntryHandled,...editorProps}) {
  const [displayFilter,setDisplayFilter]=useState('all');
  const [data,setData]=useState(null),[selected,setSelected]=useState(null),[expanded,setExpanded]=useState({}),[error,setError]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false),[uploads,setUploads]=useState(0);
  const owner=useRef(null),locked=useRef(false),selection=useRef(null),cached=useRef(new Map());
@@ -39,11 +39,15 @@ export default function ProjectChecklistWorkspace({Editor,companyId,userId,proje
   return()=>{scope.active=false;events.forEach(event=>window.removeEventListener(event,refresh));};
  },[companyId,userId,projectId]);
  const select=value=>{selection.current=value;setSelected(value);setError('');setNotice('');};
- const begin=async(group,{fresh=false,run=null,viewSaved=false,followPoint=null}={})=>{
+ const begin=async(group,{fresh=false,run=null,viewSaved=false,followPoint=null,nextUnfinished=false,isIntentCurrent=()=>true}={})=>{
   if(locked.current)return;
   const scope=owner.current;locked.current=true;setBusy(true);setError('');
   try {
-   const state=await load(scope);if(!state||!current(scope))return;
+   const state=await load(scope);if(!state||!current(scope)||!isIntentCurrent())return;
+   if(nextUnfinished){
+    group=firstUnfinishedChecklist(entryContext.current.groups,state.runs||[],state.checklist,category=>readRunDraft(window.localStorage,key(category)),readOnly);
+    if(!group){if(entryContext.current.groups.length)setNotice('Alle sjekklister er fullført. Du kan åpne dem fra oversikten.');return;}
+   }
    const latest=state.runs.find(value=>value.category===group.category);
    const saved=run||latest;
    if(followPoint&&saved?.status==='completed'&&state.checklist?.[group.category]?.[followPoint]?.status==='Avvik'&&!state.checklist?.[group.category]?.[followPoint]?.ks_deviation_id&&!readOnly)fresh=true;
@@ -69,7 +73,7 @@ export default function ProjectChecklistWorkspace({Editor,companyId,userId,proje
    const definition=runDefinition(group,instances,isWarrantyPoint(group.category));
    const value={id:crypto.randomUUID(),revision:0,predecessor_id:latest?.id||null,definition,answers:answersForDefinition(definition,state.checklist?.[group.category]||checklist?.[group.category],fresh),requestId:crypto.randomUUID(),readOnly};
    select(value);if(!readOnly)remember(value);
-  } catch(cause){if(current(scope))setError(cause.message);}
+  } catch(cause){if(current(scope)&&isIntentCurrent())setError(cause.message);}
   finally{locked.current=false;if(current(scope))setBusy(false);}
  };
  const beginRef=useRef(begin);beginRef.current=begin;
@@ -83,6 +87,21 @@ export default function ProjectChecklistWorkspace({Editor,companyId,userId,proje
   };
   jump();window.addEventListener('expoProffDokChecklistJump',jump);return()=>window.removeEventListener('expoProffDokChecklistJump',jump);
  },[activeChecklistTemplate]);
+ const entryContext=useRef(null);
+ entryContext.current={groups:activeChecklistTemplate,onEntryHandled};
+ useEffect(()=>{
+  if(!entryRequest)return;
+  let active=true;
+  const finish=()=>entryContext.current.onEntryHandled?.(entryRequest.id);
+  const matches=entryRequest.projectId===projectId&&entryRequest.companyId===companyId&&entryRequest.userId===userId;
+  // Existing exact checkpoint links take the same begin lock before this effect.
+  if(!matches||readOnly||!projectId||!companyId||!userId||selection.current||locked.current){finish();return;}
+  const cancel=()=>{active=false;finish();};
+  const events=['pointerdown','keydown','blur'];
+  events.forEach(event=>window.addEventListener(event,cancel,true));
+  beginRef.current(null,{nextUnfinished:true,isIntentCurrent:()=>active}).finally(()=>{if(active)finish();});
+  return()=>{active=false;events.forEach(event=>window.removeEventListener(event,cancel,true));};
+ },[entryRequest,companyId,userId,projectId,readOnly]);
  const change=(category,item,patch)=>{
   const value=selection.current;if(!value||value.readOnly||readOnly||locked.current||value.pendingAction)return;
   const next={...value,answers:{...value.answers,[item]:{...value.answers[item],...patch}},requestId:crypto.randomUUID()};
@@ -149,6 +168,7 @@ export default function ProjectChecklistWorkspace({Editor,companyId,userId,proje
  return <div className="project-checklist-workspace">
   <p className="note">Åpne en sjekkliste for å fylle den ut. «Lagre» lar deg eller en kollega fortsette senere. «Sjekkliste fullført» lagrer en ferdig kontroll.</p>
   {!selected&&error&&<p role="alert" className="ks-error">{error}</p>}
+  {!selected&&notice&&<p role="status" className="ks-notice">{notice}</p>}
   {showTools&&<details className="item"><summary>Egne sjekkpunkter og vedlegg</summary><fieldset disabled={readOnly}><Editor {...editorProps} checklist={checklist} activeChecklistTemplate={[]} customChecklistEnabled={customChecklistAllowed} toolsOnly consumeChecklistJump={false}/></fieldset></details>}
   {!groups.length&&<p>Ingen sjekklister er lagt til. Legg til egne sjekkpunkter, eller hent en publisert liste fra KS/HMS når firmaet har tilgang.</p>}
   <div className="ux-toolbar"><label>Vis sjekklister<select value={displayFilter} onChange={e=>setDisplayFilter(e.target.value)}><option value="all">Alle</option><option value="unfinished">Uferdige</option><option value="deviations">Med åpne avvik</option><option value="images">Mangler påkrevd bilde eller dokumentasjon</option></select></label><span className="ux-inline-note">Filtrering endrer ingen svar. Lagring og rapport bruker fortsatt hele kontrollen.</span></div>

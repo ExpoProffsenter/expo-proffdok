@@ -8,6 +8,9 @@ import {checklistRunDraftKey} from '../src/modules/checklist/checklistRuns.mjs';
 const {JSDOM}=await import(process.env.KSHMS_JSDOM_PATH||'jsdom');
 const dir=process.cwd(),temp=fs.mkdtempSync(path.join(os.tmpdir(),'checklist-resume-'));
 let checks=0;const eq=(a,b,label)=>{assert.deepEqual(a,b,label);checks++;};
+const main=fs.readFileSync('src/main.jsx','utf8');
+const navigation=main.slice(main.indexOf('    const requestChecklistEntry ='),main.indexOf('    const openKshmsDeviation ='));
+assert(navigation.includes('const goToTab = async'),'test actual request and guarded goToTab');
 fs.writeFileSync(path.join(temp,'entry.jsx'),`
 import React,{act} from '${dir}/node_modules/react/index.js';
 import {createRoot} from '${dir}/node_modules/react-dom/client.js';
@@ -15,14 +18,22 @@ import Workspace from '${dir}/src/modules/checklist/ProjectChecklistWorkspace.js
 const root=createRoot(document.getElementById('app'));
 function Editor({activeChecklistTemplate,checklist,setChecklistValue}){const group=activeChecklistTemplate[0];if(!group)return null;return <div><p>{checklist[group.category].Point?.comment||'Empty comment'}</p><button onClick={()=>setChecklistValue(group.category,'Point',{comment:'New retained comment'})}>Endre kommentar</button></div>;}
 window.act=act;window.render=props=>root.render(<Workspace {...props} Editor={Editor}/>);window.unmount=()=>root.render(null);
+const actualNavigation=new Function('scope',${JSON.stringify('with(scope){'+navigation+';return goToTab(target);}')});
+function EntryHarness(props){
+ const [request,setRequest]=React.useState(null);
+ window.issueEntry=setRequest;
+ window.navigate=target=>actualNavigation({target,projectId:props.projectId,kshmsContext:{company_id:props.companyId},authUser:{id:props.userId},setChecklistEntryRequest:setRequest,setMobileStatusOpen(){},hasActiveProjectWorkspace:true,setTab(){},setMobileMenuOpen(){},scrollToMobileTabTarget(){},tab:window.activeTab||'bilder',tabs:[['sjekklister','Sjekklister']],confirmLeaveWithUnsavedChanges:async()=>window.canLeave!==false,syncInternalProjectUrl(){},setTimeout(){}});
+ return <Workspace {...props} Editor={Editor} entryRequest={request} onEntryHandled={id=>setRequest(current=>current?.id===id?null:current)}/>;
+}
+window.renderEntry=props=>root.render(<EntryHarness {...props}/>);
 `);
 const bundle=await build({root:dir,configFile:false,logLevel:'silent',resolve:{alias:{'react/jsx-runtime':path.join(dir,'node_modules/react/jsx-runtime.js')}},define:{'process.env.NODE_ENV':'"development"'},plugins:[react(),{name:'resume-rpc',enforce:'pre',resolveId(id){if(/kshmsAccess\.js$/.test(id))return '\0rpc';},load(id){if(id==='\0rpc')return 'export const kshmsRpc=(...args)=>window.rpc(...args);';}}],build:{write:false,minify:false,lib:{entry:path.join(temp,'entry.jsx'),formats:['iife'],name:'ResumeProof',fileName:'proof'}}});
 const dom=new JSDOM('<div id="app"></div>',{url:'https://example.invalid',runScripts:'outside-only',pretendToBeVisual:true}),{window}=dom;
 window.IS_REACT_ACT_ENVIRONMENT=true;window.HTMLElement.prototype.scrollIntoView=function(){};window.MessageChannel=class{constructor(){this.port1={onmessage:null};this.port2={postMessage:()=>setImmediate(()=>this.port1.onmessage?.())};}};
 const groups=['Untouched','Saved','Local','Completed'].map(category=>({category,items:['Point']}));
 const runs=[{id:'saved',category:'Saved',status:'draft',revision:1,definition:groups[1],answers:{Point:{comment:'Server draft'}}},{id:'done',category:'Completed',status:'completed',revision:1,definition:groups[3],answers:{Point:{status:'Ok',comment:'Immutable'}}}];
-let hold=false,resolveRead;
-window.rpc=async(name)=>{assert.equal(name,'project_checklist_state','resume must not write data');if(hold)await new Promise(resolve=>resolveRead=resolve);return {context:{company_id:'company',project_id:'project',user_id:'user'},runs,checklist:{}};};
+let hold=false,resolveRead,pending=[],failRead=false;
+window.rpc=async(name)=>{assert.equal(name,'project_checklist_state','resume must not write data');if(hold)await new Promise(resolve=>{resolveRead=resolve;pending.push(resolve);});if(failRead)throw Error('QA network failure');return {context:{company_id:'company',project_id:'project',user_id:'user'},runs,checklist:{}};};
 const local={id:'local',revision:0,requestId:'local-request',definition:groups[2],answers:{Point:{comment:'Local retained draft'}}};
 window.localStorage.setItem(checklistRunDraftKey('user','company','project','Local'),JSON.stringify(local));
 window.eval((Array.isArray(bundle)?bundle[0]:bundle).output.find(value=>value.type==='chunk').code);
@@ -44,5 +55,26 @@ await click('Lukk');await click('Fortsett utfylling: Local');eq(window.document.
 await click('Lukk');await click('Fortsett utfylling: Saved');eq(window.document.querySelector('[role=dialog]').textContent.includes('Server draft'),true,'same server draft resumed');
 await click('Lukk');await click('Åpne fullført sjekkliste');eq(Boolean(window.document.querySelector('fieldset:disabled')),true,'completed control remains immutable');
 await click('Lukk');await act(async()=>window.render({...props,readOnly:true}));eq(window.document.querySelectorAll('.project-checklist-resume button').length,0,'read-only has no edit-resume buttons');
+await act(async()=>window.unmount());
+const mountEntry=async extra=>{await act(async()=>window.unmount());await act(async()=>window.renderEntry({...props,...extra}));};
+const navigate=async()=>act(async()=>{await window.navigate('sjekklister');});
+await mountEntry();eq(window.document.querySelector('[role=dialog]'),null,'ordinary mount does not auto-open a list');
+window.canLeave=false;await navigate();eq(window.document.querySelector('[role=dialog]'),null,'cancelled native navigation never requests a checklist');
+window.canLeave=true;await navigate();eq(window.document.querySelector('[role=dialog] h2').textContent,'Saved','explicit shortcut resumes first saved draft');
+await click('Lukk');await act(async()=>window.dispatchEvent(new window.Event('focus')));eq(window.document.querySelector('[role=dialog]'),null,'closing and focus never reopen the shortcut');
+window.activeTab='sjekklister';await navigate();dialog=window.document.querySelector('[role=dialog]');eq(dialog.querySelector('h2').textContent,'Saved','clicking current tab also resumes next unfinished list');
+await click('Endre kommentar');await navigate();eq(window.document.querySelector('[role=dialog]'),dialog,'clicking again keeps an open editor and its DOM');eq(dialog.textContent.includes('New retained comment'),true,'open editor keeps unsaved comment');
+await mountEntry({activeChecklistTemplate:[groups[3],groups[0]]});await navigate();eq(window.document.querySelector('[role=dialog] h2').textContent,'Untouched','first untouched list opens after skipping completed list');
+eq(window.document.querySelector('fieldset:disabled'),null,'new list opens for editing through original begin');
+await mountEntry({activeChecklistTemplate:[groups[3]]});await navigate();eq(window.document.querySelector('[role=dialog]'),null,'all completed stays in overview');eq(window.document.querySelector('[role=status]').textContent.includes('Alle sjekklister er fullført'),true,'all completed is explained');eq(Boolean(button('Åpne fullført sjekkliste')),true,'completed history remains reachable');
+await mountEntry({readOnly:true});await navigate();eq(window.document.querySelector('[role=dialog]'),null,'read-only never auto-opens an editable control');
+await mountEntry({activeChecklistTemplate:[groups[2]]});await navigate();eq(window.document.querySelector('[role=dialog]').textContent.includes('New retained comment'),true,'explicit shortcut restores existing local draft');
+await mountEntry({activeChecklistTemplate:[]});await navigate();eq(window.document.querySelector('[role=dialog]'),null,'empty checklist set does not open a blank control');
+await mountEntry();await act(async()=>window.issueEntry({id:'wrong',projectId:'other',companyId:'company',userId:'user'}));eq(window.document.querySelector('[role=dialog]'),null,'request cannot cross project identity');
+pending=[];hold=true;await mountEntry();await navigate();await act(async()=>window.dispatchEvent(new window.Event('pointerdown')));await act(async()=>{hold=false;pending.splice(0).forEach(resolve=>resolve());});eq(window.document.querySelector('[role=dialog]'),null,'new pointer intent cancels delayed opening');
+pending=[];hold=true;await mountEntry();await navigate();await act(async()=>window.dispatchEvent(new window.Event('blur')));await act(async()=>{hold=false;pending.splice(0).forEach(resolve=>resolve());});eq(window.document.querySelector('[role=dialog]'),null,'app switch cancels delayed opening');
+pending=[];hold=true;await mountEntry();await navigate();await act(async()=>window.unmount());await act(async()=>{hold=false;pending.splice(0).forEach(resolve=>resolve());});eq(window.document.querySelector('[role=dialog]'),null,'leaving project cancels delayed opening');
+failRead=true;await mountEntry();await navigate();eq(window.document.querySelector('[role=dialog]'),null,'failed read does not open stale answers');eq(window.document.body.textContent.includes('QA network failure'),true,'load failure is visible');failRead=false;await act(async()=>window.dispatchEvent(new window.Event('focus')));eq(window.document.querySelector('[role=dialog]'),null,'recovered focus read does not repeat a failed shortcut');
+window.sessionStorage.setItem('expoProffDokChecklistJumpTarget',JSON.stringify({category:'Completed',item:'Point'}));await mountEntry();await navigate();eq(window.document.querySelector('[role=dialog] h2').textContent,'Completed','exact checkpoint link wins over first-unfinished shortcut');eq(Boolean(window.document.querySelector('fieldset:disabled')),true,'completed checkpoint remains immutable');
 await act(async()=>window.unmount());dom.window.close();fs.rmSync(temp,{recursive:true,force:true});
 console.log(`Checklist resume React: ${checks} assertions PASS — priority, same saved/local draft, secured edits, focus/scroll, immutable controls and read-only`);

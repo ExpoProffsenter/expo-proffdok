@@ -161,6 +161,7 @@ jobs:
           export PLAYWRIGHT_MODULE="$RUNNER_TEMP/company-admin-browser-qa/node_modules/playwright/index.mjs"
           node scripts/project-step-save-check.mjs
           node scripts/project-workspace-browser-check.mjs
+          node scripts/project-mobile-header-browser-check.mjs
           node scripts/project-customer-fields-browser-check.mjs
           node scripts/project-participants-workspace-react-check.mjs
           node scripts/project-checklist-resume-react-check.mjs

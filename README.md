@@ -1011,3 +1011,12 @@ Status/mangler og prosjektmeny beholder sine eksisterende dialoger.
 Bare denne PR-ens nye UX-test tilpasses den nye menyrollen, med ekstra
 responsive og tastaturkontroller. Ingen eldre critical-check endres.
 Brukerprøve: Flere handlinger → meny under knappen, klikk utenfor for å lukke.
+
+
+## Mobil prosjektbredde og direkte sjekklistestart – 17. oktober 2026
+
+Miljømål BEGGE, fra main `8afb2246a5126665e7c89af8a0da3c2f81614e9c` / godkjent PR #266. Prosjektfeltet over innholdet får bredde som inkluderer begge sidemargene; en eldre global 100 %-regel klippet høyrekanten på mobil. Prosjektets handlingsrad spenner nå over hele toppfeltet, med plass til både lagring og Flere handlinger. Den eksisterende nedtrekksmenyen og alle callbacks beholdes. Fast sjekklisteknapp nederst beholdes etter Kenneths avklaring.
+
+Klikk på Sjekklister ber etter godkjent eksisterende navigasjon om neste uferdige liste: påbegynt lokal/serverkladd først, ellers første ikke-fullførte liste. Fersk eksisterende state-RPC og samme begin/dialog/editor brukes. Åpen kladd og presis lenke til sjekkpunkt vinner; ingen automatisk åpning ved mount, fokus eller etter avbrutt navigasjon. Ny brukerhandling, appbytte eller prosjekt-/firmabytte stopper sen åpning. Alle fullført viser oversikten. Read-only/support starter ikke redigering. Ingen database, RLS, utsending, lagringskommando eller ny recovery endres. `main.jsx` endres bare med en avgrenset, identitetsbundet engangsforespørsel i eksisterende goToTab og prop til den ordinære sjekklistesiden; Prosjektering beholder egen liste.
+
+QA og relevant ny Preview-prøve: `docs/qa/PROJECT_MOBILE_HEADER_CHECKLIST_20261017.md`. Ny TEST OK kreves før merge/Production; deretter main → demo med preflight.
