@@ -27,7 +27,8 @@ Denne godkjenningen gjelder implementering; ny TEST OK kreves før merge.
 ## Backend
 
 Migrasjon: `supabase/migrations/20261017124151_customer_option_quantities.sql`.
-Anvendt kun i Sandbox `ppvircenkjizeiqdxphj`; ingen Production-migrasjon.
+Anvendt kun i Sandbox `ppvircenkjizeiqdxphj` med registrert versjon
+`20261017124504`; ingen Production-migrasjon.
 Ingen nye tabeller, kolonner, RLS- eller Storage-regler.
 
 Lest tilbake i Sandbox:
@@ -64,6 +65,18 @@ Ingen e-post sendes og ingen testtilbud beholdes.
 - Full critical build og permanente checks for recovery, server-hydrering,
   desktop fanebytte/mobil dvale, bevisst navigasjon, mva., avvisning, revisjon,
   bestillingsgrunnlag og kontrakt beholdes. Nye mengdetester er lagt til CI.
+
+Fast Preview er READY på PR #269, første app-head
+`4ce4ddb679546b7dfcc0d1966b8938d7129d2602` og deployment
+`dpl_8QmV3cCcad2TUBcDsJc6VZ7kVfFi`. Etterfølgende QA-commit oppgir endelig
+head/deployment/CI i PR-en. Den endrer kun eksplisitt PDF-testavhengighet og
+statusdokumentasjon. Ingen appendring etter verifisert app-head.
+
+Eksisterende mobiltilbudstest er også grønn ved 320/360/390/760/1280 px:
+åpne/lukke hovedposter, lesbare linjer/opsjoner uten overlapp, ingen sideveis scroll,
+kundemodal/tilbake og topp/bunn. Etter Sandbox-migrasjonen er ekte 19 + 5
+`demo_sandbox_preflight` / `demo_kshms_hr_course_preflight` kjørt på nytt
+17.10.2026 kl. 12:56 UTC, begge ok=true. Ingen Golden-reset eller reseed.
 
 Innlogget brukerprøve på ekstern Preview og fysisk mobil kreves fortsatt.
 Automatisk lokal Chromium med syntetisk transport er ikke bevis på det.
