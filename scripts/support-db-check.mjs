@@ -39,6 +39,7 @@ try{
  await db.exec(await fs.readFile('supabase/migrations/20261016221008_support_scheduler.sql','utf8'));
  await db.exec(await fs.readFile('supabase/migrations/20261016221255_support_queue_eligibility.sql','utf8'));
  await db.exec(await fs.readFile('supabase/migrations/20261016223601_support_overview.sql','utf8'));
+ await db.exec(await fs.readFile('supabase/migrations/20261017000117_support_preserve_inbound_message_id.sql','utf8'));
  eq((await db.query('select enabled from support_private.worker_settings')).rows[0].enabled,false,'schedule starts disabled');
  eq((await db.query("select command from cron.job where jobname='existing-worker'")).rows[0].command,'select existing_worker()','old schedule untouched');
  eq((await db.query("select schedule from cron.job where jobname='support-queue-worker'")).rows[0].schedule,'*/5 * * * *');
@@ -115,6 +116,27 @@ try{
  eq(await rpc('support_inbound_store',['in1','<in1@example.invalid>',token,'user@example.invalid','Fra e-post']),null,'webhook redelivery deduplicated');
  eq(await rpc('support_inbound_store',['in2','<in1@example.invalid>',token,'user@example.invalid','Fra e-post']),null,'Message-ID replay deduplicated');
  await actor();view=await rpc('support_get',[c,ticket]);eq(view.messages.filter(m=>m.source==='email').length,1);
+ // A notification about received mail is not the user's email in the thread.
+ await db.exec('begin;');await service();
+ const received=await rpc('support_mail_claim',[inbound]);
+ await rpc('support_mail_finish',[inbound,id(56),'accepted','notification-provider','<notification@example.invalid>']);
+ await db.exec('reset role;');
+ eq((await db.query(`select message_id from support_private.messages where id=(select message_id from support_private.outbox where id=${q(inbound)})`)).rows[0].message_id,'<in1@example.invalid>','wrong lease cannot alter received Message-ID');
+ await service();await rpc('support_mail_finish',[inbound,received.lease_id,'accepted','notification-provider','<notification@example.invalid>']);
+ await db.exec('reset role;');
+ eq((await db.query(`select message_id from support_private.messages where id=(select message_id from support_private.outbox where id=${q(inbound)})`)).rows[0].message_id,'<in1@example.invalid>','internal notification preserves original received Message-ID');
+ eq((await db.query(`select message_id from support_private.messages where id=${q(ticket)}`)).rows[0].message_id,null,'initial internal notification is not a conversation email');
+ await actor(admin);await rpc('support_reply',[c,ticket,id(92),'Reply after incoming mail',true,false]);
+ const followupQueue=await rpc('support_delivery_authorize',[c,id(92),true]);await service();
+ const followup=await rpc('support_mail_claim',[followupQueue]);
+ eq(followup.references.includes('<in1@example.invalid>'),true,'next public reply references the actual incoming email');
+ eq(followup.references.includes('<notification@example.invalid>'),false,'internal notification does not enter public thread');
+ await rpc('support_mail_finish',[followupQueue,followup.lease_id,'accepted','followup-provider','<followup@example.invalid>']);
+ await rpc('support_mail_finish',[followupQueue,followup.lease_id,'accepted','followup-provider','<replayed@example.invalid>']);
+ await db.exec('reset role;');
+ eq((await db.query(`select message_id from support_private.messages where id=${q(id(92))}`)).rows[0].message_id,'<followup@example.invalid>','public reply stores its outbound Message-ID once');
+ eq((await db.query(`select state from support_private.outbox where id=${q(inbound)}`)).rows[0].state,'accepted','notification delivery is still completed');
+ await db.exec('rollback;');
  await db.exec(`reset role;update profiles set deactivated=true where id=${q(u)};`);await service();eq(await rpc('support_mail_claim',[inbound]),null,'revoked owner cannot receive or send');
  eq(await rpc('support_inbound_store',['in3','<in3@example.invalid>',token,'user@example.invalid','Revoked']),null);await actor();await rejects(()=>rpc('support_context'));
  await service();eq((await rpc('support_mail_pending')).includes(inbound),false,'revoked owner does not occupy retry batch');
