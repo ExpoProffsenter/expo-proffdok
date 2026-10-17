@@ -183,3 +183,10 @@ jobs:
           node scripts/support-mail-check.mjs
           node scripts/support-browser-check.mjs
           node scripts/support-layout-browser-check.mjs
+
+      - name: Verify flexible checklist fields and hot-work template
+        run: |
+          export HR_PGLITE_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/@electric-sql/pglite/dist/index.js"
+          export PLAYWRIGHT_MODULE="$RUNNER_TEMP/company-admin-browser-qa/node_modules/playwright/index.mjs"
+          node scripts/flexible-checklist-fields-db-check.mjs
+          node scripts/flexible-checklist-fields-browser-check.mjs

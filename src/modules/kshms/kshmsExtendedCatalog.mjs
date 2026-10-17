@@ -7,8 +7,8 @@ export function extendedCatalog({make,IK,SAK,AML,UTF,PV,source}) {
  const TEK=law('TEK17','https://www.dibk.no/regelverk/byggteknisk-forskrift-tek17/');
  const GDPR=law('Personopplysningsloven og personvernforordningen','https://lovdata.no/lov/2018-06-15-38');
  const r=(key,title,chapter,coverage,goal,responsibility,steps,documentation,references,match='',trades=[])=>({
-  ...make(key,title,chapter,goal,responsibility,steps.map((s,i)=>`${i+1}. ${s}`).join('\n\n'),documentation,references.map(s=>({...s,checked_on:'2026-10-06'})),coverage,'Ved '+title.toLocaleLowerCase('nb-NO'),trades),
-  recommendation:match,source_revision:1,
+  ...make(key,title,chapter,goal,responsibility,steps.map((s,i)=>`${i+1}. ${s}`).join('\n\n'),documentation,references.map(s=>({...s,checked_on:key==='hot-work'?'2026-10-17':'2026-10-06'})),coverage,'Ved '+title.toLocaleLowerCase('nb-NO'),trades),
+  recommendation:match,source_revision:key==='hot-work'?2:1,
  });
  return [
  r('infection','Smittevern og trygg gjenopptakelse av arbeid',2,['K008','K009','K010','K011','K012'],
@@ -34,8 +34,8 @@ export function extendedCatalog({make,IK,SAK,AML,UTF,PV,source}) {
  r('hot-work','Varme arbeider og brannberedskap',2,['K021','U09'],
   'Hindre antennelse og brannspredning ved gnister, flamme og varme.',
   'Arbeidsleder avklarer tillatelse og sikkerhetstiltak. Utførende og brannvakt har nødvendig opplæring og eventuelle avtalekrav til sertifikat.',
-  ['Vurder om kald metode eller et egnet fast arbeidssted kan brukes. Avklar brennbart materiale, skjulte hulrom, gass og støv, samt gjeldende forsikrings-/kontraktsvilkår.', 'Fjern eller beskytt brennbart materiale og tett åpninger som kan spre gnister. Avklar eventuell midlertidig frakobling av alarm med ansvarlig; gjeninnkobling må ha en eier.', 'Kontroller slokkeutstyr og avtal brannvakt, alarm og nødadkomst før start. Gjennomfør arbeidet innenfor den godkjente planen.', 'Kontroller området og skjulte risikosteder under og etter arbeidet. Varighet på etterkontroll følger risikovurdering og aktuelle sikkerhetsforskrifter, og dokumenteres.'],
-  'Arbeidstillatelse/SJA, kompetanse, tiltak og signert etterkontroll. Sertifikat erstatter ikke vurdering av arbeidsstedet.',[UTF,IK,guide('DSB – brannsikkerhet','https://www.dsb.no/brannsikkerhet/')],'varme arbeid|sveising|flamme|gnist'),
+  ['Vurder om kald metode eller et egnet fast arbeidssted kan brukes. Avklar brennbart materiale, skjulte hulrom, gass og støv, samt gjeldende forsikrings-/kontraktsvilkår.', 'Fjern eller beskytt brennbart materiale og tett åpninger som kan spre gnister. Avklar eventuell midlertidig frakobling av alarm med ansvarlig; gjeninnkobling må ha en eier.', 'Åpne prosjektets Sjekklister og hent firmaets publiserte «Varme arbeider», felles for alle fag. Mangler firmalisten, bruker firmaadmin/KS/HMS-ansvarlig KS/HMS → Sjekklistesentral → Bruk mal: Varme arbeider, tilpasser og publiserer. Fyll ut jobb og sikkerhet, registrer utførendes og brannvaktens egen bekreftelse og lagre FØR start. Avklar signering på vedlegg for eksterne uten innlogging. Ikke start med uavklarte mangler.', 'Brannvakt overvåker under arbeidet, i pauser og etterpå, minst én time etter slutt når sikkerhetsforskriften gjelder, og lenger ved behov. Kontroller området, gjenopprett alarm og dokumenter faktisk slutt, etterkontroll og brannvaktens bekreftelse i del 3 av samme sjekkliste. Trykk Sjekkliste fullført når kontrollen er ferdig. Start ny kontroll ved ny jobb eller endrede forhold.'],
+  'Sjekklisten «Varme arbeider» med bekreftelser før start og etterkontroll, arbeidstillatelse/SJA og dokumentert kompetanse. Kontroller slokkeutstyr og sertifikatvilkår mot gjeldende forsikring. Offentlige HMS-krav, forsikringsvilkår og lokale valg har ulike grunnlag.',[UTF,IK,{...guide('Brannvernforeningen – sikkerhetsforskrift 1.1.2024','https://www.brannvernforeningen.no/sikkerhetsforskrift-for-utforelse-av-varme-arbeider-1.1.2024.pdf?pid=Native-ContentFile-File'),checked_on:'2026-10-17'}],'varme arbeid|sveising|flamme|gnist'),
  r('grinder','Bruk av vinkelsliper og kutteutstyr',2,['K023'],
   'Unngå skivesprengning, tilbakeslag, kuttskader og brann.',
   'Arbeidsleder sørger for egnet verktøy og opplæring. Bruker kontrollerer verktøy og arbeidsområde.',

@@ -1,11 +1,12 @@
-export const CHECKLIST_TRADES = ['Rørlegger','Tømrer','Elektriker','Murer/flislegger','Maler','Ventilasjon','Annet fag'];
+import {checklistFields} from '../checklist/checklistFields.mjs';
+export const CHECKLIST_TRADES = ['Felles – alle fag','Rørlegger','Tømrer','Elektriker','Murer/flislegger','Maler','Ventilasjon','Annet fag'];
 const uuid = value => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value || '');
 export const checklistDraftKey = (userId,companyId) => `expo:kshms:checklist-draft:v1:${userId}:${companyId}`;
 export function blankChecklist(makeId = () => crypto.randomUUID()) {
- return {id:makeId(),revision:0,requestId:makeId(),content:{title:'',trade:CHECKLIST_TRADES[0],instructions:'',points:[{id:makeId(),title:'',guidance:'',image_required:false,comment_required:false,subform_version_id:null}]}};
+ return {id:makeId(),revision:0,requestId:makeId(),content:{title:'',trade:'Rørlegger',instructions:'',points:[{id:makeId(),title:'',guidance:'',image_required:false,comment_required:false,subform_version_id:null}]}};
 }
 export function checklistContent(content) {
- const clean={title:String(content?.title||'').trim(),trade:content?.trade,instructions:String(content?.instructions||'').trim(),points:(content?.points||[]).map(point=>({id:String(point.id||'').toLowerCase(),title:String(point.title||'').trim(),guidance:String(point.guidance||'').trim(),image_required:point.image_required===true,comment_required:point.comment_required===true,...(point.subform_version_id?{subform_version_id:String(point.subform_version_id).toLowerCase()}:{})}))};
+ const clean={title:String(content?.title||'').trim(),trade:content?.trade,instructions:String(content?.instructions||'').trim(),points:(content?.points||[]).map(point=>({id:String(point.id||'').toLowerCase(),title:String(point.title||'').trim(),guidance:String(point.guidance||'').trim(),image_required:point.image_required===true,comment_required:point.comment_required===true,...(point.fields?.length?{fields:checklistFields(point.fields)}:{}),...(point.allow_na===false?{allow_na:false}:{}),...(point.subform_version_id?{subform_version_id:String(point.subform_version_id).toLowerCase()}:{})}))};
  if(!clean.title || clean.title.length>160)throw new Error('Skriv et navn på sjekklisten (inntil 160 tegn).');
  if(!CHECKLIST_TRADES.includes(clean.trade))throw new Error('Velg fag for sjekklisten.');
  if(clean.instructions.length>4000 || !clean.points.length || clean.points.length>100)throw new Error('Legg inn 1–100 sjekkpunkter. Beskrivelsen kan ha inntil 4000 tegn.');
@@ -66,7 +67,7 @@ export function projectChecklistTemplate(instances=[]) {
  const categories=new Set();
  return (Array.isArray(instances)?instances:[]).flatMap(instance=>{
   try{const content=checklistSnapshot(instance.content);if(!instance.category||categories.has(instance.category))return [];categories.add(instance.category);
-   return [{category:instance.category,trade:content.trade,instructions:content.instructions,items:content.points.map(point=>point.title),requirements:Object.fromEntries(content.points.map(point=>[point.title,{image_required:point.image_required,comment_required:point.comment_required,guidance:point.guidance}]))}];
+   return [{category:instance.category,trade:content.trade,instructions:content.instructions,items:content.points.map(point=>point.title),requirements:Object.fromEntries(content.points.map(point=>[point.title,{image_required:point.image_required,comment_required:point.comment_required,guidance:point.guidance,...(point.fields?.length?{fields:point.fields}:{}),...(point.allow_na===false?{allow_na:false}:{})}]))}];
   }catch{return [];}
  });
 }

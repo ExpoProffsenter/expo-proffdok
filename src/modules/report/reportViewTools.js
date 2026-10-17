@@ -1,3 +1,4 @@
+import {projectFieldReport} from '../checklist/checklistFields.mjs';
 // FASE 25B AVTALESUM I RAPPORT: Rapport og kunderapport viser opprinnelig og gjeldende avtalesum inkl. mva. basert på strukturerte tillegg/fradrag. Eksisterende vedlegg og legacy-sammendrag beholdes.
 // FASE 24Q RAPPORTVISNING FAG/UTSTYR-BILDER: Viser eksisterende bilder fra Fag, deler og utstyr også direkte i Rapport-fanen. PDF-logikk, bildeopplasting, lagring og øvrig rapportinnhold er uendret.
 import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
@@ -18,7 +19,7 @@ export function createReportViewTools({
   publicProjectFileUrl,
   buildBathroomEquipmentReportGroups
 }) {
-  function ChecklistReportSection({ checklist, projectDeviations = [] }) {
+  function ChecklistReportSection({ checklist, project, projectDeviations = [] }) {
     const rows = [];
     Object.entries(checklist || {}).forEach(([category, items]) => {
       Object.entries(items || {}).forEach(([item, value]) => {
@@ -94,6 +95,7 @@ export function createReportViewTools({
                     /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: r.item }),
                     /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { style: { color: meta.color, fontWeight: 800, whiteSpace: "nowrap" }, children: meta.label })
                   ] }),
+                  projectFieldReport(project,r.category,r.item,r).map(([label,answer])=>(0, import_jsx_runtime.jsxs)("p", {children:[label,": ",answer]},label)),
                   r.comment && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { style: { margin: "6px 0 0" }, children: [
                     /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: r.status === "Avvik" || r.status === "Lukket avvik" ? "Opprinnelig avvik: " : "Kommentar: " }),
                     r.comment
@@ -137,7 +139,8 @@ export function createReportViewTools({
               r.item
             ] })
           ] }),
-          r.comment && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
+          projectFieldReport(project,r.category,r.item,r).map(([label,answer])=>(0, import_jsx_runtime.jsxs)("p", {children:[label,": ",answer]},label)),
+                  r.comment && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Opprinnelig avvik: " }),
             r.comment
           ] }),
@@ -382,7 +385,7 @@ function BathroomEquipmentReportSection({ surf, bathroomEquipment }) {
           ] }) })
         ] }, m.id))
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChecklistReportSection, { checklist, projectDeviations: (Array.isArray(project?.projectDeviations) ? project.projectDeviations : []).filter(row => !(kshmsReport?.ruhs || []).some(ruh => ruh.id === row.ks_deviation_id)) }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChecklistReportSection, { checklist, project, projectDeviations: (Array.isArray(project?.projectDeviations) ? project.projectDeviations : []).filter(row => !(kshmsReport?.ruhs || []).some(ruh => ruh.id === row.ks_deviation_id)) }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(KshmsReportDocuments, { data: kshmsReport }),
       tilbud?.enabled && (hasValue(tilbud.tillegg) || hasValue(tilbud.fradrag) || hasValue(tilbud.kommentar) || (tilbud.files || []).length > 0 || (tilbud.changes || []).length > 0) && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Tilbud / kontrakt" }),
@@ -585,7 +588,7 @@ function BathroomEquipmentReportSection({ surf, bathroomEquipment }) {
           ] }) })
         ] }, m.id))
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChecklistReportSection, { checklist, projectDeviations: project?.projectDeviations || [] }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChecklistReportSection, { checklist, project, projectDeviations: project?.projectDeviations || [] }),
       (files || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Sjekklister og vedlegg" }),
         files.map((f) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: f.name }, f.id))

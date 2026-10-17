@@ -1,3 +1,4 @@
+import {fieldProblem,verifyFieldReadback} from './checklistFields.mjs';
 export const checklistRunDraftKey = (userId,companyId,projectId,category) =>
  `expo:checklist-run:v1:${userId}:${companyId||'local'}:${projectId||'new'}:${category}`;
 export function readRunDraft(storage,key) {
@@ -14,7 +15,7 @@ export function runDefinition(group,instances=[],warrantyPoint=false) {
 export function answersForDefinition(definition,answers={},fresh=false) {
  return Object.fromEntries(definition.items.map(item=>{
   const value=answers?.[item]||{};
-  return [item,fresh&&!value.ks_deviation_id&&value.status!=='Avvik'?{}:{...value,photos:[...(value.photos||[])]}];
+  return [item,fresh&&!value.ks_deviation_id&&value.status!=='Avvik'?{}:{...value,photos:[...(value.photos||[])],...(fresh&&definition.requirements?.[item]?.fields?{values:{}}:{})}];
  }));
 }
 export function currentRunAnswers(run,checklist={}) {
@@ -27,7 +28,8 @@ export function completionProblem(definition,answers) {
  for(const item of definition.items){
   const answer=answers[item]||{},required=definition.requirements?.[item]||{};
   if(!answer.status)return `Vurder punktet «${item}» før du fullfører.`;
-  if(answer.status==='Ikke aktuelt')continue;
+  if(answer.status==='Ikke aktuelt'){if(required.allow_na===false)return `Punktet «${item}» kan ikke markeres som ikke aktuelt.`;continue;}
+  const missing=fieldProblem(required.fields,answer.values);if(missing)return `Fyll ut «${missing.label}» i «${item}».`;
   const photo=(answer.photos||[]).some(value=>String(value.url||'').trim()),comment=String(answer.comment||'').trim();
   if(required.documentation_either&&!photo&&!comment)return `Legg til bilde eller kommentar på «${item}».`;
   if(!required.documentation_either&&required.image_required&&!photo)return `Legg til bilde på «${item}».`;
@@ -48,5 +50,6 @@ export async function commitChecklistRun({companyId,projectId,userId,draft,actio
   ||row?.company_id!==companyId||row.project_id!==projectId||row.revision!==result.run?.revision||row.status!==expected
   ||!sameRunValue(row.definition,draft.definition)||!sameRunValue(row.answers,result.run.answers))
   throw new Error('Lagringen kunne ikke bekreftes. Kladden er beholdt. Prøv samme lagring igjen.');
+ for(const item of draft.definition.items)if(draft.definition.requirements?.[item]?.fields)verifyFieldReadback(draft.definition.requirements[item].fields,draft.answers[item]?.values,row.answers[item]?.values,userId);
  return {state,run:row,answers:result.answers};
 }

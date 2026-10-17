@@ -1,3 +1,4 @@
+import {projectFieldReport} from '../checklist/checklistFields.mjs';
 import {
   createReportGenerationStamp,
   resolveReportWarrantyReceipt,
@@ -1329,6 +1330,8 @@ export function createReportTools(deps = {}) {
             }
             y += rowH + 4.5;
           }
+
+          for(const [label,answer] of projectFieldReport(project,category,item,value))addParagraph(`${label}: ${answer}`, {size:8.5,lineHeight:4.4});
 
           if (pointPhotos.length) {
             ensureSpace(48);

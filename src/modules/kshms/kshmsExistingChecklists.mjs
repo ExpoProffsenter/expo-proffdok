@@ -14,7 +14,7 @@ export function existingChecklistCatalog({projects=[],checkpoints=[]}={}){
  const seen=new Set();
  for(const project of projects){const trades=new Map();for(const point of project.custom||[]){const trade=String(point.trade||point.fag||'Annet fag'),text=String(point.text||point.item||point.title||'').trim();if(!text)continue;if(!trades.has(trade))trades.set(trade,[]);if(!trades.get(trade).includes(text))trades.get(trade).push(text);}
   const definitions=[...trades].map(([trade,items])=>({title:`Egne prosjektpunkter – ${trade}`,trade,groups:[{category:trade,items}],instructions:''}));
-  for(const instance of project.instances||[]){const c=instance.content;if(!c?.points?.length)continue;definitions.push({title:c.title,trade:c.trade,instructions:c.instructions||'',groups:[{category:c.title,items:c.points.map(p=>p.title),requirements:Object.fromEntries(c.points.map(p=>[p.title,{guidance:p.guidance||'',image_required:p.image_required===true,comment_required:p.comment_required===true}]))}]});}
+  for(const instance of project.instances||[]){const c=instance.content;if(!c?.points?.length)continue;definitions.push({title:c.title,trade:c.trade,instructions:c.instructions||'',groups:[{category:c.title,items:c.points.map(p=>p.title),requirements:Object.fromEntries(c.points.map(p=>[p.title,{guidance:p.guidance||'',image_required:p.image_required===true,comment_required:p.comment_required===true,...(p.fields?.length?{fields:p.fields}:{}),...(p.allow_na===false?{allow_na:false}:{})}]))}]});}
   for(const d of definitions){const key=JSON.stringify(d);if(seen.has(key))continue;seen.add(key);const warranty=/sopro.*garanti|garantipunkt/i.test(d.title);rows.push(row(`project:${project.id}:${definitions.indexOf(d)}`,d.title,CHECKLIST_TRADES.includes(d.trade)?d.trade:'Annet fag',d.groups,warranty?'warranty':'project',d.instructions));}
  }
  return freeze(rows);
@@ -22,7 +22,7 @@ export function existingChecklistCatalog({projects=[],checkpoints=[]}={}){
 export function existingChecklistDraft(rows,id,makeId=()=>crypto.randomUUID()){
  const source=rows.find(row=>row.id===id);if(!source||source.locked||source.kind==='warranty'||/^warranty/.test(source.id))throw new Error('Garantipunkter er låst og kan ikke kopieres til en redigerbar sjekkliste.');
  const draft=blankChecklist(makeId),titles=new Set(),points=[];
- for(const group of source.groups)for(const title of group.items){if(titles.has(title))continue;titles.add(title);const r=group.requirements?.[title]||{};points.push({id:makeId(),title,guidance:[source.id==='standard:wetroom'?group.category:'',r.guidance||''].filter(Boolean).join(' · '),image_required:r.image_required===true,comment_required:r.comment_required===true,subform_version_id:null});}
+ for(const group of source.groups)for(const title of group.items){if(titles.has(title))continue;titles.add(title);const r=group.requirements?.[title]||{};points.push({id:makeId(),title,guidance:[source.id==='standard:wetroom'?group.category:'',r.guidance||''].filter(Boolean).join(' · '),image_required:r.image_required===true,comment_required:r.comment_required===true,...(r.fields?.length?{fields:structuredClone(r.fields)}:{}),...(r.allow_na===false?{allow_na:false}:{}),subform_version_id:null});}
  draft.content=checklistContent({title:source.title,trade:source.trade,instructions:source.instructions||'Tilpasset fra eksisterende prosjektmal. Prosjektenes originale lister og svar beholdes.',points});return draft;
 }
 export async function loadExistingChecklists({client,companyId,userId,checkContext,isCurrent=()=>true}){
