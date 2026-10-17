@@ -23,6 +23,7 @@ fs.writeFileSync(path.join(temp,'entry.jsx'),`
 import React,{useState} from '${cwd}/node_modules/react/index.js';
 import {createRoot} from '${cwd}/node_modules/react-dom/client.js';
 import * as jsxRuntime from '${cwd}/node_modules/react/jsx-runtime.js';
+import {continueAfterProjectSave} from '${cwd}/src/modules/project/projectStepContinue.mjs';
 import {createProjectOverviewTools} from '${cwd}/src/modules/project/projectOverviewTools.js';
 import Chrome,{ProjectHeaderActions,ProjectStatusDialog} from '${cwd}/src/modules/project/ProjectWorkspaceChrome.jsx';
 import {createProjectWorkspaceTabs} from '${cwd}/src/modules/project/projectNavigationTabs.mjs';
@@ -39,17 +40,18 @@ const Section=({title,children,className})=><section className={className}><h2>{
 const Select=({label,value,onChange,options,disabled})=><label>{label}<select aria-label={label} value={value} disabled={disabled} onChange={e=>onChange(e.target.value)}>{options.map(v=><option key={v}>{v}</option>)}</select></label>;
 const tools=createProjectOverviewTools({Section,Grid:({children})=><div>{children}</div>,InfoCard:()=>null,CollapsibleBlock:({children})=><div>{children}</div>,Textarea:()=>null,hasValue:Boolean});
 function App(){
- const [kind,setKind]=useState('wetroom'),[tab,setTab]=useState('prosjekt'),[draft,setDraft]=useState(''),[statusOpen,setStatusOpen]=useState(false),[project,setProject]=useState({projectName:'Prosjekt ved Elveparken',customer:'QA Kunde',address:'Testveien 1',postnr:'0001',city:'Oslo',customerEmail:'qa@example.invalid',customerPhone:'90000000',responsible:'QA Leder',salesOrigin:{acceptedTotal:10000},workflowStatus:'Pågår'});
+ const [kind,setKind]=useState('wetroom'),[tab,setTab]=useState('prosjekt'),[draft,setDraft]=useState(''),[statusOpen,setStatusOpen]=useState(false),[continuing,setContinuing]=useState(false),[continueNotice,setContinueNotice]=useState(''),[project,setProject]=useState({projectName:'Prosjekt ved Elveparken',customer:'QA Kunde',address:'Testveien 1',postnr:'0001',city:'Oslo',customerEmail:'qa@example.invalid',customerPhone:'90000000',responsible:'QA Leder',salesOrigin:{acceptedTotal:10000},workflowStatus:'Pågår'});
  window.changeKind=kind=>{setKind(kind);setTab('prosjekt');setStatusOpen(false);};
  const order=kind==='order',readOnly=kind==='support',saved=kind!=='new';
  const tabs=createProjectWorkspaceTabs({isNewProject:!saved,hasSalesOrigin:kind!=='direct'&&saved,openDeviationCount:2,unreadForAdmin:3,canUseKshms:true});
  const goToTab=async id=>{window.navCalls.push(id);if(window.cancelNavigation)return false;setTab(id);setStatusOpen(false);scrollToTarget(id);return true;};
+ const continueNext=async id=>{setContinuing(true);setContinueNotice('');try{return await continueAfterProjectSave({save:async()=>{if(window.holdSave)await new Promise(resolve=>window.finishSave=resolve);return window.saveWorks?{ok:true,projectId:'qa'}:undefined;},navigate:()=>goToTab(id),isCurrent:()=>true,events:window,onFailure:()=>setContinueNotice('Lagringen er ikke bekreftet.')});}finally{setContinuing(false);}};
  const scope={projectId:saved?'qa':null,ProjectStatusDialog,import_jsx_runtime:jsxRuntime,Section,Select,import_lucide_react:{BadgeCheck:()=>null,ClipboardCheck:()=>null},mobileStatusOpen:statusOpen,setMobileStatusOpen:setStatusOpen,project,setProject,tab,currentStatus:{icon:'🟡',label:'Pågår',tone:'progress'},projectGuideStats:{openDeviationCount:2,completionPercent:88,productCount:2,photoCount:3,checklistDone:1,checklistMissing:3,hasOvertagelse:false},unreadForAdmin:3,statusStyle:()=>({}),openActiveDeviations:()=>goToTab('avvik'),isProjectLocked:false,isProjectSupportReadOnly:readOnly,workflowStatusOptions:['Pågår','Avventer'],suggestedWorkflowStatus:'Avventer',persistedProjectHasOvertagelse:false,overtagelse:{},overtagelseHasDraftContent:()=>true,overtagelseIsSignedByBoth:()=>false,projectHasOvertagelse:()=>false,totalChatCount:5,customerChatCount:2,latestChatMessage:null,projectGuideItems:[{id:'photo',label:'Kontroller bilder',tone:'missing'}],openProjectGuideItem:()=>goToTab('bilder')};
  return <div data-expo-project-shell="1"><header><div className="head"><div style={{width:260,height:80}}>Expo Proffsenter</div><div><h1>Expo ProffDok</h1></div><button onClick={()=>window.exits++}>← Til startside</button><ProjectHeaderActions dirty={!!draft} saved={saved} readOnly={readOnly} simpleOrder={order} locked={kind==='locked'} onNew={()=>window.newProjects++} onSave={()=>window.saves++} onCopy={()=>window.copies++} onPdf={()=>window.pdfs++} onLock={value=>window.locks.push(value)}/><div id="expo-work-profile-switcher"><div className="workProfileControl"><button className="workProfileButton"><span><small>Representerer</small><b>Et firma med et langt navn</b></span></button></div></div></div>{sourceNav(jsxRuntime,tabs,tab,goToTab)}</header>
- <Chrome tabs={tabs} activeTab={tab} project={project} saved={saved} simpleOrder={order} status={scope.currentStatus} deviations={2} unread={3} onNavigate={goToTab} onStatus={()=>setStatusOpen(true)} onExit={()=>window.exits++}/>
+ <Chrome tabs={tabs} activeTab={tab} project={project} saved={saved} simpleOrder={order} status={scope.currentStatus} deviations={2} unread={3} onContinue={continueNext} continuing={continuing} continueNotice={continueNotice} readOnly={readOnly||kind==='locked'} onNavigate={goToTab} onStatus={()=>setStatusOpen(true)} onExit={()=>window.exits++}/>
  <main>{actualStatus(scope)}{tab==='prosjekt'&&tools.renderProjectOverviewPanel({project:{...project,workflowType:order?'simple_order':'wetroom'},goToTab,leaveProjectWorkspace:()=>window.exits++})}<h2>Arbeidsinnhold: {tab}</h2><label>Kladd<textarea aria-label="Kladd" value={draft} onChange={e=>setDraft(e.target.value)}/></label></main></div>;
 }
-window.navCalls=[];window.newProjects=0;window.saves=0;window.copies=0;window.pdfs=0;window.exits=0;window.locks=[];window.cancelNavigation=false;
+window.saveWorks=true;window.holdSave=false;window.navCalls=[];window.newProjects=0;window.saves=0;window.copies=0;window.pdfs=0;window.exits=0;window.locks=[];window.cancelNavigation=false;
 createRoot(document.getElementById('app')).render(<App/>);
 installDesktopSideMenu();installProjectWorkspaceHeaderGuide();installProjectWorkflowUx();
 `);
@@ -69,7 +71,7 @@ try{
  eq(await nav.getByRole('button',{name:'Oversikt',exact:true}).count(),1,'overview exists once');
  eq(await nav.getByRole('button',{name:'Bilder',exact:true}).count(),0,'other phase hidden');
  eq((await page.locator('.head').boundingBox()).height<=80,true,'desktop app header stays in one compact row');
- eq((await page.locator('.project-workspace').boundingBox()).height<310,true,'project context stays compact');
+ eq((await page.locator('.project-workspace').boundingBox()).height<440,true,'project context and requested step guide stay compact');
  eq(await page.getByText('Prosjekt ved Elveparken',{exact:true}).count(),1,'project name shown once');
  eq(await page.getByText('QA Kunde · Testveien 1 0001 Oslo',{exact:true}).count(),1,'full customer address stays in heading');
  eq(await page.locator('.project-contact-overview .guideCard').count(),4,'overview prioritizes four contact/financial fields');
@@ -80,7 +82,20 @@ try{
   eq(await page.locator('.project-contact-overview').getByText('qa@example.invalid',{exact:true}).isVisible(),true,'contact email retained '+width);
  }
  await page.setViewportSize({width:1363,height:1000});
-
+ eq(await nav.locator('.project-workspace-tabs button').allTextContents().then(labels=>labels.map(text=>text.replace(/^[1-5]/,'').replace('Ved behov','').replace('Historikk','').trim())),['Oversikt','Prosjektbeskrivelse','Avtalegrunnlag','Prosjektering','Fremdrift','Salgsgrunnlag'],'numbered order keeps history separate');
+ eq(await page.getByRole('region',{name:'Anbefalt neste steg'}).getByText('Steg 1 av 5 · Oversikt',{exact:true}).isVisible(),true,'current setup position explicit');
+ await button('Lagre og fortsett →').click();
+ await page.getByText('Steg 2 av 5 · Prosjektbeskrivelse',{exact:true}).waitFor();
+ eq(await page.evaluate(()=>window.navCalls.at(-1)),'prosjektinfo','visible continue button uses next setup step');
+ await page.evaluate(()=>window.saveWorks=false);await button('Lagre og fortsett →').click();
+ await page.getByText('Lagringen er ikke bekreftet.',{exact:true}).waitFor();
+ eq(await page.evaluate(()=>window.navCalls.at(-1)),'prosjektinfo','failed save stays at same step');
+ await page.evaluate(()=>{window.saveWorks=true;window.holdSave=true;});await button('Lagre og fortsett →').click();
+ eq(await button('Lagrer …').isEnabled(),false,'saving button blocks duplicate clicks');
+ await nav.getByRole('button',{name:'Oversikt',exact:true}).click();
+ await page.evaluate(()=>{window.holdSave=false;window.finishSave();});
+ await button('Lagre og fortsett →').waitFor();
+ eq(await page.evaluate(()=>window.navCalls.at(-1)),'prosjekt','delayed save never overrides explicit tab choice');
  await nav.getByRole('button',{name:'Overlevering og garanti',exact:true}).click();
  await nav.getByRole('button',{name:'Garanti',exact:true}).click();
  eq(await page.evaluate(()=>window.navCalls.at(-1)),'garanti','warranty remains reachable through explicit phase');
@@ -115,6 +130,15 @@ try{
   await status.press('Escape');
  }
  await page.setViewportSize({width:390,height:1000});
+ const fieldBar=page.getByRole('navigation',{name:'Prosjektverktøy på mobil',exact:true});
+ await page.evaluate(()=>window.scrollTo(0,300));
+ eq(await fieldBar.isVisible(),true,'field bar stays visible after scrolling');
+ eq((await fieldBar.boundingBox()).y+(await fieldBar.boundingBox()).height<=1000,true,'field bar fits visible screen');
+ await fieldBar.getByRole('button',{name:'Sjekklister',exact:true}).click();
+ eq(await page.evaluate(()=>window.navCalls.at(-1)),'sjekklister','field user opens checklists in one click');
+ await fieldBar.getByRole('button',{name:'Bilder',exact:true}).click();
+ await fieldBar.getByRole('button',{name:'Meny',exact:true}).click();
+ await page.getByRole('dialog').press('Escape');
  await button(/Prosjektmeny/).click();
  await page.evaluate(()=>window.cancelNavigation=true);
  await page.getByRole('dialog').getByRole('button',{name:'Prosjektbeskrivelse',exact:true}).click();

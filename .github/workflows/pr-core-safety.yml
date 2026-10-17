@@ -155,6 +155,16 @@ jobs:
           node scripts/kshms-progress-timeline-check.mjs
           node scripts/kshms-progress-react-check.mjs
 
+      - name: Verify guided projects and mobile checklists
+        run: |
+          export KSHMS_JSDOM_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/jsdom/lib/api.js"
+          export PLAYWRIGHT_MODULE="$RUNNER_TEMP/company-admin-browser-qa/node_modules/playwright/index.mjs"
+          node scripts/project-step-save-check.mjs
+          node scripts/project-workspace-browser-check.mjs
+          node scripts/project-checklist-resume-react-check.mjs
+          node scripts/project-checklist-workspace-react-check.mjs
+          node scripts/project-menu-return-react-check.mjs
+
       - name: Verify private support cases and two-way mail boundaries
         run: |
           export HR_PGLITE_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/@electric-sql/pglite/dist/index.js"

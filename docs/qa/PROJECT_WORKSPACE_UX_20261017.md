@@ -101,3 +101,49 @@ og eksisterende prosjektmeny-retur PASS etter selve kodejusteringen.
 Brukerprøve: Åpne vanlig prosjekt → Overlevering og garanti → Garanti.
 Kontroller at arbeidsinnholdet begynner høyere, kontakt-/økonomifeltene fortsatt
 vises og at enkle ordrer har tilsvarende kompakt layout med sitt funksjonsutvalg.
+
+## Veiledet oppstart og feltbruk – bestilt kl. 02:54
+
+Scope utvidet av Kenneth: tydelig rekkefølge ved prosjektopprettelse og rask
+tilgang til sjekklister på mobil. Implementert i samme PR/faste Preview, fortsatt
+utestet av bruker. main.jsx får ny lagringsretur og avgrenset fortsett-handler.
+Eksisterende saveProject-writes, goToTab og de ordinære lagringsbekreftelsene
+beholdes. Kun forStep-handlingen bruker ekstra readback-/snapshotkontroll.
+
+- Oppstart har 5 nummererte steg; enkel ordre har 3. Avtalegrunnlag, Prosjektering
+  og Fremdrift er Ved behov; Salgsgrunnlag er separat historikk uten stegnummer.
+- Lagre og fortsett viser neste mål. Nytt prosjekt bruker bekreftet server-ID.
+  Nyere kladd, feil, endret kontekst, dobbeltklikk eller ny pointer-/tastatur-
+  handling under venting skal ikke rydde kladd eller tvinge navigasjon.
+  Nyopprettet ID beholdes ved avbrudd i samme arbeidsflate, så retry ikke lager
+  en ny rad. Ulagret fremdriftsplan behandles i eksisterende planbygger.
+- Fast mobilfelt har Oversikt, Sjekklister, Bilder, Avvik og Meny. Det er synlig
+  etter rulling og har plass til safe-area. Chat, PDF og øvrig innhold finnes
+  i samme prosjektmeny. Nye prosjekter må lagres før feltverktøyene aktiveres.
+- Påbegynte sjekklister står først med Fortsett utfylling. Originale Åpne-
+  knapper, filtre, begin(), fullskjermdialog, lagring/konflikt, historikk, fullført
+  kontroll og lesetilgang beholdes. En tom lokal init blir ikke et påbegynt arbeid.
+
+Verifikasjon: project-step-save-check 98 assertions PASS med faktisk saveProject
+og continueProjectStep fra main; project-workspace-browser-check 95 assertions
+PASS ved 1363/768/390/320 px; project-checklist-resume-react-check 12 assertions
+PASS. Original project-checklist-workspace-react-check PASS uendret. Full
+critical/build PASS. Apphodegrensen <=80 px beholdes; prosjektkortgrensen i den
+nye testen er endret fra <310 til <440 px fordi brukerbestilt veiledning nå
+ligger der. Testen krever samtidig at steg og neste mål er synlige. Ingen eldre
+critical-check er endret eller svekket. Den ekstra CI-jobben kjører alle nye
+kontroller samt gamle sjekkliste- og prosjektmeny-returer.
+
+Brukerprøve i fast Preview:
+1. Nytt prosjekt → fyll inn kunde/prosjekt → Lagre og fortsett. Samme prosjekt
+   skal åpne Prosjektbeskrivelse. Valgfrie steg og neste mål skal være tydelige.
+2. Enkel ordre skal vise kortere løp, uten våtromssteg eller garanti.
+3. Mobil: rull ned, trykk Sjekklister i fastmenyen. Samme prosjekt skal åpnes.
+   Velg Fortsett utfylling på en påbegynt liste og prøv utklipp/appbytte.
+4. Bruk Meny for Chat/Rapport og andre funksjoner. Originale funksjoner og
+   lagringskrav skal være tilgjengelige. Ny TEST OK kreves før merge.
+
+Presisering: Avtalegrunnlag merkes For garanti når garanti er aktivert/utstedt,
+og vises da ikke som valgfritt. Kontrakts- og garantigatene er uendret.
+Nye tester bekrefter dette. Ekstra lagringsvernet hindrer også at et sent svar
+rydder eller erstatter nyere feltinnhold; testene bruker faktisk saveProject.

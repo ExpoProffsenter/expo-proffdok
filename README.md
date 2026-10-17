@@ -918,3 +918,16 @@ og full adresse står i toppfeltet; intern oversikt gjentar dem ikke, men behold
 telefon, e-post, prosjektansvarlig og akseptert sum inkl. mva. Kundeportalens
 ProjectInformationReadOnly og rapportdata er urørt. Vanlige prosjekter viser
 «Overlevering og garanti»; enkle ordrer beholder «Overlevering» uten garanti.
+
+Prosjektflyt 17.10: Nummererte oppstartssteg, Ved behov-merker og Salgsgrunnlag
+som historikk gir anbefalt rekkefølge. Lagre og fortsett bruker eksisterende
+lagring med et eksplisitt bekreftet resultat. Bare denne nye handlingen krever
+kontroll av hele prosjektinnholdet mot returdata (serverens firma-/bruker-
+snapshots kan normaliseres). Feil, nyere kladd, firmabytte eller senere bruker-
+handling stopper fortsettelsen. Ved nyopprettet rad beholdes ID ved avbrudd for
+å unngå duplikat ved retry. Vanlige Lagre/Oppdater-knapper og bekreftelser er
+beholdt. Ulagret fremdriftsplan må lagres i den eksisterende planbyggeren.
+Fast mobilmeny: Oversikt, Sjekklister, Bilder, Avvik, Meny. Påbegynte sjekklister
+vises først og åpner eksisterende begin/dialog/kladd-logikk. Fullførte kontroller
+og lesetilgang endres ikke. Ingen SQL-, backend-, rapport- eller e-postendring.
+CI er utvidet med faktiske lagrings-/mobil-/fortsett-tester; gamle tester beholdes.

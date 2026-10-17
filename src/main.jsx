@@ -1,3 +1,4 @@
+import { continueAfterProjectSave, projectStepDataConfirmed } from './modules/project/projectStepContinue.mjs';
 import ProjectWorkspaceChrome, { ProjectHeaderActions, ProjectStatusDialog } from './modules/project/ProjectWorkspaceChrome.jsx';
 import SupportLinkEntry from './modules/support/SupportLinkEntry.jsx';
 import WorkdayShortcuts from './modules/home/WorkdayShortcuts.jsx';
@@ -887,6 +888,12 @@ const HomeFollowups = React.lazy(() => import('./modules/home/HomeFollowups.jsx'
     const dirtyTrackingResumeTimerRef = (0, import_react.useRef)(null);
     const projectDirtyRef = (0, import_react.useRef)(false);
     const progressPlanDirtyRef = (0, import_react.useRef)(false);
+    const projectStepContextRef = (0, import_react.useRef)(null);
+    const projectStepBusyRef = (0, import_react.useRef)(false);
+    const projectStepAliveRef = (0, import_react.useRef)(true);
+    const [projectStepBusy, setProjectStepBusy] = (0, import_react.useState)(false);
+    const [projectStepNotice, setProjectStepNotice] = (0, import_react.useState)("");
+    (0, import_react.useEffect)(() => { projectStepAliveRef.current = true; return () => { projectStepAliveRef.current = false; }; }, []);
     const projectDirtyInitializedRef = (0, import_react.useRef)(false);
     const dirtyBaselineRef = (0, import_react.useRef)("");
     const newProjectTouchedRef = (0, import_react.useRef)(false);
@@ -1952,6 +1959,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       canUseAdminProjectSync
     });
     const tabs = hasActiveProjectWorkspace ? projectTabs : globalTabs;
+    projectStepContextRef.current = { projectId, tab, userId: authUser?.id, companyName: company.companyName, readOnly: isProjectSupportReadOnly, locked: isProjectLocked };
     const mobilePrimaryTabs = hasActiveProjectWorkspace ? [
       ["prosjekt", "Oversikt", "📋"],
       ["prosjektering", "Prosjektering", "📐"],
@@ -3785,7 +3793,7 @@ Kunde, adresse, bilder, chat, signaturer, avvik og utfylte sjekklistestatuser bl
         alert("Kunne ikke lagre melding: " + (error?.message || "Ukjent feil"));
       }
     };
-    const saveProject = async () => {
+    const saveProject = async (options = {}) => {
       if (!authUser) return alert("Du m\xE5 v\xE6re logget inn for \xE5 lagre prosjekt.");
       if (isProjectSupportReadOnly) return notifySupportProjectReadOnly();
       const snapshot = {
@@ -3809,6 +3817,19 @@ Kunde, adresse, bilder, chat, signaturer, avvik og utfylte sjekklistestatuser bl
         warranty,
         projectLog,
         internalNotes
+      };
+      const sourceFingerprint = projectDirtyFingerprint(latestStateRef.current || {});
+      const mayApplyStepResult = (id) => !options.forStep || (
+        (!options.canApplyResult || options.canApplyResult({ ok: true, projectId: id })) &&
+        sourceFingerprint === projectDirtyFingerprint(latestStateRef.current || {})
+      );
+      const retainCreatedIdentity = (row) => {
+        const current = projectStepContextRef.current;
+        if (current?.projectId === projectId && current?.userId === authUser.id && current?.tab === tab) {
+          setProjectId(row.id);
+          setCurrentProjectOwnerId(row.user_id || authUser.id);
+          setMobileCreatingProject(false);
+        }
       };
       const makeCleanData = (projectOverride = snapshot.project, projectLogOverride = snapshot.projectLog) => JSON.parse(JSON.stringify({
         company: snapshot.company,
@@ -3902,11 +3923,14 @@ Kunde, adresse, bilder, chat, signaturer, avvik og utfylte sjekklistestatuser bl
               return alert("⚠️ Prosjektet ble oppdatert, men begge overtagelsessignaturene kunne ikke bekreftes på server. Ikke forlat overtagelsen. Prøv Lagre overtagelse på nytt, og kontakt support hvis meldingen gjentas.");
             }
           }
+          if (options.forStep && !projectStepDataConfirmed(cleanData, dataFromRow(updatedRow))) return alert("Lagringen kunne ikke bekreftes for hele prosjektinnholdet. Du står på samme steg. Kladden er beholdt.");
+          if (!mayApplyStepResult(updatedRow.id)) return { ok: false, projectId: updatedRow.id };
           unpackData(dataFromRow(updatedRow), false);
           setProjectId(updatedRow.id);
           await loadProjects(authUser);
           resetProjectDirty();
-          return alert(shouldVerifyBothSignatures ? "✅ Begge overtagelsessignaturer er bekreftet lagret på server." : "\u2714 Prosjekt oppdatert og bekreftet lagret");
+          if (!options.forStep) alert(shouldVerifyBothSignatures ? "✅ Begge overtagelsessignaturer er bekreftet lagret på server." : "\u2714 Prosjekt oppdatert og bekreftet lagret");
+          return { ok: true, projectId: updatedRow.id };
         }
         const shouldCopy = window.confirm(
           "Prosjektet ble ikke oppdatert automatisk. Dette kan skyldes tilgang til et eldre prosjekt.\n\nVil du lagre dette som en ny oppdatert kopi n\xE5, slik at endringene ikke g\xE5r tapt?"
@@ -3932,13 +3956,16 @@ Kunde, adresse, bilder, chat, signaturer, avvik og utfylte sjekklistestatuser bl
           console.error(copyError);
           return alert("Kunne ikke lagre kopi heller: " + copyError.message);
         }
+        if (!mayApplyStepResult(copyRow.id)) { retainCreatedIdentity(copyRow); return { ok: false, projectId: copyRow.id }; }
         setProjectId(copyRow.id);
         setCurrentProjectOwnerId(copyRow.user_id || authUser.id);
         setSupportModeExplicit(false);
+        if (options.forStep && !projectStepDataConfirmed(cleanData, dataFromRow(copyRow))) return alert("Kopien er opprettet, men hele innholdet kunne ikke bekreftes. Du står på samme steg. Kladden er beholdt.");
         unpackData(dataFromRow(copyRow), false);
         await loadProjects(authUser);
         resetProjectDirty();
-        return alert("\u2714 Gammel rad kunne ikke oppdateres, men prosjektet er lagret som ny oppdatert kopi.");
+        alert("\u2714 Gammel rad kunne ikke oppdateres, men prosjektet er lagret som ny oppdatert kopi.");
+        return { ok: true, projectId: copyRow.id };
       } else {
         const newProjectData = {
           ...emptyProject(),
@@ -3967,15 +3994,50 @@ Kunde, adresse, bilder, chat, signaturer, avvik og utfylte sjekklistestatuser bl
           console.error(error);
           return alert("Kunne ikke lagre i sky: " + error.message);
         }
+        if (!mayApplyStepResult(data.id)) { retainCreatedIdentity(data); return { ok: false, projectId: data.id }; }
         setProjectId(data.id);
         setCurrentProjectOwnerId(data.user_id || authUser.id);
         setSupportModeExplicit(false);
         setMobileCreatingProject(false);
+        if (options.forStep && !projectStepDataConfirmed(makeCleanData(newProjectData, newProjectLog), dataFromRow(data))) return alert("Prosjektet er opprettet, men hele innholdet kunne ikke bekreftes. Du står på samme steg. Kladden er beholdt.");
         unpackData(dataFromRow(data), false);
         resetProjectDirty();
-        alert("\u2714 Prosjekt lagret");
+        if (!options.forStep) alert("\u2714 Prosjekt lagret");
+        loadProjects(authUser);
+        return { ok: true, projectId: data.id };
       }
-      loadProjects(authUser);
+    };
+    const continueProjectStep = async (nextId) => {
+      if (!nextId || projectStepBusyRef.current || isProjectSupportReadOnly || isProjectLocked) return false;
+      if (progressPlanDirtyRef.current) {
+        setProjectStepNotice("Lagre fremdriftsplanen i planbyggeren før du fortsetter. Prosjektet blir stående her.");
+        return false;
+      }
+      const origin = { ...projectStepContextRef.current };
+      projectStepBusyRef.current = true;
+      setProjectStepBusy(true);
+      setProjectStepNotice("");
+      try {
+        return await continueAfterProjectSave({
+          save: (canApplyResult) => saveProject({ forStep: true, canApplyResult }),
+          isCurrent: (result) => {
+            const current = projectStepContextRef.current;
+            return projectStepAliveRef.current && current?.userId === origin.userId && current?.tab === origin.tab && current?.companyName === origin.companyName && !current.readOnly && !current.locked && (current.projectId === origin.projectId || current.projectId === result?.projectId);
+          },
+          navigate: async (result) => {
+            const opened = await goToTab(nextId);
+            if (opened) syncInternalProjectUrl(result.projectId, nextId);
+            return opened;
+          },
+          onFailure: () => setProjectStepNotice("Lagringen er ikke bekreftet. Kontroller meldingen og prøv igjen. Du står fortsatt på samme steg.")
+        });
+      } catch (error) {
+        if (projectStepAliveRef.current) setProjectStepNotice("Kunne ikke lagre og fortsette. Arbeidet er beholdt: " + (error?.message || "Ukjent feil"));
+        return false;
+      } finally {
+        projectStepBusyRef.current = false;
+        if (projectStepAliveRef.current) setProjectStepBusy(false);
+      }
     };
     const saveSharedProject = async () => {
       if (!projectId) return alert("Prosjektet mangler ID og kan ikke lagres fra delingslink.");
@@ -6178,7 +6240,7 @@ ${appLink}`;
           ] })
         ] }) })
       ] }),
-      hasActiveProjectWorkspace && (0, import_jsx_runtime.jsx)(ProjectWorkspaceChrome, { tabs: projectTabs, activeTab: tab, project, saved: Boolean(projectId), simpleOrder: isSimpleOrderProject(project), status: currentStatus, deviations: projectGuideStats.openDeviationCount, unread: unreadForAdmin, onNavigate: goToTab, onStatus: openMobileStatus, onExit: projectId ? leaveProjectWorkspace : cancelNewProject }, projectId || "new"),
+      hasActiveProjectWorkspace && (0, import_jsx_runtime.jsx)(ProjectWorkspaceChrome, { tabs: projectTabs, activeTab: tab, project, saved: Boolean(projectId), simpleOrder: isSimpleOrderProject(project), status: currentStatus, deviations: projectGuideStats.openDeviationCount, unread: unreadForAdmin, onNavigate: goToTab, onStatus: openMobileStatus, onExit: projectId ? leaveProjectWorkspace : cancelNewProject, onContinue: continueProjectStep, continuing: projectStepBusy, continueNotice: projectStepNotice, readOnly: isProjectSupportReadOnly || isProjectLocked, contractRequired: Boolean(warranty?.enabled || warranty?.issued) }, projectId || "new"),
       !hasActiveProjectWorkspace && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "mobileFieldBar", "aria-label": "Mobil arbeidsmeny", children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileFieldBarInner", children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", className: "mobileFieldBarToggle", "aria-expanded": mobileMenuOpen, onClick: () => setMobileMenuOpen((open) => !open), children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: ["☰ ", tabs.find(([id]) => id === tab)?.[1] || "Velg side"] }),
