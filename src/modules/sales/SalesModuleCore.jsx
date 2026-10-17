@@ -75,6 +75,7 @@ import {
   Upload,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { applyCustomerOptionQuantities, hasInvalidCustomerOptionQuantity, parseCustomerOptionQuantity } from "./utils/salesCustomerOptionQuantities.js";
 import {
   buildInspectionIntro,
   createRequestId,
@@ -223,6 +224,9 @@ function createOfferFormChangeSignature(formValue) {
       mainPostId: option.mainPostId || "",
       mainPostTitle: option.mainPostTitle || "",
       title: option.title || "",
+      customerCanChooseQuantity: option.customerCanChooseQuantity === true,
+      quantity: String(option.quantity ?? ""),
+      unit: option.unit || "",
       description: option.description || "",
       internalProductNumber: option.internalProductNumber || "",
       amount: String(option.amount ?? ""),
@@ -1698,13 +1702,18 @@ export default function SalesModule({
     const activeOfferVersion = getActiveOfferVersion(selectedRequest);
     const offerOptions =
       activeOfferVersion?.options || selectedRequest.offerOptions || [];
-    const selectedOptions = offerOptions.filter((option) =>
+    if (hasInvalidCustomerOptionQuantity(offerOptions, acceptanceForm.selectedOptionIds, acceptanceForm.selectedOptionQuantities)) {
+      alert("Kontroller antall på valgte opsjoner. Bruk et antall over 0 og opptil 100 000, med høyst tre desimaler.");
+      return;
+    }
+    let selectedOptions = applyCustomerOptionQuantities(offerOptions, acceptanceForm.selectedOptionQuantities).filter((option) =>
       acceptanceForm.selectedOptionIds.includes(option.id)
     );
-    const acceptedTotal =
+    let acceptedTotal =
       (activeOfferVersion?.total || selectedRequest.offerTotal || 0) +
       getOfferTotal(selectedOptions);
-    const acceptedAt = new Date().toISOString();
+    let acceptedAt = new Date().toISOString();
+    let acceptedDecision = null;
 
     if (selectedRequest.isPublicOffer) {
       if (!activeSupabase) {
@@ -1712,16 +1721,21 @@ export default function SalesModule({
         return;
       }
 
-      const { error } = await acceptSalesOffer(activeSupabase, {
+      const { data, error } = await acceptSalesOffer(activeSupabase, {
         token: selectedRequest.publicToken,
         acceptedName: acceptanceForm.name.trim(),
         selectedOptions,
+        expectedVersionId: activeOfferVersion?.id,
       });
 
       if (error) {
         alert(error.message || "Kunne ikke registrere aksept.");
         return;
       }
+      acceptedDecision = data;
+      selectedOptions = data.selected_options;
+      acceptedTotal = Number(data.accepted_total);
+      acceptedAt = data.accepted_at;
     }
 
     const nextRequests = requests.map((request) =>
@@ -1737,6 +1751,7 @@ export default function SalesModule({
             ),
             acceptedOptionIds: acceptanceForm.selectedOptionIds,
             acceptedOptions: selectedOptions,
+            ...(acceptedDecision ? { acceptedPayload: acceptedDecision } : {}),
             acceptedTotal,
             acceptedOfferTitle: activeOfferVersion?.title || selectedRequest.offerTitle || selectedRequest.title || "Tilbud",
             acceptedOfferIntro: activeOfferVersion?.intro || selectedRequest.offerIntro || "",
@@ -2158,6 +2173,7 @@ export default function SalesModule({
           return {
             ...option,
             optionType,
+            customerCanChooseQuantity: optionType === "alternative" ? false : option.customerCanChooseQuantity === true,
             replacementLineId:
               optionType === "alternative"
                 ? option.replacementLineId || ""
@@ -2294,6 +2310,10 @@ export default function SalesModule({
   }
 
   async function saveOfferAndReturnToDetail() {
+    if (offerForm.options.some((option) => option.customerCanChooseQuantity === true && parseCustomerOptionQuantity(String(option.quantity ?? "").trim() || "1") === null)) {
+      alert("Kontroller antall på opsjoner med kundevalg. Bruk et antall over 0 og opptil 100 000, med høyst tre desimaler.");
+      return false;
+    }
     const {
       cleanLines,
       cleanOptions,

@@ -142,10 +142,17 @@ jobs:
           node scripts/personal-project-layout-browser-check.mjs
           node scripts/sales-overview-ux-browser-check.mjs
           node scripts/sales-editor-ux-browser-check.mjs
+          node scripts/customer-option-quantity-db-check.mjs
+          node scripts/customer-option-quantity-browser-check.mjs
           node scripts/smart-price-search-browser-check.mjs
           node scripts/price-search-mobile-check.mjs
           node scripts/progress-layout-react-check.mjs
           export KSHMS_JSPDF_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/jspdf/dist/jspdf.es.min.js"
+          if ! command -v pdftotext >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y poppler-utils
+          fi
+          node scripts/customer-option-quantity-pdf-check.mjs
           export KSHMS_JSPDF_NODE_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/jspdf/dist/jspdf.node.min.js"
           node scripts/project-progress-db-check.mjs
           node scripts/project-progress-react-check.mjs

@@ -1,3 +1,4 @@
+import { canChooseOptionQuantity } from "../utils/salesCustomerOptionQuantities.js";
 import { offerVatPresentation } from "../utils/salesOfferVatPresentation.js";
 // Expo ProffDok – FASE 37D2 / FASE 37D1 / FASE 31C / FASE 39B.2C
 // Butikktilbud bruker versjonslåst valgt logo og saksbehandlersignatur i PDF.
@@ -54,8 +55,8 @@ function optionType(option={}, lines=[]) {
 
 function qty(item={}, multiplier=1.25) {
   if(isStoreSectionLine(item) || storeAlt(item)) return "";
-  if(!hasOfferQuantityDetails(item)) return "";
-  return `${formatOfferQuantity(item)} x ${formatNok(getOfferUnitPrice(item)*multiplier)} pr. enhet`;
+  if(!hasOfferQuantityDetails(item) && !canChooseOptionQuantity(item)) return "";
+  return `${canChooseOptionQuantity(item) ? "Kunden kan velge antall. Vist antall: " : ""}${formatOfferQuantity(item)} x ${formatNok(getOfferUnitPrice(item)*multiplier)} pr. enhet`;
 }
 
 function subheading(text="") {
