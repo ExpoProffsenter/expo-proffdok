@@ -11,3 +11,5 @@
 .deviation-dialog fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
 .deviation-dialog fieldset:disabled .checklistUpload { pointer-events: none; }
 .deviation-dialog .checklistGroupBody { max-height: none; }
+
+.project-checklist-resume{display:grid;gap:8px;padding:12px;border:1px solid #b5dce1;background:#f0fafb;border-radius:14px;margin:12px 0}.project-checklist-resume>strong{font-size:14px;color:#174b55}.project-checklist-resume>button{display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;min-height:48px;padding:10px 12px;box-shadow:none}.project-checklist-resume>button>span{overflow-wrap:anywhere}.project-checklist-resume>button>b{font-size:12px;flex-shrink:0}@media(max-width:500px){.project-checklist-resume>button{align-items:flex-start;flex-direction:column;gap:5px}}

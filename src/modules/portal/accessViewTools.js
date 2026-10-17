@@ -37,7 +37,9 @@ export function createAccessViewTools({
     controllerEmailBrand,
     controllerFromName
   }) {
-    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Tilgang og deling", children: [
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Deltakere og tilganger", children: [
+      /* Existing participant root is mounted here by its own adapter, not duplicated. */
+      projectId && !controllerReadOnly && (0, import_jsx_runtime.jsx)("div", { "data-project-participants-slot": "true" }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Velg kunde-, UE- eller kontrollørtilgang. Hver portal har separat kode. Kunde og UE har tilgang mens prosjektet er aktivt og i 30 dager etter låsing. For kontrollør velger du utløpsdato og klokkeslett." }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "cards ux-access-portals", style: { marginTop: "12px" }, children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "tile", children: [

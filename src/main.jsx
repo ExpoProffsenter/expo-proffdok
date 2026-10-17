@@ -1,3 +1,5 @@
+import { continueAfterProjectSave, projectStepDataConfirmed } from './modules/project/projectStepContinue.mjs';
+import ProjectWorkspaceChrome, { ProjectHeaderActions, ProjectStatusDialog, ProjectWorkspaceFooter } from './modules/project/ProjectWorkspaceChrome.jsx';
 import SupportLinkEntry from './modules/support/SupportLinkEntry.jsx';
 import WorkdayShortcuts from './modules/home/WorkdayShortcuts.jsx';
 import DeliverySummary from './modules/report/DeliverySummary.jsx';
@@ -8,7 +10,7 @@ import ControllerPortal from './modules/controller/ControllerPortal.jsx';
 import {PROJECT_DESIGN_CHECKLIST_TEMPLATE} from './modules/config/projectDesignChecklist.mjs';
 import {SOPRO_SYSTEM_CHECKLIST_TEMPLATES} from "./modules/config/soproChecklistTemplates.mjs";
 import MobileScrollShortcuts from "./modules/app/MobileScrollShortcuts.jsx";
-import CompanyCustomerPicker from "./modules/customers/CompanyCustomerPicker.jsx";
+import ProjectInformationFields from "./modules/project/ProjectInformationFields.jsx";
 import { useKshmsAccess } from './modules/kshms/kshmsAccess.js';
 import { useHrAccess } from './modules/hr/hrAccess.js';
 import {usePersonalAccess,personalRights} from './modules/personal/personalAccess.js';
@@ -886,6 +888,12 @@ const HomeFollowups = React.lazy(() => import('./modules/home/HomeFollowups.jsx'
     const dirtyTrackingResumeTimerRef = (0, import_react.useRef)(null);
     const projectDirtyRef = (0, import_react.useRef)(false);
     const progressPlanDirtyRef = (0, import_react.useRef)(false);
+    const projectStepContextRef = (0, import_react.useRef)(null);
+    const projectStepBusyRef = (0, import_react.useRef)(false);
+    const projectStepAliveRef = (0, import_react.useRef)(true);
+    const [projectStepBusy, setProjectStepBusy] = (0, import_react.useState)(false);
+    const [projectStepNotice, setProjectStepNotice] = (0, import_react.useState)("");
+    (0, import_react.useEffect)(() => { projectStepAliveRef.current = true; return () => { projectStepAliveRef.current = false; }; }, []);
     const projectDirtyInitializedRef = (0, import_react.useRef)(false);
     const dirtyBaselineRef = (0, import_react.useRef)("");
     const newProjectTouchedRef = (0, import_react.useRef)(false);
@@ -1951,6 +1959,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       canUseAdminProjectSync
     });
     const tabs = hasActiveProjectWorkspace ? projectTabs : globalTabs;
+    projectStepContextRef.current = { projectId, tab, userId: authUser?.id, companyName: company.companyName, readOnly: isProjectSupportReadOnly, locked: isProjectLocked };
     const mobilePrimaryTabs = hasActiveProjectWorkspace ? [
       ["prosjekt", "Oversikt", "📋"],
       ["prosjektering", "Prosjektering", "📐"],
@@ -1968,6 +1977,12 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
     const scrollToMobileTabTarget = (id) => {
       if (!id) return;
       if (typeof window === "undefined" || typeof document === "undefined") return;
+      // Keep project context and phase navigation visible on deliberate tab changes.
+      // DOM presence also handles opening from a callback captured on the Startside.
+      if (document.querySelector("[data-expo-project-workspace]")) {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
       const targetMap = {
         prosjekt: ".mobileCurrentProjectBar, .desktopOnlyWhenNoProject section, main",
         sales: "main",
@@ -1999,10 +2014,6 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
     const openMobileStatus = () => {
       setMobileStatusOpen(true);
       setMobileMenuOpen(false);
-      window.setTimeout(() => {
-        const target = document.querySelector(".projectStatusSection");
-        if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
-      }, 80);
     };
 
     const confirmLeaveWithUnsavedChanges = async (actionLabel = "fortsette") => {
@@ -3782,7 +3793,7 @@ Kunde, adresse, bilder, chat, signaturer, avvik og utfylte sjekklistestatuser bl
         alert("Kunne ikke lagre melding: " + (error?.message || "Ukjent feil"));
       }
     };
-    const saveProject = async () => {
+    const saveProject = async (options = {}) => {
       if (!authUser) return alert("Du m\xE5 v\xE6re logget inn for \xE5 lagre prosjekt.");
       if (isProjectSupportReadOnly) return notifySupportProjectReadOnly();
       const snapshot = {
@@ -3806,6 +3817,19 @@ Kunde, adresse, bilder, chat, signaturer, avvik og utfylte sjekklistestatuser bl
         warranty,
         projectLog,
         internalNotes
+      };
+      const sourceFingerprint = projectDirtyFingerprint(latestStateRef.current || {});
+      const mayApplyStepResult = (id) => !options.forStep || (
+        (!options.canApplyResult || options.canApplyResult({ ok: true, projectId: id })) &&
+        sourceFingerprint === projectDirtyFingerprint(latestStateRef.current || {})
+      );
+      const retainCreatedIdentity = (row) => {
+        const current = projectStepContextRef.current;
+        if (current?.projectId === projectId && current?.userId === authUser.id && current?.tab === tab) {
+          setProjectId(row.id);
+          setCurrentProjectOwnerId(row.user_id || authUser.id);
+          setMobileCreatingProject(false);
+        }
       };
       const makeCleanData = (projectOverride = snapshot.project, projectLogOverride = snapshot.projectLog) => JSON.parse(JSON.stringify({
         company: snapshot.company,
@@ -3899,11 +3923,14 @@ Kunde, adresse, bilder, chat, signaturer, avvik og utfylte sjekklistestatuser bl
               return alert("⚠️ Prosjektet ble oppdatert, men begge overtagelsessignaturene kunne ikke bekreftes på server. Ikke forlat overtagelsen. Prøv Lagre overtagelse på nytt, og kontakt support hvis meldingen gjentas.");
             }
           }
+          if (options.forStep && !projectStepDataConfirmed(cleanData, dataFromRow(updatedRow))) return alert("Lagringen kunne ikke bekreftes for hele prosjektinnholdet. Du står på samme steg. Kladden er beholdt.");
+          if (!mayApplyStepResult(updatedRow.id)) return { ok: false, projectId: updatedRow.id };
           unpackData(dataFromRow(updatedRow), false);
           setProjectId(updatedRow.id);
           await loadProjects(authUser);
           resetProjectDirty();
-          return alert(shouldVerifyBothSignatures ? "✅ Begge overtagelsessignaturer er bekreftet lagret på server." : "\u2714 Prosjekt oppdatert og bekreftet lagret");
+          if (!options.forStep) alert(shouldVerifyBothSignatures ? "✅ Begge overtagelsessignaturer er bekreftet lagret på server." : "\u2714 Prosjekt oppdatert og bekreftet lagret");
+          return { ok: true, projectId: updatedRow.id };
         }
         const shouldCopy = window.confirm(
           "Prosjektet ble ikke oppdatert automatisk. Dette kan skyldes tilgang til et eldre prosjekt.\n\nVil du lagre dette som en ny oppdatert kopi n\xE5, slik at endringene ikke g\xE5r tapt?"
@@ -3929,13 +3956,16 @@ Kunde, adresse, bilder, chat, signaturer, avvik og utfylte sjekklistestatuser bl
           console.error(copyError);
           return alert("Kunne ikke lagre kopi heller: " + copyError.message);
         }
+        if (!mayApplyStepResult(copyRow.id)) { retainCreatedIdentity(copyRow); return { ok: false, projectId: copyRow.id }; }
         setProjectId(copyRow.id);
         setCurrentProjectOwnerId(copyRow.user_id || authUser.id);
         setSupportModeExplicit(false);
+        if (options.forStep && !projectStepDataConfirmed(cleanData, dataFromRow(copyRow))) return alert("Kopien er opprettet, men hele innholdet kunne ikke bekreftes. Du står på samme steg. Kladden er beholdt.");
         unpackData(dataFromRow(copyRow), false);
         await loadProjects(authUser);
         resetProjectDirty();
-        return alert("\u2714 Gammel rad kunne ikke oppdateres, men prosjektet er lagret som ny oppdatert kopi.");
+        alert("\u2714 Gammel rad kunne ikke oppdateres, men prosjektet er lagret som ny oppdatert kopi.");
+        return { ok: true, projectId: copyRow.id };
       } else {
         const newProjectData = {
           ...emptyProject(),
@@ -3964,15 +3994,50 @@ Kunde, adresse, bilder, chat, signaturer, avvik og utfylte sjekklistestatuser bl
           console.error(error);
           return alert("Kunne ikke lagre i sky: " + error.message);
         }
+        if (!mayApplyStepResult(data.id)) { retainCreatedIdentity(data); return { ok: false, projectId: data.id }; }
         setProjectId(data.id);
         setCurrentProjectOwnerId(data.user_id || authUser.id);
         setSupportModeExplicit(false);
         setMobileCreatingProject(false);
+        if (options.forStep && !projectStepDataConfirmed(makeCleanData(newProjectData, newProjectLog), dataFromRow(data))) return alert("Prosjektet er opprettet, men hele innholdet kunne ikke bekreftes. Du står på samme steg. Kladden er beholdt.");
         unpackData(dataFromRow(data), false);
         resetProjectDirty();
-        alert("\u2714 Prosjekt lagret");
+        if (!options.forStep) alert("\u2714 Prosjekt lagret");
+        loadProjects(authUser);
+        return { ok: true, projectId: data.id };
       }
-      loadProjects(authUser);
+    };
+    const continueProjectStep = async (nextId) => {
+      if (!nextId || projectStepBusyRef.current || isProjectSupportReadOnly || isProjectLocked) return false;
+      if (progressPlanDirtyRef.current) {
+        setProjectStepNotice("Lagre fremdriftsplanen i planbyggeren før du fortsetter. Prosjektet blir stående her.");
+        return false;
+      }
+      const origin = { ...projectStepContextRef.current };
+      projectStepBusyRef.current = true;
+      setProjectStepBusy(true);
+      setProjectStepNotice("");
+      try {
+        return await continueAfterProjectSave({
+          save: (canApplyResult) => saveProject({ forStep: true, canApplyResult }),
+          isCurrent: (result) => {
+            const current = projectStepContextRef.current;
+            return projectStepAliveRef.current && current?.userId === origin.userId && current?.tab === origin.tab && current?.companyName === origin.companyName && !current.readOnly && !current.locked && (current.projectId === origin.projectId || current.projectId === result?.projectId);
+          },
+          navigate: async (result) => {
+            const opened = await goToTab(nextId);
+            if (opened) syncInternalProjectUrl(result.projectId, nextId);
+            return opened;
+          },
+          onFailure: () => setProjectStepNotice("Lagringen er ikke bekreftet. Kontroller meldingen og prøv igjen. Du står fortsatt på samme steg.")
+        });
+      } catch (error) {
+        if (projectStepAliveRef.current) setProjectStepNotice("Kunne ikke lagre og fortsette. Arbeidet er beholdt: " + (error?.message || "Ukjent feil"));
+        return false;
+      } finally {
+        projectStepBusyRef.current = false;
+        if (projectStepAliveRef.current) setProjectStepBusy(false);
+      }
     };
     const saveSharedProject = async () => {
       if (!projectId) return alert("Prosjektet mangler ID og kan ikke lagres fra delingslink.");
@@ -6096,7 +6161,7 @@ ${appLink}`;
         bathroomEquipment
       });
     }
-    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { onClick: openImageLightboxFromClick, children: [
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { "data-expo-project-shell": hasActiveProjectWorkspace ? "1" : void 0, onClick: openImageLightboxFromClick, children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(MobileScrollShortcuts, {}),
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("style", { children: APP_RUNTIME_STYLES }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AppNewsNotice, { supabaseClient: supabase, authUser }),
@@ -6116,16 +6181,10 @@ ${appLink}`;
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: projectId ? `${currentStatus.icon} ${currentStatus.label}` : authUser?.email || name })
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: signOut, children: "Logg ut" }),
-          !isProjectSupportReadOnly && !mobileCreatingProject && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: createNewProject, children: "+ Nytt prosjekt" }),
+          !hasActiveProjectWorkspace && !isProjectSupportReadOnly && !mobileCreatingProject && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: createNewProject, children: "+ Nytt prosjekt" }),
           !projectId && mobileCreatingProject && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: cancelNewProject, children: "← Avbryt nytt prosjekt" }),
           projectId && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: leaveProjectWorkspace, children: isProjectSupportReadOnly ? "← Supportoversikt" : "← Til startside" }),
-          hasActiveProjectWorkspace && !isProjectSupportReadOnly && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: saveProject, children: projectDirty ? "● Lagre endringer" : projectId ? "Oppdater prosjekt" : "Lagre prosjekt" }),
-          projectId && !isProjectSupportReadOnly && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: saveAsNewProject, children: "Lagre som kopi" }),
-          hasActiveProjectWorkspace && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { onClick: downloadClickablePdfReport, children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Download, { size: 18 }),
-            " Last ned PDF"
-          ] }),
-          projectId && !isProjectSupportReadOnly && (isProjectLocked ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => setProjectLockedState(false), children: "\u{1F513} L\xE5s opp prosjekt" }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => setProjectLockedState(true), children: "\u{1F512} Avslutt prosjekt" }))
+          hasActiveProjectWorkspace && (0, import_jsx_runtime.jsx)(ProjectHeaderActions, { dirty: projectDirty, saved: Boolean(projectId), readOnly: isProjectSupportReadOnly, locked: isProjectLocked, simpleOrder: isSimpleOrderProject(project), onSave: saveProject, onCopy: projectId && !isProjectSupportReadOnly ? saveAsNewProject : void 0, onPdf: downloadClickablePdfReport, onLock: setProjectLockedState, onNew: createNewProject }, projectId || "new")
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("nav", { children: tabs.map(([id, l]) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { "data-expo-nav-label": l, className: tab === id ? "on" : "", onClick: () => goToTab(id), children: l }, id)) }),
         projectDirty && hasActiveProjectWorkspace && !isReadOnly && !isProjectSupportReadOnly && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { maxWidth: "1180px", margin: "0 auto 10px", padding: "10px 14px", background: "#fffbeb", border: "1px solid #facc15", borderRadius: "14px", color: "#92400e", fontWeight: 800, display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px", flexWrap: "wrap" }, children: [
@@ -6181,7 +6240,8 @@ ${appLink}`;
           ] })
         ] }) })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "mobileFieldBar", "aria-label": "Mobil arbeidsmeny", children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileFieldBarInner", children: [
+      hasActiveProjectWorkspace && (0, import_jsx_runtime.jsx)(ProjectWorkspaceChrome, { tabs: projectTabs, activeTab: tab, project, saved: Boolean(projectId), simpleOrder: isSimpleOrderProject(project), status: currentStatus, deviations: projectGuideStats.openDeviationCount, unread: unreadForAdmin, onNavigate: goToTab, onStatus: openMobileStatus, onExit: projectId ? leaveProjectWorkspace : cancelNewProject, onContinue: continueProjectStep, continuing: projectStepBusy, continueNotice: projectStepNotice, readOnly: isProjectSupportReadOnly || isProjectLocked, contractRequired: Boolean(warranty?.enabled || warranty?.issued) }, projectId || "new"),
+      !hasActiveProjectWorkspace && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "mobileFieldBar", "aria-label": "Mobil arbeidsmeny", children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileFieldBarInner", children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", className: "mobileFieldBarToggle", "aria-expanded": mobileMenuOpen, onClick: () => setMobileMenuOpen((open) => !open), children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: ["☰ ", tabs.find(([id]) => id === tab)?.[1] || "Velg side"] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { "aria-hidden": "true", children: mobileMenuOpen ? "▲" : "▼" })
@@ -6383,6 +6443,7 @@ ${appLink}`;
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => goToTab("bilder"), children: "G\xE5 til bilder" })
           ] })
         ] }),
+        projectId && (0, import_jsx_runtime.jsxs)(ProjectStatusDialog, { open: mobileStatusOpen, onClose: () => setMobileStatusOpen(false), projectName: project.projectName || project.address, children: [
         projectId && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { className: mobileStatusOpen ? "projectStatusSection mobileStatusOpen" : "projectStatusSection", title: `${currentStatus.icon} Prosjektstatus: ${currentStatus.label}`, icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary mobileStatusClose", onClick: () => setMobileStatusOpen(false), children: "✕ Lukk status" }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("details", { className: "project-status-details", key: projectId+":"+tab, open: mobileStatusOpen, children: [
@@ -6431,8 +6492,8 @@ ${appLink}`;
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Denne oversikten viser hva som er på plass og hva som bør kontrolleres før rapport, PDF og overtagelse." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "guideGrid", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "guideCard", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: `${projectGuideStats.completionPercent}%` }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "ferdigstillelse" })
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: `${projectGuideStats.checklistDone + projectGuideStats.checklistMissing > 0 ? Math.round(100 * projectGuideStats.checklistDone / (projectGuideStats.checklistDone + projectGuideStats.checklistMissing)) : 0}%` }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: `sjekkliste · ${projectGuideStats.checklistDone} av ${projectGuideStats.checklistDone + projectGuideStats.checklistMissing}` })
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "guideCard", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: projectGuideStats.productCount }),
@@ -6464,6 +6525,7 @@ ${appLink}`;
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => openProjectGuideItem(item), children: "Åpne" })
           ] }, item.id)) }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Prosjektet ser komplett ut. Kontroller rapporten før prosjektet avsluttes." }),
           projectGuideStats.openDeviationCount > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: openActiveDeviations, children: "Se aktive avvik" })
+        ] }),
         ] }),
         tab === "prosjekt" && projectId && renderProjectOverviewPanel({ project, goToTab, leaveProjectWorkspace }),
         (tab === "prosjekt" || tab === "avvik") && projectId && authUser?.id === kshmsContext?.user_id && kshmsContext?.enabled && !isProjectSupportReadOnly && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProjectSjaEntry, { context: kshmsContext, projectId, readOnly: isProjectLocked || isReadOnly }, `${kshmsScopeKey}:${projectId}`),
@@ -6522,18 +6584,8 @@ ${appLink}`;
             compact: false,
             onOpenRequest: openSalesRequestFromHome
           })
-        ] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: !projectId && !mobileCreatingProject ? "desktopOnlyWhenNoProject" : "", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Section, { title: projectId ? "Rediger kunde- og prosjektinfo" : "Prosjektinformasjon", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CollapsibleBlock, { title: "Kunde- og prosjektdata", defaultOpen: true, children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Prosjektansvarlig", value: project.responsible, onChange: (v) => setProject({ ...project, responsible: v }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Dato", type: "date", value: project.date, onChange: (v) => setProject({ ...project, date: v }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Navn p\xE5 prosjekt", value: project.projectName, onChange: (v) => setProject({ ...project, projectName: v }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Adresse", value: project.address, onChange: (v) => setProject({ ...project, address: v }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Postnr.", value: project.postnr || "", onChange: (v) => setProject({ ...project, postnr: v }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Poststed / by", value: project.city || "", onChange: (v) => setProject({ ...project, city: v }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CompanyCustomerPicker, { disabled: isProjectSupportReadOnly, value: { customer: project.customer || "", phone: project.customerPhone || "", email: project.customerEmail || "", address: project.address || "", postnr: project.postnr || "", city: project.city || "" }, onUse: (customer) => setProject(current => ({ ...current, customer: customer.customer || "", customerPhone: customer.phone || "", customerEmail: customer.email || "", address: customer.address || "", postnr: customer.postnr || "", city: customer.city || "" })) }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Kunde", value: project.customer, onChange: (v) => setProject({ ...project, customer: v }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Kunde e-post", type: "email", value: project.customerEmail || "", onChange: (v) => setProject({ ...project, customerEmail: v }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Kunde telefon", type: "tel", value: project.customerPhone || "", onChange: (v) => setProject({ ...project, customerPhone: v }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Notater", value: project.notes, onChange: (v) => setProject({ ...project, notes: v }) }),
+        ] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: !projectId && !mobileCreatingProject ? "desktopOnlyWhenNoProject" : "", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Section, { className: "project-info-editor", title: projectId ? "Rediger kunde- og prosjektinfo" : "Prosjektinformasjon", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CollapsibleBlock, { title: "Kunde- og prosjektdata", defaultOpen: true, children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProjectInformationFields, { project, setProject, Input, Textarea, readOnly: isProjectSupportReadOnly }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProjectWarrantySetup, { warranty, setWarranty, systems: soproWarrantySystems, project, onCreateStandardWetroomTemplate: createStandardWetroomTemplate }),
           false && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", gap: "10px", alignItems: "flex-start", marginTop: "4px" }, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", checked: !!project.isTemplate && !!warranty?.enabled && !!warranty?.system, onChange: (e) => {
@@ -7264,6 +7316,7 @@ ${appLink}`;
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "PDF" })
         ] })
       ] }),
+      hasActiveProjectWorkspace && (0, import_jsx_runtime.jsx)(ProjectWorkspaceFooter, { tabs: projectTabs, activeTab: tab, simpleOrder: isSimpleOrderProject(project), contractRequired: Boolean(warranty?.enabled || warranty?.issued), onNavigate: goToTab, onContinue: continueProjectStep, continuing: projectStepBusy, continueNotice: projectStepNotice, readOnly: isProjectSupportReadOnly || isProjectLocked }),
       hasActiveProjectWorkspace && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "bottomPrevNext", style: {
         display: "flex",
         justifyContent: "space-between",

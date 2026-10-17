@@ -898,3 +898,116 @@ Avgrenset implementasjon: `SupplierOrder.jsx`, `supplierOrderClient.js`, `suppli
 QA: `node scripts/supplier-order-db-check.mjs`, `node scripts/supplier-order-email-check.mjs`, `node scripts/supplier-order-react-check.mjs`, full critical-suite og bygg. Sandbox først; ny TEST OK kreves før produksjonssetting og deretter kontrollert main → demo.
 
 Plukklisten har en samlet handlingsrad: bestilling, utskrift av plukkliste, Cordel og prisutskrift. Internt prisvalg står under prisutskriften. Lagre, vis/skjul og slett står ved overskriften. På mobil står bestilling øverst i full bredde, med utskrift og Cordel under.
+
+
+### Prosjektarbeidsflate – Preview 17.10.2026
+
+Miljømål: BEGGE. Ordinære, direkte opprettede og generelle/enkle prosjekter
+bruker samme kompakte toppfelt og prosjektmeny, med eksisterende ordrefiltrering.
+ProjectWorkspaceChrome viser valgt fase på desktop og bruker eksisterende
+DeviationDialog for mobilmeny, samlet status/mangler og flere handlinger.
+React eier dialogene; eksisterende goToTab, lagring, PDF, kopi, låsing og
+forlat-bekreftelser brukes uendret. Den gamle kilde-navigasjonen beholdes for
+legacy-adapterne, mens dobbelt prosjektmeny ikke vises. Statusveiledningen
+beholder sjekklisteprosent, avvik, overtagelseskrav og eksisterende callbacks.
+Ingen SQL, e-post-, support-, timeførings- eller recovery-endring.
+Se docs/qa/PROJECT_WORKSPACE_UX_20261017.md. Ny TEST OK kreves før merge.
+
+Oppfølging 17.10: Prosjektets apphode er komprimert med lokal CSS. Navn, kunde
+og full adresse står i toppfeltet; intern oversikt gjentar dem ikke, men beholder
+telefon, e-post, prosjektansvarlig og akseptert sum inkl. mva. Kundeportalens
+ProjectInformationReadOnly og rapportdata er urørt. Vanlige prosjekter viser
+«Overlevering og garanti»; enkle ordrer beholder «Overlevering» uten garanti.
+
+Prosjektflyt 17.10: Nummererte oppstartssteg, Ved behov-merker og Salgsgrunnlag
+som historikk gir anbefalt rekkefølge. Lagre og fortsett bruker eksisterende
+lagring med et eksplisitt bekreftet resultat. Bare denne nye handlingen krever
+kontroll av hele prosjektinnholdet mot returdata (serverens firma-/bruker-
+snapshots kan normaliseres). Feil, nyere kladd, firmabytte eller senere bruker-
+handling stopper fortsettelsen. Ved nyopprettet rad beholdes ID ved avbrudd for
+å unngå duplikat ved retry. Vanlige Lagre/Oppdater-knapper og bekreftelser er
+beholdt. Ulagret fremdriftsplan må lagres i den eksisterende planbyggeren.
+Fast mobilmeny: Oversikt, Sjekklister, Bilder, Avvik, Meny. Påbegynte sjekklister
+vises først og åpner eksisterende begin/dialog/kladd-logikk. Fullførte kontroller
+og lesetilgang endres ikke. Ingen SQL-, backend-, rapport- eller e-postendring.
+CI er utvidet med faktiske lagrings-/mobil-/fortsett-tester; gamle tester beholdes.
+
+
+## Prosjektkart og samordnet nestehandling – 17.10 kl. 11:50
+
+Kenneth godkjente en miks av oversiktskartet og den nye kompakte prosjektflaten.
+Miljømål: BEGGE, samme PR #266 og faste Preview. Denne delen erstatter tidligere
+beskrivelse av ett valgt fasepanel og nummererte underfaner. Alle tre faser er
+synlige på PC i like brede bokser med lik topp-/bunnkant. Mobil beholder fast
+feltmeny og fullskjermdialog for alle prosjektfanene.
+
+Oppstart viser Deltakere og tilganger rett etter Oversikt. Eksisterende
+Prosjektinvolverte-root får en plass foran portalene i eksisterende tilgangsfane;
+oversiktens opprinnelige plass beholdes. Samme editor og kladd gjenbrukes ved
+flytting, med eksisterende egen lagring. Registrert kontakt gir ikke portaltilgang.
+Kunde-, UE- og kontrollørhandlinger bruker opprinnelige callbacks, koder, RLS og
+e-postmotor. Enkle ordrer beholder UE/funksjonsutvalg uten kundedeling.
+Ingen ny deltakereditor injiseres i skrivebeskyttet tilgangsfane eller før lagring.
+
+Begge handlingsrader bruker projectWorkspaceFlow og ProjectFlowActions.
+Fremdrift peker til Sjekklister begge steder. Den gamle bottomPrevNext beholdes
+som skjult kompatibilitetskilde for urørte legacy-checker og er ikke brukerens
+navigasjon i React-skallet. Generisk prosjektlagring brukes bare for prosjektets
+felter; kontaktlisten, fremdriftsplanen og sjekklister beholder egen lagring.
+Nye data-project-navigation-markører sikrer at gammel deltaker-kladdvakt
+fortsatt stopper nye meny-/neste-/mobilhandlinger ved ulagrede kontakter.
+
+Scope: ProjectWorkspaceChrome/presentation/CSS, to integrasjonspunkter i main,
+accessViewTools sin presentasjonsplass, deltakeradapterens hostvalg og
+kladdvaktmatch, Hjelp, nye UX-tester, QA/docs og tillegg i CI. Ingen endring i
+Sales, goToTab, lagringsmotor, database, autorisasjon, e-post eller timeføring.
+
+Testendringens begrunnelse: gammel UX-test forventet skjulte faser og fem/tre
+oppstartssteg. Ny avtalt kontrakt krever alle faser, synlige deltakere og samme
+nestehandling. Nytester fra denne PR oppdateres. I critical-project-navigation-check
+oppdateres kun hjelpetekstkontrakten til tre synlige bokser, deltaker-/portalvalg
+og lik nestehandling, med ekstra vern mot at kontakt likestilles med tilgang.
+Alle øvrige eksisterende critical-assertions beholdes. Prosjektkortets grense økes fra 440 til 560 px fordi
+hele kartet nå er synlig. Apphode <=80 px og innhold før 800 px beholdes.
+
+Brukerprøve: Åpne vanlig prosjekt → Deltakere og tilganger. Prosjektinvolverte
+skal stå før portalene. Åpne Fremdrift og kontroller at øvre/nedre handling går
+til Sjekklister. Prøv enkel ordre og mobilmeny, og avbryt navigasjon fra en
+ulagret kontakt. Faktisk QA/CI/deploybevis føres i PR før ny TEST OK.
+
+
+## Samlet kundeboks og kompakt prosjektskjema – 17.10 kl. 12:12
+
+Kenneth ba om én kundeboks og mindre luft i prosjektoversiktens skjema.
+Miljømål: BEGGE, samme PR #266/faste Preview. Scope: feltpresentasjonen i
+ProjectInformationFields, main sin skjemaintegrasjon, prosjektlokal CSS, Hjelp,
+QA/docs og tillegg til eksisterende QA-jobb. Ingen endring i kunderegisterets
+provider, RPC-er, scope/revisjon, opt-in, lagring, Sales eller portal.
+
+Prosjektopplysninger samler navn, ansvarlig, dato og prosjektadresse. Kunde
+samler navn, e-post og telefon. Kunderegister – hent eller lagre kunde åpner
+original søk/valg og eksplisitt lagring i samme boks. Registeret er lukket som
+standard; ingen kunde lagres automatisk. OnUse beholder opprinnelig mapping
+av både kontakt og prosjektadresse; brukeren skal kontrollere adressen.
+Notater beholdes synlig med lavere minimumshøyde. Garantifelt og opprinnelig
+oversiktsoverskrift/vertsplass for Prosjektinvolverte beholdes. Desktop bruker
+tre kolonner, nettbrett to og liten mobil én, med store trykk-/skrivefelt.
+
+Brukerprøve: Oppstart → Oversikt → Kunde. Åpne Kunderegister – hent eller
+lagre kunde, hent en lagret testkunde og kontroller kontakt/prosjektadresse.
+Egen registrering fungerer uten registervalg. Registerlagring krever fortsatt
+et aktivt valg; ordinær prosjektlagring er uendret. Ny TEST OK før merge.
+
+
+## Flere handlinger som nedtrekksmeny – 17.10 kl. 12:27
+
+Miljømål: BEGGE. Brukerbestilt bytte fra modal til liten meny rett under Flere
+handlinger. Scope: ProjectHeaderActions, prosjektlokal CSS, eksisterende UX-QA
+og Hjelp/docs. PDF, nytt prosjekt, kopi og avslutning/opplåsing har uendrede
+callbacks, synlighetskrav og bekreftelser. Lagre/Oppdater er fortsatt direkte.
+Menyen lukkes ved nytt klikk, valg, utenforklikk, Tab eller Escape. Escape gir
+fokus tilbake; pil/Home/End støtter tastatur. Ingen bakgrunnslåsing/fullskjerm.
+Status/mangler og prosjektmeny beholder sine eksisterende dialoger.
+Bare denne PR-ens nye UX-test tilpasses den nye menyrollen, med ekstra
+responsive og tastaturkontroller. Ingen eldre critical-check endres.
+Brukerprøve: Flere handlinger → meny under knappen, klikk utenfor for å lukke.
