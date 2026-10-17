@@ -4,7 +4,7 @@ import DeviationDialog from '../deviations/DeviationDialog.jsx';
 import { projectWorkspaceGroups } from './projectWorkspacePresentation.mjs';
 import './projectWorkspace.css';
 
-export function ProjectHeaderActions({ dirty, saved, readOnly, locked, simpleOrder, onSave, onCopy, onPdf, onLock }) {
+export function ProjectHeaderActions({ dirty, saved, readOnly, locked, simpleOrder, onSave, onCopy, onPdf, onLock, onNew }) {
   const [open, setOpen] = useState(false);
   const noun = simpleOrder ? 'ordre' : 'prosjekt';
   const run = callback => { setOpen(false); callback(); };
@@ -14,6 +14,7 @@ export function ProjectHeaderActions({ dirty, saved, readOnly, locked, simpleOrd
     {open && <DeviationDialog title="Flere handlinger" context={simpleOrder ? 'Enkel ordre' : 'Prosjekt'} closeLabel="Lukk handlinger" onClose={() => setOpen(false)}>
       <div className="project-dialog-content project-action-list">
         <button type="button" onClick={() => run(onPdf)}>Last ned PDF</button>
+        {!readOnly && onNew && <button type="button" className="secondary" onClick={() => run(onNew)}>+ Nytt prosjekt</button>}
         {saved && !readOnly && <><button type="button" className="secondary" onClick={() => run(onCopy)}>Lagre som kopi</button>
           <button type="button" className="secondary" onClick={() => run(() => onLock(!locked))}>{locked ? `🔓 Lås opp ${noun}` : `🔒 Avslutt ${noun}`}</button></>}
         <p>PDF laster ned rapporten. Kopi oppretter et eget prosjekt. Avslutning bruker den vanlige bekreftelsen.</p>

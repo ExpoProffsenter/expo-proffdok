@@ -31,7 +31,7 @@ innføres. Eksisterende varsling og godkjenninger beholdes.
 - Status og mangler samler begge eksisterende statusseksjoner i en dialog.
   Sjekklisteprosenten beregnes i React også for enkle ordrer. Avvik, foreslått
   status, overtagelsens signerings-/lagringskrav og direkte handlinger beholdes.
-- Lagre/Oppdater er synlig. PDF, kopi og avslutning/opplåsing ligger i Flere
+- Lagre/Oppdater er synlig. PDF, nytt prosjekt, kopi og avslutning/opplåsing ligger i Flere
   handlinger. Opprinnelige callbacks og bekreftelser er uendret.
 - Enkel ordre beholder sin eksisterende filtrering, UE-tilgang og terminologi.
   Ingen våtromsfunksjoner eller kundeportal introduseres.
@@ -39,7 +39,7 @@ innføres. Eksisterende varsling og godkjenninger beholdes.
 ## Utviklerens verifisering
 
 - Full eksisterende Sandbox critical/build PASS. Gamle checker er urørt.
-- project-workspace-browser-check.mjs: 69 Chromium-assertions PASS med faktisk
+- project-workspace-browser-check.mjs: 71 Chromium-assertions PASS med faktisk
   komponent, native nav-renderer, status-renderer fra main og produksjons-CSS.
   1363/768/390/320 px uten horisontal side-scroll, innhold før 800 px,
   alle dialoger, mobil fullskjerm, kladd, avbrutt/vellykket navigasjon,
@@ -73,3 +73,9 @@ Første forsøk uten disse miljøverdiene stoppet i bundling; korrekt oppsett PA
    kopi av et ekte prosjekt bare for layouttesten.
 
 Faktisk innlogget Preview og CI-/deploybevis føres i PR før TEST OK.
+
+Innlogget Preview avdekket at gammel scroll-to-content kunne rulle prosjektets
+nye meny ut av bildet. Den eksisterende scroll-hjelperen bruker nå topposisjon
+når den nye prosjektflaten er i DOM. Dette gjelder bevisste åpninger/fanebytter;
+focus-/visibility-/draft-recovery er urørt. Den faktiske scroll-hjelperen er med
+i nettlesertesten, og eksisterende page-scroll-memory-check beholdes uendret.

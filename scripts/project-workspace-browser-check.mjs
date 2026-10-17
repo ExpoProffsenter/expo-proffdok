@@ -16,6 +16,9 @@ const statusStart=main.indexOf('        projectId && (0, import_jsx_runtime.jsxs
 const statusEnd=main.indexOf('        tab === "prosjekt" && projectId && renderProjectOverviewPanel',statusStart);
 assert(statusStart>=0&&statusEnd>statusStart);
 const statusExpression=main.slice(statusStart,statusEnd).trim().replace(/,$/,'');
+const scrollStart=main.indexOf('    const scrollToMobileTabTarget = (id) => {');
+const scrollEnd=main.indexOf('\n    const openMobileStatus',scrollStart);
+const scrollFunction=main.slice(scrollStart,scrollEnd).replace('const scrollToMobileTabTarget =','return');
 fs.writeFileSync(path.join(temp,'entry.jsx'),`
 import React,{useState} from '${cwd}/node_modules/react/index.js';
 import {createRoot} from '${cwd}/node_modules/react-dom/client.js';
@@ -29,6 +32,7 @@ import '${cwd}/src/style.css';
 import {APP_RUNTIME_STYLES} from '${cwd}/src/modules/app/appRuntimeStyles.js';
 document.head.insertAdjacentHTML('beforeend','<style>'+APP_RUNTIME_STYLES+'</style>');
 const sourceNav=new Function('import_jsx_runtime','tabs','tab','goToTab',${JSON.stringify('return '+navExpression)});
+const scrollToTarget=new Function(${JSON.stringify(scrollFunction)})();
 const actualStatus=new Function('scope',${JSON.stringify('with(scope){return '+statusExpression+';}')});
 const Section=({title,children,className})=><section className={className}><h2>{title}</h2>{children}</section>;
 const Select=({label,value,onChange,options,disabled})=><label>{label}<select aria-label={label} value={value} disabled={disabled} onChange={e=>onChange(e.target.value)}>{options.map(v=><option key={v}>{v}</option>)}</select></label>;
@@ -37,13 +41,13 @@ function App(){
  window.changeKind=kind=>{setKind(kind);setTab('prosjekt');setStatusOpen(false);};
  const order=kind==='order',readOnly=kind==='support',saved=kind!=='new';
  const tabs=createProjectWorkspaceTabs({isNewProject:!saved,hasSalesOrigin:kind!=='direct'&&saved,openDeviationCount:2,unreadForAdmin:3,canUseKshms:true});
- const goToTab=async id=>{window.navCalls.push(id);if(window.cancelNavigation)return false;setTab(id);setStatusOpen(false);return true;};
+ const goToTab=async id=>{window.navCalls.push(id);if(window.cancelNavigation)return false;setTab(id);setStatusOpen(false);scrollToTarget(id);return true;};
  const scope={projectId:saved?'qa':null,ProjectStatusDialog,import_jsx_runtime:jsxRuntime,Section,Select,import_lucide_react:{BadgeCheck:()=>null,ClipboardCheck:()=>null},mobileStatusOpen:statusOpen,setMobileStatusOpen:setStatusOpen,project,setProject,tab,currentStatus:{icon:'🟡',label:'Pågår',tone:'progress'},projectGuideStats:{openDeviationCount:2,completionPercent:88,productCount:2,photoCount:3,checklistDone:1,checklistMissing:3,hasOvertagelse:false},unreadForAdmin:3,statusStyle:()=>({}),openActiveDeviations:()=>goToTab('avvik'),isProjectLocked:false,isProjectSupportReadOnly:readOnly,workflowStatusOptions:['Pågår','Avventer'],suggestedWorkflowStatus:'Avventer',persistedProjectHasOvertagelse:false,overtagelse:{},overtagelseHasDraftContent:()=>true,overtagelseIsSignedByBoth:()=>false,projectHasOvertagelse:()=>false,totalChatCount:5,customerChatCount:2,latestChatMessage:null,projectGuideItems:[{id:'photo',label:'Kontroller bilder',tone:'missing'}],openProjectGuideItem:()=>goToTab('bilder')};
- return <div data-expo-project-shell="1"><header><div className="head"><div>ProffDok</div><h1>Expo ProffDok</h1><button onClick={()=>window.exits++}>← Til startside</button><ProjectHeaderActions dirty={!!draft} saved={saved} readOnly={readOnly} simpleOrder={order} locked={kind==='locked'} onSave={()=>window.saves++} onCopy={()=>window.copies++} onPdf={()=>window.pdfs++} onLock={value=>window.locks.push(value)}/></div>{sourceNav(jsxRuntime,tabs,tab,goToTab)}</header>
+ return <div data-expo-project-shell="1"><header><div className="head"><div>ProffDok</div><h1>Expo ProffDok</h1><button onClick={()=>window.exits++}>← Til startside</button><ProjectHeaderActions dirty={!!draft} saved={saved} readOnly={readOnly} simpleOrder={order} locked={kind==='locked'} onNew={()=>window.newProjects++} onSave={()=>window.saves++} onCopy={()=>window.copies++} onPdf={()=>window.pdfs++} onLock={value=>window.locks.push(value)}/></div>{sourceNav(jsxRuntime,tabs,tab,goToTab)}</header>
  <Chrome tabs={tabs} activeTab={tab} project={project} saved={saved} simpleOrder={order} status={scope.currentStatus} deviations={2} unread={3} onNavigate={goToTab} onStatus={()=>setStatusOpen(true)} onExit={()=>window.exits++}/>
  <main>{actualStatus(scope)}<h2>Arbeidsinnhold: {tab}</h2><label>Kladd<textarea aria-label="Kladd" value={draft} onChange={e=>setDraft(e.target.value)}/></label></main></div>;
 }
-window.navCalls=[];window.saves=0;window.copies=0;window.pdfs=0;window.exits=0;window.locks=[];window.cancelNavigation=false;
+window.navCalls=[];window.newProjects=0;window.saves=0;window.copies=0;window.pdfs=0;window.exits=0;window.locks=[];window.cancelNavigation=false;
 createRoot(document.getElementById('app')).render(<App/>);
 installDesktopSideMenu();installProjectWorkspaceHeaderGuide();installProjectWorkflowUx();
 `);
@@ -63,10 +67,12 @@ try{
  eq(await nav.getByRole('button',{name:'Oversikt',exact:true}).count(),1,'overview exists once');
  eq(await nav.getByRole('button',{name:'Bilder',exact:true}).count(),0,'other phase hidden');
  await page.getByLabel('Kladd',{exact:true}).fill('Arbeidet mitt');
+ await page.evaluate(()=>window.scrollTo(0,300));
  await nav.getByRole('button',{name:'Gjennomføring',exact:true}).click();
  await nav.getByRole('button',{name:'Bilder',exact:true}).click();
  eq(await page.getByLabel('Kladd',{exact:true}).inputValue(),'Arbeidet mitt','draft preserved during native navigation');
  eq(await page.evaluate(()=>window.navCalls.at(-1)),'bilder','real tab ID');
+ await page.waitForFunction(()=>scrollY===0);eq(await page.evaluate(()=>scrollY),0,'project context remains visible after navigation');
  for(const width of [1363,768,390,320]){
   await page.setViewportSize({width,height:1000});
   eq(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'fits '+width);
@@ -103,6 +109,7 @@ try{
  eq(await page.evaluate(()=>window.navCalls.at(-1)),'bilder','status callback retained');
  await button('Flere handlinger').click();await page.getByRole('dialog').getByRole('button',{name:'Lagre som kopi',exact:true}).click();
  eq(await page.evaluate(()=>window.copies),1,'copy callback once');
+ await button('Flere handlinger').click();await page.getByRole('dialog').getByRole('button',{name:'+ Nytt prosjekt',exact:true}).click();eq(await page.evaluate(()=>window.newProjects),1,'new project callback retained');
  await button('Flere handlinger').click();await page.getByRole('dialog').getByRole('button',{name:'Last ned PDF',exact:true}).click();
  eq(await page.evaluate(()=>window.pdfs),1,'PDF callback once');
  await button('Flere handlinger').click();await page.getByRole('dialog').getByRole('button',{name:'🔒 Avslutt prosjekt',exact:true}).click();
