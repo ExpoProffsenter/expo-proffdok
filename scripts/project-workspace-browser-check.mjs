@@ -43,11 +43,13 @@ function App(){
  const [kind,setKind]=useState('wetroom'),[tab,setTab]=useState('prosjekt'),[draft,setDraft]=useState(''),[statusOpen,setStatusOpen]=useState(false),[continuing,setContinuing]=useState(false),[continueNotice,setContinueNotice]=useState(''),[project,setProject]=useState({projectName:'Prosjekt ved Elveparken',customer:'QA Kunde',address:'Testveien 1',postnr:'0001',city:'Oslo',customerEmail:'qa@example.invalid',customerPhone:'90000000',responsible:'QA Leder',salesOrigin:{acceptedTotal:10000},workflowStatus:'Pågår'});
  window.changeKind=kind=>{setKind(kind);setTab('prosjekt');setStatusOpen(false);};
  const order=kind==='order',readOnly=kind==='support',saved=kind!=='new';
+ const [mobile,setMobile]=useState(window.innerWidth<=700);React.useEffect(()=>{const resize=()=>setMobile(window.innerWidth<=700);window.addEventListener('resize',resize);return()=>window.removeEventListener('resize',resize);},[]);
+ const profileControl=<div id="expo-work-profile-switcher"><div className="workProfileControl"><button className="workProfileButton"><span><small>Representerer</small><b>Et firma med et langt navn</b></span></button></div></div>;
  const tabs=createProjectWorkspaceTabs({isNewProject:!saved,hasSalesOrigin:kind!=='direct'&&saved,openDeviationCount:2,unreadForAdmin:3,canUseKshms:true});
  const goToTab=async id=>{window.navCalls.push(id);if(window.cancelNavigation)return false;setTab(id);setStatusOpen(false);scrollToTarget(id);return true;};
  const continueNext=async id=>{setContinuing(true);setContinueNotice('');try{return await continueAfterProjectSave({save:async()=>{if(window.holdSave)await new Promise(resolve=>window.finishSave=resolve);return window.saveWorks?{ok:true,projectId:'qa'}:undefined;},navigate:()=>goToTab(id),isCurrent:()=>true,events:window,onFailure:()=>setContinueNotice('Lagringen er ikke bekreftet.')});}finally{setContinuing(false);}};
  const scope={projectId:saved?'qa':null,ProjectStatusDialog,import_jsx_runtime:jsxRuntime,Section,Select,import_lucide_react:{BadgeCheck:()=>null,ClipboardCheck:()=>null},mobileStatusOpen:statusOpen,setMobileStatusOpen:setStatusOpen,project,setProject,tab,currentStatus:{icon:'🟡',label:'Pågår',tone:'progress'},projectGuideStats:{openDeviationCount:2,completionPercent:88,productCount:2,photoCount:3,checklistDone:1,checklistMissing:3,hasOvertagelse:false},unreadForAdmin:3,statusStyle:()=>({}),openActiveDeviations:()=>goToTab('avvik'),isProjectLocked:false,isProjectSupportReadOnly:readOnly,workflowStatusOptions:['Pågår','Avventer'],suggestedWorkflowStatus:'Avventer',persistedProjectHasOvertagelse:false,overtagelse:{},overtagelseHasDraftContent:()=>true,overtagelseIsSignedByBoth:()=>false,projectHasOvertagelse:()=>false,totalChatCount:5,customerChatCount:2,latestChatMessage:null,projectGuideItems:[{id:'photo',label:'Kontroller bilder',tone:'missing'}],openProjectGuideItem:()=>goToTab('bilder')};
- return <div data-expo-project-shell="1"><header><div className="head"><div style={{width:260,height:80}}>Expo Proffsenter</div><div><h1>Expo ProffDok</h1></div><button onClick={()=>window.exits++}>← Til startside</button><ProjectHeaderActions dirty={!!draft} saved={saved} readOnly={readOnly} simpleOrder={order} locked={kind==='locked'} onNew={()=>window.newProjects++} onSave={()=>window.saves++} onCopy={()=>window.copies++} onPdf={()=>window.pdfs++} onLock={value=>window.locks.push(value)}/><div id="expo-work-profile-switcher"><div className="workProfileControl"><button className="workProfileButton"><span><small>Representerer</small><b>Et firma med et langt navn</b></span></button></div></div></div>{sourceNav(jsxRuntime,tabs,tab,goToTab)}</header>
+ return <div data-expo-project-shell="1"><header><div className="head"><div style={{width:260,height:80}}>Expo Proffsenter</div><div><h1>Expo ProffDok</h1></div><button onClick={()=>window.exits++}>← Til startside</button><ProjectHeaderActions dirty={!!draft} saved={saved} readOnly={readOnly} simpleOrder={order} locked={kind==='locked'} onNew={()=>window.newProjects++} onSave={()=>window.saves++} onCopy={()=>window.copies++} onPdf={()=>window.pdfs++} onLock={value=>window.locks.push(value)}/>{!mobile&&profileControl}</div>{mobile&&profileControl}{sourceNav(jsxRuntime,tabs,tab,goToTab)}</header>
  <Chrome tabs={tabs} activeTab={tab} project={project} saved={saved} simpleOrder={order} status={scope.currentStatus} deviations={2} unread={3} onContinue={continueNext} continuing={continuing} continueNotice={continueNotice} readOnly={readOnly||kind==='locked'} onNavigate={goToTab} onStatus={()=>setStatusOpen(true)} onExit={()=>window.exits++}/>
  <main>{actualStatus(scope)}{tab==='prosjekt'&&tools.renderProjectOverviewPanel({project:{...project,workflowType:order?'simple_order':'wetroom'},goToTab,leaveProjectWorkspace:()=>window.exits++})}<h2>Arbeidsinnhold: {tab}</h2><label>Kladd<textarea aria-label="Kladd" value={draft} onChange={e=>setDraft(e.target.value)}/></label></main><ProjectWorkspaceFooter tabs={tabs} activeTab={tab} simpleOrder={order} onNavigate={goToTab} onContinue={continueNext} continuing={continuing} readOnly={readOnly||kind==='locked'}/><div className="bottomPrevNext"><button>Old previous</button><button>Old next</button></div></div>;
 }
@@ -64,6 +66,12 @@ try{
  const page=await browser.newPage({viewport:{width:1363,height:1000}}),errors=[];page.setDefaultTimeout(4000);page.on('pageerror',e=>{errors.push(e.message);console.error('PAGE ERROR',e.message);});
  await page.goto('http://127.0.0.1:'+server.address().port+'/?progressTest=safe');
  const button=name=>page.getByRole('button',{name,exact:true});
+ // Wait for the fixture's responsive React commit, not a fixed sleep. Otherwise
+ // geometry can still include the desktop profile host after changing viewport.
+ const resize=async width=>{
+  await page.setViewportSize({width,height:1000});
+  await page.waitForFunction(()=>{const host=document.getElementById('expo-work-profile-switcher');return Boolean(host)&&(innerWidth<=700)===(host.parentElement.tagName==='HEADER');});
+ };
  await page.locator('.project-workspace').waitFor();
  const nav=page.locator('.project-workspace-navigation');
  eq(await page.locator('#expo-project-workspace-guide').count(),0,'legacy duplicate guide removed');
@@ -80,11 +88,11 @@ try{
  eq(await page.locator('.project-contact-overview .guideCard').count(),4,'overview prioritizes four contact/financial fields');
  eq(await page.locator('.project-contact-overview').getByText(/12\s500\skr/).count(),1,'accepted sum retains VAT');
  for(const width of [1363,768,390,320]){
-  await page.setViewportSize({width,height:1000});
+  await resize(width);
   eq(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'contact overview fits '+width);
   eq(await page.locator('.project-contact-overview').getByText('qa@example.invalid',{exact:true}).isVisible(),true,'contact email retained '+width);
  }
- await page.setViewportSize({width:1363,height:1000});
+ await resize(1363);
  eq(await nav.getByRole('group',{name:'Oppstart',exact:true}).locator('button').allTextContents().then(labels=>labels.map(text=>text.replace(/^[1-5]/,'').replace('Ved behov','').replace('Historikk','').trim())),['Oversikt','Deltakere og tilganger','Prosjektbeskrivelse','Avtalegrunnlag','Prosjektering','Fremdrift','Salgsgrunnlag'],'contacts and portal access precede work description; history is separate');
  eq(await page.getByRole('region',{name:'Anbefalt neste steg'}).getByText('Du er her: Oversikt',{exact:true}).isVisible(),true,'current setup position explicit');
  await page.getByRole('region',{name:'Anbefalt neste steg'}).getByRole('button',{name:'Lagre og fortsett →',exact:true}).click();
@@ -125,7 +133,7 @@ try{
  eq(await page.evaluate(()=>window.navCalls.at(-1)),'bilder','real tab ID');
  await page.waitForFunction(()=>scrollY===0);eq(await page.evaluate(()=>scrollY),0,'project context remains visible after navigation');
  for(const width of [1363,768,390,320]){
-  await page.setViewportSize({width,height:1000});
+  await resize(width);
   eq(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'fits '+width);
   eq((await page.locator('main>h2').boundingBox()).y<800,true,'content reachable '+width);
   if(width<1181){
@@ -145,7 +153,7 @@ try{
   eq(await status.getByText('Kontroller bilder',{exact:true}).isVisible(),true,'guidance not collapsed '+width);
   await status.press('Escape');
  }
- await page.setViewportSize({width:390,height:1000});
+ await resize(390);
  const fieldBar=page.getByRole('navigation',{name:'Prosjektverktøy på mobil',exact:true});
  await page.evaluate(()=>window.scrollTo(0,300));
  eq(await fieldBar.isVisible(),true,'field bar stays visible after scrolling');
@@ -168,7 +176,7 @@ try{
  eq(await page.getByRole('dialog').count(),0,'status shortcut closes dialog via existing navigation');
  eq(await page.evaluate(()=>window.navCalls.at(-1)),'bilder','status callback retained');
  for(const width of [1363,768,390,320]){
-  await page.setViewportSize({width,height:1000});
+  await resize(width);
   const trigger=button('Flere handlinger'),overflow=await page.locator('body').evaluate(e=>e.style.overflow);
   await trigger.click();const actions=page.getByRole('menu',{name:'Flere handlinger',exact:true});await actions.waitFor();
   eq(await page.getByRole('dialog').count(),0,'actions open without modal '+width);

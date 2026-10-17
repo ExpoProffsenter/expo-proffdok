@@ -102,3 +102,16 @@ section.deviation-dialog:has(.project-dialog-content){padding:0!important;margin
 .project-actions-menu>button{display:block;width:100%;min-height:44px;padding:10px 12px;border:0;border-radius:8px;background:transparent;color:#173f4b;box-shadow:none;text-align:left;font-size:13px}
 .project-actions-menu>button:hover,.project-actions-menu>button:focus-visible{background:#e8f5f6;outline:2px solid #0a7b88;outline-offset:-2px}
 @media(max-width:700px){.project-header-actions>.project-actions-dropdown{flex:1;min-width:0}.project-actions-dropdown>button{min-height:44px;font-size:13px}}
+
+/* The shared mobile section rule is 100% wide. Project context sits outside main
+   and has its own side margins; include those margins in its actual width. */
+@media(max-width:700px){
+ [data-expo-project-shell="1"]>section.project-workspace{width:calc(100% - 24px)!important;max-width:calc(100% - 24px)!important;min-width:0}
+ /* This wrapper is one grid item in the app header, not a button in the logo column. */
+ [data-expo-project-shell="1"]>header>.head>.project-header-actions{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch;width:100%;min-width:0;margin:0}
+ [data-expo-project-shell="1"]>header>.head>.project-header-actions>button,
+ [data-expo-project-shell="1"]>header>.head>.project-header-actions>.project-actions-dropdown>button{width:100%;min-width:0;min-height:44px!important;white-space:normal;overflow-wrap:anywhere;font-size:13px!important;line-height:1.25!important}
+ [data-expo-project-shell="1"]>header>.head>.project-header-actions>.project-actions-dropdown{display:flex;min-width:0}
+ [data-expo-project-shell="1"]>header>.head>.project-header-actions>.project-actions-dropdown:only-child{grid-column:1/-1}
+ [data-expo-project-shell="1"]>header>.head>.project-header-actions button>svg{flex-shrink:0}
+}

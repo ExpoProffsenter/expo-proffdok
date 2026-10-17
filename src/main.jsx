@@ -701,6 +701,7 @@ const HomeFollowups = React.lazy(() => import('./modules/home/HomeFollowups.jsx'
     const [salesOpenRequestSignal, setSalesOpenRequestSignal] = (0, import_react.useState)("");
     const [mobileMenuOpen, setMobileMenuOpen] = (0, import_react.useState)(false);
     const [mobileStatusOpen, setMobileStatusOpen] = (0, import_react.useState)(false);
+    const [checklistEntryRequest, setChecklistEntryRequest] = (0, import_react.useState)(null);
     const [projectDirty, setProjectDirty] = (0, import_react.useState)(false);
     const defaultCompanyProfile = { companyName: "Expo Proffsenter", address: "", orgNumber: "", phone: "", email: "", website: "", logoUrl: "" };
     const [company, setCompany] = (0, import_react.useState)({ ...defaultCompanyProfile });
@@ -2142,6 +2143,9 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       setTimeout(() => scrollToMobileTabTarget("prosjekt"), 90);
       setTimeout(() => scrollToMobileTabTarget("prosjekt"), 320);
     };
+    const requestChecklistEntry = (id) => {
+      setChecklistEntryRequest(id === "sjekklister" && projectId ? { id: crypto.randomUUID(), projectId, companyId: kshmsContext?.company_id, userId: authUser?.id } : null);
+    };
     const goToTab = async (id) => {
       if (!id) return;
       setMobileStatusOpen(false);
@@ -2157,12 +2161,14 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
         return;
       }
       if (id === tab) {
+        requestChecklistEntry(id);
         setMobileMenuOpen(false);
         setTimeout(() => scrollToMobileTabTarget(id), 20);
         return true;
       }
       const canLeave = await confirmLeaveWithUnsavedChanges(`går til fanen "${tabs.find(([tabId]) => tabId === id)?.[1] || id}"`);
       if (!canLeave) return false;
+      requestChecklistEntry(id);
       setTab(id);
       if (projectId && (id === "prosjekt" || projectWorkspaceOnlyTabs.has(id))) {
         syncInternalProjectUrl(projectId, id);
@@ -6827,6 +6833,8 @@ ${appLink}`;
               companyId: kshmsContext?.company_id,
               userId: authUser?.id,
               projectId,
+              entryRequest: checklistEntryRequest,
+              onEntryHandled: (id) => setChecklistEntryRequest(current => current?.id === id ? null : current),
               instances: project.kshmsChecklistInstances || [],
               readOnly: isProjectLocked || isReadOnly || isProjectSupportReadOnly,
               customChecklistAllowed,
