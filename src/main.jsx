@@ -1,3 +1,4 @@
+import ProjectWorkspaceChrome, { ProjectHeaderActions, ProjectStatusDialog } from './modules/project/ProjectWorkspaceChrome.jsx';
 import SupportLinkEntry from './modules/support/SupportLinkEntry.jsx';
 import WorkdayShortcuts from './modules/home/WorkdayShortcuts.jsx';
 import DeliverySummary from './modules/report/DeliverySummary.jsx';
@@ -1999,10 +2000,6 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
     const openMobileStatus = () => {
       setMobileStatusOpen(true);
       setMobileMenuOpen(false);
-      window.setTimeout(() => {
-        const target = document.querySelector(".projectStatusSection");
-        if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
-      }, 80);
     };
 
     const confirmLeaveWithUnsavedChanges = async (actionLabel = "fortsette") => {
@@ -6096,7 +6093,7 @@ ${appLink}`;
         bathroomEquipment
       });
     }
-    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { onClick: openImageLightboxFromClick, children: [
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { "data-expo-project-shell": hasActiveProjectWorkspace ? "1" : void 0, onClick: openImageLightboxFromClick, children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(MobileScrollShortcuts, {}),
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("style", { children: APP_RUNTIME_STYLES }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AppNewsNotice, { supabaseClient: supabase, authUser }),
@@ -6119,13 +6116,7 @@ ${appLink}`;
           !isProjectSupportReadOnly && !mobileCreatingProject && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: createNewProject, children: "+ Nytt prosjekt" }),
           !projectId && mobileCreatingProject && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: cancelNewProject, children: "← Avbryt nytt prosjekt" }),
           projectId && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: leaveProjectWorkspace, children: isProjectSupportReadOnly ? "← Supportoversikt" : "← Til startside" }),
-          hasActiveProjectWorkspace && !isProjectSupportReadOnly && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: saveProject, children: projectDirty ? "● Lagre endringer" : projectId ? "Oppdater prosjekt" : "Lagre prosjekt" }),
-          projectId && !isProjectSupportReadOnly && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: saveAsNewProject, children: "Lagre som kopi" }),
-          hasActiveProjectWorkspace && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { onClick: downloadClickablePdfReport, children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Download, { size: 18 }),
-            " Last ned PDF"
-          ] }),
-          projectId && !isProjectSupportReadOnly && (isProjectLocked ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => setProjectLockedState(false), children: "\u{1F513} L\xE5s opp prosjekt" }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => setProjectLockedState(true), children: "\u{1F512} Avslutt prosjekt" }))
+          hasActiveProjectWorkspace && (0, import_jsx_runtime.jsx)(ProjectHeaderActions, { dirty: projectDirty, saved: Boolean(projectId), readOnly: isProjectSupportReadOnly, locked: isProjectLocked, simpleOrder: isSimpleOrderProject(project), onSave: saveProject, onCopy: projectId && !isProjectSupportReadOnly ? saveAsNewProject : void 0, onPdf: downloadClickablePdfReport, onLock: setProjectLockedState }, projectId || "new")
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("nav", { children: tabs.map(([id, l]) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { "data-expo-nav-label": l, className: tab === id ? "on" : "", onClick: () => goToTab(id), children: l }, id)) }),
         projectDirty && hasActiveProjectWorkspace && !isReadOnly && !isProjectSupportReadOnly && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { maxWidth: "1180px", margin: "0 auto 10px", padding: "10px 14px", background: "#fffbeb", border: "1px solid #facc15", borderRadius: "14px", color: "#92400e", fontWeight: 800, display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px", flexWrap: "wrap" }, children: [
@@ -6181,7 +6172,8 @@ ${appLink}`;
           ] })
         ] }) })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "mobileFieldBar", "aria-label": "Mobil arbeidsmeny", children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileFieldBarInner", children: [
+      hasActiveProjectWorkspace && (0, import_jsx_runtime.jsx)(ProjectWorkspaceChrome, { tabs: projectTabs, activeTab: tab, project, saved: Boolean(projectId), simpleOrder: isSimpleOrderProject(project), status: currentStatus, deviations: projectGuideStats.openDeviationCount, unread: unreadForAdmin, onNavigate: goToTab, onStatus: openMobileStatus, onExit: projectId ? leaveProjectWorkspace : cancelNewProject }, projectId || "new"),
+      !hasActiveProjectWorkspace && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "mobileFieldBar", "aria-label": "Mobil arbeidsmeny", children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileFieldBarInner", children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", className: "mobileFieldBarToggle", "aria-expanded": mobileMenuOpen, onClick: () => setMobileMenuOpen((open) => !open), children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: ["☰ ", tabs.find(([id]) => id === tab)?.[1] || "Velg side"] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { "aria-hidden": "true", children: mobileMenuOpen ? "▲" : "▼" })
@@ -6383,6 +6375,7 @@ ${appLink}`;
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => goToTab("bilder"), children: "G\xE5 til bilder" })
           ] })
         ] }),
+        projectId && (0, import_jsx_runtime.jsxs)(ProjectStatusDialog, { open: mobileStatusOpen, onClose: () => setMobileStatusOpen(false), projectName: project.projectName || project.address, children: [
         projectId && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { className: mobileStatusOpen ? "projectStatusSection mobileStatusOpen" : "projectStatusSection", title: `${currentStatus.icon} Prosjektstatus: ${currentStatus.label}`, icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary mobileStatusClose", onClick: () => setMobileStatusOpen(false), children: "✕ Lukk status" }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("details", { className: "project-status-details", key: projectId+":"+tab, open: mobileStatusOpen, children: [
@@ -6431,8 +6424,8 @@ ${appLink}`;
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Denne oversikten viser hva som er på plass og hva som bør kontrolleres før rapport, PDF og overtagelse." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "guideGrid", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "guideCard", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: `${projectGuideStats.completionPercent}%` }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "ferdigstillelse" })
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: `${projectGuideStats.checklistDone + projectGuideStats.checklistMissing > 0 ? Math.round(100 * projectGuideStats.checklistDone / (projectGuideStats.checklistDone + projectGuideStats.checklistMissing)) : 0}%` }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: `sjekkliste · ${projectGuideStats.checklistDone} av ${projectGuideStats.checklistDone + projectGuideStats.checklistMissing}` })
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "guideCard", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: projectGuideStats.productCount }),
@@ -6464,6 +6457,7 @@ ${appLink}`;
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => openProjectGuideItem(item), children: "Åpne" })
           ] }, item.id)) }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Prosjektet ser komplett ut. Kontroller rapporten før prosjektet avsluttes." }),
           projectGuideStats.openDeviationCount > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: openActiveDeviations, children: "Se aktive avvik" })
+        ] }),
         ] }),
         tab === "prosjekt" && projectId && renderProjectOverviewPanel({ project, goToTab, leaveProjectWorkspace }),
         (tab === "prosjekt" || tab === "avvik") && projectId && authUser?.id === kshmsContext?.user_id && kshmsContext?.enabled && !isProjectSupportReadOnly && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProjectSjaEntry, { context: kshmsContext, projectId, readOnly: isProjectLocked || isReadOnly }, `${kshmsScopeKey}:${projectId}`),

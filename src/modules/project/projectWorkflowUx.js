@@ -347,6 +347,8 @@ function adaptProjectStatus(activeProject, nav) {
   }
 
   adaptChecklistProgress(section);
+  // The React status dialog owns its visibility; keep all guidance available there.
+  if (section.closest("[data-expo-project-status-content]")) return;
   const activeLabel = getActiveNavLabel(nav);
   if (activeLabel !== lastStatusTabLabel) {
     projectStatusExpanded = false;

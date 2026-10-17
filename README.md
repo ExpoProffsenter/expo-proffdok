@@ -898,3 +898,17 @@ Avgrenset implementasjon: `SupplierOrder.jsx`, `supplierOrderClient.js`, `suppli
 QA: `node scripts/supplier-order-db-check.mjs`, `node scripts/supplier-order-email-check.mjs`, `node scripts/supplier-order-react-check.mjs`, full critical-suite og bygg. Sandbox først; ny TEST OK kreves før produksjonssetting og deretter kontrollert main → demo.
 
 Plukklisten har en samlet handlingsrad: bestilling, utskrift av plukkliste, Cordel og prisutskrift. Internt prisvalg står under prisutskriften. Lagre, vis/skjul og slett står ved overskriften. På mobil står bestilling øverst i full bredde, med utskrift og Cordel under.
+
+
+### Prosjektarbeidsflate – Preview 17.10.2026
+
+Miljømål: BEGGE. Ordinære, direkte opprettede og generelle/enkle prosjekter
+bruker samme kompakte toppfelt og prosjektmeny, med eksisterende ordrefiltrering.
+ProjectWorkspaceChrome viser valgt fase på desktop og bruker eksisterende
+DeviationDialog for mobilmeny, samlet status/mangler og flere handlinger.
+React eier dialogene; eksisterende goToTab, lagring, PDF, kopi, låsing og
+forlat-bekreftelser brukes uendret. Den gamle kilde-navigasjonen beholdes for
+legacy-adapterne, mens dobbelt prosjektmeny ikke vises. Statusveiledningen
+beholder sjekklisteprosent, avvik, overtagelseskrav og eksisterende callbacks.
+Ingen SQL, e-post-, support-, timeførings- eller recovery-endring.
+Se docs/qa/PROJECT_WORKSPACE_UX_20261017.md. Ny TEST OK kreves før merge.

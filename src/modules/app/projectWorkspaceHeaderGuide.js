@@ -152,7 +152,7 @@ function syncShortcutButtons(guide) {
 function syncGuide() {
   const existing = document.getElementById(GUIDE_ID);
   const bar = document.getElementById(BAR_ID);
-  if (!window.matchMedia(DESKTOP_QUERY).matches || !isProjectWorkspace()) {
+  if (document.querySelector("[data-expo-project-workspace]") || !window.matchMedia(DESKTOP_QUERY).matches || !isProjectWorkspace()) {
     existing?.remove();
     bar?.classList.remove("expoDesktopMenuBarHasProjectGuide");
     return;
