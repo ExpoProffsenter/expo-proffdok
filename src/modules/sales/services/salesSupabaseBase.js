@@ -267,8 +267,9 @@ export async function getSalesOfferByToken(client, token) {
   };
 }
 
-export function acceptSalesOffer(client, { token, acceptedName, selectedOptions }) {
-  return client.rpc("accept_sales_offer", {
+export function acceptSalesOffer(client, { token, acceptedName, selectedOptions, expectedVersionId }) {
+  return client.rpc("accept_sales_offer_quantities", {
+    expected_version_id: expectedVersionId,
     token,
     accepted_name: acceptedName,
     selected_options: selectedOptions,

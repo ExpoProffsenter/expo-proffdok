@@ -1,3 +1,7 @@
+## Kundens antall på opsjoner – Preview 17.10.2026
+
+Opt-in `customerCanChooseQuantity` lagres i opsjons-JSON, mal/kladd og publisert versjon. Begge aktive tilbudsbyggere støtter tillegg med null eller positiv enhetspris; erstatningsalternativer har fast antall. Kunden må velge opsjonen før antall kan endres. Antall er > 0, ≤ 100 000 og høyst tre desimaler (komma tillatt). Summer beregnes med uendret intern eks. mva.-modell. Ny RPC `accept_sales_offer_quantities` kontrollerer forventet versjon under samme radlås som eksisterende aksept. Begge RPC-er henter pris, fast antall og øvrig opsjonsinnhold fra publisert versjon; bare tillatt antall kan komme fra klienten. Ukjente/dupliserte valg og motstridende erstatningsalternativer avvises. `accepted_payload.selected_options`, `accepted_total` og uendret `version_snapshot` er grunnlag for senere gjenåpning, aksept-PDF, signert kontrakt, bestillingsgrunnlag og prosjektaktivering. Eldre lagrede aksepter endres ikke. Migrasjon: `20261017124151_customer_option_quantities.sql`. Sandbox anvendt og transaksjonstestet; Production ikke anvendt. QA/testliste: docs/qa/CUSTOMER_OPTION_QUANTITIES_20261017.md.
+
 ## Samlet UX-runde 16.10.2026 – Preview før ny TEST OK
 
 Miljømål: BEGGE. Baseline er publisert main `5cc7e530685a48f4f59b403357e654e93c724578` (PR #260, godkjent og publisert). Eldre Preview-statuser lenger nede er historikk.

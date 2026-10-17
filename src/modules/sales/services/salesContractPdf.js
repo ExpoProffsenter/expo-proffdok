@@ -10,6 +10,9 @@ import {
 } from "../utils/salesContractModel.js";
 import {
   formatNok,
+  formatOfferQuantity,
+  getOfferUnitPrice,
+  hasOfferQuantityDetails,
   getOfferTermsSnapshot,
   getOfferTotal,
   getVisibleOfferLines,
@@ -636,7 +639,7 @@ export async function createFinalSalesContractPdf(contract = {}) {
       const amount = getOfferTotal([option]) * 1.25;
       textCard(
         `${index + 1}. ${clean(option.title) || "Valgt opsjon"} - ${optionTypeLabel(option)}`,
-        `${clean(option.description) || "Valgt av kunden ved aksept."}\nPrisendring inkl. mva.: ${formatNok(amount)}`
+        `${clean(option.description) || "Valgt av kunden ved aksept."}${hasOfferQuantityDetails(option) ? `\nAntall/enhetspris: ${formatOfferQuantity(option)} × ${formatNok(getOfferUnitPrice(option) * 1.25)} inkl. mva.` : ""}\nPrisendring inkl. mva.: ${formatNok(amount)}`
       );
     });
   }

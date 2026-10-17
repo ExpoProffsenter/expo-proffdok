@@ -1,3 +1,4 @@
+import { canChooseOptionQuantity, parseCustomerOptionQuantity } from "../utils/salesCustomerOptionQuantities.js";
 // Expo ProffDok – FASE 37D1 / FASE 32A / FASE 23P / FASE 29B4
 // Butikktilbud bruker valgt Ringside/Bademiljø-merkevare i det låste firmasnapshotet
 // og binder saksbehandlerens bruker/e-post når den kan bekreftes mot ansvarlig på saken.
@@ -94,6 +95,10 @@ export async function publishSalesOfferAndBuildLink({
 
   if (!request || !request.offerLines?.length) {
     throw new Error("Tilbudet mangler prislinjer.");
+  }
+
+  if ((request.offerOptions || []).some(option => option.customerCanChooseQuantity === true && (!canChooseOptionQuantity(option) || parseCustomerOptionQuantity(String(option.quantity ?? "").trim() || "1") === null))) {
+    throw new Error("Kontroller opsjonene med antallsvalg. Bruk tillegg med null eller positiv enhetspris og antall over 0 og opptil 100 000, med høyst tre desimaler.");
   }
 
   const currentLineCount = request.offerLines?.length || 0;

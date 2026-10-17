@@ -154,6 +154,7 @@ export function normalizeOfferOptions(options = []) {
     return {
       ...option,
       ...normalizeMainPostMeta(option),
+      customerCanChooseQuantity: option.customerCanChooseQuantity === undefined ? undefined : optionType !== "alternative" && option.customerCanChooseQuantity === true,
       optionType,
       replacementLineId:
         optionType === "alternative"

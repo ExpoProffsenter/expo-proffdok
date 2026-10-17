@@ -1,3 +1,4 @@
+import { canChooseOptionQuantity } from "./salesCustomerOptionQuantities.js";
 import { offerVatPresentation } from "./salesOfferVatPresentation.js";
 // Expo ProffDok – FASE 37D2 / FASE 31A2B / FASE 39B.2C
 // Felles, ren presentasjonsadapter for antall/enhetspris i kundetilbud og PDF.
@@ -76,6 +77,7 @@ function decorateLine(line = {}, multiplier = 1.25) {
 }
 
 function decorateOption(option = {}, multiplier = 1.25) {
+  if (canChooseOptionQuantity(option)) return option;
   // Store-alternativer lagrer differansen mot grunnpakken i amount. Den verdien
   // er korrekt for beregning, men er ikke en enhetspris kunden skal se.
   if (
