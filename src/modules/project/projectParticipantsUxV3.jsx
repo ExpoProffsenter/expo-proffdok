@@ -203,7 +203,7 @@ const NAV_LABELS = [
 
 function isNavigationTarget(element) {
   if (!element) return false;
-  if (element.matches('a[href]')) return true;
+  if (element.matches('a[href],[data-project-navigation]')) return true;
   const text = clean(element.textContent).replace(/^\+\s*/, '');
   return NAV_LABELS.some((label) => text === label || text.startsWith(`${label} (`));
 }
@@ -458,6 +458,8 @@ function findProjectInfoSection() {
   if (isPortalView()) return null;
   const projectId = projectIdFromUrl();
   if (!projectId) return null;
+  const slot = document.querySelector('[data-expo-project-shell="1"] [data-project-participants-slot]');
+  if (slot) return slot;
   return Array.from(document.querySelectorAll('section')).find((section) => {
     const heading = Array.from(section.children).find((child) => child.tagName === 'H2');
     return clean(heading?.textContent) === 'Rediger kunde- og prosjektinfo';

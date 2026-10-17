@@ -1,3 +1,4 @@
+import {checklistResumeEntries} from './checklistResume.mjs';
 import {checklistDisplayState} from './checklistDisplay.mjs';
 import {useEffect,useRef,useState} from 'react';
 import DeviationDialog from '../deviations/DeviationDialog.jsx';
@@ -138,6 +139,8 @@ export default function ProjectChecklistWorkspace({Editor,companyId,userId,proje
   finally{locked.current=false;if(current(scope))setBusy(false);}
  };
  const groups=activeChecklistTemplate;
+ const displayGroups=checklistResumeEntries(groups,data?.runs||[],data?.checklist||checklist,category=>readRunDraft(window.localStorage,key(category)),readOnly);
+ const resumable=displayGroups.filter(entry=>entry.resumable);
  const historical=(data?.runs||[]).filter(value=>value.status==='completed');
  const previousGroups=Object.entries(data?.checklist||checklist||{}).filter(([category,answers])=>!groups.some(group=>group.category===category)&&Object.values(answers||{}).some(answer=>answer?.status||answer?.comment||answer?.photos?.length));
  const savedSelection=selected&&data?.runs?.find(row=>row.id===selected.id);
@@ -149,7 +152,8 @@ export default function ProjectChecklistWorkspace({Editor,companyId,userId,proje
   {showTools&&<details className="item"><summary>Egne sjekkpunkter og vedlegg</summary><fieldset disabled={readOnly}><Editor {...editorProps} checklist={checklist} activeChecklistTemplate={[]} customChecklistEnabled={customChecklistAllowed} toolsOnly consumeChecklistJump={false}/></fieldset></details>}
   {!groups.length&&<p>Ingen sjekklister er lagt til. Legg til egne sjekkpunkter, eller hent en publisert liste fra KS/HMS når firmaet har tilgang.</p>}
   <div className="ux-toolbar"><label>Vis sjekklister<select value={displayFilter} onChange={e=>setDisplayFilter(e.target.value)}><option value="all">Alle</option><option value="unfinished">Uferdige</option><option value="deviations">Med åpne avvik</option><option value="images">Mangler påkrevd bilde eller dokumentasjon</option></select></label><span className="ux-inline-note">Filtrering endrer ingen svar. Lagring og rapport bruker fortsatt hele kontrollen.</span></div>
-  {groups.map(group=>{
+  {!selected&&!!resumable.length&&['all','unfinished'].includes(displayFilter)&&<div className="project-checklist-resume" role="region" aria-label="Påbegynte sjekklister"><strong>Fortsett der du slapp</strong>{resumable.map(({group})=><button key={group.category} type="button" disabled={busy} aria-label={`Fortsett utfylling: ${title(group)}`} onClick={()=>begin(group)}><span>{title(group)}</span><b>Fortsett utfylling →</b></button>)}</div>}
+  {displayGroups.map(({group})=>{
    const latest=data?.runs?.find(run=>run.category===group.category),answers=latest?.answers||checklist?.[group.category]||{},done=group.items.filter(item=>answers[item]?.status).length;
    const display=checklistDisplayState(latest?.definition||runDefinition(group,instances,isWarrantyPoint(group.category)),answers,latest?.status==='completed');
    const visible=displayFilter==='all'||(displayFilter==='unfinished'&&!display.complete)||(displayFilter==='deviations'&&display.deviations>0)||(displayFilter==='images'&&display.missingImages>0);

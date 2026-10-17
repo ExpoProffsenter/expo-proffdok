@@ -57,19 +57,11 @@ export function createProjectOverviewTools({
     const acceptedTotal = formatAcceptedTotal(
       acceptedOfferTotalInclVat(project?.salesOrigin?.acceptedTotal)
     );
-    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: simpleOrder ? "Ordreoversikt" : "Prosjektoversikt", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: [
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { className: "project-contact-overview", title: simpleOrder ? "Ordreoversikt" : "Prosjektoversikt", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: [
       simpleOrder ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { "data-expo-workflow-type": "simple_order", style: { display: "none" }, "aria-hidden": "true" }) : null,
       salesOriginRef ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { "data-expo-sales-origin-ref": salesOriginRef, "data-expo-sales-public-token": salesPublicToken, style: { display: "none" }, "aria-hidden": "true" }) : null,
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: simpleOrder ? "Enkel ordre bruker samme dokumentasjonsmotor som ProffDok, men uten kundelenke. Bruk bare de verktøyene som er relevante for oppdraget." : "Her finner du kunde, kontaktinformasjon, adresse og prosjektansvarlig samlet. Feltene kan redigeres i seksjonen under." }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: simpleOrder ? "Enkel ordre bruker samme dokumentasjonsmotor som ProffDok, men uten kundelenke. Bruk bare de verktøyene som er relevante for oppdraget." : "Kontaktinformasjon, prosjektansvarlig og tilbudssum. Opplysninger kan redigeres nedenfor." }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "guideGrid", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "guideCard", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: project.projectName || (simpleOrder ? "Uten ordrenavn" : "Uten prosjektnavn") }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: simpleOrder ? "Enkel ordre" : "Prosjekt" })
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "guideCard", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: project.customer || "Ikke registrert" }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Kunde" })
-        ] }),
         acceptedTotal ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "guideCard", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: acceptedTotal }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Akseptert tilbudssum inkl. mva." })
@@ -81,10 +73,6 @@ export function createProjectOverviewTools({
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "guideCard", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: project.customerEmail || "Ikke registrert" }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "E-post" })
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "guideCard", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: [project.address, project.postnr, project.city].filter(Boolean).join(" ") || "Ikke registrert" }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Adresse" })
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "guideCard", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: project.responsible || "Ikke registrert" }),
