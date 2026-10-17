@@ -1497,3 +1497,9 @@ legacy-adapterne, mens dobbelt prosjektmeny ikke vises. Statusveiledningen
 beholder sjekklisteprosent, avvik, overtagelseskrav og eksisterende callbacks.
 Ingen SQL, e-post-, support-, timeførings- eller recovery-endring.
 Se docs/qa/PROJECT_WORKSPACE_UX_20261017.md. Ny TEST OK kreves før merge.
+
+Oppfølging 17.10: Prosjektets apphode er komprimert med lokal CSS. Navn, kunde
+og full adresse står i toppfeltet; intern oversikt gjentar dem ikke, men beholder
+telefon, e-post, prosjektansvarlig og akseptert sum inkl. mva. Kundeportalens
+ProjectInformationReadOnly og rapportdata er urørt. Vanlige prosjekter viser
+«Overlevering og garanti»; enkle ordrer beholder «Overlevering» uten garanti.

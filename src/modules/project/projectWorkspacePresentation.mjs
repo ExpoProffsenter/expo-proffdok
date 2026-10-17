@@ -9,7 +9,7 @@ export function projectWorkspaceGroups(tabs, simpleOrder = false) {
   const labels = simpleOrder
     ? { prosjekt: 'Ordreoversikt', sales: 'Tilbudsgrunnlag', prosjektinfo: 'Ordrebeskrivelse', produkter: 'Produkter / FDV', tilgang: 'UE-tilgang', rapport: 'Sluttdokumentasjon' }
     : { prosjekt: 'Oversikt', sales: 'Salgsgrunnlag', tilbud: 'Avtalegrunnlag' };
-  return GROUPS.map(([title, ids]) => ({ title, items: ids.flatMap(id => {
+  return GROUPS.map(([title, ids]) => ({ title: !simpleOrder && title === 'Overlevering' ? 'Overlevering og garanti' : title, items: ids.flatMap(id => {
     const item = tabs.find(([key]) => key === id);
     if (!item || (simpleOrder && ORDER_HIDDEN.has(id))) return [];
     return [[id, labels[id] || item[1]]];

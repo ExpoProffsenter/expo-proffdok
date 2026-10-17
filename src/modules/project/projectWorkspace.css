@@ -24,3 +24,28 @@ section.deviation-dialog:has(.project-dialog-content){padding:0!important;margin
 @media(max-width:700px){section.project-workspace{margin:8px 12px 14px!important}.project-workspace-heading h2{font-size:23px!important}section.deviation-dialog:has(.project-dialog-content){border-radius:0!important}}
 
 [data-expo-project-shell="1"]>header>.head>div:nth-child(2)>p{display:none}
+
+/* Compact project shell only; global Startside/KS/HMS/HR headers stay unchanged. */
+[data-expo-project-shell="1"] #expo-desktop-menu-bar{min-height:44px;padding:2px max(16px,calc((100% - 1180px)/2 + 16px));gap:8px}
+[data-expo-project-shell="1"]>header>.note{font-size:11px;padding-bottom:4px!important}
+.project-workspace-heading{padding:13px 20px;gap:12px}.project-workspace-heading h2{font-size:24px;margin:4px 0}.project-workspace-heading p{font-size:13px}.project-workspace-eyebrow{font-size:10px}
+.project-workspace-status{padding:5px 18px;gap:8px 14px}.project-workspace-status button{min-height:36px;padding:6px 12px;font-size:12px}
+.project-workspace-navigation{padding:10px 18px 8px}.project-workspace-groups{padding-bottom:7px}.project-workspace-tabs{padding-top:8px}.project-workspace-navigation button{min-height:38px;padding:7px 12px}.project-workspace-hint{margin-top:7px}
+[data-expo-project-shell="1"]>main{padding-top:8px}.project-contact-overview .guideGrid{grid-template-columns:repeat(4,minmax(0,1fr));margin-top:8px}.project-contact-overview .guideCard{min-width:0;padding:10px}.project-contact-overview .guideCard b{font-size:16px;overflow-wrap:anywhere}
+@media(min-width:1181px){
+ [data-expo-project-shell="1"]>header>.head{display:grid;grid-template-columns:170px minmax(100px,1fr) auto 180px auto;gap:10px;min-height:64px;padding:6px 16px!important;box-sizing:border-box}
+ [data-expo-project-shell="1"]>header>.head>div:first-child{grid-column:1;width:170px!important;height:46px!important}
+ [data-expo-project-shell="1"]>header>.head>div:nth-child(2){grid-column:2;min-width:0}
+ [data-expo-project-shell="1"]>header>.head h1{font-size:18px;white-space:nowrap}
+ [data-expo-project-shell="1"]>header>.head>button{min-height:40px;padding:8px 12px;font-size:12px}
+ [data-expo-project-shell="1"]>header>.head>#expo-work-profile-switcher{grid-column:4;grid-row:1;min-width:0!important;width:180px!important;margin:0!important}
+ [data-expo-project-shell="1"] .head .workProfileControl{min-width:0;margin:0}
+ [data-expo-project-shell="1"] .head .workProfileButton{width:100%;min-height:40px!important;padding:5px 8px!important}
+ [data-expo-project-shell="1"] .head .workProfileButton b{max-width:130px;font-size:12px}
+ [data-expo-project-shell="1"] .head .workProfileButton small{font-size:9px}
+ [data-expo-project-shell="1"] .head>.project-header-actions{grid-column:5;grid-row:1;flex-wrap:nowrap;margin:0}
+ [data-expo-project-shell="1"] .project-header-actions>button{min-height:40px;padding:8px 12px;font-size:12px;white-space:nowrap}
+}
+@media(min-width:701px) and (max-width:1180px){[data-expo-project-shell="1"]>header>.head{gap:8px;padding:8px 16px}[data-expo-project-shell="1"]>header>.head>div:first-child{width:160px!important;height:46px!important}}
+@media(max-width:700px){.project-workspace-heading{padding:12px 14px}.project-workspace-heading h2{font-size:20px!important}.project-workspace-status{padding:8px 12px}.project-workspace-mobile{padding:10px 12px}.project-workspace-mobile>div button{padding:7px 10px;min-height:38px}.project-contact-overview .guideGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media print{[data-expo-project-shell="1"]>header{display:none!important}}

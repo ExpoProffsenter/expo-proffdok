@@ -81,7 +81,7 @@ const BASE_SECTIONS = [
     [
       "Øverst i Forespørsler og tilbud kan du velge Ny forespørsel eller Nytt tilbud. Nytt tilbud åpner valget mellom tilbudstypene du har tilgang til.",
       "Velg en statusboks for å se saker i den arbeidskøen. Antallet står i samme boks. Når du åpner en sak og velger Tilbake, beholdes søk, filter og plass i listen så lenge du er i samme arbeidsøkt i Befaring/Tilbud.",
-      "I et åpent prosjekt velger du Oppstart, Gjennomføring eller Overlevering og deretter riktig fane. På mobil åpner Prosjektmeny alle prosjektfanene i en dialog. Enkle ordrer har samme oppsett med sine egne arbeidsverktøy.",
+      "I et åpent prosjekt velger du Oppstart, Gjennomføring eller Overlevering og garanti og deretter riktig fane. På mobil åpner Prosjektmeny alle prosjektfanene i en dialog. Enkle ordrer har samme oppsett med sine egne arbeidsverktøy. Der heter siste fase Overlevering og inneholder Sluttdokumentasjon.",
       "Status og mangler åpner samlet oppfølging. Lukk dialogen for å fortsette der du var. Lagre-knappen er synlig øverst; PDF, kopi og avslutning ligger under Flere handlinger.",
       "Bruk søkefeltet for å finne saker på blant annet kunde, adresse, e-post, telefon, saksreferanse, ansvarlig, tilbudstype og innhold. Statusfaner og eget Befaring-filter snevrer inn resultatet.",
       "Bruk fanen Forespørsler for nye saker som er registrert, men hvor befaring ennå ikke er planlagt. Saken blir liggende der til befaring bookes.",
@@ -293,7 +293,7 @@ const BASE_SECTIONS = [
     [
       "Trykk Vis detaljer på et kort for kontaktinfo, ansvarlig, bilder og alle snarveiene. Vis alle detaljer åpner innholdet på alle kort. Kollaps alle detaljer gir den korte oversikten igjen.",
       "Alle, Aktive og Arkiv står alltid fremme. Åpne Søk og filtre for søk, eksakte statusvalg, kun uleste, oppdatering og nullstilling. Gjeldende filtre vises også når feltet er lukket.",
-      "Åpne prosjektet for å starte i Prosjektoversikt. Velg Oppstart, Gjennomføring eller Overlevering og deretter riktig underfane. På mobil bruker du Prosjektmeny. Status og mangler samler oppfølgingen i en dialog."
+      "Åpne prosjektet for å starte i Prosjektoversikt. Velg Oppstart, Gjennomføring eller Overlevering og garanti og deretter riktig underfane. På mobil bruker du Prosjektmeny. Status og mangler samler oppfølgingen i en dialog."
     ],
     ["Låste prosjekter må låses opp før de redigeres."],
     ["Bruk søk fremfor scrolling når listen blir lang."]
@@ -502,7 +502,7 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Hjelp og dokumentasjon", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.FileText, {}), children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item helpQuickStart", style: { background: "linear-gradient(135deg,#0f172a,#164e63)", color: "#ffffff", borderColor: "#0f766e" }, children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { style: { marginTop: 0, color: "#ffffff" }, children: "📘 Digital brukerveiledning" }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { style: { color: "#dbeafe", lineHeight: 1.6 }, children: "Søk etter det du vil gjøre. Åpne et tema og følg trinnene. Brukervilkår og installasjonsveiledning kan åpnes nederst. Innholdet følger rollen og tilgangen din. Prosjektmenyen er gruppert i Oppstart, Gjennomføring og Overlevering. Åpne Status og mangler for detaljene." }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { style: { color: "#dbeafe", lineHeight: 1.6 }, children: "Søk etter det du vil gjøre. Åpne et tema og følg trinnene. Brukervilkår og installasjonsveiledning kan åpnes nederst. Innholdet følger rollen og tilgangen din. Prosjektmenyen er gruppert i Oppstart, Gjennomføring og Overlevering og garanti. Garanti ligger i den siste gruppen i vanlige prosjekter. Åpne Status og mangler for detaljene." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", flexWrap: "wrap", gap: "10px", marginTop: "12px" }, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { style: { padding: "8px 12px", borderRadius: "999px", background: "rgba(255,255,255,.14)", fontWeight: 900 }, children: ["Rolle: ", guideRoleLabel] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("time", { dateTime: "2026-10-16", style: { padding: "8px 12px", borderRadius: "999px", background: "rgba(255,255,255,.14)", fontWeight: 900 }, children: HELP_UPDATED_LABEL })

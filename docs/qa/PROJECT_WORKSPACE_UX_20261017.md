@@ -79,3 +79,25 @@ nye meny ut av bildet. Den eksisterende scroll-hjelperen bruker nå topposisjon
 når den nye prosjektflaten er i DOM. Dette gjelder bevisste åpninger/fanebytter;
 focus-/visibility-/draft-recovery er urørt. Den faktiske scroll-hjelperen er med
 i nettlesertesten, og eksisterende page-scroll-memory-check beholdes uendret.
+
+## Siste kompakte justering etter Kenneths bilde kl. 02:42
+
+Kenneth ba kl. 02:45 om å stramme inn toppfeltet, fjerne doble prosjektdata og
+gjøre Garanti lettere å finne. Samme PR/Preview oppdateres, fortsatt uten TEST OK.
+Scope: projectWorkspace.css, ProjectWorkspaceChrome, projectWorkspacePresentation,
+intern renderProjectOverviewPanel, Hjelp og QA/docs. Ingen ny main.jsx-endring.
+Den ordinære fasen heter nå Overlevering og garanti. Enkel ordre beholder
+Overlevering uten garanti. Toppfeltet har navn, kunde og full adresse. Intern
+oversikt beholder telefon, e-post, ansvarlig og akseptert sum inkl. mva.
+ProjectInformationReadOnly for kunde/UE og rapportinnhold er uendret.
+
+86 Chromium-assertions PASS, inkludert responsive kontaktfelt ved 1363/768/390/320 px.
+Apphodet testes <=80 px og prosjektkortet <310 px ved 1363 px i fixturen.
+Alle tidligere 71 assertions beholdes, i tillegg til reell Garanti-navigasjon,
+én prosjekttittel, full adresse og akseptert beløp med mva. Siste QA/CI/deploy og
+faktiske mål i innlogget Preview føres i PR-statusen. Full critical/build PASS
+og eksisterende prosjektmeny-retur PASS etter selve kodejusteringen.
+
+Brukerprøve: Åpne vanlig prosjekt → Overlevering og garanti → Garanti.
+Kontroller at arbeidsinnholdet begynner høyere, kontakt-/økonomifeltene fortsatt
+vises og at enkle ordrer har tilsvarende kompakt layout med sitt funksjonsutvalg.
