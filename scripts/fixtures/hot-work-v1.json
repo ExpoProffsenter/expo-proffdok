@@ -1,0 +1,39 @@
+{
+  "key": "hot-work",
+  "title": "Varme arbeider og brannberedskap",
+  "chapter": "Sikker utførelse og beredskap",
+  "goal": "Hindre antennelse og brannspredning ved gnister, flamme og varme.",
+  "responsibility": "Arbeidsleder avklarer tillatelse og sikkerhetstiltak. Utførende og brannvakt har nødvendig opplæring og eventuelle avtalekrav til sertifikat.",
+  "procedure": "1. Vurder om kald metode eller et egnet fast arbeidssted kan brukes. Avklar brennbart materiale, skjulte hulrom, gass og støv, samt gjeldende forsikrings-/kontraktsvilkår.\n\n2. Fjern eller beskytt brennbart materiale og tett åpninger som kan spre gnister. Avklar eventuell midlertidig frakobling av alarm med ansvarlig; gjeninnkobling må ha en eier.\n\n3. Kontroller slokkeutstyr og avtal brannvakt, alarm og nødadkomst før start. Gjennomfør arbeidet innenfor den godkjente planen.\n\n4. Kontroller området og skjulte risikosteder under og etter arbeidet. Varighet på etterkontroll følger risikovurdering og aktuelle sikkerhetsforskrifter, og dokumenteres.",
+  "documentation": "Arbeidstillatelse/SJA, kompetanse, tiltak og signert etterkontroll. Sertifikat erstatter ikke vurdering av arbeidsstedet.",
+  "references": [
+    {
+      "title": "Forskrift om utførelse av arbeid",
+      "url": "https://www.arbeidstilsynet.no/regelverk/forskrifter/forskrift-om-utforelse-av-arbeid/",
+      "kind": "law",
+      "checked_on": "2026-10-06"
+    },
+    {
+      "title": "Internkontrollforskriften §§4–5",
+      "url": "https://www.arbeidstilsynet.no/regelverk/forskrifter/internkontrollforskriften/",
+      "kind": "law",
+      "checked_on": "2026-10-06"
+    },
+    {
+      "title": "DSB – brannsikkerhet",
+      "url": "https://www.dsb.no/brannsikkerhet/",
+      "kind": "professional",
+      "checked_on": "2026-10-06"
+    }
+  ],
+  "coverage": [
+    "K021",
+    "U09"
+  ],
+  "relevance": "Ved varme arbeider og brannberedskap",
+  "trades": [],
+  "confirmation": "Gjennomgå rutinen og avklar spørsmål med ansvarlig før du utfører oppgavene. Bekreft bare egen gjennomgang. Be om nødvendig opplæring og meld fra om mangler.",
+  "source_key": "hot-work",
+  "source_revision": 1,
+  "recommendation": "varme arbeid|sveising|flamme|gnist"
+}

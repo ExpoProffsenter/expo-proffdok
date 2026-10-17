@@ -88,3 +88,5 @@ console.log('critical-kshms-checklists-check: OK — company intake without pers
 
 // PDF must remain subject to the same edition/project access contracts.
 await import('./critical-kshms-document-pdf-check.mjs');
+
+await import('./critical-flexible-checklist-fields-check.mjs');
