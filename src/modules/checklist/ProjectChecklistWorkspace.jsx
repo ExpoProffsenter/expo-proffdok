@@ -1,3 +1,4 @@
+import {invalidateFieldConfirmations} from './checklistFields.mjs';
 import {checklistResumeEntries,firstUnfinishedChecklist} from './checklistResume.mjs';
 import {checklistDisplayState} from './checklistDisplay.mjs';
 import {useEffect,useRef,useState} from 'react';
@@ -55,7 +56,7 @@ export default function ProjectChecklistWorkspace({Editor,companyId,userId,proje
     select({...saved,definition:saved.definition,answers:currentRunAnswers(saved,state.checklist),readOnly:true});return;
    }
    const local=readRunDraft(window.localStorage,key(group.category));
-   const meaningfulLocal=local&&(local.pendingAction||Object.values(local.answers).some(answer=>answer?.status||answer?.comment||answer?.photos?.length));
+   const meaningfulLocal=local&&(local.pendingAction||Object.values(local.answers).some(answer=>answer?.status||answer?.comment||answer?.photos?.length||Object.keys(answer?.values||{}).length));
    if(!fresh&&local&&!readOnly&&(meaningfulLocal||!latest)){
     const definition=!local.pendingAction&&group.category.startsWith('Egne sjekkpunkter')?{...local.definition,items:[...new Set([...local.definition.items,...group.items])]}:local.definition;
     select({...local,definition,answers:answersForDefinition(definition,local.answers)});
@@ -102,9 +103,10 @@ export default function ProjectChecklistWorkspace({Editor,companyId,userId,proje
   beginRef.current(null,{nextUnfinished:true,isIntentCurrent:()=>active}).finally(()=>{if(active)finish();});
   return()=>{active=false;events.forEach(event=>window.removeEventListener(event,cancel,true));};
  },[entryRequest,companyId,userId,projectId,readOnly]);
- const change=(category,item,patch)=>{
+ const change=(category,item,patch,options={})=>{
   const value=selection.current;if(!value||value.readOnly||readOnly||locked.current||value.pendingAction)return;
-  const next={...value,answers:{...value.answers,[item]:{...value.answers[item],...patch}},requestId:crypto.randomUUID()};
+  const answers={...value.answers,[item]:{...value.answers[item],...patch}};
+  const next={...value,answers:invalidateFieldConfirmations(value.definition.items,value.definition.requirements||{},answers,item,options.confirmationId),requestId:crypto.randomUUID()};
   selection.current=next;setSelected(next);remember(next);setError('');
  };
  const addPhoto=async(category,item,files)=>{
@@ -161,7 +163,7 @@ export default function ProjectChecklistWorkspace({Editor,companyId,userId,proje
  const displayGroups=checklistResumeEntries(groups,data?.runs||[],data?.checklist||checklist,category=>readRunDraft(window.localStorage,key(category)),readOnly);
  const resumable=displayGroups.filter(entry=>entry.resumable);
  const historical=(data?.runs||[]).filter(value=>value.status==='completed');
- const previousGroups=Object.entries(data?.checklist||checklist||{}).filter(([category,answers])=>!groups.some(group=>group.category===category)&&Object.values(answers||{}).some(answer=>answer?.status||answer?.comment||answer?.photos?.length));
+ const previousGroups=Object.entries(data?.checklist||checklist||{}).filter(([category,answers])=>!groups.some(group=>group.category===category)&&Object.values(answers||{}).some(answer=>answer?.status||answer?.comment||answer?.photos?.length||Object.keys(answer?.values||{}).length));
  const savedSelection=selected&&data?.runs?.find(row=>row.id===selected.id);
  const pdfReady=Boolean(savedSelection&&!selected.earlierDraft&&!selected.pendingAction&&savedSelection.revision===selected.revision&&sameRunValue(savedSelection.definition,selected.definition)&&sameRunValue(answersForDefinition(savedSelection.definition,savedSelection.answers),answersForDefinition(selected.definition,selected.answers)));
  const title=definition=>definition.category.replace(/^KS\/HMS sjekkliste – /,'');
@@ -192,7 +194,7 @@ export default function ProjectChecklistWorkspace({Editor,companyId,userId,proje
   {selected&&<DeviationDialog title={title(selected.definition)} context={selected.readOnly?'Lagret kontroll':`Kontroll under arbeid${selected.revision?' · lagret versjon '+selected.revision:''}`} onClose={dismiss} busy={busy||uploads>0} closeLabel="Lukk sjekklistedialog">
    {error&&<p role="alert" className="ks-error">{error}</p>}{notice&&<p role="status" className="ks-notice">{notice}</p>}
    {selected.completed_identity&&<p>Fullført av {identityText(selected.completed_identity)} · {new Date(selected.completed_at).toLocaleString('nb-NO')}</p>}
-   <fieldset disabled={readOnly||selected.readOnly||busy||uploads>0||!!selected.pendingAction}><Editor {...editorProps} key={selected.id} embedded initiallyExpanded consumeChecklistJump={false} customChecklistEnabled={false} showOpenDeviationsOnly={false} setShowOpenDeviationsOnly={null} activeChecklistTemplate={[selected.definition]} checklist={{[selected.definition.category]:selected.answers}} setChecklistValue={change} addChecklistPhoto={addPhoto} onOpenKshmsDeviation={editorProps.onOpenKshmsDeviation?id=>{if(remember(selection.current)){setSelected(null);selection.current=null;editorProps.onOpenKshmsDeviation(id);}}:null}/></fieldset>
+   <fieldset disabled={readOnly||selected.readOnly||busy||uploads>0||!!selected.pendingAction}><Editor {...editorProps} key={selected.id} userId={userId} readOnlyFields={readOnly||selected.readOnly} embedded initiallyExpanded consumeChecklistJump={false} customChecklistEnabled={false} showOpenDeviationsOnly={false} setShowOpenDeviationsOnly={null} activeChecklistTemplate={[selected.definition]} checklist={{[selected.definition.category]:selected.answers}} setChecklistValue={change} addChecklistPhoto={addPhoto} onOpenKshmsDeviation={editorProps.onOpenKshmsDeviation?id=>{if(remember(selection.current)){setSelected(null);selection.current=null;editorProps.onOpenKshmsDeviation(id);}}:null}/></fieldset>
    {savedSelection&&!selected.earlierDraft&&<KshmsDocumentPdfButton kind="run" row={selected} companyId={companyId} userId={userId} projectId={projectId} resolveFileUrl={resolveFileUrl} disabled={!pdfReady||busy||uploads>0}/> }
    {!savedSelection&&<p className="note">Lagre kontrollen først for å laste ned egen PDF. Tidligere dokumentasjon uten kontrollhistorikk finnes i prosjektets ordinære rapport.</p>}
    <div className="project-checklist-footer">

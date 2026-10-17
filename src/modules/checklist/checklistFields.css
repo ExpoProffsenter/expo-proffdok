@@ -1,0 +1,18 @@
+.checklist-fields,.checklist-field-builder{display:grid;gap:12px;margin:12px 0;min-width:0;max-width:100%}
+.checklist-field{display:grid;gap:8px;min-width:0;margin:0;padding:10px;border:1px solid #d9e2ed;border-radius:10px;overflow-wrap:anywhere;background:#f8fafc}
+.checklist-field>label{display:grid;gap:5px;min-width:0}
+.checklist-field input,.checklist-field select,.checklist-field textarea{max-width:100%;width:100%;min-width:0;box-sizing:border-box;font:inherit;padding:10px;border:1px solid #bac9d9;border-radius:7px;background:white;color:#172b43}
+.checklist-field input[type=checkbox],.checklist-field-confirm input{width:20px;height:20px;flex:0 0 20px}
+.checklist-field-choice,.checklist-field>label.checklist-field-choice,.checklist-field-confirm label{display:flex;align-items:flex-start;gap:9px;min-height:36px}
+.checklist-field-confirm{padding:12px;background:#edf5ff;border:1px solid #a9c7ed;border-radius:10px;overflow-wrap:anywhere}
+.checklist-field-confirm small{display:block;line-height:1.5;margin-top:6px}
+.checklist-field-builder>summary{cursor:pointer;font-weight:700}
+
+.checklist-field-section{min-width:0;max-width:100%;border:1px solid #d9e2ed;border-radius:10px;margin:8px 0;background:#fff}
+.checklist-field-section>summary{padding:14px;cursor:pointer;font-weight:700;color:#14395e;overflow-wrap:anywhere}
+/* Native details in a grid must be allowed to shrink below their content size. */
+.checklistGroupBody:has(>.checklist-field-section){grid-template-columns:minmax(0,1fr)}
+.checklist-field-section,.checklist-fields,.checklist-field{width:100%;box-sizing:border-box}
+.checklist-field-section .checklistPoint,.checklist-fields,.checklist-field{grid-template-columns:minmax(0,1fr)}
+.checklistGroup:has(.checklist-field-section){grid-template-columns:minmax(0,1fr)}
+.checklistGroup:has(.checklist-field-section)>.ks-checklist-instructions{min-width:0;overflow-wrap:anywhere}

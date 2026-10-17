@@ -1024,3 +1024,11 @@ Miljømål BEGGE, fra main `8afb2246a5126665e7c89af8a0da3c2f81614e9c` / godkjent
 Klikk på Sjekklister ber etter godkjent eksisterende navigasjon om neste uferdige liste: påbegynt lokal/serverkladd først, ellers første ikke-fullførte liste. Fersk eksisterende state-RPC og samme begin/dialog/editor brukes. Åpen kladd og presis lenke til sjekkpunkt vinner; ingen automatisk åpning ved mount, fokus eller etter avbrutt navigasjon. Ny brukerhandling, appbytte eller prosjekt-/firmabytte stopper sen åpning. Alle fullført viser oversikten. Read-only/support starter ikke redigering. Ingen database, RLS, utsending, lagringskommando eller ny recovery endres. `main.jsx` endres bare med en avgrenset, identitetsbundet engangsforespørsel i eksisterende goToTab og prop til den ordinære sjekklistesiden; Prosjektering beholder egen liste.
 
 QA og relevant ny Preview-prøve: `docs/qa/PROJECT_MOBILE_HEADER_CHECKLIST_20261017.md`. Ny TEST OK kreves før merge/Production; deretter main → demo med preflight.
+
+## Fleksible sjekklister og varme arbeider – 17.10.2026
+
+Preview-leveranse (miljømål BEGGE): alle redigerbare firmamaler kan utvides med valgfrie eller påkrevde, betingede underpunkter. Status, kommentar og bilder beholdes. Felttyper: tekst, tall/minsteverdi, Ja/Nei/Ikke aktuelt, ett/flere valg, dato, klokkeslett og egen bekreftelse med serverlagret identitet/tid/innholdskontroll.
+
+Sjekklistesentral har «Bruk mal: Varme arbeider», felles for alle fag. Firmaet tilpasser og publiserer før prosjektet henter en fast utgave. Eksisterende rutine «Varme arbeider og brannberedskap» får kildeforslag v2 som viser til malen; firmaets godkjente rutiner endres ikke automatisk. Kontroller nye forslag i håndbokens eksisterende kildeoppdatering.
+
+Gamle svar og garantipunkter beholder kontrakten. Fullføring, lokal kladd, lagret kontroll, gjentatt kontroll og PDF støtter underpunktene. Ny migrasjon installeres først i Sandbox. Produksjon og main → demo venter på ny TEST OK. QA og teststeg: `docs/qa/FLEXIBLE_CHECKLISTS_HOT_WORK_20261017.md`.

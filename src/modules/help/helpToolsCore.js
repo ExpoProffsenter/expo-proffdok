@@ -236,7 +236,7 @@ const BASE_SECTIONS = [
     "sjekklister",
     "📋 Sjekklister",
     "Sjekklistene dokumenterer at arbeidet er kontrollert og danner grunnlag for kvalitet, avvik, rapport og eventuell garanti.",
-    ["Arbeid gjennom relevante punkter fortløpende og legg inn kommentar/bilde der det er nødvendig."],
+    ["Arbeid gjennom relevante punkter fortløpende og legg inn kommentar/bilde der det er nødvendig.", "Firmaadmin eller KS/HMS-ansvarlig åpner KS/HMS → Sjekklistesentral → Rediger sjekkliste (eller Rediger som firmaversjon). Under hvert punkt åpner du Underpunkter og svarfelt og trykker Legg til underpunkt. Velg tekst, tall, dato, klokkeslett, ett/flere valg, Ja/Nei eller egen bekreftelse. Svar påkrevd må fylles ut når feltet vises. Vis bare når … knytter feltet til et tidligere valg. Garantipunktene er låst.", "Varme arbeider: Velg Bruk mal: Varme arbeider i Sjekklistesentral. Malen gjelder alle fag. Tilpass og trykk Lagre og publiser. Hent den i prosjektets Sjekklister. Fyll ut og lagre jobb og egne bekreftelser FØR start. Fyll ut etterkontrollen når arbeidet og brannvakten er avsluttet. Trykk Sjekkliste fullført. Rutinen Varme arbeider og brannberedskap forklarer gangen. Nye malversjoner endrer ikke gamle prosjektkontroller."],
     ["Åpne avvik kan hindre ferdigstilling og garanti."],
     ["Ikke vent med sjekklistene til prosjektslutt."]
   ),

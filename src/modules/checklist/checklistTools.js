@@ -1,3 +1,5 @@
+import ChecklistFields from './ChecklistFields.jsx';
+import {fieldProblem} from './checklistFields.mjs';
 // FASE 24E SJEKKLISTEMODUL: Mekanisk uttrekk av eksisterende ChecklistEditor fra main.jsx. Ingen funksjons-, garanti-, rapport-, database-, RLS-, Storage-, Edge Function- eller e-postendring.
 // FASE 29A5: Alle som kan redigere sjekklisten kan fjerne feilopplastede bilder fra et sjekkpunkt.
 import React, * as ReactNS from 'react';
@@ -29,7 +31,7 @@ export function createChecklistEditor({
   checklistAttachmentDocumentTypeOptions,
   publicProjectFileUrl
 }) {
-  return function ChecklistEditor({ checklist, setChecklistValue, addChecklistPhoto, addFiles, files, setFiles, closedByName = "Utførende", showOpenDeviationsOnly = false, setShowOpenDeviationsOnly = null, warranty = {}, activeChecklistTemplate: providedActiveChecklistTemplate = null, customChecklistGroups = [], onAddCustomChecklistPoint = null, onRemoveCustomChecklistPoint = null, onSaveChecklistNow = null, checklistSaveStatus = "", onOpenKshmsDeviation = null, customChecklistEnabled, embedded = false, toolsOnly = false, initiallyExpanded = false, consumeChecklistJump = true }) {
+  return function ChecklistEditor({ checklist, setChecklistValue, addChecklistPhoto, addFiles, files, setFiles, closedByName = "Utførende", showOpenDeviationsOnly = false, setShowOpenDeviationsOnly = null, warranty = {}, activeChecklistTemplate: providedActiveChecklistTemplate = null, customChecklistGroups = [], onAddCustomChecklistPoint = null, onRemoveCustomChecklistPoint = null, onSaveChecklistNow = null, checklistSaveStatus = "", onOpenKshmsDeviation = null, customChecklistEnabled, embedded = false, toolsOnly = false, initiallyExpanded = false, consumeChecklistJump = true, userId, readOnlyFields=false }) {
     const activeChecklistTemplate = providedActiveChecklistTemplate || getActiveChecklistTemplate(warranty);
     const customChecklistAllowed = !embedded && (customChecklistEnabled ?? canUseCustomChecklistForWarranty(warranty));
     const [newCustomChecklistTrade, setNewCustomChecklistTrade] = import_react.default.useState(customChecklistTradeOptions[0] || "Rørlegger");
@@ -45,6 +47,7 @@ export function createChecklistEditor({
     const [openCategories, setOpenCategories] = import_react.default.useState(() => {
       return initiallyExpanded ? Object.fromEntries(activeChecklistTemplate.map(group => [group.category, true])) : {};
     });
+    const [activeFieldPoint,setActiveFieldPoint]=import_react.default.useState('');
     const mobileInitialChecklistJumpRef = import_react.default.useRef(false);
     import_react.default.useEffect(() => {
       if (!showOpenDeviationsOnly) return;
@@ -58,11 +61,13 @@ export function createChecklistEditor({
     const visibleChecklistGroups = showOpenDeviationsOnly ? activeChecklistTemplate.filter(groupHasOpenDeviation) : activeChecklistTemplate;
     const customChecklistQuickGroups = activeChecklistTemplate.filter((group) => String(group?.category || "").startsWith(customChecklistCategoryPrefix) && (group.items || []).length > 0);
     const flatChecklistPoints = activeChecklistTemplate.flatMap((group) => (group.items || []).map((item) => ({ category: group.category, item, anchorId: checklistPointAnchor(group.category, item) })));
-    const firstIncompletePoint = flatChecklistPoints.find((point) => !hasValue(checklist?.[point.category]?.[point.item]?.status));
+    const pointDone = point => hasValue(checklist?.[point.category]?.[point.item]?.status) && !fieldProblem(activeChecklistTemplate.find(g=>g.category===point.category)?.requirements?.[point.item]?.fields,checklist?.[point.category]?.[point.item]?.values);
+    const firstIncompletePoint = flatChecklistPoints.find((point) => !pointDone(point));
     const firstOpenDeviationPoint = flatChecklistPoints.find((point) => checklist?.[point.category]?.[point.item]?.status === "Avvik");
     const openDeviationJumpRef = import_react.default.useRef(false);
     const scrollToChecklistPoint = (point, block = "start") => {
       if (!point) return;
+      setActiveFieldPoint(point.anchorId);
       setOpenCategories((prev) => ({ ...prev, [point.category]: true }));
       window.setTimeout(() => {
         const el = document.getElementById(point.anchorId);
@@ -121,7 +126,7 @@ export function createChecklistEditor({
     }, [firstIncompletePoint?.anchorId, showOpenDeviationsOnly]);
     const scrollToNextChecklistPoint = (category, item) => {
       const index = flatChecklistPoints.findIndex((point) => point.category === category && point.item === item);
-      const nextPoint = flatChecklistPoints.slice(index + 1).find((point) => !hasValue(checklist?.[point.category]?.[point.item]?.status)) || flatChecklistPoints[index + 1];
+      const nextPoint = flatChecklistPoints.slice(index + 1).find((point) => !pointDone(point)) || flatChecklistPoints[index + 1];
       if (!nextPoint) return;
       scrollToChecklistPoint(nextPoint, "start");
     };
@@ -136,7 +141,7 @@ export function createChecklistEditor({
         scrollToChecklistPoint({ category, item, anchorId: checklistPointAnchor(category, item) }, "start");
         return;
       }
-      if (status !== "Avvik") scrollToNextChecklistPoint(category, item);
+      if (status !== "Avvik" && !fieldProblem(activeChecklistTemplate.find(g=>g.category===category)?.requirements?.[item]?.fields,currentValue.values)) scrollToNextChecklistPoint(category, item);
     };
     const stopChecklistFileDragNavigation = (event) => {
       event.preventDefault();
@@ -159,7 +164,7 @@ export function createChecklistEditor({
     };
     const groupStats = (group) => {
       const total = group.items.length;
-      const done = group.items.filter((item) => hasValue(checklist?.[group.category]?.[item]?.status)).length;
+      const done = group.items.filter((item) => pointDone({category:group.category,item})).length;
       const deviations = group.items.filter((item) => checklist?.[group.category]?.[item]?.status === "Avvik").length;
       const closedDeviations = group.items.filter((item) => checklist?.[group.category]?.[item]?.status === "Lukket avvik").length;
       const photos = group.items.reduce((sum, item) => sum + (checklist?.[group.category]?.[item]?.photos || []).length, 0);
@@ -329,7 +334,7 @@ export function createChecklistEditor({
             const warrantyPoint = isSoproWarrantyPoint(group.category);
             const pointRequirement = warrantyPoint ? { ...group.requirements?.[item] || {}, image_required: true, comment_required: true } : group.requirements?.[item] || {};
             const anchorId = checklistPointAnchor(group.category, item);
-            return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { id: anchorId, className: `checklistPoint checklistPoint-${pointTone}${warrantyPoint ? " checklistWarrantyPoint" : ""}`, children: [
+            const body = /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { id: pointRequirement.fields?.length?undefined:anchorId, className: `checklistPoint checklistPoint-${pointTone}${warrantyPoint ? " checklistWarrantyPoint" : ""}`, children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "checklistHeader", children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "checklistPointTitle", children: [
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: item }),
@@ -344,7 +349,7 @@ export function createChecklistEditor({
                     (value.photos || []).length > 0 ? ` · 📷 ${(value.photos || []).length} bilder` : ""
                   ] })
                 ] }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "checklistStatusButtons", children: ["Ok", "Ikke aktuelt", "Avvik"].map((status) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "checklistStatusButtons", children: ["Ok", ...(pointRequirement.allow_na===false?[]:["Ikke aktuelt"]), "Avvik"].map((status) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
                   "button",
                   {
                     type: "button",
@@ -356,6 +361,7 @@ export function createChecklistEditor({
                   status
                 )) })
               ] }),
+              pointRequirement.fields?.length > 0 && (0, import_jsx_runtime.jsx)(ChecklistFields, {fields:pointRequirement.fields,values:value.values||{},readOnly:readOnlyFields,userId,onChange:(values,confirmationId)=>setChecklistValue(group.category,item,{values},{confirmationId})}),
               (String(group.category || "").startsWith(customChecklistCategoryPrefix) || value.status || value.comment || (value.photos || []).length > 0) && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
                 Textarea,
                 {
@@ -388,6 +394,7 @@ export function createChecklistEditor({
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", accept: "image/*", multiple: true, onClick: (e) => e.stopPropagation(), onChange: (e) => addChecklistPhoto(group.category, item, e.target.files) })
                 ] })
               ] }),
+              pointRequirement.fields?.length > 0 && (0, import_jsx_runtime.jsx)("button", {type:"button",className:"secondary",onClick:()=>scrollToNextChecklistPoint(group.category,item),children:"Neste sjekkpunkt"}),
               (value.photos || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "photos checklistPhotos", children: value.photos.map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "photo", children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: p.url }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: p.name }),
@@ -398,6 +405,7 @@ export function createChecklistEditor({
                 }, children: "Fjern bilde" })
               ] }, p.id)) })
             ] }, item);
+            return pointRequirement.fields?.length?(0, import_jsx_runtime.jsxs)("details",{id:anchorId,className:"checklist-field-section",open:(activeFieldPoint||firstIncompletePoint?.anchorId||flatChecklistPoints[0]?.anchorId)===anchorId,children:[(0, import_jsx_runtime.jsx)("summary",{onClick:e=>{e.preventDefault();setActiveFieldPoint(anchorId);},children:item+" · "+(pointDone({category:group.category,item})?"Utfylt":"Gjenstår")}),body]},item):body;
           }) })
         ] }, group.category);
       }) }),

@@ -6,7 +6,11 @@ import {BATCH_ACK_STATEMENT,batchAcknowledgmentVersions,verifiedBatchReceipts} f
 import {acknowledgmentTime} from '../src/modules/kshms/kshmsAcknowledgmentTime.mjs';
 const originals=ROUTINE_CATALOG.filter(row=>!row.key.startsWith('store_'));
 assert.equal(originals.length,73);
-assert.equal(createHash('sha256').update(JSON.stringify(originals)).digest('hex'),'a67b31f7462e53199802638fd207f3c9757b7eacdfbdcdf97f013302ad6b53b2','All 73 pre-existing routine proposals must retain their content and source identity');
+assert.equal(createHash('sha256').update(JSON.stringify(originals.map(row=>row.key==='hot-work'?JSON.parse(fs.readFileSync('scripts/fixtures/hot-work-v1.json','utf8')):row))).digest('hex'),'a67b31f7462e53199802638fd207f3c9757b7eacdfbdcdf97f013302ad6b53b2','All 73 pre-existing routine proposals must retain their content and source identity');
+// 17.10: user explicitly requested the hot-work routine/checklist link. Keep
+// the original 73-row hash using its frozen v1; all other proposals stay exact.
+assert.equal(originals.find(row=>row.key==='hot-work').source_revision,2);
+assert(originals.find(row=>row.key==='hot-work').procedure.includes('Bruk mal: Varme arbeider'));
 const proposals=ROUTINE_CATALOG.filter(row=>row.key.startsWith('store_'));
 assert.equal(proposals.length,14);
 assert.equal(suggestedRoutines(['vvs'],'butikk med lager og truck').filter(row=>row.key.startsWith('store_')).length,14);
