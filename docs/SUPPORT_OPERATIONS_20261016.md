@@ -1,3 +1,12 @@
+> Oppdatert 17.10 etter faktisk e-postprøve: utgående prøve og Kenneths ekte
+> e-postsvar er mottatt i testsak #2. Signert webhook svarte 200 ved begge
+> leveringsforsøk; én innkommende melding og ett varsel ble lagret/sendt.
+> Testinnganger er tilbakeført, testsaken er ryddet, køen er tom og webhooken
+> er deaktivert. Globale e-postflagg og scheduler er fortsatt avslått.
+> Prøven avdekket at intern varsling overskrev innkommende Message-ID.
+> Rettelse forberedes i egen Preview før aktivering; se
+> qa/SUPPORT_EMAIL_THREADING_20261017.md. Tidligere statuser nedenfor er historikk.
+
 > Production 17.10 etter TEST OK: PR #263 er merget og app/database er publisert.
 > Seks identiske supportmigrasjoner og support-mail/support-inbound v1 er installert.
 > Intern mottaker, app-URL, disabled mail-modus og false inbound er satt bare i

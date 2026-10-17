@@ -383,6 +383,7 @@ const SYSTEM_ADMIN_SECTIONS = [
     "⚙️ Systemadministrasjon",
     "Systemadministrasjon er kontrollsenteret for brukere, roller, tverrfirma-support, produktmaster, appnyheter og systemdata.",
     [
+      "Support → Saker fra brukere er felles innboks for alle systemadministratorer. Åpne saken, skriv og send svaret. Bruk Merk som løst når saken er ferdig. Når e-postsvar er aktivert, havner brukerens svar på e-post i samme sak. Kontroller e-poststatusen; et lagret svar betyr ikke at e-posten er mottatt.",
       "Godkjenn, avvis eller slett ventende brukere. Firma må være valgt før en ny bruker kan godkjennes, og rolle/modultilganger skal kontrolleres før aktivering.",
       "Generelle tilbud kan tildeles Ringside Rørleggerbedrift AS, Bademiljø Expo og Expo Proffsenter, samt eksterne Proff-firma der Systemadmin har aktivert minst én leverandør. For eksterne firma vises tilgangen som Generelle tilbud / Proff vareregister.",
       "Bruk Supportmodus når du skal hjelpe et annet firma. I et supportprosjekt tar Supportoversikt deg tilbake til samme firmas supportvisning; Avslutt supportmodus brukes først når supportarbeidet er ferdig.",

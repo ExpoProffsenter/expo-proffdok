@@ -1,5 +1,12 @@
 # Overlevering – Support etter TEST OK
 
+Nyeste etappe: ekte e-postsvar er mottatt og sett gjennom eierens support-RPC.
+Webhook-redelivery ga fortsatt bare ett svar og ett varsel. Testoppsettet er
+tilbakeført og testsaken slettet; webhook, globale flagg og køarbeider er AV.
+En påvist Message-ID-feil rettes separat før aktivering. Se
+qa/SUPPORT_EMAIL_THREADING_20261017.md og nyeste PR; eldre statuser nedenfor
+beskriver appreleasen. Timeføring er uttrykkelig utsatt av Kenneth.
+
 Kenneth har godkjent siste Preview kl. 01:23 Europe/Oslo 17.10.2026.
 PR #263 er merget; full CI #521 og #522 SUCCESS på godkjent head
 1c8338f6129d0683a39bfbdb8a56864cc3b0e1ec. Main merge:
