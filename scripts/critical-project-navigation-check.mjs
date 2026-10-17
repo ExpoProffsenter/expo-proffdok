@@ -131,7 +131,11 @@ requireCheck(
   "Appen skiller ikke eksplisitt mellom global navigasjon og prosjektmeny."
 );
 requireCheck(
-  help.includes("anbefalt prosjektløp: Oversikt, Avtalegrunnlag, Prosjektering og Fremdrift") &&
+  help.includes("tre bokser på linje: Oppstart, Gjennomføring og Overlevering og garanti") &&
+    help.includes("Velg Deltakere og tilganger for kontaktlisten og kunde-, UE- og kontrollørlenker") &&
+    help.includes("Knappene øverst og nederst viser samme neste mål") &&
+    help.includes("En kontakt får ikke portaltilgang automatisk") &&
+    !help.includes("Velg fase og underfane") &&
     !help.includes("hurtigvalgene Oversikt, Bilder, Sjekklister og Chat"),
   "React-Hjelp må beskrive samme anbefalte prosjektløp som prosjektveiviseren."
 );

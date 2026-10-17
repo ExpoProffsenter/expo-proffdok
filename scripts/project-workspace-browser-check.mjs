@@ -25,7 +25,7 @@ import {createRoot} from '${cwd}/node_modules/react-dom/client.js';
 import * as jsxRuntime from '${cwd}/node_modules/react/jsx-runtime.js';
 import {continueAfterProjectSave} from '${cwd}/src/modules/project/projectStepContinue.mjs';
 import {createProjectOverviewTools} from '${cwd}/src/modules/project/projectOverviewTools.js';
-import Chrome,{ProjectHeaderActions,ProjectStatusDialog} from '${cwd}/src/modules/project/ProjectWorkspaceChrome.jsx';
+import Chrome,{ProjectHeaderActions,ProjectStatusDialog,ProjectWorkspaceFooter} from '${cwd}/src/modules/project/ProjectWorkspaceChrome.jsx';
 import {createProjectWorkspaceTabs} from '${cwd}/src/modules/project/projectNavigationTabs.mjs';
 import {installDesktopSideMenu} from '${cwd}/src/modules/app/desktopSideMenu.js';
 import {installProjectWorkspaceHeaderGuide} from '${cwd}/src/modules/app/projectWorkspaceHeaderGuide.js';
@@ -49,7 +49,7 @@ function App(){
  const scope={projectId:saved?'qa':null,ProjectStatusDialog,import_jsx_runtime:jsxRuntime,Section,Select,import_lucide_react:{BadgeCheck:()=>null,ClipboardCheck:()=>null},mobileStatusOpen:statusOpen,setMobileStatusOpen:setStatusOpen,project,setProject,tab,currentStatus:{icon:'🟡',label:'Pågår',tone:'progress'},projectGuideStats:{openDeviationCount:2,completionPercent:88,productCount:2,photoCount:3,checklistDone:1,checklistMissing:3,hasOvertagelse:false},unreadForAdmin:3,statusStyle:()=>({}),openActiveDeviations:()=>goToTab('avvik'),isProjectLocked:false,isProjectSupportReadOnly:readOnly,workflowStatusOptions:['Pågår','Avventer'],suggestedWorkflowStatus:'Avventer',persistedProjectHasOvertagelse:false,overtagelse:{},overtagelseHasDraftContent:()=>true,overtagelseIsSignedByBoth:()=>false,projectHasOvertagelse:()=>false,totalChatCount:5,customerChatCount:2,latestChatMessage:null,projectGuideItems:[{id:'photo',label:'Kontroller bilder',tone:'missing'}],openProjectGuideItem:()=>goToTab('bilder')};
  return <div data-expo-project-shell="1"><header><div className="head"><div style={{width:260,height:80}}>Expo Proffsenter</div><div><h1>Expo ProffDok</h1></div><button onClick={()=>window.exits++}>← Til startside</button><ProjectHeaderActions dirty={!!draft} saved={saved} readOnly={readOnly} simpleOrder={order} locked={kind==='locked'} onNew={()=>window.newProjects++} onSave={()=>window.saves++} onCopy={()=>window.copies++} onPdf={()=>window.pdfs++} onLock={value=>window.locks.push(value)}/><div id="expo-work-profile-switcher"><div className="workProfileControl"><button className="workProfileButton"><span><small>Representerer</small><b>Et firma med et langt navn</b></span></button></div></div></div>{sourceNav(jsxRuntime,tabs,tab,goToTab)}</header>
  <Chrome tabs={tabs} activeTab={tab} project={project} saved={saved} simpleOrder={order} status={scope.currentStatus} deviations={2} unread={3} onContinue={continueNext} continuing={continuing} continueNotice={continueNotice} readOnly={readOnly||kind==='locked'} onNavigate={goToTab} onStatus={()=>setStatusOpen(true)} onExit={()=>window.exits++}/>
- <main>{actualStatus(scope)}{tab==='prosjekt'&&tools.renderProjectOverviewPanel({project:{...project,workflowType:order?'simple_order':'wetroom'},goToTab,leaveProjectWorkspace:()=>window.exits++})}<h2>Arbeidsinnhold: {tab}</h2><label>Kladd<textarea aria-label="Kladd" value={draft} onChange={e=>setDraft(e.target.value)}/></label></main></div>;
+ <main>{actualStatus(scope)}{tab==='prosjekt'&&tools.renderProjectOverviewPanel({project:{...project,workflowType:order?'simple_order':'wetroom'},goToTab,leaveProjectWorkspace:()=>window.exits++})}<h2>Arbeidsinnhold: {tab}</h2><label>Kladd<textarea aria-label="Kladd" value={draft} onChange={e=>setDraft(e.target.value)}/></label></main><ProjectWorkspaceFooter tabs={tabs} activeTab={tab} simpleOrder={order} onNavigate={goToTab} onContinue={continueNext} continuing={continuing} readOnly={readOnly||kind==='locked'}/><div className="bottomPrevNext"><button>Old previous</button><button>Old next</button></div></div>;
 }
 window.saveWorks=true;window.holdSave=false;window.navCalls=[];window.newProjects=0;window.saves=0;window.copies=0;window.pdfs=0;window.exits=0;window.locks=[];window.cancelNavigation=false;
 createRoot(document.getElementById('app')).render(<App/>);
@@ -69,9 +69,12 @@ try{
  eq(await page.locator('#expo-project-workspace-guide').count(),0,'legacy duplicate guide removed');
  eq(await page.locator('.expoDesktopMenuToggle').isVisible(),false,'project drawer not duplicated');
  eq(await nav.getByRole('button',{name:'Oversikt',exact:true}).count(),1,'overview exists once');
- eq(await nav.getByRole('button',{name:'Bilder',exact:true}).count(),0,'other phase hidden');
+ eq(await nav.getByRole('button',{name:'Bilder',exact:true}).count(),1,'all phases visible');
+ eq(await page.locator('.bottomPrevNext').isVisible(),false,'legacy flow is not a second user route');
+ const cards=await nav.locator('.project-phase-card').evaluateAll(els=>els.map(e=>{const r=e.getBoundingClientRect();return {top:r.top,width:r.width,height:r.height};}));
+ eq(cards.length,3,'three aligned phase cards');eq(Math.max(...cards.map(c=>c.top))-Math.min(...cards.map(c=>c.top))<1,true,'phase cards share top edge');eq(Math.max(...cards.map(c=>c.width))-Math.min(...cards.map(c=>c.width))<1,true,'phase cards have equal widths');eq(Math.max(...cards.map(c=>c.height))-Math.min(...cards.map(c=>c.height))<1,true,'phase cards share bottom edge');
  eq((await page.locator('.head').boundingBox()).height<=80,true,'desktop app header stays in one compact row');
- eq((await page.locator('.project-workspace').boundingBox()).height<440,true,'project context and requested step guide stay compact');
+ eq((await page.locator('.project-workspace').boundingBox()).height<560,true,'project context and requested step guide stay compact');
  eq(await page.getByText('Prosjekt ved Elveparken',{exact:true}).count(),1,'project name shown once');
  eq(await page.getByText('QA Kunde · Testveien 1 0001 Oslo',{exact:true}).count(),1,'full customer address stays in heading');
  eq(await page.locator('.project-contact-overview .guideCard').count(),4,'overview prioritizes four contact/financial fields');
@@ -82,28 +85,41 @@ try{
   eq(await page.locator('.project-contact-overview').getByText('qa@example.invalid',{exact:true}).isVisible(),true,'contact email retained '+width);
  }
  await page.setViewportSize({width:1363,height:1000});
- eq(await nav.locator('.project-workspace-tabs button').allTextContents().then(labels=>labels.map(text=>text.replace(/^[1-5]/,'').replace('Ved behov','').replace('Historikk','').trim())),['Oversikt','Prosjektbeskrivelse','Avtalegrunnlag','Prosjektering','Fremdrift','Salgsgrunnlag'],'numbered order keeps history separate');
- eq(await page.getByRole('region',{name:'Anbefalt neste steg'}).getByText('Steg 1 av 5 · Oversikt',{exact:true}).isVisible(),true,'current setup position explicit');
- await button('Lagre og fortsett →').click();
- await page.getByText('Steg 2 av 5 · Prosjektbeskrivelse',{exact:true}).waitFor();
- eq(await page.evaluate(()=>window.navCalls.at(-1)),'prosjektinfo','visible continue button uses next setup step');
- await page.evaluate(()=>window.saveWorks=false);await button('Lagre og fortsett →').click();
- await page.getByText('Lagringen er ikke bekreftet.',{exact:true}).waitFor();
+ eq(await nav.getByRole('group',{name:'Oppstart',exact:true}).locator('button').allTextContents().then(labels=>labels.map(text=>text.replace(/^[1-5]/,'').replace('Ved behov','').replace('Historikk','').trim())),['Oversikt','Deltakere og tilganger','Prosjektbeskrivelse','Avtalegrunnlag','Prosjektering','Fremdrift','Salgsgrunnlag'],'contacts and portal access precede work description; history is separate');
+ eq(await page.getByRole('region',{name:'Anbefalt neste steg'}).getByText('Du er her: Oversikt',{exact:true}).isVisible(),true,'current setup position explicit');
+ await page.getByRole('region',{name:'Anbefalt neste steg'}).getByRole('button',{name:'Lagre og fortsett →',exact:true}).click();
+ await page.getByText('Du er her: Deltakere og tilganger',{exact:true}).waitFor();
+ eq(await page.evaluate(()=>window.navCalls.at(-1)),'tilgang','visible continue button uses next setup step');
+ await nav.getByRole('button',{name:'Prosjektbeskrivelse',exact:true}).click();
+ await page.evaluate(()=>window.saveWorks=false);await page.getByRole('region',{name:'Anbefalt neste steg'}).getByRole('button',{name:'Lagre og fortsett →',exact:true}).click();
+ await page.getByRole('region',{name:'Anbefalt neste steg'}).getByText('Lagringen er ikke bekreftet.',{exact:true}).waitFor();
  eq(await page.evaluate(()=>window.navCalls.at(-1)),'prosjektinfo','failed save stays at same step');
- await page.evaluate(()=>{window.saveWorks=true;window.holdSave=true;});await button('Lagre og fortsett →').click();
- eq(await button('Lagrer …').isEnabled(),false,'saving button blocks duplicate clicks');
+ await page.evaluate(()=>{window.saveWorks=true;window.holdSave=true;});await page.getByRole('region',{name:'Anbefalt neste steg'}).getByRole('button',{name:'Lagre og fortsett →',exact:true}).click();
+ eq(await page.getByRole('region',{name:'Anbefalt neste steg'}).getByRole('button',{name:'Lagrer …',exact:true}).isEnabled(),false,'saving button blocks duplicate clicks');
  await nav.getByRole('button',{name:'Oversikt',exact:true}).click();
  await page.evaluate(()=>{window.holdSave=false;window.finishSave();});
- await button('Lagre og fortsett →').waitFor();
+ await page.getByRole('region',{name:'Anbefalt neste steg'}).getByRole('button',{name:'Lagre og fortsett →',exact:true}).waitFor();
  eq(await page.evaluate(()=>window.navCalls.at(-1)),'prosjekt','delayed save never overrides explicit tab choice');
- await nav.getByRole('button',{name:'Overlevering og garanti',exact:true}).click();
+
  await nav.getByRole('button',{name:'Garanti',exact:true}).click();
  eq(await page.evaluate(()=>window.navCalls.at(-1)),'garanti','warranty remains reachable through explicit phase');
- await nav.getByRole('button',{name:'Oppstart',exact:true}).click();
+ await nav.getByRole('button',{name:'Oversikt',exact:true}).click();
 
+ for(const label of ['Fremdrift','Deltakere og tilganger','Sjekklister','Bilder','Garanti']){
+  await nav.getByRole('button',{name:label,exact:true}).click();
+  const top=page.getByRole('region',{name:'Anbefalt neste steg'}),bottom=page.getByRole('navigation',{name:'Neste og forrige prosjektsteg'});
+  eq(await top.locator('.project-step-next').innerText(),await bottom.locator('.project-step-next').innerText(),'top/footer share target and save semantics for '+label);
+ }
+ await nav.getByRole('button',{name:'Fremdrift',exact:true}).click();
+ eq(await page.getByRole('region',{name:'Anbefalt neste steg'}).getByRole('button',{name:'Gå til Sjekklister →',exact:true}).count(),1,'planner never claims a generic save');
+ await page.getByRole('navigation',{name:'Neste og forrige prosjektsteg'}).getByRole('button',{name:'Gå til Sjekklister →',exact:true}).click();
+ eq(await page.evaluate(()=>window.navCalls.at(-1)),'sjekklister','reported footer mismatch fixed');
+ await nav.getByRole('button',{name:'Deltakere og tilganger',exact:true}).click();
+ eq(await page.getByRole('region',{name:'Anbefalt neste steg'}).getByText(/En kontakt får ikke tilgang automatisk/).isVisible(),true,'contact list does not imply portal access');
+ await nav.getByRole('button',{name:'Oversikt',exact:true}).click();
  await page.getByLabel('Kladd',{exact:true}).fill('Arbeidet mitt');
  await page.evaluate(()=>window.scrollTo(0,300));
- await nav.getByRole('button',{name:'Gjennomføring',exact:true}).click();
+
  await nav.getByRole('button',{name:'Bilder',exact:true}).click();
  eq(await page.getByLabel('Kladd',{exact:true}).inputValue(),'Arbeidet mitt','draft preserved during native navigation');
  eq(await page.evaluate(()=>window.navCalls.at(-1)),'bilder','real tab ID');
@@ -164,7 +180,7 @@ try{
   await button(kind==='order'?/Ordremeny/:/Prosjektmeny/).click();
   const dialog=page.getByRole('dialog');
   if(kind==='order'){
-   for(const label of ['Ordreoversikt','Tilbudsgrunnlag','Ordrebeskrivelse','Fremdrift','Produkter / FDV','Bilder','Sjekklister','UE-tilgang','Sluttdokumentasjon'])eq(await dialog.getByRole('button',{name:label,exact:true}).count(),1,'order retains '+label);
+   for(const label of ['Ordreoversikt','Tilbudsgrunnlag','Ordrebeskrivelse','Fremdrift','Produkter / FDV','Bilder','Sjekklister','Deltakere og UE-tilgang','Sluttdokumentasjon'])eq(await dialog.getByRole('button',{name:label,exact:true}).count(),1,'order retains '+label);
    for(const label of ['Prosjektering','Overflater og innredning','Chat (3 ulest)','Overtagelse','Garanti'])eq(await dialog.getByRole('button',{name:label,exact:true}).count(),0,'order hides '+label);
   }
   if(kind==='direct'||kind==='new')eq(await dialog.getByRole('button',{name:'Salgsgrunnlag',exact:true}).count(),0,'no invented sales source '+kind);

@@ -1,5 +1,5 @@
 import { continueAfterProjectSave, projectStepDataConfirmed } from './modules/project/projectStepContinue.mjs';
-import ProjectWorkspaceChrome, { ProjectHeaderActions, ProjectStatusDialog } from './modules/project/ProjectWorkspaceChrome.jsx';
+import ProjectWorkspaceChrome, { ProjectHeaderActions, ProjectStatusDialog, ProjectWorkspaceFooter } from './modules/project/ProjectWorkspaceChrome.jsx';
 import SupportLinkEntry from './modules/support/SupportLinkEntry.jsx';
 import WorkdayShortcuts from './modules/home/WorkdayShortcuts.jsx';
 import DeliverySummary from './modules/report/DeliverySummary.jsx';
@@ -7326,6 +7326,7 @@ ${appLink}`;
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "PDF" })
         ] })
       ] }),
+      hasActiveProjectWorkspace && (0, import_jsx_runtime.jsx)(ProjectWorkspaceFooter, { tabs: projectTabs, activeTab: tab, simpleOrder: isSimpleOrderProject(project), contractRequired: Boolean(warranty?.enabled || warranty?.issued), onNavigate: goToTab, onContinue: continueProjectStep, continuing: projectStepBusy, continueNotice: projectStepNotice, readOnly: isProjectSupportReadOnly || isProjectLocked }),
       hasActiveProjectWorkspace && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "bottomPrevNext", style: {
         display: "flex",
         justifyContent: "space-between",

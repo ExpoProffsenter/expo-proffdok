@@ -86,7 +86,7 @@ eq(projectStepDataConfirmed({files:[{id:'f'}]},{files:[]}),false,'attachment can
 }
 for(const simple of [false,true]){
  const groups=projectWorkspaceGroups(createProjectWorkspaceTabs({hasSalesOrigin:true}),simple),steps=projectSetupSteps(groups);
- eq(steps.map(step=>step.id),simple?['prosjekt','prosjektinfo','fremdrift']:['prosjekt','prosjektinfo','tilbud','prosjektering','fremdrift'],'appropriate setup length '+simple);
+ eq(steps.map(step=>step.id),simple?['prosjekt','tilgang','prosjektinfo','fremdrift']:['prosjekt','tilgang','prosjektinfo','tilbud','prosjektering','fremdrift'],'appropriate setup length '+simple);
  eq(steps.some(step=>step.id==='sales'),false,'history is never a required setup step');
  eq(steps.filter(step=>step.optional).map(step=>step.id),simple?['fremdrift']:['tilbud','prosjektering','fremdrift'],'optional stages labelled '+simple);
 }

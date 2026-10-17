@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { FolderOpen, Menu, MoreHorizontal, ClipboardCheck, Camera, TriangleAlert, Home } from 'lucide-react';
 import DeviationDialog from '../deviations/DeviationDialog.jsx';
-import { projectWorkspaceGroups, projectSetupSteps } from './projectWorkspacePresentation.mjs';
+import { projectWorkspaceGroups, projectSetupSteps, projectWorkspaceFlow } from './projectWorkspacePresentation.mjs';
 import './projectWorkspace.css';
 
 export function ProjectHeaderActions({ dirty, saved, readOnly, locked, simpleOrder, onSave, onCopy, onPdf, onLock, onNew }) {
@@ -29,26 +29,20 @@ export default function ProjectWorkspaceChrome({ tabs, activeTab, project, saved
     : status;
   const groups = projectWorkspaceGroups(tabs, simpleOrder);
   const steps = projectSetupSteps(groups, { contractRequired });
-  const stepIndex = steps.findIndex(step => step.id === activeTab);
-  const step = steps[stepIndex];
-  const next = steps[stepIndex + 1] || (step ? { id: 'sjekklister', label: 'Sjekklister' } : null);
+  const flow = projectWorkspaceFlow(groups, activeTab, { contractRequired });
   const activeGroup = groups.find(group => group.items.some(([id]) => id === activeTab))?.title || groups[0]?.title;
-  const [groupName, setGroupName] = useState(activeGroup);
   const [menuOpen, setMenuOpen] = useState(false);
-  useEffect(() => { setGroupName(activeGroup); }, [activeGroup, activeTab]);
-  const group = groups.find(item => item.title === groupName) || groups[0];
   const currentLabel = groups.flatMap(item => item.items).find(([id]) => id === activeTab)?.[1] || tabs.find(([id]) => id === activeTab)?.[1];
   const select = async id => { if (await onNavigate(id) !== false) setMenuOpen(false); };
   const menuName = simpleOrder ? 'Ordremeny' : 'Prosjektmeny';
-  const buttons = (items, numbered = false) => {
-    const ordered = numbered ? [...steps.flatMap(step => items.filter(([id]) => id === step.id)), ...items.filter(([id]) => !steps.some(step => step.id === id))] : items;
-    return ordered.map(([id, label]) => {
+  const buttons = items => {
+    return items.map(([id, label]) => {
     const index = steps.findIndex(step => step.id === id);
-    return <button key={id} type="button" aria-label={label} className={activeTab === id ? 'is-active' : 'secondary'} aria-current={activeTab === id ? 'page' : undefined} onClick={() => select(id)}>
-      {numbered && index >= 0 && <span className="project-step-number" aria-hidden="true">{index + 1}</span>}{label}
-      {numbered && steps[index]?.requirement && <small className="project-step-optional">{steps[index].requirement}</small>}
-      {numbered && steps[index]?.optional && <small className="project-step-optional">Ved behov</small>}
-      {numbered && id === 'sales' && <small className="project-step-optional">Historikk</small>}
+    return <button key={id} type="button" data-project-navigation="true" aria-label={label} className={activeTab === id ? 'is-active' : 'secondary'} aria-current={activeTab === id ? 'page' : undefined} onClick={() => select(id)}>
+      {label}
+      {steps[index]?.requirement && <small className="project-step-optional">{steps[index].requirement}</small>}
+      {steps[index]?.optional && <small className="project-step-optional">Ved behov</small>}
+      {id === 'sales' && <small className="project-step-optional">Historikk</small>}
     </button>;
     });
   };
@@ -56,26 +50,29 @@ export default function ProjectWorkspaceChrome({ tabs, activeTab, project, saved
     <div className="project-workspace-heading"><div><span className="project-workspace-eyebrow"><FolderOpen size={16}/>{simpleOrder ? 'Enkel ordre' : saved ? 'Prosjekt' : 'Nytt prosjekt'}</span>
       <h2>{project.projectName || project.address || (saved ? 'Uten navn' : 'Gi prosjektet et navn')}</h2>
       <p>{[project.customer, [project.address, project.postnr, project.city].filter(Boolean).join(' ')].filter(Boolean).join(' · ') || 'Fyll inn prosjektopplysningene nedenfor.'}</p>
-    </div><button type="button" className="project-workspace-exit" onClick={onExit}>{saved ? 'Bytt prosjekt' : 'Avbryt nytt prosjekt'}</button></div>
+    </div><button type="button" className="project-workspace-exit" data-project-navigation="true" onClick={onExit}>{saved ? 'Bytt prosjekt' : 'Avbryt nytt prosjekt'}</button></div>
     <div className="project-workspace-status"><span>{workStatus.icon} {workStatus.label}</span>{saved && <><span>{deviations} åpne avvik · {unread} uleste meldinger</span><button type="button" className="secondary" onClick={onStatus}><ClipboardCheck size={16}/>Status og mangler</button></>}</div>
     <div className="project-workspace-mobile"><button type="button" aria-haspopup="dialog" aria-expanded={menuOpen} onClick={() => setMenuOpen(true)}><Menu size={18}/>{menuName}<span>{currentLabel}</span></button>
       <div>{buttons(tabs.filter(([id]) => ['hjelp','support'].includes(id)))}</div></div>
     <div className="project-workspace-navigation" aria-label={menuName}>
-      <div className="project-workspace-groups">{groups.map(item => <button type="button" key={item.title} aria-pressed={group?.title === item.title} className={group?.title === item.title ? 'is-active' : 'secondary'} onClick={() => setGroupName(item.title)}>{item.title}</button>)}</div>
-      <div className="project-workspace-tabs" aria-label={group?.title}>{buttons(group?.items || [], group?.title === 'Oppstart')}</div>
-      <p className="project-workspace-hint">{group?.title === 'Oppstart' ? 'Samle grunnlaget og planlegg arbeidet. Fortsett til Gjennomføring når du er klar.' : group?.title === 'Gjennomføring' ? 'Dokumenter arbeidet underveis. Kontroller Status og mangler før overlevering.' : 'Kontroller dokumentasjonen og gjør klar avslutningen.'}</p>
+      <p className="project-map-intro">Registrer prosjektet. Legg til deltakerne. Dokumenter arbeidet. Overlever når alt er klart.</p>
+      <div className="project-workspace-map">{groups.map((item, index) => <div key={item.title} className={`project-phase-card${activeGroup === item.title ? ' is-current' : ''}`} role="group" aria-label={item.title}>
+        <h3><span>{index + 1}</span>{item.title}</h3>
+        <p>{phasePurpose(item.title)}</p>
+        <div className="project-workspace-tabs">{buttons(item.items)}</div>
+      </div>)}</div>
     </div>
-    {step && <div className="project-step-guide" role="region" aria-label="Anbefalt neste steg">
-      <div><span>Steg {stepIndex + 1} av {steps.length} · {step.label}{step.requirement ? ` · ${step.requirement}` : step.optional ? ' · Ved behov' : ''}</span><p>{step.purpose}</p></div>
-      <div className="project-step-next"><small>Neste: {next.label}</small>{onContinue && !readOnly ? <button type="button" disabled={continuing} onClick={() => onContinue(next.id)}>{continuing ? 'Lagrer …' : 'Lagre og fortsett →'}</button> : <button type="button" className="secondary" onClick={() => select(next.id)}>Gå til {next.label}</button>}</div>
+    {flow && <div className="project-step-guide" role="region" aria-label="Anbefalt neste steg">
+      <div><span>Du er her: {flow.label}{flow.requirement ? ` · ${flow.requirement}` : flow.optional ? ' · Ved behov' : ''}</span><p>{flow.purpose}</p></div>
+      <ProjectFlowActions flow={flow} onNavigate={select} onContinue={onContinue} continuing={continuing} readOnly={readOnly}/>
       {continueNotice && <p className="project-step-notice" role="status">{continueNotice}</p>}
     </div>}
     <div className="project-field-bar" role="navigation" aria-label="Prosjektverktøy på mobil">
-      {[["prosjekt", "Oversikt", Home], ["sjekklister", "Sjekklister", ClipboardCheck], ["bilder", "Bilder", Camera], ["avvik", "Avvik", TriangleAlert]].map(([id, label, Icon]) => <button key={id} type="button" disabled={!saved && id !== 'prosjekt'} aria-current={activeTab === id ? 'page' : undefined} onClick={() => select(id)}><Icon size={20}/><span>{label}</span></button>)}
+      {[["prosjekt", "Oversikt", Home], ["sjekklister", "Sjekklister", ClipboardCheck], ["bilder", "Bilder", Camera], ["avvik", "Avvik", TriangleAlert]].map(([id, label, Icon]) => <button key={id} type="button" data-project-navigation="true" disabled={!saved && id !== 'prosjekt'} aria-current={activeTab === id ? 'page' : undefined} onClick={() => select(id)}><Icon size={20}/><span>{label}</span></button>)}
       <button type="button" aria-haspopup="dialog" aria-expanded={menuOpen} onClick={() => setMenuOpen(true)}><Menu size={20}/><span>Meny</span></button>
     </div>
     {menuOpen && <DeviationDialog title={menuName} context={project.projectName || project.address || 'Nytt prosjekt'} onClose={() => setMenuOpen(false)} closeLabel="Lukk prosjektmeny"><div className="project-dialog-content project-menu-dialog">
-      {groups.map(item => <div key={item.title}><h3>{item.title}</h3>{buttons(item.items, item.title === 'Oppstart')}</div>)}
+      {groups.map(item => <div key={item.title}><h3>{item.title}</h3><p className="project-menu-purpose">{phasePurpose(item.title)}</p>{buttons(item.items)}</div>)}
       <div><h3>Hjelp og support</h3>{buttons(tabs.filter(([id]) => ['hjelp','support'].includes(id)))}</div>
     </div></DeviationDialog>}
   </section>;
@@ -84,4 +81,25 @@ export default function ProjectWorkspaceChrome({ tabs, activeTab, project, saved
 export function ProjectStatusDialog({ open, onClose, projectName, children }) {
   if (!open) return null;
   return <DeviationDialog title="Status og mangler" context={projectName} onClose={onClose} closeLabel="Lukk status og mangler"><div className="project-dialog-content" data-expo-project-status-content="1">{children}</div></DeviationDialog>;
+}
+
+function phasePurpose(title) {
+  return title === 'Oppstart' ? 'Gjør klart prosjektet og avtal hvem som skal delta.' : title === 'Gjennomføring' ? 'Dokumenter arbeidet mens du jobber.' : 'Kontroller arbeidet og lever dokumentasjonen.';
+}
+
+export function ProjectFlowActions({ flow, onNavigate, onContinue, continuing = false, readOnly = false }) {
+  if (!flow?.next) return null;
+  const [id, label] = flow.next;
+  const save = flow.save && onContinue && !readOnly;
+  return <div className="project-step-next"><small>Neste: {label}</small><button type="button" data-project-navigation="true" disabled={continuing} onClick={() => save ? onContinue(id) : onNavigate(id)}>{continuing ? 'Lagrer …' : save ? 'Lagre og fortsett →' : `Gå til ${label} →`}</button></div>;
+}
+
+export function ProjectWorkspaceFooter({ tabs, activeTab, simpleOrder, contractRequired, onNavigate, onContinue, continuing, readOnly, continueNotice }) {
+  const flow = projectWorkspaceFlow(projectWorkspaceGroups(tabs, simpleOrder), activeTab, { contractRequired });
+  if (!flow) return null;
+  return <div className="project-flow-footer" role="navigation" aria-label="Neste og forrige prosjektsteg">
+    {flow.previous && <button type="button" data-project-navigation="true" className="secondary" onClick={() => onNavigate(flow.previous[0])}>{`← Gå til ${flow.previous[1]}`}</button>}
+    <ProjectFlowActions flow={flow} onNavigate={onNavigate} onContinue={onContinue} continuing={continuing} readOnly={readOnly}/>
+    {continueNotice && <p role="status">{continueNotice}</p>}
+  </div>;
 }

@@ -147,3 +147,57 @@ Presisering: Avtalegrunnlag merkes For garanti når garanti er aktivert/utstedt,
 og vises da ikke som valgfritt. Kontrakts- og garantigatene er uendret.
 Nye tester bekrefter dette. Ekstra lagringsvernet hindrer også at et sent svar
 rydder eller erstatter nyere feltinnhold; testene bruker faktisk saveProject.
+
+
+## Prosjektkart og samordnet nestehandling – 17.10 kl. 11:50
+
+Kenneth godkjente en miks av oversiktskartet og den nye kompakte prosjektflaten.
+Miljømål: BEGGE, samme PR #266 og faste Preview. Denne delen erstatter tidligere
+beskrivelse av ett valgt fasepanel og nummererte underfaner. Alle tre faser er
+synlige på PC i like brede bokser med lik topp-/bunnkant. Mobil beholder fast
+feltmeny og fullskjermdialog for alle prosjektfanene.
+
+Oppstart viser Deltakere og tilganger rett etter Oversikt. Eksisterende
+Prosjektinvolverte-root får en plass foran portalene i eksisterende tilgangsfane;
+oversiktens opprinnelige plass beholdes. Samme editor og kladd gjenbrukes ved
+flytting, med eksisterende egen lagring. Registrert kontakt gir ikke portaltilgang.
+Kunde-, UE- og kontrollørhandlinger bruker opprinnelige callbacks, koder, RLS og
+e-postmotor. Enkle ordrer beholder UE/funksjonsutvalg uten kundedeling.
+Ingen ny deltakereditor injiseres i skrivebeskyttet tilgangsfane eller før lagring.
+
+Begge handlingsrader bruker projectWorkspaceFlow og ProjectFlowActions.
+Fremdrift peker til Sjekklister begge steder. Den gamle bottomPrevNext beholdes
+som skjult kompatibilitetskilde for urørte legacy-checker og er ikke brukerens
+navigasjon i React-skallet. Generisk prosjektlagring brukes bare for prosjektets
+felter; kontaktlisten, fremdriftsplanen og sjekklister beholder egen lagring.
+Nye data-project-navigation-markører sikrer at gammel deltaker-kladdvakt
+fortsatt stopper nye meny-/neste-/mobilhandlinger ved ulagrede kontakter.
+
+Scope: ProjectWorkspaceChrome/presentation/CSS, to integrasjonspunkter i main,
+accessViewTools sin presentasjonsplass, deltakeradapterens hostvalg og
+kladdvaktmatch, Hjelp, nye UX-tester, QA/docs og tillegg i CI. Ingen endring i
+Sales, goToTab, lagringsmotor, database, autorisasjon, e-post eller timeføring.
+
+Testendringens begrunnelse: gammel UX-test forventet skjulte faser og fem/tre
+oppstartssteg. Ny avtalt kontrakt krever alle faser, synlige deltakere og samme
+nestehandling. Nytester fra denne PR oppdateres. I critical-project-navigation-check
+oppdateres kun hjelpetekstkontrakten til tre synlige bokser, deltaker-/portalvalg
+og lik nestehandling, med ekstra vern mot at kontakt likestilles med tilgang.
+Alle øvrige eksisterende critical-assertions beholdes. Prosjektkortets grense økes fra 440 til 560 px fordi
+hele kartet nå er synlig. Apphode <=80 px og innhold før 800 px beholdes.
+
+Brukerprøve: Åpne vanlig prosjekt → Deltakere og tilganger. Prosjektinvolverte
+skal stå før portalene. Åpne Fremdrift og kontroller at øvre/nedre handling går
+til Sjekklister. Prøv enkel ordre og mobilmeny, og avbryt navigasjon fra en
+ulagret kontakt. Faktisk QA/CI/deploybevis føres i PR før ny TEST OK.
+
+Lokal slutt-QA for prosjektkartet: full Sandbox critical/build PASS; 108 Chromium-
+assertions ved 1363/768/390/320 px PASS, inkludert like bokser og samme øvre/nedre
+handling, originalstatus, dialoger, kopi/PDF/låsing og enkel/direkte/ny/read-only.
+98 faktiske save/continue-assertions PASS. Ny deltaker-workspace-test: 21
+assertions PASS med faktisk editor og adapter: flytting av samme input/root,
+lagring, avbrutt navigasjon fra både kart/footer/mobil, fokusretur, annet
+prosjekt og kundeportal/read-only-isolasjon. Original kontrollør-React-QA PASS
+(kunde/UE-kopieringscallbacks, kontrollør opprettelse, utløp, tilbakekalling og
+e-postgrenser med syntetisk transport); gammel sjekkliste-workspace og
+prosjektmeny-retur PASS. Resume-test 12 assertions PASS.
