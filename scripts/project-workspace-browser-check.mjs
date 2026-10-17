@@ -66,6 +66,12 @@ try{
  const page=await browser.newPage({viewport:{width:1363,height:1000}}),errors=[];page.setDefaultTimeout(4000);page.on('pageerror',e=>{errors.push(e.message);console.error('PAGE ERROR',e.message);});
  await page.goto('http://127.0.0.1:'+server.address().port+'/?progressTest=safe');
  const button=name=>page.getByRole('button',{name,exact:true});
+ // Wait for the fixture's responsive React commit, not a fixed sleep. Otherwise
+ // geometry can still include the desktop profile host after changing viewport.
+ const resize=async width=>{
+  await page.setViewportSize({width,height:1000});
+  await page.waitForFunction(()=>{const host=document.getElementById('expo-work-profile-switcher');return Boolean(host)&&(innerWidth<=700)===(host.parentElement.tagName==='HEADER');});
+ };
  await page.locator('.project-workspace').waitFor();
  const nav=page.locator('.project-workspace-navigation');
  eq(await page.locator('#expo-project-workspace-guide').count(),0,'legacy duplicate guide removed');
@@ -82,11 +88,11 @@ try{
  eq(await page.locator('.project-contact-overview .guideCard').count(),4,'overview prioritizes four contact/financial fields');
  eq(await page.locator('.project-contact-overview').getByText(/12\s500\skr/).count(),1,'accepted sum retains VAT');
  for(const width of [1363,768,390,320]){
-  await page.setViewportSize({width,height:1000});
+  await resize(width);
   eq(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'contact overview fits '+width);
   eq(await page.locator('.project-contact-overview').getByText('qa@example.invalid',{exact:true}).isVisible(),true,'contact email retained '+width);
  }
- await page.setViewportSize({width:1363,height:1000});
+ await resize(1363);
  eq(await nav.getByRole('group',{name:'Oppstart',exact:true}).locator('button').allTextContents().then(labels=>labels.map(text=>text.replace(/^[1-5]/,'').replace('Ved behov','').replace('Historikk','').trim())),['Oversikt','Deltakere og tilganger','Prosjektbeskrivelse','Avtalegrunnlag','Prosjektering','Fremdrift','Salgsgrunnlag'],'contacts and portal access precede work description; history is separate');
  eq(await page.getByRole('region',{name:'Anbefalt neste steg'}).getByText('Du er her: Oversikt',{exact:true}).isVisible(),true,'current setup position explicit');
  await page.getByRole('region',{name:'Anbefalt neste steg'}).getByRole('button',{name:'Lagre og fortsett →',exact:true}).click();
@@ -127,7 +133,7 @@ try{
  eq(await page.evaluate(()=>window.navCalls.at(-1)),'bilder','real tab ID');
  await page.waitForFunction(()=>scrollY===0);eq(await page.evaluate(()=>scrollY),0,'project context remains visible after navigation');
  for(const width of [1363,768,390,320]){
-  await page.setViewportSize({width,height:1000});
+  await resize(width);
   eq(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'fits '+width);
   eq((await page.locator('main>h2').boundingBox()).y<800,true,'content reachable '+width);
   if(width<1181){
@@ -147,7 +153,7 @@ try{
   eq(await status.getByText('Kontroller bilder',{exact:true}).isVisible(),true,'guidance not collapsed '+width);
   await status.press('Escape');
  }
- await page.setViewportSize({width:390,height:1000});
+ await resize(390);
  const fieldBar=page.getByRole('navigation',{name:'Prosjektverktøy på mobil',exact:true});
  await page.evaluate(()=>window.scrollTo(0,300));
  eq(await fieldBar.isVisible(),true,'field bar stays visible after scrolling');
@@ -170,7 +176,7 @@ try{
  eq(await page.getByRole('dialog').count(),0,'status shortcut closes dialog via existing navigation');
  eq(await page.evaluate(()=>window.navCalls.at(-1)),'bilder','status callback retained');
  for(const width of [1363,768,390,320]){
-  await page.setViewportSize({width,height:1000});
+  await resize(width);
   const trigger=button('Flere handlinger'),overflow=await page.locator('body').evaluate(e=>e.style.overflow);
   await trigger.click();const actions=page.getByRole('menu',{name:'Flere handlinger',exact:true});await actions.waitFor();
   eq(await page.getByRole('dialog').count(),0,'actions open without modal '+width);

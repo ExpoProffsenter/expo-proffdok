@@ -44,3 +44,12 @@ Samme faste Preview-alias brukes. Ingen ny innlogget ekstern nettleserprøve att
 4. Skriv en testkommentar i en autorisert testsjekkliste, lukk, velg Bilder og deretter Sjekklister. Samme kladd skal være der. Lagre med vanlig Lagre-knapp hvis den skal beholdes på server.
 
 Ny TEST OK kreves av AGENTS.md før merge/Production. Etter godkjenning: Production-verifisering, kontrollert main → demo med bevart overlay og preflight.
+
+
+## QA-oppfølging etter godkjent PR #267
+
+Kenneth ga TEST OK og publiseringsgodkjenning 17.10.2026 kl. 14:14 norsk tid, men fikk ikke prøvd Preview på fysisk mobil. Main `e2cf10317f12f57e2dd6969ef32cdba1fb68c44d` / Production `dpl_J9oqmJ6MrzptjCCPMJLVN9Eun3du` er READY, identisk godkjent app-tre, HTTP 200 med riktig Production-binding.
+
+Demo-kontrollen viste en tidsavhengighet i den eldre Chromium-fixturen: setViewportSize kan returnere før React har flyttet den syntetiske firmavelgeren fra desktop-hodet til mobilens søskenvert. En umiddelbar høydemåling brukte da fortsatt desktop-plassering. Instrumentering som ventet på DOM-oppdateringen besto alle 138 opprinnelige assertions. Den nye 72-punkts faktiske mobilheader-/sjekklistetesten besto også.
+
+Avgrenset QA-rettelse: vent eksplisitt på vertsposisjonen som gjelder for aktuell skjermbredde, med eksisterende Playwright-timeout. Ingen sleep, terskelendring, fjernet assertion eller appkodeendring. Denne oppfølgingen berører bare testfil og dette QA-notatet. Endelig CI/main/demo og preflight føres i PR.
