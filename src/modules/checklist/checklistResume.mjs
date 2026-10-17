@@ -8,3 +8,10 @@ export function checklistResumeEntries(groups, runs, checklist, readDraft, readO
     return { group, resumable, index };
   }).sort((a, b) => Number(b.resumable) - Number(a.resumable) || a.index - b.index);
 }
+
+export function firstUnfinishedChecklist(groups, runs, checklist, readDraft, readOnly = false) {
+  if (readOnly) return null;
+  return checklistResumeEntries(groups, runs, checklist, readDraft).find(({ group, resumable }) =>
+    group.items.length > 0 && (resumable || runs.find(run => run.category === group.category)?.status !== 'completed')
+  )?.group || null;
+}
