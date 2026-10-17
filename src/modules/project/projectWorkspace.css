@@ -76,3 +76,22 @@ section.deviation-dialog:has(.project-dialog-content){padding:0!important;margin
 .project-menu-dialog .project-menu-purpose{flex-basis:100%;font-size:13px;color:#526f78;margin:0 0 4px}
 [data-project-participants-slot]>#expo-project-participants-root{margin:0 0 20px;padding:0;border:0}
 @media(max-width:700px){.project-flow-footer{margin:12px 0 110px;padding:0 12px}.project-flow-footer>button,.project-flow-footer .project-step-next{width:100%}.project-step-next{flex-wrap:wrap}.project-step-next button{flex:1;min-width:0}.project-step-next small{max-width:none}.project-step-guide>div:first-child{min-width:0;flex-basis:100%}}
+
+/* Project form only. Customer selection no longer separates contact fields. */
+.project-information-fields{grid-column:1/-1;display:grid;gap:12px;min-width:0}
+.project-info-card{padding:14px;border:1px solid #d6e5e8;border-radius:14px;background:#fbfdfd;min-width:0}
+.project-info-card h3{margin:0 0 10px;font-size:16px;color:#174955}
+.project-info-inputs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px 14px;align-items:start}
+.project-info-inputs>label{min-width:0;margin:0;display:grid;gap:5px;font-size:13px}
+.project-info-inputs input{min-width:0;width:100%;min-height:44px;padding:9px 11px;box-sizing:border-box;font-size:14px}
+.project-info-notes>label{display:grid;gap:5px;font-size:13px}.project-info-notes textarea{min-height:64px;padding:9px 11px;font-size:14px}
+.project-customer-register{margin-top:12px;border-top:1px solid #e0e9ed;padding-top:10px}
+.project-customer-register>summary{cursor:pointer;font-size:13px;color:#165c68;font-weight:700;min-height:28px}
+.project-customer-register>section{padding:12px 0!important;margin:0!important;border:0!important;border-radius:0!important;background:transparent!important}
+.project-customer-register>section+section{border-top:1px solid #e0e9ed!important}
+.project-customer-register h2{font-size:15px!important;margin:0 0 8px!important}.project-customer-register p{font-size:12px;margin:7px 0;line-height:1.4}
+.project-customer-register select,.project-customer-register input:not([type=checkbox]){min-height:44px;padding:9px 11px;font-size:14px}
+.project-customer-register button{min-height:44px}
+.project-info-editor .collapsibleBlockBody{padding:12px!important}
+@media(max-width:900px){.project-info-inputs{grid-template-columns:repeat(2,minmax(0,1fr))}.project-customer-inputs>label:first-child{grid-column:1/-1}}
+@media(max-width:560px){.project-info-card{padding:12px}.project-info-inputs{grid-template-columns:minmax(0,1fr)}.project-info-inputs input{font-size:16px}.project-customer-register label{min-width:0!important;width:100%}.project-customer-register input:not([type=checkbox]),.project-customer-register select{font-size:16px}}

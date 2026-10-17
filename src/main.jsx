@@ -10,7 +10,7 @@ import ControllerPortal from './modules/controller/ControllerPortal.jsx';
 import {PROJECT_DESIGN_CHECKLIST_TEMPLATE} from './modules/config/projectDesignChecklist.mjs';
 import {SOPRO_SYSTEM_CHECKLIST_TEMPLATES} from "./modules/config/soproChecklistTemplates.mjs";
 import MobileScrollShortcuts from "./modules/app/MobileScrollShortcuts.jsx";
-import CompanyCustomerPicker from "./modules/customers/CompanyCustomerPicker.jsx";
+import ProjectInformationFields from "./modules/project/ProjectInformationFields.jsx";
 import { useKshmsAccess } from './modules/kshms/kshmsAccess.js';
 import { useHrAccess } from './modules/hr/hrAccess.js';
 import {usePersonalAccess,personalRights} from './modules/personal/personalAccess.js';
@@ -6584,18 +6584,8 @@ ${appLink}`;
             compact: false,
             onOpenRequest: openSalesRequestFromHome
           })
-        ] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: !projectId && !mobileCreatingProject ? "desktopOnlyWhenNoProject" : "", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Section, { title: projectId ? "Rediger kunde- og prosjektinfo" : "Prosjektinformasjon", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CollapsibleBlock, { title: "Kunde- og prosjektdata", defaultOpen: true, children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Prosjektansvarlig", value: project.responsible, onChange: (v) => setProject({ ...project, responsible: v }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Dato", type: "date", value: project.date, onChange: (v) => setProject({ ...project, date: v }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Navn p\xE5 prosjekt", value: project.projectName, onChange: (v) => setProject({ ...project, projectName: v }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Adresse", value: project.address, onChange: (v) => setProject({ ...project, address: v }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Postnr.", value: project.postnr || "", onChange: (v) => setProject({ ...project, postnr: v }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Poststed / by", value: project.city || "", onChange: (v) => setProject({ ...project, city: v }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CompanyCustomerPicker, { disabled: isProjectSupportReadOnly, value: { customer: project.customer || "", phone: project.customerPhone || "", email: project.customerEmail || "", address: project.address || "", postnr: project.postnr || "", city: project.city || "" }, onUse: (customer) => setProject(current => ({ ...current, customer: customer.customer || "", customerPhone: customer.phone || "", customerEmail: customer.email || "", address: customer.address || "", postnr: customer.postnr || "", city: customer.city || "" })) }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Kunde", value: project.customer, onChange: (v) => setProject({ ...project, customer: v }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Kunde e-post", type: "email", value: project.customerEmail || "", onChange: (v) => setProject({ ...project, customerEmail: v }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Kunde telefon", type: "tel", value: project.customerPhone || "", onChange: (v) => setProject({ ...project, customerPhone: v }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Notater", value: project.notes, onChange: (v) => setProject({ ...project, notes: v }) }),
+        ] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: !projectId && !mobileCreatingProject ? "desktopOnlyWhenNoProject" : "", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Section, { className: "project-info-editor", title: projectId ? "Rediger kunde- og prosjektinfo" : "Prosjektinformasjon", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CollapsibleBlock, { title: "Kunde- og prosjektdata", defaultOpen: true, children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProjectInformationFields, { project, setProject, Input, Textarea, readOnly: isProjectSupportReadOnly }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProjectWarrantySetup, { warranty, setWarranty, systems: soproWarrantySystems, project, onCreateStandardWetroomTemplate: createStandardWetroomTemplate }),
           false && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", gap: "10px", alignItems: "flex-start", marginTop: "4px" }, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", checked: !!project.isTemplate && !!warranty?.enabled && !!warranty?.system, onChange: (e) => {

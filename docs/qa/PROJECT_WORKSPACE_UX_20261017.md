@@ -201,3 +201,36 @@ prosjekt og kundeportal/read-only-isolasjon. Original kontrollør-React-QA PASS
 (kunde/UE-kopieringscallbacks, kontrollør opprettelse, utløp, tilbakekalling og
 e-postgrenser med syntetisk transport); gammel sjekkliste-workspace og
 prosjektmeny-retur PASS. Resume-test 12 assertions PASS.
+
+
+## Samlet kundeboks og kompakt prosjektskjema – 17.10 kl. 12:12
+
+Kenneth ba om én kundeboks og mindre luft i prosjektoversiktens skjema.
+Miljømål: BEGGE, samme PR #266/faste Preview. Scope: feltpresentasjonen i
+ProjectInformationFields, main sin skjemaintegrasjon, prosjektlokal CSS, Hjelp,
+QA/docs og tillegg til eksisterende QA-jobb. Ingen endring i kunderegisterets
+provider, RPC-er, scope/revisjon, opt-in, lagring, Sales eller portal.
+
+Prosjektopplysninger samler navn, ansvarlig, dato og prosjektadresse. Kunde
+samler navn, e-post og telefon. Kunderegister – hent eller lagre kunde åpner
+original søk/valg og eksplisitt lagring i samme boks. Registeret er lukket som
+standard; ingen kunde lagres automatisk. OnUse beholder opprinnelig mapping
+av både kontakt og prosjektadresse; brukeren skal kontrollere adressen.
+Notater beholdes synlig med lavere minimumshøyde. Garantifelt og opprinnelig
+oversiktsoverskrift/vertsplass for Prosjektinvolverte beholdes. Desktop bruker
+tre kolonner, nettbrett to og liten mobil én, med store trykk-/skrivefelt.
+
+Brukerprøve: Oppstart → Oversikt → Kunde. Åpne Kunderegister – hent eller
+lagre kunde, hent en lagret testkunde og kontroller kontakt/prosjektadresse.
+Egen registrering fungerer uten registervalg. Registerlagring krever fortsatt
+et aktivt valg; ordinær prosjektlagring er uendret. Ny TEST OK før merge.
+
+Slutt-QA kundeboks: 36 Chromium-assertions PASS på faktiske prosjektfelter,
+main sine Input/Textarea-renderere og uendret CompanyCustomerProvider.
+1363/768/390/320 px uten siderulling; samlet kontaktboks; lavere notatfelt;
+register lukket som standard; manuell registrering uten registerskriving;
+originalt kundevalg med adresse og bevarte øvrige felt; eksplisitt opt-in-lagring
+med firma/revisjon; sen søkrespons etter firmabytte avvises; read-only.
+Full Sandbox critical/build PASS; øvrig prosjekt-workspace (108), faktisk
+save/continue (98), deltaker-workspace (21) og opprinnelig menyretur PASS.
+CompanyCustomerPicker/provider og alle Sales-filer er uendret.

@@ -1559,3 +1559,26 @@ Brukerprøve: Åpne vanlig prosjekt → Deltakere og tilganger. Prosjektinvolver
 skal stå før portalene. Åpne Fremdrift og kontroller at øvre/nedre handling går
 til Sjekklister. Prøv enkel ordre og mobilmeny, og avbryt navigasjon fra en
 ulagret kontakt. Faktisk QA/CI/deploybevis føres i PR før ny TEST OK.
+
+
+## Samlet kundeboks og kompakt prosjektskjema – 17.10 kl. 12:12
+
+Kenneth ba om én kundeboks og mindre luft i prosjektoversiktens skjema.
+Miljømål: BEGGE, samme PR #266/faste Preview. Scope: feltpresentasjonen i
+ProjectInformationFields, main sin skjemaintegrasjon, prosjektlokal CSS, Hjelp,
+QA/docs og tillegg til eksisterende QA-jobb. Ingen endring i kunderegisterets
+provider, RPC-er, scope/revisjon, opt-in, lagring, Sales eller portal.
+
+Prosjektopplysninger samler navn, ansvarlig, dato og prosjektadresse. Kunde
+samler navn, e-post og telefon. Kunderegister – hent eller lagre kunde åpner
+original søk/valg og eksplisitt lagring i samme boks. Registeret er lukket som
+standard; ingen kunde lagres automatisk. OnUse beholder opprinnelig mapping
+av både kontakt og prosjektadresse; brukeren skal kontrollere adressen.
+Notater beholdes synlig med lavere minimumshøyde. Garantifelt og opprinnelig
+oversiktsoverskrift/vertsplass for Prosjektinvolverte beholdes. Desktop bruker
+tre kolonner, nettbrett to og liten mobil én, med store trykk-/skrivefelt.
+
+Brukerprøve: Oppstart → Oversikt → Kunde. Åpne Kunderegister – hent eller
+lagre kunde, hent en lagret testkunde og kontroller kontakt/prosjektadresse.
+Egen registrering fungerer uten registervalg. Registerlagring krever fortsatt
+et aktivt valg; ordinær prosjektlagring er uendret. Ny TEST OK før merge.
