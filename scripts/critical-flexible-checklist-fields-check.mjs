@@ -7,6 +7,7 @@ import {executionContent,newExecution} from '../src/modules/kshms/kshmsExecution
 import {checklistTemplatePdfDocument,checklistRunPdfDocument} from '../src/modules/report/kshmsDocumentPdf.mjs';
 import {executionReportDocument} from '../src/modules/report/kshmsExecutionReport.mjs';
 import {ROUTINE_CATALOG} from '../src/modules/kshms/kshmsCatalog.mjs';
+import {checklistDisplayState} from '../src/modules/checklist/checklistDisplay.mjs';
 const field=(type,label=type,extra={})=>({id:crypto.randomUUID(),label,type,required:true,...extra});
 const gate=field('yesno'),conditional=field('text','Tillatelse',{when:{field_id:gate.id,equals:'Ja'}}),opt=field('text','Merknad',{required:false}),sig=field('confirmation');
 const fields=checklistFields([gate,conditional,opt,sig]),nonce=crypto.randomUUID(),values={[gate.id]:'Nei',[sig.id]:{confirmed:true,confirmation_id:nonce}};
@@ -29,6 +30,8 @@ const invalidated=invalidateFieldConfirmations(['A','B'],req,answers,'B');assert
 assert.equal(invalidateFieldConfirmations(['A','B'],req,answers,'A',sig.id),answers,'A second confirmation must retain the first signer');
 const def={category:'QA',items:['A','B'],requirements:req};
 assert.equal(completionProblem(def,answers),'');assert.match(completionProblem(def,{...answers,A:{status:'Ok',values:{}}}),/Fyll ut/);
+assert.equal(checklistDisplayState({items:['P'],requirements:{P:{image_required:true}}},{P:{status:'Ok'}}).ready,true,'Legacy assessed status remains separate from documentation requirements');
+assert.equal(checklistDisplayState(def,{...answers,A:{status:'Ok',values:{}}}).ready,false,'Required new fields must not display ready');
 assert.deepEqual(answersForDefinition(def,{A:{status:'Avvik',comment:'Keep',values:signed}},true).A.values,{},'A fresh control must not inherit another control’s confirmation');
 const hot=checklistContent(hotWorkChecklist());assert.equal(hot.trade,'Felles – alle fag');assert.equal(hot.points.length,3);assert(hot.points.every(p=>p.allow_na===false));assert(hot.points[1].fields.some(f=>f.min===60));
 assert(hot.points[1].fields.filter(f=>f.type==='confirmation').length===2);assert(hot.points[2].fields.some(f=>f.type==='confirmation'));

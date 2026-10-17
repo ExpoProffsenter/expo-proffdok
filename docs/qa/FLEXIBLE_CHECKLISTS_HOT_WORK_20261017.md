@@ -27,6 +27,8 @@ Tre deler: jobb/deltakere, sikkerhet og egne bekreftelser FØR start, avslutning
 - PDF-mapping for mal, prosjektkontroll, KS/HMS-kontroll og ordinær rapport oppdatert. Nygenerert tom mal og syntetisk utfylt kontroll rendret og visuelt inspisert (to sider hver).
 - Ingen faktisk e-post sendt. Production er ikke migrert/publisert. Innlogget brukerprøve i den faste Preview gjenstår; lokal komponenttest er ikke en slik prøve.
 
+CI #537 fanget at ny readiness-validering også tok med gamle bildekrav. Rettet slik at gammel «alle punkter vurdert»-status beholder sin separate betydning, mens bare nye feltkrav inngår i den nye kontrollen. Eksisterende test er beholdt; eget regresjonsvern er lagt til.
+
 To gamle katalogvern er presist oppdatert fordi brukeren har bestilt endring i `hot-work`: opprinnelig v1 er fryst i testfixture og erstattes bare under gammel 73-raders hashberegning. Dermed sjekkes alle andre rutiner eksakt som før, og ny v2/henvisning sjekkes separat. Kontrollert kildedato får kun unntaket 17.10.2026 for varme arbeider. Ingen scenario er fjernet.
 
 ## Kenneths test på fast Preview
