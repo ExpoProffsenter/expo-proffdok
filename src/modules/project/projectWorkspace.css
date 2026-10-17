@@ -95,3 +95,10 @@ section.deviation-dialog:has(.project-dialog-content){padding:0!important;margin
 .project-info-editor .collapsibleBlockBody{padding:12px!important}
 @media(max-width:900px){.project-info-inputs{grid-template-columns:repeat(2,minmax(0,1fr))}.project-customer-inputs>label:first-child{grid-column:1/-1}}
 @media(max-width:560px){.project-info-card{padding:12px}.project-info-inputs{grid-template-columns:minmax(0,1fr)}.project-info-inputs input{font-size:16px}.project-customer-register label{min-width:0!important;width:100%}.project-customer-register input:not([type=checkbox]),.project-customer-register select{font-size:16px}}
+
+.project-actions-dropdown{position:relative;z-index:40;flex-shrink:0}
+.project-actions-dropdown>button{width:100%;min-height:40px;padding:8px 12px;font-size:12px;white-space:nowrap}
+.project-actions-menu{position:absolute;right:0;top:calc(100% + 6px);width:260px;max-width:calc(100vw - 24px);max-height:calc(100dvh - 160px);overflow:auto;padding:6px;border:1px solid #c8dce1;border-radius:14px;background:#fff;box-shadow:0 12px 32px #123e5126;box-sizing:border-box}
+.project-actions-menu>button{display:block;width:100%;min-height:44px;padding:10px 12px;border:0;border-radius:8px;background:transparent;color:#173f4b;box-shadow:none;text-align:left;font-size:13px}
+.project-actions-menu>button:hover,.project-actions-menu>button:focus-visible{background:#e8f5f6;outline:2px solid #0a7b88;outline-offset:-2px}
+@media(max-width:700px){.project-header-actions>.project-actions-dropdown{flex:1;min-width:0}.project-actions-dropdown>button{min-height:44px;font-size:13px}}

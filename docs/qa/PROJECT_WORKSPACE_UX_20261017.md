@@ -234,3 +234,22 @@ med firma/revisjon; sen søkrespons etter firmabytte avvises; read-only.
 Full Sandbox critical/build PASS; øvrig prosjekt-workspace (108), faktisk
 save/continue (98), deltaker-workspace (21) og opprinnelig menyretur PASS.
 CompanyCustomerPicker/provider og alle Sales-filer er uendret.
+
+
+## Flere handlinger som nedtrekksmeny – 17.10 kl. 12:27
+
+Miljømål: BEGGE. Brukerbestilt bytte fra modal til liten meny rett under Flere
+handlinger. Scope: ProjectHeaderActions, prosjektlokal CSS, eksisterende UX-QA
+og Hjelp/docs. PDF, nytt prosjekt, kopi og avslutning/opplåsing har uendrede
+callbacks, synlighetskrav og bekreftelser. Lagre/Oppdater er fortsatt direkte.
+Menyen lukkes ved nytt klikk, valg, utenforklikk, Tab eller Escape. Escape gir
+fokus tilbake; pil/Home/End støtter tastatur. Ingen bakgrunnslåsing/fullskjerm.
+Status/mangler og prosjektmeny beholder sine eksisterende dialoger.
+Bare denne PR-ens nye UX-test tilpasses den nye menyrollen, med ekstra
+responsive og tastaturkontroller. Ingen eldre critical-check endres.
+Brukerprøve: Flere handlinger → meny under knappen, klikk utenfor for å lukke.
+
+Nedtrekksmeny-QA: 138 Chromium-assertions PASS. Tillegg prøver 1363/768/390/320
+px, meny under knappen uten dialog eller scroll-lås, utenforklikk, knapp-toggle,
+Escape/fokusretur, Tab, piltaster/End og opprinnelige callbacks. Kopi, PDF,
+nytt prosjekt, avslutning/opplåsing og skrivebeskyttet support beholdes.

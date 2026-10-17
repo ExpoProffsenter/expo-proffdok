@@ -167,12 +167,36 @@ try{
  await button('Status og mangler').click();await page.getByRole('dialog').getByRole('button',{name:'Åpne',exact:true}).click();
  eq(await page.getByRole('dialog').count(),0,'status shortcut closes dialog via existing navigation');
  eq(await page.evaluate(()=>window.navCalls.at(-1)),'bilder','status callback retained');
- await button('Flere handlinger').click();await page.getByRole('dialog').getByRole('button',{name:'Lagre som kopi',exact:true}).click();
+ for(const width of [1363,768,390,320]){
+  await page.setViewportSize({width,height:1000});
+  const trigger=button('Flere handlinger'),overflow=await page.locator('body').evaluate(e=>e.style.overflow);
+  await trigger.click();const actions=page.getByRole('menu',{name:'Flere handlinger',exact:true});await actions.waitFor();
+  eq(await page.getByRole('dialog').count(),0,'actions open without modal '+width);
+  const menuBox=await actions.boundingBox(),triggerBox=await trigger.boundingBox();
+  eq(menuBox.y>=triggerBox.y+triggerBox.height,true,'dropdown sits below trigger '+width);
+  eq(menuBox.x>=0&&menuBox.x+menuBox.width<=width,true,'dropdown fits screen '+width);
+  eq(await page.locator('body').evaluate(e=>e.style.overflow),overflow,'dropdown does not lock page '+width);
+  await actions.press('Escape');eq(await actions.count(),0,'Escape closes dropdown '+width);
+  eq(await trigger.evaluate(e=>document.activeElement===e),true,'Escape returns trigger focus '+width);
+ }
+ await button('Flere handlinger').press('ArrowUp');
+ await page.getByRole('menu',{name:'Flere handlinger',exact:true}).waitFor();
+ eq(await page.evaluate(()=>document.activeElement.textContent),'🔒 Avslutt prosjekt','ArrowUp opens last action');
+ await page.getByRole('menu',{name:'Flere handlinger',exact:true}).press('Escape');
+ await button('Flere handlinger').press('ArrowDown');
+ const actions=page.getByRole('menu',{name:'Flere handlinger',exact:true});
+ await actions.getByRole('menuitem',{name:'Last ned PDF',exact:true}).waitFor();
+ await actions.press('End');eq(await page.evaluate(()=>document.activeElement.textContent),'🔒 Avslutt prosjekt','End reaches last action');
+ await actions.press('ArrowDown');eq(await page.evaluate(()=>document.activeElement.textContent),'Last ned PDF','keyboard wraps to first action');
+ await actions.press('Tab');eq(await actions.count(),0,'Tab closes dropdown');
+ await button('Flere handlinger').click();await button('Flere handlinger').click();eq(await actions.count(),0,'trigger toggles dropdown closed');
+ await button('Flere handlinger').click();await page.getByRole('heading',{name:'Arbeidsinnhold: bilder',exact:true}).click();eq(await actions.count(),0,'outside click closes dropdown');
+ await button('Flere handlinger').click();await page.getByRole('menu',{name:'Flere handlinger',exact:true}).getByRole('menuitem',{name:'Lagre som kopi',exact:true}).click();
  eq(await page.evaluate(()=>window.copies),1,'copy callback once');
- await button('Flere handlinger').click();await page.getByRole('dialog').getByRole('button',{name:'+ Nytt prosjekt',exact:true}).click();eq(await page.evaluate(()=>window.newProjects),1,'new project callback retained');
- await button('Flere handlinger').click();await page.getByRole('dialog').getByRole('button',{name:'Last ned PDF',exact:true}).click();
+ await button('Flere handlinger').click();await page.getByRole('menu',{name:'Flere handlinger',exact:true}).getByRole('menuitem',{name:'+ Nytt prosjekt',exact:true}).click();eq(await page.evaluate(()=>window.newProjects),1,'new project callback retained');
+ await button('Flere handlinger').click();await page.getByRole('menu',{name:'Flere handlinger',exact:true}).getByRole('menuitem',{name:'Last ned PDF',exact:true}).click();
  eq(await page.evaluate(()=>window.pdfs),1,'PDF callback once');
- await button('Flere handlinger').click();await page.getByRole('dialog').getByRole('button',{name:'🔒 Avslutt prosjekt',exact:true}).click();
+ await button('Flere handlinger').click();await page.getByRole('menu',{name:'Flere handlinger',exact:true}).getByRole('menuitem',{name:'🔒 Avslutt prosjekt',exact:true}).click();
  eq(await page.evaluate(()=>window.locks),[true],'lock callback retained');
  await button('● Lagre endringer').click();eq(await page.evaluate(()=>window.saves),1,'save callback retained');
  for(const kind of ['order','direct','new','support','locked']){
@@ -188,9 +212,9 @@ try{
   if(kind==='support'){
    eq(await button('● Lagre endringer').count(),0,'support cannot save');
    await button('Status og mangler').click();eq(await page.getByRole('dialog').getByLabel('Arbeidsstatus',{exact:true}).isEnabled(),false,'support status remains read only');await page.getByRole('dialog').press('Escape');
-   await button('Flere handlinger').click();eq(await page.getByRole('dialog').getByRole('button',{name:'Lagre som kopi',exact:true}).count(),0,'support cannot copy');eq(await page.getByRole('dialog').getByRole('button',{name:'🔒 Avslutt prosjekt',exact:true}).count(),0,'support cannot lock');await page.getByRole('dialog').press('Escape');
+   await button('Flere handlinger').click();eq(await page.getByRole('menu',{name:'Flere handlinger',exact:true}).getByRole('menuitem',{name:'Lagre som kopi',exact:true}).count(),0,'support cannot copy');eq(await page.getByRole('menu',{name:'Flere handlinger',exact:true}).getByRole('menuitem',{name:'🔒 Avslutt prosjekt',exact:true}).count(),0,'support cannot lock');await page.getByRole('menu',{name:'Flere handlinger',exact:true}).press('Escape');
   }
-  if(kind==='locked'){await button('Flere handlinger').click();await page.getByRole('dialog').getByRole('button',{name:'🔓 Lås opp prosjekt',exact:true}).click();eq(await page.evaluate(()=>window.locks),[true,false],'unlock callback retained');}
+  if(kind==='locked'){await button('Flere handlinger').click();await page.getByRole('menu',{name:'Flere handlinger',exact:true}).getByRole('menuitem',{name:'🔓 Lås opp prosjekt',exact:true}).click();eq(await page.evaluate(()=>window.locks),[true,false],'unlock callback retained');}
  }
  eq(errors,[],'no React or DOM exceptions');
  console.log('Project workspace browser QA: PASS ('+checks+' assertions) — full-screen dialogs, drafts, native callbacks, cancellation, responsive sizes, simple/direct/new projects and read-only support');

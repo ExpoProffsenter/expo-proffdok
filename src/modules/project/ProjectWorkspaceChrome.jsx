@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { FolderOpen, Menu, MoreHorizontal, ClipboardCheck, Camera, TriangleAlert, Home } from 'lucide-react';
 import DeviationDialog from '../deviations/DeviationDialog.jsx';
 import { projectWorkspaceGroups, projectSetupSteps, projectWorkspaceFlow } from './projectWorkspacePresentation.mjs';
@@ -6,20 +6,42 @@ import './projectWorkspace.css';
 
 export function ProjectHeaderActions({ dirty, saved, readOnly, locked, simpleOrder, onSave, onCopy, onPdf, onLock, onNew }) {
   const [open, setOpen] = useState(false);
+  const root = useRef(null), trigger = useRef(null), panel = useRef(null);
+  const menuId = useId();
+  const openLast = useRef(false);
   const noun = simpleOrder ? 'ordre' : 'prosjekt';
-  const run = callback => { setOpen(false); callback(); };
+  useEffect(() => {
+    if (!open) return;
+    const items = panel.current?.querySelectorAll('button');
+    items?.[openLast.current ? items.length - 1 : 0]?.focus();
+    const outside = event => { if (!root.current?.contains(event.target)) setOpen(false); };
+    document.addEventListener('pointerdown', outside);
+    document.addEventListener('focusin', outside);
+    return () => { document.removeEventListener('pointerdown', outside); document.removeEventListener('focusin', outside); };
+  }, [open]);
+  const close = () => { setOpen(false); trigger.current?.focus(); };
+  const run = callback => { close(); callback(); };
+  const keys = event => {
+    if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); close(); return; }
+    if (event.key === 'Tab') { close(); return; }
+    if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
+    event.preventDefault();
+    const items = [...panel.current.querySelectorAll('button')];
+    const index = items.indexOf(document.activeElement);
+    const next = event.key === 'Home' ? 0 : event.key === 'End' ? items.length - 1 : (index + (event.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length;
+    items[next]?.focus();
+  };
   return <div className="project-header-actions">
     {!readOnly && <button type="button" onClick={onSave}>{dirty ? '● Lagre endringer' : saved ? `Oppdater ${noun}` : `Lagre ${noun}`}</button>}
-    <button type="button" className="secondary" aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen(true)}><MoreHorizontal size={18}/>Flere handlinger</button>
-    {open && <DeviationDialog title="Flere handlinger" context={simpleOrder ? 'Enkel ordre' : 'Prosjekt'} closeLabel="Lukk handlinger" onClose={() => setOpen(false)}>
-      <div className="project-dialog-content project-action-list">
-        <button type="button" onClick={() => run(onPdf)}>Last ned PDF</button>
-        {!readOnly && onNew && <button type="button" className="secondary" onClick={() => run(onNew)}>+ Nytt prosjekt</button>}
-        {saved && !readOnly && <><button type="button" className="secondary" onClick={() => run(onCopy)}>Lagre som kopi</button>
-          <button type="button" className="secondary" onClick={() => run(() => onLock(!locked))}>{locked ? `🔓 Lås opp ${noun}` : `🔒 Avslutt ${noun}`}</button></>}
-        <p>PDF laster ned rapporten. Kopi oppretter et eget prosjekt. Avslutning bruker den vanlige bekreftelsen.</p>
-      </div>
-    </DeviationDialog>}
+    <div className="project-actions-dropdown" ref={root}>
+      <button ref={trigger} type="button" className="secondary" aria-haspopup="menu" aria-expanded={open} aria-controls={open ? menuId : undefined} onClick={() => { openLast.current = false; setOpen(value => !value); }} onKeyDown={event => { if (['ArrowDown', 'ArrowUp'].includes(event.key)) { event.preventDefault(); openLast.current = event.key === 'ArrowUp'; setOpen(true); } }}><MoreHorizontal size={18}/>Flere handlinger</button>
+      {open && <div id={menuId} className="project-actions-menu" role="menu" aria-label="Flere handlinger" ref={panel} onKeyDown={keys}>
+        <button type="button" role="menuitem" tabIndex={-1} onClick={() => run(onPdf)}>Last ned PDF</button>
+        {!readOnly && onNew && <button type="button" role="menuitem" tabIndex={-1} onClick={() => run(onNew)}>+ Nytt prosjekt</button>}
+        {saved && !readOnly && <><button type="button" role="menuitem" tabIndex={-1} onClick={() => run(onCopy)}>Lagre som kopi</button>
+          <button type="button" role="menuitem" tabIndex={-1} onClick={() => run(() => onLock(!locked))}>{locked ? `🔓 Lås opp ${noun}` : `🔒 Avslutt ${noun}`}</button></>}
+      </div>}
+    </div>
   </div>;
 }
 

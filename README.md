@@ -997,3 +997,17 @@ Brukerprøve: Oppstart → Oversikt → Kunde. Åpne Kunderegister – hent elle
 lagre kunde, hent en lagret testkunde og kontroller kontakt/prosjektadresse.
 Egen registrering fungerer uten registervalg. Registerlagring krever fortsatt
 et aktivt valg; ordinær prosjektlagring er uendret. Ny TEST OK før merge.
+
+
+## Flere handlinger som nedtrekksmeny – 17.10 kl. 12:27
+
+Miljømål: BEGGE. Brukerbestilt bytte fra modal til liten meny rett under Flere
+handlinger. Scope: ProjectHeaderActions, prosjektlokal CSS, eksisterende UX-QA
+og Hjelp/docs. PDF, nytt prosjekt, kopi og avslutning/opplåsing har uendrede
+callbacks, synlighetskrav og bekreftelser. Lagre/Oppdater er fortsatt direkte.
+Menyen lukkes ved nytt klikk, valg, utenforklikk, Tab eller Escape. Escape gir
+fokus tilbake; pil/Home/End støtter tastatur. Ingen bakgrunnslåsing/fullskjerm.
+Status/mangler og prosjektmeny beholder sine eksisterende dialoger.
+Bare denne PR-ens nye UX-test tilpasses den nye menyrollen, med ekstra
+responsive og tastaturkontroller. Ingen eldre critical-check endres.
+Brukerprøve: Flere handlinger → meny under knappen, klikk utenfor for å lukke.
