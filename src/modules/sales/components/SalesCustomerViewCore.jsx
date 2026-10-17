@@ -1,3 +1,4 @@
+import SalesCustomerOptionQuantity from "./SalesCustomerOptionQuantity.jsx";
 import SalesOfferGroup from "./SalesOfferGroup.jsx";
 import { offerVatPresentation } from "../utils/salesOfferVatPresentation.js";
 // Expo ProffDok – FASE 31B
@@ -174,6 +175,7 @@ export default function SalesCustomerView({
   acceptanceForm,
   setAcceptanceForm,
   toggleAcceptedOption,
+  optionQuantitiesReadOnly = false,
   handleAcceptOffer,
   hideDecisionControls = false,
   onBack,
@@ -580,7 +582,7 @@ export default function SalesCustomerView({
                                   );
 
                                 return (
-                                  <label
+                                  <div
                                     className={`sales-customer-option-card ${
                                       isSelected
                                         ? "sales-customer-option-card-selected"
@@ -591,6 +593,10 @@ export default function SalesCustomerView({
                                         : ""
                                     }`}
                                     key={option.id}
+                                    onClick={(event) => {
+                                      if (optionQuantitiesReadOnly || event.target.closest("a, button, input, label, .sales-customer-option-quantity")) return;
+                                      toggleAcceptedOption(option.id);
+                                    }}
                                   >
                                     {option.imageDataUrl ? (
                                       <a
@@ -620,10 +626,12 @@ export default function SalesCustomerView({
                                     ) : null}
 
                                     <div className="sales-customer-option-content">
-                                      <div className="sales-customer-option-topline">
+                                      <label className="sales-customer-option-topline">
                                         <input
                                           type="checkbox"
                                           checked={isSelected}
+                                          disabled={optionQuantitiesReadOnly}
+                                          aria-label={`Velg ${option.title || "opsjon"}`}
                                           onChange={() =>
                                             toggleAcceptedOption(option.id)
                                           }
@@ -631,7 +639,7 @@ export default function SalesCustomerView({
                                         <span className="sales-customer-option-state">
                                           {isSelected ? "Valgt" : "Velg opsjon"}
                                         </span>
-                                      </div>
+                                      </label>
 
                                       <span className="sales-customer-option-type">
                                         {getOptionTypeLabel(option)}
@@ -677,12 +685,14 @@ export default function SalesCustomerView({
                                         ) : null}
                                       </div>
 
+                                      <SalesCustomerOptionQuantity option={option} acceptanceForm={acceptanceForm} setAcceptanceForm={setAcceptanceForm} selected={isSelected} disabled={optionQuantitiesReadOnly} vat={vat} />
+
                                       <strong className="sales-customer-option-price">
                                         {getOptionPriceLabel(option)}:{" "}
                                         {getOptionPriceChangeText(option, vat)}
                                       </strong>
                                     </div>
-                                  </label>
+                                  </div>
                                 );
                               })}
                             </div>

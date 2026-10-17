@@ -93,6 +93,7 @@ const BASE_SECTIONS = [
       "Hvis saken har lagret tekst og den lokale kladden er tom for tekst, velger du Bruk teksten fra saken eller Behold tom lokal tekst før du lagrer. Bilder og Badskisse beholdes i begge tilfeller.",
       "I Våtromstilbud står forbehold, inkludert, ikke inkludert og kundens leveranser samlet i fire kort. Vilkår og betalingsbetingelser står fortsatt nedenfor. Kontroller oppsummeringen og velg Lagre tilbud.",
       "En registrert befaring kan videreføres i samme sak som ordinært Våtromstilbud eller som Generelt tilbud når brukeren har slik tilgang.",
+      "På et tillegg kan du slå på Kunden kan velge antall. Skriv pris per enhet og eventuelt enhet, for eksempel stk. Kunden velger opsjonen og justerer antall med − / antall / + før aksept. Summen oppdateres automatisk. Alternativer som erstatter en post beholder fast antall.",
       "Opprett tilbudsutkast, forhåndsvis og publiser riktig versjon til kunden.",
       "Publiserte og aksepterte tilbudsversjoner beholdes som historikk og overskrives ikke.",
       "Et publisert ordinært Våtromstilbud kan få en egen automatisk oppfølgingsplan. Planen må aktiveres bevisst og gjelder bare den publiserte tilbudsversjonen du ser på.",
@@ -340,6 +341,7 @@ const INTERNAL_COMMERCE_SECTIONS = [
     [
       "Opprett Generelt tilbud fra ny sak eller viderefør en registrert befaring i samme sak.",
       "Bygg tilbudet med avsnitt, vare-/arbeidsposter, montering og eventuelle opsjoner.",
+      "Slå på Kunden kan velge antall på et tillegg hvis kunden selv skal velge mengde. Prisen gjelder per enhet. Kunden velger opsjonen og justerer antallet før aksept. Valgt antall følger aksepten, PDF og bestillingsgrunnlaget. Faste opsjoner og alternativer som erstatter en post beholder antallet du har satt.",
       "Varer kan hentes fra det interne vareregisteret når det er hensiktsmessig; manuelle poster kan alltid brukes.",
       "På mobil kan interne brukere i Ringside, Bademiljø Expo og Expo Proffsenter skanne strekkoden i varesøket på en post eller opsjon. Kontroller treffet og velg varen før tilbudsposten fylles. Eksterne Proff-firma bruker fortsatt ordinært varesøk.",
       "Forhåndsvis og publiser riktig versjon til kunden.",

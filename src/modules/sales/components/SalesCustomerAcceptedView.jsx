@@ -5,7 +5,7 @@ import { offerVatPresentation } from "../utils/salesOfferVatPresentation.js";
 // Butikktilbud bruker valgt merkevare, saksbehandler og faktisk alternativpris.
 
 import { CheckCircle2 } from "lucide-react";
-import { formatNok, getOfferTotal } from "../utils/salesUtils.js";
+import { formatNok, formatOfferQuantity, getOfferUnitPrice, hasOfferQuantityDetails, getOfferTotal } from "../utils/salesUtils.js";
 
 function formatAcceptedAt(value) {
   if (!value) return "Ikke registrert";
@@ -212,6 +212,7 @@ export default function SalesCustomerAcceptedView({
                           <strong style={{ display: "block", color: "#0f172a" }}>
                             {option.title || option.description || (isStoreOffer ? "Valg" : "Valgt opsjon")}
                           </strong>
+                          {hasOfferQuantityDetails(option) && !isStoreAlternative ? <span style={{ display: "block", marginTop: 4 }}>Antall/enhetspris: {formatOfferQuantity(option)} × {formatNok(getOfferUnitPrice(option) * vat.multiplier)} {vat.label}</span> : null}
                           {option.description && option.title ? (
                             <span style={{ display: "block", marginTop: 4, color: "#52616b" }}>
                               {option.description}

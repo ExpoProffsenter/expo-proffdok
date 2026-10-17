@@ -1009,6 +1009,14 @@ export default function SalesOfferBuilder({
                                         placeholder="Kort beskrivelse"
                                       />
 
+                                      {option.optionType !== "alternative" && (getOfferUnitPrice(option) >= 0 || option.customerCanChooseQuantity === true) ? (
+                                        <label className="sales-customer-quantity-choice">
+                                          <input type="checkbox" aria-label="Kunden kan velge antall" checked={option.customerCanChooseQuantity === true} onChange={(event) => updateOfferOption(option.id, "customerCanChooseQuantity", event.target.checked)} />
+                                          <span>Kunden kan velge antall</span>
+                                          <small>Prisen er per enhet. Kunden velger antall før aksept.</small>
+                                        </label>
+                                      ) : null}
+
                                       <div
                                         style={{
                                           display: "grid",

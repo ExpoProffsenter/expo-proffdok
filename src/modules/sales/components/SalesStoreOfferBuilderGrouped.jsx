@@ -1,3 +1,4 @@
+import { getOfferUnitPrice } from "../utils/salesUtils.js";
 // Expo ProffDok – FASE 39B.2C
 // Kompakt Butikktilbud-bygger: avsnitt -> hovedvare -> montering/opsjoner.
 // Dataformatet for publisering/aksept beholdes; kun editor-relasjoner legges til i JSON.
@@ -873,6 +874,14 @@ function OptionEditor({
             </>
           )}
 
+          {!alternative && (getOfferUnitPrice(option) >= 0 || option.customerCanChooseQuantity === true) ? (
+            <label className="sales-customer-quantity-choice">
+              <input type="checkbox" aria-label="Kunden kan velge antall" checked={option.customerCanChooseQuantity === true} onChange={(event) => onPatch({ customerCanChooseQuantity: event.target.checked })} />
+              <span>Kunden kan velge antall</span>
+              <small>Prisen er per enhet. Kunden velger antall før aksept.</small>
+            </label>
+          ) : null}
+
           {alternative && !replacesInstallation ? (
             <div className="store-option-installation-box">
               <strong>Montering ved alternativet</strong>
@@ -1175,6 +1184,7 @@ export default function SalesStoreOfferBuilderGrouped(props) {
   const [templateBusy, setTemplateBusy] = useState(false);
   const [templateMessage, setTemplateMessage] = useState("");
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewAcceptanceForm, setPreviewAcceptanceForm] = useState({ confirmed: false, name: "", selectedOptionIds: [] });
   const [activeSectionId, setActiveSectionId] = useState("");
   const [openSections, setOpenSections] = useState({});
   const [openProductId, setOpenProductId] = useState("");
@@ -1421,6 +1431,7 @@ export default function SalesStoreOfferBuilderGrouped(props) {
     const nextOptions = options.map((item) => {
       if (item.id !== id) return item;
       let next = normalizePricedItem(item, patch);
+      if (patch.optionType === "alternative") next.customerCanChooseQuantity = false;
       if (patch.optionType === "addition") {
         next = {
           ...next,
@@ -1775,9 +1786,16 @@ export default function SalesStoreOfferBuilderGrouped(props) {
           mode="customer-offer"
           selectedRequest={previewRequest}
           companyProfile={{}}
-          acceptanceForm={{ confirmed: false, name: "", selectedOptionIds: [] }}
-          setAcceptanceForm={() => {}}
-          toggleAcceptedOption={() => {}}
+          hideDecisionControls
+          acceptanceForm={previewAcceptanceForm}
+          setAcceptanceForm={setPreviewAcceptanceForm}
+          toggleAcceptedOption={(id) => setPreviewAcceptanceForm(current => {
+            const option = previewRequest.offerOptions.find(item => item.id === id);
+            const selected = current.selectedOptionIds;
+            if (selected.includes(id)) return { ...current, selectedOptionIds: selected.filter(value => value !== id) };
+            const remaining = option?.optionType === "alternative" ? selected.filter(value => !previewRequest.offerOptions.some(item => item.id === value && item.optionType === "alternative" && item.replacementLineId === option.replacementLineId)) : selected;
+            return { ...current, selectedOptionIds: [...remaining, id] };
+          })}
           handleAcceptOffer={(event) => event?.preventDefault?.()}
           onBack={() => setPreviewOpen(false)}
         />

@@ -1,3 +1,4 @@
+import { requestWithCustomerOptionQuantities } from "../utils/salesCustomerOptionQuantities.js";
 import SalesScrollShortcuts from "../../app/MobileScrollShortcuts.jsx";
 import { offerVatPresentation } from "../utils/salesOfferVatPresentation.js";
 // Expo ProffDok – FASE 42M / FASE 37A2 / FASE 37D2 / FASE 37D1 / FASE 34B / FASE 39B.2
@@ -330,7 +331,7 @@ function offerIsExpired(request, activeVersion) {
 }
 
 export default function SalesCustomerView(props) {
-  const quantityRequest = decorateRequestForQuantityPresentation(props.selectedRequest);
+  const quantityRequest = decorateRequestForQuantityPresentation(requestWithCustomerOptionQuantities(props.selectedRequest, props.acceptanceForm?.selectedOptionQuantities));
   const presentationRequest = decorateRequestForOptionalityPresentation(quantityRequest);
   const activeVersion = getActiveOfferVersion(presentationRequest || {});
   const storeMeta = presentationRequest?.storeOfferMeta?.__storeOfferMeta
@@ -373,7 +374,7 @@ export default function SalesCustomerView(props) {
     const frame = window.requestAnimationFrame(applyPresentation);
     const timer = window.setTimeout(applyPresentation, 120);
     return () => { window.cancelAnimationFrame(frame); window.clearTimeout(timer); };
-  }, [props.mode, props.selectedRequest?.id, props.selectedRequest?.sentOfferVersionId, props.selectedRequest?.offerLines, props.selectedRequest?.offerOptions, props.selectedRequest?.storeOfferMeta, signatureName, brandLabel, brandLogoUrl, legalCompanyName, isStoreOffer, readOnlyDeclined, hideDecisionControls, selectedOptionIds.join("|")]);
+  }, [props.mode, props.selectedRequest?.id, props.selectedRequest?.sentOfferVersionId, props.selectedRequest?.offerLines, props.selectedRequest?.offerOptions, props.selectedRequest?.storeOfferMeta, signatureName, brandLabel, brandLogoUrl, legalCompanyName, isStoreOffer, readOnlyDeclined, hideDecisionControls, selectedOptionIds.join("|"), JSON.stringify(props.acceptanceForm?.selectedOptionQuantities || {})]);
 
   async function handleDecline(event) {
     event.preventDefault();
@@ -424,6 +425,7 @@ export default function SalesCustomerView(props) {
         {...props}
         selectedRequest={brandedRequest}
         hideDecisionControls={hideDecisionControls}
+        optionQuantitiesReadOnly={readOnlyDeclined || genericExpired}
         handleAcceptOffer={acceptHandler}
         toggleAcceptedOption={readOnlyDeclined ? () => {} : props.toggleAcceptedOption}
       />
