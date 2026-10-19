@@ -45,6 +45,9 @@ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 try{
  browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_PATH||undefined,args:['--no-sandbox']});
  const page=await browser.newPage({viewport:{width:1363,height:936}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
+ // Historical fixture: one overdue task and six future tasks on 16 October.
+ // Fix Date only; browser timers and asynchronous recovery continue normally.
+ await page.clock.setFixedTime(new Date('2026-10-16T12:00:00Z'));
  await page.addInitScript(()=>{
   window.holdMetadata=false;window.metadataWaiters=[];window.holdPlans=false;window.planWaiters=[];window.sharedReads=0;window.company='a';window.denied=false;window.calls=[];window.opened=[];window.deleted=[];window.refreshes=0;window.setup=0;
   window.ctx=()=>({company_id:window.company,user_id:'self',available:true,enabled:true,company_name:'QA Firma',administer:false});
