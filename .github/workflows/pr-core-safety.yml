@@ -135,6 +135,7 @@ jobs:
           node "$RUNNER_TEMP/company-admin-browser-qa/node_modules/playwright/cli.js" install --with-deps chromium
           export PLAYWRIGHT_MODULE="$RUNNER_TEMP/company-admin-browser-qa/node_modules/playwright/index.mjs"
           node scripts/company-admin-react-check.mjs
+          node scripts/systemadmin-company-selection-react-check.mjs
           node scripts/hr-contact-reminder-react-check.mjs
           node scripts/home-followups-react-check.mjs
           node scripts/app-ux-review-browser-check.mjs
