@@ -24,3 +24,7 @@ Feltet finner nå eksisterende valgmulighet med samme trim/lowercase-nøkkel som
 3. Et reelt firmabytte prøves bare på en egnet testbruker i Sandbox. Bekreft, oppdater brukerlisten og se at nytt firma er lagret. Ikke flytt en ekte produksjonsbruker for å teste.
 
 Ny eksplisitt TEST OK kreves før merge. Deretter Production-verifisering og kontrollert main → demo med 19+5 preflight. Denne rettelsen krever ingen migrasjon.
+
+## CI-datoavhengighet i eldre test
+
+CI #539 stoppet i uendret `time-registration-db-check.mjs`: manuelle føringer brukte fast uke 12.10.2026, mens ekte tidtaker ble stoppet i dagens Oslo-uke. Feilen ble gjenskapt lokalt med uendret test. Bare testens to tidtakerscenarier er korrigert: eksisterende linje og etterlesing bruker uken for testens `now() - 2 hours`, i Europe/Oslo. Alle opprinnelige assertions, ekte RPC-er, migrasjoner og resten av testdataene beholdes. Korrigert test: 123 PostgreSQL assertions PASS. Ingen timeføringskode, database eller tidligere utsatt funksjonalitet er endret.
