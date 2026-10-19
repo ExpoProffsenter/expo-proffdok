@@ -28,3 +28,5 @@ Ny eksplisitt TEST OK kreves før merge. Deretter Production-verifisering og kon
 ## CI-datoavhengighet i eldre test
 
 CI #539 stoppet i uendret `time-registration-db-check.mjs`: manuelle føringer brukte fast uke 12.10.2026, mens ekte tidtaker ble stoppet i dagens Oslo-uke. Feilen ble gjenskapt lokalt med uendret test. Bare testens to tidtakerscenarier er korrigert: eksisterende linje og etterlesing bruker uken for testens `now() - 2 hours`, i Europe/Oslo. Alle opprinnelige assertions, ekte RPC-er, migrasjoner og resten av testdataene beholdes. Korrigert test: 123 PostgreSQL assertions PASS. Ingen timeføringskode, database eller tidligere utsatt funksjonalitet er endret.
+
+CI #540 kom videre og avdekket samme faste-uke-feil i den uendrede React-testen: «i dag»-visning ble prøvd i forrige uke. Feilen er gjenskapt før rettelse. Bare testens initialWeek/etterlesing er endret til faktisk `weekStart()` fra eksisterende Oslo-datohjelper. Alle assertions beholdes. Dette gjenoppretter testens opprinnelige kontrakt om dagens registreringer uten å endre appen. React-testen samt eksisterende mail-/cleanup-regresjonsvern er kjørt på nytt.
