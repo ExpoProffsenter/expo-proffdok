@@ -1,6 +1,6 @@
 import React from "react";
 
-const UPDATED = "Sist oppdatert: 15.10.2026";
+const UPDATED = "Sist oppdatert: 19.10.2026";
 
 function List({ items = [] }) {
   return React.createElement(
@@ -36,6 +36,7 @@ export function createHelp45BSection({ Section }) {
       ? [
           companyAdminGuide,
           "Systemadmin administrerer firma, brukere, roller, modultilganger, prisinnsyn og proffleverandører fra Systemadmin → Firmaer, brukere og tilganger.",
+          "Firma på brukerkortet viser brukerens lagrede firma også når navnet har ekstra mellomrom eller ulik bruk av store og små bokstaver. Velg et annet registrert firma og bekreft for å flytte brukeren. Å velge samme firma på nytt endrer ingenting.",
           "«Generelle tilbud / Proff vareregister» aktiveres én gang på firmaet og gjelder alle firmaets brukere. Enkel ordre er ikke en egen modultilgang, men et valg etter kundeaksept.",
           "Brukervilkårstatus vises separat fra firmaets leverandørtilgang og brukerens modultilgang. Brukeren må fortsatt godkjenne gjeldende vilkår i den ordinære innloggingsflyten.",
           "Firmaene vises kollapset. Åpne ett firma om gangen; leverandør/rabatt vises øverst og firmaets brukerkort vises nedenfor.",

@@ -4706,7 +4706,7 @@ Endringen lagres umiddelbart.`)) return;
       const userEmail = userRow.email || "brukeren";
       const current = String(userRow.company_name || "").trim();
       const cleanCompany = String(nextCompanyValue || "").trim();
-      if (cleanCompany === current) return;
+      if (cleanCompany.toLowerCase() === current.toLowerCase()) return;
       if (cleanCompany && !registeredCompanyOptions.includes(cleanCompany)) {
         return alert("Firma må velges fra registrerte firmaer. Oppdater brukerliste/supportdata hvis firmaet mangler.");
       }
@@ -7122,7 +7122,7 @@ ${appLink}`;
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Firmarolle", value: u.company_role === "firmaadmin" ? "firmaadmin" : "ansatt", options: ["ansatt", "firmaadmin"], onChange: (v) => updateAdminUserCompanyRole(u, v) }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, {
                   label: "Firma",
-                  value: registeredCompanyOptions.includes(u.company_name || "") ? u.company_name || "" : "",
+                  value: registeredCompanyOptions.find((name) => name.toLowerCase() === String(u.company_name || "").trim().toLowerCase()) || "",
                   options: registeredCompanyOptions,
                   optionLabels: { "": "Velg firma" },
                   onChange: (v) => updateAdminUserCompanyName(u, v)

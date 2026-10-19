@@ -1032,3 +1032,8 @@ Preview-leveranse (miljømål BEGGE): alle redigerbare firmamaler kan utvides me
 Sjekklistesentral har «Bruk mal: Varme arbeider», felles for alle fag. Firmaet tilpasser og publiserer før prosjektet henter en fast utgave. Eksisterende rutine «Varme arbeider og brannberedskap» får kildeforslag v2 som viser til malen; firmaets godkjente rutiner endres ikke automatisk. Kontroller nye forslag i håndbokens eksisterende kildeoppdatering.
 
 Gamle svar og garantipunkter beholder kontrakten. Fullføring, lokal kladd, lagret kontroll, gjentatt kontroll og PDF støtter underpunktene. Ny migrasjon installeres først i Sandbox. Produksjon og main → demo venter på ny TEST OK. QA og teststeg: `docs/qa/FLEXIBLE_CHECKLISTS_HOT_WORK_20261017.md`.
+
+
+### Systemadmin – firmavalg 19.10.2026
+
+Firmavalget på brukerkortet matcher nå registrert firmanavn etter trim og små bokstaver, på samme måte som firmalisten og firmafilteret. Gamle navn med mellomrom eller ulik bokstavbruk viser dermed riktig firma. Valg av samme normaliserte firma er uten skriving; et reelt firmabytte følger eksisterende bekreftelse, profiloppdatering og serverhenting. Ingen automatisk normalisering av produksjonsdata, rolle-/tilgangsendring eller endring av firmaidentitet. Regresjonsvern: `scripts/systemadmin-company-selection-react-check.mjs`, faktiske memo/Select/felt/lagringshandler fra main i Chromium, syntetisk transport. Se `docs/qa/SYSTEMADMIN_COMPANY_SELECTION_20261019.md`.

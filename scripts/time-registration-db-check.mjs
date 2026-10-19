@@ -58,11 +58,13 @@ try{
  const externalBatch=await rpc('time_export_create',[company,id(190),externalWeek,'2026-11-15',1]);eq(externalBatch.batch.rows.map(r=>r.project_number),refs,'all three reference types survive actual approved export');
  eq((await rpc('time_history',[company,external.sheet.id])).history[0].snapshot.entries.map(r=>r.external_project),refs,'immutable history retains references');
  eq(payrollCsv(externalBatch.batch).includes('00458'),true,'CSV preserves leading zeros');
- const timerExternal=id(191);let currentAdmin=await rpc('time_sheet_get',[company,week,null]);
- await rpc('time_sheet_command',[company,week,currentAdmin.employee.id,0,crypto.randomUUID(),'save',[{...row,id:id(192),category_id:internal.id,project_id:null,mode:'quantity',quantity:'1.00'}],false,'']);
+ // Timer stop belongs to its real Oslo start week, independently of dated manual-entry fixtures.
+ const externalTimerWeek=(await sql("select to_char(date_trunc('week',(now()-interval '2 hours') at time zone 'Europe/Oslo'),'YYYY-MM-DD') v"))[0].v;
+ const timerExternal=id(191);let currentAdmin=await rpc('time_sheet_get',[company,externalTimerWeek,null]);
+ await rpc('time_sheet_command',[company,externalTimerWeek,currentAdmin.employee.id,0,crypto.randomUUID(),'save',[{...row,on:externalTimerWeek,id:id(192),category_id:internal.id,project_id:null,mode:'quantity',quantity:'1.00'}],false,'']);
  let manualTimer=await rpc('time_timer_command_v2',[company,'start',timerExternal,work.id,null,'ERP tidtaking',0,'00078 – Solsiden']);eq(manualTimer.timer.external_project,'00078 – Solsiden','manual timer starts with required project');
  await db.exec(`reset role;update time_private.timers set started_at=now()-interval '2 hours' where id=${q(timerExternal)};`);await actor(admin);
- await rpc('time_timer_command',[company,'stop',timerExternal]);currentAdmin=await rpc('time_sheet_get',[company,week,null]);eq(currentAdmin.sheet.entries.find(r=>r.id===timerExternal).project_number,'00078 – Solsiden','legacy stop also keeps external timer reference');
+ await rpc('time_timer_command',[company,'stop',timerExternal]);currentAdmin=await rpc('time_sheet_get',[company,externalTimerWeek,null]);eq(currentAdmin.sheet.entries.find(r=>r.id===timerExternal).project_number,'00078 – Solsiden','legacy stop also keeps external timer reference');
  await db.exec('reset role;');eq((await sql("select has_function_privilege('anon','public.time_timer_command_v2(uuid,text,uuid,uuid,uuid,text,integer,text)','execute') v"))[0].v,false,'no anonymous timer v2');
  await db.exec('rollback;');await actor(self);
  const operation=crypto.randomUUID();state=await command('save',[row],0,employee.id,operation);eq(state.sheet.revision,1);eq(state.sheet.entries[0].quantity,8,'server clock arithmetic');
@@ -100,13 +102,14 @@ try{
  await actor(admin);settings={...settings,managers:[reader]};setup=await rpc('time_setup_save',[company,1,settings]);eq(setup.revision,2);await actor(reader);eq((await rpc('time_setup_get',[company])).revision,2,'delegated time responsible setup');
  await reject(()=>rpc('time_setup_save',[company,2,{...settings,managers:[reader,self]}]),'42501');
  // A real server timer survives repeated reads and cannot double-register on stop.
- await actor(admin);const beforeTimer=await rpc('time_sheet_get',[company,week,null]);await rpc('time_sheet_command',[company,week,beforeTimer.employee.id,0,crypto.randomUUID(),'save',[{...row,id:id(72),category_id:internal.id,project_id:null,mode:'quantity',quantity:'1.25'}],false,'']);const timerId=id(70);let timer=await rpc('time_timer_command',[company,'start',timerId,internal.id,null,'QA tidtaking',0]);eq(timer.timer.id,timerId);
+ const timerWeek=(await sql("select to_char(date_trunc('week',(now()-interval '2 hours') at time zone 'Europe/Oslo'),'YYYY-MM-DD') v"))[0].v;
+ await actor(admin);const beforeTimer=await rpc('time_sheet_get',[company,timerWeek,null]);await rpc('time_sheet_command',[company,timerWeek,beforeTimer.employee.id,0,crypto.randomUUID(),'save',[{...row,on:timerWeek,id:id(72),category_id:internal.id,project_id:null,mode:'quantity',quantity:'1.25'}],false,'']);const timerId=id(70);let timer=await rpc('time_timer_command',[company,'start',timerId,internal.id,null,'QA tidtaking',0]);eq(timer.timer.id,timerId);
  eq((await rpc('time_timer_get',[company])).timer.id,timerId,'timer survives a fresh server read');
  await reject(()=>rpc('time_timer_command',[company,'start',id(71),internal.id,null,'',0]),'22023');
  await db.exec(`reset role;update time_private.timers set started_at=now()-interval '2 hours' where id=${q(timerId)};`);await actor(admin);
  timer=await rpc('time_timer_command',[company,'stop',timerId,null,null,'',15]);eq(timer.timer,null,'stop saves and clears server timer');
  eq((await rpc('time_timer_command',[company,'stop',timerId,null,null,'',15])).timer,null,'stop retry cannot duplicate line');
- eq((await rpc('time_sheet_get',[company,week,null])).sheet.entries.filter(r=>r.id===timerId).length,1);eq((await rpc('time_sheet_get',[company,week,null])).sheet.entries.length,2,'stopping timer preserves an existing saved line and its server snapshots');
+ eq((await rpc('time_sheet_get',[company,timerWeek,null])).sheet.entries.filter(r=>r.id===timerId).length,1);eq((await rpc('time_sheet_get',[company,timerWeek,null])).sheet.entries.length,2,'stopping timer preserves an existing saved line and its server snapshots');
  // Measure a representative 10-line week including each save, approval and immutable export.
  await db.exec('reset role;begin;');await actor(self);const sizedWeek='2026-11-02';let sized=null;const sizedRows=[];
  for(let n=0;n<10;n++){sizedRows.push({...row,id:id(100+n),on:'2026-11-0'+(2+Math.floor(n/2)),category_id:internal.id,project_id:null,mode:'quantity',quantity:'3.75',note:'Montering og kontroll på syntetisk prosjekt '+n});sized=await rpc('time_sheet_command',[company,sizedWeek,employee.id,sized?.sheet.revision||0,crypto.randomUUID(),'save',sizedRows,false,'']);}
