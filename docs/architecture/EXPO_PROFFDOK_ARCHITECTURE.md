@@ -1625,3 +1625,8 @@ Bekreftelser får eksplisitt hendelses-ID ved avkryssing. Serveren eier bruker, 
 ### Systemadmin – firmavalg 19.10.2026
 
 Firmavalget på brukerkortet matcher nå registrert firmanavn etter trim og små bokstaver, på samme måte som firmalisten og firmafilteret. Gamle navn med mellomrom eller ulik bokstavbruk viser dermed riktig firma. Valg av samme normaliserte firma er uten skriving; et reelt firmabytte følger eksisterende bekreftelse, profiloppdatering og serverhenting. Ingen automatisk normalisering av produksjonsdata, rolle-/tilgangsendring eller endring av firmaidentitet. Regresjonsvern: `scripts/systemadmin-company-selection-react-check.mjs`, faktiske memo/Select/felt/lagringshandler fra main i Chromium, syntetisk transport. Se `docs/qa/SYSTEMADMIN_COMPANY_SELECTION_20261019.md`.
+
+
+### Lagerrutine og 25 kg sekker – 20.10.2026
+
+`store_lifting` er oppdatert til kildeforslag v2, «Tunge løft og varehåndtering på lager». Beskriver mottak/plukk/utlevering med 25 kg lim- og mørtelsekker, konkrete arbeidskrav, arbeidsgivers risikovurdering/opplæring/hjelpemidler og medarbeiderens utførelse/medvirkning. 25 kg, 6000 kg og 20 meter er riktig merket som veiledning, med vurdering av repetisjon og individuelle forutsetninger. Tilrettelegging vurderes sammen med drift og kollegers arbeidsmiljø; personlige helseopplysninger holdes utenfor håndboka. Stabil source_key og source_revision=2 gir sammenligning gjennom eksisterende kildeoppdatering. Firmaets gjeldende rutine erstattes først ved ny firmagodkjenning. Gamle utgaver og lesebekreftelser beholdes uendret. Ingen database-, tilgangs-, navigasjons- eller e-postendring. De 73 opprinnelige rutinene og 13 andre butikkrutiner er uendret.

@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {ROUTINE_CATALOG} from '../src/modules/kshms/kshmsCatalog.mjs';
 import {sourceUpdateOverview,sourceDifferences,applySourceField,markSourceReviewed} from '../src/modules/kshms/kshmsSourceUpdates.mjs';
 import {routineApprovalState} from '../src/modules/kshms/kshmsDraft.mjs';
 const company='source-company',user='source-manager';
@@ -26,4 +28,19 @@ for(const context of [{...state.context,manage:false},{...state.context,enabled:
 assert.equal(sourceUpdateOverview({...state,versions:null},company,user,[proposal]),null);
 assert.equal(sourceDifferences(draft,{...proposal,key:'foreign'}).length,0);
 assert.equal(sourceDifferences({...draft,references:proposal.references.map(({title,url,kind,checked_on})=>({checked_on,kind,url,title}))},proposal).find(field=>field.key==='references').different,false,'JSONB key order created a false source difference');
+// Actual warehouse v1 -> v2: adopting text must leave the approved edition intact.
+const oldWarehouse=JSON.parse(fs.readFileSync('scripts/fixtures/store-lifting-v1.json','utf8'));
+const newWarehouse=ROUTINE_CATALOG.find(row=>row.key==='store_lifting');
+const warehouseRoutine={...routine,id:'warehouse',draft:oldWarehouse};
+const warehouseVersion={...version,id:'warehouse-v1',routine_id:warehouseRoutine.id,content:structuredClone(oldWarehouse)};
+const warehouseState={...state,routines:[warehouseRoutine],versions:[warehouseVersion]};
+const warehouseBefore=JSON.stringify(warehouseState);
+assert.equal(sourceUpdateOverview(warehouseState,company,user).reviewCount,1);
+const warehouseReviewed=markSourceReviewed(applySourceField(oldWarehouse,newWarehouse,'procedure'),newWarehouse);
+assert.equal(warehouseReviewed.source_revision,2);
+assert(warehouseReviewed.procedure.includes('lim- og mørtelsekker på 25 kg'));
+assert.equal(warehouseReviewed.title,oldWarehouse.title,'Company title requires its own explicit adoption');
+assert.equal(sourceUpdateOverview({...warehouseState,routines:[{...warehouseRoutine,draft:warehouseReviewed}]},company,user).publicationCount,1);
+assert.equal(routineApprovalState({...warehouseRoutine,draft:warehouseReviewed},[warehouseVersion]).current.id,'warehouse-v1');
+assert.equal(JSON.stringify(warehouseState),warehouseBefore,'Actual approved warehouse text/history was overwritten');
 console.log('critical-kshms-source-updates-check: OK — partial adoption, explicit review, preserved firm text/dates/history, review vs publication and strict manager/company/user scope');

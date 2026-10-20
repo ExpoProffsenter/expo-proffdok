@@ -17,7 +17,7 @@ try {
   window.MessageChannel=class{constructor(){this.port1={onmessage:null};this.port2={postMessage:()=>setImmediate(()=>this.port1.onmessage?.())};}};
   const company='11111111-1111-4111-8111-111111111111',user='22222222-2222-4222-8222-222222222222',reader='33333333-3333-4333-8333-333333333333';
   const context={company_id:company,user_id:user,enabled:true,manage:true,publish:true,administer:true,responsible:true};
-  const proposal=ROUTINE_CATALOG.find(row=>row.key==='leadership');assert(proposal.source_revision>1);
+  const proposal=ROUTINE_CATALOG.find(row=>row.key===(process.env.KSHMS_SOURCE_PROPOSAL||'leadership'));assert(proposal.source_revision>1);
   const draft={...structuredClone(proposal),source_revision:1,title:'Firmaets lederansvar',chapter:'Firmaets eget kapittel',goal:'Firmaets mål',procedure:'Firmaets egne arbeidssteg',references:[{title:'Firmaets kilde',url:'https://example.invalid/company',kind:'company',checked_on:'2026-10-05'}]};
   let routine={id:'44444444-4444-4444-8444-444444444444',company_id:company,revision:2,archived:false,draft};
   const first={id:'55555555-5555-4555-8555-555555555555',company_id:company,routine_id:routine.id,number:1,content:structuredClone(draft),content_hash:'original-hash',requires_ack:true,published_by:user};
