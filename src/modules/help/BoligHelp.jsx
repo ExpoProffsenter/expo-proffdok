@@ -35,6 +35,11 @@ export function BoligHelp() {
           som utkast. Senere pakkeendringer endrer ikke dette lagrede valget.
         </li>
         <li>
+          Under «Klargjør varebestilling» er alle varelinjer valgt første gang.
+          Fjern linjer som skal kjøpes andre steder. «Lagre bestillingsutkast»
+          lagrer utvalget uten å endre boligvalget. Utkastet er ikke sendt.
+        </li>
+        <li>
           Vent på «Lagret i firmaet». Andre med tilgang kan hente samme
           struktur. Hvis noen har endret strukturen, beholdes din kladd. Hent
           siste versjon og se over før ny lagring.

@@ -59,3 +59,37 @@ export const optionBreakdown = (option, pkg) => {
     compatible: !option.replace_key || !!line,
   };
 };
+
+export async function boligOrderRpc(
+  context,
+  rootId,
+  unitId,
+  action = "get",
+  basis = {},
+  payload = {},
+) {
+  const client = getAppSupabaseClient();
+  if (!client) throw Error("Appens innlogging er ikke klar.");
+  const pending = client.rpc("bolig_order_draft", {
+    p_company_id: context.company_id,
+    p_root_id: rootId,
+    p_unit_id: unitId,
+    p_action: action,
+    p_revision: basis.order_revision ?? null,
+    p_choice_revision: basis.choice_revision ?? null,
+    p_payload: payload,
+  });
+  const { data, error } = await (typeof pending.retry === "function"
+    ? pending.retry(false)
+    : pending);
+  if (error)
+    throw Object.assign(new Error(error.message), { code: error.code });
+  if (
+    data?.context?.user_id !== context.user_id ||
+    data?.context?.company_id !== context.company_id ||
+    data?.root_id !== rootId ||
+    data?.unit_id !== unitId
+  )
+    throw Error("Firma eller bolig er endret.");
+  return data;
+}

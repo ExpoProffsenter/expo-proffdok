@@ -1,3 +1,9 @@
+## Boligprosjekter: varekort og separat bestillingsutkast – Preview 21.10.2026
+
+`BoligProductCard.jsx` bruker samme oppbygning som tilbudsvarer: bilde, beskrivelse, internt varenummer, antall/enhet, prisinformasjon og produktlenke. Bilde-/produktadresser er valgfrie HTTPS-adresser. De valideres på serveren og kopieres inn i nye valgsversjoner. Eldre versjoner endres ikke. Bildevisning laster sent, sender ingen referrer og viser reservefelt ved feil. Dette er ikke ny katalog-/prisimport eller opplasting til offentlig Storage.
+
+`BoligOrderDraft.jsx` bruker bare lagret boligvalg. Alle posisjoner velges første gang; prosjektlederen kan utelate enkeltlinjer og lagre et separat utkast. `bolig_order_draft` er SECURITY INVOKER foran privat, kontekstkontrollert gateway og append-only `order_draft_versions` med RLS/ingen direkte klient- eller service_role-rettigheter. Fersk boligrevisjon og utkast-revisjon kontrolleres under samme kataloglås. Serveren plukker varer fra den uforanderlige kilden; klientens egne varer/priser aksepteres ikke. Utvalget endrer verken boligvalg, pakke eller aksept. Alle FK-er er indeksert. `BoligDraftForm.jsx` bevarer scoped kladd og eksplisitt revisjonsgrunnlag for begge typer utkast.
+
 ## Boligprosjekter: prosjektkatalog og versjonerte valg – Preview 20.10.2026
 
 `BoligCatalog.jsx` har prosjektets grunnpakker/tilvalg og et eget valgskjema i valgt bolig. `boligCatalogClient.js` gjenbruker registrert Supabase-klient, slår av transport-retry og kontrollerer svarets bruker/firma/hovedprosjekt. Lokal kladd er scoped per bruker/firma/root/skjema med fastholdt katalog-/valgrevisjon. Fokus kan hente ferske data, men flytter ikke kladdens revisjonsgrunnlag; prosjektlederen må eksplisitt se over og velge siste grunnlag før en konfliktkladd kan lagres videre.

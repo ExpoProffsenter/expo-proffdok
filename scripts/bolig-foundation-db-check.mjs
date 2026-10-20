@@ -128,7 +128,18 @@ try {
       "utf8",
     ),
   );
-  await db.exec(await fs.readFile("supabase/migrations/20261020215336_boligprosjekter_choice_unit_index.sql","utf8"));
+  await db.exec(
+    await fs.readFile(
+      "supabase/migrations/20261020215336_boligprosjekter_choice_unit_index.sql",
+      "utf8",
+    ),
+  );
+  await db.exec(
+    await fs.readFile(
+      "supabase/migrations/20261020220230_boligprosjekter_order_drafts_product_images.sql",
+      "utf8",
+    ),
+  );
   await db.exec("begin");
   await actor();
   eq((await call()).enabled, false);
@@ -600,6 +611,111 @@ try {
     choice_revision: 1,
   });
   eq(noSumAlternative.selection.snapshot.total_cents, 18000);
+  const order = async (
+    action = "get",
+    orderRev = null,
+    choiceRev = null,
+    payload = {},
+    u = unit.id,
+    rootId = root,
+    company = firm,
+  ) =>
+    (
+      await db.query(
+        "select public.bolig_order_draft($1,$2,$3,$4,$5,$6,$7) v",
+        [company, rootId, u, action, orderRev, choiceRev, payload],
+      )
+    ).rows[0].v;
+  const allOrder = await order("save", 0, 2, { selected_positions: [0, 1] });
+  eq(allOrder.draft.snapshot.goods.length, 2);
+  const partialOrder = await order("save", 1, 2, {
+    selected_positions: [0],
+    goods: [{ sku: "FORGED" }],
+  });
+  eq(
+    partialOrder.draft.snapshot.goods.map((l) => l.sku),
+    ["EXTRA-1"],
+    "Only server source goods are used; independently excluded line stays out",
+  );
+  eq(partialOrder.draft.snapshot.excluded_count, 1);
+  eq(
+    (await catalog("unit", null, { unit_id: unit.id })).selection.snapshot.goods
+      .length,
+    2,
+    "Order exclusion never modifies unit choice",
+  );
+  await rejects(
+    () => order("save", 1, 2, { selected_positions: [0] }),
+    "PT409",
+  );
+  await rejects(
+    () => order("save", 2, 2, { selected_positions: [0, 0] }),
+    "22023",
+  );
+  await rejects(() => order("save", 2, 2, { selected_positions: [] }), "22023");
+  await rejects(
+    () => order("save", 2, 2, { selected_positions: [99] }),
+    "22023",
+  );
+  await rejects(
+    () => order("get", null, null, {}, unit.id, otherRoot),
+    "42501",
+  );
+  await actor(reader);
+  eq((await order()).draft.revision, 2);
+  await rejects(
+    () => order("save", 2, 2, { selected_positions: [0] }),
+    "42501",
+  );
+  await actor(manager);
+  await rejects(
+    () =>
+      catalog("option", 9, {
+        ...extra,
+        name: "Unsafe image",
+        image_url: "javascript:alert(1)",
+      }),
+    "22023",
+  );
+  const withImage = await catalog("option", 9, {
+    ...alternative,
+    id: altId,
+    image_url: "https://example.invalid/product.jpg",
+    product_url: "https://example.invalid/product",
+  });
+  eq(
+    withImage.options.find((o) => o.id === altId).image_url,
+    "https://example.invalid/product.jpg",
+  );
+  const nextChoice = await catalog("choose", 10, {
+    ...choose,
+    choice_revision: 2,
+  });
+  eq(
+    nextChoice.selection.snapshot.goods.find((l) => l.sku === "ALT-1")
+      .image_url,
+    "https://example.invalid/product.jpg",
+  );
+  await rejects(
+    () => order("save", 2, 2, { selected_positions: [0] }),
+    "PT409",
+  );
+  eq(
+    (await order()).draft.source_choice_revision,
+    2,
+    "Existing order source remains immutable after new unit choice",
+  );
+  const freshOrder = await order("save", 2, 3, { selected_positions: [0, 1] });
+  eq(freshOrder.draft.source_choice_revision, 3);
+  await db.exec("reset role;set role authenticated");
+  await rejects(
+    () => db.query("select * from bolig_private.order_draft_versions"),
+    "42501",
+  );
+  await db.exec("reset role;set role anon");
+  await rejects(() => order(), "42501");
+  await actor(manager);
+
   await db.exec("reset role;set role authenticated");
   await rejects(
     () => db.query("select * from bolig_private.choice_versions"),

@@ -5,12 +5,9 @@ import {
   toCents,
   optionBreakdown,
 } from "./boligCatalogClient.js";
-import {
-  boligDraftKey,
-  readBoligDraft,
-  writeBoligDraft,
-  clearBoligDraft,
-} from "./boligClient.js";
+import CatalogForm from "./BoligDraftForm.jsx";
+import BoligOrderDraft from "./BoligOrderDraft.jsx";
+import ProductCard from "./BoligProductCard.jsx";
 import { WORK_PROFILE_EVENT } from "../access/workProfileClient.js";
 import {
   MANAGED_ACCESS_EVENT,
@@ -24,76 +21,9 @@ const newLine = () => ({
   quantity: 1,
   unit: "stk",
   credit: "",
+  image_url: "",
+  product_url: "",
 });
-function CatalogForm({
-  context,
-  rootId,
-  name,
-  initial,
-  basis,
-  busy,
-  onSave,
-  children,
-  submitLabel,
-}) {
-  const key = boligDraftKey(context, rootId, "catalog-" + name),
-    [value, setValue] = useState(() => {
-      const draft = readBoligDraft(key, initial);
-      return { ...draft, _basis: draft._basis || basis };
-    }),
-    [error, setError] = useState("");
-  const change = (field, next) => {
-    const updated = { ...value, [field]: next };
-    if (!writeBoligDraft(key, updated))
-      setError("Kladden kunne ikke sikres lokalt. Behold siden åpen.");
-    setValue(updated);
-  };
-  return (
-    <form
-      className="bolig-catalog-form"
-      onSubmit={async (e) => {
-        e.preventDefault();
-        setError("");
-        try {
-          const saved = await onSave(value, value._basis);
-          if (saved) {
-            clearBoligDraft(key);
-            if (name.startsWith("choice-"))
-              setValue((v) => ({
-                ...v,
-                _basis: {
-                  catalog_revision: saved.revision,
-                  choice_revision: saved.selection.revision,
-                },
-              }));
-            else setValue({ ...initial, _basis: basis });
-          }
-        } catch (err) {
-          setError(err.message);
-        }
-      }}
-    >
-      {JSON.stringify(value._basis) !== JSON.stringify(basis) && (
-        <p role="status">
-          Grunnlaget er endret. Kladden er beholdt. Se over dagens pakker og
-          priser før du fortsetter.{" "}
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => change("_basis", basis)}
-          >
-            Se over og bruk siste grunnlag
-          </button>
-        </p>
-      )}
-      <fieldset disabled={busy}>
-        {children(value, change)}
-        <button type="submit">{submitLabel}</button>
-      </fieldset>
-      {error && <p role="alert">{error}</p>}
-    </form>
-  );
-}
 function PackageEditor({
   context,
   rootId,
@@ -243,6 +173,41 @@ function PackageEditor({
                   }
                 />
               </label>
+              <label>
+                Bildeadresse {index + 1}
+                <input
+                  type="url"
+                  placeholder="https://…"
+                  value={line.image_url || ""}
+                  onChange={(e) =>
+                    c(
+                      "lines",
+                      v.lines.map((l) =>
+                        l.key === line.key
+                          ? { ...l, image_url: e.target.value }
+                          : l,
+                      ),
+                    )
+                  }
+                />
+              </label>
+              <label>
+                Produktlenke {index + 1}
+                <input
+                  type="url"
+                  value={line.product_url || ""}
+                  onChange={(e) =>
+                    c(
+                      "lines",
+                      v.lines.map((l) =>
+                        l.key === line.key
+                          ? { ...l, product_url: e.target.value }
+                          : l,
+                      ),
+                    )
+                  }
+                />
+              </label>
               <button
                 type="button"
                 disabled={v.lines.length === 1}
@@ -286,6 +251,8 @@ function OptionEditor({
     id: entry?.id || "",
     name: entry?.name || "",
     sku: entry?.sku || "",
+    image_url: entry?.image_url || "",
+    product_url: entry?.product_url || "",
     quantity: entry?.quantity || 1,
     unit: entry?.unit || "stk",
     price: String((entry?.price_cents || 0) / 100),
@@ -311,6 +278,8 @@ function OptionEditor({
             id: v.id,
             name: v.name,
             sku: v.sku,
+            image_url: v.image_url,
+            product_url: v.product_url,
             quantity: Number(v.quantity),
             unit: v.unit,
             price_cents: toCents(v.price),
@@ -389,6 +358,23 @@ function OptionEditor({
               maxLength={80}
               value={v.sku}
               onChange={(e) => c("sku", e.target.value)}
+            />
+          </label>
+          <label>
+            Bildeadresse for tilvalget
+            <input
+              type="url"
+              placeholder="https://…"
+              value={v.image_url}
+              onChange={(e) => c("image_url", e.target.value)}
+            />
+          </label>
+          <label>
+            Produktlenke for tilvalget
+            <input
+              type="url"
+              value={v.product_url}
+              onChange={(e) => c("product_url", e.target.value)}
             />
           </label>
           <div className="bolig-catalog-pair">
@@ -515,10 +501,12 @@ function ChoiceEditor({ context, root, state, unit, busy, save }) {
                 <ul>
                   {pkg.lines.map((l) => (
                     <li key={l.key}>
-                      {l.quantity} {l.unit} {l.name} · grunnsum{" "}
-                      {l.credit_cents == null
-                        ? "ikke angitt"
-                        : money(l.credit_cents)}
+                      <ProductCard line={l}>
+                        Grunnsum{" "}
+                        {l.credit_cents == null
+                          ? "ikke angitt"
+                          : money(l.credit_cents)}
+                      </ProductCard>
                     </li>
                   ))}
                 </ul>
@@ -542,8 +530,7 @@ function ChoiceEditor({ context, root, state, unit, busy, save }) {
                           )
                         }
                       />
-                      <span>
-                        <strong>{o.name}</strong>
+                      <ProductCard line={o}>
                         <small>
                           {o.replace_key
                             ? "Alternativ til standardvare"
@@ -558,7 +545,7 @@ function ChoiceEditor({ context, root, state, unit, busy, save }) {
                             ? "Grunnsum mangler for fratrekk. Fyll inn grunnsummen, eller rediger alternativet til uten fratrekk."
                             : `Pris ${money(o.price_cents)} − fratrekk ${money(b.deduction)} = ${money(b.net)} inkl. mva.`}
                         </small>
-                      </span>
+                      </ProductCard>
                     </label>
                   );
                 })}
@@ -769,16 +756,17 @@ export default function BoligCatalog({ context, root, unit = null }) {
                     <ul>
                       {entry.lines.map((l) => (
                         <li key={l.key}>
-                          {l.quantity} {l.unit} {l.name}
-                          {l.sku ? ` · ${l.sku}` : ""} · grunnsum{" "}
-                          {l.credit_cents == null
-                            ? "ikke angitt"
-                            : money(l.credit_cents)}
+                          <ProductCard line={l}>
+                            Grunnsum{" "}
+                            {l.credit_cents == null
+                              ? "ikke angitt"
+                              : money(l.credit_cents)}
+                          </ProductCard>
                         </li>
                       ))}
                     </ul>
                   ) : (
-                    <p>
+                    <ProductCard line={entry}>
                       {entry.replace_key
                         ? "Alternativ til standardvare"
                         : "Tillegg til grunnpakken"}{" "}
@@ -786,7 +774,7 @@ export default function BoligCatalog({ context, root, unit = null }) {
                       {entry.deduct_base
                         ? " · grunnsummen trekkes fra"
                         : " · uten fratrekk"}
-                    </p>
+                    </ProductCard>
                   )}
                   <small>Versjon {entry.revision}</small>
                   {canWrite && (
@@ -913,6 +901,15 @@ export default function BoligCatalog({ context, root, unit = null }) {
             />
           ) : (
             <p>Lesetilgang. Lagrede boligvalg kan leses, men ikke endres.</p>
+          )}
+          {selected && (
+            <BoligOrderDraft
+              key={"order:" + unit.id}
+              context={context}
+              root={root}
+              unit={unit}
+              choiceRevision={selected.revision}
+            />
           )}
         </>
       )}

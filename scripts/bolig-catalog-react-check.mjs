@@ -38,6 +38,8 @@ let state = {
     {
       id: "o1",
       name: "Alternativ servant",
+      image_url: "https://example.invalid/product.jpg",
+      product_url: "https://example.invalid/product",
       sku: "ALT-1",
       quantity: 1,
       unit: "stk",
@@ -64,6 +66,7 @@ let state = {
   history: [],
 };
 const calls = [];
+let orderDraft = null;
 let conflict = false,
   held = null;
 try {
@@ -110,6 +113,33 @@ try {
   };
   w.__client = {
     rpc: async (name, args) => {
+      if (name === "bolig_order_draft") {
+        if (args.p_action === "save") {
+          assert.equal(args.p_choice_revision, state.selection.revision);
+          orderDraft = {
+            revision: (orderDraft?.revision || 0) + 1,
+            source_choice_revision: state.selection.revision,
+            snapshot: {
+              selected_positions: args.p_payload.selected_positions,
+              goods: state.selection.snapshot.goods.filter((_, i) =>
+                args.p_payload.selected_positions.includes(i),
+              ),
+              excluded_count:
+                state.selection.snapshot.goods.length -
+                args.p_payload.selected_positions.length,
+            },
+          };
+        }
+        return {
+          data: {
+            context: { ...ctx },
+            root_id: root.id,
+            unit_id: args.p_unit_id,
+            selection: state.selection,
+            draft: orderDraft,
+          },
+        };
+      }
       assert.equal(name, "bolig_catalog");
       calls.push(args);
       assert.equal(args.p_company_id, ctx.company_id);
@@ -252,6 +282,10 @@ try {
     ),
   );
   await act(() => button("Tilvalgsliste").click());
+  assert(
+    d.querySelector('img[src="https://example.invalid/product.jpg"]'),
+    "Product image uses the familiar goods card",
+  );
   await act(() => button("Nytt tilvalg").click());
   await input("Navn på tilvalg", "Testalternativ");
   await input("Varenummer for tilvalget", "QA-ALT");
@@ -339,6 +373,30 @@ try {
     "Only deliberate review rebases a draft",
   );
 
+  await act(() => {});
+  const orderRegion = d.querySelector('[aria-label="Bestillingsutkast"]');
+  assert(orderRegion);
+  const orderChecks = [...orderRegion.querySelectorAll("input[type=checkbox]")];
+  assert.equal(orderChecks.length, 2);
+  assert(
+    orderChecks.every((c) => c.checked),
+    "Every order line is selected by default",
+  );
+  await act(() => orderChecks[1].click());
+  await act(() =>
+    orderRegion
+      .querySelector("form")
+      .dispatchEvent(
+        new w.Event("submit", { bubbles: true, cancelable: true }),
+      ),
+  );
+  assert.equal(orderDraft.snapshot.goods.length, 1);
+  assert.equal(
+    state.selection.snapshot.goods.length,
+    2,
+    "Order exclusion must not change accepted/source choice goods",
+  );
+  assert(orderRegion.textContent.includes("1 varelinjer med"));
   ctx.role = "reader";
   state.context = { ...ctx };
   await render({ id: "unit-a", number: "H0101" });
@@ -371,7 +429,7 @@ try {
   await act(() => w.__unmount());
   dom.window.close();
   console.log(
-    "PASS actual catalog React: optional base price with SKU, alternative/additional controls, explicit credit, exact cents, displayed net total, immutable saved goods, local draft/conflict/focus, reader limits and late company response fence.",
+    "PASS actual catalog React: optional base price with SKU, alternative/additional controls, explicit credit, exact cents, displayed net total, immutable saved goods, local draft/conflict/focus, reader limits, product images, all-selected order lines, independently saved exclusions and late company response fence.",
   );
 } finally {
   fs.rmSync(temp, { recursive: true, force: true });
