@@ -8,7 +8,7 @@ Fortsett Expo ProffDok i `ExpoProffsenter/expo-proffdok`. Les AGENTS.md og hele 
 
 ## Viktig kontekst
 
-Kunden er en rørleggerbedrift som er totalentreprenør for alle fag. Aktuelt prosjekt har over 300 leiligheter og anbudssum 50 millioner inkl. mva. Borettslaget betaler grunnleveranse; beboer betaler egne tilvalg. Én kontaktperson og ett samlet våtromsprosjekt per leilighet. Flere grunnpakker og individuelle avvik. Entreprenørens prosjektleder/innkjøper bestiller; egen Cordelordre per leilighet, med delleveranser. Dagens aksept først, BankID senere.
+Kunden er en rørleggerbedrift som er totalentreprenør for alle fag. Aktuelt prosjekt har over 300 leiligheter og anbudssum 50 millioner inkl. mva. Borettslaget betaler grunnleveranse; beboer betaler egne tilvalg. Én kontaktperson og ett samlet våtromsprosjekt per leilighet. Flere grunnpakker og individuelle avvik. Entreprenørens prosjektleder/innkjøper bestiller; eget ordrenummer per leilighet, med delleveranser. «Vårt ordrenummer» tilhører brukerbedriften. Expo/Ringside må opprette egne separate ordrer i Cordel og beholde brukerens nummer som kjøpers referanse. Dagens aksept først, BankID senere.
 
 Alle hovedområder kreves i første operative versjon, men skal utvikles i sikre, separate etapper. Kenneth godkjente visuell retning og ba om neste trinn: klikkbar prototype. Dette er ikke en autorisasjon til å sette hele modulen i produksjon.
 
@@ -24,3 +24,5 @@ Prototypen ligger isolert i `public/demo/boligprosjekter/`, uten integrasjon i e
 Rutine-e-post forblir deaktivert. Supportmottaker `kenneth@ringside.no` bare på server. Timeføring/PR #246 og PR #217 er parkert. Ingen demo → main. Ingen merge uten relevant QA og eksplisitt TEST OK.
 
 Kenneth ønsker at vi varsler om ny chat før større nye arbeidsfaser. Fullfør prototypeprøven før eventuell operativ modulutvikling, og oppdater denne handoffen med faktisk commit/PR/deploymentstatus. Ingen bestemt dato for kundemøte er oppgitt.
+
+Terminologikorrigering etter første brukerinntrykk: Kenneth ba om «Vårt ordrenummer» i stedet for «Cordel-ordre». Kenneth presiserte at nummeret tilhører brukeren, og at Expo/Ringside oppretter egne ordrer. Prototypen skiller derfor brukerreferanse og leverandørordrenummer, med bevaring av tidligere lokale eksempeldata. Ingen ekte leverandørordre opprettes. Prototypen ligger i draft PR #277; les PR-ens nyeste head og endelige Preview-/CI-status.

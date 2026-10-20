@@ -22,7 +22,7 @@ function makeUnit(e,f,u,index) {
   const isHero=e.id==='B1'&&f===3&&u===2;
   const selected=isHero?['vanity','shower']:index%3===0?['vanity']:[];
   const accepted=isHero||index%5===0;
-  return {id:unitId(e.id,f,u),entrance:e.id,floor:f,number:unitNumber(f,u),position:u,contact:isHero?'Anne Eksempel':`Beboer ${unitNumber(f,u)}`,package:index%3===0?'A':'B',stage:isHero?1:index%4,selected,accepted:accepted?{version:1,ids:[...selected],total:optionTotal(selected),factor:1,at:'20.10.2026',by:'Eksempelbeboer'}:null,history:[],editing:false,start:'2026-11-02',checklist:[true,true,index%3===0,false],note:'',orders:[],portal:{progress:false,fdv:false,defects:false,handover:false}};
+  return {id:unitId(e.id,f,u),entrance:e.id,floor:f,number:unitNumber(f,u),userOrderNumber:isHero?'78421':'PR-'+String(index+1).padStart(4,'0'),position:u,contact:isHero?'Anne Eksempel':`Beboer ${unitNumber(f,u)}`,package:index%3===0?'A':'B',stage:isHero?1:index%4,selected,accepted:accepted?{version:1,ids:[...selected],total:optionTotal(selected),factor:1,at:'20.10.2026',by:'Eksempelbeboer'}:null,history:[],editing:false,start:'2026-11-02',checklist:[true,true,index%3===0,false],note:'',orders:[],portal:{progress:false,fdv:false,defects:false,handover:false}};
 }
 export function initialState() {
   const s={version:VERSION,entrances:[],units:{},orders:[],notices:[],factor:1,index:{base:170,current:170},portalDefaults:{progress:false,fdv:false,defects:false,handover:false}};
@@ -32,7 +32,7 @@ export function initialState() {
     for(let f=1;f<=6;f++)for(let u=1;u<=4;u++){const unit=makeUnit(e,f,u,idx++);s.units[unit.id]=unit;}
   }
   const hero=s.units['B1:3:2'];
-  const order={id:'EX-001',unit:hero.id,phase:'Innbyggingsvarer',version:1,status:'Bestilt – eksempel',date:'20.10.2026',cordel:'78421'};
+  const order={id:'EX-001',unit:hero.id,phase:'Innbyggingsvarer',version:1,status:'Bestilt – eksempel',date:'20.10.2026',userOrderNumber:hero.userOrderNumber,supplierOrderNumber:null};
   s.orders.push(order);hero.orders.push(order.id);
   return s;
 }
@@ -57,7 +57,7 @@ export function addOrder(state,id,phase) {
   const u=state.units[id];if(!u?.accepted||u.editing)throw Error('Godkjenn tilvalgsgrunnlaget først.');
   if(!['Innbyggingsvarer','Sanitærutstyr'].includes(phase))throw Error('Ugyldig leveransetype.');
   if(state.orders.some(o=>o.unit===id&&o.phase===phase))throw Error('Denne leveransen er allerede klargjort.');
-  const order={id:'EX-'+String(state.orders.length+1).padStart(3,'0'),unit:id,phase,version:u.accepted.version,status:'Klargjort – eksempel',date:'20.10.2026',cordel:String(78421+activeUnits(state).findIndex(x=>x.id===id))};
+  const order={id:'EX-'+String(state.orders.length+1).padStart(3,'0'),unit:id,phase,version:u.accepted.version,status:'Klargjort – eksempel',date:'20.10.2026',userOrderNumber:u.userOrderNumber,supplierOrderNumber:null};
   state.orders.push(order);u.orders.push(order.id);return order;
 }
 export function resizeEntrance(state,id,counts) {
@@ -80,6 +80,14 @@ export function restoreState(raw) {
   try {const v=JSON.parse(raw);if(v?.version!==VERSION||!Array.isArray(v.entrances)||v.entrances.length!==13||!v.units||!Array.isArray(v.orders)||!Array.isArray(v.notices)||!Number.isFinite(v.factor)||v.factor<=0||v.factor>10)return null;
     if(v.entrances.some(e=>!['A','B','C'].includes(e.block)||!Array.isArray(e.units)||e.units.length<1||e.units.length>20||e.units.some(n=>!Number.isInteger(n)||n<1||n>8)))return null;
     if(activeUnits(v).length!==v.entrances.reduce((n,e)=>n+e.units.reduce((a,b)=>a+b,0),0))return null;
+    // Old prototype numbers are the buying user's references, never supplier order IDs.
+    for(const [i,u] of Object.values(v.units).entries()){
+      if(typeof u.userOrderNumber!=='string')u.userOrderNumber=String(v.orders.find(o=>o.unit===u.id)?.cordel||('PR-'+String(i+1).padStart(4,'0')));
+    }
+    for(const o of v.orders){
+      if(typeof o.userOrderNumber!=='string')o.userOrderNumber=String(o.cordel||v.units[o.unit]?.userOrderNumber||'');
+      if(!('supplierOrderNumber' in o))o.supplierOrderNumber=null;
+    }
     return v;
   }catch{return null;}
 }

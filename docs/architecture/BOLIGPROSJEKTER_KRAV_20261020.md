@@ -37,7 +37,7 @@ Kilde: Kenneths avklaringer 20.10.2026, Europe/Oslo. Dette dokumentet er en krav
 ## Bestilling og Cordel
 
 - Kun prosjektleder eller innkjøpsansvarlig hos entreprenøren sender varebestilling til Expo/Ringside. Beboerens aksept er ikke i seg selv en leverandørbestilling.
-- Én egen Cordel-ordre per leilighet. Flere bestillinger/delleveranser kan følge samme ordre.
+- **Vårt ordrenummer** tilhører brukerbedriften/entreprenøren og er deres egen referanse per leilighet. Expo/Ringside oppretter egne, separate leverandørordrer i Cordel ved mottak. Brukerens nummer skal følge som kjøpers referanse og aldri brukes som leverandørens ordrenummer. Delleveranser må bevare koblingen mellom leilighet, brukerens referanse og leverandørens egne ordre.
 - Felles leveringsoppsett på hovedprosjektet, med valg/avvik per leilighet. Samlet levering og delleveranser støttes.
 - Gjenbruk katalog, bestillingsgrunnlag og eksisterende prisfrie Cordel-vareformat der det passer. Mottak/ruting hos Expo, sikker ordreidentifikasjon, varig ordrehistorikk og aksept-/leveranseavstemming må utvikles.
 - Dagens Cordel-ordrenummer i plukklisten er en manuell påminnelse, ikke automatisk ruting. Ingen påstand om ferdig direkteintegrasjon uten faktisk prøveimport og kontroll av mottakerens ordreoppsett.

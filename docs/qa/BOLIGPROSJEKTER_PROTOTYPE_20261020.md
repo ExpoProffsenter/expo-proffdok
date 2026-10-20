@@ -14,7 +14,7 @@ Miljømål: **SANDBOX/DEMO**. Baseline main `0730eeb46c49bf45b5d910772da5c2ad7ed
 - 312 syntetiske leiligheter i 13 oppganger / 3 blokker. Automatisk fasade, valgt leilighet, adresser, etasjer og statuslag for fremdrift/tilvalg/bestilling/dokumentasjon.
 - Separate leilighetsvisninger, grunnpakkeeksempel, tilvalg og simulerte versjonerte aksepter/tillegg.
 - Enkle avhengighets-/kombinasjonsregler for tilvalg og eksempel på erstatning av standardvarer i varegrunnlaget.
-- Én eksempel-Cordelordre per leilighet, klargjøring av to delleveranser, sperre mot samme delleveranse to ganger. Ingen importfil eller virkelig sending.
+- Brukerbedriftens «Vårt ordrenummer» per leilighet, separat fra leverandørens ordrenummer (avventer egen ordre hos Expo/Ringside), klargjøring av to delleveranser, sperre mot samme delleveranse to ganger. Ingen importfil eller virkelig sending.
 - Illustrativ hovedplan og godkjenning av datoendring per bolig/opplegg/oppgang. Endret relevant dato ugyldiggjør godkjente eksempelvarsler.
 - Redigerbar varselforhåndsvisning, kanaler og lokal godkjenning, utskrift/PDF via nettleser. Ingen mail/SMS.
 - Redigering av etasjeantall/leiligheter per etasje/adresse. Skjulte tidligere leiligheter og historikk slettes ikke.
