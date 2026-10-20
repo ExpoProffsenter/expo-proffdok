@@ -23,7 +23,7 @@ export function BoligHelp() {
           prosjektinnhold.
         </li>
         <li>
-          Åpne Grunnpakker på hovedprosjektet. Legg inn vareinnhold, varenummer
+          Åpne Oppsett → Grunnpakker på hovedprosjektet. Legg inn vareinnhold, varenummer
           og antall. Grunnpakken trenger ingen sum. Valgfri grunnsum per
           varelinje brukes bare som fratrekk ved et alternativ. Under
           Tilvalgsliste velger du Tillegg til eller Alternativ til en

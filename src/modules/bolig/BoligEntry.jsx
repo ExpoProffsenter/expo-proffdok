@@ -353,21 +353,23 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
           {notice}
         </p>
       ) : null}
-      <div className="bolig-toolbar">
-        <button type="button" disabled={busy} onClick={refresh}>
-          <RefreshCw size={14} /> Hent siste versjon
-        </button>
-        <small>
-          {!ctx.enabled
-            ? !ctx.licensed
-              ? "Firmaet er ikke aktivert"
-              : "Brukertilgang mangler"
-            : ctx.role === "manager"
-              ? "Prosjektledertilgang"
-              : "Lesetilgang"}
-        </small>
+      <div className="bolig-utilities">
+        <div className="bolig-toolbar">
+          <button type="button" disabled={busy} onClick={refresh}>
+            <RefreshCw size={14} /> Hent siste versjon
+          </button>
+          <small>
+            {!ctx.enabled
+              ? !ctx.licensed
+                ? "Firmaet er ikke aktivert"
+                : "Brukertilgang mangler"
+              : ctx.role === "manager"
+                ? "Prosjektledertilgang"
+                : "Lesetilgang"}
+          </small>
+        </div>
+        <BoligHelp />
       </div>
-      <BoligHelp />
       {!ctx.enabled ? null : (
         <>
           <div className="bolig-projects-layout">

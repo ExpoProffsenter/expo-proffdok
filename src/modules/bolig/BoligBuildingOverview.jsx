@@ -152,7 +152,11 @@ export default function BoligBuildingOverview({
           Oppsett
         </button>
       </div>
-      <nav className="bolig-block-tabs" aria-label="Velg blokk">
+      <nav
+        className="bolig-block-tabs"
+        aria-label="Velg blokk"
+        hidden={blocks.length < 2}
+      >
         {blocks.map((b) => (
           <button
             key={b.id}

@@ -918,6 +918,15 @@ export default function BoligCatalog({
                   {selected.snapshot.package.name} · beboerens tilvalg{" "}
                   {money(selected.snapshot.total_cents)} inkl. mva.
                 </p>
+                {compact && selected.snapshot.options?.length > 0 && (
+                  <div className="bolig-unit-choice-products">
+                    {selected.snapshot.options.map((o) => (
+                      <ProductCard key={o.id} line={o}>
+                        {money(o.net_cents)} inkl. mva.
+                      </ProductCard>
+                    ))}
+                  </div>
+                )}
                 {selected.snapshot.catalog_revision !== valid.revision && (
                   <p>
                     Pakkeoppsettet er endret etter dette valget. Det lagrede
