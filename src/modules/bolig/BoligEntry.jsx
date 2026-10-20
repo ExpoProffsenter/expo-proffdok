@@ -1,10 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import {
-  MANAGED_ACCESS_EVENT,
-  MODULE_ACCESS_EVENT,
-} from "../access/moduleAccessClient.js";
 import { WORK_PROFILE_EVENT } from "../access/workProfileClient.js";
+import { useBoligContext } from "./boligAccess.js";
 import { BoligHelp } from "../help/BoligHelp.jsx";
 import {
   boligRpc,
@@ -14,122 +11,46 @@ import {
   clearBoligDraft,
 } from "./boligClient.js";
 import "./bolig.css";
-const ACCESS_EVENT = "expo-proffdok-bolig-access";
-export default function BoligEntry({
-  userId,
-  onOpenProject,
-  mode = "workspace",
-  onExit,
-}) {
-  const [context, setContext] = useState(null),
-    [open, setOpen] = useState(mode === "workspace"),
-    [loadError, setLoadError] = useState("");
-  const seq = useRef(0);
+export default function BoligEntry({ userId, onOpenProject, onExit }) {
+  const { context, loadError } = useBoligContext(userId);
+  const [open, setOpen] = useState(true);
   const exit = useRef(onExit);
   exit.current = onExit;
   const close = useCallback(() => {
     setOpen(false);
     exit.current?.();
   }, []);
-  useEffect(() => setOpen(mode === "workspace"), [mode]);
-  useEffect(() => {
-    let live = true;
-    const refresh = (event) => {
-      const token = ++seq.current;
-      setLoadError("");
-      if (event?.type === WORK_PROFILE_EVENT)
-        setContext((old) =>
-          old?.company_id === event.detail?.active_company_id ? old : null,
-        );
-      if (
-        [MANAGED_ACCESS_EVENT, MODULE_ACCESS_EVENT, ACCESS_EVENT].includes(
-          event?.type,
-        )
-      )
-        setContext(null);
-      boligRpc()
-        .then((c) => {
-          if (live && token === seq.current)
-            setContext(c?.user_id === userId ? c : null);
-        })
-        .catch((e) => {
-          if (live && token === seq.current) {
-            setContext(null);
-            setLoadError(e.message);
-          }
-        });
-    };
-    setContext(null);
-    if (userId) refresh();
-    const events = [
-      WORK_PROFILE_EVENT,
-      MANAGED_ACCESS_EVENT,
-      MODULE_ACCESS_EVENT,
-      ACCESS_EVENT,
-      "focus",
-    ];
-    events.forEach((e) => window.addEventListener(e, refresh));
-    return () => {
-      live = false;
-      seq.current++;
-      events.forEach((e) => window.removeEventListener(e, refresh));
-    };
-  }, [userId]);
-  if (context?.user_id !== userId) {
-    if (mode === "accessShortcut") return null;
+  if (!context)
     return (
       <section className="bolig-entry-state" aria-label="Boligprosjekter">
         <h2>Boligprosjekter</h2>
         <p role="status">{loadError || "Henter firma og tilgang …"}</p>
-        {loadError ? (
-          <p>
-            Kontroller aktivt firma og innlogging. Firmaadmin kan kontrollere
-            tilgangen din.
-          </p>
-        ) : null}
       </section>
     );
-  }
-  if (mode === "accessShortcut" && !context.manage_access) return null;
-  return (
-    <>
-      {mode === "accessShortcut" ? (
-        <section
-          className="bolig-access-shortcut"
-          aria-label="Boligprosjekter – aktivering og tilganger"
-        >
-          <strong>Boligprosjekter</strong>
-          <span>
-            {context.licensed
-              ? "Aktivert for " + context.company_name
-              : "Ikke aktivert for " + context.company_name}
-          </span>
-          <button type="button" onClick={() => setOpen(true)}>
-            Aktivering og tilganger
-          </button>
-          <small>
-            Gjelder aktivt firma. Velg et annet firma øverst før du endrer
-            tilgang der.
-          </small>
-        </section>
-      ) : !open ? (
-        <button type="button" onClick={() => setOpen(true)}>
-          Åpne boligprosjekter
-        </button>
-      ) : null}
-      {open
-        ? createPortal(
-            <BoligWorkspace
-              key={`${userId}:${context.company_id}`}
-              context={context}
-              startWithAccess={mode === "accessShortcut"}
-              onClose={close}
-              onOpenProject={onOpenProject}
-            />,
-            document.body,
-          )
-        : null}
-    </>
+  if (!context.enabled)
+    return (
+      <section className="bolig-entry-state" aria-label="Boligprosjekter">
+        <h2>Boligprosjekter</h2>
+        <p role="status">
+          Boligprosjekter er ikke tilgjengelig for deg i valgt firma. Kontakt
+          firmaadmin hvis du trenger tilgang.
+        </p>
+      </section>
+    );
+  return open ? (
+    createPortal(
+      <BoligWorkspace
+        key={`${userId}:${context.company_id}`}
+        context={context}
+        onClose={close}
+        onOpenProject={onOpenProject}
+      />,
+      document.body,
+    )
+  ) : (
+    <button type="button" onClick={() => setOpen(true)}>
+      Åpne boligprosjekter
+    </button>
   );
 }
 
@@ -229,36 +150,26 @@ function FloorFields({ value, onChange }) {
     </div>
   );
 }
-function BoligWorkspace({
-  context,
-  onClose,
-  onOpenProject,
-  startWithAccess = false,
-}) {
+function BoligWorkspace({ context, onClose, onOpenProject }) {
   const dialog = useRef(null),
     alive = useRef(true),
     selection = useRef(0);
   const [ctx, setCtx] = useState(context),
     [roots, setRoots] = useState([]),
     [record, setRecord] = useState(null),
-    [access, setAccess] = useState(null),
     [projects, setProjects] = useState([]),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
     [notice, setNotice] = useState(""),
     [entranceId, setEntranceId] = useState(""),
     [unitId, setUnitId] = useState(""),
-    [query, setQuery] = useState(""),
-    [settings, setSettings] = useState(
-      startWithAccess || (context.manage_access && !context.enabled),
-    );
+    [query, setQuery] = useState("");
   useEffect(() => {
     setCtx(context);
     if (!context.enabled) {
       setRecord(null);
       setRoots([]);
       setProjects([]);
-      if (!context.manage_access) setAccess(null);
     }
   }, [context]);
   const apply = useCallback(
@@ -273,7 +184,6 @@ function BoligWorkspace({
       if (value?.context) setCtx(value.context);
       if (value?.roots) setRoots(value.roots);
       if (value?.root) setRecord(value);
-      if (value?.members) setAccess(value);
       if (value?.projects) setProjects(value.projects);
     },
     [context.user_id, context.company_id],
@@ -315,7 +225,6 @@ function BoligWorkspace({
         if (e.code === "42501") {
           setCtx({ ...ctx, enabled: false, role: "none" });
           setRecord(null);
-          setAccess(null);
           setProjects([]);
           setRoots([]);
           const latest = await boligRpc().catch(() => null);
@@ -338,7 +247,6 @@ function BoligWorkspace({
     const load = async () => {
       try {
         if (context.enabled) await request("list");
-        if (context.manage_access) await request("access");
       } catch (e) {
         if (alive.current) setError(e.message);
       }
@@ -348,13 +256,7 @@ function BoligWorkspace({
       alive.current = false;
       window.removeEventListener(WORK_PROFILE_EVENT, handleScope);
     };
-  }, [
-    context.company_id,
-    context.enabled,
-    context.manage_access,
-    request,
-    onClose,
-  ]);
+  }, [context.company_id, context.enabled, request, onClose]);
   const fetchRecord = async (id) => {
     const token = ++selection.current;
     setError("");
@@ -383,19 +285,14 @@ function BoligWorkspace({
         setCtx(c);
         setRecord(null);
         setRoots([]);
-        setAccess(null);
-        if (c.company_id === context.company_id && c.manage_access)
-          await request("access");
         return;
       }
       setCtx(c);
       await request("list");
       if (record) await request("get", { rootId: record.root.id });
-      if (c.manage_access) await request("access");
     } catch (e) {
       setRecord(null);
       setRoots([]);
-      setAccess(null);
       setError(e.message);
     }
   };
@@ -449,26 +346,6 @@ function BoligWorkspace({
           Lukk boligprosjekter
         </button>
       </header>
-      {!ctx.enabled ? (
-        <section className="bolig-access-state" role="status">
-          <h3>
-            {!ctx.licensed
-              ? "Boligprosjekter er ikke aktivert for " + ctx.company_name
-              : "Din bruker mangler tilgang til Boligprosjekter"}
-          </h3>
-          <p>
-            {!ctx.licensed
-              ? ctx.system_admin
-                ? "Aktiver firmaet i «Aktivering og tilganger» nedenfor. Som systemadmin har du prosjektledertilgang når firmaet er aktivert."
-                : ctx.manage_access
-                  ? "Systemadmin må først aktivere Boligprosjekter for firmaet. Deretter kan du som firmaadmin gi ansatte tilgang nedenfor."
-                  : "Be firmaadmin kontakte systemadmin for å aktivere Boligprosjekter for firmaet."
-              : ctx.manage_access
-                ? "Kontroller at hovedmodulen «Prosjekter og dokumentasjon» er aktivert for brukeren."
-                : "Be firmaadmin gi deg lesetilgang eller prosjektledertilgang under «Aktivering og tilganger». Du må også ha «Prosjekter og dokumentasjon»."}
-          </p>
-        </section>
-      ) : null}
       {error ? (
         <p role="alert" className="bolig-error">
           {error}
@@ -483,11 +360,6 @@ function BoligWorkspace({
         <button type="button" disabled={busy} onClick={refresh}>
           Hent siste versjon
         </button>
-        {ctx.manage_access ? (
-          <button type="button" onClick={() => setSettings(!settings)}>
-            {settings ? "Skjul tilgangsoppsett" : "Aktivering og tilganger"}
-          </button>
-        ) : null}
         <small>
           {!ctx.enabled
             ? !ctx.licensed
@@ -498,70 +370,6 @@ function BoligWorkspace({
               : "Lesetilgang"}
         </small>
       </div>
-      {settings && access ? (
-        <section className="bolig-panel">
-          <h3>Aktivering og tilganger</h3>
-          <p>
-            Firmaadmin følger firmaaktiveringen. Andre interne brukere tildeles
-            tilgang her og må også ha ordinær prosjekttilgang.
-          </p>
-          {ctx.system_admin ? (
-            <label className="bolig-license-toggle">
-              <input
-                type="checkbox"
-                checked={ctx.licensed}
-                disabled={busy}
-                onChange={async (e) => {
-                  const next = e.target.checked;
-                  if (
-                    await perform("license", {
-                      revision: ctx.license_revision,
-                      payload: { enabled: next },
-                    })
-                  ) {
-                    if (next) await request("list");
-                    else {
-                      setRoots([]);
-                      setRecord(null);
-                    }
-                  }
-                }}
-              />
-              Aktiver Boligprosjekter for firmaet
-            </label>
-          ) : (
-            <p>
-              {ctx.licensed
-                ? "Firmamodulen er aktivert."
-                : "Systemadmin må aktivere modulen på firmaet."}
-            </p>
-          )}
-          {access.members.map((m) => (
-            <div className="bolig-member" key={m.user_id}>
-              <span>{m.name}</span>
-              {m.firmaadmin ? (
-                <b>Firmaadmin</b>
-              ) : (
-                <select
-                  aria-label={`Tilgang for ${m.name}`}
-                  value={m.role}
-                  disabled={busy || !ctx.licensed}
-                  onChange={(e) =>
-                    perform("member", {
-                      revision: m.revision,
-                      payload: { user_id: m.user_id, role: e.target.value },
-                    })
-                  }
-                >
-                  <option value="none">Ingen tilgang</option>
-                  <option value="reader">Lesetilgang</option>
-                  <option value="manager">Prosjektledertilgang</option>
-                </select>
-              )}
-            </div>
-          ))}
-        </section>
-      ) : null}
       <BoligHelp />
       {!ctx.enabled ? null : (
         <>

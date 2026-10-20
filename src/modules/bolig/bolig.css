@@ -297,3 +297,10 @@
   padding: 0;
   vertical-align: middle;
 }
+
+.bolig-admin-access { margin: 16px 0; padding: 20px; border: 1px solid #c5dce4; border-radius: 14px; background: #f5fafc; color: #183641; }
+.bolig-admin-access h3 { margin-top: 0; }
+.bolig-admin-access select { min-height: 44px; max-width: 100%; }
+.bolig-admin-access .bolig-member { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #d7e6ed; flex-wrap: wrap; }
+.bolig-admin-access .bolig-license-toggle { display: flex; align-items: center; gap: 12px; padding: 14px; background: #e8f5f8; border-radius: 10px; margin: 12px 0; }
+.bolig-admin-access .bolig-license-toggle input { width: 20px; height: 20px; flex: 0 0 20px; }

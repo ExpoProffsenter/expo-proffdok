@@ -116,6 +116,12 @@ try {
       "utf8",
     ),
   );
+  await db.exec(
+    await fs.readFile(
+      "supabase/migrations/20261020212755_boligprosjekter_systemadmin_firm_access.sql",
+      "utf8",
+    ),
+  );
   await db.exec("begin");
   await actor();
   eq((await call()).enabled, false);
@@ -316,6 +322,61 @@ try {
   await rejects(() => call("get", root), "42501");
   await db.exec("reset role;set role anon");
   await rejects(() => call("context"), "42501");
+  const firmCall = async (c = null, rev = null, enabled = null) =>
+    (
+      await db.query("select public.bolig_firm_access($1,$2,$3) v", [
+        c,
+        rev,
+        enabled,
+      ])
+    ).rows[0].v;
+  await rejects(() => firmCall(), "42501");
+  await actor(admin);
+  await rejects(() => firmCall(), "42501");
+  await rejects(() => firmCall(other, 0, true), "42501");
+  await actor(system);
+  await db.exec("reset role");
+  const priorLicenseAudit = (
+    await db.query(
+      "select count(*)::int n from bolig_private.audit where company_id=$1 and action='license'",
+      [other],
+    )
+  ).rows[0].n;
+  await actor(system);
+  const beforeFirm = (await firmCall()).companies.find(
+    (c) => c.company_id === other,
+  );
+  const crossFirm = await firmCall(other, beforeFirm.revision, true);
+  eq(
+    crossFirm.companies.find((c) => c.company_id === other).licensed,
+    true,
+    "Systemadmin can activate firm without membership or workspace switch",
+  );
+  eq(
+    (await call()).company_id,
+    firm,
+    "Firm activation preserves active workspace",
+  );
+  await rejects(() => firmCall(other, beforeFirm.revision, false), "PT409");
+  await rejects(() => firmCall(id(999), 0, true), "22023");
+  await db.exec("reset role");
+  eq(
+    (
+      await db.query(
+        "select count(*)::int n from bolig_private.audit where company_id=$1 and action='license'",
+        [other],
+      )
+    ).rows[0].n,
+    priorLicenseAudit + 1,
+    "Only successful license write is audited",
+  );
+  await db.exec(
+    `update public.profiles set deactivated=true where id=${q(system)}`,
+  );
+  await actor(system);
+  await rejects(() => firmCall(), "42501");
+  await db.exec("reset role;set role service_role");
+  await rejects(() => firmCall(), "42501");
   await db.exec("rollback");
   console.log(
     "PASS bolig PostgreSQL: " +

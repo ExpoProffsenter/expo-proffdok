@@ -23,6 +23,21 @@ assert(
     ([id]) => id === "bolig",
   ),
 );
+assert(
+  main.includes(
+    "canUseBolig: Boolean(boligContext?.enabled && boligContext.user_id === authUser?.id)",
+  ),
+);
+assert(
+  fs
+    .readFileSync("src/modules/company/CompanyAdminPanel.jsx", "utf8")
+    .includes('mode="company" expectedCompanyId={current.company_id}'),
+);
+assert(
+  fs
+    .readFileSync("src/modules/app/SystemAdminWorkspace.jsx", "utf8")
+    .includes("<BoligFirmAccessPanel userId={authUser?.id}/>"),
+);
 const integration = main.split("\n").find((s) => s.includes("(BoligEntry, {"));
 assert(
   integration &&
@@ -33,7 +48,7 @@ assert(
 );
 fs.writeFileSync(
   entry,
-  `import React,{act} from '${cwd}/node_modules/react/index.js';import {createRoot} from '${cwd}/node_modules/react-dom/client.js';import Entry from '${cwd}/src/modules/bolig/BoligEntry.jsx';const root=createRoot(document.getElementById('app'));globalThis.__act=act;globalThis.__render=(id,mode='workspace')=>root.render(React.createElement('form',{id:'ordinary-project-form'},React.createElement(Entry,{userId:id,mode,onExit:mode==='workspace'?()=>globalThis.__exited=true:undefined,onOpenProject:(...a)=>globalThis.__opened=a})));globalThis.__unmount=()=>root.render(null);globalThis.__dispose=()=>root.unmount();`,
+  `import React,{act} from '${cwd}/node_modules/react/index.js';import {createRoot} from '${cwd}/node_modules/react-dom/client.js';import Entry from '${cwd}/src/modules/bolig/BoligEntry.jsx';import Access from '${cwd}/src/modules/bolig/BoligAccessPanel.jsx';import FirmAccess from '${cwd}/src/modules/bolig/BoligFirmAccessPanel.jsx';import {useBoligContext} from '${cwd}/src/modules/bolig/boligAccess.js';function Availability({id}){const {context}=useBoligContext(id);return React.createElement('output',{'data-bolig-enabled':!!context?.enabled});}const root=createRoot(document.getElementById('app'));globalThis.__act=act;globalThis.__render=(id,mode='workspace')=>root.render(React.createElement('form',{id:'ordinary-project-form'},React.createElement(Availability,{id}),mode==='workspace'?React.createElement(Entry,{userId:id,onExit:()=>globalThis.__exited=true,onOpenProject:(...a)=>globalThis.__opened=a}):mode==='system'?React.createElement(FirmAccess,{userId:id}):React.createElement(Access,{userId:id,mode})));globalThis.__unmount=()=>root.render(null);globalThis.__dispose=()=>root.unmount();`,
 );
 try {
   const built = await build({
@@ -98,7 +113,12 @@ try {
     system = false,
     licenseRevision = 1,
     memberRole = "none",
-    memberRevision = 0;
+    memberRevision = 0,
+    accessConflict = false,
+    holdAccess = false;
+  const accessWaiters = [];
+  let externalLicensed = false,
+    externalRevision = 0;
   const calls = [];
   let record = {
     root: {
@@ -146,8 +166,44 @@ try {
   });
   w.__client = {
     rpc: async (name, args) => {
-      assert.equal(name, "bolig_workspace");
       calls.push(args);
+      if (name === "bolig_firm_access") {
+        if (!system)
+          return { error: { code: "42501", message: "Systemadmin kreves." } };
+        if (args.p_enabled !== null) {
+          if (args.p_company_id === "external-firm") {
+            assert.equal(args.p_revision, externalRevision);
+            externalLicensed = args.p_enabled;
+            externalRevision++;
+          } else {
+            assert.equal(args.p_company_id, company);
+            assert.equal(args.p_revision, licenseRevision);
+            licensed = args.p_enabled;
+            licenseRevision++;
+          }
+        }
+        return {
+          data: {
+            user_id: "self",
+            system_admin: true,
+            companies: [
+              {
+                company_id: company,
+                company_name: company,
+                licensed,
+                revision: licenseRevision,
+              },
+              {
+                company_id: "external-firm",
+                company_name: "Eksternt firma",
+                licensed: externalLicensed,
+                revision: externalRevision,
+              },
+            ],
+          },
+        };
+      }
+      assert.equal(name, "bolig_workspace");
       const ctx = context();
       if (args.p_action === "context") return { data: ctx };
       assert.equal(args.p_company_id, company);
@@ -162,8 +218,14 @@ try {
           firmaadmin: false,
         },
       ];
-      if (args.p_action === "access")
-        return { data: { context: ctx, members } };
+      if (args.p_action === "access") {
+        const response = { data: { context: ctx, members } };
+        if (holdAccess)
+          return new Promise((resolve) =>
+            accessWaiters.push(() => resolve(response)),
+          );
+        return response;
+      }
       if (args.p_action === "license") {
         assert(system);
         assert.equal(args.p_revision, licenseRevision);
@@ -172,6 +234,10 @@ try {
         return { data: { context: context(), members } };
       }
       if (args.p_action === "member") {
+        if (accessConflict)
+          return {
+            error: { code: "PT409", message: "Brukertilgangen er endret." },
+          };
         assert(manage && licensed);
         assert.equal(args.p_revision, memberRevision);
         memberRole = args.p_payload.role;
@@ -346,70 +412,143 @@ try {
   assert.equal(q("dialog"), null);
   enabled = false;
   await act(() => w.dispatchEvent(new w.Event("focus")));
-  await act(() => button("Åpne boligprosjekter").click());
-  assert(
-    q(".bolig-access-state").textContent.includes("Din bruker mangler tilgang"),
-  );
-  assert.equal(q(".bolig-root"), null);
+  assert.equal(q("dialog"), null, "Unavailable user must not enter workspace");
+  assert.equal(q("[data-bolig-enabled]").dataset.boligEnabled, "false");
+  assert(!w.document.body.textContent.includes("Aktivering og tilganger"));
   await act(() => w.__unmount());
   enabled = true;
   licensed = false;
   manage = true;
   system = true;
-  await act(() => w.__render("self"));
-  assert(q(".bolig-access-state").textContent.includes("ikke aktivert"));
-  assert(
-    q("input[type=checkbox]"),
-    "Disabled module must expose activation to systemadmin immediately",
+  await act(() => w.__render("self", "system"));
+  assert.equal(q("dialog"), null, "License belongs inline in Systemadmin");
+  assert(q("input[type=checkbox]"));
+  assert.equal(
+    q('[aria-label="Boligtilgang for QA Medarbeider"]'),
+    null,
+    "Systemadmin license surface must not mix individual grants",
   );
   await act(() => w.dispatchEvent(new w.Event("focus")));
-  assert(q("input[type=checkbox]"), "Focus must keep access setup available");
-  await act(() => button("Hent siste versjon").click());
-  assert(
-    q("input[type=checkbox]"),
-    "Reload must keep disabled firm access setup available",
-  );
+  assert(q("input[type=checkbox]"), "Focus preserves firm activation control");
+  await act(() => button("Hent firmatilgangene på nytt").click());
+  assert(q("input[type=checkbox]"));
   await act(() => q("input[type=checkbox]").click());
   assert.equal(licensed, true);
   assert(q("input[type=checkbox]").checked);
+  assert.equal(
+    q("[data-bolig-enabled]").dataset.boligEnabled,
+    "true",
+    "Saved license refreshes global menu entitlement",
+  );
+  const workCompany = company;
   await act(() => {
-    const select = q('[aria-label="Tilgang for QA Medarbeider"]');
+    const select = q('[aria-label="Firma for Boligprosjekter"]');
+    select.value = "external-firm";
+    select.dispatchEvent(new w.Event("change", { bubbles: true }));
+  });
+  await act(() => q("input[type=checkbox]").click());
+  assert.equal(
+    externalLicensed,
+    true,
+    "Systemadmin activates company outside current work profile",
+  );
+  assert.equal(
+    company,
+    workCompany,
+    "Firm administration must not switch workspace",
+  );
+  await act(() => w.__unmount());
+  system = false;
+  await act(() => w.__render("self", "system"));
+  assert.equal(
+    q("input[type=checkbox]"),
+    null,
+    "Firmaadmin cannot render system activation control",
+  );
+  await act(() => w.__unmount());
+  await act(() => w.__render("self", "company"));
+  assert.equal(
+    q("input[type=checkbox]"),
+    null,
+    "Firmaadmin gets no firm activation control",
+  );
+  assert(q('[aria-label="Boligtilgang for QA Medarbeider"]'));
+  await act(() => {
+    const select = q('[aria-label="Boligtilgang for QA Medarbeider"]');
     select.value = "manager";
     select.dispatchEvent(new w.Event("change", { bubbles: true }));
   });
   assert.equal(memberRole, "manager");
-  await act(() => w.__unmount());
-  licensed = false;
-  system = false;
-  await act(() => w.__render("self"));
-  assert(
-    q(".bolig-access-state").textContent.includes(
-      "Systemadmin må først aktivere",
+  await act(() => {
+    const select = q('[aria-label="Boligtilgang for QA Medarbeider"]');
+    select.value = "reader";
+    select.dispatchEvent(new w.Event("change", { bubbles: true }));
+  });
+  assert.equal(memberRole, "reader");
+  accessConflict = true;
+  const memberWrites = calls.filter((c) => c.p_action === "member").length;
+  await act(() => {
+    const select = q("select");
+    select.value = "none";
+    select.dispatchEvent(new w.Event("change", { bubbles: true }));
+  });
+  assert.equal(
+    calls.filter((c) => c.p_action === "member").length,
+    memberWrites + 1,
+    "Conflict must never replay a grant",
+  );
+  assert(q('[role="alert"]').textContent.includes("Brukertilgangen er endret"));
+  assert.equal(q("select"), null, "Stale revision cannot be submitted again");
+  accessConflict = false;
+  await act(() => button("Hent tilgangene på nytt").click());
+  assert.equal(q("select").value, "reader");
+  holdAccess = true;
+  await act(() => w.dispatchEvent(new w.Event("focus")));
+  assert.equal(accessWaiters.length, 1);
+  const oldCompany = company;
+  company = "firm-c";
+  holdAccess = false;
+  await act(() =>
+    w.dispatchEvent(
+      new w.CustomEvent("expo-proffdok-work-profile", {
+        detail: { active_company_id: company },
+      }),
     ),
   );
+  assert(q(".bolig-admin-access h3").textContent.includes("firm-c"));
+  await act(() => accessWaiters.splice(0).forEach((resolve) => resolve()));
+  assert(
+    !q(".bolig-admin-access h3").textContent.includes(oldCompany),
+    "Late old-company response must stay ignored",
+  );
+  licensed = false;
+  await act(() => w.dispatchEvent(new w.Event("focus")));
+  assert(q("select").disabled, "Unlicensed firm cannot delegate user grants");
+  assert.equal(q("input[type=checkbox]"), null);
+  manage = false;
+  await act(() => w.dispatchEvent(new w.Event("focus")));
   assert.equal(
-    q("input[type=checkbox]"),
+    q(".bolig-admin-access"),
     null,
-    "Firmaadmin must not receive activation control",
+    "Revoked admin loses access controls",
   );
   await act(() => w.__unmount());
-  await act(() => w.__render("self", "accessShortcut"));
-  assert.equal(q("dialog"), null);
-  assert(button("Aktivering og tilganger"));
-  await act(() => button("Aktivering og tilganger").click());
-  assert(q("dialog"));
-  assert(q("dialog h3").textContent.includes("ikke aktivert"));
-  await act(() => w.__unmount());
-  manage = false;
-  role = "none";
+  role = "reader";
   licensed = true;
-  await act(() => w.__render("self", "accessShortcut"));
-  assert.equal(button("Aktivering og tilganger"), undefined);
+  await act(() => w.__render("self"));
+  assert(q("dialog"));
+  assert.equal(q("input[type=checkbox]"), null);
+  assert(
+    !q("dialog").textContent.includes("Systemadmin"),
+    "Ordinary workspace has no admin instructions",
+  );
+  assert(!q("dialog").textContent.includes("Firmaadmin"));
+  assert(q(".bolig-help[open]"));
   await act(() => w.__unmount());
   await act(() => w.__dispose());
   dom.window.close();
   console.log(
-    "PASS bolig actual React: menu workspace, explicit firm/license/user states, systemadmin activation, member grant, firmaadmin limits, admin shortcut, real component, portal isolation, scoped local drafts, focus preservation, conflict/retry, server readback, company switch and entitlement revocation.",
+    "PASS bolig actual React: server-gated menu, separate Systemadmin license and Firmaadmin member controls, no admin instructions in workspace, license/grant readback, reader/manager and revoked admin, real component, portal isolation, scoped local drafts, focus preservation, conflict/retry, server readback, company switch and entitlement revocation.",
   );
 } catch (e) {
   console.error(e.message);

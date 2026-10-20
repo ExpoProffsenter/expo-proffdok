@@ -4,11 +4,8 @@ export function BoligHelp() {
     <details className="bolig-help" open>
       <summary>Slik styrer du prosjektet</summary>
       <p>
-        Åpne Boligprosjekter fra Meny. Tilgangsoppsettet finnes under
-        «Aktivering og tilganger» her, og via samme snarvei i Firmaadmin og
-        Systemadmin. Velg riktig firma øverst. Systemadmin aktiverer firmaet
-        først. Firmaadmin gir deretter interne ansatte lesetilgang eller
-        prosjektledertilgang.
+        Opprett et hovedprosjekt. Bygg deretter opp boligene i rekkefølgen
+        nedenfor.
       </p>
       <ol>
         <li>
@@ -35,11 +32,6 @@ export function BoligHelp() {
           overskytende boliger og bevarer ID-er, kontakt og prosjektkobling.
         </li>
       </ol>
-      <p>
-        Systemadmin aktiverer modulen på firmaet. Firmaadmin velger lesetilgang
-        eller prosjektledertilgang for interne medarbeidere. Eksisterende
-        prosjekttilgang gjelder fortsatt når du åpner et koblet prosjekt.
-      </p>
       <p>
         Denne første etappen lagrer boligstruktur og prosjektkoblinger. Pakker,
         tilvalg, fremdrift, beboerportal og e-postbestillinger følger i senere
