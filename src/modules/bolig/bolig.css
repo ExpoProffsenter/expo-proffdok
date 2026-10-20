@@ -49,17 +49,20 @@
 }
 .bolig-dialog button {
   min-height: 42px;
-  border: 1px solid #b7d4da;
+  border: 1px solid #88aab8;
   background: white;
   border-radius: 8px;
   padding: 9px 13px;
-  color: #005d69;
+  color: #154c60;
   cursor: pointer;
   font: inherit;
 }
 .bolig-dialog button:disabled {
-  opacity: 0.55;
-  cursor: default;
+  opacity: 1;
+  color: #526775;
+  border-color: #c3cfd4;
+  background: #e7eef2;
+  cursor: not-allowed;
 }
 .bolig-dialog button:focus-visible,
 .bolig-dialog summary:focus-visible {
@@ -563,53 +566,13 @@
   break-inside: avoid;
   margin: 5px 0;
 }
-.bolig-project-picker {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  padding: 5px 0 12px;
-}
-.bolig-project-picker > h3 {
-  font-size: 12px;
-  color: #526d7c;
-  margin: 0 5px 0 0;
-}
-.bolig-project-picker .bolig-root {
-  width: auto;
-  min-width: 190px;
-  max-width: 330px;
-  display: block;
-  text-align: left;
-  margin: 0;
-  background: #fff;
-}
-.bolig-project-picker .bolig-root b {
-  font-size: 12px;
-}
-.bolig-project-picker .bolig-root small {
-  margin-top: 2px;
-  font-size: 10px;
-  color: #687d89;
-}
+
 .bolig-dialog [aria-pressed="true"] {
-  background: #008aa0;
+  background: #006b7a;
   color: white;
-  border-color: #008aa0;
+  border-color: #005865;
 }
-.bolig-project-picker [aria-pressed="true"] small {
-  color: #e6fcff;
-}
-.bolig-project-picker > details {
-  margin: 0 0 0 auto;
-}
-.bolig-project-picker > details[open] {
-  flex-basis: 100%;
-  margin: 5px 0;
-  background: white;
-  padding: 12px;
-  border-radius: 10px;
-}
+
 .bolig-workspace {
   padding: 0;
   background: transparent;
@@ -742,7 +705,7 @@
   width: max-content;
   max-width: 100%;
   margin: 13px auto 0;
-  background: #ffffffec;
+  background: #ffffff;
   border: 1px solid #c5d0d5;
   padding: 5px 8px;
   text-align: center;
@@ -770,7 +733,7 @@
   font-size: 9px;
   font-weight: 700;
   color: #314d59;
-  background: #ffffffc9;
+  background: #ffffff;
   padding: 3px;
   border-radius: 3px;
 }
@@ -789,28 +752,31 @@
   border-bottom: 4px solid #b8bdba;
   border-radius: 1px;
   color: #375c6d;
-  background: #e6edf0ed;
+  background: #e7eef4;
   box-shadow: 0 2px 5px #21394525;
 }
 .bolig-window b {
   font-size: 11px;
 }
 .bolig-dialog .bolig-window.ready {
-  background: #d8efdcf2;
-  color: #297b47;
+  background: #bbe7ce;
+  color: #145b35;
+  border-color: #29945e;
 }
 .bolig-dialog .bolig-window.pending {
-  background: #d9f4fff0;
-  color: #007f9f;
+  background: #b9ddff;
+  color: #124d78;
+  border-color: #398dc8;
 }
 .bolig-dialog .bolig-window.review {
-  background: #fff0ccf2;
-  color: #99671b;
+  background: #ffd783;
+  color: #663e00;
+  border-color: #b87b14;
 }
 .bolig-dialog .bolig-window.selected {
-  outline: 3px solid #00b9cc;
+  outline: 3px solid #003c77;
   outline-offset: 0;
-  box-shadow: 0 0 0 5px #b3f6ff;
+  box-shadow: 0 0 0 5px #79d0eb;
 }
 .bolig-dialog .bolig-window:hover {
   filter: brightness(1.04);
@@ -960,11 +926,11 @@
   margin: 6px 0;
 }
 .bolig-dialog .bolig-primary {
-  background: #008da3;
+  background: #006b7a;
   color: white;
   width: 100%;
   margin-top: 10px;
-  border-color: #008da3;
+  border-color: #005865;
 }
 .bolig-project-configuration {
   background: white;
@@ -1110,28 +1076,12 @@
   .bolig-dialog > header p {
     display: none;
   }
-  .bolig-project-picker {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    align-items: flex-start;
-  }
-  .bolig-project-picker > h3 {
-    display: none;
-  }
-  .bolig-project-picker .bolig-root {
-    min-width: 200px;
-  }
-  .bolig-project-picker > details {
-    min-width: 160px;
-  }
-  .bolig-project-picker > details[open] {
-    min-width: 280px;
-  }
+
   .bolig-project-header {
     display: block;
   }
   .bolig-project-header nav {
-    margin-top: 10px;
+    margin-top: 0;
   }
   .bolig-building-panel {
     padding: 10px;
@@ -1185,9 +1135,7 @@
 .bolig-dialog .bolig-utilities .bolig-help[open] {
   flex-basis: 100%;
 }
-.bolig-project-picker {
-  padding-bottom: 8px;
-}
+
 .bolig-unit-choice-products {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -1229,10 +1177,9 @@
   font-size: 12px;
 }
 .bolig-dialog .bolig-catalog-line {
-  grid-template-columns: 42px minmax(170px, 2.2fr) minmax(
-      110px,
-      1.2fr
-    ) 72px 68px minmax(100px, 1fr) 36px;
+  grid-template-columns:
+    42px minmax(170px, 2.2fr) minmax(110px, 1.2fr)
+    72px 68px minmax(100px, 1fr) 36px;
   gap: 9px;
   align-items: end;
   padding: 12px;
@@ -1373,5 +1320,245 @@
   .bolig-option-editor fieldset,
   .bolig-dialog .bolig-unit-contact fieldset {
     grid-template-columns: 1fr;
+  }
+}
+
+/* Strong, opaque actions and a focused project workspace. */
+.bolig-dialog button:not(:disabled):hover {
+  border-color: #00788a;
+  box-shadow: 0 2px 5px #153a4c18;
+}
+.bolig-dialog button[aria-pressed="true"] {
+  font-weight: 700;
+  box-shadow: 0 2px 5px #00526028;
+}
+.bolig-dialog button[type="submit"],
+.bolig-dialog .bolig-create-action {
+  background: #006b7a;
+  border-color: #005865;
+  color: white;
+  font-weight: 700;
+}
+.bolig-dialog button[type="submit"]:disabled,
+.bolig-dialog .bolig-create-action:disabled {
+  background: #e7eef2;
+  border-color: #c3cfd4;
+  color: #526775;
+}
+.bolig-dialog .bolig-edit-action {
+  background: #e1f0ff;
+  color: #114e76;
+  border-color: #6996b0;
+  font-weight: 650;
+}
+.bolig-dialog .bolig-quiet-action {
+  background: #f1f4f6;
+  color: #475c6b;
+  border-color: #b6c6cf;
+}
+.bolig-project-actions {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+.bolig-dialog .bolig-switch-project {
+  background: #173b55;
+  border-color: #173b55;
+  color: white;
+  font-weight: 650;
+}
+.bolig-project-header {
+  margin-top: 12px;
+}
+.bolig-dialog.bolig-project-dialog {
+  width: min(680px, calc(100vw - 32px));
+  height: auto;
+  max-height: 84dvh;
+  margin: auto;
+  padding: 20px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 20px 80px #102c4850;
+}
+.bolig-project-dialog::backdrop {
+  background: #102b486b;
+}
+.bolig-dialog .bolig-picker-search {
+  display: flex;
+  position: relative;
+  align-items: center;
+  margin: 16px 0 8px;
+}
+.bolig-picker-search > svg {
+  position: absolute;
+  left: 11px;
+  color: #3b687f;
+}
+.bolig-dialog .bolig-picker-search input {
+  padding-left: 37px;
+  margin: 0;
+}
+.bolig-dialog .bolig-picker-archive {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 10px 0;
+  font-size: 12px;
+}
+.bolig-picker-list {
+  display: grid;
+  gap: 7px;
+  max-height: 340px;
+  overflow: auto;
+  padding: 3px;
+}
+.bolig-project-dialog .bolig-root {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-start;
+  text-align: left;
+  padding: 12px;
+  width: 100%;
+  margin: 0;
+  border-color: #bbccd6;
+}
+.bolig-project-dialog .bolig-root > span {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.bolig-project-dialog .bolig-root small {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  color: #526a7c;
+}
+.bolig-project-dialog .bolig-root[aria-pressed="true"] small {
+  color: white;
+}
+.bolig-dialog .bolig-picker-create {
+  padding-top: 14px;
+  margin-top: 14px;
+  border-top: 1px solid #d3e0e7;
+}
+.bolig-picker-create > summary {
+  padding: 9px;
+  background: #e6f3f6;
+  border-radius: 7px;
+}
+.bolig-project-dialog form {
+  margin-top: 10px;
+}
+.bolig-catalog-library {
+  padding: 10px;
+  background: #fff;
+  border: 1px solid #bdcfdb;
+  border-radius: 9px;
+}
+.bolig-dialog .bolig-catalog-library > summary {
+  color: #214e66;
+  font-size: 13px;
+  min-height: 24px;
+}
+.bolig-catalog-cards {
+  align-items: start;
+  margin: 10px 0;
+}
+.bolig-catalog-cards article {
+  padding: 12px;
+  background: #f9fcfd;
+}
+.bolig-catalog-cards article > ul {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0;
+  display: grid;
+  gap: 6px;
+}
+.bolig-catalog-cards article .bolig-toolbar {
+  margin: 10px 0 0;
+  justify-content: flex-start;
+  gap: 6px;
+}
+.bolig-dialog .bolig-catalog-cards .bolig-toolbar button {
+  font-size: 11px;
+  min-height: 33px;
+  padding: 6px 8px;
+}
+.bolig-catalog-cards .bolig-product-card {
+  grid-template-columns: 52px minmax(0, 1fr);
+  gap: 8px;
+  padding: 7px;
+}
+.bolig-catalog-cards .bolig-product-image {
+  min-height: 52px;
+}
+.bolig-catalog-cards .bolig-product-image img {
+  width: 52px;
+  height: 52px;
+}
+.bolig-catalog-cards .bolig-product-info {
+  font-size: 11px;
+  gap: 3px;
+}
+.bolig-catalog-cards .bolig-product-info strong {
+  font-size: 12px;
+}
+.bolig-dialog .bolig-line-extra {
+  margin-top: 1px;
+}
+.bolig-dialog .bolig-line-extra > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 32px;
+  padding: 5px 10px;
+  background: #dceffc;
+  color: #0a4a72;
+  border: 1px solid #6d9bb9;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.bolig-dialog .bolig-line-extra[open] > summary {
+  background: #185f88;
+  border-color: #185f88;
+  color: white;
+}
+.bolig-line-extra > div {
+  padding: 10px;
+  margin-top: 7px;
+  background: #edf5fb;
+  border: 1px solid #c2d8e6;
+  border-radius: 7px;
+}
+.bolig-editor-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+}
+.bolig-dialog .bolig-add-line {
+  background: #d9eef4;
+  border-color: #70a6b7;
+  color: #005467;
+  font-weight: 700;
+}
+@media (max-width: 600px) {
+  .bolig-project-actions {
+    margin-top: 9px;
+    gap: 7px;
+  }
+  .bolig-project-actions > .bolig-switch-project {
+    width: auto;
+  }
+  .bolig-dialog.bolig-project-dialog {
+    padding: 14px;
+    max-height: 90dvh;
+  }
+  .bolig-project-dialog .bolig-root {
+    font-size: 12px;
+    padding: 10px;
   }
 }

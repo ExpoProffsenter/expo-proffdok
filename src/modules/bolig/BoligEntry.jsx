@@ -12,6 +12,7 @@ import {
 } from "./boligClient.js";
 import "./bolig.css";
 import { useBoligUiState } from "./boligUiState.js";
+import BoligProjectPicker from "./BoligProjectPicker.jsx";
 import BoligCatalog from "./BoligCatalog.jsx";
 import BoligBuildingOverview from "./BoligBuildingOverview.jsx";
 import { Building2, Home, Settings2, RefreshCw, X } from "lucide-react";
@@ -189,10 +190,13 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
         throw Error("Arbeidsfirmaet er endret.");
       if (value?.context) setCtx(value.context);
       if (value?.roots) setRoots(value.roots);
-      if (value?.root) setRecord(value);
+      if (value?.root) {
+        setRecord(value);
+        setRootId(value.root.id);
+      }
       if (value?.projects) setProjects(value.projects);
     },
-    [context.user_id, context.company_id],
+    [context.user_id, context.company_id, setRootId],
   );
   const request = useCallback(
     async (action, options = {}) => {
@@ -331,6 +335,54 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
     ) || [];
   const unit = visibleUnits.find((u) => u.id === unitId);
   const block = record?.blocks.find((b) => b.id === entrance?.block_id);
+  const projectPicker = (
+    <BoligProjectPicker
+      roots={roots}
+      activeRoot={record?.root}
+      busy={busy}
+      onSelect={async (id) => {
+        setView("overview");
+        await fetchRecord(id);
+      }}
+    >
+      {ctx.role === "manager" ? (
+        <DraftForm
+          context={ctx}
+          name="create"
+          initial={{ title: "", reference: "" }}
+          busy={busy}
+          onSubmit={async (payload) => {
+            const saved = await perform("create", { payload });
+            if (saved) setView("setup");
+            return saved;
+          }}
+          submitLabel="Opprett hovedprosjekt"
+        >
+          {(v, c) => (
+            <>
+              <label>
+                Prosjektnavn
+                <input
+                  required
+                  maxLength={160}
+                  value={v.title}
+                  onChange={(e) => c("title", e.target.value)}
+                />
+              </label>
+              <label>
+                Prosjektnummer
+                <input
+                  maxLength={80}
+                  value={v.reference}
+                  onChange={(e) => c("reference", e.target.value)}
+                />
+              </label>
+            </>
+          )}
+        </DraftForm>
+      ) : null}
+    </BoligProjectPicker>
+  );
   return (
     <dialog
       className="bolig-dialog"
@@ -380,75 +432,15 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
       {!ctx.enabled ? null : (
         <>
           <div className="bolig-projects-layout">
-            <aside className="bolig-project-picker">
-              <h3>Velg prosjekt</h3>
-              {roots.length ? (
-                roots.map((r) => (
-                  <button
-                    className="bolig-root"
-                    type="button"
-                    disabled={busy}
-                    key={r.id}
-                    aria-pressed={record?.root.id === r.id}
-                    onClick={() => {
-                      setView("overview");
-                      fetchRecord(r.id);
-                    }}
-                  >
-                    <b>
-                      {r.title}
-                      {r.archived ? " · arkivert" : ""}
-                    </b>
-                    <small>
-                      {r.reference} · {r.unit_count} boliger
-                    </small>
-                  </button>
-                ))
-              ) : (
-                <p>Ingen boligprosjekter er opprettet ennå.</p>
-              )}
-              {ctx.role === "manager" ? (
-                <details>
-                  <summary>+ Nytt hovedprosjekt</summary>
-                  <DraftForm
-                    context={ctx}
-                    name="create"
-                    initial={{ title: "", reference: "" }}
-                    busy={busy}
-                    onSubmit={(payload) => perform("create", { payload })}
-                    submitLabel="Opprett hovedprosjekt"
-                  >
-                    {(v, c) => (
-                      <>
-                        <label>
-                          Prosjektnavn
-                          <input
-                            required
-                            maxLength={160}
-                            value={v.title}
-                            onChange={(e) => c("title", e.target.value)}
-                          />
-                        </label>
-                        <label>
-                          Prosjektnummer
-                          <input
-                            maxLength={80}
-                            value={v.reference}
-                            onChange={(e) => c("reference", e.target.value)}
-                          />
-                        </label>
-                      </>
-                    )}
-                  </DraftForm>
-                </details>
-              ) : null}
-            </aside>
             <section className="bolig-panel bolig-workspace">
               {!record ? (
-                <p>
-                  Velg eller opprett et hovedprosjekt. Legg så til blokk og
-                  oppgang.
-                </p>
+                <div className="bolig-project-empty">
+                  {projectPicker}
+                  <p>
+                    Velg eller opprett et hovedprosjekt. Legg så til bygg og
+                    oppgang.
+                  </p>
+                </div>
               ) : (
                 <>
                   <div className="bolig-project-header">
@@ -461,24 +453,27 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
                         oppganger
                       </p>
                     </div>
-                    <nav aria-label="Arbeidsområde">
-                      <button
-                        type="button"
-                        aria-pressed={view === "overview"}
-                        onClick={() => setView("overview")}
-                      >
-                        <Home size={17} />
-                        Byggoversikt
-                      </button>
-                      <button
-                        type="button"
-                        aria-pressed={view === "setup"}
-                        onClick={() => setView("setup")}
-                      >
-                        <Settings2 size={17} />
-                        Oppsett
-                      </button>
-                    </nav>
+                    <div className="bolig-project-actions">
+                      {projectPicker}
+                      <nav aria-label="Arbeidsområde">
+                        <button
+                          type="button"
+                          aria-pressed={view === "overview"}
+                          onClick={() => setView("overview")}
+                        >
+                          <Home size={17} />
+                          Byggoversikt
+                        </button>
+                        <button
+                          type="button"
+                          aria-pressed={view === "setup"}
+                          onClick={() => setView("setup")}
+                        >
+                          <Settings2 size={17} />
+                          Oppsett
+                        </button>
+                      </nav>
+                    </div>
                   </div>
                   <div
                     hidden={view !== "setup"}

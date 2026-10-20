@@ -356,6 +356,50 @@ try {
     input.dispatchEvent(new w.Event("input", { bubbles: true }));
   });
   assert.equal(input.value, "Usendt kladd");
+  await act(() => button("Bytt prosjekt").click());
+  const picker = q(".bolig-project-dialog");
+  assert(picker.open, "Project chooser opens as its own modal");
+  assert.equal(
+    q('dialog[aria-label="Boligprosjekter"] .bolig-root'),
+    null,
+    "Other projects take no space in the active workspace",
+  );
+  const pickerSearch = picker.querySelector("input[type=search]");
+  await act(() => {
+    Object.getOwnPropertyDescriptor(
+      w.HTMLInputElement.prototype,
+      "value",
+    ).set.call(pickerSearch, "ingen treff");
+    pickerSearch.dispatchEvent(new w.Event("input", { bubbles: true }));
+  });
+  assert.equal(picker.querySelectorAll(".bolig-root").length, 0);
+  await act(() => {
+    Object.getOwnPropertyDescriptor(
+      w.HTMLInputElement.prototype,
+      "value",
+    ).set.call(pickerSearch, "");
+    pickerSearch.dispatchEvent(new w.Event("input", { bubbles: true }));
+  });
+  const readsBefore = calls.filter((c) => c.p_action === "get").length;
+  await act(() => picker.querySelector(".bolig-root").click());
+  assert(!picker.open);
+  assert.equal(
+    calls.filter((c) => c.p_action === "get").length,
+    readsBefore,
+    "Choosing the active project must not reset its phase or draft",
+  );
+  assert(input.isConnected && input.value === "Usendt kladd");
+  await act(() => button("Bytt prosjekt").click());
+  await act(() =>
+    picker.dispatchEvent(
+      new w.Event("cancel", { bubbles: true, cancelable: true }),
+    ),
+  );
+  assert(
+    !picker.open && q('dialog[aria-label="Boligprosjekter"]').open,
+    "Escape closes only the project popup, keeping the workspace open",
+  );
+  assert(!w.__exited, "Popup cancel must never navigate to Startside");
   const key = "expo-proffdok.bolig-draft.v1:self:firm-a:root-1:unit-u";
   assert(
     JSON.parse(w.localStorage.getItem(key)).contact_name === "Usendt kladd",
@@ -663,9 +707,15 @@ try {
   licensed = true;
   await act(() => w.__render("self"));
   assert(q("dialog"));
-  assert.equal(q("input[type=checkbox]"), null);
+  assert.equal(
+    Boolean(q('dialog[aria-label="Boligprosjekter"] input[type=checkbox]')),
+    false,
+    "Reader workspace has no administrative grant toggles; project popup has its own archive filter",
+  );
   assert(
-    !q("dialog").textContent.includes("Systemadmin"),
+    !q('dialog[aria-label="Boligprosjekter"]').textContent.includes(
+      "Systemadmin",
+    ),
     "Ordinary workspace has no admin instructions",
   );
   assert(!q("dialog").textContent.includes("Firmaadmin"));

@@ -60,3 +60,19 @@ Rekkefølgen kan justeres etter kundebehov. Ingen produksjonsmerge uten relevant
 - Enkel redigering for å flytte og skalere innholdsrammen over fasaden. Hvert felt kan ved behov finjusteres. Lagre posisjon og størrelse som prosent av selve bildet, ikke av hele nettleservinduet. Ta hensyn til tomme marger ved proporsjonal visning. Samme transformasjon brukes på bilde og felter ved zoom/panorering.
 - Felt bindes til stabile bygg-/hus-/bolig-/rom-ID-er. Vinduer/rom/hus trenger ikke ligge i et perfekt rutenett; senere støtte for frie polygoner kan brukes ved skrå fotografier eller situasjonsplaner.
 - Ny bildeversjon skal ha egen kontrollert tilpasning/forhåndsvisning før den erstatter gjeldende bilde. Bytt bilde uten å endre bolig-/romhistorikk. Prosjektleder bekrefter forslag til plassering.
+
+## Kenneths prosjektveiviser: «Bygg prosjekt»
+
+Avklart retning 21. oktober 2026: start med å bygge prosjektet gjennom korte trinn med Tilbake/Neste, en visuell forhåndsvisning og en avsluttende kontroll. Veiviseren er neste produktetappe; den nåværende popupvelgeren og designforbedringen implementerer ikke denne byggeflyten.
+
+1. Prosjekt: navn, nummer og valgt firma. Angi boligtype med tydelige bildekort: leilighetsbygg, enebolig, tomannsbolig, flerfamiliehus og boligfelt. Tillat senere ulike typer per bygg i samme hovedprosjekt. Bildene er eksempler, ikke ferdige prosjektbilder.
+2. Bygg: antall bygg. Hvert bygg har eget navn/nummer, adresse og boligtype. Vis kompakte kort «Bygg 1», «Bygg 2» med «Rediger bygg». «Kopier oppsett fra bygg 1» fyller bare struktur og skal ikke kopiere personer, boligvalg eller historikk.
+3. Boliger: konfigurer hvert bygg separat. Antall oppganger ved behov, adresse per oppgang der den avviker, etasjer og antall boliger per etasje. Ulike etasjetall per bygg og oppgang støttes. Boligtotal beregnes fra etasjene; «leiligheter per oppgang» skal ikke være en separat motstridende sum. Enebolig hopper over oppgang, tomannsbolig foreslår to boenheter og flerfamiliehus et redigerbart antall. Eneboligens etasjer er romplan, ikke én ny husstand per etasje.
+4. Rom: foreslå Bad 1, vaskerom, WC og teknisk rom, med avkryssing/egendefinerte rom og mulighet for en rommal per boligtype. Tegning/bilde og romdefinisjon kan komme etter første prosjektopprettelse, slik at veiviseren ikke blir for lang.
+5. Kontroller: vis hvert bygg, adresse, oppganger, etasjer og boligtotal. «Opprett prosjektforside» oppretter den visuelle oversikten. Tillat endring av ett bygg fra kontrollbildet uten å begynne på nytt.
+
+Prosjektforsiden blir arbeidsstedet etterpå, med tydelige neste handlinger: Grunnpakker → Tilvalgspakker → Fremdrift → Sjekklister per husstand/rom → Bestillinger. Innhold kan forberedes felles og tildeles utvalgte boliger. Endring av felles mal må aldri overskrive allerede lagrede individuelle valg eller utfylte sjekklister. Reelle fremdrifts-/leveringsdata skal kobles før de vises som status. «Manglende oppsett» må skilles fra faktisk byggeframdrift.
+
+Dagens foundation gjenbrukes: flere blokker/oppganger, eget etasje-/boligoppsett per oppgang, stabile bolig-ID-er, kontakter, grunnpakker, tilvalg og bestillingsutkast. Nye boligtyper/byggadresse/rom og kobling mot fremdrift/sjekklister krever egen gjennomarbeidet modell; ingen hus skal få en kunstig blokkstruktur bare for å passe dagens skjema.
+
+Veiviserkladd skal lagres per bruker/firma, tåle fanebytte og kunne fortsettes. Endelig opprettelse trenger en validert, idempotent serverkommando med entydig kvittering; ingen dubletter eller skjulte halvferdige prosjekter hvis forbindelsen brytes. Ved senere strukturendring beholdes ID-er, kontakter, bestillinger og historikk; reduksjon skjuler med eksplisitt kontroll. Brukeren skal alltid kunne gå tilbake og kontrollere før endelig opprettelse.

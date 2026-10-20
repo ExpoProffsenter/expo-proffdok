@@ -1,4 +1,4 @@
-import { Package, Trash2 } from "lucide-react";
+import { Package, Trash2, ImagePlus, Plus, Pencil, EyeOff } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import {
   boligCatalogRpc,
@@ -227,7 +227,12 @@ function PackageEditor({
                 <Trash2 size={17} />
               </button>
               <details className="bolig-line-extra">
-                <summary>Bilde og produktlenke</summary>
+                <summary>
+                  <ImagePlus size={16} />
+                  {line.image_url || line.product_url
+                    ? "Bilde / lenke registrert"
+                    : "Legg til bilde / produktlenke"}
+                </summary>
                 <div>
                   <label>
                     Bildeadresse {index + 1}
@@ -268,16 +273,20 @@ function PackageEditor({
               </details>
             </div>
           ))}
-          <button
-            type="button"
-            disabled={v.lines.length >= 100}
-            onClick={() => c("lines", [...v.lines, newLine()])}
-          >
-            Legg til varelinje
-          </button>
-          <button type="button" onClick={onCancel}>
-            Lukk pakkeredigering
-          </button>
+          <div className="bolig-editor-actions">
+            <button
+              className="bolig-add-line"
+              type="button"
+              disabled={v.lines.length >= 100}
+              onClick={() => c("lines", [...v.lines, newLine()])}
+            >
+              <Plus size={16} />
+              Legg til varelinje
+            </button>
+            <button type="button" onClick={onCancel}>
+              Lukk pakkeredigering
+            </button>
+          </div>
         </>
       )}
     </CatalogForm>
@@ -657,8 +666,11 @@ export default function BoligCatalog({
     `${phaseKey}:editor`,
     null,
   );
-  const setEditing = (next) =>
+  const [libraryOpen, setLibraryOpen] = useState(!editPointer);
+  const setEditing = (next) => {
     setEditPointer(next ? { kind: next.kind, id: next.entry?.id || "" } : null);
+    setLibraryOpen(!next);
+  };
   const [state, setState] = useState(null),
     [error, setError] = useState(""),
     [notice, setNotice] = useState(""),
@@ -860,77 +872,97 @@ export default function BoligCatalog({
               Tilvalgsliste
             </button>
           </nav>
-          <div className="bolig-catalog-cards">
-            {(tab === "packages" ? valid.packages : valid.options).map(
-              (entry) => (
-                <article key={entry.id}>
-                  <h4>
-                    {entry.name}
-                    {entry.archived ? " · skjult" : ""}
-                  </h4>
-                  {tab === "packages" ? (
-                    <ul>
-                      {entry.lines.map((l) => (
-                        <li key={l.key}>
-                          <ProductCard line={l}>
-                            Grunnsum{" "}
-                            {l.credit_cents == null
-                              ? "ikke angitt"
-                              : money(l.credit_cents)}
-                          </ProductCard>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <ProductCard line={entry}>
-                      {entry.replace_key
-                        ? "Alternativ til standardvare"
-                        : "Tillegg til grunnpakken"}{" "}
-                      · {money(entry.price_cents)} inkl. mva.
-                      {entry.deduct_base
-                        ? " · grunnsummen trekkes fra"
-                        : " · uten fratrekk"}
-                    </ProductCard>
-                  )}
-                  <small>Versjon {entry.revision}</small>
-                  {canWrite && (
-                    <div className="bolig-toolbar">
-                      <button
-                        type="button"
-                        disabled={busy || loading}
-                        onClick={() => setEditing({ kind: tab, entry })}
-                      >
-                        Rediger {tab === "packages" ? "grunnpakke" : "tilvalg"}:{" "}
-                        {entry.name}
-                      </button>
-                      <button
-                        type="button"
-                        disabled={busy || loading}
-                        onClick={() =>
-                          save("archive", {
-                            kind: tab === "packages" ? "package" : "option",
-                            id: entry.id,
-                            archived: !entry.archived,
-                          })
-                        }
-                      >
-                        {entry.archived ? "Gjenopprett" : "Skjul"} {entry.name}
-                      </button>
-                    </div>
-                  )}
-                </article>
-              ),
+          <details
+            className="bolig-catalog-library"
+            open={libraryOpen}
+            onToggle={(e) => setLibraryOpen(e.currentTarget.open)}
+          >
+            <summary>
+              {tab === "packages"
+                ? `${valid.packages.length} grunnpakker`
+                : `${valid.options.length} tilvalg`}{" "}
+              i prosjektet
+            </summary>
+            <div className="bolig-catalog-cards">
+              {(tab === "packages" ? valid.packages : valid.options).map(
+                (entry) => (
+                  <article key={entry.id}>
+                    <h4>
+                      {entry.name}
+                      {entry.archived ? " · skjult" : ""}
+                    </h4>
+                    {tab === "packages" ? (
+                      <ul>
+                        {entry.lines.map((l) => (
+                          <li key={l.key}>
+                            <ProductCard line={l}>
+                              Grunnsum{" "}
+                              {l.credit_cents == null
+                                ? "ikke angitt"
+                                : money(l.credit_cents)}
+                            </ProductCard>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <ProductCard line={entry}>
+                        {entry.replace_key
+                          ? "Alternativ til standardvare"
+                          : "Tillegg til grunnpakken"}{" "}
+                        · {money(entry.price_cents)} inkl. mva.
+                        {entry.deduct_base
+                          ? " · grunnsummen trekkes fra"
+                          : " · uten fratrekk"}
+                      </ProductCard>
+                    )}
+                    <small>Versjon {entry.revision}</small>
+                    {canWrite && (
+                      <div className="bolig-toolbar">
+                        <button
+                          type="button"
+                          className="bolig-edit-action"
+                          disabled={busy || loading}
+                          onClick={() => setEditing({ kind: tab, entry })}
+                        >
+                          <Pencil size={15} />
+                          Rediger{" "}
+                          {tab === "packages" ? "grunnpakke" : "tilvalg"}:{" "}
+                          {entry.name}
+                        </button>
+                        <button
+                          type="button"
+                          disabled={busy || loading}
+                          className="bolig-quiet-action"
+                          onClick={() =>
+                            save("archive", {
+                              kind: tab === "packages" ? "package" : "option",
+                              id: entry.id,
+                              archived: !entry.archived,
+                            })
+                          }
+                        >
+                          <EyeOff size={15} />
+                          {entry.archived ? "Gjenopprett" : "Skjul"}{" "}
+                          {entry.name}
+                        </button>
+                      </div>
+                    )}
+                  </article>
+                ),
+              )}
+            </div>
+            {canWrite && (
+              <button
+                type="button"
+                className="bolig-create-action"
+                disabled={busy || loading}
+                onClick={() => setEditing({ kind: tab, entry: null })}
+              >
+                <Plus size={16} />
+                {tab === "packages" ? "Ny grunnpakke" : "Nytt tilvalg"}
+              </button>
             )}
-          </div>
-          {canWrite && (
-            <button
-              type="button"
-              disabled={busy || loading}
-              onClick={() => setEditing({ kind: tab, entry: null })}
-            >
-              {tab === "packages" ? "Ny grunnpakke" : "Nytt tilvalg"}
-            </button>
-          )}
+          </details>
           {editing &&
             canWrite &&
             (editing.kind === "packages" ? (
