@@ -1,5 +1,9 @@
 # Handoff – Boligprosjekter
 
+## Nyeste lokale etappe: tydelig oppsett og e-postbestilling
+
+Kenneth fant veiledningen lite synlig og savnet tydelig UX for byggstruktur, grunnpakkeinnhold, prosjektets tilvalgsliste og konkrete leilighetsvalg. Dette er nå lokale eksempelredigerere i samme isolerte prototype. E-postbestilling er avklart som kanal til avtalt mottaker, med adresse, navn og/eller leilighetsnr., ønsket levering og valgfritt ASCII-vedlegg. Ingen faktisk mottaker er oppgitt; ingen ekte e-post eller ASCII-fil lages/sendes i prototypen. Se nyeste krav/QA-avsnitt og fersk PR #277 for eksakt head, CI/READY og Skynett-resultater. Nye modell-/DOM-scenarioer i critical-demo-boligprosjekter-setup.mjs beskytter dynamisk struktur, gjenoppretting, aksepterte snapshot og bestillingsmailens felt. Fremdeles ingen TEST OK eller merge/produksjonsmodul. Før større operativ etappe: ny chat med repo-basert handoff.
+
 ## Oppdatering: samlet prosjektlederflyt
 
 Kenneth ba i ny chat om egne tester i Skynett og samlet oppdatering. Videreført samme draft PR #277 og faste Preview; SANDBOX/DEMO. Nye veiledninger/neste steg, oppfølgingsfiltre og globalt søk. Rettet dobbelt servantskap i varegrunnlag, lagring/visning av leveringsdato, samsvar mellom valgt oppgang og datoflytting samt redigering før ny varselgodkjenning. Egen `scripts/critical-demo-boligprosjekter-flow.mjs` beskytter funnene.

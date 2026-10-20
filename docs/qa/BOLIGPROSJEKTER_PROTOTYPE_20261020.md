@@ -72,3 +72,25 @@ Samlet brukerprøve etter utviklerens live-QA:
 4. Varsler → forhåndsvis/godkjenn eksempel. Fremdrift → flytt oppstart → godkjenn. Varsler → «Gjennomgå varsel» → rett dato/tekst → forhåndsvis/godkjenn. Samme varsel skal få oppdatert innhold.
 
 Full operativ modul, ekte roller, utsending, Cordel, BankID og dynamisk produksjonsplan er fremdeles ikke implementert. Mobil/Safari-verifikasjon må spesifiseres separat fra desktop-Skynett. TEST OK gjelder prototypens brukeropplevelse.
+
+
+## Tredje prototypeetappe: tydelig oppsett og bestillingsmail
+
+Scope/miljømål er fortsatt isolert SANDBOX/DEMO. Ny lokal scenariofil: `scripts/critical-demo-boligprosjekter-setup.mjs`. Eksisterende critical-kontroller endres ikke.
+
+- «Slik styrer du prosjektet» er en rammet veiledningsboks med ikon, forklaring og handlingssnarveier. «Prototype · se status» forklarer hva som er lokalt prøvbart og hva som gjenstår.
+- Oppsett har tre konkrete områder: (1) bygg/oppganger/etasjer/leiligheter, (2) grunnpakkers innhold og (3) prosjektets tilvalgsliste. Legg til blokk med første oppgang; legg til flere oppganger i en blokk. Skjul/gjenopprett bevarer samme ID-er/historikk. Minst én synlig oppgang må beholdes.
+- Eksisterende etasjeredigerer beholdes. Nye boliger starter uten syntetisk aksept eller bestilling. Dynamisk struktur kan gjenåpnes etter reload, også med flere enn de opprinnelige 13 oppgangene. Lokal demonstrasjonsgrense: 10 blokker og 80 oppganger inkludert skjulte, 1–20 etasjer og 1–8 boliger per etasje.
+- Pakkeinnhold og prosjektets tilvalg/tilleggspriser kan redigeres lokalt. Tilvalg kan legges til; fjerning og ny administrasjon av avhengighetsregler inngår ikke. Standardvarers stabile vareplass bevarer erstatningsregelen ved navneendring. Akseptert pakke-/vare-/pristekst lagres som snapshot og skrives ikke om. Gamle eksempeldata utvides ved restore. Pakke kan velges for ikke-akseptert bolig; akseptert grunnlag er låst.
+- «Tilvalg for Hxxxx» forklarer skillet mellom prosjektets liste og det konkrete valget. Snarvei fra Oppsett åpner valgt bolig.
+- Bestillingsoppsett har avtalt mottakeradresse og felles leveringsadresse. Mailforhåndsvisning krever mottaker, leveringsadresse og gyldig dato, og viser prosjekt, leilighetsadresse, navn, leilighetsnummer, kjøpers referanse og ønsket levering. Ingen priser lekker inn i leverandørmailen. Retur bevarer eksempeldato/adresse/mottaker og ønske om ASCII-vedlegg.
+- Mailen viser samlet varegrunnlag for boligen. Korrekt varefordeling per delleveranse gjenstår. ASCII er et dokumentert vedleggsønske i prototypen, ikke en generert/prøveimportert fil. Ingen sending, mailto-lenke eller nettverkskall.
+
+Lokal QA før push: tidligere modell/DOM/flyt + ny oppsett-/e-postscenariofil, isolasjon og full sandbox critical/build. Fersk PR #277 dokumenterer eksakt commit, CI/READY og faktisk etterfølgende Skynett-prøve. Ingen uutført live-/mobiltest hevdes her.
+
+Samlet brukerprøve:
+1. Åpne veiledningsboksen og «Prototype · se status».
+2. Oppsett → Bygg og oppganger → Legg til blokk, deretter Legg til oppgang. Etasjer og leiligheter endres i den aktuelle oppgangen. Skjul/gjenopprett og se at samme bolig/historikk kommer tilbake.
+3. Oppsett → Grunnpakker → rediger innhold. Oppsett → Rediger prosjektets tilvalgsliste → rediger et tillegg eller legg til et nytt.
+4. «Velg tilvalg for …» åpner den valgte boligen. Akseptert eksempel krever «Opprett nytt tillegg» før endring; gammel aksept bevares.
+5. Bestillinger for H0302 → Klargjør bestilling → fyll eksempeladresse (for eksempel ordre@example.invalid), leveringsadresse og dato → Forhåndsvis bestillingsmail. Adresse, navn/leilighet, referanse og dato skal vises. Ingen mail sendes.

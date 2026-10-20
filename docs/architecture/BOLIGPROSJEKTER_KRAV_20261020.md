@@ -38,6 +38,7 @@ Kilde: Kenneths avklaringer 20.10.2026, Europe/Oslo. Dette dokumentet er en krav
 
 - Kun prosjektleder eller innkjøpsansvarlig hos entreprenøren sender varebestilling til Expo/Ringside. Beboerens aksept er ikke i seg selv en leverandørbestilling.
 - **Vårt ordrenummer** tilhører brukerbedriften/entreprenøren og er deres egen referanse per leilighet. Expo/Ringside oppretter egne, separate leverandørordrer i Cordel ved mottak. Brukerens nummer skal følge som kjøpers referanse og aldri brukes som leverandørens ordrenummer. Delleveranser må bevare koblingen mellom leilighet, brukerens referanse og leverandørens egne ordre.
+- Bestilling til Expo/Ringside kan sendes på **e-post til avtalt mottakeradresse**, lagret i prosjektets bestillingsoppsett. E-posten skal inneholde prosjekt, leilighetsadresse, navn og/eller leilighetsnummer og ønsket leveringsdato. Ta også med kjøpers ordrenummer, leveringsadresse og delleveranse. ASCII-fil kan være et valgfritt vedlegg; format og vareutvalg per delleveranse må verifiseres før ekte utsending. Ingen faktisk mottakeradresse er oppgitt i avklaringen.
 - Felles leveringsoppsett på hovedprosjektet, med valg/avvik per leilighet. Samlet levering og delleveranser støttes.
 - Gjenbruk katalog, bestillingsgrunnlag og eksisterende prisfrie Cordel-vareformat der det passer. Mottak/ruting hos Expo, sikker ordreidentifikasjon, varig ordrehistorikk og aksept-/leveranseavstemming må utvikles.
 - Dagens Cordel-ordrenummer i plukklisten er en manuell påminnelse, ikke automatisk ruting. Ingen påstand om ferdig direkteintegrasjon uten faktisk prøveimport og kontroll av mottakerens ordreoppsett.
@@ -90,3 +91,10 @@ Kilde: Kenneths avklaringer 20.10.2026, Europe/Oslo. Dette dokumentet er en krav
 - Ingen dato for kundemøte eller operativ oppstart er oppgitt.
 
 Kenneth ønsker varsel om ny chat før en større neste fase. Lever en repo-basert handoff etter prototypeprøven. Det finnes ikke et pålitelig signal for akkurat når chatten vil «låse seg»; ikke lov en automatisk teknisk overvåkning av dette.
+
+
+## UX-presisering og neste lokale prototypeetappe
+
+Kenneth påpekte at «Slik styrer du prosjektet» var lite synlig, og at det var uklart hvor antall blokker/oppganger/etasjer, pakkeinnhold, prosjektets tilvalgsliste og konkrete beboervalg håndteres. Veiledningen skal vises som tydelig boks. Prosjektoppsett og valg per bolig skal ha egne innganger med forklaring. Prototypens fungerende lokale eksempelhandlinger skal skilles fra fremtidig operativ funksjonalitet.
+
+Oppsett er nå prøvbart lokalt: legge til/skjule/gjenopprette blokker/oppganger, endre etasjer/leiligheter, redigere tre grunnpakkers innhold, redigere/utvide prosjektets tilvalgsliste og velge pakke/tilvalg per bolig. Dette er fortsatt isolert prototype, ikke autorisasjon til ny produksjonsmodul eller ekte e-postutsending. Aksepter og deres vare-/pakkeinnhold skal bevares ved senere oppsettsendring. Skjuling må kunne angres uten nye leilighets-ID-er.
