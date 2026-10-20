@@ -1,0 +1,76 @@
+[data-expo-app-shell] .workspace-view-control {
+  margin-left: auto;
+  flex: 0 0 auto;
+}
+[data-expo-app-shell] .workspace-view-control > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 36px;
+  padding: 8px 12px;
+  border: 1px solid #8baab9;
+  border-radius: 9px;
+  background: #fff;
+  color: #173d50;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 750;
+  white-space: nowrap;
+  cursor: pointer;
+}
+[data-expo-app-shell] .workspace-view-control > button:focus-visible {
+  outline: 3px solid #008b9d;
+  outline-offset: 3px;
+}
+[data-expo-app-shell][data-expo-fullscreen]
+  > header
+  > .head
+  > :not(.workspace-view-control),
+[data-expo-app-shell][data-expo-fullscreen] > header > nav,
+[data-expo-app-shell][data-expo-fullscreen] > header > .expoDesktopMenuBar,
+[data-expo-app-shell][data-expo-fullscreen] > header > .mobileNav,
+[data-expo-app-shell][data-expo-fullscreen] > header > .mobileFieldBar {
+  display: none !important;
+}
+[data-expo-app-shell][data-expo-fullscreen] > header {
+  position: static;
+  padding: 0;
+  min-height: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+[data-expo-app-shell][data-expo-fullscreen] > header > .head {
+  height: 0;
+  min-height: 0;
+  padding: 0 !important;
+  margin: 0;
+  border: 0;
+}
+[data-expo-app-shell][data-expo-fullscreen] .workspace-view-control {
+  position: fixed;
+  top: max(8px, env(safe-area-inset-top));
+  right: max(12px, env(safe-area-inset-right));
+  z-index: 100;
+}
+[data-expo-app-shell][data-expo-fullscreen] .workspace-view-control > button {
+  background: #173d50;
+  border-color: #173d50;
+  color: #fff;
+  box-shadow: 0 3px 12px #173d5030;
+}
+[data-expo-app-shell][data-expo-fullscreen] > main {
+  max-width: none;
+  padding-top: 54px !important;
+}
+@media (max-width: 700px) {
+  [data-expo-app-shell] > header > .head > .workspace-view-control {
+    grid-column: 1 / -1;
+  }
+}
+@media print {
+  [data-expo-app-shell] .workspace-view-control {
+    display: none !important;
+  }
+}

@@ -1562,3 +1562,36 @@
     padding: 10px;
   }
 }
+
+/* Ordinary app page; only choices inside the module use a modal. */
+.bolig-dialog.bolig-page {
+  position: static;
+  width: 100%;
+  max-width: none;
+  height: auto;
+  min-height: 0;
+  max-height: none;
+  margin: 0;
+  overflow: visible;
+  padding: 16px;
+}
+.bolig-dialog.bolig-project-dialog {
+  min-height: 0;
+  height: fit-content;
+  overflow: auto;
+}
+.bolig-project-dialog .bolig-picker-archive {
+  justify-content: flex-start;
+}
+.bolig-project-dialog .bolig-picker-archive input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  min-height: 16px;
+  flex: 0 0 16px;
+  margin: 0;
+}
+@media (max-width: 680px) {
+  .bolig-dialog.bolig-page {
+    padding: 10px;
+  }
+}

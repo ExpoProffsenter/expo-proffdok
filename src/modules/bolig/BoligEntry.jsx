@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
 import { WORK_PROFILE_EVENT } from "../access/workProfileClient.js";
 import { useBoligContext } from "./boligAccess.js";
 import { BoligHelp } from "../help/BoligHelp.jsx";
@@ -15,7 +14,7 @@ import { useBoligUiState } from "./boligUiState.js";
 import BoligProjectPicker from "./BoligProjectPicker.jsx";
 import BoligCatalog from "./BoligCatalog.jsx";
 import BoligBuildingOverview from "./BoligBuildingOverview.jsx";
-import { Building2, Home, Settings2, RefreshCw, X } from "lucide-react";
+import { Building2, Home, Settings2, RefreshCw, ArrowLeft } from "lucide-react";
 export default function BoligEntry({ userId, onOpenProject, onExit }) {
   const { context, loadError } = useBoligContext(userId);
   const [open, setOpen] = useState(true);
@@ -43,15 +42,12 @@ export default function BoligEntry({ userId, onOpenProject, onExit }) {
       </section>
     );
   return open ? (
-    createPortal(
-      <BoligWorkspace
-        key={`${userId}:${context.company_id}`}
-        context={context}
-        onClose={close}
-        onOpenProject={onOpenProject}
-      />,
-      document.body,
-    )
+    <BoligWorkspace
+      key={`${userId}:${context.company_id}`}
+      context={context}
+      onClose={close}
+      onOpenProject={onOpenProject}
+    />
   ) : (
     <button type="button" onClick={() => setOpen(true)}>
       Åpne boligprosjekter
@@ -156,8 +152,7 @@ function FloorFields({ value, onChange }) {
   );
 }
 function BoligWorkspace({ context, onClose, onOpenProject }) {
-  const dialog = useRef(null),
-    alive = useRef(true),
+  const alive = useRef(true),
     selection = useRef(0);
   const [ctx, setCtx] = useState(context),
     [roots, setRoots] = useState([]),
@@ -249,7 +244,6 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
   };
   useEffect(() => {
     alive.current = true;
-    dialog.current?.showModal();
     const handleScope = (ev) => {
       if (ev.detail?.active_company_id !== context.company_id) onClose();
     };
@@ -384,12 +378,7 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
     </BoligProjectPicker>
   );
   return (
-    <dialog
-      className="bolig-dialog"
-      ref={dialog}
-      onCancel={onClose}
-      aria-label="Boligprosjekter"
-    >
+    <section className="bolig-dialog bolig-page" aria-label="Boligprosjekter">
       <header>
         <div>
           <small>{ctx.company_name}</small>
@@ -399,7 +388,7 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
           <p>Byggoversikt, boligvalg og varebestillinger</p>
         </div>
         <button type="button" onClick={onClose}>
-          <X size={16} /> Lukk boligprosjekter
+          <ArrowLeft size={16} /> Til startsiden
         </button>
       </header>
       {error ? (
@@ -954,6 +943,6 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
           </div>
         </>
       )}
-    </dialog>
+    </section>
   );
 }

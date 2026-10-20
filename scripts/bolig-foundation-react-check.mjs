@@ -48,7 +48,7 @@ assert(
 );
 fs.writeFileSync(
   entry,
-  `import React,{act} from '${cwd}/node_modules/react/index.js';import {createRoot} from '${cwd}/node_modules/react-dom/client.js';import Entry from '${cwd}/src/modules/bolig/BoligEntry.jsx';import Access from '${cwd}/src/modules/bolig/BoligAccessPanel.jsx';import FirmAccess from '${cwd}/src/modules/bolig/BoligFirmAccessPanel.jsx';import {useBoligContext} from '${cwd}/src/modules/bolig/boligAccess.js';function Availability({id}){const {context}=useBoligContext(id);return React.createElement('output',{'data-bolig-enabled':!!context?.enabled});}const root=createRoot(document.getElementById('app'));globalThis.__act=act;globalThis.__render=(id,mode='workspace')=>root.render(React.createElement('form',{id:'ordinary-project-form'},React.createElement(Availability,{id}),mode==='workspace'?React.createElement(Entry,{userId:id,onExit:()=>globalThis.__exited=true,onOpenProject:(...a)=>globalThis.__opened=a}):mode==='system'?React.createElement(FirmAccess,{userId:id}):React.createElement(Access,{userId:id,mode})));globalThis.__unmount=()=>root.render(null);globalThis.__dispose=()=>root.unmount();`,
+  `import React,{act} from '${cwd}/node_modules/react/index.js';import {createRoot} from '${cwd}/node_modules/react-dom/client.js';import Entry from '${cwd}/src/modules/bolig/BoligEntry.jsx';import WorkspaceViewMode from '${cwd}/src/modules/app/WorkspaceViewMode.jsx';import Access from '${cwd}/src/modules/bolig/BoligAccessPanel.jsx';import FirmAccess from '${cwd}/src/modules/bolig/BoligFirmAccessPanel.jsx';import {useBoligContext} from '${cwd}/src/modules/bolig/boligAccess.js';function Availability({id}){const {context}=useBoligContext(id);return React.createElement('output',{'data-bolig-enabled':!!context?.enabled});}const root=createRoot(document.getElementById('app'));globalThis.__act=act;globalThis.__render=(id,mode='workspace')=>root.render(React.createElement('div',{'data-expo-app-shell':'true'},React.createElement('header',null,React.createElement('div',{className:'head'},React.createElement('h1',null,'Expo ProffDok'),React.createElement(WorkspaceViewMode,{key:id})),React.createElement('nav',null,'Appmeny')),React.createElement('main',null,React.createElement('form',{id:'ordinary-project-form'},React.createElement('input',{defaultValue:'Usendt ordinær prosjektkladd'})),React.createElement(Availability,{id}),mode==='workspace'?React.createElement(Entry,{userId:id,onExit:()=>globalThis.__exited=true,onOpenProject:(...a)=>globalThis.__opened=a}):mode==='system'?React.createElement(FirmAccess,{userId:id}):React.createElement(Access,{userId:id,mode}))));globalThis.__unmount=()=>root.render(null);globalThis.__dispose=()=>root.unmount();`,
 );
 try {
   const built = await build({
@@ -88,6 +88,12 @@ try {
     pretendToBeVisual: true,
   });
   const { window: w } = dom;
+  const viewStyles = w.document.createElement("style");
+  viewStyles.textContent = fs.readFileSync(
+    "src/modules/app/workspaceViewMode.css",
+    "utf8",
+  );
+  w.document.head.append(viewStyles);
   w.IS_REACT_ACT_ENVIRONMENT = true;
   w.MessageChannel = class {
     constructor() {
@@ -334,11 +340,18 @@ try {
       );
   await act(() => w.__render("self"));
   assert.equal(q(".bolig-entry"), null, "Startside card must be removed");
-  assert(q("dialog[open]"));
+  assert(
+    q("main > .bolig-page"),
+    "Bolig opens inline inside the ordinary app main",
+  );
+  assert(
+    !q('dialog[aria-label="Boligprosjekter"]'),
+    "The module must not be a modal",
+  );
   assert.equal(
-    q("dialog").closest("#ordinary-project-form"),
+    q(".bolig-page").closest("#ordinary-project-form"),
     null,
-    "Portal must avoid nested project forms.",
+    "Inline module forms must be siblings of the ordinary project form.",
   );
   await act(() => button("Felles prosjekt2 boliger")?.click());
   if (!q(".bolig-grid")) await act(() => q(".bolig-root").click());
@@ -356,11 +369,40 @@ try {
     input.dispatchEvent(new w.Event("input", { bubbles: true }));
   });
   assert.equal(input.value, "Usendt kladd");
+  const workspace = q(".bolig-page");
+  const ordinaryDraft = q("#ordinary-project-form input");
+  const readsBeforeViewChange = calls.length;
+  await act(() => button("Fullskjermvisning").click());
+  assert.equal(q("[data-expo-app-shell]").dataset.expoFullscreen, "true");
+  assert.equal(w.getComputedStyle(q(".head h1")).display, "none");
+  assert.equal(w.getComputedStyle(q("header > nav")).display, "none");
+  assert.notEqual(
+    w.getComputedStyle(q(".workspace-view-control")).display,
+    "none",
+  );
+  assert.equal(
+    q(".workspace-view-control button").getAttribute("aria-pressed"),
+    "true",
+  );
+  assert(workspace === q(".bolig-page") && input.isConnected);
+  assert.equal(input.value, "Usendt kladd");
+  await act(() => button("Vanlig visning").click());
+  assert(!q("[data-expo-fullscreen]"));
+  assert.notEqual(w.getComputedStyle(q(".head h1")).display, "none");
+  assert(workspace === q(".bolig-page") && input.isConnected);
+  assert(ordinaryDraft === q("#ordinary-project-form input"));
+  assert.equal(ordinaryDraft.value, "Usendt ordinær prosjektkladd");
+  assert.equal(
+    calls.length,
+    readsBeforeViewChange,
+    "View changes never reload or navigate",
+  );
+
   await act(() => button("Bytt prosjekt").click());
   const picker = q(".bolig-project-dialog");
   assert(picker.open, "Project chooser opens as its own modal");
   assert.equal(
-    q('dialog[aria-label="Boligprosjekter"] .bolig-root'),
+    q('section.bolig-page[aria-label="Boligprosjekter"] .bolig-root'),
     null,
     "Other projects take no space in the active workspace",
   );
@@ -396,7 +438,7 @@ try {
     ),
   );
   assert(
-    !picker.open && q('dialog[aria-label="Boligprosjekter"]').open,
+    !picker.open && q(".bolig-page")?.isConnected,
     "Escape closes only the project popup, keeping the workspace open",
   );
   assert(!w.__exited, "Popup cancel must never navigate to Startside");
@@ -558,7 +600,7 @@ try {
   await act(() => button("Hent siste versjon").click());
   await act(() => button("Åpne leilighetsprosjekt").click());
   assert.deepEqual(Array.from(w.__opened), ["ordinary-project", "prosjekt"]);
-  assert.equal(q("dialog"), null);
+  assert.equal(q(".bolig-page"), null);
   await act(() => button("Åpne boligprosjekter").click());
   await act(() => q(".bolig-root").click());
   await act(() => q(".bolig-grid button").click());
@@ -579,10 +621,14 @@ try {
     ),
   );
   assert.equal(q(".bolig-unit"), null);
-  assert.equal(q("dialog"), null);
+  assert.equal(q(".bolig-page"), null);
   enabled = false;
   await act(() => w.dispatchEvent(new w.Event("focus")));
-  assert.equal(q("dialog"), null, "Unavailable user must not enter workspace");
+  assert.equal(
+    q(".bolig-page"),
+    null,
+    "Unavailable user must not enter workspace",
+  );
   assert.equal(q("[data-bolig-enabled]").dataset.boligEnabled, "false");
   assert(!w.document.body.textContent.includes("Aktivering og tilganger"));
   await act(() => w.__unmount());
@@ -706,19 +752,23 @@ try {
   role = "reader";
   licensed = true;
   await act(() => w.__render("self"));
-  assert(q("dialog"));
+  assert(q(".bolig-page"));
   assert.equal(
-    Boolean(q('dialog[aria-label="Boligprosjekter"] input[type=checkbox]')),
+    Boolean(
+      q(
+        'section.bolig-page[aria-label="Boligprosjekter"] input[type=checkbox]',
+      ),
+    ),
     false,
     "Reader workspace has no administrative grant toggles; project popup has its own archive filter",
   );
   assert(
-    !q('dialog[aria-label="Boligprosjekter"]').textContent.includes(
+    !q('section.bolig-page[aria-label="Boligprosjekter"]').textContent.includes(
       "Systemadmin",
     ),
     "Ordinary workspace has no admin instructions",
   );
-  assert(!q("dialog").textContent.includes("Firmaadmin"));
+  assert(!q(".bolig-page").textContent.includes("Firmaadmin"));
   assert(
     q(".bolig-help:not([open])"),
     "Guide is available but collapsed so the facade is the first workspace",
@@ -727,7 +777,7 @@ try {
   await act(() => w.__dispose());
   dom.window.close();
   console.log(
-    "PASS bolig actual React: server-gated menu, separate Systemadmin license and Firmaadmin member controls, no admin instructions in workspace, license/grant readback, reader/manager and revoked admin, real component, portal isolation, scoped local drafts, focus preservation, conflict/retry, server readback, company switch and entitlement revocation.",
+    "PASS bolig actual React: server-gated menu, separate Systemadmin license and Firmaadmin member controls, no admin instructions in workspace, license/grant readback, reader/manager and revoked admin, real component, inline page/form isolation, shared fullscreen roundtrip without remount/RPC/draft loss, scoped local drafts, focus preservation, conflict/retry, server readback, company switch and entitlement revocation.",
   );
 } catch (e) {
   console.error(e.stack || e.message);
