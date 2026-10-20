@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'none'; object-src 'none'; base-uri 'self'; form-action 'none'">
+  <meta name="theme-color" content="#007f89">
+  <title>Boligprosjekter – Expo ProffDok – prototype</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <header class="topbar"><a class="brand" href="./" aria-label="Expo ProffDok Boligprosjekter"><span>Expo</span>ProffDok</a><span class="brand-divider"></span><b>Boligprosjekter</b><span class="prototype-tag">Klikkbar prototype</span><div class="top-user"><span class="avatar">KE</span><span>Knut Eksempel<small>Prosjektleder</small></span></div></header>
+  <div class="demo-notice"><span class="live-dot"></span><span>Kun eksempeldata. Endringer lagres i denne nettleseren. Ingen ekte bestillinger eller varsler sendes.</span><button type="button" id="reset-demo">Nullstill eksempel</button></div>
+  <main>
+    <section class="project-heading"><div><span class="eyebrow">HOVEDPROSJEKT · BP-2026-001</span><h1>Solgløtt borettslag</h1><p>Våtromsmodernisering <span>·</span> Sammen om hver leilighet</p></div><div class="project-stats" id="project-stats"></div></section>
+    <nav class="main-tabs" aria-label="Hovedvisninger" id="main-tabs"></nav>
+    <div id="workspace"></div>
+  </main>
+  <footer>Expo ProffDok · Boligprosjekter <span>Konsept under utvikling · Illustrasjonsdata</span></footer>
+  <dialog id="dialog"><div id="dialog-body"></div></dialog>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <div id="print-area"></div>
+  <script type="module" src="./app.mjs"></script>
+</body>
+</html>
