@@ -1627,3 +1627,8 @@ Firmavalget på brukerkortet matcher nå registrert firmanavn etter trim og små
 ### Lagerrutine og 25 kg sekker – 20.10.2026
 
 `store_lifting` er oppdatert til kildeforslag v2, «Tunge løft og varehåndtering på lager». Beskriver mottak/plukk/utlevering med 25 kg lim- og mørtelsekker, konkrete arbeidskrav, arbeidsgivers risikovurdering/opplæring/hjelpemidler og medarbeiderens utførelse/medvirkning. 25 kg, 6000 kg og 20 meter er riktig merket som veiledning, med vurdering av repetisjon og individuelle forutsetninger. Tilrettelegging vurderes sammen med drift og kollegers arbeidsmiljø; personlige helseopplysninger holdes utenfor håndboka. Stabil source_key og source_revision=2 gir sammenligning gjennom eksisterende kildeoppdatering. Firmaets gjeldende rutine erstattes først ved ny firmagodkjenning. Gamle utgaver og lesebekreftelser beholdes uendret. Ingen database-, tilgangs-, navigasjons- eller e-postendring. De 73 opprinnelige rutinene og 13 andre butikkrutiner er uendret.
+
+
+### Lagre rutineutkast etter tekstsammenligning – 20.10.2026
+
+Ekstra «Lagre utkast» nederst etter ProffDoks tekstsammenligning er koblet til det eksisterende redigeringsskjemaet med en unik form-ID. Samme innsending, påkrevde felt og busy-sperre gjelder fra begge knapper. Lagring, lokal kladd, firmagodkjenning og lesebekreftelser følger eksisterende flyt. Miljømål BEGGE; Preview og ny TEST OK før produksjon.
