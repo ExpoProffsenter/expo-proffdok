@@ -74,6 +74,7 @@ try {
     build: {
       write: false,
       minify: false,
+      cssMinify: true,
       lib: {
         entry,
         cssFileName: "bolig-proof",
@@ -82,18 +83,33 @@ try {
       },
     },
   });
-  const dom = new JSDOM('<div id="app"></div>', {
-    url: "https://example.invalid",
-    runScripts: "outside-only",
-    pretendToBeVisual: true,
-  });
+  const dom = new JSDOM(
+    '<style>header { backdrop-filter: blur(16px); }</style><div id="app"></div>',
+    {
+      url: "https://example.invalid",
+      runScripts: "outside-only",
+      pretendToBeVisual: true,
+    },
+  );
   const { window: w } = dom;
   const viewStyles = w.document.createElement("style");
-  viewStyles.textContent = fs.readFileSync(
-    "src/modules/app/workspaceViewMode.css",
-    "utf8",
-  );
+  viewStyles.textContent = (Array.isArray(built) ? built[0] : built).output
+    .filter((file) => file.type === "asset" && file.fileName.endsWith(".css"))
+    .map((file) => String(file.source))
+    .join("\n");
   w.document.head.append(viewStyles);
+  // JSDOM has no backdrop layout. Check the emitted CSS, since the minifier
+  // previously kept only the prefixed declaration and Chrome ignored it.
+  const fullscreenHeaderRule = [...viewStyles.sheet.cssRules].find(
+    (rule) =>
+      rule.selectorText?.replaceAll(" ", "") ===
+      "[data-expo-app-shell][data-expo-fullscreen]>header",
+  );
+  assert.equal(
+    fullscreenHeaderRule?.style.getPropertyValue("backdrop-filter"),
+    "none",
+    "Built CSS must retain the standard backdrop property for the fixed return button",
+  );
   w.IS_REACT_ACT_ENVIRONMENT = true;
   w.MessageChannel = class {
     constructor() {
