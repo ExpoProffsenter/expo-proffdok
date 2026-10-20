@@ -5,13 +5,17 @@ export async function boligRpc(
 ) {
   const client = getAppSupabaseClient();
   if (!client) throw Error("Appens innlogging er ikke klar.");
-  const { data, error } = await client.rpc("bolig_workspace", {
+  const pending = client.rpc("bolig_workspace", {
     p_company_id: companyId,
     p_action: action,
     p_root_id: rootId,
     p_revision: revision,
     p_payload: payload,
   });
+  // A lost response must not silently create a second root or replay a write.
+  const { data, error } = await (typeof pending.retry === "function"
+    ? pending.retry(false)
+    : pending);
   if (error)
     throw Object.assign(
       new Error(

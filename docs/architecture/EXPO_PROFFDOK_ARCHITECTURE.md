@@ -4,7 +4,7 @@
 
 Offentlig `bolig_workspace` er SECURITY INVOKER og delegerer til avgrenset SECURITY DEFINER-gateway med tom search_path i ikke-eksponert `bolig_private`. Alle tabeller har RLS, ingen klient-/service_role-tabellrettigheter og ingen direkte tabellpolicies. Gatewayen sjekker auth.uid, aktivt arbeidsfirma, godkjent intern profil, medlemskap, prosjekttilgang, firmaaktivering og individuell rolle ved hvert kall. Systemadmin aktiverer firmaet; firmaadmin administrerer interne medlemmer. Hovedprosjektraden låses og revisjon sammenlignes ved endring. Handlinger revideres i privat audit-tabell. UUID-er og koblinger beholdes ved skjuling/utvidelse. Koblet prosjekt må være tilgjengelig, ulåst og i samme firma; prosjektets ordinære tilgang gjelder fortsatt ved åpning. Ingen eksisterende prosjektrader oppdateres.
 
-Migrasjoner `20261020201453_boligprosjekter_foundation.sql` og `20261020202637_boligprosjekter_fk_indexes.sql` gjelder nye private tabeller/funksjoner/indekser. Begge er kun installert i Sandbox. Ingen firmaaktivering eller tildeling er beholdt etter utviklertest. QA og produksjonsforutsetninger: `docs/qa/BOLIG_FOUNDATION_20261020.md`.
+Migrasjoner `20261020201453_boligprosjekter_foundation.sql` , `20261020202637_boligprosjekter_fk_indexes.sql` , `20261020203617_boligprosjekter_root_list_scope.sql` og `20261020204107_boligprosjekter_conflict_http_status.sql` gjelder nye private tabeller/funksjoner/indekser. Alle fire er kun installert i Sandbox. Firmaaktivering er slått av igjen etter utviklertest; ingen individuelle tilganger er tildelt. QA og produksjonsforutsetninger: `docs/qa/BOLIG_FOUNDATION_20261020.md`.
 
 ## Kundevalgt opsjonsantall – Preview 17.10.2026
 

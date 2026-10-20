@@ -141,7 +141,7 @@ try {
         if (conflict)
           return {
             error: {
-              code: "40001",
+              code: "PT409",
               message:
                 "En annen bruker har endret strukturen. Kladden er beholdt.",
             },
@@ -153,6 +153,17 @@ try {
       throw Error("Unexpected action " + args.p_action);
     },
   };
+  const transport = w.__client.rpc;
+  w.__client.rpc = (...args) => ({
+    retry(enabled) {
+      assert.equal(
+        enabled,
+        false,
+        "Bolig calls must explicitly disable SDK retries",
+      );
+      return transport(...args);
+    },
+  });
   const js = (Array.isArray(built) ? built[0] : built).output.find(
     (x) => x.type === "chunk",
   ).code;

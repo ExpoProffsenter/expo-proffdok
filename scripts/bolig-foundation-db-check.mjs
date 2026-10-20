@@ -55,7 +55,7 @@ const rejects = async (fn, code) => {
 };
 try {
   await db.exec(
-    `create role anon;create role authenticated;create role service_role;create schema auth;create table auth.users(id uuid primary key);create function auth.uid() returns uuid language sql as $$select nullif(current_setting('qa.user',true),'')::uuid$$;create function public.current_active_company_scope_id() returns uuid language sql as $$select nullif(current_setting('qa.company',true),'')::uuid$$;create table public.sales_company_scopes(id uuid primary key,display_name text);create table public.profiles(id uuid primary key,email text,approved boolean default true,deactivated boolean default false,role text default 'member',system_role text);create table public.sales_company_memberships(company_id uuid,user_id uuid,workspace_role text);create table public.projects(id uuid primary key,company_scope_id uuid,user_id uuid,title text,locked boolean default false,updated_at timestamptz default now());create function public.current_profile_is_systemadmin() returns boolean language sql security definer as $$select exists(select 1 from public.profiles where id=auth.uid() and system_role='systemadmin' and approved and not deactivated)$$;create function public.current_user_has_module_access(text) returns boolean language sql as $$select coalesce(current_setting('qa.projects',true),'yes')<>'no'$$;create function public.project_row_access_allowed(uuid,uuid) returns boolean language sql as $$select $1=public.current_active_company_scope_id()$$;grant usage on schema auth to authenticated;`,
+    `create role anon;create role authenticated;create role service_role;create schema auth;create table auth.users(id uuid primary key);create function auth.uid() returns uuid language sql as $$select nullif(current_setting('qa.user',true),'')::uuid$$;create function public.current_active_company_scope_id() returns uuid language sql as $$select nullif(current_setting('qa.company',true),'')::uuid$$;create table public.sales_company_scopes(id uuid primary key,display_name text);create table public.profiles(id uuid primary key,email text,approved boolean default true,deactivated boolean default false,role text default 'member',system_role text);create table public.sales_company_memberships(company_id uuid,user_id uuid,workspace_role text);create table public.projects(id uuid primary key,company_scope_id uuid,user_id uuid,title text,locked boolean default false,updated_at timestamptz default now());create function public.current_profile_is_systemadmin() returns boolean language sql security definer as $$select exists(select 1 from public.profiles where id=auth.uid() and system_role='systemadmin' and approved and not deactivated)$$;create function public.current_user_has_module_access(text) returns boolean language sql as $$select coalesce(current_setting('qa.projects',true),'yes')<>'no'$$;create function public.project_row_access_allowed(uuid,uuid) returns boolean language sql as $$select $1=public.current_active_company_scope_id() and coalesce(current_setting('qa.project_read',true),'yes')<>'no'$$;grant usage on schema auth to authenticated;`,
   );
   await db.query(
     "insert into public.sales_company_scopes values($1,$2),($3,$4)",
@@ -98,6 +98,18 @@ try {
       "utf8",
     ),
   );
+  await db.exec(
+    await fs.readFile(
+      "supabase/migrations/20261020203617_boligprosjekter_root_list_scope.sql",
+      "utf8",
+    ),
+  );
+  await db.exec(
+    await fs.readFile(
+      "supabase/migrations/20261020204107_boligprosjekter_conflict_http_status.sql",
+      "utf8",
+    ),
+  );
   await db.exec("begin");
   await actor();
   eq((await call()).enabled, false);
@@ -106,7 +118,7 @@ try {
   await actor(system);
   let access = await call("license", null, 0, { enabled: true });
   eq(access.context.enabled, true);
-  await rejects(() => call("license", null, 0, { enabled: false }), "40001");
+  await rejects(() => call("license", null, 0, { enabled: false }), "PT409");
   await actor();
   access = await call("member", null, 0, { user_id: manager, role: "manager" });
   await call("member", null, 0, { user_id: reader, role: "reader" });
@@ -116,7 +128,7 @@ try {
   );
   await rejects(
     () => call("member", null, 0, { user_id: manager, role: "reader" }),
-    "40001",
+    "PT409",
   );
   await actor(manager);
   let result = await call("create", null, null, {
@@ -124,6 +136,11 @@ try {
     reference: "BP-1",
   });
   const root = result.root.id;
+  eq(
+    (await call("list")).roots.map((x) => x.id),
+    [root],
+    "Created root must appear in shared list",
+  );
   eq(result.root.revision, 1);
   const mutate = async (action, payload) => {
     result = await call(action, root, result.root.revision, payload);
@@ -162,10 +179,21 @@ try {
     result.units.find((x) => x.id === unit.id).contact_name,
     "Eksempel Person",
   );
-  await rejects(() => call("block", root, 1, { name: "Stale draft" }), "40001");
+  await rejects(() => call("block", root, 1, { name: "Stale draft" }), "PT409");
   const revision = result.root.revision;
   await actor(reader);
   eq((await call("get", root)).units.length, 500);
+  eq((await call("list")).roots[0].unit_count, 500);
+  await db.exec(
+    "reset role;select set_config('qa.project_read','no',false);set role authenticated",
+  );
+  const masked = (await call("get", root)).units.find((x) => x.id === unit.id);
+  eq(masked.has_project, true);
+  eq(masked.project_id, null);
+  eq((await call("projects", root)).projects, []);
+  await db.exec(
+    "reset role;select set_config('qa.project_read','yes',false);set role authenticated",
+  );
   await rejects(
     () => call("block", root, revision, { name: "Denied" }),
     "42501",
@@ -177,6 +205,7 @@ try {
   await call("member", null, 0, { user_id: outsider, role: "manager" }, other);
   await actor(outsider, other);
   eq((await call("context", null, null, {}, other)).enabled, true);
+  eq((await call("list", null, null, {}, other)).roots, []);
   await rejects(() => call("get", root, null, {}, other), "42501");
   await actor(manager, other);
   await rejects(() => call("get", root), "42501");

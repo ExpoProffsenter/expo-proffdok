@@ -255,7 +255,7 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
     } catch (e) {
       if (alive.current) {
         setError(
-          e.code === "40001"
+          ["PT409", "40001"].includes(e.code)
             ? e.message + " Trykk «Hent siste versjon»."
             : e.message,
         );
