@@ -4,7 +4,7 @@ Miljømål: **BEGGE**, Preview/Sandbox først. Baseline main `0730eeb46c49bf45b5
 
 ## Scope
 
-Nye filer i `src/modules/bolig`, avgrenset Hjelp-komponent, fem additive bolig-migrasjoner, to egne runtime-tester og tilhørende README/arkitektur/QA. `src/main.jsx` får kun lazy-import og en autorisert launcher i Startside uten åpent prosjekt. `.github/workflows/pr-core-safety.yml` får et tillegg som kjører de nye testene etter eksisterende kontroller. Eksisterende checkere, menyer, Sales, recovery, prosjektlagring, e-post og eksisterende rettigheter endres ikke.
+Nye filer i `src/modules/bolig`, avgrenset Hjelp-komponent, fem additive bolig-migrasjoner, to egne runtime-tester og tilhørende README/arkitektur/QA. `src/main.jsx` får lazy-import, global menyinngang og kompakte tilgangssnarveier i Firmaadmin/Systemadmin. Ingen boligflate monteres på Startsiden. `projectNavigationTabs.mjs` får en valgfri global Boligprosjekter-fane; prosjektmenyen beholdes. `.github/workflows/pr-core-safety.yml` får et tillegg som kjører de nye testene etter eksisterende kontroller. Eksisterende checkere, øvrige menypunkter, Sales, recovery, prosjektlagring, e-post og eksisterende rettigheter endres ikke.
 
 ## Leveranse
 
@@ -17,7 +17,7 @@ Nye filer i `src/modules/bolig`, avgrenset Hjelp-komponent, fem additive bolig-m
 ## Verifikasjon
 
 - Den eksakte SQL-migrasjonen kjøres i PGlite med roller og autentiseringskontrakter. 42 kontroller: 500 boliger, delt lesing, firma-/modul-/bruker-/rollegrenser, feil firma også med aktiv modul, låst prosjekt, revisjonskonflikt og rollback, stabile ID-er/kontakt/kobling, deaktivert bruker, tilbakekalt tilgang, direkte tabelltilgang og anonym nektet.
-- Faktisk React-komponent kjøres i JSDOM med kontrollert transport. Kontrollerer autorisert launcher, portal uten nestede prosjektskjema, lokal kladd, fanebytte, konflikt/henting/ny lagring, firmabytte og bortfalt aktivering. Dette er komponenttest; den erstatter ikke innlogget integrasjonsprøve.
+- Faktisk React-komponent kjøres i JSDOM med kontrollert transport. Kontrollerer menyinngang, manglende firmaaktivering mot manglende brukertilgang, automatisk åpnet adminoppsett, systemadmin-aktivering, firmaadmin-grense, faktisk individuell tildeling og adminsnarvei, portal uten nestede prosjektskjema, lokal kladd, fanebytte, konflikt/henting/ny lagring, firmabytte og bortfalt aktivering. Dette er komponenttest; den erstatter ikke innlogget integrasjonsprøve.
 - Full critical/Sandbox-build PASS. Eksisterende faktisk React-test for KS/HMS + HR + Min side navigation PASS. Eksisterende prosjektmeny-returtest PASS (ordre → Startside/våtrom, KS/HMS, mobiltekster).
 - Alle fem migrasjoner installert i Sandbox `ppvircenkjizeiqdxphj`. Ekte PostgreSQL-prøve med eksisterende intern autorisasjon: midlertidig aktivering, nytt syntetisk hovedprosjekt, blokk og 500 boliger, reread og gammel revisjon avvist. Hele testen rullet tilbake. Null testhovedprosjekter igjen. Ingen personidentitet eller token eksportert.
 - Supabase security/performance advisors gjennomgått. Nye tabeller med RLS uten policies er tilsiktet deny-all for direkte tilgang; data går bare gjennom kontrollert gateway. To manglende FK-indekser rettet i egen additiv migrasjon. Nye ubrukte indekser er forventet før modulen er tatt i bruk. Andre eksisterende moduladvarsler er utenfor scope.
@@ -42,7 +42,7 @@ Gjennomgangen fant at standard-FK fra den nye boligkoblingen ville stanse ordin�
 
 ## Innlogget Preview-prøve før TEST OK
 
-1. Systemadmin velger avtalt testfirma. På Startsiden: «Åpne boligprosjekter» → «Firmaets tilganger» → «Aktiver Boligprosjekter for firmaet». Firmaadmin kan tildele testmedarbeider prosjektledertilgang.
+1. Systemadmin velger avtalt testfirma. «Meny» → «Boligprosjekter» → «Aktivering og tilganger» → «Aktiver Boligprosjekter for firmaet». Firmaadmin kan tildele testmedarbeider prosjektledertilgang.
 2. «Nytt hovedprosjekt» → fyll prosjektnavn/nummer → «Opprett hovedprosjekt». «Legg til blokk» → «Lagre blokk». «Legg til oppgang» → velg blokk/adresse, antall etasjer og antall per etasje → «Lagre oppgang». Kontroller total og boligkort.
 3. Velg bolig. Endre kontakt/leilighetsnummer og «Lagre i firmaet». Åpne fra en annen bruker/enhet med tilgang og hent samme prosjekt.
 4. «Hent tilgjengelige ProffDok-prosjekter» → velg eksisterende testprosjekt → lagre → «Åpne leilighetsprosjekt». Kontroller at ordinær prosjektflyt og tilbake til Startsiden fungerer.
@@ -55,3 +55,9 @@ Gjennomgangen fant at standard-FK fra den nye boligkoblingen ville stanse ordin�
 Grunnpakke, redigering av tilvalgslister, valg per bolig, fremdriftsplan, beboerportal og bestillinger er senere etapper. Bestilling til Expo/Ringside skal gå til avtalt e-postadresse og inneholde adresse, navn og/eller leilighetsnummer og ønsket leveringsdato, eventuelt validert ASCII-fil. Kundens ordrenummer er kundens referanse; leverandørens Cordel-ordre opprettes av leverandøren. Ingen e-post sendes av denne etappen.
 
 Ny TEST OK kreves før merge. Deretter: Production-migrasjoner → merge/releasekontroll → produksjonsverifisering → kontrollert main → demo-synk og sandbox-preflight. Før dette er løsningen en ikke-godkjent foundation-Preview, ikke ferdig operativ modul.
+
+## Meny og tilgang – brukeroppfølging 20.10.2026
+
+Brukeren ba om å frigjøre Startsiden og fant ikke tilgangsoppsettet. Firmaet var slått av etter utviklertest, men teksten ga inntrykk av manglende personlig rettighet. Boligprosjekter ligger nå i global Meny og i mobilens øvrige menyvalg. Administrasjon er lett tilgjengelig via «Aktivering og tilganger» i boligflaten, Firmaadmin og Systemadmin, alltid for firmaet som er valgt øverst. Ingen Startside-boks. Firmaaktivering og brukerrolle skilles i teksten; en administrator ser oppsettet åpnet automatisk når firmaet er inaktivt. Hent siste versjon/fokus beholder tilgangsoppsettet også når modulen er av. Systemadmin kan aktivere firma, firmaadmin kan tildele ansatte etter aktivering. Lesere/brukere uten tilgang får ikke adminhandlinger eller boligdata. Ingen nye SQL-, lisens- eller tildelingsendringer utføres i denne oppfølgingen.
+
+Test: Meny → Boligprosjekter; kontroller at Startsidekortet er borte. Som systemadmin med inaktivt firma skal korrekt forklaring og «Aktiver Boligprosjekter for firmaet» vises med én gang. I Firmaadmin/Systemadmin skal «Aktivering og tilganger» åpne samme oppsett. Etter aktivering kan firmaadmin velge leser/prosjektleder på medarbeider. Kontroller lukking til Startside, ordinær prosjektmeny, fanebytte, firmabytte og mobilmeny. Runtime-testen har permanente kontroller for tilgangsgrensene, fokus og Hent siste versjon med inaktivt firma. Full critical/Sandbox-build, eksisterende prosjektmeny-retur og KS/HMS/HR/Min side-navigation passerer lokalt. Full CI og innlogget Preview etter utrulling dokumenteres i PR #278.

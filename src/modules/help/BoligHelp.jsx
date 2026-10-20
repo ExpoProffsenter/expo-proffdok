@@ -3,6 +3,13 @@ export function BoligHelp() {
   return (
     <details className="bolig-help" open>
       <summary>Slik styrer du prosjektet</summary>
+      <p>
+        Åpne Boligprosjekter fra Meny. Tilgangsoppsettet finnes under
+        «Aktivering og tilganger» her, og via samme snarvei i Firmaadmin og
+        Systemadmin. Velg riktig firma øverst. Systemadmin aktiverer firmaet
+        først. Firmaadmin gir deretter interne ansatte lesetilgang eller
+        prosjektledertilgang.
+      </p>
       <ol>
         <li>
           Opprett hovedprosjektet. Legg deretter til blokker og oppganger med

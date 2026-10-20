@@ -1958,6 +1958,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       isCompanyAdminUser,
       canUseKshms: Boolean(kshmsContext?.enabled),
       canUseHr: ownRights.hrManagement,
+      canUseBolig: Boolean(authUser?.id && profile?.approved && !profile?.deactivated && ["admin", "member", "ansatt", "firmaadmin"].includes(profile?.role)),
       personalPage: ownRights.enabled,
       canUseAdminProjectSync
     });
@@ -6315,7 +6316,7 @@ ${appLink}`;
         children: [
         tab === "prosjekt" && !hasActiveProjectWorkspace && !mobileCreatingProject && !isProjectSupportReadOnly && (0, import_jsx_runtime.jsx)(WorkdayShortcuts,{canPersonal:ownRights.enabled,canHr:ownRights.hr,canKshms:ownRights.kshms,onPersonal:()=>goToTab("innlogging"),onHr:()=>goToTab("hr"),onKshms:()=>goToTab("kshms")}),
         tab === "prosjekt" && !hasActiveProjectWorkspace && !mobileCreatingProject && !isProjectSupportReadOnly && (0, import_jsx_runtime.jsx)(React.Suspense, { fallback: null, children: (0, import_jsx_runtime.jsx)(HomeFollowups, { hrContext: ownRights.hr ? hrContext : null, kshmsContext, userId: authUser?.id, onOpenDeviation: openKshmsDeviation, onSetup: () => goToTab("hr") }, authUser?.id) }),
-        authUser?.id && !hasActiveProjectWorkspace && !mobileCreatingProject && !isProjectSupportReadOnly && tab === "prosjekt" && (0, import_jsx_runtime.jsx)(React.Suspense, { fallback: null, children: (0, import_jsx_runtime.jsx)(BoligEntry, { userId: authUser.id, onOpenProject: openProjectById }) }),
+        authUser?.id && !hasActiveProjectWorkspace && !mobileCreatingProject && !isProjectSupportReadOnly && (tab === "bolig" || (isCompanyAdminUser && ["firmaadmin", "admin"].includes(tab))) && (0, import_jsx_runtime.jsx)(React.Suspense, { fallback: "Henter Boligprosjekter …", children: (0, import_jsx_runtime.jsx)(BoligEntry, { userId: authUser.id, onOpenProject: openProjectById, mode: tab === "bolig" ? "workspace" : "accessShortcut", onExit: tab === "bolig" ? () => goToTab("prosjekt") : null }) }),
         !projectId && !mobileCreatingProject && tab === "prosjekt" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { className: "mobileProjectChooser", children: [
           authUser?.id && !hasActiveProjectWorkspace && !isProjectSupportReadOnly && (0, import_jsx_runtime.jsx)(React.Suspense, { fallback: null, children: (0, import_jsx_runtime.jsx)(MobileTimeShortcut, { personalContext, hrContext, userId: authUser?.id }) }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileHomeHero", children: [

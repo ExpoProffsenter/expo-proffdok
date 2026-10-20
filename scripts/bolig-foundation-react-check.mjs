@@ -9,15 +9,31 @@ const cwd = process.cwd(),
   temp = fs.mkdtempSync(path.join(os.tmpdir(), "bolig-react-")),
   entry = path.join(temp, "entry.jsx");
 const main = fs.readFileSync("src/main.jsx", "utf8");
+const { createGlobalAppTabs, createProjectWorkspaceTabs } = await import(
+  "../src/modules/project/projectNavigationTabs.mjs"
+);
+assert(
+  createGlobalAppTabs({ canUseBolig: true }).some(
+    ([id, label]) => id === "bolig" && label === "Boligprosjekter",
+  ),
+);
+assert(!createGlobalAppTabs().some(([id]) => id === "bolig"));
+assert(
+  !createProjectWorkspaceTabs({ canUseBolig: true }).some(
+    ([id]) => id === "bolig",
+  ),
+);
 const integration = main.split("\n").find((s) => s.includes("(BoligEntry, {"));
 assert(
   integration &&
     integration.includes("!hasActiveProjectWorkspace") &&
-    integration.includes("!isProjectSupportReadOnly"),
+    integration.includes("!isProjectSupportReadOnly") &&
+    integration.includes('tab === "bolig"') &&
+    !integration.includes('tab === "prosjekt"'),
 );
 fs.writeFileSync(
   entry,
-  `import React,{act} from '${cwd}/node_modules/react/index.js';import {createRoot} from '${cwd}/node_modules/react-dom/client.js';import Entry from '${cwd}/src/modules/bolig/BoligEntry.jsx';const root=createRoot(document.getElementById('app'));globalThis.__act=act;globalThis.__render=id=>root.render(React.createElement('form',{id:'ordinary-project-form'},React.createElement(Entry,{userId:id,onOpenProject:(...a)=>globalThis.__opened=a})));globalThis.__unmount=()=>root.unmount();`,
+  `import React,{act} from '${cwd}/node_modules/react/index.js';import {createRoot} from '${cwd}/node_modules/react-dom/client.js';import Entry from '${cwd}/src/modules/bolig/BoligEntry.jsx';const root=createRoot(document.getElementById('app'));globalThis.__act=act;globalThis.__render=(id,mode='workspace')=>root.render(React.createElement('form',{id:'ordinary-project-form'},React.createElement(Entry,{userId:id,mode,onExit:mode==='workspace'?()=>globalThis.__exited=true:undefined,onOpenProject:(...a)=>globalThis.__opened=a})));globalThis.__unmount=()=>root.render(null);globalThis.__dispose=()=>root.unmount();`,
 );
 try {
   const built = await build({
@@ -76,7 +92,13 @@ try {
     role = "manager",
     enabled = true,
     denied = false,
-    conflict = false;
+    conflict = false,
+    licensed = true,
+    manage = false,
+    system = false,
+    licenseRevision = 1,
+    memberRole = "none",
+    memberRevision = 0;
   const calls = [];
   let record = {
     root: {
@@ -116,11 +138,11 @@ try {
     user_id: "self",
     company_name: company,
     role,
-    enabled,
-    licensed: enabled,
-    license_revision: 1,
-    manage_access: false,
-    system_admin: false,
+    enabled: enabled && licensed,
+    licensed,
+    license_revision: licenseRevision,
+    manage_access: manage,
+    system_admin: system,
   });
   w.__client = {
     rpc: async (name, args) => {
@@ -131,6 +153,38 @@ try {
       assert.equal(args.p_company_id, company);
       if (denied)
         return { error: { code: "42501", message: "Tilgangen er fjernet." } };
+      const members = [
+        {
+          user_id: "member-1",
+          name: "QA Medarbeider",
+          role: memberRole,
+          revision: memberRevision,
+          firmaadmin: false,
+        },
+      ];
+      if (args.p_action === "access")
+        return { data: { context: ctx, members } };
+      if (args.p_action === "license") {
+        assert(system);
+        assert.equal(args.p_revision, licenseRevision);
+        licensed = args.p_payload.enabled;
+        licenseRevision++;
+        return { data: { context: context(), members } };
+      }
+      if (args.p_action === "member") {
+        assert(manage && licensed);
+        assert.equal(args.p_revision, memberRevision);
+        memberRole = args.p_payload.role;
+        memberRevision++;
+        return {
+          data: {
+            context: context(),
+            members: [
+              { ...members[0], role: memberRole, revision: memberRevision },
+            ],
+          },
+        };
+      }
       if (args.p_action === "list")
         return {
           data: { context: ctx, roots: [{ ...record.root, unit_count: 2 }] },
@@ -179,8 +233,7 @@ try {
         (b) => b.textContent === text,
       );
   await act(() => w.__render("self"));
-  assert(button("Åpne boligprosjekter"));
-  await act(() => button("Åpne boligprosjekter").click());
+  assert.equal(q(".bolig-entry"), null, "Startside card must be removed");
   assert(q("dialog[open]"));
   assert.equal(
     q("dialog").closest("#ordinary-project-form"),
@@ -293,11 +346,70 @@ try {
   assert.equal(q("dialog"), null);
   enabled = false;
   await act(() => w.dispatchEvent(new w.Event("focus")));
-  assert.equal(button("Åpne boligprosjekter"), undefined);
+  await act(() => button("Åpne boligprosjekter").click());
+  assert(
+    q(".bolig-access-state").textContent.includes("Din bruker mangler tilgang"),
+  );
+  assert.equal(q(".bolig-root"), null);
   await act(() => w.__unmount());
+  enabled = true;
+  licensed = false;
+  manage = true;
+  system = true;
+  await act(() => w.__render("self"));
+  assert(q(".bolig-access-state").textContent.includes("ikke aktivert"));
+  assert(
+    q("input[type=checkbox]"),
+    "Disabled module must expose activation to systemadmin immediately",
+  );
+  await act(() => w.dispatchEvent(new w.Event("focus")));
+  assert(q("input[type=checkbox]"), "Focus must keep access setup available");
+  await act(() => button("Hent siste versjon").click());
+  assert(
+    q("input[type=checkbox]"),
+    "Reload must keep disabled firm access setup available",
+  );
+  await act(() => q("input[type=checkbox]").click());
+  assert.equal(licensed, true);
+  assert(q("input[type=checkbox]").checked);
+  await act(() => {
+    const select = q('[aria-label="Tilgang for QA Medarbeider"]');
+    select.value = "manager";
+    select.dispatchEvent(new w.Event("change", { bubbles: true }));
+  });
+  assert.equal(memberRole, "manager");
+  await act(() => w.__unmount());
+  licensed = false;
+  system = false;
+  await act(() => w.__render("self"));
+  assert(
+    q(".bolig-access-state").textContent.includes(
+      "Systemadmin må først aktivere",
+    ),
+  );
+  assert.equal(
+    q("input[type=checkbox]"),
+    null,
+    "Firmaadmin must not receive activation control",
+  );
+  await act(() => w.__unmount());
+  await act(() => w.__render("self", "accessShortcut"));
+  assert.equal(q("dialog"), null);
+  assert(button("Aktivering og tilganger"));
+  await act(() => button("Aktivering og tilganger").click());
+  assert(q("dialog"));
+  assert(q("dialog h3").textContent.includes("ikke aktivert"));
+  await act(() => w.__unmount());
+  manage = false;
+  role = "none";
+  licensed = true;
+  await act(() => w.__render("self", "accessShortcut"));
+  assert.equal(button("Aktivering og tilganger"), undefined);
+  await act(() => w.__unmount());
+  await act(() => w.__dispose());
   dom.window.close();
   console.log(
-    "PASS bolig actual React: authorized launcher, real component, portal isolation, scoped local drafts, focus preservation, conflict/retry, server readback, company switch and entitlement revocation.",
+    "PASS bolig actual React: menu workspace, explicit firm/license/user states, systemadmin activation, member grant, firmaadmin limits, admin shortcut, real component, portal isolation, scoped local drafts, focus preservation, conflict/retry, server readback, company switch and entitlement revocation.",
   );
 } catch (e) {
   console.error(e.message);
