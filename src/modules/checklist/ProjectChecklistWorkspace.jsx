@@ -1,3 +1,4 @@
+import {projectChecklistReadRpc} from './projectChecklistRead.mjs';
 import {invalidateFieldConfirmations} from './checklistFields.mjs';
 import {checklistResumeEntries,firstUnfinishedChecklist} from './checklistResume.mjs';
 import {checklistDisplayState} from './checklistDisplay.mjs';
@@ -11,7 +12,9 @@ import {answersForDefinition,checklistRunDraftKey,commitChecklistRun,completionP
 import './projectChecklistWorkspace.css';
 import KshmsDocumentPdfButton from '../kshms/KshmsDocumentPdfButton.jsx';
 
-export default function ProjectChecklistWorkspace({Editor,companyId,userId,projectId,checklist,activeChecklistTemplate,instances=[],readOnly=false,showTools=true,showPrevious=true,customChecklistAllowed=false,isWarrantyPoint=()=>false,onSaved,uploadImages,resolveFileUrl,entryRequest=null,onEntryHandled,...editorProps}) {
+export default function ProjectChecklistWorkspace({Editor,companyId,userId,projectId,checklist,activeChecklistTemplate,instances=[],readOnly=false,supportReadOnly=false,showTools=true,showPrevious=true,customChecklistAllowed=false,isWarrantyPoint=()=>false,onSaved,uploadImages,resolveFileUrl,entryRequest=null,onEntryHandled,...editorProps}) {
+ readOnly=readOnly||supportReadOnly;
+ const readRpc=projectChecklistReadRpc(kshmsRpc,{supportReadOnly,companyId,projectId});
  const [displayFilter,setDisplayFilter]=useState('all');
  const [data,setData]=useState(null),[selected,setSelected]=useState(null),[expanded,setExpanded]=useState({}),[error,setError]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false),[uploads,setUploads]=useState(0);
  const owner=useRef(null),locked=useRef(false),selection=useRef(null),cached=useRef(new Map());
@@ -25,9 +28,9 @@ export default function ProjectChecklistWorkspace({Editor,companyId,userId,proje
  };
  const load=async scope=>{
   if(!projectId||!companyId||!userId)return {runs:[],checklist};
-  const state=await kshmsRpc('project_checklist_state',{p_company_id:companyId,p_project_id:projectId});
+  const state=await readRpc('project_checklist_state',{p_company_id:companyId,p_project_id:projectId});
   if(!current(scope))return null;
-  if(state.context?.company_id!==companyId||state.context.project_id!==projectId||state.context.user_id!==userId)throw new Error('Prosjektets firmatilgang er endret.');
+  if((supportReadOnly&&state.context?.support_read_only!==true)||state.context?.company_id!==companyId||state.context.project_id!==projectId||state.context.user_id!==userId)throw new Error('Prosjektets firmatilgang er endret.');
   setData(state);return state;
  };
  useEffect(()=>{
@@ -38,7 +41,7 @@ export default function ProjectChecklistWorkspace({Editor,companyId,userId,proje
   };
   refresh();const events=['focus',MANAGED_ACCESS_EVENT,MODULE_ACCESS_EVENT,WORK_PROFILE_EVENT];events.forEach(event=>window.addEventListener(event,refresh));
   return()=>{scope.active=false;events.forEach(event=>window.removeEventListener(event,refresh));};
- },[companyId,userId,projectId]);
+ },[companyId,userId,projectId,supportReadOnly]);
  const select=value=>{selection.current=value;setSelected(value);setError('');setNotice('');};
  const begin=async(group,{fresh=false,run=null,viewSaved=false,followPoint=null,nextUnfinished=false,isIntentCurrent=()=>true}={})=>{
   if(locked.current)return;
@@ -195,14 +198,14 @@ export default function ProjectChecklistWorkspace({Editor,companyId,userId,proje
    {error&&<p role="alert" className="ks-error">{error}</p>}{notice&&<p role="status" className="ks-notice">{notice}</p>}
    {selected.completed_identity&&<p>Fullført av {identityText(selected.completed_identity)} · {new Date(selected.completed_at).toLocaleString('nb-NO')}</p>}
    <fieldset disabled={readOnly||selected.readOnly||busy||uploads>0||!!selected.pendingAction}><Editor {...editorProps} key={selected.id} userId={userId} readOnlyFields={readOnly||selected.readOnly} embedded initiallyExpanded consumeChecklistJump={false} customChecklistEnabled={false} showOpenDeviationsOnly={false} setShowOpenDeviationsOnly={null} activeChecklistTemplate={[selected.definition]} checklist={{[selected.definition.category]:selected.answers}} setChecklistValue={change} addChecklistPhoto={addPhoto} onOpenKshmsDeviation={editorProps.onOpenKshmsDeviation?id=>{if(remember(selection.current)){setSelected(null);selection.current=null;editorProps.onOpenKshmsDeviation(id);}}:null}/></fieldset>
-   {savedSelection&&!selected.earlierDraft&&<KshmsDocumentPdfButton kind="run" row={selected} companyId={companyId} userId={userId} projectId={projectId} resolveFileUrl={resolveFileUrl} disabled={!pdfReady||busy||uploads>0}/> }
+   {savedSelection&&!selected.earlierDraft&&<KshmsDocumentPdfButton rpc={readRpc} kind="run" row={selected} companyId={companyId} userId={userId} projectId={projectId} resolveFileUrl={resolveFileUrl} disabled={!pdfReady||busy||uploads>0}/> }
    {!savedSelection&&<p className="note">Lagre kontrollen først for å laste ned egen PDF. Tidligere dokumentasjon uten kontrollhistorikk finnes i prosjektets ordinære rapport.</p>}
    <div className="project-checklist-footer">
     {!selected.readOnly&&!readOnly&&<><button type="button" disabled={busy||uploads>0} onClick={()=>save('save')}>{selected.pendingAction?'Prøv lagring igjen':'Lagre'}</button><button type="button" disabled={busy||uploads>0||!!selected.pendingAction} onClick={()=>save('complete')}>Sjekkliste fullført</button></>}
     {selected.readOnly&&selected.status==='completed'&&!readOnly&&groups.some(group=>group.category===selected.definition.category)&&<button type="button" disabled={busy} onClick={()=>begin(groups.find(group=>group.category===selected.definition.category),{fresh:true})}>Start ny kontroll</button>}
     {!selected.readOnly&&data?.runs?.some(run=>run.category===selected.definition.category)&&<button type="button" className="secondary" disabled={busy} onClick={()=>begin(selected.definition,{viewSaved:true})}>Vis lagret kontroll</button>}
     {selected.readOnly&&selected.status==='draft'&&!readOnly&&!selected.earlierDraft&&<button type="button" disabled={busy} onClick={continueSaved}>Fortsett med lagret kontroll</button>}
-    {readRunDraft(window.localStorage,key(selected.definition.category)+':previous')&&!selected.earlierDraft&&<button type="button" className="secondary" disabled={busy} onClick={()=>select({...readRunDraft(window.localStorage,key(selected.definition.category)+':previous'),readOnly:true,earlierDraft:true})}>Vis tidligere kladd</button>}
+    {!supportReadOnly&&readRunDraft(window.localStorage,key(selected.definition.category)+':previous')&&!selected.earlierDraft&&<button type="button" className="secondary" disabled={busy} onClick={()=>select({...readRunDraft(window.localStorage,key(selected.definition.category)+':previous'),readOnly:true,earlierDraft:true})}>Vis tidligere kladd</button>}
     {selected.readOnly&&readRunDraft(window.localStorage,key(selected.definition.category))&&!readOnly&&<button type="button" className="secondary" onClick={()=>select(readRunDraft(window.localStorage,key(selected.definition.category)))}>Tilbake til kladden</button>}
     <button type="button" className="secondary" disabled={busy||uploads>0} onClick={dismiss}>Lukk</button>
    </div>

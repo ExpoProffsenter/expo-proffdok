@@ -6,9 +6,9 @@ import {build} from 'vite';
 import react from '@vitejs/plugin-react';
 const {JSDOM}=await import(process.env.KSHMS_JSDOM_PATH||'jsdom');
 const dir=process.cwd(),temporary=fs.mkdtempSync(path.join(os.tmpdir(),'project-checklist-qa-')),entry=path.join(temporary,'entry.jsx');
-fs.writeFileSync(entry,`import React,{act} from '${dir}/node_modules/react/index.js';import {createRoot} from '${dir}/node_modules/react-dom/client.js';import Workspace from '${dir}/src/modules/checklist/ProjectChecklistWorkspace.jsx';import {createChecklistEditor} from '${dir}/src/modules/checklist/checklistTools.js';import {installDesktopSideMenu} from '${dir}/src/modules/app/desktopSideMenu.js';import {installProjectWorkspaceHeaderGuide} from '${dir}/src/modules/app/projectWorkspaceHeaderGuide.js';
+fs.writeFileSync(entry,`import React,{act} from '${dir}/node_modules/react/index.js';import {createRoot} from '${dir}/node_modules/react-dom/client.js';import Workspace from '${dir}/src/modules/checklist/ProjectChecklistWorkspace.jsx';import Picker from '${dir}/src/modules/checklist/ProjectChecklistPicker.jsx';import {createChecklistEditor} from '${dir}/src/modules/checklist/checklistTools.js';import {installDesktopSideMenu} from '${dir}/src/modules/app/desktopSideMenu.js';import {installProjectWorkspaceHeaderGuide} from '${dir}/src/modules/app/projectWorkspaceHeaderGuide.js';
 const Editor=createChecklistEditor({Section:p=>React.createElement('section',{},p.children),Grid:p=>React.createElement('div',{},p.children),Textarea:p=>React.createElement('label',{},p.label,React.createElement('textarea',{value:p.value||'',onChange:e=>p.onChange(e.target.value)})),getActiveChecklistTemplate:()=>[],getWarrantyYears:()=>5,canUseCustomChecklistForWarranty:()=>false,customChecklistTradeOptions:['Rørlegger'],customChecklistCategoryFromTrade:trade=>'Egne sjekkpunkter – '+trade,customChecklistTradeFromCategory:category=>category.split(' – ').at(-1),customChecklistTradeIconUrl:()=> 'https://example.invalid/icon.svg',hasValue:value=>String(value||'').trim().length>0,customChecklistCategoryPrefix:'Egne sjekkpunkter',checklistPointAnchor:(group,item)=>group+item,isWarrantyCheckpoint:()=>false,isSoproWarrantyPoint:()=>false,isSoproWarrantyCategory:()=>false,checklistAttachmentTradeOptions:[],checklistAttachmentDocumentTypeOptions:[],publicProjectFileUrl:()=>''});
-const root=createRoot(document.getElementById('app'));globalThis.__act=act;globalThis.__render=props=>root.render(React.createElement(Workspace,{...props,Editor}));globalThis.__unmount=()=>root.render(null);globalThis.__menus=()=>{installDesktopSideMenu();installProjectWorkspaceHeaderGuide();};`);
+const root=createRoot(document.getElementById('app'));globalThis.__act=act;globalThis.__render=props=>root.render(React.createElement(Workspace,{...props,Editor}));globalThis.__unmount=()=>root.render(null);globalThis.__renderPicker=props=>root.render(React.createElement(Picker,props));globalThis.__menus=()=>{installDesktopSideMenu();installProjectWorkspaceHeaderGuide();};`);
 const bundle=await build({root:dir,configFile:false,logLevel:'silent',define:{'process.env.NODE_ENV':'"development"'},build:{write:false,minify:false,lib:{entry,formats:['iife'],name:'WorkspaceProof',fileName:'proof'}},plugins:[react(),{name:'qa-rpc',enforce:'pre',resolveId(id){if(/kshmsAccess\.js$/.test(id))return '\0rpc';if(/appSupabaseClientRegistry\.js$/.test(id))return '\0client';},load(id){if(id==='\0rpc')return 'export const kshmsRpc=(...args)=>globalThis.__rpc(...args);';if(id==='\0client')return 'export const getAppSupabaseClient=()=>null;';}}]});
 const dom=new JSDOM('<header><nav><button>Ordreoversikt</button><button>Ordrebeskrivelse</button><button>Sjekklister</button><button>Bilder</button><button style="display:none">Garanti</button><button>Hjelp</button></nav></header><main><div id="app"></div></main>',{url:'https://example.invalid',runScripts:'outside-only',pretendToBeVisual:true});
 const {window}=dom;window.IS_REACT_ACT_ENVIRONMENT=true;window.confirm=()=>true;window.prompt=()=> 'OK';window.alert=()=>{};
@@ -77,5 +77,30 @@ for(let n=1;n<design.items.length;n++)await choose('Ikke aktuelt',n);
 await click(button('Sjekkliste fullført'));assert.equal(runs[0].status,'completed');assert.deepEqual(runs.slice(1),beforeDesign);await click(button('Lukk'));await act(async()=>window.__unmount());
 await act(async()=>window.__render({...designProps(),readOnly:true}));await click(button('Åpne fullført sjekkliste'));assert(window.document.querySelector('fieldset:disabled'));assert(!button('Start ny kontroll'));assert(!button('Lagre'));await click(button('Lukk'));await act(async()=>window.__unmount());
 console.log('Design checklist real React PASS: shared save/reopen/full completion/read-only, no cross-category answers or overwritten execution history.');
+// Support stays read-only even without the caller also setting readOnly.
+const ordinaryRpc=window.__rpc,supportCalls=[],savedRuns=structuredClone(runs);
+const localBefore=JSON.stringify({...window.localStorage});
+window.__rpc=async(name,args)=>{
+ supportCalls.push(name);
+ if(name==='project_checklist_support_state'){
+  assert.equal(args.p_project_id,project);assert.equal(args.p_company_id,undefined);
+  return {context:{company_id:company,project_id:project,user_id:'user',support_read_only:true},runs:structuredClone(runs),checklist:structuredClone(checklist)};
+ }
+ throw Error('Ordinary project route must not be used in cross-company support');
+};
+await act(async()=>window.__render({...designProps(),readOnly:false,supportReadOnly:true}));
+await click(button('Åpne fullført sjekkliste'));
+assert(window.document.querySelector('fieldset:disabled'));
+for(const label of ['Lagre','Sjekkliste fullført','Start ny kontroll','Fortsett med lagret kontroll','Vis tidligere kladd'])assert(!button(label),label+' is forbidden in support');
+await click(button('Lukk'));await act(async()=>window.__unmount());
+assert.deepEqual(runs,savedRuns);assert.equal(JSON.stringify({...window.localStorage}),localBefore,'support never writes a local draft');
+assert(supportCalls.length>=2&&supportCalls.every(name=>name==='project_checklist_support_state'));
+const beforePicker=supportCalls.length;let opened=null;
+await act(async()=>window.__renderPicker({companyId:company,userId:'user',projectId:project,supportReadOnly:true,instances:[{id:'installed',company_id:company,version:1,content:{title:'Saved project checklist'}}],onOpen:value=>opened=value.id}));
+assert(!button('Hent sjekkliste'));await click(button('Åpne sjekkliste'));assert.equal(opened,'installed');
+assert.equal(supportCalls.length,beforePicker,'support picker reads installed project snapshot without ordinary catalog RPC');
+await act(async()=>window.__unmount());
+window.__rpc=ordinaryRpc;
+console.log('Actual support checklist React PASS: explicit cross-company read, completed saved answers, all writes disabled and local drafts untouched.');
 dom.window.close();fs.rmSync(temporary,{recursive:true,force:true});
 console.log('Project checklist real React flow: PASS — collapsed lists, popup, save/reopen, immutable history, lost response, concurrent colleague, retained draft, legacy deviation follow-up and compact order menu');

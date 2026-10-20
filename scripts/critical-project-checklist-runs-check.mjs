@@ -108,3 +108,14 @@ const renderedDesign=new Function('env',`with(env){return ${designExpression};}`
 assert.equal(renderedDesign.props.children.at(-1).type,'workspace');assert.equal(renderedDesign.props.children.at(-2).props.className,'note');
 assert.equal(renderedDesign.props.children.at(-3).props.children,'Sjekkliste for prosjektering');
 console.log('Actual design panel render PASS: all original fields and drawings precede final checklist.');
+
+// Support changes only the explicit read route; ordinary commands pass through.
+const {projectChecklistReadRpc}=await import('../src/modules/checklist/projectChecklistRead.mjs');
+const supportCalls=[];const rawRpc=(name,args)=>{supportCalls.push({name,args});return {ok:true};};
+assert.equal(projectChecklistReadRpc(rawRpc,{supportReadOnly:false}),rawRpc);
+const supportRpc=projectChecklistReadRpc(rawRpc,{supportReadOnly:true,companyId:'target',projectId:'project'});
+supportRpc('project_checklist_state',{p_company_id:'target',p_project_id:'project'});
+assert.deepEqual(supportCalls[0],{name:'project_checklist_support_state',args:{p_project_id:'project'}});
+supportRpc('work_profile_company_profile',{p_company_id:'target'});
+for(const [name,args] of [['project_checklist_command',{}],['project_checklist_state',{p_company_id:'wrong',p_project_id:'project'}],['work_profile_company_profile',{p_company_id:'wrong'}]])assert.throws(()=>supportRpc(name,args));
+console.log('Support read adapter PASS: exact project/firm only, verified PDF read route and no command forwarding.');

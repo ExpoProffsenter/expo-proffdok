@@ -1887,6 +1887,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       return (projectListRows || []).find((item) => item?.row?.id === projectId) || null;
     }, [supportModeExplicit, isSystemAdminUser, projectId, currentProjectOwnerId, authUser?.id, projectListRows]);
     const isSupportModeActive = !!currentSupportProjectRow;
+    const projectChecklistCompanyId = isProjectSupportReadOnly ? currentSupportProjectRow?.row?.company_scope_id : kshmsContext?.company_id;
     const supportProjectCompanyName = String(
       currentSupportProjectRow?.row?.data?.company?.companyName ||
       currentSupportProjectRow?.row?.data?.company?.company_name ||
@@ -6722,10 +6723,11 @@ ${appLink}`;
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Vurder grunnlaget og løsningene før utførelsen starter. Åpne sjekklisten, velg Ok, Avvik eller Ikke aktuelt og legg til kommentar eller dokumentasjon. Lagre underveis. Se grunnlaget, tegningene og øvrige prosjekteringsfelt over." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProjectChecklistWorkspace, {
             Editor: ChecklistEditor,
-            companyId: kshmsContext?.company_id,
+            companyId: projectChecklistCompanyId,
             userId: authUser?.id,
             projectId,
             readOnly: isProjectLocked || isReadOnly || isProjectSupportReadOnly,
+            supportReadOnly: isProjectSupportReadOnly,
             showTools: false,
             showPrevious: false,
             onSaved: applySavedChecklistControl,
@@ -6806,22 +6808,24 @@ ${appLink}`;
           uploadImages,
           authorName: authenticatedFullName || user.name || authUser?.email || profile?.email || "Ukjent"
         }), !isSimpleOrderProject(project) && authUser && kshmsContext?.company_id && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProjectChecklistPicker, {
-          companyId: kshmsContext.company_id,
+          companyId: projectChecklistCompanyId,
           userId: authUser.id,
           projectId,
           instances: project.kshmsChecklistInstances || [],
           readOnly: isProjectLocked || isReadOnly || isProjectSupportReadOnly,
+          supportReadOnly: isProjectSupportReadOnly,
           onImport: saveProjectChecklist,
           onOpen: openProjectChecklist
         }, `${authUser.id}:${kshmsContext.company_id}:${projectId}`)] }),
         tab === "sjekklister" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Sjekklister og vedlegg", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.FileText, {}), children: [
           authUser && kshmsContext?.company_id && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProjectChecklistPicker, {
             collapsed: true,
-            companyId: kshmsContext.company_id,
+            companyId: projectChecklistCompanyId,
             userId: authUser.id,
             projectId,
             instances: project.kshmsChecklistInstances || [],
             readOnly: isProjectLocked || isReadOnly || isProjectSupportReadOnly,
+            supportReadOnly: isProjectSupportReadOnly,
             onImport: saveProjectChecklist,
             onOpen: openProjectChecklist
           }, `${authUser.id}:${kshmsContext.company_id}:${projectId}`),
@@ -6830,13 +6834,14 @@ ${appLink}`;
             ProjectChecklistWorkspace,
             {
               Editor: ChecklistEditor,
-              companyId: kshmsContext?.company_id,
+              companyId: projectChecklistCompanyId,
               userId: authUser?.id,
               projectId,
               entryRequest: checklistEntryRequest,
               onEntryHandled: (id) => setChecklistEntryRequest(current => current?.id === id ? null : current),
               instances: project.kshmsChecklistInstances || [],
               readOnly: isProjectLocked || isReadOnly || isProjectSupportReadOnly,
+              supportReadOnly: isProjectSupportReadOnly,
               customChecklistAllowed,
               isWarrantyPoint: isSoproWarrantyPoint,
               onSaved: applySavedChecklistControl,

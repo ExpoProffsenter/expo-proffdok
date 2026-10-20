@@ -1065,3 +1065,10 @@ Ansattes faktiske egenbekreftelse i primærfirmaet dekker egne tildelte utgaver 
 En privat, API-avskåret trigger håndterer ny egenbekreftelse; autorisert `kshms_get_state` gjenbruker eksisterende bekreftelser ved nye tildelinger og reparerer eventuelle samtidighetskappløp før visning. Unik versjon/bruker og `ON CONFLICT DO NOTHING` gjør gjentakelser idempotente. Eksisterende leser-/lederfiltre beholdes. Oppfølging og personalhåndbok/PDF viser kildefirma. Primærfirma følger medlemskapets `is_primary`, ikke firmaet valgt i menyen. Ingen tilgang, rutinetekst eller e-postinnstilling endres.
 
 QA: `scripts/kshms-primary-ack-db-check.mjs` med ekte PostgreSQL/RPC-er og syntetisk rollbackscenario; eksisterende samlet/enkeltbekreftelse og faktisk React/jsPDF beholdes som regresjonsvern.
+
+
+### Prosjektsjekklister i skrivebeskyttet supportmodus – 20. oktober 2026
+
+Systemadmin kunne åpne ML Flis-prosjektet, mens sjekklistene brukte administratorens aktive firma og viste «Prosjektet er ikke tilgjengelig i aktivt firma». De fire sjekklisteintegrasjonene i `main.jsx` får nå prosjektets faktiske firma og eksplisitt `supportReadOnly`. Ingen aktiv arbeidsprofil eller medlemskap endres.
+
+Ny `project_checklist_support_state(uuid)` kontrollerer fersk aktiv systemadmin og eksisterende prosjektleserett, avleder firma fra prosjektet og returnerer bare prosjektets kontroller og svar. Vanlig `project_checklist_state`, alle skrive-RPC-er og private tabellrettigheter er uendret. Supportflaten bruker ingen privat lokal kladd, lagrer ikke og importerer ikke nye maler. Eksisterende PDF-verifisering bruker samme autoriserte leserute før/etter generering; firmaprofilens etablerte systemadminregel beholdes. Ordinær fullføring/historikk/lokal sikring har eget regresjonsvern.
