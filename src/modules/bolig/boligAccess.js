@@ -14,7 +14,18 @@ export function useBoligContext(userId) {
     async (event) => {
       const ticket = ++generation.current;
       setLoadError("");
-      if (event && event.type !== "focus") setContext(null);
+      if (event?.type === WORK_PROFILE_EVENT)
+        setContext((previous) =>
+          previous?.company_id === event.detail?.active_company_id
+            ? previous
+            : null,
+        );
+      if (
+        [BOLIG_ACCESS_EVENT, MODULE_ACCESS_EVENT].includes(event?.type) ||
+        (event?.type === MANAGED_ACCESS_EVENT &&
+          (!event.detail?.userId || event.detail.userId === userId))
+      )
+        setContext(null);
       if (!userId) {
         setContext(null);
         return;

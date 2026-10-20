@@ -15,6 +15,7 @@ export default function CatalogForm({
   onSave,
   children,
   submitLabel,
+  className = "",
 }) {
   const key = boligDraftKey(context, rootId, "catalog-" + name),
     [value, setValue] = useState(() => {
@@ -33,7 +34,7 @@ export default function CatalogForm({
   };
   return (
     <form
-      className="bolig-catalog-form"
+      className={`bolig-catalog-form ${className}`}
       onSubmit={async (e) => {
         e.preventDefault();
         setError("");

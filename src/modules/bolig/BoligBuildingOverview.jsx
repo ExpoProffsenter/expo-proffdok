@@ -9,6 +9,7 @@ import {
   Settings2,
   TriangleAlert,
 } from "lucide-react";
+import { useBoligUiState } from "./boligUiState.js";
 import { getAppSupabaseClient } from "../access/appSupabaseClientRegistry.js";
 
 export function unitStatus(unit, status, layer) {
@@ -52,8 +53,16 @@ export default function BoligBuildingOverview({
   query,
   onQuery,
 }) {
-  const [blockId, setBlockId] = useState("");
-  const [layer, setLayer] = useState("choice");
+  const [blockId, setBlockId] = useBoligUiState(
+    context,
+    `${record.root.id}:block`,
+    "",
+  );
+  const [layer, setLayer] = useBoligUiState(
+    context,
+    `${record.root.id}:layer`,
+    "choice",
+  );
   const [statuses, setStatuses] = useState(null);
   const [error, setError] = useState("");
   const generation = useRef(0);

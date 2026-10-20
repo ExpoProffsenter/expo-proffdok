@@ -115,7 +115,9 @@ try {
     memberRole = "none",
     memberRevision = 0,
     accessConflict = false,
-    holdAccess = false;
+    holdAccess = false,
+    holdContext = false;
+  const contextWaiters = [];
   const accessWaiters = [];
   let externalLicensed = false,
     externalRevision = 0;
@@ -231,7 +233,13 @@ try {
         };
       assert.equal(name, "bolig_workspace");
       const ctx = context();
-      if (args.p_action === "context") return { data: ctx };
+      if (args.p_action === "context") {
+        if (holdContext)
+          return new Promise((resolve) =>
+            contextWaiters.push(() => resolve({ data: ctx })),
+          );
+        return { data: ctx };
+      }
       assert.equal(args.p_company_id, company);
       if (denied)
         return { error: { code: "42501", message: "Tilgangen er fjernet." } };
@@ -355,6 +363,56 @@ try {
   await act(() => w.dispatchEvent(new w.Event("focus")));
   assert(q(".bolig-unit input").value === "H0101");
   assert(q(".bolig-unit form").textContent.includes("Kontaktperson"));
+  holdContext = true;
+  await act(() =>
+    w.dispatchEvent(
+      new w.CustomEvent("expo-proffdok-work-profile", {
+        detail: { active_company_id: "firm-a" },
+      }),
+    ),
+  );
+  assert.equal(
+    q(".bolig-unit form")?.contains(input),
+    true,
+    "Same-company profile refresh must retain current apartment and draft DOM while authorization is pending",
+  );
+  holdContext = false;
+  await act(() => contextWaiters.splice(0).forEach((resolve) => resolve()));
+  assert.equal(input.value, "Usendt kladd");
+  await act(() => w.__unmount());
+  await act(() => w.__render("self"));
+  assert.equal(
+    q(".bolig-unit form input").value,
+    "H0101",
+    "Selected apartment is restored after access-gate remount",
+  );
+  const emailLabel = [...w.document.querySelectorAll("label")].find(
+    (l) => l.textContent.trim() === "E-post",
+  );
+  const phoneLabel = [...w.document.querySelectorAll("label")].find(
+    (l) => l.textContent.trim() === "Mobil",
+  );
+  const address = [...w.document.querySelectorAll("input")].find(
+    (i) => i.readOnly,
+  );
+  assert.equal(
+    address.value,
+    "Eksempelgata 1A",
+    "Address follows the selected apartment entrance",
+  );
+  await act(() => {
+    const set = Object.getOwnPropertyDescriptor(
+      w.HTMLInputElement.prototype,
+      "value",
+    ).set;
+    for (const [el, value] of [
+      [emailLabel.querySelector("input"), "demo@example.invalid"],
+      [phoneLabel.querySelector("input"), "+47 900 00 000"],
+    ]) {
+      set.call(el, value);
+      el.dispatchEvent(new w.Event("input", { bubbles: true }));
+    }
+  });
   conflict = true;
   await act(() =>
     q(".bolig-unit form").dispatchEvent(
@@ -375,6 +433,8 @@ try {
     ),
   );
   assert.equal(record.units[0].contact_name, "Usendt kladd");
+  assert.equal(record.units[0].contact_email, "demo@example.invalid");
+  assert.equal(record.units[0].contact_phone, "+47 900 00 000");
   assert.equal(w.localStorage.getItem(key), null);
   assert.equal(q("[role=status]").textContent, "Lagret i firmaet.");
   const setInput = async (input, value) =>
@@ -399,6 +459,46 @@ try {
     calls.filter((c) => c.p_action === "resize").length,
     0,
     "Shape changes require explicit save",
+  );
+  await act(() =>
+    [...w.document.querySelectorAll('[aria-label="Arbeidsområde"] button')]
+      .find((b) => b.textContent.trim() === "Oppsett")
+      .click(),
+  );
+  holdContext = true;
+  await act(() =>
+    w.dispatchEvent(
+      new w.CustomEvent("expo-proffdok-work-profile", {
+        detail: { active_company_id: "firm-a" },
+      }),
+    ),
+  );
+  assert.equal(
+    resize.querySelector(".bolig-floors input").value,
+    "3",
+    "Pending same-firm authorization retains structure draft",
+  );
+  holdContext = false;
+  await act(() => contextWaiters.splice(0).forEach((resolve) => resolve()));
+  await act(() => w.__unmount());
+  await act(() => w.__render("self"));
+  assert.equal(
+    [...w.document.querySelectorAll('[aria-label="Arbeidsområde"] button')]
+      .find((b) => b.textContent.trim() === "Oppsett")
+      .getAttribute("aria-pressed"),
+    "true",
+    "Setup phase restores after gate remount",
+  );
+  assert.equal(
+    [...w.document.querySelectorAll("details")]
+      .find(
+        (x) =>
+          x.querySelector("summary")?.textContent ===
+          "Endre etasjer og leiligheter",
+      )
+      .querySelector(".bolig-floors input").value,
+    "3",
+    "Unsaved floors restore without a server write",
   );
   role = "reader";
   await act(() => w.dispatchEvent(new w.Event("focus")));

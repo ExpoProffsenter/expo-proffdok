@@ -1,3 +1,4 @@
+import { Package, Trash2 } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import {
   boligCatalogRpc,
@@ -5,6 +6,7 @@ import {
   toCents,
   optionBreakdown,
 } from "./boligCatalogClient.js";
+import { useBoligUiState } from "./boligUiState.js";
 import CatalogForm from "./BoligDraftForm.jsx";
 import BoligOrderDraft from "./BoligOrderDraft.jsx";
 import ProductCard from "./BoligProductCard.jsx";
@@ -46,6 +48,7 @@ function PackageEditor({
     <CatalogForm
       context={context}
       rootId={rootId}
+      className="bolig-package-editor"
       name={"package-" + (entry?.id || "new")}
       basis={{ catalog_revision: revision }}
       initial={initial}
@@ -101,14 +104,27 @@ function PackageEditor({
               onChange={(e) => c("name", e.target.value)}
             />
           </label>
-          <p>
-            Grunnpakken er inkludert i hovedentreprisen og trenger ingen
-            totalsum. Oppgi valgfri grunnsum per varelinje bare når den skal
-            brukes som fratrekk ved et alternativ. Varenummer og antall beholdes
-            i varegrunnlaget.
+          <p className="bolig-editor-hint">
+            Grunnpakken er inkludert i entreprisen. Grunnsum er valgfri og
+            brukes bare ved fratrekk.
           </p>
           {v.lines.map((line, index) => (
             <div className="bolig-catalog-line" key={line.key}>
+              <span
+                className="bolig-line-badge"
+                aria-label={`Varelinje ${index + 1}`}
+              >
+                {line.image_url?.startsWith("https://") ? (
+                  <img
+                    src={line.image_url}
+                    alt=""
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <Package size={22} />
+                )}
+                <small>{index + 1}</small>
+              </span>
               <label>
                 Varebeskrivelse {index + 1}
                 <input
@@ -195,43 +211,11 @@ function PackageEditor({
                   }
                 />
               </label>
-              <label>
-                Bildeadresse {index + 1}
-                <input
-                  type="url"
-                  placeholder="https://…"
-                  value={line.image_url || ""}
-                  onChange={(e) =>
-                    c(
-                      "lines",
-                      v.lines.map((l) =>
-                        l.key === line.key
-                          ? { ...l, image_url: e.target.value }
-                          : l,
-                      ),
-                    )
-                  }
-                />
-              </label>
-              <label>
-                Produktlenke {index + 1}
-                <input
-                  type="url"
-                  value={line.product_url || ""}
-                  onChange={(e) =>
-                    c(
-                      "lines",
-                      v.lines.map((l) =>
-                        l.key === line.key
-                          ? { ...l, product_url: e.target.value }
-                          : l,
-                      ),
-                    )
-                  }
-                />
-              </label>
               <button
                 type="button"
+                className="bolig-line-remove"
+                aria-label={`Fjern varelinje ${index + 1}`}
+                title={`Fjern varelinje ${index + 1}`}
                 disabled={v.lines.length === 1}
                 onClick={() =>
                   c(
@@ -240,8 +224,48 @@ function PackageEditor({
                   )
                 }
               >
-                Fjern varelinje {index + 1}
+                <Trash2 size={17} />
               </button>
+              <details className="bolig-line-extra">
+                <summary>Bilde og produktlenke</summary>
+                <div>
+                  <label>
+                    Bildeadresse {index + 1}
+                    <input
+                      type="url"
+                      placeholder="https://…"
+                      value={line.image_url || ""}
+                      onChange={(e) =>
+                        c(
+                          "lines",
+                          v.lines.map((l) =>
+                            l.key === line.key
+                              ? { ...l, image_url: e.target.value }
+                              : l,
+                          ),
+                        )
+                      }
+                    />
+                  </label>
+                  <label>
+                    Produktlenke {index + 1}
+                    <input
+                      type="url"
+                      value={line.product_url || ""}
+                      onChange={(e) =>
+                        c(
+                          "lines",
+                          v.lines.map((l) =>
+                            l.key === line.key
+                              ? { ...l, product_url: e.target.value }
+                              : l,
+                          ),
+                        )
+                      }
+                    />
+                  </label>
+                </div>
+              </details>
             </div>
           ))}
           <button
@@ -288,6 +312,7 @@ function OptionEditor({
     <CatalogForm
       context={context}
       rootId={rootId}
+      className="bolig-option-editor"
       name={"option-" + (entry?.id || "new")}
       basis={{ catalog_revision: revision }}
       initial={initial}
@@ -611,15 +636,34 @@ export default function BoligCatalog({
   unit = null,
   compact = false,
 }) {
-  const [unitTab, setUnitTab] = useState("choice"),
-    [editChoice, setEditChoice] = useState(false);
+  const phaseKey = `${root.id}:${unit?.id || "setup"}`;
+  const [unitTab, setUnitTab] = useBoligUiState(
+      context,
+      `${phaseKey}:unit-tab`,
+      "choice",
+    ),
+    [editChoice, setEditChoice] = useBoligUiState(
+      context,
+      `${phaseKey}:edit-choice`,
+      false,
+    );
+  const [tab, setTab] = useBoligUiState(
+    context,
+    `${phaseKey}:catalog-tab`,
+    "packages",
+  );
+  const [editPointer, setEditPointer] = useBoligUiState(
+    context,
+    `${phaseKey}:editor`,
+    null,
+  );
+  const setEditing = (next) =>
+    setEditPointer(next ? { kind: next.kind, id: next.entry?.id || "" } : null);
   const [state, setState] = useState(null),
     [error, setError] = useState(""),
     [notice, setNotice] = useState(""),
     [loading, setLoading] = useState(true),
-    [busy, setBusy] = useState(false),
-    [tab, setTab] = useState("packages"),
-    [editing, setEditing] = useState(null);
+    [busy, setBusy] = useState(false);
   const generation = useRef(0),
     operation = useRef(false);
   const load = async (clear = false) => {
@@ -649,13 +693,16 @@ export default function BoligCatalog({
     load(true);
     const refresh = (e) => {
       if (
-        e.type === WORK_PROFILE_EVENT ||
-        e.type === MANAGED_ACCESS_EVENT ||
+        (e.type === WORK_PROFILE_EVENT &&
+          e.detail?.active_company_id !== context.company_id) ||
+        (e.type === MANAGED_ACCESS_EVENT &&
+          (!e.detail?.userId || e.detail.userId === context.user_id)) ||
         e.type === MODULE_ACCESS_EVENT
       ) {
         ++generation.current;
         setState(null);
         setLoading(true);
+        load();
         return;
       }
       load();
@@ -685,6 +732,16 @@ export default function BoligCatalog({
     state?.context?.company_id === context.company_id &&
     state?.root_id === root.id
       ? state
+      : null;
+  const editingEntry = editPointer?.id
+    ? (editPointer.kind === "packages"
+        ? valid?.packages
+        : valid?.options
+      )?.find((e) => e.id === editPointer.id)
+    : null;
+  const editing =
+    editPointer && (!editPointer.id || editingEntry)
+      ? { kind: editPointer.kind, entry: editingEntry }
       : null;
   const canWrite =
     !!valid &&

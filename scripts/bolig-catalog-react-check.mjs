@@ -270,6 +270,25 @@ try {
   await input("Pakkenavn", "Inkludert i entreprisen");
   await input("Varebeskrivelse 1", "Standard dusj");
   await input("Varenummer 1", "DUSJ-1");
+  await act(() =>
+    w.dispatchEvent(
+      new w.CustomEvent("expo-proffdok-work-profile", {
+        detail: { active_company_id: "firm-a" },
+      }),
+    ),
+  );
+  assert.equal(
+    field("Pakkenavn").value,
+    "Inkludert i entreprisen",
+    "Profile refresh retains package editor",
+  );
+  await act(() => w.__unmount());
+  await render();
+  assert.equal(
+    field("Varenummer 1").value,
+    "DUSJ-1",
+    "Remount restores package phase and draft",
+  );
   await submit();
   assert.equal(
     calls.find((c) => c.p_action === "package").p_payload.lines[0].credit_cents,
@@ -296,6 +315,25 @@ try {
   assert(creditLabel);
   await act(() => creditLabel.querySelector("input").click());
   await input("Pris for hele tilvalget inkl. mva.", "180,50");
+  await act(() =>
+    w.dispatchEvent(
+      new w.CustomEvent("expo-proffdok-work-profile", {
+        detail: { active_company_id: "firm-a" },
+      }),
+    ),
+  );
+  assert.equal(
+    field("Navn på tilvalg").value,
+    "Testalternativ",
+    "Profile refresh retains option phase",
+  );
+  await act(() => w.__unmount());
+  await render();
+  assert.equal(
+    field("Pris for hele tilvalget inkl. mva.").value,
+    "180,50",
+    "Remount restores option phase and price draft",
+  );
   await submit();
   const saved = calls.find((c) => c.p_action === "option").p_payload;
   assert.equal(saved.price_cents, 18050);
@@ -330,6 +368,25 @@ try {
       .querySelector("input");
   await act(() => check("Alternativ servant").click());
   await act(() => check("Ekstra knagg").click());
+  await act(() =>
+    w.dispatchEvent(
+      new w.CustomEvent("expo-proffdok-work-profile", {
+        detail: { active_company_id: "firm-a" },
+      }),
+    ),
+  );
+  assert.equal(
+    check("Ekstra knagg").checked,
+    true,
+    "Same-company profile keeps unsaved choice",
+  );
+  await act(() => w.__unmount());
+  await render({ id: "unit-a", number: "H0101" });
+  assert.equal(
+    check("Alternativ servant").checked,
+    true,
+    "Remount restores choice draft without saving it",
+  );
   assert(
     d.querySelector(".bolig-choice-total").textContent.includes("105,00"),
     "Alternative net plus additional amount",
@@ -384,6 +441,23 @@ try {
   );
   await act(() => orderChecks[1].click());
   await act(() =>
+    w.dispatchEvent(
+      new w.CustomEvent("expo-proffdok-work-profile", {
+        detail: { active_company_id: "firm-a" },
+      }),
+    ),
+  );
+  assert.equal(
+    [
+      ...d.querySelectorAll(
+        '[aria-label="Bestillingsutkast"] input[type=checkbox]',
+      ),
+    ][1].checked,
+    false,
+    "Profile refresh preserves order exclusion",
+  );
+
+  await act(() =>
     orderRegion
       .querySelector("form")
       .dispatchEvent(
@@ -397,6 +471,73 @@ try {
     "Order exclusion must not change accepted/source choice goods",
   );
   assert(orderRegion.textContent.includes("1 varelinjer med"));
+  await act(() =>
+    w.__render({
+      context: ctx,
+      root,
+      unit: { id: "unit-a", number: "H0101" },
+      compact: true,
+    }),
+  );
+  await act(() => button("Bestilling").click());
+  const before = [
+    ...d.querySelectorAll(
+      '[aria-label="Bestillingsutkast"] input[type=checkbox]',
+    ),
+  ];
+  await act(() => before[0].click());
+  await act(() => {
+    Object.defineProperty(d, "visibilityState", {
+      configurable: true,
+      value: "hidden",
+    });
+    d.dispatchEvent(new w.Event("visibilitychange"));
+  });
+  await act(() => {
+    Object.defineProperty(d, "visibilityState", {
+      configurable: true,
+      value: "visible",
+    });
+    d.dispatchEvent(new w.Event("visibilitychange"));
+    w.dispatchEvent(new w.Event("focus"));
+    w.dispatchEvent(
+      new w.CustomEvent("expo-proffdok-work-profile", {
+        detail: { active_company_id: "firm-a" },
+      }),
+    );
+  });
+  assert.equal(
+    [
+      ...d.querySelectorAll(
+        '[aria-label="Bestillingsutkast"] input[type=checkbox]',
+      ),
+    ][0].checked,
+    false,
+    "Order draft survives visibility + focus + repeated profile event",
+  );
+  await act(() => w.__unmount());
+  await act(() =>
+    w.__render({
+      context: ctx,
+      root,
+      unit: { id: "unit-a", number: "H0101" },
+      compact: true,
+    }),
+  );
+  assert.equal(
+    button("Bestilling").getAttribute("aria-pressed"),
+    "true",
+    "Order phase restores after access remount",
+  );
+  assert.equal(
+    [
+      ...d.querySelectorAll(
+        '[aria-label="Bestillingsutkast"] input[type=checkbox]',
+      ),
+    ][0].checked,
+    false,
+    "Unsaved order exclusion restores without changing source choice",
+  );
   ctx.role = "reader";
   state.context = { ...ctx };
   await render({ id: "unit-a", number: "H0101" });

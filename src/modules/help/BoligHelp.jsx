@@ -17,15 +17,16 @@ export function BoligHelp() {
           Kontroller totalen og lagre oppgangen.
         </li>
         <li>
-          Velg en bolig for å rette leilighetsnummer, kontaktperson og kobling
-          til et ordinært ProffDok-prosjekt. Opprett selve våtromsprosjektet
-          gjennom vanlig prosjektopprettelse først. Koblingen kopierer ikke
-          prosjektinnhold.
+          Velg en bolig. Åpne «Kontakt og leilighetsprosjekt» for å fylle inn
+          navn, e-post og mobil. Adressen hentes fra oppgangen. Her kan du også
+          rette leilighetsnummer og koble til et ordinært ProffDok-prosjekt.
+          Opprett selve våtromsprosjektet gjennom vanlig prosjektopprettelse
+          først. Koblingen kopierer ikke prosjektinnhold.
         </li>
         <li>
-          Åpne Oppsett → Grunnpakker på hovedprosjektet. Legg inn vareinnhold, varenummer
-          og antall. Grunnpakken trenger ingen sum. Valgfri grunnsum per
-          varelinje brukes bare som fratrekk ved et alternativ. Under
+          Åpne Oppsett → Grunnpakker på hovedprosjektet. Legg inn vareinnhold,
+          varenummer og antall. Grunnpakken trenger ingen sum. Valgfri grunnsum
+          per varelinje brukes bare som fratrekk ved et alternativ. Under
           Tilvalgsliste velger du Tillegg til eller Alternativ til en
           standardvare, med eller uten fratrekk.
         </li>

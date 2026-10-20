@@ -146,6 +146,12 @@ try {
       "utf8",
     ),
   );
+  await db.exec(
+    await fs.readFile(
+      "supabase/migrations/20261020230426_boligprosjekter_unit_contact.sql",
+      "utf8",
+    ),
+  );
   await db.exec("begin");
   await actor();
   eq((await call()).enabled, false);
@@ -196,9 +202,60 @@ try {
     id: unit.id,
     number: "H0101",
     contact_name: "Eksempel Person",
+    contact_email: " EKSEMPEL@EXAMPLE.INVALID ",
+    contact_phone: " +47 900 00 000 ",
     project_id: project,
   });
   eq(result.units.find((x) => x.id === unit.id).project_id, project);
+  eq(
+    result.units.find((x) => x.id === unit.id).contact_email,
+    "eksempel@example.invalid",
+  );
+  eq(
+    result.units.find((x) => x.id === unit.id).contact_phone,
+    "+47 900 00 000",
+  );
+  await rejects(
+    () =>
+      mutate("unit", {
+        id: unit.id,
+        number: "H0101",
+        contact_email: "invalid",
+        project_id: project,
+      }),
+    "23514",
+  );
+  await rejects(
+    () =>
+      mutate("unit", {
+        id: unit.id,
+        number: "H0101",
+        contact_phone: "x".repeat(41),
+        project_id: project,
+      }),
+    "23514",
+  );
+  await rejects(
+    () =>
+      mutate("unit", {
+        id: unit.id,
+        number: "H0101",
+        contact_email: 42,
+        project_id: project,
+      }),
+    "22023",
+  );
+  await mutate("unit", {
+    id: unit.id,
+    number: "H0101",
+    contact_name: "Eksempel Person",
+    project_id: project,
+  });
+  eq(
+    result.units.find((x) => x.id === unit.id).contact_email,
+    "eksempel@example.invalid",
+    "Older clients must not erase contacts",
+  );
   await mutate("resize", {
     id: entrance,
     address: "Eksempelgata 1A",
@@ -219,6 +276,19 @@ try {
   const revision = result.root.revision;
   await actor(reader);
   eq((await call("get", root)).units.length, 500);
+  eq(
+    (await call("get", root)).units.find((x) => x.id === unit.id).contact_phone,
+    "+47 900 00 000",
+  );
+  await rejects(
+    () =>
+      call("unit", root, result.root.revision, {
+        id: unit.id,
+        number: "H0101",
+        contact_email: "changed@example.invalid",
+      }),
+    "42501",
+  );
   eq((await call("list")).roots[0].unit_count, 500);
   await db.exec(
     "reset role;select set_config('qa.project_read','no',false);set role authenticated",

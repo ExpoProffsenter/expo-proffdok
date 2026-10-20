@@ -73,6 +73,8 @@ Følgende er ikke-forhandlebare regresjonskrav:
 9. **Bevisst brukerhandling vinner alltid over automatisk recovery i hele den interne appen.** Etter fanebytte/dvale skal første ekte brukerinteraksjon avslutte gammel foreground-recovery før `Tilbake`, `Lagre`, `Avbryt`, menyvalg, Startside eller annen navigasjon behandles. Senere recovery-timere må aldri kunne reversere brukerens valg.
 10. `Prissøk` → appbytte/dvale → tilbake: samme Prissøk-arbeidsflate skal gjenåpnes når den faktisk var aktiv, og valgte varer i den midlertidige arbeidslisten skal fortsatt være tilgjengelige. Bevisst navigasjon bort fra Prissøk skal rydde denne recovery-markøren.
 
+11. **Alle faser skal bevare arbeidssted ved fanebytte/dvale.** Oppdatering av samme bruker/arbeidsfirma skal ikke sende brukeren til Startsiden, hovedoversikten eller en annen fane. Nye og endrede arbeidsflater skal scenario-testes med visibility/focus, gjentatt arbeidsprofilhendelse, forsinket tilgangssvar og usendt kladd. I Boligprosjekter gjelder dette bygg/oppsett, grunnpakke, tilvalg, boligkontakt, boligvalg og bestillingsutkast. Reelt bruker-/firmabytte eller tilbakekalt tilgang skal fortsatt sperre gammelt innhold straks. Gjenoppretting skal verifisere lagrede ID-er mot ferske serverdata og respektere bevisst navigasjon/lukking.
+
 ## 4. Server-first + local safety
 
 For data som allerede finnes på server:

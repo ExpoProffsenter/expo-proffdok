@@ -11,6 +11,7 @@ import {
   clearBoligDraft,
 } from "./boligClient.js";
 import "./bolig.css";
+import { useBoligUiState } from "./boligUiState.js";
 import BoligCatalog from "./BoligCatalog.jsx";
 import BoligBuildingOverview from "./BoligBuildingOverview.jsx";
 import { Building2, Home, Settings2, RefreshCw, X } from "lucide-react";
@@ -164,10 +165,11 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
     [notice, setNotice] = useState(""),
-    [entranceId, setEntranceId] = useState(""),
-    [unitId, setUnitId] = useState(""),
-    [query, setQuery] = useState(""),
-    [view, setView] = useState("overview");
+    [entranceId, setEntranceId] = useBoligUiState(context, "entrance", ""),
+    [unitId, setUnitId] = useBoligUiState(context, "unit", ""),
+    [query, setQuery] = useBoligUiState(context, "query", ""),
+    [view, setView] = useBoligUiState(context, "view", "overview");
+  const [rootId, setRootId] = useBoligUiState(context, "root", "");
   useEffect(() => {
     setCtx(context);
     if (!context.enabled) {
@@ -252,8 +254,10 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
       try {
         if (context.enabled) {
           const listing = await request("list");
-          const first = listing.roots?.find((r) => !r.archived);
-          if (first && alive.current) await fetchRecord(first.id);
+          const first =
+            listing.roots?.find((r) => r.id === rootId) ||
+            listing.roots?.find((r) => !r.archived);
+          if (first && alive.current) await fetchRecord(first.id, true);
         }
       } catch (e) {
         if (alive.current) setError(e.message);
@@ -265,7 +269,7 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
       window.removeEventListener(WORK_PROFILE_EVENT, handleScope);
     };
   }, [context.company_id, context.enabled, request, onClose]);
-  const fetchRecord = async (id) => {
+  const fetchRecord = async (id, restore = false) => {
     const token = ++selection.current;
     setError("");
     try {
@@ -275,8 +279,11 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
       });
       if (alive.current && token === selection.current) {
         apply(value);
-        setEntranceId("");
-        setUnitId("");
+        setRootId(id);
+        if (!restore) {
+          setEntranceId("");
+          setUnitId("");
+        }
       }
     } catch (e) {
       if (alive.current && token === selection.current) {
@@ -749,6 +756,23 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
                             prosjektet.
                           </p>
                         )}
+                        <div className="bolig-contact-summary">
+                          <strong>
+                            {unit.contact_name ||
+                              "Kontaktperson ikke registrert"}
+                          </strong>
+                          <span>
+                            {
+                              entrances.find((e) => e.id === unit.entrance_id)
+                                ?.address
+                            }{" "}
+                            · {unit.number}
+                          </span>
+                          <span>
+                            {unit.contact_email || "E-post mangler"} ·{" "}
+                            {unit.contact_phone || "Mobil mangler"}
+                          </span>
+                        </div>
                         <details className="bolig-unit-contact">
                           <summary>Kontakt og leilighetsprosjekt</summary>
                           {canWrite &&
@@ -762,6 +786,8 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
                               initial={{
                                 number: unit.number,
                                 contact_name: unit.contact_name,
+                                contact_email: unit.contact_email || "",
+                                contact_phone: unit.contact_phone || "",
                                 project_id: unit.project_id || "",
                               }}
                               onSubmit={(v) =>
@@ -788,6 +814,42 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
                                       value={v.contact_name}
                                       onChange={(e) =>
                                         c("contact_name", e.target.value)
+                                      }
+                                    />
+                                  </label>
+                                  <label>
+                                    Adresse
+                                    <input
+                                      readOnly
+                                      value={
+                                        entrances.find(
+                                          (e) => e.id === unit.entrance_id,
+                                        )?.address || ""
+                                      }
+                                    />
+                                    <small>
+                                      Hentes automatisk fra oppgangen.
+                                    </small>
+                                  </label>
+                                  <label>
+                                    E-post
+                                    <input
+                                      type="email"
+                                      maxLength={254}
+                                      value={v.contact_email || ""}
+                                      onChange={(e) =>
+                                        c("contact_email", e.target.value)
+                                      }
+                                    />
+                                  </label>
+                                  <label>
+                                    Mobil
+                                    <input
+                                      type="tel"
+                                      maxLength={40}
+                                      value={v.contact_phone || ""}
+                                      onChange={(e) =>
+                                        c("contact_phone", e.target.value)
                                       }
                                     />
                                   </label>
