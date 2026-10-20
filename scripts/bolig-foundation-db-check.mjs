@@ -55,7 +55,7 @@ const rejects = async (fn, code) => {
 };
 try {
   await db.exec(
-    `create role anon;create role authenticated;create role service_role;create schema auth;create table auth.users(id uuid primary key);create function auth.uid() returns uuid language sql as $$select nullif(current_setting('qa.user',true),'')::uuid$$;create function public.current_active_company_scope_id() returns uuid language sql as $$select nullif(current_setting('qa.company',true),'')::uuid$$;create table public.sales_company_scopes(id uuid primary key,display_name text);create table public.profiles(id uuid primary key,email text,approved boolean default true,deactivated boolean default false,role text default 'member',system_role text);create table public.sales_company_memberships(company_id uuid,user_id uuid,workspace_role text);create table public.projects(id uuid primary key,company_scope_id uuid,user_id uuid,title text,locked boolean default false,updated_at timestamptz default now());create function public.current_profile_is_systemadmin() returns boolean language sql security definer as $$select exists(select 1 from public.profiles where id=auth.uid() and system_role='systemadmin' and approved and not deactivated)$$;create function public.current_user_has_module_access(text) returns boolean language sql as $$select coalesce(current_setting('qa.projects',true),'yes')<>'no'$$;create function public.project_row_access_allowed(uuid,uuid) returns boolean language sql as $$select $1=public.current_active_company_scope_id() and coalesce(current_setting('qa.project_read',true),'yes')<>'no'$$;grant usage on schema auth to authenticated;`,
+    `create role anon;create role authenticated;create role service_role;create schema auth;create table auth.users(id uuid primary key);create function auth.uid() returns uuid language sql as $$select nullif(current_setting('qa.user',true),'')::uuid$$;create function public.current_active_company_scope_id() returns uuid language sql as $$select nullif(current_setting('qa.company',true),'')::uuid$$;create table public.sales_company_scopes(id uuid primary key,display_name text);create table public.profiles(id uuid primary key,email text,approved boolean default true,deactivated boolean default false,role text default 'member',system_role text);create table public.sales_company_memberships(company_id uuid,user_id uuid,workspace_role text);create table public.projects(id uuid primary key,company_scope_id uuid,user_id uuid,title text,locked boolean default false,updated_at timestamptz default now());create function public.current_profile_is_systemadmin() returns boolean language sql security definer as $$select exists(select 1 from public.profiles where id=auth.uid() and system_role='systemadmin' and approved and not deactivated)$$;create function public.current_user_has_module_access(text) returns boolean language sql as $$select coalesce(current_setting('qa.projects',true),'yes')<>'no'$$;create function public.project_row_access_allowed(uuid,uuid) returns boolean language sql as $$select public.current_profile_is_systemadmin() or ($1=public.current_active_company_scope_id() and coalesce(current_setting('qa.project_read',true),'yes')<>'no')$$;grant usage on schema auth to authenticated;`,
   );
   await db.query(
     "insert into public.sales_company_scopes values($1,$2),($3,$4)",
@@ -107,6 +107,12 @@ try {
   await db.exec(
     await fs.readFile(
       "supabase/migrations/20261020204107_boligprosjekter_conflict_http_status.sql",
+      "utf8",
+    ),
+  );
+  await db.exec(
+    await fs.readFile(
+      "supabase/migrations/20261020205027_boligprosjekter_project_link_lifecycle.sql",
       "utf8",
     ),
   );
@@ -245,6 +251,48 @@ try {
     () => mutate("unit", { id: unit.id, number: "H0101", project_id: project }),
     "42501",
   );
+  const deletable = id(10),
+    secondUnit = result.units[1].id;
+  await db.exec("reset role");
+  await db.query(
+    "insert into public.projects(id,company_scope_id,user_id,title) values($1,$2,$3,$4)",
+    [deletable, firm, manager, "Disposable QA project"],
+  );
+  await actor(manager);
+  await mutate("unit", {
+    id: secondUnit,
+    number: "H0102",
+    contact_name: "Keep unit",
+    project_id: deletable,
+  });
+  await db.exec("reset role");
+  await db.query("delete from public.projects where id=$1", [deletable]);
+  await actor(manager);
+  const retained = (await call("get", root)).units.find(
+    (x) => x.id === secondUnit,
+  );
+  eq(retained.project_id, null);
+  eq(retained.contact_name, "Keep unit");
+  const moved = id(11);
+  await db.exec("reset role");
+  await db.query(
+    "insert into public.projects(id,company_scope_id,user_id,title) values($1,$2,$3,$4)",
+    [moved, firm, manager, "Movable QA project"],
+  );
+  await actor(manager);
+  await mutate("unit", { id: secondUnit, number: "H0102", project_id: moved });
+  await db.exec("reset role");
+  await db.query("update public.projects set company_scope_id=$1 where id=$2", [
+    other,
+    moved,
+  ]);
+  await actor(system);
+  const scoped = (await call("get", root)).units.find(
+    (x) => x.id === secondUnit,
+  );
+  eq(scoped.has_project, true);
+  eq(scoped.project_id, null);
+  await actor(manager);
   await db.exec(
     `reset role;update public.profiles set deactivated=true where id=${q(reader)}`,
   );

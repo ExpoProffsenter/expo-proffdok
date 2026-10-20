@@ -2,7 +2,7 @@
 
 Miljømål: BEGGE. Egen core-endring fra ren main, adskilt fra prototype-PR #277. Første etappe gir serverlagret hovedprosjekt → blokk → oppgang → bolig, firmaaktivering og individuell lese-/prosjektledertilgang. Etasjeoppsettet har egne felt og total. Eksisterende ProffDok-prosjekter kobles til boliger; eksisterende prosjektinnhold og rettigheter brukes videre.
 
-Fire additive migrasjoner er installert kun i Sandbox. Modulen er ikke aktivert permanent på noen firmaer. Production er urørt. Grunnpakker, tilvalg, fremdrift, portal og e-postbestillinger er ikke del av denne etappen. Ingen merge uten grønn QA, innlogget Preview-prøve og ny TEST OK. Scope, arkitektur, testbevis og videre arbeid: `docs/qa/BOLIG_FOUNDATION_20261020.md`.
+Fem additive migrasjoner er installert kun i Sandbox. Modulen er ikke aktivert permanent på noen firmaer. Production er urørt. Grunnpakker, tilvalg, fremdrift, portal og e-postbestillinger er ikke del av denne etappen. Ingen merge uten grønn QA, innlogget Preview-prøve og ny TEST OK. Scope, arkitektur, testbevis og videre arbeid: `docs/qa/BOLIG_FOUNDATION_20261020.md`.
 
 ## Antall på kundevalgte opsjoner – Preview 17.10.2026
 

@@ -4,7 +4,7 @@ Miljømål: **BEGGE**, Preview/Sandbox først. Baseline main `0730eeb46c49bf45b5
 
 ## Scope
 
-Nye filer i `src/modules/bolig`, avgrenset Hjelp-komponent, fire additive bolig-migrasjoner, to egne runtime-tester og tilhørende README/arkitektur/QA. `src/main.jsx` får kun lazy-import og en autorisert launcher i Startside uten åpent prosjekt. `.github/workflows/pr-core-safety.yml` får et tillegg som kjører de nye testene etter eksisterende kontroller. Eksisterende checkere, menyer, Sales, recovery, prosjektlagring, e-post og eksisterende rettigheter endres ikke.
+Nye filer i `src/modules/bolig`, avgrenset Hjelp-komponent, fem additive bolig-migrasjoner, to egne runtime-tester og tilhørende README/arkitektur/QA. `src/main.jsx` får kun lazy-import og en autorisert launcher i Startside uten åpent prosjekt. `.github/workflows/pr-core-safety.yml` får et tillegg som kjører de nye testene etter eksisterende kontroller. Eksisterende checkere, menyer, Sales, recovery, prosjektlagring, e-post og eksisterende rettigheter endres ikke.
 
 ## Leveranse
 
@@ -16,10 +16,10 @@ Nye filer i `src/modules/bolig`, avgrenset Hjelp-komponent, fire additive bolig-
 
 ## Verifikasjon
 
-- Den eksakte SQL-migrasjonen kjøres i PGlite med roller og autentiseringskontrakter. 38 kontroller: 500 boliger, delt lesing, firma-/modul-/bruker-/rollegrenser, feil firma også med aktiv modul, låst prosjekt, revisjonskonflikt og rollback, stabile ID-er/kontakt/kobling, deaktivert bruker, tilbakekalt tilgang, direkte tabelltilgang og anonym nektet.
+- Den eksakte SQL-migrasjonen kjøres i PGlite med roller og autentiseringskontrakter. 42 kontroller: 500 boliger, delt lesing, firma-/modul-/bruker-/rollegrenser, feil firma også med aktiv modul, låst prosjekt, revisjonskonflikt og rollback, stabile ID-er/kontakt/kobling, deaktivert bruker, tilbakekalt tilgang, direkte tabelltilgang og anonym nektet.
 - Faktisk React-komponent kjøres i JSDOM med kontrollert transport. Kontrollerer autorisert launcher, portal uten nestede prosjektskjema, lokal kladd, fanebytte, konflikt/henting/ny lagring, firmabytte og bortfalt aktivering. Dette er komponenttest; den erstatter ikke innlogget integrasjonsprøve.
 - Full critical/Sandbox-build PASS. Eksisterende faktisk React-test for KS/HMS + HR + Min side navigation PASS. Eksisterende prosjektmeny-returtest PASS (ordre → Startside/våtrom, KS/HMS, mobiltekster).
-- Alle fire migrasjoner installert i Sandbox `ppvircenkjizeiqdxphj`. Ekte PostgreSQL-prøve med eksisterende intern autorisasjon: midlertidig aktivering, nytt syntetisk hovedprosjekt, blokk og 500 boliger, reread og gammel revisjon avvist. Hele testen rullet tilbake. Null testhovedprosjekter igjen. Ingen personidentitet eller token eksportert.
+- Alle fem migrasjoner installert i Sandbox `ppvircenkjizeiqdxphj`. Ekte PostgreSQL-prøve med eksisterende intern autorisasjon: midlertidig aktivering, nytt syntetisk hovedprosjekt, blokk og 500 boliger, reread og gammel revisjon avvist. Hele testen rullet tilbake. Null testhovedprosjekter igjen. Ingen personidentitet eller token eksportert.
 - Supabase security/performance advisors gjennomgått. Nye tabeller med RLS uten policies er tilsiktet deny-all for direkte tilgang; data går bare gjennom kontrollert gateway. To manglende FK-indekser rettet i egen additiv migrasjon. Nye ubrukte indekser er forventet før modulen er tatt i bruk. Andre eksisterende moduladvarsler er utenfor scope.
 
 Kjøring: `HR_PGLITE_PATH=<sti til pglite dist/index.js> node scripts/bolig-foundation-db-check.mjs` og `KSHMS_JSDOM_PATH=<sti til jsdom lib/api.js> node scripts/bolig-foundation-react-check.mjs`. CI installerer pinnede QA-avhengigheter og kjører samme filer. Full critical build og relevante eksisterende navigasjons-/prosjekttester skal være grønne før TEST OK.
@@ -28,13 +28,17 @@ Kjøring: `HR_PGLITE_PATH=<sti til pglite dist/index.js> node scripts/bolig-foun
 
 Innlogget Preview med demo-brukeren fant at opprettet hovedprosjekt ikke kom i listen. Årsak: listealiaset `r` kolliderte med PL/pgSQL-recorden `r` under `use_variable`, slik at listespørringen filtrerte på en tom lokal record. Egen additiv migrasjon `20261020203617_boligprosjekter_root_list_scope.sql` gir listealiaset et entydig navn og beholder øvrig gateway/grants. Den nye PostgreSQL-testen feiler før rettelsen og passerer etterpå. Tidligere brukere/data berøres ikke.
 
-Sandbox MCP-historikk bruker servergenererte versjoner: foundation `20261020202112`, FK-indekser `20261020202709`, listescoping `20261020203641`, HTTP-konflikt `20261020204137`; kildefilene er generert med CLI. Ved senere CLI-synk må denne navne-/versjonskoblingen håndteres eksplisitt; migrasjonene skal ikke kjøres dobbelt på Sandbox. Production har ingen av migrasjonene installert.
+Sandbox MCP-historikk bruker servergenererte versjoner: foundation `20261020202112`, FK-indekser `20261020202709`, listescoping `20261020203641`, HTTP-konflikt `20261020204137`, prosjektkobling `20261020205119`; kildefilene er generert med CLI. Ved senere CLI-synk må denne navne-/versjonskoblingen håndteres eksplisitt; migrasjonene skal ikke kjøres dobbelt på Sandbox. Production har ingen av migrasjonene installert.
 
 ## Konflikt over ekte HTTP
 
 Innlogget prøve med en ekte usendt kladd og en separat godkjent RPC-endring av samme testbolig avdekket automatisk gjentakelse ved SQLSTATE `40001` i PostgREST 14.5. Egen additiv migrasjon `20261020204107_boligprosjekter_conflict_http_status.sql` returnerer `PT409` for modulens tre eksplisitte revisjonskonflikter. Klienten gjenkjenner HTTP-konflikten og deaktiverer SDK-retry eksplisitt. Etter rettelsen kom konflikten straks frem; lokal tekst var beholdt etter «Hent siste versjon» og kunne lagres bevisst. Ingen generell PostgREST-/auth-/recovery-konfigurasjon ble endret. Den identifiserte gamle testforespørselen var allerede avsluttet da målrettet opprydding ble forsøkt; ingen annen backend ble stoppet. Offisiell forklaring: https://supabase.com/docs/guides/troubleshooting/high-cpu-and-infinite-transaction-retries-when-using-custom-error-codes-in-rpc-functions-77326b .
 
 Innlogget browser → RPC → database-prøve: midlertidig firmaaktivering, hovedprosjekt i liste, blokk og oppgang med 4 + 4 + 3 boliger, kontakt og prosjektkobling, ny innlasting med bevart innlogging, versjonskonflikt med lokal kladd, reduksjon til 8 og tilbake til 11 boliger. Samme bolig-UUID, kontakt og prosjektkobling er beholdt. Rolle-/firma-/tilbakekallingsmatrisen testes i PostgreSQL/React; to ulike ekte brukerinnlogginger er ikke prøvd her. Åpning av eksisterende QA-prosjekt og retur til Startsiden er kontrollert uten å redigere prosjektinnhold. Det nye syntetiske hovedprosjektet er arkivert, testkoblingen til ordinært prosjekt fjernet og firmaaktiveringen slått av igjen. Ingen individuelle tilganger er tildelt.
+
+## Eksisterende prosjektlivsløp
+
+Gjennomgangen fant at standard-FK fra den nye boligkoblingen ville stanse ordinær prosjektsletting. En faktisk PostgreSQL-test viste 23503 før rettelsen. `20261020205027_boligprosjekter_project_link_lifecycle.sql` gjør bare den nye private koblingen til ON DELETE SET NULL. Etter sletting beholdes boligens UUID og kontakt, mens prosjektkoblingen fjernes. Ingen eksisterende slettefunksjon, rettighet eller prosjektrad endres av migrasjonen. Samme migrasjon krever eksplisitt samme firma også ved lesing av koblet prosjekt-ID; flyttes et ordinært prosjekt senere til annet firma, er ID-en maskert også for systemadmin. Begge scenarier er med i de 42 PostgreSQL-kontrollene. Ingen ekte eksisterende prosjektdata ble slettet i Sandbox-prøven.
 
 ## Innlogget Preview-prøve før TEST OK
 
