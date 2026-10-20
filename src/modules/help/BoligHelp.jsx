@@ -23,6 +23,18 @@ export function BoligHelp() {
           prosjektinnhold.
         </li>
         <li>
+          Åpne Grunnpakker på hovedprosjektet. Legg inn vareinnhold, varenummer
+          og antall. Grunnpakken trenger ingen sum. Valgfri grunnsum per
+          varelinje brukes bare som fratrekk ved et alternativ. Under
+          Tilvalgsliste velger du Tillegg til eller Alternativ til en
+          standardvare, med eller uten fratrekk.
+        </li>
+        <li>
+          Velg en bolig. Under Grunnpakke og tilvalg velger du pakken og
+          tilvalgene. Kontroller pris, fratrekk og mellomlegg. Lagre boligvalget
+          som utkast. Senere pakkeendringer endrer ikke dette lagrede valget.
+        </li>
+        <li>
           Vent på «Lagret i firmaet». Andre med tilgang kan hente samme
           struktur. Hvis noen har endret strukturen, beholdes din kladd. Hent
           siste versjon og se over før ny lagring.
@@ -33,9 +45,9 @@ export function BoligHelp() {
         </li>
       </ol>
       <p>
-        Denne første etappen lagrer boligstruktur og prosjektkoblinger. Pakker,
-        tilvalg, fremdrift, beboerportal og e-postbestillinger følger i senere
-        etapper.
+        Boligvalg er interne utkast. Kundeaksept, fremdrift, beboerportal og
+        e-postbestillinger er ikke koblet til ennå. Grunnleveransen og beboerens
+        tilvalg holdes adskilt.
       </p>
     </details>
   );

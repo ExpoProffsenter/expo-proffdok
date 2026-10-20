@@ -11,6 +11,7 @@ import {
   clearBoligDraft,
 } from "./boligClient.js";
 import "./bolig.css";
+import BoligCatalog from "./BoligCatalog.jsx";
 export default function BoligEntry({ userId, onOpenProject, onExit }) {
   const { context, loadError } = useBoligContext(userId);
   const [open, setOpen] = useState(true);
@@ -462,6 +463,13 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
                       </button>
                     ) : null}
                   </div>
+                  <BoligCatalog
+                    key={
+                      ctx.user_id + ":" + ctx.company_id + ":" + record.root.id
+                    }
+                    context={ctx}
+                    root={record.root}
+                  />
                   {canWrite ? (
                     <div className="bolig-setup">
                       <details>
@@ -792,6 +800,12 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
                           {unit.contact_name || "Ikke registrert"}
                         </p>
                       )}
+                      <BoligCatalog
+                        key={unit.id + ":" + ctx.role}
+                        context={ctx}
+                        root={record.root}
+                        unit={unit}
+                      />
                     </section>
                   ) : null}
                   {ctx.role === "manager" ? (

@@ -122,6 +122,13 @@ try {
       "utf8",
     ),
   );
+  await db.exec(
+    await fs.readFile(
+      "supabase/migrations/20261020214210_boligprosjekter_packages_choices.sql",
+      "utf8",
+    ),
+  );
+  await db.exec(await fs.readFile("supabase/migrations/20261020215336_boligprosjekter_choice_unit_index.sql","utf8"));
   await db.exec("begin");
   await actor();
   eq((await call()).enabled, false);
@@ -298,6 +305,309 @@ try {
   );
   eq(scoped.has_project, true);
   eq(scoped.project_id, null);
+  const catalog = async (
+    action = "state",
+    expected = null,
+    payload = {},
+    rootId = root,
+    company = firm,
+  ) =>
+    (
+      await db.query("select public.bolig_catalog($1,$2,$3,$4,$5) v", [
+        company,
+        rootId,
+        action,
+        expected,
+        payload,
+      ])
+    ).rows[0].v;
+  let catalogState = await catalog();
+  eq(catalogState.revision, 0);
+  const baseLine = {
+    key: "standard-servant",
+    name: "Standard servant",
+    sku: "STD-1",
+    quantity: 1,
+    unit: "stk",
+    credit_cents: 10000,
+  };
+  catalogState = await catalog("package", 0, {
+    name: "Standard",
+    lines: [baseLine],
+  });
+  const packageId = catalogState.packages[0].id;
+  await rejects(
+    () => catalog("package", 0, { name: "Conflict", lines: [baseLine] }),
+    "PT409",
+  );
+  await rejects(
+    () =>
+      catalog("package", 1, {
+        name: "Duplicate keys",
+        lines: [baseLine, baseLine],
+      }),
+    "22023",
+  );
+  await rejects(
+    () =>
+      catalog("package", 1, {
+        name: "Fractional cents",
+        lines: [{ ...baseLine, credit_cents: 1.5 }],
+      }),
+    "22023",
+  );
+  const extra = {
+    name: "Ekstra knagg",
+    sku: "EXTRA-1",
+    quantity: 2,
+    unit: "stk",
+    price_cents: 2500,
+    replace_key: "",
+    deduct_base: false,
+  };
+  catalogState = await catalog("option", 1, extra);
+  const extraId = catalogState.options.find((o) => o.name === extra.name).id;
+  const alternative = {
+    ...extra,
+    name: "Alternativ servant",
+    sku: "ALT-1",
+    quantity: 1,
+    price_cents: 18000,
+    replace_key: baseLine.key,
+    deduct_base: true,
+  };
+  catalogState = await catalog("option", 2, alternative);
+  const altId = catalogState.options.find(
+    (o) => o.name === alternative.name,
+  ).id;
+  catalogState = await catalog("option", 3, {
+    ...alternative,
+    name: "Alternativ uten fratrekk",
+    deduct_base: false,
+  });
+  const noCreditId = catalogState.options.find(
+    (o) => o.name === "Alternativ uten fratrekk",
+  ).id;
+  await rejects(
+    () =>
+      catalog("option", 4, {
+        ...extra,
+        name: "Invalid additional deduction",
+        deduct_base: true,
+      }),
+    "22023",
+  );
+  await rejects(
+    () =>
+      catalog("option", 4, {
+        ...extra,
+        name: "Unknown base",
+        replace_key: "unknown",
+      }),
+    "22023",
+  );
+  await rejects(
+    () => catalog("option", 4, { ...extra, name: "Negative", price_cents: -1 }),
+    "23514",
+  );
+  const choose = {
+    unit_id: unit.id,
+    package_id: packageId,
+    option_ids: [extraId, altId],
+    choice_revision: 0,
+    total_cents: 1,
+  };
+  let choiceState = await catalog("choose", 4, choose);
+  eq(
+    choiceState.selection.snapshot.total_cents,
+    10500,
+    "Gross minus base credit plus standalone extra; client total ignored",
+  );
+  eq(
+    choiceState.selection.snapshot.options.find((o) => o.id === altId)
+      .deduction_cents,
+    10000,
+  );
+  eq(
+    choiceState.selection.snapshot.options.find((o) => o.id === altId)
+      .net_cents,
+    8000,
+  );
+  eq(
+    choiceState.selection.snapshot.goods.map((l) => l.sku).sort(),
+    ["ALT-1", "EXTRA-1"],
+    "Replaced standard SKU must not remain in goods",
+  );
+  const immutable = JSON.stringify(choiceState.selection.snapshot);
+  await rejects(
+    () =>
+      catalog("choose", 4, {
+        ...choose,
+        option_ids: [altId, noCreditId],
+        choice_revision: 1,
+      }),
+    "22023",
+  );
+  await rejects(
+    () =>
+      catalog("choose", 4, {
+        ...choose,
+        option_ids: [altId, altId],
+        choice_revision: 1,
+      }),
+    "22023",
+  );
+  await rejects(() => catalog("choose", 4, choose), "PT409");
+  const noCredit = await catalog("choose", 4, {
+    ...choose,
+    unit_id: secondUnit,
+    option_ids: [noCreditId],
+    choice_revision: 0,
+  });
+  eq(
+    noCredit.selection.snapshot.total_cents,
+    18000,
+    "Alternative may replace standard goods without a deduction",
+  );
+  eq(noCredit.selection.snapshot.goods.length, 1);
+  catalogState = await catalog("option", 4, {
+    ...alternative,
+    id: altId,
+    price_cents: 30000,
+  });
+  catalogState = await catalog("package", 5, {
+    id: packageId,
+    name: "Standard ny",
+    lines: [{ ...baseLine, credit_cents: 12000 }],
+  });
+  eq(
+    JSON.stringify(
+      (await catalog("unit", null, { unit_id: unit.id })).selection.snapshot,
+    ),
+    immutable,
+    "Catalog and base-credit changes never rewrite saved choice",
+  );
+  await rejects(
+    () => catalog("choose", 4, { ...choose, choice_revision: 1 }),
+    "PT409",
+  );
+  choiceState = await catalog("choose", 6, { ...choose, choice_revision: 1 });
+  eq(choiceState.selection.snapshot.total_cents, 20500);
+  eq(choiceState.history.length, 2);
+  eq(
+    JSON.stringify(choiceState.history.find((h) => h.revision === 1).snapshot),
+    immutable,
+  );
+  const otherRoot = (
+    await call("create", null, null, { title: "Separate catalog" })
+  ).root.id;
+  await rejects(
+    () =>
+      catalog(
+        "package",
+        0,
+        { id: packageId, name: "Stolen", lines: [baseLine] },
+        otherRoot,
+      ),
+    "42501",
+  );
+  await rejects(
+    () => catalog("unit", null, { unit_id: unit.id }, otherRoot),
+    "42501",
+  );
+  await rejects(() => catalog("state", null, {}, root, other), "42501");
+  await actor(reader);
+  eq((await catalog()).packages.length, 1);
+  await rejects(() => catalog("option", 6, extra), "42501");
+  await actor(manager);
+  catalogState = await catalog("archive", 6, {
+    kind: "package",
+    id: packageId,
+    archived: true,
+  });
+  await rejects(
+    () => catalog("choose", 7, { ...choose, choice_revision: 2 }),
+    "22023",
+  );
+  eq(
+    JSON.stringify(
+      (await catalog("unit", null, { unit_id: unit.id })).history.find(
+        (h) => h.revision === 1,
+      ).snapshot,
+    ),
+    immutable,
+  );
+  catalogState = await catalog("archive", 7, {
+    kind: "package",
+    id: packageId,
+    archived: false,
+  });
+  const archivedRoot = await call(
+    "archive",
+    root,
+    (await call("get", root)).root.revision,
+    { kind: "root", id: root, archived: true },
+  );
+  await rejects(() => catalog("option", 8, extra), "42501");
+  await call("archive", root, archivedRoot.root.revision, {
+    kind: "root",
+    id: root,
+    archived: false,
+  });
+  const noSumState = await catalog("package", 8, {
+    name: "Inkludert uten sum",
+    lines: [{ ...baseLine, credit_cents: null }],
+  });
+  const noSumId = noSumState.packages.find(
+    (p) => p.name === "Inkludert uten sum",
+  ).id;
+  const thirdUnit = result.units[2].id;
+  const noSumChoice = await catalog("choose", 9, {
+    unit_id: thirdUnit,
+    package_id: noSumId,
+    option_ids: [],
+    choice_revision: 0,
+  });
+  eq(
+    noSumChoice.selection.snapshot.total_cents,
+    0,
+    "Included base package needs no total price",
+  );
+  eq(
+    noSumChoice.selection.snapshot.goods[0].sku,
+    "STD-1",
+    "Unpriced base goods retain SKU and quantity for later ordering",
+  );
+  eq(
+    noSumChoice.selection.snapshot.package.lines[0].credit_cents,
+    null,
+    "Unspecified credit is distinct from an explicit zero",
+  );
+  await rejects(
+    () =>
+      catalog("choose", 9, {
+        unit_id: thirdUnit,
+        package_id: noSumId,
+        option_ids: [altId],
+        choice_revision: 1,
+      }),
+    "22023",
+  );
+  const noSumAlternative = await catalog("choose", 9, {
+    unit_id: thirdUnit,
+    package_id: noSumId,
+    option_ids: [noCreditId],
+    choice_revision: 1,
+  });
+  eq(noSumAlternative.selection.snapshot.total_cents, 18000);
+  await db.exec("reset role;set role authenticated");
+  await rejects(
+    () => db.query("select * from bolig_private.choice_versions"),
+    "42501",
+  );
+  await db.exec("reset role;set role anon");
+  await rejects(() => catalog(), "42501");
+  await actor(manager);
   await actor(manager);
   await db.exec(
     `reset role;update public.profiles set deactivated=true where id=${q(reader)}`,

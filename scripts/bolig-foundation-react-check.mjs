@@ -203,6 +203,7 @@ try {
           },
         };
       }
+      if(name === "bolig_catalog") return {data:{context:context(),root_id:args.p_root_id,revision:0,packages:[],options:[],history:[],selection:null}};
       assert.equal(name, "bolig_workspace");
       const ctx = context();
       if (args.p_action === "context") return { data: ctx };

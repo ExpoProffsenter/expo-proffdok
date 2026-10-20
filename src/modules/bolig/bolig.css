@@ -304,3 +304,21 @@
 .bolig-admin-access .bolig-member { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #d7e6ed; flex-wrap: wrap; }
 .bolig-admin-access .bolig-license-toggle { display: flex; align-items: center; gap: 12px; padding: 14px; background: #e8f5f8; border-radius: 10px; margin: 12px 0; }
 .bolig-admin-access .bolig-license-toggle input { width: 20px; height: 20px; flex: 0 0 20px; }
+
+.bolig-catalog { margin: 20px 0; padding: 18px; border: 1px solid #bcdde1; border-radius: 14px; background: #f4fbfc; min-width: 0; }
+.bolig-catalog nav { display:flex; gap: 10px; margin: 14px 0; flex-wrap:wrap; }
+.bolig-catalog nav button[aria-pressed=true] { background: #095a63; color: white; }
+.bolig-catalog-cards { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(250px,100%),1fr)); gap: 12px; margin: 16px 0; }
+.bolig-catalog-cards article, .bolig-saved-choice { padding:16px; border:1px solid #d0e2e7; border-radius:12px; background:white; min-width:0; overflow-wrap:anywhere; }
+.bolig-catalog-form { margin-top:16px; }
+.bolig-catalog-form fieldset { display:grid; gap:12px; padding:14px; border:1px solid #cbdfe4; border-radius:12px; min-width:0; }
+.bolig-catalog-form label { display:grid; gap:6px; min-width:0; }
+.bolig-catalog-form input, .bolig-catalog-form select { max-width:100%; width:100%; min-height:44px; }
+.bolig-catalog-line { display:grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap:12px; padding:14px; background:white; border-radius:10px; border:1px solid #d4e6ea; }
+.bolig-catalog-pair { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.bolig-catalog-form .bolig-catalog-check, .bolig-catalog-form .bolig-option-choice { display:flex; gap:12px; align-items:center; }
+.bolig-catalog-form input[type=checkbox] { flex:0 0 22px; width:22px; height:22px; min-height:22px; }
+.bolig-option-choice { padding:14px; border:1px solid #c9e0e5; border-radius:10px; background:white; }
+.bolig-option-choice small { display:block; margin-top:5px; }
+.bolig-choice-total { font-size:18px; font-weight:700; padding:14px; background:#dcf3f4; border-radius:10px; }
+@media(max-width:600px) { .bolig-catalog { padding:12px; } .bolig-catalog-line { grid-template-columns:1fr; } }
