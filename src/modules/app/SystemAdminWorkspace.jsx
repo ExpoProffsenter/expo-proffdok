@@ -29,8 +29,8 @@ export default function SystemAdminWorkspace({children,supabaseClient,authUser,a
    </>:id==='support'?<SupportWorkspace supabaseClient={supabaseClient} authUser={authUser} admin standalone/>:<>
     {!['news','broadcast','store'].includes(id)&&<div className="pd-admin-panel-heading"><h3>{label}</h3><p>{description[id]}</p></div>}
     {id==='store'&&<div data-systemadmin-store-catalog-slot/>}
-    {original.filter(child=>child.props['data-admin-area']===id)}
     {id==='projects'&&<BoligFirmAccessPanel userId={authUser?.id}/>}
+    {original.filter(child=>child.props['data-admin-area']===id)}
     {id==='projects'&&<SystemAdminSalesSupport supabaseClient={supabaseClient} authUser={authUser}/>}
     {['news','broadcast'].includes(id)&&<AppNewsAdmin supabaseClient={supabaseClient} authUser={authUser} area={id}/>}
    </>}
