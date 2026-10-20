@@ -18,7 +18,7 @@ try{
   w.Image=class{set src(url){this.width=400;this.height=100;setImmediate(()=>this.onload?.());}};
   w.HTMLCanvasElement.prototype.getContext=()=>({drawImage(){}});w.HTMLCanvasElement.prototype.toDataURL=()=>`data:image/png;base64,${fs.readFileSync('public/expo-logo.png').toString('base64')}`;
   const exports=[],calls=[];let fail=false,hold=null;
-  const server=structuredClone(fixture);server.versions[1].content.procedure='Hele denne fremgangsmåten skal følge med over flere sider. '.repeat(500)+'LANG RUTINE SLUTT';
+  const server=structuredClone(fixture);server.acknowledgments[0]={...server.acknowledgments[0],shared_from_version_id:'source-version',shared_from_company_id:'primary',shared_from_company_name:'QA Hovedfirma',shared_at:'2026-10-20T12:00:00Z'};server.versions[1].content.procedure='Hele denne fremgangsmåten skal følge med over flere sider. '.repeat(500)+'LANG RUTINE SLUTT';
   w.__save=(name,bytes)=>exports.push({name,bytes:new Uint8Array(bytes)});
   w.__rpc=async(name,args)=>{calls.push(name);if(hold)await hold;if(fail)throw Error('Tilgang avslått');if(name==='work_profile_company_profile')return {companyId:args.p_company_id,companyName:'QA Ringside Rørleggerbedrift',logoUrl:'/firmalogo.png'};if(name==='kshms_get_state')return structuredClone(server);throw Error('Mutation forbidden');};
   w.eval((Array.isArray(bundle)?bundle[0]:bundle).output.find(e=>e.type==='chunk'&&e.isEntry).code);
@@ -29,7 +29,7 @@ try{
   for(const manage of [false,true]){
    server.context.manage=manage;
    await render('handbook',{data:structuredClone(server),userId:'u',query:'Rutine 001',onQueryChange(){},onRead(){},busy:false});
-   assert.equal(d.querySelectorAll('.ks-personal-routine').length,1,'search retained');
+   assert.equal(d.querySelectorAll('.ks-personal-routine').length,1,'search retained');assert(d.body.textContent.includes('Samme rutinetekst bekreftet i QA Hovedfirma'),'original source shown in actual handbook');
    await click();assert.equal(exports.length,manage?2:1);assert(d.querySelector('[role="status"]').textContent.includes('firmaets logo'));
   }
   const output=process.env.KSHMS_HANDBOOK_PDF_OUTPUT;

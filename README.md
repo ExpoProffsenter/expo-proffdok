@@ -1060,3 +1060,12 @@ Nye og eksisterende aktive interne medarbeidere med KS/HMS-tilgang får siste go
 Kenneth bestilte direkte produksjon og supplerte med alle eksisterende ansatte og samme håndbok i Bademiljø Expo og Expo Proffsenter. Etter kontrollert rollback-prøve er de to tomme håndbøkene fylt via eksisterende oppstart/lagre/publiser-RPC-er, med uttrykkelig bestilling som endringsvurdering og uten egen lesebekreftelse. 87 gjeldende Ringside-utgaver er innholdslike i alle tre firmaene. 7 aktive Expo Proffsenter-medarbeidere fikk påkrevd KS/HMS-lesetilgang. Alle 19/10/11 aktive medlemskap har nå 87 gjeldende rutiner. Ringsides 3 eldre utgaver og alle eksisterende lesebekreftelser er beholdt. Dette er en engangskopiering; senere firmaredigeringer er fortsatt selvstendige.
 
 QA, migrasjon og publisert status: `docs/qa/HANDBOOK_AUTO_ASSIGNMENT_20261020.md`.
+
+
+### Én gjennomgang i hovedfirmaet – 20. oktober 2026
+
+Ansattes faktiske egenbekreftelse i primærfirmaet dekker egne tildelte utgaver med identisk `content_hash` **og** JSONB-innhold i andre tilgjengelige firmaer. Ulik tekst krever egen gjennomgang. Begge firmaer må ha aktiv KS/HMS-lisens og brukerens medlemskap/tilgang. Originale kvitteringer endres aldri. Gjenbruk lagres med originalens navn, tidspunkt, tekst og kildeutgave/firma, eget `shared_at` og revisjonshendelsen `ack_shared_primary`. Det er ikke en ny signering. Eksisterende selvstendige kvitteringer beholdes. Ingen kjeder av gjenbrukte kvitteringer opprettes.
+
+En privat, API-avskåret trigger håndterer ny egenbekreftelse; autorisert `kshms_get_state` gjenbruker eksisterende bekreftelser ved nye tildelinger og reparerer eventuelle samtidighetskappløp før visning. Unik versjon/bruker og `ON CONFLICT DO NOTHING` gjør gjentakelser idempotente. Eksisterende leser-/lederfiltre beholdes. Oppfølging og personalhåndbok/PDF viser kildefirma. Primærfirma følger medlemskapets `is_primary`, ikke firmaet valgt i menyen. Ingen tilgang, rutinetekst eller e-postinnstilling endres.
+
+QA: `scripts/kshms-primary-ack-db-check.mjs` med ekte PostgreSQL/RPC-er og syntetisk rollbackscenario; eksisterende samlet/enkeltbekreftelse og faktisk React/jsPDF beholdes som regresjonsvern.
