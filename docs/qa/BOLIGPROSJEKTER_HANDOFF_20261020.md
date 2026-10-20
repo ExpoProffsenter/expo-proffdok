@@ -1,5 +1,12 @@
 # Handoff – Boligprosjekter
 
+## Oppdatering: samlet prosjektlederflyt
+
+Kenneth ba i ny chat om egne tester i Skynett og samlet oppdatering. Videreført samme draft PR #277 og faste Preview; SANDBOX/DEMO. Nye veiledninger/neste steg, oppfølgingsfiltre og globalt søk. Rettet dobbelt servantskap i varegrunnlag, lagring/visning av leveringsdato, samsvar mellom valgt oppgang og datoflytting samt redigering før ny varselgodkjenning. Egen `scripts/critical-demo-boligprosjekter-flow.mjs` beskytter funnene.
+
+Les siste avsnitt i QA-filen og **fersk PR #277** for samlet head, CI, deployment og faktisk Skynett-resultat. Status/commit under er historikk fra før denne etappen. Ingen TEST OK, merge, produksjonssetting eller demo-synk er gitt. User's next TEST OK remains scoped to prototype experience. Varsle om ny chat før operativ backend-/integrasjonsutvikling.
+
+
 Fortsett Expo ProffDok i `ExpoProffsenter/expo-proffdok`. Les AGENTS.md og hele PROJECT_GUARDRAILS.md. Les deretter:
 
 1. `docs/architecture/BOLIGPROSJEKTER_KRAV_20261020.md` – alle valgene Kenneth tok én etter én. Ikke still de samme spørsmålene på nytt.

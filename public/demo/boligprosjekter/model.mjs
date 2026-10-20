@@ -2,7 +2,7 @@
 export const STORAGE_KEY = 'expo-proffdok.boligprosjekter-prototype.v1';
 export const VERSION = 1;
 export const OPTIONS = [
-  { id:'vanity', title:'Servantskap 80 cm', detail:'Valnøtt · erstatter standard 60 cm', price:12900, kind:'cabinet', sku:'EKSEMPEL-801', supplier:'Eksempelleverandør', replaces:'Servantskap 60 cm' },
+  { id:'vanity', title:'Servantskap 80 cm', detail:'Valnøtt · erstatter standard 60 cm', price:12900, kind:'cabinet', sku:'EKSEMPEL-801', supplier:'Eksempelleverandør', replaces:'Standard servantskap 60 cm' },
   { id:'shower', title:'Dusjsett krom', detail:'Oppgradert dusjsett · erstatter standard', price:5550, kind:'shower', sku:'EKSEMPEL-302', supplier:'Eksempelleverandør', replaces:'Standard dusjsett' },
   { id:'black', title:'Dusjsett matt sort', detail:'Alternativ til dusjsett krom', price:6900, kind:'shower', sku:'EKSEMPEL-303', supplier:'Eksempelleverandør', excludes:['shower'], replaces:'Standard dusjsett' },
   { id:'socket', title:'Ekstra stikkontakt', detail:'Levering og montering · tillegg', price:1850, kind:'socket', sku:'EKSEMPEL-401', supplier:'Eksempelleverandør' },
@@ -53,11 +53,12 @@ export function acceptUnit(state,id) {
   u.accepted={version:(u.accepted?.version||0)+1,ids:[...u.selected],total:optionTotal(u.selected,state.factor),factor:state.factor,at:'20.10.2026',by:'Eksempelbeboer'};u.editing=false;
   return u.accepted;
 }
-export function addOrder(state,id,phase) {
+export function addOrder(state,id,phase,delivery=null) {
   const u=state.units[id];if(!u?.accepted||u.editing)throw Error('Godkjenn tilvalgsgrunnlaget først.');
   if(!['Innbyggingsvarer','Sanitærutstyr'].includes(phase))throw Error('Ugyldig leveransetype.');
   if(state.orders.some(o=>o.unit===id&&o.phase===phase))throw Error('Denne leveransen er allerede klargjort.');
-  const order={id:'EX-'+String(state.orders.length+1).padStart(3,'0'),unit:id,phase,version:u.accepted.version,status:'Klargjort – eksempel',date:'20.10.2026',userOrderNumber:u.userOrderNumber,supplierOrderNumber:null};
+  if(delivery!==null&&!validDate(delivery))throw Error('Velg en gyldig leveringsdato.');
+  const order={delivery,id:'EX-'+String(state.orders.length+1).padStart(3,'0'),unit:id,phase,version:u.accepted.version,status:'Klargjort – eksempel',date:'20.10.2026',userOrderNumber:u.userOrderNumber,supplierOrderNumber:null};
   state.orders.push(order);u.orders.push(order.id);return order;
 }
 export function resizeEntrance(state,id,counts) {
@@ -71,7 +72,7 @@ export function resizeEntrance(state,id,counts) {
   return {before,after:activeUnits(state,id).length,preserved:Object.values(state.units).filter(u=>u.entrance===id).length-activeUnits(state,id).length};
 }
 export function shiftPlan(state,id,date) {
-  if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!Number.isFinite(Date.parse(date)))throw Error('Velg en gyldig dato.');
+  if(!validDate(date))throw Error('Velg en gyldig dato.');
   const u=state.units[id];if(!u)throw Error('Leiligheten finnes ikke.');
   if(u.start===date)return 0;u.start=date;
   let changed=0;for(const n of state.notices)if(n.entrance===u.entrance&&n.status==='Godkjent eksempel'){n.status='Må godkjennes på nytt';changed++;}return changed;
@@ -90,4 +91,17 @@ export function restoreState(raw) {
     }
     return v;
   }catch{return null;}
+}
+
+export function validDate(value) {
+  return typeof value==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(value)&&Number.isFinite(Date.parse(value))&&new Date(value+'T12:00:00Z').toISOString().slice(0,10)===value;
+}
+export function orderItems(u) {
+  const standard=[{title:'Standard servantskap 60 cm',sku:'EKSEMPEL-060',qty:1},{title:'Standard dusjsett',sku:'EKSEMPEL-100',qty:1}];
+  const upgrades=OPTIONS.filter(o=>u.accepted?.ids.includes(o.id));
+  return [...standard.filter(o=>!upgrades.some(x=>x.replaces===o.title)),...upgrades.map(o=>({title:o.title,sku:o.sku,qty:1}))];
+}
+export function unitWork(state,u) {
+  const pending=['Innbyggingsvarer','Sanitærutstyr'].filter(phase=>!state.orders.some(o=>o.unit===u.id&&o.phase===phase));
+  return {needsAcceptance:!u.accepted||u.editing,ready:!!u.accepted&&!u.editing&&pending.length>0,pending};
 }

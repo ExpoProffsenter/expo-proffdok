@@ -44,3 +44,31 @@ Miljømål: **SANDBOX/DEMO**. Baseline main `0730eeb46c49bf45b5d910772da5c2ad7ed
 7. Nullstill eksempel etter prøven ved behov. Innlogging og andre appdata skal være bevart.
 
 Kenneths TEST OK vil gjelde denne avgrensede prototypen og brukeropplevelsen, ikke produksjonsgodkjenning av hele boligmodulen.
+
+
+## Samlet prosjektlederflyt – andre prototypeetappe 20.10.2026
+
+Kenneth ba om egne tester i Skynett og én samlet oppdatering, med en fersk prosjektleder som målgruppe. Miljømål og isolasjon er uendret: SANDBOX/DEMO. Ingen Production-merge eller permanent demo-synk.
+
+Faktisk Skynett-prøve av tidligere head `a2709c4` avdekket dobbelt standard/oppgradert servantskap i varegrunnlaget. Kildegjennomgang avdekket at leveringsdatoen ikke ble tatt med i lokal bestilling, og at valgt oppgang kunne avvike fra leiligheten datoendringen gjaldt. Disse er rettet i prototypen.
+
+Samlet endring:
+- Kort forklaring per hovedvisning og sammenleggbar veiledning for oppsett → tilvalg → bestilling → plan/varsler → dokumentasjon.
+- Dynamisk neste steg per bolig. Oppfølgingsfiltre viser faktiske eksempelboliger som trenger oppfølging/tilvalgsavklaring eller er klare for bestilling.
+- Søk i alle aktive leiligheter, også utenfor vist blokk. Adresse, leilighet, kontakt og egen ordrereferanse kan kombineres uavhengig av ordrekkefølge. De første 30 treffene vises; snevr inn søket ved flere treff.
+- Valgt blokk/oppgang og aktuell leilighet holdes sammen. Datoendringen gjelder den viste oppgangen.
+- Oppgraderinger erstatter standardvaren i et felles, testet varegrunnlag. Ønsket leveringsdato valideres, lagres og vises. Historiske bestillinger uten dato får ingen oppdiktet leveringsdato.
+- Alle klargjorte delleveranser gir en forklaring fremfor tomt bestillingsskjema. Manglende aksept fører brukeren til tilvalg. Lokal klargjøring beskrives som klargjøring.
+- «Gjennomgå varsel» åpner dato/tekst/mottakere for retting før ny forhåndsvisning og godkjenning. Samme varsel oppdateres; tidligere innhold bevares i lokal revisjonshistorikk.
+
+Lokale bevis: egne modell-/DOM-kontroller, ny `critical-demo-boligprosjekter-flow.mjs`, PR-isolasjon og full critical/build kjøres før samlet push. Den nye scenariofilen beskytter faktiske feil: dobbel vare, tapt dato, feil oppgang og foreldet varsel. Eksisterende checker er ikke endret. Sandbox-build må vise «Explicit backend target: Sandbox Supabase only».
+
+Fersk READY/CI og Skynett-readback av den samlede oppdateringen dokumenteres i PR #277 etter push. Dette avsnittet hevder ikke at ennå ventende live-QA er gjennomført. PR-ens nyeste head/resultater er autoritative.
+
+Samlet brukerprøve etter utviklerens live-QA:
+1. Byggoversikt → «Slik styrer du prosjektet» og oppfølgingsfiltrene. Åpne en bolig fra trefflisten; «Neste steg» skal forklare handlingen.
+2. Søk «14D H0604» fra Blokk B. Treffet skal åpne riktig bolig i Blokk C.
+3. H0302 i 12A → Bestillinger → «Se varegrunnlag»: bare oppgradert servantskap/dusjsett. Klargjør sanitærutstyr med en valgt dato; datoen skal følge oversikten også etter omlasting.
+4. Varsler → forhåndsvis/godkjenn eksempel. Fremdrift → flytt oppstart → godkjenn. Varsler → «Gjennomgå varsel» → rett dato/tekst → forhåndsvis/godkjenn. Samme varsel skal få oppdatert innhold.
+
+Full operativ modul, ekte roller, utsending, Cordel, BankID og dynamisk produksjonsplan er fremdeles ikke implementert. Mobil/Safari-verifikasjon må spesifiseres separat fra desktop-Skynett. TEST OK gjelder prototypens brukeropplevelse.
