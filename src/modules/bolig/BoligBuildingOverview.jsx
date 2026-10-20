@@ -232,7 +232,9 @@ export default function BoligBuildingOverview({
                   style={{
                     minWidth: Math.max(
                       265,
-                      Math.max(...(e.counts || [4])) * 52 + 100,
+                      Math.ceil(
+                        (Math.max(...(e.counts || [4])) * 56 - 4) / 0.64,
+                      ),
                     ),
                   }}
                 >

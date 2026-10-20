@@ -50,3 +50,13 @@ Entreprisekontrakt med vedlegg kan lastes opp som PDF og brukes som salgs-/lever
 4. Bygg privat dokumentområde og deretter kontraktsanalyse med kildehenvisninger.
 
 Rekkefølgen kan justeres etter kundebehov. Ingen produksjonsmerge uten relevant QA og Kenneths uttrykkelige TEST OK. Varsle om ny chat før en stor ny etappe, med repo-basert overlevering. Den separate Sandbox-feilen `list_managed_work_profiles` fra brukeradministrasjonen er registrert for egen undersøkelse; den endres ikke som sideeffekt av boliglayouten.
+
+## Presisering fra Kenneth: skalerbar bygning og eget prosjektbilde
+
+- Byggets høyde skal følge etasjeantallet; bredde og vindusfordeling følger antall leiligheter i hver etasje. Ulike antall per etasje må kunne vises uten at boliger eller ID-er flyttes. Mange leiligheter skal gi horisontal panorering fremfor uleselig små klikkfelt.
+- Dagens fase har dynamisk etasje-/boligrutenett og en felles dekorativ fasadeillustrasjon som skaleres. Det er ikke en full parametrisk arkitekturmodell; dekorative balkonger er ikke registrerte boliger.
+- Prosjekttype velger passende standardbilde: blokk eller flott enebolig. Boligfelt skal ha oversiktsbilde og klikkbare hus, med videre valg av riktig hus og rom. Dette inngår i neste hus-/rometappe.
+- Prosjektleder skal kunne laste opp prosjektets eget bilde/visualisering. Originalens sideforhold beholdes. Bildeutsnitt skal ikke endres automatisk slik at feltene forskyves.
+- Enkel redigering for å flytte og skalere innholdsrammen over fasaden. Hvert felt kan ved behov finjusteres. Lagre posisjon og størrelse som prosent av selve bildet, ikke av hele nettleservinduet. Ta hensyn til tomme marger ved proporsjonal visning. Samme transformasjon brukes på bilde og felter ved zoom/panorering.
+- Felt bindes til stabile bygg-/hus-/bolig-/rom-ID-er. Vinduer/rom/hus trenger ikke ligge i et perfekt rutenett; senere støtte for frie polygoner kan brukes ved skrå fotografier eller situasjonsplaner.
+- Ny bildeversjon skal ha egen kontrollert tilpasning/forhåndsvisning før den erstatter gjeldende bilde. Bytt bilde uten å endre bolig-/romhistorikk. Prosjektleder bekrefter forslag til plassering.
