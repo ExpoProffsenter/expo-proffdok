@@ -15,7 +15,13 @@ const proposals=ROUTINE_CATALOG.filter(row=>row.key.startsWith('store_'));
 assert.equal(proposals.length,14);
 assert.equal(suggestedRoutines(['vvs'],'butikk med lager og truck').filter(row=>row.key.startsWith('store_')).length,14);
 assert.equal(suggestedRoutines(['vvs'],'rørarbeid i bolig').filter(row=>row.key.startsWith('store_')).length,0);
-assert(proposals.every(row=>row.references.length&&row.references.every(ref=>ref.checked_on==='2026-10-12')));
+// 20.10: only the requested store_lifting v2 has newly checked sources.
+// Preserve all thirteen other store proposals byte-for-byte in JSON order.
+assert.equal(createHash('sha256').update(JSON.stringify(proposals.filter(row=>row.key!=='store_lifting'))).digest('hex'),'795e26762819a605b8e5cee336f9caa65588b025872bd0a29aa79f524e886e4a');
+assert(proposals.every(row=>row.references.length&&row.references.every(ref=>ref.checked_on===(row.key==='store_lifting'?'2026-10-20':'2026-10-12'))));
+const lifting=proposals.find(row=>row.key==='store_lifting');
+assert.equal(lifting.source_revision,2);
+for(const text of ['25 kg','lim- og mørtelsekker','Medarbeideren forventes','praktisk opplæring','ikke en absolutt lovbestemt','6000 kg','20 meter','Ved begrensninger','annet passende arbeid','medvirke','utenfor felles håndbok'])assert(lifting.procedure.includes(text),text);
 assert(proposals.find(row=>row.key==='store_truck_training').procedure.includes('sertifisert sikkerhetsopplæring'));
 assert(proposals.find(row=>row.key==='store_truck_training').procedure.includes('ingen truckkompetanse eller kjøretillatelse'));
 const state={context:{company_id:'a',user_id:'self',enabled:true},routines:[{id:'r'},{id:'archived',archived:true}],versions:Array.from({length:87},(_,i)=>({id:`v${i}`,routine_id:'r',number:i+1,requires_ack:i%2===0,content:{title:`Rutine ${i}`}})),assignments:[],acknowledgments:[]};

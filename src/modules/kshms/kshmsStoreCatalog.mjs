@@ -5,16 +5,18 @@ const checked_on='2026-10-12';
 const guide=(title,url)=>({title,url,kind:'professional',checked_on});
 const TRUCK=guide('Arbeidstilsynet – trygg truckkøyring','https://www.arbeidstilsynet.no/risikofylt-arbeid/maskiner/trygg-truckkoyring/');
 const RACK=guide('Arbeidstilsynet – reoler og lagersystemer','https://www.arbeidstilsynet.no/risikofylt-arbeid/reoler-lagersystemer/');
-const ERGO=guide('Arbeidstilsynet – vurdering av manuelt arbeid','https://www.arbeidstilsynet.no/arbeidsmiljo/ergonomi/Vurderingsverktoy-for-ergonomisk-risiko-ved-manuelt-arbeid/');
+const ERGO=guide('Arbeidstilsynet – manuelt arbeid','https://www.arbeidstilsynet.no/arbeidsmiljo/ergonomi/manuelt-arbeid/');
+const HEAVY=guide('Arbeidstilsynet – tungt arbeid og anbefalte belastninger','https://www.arbeidstilsynet.no/arbeidsmiljo/ergonomi/manuelt-arbeid/tungt-arbeid/');
+const ADAPT=guide('Arbeidstilsynet – tilrettelegging og medvirkning','https://www.arbeidstilsynet.no/arbeidstid-og-organisering/tilrettelegging/');
+const WORK={title:'Arbeidsmiljøloven §§ 2-3, 4-4 og 4-6',url:'https://www.arbeidstilsynet.no/regelverk/lover/arbeidsmiljoloven--aml/',kind:'law'};
 const SDS=guide('Arbeidstilsynet – sikkerhetsdatablad','https://www.arbeidstilsynet.no/risikofylt-arbeid/kjemikalier/stoffkartotek/sikkerhetsdatablad/');
 const ALONE=guide('Arbeidstilsynet – alenearbeid','https://www.arbeidstilsynet.no/arbeidstid-og-organisering/alenearbeid/');
 const THREATS=guide('Arbeidstilsynet – vold og trusler','https://www.arbeidstilsynet.no/arbeidsmiljo/vold-og-trusler/');
 
 export function storeCatalog({make,IK,UTF}) {
- const local=reference=>({...reference,checked_on});
  const r=(key,title,chapter,goal,responsibility,steps,documentation,references)=>({
-  ...make(`store_${key}`,title,chapter,goal,responsibility,steps.map((step,index)=>`${index+1}. ${step}`).join('\n\n'),documentation,references.map(local),[],'Ved drift av VVS-butikk, utstilling og lager',['vvs']),
-  recommendation:'butikk|lager|truck|utstilling|varemottak',source_revision:1,
+  ...make(`store_${key}`,title,chapter,goal,responsibility,steps.map((step,index)=>`${index+1}. ${step}`).join('\n\n'),documentation,references.map(reference=>({...reference,checked_on:key==='lifting'?'2026-10-20':checked_on})),[],'Ved drift av VVS-butikk, utstilling og lager',['vvs']),
+  recommendation:'butikk|lager|truck|utstilling|varemottak',source_revision:key==='lifting'?2:1,
  });
  return [
   r('traffic','Trygg ferdsel i butikk, utstilling og lager',2,
@@ -44,15 +46,18 @@ export function storeCatalog({make,IK,UTF}) {
     'Ved påkjørsel, deformasjon eller annen reolskade sperres berørt område. Kvalifisert person vurderer reparasjon og sikker gjenåpning.',
     'Gjennomfør dokumenterte kontroller ved kvalifisert person med hyppighet tilpasset risiko og anvisninger. Hold rømningsveier, sprinklerfunksjon og adkomst til sikringsutstyr fri.'],
    'Lager-/lastplan, reolkontroller, skademeldinger og beslutning om reparasjon eller gjenåpning.',[RACK,IK]),
-  r('lifting','Håndtering av badekar, porselen, møbler og lange rør',2,
-   'Redusere belastningsskader, klemskader og skade på tunge eller uhåndterlige VVS-produkter.',
-   'Butikk-/lagerleder planlegger hjelpemidler og bemanning. Medarbeider vurderer løftet og ber om hjelp før det blir uforsvarlig.',
-   ['Vurder vekt, størrelse, grep, emballasje, arbeidsstilling og transportvei før varen flyttes. Avklar trapper, terskler og plass ved kundens kjøretøy.',
-    'Velg hjelpemidler og metode som reduserer manuelle løft. Bruk egnet tralle, løfteutstyr eller truck der det er forsvarlig og tillatt.',
-    'Ved nødvendig løft med flere personer avtales grep, løfteretning og én tydelig leder for bevegelsen. Hold hender og føtter unna klempunkter.',
-    'Ikke løft eller skyv ustabilt eller skadet porselen. Sikre lange rør og store flater mot sving, rulling og utilsiktet bevegelse.',
-    'Stans ved smerte, utilstrekkelig grep eller usikker kontroll. Leder tilpasser arbeidsmåte og følger opp gjentatte belastninger.'],
-   'Vurdering av manuell håndtering, hjelpemidler, opplæring og registrerte belastnings-/klemhendelser.',[ERGO,IK]),
+  r('lifting','Tunge løft og varehåndtering på lager',2,
+   'Gjennomføre lagerets vareflyt effektivt og forsvarlig, med tydelige arbeidskrav og forebygging av belastnings- og klemskader.',
+   'Arbeidsgiver og butikk-/lagerleder avklarer arbeidskrav, risikovurdering, bemanning, hjelpemidler og praktisk opplæring. Medarbeider utfører avtalte oppgaver etter sikker arbeidsmåte, bruker hjelpemidlene og melder fra om farer og behov for tilrettelegging.',
+   ['Arbeidsoppgaver: Mottak, varepåfylling, plukk og utlevering innebærer fysisk varehåndtering. Der lageret fører lim- og mørtelsekker på 25 kg, inngår håndtering av disse i arbeidet. Avklar konkrete oppgaver og arbeidsmåter ved oppstart og endringer. Medarbeideren forventes å utføre de avtalte lageroppgavene med nødvendig opplæring og egnede hjelpemidler. Manuelle enkeltløft av 25 kg sekker kan inngå når den konkrete oppgaven og medarbeiderens forutsetninger er vurdert som forsvarlige.',
+    'Planlegging: Leder vurderer vekt, grep, rekkeavstand, løftehøyde, antall løft, arbeidstempo og samlet belastning sammen med medarbeiderne. Ta med løft fra nederste pallelag, lasting i kundebil, trapper, terskler, underlag og plass. Plasser tunge varer og paller slik at løft kan gjøres tett på kroppen i god arbeidshøyde. Gjør tralle, pallejekk, løftebord eller annet egnet utstyr tilgjengelig før oppgaven starter.',
+    'Vekt og belastning: Arbeidstilsynet anbefaler å unngå enkeltløft over 25 kg under optimale forhold. Dette er en anbefaling, ikke en absolutt lovbestemt vektgrense eller en garanti for at 25 kg er trygt. Også lettere løft kan være uforsvarlige ved dårlig grep, lang rekkeavstand, vridning eller mange gjentakelser. Veiledningen om høyst 6000 kg samlet per dag ved stående/gående arbeid og bæreavstand som ikke bør overstige 20 meter på plant underlag er vurderingsstøtte, ikke en arbeidskvote eller et bevis på forsvarlighet.',
+    'Limsekker og gjentatte løft: Flytt paller og flere sekker med egnet transportutstyr. Velg løftehjelpemiddel ved gjentatte eller krevende overføringer. Et manuelt enkeltløft gjøres kontrollert med sikkert grep, lasten tett på kroppen og stabil fotstilling. Flytt føttene fremfor å vri kroppen under belastning. Unngå løft over skulderhøyde eller fra lav høyde når belastningen blir uheldig. Varier oppgaver og avtal restitusjon etter den samlede belastningen. At én sekk veier 25 kg gjør ikke gjentatte løft gjennom dagen forsvarlige.',
+    'Store og uhåndterlige varer: Velg metode etter både vekt og størrelse. Bruk egnet utstyr for badekar, porselen, møbler og lange rør. Ved nødvendig fellesløft avtales grep, retning og én leder for bevegelsen; to personer gir ikke automatisk dobbel forsvarlig løftevekt. Sikre lange rør mot rulling og store flater mot sving og tipping. Ikke løft eller skyv ustabilt eller skadet porselen. Hold hender og føtter utenfor klempunkter og uvedkommende utenfor faresonen.',
+    'Opplæring og medvirkning: Leder viser arbeidsmåten og kontrollerer at medarbeideren kan bruke aktuelt utstyr og håndtere varene sikkert i praksis. Medarbeideren følger instruksen, bruker avtalte hjelpemidler og deltar i forbedringer. Truck og annet utstyr brukes bare med nødvendig kompetanse og tillatelse. Lesebekreftelse i ProffDok erstatter ikke praktisk opplæring eller vurdering av arbeidsevne.',
+    'Stans og avklar: Avbryt den aktuelle håndteringen ved smerte, utilstrekkelig grep, ustabil last eller annen fare. Sikre varen og varsle leder. Leder avklarer en forsvarlig metode før oppgaven fortsetter. Medarbeideren bidrar til løsningen og utfører andre avtalte, forsvarlige oppgaver mens forholdet avklares. Meld farlige forhold og belastnings-/klemhendelser som avvik.',
+    'Ved begrensninger: Leder og medarbeider avklarer hvilke oppgaver som kan utføres, prøver relevante tiltak og avtaler oppfølging. Bruk BHT eller annen fagkyndig ved behov. Arbeidsgiver vurderer tilrettelegging og eventuelt annet passende arbeid etter gjeldende plikter. Vurder også drift, kostnader og belastningen på kolleger; tiltak skal ikke gi andre et uforsvarlig arbeidsmiljø. Medarbeideren skal melde behov og medvirke til utprøving. Funksjonsvurderinger og individuelle helseopplysninger behandles fortrolig, utenfor felles håndbok.'],
+   'Datert vurdering av faktiske lageroppgaver og samlet belastning, avtalt arbeidsmåte og hjelpemidler, dokumentert praktisk opplæring, avvik og oppfølging av tiltak. Individuelle tilretteleggingsavtaler oppbevares med begrenset tilgang.',[ERGO,HEAVY,ADAPT,UTF,WORK,IK]),
   r('truck_training','Truck – kompetanse, tillatelse og lokal instruks',1,
    'Sikre at bare personer med nødvendig opplæring og avklart tillatelse bruker trucken.',
    'Arbeidsgiver/lagerleder kontrollerer kompetansen og gir lokal tillatelse. Føreren bruker bare utstyr og oppgaver vedkommende er opplært til.',
