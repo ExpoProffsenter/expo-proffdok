@@ -1,3 +1,4 @@
+import {sharedAcknowledgmentLabel} from './kshmsSharedAcknowledgment.mjs';
 import { useId,useState } from 'react';
 import { matchesRoutineSearch } from './kshmsSearch.mjs';
 import { acknowledgmentTime } from './kshmsAcknowledgmentTime.mjs';
@@ -14,7 +15,7 @@ export default function KshmsAcknowledgments({overview}) {
    {!visible.length&&<p>Ingen medarbeidere passer søket. Prøv et annet navn eller tøm søket.</p>}
    {visible.map(group=><details className="ks-ack-person" key={group.userId}>
     <summary><span className="ks-ack-summary"><span className="ks-ack-name">{group.label}</span><span className="ks-ack-progress"><strong>{group.confirmed} av {group.entries.length} bekreftet</strong><span className={`ks-badge ${group.missing?'ks-status-draft':'ks-status-approved'}`}>{group.missing?`${group.missing} gjenstår`:'Ferdig'}</span></span></span></summary>
-    <ul className="ks-ack-versions">{group.entries.map(({version,acknowledgment})=><li key={version.id}><span>{version.content.title} · v{version.number}</span><span>{acknowledgment?<>{'Bekreftet'}{acknowledgment.acknowledged_at&&<> · <time dateTime={acknowledgment.acknowledged_at}>{acknowledgmentTime(acknowledgment.acknowledged_at)}</time></>}</>:'Mangler bekreftelse'}</span></li>)}</ul>
+    <ul className="ks-ack-versions">{group.entries.map(({version,acknowledgment})=><li key={version.id}><span>{version.content.title} · v{version.number}</span><span>{acknowledgment?<>{'Bekreftet'}{acknowledgment.acknowledged_at&&<> · <time dateTime={acknowledgment.acknowledged_at}>{acknowledgmentTime(acknowledgment.acknowledged_at)}</time></>}{sharedAcknowledgmentLabel(acknowledgment)&&<small className="ks-field-hint">{sharedAcknowledgmentLabel(acknowledgment)}</small>}</>:'Mangler bekreftelse'}</span></li>)}</ul>
    </details>)}
   </>}
  </section>;
