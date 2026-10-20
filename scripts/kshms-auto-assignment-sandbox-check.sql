@@ -1,0 +1,44 @@
+-- Runs after the random synthetic prelude in kshms-bulk-sandbox-check.sql.
+-- The outer transaction is always rolled back; never acknowledges a real person.
+create function pg_temp.auto_assignment_scenario() returns void language plpgsql security definer set search_path='' as $$declare c uuid:=current_setting('bulk.qa.company')::uuid;
+ admin_id uuid:=current_setting('bulk.qa.admin')::uuid;reader_id uuid:=current_setting('bulk.qa.reader')::uuid;
+ r jsonb;v jsonb;first_id uuid;latest_id uuid;second_id uuid;archived_id uuid;version_before jsonb;assign_before jsonb;ack_before jsonb;
+ d jsonb:='{"title":"Synthetic auto assignment","chapter":"QA","goal":"Goal","responsibility":"Owner","procedure":"Synthetic steps","documentation":"Checks","confirmation":"Own reading","references":[]}';
+ statement text:='Jeg har gjennomgått denne rutineversjonen, forstår mitt ansvar og vil følge rutinen. Jeg ber om forklaring eller nødvendig opplæring dersom noe er uklart, og melder fra om farlige forhold og avvik. Bekreftelsen dokumenterer gjennomgang; den erstatter ikke opplæring eller faktisk utførelse.';
+begin
+ perform set_config('request.jwt.claim.sub',admin_id::text,true);
+ perform public.kshms_command(c,'settings',jsonb_build_object('revision',0,'trades',jsonb_build_array('vvs'),'responsible_user_id',admin_id));
+ r:=public.kshms_command(c,'save',jsonb_build_object('draft',d));
+ v:=public.kshms_command(c,'publish',jsonb_build_object('id',r->>'id','revision',r->'revision','change_summary','Synthetic first'));first_id:=(v->>'id')::uuid;
+ r:=public.kshms_command(c,'save',jsonb_build_object('id',r->>'id','revision',(r->>'revision')::int+1,'draft',jsonb_set(d,'{procedure}','"Synthetic updated steps"')));
+ v:=public.kshms_command(c,'publish',jsonb_build_object('id',r->>'id','revision',r->'revision','change_summary','Synthetic updated'));latest_id:=(v->>'id')::uuid;
+ r:=public.kshms_command(c,'save',jsonb_build_object('draft',jsonb_set(d,'{title}','"Synthetic second"')));
+ v:=public.kshms_command(c,'publish',jsonb_build_object('id',r->>'id','revision',r->'revision','change_summary','Synthetic second'));second_id:=(v->>'id')::uuid;
+ r:=public.kshms_command(c,'save',jsonb_build_object('draft',jsonb_set(d,'{title}','"Synthetic archived"')));
+ v:=public.kshms_command(c,'publish',jsonb_build_object('id',r->>'id','revision',r->'revision','change_summary','Synthetic archived'));archived_id:=(v->>'id')::uuid;
+ perform public.kshms_command(c,'archive',jsonb_build_object('id',r->>'id','revision',(r->>'revision')::int+1));
+ perform public.kshms_command(c,'save',jsonb_build_object('draft',jsonb_set(d,'{title}','"Synthetic unpublished draft"')));
+ select jsonb_agg(to_jsonb(x) order by x.id) into version_before from public.kshms_versions x where company_id=c;
+ perform pg_temp.bulk_assert(not exists(select 1 from public.kshms_assignments where user_id=reader_id),'no access means no assignments');
+ perform public.kshms_command(c,'access',jsonb_build_object('user_id',reader_id,'role','reader','enabled',true));
+ perform pg_temp.bulk_assert((select array_agg(version_id order by version_id) from public.kshms_assignments where user_id=reader_id and company_id=c)=(select array_agg(x order by x) from unnest(array[latest_id,second_id]) x),'only latest approved active editions assigned');
+ perform pg_temp.bulk_assert(not exists(select 1 from public.kshms_acknowledgments where user_id=reader_id),'assignment creates no receipt');
+ perform set_config('request.jwt.claim.sub',reader_id::text,true);
+ perform pg_temp.bulk_assert(jsonb_array_length(public.kshms_get_state(c)->'versions')=2,'employee state immediately contains handbook');
+ perform public.kshms_command(c,'ack',jsonb_build_object('version_id',latest_id,'statement',statement));
+ select jsonb_agg(to_jsonb(x) order by x.version_id) into ack_before from public.kshms_acknowledgments x where user_id=reader_id;
+ select jsonb_agg(to_jsonb(x) order by x.version_id) into assign_before from public.kshms_assignments x where user_id=reader_id;
+ perform set_config('request.jwt.claim.sub',admin_id::text,true);
+ perform public.kshms_command(c,'access',jsonb_build_object('user_id',reader_id,'role','responsible','enabled',true));
+ perform public.kshms_command(c,'access',jsonb_build_object('user_id',reader_id,'role','reader','enabled',false));
+ perform public.kshms_command(c,'access',jsonb_build_object('user_id',reader_id,'role','reader','enabled',true));
+ perform pg_temp.bulk_assert(assign_before=(select jsonb_agg(to_jsonb(x) order by x.version_id) from public.kshms_assignments x where user_id=reader_id),'idempotent grants preserve assignment actor/time');
+ perform pg_temp.bulk_assert(ack_before=(select jsonb_agg(to_jsonb(x) order by x.version_id) from public.kshms_acknowledgments x where user_id=reader_id),'receipt unchanged after role change and reactivation');
+ perform pg_temp.bulk_assert(version_before=(select jsonb_agg(to_jsonb(x) order by x.id) from public.kshms_versions x where company_id=c),'all published editions immutable');
+ perform pg_temp.bulk_assert((select count(*)=1 from public.kshms_audit where company_id=c and action='auto_assign_current_handbook' and object_id=reader_id),'only newly inserted assignments create an audit record');
+end$$;
+set local role authenticated;
+select pg_temp.auto_assignment_scenario();
+reset role;
+select 'PASS: automatic assignment via existing access RPC, immediate employee state, latest active editions only, unchanged receipts/history, idempotent roles/regrant and audit' as result;
+rollback;

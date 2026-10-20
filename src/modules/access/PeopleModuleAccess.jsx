@@ -46,6 +46,7 @@ export default function PeopleModuleAccess({companyId,userId=null}) {
  return <section className="people-module-access" style={{marginTop:12,padding:12,border:'1px solid #cfe0e4',borderRadius:10,background:'#f8fcfc'}}>
   <b>{userId?'KS/HMS og HR':'Firmaets KS/HMS- og HR-avtale'}</b>
   <p className="note">{userId?'Firmaet må ha aktivert modulen først. HR gir adgang til modulen; innsyn krever også egen medarbeider, nærmeste leder, firmaadmin eller uttrykkelig lesetilgang.':'Systemadministrator aktiverer modulene firmaet har avtalt å kjøpe. Dette registrerer tilgang og starter ingen betaling. Deretter velges brukertilgang på kortene nedenfor.'}</p>
+  {userId&&<p className="note">Med aktiv KS/HMS-tilgang får medarbeideren automatisk firmaets gjeldende, godkjente rutiner på Min side → Personalhåndbok. Medarbeideren leser og bekrefter selv.</p>}
   {!companyId?<p className="note">Velg et gyldig firma først.</p>:!draft&&!error?<p role="status">Henter modulavtale og tilgang …</p>:null}
   {draft?<div style={{display:'grid',gap:10}}>
    {['kshms','hr'].map(key=>{

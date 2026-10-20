@@ -3,6 +3,7 @@ import fs from 'node:fs/promises';
 import {checkInvitationAccess} from './company-invitation-db-check.mjs';
 import {checkInvitationResend} from './company-invitation-resend-db-check.mjs';
 import {checkInvitationAutoHr} from './company-invitation-auto-hr-db-check.mjs';
+import {checkInvitationHandbook} from './company-invitation-handbook-db-check.mjs';
 const {PGlite}=await import(process.env.HR_PGLITE_PATH||'@electric-sql/pglite');
 const db=new PGlite();let checks=0;
 const id=n=>`97000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
@@ -75,5 +76,6 @@ try{
  await checkInvitationAccess({db,id,a,b,outside,sys,admin,worker,other,secondary,q,rpc,actor,eq,rejects});
  await checkInvitationResend({db,id,a,b,sys,admin,worker,other,secondary,q,rpc,actor,eq,rejects});
  await checkInvitationAutoHr({db,id,a,b,sys,admin,worker,secondary,q,rpc,actor,eq,rejects});
+ await checkInvitationHandbook({db,id,a,b,admin,worker,q,rpc,actor,eq,rejects});
  console.log(`company-admin-db-check: ${checks} PostgreSQL assertions PASS; real migration, existing profile guard and module-manager authorization; synthetic fixtures.`);
-}finally{await db.close();}
+}catch(e){console.error('Company admin DB QA:',e.code,e.message,e.where||'');process.exitCode=1;}finally{await db.close();}
