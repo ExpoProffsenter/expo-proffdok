@@ -1635,3 +1635,12 @@ Firmavalget på brukerkortet matcher nå registrert firmanavn etter trim og små
 ### Lagre rutineutkast etter tekstsammenligning – 20.10.2026
 
 Ekstra «Lagre utkast» nederst etter ProffDoks tekstsammenligning er koblet til det eksisterende redigeringsskjemaet med en unik form-ID. Samme innsending, påkrevde felt og busy-sperre gjelder fra begge knapper. Lagring, lokal kladd, firmagodkjenning og lesebekreftelser følger eksisterende flyt. Miljømål BEGGE; Preview og ny TEST OK før produksjon.
+
+
+### Automatisk personalhåndbok ved tilgang – 20.10.2026
+
+Nye og eksisterende aktive interne medarbeidere med KS/HMS-tilgang får siste godkjente utgave av alle aktive firmarutiner. Private triggerfunksjoner dekker tilgang på brukerkort, akseptert invitasjon, firmarolle, sen godkjenning/reaktivering og firmamodul. Samme firmalås som publisering hindrer tap ved samtidig tildeling/publisering. Bare manglende tildelinger opprettes; tidligere utgaver, kvitteringer, roller og firmatilgang beholdes. Ingen ansatt bekreftes automatisk. Rutine-e-post er fortsatt sperret.
+
+Kenneth bestilte direkte produksjon og supplerte med alle eksisterende ansatte og samme håndbok i Bademiljø Expo og Expo Proffsenter. Etter kontrollert rollback-prøve er de to tomme håndbøkene fylt via eksisterende oppstart/lagre/publiser-RPC-er, med uttrykkelig bestilling som endringsvurdering og uten egen lesebekreftelse. 87 gjeldende Ringside-utgaver er innholdslike i alle tre firmaene. 7 aktive Expo Proffsenter-medarbeidere fikk påkrevd KS/HMS-lesetilgang. Alle 19/10/11 aktive medlemskap har nå 87 gjeldende rutiner. Ringsides 3 eldre utgaver og alle eksisterende lesebekreftelser er beholdt. Dette er en engangskopiering; senere firmaredigeringer er fortsatt selvstendige.
+
+QA, migrasjon og publisert status: `docs/qa/HANDBOOK_AUTO_ASSIGNMENT_20261020.md`.
