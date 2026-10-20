@@ -1,3 +1,9 @@
+## Boligprosjekter: felles grunnlag – Preview 20.10.2026
+
+Miljømål: BEGGE. Egen core-endring fra ren main, adskilt fra prototype-PR #277. Første etappe gir serverlagret hovedprosjekt → blokk → oppgang → bolig, firmaaktivering og individuell lese-/prosjektledertilgang. Etasjeoppsettet har egne felt og total. Eksisterende ProffDok-prosjekter kobles til boliger; eksisterende prosjektinnhold og rettigheter brukes videre.
+
+To additive migrasjoner er installert kun i Sandbox. Modulen er ikke aktivert permanent på noen firmaer. Production er urørt. Grunnpakker, tilvalg, fremdrift, portal og e-postbestillinger er ikke del av denne etappen. Ingen merge uten grønn QA, innlogget Preview-prøve og ny TEST OK. Scope, arkitektur, testbevis og videre arbeid: `docs/qa/BOLIG_FOUNDATION_20261020.md`.
+
 ## Antall på kundevalgte opsjoner – Preview 17.10.2026
 
 Våtromstilbud og Generelt tilbud får et eget valg «Kunden kan velge antall» på tillegg. Kunden velger opsjonen og bruker − / antall / +. Enhetspris og sum vises med tilbudets låste mva.-visning. Aksepten lagrer serverberegnet sum og valgt antall fra publisert versjon. Faste opsjoner og erstatningsalternativer beholder publisert antall. Ny TEST OK kreves før Production og kontrollert main → demo-synk. Se docs/qa/CUSTOMER_OPTION_QUANTITIES_20261017.md.

@@ -100,6 +100,7 @@ const PersonalPage = React.lazy(() => import('./modules/personal/PersonalPage.js
 const MobileTimeShortcut = React.lazy(() => import('./modules/time/MobileTimeShortcut.jsx'));
 const HrModule = React.lazy(() => import('./modules/hr/HrModule.jsx'));
 const HomeFollowups = React.lazy(() => import('./modules/home/HomeFollowups.jsx'));
+const BoligEntry = React.lazy(() => import('./modules/bolig/BoligEntry.jsx'));
   var supabase = getAppSupabaseClient() || (0, import_supabase_js.createClient)(
     "https://dqffxflaoyarbxyiyhop.supabase.co",
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxZmZ4Zmxhb3lhcmJ4eWl5aG9wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NzcxNTEsImV4cCI6MjA5MzA1MzE1MX0.5fkVNPooHGlayw4NgYM3fUVrAiv0XbUyTixkfeToMSE"
@@ -6314,6 +6315,7 @@ ${appLink}`;
         children: [
         tab === "prosjekt" && !hasActiveProjectWorkspace && !mobileCreatingProject && !isProjectSupportReadOnly && (0, import_jsx_runtime.jsx)(WorkdayShortcuts,{canPersonal:ownRights.enabled,canHr:ownRights.hr,canKshms:ownRights.kshms,onPersonal:()=>goToTab("innlogging"),onHr:()=>goToTab("hr"),onKshms:()=>goToTab("kshms")}),
         tab === "prosjekt" && !hasActiveProjectWorkspace && !mobileCreatingProject && !isProjectSupportReadOnly && (0, import_jsx_runtime.jsx)(React.Suspense, { fallback: null, children: (0, import_jsx_runtime.jsx)(HomeFollowups, { hrContext: ownRights.hr ? hrContext : null, kshmsContext, userId: authUser?.id, onOpenDeviation: openKshmsDeviation, onSetup: () => goToTab("hr") }, authUser?.id) }),
+        authUser?.id && !hasActiveProjectWorkspace && !mobileCreatingProject && !isProjectSupportReadOnly && tab === "prosjekt" && (0, import_jsx_runtime.jsx)(React.Suspense, { fallback: null, children: (0, import_jsx_runtime.jsx)(BoligEntry, { userId: authUser.id, onOpenProject: openProjectById }) }),
         !projectId && !mobileCreatingProject && tab === "prosjekt" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { className: "mobileProjectChooser", children: [
           authUser?.id && !hasActiveProjectWorkspace && !isProjectSupportReadOnly && (0, import_jsx_runtime.jsx)(React.Suspense, { fallback: null, children: (0, import_jsx_runtime.jsx)(MobileTimeShortcut, { personalContext, hrContext, userId: authUser?.id }) }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileHomeHero", children: [
