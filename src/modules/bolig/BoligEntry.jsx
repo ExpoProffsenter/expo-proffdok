@@ -490,7 +490,9 @@ function BoligWorkspace({
         ) : null}
         <small>
           {!ctx.enabled
-            ? "Ikke aktivert / tilgang mangler"
+            ? !ctx.licensed
+              ? "Firmaet er ikke aktivert"
+              : "Brukertilgang mangler"
             : ctx.role === "manager"
               ? "Prosjektledertilgang"
               : "Lesetilgang"}
@@ -504,7 +506,7 @@ function BoligWorkspace({
             tilgang her og må også ha ordinær prosjekttilgang.
           </p>
           {ctx.system_admin ? (
-            <label>
+            <label className="bolig-license-toggle">
               <input
                 type="checkbox"
                 checked={ctx.licensed}

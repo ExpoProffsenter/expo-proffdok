@@ -275,3 +275,25 @@
 .bolig-entry-state {
   padding: 20px;
 }
+
+.bolig-dialog .bolig-license-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 12px;
+  background: #eef9fa;
+  border-radius: 8px;
+}
+.bolig-dialog .bolig-license-toggle input[type="checkbox"] {
+  display: inline-block;
+  flex: none;
+  width: 20px;
+  height: 20px;
+  min-height: 20px;
+  margin: 0;
+  padding: 0;
+  vertical-align: middle;
+}
