@@ -67,6 +67,7 @@ export default function BoligOrderDraft({
       );
       if (ticket !== generation.current) return false;
       setState(saved);
+      window.dispatchEvent(new CustomEvent("expo-proffdok-bolig-order"));
       setNotice("Bestillingsutkastet er lagret. Ingen bestilling er sendt.");
       return saved;
     } catch (err) {

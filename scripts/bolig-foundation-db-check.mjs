@@ -140,6 +140,12 @@ try {
       "utf8",
     ),
   );
+  await db.exec(
+    await fs.readFile(
+      "supabase/migrations/20261020223523_boligprosjekter_overview_status.sql",
+      "utf8",
+    ),
+  );
   await db.exec("begin");
   await actor();
   eq((await call()).enabled, false);
@@ -705,7 +711,29 @@ try {
     2,
     "Existing order source remains immutable after new unit choice",
   );
+  const beforeNewOrder = (
+    await db.query("select public.bolig_overview($1,$2) v", [firm, root])
+  ).rows[0].v.units.find((u) => u.unit_id === choose.unit_id);
+  eq(beforeNewOrder.choice_revision, 3, "Overview uses latest choice revision");
+  eq(beforeNewOrder.order_outdated, true, "Old source is marked for review");
   const freshOrder = await order("save", 2, 3, { selected_positions: [0, 1] });
+  const afterNewOrder = (
+    await db.query("select public.bolig_overview($1,$2) v", [firm, root])
+  ).rows[0].v.units.find((u) => u.unit_id === choose.unit_id);
+  eq(afterNewOrder.order_revision, 3, "Overview reads newly saved order");
+  eq(
+    afterNewOrder.order_outdated,
+    false,
+    "Reviewed order points to latest choice",
+  );
+  await actor(reader);
+  eq(
+    (await db.query("select public.bolig_overview($1,$2) v", [firm, root]))
+      .rows[0].v.units.length,
+    500,
+    "Reader may view summaries but gets no write action",
+  );
+  await actor(manager);
   eq(freshOrder.draft.source_choice_revision, 3);
   await db.exec("reset role;set role authenticated");
   await rejects(
@@ -728,6 +756,35 @@ try {
   await db.exec(
     `reset role;update public.profiles set deactivated=true where id=${q(reader)}`,
   );
+  const overview = async (company = firm, rootId = root) =>
+    (await db.query("select public.bolig_overview($1,$2) v", [company, rootId]))
+      .rows[0].v;
+  await actor(admin);
+  const statusOverview = await overview();
+  eq(
+    statusOverview.root_id,
+    root,
+    "Overview returns requested firm-owned root",
+  );
+  eq(statusOverview.context.company_id, firm);
+  eq(
+    statusOverview.units.length,
+    (await call("get", root)).units.filter((u) => !u.archived).length,
+    "Overview lists active units only",
+  );
+  eq(
+    statusOverview.units.every(
+      (u) => !("snapshot" in u) && !("total_cents" in u),
+    ),
+    true,
+    "Overview exposes no financial snapshots",
+  );
+  await rejects(() => overview(other, root), "42501");
+  await rejects(() => overview(firm, id(999)), "42501");
+  await db.exec("reset role;set role anon");
+  await rejects(() => overview(), "42501");
+  await db.exec("reset role;set role service_role");
+  await rejects(() => overview(), "42501");
   await actor(reader);
   await rejects(() => call("get", root), "42501");
   await actor(manager);

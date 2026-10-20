@@ -8,6 +8,7 @@ import {
 import CatalogForm from "./BoligDraftForm.jsx";
 import BoligOrderDraft from "./BoligOrderDraft.jsx";
 import ProductCard from "./BoligProductCard.jsx";
+import BoligCatalogLookup from "./BoligCatalogLookup.jsx";
 import { WORK_PROFILE_EVENT } from "../access/workProfileClient.js";
 import {
   MANAGED_ACCESS_EVENT,
@@ -70,6 +71,27 @@ function PackageEditor({
       {(v, c) => (
         <>
           <h4>{entry ? "Rediger grunnpakke" : "Ny grunnpakke"}</h4>
+          <BoligCatalogLookup
+            context={context}
+            onUse={(item) => {
+              const empty = v.lines.findIndex((l) => !l.name && !l.sku);
+              const line = {
+                ...newLine(),
+                name: item.name,
+                sku: item.sku,
+                image_url: item.image_url,
+                product_url: item.product_url,
+              };
+              c(
+                "lines",
+                empty >= 0
+                  ? v.lines.map((l, i) =>
+                      i === empty ? { ...line, key: l.key } : l,
+                    )
+                  : [...v.lines, line],
+              );
+            }}
+          />
           <label>
             Pakkenavn
             <input
@@ -293,6 +315,18 @@ function OptionEditor({
       {(v, c) => (
         <>
           <h4>{entry ? "Rediger tilvalg" : "Nytt tilvalg"}</h4>
+          <BoligCatalogLookup
+            context={context}
+            onUse={(item) => {
+              c({
+                name: item.name,
+                sku: item.sku,
+                image_url: item.image_url,
+                product_url: item.product_url,
+                ...(item.price !== null ? { price: item.price } : {}),
+              });
+            }}
+          />
           <label>
             Navn på tilvalg
             <input
@@ -571,7 +605,14 @@ function ChoiceEditor({ context, root, state, unit, busy, save }) {
     </CatalogForm>
   );
 }
-export default function BoligCatalog({ context, root, unit = null }) {
+export default function BoligCatalog({
+  context,
+  root,
+  unit = null,
+  compact = false,
+}) {
+  const [unitTab, setUnitTab] = useState("choice"),
+    [editChoice, setEditChoice] = useState(false);
   const [state, setState] = useState(null),
     [error, setError] = useState(""),
     [notice, setNotice] = useState(""),
@@ -697,12 +738,30 @@ export default function BoligCatalog({ context, root, unit = null }) {
           : "Grunnpakker og tilvalgsliste"
       }
     >
-      <h3>
+      {unit && compact && (
+        <nav className="bolig-unit-tabs" aria-label="Arbeid med boligen">
+          <button
+            type="button"
+            aria-pressed={unitTab === "choice"}
+            onClick={() => setUnitTab("choice")}
+          >
+            Boligvalg
+          </button>
+          <button
+            type="button"
+            aria-pressed={unitTab === "order"}
+            onClick={() => setUnitTab("order")}
+          >
+            Bestilling
+          </button>
+        </nav>
+      )}
+      <h3 hidden={compact}>
         {unit
           ? `Grunnpakke og tilvalg · ${unit.number}`
           : "Prosjektets grunnpakker og tilvalg"}
       </h3>
-      <p>
+      <p hidden={compact}>
         {unit
           ? "Velg grunnpakke og tilvalg for denne boligen. Kontroller mellomlegget og lagre et valgsutkast."
           : "Lag grunnpakkene først. Legg deretter til alternativer og tillegg i prosjektets tilvalgsliste. Velg til slutt innholdet på hver bolig nedenfor."}
@@ -851,66 +910,98 @@ export default function BoligCatalog({ context, root, unit = null }) {
       )}
       {valid && unit && (
         <>
-          {selected ? (
-            <div className="bolig-saved-choice">
-              <h4>Lagret valgsutkast · versjon {selected.revision}</h4>
-              <p>
-                {selected.snapshot.package.name} · beboerens tilvalg{" "}
-                {money(selected.snapshot.total_cents)} inkl. mva.
-              </p>
-              {selected.snapshot.catalog_revision !== valid.revision && (
+          <div hidden={compact && unitTab !== "choice"}>
+            {selected ? (
+              <div className="bolig-saved-choice">
+                <h4>Lagret valgsutkast · versjon {selected.revision}</h4>
                 <p>
-                  Pakkeoppsettet er endret etter dette valget. Det lagrede
-                  valget er beholdt. Se over dagens pakker før du lagrer en ny
-                  versjon.
+                  {selected.snapshot.package.name} · beboerens tilvalg{" "}
+                  {money(selected.snapshot.total_cents)} inkl. mva.
+                </p>
+                {selected.snapshot.catalog_revision !== valid.revision && (
+                  <p>
+                    Pakkeoppsettet er endret etter dette valget. Det lagrede
+                    valget er beholdt. Se over dagens pakker før du lagrer en ny
+                    versjon.
+                  </p>
+                )}
+                <details>
+                  <summary>Se lagret varegrunnlag</summary>
+                  <ul>
+                    {selected.snapshot.goods.map((l, i) => (
+                      <li key={i}>
+                        {l.quantity} {l.unit} {l.name}
+                        {l.sku ? ` · ${l.sku}` : ""}
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+                <details>
+                  <summary>
+                    Siste valgsversjoner ({valid.history.length})
+                  </summary>
+                  {valid.history.map((h) => (
+                    <p key={h.revision}>
+                      Versjon {h.revision} · {h.snapshot.package.name} ·{" "}
+                      {money(h.snapshot.total_cents)} inkl. mva.
+                    </p>
+                  ))}
+                </details>
+              </div>
+            ) : (
+              <p>Ingen grunnpakke er valgt for denne boligen ennå.</p>
+            )}
+            {canWrite && compact && selected && (
+              <button type="button" onClick={() => setEditChoice(!editChoice)}>
+                {editChoice
+                  ? "Lukk redigering av boligvalg"
+                  : "Endre boligvalg"}
+              </button>
+            )}
+            <div hidden={compact && !!selected && !editChoice}>
+              {canWrite ? (
+                <ChoiceEditor
+                  key={unit.id}
+                  context={context}
+                  root={root}
+                  state={valid}
+                  unit={unit}
+                  busy={busy || loading}
+                  save={save}
+                />
+              ) : (
+                <p>
+                  Lesetilgang. Lagrede boligvalg kan leses, men ikke endres.
                 </p>
               )}
-              <details>
-                <summary>Se lagret varegrunnlag</summary>
-                <ul>
-                  {selected.snapshot.goods.map((l, i) => (
-                    <li key={i}>
-                      {l.quantity} {l.unit} {l.name}
-                      {l.sku ? ` · ${l.sku}` : ""}
-                    </li>
-                  ))}
-                </ul>
-              </details>
-              <details>
-                <summary>Siste valgsversjoner ({valid.history.length})</summary>
-                {valid.history.map((h) => (
-                  <p key={h.revision}>
-                    Versjon {h.revision} · {h.snapshot.package.name} ·{" "}
-                    {money(h.snapshot.total_cents)} inkl. mva.
-                  </p>
-                ))}
-              </details>
             </div>
-          ) : (
-            <p>Ingen grunnpakke er valgt for denne boligen ennå.</p>
-          )}
-          {canWrite ? (
-            <ChoiceEditor
-              key={unit.id}
-              context={context}
-              root={root}
-              state={valid}
-              unit={unit}
-              busy={busy || loading}
-              save={save}
-            />
-          ) : (
-            <p>Lesetilgang. Lagrede boligvalg kan leses, men ikke endres.</p>
-          )}
-          {selected && (
-            <BoligOrderDraft
-              key={"order:" + unit.id}
-              context={context}
-              root={root}
-              unit={unit}
-              choiceRevision={selected.revision}
-            />
-          )}
+            {compact && selected && (
+              <button
+                className="bolig-primary"
+                type="button"
+                onClick={() => setUnitTab("order")}
+              >
+                Neste: klargjør varebestilling →
+              </button>
+            )}
+          </div>
+          <div hidden={compact && unitTab !== "order"}>
+            {!selected && (
+              <p>
+                Velg og lagre grunnpakken under Boligvalg før du klargjør
+                bestillingen.
+              </p>
+            )}
+            {selected && (
+              <BoligOrderDraft
+                key={"order:" + unit.id}
+                context={context}
+                root={root}
+                unit={unit}
+                choiceRevision={selected.revision}
+              />
+            )}
+          </div>
         </>
       )}
     </section>

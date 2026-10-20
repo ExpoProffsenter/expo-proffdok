@@ -1,7 +1,7 @@
 import React from "react";
 export function BoligHelp() {
   return (
-    <details className="bolig-help" open>
+    <details className="bolig-help">
       <summary>Slik styrer du prosjektet</summary>
       <p>
         Opprett et hovedprosjekt. Bygg deretter opp boligene i rekkefølgen

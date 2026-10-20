@@ -203,7 +203,32 @@ try {
           },
         };
       }
-      if(name === "bolig_catalog") return {data:{context:context(),root_id:args.p_root_id,revision:0,packages:[],options:[],history:[],selection:null}};
+      if (name === "bolig_overview")
+        return {
+          data: {
+            context: context(),
+            root_id: args.p_root_id,
+            units: record.units.map((u) => ({
+              unit_id: u.id,
+              choice_revision: 0,
+              order_revision: 0,
+              catalog_changed: false,
+              order_outdated: false,
+            })),
+          },
+        };
+      if (name === "bolig_catalog")
+        return {
+          data: {
+            context: context(),
+            root_id: args.p_root_id,
+            revision: 0,
+            packages: [],
+            options: [],
+            history: [],
+            selection: null,
+          },
+        };
       assert.equal(name, "bolig_workspace");
       const ctx = context();
       if (args.p_action === "context") return { data: ctx };
@@ -297,7 +322,7 @@ try {
   const q = (s) => w.document.querySelector(s),
     button = (text) =>
       [...w.document.querySelectorAll("button")].find(
-        (b) => b.textContent === text,
+        (b) => b.textContent.trim() === text,
       );
   await act(() => w.__render("self"));
   assert.equal(q(".bolig-entry"), null, "Startside card must be removed");
@@ -544,7 +569,10 @@ try {
     "Ordinary workspace has no admin instructions",
   );
   assert(!q("dialog").textContent.includes("Firmaadmin"));
-  assert(q(".bolig-help[open]"));
+  assert(
+    q(".bolig-help:not([open])"),
+    "Guide is available but collapsed so the facade is the first workspace",
+  );
   await act(() => w.__unmount());
   await act(() => w.__dispose());
   dom.window.close();
@@ -552,7 +580,7 @@ try {
     "PASS bolig actual React: server-gated menu, separate Systemadmin license and Firmaadmin member controls, no admin instructions in workspace, license/grant readback, reader/manager and revoked admin, real component, portal isolation, scoped local drafts, focus preservation, conflict/retry, server readback, company switch and entitlement revocation.",
   );
 } catch (e) {
-  console.error(e.message);
+  console.error(e.stack || e.message);
   process.exitCode = 1;
 } finally {
   fs.rmSync(temp, { recursive: true, force: true });

@@ -23,7 +23,10 @@ export default function CatalogForm({
     }),
     [error, setError] = useState("");
   const change = (field, next) => {
-    const updated = { ...value, [field]: next };
+    const updated = {
+      ...value,
+      ...(typeof field === "object" ? field : { [field]: next }),
+    };
     if (!writeBoligDraft(key, updated))
       setError("Kladden kunne ikke sikres lokalt. Behold siden åpen.");
     setValue(updated);
