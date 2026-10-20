@@ -17,7 +17,7 @@ try {
  create table public.user_active_company_scope(user_id uuid primary key,company_id uuid);
  create or replace function public.current_active_company_scope_id() returns uuid language sql security definer set search_path='' as $$select company_id from public.user_active_company_scope where user_id=auth.uid()$$;
  create table public.projects(id uuid primary key,user_id uuid,company_scope_id uuid,title text,data jsonb,locked boolean default false,updated_at timestamptz default now());
- create function public.project_row_access_allowed(c uuid,u uuid) returns boolean language plpgsql as $$begin return c=public.current_active_company_scope_id() and (exists(select 1 from public.user_module_access where user_id=auth.uid() and module_key='projects') or exists(select 1 from public.profiles where id=auth.uid() and role='admin'));end$$;
+ create function public.project_row_access_allowed(c uuid,u uuid) returns boolean language plpgsql as $$begin return public.current_profile_is_systemadmin() or c=public.current_active_company_scope_id() and (exists(select 1 from public.user_module_access where user_id=auth.uid() and module_key='projects') or exists(select 1 from public.profiles where id=auth.uid() and role='admin'));end$$;
  create table public.user_module_access(user_id uuid,module_key text,enabled boolean,updated_at timestamptz default now());
  create function public.is_internal_work_profile_company(c uuid) returns boolean language sql as $$select false$$;
  create or replace function public.current_profile_is_systemadmin() returns boolean language sql as $$select exists(select 1 from public.profiles where id=auth.uid() and system_role='systemadmin' and approved and not coalesce(deactivated,false))$$;
@@ -33,9 +33,14 @@ try {
   try {await db.exec(sql);} catch(error) {throw new Error('Failed migration: '+name+' ('+error.code+'): '+error.message);}
  }
  await db.exec(await fs.readFile('supabase/migrations/20261017133759_flexible_checklist_fields_hot_work.sql','utf8'));
+ await db.exec(await fs.readFile('supabase/migrations/20261020140517_project_checklist_support_read.sql','utf8'));
  await db.exec("insert into auth.users(id) values('00000000-0000-4000-8000-000000000001');insert into public.profiles(id,email,approved,deactivated,role,system_role) values('00000000-0000-4000-8000-000000000001','sys@example.invalid',true,false,'admin','systemadmin');create function public.sales_normalize_company_name(v text) returns text language sql as $$select lower(v)$$;create function extensions.digest(v bytea,algo text) returns bytea language sql as $$select sha256(v)$$;grant usage on schema public to authenticated;grant select,update on public.projects to authenticated;");
  for(const script of ['kshms-checklist-central-sandbox-check.sql','project-checklist-runs-sandbox-check.sql','kshms-checklist-subforms-sandbox-check.sql','kshms-executions-sandbox-check.sql','flexible-checklist-fields-sandbox-check.sql']){
   try{for(const result of await db.exec(await fs.readFile('scripts/'+script,'utf8')))if(result.rows?.length)console.log(script,result.rows);}catch(e){console.error(script,e.code,e.message,e.where);throw new Error(e.message);}
  }
+ const supportPrelude=(await fs.readFile('scripts/project-checklist-runs-sandbox-check.sql','utf8')).split('set local role authenticated;')[0];
+ const supportScenario=supportPrelude+await fs.readFile('scripts/project-checklist-support-sandbox-check.sql','utf8');
+ if(process.env.PROJECT_SUPPORT_SQL_OUTPUT)await fs.writeFile(process.env.PROJECT_SUPPORT_SQL_OUTPUT,supportScenario);
+ for(const result of await db.exec(supportScenario))if(result.rows?.length)console.log(result.rows);
  console.log('Flexible fields PostgreSQL PASS: actual migrations, existing checklist/subform/execution scenarios + new typed controls. Synthetic platform adapter; not cloud Auth/Storage proof.');
 } finally {await db.close();}

@@ -5,12 +5,13 @@ import { MANAGED_ACCESS_EVENT,MODULE_ACCESS_EVENT } from '../access/moduleAccess
 import { WORK_PROFILE_EVENT } from '../access/workProfileClient.js';
 import '../kshms/kshmsChecklists.css';
 
-export default function ProjectChecklistPicker({companyId,userId,projectId,instances=[],readOnly,onImport,onOpen,collapsed=false}) {
+export default function ProjectChecklistPicker({companyId,userId,projectId,instances=[],readOnly,supportReadOnly=false,onImport,onOpen,collapsed=false}) {
  const [data,setData]=useState(null),[trade,setTrade]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState('');
  const scopeRef=useRef(null),request=useRef(0),locked=useRef(false),attempts=useRef(new Map());
  const current=scope=>scope?.active&&scopeRef.current===scope;
  const load=async()=>{
   const scope=scopeRef.current,revision=++request.current;
+  if(supportReadOnly){setData(null);setError('');return;}
   try{
    const result=await kshmsRpc('kshms_project_checklists',{p_company_id:companyId,p_project_id:projectId});
    if(!current(scope)||revision!==request.current)return;
@@ -26,8 +27,9 @@ export default function ProjectChecklistPicker({companyId,userId,projectId,insta
   if(companyId&&userId&&projectId)refresh();
   const events=[MANAGED_ACCESS_EVENT,MODULE_ACCESS_EVENT,WORK_PROFILE_EVENT,'focus'];events.forEach(event=>window.addEventListener(event,refresh));
   return()=>{scope.active=false;events.forEach(event=>window.removeEventListener(event,refresh));};
- },[companyId,userId,projectId]);
+ },[companyId,userId,projectId,supportReadOnly]);
  const installed=(Array.isArray(instances)?instances:[]).filter(item=>item.company_id===companyId);
+ if(supportReadOnly)return installed.length?<section className="ks-checklists"><h2>Prosjektets sjekklister</h2><p>Supportmodus: Du kan lese innhentede sjekklister. Endringer er sperret.</p>{installed.map(instance=><article className="ks-card" key={instance.id}><h3>{instance.content.title}</h3><p>Versjon {instance.version}</p><button type="button" className="secondary" onClick={()=>onOpen(instance)}>Åpne sjekkliste</button></article>)}</section>:null;
  const take=async version=>{
   if(locked.current||readOnly)return;
   const scope=scopeRef.current;if(!current(scope))return;
