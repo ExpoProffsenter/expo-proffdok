@@ -3,7 +3,7 @@ import {kshmsRpc} from './kshmsAccess.js';
 import {downloadDocumentPdf} from '../report/kshmsDocumentPdf.mjs';
 import {downloadSjaPdf} from '../report/kshmsSjaPdf.mjs';
 
-export default function KshmsDocumentPdfButton({kind,row,companyId,userId,projectId=null,disabled=false,active=true,resolveFileUrl}){
+export default function KshmsDocumentPdfButton({kind,row,companyId,userId,projectId=null,disabled=false,active=true,resolveFileUrl,rpc=kshmsRpc}){
  const [busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState('');
  const owner=useRef(null),locked=useRef(false),latest=useRef(null);
  const fingerprint=JSON.stringify([kind,companyId,userId,projectId,row,active,disabled]);latest.current=fingerprint;
@@ -13,7 +13,7 @@ export default function KshmsDocumentPdfButton({kind,row,companyId,userId,projec
   const scope=owner.current,snapshot=fingerprint;
   const current=()=>scope?.active&&owner.current===scope&&latest.current===snapshot;
   locked.current=true;setBusy(true);setError('');setNotice('');
-  try{const exportPdf=kind==='sja'?downloadSjaPdf:downloadDocumentPdf;const result=await exportPdf({kind,expected:row,companyId,userId,projectId,rpc:kshmsRpc,isCurrent:current,resolveFileUrl});if(current()&&result)setNotice(result.logoMissing?'PDF er laget med firmanavn. Logoen kunne ikke hentes.':'PDF er laget fra den lagrede dokumentasjonen.');}
+  try{const exportPdf=kind==='sja'?downloadSjaPdf:downloadDocumentPdf;const result=await exportPdf({kind,expected:row,companyId,userId,projectId,rpc,isCurrent:current,resolveFileUrl});if(current()&&result)setNotice(result.logoMissing?'PDF er laget med firmanavn. Logoen kunne ikke hentes.':'PDF er laget fra den lagrede dokumentasjonen.');}
   catch(cause){if(current())setError(cause.message);}
   finally{locked.current=false;if(scope?.active&&owner.current===scope)setBusy(false);}
  };
