@@ -59,6 +59,8 @@ jobs:
           node scripts/kshms-executions-react-check.mjs
           node scripts/kshms-review-reminders-react-check.mjs
           node scripts/kshms-publication-react-check.mjs
+          node scripts/kshms-source-updates-react-check.mjs
+          KSHMS_SOURCE_PROPOSAL=store_lifting node scripts/kshms-source-updates-react-check.mjs
 
       - name: Verify HR practice and existing HR React flows
         run: |
