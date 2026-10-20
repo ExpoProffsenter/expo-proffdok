@@ -1,3 +1,4 @@
+import {sharedAcknowledgmentLabel} from '../kshms/kshmsSharedAcknowledgment.mjs';
 import {personalHandbook,identityText} from '../kshms/kshmsPersonal.mjs';
 import {routineNumber} from '../kshms/kshmsJobChoices.mjs';
 import {acknowledgmentTime} from '../kshms/kshmsAcknowledgmentTime.mjs';
@@ -24,7 +25,7 @@ export function handbookSnapshot(state,companyId,userId){
 function handbookRoutine(entry,userId){
  const document=routinePdfDocument(entry.version,entry.routine),ack=entry.acknowledgment;
  if(entry.historical)document.fields[1][1]='HISTORIKK - TIDLIGERE ELLER UTGÅTT TILDELT UTGAVE. Kontroller gjeldende rutine i appen.';
- document.closing=[['Din egen gjennomgang',ack?.user_id===userId&&ack.version_id===entry.version.id?`Bekreftet av ${identityText(ack.user_identity,userId)} - ${acknowledgmentTime(ack.acknowledged_at)}`:'Ikke bekreftet'],...(ack?[['Lagret bekreftelsestekst',ack.statement]]:[]),['Lesebekreftelse','Nedlasting registrerer ingen ny bekreftelse. Les og bekreft i appen.']];
+ document.closing=[['Din egen gjennomgang',ack?.user_id===userId&&ack.version_id===entry.version.id?`Bekreftet av ${identityText(ack.user_identity,userId)} - ${acknowledgmentTime(ack.acknowledged_at)}`:'Ikke bekreftet'],...(sharedAcknowledgmentLabel(ack)?[['Tidligere bekreftelse',sharedAcknowledgmentLabel(ack)]]:[]),...(ack?[['Lagret bekreftelsestekst',ack.statement]]:[]),['Lesebekreftelse','Nedlasting registrerer ingen ny bekreftelse. Les og bekreft i appen.']];
  return document;
 }
 
