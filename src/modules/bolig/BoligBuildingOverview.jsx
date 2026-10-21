@@ -12,7 +12,7 @@ import {
   FileCheck2,
   Package,
   Search,
-  Settings2,
+  List,
   TriangleAlert,
 } from "lucide-react";
 import BoligBuildingArt from "./BoligBuildingArt.jsx";
@@ -58,7 +58,6 @@ export default function BoligBuildingOverview({
   record,
   unitId,
   onSelect,
-  onSetup,
   query,
   onQuery,
 }) {
@@ -71,6 +70,16 @@ export default function BoligBuildingOverview({
     context,
     `${record.root.id}:layer`,
     "choice",
+  );
+  const [presentation, setPresentation] = useBoligUiState(
+    context,
+    `${record.root.id}:presentation`,
+    "facade",
+  );
+  const [statusFilter, setStatusFilter] = useBoligUiState(
+    context,
+    `${record.root.id}:status-filter`,
+    "all",
   );
   const [statuses, setStatuses] = useState(null);
   const [error, setError] = useState("");
@@ -245,22 +254,69 @@ export default function BoligBuildingOverview({
       onSelect("");
   };
   const terms = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
-  const results = terms.length
-    ? units.filter((u) => {
-        const e = entranceMap.get(u.entrance_id),
-          b = blocks.find((b) => b.id === e.block_id);
-        return terms.every((t) =>
-          `${u.number} ${u.official_number || ""} ${u.contact_name || ""} ${u.contact_email || ""} ${u.contact_phone || ""} ${e.address} ${b.name}`
-            .toLowerCase()
-            .includes(t),
-        );
-      })
+  const listVisible =
+    presentation === "list" || terms.length > 0 || statusFilter !== "all";
+  const statusLabels = {
+    ready:
+      layer === "project"
+        ? "Prosjekt koblet"
+        : layer === "order"
+          ? "Utkast lagret"
+          : "Boligvalg lagret",
+    review: "Må gjennomgås",
+    empty: layer === "project" ? "Prosjekt mangler" : "Boligvalg mangler",
+    pending: "Klargjør bestilling",
+    unknown: "Status ikke hentet",
+  };
+  const results = listVisible
+    ? units
+        .filter((u) => {
+          const e = entranceMap.get(u.entrance_id),
+            b = blocks.find((b) => b.id === e.block_id);
+          const matchesStatus =
+            statusFilter === "all" ||
+            (statusFilter === "contact"
+              ? !u.contact_name?.trim() ||
+                !u.contact_email?.trim() ||
+                !u.contact_phone?.trim()
+              : unitStatus(u, statuses?.[u.id], layer).tone === statusFilter);
+          return (
+            matchesStatus &&
+            terms.every((t) =>
+              `${u.number} ${u.official_number || ""} ${u.contact_name || ""} ${u.contact_email || ""} ${u.contact_phone || ""} ${e.address} ${b.name}`
+                .toLowerCase()
+                .includes(t),
+            )
+          );
+        })
+        .sort((a, b) => {
+          const ae = entranceMap.get(a.entrance_id),
+            be = entranceMap.get(b.entrance_id);
+          return (
+            blocks
+              .find((v) => v.id === ae.block_id)
+              .name.localeCompare(
+                blocks.find((v) => v.id === be.block_id).name,
+                "nb",
+                { numeric: true },
+              ) ||
+            ae.address.localeCompare(be.address, "nb", { numeric: true }) ||
+            a.floor - b.floor ||
+            a.number.localeCompare(b.number, "nb", { numeric: true })
+          );
+        })
     : null;
-  useEffect(() => setResultPage(0), [query]);
-  const pageStart = Math.min(
-    resultPage * 50,
-    Math.max(0, (results?.length || 1) - 1),
+  useEffect(() => setResultPage(0), [query, statusFilter, layer, presentation]);
+  const currentPage = Math.min(
+    resultPage,
+    Math.max(0, Math.ceil((results?.length || 0) / 50) - 1),
   );
+  const pageStart = currentPage * 50;
+  const statusCounts = units.reduce((counts, u) => {
+    const tone = unitStatus(u, statuses?.[u.id], layer).tone;
+    counts[tone] = (counts[tone] || 0) + 1;
+    return counts;
+  }, {});
   const buildingTerms = buildingQuery
     .toLocaleLowerCase("nb")
     .trim()
@@ -371,10 +427,6 @@ export default function BoligBuildingOverview({
             onChange={(e) => onQuery(e.target.value)}
           />
         </label>
-        <button type="button" onClick={onSetup}>
-          <Settings2 size={15} />
-          Oppsett
-        </button>
       </div>
       {blocks.length > 1 && (
         <>
@@ -443,6 +495,50 @@ export default function BoligBuildingOverview({
           </button>
         ))}
       </nav>
+      <div className="bolig-overview-tools">
+        <div
+          role="group"
+          aria-label="Visning av boliger"
+          className="bolig-overview-view"
+        >
+          <button
+            type="button"
+            aria-pressed={!listVisible}
+            onClick={() => {
+              setPresentation("facade");
+              setStatusFilter("all");
+              onQuery("");
+            }}
+          >
+            <Building2 size={16} />
+            Fasade
+          </button>
+          <button
+            type="button"
+            aria-pressed={!!listVisible}
+            onClick={() => setPresentation("list")}
+          >
+            <List size={16} />
+            Boligliste
+          </button>
+        </div>
+        <label>
+          Filtrer boliger
+          <select
+            aria-label="Filtrer boliger"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            <option value="all">Alle statuser · {units.length}</option>
+            {Object.entries(statusLabels).map(([tone, label]) => (
+              <option key={tone} value={tone}>
+                {label} · {statusCounts[tone] || 0}
+              </option>
+            ))}
+            <option value="contact">Mangler kontaktinfo</option>
+          </select>
+        </label>
+      </div>
       {error && (
         <p role="status" className="bolig-overview-error">
           {error}
@@ -454,31 +550,56 @@ export default function BoligBuildingOverview({
             {results.length} {results.length === 1 ? "bolig" : "boliger"} funnet
             i hele prosjektet
           </p>
-          {results.slice(pageStart, pageStart + 50).map((u) => (
-            <button
-              key={u.id}
-              type="button"
-              onClick={() => {
-                setBlockId(
-                  entrances.find((e) => e.id === u.entrance_id).block_id,
-                );
-                setActiveEntranceId(u.entrance_id);
-                setAllBuildings(false);
-                onQuery("");
-                onSelect(u.id);
-              }}
-            >
-              {u.number} ·{" "}
-              {entrances.find((e) => e.id === u.entrance_id).address} ·{" "}
-              {u.contact_name || "Kontakt ikke registrert"}
-            </button>
-          ))}
+          {!results.length && (
+            <p>
+              Ingen boliger passer til søket og filteret. Velg «Alle statuser»
+              eller endre søket.
+            </p>
+          )}
+          {results.slice(pageStart, pageStart + 50).map((u) => {
+            const status = unitStatus(u, statuses?.[u.id], layer),
+              Icon = icons[status.icon];
+            const e = entranceMap.get(u.entrance_id),
+              b = blocks.find((v) => v.id === e.block_id);
+            return (
+              <button
+                className="bolig-overview-row"
+                aria-pressed={unitId === u.id}
+                key={u.id}
+                type="button"
+                onClick={() => {
+                  setBlockId(
+                    entrances.find((e) => e.id === u.entrance_id).block_id,
+                  );
+                  setActiveEntranceId(u.entrance_id);
+                  setAllBuildings(false);
+                  onQuery("");
+                  setStatusFilter("all");
+                  setPresentation("facade");
+                  onSelect(u.id);
+                }}
+              >
+                <span>
+                  <b>{u.number}</b>
+                  <small>
+                    {b.name} · {e.address} · {u.floor}. etg.
+                    {u.official_number ? ` · ${u.official_number}` : ""}
+                  </small>
+                  <small>{u.contact_name || "Kontakt ikke registrert"}</small>
+                </span>
+                <span className={`bolig-status-badge ${status.tone}`}>
+                  <Icon size={15} />
+                  {status.label}
+                </span>
+              </button>
+            );
+          })}
           {results.length > 50 && (
             <div className="bolig-result-pages">
               <button
                 type="button"
-                disabled={!resultPage}
-                onClick={() => setResultPage((v) => v - 1)}
+                disabled={!currentPage}
+                onClick={() => setResultPage(currentPage - 1)}
               >
                 Forrige treff
               </button>
@@ -489,7 +610,7 @@ export default function BoligBuildingOverview({
               <button
                 type="button"
                 disabled={pageStart + 50 >= results.length}
-                onClick={() => setResultPage((v) => v + 1)}
+                onClick={() => setResultPage(currentPage + 1)}
               >
                 Neste treff
               </button>
@@ -636,6 +757,7 @@ export default function BoligBuildingOverview({
                         240,
                         Math.max(...(e.counts || [4])) * 56 + 70,
                       ),
+                      "--facade-span": shownEntrances.length,
                       "--entrance-position":
                         blockEntrances.indexOf(e) % 2 === 0 ? "left" : "right",
                     }}
@@ -649,7 +771,7 @@ export default function BoligBuildingOverview({
                           <div
                             className="bolig-windows"
                             style={{
-                              gridTemplateColumns: `repeat(${entranceUnits.filter((u) => u.floor === f).length}, minmax(52px,1fr))`,
+                              gridTemplateColumns: `repeat(${entranceUnits.filter((u) => u.floor === f).length}, minmax(52px,84px))`,
                             }}
                           >
                             {entranceUnits
@@ -675,7 +797,9 @@ export default function BoligBuildingOverview({
                                     }}
                                   >
                                     <b>{u.number}</b>
-                                    <Icon size={18} />
+                                    <span className="bolig-window-status">
+                                      <Icon size={13} />
+                                    </span>
                                     <span className="bolig-sr-only">
                                       {status.label}
                                     </span>
@@ -709,9 +833,9 @@ export default function BoligBuildingOverview({
             Legg til en blokk og oppgang. Boligene vises her når du har lagret
             antall etasjer og leiligheter.
           </p>
-          <button type="button" onClick={onSetup}>
-            Åpne oppsett
-          </button>
+          <p>
+            Åpne «Oppsett» øverst i prosjektet for å legge til bygg og boliger.
+          </p>
         </div>
       )}
       <div className="bolig-status-legend">

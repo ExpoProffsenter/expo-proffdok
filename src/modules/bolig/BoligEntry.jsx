@@ -591,7 +591,7 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
                     <p>
                       {setupArea === "catalog"
                         ? "Lag og rediger prosjektets grunnpakker og tilvalg her. Pakkene kan brukes som fellespakke og som rompakker."
-                        : "Velg hva du vil jobbe med. Kladden beholdes når du bytter område."}
+                        : "Her samler du bygg, adresser, bolignumre, rommaler og arkiv. Velg en oppgave nedenfor. Kladden beholdes når du bytter område."}
                     </p>
                     {setupArea === "catalog" && unit && (
                       <button
@@ -872,7 +872,6 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
                       unitId={unitId}
                       query={query}
                       onQuery={setQuery}
-                      onSetup={() => setView("setup")}
                       onSelect={(id) => {
                         setNotice("");
                         setUnitId(id);
@@ -943,7 +942,7 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
                             {unit.contact_phone || "Mobil mangler"}
                           </span>
                         </div>
-                        <BoligTaskDialog title="Kontakt og leilighetsprosjekt">
+                        <BoligTaskDialog title="Leilighetsinformasjon">
                           {canWrite &&
                           (!unit.has_project || unit.project_id) ? (
                             <DraftForm

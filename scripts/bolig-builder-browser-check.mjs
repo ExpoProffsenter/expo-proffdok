@@ -25,7 +25,7 @@ const homeRoots=Array.from({length:15},(_,i)=>({id:'root'+i,title:'Boligprosjekt
 const context={user_id:'qa-user',company_id:'qa-company',company_name:'Eksempelfirma · kun test',enabled:true,role:'manager'};
 const make=(mode)=>{const record={root:{id:mode,revision:1},blocks:[],entrances:[],units:[]};for(let b=0;b<(mode==='fivehundred'?25:mode==='many'?20:1);b++){record.blocks.push({id:'b'+b,name:'Bygg '+(b+1),building_type:'apartment',address:'Eksempelgata '+(b+1)});for(let e=0;e<((mode==='many'||mode==='fivehundred')?2:20);e++){const id='b'+b+'e'+e,counts=mode==='uneven'?[2,3,1]:(mode==='many'||mode==='fivehundred')?[2,2,2,2,2]:[4,4,4,4,4,4];record.entrances.push({id,block_id:'b'+b,address:'Eksempelgata '+(b+1)+' oppgang '+(e+1),counts});counts.forEach((n,f)=>{for(let p=0;p<n;p++)record.units.push({id:id+'f'+f+'p'+p,entrance_id:id,floor:f+1,number:'H'+String(f+1).padStart(2,'0')+String(p+1).padStart(2,'0'),contact_name:b===19&&e===1&&f===4&&p===0?'Siste Eksempel':'',has_project:false});});}}return record;};
 window.__attempts=[];window.__failNext=false;window.__client={rpc:async(name,args)=>({data:{context,root_id:args.p_root_id,units:[]}})};
-function App({mode}){const [q,sq]=useState(''),[unit,su]=useState(''),[busy,sb]=useState(false);return <section className="bolig-dialog bolig-page" style={{maxWidth:'100%',width:'100%',minHeight:'100vh'}}>{mode==='home'?<><ProjectHome roots={homeRoots} activeRoot={homeRoots[0]} active loading={false} busy={false} manager onSelect={su} onResume={()=>su('resume')}><Builder context={context} busy={false} onCreate={async()=>{}}/></ProjectHome><output>{unit}</output></>:mode==='builder'?<div className="bolig-utilities"><div className="bolig-toolbar"><small>Prosjektledertilgang</small></div><BoligHelp/><Builder context={context} busy={busy} onCreate={async payload=>{sb(true);try{window.__attempts.push(payload);if(window.__failNext){window.__failNext=false;throw Error('Forbindelsen ble brutt. Kontroller opprettelsen.');}}finally{sb(false);}}}/></div>:mode==='contact'?<Task title="Kontakt og leilighetsprosjekt"><label>Kontaktperson<input aria-label="Kontaktperson" defaultValue="Eksempelperson"/></label></Task>:<><Overview context={context} record={make(mode)} query={q} onQuery={sq} unitId={unit} onSelect={su} onSetup={()=>{}}/><output>{unit}</output></>}</section>};
+function App({mode}){const [q,sq]=useState(''),[unit,su]=useState(''),[busy,sb]=useState(false);return <section className="bolig-dialog bolig-page" style={{maxWidth:'100%',width:'100%',minHeight:'100vh'}}>{mode==='home'?<><ProjectHome roots={homeRoots} activeRoot={homeRoots[0]} active loading={false} busy={false} manager onSelect={su} onResume={()=>su('resume')}><Builder context={context} busy={false} onCreate={async()=>{}}/></ProjectHome><output>{unit}</output></>:mode==='builder'?<div className="bolig-utilities"><div className="bolig-toolbar"><small>Prosjektledertilgang</small></div><BoligHelp/><Builder context={context} busy={busy} onCreate={async payload=>{sb(true);try{window.__attempts.push(payload);if(window.__failNext){window.__failNext=false;throw Error('Forbindelsen ble brutt. Kontroller opprettelsen.');}}finally{sb(false);}}}/></div>:mode==='contact'?<Task title="Leilighetsinformasjon"><label>Kontaktperson<input aria-label="Kontaktperson" defaultValue="Eksempelperson"/></label></Task>:<><Overview context={context} record={make(mode)} query={q} onQuery={sq} unitId={unit} onSelect={su} onSetup={()=>{}}/><output>{unit}</output></>}</section>};
 const root=createRoot(document.getElementById('app'));window.__mode=mode=>root.render(<App key={mode} mode={mode}/>);window.__mode('builder');
 `,
 );
@@ -548,10 +548,10 @@ try {
   );
   await page.evaluate(() => window.__mode("contact"));
   await page
-    .getByRole("button", { name: "Kontakt og leilighetsprosjekt", exact: true })
+    .getByRole("button", { name: "Leilighetsinformasjon", exact: true })
     .click();
   const contact = page.getByRole("dialog", {
-    name: "Kontakt og leilighetsprosjekt",
+    name: "Leilighetsinformasjon",
     exact: true,
   });
   await contact
@@ -560,7 +560,7 @@ try {
   await contact.press("Escape");
   eq(await contact.isVisible(), false);
   await page
-    .getByRole("button", { name: "Kontakt og leilighetsprosjekt", exact: true })
+    .getByRole("button", { name: "Leilighetsinformasjon", exact: true })
     .click();
   eq(
     await contact.getByLabel("Kontaktperson", { exact: true }).inputValue(),

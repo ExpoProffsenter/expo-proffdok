@@ -33,14 +33,18 @@ export function BoligHelp() {
         <li>
           Bruk «Alle bygg» eller «Bytt bygg» for å finne riktig bygg. Lange
           blokker har oppgangsvelger og et oversiktsbånd. Søk finner boliger,
-          adresser og kontaktpersoner på tvers av byggene.
+          adresser og kontaktpersoner på tvers av byggene. «Boligliste» viser
+          alle boliger med kontakt og status. «Filtrer boliger» finner manglende
+          valg, utkast som må gjennomgås og ufullstendig kontaktinfo. Filteret
+          følger valgt statusområde. «Fasade» fjerner søk og filter og viser
+          bygget igjen.
         </li>
         <li>
-          Velg en bolig. Åpne «Kontakt og leilighetsprosjekt» for å fylle inn
-          navn, e-post og mobil. Adressen hentes fra oppgangen. Her kan du også
-          rette leilighetsnummer og koble til et ordinært ProffDok-prosjekt.
-          Opprett selve våtromsprosjektet gjennom vanlig prosjektopprettelse
-          først. Koblingen kopierer ikke prosjektinnhold.
+          Velg en bolig. Åpne «Leilighetsinformasjon» for å fylle inn navn,
+          e-post og mobil. Adressen hentes fra oppgangen. Her kan du også rette
+          leilighetsnummer og koble til et ordinært ProffDok-prosjekt. Opprett
+          selve våtromsprosjektet gjennom vanlig prosjektopprettelse først.
+          Koblingen kopierer ikke prosjektinnhold.
         </li>
         <li>
           Under «Rom og oversikt» velger du «Legg til rom». Velg type, navn og

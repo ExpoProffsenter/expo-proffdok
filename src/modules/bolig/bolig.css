@@ -739,47 +739,71 @@
 }
 .bolig-windows {
   display: grid;
-  gap: 4px;
+  justify-content: space-around;
+  gap: 10px;
   width: 100%;
 }
 .bolig-dialog .bolig-window {
-  min-height: 48px;
-  padding: 7px 3px;
+  min-height: 64px;
+  height: 64px;
+  min-width: 52px;
+  width: 100%;
+  padding: 5px;
   display: flex;
   flex-direction: column;
-  gap: 7px;
-  border: 2px solid #f9fcff;
-  border-bottom: 4px solid #b8bdba;
-  border-radius: 1px;
-  color: #375c6d;
-  background: #e7eef4;
-  box-shadow: 0 2px 5px #21394525;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  border: 3px solid #f5f3ee;
+  border-bottom: 5px solid #b8b9af;
+  border-radius: 2px;
+  color: #fff;
+  background: linear-gradient(
+    125deg,
+    #6c8794 0%,
+    #304b5b 48%,
+    #587483 49%,
+    #2a4454 100%
+  );
+  box-shadow:
+    0 2px 5px #152b4245,
+    inset 0 0 0 1px #263f4e;
 }
 .bolig-window b {
-  font-size: 11px;
+  font-size: 10px;
+  line-height: 14px;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  text-shadow: 0 1px 2px #112737;
 }
-.bolig-dialog .bolig-window.ready {
-  background: #bbe7ce;
+.bolig-window-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  border-radius: 4px;
+  background: #f4f7f8;
+  color: #48616f;
+}
+.bolig-window.ready .bolig-window-status {
+  background: #d8f2e2;
   color: #145b35;
-  border-color: #29945e;
 }
-.bolig-dialog .bolig-window.pending {
-  background: #b9ddff;
+.bolig-window.pending .bolig-window-status {
+  background: #dcefff;
   color: #124d78;
-  border-color: #398dc8;
 }
-.bolig-dialog .bolig-window.review {
-  background: #ffd783;
+.bolig-window.review .bolig-window-status {
+  background: #ffe2a3;
   color: #663e00;
-  border-color: #b87b14;
 }
 .bolig-dialog .bolig-window.selected {
   outline: 3px solid #003c77;
-  outline-offset: 0;
-  box-shadow: 0 0 0 5px #79d0eb;
+  outline-offset: 1px;
+  box-shadow: 0 0 0 6px #a4e5f1;
 }
 .bolig-dialog .bolig-window:hover {
-  filter: brightness(1.04);
+  filter: brightness(1.12);
   transform: translateY(-1px);
 }
 .bolig-ground-floor {
@@ -2226,15 +2250,17 @@
   padding: 5px 4px 6px;
 }
 .bolig-connected-scene .bolig-building {
-  background-size: 200% 100%;
+  container: bolig-facade / inline-size;
+  background-size: calc(100% * var(--facade-span, 1)) 100%;
   background-position: var(--entrance-position, left) center;
   border-radius: 0;
   border-bottom: 5px solid #9aa6a1;
-  padding-bottom: 70px;
+  padding-bottom: 90px;
   border-right: 2px solid #b8c7c7;
 }
 .bolig-connected-scene .bolig-building-floors.bolig-grid {
-  margin: 0 18px 0 42px;
+  margin: 10px 18% 0 22%;
+  gap: 18px;
 }
 .bolig-connected-scene .bolig-building h4 {
   max-width: calc(100% - 20px);
@@ -3871,5 +3897,100 @@
   }
   .bolig-preparation-rooms summary {
     flex-wrap: wrap;
+  }
+}
+
+/* Keep facade controls compact; status belongs to the small window badge. */
+.bolig-overview-tools {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 12px 0;
+}
+.bolig-overview-view {
+  display: flex;
+  gap: 5px;
+}
+.bolig-dialog .bolig-overview-view button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: none;
+  font-size: 12px;
+}
+.bolig-dialog .bolig-overview-view button[aria-pressed="true"] {
+  background: #08798a;
+  color: white;
+  border-color: #076878;
+}
+.bolig-overview-tools label {
+  margin: 0;
+  font-size: 11px;
+  width: min(100%, 230px);
+}
+.bolig-overview-tools select {
+  font-size: 12px;
+}
+.bolig-search-results .bolig-overview-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  box-shadow: none;
+}
+.bolig-overview-row > span:first-child {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+  overflow-wrap: anywhere;
+}
+.bolig-overview-row small {
+  font-size: 11px;
+  color: #4a6271;
+}
+.bolig-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  border-radius: 6px;
+  padding: 6px 8px;
+  color: #48616f;
+  background: #edf2f5;
+}
+.bolig-status-badge.ready {
+  color: #145b35;
+  background: #d8f2e2;
+}
+.bolig-status-badge.pending {
+  color: #124d78;
+  background: #dcefff;
+}
+.bolig-status-badge.review {
+  color: #663e00;
+  background: #fff0d1;
+}
+@media (max-width: 600px) {
+  .bolig-search-results .bolig-overview-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .bolig-connected-scene .bolig-building-floors.bolig-grid {
+    margin-right: 13%;
+    margin-left: 20%;
+  }
+}
+
+@container bolig-facade (max-width: 450px) {
+  .bolig-building-floors.bolig-grid {
+    margin: 10px 12px 0 42px;
+    gap: 14px;
+  }
+  .bolig-windows {
+    gap: 4px;
   }
 }

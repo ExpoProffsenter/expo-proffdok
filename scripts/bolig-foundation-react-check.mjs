@@ -541,6 +541,17 @@ try {
   await act(() => w.dispatchEvent(new w.Event("focus")));
   assert(q(".bolig-task-dialog input").value === "H0101");
   assert(q(".bolig-task-dialog form").textContent.includes("Kontaktperson"));
+  assert(
+    q('.bolig-task-dialog[aria-label="Leilighetsinformasjon"]'),
+    "Apartment information has the requested title",
+  );
+  assert.equal(
+    [...w.document.querySelectorAll("button")].filter(
+      (b) => b.textContent.trim() === "Oppsett",
+    ).length,
+    1,
+    "One shared project setup entrance",
+  );
   holdContext = true;
   await act(() =>
     w.dispatchEvent(
