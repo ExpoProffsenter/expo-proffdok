@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import assert from "node:assert/strict";
+import roomsScenarios from "./bolig-rooms-db-scenarios.mjs";
 const { PGlite } = await import(
   process.env.HR_PGLITE_PATH || "@electric-sql/pglite"
 );
@@ -161,6 +162,18 @@ try {
   await db.exec(
     await fs.readFile(
       "supabase/migrations/20261021001124_bolig_building_household_guard.sql",
+      "utf8",
+    ),
+  );
+  await db.exec(
+    await fs.readFile(
+      "supabase/migrations/20261021145003_bolig_rooms.sql",
+      "utf8",
+    ),
+  );
+  await db.exec(
+    await fs.readFile(
+      "supabase/migrations/20261021145829_bolig_room_fk_indexes.sql",
       "utf8",
     ),
   );
@@ -835,6 +848,20 @@ try {
   await rejects(() => catalog(), "42501");
   await actor(manager);
   await actor(manager);
+  await roomsScenarios({
+    db,
+    call,
+    actor,
+    eq,
+    rejects,
+    id,
+    firm,
+    other,
+    admin,
+    manager,
+    reader,
+    outsider,
+  });
   await db.exec(
     `reset role;update public.profiles set deactivated=true where id=${q(reader)}`,
   );

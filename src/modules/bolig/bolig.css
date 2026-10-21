@@ -2830,3 +2830,370 @@
 .bolig-dialog .bolig-home-search input:focus {
   outline: none;
 }
+
+/* Rooms stay compact inside the apartment pane. Editing uses a separate dialog. */
+.bolig-rooms {
+  border: 1px solid #dbe6e9;
+  border-radius: 16px;
+  padding: 16px;
+  background: #fff;
+  margin: 16px 0;
+  min-width: 0;
+}
+.bolig-rooms-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.bolig-rooms-heading small,
+.bolig-room-dialog header small {
+  color: #55777e;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+.bolig-rooms-heading h4 {
+  margin: 4px 0 0;
+  font-size: 17px;
+  color: #173e46;
+}
+.bolig-rooms-heading h4 span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #e9f4f3;
+  color: #176c6a;
+  min-width: 24px;
+  height: 24px;
+  font-size: 12px;
+  border-radius: 8px;
+  margin-left: 4px;
+}
+.bolig-rooms button,
+.bolig-room-dialog button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 40px;
+  margin: 0;
+  font-size: 12px;
+}
+.bolig-rooms .bolig-room-add {
+  width: auto;
+  flex-shrink: 0;
+  color: #176c6a;
+  background: #edf7f6;
+  border: 1px solid #c8e7e3;
+}
+.bolig-room-select {
+  display: grid;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #48636c;
+}
+.bolig-room-select select {
+  width: 100%;
+  min-height: 44px;
+  background: #f6f9fa;
+  border: 1px solid #dbe6e9;
+  border-radius: 10px;
+  padding: 10px;
+  color: #173e46;
+}
+.bolig-room-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+  max-height: 230px;
+  overflow: auto;
+  padding: 2px;
+}
+.bolig-rooms .bolig-room-grid button {
+  display: flex;
+  justify-content: flex-start;
+  text-align: left;
+  padding: 12px 10px;
+  border: 1px solid #e0eaed;
+  border-radius: 10px;
+  background: #fff;
+  color: #24646a;
+  min-width: 0;
+}
+.bolig-room-grid button:hover {
+  background: #f1f8f7;
+  border-color: #7eb5ad;
+}
+.bolig-room-grid button span {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.bolig-room-grid strong {
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.bolig-room-grid small {
+  color: #617880;
+  font-size: 11px;
+}
+.bolig-room-grid svg {
+  flex-shrink: 0;
+}
+.bolig-room-detail {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 14px;
+  flex-wrap: wrap;
+}
+.bolig-room-icon {
+  display: flex;
+  padding: 12px;
+  background: #eaf6f4;
+  border-radius: 12px;
+  color: #258177;
+}
+.bolig-room-detail div {
+  flex: 1;
+  min-width: 90px;
+}
+.bolig-room-detail h5 {
+  margin: 0 0 4px;
+  font-size: 16px;
+  overflow-wrap: anywhere;
+}
+.bolig-room-detail p {
+  margin: 0;
+  font-size: 12px;
+  color: #617880;
+}
+.bolig-room-detail button {
+  background: #fff;
+  border: 1px solid #dbe6e9;
+  color: #215866;
+}
+.bolig-rooms-empty {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: #f5f9fa;
+  padding: 16px 12px;
+  border-radius: 10px;
+  margin-top: 12px;
+  color: #456b72;
+}
+.bolig-rooms-empty svg {
+  flex-shrink: 0;
+}
+.bolig-rooms-empty strong {
+  color: #274f58;
+  font-size: 13px;
+}
+.bolig-rooms-empty p {
+  font-size: 12px;
+  margin: 6px 0 0;
+}
+.bolig-room-note {
+  font-size: 11px;
+  color: #667d86;
+  line-height: 1.5;
+  margin: 12px 0 0;
+}
+.bolig-room-archive {
+  font-size: 12px;
+  margin-top: 12px;
+}
+.bolig-room-archive summary {
+  cursor: pointer;
+  color: #526b72;
+}
+.bolig-room-archive > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 0;
+}
+.bolig-room-archive span {
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.bolig-room-dialog {
+  width: min(580px, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  padding: 24px;
+  box-sizing: border-box;
+  overflow: auto;
+  border-radius: 20px;
+}
+.bolig-room-dialog * {
+  box-sizing: border-box;
+}
+.bolig-room-dialog > header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+.bolig-room-dialog h2 {
+  margin: 5px 0 0;
+  font-size: 23px;
+}
+.bolig-room-dialog header button {
+  padding: 8px;
+  background: #f1f5f7;
+  border: 0;
+  border-radius: 10px;
+}
+.bolig-room-dialog form > p {
+  color: #617880;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.bolig-room-dialog fieldset {
+  border: 0;
+  padding: 0;
+  margin: 18px 0 0;
+  min-width: 0;
+}
+.bolig-room-dialog legend {
+  font-size: 12px;
+  font-weight: 700;
+  color: #3b5d65;
+  margin-bottom: 8px;
+}
+.bolig-room-types {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.bolig-room-dialog .bolig-room-types button {
+  flex-direction: column;
+  gap: 8px;
+  min-height: 82px;
+  padding: 8px 3px;
+  background: #fff;
+  border: 1px solid #dbe6e9;
+  border-radius: 12px;
+  color: #506b74;
+  font-size: 11px;
+}
+.bolig-room-types button[aria-pressed="true"] {
+  border-color: #297b73;
+  color: #155d56;
+  background: #eaf5f2;
+  box-shadow: 0 0 0 1px #297b73;
+}
+.bolig-room-dialog label {
+  display: grid;
+  gap: 7px;
+  font-size: 12px;
+  color: #3b5d65;
+  font-weight: 600;
+  margin: 16px 0;
+}
+.bolig-room-dialog input {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  background: #fff;
+  border: 1px solid #cfdfe3;
+  border-radius: 10px;
+  color: #173e46;
+  font-size: 14px;
+}
+.bolig-room-dialog label small {
+  font-weight: 400;
+  font-size: 11px;
+  color: #667d86;
+}
+.bolig-room-dialog footer {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid #e6edef;
+}
+.bolig-room-dialog footer button {
+  padding: 12px 16px;
+  border: 1px solid #dbe6e9;
+  border-radius: 10px;
+  background: #fff;
+  color: #315661;
+  min-height: 44px;
+}
+.bolig-room-dialog footer button[type="submit"] {
+  background: #176e67;
+  color: #fff;
+  border-color: #176e67;
+}
+.bolig-room-more {
+  font-size: 12px;
+  color: #627981;
+  margin-top: 16px;
+}
+.bolig-room-more summary {
+  cursor: pointer;
+}
+.bolig-room-more button {
+  margin: 10px 8px 0 0;
+}
+.bolig-room-conflict {
+  background: #fff8e9;
+  border: 1px solid #efd6a5;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 12px;
+}
+.bolig-room-conflict ul {
+  max-height: 120px;
+  overflow: auto;
+}
+.bolig-room-dialog [role="alert"] {
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.bolig-rooms button:focus-visible,
+.bolig-room-dialog button:focus-visible,
+.bolig-room-select select:focus-visible {
+  outline: 3px solid #1a8a80;
+  outline-offset: 3px;
+}
+@media (max-width: 600px) {
+  .bolig-rooms {
+    padding: 12px;
+  }
+  .bolig-rooms-heading {
+    gap: 6px;
+  }
+  .bolig-rooms-heading h4 {
+    font-size: 15px;
+  }
+  .bolig-rooms .bolig-room-add {
+    padding: 8px;
+    min-height: 44px;
+    font-size: 11px;
+  }
+  .bolig-room-dialog {
+    padding: 18px;
+  }
+  .bolig-room-types {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .bolig-room-dialog footer {
+    flex-direction: column-reverse;
+  }
+  .bolig-room-dialog footer button {
+    width: 100%;
+  }
+  .bolig-room-dialog input {
+    font-size: 16px;
+  }
+}

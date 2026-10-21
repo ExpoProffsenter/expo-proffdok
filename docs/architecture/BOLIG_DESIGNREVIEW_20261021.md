@@ -38,11 +38,11 @@ Boligpanelet viser kort kontaktoppsummering. Kontakt og leilighetsprosjekt åpne
 
 Anbefalt videre visning i boligpanelet er tre korte arbeidsvalg: Boligvalg, Leveranser og Dokumentasjon. Hvert valg åpner sitt arbeidsområde fremfor å vise alle detaljer samtidig. Leveranser og Dokumentasjon skal aktiveres først når faktisk data og tillatelser er koblet på.
 
-## 7. Rom og plantegninger – konkret forslag, ikke bygget
+## 7. Rom – første etappe bygget; plantegninger gjenstår
 
-Boligpanelet får et kompakt romvalg: Alle rom, Bad 1, Bad 2, Vaskerom, WC og Legg til rom. Legg til rom åpner popup med standardtyper, egendefinert navn og valgfri etasje. Brukeren trenger ingen tegning for å begynne. Ett ordinært leilighetsprosjekt beholdes; rom ligger under boligen.
+Første rometappe er bygget i Preview/Sandbox, se docs/qa/BOLIG_ROOMS_20261021.md. Boligpanelet har et kompakt romvalg: Alle rom, Bad 1, Bad 2, Vaskerom, WC og Legg til rom. Legg til rom åpner popup med standardtyper, egendefinert navn og valgfri etasje. Brukeren trenger ingen tegning for å begynne. Ett ordinært leilighetsprosjekt beholdes; rom ligger under boligen.
 
-Romkort viser bare navn, avtalt varepakke og dokumentasjonsstatus. Rediger og Se varer åpner avgrensede oppgaver. Plantegning åpnes i egen arbeidsflate med sidevelger og manuelle rommarkører. Markeringsområder følger tegningens koordinater og stabile rom-ID-er. Ny tegningsversjon krever gjennomgang før den erstatter gjeldende. Ingen automatisk opprettelse av nye prosjekter per bad.
+Romkort viser nå navn, type og valgfri etasje. Kobling til varepakke og dokumentasjon gjenstår. Ønsket neste steg: Rediger og Se varer åpner avgrensede oppgaver. Plantegning åpnes i egen arbeidsflate med sidevelger og manuelle rommarkører. Markeringsområder følger tegningens koordinater og stabile rom-ID-er. Ny tegningsversjon krever gjennomgang før den erstatter gjeldende. Ingen automatisk opprettelse av nye prosjekter per bad.
 
 ## 8. Eget byggbilde og situasjonsplan – konkret forslag, ikke bygget
 

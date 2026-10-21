@@ -206,3 +206,4 @@ jobs:
           node scripts/bolig-overview-react-check.mjs
           export PLAYWRIGHT_MODULE="$RUNNER_TEMP/company-admin-browser-qa/node_modules/playwright/index.mjs"
           node scripts/bolig-builder-browser-check.mjs
+          node scripts/bolig-rooms-browser-check.mjs

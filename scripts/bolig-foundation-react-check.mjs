@@ -241,6 +241,16 @@ try {
             })),
           },
         };
+      if (name === "bolig_rooms")
+        return {
+          data: {
+            context: context(),
+            root_id: args.p_root_id,
+            unit_id: args.p_unit_id,
+            revision: 0,
+            rooms: [],
+          },
+        };
       if (name === "bolig_catalog")
         return {
           data: {

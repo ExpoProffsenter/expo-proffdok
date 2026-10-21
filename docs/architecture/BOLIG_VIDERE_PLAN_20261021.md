@@ -2,17 +2,21 @@
 
 Kenneths instruks 21. oktober 2026: så nær den godkjente Solgløtt-konseptskissen som mulig. Førsteinntrykket av foundation var svakt, med mye luft og lange skjemaer. Denne filen skiller nåværende leveranse fra ønskelisten.
 
-## Nå: byggoversikt og varevalg
+## Nå: prosjektoversikt, bygg, rom og varevalg
 
 Miljømål BEGGE, først eksisterende foundation-Preview/Sandbox i PR #278. Scope: egne boligkomponenter/CSS, boligveiledning, fasadeillustrasjon, egne tester og én additiv lesefunksjon for status. Ingen endring i eksisterende Sales, innlogging, prosjektlagring, menyer, HR, e-post, eksisterende katalogrettigheter eller øvrige critical checks.
 
-- Kompakt prosjektvalg og prosjektets bolig-/blokk-/oppgangstall. Første aktive prosjekt åpnes automatisk. Veiledning tilgjengelig, sammenlagt som standard.
+- Kompakt prosjektvalg og prosjektets bolig-/blokk-/oppgangstall. Første åpning viser Prosjektoversikt; et tidligere servervalidert arbeidssted kan gjenopptas. Bygg nytt prosjekt og Fortsett prosjektkladd er separate innganger. Veiledning tilgjengelig, sammenlagt som standard.
 - Byggoversikt som hovedflate. Faktiske etasjer og bolig-ID-er danner klikkbare vinduer over en illustrert fasade. Boligpanelet står ved siden av på desktop. På mobil kan man gå tilbake til bygget.
 - Egne arbeidsområder Byggoversikt og Oppsett. Oppsett samler struktur, grunnpakker og tilvalg. Skjulte arbeidsområder beholder monterte skjemaer og lokal kladd.
 - Boligpanelet skiller Boligvalg fra Bestilling. Lagret boligvalg vises før redigering; kontakt/prosjektkobling ligger under eget valg.
 - Statuslag for lagrede boligvalg, bestillingsutkast og prosjektkobling. Aldri vis «Bestilt», «Ferdig» eller fremdriftsstatus basert på et utkast. Ny lesefunksjon returnerer kun statussammendrag for godkjent firma/prosjekt. Utdatert kildevalg og endret katalog markeres.
 - Katalogoppslag bruker eksisterende serverrettigheter: interne brukere med intern katalogtilgang kan søke internt; proffoppslag følger firmaets aktive leverandører og nødvendige modultilganger. Prisinnsyn gir ingen ekstra katalogtilgang. Kun varebeskrivelse, varenummer, bilde/produktlenke og eventuell salgspris kopieres. Innkjøpsnetto og rabatter følger aldri boligvalg/bestillingsgrunnlag.
 - Eksisterende revisjoner, historikk, kildevalg og bestillingsutvalg beholdes. Ingen reell utsending eller kundeaksept.
+
+## Første rometappe levert i Preview/Sandbox
+
+«Rom og oversikt» har Alle rom, egne romnavn, standardtyper, valgfri etasje og Legg til/Rediger rom i popup. Stabile ID-er, romrevisjoner, arkiv/gjenopprett og varig versjonshistorikk er implementert. Ett ordinært prosjekt per bolig beholdes. Eksisterende boligvalg og bestillingsutkast gjelder fortsatt hele boligen og er uendret. Kobling av varer, pakker, tilvalg og sjekklister til rom, rommal og plantegninger er neste delsteg. Se docs/qa/BOLIG_ROOMS_20261021.md for scope, migrasjoner, QA og begrensninger. Ingen produksjonsmerge er utført.
 
 ## Ønskeliste: privat kontraktsgrunnlag og analyse
 

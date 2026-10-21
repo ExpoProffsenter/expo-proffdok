@@ -16,6 +16,7 @@ import BoligProjectBuilder from "./BoligProjectBuilder.jsx";
 import BoligProjectHome from "./BoligProjectHome.jsx";
 import BoligProjectPicker from "./BoligProjectPicker.jsx";
 import BoligCatalog from "./BoligCatalog.jsx";
+import BoligRooms from "./BoligRooms.jsx";
 import BoligBuildingOverview from "./BoligBuildingOverview.jsx";
 import { Building2, Home, Settings2, RefreshCw, ArrowLeft } from "lucide-react";
 export default function BoligEntry({ userId, onOpenProject, onExit }) {
@@ -1007,6 +1008,12 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
                             </p>
                           )}
                         </BoligTaskDialog>
+                        <BoligRooms
+                          key={unit.id + ":rooms:" + ctx.role}
+                          context={ctx}
+                          root={record.root}
+                          unit={unit}
+                        />
                         <BoligCatalog
                           compact
                           key={unit.id + ":" + ctx.role}

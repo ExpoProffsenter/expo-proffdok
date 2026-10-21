@@ -27,6 +27,13 @@ export function BoligHelp() {
           først. Koblingen kopierer ikke prosjektinnhold.
         </li>
         <li>
+          Under «Rom og oversikt» velger du «Legg til rom». Velg type, navn og
+          eventuell etasje. Flere bad får egne navn. «Rediger rom» lar deg rette
+          opplysningene. Rom kan arkiveres og gjenopprettes uten å miste
+          historikken. Ett ordinært prosjekt beholdes for hele boligen. Pakker
+          og bestillingsutkast gjelder foreløpig hele boligen.
+        </li>
+        <li>
           Åpne Oppsett → Grunnpakker og tilvalg → Grunnpakker. Legg inn
           vareinnhold, varenummer og antall. Grunnpakken trenger ingen sum.
           Valgfri grunnsum per varelinje brukes bare som fratrekk ved et
