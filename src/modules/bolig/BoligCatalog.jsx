@@ -8,6 +8,7 @@ import {
 } from "./boligCatalogClient.js";
 import { useBoligUiState } from "./boligUiState.js";
 import CatalogForm from "./BoligDraftForm.jsx";
+import BoligEditorDialog from "./BoligEditorDialog.jsx";
 import BoligOrderDraft from "./BoligOrderDraft.jsx";
 import ProductCard from "./BoligProductCard.jsx";
 import BoligCatalogLookup from "./BoligCatalogLookup.jsx";
@@ -73,7 +74,6 @@ function PackageEditor({
     >
       {(v, c) => (
         <>
-          <h4>{entry ? "Rediger grunnpakke" : "Ny grunnpakke"}</h4>
           <BoligCatalogLookup
             context={context}
             onUse={(item) => {
@@ -348,7 +348,6 @@ function OptionEditor({
     >
       {(v, c) => (
         <>
-          <h4>{entry ? "Rediger tilvalg" : "Nytt tilvalg"}</h4>
           <BoligCatalogLookup
             context={context}
             onUse={(item) => {
@@ -872,6 +871,22 @@ export default function BoligCatalog({
               Tilvalgsliste
             </button>
           </nav>
+          {canWrite && (
+            <button
+              type="button"
+              className="bolig-create-action"
+              disabled={busy || loading}
+              onClick={() => setEditing({ kind: tab, entry: null })}
+            >
+              <Plus size={16} />
+              {tab === "packages" ? "Ny grunnpakke" : "Nytt tilvalg"}
+            </button>
+          )}
+          <p className="bolig-editor-hint">
+            {tab === "packages"
+              ? "1. Gi pakken et navn. 2. Legg inn varer fra katalogen eller skriv dem inn selv. 3. Lagre pakken."
+              : "Velg om varen er et tillegg eller erstatter en standardvare. Oppgi pris og eventuelt fratrekk."}
+          </p>
           <details
             className="bolig-catalog-library"
             open={libraryOpen}
@@ -951,44 +966,47 @@ export default function BoligCatalog({
                 ),
               )}
             </div>
-            {canWrite && (
-              <button
-                type="button"
-                className="bolig-create-action"
-                disabled={busy || loading}
-                onClick={() => setEditing({ kind: tab, entry: null })}
-              >
-                <Plus size={16} />
-                {tab === "packages" ? "Ny grunnpakke" : "Nytt tilvalg"}
-              </button>
-            )}
           </details>
-          {editing &&
-            canWrite &&
-            (editing.kind === "packages" ? (
-              <PackageEditor
-                key={editing.entry?.id || "new-package"}
-                context={context}
-                rootId={root.id}
-                revision={valid.revision}
-                entry={editing.entry}
-                busy={busy || loading}
-                save={save}
-                onCancel={() => setEditing(null)}
-              />
-            ) : (
-              <OptionEditor
-                key={editing.entry?.id || "new-option"}
-                context={context}
-                rootId={root.id}
-                revision={valid.revision}
-                entry={editing.entry}
-                packages={valid.packages}
-                busy={busy || loading}
-                save={save}
-                onCancel={() => setEditing(null)}
-              />
-            ))}
+          {editing && canWrite && (
+            <BoligEditorDialog
+              title={
+                editing.kind === "packages"
+                  ? editing.entry
+                    ? "Rediger grunnpakke"
+                    : "Ny grunnpakke"
+                  : editing.entry
+                    ? "Rediger tilvalg"
+                    : "Nytt tilvalg"
+              }
+              busy={busy}
+              onClose={() => setEditing(null)}
+            >
+              {editing.kind === "packages" ? (
+                <PackageEditor
+                  key={editing.entry?.id || "new-package"}
+                  context={context}
+                  rootId={root.id}
+                  revision={valid.revision}
+                  entry={editing.entry}
+                  busy={busy || loading}
+                  save={save}
+                  onCancel={() => setEditing(null)}
+                />
+              ) : (
+                <OptionEditor
+                  key={editing.entry?.id || "new-option"}
+                  context={context}
+                  rootId={root.id}
+                  revision={valid.revision}
+                  entry={editing.entry}
+                  packages={valid.packages}
+                  busy={busy || loading}
+                  save={save}
+                  onCancel={() => setEditing(null)}
+                />
+              )}
+            </BoligEditorDialog>
+          )}
           {!valid.packages.length && (
             <p>
               Start med «Ny grunnpakke». Innholdet kan deretter velges for

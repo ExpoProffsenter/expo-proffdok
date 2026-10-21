@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import assert from "node:assert/strict";
+import contentScenarios from "./bolig-room-content-db-scenarios.mjs";
 import roomsScenarios from "./bolig-rooms-db-scenarios.mjs";
 const { PGlite } = await import(
   process.env.HR_PGLITE_PATH || "@electric-sql/pglite"
@@ -174,6 +175,12 @@ try {
   await db.exec(
     await fs.readFile(
       "supabase/migrations/20261021145829_bolig_room_fk_indexes.sql",
+      "utf8",
+    ),
+  );
+  await db.exec(
+    await fs.readFile(
+      "supabase/migrations/20261021155350_bolig_room_contents.sql",
       "utf8",
     ),
   );
@@ -858,6 +865,19 @@ try {
     firm,
     other,
     admin,
+    manager,
+    reader,
+    outsider,
+  });
+  await contentScenarios({
+    db,
+    call,
+    actor,
+    eq,
+    rejects,
+    id,
+    firm,
+    other,
     manager,
     reader,
     outsider,

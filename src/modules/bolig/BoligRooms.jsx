@@ -12,6 +12,7 @@ import {
   X,
   Layers3,
 } from "lucide-react";
+import BoligRoomContent from "./BoligRoomContent.jsx";
 import { boligRoomsRpc } from "./boligRoomsClient.js";
 import {
   boligDraftKey,
@@ -324,10 +325,14 @@ export default function BoligRooms({ context, root, unit }) {
               </div>
             </div>
           )}
-          <p className="bolig-room-note">
-            Her registrerer du rommene. Rommene har ikke eget vareinnhold ennå.
-            Grunnpakke og tilvalg velges under «Boligvalg» for hele boligen.
-          </p>
+          <BoligRoomContent
+            key={unit.id + ":" + context.role}
+            context={context}
+            root={root}
+            unit={unit}
+            activeRoom={active}
+            roomsRevision={data.revision}
+          />
           {!!archived.length && (
             <details className="bolig-room-archive">
               <summary>Arkiverte rom ({archived.length})</summary>

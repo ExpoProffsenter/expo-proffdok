@@ -3230,3 +3230,104 @@
     height: 90px;
   }
 }
+
+/* Task dialogs and room quantities share the module's compact work surface. */
+.bolig-catalog-dialog {
+  width: min(960px, calc(100vw - 24px));
+}
+.bolig-catalog-dialog .bolig-catalog-form {
+  border: 0;
+  padding: 0;
+  box-shadow: none;
+}
+.bolig-catalog-dialog .bolig-catalog-form h4 {
+  margin-top: 0;
+}
+.bolig-room-content {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #dbe5df;
+}
+.bolig-room-content > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.bolig-room-content h4 {
+  margin: 4px 0 12px;
+}
+.bolig-room-content small {
+  color: #496558;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+}
+.bolig-allocation-dialog {
+  width: min(780px, calc(100vw - 24px));
+}
+.bolig-allocation-dialog fieldset {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+}
+.bolig-allocation-line {
+  padding: 14px;
+  border: 1px solid #dbe5df;
+  border-radius: 12px;
+  margin: 12px 0;
+  background: #fbfcfb;
+}
+.bolig-allocation-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 130px auto;
+  gap: 10px;
+  align-items: end;
+  margin: 12px 0;
+}
+.bolig-allocation-fields label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  font-size: 12px;
+}
+.bolig-allocation-fields input,
+.bolig-allocation-fields select {
+  width: 100%;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid #cbd8d0;
+  border-radius: 8px;
+  box-sizing: border-box;
+  background: white;
+}
+.bolig-allocation-summary section {
+  padding: 12px;
+  border: 1px solid #dbe5df;
+  border-radius: 10px;
+  margin: 10px 0;
+}
+.bolig-allocation-summary h5 {
+  margin: 0 0 8px;
+  font-size: 14px;
+}
+.bolig-allocation-summary ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+@media (max-width: 480px) {
+  .bolig-allocation-fields {
+    grid-template-columns: minmax(0, 1fr) 80px;
+  }
+  .bolig-allocation-fields button {
+    grid-column: 2;
+    justify-self: end;
+  }
+  .bolig-room-content > header > button {
+    width: 100%;
+    justify-content: center;
+  }
+}

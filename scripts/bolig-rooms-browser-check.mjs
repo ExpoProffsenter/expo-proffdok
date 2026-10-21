@@ -25,6 +25,7 @@ window.__client={rpc:async(name,args)=>{
  if(window.__deny)return {error:{code:'42501',message:'Tilgangen er fjernet.'}};
  const unit=args.p_unit_id,s=window.__states[unit];
  const reply=()=>({data:{context:ctx,root_id:args.p_root_id,unit_id:unit,root_archived:false,...JSON.parse(JSON.stringify(s))}});
+ if(name==='bolig_room_content')return reply();
  if(args.p_action==='list') {const response=reply();if(window.__holdList)return new Promise(resolve=>window.__waiters.push(()=>resolve(response)));return response;}
  if(args.p_revision!==s.revision)return {error:{code:'PT409',message:'Rommene er endret. Hent siste romoversikt.'}};
  if(ctx.role!=='manager')return {error:{code:'42501',message:'Prosjektleder kreves.'}};

@@ -190,7 +190,7 @@ try {
   });
   w.__client = {
     rpc: async (name, args) => {
-      calls.push(args);
+      calls.push({ ...args, rpc_name: name });
       if (name === "bolig_firm_access") {
         if (!system)
           return { error: { code: "42501", message: "Systemadmin kreves." } };
@@ -241,7 +241,7 @@ try {
             })),
           },
         };
-      if (name === "bolig_rooms")
+      if (name === "bolig_rooms" || name === "bolig_room_content")
         return {
           data: {
             context: context(),
@@ -409,7 +409,9 @@ try {
     "Module starts at its own project overview",
   );
   assert.equal(
-    calls.filter((c) => c.p_action === "get").length,
+    calls.filter(
+      (c) => c.p_action === "get" && c.rpc_name === "bolig_workspace",
+    ).length,
     0,
     "Project home does not automatically open the first project",
   );
@@ -505,11 +507,15 @@ try {
     ).set.call(pickerSearch, "");
     pickerSearch.dispatchEvent(new w.Event("input", { bubbles: true }));
   });
-  const readsBefore = calls.filter((c) => c.p_action === "get").length;
+  const readsBefore = calls.filter(
+    (c) => c.p_action === "get" && c.rpc_name === "bolig_workspace",
+  ).length;
   await act(() => picker.querySelector(".bolig-root").click());
   assert(!picker.open);
   assert.equal(
-    calls.filter((c) => c.p_action === "get").length,
+    calls.filter(
+      (c) => c.p_action === "get" && c.rpc_name === "bolig_workspace",
+    ).length,
     readsBefore,
     "Choosing the active project must not reset its phase or draft",
   );
@@ -649,7 +655,9 @@ try {
   );
   holdContext = false;
   await act(() => contextWaiters.splice(0).forEach((resolve) => resolve()));
-  const readsBeforeHome = calls.filter((c) => c.p_action === "get").length;
+  const readsBeforeHome = calls.filter(
+    (c) => c.p_action === "get" && c.rpc_name === "bolig_workspace",
+  ).length;
   await act(() => button("Prosjektoversikt").click());
   assert(!q(".bolig-home").hidden, "All projects returns to the module home");
   assert(
@@ -671,7 +679,9 @@ try {
     "Resume retains exact draft DOM and text",
   );
   assert.equal(
-    calls.filter((c) => c.p_action === "get").length,
+    calls.filter(
+      (c) => c.p_action === "get" && c.rpc_name === "bolig_workspace",
+    ).length,
     readsBeforeHome,
     "Home/resume does not refetch or reset the active project",
   );

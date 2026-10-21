@@ -17,7 +17,13 @@ Miljømål BEGGE, først eksisterende foundation-Preview/Sandbox i PR #278. Scop
 
 ## Første rometappe levert i Preview/Sandbox
 
-«Rom og oversikt» har Alle rom, egne romnavn, standardtyper, valgfri etasje og Legg til/Rediger rom i popup. Stabile ID-er, romrevisjoner, arkiv/gjenopprett og varig versjonshistorikk er implementert. Ett ordinært prosjekt per bolig beholdes. Eksisterende boligvalg og bestillingsutkast gjelder fortsatt hele boligen og er uendret. Kobling av varer, pakker, tilvalg og sjekklister til rom, rommal og plantegninger er neste delsteg. Se docs/qa/BOLIG_ROOMS_20261021.md for scope, migrasjoner, QA og begrensninger. Ingen produksjonsmerge er utført.
+«Rom og oversikt» har Alle rom, egne romnavn, standardtyper, valgfri etasje og Legg til/Rediger rom i popup. Stabile ID-er, romrevisjoner, arkiv/gjenopprett og varig versjonshistorikk er implementert. Ett ordinært prosjekt per bolig beholdes. Eksisterende boligvalg og bestillingsutkast gjelder fortsatt hele boligen og er uendret. Varefordeling er beskrevet i andre rometappe nedenfor. Egne rompakker, sjekklister, rommal og plantegninger gjenstår. Se docs/qa/BOLIG_ROOMS_20261021.md for scope, migrasjoner, QA og begrensninger. Ingen produksjonsmerge er utført.
+
+## Andre rometappe: varer på rom og enklere pakkeeditor
+
+«Ny grunnpakke» og «Nytt tilvalg» er synlige uten å åpne biblioteket. Redigering skjer i egne native dialoger og bevarer lokale utkast ved lukking/retur. «Legg innhold på rommet» fordeler vareantall fra lagret boligvalg til aktive rom. Antall kan deles mellom rom; rest vises som Ikke fordelt. Forhåndsvisning kreves før lagring. Egen immutable fordelingshistorikk med kildevalg og romrevisjon bevarer priser, boligvalg og ordrenes utelatte linjer. Et nytt boligvalg arver aldri gammel fordeling stille.
+
+Dette er mengdefordeling av boligvalget, ikke uavhengige grunnpakker per rom. Rommaler/egen pakke per rom, flerboligfordeling og romdata i neste faktiske bestillingsprosess gjenstår. Se docs/qa/BOLIG_ROMINNHOLD_20261021.md. Preview/Sandbox, ingen produksjonsmerge.
 
 ## Ønskeliste: privat kontraktsgrunnlag og analyse
 

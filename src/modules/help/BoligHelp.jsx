@@ -30,20 +30,28 @@ export function BoligHelp() {
           Under «Rom og oversikt» velger du «Legg til rom». Velg type, navn og
           eventuell etasje. Flere bad får egne navn. «Rediger rom» lar deg rette
           opplysningene. Rom kan arkiveres og gjenopprettes uten å miste
-          historikken. Ett ordinært prosjekt beholdes for hele boligen. Pakker
-          og bestillingsutkast gjelder foreløpig hele boligen.
+          historikken. Ett ordinært prosjekt beholdes for hele boligen.
         </li>
         <li>
-          Åpne Oppsett → Grunnpakker og tilvalg → Grunnpakker. Legg inn
-          vareinnhold, varenummer og antall. Grunnpakken trenger ingen sum.
-          Valgfri grunnsum per varelinje brukes bare som fratrekk ved et
-          alternativ. Under Tilvalgsliste velger du Tillegg til eller Alternativ
-          til en standardvare, med eller uten fratrekk.
+          Åpne Oppsett → Grunnpakker og tilvalg → Grunnpakker → «Ny grunnpakke».
+          Pakken åpnes i en egen dialog. Legg inn vareinnhold, varenummer og
+          antall. Grunnpakken trenger ingen sum. Valgfri grunnsum per varelinje
+          brukes bare som fratrekk ved et alternativ. Under Tilvalgsliste velger
+          du Tillegg til eller Alternativ til en standardvare, med eller uten
+          fratrekk.
         </li>
         <li>
           Velg en bolig. Under Grunnpakke og tilvalg velger du pakken og
           tilvalgene. Kontroller pris, fratrekk og mellomlegg. Lagre boligvalget
           som utkast. Senere pakkeendringer endrer ikke dette lagrede valget.
+        </li>
+        <li>
+          Tilbake i «Rom og oversikt» velger du et rom og «Legg innhold på
+          rommet». Velg varer fra boligvalget. Del antallet mellom flere rom ved
+          behov. «Forhåndsvis romfordeling» viser hvert rom og det som ikke er
+          fordelt. Velg «Lagre romfordeling» når antall og rom stemmer. Priser
+          og bestillingsutkast endres ikke. Et nytt boligvalg krever ny
+          gjennomgang av romfordelingen.
         </li>
         <li>
           Under «Klargjør varebestilling» er alle varelinjer valgt første gang.
