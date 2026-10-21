@@ -179,6 +179,8 @@ try {
     0,
     "Preview does not save",
   );
+  eq(await page.locator('.bolig-preparation-preview-list article b').first().textContent(), 'A-101', 'Preview keeps natural unit order after editing a row');
+  eq(await page.locator('.bolig-preparation-preview-list article').first().textContent().then(text => text.includes('Eksempelgata 10A')), true, 'Preview identifies the entrance');
   await page.evaluate(() => (window.__lost = true));
   await btn("Bekreft og lagre").click();
   await btn("Kontroller lagringen").waitFor();

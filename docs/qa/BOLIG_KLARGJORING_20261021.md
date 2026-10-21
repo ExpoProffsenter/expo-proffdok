@@ -16,7 +16,7 @@ Forhåndsvisning skiller **Klar**, **Beholdes**, **Uendret** og **Må vurderes**
 
 ## Lagring, samtidighet og tilgang
 
-Ny additiv kilde `20261021182208_bolig_project_preparation.sql`, kun Sandbox `ppvircenkjizeiqdxphj`.
+Ny additiv kilde `20261021182208_bolig_project_preparation.sql`, serverversjon `20261021183932`, kun Sandbox `ppvircenkjizeiqdxphj`.
 
 - Egen `bolig_prepare` SECURITY INVOKER-gateway; privat implementation følger eksisterende fersk firma-/bruker-/modul-/managerkontroll. Ingen endring av global innlogging, Sales, HR, øvrig prosjektkjerne eller andre modulers rettigheter.
 - Privat `room_templates` og `preparation_receipts` med RLS/ingen direkte klientgrants. FK-indekser. Ingen anon/PUBLIC/service_role EXECUTE. Eksisterende immutable room/choice/order-versjoner gjenbrukes. Persondata kopieres ikke til malene.
@@ -28,12 +28,16 @@ Ny additiv kilde `20261021182208_bolig_project_preparation.sql`, kun Sandbox `pp
 ## Verifisert
 
 - Ekte PostgreSQL/PGlite: **367 assertions PASS**, de tidligere 310 beholdt. Nye prøver dekker nummerbytte, offisielt nummer, duplikater, feil mål, preview uten skriving, rev-konflikt/replay, byggmetadata/resize/stabile ID-er, mal/gjenbruk, to rom med samme pakke, bevart felles-/rominnhold og ordreutelatelser, arkivkonflikt, ukjent pakke, sent ugyldig mål med full rollback, reader/fremmed firma/anon og direkte tabellnekt.
-- Faktisk Chromium/React: **29 assertions PASS**. Samlet nummerering, byggkladd, separat kladd per dialog, maloppretting/-lagring/-tildeling, utvalg, standard bevaring, eksplisitt tillegg, forhåndsvisning, mistet svar/samme kvittering, utdatert grunnlag, focus/visibility, rolletap og 320/390/1024/1366 px. Ingen nettleserfeil eller horisontal overflow. Nytt rom beholder åpen editor mens navnet fylles inn.
-- Foundation-React og katalog-React PASS. Full critical build PASS. Berørte rom-/rompakke-/ordre- og byggsuiter kjøres før publisering; endelig CI/deploy og innlogget skynettprøve dokumenteres i PR.
+- Faktisk Chromium/React: **31 assertions PASS**. Samlet nummerering, byggkladd, separat kladd per dialog, maloppretting/-lagring/-tildeling, utvalg, standard bevaring, eksplisitt tillegg, forhåndsvisning, mistet svar/samme kvittering, utdatert grunnlag, focus/visibility, rolletap og 320/390/1024/1366 px. Ingen nettleserfeil eller horisontal overflow. Nytt rom beholder åpen editor mens navnet fylles inn.
+- Foundation-React og katalog-React PASS. Full critical build PASS. Berørte rom-/rompakke-/ordre- og byggsuiter PASS: rom 51, rominnhold 33, rompakke/ordre 36, veiviser 101, kataloginngang 24 og bildeflyt 26. Endelig CI/deploy dokumenteres i PR.
 - Faktisk autentisert Sandbox PostgreSQL: isolert 24-boligers transaksjon med nummerering, offisielle felt, preview uten skriving, lagring/replay, rommal og tre pakkescope per bolig, samt standard bevaring ved nytt forsøk. **PASS, full ROLLBACK.** Ingen brukerprosjekter endret.
 - Advisors gjennomgått. Nye tabeller har tilsiktet deny-all/RLS INFO; ingen manglende FK-indekser for endringen. Ingen direkte klienttabelltilgang åpnes. Se [RLS-lint](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy).
 
 Fysisk mobil/Safari og to ekte samtidige brukerinnlogginger er ikke fullstendig prøvd. Bulkgrensen på 500 er en inngangsgrense; databasens eksisterende 500-boligers grunnlag er ikke en ytelsesgaranti for alle kombinasjoner av 60 rom/1000 varelinjer. Gjør en avgrenset prøve før stor reell tildeling.
+
+## Innlogget skynettprøve og beholdt demo
+
+Faktisk cloud-browser → Supabase API → database er prøvd på samme faste Preview. Demoøkten beholdt innloggingen gjennom oppdateringen. Eget syntetisk eksempel **DEMO – Klargjør hel blokk**, ref. `QA-KLARGJORING-20261021`, har 24 boliger i to oppganger. Oppgang A er nummerert A-101–A-304; A-101 har separat H0101. Rommalen «Standardbolig – bad og vaskerom» er tildelt de 12 boligene i A: to rom, to rompakker og én fellespakke, fire varelinjer per bolig. Oppgang B er urørt og klar for brukerprøve. Byggnavn ble lagret som «Blokk A – demo». Preview, lagringskvitteringer og serverreadback er kontrollert. Ingen brukerprosjekter, ekte kontakter, utsending eller leverandørordre er endret.
 
 ## Kort samlet brukerprøve
 

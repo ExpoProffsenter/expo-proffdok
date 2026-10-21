@@ -122,8 +122,6 @@ export default function BoligPreparation({ context, root, onChanged }) {
   const key = boligDraftKey(context, root.id, "preparation");
   const allowed =
     context.enabled && context.role === "manager" && !root.archived;
-  const latest = useRef({ draft, pending, kind });
-  latest.current = { draft, pending, kind };
   const changed = useRef(onChanged);
   changed.current = onChanged;
   const persist = (nextDraft, nextPending = pending, nextKind = kind) => {
@@ -277,6 +275,10 @@ export default function BoligPreparation({ context, root, onChanged }) {
   const stale = draft
     ? JSON.stringify(draft._basis) !== JSON.stringify(data?.basis)
     : false;
+  const unitOrder = new Map(units.map((unit, index) => [unit.id, index]));
+  const previewRows = [...(preview?.proposal || [])].sort(
+    (a, b) => (unitOrder.get(a.id) ?? 0) - (unitOrder.get(b.id) ?? 0),
+  );
   const chooseBuilding = (id) => {
     const b = data.blocks.find((b) => b.id === id),
       e = data.entrances.find((e) => e.block_id === id && !e.archived);
@@ -1209,10 +1211,23 @@ export default function BoligPreparation({ context, root, onChanged }) {
                       beholdes eller må vurderes
                     </p>
                     <div className="bolig-preparation-preview-list">
-                      {preview.proposal.map((p, i) => (
+                      {previewRows.map((p, i) => (
                         <article key={p.id || i}>
                           <b>{p.number || p.name || p.before}</b>
                           <span>{statuses[p.status]}</span>
+                          {units.find((unit) => unit.id === p.id) && (
+                            <small>
+                              {
+                                units.find((unit) => unit.id === p.id).block
+                                  .name
+                              }{" "}
+                              ·{" "}
+                              {
+                                units.find((unit) => unit.id === p.id).entrance
+                                  .address
+                              }
+                            </small>
+                          )}
                           <small>
                             {kind === "numbering"
                               ? `${p.before} → ${p.number}${p.official_number ? ` · Offisielt: ${p.official_number}` : ""}`
