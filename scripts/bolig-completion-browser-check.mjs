@@ -121,13 +121,13 @@ try {
   );
   const first = area.getByRole("button", { name: /Arbeidet er utført/ });
   await first.click();
-  await area
+  await page
     .getByLabel("Dokumentreferanse og kontrollbeskrivelse")
     .fill("QA utførelse protokoll 1");
-  await area.getByLabel("Kontrollen er utført og dokumentert").check();
+  await page.getByLabel("Kontrollen er utført og dokumentert").check();
   await page.evaluate(() => window.dispatchEvent(new Event("focus")));
   eq(
-    await area
+    await page
       .getByLabel("Dokumentreferanse og kontrollbeskrivelse")
       .inputValue(),
     "QA utførelse protokoll 1",
@@ -136,7 +136,7 @@ try {
   await button("Avbryt og behold kladd").click();
   await first.click();
   eq(
-    await area
+    await page
       .getByLabel("Dokumentreferanse og kontrollbeskrivelse")
       .inputValue(),
     "QA utførelse protokoll 1",
@@ -145,12 +145,14 @@ try {
   for (const width of [320, 390, 1024, 1366]) {
     await page.setViewportSize({ width, height: 900 });
     eq(
-      await area.evaluate((el) => el.scrollWidth <= el.clientWidth + 1),
+      await page
+        .getByRole("dialog", { name: "Dokumenter kontroll", exact: true })
+        .evaluate((el) => el.scrollWidth <= el.clientWidth + 1),
       true,
       "No completion overflow " + width,
     );
     eq(
-      await area
+      await page
         .getByLabel("Dokumentreferanse og kontrollbeskrivelse")
         .evaluate((el) => parseFloat(getComputedStyle(el).fontSize) >= 16),
       true,
@@ -159,9 +161,9 @@ try {
   }
   await page.evaluate(() => (window.__reject = true));
   await button("Lagre kontroll").click();
-  await area.getByRole("alert").waitFor();
+  await page.getByRole("alert").waitFor();
   eq(
-    await area
+    await page
       .getByLabel("Dokumentreferanse og kontrollbeskrivelse")
       .inputValue(),
     "QA utførelse protokoll 1",
@@ -177,10 +179,10 @@ try {
     "Sluttdokumentasjon er kontrollert",
   ]) {
     await area.getByRole("button", { name: new RegExp(title) }).click();
-    await area
+    await page
       .getByLabel("Dokumentreferanse og kontrollbeskrivelse")
       .fill("QA dokument " + title);
-    await area.getByLabel("Kontrollen er utført og dokumentert").check();
+    await page.getByLabel("Kontrollen er utført og dokumentert").check();
     await button("Lagre kontroll").click();
     await area.getByRole("status").waitFor();
   }
@@ -205,13 +207,13 @@ try {
     "Approved evidence locked",
   );
   await button("Registrer overtagelse").click();
-  await area
+  await page
     .getByLabel("Referanse til overtagelsesprotokoll")
     .fill("QA overtagelsesprotokoll 22 oktober");
   await button("Lagre overtagelse").click();
   await area.getByText("Overtatt", { exact: true }).first().waitFor();
   await button("Gjenåpne med begrunnelse").click();
-  await area.getByLabel("Begrunnelse").fill("QA endring krever ny kontroll");
+  await page.getByLabel("Begrunnelse").fill("QA endring krever ny kontroll");
   await button("Gjenåpne ferdigstilling").click();
   await button("Godkjenn for overtagelse").waitFor();
   eq(
@@ -226,8 +228,8 @@ try {
     "Past handover retained",
   );
   await button("Legg til kontrollpunkt").click();
-  await area.getByLabel("Navn på kontrollpunkt").fill("QA ekstra badkontroll");
-  await area.getByLabel("Rom", { exact: true }).selectOption("bath");
+  await page.getByLabel("Navn på kontrollpunkt").fill("QA ekstra badkontroll");
+  await page.getByLabel("Rom", { exact: true }).selectOption("bath");
   await button("Lagre kontroll").click();
   eq(
     await button("Godkjenn for overtagelse").isEnabled(),

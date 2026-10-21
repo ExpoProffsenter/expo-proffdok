@@ -10,7 +10,7 @@ Scope: egne Bolig-komponenter/klient/CSS, Bolig-hjelp, to additive migrasjoner o
 
 ## Produktkontrakt
 
-- Boligens **Ferdigstilling** åpner kontrollplan i eksisterende arbeidsdialog. Fem faste krav: utførelse, sjekklister/kontroller, avvik, bilder, sluttdokumentasjon. Egne påkrevde kontrollpunkter kan legges til og knyttes til aktive rom. Punkter kan stå som ikke utført. Arkivert rom gjør tilknyttet dokumentasjon ugyldig til den er kontrollert/tilknyttet på nytt.
+- Boligens **Ferdigstilling** åpner kontrollplan i eksisterende arbeidsdialog. Hvert kontrollkort åpner egen popup med bevis, bekreftelse og lagring, uten scrolling for å finne editoren. Fem faste krav: utførelse, sjekklister/kontroller, avvik, bilder, sluttdokumentasjon. Egne påkrevde kontrollpunkter kan legges til og knyttes til aktive rom. Punkter kan stå som ikke utført. Arkivert rom gjør tilknyttet dokumentasjon ugyldig til den er kontrollert/tilknyttet på nytt.
 - Dokumentreferanse/kontrollbeskrivelse og eksplisitt bekreftelse kreves for utført punkt. Bevisst endring til ikke utført sperrer godkjenning. Dato/aktør og endringer bevares.
 - Ansvarlig velges blant aktive interne firmamedlemmer. Opprettelse setter innlogget leder som ansvarlig. Ingen nye arbeidsfrister eller fristutsendinger innføres her. Eksisterende sjekkliste-/avvikspåminnelser beholdes; en egen frist-/varslingsflyt for Bolig-kontroller gjenstår før fristfelt innføres.
 - **Utført → Kontrollert → Klar for overtagelse → Overtatt** er ulike tilstander. Kontrollert er ikke godkjent. Bolig-prosjektlederrollen kan godkjenne etter egen bekreftelsesside når mangellisten er tom. Det kreves ikke en annen person enn utføreren i denne første modellen.

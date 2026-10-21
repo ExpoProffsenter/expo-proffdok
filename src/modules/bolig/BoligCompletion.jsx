@@ -52,6 +52,7 @@ function ProofForm({
   busy,
   onSave,
   onCancel,
+  error,
 }) {
   const key = boligDraftKey(
     context,
@@ -102,6 +103,7 @@ function ProofForm({
   return (
     <form className="bolig-completion-form" onSubmit={submit}>
       <h3>{title}</h3>
+      {error && <p role="alert">{error}</p>}
       {storageError && (
         <p role="alert">
           Kladden kan ikke sikres på denne enheten. Behold vinduet åpent til du
@@ -438,7 +440,7 @@ export default function BoligCompletion({
           </li>
         ))}
       </ol>
-      {error && <p role="alert">{error}</p>}
+      {error && !editor && <p role="alert">{error}</p>}
       {notice && (
         <p role="status" className="bolig-completion-success">
           {notice}
@@ -565,20 +567,27 @@ export default function BoligCompletion({
         </>
       )}
       {editor && (
-        <ProofForm
-          key={`${scopeId}:${editor.mode}:${editor.item?.id || "new"}`}
-          context={context}
-          root={root}
-          scopeId={scopeId}
-          row={row}
-          mode={editor.mode}
-          item={editor.item}
-          members={data.members}
-          rooms={data.rooms}
+        <Dialog
+          title="Dokumenter kontroll"
           busy={busy}
-          onSave={save}
-          onCancel={() => setEditor(null)}
-        />
+          onClose={() => setEditor(null)}
+        >
+          <ProofForm
+            key={`${scopeId}:${editor.mode}:${editor.item?.id || "new"}`}
+            context={context}
+            root={root}
+            scopeId={scopeId}
+            row={row}
+            mode={editor.mode}
+            item={editor.item}
+            members={data.members}
+            rooms={data.rooms}
+            busy={busy}
+            error={error}
+            onSave={save}
+            onCancel={() => setEditor(null)}
+          />
+        </Dialog>
       )}
       {row.issues.length > 0 && (
         <details
