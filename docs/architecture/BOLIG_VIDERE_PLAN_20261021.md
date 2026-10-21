@@ -4,6 +4,10 @@ Kenneths instruks 21. oktober 2026: så nær den godkjente Solgløtt-konseptskis
 
 ## Nå: prosjektoversikt, bygg, rom og varevalg
 
+Ny pakkeetappe: grunnpakker og Tilvalgspakker får egendefinerte, ordnede avsnitt med kort kundetekst. Tilvalgspakker kan inneholde flere varer som velges samlet til én pakkepris. Pris/fratrekk beholdes, mens hver vare forblir selvstendig i bestillingsutkastet. Gamle enkeltvarer og lokale utkast oppgraderes uten endring av historiske valg. Nullfordeling på tom bolig er rettet. Rediger bygg har nå Lagre endringer som hovedhandling før eksplisitt gjennomgang/bekreftelse. Se docs/qa/BOLIG_AVSNITT_20261021.md.
+
+Neste anbefalte samlede funksjonspakke er bestilling og levering: kjøpers Vårt ordrenummer, separat leverandørordrenummer, felles/individuell leveringsadresse, delleveranser og tydelig overgang fra utkast til faktisk bestilling. Etterpå kobles faktisk fremdrift/sjekklister til bolig og rom, deretter kundeaksept og avgrenset ekstern tilgang. Excel-import forblir sist.
+
 Siste UX-pakke: én Oppsett-knapp øverst i prosjektet, «Leilighetsinformasjon» som navn på boligdialogen og kompakte glassvinduer med små statusmerker på fasaden. «Boligliste» og «Filtrer boliger» søker samlet i hele hovedprosjektet med kontakt, offisielt bolignummer og status. Resultatet har 50 boliger per side. Fasade nullstiller søk/filter. Se docs/qa/BOLIG_OVERSIKT_20261021.md.
 
 Samlet klargjøring er lagt til under Oppsett → Bygg og boliger: Rediger bygg, Nummerer boliger og Rom og pakker til flere boliger. Prosjektlagrede rommaler kan tilføre rompakker/fellespakke til utvalgte boliger etter forhåndsvisning. Egne valg beholdes som standard; eksplisitt tillegg fyller bare manglende innhold. Eget offisielt bolignummer er separat fra prosjektets leilighetsnummer. Se docs/qa/BOLIG_KLARGJORING_20261021.md for gjeldende status og begrensninger. Eldre «gjenstår»-avsnitt nedenfor er historiske der denne leveransen dekker dem. Kenneth har uttrykkelig utsatt Excel-import til slutt.

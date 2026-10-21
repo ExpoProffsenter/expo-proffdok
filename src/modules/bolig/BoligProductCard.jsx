@@ -11,10 +11,18 @@ export default function ProductCard({ line, children }) {
       </span>
       <span className="bolig-product-info">
         <strong>{line.name}</strong>
-        <small>
-          {line.sku ? `Varenr. ${line.sku}` : "Varenummer ikke registrert"} ·{" "}
-          {line.quantity} {line.unit}
-        </small>
+        {line.lines?.length ? (
+          <small>
+            {line.lines.length} {line.lines.length === 1 ? "vare" : "varer"} i
+            tilvalgspakken
+          </small>
+        ) : (
+          <small>
+            {line.sku ? `Varenr. ${line.sku}` : "Varenummer ikke registrert"} ·{" "}
+            {line.quantity} {line.unit}
+          </small>
+        )}
+        {line.section_name && <small>Avsnitt: {line.section_name}</small>}
         {children}
       </span>
     </span>

@@ -300,21 +300,22 @@ try {
         p.name === "Inkludert i entreprisen" && p.lines[0].sku === "DUSJ-1",
     ),
   );
-  await act(() => button("Tilvalgsliste").click());
+  await act(() => button("Tilvalgspakker").click());
   assert(
     d.querySelector('img[src="https://example.invalid/product.jpg"]'),
     "Product image uses the familiar goods card",
   );
-  await act(() => button("Legg til tilvalg").click());
-  await input("Navn på tilvalg", "Testalternativ");
-  await input("Varenummer for tilvalget", "QA-ALT");
-  await select("Tilvalgstype", "alternative");
+  await act(() => button("Ny tilvalgspakke").click());
+  await input("Navn på tilvalgspakke", "Testalternativ");
+  await input("Varebeskrivelse 1", "Alternativ dusj");
+  await input("Varenummer 1", "QA-ALT");
+  await select("Tilvalgspakketype", "alternative");
   const creditLabel = [...d.querySelectorAll("label")].find((l) =>
     l.textContent.includes("Trekk fra grunnsummen"),
   );
   assert(creditLabel);
   await act(() => creditLabel.querySelector("input").click());
-  await input("Pris for hele tilvalget inkl. mva.", "180,50");
+  await input("Pris for hele tilvalgspakken inkl. mva.", "180,50");
   await act(() =>
     w.dispatchEvent(
       new w.CustomEvent("expo-proffdok-work-profile", {
@@ -323,14 +324,14 @@ try {
     ),
   );
   assert.equal(
-    field("Navn på tilvalg").value,
+    field("Navn på tilvalgspakke").value,
     "Testalternativ",
     "Profile refresh retains option phase",
   );
   await act(() => w.__unmount());
   await render();
   assert.equal(
-    field("Pris for hele tilvalget inkl. mva.").value,
+    field("Pris for hele tilvalgspakken inkl. mva.").value,
     "180,50",
     "Remount restores option phase and price draft",
   );

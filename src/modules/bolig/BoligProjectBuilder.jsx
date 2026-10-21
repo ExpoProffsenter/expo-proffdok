@@ -898,7 +898,7 @@ export default function BoligProjectBuilder({ context, onCreate, busy }) {
                     <div className="bolig-builder-house-note">
                       <CheckCircle2 size={23} />
                       <p>
-                        Etter opprettelse velger du grunnpakker og tilvalg. Rom
+                        Etter opprettelse velger du grunnpakker og tilvalgspakker. Rom
                         og dokumentasjon kan legges til senere.
                       </p>
                     </div>

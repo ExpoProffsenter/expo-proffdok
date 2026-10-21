@@ -922,7 +922,7 @@ export default function BoligPreparation({ context, root, onChanged }) {
                       <p>
                         Lag en rommal med grunnpakker. Bruk den på valgte
                         boliger etter at du har sett over resultatet.
-                        Individuelle tilvalg velges senere på boligen.
+                        Individuelle tilvalgspakker velges senere på boligen.
                       </p>
                       <div className="bolig-preparation-inline">
                         <label>
@@ -1246,11 +1246,30 @@ export default function BoligPreparation({ context, root, onChanged }) {
                     </p>
                   </section>
                 )}
+                {kind === "building" && (
+                  <p className="bolig-preparation-save-hint">
+                    Lagre endringer åpner en gjennomgang. Bekreft deretter for å
+                    lagre i prosjektet.
+                  </p>
+                )}
                 <footer className="bolig-preparation-footer">
                   <button type="button" disabled={busy} onClick={close}>
                     Lukk og behold kladd
                   </button>
+                  {kind === "building" && (
+                    <details className="bolig-preparation-more">
+                      <summary>Flere valg</summary>
+                      <button
+                        type="button"
+                        disabled={busy || !!pending}
+                        onClick={() => load().catch((e) => setError(e.message))}
+                      >
+                        Hent siste grunnlag
+                      </button>
+                    </details>
+                  )}
                   <button
+                    hidden={kind === "building"}
                     type="button"
                     disabled={busy || !!pending}
                     onClick={() => load().catch((e) => setError(e.message))}
@@ -1260,11 +1279,15 @@ export default function BoligPreparation({ context, root, onChanged }) {
                   </button>
                   <button
                     type="button"
+                    className={kind === "building" ? "bolig-primary" : ""}
+                    hidden={kind === "building" && !!preview}
                     disabled={busy || !!pending || !draft || stale}
                     onClick={() => run("preview")}
                   >
                     <Eye size={17} />
-                    Forhåndsvis endringer
+                    {kind === "building"
+                      ? "Lagre endringer"
+                      : "Forhåndsvis endringer"}
                   </button>
                   {preview && (
                     <button
@@ -1275,6 +1298,7 @@ export default function BoligPreparation({ context, root, onChanged }) {
                         stale ||
                         !preview.proposal.some((p) => p.status === "ready")
                       }
+                      className="bolig-primary"
                       onClick={() => run("save")}
                     >
                       <Check size={17} />

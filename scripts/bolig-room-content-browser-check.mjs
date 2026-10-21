@@ -30,7 +30,7 @@ window.__client={rpc:async(name,args)=>{window.__calls.push({name,args});if(wind
  return response;
 }};
 if(sessionStorage.getItem('qa-server'))window.__data=JSON.parse(sessionStorage.getItem('qa-server'));
-const r=createRoot(document.getElementById('app'));window.__render=(mode='content')=>r.render(<section className="bolig-page" data-qa-role={window.__ctx.role}><h2>Eksempelprosjekt · Bolig H0101</h2>{mode==='none'?null:mode==='catalog'?<Catalog key={'cat'+window.__ctx.company_id} context={{...window.__ctx}} root={{id:'root',archived:false}}/>:<Content key={window.__ctx.company_id+window.__ctx.role} context={{...window.__ctx}} root={{id:'root',archived:false}} unit={{id:'unit',number:'H0101'}} activeRoom={window.__room} roomsRevision={window.__data.revision}/>}</section>);window.__render();`,
+const r=createRoot(document.getElementById('app'));window.__render=(mode='content')=>r.render(<section className="bolig-page" data-qa-role={window.__ctx.role}><h2>Eksempelprosjekt · Bolig H0101</h2>{mode==='none'?null:mode==='catalog'?<Catalog key={'cat'+window.__ctx.company_id} context={{...window.__ctx}} root={{id:'root',archived:false}}/>:<Content key={window.__ctx.company_id+window.__ctx.role} context={{...window.__ctx}} root={{id:'root',archived:false}} unit={{id:'unit',number:'H0101'}} activeRoom={window.__room} roomsRevision={window.__data.revision}/>}</section>);window.__initialSelection=window.__data.selection;if(!sessionStorage.getItem('qa-server'))window.__data.selection=null;window.__render();`,
 );
 let server,
   browser,
@@ -107,6 +107,26 @@ try {
   const btn = (name) => page.getByRole("button", { name, exact: true }),
     dlg = () =>
       page.getByRole("dialog", { name: "Fordel varer på rom", exact: true });
+  await page
+    .getByText("Velg og lagre grunnpakke og tilvalgspakker under", {
+      exact: false,
+    })
+    .waitFor();
+  eq(
+    await page.getByRole("alert").count(),
+    0,
+    "Empty unit has no allocation error",
+  );
+  await page.evaluate(() => window.dispatchEvent(new Event("focus")));
+  eq(
+    await page.getByRole("alert").count(),
+    0,
+    "Empty unit also survives refresh",
+  );
+  await page.evaluate(() => {
+    window.__data.selection = window.__initialSelection;
+    window.dispatchEvent(new Event("focus"));
+  });
   await btn("Fordel varer på rom").click();
   for (const width of [320, 390, 1024, 1366]) {
     await page.setViewportSize({ width, height: 900 });
@@ -368,11 +388,11 @@ try {
     "Package mobile width",
   );
   await page.keyboard.press("Escape");
-  await btn("Tilvalgsliste").click();
-  await btn("Legg til tilvalg").click();
+  await btn("Tilvalgspakker").click();
+  await btn("Ny tilvalgspakke").click();
   eq(
     await page
-      .getByRole("dialog", { name: "Nytt tilvalg", exact: true })
+      .getByRole("dialog", { name: "Ny tilvalgspakke", exact: true })
       .isVisible(),
     true,
   );

@@ -44,8 +44,11 @@ export default function CatalogForm({
     <form
       className={`bolig-catalog-form ${className}`}
       onInvalidCapture={(e) => {
-        const folded = e.target.closest("details");
-        if (folded) folded.open = true;
+        let ancestor = e.target.parentElement;
+        while (ancestor && ancestor !== e.currentTarget) {
+          if (ancestor.tagName === "DETAILS") ancestor.open = true;
+          ancestor = ancestor.parentElement;
+        }
       }}
       onSubmit={async (e) => {
         e.preventDefault();

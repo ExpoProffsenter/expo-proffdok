@@ -112,7 +112,7 @@ try {
     .getByRole("button", { name: "Åpne Eksempelprosjekt", exact: true })
     .click();
   await nav
-    .getByRole("button", { name: "Grunnpakker og tilvalg", exact: true })
+    .getByRole("button", { name: "Grunnpakker og tilvalgspakker", exact: true })
     .waitFor();
   eq(
     await page
@@ -143,10 +143,10 @@ try {
     );
   }
   await nav
-    .getByRole("button", { name: "Grunnpakker og tilvalg", exact: true })
+    .getByRole("button", { name: "Grunnpakker og tilvalgspakker", exact: true })
     .click();
   eq(await btn("Ny grunnpakke").isVisible(), true);
-  eq(await btn("Legg til tilvalg").isVisible(), true);
+  eq(await btn("Ny tilvalgspakke").isVisible(), true);
   eq(
     await nav.locator('[aria-pressed="true"]').count(),
     1,
@@ -173,7 +173,7 @@ try {
   await page.keyboard.press("Escape");
   await nav.getByRole("button", { name: "Hovedside", exact: true }).click();
   await nav
-    .getByRole("button", { name: "Grunnpakker og tilvalg", exact: true })
+    .getByRole("button", { name: "Grunnpakker og tilvalgspakker", exact: true })
     .click();
   await btn("Ny grunnpakke").click();
   eq(
@@ -182,21 +182,21 @@ try {
     "Detour retains package authoring draft",
   );
   await page.keyboard.press("Escape");
-  await btn("Tilvalgsliste").click();
-  eq(await btn("Rediger tilvalg: Ekstra speil").isVisible(), true);
-  await btn("Rediger tilvalg: Ekstra speil").click();
+  await btn("Tilvalgspakker").click();
+  eq(await btn("Rediger tilvalgspakke: Ekstra speil").isVisible(), true);
+  await btn("Rediger tilvalgspakke: Ekstra speil").click();
   eq(
     await page
-      .getByRole("dialog", { name: "Rediger tilvalg", exact: true })
-      .getByLabel("Navn på tilvalg", { exact: true })
+      .getByRole("dialog", { name: "Rediger tilvalgspakke", exact: true })
+      .getByLabel("Navn på tilvalgspakke", { exact: true })
       .inputValue(),
     "Ekstra speil",
   );
   await page.keyboard.press("Escape");
-  await btn("Legg til tilvalg").click();
+  await btn("Ny tilvalgspakke").click();
   eq(
     await page
-      .getByRole("dialog", { name: "Nytt tilvalg", exact: true })
+      .getByRole("dialog", { name: "Ny tilvalgspakke", exact: true })
       .isVisible(),
     true,
   );

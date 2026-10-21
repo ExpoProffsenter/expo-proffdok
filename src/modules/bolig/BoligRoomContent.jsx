@@ -165,7 +165,9 @@ export default function BoligRoomContent({
         const next = cached || {
           basis: basisOf(value),
           allocations:
-            value.content?.source_choice_revision === value.selection?.revision
+            value.content &&
+            value.selection &&
+            value.content.source_choice_revision === value.selection.revision
               ? value.content.allocations.map(
                   ({ position, room_id, quantity }) => ({
                     position,
@@ -182,7 +184,9 @@ export default function BoligRoomContent({
         const next = {
           basis: basisOf(value),
           allocations:
-            value.content?.source_choice_revision === value.selection?.revision
+            value.content &&
+            value.selection &&
+            value.content.source_choice_revision === value.selection.revision
               ? value.content.allocations.map(
                   ({ position, room_id, quantity }) => ({
                     position,
@@ -358,7 +362,7 @@ export default function BoligRoomContent({
     <section className="bolig-room-content" aria-label="Vareinnhold på rom">
       <header>
         <div>
-          <small>GRUNNPAKKE OG TILVALG</small>
+          <small>GRUNNPAKKE OG TILVALGSPAKKER</small>
           <h4>
             {activeRoom ? `Innhold i ${activeRoom.name}` : "Vareinnhold på rom"}
           </h4>
@@ -380,7 +384,7 @@ export default function BoligRoomContent({
         <p role="status">Henter vareinnhold …</p>
       ) : !data?.selection ? (
         <p>
-          Velg og lagre grunnpakke og tilvalg under «Boligvalg» nedenfor.
+          Velg og lagre grunnpakke og tilvalgspakker under «Boligvalg» nedenfor.
           Deretter fordeler du varene på rom her.
         </p>
       ) : (

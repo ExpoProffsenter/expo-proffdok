@@ -704,12 +704,12 @@ try {
       ...w.document.querySelectorAll('[aria-label="Arbeidsområde"] button'),
     ].find((b) => b.textContent.trim() === label);
   assert(
-    workNav("Grunnpakker og tilvalg"),
+    workNav("Grunnpakker og tilvalgspakker"),
     "Catalog has a direct project navigation entry",
   );
-  await act(() => workNav("Grunnpakker og tilvalg").click());
+  await act(() => workNav("Grunnpakker og tilvalgspakker").click());
   assert.equal(
-    workNav("Grunnpakker og tilvalg").getAttribute("aria-pressed"),
+    workNav("Grunnpakker og tilvalgspakker").getAttribute("aria-pressed"),
     "true",
   );
   assert.equal(
@@ -724,7 +724,7 @@ try {
       (b) => b.textContent.trim() === name,
     );
   assert(
-    create("Ny grunnpakke") && create("Legg til tilvalg"),
+    create("Ny grunnpakke") && create("Ny tilvalgspakke"),
     "Both create actions are visible together",
   );
   await act(() => create("Ny grunnpakke").click());
@@ -739,9 +739,9 @@ try {
     "Direct entry retains package editor through focus",
   );
   await act(() => q(".bolig-catalog-dialog header button").click());
-  await act(() => create("Legg til tilvalg").click());
+  await act(() => create("Ny tilvalgspakke").click());
   assert(
-    q('dialog[aria-label="Nytt tilvalg"]'),
+    q('dialog[aria-label="Ny tilvalgspakke"]'),
     "Option authoring needs no extra category navigation",
   );
   await act(() => q(".bolig-catalog-dialog header button").click());

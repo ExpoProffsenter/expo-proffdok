@@ -15,6 +15,9 @@ import {
 } from "./boligClient.js";
 import { money, optionBreakdown } from "./boligCatalogClient.js";
 import ProductCard from "./BoligProductCard.jsx";
+import BoligPackageContents, {
+  OptionContents,
+} from "./BoligPackageContents.jsx";
 const equal = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 const roomLabel = (part, rooms) =>
   part.scope_id === "common"
@@ -61,9 +64,9 @@ export function PackageChoiceSummary({
             </div>
             <span>{p.goods.length} varelinjer</span>
           </div>
-          <p>Tilvalg: {money(p.total_cents)} inkl. mva.</p>
+          <p>Tilvalgspakker: {money(p.total_cents)} inkl. mva.</p>
           <details>
-            <summary>Vis varer og tilvalg</summary>
+            <summary>Vis varer og tilvalgspakker</summary>
             <ul>
               {p.goods.map((g, i) => (
                 <li key={i}>
@@ -371,8 +374,8 @@ export default function BoligPackageChoices({
         <>
           <p className="bolig-editor-hint">
             {activeRoom
-              ? "Velg grunnpakke og tilvalg for dette rommet. Fellespakken for boligen beholdes."
-              : "Fellespakken gjelder boligen. Velg et rom ovenfor for å legge til rompakke. Lag gjenbrukbare pakker under Grunnpakker og tilvalg øverst."}
+              ? "Velg grunnpakke og tilvalgspakker for dette rommet. Fellespakken for boligen beholdes."
+              : "Fellespakken gjelder boligen. Velg et rom ovenfor for å legge til rompakke. Lag gjenbrukbare pakker under Grunnpakker og tilvalgspakker øverst."}
           </p>
           <PackageChoiceSummary
             components={components}
@@ -386,7 +389,7 @@ export default function BoligPackageChoices({
             )}
           {data.selection?.snapshot.format === "scoped-v1" && (
             <p className="bolig-choice-total">
-              Samlet tilvalg for boligen:{" "}
+              Samlet tilvalgspakker for boligen:{" "}
               {money(data.selection.snapshot.total_cents)} inkl. mva.
             </p>
           )}
@@ -417,7 +420,7 @@ export default function BoligPackageChoices({
         <dialog
           ref={dialog}
           className="bolig-dialog bolig-package-choice-dialog"
-          aria-label="Velg pakke og tilvalg"
+          aria-label="Velg pakke og tilvalgspakker"
           onCancel={(e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -434,7 +437,7 @@ export default function BoligPackageChoices({
                   ? "Se over pakkevalget"
                   : scope === "common"
                     ? "Fellespakke for boligen"
-                    : "Pakke og tilvalg for rommet"}
+                    : "Pakke og tilvalgspakker for rommet"}
               </h2>
             </div>
             <button
@@ -450,7 +453,7 @@ export default function BoligPackageChoices({
             <>
               {onOpenCatalog && (
                 <p className="bolig-catalog-shortcut">
-                  Mangler pakken eller tilvalget du trenger?{" "}
+                  Mangler pakken eller tilvalgspakken du trenger?{" "}
                   <button
                     type="button"
                     disabled={busy}
@@ -465,7 +468,7 @@ export default function BoligPackageChoices({
                       onOpenCatalog();
                     }}
                   >
-                    Lag eller rediger grunnpakker og tilvalg
+                    Lag eller rediger grunnpakker og tilvalgspakker
                   </button>
                 </p>
               )}
@@ -549,15 +552,12 @@ export default function BoligPackageChoices({
                         <>
                           <details>
                             <summary>Vis grunnvarer i {pkg.name}</summary>
-                            <ul>
-                              {pkg.lines.map((l) => (
-                                <li key={l.key}>
-                                  <ProductCard line={l} />
-                                </li>
-                              ))}
-                            </ul>
+                            <BoligPackageContents
+                              sections={pkg.sections}
+                              lines={pkg.lines}
+                            />
                           </details>
-                          <h4>Tilvalg for {label}</h4>
+                          <h4>Tilvalgspakker for {label}</h4>
                           {data.options
                             .filter(
                               (o) =>
@@ -567,51 +567,51 @@ export default function BoligPackageChoices({
                               const b = optionBreakdown(o, pkg),
                                 checked = draft.option_ids.includes(o.id);
                               return (
-                                <label
-                                  className="bolig-option-choice"
-                                  key={o.id}
-                                >
-                                  <input
-                                    type="checkbox"
-                                    checked={checked}
-                                    disabled={
-                                      !checked &&
-                                      (o.archived ||
-                                        !b.compatible ||
-                                        b.missingCredit)
-                                    }
-                                    onChange={(e) =>
-                                      change({
-                                        ...draft,
-                                        option_ids: e.target.checked
-                                          ? [...draft.option_ids, o.id]
-                                          : draft.option_ids.filter(
-                                              (id) => id !== o.id,
-                                            ),
-                                      })
-                                    }
-                                  />
-                                  <ProductCard line={o}>
-                                    <small>
-                                      {o.replace_key
-                                        ? "Alternativ til standardvare"
-                                        : "Tillegg"}
-                                      {!b.compatible
-                                        ? " · passer ikke til pakken"
-                                        : ""}
-                                      {o.archived ? " · skjult" : ""}
-                                    </small>
-                                    <small>
-                                      {b.missingCredit
-                                        ? "Grunnsum mangler for fratrekk"
-                                        : `${money(o.price_cents)} − ${money(b.deduction)} = ${money(b.net)} inkl. mva.`}
-                                    </small>
-                                  </ProductCard>
-                                </label>
+                                <div key={o.id}>
+                                  <label className="bolig-option-choice">
+                                    <input
+                                      type="checkbox"
+                                      checked={checked}
+                                      disabled={
+                                        !checked &&
+                                        (o.archived ||
+                                          !b.compatible ||
+                                          b.missingCredit)
+                                      }
+                                      onChange={(e) =>
+                                        change({
+                                          ...draft,
+                                          option_ids: e.target.checked
+                                            ? [...draft.option_ids, o.id]
+                                            : draft.option_ids.filter(
+                                                (id) => id !== o.id,
+                                              ),
+                                        })
+                                      }
+                                    />
+                                    <ProductCard line={o}>
+                                      <small>
+                                        {o.replace_key
+                                          ? "Alternativ til standardvare"
+                                          : "Tillegg"}
+                                        {!b.compatible
+                                          ? " · passer ikke til pakken"
+                                          : ""}
+                                        {o.archived ? " · skjult" : ""}
+                                      </small>
+                                      <small>
+                                        {b.missingCredit
+                                          ? "Grunnsum mangler for fratrekk"
+                                          : `${money(o.price_cents)} − ${money(b.deduction)} = ${money(b.net)} inkl. mva.`}
+                                      </small>
+                                    </ProductCard>
+                                  </label>
+                                  <OptionContents option={o} />
+                                </div>
                               );
                             })}
                           <p className="bolig-choice-total">
-                            Tilvalg her:{" "}
+                            Tilvalgspakker her:{" "}
                             {money(
                               opts.reduce(
                                 (s, o) => s + optionBreakdown(o, pkg).net,
@@ -638,8 +638,8 @@ export default function BoligPackageChoices({
                     rooms={rooms}
                   />
                   <p className="bolig-choice-total">
-                    Samlet tilvalg: {money(proposal.total_cents)} inkl. mva. ·{" "}
-                    {proposal.goods.length} varelinjer
+                    Samlet tilvalgspakker: {money(proposal.total_cents)} inkl.
+                    mva. · {proposal.goods.length} varelinjer
                   </p>
                   <p>
                     Bestillingsutkastet beholdes og må gjennomgås mot det nye
@@ -656,8 +656,8 @@ export default function BoligPackageChoices({
               )}
               {invalid && (
                 <p role="alert">
-                  Velg en aktiv grunnpakke, og fjern tilvalg som ikke passer
-                  eller erstatter samme standardvare.
+                  Velg en aktiv grunnpakke, og fjern tilvalgspakker som ikke
+                  passer eller erstatter samme standardvare.
                 </p>
               )}
               {error && <p role="alert">{error}</p>}

@@ -413,7 +413,7 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
         setView("overview");
         setScreen("workspace");
         setNotice(
-          "Prosjektforsiden er opprettet. Velg et bygg, eller åpne Grunnpakker og tilvalg for å lage vareinnholdet.",
+          "Prosjektforsiden er opprettet. Velg et bygg, eller åpne Grunnpakker og tilvalgspakker for å lage vareinnholdet.",
         );
         try {
           await request("list");
@@ -561,7 +561,7 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
                           onClick={openCatalog}
                         >
                           <Package size={17} />
-                          Grunnpakker og tilvalg
+                          Grunnpakker og tilvalgspakker
                         </button>
                         <button
                           type="button"
@@ -585,12 +585,12 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
                   >
                     <h3 ref={catalogHeading} tabIndex={-1}>
                       {setupArea === "catalog"
-                        ? "Grunnpakker og tilvalg"
+                        ? "Grunnpakker og tilvalgspakker"
                         : "Oppsett av prosjektet"}
                     </h3>
                     <p>
                       {setupArea === "catalog"
-                        ? "Lag og rediger prosjektets grunnpakker og tilvalg her. Pakkene kan brukes som fellespakke og som rompakker."
+                        ? "Lag og rediger prosjektets grunnpakker og tilvalgspakker her. Pakkene kan brukes som fellespakke og som rompakker."
                         : "Her samler du bygg, adresser, bolignumre, rommaler og arkiv. Velg en oppgave nedenfor. Kladden beholdes når du bytter område."}
                     </p>
                     {setupArea === "catalog" && unit && (
@@ -1085,10 +1085,10 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
                       <aside className="bolig-select-unit">
                         <Home size={34} />
                         <h3>Velg en bolig i bygget</h3>
-                        <p>Se grunnpakke, tilvalg og bestillingsutkast her.</p>
+                        <p>Se grunnpakke, tilvalgspakker og bestillingsutkast her.</p>
                         <ol>
                           <li>Velg leilighet i oversikten.</li>
-                          <li>Velg og lagre grunnpakke og tilvalg.</li>
+                          <li>Velg og lagre grunnpakke og tilvalgspakker.</li>
                           <li>Klargjør varebestillingen.</li>
                         </ol>
                       </aside>

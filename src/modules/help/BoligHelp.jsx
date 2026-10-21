@@ -12,7 +12,8 @@ export function BoligHelp() {
       <ol>
         <li>
           Åpne Oppsett → Bygg og boliger for å klargjøre flere boliger samtidig.
-          «Rediger bygg» endrer navn, type, adresser og boligfordeling.
+          «Rediger bygg» endrer navn, type, adresser og boligfordeling. Velg
+          «Lagre endringer», se gjennom resultatet og velg «Bekreft og lagre».
           «Nummerer boliger» gir nummerforslag og samlet redigering. Offisielt
           bolignummer har et eget felt. Forhåndsvisningen viser resultatet før
           du velger «Bekreft og lagre».
@@ -22,8 +23,8 @@ export function BoligHelp() {
           valgfri fellespakke. Lagre malen for gjenbruk i prosjektet. Velg bygg,
           oppgang eller enkeltboliger og forhåndsvis før tildeling. Boliger med
           egne rom eller valg hoppes over som standard. Du kan velge å legge til
-          manglende innhold; eksisterende rom, pakker og individuelle tilvalg
-          beholdes. Romkonflikter må vurderes på boligen.
+          manglende innhold; eksisterende rom, pakker og individuelle
+          tilvalgspakker beholdes. Romkonflikter må vurderes på boligen.
         </li>
         <li>
           Velg «Bygg nytt prosjekt». Velg boligtype, legg inn bygg og adresser,
@@ -53,21 +54,28 @@ export function BoligHelp() {
           historikken. Ett ordinært prosjekt beholdes for hele boligen.
         </li>
         <li>
-          Åpne «Grunnpakker og tilvalg» øverst i prosjektet → «Ny grunnpakke».
-          Pakken åpnes i en egen dialog. Legg inn vareinnhold, varenummer og
-          antall. Grunnpakken trenger ingen sum. Valgfri grunnsum per varelinje
-          brukes bare som fratrekk ved et alternativ. Last opp bilde fra
-          enheten, eller dra det inn på varen. «Legg til tilvalg» står ved siden
-          av. Åpne en lagret pakke eller Tilvalgsliste og velg Rediger for å
-          rette innholdet. Under Tilvalgsliste velger du Tillegg til eller
-          Alternativ til en standardvare, med eller uten fratrekk.
+          Åpne «Grunnpakker og tilvalgspakker» øverst i prosjektet → «Ny
+          grunnpakke». Gi pakken navn. Velg «Legg til avsnitt» for Fliser,
+          Baderomsinnredning, Dusjvegger eller egne navn. Legg varer i riktig
+          avsnitt. Piltastknappene endrer rekkefølgen. Fjerner du et avsnitt,
+          beholdes varene under «Uten avsnitt». Åpne innholdet ved behov. Legg
+          inn varenummer og antall. Grunnpakken trenger ingen sum. Valgfri
+          grunnsum per varelinje brukes bare som fratrekk ved et alternativ.
+          Last opp bilde fra enheten, eller dra det inn på varen. «Ny
+          tilvalgspakke» står ved siden av. Åpne en lagret pakke eller
+          Tilvalgspakker og velg Rediger for å rette innholdet. Under
+          Tilvalgspakker velger du Tillegg til eller Alternativ til en
+          standardvare, med eller uten fratrekk. En tilvalgspakke kan inneholde
+          flere varer og avsnitt. De velges samlet til én pakkepris. I
+          bestillingsutkastet kan du fortsatt utelate enkeltvarer.
         </li>
         <li>
           Velg «Alle rom» → «Velg fellespakke» for varer som gjelder hele
           boligen. Velg deretter et rom → «Velg rompakke». Den samme grunnpakken
-          kan brukes i flere rom med egne tilvalg i hvert rom. Kontroller pris,
-          fratrekk og samlet innhold med «Forhåndsvis pakkevalg». Velg «Lagre
-          pakkevalg» når det stemmer. Andre rom og tidligere versjoner beholdes.
+          kan brukes i flere rom med egne tilvalgspakker i hvert rom. Kontroller
+          pris, fratrekk og samlet innhold med «Forhåndsvis pakkevalg». Velg
+          «Lagre pakkevalg» når det stemmer. Andre rom og tidligere versjoner
+          beholdes.
         </li>
         <li>
           Eldre boligvalg kan fortsatt fordeles manuelt med «Legg innhold på
@@ -99,7 +107,7 @@ export function BoligHelp() {
       <p>
         Boligvalg er interne utkast. Kundeaksept, fremdrift, beboerportal og
         e-postbestillinger er ikke koblet til ennå. Grunnleveransen og beboerens
-        tilvalg holdes adskilt.
+        tilvalgspakker holdes adskilt.
       </p>
     </details>
   );

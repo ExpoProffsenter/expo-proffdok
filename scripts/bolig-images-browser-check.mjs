@@ -185,22 +185,28 @@ try {
     "Saved private package image reloads",
   );
   await page.keyboard.press("Escape");
-  await btn("Legg til tilvalg").click();
-  const opt = page.getByRole("dialog", { name: "Nytt tilvalg", exact: true });
+  await btn("Ny tilvalgspakke").click();
+  const opt = page.getByRole("dialog", {
+    name: "Ny tilvalgspakke",
+    exact: true,
+  });
   await opt
-    .getByLabel("Navn på tilvalg", { exact: true })
-    .fill("Tilvalg med bilde");
+    .getByLabel("Navn på tilvalgspakke", { exact: true })
+    .fill("Tilvalgspakker med bilde");
   await opt
-    .getByLabel("Pris for hele tilvalget inkl. mva.", { exact: true })
+    .getByLabel("Varebeskrivelse 1", { exact: true })
+    .fill("Vare med bilde");
+  await opt
+    .getByLabel("Pris for hele tilvalgspakken inkl. mva.", { exact: true })
     .fill("1250");
   await opt
-    .getByLabel("Last opp bilde for tilvalget", { exact: true })
+    .getByLabel("Last opp bilde for varelinje 1", { exact: true })
     .setInputFiles(imageFile);
   await opt.locator(".bolig-upload-preview img").waitFor();
   eq(await opt.locator("input[type=url]").count(), 0);
   await page.evaluate(() => (window.__fail = true));
   await opt
-    .getByLabel("Last opp bilde for tilvalget", { exact: true })
+    .getByLabel("Last opp bilde for varelinje 1", { exact: true })
     .setInputFiles(imageFile);
   await opt
     .getByRole("alert")
@@ -212,7 +218,7 @@ try {
     "Failed replacement retains previous image",
   );
   await page.evaluate(() => (window.__fail = false));
-  await btn("Lagre tilvalg").click();
+  await btn("Lagre tilvalgspakke").click();
   await opt.waitFor({ state: "detached" });
   eq(
     await page.locator(".bolig-option-card-content").count(),
@@ -231,14 +237,15 @@ try {
     0,
     "Product cards keep the customer in the app",
   );
-  await btn("Rediger tilvalg: Tilvalg med bilde").click();
+  await btn("Rediger tilvalgspakke: Tilvalgspakker med bilde").click();
   const editOpt = page.getByRole("dialog", {
-    name: "Rediger tilvalg",
+    name: "Rediger tilvalgspakke",
     exact: true,
   });
+  await editOpt.locator(".bolig-edit-line > summary").click();
   await editOpt.locator(".bolig-upload-preview img").waitFor();
   await editOpt
-    .getByLabel("Last opp bilde for tilvalget", { exact: true })
+    .getByLabel("Last opp bilde for varelinje 1", { exact: true })
     .setInputFiles({
       name: "x.svg",
       mimeType: "image/svg+xml",
@@ -252,7 +259,7 @@ try {
   );
   await btn("Fjern bilde").click();
   eq(await editOpt.locator(".bolig-upload-preview").count(), 0);
-  await btn("Lagre tilvalg").click();
+  await btn("Lagre tilvalgspakke").click();
   await editOpt.waitFor({ state: "detached" });
   eq(
     await page.evaluate(
@@ -284,7 +291,7 @@ try {
       true,
       "Compact catalog has no overflow " + width,
     );
-    eq(await btn("Legg til tilvalg").isVisible(), true);
+    eq(await btn("Ny tilvalgspakke").isVisible(), true);
   }
   await page.setViewportSize({ width: 390, height: 844 });
   await page.screenshot({

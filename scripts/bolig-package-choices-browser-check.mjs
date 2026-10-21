@@ -124,7 +124,7 @@ try {
   await page.goto("http://127.0.0.1:" + server.address().port);
   const btn = (name) => page.getByRole("button", { name, exact: true }),
     dlg = () =>
-      page.getByRole("dialog", { name: "Velg pakke og tilvalg", exact: true }),
+      page.getByRole("dialog", { name: "Velg pakke og tilvalgspakker", exact: true }),
     roomSelect = () => page.locator(".bolig-room-select select");
   await roomSelect().selectOption("bad1");
   await btn("Velg rompakke").click();
@@ -169,7 +169,7 @@ try {
     true,
     "Exact editor DOM retained",
   );
-  await btn("Lag eller rediger grunnpakker og tilvalg").click();
+  await btn("Lag eller rediger grunnpakker og tilvalgspakker").click();
   await dlg().waitFor({ state: "hidden" });
   eq(
     await page.evaluate(() => window.__shortcut),
@@ -207,9 +207,9 @@ try {
   eq(
     await dlg()
       .locator(".bolig-choice-total")
-      .filter({ hasText: "Samlet tilvalg" })
+      .filter({ hasText: "Samlet tilvalgspakker" })
       .innerText(),
-    "Samlet tilvalg: 80,00 kr inkl. mva. · 4 varelinjer",
+    "Samlet tilvalgspakker: 80,00 kr inkl. mva. · 4 varelinjer",
   );
   eq(
     await dlg()
@@ -251,9 +251,9 @@ try {
   eq(
     await dlg()
       .locator(".bolig-choice-total")
-      .filter({ hasText: "Samlet tilvalg" })
+      .filter({ hasText: "Samlet tilvalgspakker" })
       .innerText(),
-    "Samlet tilvalg: 380,00 kr inkl. mva. · 7 varelinjer",
+    "Samlet tilvalgspakker: 380,00 kr inkl. mva. · 7 varelinjer",
   );
   await btn("Lagre pakkevalg").click();
   await dlg().waitFor({ state: "hidden" });

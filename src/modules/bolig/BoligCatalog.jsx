@@ -1,4 +1,4 @@
-import { Package, Trash2, ImagePlus, Plus, Pencil, EyeOff } from "lucide-react";
+import { Package, Plus, Pencil, EyeOff } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import {
   boligCatalogRpc,
@@ -11,41 +11,22 @@ import CatalogForm from "./BoligDraftForm.jsx";
 import BoligEditorDialog from "./BoligEditorDialog.jsx";
 import BoligOrderDraft from "./BoligOrderDraft.jsx";
 import ProductCard from "./BoligProductCard.jsx";
-import BoligImageUpload from "./BoligImageUpload.jsx";
-import BoligProductImage from "./BoligProductImage.jsx";
-import BoligCatalogLookup from "./BoligCatalogLookup.jsx";
+import BoligPackageContentEditor from "./BoligPackageContentEditor.jsx";
+import BoligPackageContents, {
+  OptionContents,
+} from "./BoligPackageContents.jsx";
+import {
+  newPackageLine,
+  contentDraft,
+  optionLines,
+  preparePackageLines,
+} from "./boligPackageSections.js";
 import { WORK_PROFILE_EVENT } from "../access/workProfileClient.js";
 import {
   MANAGED_ACCESS_EVENT,
   MODULE_ACCESS_EVENT,
 } from "../access/moduleAccessClient.js";
 const CATALOG_EVENT = "expo-proffdok-bolig-catalog";
-function PackageLine({ initialOpen, title, summary, children }) {
-  const [open, setOpen] = useState(initialOpen);
-  return (
-    <details
-      className="bolig-edit-line"
-      open={open}
-      onToggle={(e) => setOpen(e.currentTarget.open)}
-    >
-      <summary>
-        {title}
-        <small>{summary}</small>
-      </summary>
-      {children}
-    </details>
-  );
-}
-const newLine = () => ({
-  key: crypto.randomUUID(),
-  name: "",
-  sku: "",
-  quantity: 1,
-  unit: "stk",
-  credit: "",
-  image_url: "",
-  product_url: "",
-});
 function PackageEditor({
   context,
   rootId,
@@ -58,10 +39,11 @@ function PackageEditor({
   const initial = {
     id: entry?.id || "",
     name: entry?.name || "",
+    sections: entry?.sections || [],
     lines: entry?.lines.map((l) => ({
       ...l,
       credit: l.credit_cents == null ? "" : String(l.credit_cents / 100),
-    })) || [newLine()],
+    })) || [newPackageLine()],
   };
   return (
     <CatalogForm
@@ -73,217 +55,49 @@ function PackageEditor({
       initial={initial}
       busy={busy}
       submitLabel="Lagre grunnpakke"
-      onSave={(v, basis) =>
-        save(
+      onSave={(raw, basis) => {
+        const v = contentDraft(raw);
+        return save(
           "package",
           {
             id: v.id,
             name: v.name,
-            lines: v.lines.map(({ credit, ...l }) => ({
-              ...l,
-              quantity: Number(l.quantity),
-              credit_cents:
-                String(credit).trim() === "" ? null : toCents(credit),
-            })),
+            sections: v.sections,
+            lines: preparePackageLines(v, toCents),
           },
           basis.catalog_revision,
-        )
-      }
+        );
+      }}
     >
-      {(v, c) => (
-        <>
-          <BoligCatalogLookup
-            context={context}
-            onUse={(item) => {
-              const empty = v.lines.findIndex((l) => !l.name && !l.sku);
-              const line = {
-                ...newLine(),
-                name: item.name,
-                sku: item.sku,
-                image_url: item.image_url,
-                product_url: item.product_url,
-              };
-              c(
-                "lines",
-                empty >= 0
-                  ? v.lines.map((l, i) =>
-                      i === empty ? { ...line, key: l.key } : l,
-                    )
-                  : [...v.lines, line],
-              );
-            }}
-          />
-          <label>
-            Pakkenavn
-            <input
-              required
-              maxLength={120}
-              value={v.name}
-              onChange={(e) => c("name", e.target.value)}
+      {(raw, c) => {
+        const v = contentDraft(raw);
+        return (
+          <>
+            <label>
+              Pakkenavn
+              <input
+                required
+                maxLength={120}
+                value={v.name}
+                onChange={(e) => c("name", e.target.value)}
+              />
+            </label>
+            <p className="bolig-editor-hint">
+              Grunnpakken er inkludert i entreprisen. Grunnsum er valgfri og
+              brukes bare ved fratrekk.
+            </p>
+            <BoligPackageContentEditor
+              value={v}
+              change={c}
+              context={context}
+              rootId={rootId}
             />
-          </label>
-          <p className="bolig-editor-hint">
-            Grunnpakken er inkludert i entreprisen. Grunnsum er valgfri og
-            brukes bare ved fratrekk.
-          </p>
-          {v.lines.map((line, index) => (
-            <PackageLine
-              key={line.key}
-              initialOpen={!line.name}
-              title={`Vare ${index + 1} · ${line.name || "Ny vare"}`}
-              summary={`${line.quantity} ${line.unit} · Åpne / lukk`}
-            >
-              <div className="bolig-catalog-line">
-                <span
-                  className="bolig-line-badge"
-                  aria-label={`Varelinje ${index + 1}`}
-                >
-                  {line.image_url ? (
-                    <BoligProductImage value={line.image_url} alt="" />
-                  ) : (
-                    <Package size={22} />
-                  )}
-                  <small>{index + 1}</small>
-                </span>
-                <label>
-                  Varebeskrivelse {index + 1}
-                  <input
-                    required
-                    maxLength={160}
-                    value={line.name}
-                    onChange={(e) =>
-                      c(
-                        "lines",
-                        v.lines.map((l) =>
-                          l.key === line.key
-                            ? { ...l, name: e.target.value }
-                            : l,
-                        ),
-                      )
-                    }
-                  />
-                </label>
-                <label>
-                  Varenummer {index + 1}
-                  <input
-                    maxLength={80}
-                    value={line.sku}
-                    onChange={(e) =>
-                      c(
-                        "lines",
-                        v.lines.map((l) =>
-                          l.key === line.key
-                            ? { ...l, sku: e.target.value }
-                            : l,
-                        ),
-                      )
-                    }
-                  />
-                </label>
-                <label>
-                  Antall {index + 1}
-                  <input
-                    type="number"
-                    min="0.001"
-                    max="10000"
-                    step="0.001"
-                    required
-                    value={line.quantity}
-                    onChange={(e) =>
-                      c(
-                        "lines",
-                        v.lines.map((l) =>
-                          l.key === line.key
-                            ? { ...l, quantity: e.target.value }
-                            : l,
-                        ),
-                      )
-                    }
-                  />
-                </label>
-                <label>
-                  Enhet {index + 1}
-                  <input
-                    required
-                    maxLength={20}
-                    value={line.unit}
-                    onChange={(e) =>
-                      c(
-                        "lines",
-                        v.lines.map((l) =>
-                          l.key === line.key
-                            ? { ...l, unit: e.target.value }
-                            : l,
-                        ),
-                      )
-                    }
-                  />
-                </label>
-                <label>
-                  Grunnsum inkl. mva. {index + 1}
-                  <input
-                    inputMode="decimal"
-                    placeholder="Valgfritt fratrekksbeløp"
-                    value={line.credit}
-                    onChange={(e) =>
-                      c(
-                        "lines",
-                        v.lines.map((l) =>
-                          l.key === line.key
-                            ? { ...l, credit: e.target.value }
-                            : l,
-                        ),
-                      )
-                    }
-                  />
-                </label>
-                <button
-                  type="button"
-                  className="bolig-line-remove"
-                  aria-label={`Fjern varelinje ${index + 1}`}
-                  title={`Fjern varelinje ${index + 1}`}
-                  disabled={v.lines.length === 1}
-                  onClick={() =>
-                    c(
-                      "lines",
-                      v.lines.filter((l) => l.key !== line.key),
-                    )
-                  }
-                >
-                  <Trash2 size={17} />
-                </button>
-                <BoligImageUpload
-                  context={context}
-                  rootId={rootId}
-                  value={line.image_url || ""}
-                  label={`Bilde for varelinje ${index + 1}`}
-                  onChange={(url) =>
-                    c((current) => ({
-                      lines: current.lines.map((l) =>
-                        l.key === line.key ? { ...l, image_url: url } : l,
-                      ),
-                    }))
-                  }
-                />
-              </div>
-            </PackageLine>
-          ))}
-          <div className="bolig-editor-actions">
-            <button
-              className="bolig-add-line"
-              type="button"
-              disabled={v.lines.length >= 100}
-              onClick={() => c("lines", [...v.lines, newLine()])}
-            >
-              <Plus size={16} />
-              Legg til varelinje
-            </button>
             <button type="button" onClick={onCancel}>
               Lukk pakkeredigering
             </button>
-          </div>
-        </>
-      )}
+          </>
+        );
+      }}
     </CatalogForm>
   );
 }
@@ -300,11 +114,8 @@ function OptionEditor({
   const initial = {
     id: entry?.id || "",
     name: entry?.name || "",
-    sku: entry?.sku || "",
-    image_url: entry?.image_url || "",
-    product_url: entry?.product_url || "",
-    quantity: entry?.quantity || 1,
-    unit: entry?.unit || "stk",
+    sections: entry?.sections || [],
+    lines: entry ? optionLines(entry) : [newPackageLine()],
     price: String((entry?.price_cents || 0) / 100),
     replace_key: entry?.replace_key || "",
     deduct_base: entry?.deduct_base || false,
@@ -321,156 +132,123 @@ function OptionEditor({
       basis={{ catalog_revision: revision }}
       initial={initial}
       busy={busy}
-      submitLabel="Lagre tilvalg"
-      onSave={(v, basis) =>
-        save(
+      submitLabel="Lagre tilvalgspakke"
+      onSave={(raw, basis) => {
+        const v = contentDraft(raw, true),
+          goods = preparePackageLines(v),
+          first = goods[0];
+        return save(
           "option",
           {
             id: v.id,
             name: v.name,
-            sku: v.sku,
-            image_url: v.image_url,
-            product_url: v.product_url,
-            quantity: Number(v.quantity),
-            unit: v.unit,
+            sections: v.sections,
+            lines: goods,
+            sku: goods.length === 1 ? first.sku : "",
+            image_url: first.image_url || "",
+            product_url: first.product_url || "",
+            quantity: goods.length === 1 ? first.quantity : 1,
+            unit: goods.length === 1 ? first.unit : "pakke",
             price_cents: toCents(v.price),
             replace_key: v.replace_key,
             deduct_base: !!v.replace_key && v.deduct_base,
           },
           basis.catalog_revision,
-        )
-      }
+        );
+      }}
     >
-      {(v, c) => (
-        <>
-          <BoligCatalogLookup
-            context={context}
-            onUse={(item) => {
-              c({
-                name: item.name,
-                sku: item.sku,
-                image_url: item.image_url,
-                product_url: item.product_url,
-                ...(item.price !== null ? { price: item.price } : {}),
-              });
-            }}
-          />
-          <label>
-            Navn på tilvalg
-            <input
-              required
-              maxLength={120}
-              value={v.name}
-              onChange={(e) => c("name", e.target.value)}
-            />
-          </label>
-          <label>
-            Tilvalgstype
-            <select
-              value={v.replace_key ? "alternative" : "additional"}
-              onChange={(e) => {
-                c(
-                  "replace_key",
-                  e.target.value === "alternative" ? lines[0]?.key || "" : "",
-                );
-              }}
-            >
-              <option value="additional">Tillegg til grunnpakken</option>
-              <option value="alternative" disabled={!lines.length}>
-                Alternativ til en standardvare
-              </option>
-            </select>
-          </label>
-          {v.replace_key && (
-            <>
-              <label>
-                Erstatter standardvare
-                <select
-                  value={v.replace_key}
-                  onChange={(e) => c("replace_key", e.target.value)}
-                >
-                  {!lines.some((l) => l.key === v.replace_key) && (
-                    <option value={v.replace_key}>
-                      Tidligere standardvare – velg på nytt
-                    </option>
-                  )}
-                  {lines.map((l) => (
-                    <option key={l.key} value={l.key}>
-                      {l.packageName} · {l.name} · grunnsum{" "}
-                      {l.credit_cents == null
-                        ? "ikke angitt"
-                        : money(l.credit_cents)}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="bolig-catalog-check">
-                <input
-                  type="checkbox"
-                  checked={v.deduct_base}
-                  onChange={(e) => c("deduct_base", e.target.checked)}
-                />
-                Trekk fra grunnsummen for standardvaren
-              </label>
-            </>
-          )}
-          <label>
-            Varenummer for tilvalget
-            <input
-              maxLength={80}
-              value={v.sku}
-              onChange={(e) => c("sku", e.target.value)}
-            />
-          </label>
-          <BoligImageUpload
-            context={context}
-            rootId={rootId}
-            value={v.image_url}
-            label="Bilde for tilvalget"
-            onChange={(url) => c("image_url", url)}
-          />
-          <div className="bolig-catalog-pair">
+      {(raw, c) => {
+        const v = contentDraft(raw, true);
+        return (
+          <>
             <label>
-              Antall i tilvalget
+              Navn på tilvalgspakke
               <input
-                type="number"
-                min="0.001"
-                max="10000"
-                step="0.001"
                 required
-                value={v.quantity}
-                onChange={(e) => c("quantity", e.target.value)}
+                maxLength={120}
+                value={v.name}
+                onChange={(e) => c("name", e.target.value)}
               />
             </label>
             <label>
-              Enhet for tilvalget
+              Tilvalgspakketype
+              <select
+                aria-label="Tilvalgspakketype"
+                value={v.replace_key ? "alternative" : "additional"}
+                onChange={(e) =>
+                  c(
+                    "replace_key",
+                    e.target.value === "alternative" ? lines[0]?.key || "" : "",
+                  )
+                }
+              >
+                <option value="additional">Tillegg til grunnpakken</option>
+                <option value="alternative" disabled={!lines.length}>
+                  Alternativ til en standardvare
+                </option>
+              </select>
+            </label>
+            {v.replace_key && (
+              <>
+                <label>
+                  Erstatter standardvare
+                  <select
+                    aria-label="Erstatter standardvare"
+                    value={v.replace_key}
+                    onChange={(e) => c("replace_key", e.target.value)}
+                  >
+                    {!lines.some((l) => l.key === v.replace_key) && (
+                      <option value={v.replace_key}>
+                        Tidligere standardvare – velg på nytt
+                      </option>
+                    )}
+                    {lines.map((l) => (
+                      <option key={l.key} value={l.key}>
+                        {l.packageName} · {l.name} · grunnsum{" "}
+                        {l.credit_cents == null
+                          ? "ikke angitt"
+                          : money(l.credit_cents)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="bolig-catalog-check">
+                  <input
+                    type="checkbox"
+                    checked={v.deduct_base}
+                    onChange={(e) => c("deduct_base", e.target.checked)}
+                  />
+                  Trekk fra grunnsummen for standardvaren
+                </label>
+              </>
+            )}
+            <BoligPackageContentEditor
+              value={v}
+              change={c}
+              context={context}
+              rootId={rootId}
+              base={false}
+            />
+            <label>
+              Pris for hele tilvalgspakken inkl. mva.
               <input
                 required
-                maxLength={20}
-                value={v.unit}
-                onChange={(e) => c("unit", e.target.value)}
+                inputMode="decimal"
+                value={v.price}
+                onChange={(e) => c("price", e.target.value)}
               />
             </label>
-          </div>
-          <label>
-            Pris for hele tilvalget inkl. mva.
-            <input
-              required
-              inputMode="decimal"
-              value={v.price}
-              onChange={(e) => c("price", e.target.value)}
-            />
-          </label>
-          <p>
-            Prisen gjelder antallet over. Ved alternativ vises fratrekk og
-            mellomlegg når pakken velges for boligen. Et alternativ erstatter
-            hele standardvarelinjen.
-          </p>
-          <button type="button" onClick={onCancel}>
-            Lukk tilvalgsredigering
-          </button>
-        </>
-      )}
+            <p>
+              Prisen gjelder alle varene og antallene i tilvalgspakken samlet.
+              Ved alternativ erstattes hele standardvarelinjen. Eventuelt
+              fratrekk vises når pakken velges på boligen.
+            </p>
+            <button type="button" onClick={onCancel}>
+              Lukk tilvalgspakkeredigering
+            </button>
+          </>
+        );
+      }}
     </CatalogForm>
   );
 }
@@ -550,68 +328,69 @@ function ChoiceEditor({ context, root, state, unit, busy, save }) {
             {pkg && (
               <>
                 <h4>Innhold i {pkg.name}</h4>
-                <ul>
-                  {pkg.lines.map((l) => (
-                    <li key={l.key}>
-                      <ProductCard line={l}>
-                        Grunnsum{" "}
-                        {l.credit_cents == null
-                          ? "ikke angitt"
-                          : money(l.credit_cents)}
-                      </ProductCard>
-                    </li>
-                  ))}
-                </ul>
-                <h4>Velg tilvalg</h4>
+                <BoligPackageContents sections={pkg.sections} lines={pkg.lines}>
+                  {(l) => (
+                    <>
+                      Grunnsum{" "}
+                      {l.credit_cents == null
+                        ? "ikke angitt"
+                        : money(l.credit_cents)}
+                    </>
+                  )}
+                </BoligPackageContents>
+                <h4>Velg tilvalgspakker</h4>
                 {state.options.map((o) => {
                   const b = optionBreakdown(o, pkg),
                     checked = v.option_ids.includes(o.id);
                   if (o.archived && !checked) return null;
                   return (
-                    <label className="bolig-option-choice" key={o.id}>
-                      <input
-                        type="checkbox"
-                        checked={checked}
-                        disabled={(!b.compatible || o.archived) && !checked}
-                        onChange={(e) =>
-                          c(
-                            "option_ids",
-                            e.target.checked
-                              ? [...v.option_ids, o.id]
-                              : v.option_ids.filter((id) => id !== o.id),
-                          )
-                        }
-                      />
-                      <ProductCard line={o}>
-                        <small>
-                          {o.replace_key
-                            ? "Alternativ til standardvare"
-                            : "Tillegg til grunnpakken"}
-                          {!b.compatible
-                            ? " · passer ikke til valgt pakke"
-                            : ""}
-                          {o.archived ? " · skjult" : ""}
-                        </small>
-                        <small>
-                          {b.missingCredit
-                            ? "Grunnsum mangler for fratrekk. Fyll inn grunnsummen, eller rediger alternativet til uten fratrekk."
-                            : `Pris ${money(o.price_cents)} − fratrekk ${money(b.deduction)} = ${money(b.net)} inkl. mva.`}
-                        </small>
-                      </ProductCard>
-                    </label>
+                    <div key={o.id}>
+                      <label className="bolig-option-choice">
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          disabled={(!b.compatible || o.archived) && !checked}
+                          onChange={(e) =>
+                            c(
+                              "option_ids",
+                              e.target.checked
+                                ? [...v.option_ids, o.id]
+                                : v.option_ids.filter((id) => id !== o.id),
+                            )
+                          }
+                        />
+                        <ProductCard line={o}>
+                          <small>
+                            {o.replace_key
+                              ? "Alternativ til standardvare"
+                              : "Tillegg til grunnpakken"}
+                            {!b.compatible
+                              ? " · passer ikke til valgt pakke"
+                              : ""}
+                            {o.archived ? " · skjult" : ""}
+                          </small>
+                          <small>
+                            {b.missingCredit
+                              ? "Grunnsum mangler for fratrekk. Fyll inn grunnsummen, eller rediger alternativet til uten fratrekk."
+                              : `Pris ${money(o.price_cents)} − fratrekk ${money(b.deduction)} = ${money(b.net)} inkl. mva.`}
+                          </small>
+                        </ProductCard>
+                      </label>
+                      <OptionContents option={o} />
+                    </div>
                   );
                 })}
               </>
             )}
             {invalid && (
               <p role="alert">
-                Fjern skjulte tilvalg eller tilvalg som ikke passer til pakken
-                før lagring.
+                Fjern skjulte tilvalgspakker eller tilvalgspakker som ikke
+                passer til pakken før lagring.
               </p>
             )}
             <p className="bolig-choice-total">
-              Beboerens tilvalg: {invalid ? "må kontrolleres" : money(total)}{" "}
-              inkl. mva.
+              Beboerens tilvalgspakker:{" "}
+              {invalid ? "må kontrolleres" : money(total)} inkl. mva.
             </p>
             <p>
               Dette er prosjektlederens valgsutkast. Ingen kundeaksept eller
@@ -785,8 +564,8 @@ export default function BoligCatalog({
       className="bolig-catalog"
       aria-label={
         unit
-          ? "Grunnpakke og tilvalg for boligen"
-          : "Grunnpakker og tilvalgsliste"
+          ? "Grunnpakke og tilvalgspakker for boligen"
+          : "Grunnpakker og tilvalgspakker"
       }
     >
       {unit && compact && (
@@ -809,13 +588,13 @@ export default function BoligCatalog({
       )}
       <h3 hidden={compact}>
         {unit
-          ? `Grunnpakke og tilvalg · ${unit.number}`
-          : "Prosjektets grunnpakker og tilvalg"}
+          ? `Grunnpakke og tilvalgspakker · ${unit.number}`
+          : "Prosjektets grunnpakker og tilvalgspakker"}
       </h3>
       <p hidden={compact}>
         {unit
-          ? "Velg grunnpakke og tilvalg for denne boligen. Kontroller mellomlegget og lagre et valgsutkast."
-          : "Lag grunnpakkene først. Legg deretter til alternativer og tillegg i prosjektets tilvalgsliste. Velg til slutt innholdet på hver bolig nedenfor."}
+          ? "Velg grunnpakke og tilvalgspakker for denne boligen. Kontroller mellomlegget og lagre et valgsutkast."
+          : "Lag grunnpakkene først. Legg deretter til alternativer og tillegg i prosjektets tilvalgspakker. Velg til slutt innholdet på hver bolig nedenfor."}
       </p>
       {error && (
         <p role="alert" className="bolig-error">
@@ -828,7 +607,9 @@ export default function BoligCatalog({
         </p>
       )}
       <button type="button" disabled={busy || loading} onClick={() => load()}>
-        {loading ? "Henter pakker og tilvalg …" : "Hent siste pakker og valg"}
+        {loading
+          ? "Henter pakker og tilvalgspakker …"
+          : "Hent siste pakker og valg"}
       </button>
       {valid && !unit && (
         <>
@@ -851,14 +632,14 @@ export default function BoligCatalog({
                 setEditing(null);
               }}
             >
-              Tilvalgsliste
+              Tilvalgspakker
             </button>
           </nav>
           {canWrite && (
             <div className="bolig-catalog-create-actions">
               {[
                 { kind: "packages", label: "Ny grunnpakke" },
-                { kind: "options", label: "Legg til tilvalg" },
+                { kind: "options", label: "Ny tilvalgspakke" },
               ].map((action) => (
                 <button
                   key={action.kind}
@@ -888,7 +669,7 @@ export default function BoligCatalog({
             <h4>
               {tab === "packages"
                 ? `${valid.packages.length} grunnpakker`
-                : `${valid.options.length} tilvalg`}{" "}
+                : `${valid.options.length} tilvalgspakker`}{" "}
               i prosjektet
             </h4>
             <div className="bolig-catalog-cards">
@@ -904,33 +685,52 @@ export default function BoligCatalog({
                         <summary>
                           {entry.lines.length} varelinjer · Vis innhold
                         </summary>
-                        <ul>
-                          {entry.lines.map((l) => (
-                            <li key={l.key}>
-                              <ProductCard line={l}>
-                                Grunnsum{" "}
-                                {l.credit_cents == null
-                                  ? "ikke angitt"
-                                  : money(l.credit_cents)}
-                              </ProductCard>
-                            </li>
-                          ))}
-                        </ul>
+                        <BoligPackageContents
+                          sections={entry.sections}
+                          lines={entry.lines}
+                        >
+                          {(l) => (
+                            <>
+                              Grunnsum{" "}
+                              {l.credit_cents == null
+                                ? "ikke angitt"
+                                : money(l.credit_cents)}
+                            </>
+                          )}
+                        </BoligPackageContents>
                       </details>
                     ) : (
                       <details className="bolig-option-card-content">
                         <summary>
                           {money(entry.price_cents)} inkl. mva. · Vis innhold
                         </summary>
-                        <ProductCard line={entry}>
-                          {entry.replace_key
-                            ? "Alternativ til standardvare"
-                            : "Tillegg til grunnpakken"}{" "}
-                          · {money(entry.price_cents)} inkl. mva.
-                          {entry.deduct_base
-                            ? " · grunnsummen trekkes fra"
-                            : " · uten fratrekk"}
-                        </ProductCard>
+                        {!entry.lines?.length && (
+                          <ProductCard line={entry}>
+                            {entry.replace_key
+                              ? "Alternativ til standardvare"
+                              : "Tillegg til grunnpakken"}{" "}
+                            · {money(entry.price_cents)} inkl. mva.
+                            {entry.deduct_base
+                              ? " · grunnsummen trekkes fra"
+                              : " · uten fratrekk"}
+                          </ProductCard>
+                        )}
+                        {entry.lines?.length > 0 && (
+                          <p>
+                            {entry.replace_key
+                              ? "Alternativ til standardvare"
+                              : "Tillegg til grunnpakken"}
+                            {entry.deduct_base
+                              ? " · grunnsummen trekkes fra"
+                              : " · uten fratrekk"}
+                          </p>
+                        )}
+                        {entry.lines?.length > 0 && (
+                          <BoligPackageContents
+                            sections={entry.sections}
+                            lines={optionLines(entry)}
+                          />
+                        )}
                       </details>
                     )}
                     <small>Versjon {entry.revision}</small>
@@ -944,8 +744,9 @@ export default function BoligCatalog({
                         >
                           <Pencil size={15} />
                           Rediger{" "}
-                          {tab === "packages" ? "grunnpakke" : "tilvalg"}:{" "}
-                          {entry.name}
+                          {tab === "packages"
+                            ? "grunnpakke"
+                            : "tilvalgspakke"}: {entry.name}
                         </button>
                         <button
                           type="button"
@@ -978,8 +779,8 @@ export default function BoligCatalog({
                     ? "Rediger grunnpakke"
                     : "Ny grunnpakke"
                   : editing.entry
-                    ? "Rediger tilvalg"
-                    : "Nytt tilvalg"
+                    ? "Rediger tilvalgspakke"
+                    : "Ny tilvalgspakke"
               }
               busy={busy}
               onClose={() => setEditing(null)}
@@ -1025,7 +826,7 @@ export default function BoligCatalog({
               <div className="bolig-saved-choice">
                 <h4>Lagret valgsutkast · versjon {selected.revision}</h4>
                 <p>
-                  {selected.snapshot.package.name} · beboerens tilvalg{" "}
+                  {selected.snapshot.package.name} · beboerens tilvalgspakker{" "}
                   {money(selected.snapshot.total_cents)} inkl. mva.
                 </p>
                 {compact && selected.snapshot.options?.length > 0 && (

@@ -1,4 +1,13 @@
 import { getAppSupabaseClient } from "../access/appSupabaseClientRegistry.js";
+export const packageErrorMessage = (message) =>
+  String(message || "Kunne ikke behandle pakken.")
+    .replace(/\bEt tilvalg\b/g, "En tilvalgspakke")
+    .replace(/\bet tilvalg\b/g, "en tilvalgspakke")
+    .replace(/\bSamme tilvalg\b/g, "Samme tilvalgspakke")
+    .replace(/\bTilvalget\b/g, "Tilvalgspakken")
+    .replace(/\btilvalget\b/g, "tilvalgspakken")
+    .replace(/\bTilvalg\b/g, "Tilvalgspakker")
+    .replace(/\btilvalg\b/g, "tilvalgspakker");
 export async function boligCatalogRpc(
   context,
   rootId,
@@ -23,7 +32,7 @@ export async function boligCatalogRpc(
       new Error(
         error.code === "23505"
           ? "Navnet finnes allerede i dette hovedprosjektet."
-          : error.message,
+          : packageErrorMessage(error.message),
       ),
       { code: error.code },
     );

@@ -1,4 +1,5 @@
 import { getAppSupabaseClient } from "../access/appSupabaseClientRegistry.js";
+import { packageErrorMessage } from "./boligCatalogClient.js";
 export const PACKAGE_CHOICES_EVENT = "expo-proffdok-bolig-catalog";
 export const PACKAGE_EDITOR_EVENT = "expo-proffdok-bolig-package-editor";
 export const packageChoiceBasis = (data) => ({
@@ -35,7 +36,9 @@ export async function packageChoicesRpc(
     ? request.retry(false)
     : request);
   if (error)
-    throw Object.assign(new Error(error.message), { code: error.code });
+    throw Object.assign(new Error(packageErrorMessage(error.message)), {
+      code: error.code,
+    });
   if (
     data?.context?.user_id !== context.user_id ||
     data?.context?.company_id !== context.company_id ||

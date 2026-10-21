@@ -250,12 +250,12 @@ try {
     "Independent building draft retained",
   );
   eq(
-    await btn("Forhåndsvis endringer").isEnabled(),
+    await btn("Lagre endringer").isEnabled(),
     false,
     "Stale draft requires explicit rebase",
   );
   await btn("Se over og bruk siste grunnlag").click();
-  await btn("Forhåndsvis endringer").click();
+  await btn("Lagre endringer").click();
   await page.getByText("0 nye · 4 skjules · 0 gjenopprettes").waitFor();
   checks++;
   await btn("Lukk og behold kladd").click();
