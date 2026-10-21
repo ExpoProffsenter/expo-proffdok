@@ -34,7 +34,7 @@ window.__client={rpc:async(name,args)=>{
  s.revision++;if(window.__loseNextSave){window.__loseNextSave=false;return {error:{message:'Lagringssvaret gikk tapt.'}};}return reply();
 }};
 const root=createRoot(document.getElementById('app'));
-window.__render=(unit='u1')=>root.render(<section className="bolig-page bolig-dialog" style={{width:'100%',maxWidth:'900px',padding:'16px',boxSizing:'border-box'}}><h2>Eksempelprosjekt · Bolig H0101</h2><div style={{maxWidth:'420px'}}><Rooms key={window.__context.company_id+unit+window.__context.role} context={{...window.__context}} root={{id:'qa-root',archived:false}} unit={{id:unit,number:'H0101'}}/></div></section>);
+window.__render=(unit='u1')=>root.render(<section data-qa-role={window.__context.role} className="bolig-page bolig-dialog" style={{width:'100%',maxWidth:'900px',padding:'16px',boxSizing:'border-box'}}><h2>Eksempelprosjekt · Bolig H0101</h2><div style={{maxWidth:'420px'}}><Rooms key={window.__context.company_id+unit+window.__context.role} context={{...window.__context}} root={{id:'qa-root',archived:false}} unit={{id:unit,number:'H0101'}}/></div></section>);
 window.__render();
 `,
 );
@@ -424,6 +424,8 @@ try {
     window.__context.role = "reader";
     window.__render("u1");
   });
+  // React root.render is scheduled; wait for the new role DOM before reading it.
+  await page.locator('[data-qa-role="reader"]').waitFor();
   await page.getByRole("combobox", { name: "Vis rom" }).waitFor();
   eq(await add().count(), 0, "Reader has no room creation action");
   eq(

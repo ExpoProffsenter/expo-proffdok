@@ -53,3 +53,9 @@ Ingen merge før relevant Preview-prøve, grønn critical QA og Kenneths uttrykk
 ## Neste etappe og bevarte krav
 
 Knyt varer/pakker/tilvalg til rom med egen versjonering og tydelig strategi for eldre valg uten rom. Eksisterende historikk skal fortsatt vises som boligomfattende; ingen automatisk flytting av varer, priser eller utfylte sjekklister. Deretter sjekklister/dokumentasjon, rommal med forhåndsvisning/utvalg, plantegninger/markører og egne bilder. Ingen av disse er operative nå. Hele øvrige ønskelisten i BOLIG_VIDERE_PLAN_20261021.md og overleveringen følger videre, inkludert operativ bestilling/levering, faktisk fremdrift/varsler, beboeraksept, indeks, import, leverandørtilgang og privat kontraktsanalyse. Ingen ekte ordre eller varsler er sendt.
+
+## Publisert eksempel og CI-oppfølging
+
+Sandbox har et bevisst beholdt romeksempel i DEMO – Blandede boligtyper / Eneboligen / Bolig: Bad 1 (1. etasje), Bad 2 (2. etasje), Vaskerom og Teknisk rom (Kjeller). Dette er separat fra den tilbakeførte QA-ROOMS-ROLLBACK-prøven. Ingen rom er lagt til brukerens egne prosjekter.
+
+Første romhead 2c0f6d02 hadde READY Preview dpl_G6k2de4vZhPF8qbiuz6ezC9cyY2L. CI #578 passerte build, PostgreSQL 192, alle eksisterende React-suiter og builder 99, men stoppet i den nye rollebytteprøven: en umiddelbar count kunne lese forrige React-render. Testfixturen har derfor fått en rendret rollemarkør; prøven venter på faktisk leservisning og fersk romrespons før de samme nekt-assertionene utføres. Ingen produktrettighet eller eksisterende assertion er endret. Endelig CI/deploy-status føres i PR #278.
