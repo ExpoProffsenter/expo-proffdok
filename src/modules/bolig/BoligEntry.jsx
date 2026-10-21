@@ -662,6 +662,7 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
                     </div>
                     <div hidden={setupArea !== "catalog"}>
                       <BoligCatalog
+                        compact
                         key={
                           ctx.user_id +
                           ":" +

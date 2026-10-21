@@ -3439,3 +3439,11 @@
 .bolig-package-card-content {
   margin: 10px 0;
 }
+.bolig-project-header nav {
+  flex-wrap: wrap;
+  max-width: 100%;
+}
+.bolig-catalog > .bolig-editor-hint {
+  margin: 10px 0;
+  line-height: 1.45;
+}
