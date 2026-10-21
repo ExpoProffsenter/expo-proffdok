@@ -451,14 +451,19 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
                       <small>HOVEDPROSJEKT</small>
                       <h3>{record.root.title}</h3>
                       <p>
-                        {record.root.reference} · {visibleUnits.length} boliger
-                        · {activeBlocks.length} bygg ·{" "}
+                        {record.root.reference} · {visibleUnits.length}{" "}
+                        {visibleUnits.length === 1 ? "bolig" : "boliger"} ·{" "}
+                        {activeBlocks.length} bygg ·{" "}
                         {
                           entrances.filter((e) =>
                             apartmentBlocks.some((b) => b.id === e.block_id),
                           ).length
                         }{" "}
-                        oppganger
+                        {entrances.filter((e) =>
+                          apartmentBlocks.some((b) => b.id === e.block_id),
+                        ).length === 1
+                          ? "oppgang"
+                          : "oppganger"}
                       </p>
                     </div>
                     <div className="bolig-project-actions">

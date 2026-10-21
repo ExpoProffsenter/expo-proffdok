@@ -140,6 +140,15 @@ export default function BoligBuildingOverview({
     `${record.root.id}:building-search`,
     "",
   );
+  const [buildingOffset, setBuildingOffset] = useBoligUiState(
+    context,
+    `${record.root.id}:building-offset`,
+    0,
+  );
+  const [cardLimit, setCardLimit] = useState(12);
+  useEffect(() => {
+    setBuildingOffset(0);
+  }, [buildingQuery]);
   const [pickerOpen, setPickerOpen] = useState(false),
     [capacity, setCapacity] = useState(1),
     [resultPage, setResultPage] = useState(0);
@@ -158,7 +167,10 @@ export default function BoligBuildingOverview({
   }, [pickerOpen]);
   useEffect(() => {
     const node = surface.current;
-    const measure = () => setCapacity(node?.clientWidth >= 680 ? 2 : 1);
+    const measure = () => {
+      setCapacity(node?.clientWidth >= 680 ? 2 : 1);
+      setCardLimit(node?.clientWidth < 500 ? 4 : 12);
+    };
     measure();
     if (!node || typeof ResizeObserver === "undefined") return;
     const observer = new ResizeObserver(measure);
@@ -256,13 +268,20 @@ export default function BoligBuildingOverview({
         .includes(t),
     ),
   );
+  const cardPage = Math.min(
+    Math.floor(buildingOffset / cardLimit),
+    Math.max(0, Math.ceil(filteredBlocks.length / cardLimit) - 1),
+  );
   const buildingCards = (compact = false) => (
     <div
       className={
         compact ? "bolig-building-picker-list" : "bolig-building-cards"
       }
     >
-      {filteredBlocks.map((b) => {
+      {(compact
+        ? filteredBlocks
+        : filteredBlocks.slice(cardPage * cardLimit, (cardPage + 1) * cardLimit)
+      ).map((b) => {
         const es = entrances.filter((e) => e.block_id === b.id),
           us = es.flatMap((e) => unitsByEntrance.get(e.id) || []);
         const ready = us.filter(
@@ -285,8 +304,11 @@ export default function BoligBuildingOverview({
                 {b.address || es[0]?.address || "Adresse mangler"}
               </small>
               <small>
-                {typeInfo(b.building_type).label} · {us.length} boliger
-                {b.building_type === "house" ? "" : ` · ${es.length} oppganger`}
+                {typeInfo(b.building_type).label} · {us.length}{" "}
+                {us.length === 1 ? "bolig" : "boliger"}
+                {b.building_type && b.building_type !== "apartment"
+                  ? ""
+                  : ` · ${es.length} ${es.length === 1 ? "oppgang" : "oppganger"}`}
               </small>
               <small>
                 {statuses
@@ -476,6 +498,29 @@ export default function BoligBuildingOverview({
             />
           </label>
           {buildingCards()}
+          {filteredBlocks.length > cardLimit && (
+            <nav className="bolig-building-pages" aria-label="Bla mellom bygg">
+              <button
+                type="button"
+                disabled={!cardPage}
+                onClick={() => setBuildingOffset((cardPage - 1) * cardLimit)}
+              >
+                Forrige bygg
+              </button>
+              <span>
+                {cardPage * cardLimit + 1}–
+                {Math.min((cardPage + 1) * cardLimit, filteredBlocks.length)} av{" "}
+                {filteredBlocks.length} bygg
+              </span>
+              <button
+                type="button"
+                disabled={(cardPage + 1) * cardLimit >= filteredBlocks.length}
+                onClick={() => setBuildingOffset((cardPage + 1) * cardLimit)}
+              >
+                Neste bygg
+              </button>
+            </nav>
+          )}
         </div>
       ) : shownEntrances.length ? (
         <>

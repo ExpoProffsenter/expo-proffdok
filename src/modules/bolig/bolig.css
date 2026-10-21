@@ -2483,3 +2483,25 @@
   width: auto;
   flex: 0 0 auto;
 }
+.bolig-main-grid:has(.bolig-all-buildings) {
+  grid-template-columns: minmax(0, 1fr);
+}
+.bolig-main-grid:has(.bolig-all-buildings) > .bolig-select-unit {
+  display: none;
+}
+.bolig-building-pages {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  padding-top: 14px;
+  font-size: 12px;
+}
+.bolig-dialog .bolig-building-pages button {
+  font-size: 12px;
+}
+@media (max-width: 500px) {
+  .bolig-building-pages {
+    flex-wrap: wrap;
+  }
+}

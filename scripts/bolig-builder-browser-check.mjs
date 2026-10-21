@@ -328,7 +328,7 @@ try {
   await page.getByRole("button", { name: "Alle bygg", exact: false }).click();
   eq(
     await page.locator(".bolig-all-buildings .bolig-building-card").count(),
-    20,
+    12,
   );
   eq(
     await page.locator(".bolig-window").count(),
@@ -339,6 +339,13 @@ try {
     path: path.join(temp, "many-buildings.png"),
     fullPage: true,
   });
+  await page.getByRole("button", { name: "Neste bygg", exact: true }).click();
+  eq(
+    await page.locator(".bolig-all-buildings .bolig-building-card").count(),
+    8,
+    "Remaining buildings are reachable without a long overview",
+  );
+  await page.getByRole("button", { name: "Forrige bygg", exact: true }).click();
   await page.getByRole("button", { name: "Åpne Bygg 1", exact: true }).click();
   await page
     .getByPlaceholder("Søk bolig, adresse eller kontakt")
@@ -374,15 +381,42 @@ try {
   await page.getByRole("button", { name: "Alle bygg", exact: false }).click();
   eq(
     await page.locator(".bolig-all-buildings .bolig-building-card").count(),
-    25,
-    "500 households overview renders 25 building cards",
+    12,
+    "500 households overview renders only the first page",
   );
   eq(await page.locator(".bolig-window").count(), 0);
+  await page.getByRole("button", { name: "Neste bygg", exact: true }).click();
+  await page.getByRole("button", { name: "Neste bygg", exact: true }).click();
+  eq(
+    await page.locator(".bolig-all-buildings .bolig-building-card").count(),
+    1,
+    "Last page reaches building 25",
+  );
   await page.getByRole("button", { name: "Åpne Bygg 25", exact: true }).click();
   eq(
     await page.locator(".bolig-window").count(),
     20,
     "500 households only render the active building",
+  );
+  await page.getByRole("button", { name: "Alle bygg", exact: false }).click();
+  await page.setViewportSize({ width: 390, height: 900 });
+  eq(
+    await page
+      .getByRole("button", { name: "Åpne Bygg 25", exact: true })
+      .isVisible(),
+    true,
+    "Resizing retains the same building range",
+  );
+  assert(
+    (await page.locator(".bolig-all-buildings .bolig-building-card").count()) <=
+      4,
+  );
+  checks++;
+  await page.getByRole("button", { name: "Forrige bygg", exact: true }).click();
+  eq(
+    await page.locator(".bolig-all-buildings .bolig-building-card").count(),
+    4,
+    "Mobile overview shows at most four buildings per page",
   );
   await page.evaluate(() => window.__mode("contact"));
   await page

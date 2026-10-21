@@ -10,7 +10,7 @@ Veiviseren oppretter ingen serverposter før siste knapp. Hele prosjektet lagres
 
 ## 2. Alle bygg og Bytt bygg – implementert for Preview
 
-Alle bygg gir en kortoversikt med riktig boligtype, adresse, antall boliger og registrert valg-/koblingsstatus. Bare valgt bygg tegner boliger. Bytt bygg er en søkbar popup; ingen permanent lang sidelist. Globalt boligsøk finner også kontakt, adresse og treff i et annet bygg. Mange treff vises 50 om gangen.
+Alle bygg gir en kortoversikt med riktig boligtype, adresse, antall boliger og registrert valg-/koblingsstatus. Bare valgt bygg tegner boliger. Kortvisningen har 12 bygg per side på større skjermer og 4 på mobil, med søk og Neste/Forrige. Alle bygg bruker full bredde uten et tomt boligpanel ved siden av. Bytt bygg er en søkbar popup; ingen permanent lang sidelist. Globalt boligsøk finner også kontakt, adresse og treff i et annet bygg. Mange treff vises 50 om gangen.
 
 ## 3. Lange bygg – implementert for Preview
 
