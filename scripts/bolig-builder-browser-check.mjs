@@ -79,9 +79,17 @@ try {
     } else if (req.url === "/style.css") {
       res.setHeader("content-type", "text/css");
       res.end(css);
-    } else if (req.url === "/bolig/fasade.webp") {
+    } else if (
+      [
+        "/bolig/fasade.webp",
+        "/bolig/enebolig-v2.webp",
+        "/bolig/tomannsbolig-v2.webp",
+        "/bolig/flerfamiliehus-v2.webp",
+        "/bolig/boligfelt-v2.webp",
+      ].includes(req.url)
+    ) {
       res.setHeader("content-type", "image/webp");
-      res.end(fs.readFileSync("public/bolig/fasade.webp"));
+      res.end(fs.readFileSync("public" + req.url));
     } else
       res.end(
         '<!doctype html><html lang="nb"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0;font-family:Arial,sans-serif}button,input,select{font:inherit}button{cursor:pointer}</style><link rel="stylesheet" href="/style.css"><div id="app"></div><script src="/app.js"></script></html>',
@@ -146,6 +154,34 @@ try {
     exact: true,
   });
   eq(await dialog.isVisible(), true);
+  await page.waitForFunction(() => {
+    const images = [...document.querySelectorAll(".bolig-type-card img")];
+    return (
+      images.length === 5 &&
+      images.every((img) => img.complete && img.naturalWidth > 0)
+    );
+  });
+  eq(
+    await dialog
+      .locator(".bolig-type-card img")
+      .evaluateAll(
+        (images) => new Set(images.map((img) => img.getAttribute("src"))).size,
+      ),
+    5,
+    "Each housing type has a distinct successfully loaded photograph",
+  );
+  eq(
+    await dialog
+      .locator(".bolig-type-card img")
+      .evaluateAll((images) =>
+        images.every((img) => getComputedStyle(img).objectFit === "cover"),
+      ),
+    true,
+    "Example photos preserve their proportions in type cards",
+  );
+  await dialog
+    .locator(".bolig-type-card img")
+    .evaluateAll((images) => Promise.all(images.map((img) => img.decode())));
   await page.screenshot({ path: path.join(temp, "builder-types.png") });
   await dialog
     .getByLabel("Prosjektnavn", { exact: true })

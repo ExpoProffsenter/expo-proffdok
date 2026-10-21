@@ -3197,3 +3197,36 @@
     font-size: 16px;
   }
 }
+
+.bolig-page > header .bolig-project-overview-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  background: #173e54;
+  border-color: #173e54;
+  color: #fff;
+  font-weight: 650;
+}
+
+/* Match the existing facade's photographic quality across every housing type. */
+.bolig-building-art {
+  object-fit: cover;
+  object-position: center 55%;
+  background: #e9f2f5;
+}
+.bolig-house-scene > .bolig-building-art {
+  width: min(100%, 720px);
+  height: clamp(200px, 30vw, 360px);
+  object-fit: contain;
+  border-radius: 14px;
+}
+.bolig-type-card .bolig-building-art {
+  height: 150px;
+  object-position: center 40%;
+}
+@media (max-width: 600px) {
+  .bolig-type-card .bolig-building-art {
+    height: 90px;
+  }
+}

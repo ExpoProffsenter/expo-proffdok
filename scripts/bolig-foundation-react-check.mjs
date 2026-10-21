@@ -421,6 +421,23 @@ try {
     q('.bolig-home-project[aria-label="Åpne Felles prosjekt"]').click(),
   );
   assert(q(".bolig-home").hidden, "Choosing a project opens its workspace");
+  assert.equal(
+    q(".bolig-page > header .bolig-project-overview-link").textContent.trim(),
+    "Prosjektoversikt",
+    "Module header returns to project selection and creation",
+  );
+  assert.equal(
+    [...w.document.querySelectorAll(".bolig-page button")].filter((b) =>
+      b.textContent.includes("Til appens startside"),
+    ).length,
+    0,
+    "No duplicate app-home action inside the module",
+  );
+  assert.equal(
+    w.document.querySelectorAll(".bolig-project-overview-link").length,
+    1,
+    "One distinct project overview entry",
+  );
   assert(q(".bolig-grid"));
   await act(() => q(".bolig-grid button").click());
   const input = [...w.document.querySelectorAll("label")]
@@ -633,7 +650,7 @@ try {
   holdContext = false;
   await act(() => contextWaiters.splice(0).forEach((resolve) => resolve()));
   const readsBeforeHome = calls.filter((c) => c.p_action === "get").length;
-  await act(() => button("Alle prosjekter").click());
+  await act(() => button("Prosjektoversikt").click());
   assert(!q(".bolig-home").hidden, "All projects returns to the module home");
   assert(
     resize.isConnected && floors.value === "3",

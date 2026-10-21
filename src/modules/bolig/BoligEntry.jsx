@@ -422,9 +422,20 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
           </h2>
           <p>Byggoversikt, boligvalg og varebestillinger</p>
         </div>
-        <button type="button" onClick={onClose}>
-          <ArrowLeft size={16} /> Til appens startside
-        </button>
+        {ctx.enabled && screen === "workspace" && record && (
+          <button
+            type="button"
+            className="bolig-project-overview-link"
+            title="Velg boligprosjekt eller bygg et nytt prosjekt"
+            onClick={() => {
+              selection.current++;
+              setScreen("projects");
+              setNotice("");
+            }}
+          >
+            <ArrowLeft size={17} /> Prosjektoversikt
+          </button>
+        )}
       </header>
       {error ? (
         <p role="alert" className="bolig-error">
@@ -513,16 +524,6 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
                       </p>
                     </div>
                     <div className="bolig-project-actions">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          selection.current++;
-                          setScreen("projects");
-                          setNotice("");
-                        }}
-                      >
-                        <ArrowLeft size={17} /> Alle prosjekter
-                      </button>
                       {projectPicker}
                       <nav aria-label="Arbeidsområde">
                         <button

@@ -5,7 +5,7 @@ export function BoligHelp() {
       <summary>Slik styrer du prosjektet</summary>
       <p>
         Start i prosjektoversikten. Velg «Bygg nytt prosjekt», fortsett en
-        kladd, eller åpne et av firmaets prosjekter. «Alle prosjekter» tar deg
+        kladd, eller åpne et av firmaets prosjekter. «Prosjektoversikt» tar deg
         tilbake uten å fjerne usendt arbeid.
       </p>
       <ol>

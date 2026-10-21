@@ -6,6 +6,7 @@ Kenneths instruks 21. oktober 2026: så nær den godkjente Solgløtt-konseptskis
 
 Miljømål BEGGE, først eksisterende foundation-Preview/Sandbox i PR #278. Scope: egne boligkomponenter/CSS, boligveiledning, fasadeillustrasjon, egne tester og én additiv lesefunksjon for status. Ingen endring i eksisterende Sales, innlogging, prosjektlagring, menyer, HR, e-post, eksisterende katalogrettigheter eller øvrige critical checks.
 
+- «Prosjektoversikt» øverst i et åpent prosjekt går til modulens forside med prosjektvalg/nytt prosjekt. Appens globale Startside er separat. Nye fotorealistiske eksempelbilder for hus/boligfelt følger blokkens stil; egne prosjektbilder er fortsatt et senere steg. Se docs/qa/BOLIG_NAV_BILDER_20261021.md for UX-gjennomgang og prioritering.
 - Kompakt prosjektvalg og prosjektets bolig-/blokk-/oppgangstall. Første åpning viser Prosjektoversikt; et tidligere servervalidert arbeidssted kan gjenopptas. Bygg nytt prosjekt og Fortsett prosjektkladd er separate innganger. Veiledning tilgjengelig, sammenlagt som standard.
 - Byggoversikt som hovedflate. Faktiske etasjer og bolig-ID-er danner klikkbare vinduer over en illustrert fasade. Boligpanelet står ved siden av på desktop. På mobil kan man gå tilbake til bygget.
 - Egne arbeidsområder Byggoversikt og Oppsett. Oppsett samler struktur, grunnpakker og tilvalg. Skjulte arbeidsområder beholder monterte skjemaer og lokal kladd.

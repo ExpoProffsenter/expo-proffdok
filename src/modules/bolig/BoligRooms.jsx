@@ -325,8 +325,8 @@ export default function BoligRooms({ context, root, unit }) {
             </div>
           )}
           <p className="bolig-room-note">
-            Registrer rommene her. Grunnpakke, tilvalg og bestillingsutkast
-            gjelder foreløpig hele boligen.
+            Her registrerer du rommene. Rommene har ikke eget vareinnhold ennå.
+            Grunnpakke og tilvalg velges under «Boligvalg» for hele boligen.
           </p>
           {!!archived.length && (
             <details className="bolig-room-archive">
