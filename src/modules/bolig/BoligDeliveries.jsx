@@ -287,7 +287,7 @@ function DeliveryWorkspace({
       </div>
       {error && <p role="alert">{error}</p>}
       {notice && <p role="status">{notice}</p>}
-      {pending && (
+      {pending && !busy && (
         <div className="bolig-delivery-warning" role="status">
           <strong>Lagringen må avklares</strong>
           <p>

@@ -4,7 +4,7 @@ Miljømål BEGGE. Samme foundation-branch og draft PR #278; først Preview/Sandb
 
 ## Endring og scope
 
-Egne boligkomponenter/klient/CSS, boligstatus og hjelp, tre additive bolig-migrasjoner, en ny boligspesifikk Edge Function med egne delte eksport-/mailfiler, og egne QA-tester/CI. Eksisterende Cordel-eksport, ordinær bestillingsmail, Sales, HR, global meny, auth og andre moduler er uendret. Cordel- og selskapsprofilfunksjoner gjenbrukes med fersk rettighetskontroll.
+Egne boligkomponenter/klient/CSS, boligstatus og hjelp, fire additive bolig-migrasjoner, en ny boligspesifikk Edge Function med egne delte eksport-/mailfiler, og egne QA-tester/CI. Eksisterende Cordel-eksport, ordinær bestillingsmail, Sales, HR, global meny, auth og andre moduler er uendret. Cordel- og selskapsprofilfunksjoner gjenbrukes med fersk rettighetskontroll.
 
 - Vårt ordrenummer er kjøpers referanse. Leverandørordrenummer er valgfritt, kan fylles senere og er separat fra appens interne B-referanse.
 - Felles prosjektadresse/merknad er standard. Hver bolig kan ha egen adresse og uavhengig valg av samlet/delt bestilling og samlet/delt levering.
@@ -34,12 +34,13 @@ Kilder:
 - 20261021202352_bolig_orders_deliveries.sql
 - 20261021203036_bolig_order_email_attachments.sql
 - 20261021204213_bolig_delivery_overview.sql
+- 20261021205031_bolig_delivery_fk_indexes.sql
 
 Tidsstempel hos server kan avvike fra kildefilen. Sammenlign innhold, ikke installer samme migrasjon en gang til på grunn av et annet versjonsstempel.
 
 ## QA
 
-- PostgreSQL/PGlite kjører alle eksisterende boligscenarier og nye bestillings-/mottaks-/mail-/oversiktsscenarier. Nye tester omfatter firma-/leser-/anon-sperrer, gamle revisjoner, replay, endret mottaker, valgfri referanse, delordre, dellevering, korreksjon, fryst adresse, kildeendring, sendelås og service_role-only provider-kvittering.
+- PostgreSQL/PGlite: 472 assertions PASS. Kjøringen omfatter alle eksisterende boligscenarier og nye bestillings-/mottaks-/mail-/oversiktsscenarier. Nye tester omfatter firma-/leser-/anon-sperrer, gamle revisjoner, replay, endret mottaker, valgfri referanse, delordre, dellevering, korreksjon, fryst adresse, kildeendring, sendelås og service_role-only provider-kvittering.
 - E-post: 46 assertions med mock-provider; to vedlegg, identiske Cordel-bytes, bare kanonisk mottaker, escaping, layout, ingen priser og stabil retry. Ingen mail sendt.
 - OOXML: alle ZIP/XML-deler parses; rå tekstverdier beholder innledende nuller, antall er numeriske, formellignende tekst er ikke formler. Importert med artifact-tool og visuelt rendret. Rendererens General-format kan vise numeriske tekstverdier uten nuller; rå XLSX-cellene er inlineStr og importinspeksjon bekrefter strengverdiene.
 - Chromium med faktisk global app-CSS: 26 assertions ved 320/390/1024/1366 px, ingen horisontal dialogoverflow. Felles/egen adresse, delvalg, valgfri leverandørreferanse, fokus og kladd ved lukking, ordre, mailpreview og Excel-nedlasting, mistet sendsvar med samme ID, manuell Bestilt, del-/sluttmottak og lesertilgang.
@@ -53,3 +54,13 @@ Ingen ekte leverandørmail er sendt eller levert under QA; provider-transport er
 Bestilling deles per bolig og varelinje; ikke mengdedeling av én varelinje i flere innkjøpsordrer eller en felles ordre på tvers av boliger. Dellevering kan ha delmengder. Ingen automatisk ombestilling/endringsordre etter revidert boligvalg når noe er bestilt; dette stopper for avklaring. Ingen forventet leverandørbekreftet dato, ekstern leverandørportal eller automatisk beboervarsling. Ønsket leveringsdato er en forespørsel, ikke en tildelt arbeidsfrist/ansvarlig; denne runden oppretter ingen automatiske fristvarsler. Eksisterende ansvarligvarsler er ikke endret.
 
 Neste: faktisk fremdrift/sjekklister per bolig/rom, kundeaksept og avgrenset ekstern tilgang. Excel-import sist. Ingen Production uten relevant QA og Kenneths eksplisitte TEST OK.
+
+Rådgivere: to nye manglende FK-indekser på unit_id ble funnet og rettet i siste migrasjon. Nye RLS-no-policy INFO gjelder tilsiktet deny-all i privat skjema uten klientgrants. Ingen nye åpne public-definer-funksjoner.
+
+## Innlogget skynettprøve
+
+Fast Preview ble prøvd som demo@expo-proffdok.no i Expo Proffsenter på faktisk publisert e5c442ff. Under DEMO – Klargjør hel blokk → oppgang B → H0101 ble felles leveringsadresse/merknad og Dellevering lagret. Bestillingsgrunnlaget ble klargjort uten leverandørordrenummer. B-3 er annullert som en del av prøven; B-5 er gjeldende klargjort eksempel med tre varer og ønsket leveringsdato 12.11.2026. Boligvalget har fortsatt fire varer, og det tidligere utelatte veggstaget er ikke med i bestilling/vedlegg. Ingen faktisk bestilling er sendt eller manuelt markert Bestilt i det beholdte eksemplet.
+
+Mailpreview med qa@example.invalid og DEMO-FAG er lagret og viser riktig Expo Proffsenter-logo, prosjekt, bygg/oppgang, H0101, leveringsoppsett og ordrebekreftelsesadresse. Begge vedlegg er lastet ned gjennom det faktiske grensesnittet. Vedleggene bygges fra samme serverlagrede snapshot. Puppeteer-/Playwright-lignende datofylling i skynett krevde et ekte tastetrykk for å utløse nettleserens change-event; tastaturvalg ble kontrollert i gjennomgangen og lagret med riktig dato.
+
+PR Core Safety #595, run 39673626740/job 119477667441, SUCCESS på e5c442ff. Alle trinn grønne, inkludert ny bolig-DB/mail/browser og øvrige moduler. Siste oppfølging legger kun til to manglende FK-indekser, QA-bevis undertrykking av «må avklares»-varsel mens ordinær lagring fortsatt pågår, og riktige statusforklaringer i byggoversikten. Publiserings- og CI-status for siste head føres i PR.

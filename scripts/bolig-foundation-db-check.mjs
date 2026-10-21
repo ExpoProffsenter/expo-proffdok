@@ -210,6 +210,7 @@ try {
   await db.exec(`alter table auth.users add column email text default 'qa@example.invalid';create function public.get_cordel_export_access() returns boolean language sql as $$select coalesce(current_setting('qa.cordel',true),'yes')<>'no'$$;create function public.work_profile_company_profile(uuid) returns jsonb language sql as $$select '{"companyName":"QA Firma","address":"QA gate"}'::jsonb$$;`);
   await db.exec(await fs.readFile("supabase/migrations/20261021203036_bolig_order_email_attachments.sql", "utf8"));
   await db.exec(await fs.readFile("supabase/migrations/20261021204213_bolig_delivery_overview.sql", "utf8"));
+  await db.exec(await fs.readFile("supabase/migrations/20261021205031_bolig_delivery_fk_indexes.sql", "utf8"));
   await db.exec("begin");
   await actor();
   eq((await call()).enabled, false);

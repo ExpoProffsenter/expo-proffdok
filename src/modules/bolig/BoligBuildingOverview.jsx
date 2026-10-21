@@ -293,11 +293,12 @@ export default function BoligBuildingOverview({
       layer === "project"
         ? "Prosjekt koblet"
         : layer === "order"
-          ? "Utkast lagret"
+          ? "Utkast lagret / levert"
           : "Boligvalg lagret",
     review: "Må gjennomgås",
     empty: layer === "project" ? "Prosjekt mangler" : "Boligvalg mangler",
-    pending: "Klargjør bestilling",
+    pending:
+      layer === "order" ? "Bestilling / levering pågår" : "Klargjør bestilling",
     unknown: "Status ikke hentet",
   };
   const results = listVisible
@@ -897,7 +898,7 @@ export default function BoligBuildingOverview({
         {layer === "choice"
           ? "lagrede valgsutkast"
           : layer === "order"
-            ? "bestillingsutkast, ikke sendte bestillinger"
+            ? "klargjorte grunnlag, bestillinger og registrert varemottak"
             : "kobling til ordinært leilighetsprosjekt"}
         . Fremdrift kobles til i en senere etappe.
       </p>
