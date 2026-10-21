@@ -255,6 +255,9 @@ try {
   await dialog("Registrer varemottak").waitFor({ state: "hidden" });
   eq(await page.locator(".bolig-delivery-badge").innerText(), "Levert");
   await page.evaluate(() => window.__render("reader"));
+  // React root.render schedules the role change; the existing refresh button
+  // is present in both roles and is not a completion signal.
+  await button("Klargjør bestilling").waitFor({ state: "detached" });
   await button("Oppdater status").waitFor();
   eq(await button("Klargjør bestilling").count(), 0);
   eq(await button("Registrer varemottak").count(), 0);
