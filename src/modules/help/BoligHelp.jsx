@@ -3,11 +3,13 @@ export function BoligHelp() {
   return (
     <details className="bolig-help">
       <summary>Slik styrer du prosjektet</summary>
-      <p>Bruk «Bygg prosjekt». Fortsett deretter i rekkefølgen nedenfor.</p>
+      <p>
+        Bruk «Bygg nytt prosjekt». Fortsett deretter i rekkefølgen nedenfor.
+      </p>
       <ol>
         <li>
-          Velg «Bygg prosjekt». Velg boligtype, legg inn bygg og adresser, og se
-          over boligfordelingen før «Opprett prosjektforside». En enebolig
+          Velg «Bygg nytt prosjekt». Velg boligtype, legg inn bygg og adresser,
+          og se over boligfordelingen før «Opprett prosjektforside». En enebolig
           registreres som én husstand, uansett etasjeantall.
         </li>
         <li>

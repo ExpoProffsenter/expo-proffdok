@@ -16,13 +16,14 @@ fs.writeFileSync(
 import React,{useState} from '${cwd}/node_modules/react/index.js';
 import {createRoot} from '${cwd}/node_modules/react-dom/client.js';
 import Builder from '${cwd}/src/modules/bolig/BoligProjectBuilder.jsx';
+import {BoligHelp} from '${cwd}/src/modules/help/BoligHelp.jsx';
 import Task from '${cwd}/src/modules/bolig/BoligTaskDialog.jsx';
 import Overview from '${cwd}/src/modules/bolig/BoligBuildingOverview.jsx';
 import '${cwd}/src/modules/bolig/bolig.css';
 const context={user_id:'qa-user',company_id:'qa-company',company_name:'Eksempelfirma · kun test',enabled:true,role:'manager'};
 const make=(mode)=>{const record={root:{id:mode,revision:1},blocks:[],entrances:[],units:[]};for(let b=0;b<(mode==='fivehundred'?25:mode==='many'?20:1);b++){record.blocks.push({id:'b'+b,name:'Bygg '+(b+1),building_type:'apartment',address:'Eksempelgata '+(b+1)});for(let e=0;e<((mode==='many'||mode==='fivehundred')?2:20);e++){const id='b'+b+'e'+e,counts=mode==='uneven'?[2,3,1]:(mode==='many'||mode==='fivehundred')?[2,2,2,2,2]:[4,4,4,4,4,4];record.entrances.push({id,block_id:'b'+b,address:'Eksempelgata '+(b+1)+' oppgang '+(e+1),counts});counts.forEach((n,f)=>{for(let p=0;p<n;p++)record.units.push({id:id+'f'+f+'p'+p,entrance_id:id,floor:f+1,number:'H'+String(f+1).padStart(2,'0')+String(p+1).padStart(2,'0'),contact_name:b===19&&e===1&&f===4&&p===0?'Siste Eksempel':'',has_project:false});});}}return record;};
 window.__attempts=[];window.__failNext=false;window.__client={rpc:async(name,args)=>({data:{context,root_id:args.p_root_id,units:[]}})};
-function App({mode}){const [q,sq]=useState(''),[unit,su]=useState(''),[busy,sb]=useState(false);return <section className="bolig-dialog bolig-page" style={{maxWidth:'100%',width:'100%',minHeight:'100vh'}}>{mode==='builder'?<Builder context={context} busy={busy} onCreate={async payload=>{sb(true);try{window.__attempts.push(payload);if(window.__failNext){window.__failNext=false;throw Error('Forbindelsen ble brutt. Kontroller opprettelsen.');}}finally{sb(false);}}}/>:mode==='contact'?<Task title="Kontakt og leilighetsprosjekt"><label>Kontaktperson<input aria-label="Kontaktperson" defaultValue="Eksempelperson"/></label></Task>:<><Overview context={context} record={make(mode)} query={q} onQuery={sq} unitId={unit} onSelect={su} onSetup={()=>{}}/><output>{unit}</output></>}</section>};
+function App({mode}){const [q,sq]=useState(''),[unit,su]=useState(''),[busy,sb]=useState(false);return <section className="bolig-dialog bolig-page" style={{maxWidth:'100%',width:'100%',minHeight:'100vh'}}>{mode==='builder'?<div className="bolig-utilities"><div className="bolig-toolbar"><small>Prosjektledertilgang</small></div><BoligHelp/><Builder context={context} busy={busy} onCreate={async payload=>{sb(true);try{window.__attempts.push(payload);if(window.__failNext){window.__failNext=false;throw Error('Forbindelsen ble brutt. Kontroller opprettelsen.');}}finally{sb(false);}}}/></div>:mode==='contact'?<Task title="Kontakt og leilighetsprosjekt"><label>Kontaktperson<input aria-label="Kontaktperson" defaultValue="Eksempelperson"/></label></Task>:<><Overview context={context} record={make(mode)} query={q} onQuery={sq} unitId={unit} onSelect={su} onSetup={()=>{}}/><output>{unit}</output></>}</section>};
 const root=createRoot(document.getElementById('app'));window.__mode=mode=>root.render(<App key={mode} mode={mode}/>);window.__mode('builder');
 `,
 );
@@ -103,11 +104,43 @@ try {
     console.error("PAGE ERROR:", e.message);
   });
   await page.goto("http://127.0.0.1:" + server.address().port);
+  for (const width of [320, 390, 1024, 1366]) {
+    await page.setViewportSize({ width, height: 900 });
+    const help = page.locator(".bolig-help");
+    const buildButton = page.getByRole("button", {
+      name: "Bygg nytt prosjekt",
+      exact: true,
+    });
+    const helpBox = await help.boundingBox(),
+      buttonBox = await buildButton.boundingBox();
+    eq(
+      Math.abs(helpBox.height - buttonBox.height) < 1,
+      true,
+      "Header actions have equal height",
+    );
+    if (width >= 1024)
+      eq(
+        Math.abs(helpBox.y - buttonBox.y) < 1,
+        true,
+        "Desktop header actions share the same top edge",
+      );
+    eq(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+      true,
+      "Header actions fit mobile and desktop",
+    );
+    await help.locator("summary").click();
+    eq(await help.getAttribute("open"), "", "Help opens after header styling");
+    await help.locator("summary").click();
+  }
+  await page.setViewportSize({ width: 1366, height: 900 });
   await page
-    .getByRole("button", { name: "Bygg prosjekt", exact: true })
+    .getByRole("button", { name: "Bygg nytt prosjekt", exact: true })
     .click();
   const dialog = page.getByRole("dialog", {
-    name: "Bygg prosjekt",
+    name: "Bygg nytt prosjekt",
     exact: true,
   });
   eq(await dialog.isVisible(), true);
@@ -192,7 +225,7 @@ try {
   );
   // Fresh wizard stays in place across focus/visibility; Escape only closes the inner dialog.
   await page
-    .getByRole("button", { name: "Bygg prosjekt", exact: true })
+    .getByRole("button", { name: "Bygg nytt prosjekt", exact: true })
     .click();
   await dialog.getByLabel("Prosjektnavn", { exact: true }).fill("Usendt kladd");
   await page.evaluate(() => {

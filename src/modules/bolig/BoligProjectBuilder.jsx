@@ -200,7 +200,9 @@ export default function BoligProjectBuilder({ context, onCreate, busy }) {
         onClick={() => setOpen(true)}
       >
         <Plus size={17} />
-        {draft.title || draft.step ? "Fortsett prosjektkladd" : "Bygg prosjekt"}
+        {draft.title || draft.step
+          ? "Fortsett prosjektkladd"
+          : "Bygg nytt prosjekt"}
       </button>
       {createPortal(
         <dialog
@@ -216,7 +218,7 @@ export default function BoligProjectBuilder({ context, onCreate, busy }) {
           <header>
             <div>
               <small>{context.company_name} · NYTT BOLIGPROSJEKT</small>
-              <h2 id="bolig-builder-title">Bygg prosjekt</h2>
+              <h2 id="bolig-builder-title">Bygg nytt prosjekt</h2>
               <p>Fra bygg og adresser til en oversikt du kan jobbe i.</p>
             </div>
             <button

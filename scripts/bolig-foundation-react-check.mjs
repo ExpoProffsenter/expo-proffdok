@@ -867,7 +867,7 @@ try {
     null,
     "Receipt clears exact local attempt",
   );
-  assert(button("Bygg prosjekt"), "Next creation starts with a clean wizard");
+  assert(button("Bygg nytt prosjekt"), "Next creation starts with a clean wizard");
   await act(() => w.__unmount());
   await act(() => w.__dispose());
   dom.window.close();

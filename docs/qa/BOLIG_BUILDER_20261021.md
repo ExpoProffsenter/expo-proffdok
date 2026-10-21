@@ -41,7 +41,7 @@ Et tredje syntetisk prosjekt, QA-BOLIGTYPER-20261021, er opprettet gjennom den f
 
 ## Brukerprøve
 
-1. Meny → Boligprosjekter → Bygg prosjekt. Prøv boligtypekortene og Neste/Tilbake.
+1. Meny → Boligprosjekter → Bygg nytt prosjekt. Prøv boligtypekortene og Neste/Tilbake.
 2. Bygg og adresser → flere bygg, forskjellige boligtyper og Kopier oppsett til nytt bygg. Fyll inn nye adresser.
 3. Etasjer og boliger → flere oppganger og ulik boligfordeling. Se beregnet total.
 4. Se over og opprett → Rediger bygg, eller Opprett prosjektforside for et syntetisk eksempel.
@@ -56,3 +56,12 @@ Ti UX-forslag og tydelig skille mellom implementert og planlagt: `docs/architect
 Siste skynettkontroll på 43ec3675 bekrefter 12 bygg på første side, Bygg 25 på siste side, naturlig sortering 1–12, full arbeidsbredde uten tomt sidepanel, ingen horisontal sideoverflow og kompakt Bygg prosjekt-knapp (136px). Søk «Eksempelenga 24 H0302» fra Bygg 25 åpner riktig bolig i Bygg 24. Eneboligen tegner husillustrasjon og nøyaktig én boligknapp. Oppgangsveiviseren viser ett redigeringsfelt ved 20 oppganger, og kladden gjenåpner riktig trinn med 20. Et usendt pakkenavn beholdes ved områdeskifte og settes tilbake uten lagring. CI #573 / 39521964393 er SUCCESS på 43ec3675; Vercel dpl_65QwDHNTBRyuXnHsbtpy88SHN9nc er READY på samme head. Main 0730eeb4 og permanent demo 1312f406 er lest tilbake uendret.
 
 En siste avgrenset oppfølging etter visuell kontroll flytter fokus/visning til overskriften ved Neste/Forrige bygg, slik at en ny side ikke åpner nederst etter klikk på bunnpageren. To nye Chromium-assertions beskytter dette på desktop og mobil (64 totalt). «Alle bygg» og aktivt byggkort har eksplisitt kontrast. Ingen nye serverkall eller datamutasjoner ved sidebyttet.
+
+
+## Knappjustering etter brukerprøve
+
+Brukerens skjermbilde viste at «Bygg prosjekt» stod lavere enn «Slik styrer du prosjektet». Årsaken var en arvet toppmarg på primærknappen. Den er nullstilt bare i Boligprosjekters verktøylinje. Begge handlingene har 44 px høyde; hjelpevalget beholder tydelig åpen/lukket pil og vanlig details-tastaturbetjening. Knapp, dialogtittel og hjelpetekst bruker nå «Bygg nytt prosjekt». «Fortsett prosjektkladd» beholdes ved påbegynt kladd.
+
+Scope: egen bolig-CSS, veivisertekst, BoligHelp og tilhørende QA. Ingen data-/tilgangs-/navigasjonsendring. Testselectors er oppdatert til det bestilte knappnavnet; eksisterende scenarioassertions er beholdt. Chromium-testen er utvidet fra 64 til 78 assertions med lik knappehøyde, samme topplinje på desktop, ingen horisontal overflow og åpning/lukking av hjelp ved 320/390/1024/1366 px. Alle 78 passerer lokalt. Foundation-React og full critical build passerer også. Skynettleseren viser innlogging i denne økten, så denne lille endringen er ikke prøvd med en ny innlogget økt.
+
+Brukerprøve: Åpne Boligprosjekter i samme faste Preview. «Slik styrer du prosjektet» og «Bygg nytt prosjekt» skal ha samme høyde og stå på samme linje der det er plass. Åpne hjelp, lukk igjen, og åpne veiviseren. Ved eksisterende kladd skal «Fortsett prosjektkladd» fortsatt åpne samme trinn og tekst. Ingen produksjonsmerge før uttrykkelig TEST OK.
