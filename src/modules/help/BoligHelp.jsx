@@ -4,7 +4,9 @@ export function BoligHelp() {
     <details className="bolig-help">
       <summary>Slik styrer du prosjektet</summary>
       <p>
-        Bruk «Bygg nytt prosjekt». Fortsett deretter i rekkefølgen nedenfor.
+        Start i prosjektoversikten. Velg «Bygg nytt prosjekt», fortsett en
+        kladd, eller åpne et av firmaets prosjekter. «Alle prosjekter» tar deg
+        tilbake uten å fjerne usendt arbeid.
       </p>
       <ol>
         <li>

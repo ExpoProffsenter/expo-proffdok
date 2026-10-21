@@ -2,6 +2,10 @@
 
 Kenneths bestilling 21. oktober: arbeid selvstendig videre, legg design og UX først, test i skynettleser, og bruk tydelige valg, sammenleggbare områder og popuper for å unngå lange sider. Miljømål BEGGE; kun foundation-Preview/Sandbox før ny TEST OK. Dette dokumentet skiller implementering fra forslag. Gjeldende hovedkrav og alle uavklarte ønsker står fortsatt i BOLIG_VIDERE_PLAN_20261021.md og handoffen; ingen er tatt ut.
 
+## Modulens startside – implementert etter brukerprøve
+
+Prosjektoversikt er modulens egen startside. «Bygg nytt prosjekt» er fast synlig, med separat kladdvalg. Firmaets prosjektkort har søk, aktivt/arkivert-filter og seks kort per side på PC / tre på mobil. «Alle prosjekter» går tilbake til denne oversikten fra et åpnet prosjekt og bevarer usendt arbeid. «Sist åpnet» fortsetter samme arbeidsområde uten ny henting. Første åpning velger ikke automatisk firmaets første prosjekt; et lagret arbeidssted bevares ved fokus/remount. En eksisterende lokal kladd må bekreftes forkastet før ren ny start; usikkert opprettelsesforsøk må først kontrolleres.
+
 ## 1. Bygg prosjekt – implementert for Preview
 
 Fire trinn: Prosjekt og boligtype → Bygg og adresser → Etasjer og boliger → Se over og opprett. Typekort med skarpe illustrasjoner, tydelig valgt tilstand og lite tekst. Firma vises fra gjeldende arbeidsprofil. Blandet boligtype velges per bygg. Oppganger velges i én kompakt velger, med ett aktivt redigeringsfelt og synlig telling av ferdige adresser. Antall boliger summeres fra fordelingen. Ingen motstridende totalfelt.

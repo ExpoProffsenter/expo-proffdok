@@ -58,10 +58,14 @@ export default function BoligProjectBuilder({ context, onCreate, busy }) {
   });
   const [open, setOpen] = useState(false),
     [error, setError] = useState(""),
-    [warning, setWarning] = useState("");
+    [warning, setWarning] = useState(""),
+    [startChoice, setStartChoice] = useState(false),
+    [confirmDiscard, setConfirmDiscard] = useState(false);
   const dialog = useRef(null),
     trigger = useRef(null),
+    returnFocus = useRef(null),
     heading = useRef(null),
+    choiceHeading = useRef(null),
     sending = useRef(false);
   const update = (next) => {
     if (sending.current) return;
@@ -78,13 +82,13 @@ export default function BoligProjectBuilder({ context, onCreate, busy }) {
   };
   useEffect(() => {
     if (open) {
-      dialog.current?.showModal();
-      heading.current?.focus();
+      if (!dialog.current?.open) dialog.current?.showModal();
+      (startChoice ? choiceHeading : heading).current?.focus();
     } else if (dialog.current?.open) {
       dialog.current.close();
-      trigger.current?.focus({ preventScroll: true });
+      (returnFocus.current || trigger.current)?.focus({ preventScroll: true });
     }
-  }, [open]);
+  }, [open, startChoice]);
   useEffect(() => {
     if (open) {
       heading.current?.focus();
@@ -189,6 +193,35 @@ export default function BoligProjectBuilder({ context, onCreate, busy }) {
       sending.current = false;
     }
   };
+  const hasDraft = Boolean(
+    draft.type !== "apartment" ||
+    draft.title ||
+    draft.reference ||
+    draft.step ||
+    draft.submitted ||
+    draft.buildings.some(
+      (v) => v.address || v.entrances.some((e) => e.address),
+    ),
+  );
+  const launch = (resume = false, target) => {
+    returnFocus.current = target;
+    setStartChoice(!resume && hasDraft);
+    setConfirmDiscard(false);
+    setOpen(true);
+  };
+  const restart = () => {
+    if (draft.submitted || busy) return;
+    const fresh = seed();
+    if (!writeBoligDraft(key, fresh)) {
+      setWarning("Kunne ikke sikre en ny kladd. Den gamle kladden er beholdt.");
+      return;
+    }
+    setDraft(fresh);
+    setStartChoice(false);
+    setConfirmDiscard(false);
+    setError("");
+    setWarning("");
+  };
   const total = draft.buildings.reduce((s, v) => s + buildingTotal(v), 0);
   return (
     <>
@@ -197,13 +230,21 @@ export default function BoligProjectBuilder({ context, onCreate, busy }) {
         type="button"
         className="bolig-primary"
         disabled={busy}
-        onClick={() => setOpen(true)}
+        onClick={(e) => launch(false, e.currentTarget)}
       >
         <Plus size={17} />
-        {draft.title || draft.step
-          ? "Fortsett prosjektkladd"
-          : "Bygg nytt prosjekt"}
+        Bygg nytt prosjekt
       </button>
+      {hasDraft && (
+        <button
+          type="button"
+          className="bolig-resume-draft"
+          disabled={busy}
+          onClick={(e) => launch(true, e.currentTarget)}
+        >
+          Fortsett prosjektkladd
+        </button>
+      )}
       {createPortal(
         <dialog
           ref={dialog}
@@ -230,7 +271,65 @@ export default function BoligProjectBuilder({ context, onCreate, busy }) {
               <X size={20} />
             </button>
           </header>
+          {startChoice && (
+            <section className="bolig-builder-start-choice">
+              <h3 ref={choiceHeading} tabIndex={-1}>
+                Du har en prosjektkladd
+              </h3>
+              <p>
+                <b>{draft.title || "Prosjekt uten navn"}</b> · Trinn{" "}
+                {draft.step + 1} av 4
+              </p>
+              <p>
+                Kladden ligger i denne nettleseren. Fortsett der du slapp, eller
+                forkast den før du starter på nytt.
+              </p>
+              {draft.submitted && (
+                <p role="status">
+                  Opprettelse er forsøkt. Kontroller resultatet fra kladden før
+                  du starter et nytt prosjekt.
+                </p>
+              )}
+              <div>
+                <button
+                  type="button"
+                  className="bolig-primary"
+                  onClick={() => setStartChoice(false)}
+                >
+                  Fortsett med kladden
+                </button>
+                {!draft.submitted &&
+                  (!confirmDiscard ? (
+                    <button
+                      type="button"
+                      onClick={() => setConfirmDiscard(true)}
+                    >
+                      Forkast kladd og start på nytt
+                    </button>
+                  ) : (
+                    <>
+                      <p>
+                        Dette fjerner oppsettet «
+                        {draft.title || "Prosjekt uten navn"}» fra denne
+                        nettleseren.
+                      </p>
+                      <button type="button" onClick={restart}>
+                        Ja, forkast kladden
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setConfirmDiscard(false)}
+                      >
+                        Behold kladden
+                      </button>
+                    </>
+                  ))}
+              </div>
+              {warning && <p role="alert">{warning}</p>}
+            </section>
+          )}
           <ol
+            hidden={startChoice}
             className="bolig-builder-steps"
             aria-label="Trinn i prosjektopprettelsen"
           >
@@ -246,6 +345,7 @@ export default function BoligProjectBuilder({ context, onCreate, busy }) {
             ))}
           </ol>
           <form
+            hidden={startChoice}
             noValidate
             onSubmit={(e) => {
               e.preventDefault();

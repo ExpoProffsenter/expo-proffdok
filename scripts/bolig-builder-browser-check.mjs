@@ -16,14 +16,16 @@ fs.writeFileSync(
 import React,{useState} from '${cwd}/node_modules/react/index.js';
 import {createRoot} from '${cwd}/node_modules/react-dom/client.js';
 import Builder from '${cwd}/src/modules/bolig/BoligProjectBuilder.jsx';
+import ProjectHome from '${cwd}/src/modules/bolig/BoligProjectHome.jsx';
 import {BoligHelp} from '${cwd}/src/modules/help/BoligHelp.jsx';
 import Task from '${cwd}/src/modules/bolig/BoligTaskDialog.jsx';
 import Overview from '${cwd}/src/modules/bolig/BoligBuildingOverview.jsx';
 import '${cwd}/src/modules/bolig/bolig.css';
+const homeRoots=Array.from({length:15},(_,i)=>({id:'root'+i,title:'Boligprosjekt '+(i+1),reference:'QA-'+(i+1),unit_count:(i+1)*10,archived:i===14}));
 const context={user_id:'qa-user',company_id:'qa-company',company_name:'Eksempelfirma · kun test',enabled:true,role:'manager'};
 const make=(mode)=>{const record={root:{id:mode,revision:1},blocks:[],entrances:[],units:[]};for(let b=0;b<(mode==='fivehundred'?25:mode==='many'?20:1);b++){record.blocks.push({id:'b'+b,name:'Bygg '+(b+1),building_type:'apartment',address:'Eksempelgata '+(b+1)});for(let e=0;e<((mode==='many'||mode==='fivehundred')?2:20);e++){const id='b'+b+'e'+e,counts=mode==='uneven'?[2,3,1]:(mode==='many'||mode==='fivehundred')?[2,2,2,2,2]:[4,4,4,4,4,4];record.entrances.push({id,block_id:'b'+b,address:'Eksempelgata '+(b+1)+' oppgang '+(e+1),counts});counts.forEach((n,f)=>{for(let p=0;p<n;p++)record.units.push({id:id+'f'+f+'p'+p,entrance_id:id,floor:f+1,number:'H'+String(f+1).padStart(2,'0')+String(p+1).padStart(2,'0'),contact_name:b===19&&e===1&&f===4&&p===0?'Siste Eksempel':'',has_project:false});});}}return record;};
 window.__attempts=[];window.__failNext=false;window.__client={rpc:async(name,args)=>({data:{context,root_id:args.p_root_id,units:[]}})};
-function App({mode}){const [q,sq]=useState(''),[unit,su]=useState(''),[busy,sb]=useState(false);return <section className="bolig-dialog bolig-page" style={{maxWidth:'100%',width:'100%',minHeight:'100vh'}}>{mode==='builder'?<div className="bolig-utilities"><div className="bolig-toolbar"><small>Prosjektledertilgang</small></div><BoligHelp/><Builder context={context} busy={busy} onCreate={async payload=>{sb(true);try{window.__attempts.push(payload);if(window.__failNext){window.__failNext=false;throw Error('Forbindelsen ble brutt. Kontroller opprettelsen.');}}finally{sb(false);}}}/></div>:mode==='contact'?<Task title="Kontakt og leilighetsprosjekt"><label>Kontaktperson<input aria-label="Kontaktperson" defaultValue="Eksempelperson"/></label></Task>:<><Overview context={context} record={make(mode)} query={q} onQuery={sq} unitId={unit} onSelect={su} onSetup={()=>{}}/><output>{unit}</output></>}</section>};
+function App({mode}){const [q,sq]=useState(''),[unit,su]=useState(''),[busy,sb]=useState(false);return <section className="bolig-dialog bolig-page" style={{maxWidth:'100%',width:'100%',minHeight:'100vh'}}>{mode==='home'?<><ProjectHome roots={homeRoots} activeRoot={homeRoots[0]} active loading={false} busy={false} manager onSelect={su} onResume={()=>su('resume')}><Builder context={context} busy={false} onCreate={async()=>{}}/></ProjectHome><output>{unit}</output></>:mode==='builder'?<div className="bolig-utilities"><div className="bolig-toolbar"><small>Prosjektledertilgang</small></div><BoligHelp/><Builder context={context} busy={busy} onCreate={async payload=>{sb(true);try{window.__attempts.push(payload);if(window.__failNext){window.__failNext=false;throw Error('Forbindelsen ble brutt. Kontroller opprettelsen.');}}finally{sb(false);}}}/></div>:mode==='contact'?<Task title="Kontakt og leilighetsprosjekt"><label>Kontaktperson<input aria-label="Kontaktperson" defaultValue="Eksempelperson"/></label></Task>:<><Overview context={context} record={make(mode)} query={q} onQuery={sq} unitId={unit} onSelect={su} onSetup={()=>{}}/><output>{unit}</output></>}</section>};
 const root=createRoot(document.getElementById('app'));window.__mode=mode=>root.render(<App key={mode} mode={mode}/>);window.__mode('builder');
 `,
 );
@@ -207,7 +209,22 @@ try {
   );
   eq(saved.submitted, true);
   await page.reload();
-  await page.getByRole("button", { name: "Fortsett prosjektkladd" }).click();
+  await page
+    .getByRole("button", { name: "Bygg nytt prosjekt", exact: true })
+    .click();
+  eq(
+    await dialog
+      .getByRole("button", {
+        name: "Forkast kladd og start på nytt",
+        exact: true,
+      })
+      .count(),
+    0,
+    "Uncertain creation cannot be discarded before receipt check",
+  );
+  await dialog
+    .getByRole("button", { name: "Fortsett med kladden", exact: true })
+    .click();
   await dialog.getByRole("button", { name: "Kontroller opprettelsen" }).click();
   const replay = (await page.evaluate(() => window.__attempts))[0];
   eq(
@@ -269,6 +286,34 @@ try {
     await dialog.getByLabel("Oppgangens adresse", { exact: true }).inputValue(),
     "Siste oppgang",
     "Selected entrance and its draft survive closing",
+  );
+  await dialog.press("Escape");
+  await page
+    .getByRole("button", { name: "Bygg nytt prosjekt", exact: true })
+    .click();
+  eq(
+    await dialog
+      .getByRole("heading", { name: "Du har en prosjektkladd" })
+      .isVisible(),
+    true,
+    "New project never silently overwrites a draft",
+  );
+  await dialog
+    .getByRole("button", {
+      name: "Forkast kladd og start på nytt",
+      exact: true,
+    })
+    .click();
+  await dialog
+    .getByRole("button", { name: "Behold kladden", exact: true })
+    .click();
+  await dialog
+    .getByRole("button", { name: "Fortsett med kladden", exact: true })
+    .click();
+  eq(
+    await dialog.getByLabel("Oppgangens adresse", { exact: true }).inputValue(),
+    "Siste oppgang",
+    "Declining discard keeps the exact previous draft",
   );
   await dialog.press("Escape");
   for (const width of [320, 390, 1024, 1366]) {
@@ -485,6 +530,110 @@ try {
     await contact.getByLabel("Kontaktperson", { exact: true }).inputValue(),
     "Usendt kontakttekst",
     "Closing contact popup retains the exact editor",
+  );
+  await contact.press("Escape");
+  await page.setViewportSize({ width: 1366, height: 900 });
+  await page.evaluate(() => window.__mode("home"));
+  const home = page.getByRole("region", {
+    name: "Prosjektoversikt",
+    exact: true,
+  });
+  await home.waitFor();
+  eq(
+    await home.locator(".bolig-home-project").count(),
+    6,
+    "Home limits projects to six cards per page",
+  );
+  eq(
+    await home
+      .getByRole("button", { name: "Bygg nytt prosjekt", exact: true })
+      .isVisible(),
+    true,
+    "New project remains visible alongside resume draft",
+  );
+  eq(
+    await home
+      .getByRole("button", { name: "Fortsett prosjektkladd", exact: true })
+      .isVisible(),
+    true,
+  );
+  await home
+    .getByRole("button", { name: "Neste prosjekter", exact: true })
+    .click();
+  await home
+    .getByRole("button", { name: "Neste prosjekter", exact: true })
+    .click();
+  eq(await home.locator(".bolig-home-project").count(), 2);
+  await home.getByLabel("Søk boligprosjekter", { exact: true }).fill("QA-14");
+  eq(await home.locator(".bolig-home-project").count(), 1);
+  await home
+    .getByRole("button", { name: "Åpne Boligprosjekt 14", exact: true })
+    .click();
+  eq(
+    await page.locator("output").textContent(),
+    "root13",
+    "Home opens the actual selected project ID",
+  );
+  await home.getByLabel("Søk boligprosjekter", { exact: true }).fill("");
+  await home
+    .getByLabel("Vis prosjekter", { exact: true })
+    .selectOption("archived");
+  eq(await home.locator(".bolig-home-project").count(), 1);
+  await home
+    .getByLabel("Vis prosjekter", { exact: true })
+    .selectOption("active");
+  for (const width of [320, 390, 1024, 1366]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.waitForFunction(
+      (expected) =>
+        document.querySelectorAll(".bolig-home-project").length === expected,
+      width <= 680 ? 3 : 6,
+    );
+    eq(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+      true,
+      "Module home fits each viewport",
+    );
+    eq(
+      await home.locator(".bolig-home-project").count(),
+      width <= 680 ? 3 : 6,
+      "Mobile home shows at most three project cards",
+    );
+    await page.screenshot({
+      path: path.join(temp, `home-${width}.png`),
+      fullPage: true,
+    });
+  }
+  await home
+    .getByRole("button", { name: "Bygg nytt prosjekt", exact: true })
+    .click();
+  await dialog
+    .getByRole("button", {
+      name: "Forkast kladd og start på nytt",
+      exact: true,
+    })
+    .click();
+  eq(
+    await dialog.getByLabel("Prosjektnavn", { exact: true }).isVisible(),
+    false,
+    "A separate explicit confirmation protects the draft",
+  );
+  await dialog
+    .getByRole("button", { name: "Ja, forkast kladden", exact: true })
+    .click();
+  eq(
+    await dialog.getByLabel("Prosjektnavn", { exact: true }).inputValue(),
+    "",
+    "Explicit discard starts a clean wizard",
+  );
+  await dialog.press("Escape");
+  eq(
+    await home
+      .getByRole("button", { name: "Fortsett prosjektkladd", exact: true })
+      .count(),
+    0,
   );
   eq(errors, []);
   console.log(

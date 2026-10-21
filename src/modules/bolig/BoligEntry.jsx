@@ -13,6 +13,7 @@ import "./bolig.css";
 import { useBoligUiState } from "./boligUiState.js";
 import BoligTaskDialog from "./BoligTaskDialog.jsx";
 import BoligProjectBuilder from "./BoligProjectBuilder.jsx";
+import BoligProjectHome from "./BoligProjectHome.jsx";
 import BoligProjectPicker from "./BoligProjectPicker.jsx";
 import BoligCatalog from "./BoligCatalog.jsx";
 import BoligBuildingOverview from "./BoligBuildingOverview.jsx";
@@ -155,19 +156,28 @@ function FloorFields({ value, onChange }) {
 }
 function BoligWorkspace({ context, onClose, onOpenProject }) {
   const alive = useRef(true),
-    selection = useRef(0);
+    selection = useRef(0),
+    workspaceHeading = useRef(null);
   const [ctx, setCtx] = useState(context),
     [roots, setRoots] = useState([]),
     [record, setRecord] = useState(null),
     [projects, setProjects] = useState([]),
     [busy, setBusy] = useState(false),
+    [listingLoading, setListingLoading] = useState(true),
     [error, setError] = useState(""),
     [notice, setNotice] = useState(""),
     [entranceId, setEntranceId] = useBoligUiState(context, "entrance", ""),
     [unitId, setUnitId] = useBoligUiState(context, "unit", ""),
     [query, setQuery] = useBoligUiState(context, "query", ""),
     [view, setView] = useBoligUiState(context, "view", "overview");
+  const [screen, setScreen] = useBoligUiState(context, "screen", "projects");
   const [rootId, setRootId] = useBoligUiState(context, "root", "");
+  useEffect(() => {
+    if (screen === "workspace" && record?.root.id) {
+      workspaceHeading.current?.focus({ preventScroll: true });
+      workspaceHeading.current?.scrollIntoView?.({ block: "start" });
+    }
+  }, [screen, record?.root.id]);
   const [setupArea, setSetupArea] = useBoligUiState(
     context,
     "setup-area",
@@ -262,10 +272,14 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
           const first =
             listing.roots?.find((r) => r.id === rootId) ||
             listing.roots?.find((r) => !r.archived);
-          if (first && alive.current) await fetchRecord(first.id, true);
+          if (first && alive.current && (rootId || screen === "workspace"))
+            await fetchRecord(first.id, true);
+          else if (alive.current) setScreen("projects");
         }
       } catch (e) {
         if (alive.current) setError(e.message);
+      } finally {
+        if (alive.current) setListingLoading(false);
       }
     };
     load();
@@ -288,6 +302,8 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
         if (!restore) {
           setEntranceId("");
           setUnitId("");
+          setView("overview");
+          setScreen("workspace");
         }
       }
     } catch (e) {
@@ -362,6 +378,7 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
         setEntranceId("");
         setUnitId("");
         setView("overview");
+        setScreen("workspace");
         setNotice(
           "Prosjektforsiden er opprettet. Velg et bygg, eller åpne Oppsett for å lage grunnpakker og tilvalg.",
         );
@@ -401,7 +418,7 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
           <p>Byggoversikt, boligvalg og varebestillinger</p>
         </div>
         <button type="button" onClick={onClose}>
-          <ArrowLeft size={16} /> Til startsiden
+          <ArrowLeft size={16} /> Til appens startside
         </button>
       </header>
       {error ? (
@@ -430,11 +447,33 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
           </small>
         </div>
         <BoligHelp />
-        {ctx.enabled ? builder : null}
       </div>
       {!ctx.enabled ? null : (
         <>
-          <div className="bolig-projects-layout">
+          <BoligProjectHome
+            roots={roots}
+            activeRoot={record?.root}
+            active={screen !== "workspace" || !record}
+            loading={listingLoading}
+            busy={busy}
+            manager={ctx.role === "manager"}
+            onSelect={async (id) => {
+              if (record?.root.id === id) {
+                selection.current++;
+                setScreen("workspace");
+              } else await fetchRecord(id);
+            }}
+            onResume={() => {
+              selection.current++;
+              setScreen("workspace");
+            }}
+          >
+            {builder}
+          </BoligProjectHome>
+          <div
+            className="bolig-projects-layout"
+            hidden={screen !== "workspace" || !record}
+          >
             <section className="bolig-panel bolig-workspace">
               {!record ? (
                 <div className="bolig-project-empty">
@@ -449,7 +488,9 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
                   <div className="bolig-project-header">
                     <div>
                       <small>HOVEDPROSJEKT</small>
-                      <h3>{record.root.title}</h3>
+                      <h3 ref={workspaceHeading} tabIndex={-1}>
+                        {record.root.title}
+                      </h3>
                       <p>
                         {record.root.reference} · {visibleUnits.length}{" "}
                         {visibleUnits.length === 1 ? "bolig" : "boliger"} ·{" "}
@@ -467,6 +508,16 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
                       </p>
                     </div>
                     <div className="bolig-project-actions">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          selection.current++;
+                          setScreen("projects");
+                          setNotice("");
+                        }}
+                      >
+                        <ArrowLeft size={17} /> Alle prosjekter
+                      </button>
                       {projectPicker}
                       <nav aria-label="Arbeidsområde">
                         <button

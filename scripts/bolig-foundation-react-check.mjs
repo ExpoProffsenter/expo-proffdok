@@ -394,8 +394,23 @@ try {
     null,
     "Inline module forms must be siblings of the ordinary project form.",
   );
-  await act(() => button("Felles prosjekt2 boliger")?.click());
-  if (!q(".bolig-grid")) await act(() => q(".bolig-root").click());
+  assert(
+    q(".bolig-home") && !q(".bolig-home").hidden,
+    "Module starts at its own project overview",
+  );
+  assert.equal(
+    calls.filter((c) => c.p_action === "get").length,
+    0,
+    "Project home does not automatically open the first project",
+  );
+  assert(
+    button("Bygg nytt prosjekt"),
+    "New-project entry is visible on the module home",
+  );
+  await act(() =>
+    q('.bolig-home-project[aria-label="Åpne Felles prosjekt"]').click(),
+  );
+  assert(q(".bolig-home").hidden, "Choosing a project opens its workspace");
   assert(q(".bolig-grid"));
   await act(() => q(".bolig-grid button").click());
   const input = [...w.document.querySelectorAll("label")]
@@ -607,6 +622,32 @@ try {
   );
   holdContext = false;
   await act(() => contextWaiters.splice(0).forEach((resolve) => resolve()));
+  const readsBeforeHome = calls.filter((c) => c.p_action === "get").length;
+  await act(() => button("Alle prosjekter").click());
+  assert(!q(".bolig-home").hidden, "All projects returns to the module home");
+  assert(
+    resize.isConnected && floors.value === "3",
+    "Home keeps the same unsent editor mounted",
+  );
+  await act(() => {
+    w.dispatchEvent(new w.Event("focus"));
+    w.document.dispatchEvent(new w.Event("visibilitychange"));
+  });
+  assert(
+    !q(".bolig-home").hidden,
+    "Focus must respect the explicit choice of home",
+  );
+  await act(() => q(".bolig-home-resume").click());
+  assert(q(".bolig-home").hidden, "Resume returns to the workspace");
+  assert(
+    resize.isConnected && floors.value === "3",
+    "Resume retains exact draft DOM and text",
+  );
+  assert.equal(
+    calls.filter((c) => c.p_action === "get").length,
+    readsBeforeHome,
+    "Home/resume does not refetch or reset the active project",
+  );
   await act(() => w.__unmount());
   await act(() => w.__render("self"));
   assert.equal(
@@ -867,7 +908,10 @@ try {
     null,
     "Receipt clears exact local attempt",
   );
-  assert(button("Bygg nytt prosjekt"), "Next creation starts with a clean wizard");
+  assert(
+    button("Bygg nytt prosjekt"),
+    "Next creation starts with a clean wizard",
+  );
   await act(() => w.__unmount());
   await act(() => w.__dispose());
   dom.window.close();
