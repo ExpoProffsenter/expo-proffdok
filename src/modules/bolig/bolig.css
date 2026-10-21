@@ -2259,7 +2259,9 @@
   border-right: 2px solid #b8c7c7;
 }
 .bolig-connected-scene .bolig-building-floors.bolig-grid {
-  margin: 10px 18% 0 22%;
+  margin: 10px
+    max(12px, min(18%, calc((100% - var(--row-min-width, 238px)) / 2))) 0
+    max(42px, min(22%, calc((100% - var(--row-min-width, 238px)) / 2)));
   gap: 18px;
 }
 .bolig-connected-scene .bolig-building h4 {
@@ -3979,14 +3981,10 @@
     align-items: flex-start;
     flex-direction: column;
   }
-  .bolig-connected-scene .bolig-building-floors.bolig-grid {
-    margin-right: 13%;
-    margin-left: 20%;
-  }
 }
 
 @container bolig-facade (max-width: 450px) {
-  .bolig-building-floors.bolig-grid {
+  .bolig-connected-scene .bolig-building-floors.bolig-grid {
     margin: 10px 12px 0 42px;
     gap: 14px;
   }

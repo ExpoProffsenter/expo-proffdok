@@ -19,7 +19,7 @@ Eksisterende kontakt-/modaltester får nytt forventet navn fordi brukeren ba om 
 ## Lokal verifisering
 
 - Oversikt React: eksisterende scenarier bestått.
-- Oversikt Chromium: 35 assertions med faktisk global appstil, bredder 320/390/1024/1366 px.
+- Oversikt Chromium: 39 assertions med faktisk global appstil, bredder 320/390/1024/1366 px.
 - Byggveiviser Chromium: 102 assertions, inkludert eksisterende modal/fokus, store bygg og responsivitet.
 - Foundation React: bestått, inkludert én Oppsett-inngang og nytt dialognavn.
 - Pakkenavigasjon Chromium: 24 assertions bestått.
@@ -45,3 +45,5 @@ Fysisk Safari/mobil og to samtidige reelle kontoer er ikke prøvd i denne UX-pak
 CI #591 besto alle foregående trinn og bolig-DB/React, men sjekket byggoverskriftens plassering før komponentens requestAnimationFrame hadde rullet. Scenariet venter nå på samme synlighetskrav og bekrefter i tillegg dokumentets aktive tastaturfokus. Ingen scenario eller krav fjernet. Ny full kjøring kreves på sluttversjonen.
 
 Skynett på c7582267: Alle bygg avslutter listen, Mangler boligvalg viser de 12 B-boligene, og syntetisk prosjekt med 500 boliger gir 50 rader per side, 51–100 på neste side. Søk «Eksempelenga 25 H0504» gir ett treff og åpner riktig bolig i Bygg 25. Ingen serverdata endret.
+
+Tette etasjer: vinduenes minimumsbredde og luft rundt vinduene følger etasjens største boligantall. En testoppgang med 32/32/28 boliger per etasje verifiserer at alle vinduer holdes innenfor egen fasade og at bare fasadeområdet ruller horisontalt, på 320 og 1366 px.

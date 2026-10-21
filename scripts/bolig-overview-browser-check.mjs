@@ -20,7 +20,7 @@ import '${cwd}/src/style.css';
 import '${cwd}/src/modules/ui/appUxReview.css';
 import '${cwd}/src/modules/bolig/bolig.css';
 const context={user_id:'qa',company_id:'firm',role:'manager',enabled:true};
-const record={root:{id:'overview',revision:1},blocks:[{id:'a',name:'Blokk A',building_type:'apartment'},{id:'b',name:'Blokk B',building_type:'apartment'}],entrances:[{id:'ea',block_id:'a',address:'Eksempelgata 1',counts:[4,4,4]},{id:'eb',block_id:'b',address:'Eksempelgata 2',counts:[4,4,4]}],units:[]};
+const record={root:{id:'overview',revision:1},blocks:[{id:'a',name:'Blokk A',building_type:'apartment'},{id:'b',name:'Blokk B',building_type:'apartment'}],entrances:[{id:'ea',block_id:'a',address:'Eksempelgata 1',counts:[4,4,4]},{id:'eb',block_id:'b',address:'Eksempelgata 2',counts:[32,32,28]}],units:[]};
 for(let i=0;i<104;i++)record.units.push({id:'u'+i,entrance_id:i<12?'ea':'eb',floor:1+Math.floor(i%12/4),number:(i<12?'A-':'B-')+(101+i),official_number:i===103?'H9999':'',has_project:i%2===0,contact_name:i===0?'Komplett Eksempel':'',contact_email:i===0?'eksempel@example.invalid':'',contact_phone:i===0?'00000000':''});
 window.__fail=false;window.__calls=[];window.__client={rpc:async(name,args)=>{window.__calls.push({name,args});return window.__fail?{error:{message:'Denied'}}:{data:{context,root_id:record.root.id,units:record.units.map((u,i)=>({unit_id:u.id,choice_revision:i%3===0?1:0,catalog_changed:i%6===0,order_revision:i%4===0?1:0,order_outdated:i%8===0}))}};}};
 function App(){const [q,sq]=useState(''),[unit,su]=useState('');return <section className="bolig-dialog bolig-page"><Overview context={context} record={record} query={q} onQuery={sq} unitId={unit} onSelect={su}/><output aria-label="Valgt ID">{unit}</output></section>}
@@ -258,6 +258,27 @@ try {
     "Eksempelgata 2",
     "Selection returns to correct building",
   );
+  for (const width of [320, 1366]) {
+    await page.setViewportSize({ width, height: 1000 });
+    eq(
+      await page.locator(".bolig-window").evaluateAll((es) =>
+        es.every((e) => {
+          const w = e.getBoundingClientRect(),
+            b = e.closest("article").getBoundingClientRect();
+          return w.left >= b.left && w.right <= b.right + 1;
+        }),
+      ),
+      true,
+      "Dense floors keep every window within its own facade",
+    );
+    eq(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+      true,
+      "Dense floors scroll inside the facade only",
+    );
+  }
   await btn("Boligvalg").click();
   await page.evaluate(() => {
     window.__fail = true;

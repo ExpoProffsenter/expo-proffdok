@@ -760,8 +760,9 @@ export default function BoligBuildingOverview({
                     style={{
                       minWidth: Math.max(
                         240,
-                        Math.max(...(e.counts || [4])) * 56 + 70,
+                        Math.max(...(e.counts || [4])) * 62 + 80,
                       ),
+                      "--row-min-width": `${Math.max(...(e.counts || [4])) * 62 - 10}px`,
                       "--facade-span": shownEntrances.length,
                       "--entrance-position":
                         blockEntrances.indexOf(e) % 2 === 0 ? "left" : "right",
