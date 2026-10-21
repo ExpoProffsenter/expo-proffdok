@@ -2505,3 +2505,21 @@
     flex-wrap: wrap;
   }
 }
+.bolig-building-toolbar h3 {
+  scroll-margin-top: 190px;
+}
+.bolig-building-toolbar h3:focus {
+  outline: none;
+}
+[data-expo-fullscreen] .bolig-building-toolbar h3 {
+  scroll-margin-top: 12px;
+}
+.bolig-dialog .bolig-building-breadcrumb button[aria-pressed="true"] {
+  background: #007f91;
+  border-color: #007484;
+  color: #fff;
+}
+.bolig-dialog .bolig-building-card[aria-pressed="true"] {
+  border-color: #00899b;
+  box-shadow: inset 0 0 0 1px #00899b;
+}

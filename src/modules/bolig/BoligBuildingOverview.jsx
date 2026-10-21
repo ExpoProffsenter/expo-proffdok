@@ -152,6 +152,14 @@ export default function BoligBuildingOverview({
   const [pickerOpen, setPickerOpen] = useState(false),
     [capacity, setCapacity] = useState(1),
     [resultPage, setResultPage] = useState(0);
+  const titleRef = useRef(null);
+  const changeBuildingPage = (offset) => {
+    setBuildingOffset(offset);
+    requestAnimationFrame(() => {
+      titleRef.current?.focus({ preventScroll: true });
+      titleRef.current?.scrollIntoView({ block: "start" });
+    });
+  };
   const surface = useRef(null),
     picker = useRef(null),
     pickerTrigger = useRef(null),
@@ -349,7 +357,7 @@ export default function BoligBuildingOverview({
         )}
       </div>
       <div className="bolig-building-toolbar">
-        <h3>
+        <h3 ref={titleRef} tabIndex={-1}>
           <Building2 size={20} />
           {allBuildings ? "Alle bygg" : selectedBlock?.name || "Byggoversikt"}
         </h3>
@@ -442,7 +450,10 @@ export default function BoligBuildingOverview({
       )}
       {results ? (
         <div className="bolig-search-results">
-          <p>{results.length} boliger funnet i hele prosjektet</p>
+          <p>
+            {results.length} {results.length === 1 ? "bolig" : "boliger"} funnet
+            i hele prosjektet
+          </p>
           {results.slice(pageStart, pageStart + 50).map((u) => (
             <button
               key={u.id}
@@ -503,7 +514,7 @@ export default function BoligBuildingOverview({
               <button
                 type="button"
                 disabled={!cardPage}
-                onClick={() => setBuildingOffset((cardPage - 1) * cardLimit)}
+                onClick={() => changeBuildingPage((cardPage - 1) * cardLimit)}
               >
                 Forrige bygg
               </button>
@@ -515,7 +526,7 @@ export default function BoligBuildingOverview({
               <button
                 type="button"
                 disabled={(cardPage + 1) * cardLimit >= filteredBlocks.length}
-                onClick={() => setBuildingOffset((cardPage + 1) * cardLimit)}
+                onClick={() => changeBuildingPage((cardPage + 1) * cardLimit)}
               >
                 Neste bygg
               </button>

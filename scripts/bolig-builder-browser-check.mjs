@@ -345,6 +345,13 @@ try {
     8,
     "Remaining buildings are reachable without a long overview",
   );
+  eq(
+    await page
+      .locator(".bolig-building-toolbar h3")
+      .evaluate((e) => e.getBoundingClientRect().top >= 0),
+    true,
+    "Paging returns focus and view to the building heading",
+  );
   await page.getByRole("button", { name: "Forrige bygg", exact: true }).click();
   await page.getByRole("button", { name: "Åpne Bygg 1", exact: true }).click();
   await page
@@ -417,6 +424,13 @@ try {
     await page.locator(".bolig-all-buildings .bolig-building-card").count(),
     4,
     "Mobile overview shows at most four buildings per page",
+  );
+  eq(
+    await page
+      .locator(".bolig-building-toolbar h3")
+      .evaluate((e) => e.getBoundingClientRect().top >= 0),
+    true,
+    "Mobile page change starts at the heading",
   );
   await page.evaluate(() => window.__mode("contact"));
   await page
