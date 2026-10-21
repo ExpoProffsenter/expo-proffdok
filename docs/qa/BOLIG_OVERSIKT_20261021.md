@@ -19,7 +19,7 @@ Eksisterende kontakt-/modaltester får nytt forventet navn fordi brukeren ba om 
 ## Lokal verifisering
 
 - Oversikt React: eksisterende scenarier bestått.
-- Oversikt Chromium: 33 assertions med faktisk global appstil, bredder 320/390/1024/1366 px.
+- Oversikt Chromium: 35 assertions med faktisk global appstil, bredder 320/390/1024/1366 px.
 - Byggveiviser Chromium: 101 assertions, inkludert eksisterende modal/fokus, store bygg og responsivitet.
 - Foundation React: bestått, inkludert én Oppsett-inngang og nytt dialognavn.
 - Pakkenavigasjon Chromium: 24 assertions bestått.
@@ -27,7 +27,11 @@ Eksisterende kontakt-/modaltester får nytt forventet navn fordi brukeren ba om 
 
 ## Skynett og publisert versjon
 
-Fylles med konkret Preview-verifisering etter publisering. Ingen endring av kundens Testprosjekt 79800. Bare syntetisk QA-prosjekt brukes.
+Publisert første versjon 6fb55843 på fast branch-Preview, Vercel dpl_3dLeJX1LcZosYUJXme2AzwcspMvS READY. Innlogget skynettprøve på DEMO – Klargjør hel blokk viser 24 boliger: 12 Må gjennomgås og 12 Boligvalg mangler. Filteret viser de 12 forventede A-boligene. Valg av A-101 åpner korrekt adresse Eksempelgata 30A og offisielt H0101. Leilighetsinformasjon viser kontakt-/prosjektfeltene med korrekt tittel. Usendt syntetisk kontaktprøve er beholdt ved lukking/åpning og deretter tømt igjen uten serverlagring. Nøyaktig én Oppsett-knapp kontrollert. Samlet Oppsett viser eksisterende bygg, nummerering og rommaler.
+
+Siste tillegg sikrer at Alle bygg/Bytt bygg eksplisitt avslutter liste/filter. Ny Chromium-scenario verifiserer begge returhandlinger. Ingen endring av kundens Testprosjekt 79800; bare syntetisk QA-prosjekt brukes.
+
+CI #590 besto critical build og øvrige gjennomførte trinn, men stanset etter PASS i uendret compact-reference-browser-check med en Playwright ProtocolError ved lukking av JavaScript-dialog (session closed). Ingen kjernefiler eller kjernechecker er endret som følge av dette. Ny kjøring på oppfølgingscommit verifiseres separat.
 
 ## Kort brukerprøve
 

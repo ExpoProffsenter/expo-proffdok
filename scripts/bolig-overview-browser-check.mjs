@@ -150,6 +150,28 @@ try {
     });
   }
   await btn("Boligliste").click();
+  await btn("Alle bygg 2").click();
+  eq(
+    await page.locator(".bolig-all-buildings .bolig-building-card").count(),
+    2,
+    "All buildings exits the list explicitly",
+  );
+  await page
+    .locator(".bolig-all-buildings")
+    .getByRole("button", { name: "Åpne Blokk A", exact: true })
+    .click();
+  await btn("Boligliste").click();
+  await btn("Bytt bygg").click();
+  await page
+    .getByRole("dialog", { name: "Bytt bygg", exact: true })
+    .getByRole("button", { name: "Åpne Blokk A", exact: true })
+    .click();
+  eq(
+    await page.locator(".bolig-window").count(),
+    12,
+    "Explicit building selection returns to facade",
+  );
+  await btn("Boligliste").click();
   eq(
     await page.locator(".bolig-overview-row").count(),
     50,

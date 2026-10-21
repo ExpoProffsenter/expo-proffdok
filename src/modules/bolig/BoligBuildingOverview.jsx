@@ -238,6 +238,8 @@ export default function BoligBuildingOverview({
     segmentStart + capacity,
   );
   const chooseBlock = (id) => {
+    setPresentation("facade");
+    setStatusFilter("all");
     setBlockId(id);
     setAllBuildings(false);
     onQuery("");
@@ -398,6 +400,9 @@ export default function BoligBuildingOverview({
           type="button"
           aria-pressed={allBuildings}
           onClick={() => {
+            setPresentation("facade");
+            setStatusFilter("all");
+            onQuery("");
             setAllBuildings(true);
             onSelect("");
           }}
