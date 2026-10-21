@@ -10,3 +10,7 @@ verify_jwt = false
 [functions.support-inbound]
 # Provider webhook uses raw-body HMAC, timestamp window and durable deduplication.
 verify_jwt = false
+
+[functions.bolig-protocol-email]
+# JWT gate plus Auth.getUser and scope/revision checks in the canonical gateway.
+verify_jwt = true

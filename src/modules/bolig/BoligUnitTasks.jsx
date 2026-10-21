@@ -3,7 +3,6 @@ import {
   Package,
   Truck,
   ClipboardCheck,
-  Images,
   FileCheck2,
   ChevronRight,
   X,
@@ -14,7 +13,7 @@ export default function BoligUnitTasks({
   rooms,
   order,
   completion,
-  onOpenProject,
+  quality,
 }) {
   const [panel, setPanel] = useState(null),
     dialog = useRef(null),
@@ -39,10 +38,6 @@ export default function BoligUnitTasks({
   const open = (id, e) => {
     opener.current = e.currentTarget;
     setPanel(id);
-  };
-  const project = (tab) => {
-    setPanel(null);
-    onOpenProject(unit.project_id, tab);
   };
   const tile = (id, Icon, title, text) => (
     <button
@@ -80,9 +75,7 @@ export default function BoligUnitTasks({
         "quality",
         ClipboardCheck,
         "Sjekklister og dokumentasjon",
-        unit.project_id
-          ? "Åpne sjekklister, bilder, avvik og rapport"
-          : "Koble leilighetsprosjekt for sjekklister og dokumentasjon",
+        "Egne sjekklister, filer, FDV og ekstern protokoll",
       )}
       {tile(
         "finish",
@@ -115,35 +108,7 @@ export default function BoligUnitTasks({
         </header>
         <div hidden={panel !== "rooms"}>{rooms}</div>
         <div hidden={panel !== "order"}>{order}</div>
-        {panel === "quality" && (
-          <div className="bolig-unit-quality">
-            <p>
-              Sjekklister, bilder og avvik føres i det koblede
-              ProffDok-prosjektet. Samme innhold og tilganger brukes her.
-            </p>
-            {unit.project_id ? (
-              <div className="bolig-unit-quality-actions">
-                {[
-                  ["sjekklister", "Åpne sjekklister"],
-                  ["bilder", "Åpne bilder"],
-                  ["avvik", "Åpne avvik"],
-                  ["rapport", "Åpne rapport og dokumentasjon"],
-                ].map(([tab, label]) => (
-                  <button type="button" key={tab} onClick={() => project(tab)}>
-                    {label}
-                    <ChevronRight size={17} />
-                  </button>
-                ))}
-              </div>
-            ) : (
-              <p>
-                Åpne Leilighetsinformasjon og koble riktig prosjekt først.
-                Boligtilgang gir ikke automatisk tilgang til
-                prosjektdokumentasjonen.
-              </p>
-            )}
-          </div>
-        )}
+        {panel === "quality" && quality}
         {panel === "finish" &&
           (completion || (
             <p>Åpne dokumentert ferdigstilling fra boligens arbeidsområde.</p>

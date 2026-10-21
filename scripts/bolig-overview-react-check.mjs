@@ -35,6 +35,7 @@ try {
       write: false,
       minify: false,
       lib: {
+        cssFileName: "qa",
         entry: path.join(temp, "entry.jsx"),
         formats: ["iife"],
         name: "Proof",

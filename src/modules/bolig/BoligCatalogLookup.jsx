@@ -36,6 +36,7 @@ export function catalogProduct(item) {
     sku: String(item.supplier_product_number || ""),
     image_url: item.image_url || "",
     product_url: item.product_url || "",
+    fdv_url: item.fdv_url || item.fdvUrl || "",
     price: price == null ? null : String(Number(price)),
   };
 }

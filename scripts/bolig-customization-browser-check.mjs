@@ -35,7 +35,7 @@ window.__client={rpc:async(name,args)=>{
  part=nextPart;state={...state,selection:{revision:state.selection.revision+1,snapshot:proposal},components:[part]};return {data:structuredClone(state)};
 }};
 const app=createRoot(document.getElementById('app'));
-window.__show=(mode='custom',role='manager',company='firm')=>app.render(mode==='custom'?<Customize key={role+company} context={{...ctx,role,company_id:company}} root={root} unit={unit} scopeId="common" onClose={saved=>{window.__saved=saved;app.render(<button onClick={()=>window.__show()}>Åpne tilpasning igjen</button>);}}/>:mode==='tasks'?<div className="bolig-unit" style={{maxWidth:600,margin:'auto'}}><Tasks unit={unit} active={true} rooms={<label>QA romkladd<input defaultValue="Usendt romkladd"/></label>} order={<p>QA bestillingsgrunnlag</p>} onOpenProject={(...args)=>window.__opened=args}/></div>:<div className="bolig-dialog"><Overview blocks={[{id:'a',name:'Blokk A'},{id:'b',name:'Blokk B'}]} entrances={[{id:'ea',block_id:'a',address:'Gate 1A'},{id:'eb',block_id:'b',address:'Gate 1B'}]} units={[{id:'a1',number:'H0101',entrance_id:'ea'},{id:'b1',number:'H0201',entrance_id:'eb'}]} statuses={{a1:{purchase_count:2,prepared_count:1,ordered_count:0,partial_count:1,delivered_count:0},b1:{purchase_count:1,prepared_count:0,ordered_count:0,partial_count:0,delivered_count:1}}} selectedBlockId="a" onSelect={id=>window.__selected=id}/></div>);
+window.__show=(mode='custom',role='manager',company='firm')=>app.render(mode==='custom'?<Customize key={role+company} context={{...ctx,role,company_id:company}} root={root} unit={unit} scopeId="common" onClose={saved=>{window.__saved=saved;app.render(<button onClick={()=>window.__show()}>Åpne tilpasning igjen</button>);}}/>:mode==='tasks'?<div className="bolig-unit" style={{maxWidth:600,margin:'auto'}}><Tasks unit={unit} active={true} rooms={<label>QA romkladd<input defaultValue="Usendt romkladd"/></label>} order={<p>QA bestillingsgrunnlag</p>} quality={<label>QA boligkontroll<input defaultValue="Egen kontroll i boligmodulen"/></label>} onOpenProject={(...args)=>window.__opened=args}/></div>:<div className="bolig-dialog"><Overview blocks={[{id:'a',name:'Blokk A'},{id:'b',name:'Blokk B'}]} entrances={[{id:'ea',block_id:'a',address:'Gate 1A'},{id:'eb',block_id:'b',address:'Gate 1B'}]} units={[{id:'a1',number:'H0101',entrance_id:'ea'},{id:'b1',number:'H0201',entrance_id:'eb'}]} statuses={{a1:{purchase_count:2,prepared_count:1,ordered_count:0,partial_count:1,delivered_count:0},b1:{purchase_count:1,prepared_count:0,ordered_count:0,partial_count:0,delivered_count:1}}} selectedBlockId="a" onSelect={id=>window.__selected=id}/></div>);
 window.__show();
 `,
 );
@@ -217,12 +217,19 @@ try {
   );
   await button("Tilbake til boligen").click();
   await button("Sjekklister og dokumentasjon").click();
-  await button("Åpne sjekklister").click();
+  eq(
+    await dialog("Sjekklister og dokumentasjon")
+      .getByLabel("QA boligkontroll")
+      .inputValue(),
+    "Egen kontroll i boligmodulen",
+    "Native quality work area stays in the module",
+  );
   eq(
     await page.evaluate(() => window.__opened),
-    ["project", "sjekklister"],
-    "Checklist route uses linked project",
+    undefined,
+    "Quality does not navigate to the single-project module",
   );
+  await button("Tilbake til boligen").click();
   await button("Ferdigstilling").click();
   eq(
     (await dialog("Ferdigstilling").innerText()).includes(

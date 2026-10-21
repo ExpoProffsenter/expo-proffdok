@@ -113,10 +113,29 @@ export function BoligHelp() {
           bolig kan ha flere ordre.
         </li>
         <li>
-          Sjekklister, bilder, avvik og overtagelse åpnes i koblet
-          leilighetsprosjekt. Riktig prosjekttilgang kreves. Automatisk, samlet
-          ferdigstillingsstatus for bolig, bygg og hovedprosjekt er ikke bygget
-          ennå.
+          «Sjekklister og dokumentasjon» har egne kontroller for boligen. Velg
+          «Ny sjekkliste» for å bygge manuelt eller hente en publisert firmamal.
+          Last opp bilder under «Filer og bilder» og knytt dem til
+          sjekkpunktene. Lagre underveis. Velg «Fullfør kontrollen ved lagring»
+          når listen er ferdig. Åpne avvik må rettes og lukkes med beskrivelse
+          før ferdigstilling.
+        </li>
+        <li>
+          Legg FDV-lenker på varene i grunnpakker, tilvalgspakker og
+          boligtilpasninger. «FDV» viser siste lagrede varevalg. «Rediger lenke»
+          i boligen retter en dokumentlenke uten å endre gamle bestillinger.
+          «Last ned FDV-oversikt» lager PDF med klikkbare lenker. Kontroller
+          monterte varer før overlevering. Bygg og prosjekt samler boligenes
+          varer. Eksterne dokumenter følger ikke PDF-en.
+        </li>
+        <li>
+          Har kontrolløren en egen protokoll? Last opp originalen som «Ekstern
+          protokoll» under «Filer og bilder». Velg «Legg til protokoll», før inn
+          merknadene og dokumenter rettingen. Appen leser ikke merknadene
+          automatisk fra PDF-en. «Bekreft retting» lagrer navn og tidspunkt.
+          «Send bekreftelse på e-post» er valgfritt. Velg mottaker, se over og
+          send. Ved uavklart svar bruker du «Prøv samme sending igjen».
+          Tidligere protokoller og bekreftelser beholdes.
         </li>
         <li>
           Under Bestilling velger du «Leveringsoppsett». Lagre felles adresse
@@ -152,11 +171,11 @@ export function BoligHelp() {
           dokumentreferanser for utførelse, sjekklister, avvik, bilder og
           sluttdokumentasjon. «Legg til kontrollpunkt» kan knyttes til et rom.
           Velg ansvarlig og følg «Dette gjenstår». Koblet leilighetsprosjekt
-          kontrolleres automatisk for ufullførte kontroller og åpne avvik. Uten
-          kobling kontrollerer prosjektleder referansene manuelt. «Godkjenn for
-          overtagelse» krever at mangellisten er tom. «Registrer overtagelse»
-          viser til en allerede gjennomført protokoll. Dette er intern
-          registrering, ikke en digital signatur.
+          kontrolleres automatisk for ufullførte kontroller og åpne avvik. Egne
+          kontroller og eksterne protokoller i Boligprosjekter kontrolleres også
+          automatisk. «Godkjenn for overtagelse» krever at mangellisten er tom.
+          «Registrer overtagelse» viser til en allerede gjennomført protokoll.
+          Dette er intern registrering, ikke en digital signatur.
         </li>
         <li>
           «Ferdigstilling av bygg» og «Ferdigstilling av prosjekt» samler

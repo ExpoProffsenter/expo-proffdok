@@ -120,3 +120,7 @@ Prosjektforsiden blir arbeidsstedet etterpå, med tydelige neste handlinger: Gru
 Dagens foundation gjenbrukes: flere blokker/oppganger, eget etasje-/boligoppsett per oppgang, stabile bolig-ID-er, kontakter, grunnpakker, tilvalg og bestillingsutkast. Nye boligtyper/byggadresse/rom og kobling mot fremdrift/sjekklister krever egen gjennomarbeidet modell; ingen hus skal få en kunstig blokkstruktur bare for å passe dagens skjema.
 
 Veiviserkladd skal lagres per bruker/firma, tåle fanebytte og kunne fortsettes. Endelig opprettelse trenger en validert, idempotent serverkommando med entydig kvittering; ingen dubletter eller skjulte halvferdige prosjekter hvis forbindelsen brytes. Ved senere strukturendring beholdes ID-er, kontakter, bestillinger og historikk; reduksjon skjuler med eksplisitt kontroll. Brukeren skal alltid kunne gå tilbake og kontrollere før endelig opprettelse.
+
+### Native dokumentasjon og FDV – 22. oktober
+
+Oppfølgingen er bygget videre i samme feature-branch: egne kontroller og privat dokumentasjon per bolig/bygg/prosjekt, publisert firmamal eller manuell bygger, FDV-lenker og aggregert PDF-oversikt, valgfri ekstern protokoll med dokumentert retting og eksplisitt e-postreview/sending. Se `docs/qa/BOLIG_DOKUMENTASJON_20261022.md` for kontrakt og QA. Kontroller og protokoller er nå en del av serverberegnet ferdigstillingsgrunnlag. Neste utvidelse må avklare eventuell frist-/varslingsflyt, arkivert eksportpakke med faktiske dokumentfiler og kontroll av montert leveranse; ikke anta at et lagret varevalg alene er slutt-FDV.

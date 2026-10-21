@@ -1,3 +1,5 @@
+import BoligQuality from "./BoligQuality.jsx";
+import { QUALITY_EVENT } from "./boligQualityClient.js";
 import React, { useEffect, useRef, useState } from "react";
 import {
   CheckCircle2,
@@ -262,6 +264,7 @@ export default function BoligCompletion({
   onOpenProject,
   projectId,
 }) {
+  const [qualityOpen, setQualityOpen] = useState(false);
   const [data, setData] = useState(null),
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false),
@@ -315,6 +318,7 @@ export default function BoligCompletion({
   useEffect(() => {
     const events = [
       "focus",
+      QUALITY_EVENT,
       "expo-proffdok-bolig-completion",
       "expo-proffdok-bolig-order",
       "expo-proffdok-bolig-catalog",
@@ -614,6 +618,31 @@ export default function BoligCompletion({
           )}
         </details>
       )}
+      <div className="bolig-quality-entry">
+        <div>
+          <strong>Sjekklister og sluttdokumentasjon</strong>
+          <p>
+            Før egne kontroller, samle FDV og følg opp ekstern protokoll i dette
+            arbeidsområdet.
+          </p>
+        </div>
+        <button type="button" onClick={() => setQualityOpen(true)}>
+          Åpne dokumentasjon
+        </button>
+      </div>
+      {qualityOpen && (
+        <Dialog
+          title="Sjekklister og dokumentasjon"
+          onClose={() => setQualityOpen(false)}
+        >
+          <BoligQuality
+            context={context}
+            root={root}
+            scopeId={scopeId}
+            onChange={load}
+          />
+        </Dialog>
+      )}
       {projectId && (
         <div className="bolig-completion-project">
           <p>
@@ -639,13 +668,6 @@ export default function BoligCompletion({
             Åpne dokumentasjon
           </button>
         </div>
-      )}
-      {!projectId && row.kind === "unit" && (
-        <p className="bolig-completion-hint">
-          Ingen ProffDok-prosjekt er koblet. Dokumentreferansene kontrolleres
-          manuelt av prosjektleder. Koble et prosjekt under
-          Leilighetsinformasjon for automatisk kontroll av sjekklister og avvik.
-        </p>
       )}
       {children.length > 0 && (
         <CompletionChildren rows={children} onScope={onScope} />
@@ -847,6 +869,7 @@ export function BoligCompletionOverview({
     load();
     const events = [
       "focus",
+      QUALITY_EVENT,
       "expo-proffdok-bolig-completion",
       "expo-proffdok-bolig-order",
       "expo-proffdok-bolig-catalog",

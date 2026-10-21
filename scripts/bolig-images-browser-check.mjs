@@ -147,9 +147,17 @@ try {
   );
   eq(
     await pkg.locator("input[type=url]").count(),
-    0,
-    "No external product or image address fields",
+    1,
+    "Only the requested FDV URL field; catalog images still use private upload",
   );
+  eq(
+    await pkg.getByLabel(/^FDV-lenke/).count(),
+    1,
+    "The URL field is specifically FDV, never an image address",
+  );
+  await pkg
+    .getByLabel(/^FDV-lenke/)
+    .fill("https://example.org/product-fdv.pdf");
   await btn("Lagre grunnpakke").click();
   await pkg.waitFor({ state: "detached" });
   let saved = await page.evaluate(
@@ -157,6 +165,11 @@ try {
       window.__calls.find((c) => c.args?.p_action === "package").args.p_payload,
   );
   eq(saved.lines[0].sku, "ENDRET-UNDER-OPPLASTING");
+  eq(
+    saved.lines[0].fdv_url,
+    "https://example.org/product-fdv.pdf",
+    "FDV link saved with the product",
+  );
   eq(
     saved.lines[0].image_url.startsWith(
       "https://qa.supabase.co/storage/v1/object/public/bolig-catalog-images/",
@@ -203,7 +216,12 @@ try {
     .getByLabel("Last opp bilde for varelinje 1", { exact: true })
     .setInputFiles(imageFile);
   await opt.locator(".bolig-upload-preview img").waitFor();
-  eq(await opt.locator("input[type=url]").count(), 0);
+  eq(
+    await opt.locator("input[type=url]").count(),
+    1,
+    "Option packages expose only the requested FDV URL",
+  );
+  eq(await opt.getByLabel(/^FDV-lenke/).count(), 1);
   await page.evaluate(() => (window.__fail = true));
   await opt
     .getByLabel("Last opp bilde for varelinje 1", { exact: true })

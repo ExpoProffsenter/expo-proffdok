@@ -1,3 +1,4 @@
+import BoligQuality from "./BoligQuality.jsx";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { WORK_PROFILE_EVENT } from "../access/workProfileClient.js";
 import { useBoligContext } from "./boligAccess.js";
@@ -1080,6 +1081,13 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
                             onClose();
                             onOpenProject?.(id, tab);
                           }}
+                          quality={
+                            <BoligQuality
+                              context={ctx}
+                              root={record.root}
+                              scopeId={unit.id}
+                            />
+                          }
                           completion={
                             <BoligCompletion
                               context={ctx}

@@ -7,6 +7,7 @@ export const newPackageLine = (section_id = "") => ({
   credit: "",
   image_url: "",
   product_url: "",
+  fdv_url: "",
   section_id,
 });
 export function optionLines(option) {
@@ -22,6 +23,7 @@ export function optionLines(option) {
             unit: option.unit || "stk",
             image_url: option.image_url || "",
             product_url: option.product_url || "",
+            fdv_url: option.fdv_url || "",
             section_id: "",
           },
         ]

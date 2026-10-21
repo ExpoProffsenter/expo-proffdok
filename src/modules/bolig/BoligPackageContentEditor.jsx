@@ -103,6 +103,7 @@ export default function BoligPackageContentEditor({
             sku: item.sku,
             image_url: item.image_url,
             product_url: item.product_url,
+            fdv_url: item.fdv_url || "",
           };
           c(
             "lines",
@@ -287,6 +288,22 @@ export default function BoligPackageContentEditor({
                             </option>
                           ))}
                         </select>
+                      </label>
+                      <label>
+                        FDV-lenke (valgfritt)
+                        <input
+                          type="url"
+                          placeholder="https://…/fdv.pdf"
+                          maxLength={2000}
+                          value={line.fdv_url || ""}
+                          onChange={(e) =>
+                            patch(line.key, { fdv_url: e.target.value })
+                          }
+                        />
+                        <small>
+                          Bruk lenken til drift og vedlikehold. Den følger varen
+                          til boligens FDV-oversikt.
+                        </small>
                       </label>
                       <BoligImageUpload
                         context={context}
