@@ -94,6 +94,35 @@ export function BoligHelp() {
           Utkastet er ikke sendt.
         </li>
         <li>
+          Under Bestilling velger du «Leveringsoppsett». Lagre felles adresse
+          for prosjektet, eller velg egen adresse for boligen. Bestilling og
+          levering kan være samlet eller delt. Leverandørordrenummer er
+          valgfritt og kan fylles inn senere.
+        </li>
+        <li>
+          «Klargjør bestilling» bruker det lagrede vareutvalget. Velg
+          leverandør, Vårt ordrenummer og eventuell ønsket leveringsdato. Se
+          over og lagre bestillingsgrunnlaget. Delt bestilling lar deg velge
+          varer i flere omganger. Et klargjort grunnlag er ikke en bestilt
+          ordre.
+        </li>
+        <li>
+          «Send bestilling på e-post» krever prosjektleder- og Cordel-tilgang.
+          Oppgi mottaker og riktig leverandør/fagområde fra Cordel-prisboken.
+          Kontroller e-post og de to vedleggene: Cordel ASCII og Excel. Begge
+          har samme varer og antall. Klikk «Send bestilling med to vedlegg» når
+          alt stemmer. Ved uklart svar bruker du samme sending igjen. Bestilt
+          betyr at e-posttjenesten har bekreftet sendingen, ikke at leverandøren
+          har bekreftet ordren.
+        </li>
+        <li>
+          Er ordren lagt på annen måte, bruker du «Registrer som bestilt». Under
+          «Registrer varemottak» skriver du mengden som kom nå. «Fyll inn alt
+          som gjenstår» foreslår resten. En korrigering bruker negativ mengde og
+          en forklaring. Historikken beholdes. Endret boligvalg etter faktisk
+          bestilling må avklares før nye bestillinger.
+        </li>
+        <li>
           Vent på «Lagret i firmaet». Andre med tilgang kan hente samme
           struktur. Hvis noen har endret strukturen, beholdes din kladd. Hent
           siste versjon og se over før ny lagring.
@@ -105,8 +134,8 @@ export function BoligHelp() {
         </li>
       </ol>
       <p>
-        Boligvalg er interne utkast. Kundeaksept, fremdrift, beboerportal og
-        e-postbestillinger er ikke koblet til ennå. Grunnleveransen og beboerens
+        Boligvalg er interne utkast. Kundeaksept, beboerportal og samlet
+        fremdrift er ikke koblet til ennå. Grunnleveransen og beboerens
         tilvalgspakker holdes adskilt.
       </p>
     </details>

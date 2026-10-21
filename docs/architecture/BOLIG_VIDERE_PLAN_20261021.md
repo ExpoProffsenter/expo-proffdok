@@ -4,6 +4,8 @@ Kenneths instruks 21. oktober 2026: så nær den godkjente Solgløtt-konseptskis
 
 ## Nå: prosjektoversikt, bygg, rom og varevalg
 
+Bestilling/levering er utvidet i samme Preview: felles/egen leveringsadresse, samlet/delt bestilling og levering, valgfritt leverandørordrenummer, frosset ordregrunnlag og mengdeført varemottak med historikk. Eksplisitt bestillingsmail har to vedlegg (eksisterende Cordel ASCII-format og Excel), firmalayout og tydelig leilighets-/leveringsinformasjon. Ingen sending uten brukerens sendeknapp. Reell provider-sending er ikke utført under QA. Faktiske statuskoder er koblet til byggoversikten. Se docs/qa/BOLIG_BESTILLING_LEVERING_20261021.md for gjeldende scope og begrensninger. «Neste anbefalte»-avsnitt om dette nedenfor er historisk; neste etappe er faktisk fremdrift/sjekklister per bolig/rom, kundeaksept og eksterne roller. Excel-import forblir sist.
+
 Ny pakkeetappe: grunnpakker og Tilvalgspakker får egendefinerte, ordnede avsnitt med kort kundetekst. Tilvalgspakker kan inneholde flere varer som velges samlet til én pakkepris. Pris/fratrekk beholdes, mens hver vare forblir selvstendig i bestillingsutkastet. Gamle enkeltvarer og lokale utkast oppgraderes uten endring av historiske valg. Nullfordeling på tom bolig er rettet. Rediger bygg har nå Lagre endringer som hovedhandling før eksplisitt gjennomgang/bekreftelse. Se docs/qa/BOLIG_AVSNITT_20261021.md.
 
 Neste anbefalte samlede funksjonspakke er bestilling og levering: kjøpers Vårt ordrenummer, separat leverandørordrenummer, felles/individuell leveringsadresse, delleveranser og tydelig overgang fra utkast til faktisk bestilling. Etterpå kobles faktisk fremdrift/sjekklister til bolig og rom, deretter kundeaksept og avgrenset ekstern tilgang. Excel-import forblir sist.

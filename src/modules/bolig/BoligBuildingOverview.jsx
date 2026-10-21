@@ -29,6 +29,36 @@ export function unitStatus(unit, status, layer) {
   if (!status)
     return { tone: "unknown", label: "Status ikke hentet", icon: "empty" };
   if (layer === "order") {
+    if (status.purchase_outdated)
+      return {
+        tone: "review",
+        label: "Bestilling må avklares",
+        icon: "review",
+      };
+    if (
+      status.delivered_count > 0 &&
+      status.delivered_count === status.purchase_count &&
+      status.remaining_goods === 0 &&
+      !status.order_outdated
+    )
+      return { tone: "ready", label: "Levert", icon: "check" };
+    if (status.partial_count > 0 || status.delivered_count > 0)
+      return { tone: "pending", label: "Delvis levert", icon: "order" };
+    if (status.ordered_count > 0)
+      return {
+        tone: "pending",
+        label:
+          status.remaining_goods > 0 || status.prepared_count > 0
+            ? "Delvis bestilt"
+            : "Bestilt",
+        icon: "order",
+      };
+    if (status.prepared_count > 0)
+      return {
+        tone: "pending",
+        label: "Bestillingsgrunnlag klargjort",
+        icon: "order",
+      };
     if (status.order_outdated)
       return { tone: "review", label: "Se over varegrunnlag", icon: "review" };
     if (status.order_revision)
@@ -486,7 +516,7 @@ export default function BoligBuildingOverview({
       <nav className="bolig-layer-tabs" aria-label="Vis boligstatus">
         {[
           ["choice", "Boligvalg", FileCheck2],
-          ["order", "Bestillingsutkast", Package],
+          ["order", "Bestilling og levering", Package],
           ["project", "Prosjektkobling", Building2],
         ].map(([id, label, Icon]) => (
           <button

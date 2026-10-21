@@ -4127,3 +4127,34 @@
   color: #385869;
   padding: 0 20px;
 }
+
+/* Orders and receipts: compact cards, opaque dialogs, local scroll on small screens. */
+.bolig-deliveries{border-top:1px solid #cbdde6;margin-top:22px;padding-top:20px;color:#183647}
+.bolig-delivery-heading{display:flex;gap:12px;align-items:center;margin-bottom:14px}
+.bolig-delivery-icon{display:grid;place-items:center;width:44px;height:44px;flex-shrink:0;background:#d9f3f2;border-radius:13px;color:#087c80}
+.bolig-delivery-heading h4{margin:0!important;font-size:17px}.bolig-delivery-heading p{font-size:13px;margin:3px 0!important;color:#526b7a}
+.bolig-delivery-summary{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:14px;padding:14px;background:#eef6fa;border:1px solid #d1e3eb;border-radius:13px;margin-bottom:12px}
+.bolig-delivery-summary strong,.bolig-delivery-summary small,.bolig-delivery-order small,.bolig-delivery-goods small,.bolig-delivery-receive-line small{display:block}
+.bolig-delivery-summary small,.bolig-delivery-order small,.bolig-delivery-goods small,.bolig-delivery-receive-line small{font-size:12px;color:#536a78;margin-top:3px}
+.bolig-delivery-address{white-space:pre-wrap;overflow-wrap:anywhere}
+.bolig-delivery-actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.bolig-delivery-actions button{display:inline-flex;align-items:center;gap:7px;min-height:40px}
+.bolig-delivery-empty{display:flex;gap:12px;padding:18px;border:1px dashed #aac9d7;border-radius:13px;background:#f6fafc;margin-top:16px}.bolig-delivery-empty p{margin:4px 0 0;font-size:13px}
+.bolig-delivery-orders{display:grid;gap:9px;margin-top:14px}
+.bolig-delivery-order{border:1px solid #c6dce6;border-radius:13px;overflow:hidden;background:#fff}
+.bolig-delivery-order>summary{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:14px;cursor:pointer;background:#edf5fa;list-style:none}
+.bolig-delivery-order>summary:before{content:'›';font-size:23px;color:#087c80}.bolig-delivery-order[open]>summary:before{transform:rotate(90deg)}
+.bolig-delivery-order>summary>div{min-width:0;flex:1;overflow-wrap:anywhere}.bolig-delivery-badge{padding:5px 9px;border-radius:20px;background:#dce7ed;color:#29495c;font-size:12px;font-weight:800;white-space:nowrap}
+.bolig-delivery-ordered .bolig-delivery-badge{background:#daeaff;color:#174a83}.bolig-delivery-partial .bolig-delivery-badge{background:#fff0c9;color:#795000}.bolig-delivery-delivered .bolig-delivery-badge{background:#d5f2e0;color:#19663c}
+.bolig-delivery-order-body{padding:14px}.bolig-delivery-goods,.bolig-delivery-history{list-style:none;padding:0;margin:12px 0}
+.bolig-delivery-goods li{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid #e1ebf0;font-size:13px}.bolig-delivery-goods li>div:first-child{min-width:0;flex:1;overflow-wrap:anywhere}.bolig-delivery-goods li>div:last-child{text-align:right}
+.bolig-delivery-history li{font-size:13px;padding:8px 0;border-top:1px solid #e1ebf0}
+.bolig-delivery-dialog{padding:16px;min-width:0}.bolig-delivery-dialog>details{margin:10px 0;border:1px solid #c9dce6;border-radius:12px;padding:12px;background:#f5f9fc}.bolig-delivery-dialog>details>summary{cursor:pointer;font-weight:800;color:#164c69}
+.bolig-delivery-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.bolig-delivery-fields label{min-width:0}.bolig-delivery-dialog label{font-size:13px;font-weight:700;color:#24495d}
+.bolig-delivery-dialog input:not([type=checkbox]),.bolig-delivery-dialog select,.bolig-delivery-dialog textarea{box-sizing:border-box;width:100%;min-width:0;min-height:42px;background:#fff;color:#183647;border:1px solid #9cbccf;border-radius:8px;padding:9px;font-size:14px}
+.bolig-delivery-dialog textarea{resize:vertical;min-height:70px}.bolig-delivery-dialog .bolig-order-line{font-weight:400}.bolig-delivery-dialog .bolig-order-line input{width:20px;flex-shrink:0}
+.bolig-delivery-confirm{display:flex!important;align-items:center;gap:10px;padding:12px;background:#e4f3f2;border-radius:10px;margin:12px 0}.bolig-delivery-confirm input[type=checkbox]{appearance:auto!important;width:20px!important;height:20px!important;flex-shrink:0}
+.bolig-delivery-review,.bolig-delivery-warning{padding:14px;border-radius:12px;border:1px solid #a9cec9;background:#edf8f5;margin:12px 0}.bolig-delivery-review ul{padding-left:20px;font-size:13px}.bolig-delivery-warning{background:#fff5d9;border-color:#e3c472}
+.bolig-delivery-receive-line{display:grid!important;grid-template-columns:minmax(0,1fr) 100px;gap:14px;align-items:center;border-bottom:1px solid #d8e6ed;padding:10px 0!important}.bolig-delivery-receive-line>span{overflow-wrap:anywhere}
+@media(max-width:600px){.bolig-delivery-fields,.bolig-delivery-summary{grid-template-columns:minmax(0,1fr)}.bolig-delivery-dialog{padding:12px}.bolig-delivery-order>summary{gap:7px;padding:11px}.bolig-delivery-actions button{flex:1 1 140px;justify-content:center}.bolig-delivery-badge{font-size:11px}.bolig-delivery-receive-line{grid-template-columns:minmax(0,1fr) 80px;gap:8px}}
+.bolig-mail-preview{display:block;border:1px solid #adc8d7;border-radius:12px;width:100%;height:480px;background:#51585a;box-sizing:border-box}.bolig-mail-recipient{padding:14px;background:#e3f3f0;border:1px solid #99c8bf;border-radius:12px;margin-bottom:12px;overflow-wrap:anywhere}.bolig-mail-recipient small,.bolig-mail-recipient strong,.bolig-mail-fag small{display:block}.bolig-mail-recipient small,.bolig-mail-fag small{font-size:12px;color:#526b7a}.bolig-mail-fag{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(100px,0.8fr);gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid #d8e6ed}.bolig-mail-fag span{overflow-wrap:anywhere}
+.bolig-delivery-dialog label.bolig-order-line{display:flex!important;flex-direction:row!important;align-items:center;gap:12px;padding:8px 0!important}.bolig-delivery-dialog label.bolig-order-line>.bolig-product-card{flex:1;min-width:0}.bolig-delivery-dialog label.bolig-order-line>input[type=checkbox]{appearance:auto!important;width:20px!important;height:20px!important;min-height:20px!important;flex:0 0 20px;margin:0!important}

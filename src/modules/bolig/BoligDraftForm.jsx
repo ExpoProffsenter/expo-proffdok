@@ -17,6 +17,7 @@ export default function CatalogForm({
   submitLabel,
   className = "",
   onRebase = null,
+  conflictMessage = "Grunnlaget er endret. Kladden er beholdt. Se over dagens pakker og priser før du fortsetter.",
 }) {
   const key = boligDraftKey(context, rootId, "catalog-" + name),
     [value, setValue] = useState(() => {
@@ -86,8 +87,7 @@ export default function CatalogForm({
     >
       {JSON.stringify(value._basis) !== JSON.stringify(basis) && (
         <p role="status">
-          Grunnlaget er endret. Kladden er beholdt. Se over dagens pakker og
-          priser før du fortsetter.{" "}
+          {conflictMessage}{" "}
           <button
             type="button"
             disabled={busy}

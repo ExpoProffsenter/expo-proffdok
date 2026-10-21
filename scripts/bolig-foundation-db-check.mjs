@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import assert from "node:assert/strict";
 import imageScenarios from "./bolig-images-db-scenarios.mjs";
+import deliveryScenarios from "./bolig-delivery-db-scenarios.mjs";
 import sectionScenarios from "./bolig-sections-db-scenarios.mjs";
 import preparationScenarios from "./bolig-preparation-db-scenarios.mjs";
 import packageScenarios from "./bolig-package-choices-db-scenarios.mjs";
@@ -205,6 +206,10 @@ try {
   );
   await db.exec(await fs.readFile("supabase/migrations/20261021182208_bolig_project_preparation.sql", "utf8"));
   await db.exec(await fs.readFile("supabase/migrations/20261021194409_bolig_catalog_sections.sql", "utf8"));
+  await db.exec(await fs.readFile("supabase/migrations/20261021202352_bolig_orders_deliveries.sql", "utf8"));
+  await db.exec(`alter table auth.users add column email text default 'qa@example.invalid';create function public.get_cordel_export_access() returns boolean language sql as $$select coalesce(current_setting('qa.cordel',true),'yes')<>'no'$$;create function public.work_profile_company_profile(uuid) returns jsonb language sql as $$select '{"companyName":"QA Firma","address":"QA gate"}'::jsonb$$;`);
+  await db.exec(await fs.readFile("supabase/migrations/20261021203036_bolig_order_email_attachments.sql", "utf8"));
+  await db.exec(await fs.readFile("supabase/migrations/20261021204213_bolig_delivery_overview.sql", "utf8"));
   await db.exec("begin");
   await actor();
   eq((await call()).enabled, false);
@@ -931,6 +936,7 @@ try {
   });
   await preparationScenarios({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider});
   await sectionScenarios({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider});
+  await deliveryScenarios({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider});
   await db.exec(
     `reset role;update public.profiles set deactivated=true where id=${q(reader)}`,
   );
@@ -1181,6 +1187,7 @@ try {
       code: error.code,
       where: error.where,
       params: error.params,
+      position: error.position, internalPosition: error.internalPosition, internalQuery: error.internalQuery,
     }),
   );
   process.exitCode = 1;

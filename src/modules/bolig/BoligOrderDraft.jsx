@@ -3,6 +3,7 @@ import { boligOrderRpc } from "./boligCatalogClient.js";
 import { rebaseOrderPositions } from "./boligPackageChoicesClient.js";
 import DraftForm from "./BoligDraftForm.jsx";
 import ProductCard from "./BoligProductCard.jsx";
+import BoligDeliveries from "./BoligDeliveries.jsx";
 export default function BoligOrderDraft({
   context,
   root,
@@ -195,8 +196,8 @@ export default function BoligOrderDraft({
                 varelinjer valgt.
               </p>
               <p>
-                Utkastet er ikke sendt. Mottaker og leveringsoppsett fylles inn
-                i neste bestillingstrinn.
+                Utkastet er ikke sendt. Fortsett med Klargjør bestilling
+                nedenfor.
               </p>
             </>
           )}
@@ -212,6 +213,14 @@ export default function BoligOrderDraft({
           </p>
         )
       )}
+      <BoligDeliveries
+        context={context}
+        root={root}
+        unit={unit}
+        draft={state?.draft}
+        choiceRevision={current?.revision}
+        draftLoading={loading}
+      />
     </section>
   );
 }

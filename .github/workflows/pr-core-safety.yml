@@ -200,6 +200,7 @@ jobs:
         run: |
           export HR_PGLITE_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/@electric-sql/pglite/dist/index.js"
           export KSHMS_JSDOM_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/jsdom/lib/api.js"
+          node scripts/bolig-order-email-check.mjs
           node scripts/bolig-foundation-db-check.mjs
           node scripts/bolig-foundation-react-check.mjs
           node scripts/bolig-catalog-react-check.mjs
@@ -213,4 +214,5 @@ jobs:
           node scripts/bolig-catalog-navigation-browser-check.mjs
           node scripts/bolig-images-browser-check.mjs
           node scripts/bolig-sections-browser-check.mjs
+          node scripts/bolig-delivery-browser-check.mjs
           node scripts/bolig-preparation-browser-check.mjs

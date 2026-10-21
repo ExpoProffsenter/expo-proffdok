@@ -182,7 +182,7 @@ try {
   );
   await act(() => d.querySelector(".bolig-window").click());
   assert.equal(selected, "u2");
-  await act(() => button("Bestillingsutkast").click());
+  await act(() => button("Bestilling og levering").click());
   assert(
     d.querySelector(
       '[aria-label="H0201 · Testveien 1 · Se over varegrunnlag"]',
