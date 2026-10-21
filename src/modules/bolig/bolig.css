@@ -4230,3 +4230,8 @@
 .bolig-dialog .bolig-edit-line>summary::before,
 .bolig-dialog .bolig-delivery-order>summary::before {content:'›';font-size:24px;}
 @media(max-width:600px){.bolig-dialog summary{font-size:16px;min-height:48px;}}
+/* Header help and creation/refresh actions retain the same outer height. */
+.bolig-dialog .bolig-utilities>.bolig-primary,
+.bolig-dialog .bolig-utilities>.bolig-toolbar>button {height:52px;min-height:52px;}
+.bolig-dialog .bolig-utilities .bolig-help:not([open]) {height:52px;box-sizing:border-box;}
+.bolig-dialog .bolig-utilities .bolig-help>summary {height:50px;box-sizing:border-box;}
