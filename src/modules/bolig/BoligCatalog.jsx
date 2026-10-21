@@ -1067,14 +1067,49 @@ export default function BoligCatalog({
             ) : (
               <p>Ingen grunnpakke er valgt for denne boligen ennå.</p>
             )}
-            {canWrite && compact && selected && (
-              <button type="button" onClick={() => setEditChoice(!editChoice)}>
-                {editChoice
-                  ? "Lukk redigering av boligvalg"
-                  : "Endre boligvalg"}
-              </button>
+            {selected?.snapshot.format === "scoped-v1" && (
+              <p>
+                Boligen har egne rompakker og fellespakke. Velg rom i «Rom og
+                oversikt» for å endre en rompakke.{" "}
+                {canWrite && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      window.dispatchEvent(
+                        new CustomEvent("expo-proffdok-bolig-package-editor", {
+                          detail: {
+                            root_id: root.id,
+                            unit_id: unit.id,
+                            scope_id: "common",
+                          },
+                        }),
+                      )
+                    }
+                  >
+                    Vis fellespakke
+                  </button>
+                )}
+              </p>
             )}
-            <div hidden={compact && !!selected && !editChoice}>
+            {canWrite &&
+              compact &&
+              selected &&
+              selected.snapshot.format !== "scoped-v1" && (
+                <button
+                  type="button"
+                  onClick={() => setEditChoice(!editChoice)}
+                >
+                  {editChoice
+                    ? "Lukk redigering av boligvalg"
+                    : "Endre boligvalg"}
+                </button>
+              )}
+            <div
+              hidden={
+                selected?.snapshot.format === "scoped-v1" ||
+                (compact && !!selected && !editChoice)
+              }
+            >
               {canWrite ? (
                 <ChoiceEditor
                   key={unit.id}

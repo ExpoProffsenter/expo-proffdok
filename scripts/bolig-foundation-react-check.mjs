@@ -241,6 +241,21 @@ try {
             })),
           },
         };
+      if (name === "bolig_package_choices")
+        return {
+          data: {
+            context: context(),
+            root_id: args.p_root_id,
+            unit_id: args.p_unit_id,
+            revision: 0,
+            rooms_revision: 0,
+            rooms: [],
+            packages: [],
+            options: [],
+            components: [],
+            selection: null,
+          },
+        };
       if (name === "bolig_rooms" || name === "bolig_room_content")
         return {
           data: {

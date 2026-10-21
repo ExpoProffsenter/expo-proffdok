@@ -12,6 +12,7 @@ import {
   X,
   Layers3,
 } from "lucide-react";
+import BoligPackageChoices from "./BoligPackageChoices.jsx";
 import BoligRoomContent from "./BoligRoomContent.jsx";
 import { boligRoomsRpc } from "./boligRoomsClient.js";
 import {
@@ -325,6 +326,14 @@ export default function BoligRooms({ context, root, unit }) {
               </div>
             </div>
           )}
+          <BoligPackageChoices
+            key={unit.id + ":packages:" + context.role}
+            context={context}
+            root={root}
+            unit={unit}
+            activeRoom={active}
+            roomsRevision={data.revision}
+          />
           <BoligRoomContent
             key={unit.id + ":" + context.role}
             context={context}

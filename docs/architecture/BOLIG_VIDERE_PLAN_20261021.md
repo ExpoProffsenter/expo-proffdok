@@ -23,7 +23,15 @@ Miljømål BEGGE, først eksisterende foundation-Preview/Sandbox i PR #278. Scop
 
 «Ny grunnpakke» og «Nytt tilvalg» er synlige uten å åpne biblioteket. Redigering skjer i egne native dialoger og bevarer lokale utkast ved lukking/retur. «Legg innhold på rommet» fordeler vareantall fra lagret boligvalg til aktive rom. Antall kan deles mellom rom; rest vises som Ikke fordelt. Forhåndsvisning kreves før lagring. Egen immutable fordelingshistorikk med kildevalg og romrevisjon bevarer priser, boligvalg og ordrenes utelatte linjer. Et nytt boligvalg arver aldri gammel fordeling stille.
 
-Dette er mengdefordeling av boligvalget, ikke uavhengige grunnpakker per rom. Rommaler/egen pakke per rom, flerboligfordeling og romdata i neste faktiske bestillingsprosess gjenstår. Se docs/qa/BOLIG_ROMINNHOLD_20261021.md. Preview/Sandbox, ingen produksjonsmerge.
+Dette første steget var mengdefordeling av boligvalget. Uavhengige rompakker og fellespakke er nå lagt til i tredje etappe nedenfor. Flerboligfordeling, rommaler med romstruktur og neste faktiske bestillingsprosess gjenstår. Se docs/qa/BOLIG_ROMINNHOLD_20261021.md. Preview/Sandbox, ingen produksjonsmerge.
+
+## Tredje rometappe: egne rompakker og felles boligpakke
+
+Kenneth valgte 21. oktober støtte for begge deler. «Alle rom» har Velg/Endre fellespakke. Hvert rom har Velg/Endre rompakke, med gjenbruk av prosjektets grunnpakker og uavhengige alternativer/tillegg. Preview viser hele boligens foreslåtte grunnlag før lagring. Hvert rom fryses separat i én samlet boligvalgsversjon. Varelinjene har stabile nøkler per rom/fellespakke; bestillingen viser rom og holder samme vare i to rom adskilt.
+
+Eksisterende boligvalg beholdes som fellespakke ved eksplisitt første lagring. Historiske valg/ordre skrives aldri om. Manuell fordeling av uendrede fellesvarer beholdes, eller kan eksplisitt fjernes med varene beholdt. Gamle klienter kan ikke skrive over et rombasert valg med et enkelt boligvalg. Eldre manuell fordeling er bevart for eldre valg. Utelatte uendrede varer mappes til nye posisjoner; nye/endrede varer velges. Lokal usendt utelatelse følger også riktig rom ved bevisst gjennomgang. Se docs/qa/BOLIG_ROMPAKKER_20261021.md.
+
+Flerboligfordeling med målgruppe/forhåndsvisning, struktur-/sjekkliste-/dokumentasjonsmaler per rom, egne prosjektbilder/plantegninger og faktisk ordre/aksept/fremdrift gjenstår. Ingen produksjonsmerge.
 
 ## Ønskeliste: privat kontraktsgrunnlag og analyse
 

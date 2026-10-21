@@ -16,6 +16,7 @@ export default function CatalogForm({
   children,
   submitLabel,
   className = "",
+  onRebase = null,
 }) {
   const key = boligDraftKey(context, rootId, "catalog-" + name),
     [value, setValue] = useState(() => {
@@ -72,7 +73,9 @@ export default function CatalogForm({
           <button
             type="button"
             disabled={busy}
-            onClick={() => change("_basis", basis)}
+            onClick={() =>
+              change({ ...(onRebase ? onRebase(value) : {}), _basis: basis })
+            }
           >
             Se over og bruk siste grunnlag
           </button>
@@ -80,7 +83,14 @@ export default function CatalogForm({
       )}
       <fieldset disabled={busy}>
         {children(value, change)}
-        <button type="submit">{submitLabel}</button>
+        <button
+          type="submit"
+          disabled={
+            !!onRebase && JSON.stringify(value._basis) !== JSON.stringify(basis)
+          }
+        >
+          {submitLabel}
+        </button>
       </fieldset>
       {error && <p role="alert">{error}</p>}
     </form>

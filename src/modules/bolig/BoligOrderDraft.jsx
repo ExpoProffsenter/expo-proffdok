@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { boligOrderRpc } from "./boligCatalogClient.js";
+import { rebaseOrderPositions } from "./boligPackageChoicesClient.js";
 import DraftForm from "./BoligDraftForm.jsx";
 import ProductCard from "./BoligProductCard.jsx";
 export default function BoligOrderDraft({
@@ -93,10 +94,11 @@ export default function BoligOrderDraft({
     order_revision: state?.draft?.revision || 0,
   };
   const initial = {
+    source_goods: current?.snapshot.goods || [],
     selected_positions:
       state?.draft && state.draft.source_choice_revision === current?.revision
         ? state.draft.snapshot.selected_positions
-        : positions,
+        : state?.suggested_positions || positions,
   };
   return (
     <section className="bolig-order-draft" aria-label="Bestillingsutkast">
@@ -125,7 +127,9 @@ export default function BoligOrderDraft({
           </p>
           {state.draft.source_choice_revision !== current?.revision && (
             <p>
-              Boligvalget er endret. Se over varelinjene før du lagrer et nytt
+              Boligvalget er endret. Tidligere utelatte, uendrede varer er
+              fortsatt utelatt i forslaget. Nye eller endrede varer er valgt. Se
+              over og bruk siste grunnlag før du lagrer et nytt
               bestillingsutkast.
             </p>
           )}
@@ -141,6 +145,15 @@ export default function BoligOrderDraft({
           basis={basis}
           busy={busy || loading}
           onSave={save}
+          onRebase={(value) => ({
+            source_goods: initial.source_goods,
+            selected_positions: rebaseOrderPositions(
+              value.source_goods,
+              value.selected_positions,
+              initial.source_goods,
+              initial.selected_positions,
+            ),
+          })}
           submitLabel="Lagre bestillingsutkast"
         >
           {(value, change) => (
@@ -165,7 +178,9 @@ export default function BoligOrderDraft({
                       )
                     }
                   />
-                  <ProductCard line={line} />
+                  <ProductCard line={line}>
+                    {line.room_name && <small>{line.room_name}</small>}
+                  </ProductCard>
                 </label>
               ))}
               <p>

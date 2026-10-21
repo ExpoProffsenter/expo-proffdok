@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import assert from "node:assert/strict";
+import packageScenarios from "./bolig-package-choices-db-scenarios.mjs";
 import contentScenarios from "./bolig-room-content-db-scenarios.mjs";
 import roomsScenarios from "./bolig-rooms-db-scenarios.mjs";
 const { PGlite } = await import(
@@ -181,6 +182,12 @@ try {
   await db.exec(
     await fs.readFile(
       "supabase/migrations/20261021155350_bolig_room_contents.sql",
+      "utf8",
+    ),
+  );
+  await db.exec(
+    await fs.readFile(
+      "supabase/migrations/20261021163256_bolig_scoped_package_choices.sql",
       "utf8",
     ),
   );
@@ -870,6 +877,19 @@ try {
     outsider,
   });
   await contentScenarios({
+    db,
+    call,
+    actor,
+    eq,
+    rejects,
+    id,
+    firm,
+    other,
+    manager,
+    reader,
+    outsider,
+  });
+  await packageScenarios({
     db,
     call,
     actor,

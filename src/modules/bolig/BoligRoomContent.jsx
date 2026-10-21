@@ -353,6 +353,7 @@ export default function BoligRoomContent({
   };
   if (!context.enabled)
     return <p>Rominnhold er ikke tilgjengelig i aktivt firma.</p>;
+  if (data?.selection?.snapshot.format === "scoped-v1") return null;
   return (
     <section className="bolig-room-content" aria-label="Vareinnhold på rom">
       <header>

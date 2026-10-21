@@ -41,22 +41,27 @@ export function BoligHelp() {
           fratrekk.
         </li>
         <li>
-          Velg en bolig. Under Grunnpakke og tilvalg velger du pakken og
-          tilvalgene. Kontroller pris, fratrekk og mellomlegg. Lagre boligvalget
-          som utkast. Senere pakkeendringer endrer ikke dette lagrede valget.
+          Velg «Alle rom» → «Velg fellespakke» for varer som gjelder hele
+          boligen. Velg deretter et rom → «Velg rompakke». Den samme grunnpakken
+          kan brukes i flere rom med egne tilvalg i hvert rom. Kontroller pris,
+          fratrekk og samlet innhold med «Forhåndsvis pakkevalg». Velg «Lagre
+          pakkevalg» når det stemmer. Andre rom og tidligere versjoner beholdes.
         </li>
         <li>
-          Tilbake i «Rom og oversikt» velger du et rom og «Legg innhold på
-          rommet». Velg varer fra boligvalget. Del antallet mellom flere rom ved
-          behov. «Forhåndsvis romfordeling» viser hvert rom og det som ikke er
-          fordelt. Velg «Lagre romfordeling» når antall og rom stemmer. Priser
-          og bestillingsutkast endres ikke. Et nytt boligvalg krever ny
-          gjennomgang av romfordelingen.
+          Eldre boligvalg kan fortsatt fordeles manuelt med «Legg innhold på
+          rommet». Når rompakker tas i bruk, beholdes det eldre valget som
+          fellespakke. Nye rompakker kommer i tillegg. Behold eller fjern
+          fellespakken etter at du har sett over hele boliggrunnlaget. Uendret
+          manuell romfordeling beholdes. I fellespakkevalget kan du også fjerne
+          denne fordelingen og beholde varene felles i boligen.
         </li>
         <li>
           Under «Klargjør varebestilling» er alle varelinjer valgt første gang.
           Fjern linjer som skal kjøpes andre steder. «Lagre bestillingsutkast»
-          lagrer utvalget uten å endre boligvalget. Utkastet er ikke sendt.
+          lagrer utvalget uten å endre boligvalget. Varelinjene viser riktig
+          rom. Ved nye pakkevalg beholdes utelatte, uendrede varer. Nye og
+          endrede varer velges. Se over og bruk siste grunnlag før du lagrer.
+          Utkastet er ikke sendt.
         </li>
         <li>
           Vent på «Lagret i firmaet». Andre med tilgang kan hente samme
