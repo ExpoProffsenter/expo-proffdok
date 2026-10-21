@@ -108,7 +108,7 @@ try {
     dlg = () =>
       page.getByRole("dialog", { name: "Fordel varer på rom", exact: true });
   await page
-    .getByText("Velg og lagre grunnpakke og tilvalgspakker under", {
+    .getByText("Velg og lagre en fellespakke eller rompakke i", {
       exact: false,
     })
     .waitFor();
