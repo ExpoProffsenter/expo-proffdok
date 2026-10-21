@@ -16,6 +16,8 @@ fs.writeFileSync(
 import React,{useState} from '${cwd}/node_modules/react/index.js';
 import {createRoot} from '${cwd}/node_modules/react-dom/client.js';
 import Preparation from '${cwd}/src/modules/bolig/BoligPreparation.jsx';
+import '${cwd}/src/style.css';
+import '${cwd}/src/modules/ui/appUxReview.css';
 import '${cwd}/src/modules/bolig/bolig.css';
 const context={user_id:'qa-user',company_id:'qa-company',role:'manager',enabled:true};
 const units=Array.from({length:36},(_,i)=>({id:'u'+i,entrance_id:i<24?'e1':'e2',floor:Math.floor(i%24/4)+1,position:i%4+1,number:'H'+String(Math.floor(i%24/4)+1).padStart(2,'0')+String(i%4+1).padStart(2,'0'),official_number:'',archived:false}));
@@ -123,6 +125,13 @@ try {
     12,
     "Only one page of units rendered",
   );
+  eq(
+    await dialog()
+      .locator("header h2")
+      .evaluate((element) => getComputedStyle(element).color),
+    "rgb(255, 255, 255)",
+    "Header keeps white contrast with actual app CSS",
+  );
   await dialog().getByLabel("Oppgang", { exact: true }).selectOption("e1");
   await dialog().getByLabel("Prefiks", { exact: true }).fill("A-");
   await btn("Lag nummerforslag for 24 boliger").click();
@@ -179,8 +188,23 @@ try {
     0,
     "Preview does not save",
   );
-  eq(await page.locator('.bolig-preparation-preview-list article b').first().textContent(), 'A-101', 'Preview keeps natural unit order after editing a row');
-  eq(await page.locator('.bolig-preparation-preview-list article').first().textContent().then(text => text.includes('Eksempelgata 10A')), true, 'Preview identifies the entrance');
+  eq(
+    await page
+      .locator(".bolig-preparation-preview-list article b")
+      .first()
+      .textContent(),
+    "A-101",
+    "Preview keeps natural unit order after editing a row",
+  );
+  eq(
+    await page
+      .locator(".bolig-preparation-preview-list article")
+      .first()
+      .textContent()
+      .then((text) => text.includes("Eksempelgata 10A")),
+    true,
+    "Preview identifies the entrance",
+  );
   await page.evaluate(() => (window.__lost = true));
   await btn("Bekreft og lagre").click();
   await btn("Kontroller lagringen").waitFor();
@@ -263,6 +287,15 @@ try {
     .selectOption({ label: "Standard 3-roms" });
   await dialog().getByLabel("Oppgang", { exact: true }).selectOption("e1");
   await btn("Velg alle 24 treff").click();
+  eq(
+    await dialog()
+      .getByRole("checkbox", {
+        name: "Legg også til manglende rom og pakker i boliger med innhold",
+      })
+      .evaluate((element) => element.getBoundingClientRect().width),
+    18,
+    "Checkbox stays compact with global styles",
+  );
   await btn("Forhåndsvis endringer").click();
   await page.getByText("Har egne rom eller boligvalg. Beholdes.").waitFor();
   checks++;
