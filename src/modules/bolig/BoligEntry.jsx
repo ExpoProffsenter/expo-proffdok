@@ -17,6 +17,7 @@ import BoligProjectHome from "./BoligProjectHome.jsx";
 import BoligCatalog from "./BoligCatalog.jsx";
 import BoligRooms from "./BoligRooms.jsx";
 import BoligBuildingOverview from "./BoligBuildingOverview.jsx";
+import BoligPreparation from "./BoligPreparation.jsx";
 import {
   Building2,
   Home,
@@ -668,6 +669,18 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
                       />
                     </div>
                     <div hidden={setupArea !== "structure"}>
+                      <BoligPreparation
+                        key={
+                          ctx.user_id +
+                          ":" +
+                          ctx.company_id +
+                          ":" +
+                          record.root.id
+                        }
+                        context={ctx}
+                        root={record.root}
+                        onChanged={() => fetchRecord(record.root.id, true)}
+                      />
                       {canWrite ? (
                         <div className="bolig-setup">
                           <details>
@@ -886,6 +899,11 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
                           }{" "}
                           · {unit.number}
                         </h3>
+                        {unit.official_number && (
+                          <small>
+                            Offisielt bolignummer: {unit.official_number}
+                          </small>
+                        )}
                         {unit.project_id ? (
                           <button
                             type="button"

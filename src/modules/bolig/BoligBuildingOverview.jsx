@@ -250,7 +250,7 @@ export default function BoligBuildingOverview({
         const e = entranceMap.get(u.entrance_id),
           b = blocks.find((b) => b.id === e.block_id);
         return terms.every((t) =>
-          `${u.number} ${u.contact_name || ""} ${u.contact_email || ""} ${u.contact_phone || ""} ${e.address} ${b.name}`
+          `${u.number} ${u.official_number || ""} ${u.contact_name || ""} ${u.contact_email || ""} ${u.contact_phone || ""} ${e.address} ${b.name}`
             .toLowerCase()
             .includes(t),
         );

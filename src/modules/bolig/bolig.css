@@ -3542,3 +3542,313 @@
 .bolig-dialog .bolig-setup-menu button small {
   color: #e0edf4;
 }
+.bolig-preparation {
+  margin: 1rem 0 1.3rem;
+  padding: 1.2rem;
+  border: 1px solid #cbdce9;
+  border-radius: 16px;
+  background: #f1f6fb;
+  color: #12354d;
+}
+.bolig-preparation-heading small,
+.bolig-preparation-dialog header small {
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: #277084;
+}
+.bolig-preparation-heading h4 {
+  margin: 0.3rem 0;
+  font-size: 1.15rem;
+}
+.bolig-preparation-heading p {
+  margin: 0.35rem 0 1rem;
+}
+.bolig-preparation-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+.bolig-preparation-actions > button {
+  background: #163f62;
+  color: #fff;
+  border: 1px solid #163f62;
+  border-radius: 12px;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  text-align: left;
+  min-width: 0;
+}
+.bolig-preparation-actions > button:hover {
+  background: #20577e;
+}
+.bolig-preparation-actions span {
+  min-width: 0;
+}
+.bolig-preparation-actions small {
+  display: block;
+  color: #d1e5f2;
+  font-size: 0.75rem;
+  margin-top: 0.35rem;
+  font-weight: 400;
+}
+.bolig-preparation-dialog {
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  width: min(1050px, calc(100vw - 32px));
+  max-width: calc(100vw - 32px);
+  padding: 0;
+  background: #fff;
+  color: #14354d;
+}
+.bolig-preparation-dialog header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #123b5c;
+  color: #fff;
+  padding: 1rem 1.3rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.bolig-preparation-dialog > header {
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+}
+.bolig-preparation-dialog > header > div { flex: 1; min-width: 0; }
+.bolig-preparation-dialog > header > button { flex: 0 0 42px; width: 42px; }
+.bolig-preparation-dialog header small {
+  color: #90dce1;
+}
+.bolig-preparation-dialog header h2 {
+  margin: 0.25rem 0;
+  font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+}
+.bolig-preparation-body {
+  padding: 1.2rem;
+}
+.bolig-preparation-body fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.bolig-preparation-dialog label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin-bottom: 0.6rem;
+  min-width: 0;
+}
+.bolig-preparation-dialog input:not([type="checkbox"]),
+.bolig-preparation-dialog select {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  min-height: 42px;
+  border: 1px solid #bdcfdd;
+  border-radius: 8px;
+  padding: 0.6rem;
+  color: #163b55;
+  background: #fff;
+  font: inherit;
+}
+.bolig-preparation-dialog button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 40px;
+}
+.bolig-preparation-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 0.7rem;
+  margin: 0.8rem 0;
+}
+.bolig-preparation-inline {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin: 0.8rem 0;
+}
+.bolig-preparation-inline label {
+  flex: 1;
+  margin: 0;
+}
+.bolig-preparation-list {
+  display: grid;
+  gap: 0.55rem;
+}
+.bolig-preparation-list article {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.7rem;
+  align-items: center;
+  background: #f2f6fa;
+  padding: 0.75rem;
+  border-radius: 10px;
+  border: 1px solid #dce7ef;
+}
+.bolig-preparation-list article label {
+  margin: 0;
+}
+.bolig-preparation-list article small {
+  display: block;
+  margin-top: 0.3rem;
+  color: #4d687c;
+}
+.bolig-preparation-pager {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  justify-content: flex-end;
+  margin: 0.75rem 0;
+  font-size: 0.8rem;
+}
+.bolig-preparation-pager span {
+  margin-right: auto;
+}
+.bolig-preparation-rooms details {
+  border: 1px solid #cfdee8;
+  background: #f4f8fb;
+  border-radius: 10px;
+  padding: 0.8rem;
+  margin: 0.6rem 0;
+}
+.bolig-preparation-rooms summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.8rem;
+  cursor: pointer;
+}
+.bolig-preparation-rooms summary::before {
+  content: "▸";
+  color: #277084;
+}
+.bolig-preparation-rooms details[open] summary::before {
+  content: "▾";
+}
+.bolig-preparation-rooms summary b {
+  margin-right: auto;
+}
+.bolig-preparation-rooms summary span {
+  font-size: 0.8rem;
+  color: #43687e;
+}
+.bolig-preparation-targets {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+.bolig-preparation-targets > label {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0;
+  background: #f3f7fa;
+  border: 1px solid #d8e4ed;
+  border-radius: 10px;
+  padding: 0.75rem;
+}
+.bolig-preparation-targets span {
+  flex: 1;
+}
+.bolig-preparation-targets small {
+  display: block;
+  color: #4d687c;
+  font-size: 0.72rem;
+  margin-top: 0.2rem;
+}
+.bolig-preparation-dialog .bolig-check {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0.9rem 0;
+}
+.bolig-preparation-hint {
+  font-size: 0.8rem;
+  color: #4b6577;
+}
+.bolig-preparation-notice {
+  padding: 0.8rem;
+  background: #e6f4f3;
+  border: 1px solid #aad8d4;
+  border-radius: 10px;
+}
+.bolig-preparation-preview {
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid #7bbab5;
+  border-radius: 12px;
+  background: #edf8f6;
+}
+.bolig-preparation-preview h3 {
+  margin-top: 0;
+}
+.bolig-preparation-preview-list {
+  max-height: 280px;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.bolig-preparation-preview-list article {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.3rem;
+  padding: 0.6rem;
+  border-bottom: 1px solid #c3dfdc;
+}
+.bolig-preparation-preview-list small {
+  grid-column: 1 / -1;
+}
+.bolig-preparation-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 1rem;
+  padding: 0.9rem 0 0.2rem;
+  background: #fff;
+}
+@media (max-width: 650px) {
+  .bolig-preparation {
+    padding: 0.8rem;
+  }
+  .bolig-preparation-actions {
+    grid-template-columns: 1fr;
+  }
+  .bolig-preparation-dialog {
+    width: calc(100vw - 16px);
+    max-width: calc(100vw - 16px);
+  }
+  .bolig-preparation-dialog header,
+  .bolig-preparation-body {
+    padding: 0.8rem;
+  }
+  .bolig-preparation-filters,
+  .bolig-preparation-targets {
+    grid-template-columns: 1fr;
+  }
+  .bolig-preparation-list article {
+    grid-template-columns: 1fr 1fr;
+  }
+  .bolig-preparation-list article > div {
+    grid-column: 1 / -1;
+  }
+  .bolig-preparation-footer button {
+    flex: 1 1 100%;
+  }
+  .bolig-preparation-rooms summary {
+    flex-wrap: wrap;
+  }
+}

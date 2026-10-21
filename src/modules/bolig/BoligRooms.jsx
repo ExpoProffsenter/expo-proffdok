@@ -89,11 +89,13 @@ export default function BoligRooms({
       if (document.visibilityState !== "hidden") load();
     };
     window.addEventListener("focus", load);
+    window.addEventListener("expo-proffdok-bolig-catalog", load);
     document.addEventListener("visibilitychange", visible);
     return () => {
       alive.current = false;
       ++generation.current;
       window.removeEventListener("focus", load);
+      window.removeEventListener("expo-proffdok-bolig-catalog", load);
       document.removeEventListener("visibilitychange", visible);
     };
   }, [load]);

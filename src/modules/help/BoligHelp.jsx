@@ -11,6 +11,21 @@ export function BoligHelp() {
       </p>
       <ol>
         <li>
+          Åpne Oppsett → Bygg og boliger for å klargjøre flere boliger samtidig.
+          «Rediger bygg» endrer navn, type, adresser og boligfordeling.
+          «Nummerer boliger» gir nummerforslag og samlet redigering. Offisielt
+          bolignummer har et eget felt. Forhåndsvisningen viser resultatet før
+          du velger «Bekreft og lagre».
+        </li>
+        <li>
+          «Rom og pakker til flere boliger» lager en rommal med rompakker og
+          valgfri fellespakke. Lagre malen for gjenbruk i prosjektet. Velg bygg,
+          oppgang eller enkeltboliger og forhåndsvis før tildeling. Boliger med
+          egne rom eller valg hoppes over som standard. Du kan velge å legge til
+          manglende innhold; eksisterende rom, pakker og individuelle tilvalg
+          beholdes. Romkonflikter må vurderes på boligen.
+        </li>
+        <li>
           Velg «Bygg nytt prosjekt». Velg boligtype, legg inn bygg og adresser,
           og se over boligfordelingen før «Opprett prosjektforside». En enebolig
           registreres som én husstand, uansett etasjeantall.

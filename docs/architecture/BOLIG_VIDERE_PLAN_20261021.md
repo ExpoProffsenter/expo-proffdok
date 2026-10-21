@@ -4,6 +4,8 @@ Kenneths instruks 21. oktober 2026: så nær den godkjente Solgløtt-konseptskis
 
 ## Nå: prosjektoversikt, bygg, rom og varevalg
 
+Samlet klargjøring er lagt til under Oppsett → Bygg og boliger: Rediger bygg, Nummerer boliger og Rom og pakker til flere boliger. Prosjektlagrede rommaler kan tilføre rompakker/fellespakke til utvalgte boliger etter forhåndsvisning. Egne valg beholdes som standard; eksplisitt tillegg fyller bare manglende innhold. Eget offisielt bolignummer er separat fra prosjektets leilighetsnummer. Se docs/qa/BOLIG_KLARGJORING_20261021.md for gjeldende status og begrensninger. Eldre «gjenstår»-avsnitt nedenfor er historiske der denne leveransen dekker dem. Kenneth har uttrykkelig utsatt Excel-import til slutt.
+
 Oppdatert pakkeinngang: «Grunnpakker og tilvalg» er et eget arbeidsområde øverst i prosjektet, ved siden av Hovedside og Oppsett. Ny grunnpakke/Legg til tilvalg er synlige samtidig. Rompakke-dialogen har snarvei til opprettelse/redigering med bevart utkast. Se docs/qa/BOLIG_PAKKEINNGANG_20261021.md.
 
 Siste brukerjustering: samme kompakte varekortmønster som tilbudsbyggeren, sammenlagte varelinjer og tilvalg, direkte bildeopplasting i begge editortyper og ingen utgående produktlenker. Menyvalgene er ugjennomsiktig blå/turkis. Bytt prosjekt er fjernet fra prosjektbildet; Hovedside viser bygg/boliger og Prosjektoversikt velger/oppretter prosjekt. Ny modulåpning eller sideoppdatering starter på Prosjektoversikt, mens tilgangsoppfriskning/fanebytte i samme besøk bevarer arbeidsstedet. Privat bildebucket er kun migrert i Sandbox. Se docs/qa/BOLIG_PAKKEBILDER_20261021.md.

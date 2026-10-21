@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import assert from "node:assert/strict";
 import imageScenarios from "./bolig-images-db-scenarios.mjs";
+import preparationScenarios from "./bolig-preparation-db-scenarios.mjs";
 import packageScenarios from "./bolig-package-choices-db-scenarios.mjs";
 import contentScenarios from "./bolig-room-content-db-scenarios.mjs";
 import roomsScenarios from "./bolig-rooms-db-scenarios.mjs";
@@ -201,6 +202,7 @@ try {
       "utf8",
     ),
   );
+  await db.exec(await fs.readFile("supabase/migrations/20261021182208_bolig_project_preparation.sql", "utf8"));
   await db.exec("begin");
   await actor();
   eq((await call()).enabled, false);
@@ -925,6 +927,7 @@ try {
     reader,
     outsider,
   });
+  await preparationScenarios({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider});
   await db.exec(
     `reset role;update public.profiles set deactivated=true where id=${q(reader)}`,
   );
@@ -1171,6 +1174,7 @@ try {
   console.error(
     JSON.stringify({
       message: error.message,
+      stack: error.stack,
       code: error.code,
       where: error.where,
       params: error.params,
