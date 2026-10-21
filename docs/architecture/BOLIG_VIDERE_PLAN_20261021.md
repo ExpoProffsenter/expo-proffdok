@@ -4,6 +4,8 @@ Kenneths instruks 21. oktober 2026: så nær den godkjente Solgløtt-konseptskis
 
 ## Nå: prosjektoversikt, bygg, rom og varevalg
 
+Oppdatert pakkeinngang: «Grunnpakker og tilvalg» er et eget arbeidsområde øverst i prosjektet, ved siden av Byggoversikt og Oppsett. Ny grunnpakke/Nytt tilvalg er synlige samtidig. Rompakke-dialogen har snarvei til opprettelse/redigering med bevart utkast. Se docs/qa/BOLIG_PAKKEINNGANG_20261021.md.
+
 Miljømål BEGGE, først eksisterende foundation-Preview/Sandbox i PR #278. Scope: egne boligkomponenter/CSS, boligveiledning, fasadeillustrasjon, egne tester og én additiv lesefunksjon for status. Ingen endring i eksisterende Sales, innlogging, prosjektlagring, menyer, HR, e-post, eksisterende katalogrettigheter eller øvrige critical checks.
 
 - «Prosjektoversikt» øverst i et åpent prosjekt går til modulens forside med prosjektvalg/nytt prosjekt. Appens globale Startside er separat. Nye fotorealistiske eksempelbilder for hus/boligfelt følger blokkens stil; egne prosjektbilder er fortsatt et senere steg. Se docs/qa/BOLIG_NAV_BILDER_20261021.md for UX-gjennomgang og prioritering.

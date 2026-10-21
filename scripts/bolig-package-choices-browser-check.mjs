@@ -48,7 +48,7 @@ window.__client={rpc:async(name,args)=>{const s=window.__data,p=args.p_payload;w
  }
  const result=reply();if(window.__hold && args.p_action==='get')return new Promise(resolve=>window.__waiters.push(()=>resolve(result)));return result;
 }};
-const root=createRoot(document.getElementById('app'));window.__render=(mode='unit')=>root.render(<section className="bolig-page" data-qa-role={window.__ctx.role}><h2>Eksempelhuset · Bolig</h2>{mode==='none'?null:<React.Fragment key={window.__ctx.company_id+window.__ctx.role}><Rooms context={{...window.__ctx}} root={{id:'root',archived:false}} unit={{id:'unit',number:'Bolig'}}/><Catalog compact context={{...window.__ctx}} root={{id:'root',archived:false}} unit={{id:'unit',number:'Bolig'}}/></React.Fragment>}</section>);window.__render();`,
+const root=createRoot(document.getElementById('app'));window.__render=(mode='unit')=>root.render(<section className="bolig-page" data-qa-role={window.__ctx.role}><h2>Eksempelhuset · Bolig</h2>{mode==='none'?null:<React.Fragment key={window.__ctx.company_id+window.__ctx.role}><Rooms onOpenCatalog={()=>{window.__shortcut=(window.__shortcut||0)+1;}} context={{...window.__ctx}} root={{id:'root',archived:false}} unit={{id:'unit',number:'Bolig'}}/><Catalog compact context={{...window.__ctx}} root={{id:'root',archived:false}} unit={{id:'unit',number:'Bolig'}}/></React.Fragment>}</section>);window.__render();`,
 );
 let server,
   browser,
@@ -168,6 +168,19 @@ try {
     ),
     true,
     "Exact editor DOM retained",
+  );
+  await btn("Lag eller rediger grunnpakker og tilvalg").click();
+  await dlg().waitFor({ state: "hidden" });
+  eq(
+    await page.evaluate(() => window.__shortcut),
+    1,
+    "Room editor forwards catalog navigation",
+  );
+  await btn("Velg rompakke").click();
+  eq(
+    await option("Alternativ servant").isChecked(),
+    true,
+    "Catalog shortcut preserves room package draft",
   );
   await page.keyboard.press("Escape");
   await btn("Velg rompakke").click();

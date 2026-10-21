@@ -32,7 +32,12 @@ const types = [
 ];
 const roomType = (id) => types.find((t) => t.id === id) || types[4];
 // Server validates room IDs before a remembered pointer can reveal content.
-export default function BoligRooms({ context, root, unit }) {
+export default function BoligRooms({
+  context,
+  root,
+  unit,
+  onOpenCatalog = null,
+}) {
   const [data, setData] = useState(null),
     [error, setError] = useState(""),
     [notice, setNotice] = useState(""),
@@ -328,6 +333,7 @@ export default function BoligRooms({ context, root, unit }) {
           )}
           <BoligPackageChoices
             key={unit.id + ":packages:" + context.role}
+            onOpenCatalog={onOpenCatalog}
             context={context}
             root={root}
             unit={unit}

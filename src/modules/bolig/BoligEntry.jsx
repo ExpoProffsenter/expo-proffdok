@@ -18,7 +18,14 @@ import BoligProjectPicker from "./BoligProjectPicker.jsx";
 import BoligCatalog from "./BoligCatalog.jsx";
 import BoligRooms from "./BoligRooms.jsx";
 import BoligBuildingOverview from "./BoligBuildingOverview.jsx";
-import { Building2, Home, Settings2, RefreshCw, ArrowLeft } from "lucide-react";
+import {
+  Building2,
+  Home,
+  Settings2,
+  RefreshCw,
+  ArrowLeft,
+  Package,
+} from "lucide-react";
 export default function BoligEntry({ userId, onOpenProject, onExit }) {
   const { context, loadError } = useBoligContext(userId);
   const [open, setOpen] = useState(true);
@@ -184,6 +191,24 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
     "setup-area",
     "structure",
   );
+  const catalogHeading = useRef(null),
+    catalogIntent = useRef(false);
+  const focusCatalog = () => {
+    catalogHeading.current?.focus({ preventScroll: true });
+    catalogHeading.current?.scrollIntoView?.({ block: "start" });
+  };
+  const openCatalog = () => {
+    if (view === "setup" && setupArea === "catalog") focusCatalog();
+    else catalogIntent.current = true;
+    setView("setup");
+    setSetupArea("catalog");
+  };
+  useEffect(() => {
+    if (catalogIntent.current && view === "setup" && setupArea === "catalog") {
+      catalogIntent.current = false;
+      focusCatalog();
+    }
+  }, [view, setupArea]);
   useEffect(() => {
     setCtx(context);
     if (!context.enabled) {
@@ -381,7 +406,7 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
         setView("overview");
         setScreen("workspace");
         setNotice(
-          "Prosjektforsiden er opprettet. Velg et bygg, eller åpne Oppsett for å lage grunnpakker og tilvalg.",
+          "Prosjektforsiden er opprettet. Velg et bygg, eller åpne Grunnpakker og tilvalg for å lage vareinnholdet.",
         );
         try {
           await request("list");
@@ -536,8 +561,23 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
                         </button>
                         <button
                           type="button"
-                          aria-pressed={view === "setup"}
-                          onClick={() => setView("setup")}
+                          aria-pressed={
+                            view === "setup" && setupArea === "catalog"
+                          }
+                          onClick={openCatalog}
+                        >
+                          <Package size={17} />
+                          Grunnpakker og tilvalg
+                        </button>
+                        <button
+                          type="button"
+                          aria-pressed={
+                            view === "setup" && setupArea !== "catalog"
+                          }
+                          onClick={() => {
+                            setSetupArea("structure");
+                            setView("setup");
+                          }}
                         >
                           <Settings2 size={17} />
                           Oppsett
@@ -549,14 +589,30 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
                     hidden={view !== "setup"}
                     className="bolig-project-configuration"
                   >
-                    <h3>Oppsett av prosjektet</h3>
+                    <h3 ref={catalogHeading} tabIndex={-1}>
+                      {setupArea === "catalog"
+                        ? "Grunnpakker og tilvalg"
+                        : "Oppsett av prosjektet"}
+                    </h3>
                     <p>
-                      Velg hva du vil jobbe med. Kladden beholdes når du bytter
-                      område.
+                      {setupArea === "catalog"
+                        ? "Lag og rediger prosjektets grunnpakker og tilvalg her. Pakkene kan brukes som fellespakke og som rompakker."
+                        : "Velg hva du vil jobbe med. Kladden beholdes når du bytter område."}
                     </p>
+                    {setupArea === "catalog" && unit && (
+                      <button
+                        type="button"
+                        className="bolig-quiet-action"
+                        onClick={() => setView("overview")}
+                      >
+                        <ArrowLeft size={15} />
+                        Tilbake til boligvalg
+                      </button>
+                    )}
                     <nav
                       className="bolig-setup-menu"
                       aria-label="Velg prosjektoppsett"
+                      hidden={setupArea === "catalog"}
                     >
                       <button
                         type="button"
@@ -572,17 +628,7 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
                           </small>
                         </span>
                       </button>
-                      <button
-                        type="button"
-                        aria-pressed={setupArea === "catalog"}
-                        onClick={() => setSetupArea("catalog")}
-                      >
-                        <Home size={23} />
-                        <span>
-                          <b>Grunnpakker og tilvalg</b>
-                          <small>Felles vareinnhold og alternativer</small>
-                        </span>
-                      </button>
+
                       <button
                         type="button"
                         aria-pressed={setupArea === "archive"}
@@ -1011,6 +1057,7 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
                         </BoligTaskDialog>
                         <BoligRooms
                           key={unit.id + ":rooms:" + ctx.role}
+                          onOpenCatalog={openCatalog}
                           context={ctx}
                           root={record.root}
                           unit={unit}

@@ -670,6 +670,57 @@ try {
   );
   holdContext = false;
   await act(() => contextWaiters.splice(0).forEach((resolve) => resolve()));
+  const workNav = (label) =>
+    [
+      ...w.document.querySelectorAll('[aria-label="Arbeidsområde"] button'),
+    ].find((b) => b.textContent.trim() === label);
+  assert(
+    workNav("Grunnpakker og tilvalg"),
+    "Catalog has a direct project navigation entry",
+  );
+  await act(() => workNav("Grunnpakker og tilvalg").click());
+  assert.equal(
+    workNav("Grunnpakker og tilvalg").getAttribute("aria-pressed"),
+    "true",
+  );
+  assert.equal(
+    workNav("Oppsett").getAttribute("aria-pressed"),
+    "false",
+    "Only the chosen work area is active",
+  );
+  const setup = q(".bolig-project-configuration");
+  assert.equal(setup.hidden, false);
+  const create = (name) =>
+    [...setup.querySelectorAll("button")].find(
+      (b) => b.textContent.trim() === name,
+    );
+  assert(
+    create("Ny grunnpakke") && create("Nytt tilvalg"),
+    "Both create actions are visible together",
+  );
+  await act(() => create("Ny grunnpakke").click());
+  const packageName = [...w.document.querySelectorAll("label")]
+    .find((l) => l.textContent.trim() === "Pakkenavn")
+    .querySelector("input");
+  await setInput(packageName, "Bevart fra direkte pakkeinngang");
+  await act(() => w.dispatchEvent(new w.Event("focus")));
+  assert(
+    packageName.isConnected &&
+      packageName.value === "Bevart fra direkte pakkeinngang",
+    "Direct entry retains package editor through focus",
+  );
+  await act(() => q(".bolig-catalog-dialog header button").click());
+  await act(() => create("Nytt tilvalg").click());
+  assert(
+    q('dialog[aria-label="Nytt tilvalg"]'),
+    "Option authoring needs no extra category navigation",
+  );
+  await act(() => q(".bolig-catalog-dialog header button").click());
+  await act(() => workNav("Oppsett").click());
+  assert(
+    resize.isConnected && floors.value === "3",
+    "Catalog detour retains the original structure editor and draft",
+  );
   const readsBeforeHome = calls.filter(
     (c) => c.p_action === "get" && c.rpc_name === "bolig_workspace",
   ).length;

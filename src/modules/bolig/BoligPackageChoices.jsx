@@ -110,6 +110,7 @@ export default function BoligPackageChoices({
   unit,
   activeRoom = null,
   roomsRevision,
+  onOpenCatalog = null,
 }) {
   const [data, setData] = useState(null),
     [draft, setDraft] = useState(null),
@@ -371,7 +372,7 @@ export default function BoligPackageChoices({
           <p className="bolig-editor-hint">
             {activeRoom
               ? "Velg grunnpakke og tilvalg for dette rommet. Fellespakken for boligen beholdes."
-              : "Fellespakken gjelder boligen. Velg et rom ovenfor for å legge til rompakke. Lag gjenbrukbare pakker under Oppsett → Grunnpakker og tilvalg."}
+              : "Fellespakken gjelder boligen. Velg et rom ovenfor for å legge til rompakke. Lag gjenbrukbare pakker under Grunnpakker og tilvalg øverst."}
           </p>
           <PackageChoiceSummary
             components={components}
@@ -447,6 +448,27 @@ export default function BoligPackageChoices({
           </header>
           {draft && data && canWrite && (
             <>
+              {onOpenCatalog && (
+                <p className="bolig-catalog-shortcut">
+                  Mangler pakken eller tilvalget du trenger?{" "}
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => {
+                      if (!writeBoligDraft(keyFor(scope), draft)) {
+                        setError(
+                          "Utkastet kunne ikke sikres lokalt. Behold siden åpen og prøv igjen.",
+                        );
+                        return;
+                      }
+                      close();
+                      onOpenCatalog();
+                    }}
+                  >
+                    Lag eller rediger grunnpakker og tilvalg
+                  </button>
+                </p>
+              )}
               {data.selection &&
                 data.selection.snapshot.format !== "scoped-v1" && (
                   <p className="bolig-notice">

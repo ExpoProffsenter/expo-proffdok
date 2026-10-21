@@ -3418,3 +3418,24 @@
     justify-content: center;
   }
 }
+
+.bolig-catalog-create-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 14px 0;
+}
+.bolig-catalog-shortcut {
+  border: 1px solid #b9d8d4;
+  background: #eef8f4;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 13px;
+}
+.bolig-catalog-shortcut button {
+  display: block;
+  margin-top: 8px;
+}
+.bolig-package-card-content {
+  margin: 10px 0;
+}

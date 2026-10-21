@@ -872,15 +872,26 @@ export default function BoligCatalog({
             </button>
           </nav>
           {canWrite && (
-            <button
-              type="button"
-              className="bolig-create-action"
-              disabled={busy || loading}
-              onClick={() => setEditing({ kind: tab, entry: null })}
-            >
-              <Plus size={16} />
-              {tab === "packages" ? "Ny grunnpakke" : "Nytt tilvalg"}
-            </button>
+            <div className="bolig-catalog-create-actions">
+              {[
+                { kind: "packages", label: "Ny grunnpakke" },
+                { kind: "options", label: "Nytt tilvalg" },
+              ].map((action) => (
+                <button
+                  key={action.kind}
+                  type="button"
+                  className="bolig-create-action"
+                  disabled={busy || loading}
+                  onClick={() => {
+                    setTab(action.kind);
+                    setEditing({ kind: action.kind, entry: null });
+                  }}
+                >
+                  <Plus size={16} />
+                  {action.label}
+                </button>
+              ))}
+            </div>
           )}
           <p className="bolig-editor-hint">
             {tab === "packages"
@@ -907,18 +918,23 @@ export default function BoligCatalog({
                       {entry.archived ? " · skjult" : ""}
                     </h4>
                     {tab === "packages" ? (
-                      <ul>
-                        {entry.lines.map((l) => (
-                          <li key={l.key}>
-                            <ProductCard line={l}>
-                              Grunnsum{" "}
-                              {l.credit_cents == null
-                                ? "ikke angitt"
-                                : money(l.credit_cents)}
-                            </ProductCard>
-                          </li>
-                        ))}
-                      </ul>
+                      <details className="bolig-package-card-content">
+                        <summary>
+                          {entry.lines.length} varelinjer · Vis innhold
+                        </summary>
+                        <ul>
+                          {entry.lines.map((l) => (
+                            <li key={l.key}>
+                              <ProductCard line={l}>
+                                Grunnsum{" "}
+                                {l.credit_cents == null
+                                  ? "ikke angitt"
+                                  : money(l.credit_cents)}
+                              </ProductCard>
+                            </li>
+                          ))}
+                        </ul>
+                      </details>
                     ) : (
                       <ProductCard line={entry}>
                         {entry.replace_key

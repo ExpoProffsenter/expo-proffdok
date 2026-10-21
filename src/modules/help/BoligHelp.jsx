@@ -33,12 +33,13 @@ export function BoligHelp() {
           historikken. Ett ordinært prosjekt beholdes for hele boligen.
         </li>
         <li>
-          Åpne Oppsett → Grunnpakker og tilvalg → Grunnpakker → «Ny grunnpakke».
+          Åpne «Grunnpakker og tilvalg» øverst i prosjektet → «Ny grunnpakke».
           Pakken åpnes i en egen dialog. Legg inn vareinnhold, varenummer og
           antall. Grunnpakken trenger ingen sum. Valgfri grunnsum per varelinje
-          brukes bare som fratrekk ved et alternativ. Under Tilvalgsliste velger
-          du Tillegg til eller Alternativ til en standardvare, med eller uten
-          fratrekk.
+          brukes bare som fratrekk ved et alternativ. «Nytt tilvalg» står ved
+          siden av. Åpne en lagret pakke eller Tilvalgsliste og velg Rediger for
+          å rette innholdet. Under Tilvalgsliste velger du Tillegg til eller
+          Alternativ til en standardvare, med eller uten fratrekk.
         </li>
         <li>
           Velg «Alle rom» → «Velg fellespakke» for varer som gjelder hele
