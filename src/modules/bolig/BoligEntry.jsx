@@ -15,6 +15,7 @@ import BoligTaskDialog from "./BoligTaskDialog.jsx";
 import BoligProjectBuilder from "./BoligProjectBuilder.jsx";
 import BoligProjectHome from "./BoligProjectHome.jsx";
 import BoligCatalog from "./BoligCatalog.jsx";
+import BoligUnitTasks from "./BoligUnitTasks.jsx";
 import BoligRooms from "./BoligRooms.jsx";
 import BoligBuildingOverview from "./BoligBuildingOverview.jsx";
 import BoligPreparation from "./BoligPreparation.jsx";
@@ -1066,26 +1067,43 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
                             </p>
                           )}
                         </BoligTaskDialog>
-                        <BoligRooms
-                          key={unit.id + ":rooms:" + ctx.role}
-                          onOpenCatalog={openCatalog}
-                          context={ctx}
-                          root={record.root}
+                        <BoligUnitTasks
+                          key={unit.id + ":tasks:" + ctx.role}
                           unit={unit}
-                        />
-                        <BoligCatalog
-                          compact
-                          key={unit.id + ":" + ctx.role}
-                          context={ctx}
-                          root={record.root}
-                          unit={unit}
+                          active={view === "overview"}
+                          onOpenProject={(id, tab) => {
+                            onClose();
+                            onOpenProject?.(id, tab);
+                          }}
+                          rooms={
+                            <BoligRooms
+                              key={unit.id + ":rooms:" + ctx.role}
+                              onOpenCatalog={openCatalog}
+                              context={ctx}
+                              root={record.root}
+                              unit={unit}
+                            />
+                          }
+                          order={
+                            <BoligCatalog
+                              compact
+                              orderOnly
+                              key={unit.id + ":" + ctx.role}
+                              context={ctx}
+                              root={record.root}
+                              unit={unit}
+                            />
+                          }
                         />
                       </section>
                     ) : (
                       <aside className="bolig-select-unit">
                         <Home size={34} />
                         <h3>Velg en bolig i bygget</h3>
-                        <p>Se grunnpakke, tilvalgspakker og bestillingsutkast her.</p>
+                        <p>
+                          Se grunnpakke, tilvalgspakker og bestillingsutkast
+                          her.
+                        </p>
                         <ol>
                           <li>Velg leilighet i oversikten.</li>
                           <li>Velg og lagre grunnpakke og tilvalgspakker.</li>

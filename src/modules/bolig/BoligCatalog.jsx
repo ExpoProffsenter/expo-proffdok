@@ -407,6 +407,7 @@ export default function BoligCatalog({
   root,
   unit = null,
   compact = false,
+  orderOnly = false,
 }) {
   const phaseKey = `${root.id}:${unit?.id || "setup"}`;
   const [unitTab, setUnitTab] = useBoligUiState(
@@ -568,7 +569,7 @@ export default function BoligCatalog({
           : "Grunnpakker og tilvalgspakker"
       }
     >
-      {unit && compact && (
+      {unit && compact && !orderOnly && (
         <nav className="bolig-unit-tabs" aria-label="Arbeid med boligen">
           <button
             type="button"
@@ -821,7 +822,7 @@ export default function BoligCatalog({
       )}
       {valid && unit && (
         <>
-          <div hidden={compact && unitTab !== "choice"}>
+          <div hidden={orderOnly || (compact && unitTab !== "choice")}>
             {selected ? (
               <div className="bolig-saved-choice">
                 <h4>Lagret valgsutkast · versjon {selected.revision}</h4>
@@ -940,11 +941,12 @@ export default function BoligCatalog({
               </button>
             )}
           </div>
-          <div hidden={compact && unitTab !== "order"}>
+          <div hidden={!orderOnly && compact && unitTab !== "order"}>
             {!selected && (
               <p>
-                Velg og lagre grunnpakken under Boligvalg før du klargjør
-                bestillingen.
+                {orderOnly
+                  ? "Velg og lagre en grunnpakke under Rom, grunnpakke og tilvalgspakker før du klargjør bestillingen."
+                  : "Velg og lagre grunnpakken under Boligvalg før du klargjør bestillingen."}
               </p>
             )}
             {selected && (

@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import assert from "node:assert/strict";
+import customizationScenarios from "./bolig-customization-db-scenarios.mjs";
 import imageScenarios from "./bolig-images-db-scenarios.mjs";
 import deliveryScenarios from "./bolig-delivery-db-scenarios.mjs";
 import sectionScenarios from "./bolig-sections-db-scenarios.mjs";
@@ -211,6 +212,7 @@ try {
   await db.exec(await fs.readFile("supabase/migrations/20261021203036_bolig_order_email_attachments.sql", "utf8"));
   await db.exec(await fs.readFile("supabase/migrations/20261021204213_bolig_delivery_overview.sql", "utf8"));
   await db.exec(await fs.readFile("supabase/migrations/20261021205031_bolig_delivery_fk_indexes.sql", "utf8"));
+  await db.exec(await fs.readFile("supabase/migrations/20261021213014_bolig_unit_customization.sql", "utf8"));
   await db.exec("begin");
   await actor();
   eq((await call()).enabled, false);
@@ -922,6 +924,7 @@ try {
     reader,
     outsider,
   });
+  await customizationScenarios({ db, call, actor, eq, rejects, id, firm, other, manager, reader, outsider });
   await packageScenarios({
     db,
     call,

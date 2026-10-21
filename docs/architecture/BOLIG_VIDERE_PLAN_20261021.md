@@ -2,6 +2,12 @@
 
 Kenneths instruks 21. oktober 2026: så nær den godkjente Solgløtt-konseptskissen som mulig. Førsteinntrykket av foundation var svakt, med mye luft og lange skjemaer. Denne filen skiller nåværende leveranse fra ønskelisten.
 
+## Oppfølging: individuelle avvik, boligkort og samlede leveranser
+
+Neste prioritering etter denne Preview-runden: samlet, dokumentert ferdigstilling per bolig med sjekklister/kontroller, avklarte avvik, bilder/sluttdokumentasjon og overtagelse som grunnlag. Vis antall faktisk ferdige boliger mot aktive boliger i valgt bygg og hele hovedprosjektet. Et bygg er først ferdig når alle relevante boliger og byggets fellesarbeider er ferdigstilt. Prosjektet følger alle aktive bygg og prosjektets fellesarbeider. Ingen fri grønn status fra et utkast eller fra varemottak. Avklar regler for gjenåpning, godkjenner og endringer etter overtagelse i denne etappen.
+
+Individuell vare-/mengdetilpasning ligger nå i Preview/Sandbox med begrunnelse, forhåndsvisning, ny boligvalgsversjon, separat pristillegg/fratrekk og gjenoppretting av opprinnelig fryst pakkevalg. Delte grunnpakker/tilvalgspakker og andre boliger beholdes. Aktive ordre sperrer tilpasningen for eksplisitt avklaring. Høyrekolonnen har korte, ugjennomsiktige handlingskort som åpner popuper for rom/pakker, bestilling/levering, sjekklister/dokumentasjon og ferdigstilling. Sjekklister og overtagelse gjenbruker eksisterende koblede prosjektflater, med eksisterende prosjekttilgang. Samlede leveransetall og boligliste finnes per bygg og prosjekt. Ferdigstillingsdialogen forklarer kontrollene og åpner eksisterende overtagelse, men oppretter ingen ny ferdigstatus. Se docs/qa/BOLIG_INDIVIDUELLE_AVVIK_20261021.md.
+
 ## Nå: prosjektoversikt, bygg, rom og varevalg
 
 Bestilling/levering er utvidet i samme Preview: felles/egen leveringsadresse, samlet/delt bestilling og levering, valgfritt leverandørordrenummer, frosset ordregrunnlag og mengdeført varemottak med historikk. Eksplisitt bestillingsmail har to vedlegg (eksisterende Cordel ASCII-format og Excel), firmalayout og tydelig leilighets-/leveringsinformasjon. Ingen sending uten brukerens sendeknapp. Reell provider-sending er ikke utført under QA. Faktiske statuskoder er koblet til byggoversikten. Se docs/qa/BOLIG_BESTILLING_LEVERING_20261021.md for gjeldende scope og begrensninger. «Neste anbefalte»-avsnitt om dette nedenfor er historisk; neste etappe er faktisk fremdrift/sjekklister per bolig/rom, kundeaksept og eksterne roller. Excel-import forblir sist.

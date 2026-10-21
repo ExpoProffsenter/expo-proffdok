@@ -4158,3 +4158,31 @@
 @media(max-width:600px){.bolig-delivery-fields,.bolig-delivery-summary{grid-template-columns:minmax(0,1fr)}.bolig-delivery-dialog{padding:12px}.bolig-delivery-order>summary{gap:7px;padding:11px}.bolig-delivery-actions button{flex:1 1 140px;justify-content:center}.bolig-delivery-badge{font-size:11px}.bolig-delivery-receive-line{grid-template-columns:minmax(0,1fr) 80px;gap:8px}}
 .bolig-mail-preview{display:block;border:1px solid #adc8d7;border-radius:12px;width:100%;height:480px;background:#51585a;box-sizing:border-box}.bolig-mail-recipient{padding:14px;background:#e3f3f0;border:1px solid #99c8bf;border-radius:12px;margin-bottom:12px;overflow-wrap:anywhere}.bolig-mail-recipient small,.bolig-mail-recipient strong,.bolig-mail-fag small{display:block}.bolig-mail-recipient small,.bolig-mail-fag small{font-size:12px;color:#526b7a}.bolig-mail-fag{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(100px,0.8fr);gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid #d8e6ed}.bolig-mail-fag span{overflow-wrap:anywhere}
 .bolig-delivery-dialog label.bolig-order-line{display:flex!important;flex-direction:row!important;align-items:center;gap:12px;padding:8px 0!important}.bolig-delivery-dialog label.bolig-order-line>.bolig-product-card{flex:1;min-width:0}.bolig-delivery-dialog label.bolig-order-line>input[type=checkbox]{appearance:auto!important;width:20px!important;height:20px!important;min-height:20px!important;flex:0 0 20px;margin:0!important}
+
+/* Apartment overview: short opaque cards; longer work opens in dialogs. */
+.bolig-unit-task-grid {display:grid;gap:10px;margin-top:16px;}
+.bolig-unit-task-card {display:flex!important;align-items:center;gap:13px;width:100%;text-align:left!important;padding:18px!important;background:#f4fbfd!important;border:1px solid #bfdde5!important;border-radius:15px!important;color:#143d4c!important;box-shadow:0 3px 12px #0d475508;min-width:0;}
+.bolig-unit-task-card:hover {border-color:#008fa1!important;background:#e7f6f8!important;}
+.bolig-unit-task-card>span:nth-child(2) {display:grid;gap:5px;flex:1;min-width:0;}
+.bolig-unit-task-card strong {font-size:16px;line-height:1.35;}
+.bolig-unit-task-card small {font-weight:400;color:#456777;line-height:1.45;}
+.bolig-unit-task-icon {display:grid;place-items:center;flex:0 0 44px;height:44px;border-radius:12px;background:#d7f1f2;color:#008698;}
+.bolig-unit-work-dialog {width:min(960px,calc(100vw - 24px));max-width:960px;}
+.bolig-unit-work-dialog>header small {color:#527380;}
+.bolig-unit-quality {padding:12px 4px;line-height:1.6;}
+.bolig-unit-quality-actions {display:grid;gap:10px;grid-template-columns:repeat(2,minmax(0,1fr));}
+.bolig-unit-quality-actions button {display:flex;justify-content:space-between;align-items:center;gap:10px;padding:15px!important;background:#e4f4f6!important;color:#174959!important;border:1px solid #badce2!important;}
+.bolig-custom-review {list-style:none;padding:0;display:grid;gap:8px;}
+.bolig-delivery-totals {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:12px 0;}
+.bolig-delivery-totals>div {padding:12px;background:#e7f5f7;border:1px solid #c1dfe5;border-radius:12px;display:grid;gap:4px;}
+.bolig-delivery-totals strong {font-size:23px;color:#006e80;}
+.bolig-delivery-totals span {font-size:12px;color:#355d6e;}
+.bolig-summary-list {display:grid;gap:8px;list-style:none;padding:0;}
+.bolig-summary-list button {width:100%;display:flex;justify-content:space-between;gap:12px;text-align:left;}
+@media(max-width:600px){.bolig-unit-task-card{padding:13px!important;gap:10px;}.bolig-unit-task-card strong{font-size:15px;}.bolig-unit-quality-actions{grid-template-columns:1fr;}.bolig-delivery-totals{grid-template-columns:repeat(2,minmax(0,1fr));}}
+.bolig-summary-list button>span {display:grid;gap:5px;min-width:0;}
+.bolig-summary-list small {font-weight:400;line-height:1.4;color:#476b79;}
+.bolig-overview-delivery-actions {padding:12px 0;flex-wrap:wrap;}
+.bolig-dialog.bolig-unit-work-dialog {height:auto;max-height:calc(100dvh - 24px);overflow:auto;background:#f1f8fb;}
+.bolig-unit-work-dialog>header {padding-bottom:12px;margin-bottom:12px;border-bottom:1px solid #d5e5ea;}
+.bolig-unit-work-dialog>footer {margin-top:12px;padding-top:12px;border-top:1px solid #d5e5ea;}

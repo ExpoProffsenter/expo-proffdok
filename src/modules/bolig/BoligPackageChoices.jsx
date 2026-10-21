@@ -15,6 +15,7 @@ import {
 } from "./boligClient.js";
 import { money, optionBreakdown } from "./boligCatalogClient.js";
 import ProductCard from "./BoligProductCard.jsx";
+import BoligUnitCustomization from "./BoligUnitCustomization.jsx";
 import BoligPackageContents, {
   OptionContents,
 } from "./BoligPackageContents.jsx";
@@ -28,6 +29,7 @@ export function PackageChoiceSummary({
   rooms,
   roomId = null,
   onEdit = null,
+  onCustomize = null,
 }) {
   const visible = components
     .filter((p) => !roomId || p.room_id === roomId)
@@ -65,6 +67,22 @@ export function PackageChoiceSummary({
             <span>{p.goods.length} varelinjer</span>
           </div>
           <p>Tilvalgspakker: {money(p.total_cents)} inkl. mva.</p>
+          {p.customization && (
+            <p className="bolig-notice">
+              <strong>Tilpasset denne boligen</strong>
+              <br />
+              {p.customization.reason}
+            </p>
+          )}
+          {onCustomize && (
+            <button
+              type="button"
+              className="bolig-quiet-action"
+              onClick={() => onCustomize(p.scope_id)}
+            >
+              Tilpass denne leiligheten · {roomLabel(p, rooms)}
+            </button>
+          )}
           <details>
             <summary>Vis varer og tilvalgspakker</summary>
             <ul>
@@ -123,7 +141,8 @@ export default function BoligPackageChoices({
     [busy, setBusy] = useState(false),
     [loading, setLoading] = useState(true),
     [error, setError] = useState(""),
-    [notice, setNotice] = useState("");
+    [notice, setNotice] = useState(""),
+    [customScope, setCustomScope] = useState(null);
   const generation = useRef(0),
     operation = useRef(false),
     dialog = useRef(null),
@@ -382,6 +401,7 @@ export default function BoligPackageChoices({
             rooms={rooms}
             roomId={activeRoom?.id}
             onEdit={!activeRoom && canWrite ? start : null}
+            onCustomize={canWrite ? setCustomScope : null}
           />
           {activeRoom &&
             !components.some((p) => p.room_id === activeRoom.id) && (
@@ -408,6 +428,22 @@ export default function BoligPackageChoices({
         </>
       )}
       {notice && <p role="status">{notice}</p>}
+      {customScope && (
+        <BoligUnitCustomization
+          key={customScope}
+          context={context}
+          root={root}
+          unit={unit}
+          scopeId={customScope}
+          onClose={(saved) => {
+            setCustomScope(null);
+            if (saved)
+              setNotice(
+                "Tilpasningen er lagret bare for denne boligen. Se over bestillingsutkastet på nytt.",
+              );
+          }}
+        />
+      )}
       {error && data && !open && (
         <p role="alert">
           {error}{" "}

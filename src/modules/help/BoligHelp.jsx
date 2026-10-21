@@ -94,6 +94,31 @@ export function BoligHelp() {
           sendt.
         </li>
         <li>
+          Velg en bolig. Høyrekolonnen har «Rom, grunnpakke og tilvalgspakker»,
+          «Bestilling og levering», «Sjekklister og dokumentasjon» og
+          «Ferdigstilling». Arbeidet åpnes i popup. Lukk og fortsett senere uten
+          å miste kladden.
+        </li>
+        <li>
+          Åpne «Rom, grunnpakke og tilvalgspakker». «Tilpass denne leiligheten»
+          endrer varer og antall bare for valgt bolig og rom. Skriv begrunnelse,
+          se over og lagre. Pakkeprisen endres bare hvis du skriver et
+          pristillegg eller fratrekk. Gjenoppretting bruker pakkevalget før
+          første tilpasning. En klargjort eller bestilt ordre må avklares før
+          varegrunnlaget kan endres.
+        </li>
+        <li>
+          «Leveranser i bygget» og «Leveranser i prosjektet» viser faktiske
+          ordrestatus per bolig. Tallene gjelder ordre, ikke ferdige boliger. Én
+          bolig kan ha flere ordre.
+        </li>
+        <li>
+          Sjekklister, bilder, avvik og overtagelse åpnes i koblet
+          leilighetsprosjekt. Riktig prosjekttilgang kreves. Automatisk, samlet
+          ferdigstillingsstatus for bolig, bygg og hovedprosjekt er ikke bygget
+          ennå.
+        </li>
+        <li>
           Under Bestilling velger du «Leveringsoppsett». Lagre felles adresse
           for prosjektet, eller velg egen adresse for boligen. Bestilling og
           levering kan være samlet eller delt. Leverandørordrenummer er

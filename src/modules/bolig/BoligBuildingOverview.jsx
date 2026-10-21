@@ -15,6 +15,7 @@ import {
   List,
   TriangleAlert,
 } from "lucide-react";
+import BoligDeliveryOverview from "./BoligDeliveryOverview.jsx";
 import BoligBuildingArt from "./BoligBuildingArt.jsx";
 import { typeInfo } from "./boligStructure.js";
 import { createPortal } from "react-dom";
@@ -875,6 +876,14 @@ export default function BoligBuildingOverview({
           </p>
         </div>
       )}
+      <BoligDeliveryOverview
+        blocks={blocks}
+        entrances={entrances}
+        units={units}
+        statuses={statuses}
+        selectedBlockId={selectedBlock?.id}
+        onSelect={onSelect}
+      />
       <div className="bolig-status-legend">
         <span className="ready">
           <CheckCircle2 size={16} />
