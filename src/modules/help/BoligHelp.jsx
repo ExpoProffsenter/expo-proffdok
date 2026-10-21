@@ -148,6 +148,25 @@ export function BoligHelp() {
           bestilling må avklares før nye bestillinger.
         </li>
         <li>
+          Åpne «Ferdigstilling» i boligen → «Opprett kontrollplan». Legg inn
+          dokumentreferanser for utførelse, sjekklister, avvik, bilder og
+          sluttdokumentasjon. «Legg til kontrollpunkt» kan knyttes til et rom.
+          Velg ansvarlig og følg «Dette gjenstår». Koblet leilighetsprosjekt
+          kontrolleres automatisk for ufullførte kontroller og åpne avvik. Uten
+          kobling kontrollerer prosjektleder referansene manuelt. «Godkjenn for
+          overtagelse» krever at mangellisten er tom. «Registrer overtagelse»
+          viser til en allerede gjennomført protokoll. Dette er intern
+          registrering, ikke en digital signatur.
+        </li>
+        <li>
+          «Ferdigstilling av bygg» og «Ferdigstilling av prosjekt» samler
+          statusen. Avklar også egne fellesarbeider, eller begrunn at det ikke
+          er noen. Ferdige boliger alene er ikke nok. Endret grunnlag krever ny
+          kontroll. «Gjenåpne med begrunnelse» beholder tidligere godkjenninger
+          og overtagelser i historikken. Usendt kontrollbeskrivelse beholdes når
+          du lukker vinduet.
+        </li>
+        <li>
           Vent på «Lagret i firmaet». Andre med tilgang kan hente samme
           struktur. Hvis noen har endret strukturen, beholdes din kladd. Hent
           siste versjon og se over før ny lagring.
@@ -159,8 +178,8 @@ export function BoligHelp() {
         </li>
       </ol>
       <p>
-        Boligvalg er interne utkast. Kundeaksept, beboerportal og samlet
-        fremdrift er ikke koblet til ennå. Grunnleveransen og beboerens
+        Boligvalg er interne utkast. Kundeaksept, beboerportal og automatisk
+        beboervarsling er ikke koblet til ennå. Grunnleveransen og beboerens
         tilvalgspakker holdes adskilt.
       </p>
     </details>

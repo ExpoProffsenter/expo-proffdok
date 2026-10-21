@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import assert from "node:assert/strict";
+import completionScenarios from "./bolig-completion-db-scenarios.mjs";
 import customizationScenarios from "./bolig-customization-db-scenarios.mjs";
 import imageScenarios from "./bolig-images-db-scenarios.mjs";
 import deliveryScenarios from "./bolig-delivery-db-scenarios.mjs";
@@ -942,6 +943,7 @@ try {
   await preparationScenarios({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider});
   await sectionScenarios({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider});
   await deliveryScenarios({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider});
+  await completionScenarios({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider});
   await db.exec(
     `reset role;update public.profiles set deactivated=true where id=${q(reader)}`,
   );

@@ -13,6 +13,7 @@ export default function BoligUnitTasks({
   active,
   rooms,
   order,
+  completion,
   onOpenProject,
 }) {
   const [panel, setPanel] = useState(null),
@@ -143,40 +144,10 @@ export default function BoligUnitTasks({
             )}
           </div>
         )}
-        {panel === "finish" && (
-          <div className="bolig-unit-quality">
-            <p>
-              <strong>Ferdigstilling må kontrolleres per bolig.</strong>{" "}
-              Registrert varemottak forteller at varer er levert. Det bekrefter
-              ikke at arbeidet eller dokumentasjonen er ferdig.
-            </p>
-            <ul>
-              <li>Fullfør relevante sjekklister og kontroller.</li>
-              <li>Avklar avvik og mangler.</li>
-              <li>Kontroller bilder og sluttdokumentasjon.</li>
-              <li>Gjennomfør overtagelse i leilighetsprosjektet.</li>
-            </ul>
-            {unit.project_id ? (
-              <button
-                type="button"
-                className="bolig-primary"
-                onClick={() => project("overtagelse")}
-              >
-                Åpne overtagelse
-              </button>
-            ) : (
-              <p>
-                Koble riktig leilighetsprosjekt under Leilighetsinformasjon
-                først.
-              </p>
-            )}
-            <p>
-              Samlet, automatisk ferdigstillingsstatus for boliger, bygg og
-              hovedprosjekt er neste etappe. Ingen bolig markeres Ferdig fra
-              denne dialogen.
-            </p>
-          </div>
-        )}
+        {panel === "finish" &&
+          (completion || (
+            <p>Åpne dokumentert ferdigstilling fra boligens arbeidsområde.</p>
+          ))}
         <footer>
           <button type="button" onClick={() => setPanel(null)}>
             Tilbake til boligen

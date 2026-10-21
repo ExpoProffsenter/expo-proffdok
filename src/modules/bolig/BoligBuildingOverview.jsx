@@ -7,6 +7,7 @@ import {
   LayoutGrid,
   MapPin,
   X,
+  ClipboardCheck,
   CheckCircle2,
   Circle,
   FileCheck2,
@@ -15,6 +16,8 @@ import {
   List,
   TriangleAlert,
 } from "lucide-react";
+import { BoligCompletionOverview } from "./BoligCompletion.jsx";
+import { completionLabels, completionTone } from "./boligCompletionClient.js";
 import BoligDeliveryOverview from "./BoligDeliveryOverview.jsx";
 import BoligBuildingArt from "./BoligBuildingArt.jsx";
 import { typeInfo } from "./boligStructure.js";
@@ -23,6 +26,18 @@ import { useBoligUiState } from "./boligUiState.js";
 import { getAppSupabaseClient } from "../access/appSupabaseClientRegistry.js";
 
 export function unitStatus(unit, status, layer) {
+  if (layer === "completion")
+    return status?.completion
+      ? {
+          tone: completionTone(status.completion),
+          label: completionLabels[status.completion],
+          icon: ["ready", "handed_over"].includes(status.completion)
+            ? "check"
+            : status.completion === "review"
+              ? "review"
+              : "empty",
+        }
+      : { tone: "unknown", label: "Kontrollstatus ikke hentet", icon: "empty" };
   if (layer === "project")
     return unit.has_project
       ? { tone: "ready", label: "Prosjekt koblet", icon: "check" }
@@ -91,6 +106,7 @@ export default function BoligBuildingOverview({
   onSelect,
   query,
   onQuery,
+  onOpenProject,
 }) {
   const [blockId, setBlockId] = useBoligUiState(
     context,
@@ -112,7 +128,16 @@ export default function BoligBuildingOverview({
     `${record.root.id}:status-filter`,
     "all",
   );
-  const [statuses, setStatuses] = useState(null);
+  const [completionData, setCompletionData] = useState(null);
+  const [orderStatuses, setStatuses] = useState(null);
+  const statuses = useMemo(() => {
+    if (!orderStatuses && !completionData) return null;
+    const next = { ...orderStatuses };
+    for (const row of completionData?.rows || [])
+      if (row.kind === "unit")
+        next[row.scope_id] = { ...next[row.scope_id], completion: row.status };
+    return next;
+  }, [orderStatuses, completionData]);
   const [error, setError] = useState("");
   const generation = useRef(0);
   useEffect(() => {
@@ -519,6 +544,7 @@ export default function BoligBuildingOverview({
         {[
           ["choice", "Boligvalg", FileCheck2],
           ["order", "Bestilling og levering", Package],
+          ["completion", "Ferdigstilling", ClipboardCheck],
           ["project", "Prosjektkobling", Building2],
         ].map(([id, label, Icon]) => (
           <button
@@ -876,11 +902,19 @@ export default function BoligBuildingOverview({
           </p>
         </div>
       )}
+      <BoligCompletionOverview
+        context={context}
+        root={record.root}
+        record={record}
+        selectedBlockId={selectedBlock?.id}
+        onData={setCompletionData}
+        onOpenProject={onOpenProject}
+      />
       <BoligDeliveryOverview
         blocks={blocks}
         entrances={entrances}
         units={units}
-        statuses={statuses}
+        statuses={orderStatuses}
         selectedBlockId={selectedBlock?.id}
         onSelect={onSelect}
       />
@@ -908,8 +942,10 @@ export default function BoligBuildingOverview({
           ? "lagrede valgsutkast"
           : layer === "order"
             ? "klargjorte grunnlag, bestillinger og registrert varemottak"
-            : "kobling til ordinært leilighetsprosjekt"}
-        . Fremdrift kobles til i en senere etappe.
+            : layer === "completion"
+              ? "dokumenterte kontroller og godkjenning per bolig"
+              : "kobling til ordinært leilighetsprosjekt"}
+        . Åpne Ferdigstilling for konkrete mangler og neste handling.
       </p>
     </section>
   );

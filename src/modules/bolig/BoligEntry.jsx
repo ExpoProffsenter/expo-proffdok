@@ -15,6 +15,7 @@ import BoligTaskDialog from "./BoligTaskDialog.jsx";
 import BoligProjectBuilder from "./BoligProjectBuilder.jsx";
 import BoligProjectHome from "./BoligProjectHome.jsx";
 import BoligCatalog from "./BoligCatalog.jsx";
+import BoligCompletion from "./BoligCompletion.jsx";
 import BoligUnitTasks from "./BoligUnitTasks.jsx";
 import BoligRooms from "./BoligRooms.jsx";
 import BoligBuildingOverview from "./BoligBuildingOverview.jsx";
@@ -871,6 +872,10 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
                       context={ctx}
                       record={record}
                       unitId={unitId}
+                      onOpenProject={(id, tab) => {
+                        onClose();
+                        onOpenProject?.(id, tab);
+                      }}
                       query={query}
                       onQuery={setQuery}
                       onSelect={(id) => {
@@ -1075,6 +1080,18 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
                             onClose();
                             onOpenProject?.(id, tab);
                           }}
+                          completion={
+                            <BoligCompletion
+                              context={ctx}
+                              root={record.root}
+                              scopeId={unit.id}
+                              projectId={unit.project_id}
+                              onOpenProject={(id, tab) => {
+                                onClose();
+                                onOpenProject?.(id, tab);
+                              }}
+                            />
+                          }
                           rooms={
                             <BoligRooms
                               key={unit.id + ":rooms:" + ctx.role}

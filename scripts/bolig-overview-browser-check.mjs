@@ -22,7 +22,7 @@ import '${cwd}/src/modules/bolig/bolig.css';
 const context={user_id:'qa',company_id:'firm',role:'manager',enabled:true};
 const record={root:{id:'overview',revision:1},blocks:[{id:'a',name:'Blokk A',building_type:'apartment'},{id:'b',name:'Blokk B',building_type:'apartment'}],entrances:[{id:'ea',block_id:'a',address:'Eksempelgata 1',counts:[4,4,4]},{id:'eb',block_id:'b',address:'Eksempelgata 2',counts:[32,32,28]}],units:[]};
 for(let i=0;i<104;i++)record.units.push({id:'u'+i,entrance_id:i<12?'ea':'eb',floor:1+Math.floor(i%12/4),number:(i<12?'A-':'B-')+(101+i),official_number:i===103?'H9999':'',has_project:i%2===0,contact_name:i===0?'Komplett Eksempel':'',contact_email:i===0?'eksempel@example.invalid':'',contact_phone:i===0?'00000000':''});
-window.__fail=false;window.__calls=[];window.__client={rpc:async(name,args)=>{window.__calls.push({name,args});return window.__fail?{error:{message:'Denied'}}:{data:{context,root_id:record.root.id,units:record.units.map((u,i)=>({unit_id:u.id,choice_revision:i%3===0?1:0,catalog_changed:i%6===0,order_revision:i%4===0?1:0,order_outdated:i%8===0}))}};}};
+window.__fail=false;window.__calls=[];window.__client={rpc:async(name,args)=>{window.__calls.push({name,args});if(!window.__fail && name==='bolig_completion')return {data:{context,root_id:record.root.id,scope_id:null,rows:[...record.units.map(u=>({scope_id:u.id,kind:'unit',status:'not_started'})),{scope_id:record.root.id,kind:'project',status:'not_started'}]}};return window.__fail?{error:{message:'Denied'}}:{data:{context,root_id:record.root.id,units:record.units.map((u,i)=>({unit_id:u.id,choice_revision:i%3===0?1:0,catalog_changed:i%6===0,order_revision:i%4===0?1:0,order_outdated:i%8===0}))}};}};
 function App(){const [q,sq]=useState(''),[unit,su]=useState('');return <section className="bolig-dialog bolig-page"><Overview context={context} record={record} query={q} onQuery={sq} unitId={unit} onSelect={su}/><output aria-label="Valgt ID">{unit}</output></section>}
 createRoot(document.getElementById('app')).render(<App/>);`,
 );
@@ -318,11 +318,15 @@ try {
   );
   eq(
     await page.evaluate(() =>
-      window.__calls.every((c) => c.name === "bolig_overview"),
+      window.__calls.every((c) => c.name === "bolig_overview" || (c.name === "bolig_completion" && c.args.p_action === "get")),
     ),
     true,
     "Overview is read-only",
   );
+  await btn("Ferdigstilling").click();
+  await filter.selectOption("all");
+  await btn("Boligliste").click();
+  eq((await page.locator(".bolig-overview-row").first().innerText()).includes("Ikke startet"),true,"Completion layer shows documented state rather than delivery state");
   eq(errors, [], "No runtime errors");
   console.log(
     "PASS overview Chromium: " + checks + " assertions. Screenshots: " + temp,

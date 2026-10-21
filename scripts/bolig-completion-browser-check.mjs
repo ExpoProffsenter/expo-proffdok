@@ -1,0 +1,259 @@
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import http from "node:http";
+import { build } from "vite";
+import react from "@vitejs/plugin-react";
+const { chromium } = await import(
+  process.env.PLAYWRIGHT_MODULE || "playwright"
+);
+const cwd = process.cwd(),
+  temp = fs.mkdtempSync(path.join(os.tmpdir(), "bolig-deliveries-"));
+fs.writeFileSync(
+  path.join(temp, "entry.jsx"),
+  `
+import React from '${cwd}/node_modules/react/index.js';import {createRoot} from '${cwd}/node_modules/react-dom/client.js';
+import Completion from '${cwd}/src/modules/bolig/BoligCompletion.jsx';
+import '${cwd}/src/style.css';import '${cwd}/src/modules/bolig/bolig.css';
+const ctx={user_id:'qa',company_id:'firm',role:'manager',enabled:true},root={id:'root',title:'QA Prosjekt'};
+const initial=()=>({scope_id:'unit',kind:'unit',parent_id:'block',title:'H0101 · QA kontrollgate',revision:0,basis:'basis0',source_basis:'source0',source:{issues:[]},status:'not_started',items:[],issues:['Avklar kontrollene'],done:0,total:0,owner_id:'qa',owner_name:'QA Leder',approval:null,handover:null});
+let row=initial(),history=[];
+window.__reject=false;window.__foreign=false;window.__calls=[];window.__hold=false;
+const state=()=>({context:ctx,root_id:'root',scope_id:'unit',rows:[structuredClone(row)],history,members:[{id:'qa',name:'QA Leder'}],rooms:[{id:'bath',name:'Bad 1'}]});
+window.__client={rpc:async(name,args)=>{window.__calls.push({name,args});if(window.__hold)await new Promise(r=>window.__release=r);if(window.__foreign)return {data:{...state(),context:{...ctx,company_id:'wrong'}}};if(args.p_action==='get')return {data:state()};if(window.__reject)return {error:{code:'PT409',message:'QA: Grunnlaget er endret. Kladden er beholdt.'}};
+const p=args.p_payload;
+if(args.p_action==='start')row.items=['Arbeidet er utført','Sjekklister og kontroller er fullført','Avvik og mangler er avklart','Bilder er kontrollert','Sluttdokumentasjon er kontrollert'].map((title,i)=>({id:'item'+i,title,kind:i?'documents':'execution',done:false,valid:false,evidence:''}));
+if(args.p_action==='item')row.items=row.items.map(i=>i.id===p.id?{...i,done:p.done,valid:p.done,evidence:p.evidence,by_name:'QA Leder',at:'2026-10-22T10:00:00Z'}:i);
+if(args.p_action==='add')row.items.push({...p,valid:p.done});
+if(args.p_action==='approve')row.approval={by_name:'QA Leder',at:'2026-10-22T10:00:00Z'};
+if(args.p_action==='handover')row.handover={reference:p.reason,at:'2026-10-22T10:00:00Z'};
+if(args.p_action==='reopen'){row.approval=null;row.handover=null;}
+row.done=row.items.filter(i=>i.valid).length;row.total=row.items.length;row.issues=row.items.filter(i=>!i.valid).map(i=>i.title+': dokumentasjon mangler.');row.status=row.handover?'handed_over':row.approval?'ready':row.done===row.total?'controlled':row.items[0]?.valid?'executed':'in_progress';row.revision++;row.basis='basis'+row.revision;
+history=[{id:row.revision,action:args.p_action,actor_name:'QA Leder',at:'2026-10-22T10:00:00Z',reason:p.reason},...history];return {data:state()};}};
+const app=createRoot(document.getElementById('app'));window.__show=(role='manager')=>app.render(<div className="bolig-dialog" style={{position:'static',display:'block',maxWidth:850,margin:'auto'}}><Completion key={role} context={{...ctx,role}} root={root} scopeId="unit"/></div>);window.__show();
+`,
+);
+let server,
+  browser,
+  checks = 0;
+const eq = (a, b, m) => {
+  assert.deepEqual(a, b, m);
+  checks++;
+};
+try {
+  const r = await build({
+    root: cwd,
+    configFile: false,
+    define: {
+      "process.env.NODE_ENV": '"production"',
+      "import.meta.env.VITE_SUPABASE_URL": '"https://qa.supabase.co"',
+      "import.meta.env.VITE_SUPABASE_ANON_KEY": '"qa"',
+    },
+    logLevel: "silent",
+    plugins: [
+      react({ jsxRuntime: "classic" }),
+      {
+        name: "mock",
+        enforce: "pre",
+        resolveId(id) {
+          if (id.endsWith("appSupabaseClientRegistry.js")) return "\0mock";
+        },
+        load(id) {
+          if (id === "\0mock")
+            return "export const getAppSupabaseClient=()=>window.__client;";
+        },
+      },
+    ],
+    build: {
+      write: false,
+      minify: false,
+      lib: {
+        entry: path.join(temp, "entry.jsx"),
+        formats: ["iife"],
+        name: "Qa",
+        cssFileName: "qa",
+      },
+    },
+  });
+  const out = (Array.isArray(r) ? r[0] : r).output,
+    script = out.find((x) => x.type === "chunk").code,
+    css = out
+      .filter((x) => x.type === "asset" && x.fileName.endsWith(".css"))
+      .map((x) => x.source)
+      .join("\n");
+  server = http.createServer((req, res) => {
+    if (req.url === "/app.js") {
+      res.setHeader("content-type", "text/javascript");
+      res.end(script);
+    } else if (req.url === "/app.css") {
+      res.setHeader("content-type", "text/css");
+      res.end(css);
+    } else
+      res.end(
+        '<!doctype html><html lang="nb"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/app.css"><div id="app"></div><script src="/app.js"></script></html>',
+      );
+  });
+  await new Promise((r) => server.listen(0, "127.0.0.1", r));
+  browser = await chromium.launch({
+    headless: true,
+    ...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH
+      ? {
+          executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH,
+          args: ["--no-sandbox"],
+        }
+      : {}),
+  });
+  const page = await browser.newPage({
+      viewport: { width: 1366, height: 900 },
+    }),
+    errors = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await page.goto("http://127.0.0.1:" + server.address().port);
+  const button = (name) => page.getByRole("button", { name, exact: true }),
+    dialog = (name) => page.getByRole("dialog", { name, exact: true });
+  const area = page.getByRole("region", { name: "Dokumentert ferdigstilling" });
+  await button("Opprett kontrollplan").click();
+  eq(
+    await button("Godkjenn for overtagelse").isEnabled(),
+    false,
+    "Unfinished proof cannot approve",
+  );
+  const first = area.getByRole("button", { name: /Arbeidet er utført/ });
+  await first.click();
+  await area
+    .getByLabel("Dokumentreferanse og kontrollbeskrivelse")
+    .fill("QA utførelse protokoll 1");
+  await area.getByLabel("Kontrollen er utført og dokumentert").check();
+  await page.evaluate(() => window.dispatchEvent(new Event("focus")));
+  eq(
+    await area
+      .getByLabel("Dokumentreferanse og kontrollbeskrivelse")
+      .inputValue(),
+    "QA utførelse protokoll 1",
+    "Focus preserves unsent evidence",
+  );
+  await button("Avbryt og behold kladd").click();
+  await first.click();
+  eq(
+    await area
+      .getByLabel("Dokumentreferanse og kontrollbeskrivelse")
+      .inputValue(),
+    "QA utførelse protokoll 1",
+    "Closed draft restored",
+  );
+  for (const width of [320, 390, 1024, 1366]) {
+    await page.setViewportSize({ width, height: 900 });
+    eq(
+      await area.evaluate((el) => el.scrollWidth <= el.clientWidth + 1),
+      true,
+      "No completion overflow " + width,
+    );
+    eq(
+      await area
+        .getByLabel("Dokumentreferanse og kontrollbeskrivelse")
+        .evaluate((el) => parseFloat(getComputedStyle(el).fontSize) >= 16),
+      true,
+      "Readable evidence " + width,
+    );
+  }
+  await page.evaluate(() => (window.__reject = true));
+  await button("Lagre kontroll").click();
+  await area.getByRole("alert").waitFor();
+  eq(
+    await area
+      .getByLabel("Dokumentreferanse og kontrollbeskrivelse")
+      .inputValue(),
+    "QA utførelse protokoll 1",
+    "Write failure retains proof",
+  );
+  await page.evaluate(() => (window.__reject = false));
+  await button("Lagre kontroll").click();
+  await area.getByRole("status").waitFor();
+  for (const title of [
+    "Sjekklister og kontroller er fullført",
+    "Avvik og mangler er avklart",
+    "Bilder er kontrollert",
+    "Sluttdokumentasjon er kontrollert",
+  ]) {
+    await area.getByRole("button", { name: new RegExp(title) }).click();
+    await area
+      .getByLabel("Dokumentreferanse og kontrollbeskrivelse")
+      .fill("QA dokument " + title);
+    await area.getByLabel("Kontrollen er utført og dokumentert").check();
+    await button("Lagre kontroll").click();
+    await area.getByRole("status").waitFor();
+  }
+  eq(
+    await button("Godkjenn for overtagelse").isEnabled(),
+    true,
+    "Completed evidence enables approval",
+  );
+  await button("Godkjenn for overtagelse").click();
+  eq(
+    await page.evaluate(
+      () => window.__calls.filter((c) => c.args.p_action === "approve").length,
+    ),
+    0,
+    "Review has no mutation",
+  );
+  await button("Bekreft godkjenning").click();
+  await button("Registrer overtagelse").waitFor();
+  eq(
+    await area.getByRole("button", { name: /Arbeidet er utført/ }).isEnabled(),
+    false,
+    "Approved evidence locked",
+  );
+  await button("Registrer overtagelse").click();
+  await area
+    .getByLabel("Referanse til overtagelsesprotokoll")
+    .fill("QA overtagelsesprotokoll 22 oktober");
+  await button("Lagre overtagelse").click();
+  await area.getByText("Overtatt", { exact: true }).first().waitFor();
+  await button("Gjenåpne med begrunnelse").click();
+  await area.getByLabel("Begrunnelse").fill("QA endring krever ny kontroll");
+  await button("Gjenåpne ferdigstilling").click();
+  await button("Godkjenn for overtagelse").waitFor();
+  eq(
+    await button("Registrer overtagelse").count(),
+    0,
+    "Reopen clears handover",
+  );
+  await area.getByText(/Historikk ·/).click();
+  eq(
+    (await area.innerText()).includes("Overtagelse registrert"),
+    true,
+    "Past handover retained",
+  );
+  await button("Legg til kontrollpunkt").click();
+  await area.getByLabel("Navn på kontrollpunkt").fill("QA ekstra badkontroll");
+  await area.getByLabel("Rom", { exact: true }).selectOption("bath");
+  await button("Lagre kontroll").click();
+  eq(
+    await button("Godkjenn for overtagelse").isEnabled(),
+    false,
+    "Added pending room control blocks approval",
+  );
+  await page.evaluate(() => window.__show("reader"));
+  await area.waitFor();
+  eq(await button("Legg til kontrollpunkt").count(), 0, "Reader has no writes");
+  await page.evaluate(() => {
+    window.__foreign = true;
+    window.__show("manager");
+  });
+  await page.getByRole("alert").waitFor();
+  eq(
+    await page.getByText("QA utførelse protokoll 1", { exact: true }).count(),
+    0,
+    "Foreign context hides evidence",
+  );
+  eq(errors, [], "No runtime exceptions");
+  console.log(
+    "PASS completion Chromium: " +
+      checks +
+      " assertions; proof/draft/focus, review, handover/reopen/history, room requirements, responsive layout and access.",
+  );
+} finally {
+  await browser?.close();
+  await new Promise((r) => (server ? server.close(r) : r()));
+}

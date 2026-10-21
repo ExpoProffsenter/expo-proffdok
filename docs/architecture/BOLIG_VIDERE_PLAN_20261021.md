@@ -1,5 +1,10 @@
 # Boligprosjekter – arbeidsflate og videre produktkrav
 
+## Oppdatert 22. oktober: dokumentert ferdigstilling i Preview-etappen
+
+Ferdigstillingsmotor for bolig, bygg og prosjekt er implementert med kontrollbevis, ansvarlig, manuell dokumentreferanse, native prosjekt-/sjekkliste-/avvikskontroll, egne fellesarbeider, godkjenning, intern overtagelsesregistrering og begrunnet gjenåpning. Endret grunnlag opphever gyldig grønn status og påvirker foreldre. Se `docs/qa/BOLIG_FERDIGSTILLING_20261022.md` for kontrakt, grenser, tester og publiseringsstatus. Eldre formuleringer nedenfor om at motoren mangler er historiske. Automatisk FDV/filverifisering, kontrollmaler/massefordeling og Bolig-frister med varsling er ikke levert i denne etappen.
+
+
 Kenneths instruks 21. oktober 2026: så nær den godkjente Solgløtt-konseptskissen som mulig. Førsteinntrykket av foundation var svakt, med mye luft og lange skjemaer. Denne filen skiller nåværende leveranse fra ønskelisten.
 
 ## Oppfølging: individuelle avvik, boligkort og samlede leveranser

@@ -226,10 +226,10 @@ try {
   await button("Ferdigstilling").click();
   eq(
     (await dialog("Ferdigstilling").innerText()).includes(
-      "Ingen bolig markeres Ferdig",
+      "Åpne dokumentert ferdigstilling",
     ),
     true,
-    "No invented completion state",
+    "Completion work area has an explicit integration slot",
   );
   await button("Tilbake til boligen").click();
   await page.evaluate(() => window.__show("overview"));
