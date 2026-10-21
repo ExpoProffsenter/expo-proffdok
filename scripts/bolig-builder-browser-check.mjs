@@ -205,6 +205,39 @@ try {
   );
   await dialog.press("Escape");
   eq(await dialog.isVisible(), false);
+  await page.getByRole("button", { name: "Fortsett prosjektkladd" }).click();
+  await dialog.getByRole("button", { name: "Neste", exact: true }).click();
+  await dialog
+    .getByLabel("Byggets adresse", { exact: true })
+    .fill("Eksempelgata 20");
+  await dialog.getByRole("button", { name: "Neste", exact: true }).click();
+  await dialog.getByLabel("Antall oppganger", { exact: true }).fill("20");
+  eq(
+    await dialog.locator(".bolig-builder-entrance").count(),
+    1,
+    "Twenty entrances use one selected editor, not twenty rows",
+  );
+  const lastEntranceKey = await dialog
+    .getByLabel("Oppgang i bygget", { exact: true })
+    .locator("option")
+    .last()
+    .getAttribute("value");
+  await dialog
+    .getByLabel("Oppgang i bygget", { exact: true })
+    .selectOption(lastEntranceKey);
+  await dialog
+    .getByLabel("Oppgangens adresse", { exact: true })
+    .fill("Siste oppgang");
+  await dialog
+    .getByRole("button", { name: "Lukk og behold prosjektkladd" })
+    .click();
+  await page.getByRole("button", { name: "Fortsett prosjektkladd" }).click();
+  eq(
+    await dialog.getByLabel("Oppgangens adresse", { exact: true }).inputValue(),
+    "Siste oppgang",
+    "Selected entrance and its draft survive closing",
+  );
+  await dialog.press("Escape");
   for (const width of [320, 390, 1024, 1366]) {
     await page.setViewportSize({ width, height: 900 });
     await page.evaluate(() => window.__mode("long"));

@@ -92,6 +92,8 @@ export default function BoligProjectBuilder({ context, onCreate, busy }) {
     }
   }, [draft.step]);
   const b = draft.buildings[draft.selected] || draft.buildings[0];
+  const activeDraftEntrance =
+    b.entrances.find((e) => e.key === b.entrance_key) || b.entrances[0];
   const changeBuilding = (values) =>
     update({
       buildings: draft.buildings.map((v) =>
@@ -372,7 +374,7 @@ export default function BoligProjectBuilder({ context, onCreate, busy }) {
                             <p>
                               {buildingTotal(b)} boliger
                               {b.building_type === "apartment"
-                                ? ` · ${b.entrances.length} oppganger`
+                                ? ` · ${b.entrances.length} ${b.entrances.length === 1 ? "oppgang" : "oppganger"}`
                                 : ""}
                             </p>
                           </div>
@@ -537,130 +539,165 @@ export default function BoligProjectBuilder({ context, onCreate, busy }) {
                                 />
                               </label>
                             )}
-                            {b.entrances.map((e, index) => (
-                              <details
-                                className="bolig-builder-entrance"
-                                key={e.key}
-                                open={b.entrances.length === 1 || undefined}
-                              >
-                                <summary>
-                                  {b.building_type === "apartment"
-                                    ? `Oppgang ${index + 1}`
-                                    : "Boligfordeling"}
-                                  <span>
-                                    {e.address || b.address} ·{" "}
-                                    {e.counts.reduce(
-                                      (s, n) => s + Number(n),
-                                      0,
-                                    )}{" "}
-                                    boliger
-                                  </span>
-                                </summary>
-                                <div>
-                                  {b.entrances.length > 1 && (
-                                    <label>
-                                      Oppgangens adresse
-                                      <input
-                                        required
-                                        maxLength={200}
-                                        value={e.address}
-                                        placeholder={b.address}
-                                        onChange={(ev) =>
-                                          changeBuilding({
-                                            entrances: b.entrances.map((v) =>
-                                              v.key === e.key
-                                                ? {
-                                                    ...v,
-                                                    address: ev.target.value,
-                                                  }
-                                                : v,
-                                            ),
-                                          })
-                                        }
-                                      />
-                                    </label>
-                                  )}
-                                  <label>
-                                    Antall etasjer
-                                    <input
-                                      type="number"
-                                      min="1"
-                                      max="30"
-                                      value={e.counts.length}
-                                      onChange={(ev) => {
-                                        const n = Number(ev.target.value);
-                                        if (
-                                          Number.isInteger(n) &&
-                                          n >= 1 &&
-                                          n <= 30
-                                        )
-                                          changeBuilding({
-                                            entrances: b.entrances.map((v) =>
-                                              v.key === e.key
-                                                ? {
-                                                    ...v,
-                                                    counts: Array.from(
-                                                      { length: n },
-                                                      (_, i) =>
-                                                        v.counts[i] ??
-                                                        v.counts[0],
-                                                    ),
-                                                  }
-                                                : v,
-                                            ),
-                                          });
-                                      }}
-                                    />
-                                  </label>
-                                  <div className="bolig-builder-floor-grid">
-                                    {e.counts.map((n, floor) => (
-                                      <label key={floor}>
-                                        {floor + 1}. etasje
+                            {b.entrances.length > 1 && (
+                              <div className="bolig-builder-entrance-picker">
+                                <label>
+                                  Oppgang i bygget
+                                  <select
+                                    aria-label="Oppgang i bygget"
+                                    value={activeDraftEntrance.key}
+                                    onChange={(e) =>
+                                      changeBuilding({
+                                        entrance_key: e.target.value,
+                                      })
+                                    }
+                                  >
+                                    {b.entrances.map((e, i) => (
+                                      <option key={e.key} value={e.key}>
+                                        {i + 1}.{" "}
+                                        {e.address || "Adresse mangler"}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </label>
+                                <small>
+                                  {
+                                    b.entrances.filter((e) => e.address.trim())
+                                      .length
+                                  }{" "}
+                                  av {b.entrances.length} oppgangsadresser fylt
+                                  inn
+                                </small>
+                              </div>
+                            )}
+                            {b.entrances
+                              .filter((e) => e.key === activeDraftEntrance.key)
+                              .map((e) => (
+                                <details
+                                  className="bolig-builder-entrance"
+                                  key={e.key}
+                                  open
+                                >
+                                  <summary>
+                                    {b.building_type === "apartment"
+                                      ? `Oppgang ${b.entrances.indexOf(e) + 1}`
+                                      : "Boligfordeling"}
+                                    <span>
+                                      {e.address || b.address} ·{" "}
+                                      {e.counts.reduce(
+                                        (s, n) => s + Number(n),
+                                        0,
+                                      )}{" "}
+                                      boliger
+                                    </span>
+                                  </summary>
+                                  <div>
+                                    {b.entrances.length > 1 && (
+                                      <label>
+                                        Oppgangens adresse
                                         <input
-                                          type="number"
-                                          min="1"
-                                          max="20"
                                           required
-                                          value={n}
+                                          maxLength={200}
+                                          value={e.address}
+                                          placeholder={b.address}
                                           onChange={(ev) =>
                                             changeBuilding({
                                               entrances: b.entrances.map((v) =>
                                                 v.key === e.key
                                                   ? {
                                                       ...v,
-                                                      counts: v.counts.map(
-                                                        (x, i) =>
-                                                          i === floor
-                                                            ? ev.target.value
-                                                            : x,
-                                                      ),
+                                                      address: ev.target.value,
                                                     }
                                                   : v,
                                               ),
                                             })
                                           }
                                         />
-                                        <small>boliger</small>
                                       </label>
-                                    ))}
+                                    )}
+                                    <label>
+                                      Antall etasjer
+                                      <input
+                                        type="number"
+                                        min="1"
+                                        max="30"
+                                        value={e.counts.length}
+                                        onChange={(ev) => {
+                                          const n = Number(ev.target.value);
+                                          if (
+                                            Number.isInteger(n) &&
+                                            n >= 1 &&
+                                            n <= 30
+                                          )
+                                            changeBuilding({
+                                              entrances: b.entrances.map((v) =>
+                                                v.key === e.key
+                                                  ? {
+                                                      ...v,
+                                                      counts: Array.from(
+                                                        { length: n },
+                                                        (_, i) =>
+                                                          v.counts[i] ??
+                                                          v.counts[0],
+                                                      ),
+                                                    }
+                                                  : v,
+                                              ),
+                                            });
+                                        }}
+                                      />
+                                    </label>
+                                    <div className="bolig-builder-floor-grid">
+                                      {e.counts.map((n, floor) => (
+                                        <label key={floor}>
+                                          {floor + 1}. etasje
+                                          <input
+                                            type="number"
+                                            min="1"
+                                            max="20"
+                                            required
+                                            value={n}
+                                            onChange={(ev) =>
+                                              changeBuilding({
+                                                entrances: b.entrances.map(
+                                                  (v) =>
+                                                    v.key === e.key
+                                                      ? {
+                                                          ...v,
+                                                          counts: v.counts.map(
+                                                            (x, i) =>
+                                                              i === floor
+                                                                ? ev.target
+                                                                    .value
+                                                                : x,
+                                                          ),
+                                                        }
+                                                      : v,
+                                                ),
+                                              })
+                                            }
+                                          />
+                                          <small>boliger</small>
+                                        </label>
+                                      ))}
+                                    </div>
+                                    {b.entrances.length > 1 && (
+                                      <button
+                                        type="button"
+                                        onClick={() =>
+                                          changeBuilding({
+                                            entrances: b.entrances.filter(
+                                              (v) => v.key !== e.key,
+                                            ),
+                                          })
+                                        }
+                                      >
+                                        Fjern oppgang
+                                      </button>
+                                    )}
                                   </div>
-                                  {b.entrances.length > 1 && (
-                                    <button
-                                      type="button"
-                                      onClick={() =>
-                                        changeBuilding({
-                                          entrances: b.entrances.filter(
-                                            (v) => v.key !== e.key,
-                                          ),
-                                        })
-                                      }
-                                    >
-                                      Fjern oppgang
-                                    </button>
-                                  )}
-                                </div>
-                              </details>
-                            ))}
+                                </details>
+                              ))}
                           </>
                         )}
                       </div>
@@ -705,13 +742,46 @@ export default function BoligProjectBuilder({ context, onCreate, busy }) {
                               {buildingTotal(v)} boliger
                             </small>
                             {v.building_type === "apartment" && (
-                              <small>
-                                {v.entrances.length} oppganger ·{" "}
-                                {v.entrances
-                                  .map((e) => e.counts.length)
-                                  .join(" / ")}{" "}
-                                etasjer
-                              </small>
+                              <>
+                                <small>
+                                  {v.entrances.length}{" "}
+                                  {v.entrances.length === 1
+                                    ? "oppgang"
+                                    : "oppganger"}{" "}
+                                  ·{" "}
+                                  {Math.min(
+                                    ...v.entrances.map((e) => e.counts.length),
+                                  ) ===
+                                  Math.max(
+                                    ...v.entrances.map((e) => e.counts.length),
+                                  )
+                                    ? v.entrances[0].counts.length
+                                    : `${Math.min(...v.entrances.map((e) => e.counts.length))}–${Math.max(...v.entrances.map((e) => e.counts.length))}`}{" "}
+                                  etasjer
+                                </small>
+                                <details className="bolig-review-distribution">
+                                  <summary>
+                                    Se oppganger og boligfordeling
+                                  </summary>
+                                  <div>
+                                    {v.entrances.map((e, index) => (
+                                      <p key={e.key}>
+                                        <b>
+                                          {index + 1}. {e.address || v.address}
+                                        </b>
+                                        <small>
+                                          {e.counts.length} etasjer ·{" "}
+                                          {e.counts.reduce(
+                                            (sum, n) => sum + Number(n),
+                                            0,
+                                          )}{" "}
+                                          boliger
+                                        </small>
+                                      </p>
+                                    ))}
+                                  </div>
+                                </details>
+                              </>
                             )}
                           </div>
                           <button

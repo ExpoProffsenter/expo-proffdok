@@ -759,6 +759,7 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
                       onQuery={setQuery}
                       onSetup={() => setView("setup")}
                       onSelect={(id) => {
+                        setNotice("");
                         setUnitId(id);
                         const next = visibleUnits.find((u) => u.id === id);
                         if (next) setEntranceId(next.entrance_id);

@@ -4,7 +4,7 @@ Kenneths bestilling 21. oktober: arbeid selvstendig videre, legg design og UX f�
 
 ## 1. Bygg prosjekt – implementert for Preview
 
-Fire trinn: Prosjekt og boligtype → Bygg og adresser → Etasjer og boliger → Se over og opprett. Typekort med skarpe illustrasjoner, tydelig valgt tilstand og lite tekst. Firma vises fra gjeldende arbeidsprofil. Blandet boligtype velges per bygg. Antall boliger summeres fra fordelingen. Ingen motstridende totalfelt.
+Fire trinn: Prosjekt og boligtype → Bygg og adresser → Etasjer og boliger → Se over og opprett. Typekort med skarpe illustrasjoner, tydelig valgt tilstand og lite tekst. Firma vises fra gjeldende arbeidsprofil. Blandet boligtype velges per bygg. Oppganger velges i én kompakt velger, med ett aktivt redigeringsfelt og synlig telling av ferdige adresser. Antall boliger summeres fra fordelingen. Ingen motstridende totalfelt.
 
 Veiviseren oppretter ingen serverposter før siste knapp. Hele prosjektet lagres i én transaksjon, med referanse og kvittering. Et nytt forsøk etter mistet svar henter samme prosjekt. Lokalt oppsett er avgrenset per bruker/firma; lukk/Escape og gjenåpning beholder trinn og tekst. Dette er en lokal kladd, ikke en kladd tilgjengelig fra alle enheter.
 

@@ -2442,3 +2442,44 @@
   left: -38px;
   font-size: 9px;
 }
+.bolig-builder-entrance-picker {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 5px;
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid #bedde3;
+  background: #eff8fa;
+  border-radius: 8px;
+}
+.bolig-builder-entrance-picker > small {
+  font-size: 11px;
+  color: #4a727f;
+}
+.bolig-review-distribution {
+  font-size: 10px;
+  margin: 4px 0 0;
+}
+.bolig-dialog .bolig-review-distribution summary {
+  min-height: 20px;
+  font-size: 10px;
+  color: #08788a;
+}
+.bolig-review-distribution > div {
+  max-height: 180px;
+  overflow: auto;
+}
+.bolig-review-distribution p {
+  display: grid;
+  gap: 3px;
+  margin: 6px 0;
+  padding-top: 6px;
+  border-top: 1px solid #e0ebef;
+}
+.bolig-review-distribution p b {
+  font-size: 10px;
+}
+.bolig-dialog .bolig-utilities > .bolig-primary {
+  width: auto;
+  flex: 0 0 auto;
+}

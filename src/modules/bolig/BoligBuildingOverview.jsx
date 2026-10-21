@@ -158,7 +158,7 @@ export default function BoligBuildingOverview({
   }, [pickerOpen]);
   useEffect(() => {
     const node = surface.current;
-    const measure = () => setCapacity(node?.clientWidth >= 750 ? 2 : 1);
+    const measure = () => setCapacity(node?.clientWidth >= 680 ? 2 : 1);
     measure();
     if (!node || typeof ResizeObserver === "undefined") return;
     const observer = new ResizeObserver(measure);
@@ -167,11 +167,17 @@ export default function BoligBuildingOverview({
   }, []);
   const { blocks, entrances, units, entranceMap, unitsByEntrance } =
     useMemo(() => {
-      const blocks = record.blocks.filter((b) => !b.archived),
+      const blocks = record.blocks
+          .filter((b) => !b.archived)
+          .sort((a, b) =>
+            a.name.localeCompare(b.name, "nb", { numeric: true }),
+          ),
         blockIds = new Set(blocks.map((b) => b.id));
-      const entrances = record.entrances.filter(
-        (e) => !e.archived && blockIds.has(e.block_id),
-      );
+      const entrances = record.entrances
+        .filter((e) => !e.archived && blockIds.has(e.block_id))
+        .sort((a, b) =>
+          a.address.localeCompare(b.address, "nb", { numeric: true }),
+        );
       const entranceMap = new Map(entrances.map((e) => [e.id, e])),
         unitsByEntrance = new Map();
       const units = record.units.filter(
