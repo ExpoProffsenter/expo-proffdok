@@ -369,7 +369,7 @@ try {
   );
   await page.keyboard.press("Escape");
   await btn("Tilvalgsliste").click();
-  await btn("Nytt tilvalg").click();
+  await btn("Legg til tilvalg").click();
   eq(
     await page
       .getByRole("dialog", { name: "Nytt tilvalg", exact: true })

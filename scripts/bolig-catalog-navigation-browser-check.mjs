@@ -100,9 +100,32 @@ try {
       exact: true,
     }),
     btn = (name) => page.getByRole("button", { name, exact: true });
+  await page
+    .getByRole("region", { name: "Prosjektoversikt", exact: true })
+    .waitFor();
+  eq(
+    await nav.count(),
+    0,
+    "Stored screen pointer never bypasses project home on a new visit",
+  );
+  await page
+    .getByRole("button", { name: "Åpne Eksempelprosjekt", exact: true })
+    .click();
   await nav
     .getByRole("button", { name: "Grunnpakker og tilvalg", exact: true })
     .waitFor();
+  eq(
+    await page
+      .getByRole("button", { name: "Bytt prosjekt", exact: true })
+      .count(),
+    0,
+  );
+  eq(
+    await nav
+      .getByRole("button", { name: "Hovedside", exact: true })
+      .isVisible(),
+    true,
+  );
   for (const width of [320, 390, 1024, 1366]) {
     await page.setViewportSize({ width, height: 900 });
     eq(
@@ -123,7 +146,7 @@ try {
     .getByRole("button", { name: "Grunnpakker og tilvalg", exact: true })
     .click();
   eq(await btn("Ny grunnpakke").isVisible(), true);
-  eq(await btn("Nytt tilvalg").isVisible(), true);
+  eq(await btn("Legg til tilvalg").isVisible(), true);
   eq(
     await nav.locator('[aria-pressed="true"]').count(),
     1,
@@ -148,7 +171,7 @@ try {
     .getByLabel("Pakkenavn", { exact: true })
     .fill("Bevart ny pakke");
   await page.keyboard.press("Escape");
-  await nav.getByRole("button", { name: "Byggoversikt", exact: true }).click();
+  await nav.getByRole("button", { name: "Hovedside", exact: true }).click();
   await nav
     .getByRole("button", { name: "Grunnpakker og tilvalg", exact: true })
     .click();
@@ -170,7 +193,7 @@ try {
     "Ekstra speil",
   );
   await page.keyboard.press("Escape");
-  await btn("Nytt tilvalg").click();
+  await btn("Legg til tilvalg").click();
   eq(
     await page
       .getByRole("dialog", { name: "Nytt tilvalg", exact: true })
@@ -194,6 +217,16 @@ try {
     ),
     0,
     "Navigation never mutates catalog",
+  );
+  await page.reload();
+  await page
+    .getByRole("region", { name: "Prosjektoversikt", exact: true })
+    .waitFor();
+  eq(await nav.count(), 0, "Reload starts at project home");
+  eq(
+    await page.getByRole("dialog").count(),
+    0,
+    "No previous editor reopens above project home",
   );
   eq(errors, [], "No runtime errors");
   console.log(

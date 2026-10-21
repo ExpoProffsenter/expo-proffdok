@@ -4,14 +4,16 @@ Kenneths instruks 21. oktober 2026: så nær den godkjente Solgløtt-konseptskis
 
 ## Nå: prosjektoversikt, bygg, rom og varevalg
 
-Oppdatert pakkeinngang: «Grunnpakker og tilvalg» er et eget arbeidsområde øverst i prosjektet, ved siden av Byggoversikt og Oppsett. Ny grunnpakke/Nytt tilvalg er synlige samtidig. Rompakke-dialogen har snarvei til opprettelse/redigering med bevart utkast. Se docs/qa/BOLIG_PAKKEINNGANG_20261021.md.
+Oppdatert pakkeinngang: «Grunnpakker og tilvalg» er et eget arbeidsområde øverst i prosjektet, ved siden av Hovedside og Oppsett. Ny grunnpakke/Legg til tilvalg er synlige samtidig. Rompakke-dialogen har snarvei til opprettelse/redigering med bevart utkast. Se docs/qa/BOLIG_PAKKEINNGANG_20261021.md.
+
+Siste brukerjustering: samme kompakte varekortmønster som tilbudsbyggeren, sammenlagte varelinjer og tilvalg, direkte bildeopplasting i begge editortyper og ingen utgående produktlenker. Menyvalgene er ugjennomsiktig blå/turkis. Bytt prosjekt er fjernet fra prosjektbildet; Hovedside viser bygg/boliger og Prosjektoversikt velger/oppretter prosjekt. Ny modulåpning eller sideoppdatering starter på Prosjektoversikt, mens tilgangsoppfriskning/fanebytte i samme besøk bevarer arbeidsstedet. Privat bildebucket er kun migrert i Sandbox. Se docs/qa/BOLIG_PAKKEBILDER_20261021.md.
 
 Miljømål BEGGE, først eksisterende foundation-Preview/Sandbox i PR #278. Scope: egne boligkomponenter/CSS, boligveiledning, fasadeillustrasjon, egne tester og én additiv lesefunksjon for status. Ingen endring i eksisterende Sales, innlogging, prosjektlagring, menyer, HR, e-post, eksisterende katalogrettigheter eller øvrige critical checks.
 
 - «Prosjektoversikt» øverst i et åpent prosjekt går til modulens forside med prosjektvalg/nytt prosjekt. Appens globale Startside er separat. Nye fotorealistiske eksempelbilder for hus/boligfelt følger blokkens stil; egne prosjektbilder er fortsatt et senere steg. Se docs/qa/BOLIG_NAV_BILDER_20261021.md for UX-gjennomgang og prioritering.
-- Kompakt prosjektvalg og prosjektets bolig-/blokk-/oppgangstall. Første åpning viser Prosjektoversikt; et tidligere servervalidert arbeidssted kan gjenopptas. Bygg nytt prosjekt og Fortsett prosjektkladd er separate innganger. Veiledning tilgjengelig, sammenlagt som standard.
+- Kompakt prosjektvalg og prosjektets bolig-/blokk-/oppgangstall. Første åpning viser Prosjektoversikt; et arbeidssted i samme besøk kan gjenopptas uten å miste kladd. Bygg nytt prosjekt og Fortsett prosjektkladd er separate innganger. Veiledning tilgjengelig, sammenlagt som standard.
 - Byggoversikt som hovedflate. Faktiske etasjer og bolig-ID-er danner klikkbare vinduer over en illustrert fasade. Boligpanelet står ved siden av på desktop. På mobil kan man gå tilbake til bygget.
-- Egne arbeidsområder Byggoversikt og Oppsett. Oppsett samler struktur, grunnpakker og tilvalg. Skjulte arbeidsområder beholder monterte skjemaer og lokal kladd.
+- Egne arbeidsområder Hovedside, Grunnpakker og tilvalg og Oppsett. Oppsett samler struktur og arkiv. Skjulte arbeidsområder beholder monterte skjemaer og lokal kladd.
 - Boligpanelet skiller Boligvalg fra Bestilling. Lagret boligvalg vises før redigering; kontakt/prosjektkobling ligger under eget valg.
 - Statuslag for lagrede boligvalg, bestillingsutkast og prosjektkobling. Aldri vis «Bestilt», «Ferdig» eller fremdriftsstatus basert på et utkast. Ny lesefunksjon returnerer kun statussammendrag for godkjent firma/prosjekt. Utdatert kildevalg og endret katalog markeres.
 - Katalogoppslag bruker eksisterende serverrettigheter: interne brukere med intern katalogtilgang kan søke internt; proffoppslag følger firmaets aktive leverandører og nødvendige modultilganger. Prisinnsyn gir ingen ekstra katalogtilgang. Kun varebeskrivelse, varenummer, bilde/produktlenke og eventuell salgspris kopieres. Innkjøpsnetto og rabatter følger aldri boligvalg/bestillingsgrunnlag.

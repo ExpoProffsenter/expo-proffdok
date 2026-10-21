@@ -11,6 +11,8 @@ import CatalogForm from "./BoligDraftForm.jsx";
 import BoligEditorDialog from "./BoligEditorDialog.jsx";
 import BoligOrderDraft from "./BoligOrderDraft.jsx";
 import ProductCard from "./BoligProductCard.jsx";
+import BoligImageUpload from "./BoligImageUpload.jsx";
+import BoligProductImage from "./BoligProductImage.jsx";
 import BoligCatalogLookup from "./BoligCatalogLookup.jsx";
 import { WORK_PROFILE_EVENT } from "../access/workProfileClient.js";
 import {
@@ -18,6 +20,22 @@ import {
   MODULE_ACCESS_EVENT,
 } from "../access/moduleAccessClient.js";
 const CATALOG_EVENT = "expo-proffdok-bolig-catalog";
+function PackageLine({ initialOpen, title, summary, children }) {
+  const [open, setOpen] = useState(initialOpen);
+  return (
+    <details
+      className="bolig-edit-line"
+      open={open}
+      onToggle={(e) => setOpen(e.currentTarget.open)}
+    >
+      <summary>
+        {title}
+        <small>{summary}</small>
+      </summary>
+      {children}
+    </details>
+  );
+}
 const newLine = () => ({
   key: crypto.randomUUID(),
   name: "",
@@ -109,169 +127,146 @@ function PackageEditor({
             brukes bare ved fratrekk.
           </p>
           {v.lines.map((line, index) => (
-            <div className="bolig-catalog-line" key={line.key}>
-              <span
-                className="bolig-line-badge"
-                aria-label={`Varelinje ${index + 1}`}
-              >
-                {line.image_url?.startsWith("https://") ? (
-                  <img
-                    src={line.image_url}
-                    alt=""
-                    referrerPolicy="no-referrer"
+            <PackageLine
+              key={line.key}
+              initialOpen={!line.name}
+              title={`Vare ${index + 1} · ${line.name || "Ny vare"}`}
+              summary={`${line.quantity} ${line.unit} · Åpne / lukk`}
+            >
+              <div className="bolig-catalog-line">
+                <span
+                  className="bolig-line-badge"
+                  aria-label={`Varelinje ${index + 1}`}
+                >
+                  {line.image_url ? (
+                    <BoligProductImage value={line.image_url} alt="" />
+                  ) : (
+                    <Package size={22} />
+                  )}
+                  <small>{index + 1}</small>
+                </span>
+                <label>
+                  Varebeskrivelse {index + 1}
+                  <input
+                    required
+                    maxLength={160}
+                    value={line.name}
+                    onChange={(e) =>
+                      c(
+                        "lines",
+                        v.lines.map((l) =>
+                          l.key === line.key
+                            ? { ...l, name: e.target.value }
+                            : l,
+                        ),
+                      )
+                    }
                   />
-                ) : (
-                  <Package size={22} />
-                )}
-                <small>{index + 1}</small>
-              </span>
-              <label>
-                Varebeskrivelse {index + 1}
-                <input
-                  required
-                  maxLength={160}
-                  value={line.name}
-                  onChange={(e) =>
+                </label>
+                <label>
+                  Varenummer {index + 1}
+                  <input
+                    maxLength={80}
+                    value={line.sku}
+                    onChange={(e) =>
+                      c(
+                        "lines",
+                        v.lines.map((l) =>
+                          l.key === line.key
+                            ? { ...l, sku: e.target.value }
+                            : l,
+                        ),
+                      )
+                    }
+                  />
+                </label>
+                <label>
+                  Antall {index + 1}
+                  <input
+                    type="number"
+                    min="0.001"
+                    max="10000"
+                    step="0.001"
+                    required
+                    value={line.quantity}
+                    onChange={(e) =>
+                      c(
+                        "lines",
+                        v.lines.map((l) =>
+                          l.key === line.key
+                            ? { ...l, quantity: e.target.value }
+                            : l,
+                        ),
+                      )
+                    }
+                  />
+                </label>
+                <label>
+                  Enhet {index + 1}
+                  <input
+                    required
+                    maxLength={20}
+                    value={line.unit}
+                    onChange={(e) =>
+                      c(
+                        "lines",
+                        v.lines.map((l) =>
+                          l.key === line.key
+                            ? { ...l, unit: e.target.value }
+                            : l,
+                        ),
+                      )
+                    }
+                  />
+                </label>
+                <label>
+                  Grunnsum inkl. mva. {index + 1}
+                  <input
+                    inputMode="decimal"
+                    placeholder="Valgfritt fratrekksbeløp"
+                    value={line.credit}
+                    onChange={(e) =>
+                      c(
+                        "lines",
+                        v.lines.map((l) =>
+                          l.key === line.key
+                            ? { ...l, credit: e.target.value }
+                            : l,
+                        ),
+                      )
+                    }
+                  />
+                </label>
+                <button
+                  type="button"
+                  className="bolig-line-remove"
+                  aria-label={`Fjern varelinje ${index + 1}`}
+                  title={`Fjern varelinje ${index + 1}`}
+                  disabled={v.lines.length === 1}
+                  onClick={() =>
                     c(
                       "lines",
-                      v.lines.map((l) =>
-                        l.key === line.key ? { ...l, name: e.target.value } : l,
-                      ),
+                      v.lines.filter((l) => l.key !== line.key),
                     )
                   }
-                />
-              </label>
-              <label>
-                Varenummer {index + 1}
-                <input
-                  maxLength={80}
-                  value={line.sku}
-                  onChange={(e) =>
-                    c(
-                      "lines",
-                      v.lines.map((l) =>
-                        l.key === line.key ? { ...l, sku: e.target.value } : l,
+                >
+                  <Trash2 size={17} />
+                </button>
+                <BoligImageUpload
+                  context={context}
+                  rootId={rootId}
+                  value={line.image_url || ""}
+                  label={`Bilde for varelinje ${index + 1}`}
+                  onChange={(url) =>
+                    c((current) => ({
+                      lines: current.lines.map((l) =>
+                        l.key === line.key ? { ...l, image_url: url } : l,
                       ),
-                    )
+                    }))
                   }
                 />
-              </label>
-              <label>
-                Antall {index + 1}
-                <input
-                  type="number"
-                  min="0.001"
-                  max="10000"
-                  step="0.001"
-                  required
-                  value={line.quantity}
-                  onChange={(e) =>
-                    c(
-                      "lines",
-                      v.lines.map((l) =>
-                        l.key === line.key
-                          ? { ...l, quantity: e.target.value }
-                          : l,
-                      ),
-                    )
-                  }
-                />
-              </label>
-              <label>
-                Enhet {index + 1}
-                <input
-                  required
-                  maxLength={20}
-                  value={line.unit}
-                  onChange={(e) =>
-                    c(
-                      "lines",
-                      v.lines.map((l) =>
-                        l.key === line.key ? { ...l, unit: e.target.value } : l,
-                      ),
-                    )
-                  }
-                />
-              </label>
-              <label>
-                Grunnsum inkl. mva. {index + 1}
-                <input
-                  inputMode="decimal"
-                  placeholder="Valgfritt fratrekksbeløp"
-                  value={line.credit}
-                  onChange={(e) =>
-                    c(
-                      "lines",
-                      v.lines.map((l) =>
-                        l.key === line.key
-                          ? { ...l, credit: e.target.value }
-                          : l,
-                      ),
-                    )
-                  }
-                />
-              </label>
-              <button
-                type="button"
-                className="bolig-line-remove"
-                aria-label={`Fjern varelinje ${index + 1}`}
-                title={`Fjern varelinje ${index + 1}`}
-                disabled={v.lines.length === 1}
-                onClick={() =>
-                  c(
-                    "lines",
-                    v.lines.filter((l) => l.key !== line.key),
-                  )
-                }
-              >
-                <Trash2 size={17} />
-              </button>
-              <details className="bolig-line-extra">
-                <summary>
-                  <ImagePlus size={16} />
-                  {line.image_url || line.product_url
-                    ? "Bilde / lenke registrert"
-                    : "Legg til bilde / produktlenke"}
-                </summary>
-                <div>
-                  <label>
-                    Bildeadresse {index + 1}
-                    <input
-                      type="url"
-                      placeholder="https://…"
-                      value={line.image_url || ""}
-                      onChange={(e) =>
-                        c(
-                          "lines",
-                          v.lines.map((l) =>
-                            l.key === line.key
-                              ? { ...l, image_url: e.target.value }
-                              : l,
-                          ),
-                        )
-                      }
-                    />
-                  </label>
-                  <label>
-                    Produktlenke {index + 1}
-                    <input
-                      type="url"
-                      value={line.product_url || ""}
-                      onChange={(e) =>
-                        c(
-                          "lines",
-                          v.lines.map((l) =>
-                            l.key === line.key
-                              ? { ...l, product_url: e.target.value }
-                              : l,
-                          ),
-                        )
-                      }
-                    />
-                  </label>
-                </div>
-              </details>
-            </div>
+              </div>
+            </PackageLine>
           ))}
           <div className="bolig-editor-actions">
             <button
@@ -427,23 +422,13 @@ function OptionEditor({
               onChange={(e) => c("sku", e.target.value)}
             />
           </label>
-          <label>
-            Bildeadresse for tilvalget
-            <input
-              type="url"
-              placeholder="https://…"
-              value={v.image_url}
-              onChange={(e) => c("image_url", e.target.value)}
-            />
-          </label>
-          <label>
-            Produktlenke for tilvalget
-            <input
-              type="url"
-              value={v.product_url}
-              onChange={(e) => c("product_url", e.target.value)}
-            />
-          </label>
+          <BoligImageUpload
+            context={context}
+            rootId={rootId}
+            value={v.image_url}
+            label="Bilde for tilvalget"
+            onChange={(url) => c("image_url", url)}
+          />
           <div className="bolig-catalog-pair">
             <label>
               Antall i tilvalget
@@ -665,10 +650,8 @@ export default function BoligCatalog({
     `${phaseKey}:editor`,
     null,
   );
-  const [libraryOpen, setLibraryOpen] = useState(!editPointer);
   const setEditing = (next) => {
     setEditPointer(next ? { kind: next.kind, id: next.entry?.id || "" } : null);
-    setLibraryOpen(!next);
   };
   const [state, setState] = useState(null),
     [error, setError] = useState(""),
@@ -875,7 +858,7 @@ export default function BoligCatalog({
             <div className="bolig-catalog-create-actions">
               {[
                 { kind: "packages", label: "Ny grunnpakke" },
-                { kind: "options", label: "Nytt tilvalg" },
+                { kind: "options", label: "Legg til tilvalg" },
               ].map((action) => (
                 <button
                   key={action.kind}
@@ -898,17 +881,16 @@ export default function BoligCatalog({
               ? "1. Gi pakken et navn. 2. Legg inn varer fra katalogen eller skriv dem inn selv. 3. Lagre pakken."
               : "Velg om varen er et tillegg eller erstatter en standardvare. Oppgi pris og eventuelt fratrekk."}
           </p>
-          <details
+          <section
             className="bolig-catalog-library"
-            open={libraryOpen}
-            onToggle={(e) => setLibraryOpen(e.currentTarget.open)}
+            aria-label="Lagret innhold"
           >
-            <summary>
+            <h4>
               {tab === "packages"
                 ? `${valid.packages.length} grunnpakker`
                 : `${valid.options.length} tilvalg`}{" "}
               i prosjektet
-            </summary>
+            </h4>
             <div className="bolig-catalog-cards">
               {(tab === "packages" ? valid.packages : valid.options).map(
                 (entry) => (
@@ -936,15 +918,20 @@ export default function BoligCatalog({
                         </ul>
                       </details>
                     ) : (
-                      <ProductCard line={entry}>
-                        {entry.replace_key
-                          ? "Alternativ til standardvare"
-                          : "Tillegg til grunnpakken"}{" "}
-                        · {money(entry.price_cents)} inkl. mva.
-                        {entry.deduct_base
-                          ? " · grunnsummen trekkes fra"
-                          : " · uten fratrekk"}
-                      </ProductCard>
+                      <details className="bolig-option-card-content">
+                        <summary>
+                          {money(entry.price_cents)} inkl. mva. · Vis innhold
+                        </summary>
+                        <ProductCard line={entry}>
+                          {entry.replace_key
+                            ? "Alternativ til standardvare"
+                            : "Tillegg til grunnpakken"}{" "}
+                          · {money(entry.price_cents)} inkl. mva.
+                          {entry.deduct_base
+                            ? " · grunnsummen trekkes fra"
+                            : " · uten fratrekk"}
+                        </ProductCard>
+                      </details>
                     )}
                     <small>Versjon {entry.revision}</small>
                     {canWrite && (
@@ -982,7 +969,7 @@ export default function BoligCatalog({
                 ),
               )}
             </div>
-          </details>
+          </section>
           {editing && canWrite && (
             <BoligEditorDialog
               title={

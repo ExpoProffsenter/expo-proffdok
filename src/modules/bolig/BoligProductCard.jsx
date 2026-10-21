@@ -1,21 +1,13 @@
-import React, { useState } from "react";
+import React from "react";
+import BoligProductImage from "./BoligProductImage.jsx";
 export default function ProductCard({ line, children }) {
-  const [failed, setFailed] = useState("");
-  const image = line.image_url || "";
   return (
     <span className="bolig-product-card">
       <span className="bolig-product-image">
-        {image && failed !== image ? (
-          <img
-            src={image}
-            alt={line.name || "Varebilde"}
-            loading="lazy"
-            referrerPolicy="no-referrer"
-            onError={() => setFailed(image)}
-          />
-        ) : (
-          <span aria-label="Vare uten bilde">Varebilde</span>
-        )}
+        <BoligProductImage
+          value={line.image_url || ""}
+          alt={line.name || "Varebilde"}
+        />
       </span>
       <span className="bolig-product-info">
         <strong>{line.name}</strong>
@@ -24,16 +16,6 @@ export default function ProductCard({ line, children }) {
           {line.quantity} {line.unit}
         </small>
         {children}
-        {line.product_url && (
-          <a
-            href={line.product_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            referrerPolicy="no-referrer"
-          >
-            Se produkt
-          </a>
-        )}
       </span>
     </span>
   );

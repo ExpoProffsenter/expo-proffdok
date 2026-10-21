@@ -14,7 +14,6 @@ import { useBoligUiState } from "./boligUiState.js";
 import BoligTaskDialog from "./BoligTaskDialog.jsx";
 import BoligProjectBuilder from "./BoligProjectBuilder.jsx";
 import BoligProjectHome from "./BoligProjectHome.jsx";
-import BoligProjectPicker from "./BoligProjectPicker.jsx";
 import BoligCatalog from "./BoligCatalog.jsx";
 import BoligRooms from "./BoligRooms.jsx";
 import BoligBuildingOverview from "./BoligBuildingOverview.jsx";
@@ -29,9 +28,12 @@ import {
 export default function BoligEntry({ userId, onOpenProject, onExit }) {
   const { context, loadError } = useBoligContext(userId);
   const [open, setOpen] = useState(true);
+  // New module visit starts at project home; access refresh keeps this visit intact.
+  const visit = useRef({});
   const exit = useRef(onExit);
   exit.current = onExit;
   const close = useCallback(() => {
+    visit.current = {};
     setOpen(false);
     exit.current?.();
   }, []);
@@ -56,6 +58,7 @@ export default function BoligEntry({ userId, onOpenProject, onExit }) {
     <BoligWorkspace
       key={`${userId}:${context.company_id}`}
       context={context}
+      visit={visit.current}
       onClose={close}
       onOpenProject={onOpenProject}
     />
@@ -162,7 +165,7 @@ function FloorFields({ value, onChange }) {
     </div>
   );
 }
-function BoligWorkspace({ context, onClose, onOpenProject }) {
+function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
   const alive = useRef(true),
     selection = useRef(0),
     workspaceHeading = useRef(null);
@@ -178,7 +181,12 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
     [unitId, setUnitId] = useBoligUiState(context, "unit", ""),
     [query, setQuery] = useBoligUiState(context, "query", ""),
     [view, setView] = useBoligUiState(context, "view", "overview");
-  const [screen, setScreen] = useBoligUiState(context, "screen", "projects");
+  const visitKey = `${context.user_id}:${context.company_id}`;
+  const [screen, updateScreen] = useState(() => visit[visitKey] || "projects");
+  const setScreen = (next) => {
+    visit[visitKey] = next;
+    updateScreen(next);
+  };
   const [rootId, setRootId] = useBoligUiState(context, "root", "");
   useEffect(() => {
     if (screen === "workspace" && record?.root.id) {
@@ -295,10 +303,8 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
       try {
         if (context.enabled) {
           const listing = await request("list");
-          const first =
-            listing.roots?.find((r) => r.id === rootId) ||
-            listing.roots?.find((r) => !r.archived);
-          if (first && alive.current && (rootId || screen === "workspace"))
+          const first = listing.roots?.find((r) => r.id === rootId);
+          if (first && alive.current && screen === "workspace")
             await fetchRecord(first.id, true);
           else if (alive.current) setScreen("projects");
         }
@@ -426,17 +432,6 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
       busy={busy || listingLoading}
     />
   );
-  const projectPicker = (
-    <BoligProjectPicker
-      roots={roots}
-      activeRoot={record?.root}
-      busy={busy}
-      onSelect={async (id) => {
-        setView("overview");
-        await fetchRecord(id);
-      }}
-    ></BoligProjectPicker>
-  );
   return (
     <section className="bolig-dialog bolig-page" aria-label="Boligprosjekter">
       <header>
@@ -518,7 +513,6 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
             <section className="bolig-panel bolig-workspace">
               {!record ? (
                 <div className="bolig-project-empty">
-                  {projectPicker}
                   <p>
                     Velg eller opprett et hovedprosjekt. Legg så til bygg og
                     oppgang.
@@ -549,7 +543,6 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
                       </p>
                     </div>
                     <div className="bolig-project-actions">
-                      {projectPicker}
                       <nav aria-label="Arbeidsområde">
                         <button
                           type="button"
@@ -557,7 +550,7 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
                           onClick={() => setView("overview")}
                         >
                           <Home size={17} />
-                          Byggoversikt
+                          Hovedside
                         </button>
                         <button
                           type="button"

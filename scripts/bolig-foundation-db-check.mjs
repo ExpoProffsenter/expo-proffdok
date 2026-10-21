@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import assert from "node:assert/strict";
+import imageScenarios from "./bolig-images-db-scenarios.mjs";
 import packageScenarios from "./bolig-package-choices-db-scenarios.mjs";
 import contentScenarios from "./bolig-room-content-db-scenarios.mjs";
 import roomsScenarios from "./bolig-rooms-db-scenarios.mjs";
@@ -188,6 +189,15 @@ try {
   await db.exec(
     await fs.readFile(
       "supabase/migrations/20261021163256_bolig_scoped_package_choices.sql",
+      "utf8",
+    ),
+  );
+  await db.exec(
+    `create schema storage;create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);create table storage.objects(bucket_id text,name text,primary key(bucket_id,name));alter table storage.objects enable row level security;grant usage on schema storage to authenticated,anon;grant select,insert,update,delete on storage.objects to authenticated,anon;`,
+  );
+  await db.exec(
+    await fs.readFile(
+      "supabase/migrations/20261021173913_bolig_catalog_image_uploads.sql",
       "utf8",
     ),
   );
@@ -877,6 +887,19 @@ try {
     outsider,
   });
   await contentScenarios({
+    db,
+    call,
+    actor,
+    eq,
+    rejects,
+    id,
+    firm,
+    other,
+    manager,
+    reader,
+    outsider,
+  });
+  await imageScenarios({
     db,
     call,
     actor,

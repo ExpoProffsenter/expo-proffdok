@@ -210,3 +210,4 @@ jobs:
           node scripts/bolig-room-content-browser-check.mjs
           node scripts/bolig-package-choices-browser-check.mjs
           node scripts/bolig-catalog-navigation-browser-check.mjs
+          node scripts/bolig-images-browser-check.mjs

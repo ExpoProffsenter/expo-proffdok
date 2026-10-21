@@ -305,7 +305,7 @@ try {
     d.querySelector('img[src="https://example.invalid/product.jpg"]'),
     "Product image uses the familiar goods card",
   );
-  await act(() => button("Nytt tilvalg").click());
+  await act(() => button("Legg til tilvalg").click());
   await input("Navn på tilvalg", "Testalternativ");
   await input("Varenummer for tilvalget", "QA-ALT");
   await select("Tilvalgstype", "alternative");
@@ -433,6 +433,14 @@ try {
   await act(() => {});
   const orderRegion = d.querySelector('[aria-label="Bestillingsutkast"]');
   assert(orderRegion);
+  const orderRebase = [...orderRegion.querySelectorAll("button")].find(
+    (b) => b.textContent.trim() === "Se over og bruk siste grunnlag",
+  );
+  assert(
+    orderRebase,
+    "Changed choice revision preserves order basis and requires deliberate review",
+  );
+  await act(() => orderRebase.click());
   const orderChecks = [...orderRegion.querySelectorAll("input[type=checkbox]")];
   assert.equal(orderChecks.length, 2);
   assert(

@@ -32,8 +32,15 @@ export default function BoligOrderDraft({
       if (ticket === generation.current) setLoading(false);
     }
   };
+  const scopeKey = `${context.user_id}:${context.company_id}:${root.id}:${unit.id}`;
+  const previousScope = useRef(scopeKey);
   useEffect(() => {
-    setState(null);
+    if (previousScope.current !== scopeKey) {
+      previousScope.current = scopeKey;
+      setState(null);
+    }
+    // A new choice revision updates the basis, retaining unsent exclusions and
+    // requiring explicit review instead of remounting an apparently fresh form.
     load();
     window.addEventListener("focus", load);
     return () => {

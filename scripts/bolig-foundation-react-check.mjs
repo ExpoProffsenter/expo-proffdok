@@ -498,15 +498,13 @@ try {
     "View changes never reload or navigate",
   );
 
-  await act(() => button("Bytt prosjekt").click());
-  const picker = q(".bolig-project-dialog");
-  assert(picker.open, "Project chooser opens as its own modal");
-  assert.equal(
-    q('section.bolig-page[aria-label="Boligprosjekter"] .bolig-root'),
-    null,
-    "Other projects take no space in the active workspace",
-  );
-  const pickerSearch = picker.querySelector("input[type=search]");
+  assert(!button("Bytt prosjekt"), "Only project overview switches projects");
+  const readsBefore = calls.filter(
+    (c) => c.p_action === "get" && c.rpc_name === "bolig_workspace",
+  ).length;
+  await act(() => button("Prosjektoversikt").click());
+  assert(!q(".bolig-home").hidden);
+  const pickerSearch = q(".bolig-home input[type=search]");
   await act(() => {
     Object.getOwnPropertyDescriptor(
       w.HTMLInputElement.prototype,
@@ -514,7 +512,10 @@ try {
     ).set.call(pickerSearch, "ingen treff");
     pickerSearch.dispatchEvent(new w.Event("input", { bubbles: true }));
   });
-  assert.equal(picker.querySelectorAll(".bolig-root").length, 0);
+  assert.equal(
+    q(".bolig-home").querySelectorAll(".bolig-home-project").length,
+    0,
+  );
   await act(() => {
     Object.getOwnPropertyDescriptor(
       w.HTMLInputElement.prototype,
@@ -522,30 +523,17 @@ try {
     ).set.call(pickerSearch, "");
     pickerSearch.dispatchEvent(new w.Event("input", { bubbles: true }));
   });
-  const readsBefore = calls.filter(
-    (c) => c.p_action === "get" && c.rpc_name === "bolig_workspace",
-  ).length;
-  await act(() => picker.querySelector(".bolig-root").click());
-  assert(!picker.open);
+  await act(() => q(".bolig-home-resume").click());
+  assert(q(".bolig-home").hidden);
   assert.equal(
     calls.filter(
       (c) => c.p_action === "get" && c.rpc_name === "bolig_workspace",
     ).length,
     readsBefore,
-    "Choosing the active project must not reset its phase or draft",
+    "Home/resume must not reload active draft",
   );
   assert(input.isConnected && input.value === "Usendt kladd");
-  await act(() => button("Bytt prosjekt").click());
-  await act(() =>
-    picker.dispatchEvent(
-      new w.Event("cancel", { bubbles: true, cancelable: true }),
-    ),
-  );
-  assert(
-    !picker.open && q(".bolig-page")?.isConnected,
-    "Escape closes only the project popup, keeping the workspace open",
-  );
-  assert(!w.__exited, "Popup cancel must never navigate to Startside");
+  assert(!w.__exited, "Project home stays inside module");
   const key = "expo-proffdok.bolig-draft.v1:self:firm-a:root-1:unit-u";
   assert(
     JSON.parse(w.localStorage.getItem(key)).contact_name === "Usendt kladd",
@@ -569,12 +557,42 @@ try {
   holdContext = false;
   await act(() => contextWaiters.splice(0).forEach((resolve) => resolve()));
   assert.equal(input.value, "Usendt kladd");
+  await act(() =>
+    w.dispatchEvent(
+      new w.CustomEvent("expo-proffdok-managed-access-changed", {
+        detail: { userId: "self" },
+      }),
+    ),
+  );
+  assert(
+    q(".bolig-home").hidden,
+    "Access-gate remount in the same visit keeps the workspace",
+  );
+  assert.equal(
+    [...w.document.querySelectorAll("label")]
+      .find((l) => l.textContent.startsWith("Kontaktperson"))
+      .querySelector("input").value,
+    "Usendt kladd",
+    "Access refresh keeps apartment draft",
+  );
   await act(() => w.__unmount());
   await act(() => w.__render("self"));
+  assert(
+    !q(".bolig-home").hidden,
+    "A new module visit starts on project home even with stored workspace pointers",
+  );
+  assert(
+    !q(".bolig-task-dialog"),
+    "New visit must not reopen the previous apartment dialog",
+  );
+  await act(() =>
+    q('.bolig-home-project[aria-label="Åpne Felles prosjekt"]').click(),
+  );
+  await act(() => q(".bolig-grid button").click());
   assert.equal(
     q(".bolig-task-dialog form input").value,
     "H0101",
-    "Selected apartment is restored after access-gate remount",
+    "Explicitly reopening apartment restores its secured draft",
   );
   const emailLabel = [...w.document.querySelectorAll("label")].find(
     (l) => l.textContent.trim() === "E-post",
@@ -695,7 +713,7 @@ try {
       (b) => b.textContent.trim() === name,
     );
   assert(
-    create("Ny grunnpakke") && create("Nytt tilvalg"),
+    create("Ny grunnpakke") && create("Legg til tilvalg"),
     "Both create actions are visible together",
   );
   await act(() => create("Ny grunnpakke").click());
@@ -710,7 +728,7 @@ try {
     "Direct entry retains package editor through focus",
   );
   await act(() => q(".bolig-catalog-dialog header button").click());
-  await act(() => create("Nytt tilvalg").click());
+  await act(() => create("Legg til tilvalg").click());
   assert(
     q('dialog[aria-label="Nytt tilvalg"]'),
     "Option authoring needs no extra category navigation",
@@ -753,12 +771,20 @@ try {
   );
   await act(() => w.__unmount());
   await act(() => w.__render("self"));
+  assert(
+    !q(".bolig-home").hidden,
+    "New visit starts at home, retaining setup draft in storage",
+  );
+  await act(() =>
+    q('.bolig-home-project[aria-label="Åpne Felles prosjekt"]').click(),
+  );
+  await act(() => workNav("Oppsett").click());
   assert.equal(
     [...w.document.querySelectorAll('[aria-label="Arbeidsområde"] button')]
       .find((b) => b.textContent.trim() === "Oppsett")
       .getAttribute("aria-pressed"),
     "true",
-    "Setup phase restores after gate remount",
+    "Setup can be reopened explicitly after a new visit",
   );
   assert.equal(
     [...w.document.querySelectorAll("details")]
@@ -771,6 +797,8 @@ try {
     "3",
     "Unsaved floors restore without a server write",
   );
+  await act(() => workNav("Hovedside").click());
+  await act(() => q(".bolig-grid button").click());
   role = "reader";
   await act(() => w.dispatchEvent(new w.Event("focus")));
   assert.equal(
@@ -787,7 +815,7 @@ try {
   assert.deepEqual(Array.from(w.__opened), ["ordinary-project", "prosjekt"]);
   assert.equal(q(".bolig-page"), null);
   await act(() => button("Åpne boligprosjekter").click());
-  await act(() => q(".bolig-root").click());
+  await act(() => q(".bolig-home-project").click());
   await act(() => q(".bolig-grid button").click());
   denied = true;
   await act(() =>
@@ -945,7 +973,7 @@ try {
       ),
     ),
     false,
-    "Reader workspace has no administrative grant toggles; project popup has its own archive filter",
+    "Reader project home has no administrative grant toggles",
   );
   assert(
     !q('section.bolig-page[aria-label="Boligprosjekter"]').textContent.includes(

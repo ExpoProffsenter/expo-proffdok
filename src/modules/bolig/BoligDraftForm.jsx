@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   boligDraftKey,
   readBoligDraft,
@@ -24,21 +24,36 @@ export default function CatalogForm({
       return { ...draft, _basis: draft._basis || basis };
     }),
     [error, setError] = useState("");
+  const latest = useRef(value);
+  latest.current = value;
   const change = (field, next) => {
     const updated = {
-      ...value,
-      ...(typeof field === "object" ? field : { [field]: next }),
+      ...latest.current,
+      ...(typeof field === "function"
+        ? field(latest.current)
+        : typeof field === "object"
+          ? field
+          : { [field]: next }),
     };
     if (!writeBoligDraft(key, updated))
       setError("Kladden kunne ikke sikres lokalt. Behold siden åpen.");
+    latest.current = updated;
     setValue(updated);
   };
   return (
     <form
       className={`bolig-catalog-form ${className}`}
+      onInvalidCapture={(e) => {
+        const folded = e.target.closest("details");
+        if (folded) folded.open = true;
+      }}
       onSubmit={async (e) => {
         e.preventDefault();
         setError("");
+        if (e.currentTarget.querySelector('[data-image-uploading="true"]')) {
+          setError("Vent til bildet er lastet opp før du lagrer.");
+          return;
+        }
         try {
           const saved = await onSave(value, value._basis);
           if (saved) {

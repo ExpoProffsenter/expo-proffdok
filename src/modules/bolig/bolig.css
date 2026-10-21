@@ -3447,3 +3447,98 @@
   margin: 10px 0;
   line-height: 1.45;
 }
+
+/* Same compact rows and direct image actions as the offer builder. */
+.bolig-dialog .bolig-project-header nav button,
+.bolig-dialog .bolig-catalog nav button,
+.bolig-dialog .bolig-setup-menu button,
+.bolig-dialog .bolig-unit-tabs button,
+.bolig-dialog .bolig-builder-sidebar nav button {
+  background: #17405b;
+  border-color: #12354d;
+  color: #fff;
+  opacity: 1;
+}
+.bolig-dialog .bolig-project-header nav button[aria-pressed="true"],
+.bolig-dialog .bolig-catalog nav button[aria-pressed="true"],
+.bolig-dialog .bolig-setup-menu button[aria-pressed="true"],
+.bolig-dialog .bolig-unit-tabs button[aria-pressed="true"],
+.bolig-dialog .bolig-builder-sidebar nav button[aria-pressed="true"] {
+  background: #006b7a;
+  border-color: #005865;
+  color: #fff;
+}
+.bolig-dialog .bolig-builder-sidebar nav small {
+  color: #e0edf4;
+}
+.bolig-catalog-library > h4 {
+  margin: 14px 0 8px;
+}
+.bolig-dialog .bolig-catalog-cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+.bolig-catalog-cards article {
+  padding: 12px 16px;
+}
+.bolig-catalog-cards h4 {
+  margin: 0 0 5px;
+}
+.bolig-option-card-content > summary,
+.bolig-edit-line > summary {
+  cursor: pointer;
+  padding: 12px;
+  background: #e0edf5;
+  color: #173b50;
+  border-radius: 8px;
+  font-weight: 650;
+}
+.bolig-option-card-content > .bolig-product-card {
+  margin: 10px 0;
+}
+.bolig-edit-line {
+  grid-column: 1 / -1;
+  border: 1px solid #b8d0df;
+  background: #fff;
+  border-radius: 9px;
+  margin: 8px 0;
+}
+.bolig-edit-line > summary small {
+  display: block;
+  margin: 4px 0 0 18px;
+  font-weight: 400;
+}
+.bolig-image-upload {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 12px;
+  border: 1px dashed #88b3c5;
+  background: #eaf4fa;
+  border-radius: 9px;
+}
+.bolig-image-upload > strong,
+.bolig-image-upload > small {
+  flex-basis: 100%;
+}
+.bolig-image-upload input[hidden] {
+  display: none;
+}
+.bolig-upload-preview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.bolig-upload-preview img {
+  width: 86px;
+  height: 70px;
+  object-fit: contain;
+  border-radius: 6px;
+  background: white;
+}
+.bolig-dialog .bolig-setup-menu button small {
+  color: #e0edf4;
+}

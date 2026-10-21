@@ -6,7 +6,8 @@ export function BoligHelp() {
       <p>
         Start i prosjektoversikten. Velg «Bygg nytt prosjekt», fortsett en
         kladd, eller åpne et av firmaets prosjekter. «Prosjektoversikt» tar deg
-        tilbake uten å fjerne usendt arbeid.
+        tilbake uten å fjerne usendt arbeid. En ny åpning starter her.
+        «Hovedside» viser bygg og boliger i prosjektet du har valgt.
       </p>
       <ol>
         <li>
@@ -36,9 +37,10 @@ export function BoligHelp() {
           Åpne «Grunnpakker og tilvalg» øverst i prosjektet → «Ny grunnpakke».
           Pakken åpnes i en egen dialog. Legg inn vareinnhold, varenummer og
           antall. Grunnpakken trenger ingen sum. Valgfri grunnsum per varelinje
-          brukes bare som fratrekk ved et alternativ. «Nytt tilvalg» står ved
-          siden av. Åpne en lagret pakke eller Tilvalgsliste og velg Rediger for
-          å rette innholdet. Under Tilvalgsliste velger du Tillegg til eller
+          brukes bare som fratrekk ved et alternativ. Last opp bilde fra
+          enheten, eller dra det inn på varen. «Legg til tilvalg» står ved siden
+          av. Åpne en lagret pakke eller Tilvalgsliste og velg Rediger for å
+          rette innholdet. Under Tilvalgsliste velger du Tillegg til eller
           Alternativ til en standardvare, med eller uten fratrekk.
         </li>
         <li>
