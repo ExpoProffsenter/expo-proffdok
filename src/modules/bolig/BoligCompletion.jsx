@@ -228,7 +228,11 @@ function ProofForm({
           <p className="bolig-completion-hint">
             {mode === "handover"
               ? "Dette registrerer en overtagelse som allerede er gjennomført. Signering gjøres i overtagelsesprotokollen."
-              : "Oppgi filnavn, dato eller annen presis referanse. Dokumentene lagres i prosjektet eller avtalt dokumentarkiv."}
+              : mode === "reopen"
+                ? "Forklar hva som skal kontrolleres på nytt. Tidligere godkjenning og overtagelse beholdes i historikken."
+                : mode === "no_common"
+                  ? "Forklar hvorfor dette bygget eller prosjektet ikke har egne fellesarbeider. Boligene kontrolleres fortsatt hver for seg."
+                  : "Oppgi filnavn, dato eller annen presis referanse. Dokumentene lagres i prosjektet eller avtalt dokumentarkiv."}
           </p>
         </>
       )}
@@ -373,7 +377,9 @@ export default function BoligCompletion({
         )}
       </section>
     );
-  const children = data.rows.filter((r) => r.parent_id === scopeId);
+  const children = data.rows
+    .filter((r) => r.parent_id === scopeId)
+    .sort((a, b) => a.title.localeCompare(b.title, "nb", { numeric: true }));
   const ownMissing = row.items.filter((i) => !i.valid).length;
   const childrenAwaitHandover = children.some(
     (r) => r.status !== "handed_over",
@@ -712,7 +718,7 @@ export default function BoligCompletion({
             <>
               <p>
                 {row.issues.length
-                  ? `${ownMissing} egne kontroller mangler dokumentasjon. Fullfør også eventuelle mangler i koblet prosjekt og underliggende bygg/boliger.`
+                  ? `${ownMissing ? ownMissing + " egne kontroller mangler dokumentasjon." : "Egne kontroller er dokumentert."} Fullfør også eventuelle mangler i koblet prosjekt og underliggende bygg/boliger.`
                   : "Alle kontrollkrav er dokumentert. Prosjektleder kan nå godkjenne grunnlaget."}
               </p>
               <button

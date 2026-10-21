@@ -20,7 +20,7 @@ const ctx={user_id:'qa',company_id:'firm',role:'manager',enabled:true},root={id:
 const initial=()=>({scope_id:'unit',kind:'unit',parent_id:'block',title:'H0101 · QA kontrollgate',revision:0,basis:'basis0',source_basis:'source0',source:{issues:[]},status:'not_started',items:[],issues:['Avklar kontrollene'],done:0,total:0,owner_id:'qa',owner_name:'QA Leder',approval:null,handover:null});
 let row=initial(),history=[];
 window.__reject=false;window.__foreign=false;window.__calls=[];window.__hold=false;
-const state=()=>({context:ctx,root_id:'root',scope_id:'unit',rows:[structuredClone(row)],history,members:[{id:'qa',name:'QA Leder'}],rooms:[{id:'bath',name:'Bad 1'}]});
+const state=()=>({context:ctx,root_id:'root',scope_id:'unit',rows:[{...structuredClone(row),kind:window.__asParent?'block':'unit'},...(window.__asParent?[{scope_id:'child2',parent_id:'unit',kind:'unit',title:'H0102',status:'not_started',issues:['Avklar kontrollene']},{scope_id:'child1',parent_id:'unit',kind:'unit',title:'H0101',status:'ready',issues:[]}]:[])],history,members:[{id:'qa',name:'QA Leder'}],rooms:[{id:'bath',name:'Bad 1'}]});
 window.__client={rpc:async(name,args)=>{window.__calls.push({name,args});if(window.__hold)await new Promise(r=>window.__release=r);if(window.__foreign)return {data:{...state(),context:{...ctx,company_id:'wrong'}}};if(args.p_action==='get')return {data:state()};if(window.__reject)return {error:{code:'PT409',message:'QA: Grunnlaget er endret. Kladden er beholdt.'}};
 const p=args.p_payload;
 if(args.p_action==='start')row.items=['Arbeidet er utført','Sjekklister og kontroller er fullført','Avvik og mangler er avklart','Bilder er kontrollert','Sluttdokumentasjon er kontrollert'].map((title,i)=>({id:'item'+i,title,kind:i?'documents':'execution',done:false,valid:false,evidence:''}));
@@ -239,6 +239,33 @@ try {
   await page.evaluate(() => window.__show("reader"));
   await area.waitFor();
   eq(await button("Legg til kontrollpunkt").count(), 0, "Reader has no writes");
+  await page.evaluate(() => {
+    window.__asParent = true;
+    window.__show("manager");
+  });
+  await page.locator(".bolig-completion-children strong").first().waitFor();
+  eq(
+    await page.locator(".bolig-completion-children strong").first().innerText(),
+    "H0101",
+    "Natural dwelling order",
+  );
+  eq(
+    await page
+      .locator(".bolig-completion-children strong")
+      .first()
+      .evaluate((el) => parseFloat(getComputedStyle(el).fontSize)),
+    16,
+    "Readable dwelling title",
+  );
+  eq(
+    await page
+      .locator(".bolig-completion-children button")
+      .first()
+      .evaluate((el) => el.getBoundingClientRect().height >= 72),
+    true,
+    "Comfortable dwelling target",
+  );
+  await page.evaluate(() => window.__show("reader"));
   await page.evaluate(() => {
     window.__foreign = true;
     window.__show("manager");

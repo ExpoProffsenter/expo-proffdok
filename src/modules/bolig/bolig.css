@@ -4539,3 +4539,8 @@
   width: 20px;
   height: 20px;
 }
+
+.bolig-completion-children .bolig-summary-list li > button { min-height:72px; padding:14px 16px; }
+.bolig-completion-children .bolig-summary-list strong { font-size:16px; line-height:1.45; }
+.bolig-completion-children .bolig-summary-list small { display:block; font-size:14px; line-height:1.5; margin-top:5px; color:#526a79; }
+.bolig-completion .bolig-primary:disabled { background:#e1e8ed; border-color:#cdd8e0; color:#526775; opacity:1; cursor:not-allowed; }
