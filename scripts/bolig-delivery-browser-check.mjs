@@ -13,14 +13,16 @@ const cwd = process.cwd(),
 fs.writeFileSync(
   path.join(temp, "entry.jsx"),
   `
-import React from '${cwd}/node_modules/react/index.js';import {createRoot} from '${cwd}/node_modules/react-dom/client.js';import Deliveries from '${cwd}/src/modules/bolig/BoligDeliveries.jsx';import '${cwd}/src/style.css';import '${cwd}/src/modules/ui/appUxReview.css';import '${cwd}/src/modules/bolig/bolig.css';
+import React from '${cwd}/node_modules/react/index.js';import {createRoot} from '${cwd}/node_modules/react-dom/client.js';import Deliveries from '${cwd}/src/modules/bolig/BoligDeliveries.jsx';import OrderDraft from '${cwd}/src/modules/bolig/BoligOrderDraft.jsx';import '${cwd}/src/style.css';import '${cwd}/src/modules/ui/appUxReview.css';import '${cwd}/src/modules/bolig/bolig.css';
 const ctx={user_id:'qa',company_id:'firm',role:'manager',enabled:true},root={id:'root',reference:'00420',title:'QA Boligprosjekt'},unit={id:'unit',number:'H0101'};
 const goods=[{key:'a',name:'Servant',sku:'00123',quantity:2.5,unit:'stk',room_name:'Bad 1'},{key:'b',name:'Flis',sku:'00456',quantity:1,unit:'m²',room_name:'Bad 2'}];
 const draft={revision:1,source_choice_revision:1,snapshot:{goods}};
 let state={context:ctx,root_id:'root',unit_id:'unit',revision:0,settings:{address:'',note:''},unit_settings:{address_mode:'common',address:'',order_mode:'combined',delivery_mode:'combined'},orders:[],events:[]};
 window.__calls=[];window.__hold=false;window.__sendFail=false;window.__sends=[];window.__client={auth:{getSession:async()=>({data:{session:{access_token:'qa'}}})},rpc:async(name,args)=>{window.__calls.push({name,args});if(window.__hold)await new Promise(r=>window.__release=r);
+if(name==='bolig_order_draft'){return {data:{context:ctx,root_id:'root',unit_id:'unit',selection:{revision:1,snapshot:{goods}},draft:{...draft,revision:args.p_action==='save'?2:1,snapshot:{goods,selected_positions:[0,1],excluded_count:0}}}};}
 if(name==='bolig_order_mail'){const o=state.orders.find(o=>o.id===args.p_payload.order_id);return {data:{id:args.p_payload.request_id,sent:false,snapshot:{...o.snapshot,to:args.p_payload.to,company:{companyName:'QA Firma'},replyTo:'qa@example.invalid',order_id:o.id,order_number:o.number,goods:o.snapshot.goods.map((g,i)=>({...g,supplier:args.p_payload.fag[i]}))}}};}
 if(name!=='bolig_deliveries')return {error:{message:'unexpected '+name}};const p=args.p_payload;
+if(args.p_action==='create' && window.__rejectCreate)return {error:{code:'22023',message:'QA: Kontroller bestillingen'}};
 if(args.p_action!=='get') {if(p.revision!==state.revision)return {error:{code:'PT409',message:'Endret grunnlag'}};
 if(args.p_action==='settings')state.settings=p.settings;
 if(args.p_action==='unit_settings')state.unit_settings=p.settings;
@@ -30,7 +32,7 @@ if(args.p_action==='receive'){const o=state.orders.find(o=>o.id===p.order_id);p.
 if(args.p_action==='supplier_reference')state.orders.find(o=>o.id===p.order_id).snapshot.supplier_reference=p.supplier_reference;
 state.revision++;}return {data:structuredClone(state)};}};
 window.fetch=async(url,args)=>{window.__sends.push(JSON.parse(args.body));if(window.__sendFail)throw Error('Mistet nettverkssvar');return {ok:true,json:async()=>({ok:true})};};
-const app=createRoot(document.getElementById('app'));window.__render=(role='manager',company='firm')=>app.render(<div className="bolig-dialog" style={{padding:20,maxWidth:950,margin:'auto'}}><Deliveries context={{...ctx,role,company_id:company}} root={root} unit={unit} draft={draft} choiceRevision={1}/></div>);window.__render();
+const app=createRoot(document.getElementById('app'));window.__render=(role='manager',company='firm')=>app.render(<div className="bolig-dialog" style={{padding:20,maxWidth:950,margin:'auto'}}><Deliveries context={{...ctx,role,company_id:company}} root={root} unit={unit} draft={draft} choiceRevision={1}/></div>);window.__renderDraft=()=>{state={...state,revision:0,orders:[],settings:{address:'',note:''},unit_settings:{...state.unit_settings,address_mode:'common',address:''}};app.render(<OrderDraft context={ctx} root={root} unit={unit} choiceRevision={1}/>);};window.__render();
 `,
 );
 let server,
@@ -182,8 +184,42 @@ try {
       fullPage: true,
     });
   }
-  await button("Lagre bestillingsgrunnlag").click();
-  await d.waitFor({ state: "hidden" });
+  await page.evaluate(() => (window.__rejectCreate = true));
+  await button("Lagre og gå til sending").click();
+  await d
+    .getByRole("alert")
+    .getByText("QA: Kontroller bestillingen", { exact: false })
+    .waitFor();
+  eq(
+    await d.isVisible(),
+    true,
+    "A rejected save explains the problem inside the active dialog",
+  );
+  await page.evaluate(() => {
+    window.__rejectCreate = false;
+    window.__hold = true;
+  });
+  await button("Lagre og gå til sending").click();
+  await page.waitForFunction(() => !!window.__release, null, {
+    timeout: 10000,
+  });
+  await page.evaluate(() => {
+    window.dispatchEvent(new Event("focus"));
+    window.__hold = false;
+    window.__release();
+  });
+  await dialog("Send bestilling").waitFor();
+  eq(
+    await page.evaluate(() => window.__sends.length),
+    0,
+    "Saving opens mail without sending",
+  );
+  await button("Lukk og behold kladd").click();
+  eq(
+    await button("Send bestilling · B-3").isVisible(),
+    true,
+    "Send remains visible with collapsed order",
+  );
   eq(
     (await page.locator(".bolig-delivery-summary").innerText()).includes(
       "Boligadresse 2",
@@ -197,7 +233,7 @@ try {
     1,
   );
   await button("Send bestilling på e-post").click();
-  d = dialog("Bestillingsmail med vedlegg");
+  d = dialog("Send bestilling");
   await d.getByLabel("Leverandørens e-postadresse").fill("qa@example.invalid");
   await d
     .getByLabel("Leverandør/fagområde: Servant", { exact: true })
@@ -261,6 +297,36 @@ try {
   await button("Oppdater status").waitFor();
   eq(await button("Klargjør bestilling").count(), 0);
   eq(await button("Registrer varemottak").count(), 0);
+  await page.evaluate(() => window.__renderDraft());
+  await button("Lagre og fortsett").waitFor();
+  await page.waitForFunction(
+    () =>
+      !document.querySelector('[aria-label="Bestillingsutkast"] fieldset')
+        .disabled,
+  );
+  await button("Lagre og fortsett").click();
+  d = dialog("Leveringsoppsett");
+  await d.waitFor();
+  eq(
+    await d.isVisible(),
+    true,
+    "Saving goods opens address setup when missing",
+  );
+  await d
+    .getByLabel("Felles leveringsadresse", { exact: true })
+    .fill("QA Varemottak 1");
+  await d
+    .getByRole("button", { name: "Lagre endringer", exact: true })
+    .first()
+    .click();
+  d = dialog("Klargjør bestilling");
+  await d.waitFor();
+  eq(
+    await d.getByLabel("Vårt ordrenummer", { exact: true }).inputValue(),
+    "00420",
+    "Address save continues into the order review",
+  );
+  await button("Lukk og behold kladd").click();
   eq(errors, [], "no runtime errors");
   console.log(
     "PASS bolig delivery Chromium: " + checks + " assertions. " + temp,

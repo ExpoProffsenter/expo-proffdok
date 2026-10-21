@@ -124,7 +124,10 @@ try {
   await page.goto("http://127.0.0.1:" + server.address().port);
   const btn = (name) => page.getByRole("button", { name, exact: true }),
     dlg = () =>
-      page.getByRole("dialog", { name: "Velg pakke og tilvalgspakker", exact: true }),
+      page.getByRole("dialog", {
+        name: "Velg pakke og tilvalgspakker",
+        exact: true,
+      }),
     roomSelect = () => page.locator(".bolig-room-select select");
   await roomSelect().selectOption("bad1");
   await btn("Velg rompakke").click();
@@ -290,7 +293,7 @@ try {
     "Order lines show room",
   );
   await order
-    .getByRole("button", { name: "Lagre bestillingsutkast", exact: true })
+    .getByRole("button", { name: "Lagre og fortsett", exact: true })
     .click();
   eq(await page.evaluate(() => window.__data.draft.snapshot.goods.length), 6);
   await order

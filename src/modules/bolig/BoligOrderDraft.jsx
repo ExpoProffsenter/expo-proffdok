@@ -14,7 +14,8 @@ export default function BoligOrderDraft({
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false),
     [loading, setLoading] = useState(true),
-    [notice, setNotice] = useState("");
+    [notice, setNotice] = useState(""),
+    [continueRevision, setContinueRevision] = useState(0);
   const generation = useRef(0),
     operation = useRef(false);
   const load = async () => {
@@ -43,10 +44,16 @@ export default function BoligOrderDraft({
     // A new choice revision updates the basis, retaining unsent exclusions and
     // requiring explicit review instead of remounting an apparently fresh form.
     load();
-    window.addEventListener("focus", load);
+    const refresh = () => {
+      // A foreground refresh must not discard the acknowledgement of an active save.
+      if (!operation.current && document.visibilityState !== "hidden") load();
+    };
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", refresh);
     return () => {
       ++generation.current;
-      window.removeEventListener("focus", load);
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", refresh);
     };
   }, [
     context.user_id,
@@ -78,6 +85,7 @@ export default function BoligOrderDraft({
       setState(saved);
       window.dispatchEvent(new CustomEvent("expo-proffdok-bolig-order"));
       setNotice("Bestillingsutkastet er lagret. Ingen bestilling er sendt.");
+      setContinueRevision(saved.draft.revision);
       return saved;
     } catch (err) {
       if (ticket === generation.current) {
@@ -162,7 +170,7 @@ export default function BoligOrderDraft({
               initial.selected_positions,
             ),
           })}
-          submitLabel="Lagre bestillingsutkast"
+          submitLabel={busy ? "Lagrer vareutvalg …" : "Lagre og fortsett"}
         >
           {(value, change) => (
             <>
@@ -196,8 +204,8 @@ export default function BoligOrderDraft({
                 varelinjer valgt.
               </p>
               <p>
-                Utkastet er ikke sendt. Fortsett med Klargjør bestilling
-                nedenfor.
+                Lagre vareutvalget for å kontrollere leverandør og levering i
+                neste dialog. E-posten sendes først når du bekrefter sendingen.
               </p>
             </>
           )}
@@ -220,6 +228,8 @@ export default function BoligOrderDraft({
         draft={state?.draft}
         choiceRevision={current?.revision}
         draftLoading={loading}
+        continueRevision={continueRevision}
+        onContinueHandled={() => setContinueRevision(0)}
       />
     </section>
   );

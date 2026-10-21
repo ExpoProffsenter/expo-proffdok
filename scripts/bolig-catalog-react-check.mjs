@@ -66,7 +66,9 @@ let state = {
   history: [],
 };
 const calls = [];
-let orderDraft = null;
+let orderDraft = null,
+  holdOrderSave = false,
+  releaseOrderSave;
 let conflict = false,
   held = null;
 try {
@@ -115,6 +117,10 @@ try {
     rpc: async (name, args) => {
       if (name === "bolig_order_draft") {
         if (args.p_action === "save") {
+          if (holdOrderSave)
+            await new Promise((resolve) => {
+              releaseOrderSave = resolve;
+            });
           assert.equal(args.p_choice_revision, state.selection.revision);
           orderDraft = {
             revision: (orderDraft?.revision || 0) + 1,
@@ -466,12 +472,25 @@ try {
     "Profile refresh preserves order exclusion",
   );
 
+  holdOrderSave = true;
   await act(() =>
     orderRegion
       .querySelector("form")
       .dispatchEvent(
         new w.Event("submit", { bubbles: true, cancelable: true }),
       ),
+  );
+  await act(() => {
+    w.dispatchEvent(new w.Event("focus"));
+    d.dispatchEvent(new w.Event("visibilitychange"));
+  });
+  await act(async () => {
+    holdOrderSave = false;
+    releaseOrderSave();
+  });
+  assert(
+    orderRegion.textContent.includes("Bestillingsutkastet er lagret."),
+    "Focus during save preserves the acknowledgement",
   );
   assert.equal(orderDraft.snapshot.goods.length, 1);
   assert.equal(

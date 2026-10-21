@@ -42,7 +42,7 @@ function TextField({
         required={required}
         maxLength={maxLength}
         value={value[name] || ""}
-        onChange={(e) => change(name, e.target.value)}
+        onChange={(e) => change({ [name]: e.target.value, review: false })}
       />
     </label>
   );
@@ -76,8 +76,8 @@ function OrderReview({ value, state, draft }) {
       </ul>
       {value.note && <p>{value.note}</p>}
       <p>
-        Dette lagrer bestillingsgrunnlaget. Registrer «Bestilt» etter at ordren
-        faktisk er lagt hos leverandøren.
+        Velg «Lagre og gå til sending» for å åpne e-postdialogen. Der
+        kontrollerer du mottaker og begge vedleggene før du sender.
       </p>
     </div>
   );
@@ -89,12 +89,23 @@ export default function BoligDeliveries({
   draft,
   choiceRevision,
   draftLoading = false,
+  continueRevision = 0,
+  onContinueHandled,
 }) {
   const scope = `${context.user_id}:${context.company_id}:${root.id}:${unit.id}:${context.role}:${context.enabled}`;
   return (
     <DeliveryWorkspace
       key={scope}
-      {...{ context, root, unit, draft, choiceRevision, draftLoading }}
+      {...{
+        context,
+        root,
+        unit,
+        draft,
+        choiceRevision,
+        draftLoading,
+        continueRevision,
+        onContinueHandled,
+      }}
     />
   );
 }
@@ -105,6 +116,8 @@ function DeliveryWorkspace({
   draft,
   choiceRevision,
   draftLoading,
+  continueRevision,
+  onContinueHandled,
 }) {
   const [state, setState] = useState(null),
     [error, setError] = useState(""),
@@ -123,7 +136,8 @@ function DeliveryWorkspace({
   const generation = useRef(0),
     operation = useRef(false),
     mounted = useRef(true),
-    writeAllowed = useRef(false);
+    writeAllowed = useRef(false),
+    continueAfterSettings = useRef(false);
   const load = async () => {
     if (operation.current) return;
     const ticket = ++generation.current;
@@ -214,7 +228,23 @@ function DeliveryWorkspace({
       if (!mounted.current) return false;
       setState(next);
       setPending(null);
-      setEditor(null);
+      // The canonical create receipt identifies the saved order, including retries.
+      const created =
+        attempt.action === "create"
+          ? next.orders.find((o) => o.number === `B-${next.revision}`)
+          : null;
+      const readyAfterSettings =
+        continueAfterSettings.current &&
+        ["settings", "unit_settings"].includes(attempt.action) &&
+        deliveryAddress(next);
+      setEditor(
+        created
+          ? { kind: "mail", id: created.id }
+          : readyAfterSettings
+            ? "create"
+            : null,
+      );
+      if (created || readyAfterSettings) continueAfterSettings.current = false;
       setNotice(
         attempt.action === "create"
           ? "Bestillingsgrunnlaget er lagret. Ingen bestilling er sendt."
@@ -242,6 +272,38 @@ function DeliveryWorkspace({
   const available = availableDeliveryPositions(draft, orders);
   const currentDraft =
     !!draft && draft.source_choice_revision === choiceRevision && !draftLoading;
+  const continued = useRef(0);
+  useEffect(() => {
+    if (
+      !continueRevision ||
+      continued.current === continueRevision ||
+      loading ||
+      !state ||
+      draftLoading ||
+      !canWrite
+    )
+      return;
+    continued.current = continueRevision;
+    onContinueHandled?.();
+    if (pending) return;
+    if (currentDraft && available.length) {
+      continueAfterSettings.current = !deliveryAddress(state);
+      setEditor(continueAfterSettings.current ? "settings" : "create");
+    } else {
+      const prepared = orders.find((o) => o.status === "prepared");
+      if (prepared) setEditor({ kind: "mail", id: prepared.id });
+    }
+  }, [
+    continueRevision,
+    loading,
+    state,
+    draftLoading,
+    canWrite,
+    pending,
+    currentDraft,
+    available.length,
+    onContinueHandled,
+  ]);
   const openEditor = (kind) => setEditor(kind);
   const basis = {
     delivery_revision: state?.revision || 0,
@@ -269,7 +331,7 @@ function DeliveryWorkspace({
         review: false,
       })}
       onSave={(v, b) => onSave(v, { ...b, revision: b.delivery_revision })}
-      submitLabel={label}
+      submitLabel={busy ? "Lagrer …" : label}
     >
       {children}
     </DraftForm>
@@ -366,6 +428,32 @@ function DeliveryWorkspace({
               Lagre bestillingsutkastet med gjeldende vareutvalg før du klargjør
               en bestilling.
             </p>
+          )}
+          {canWrite && orders.some((o) => o.status === "prepared") && (
+            <div
+              className="bolig-delivery-review"
+              aria-label="Klare til sending"
+            >
+              <strong>Klare til sending</strong>
+              <p>
+                Grunnlaget er lagret. Åpne e-posten og kontroller vedleggene.
+              </p>
+              <div className="bolig-delivery-actions">
+                {orders
+                  .filter((o) => o.status === "prepared")
+                  .map((o) => (
+                    <button
+                      key={o.id}
+                      type="button"
+                      className="bolig-primary"
+                      disabled={locked}
+                      onClick={() => openEditor({ kind: "mail", id: o.id })}
+                    >
+                      Send bestilling · {o.number}
+                    </button>
+                  ))}
+              </div>
+            </div>
           )}
           {!orders.length ? (
             <div className="bolig-delivery-empty">
@@ -555,6 +643,11 @@ function DeliveryWorkspace({
           )}
           {editor && (
             <Dialog
+              key={
+                typeof editor === "string"
+                  ? editor
+                  : `${editor.kind}:${editor.id}`
+              }
               title={
                 editor === "settings"
                   ? "Leveringsoppsett"
@@ -565,11 +658,14 @@ function DeliveryWorkspace({
                         receive: "Registrer varemottak",
                         reference: "Leverandørordrenummer",
                         cancel: "Annuller bestillingsgrunnlag",
-                        mail: "Bestillingsmail med vedlegg",
+                        mail: "Send bestilling",
                       }[editor.kind]
               }
               busy={busy}
-              onClose={() => setEditor(null)}
+              onClose={() => {
+                continueAfterSettings.current = false;
+                setEditor(null);
+              }}
             >
               {editor === "settings" ? (
                 <div className="bolig-delivery-dialog">
@@ -819,31 +915,42 @@ function DeliveryWorkspace({
                         )}
                       </>
                     ),
-                    "Lagre bestillingsgrunnlag",
+                    "Lagre og gå til sending",
                   )}
                 </div>
               ) : editor.kind === "mail" ? (
-                <BoligOrderMail
-                  key={editor.id}
-                  context={context}
-                  root={root}
-                  unit={unit}
-                  order={orders.find((o) => o.id === editor.id)}
-                  revision={state.revision}
-                  onBusy={setBusy}
-                  onSent={() => {
-                    setNotice("E-posttjenesten har bekreftet sendingen.");
-                    load();
-                  }}
-                />
+                <>
+                  <p role="status">
+                    Bestillingsgrunnlaget er lagret. Kontroller e-posten før du
+                    sender.
+                  </p>
+                  <BoligOrderMail
+                    key={editor.id}
+                    context={context}
+                    root={root}
+                    unit={unit}
+                    order={orders.find((o) => o.id === editor.id)}
+                    revision={state.revision}
+                    onBusy={setBusy}
+                    onSent={() => {
+                      setNotice("E-posttjenesten har bekreftet sendingen.");
+                      load();
+                    }}
+                  />
+                </>
               ) : (
                 <OrderAction {...{ editor, state, makeForm, run }} />
               )}
+              {error && <p role="alert">{error}</p>}
+              {busy && <p role="status">Lagrer eller behandler sending …</p>}
               <footer>
                 <button
                   type="button"
                   disabled={busy}
-                  onClick={() => setEditor(null)}
+                  onClick={() => {
+                    continueAfterSettings.current = false;
+                    setEditor(null);
+                  }}
                 >
                   Lukk og behold kladd
                 </button>

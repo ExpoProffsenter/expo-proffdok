@@ -64,3 +64,12 @@ Fast Preview ble prøvd som demo@expo-proffdok.no i Expo Proffsenter på faktisk
 Mailpreview med qa@example.invalid og DEMO-FAG er lagret og viser riktig Expo Proffsenter-logo, prosjekt, bygg/oppgang, H0101, leveringsoppsett og ordrebekreftelsesadresse. Begge vedlegg er lastet ned gjennom det faktiske grensesnittet. Vedleggene bygges fra samme serverlagrede snapshot. Puppeteer-/Playwright-lignende datofylling i skynett krevde et ekte tastetrykk for å utløse nettleserens change-event; tastaturvalg ble kontrollert i gjennomgangen og lagret med riktig dato.
 
 PR Core Safety #595, run 39673626740/job 119477667441, SUCCESS på e5c442ff. Alle trinn grønne, inkludert ny bolig-DB/mail/browser og øvrige moduler. Siste oppfølging legger kun til to manglende FK-indekser, QA-bevis undertrykking av «må avklares»-varsel mens ordinær lagring fortsatt pågår, og riktige statusforklaringer i byggoversikten. Publiserings- og CI-status for siste head føres i PR.
+## Oppfølging: direkte fra lagring til sending
+
+- «Lagre og fortsett» lagrer vareutvalget og åpner bestillingskontrollen. Mangler leveringsadresse, åpnes leveringsoppsettet først; lagret adresse fører videre til kontrollen.
+- «Lagre og gå til sending» lagrer det kontrollerte grunnlaget og åpner «Send bestilling» direkte. En eksisterende klargjort ordre kan åpnes fra en synlig sendeknapp uten å utvide ordrekortet.
+- Mottaker, Cordel-fagområde, forhåndsvisning og endelig sendeklikk beholdes. Ingen e-post sendes ved lagring eller åpning av dialogen.
+- Lagringsfeil vises i den aktive dialogen. Fokus-/visibility-hendelser under lagring av vareutvalget skal ikke forkaste lagringskvitteringen.
+- Permanent Chromium-scenario dekker hele overgangen, manglende adresse, feil i aktiv dialog, fokus under lagring, lukking/gjenåpning, mobilbredder og eksisterende sending/mottak: 31 assertions. Pakkevalg i Chromium: 36 assertions. React-scenario dekker forsinket utkastlagring med fokus/visibility før svar.
+- Endret forventning i scenarioene er begrunnet i brukerens ønske om automatisk neste dialog; eksisterende tilgangs-, kladd-, vedleggs- og sendekontroller beholdes.
+- Separat tilpasning av produktlinjer/mengder per leilighet er fortsatt neste funksjon. Eksisterende pakke-/tilvalgspakkevalg er per bolig/rom, men ingen ny lokal produkt-overstyring er innført her.

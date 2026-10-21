@@ -87,11 +87,11 @@ export function BoligHelp() {
         </li>
         <li>
           Under «Klargjør varebestilling» er alle varelinjer valgt første gang.
-          Fjern linjer som skal kjøpes andre steder. «Lagre bestillingsutkast»
-          lagrer utvalget uten å endre boligvalget. Varelinjene viser riktig
-          rom. Ved nye pakkevalg beholdes utelatte, uendrede varer. Nye og
-          endrede varer velges. Se over og bruk siste grunnlag før du lagrer.
-          Utkastet er ikke sendt.
+          Fjern linjer som skal kjøpes andre steder. «Lagre og fortsett» lagrer
+          utvalget uten å endre boligvalget. Varelinjene viser riktig rom. Ved
+          nye pakkevalg beholdes utelatte, uendrede varer. Nye og endrede varer
+          velges. Se over og bruk siste grunnlag før du lagrer. Utkastet er ikke
+          sendt.
         </li>
         <li>
           Under Bestilling velger du «Leveringsoppsett». Lagre felles adresse
@@ -102,9 +102,9 @@ export function BoligHelp() {
         <li>
           «Klargjør bestilling» bruker det lagrede vareutvalget. Velg
           leverandør, Vårt ordrenummer og eventuell ønsket leveringsdato. Se
-          over og lagre bestillingsgrunnlaget. Delt bestilling lar deg velge
-          varer i flere omganger. Et klargjort grunnlag er ikke en bestilt
-          ordre.
+          over og velg «Lagre og gå til sending». E-postdialogen åpnes direkte.
+          Delt bestilling lar deg velge varer i flere omganger. Et klargjort
+          grunnlag er ikke en bestilt ordre.
         </li>
         <li>
           «Send bestilling på e-post» krever prosjektleder- og Cordel-tilgang.
