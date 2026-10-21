@@ -152,6 +152,18 @@ try {
       "utf8",
     ),
   );
+  await db.exec(
+    await fs.readFile(
+      "supabase/migrations/20261021000023_bolig_project_builder.sql",
+      "utf8",
+    ),
+  );
+  await db.exec(
+    await fs.readFile(
+      "supabase/migrations/20261021001124_bolig_building_household_guard.sql",
+      "utf8",
+    ),
+  );
   await db.exec("begin");
   await actor();
   eq((await call()).enabled, false);
@@ -930,6 +942,135 @@ try {
   await rejects(() => firmCall(), "42501");
   await db.exec("reset role;set role service_role");
   await rejects(() => firmCall(), "42501");
+  await db.exec("rollback");
+  await db.exec("begin");
+  await actor(system);
+  await call("license", null, 0, { enabled: true });
+  await actor(admin);
+  await call("member", null, 0, { user_id: manager, role: "manager" });
+  // Atomic builder: scale, mixed types, duplicate response recovery, rollback and access.
+  await actor(manager);
+  const plan = {
+    request_id: id(1000),
+    title: "Builder QA",
+    reference: "QA-ONLY",
+    buildings: Array.from({ length: 20 }, (_, i) => ({
+      name: `Bygg ${i + 1}`,
+      building_type: "apartment",
+      address: `Testgata ${i + 1}`,
+      house_floors: 2,
+      entrances: ["A", "B"].map((l) => ({
+        address: `Testgata ${i + 1}${l}`,
+        counts: [2, 2, 2, 2, 2],
+      })),
+    })),
+  };
+  const built = await call("create_plan", null, null, plan);
+  eq(built.units.length, 400, "20 buildings created atomically");
+  eq(built.blocks.length, 20);
+  eq(built.entrances.length, 40);
+  eq(built.receipt.created, true);
+  const replay = await call("create_plan", null, null, plan);
+  eq(replay.root.id, built.root.id, "Lost response recovers the same root");
+  eq(
+    replay.units.map((u) => u.id),
+    built.units.map((u) => u.id),
+    "Replay preserves stable entity IDs",
+  );
+  eq(replay.receipt.created, false);
+  await rejects(
+    () => call("create_plan", null, null, { ...plan, title: "Changed" }),
+    "PT409",
+  );
+  const mixed = await call("create_plan", null, null, {
+    ...plan,
+    request_id: id(1001),
+    buildings: [
+      {
+        name: "Hus",
+        building_type: "house",
+        address: "Testhus 1",
+        house_floors: 3,
+        entrances: [{ address: "Testhus 1", counts: [1] }],
+      },
+      {
+        name: "Tomann",
+        building_type: "duplex",
+        address: "Testhus 2",
+        house_floors: 2,
+        entrances: [{ address: "Testhus 2", counts: [1, 1] }],
+      },
+      {
+        name: "Langblokk",
+        building_type: "apartment",
+        address: "Langgata",
+        house_floors: 2,
+        entrances: Array.from({ length: 20 }, (_, i) => ({
+          address: `Langgata ${i + 1}`,
+          counts: [4, 4, 4, 4, 4, 4],
+        })),
+      },
+    ],
+  });
+  eq(mixed.units.length, 483);
+  eq(mixed.blocks.length, 3);
+  eq(mixed.blocks.find((b) => b.building_type === "house").house_floors, 3);
+  eq(
+    mixed.units.filter((u) => u.number === "Bolig").length,
+    1,
+    "House floors do not create households",
+  );
+  const houseEntrance = mixed.entrances.find(
+    (e) =>
+      mixed.blocks.find((b) => b.id === e.block_id)?.building_type === "house",
+  );
+  await rejects(
+    () =>
+      call("resize", mixed.root.id, mixed.root.revision, {
+        id: houseEntrance.id,
+        address: houseEntrance.address,
+        counts: [1, 1],
+      }),
+    "22023",
+  );
+  await rejects(
+    () =>
+      call("entrance", mixed.root.id, mixed.root.revision, {
+        block_id: houseEntrance.block_id,
+        address: "Another house entrance",
+        counts: [1],
+      }),
+    "22023",
+  );
+  const beforeBad = (await call("list")).roots.length;
+  const invalid = structuredClone(plan);
+  invalid.request_id = id(1002);
+  invalid.buildings[19].entrances[1].counts = [0];
+  await rejects(() => call("create_plan", null, null, invalid), "22023");
+  eq(
+    (await call("list")).roots.length,
+    beforeBad,
+    "Invalid final building leaves no partial root",
+  );
+  invalid.buildings[19].entrances[1].counts = [1];
+  invalid.buildings[19].entrances[1].address =
+    invalid.buildings[0].entrances[0].address;
+  await rejects(() => call("create_plan", null, null, invalid), "23505");
+  eq(
+    (await call("list")).roots.length,
+    beforeBad,
+    "Duplicate final address rolls back all entities",
+  );
+  await actor(reader);
+  await rejects(() => call("create_plan", null, null, plan), "42501");
+  await actor(outsider, other);
+  await rejects(() => call("create_plan", null, null, plan), "42501");
+  await actor(manager);
+  await rejects(() => call("create_plan", null, null, plan, other), "42501");
+  await rejects(
+    () => db.query("select * from bolig_private.creation_receipts"),
+    "42501",
+  );
   await db.exec("rollback");
   console.log(
     "PASS bolig PostgreSQL: " +

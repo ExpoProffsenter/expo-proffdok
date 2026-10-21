@@ -3,18 +3,17 @@ export function BoligHelp() {
   return (
     <details className="bolig-help">
       <summary>Slik styrer du prosjektet</summary>
-      <p>
-        Opprett et hovedprosjekt. Bygg deretter opp boligene i rekkefølgen
-        nedenfor.
-      </p>
+      <p>Bruk «Bygg prosjekt». Fortsett deretter i rekkefølgen nedenfor.</p>
       <ol>
         <li>
-          Opprett hovedprosjektet. Legg deretter til blokker og oppganger med
-          adresse.
+          Velg «Bygg prosjekt». Velg boligtype, legg inn bygg og adresser, og se
+          over boligfordelingen før «Opprett prosjektforside». En enebolig
+          registreres som én husstand, uansett etasjeantall.
         </li>
         <li>
-          Velg antall etasjer. Fyll inn antall leiligheter i hver etasje.
-          Kontroller totalen og lagre oppgangen.
+          Bruk «Alle bygg» eller «Bytt bygg» for å finne riktig bygg. Lange
+          blokker har oppgangsvelger og et oversiktsbånd. Søk finner boliger,
+          adresser og kontaktpersoner på tvers av byggene.
         </li>
         <li>
           Velg en bolig. Åpne «Kontakt og leilighetsprosjekt» for å fylle inn
@@ -24,11 +23,11 @@ export function BoligHelp() {
           først. Koblingen kopierer ikke prosjektinnhold.
         </li>
         <li>
-          Åpne Oppsett → Grunnpakker på hovedprosjektet. Legg inn vareinnhold,
-          varenummer og antall. Grunnpakken trenger ingen sum. Valgfri grunnsum
-          per varelinje brukes bare som fratrekk ved et alternativ. Under
-          Tilvalgsliste velger du Tillegg til eller Alternativ til en
-          standardvare, med eller uten fratrekk.
+          Åpne Oppsett → Grunnpakker og tilvalg → Grunnpakker. Legg inn
+          vareinnhold, varenummer og antall. Grunnpakken trenger ingen sum.
+          Valgfri grunnsum per varelinje brukes bare som fratrekk ved et
+          alternativ. Under Tilvalgsliste velger du Tillegg til eller Alternativ
+          til en standardvare, med eller uten fratrekk.
         </li>
         <li>
           Velg en bolig. Under Grunnpakke og tilvalg velger du pakken og
@@ -46,8 +45,9 @@ export function BoligHelp() {
           siste versjon og se over før ny lagring.
         </li>
         <li>
-          Skjul/gjenopprett byggdeler ved behov. Færre etasjer skjuler
-          overskytende boliger og bevarer ID-er, kontakt og prosjektkobling.
+          Åpne Oppsett → Arkiv og synlighet for å skjule/gjenopprette byggdeler.
+          Færre etasjer skjuler overskytende boliger og bevarer ID-er, kontakt
+          og prosjektkobling.
         </li>
       </ol>
       <p>

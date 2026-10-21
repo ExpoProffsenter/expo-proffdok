@@ -9,9 +9,8 @@ const cwd = process.cwd(),
   temp = fs.mkdtempSync(path.join(os.tmpdir(), "bolig-react-")),
   entry = path.join(temp, "entry.jsx");
 const main = fs.readFileSync("src/main.jsx", "utf8");
-const { createGlobalAppTabs, createProjectWorkspaceTabs } = await import(
-  "../src/modules/project/projectNavigationTabs.mjs"
-);
+const { createGlobalAppTabs, createProjectWorkspaceTabs } =
+  await import("../src/modules/project/projectNavigationTabs.mjs");
 assert(
   createGlobalAppTabs({ canUseBolig: true }).some(
     ([id, label]) => id === "bolig" && label === "Boligprosjekter",
@@ -138,7 +137,8 @@ try {
     memberRevision = 0,
     accessConflict = false,
     holdAccess = false,
-    holdContext = false;
+    holdContext = false,
+    emptyListing = false;
   const contextWaiters = [];
   const accessWaiters = [];
   let externalLicensed = false,
@@ -309,10 +309,35 @@ try {
       }
       if (args.p_action === "list")
         return {
-          data: { context: ctx, roots: [{ ...record.root, unit_count: 2 }] },
+          data: {
+            context: ctx,
+            roots: emptyListing ? [] : [{ ...record.root, unit_count: 2 }],
+          },
         };
       if (args.p_action === "get")
         return { data: { ...structuredClone(record), context: ctx } };
+      if (args.p_action === "create_plan") {
+        emptyListing = false;
+        record = {
+          ...record,
+          root: {
+            ...record.root,
+            id: "created-root",
+            title: args.p_payload.title,
+          },
+        };
+        return {
+          data: {
+            ...structuredClone(record),
+            context: ctx,
+            receipt: {
+              request_id: args.p_payload.request_id,
+              root_id: record.root.id,
+              created: true,
+            },
+          },
+        };
+      }
       if (args.p_action === "unit") {
         if (conflict)
           return {
@@ -463,8 +488,8 @@ try {
     JSON.parse(w.localStorage.getItem(key)).contact_name === "Usendt kladd",
   );
   await act(() => w.dispatchEvent(new w.Event("focus")));
-  assert(q(".bolig-unit input").value === "H0101");
-  assert(q(".bolig-unit form").textContent.includes("Kontaktperson"));
+  assert(q(".bolig-task-dialog input").value === "H0101");
+  assert(q(".bolig-task-dialog form").textContent.includes("Kontaktperson"));
   holdContext = true;
   await act(() =>
     w.dispatchEvent(
@@ -474,7 +499,7 @@ try {
     ),
   );
   assert.equal(
-    q(".bolig-unit form")?.contains(input),
+    q(".bolig-task-dialog form")?.contains(input),
     true,
     "Same-company profile refresh must retain current apartment and draft DOM while authorization is pending",
   );
@@ -484,7 +509,7 @@ try {
   await act(() => w.__unmount());
   await act(() => w.__render("self"));
   assert.equal(
-    q(".bolig-unit form input").value,
+    q(".bolig-task-dialog form input").value,
     "H0101",
     "Selected apartment is restored after access-gate remount",
   );
@@ -517,7 +542,7 @@ try {
   });
   conflict = true;
   await act(() =>
-    q(".bolig-unit form").dispatchEvent(
+    q(".bolig-task-dialog form").dispatchEvent(
       new w.Event("submit", { bubbles: true, cancelable: true }),
     ),
   );
@@ -530,7 +555,7 @@ try {
   conflict = false;
   await act(() => button("Hent siste versjon").click());
   await act(() =>
-    q(".bolig-unit form").dispatchEvent(
+    q(".bolig-task-dialog form").dispatchEvent(
       new w.Event("submit", { bubbles: true, cancelable: true }),
     ),
   );
@@ -605,7 +630,7 @@ try {
   role = "reader";
   await act(() => w.dispatchEvent(new w.Event("focus")));
   assert.equal(
-    q(".bolig-unit form"),
+    q(".bolig-task-dialog form"),
     null,
     "Role downgrade removes edit controls",
   );
@@ -622,7 +647,7 @@ try {
   await act(() => q(".bolig-grid button").click());
   denied = true;
   await act(() =>
-    q(".bolig-unit form").dispatchEvent(
+    q(".bolig-task-dialog form").dispatchEvent(
       new w.Event("submit", { bubbles: true, cancelable: true }),
     ),
   );
@@ -789,6 +814,60 @@ try {
     q(".bolig-help:not([open])"),
     "Guide is available but collapsed so the facade is the first workspace",
   );
+  await act(() => w.__unmount());
+  role = "manager";
+  emptyListing = true;
+  const builderKey = `expo-proffdok.bolig-draft.v1:self:${company}:new:builder`;
+  w.localStorage.setItem(
+    builderKey,
+    JSON.stringify({
+      version: 1,
+      request_id: "qa-request",
+      title: "First project",
+      reference: "QA",
+      type: "house",
+      step: 3,
+      selected: 0,
+      submitted: false,
+      buildings: [
+        {
+          key: "qa-building",
+          name: "House",
+          building_type: "house",
+          address: "Example 1",
+          house_floors: 2,
+          entrances: [{ key: "e", address: "", counts: [1] }],
+        },
+      ],
+    }),
+  );
+  await act(() => w.__render("self"));
+  assert(
+    !q(".bolig-project-header"),
+    "First project starts from empty listing",
+  );
+  await act(() => button("Fortsett prosjektkladd").click());
+  const builderDialog = q(".bolig-builder-dialog");
+  await act(() =>
+    builderDialog
+      .querySelector("form")
+      .dispatchEvent(
+        new w.Event("submit", { bubbles: true, cancelable: true }),
+      ),
+  );
+  assert.equal(q(".bolig-project-header h3").textContent, "First project");
+  assert.equal(
+    q(".bolig-builder-dialog"),
+    builderDialog,
+    "First creation keeps the wizard mounted across empty to populated workspace",
+  );
+  assert(!builderDialog.open, "Receipt closes builder");
+  assert.equal(
+    w.localStorage.getItem(builderKey),
+    null,
+    "Receipt clears exact local attempt",
+  );
+  assert(button("Bygg prosjekt"), "Next creation starts with a clean wizard");
   await act(() => w.__unmount());
   await act(() => w.__dispose());
   dom.window.close();

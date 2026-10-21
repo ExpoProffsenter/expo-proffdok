@@ -1,6 +1,12 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Building2,
+  ArrowLeft,
+  ArrowRight,
+  ChevronDown,
+  LayoutGrid,
+  MapPin,
+  X,
   CheckCircle2,
   Circle,
   FileCheck2,
@@ -9,6 +15,9 @@ import {
   Settings2,
   TriangleAlert,
 } from "lucide-react";
+import BoligBuildingArt from "./BoligBuildingArt.jsx";
+import { typeInfo } from "./boligStructure.js";
+import { createPortal } from "react-dom";
 import { useBoligUiState } from "./boligUiState.js";
 import { getAppSupabaseClient } from "../access/appSupabaseClientRegistry.js";
 
@@ -116,35 +125,205 @@ export default function BoligBuildingOverview({
     record.root.id,
     record.root.revision,
   ]);
-  const blocks = record.blocks.filter((b) => !b.archived);
-  const entrances = record.entrances.filter(
-    (e) => !e.archived && blocks.some((b) => b.id === e.block_id),
+  const [allBuildings, setAllBuildings] = useBoligUiState(
+    context,
+    `${record.root.id}:all-buildings`,
+    false,
   );
-  const units = record.units.filter(
-    (u) => !u.archived && entrances.some((e) => e.id === u.entrance_id),
+  const [activeEntranceId, setActiveEntranceId] = useBoligUiState(
+    context,
+    `${record.root.id}:overview-entrance`,
+    "",
   );
+  const [buildingQuery, setBuildingQuery] = useBoligUiState(
+    context,
+    `${record.root.id}:building-search`,
+    "",
+  );
+  const [pickerOpen, setPickerOpen] = useState(false),
+    [capacity, setCapacity] = useState(1),
+    [resultPage, setResultPage] = useState(0);
+  const surface = useRef(null),
+    picker = useRef(null),
+    pickerTrigger = useRef(null),
+    pickerSearch = useRef(null);
+  useEffect(() => {
+    if (pickerOpen) {
+      picker.current?.showModal();
+      pickerSearch.current?.focus();
+    } else if (picker.current?.open) {
+      picker.current.close();
+      pickerTrigger.current?.focus({ preventScroll: true });
+    }
+  }, [pickerOpen]);
+  useEffect(() => {
+    const node = surface.current;
+    const measure = () => setCapacity(node?.clientWidth >= 750 ? 2 : 1);
+    measure();
+    if (!node || typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(measure);
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+  const { blocks, entrances, units, entranceMap, unitsByEntrance } =
+    useMemo(() => {
+      const blocks = record.blocks.filter((b) => !b.archived),
+        blockIds = new Set(blocks.map((b) => b.id));
+      const entrances = record.entrances.filter(
+        (e) => !e.archived && blockIds.has(e.block_id),
+      );
+      const entranceMap = new Map(entrances.map((e) => [e.id, e])),
+        unitsByEntrance = new Map();
+      const units = record.units.filter(
+        (u) => !u.archived && entranceMap.has(u.entrance_id),
+      );
+      units.forEach((u) => {
+        if (!unitsByEntrance.has(u.entrance_id))
+          unitsByEntrance.set(u.entrance_id, []);
+        unitsByEntrance.get(u.entrance_id).push(u);
+      });
+      return { blocks, entrances, units, entranceMap, unitsByEntrance };
+    }, [record]);
   const selectedBlock = blocks.find((b) => b.id === blockId) || blocks[0];
+  const blockEntrances = entrances.filter(
+    (e) => e.block_id === selectedBlock?.id,
+  );
+  const activeEntrance =
+    blockEntrances.find((e) => e.id === activeEntranceId) || blockEntrances[0];
+  const entranceIndex = Math.max(
+    0,
+    blockEntrances.findIndex((e) => e.id === activeEntrance?.id),
+  );
+  const segmentStart = Math.min(
+    Math.floor(entranceIndex / capacity) * capacity,
+    Math.max(0, blockEntrances.length - capacity),
+  );
+  const shownEntrances = blockEntrances.slice(
+    segmentStart,
+    segmentStart + capacity,
+  );
+  const chooseBlock = (id) => {
+    setBlockId(id);
+    setAllBuildings(false);
+    onQuery("");
+    onSelect("");
+    setPickerOpen(false);
+  };
+  const chooseEntrance = (e) => {
+    setActiveEntranceId(e.id);
+    if (
+      unitId &&
+      entranceMap.get(units.find((u) => u.id === unitId)?.entrance_id)?.id !==
+        e.id
+    )
+      onSelect("");
+  };
   const terms = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
   const results = terms.length
     ? units.filter((u) => {
-        const e = entrances.find((e) => e.id === u.entrance_id);
-        const b = blocks.find((b) => b.id === e.block_id);
+        const e = entranceMap.get(u.entrance_id),
+          b = blocks.find((b) => b.id === e.block_id);
         return terms.every((t) =>
-          `${u.number} ${u.contact_name || ""} ${e.address} ${b.name}`
+          `${u.number} ${u.contact_name || ""} ${u.contact_email || ""} ${u.contact_phone || ""} ${e.address} ${b.name}`
             .toLowerCase()
             .includes(t),
         );
       })
     : null;
-  const shownEntrances = entrances.filter(
-    (e) => e.block_id === selectedBlock?.id,
+  useEffect(() => setResultPage(0), [query]);
+  const pageStart = Math.min(
+    resultPage * 50,
+    Math.max(0, (results?.length || 1) - 1),
+  );
+  const buildingTerms = buildingQuery
+    .toLocaleLowerCase("nb")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+  const filteredBlocks = blocks.filter((b) =>
+    buildingTerms.every((t) =>
+      `${b.name} ${b.address || ""} ${entrances
+        .filter((e) => e.block_id === b.id)
+        .map((e) => e.address)
+        .join(" ")}`
+        .toLocaleLowerCase("nb")
+        .includes(t),
+    ),
+  );
+  const buildingCards = (compact = false) => (
+    <div
+      className={
+        compact ? "bolig-building-picker-list" : "bolig-building-cards"
+      }
+    >
+      {filteredBlocks.map((b) => {
+        const es = entrances.filter((e) => e.block_id === b.id),
+          us = es.flatMap((e) => unitsByEntrance.get(e.id) || []);
+        const ready = us.filter(
+          (u) => unitStatus(u, statuses?.[u.id], layer).tone === "ready",
+        ).length;
+        return (
+          <button
+            type="button"
+            key={b.id}
+            className="bolig-building-card"
+            aria-label={`Åpne ${b.name}`}
+            aria-pressed={selectedBlock?.id === b.id}
+            onClick={() => chooseBlock(b.id)}
+          >
+            <BoligBuildingArt type={b.building_type} />
+            <span>
+              <b>{b.name}</b>
+              <small>
+                <MapPin size={13} />
+                {b.address || es[0]?.address || "Adresse mangler"}
+              </small>
+              <small>
+                {typeInfo(b.building_type).label} · {us.length} boliger
+                {b.building_type === "house" ? "" : ` · ${es.length} oppganger`}
+              </small>
+              <small>
+                {statuses
+                  ? `${ready} av ${us.length} lagret / koblet`
+                  : "Henter status …"}
+              </small>
+            </span>
+            <ArrowRight size={17} />
+          </button>
+        );
+      })}
+      {!filteredBlocks.length && <p>Ingen bygg passer til søket.</p>}
+    </div>
   );
   return (
-    <section className="bolig-building-panel" aria-label="Byggoversikt">
+    <section
+      ref={surface}
+      className="bolig-building-panel"
+      aria-label="Byggoversikt"
+    >
+      <div className="bolig-building-breadcrumb">
+        <button
+          type="button"
+          aria-pressed={allBuildings}
+          onClick={() => {
+            setAllBuildings(true);
+            onSelect("");
+          }}
+        >
+          <LayoutGrid size={15} />
+          Alle bygg <small>{blocks.length}</small>
+        </button>
+        {!allBuildings && (
+          <>
+            <span>/</span>
+            <b>{selectedBlock?.name || "Velg bygg"}</b>
+          </>
+        )}
+      </div>
       <div className="bolig-building-toolbar">
         <h3>
           <Building2 size={20} />
-          {selectedBlock?.name || "Byggoversikt"}
+          {allBuildings ? "Alle bygg" : selectedBlock?.name || "Byggoversikt"}
         </h3>
         <label className="bolig-overview-search">
           <Search size={16} />
@@ -161,25 +340,56 @@ export default function BoligBuildingOverview({
           Oppsett
         </button>
       </div>
-      <nav
-        className="bolig-block-tabs"
-        aria-label="Velg blokk"
-        hidden={blocks.length < 2}
-      >
-        {blocks.map((b) => (
+      {blocks.length > 1 && (
+        <>
           <button
-            key={b.id}
+            ref={pickerTrigger}
+            className="bolig-switch-building"
             type="button"
-            aria-pressed={selectedBlock?.id === b.id}
-            onClick={() => {
-              setBlockId(b.id);
-              onQuery("");
-            }}
+            aria-haspopup="dialog"
+            aria-expanded={pickerOpen}
+            onClick={() => setPickerOpen(true)}
           >
-            {b.name}
+            <Building2 size={16} />
+            Bytt bygg
+            <ChevronDown size={15} />
           </button>
-        ))}
-      </nav>
+          {createPortal(
+            <dialog
+              ref={picker}
+              className="bolig-dialog bolig-building-picker"
+              aria-label="Bytt bygg"
+              onCancel={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setPickerOpen(false);
+              }}
+            >
+              <header>
+                <h2>Bytt bygg</h2>
+                <button
+                  type="button"
+                  aria-label="Lukk byggvelger"
+                  onClick={() => setPickerOpen(false)}
+                >
+                  <X size={20} />
+                </button>
+              </header>
+              <label>
+                Søk bygg eller adresse
+                <input
+                  ref={pickerSearch}
+                  type="search"
+                  value={buildingQuery}
+                  onChange={(e) => setBuildingQuery(e.target.value)}
+                />
+              </label>
+              {buildingCards(true)}
+            </dialog>,
+            document.body,
+          )}
+        </>
+      )}
       <nav className="bolig-layer-tabs" aria-label="Vis boligstatus">
         {[
           ["choice", "Boligvalg", FileCheck2],
@@ -205,7 +415,7 @@ export default function BoligBuildingOverview({
       {results ? (
         <div className="bolig-search-results">
           <p>{results.length} boliger funnet i hele prosjektet</p>
-          {results.map((u) => (
+          {results.slice(pageStart, pageStart + 50).map((u) => (
             <button
               key={u.id}
               type="button"
@@ -213,6 +423,8 @@ export default function BoligBuildingOverview({
                 setBlockId(
                   entrances.find((e) => e.id === u.entrance_id).block_id,
                 );
+                setActiveEntranceId(u.entrance_id);
+                setAllBuildings(false);
                 onQuery("");
                 onSelect(u.id);
               }}
@@ -222,89 +434,211 @@ export default function BoligBuildingOverview({
               {u.contact_name || "Kontakt ikke registrert"}
             </button>
           ))}
+          {results.length > 50 && (
+            <div className="bolig-result-pages">
+              <button
+                type="button"
+                disabled={!resultPage}
+                onClick={() => setResultPage((v) => v - 1)}
+              >
+                Forrige treff
+              </button>
+              <span>
+                {pageStart + 1}–{Math.min(pageStart + 50, results.length)} av{" "}
+                {results.length}
+              </span>
+              <button
+                type="button"
+                disabled={pageStart + 50 >= results.length}
+                onClick={() => setResultPage((v) => v + 1)}
+              >
+                Neste treff
+              </button>
+            </div>
+          )}
+        </div>
+      ) : allBuildings ? (
+        <div className="bolig-all-buildings">
+          <p>Velg et bygg for å se oppganger og boliger.</p>
+          <label>
+            Søk bygg eller adresse
+            <input
+              type="search"
+              value={buildingQuery}
+              onChange={(e) => setBuildingQuery(e.target.value)}
+              placeholder="Byggnavn eller adresse"
+            />
+          </label>
+          {buildingCards()}
         </div>
       ) : shownEntrances.length ? (
-        <div className="bolig-facade-scene">
-          <div className="bolig-buildings">
-            {shownEntrances.map((e) => {
-              const floors = [
-                ...new Set(
-                  units
-                    .filter((u) => u.entrance_id === e.id)
-                    .map((u) => u.floor),
-                ),
-              ].sort((a, b) => b - a);
-              return (
-                <article
-                  key={e.id}
-                  className="bolig-building"
-                  style={{
-                    minWidth: Math.max(
-                      265,
-                      Math.ceil(
-                        (Math.max(...(e.counts || [4])) * 56 - 4) / 0.64,
-                      ),
-                    ),
-                  }}
+        <>
+          {blockEntrances.length > 1 && (
+            <div className="bolig-entrance-navigation">
+              <div>
+                <b>{selectedBlock.name}</b>
+                <small>
+                  {blockEntrances.length} oppganger · viser {segmentStart + 1}
+                  {shownEntrances.length > 1
+                    ? `–${segmentStart + shownEntrances.length}`
+                    : ""}
+                </small>
+              </div>
+              <label>
+                <span className="bolig-sr-only">Velg oppgang</span>
+                <select
+                  aria-label="Velg oppgang"
+                  value={activeEntrance?.id}
+                  onChange={(ev) =>
+                    chooseEntrance(
+                      blockEntrances.find((e) => e.id === ev.target.value),
+                    )
+                  }
                 >
-                  <h4>{e.address}</h4>
-                  <div className="bolig-roof" />
-                  <div className="bolig-building-floors bolig-grid">
-                    {floors.map((f) => (
-                      <div className="bolig-facade-floor" key={f}>
-                        <small>{f}. etg.</small>
-                        <div
-                          className="bolig-windows"
-                          style={{
-                            gridTemplateColumns: `repeat(${units.filter((u) => u.entrance_id === e.id && u.floor === f).length}, minmax(52px,1fr))`,
-                          }}
-                        >
-                          {units
-                            .filter(
-                              (u) => u.entrance_id === e.id && u.floor === f,
-                            )
-                            .map((u) => {
-                              const status = unitStatus(
-                                  u,
-                                  statuses?.[u.id],
-                                  layer,
-                                ),
-                                Icon = icons[status.icon];
-                              return (
-                                <button
-                                  key={u.id}
-                                  type="button"
-                                  className={`bolig-window ${status.tone} ${unitId === u.id ? "selected" : ""}`}
-                                  aria-pressed={unitId === u.id}
-                                  aria-label={`${u.number} · ${e.address} · ${status.label}`}
-                                  title={`${u.number} · ${status.label}`}
-                                  onClick={() => onSelect(u.id)}
-                                >
-                                  <b>{u.number}</b>
-                                  <Icon size={18} />
-                                  <span className="bolig-sr-only">
-                                    {status.label}
-                                  </span>
-                                </button>
-                              );
-                            })}
+                  {blockEntrances.map((e, i) => (
+                    <option key={e.id} value={e.id}>
+                      {i + 1}. {e.address}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <nav aria-label="Naviger oppganger">
+                <button
+                  type="button"
+                  disabled={entranceIndex === 0}
+                  aria-label="Forrige oppgang"
+                  onClick={() =>
+                    chooseEntrance(blockEntrances[entranceIndex - 1])
+                  }
+                >
+                  <ArrowLeft size={17} />
+                </button>
+                <button
+                  type="button"
+                  disabled={entranceIndex === blockEntrances.length - 1}
+                  aria-label="Neste oppgang"
+                  onClick={() =>
+                    chooseEntrance(blockEntrances[entranceIndex + 1])
+                  }
+                >
+                  <ArrowRight size={17} />
+                </button>
+              </nav>
+              <div
+                className="bolig-building-minimap"
+                aria-label="Oppgangsoversikt"
+              >
+                {blockEntrances.map((e, i) => (
+                  <button
+                    type="button"
+                    key={e.id}
+                    title={e.address}
+                    aria-label={`Vis ${e.address}`}
+                    aria-pressed={activeEntrance?.id === e.id}
+                    data-visible={shownEntrances.some((v) => v.id === e.id)}
+                    style={{
+                      "--floors": Math.max(
+                        ...blockEntrances.map((v) => v.counts?.length || 1),
+                      )
+                        ? `${Math.max(28, ((e.counts?.length || 1) / Math.max(...blockEntrances.map((v) => v.counts?.length || 1))) * 100)}%`
+                        : "100%",
+                    }}
+                    onClick={() => chooseEntrance(e)}
+                  >
+                    <span>{i + 1}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div
+            className={`bolig-facade-scene bolig-connected-scene ${selectedBlock.building_type === "house" || selectedBlock.building_type === "duplex" ? "bolig-house-scene" : ""}`}
+          >
+            {selectedBlock.building_type === "house" ||
+            selectedBlock.building_type === "duplex" ? (
+              <BoligBuildingArt type={selectedBlock.building_type} />
+            ) : null}
+            <div className="bolig-buildings">
+              {shownEntrances.map((e) => {
+                const entranceUnits = unitsByEntrance.get(e.id) || [];
+                const floors = [
+                  ...new Set(entranceUnits.map((u) => u.floor)),
+                ].sort((a, b) => b - a);
+                return (
+                  <article
+                    key={e.id}
+                    className={`bolig-building ${activeEntrance?.id === e.id ? "is-active-entrance" : ""}`}
+                    style={{
+                      minWidth: Math.max(
+                        240,
+                        Math.max(...(e.counts || [4])) * 56 + 70,
+                      ),
+                      "--entrance-position":
+                        blockEntrances.indexOf(e) % 2 === 0 ? "left" : "right",
+                    }}
+                  >
+                    <h4>{e.address}</h4>
+                    <div className="bolig-roof" />
+                    <div className="bolig-building-floors bolig-grid">
+                      {floors.map((f) => (
+                        <div className="bolig-facade-floor" key={f}>
+                          <small>{f}. etg.</small>
+                          <div
+                            className="bolig-windows"
+                            style={{
+                              gridTemplateColumns: `repeat(${entranceUnits.filter((u) => u.floor === f).length}, minmax(52px,1fr))`,
+                            }}
+                          >
+                            {entranceUnits
+                              .filter((u) => u.floor === f)
+                              .map((u) => {
+                                const status = unitStatus(
+                                    u,
+                                    statuses?.[u.id],
+                                    layer,
+                                  ),
+                                  Icon = icons[status.icon];
+                                return (
+                                  <button
+                                    key={u.id}
+                                    type="button"
+                                    className={`bolig-window ${status.tone} ${unitId === u.id ? "selected" : ""}`}
+                                    aria-pressed={unitId === u.id}
+                                    aria-label={`${u.number} · ${e.address} · ${status.label}`}
+                                    title={`${u.number} · ${status.label}`}
+                                    onClick={() => {
+                                      setActiveEntranceId(e.id);
+                                      onSelect(u.id);
+                                    }}
+                                  >
+                                    <b>{u.number}</b>
+                                    <Icon size={18} />
+                                    <span className="bolig-sr-only">
+                                      {status.label}
+                                    </span>
+                                  </button>
+                                );
+                              })}
+                          </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="bolig-ground-floor">
-                    <span />
-                    <span className="bolig-entrance-door" />
-                    <span />
-                  </div>
-                </article>
-              );
-            })}
+                      ))}
+                    </div>
+                    <div className="bolig-ground-floor">
+                      <span />
+                      <span className="bolig-entrance-door" />
+                      <span />
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+            <small className="bolig-illustration-note">
+              Illustrert bygg · boligene følger registrerte etasjer og
+              leiligheter
+            </small>
           </div>
-          <small className="bolig-illustration-note">
-            Illustrert bygg · boligene følger registrerte etasjer og leiligheter
-          </small>
-        </div>
+        </>
       ) : (
         <div className="bolig-empty-building">
           <Building2 size={40} />

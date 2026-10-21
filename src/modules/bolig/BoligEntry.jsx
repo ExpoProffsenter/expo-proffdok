@@ -11,6 +11,8 @@ import {
 } from "./boligClient.js";
 import "./bolig.css";
 import { useBoligUiState } from "./boligUiState.js";
+import BoligTaskDialog from "./BoligTaskDialog.jsx";
+import BoligProjectBuilder from "./BoligProjectBuilder.jsx";
 import BoligProjectPicker from "./BoligProjectPicker.jsx";
 import BoligCatalog from "./BoligCatalog.jsx";
 import BoligBuildingOverview from "./BoligBuildingOverview.jsx";
@@ -166,6 +168,11 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
     [query, setQuery] = useBoligUiState(context, "query", ""),
     [view, setView] = useBoligUiState(context, "view", "overview");
   const [rootId, setRootId] = useBoligUiState(context, "root", "");
+  const [setupArea, setSetupArea] = useBoligUiState(
+    context,
+    "setup-area",
+    "structure",
+  );
   useEffect(() => {
     setCtx(context);
     if (!context.enabled) {
@@ -318,6 +325,9 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
   const canWrite =
     ctx.enabled && ctx.role === "manager" && !record?.root.archived;
   const activeBlocks = record?.blocks.filter((b) => !b.archived) || [];
+  const apartmentBlocks = activeBlocks.filter(
+    (b) => !b.building_type || b.building_type === "apartment",
+  );
   const entrances =
     record?.entrances.filter(
       (e) => !e.archived && activeBlocks.some((b) => b.id === e.block_id),
@@ -329,6 +339,46 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
     ) || [];
   const unit = visibleUnits.find((u) => u.id === unitId);
   const block = record?.blocks.find((b) => b.id === entrance?.block_id);
+  const creating = useRef(false);
+  const createPlan = async (payload) => {
+    if (creating.current) throw Error("Opprettelse pågår allerede.");
+    creating.current = true;
+    setBusy(true);
+    setError("");
+    try {
+      const result = await boligRpc("create_plan", {
+        companyId: context.company_id,
+        payload,
+      });
+      if (
+        result?.receipt?.request_id !== payload.request_id ||
+        result?.receipt?.root_id !== result?.root?.id
+      )
+        throw Error(
+          "Mangler kvittering. Kontroller opprettelsen med samme oppsett.",
+        );
+      if (alive.current) {
+        apply(result);
+        setEntranceId("");
+        setUnitId("");
+        setView("overview");
+        setNotice(
+          "Prosjektforsiden er opprettet. Velg et bygg, eller åpne Oppsett for å lage grunnpakker og tilvalg.",
+        );
+        try {
+          await request("list");
+        } catch {
+          /* The verified creation receipt remains authoritative. */
+        }
+      }
+    } finally {
+      creating.current = false;
+      if (alive.current) setBusy(false);
+    }
+  };
+  const builder = ctx.role === "manager" && (
+    <BoligProjectBuilder context={ctx} onCreate={createPlan} busy={busy} />
+  );
   const projectPicker = (
     <BoligProjectPicker
       roots={roots}
@@ -338,44 +388,7 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
         setView("overview");
         await fetchRecord(id);
       }}
-    >
-      {ctx.role === "manager" ? (
-        <DraftForm
-          context={ctx}
-          name="create"
-          initial={{ title: "", reference: "" }}
-          busy={busy}
-          onSubmit={async (payload) => {
-            const saved = await perform("create", { payload });
-            if (saved) setView("setup");
-            return saved;
-          }}
-          submitLabel="Opprett hovedprosjekt"
-        >
-          {(v, c) => (
-            <>
-              <label>
-                Prosjektnavn
-                <input
-                  required
-                  maxLength={160}
-                  value={v.title}
-                  onChange={(e) => c("title", e.target.value)}
-                />
-              </label>
-              <label>
-                Prosjektnummer
-                <input
-                  maxLength={80}
-                  value={v.reference}
-                  onChange={(e) => c("reference", e.target.value)}
-                />
-              </label>
-            </>
-          )}
-        </DraftForm>
-      ) : null}
-    </BoligProjectPicker>
+    ></BoligProjectPicker>
   );
   return (
     <section className="bolig-dialog bolig-page" aria-label="Boligprosjekter">
@@ -417,6 +430,7 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
           </small>
         </div>
         <BoligHelp />
+        {ctx.enabled ? builder : null}
       </div>
       {!ctx.enabled ? null : (
         <>
@@ -438,7 +452,12 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
                       <h3>{record.root.title}</h3>
                       <p>
                         {record.root.reference} · {visibleUnits.length} boliger
-                        · {activeBlocks.length} blokker · {entrances.length}{" "}
+                        · {activeBlocks.length} bygg ·{" "}
+                        {
+                          entrances.filter((e) =>
+                            apartmentBlocks.some((b) => b.id === e.block_id),
+                          ).length
+                        }{" "}
                         oppganger
                       </p>
                     </div>
@@ -470,216 +489,262 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
                   >
                     <h3>Oppsett av prosjektet</h3>
                     <p>
-                      1. Registrer bygg og oppganger. 2. Lag grunnpakker og
-                      tilvalg. 3. Åpne Byggoversikt og velg innhold for hver
-                      bolig.
+                      Velg hva du vil jobbe med. Kladden beholdes når du bytter
+                      område.
                     </p>
-                    {ctx.role === "manager" ? (
+                    <nav
+                      className="bolig-setup-menu"
+                      aria-label="Velg prosjektoppsett"
+                    >
                       <button
                         type="button"
-                        disabled={busy}
-                        onClick={() =>
-                          change("archive", {
-                            kind: "root",
-                            id: record.root.id,
-                            archived: !record.root.archived,
-                          })
-                        }
+                        aria-pressed={setupArea === "structure"}
+                        onClick={() => setSetupArea("structure")}
                       >
-                        {record.root.archived
-                          ? "Gjenopprett hovedprosjekt"
-                          : "Arkiver hovedprosjekt"}
-                      </button>
-                    ) : null}
-                    <BoligCatalog
-                      key={
-                        ctx.user_id +
-                        ":" +
-                        ctx.company_id +
-                        ":" +
-                        record.root.id
-                      }
-                      context={ctx}
-                      root={record.root}
-                    />
-                    {canWrite ? (
-                      <div className="bolig-setup">
-                        <details>
-                          <summary>Legg til blokk</summary>
-                          <DraftForm
-                            key={record.root.id + "block"}
-                            context={ctx}
-                            root={record.root.id}
-                            name="block"
-                            busy={busy}
-                            initial={{ name: "" }}
-                            onSubmit={(v) => change("block", v)}
-                            submitLabel="Lagre blokk"
-                          >
-                            {(v, c) => (
-                              <label>
-                                Blokknavn
-                                <input
-                                  required
-                                  maxLength={100}
-                                  value={v.name}
-                                  onChange={(e) => c("name", e.target.value)}
-                                />
-                              </label>
-                            )}
-                          </DraftForm>
-                        </details>
-                        {activeBlocks.length ? (
-                          <details>
-                            <summary>Legg til oppgang</summary>
-                            <DraftForm
-                              key={record.root.id + "entrance"}
-                              context={ctx}
-                              root={record.root.id}
-                              name="entrance"
-                              busy={busy}
-                              initial={{
-                                block_id: activeBlocks[0].id,
-                                address: "",
-                                counts: "4,4,4,4,4,4",
-                              }}
-                              onSubmit={(v) =>
-                                change("entrance", {
-                                  ...v,
-                                  counts: v.counts
-                                    .split(",")
-                                    .map((n) => Number(n.trim())),
-                                })
-                              }
-                              submitLabel="Lagre oppgang"
-                            >
-                              {(v, c) => (
-                                <>
-                                  <label>
-                                    Blokk
-                                    <select
-                                      value={v.block_id}
-                                      onChange={(e) =>
-                                        c("block_id", e.target.value)
-                                      }
-                                    >
-                                      {activeBlocks.map((b) => (
-                                        <option key={b.id} value={b.id}>
-                                          {b.name}
-                                        </option>
-                                      ))}
-                                    </select>
-                                  </label>
-                                  <label>
-                                    Adresse
-                                    <input
-                                      required
-                                      maxLength={200}
-                                      value={v.address}
-                                      onChange={(e) =>
-                                        c("address", e.target.value)
-                                      }
-                                    />
-                                  </label>
-                                  <FloorFields
-                                    value={v.counts}
-                                    onChange={(value) => c("counts", value)}
-                                  />
-                                </>
-                              )}
-                            </DraftForm>
-                          </details>
-                        ) : null}
-                      </div>
-                    ) : null}
-                    <label>
-                      Oppgang
-                      <select
-                        value={entrance?.id || ""}
-                        onChange={(e) => {
-                          setEntranceId(e.target.value);
-                          setUnitId("");
-                          setQuery("");
-                        }}
-                      >
-                        {entrances.map((e) => (
-                          <option value={e.id} key={e.id}>
-                            {
-                              record.blocks.find((b) => b.id === e.block_id)
-                                ?.name
-                            }{" "}
-                            · {e.address}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    {entrance ? (
-                      <>
-                        <div className="bolig-toolbar">
-                          <h4>
-                            {block?.name} · {entrance.address}
-                          </h4>
+                        <Building2 size={23} />
+                        <span>
+                          <b>Bygg og boliger</b>
                           <small>
-                            {
-                              visibleUnits.filter(
-                                (u) => u.entrance_id === entrance.id,
-                              ).length
-                            }{" "}
+                            {activeBlocks.length} bygg · {visibleUnits.length}{" "}
                             boliger
                           </small>
-                        </div>
-                        {canWrite ? (
+                        </span>
+                      </button>
+                      <button
+                        type="button"
+                        aria-pressed={setupArea === "catalog"}
+                        onClick={() => setSetupArea("catalog")}
+                      >
+                        <Home size={23} />
+                        <span>
+                          <b>Grunnpakker og tilvalg</b>
+                          <small>Felles vareinnhold og alternativer</small>
+                        </span>
+                      </button>
+                      <button
+                        type="button"
+                        aria-pressed={setupArea === "archive"}
+                        onClick={() => setSetupArea("archive")}
+                      >
+                        <Settings2 size={23} />
+                        <span>
+                          <b>Arkiv og synlighet</b>
+                          <small>Skjul eller gjenopprett byggdeler</small>
+                        </span>
+                      </button>
+                    </nav>
+                    <div hidden={setupArea !== "archive"}>
+                      {ctx.role === "manager" ? (
+                        <button
+                          type="button"
+                          disabled={busy}
+                          onClick={() =>
+                            change("archive", {
+                              kind: "root",
+                              id: record.root.id,
+                              archived: !record.root.archived,
+                            })
+                          }
+                        >
+                          {record.root.archived
+                            ? "Gjenopprett hovedprosjekt"
+                            : "Arkiver hovedprosjekt"}
+                        </button>
+                      ) : null}
+                    </div>
+                    <div hidden={setupArea !== "catalog"}>
+                      <BoligCatalog
+                        key={
+                          ctx.user_id +
+                          ":" +
+                          ctx.company_id +
+                          ":" +
+                          record.root.id
+                        }
+                        context={ctx}
+                        root={record.root}
+                      />
+                    </div>
+                    <div hidden={setupArea !== "structure"}>
+                      {canWrite ? (
+                        <div className="bolig-setup">
                           <details>
-                            <summary>Endre etasjer og leiligheter</summary>
+                            <summary>Legg til bygg</summary>
                             <DraftForm
-                              key={entrance.id}
+                              key={record.root.id + "block"}
                               context={ctx}
                               root={record.root.id}
-                              name={"resize-" + entrance.id}
+                              name="block"
                               busy={busy}
-                              initial={{
-                                address: entrance.address,
-                                counts: entrance.counts.join(","),
-                              }}
-                              onSubmit={(v) =>
-                                change("resize", {
-                                  id: entrance.id,
-                                  address: v.address,
-                                  counts: v.counts
-                                    .split(",")
-                                    .map((n) => Number(n.trim())),
-                                })
-                              }
+                              initial={{ name: "" }}
+                              onSubmit={(v) => change("block", v)}
+                              submitLabel="Lagre bygg"
                             >
                               {(v, c) => (
-                                <>
-                                  <label>
-                                    Adresse
-                                    <input
-                                      required
-                                      maxLength={200}
-                                      value={v.address}
-                                      onChange={(e) =>
-                                        c("address", e.target.value)
-                                      }
-                                    />
-                                  </label>
-                                  <FloorFields
-                                    value={v.counts}
-                                    onChange={(value) => c("counts", value)}
+                                <label>
+                                  Byggnavn
+                                  <input
+                                    required
+                                    maxLength={100}
+                                    value={v.name}
+                                    onChange={(e) => c("name", e.target.value)}
                                   />
-                                  <p>
-                                    Færre etasjer skjuler tidligere boliger. De
-                                    gjenopprettes med samme ID og historikk ved
-                                    økning.
-                                  </p>
-                                </>
+                                </label>
                               )}
                             </DraftForm>
                           </details>
-                        ) : null}
-                      </>
-                    ) : null}
+                          {apartmentBlocks.length ? (
+                            <details>
+                              <summary>Legg til oppgang</summary>
+                              <DraftForm
+                                key={record.root.id + "entrance"}
+                                context={ctx}
+                                root={record.root.id}
+                                name="entrance"
+                                busy={busy}
+                                initial={{
+                                  block_id: apartmentBlocks[0].id,
+                                  address: "",
+                                  counts: "4,4,4,4,4,4",
+                                }}
+                                onSubmit={(v) =>
+                                  change("entrance", {
+                                    ...v,
+                                    counts: v.counts
+                                      .split(",")
+                                      .map((n) => Number(n.trim())),
+                                  })
+                                }
+                                submitLabel="Lagre oppgang"
+                              >
+                                {(v, c) => (
+                                  <>
+                                    <label>
+                                      Blokk
+                                      <select
+                                        value={v.block_id}
+                                        onChange={(e) =>
+                                          c("block_id", e.target.value)
+                                        }
+                                      >
+                                        {apartmentBlocks.map((b) => (
+                                          <option key={b.id} value={b.id}>
+                                            {b.name}
+                                          </option>
+                                        ))}
+                                      </select>
+                                    </label>
+                                    <label>
+                                      Adresse
+                                      <input
+                                        required
+                                        maxLength={200}
+                                        value={v.address}
+                                        onChange={(e) =>
+                                          c("address", e.target.value)
+                                        }
+                                      />
+                                    </label>
+                                    <FloorFields
+                                      value={v.counts}
+                                      onChange={(value) => c("counts", value)}
+                                    />
+                                  </>
+                                )}
+                              </DraftForm>
+                            </details>
+                          ) : null}
+                        </div>
+                      ) : null}
+                      <label>
+                        Bygg eller oppgang
+                        <select
+                          value={entrance?.id || ""}
+                          onChange={(e) => {
+                            setEntranceId(e.target.value);
+                            setUnitId("");
+                            setQuery("");
+                          }}
+                        >
+                          {entrances.map((e) => (
+                            <option value={e.id} key={e.id}>
+                              {
+                                record.blocks.find((b) => b.id === e.block_id)
+                                  ?.name
+                              }{" "}
+                              · {e.address}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      {entrance ? (
+                        <>
+                          <div className="bolig-toolbar">
+                            <h4>
+                              {block?.name} · {entrance.address}
+                            </h4>
+                            <small>
+                              {
+                                visibleUnits.filter(
+                                  (u) => u.entrance_id === entrance.id,
+                                ).length
+                              }{" "}
+                              boliger
+                            </small>
+                          </div>
+                          {canWrite ? (
+                            <details>
+                              <summary>Endre etasjer og leiligheter</summary>
+                              <DraftForm
+                                key={entrance.id}
+                                context={ctx}
+                                root={record.root.id}
+                                name={"resize-" + entrance.id}
+                                busy={busy}
+                                initial={{
+                                  address: entrance.address,
+                                  counts: entrance.counts.join(","),
+                                }}
+                                onSubmit={(v) =>
+                                  change("resize", {
+                                    id: entrance.id,
+                                    address: v.address,
+                                    counts: v.counts
+                                      .split(",")
+                                      .map((n) => Number(n.trim())),
+                                  })
+                                }
+                              >
+                                {(v, c) => (
+                                  <>
+                                    <label>
+                                      Adresse
+                                      <input
+                                        required
+                                        maxLength={200}
+                                        value={v.address}
+                                        onChange={(e) =>
+                                          c("address", e.target.value)
+                                        }
+                                      />
+                                    </label>
+                                    <FloorFields
+                                      value={v.counts}
+                                      onChange={(value) => c("counts", value)}
+                                    />
+                                    <p>
+                                      Færre etasjer skjuler tidligere boliger.
+                                      De gjenopprettes med samme ID og historikk
+                                      ved økning.
+                                    </p>
+                                  </>
+                                )}
+                              </DraftForm>
+                            </details>
+                          ) : null}
+                        </>
+                      ) : null}
+                    </div>
                   </div>
                   <div
                     className={`bolig-main-grid ${unit ? "has-selected" : ""}`}
@@ -757,8 +822,7 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
                             {unit.contact_phone || "Mobil mangler"}
                           </span>
                         </div>
-                        <details className="bolig-unit-contact">
-                          <summary>Kontakt og leilighetsprosjekt</summary>
+                        <BoligTaskDialog title="Kontakt og leilighetsprosjekt">
                           {canWrite &&
                           (!unit.has_project || unit.project_id) ? (
                             <DraftForm
@@ -881,7 +945,7 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
                               {unit.contact_name || "Ikke registrert"}
                             </p>
                           )}
-                        </details>
+                        </BoligTaskDialog>
                         <BoligCatalog
                           compact
                           key={unit.id + ":" + ctx.role}
@@ -904,7 +968,9 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
                     )}
                   </div>
                   {ctx.role === "manager" ? (
-                    <details hidden={view !== "setup"}>
+                    <details
+                      hidden={view !== "setup" || setupArea !== "archive"}
+                    >
                       <summary>Skjul eller gjenopprett byggdeler</summary>
                       {[
                         ...record.blocks.map((b) => ({
