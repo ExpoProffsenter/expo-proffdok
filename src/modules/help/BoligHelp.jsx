@@ -132,8 +132,8 @@ export function BoligHelp() {
           grunnlag er ikke en bestilt ordre.
         </li>
         <li>
-          «Send bestilling på e-post» krever prosjektleder- og Cordel-tilgang.
-          Oppgi mottaker og riktig leverandør/fagområde fra Cordel-prisboken.
+          Prosjektleder sender bestillingen fra «Send bestilling». Oppgi
+          leverandørens e-postadresse og kontroller bestillingsopplysningene.
           Kontroller e-post og de to vedleggene: Cordel ASCII og Excel. Begge
           har samme varer og antall. Klikk «Send bestilling med to vedlegg» når
           alt stemmer. Ved uklart svar bruker du samme sending igjen. Bestilt

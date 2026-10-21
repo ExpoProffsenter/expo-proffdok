@@ -4186,3 +4186,47 @@
 .bolig-dialog.bolig-unit-work-dialog {height:auto;max-height:calc(100dvh - 24px);overflow:auto;background:#f1f8fb;}
 .bolig-unit-work-dialog>header {padding-bottom:12px;margin-bottom:12px;border-bottom:1px solid #d5e5ea;}
 .bolig-unit-work-dialog>footer {margin-top:12px;padding-top:12px;border-top:1px solid #d5e5ea;}
+
+/* One readable disclosure control across this module and its work dialogs. */
+.bolig-dialog summary,
+.bolig-page summary,
+.bolig-workspace summary {
+  display:flex;align-items:center;gap:10px;
+  min-height:48px!important;padding:12px 14px!important;
+  box-sizing:border-box;border:1px solid #b3cfdc;border-radius:9px;
+  background:#e2eff6;color:#163f56;
+  font-size:16px!important;font-weight:650;line-height:1.45!important;
+  cursor:pointer;list-style:none;overflow-wrap:anywhere;
+}
+.bolig-dialog summary::-webkit-details-marker,
+.bolig-page summary::-webkit-details-marker,
+.bolig-workspace summary::-webkit-details-marker {display:none;}
+.bolig-dialog summary::before,
+.bolig-page summary::before,
+.bolig-workspace summary::before {content:'›'!important;display:inline-grid;place-items:center;flex:0 0 18px;width:18px;height:22px;font-size:24px;line-height:1;color:#007c90;transform:none!important;}
+.bolig-dialog details[open]>summary::before,
+.bolig-page details[open]>summary::before,
+.bolig-workspace details[open]>summary::before {transform:rotate(90deg)!important;}
+.bolig-dialog summary:hover,
+.bolig-page summary:hover,
+.bolig-workspace summary:hover {background:#d5eaf3;border-color:#67a7bc;}
+.bolig-dialog summary:focus-visible {outline:3px solid #00a2b5;outline-offset:3px;}
+.bolig-dialog details[open]>summary {margin-bottom:10px;}
+.bolig-dialog .bolig-edit-section>summary,
+.bolig-dialog .bolig-edit-line>summary,
+.bolig-dialog .bolig-option-contents>summary,
+.bolig-dialog .bolig-option-card-content>summary,
+.bolig-dialog .bolig-package-choice-cards summary,
+.bolig-dialog .bolig-allocation-summary summary,
+.bolig-dialog .bolig-preparation-more>summary,
+.bolig-dialog .bolig-delivery-dialog>details>summary,
+.bolig-dialog .bolig-delivery-order>summary {
+  min-height:48px!important;padding:12px 14px!important;font-size:16px;line-height:1.45;
+  background:#e2eff6;color:#163f56;border:1px solid #b3cfdc;border-radius:9px;
+}
+.bolig-dialog .bolig-package-choice-cards details {margin-top:12px;}
+.bolig-dialog .bolig-edit-line>summary {border:0;border-radius:8px;}
+.bolig-dialog .bolig-edit-section>summary::before,
+.bolig-dialog .bolig-edit-line>summary::before,
+.bolig-dialog .bolig-delivery-order>summary::before {content:'›';font-size:24px;}
+@media(max-width:600px){.bolig-dialog summary{font-size:16px;min-height:48px;}}

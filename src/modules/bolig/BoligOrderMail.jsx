@@ -191,7 +191,7 @@ export default function BoligOrderMail({
                 disabled={busy}
                 onClick={() => change({ preview: null, request_id: null })}
               >
-                Endre mottaker og fagområde
+                Endre mottaker og vareleverandør
               </button>
             )}
           </div>
@@ -209,9 +209,8 @@ export default function BoligOrderMail({
         >
           <fieldset disabled={busy}>
             <p>
-              Oppgi leverandørens e-postadresse. Kontroller leverandør/fagområde
-              slik det er registrert i mottakerens Cordel-prisbok. Varenummer og
-              antall følger det lagrede grunnlaget.
+              Oppgi leverandørens e-postadresse. Kontroller varenummer, antall
+              og vareleverandør før du sender.
             </p>
             <label>
               Leverandørens e-postadresse
@@ -226,9 +225,9 @@ export default function BoligOrderMail({
               />
             </label>
             <label>
-              Felles leverandør/fagområde (valgfritt)
+              Vareleverandør for alle varer (valgfritt)
               <input
-                aria-label="Felles leverandør/fagområde (valgfritt)"
+                aria-label="Vareleverandør for alle varer (valgfritt)"
                 maxLength={160}
                 value={value.common_fag || ""}
                 onChange={(e) => change({ common_fag: e.target.value })}
@@ -244,11 +243,11 @@ export default function BoligOrderMail({
                 })
               }
             >
-              Bruk fagområdet på alle varer
+              Bruk leverandøren på alle varer
             </button>
             <details open={value.fag.some((f) => !f)}>
               <summary>
-                Cordel-felt · {order.snapshot.goods.length} varelinjer
+                Vareleverandører · {order.snapshot.goods.length} varelinjer
               </summary>
               {order.snapshot.goods.map((g, i) => (
                 <label className="bolig-mail-fag" key={i}>
@@ -260,7 +259,7 @@ export default function BoligOrderMail({
                   </span>
                   <input
                     required
-                    aria-label={`Leverandør/fagområde: ${g.name}`}
+                    aria-label={`Vareleverandør: ${g.name}`}
                     maxLength={160}
                     value={value.fag[i] || ""}
                     onChange={(e) =>

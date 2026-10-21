@@ -235,9 +235,7 @@ try {
   await button("Send bestilling på e-post").click();
   d = dialog("Send bestilling");
   await d.getByLabel("Leverandørens e-postadresse").fill("qa@example.invalid");
-  await d
-    .getByLabel("Leverandør/fagområde: Servant", { exact: true })
-    .fill("QA Rør");
+  await d.getByLabel("Vareleverandør: Servant", { exact: true }).fill("QA Rør");
   await button("Forhåndsvis e-post og vedlegg").click();
   await d.locator("iframe").waitFor();
   eq(await button("Last ned Excel-vedlegg").count(), 1);
@@ -258,7 +256,7 @@ try {
   await button("Send bestilling med to vedlegg").click();
   await page.getByRole("alert").getByText("Mistet nettverkssvar").waitFor();
   eq(await button("Prøv samme sending igjen").count(), 1);
-  eq(await button("Endre mottaker og fagområde").count(), 0);
+  eq(await button("Endre mottaker og vareleverandør").count(), 0);
   await page.evaluate(() => (window.__sendFail = false));
   await button("Prøv samme sending igjen").click();
   await page

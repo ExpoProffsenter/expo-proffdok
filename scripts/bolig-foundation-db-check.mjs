@@ -213,6 +213,7 @@ try {
   await db.exec(await fs.readFile("supabase/migrations/20261021204213_bolig_delivery_overview.sql", "utf8"));
   await db.exec(await fs.readFile("supabase/migrations/20261021205031_bolig_delivery_fk_indexes.sql", "utf8"));
   await db.exec(await fs.readFile("supabase/migrations/20261021213014_bolig_unit_customization.sql", "utf8"));
+  await db.exec(await fs.readFile("supabase/migrations/20261021215044_bolig_order_mail_sender_access.sql", "utf8"));
   await db.exec("begin");
   await actor();
   eq((await call()).enabled, false);

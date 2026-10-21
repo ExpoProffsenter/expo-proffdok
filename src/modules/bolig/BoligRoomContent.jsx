@@ -384,8 +384,8 @@ export default function BoligRoomContent({
         <p role="status">Henter vareinnhold …</p>
       ) : !data?.selection ? (
         <p>
-          Velg og lagre grunnpakke og tilvalgspakker under «Boligvalg» nedenfor.
-          Deretter fordeler du varene på rom her.
+          Velg og lagre en fellespakke eller rompakke i «Rompakker og
+          fellespakke». Varene følger deretter riktig bolig og rom.
         </p>
       ) : (
         <>

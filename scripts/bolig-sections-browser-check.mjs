@@ -167,6 +167,26 @@ try {
       true,
       "Editor fits viewport " + width,
     );
+    const disclosureStyles = await form
+      .locator(".bolig-edit-section > summary, .bolig-edit-line > summary")
+      .evaluateAll((nodes) =>
+        nodes.map((n) => ({
+          font: getComputedStyle(n).fontSize,
+          min: getComputedStyle(n).minHeight,
+          padding: getComputedStyle(n).padding,
+          background: getComputedStyle(n).backgroundColor,
+        })),
+      );
+    eq(
+      disclosureStyles.every((s) => s.font === "16px" && s.min === "48px"),
+      true,
+      "Readable section and item controls " + width,
+    );
+    eq(
+      new Set(disclosureStyles.map((s) => s.padding + "|" + s.background)).size,
+      1,
+      "Consistent section and item control surfaces " + width,
+    );
     await page.screenshot({
       path: path.join(temp, "sections-" + width + ".png"),
       fullPage: true,

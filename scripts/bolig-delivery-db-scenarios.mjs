@@ -350,6 +350,12 @@ export default async function deliveryScenarios({
     to: "supplier@example.invalid",
     fag: ["QA Fag"],
   };
+  await db.exec("select set_config('qa.cordel','no',false)");
+  eq(
+    (await db.query("select public.get_cordel_export_access() v")).rows[0].v,
+    false,
+    "Sender has no Cordel export access",
+  );
   const preview = await mail("prepare", mp);
   eq(preview.snapshot.to, "supplier@example.invalid");
   eq(preview.snapshot.goods[0].sku, "00b");
@@ -387,8 +393,11 @@ export default async function deliveryScenarios({
     "22023",
   );
   await db.exec("select set_config('qa.cordel','no',false)");
-  await rejects(() => mail("inspect", { request_id: preview.id }), "42501");
-  await db.exec("select set_config('qa.cordel','yes',false)");
+  eq(
+    (await mail("inspect", { request_id: preview.id })).id,
+    preview.id,
+    "Sender can inspect attachments without Cordel permission",
+  );
   await actor(reader);
   await rejects(() => mail("begin", { request_id: preview.id }), "42501");
   await actor(manager);
@@ -458,4 +467,5 @@ export default async function deliveryScenarios({
       .supplier_reference,
     "Etter mottatt ordrebekreftelse",
   );
+  await db.exec("select set_config('qa.cordel','yes',false)");
 }

@@ -31,3 +31,11 @@ Revisjoner for boligvalg, rom og katalog må stemme. Ukjente priser, rom-ID-er o
 ## Ferdigstilling og neste etappe
 
 Ferdigstillingsdialogen er konkret veiledning og snarvei til eksisterende overtagelse. Den oppretter ingen «Ferdig»-status. Samlet kontroll basert på faktisk utfylte sjekklister, avklarte avvik, dokumentasjon og overtagelse gjenstår. Bygg/prosjekt skal også ta hensyn til relevante fellesarbeider. Ingen bolig eller blokk markeres automatisk ferdig fordi varer er mottatt. Regler for godkjenner, gjenåpning og endringer etter overtagelse må inngå i neste etappe. Excel-import er fortsatt utsatt til sist.
+
+## Oppfølging: avsendertilgang og lesbare innholdsknapper
+
+Kenneth presiserte at Cordel brukes av mottakeren, ikke av prosjektbrukeren. Ny additiv migrasjon `20261021215044_bolig_order_mail_sender_access.sql` fjerner derfor bare Cordel-eksportkravet fra boligbestillingsmail. Totalt 26 bolig-migrasjoner i Sandbox. Fersk bolig-manager/firma/rot/boligkontroll, immutable mottaker/vedlegg, sendelås og service-only kvittering er uendret. Eksisterende Cordel-eksport andre steder beholder sin tilgangskontroll. Senderforhåndsvisning, inspeksjon og sendekrav testes med Cordel-flagget avslått; reader-/firma-/anon-sperrer beholdes. PostgreSQL: 500 assertions PASS lokalt.
+
+Brukerhjelp og maildialog viser vanlig bestillingsflyt og vareleverandør, uten krav om mottakerens interne prisbokoppsett. Filtypene Cordel ASCII og Excel beholdes. Vareleverandør og varenummer kreves fortsatt for entydige varelinjer; eksportformatet er uendret.
+
+Alle disclosure-kontroller i boligmodulens egne sider og popuper får felles minst 48 px trykkflate, 16 px tekst, konsistent padding/ugjennomsiktig overflate og tydelig pil. Egne underordnede vare-/avsnittsknapper skal følge samme kontrollstil som sammenfoldede pakkeinnhold. Permanente responsive Chromium-scenarier kontrollerer at avsnitt og varelinjer har samme font, minstestørrelse, padding og overflate ved 320/390/1024/1366 px. Gammel veiledning som pekte til Boligvalg-fanen er korrigert til Rompakker og fellespakke.
