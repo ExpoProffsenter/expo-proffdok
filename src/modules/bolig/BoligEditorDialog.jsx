@@ -2,7 +2,13 @@ import React, { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 
-export default function BoligEditorDialog({ title, busy, onClose, children }) {
+export default function BoligEditorDialog({
+  title,
+  busy,
+  onClose,
+  children,
+  className = "",
+}) {
   const dialog = useRef(null);
   useEffect(() => {
     const node = dialog.current;
@@ -12,7 +18,7 @@ export default function BoligEditorDialog({ title, busy, onClose, children }) {
   return createPortal(
     <dialog
       ref={dialog}
-      className="bolig-dialog bolig-catalog-dialog"
+      className={`bolig-dialog bolig-catalog-dialog ${className}`}
       aria-label={title}
       onCancel={(e) => {
         e.preventDefault();

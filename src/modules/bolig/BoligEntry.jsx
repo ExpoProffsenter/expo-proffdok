@@ -927,9 +927,8 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
                           </p>
                         ) : (
                           <p>
-                            Koble et ordinært ProffDok-prosjekt til boligen.
-                            Innhold, sjekklister og dokumentasjon blir i
-                            prosjektet.
+                            Før sjekklister, FDV og protokoller direkte her. Et
+                            ordinært ProffDok-prosjekt kan kobles til ved behov.
                           </p>
                         )}
                         <div className="bolig-contact-summary">

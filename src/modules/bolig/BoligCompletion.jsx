@@ -632,6 +632,7 @@ export default function BoligCompletion({
       </div>
       {qualityOpen && (
         <Dialog
+          className="bolig-quality-dialog"
           title="Sjekklister og dokumentasjon"
           onClose={() => setQualityOpen(false)}
         >

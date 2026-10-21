@@ -165,7 +165,12 @@ export default function ProtocolMail({
     }
   };
   return (
-    <Dialog title="Send rettingsbekreftelse" busy={busy} onClose={onClose}>
+    <Dialog
+      className="bolig-quality-dialog"
+      title="Send rettingsbekreftelse"
+      busy={busy}
+      onClose={onClose}
+    >
       <div className="bolig-quality-editor">
         {!ready ? (
           <>

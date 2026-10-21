@@ -733,6 +733,7 @@ export default function BoligQuality({ context, root, scopeId, onChange }) {
       </details>
       {editor && (
         <Dialog
+          className="bolig-quality-dialog"
           title={editor.title}
           busy={busy}
           onClose={() => setEditor(null)}
@@ -1290,6 +1291,7 @@ export default function BoligQuality({ context, root, scopeId, onChange }) {
       )}
       {snapshot && (
         <Dialog
+          className="bolig-quality-dialog"
           title={`Dokumentasjon · lagret utgave ${snapshot.revision}`}
           onClose={() => setSnapshot(null)}
         >

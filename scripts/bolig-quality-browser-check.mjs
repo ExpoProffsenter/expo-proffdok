@@ -198,6 +198,13 @@ try {
   await button(/QA Egen kontroll/).click();
   eq(await button("Lagre kontroll").count(), 0, "Completed run is read-only");
   await button("Gjenåpne kontroll").click();
+  eq(
+    await dialog("Gjenåpne kontroll").evaluate(
+      (n) => n.getBoundingClientRect().height < 700,
+    ),
+    true,
+    "Short forms use their content height",
+  );
   await page.getByLabel("Begrunnelse").fill("Rettet og skal kontrolleres");
   await button("Gjenåpne").click();
   await button(/QA Egen kontroll/).click();
@@ -268,6 +275,28 @@ try {
   await button("Send bekreftelse på e-post").click();
   await page.getByLabel("E-postmottaker").fill("selected@example.invalid");
   await button("Se over e-post").click();
+  eq(
+    await page
+      .locator(".bolig-quality-notice")
+      .last()
+      .evaluate((n) => {
+        const lum = (rgb) => {
+          const c = rgb
+            .match(/[0-9.]+/g)
+            .slice(0, 3)
+            .map((v) => Number(v) / 255)
+            .map((v) =>
+              v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4,
+            );
+          return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+        };
+        const bg = lum(getComputedStyle(n).backgroundColor),
+          fg = lum(getComputedStyle(n.querySelector("p")).color);
+        return (Math.max(bg, fg) + 0.05) / (Math.min(bg, fg) + 0.05) >= 4.5;
+      }),
+    true,
+    "Recipient review has readable text contrast",
+  );
   eq(
     await page.getByText("selected@example.invalid", { exact: true }).count(),
     1,
@@ -356,6 +385,24 @@ try {
     const pages = browser.contexts().flatMap((c) => c.pages());
     if (pages[0]) {
       console.error(await pages[0].locator("body").innerText());
+      console.error(
+        await pages[0]
+          .locator("dialog[open]")
+          .evaluateAll((nodes) =>
+            nodes.map((n) => ({
+              class: n.className,
+              height: getComputedStyle(n).height,
+              min: getComputedStyle(n).minHeight,
+              inline: n.getAttribute("style"),
+              children: [...n.children].map((c) => ({
+                tag: c.tagName,
+                class: c.className,
+                h: getComputedStyle(c).height,
+                min: getComputedStyle(c).minHeight,
+              })),
+            })),
+          ),
+      );
       await pages[0].screenshot({ path: "/tmp/bolig-quality-failure.png" });
     }
   }

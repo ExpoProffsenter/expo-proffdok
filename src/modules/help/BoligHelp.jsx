@@ -129,13 +129,14 @@ export function BoligHelp() {
           varer. Eksterne dokumenter følger ikke PDF-en.
         </li>
         <li>
-          Har kontrolløren en egen protokoll? Last opp originalen som «Ekstern
-          protokoll» under «Filer og bilder». Velg «Legg til protokoll», før inn
-          merknadene og dokumenter rettingen. Appen leser ikke merknadene
-          automatisk fra PDF-en. «Bekreft retting» lagrer navn og tidspunkt.
-          «Send bekreftelse på e-post» er valgfritt. Velg mottaker, se over og
-          send. Ved uavklart svar bruker du «Prøv samme sending igjen».
-          Tidligere protokoller og bekreftelser beholdes.
+          Har kontrolløren en egen protokoll? Velg «Legg til protokoll» under
+          «Ekstern protokoll». Last opp originalen, før inn merknadene og
+          dokumenter rettingen. Du kan også velge en fil som allerede er lastet
+          opp. Appen leser ikke merknadene automatisk fra PDF-en. «Bekreft
+          retting» lagrer navn og tidspunkt. «Send bekreftelse på e-post» er
+          valgfritt. Velg mottaker, se over og send. Ved uavklart svar bruker du
+          «Prøv samme sending igjen». Tidligere protokoller og bekreftelser
+          beholdes.
         </li>
         <li>
           Under Bestilling velger du «Leveringsoppsett». Lagre felles adresse
