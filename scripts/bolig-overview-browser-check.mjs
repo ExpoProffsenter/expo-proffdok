@@ -326,6 +326,8 @@ try {
   await btn("Ferdigstilling").click();
   await filter.selectOption("all");
   await btn("Boligliste").click();
+  eq((await filter.locator("option").allTextContents()).some(t=>t.startsWith("Klar for overtagelse / overtatt")),true,"Completion filter uses handover language");
+  eq((await filter.locator("option").allTextContents()).some(t=>t.includes("Boligvalg")),false,"Completion filter does not label controls as package choices");
   eq((await page.locator(".bolig-overview-row").first().innerText()).includes("Ikke startet"),true,"Completion layer shows documented state rather than delivery state");
   eq(errors, [], "No runtime errors");
   console.log(

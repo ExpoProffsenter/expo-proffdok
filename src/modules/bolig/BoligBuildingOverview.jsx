@@ -320,12 +320,26 @@ export default function BoligBuildingOverview({
         ? "Prosjekt koblet"
         : layer === "order"
           ? "Utkast lagret / levert"
-          : "Boligvalg lagret",
-    review: "Må gjennomgås",
-    empty: layer === "project" ? "Prosjekt mangler" : "Boligvalg mangler",
+          : layer === "completion"
+            ? "Klar for overtagelse / overtatt"
+            : "Boligvalg lagret",
+    review: layer === "completion" ? "Ny kontroll kreves" : "Må gjennomgås",
+    empty:
+      layer === "completion"
+        ? "Ikke startet"
+        : layer === "project"
+          ? "Prosjekt mangler"
+          : "Boligvalg mangler",
     pending:
-      layer === "order" ? "Bestilling / levering pågår" : "Klargjør bestilling",
-    unknown: "Status ikke hentet",
+      layer === "completion"
+        ? "Under arbeid / kontroll"
+        : layer === "order"
+          ? "Bestilling / levering pågår"
+          : "Klargjør bestilling",
+    unknown:
+      layer === "completion"
+        ? "Kontrollstatus ikke hentet"
+        : "Status ikke hentet",
   };
   const results = listVisible
     ? units
@@ -921,19 +935,19 @@ export default function BoligBuildingOverview({
       <div className="bolig-status-legend">
         <span className="ready">
           <CheckCircle2 size={16} />
-          Lagret / koblet
+          {layer === "completion" ? "Klar / overtatt" : "Lagret / koblet"}
         </span>
         <span className="pending">
           <Package size={16} />
-          Neste steg
+          {layer === "completion" ? "Under arbeid / kontroll" : "Neste steg"}
         </span>
         <span className="empty">
           <Circle size={16} />
-          Mangler
+          {layer === "completion" ? "Ikke startet" : "Mangler"}
         </span>
         <span className="review">
           <TriangleAlert size={16} />
-          Se over
+          {layer === "completion" ? "Ny kontroll kreves" : "Se over"}
         </span>
       </div>
       <p className="bolig-overview-caption">
