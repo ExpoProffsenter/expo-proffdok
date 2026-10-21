@@ -394,7 +394,11 @@ function BoligWorkspace({ context, onClose, onOpenProject }) {
     }
   };
   const builder = ctx.role === "manager" && (
-    <BoligProjectBuilder context={ctx} onCreate={createPlan} busy={busy} />
+    <BoligProjectBuilder
+      context={ctx}
+      onCreate={createPlan}
+      busy={busy || listingLoading}
+    />
   );
   const projectPicker = (
     <BoligProjectPicker
