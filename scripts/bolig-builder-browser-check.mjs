@@ -459,12 +459,30 @@ try {
     8,
     "Remaining buildings are reachable without a long overview",
   );
+  // React's new card page may commit before the scheduled browser frame scrolls.
+  // Wait for the original user-visible contract, including keyboard focus.
+  await page.waitForFunction(() => {
+    const heading = document.querySelector(".bolig-building-toolbar h3");
+    const box = heading?.getBoundingClientRect();
+    return (
+      heading === document.activeElement &&
+      box.top >= 0 &&
+      box.bottom <= innerHeight
+    );
+  });
   eq(
     await page
       .locator(".bolig-building-toolbar h3")
       .evaluate((e) => e.getBoundingClientRect().top >= 0),
     true,
     "Paging returns focus and view to the building heading",
+  );
+  eq(
+    await page
+      .locator(".bolig-building-toolbar h3")
+      .evaluate((e) => e === document.activeElement),
+    true,
+    "Paging also restores keyboard focus",
   );
   await page.getByRole("button", { name: "Forrige bygg", exact: true }).click();
   await page.getByRole("button", { name: "Åpne Bygg 1", exact: true }).click();

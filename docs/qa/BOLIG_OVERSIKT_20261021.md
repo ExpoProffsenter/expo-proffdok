@@ -20,7 +20,7 @@ Eksisterende kontakt-/modaltester får nytt forventet navn fordi brukeren ba om 
 
 - Oversikt React: eksisterende scenarier bestått.
 - Oversikt Chromium: 35 assertions med faktisk global appstil, bredder 320/390/1024/1366 px.
-- Byggveiviser Chromium: 101 assertions, inkludert eksisterende modal/fokus, store bygg og responsivitet.
+- Byggveiviser Chromium: 102 assertions, inkludert eksisterende modal/fokus, store bygg og responsivitet.
 - Foundation React: bestått, inkludert én Oppsett-inngang og nytt dialognavn.
 - Pakkenavigasjon Chromium: 24 assertions bestått.
 - Build og critical/scope-guard kontrolleres før publisering.
@@ -41,3 +41,7 @@ CI #590 besto critical build og øvrige gjennomførte trinn, men stanset etter P
 4. Åpne Leilighetsinformasjon. Kontakt, adresse og prosjektkobling skal ligge i samme dialog som før. Lukk/åpne skal beholde usendt kladd.
 
 Fysisk Safari/mobil og to samtidige reelle kontoer er ikke prøvd i denne UX-pakken.
+
+CI #591 besto alle foregående trinn og bolig-DB/React, men sjekket byggoverskriftens plassering før komponentens requestAnimationFrame hadde rullet. Scenariet venter nå på samme synlighetskrav og bekrefter i tillegg dokumentets aktive tastaturfokus. Ingen scenario eller krav fjernet. Ny full kjøring kreves på sluttversjonen.
+
+Skynett på c7582267: Alle bygg avslutter listen, Mangler boligvalg viser de 12 B-boligene, og syntetisk prosjekt med 500 boliger gir 50 rader per side, 51–100 på neste side. Søk «Eksempelenga 25 H0504» gir ett treff og åpner riktig bolig i Bygg 25. Ingen serverdata endret.
