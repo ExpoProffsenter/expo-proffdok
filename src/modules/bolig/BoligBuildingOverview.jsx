@@ -33,7 +33,9 @@ export function unitStatus(unit, status, layer) {
           label: completionLabels[status.completion],
           icon: ["ready", "handed_over"].includes(status.completion)
             ? "check"
-            : status.completion === "review"
+            : ["review", "ready_with_rest", "handed_over_with_rest"].includes(
+                  status.completion,
+                )
               ? "review"
               : "empty",
         }
@@ -323,6 +325,9 @@ export default function BoligBuildingOverview({
           : layer === "completion"
             ? "Klar for overtagelse / overtatt"
             : "Boligvalg lagret",
+    ...(layer === "completion"
+      ? { rest: "Klar / overtatt med restpunkter" }
+      : {}),
     review: layer === "completion" ? "Ny kontroll kreves" : "Må gjennomgås",
     empty:
       layer === "completion"
@@ -356,7 +361,7 @@ export default function BoligBuildingOverview({
           return (
             matchesStatus &&
             terms.every((t) =>
-              `${u.number} ${u.official_number || ""} ${u.contact_name || ""} ${u.contact_email || ""} ${u.contact_phone || ""} ${e.address} ${b.name}`
+              `${u.number} ${u.official_number || ""} ${u.contact_name || ""} ${u.contact_email || ""} ${u.contact_phone || ""} ${e.address || "Adresse legges til senere"} ${b.name}`
                 .toLowerCase()
                 .includes(t),
             )
@@ -659,7 +664,8 @@ export default function BoligBuildingOverview({
                 <span>
                   <b>{u.number}</b>
                   <small>
-                    {b.name} · {e.address} · {u.floor}. etg.
+                    {b.name} · {e.address || "Adresse legges til senere"} ·{" "}
+                    {u.floor}. etg.
                     {u.official_number ? ` · ${u.official_number}` : ""}
                   </small>
                   <small>{u.contact_name || "Kontakt ikke registrert"}</small>
@@ -757,7 +763,7 @@ export default function BoligBuildingOverview({
                 >
                   {blockEntrances.map((e, i) => (
                     <option key={e.id} value={e.id}>
-                      {i + 1}. {e.address}
+                      {i + 1}. {e.address || "Adresse legges til senere"}
                     </option>
                   ))}
                 </select>
@@ -792,8 +798,8 @@ export default function BoligBuildingOverview({
                   <button
                     type="button"
                     key={e.id}
-                    title={e.address}
-                    aria-label={`Vis ${e.address}`}
+                    title={e.address || "Adresse legges til senere"}
+                    aria-label={`Vis ${e.address || "Adresse legges til senere"}`}
                     aria-pressed={activeEntrance?.id === e.id}
                     data-visible={shownEntrances.some((v) => v.id === e.id)}
                     style={{
@@ -840,7 +846,9 @@ export default function BoligBuildingOverview({
                         blockEntrances.indexOf(e) % 2 === 0 ? "left" : "right",
                     }}
                   >
-                    <h4>{e.address}</h4>
+                    <h4>
+                      {e.address || `Oppgang ${blockEntrances.indexOf(e) + 1}`}
+                    </h4>
                     <div className="bolig-roof" />
                     <div className="bolig-building-floors bolig-grid">
                       {floors.map((f) => (
@@ -867,7 +875,7 @@ export default function BoligBuildingOverview({
                                     type="button"
                                     className={`bolig-window ${status.tone} ${unitId === u.id ? "selected" : ""}`}
                                     aria-pressed={unitId === u.id}
-                                    aria-label={`${u.number} · ${e.address} · ${status.label}`}
+                                    aria-label={`${u.number} · ${e.address || "Adresse legges til senere"} · ${status.label}`}
                                     title={`${u.number} · ${status.label}`}
                                     onClick={() => {
                                       setActiveEntranceId(e.id);
@@ -937,6 +945,12 @@ export default function BoligBuildingOverview({
           <CheckCircle2 size={16} />
           {layer === "completion" ? "Klar / overtatt" : "Lagret / koblet"}
         </span>
+        {layer === "completion" && (
+          <span className="rest">
+            <TriangleAlert size={16} />
+            Med restpunkter
+          </span>
+        )}
         <span className="pending">
           <Package size={16} />
           {layer === "completion" ? "Under arbeid / kontroll" : "Neste steg"}

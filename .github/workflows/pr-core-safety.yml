@@ -204,6 +204,7 @@ jobs:
           node scripts/bolig-protocol-email-check.mjs
           export KSHMS_JSPDF_NODE_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/jspdf/dist/jspdf.node.min.js"
           node scripts/bolig-fdv-pdf-check.mjs
+          node scripts/bolig-documentation-export-check.mjs
           node scripts/bolig-foundation-db-check.mjs
           node scripts/bolig-foundation-react-check.mjs
           node scripts/bolig-catalog-react-check.mjs

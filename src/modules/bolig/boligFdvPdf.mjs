@@ -11,9 +11,11 @@ export function buildBoligFdvPdf(
   JsPDF,
   state,
   profile,
-  { logo = null, now = new Date() } = {},
+  { logo = null, now = new Date(), document: existingDocument = null } = {},
 ) {
-  const doc = new JsPDF({ unit: "mm", format: "a4", compress: true });
+  const doc =
+    existingDocument || new JsPDF({ unit: "mm", format: "a4", compress: true });
+  if (existingDocument) doc.addPage();
   let y = 18;
   const text = (value, size = 10, bold = false, color = [30, 41, 59]) => {
     doc.setFont("helvetica", bold ? "bold" : "normal");

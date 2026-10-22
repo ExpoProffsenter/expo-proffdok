@@ -19,6 +19,8 @@ export default function ProtocolMail({
   rootId,
   scopeId,
   protocol,
+  initialTo = "",
+  autoPrepare = false,
   onClose,
 }) {
   const key = boligDraftKey(
@@ -26,7 +28,9 @@ export default function ProtocolMail({
     rootId,
     `protocol-mail:${scopeId}:${protocol.id}:${protocol.confirmation.id}`,
   );
-  const [to, setTo] = useState(() => readBoligDraft(key, {}).to || ""),
+  const [to, setTo] = useState(
+      () => initialTo || readBoligDraft(key, {}).to || "",
+    ),
     [prepared, setPrepared] = useState(null),
     [history, setHistory] = useState([]),
     [busy, setBusy] = useState(false),
@@ -34,6 +38,7 @@ export default function ProtocolMail({
     [ready, setReady] = useState(false),
     [sent, setSent] = useState(false),
     [attempted, setAttempted] = useState(false);
+  const autoStarted = useRef(false);
   const epoch = useRef(0),
     alive = useRef(true);
   const rpc = async (action, payload) => {
@@ -101,7 +106,7 @@ export default function ProtocolMail({
     protocol.confirmation.id,
   ]);
   const prepare = async (e) => {
-    e.preventDefault();
+    e?.preventDefault();
     const t = epoch.current;
     setBusy(true);
     setError("");
@@ -121,6 +126,19 @@ export default function ProtocolMail({
       if (alive.current && t === epoch.current) setBusy(false);
     }
   };
+  useEffect(() => {
+    if (
+      autoPrepare &&
+      initialTo &&
+      ready &&
+      !prepared &&
+      !sent &&
+      !autoStarted.current
+    ) {
+      autoStarted.current = true;
+      prepare();
+    }
+  }, [autoPrepare, initialTo, ready, prepared, sent]);
   const send = async () => {
     const t = epoch.current;
     setBusy(true);

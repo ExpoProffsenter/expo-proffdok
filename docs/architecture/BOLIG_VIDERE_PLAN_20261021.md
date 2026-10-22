@@ -124,3 +124,7 @@ Veiviserkladd skal lagres per bruker/firma, tåle fanebytte og kunne fortsettes.
 ### Native dokumentasjon og FDV – 22. oktober
 
 Oppfølgingen er bygget videre i samme feature-branch: egne kontroller og privat dokumentasjon per bolig/bygg/prosjekt, publisert firmamal eller manuell bygger, FDV-lenker og aggregert PDF-oversikt, valgfri ekstern protokoll med dokumentert retting og eksplisitt e-postreview/sending. Se `docs/qa/BOLIG_DOKUMENTASJON_20261022.md` for kontrakt og QA. Kontroller og protokoller er nå en del av serverberegnet ferdigstillingsgrunnlag. Neste utvidelse må avklare eventuell frist-/varslingsflyt, arkivert eksportpakke med faktiske dokumentfiler og kontroll av montert leveranse; ikke anta at et lagret varevalg alene er slutt-FDV.
+
+### Enkel flyt og samlet dokumentasjon – 22. oktober
+
+Kenneth har valgt progressiv prosjektstart uten adressekrav, bare eksplisitt påkrevde sjekklister som sluttkrav, kritiske avvik som stopper og mindre restpunkter med egen status, massefordeling fra sentral/prosjektlister, samlet PDF/ZIP og valgfri bekreft-og-send-flyt. Denne etappen erstatter de tidligere generelle sperrene for alle native kladder/avvik. Se `docs/qa/BOLIG_ENKEL_FLYT_20261022.md` for ferdig kontrakt, verifikasjon og gjenstående grenser.

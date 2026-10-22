@@ -32,14 +32,23 @@ if(name==='bolig_protocol_mail'){
  if(args.p_action==='prepare'){const protocol=d.protocols.find(x=>x.id===p.protocol_id);prepared={...state(),id:p.request_id,snapshot:{to:p.to,company:{companyName:'QA Firma'},project:'QA Prosjekt',scope:'H0101',protocol,original:{name:'protokoll.pdf'}}};}
  return {data:prepared};
 }
+
+if(name==='bolig_quality_distribution'){
+ const base={context:{...ctx,role:window.__role},root_id:'root'};
+ if(args.p_action==='get')return {data:{...base,templates:[{id:'published',title:'Firmaets kontroll',number:3}],project_lists:d.checks.map(x=>({id:x.id,scope_id:'unit',title:x.definition.title,scope_title:'H0101'})),targets:[{scope_id:'unit',room_id:null,block_id:'block',block:'Bygg A',title:'H0101'},{scope_id:'second',room_id:null,block_id:'block',block:'Bygg A',title:'H0102'},{scope_id:'unit',room_id:'bath',room:'Bad',block_id:'block',block:'Bygg A',title:'H0101'}]}};
+ const plan=p.targets.flatMap(t=>p.sources.map(src=>({...t,title:src.kind==='template'?'Firmaets kontroll':'Prosjektliste',skip:false})));
+ return {data:{...base,basis:'batch-basis',added:plan.length,skipped:0,plan}};
+}
+if(name==='bolig_documentation_export')return {data:{context:ctx,root_id:'root',scope_id:'unit',kind:'unit',title:'H0101',project:'QA Prosjekt',basis:'export-basis',status:'ready_with_rest',restpoints:[{title:'Mindre justering'}],fdv:structuredClone(fdv),scopes:[{id:'unit',title:'H0101',kind:'unit',revision,common:false,data:{...structuredClone(d),documents:[]},completion:{status:'ready_with_rest',items:[]},rooms:[],history:[]}]}};
 if(name==='work_profile_company_profile')return {data:{companyId:'firm',companyName:'QA Firma'}};
 if(args.p_action==='get')return {data:state()};
-if(args.p_action==='check_add')d.checks.push({id:p.id,definition:p.version_id?templates[0].content:p.content,status:'draft',answers:{},sequence:1,source_number:p.version_id?3:null});
+if(args.p_action==='check_add')d.checks.push({id:p.id,definition:p.version_id?templates[0].content:p.content,status:'draft',required:p.required,answers:{},sequence:1,source_number:p.version_id?3:null});
 if(args.p_action==='check_save')d.checks=d.checks.map(x=>x.id===p.id?{...x,answers:p.answers,status:p.complete?'completed':'draft',completed_at:'2026-10-22T10:00:00Z',completed_by_name:'QA Leder'}:x);
 if(args.p_action==='check_reopen')d.checks=d.checks.map(x=>x.id===p.id?{...x,status:'draft',sequence:x.sequence+1}:x);
 if(args.p_action==='document')d.documents.push({...p.file,id:p.id,by_name:'QA Leder',at:'2026-10-22T10:00:00Z'});
 if(args.p_action==='protocol_add')d.protocols.push({...p});
 if(args.p_action==='protocol_save')d.protocols=d.protocols.map(x=>x.id===p.id?{...x,...p}:x);
+if(args.p_action==='protocol_reopen')d.protocols=d.protocols.map(x=>x.id===p.id?{...x,confirmation:undefined}:x);
 if(args.p_action==='protocol_confirm')d.protocols=d.protocols.map(x=>x.id===p.id?{...x,confirmation:{id:'confirmation',by_name:'QA Leder',by:'qa',at:'2026-10-22T10:00:00Z',note:p.reason}}:x);
 if(args.p_action==='fdv_link')fdv=fdv.map(g=>g.key===p.key?{...g,fdv_url:p.url,corrected:true}:g);
 revision++;history=[{revision,action:args.p_action,actor_name:'QA Leder',created_at:'2026-10-22T10:00:00Z',reason:p.reason},...history];return {data:state()};
@@ -334,6 +343,49 @@ try {
     await page.getByRole("link", { name: /Åpne FDV/ }).getAttribute("href"),
     "https://example.org/fdv.pdf",
   );
+  // One continuous confirmation/email flow: recipient selected before the
+  // confirmation is saved; canonical mail preview still precedes provider call.
+  await button(/Ekstern protokoll/).click();
+  await button("Gjenåpne bekreftelse").click();
+  await page.getByLabel("Begrunnelse").fill("Prøve samlet bekreft-og-send-flyt");
+  await button("Gjenåpne").click();
+  await button("Bekreft og send").click();
+  await page.getByLabel("E-postmottaker").fill("chosen-combined@example.invalid");
+  await page.getByLabel("Samlet bekreftelse").fill("Rettet og kontrollert mot originalen.");
+  await button("Lagre bekreftelse").click();
+  await page.getByText("chosen-combined@example.invalid",{exact:true}).waitFor();
+  eq(await page.evaluate(()=>window.__calls.filter(c=>c.name==='bolig-protocol-email').length),1,"Combined flow reviews canonical mail before second provider call");
+  eq(await page.evaluate(()=>window.__calls.filter(c=>c.name==='bolig_protocol_mail'&&c.args.p_action==='prepare').at(-1).args.p_payload.to),"chosen-combined@example.invalid","Selected recipient carried into preview");
+  await button("Send bekreftelse").click();
+  await button("Tilbake til dokumentasjonen").click();
+  await button(/^Sjekklister/).click();
+  await button("Fordel sjekklister").click();
+  modal=dialog("Fordel sjekklister");
+  await modal.getByRole("checkbox", {name:/Firmaets kontroll.*Sjekklistesentral/}).check();
+  await modal.getByRole("button",{name:"Velg alle 2 i utvalget",exact:true}).click();
+  await modal.getByLabel("Fordel til",{exact:true}).selectOption("rooms");
+  await modal.getByRole("button",{name:"Velg alle 1 i utvalget",exact:true}).click();
+  await page.evaluate(()=>window.dispatchEvent(new Event("expo-proffdok-work-profile")));
+  eq(await modal.getByLabel("Fordel til",{exact:true}).inputValue(),"rooms","Same-firm refresh retains distribution workspace");
+  await button("Lukk fordel sjekklister").click();
+  await button("Fordel sjekklister").click();
+  modal=dialog("Fordel sjekklister");
+  eq(await modal.getByRole("checkbox", {name:/Firmaets kontroll.*Sjekklistesentral/}).isChecked(),true,"Distribution selection survives close/reopen");
+  await modal.getByLabel("Nye kontroller er påkrevde ved sluttgodkjenning").uncheck();
+  await button("Forhåndsvis fordeling").click();
+  await modal.getByText("3 nye kontroller",{exact:true}).waitFor();
+  eq(await page.evaluate(()=>window.__calls.filter(c=>c.name==='bolig_quality_distribution'&&c.args.p_action==='apply').length),0,"Distribution preview is read-only");
+  await button("Bekreft og fordel").click();
+  await modal.getByText("Sjekklistene er fordelt",{exact:true}).waitFor();
+  eq(await page.evaluate(()=>window.__calls.find(c=>c.name==='bolig_quality_distribution'&&c.args.p_action==='apply').args.p_payload.required),false,"Optional requirement preserved through distribution");
+  eq(await page.evaluate(()=>window.__calls.find(c=>c.name==='bolig_quality_distribution'&&c.args.p_action==='apply').args.p_payload.targets.length),3,"Units and rooms are explicit distinct targets");
+  await button("Tilbake til dokumentasjonen").click();
+  await button("Samlet PDF og ZIP").click();
+  modal=dialog("Samlet sluttdokumentasjon");
+  await modal.getByText("Ekstern FDV følger som lenker",{exact:true}).waitFor();
+  eq(await modal.getByRole("button",{name:"Last ned ZIP med originalfiler",exact:true}).isEnabled(),true,"Export can be used with disclosed restpoints");
+  eq(await modal.getByText("Klar med restpunkter",{exact:true}).count(),1,"Conditional readiness shown in export preview");
+  await button("Lukk samlet sluttdokumentasjon").click();
   await page.setViewportSize({ width: 390, height: 844 });
   eq(
     await page.evaluate(

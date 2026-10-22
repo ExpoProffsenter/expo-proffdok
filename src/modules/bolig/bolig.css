@@ -4606,3 +4606,218 @@
 .bolig-dialog .bolig-quality-card { color:#183b49; background:#fff; }
 .bolig-dialog .bolig-quality-tabs button { background:#e8f3f7; color:#193f4c; border-color:#b5d2db; }
 .bolig-dialog .bolig-quality-tabs button[aria-current] { background:#d2edf0; color:#123b45; border-color:#0099a7; }
+
+/* Progressive completion: requirements, reminders and disclosed remaining work. */
+.bolig-completion-review-entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  background: #eef7f6;
+  border: 1px solid #b8d9d6;
+  border-radius: 14px;
+  padding: 18px;
+  margin: 16px 0;
+}
+.bolig-completion-review-entry p {
+  margin: 6px 0 0;
+  max-width: 62ch;
+}
+.bolig-completion-proof-details,
+.bolig-completion-reminders {
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 0 16px;
+  margin: 14px 0;
+}
+.bolig-completion-proof-details > summary,
+.bolig-completion-reminders > summary {
+  font-size: 16px;
+  min-height: 52px;
+  align-content: center;
+  cursor: pointer;
+  font-weight: 650;
+}
+.bolig-completion-rest {
+  background: #fff8e7;
+  color: #6f4000;
+  border: 1px solid #d8ae55;
+  border-radius: 14px;
+  padding: 18px;
+  margin: 16px 0;
+}
+.bolig-completion-rest summary {
+  min-height: 48px;
+  align-content: center;
+  cursor: pointer;
+  font-size: 16px;
+}
+.bolig-completion-rest small {
+  display: block;
+}
+.bolig-completion-badge.tone-rest {
+  background: #fff1cc;
+  color: #754600;
+  border: 1px solid #ce9b34;
+}
+.bolig-completion-evidence {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.bolig-completion-evidence > div {
+  padding: 14px;
+  background: #edf5f4;
+  border-radius: 10px;
+  color: #193f42;
+}
+.bolig-completion-evidence dt {
+  font-size: 16px;
+  font-weight: 700;
+}
+.bolig-completion-evidence dd {
+  margin: 7px 0 0;
+  font-size: 16px;
+}
+@media (max-width: 640px) {
+  .bolig-completion-review-entry {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .bolig-completion-evidence {
+    grid-template-columns: 1fr;
+  }
+}
+
+.bolig-quality-distribution-entry {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 18px;
+  background: #eef5f4;
+  border: 1px solid #bad5d2;
+  border-radius: 12px;
+  margin: 0 0 18px;
+  font-size: 16px;
+}
+.bolig-distribution-section {
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 0 16px 14px;
+  margin: 14px 0;
+}
+.bolig-distribution-section > summary {
+  font-weight: 700;
+  font-size: 17px;
+  min-height: 56px;
+  align-content: center;
+  cursor: pointer;
+}
+.bolig-distribution-options {
+  display: grid;
+  gap: 8px;
+  max-height: 350px;
+  overflow: auto;
+  padding: 6px 2px;
+}
+.bolig-distribution-options > label {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 12px;
+  background: #fff;
+  min-height: 64px;
+  cursor: pointer;
+}
+.bolig-distribution-options > label:has(input:checked) {
+  background: #edf8f5;
+  border-color: #288476;
+}
+.bolig-distribution-options small {
+  display: block;
+  margin-top: 5px;
+  font-size: 15px;
+  color: #475569;
+}
+.bolig-distribution-filters {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.bolig-distribution-filters > label:last-child {
+  grid-column: 1/-1;
+}
+@media (max-width: 640px) {
+  .bolig-quality-distribution-entry {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .bolig-distribution-filters {
+    grid-template-columns: 1fr;
+  }
+  .bolig-distribution-filters > label:last-child {
+    grid-column: auto;
+  }
+}
+
+.bolig-quality-export-entry {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 18px;
+  border: 1px solid #b8d9d6;
+  background: #f1f8f7;
+  border-radius: 12px;
+  margin: 16px 0;
+  font-size: 16px;
+}
+.bolig-export-counts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 18px 0;
+}
+.bolig-export-counts > div {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 16px;
+  border-radius: 12px;
+  background: #eaf3f2;
+  color: #1b4142;
+}
+.bolig-export-counts strong {
+  font-size: 26px;
+}
+.bolig-export-counts span {
+  font-size: 16px;
+}
+.bolig-export > details > summary {
+  min-height: 52px;
+  align-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+@media (max-width: 640px) {
+  .bolig-quality-export-entry {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .bolig-export-counts {
+    grid-template-columns: 1fr;
+  }
+  .bolig-export-counts > div {
+    flex-direction: row;
+    align-items: center;
+    gap: 14px;
+  }
+}
+
+.bolig-window.rest .bolig-window-status{background:#f6cd74;color:#593600;}
+.bolig-status-badge.rest{background:#fff1cc;color:#754600;border:1px solid #ce9b34;}
+.bolig-status-legend .rest{color:#805000;}

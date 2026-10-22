@@ -262,7 +262,7 @@ export default function BoligPreparation({ context, root, onChanged }) {
         (!blockId || u.block.id === blockId) &&
         (!entranceId || u.entrance_id === entranceId) &&
         (!search ||
-          `${u.number} ${u.entrance.address} ${u.block.name}`
+          `${u.number} ${u.entrance.address || "Adresse legges til senere"} ${u.block.name}`
             .toLocaleLowerCase("nb")
             .includes(search.toLocaleLowerCase("nb"))),
     );
@@ -419,7 +419,7 @@ export default function BoligPreparation({ context, root, onChanged }) {
             .filter((e) => !e.archived && (!blockId || e.block_id === blockId))
             .map((e) => (
               <option key={e.id} value={e.id}>
-                {e.address}
+                {e.address || "Adresse legges til senere"}
               </option>
             ))}
         </select>
@@ -702,14 +702,16 @@ export default function BoligPreparation({ context, root, onChanged }) {
                               <div>
                                 <b>{u.number}</b>
                                 <small>
-                                  {u.block.name} · {u.entrance.address} ·{" "}
-                                  {u.floor}. etasje
+                                  {u.block.name} ·{" "}
+                                  {u.entrance.address ||
+                                    "Adresse legges til senere"}{" "}
+                                  · {u.floor}. etasje
                                 </small>
                               </div>
                               <label>
                                 Leilighetsnummer
                                 <input
-                                  aria-label={`Leilighetsnummer ${u.number} ${u.entrance.address}`}
+                                  aria-label={`Leilighetsnummer ${u.number} ${u.entrance.address || "Adresse legges til senere"}`}
                                   maxLength={60}
                                   value={row.number}
                                   onChange={(e) =>
@@ -720,7 +722,7 @@ export default function BoligPreparation({ context, root, onChanged }) {
                               <label>
                                 Offisielt bolignummer
                                 <input
-                                  aria-label={`Offisielt bolignummer ${u.number} ${u.entrance.address}`}
+                                  aria-label={`Offisielt bolignummer ${u.number} ${u.entrance.address || "Adresse legges til senere"}`}
                                   maxLength={40}
                                   value={row.official_number}
                                   onChange={(e) =>
@@ -797,7 +799,7 @@ export default function BoligPreparation({ context, root, onChanged }) {
                               </select>
                             </label>
                             <label>
-                              Byggets adresse
+                              Byggets adresse (valgfritt)
                               <input
                                 maxLength={200}
                                 value={draft.address}
@@ -847,13 +849,13 @@ export default function BoligPreparation({ context, root, onChanged }) {
                                 )
                                 .map((e) => (
                                   <option key={e.id} value={e.id}>
-                                    {e.address}
+                                    {e.address || "Adresse legges til senere"}
                                   </option>
                                 ))}
                             </select>
                           </label>
                           <label>
-                            Oppgangens adresse
+                            Oppgangens adresse (valgfritt)
                             <input
                               maxLength={200}
                               value={draft.entrance_address}
@@ -1154,7 +1156,9 @@ export default function BoligPreparation({ context, root, onChanged }) {
                                   <span>
                                     <b>{u.number}</b>
                                     <small>
-                                      {u.block.name} · {u.entrance.address}
+                                      {u.block.name} ·{" "}
+                                      {u.entrance.address ||
+                                        "Adresse legges til senere"}
                                     </small>
                                   </span>
                                   <small>

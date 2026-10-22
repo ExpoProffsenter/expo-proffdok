@@ -28,6 +28,8 @@ import {
   openQualityFile,
 } from "./boligQualityClient.js";
 import { downloadBoligFdv } from "./boligFdvPdf.mjs";
+import DocumentationExport from "./BoligDocumentationExport.jsx";
+import QualityDistribution from "./BoligQualityDistribution.jsx";
 import ProtocolMail from "./BoligProtocolMail.jsx";
 const date = (v) =>
   v ? new Date(v).toLocaleString("nb-NO", { timeZone: "Europe/Oslo" }) : "";
@@ -53,6 +55,7 @@ const tabs = [
 ];
 const actions = {
   check_add: "Sjekkliste opprettet",
+  check_requirement: "Krav til kontroll oppdatert",
   check_save: "Kontroll lagret",
   check_reopen: "Kontroll gjenåpnet",
   check_archive: "Kontroll arkivert",
@@ -71,6 +74,8 @@ export default function BoligQuality({ context, root, scopeId, onChange }) {
     [message, setMessage] = useState(""),
     [verified, setVerified] = useState(false),
     [mail, setMail] = useState(null),
+    [distribution, setDistribution] = useState(false),
+    [exportOpen, setExportOpen] = useState(false),
     [snapshot, setSnapshot] = useState(null);
   const epoch = useRef(0),
     alive = useRef(true);
@@ -136,6 +141,15 @@ export default function BoligQuality({ context, root, scopeId, onChange }) {
         throw Error("Skrivetilgangen er endret. Kladden er beholdt.");
       setData(next);
       setEditor(null);
+      if (action === "protocol_confirm" && value.send_mail) {
+        const confirmed = next.data.protocols.find((p) => p.id === value.id);
+        if (confirmed?.confirmation)
+          setMail({
+            protocol: confirmed,
+            initialTo: value.to,
+            autoPrepare: true,
+          });
+      }
       setMessage(actions[action] + ".");
       window.dispatchEvent(
         new CustomEvent(QUALITY_EVENT, { detail: { rootId: root.id } }),
@@ -149,7 +163,7 @@ export default function BoligQuality({ context, root, scopeId, onChange }) {
       }
       throw e;
     } finally {
-      if (currentTicket(t)) setBusy(false);
+      if (alive.current) setBusy(false);
     }
   };
   const open = (mode, initial, title) => setEditor({ mode, initial, title });
@@ -225,6 +239,21 @@ export default function BoligQuality({ context, root, scopeId, onChange }) {
           <RefreshCw size={18} />
         </button>
       </div>
+      <div className="bolig-quality-export-entry">
+        <span>Dokumentasjon for overlevering</span>
+        <button type="button" onClick={() => setExportOpen(true)}>
+          <Download size={18} />
+          Samlet PDF og ZIP
+        </button>
+      </div>
+      {exportOpen && (
+        <DocumentationExport
+          context={context}
+          root={root}
+          scopeId={scopeId}
+          onClose={() => setExportOpen(false)}
+        />
+      )}
       <p>
         Før kontrollene og samle dokumentene her. FDV er informasjon om
         forvaltning, drift og vedlikehold. Fullfør dokumentasjonen før du
@@ -252,6 +281,14 @@ export default function BoligQuality({ context, root, scopeId, onChange }) {
           </button>
         ))}
       </nav>
+      {distribution && (
+        <QualityDistribution
+          context={context}
+          root={root}
+          onClose={() => setDistribution(false)}
+          onDistributed={() => load()}
+        />
+      )}
       {message && (
         <p role="status" className="bolig-quality-notice">
           {message}
@@ -263,8 +300,9 @@ export default function BoligQuality({ context, root, scopeId, onChange }) {
             <div>
               <h4>Sjekklister for dette arbeidsområdet</h4>
               <p>
-                Bygg egne lister eller hent en publisert firmamal. Boliger, bygg
-                og prosjekt har hver sine kontroller.
+                Bygg prosjektlister eller hent publiserte firmamaler fra
+                sjekklistesentralen. Boliger, bygg og prosjekt har hver sine
+                kontroller.
               </p>
             </div>
             {editable && (
@@ -278,6 +316,7 @@ export default function BoligQuality({ context, root, scopeId, onChange }) {
                       content: blank(),
                       version_id: "",
                       room_id: "",
+                      required: true,
                     },
                     "Ny sjekkliste",
                   )
@@ -288,6 +327,14 @@ export default function BoligQuality({ context, root, scopeId, onChange }) {
               </button>
             )}
           </div>
+          {editable && (
+            <div className="bolig-quality-distribution-entry">
+              <span>Samme kontroll i flere boliger?</span>
+              <button type="button" onClick={() => setDistribution(true)}>
+                Fordel sjekklister
+              </button>
+            </div>
+          )}
           {!activeChecks.length && (
             <div className="bolig-quality-empty">
               <ClipboardCheck size={30} />
@@ -311,7 +358,12 @@ export default function BoligQuality({ context, root, scopeId, onChange }) {
                   onClick={() =>
                     open(
                       "check_save",
-                      { id: c.id, answers: c.answers, complete: false },
+                      {
+                        id: c.id,
+                        answers: c.answers,
+                        required: c.required !== false,
+                        complete: false,
+                      },
                       c.definition.title,
                     )
                   }
@@ -325,7 +377,8 @@ export default function BoligQuality({ context, root, scopeId, onChange }) {
                       {c.source_number
                         ? `Firmamal v${c.source_number}`
                         : "Egen sjekkliste"}{" "}
-                      · Kontroll {c.sequence}
+                      · Kontroll {c.sequence} ·{" "}
+                      {c.required !== false ? "Påkrevd" : "Valgfri"}
                       {c.room_id
                         ? " · " +
                           (data.rooms.find((r) => r.id === c.room_id)?.name ||
@@ -449,7 +502,7 @@ export default function BoligQuality({ context, root, scopeId, onChange }) {
                 } catch (e) {
                   if (currentTicket(t)) setMessage(e.message);
                 } finally {
-                  if (currentTicket(t)) setBusy(false);
+                  if (alive.current) setBusy(false);
                 }
               }}
             >
@@ -656,7 +709,7 @@ export default function BoligQuality({ context, root, scopeId, onChange }) {
                         onClick={() =>
                           open(
                             "protocol_confirm",
-                            { id: p.id, reason: "" },
+                            { id: p.id, reason: "", send_mail: false, to: "" },
                             "Bekreft retting",
                           )
                         }
@@ -664,6 +717,24 @@ export default function BoligQuality({ context, root, scopeId, onChange }) {
                         Bekreft retting
                       </button>
                     ))}
+                  {editable && !p.confirmation && (
+                    <button
+                      type="button"
+                      disabled={
+                        (!p.remarks.length && !p.no_remarks) ||
+                        p.remarks.some((r) => !r.rectified)
+                      }
+                      onClick={() =>
+                        open(
+                          "protocol_confirm",
+                          { id: p.id, reason: "", send_mail: true, to: "" },
+                          "Bekreft og send",
+                        )
+                      }
+                    >
+                      Bekreft og send
+                    </button>
+                  )}
                 </div>
               </article>
             ))}
@@ -743,6 +814,18 @@ export default function BoligQuality({ context, root, scopeId, onChange }) {
               form(
                 (v, c) => (
                   <>
+                    <label className="bolig-quality-choice">
+                      <input
+                        type="checkbox"
+                        checked={v.required !== false}
+                        onChange={(e) => c("required", e.target.checked)}
+                      />
+                      Påkrevd ved sluttgodkjenning
+                    </label>
+                    <p>
+                      Valgfrie lister gir påminnelser. Kritiske avvik må alltid
+                      avklares.
+                    </p>
                     <label>
                       Hent mal
                       <select
@@ -826,6 +909,15 @@ export default function BoligQuality({ context, root, scopeId, onChange }) {
                       (v, c) => (
                         <>
                           <p>{row.definition.instructions}</p>
+                          <label className="bolig-quality-choice">
+                            <input
+                              type="checkbox"
+                              checked={v.required ?? row.required !== false}
+                              disabled={readOnly}
+                              onChange={(e) => c("required", e.target.checked)}
+                            />
+                            Påkrevd ved sluttgodkjenning
+                          </label>
                           <p>
                             {readOnly
                               ? "Lagret kontroll. Gjenåpne med en begrunnelse for å endre svar."
@@ -861,6 +953,24 @@ export default function BoligQuality({ context, root, scopeId, onChange }) {
                                     {i + 1}. {p.title}
                                   </legend>
                                   {p.guidance && <p>{p.guidance}</p>}
+                                  {a.status === "Avvik" && (
+                                    <label>
+                                      Alvorlighetsgrad
+                                      <select
+                                        value={a.severity || "critical"}
+                                        onChange={(e) =>
+                                          patch({ severity: e.target.value })
+                                        }
+                                      >
+                                        <option value="critical">
+                                          Kritisk – stopper godkjenning
+                                        </option>
+                                        <option value="minor">
+                                          Mindre restpunkt – følger overtagelsen
+                                        </option>
+                                      </select>
+                                    </label>
+                                  )}
                                   <label>
                                     Resultat
                                     <select
@@ -942,6 +1052,20 @@ export default function BoligQuality({ context, root, scopeId, onChange }) {
                         type="button"
                         onClick={() =>
                           open(
+                            "check_requirement",
+                            { id: row.id, required: row.required !== false },
+                            "Krav til sjekklisten",
+                          )
+                        }
+                      >
+                        Endre krav til kontroll
+                      </button>
+                    )}
+                    {editable && row.status === "completed" && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          open(
                             "check_reopen",
                             { id: row.id, reason: "" },
                             "Gjenåpne kontroll",
@@ -969,6 +1093,26 @@ export default function BoligQuality({ context, root, scopeId, onChange }) {
                   </>
                 );
               })()}
+            {editor.mode === "check_requirement" &&
+              form(
+                (v, c) => (
+                  <>
+                    <p>
+                      Kontrollens svar og fullføring beholdes. Kravet lagres i
+                      dokumentasjonshistorikken.
+                    </p>
+                    <label className="bolig-quality-choice">
+                      <input
+                        type="checkbox"
+                        checked={v.required}
+                        onChange={(e) => c("required", e.target.checked)}
+                      />
+                      Påkrevd ved sluttgodkjenning
+                    </label>
+                  </>
+                ),
+                "Lagre krav",
+              )}
             {editor.mode === "document" &&
               form(
                 (v, c) => (
@@ -1051,6 +1195,38 @@ export default function BoligQuality({ context, root, scopeId, onChange }) {
                         ? "Jeg har sammenlignet merknadene med originalprotokollen og kontrollert at rettingen er dokumentert. Dette registrerer min bekreftelse på retting."
                         : ""}
                     </p>
+                    {editor.mode === "protocol_confirm" && (
+                      <>
+                        <label className="bolig-quality-choice">
+                          <input
+                            type="checkbox"
+                            checked={!!v.send_mail}
+                            onChange={(e) => c("send_mail", e.target.checked)}
+                          />
+                          Send bekreftelse på e-post
+                        </label>
+                        {v.send_mail && (
+                          <>
+                            <label>
+                              E-postmottaker
+                              <input
+                                type="email"
+                                required
+                                maxLength={254}
+                                value={v.to || ""}
+                                onChange={(e) => c("to", e.target.value)}
+                              />
+                            </label>
+                            <p>
+                              Først lagres din rettingsbekreftelse. Deretter får
+                              du se den ferdige e-posten til valgt mottaker og
+                              trykker «Send bekreftelse». Ingenting sendes før
+                              den gjennomgangen.
+                            </p>
+                          </>
+                        )}
+                      </>
+                    )}
                     <Reason
                       value={v.reason}
                       onChange={(v) => c("reason", v)}
@@ -1176,6 +1352,29 @@ export default function BoligQuality({ context, root, scopeId, onChange }) {
                                 )
                               }
                             />
+                          </label>
+                          <label>
+                            Alvorlighetsgrad
+                            <select
+                              value={r.severity || "critical"}
+                              onChange={(e) =>
+                                c(
+                                  "remarks",
+                                  v.remarks.map((x) =>
+                                    x.id === r.id
+                                      ? { ...x, severity: e.target.value }
+                                      : x,
+                                  ),
+                                )
+                              }
+                            >
+                              <option value="critical">
+                                Kritisk – stopper godkjenning
+                              </option>
+                              <option value="minor">
+                                Mindre restpunkt – følger overtagelsen
+                              </option>
+                            </select>
                           </label>
                           <label>
                             Utført retting / dokumentasjon
@@ -1307,7 +1506,9 @@ export default function BoligQuality({ context, root, scopeId, onChange }) {
           context={context}
           rootId={root.id}
           scopeId={scopeId}
-          protocol={mail}
+          protocol={mail.protocol || mail}
+          initialTo={mail.initialTo || ""}
+          autoPrepare={Boolean(mail.autoPrepare)}
           onClose={() => setMail(null)}
         />
       )}

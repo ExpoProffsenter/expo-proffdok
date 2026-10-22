@@ -189,8 +189,8 @@ try {
   await dialog.getByRole("button", { name: "Enebolig Ett hus" }).click();
   await dialog.getByRole("button", { name: "Neste", exact: true }).click();
   await dialog
-    .getByLabel("Byggets adresse", { exact: true })
-    .fill("Eksempelgata 1");
+    .getByLabel("Byggets adresse (valgfritt)", { exact: true })
+    .fill("");
   await dialog.getByRole("button", { name: "Neste", exact: true }).click();
   await dialog.getByLabel("Etasjer i huset", { exact: true }).fill("3");
   eq(
@@ -236,6 +236,7 @@ try {
     (await page.evaluate(() => window.__attempts))[0].buildings[0].house_floors,
     3,
   );
+  eq((await page.evaluate(()=>window.__attempts))[0].buildings[0].address,"","Project can be created with a genuinely unknown address");
   const saved = await page.evaluate(() =>
     JSON.parse(
       localStorage.getItem(
@@ -294,7 +295,7 @@ try {
   await page.getByRole("button", { name: "Fortsett prosjektkladd" }).click();
   await dialog.getByRole("button", { name: "Neste", exact: true }).click();
   await dialog
-    .getByLabel("Byggets adresse", { exact: true })
+    .getByLabel("Byggets adresse (valgfritt)", { exact: true })
     .fill("Eksempelgata 20");
   await dialog.getByRole("button", { name: "Neste", exact: true }).click();
   await dialog.getByLabel("Antall oppganger", { exact: true }).fill("20");
@@ -312,14 +313,14 @@ try {
     .getByLabel("Oppgang i bygget", { exact: true })
     .selectOption(lastEntranceKey);
   await dialog
-    .getByLabel("Oppgangens adresse", { exact: true })
+    .getByLabel("Oppgangens adresse (valgfritt)", { exact: true })
     .fill("Siste oppgang");
   await dialog
     .getByRole("button", { name: "Lukk og behold prosjektkladd" })
     .click();
   await page.getByRole("button", { name: "Fortsett prosjektkladd" }).click();
   eq(
-    await dialog.getByLabel("Oppgangens adresse", { exact: true }).inputValue(),
+    await dialog.getByLabel("Oppgangens adresse (valgfritt)", { exact: true }).inputValue(),
     "Siste oppgang",
     "Selected entrance and its draft survive closing",
   );
@@ -347,7 +348,7 @@ try {
     .getByRole("button", { name: "Fortsett med kladden", exact: true })
     .click();
   eq(
-    await dialog.getByLabel("Oppgangens adresse", { exact: true }).inputValue(),
+    await dialog.getByLabel("Oppgangens adresse (valgfritt)", { exact: true }).inputValue(),
     "Siste oppgang",
     "Declining discard keeps the exact previous draft",
   );

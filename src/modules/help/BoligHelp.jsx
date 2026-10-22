@@ -28,8 +28,9 @@ export function BoligHelp() {
         </li>
         <li>
           Velg «Bygg nytt prosjekt». Velg boligtype, legg inn bygg og adresser,
-          og se over boligfordelingen før «Opprett prosjektforside». En enebolig
-          registreres som én husstand, uansett etasjeantall.
+          og se over boligfordelingen før «Opprett prosjektforside». Navn og
+          foreløpig boligstruktur er nok. Adresser og kontakter kan fylles inn
+          senere. En enebolig registreres som én husstand, uansett etasjeantall.
         </li>
         <li>
           Bruk «Alle bygg» eller «Bytt bygg» for å finne riktig bygg. Lange
@@ -117,8 +118,25 @@ export function BoligHelp() {
           «Ny sjekkliste» for å bygge manuelt eller hente en publisert firmamal.
           Last opp bilder under «Filer og bilder» og knytt dem til
           sjekkpunktene. Lagre underveis. Velg «Fullfør kontrollen ved lagring»
-          når listen er ferdig. Åpne avvik må rettes og lukkes med beskrivelse
-          før ferdigstilling.
+          når listen er ferdig. Merk listen som påkrevd hvis den skal inngå i
+          sluttkravene. Valgfrie lister gir påminnelser. Kritiske avvik stopper
+          godkjenning. Mindre restpunkter følger med som «Klar med restpunkter»
+          og tas med i sluttdokumentasjonen.
+        </li>
+        <li>
+          Velg «Fordel sjekklister» for å hente publiserte firmamaler fra
+          sjekklistesentralen eller bruke egne prosjektlister. Velg boliger
+          eller rom, se over fordelingen og velg «Bekreft og fordel». Hver
+          mottaker får sin egen kontroll med tomme svar. Eksisterende kontroller
+          og utfylte svar beholdes.
+        </li>
+        <li>
+          «Samlet PDF og ZIP» finnes under Sjekklister og dokumentasjon for
+          bolig, bygg og prosjekt. Relevant fellesdokumentasjon følger med. Last
+          ned samlet PDF eller ZIP med PDF, originale filer/bilder, lagrede
+          kontrollutgaver, historikk og filmanifest. Ekstern FDV følger som
+          lenker. Uferdig dokumentasjon kan også lastes ned; status og
+          restpunkter vises tydelig. Nedlasting godkjenner ikke arbeidet.
         </li>
         <li>
           Legg FDV-lenker på varene i grunnpakker, tilvalgspakker og
@@ -134,9 +152,11 @@ export function BoligHelp() {
           dokumenter rettingen. Du kan også velge en fil som allerede er lastet
           opp. Appen leser ikke merknadene automatisk fra PDF-en. «Bekreft
           retting» lagrer navn og tidspunkt. «Send bekreftelse på e-post» er
-          valgfritt. Velg mottaker, se over og send. Ved uavklart svar bruker du
-          «Prøv samme sending igjen». Tidligere protokoller og bekreftelser
-          beholdes.
+          valgfritt. «Bekreft og send» lar deg velge mottaker samtidig med
+          bekreftelsen. Først lagres rettingsbekreftelsen, deretter ser du den
+          ferdige e-posten og velger «Send bekreftelse». Ved uavklart svar
+          bruker du «Prøv samme sending igjen». Tidligere protokoller og
+          bekreftelser beholdes.
         </li>
         <li>
           Under Bestilling velger du «Leveringsoppsett». Lagre felles adresse
@@ -168,23 +188,26 @@ export function BoligHelp() {
           bestilling må avklares før nye bestillinger.
         </li>
         <li>
-          Åpne «Ferdigstilling» i boligen → «Opprett kontrollplan». Legg inn
-          dokumentreferanser for utførelse, sjekklister, avvik, bilder og
-          sluttdokumentasjon. «Legg til kontrollpunkt» kan knyttes til et rom.
-          Velg ansvarlig og følg «Dette gjenstår». Koblet leilighetsprosjekt
-          kontrolleres automatisk for ufullførte kontroller og åpne avvik. Egne
-          kontroller og eksterne protokoller i Boligprosjekter kontrolleres også
-          automatisk. «Godkjenn for overtagelse» krever at mangellisten er tom.
-          «Registrer overtagelse» viser til en allerede gjennomført protokoll.
-          Dette er intern registrering, ikke en digital signatur.
+          Åpne «Ferdigstilling» i boligen → «Opprett kontrollplan». «Samlet
+          gjennomgang» viser lagrede kontroller, avvik, filer og FDV. Bekreft
+          gjennomgangen og legg til notat ved behov. De faste kontrollområdene
+          gjennomgås samlet; «Vis kontrollpunkter» åpner detaljene. Egne ekstra
+          kontrollpunkter følges opp hver for seg. «Godkjenn for overtagelse»
+          krever at påkrevde forhold og kritiske avvik er avklart. Mindre
+          restpunkter gir «Klar med restpunkter». «Registrer overtagelse» viser
+          til en allerede gjennomført protokoll. Dette er intern registrering,
+          ikke en digital signatur.
         </li>
         <li>
           «Ferdigstilling av bygg» og «Ferdigstilling av prosjekt» samler
-          statusen. Avklar også egne fellesarbeider, eller begrunn at det ikke
-          er noen. Ferdige boliger alene er ikke nok. Endret grunnlag krever ny
-          kontroll. «Gjenåpne med begrunnelse» beholder tidligere godkjenninger
-          og overtagelser i historikken. Usendt kontrollbeskrivelse beholdes når
-          du lukker vinduet.
+          statusen. Avklar også egne fellesarbeider, eller velg «Ingen egne
+          fellesarbeider». Notat er valgfritt. Ferdige boliger alene er ikke
+          nok. Endret arbeids- eller dokumentgrunnlag krever ny godkjenning, men
+          tidligere kontrollbeskrivelser beholdes. Registrering av underliggende
+          overtagelser krever ikke ny gjennomgang av uendret arbeid. «Gjenåpne
+          med begrunnelse» beholder tidligere godkjenninger og overtagelser i
+          historikken. Usendt kontrollbeskrivelse beholdes når du lukker
+          vinduet.
         </li>
         <li>
           Vent på «Lagret i firmaet». Andre med tilgang kan hente samme

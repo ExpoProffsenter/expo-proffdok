@@ -5,7 +5,9 @@ export const completionLabels = {
   executed: "Utført",
   controlled: "Kontrollert",
   ready: "Klar for overtagelse",
+  ready_with_rest: "Klar med restpunkter",
   handed_over: "Overtatt",
+  handed_over_with_rest: "Overtatt med restpunkter",
   review: "Ny kontroll kreves",
 };
 export async function completionRpc(
@@ -40,6 +42,8 @@ export async function completionRpc(
   return data;
 }
 export function completionTone(status) {
+  if (["ready_with_rest", "handed_over_with_rest"].includes(status))
+    return "rest";
   return ["ready", "handed_over"].includes(status)
     ? "ready"
     : status === "review"

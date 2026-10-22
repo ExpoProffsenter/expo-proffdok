@@ -1,3 +1,4 @@
+import DraftForm from "./BoligDraftForm.jsx";
 import BoligQuality from "./BoligQuality.jsx";
 import { QUALITY_EVENT } from "./boligQualityClient.js";
 import React, { useEffect, useRef, useState } from "react";
@@ -33,6 +34,7 @@ const date = (value) =>
     : "";
 const actionLabels = {
   start: "Kontrollplan opprettet",
+  review_all: "Samlet gjennomgang lagret",
   no_common: "Fellesarbeider avklart",
   owner: "Ansvarlig endret",
   item: "Kontrollpunkt lagret",
@@ -209,12 +211,17 @@ function ProofForm({
           )}
           <label>
             {["reopen", "no_common"].includes(mode)
-              ? "Begrunnelse"
+              ? mode === "no_common"
+                ? "Notat (valgfritt)"
+                : "Begrunnelse"
               : mode === "handover"
                 ? "Referanse til overtagelsesprotokoll"
                 : "Dokumentreferanse og kontrollbeskrivelse"}
             <textarea
-              required={!["item", "add"].includes(mode) || draft.done}
+              required={
+                mode !== "no_common" &&
+                (!["item", "add"].includes(mode) || draft.done)
+              }
               minLength={draft.done ? 3 : undefined}
               maxLength={2000}
               rows={4}
@@ -233,7 +240,7 @@ function ProofForm({
               : mode === "reopen"
                 ? "Forklar hva som skal kontrolleres på nytt. Tidligere godkjenning og overtagelse beholdes i historikken."
                 : mode === "no_common"
-                  ? "Forklar hvorfor dette bygget eller prosjektet ikke har egne fellesarbeider. Boligene kontrolleres fortsatt hver for seg."
+                  ? "Du bekrefter at det ikke er egne fellesarbeider i dette området. Boligene kontrolleres fortsatt hver for seg. Legg til et notat ved behov."
                   : "Oppgi filnavn, dato eller annen presis referanse. Dokumentene lagres i prosjektet eller avtalt dokumentarkiv."}
           </p>
         </>
@@ -386,7 +393,7 @@ export default function BoligCompletion({
     .sort((a, b) => a.title.localeCompare(b.title, "nb", { numeric: true }));
   const ownMissing = row.items.filter((i) => !i.valid).length;
   const childrenAwaitHandover = children.some(
-    (r) => r.status !== "handed_over",
+    (r) => !["handed_over", "handed_over_with_rest"].includes(r.status),
   );
   return (
     <section
@@ -430,10 +437,37 @@ export default function BoligCompletion({
         aria-label="Trinn i ferdigstillingen"
       >
         {[
-          ["Utført", ["executed", "controlled", "ready", "handed_over"]],
-          ["Kontrollert", ["controlled", "ready", "handed_over"]],
-          ["Klar for overtagelse", ["ready", "handed_over"]],
-          ["Overtatt", ["handed_over"]],
+          [
+            "Utført",
+            [
+              "executed",
+              "controlled",
+              "ready",
+              "ready_with_rest",
+              "handed_over",
+              "handed_over_with_rest",
+            ],
+          ],
+          [
+            "Kontrollert",
+            [
+              "controlled",
+              "ready",
+              "ready_with_rest",
+              "handed_over",
+              "handed_over_with_rest",
+            ],
+          ],
+          [
+            "Klar for overtagelse",
+            [
+              "ready",
+              "ready_with_rest",
+              "handed_over",
+              "handed_over_with_rest",
+            ],
+          ],
+          ["Overtatt", ["handed_over", "handed_over_with_rest"]],
         ].map(([name, states], i) => (
           <li
             key={name}
@@ -523,46 +557,70 @@ export default function BoligCompletion({
               {row.done} av {row.total} dokumentert
             </span>
           </div>
-          <div className="bolig-completion-items">
-            {row.items.map((item) => (
+          {editable && !locked && (
+            <div className="bolig-completion-review-entry">
+              <div>
+                <strong>Gjennomgå dokumentasjonen samlet</strong>
+                <p>
+                  Se kontroller, avvik, bilder og FDV på ett sted. Du trenger
+                  ikke skrive samme dokumentreferanse fem ganger.
+                </p>
+              </div>
               <button
                 type="button"
-                key={item.id}
-                disabled={!editable || locked || busy}
-                onClick={() => setEditor({ mode: "item", item })}
+                className="bolig-primary"
+                disabled={busy}
+                onClick={() => setEditor({ mode: "review_all" })}
               >
-                <span className={item.valid ? "is-done" : ""}>
-                  {item.valid ? (
-                    <CheckCircle2 size={22} />
-                  ) : (
-                    <Circle size={22} />
-                  )}
-                </span>
-                <span>
-                  <strong>{item.title}</strong>
-                  {item.room_id && (
-                    <small>
-                      {data.rooms.find((r) => r.id === item.room_id)?.name ||
-                        "Tidligere rom – kontroller tilknytningen"}
-                    </small>
-                  )}
-                  <small>
-                    {item.valid
-                      ? item.evidence
-                      : item.done
-                        ? "Grunnlaget er endret. Kontroller på nytt."
-                        : "Legg til dokumentasjon"}
-                  </small>
-                  {item.valid && (
-                    <small>
-                      {item.by_name || "Registrert"} · {date(item.at)}
-                    </small>
-                  )}
-                </span>
-                <ChevronRight size={18} />
+                Samlet gjennomgang
               </button>
-            ))}
-          </div>
+            </div>
+          )}
+          <details className="bolig-completion-proof-details">
+            <summary>
+              Vis kontrollpunkter · {row.done} av {row.total}
+            </summary>
+            <div className="bolig-completion-items">
+              {row.items.map((item) => (
+                <button
+                  type="button"
+                  key={item.id}
+                  disabled={!editable || locked || busy}
+                  onClick={() => setEditor({ mode: "item", item })}
+                >
+                  <span className={item.valid ? "is-done" : ""}>
+                    {item.valid ? (
+                      <CheckCircle2 size={22} />
+                    ) : (
+                      <Circle size={22} />
+                    )}
+                  </span>
+                  <span>
+                    <strong>{item.title}</strong>
+                    {item.room_id && (
+                      <small>
+                        {data.rooms.find((r) => r.id === item.room_id)?.name ||
+                          "Tidligere rom – kontroller tilknytningen"}
+                      </small>
+                    )}
+                    <small>
+                      {item.valid
+                        ? item.evidence
+                        : item.done
+                          ? "Grunnlaget er endret. Kontroller på nytt."
+                          : "Legg til dokumentasjon"}
+                    </small>
+                    {item.valid && (
+                      <small>
+                        {item.by_name || "Registrert"} · {date(item.at)}
+                      </small>
+                    )}
+                  </span>
+                  <ChevronRight size={18} />
+                </button>
+              ))}
+            </div>
+          </details>
           {editable && !locked && (
             <button
               type="button"
@@ -582,21 +640,32 @@ export default function BoligCompletion({
           busy={busy}
           onClose={() => setEditor(null)}
         >
-          <ProofForm
-            key={`${scopeId}:${editor.mode}:${editor.item?.id || "new"}`}
-            context={context}
-            root={root}
-            scopeId={scopeId}
-            row={row}
-            mode={editor.mode}
-            item={editor.item}
-            members={data.members}
-            rooms={data.rooms}
-            busy={busy}
-            error={error}
-            onSave={save}
-            onCancel={() => setEditor(null)}
-          />
+          {editor.mode === "review_all" ? (
+            <CompletionReview
+              context={context}
+              root={root}
+              scopeId={scopeId}
+              row={row}
+              busy={busy}
+              onSave={save}
+            />
+          ) : (
+            <ProofForm
+              key={`${scopeId}:${editor.mode}:${editor.item?.id || "new"}`}
+              context={context}
+              root={root}
+              scopeId={scopeId}
+              row={row}
+              mode={editor.mode}
+              item={editor.item}
+              members={data.members}
+              rooms={data.rooms}
+              busy={busy}
+              error={error}
+              onSave={save}
+              onCancel={() => setEditor(null)}
+            />
+          )}
         </Dialog>
       )}
       {row.issues.length > 0 && (
@@ -616,6 +685,41 @@ export default function BoligCompletion({
               detaljer.
             </p>
           )}
+        </details>
+      )}
+      {(row.restpoints || []).length > 0 && (
+        <div className="bolig-completion-rest">
+          <strong>
+            {row.restpoints.length} mindre restpunkter følger overtagelsen
+          </strong>
+          <p>
+            Dette er ikke en ferdigmelding uten merknader. Restpunktene tas med
+            i godkjenningen og sluttpakken.
+          </p>
+          <details>
+            <summary>Vis restpunktene</summary>
+            <ul>
+              {row.restpoints.map((p, i) => (
+                <li key={i}>
+                  <strong>{p.title}</strong>
+                  {p.comment && <p>{p.comment}</p>}
+                  <small>{p.source}</small>
+                </li>
+              ))}
+            </ul>
+          </details>
+        </div>
+      )}
+      {(row.warnings || []).length > 0 && (
+        <details className="bolig-completion-reminders">
+          <summary>
+            Påminnelser som ikke stopper · {row.warnings.length}
+          </summary>
+          <ul>
+            {row.warnings.map((w, i) => (
+              <li key={i}>{w}</li>
+            ))}
+          </ul>
         </details>
       )}
       <div className="bolig-quality-entry">
@@ -687,14 +791,15 @@ export default function BoligCompletion({
                   {date(row.handover.at)}
                 </p>
               )}
-              {childrenAwaitHandover && row.status === "ready" && (
-                <p>
-                  Registrer overtagelse for alle aktive boliger eller bygg før
-                  du registrerer samlet overtagelse.
-                </p>
-              )}
+              {childrenAwaitHandover &&
+                ["ready", "ready_with_rest"].includes(row.status) && (
+                  <p>
+                    Registrer overtagelse for alle aktive boliger eller bygg før
+                    du registrerer samlet overtagelse.
+                  </p>
+                )}
               <div className="bolig-completion-actions">
-                {row.status === "ready" && (
+                {["ready", "ready_with_rest"].includes(row.status) && (
                   <button
                     className="bolig-primary"
                     type="button"
@@ -716,7 +821,11 @@ export default function BoligCompletion({
             </>
           ) : confirm ? (
             <>
-              <strong>Godkjenn dette grunnlaget?</strong>
+              <strong>
+                {row.restpoints?.length
+                  ? "Godkjenn som klar med restpunkter?"
+                  : "Godkjenn dette grunnlaget?"}
+              </strong>
               <p>
                 Du bekrefter at arbeidet og dokumentasjonen er kontrollert.
                 Godkjenningen lagres med navn, tidspunkt og gjeldende grunnlag.
@@ -734,7 +843,9 @@ export default function BoligCompletion({
                 disabled={busy || row.issues.length > 0}
                 onClick={() => save("approve")}
               >
-                Bekreft godkjenning
+                {row.restpoints?.length
+                  ? "Bekreft – klar med restpunkter"
+                  : "Bekreft godkjenning"}
               </button>
             </>
           ) : (
@@ -891,7 +1002,12 @@ export function BoligCompletionOverview({
   const project = data?.rows.find((r) => r.scope_id === root.id);
   const units = data?.rows.filter((r) => r.kind === "unit") || [];
   const ready = units.filter((r) =>
-    ["ready", "handed_over"].includes(r.status),
+    [
+      "ready",
+      "ready_with_rest",
+      "handed_over",
+      "handed_over_with_rest",
+    ].includes(r.status),
   ).length;
   return (
     <div className="bolig-completion-overview">
@@ -944,6 +1060,85 @@ export function BoligCompletionOverview({
           </footer>
         </Dialog>
       )}
+    </div>
+  );
+}
+
+function CompletionReview({ context, root, scopeId, row, busy, onSave }) {
+  const e = row.source.evidence || {};
+  return (
+    <div className="bolig-completion-review">
+      <h3>Samlet gjennomgang</h3>
+      <p>
+        Kontroller arbeidet og de lagrede dokumentene før du bekrefter. Egne
+        ekstra kontrollpunkter må fortsatt følges opp hver for seg.
+      </p>
+      <dl className="bolig-completion-evidence">
+        <div>
+          <dt>Påkrevde sjekklister</dt>
+          <dd>
+            {e.completed_required || 0} av {e.required_checks || 0} fullført
+          </dd>
+        </div>
+        <div>
+          <dt>Avvik</dt>
+          <dd>
+            {e.critical || 0} kritiske · {row.restpoints?.length || 0} mindre
+            restpunkter
+          </dd>
+        </div>
+        <div>
+          <dt>Lagrede filer</dt>
+          <dd>
+            {e.documents || 0}, herav {e.photos || 0} bilder
+          </dd>
+        </div>
+        <div>
+          <dt>FDV-grunnlag</dt>
+          <dd>
+            {e.fdv || 0} varelinjer · {e.fdv_missing || 0} uten lenke
+          </dd>
+        </div>
+      </dl>
+      <p>
+        Varevalget må sammenlignes med det som faktisk er montert. Dokumentasjon
+        i et eksternt arkiv gjennomgås også manuelt.
+      </p>
+      <DraftForm
+        context={context}
+        rootId={root.id}
+        name={`completion-review:${scopeId}`}
+        initial={{ confirmed: false, note: "" }}
+        basis={{ revision: row.revision, basis: row.basis }}
+        busy={busy}
+        submitLabel="Lagre samlet gjennomgang"
+        onRebase={(v) => v}
+        onSave={(v, b) => onSave("review_all", v, b)}
+      >
+        {(v, c) => (
+          <>
+            <label className="bolig-completion-check">
+              <input
+                type="checkbox"
+                required
+                checked={v.confirmed}
+                onChange={(ev) => c("confirmed", ev.target.checked)}
+              />
+              Jeg har gjennomgått arbeidet, kontrollene, avvikene, bildene og
+              sluttdokumentasjonen.
+            </label>
+            <label>
+              Notat eller ekstern dokumentreferanse (valgfritt)
+              <textarea
+                rows={3}
+                maxLength={2000}
+                value={v.note}
+                onChange={(ev) => c("note", ev.target.value)}
+              />
+            </label>
+          </>
+        )}
+      </DraftForm>
     </div>
   );
 }

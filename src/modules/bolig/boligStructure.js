@@ -70,14 +70,13 @@ export function validatePlan(draft) {
     if (names.has(b.name.trim()))
       return `To bygg heter «${b.name.trim()}». Gi dem ulike navn.`;
     names.add(b.name.trim());
-    if (!b.address.trim()) return `Fyll inn adressen til ${b.name}.`;
     if (!b.entrances.length || b.entrances.length > 100)
       return `Velg 1–100 oppganger i ${b.name}.`;
     for (const e of b.entrances) {
       const address = (e.address || b.address).trim();
-      if (addresses.has(address))
+      if (address && addresses.has(address))
         return `Adressen «${address}» brukes flere ganger. Fyll inn egen adresse for hver oppgang.`;
-      addresses.add(address);
+      if (address) addresses.add(address);
       if (
         !e.counts.length ||
         e.counts.length > 30 ||

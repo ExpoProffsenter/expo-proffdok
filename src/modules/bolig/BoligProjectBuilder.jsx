@@ -42,7 +42,7 @@ const seed = () => ({
 });
 const steps = [
   "Prosjekt og boligtype",
-  "Bygg og adresser",
+  "Bygg og valgfri adresse",
   "Etasjer og boliger",
   "Se over og opprett",
 ];
@@ -146,8 +146,8 @@ export default function BoligProjectBuilder({ context, onCreate, busy }) {
           ? "Gi prosjektet et navn."
           : ""
         : draft.step === 1
-          ? draft.buildings.some((v) => !v.name.trim() || !v.address.trim())
-            ? "Fyll inn navn og adresse for alle bygg."
+          ? draft.buildings.some((v) => !v.name.trim())
+            ? "Gi alle bygg et navn."
             : ""
           : validatePlan(draft);
     if (failure) {
@@ -451,7 +451,9 @@ export default function BoligProjectBuilder({ context, onCreate, busy }) {
                               <Building2 size={16} />
                               <span>
                                 <b>{v.name}</b>
-                                <small>{v.address || "Adresse mangler"}</small>
+                                <small>
+                                  {v.address || "Adresse legges til senere"}
+                                </small>
                               </span>
                               <small>{buildingTotal(v)}</small>
                             </button>
@@ -522,9 +524,8 @@ export default function BoligProjectBuilder({ context, onCreate, busy }) {
                                 </select>
                               </label>
                               <label className="bolig-span-all">
-                                Byggets adresse
+                                Byggets adresse (valgfritt)
                                 <input
-                                  required
                                   maxLength={200}
                                   value={b.address}
                                   onChange={(e) =>
@@ -657,7 +658,8 @@ export default function BoligProjectBuilder({ context, onCreate, busy }) {
                                     {b.entrances.map((e, i) => (
                                       <option key={e.key} value={e.key}>
                                         {i + 1}.{" "}
-                                        {e.address || "Adresse mangler"}
+                                        {e.address ||
+                                          "Adresse legges til senere"}
                                       </option>
                                     ))}
                                   </select>
@@ -685,7 +687,10 @@ export default function BoligProjectBuilder({ context, onCreate, busy }) {
                                       ? `Oppgang ${b.entrances.indexOf(e) + 1}`
                                       : "Boligfordeling"}
                                     <span>
-                                      {e.address || b.address} ·{" "}
+                                      {e.address ||
+                                        b.address ||
+                                        "Adresse legges til senere"}{" "}
+                                      ·{" "}
                                       {e.counts.reduce(
                                         (s, n) => s + Number(n),
                                         0,
@@ -696,9 +701,8 @@ export default function BoligProjectBuilder({ context, onCreate, busy }) {
                                   <div>
                                     {b.entrances.length > 1 && (
                                       <label>
-                                        Oppgangens adresse
+                                        Oppgangens adresse (valgfritt)
                                         <input
-                                          required
                                           maxLength={200}
                                           value={e.address}
                                           placeholder={b.address}
@@ -869,7 +873,10 @@ export default function BoligProjectBuilder({ context, onCreate, busy }) {
                                     {v.entrances.map((e, index) => (
                                       <p key={e.key}>
                                         <b>
-                                          {index + 1}. {e.address || v.address}
+                                          {index + 1}.{" "}
+                                          {e.address ||
+                                            v.address ||
+                                            "Adresse legges til senere"}
                                         </b>
                                         <small>
                                           {e.counts.length} etasjer ·{" "}
@@ -898,8 +905,9 @@ export default function BoligProjectBuilder({ context, onCreate, busy }) {
                     <div className="bolig-builder-house-note">
                       <CheckCircle2 size={23} />
                       <p>
-                        Etter opprettelse velger du grunnpakker og tilvalgspakker. Rom
-                        og dokumentasjon kan legges til senere.
+                        Etter opprettelse velger du grunnpakker og
+                        tilvalgspakker. Rom og dokumentasjon kan legges til
+                        senere.
                       </p>
                     </div>
                   </>

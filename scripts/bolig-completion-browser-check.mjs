@@ -18,18 +18,19 @@ import Completion from '${cwd}/src/modules/bolig/BoligCompletion.jsx';
 import '${cwd}/src/style.css';import '${cwd}/src/modules/bolig/bolig.css';
 const ctx={user_id:'qa',company_id:'firm',role:'manager',enabled:true},root={id:'root',title:'QA Prosjekt'};
 const initial=()=>({scope_id:'unit',kind:'unit',parent_id:'block',title:'H0101 · QA kontrollgate',revision:0,basis:'basis0',source_basis:'source0',source:{issues:[]},status:'not_started',items:[],issues:['Avklar kontrollene'],done:0,total:0,owner_id:'qa',owner_name:'QA Leder',approval:null,handover:null});
-let row=initial(),history=[];
+let row=initial(),history=[];window.__reset=()=>{row=initial();row.restpoints=[{scope_id:'unit',source:'QA Kontroll',title:'Mindre justering',comment:'Rosett justeres'}];row.warnings=['Valgfri liste er under arbeid'];row.source.evidence={checks:2,required_checks:1,completed_required:1,critical:0,minor:1,documents:3,photos:2,fdv:4,fdv_missing:1};history=[];};
 window.__reject=false;window.__foreign=false;window.__calls=[];window.__hold=false;
 const state=()=>({context:ctx,root_id:'root',scope_id:'unit',rows:[{...structuredClone(row),kind:window.__asParent?'block':'unit'},...(window.__asParent?[{scope_id:'child2',parent_id:'unit',kind:'unit',title:'H0102',status:'not_started',issues:['Avklar kontrollene']},{scope_id:'child1',parent_id:'unit',kind:'unit',title:'H0101',status:'ready',issues:[]}]:[])],history,members:[{id:'qa',name:'QA Leder'}],rooms:[{id:'bath',name:'Bad 1'}]});
 window.__client={rpc:async(name,args)=>{window.__calls.push({name,args});if(window.__hold)await new Promise(r=>window.__release=r);if(window.__foreign)return {data:{...state(),context:{...ctx,company_id:'wrong'}}};if(args.p_action==='get')return {data:state()};if(window.__reject)return {error:{code:'PT409',message:'QA: Grunnlaget er endret. Kladden er beholdt.'}};
 const p=args.p_payload;
 if(args.p_action==='start')row.items=['Arbeidet er utført','Sjekklister og kontroller er fullført','Avvik og mangler er avklart','Bilder er kontrollert','Sluttdokumentasjon er kontrollert'].map((title,i)=>({id:'item'+i,title,kind:i?'documents':'execution',done:false,valid:false,evidence:''}));
+if(args.p_action==='review_all')row.items=row.items.map(i=>({...i,done:true,valid:true,evidence:p.note||'Samlet gjennomgang'}));
 if(args.p_action==='item')row.items=row.items.map(i=>i.id===p.id?{...i,done:p.done,valid:p.done,evidence:p.evidence,by_name:'QA Leder',at:'2026-10-22T10:00:00Z'}:i);
 if(args.p_action==='add')row.items.push({...p,valid:p.done});
 if(args.p_action==='approve')row.approval={by_name:'QA Leder',at:'2026-10-22T10:00:00Z'};
 if(args.p_action==='handover')row.handover={reference:p.reason,at:'2026-10-22T10:00:00Z'};
 if(args.p_action==='reopen'){row.approval=null;row.handover=null;}
-row.done=row.items.filter(i=>i.valid).length;row.total=row.items.length;row.issues=row.items.filter(i=>!i.valid).map(i=>i.title+': dokumentasjon mangler.');row.status=row.handover?'handed_over':row.approval?'ready':row.done===row.total?'controlled':row.items[0]?.valid?'executed':'in_progress';row.revision++;row.basis='basis'+row.revision;
+row.done=row.items.filter(i=>i.valid).length;row.total=row.items.length;row.issues=row.items.filter(i=>!i.valid).map(i=>i.title+': dokumentasjon mangler.');row.status=row.handover?(row.restpoints?.length?'handed_over_with_rest':'handed_over'):row.approval?(row.restpoints?.length?'ready_with_rest':'ready'):row.done===row.total?'controlled':row.items[0]?.valid?'executed':'in_progress';row.revision++;row.basis='basis'+row.revision;
 history=[{id:row.revision,action:args.p_action,actor_name:'QA Leder',at:'2026-10-22T10:00:00Z',reason:p.reason},...history];return {data:state()};}};
 const app=createRoot(document.getElementById('app'));window.__show=(role='manager')=>app.render(<div className="bolig-dialog" style={{position:'static',display:'block',maxWidth:850,margin:'auto'}}><Completion key={role} context={{...ctx,role}} root={root} scopeId="unit"/></div>);window.__show();
 `,
@@ -114,6 +115,7 @@ try {
     dialog = (name) => page.getByRole("dialog", { name, exact: true });
   const area = page.getByRole("region", { name: "Dokumentert ferdigstilling" });
   await button("Opprett kontrollplan").click();
+  await area.locator(".bolig-completion-proof-details > summary").click();
   eq(
     await button("Godkjenn for overtagelse").isEnabled(),
     false,
@@ -239,9 +241,21 @@ try {
   await page.evaluate(() => window.__show("reader"));
   await area.waitFor();
   eq(await button("Legg til kontrollpunkt").count(), 0, "Reader has no writes");
+  await page.evaluate(()=>{window.__reset();window.__show("manager");});
+  await button("Opprett kontrollplan").click();
+  eq(await area.locator(".bolig-completion-proof-details").getAttribute("open"),null,"Individual proof fields start collapsed");
+  await button("Samlet gjennomgang").click();
+  await page.getByLabel("Jeg har gjennomgått arbeidet, kontrollene, avvikene, bildene og sluttdokumentasjonen.",{exact:true}).check();
+  await button("Lagre samlet gjennomgang").click();
+  eq(await button("Godkjenn for overtagelse").isEnabled(),true,"One explicit review covers core requirements without repeated text");
+  await button("Godkjenn for overtagelse").click();
+  await button("Bekreft – klar med restpunkter").click();
+  eq(await area.locator(".bolig-completion-badge").innerText(),"Klar med restpunkter","Minor items are disclosed in readiness status");
+  eq(await button("Registrer overtagelse").isEnabled(),true,"Actual handover can be recorded with minor remaining work");
   await page.evaluate(() => {
     window.__asParent = true;
     window.__show("manager");
+    window.dispatchEvent(new Event("focus"));
   });
   await page.locator(".bolig-completion-children strong").first().waitFor();
   eq(
