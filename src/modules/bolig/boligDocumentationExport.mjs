@@ -45,7 +45,7 @@ export function documentationFiles(state) {
       files.push({
         ...file,
         scope_id: scope.id,
-        scope_title: scope.title,
+        scope_title: scope.title.replace(/\s*·\s*$/, ""),
         archive_name: `${folder(scope)}/Filer/${file.id.slice(0, 8)}-${safeDocumentationName(file.name)}`,
       });
     }
@@ -171,7 +171,7 @@ export function buildBoligDocumentationPdf(
   const selected = state.scopes.find((s) => s.id === state.scope_id);
   add({
     type: "Samlet sluttdokumentasjon",
-    title: state.title,
+    title: state.title.replace(/\s*·\s*$/, ""),
     fields: [
       ["Prosjekt", state.project],
       ["Status ved uttrekk", completionLabels[state.status] || state.status],
@@ -221,7 +221,7 @@ export function buildBoligDocumentationPdf(
   if (state.restpoints.length)
     add({
       type: "Restpunkter ved overlevering",
-      title: state.title,
+      title: state.title.replace(/\s*·\s*$/, ""),
       fields: [
         ["Antall", state.restpoints.length],
         ["Status", completionLabels[state.status] || state.status],
@@ -249,7 +249,7 @@ export function buildBoligDocumentationPdf(
       type: scope.common
         ? "Fellesdokumentasjon"
         : "Kontroll og dokumentoversikt",
-      title: scope.title,
+      title: scope.title.replace(/\s*·\s*$/, ""),
       fields: [
         ["Status", completionLabels[c.status] || c.status],
         ["Ansvarlig", c.owner_name || "Ikke valgt"],

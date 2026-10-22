@@ -242,7 +242,7 @@ export default function BoligQualityDistribution({
                 sjekklister og mål på nytt.
               </p>
             )}
-            <details open className="bolig-distribution-section">
+            <details open={!preview} className="bolig-distribution-section">
               <summary>
                 1. Velg sjekklister · {chosenSources.length} valgt
               </summary>
@@ -291,7 +291,7 @@ export default function BoligQualityDistribution({
                 </p>
               )}
             </details>
-            <details open className="bolig-distribution-section">
+            <details open={!preview} className="bolig-distribution-section">
               <summary>
                 2. Velg boliger eller rom · {chosenTargets.length} valgt
               </summary>

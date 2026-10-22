@@ -227,7 +227,7 @@ export default function BoligQuality({ context, root, scopeId, onChange }) {
                 ? "Byggets fellesdokumentasjon"
                 : "Prosjektets fellesdokumentasjon"}
           </span>
-          <h3>{data.title}</h3>
+          <h3>{data.title.replace(/\s*·\s*$/, "")}</h3>
         </div>
         <button
           type="button"

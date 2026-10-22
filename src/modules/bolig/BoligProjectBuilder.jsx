@@ -423,7 +423,7 @@ export default function BoligProjectBuilder({ context, onCreate, busy }) {
                   <>
                     <p className="bolig-builder-hint">
                       {draft.step === 1
-                        ? "Gi hvert bygg et navn og en adresse. En lang blokk med flere oppganger er ett bygg."
+                        ? "Gi hvert bygg et navn. Adresse kan legges til senere. En lang blokk med flere oppganger er ett bygg."
                         : "Velg et bygg. Tilpass oppganger og boliger. Totalen regnes ut for deg."}
                     </p>
                     <div className="bolig-builder-layout">
@@ -578,8 +578,8 @@ export default function BoligProjectBuilder({ context, onCreate, busy }) {
                               )}
                             </div>
                             <small className="bolig-builder-hint">
-                              Kopiering tar med boligtype og etasjer. Fyll inn
-                              en ny adresse.
+                              Kopiering tar med boligtype og etasjer. Adresse kan
+                              fylles inn senere.
                             </small>
                           </>
                         ) : b.building_type === "house" ? (

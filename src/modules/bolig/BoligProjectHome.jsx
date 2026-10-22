@@ -68,7 +68,7 @@ export default function BoligProjectHome({
           </h3>
           <p>
             {manager
-              ? "Start med bygg, adresser og boliger. Fortsett deretter med grunnpakker og tilvalgspakker."
+              ? "Start med navn og foreløpig boligstruktur. Adresser og pakker kan legges til senere."
               : "Åpne et prosjekt for å se bygg, boliger og registrerte valg."}
           </p>
           <div className="bolig-home-actions">{children}</div>

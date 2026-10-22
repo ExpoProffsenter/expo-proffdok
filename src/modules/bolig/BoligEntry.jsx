@@ -901,7 +901,7 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
                         <h3>
                           {
                             entrances.find((e) => e.id === unit.entrance_id)
-                              ?.address
+                              ?.address || "Adresse legges til senere"
                           }{" "}
                           · {unit.number}
                         </h3>
@@ -939,7 +939,7 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
                           <span>
                             {
                               entrances.find((e) => e.id === unit.entrance_id)
-                                ?.address
+                                ?.address || "Adresse legges til senere"
                             }{" "}
                             · {unit.number}
                           </span>

@@ -420,7 +420,7 @@ export default function BoligCompletion({
                 ? "Bygg og fellesarbeider"
                 : "Prosjekt og fellesarbeider"}
           </span>
-          <h3>{row.title}</h3>
+          <h3>{row.title.replace(/\s*·\s*$/, "")}</h3>
         </div>
         <span
           className={`bolig-completion-badge tone-${completionTone(verified ? row.status : "not_started")}`}

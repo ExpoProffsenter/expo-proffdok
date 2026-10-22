@@ -122,7 +122,7 @@ export default function BoligDocumentationExport({
             <div className="bolig-quality-heading">
               <div>
                 <span className="bolig-completion-eyebrow">Dokumentpakke</span>
-                <h3>{data.title}</h3>
+                <h3>{data.title.replace(/\s*·\s*$/, "")}</h3>
               </div>
               <span
                 className={`bolig-completion-badge tone-${completionTone(data.status)}`}

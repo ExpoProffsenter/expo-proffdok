@@ -27,7 +27,9 @@ Kontrollert utgangspunkt: feature `f91e9ac2`, main `0730eeb4`. Eksisterende node
 - [x] Massefordeling med forhåndsvisning, revisjonsvern og gjentakelsessikker lagring.
 - [x] Samlet PDF/ZIP med tilgangs- og grunnlagskontroll, filmanifest og ekte filbyte.
 - [x] Valgfri bekreft-og-send-flyt med lagret bekreftelse og separat sendestatus.
-- [ ] Relevante automatiserte tester, PDF-render, sikkerhetskontroll, sandbox og skynett.
+- [x] Automatiserte tester, PDF-render, sikkerhetskontroll og sandbox.
+- [x] Innlogget skynett: oppstart, prosjektliste, fordeling, sentralimport og samlet sluttkontroll.
+- [ ] Siste innloggede opplasting/nedlasting etter nettleseravbrudd.
 - [ ] Samme Preview oppdatert, eksakt CI grønn, kort brukertest og handoff.
 
 Tidligere dokumentasjon beskriver eldre sperreregler. Denne etappens ferdige kontrakt og tester skal dokumentere hva som erstatter dem; sikkerhets-, historikk- og konfliktvern skal beholdes.
@@ -47,7 +49,7 @@ Tidligere dokumentasjon beskriver eldre sperreregler. Denne etappens ferdige kon
 
 PGlite/PostgreSQL **681 assertions PASS**. De tidligere scenariene beholdes; nye scenarier dekker alle seks valg, sentralimport/romfordeling, snapshot/replay/stale/atomisk rollback, samlet gjennomgang, godkjenningskjede, og konkret regresjonsvern mot naboboligens restpunkter i en boligpakke.
 
-Native Chromium **31 assertions PASS**, ferdigstilling **28 PASS**. Builder **103**, oversikt **42**, klargjøring **33**, boligtilpasning **22**, levering **31**, foundation/catalog/overview React PASS. Native testene dekker samlet bekreft-og-send med valgt mottaker og eksplisitt provider-mock, kladd/fokus/lukking, fordeling til bolig/rom, forhåndsvisning før skriv, og dokumentpakke med synlige restpunkter. Eksisterende tester oppdatert bare for nye faktiske feltetiketter og kollapset detaljvisning; ingen tilgangs-/historikk-/konflikttest fjernet.
+Native Chromium **33 assertions PASS**, ferdigstilling **28 PASS**. Builder **103**, oversikt **42**, klargjøring **33**, boligtilpasning **22**, levering **31**, foundation/catalog/overview React PASS. Native testene dekker samlet bekreft-og-send med valgt mottaker og eksplisitt provider-mock, kladd/fokus/lukking, fordeling til bolig/rom, forhåndsvisning før skriv, og dokumentpakke med synlige restpunkter. Eksisterende tester oppdatert bare for nye faktiske feltetiketter og kollapset detaljvisning; ingen tilgangs-/historikk-/konflikttest fjernet.
 
 PDF/ZIP **31 assertions PASS** med ekte jsPDF-byte, arkivkontroll via Python zipfile/CRC, SHA-256-verifikasjon av alle filer, originalbyte-identitet, underskjemasvar, historikk og klikkbar FDV. Seks sider i vanlig rapport og ti sider i langt eksempel rendret og visuelt kontrollert uten avkutting/overlapping. Eksisterende FDV PDF **12 PASS**, protokollmail **24 PASS**. Full critical build PASS; eksakt CI kontrolleres ved publisering.
 
@@ -59,4 +61,23 @@ Security advisors før/etter: bare ett nytt INFO-funn for den bevisst private de
 
 ## Gjenstår før gjennomgang
 
-Faktisk innlogget Preview-test av ny oppstart, massefordeling, samlet gjennomgang og nedlastet PDF/ZIP, eksakt READY/CI og oppdatert teststi dokumenteres etter publisering. Reell e-postlevering og fysisk Safari-enhet er fortsatt ikke bekreftet. Produksjonssetting og main → demo krever TEST OK.
+Siste faktiske opplastings- og nedlastingsprøve i skynett, reell e-postlevering og fysisk Safari-enhet er fortsatt ikke bekreftet. Omfang og verifiserte deler er dokumentert nedenfor. Produksjonssetting og main → demo krever TEST OK.
+
+## Publisering og faktisk skynettprøve
+
+Første samlede publisering: **8dfa35ee1ca94f6937658c0becf5b7642f99ad26**, tree **ffd783249ff79626a62ca1fb594c23511a953248**. Vercel **dpl_8kUfFPS6J6Ht62FbhC5wmPUg5ZCi READY** på riktig branch. **PR Core Safety #609 / 39701531965 SUCCESS** på eksakt commit. Samme faste Preview brukes videre.
+
+I innlogget skynett er **DEMO – Enkel flyt og sluttpakke** opprettet med kun navn, foreløpig tomannsboligstruktur og tom adresse. Root **661ed7e7-76e4-4230-b5b6-f2f853290e6d**. H0101 **799b1cad-b981-4b3d-98a9-13ff4026ca3e**, H0102 **4876d46f-1990-4a82-a166-9e1c1bd41856**. En egen prosjektliste ble fordelt via forhåndsvisning/bekreftelse til begge boliger. H0101 ble fullført med et eksplisitt mindre restpunkt; H0102 beholdt selvstendige tomme svar. En publisert DEMO-firmamal v1 ble i tillegg importert i H0101 som valgfri, uferdig kontroll. «Samlet gjennomgang» ble lagret uten notat, og H0101 godkjent som **Klar med restpunkter**, med den valgfrie kladden som påminnelse. Reell server-readback etter avbruddet bekrefter kontrollene, påkrevd/valgfri, minor-svar og tom adresse.
+
+Visuell skynettprøve fant en konflikt med global input-bredde: avkrysningsboksene i fordelingen ble 641 px brede og titlene 14 px. Avgrenset rettelse setter boksene til 22 px, titler/undertekst til 16 px, og kollapser valgseksjonene ved forhåndsvisning. To nye Chromium-assertions PASS lokalt før avbruddet, totalt 33. Siste polish retter også foreldet adressetekst og løse skilletegn når adressen er tom.
+
+Skynettverktøyet stanset under åpning av filvelger for en syntetisk protokoll. Etterpå er arbeidsmiljø og nettleserverktøy frakoblet. Det er ikke registrert ny protokoll eller fil i denne nye demoen (server-readback viser 0/0). PDF/ZIP-generering, kontrollsummer og originalbyte er verifisert lokalt og i CI, men **ny faktisk PDF/ZIP-nedlasting i skynett og bekreft-og-send mot faktisk e-posttjeneste er ikke sluttprøvd**. Ingen ekte e-post er sendt. Tidligere demo «DEMO – Sjekklister, FDV og protokoll» har fortsatt sitt syntetiske FDV-grunnlag og originale protokoll.
+
+Produksjon og main er kontrollert uendret ved gjenopptakelse: main **0730eeb46c49bf45b5d910772da5c2ad7ed60771**, **0 Bolig-migrasjoner i produksjon**. Ingen TEST OK, merge eller main → demo-synk. Ventende lokal polish kan overlappe siste GitHub-commit; ved nytt tilkoblet arbeidsmiljø skal remote head hentes og sammenlignes før lokal kode brukes.
+
+## Kort brukertest
+
+1. Åpne samme Preview → Boligprosjekter → **DEMO – Enkel flyt og sluttpakke** → H0101 → **Ferdigstilling**. Forvent «Klar med restpunkter», ett restpunkt og én valgfri påminnelse.
+2. **Sjekklister og dokumentasjon → Fordel sjekklister**. Velg prosjektlisten og begge boliger → forhåndsvis. Begge eksisterende kontroller skal beholdes.
+3. **Samlet PDF og ZIP** åpner innholdsoversikten. Samlet PDF/ZIP kan tas ut underveis uten at status endres. For prøve med FDV og en faktisk originalfil, bruk tidligere **DEMO – Sjekklister, FDV og protokoll → H0101**.
+4. Valgfri ekte e-postprøve gjøres senere med en faktisk valgt mottaker; ikke send til syntetiske .invalid-adresser.

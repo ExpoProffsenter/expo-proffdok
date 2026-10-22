@@ -362,6 +362,7 @@ try {
   await button("Fordel sjekklister").click();
   modal=dialog("Fordel sjekklister");
   await modal.getByRole("checkbox", {name:/Firmaets kontroll.*Sjekklistesentral/}).check();
+  eq(await modal.locator(".bolig-distribution-options > label").first().evaluate(el=>({checkbox:getComputedStyle(el.querySelector('input')).width,title:getComputedStyle(el.querySelector('strong')).fontSize,detail:getComputedStyle(el.querySelector('small')).fontSize})),{checkbox:"22px",title:"16px",detail:"16px"},"Distribution checkboxes stay compact and labels readable under global app CSS");
   await modal.getByRole("button",{name:"Velg alle 2 i utvalget",exact:true}).click();
   await modal.getByLabel("Fordel til",{exact:true}).selectOption("rooms");
   await modal.getByRole("button",{name:"Velg alle 1 i utvalget",exact:true}).click();
@@ -374,6 +375,7 @@ try {
   await modal.getByLabel("Nye kontroller er påkrevde ved sluttgodkjenning").uncheck();
   await button("Forhåndsvis fordeling").click();
   await modal.getByText("3 nye kontroller",{exact:true}).waitFor();
+  eq(await modal.locator(".bolig-distribution-section").evaluateAll(nodes=>nodes.every(n=>!n.open)),true,"Preview collapses finished selections to keep confirmation visible");
   eq(await page.evaluate(()=>window.__calls.filter(c=>c.name==='bolig_quality_distribution'&&c.args.p_action==='apply').length),0,"Distribution preview is read-only");
   await button("Bekreft og fordel").click();
   await modal.getByText("Sjekklistene er fordelt",{exact:true}).waitFor();
