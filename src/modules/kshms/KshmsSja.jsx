@@ -1,3 +1,4 @@
+import {isRpcConflict} from '../app/rpcErrors.mjs';
 import { useEffect, useId, useRef, useState } from 'react';
 import { kshmsRpc } from './kshmsAccess.js';
 import { ProjectChoice, RoutineChoice, useKshmsJobChoices } from './KshmsJobChoices.jsx';
@@ -125,7 +126,7 @@ export default function KshmsSja({ context, active = true, projectId = null, sco
     } catch (cause) {
       if (!current(scope)) return;
       setError(`${cause.message} Kladden er beholdt.`);
-      if (cause.code === '40001') { try { const detail = await kshmsRpc('kshms_sja_detail', { p_company_id: companyId, p_id: editor.id }); if (current(scope) && allowedState(detail) && detail.sja) setConflict(detail.sja); } catch { /* Keep the local form when comparison cannot be loaded. */ } }
+      if (isRpcConflict(cause)) { try { const detail = await kshmsRpc('kshms_sja_detail', { p_company_id: companyId, p_id: editor.id }); if (current(scope) && allowedState(detail) && detail.sja) setConflict(detail.sja); } catch { /* Keep the local form when comparison cannot be loaded. */ } }
     } finally { locked.current = false; if (current(scope)) setBusy(false); }
   };
   useEffect(() => {

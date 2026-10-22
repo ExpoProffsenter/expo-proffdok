@@ -1,3 +1,4 @@
+const CONFLICT_CODE=process.env.QA_RPC_CONFLICT_POLICY==='1'?'PT409':'40001';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 const {PGlite}=await import(process.env.HR_PGLITE_PATH||'/tmp/hr-h4-runtime/node_modules/@electric-sql/pglite/dist/index.js');
@@ -67,7 +68,7 @@ try{
  await actor(self);await command('share');
  await actor(leader);await command('meeting',{answers:{[meeting]:'Syntetisk tilrettelegging'},actions:[{id:id(40),task:'Test avtalt tiltak',owner_id:self,due_on:today,done:false}],next_on:today});
  const saved=revision;
- await reject(()=>rpc('hr_sick_leave_command',[company,employee.id,employeeRevision,conversation,saved-1,'close',{on:today,confirmed:true}]),'40001');
+ await reject(()=>rpc('hr_sick_leave_command',[company,employee.id,employeeRevision,conversation,saved-1,'close',{on:today,confirmed:true}]),CONFLICT_CODE);
  await command('ready');await command('confirm');await actor(self);await command('confirm');eq(state.conversation.stage,'completed','both confirm for themselves');
  await reject(()=>command('followup',followup()),'42501');
  await actor(leader);

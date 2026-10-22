@@ -1,3 +1,4 @@
+const CONFLICT_CODE=process.env.QA_RPC_CONFLICT_POLICY==='1'?'PT409':'40001';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {checkInvitationAccess} from './company-invitation-db-check.mjs';
@@ -58,7 +59,7 @@ try{
  await rejects(()=>rpc('company_admin_invite',[b,'bad','ansatt']),'22023');await rejects(()=>rpc('company_admin_invite',[b,'system@example.invalid','ansatt']));
  await actor(admin);s=await rpc('company_admin_snapshot');eq(s.users.some(u=>u.id===other),false);eq(s.users.find(u=>u.id===secondary).core_access,null);eq(s.users.find(u=>u.id===worker).core_access.user_id,worker);
  await rejects(()=>rpc('company_admin_set_status',[b,worker,{approved:true,deactivated:false},true]));
- await rpc('company_admin_set_role',[b,worker,'ansatt','firmaadmin']);await rejects(()=>rpc('company_admin_set_role',[b,worker,'ansatt','ansatt']),'40001');
+ await rpc('company_admin_set_role',[b,worker,'ansatt','firmaadmin']);await rejects(()=>rpc('company_admin_set_role',[b,worker,'ansatt','ansatt']),CONFLICT_CODE);
  await rejects(()=>rpc('company_admin_set_role',[b,admin,'firmaadmin','ansatt']));await rejects(()=>rpc('company_admin_set_role',[b,other,'ansatt','firmaadmin']));
  await rpc('company_admin_set_role',[b,secondary,'firmaadmin','ansatt']);await db.exec('reset role');eq((await db.query(`select company_role from public.profiles where id=${q(secondary)}`)).rows[0].company_role,'ansatt');
  await actor(secondary);await rejects(()=>rpc('company_admin_snapshot'));
@@ -66,7 +67,7 @@ try{
  await actor(secondary);invitation=await rpc('company_admin_invite',[b,'pending@example.invalid','ansatt']);eq(invitation.accepted,false,'secondary firmaadmin may invite new staff');
  await actor(pending);eq((await rpc('accept_company_user_invite')).accepted,true,'recipient accepts scoped admin invitation');
  await db.exec('reset role');eq((await db.query(`select company_name,approved from public.profiles where id=${q(pending)}`)).rows[0],{company_name:'Bademiljø Expo',approved:true});
- await actor(sys);await rpc('company_admin_set_status',[b,worker,{approved:true,deactivated:false},true]);await rejects(()=>rpc('company_admin_invite',[b,'worker@example.invalid','ansatt']));await rejects(()=>rpc('company_admin_set_status',[b,worker,{approved:true,deactivated:false},false]),'40001');await rpc('company_admin_set_status',[b,worker,{approved:false,deactivated:true},false]);
+ await actor(sys);await rpc('company_admin_set_status',[b,worker,{approved:true,deactivated:false},true]);await rejects(()=>rpc('company_admin_invite',[b,'worker@example.invalid','ansatt']));await rejects(()=>rpc('company_admin_set_status',[b,worker,{approved:true,deactivated:false},false]),CONFLICT_CODE);await rpc('company_admin_set_status',[b,worker,{approved:false,deactivated:true},false]);
  await actor(worker);eq((await rpc('company_admin_snapshot')).company_id,b,'promoted member is manager');
  await actor(admin);await rpc('company_admin_set_role',[b,worker,'firmaadmin','ansatt']);await actor(worker);await rejects(()=>rpc('company_admin_snapshot'));
  await actor(other,outside);await rejects(()=>rpc('company_admin_snapshot'));await rejects(()=>rpc('company_admin_invite',[outside,'bad@example.invalid','ansatt']));

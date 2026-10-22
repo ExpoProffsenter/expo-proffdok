@@ -23,7 +23,7 @@ window.__rpc=async(name,args)=>{calls.push({name,args:structuredClone(args)});co
  if(name==='kshms_execution_detail'){details++;if(fail==='read'){fail='';throw Error('QA readback failed');}const row=records.get(args.p_id);if(!row||row.company_id!==args.p_company_id)throw Error('QA permission denied');return {context:scoped,record:structuredClone(row),links:[]};}
  if(name==='kshms_execution_command'){
   if(fail==='command'){fail='';throw Error('QA network failed');}const savedReceipt=receipts.get(args.p_request_id);if(savedReceipt)return structuredClone(savedReceipt);
-  const p=args.p_payload,previous=records.get(p.id);if(previous&&previous.revision!==p.revision)throw Object.assign(Error('QA revision conflict'),{code:'40001'});
+  const p=args.p_payload,previous=records.get(p.id);if(previous&&previous.revision!==p.revision)throw Object.assign(Error('QA revision conflict'),{code:'PT409'});
   const row={...p,company_id:args.p_company_id,revision:(previous?.revision||0)+1,status:args.p_action==='complete'?'completed':'draft',completed_by:args.p_action==='complete'?scoped.user_id:null,completed_identity:args.p_action==='complete'?{name:'Historisk utfører'}:null,responsible_identity:{name:'Historisk ansvarlig'},completed_at:args.p_action==='complete'?'2026-10-08T13:00:00Z':null,statement:args.p_action==='complete'?p.statement:null,template_snapshot:p.template_version_id?{number:1,content:structuredClone(templates[0].content)}:null};
   records.set(p.id,structuredClone(row));const result={record:{id:row.id,company_id:row.company_id,revision:row.revision}};receipts.set(args.p_request_id,result);if(deferCommand){const wait=deferCommand;deferCommand=null;return await wait.promise;}return result;
  }throw Error('Unexpected QA RPC '+name);

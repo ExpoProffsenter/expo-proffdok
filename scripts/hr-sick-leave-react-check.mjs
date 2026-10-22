@@ -23,7 +23,7 @@ globalThis.__rpc=async(name,args={})=>{
  const c=s.cases[args.p_conversation_id];if(!c)throw Error('Ukjent samtale');
  if(name==='hr_sick_leave_get'){const r=project(c);if(args.p_version){r.conversation=clone(s.history[c.id][args.p_version]);r.historical=true;Object.keys(r.permissions).forEach(k=>r.permissions[k]=false);}return r;}
  if(name==='hr_sick_leave_command'){
-  if(args.p_revision!==c.revision)throw Object.assign(Error('Konflikt'),{code:'40001'});const data=args.p_data;
+  if(args.p_revision!==c.revision)throw Object.assign(Error('Konflikt'),{code:'PT409'});const data=args.p_data;
   if(args.p_action==='preparation')c.preparation=data.answers;
   else if(args.p_action==='share'){c.shared=true;c.stage='meeting';}
   else if(args.p_action==='meeting'){c.meeting=data.answers;c.actions=data.actions;c.next_on=data.next_on;}

@@ -49,7 +49,7 @@ window.__rpc = async (name, args) => {
   assert.equal(name, 'kshms_execution_command');
   if (receipts.has(args.p_request_id)) return structuredClone(receipts.get(args.p_request_id));
   const p = args.p_payload, before = rows.get(p.id), content = executionContent(p.content, p.kind);
-  if (before && before.revision !== p.revision) throw Object.assign(Error('QA conflict'), { code: '40001' });
+  if (before && before.revision !== p.revision) throw Object.assign(Error('QA conflict'), { code: 'PT409' });
   const completed = args.p_action === 'complete';
   if (completed) { assert.equal(content.responsible_id, scoped.user_id); assert(p.confirmed); assert.equal(executionIssues(content, p.kind).length, 0); }
   const row = { ...p, content, company_id: company, responsible_id: content.responsible_id, revision: (before?.revision || 0) + 1, status: completed ? 'completed' : 'draft', completed_by: completed ? scoped.user_id : null, completed_at: completed ? '2026-10-08T18:00:00Z' : null, completed_identity: completed ? { name: 'QA ansvarlig' } : null, statement: completed ? p.statement : null };

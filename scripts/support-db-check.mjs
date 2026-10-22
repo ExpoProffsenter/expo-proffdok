@@ -1,3 +1,4 @@
+const CONFLICT_CODE=process.env.QA_RPC_CONFLICT_POLICY==='1'?'PT409':'40001';
 import assert from 'node:assert/strict';import fs from 'node:fs/promises';
 const {PGlite}=await import(process.env.HR_PGLITE_PATH||'@electric-sql/pglite');const db=new PGlite();let checks=0;
 const eq=(a,b,label)=>{assert.deepEqual(a,b,label);checks++;};const q=v=>v==null?'null':"'"+String(v).replaceAll("'","''")+"'";
@@ -79,7 +80,7 @@ try{
  await rpc('support_reply',[c,ticket,answer,'Svaret fra support',true,false]);
  await rpc('support_reply',[c,ticket,answer,'Svaret fra support',true,false]);
  view=await rpc('support_get',[c,ticket,true]);eq(view.messages.length,3);eq(view.ticket.status,'working');
- await rejects(()=>rpc('support_update',[c,ticket,1,'solved',admin]),'40001');
+ await rejects(()=>rpc('support_update',[c,ticket,1,'solved',admin]),CONFLICT_CODE);
  await rpc('support_update',[c,ticket,view.ticket.revision,'solved',admin]);
  // A shared inbox is independent of the optional legacy assignee and company.
  await db.exec(`begin;reset role;insert into auth.users(id,email) values(${q(id(90))},'second-admin@example.invalid');insert into profiles(id,system_role) values(${q(id(90))},'systemadmin');insert into sales_company_memberships values(${q(id(90))},${q(d)});insert into active_scope values(${q(id(90))},${q(d)});`);

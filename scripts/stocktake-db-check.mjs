@@ -1,3 +1,4 @@
+const CONFLICT_CODE=process.env.QA_RPC_CONFLICT_POLICY==='1'?'PT409':'40001';
 import assert from 'node:assert/strict';import fs from 'node:fs/promises';
 const {PGlite}=await import(process.env.HR_PGLITE_PATH||'@electric-sql/pglite');const db=new PGlite();
 let checks=0;const eq=(a,b,n)=>{assert.deepEqual(a,b,n);checks++;};const q=v=>v==null?'null':"'"+String(typeof v==='object'?JSON.stringify(v):v).replaceAll("'","''")+"'";
@@ -27,22 +28,22 @@ try{
  insert into public.internal_store_catalog_items values(${q(product)},'Leverandør A','00123','Rørdel','07000000000001',${q(imp)},true),(${q(product2)},'Leverandør B','00123','Samme strekkode','07000000000001',${q(imp)},true);`);
  await db.exec(await fs.readFile('supabase/migrations/20261015105313_stocktake_company_counts.sql','utf8'));
  await actor();eq((await rpc('stocktake_context')).enabled,false,'off by default');await rejects(()=>rpc('stocktake_list',[company]));
- eq((await rpc('stocktake_admin_get',[company])).revision,0);eq((await rpc('stocktake_admin_set',[company,true,0])).enabled,true);await rejects(()=>rpc('stocktake_admin_set',[company,false,0]),'40001');
+ eq((await rpc('stocktake_admin_get',[company])).revision,0);eq((await rpc('stocktake_admin_set',[company,true,0])).enabled,true);await rejects(()=>rpc('stocktake_admin_set',[company,false,0]),CONFLICT_CODE);
  eq((await rpc('stocktake_context')).company_id,company);await actor(peer);await rejects(()=>rpc('stocktake_admin_set',[company,false,1]));await actor();
  const create=[company,session,'Oktober','1 – QA lager','2026-10-15'];eq((await rpc('stocktake_create',create)).warehouse,'1 – QA lager');eq((await rpc('stocktake_create',create)).id,session);await rejects(()=>rpc('stocktake_create',[company,session,'Endret','Lager','2026-10-15']),'22023');
  const add={action:'add',catalog_id:product,location:'A',quantity:'2.5'};const command=id(20);let result=await record(add,command);eq(result.number,'00123');eq(result.quantity,2.5);eq(result.supplier,'Leverandør A');eq((await record(add,command)).quantity,2.5,'lost-response replay never adds twice');eq((await record({...add,quantity:'3'},command)).code,'22023');
  await actor(peer);eq((await record({...add,quantity:'1'})).quantity,3.5,'same company collaborates');await actor();
  const second=await record({...add,catalog_id:product2});eq(second.supplier,'Leverandør B');eq((await rpc('stocktake_get',[company,session,0])).total,2,'same barcode across suppliers stays separate');
  const manual={action:'add',supplier:'Manual grossist',number:'00045',description:'Uten skannbar kode',gtin:'',location:'B',quantity:'0'};const zero=await record(manual);eq(zero.quantity,0,'zero is a counted line');
- let changed=await record({action:'set',line_id:zero.id,revision:zero.revision,quantity:'7.125'});eq(changed.quantity,7.125);eq((await record({action:'set',line_id:zero.id,revision:zero.revision,quantity:'9'})).code,'40001','stale overwrite denied');
- eq((await record({action:'delete',line_id:zero.id,revision:zero.revision})).code,'40001');eq((await record({action:'delete',line_id:changed.id,revision:changed.revision})).deleted,zero.id);
+ let changed=await record({action:'set',line_id:zero.id,revision:zero.revision,quantity:'7.125'});eq(changed.quantity,7.125);eq((await record({action:'set',line_id:zero.id,revision:zero.revision,quantity:'9'})).code,CONFLICT_CODE,'stale overwrite denied');
+ eq((await record({action:'delete',line_id:zero.id,revision:zero.revision})).code,CONFLICT_CODE);eq((await record({action:'delete',line_id:changed.id,revision:changed.revision})).deleted,zero.id);
  for(const bad of [{...manual,quantity:'-1'},{...manual,quantity:'1.1234'},{...manual,quantity:''},{...manual,supplier:''},{...manual,number:''},{...manual,description:''},{...manual,price:12},{...manual,description:'Bad\ntext'},{...add,catalog_id:id(999)}])eq((await record(bad)).code,'22023');
  await db.exec(`reset role;update public.internal_store_catalog_imports set status='loading';`);await actor();eq((await record(add)).code,'55000');await db.exec(`reset role;update public.internal_store_catalog_imports set status='active';`);await actor();
  await rejects(()=>db.query('select * from stocktake_private.lines'));await actor(foreign);await rejects(()=>rpc('stocktake_get',[company,session,0]));await rejects(()=>rpc('stocktake_context').then(x=>rpc('stocktake_list',[other])));await actor();
  // More than 30 rows; pagination and no price fields in the stored representation.
  for(let n=0;n<115;n++)await record({...manual,number:'T-'+n,quantity:'1'});
  let page=await rpc('stocktake_get',[company,session,0]);eq(page.total,117);eq(page.items.length,100);eq((await rpc('stocktake_get',[company,session,100])).items.length,17);eq(JSON.stringify(page).includes('price'),false);
- const oldRevision=page.session.revision;await record({...manual,number:'Another',quantity:'1'});eq((await record({action:'close',revision:oldRevision})).code,'40001');
+ const oldRevision=page.session.revision;await record({...manual,number:'Another',quantity:'1'});eq((await record({action:'close',revision:oldRevision})).code,CONFLICT_CODE);
  await rpc('stocktake_admin_set',[company,false,1]);await rejects(()=>rpc('stocktake_get',[company,session,0]));await rejects(()=>record(add));await rpc('stocktake_admin_set',[company,true,2]);
  await db.exec(`reset role;update public.profiles set deactivated=true where id=${q(u)};`);await actor();await rejects(()=>rpc('stocktake_get',[company,session,0]));await rejects(()=>rpc('stocktake_admin_set',[company,false,3]));await db.exec(`reset role;update public.profiles set deactivated=false;delete from public.sales_company_memberships where user_id=${q(peer)};`);await actor(peer);await rejects(()=>rpc('stocktake_get',[company,session,0]));await actor();
  page=await rpc('stocktake_get',[company,session,0]);eq((await record({action:'close',revision:page.session.revision})).closed,true);eq((await record(add)).code,'55000');eq((await rpc('stocktake_get',[company,session,0])).session.closed,true);

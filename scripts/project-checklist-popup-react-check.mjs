@@ -22,7 +22,7 @@ window.__rpc=async(name,args)=>{
  if(name!=='project_checklist_command')throw Error(name);
  commands.push(structuredClone(args));if(receipts.has(args.p_request_id))return structuredClone(receipts.get(args.p_request_id));
  const p=args.p_payload,previous=runs.find(run=>run.id===p.id);
- if(previous&&(previous.revision!==p.revision||previous.status==='completed'))throw Object.assign(Error('En annen person har lagret kontrollen.'),{code:'40001'});
+ if(previous&&(previous.revision!==p.revision||previous.status==='completed'))throw Object.assign(Error('En annen person har lagret kontrollen.'),{code:'PT409'});
  const now=new Date().toISOString(),identity={id:userId,name:userId,email:userId+'@example.invalid'};
  const row={...p,category:p.definition.category,company_id:company,project_id:projectId,revision:(previous?.revision||0)+1,status:args.p_action==='complete'?'completed':'draft',updated_at:now,updated_identity:identity,...(args.p_action==='complete'?{completed_at:now,completed_identity:identity}:{})};
  runs=[row,...runs.filter(run=>run.id!==row.id)];answers={...answers,[category]:row.answers};

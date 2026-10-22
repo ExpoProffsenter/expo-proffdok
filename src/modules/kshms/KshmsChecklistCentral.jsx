@@ -1,3 +1,4 @@
+import {isRpcConflict} from '../app/rpcErrors.mjs';
 import {ChecklistFieldBuilder} from '../checklist/ChecklistFields.jsx';
 import {hotWorkChecklist} from './hotWorkChecklist.mjs';
 import KshmsExistingChecklists from './KshmsExistingChecklists.jsx';
@@ -63,7 +64,7 @@ export default function KshmsChecklistCentral({context,active=true}) {
    window.localStorage.removeItem(checklistDraftKey(userId,companyId));
    setNotice(action==='publish'?`«${saved.template.draft.title}» er publisert som versjon ${saved.version.number}. Den kan nå hentes under Sjekklister i alle prosjekttyper. Våtrom har også inngangen under Fag/utstyr.`:'Utkastet er lagret. Publiser når sjekklisten er klar for prosjekter.');
    setEditor(action==='publish'?null:{id:saved.template.id,revision:saved.template.revision,requestId:crypto.randomUUID(),content:saved.template.draft});
-  }catch(cause){if(current(scope)){if(cause.code==='40001'){try{await load();}catch{}setError('En annen person har endret sjekklisten. Din kladd er beholdt. Sammenlign teksten under før du lagrer igjen.');}else setError(`${cause.message} Kladden er beholdt.`);}}
+  }catch(cause){if(current(scope)){if(isRpcConflict(cause)){try{await load();}catch{}setError('En annen person har endret sjekklisten. Din kladd er beholdt. Sammenlign teksten under før du lagrer igjen.');}else setError(`${cause.message} Kladden er beholdt.`);}}
   finally{locked.current=false;if(current(scope))setBusy(false);}
  };
  const archive=async row=>{

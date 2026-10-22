@@ -25,7 +25,7 @@ try{
     return {data:structuredClone(name.includes('user')?user:company)};
    }
    writes.push({name,args:structuredClone(args)});
-   if(fail)return {error:{code:'40001',message:'Tilgangen er endret. Hent på nytt.'}};
+   if(fail)return {error:{code:'PT409',message:'Tilgangen er endret. Hent på nytt.'}};
    if(name==='people_modules_user_set'){
     assert.deepEqual(args.p_expected,user);assert.equal(args.p_company_id,'c');assert.equal(args.p_user_id,'u');
     user={...user,kshms:args.p_kshms,kshms_role:args.p_kshms_role,hr:args.p_hr};return {data:structuredClone(user)};

@@ -42,7 +42,7 @@ window.__rpc = async (name, args) => {
   if (receipts.has(args.p_request_id)) return receipts.get(args.p_request_id);
   const payload = args.p_payload, old = rows.get(payload.id);
   if (old?.status === 'signed') throw Error('Signert analyse kan ikke endres');
-  if (old && old.revision !== payload.revision) throw Object.assign(Error('En kollega har lagret en nyere SJA.'), { code: '40001' });
+  if (old && old.revision !== payload.revision) throw Object.assign(Error('En kollega har lagret en nyere SJA.'), { code: 'PT409' });
   const content = sjaContent(payload.content), signed = args.p_action === 'sign';
   const row = { id: payload.id, company_id: args.p_company_id, content, title: content.title, workplace: content.workplace, project_reference: content.project_reference, revision: (old?.revision || 0) + 1, status: signed ? 'signed' : 'draft', created_by: old?.created_by || user, leader_id: content.leader_id || null, leader_identity: content.leader_id === user ? identity : content.leader_id === colleague ? otherIdentity : null, updated_at: '2026-10-07T21:00:00Z', signed_by: signed ? user : null, signed_identity: signed ? identity : null, signed_at: signed ? '2026-10-07T21:00:00Z' : null, statement: signed ? SJA_STATEMENT : null };
   rows.set(row.id, row); const result = { sja: structuredClone(row) }; receipts.set(args.p_request_id, result);
