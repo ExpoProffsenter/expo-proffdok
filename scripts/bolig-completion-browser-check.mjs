@@ -32,7 +32,7 @@ if(args.p_action==='handover')row.handover={reference:p.reason,at:'2026-10-22T10
 if(args.p_action==='reopen'){row.approval=null;row.handover=null;}
 row.done=row.items.filter(i=>i.valid).length;row.total=row.items.length;row.issues=row.items.filter(i=>!i.valid).map(i=>i.title+': dokumentasjon mangler.');row.status=row.handover?(row.restpoints?.length?'handed_over_with_rest':'handed_over'):row.approval?(row.restpoints?.length?'ready_with_rest':'ready'):row.done===row.total?'controlled':row.items[0]?.valid?'executed':'in_progress';row.revision++;row.basis='basis'+row.revision;
 history=[{id:row.revision,action:args.p_action,actor_name:'QA Leder',at:'2026-10-22T10:00:00Z',reason:p.reason},...history];return {data:state()};}};
-const app=createRoot(document.getElementById('app'));window.__show=(role='manager')=>app.render(<div className="bolig-dialog" style={{position:'static',display:'block',maxWidth:850,margin:'auto'}}><Completion key={role} context={{...ctx,role}} root={root} scopeId="unit"/></div>);window.__show();
+const app=createRoot(document.getElementById('app'));window.__show=(role='manager')=>app.render(<div className="bolig-dialog" data-qa-role={role} style={{position:'static',display:'block',maxWidth:850,margin:'auto'}}><Completion key={role} context={{...ctx,role}} root={root} scopeId="unit"/></div>);window.__show();
 `,
 );
 let server,
@@ -238,9 +238,13 @@ try {
     false,
     "Added pending room control blocks approval",
   );
+  const readerCallStart = await page.evaluate(() => window.__calls.length);
   await page.evaluate(() => window.__show("reader"));
-  await area.waitFor();
+  await page.locator('[data-qa-role="reader"]').getByRole("heading", {
+    name: "H0101 · QA kontrollgate", exact: true,
+  }).waitFor();
   eq(await button("Legg til kontrollpunkt").count(), 0, "Reader has no writes");
+  eq(await page.evaluate(start => window.__calls.slice(start).filter(call => call.args.p_action !== "get").length, readerCallStart), 0, "Reader render makes no mutation calls");
   await page.evaluate(()=>{window.__reset();window.__show("manager");});
   await button("Opprett kontrollplan").click();
   eq(await area.locator(".bolig-completion-proof-details").getAttribute("open"),null,"Individual proof fields start collapsed");
