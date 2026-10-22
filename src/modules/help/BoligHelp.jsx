@@ -9,6 +9,33 @@ export function BoligHelp() {
         tilbake uten å fjerne usendt arbeid. En ny åpning starter her.
         «Hovedside» viser bygg og boliger i prosjektet du har valgt.
       </p>
+      <details>
+        <summary>Fremdrift og varsler</summary>
+        <p>
+          Åpne «Fremdrift og varsler» i prosjektet eller boligen. Velg «Ny
+          aktivitet», legg inn bolig, rom, datoer og ansvarlig, og velg «Lagre
+          endringer». «Må utføres etter» knytter arbeidet til en annen aktivitet
+          i samme bolig. Registrer faktisk start og slutt når arbeidet er gjort.
+          Påkrevde aktiviteter må være utført før ferdigstilling kan godkjennes.
+        </p>
+        <p>
+          «Klargjør beboervarsel» lager et eget utkast. Velg «Se over varselet»,
+          kontroller mottaker, datoer og tekst, og godkjenn. Publiser manuelt i
+          portalen, eller bruk valgt dato når automatisk varsling er aktivert.
+          Endret plan, kontakt eller innhold krever en ny varselutgave. «Trekk
+          tilbake» stopper videre visning og ventende utsending; en allerede
+          sendt e-post kan ikke trekkes tilbake.
+        </p>
+        <p>
+          Åpne aktiviteter vises i planen. Når e-post er aktivert, får ansvarlig
+          også oppfølging ved tildeling, to dager før planlagt slutt, på
+          sluttdatoen og ukentlig etterpå. Ny mottaker, endret grunnlag,
+          avsluttet arbeid eller bortfalt tilgang stopper gamle ventende
+          varsler. I testfasen er automatisk publisering og e-post satt på
+          pause. Status «akseptert av e-posttjenesten» betyr ikke at e-posten er
+          mottatt eller lest.
+        </p>
+      </details>
       <ol>
         <li>
           Åpne Oppsett → Bygg og boliger for å klargjøre flere boliger samtidig.
@@ -200,24 +227,24 @@ export function BoligHelp() {
         <li>
           «Ny endringsordre» lar deg velge bestillingen som endres. Samle alle
           vareendringene i samme kladd og angi samlet pristillegg eller fratrekk
-          inkl. mva. Kontroller «Før»
-          og «Etter» før godkjenning og deling. Den opprinnelige bestillingen
-          beholdes. Når beboeren har akseptert, avklarer du endringen med
-          leverandøren og registrerer hvem som bekreftet og hvor endringen er
-          bestilt eller kreditert. «Last ned endringsbestilling / kreditering»
-          gir Excel med bare forskjellene. Pluss er tillegg. Minus er reduksjon
-          som må avklares med leverandøren. Velg «Registrer leverandøroppfølging»,
-          fyll ut referanse og bekreftelse og velg «Bekreft og oppdater leveransen».
-          Da oppdateres mottaksgrunnlag og FDV, mens tidligere mottak følger riktig
-          vare. Originalbestillingen beholdes under historikk. Uavklart oppfølging
+          inkl. mva. Kontroller «Før» og «Etter» før godkjenning og deling. Den
+          opprinnelige bestillingen beholdes. Når beboeren har akseptert,
+          avklarer du endringen med leverandøren og registrerer hvem som
+          bekreftet og hvor endringen er bestilt eller kreditert. «Last ned
+          endringsbestilling / kreditering» gir Excel med bare forskjellene.
+          Pluss er tillegg. Minus er reduksjon som må avklares med leverandøren.
+          Velg «Registrer leverandøroppfølging», fyll ut referanse og
+          bekreftelse og velg «Bekreft og oppdater leveransen». Da oppdateres
+          mottaksgrunnlag og FDV, mens tidligere mottak følger riktig vare.
+          Originalbestillingen beholdes under historikk. Uavklart oppfølging
           stopper ferdigstilling. Beboerens svar alene sender ingen bestilling.
         </li>
         <li>
           «Gjeldende boligavtale» viser én hovedavtale. Tidligere utgaver ligger
           under «Avtalehistorikk». Etter aksept brukes endringsordre for nye
-          endringer. «Lag ny utgave» beholder tidligere utgaver. En gyldig publisert
-          eldre utgave kan fortsatt aksepteres. Når én utgave er akseptert,
-          sperres de andre uavklarte utgavene i samme avtalerekke.
+          endringer. «Lag ny utgave» beholder tidligere utgaver. En gyldig
+          publisert eldre utgave kan fortsatt aksepteres. Når én utgave er
+          akseptert, sperres de andre uavklarte utgavene i samme avtalerekke.
           «Tilbakekall utgaven» sperrer en uavklart lenke. Et registrert svar
           endres gjennom en ny avtale. Ved uavklart lagring bruker du «Prøv
           samme lagring igjen». Lukk dialogen for å beholde kladden; velg
@@ -260,8 +287,9 @@ export function BoligHelp() {
         Åpne «Beboerportal» i boligen. Legg til grunnpakken og ønskede
         valgmuligheter. «Klargjør invitasjon» viser kontakt og innhold før du
         lager en personlig lenke. Kopier invitasjonen og send den gjennom deres
-        vanlige e-postkanal. Ingen e-post sendes fra portalen. Lenken varer i
-        30 dager. «Tilbakekall portaltilgang» stenger den. Ny kontakt krever ny lenke.
+        vanlige e-postkanal. Ingen e-post sendes fra portalen. Lenken varer i 30
+        dager. «Tilbakekall portaltilgang» stenger den. Ny kontakt krever ny
+        lenke.
       </p>
       <p>
         Beboeren sender et valg til gjennomgang. Se varer og pris under
@@ -271,9 +299,9 @@ export function BoligHelp() {
         endringsavtalen. En akseptert avtale vises som kvittering.
       </p>
       <p>
-        Del dokumentlenker og skriv meldinger under «Beboerportal». Bare det
-        som deles her blir tilgjengelig for beboeren. Meldinger og svar leses
-        i portalen. Automatisk e-postvarsling og deling av private prosjektfiler
+        Del dokumentlenker og skriv meldinger under «Beboerportal». Bare det som
+        deles her blir tilgjengelig for beboeren. Meldinger og svar leses i
+        portalen. Automatisk e-postvarsling og deling av private prosjektfiler
         inngår ikke i denne versjonen.
       </p>
     </details>

@@ -214,6 +214,7 @@ jobs:
           export KSHMS_JSDOM_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/jsdom/lib/api.js"
           node scripts/bolig-order-email-check.mjs
           node scripts/bolig-protocol-email-check.mjs
+          node scripts/bolig-progress-email-check.mjs
           export KSHMS_JSPDF_NODE_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/jspdf/dist/jspdf.node.min.js"
           node scripts/bolig-fdv-pdf-check.mjs
           node scripts/bolig-documentation-export-check.mjs
@@ -233,6 +234,7 @@ jobs:
           node scripts/bolig-completion-browser-check.mjs
           node scripts/bolig-commerce-browser-check.mjs
           node scripts/bolig-portal-browser-check.mjs
+          node scripts/bolig-progress-browser-check.mjs
           node scripts/bolig-amendment-export-check.mjs
           node scripts/bolig-quality-browser-check.mjs
           node scripts/bolig-customization-browser-check.mjs

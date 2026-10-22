@@ -1096,3 +1096,5 @@ Boligprosjekter har en avgrenset beboerportal i feature/Preview: fryste valgmuli
 Tilbud: versjonskonflikter i accept_sales_offer_quantities returnerer PT409 i stedet for 40001, for å unngå PostgREST 14s ubegrensede transaksjonsretry. Kontroll av versjon og ordinær aksept beholdes. Rettet og verifisert kun i Sandbox; produksjon venter TEST OK. Se docs/qa/OFFER_CONFLICT_CPU_20261022.md.
 
 Stabilitet 22.10.2026: Forretningskonflikter bruker PT409 (HTTP 409). CI og build blokkerer nye manuelt hevede transaksjonsfeilkoder. Migrasjonen er avgrenset til 46 kontrollerte funksjoner, med uendrede tilgangssjekker, låser, utkast og rettigheter. Se docs/qa/RPC_CONFLICT_HARDENING_20261022.md.
+
+Boligprosjekter (Preview 23.10.2026): «Fremdrift og varsler» følger planlagt og faktisk arbeid per bolig/rom, ansvarlig og avhengigheter. Påkrevde åpne aktiviteter sperrer ferdigstilling. Beboervarsler må gjennomgås og godkjennes på nøyaktig gjeldende plan/kontakt før publisering. Egen e-postkø er implementert, men automatisk publisering og e-post er deaktivert i testfasen. Se docs/qa/BOLIG_FREMDRIFT_20261023.md.

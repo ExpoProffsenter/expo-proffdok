@@ -593,6 +593,16 @@ export default function BoligPortalPage() {
                 Skriv spørsmål om boligen din. Svar blir synlige her når
                 prosjektleder har svart.
               </p>
+              {(data.progress_notices || []).map((n) => (
+                <article key={n.id} className="bolig-portal-message manager">
+                  <strong>Planlagt arbeid · {n.title}</strong>
+                  <p>{n.body}</p>
+                  <small>
+                    {n.start.split("-").reverse().join(".")} –{" "}
+                    {n.end.split("-").reverse().join(".")}
+                  </small>
+                </article>
+              ))}
               <div className="bolig-portal-messages">
                 {data.events
                   .filter((e) => ["message", "reply"].includes(e.kind))

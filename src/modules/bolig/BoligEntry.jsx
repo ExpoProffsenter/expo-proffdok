@@ -19,6 +19,7 @@ import BoligCatalog from "./BoligCatalog.jsx";
 import BoligCompletion from "./BoligCompletion.jsx";
 import BoligPortalManager from "./BoligPortalManager.jsx";
 import BoligCommerce from "./BoligCommerce.jsx";
+import BoligProgress from "./BoligProgress.jsx";
 import BoligUnitTasks from "./BoligUnitTasks.jsx";
 import BoligRooms from "./BoligRooms.jsx";
 import BoligBuildingOverview from "./BoligBuildingOverview.jsx";
@@ -26,6 +27,7 @@ import BoligPreparation from "./BoligPreparation.jsx";
 import {
   Building2,
   Home,
+  CalendarDays,
   Settings2,
   RefreshCw,
   ArrowLeft,
@@ -558,6 +560,7 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
                           <Home size={17} />
                           Hovedside
                         </button>
+                        <button type="button" aria-pressed={view === "progress"} onClick={() => setView("progress")}><CalendarDays size={17}/>Fremdrift og varsler</button>
                         <button
                           type="button"
                           aria-pressed={
@@ -866,6 +869,7 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
                       ) : null}
                     </div>
                   </div>
+                  {view === "progress" && <BoligProgress key={`${ctx.user_id}/${ctx.company_id}/${record.root.id}`} context={ctx} root={record.root}/>}
                   <div
                     className={`bolig-main-grid ${unit ? "has-selected" : ""}`}
                     hidden={view !== "overview"}
@@ -1078,6 +1082,7 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
                           key={unit.id + ":tasks:" + ctx.role}
                           unit={unit}
                           active={view === "overview"}
+                          progress={<BoligProgress key={`${ctx.user_id}/${ctx.company_id}/${record.root.id}/${unit.id}`} context={ctx} root={record.root} unit={unit}/>}
                           portal={<BoligPortalManager key={`${ctx.user_id}/${ctx.company_id}/${record.root.id}/${unit.id}`} context={ctx} root={record.root} unit={unit}/>}
                           commerce={<BoligCommerce context={ctx} root={record.root} unit={unit}/>}
                           onOpenProject={(id, tab) => {

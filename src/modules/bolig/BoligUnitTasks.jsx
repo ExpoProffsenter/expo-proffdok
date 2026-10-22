@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
+  CalendarDays,
   Package,
   Truck,
   ClipboardCheck,
@@ -18,6 +19,7 @@ export default function BoligUnitTasks({
   quality,
   commerce,
   portal,
+  progress,
 }) {
   const [panel, setPanel] = useState(null),
     dialog = useRef(null),
@@ -40,6 +42,7 @@ export default function BoligUnitTasks({
     finish: "Ferdigstilling",
     commerce: "Endringer og beboeraksept",
     portal: "Beboerportal",
+    progress: "Fremdrift og varsler",
   };
   const open = (id, e) => {
     opener.current = e.currentTarget;
@@ -83,8 +86,27 @@ export default function BoligUnitTasks({
         "Sjekklister og dokumentasjon",
         "Egne sjekklister, filer, FDV og ekstern protokoll",
       )}
-      {portal && tile("portal", UserRound, "Beboerportal", "Valgmuligheter, invitasjon, dokumentlenker og meldinger")}
-      {commerce && tile("commerce", FileSignature, "Endringer og beboeraksept", "Før og etter, avtalt pris og beboerens bekreftelse")}
+      {progress &&
+        tile(
+          "progress",
+          CalendarDays,
+          "Fremdrift og varsler",
+          "Planlagte datoer, faktisk utførelse og godkjente beboervarsler",
+        )}
+      {portal &&
+        tile(
+          "portal",
+          UserRound,
+          "Beboerportal",
+          "Valgmuligheter, invitasjon, dokumentlenker og meldinger",
+        )}
+      {commerce &&
+        tile(
+          "commerce",
+          FileSignature,
+          "Endringer og beboeraksept",
+          "Før og etter, avtalt pris og beboerens bekreftelse",
+        )}
       {tile(
         "finish",
         FileCheck2,
@@ -119,6 +141,7 @@ export default function BoligUnitTasks({
         {panel === "quality" && quality}
         {panel === "commerce" && commerce}
         {panel === "portal" && portal}
+        {panel === "progress" && progress}
         {panel === "finish" &&
           (completion || (
             <p>Åpne dokumentert ferdigstilling fra boligens arbeidsområde.</p>

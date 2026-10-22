@@ -14,3 +14,7 @@ verify_jwt = false
 [functions.bolig-protocol-email]
 # JWT gate plus Auth.getUser and scope/revision checks in the canonical gateway.
 verify_jwt = true
+
+[functions.bolig-progress-notifications]
+# Private Vault-token authentication; no client-origin or bearer access.
+verify_jwt = false
