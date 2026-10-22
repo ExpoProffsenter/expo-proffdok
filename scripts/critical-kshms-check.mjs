@@ -16,6 +16,7 @@ import './critical-kshms-deviation-extract-check.mjs';
 import fs from 'node:fs';
 import './critical-kshms-inspection-extract-check.mjs';
 import assert from 'node:assert/strict';
+import {isRpcConflict} from '../src/modules/app/rpcErrors.mjs';
 import './critical-kshms-bulk-check.mjs';
 import './critical-kshms-publication-check.mjs';
 import './critical-kshms-handbook-pdf-check.mjs';
@@ -223,7 +224,7 @@ const runStart=moduleSource.indexOf(' const run='),runEnd=moduleSource.indexOf('
 const wrapper=moduleSource.slice(runStart,runEnd);
 for(const failure of ['','command','refresh']){
  const stages=[],ui={busy:false,error:'',notice:''},serverState={marker:'fresh'};
- const command=new Function('bindings','const {kshmsRpc,companyId,load,setBusy,setError,setNotice,setupSuggestionFields,setSetup}=bindings;'+wrapper+';return run;')({kshmsRpc:async()=>{stages.push('command');if(failure==='command')throw new Error('Command failed');return {};},companyId:'a',load:async()=>{stages.push('read');if(failure==='refresh')throw new Error('Refresh failed');return serverState;},setBusy:changeUi(ui,'busy'),setError:changeUi(ui,'error'),setNotice:changeUi(ui,'notice'),setupSuggestionFields:{current:new Set()},setSetup(){}});
+ const command=new Function('bindings','const {isRpcConflict,kshmsRpc,companyId,load,setBusy,setError,setNotice,setupSuggestionFields,setSetup}=bindings;'+wrapper+';return run;')({isRpcConflict,kshmsRpc:async()=>{stages.push('command');if(failure==='command')throw new Error('Command failed');return {};},companyId:'a',load:async()=>{stages.push('read');if(failure==='refresh')throw new Error('Refresh failed');return serverState;},setBusy:changeUi(ui,'busy'),setError:changeUi(ui,'error'),setNotice:changeUi(ui,'notice'),setupSuggestionFields:{current:new Set()},setSetup(){}});
  const response=await command('ack',{},'',(_,state)=>{assert.equal(state,serverState);stages.push('confirmed');});
  assert.deepEqual(stages,failure==='command'?['command']:failure==='refresh'?['command','read']:['command','read','confirmed']);assert.equal(ui.busy,false);assert.equal(Boolean(response),!failure);if(failure)assert(ui.error);
 }

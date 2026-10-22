@@ -45,7 +45,7 @@ try{
    }
    if(name==='hr_contact_save'){
     if(window.saveFail)return {error:{message:'Syntetisk lagringsfeil'}};
-    if(args.p_company_id!==window.company||args.p_contact_revision!==window.revision)return {error:{code:'40001',message:'Endret'}};
+    if(args.p_company_id!==window.company||args.p_contact_revision!==window.revision)return {error:{code:'PT409',message:'Endret'}};
     window.fields=structuredClone(args.p_data);window.revision++;return {data:{context:window.ctx(),employee:{id:'employee',revision:1},revision:window.revision}};
    }
    if(name==='hr_followup_tasks'||name==='hr_conversation_feedback_notices')return {data:{context:window.ctx(),tasks:[],next:null}};

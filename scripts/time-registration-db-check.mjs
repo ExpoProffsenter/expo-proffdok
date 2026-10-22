@@ -1,3 +1,4 @@
+const CONFLICT_CODE=process.env.QA_RPC_CONFLICT_POLICY==='1'?'PT409':'40001';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {defaultCategories,EXPORT_COLUMNS,payrollCsv} from '../src/modules/time/timeCore.mjs';
@@ -27,7 +28,7 @@ try{
  await actor(admin);let settings={enabled:true,categories:defaultCategories(),employee_numbers:{[self]:'004',[admin]:'003'},project_numbers:{},managers:[],deadline_day:0,deadline_time:'12:00',export:{separator:';',decimal:',',date_format:'yyyy-mm-dd',columns:EXPORT_COLUMNS.map(([key,label])=>({key,label}))}};
  settings.categories=settings.categories.map((c,i)=>({...c,payroll_code:'00'+(i+1)}));
  let setup=await rpc('time_setup_save',[company,0,settings]);eq(setup.revision,1,'settings persisted');
- await reject(()=>rpc('time_setup_save',[company,0,settings]),'40001');
+ await reject(()=>rpc('time_setup_save',[company,0,settings]),CONFLICT_CODE);
  let bad={...settings,employee_numbers:{[self]:'1',[admin]:'1'}};await reject(()=>rpc('time_setup_save',[company,1,bad]),'22023');
  eq((await rpc('time_tasks_get',[company])).mobile_shortcut,false,'missing shortcut preference defaults off');
  await db.exec('reset role;begin;');await actor(admin);
@@ -69,7 +70,7 @@ try{
  await db.exec('rollback;');await actor(self);
  const operation=crypto.randomUUID();state=await command('save',[row],0,employee.id,operation);eq(state.sheet.revision,1);eq(state.sheet.entries[0].quantity,8,'server clock arithmetic');
  eq((await command('save',[row],0,employee.id,operation)).sheet.revision,1,'retry is idempotent');
- await reject(()=>command('save',[{...row,note:'changed'}],0,employee.id,operation),'40001');await reject(()=>command('save',[row],0),'40001');
+ await reject(()=>command('save',[{...row,note:'changed'}],0,employee.id,operation),CONFLICT_CODE);await reject(()=>command('save',[row],0),CONFLICT_CODE);
  await reject(()=>command('save',[{...row,project_id:id(99)}]),'42501');await reject(()=>command('save',[{...row,project_id:null}]),'22023');
  await reject(()=>command('save',[{...row,on:'2026-10-19'}]),'22023');await reject(()=>command('save',[{...row,pause:600}]),'22023');await reject(()=>command('save',[{...row,start:'24:00'}]),'22023');
  await reject(()=>command('save',[row,{...row,id:id(21),start:'15:00',end:'17:00',pause:0}]),'22023');

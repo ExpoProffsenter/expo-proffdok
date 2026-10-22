@@ -1,3 +1,4 @@
+import {isRpcConflict} from '../app/rpcErrors.mjs';
 import ChecklistFields from '../checklist/ChecklistFields.jsx';
 import {invalidateFieldConfirmations} from '../checklist/checklistFields.mjs';
 import {useEffect,useId,useRef,useState} from 'react';
@@ -51,7 +52,7 @@ export default function KshmsExecutions({context,kind,active=true,projectId=null
    if(action==='complete')onClose?.();
    // A list refresh is independent of the already verified save and closure.
    try{await load();}catch{if(current(scope))setError('Gjennomføringen er lagret. Listen kunne ikke oppdateres. Trykk Oppdater.');}
-  }catch(e){if(current(scope)){setError(e.message+' Kladden er beholdt.');if(e.code==='40001'){try{const value=await kshmsRpc('kshms_execution_detail',{p_company_id:companyId,p_id:editorRef.current.id});if(current(scope)&&scopeValid(value.context))setDetail(value);}catch{}}}}
+  }catch(e){if(current(scope)){setError(e.message+' Kladden er beholdt.');if(isRpcConflict(e)){try{const value=await kshmsRpc('kshms_execution_detail',{p_company_id:companyId,p_id:editorRef.current.id});if(current(scope)&&scopeValid(value.context))setDetail(value);}catch{}}}}
   finally{lock.current=false;if(current(scope))setBusy(false);}
  };
  const downloadPdf=async()=>{if(lock.current||!editorRef.current||dirty||!editorRef.current.revision)return;const scope=scopeRef.current,snapshot=editorRef.current;lock.current=true;setBusy(true);setError('');try{const result=await downloadExecutionPdf({rpc:kshmsRpc,companyId,userId,editor:snapshot,isCurrent:()=>current(scope)&&editorRef.current===snapshot});if(result&&current(scope))setNotice(result.logoMissing?'PDF er lastet ned med firmanavn. Firmalogoen kunne ikke hentes.':'PDF er lastet ned fra lagret dokumentasjon.');}catch(e){if(current(scope))setError(e.message+' Dokumentasjonen og eventuell kladd er beholdt.');}finally{lock.current=false;if(current(scope))setBusy(false);}};

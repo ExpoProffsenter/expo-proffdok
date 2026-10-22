@@ -1,3 +1,4 @@
+const CONFLICT_CODE=process.env.QA_RPC_CONFLICT_POLICY==='1'?'PT409':'40001';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 const {PGlite}=await import(process.env.HR_PGLITE_PATH);
@@ -31,13 +32,13 @@ try{
  const before=JSON.stringify(await sql('select * from public.profiles order by id')),members=JSON.stringify(await sql('select * from public.sales_company_memberships order by user_id'));
  await actor(member);await reject(()=>rename(c,'Original Firm','Ringside AS'),'42501');
  await actor(admin);await reject(()=>rename(other,'Other Firm','Ringside AS'),'42501');
- await reject(()=>rename(c,'Original Firm','Other Firm'),'23505');await reject(()=>rename(c,'Stale','Ringside AS'),'40001');
+ await reject(()=>rename(c,'Original Firm','Other Firm'),'23505');await reject(()=>rename(c,'Stale','Ringside AS'),CONFLICT_CODE);
  for(const bad of ['x','line\nbreak','x'.repeat(101)])await reject(()=>rename(c,'Original Firm',bad),'22023');
  let v=(await rename(c,'Original Firm','Ringside AS'))[0].v;
  eq(v.companyId,c);eq(v.companyName,'Ringside AS');eq(v.orgNumber,'123456789');eq(v.logoUrl,'/original.png');eq(v.email,'office@example.invalid');
  await db.exec('reset role');eq((await sql(`select normalized_name from public.sales_company_scopes where id=${q(c)}`))[0].normalized_name,'original firm');eq(JSON.stringify(await sql('select * from public.profiles order by id')),before);eq(JSON.stringify(await sql('select * from public.sales_company_memberships order by user_id')),members);eq((await sql('select document from public.company_name_qa_history'))[0].document.companyName,'Original Firm');
  await actor(member);eq((await sql('select public.get_my_company_profile() v'))[0].v.companyName,'Ringside AS');
- await actor(admin);await reject(()=>rename(c,'Original Firm','Unexpected'),'40001');
+ await actor(admin);await reject(()=>rename(c,'Original Firm','Unexpected'),CONFLICT_CODE);
  await actor(sys);eq((await rename(c,'Ringside AS','Synthetic renamed firm'))[0].v.companyName,'Synthetic renamed firm');
  await db.exec(`reset role;update public.profiles set deactivated=true where id=${q(admin)}`);await actor(admin);await reject(()=>rename(c,'Synthetic renamed firm','Fail'),'42501');
  await db.exec('reset role;set role anon;');await reject(()=>rename(c,'Synthetic renamed firm','Fail'),'42501');
