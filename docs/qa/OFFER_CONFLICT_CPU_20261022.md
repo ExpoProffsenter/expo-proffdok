@@ -3,7 +3,8 @@
 Miljømål **BEGGE**. Separat hotfix fra gjeldende main `6aa355cd` for å bevare
 Boligprosjekter PR #278. Ingen Bolig-, navigasjons-, recovery- eller frontend-
 funksjonalitet endres. Kenneth videresendte Supabase CPU-varsel for Sandbox.
-Read-only diagnose er utført i begge miljøer. Ingen produksjonsendring.
+Diagnose er utført i begge miljøer. Etter Kenneths «Fix produksjon» er den
+avgrensede migrasjonen også anvendt og verifisert i produksjon.
 
 ## Bevist årsak og avgrensning
 
@@ -40,7 +41,7 @@ PT409-feil; akseptdelegeringen blir aldri nådd. Ingen bruker-/tilbudsdata ble e
 
 ## Anvendelse og evidens
 
-- Migrasjonen er anvendt **kun i Sandbox**. Ikke rediger eller kjør den på nytt.
+- Migrasjonen er anvendt i **Sandbox og produksjon**. Ikke rediger eller kjør den på nytt.
 - PGlite: 9 kontroller av eksakt endring, null/utdatert versjon, ukjent token,
   uendret aktiv versjon og gyldig mengdedelegasjon.
 - Klientens eksisterende mapper→handler→RPC-kontroll har fått PT409 som ekstra
@@ -55,11 +56,29 @@ PT409-feil; akseptdelegeringen blir aldri nådd. Ingen bruker-/tilbudsdata ble e
 - Security advisors: samme 399 eksisterende funn, ingen nye fra denne endringen.
 
 Full kritisk build, klienttest og scope/docs/diff-kontroll dokumenteres i PR.
-Produksjon følger prosjektets TEST OK-regel. Det er ingen målt grunn til å kjøpe
+Produksjonsrettelsen er eksplisitt autorisert av Kenneth. Det er ingen målt grunn til å kjøpe
 større compute før feilstormen er rettet og CPU-grafen er vurdert på nytt.
 
 ## Test og publisering
 
 Kontroller bevisst feil versjon: rask HTTP 409, ingen kvittering/aksept og ingen
 uendelig retry. Gyldig versjon og valgte antall følger uendret akseptflyt.
-Produksjonsmigrasjon og kontrollert main→demo-synk er ikke utført.
+Produksjonsmigrasjonen er utført; kontrollert main→demo-synk følger grønn CI og merge.
+
+## Produksjonsverifisering 22.10.2026
+
+- Faktisk offentlig REST-kall med bevisst feil versjon: HTTP 409, PT409,
+  avsluttet innen 6,8 sekunder. Den valgte referansen hadde en annen aktiv versjon;
+  ordinær aksept kunne derfor ikke nås. Tilbudets fullrad-hash var uendret etterpå.
+- Definisjonen før/etter har nøyaktig én feilkodeendring. ACL er uendret.
+- Security advisors har uendret 375 eksisterende funn.
+- Loggen 21:17:30–21:20:30 UTC viser én PT409 (testavvisningen), ingen 40001.
+- Rollbackteller 4505 før testen, 4506 etter testen og fortsatt 4506 kl. 21:25:17
+  UTC. Ingen aktive akseptkall. Ingen produksjonsprosesser ble stoppet.
+- En lesende audit fant 46 andre funksjoner som manuelt bruker 40001. Disse er
+  ikke endret i denne hendelsesrettelsen; egen modulvis regresjonsgjennomgang gjenstår.
+- CI avdekket en eksisterende fixture-feil i compact-reference-browser-check:
+  målet for den utsatte sjekklistefokuseringen manglet, og alert kolliderte med
+  nettleserlukking etter 28 beståtte kontroller. Fixture har nå et faktisk mål og
+  en ekstra kontroll av at fokuseringen er fullført. Ingen produktkode eller
+  eksisterende assertions er fjernet eller svekket.
