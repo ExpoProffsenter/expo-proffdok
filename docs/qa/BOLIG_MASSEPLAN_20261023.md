@@ -20,7 +20,7 @@ Additiv CLI-generert migrasjon 20261022231401_bolig_progress_bulk_planning.sql, 
 
 ## Kontroll
 
-Lokale resultater: 961 PGlite-assertions (tidligere 920 beholdt), 22 dato-/taktassertions, 27 nye Chromium-assertions og eksisterende fremdrift 24 PASS. Felles KS/HMS-planlegger 128, prosjektplanlegger 39, tidslinjekjerne 102 og provider-mockede fremdriftsmailkontroller 22 PASS. Full critical build PASS. Ny nettlesersuite dekker masseutvalg, standardaktiviteter, forhåndsvisning uten skriving, fokus/reload, identisk replay, forskyvning, felles tidslinje/angre, datogjennomgang, gammel revisjon, 390/320 px, leser og tilbakekalt tilgang.
+Lokale resultater: 961 PGlite-assertions (tidligere 920 beholdt), 22 dato-/taktassertions, 30 nye Chromium-assertions og eksisterende fremdrift 24 PASS. Felles KS/HMS-planlegger 128, prosjektplanlegger 39, tidslinjekjerne 102 og provider-mockede fremdriftsmailkontroller 22 PASS. Full critical build PASS. Ny nettlesersuite dekker masseutvalg, standardaktiviteter, forhåndsvisning uten skriving, fokus/reload, identisk replay, forskyvning, felles tidslinje/angre, datogjennomgang, gammel revisjon, 390/320 px, leser og tilbakekalt tilgang.
 
 Sandbox: to additive migrasjoner anvendt kun ppvircenkjizeiqdxphj: 20261022231401 (SHA256 6ce8688abe7d5e8bf7bdfe1958ac5cd4cb4465a602a665747c5d803d5b3d13ed) og 20261022232949 (SHA256 7ed68908acb732f8d24847b366fc77f67c16e31b193f425b7c0713dee6b2b264). Den siste beholder public-gateway som SECURITY INVOKER og flytter batch-dispatch inn i allerede autorisert privat workspace; private batch/historikkhjelpere har ingen nye app-grants. Første anvendte migrasjon er urørt. Security advisors 406 før og 406 etter, med uendrede grupper/funnantall. Et midlertidig ekstra funn for eksponert definer ble fjernet av den additive invoker-rettingen; ingen påstand om null eksisterende funn.
 
@@ -34,3 +34,5 @@ Felles planleggerfokus/deling har ytterligere 28 assertions PASS; builder 103, p
 2. «Åpne samlet tidslinje»: bytt uke/måned, velg bolig og flytt et planlagt arbeid. «Lagre fremdriftsplan» viser datoene før «Lagre datoendringer». «Angre» gjelder før lagring.
 3. «Flytt datoer samlet»: velg boliger, antall dager og forhåndsvis. Påbegynt/utført telles som beholdt. En ugyldig avhengighet skal stoppe hele lagringen.
 4. Skriv en mal eller flytt en dato, lukk og åpne igjen/last siden på nytt. Utkastet skal finnes. Kontroller også en enkelt bolig og at varsel med endrede datoer krever ny godkjenning.
+
+Visuell etterkontroll fant at generelle dialogregler gav den nye masseflaten fast full høyde og blokkstil på boligvalg. Dialogens egne klasser overstyrer nå bare dette oppsettet: innholdshøyde, én rullbar flate og boligvalg med avkryssing på samme rad. Permanente DOM-layoutassertions beskytter kaskaden. Ingen generelle boligdialoger er endret.

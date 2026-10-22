@@ -549,3 +549,27 @@
     flex: 1;
   }
 }
+
+/* Scoped above the module's generic full-height dialog and label rules. */
+.bolig-dialog.bolig-plan-dialog {
+  height: fit-content;
+  min-height: 0;
+  max-height: calc(100dvh - 24px);
+  overflow: hidden;
+}
+.bolig-dialog.bolig-plan-dialog .bolig-plan-dialog-body {
+  max-height: calc(100dvh - 140px);
+}
+.bolig-dialog.bolig-plan-dialog .bolig-plan-dialog-body label {
+  display: flex;
+}
+.bolig-dialog.bolig-plan-dialog .bolig-plan-unit-list label {
+  margin: 0;
+  padding: 6px;
+  min-height: 44px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.bolig-dialog.bolig-plan-dialog .bolig-plan-unit-list label:has(input:checked) {
+  background: #e1f1f2;
+}

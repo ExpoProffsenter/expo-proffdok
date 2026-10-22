@@ -107,6 +107,22 @@ try {
     name: "Planlegg flere boliger",
     exact: true,
   });
+  eq(
+    await d
+      .locator(".bolig-plan-unit-list label")
+      .first()
+      .evaluate((el) => getComputedStyle(el).display),
+    "flex",
+    "Scoped unit choices override generic dialog labels",
+  );
+  eq(
+    await d
+      .locator(".bolig-plan-unit-list label")
+      .first()
+      .evaluate((el) => getComputedStyle(el).flexDirection),
+    "row",
+    "Checkbox and apartment label share one row",
+  );
   await d.getByLabel("Bygg", { exact: true }).selectOption("b");
   await d
     .getByRole("button", { name: "Velg alle treff (2)", exact: true })
@@ -146,6 +162,11 @@ try {
     "Two apartments × two activities reviewed",
   );
   eq(
+    await d.evaluate((el) => el.getBoundingClientRect().height < 750),
+    true,
+    "Review dialog fits its content instead of stretching to viewport",
+  );
+  eq(
     (await d.locator("tbody tr").first().innerText()).includes("23.10.2026"),
     true,
     "Dates shown before save",
@@ -157,6 +178,11 @@ try {
     0,
     "Preview does not write",
   );
+  if (process.env.BOLIG_PLANNING_QA)
+    await page.screenshot({
+      path: process.env.BOLIG_PLANNING_QA + "/mass-review-desktop.png",
+      fullPage: true,
+    });
   await page.evaluate(() => (window.__lost = true));
   await d.getByRole("button", { name: "Lagre 4 aktiviteter samlet" }).click();
   await d.getByText("Forbindelsen ble brutt.", { exact: true }).waitFor();
@@ -286,6 +312,11 @@ try {
       true,
       "Mobile dialog width " + width,
     );
+    if (process.env.BOLIG_PLANNING_QA)
+      await page.screenshot({
+        path: process.env.BOLIG_PLANNING_QA + "/mass-setup-" + width + ".png",
+        fullPage: true,
+      });
     await d.getByRole("button", { name: "Forhåndsvis planen" }).click();
     eq(await d.locator("tbody tr").count(), 4, "Mobile review " + width);
     await d
