@@ -53,7 +53,7 @@ if(args.p_action==='protocol_confirm')d.protocols=d.protocols.map(x=>x.id===p.id
 if(args.p_action==='fdv_link')fdv=fdv.map(g=>g.key===p.key?{...g,fdv_url:p.url,corrected:true}:g);
 revision++;history=[{revision,action:args.p_action,actor_name:'QA Leder',created_at:'2026-10-22T10:00:00Z',reason:p.reason},...history];return {data:state()};
 }};
-const app=createRoot(document.getElementById('app'));window.__show=(role='manager')=>{window.__role=role;app.render(<div className="bolig-dialog" style={{position:'static',display:'block',maxWidth:1000,margin:'auto'}}><Quality key={role} context={{...ctx,role}} root={root} scopeId="unit"/></div>);};window.__show();
+const app=createRoot(document.getElementById('app'));window.__show=(role='manager')=>{window.__role=role;app.render(<div className="bolig-dialog" data-qa-role={role} style={{position:'static',display:'block',maxWidth:1000,margin:'auto'}}><Quality key={role} context={{...ctx,role}} root={root} scopeId="unit"/></div>);};window.__show();
 `,
 );
 let server,
@@ -405,11 +405,13 @@ try {
     true,
     "Readable touch controls",
   );
+  const readerCallStart = await page.evaluate(() => window.__calls.length);
   await page.evaluate(() => window.__show("reader"));
-  await page
-    .getByRole("region", { name: "Sjekklister, FDV og protokoller" })
-    .waitFor();
+  await page.locator('[data-qa-role="reader"]').getByRole("heading", {
+    name: "H0101 · QA Gate", exact: true,
+  }).waitFor();
   eq(await button("Ny sjekkliste").count(), 0, "Reader has no mutations");
+  eq(await page.evaluate(start => window.__calls.slice(start).filter(call => call.args.p_action !== "get").length, readerCallStart), 0, "Reader render makes no mutation calls");
   await button(/QA Egen kontroll/).click();
   eq(
     await page.getByLabel("Resultat").isEnabled(),
