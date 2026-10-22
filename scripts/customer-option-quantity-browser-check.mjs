@@ -31,7 +31,17 @@ try {
     await page.locator('.sales-customer-option-card').first().waitFor({state:'attached'});
     for(const summary of await page.locator('.sales-expandable-offer-group:not([open]) > summary').all())await summary.click();
     const card=page.locator('.sales-customer-option-card').filter({has:page.getByRole('heading',{name:/Downlight/})});
-    const qty=card.getByRole('textbox');await qty.waitFor();eq(await qty.isDisabled(),true,'unselected disabled '+width);
+    const qty=card.getByRole('textbox');await qty.waitFor();eq(await qty.isEnabled(),true,'unselected quantity is directly editable '+width);
+    await qty.focus();eq(await card.getByRole('checkbox').isChecked(),false,'focus alone never selects an option '+width);
+    const fixed=page.locator('.sales-customer-option-card').filter({has:page.getByRole('heading',{name:/Fast tillegg/})});
+    await fixed.getByRole('checkbox').check();
+    await card.getByRole('button',{name:/Øk antall/}).click();eq(await qty.inputValue(),'2','plus works before selecting option '+width);
+    eq(await card.getByRole('checkbox').isChecked(),true,'plus selects option atomically '+width);
+    eq(await fixed.getByRole('checkbox').isChecked(),true,'quantity change preserves other selected options '+width);
+    await card.getByRole('button',{name:/Øk antall/}).click();eq(await page.evaluate(()=>window.form.selectedOptionIds.filter(id=>id==='spot').length),1,'repeated steps never duplicate selected id '+width);
+    await card.getByRole('checkbox').uncheck();await qty.fill('4');
+    eq(await card.getByRole('checkbox').isChecked(),true,'typing selects an unselected option '+width);
+    await fixed.getByRole('checkbox').uncheck();await card.getByRole('checkbox').uncheck();
     eq(await page.locator('.sales-customer-option-quantity').count(),1,'fixed has no selector '+width);
     await card.getByRole('heading').click();eq(await card.getByRole('checkbox').isChecked(),true,'card body selects option '+width);await qty.fill('4');
     eq(await page.evaluate(()=>window.form.selectedOptionQuantities.spot),'4','input persists '+width);

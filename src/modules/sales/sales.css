@@ -2491,6 +2491,35 @@ section.sales-workspace-intro:has(+ [data-sales-resume-workspace] .sales-editor-
 }
 .sales-editor-app .sales-note-field:nth-of-type(even) { background: #f4f2fa; border-color: #ddd6eb; }
 .sales-editor-app .sales-note-field textarea { min-height: 116px; resize: vertical; }
+.sales-editor-app details.sales-offer-text-section { display:block; padding:0; overflow:hidden; }
+.sales-offer-text-section > summary {
+  display:flex; align-items:center; gap:16px; min-height:76px; padding:16px 18px;
+  list-style:none; cursor:pointer; color:#214658;
+}
+.sales-offer-text-section > summary::-webkit-details-marker { display:none; }
+.sales-offer-text-section > summary:focus-visible { outline:3px solid #008c96; outline-offset:-3px; border-radius:15px; }
+.sales-offer-text-heading { display:grid; gap:5px; min-width:0; flex:1; }
+.sales-offer-text-heading strong { font-size:16px; line-height:1.4; }
+.sales-offer-text-heading > span {
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+  overflow:hidden; overflow-wrap:anywhere; color:#526975; font-size:14px; line-height:1.5;
+}
+.sales-offer-text-action { display:flex; align-items:center; gap:8px; font-size:14px; font-weight:700; }
+.sales-offer-text-close-label { display:none; }
+.sales-offer-text-section[open] .sales-offer-text-open-label { display:none; }
+.sales-offer-text-section[open] .sales-offer-text-close-label { display:inline; }
+.sales-offer-text-section[open] .sales-offer-text-action svg { transform:rotate(180deg); }
+.sales-offer-text-section[open] > summary { border-bottom:1px solid #d0e3e8; }
+.sales-offer-text-section .sales-offer-text-body { margin:0; padding:16px; }
+.sales-offer-text-label { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
+.sales-editor-app .sales-offer-text-section textarea { min-height:320px; font-size:16px; line-height:1.65; }
+@media (max-width:760px) {
+  .sales-editor-app details.sales-offer-text-section { padding:0; }
+  .sales-offer-text-section > summary { gap:10px; padding:14px; }
+  .sales-offer-text-action > span { display:none !important; }
+  .sales-offer-text-section .sales-offer-text-body { padding:12px; }
+  .sales-editor-app .sales-offer-text-section textarea { min-height:280px; }
+}
 .sales-editor-app .sales-offer-template-panel { margin-top: 0; padding: 14px; }
 .sales-editor-app .sales-template-controls { grid-template-columns: minmax(180px, 1fr) auto; align-items: end; }
 @media (max-width: 760px) {
