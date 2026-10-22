@@ -7,6 +7,7 @@ import {
   ChevronRight,
   X,
   FileSignature,
+  UserRound,
 } from "lucide-react";
 export default function BoligUnitTasks({
   unit,
@@ -16,6 +17,7 @@ export default function BoligUnitTasks({
   completion,
   quality,
   commerce,
+  portal,
 }) {
   const [panel, setPanel] = useState(null),
     dialog = useRef(null),
@@ -37,6 +39,7 @@ export default function BoligUnitTasks({
     quality: "Sjekklister og dokumentasjon",
     finish: "Ferdigstilling",
     commerce: "Endringer og beboeraksept",
+    portal: "Beboerportal",
   };
   const open = (id, e) => {
     opener.current = e.currentTarget;
@@ -80,6 +83,7 @@ export default function BoligUnitTasks({
         "Sjekklister og dokumentasjon",
         "Egne sjekklister, filer, FDV og ekstern protokoll",
       )}
+      {portal && tile("portal", UserRound, "Beboerportal", "Valgmuligheter, invitasjon, dokumentlenker og meldinger")}
       {commerce && tile("commerce", FileSignature, "Endringer og beboeraksept", "Før og etter, avtalt pris og beboerens bekreftelse")}
       {tile(
         "finish",
@@ -114,6 +118,7 @@ export default function BoligUnitTasks({
         <div hidden={panel !== "order"}>{order}</div>
         {panel === "quality" && quality}
         {panel === "commerce" && commerce}
+        {panel === "portal" && portal}
         {panel === "finish" &&
           (completion || (
             <p>Åpne dokumentert ferdigstilling fra boligens arbeidsområde.</p>

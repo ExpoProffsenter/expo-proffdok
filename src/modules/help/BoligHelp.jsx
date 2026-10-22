@@ -257,9 +257,24 @@ export function BoligHelp() {
         </li>
       </ol>
       <p>
-        Boligvalg er interne utkast. Kundeaksept, beboerportal og automatisk
-        beboervarsling er ikke koblet til ennå. Grunnleveransen og beboerens
-        tilvalgspakker holdes adskilt.
+        Åpne «Beboerportal» i boligen. Legg til grunnpakken og ønskede
+        valgmuligheter. «Klargjør invitasjon» viser kontakt og innhold før du
+        lager en personlig lenke. Kopier invitasjonen og send den gjennom deres
+        vanlige e-postkanal. Ingen e-post sendes fra portalen. Lenken varer i
+        30 dager. «Tilbakekall portaltilgang» stenger den. Ny kontakt krever ny lenke.
+      </p>
+      <p>
+        Beboeren sender et valg til gjennomgang. Se varer og pris under
+        «Innsendte valg». «Bruk valget i avtalegrunnlaget» lagrer nytt boligvalg
+        før en avtale er delt eller varer bestilt. Klargjør deretter avtalen
+        under «Endringer og beboeraksept». Ved senere endringer bruker du
+        endringsavtalen. En akseptert avtale vises som kvittering.
+      </p>
+      <p>
+        Del dokumentlenker og skriv meldinger under «Beboerportal». Bare det
+        som deles her blir tilgjengelig for beboeren. Meldinger og svar leses
+        i portalen. Automatisk e-postvarsling og deling av private prosjektfiler
+        inngår ikke i denne versjonen.
       </p>
     </details>
   );

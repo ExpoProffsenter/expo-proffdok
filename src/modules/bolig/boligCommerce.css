@@ -42,3 +42,17 @@
 .bolig-commerce-confirm { display:flex !important; align-items:flex-start; gap:12px; margin:18px 0; line-height:1.6; }
 .bolig-commerce-confirm input[type="checkbox"] { width:22px !important; min-width:22px; height:22px; margin-top:3px; flex:none; }
 @media(max-width:500px) { .bolig-commerce .bolig-commerce-row { align-items:flex-start; flex-direction:column; } .bolig-commerce-price strong { font-size:27px; } }
+.bolig-portal-manager>details {border:1px solid #d9e4de;border-radius:13px;padding:0 17px;margin:15px 0;}
+.bolig-portal-manager>details>summary {font-size:16px;font-weight:750;min-height:55px;padding:18px 0;cursor:pointer;}
+.bolig-portal-manager-status {display:grid;gap:7px;padding:18px;background:#eef5ef;border:1px solid #d7e5d9;border-radius:13px;margin:20px 0;overflow-wrap:anywhere;}
+.bolig-portal-manager-status small {color:#526c5d;}
+.bolig-portal-manager form {margin:18px 0;}
+.bolig-portal-manager fieldset {display:grid;gap:16px;border:0;padding:0;min-width:0;}
+.bolig-portal-manager-offer {display:flex;gap:16px;justify-content:space-between;align-items:flex-start;padding:18px 0;border-top:1px solid #dce7df;}
+.bolig-portal-manager-offer strong,.bolig-portal-manager-offer small {display:block;margin-bottom:8px;}
+.bolig-portal-review {padding:20px 0;border-top:1px solid #dce7df;}
+.bolig-portal-review>strong,.bolig-portal-review>small {display:block;margin-bottom:10px;}
+.bolig-portal-review p {white-space:pre-wrap;}
+.bolig-portal-manager a {color:#155c51;overflow-wrap:anywhere;}
+.bolig-portal-manager .bolig-commerce-actions {align-items:center;}
+@media(max-width:550px){.bolig-portal-manager-offer{flex-direction:column}}
