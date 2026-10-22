@@ -24,6 +24,7 @@ import Manager from '${root}/src/modules/bolig/BoligPortalManager.jsx';import Po
 import '${root}/src/style.css';import '${root}/src/modules/bolig/bolig.css';import '${root}/src/modules/bolig/boligCommerce.css';import '${root}/src/modules/bolig/boligResident.css';
 const goods=[{key:'a',name:'Servant i eik',sku:'QA-01',quantity:1,unit:'stk',room_name:'Bad'}];
 let state={id:'portal',menu_version:1,expires_at:'2026-11-22T12:00:00Z',identity:{project:'Solgløtt borettslag',company:'QA Firma',block:'Bygg A',unit:'H0101',address:'Solgløttveien 1'},offers:[{id:'base',title:'Grunnpakke',total_cents:0,goods},{id:'oak',title:'Tilvalgspakke i eik',total_cents:15000,goods}],events:[],documents:[{id:'fdv',title:'Brukerveiledning',url:'https://example.invalid/fdv.pdf'}],agreements:[{id:'agreement',kind:'choice',version:1,status:'published',expires_at:'2026-11-22',snapshot:{identity:{},goods,total_cents:15000,reason:'Valgene dine'}}]};
+window.__newReply=()=>state.events.push({id:'external-reply',kind:'reply',sender:'manager',body:'Svar fra prosjektleder etter oppdatering',created_at:'2026-10-22T13:00:00Z'});
 window.__calls=[];window.__lost=false;window.__deny=false;window.__conflict=false;
 window.fetch=async(url,options)=>{const p=JSON.parse(options.body);window.__calls.push(p);if(window.__deny)return new Response(JSON.stringify({code:'42501',message:'Portallenken er tilbakekalt.'}),{status:403});
 if(p.p_action!=='get'){
@@ -192,6 +193,20 @@ try {
   );
   await page.getByRole("button", { name: "Send melding", exact: true }).click();
   await page.getByText("Mitt spørsmål om boligen", { exact: true }).waitFor();
+  await page.getByLabel("Din melding").fill("Kladd under oppdatering");
+  await page.evaluate(() => window.__newReply());
+  await page
+    .getByRole("button", { name: "Hent siste status", exact: true })
+    .click();
+  await page
+    .getByText("Svar fra prosjektleder etter oppdatering", { exact: true })
+    .waitFor();
+  checks++;
+  eq(
+    await page.getByLabel("Din melding").inputValue(),
+    "Kladd under oppdatering",
+    "server refresh preserves unsent message",
+  );
   await page.getByRole("button", { name: "Dokumenter", exact: true }).click();
   eq(
     await page

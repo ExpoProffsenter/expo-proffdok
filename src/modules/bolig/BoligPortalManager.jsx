@@ -214,7 +214,12 @@ export default function BoligPortalManager({ context, root, unit }) {
       className="bolig-commerce bolig-portal-manager"
       aria-label="Administrer beboerportal"
     >
-      <h3>Beboerportal</h3>
+      <div className="bolig-commerce-heading">
+        <h3>Beboerportal</h3>
+        <button type="button" disabled={busy || loading} onClick={load}>
+          Oppdater portalstatus
+        </button>
+      </div>
       <p>
         Del valgmuligheter, avtaler og dokumentlenker med boligens kontakt.
         Innsendte valg går til gjennomgang før de brukes i avtalegrunnlaget.
@@ -222,7 +227,8 @@ export default function BoligPortalManager({ context, root, unit }) {
       {error && <p role="alert">{error}</p>}
       {notice && <p role="status">{notice}</p>}
       {loading && <p role="status">Henter portalen …</p>}
-      {draft.pending && (
+      {busy && <p role="status">Lagrer endringen …</p>}
+      {draft.pending && !busy && (
         <button disabled={busy} onClick={() => run(null, {}, true)}>
           Prøv samme lagring igjen
         </button>

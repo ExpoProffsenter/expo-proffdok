@@ -45,7 +45,7 @@ Ingen produksjonsmerge, produksjonsmigrasjon eller main→demo-synk.
   dekker serverpris, grunnfratrekk, innsendingsreplay og konflikt, firma-/nabo-/
   leser-/anontilgang, private tabeller/funksjoner, stale grunnlag, publisering,
   rotasjon/utløp/kontaktbytte/tilbakekalling, avtaleaksept og kvitteringsreplay.
-- Chromium portal: **25 assertions**, reelle komponenter/adaptre med isolerte
+- Chromium portal: **27 assertions**, reelle komponenter/adaptre med isolerte
   API-mocker. Valg, tapte svar, reload/fokus, meldingskladd ved faneskift/lukking,
   dokumentlenke, nøyaktig aksept/kvittering, intern invitasjon, leserrolle og
   1366/390/320 px. Offentlig og intern CSS bygges separat. Visuell kontroll fant
@@ -68,7 +68,23 @@ brukes. Verifikasjonsskriptet er lagt til eksisterende CI, uten svekkede tester.
 
 ## Publisering og brukertest
 
-Publiserings-SHA, deployment/CI og faktisk Preview-prøve oppdateres etter publisering.
+Første publiserte kode-SHA `25596783`, deployment `dpl_5qXgpMghijjvSNX8DvgcMtiub8P7` READY.
+Faktisk skynettprøve bruker **DEMO – Beboerportal**, root
+`14c8234e-1f14-42d3-8bae-7557abef3572`. Bevar denne nye demoen og alle tidligere demoer.
+Fra UI ble grunnpakke 0 kr og eikealternativ 150 kr klargjort, invitasjon
+forhåndsvist og portaltilgang opprettet uten utsending. Beboeren sendte alternativet
+til gjennomgang og en melding. Leder anvendte det som intern valgrevisjon 2,
+svarte og delte en syntetisk FDV-lenke. Avtale utgave 1 med 150 kr ble klargjort,
+godkjent, publisert og akseptert på portalens avtaleside. Kvittering er verifisert.
+Ingen ekte kundeavtale eller bestilling ble opprettet. FDV-testlenken er bevisst
+syntetisk, og dokumentnedlasting fra ekstern server er ikke verifisert.
+
+Skynettprøven fant at statusknappen kunne dekkes av innledningen på desktop.
+Den bruker nå vanlig dokumentflyt. Ny runtime-test klikker knappen, henter et
+nytt prosjektsvar og bevarer usendt meldingskladd. Normal pågående lagring viser
+«Registrerer svaret»/«Lagrer endringen», ikke en for tidlig feilmelding om ukjent
+resultat. Intern «Oppdater portalstatus» gir eksplisitt oppdatering uten å lukke.
+Siste SHA, deployment og eksakt CI-resultat vedlikeholdes i PR #278.
 Bruk fast Preview, ikke ny engangsadresse. Kenneths TEST OK kreves før merge.
 
 Kort brukertest: Boligprosjekter → åpne prosjekt → velg bolig → Beboerportal.

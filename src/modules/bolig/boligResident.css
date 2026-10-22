@@ -42,7 +42,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 .bolig-portal-tabs button {border:0;background:transparent;color:#3c6058;font-size:14px;padding:13px 7px;min-height:48px;display:flex;gap:6px;justify-content:center;align-items:center;}
 .bolig-portal-tabs button[aria-current] {background:#fff;color:#154f43;box-shadow:0 2px 8px #23493916;}
 .bolig-portal-tabs button span {background:#e7bb55;color:#3c3926;border-radius:99px;padding:2px 6px;font-size:11px;}
-.bolig-portal-refresh {float:right;min-height:38px;padding:8px 12px;font-size:12px;background:white;color:#155c51;margin-top:10px;}
+.bolig-portal-refresh {display:block;margin-left:auto;min-height:38px;padding:8px 12px;font-size:12px;background:white;color:#155c51;margin-top:10px;}
 .bolig-portal-offers {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:24px 0;}
 .bolig-portal-offers article {border:1px solid #d7e2d9;background:#fafcf9;border-radius:15px;min-width:0;overflow:hidden;}
 .bolig-portal-offers article.selected {border:2px solid #21765e;background:#f2f9f2;}

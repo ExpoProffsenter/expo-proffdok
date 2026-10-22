@@ -24,6 +24,7 @@ export default function BoligPortalPage() {
   const [data, setData] = useState(null),
     [error, setError] = useState(""),
     [loading, setLoading] = useState(true),
+    [refreshing, setRefreshing] = useState(false),
     [busy, setBusy] = useState(false),
     [tab, setTab] = useState("choices");
   const [draft, setDraft] = useState({
@@ -63,6 +64,7 @@ export default function BoligPortalPage() {
   const load = async () => {
     if (operating.current) return;
     const ticket = ++epoch.current;
+    setRefreshing(true);
     if (!current.current) setLoading(true);
     try {
       if (!/^[0-9a-f]{64}$/.test(token.current))
@@ -99,7 +101,10 @@ export default function BoligPortalPage() {
         }
       }
     } finally {
-      if (alive.current && ticket === epoch.current) setLoading(false);
+      if (alive.current && ticket === epoch.current) {
+        setLoading(false);
+        setRefreshing(false);
+      }
     }
   };
   useEffect(() => {
@@ -232,7 +237,7 @@ export default function BoligPortalPage() {
           {notice}
         </p>
       )}
-      {pending && (
+      {pending && !busy && (
         <section className="bolig-resident-card">
           <h2>Sendingen er ikke bekreftet</h2>
           <p>Prøv samme sending igjen. Den registreres bare én gang.</p>
@@ -241,6 +246,8 @@ export default function BoligPortalPage() {
           </button>
         </section>
       )}
+      {busy && <p role="status">Registrerer svaret …</p>}
+      {refreshing && !loading && <p role="status">Oppdaterer portalstatus …</p>}
       {loading && <p role="status">Henter beboerportalen …</p>}
       {!data && !loading && (
         <section className="bolig-resident-card">
@@ -252,7 +259,7 @@ export default function BoligPortalPage() {
         <button
           className="bolig-portal-refresh"
           onClick={load}
-          disabled={loading}
+          disabled={loading || refreshing}
         >
           Hent siste status
         </button>
