@@ -149,7 +149,7 @@ export default function BoligCommerce({ context, root, unit }) {
       <h4>Gjeldende boligavtale</h4>
       {overview.choice ? row(overview.choice) : <p>Ingen boligavtale er klargjort ennå.</p>}
       {overview.choice?.status === "accepted" && <p className="bolig-commerce-guidance">Boligvalget er akseptert. Samle videre vare- og prisendringer i en ny endringsordre.</p>}
-      <h4>Endringsordrer · {overview.changes.length}</h4>
+      <h4>Siste endringsgrunnlag · {overview.changes.length}</h4>
       <p>Gjør alle ønskede vareendringer i samme kladd. Gjennomgå samlet pris før du lager beboerlenken.</p>
       <div className="bolig-commerce-list">{overview.changes.map(row)}</div>
       <details className="bolig-commerce-history"><summary><History size={18}/> Avtalehistorikk · {overview.history.length} tidligere utgaver</summary>

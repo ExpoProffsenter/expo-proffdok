@@ -19,7 +19,7 @@ Sales, auth/recovery, global navigasjon og andre moduler røres ikke.
 - Baseline, guardrails og gjeldende main kontrollert.
 - Implementering og lokale tester bestått. Migrasjonen er installert bare i Sandbox.
 - 796 databaseassertions, 38 commerce Chromium, 31 levering, 29 ferdigstilling,
-  36 PDF/ZIP og 13 eksport-/oversiktsassertions PASS. Full critical Sandbox-build,
+  36 PDF/ZIP og 15 eksport-/oversiktsassertions PASS. Full critical Sandbox-build,
   scope guard og release docs guard PASS. Ingen tester fjernet.
 - Faktisk manager-RPC for eksisterende syntetisk akseptert endring er prøvd med
   ROLLBACK: originalordre har fortsatt antall 2; effektiv leveranse får 3.
@@ -37,7 +37,7 @@ Publiseringsstatus og beståtte kontroller oppdateres før overlevering.
 
 ## Gjeldende kontrakt
 
-- Én hovedavtale vises. Akseptert hovedavtale sperrer en ny parallell hovedavtale.
+- Én hovedavtale og siste endringsgrunnlag per bestilling vises. Tidligere endringer ligger i historikk. Akseptert hovedavtale sperrer en ny parallell hovedavtale.
   Uavklarte gamle parallelle testgrunnlag merkes erstattet; ingenting slettes.
 - Første versjon og videre uavklarte utgaver hører til samme rekke også uten at
   klienten sender group_id. En fortsatt gyldig eldre utgave kan aksepteres.

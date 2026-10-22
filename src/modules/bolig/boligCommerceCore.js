@@ -16,9 +16,9 @@ export function agreementOverview(documents = []) {
   const choice = choices.find(d => d.status === "accepted") || choices.find(live) || null;
   const groups = new Set();
   const changes = ordered.filter(d => d.kind === "change" && live(d)).filter(d => {
-    const key = d.group_id || d.id;
+    const key = d.snapshot?.order_id || d.snapshot?.order_number || d.group_id || d.id;
     if (groups.has(key)) return false;
-    const accepted = ordered.find(x => (x.group_id || x.id) === key && ["accepted","handled"].includes(x.status));
+    const accepted = ordered.find(x => x.kind === "change" && (x.group_id || x.id) === (d.group_id || d.id) && ["accepted","handled"].includes(x.status));
     if (accepted && accepted.id !== d.id) return false;
     groups.add(key); return true;
   });
