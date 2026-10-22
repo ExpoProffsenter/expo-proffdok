@@ -26,6 +26,7 @@ import {
   hasOfferQuantityDetails,
 } from "../utils/salesUtils.js";
 import "./SalesOfferQuantity.css";
+import SalesOfferTextSection from "./SalesOfferTextSection.jsx";
 
 function hasLineContent(line) {
   return Boolean(
@@ -1335,53 +1336,37 @@ export default function SalesOfferBuilder({
                 </button>
               </div>
 
-              <label className="sales-field sales-note-field">
-                <span>Forutsetninger og forbehold</span>
-                <textarea
+              <SalesOfferTextSection title="Forutsetninger og forbehold"
                   value={offerForm.reservations}
                   onChange={(event) =>
                     updateOfferForm("reservations", event.target.value)
                   }
                   placeholder="Eksempel: Tilbudet forutsetter at eksisterende konstruksjoner er egnet for planlagte arbeider. Skjulte forhold prises som tillegg etter avtale."
-                  rows={5}
-                />
-              </label>
+              />
 
-              <label className="sales-field sales-note-field">
-                <span>Dette er inkludert</span>
-                <textarea
+              <SalesOfferTextSection title="Dette er inkludert"
                   value={offerForm.included}
                   onChange={(event) =>
                     updateOfferForm("included", event.target.value)
                   }
                   placeholder="Beskriv arbeidene, materialene og ytelsene som inngår i tilbudssummen."
-                  rows={5}
-                />
-              </label>
+              />
 
-              <label className="sales-field sales-note-field">
-                <span>Dette er ikke inkludert</span>
-                <textarea
+              <SalesOfferTextSection title="Dette er ikke inkludert"
                   value={offerForm.excluded}
                   onChange={(event) =>
                     updateOfferForm("excluded", event.target.value)
                   }
                   placeholder="Beskriv tydelig hva som ikke inngår i tilbudssummen."
-                  rows={5}
-                />
-              </label>
+              />
 
-              <label className="sales-field sales-note-field">
-                <span>Dette sørger kunden for</span>
-                <textarea
+              <SalesOfferTextSection title="Dette sørger kunden for"
                   value={offerForm.customerSupplied}
                   onChange={(event) =>
                     updateOfferForm("customerSupplied", event.target.value)
                   }
                   placeholder="Beskriv hva kunden skal levere, bestille eller klargjøre før og under arbeidet."
-                  rows={5}
-                />
-              </label>
+              />
 
               <label className="sales-field sales-field-full">
                 <span><input type="checkbox" checked={offerForm.showPricesExVat === true} onChange={event => updateOfferForm("showPricesExVat", event.target.checked)} /> Vis priser eks. mva.</span>
