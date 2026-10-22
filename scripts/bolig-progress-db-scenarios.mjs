@@ -21,6 +21,12 @@ export default async function progressScenarios({
       "utf8",
     ),
   );
+  await db.exec(
+    await fs.readFile(
+      "supabase/migrations/20261022224451_bolig_progress_read_projection_alias.sql",
+      "utf8",
+    ),
+  );
   await actor(manager);
   const rec = await call("create_plan", null, null, {
     request_id: id(50000),
@@ -226,6 +232,13 @@ export default async function progressScenarios({
     [unit, "QA Beboer", "qa@example.invalid"],
   );
   await actor(manager);
+  eq((await rpc()).notices.length, 1, "Plain unit GET retains saved notice");
+  eq(
+    (await rpc("get", {}, null)).notices.length,
+    1,
+    "Project GET retains notice after reload",
+  );
+  s = await rpc();
   // Changing contact after draft invalidates approval; immutable editions must be replaced.
   await rejects(
     () => write("approve", { id: n1, basis: n.basis, reviewed: true }),
@@ -293,6 +306,10 @@ export default async function progressScenarios({
     "Only unfinished owners receive due tasks",
   );
   await db.exec("select bolig_private.progress_tick()");
+  await actor(manager);
+  s = await rpc();
+  eq(s.deliveries.length, 3, "GET projects queued delivery statuses");
+  await db.exec("reset role");
   eq(
     (
       await db.query(

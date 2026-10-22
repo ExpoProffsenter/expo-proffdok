@@ -14,6 +14,7 @@ begin
  if s#>>'{tasks,0,status}'<>'planned' or s->'mail_enabled'<>'false'::jsonb then raise exception 'Plan/paused transport mismatch';end if;
  v:=public.bolig_progress(c,root,unit,'save',p);if v->'revision'<>s->'revision' then raise exception 'Replay changed revision';end if;
  s:=public.bolig_progress(c,root,unit,'notice',jsonb_build_object('request_id',gen_random_uuid(),'revision',s->'revision','id',nid,'task_id',t,'body','QA Planlagt arbeid. Ingen ekte mottaker.','publish_on',today));
+ v:=public.bolig_progress(c,root,unit);if jsonb_array_length(v->'notices')<>1 then raise exception 'Saved notice missing from GET';end if;
  s:=public.bolig_progress(c,root,unit,'approve',jsonb_build_object('request_id',gen_random_uuid(),'revision',s->'revision','id',nid,'basis',s#>>'{notices,0,basis}','reviewed',true));
  s:=public.bolig_progress(c,root,unit,'publish',jsonb_build_object('request_id',gen_random_uuid(),'revision',s->'revision','id',nid,'reviewed',true));
  if s#>>'{notices,0,published_at}' is null then raise exception 'Approved publication missing';end if;
