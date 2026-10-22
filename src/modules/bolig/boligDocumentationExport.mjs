@@ -24,7 +24,7 @@ const hash = async (bytes) =>
     (b) => b.toString(16).padStart(2, "0"),
   ).join("");
 const folder = (s) =>
-  `${s.kind === "project" ? "01-Prosjekt" : s.kind === "block" ? "02-Bygg" : "03-Boliger"}/${safeDocumentationName(s.title)}-${s.id.slice(0, 8)}`;
+  `${s.kind === "project" ? "01-Prosjekt" : s.kind === "block" ? "02-Bygg" : "03-Boliger"}/${safeDocumentationName(s.title.replace(/\s*·\s*$/, ""))}-${s.id.slice(0, 8)}`;
 export function documentationFiles(state) {
   const files = [];
   for (const scope of state.scopes)
@@ -157,6 +157,7 @@ export function buildBoligDocumentationPdf(
   { logo = null, now = new Date(), manifest = [] } = {},
 ) {
   const doc = new JsPDF({ unit: "mm", format: "a4", compress: true });
+  const title = (value) => String(value || "").replace(/\s*·\s*$/, "");
   const append = (report) =>
     appendBoxedPdf(doc, report, {
       companyName: profile.companyName,
@@ -211,7 +212,7 @@ export function buildBoligDocumentationPdf(
               : s.kind === "block"
                 ? "Bygg"
                 : "Prosjekt",
-          `${s.title} · ${s.data.checks.length} kontroller · ${s.data.documents.length} filer`,
+          `${title(s.title)} · ${s.data.checks.length} kontroller · ${s.data.documents.length} filer`,
         ]),
         photos: [],
       },
@@ -231,7 +232,7 @@ export function buildBoligDocumentationPdf(
         fields: [
           [
             "Arbeidsområde",
-            state.scopes.find((s) => s.id === p.scope_id)?.title ||
+            title(state.scopes.find((s) => s.id === p.scope_id)?.title) ||
               "Se underliggende bolig",
           ],
           ["Kilde", p.source],
@@ -317,7 +318,7 @@ export function buildBoligDocumentationPdf(
         type: `${check.archived ? "Arkivert sjekkliste" : check.status === "completed" ? "Fullført kontroll" : "Kontroll under arbeid"}`,
         title: check.definition.title,
         fields: [
-          ["Arbeidsområde", scope.title],
+          ["Arbeidsområde", title(scope.title)],
           [
             "Rom",
             scope.rooms.find((r) => r.id === check.room_id)?.name ||
@@ -379,7 +380,7 @@ export function buildBoligDocumentationPdf(
           : "Ekstern protokoll og retting",
         title: protocol.title,
         fields: [
-          ["Arbeidsområde", scope.title],
+          ["Arbeidsområde", title(scope.title)],
           [
             "Originalfil",
             scope.data.documents.find((f) => f.id === protocol.document_id)
@@ -446,8 +447,6 @@ export function buildBoligDocumentationPdf(
   const pages = doc.internal.getNumberOfPages();
   for (let n = 1; n <= pages; n++) {
     doc.setPage(n);
-    doc.setFillColor(255, 255, 255);
-    doc.rect(0, 281, 210, 16, "F");
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
     doc.setTextColor(71, 85, 105);

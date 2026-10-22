@@ -35,7 +35,7 @@ const state = {
   root_id: root,
   scope_id: unit,
   project: "DEMO Boligprosjekt",
-  title: "H0101 – Dokumentasjon",
+  title: "H0101 · ",
   kind: "unit",
   basis: "immutable-export-basis",
   status: "ready_with_rest",
@@ -78,7 +78,7 @@ const state = {
     {
       id: unit,
       kind: "unit",
-      title: "H0101",
+      title: "H0101 · ",
       revision: 4,
       common: false,
       rooms: [],
@@ -214,15 +214,35 @@ const manifest = [
     size: originalBytes.length,
   },
 ];
+eq(files[0].archive_name.includes("H0101 ·"), false,
+  "Unknown address leaves no empty separator in archive folders");
 const logo =
   "data:image/png;base64," +
   fs
     .readFileSync("public/brands/ringside-rorleggerbedrift.png")
     .toString("base64");
-const pdf = buildBoligDocumentationPdf(JsPDF, state, profile, {
+const printed = [];
+function AuditedPdf(options) {
+  const doc = new JsPDF(options), text = doc.text;
+  doc.text = function (value, ...args) {
+    printed.push(value);
+    return text.call(this, value, ...args);
+  };
+  return doc;
+}
+const pdf = buildBoligDocumentationPdf(AuditedPdf, state, profile, {
   logo,
   manifest,
 });
+eq(printed.filter((s) => String(s).includes("FDV-oversikt") &&
+  String(s).includes("Expo ProffDok")).length, 0,
+  "Combined report contains no hidden FDV footer text layer");
+eq(printed.filter((s) => String(s).includes("Expo ProffDok · Samlet dokumentasjon")).length,
+  pdf.internal.getNumberOfPages(), "Exactly one report footer per page");
+eq(printed.filter((s) => /^Side \d+ av \d+$/.test(String(s))).length,
+  pdf.internal.getNumberOfPages(), "Exactly one searchable page number per page");
+eq(printed.some((s) => /H0101\s*·\s*(?:·|$)/.test(String(s))), false,
+  "Unknown address leaves no empty separator in rendered report headings or scope labels");
 eq(
   new TextDecoder().decode(
     new Uint8Array(pdf.output("arraybuffer")).slice(0, 5),

@@ -83,3 +83,13 @@ Polish **1bdf5a73** er READY. CI #610 bestod full critical build, 681 PostgreSQL
 2. **Sjekklister og dokumentasjon → Fordel sjekklister**. Velg prosjektlisten og begge boliger → forhåndsvis. Begge eksisterende kontroller skal beholdes.
 3. **Samlet PDF og ZIP** åpner innholdsoversikten. Samlet PDF/ZIP kan tas ut underveis uten at status endres. For prøve med FDV og en faktisk originalfil, bruk tidligere **DEMO – Sjekklister, FDV og protokoll → H0101**.
 4. Valgfri ekte e-postprøve gjøres senere med en faktisk valgt mottaker; ikke send til syntetiske .invalid-adresser.
+
+## Gjenopptatt sluttprøve 22. oktober
+
+Kontrollert faktisk feature-HEAD **3a69f05f20f9920c81c668511dd16decc01ce554**, samme draft PR #278 og main **0730eeb4**. Fast Preview peker til **dpl_5ueCYrLUsLk7QxgQA87GA9kHyhHF READY** på denne SHA-en. Tidligere chat rakk altså å publisere alle seks avklaringene; handoffen fra før denne etappen er ikke gjeldende kodefasit.
+
+Sikker innlogging i skynett er gjenopprettet. H0101 viste korrekt **Klar med restpunkter** før endring. En ny syntetisk PDF uten kundedata er lastet opp gjennom faktisk filvelger og registrert som **DEMO – Originalfil for sluttpakke** i DEMO – Enkel flyt og sluttpakke. Filer og bilder viser 1, dokumenthistorikken økte fra 3 til 4 og eksporten viste forventet **Ny kontroll kreves** etter endret dokumentgrunnlag. Faktisk ZIP- og PDF-nedlasting ga begge synlig kvittering; samlet PDF ble synkronisert, tekstlest og rendret (9 sider). Originalen ble ikke overskrevet. ZIP-ens faktiske innhold kontrolleres etter siste eksportpolish; den første browser-download-filen var ikke lenger tilgjengelig da bytekontrollen startet.
+
+Den faktiske PDF-en avdekket to eksportdetaljer: FDV-delen skrev sin egen sidefot på alle sider før rapporten malte over den, slik at tekstuttrekk fikk dupliserte sideføtter/sidetall; og tom adresse etterlot løse midtpunkter i enkelte scope-etiketter. Avgrenset rettelse i Bolig-eksporten lar samlet rapport eie sidefoten og rydder kun visningsetiketter/arkivmappenavn. Lagrede titler, originale filer, status, historikk, tilgang og eksportens grunnlagskontroll endres ikke.
+
+PDF/ZIP-testen har nå **36 assertions PASS**, inkludert nøyaktig én tekstlig sidefot og ett sidetall per side og ingen løse adresse-skilletegn. Eksisterende separat FDV-PDF har fortsatt **12 PASS**. Ny samlet PDF er rendret; scope guard, diff-check og full critical build PASS. Endelig publisering/CI og siste faktiske nedlasting registreres i PR-beskrivelsen. Ingen faktisk e-post er sendt og ingen produksjonsendring er gjort.

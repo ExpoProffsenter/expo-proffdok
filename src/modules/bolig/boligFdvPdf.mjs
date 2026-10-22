@@ -65,7 +65,7 @@ export function buildBoligFdvPdf(
     }
   }
   paragraph("FDV-oversikt", 22, true, [15, 84, 88]);
-  paragraph(state.title, 14, true);
+  paragraph(state.title.replace(/\s*·\s*$/, ""), 14, true);
   paragraph("Kontrollgrunnlag fra lagrede varevalg", 10, true);
   paragraph(
     "Oversikten viser siste lagrede varevalg. Kontroller at varene er montert som angitt før den brukes ved overlevering. Dokumentene bak eksterne lenker er ikke vedlagt denne PDF-en.",
@@ -139,8 +139,10 @@ export function buildBoligFdvPdf(
         10,
       );
   }
+  // The combined report owns its footer. Do not leave a second, hidden text
+  // layer beneath it: PDF search, selection and assistive readers see both.
   const pages = doc.internal.getNumberOfPages();
-  for (let n = 1; n <= pages; n++) {
+  for (let n = 1; !existingDocument && n <= pages; n++) {
     doc.setPage(n);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
