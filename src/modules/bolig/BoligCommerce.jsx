@@ -7,6 +7,8 @@ import { money } from "./boligCatalogClient.js";
 import ContentEditor from "./BoligPackageContentEditor.jsx";
 import Dialog from "./BoligEditorDialog.jsx";
 import Summary from "./BoligAgreementSummary.jsx";
+import { agreementOverview, supplierDelta } from "./boligCommerceCore.js";
+import { downloadAmendment } from "./boligAmendmentExport.js";
 import "./boligCommerce.css";
 
 const stamp = value => value ? new Date(value).toLocaleString("nb-NO", { dateStyle: "short", timeStyle: "short" }) : "";
@@ -18,7 +20,7 @@ export default function BoligCommerce({ context, root, unit }) {
   const [selected, setSelected] = useState(null), [handling, setHandling] = useState(null);
   const [editing, setEditing] = useState(false);
   const [historyLimit, setHistoryLimit] = useState(10);
-  const alive = useRef(true), epoch = useRef(0), operation = useRef(false), latest = useRef(local);
+  const alive = useRef(true), epoch = useRef(0), operation = useRef(false), latest = useRef(local), hasData = useRef(false);
   latest.current = local;
   const persist = next => {
     if (!writeBoligDraft(key, next)) throw Error("Kladden kunne ikke sikres lokalt. Behold siden åpen.");
@@ -27,18 +29,21 @@ export default function BoligCommerce({ context, root, unit }) {
   const load = async () => {
     if (operation.current) return;
     const ticket = ++epoch.current;
-    setLoading(true);
+    if (!hasData.current) setLoading(true);
     try {
       const next = await commerceRpc(context, root.id, unit.id);
-      if (alive.current && ticket === epoch.current) { setData(next); setError(""); }
+      if (alive.current && ticket === epoch.current) { hasData.current = true; setData(next); setError(""); }
     } catch (e) {
       if (alive.current && ticket === epoch.current) {
-        setError(e.message); if (e.code === "42501") setData(null);
+        setError(e.message); if (e.code === "42501") { hasData.current = false; setData(null); }
       }
     } finally { if (alive.current && ticket === epoch.current) setLoading(false); }
   };
   useEffect(() => {
-    alive.current = true; load();
+    alive.current = true; hasData.current = false; setData(null); setLoading(true);
+    setSelected(null); setHandling(null); setEditing(false);
+    const scoped = readBoligDraft(key, {form:null,links:{},pending:null}); latest.current = scoped; setLocal(scoped);
+    load();
     const refresh = () => { if (document.visibilityState !== "hidden") load(); };
     window.addEventListener("focus", refresh); document.addEventListener("visibilitychange", refresh);
     return () => { alive.current = false; ++epoch.current; window.removeEventListener("focus", refresh); document.removeEventListener("visibilitychange", refresh); };
@@ -85,13 +90,18 @@ export default function BoligCommerce({ context, root, unit }) {
         kind, group_id: prior?.group_id || null, order_id: prior?.snapshot.order_id || "",
         choice_revision: data.choice_revision, delivery_revision: data.delivery_revision,
         reason: prior?.snapshot.reason || "", adjustment: prior ? String(prior.snapshot.delta_cents / 100) : "0",
-        sections: [], lines: prior?.kind === "change" ? prior.snapshot.goods.map(g => ({ ...g, section_id: "" })) : [],
+        sections: [], lines: prior?.kind === "change" ? (prior.snapshot.fulfillment_goods || prior.snapshot.goods).map(g => ({ ...g, section_id: "" })) : [],
       } });
       setSelected(null);
       setEditing(true);
     } catch (e) { setError(e.message); }
   };
   const doc = data?.documents.find(d => d.id === selected);
+  const overview = agreementOverview(data?.documents);
+  const row = d => <button type="button" key={d.id} className="bolig-commerce-row" onClick={() => { setSelected(d.id); setHandling(null); }}>
+    <span><strong>{d.kind === "change" ? `Endringsordre · ${d.snapshot.order_number}` : "Boligvalg"} · v{d.version}</strong><small>{stamp(d.created_at)}{d.kind === "change" ? ` · ${supplierDelta(d.snapshot.before_goods,d.snapshot.goods).length} vareendringer` : ""}</small></span>
+    <span className={`bolig-commerce-badge ${d.status}`}>{d.kind === "change" && d.status === "handled" && !d.fulfillment_applied_at ? "Leveransen må oppdateres" : commerceLabels[d.status]}</span>
+  </button>;
   const form = local.form;
   return <section className="bolig-commerce" aria-label="Endringer og beboeraksept">
     <div className="bolig-commerce-heading"><FileSignature size={27}/><div>
@@ -105,7 +115,7 @@ export default function BoligCommerce({ context, root, unit }) {
       <button type="button" disabled={busy || loading} onClick={() => run(null, null, true)}>Prøv samme lagring igjen</button></div>}
     {data && <>
       {writable && !form && <div className="bolig-commerce-actions">
-        <button type="button" disabled={disabled || !data.selection} onClick={() => start("choice")}><Plus size={17}/>Klargjør beboeraksept</button>
+        {overview.choice?.status !== "accepted" && <button type="button" disabled={disabled || !data.selection} onClick={() => start("choice", overview.choice)}><Plus size={17}/>Klargjør beboeraksept</button>}
         <button type="button" disabled={disabled || !data.orders.length} onClick={() => start("change")}><Plus size={17}/>Ny endringsordre</button>
       </div>}
       {!data.selection && <p>Lagre boligens grunnpakke og tilvalgspakker før du klargjør beboeraksept.</p>}
@@ -136,20 +146,24 @@ export default function BoligCommerce({ context, root, unit }) {
           </fieldset>
         </form>
       </Dialog>}
-      <h4><History size={18}/> Avtalehistorikk</h4>
-      {!data.documents.length && <p>Ingen avtaler er klargjort for denne boligen ennå.</p>}
-      <div className="bolig-commerce-list">{data.documents.slice(0, historyLimit).map(d => <button type="button" key={d.id} className="bolig-commerce-row" onClick={() => { setSelected(d.id); setHandling(null); }}>
-        <span><strong>{d.kind === "change" ? `Endringsordre · ${d.snapshot.order_number}` : "Beboeraksept"} · v{d.version}</strong><small>{stamp(d.created_at)}</small></span>
-        <span className={`bolig-commerce-badge ${d.status}`}>{commerceLabels[d.status]}</span>
-      </button>)}</div>
-      {data.documents.length > historyLimit && <button type="button" onClick={() => setHistoryLimit(n => n + 10)}>Vis flere avtaler · {data.documents.length - historyLimit} til</button>}
+      <h4>Gjeldende boligavtale</h4>
+      {overview.choice ? row(overview.choice) : <p>Ingen boligavtale er klargjort ennå.</p>}
+      {overview.choice?.status === "accepted" && <p className="bolig-commerce-guidance">Boligvalget er akseptert. Samle videre vare- og prisendringer i en ny endringsordre.</p>}
+      <h4>Endringsordrer · {overview.changes.length}</h4>
+      <p>Gjør alle ønskede vareendringer i samme kladd. Gjennomgå samlet pris før du lager beboerlenken.</p>
+      <div className="bolig-commerce-list">{overview.changes.map(row)}</div>
+      <details className="bolig-commerce-history"><summary><History size={18}/> Avtalehistorikk · {overview.history.length} tidligere utgaver</summary>
+        <div className="bolig-commerce-list">{overview.history.slice(0,historyLimit).map(row)}</div>
+        {overview.history.length > historyLimit && <button type="button" onClick={() => setHistoryLimit(n => n+10)}>Vis flere avtaler · {overview.history.length-historyLimit} til</button>}
+      </details>
       {doc && <Dialog title={`${doc.kind === "change" ? "Endringsordre" : "Beboeraksept"} · utgave ${doc.version}`} busy={busy} onClose={() => setSelected(null)}>
         <p><strong>{unit.number}</strong> · <span className={`bolig-commerce-badge ${doc.status}`}>{commerceLabels[doc.status]}</span></p>
         {error && <p role="alert">{error}</p>}{notice && <p role="status">{notice}</p>}
         {local.pending && <button type="button" disabled={busy || loading} onClick={() => run(null, null, true)}>Prøv samme lagring igjen</button>}
         <Summary document={doc}/>
         {doc.accepted_at && <p className="bolig-notice"><CheckCircle2 size={18}/> {doc.status === "declined" ? "Avslått" : "Akseptert"} av {doc.accepted_name} · {stamp(doc.accepted_at)}</p>}
-        {doc.kind === "change" && <p className="bolig-notice">Aksept avtaler endringen med beboeren. Prosjektleder må avklare den med leverandøren og registrere hvordan bestillingen følges opp.</p>}
+        {doc.kind === "change" && <p className="bolig-notice">Last ned endringsgrunnlaget og avklar tilleggsbestilling eller kreditering med leverandøren. Bekreft deretter for å oppdatere mottak og FDV. Originalbestillingen beholdes i historikken.</p>}
+        {doc.fulfillment_applied_at && <p className="bolig-notice"><strong>Leveranse, mottak og FDV er oppdatert</strong><br/>{doc.fulfillment_reference} · {stamp(doc.fulfillment_applied_at)}</p>}
         {doc.handling_note && <p><strong>Leverandør og bestilling er fulgt opp</strong><br/>{doc.handling_note}</p>}
         {local.links[doc.id] && doc.status === "published" && <div className="bolig-commerce-link">
           <label>Beboerlenke<input readOnly value={local.links[doc.id]} onFocus={e => e.target.select()}/></label>
@@ -164,13 +178,21 @@ export default function BoligCommerce({ context, root, unit }) {
           {doc.status === "approved" && <button type="button" disabled={disabled} onClick={() => run("publish", { document_id: doc.id, revision: doc.revision, token: newResidentToken() })}>Lag beboerlenke</button>}
           {["draft", "approved", "published", "expired"].includes(doc.status) && <button type="button" disabled={disabled} onClick={() => run("revoke", { document_id: doc.id, revision: doc.revision })}>Tilbakekall utgaven</button>}
           {["draft", "approved", "published", "expired", "declined", "revoked"].includes(doc.status) && <button type="button" disabled={disabled || !!form} onClick={() => start(doc.kind, doc)}>Lag ny utgave</button>}
-          {doc.kind === "change" && doc.status === "accepted" && <button type="button" disabled={disabled} onClick={() => setHandling("")}>Registrer leverandøroppfølging</button>}
+          {doc.kind === "change" && ["accepted","handled"].includes(doc.status) && <button type="button" disabled={disabled} onClick={() => { try { downloadAmendment(doc,context); } catch (e) { setError(e.message); } }}>Last ned endringsbestilling / kreditering</button>}
+          {doc.kind === "change" && ["accepted","handled"].includes(doc.status) && !doc.fulfillment_applied_at && <button type="button" disabled={disabled} onClick={() => setHandling(local.followups?.[doc.id] || {note:doc.handling_note || "",reference:"",reviewed:false})}>Registrer leverandøroppfølging</button>}
         </div>}
-        {handling !== null && writable && <form onSubmit={e => { e.preventDefault(); run("handled", { document_id: doc.id, revision: doc.revision, note: handling }); }}>
-          <label>Leverandørbekreftelse og bestillingsreferanse<textarea required minLength={10} maxLength={2000} rows={4} value={handling} onChange={e => setHandling(e.target.value)} placeholder="Hvem bekreftet endringen, når, og hvor er den bestilt eller kreditert?"/></label>
-          <button type="submit" disabled={disabled}>Lagre oppfølging</button>
+        {handling !== null && writable && <form onSubmit={e => { e.preventDefault(); run("apply", { document_id: doc.id, revision: doc.revision, ...handling }); }}>
+          <SupplierFollowup value={handling} disabled={disabled} change={fields => { const next={...handling,...fields};setHandling(next);try { persist({...latest.current,followups:{...latest.current.followups,[doc.id]:next}}); } catch(e) { setError(e.message); } }}/>
+          <button type="submit" disabled={disabled}>Bekreft og oppdater leveransen</button>
         </form>}
       </Dialog>}
     </>}
   </section>;
+}
+function SupplierFollowup({value,change,disabled}) {
+  return <fieldset disabled={disabled}>
+    <label>Bestillings- eller krediteringsreferanse<input aria-label="Bestillings- eller krediteringsreferanse" required minLength={2} maxLength={160} value={value.reference} onChange={e=>change({reference:e.target.value,reviewed:false})}/></label>
+    <label>Leverandørbekreftelse og bestillingsreferanse<textarea aria-label="Leverandørbekreftelse og bestillingsreferanse" required minLength={10} maxLength={2000} rows={4} value={value.note} onChange={e=>change({note:e.target.value,reviewed:false})} placeholder="Hvem bekreftet endringen, når, og hvor er den bestilt eller kreditert?"/></label>
+    <label className="bolig-commerce-confirm"><input type="checkbox" required checked={value.reviewed} onChange={e=>change({reviewed:e.target.checked})}/><span>Leverandøren har bekreftet alle tillegg og reduksjoner. Jeg vil oppdatere leveransen, mottaksgrunnlaget og FDV.</span></label>
+  </fieldset>;
 }

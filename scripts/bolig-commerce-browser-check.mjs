@@ -27,12 +27,13 @@ if(args.p_action==='get')return {data:state()};
 if(window.__conflict)return {error:{code:'PT409',message:'Grunnlaget er endret. Hent siste grunnlag.'}};
 if(receipts.has(p.request_id))return {data:receipts.get(p.request_id)};
 let d=docs.find(d=>d.id===p.document_id);
-if(args.p_action==='create'){d={id:'document-'+(docs.length+1),group_id:'group',version:docs.length+1,kind:p.kind,status:'draft',revision:1,created_at:'2026-10-22T18:00:00Z',snapshot:{...snapshot,reason:p.reason}};docs.unshift(d);}
+if(args.p_action==='create'){d={id:'document-'+(docs.length+1),group_id:p.kind+'-group',version:docs.length+1,kind:p.kind,status:'draft',revision:1,created_at:'2026-10-22T18:00:00Z',snapshot:{...snapshot,reason:p.reason}};docs.unshift(d);}
 if(args.p_action==='approve'){d.status='approved';d.revision++;}
 if(args.p_action==='publish'){d.status='published';d.expires_at='2026-11-21T18:00:00Z';d.revision++;}
 if(args.p_action==='revoke'){d.status='revoked';d.revision++;}
-if(args.p_action==='handled'){d.status='handled';d.handling_note=p.note;d.revision++;}
+if(args.p_action==='apply'){d.status='handled';d.handling_note=p.note;d.fulfillment_reference=p.reference;d.fulfillment_applied_at='2026-10-22T18:00:00Z';d.revision++;}
 const result={...state(),document_id:d?.id};receipts.set(p.request_id,result);return {data:result};}};
+window.__duplicate=()=>{docs=[{id:'accepted-choice',group_id:'accepted-group',version:1,kind:'choice',status:'accepted',revision:4,created_at:'2026-10-22T17:00:00Z',snapshot},{id:'old-choice',group_id:'old-group',version:1,kind:'choice',status:'published',revision:3,created_at:'2026-10-22T16:00:00Z',snapshot}];window.dispatchEvent(new Event('focus'));};
 window.__asAccepted=()=>{docs[0].status='accepted';docs[0].accepted_name='QA Beboer';docs[0].accepted_at='2026-10-22T18:00:00Z';docs[0].revision++;window.dispatchEvent(new Event('focus'));};
 window.__mode='internal';window.__networkLoss=false;window.__publicCalls=[];
 let publicDoc={id:'public-doc',kind:'change',version:2,status:'published',revision:3,snapshot,expires_at:'2026-11-21T18:00:00Z'};
@@ -100,9 +101,16 @@ try {
   await page.evaluate(()=>window.__asAccepted());
   await page.getByRole("button",{name:"Registrer leverandøroppfølging",exact:true}).click();
   await page.getByLabel("Leverandørbekreftelse og bestillingsreferanse").fill("QA Leverandør har bekreftet. Tillegget er bestilt på QA-2.");
-  await page.getByRole("button",{name:"Lagre oppfølging",exact:true}).click();
+  await page.getByLabel("Bestillings- eller krediteringsreferanse",{exact:true}).fill("QA-2");
+  await page.getByRole("button",{name:"Lukk endringsordre · utgave 2",exact:true}).click();
+  await page.getByRole("button",{name:/Endringsordre · B-1 · v2/}).click();
+  await page.getByRole("button",{name:"Registrer leverandøroppfølging",exact:true}).click();
+  eq(await page.getByLabel("Bestillings- eller krediteringsreferanse",{exact:true}).inputValue(),"QA-2","followup reference survives closing");
+  eq(await page.getByLabel("Leverandørbekreftelse og bestillingsreferanse",{exact:true}).inputValue(),"QA Leverandør har bekreftet. Tillegget er bestilt på QA-2.");
+  await page.getByRole("checkbox").check();
+  await page.getByRole("button",{name:"Bekreft og oppdater leveransen",exact:true}).click();
   await page.getByText("Leverandør og bestilling er fulgt opp",{exact:true}).waitFor();checks++;
-  eq(await page.evaluate(()=>window.__calls.filter(c=>c.args.p_action==='handled').length),1);
+  eq(await page.evaluate(()=>window.__calls.filter(c=>c.args.p_action==='apply').length),1);
   await page.getByRole("button",{name:"Lukk endringsordre · utgave 2",exact:true}).click();
   await page.getByRole("button",{name:"Klargjør beboeraksept",exact:true}).click();
   await page.getByLabel("Beskrivelse til beboeren").fill("QA – bevar ved feil");
@@ -112,12 +120,21 @@ try {
   eq(await page.getByLabel("Beskrivelse til beboeren").inputValue(),"QA – bevar ved feil");
   await page.evaluate(()=>window.__show('internal','reader'));
   await page.getByRole("button",{name:"Endringer og beboeraksept",exact:true}).click();
-  await page.getByText("Avtalehistorikk",{exact:true}).waitFor();
+  await page.getByText(/Avtalehistorikk ·/).waitFor();
   eq(await page.getByRole("button",{name:"Klargjør beboeraksept",exact:true}).count(),0,"reader has no write action");
   eq(await page.getByRole("button",{name:"Ny endringsordre",exact:true}).count(),0);
   await page.evaluate(()=>{window.__foreign=true;window.dispatchEvent(new Event('focus'));});
   await page.getByRole("alert").filter({hasText:"Firma eller bolig er endret"}).waitFor();
-  eq(await page.getByText("Avtalehistorikk",{exact:true}).count(),0,"foreign response hides previous firm data");
+  eq(await page.getByText(/Avtalehistorikk ·/).count(),0,"foreign response hides previous firm data");
+  const parallel=await browser.newPage();await parallel.goto(url);
+  await parallel.getByRole("button",{name:"Endringer og beboeraksept",exact:true}).click();
+  await parallel.getByRole("button",{name:"Klargjør beboeraksept",exact:true}).waitFor();
+  await parallel.evaluate(()=>window.__duplicate());
+  await parallel.getByText("Boligvalget er akseptert.",{exact:false}).waitFor();
+  eq(await parallel.getByRole("button",{name:"Klargjør beboeraksept",exact:true}).count(),0,"accepted choice cannot start a parallel agreement");
+  eq(await parallel.getByText("Venter på beboer",{exact:true}).isVisible(),false,"old pending choice is collapsed in history");
+  await parallel.getByText(/Avtalehistorikk ·/).click();
+  eq(await parallel.getByText("Venter på beboer",{exact:true}).isVisible(),true,"prior agreement remains available in explicit history");
   const publicPage=await browser.newPage({viewport:{width:390,height:844}});publicPage.setDefaultTimeout(10000);publicPage.on("pageerror",e=>errors.push(e.message));
   await publicPage.goto(url+"/?public#"+"a".repeat(64));
   await publicPage.getByRole("heading",{name:"Endring av leveransen din"}).waitFor();

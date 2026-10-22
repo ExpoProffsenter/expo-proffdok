@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { COMMERCE_EVENT } from "./boligCommerceClient.js";
 import {
   Truck,
   PackageCheck,
@@ -164,11 +165,13 @@ function DeliveryWorkspace({
       if (document.visibilityState !== "hidden") load();
     };
     window.addEventListener("focus", refresh);
+    window.addEventListener(COMMERCE_EVENT, refresh);
     document.addEventListener("visibilitychange", refresh);
     return () => {
       mounted.current = false;
       ++generation.current;
       window.removeEventListener("focus", refresh);
+      window.removeEventListener(COMMERCE_EVENT, refresh);
       document.removeEventListener("visibilitychange", refresh);
     };
   }, [
@@ -490,6 +493,10 @@ function DeliveryWorkspace({
                     </span>
                   </summary>
                   <div className="bolig-delivery-order-body">
+                    {o.original_snapshot && <details><summary>Original bestilling før endringer · {o.original_snapshot.goods.length} varelinjer</summary>
+                      <p>Mottak nedenfor følger leveransen etter bekreftede endringer. Den opprinnelige bestillingen er bevart her.</p>
+                      <ul>{o.original_snapshot.goods.map(g=><li key={g.key}>{g.name} · {quantity(g.quantity)} {g.unit}</li>)}</ul>
+                    </details>}
                     <p className="bolig-delivery-address">
                       <strong>Leveringsadresse</strong>
                       <br />
@@ -611,6 +618,7 @@ function DeliveryWorkspace({
                                   create: "Grunnlag klargjort",
                                   ordered: "Registrert bestilt",
                                   receive: "Varemottak / korrigering",
+                                  amendment_applied: "Bekreftet endring – leveranse oppdatert",
                                   cancel: "Grunnlag annullert",
                                   supplier_reference:
                                     "Leverandørreferanse endret",
@@ -625,9 +633,9 @@ function DeliveryWorkspace({
                                 <ul>
                                   {e.payload.lines.map((l, i) => (
                                     <li key={i}>
-                                      {o.snapshot.goods[l.position]?.name}:{" "}
+                                      {(e.payload.goods || o.original_snapshot?.goods || o.snapshot.goods)[l.position]?.name}:{" "}
                                       {quantity(l.quantity)}{" "}
-                                      {o.snapshot.goods[l.position]?.unit}
+                                      {(e.payload.goods || o.original_snapshot?.goods || o.snapshot.goods)[l.position]?.unit}
                                     </li>
                                   ))}
                                 </ul>

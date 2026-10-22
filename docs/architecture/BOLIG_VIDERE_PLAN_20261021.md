@@ -1,5 +1,15 @@
 # Boligprosjekter – arbeidsflate og videre produktkrav
 
+## Samlet avtale- og leveranseflyt – 22. oktober
+
+Kenneth ønsker større samlede leveranser. Én gjeldende hovedavtale og sammenfoldet
+historikk erstatter parallelle like kort. Flere vareendringer samles før aksept.
+Etter leverandørens bekreftelse oppdaterer en eksplisitt handling effektiv leveranse,
+mottak og FDV, mens originalordre og historikk beholdes. Endringsbestilling/kreditering
+kan lastes ned som Excel med bare forskjellene. Dette erstatter eldre beskrivelser
+nedenfor om at mottak/FDV ikke kan følge endringer. Leverandørsending og kreditering
+må fortsatt faktisk utføres og bekreftes. Se `docs/qa/BOLIG_SAMLET_LEVERANSE_20261022.md`.
+
 ## Boligprosjekter: endringsordre og beboeraksept – Preview 22.10.2026
 
 Ny etappe på samme feature-branch/PR #278. Boligens «Endringer og beboeraksept» gir prosjektleder en egen avtalehistorikk. Beboeraksept fryser siste lagrede boligvalg og serverens tilvalgspris. Endringsordre viser opprinnelige bestillingsvarer mot foreslått leveranse, med eksplisitt pristillegg/fratrekk inkl. mva. Prosjektleder lagrer kladd, gjennomgår, godkjenner og lager en 30-dagers beboerlenke. Beboeren ser én bestemt utgave og bekrefter navn og svar før innsending. Kvitteringen kommer først etter serverbekreftelse. En tidligere publisert, gyldig utgave kan aksepteres; andre uavklarte utgaver i samme avtalerekke sperres etter aksept.

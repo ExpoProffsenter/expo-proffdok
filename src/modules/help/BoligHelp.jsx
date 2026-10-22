@@ -198,17 +198,24 @@ export function BoligHelp() {
           den aksepterte utgaven. Dette er en lenkebasert beboerbekreftelse.
         </li>
         <li>
-          «Ny endringsordre» lar deg velge bestillingen som endres, tilpasse
-          varene og angi pristillegg eller fratrekk inkl. mva. Kontroller «Før»
+          «Ny endringsordre» lar deg velge bestillingen som endres. Samle alle
+          vareendringene i samme kladd og angi samlet pristillegg eller fratrekk
+          inkl. mva. Kontroller «Før»
           og «Etter» før godkjenning og deling. Den opprinnelige bestillingen
           beholdes. Når beboeren har akseptert, avklarer du endringen med
           leverandøren og registrerer hvem som bekreftet og hvor endringen er
-          bestilt eller kreditert. Bruk «Registrer leverandøroppfølging».
-          Uavklart oppfølging stopper ferdigstilling. Selve leverandørordren,
-          varevalget og mottaket endres ikke automatisk av beboerens svar.
+          bestilt eller kreditert. «Last ned endringsbestilling / kreditering»
+          gir Excel med bare forskjellene. Pluss er tillegg. Minus er reduksjon
+          som må avklares med leverandøren. Velg «Registrer leverandøroppfølging»,
+          fyll ut referanse og bekreftelse og velg «Bekreft og oppdater leveransen».
+          Da oppdateres mottaksgrunnlag og FDV, mens tidligere mottak følger riktig
+          vare. Originalbestillingen beholdes under historikk. Uavklart oppfølging
+          stopper ferdigstilling. Beboerens svar alene sender ingen bestilling.
         </li>
         <li>
-          «Lag ny utgave» beholder tidligere utgaver. En gyldig publisert
+          «Gjeldende boligavtale» viser én hovedavtale. Tidligere utgaver ligger
+          under «Avtalehistorikk». Etter aksept brukes endringsordre for nye
+          endringer. «Lag ny utgave» beholder tidligere utgaver. En gyldig publisert
           eldre utgave kan fortsatt aksepteres. Når én utgave er akseptert,
           sperres de andre uavklarte utgavene i samme avtalerekke.
           «Tilbakekall utgaven» sperrer en uavklart lenke. Et registrert svar
