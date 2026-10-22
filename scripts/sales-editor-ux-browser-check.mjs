@@ -40,13 +40,28 @@ for(const width of [1363,768,390,320]){
   eq(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,'no sideways scroll '+mode+'/'+width);
   const cards=await page.locator('.sales-note-field').evaluateAll(nodes=>nodes.map(el=>({x:el.getBoundingClientRect().x,y:el.getBoundingClientRect().y,width:el.getBoundingClientRect().width})));
   eq(cards.length,4,'all note fields '+mode+'/'+width);
-  eq(width>760?Math.abs(cards[0].y-cards[1].y)<1:cards[1].y>cards[0].y,true,'desktop paired/mobile stack '+mode+'/'+width);
+  eq(mode==='offer'?cards[1].y>cards[0].y:(width>760?Math.abs(cards[0].y-cards[1].y)<1:cards[1].y>cards[0].y),true,'offer full-width sections / original inspection layout '+mode+'/'+width);
+  if(mode==='offer'){
+   eq(await page.locator('.sales-offer-text-section').evaluateAll(nodes=>nodes.every(n=>!n.open)),true,'offer text starts compact '+width);
+   for(const summary of await page.locator('.sales-offer-text-section > summary').all())await summary.click();
+   eq(await page.locator('.sales-offer-text-section textarea').evaluateAll(nodes=>nodes.every(el=>el.getBoundingClientRect().height>=(innerWidth<=760?280:320)&&getComputedStyle(el).fontSize==='16px')),true,'expanded offer fields are large and readable '+width);
+  }
   eq(await page.locator('.sales-note-field textarea').evaluateAll(nodes=>nodes.every(el=>el.getBoundingClientRect().height>=116&&getComputedStyle(el).resize==='vertical')),true,'roomy resizable fields '+mode+'/'+width);
   if(mode==='offer'){
    eq(await page.locator('.sales-offer-line').count()>0,true,'offer lines retained '+width);
    eq(await page.getByText('Bevart opsjon',{exact:true}).count()+await page.locator('input,textarea').evaluateAll(nodes=>nodes.filter(n=>n.value==='Bevart opsjon').length)>0,true,'option retained '+width);
    await page.getByRole('button',{name:'Bruk valgt mal',exact:true}).click();eq((await page.evaluate(()=>window.calls)).at(-1).name,'applyTemplate','template action '+width);
-   await page.getByLabel('Dette er inkludert').fill('Ny tilbudstekst');eq(await page.getByLabel('Dette er inkludert').inputValue(),'Ny tilbudstekst','offer field updates '+width);
+   await page.getByLabel('Dette er inkludert',{exact:true}).fill('Ny tilbudstekst\nAndre avsnitt med uferdig tekst');
+   const section=page.locator('.sales-offer-text-section').filter({has:page.getByLabel('Dette er inkludert',{exact:true})});
+   const field=page.getByLabel('Dette er inkludert',{exact:true});
+   await field.evaluate(el=>{el.dataset.originalNode='retained';});
+   await section.locator('summary').click();eq(await field.isVisible(),false,'collapse hides large editor '+width);
+   eq((await section.locator('summary').innerText()).includes('Ny tilbudstekst'),true,'collapsed summary reflects latest text '+width);
+   await page.evaluate(()=>{document.dispatchEvent(new Event('visibilitychange'));window.dispatchEvent(new Event('focus'));window.dispatchEvent(new Event('expo-proffdok-work-profile'));});
+   await section.locator('summary').focus();await section.locator('summary').press('Enter');
+   eq(await field.inputValue(),'Ny tilbudstekst\nAndre avsnitt med uferdig tekst','collapse/focus/reopen keeps entire unsaved text '+width);
+   eq(await field.getAttribute('data-original-node'),'retained','collapse never unmounts controlled field '+width);
+   eq(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,'expanded note never overflows sideways '+width);
    await page.locator('#sales-offer-builder-form').getByRole('button',{name:'Lagre tilbud',exact:true}).click();eq((await page.evaluate(()=>window.calls)).at(-1).name,'offerSave','original save callback '+width);
   }
   if(process.env.EDITOR_QA_OUTPUT){fs.mkdirSync(process.env.EDITOR_QA_OUTPUT,{recursive:true});await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:path.join(process.env.EDITOR_QA_OUTPUT,mode+'-'+width+'.png'),fullPage:true});}
