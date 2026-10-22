@@ -25,7 +25,14 @@ export default function BoligResidentPage() {
     } catch (e) { if (alive.current) { setError(e.message); setDoc(null); } }
     finally { if (alive.current) setLoading(false); }
   };
-  useEffect(() => { alive.current = true; load(); return () => { alive.current = false; }; }, []);
+  useEffect(() => {
+    alive.current = true; load();
+    // A second agreement can open in the same tab with only the fragment changed.
+    // Recreate the page so the token, receipt and pending answer stay together.
+    const changeAgreement = () => window.location.reload();
+    window.addEventListener("hashchange", changeAgreement);
+    return () => { alive.current = false; window.removeEventListener("hashchange", changeAgreement); };
+  }, []);
   const update = fields => {
     const next = { ...draft, ...fields };
     setDraft(next); setConfirming(false);

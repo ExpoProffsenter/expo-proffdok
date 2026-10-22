@@ -143,6 +143,13 @@ try {
   eq(await publicPage.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
   eq(await publicPage.evaluate(()=>document.querySelector('.bolig-resident-brand').getBoundingClientRect().bottom<=document.querySelector('.bolig-resident-intro').getBoundingClientRect().top),true,"public header does not overlap content");
   await publicPage.screenshot({path:path.join(tmp,"resident-receipt.png"),fullPage:true});
+  await publicPage.goto(url+"/?public#invalid");
+  await publicPage.getByRole("heading",{name:"Avtalen kan ikke åpnes"}).waitFor();
+  eq(await publicPage.getByRole("heading",{name:"Aksepten din er registrert"}).count(),0,"fragment navigation clears the prior receipt");
+  eq(await publicPage.evaluate(()=>window.__publicCalls.length),0,"invalid replacement link never reuses prior token");
+  await publicPage.goto(url+"/?public#"+"a".repeat(64));
+  await publicPage.getByRole("heading",{name:"Endring av leveransen din"}).waitFor();
+  eq(await publicPage.getByLabel("Fullt navn").inputValue(),"","replacement agreement starts with its own answer");
   const invalid=await browser.newPage();await invalid.goto(url+"/?public#invalid");await invalid.getByRole("heading",{name:"Avtalen kan ikke åpnes"}).waitFor();checks++;
   eq(await invalid.evaluate(()=>window.__publicCalls.length),0,"incomplete token never reaches server");
   eq(errors,[],"no browser runtime errors");

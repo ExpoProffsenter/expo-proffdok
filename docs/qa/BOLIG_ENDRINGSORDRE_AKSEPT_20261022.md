@@ -73,7 +73,7 @@ avtalekvitteringen kan skrives ut separat fra kundesiden.
   funksjonssperre, token-projeksjon/hash, sekvens/replay, beslutningslås,
   tilbakekalling/utløp/arkivering/firmaavaktivering, mottatte mengder, originalordre
   og ferdigstillingsbasis før/etter leverandøroppfølging.
-- Chromium: **30 assertions PASS** med faktisk React-handler og RPC-/fetch-adapter.
+- Chromium: **33 assertions PASS** med faktisk React-handler og RPC-/fetch-adapter.
   Separate interne og offentlige stylesheets, 390/1280 px, ingen overflow eller
   overskriftsoverlapp. Før/etter, intern godkjenning, lenke, leverandøroppfølging,
   kladd/fokus/lukking, leser/fremmed firma og mistet akseptsvar er kontrollert.
@@ -88,23 +88,30 @@ avtalekvitteringen kan skrives ut separat fra kundesiden.
 - Full critical build er bestått etter at ny separat HTML-entry er lagt til.
   Endelig Sandbox-build, eksisterende berørte reiser og scope kontrolleres før push.
 
-## Publiseringsstatus før godkjenning
+## Publisert Preview og faktisk skynettprøve
 
-Ny kode er committet lokalt på samme boligbranch. Push til eksisterende GitHub-branch
-ble avvist av automatisk godkjenningskontroll: den krevde uttrykkelig tillatelse til
-å publisere kodepakken til GitHub. Ingen alternativ publiseringsvei er forsøkt.
-Eksisterende Preview og PR-head er derfor fortsatt den tidligere utgaven.
+Kenneth godkjente publisering med nytt «kjør». Den tilkoblede GitHub-integrasjonen
+publiserte det identiske testede tree-et på eksisterende branch, etter at vanlig
+Git-push manglet innlogging. Første kommersielle Preview er READY på `312e5bcc`.
+Endelig SHA, deployment og CI-status dokumenteres i PR #278.
 
 Migrasjonen er installert bare i Sandbox. Faktiske gateways/anon, replay og intern
 readback består i ROLLBACK-prøven. Et eget syntetisk prosjekt er klargjort:
 **DEMO – Endringsordre og beboeraksept**, H0101 med to varer og testpris 1250 kr.
 Ingen kontakter, e-post eller reell leverandør er knyttet til dette.
 
-En lokal Chromium-prøve av faktisk Sandbox-bundet dist forsøkte ekte REST, men
-nettverksforbindelsen til Sandbox returnerte `net::ERR_EMPTY_RESPONSE` før HTTP-svar.
-Ingen aksept ble registrert. Dette er ikke en bekreftet appfeil eller en bestått
-skynettprøve. Endelig browser → REST → database → reload må gjennomføres på den
-faste Preview-adressen etter autorisert push. Nettverksfeil får nå norsk melding.
+Innlogget skynett har opprettet, gjennomgått og godkjent et syntetisk boligvalg,
+laget lenke, registrert testbeboerens aksept og vist samme kvittering etter reload.
+Faktisk database-readback bekrefter riktig dokument, pris 1250 kr, navn og tidspunkt.
+Endringsordre B-2 er laget gjennom UI med antall 2 → 3 og pristillegg 350 kr;
+Før/Etter og publisert beboergrunnlag er kontrollert. Ingen reell kundeaksept.
+
+Skynettprøven avdekket at navigasjon til en annen lenke i samme fane bare endrer
+URL-fragmentet. Siden lastes nå på nytt ved hashchange, slik at gammelt token,
+kvittering og svar aldri blir stående for den nye lenken. Tre nye Chromium-
+assertions bekrefter tømt kvittering, ingen token-gjenbruk og selvstendig svar.
+En tidligere lokal REST-prøve var blokkert av miljønettverket; den faktiske
+skynettprøven over har bekreftet browser → REST → database → reload.
 
 ## Kort brukertest etter Preview-oppdatering
 
