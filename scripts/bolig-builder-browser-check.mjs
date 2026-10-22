@@ -141,9 +141,9 @@ try {
       true,
       "Header actions fit mobile and desktop",
     );
-    await help.locator("summary").click();
+    await help.locator(":scope > summary").click();
     eq(await help.getAttribute("open"), "", "Help opens after header styling");
-    await help.locator("summary").click();
+    await help.locator(":scope > summary").click();
   }
   await page.setViewportSize({ width: 1366, height: 900 });
   await page

@@ -31,3 +31,13 @@ Security advisors før/etter: 399 → 406 konkrete funn i seks grupper. Nøyakti
 Etterkontroll Sandbox 23.10.2026 kl. 00:39 Oslo: null manuelt retryende funksjoner og null API-spørringer over 30 sekunder; rollbackteller 19557211. Dette er ett kontrolltidspunkt, ikke kontinuerlig overvåking.
 
 Skynettprøven fant en SQL alias-kollisjon etter første lagring: lokal variabel t skygget tabellaliaset t i GET-projeksjonen for notices/deliveries. Varslet var korrekt lagret, men manglet etter statuslast. Ny CLI-migrasjon 20261022224451 retter bare de to aliasene med kontrollerte ankre; den anvendte opprinnelige migrasjonen er urørt. Permanent test leser nå varsel fra både bolig-GET og prosjekt-GET etter lagring, og leser faktisk køstatus på GET. 917 DB-assertions PASS; ny live rollback-smoke inkluderer reload-lesing av varselet.
+
+## Faktisk Preview → API → database → portal
+
+På fast Preview med bevart demo-innlogging er det laget en separat syntetisk demo **DEMO – Fremdrift og beboervarsler**, root 7d844477-ffdd-483c-b677-1d41a19699e1, H0101 13a1c28c-8952-45df-88c2-3cd8d4992d20, H0102 03cba00f-f303-4350-bfa4-bf5a59399f32. Tidligere demoer er urørt.
+
+Faktisk UI-lagret aktivitet «Montering av baderom» 5aee779f-86b4-4997-bd3c-99122ba3cbd0, planlagt 23.10.2026, ansvarlig demo-bruker. Varsel 4a871a3f-1a0a-4b41-a969-f80ceecd8a09 er lagret, hentet på nytt, gjennomgått med syntetisk .invalid-mottaker, godkjent og publisert via separate UI-bekreftelser. En personlig testportal er laget uten utsending; portal 7af10fa9-9d57-4750-8bdc-21b751c38e5d. Beboerens faktiske Meldinger viser nøyaktig det publiserte varselet. Ingen tilbud/ordre/aksept er opprettet i denne testen.
+
+Planlagt slutt er deretter endret fra 23. til 24. oktober gjennom kalenderfeltets normale tastaturbetjening og lagret. DB: aktivitetsrevisjon 3, gammel publikasjon bevart, current_approval=false, null mailjobber. «Hent siste status» i faktisk beboerportal fjerner den foreldede beskjeden fra gjeldende visning. Intern oversikt beholder utgaven med krav om ny godkjenning. Ingen faktisk kunde/leverandør er kontaktet. Portalens lenketoken skal ikke legges i dokumentasjon eller commits.
+
+CI #631 hadde alle forutgående moduler og 917 DB-assertions grønne, men stoppet i builder-testen fordi gammel summary-selector traff både hovedhjelp og den nye underhjelpen. Selector er avgrenset til hovedhjelpens direkte summary; alle opprinnelige assertions bevares. Siste CI/deploy-status vedlikeholdes i PR #278, ikke antatt fra eldre HEAD.
