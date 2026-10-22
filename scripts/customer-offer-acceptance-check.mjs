@@ -64,7 +64,7 @@ for (const withOptions of [false, true]) {
   eq(r.nextRequests[0].acceptedAt, r.result.accepted_at, 'persisted receipt uses server-confirmed timestamp');
   eq(r.saved.length, 1, 'successful acceptance persists');
 }
-for (const error of [{ code: '40001', message: 'Tilbudet er oppdatert. Last inn siden på nytt.' }, { code: 'NETWORK', message: 'Ingen forbindelse' }]) {
+for (const error of [{ code: 'PT409', message: 'Tilbudet er oppdatert. Last inn siden på nytt.' }, { code: '40001', message: 'Tilbudet er oppdatert. Last inn siden på nytt.' }, { code: 'NETWORK', message: 'Ingen forbindelse' }]) {
   const r = await submit({ error });
   eq(r.mode, 'customer-offer', 'rejected or failed RPC never shows a successful receipt');
   eq(r.saved.length, 0, 'rejected or failed RPC never persists a local acceptance');
