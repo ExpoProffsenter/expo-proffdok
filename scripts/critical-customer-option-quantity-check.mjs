@@ -27,3 +27,4 @@ const accepted=mapPublicOfferToRequest(publicData);
 eq(accepted.acceptedOptions[0].quantity,4,'public reload retains chosen count');eq(accepted.acceptedTotal,19600,'server total');
 eq(requestWithCustomerOptionQuantities(accepted,{spot:99}),accepted,'accepted snapshot cannot be changed by choice state');
 console.log(`PASS customer option quantities: ${checks} pure runtime checks for validation, publication, reload, draft signatures, arithmetic and immutable accepted history.`);
+await import('./customer-offer-acceptance-check.mjs');
