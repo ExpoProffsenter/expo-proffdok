@@ -1,3 +1,4 @@
+const CONFLICT_CODE=process.env.QA_RPC_CONFLICT_POLICY==='1'?'PT409':'40001';
 import fs from 'node:fs/promises';import assert from 'node:assert/strict';
 const {PGlite}=await import(process.env.HR_PGLITE_PATH||'@electric-sql/pglite');const db=await PGlite.create();let count=0;
 const id=n=>'20000000-0000-4000-8000-'+String(n).padStart(12,'0'),firm=id(1),other=id(2),owner=id(3),worker=id(4),foreign=id(5),project=id(10),q=v=>"'"+String(v).replaceAll("'","''")+"'";
@@ -17,7 +18,7 @@ try{
  await db.exec('reset role');let stored=(await db.query('select plan from public.project_progress_plans')).rows[0].plan;eq(stored.activities[0].assigneeIds,undefined,'portal-facing plan has no participant IDs');eq(stored.activities[0].crewSize,3);
  await actor(worker);eq((await rpc('get_my_personal_context',[])).personal_page,true,'assigned worker gets Min side without HR/KS license');let mine=await rpc('project_progress_mine',[firm,null,null]);eq(mine.plans.length,1);r=await rpc('project_progress_mine',[firm,project,null]);eq(r.record.plan.activities.map(a=>a.id),['a']);eq(r.record.plan.activities[0].assigneeIds,[worker]);eq(r.record.plan.source,null);
  await reject(()=>rpc('project_progress_editor',[project]),'42501');await reject(()=>db.query('select * from progress_private.assignments'),'42501');
- await actor(owner);await reject(()=>save(plan,0),'40001');eq((await rpc('project_progress_editor',[project])).record.revision,1);
+ await actor(owner);await reject(()=>save(plan,0),CONFLICT_CODE);eq((await rpc('project_progress_editor',[project])).record.revision,1);
  for(const assigneeIds of [[foreign],[worker,worker],null,['bad']])await reject(()=>save({...plan,activities:[{...plan.activities[0],assigneeIds}]}));
  for(const crewSize of [0,-1,1.5,1000,'3'])await reject(()=>save({...plan,activities:[{...plan.activities[0],crewSize}]}));
  await reject(()=>save({...plan,activities:[{...plan.activities[0],sessions:[{date:'2026-02-30',startTime:'08:00',endTime:'16:00'}]}]}));

@@ -1,3 +1,4 @@
+import {isRpcConflict} from '../app/rpcErrors.mjs';
 import React,{useEffect,useRef,useState} from 'react';
 import {BookOpen,Plus,Save,Eye,ArrowUp,ArrowDown,Trash2,History,Archive,RotateCcw} from 'lucide-react';
 import {hrRpc} from './hrAccess.js';
@@ -64,7 +65,7 @@ export default function HrConversationTemplates({context,targetRef,startRequest,
   try{await job(session,current);}
   catch(e){if(current()){
    if(e.code==='42501')workspace.delete(scope);
-   setError(e.code==='40001'?'En annen bruker har lagret en nyere utgave. Kladden din er beholdt. Trykk Oppdater maler.':e.message);
+   setError(isRpcConflict(e)?'En annen bruker har lagret en nyere utgave. Kladden din er beholdt. Trykk Oppdater maler.':e.message);
   }}finally{if(current()){locked.current=false;setBusy(false);}}
  };
  const install=result=>{
@@ -92,7 +93,7 @@ export default function HrConversationTemplates({context,targetRef,startRequest,
   validateHrTemplate(draft.content);
   let result;
   try{result=await session.save(draft.id,draft.revision,draft.content,archived);}
-  catch(e){if(e.code==='42501'||e.code==='40001')throw e;throw Error('Lagringen kunne ikke bekreftes. Trykk Oppdater maler og åpne eventuell lagret mal før du prøver igjen. '+e.message);}
+  catch(e){if(e.code==='42501'||isRpcConflict(e))throw e;throw Error('Lagringen kunne ikke bekreftes. Trykk Oppdater maler og åpne eventuell lagret mal før du prøver igjen. '+e.message);}
   // Commit confirmation is independent of an optional catalogue refresh.
   if(!current())return;install(result);setNotice(archived?'Malen er arkivert. Gamle utgaver er beholdt.':'Malen er lagret · utgave '+result.template.revision+'.');
   try{const listing=await session.list();if(current())setData(listing);}catch{if(current())setError('Malen er lagret. Oppdater maler for å hente oversikten på nytt.');}

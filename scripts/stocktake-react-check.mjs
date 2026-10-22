@@ -27,7 +27,7 @@ try{
    if(n==='stocktake_get')return {session:structuredClone(session),total:window.rows.length,items:structuredClone(window.rows.slice(a.p_offset||0,(a.p_offset||0)+100))};
    if(n==='stocktake_record'){
     if(window.commands[a.p_command_id])return structuredClone(window.commands[a.p_command_id]);
-    if(window.nextError){const error=window.nextError;window.nextError=null;return {error,code:'40001'};}
+    if(window.nextError){const error=window.nextError;window.nextError=null;return {error,code:'PT409'};}
     const i=a.p_input;let result;
     if(i.action==='add'){
      const data=i.catalog_id?{supplier:'Leverandør '+i.catalog_id,number:'00123',description:'Rørdel '+i.catalog_id,gtin:'07000000000001',location:i.location,catalog_id:i.catalog_id}:i;

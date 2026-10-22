@@ -1,3 +1,4 @@
+import {isRpcConflict} from '../src/modules/app/rpcErrors.mjs';
 import assert from 'node:assert/strict';
 import './critical-kshms-notifications-check.mjs';
 import './critical-kshms-ruh-pdf-check.mjs';
@@ -113,11 +114,11 @@ const editorRpc=async(name,args)=>{
  if(name==='kshms_deviation_command'){commands++;if(args.p_action==='close'&&failClose)throw new Error('Synthetic failed close');serverCase={...serverCase,...args.p_payload,revision:serverCase.revision+1};if(args.p_action==='close')serverCase={...serverCase,status:'closed',closed_by:eli,closed_at:closed.closed_at,closed_identity:closed.closed_identity,control_note:args.p_payload.control_note.trim()};return serverCase;}
  throw new Error(name);
 };
-const Editor=new Function('bindings','const {useState,useRef,useEffect,kshmsRpc,window,useKshmsJobChoices,ruhRegistrationIssues,readDeviationDraft,deviationForm,deviationClosureIssues,storeDeviationDraft,deviationDraftKey,validateDeviation,saveDeviation,publishDeviationChange,DEVIATION_CHANGE_EVENT}=bindings;'+editorBody+';return KshmsDeviations;')({
+const Editor=new Function('bindings','const {isRpcConflict,useState,useRef,useEffect,kshmsRpc,window,useKshmsJobChoices,ruhRegistrationIssues,readDeviationDraft,deviationForm,deviationClosureIssues,storeDeviationDraft,deviationDraftKey,validateDeviation,saveDeviation,publishDeviationChange,DEVIATION_CHANGE_EVENT}=bindings;'+editorBody+';return KshmsDeviations;')({
  useState:init=>{const id=slot++;if(!(id in slots))slots[id]=typeof init==='function'?init():init;return [slots[id],value=>slots[id]=typeof value==='function'?value(slots[id]):value];},
  useRef:init=>{const id=slot++;if(!(id in slots))slots[id]={current:init};return slots[id];},
  useEffect:(fn,deps)=>{const id=slot++;if(!effects[id]||deps.some((value,i)=>value!==effects[id].deps[i]))queue.push(()=>{effects[id]?.cleanup?.();effects[id]={deps,cleanup:fn()};});},
- kshmsRpc:editorRpc,window:editorWindow,useKshmsJobChoices:()=>({value:null}),ruhRegistrationIssues:()=>[],readDeviationDraft,deviationForm,deviationClosureIssues,storeDeviationDraft,deviationDraftKey,validateDeviation,saveDeviation,publishDeviationChange:row=>published.push(row),DEVIATION_CHANGE_EVENT:'changed'
+ isRpcConflict,kshmsRpc:editorRpc,window:editorWindow,useKshmsJobChoices:()=>({value:null}),ruhRegistrationIssues:()=>[],readDeviationDraft,deviationForm,deviationClosureIssues,storeDeviationDraft,deviationDraftKey,validateDeviation,saveDeviation,publishDeviationChange:row=>published.push(row),DEVIATION_CHANGE_EVENT:'changed'
 });
 const renderEditor=()=>{slot=0;const view=Editor({context:{company_id:companyId,user_id:eli,manage:false}});for(const effect of queue.splice(0))effect();return view;};
 let view=renderEditor();await view.openCase(caseId);view=renderEditor();

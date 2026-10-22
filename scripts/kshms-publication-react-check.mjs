@@ -32,7 +32,7 @@ try{
    if(name==='kshms_publish_batch'){
     assert.equal(args.p_company_id,c);assert.equal(args.p_user_id,u);assert.equal(args.p_approval_statement,COMPANY_APPROVAL_STATEMENT);assert.equal(args.p_self_statement,args.p_acknowledge_self?ACK_STATEMENT:null);
     if(mode==='deferred')return new Promise(resolve=>{pendingResolve=resolve;});
-    if(mode==='stale'){server.routines.at(-1).revision++;server.routines.at(-1).draft.procedure='Changed after review';throw{code:'40001'};}
+    if(mode==='stale'){server.routines.at(-1).revision++;server.routines.at(-1).draft.procedure='Changed after review';throw{code:'PT409'};}
     if(mode==='revoked'){server.context.publish=false;throw{code:'42501'};}
     const selected=mode==='incomplete'?args.p_routines.slice(1):args.p_routines;
     const versions=selected.map(item=>publishOne(item,companyPublicationSummary(args.p_assessment),args.p_requires_ack,args.p_acknowledge_self));

@@ -16,13 +16,14 @@ const import_lucide_react = { FileText };
 const import_jsx_runtime = { jsx, jsxs, Fragment };
 import {presentHelpTopics,plainHelpTitle} from './helpPresentation.mjs';
 const HELP_ICONS={start:Home,mobil:Smartphone,sales:BriefcaseBusiness,badskisse:Ruler,firmaProfil:Building2,epostvalg:Mail,firma:Users,prosjektliste:FolderOpen,kshms:ShieldCheck,hr:UserRound,hjelp:CircleHelp,systemadmin:Settings,bilder:Camera,chat:MessageSquare,tilgang:KeyRound,produkter:Package,sjekklister:ClipboardList,avvik:TriangleAlert};
-const HELP_UPDATED_LABEL = "Sist oppdatert: 17.10.2026";
+const HELP_UPDATED_LABEL = "Sist oppdatert: 22.10.2026";
 
 function section(key, title, purpose, workflow = [], important = [], best = []) {
   return { key, title, purpose, workflow, important, best };
 }
 
 const BASE_SECTIONS = [
+  section("save-conflict", "Når noen andre har lagret først", "Ta vare på det du har skrevet, og sammenlign med den lagrede utgaven.", ["Les meldingen i skjemaet. Behold kladden din mens du henter den nye utgaven med knappen som vises der.", "Sammenlign endringene før du lagrer igjen. Vent på bekreftelsen før du lukker skjemaet."], ["En konfliktmelding betyr at handlingen ble avvist. Den er ikke en bekreftelse på lagring eller godkjenning."]),
   section("cordel", "Eksport av tilbud til Cordel", "A–Å: engangsoppsett, P:-mappe, importdefinisjoner, jobbliste, priser og plukkliste."),
   section(
     "start",

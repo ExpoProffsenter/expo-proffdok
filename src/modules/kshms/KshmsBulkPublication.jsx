@@ -1,3 +1,4 @@
+import {isRpcConflict} from '../app/rpcErrors.mjs';
 import {useEffect,useId,useRef,useState} from 'react';
 import {kshmsRpc} from './kshmsAccess.js';
 import {ACK_STATEMENT} from './kshmsCatalog.mjs';
@@ -35,7 +36,7 @@ export default function KshmsBulkPublication({data,companyId,userId,busy,dirty,o
    const versions=verifiedCompanyPublications({data:fresh,companyId,userId,snapshot:frozen,assessment:reason,requiresAck:required,selfAcknowledgment:own});
    if(fresh)onState(fresh);setSnapshot(null);setConsent(false);setConfirmSelf(false);
    if(versions){setSelected([]);setOpen(false);setAssessment('');onPublished(frozen.map(row=>row.id));setFeedback({error:false,message:`${versions.length} rutiner er godkjent og publisert. Hver utgave har din godkjenning, vurderingen og tidspunktet ${acknowledgmentTime(versions[0].published_at)}.${own?' Din egen lesebekreftelse er også registrert på hver utgave.':' Ansatte bekrefter sin egen gjennomgang i «Les og bekreft».'}`});}
-   else if(error?.code==='40001')setFeedback({error:true,message:'Et valgt utkast er endret eller publisert av noen andre. Ingen delvis publisering fra denne handlingen. Vurder den oppdaterte teksten og godkjenn på nytt. Vurderingsfeltet ditt er beholdt.'});
+   else if(isRpcConflict(error))setFeedback({error:true,message:'Et valgt utkast er endret eller publisert av noen andre. Ingen delvis publisering fra denne handlingen. Vurder den oppdaterte teksten og godkjenn på nytt. Vurderingsfeltet ditt er beholdt.'});
    else if(error?.code==='42501'){if(!fresh)onState(null);setFeedback({error:true,message:'Arbeidsprofil eller rett til godkjenning er endret. Åpne håndboka på nytt.'});}
    else setFeedback({error:true,message:'Vi kunne ikke kontrollere alle nye utgaver. Oppdater håndboka før du prøver igjen. Vurderingsfeltet ditt er beholdt.'});
   }finally{inFlight.current=false;if(isCurrent())onBusy(false);}

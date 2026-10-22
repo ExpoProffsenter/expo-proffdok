@@ -1,3 +1,4 @@
+import {isRpcConflict} from '../app/rpcErrors.mjs';
 import React,{useEffect,useRef,useState} from 'react';
 import {Plus,Save,Settings,Users,Download} from 'lucide-react';
 import {MANAGED_ACCESS_EVENT,MODULE_ACCESS_EVENT} from '../access/moduleAccessClient.js';
@@ -17,7 +18,7 @@ export default function TimeSetup({context,onSaved}){
    catch(e){if(alive&&ticket===revision.current)setError(e.message);}finally{if(alive&&ticket===revision.current){setBusy(false);busyRef.current=false;}}};
   refresh();const events=['focus',WORK_PROFILE_EVENT,MANAGED_ACCESS_EVENT,MODULE_ACCESS_EVENT];events.forEach(e=>window.addEventListener(e,refresh));document.addEventListener('visibilitychange',refresh);return()=>{alive=false;revision.current++;session.dispose();ref.current=null;events.forEach(e=>window.removeEventListener(e,refresh));document.removeEventListener('visibilitychange',refresh);};
  },[context.company_id,context.user_id]);
- const run=async job=>{if(busyRef.current||!ref.current)return;const session=ref.current,ticket=++revision.current;setBusy(true);busyRef.current=true;setError('');setNotice('');try{await job(session,()=>session===ref.current&&ticket===revision.current);}catch(e){if(session===ref.current&&ticket===revision.current){setError(e.message);if(e.code==='40001')setConflict(true);}}finally{if(session===ref.current&&ticket===revision.current){setBusy(false);busyRef.current=false;}}};
+ const run=async job=>{if(busyRef.current||!ref.current)return;const session=ref.current,ticket=++revision.current;setBusy(true);busyRef.current=true;setError('');setNotice('');try{await job(session,()=>session===ref.current&&ticket===revision.current);}catch(e){if(session===ref.current&&ticket===revision.current){setError(e.message);if(isRpcConflict(e))setConflict(true);}}finally{if(session===ref.current&&ticket===revision.current){setBusy(false);busyRef.current=false;}}};
  const editCategory=(id,patch)=>update({...draft,categories:draft.categories.map(c=>c.id===id?{...c,...patch}:c)});
  const mapping=(field,key,value)=>{const copy={...draft[field]};if(value.trim())copy[key]=value.trim();else delete copy[key];update({...draft,[field]:copy});};
  const loadProjects=after=>run(async(session,current)=>{const r=await session.call('time_projects',{p_query:projectQuery,p_after:after||null});if(current()){setProjects(before=>after?[...before,...r.projects.filter(p=>!before.some(x=>x.id===p.id))]:r.projects);setProjectNext(r.next);}});

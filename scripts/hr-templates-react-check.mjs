@@ -24,7 +24,7 @@ try{
    if(name==='hr_template_list')return {data:{context,templates:records.map(t=>({id:t.id,revision:t.revision,archived:t.archived,title:t.versions.at(-1).content.title,kind:t.versions.at(-1).content.kind,question_count:t.versions.at(-1).content.questions.length})),next:null}};
    let record=records.find(t=>t.id===args.p_template_id);
    if(name==='hr_template_save'){
-    if((record?.revision||0)!==args.p_revision)return {error:{code:'40001',message:'Malen er endret'}};
+    if((record?.revision||0)!==args.p_revision)return {error:{code:'PT409',message:'Malen er endret'}};
     if(!record){record={id:args.p_template_id,revision:0,archived:false,versions:[]};records.push(record);}
     record.revision++;record.archived=args.p_archived;
     record.versions.push({revision:record.revision,archived:record.archived,content:reorder(args.p_content),saved_at:'2026-10-10T02:00:00Z'});

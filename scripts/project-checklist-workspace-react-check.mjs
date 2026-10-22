@@ -28,7 +28,7 @@ window.__rpc=async(name,args)=>{
  assert.equal(name,'project_checklist_command');lastRequest=args.p_request_id;
  if(receipts.has(args.p_request_id))return receipts.get(args.p_request_id);
  const old=runs.find(row=>row.id===args.p_payload.id);
- if(old&&old.revision!==args.p_payload.revision){const error=Error('En annen person har lagret. Kladden er beholdt.');error.code='40001';throw error;}
+ if(old&&old.revision!==args.p_payload.revision){const error=Error('En annen person har lagret. Kladden er beholdt.');error.code='PT409';throw error;}
  const row={...structuredClone(args.p_payload),category:args.p_payload.definition.category,company_id:company,project_id:project,revision:(old?.revision||0)+1,status:args.p_action==='complete'?'completed':'draft',updated_at:'2026-10-07T19:00:00Z',updated_identity:identity,...(args.p_action==='complete'?{completed_at:'2026-10-07T19:00:00Z',completed_identity:identity}:{})};
  runs=[row,...runs.filter(value=>value.id!==row.id)];checklist={...checklist,[row.category]:row.answers};
  const result={context:{company_id:company,project_id:project,user_id:'user'},run:row,answers:row.answers};receipts.set(args.p_request_id,result);

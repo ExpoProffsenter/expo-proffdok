@@ -1,3 +1,4 @@
+import {isRpcConflict} from '../app/rpcErrors.mjs';
 import React,{useCallback,useEffect,useRef,useState} from 'react';
 import {ShieldCheck} from 'lucide-react';
 import {hrRpc} from './hrAccess.js';
@@ -63,7 +64,7 @@ export default function PrivateContact({context,employee,initiallyOpen=false}) {
     if(current()&&fresh?.available&&fresh.context?.company_id===companyId&&fresh.context.user_id===userId&&fresh.employee?.id===value.employee.id&&fresh.employee?.revision===value.employee.revision&&fresh.revision===result.revision){contactDrafts.delete(scopeKey);setConflict(false);valueRef.current=fresh;setValue(fresh);setDraft({...empty(),...fresh.data});setNotice('Kontaktprofilen er lagret.');window.dispatchEvent(new Event(HR_CONTACT_SAVED_EVENT));}
     else if(current())throw new Error('Kontaktprofilen er lagret, men tilgangen er endret. Åpne profilen på nytt.');
    }
-  }catch(e){if(current()){clear();if(e.code==='42501')contactDrafts.delete(scopeKey);setError(e.code==='40001'?'En annen økt har endret profilen eller tilgangen. Kladden er beholdt. Åpne profilen på nytt.':e.message);}}
+  }catch(e){if(current()){clear();if(e.code==='42501')contactDrafts.delete(scopeKey);setError(isRpcConflict(e)?'En annen økt har endret profilen eller tilgangen. Kladden er beholdt. Åpne profilen på nytt.':e.message);}}
   finally{if(current()){setBusy(false);busyRef.current=false;}}
  };
  return <details className="hr-private-contact" open={initiallyOpen||undefined}><summary><ShieldCheck size={18} aria-hidden="true"/>Adresse og nærmeste pårørende</summary>

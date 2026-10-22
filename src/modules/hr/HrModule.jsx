@@ -1,3 +1,4 @@
+import {isRpcConflict} from '../app/rpcErrors.mjs';
 import {hrEmployeeLabel} from './hrEmployeeLabel.mjs';
 import React,{useCallback,useEffect,useRef,useState} from 'react';
 import {createHrFoundationSession,hrClosureMessage} from './hrFoundation.mjs';
@@ -101,7 +102,7 @@ export default function HrModule({context,audience='legacy',initialEmployeeId=nu
   setError('');setNotice('');setBusy(true);busyRef.current=true;
   const current=()=>ticket===revision.current&&sessionRef.current===session;
   try{await job(session,current);}
-  catch(e){if(current())setError(e.code==='40001'?'En annen bruker har endret registeret. Trykk «Oppdater registeret» og se over endringen.':e.message);}
+  catch(e){if(current())setError(isRpcConflict(e)?'En annen bruker har endret registeret. Trykk «Oppdater registeret» og se over endringen.':e.message);}
   finally{if(current()){setBusy(false);busyRef.current=false;}}
  };
  const open=id=>run(async(session,current)=>{installDetail(null);const result=await session.get(id);if(current()){installDetail(result.employee);selectId(result.employee.id);}});

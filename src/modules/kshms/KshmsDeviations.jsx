@@ -1,3 +1,4 @@
+import {isRpcConflict} from '../app/rpcErrors.mjs';
 import { useEffect,useId,useRef,useState } from 'react';
 import { getAppSupabaseClient } from '../access/appSupabaseClientRegistry.js';
 import { kshmsRpc } from './kshmsAccess.js';
@@ -110,7 +111,7 @@ export default function KshmsDeviations({context,request,projectId=null,ruhOnly=
    installDetail(result);window.localStorage.removeItem(deviationDraftKey(userId,companyId,projectId));setCached(null);setNotice(action==='close'?'Avviket er lukket og lagret.':isRuh?'RUH-en er lagret.':'Avviket er lagret.');publishDeviationChange(result.case);
    if(action==='close'){setForm(null);setDetail(null);setFiles([]);setFileLinks({});return;}
    try{const items=await kshmsRpc('kshms_deviation_files',{p_company_id:companyId,p_id:result.case.id});if(current(owner)&&serial===caseSerial.current)setFiles(items);}catch{if(current(owner))setError('Avviket er lagret, men vedleggene kunne ikke oppdateres. Trykk «Oppdater sak».');}
-  }catch(e){if(current(owner)&&serial===caseSerial.current){setError(e.code==='40001'?'En annen har endret saken. Din kladd er beholdt. Sammenlign med lagret sak under før du lagrer igjen.':`Kunne ikke bekrefte lagringen. Kladden er beholdt. ${e.message}`);if(id)try{const server=await kshmsRpc('kshms_deviation_detail',{p_company_id:companyId,p_id:id});if(current(owner)&&serial===caseSerial.current)setConflict(server);}catch{}}}
+  }catch(e){if(current(owner)&&serial===caseSerial.current){setError(isRpcConflict(e)?'En annen har endret saken. Din kladd er beholdt. Sammenlign med lagret sak under før du lagrer igjen.':`Kunne ikke bekrefte lagringen. Kladden er beholdt. ${e.message}`);if(id)try{const server=await kshmsRpc('kshms_deviation_detail',{p_company_id:companyId,p_id:id});if(current(owner)&&serial===caseSerial.current)setConflict(server);}catch{}}}
   finally{locked.current=false;if(current(owner))setBusy(false);}
  };
  const reopen=async()=>{
