@@ -1725,7 +1725,7 @@ export default function SalesModule({
         token: selectedRequest.publicToken,
         acceptedName: acceptanceForm.name.trim(),
         selectedOptions,
-        expectedVersionId: activeOfferVersion?.id,
+        expectedVersionId: activeOfferVersion?.id || selectedRequest.sentOfferVersionId,
       });
 
       if (error) {
