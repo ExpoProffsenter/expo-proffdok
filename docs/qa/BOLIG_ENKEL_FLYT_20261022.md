@@ -29,7 +29,7 @@ Kontrollert utgangspunkt: feature `f91e9ac2`, main `0730eeb4`. Eksisterende node
 - [x] Valgfri bekreft-og-send-flyt med lagret bekreftelse og separat sendestatus.
 - [x] Automatiserte tester, PDF-render, sikkerhetskontroll og sandbox.
 - [x] Innlogget skynett: oppstart, prosjektliste, fordeling, sentralimport og samlet sluttkontroll.
-- [ ] Siste innloggede opplasting/nedlasting etter nettleseravbrudd.
+- [x] Siste innloggede opplasting/nedlasting etter nettleseravbrudd (se gjenopptatt sluttprøve nedenfor).
 - [ ] Samme Preview oppdatert, eksakt CI grønn, kort brukertest og handoff.
 
 Tidligere dokumentasjon beskriver eldre sperreregler. Denne etappens ferdige kontrakt og tester skal dokumentere hva som erstatter dem; sikkerhets-, historikk- og konfliktvern skal beholdes.
@@ -93,3 +93,9 @@ Sikker innlogging i skynett er gjenopprettet. H0101 viste korrekt **Klar med res
 Den faktiske PDF-en avdekket to eksportdetaljer: FDV-delen skrev sin egen sidefot på alle sider før rapporten malte over den, slik at tekstuttrekk fikk dupliserte sideføtter/sidetall; og tom adresse etterlot løse midtpunkter i enkelte scope-etiketter. Avgrenset rettelse i Bolig-eksporten lar samlet rapport eie sidefoten og rydder kun visningsetiketter/arkivmappenavn. Lagrede titler, originale filer, status, historikk, tilgang og eksportens grunnlagskontroll endres ikke.
 
 PDF/ZIP-testen har nå **36 assertions PASS**, inkludert nøyaktig én tekstlig sidefot og ett sidetall per side og ingen løse adresse-skilletegn. Eksisterende separat FDV-PDF har fortsatt **12 PASS**. Ny samlet PDF er rendret; scope guard, diff-check og full critical build PASS. Endelig publisering/CI og siste faktiske nedlasting registreres i PR-beskrivelsen. Ingen faktisk e-post er sendt og ingen produksjonsendring er gjort.
+
+Faktisk ny ZIP fra **e37c2941** er deretter lastet ned og inspisert: fem arkivoppføringer, gyldig CRC, alle SHA-256 fra filmanifestet verifisert og opplastet original-PDF byte for byte identisk. Datafilen har `ready_with_rest` for riktig bolig og inneholder verken privat objektsti/arbeidsprofil eller H0102s ID. Samlet PDF i ZIP har 9 sider, nøyaktig én tekstlig sidefot på hver side og ingen doble adresse-skilletegn. Den faktiske PDF-en er rendret og kontrollert.
+
+I faktisk UI: dokumentendringen krevde begrunnet gjenåpning; ny samlet gjennomgang ble lagret, og eksplisitt godkjenning ga igjen **Klar med restpunkter**. Ferdigstillingshistorikken økte fra 3 til 6. Gjentatt fordelingsforhåndsvisning fra prosjektlisten til begge boliger viste **0 nye / 2 eksisterende beholdes**; ingen ny fordeling ble lagret i denne prøven.
+
+Siste visuelle prøve fant at det separate påkrevd-valget i fordelingsdialogen fortsatt arvet global full input-bredde. Checkbox-størrelsen gjelder nå alle avkryssinger i akkurat denne dialogen, og påkrevd-valget får horisontal etikett med 48 px trykkflate. En ny assertion kontrollerer 22 px checkbox, flex-rad, 12 px gap og 48 px trykkflate under faktisk global CSS. Reader-testrettelsen **354467aa**, som ble publisert mens sluttprøven pågikk, er bevart uendret.

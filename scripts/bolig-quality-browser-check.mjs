@@ -363,6 +363,7 @@ try {
   modal=dialog("Fordel sjekklister");
   await modal.getByRole("checkbox", {name:/Firmaets kontroll.*Sjekklistesentral/}).check();
   eq(await modal.locator(".bolig-distribution-options > label").first().evaluate(el=>({checkbox:getComputedStyle(el.querySelector('input')).width,title:getComputedStyle(el.querySelector('strong')).fontSize,detail:getComputedStyle(el.querySelector('small')).fontSize})),{checkbox:"22px",title:"16px",detail:"16px"},"Distribution checkboxes stay compact and labels readable under global app CSS");
+  eq(await modal.getByLabel("Nye kontroller er påkrevde ved sluttgodkjenning").evaluate(el=>({checkbox:getComputedStyle(el).width,layout:getComputedStyle(el.parentElement).display,height:getComputedStyle(el.parentElement).minHeight,gap:getComputedStyle(el.parentElement).gap})),{checkbox:"22px",layout:"flex",height:"48px",gap:"12px"},"Required toggle keeps its checkbox beside a readable label with a full touch target");
   await modal.getByRole("button",{name:"Velg alle 2 i utvalget",exact:true}).click();
   await modal.getByLabel("Fordel til",{exact:true}).selectOption("rooms");
   await modal.getByRole("button",{name:"Velg alle 1 i utvalget",exact:true}).click();
