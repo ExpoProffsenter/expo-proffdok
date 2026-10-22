@@ -22,6 +22,7 @@ import {
   localToday,
   PROGRESS_EVENT,
 } from "./boligProgressClient.js";
+import Planning from "./BoligProgressPlanning.jsx";
 const COMPLETION_EVENT = "expo-proffdok-bolig-completion";
 const empty = { editor: null, notice: null, pending: null };
 const formTask = (unit, owner) => ({
@@ -138,7 +139,7 @@ export default function BoligProgress({ context, root, unit = null }) {
             action,
             payload: {
               ...payload,
-              revision: data.revision,
+              revision: payload.revision ?? data.revision,
               request_id: crypto.randomUUID(),
             },
           };
@@ -158,6 +159,11 @@ export default function BoligProgress({ context, root, unit = null }) {
           ? { editor: null }
           : {}),
         ...(attempt.action === "notice" ? { notice: null } : {}),
+        ...(attempt.action === "batch"
+          ? attempt.payload.mode === "dates"
+            ? { schedule: null }
+            : { bulkPreview: null }
+          : {}),
       });
       setData(next);
       setReview(null);
@@ -169,6 +175,7 @@ export default function BoligProgress({ context, root, unit = null }) {
             ? "Varselet er godkjent. Publiser nå eller la godkjent dato styre publisering når varsling er aktivert."
             : "Endringen er lagret.",
       );
+      return true;
     } catch (e) {
       if (alive.current && currentScope.current === scope) {
         setError(e.message);
@@ -313,6 +320,32 @@ export default function BoligProgress({ context, root, unit = null }) {
           </button>
         </div>
       )}
+      <Planning
+        data={data}
+        draft={draft}
+        update={update}
+        run={run}
+        writable={writable}
+        disabled={disabled}
+        saving={busy}
+        serverError={error}
+        context={context}
+        root={root}
+        unit={unit}
+        onEdit={(t) => {
+          if (!t) return;
+          update({
+            editor: {
+              ...t,
+              room_id: t.room_id || "",
+              predecessor_id: t.predecessor_id || "",
+              actual_start: t.actual_start || "",
+              actual_end: t.actual_end || "",
+            },
+          });
+          setReview({ kind: "editor" });
+        }}
+      />
       <div className="bolig-progress-tools">
         <label>
           Søk i fremdrift
@@ -556,6 +589,8 @@ export default function BoligProgress({ context, root, unit = null }) {
             {
               {
                 save: "Aktivitet lagret",
+                batch_create: "Aktiviteter opprettet samlet",
+                batch_dates: "Planlagte datoer flyttet samlet",
                 archive: "Aktivitet arkivert",
                 notice: "Varselutkast lagret",
                 approve: "Varsel godkjent",

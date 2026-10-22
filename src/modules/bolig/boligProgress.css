@@ -410,3 +410,142 @@
   display: block;
   margin-top: 5px;
 }
+
+.bolig-plan-workspace {
+  padding: 16px;
+  border: 1px solid #d8e1e8;
+  border-radius: 14px;
+  background: #f7f9fc;
+  margin-bottom: 18px;
+}
+.bolig-plan-launchers,
+.bolig-plan-dialog-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.bolig-plan-dialog {
+  width: min(1000px, 96vw);
+}
+.bolig-plan-dialog-body {
+  padding: 20px;
+  max-height: 78dvh;
+  overflow: auto;
+}
+.bolig-plan-dialog-body fieldset {
+  border: 0;
+  padding: 0;
+  min-width: 0;
+}
+.bolig-plan-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin: 12px 0;
+}
+.bolig-plan-dialog-body label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-weight: 600;
+}
+.bolig-plan-dialog-body input,
+.bolig-plan-dialog-body select {
+  width: 100%;
+  padding: 9px;
+  min-height: 42px;
+  border: 1px solid #bdcbd7;
+  border-radius: 7px;
+  background: #fff;
+  color: #172d43;
+  box-sizing: border-box;
+}
+.bolig-plan-dialog-body small {
+  font-weight: 400;
+  font-size: 12px;
+  color: #4f6275;
+}
+.bolig-plan-unit-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  max-height: 230px;
+  overflow: auto;
+  gap: 8px;
+  margin: 12px 0;
+  border: 1px solid #d8e1e8;
+  padding: 10px;
+  border-radius: 8px;
+}
+.bolig-plan-unit-list label,
+.bolig-plan-check {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 8px !important;
+}
+.bolig-plan-unit-list input,
+.bolig-plan-check input {
+  width: 18px;
+  height: 18px;
+  min-height: 18px;
+  flex: none;
+}
+.bolig-plan-unit-list small {
+  display: block;
+}
+.bolig-plan-step {
+  display: grid;
+  grid-template-columns: minmax(150px, 1fr) 100px auto auto;
+  gap: 10px;
+  align-items: end;
+  padding: 10px 0;
+  border-bottom: 1px solid #e4e9ee;
+}
+.bolig-plan-steps {
+  margin: 12px 0;
+}
+.bolig-plan-dialog-actions {
+  justify-content: flex-end;
+  margin-top: 20px;
+  padding: 14px 0 0;
+  border-top: 1px solid #d8e1e8;
+}
+.bolig-plan-preview-scroll {
+  max-height: 45dvh;
+  overflow: auto;
+  border: 1px solid #d8e1e8;
+  border-radius: 8px;
+}
+.bolig-plan-preview-scroll table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 13px;
+}
+.bolig-plan-preview-scroll th {
+  position: sticky;
+  top: 0;
+  background: #edf2f7;
+  text-align: left;
+}
+.bolig-plan-preview-scroll th,
+.bolig-plan-preview-scroll td {
+  padding: 10px;
+  border-bottom: 1px solid #e4e9ee;
+}
+.bolig-plan-preview-scroll strong {
+  display: block;
+}
+@media (max-width: 600px) {
+  .bolig-plan-step {
+    grid-template-columns: minmax(130px, 1fr) 85px;
+  }
+  .bolig-plan-dialog-body {
+    padding: 12px;
+  }
+  .bolig-plan-preview-scroll {
+    font-size: 12px;
+  }
+  .bolig-plan-dialog-actions button {
+    flex: 1;
+  }
+}

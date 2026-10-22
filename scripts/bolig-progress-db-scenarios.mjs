@@ -572,4 +572,7 @@ export default async function progressScenarios({
     "update bolig_private.progress_mail_settings set enabled=false",
   );
   await actor(manager);
+  const {default:planning}=await import('./bolig-progress-planning-db-scenarios.mjs');
+  await planning({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider});
+
 }

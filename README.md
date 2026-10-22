@@ -1,3 +1,7 @@
+## Boligprosjekter: masseplan og felles tidslinje – Preview 23.10.2026
+
+Fremdrift har samlet valg av bygg/oppgang/etasje/boliger, lokal arbeidsmal fra appens standardaktiviteter, startdato, takt og forhåndsvisning av alle datoer. Inntil 400 aktiviteter lagres eller flyttes atomisk; påbegynt og utført arbeid avklares enkeltvis. Tidslinjen gjenbruker appens eksisterende planlegger med uke/måned, dra/resize og angre. Boligoppgavene er fortsatt ett autoritativt grunnlag for datoer, ferdigstilling og gjennomgåtte beboervarsler. Ingen dobbeltlagring i prosjekt-/KS-planer eller oppdiktet bemanning. Samme Preview/Sandbox, e-post fortsatt deaktivert og ingen produksjonssetting uten TEST OK. Se `docs/qa/BOLIG_MASSEPLAN_20261023.md` for grenser og testguide.
+
 ## Boligprosjekter: endringsordre og beboeraksept – Preview 22.10.2026
 
 Ny etappe på samme feature-branch/PR #278. Boligens «Endringer og beboeraksept» gir prosjektleder en egen avtalehistorikk. Beboeraksept fryser siste lagrede boligvalg og serverens tilvalgspris. Endringsordre viser opprinnelige bestillingsvarer mot foreslått leveranse, med eksplisitt pristillegg/fratrekk inkl. mva. Prosjektleder lagrer kladd, gjennomgår, godkjenner og lager en 30-dagers beboerlenke. Beboeren ser én bestemt utgave og bekrefter navn og svar før innsending. Kvitteringen kommer først etter serverbekreftelse. En tidligere publisert, gyldig utgave kan aksepteres; andre uavklarte utgaver i samme avtalerekke sperres etter aksept.

@@ -12,6 +12,24 @@ export function BoligHelp() {
       <details>
         <summary>Fremdrift og varsler</summary>
         <p>
+          Mange boliger? Velg «Planlegg flere boliger». Filtrer på bygg, oppgang
+          eller etasje og velg boligene. Sett første oppstart og dager mellom
+          boligstarter. Legg arbeidene i riktig rekkefølge, med varighet og
+          ansvarlig. «Forhåndsvis planen» viser alle datoene før du lagrer.
+          Ukeregelen teller mandag–fredag eller alle dager. Juster helligdager
+          selv. Samme oppsett kan brukes på neste utvalg. Inntil 400 aktiviteter
+          lagres samlet.
+        </p>
+        <p>
+          «Åpne samlet tidslinje» bruker appens felles planlegger. Velg bolig,
+          uke eller måned. Dra en aktivitet eller endene for å justere datoene.
+          «Angre» gjelder ulagrede endringer. Se over og lagre datoendringene.
+          «Flytt datoer samlet» flytter åpne aktiviteter i valgte boliger.
+          Påbegynt og utført arbeid avklares enkeltvis. En avhengighet som
+          brytes, stopper hele lagringen. Beboervarsler godkjennes separat etter
+          endret plan.
+        </p>
+        <p>
           Åpne «Fremdrift og varsler» i prosjektet eller boligen. Velg «Ny
           aktivitet», legg inn bolig, rom, datoer og ansvarlig, og velg «Lagre
           endringer». «Må utføres etter» knytter arbeidet til en annen aktivitet
