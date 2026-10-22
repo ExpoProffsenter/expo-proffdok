@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import assert from "node:assert/strict";
 import streamlined from "./bolig-streamlined-db-scenarios.mjs";
+import commerceScenarios from "./bolig-commerce-db-scenarios.mjs";
 import qualityScenarios from "./bolig-quality-db-scenarios.mjs";
 import completionScenarios from "./bolig-completion-db-scenarios.mjs";
 import customizationScenarios from "./bolig-customization-db-scenarios.mjs";
@@ -948,6 +949,7 @@ try {
   await completionScenarios({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider});
   await qualityScenarios({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider});
   await streamlined({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider});
+  await commerceScenarios({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider});
   await db.exec(
     `reset role;update public.profiles set deactivated=true where id=${q(reader)}`,
   );

@@ -6,6 +6,7 @@ import {
   FileCheck2,
   ChevronRight,
   X,
+  FileSignature,
 } from "lucide-react";
 export default function BoligUnitTasks({
   unit,
@@ -14,6 +15,7 @@ export default function BoligUnitTasks({
   order,
   completion,
   quality,
+  commerce,
 }) {
   const [panel, setPanel] = useState(null),
     dialog = useRef(null),
@@ -34,6 +36,7 @@ export default function BoligUnitTasks({
     order: "Bestilling og levering",
     quality: "Sjekklister og dokumentasjon",
     finish: "Ferdigstilling",
+    commerce: "Endringer og beboeraksept",
   };
   const open = (id, e) => {
     opener.current = e.currentTarget;
@@ -77,6 +80,7 @@ export default function BoligUnitTasks({
         "Sjekklister og dokumentasjon",
         "Egne sjekklister, filer, FDV og ekstern protokoll",
       )}
+      {commerce && tile("commerce", FileSignature, "Endringer og beboeraksept", "Før og etter, avtalt pris og beboerens bekreftelse")}
       {tile(
         "finish",
         FileCheck2,
@@ -109,6 +113,7 @@ export default function BoligUnitTasks({
         <div hidden={panel !== "rooms"}>{rooms}</div>
         <div hidden={panel !== "order"}>{order}</div>
         {panel === "quality" && quality}
+        {panel === "commerce" && commerce}
         {panel === "finish" &&
           (completion || (
             <p>Åpne dokumentert ferdigstilling fra boligens arbeidsområde.</p>

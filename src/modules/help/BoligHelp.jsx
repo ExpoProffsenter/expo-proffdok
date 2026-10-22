@@ -188,6 +188,35 @@ export function BoligHelp() {
           bestilling må avklares før nye bestillinger.
         </li>
         <li>
+          Åpne «Endringer og beboeraksept» i boligen. «Klargjør beboeraksept»
+          bruker boligens lagrede varer og tilvalgspris. Beskriv grunnlaget,
+          velg «Lagre og gjennomgå» og kontroller innholdet. «Godkjenn
+          grunnlaget» er din interne godkjenning. Velg deretter «Lag
+          beboerlenke» og del den med riktig beboer. Lenken varer i 30 dager.
+          Ingen e-post sendes av disse knappene. Beboeren gjennomgår pris og
+          varer, oppgir navn og bekrefter svaret i to trinn. Kvitteringen viser
+          den aksepterte utgaven. Dette er en lenkebasert beboerbekreftelse.
+        </li>
+        <li>
+          «Ny endringsordre» lar deg velge bestillingen som endres, tilpasse
+          varene og angi pristillegg eller fratrekk inkl. mva. Kontroller «Før»
+          og «Etter» før godkjenning og deling. Den opprinnelige bestillingen
+          beholdes. Når beboeren har akseptert, avklarer du endringen med
+          leverandøren og registrerer hvem som bekreftet og hvor endringen er
+          bestilt eller kreditert. Bruk «Registrer leverandøroppfølging».
+          Uavklart oppfølging stopper ferdigstilling. Selve leverandørordren,
+          varevalget og mottaket endres ikke automatisk av beboerens svar.
+        </li>
+        <li>
+          «Lag ny utgave» beholder tidligere utgaver. En gyldig publisert
+          eldre utgave kan fortsatt aksepteres. Når én utgave er akseptert,
+          sperres de andre uavklarte utgavene i samme avtalerekke.
+          «Tilbakekall utgaven» sperrer en uavklart lenke. Et registrert svar
+          endres gjennom en ny avtale. Ved uavklart lagring bruker du «Prøv
+          samme lagring igjen». Lukk dialogen for å beholde kladden; velg
+          «Fortsett kladd» når du vil arbeide videre.
+        </li>
+        <li>
           Åpne «Ferdigstilling» i boligen → «Opprett kontrollplan». «Samlet
           gjennomgang» viser lagrede kontroller, avvik, filer og FDV. Bekreft
           gjennomgangen og legg til notat ved behov. De faste kontrollområdene

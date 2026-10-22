@@ -1,3 +1,11 @@
+## Boligprosjekter: endringsordre og beboeraksept – Preview 22.10.2026
+
+Ny etappe på samme feature-branch/PR #278. Boligens «Endringer og beboeraksept» gir prosjektleder en egen avtalehistorikk. Beboeraksept fryser siste lagrede boligvalg og serverens tilvalgspris. Endringsordre viser opprinnelige bestillingsvarer mot foreslått leveranse, med eksplisitt pristillegg/fratrekk inkl. mva. Prosjektleder lagrer kladd, gjennomgår, godkjenner og lager en 30-dagers beboerlenke. Beboeren ser én bestemt utgave og bekrefter navn og svar før innsending. Kvitteringen kommer først etter serverbekreftelse. En tidligere publisert, gyldig utgave kan aksepteres; andre uavklarte utgaver i samme avtalerekke sperres etter aksept.
+
+Aksept og leverandørbestilling er separate handlinger. Originalordren, mottak og boligvalg omskrives ikke av en beboeraksept. Akseptert endringsordre stopper ferdigstilling til prosjektleder har dokumentert leverandøravklaring og hvordan endringen er bestilt/kreditert. Endret avtalegrunnlag krever ny sluttkontroll. Kundesiden er en separat, liten side uten intern navigasjon eller innloggingsavhengighet. Token lagres hashet; kundesiden viser bare godkjent avtaleinnhold. Ingen e-post sendes automatisk. Dette er aksept av et forberedt grunnlag, ikke full beboerportal med frie tilvalgsvalg, chat eller dokumentarkiv. Ingen produksjonsmigrasjon eller merge er gjort. QA og grenser: `docs/qa/BOLIG_ENDRINGSORDRE_AKSEPT_20261022.md`.
+
+Eldre «gjenstår»-beskrivelser nedenfor er historikk der denne etappen har levert funksjonen.
+
 ## Boligprosjekter: varekort og separat bestillingsutkast – Preview 21.10.2026
 
 `BoligProductCard.jsx` bruker samme oppbygning som tilbudsvarer: bilde, beskrivelse, internt varenummer, antall/enhet, prisinformasjon og produktlenke. Bilde-/produktadresser er valgfrie HTTPS-adresser. De valideres på serveren og kopieres inn i nye valgsversjoner. Eldre versjoner endres ikke. Bildevisning laster sent, sender ingen referrer og viser reservefelt ved feil. Dette er ikke ny katalog-/prisimport eller opplasting til offentlig Storage.

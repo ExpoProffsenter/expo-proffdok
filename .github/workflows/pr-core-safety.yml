@@ -219,6 +219,7 @@ jobs:
           node scripts/bolig-images-browser-check.mjs
           node scripts/bolig-sections-browser-check.mjs
           node scripts/bolig-completion-browser-check.mjs
+          node scripts/bolig-commerce-browser-check.mjs
           node scripts/bolig-quality-browser-check.mjs
           node scripts/bolig-customization-browser-check.mjs
           node scripts/bolig-delivery-browser-check.mjs

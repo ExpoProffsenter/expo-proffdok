@@ -116,6 +116,7 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, "index.html"),
         salesPreview: resolve(__dirname, "sales-preview.html"),
+        boligResident: resolve(__dirname, "bolig-kunde.html"),
       },
     },
   },

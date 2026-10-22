@@ -1,5 +1,14 @@
 # Boligprosjekter – arbeidsflate og videre produktkrav
 
+## Boligprosjekter: endringsordre og beboeraksept – Preview 22.10.2026
+
+Ny etappe på samme feature-branch/PR #278. Boligens «Endringer og beboeraksept» gir prosjektleder en egen avtalehistorikk. Beboeraksept fryser siste lagrede boligvalg og serverens tilvalgspris. Endringsordre viser opprinnelige bestillingsvarer mot foreslått leveranse, med eksplisitt pristillegg/fratrekk inkl. mva. Prosjektleder lagrer kladd, gjennomgår, godkjenner og lager en 30-dagers beboerlenke. Beboeren ser én bestemt utgave og bekrefter navn og svar før innsending. Kvitteringen kommer først etter serverbekreftelse. En tidligere publisert, gyldig utgave kan aksepteres; andre uavklarte utgaver i samme avtalerekke sperres etter aksept.
+
+Aksept og leverandørbestilling er separate handlinger. Originalordren, mottak og boligvalg omskrives ikke av en beboeraksept. Akseptert endringsordre stopper ferdigstilling til prosjektleder har dokumentert leverandøravklaring og hvordan endringen er bestilt/kreditert. Endret avtalegrunnlag krever ny sluttkontroll. Kundesiden er en separat, liten side uten intern navigasjon eller innloggingsavhengighet. Token lagres hashet; kundesiden viser bare godkjent avtaleinnhold. Ingen e-post sendes automatisk. Dette er aksept av et forberedt grunnlag, ikke full beboerportal med frie tilvalgsvalg, chat eller dokumentarkiv. Ingen produksjonsmigrasjon eller merge er gjort. QA og grenser: `docs/qa/BOLIG_ENDRINGSORDRE_AKSEPT_20261022.md`.
+
+Eldre «gjenstår»-beskrivelser nedenfor er historikk der denne etappen har levert funksjonen.
+
+
 ## Oppdatert 22. oktober: dokumentert ferdigstilling i Preview-etappen
 
 Ferdigstillingsmotor for bolig, bygg og prosjekt er implementert med kontrollbevis, ansvarlig, manuell dokumentreferanse, native prosjekt-/sjekkliste-/avvikskontroll, egne fellesarbeider, godkjenning, intern overtagelsesregistrering og begrunnet gjenåpning. Endret grunnlag opphever gyldig grønn status og påvirker foreldre. Se `docs/qa/BOLIG_FERDIGSTILLING_20261022.md` for kontrakt, grenser, tester og publiseringsstatus. Eldre formuleringer nedenfor om at motoren mangler er historiske. Automatisk FDV/filverifisering, kontrollmaler/massefordeling og Bolig-frister med varsling er ikke levert i denne etappen.

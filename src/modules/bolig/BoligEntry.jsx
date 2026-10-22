@@ -17,6 +17,7 @@ import BoligProjectBuilder from "./BoligProjectBuilder.jsx";
 import BoligProjectHome from "./BoligProjectHome.jsx";
 import BoligCatalog from "./BoligCatalog.jsx";
 import BoligCompletion from "./BoligCompletion.jsx";
+import BoligCommerce from "./BoligCommerce.jsx";
 import BoligUnitTasks from "./BoligUnitTasks.jsx";
 import BoligRooms from "./BoligRooms.jsx";
 import BoligBuildingOverview from "./BoligBuildingOverview.jsx";
@@ -1076,6 +1077,7 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
                           key={unit.id + ":tasks:" + ctx.role}
                           unit={unit}
                           active={view === "overview"}
+                          commerce={<BoligCommerce context={ctx} root={record.root} unit={unit}/>}
                           onOpenProject={(id, tab) => {
                             onClose();
                             onOpenProject?.(id, tab);

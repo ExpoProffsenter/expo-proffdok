@@ -1,6 +1,7 @@
 import DraftForm from "./BoligDraftForm.jsx";
 import BoligQuality from "./BoligQuality.jsx";
 import { QUALITY_EVENT } from "./boligQualityClient.js";
+import { COMMERCE_EVENT } from "./boligCommerceClient.js";
 import React, { useEffect, useRef, useState } from "react";
 import {
   CheckCircle2,
@@ -326,6 +327,7 @@ export default function BoligCompletion({
     const events = [
       "focus",
       QUALITY_EVENT,
+      COMMERCE_EVENT,
       "expo-proffdok-bolig-completion",
       "expo-proffdok-bolig-order",
       "expo-proffdok-bolig-catalog",
@@ -982,6 +984,7 @@ export function BoligCompletionOverview({
     const events = [
       "focus",
       QUALITY_EVENT,
+      COMMERCE_EVENT,
       "expo-proffdok-bolig-completion",
       "expo-proffdok-bolig-order",
       "expo-proffdok-bolig-catalog",
