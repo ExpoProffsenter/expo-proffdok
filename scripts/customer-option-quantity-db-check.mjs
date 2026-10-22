@@ -1,3 +1,4 @@
+const CONFLICT_CODE=process.env.QA_RPC_CONFLICT_POLICY==='1'?'PT409':'40001';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 const { PGlite } = await import(process.env.HR_PGLITE_PATH || '@electric-sql/pglite');
@@ -51,7 +52,7 @@ try {
   }
   await rejects([{id:'unknown'}]);await rejects([{id:'spot'},{id:'spot'}]);await rejects([{id:'alt'},{id:'alt2'}]);
   await rejects({},'22023');await rejects([1],'22023');
-  await rejects([],'40001',id(9));await rejects([],'40001',null);
+  await rejects([],CONFLICT_CODE,id(9));await rejects([],CONFLICT_CODE,null);
   for (const status of ['accepted','declined']) await transaction(async()=>{
     await db.exec(`reset role;update sales_offers set status='${status}';set role anon;`);
     await assert.rejects(()=>rpc([]),e=>e.code==='P0001');checks++;

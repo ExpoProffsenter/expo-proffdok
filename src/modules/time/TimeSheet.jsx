@@ -1,3 +1,4 @@
+import {isRpcConflict} from '../app/rpcErrors.mjs';
 import React,{useEffect,useRef,useState} from 'react';
 import {Plus,Copy,Clock,Receipt,ArrowLeft,ArrowRight,Save,Send,Check,Undo2,History,Paperclip,Trash2,Play,Square} from 'lucide-react';
 import DeviationDialog from '../deviations/DeviationDialog.jsx';
@@ -36,7 +37,7 @@ export default function TimeSheet({context,employeeId=null,initialWeek=null,onBa
  const run=async job=>{
   if(busyRef.current||!sessionRef.current)return;const session=sessionRef.current,id=++ticket.current;setBusy(true);busyRef.current=true;setError('');setNotice('');
   const current=()=>id===ticket.current&&session===sessionRef.current;
-  try{await job(session,current);}catch(e){if(current()){setError(e.message);if(e.code==='40001')setConflict(true);if(e.code==='42501'){setValue(null);setEditor(null);setHistory(null);}}}
+  try{await job(session,current);}catch(e){if(current()){setError(e.message);if(isRpcConflict(e))setConflict(true);if(e.code==='42501'){setValue(null);setEditor(null);setHistory(null);}}}
   finally{if(current()){setBusy(false);busyRef.current=false;}}
  };
  const command=async(session,action,rows=valueRef.current?.sheet?.entries||[],empty=false,note='')=>{

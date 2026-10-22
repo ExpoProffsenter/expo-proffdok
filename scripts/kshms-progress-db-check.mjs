@@ -1,3 +1,4 @@
+const CONFLICT_CODE=process.env.QA_RPC_CONFLICT_POLICY==='1'?'PT409':'40001';
 import fs from 'node:fs/promises';import assert from 'node:assert/strict';
 import {moveBand,plannedBands} from '../src/modules/kshms/kshmsProgressTimeline.mjs';
 const {PGlite}=await import(process.env.HR_PGLITE_PATH||'@electric-sql/pglite');const db=await PGlite.create();let count=0;
@@ -20,7 +21,7 @@ try{
  await db.exec('begin');
  let generated=moveBand(plan.activities[0],plannedBands(plan.activities[0].sessions)[0],'end',3);generated=moveBand(generated,plannedBands(generated.sessions)[0],'move',2);generated=moveBand(generated,plannedBands(generated.sessions)[0],'move',30,'minute');generated={...generated,nsCode:'312'};
  const verified=await save(0,{...plan,activities:[generated]},id(11));eq(verified.record.plan.activities[0].sessions.length,4,'stretched dates accepted by actual RPC');eq(verified.record.plan.activities[0].sessions[0].date,'2026-10-22');eq(verified.record.plan.activities[0].sessions[0].startTime,'08:30');eq(verified.record.plan.activities[0].nsCode,'312');await db.exec('rollback');eq((await rpc('kshms_progress_list',[firm,false,null])).plans.length,1,'generated-plan transaction rolled back');
- await reject(()=>save(0),'40001');eq((await rpc('kshms_progress_get',[firm,planId])).record.revision,1);
+ await reject(()=>save(0),CONFLICT_CODE);eq((await rpc('kshms_progress_get',[firm,planId])).record.revision,1);
  await save(1,{...plan,activities:[{...plan.activities[0],status:'Pågår'}]});eq((await rpc('kshms_progress_get',[firm,planId])).record.revision,2);
  await actor(reader);eq((await rpc('kshms_progress_get',[firm,planId])).record.plan.activities[0].status,'Pågår');await reject(()=>save(2),'42501');await reject(()=>db.query('select * from kshms_private.progress_plans'),'42501');
  await actor(manager,other);await reject(()=>rpc('kshms_progress_get',[firm,planId]),'42501');await reject(()=>rpc('kshms_progress_get',[other,planId]),'42501');await reject(()=>save(2,plan,planId,other),'42501');eq((await rpc('kshms_progress_list',[other,false,null])).plans.length,0);

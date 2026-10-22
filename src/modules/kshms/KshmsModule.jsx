@@ -1,3 +1,4 @@
+import {isRpcConflict} from '../app/rpcErrors.mjs';
 import { routineNumber } from './kshmsJobChoices.mjs';
 import { useEffect,useId,useRef,useState } from 'react';
 import KshmsNavigation from './KshmsNavigation.jsx';
@@ -121,7 +122,7 @@ export default function KshmsModule({context,deviationRequest,personalOnly=false
  const run=async(action,payload,success='Lagret.',onSaved=null)=>{
   setBusy(true);setError('');setNotice('');
   try{const result=await kshmsRpc('kshms_command',{p_company_id:companyId,p_action:action,p_payload:payload});const value=await load();if(action==='settings'){setupSuggestionFields.current.clear();setSetup(value.settings||emptySetup);}setNotice(success);onSaved?.(result,value);return result;}
-  catch(e){if(e.code==='40001'){try{await load()}catch{}setError('En annen person har lagret endringer. Sammenlign din tekst med den lagrede teksten før du lagrer igjen. Ditt utkast er beholdt på denne enheten.');}else setError(e.message);return null;}
+  catch(e){if(isRpcConflict(e)){try{await load()}catch{}setError('En annen person har lagret endringer. Sammenlign din tekst med den lagrede teksten før du lagrer igjen. Ditt utkast er beholdt på denne enheten.');}else setError(e.message);return null;}
   finally{setBusy(false);}
  };
  const chooseEditor=(draft,routine=null,compareSource=false)=>{

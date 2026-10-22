@@ -1,3 +1,4 @@
+import {isRpcConflict} from '../app/rpcErrors.mjs';
 import React,{useEffect,useRef,useState} from 'react';
 import {hrRpc} from './hrAccess.js';
 import {createConversationSession,CONVERSATION_STAGES,conversationOpeningStep} from './hrConversationSession.mjs';
@@ -85,7 +86,7 @@ export default function HrConversations({context,employee,initialCaseId=null,ini
   if(busyRef.current||!session.current)return;const ticket=++epoch.current,s=session.current;
   const current=()=>alive.current&&ticket===epoch.current&&session.current===s;
   busyRef.current=true;setBusy(true);setError('');setNotice('');
-  try{await job(s,current);}catch(e){if(current()){setError(e.code==='40001'?'En annen bruker har endret samtalen. Kladden er beholdt. Hent lagret utgave før du fortsetter.':e.message);if(e.code==='40001')setConflict(true);}}
+  try{await job(s,current);}catch(e){if(current()){setError(isRpcConflict(e)?'En annen bruker har endret samtalen. Kladden er beholdt. Hent lagret utgave før du fortsetter.':e.message);if(isRpcConflict(e))setConflict(true);}}
   finally{if(current()){busyRef.current=false;setBusy(false);}}
  };
  const leave=()=>!dirty||window.confirm('Du har ulagrede endringer. Vil du åpne en annen samtale og legge kladden til side?');
@@ -166,7 +167,7 @@ export default function HrConversations({context,employee,initialCaseId=null,ini
    <form onSubmit={e=>{e.preventDefault();run(async(s,current)=>{if(!leave())return;const t=templates?.find(t=>t.id===templateId);if(!t&&!startAttempt.current)return;
     const args=startAttempt.current||{id:crypto.randomUUID(),employeeRevision:listing.employee.revision,templateId:t.id,templateRevision:t.revision,on,time,location};
     startAttempt.current=args;setStartPending(true);remember(scope,{id:args.id,revision:0,employeeRevision:args.employeeRevision,draft:null,step:0,startAttempt:args});
-    let r;try{r=await s.start(args);}catch(e){if(['22023','40001','42501'].includes(e.code)){startAttempt.current=null;setStartPending(false);}throw e;}
+    let r;try{r=await s.start(args);}catch(e){if(['22023','PT409','40001','42501'].includes(e.code)){startAttempt.current=null;setStartPending(false);}throw e;}
     if(current()){install(r);setListing(previous=>({...previous,conversations:[...previous.conversations.filter(row=>row.id!==r.conversation.id),{id:r.conversation.id,title:r.conversation.template.title,revision:r.current_revision,stage:r.conversation.stage,on:r.conversation.on,meeting_time:r.conversation.meeting_time}]}));setStep(0);}
    });}}><fieldset disabled={busy||startPending}><Field label="Samtalemal"><select required value={templateId} onChange={e=>setTemplateId(e.target.value)}><option value="">Velg mal</option>{templates?.map(t=><option key={t.id} value={t.id}>{t.title}</option>)}</select></Field>
    {templates?.length===0&&<p>Firmaadmin lager og lagrer en samtalemal under HR → Samtalemaler først.</p>}

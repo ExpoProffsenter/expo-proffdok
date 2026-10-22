@@ -48,7 +48,7 @@ window.__rpc = async (name, args) => {
   if (mode === 'fail-save') { mode = ''; throw Error('Synthetic network error'); }
   if (receipts.has(args.p_request_id)) return structuredClone(receipts.get(args.p_request_id));
   const before = rows.get(args.p_payload.id);
-  if (before?.revision !== undefined && before.revision !== args.p_payload.revision) throw Object.assign(Error('Synthetic revision conflict'), { code: '40001' });
+  if (before?.revision !== undefined && before.revision !== args.p_payload.revision) throw Object.assign(Error('Synthetic revision conflict'), { code: 'PT409' });
   const content = sjaContent(args.p_payload.content), signed = args.p_action === 'sign';
   const row = { id: args.p_payload.id, company_id: company, project_id:args.p_payload.project_id||null, project_name:args.p_payload.project_id?projectName(args.p_payload.project_id):null, content, revision: (before?.revision || 0) + 1, status: signed ? 'signed' : 'draft', created_by: user, leader_id: content.leader_id, leader_identity: members.find(member => member.id === content.leader_id)?.identity, signed_by: signed ? user : null, signed_identity: signed ? members[0].identity : null, signed_at: signed ? '2026-10-07T21:35:00Z' : null, statement: signed ? SJA_STATEMENT : null };
   rows.set(row.id, row); const result = { sja: row }; receipts.set(args.p_request_id, structuredClone(result));

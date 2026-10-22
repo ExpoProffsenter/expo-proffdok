@@ -1,3 +1,4 @@
+import {isRpcConflict} from '../app/rpcErrors.mjs';
 import React,{useEffect,useRef,useState} from 'react';
 import {hrRpc} from './hrAccess.js';
 import {createSickLeaveSession,CONVERSATION_STAGES} from './hrSickLeaveSession.mjs';
@@ -65,7 +66,7 @@ export default function HrSickLeaveCases({context,employee,initialCaseId=null,in
   if(busyRef.current||!session.current)return;const ticket=++epoch.current,s=session.current;
   const current=()=>alive.current&&ticket===epoch.current&&session.current===s;
   busyRef.current=true;setBusy(true);setError('');setNotice('');
-  try{await job(s,current);}catch(e){if(current()){setError(e.code==='40001'?'En annen bruker har endret oppfølgingen. Kladden er beholdt. Hent lagret utgave før du fortsetter.':e.message);if(e.code==='40001')setConflict(true);}}
+  try{await job(s,current);}catch(e){if(current()){setError(isRpcConflict(e)?'En annen bruker har endret oppfølgingen. Kladden er beholdt. Hent lagret utgave før du fortsetter.':e.message);if(isRpcConflict(e))setConflict(true);}}
   finally{if(current()){busyRef.current=false;setBusy(false);}}
  };
  const leave=()=>!dirty||window.confirm('Du har ulagrede endringer. Vil du åpne en annen oppfølging og legge kladden til side?');

@@ -34,6 +34,11 @@ jobs:
       - name: Verify scope guard logic
         run: node scripts/critical-pr-scope-guard.mjs --self-test
 
+      - name: Block retryable SQL codes for business conflicts
+        run: |
+          node scripts/critical-rpc-error-codes-check.mjs --self-test
+          node scripts/critical-rpc-error-codes-check.mjs
+
       - name: Enforce PR scope isolation
         run: node scripts/critical-pr-scope-guard.mjs "origin/${{ github.base_ref }}"
 
@@ -84,6 +89,12 @@ jobs:
           node scripts/hr-conversations-runtime-check.mjs
           node scripts/hr-conversations-react-check.mjs
           KSHMS_JSPDF_PATH="$HR_PRACTICE_JSPDF_PATH" node scripts/kshms-handbook-pdf-react-check.mjs
+
+      - name: Verify HTTP409 migration and existing module conflicts
+        run: |
+          export HR_PGLITE_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/@electric-sql/pglite/dist/index.js"
+          node scripts/rpc-business-conflicts-db-check.mjs
+          node scripts/rpc-conflict-module-regression-check.mjs
 
       - name: Verify private sick-leave followup and reminder transport
         run: |

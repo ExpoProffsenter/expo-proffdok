@@ -35,7 +35,7 @@ try{
    if(name==='kshms_acknowledge_batch'){
     assert.equal(args.p_company_id,c);assert.equal(args.p_user_id,u);assert.equal(args.p_statement,BATCH_ACK_STATEMENT);
     if(mode==='deferred')return new Promise(resolve=>{pendingResolve=resolve;});
-    if(mode==='stale'){server=fixture('reader',88);throw{code:'40001',message:'New assignment'};}
+    if(mode==='stale'){server=fixture('reader',88);throw{code:'PT409',message:'New assignment'};}
     if(mode==='revoked'){server.context.enabled=false;throw{code:'42501',message:'Revoked'};}
     if(mode!=='incomplete')record(args.p_version_ids);
     if(mode==='lost-response')throw Error('Response lost after commit');

@@ -1,3 +1,4 @@
+import {isRpcConflict} from '../app/rpcErrors.mjs';
 import { useEffect, useId, useRef, useState } from 'react';
 import { kshmsRpc } from './kshmsAccess.js';
 import { BATCH_ACK_STATEMENT, acknowledgmentScope, batchAcknowledgmentVersions, batchVersionKey, verifiedBatchReceipts } from './kshmsBulkAcknowledgment.mjs';
@@ -47,7 +48,7 @@ export default function KshmsBulkAcknowledgment({data,companyId,userId,busy,onBu
    if(receipts){
     const times=[...new Set(receipts.map(row=>row.acknowledged_at))];
     setFeedback({error:false,message:`Din egen bekreftelse er kontrollert og registrert på alle ${ids.length} rutineutgavene.${times.length===1?` Tidspunkt: ${acknowledgmentTime(times[0])}.`:' Dato og klokkeslett vises på hver rutineutgave.'}`});
-   }else if(commandError?.code==='40001'){
+   }else if(isRpcConflict(commandError)){
     setFeedback({error:true,message:'Rutinene eller tildelingene er endret. Kontroller den oppdaterte listen og les nye utgaver før du bekrefter igjen.'});
    }else if(commandError?.code==='42501'){
     if(!fresh)onState(null);

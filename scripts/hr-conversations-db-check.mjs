@@ -1,3 +1,4 @@
+const CONFLICT_CODE=process.env.QA_RPC_CONFLICT_POLICY==='1'?'PT409':'40001';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 const {PGlite}=await import(process.env.HR_PGLITE_PATH||'/tmp/hr-h4-runtime/node_modules/@electric-sql/pglite/dist/index.js');
@@ -70,7 +71,7 @@ try{
  const schedule=(revision,on='2026-11-02',time='14:45')=>rpc('hr_conversation_schedule',[company,employee.id,1,conversation,revision,on,time]);
  await actor(self);await reject(()=>schedule(1),'42501');
  await actor(admin);await reject(()=>schedule(1),'42501');
- await actor(leader);await reject(()=>schedule(0),'40001');await reject(()=>schedule(1,'2026-11-02','24:00'),'22023');
+ await actor(leader);await reject(()=>schedule(0),CONFLICT_CODE);await reject(()=>schedule(1,'2026-11-02','24:00'),'22023');
  state=await schedule(1);eq(state.current_revision,2);eq(state.conversation.on,'2026-11-02');eq(state.conversation.meeting_time,'14:45');
  eq((await schedule(2)).current_revision,2,'unchanged time is idempotent');
  eq((await rpc('hr_conversation_get',[company,employee.id,conversation,1])).conversation.meeting_time,'13:30','original time remains in immutable history');
@@ -84,7 +85,7 @@ try{
  await db.exec('reset role;');eq((await sql('select count(*)::int n from hr_private.followup_deliveries'))[0].n,0,'no delivery from creation or disabled click');
  await db.exec("update hr_private.followup_settings set enabled=true,endpoint='';");
  await actor(leader);eq((await status()).email_status,'not_queued');
- await reject(()=>rpc('hr_conversation_notify',[company,employee.id,1,conversation,1]),'40001');
+ await reject(()=>rpc('hr_conversation_notify',[company,employee.id,1,conversation,1]),CONFLICT_CODE);
  for(const u of [self,admin]){await actor(u);eq((await status()).can_notify,false);await reject(notify,'42501');}
  await actor(leader);eq((await notify()).email_status,'pending');eq((await notify()).email_status,'pending','same appointment retries deduplicate');
  await db.exec('reset role;');eq((await sql('select count(*)::int n from hr_private.followup_deliveries'))[0].n,1);
@@ -122,7 +123,7 @@ try{
  await db.exec('reset role;update hr_private.followup_settings set enabled=false;');
  await actor(leader);
  const reminder=(enabled,rev=state.current_revision)=>rpc('hr_conversation_reminder',[company,employee.id,1,conversation,rev,enabled]);
- await reject(()=>reminder(true,state.current_revision-1),'40001');await actor(self);await reject(()=>reminder(true),'42501');await actor(admin);await reject(()=>reminder(true),'42501');await actor(leader);
+ await reject(()=>reminder(true,state.current_revision-1),CONFLICT_CODE);await actor(self);await reject(()=>reminder(true),'42501');await actor(admin);await reject(()=>reminder(true),'42501');await actor(leader);
  const content=state.conversation.content_version;state=await reminder(true);eq(state.conversation.leader_email_reminder,true);eq(state.conversation.leader_reminder_user_id,leader);eq(state.conversation.content_version,content,'notification choice does not change meeting contents/confirmations');
  eq((await reminder(true)).current_revision,state.current_revision,'same preference is idempotent');
  await db.exec("reset role;update hr_private.followup_settings set enabled=true,endpoint='';select hr_private.queue_conversation_reminders();");
@@ -170,7 +171,7 @@ try{
  await actor(leader);const page1=await feedbackNotices(),page2=await rpc('hr_conversation_feedback_notices',[company,page1.next]);eq(page1.tasks.length,50,'bounded feedback page');eq(page2.tasks.length,3);eq(page2.next,null,'no invented extra page');eq(new Set([...page1.tasks,...page2.tasks].map(t=>t.case_id)).size,53,'cursor neither loses nor duplicates feedback');
  await db.exec("reset role;delete from hr_private.artifacts where id::text like '71000000-%';");await actor(leader);
  for(const u of [self,admin,reader,outsider,system]){await actor(u);eq((await feedbackNotices()).tasks,[],'only current leader sees card');await reject(()=>handleInput(),'42501');}
- await actor(leader);await reject(()=>handleInput(sharedRevision,employeeRevision-1),'40001');await reject(()=>rpc('hr_conversation_feedback_notices',[foreign]),'42501');
+ await actor(leader);await reject(()=>handleInput(sharedRevision,employeeRevision-1),CONFLICT_CODE);await reject(()=>rpc('hr_conversation_feedback_notices',[foreign]),'42501');
  await db.exec('reset role;');const mailBefore=await sql('select * from hr_private.followup_deliveries order by id');await actor(leader);
  eq((await handleInput()).handled,true);eq((await feedbackNotices()).tasks,[],'explicit acknowledgement removes input');eq((await handleInput()).handled,true,'response-loss retry is idempotent');eq((await get()).current_revision,revision,'handling never changes conversation');
  await db.exec('reset role;');eq(await sql('select * from hr_private.followup_deliveries order by id'),mailBefore,'handling does not touch or resend mail');await actor(leader);
@@ -178,7 +179,7 @@ try{
  let feedback=await rpc('hr_conversation_mail_reserve',['employee-feedback']);eq(Object.keys(feedback).sort(),['attempt','id','to'],'feedback has no answers/date/person/firm');eq(await rpc('hr_conversation_mail_validate',[feedback.id,feedback.attempt,'employee-feedback']),true);
  await rpc('hr_followup_worker_finish',[feedback.id,feedback.attempt,true]);
  await actor(self);await command('comment',{text:'A new employee comment'});
- await actor(leader);eq((await feedbackNotices()).tasks.length,1,'new comment alerts after handling');await reject(()=>handleInput(sharedRevision),'40001','old acknowledgement cannot swallow new input');await actor(self);
+ await actor(leader);eq((await feedbackNotices()).tasks.length,1,'new comment alerts after handling');await reject(()=>handleInput(sharedRevision),CONFLICT_CODE,'old acknowledgement cannot swallow new input');await actor(self);
  await db.exec('reset role;set role service_role;');feedback=await rpc('hr_conversation_mail_reserve',['employee-feedback']);eq(Boolean(feedback.id),true,'saved employee comment mails leader');await actor(self);await command('comment',{text:'A newer employee comment'});await db.exec('reset role;set role service_role;');eq(await rpc('hr_conversation_mail_validate',[feedback.id,feedback.attempt,'employee-feedback']),false,'superseded unsent feedback is coalesced');feedback=await rpc('hr_conversation_mail_reserve',['employee-feedback']);eq(Boolean(feedback.id),true);
  await db.exec(`reset role;update hr_private.module_access set enabled=false where company_id=${q(company)} and user_id=${q(leader)};set role service_role;`);eq(await rpc('hr_conversation_mail_validate',[feedback.id,feedback.attempt,'employee-feedback']),false,'current HR entitlement required for leader mail');
  await actor(leader);await reject(()=>feedbackNotices(),'42501');await reject(()=>handleInput(),'42501');
@@ -190,7 +191,7 @@ try{
  await command('meeting',{answers:{[meeting]:'Shared summary'},actions:[],next_on:''});
  eq(state.conversation.preparation[question],'Private preparation','manager cannot erase original answers');
  const saved=revision;
- await reject(()=>rpc('hr_conversation_command',[company,employee.id,employeeRevision,conversation,saved-1,'meeting',{answers:{[meeting]:'stale'},actions:[],next_on:''}]),'40001');
+ await reject(()=>rpc('hr_conversation_command',[company,employee.id,employeeRevision,conversation,saved-1,'meeting',{answers:{[meeting]:'stale'},actions:[],next_on:''}]),CONFLICT_CODE);
  eq((await get()).conversation.meeting[meeting],'Shared summary');
  await reject(()=>command('meeting',{answers:{[meeting]:'summary'},actions:[{id:id(40),task:'Do it',owner_id:outsider,due_on:'2026-11-20',done:false}],next_on:'2026-11-21'}),'22023');
  await command('meeting',{answers:{[meeting]:'Shared summary'},actions:[{id:id(40),task:'Follow up',owner_id:self,due_on:'2026-11-20',done:false}],next_on:'2026-11-21'});
@@ -199,7 +200,7 @@ try{
  await command('ready');eq(state,reviewSnapshot,'same awaiting review keeps revision/content/confirmation/feedback/saved fields byte-for-byte');
  await db.exec('reset role;');eq((await sql('select (select count(*) from hr_private.artifacts)::int history,(select count(*) from hr_private.followup_deliveries)::int mail,(select count(*) from hr_private.conversation_feedback_receipts)::int receipts'))[0],reviewCounts,'repeated review makes no history, email or receipt');await actor(leader);
  await actor(self);await reject(()=>command('ready'),'42501');await actor(admin);await reject(()=>command('ready'),'42501');await actor(leader);
- await reject(()=>rpc('hr_conversation_command',[company,employee.id,employeeRevision,conversation,revision-1,'ready',{}]),'40001');
+ await reject(()=>rpc('hr_conversation_command',[company,employee.id,employeeRevision,conversation,revision-1,'ready',{}]),CONFLICT_CODE);
 
  await actor(self);await command('comment',{text:'My disagreement remains part of the record'});
  eq(state.conversation.confirmations.leader,null,'comment changes require renewed confirmation');
@@ -234,7 +235,7 @@ try{
  const placeStatus=()=>rpc('hr_conversation_invitation_status',[company,employee.id,placeCase]);
  const placeNotify=()=>rpc('hr_conversation_notify',[company,employee.id,employeeRevision,placeCase,placeState.current_revision]);
  const changePlace=location=>rpc('hr_conversation_schedule_at_place',[company,employee.id,employeeRevision,placeCase,placeState.current_revision,'2026-11-04','12:00',location]);
- eq((await changePlace('Sted A')).current_revision,1,'unchanged place is idempotent');await reject(()=>rpc('hr_conversation_schedule_at_place',[company,employee.id,employeeRevision,placeCase,0,'2026-11-04','12:00','Sted B']),'40001');
+ eq((await changePlace('Sted A')).current_revision,1,'unchanged place is idempotent');await reject(()=>rpc('hr_conversation_schedule_at_place',[company,employee.id,employeeRevision,placeCase,0,'2026-11-04','12:00','Sted B']),CONFLICT_CODE);
  await placeNotify();await placeNotify();await db.exec('reset role;');eq((await sql('select count(*)::int n from hr_private.followup_deliveries'))[0].n,1);
  await db.exec('set role service_role;');eq(await rpc('hr_followup_worker_reserve'),null,'deadline worker cannot take a place invitation');let placeJob=await rpc('hr_conversation_invitation_reserve');eq(placeJob.location,'Sted A');eq(placeJob.branding.name,'Synthetic');
  eq(await rpc('hr_conversation_invitation_validate_place',[placeJob.id,placeJob.attempt,placeJob.on,placeJob.time,'Sted A']),true);eq(await rpc('hr_conversation_invitation_validate_place',[placeJob.id,placeJob.attempt,placeJob.on,placeJob.time,'Sted B']),false,'reserved place cannot be substituted');

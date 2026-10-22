@@ -17,7 +17,7 @@ try{
    const context=window.context();if(name==='work_profile_company_profile')return {data:{companyId:window.company,companyName:'Aktivt kursfirma',logoUrl:location.origin+'/logo.png'}};
    if(name==='project_progress_editor'){
     if(window.company!=='firm')return {error:{message:'Feil arbeidsprofil'}};
-    if(args.p_plan){if(window.locked)return {error:{message:'Låst'}};if(args.p_revision!==window.saved.revision)return {error:{code:'40001',message:'Planen er endret i en annen økt'}};window.writes++;window.saved={...window.saved,revision:window.saved.revision+1,plan:structuredClone(args.p_plan),customerVisible:args.p_customer_visible};sessionStorage.setItem('project-plan',JSON.stringify(window.saved));}
+    if(args.p_plan){if(window.locked)return {error:{message:'Låst'}};if(args.p_revision!==window.saved.revision)return {error:{code:'PT409',message:'Planen er endret i en annen økt'}};window.writes++;window.saved={...window.saved,revision:window.saved.revision+1,plan:structuredClone(args.p_plan),customerVisible:args.p_customer_visible};sessionStorage.setItem('project-plan',JSON.stringify(window.saved));}
     const data={context,record:{...structuredClone(window.saved),locked:window.locked},people:[{id:'owner',name:'Kursleder'},{id:'worker',name:'Kursmontør'}]};if(window.hold)return new Promise(resolve=>window.waiters.push(()=>resolve({data})));return {data};
    }
    if(name==='project_progress_mine'){
