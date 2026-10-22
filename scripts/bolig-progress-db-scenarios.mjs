@@ -27,6 +27,19 @@ export default async function progressScenarios({
       "utf8",
     ),
   );
+  await db.exec(
+    "create table public.user_module_access(user_id uuid,module_key text,primary key(user_id,module_key));",
+  );
+  await db.query(
+    "insert into public.user_module_access values($1,'projects'),($2,'projects')",
+    [manager, reader],
+  );
+  await db.exec(
+    await fs.readFile(
+      "supabase/migrations/20261022225347_bolig_progress_recipient_module_access.sql",
+      "utf8",
+    ),
+  );
   await actor(manager);
   const rec = await call("create_plan", null, null, {
     request_id: id(50000),
@@ -516,6 +529,44 @@ export default async function progressScenarios({
     ).rows[0].n,
     0,
     "Every private progress table has RLS",
+  );
+  await db.exec("reset role");
+  eq(
+    (
+      await db.query("select bolig_private.progress_member($1,$2) v", [
+        firm,
+        manager,
+      ])
+    ).rows[0].v,
+    true,
+    "Recipient module baseline is active",
+  );
+  await db.query(
+    "delete from public.user_module_access where user_id=$1 and module_key='projects'",
+    [manager],
+  );
+  eq(
+    (
+      await db.query("select bolig_private.progress_member($1,$2) v", [
+        firm,
+        manager,
+      ])
+    ).rows[0].v,
+    false,
+    "Revoked projects entitlement removes recipient",
+  );
+  eq(
+    (
+      await db.query(
+        "select count(*)::int n from bolig_private.progress_deliveries d where kind='owner' and bolig_private.progress_delivery_valid(d)",
+      )
+    ).rows[0].n,
+    0,
+    "Module revocation suppresses pending owner deliveries",
+  );
+  await db.query(
+    "insert into public.user_module_access values($1,'projects')",
+    [manager],
   );
   await db.exec(
     "update bolig_private.progress_mail_settings set enabled=false",
