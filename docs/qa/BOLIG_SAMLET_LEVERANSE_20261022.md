@@ -19,7 +19,7 @@ Sales, auth/recovery, global navigasjon og andre moduler røres ikke.
 - Baseline, guardrails og gjeldende main kontrollert.
 - Implementering og lokale tester bestått. Migrasjonen er installert bare i Sandbox.
 - 796 databaseassertions, 38 commerce Chromium, 31 levering, 29 ferdigstilling,
-  36 PDF/ZIP og 15 eksport-/oversiktsassertions PASS. Full critical Sandbox-build,
+  36 PDF/ZIP og 16 eksport-/oversiktsassertions PASS. Full critical Sandbox-build,
   scope guard og release docs guard PASS. Ingen tester fjernet.
 - Faktisk manager-RPC for eksisterende syntetisk akseptert endring er prøvd med
   ROLLBACK: originalordre har fortsatt antall 2; effektiv leveranse får 3.
@@ -65,3 +65,7 @@ et endringsgrunnlag, ikke bevis på mottatt ordre/kreditnota. Ingen automatisk �
 eller Cordel-kreditering er innført. Beboeraksept alene oppdaterer aldri leveransen.
 Selvbetjente tilvalg/beboerportal, fremdrift/varsler, leverandørinnsyn, egne bilder/
 plantegninger, privat kontraktsanalyse og Excel-import er fortsatt neste etapper.
+
+Leverandør-Excel utelater beboerpris og beboerens fritekst. Bare vareforskjeller,
+leverings-/bestillingsreferanser og fast forklaring følger filen. To runtime-
+assertions beskytter mot pris-/fritekstlekkasje. Ingen ekte fil er sendt.

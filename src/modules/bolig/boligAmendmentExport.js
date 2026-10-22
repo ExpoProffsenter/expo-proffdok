@@ -1,6 +1,6 @@
 import { boligOrderXlsx } from "../../../supabase/functions/_shared/bolig-order-attachments.mjs";
 import { downloadCordelFile } from "../cordel/cordelFiles.mjs";
-import { supplierDelta, agreementMoney } from "./boligCommerceCore.js";
+import { supplierDelta } from "./boligCommerceCore.js";
 
 export function amendmentWorkbook(document, context) {
   const s = document.snapshot;
@@ -12,7 +12,7 @@ export function amendmentWorkbook(document, context) {
     reference:document.fulfillment_reference || supplier.reference || `Endring ${s.order_number} v${document.version}`,
     supplier:supplier.supplier || "Avklares med bestillingens leverandør",supplier_reference:supplier.supplier_reference || "",address:supplier.address || s.identity.address,
     replyTo:"",requested_date:supplier.requested_date || "",delivery_mode:"partial",delivery_note:"Avtal levering og eventuell retur med leverandøren.",
-    note:`ENDRINGSBESTILLING / KREDITERING. Bare forskjellen fra tidligere bestilling. Pluss = tilleggsbestilling. Minus = reduksjon/kreditering som må bekreftes av leverandøren. Ingen automatisk sending. Avtalt prisvirkning for beboeren: ${agreementMoney(s.delta_cents)} inkl. mva. ${s.reason}`,
+    note:"ENDRINGSBESTILLING / KREDITERING. Bare forskjellen fra tidligere bestilling. Pluss = tilleggsbestilling. Minus = reduksjon/kreditering som må bekreftes av leverandøren. Avtal pris og eventuell retur med leverandøren. Ingen automatisk sending.",
     goods:supplierDelta(s.before_goods,s.goods),
   });
 }
