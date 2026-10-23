@@ -104,13 +104,57 @@ try {
   await d.getByLabel("Bedrift", { exact: true }).fill("QA Leverandør");
   await d.getByLabel("Kontaktperson", { exact: true }).fill("Per Partner");
   await d.getByLabel("E-post", { exact: true }).fill("per@qa.invalid");
-  await d.getByRole("checkbox").first().check();
-  await d.getByRole("checkbox").nth(1).check();
-  await d.getByText("Se nøyaktig hva som deles", { exact: true }).click();
   eq(
-    await d.getByText("Servant", { exact: true }).count(),
+    await d
+      .getByRole("checkbox", { name: "Fremdrift", exact: false })
+      .isChecked(),
+    true,
+    "supplier suggests progress",
+  );
+  eq(
+    await d
+      .getByRole("checkbox", {
+        name: "Bestillinger og leveranser",
+        exact: false,
+      })
+      .isChecked(),
+    true,
+    "supplier suggests orders",
+  );
+  await d.getByLabel("Type", { exact: true }).selectOption("ue");
+  eq(
+    await d
+      .getByRole("checkbox", { name: "Sjekklister", exact: false })
+      .isChecked(),
+    true,
+    "UE suggests checklists",
+  );
+  eq(
+    await d
+      .getByRole("checkbox", {
+        name: "Bestillinger og leveranser",
+        exact: false,
+      })
+      .isChecked(),
+    false,
+    "UE does not default orders",
+  );
+  await d.getByLabel("Type", { exact: true }).selectOption("supplier");
+  await d.getByRole("checkbox", { name: "Sjekklister", exact: false }).check();
+  await d
+    .getByLabel("Leverandør på bestillingene", { exact: false })
+    .fill("QA Leverandør");
+  eq(
+    await d.getByRole("checkbox").count(),
+    3,
+    "only function choices, no apartment selector",
+  );
+  eq(
+    await d
+      .getByText("Hele boligprosjektet · 40 leiligheter", { exact: true })
+      .count(),
     1,
-    "review exact order goods",
+    "all apartments explicit",
   );
   await button("Lukk og behold utkast").click();
   await button("Gi tilgang").click();
@@ -155,6 +199,63 @@ try {
       .count(),
     1,
   );
+  await button("Endre funksjoner").click();
+  d = dialog("Endre funksjoner");
+  await d
+    .getByRole("checkbox", { name: "Sjekklister", exact: false })
+    .uncheck();
+  await page.evaluate(() => (window.__fail = true));
+  await button("Lagre funksjoner").click();
+  await button("Prøv samme forsøk igjen").click();
+  await dialog("QA Leverandør – oppfølging").waitFor();
+  const permissions = await page.evaluate(() =>
+    window.__calls
+      .filter((x) => x.args?.p_action === "permissions")
+      .map((x) => x.args.p_payload),
+  );
+  eq(permissions[0], permissions[1], "permissions exact retry");
+  eq(
+    await page.getByLabel("Tilgangslenke", { exact: true }).inputValue(),
+    `${new URL(page.url()).origin}/bolig-kunde.html#partner=${first.token}`,
+    "permissions retains token",
+  );
+  await button("Endre funksjoner").click();
+  d = dialog("Endre funksjoner");
+  await d.getByRole("checkbox", { name: "Sjekklister", exact: false }).check();
+  await button("Lukk og behold utkast").click();
+  await page.evaluate(() => window.__managerRemount());
+  await button("Gi tilgang").click();
+  d = dialog("Endre funksjoner");
+  eq(
+    await d
+      .getByRole("checkbox", { name: "Sjekklister", exact: false })
+      .isChecked(),
+    true,
+    "permission draft retained across remount",
+  );
+  eq(
+    await d.getByLabel("Kontaktperson", { exact: true }).isDisabled(),
+    true,
+    "remounted edit keeps identity immutable",
+  );
+  await page.evaluate(() => window.__advanceRevision());
+  await button("Lagre funksjoner").click();
+  await button("Jeg har sett siste tilgang").waitFor();
+  eq(
+    await button("Lagre funksjoner").isDisabled(),
+    true,
+    "stale permissions require review",
+  );
+  eq(
+    await d
+      .getByRole("checkbox", { name: "Sjekklister", exact: false })
+      .isChecked(),
+    true,
+    "stale conflict preserves choices",
+  );
+  await button("Jeg har sett siste tilgang").click();
+  await button("Lagre funksjoner").click();
+  await dialog("QA Leverandør – oppfølging").waitFor();
   await page
     .getByLabel("Lukk qa leverandør – oppfølging", { exact: true })
     .click();
@@ -168,7 +269,7 @@ try {
     .waitFor();
   eq(
     await page.title(),
-    "Dine leveranser · Expo ProffDok",
+    "Prosjektsamarbeid · Expo ProffDok",
     "partner route has its own title",
   );
   eq(
@@ -183,6 +284,24 @@ try {
       .count(),
     1,
   );
+  await button("Sjekklister (1)").click();
+  await page.getByText("Se kontrollpunkter (1)", { exact: true }).click();
+  eq(
+    await page.getByText("Servant kontrollert", { exact: true }).count(),
+    1,
+    "readonly checklist points available",
+  );
+  eq(
+    await page.getByText("Avvik", { exact: true }).count(),
+    1,
+    "checklist status available",
+  );
+  eq(
+    await button("Bekreft dato / meld avvik").count(),
+    0,
+    "checklist is read only",
+  );
+  await button("Leveranser (1)").click();
   await button("Bekreft dato / meld avvik").click();
   d = dialog("Bekreft dato eller meld avvik");
   await d
@@ -364,6 +483,46 @@ try {
       )
     )[1],
     "in-flight late replay uses same payload",
+  );
+  await page.evaluate(() => {
+    window.__futureUnit();
+    window.dispatchEvent(new Event("focus"));
+  });
+  await button("Fremdrift (2)").click();
+  eq(
+    await page.getByText("Ny leilighet", { exact: true }).count(),
+    1,
+    "new apartment included without selections",
+  );
+  eq(
+    await page
+      .getByText(
+        "Hele prosjektet · 41 leiligheter. Nye leiligheter omfattes automatisk.",
+        { exact: true },
+      )
+      .count(),
+    1,
+  );
+  await page.getByRole("searchbox").fill("H0201");
+  eq(
+    await page.locator(".bolig-partner-item").count(),
+    1,
+    "apartment search filters rows",
+  );
+  await page.evaluate(() => {
+    window.__features(["orders"]);
+    window.dispatchEvent(new Event("focus"));
+  });
+  await button("Leveranser (1)").waitFor();
+  eq(
+    await page.getByRole("button", { name: /^Fremdrift/ }).count(),
+    0,
+    "removed feature hides navigation",
+  );
+  eq(
+    await page.getByRole("button", { name: /^Sjekklister/ }).count(),
+    0,
+    "disabled checklist hidden",
   );
   eq(errors, [], "no runtime errors");
   console.log(

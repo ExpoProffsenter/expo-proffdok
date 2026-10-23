@@ -242,6 +242,7 @@
 }
 .bolig-partner-tabs {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   border-bottom: 1px solid #dce6df;
   padding: 8px 0;
@@ -326,4 +327,39 @@
   .bolig-partner-empty {
     padding: 23px;
   }
+}
+
+.bolig-partner-features {
+  display: grid;
+  gap: 12px;
+  border: 0;
+  padding: 0;
+  margin: 16px 0;
+  min-width: 0;
+}
+.bolig-partner-features > label {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px;
+  border: 1px solid #cbd9d5;
+  border-radius: 12px;
+}
+.bolig-partner-features input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+.bolig-partner-features small {
+  display: block;
+  margin-top: 5px;
+}
+.bolig-partner-features > .bolig-partner-supplier {
+  display: grid;
+}
+.bolig-partner-scope {
+  padding: 14px;
+  background: #edf5f1;
+  border-radius: 10px;
 }

@@ -31,6 +31,12 @@ export default async function ({
       "utf8",
     ),
   );
+  await db.exec(
+    await fs.readFile(
+      "supabase/migrations/20261023190621_bolig_partner_project_features.sql",
+      "utf8",
+    ),
+  );
   await actor(manager);
   const root = (await call("list")).roots.find(
     (r) => r.reference === "QA-PILOT-40-20261023",
@@ -349,4 +355,221 @@ export default async function ({
   );
   await actor(manager);
   eq((await rpc()).partners.length, 2);
+  const ueToken = "ef".repeat(32),
+    supplierToken = "12".repeat(32);
+  const base = {
+    access_mode: "project",
+    request_id: id(98100),
+    id: id(98101),
+    token: ueToken,
+    name: "QA UE",
+    email: "ue@qa.invalid",
+    organisation: "QA UE firma",
+    kind: "ue",
+    days: 30,
+    features: ["progress", "checklists"],
+    reviewed: true,
+    supplier_name: "",
+  };
+  await rejects(() => rpc("create", { ...base, features: [] }), "22023");
+  await rejects(() => rpc("create", { ...base, features: ["hr"] }), "22023");
+  await rejects(
+    () => rpc("create", { ...base, features: ["progress", "progress"] }),
+    "22023",
+  );
+  await rejects(
+    () => rpc("create", { ...base, features: ["orders"] }),
+    "22023",
+  );
+  await rejects(
+    () => rpc("create", { ...base, order_ids: [order.id] }),
+    "22023",
+  );
+  s = await rpc("create", base);
+  eq(s.created_id, base.id);
+  eq(
+    (await rpc("create", base)).partners.length,
+    s.partners.length,
+    "project create replay",
+  );
+  await db.exec(
+    "reset role;select set_config('qa.user','',false);set role anon",
+  );
+  p = await portal(ueToken);
+  eq(p.access_mode, "project");
+  eq(p.unit_count, 40);
+  eq(p.tasks.length, 161);
+  eq(p.orders, []);
+  eq(p.checklists.length, 1);
+  eq(p.checklists[0].points[0].status, "Avvik");
+  for (const key of [
+    "by_name",
+    "completed_by",
+    "answers",
+    "comment",
+    "documents",
+    "fdv",
+    "values",
+    "contact_email",
+  ])
+    eq(
+      JSON.stringify(p.checklists).includes('"' + key + '"'),
+      false,
+      "checklist projection omits " + key,
+    );
+  await rejects(
+    () => portal(ueToken, "respond", { ...answer, request_id: id(98102) }),
+    "42501",
+  );
+  await rejects(
+    () => portal(ueToken, "check_save", { id: p.checklists[0].id }),
+    "42501",
+  );
+  await rejects(
+    () => db.query("select public.bolig_quality($1,$2,$2)", [firm, root]),
+    "42501",
+  );
+  // New apartment and new work automatically fall under a project function.
+  await actor(manager);
+  let rec = await call("get", root);
+  rec = await call("entrance", root, rec.root.revision, {
+    block_id: rec.blocks[0].id,
+    address: "QA Future entrance",
+    counts: [1],
+  });
+  const ent = rec.entrances.find((e) => e.address === "QA Future entrance");
+  const newUnit = rec.units.find((u) => u.entrance_id === ent.id);
+  const futureTask = id(98103),
+    futureOrder = id(98104),
+    otherOrder = id(98105);
+  await db.exec("reset role");
+  await db.query(
+    "insert into bolig_private.progress_tasks(id,root_id,unit_id,title,owner_id,planned_start,planned_end,status) values($1,$2,$3,'QA future activity',$4,'2026-11-05','2026-11-06','planned')",
+    [futureTask, root, newUnit.id, manager],
+  );
+  const supplier = (
+    await db.query(
+      "select snapshot->>'supplier' name from bolig_private.purchase_orders where id=$1",
+      [order.id],
+    )
+  ).rows[0].name;
+  for (const [oid, name] of [
+    [futureOrder, supplier],
+    [otherOrder, "QA other supplier"],
+  ])
+    await db.query(
+      "insert into bolig_private.purchase_orders(id,root_id,unit_id,source_choice_revision,source_draft_revision,number,status,snapshot,created_by,ordered_at) select $1,root_id,$2,source_choice_revision,source_draft_revision,$3,'ordered',jsonb_set(snapshot,'{supplier}',to_jsonb($4::text)),created_by,ordered_at from bolig_private.purchase_orders where id=$5",
+      [oid, newUnit.id, "QA-" + name, name, order.id],
+    );
+  await db.exec("select set_config('qa.user','',false);set role anon");
+  p = await portal(ueToken);
+  eq(p.unit_count, 41);
+  eq(
+    p.tasks.some((x) => x.id === futureTask),
+    true,
+    "new apartment/work included without assigning rows",
+  );
+  eq(
+    (await portal(secondToken)).tasks.length,
+    1,
+    "old selected link remains narrow",
+  );
+  await actor(manager);
+  const supplierGrant = {
+    ...base,
+    id: id(98106),
+    request_id: id(98107),
+    token: supplierToken,
+    kind: "supplier",
+    organisation: "QA Supplier",
+    features: ["orders"],
+    supplier_name: supplier,
+  };
+  await rpc("create", supplierGrant);
+  await db.exec(
+    "reset role;select set_config('qa.user','',false);set role anon",
+  );
+  p = await portal(supplierToken);
+  eq(p.orders.length, 2);
+  eq(
+    p.orders.some((o) => o.id === futureOrder),
+    true,
+  );
+  eq(
+    p.orders.some((o) => o.id === otherOrder),
+    false,
+  );
+  eq(p.tasks, []);
+  eq(p.checklists, []);
+  await rejects(
+    () =>
+      portal(supplierToken, "respond", {
+        ...answer,
+        target_id: otherOrder,
+        basis: p.orders[0].basis,
+        request_id: id(98108),
+      }),
+    "42501",
+  );
+  await rejects(
+    () =>
+      portal(supplierToken, "respond", {
+        ...answer,
+        kind: "task",
+        target_id: futureTask,
+        request_id: id(98109),
+      }),
+    "42501",
+  );
+  const source = p.orders.find((o) => o.id === order.id);
+  const reply = { ...answer, basis: source.basis, request_id: id(98110) };
+  await portal(supplierToken, "respond", reply);
+  await actor(manager);
+  s = await rpc();
+  let grant = s.partners.find((x) => x.id === supplierGrant.id);
+  const permission = {
+    access_mode: "project",
+    id: grant.id,
+    request_id: id(98111),
+    revision: grant.revision,
+    features: ["progress"],
+    supplier_name: "",
+    reviewed: true,
+  };
+  s = await rpc("permissions", permission);
+  eq(
+    (await rpc("permissions", permission)).partners.find(
+      (x) => x.id === grant.id,
+    ).revision,
+    s.partners.find((x) => x.id === grant.id).revision,
+    "permission replay no extra revision",
+  );
+  await rejects(
+    () =>
+      rpc("permissions", {
+        ...permission,
+        request_id: id(98112),
+        features: ["checklists"],
+      }),
+    "PT409",
+  );
+  await db.exec(
+    "reset role;select set_config('qa.user','',false);set role anon",
+  );
+  p = await portal(supplierToken);
+  eq(p.orders, []);
+  eq(p.events, []);
+  eq(p.tasks.length, 162);
+  await rejects(
+    () => portal(supplierToken, "respond", reply),
+    "42501",
+    "removed function checked before replay",
+  );
+  await actor(manager);
+  await rpc("revoke", { id: base.id, request_id: id(98113) });
+  await db.exec(
+    "reset role;select set_config('qa.user','',false);set role anon",
+  );
+  await rejects(() => portal(ueToken), "42501");
+  await actor(manager);
 }

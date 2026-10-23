@@ -17,14 +17,21 @@ import {
   useLivePartner,
 } from "./boligPartnerClient.js";
 import "./boligPartners.css";
+const featureNames = {
+  progress: "Fremdrift",
+  checklists: "Sjekklister",
+  orders: "Bestillinger og leveranser",
+};
+const defaults = (kind) =>
+  kind === "ue" ? ["progress", "checklists"] : ["progress", "orders"];
 const blank = {
   name: "",
   email: "",
   organisation: "",
   kind: "supplier",
   days: 30,
-  order_ids: [],
-  task_ids: [],
+  features: defaults("supplier"),
+  supplier_name: "",
 };
 export default function BoligPartners({ context, root }) {
   const key = `expo.bolig-partners.v1:${context.user_id}:${context.company_id}:${root.id}`;
@@ -32,15 +39,20 @@ export default function BoligPartners({ context, root }) {
   const { data, error, busy, load, run } = useLivePartner(scope, () =>
     partnerManagerRpc(context, root.id),
   );
-  const [draft, setDraft] = useState(() => readPartnerDraft(key, { ...blank })),
+  const [draft, setDraft] = useState(() => ({
+      ...blank,
+      ...readPartnerDraft(key, { ...blank }),
+    })),
     [pending, setPending] = useState(() =>
       readPartnerDraft(key + ":pending", null),
     ),
     [links, setLinks] = useState(() => readPartnerDraft(key + ":links", {}));
   const [editor, setEditor] = useState(false),
     [selected, setSelected] = useState(null),
-    [query, setQuery] = useState(""),
-    [limit, setLimit] = useState(40),
+    [editing, setEditing] = useState(
+      () => readPartnerDraft(key, {}).editing || null,
+    ),
+    [stale, setStale] = useState(false),
     [localError, setLocalError] = useState(""),
     [notice, setNotice] = useState("");
   const manager =
@@ -58,37 +70,30 @@ export default function BoligPartners({ context, root }) {
       );
     }
   };
-  const rows = [...(data?.orders || []), ...(data?.tasks || [])];
-  const chosen = rows.filter((x) =>
-    draft[x.kind === "order" ? "order_ids" : "task_ids"].includes(x.id),
-  );
-  const missing =
-    draft.order_ids.length + draft.task_ids.length !== chosen.length;
-  const shown = rows
-    .filter((x) =>
-      `${x.title} ${x.number} ${x.address}`
-        .toLowerCase()
-        .includes(query.toLowerCase()),
-    )
-    .slice(0, limit);
   const create = () => {
-    if (!data || !manager || busy) return;
+    if (!data || !manager || busy || stale) return;
     let attempt = pending;
     try {
       if (!attempt) {
-        if (missing)
-          throw Error(
-            "En valgt rad er ikke lenger tilgjengelig. Fjern valget og se over grunnlaget.",
-          );
         attempt = {
-          action: "create",
+          action: editing ? "permissions" : "create",
           payload: {
-            ...draft,
-            id: crypto.randomUUID(),
+            ...(editing
+              ? { id: editing.id, revision: editing.revision }
+              : {
+                  name: draft.name,
+                  email: draft.email,
+                  organisation: draft.organisation,
+                  kind: draft.kind,
+                  days: draft.days,
+                  id: crypto.randomUUID(),
+                  token: partnerToken(),
+                }),
             request_id: crypto.randomUUID(),
-            token: partnerToken(),
+            access_mode: "project",
             reviewed: true,
-            basis: Object.fromEntries(chosen.map((x) => [x.id, x.basis])),
+            features: draft.features,
+            supplier_name: draft.supplier_name,
           },
         };
         storePartnerDraft(key + ":pending", attempt);
@@ -102,7 +107,11 @@ export default function BoligPartners({ context, root }) {
             throw Error("Tilgangsreferansen stemmer ikke.");
           const next = {
             ...links,
-            [result.created_id]: `${location.origin}/bolig-kunde.html#partner=${attempt.payload.token}`,
+            ...(attempt.action === "create"
+              ? {
+                  [result.created_id]: `${location.origin}/bolig-kunde.html#partner=${attempt.payload.token}`,
+                }
+              : {}),
           };
           storePartnerDraft(key + ":links", next);
           storePartnerDraft(key + ":pending", null);
@@ -111,14 +120,21 @@ export default function BoligPartners({ context, root }) {
           setPending(null);
           setDraft({ ...blank });
           setEditor(false);
+          setEditing(null);
           setSelected(result.created_id);
-          setNotice("Tilgangslenken er klar. Ingen invitasjon er sendt.");
+          setNotice(
+            attempt.action === "permissions"
+              ? "Funksjonene er oppdatert for hele prosjektet. Samme lenke gjelder."
+              : "Tilgangslenken er klar. Ingen invitasjon er sendt.",
+          );
         },
         (e) => {
           if (["PT409", "22023"].includes(e.code)) {
             storePartnerDraft(key + ":pending", null);
             setPending(null);
             setLocalError(e.message);
+            if (attempt.action === "permissions" && e.code === "PT409")
+              setStale(true);
             load();
           }
         },
@@ -158,8 +174,8 @@ export default function BoligPartners({ context, root }) {
           <small>SAMARBEID I PROSJEKTET</small>
           <h2>UE og leverandører</h2>
           <p>
-            Del utvalgte leveranser og aktiviteter. Følg bekreftede datoer og
-            avvik på samme grunnlag som prosjektet bruker.
+            Gi tilgang til hele prosjektet og velg funksjonene hver UE eller
+            leverandør skal kunne følge. Se bekreftede datoer og avvik her.
           </p>
         </div>
         {manager && (
@@ -167,7 +183,17 @@ export default function BoligPartners({ context, root }) {
             type="button"
             className="bolig-primary"
             disabled={!data || busy}
-            onClick={() => setEditor(true)}
+            onClick={() => {
+              setEditing(
+                pending?.action === "permissions"
+                  ? {
+                      id: pending.payload.id,
+                      revision: pending.payload.revision,
+                    }
+                  : draft.editing || null,
+              );
+              setEditor(true);
+            }}
           >
             <Plus size={17} />
             Gi tilgang
@@ -197,9 +223,9 @@ export default function BoligPartners({ context, root }) {
               <ShieldCheck size={35} />
               <h3>Riktig innsyn til hver samarbeidspartner</h3>
               <p>
-                Velg en kontakt og del bare ordrene og aktivitetene vedkommende
-                skal følge opp. Leverandørens svar vises her. Varemottak
-                registreres fortsatt på bestillingen.
+                Velg kontakt og funksjoner én gang. Tilgangen omfatter alle
+                aktive leiligheter i prosjektet, også nye som legges til senere.
+                Leverandørens svar vises her.
               </p>
             </div>
           )}
@@ -235,6 +261,13 @@ export default function BoligPartners({ context, root }) {
                     {p.orders.length} leveranser · {p.tasks.length} aktiviteter
                     · {issues} avvik
                   </small>
+                  <small>
+                    {p.access_mode === "project"
+                      ? (p.features || [])
+                          .map((x) => featureNames[x])
+                          .join(" · ")
+                      : "Eldre tilgang til utvalgte rader"}
+                  </small>
                   <small>Til {partnerDate(p.expires_at)}</small>
                   <span>Åpne oppfølging →</span>
                 </button>
@@ -246,7 +279,9 @@ export default function BoligPartners({ context, root }) {
       {editor && manager && (
         <Dialog
           className="bolig-partner-dialog"
-          title="Gi UE eller leverandør tilgang"
+          title={
+            editing ? "Endre funksjoner" : "Gi UE eller leverandør tilgang"
+          }
           busy={busy}
           onClose={() => setEditor(false)}
         >
@@ -264,7 +299,7 @@ export default function BoligPartners({ context, root }) {
                 create();
               }}
             >
-              <fieldset disabled={busy || !!pending}>
+              <fieldset disabled={busy || !!pending || !!editing}>
                 <div className="bolig-partner-fields">
                   <label>
                     Bedrift
@@ -299,8 +334,14 @@ export default function BoligPartners({ context, root }) {
                   <label>
                     Type
                     <select
+                      aria-label="Type"
                       value={draft.kind}
-                      onChange={(e) => update({ kind: e.target.value })}
+                      onChange={(e) =>
+                        update({
+                          kind: e.target.value,
+                          features: defaults(e.target.value),
+                        })
+                      }
                     >
                       <option value="supplier">Leverandør</option>
                       <option value="ue">UE</option>
@@ -309,6 +350,7 @@ export default function BoligPartners({ context, root }) {
                   <label>
                     Gyldig i
                     <select
+                      aria-label="Gyldig i"
                       value={draft.days}
                       onChange={(e) => update({ days: Number(e.target.value) })}
                     >
@@ -321,88 +363,116 @@ export default function BoligPartners({ context, root }) {
                   </label>
                 </div>
               </fieldset>
-              <h3>Velg leveranser og aktiviteter</h3>
-              <p>
-                Kun faktisk bestilte ordre og aktive aktiviteter kan deles. Hver
-                ordre deles med alle varelinjene i ordren, uten priser. Del
-                ulike leverandørers varer i separate ordre.
-              </p>
-              <label>
-                Søk i grunnlaget
-                <input
-                  type="search"
-                  value={query}
-                  onChange={(e) => {
-                    setQuery(e.target.value);
-                    setLimit(40);
-                  }}
-                />
-              </label>
-              <div className="bolig-partner-selection">
-                {shown.map((x) => {
-                  const field = x.kind === "order" ? "order_ids" : "task_ids";
-                  return (
-                    <label key={x.id}>
-                      <input
-                        type="checkbox"
-                        checked={draft[field].includes(x.id)}
-                        disabled={busy || !!pending}
-                        onChange={(e) =>
-                          update({
-                            [field]: e.target.checked
-                              ? [...draft[field], x.id]
-                              : draft[field].filter((id) => id !== x.id),
-                          })
-                        }
-                      />
-                      <span>
-                        <b>{x.title}</b>
-                        <small>
-                          {x.kind === "order" ? "Leveranse" : "Aktivitet"} ·{" "}
-                          {x.address} · {x.number}
-                        </small>
-                      </span>
-                    </label>
-                  );
-                })}
+              <div className="bolig-partner-project">
+                <div>
+                  <h3>
+                    Hele boligprosjektet · {data.unit_count || 0} leiligheter
+                  </h3>
+                  <p>
+                    Alle aktive leiligheter omfattes. Nye leiligheter får samme
+                    tilgang automatisk.
+                  </p>
+                </div>
               </div>
-              {rows.length > limit && (
-                <button type="button" onClick={() => setLimit(limit + 40)}>
-                  Vis flere
-                </button>
-              )}
+              <h3>Velg funksjoner</h3>
+              <fieldset
+                className="bolig-partner-features"
+                disabled={busy || !!pending}
+              >
+                {Object.entries(featureNames).map(([id, label]) => (
+                  <label key={id}>
+                    <input
+                      type="checkbox"
+                      checked={draft.features.includes(id)}
+                      onChange={(e) =>
+                        update({
+                          features: e.target.checked
+                            ? [...draft.features, id]
+                            : draft.features.filter((x) => x !== id),
+                        })
+                      }
+                    />
+                    <span>
+                      <b>{label}</b>
+                      <small>
+                        {id === "progress"
+                          ? "Planlagte aktiviteter og datoer. Bekreft dato eller meld avvik."
+                          : id === "checklists"
+                            ? "Les sjekklister, kontrollpunkter og status. Ingen redigering."
+                            : "Bestilte varer, leveringsdatoer og mottaksstatus for valgt leverandør. Uten priser."}
+                      </small>
+                    </span>
+                  </label>
+                ))}
+                {draft.features.includes("orders") && (
+                  <label className="bolig-partner-supplier">
+                    Leverandør på bestillingene
+                    <input
+                      required
+                      minLength={2}
+                      maxLength={160}
+                      list="bolig-partner-suppliers"
+                      value={draft.supplier_name}
+                      onChange={(e) =>
+                        update({ supplier_name: e.target.value })
+                      }
+                    />
+                    <datalist id="bolig-partner-suppliers">
+                      {(data.suppliers || []).map((x) => (
+                        <option key={x} value={x} />
+                      ))}
+                    </datalist>
+                    <small>
+                      Bruk samme leverandørnavn som på bestillingen. Bare denne
+                      leverandørens ordre vises, på tvers av alle leiligheter.
+                    </small>
+                  </label>
+                )}
+              </fieldset>
               <p>
-                <b>
-                  {draft.order_ids.length} leveranser og {draft.task_ids.length}{" "}
-                  aktiviteter valgt.
-                </b>{" "}
-                Beboerkontakt, pris, margin og andre prosjektopplysninger deles
-                ikke.
+                Forslag: UE får fremdrift og sjekklister. Leverandør får
+                fremdrift og bestillinger. Du kan justere valgene.
               </p>
-              {missing && (
+              {stale && editing && (
                 <p role="alert">
-                  Noen valgte rader er fjernet eller arkivert.{" "}
+                  Tilgangen er endret. Se over siste registrerte funksjoner før
+                  du lagrer utkastet:{" "}
+                  {(
+                    data.partners.find((x) => x.id === editing.id)?.features ||
+                    []
+                  )
+                    .map((x) => featureNames[x])
+                    .join(" · ")}
+                  .{" "}
                   <button
                     type="button"
-                    onClick={() =>
-                      update({
-                        order_ids: chosen
-                          .filter((x) => x.kind === "order")
-                          .map((x) => x.id),
-                        task_ids: chosen
-                          .filter((x) => x.kind === "task")
-                          .map((x) => x.id),
-                      })
-                    }
+                    onClick={() => {
+                      const latest = data.partners.find(
+                        (x) => x.id === editing.id,
+                      );
+                      if (!latest?.active) return;
+                      const nextEditing = {
+                        id: latest.id,
+                        revision: latest.revision,
+                      };
+                      try {
+                        storePartnerDraft(key, {
+                          ...draft,
+                          editing: nextEditing,
+                        });
+                        setDraft({ ...draft, editing: nextEditing });
+                        setEditing(nextEditing);
+                        setStale(false);
+                        setLocalError("");
+                      } catch {
+                        setLocalError("Nettleseren kunne ikke sikre kladden.");
+                      }
+                    }}
                   >
-                    Fjern utilgjengelige valg
+                    Jeg har sett siste tilgang
                   </button>
                 </p>
               )}
-              <details>
-                <summary>Se nøyaktig hva som deles</summary>
-                <Items items={chosen} />
-              </details>
               {pending && (
                 <p>
                   Et forsøk venter på kvittering. Prøv samme forsøk igjen for å
@@ -418,15 +488,20 @@ export default function BoligPartners({ context, root }) {
                   type="submit"
                   disabled={
                     busy ||
+                    stale ||
                     (!pending &&
-                      (!chosen.length || missing || chosen.length > 200))
+                      (!draft.features.length ||
+                        (draft.features.includes("orders") &&
+                          draft.supplier_name.trim().length < 2)))
                   }
                 >
                   {busy
                     ? "Lagrer …"
                     : pending
                       ? "Prøv samme forsøk igjen"
-                      : "Opprett tilgangslenke"}
+                      : editing
+                        ? "Lagre funksjoner"
+                        : "Opprett tilgangslenke"}
                 </button>
               </footer>
             </form>
@@ -472,6 +547,38 @@ export default function BoligPartners({ context, root }) {
                   kontakten en ny lenke, trekk tilbake og opprett ny tilgang.
                 </p>
               )}
+              {partner.access_mode === "project" && (
+                <button
+                  type="button"
+                  disabled={busy || !!pending}
+                  onClick={() => {
+                    const next = {
+                      ...blank,
+                      name: partner.name,
+                      email: partner.email,
+                      organisation: partner.organisation,
+                      kind: partner.kind,
+                      features: partner.features,
+                      supplier_name: partner.supplier_name || "",
+                      editing: { id: partner.id, revision: partner.revision },
+                    };
+                    try {
+                      storePartnerDraft(key, next);
+                      setDraft(next);
+                      setEditing({
+                        id: partner.id,
+                        revision: partner.revision,
+                      });
+                      setSelected(null);
+                      setEditor(true);
+                    } catch {
+                      setLocalError("Nettleseren kunne ikke sikre kladden.");
+                    }
+                  }}
+                >
+                  Endre funksjoner
+                </button>
+              )}
               <button
                 type="button"
                 disabled={busy}
@@ -481,6 +588,11 @@ export default function BoligPartners({ context, root }) {
               </button>
             </div>
           )}
+          <p>
+            {partner.access_mode === "project"
+              ? `Hele prosjektet · ${partner.unit_count} leiligheter · ${(partner.features || []).map((x) => featureNames[x]).join(" · ")}`
+              : "Eldre tilgang: Bare tidligere valgte rader deles. Opprett ny tilgang for å dele hele prosjektet."}
+          </p>
           <p>
             Svarene endrer ikke prosjektplanen eller registrert varemottak.
             Datoendringer følges opp i «Fremdrift og varsler». Mottak

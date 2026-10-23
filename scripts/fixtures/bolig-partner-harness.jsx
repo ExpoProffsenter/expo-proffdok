@@ -53,6 +53,20 @@ let state = {
     partners: [],
     orders: [order],
     tasks: [task],
+    unit_count: 40,
+    suppliers: ["QA Leverandør"],
+    checklists: [
+      {
+        id: "check1",
+        scope_id: "unit1",
+        title: "Sluttkontroll",
+        trade: "Rør",
+        number: "H0101",
+        address: "Demoparken 101",
+        status: "completed",
+        points: [{ id: "p1", title: "Servant kontrollert", status: "Avvik" }],
+      },
+    ],
   },
   events = [];
 window.__calls = [];
@@ -80,9 +94,27 @@ const view = () => ({
     reference: "00420",
   },
   expires_at: "2026-12-01",
-  orders: [order],
-  tasks: [task],
-  events: [...events].reverse(),
+  access_mode: "project",
+  features: state.partners[0]?.features || ["orders", "progress", "checklists"],
+  unit_count: state.unit_count,
+  orders: (state.partners[0]?.features || ["orders"]).includes("orders")
+    ? [order]
+    : [],
+  tasks: (state.partners[0]?.features || ["progress"]).includes("progress")
+    ? state.tasks
+    : [],
+  checklists: (state.partners[0]?.features || ["checklists"]).includes(
+    "checklists",
+  )
+    ? state.checklists
+    : [],
+  events: [...events]
+    .reverse()
+    .filter((e) =>
+      (state.partners[0]?.features || ["orders", "progress"]).includes(
+        e.kind === "order" ? "orders" : "progress",
+      ),
+    ),
 });
 window.__client = {
   rpc: async (name, args) => {
@@ -103,8 +135,9 @@ window.__client = {
           organisation: p.organisation,
           email: p.email,
           revision: 1,
-          order_ids: p.order_ids,
-          task_ids: p.task_ids,
+          features: p.features,
+          supplier_name: p.supplier_name,
+          access_mode: p.access_mode,
         });
       state.created_id = p.id;
       if (window.__fail) {
@@ -112,6 +145,30 @@ window.__client = {
         return { error: { message: "Mistet kvittering" } };
       }
     }
+    if (args.p_action === "permissions") {
+      if (!window.__receipts[p.request_id]) {
+        if (p.revision !== state.partners[0].revision)
+          return { error: { code: "PT409", message: "Tilgangen er endret" } };
+        Object.assign(state.partners[0], {
+          features: p.features,
+          supplier_name: p.supplier_name,
+          revision: state.partners[0].revision + 1,
+        });
+        window.__receipts[p.request_id] = true;
+      }
+      state.created_id = p.id;
+      if (window.__fail) {
+        window.__fail = false;
+        return { error: { message: "Mistet kvittering" } };
+      }
+    }
+    state.partners = state.partners.map((p) => ({
+      ...p,
+      orders: p.features.includes("orders") ? [order] : [],
+      tasks: p.features.includes("progress") ? state.tasks : [],
+      checklists: p.features.includes("checklists") ? state.checklists : [],
+      unit_count: state.unit_count,
+    }));
     if (args.p_action === "revoke") state.partners[0].active = false;
     return {
       data:
@@ -163,6 +220,26 @@ window.fetch = async (url, args) => {
     }
   }
   return { ok: true, json: async () => structuredClone(view()) };
+};
+window.__advanceRevision = () => {
+  state.partners[0].revision++;
+};
+window.__managerRemount = () => {
+  app.unmount();
+  app = createRoot(document.getElementById("app"));
+  window.__render();
+};
+window.__futureUnit = () => {
+  state.unit_count++;
+  state.tasks.push({
+    ...task,
+    id: "future-task",
+    number: "H0201",
+    title: "Ny leilighet",
+  });
+};
+window.__features = (features) => {
+  state.partners[0].features = features;
 };
 window.__changeBasis = () => {
   task.basis += "-new";

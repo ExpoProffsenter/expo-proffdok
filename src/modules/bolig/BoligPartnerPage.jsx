@@ -16,7 +16,7 @@ export default function BoligPartnerPage() {
     location.hash.replace(/^#partner=/, ""),
   );
   useEffect(() => {
-    document.title = "Dine leveranser · Expo ProffDok";
+    document.title = "Prosjektsamarbeid · Expo ProffDok";
     const change = () => setToken(location.hash.replace(/^#partner=/, ""));
     window.addEventListener("hashchange", change);
     return () => window.removeEventListener("hashchange", change);
@@ -38,8 +38,22 @@ function PartnerPage({ token }) {
   const [open, setOpen] = useState(false),
     [notice, setNotice] = useState(""),
     [localError, setLocalError] = useState(""),
-    [tab, setTab] = useState("orders");
-  const items = data?.[tab] || [],
+    [tab, setTab] = useState("orders"),
+    [query, setQuery] = useState(""),
+    [limit, setLimit] = useState(40);
+  const tabs = [
+    { id: "orders", feature: "orders", title: "Leveranser" },
+    { id: "tasks", feature: "progress", title: "Fremdrift" },
+    { id: "checklists", feature: "checklists", title: "Sjekklister" },
+  ].filter((x) =>
+    data?.features ? data.features.includes(x.feature) : x.id !== "checklists",
+  );
+  const activeTab = tabs.some((x) => x.id === tab) ? tab : tabs[0]?.id;
+  const items = (data?.[activeTab] || []).filter((x) =>
+      `${x.title} ${x.number} ${x.address} ${x.room_name || ""}`
+        .toLowerCase()
+        .includes(query.toLowerCase()),
+    ),
     target =
       data &&
       [...data.orders, ...data.tasks].find(
@@ -135,8 +149,10 @@ function PartnerPage({ token }) {
         </span>
         <div>
           <small>PROSJEKTSAMARBEID</small>
-          <h1>Dine leveranser og aktiviteter</h1>
-          <p>Bekreft avtalt dato, eller gi beskjed om noe må avklares.</p>
+          <h1>Ditt prosjekt</h1>
+          <p>
+            Følg fremdrift, kontroller og leveranser som prosjektet har delt.
+          </p>
         </div>
       </header>
       {(error || localError) && <p role="alert">{localError || error}</p>}
@@ -188,29 +204,91 @@ function PartnerPage({ token }) {
               </button>
             </div>
           )}
+          <p className="bolig-partner-scope">
+            {data.access_mode === "project"
+              ? `Hele prosjektet · ${data.unit_count} leiligheter. Nye leiligheter omfattes automatisk.`
+              : "Denne eldre lenken gjelder utvalgte leveranser og aktiviteter."}
+          </p>
           <nav className="bolig-partner-tabs" aria-label="Delt innhold">
-            <button
-              type="button"
-              aria-pressed={tab === "orders"}
-              onClick={() => setTab("orders")}
-            >
-              Leveranser ({data.orders.length})
-            </button>
-            <button
-              type="button"
-              aria-pressed={tab === "tasks"}
-              onClick={() => setTab("tasks")}
-            >
-              Fremdrift ({data.tasks.length})
-            </button>
+            {tabs.map((x) => (
+              <button
+                key={x.id}
+                type="button"
+                aria-pressed={activeTab === x.id}
+                onClick={() => {
+                  setTab(x.id);
+                  setLimit(40);
+                }}
+              >
+                {x.title} ({data[x.id]?.length || 0})
+              </button>
+            ))}
           </nav>
+          <label>
+            Søk etter leilighet, adresse eller innhold
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setLimit(40);
+              }}
+            />
+          </label>
           {items.length ? (
-            <Items items={items} events={data.events} onRespond={respond} />
+            activeTab === "checklists" ? (
+              <>
+                <p>
+                  Sjekklistene er delt for lesing. Prosjektet registrerer og
+                  oppdaterer kontrollene.
+                </p>
+                <div className="bolig-partner-items">
+                  {items.slice(0, limit).map((x) => (
+                    <article
+                      className="bolig-partner-item"
+                      key={`${x.scope_id}:${x.id}`}
+                    >
+                      <h3>{x.title}</h3>
+                      <p>
+                        {x.address} · {x.number}
+                        {x.room_name ? ` · ${x.room_name}` : ""}
+                      </p>
+                      <p>
+                        {x.status === "completed" ? "Fullført" : "Under arbeid"}{" "}
+                        · {x.trade}
+                      </p>
+                      <details>
+                        <summary>
+                          Se kontrollpunkter ({x.points.length})
+                        </summary>
+                        <ul>
+                          {x.points.map((p) => (
+                            <li key={p.id}>
+                              <b>{p.title}</b>
+                              {p.guidance && <p>{p.guidance}</p>}
+                              <p>{p.status || "Ikke kontrollert"}</p>
+                            </li>
+                          ))}
+                        </ul>
+                      </details>
+                    </article>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <Items
+                items={items.slice(0, limit)}
+                events={data.events}
+                onRespond={respond}
+              />
+            )
           ) : (
-            <p>
-              Ingen {tab === "orders" ? "leveranser" : "aktiviteter"} er delt
-              med deg.
-            </p>
+            <p>Ingen treff i denne funksjonen.</p>
+          )}
+          {items.length > limit && (
+            <button type="button" onClick={() => setLimit(limit + 40)}>
+              Vis flere
+            </button>
           )}
           {open && (
             <Dialog

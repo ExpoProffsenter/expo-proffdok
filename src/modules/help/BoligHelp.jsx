@@ -13,24 +13,30 @@ export function BoligHelp() {
         <summary>UE og leverandører</summary>
         <p>
           Åpne «UE og leverandører» i prosjektet. Velg «Gi tilgang», fyll inn
-          kontakt og bedrift og velg ordrene eller aktivitetene som skal deles.
-          Ordren må være faktisk bestilt. Alle varer i en valgt ordre deles uten
-          priser. Bruk separate ordre for ulike leverandører. «Se nøyaktig hva
-          som deles» viser mottakerens grunnlag før du velger «Opprett
-          tilgangslenke».
+          kontakt og bedrift og velg funksjonene kontakten får se. Tilgangen
+          gjelder alle aktive leiligheter i prosjektet, også nye. Du trenger
+          ikke velge leilighetene enkeltvis. UE får forslag om fremdrift og
+          sjekklister. Leverandør får forslag om fremdrift og bestillinger. Du
+          kan endre forslagene. Ved bestillinger velger du leverandørnavnet som
+          brukes på ordrene. Bare denne leverandørens bestilte varer deles, uten
+          priser. Velg «Opprett tilgangslenke» når valgene er klare.
         </p>
         <p>
           Lenken gir tilgang til den som har den. Del den bare med kontakten du
           har valgt. Ingen invitasjon sendes automatisk. Tilgangen gjelder i
           valgt antall dager og kan stoppes med «Trekk tilbake tilgang». Ved
-          nytt omfang eller ny kontakt: trekk tilbake og opprett en ny tilgang.
+          endrede funksjoner: åpne kontakten og velg «Endre funksjoner». Samme
+          lenke gjelder. Ved ny kontakt: trekk tilbake og opprett ny tilgang.
+          Eldre lenker med enkeltutvalg beholder sitt opprinnelige omfang.
         </p>
         <p>
           Kontakten åpner «Leveranser» eller «Fremdrift» og velger «Bekreft dato
           / meld avvik». Svarene vises i oppfølgingen. Endret grunnlag merker
           tidligere svar som historikk. Bekreftelsen registrerer ikke varemottak
           og flytter ingen datoer. Prosjektleder følger opp i eksisterende
-          bestilling eller «Fremdrift og varsler».
+          bestilling eller «Fremdrift og varsler». «Sjekklister» viser
+          kontrollpunkter og status for lesing. Kontakten kan søke etter
+          leilighet, adresse eller innhold.
         </p>
       </details>
       <details>

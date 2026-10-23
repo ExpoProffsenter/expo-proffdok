@@ -1770,3 +1770,10 @@ Svar appendes med hash av gjennomgått faktisk ordre-/aktivitetsgrunnlag. Endret
 Partnerens svar-/tilgangshistorikk bruker `clock_timestamp()` for korrekt rekkefølge under prosjektlåsen. Capability-utløp reevalueres mot faktisk klokke etter låseventing (migrasjon20261023183331). Eksisterende svarhistorikk omskrives ikke.
 
 Utstederkontrollen gjenbruker `progress_member(company,user)` for gjeldende Projects-entitlement uten brukerimitasjon, i tillegg til særskilt manager-krav (migrasjon20261023184654). Systemadmins arvede modulrett følger samme eksisterende plattformregel.
+
+
+### Prosjektomfattende UE-/leverandørtilgang (23.10.2026)
+
+Oppdatert etter Kenneths presisering: tilgang gjelder alle aktive leiligheter i prosjektet, også fremtidige. Manager velger funksjoner, ikke enkeltleiligheter eller rader. UE foreslås `progress` + `checklists`; leverandør foreslås `progress` + `orders`. Valgene kan justeres. Bestillinger avgrenses server-side til valgt leverandørnavn fra ordren på tvers av prosjektet; priser og andre leverandørers ordre deles ikke. Sjekklister er en hvitelistet leseprojeksjon av kontrollpunkter og status, uten svarverdier, kommentarer, aktørdata eller dokumentstier. Kontakt, gyldighet og bearer-lenkens eierskap følger eksisterende modell. Prosjektleder kan endre funksjoner på samme lenke med revisjonskontroll og eksakt retry. Fjernede funksjoner stenges også før tidligere svarforsøk kan replayes. Eldre selected-row-lenker utvides aldri automatisk.
+
+Additiv migrasjon `20261023190621_bolig_partner_project_features.sql` er installert kun i Sandbox. Ingen endring av ordre, mottak eller fremdriftsplan fra mottakersvar. Portal viser bare tillatte faner, søk og sidevisning på 40 rader. Tidligere beskrivelse av obligatorisk enkeltutvalg gjelder kun eldre lenker. QA og konkret brukertest: `docs/qa/BOLIG_PARTNERE_20261023.md`; overlevering: `docs/CHAT_HANDOFF_BOLIG_20261023.md`. Samme PR278/Preview; produksjonsløp krever grønn critical QA og eksplisitt Bolig TEST OK.

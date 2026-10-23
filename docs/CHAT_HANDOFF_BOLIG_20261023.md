@@ -110,3 +110,10 @@ CI651 feilet på ny historikkrekkefølge: default now() ga transaksjonsstart i s
 ### Nyeste tilgangsgrense
 
 Sandbox20261023184654 kobler partnerlenkens aktive utsteder til eksisterende Projects-entitlement (`progress_member`) i tillegg til manager-rolle. 1224 DB og faktisk rollback-smoke med bortfalt vanlig modulrett PASS; fullbuild PASS. Systemadmins arvede modulrett beholdes. Ingen UI-endring utover tidligere korrekt sidetittel;29 browser PASS beholdt. Dokumentasjon i BOLIG_PARTNERE_20261023.md. Gjeldende SHA/CI/READY leses fra PR278 etter siste publisering; ikke bruk eldre651/652 som grønn fasit.
+
+
+### Siste presisering: prosjektomfattende funksjonsvalg
+
+Kenneth korrigerte enkeltutvalget: tildelt tilgang skal gjelde alle leiligheter i prosjektet, funksjonene velges for hver UE/leverandør. Gjeldende implementasjon erstatter radvelgeren med Fremdrift, Sjekklister (lesing) og Bestillinger og leveranser (avgrenset til valgt leverandørs ordre i hele prosjektet). UE foreslås fremdrift+sjekklister, leverandør fremdrift+bestillinger. Nye leiligheter følger automatisk. Endre funksjoner på samme lenke med CAS+eksakt retry. Gamle selected-row-lenker beholdes snevre; ikke migrer dem automatisk.
+
+Sandbox-migrasjon20261023190621.1265 DB og48 partnerbrowser PASS. Baseline57179875 hadde CI653 success. Detaljer, grenser og testliste i siste avsnitt av `docs/qa/BOLIG_PARTNERE_20261023.md`. Fortsett på samme PR278/Preview og les siste publiserte SHA/CI/READY før grønnstatus. Ingen produksjonssetting/ekte e-post; Bolig TEST OK mangler fortsatt.

@@ -1,5 +1,7 @@
 # UE-/leverandørtilgang og leveringsoppfølging
 
+**Gjeldende funksjonsmodell er prosjektomfattende tilgang, beskrevet sist i dokumentet. Tidligere enkeltutvalg nedenfor er historikk og gjelder bare gamle lenker.**
+
 Miljømål **BEGGE**. Start `05ff9aef130b3b6e40cec1cd4dfa1ccb10ef6459`, main `36462e2b05ecd8e53dcdd7818c4b791b7c7cb2ed`, eksisterende branch/PR278 og fast Preview beholdes. Kenneth: «Les handoffen og fortsett med UE-/leverandørtilgang og leveringsoppfølging». Ingen Bolig TEST OK, produksjonsmerge eller ekte utsending. Ingen subagenter.
 
 ## Scope bestemt før kode
@@ -60,3 +62,31 @@ En siste tilgangsgrense er lukket med additiv Sandbox-migrasjon **20261023184654
 **1224 DB-kontroller PASS**, tidligere1222 beholdt, med ny bortfall-/gjenopprettingstest for vanlig utsteder. Full critical Sandbox-build PASS. Faktisk rollback-smoke PASS også med module entitlement: demo-systemadmin modelleres midlertidig som vanlig leder inne i et savepoint, deretter rulles både profil/modul og alle prøvehandlinger tilbake. Første prøve hadde feil forventning om systemadmins arvede Projects-rett; prøveoppsettet ble rettet, selve plattformregelen beholdt. Ett connector-kall ble avbrutt med Invalid requestState; readback bekreftet ingen restdata/endring, og nytt korrigert forsøk bestod. Ingen offentlig rolle-/modulmekanisme er endret.
 
 Samme faktisk innloggede pilot og29 browser-kontroller gjelder uendret UI. Etterprøve på korrigert70998692 READY viste riktig sidetittel og fortsatt avvist prøvelenke. Ny commit for denne smale SQL-grensen og samlet CI-status skal avleses i PR278. CI652 var fortsatt i firmatilgangssteget ved dette checkpointet og er ikke påstått grønn.
+
+
+## Gjeldende: hele prosjektet og funksjonsvalg
+
+Kenneth presiserte at hver gitt tilgang skal omfatte alle leiligheter, mens innsyn velges per funksjon. Enkeltutvalget er erstattet i opprettingsdialogen. Miljømål BEGGE; samme branch, PR278 og Preview. Start denne presiseringen: `57179875`, der CI653 er bekreftet **success**. Main fortsatt `36462e2b`. Ingen subagenter, produksjonsendring eller ekte utsending.
+
+- Hele det aktive prosjektet deles, inkludert nye leiligheter og aktiviteter uten nye avkrysninger.
+- Funksjonene er Fremdrift, Sjekklister og Bestillinger og leveranser. UE foreslås fremdrift+sjekklister, leverandør fremdrift+bestillinger. Kan justeres.
+- Bestillinger avgrenses til navngitt leverandør fra ordresnapshot, på tvers av leiligheter. Fremmede leverandørers ordre og priser filtreres server-side.
+- Sjekklister viser tittel, plassering, kontrollpunkter/veiledning og status. Bare lesing; ikke svarverdier, kommentarer, aktørnavn eller dokumenter.
+- Endre funksjoner på eksisterende prosjekttilgang med samme lenke, CAS-revisjon, audit og eksakt request-id-replay. Fjernede funksjoner skjuler innhold/historikk og avviser svar også før receipt-replay. Tilbakekalling/utløp/utstederrett følger tidligere kontroller.
+- Eksisterende v1-lenker er fortsatt begrenset til sine gamle rader. Nytt UI lager bare prosjekttilganger. Gamle ventende forsøk beholdes eksakt.
+- Portal viser bare tillatte faner, søk etter bolig/adresse/innhold og 40 rader om gangen. Kladd, fanebytte/dvale, sent svar, endret grunnlag og tilbakekalling følger tidligere beskyttelse.
+
+Sandbox-migrasjon **20261023190621_bolig_partner_project_features**. Eksisterende partnerfunksjon bevares som privat owner-only v1-helper; ingen nye tabellgrants eller offentlige definerfunksjoner. Alle offentlige kall reautoriserer.
+
+Verifisering: **1265 PostgreSQL-kontroller PASS**, alle gamle scenarier beholdt. Nye kontroller dekker automatiske fremtidige leiligheter/aktiviteter, skillet mellom leverandører, funksjonsgrenser, sjekklistenes felter, avvist sjekklisteskriving, endring med revisjonskonflikt/replay, funksjonsfjerning før svar-replay og at gamle lenker ikke utvides. **48 Chromium-kontroller PASS**, inkludert rolleforslag, bare tre funksjonsvalg, endring av samme lenke/retry, sjekklister uten svarknapp, nye leiligheter, søk, funksjonsfjerning og tidligere kladd-/dvale-/tilbakekallingsscenarioer. Ingen horisontal overflow ved1366/390/320px.
+
+### Prøv i fast Preview
+
+1. Åpne prosjektet → **UE og leverandører → Gi tilgang**. Se «Hele boligprosjektet ·40 leiligheter». Fyll en fiktiv kontakt med .invalid-e-post. Bytt **Type** mellom UE og leverandør og kontroller forslagene.
+2. Velg funksjoner. Ved bestillinger velger du **Leverandør på bestillingene**. Opprett lenken. Ingen utsending. Åpne mottakersiden: bare valgte faner, alle relevante leiligheter.
+3. Velg **Sjekklister** hvis delt. Åpne kontrollpunkter og se status. Ingen redigering. Søk etter en leilighet for å avgrense visningen.
+4. Åpne kontakten hos prosjektleder → **Endre funksjoner** → **Lagre funksjoner**. Åpne samme lenke og se at de nye valgene gjelder. Trekk til slutt tilbake fiktiv tilgang.
+
+Innlogget brukerprøve og Bolig TEST OK gjenstår før produksjonsløpet.
+
+Full critical Sandbox-build, scope-/release-docs-guard og diff-check PASS. Faktisk Sandbox rollback-smoke i `scripts/bolig-partner-project-sandbox-smoke.sql` PASS med40 boliger/161 aktiviteter, én leverandørordre og én sjekkliste med Avvik. Også opprinnelig selected-row-smoke PASS, inkludert bortfalt vanlig Projects-entitlement og tilbakekalling. Ingen midlertidige tilganger/svar beholdt. Nettleserprøven dekker også permission-kladd etter remount og revisjonskonflikt med eksplisitt ny gjennomgang uten kladdtap.

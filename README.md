@@ -1141,3 +1141,10 @@ Boligprosjekter Preview: **UE og leverandører** gir navngitte kontakter en tids
 Partnerhistorikken bruker faktisk innsettingstid, og utløp kontrolleres etter venting på prosjektlåsen. UI-pilot med to syntetiske svar og tilbakekalt lenke er dokumentert i Bolig-partner-QA.
 
 Partnerlenker stopper også når vanlig utsteder mister Prosjekt-tilgangen; eksisterende modulregel gjenbrukes, med manager-kravet beholdt.
+
+
+### Prosjektomfattende UE-/leverandørtilgang (23.10.2026)
+
+Oppdatert etter Kenneths presisering: tilgang gjelder alle aktive leiligheter i prosjektet, også fremtidige. Manager velger funksjoner, ikke enkeltleiligheter eller rader. UE foreslås `progress` + `checklists`; leverandør foreslås `progress` + `orders`. Valgene kan justeres. Bestillinger avgrenses server-side til valgt leverandørnavn fra ordren på tvers av prosjektet; priser og andre leverandørers ordre deles ikke. Sjekklister er en hvitelistet leseprojeksjon av kontrollpunkter og status, uten svarverdier, kommentarer, aktørdata eller dokumentstier. Kontakt, gyldighet og bearer-lenkens eierskap følger eksisterende modell. Prosjektleder kan endre funksjoner på samme lenke med revisjonskontroll og eksakt retry. Fjernede funksjoner stenges også før tidligere svarforsøk kan replayes. Eldre selected-row-lenker utvides aldri automatisk.
+
+Additiv migrasjon `20261023190621_bolig_partner_project_features.sql` er installert kun i Sandbox. Ingen endring av ordre, mottak eller fremdriftsplan fra mottakersvar. Portal viser bare tillatte faner, søk og sidevisning på 40 rader. Tidligere beskrivelse av obligatorisk enkeltutvalg gjelder kun eldre lenker. QA og konkret brukertest: `docs/qa/BOLIG_PARTNERE_20261023.md`; overlevering: `docs/CHAT_HANDOFF_BOLIG_20261023.md`. Samme PR278/Preview; produksjonsløp krever grønn critical QA og eksplisitt Bolig TEST OK.
