@@ -90,3 +90,14 @@ Verifisering: **1265 PostgreSQL-kontroller PASS**, alle gamle scenarier beholdt.
 Innlogget brukerprøve og Bolig TEST OK gjenstår før produksjonsløpet.
 
 Full critical Sandbox-build, scope-/release-docs-guard og diff-check PASS. Faktisk Sandbox rollback-smoke i `scripts/bolig-partner-project-sandbox-smoke.sql` PASS med40 boliger/161 aktiviteter, én leverandørordre og én sjekkliste med Avvik. Også opprinnelig selected-row-smoke PASS, inkludert bortfalt vanlig Projects-entitlement og tilbakekalling. Ingen midlertidige tilganger/svar beholdt. Nettleserprøven dekker også permission-kladd etter remount og revisjonskonflikt med eksplisitt ny gjennomgang uten kladdtap.
+
+
+### Faktisk UI-prøve av prosjektomfanget
+
+Kode `4aeb307f9d81707dcd1ba42d406551b49fbad294`, tree `6c064e68006c09c39ea5c38efce28075d2d36e2c`, Preview `dpl_BFz1WUgK8HeNpw84V3xPJDpRTW5R` READY med fast alias og eksakt SHA. Samme demoøkt beholdt etter publisering.
+
+I boligpiloten ble en fiktiv UE-kontakt (.invalid) gitt prosjektomfattende Fremdrift+Sjekklister. Mottakersiden viste **40 leiligheter**, **161 aktiviteter**, **1 sjekkliste** og ingen Leveranser-fane. Sluttkontrollens punkt «Rosett kontrollert» viste Avvik for lesing; søk «rosett» ga den eksisterende rosettaktiviteten. Deretter ble **Endre funksjoner** brukt til å fjerne Sjekklister og legge til Bestillinger og leveranser med «DEMO – Fiktiv leverandør». Samme lenke ble bekreftet uendret. Ny åpning viste bare Fremdrift161/Leveranser1, med B-3 delvis mottatt. Ingen sjekklistetilgang. Tilgangen `d40acf45-5ecb-45a0-ab01-c1bc42ee65db` ble trukket tilbake i UI og samme lenke ble faktisk avvist uten prosjektinnhold. Ingen ekstra svar eller utsending opprettet i denne UI-prøven.
+
+Bevis: `evidence/bolig-prosjekttilgang-20261023.jpg` og `evidence/bolig-partner-sjekklister-20261023.jpg`. Ingen token i bildene. Readback:40 boliger/161 oppgaver,0 aktive tilganger; rosett revision3/slutt31.10 og ordre partial/mottatt1/referanse tom uendret. Produksjon har fortsatt0 Bolig-migrasjoner. Sikkerhetsrådgiver har samme seks kategorier/tall som før endringen (155 private deny-all-tabeller,22 anon/238 authenticated definer-advarsler, øvrige1 hver).
+
+CI654/40009409713 er registrert på4aeb307f; første kritiske build/scope-grenser er grønne. Samlet kjøring avventes; hent gjeldende status fra PR278. Dette dokumentasjonsbeviset endrer ingen kjørekode. Innlogget prøve er utført av agenten, mens Kenneths egen samlede Bolig TEST OK og fysisk Safari/mobil fortsatt gjenstår.
