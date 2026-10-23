@@ -27,3 +27,5 @@ Eksisterende recovery, tab-resume, entry-resume, serverhydrering (inkludert 21 i
 ## Brukerprøve
 
 Åpne en sak → Befaringsnotat → trykk et bilde under Bilder fra befaring. Bildet skal vises større uten ny fane. Lukk med krysset, Escape eller utenfor bildet. Skriv gjerne litt tekst først og kontroller at den fortsatt står der. Prøv også lagret Badskisse og vanlig Lagre befaringsnotat. Produksjonssetting venter på TEST OK; deretter main→demo og Sandbox-preflight i vanlig retning.
+
+CI #636 passerte de nye bildekontrollene frem til eksisterende editorassertion «inspection updates 768»: fixture skrev etter mode-remount før asynkron IndexedDB-gjenoppretting hadde aktivert feltet. Testen venter nå på faktisk enabled textarea, som ved førstegangs åpning. Tekstassertion og alle andre assertions beholdes; ingen produksjonslogikk eller tester er fjernet/svekket.

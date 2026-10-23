@@ -98,7 +98,7 @@ for(const width of [1363,768,390,320]){
   }
   if(process.env.EDITOR_QA_OUTPUT){fs.mkdirSync(process.env.EDITOR_QA_OUTPUT,{recursive:true});await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:path.join(process.env.EDITOR_QA_OUTPUT,mode+'-'+width+'.png'),fullPage:true});}
  }
- await page.locator('#mode').click();await page.getByLabel('Kundens ønsker').fill('Ny befaringstekst');eq(await page.getByLabel('Kundens ønsker').inputValue(),'Ny befaringstekst','inspection updates '+width);
+ await page.locator('#mode').click();await page.waitForFunction(()=>!document.querySelector('textarea')?.disabled);await page.getByLabel('Kundens ønsker').fill('Ny befaringstekst');eq(await page.getByLabel('Kundens ønsker').inputValue(),'Ny befaringstekst','inspection updates '+width);
  await page.getByRole('button',{name:/Lagre befaringsnotat/}).click();eq((await page.evaluate(()=>window.calls)).at(-1).name,'inspectionSave','same inspection save '+width);
  await page.waitForFunction(()=>!Array.from(document.querySelectorAll('button')).find(b=>b.textContent.trim()==='Avbryt')?.disabled);await page.getByRole('button',{name:'Avbryt',exact:true}).click();eq((await page.evaluate(()=>window.calls)).at(-1).name,'back','same back '+width);
  await page.evaluate(()=>window.openEmptyInspection());await page.getByRole('button',{name:'Bruk teksten fra saken',exact:true}).waitFor();
