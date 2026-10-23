@@ -154,3 +154,10 @@ Egen fiktiv UE-grantf8701f60-d7a2-4b01-a610-1b9260c8ddf6,1 dag, kun Sjekklister+
 Alle tre QA-listene er deretter arkivert gjennom native managerfunksjon med begrunnelse; historikken beholdes. Bare egen QA-grant er tilbakekalt, og samme lenke er faktisk åpnet på nytt og avvist uten prosjektinnhold. Readback:1 aktiv tilgang (brukerens beholdt), QA revoked=true,3 QA-lister arkivert og original H0101 fortsatt Avvik. Ingen filer, bestillinger, fremdriftsdatoer, e-post eller produksjonsdata endret av prøven. En første sammensatt QA-transaksjon ble automatisk rullet tilbake ved deadlock; separat avgrenset oppretting/prøve/arkivering lyktes. Ingen endring i backendens låsemekanisme er gjort i denne visningspakken; observasjonen må vurderes i senere concurrency-QA.
 
 CI662/40021028773 på appkoden1bdae9ec er fortsatt in_progress ved denne dokumentasjonen. Sjekk gjeldende HEAD/CI etter dokumentasjonspublisering; grønn lokal QA er ikke en påstand om ferdig samlet CI. Kenneths Bolig TEST OK og fysisk Safari/mobil gjenstår før merge.
+
+
+## Nytt senere-ønske: faktisk bemanningsliste – 23.10.2026
+
+Kenneth ber om å notere, ikke bygge nå: prosjektets involverte håndverkere skal svært enkelt registrere seg inn ved ankomst og ut ved hjemreise, særlig på mobil. Dagens oversikt viser registrerte personer/firma, antall inne og inn-/uttider og kan brukes mot byggherre/tilsyn. Prosjektleder må kunne registrere inn/ut manuelt og rette glemte tidspunkt, med sporbar historikk. Felles prosjektfunksjon vurderes, også for boligprosjekter. Full kravtekst er lagt øverst i `docs/architecture/BOLIG_VIDERE_PLAN_20261021.md`. Skal ikke forveksles med planlagt bemanning i Gantt. Ikke implementert; prioriteres senere.
+
+Neste anbefalte funksjon etter levert sjekklisteprioritering: e-post med eksisterende UE-/leverandørlenke fra samme kontaktvindu, tydelig mottaker og enkel Send-handling, via eksisterende utsendingsmotor uten eget godkjenningssted. Bruker har i denne turen kun bedt om notat og neste-status; ingen ny funksjonskode eller ekte utsending er igangsatt. Produksjonsløpet krever fortsatt separat Bolig TEST OK.

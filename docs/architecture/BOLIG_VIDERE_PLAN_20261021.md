@@ -1,5 +1,22 @@
 # Boligprosjekter – arbeidsflate og videre produktkrav
 
+## Nyeste prioritering – 23. oktober 2026
+
+Sjekklisteprioritering i UE-portalen er levert i Preview: Pågående → Neste sjekklister → sammenfoldet Fullførte. Gjeldende funksjonsstatus og faktisk QA finnes i `docs/qa/BOLIG_PARTNERE_20261023.md`; eldre «neste»-punkter nedenfor er historikk der funksjonen nå er levert.
+
+Anbefalt neste funksjonspakke er å sende UE-/leverandørens eksisterende tilgangslenke på e-post fra kontaktvinduet, med tydelig mottaker, firmaprofil og én enkel Send-handling. Gjenbruk eksisterende utsendingsmotor og samme tilgangsmodell; unngå separat godkjenningssted eller dobbeltregistrering. Utsending må gi korrekt kvittering og bruke gjeldende tilgang/mottaker. Funksjonen er ikke implementert, og denne planen autoriserer ingen ekte utsending. Deretter vurderes egne fasader/plantegninger med stabile bolig-/rommarkører, booking av beboertilgang og privat kontraktsområde/analyse/indeksregulering. Excel-import er fortsatt sist. Kenneths nye bemanningsønske nedenfor ligger på senere-listen; plassering i rekkefølgen avtales når det tas opp.
+
+## Senere ønske: dagens bemanning med enkel inn-/utlogging
+
+Registrert etter Kenneths beskjed 23. oktober 2026. **Kun planlagt – ikke implementert.** Ønsket gjelder prosjektets involverte håndverkere og skal vurderes som en felles prosjektfunksjon, også for boligprosjekter der relevant.
+
+- Håndverkeren registrerer seg inn på prosjektet ved ankomst om morgenen og ut når vedkommende reiser hjem. Svært enkel mobilflyt med tydelige «Logg inn på prosjektet» / «Logg ut av prosjektet» og synlig gjeldende registreringsstatus. Identifikasjon og gjenbruk av eksisterende prosjekt-/UE-tilgang avklares ved implementering, med færrest mulig steg.
+- Prosjektets bemanningsoversikt viser hvem som er registrert inne nå, antall til stede og dagens inn-/uttider. Navn og firma skal være lette å finne. Skill faktisk registrert tilstedeværelse fra planlagt bemanning i fremdriftsplanen.
+- Dagens bemanningsliste skal kunne brukes overfor byggherre, tilsyn og andre relevante prosjektaktører, med en enkel utskrifts-/eksportmulighet når funksjonen bygges.
+- Prosjektleder kan manuelt registrere deltagere inn eller ut og rette tidspunkt når noen har glemt å registrere seg. Historikken skal vise hvem som gjorde rettingen, opprinnelig registrering og korrigering.
+- Bevar historikk per prosjektdag, slik at tidligere bemanning kan dokumenteres. Visningen beskriver registrert tilstedeværelse; glemte registreringer må kunne følges opp og rettes.
+- Hovedkravet er enkel daglig bruk og lite administrasjon. Eventuell kobling til eksisterende timeføring vurderes senere; første behov er en lett tilgjengelig bemanningsliste for prosjektet.
+
 ## Samlet avtale- og leveranseflyt – 22. oktober
 
 Kenneth ønsker større samlede leveranser. Én gjeldende hovedavtale og sammenfoldet
