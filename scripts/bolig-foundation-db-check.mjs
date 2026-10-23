@@ -958,6 +958,10 @@ try {
   await coordinationScenarios({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider});
   const {default:handoverScenarios}=await import("./bolig-handover-db-scenarios.mjs");
   await handoverScenarios({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider});
+  const {default:followupScenarios}=await import("./bolig-followup-db-scenarios.mjs");
+  await followupScenarios({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider});
+  const {default:pilotScenarios}=await import("./bolig-pilot-db-scenarios.mjs");
+  await pilotScenarios({db,call,actor,eq,firm,manager});
   await db.exec(
     `reset role;update public.profiles set deactivated=true where id=${q(reader)}`,
   );

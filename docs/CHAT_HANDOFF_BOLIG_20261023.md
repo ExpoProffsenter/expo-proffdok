@@ -62,3 +62,12 @@ Les aktuelle relevante skills før bruk.
 - Start: historikk sikres før ny implementering. Ingen funksjonsendringer i denne pakken på dette tidspunktet.
 - Neste: les eksisterende fremdrifts-/overtakelses-/PDF-flyt og tester, avgrens endringene, implementer og verifiser, oppdater denne loggen med funn og konkret resultat.
 
+
+## Checkpoint etter implementering
+Historikken er først sikret eksternt og i commit f0ce4790cd24196b883fe74789bd37220e5339a9.
+Den nye pakken er implementert lokalt. 1125 PostgreSQL, 34 eksisterende overtakelse/A–Å, 16 nye browser, 33 klargjøring og 20 faktiske PDF-kontroller PASS; full critical build PASS.
+Sandbox-migrasjoner: 20261023144403, 20261023144404, 20261023144405. Produksjon fortsatt 0 Bolig-migrasjoner. E-post AV og ingen pending/sending jobber før pilot.
+Pilot er opprettet: 80821082-c64a-41a9-91cb-db2aa049ed2e. Se docs/qa/BOLIG_PILOT_OG_OPPFOLGING_20261023.md for eksakt innhold, brukerprøve, migrasjoner og sikkerhetskontrakt.
+Pilot avdekket og rettet kontakt-/avtaleslenkegrense samt ugyldig alias i bestillingsopprettelse. Ingen produksjonsendring.
+Cloud-smoke er PASS med alle syntetiske data rullet tilbake; 0 restprosjekter. Eksisterende fremdrift 24 Chromium PASS. Sikkerhetsrådgiver har samme kategorier; kun privat RLS deny-all tabell 151→152. Sandbox mail AV, 0 ventende jobber og én idempotent pilot.
+Neste: publiser branch med GitHub create_tree/commit/update_ref, kontroller CI og READY Preview på eksakt ny SHA, oppdater denne handoffen og filhistorikken. Ingen merge uten Kenneths egen TEST OK.

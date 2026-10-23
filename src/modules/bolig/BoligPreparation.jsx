@@ -472,6 +472,9 @@ export default function BoligPreparation({ context, root, onChanged }) {
           <p>
             Gjør flere boliger klare samtidig. Se over endringene før du lagrer.
           </p>
+          <p>
+            Anbefalt rekkefølge: kontroller bygg og nummerering, lag én god rommal med grunnpakker, og prøv den på én bolig. Fordel deretter til resten. Individuelle unntak kan du ta etterpå.
+          </p>
         </div>
       </div>
       <div className="bolig-preparation-actions">

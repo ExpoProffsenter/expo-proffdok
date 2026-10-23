@@ -6,6 +6,7 @@ import { COMMERCE_EVENT } from "./boligCommerceClient.js";
 import { PROGRESS_EVENT } from "./boligProgressClient.js";
 import { COORDINATION_EVENT } from "./boligCoordination.js";
 import Dialog from "./BoligEditorDialog.jsx";
+import CaseFollowup from "./BoligCaseFollowup.jsx";
 
 async function rpc(
   context,
@@ -57,7 +58,8 @@ export default function BoligHandoverReview({
     [busy, setBusy] = useState(false),
     [open, setOpen] = useState(false),
     [notice, setNotice] = useState(""),
-    [historyRevision, setHistoryRevision] = useState(null);
+    [historyRevision, setHistoryRevision] = useState(null),
+    [followup, setFollowup] = useState(null);
   const ticket = useRef(0),
     activeScope = useRef(scopeKey),
     working = useRef(false),
@@ -73,6 +75,7 @@ export default function BoligHandoverReview({
     setError("");
     setNotice("");
     setHistoryRevision(null);
+    setFollowup(null);
     working.current = false;
     pending.current = null;
     if (!context.enabled) return;
@@ -240,6 +243,7 @@ export default function BoligHandoverReview({
             <CaseList
               cases={current.cases}
               decisions={current.assessment?.decisions}
+              onFollowup={setFollowup}
             />
             {context.role === "manager" && !current.root_archived && (
               <button
@@ -255,6 +259,9 @@ export default function BoligHandoverReview({
             )}
           </>
         )
+      )}
+      {current && followup && !current.restricted && (
+        <CaseFollowup key={scopeKey} context={context} root={root} scopeId={scopeId} source={followup} onClose={() => setFollowup(null)} />
       )}
       {!!current?.history?.length && (
         <details className="bolig-handover-history">
@@ -334,7 +341,7 @@ export default function BoligHandoverReview({
     </section>
   );
 }
-function CaseList({ cases, decisions }) {
+function CaseList({ cases, decisions, onFollowup }) {
   const [search, setSearch] = useState(""),
     [limit, setLimit] = useState(10);
   const map = new Map((decisions || []).map((d) => [d.id, d]));
@@ -376,6 +383,7 @@ function CaseList({ cases, decisions }) {
                   : "Ikke vurdert"}
               </span>
               {d?.reason && <p>{d.reason}</p>}
+              {onFollowup && <button type="button" onClick={() => onFollowup({ ...c, owner_id: d?.owner_id })}>Oppfølging i fremdriftsplanen</button>}
             </li>
           );
         })}

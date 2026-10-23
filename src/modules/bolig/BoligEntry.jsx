@@ -996,6 +996,9 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
                                       }
                                     />
                                   </label>
+                                  {(v.contact_name !== unit.contact_name || v.contact_email !== (unit.contact_email || "")) && (
+                                    <p role="status">Når du lagrer ny kontakt, stoppes gamle portal- og avtaleslenker. Avtaler og bestillinger beholdes i intern historikk. Kontroller delte dokumentlenker, og lag en ny portalinvitasjon til den nye kontakten.</p>
+                                  )}
                                   <label>
                                     Adresse
                                     <input

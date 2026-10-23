@@ -23,6 +23,7 @@ import {
   PROGRESS_EVENT,
 } from "./boligProgressClient.js";
 import Planning from "./BoligProgressPlanning.jsx";
+import NoticePrint from "./BoligNoticePrint.jsx";
 const COMPLETION_EVENT = "expo-proffdok-bolig-completion";
 const empty = { editor: null, notice: null, pending: null };
 const formTask = (unit, owner) => ({
@@ -540,6 +541,12 @@ export default function BoligProgress({ context, root, unit = null }) {
             {writable && (
               <div className="bolig-progress-task-actions">
                 <button
+                  disabled={disabled || !n.current}
+                  onClick={() => setReview({ kind: "print", id: n.id })}
+                >
+                  PDF / oppslag
+                </button>
+                <button
                   disabled={disabled}
                   onClick={() => {
                     setConfirmed(false);
@@ -933,6 +940,9 @@ export default function BoligProgress({ context, root, unit = null }) {
             </footer>
           </form>
         </Dialog>
+      )}
+      {writable && review?.kind === "print" && data.notices.some((n) => n.id === review.id) && (
+        <NoticePrint key={scope} context={context} root={root} unit={unit} notice={data.notices.find((n) => n.id === review.id)} onClose={() => setReview(null)} />
       )}
       {review?.kind === "review" &&
         (() => {

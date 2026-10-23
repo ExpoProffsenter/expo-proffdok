@@ -219,6 +219,7 @@ jobs:
           export KSHMS_JSPDF_NODE_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/jspdf/dist/jspdf.node.min.js"
           node scripts/bolig-fdv-pdf-check.mjs
           node scripts/bolig-documentation-export-check.mjs
+          node scripts/bolig-resident-notice-pdf-check.mjs
           node scripts/bolig-foundation-db-check.mjs
           node scripts/bolig-foundation-react-check.mjs
           node scripts/bolig-catalog-react-check.mjs
@@ -234,6 +235,7 @@ jobs:
           node scripts/bolig-sections-browser-check.mjs
           node scripts/bolig-completion-browser-check.mjs
           node scripts/bolig-handover-browser-check.mjs
+          node scripts/bolig-followup-browser-check.mjs
           node scripts/bolig-commerce-browser-check.mjs
           node scripts/bolig-portal-browser-check.mjs
           node scripts/bolig-progress-browser-check.mjs

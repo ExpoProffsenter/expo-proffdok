@@ -18,7 +18,7 @@ const steps = [
     where: "Grunnpakker og tilvalgspakker → Grunnpakker",
     text: "Lag rom og avsnitt, for eksempel fliser, innredning og dusj. Legg inn varer, bilder, varenummer og antall som inngår i standardleveransen.",
     recommend:
-      "Bygg én gjennomarbeidet grunnpakke før du fordeler den. Grunnpakken kan være uten salgssum når den inngår i hovedentreprisen.",
+      "Bygg én gjennomarbeidet grunnpakke først. Under «Klargjør boligprosjektet» kan du lagre en rommal med grunnpakker og bruke den på mange boliger. Grunnpakken kan være uten salgssum når den inngår i hovedentreprisen.",
     later:
       "Tilvalg og individuelle unntak kan komme etterpå. Kontroller rominnholdet før bestilling.",
     next: "Lag tilvalgspakkene som skal være tilgjengelige.",
@@ -28,7 +28,7 @@ const steps = [
     where: "Grunnpakker og tilvalgspakker → Tilvalgspakker → Boligvalg",
     text: "Sett opp alternativ til standardvaren eller tillegg til grunnpakken. Fordel felles oppsett til flere boliger. Åpne én bolig når du skal gjøre et individuelt unntak.",
     recommend:
-      "Bruk felles pakker for det som er likt. Kontroller både tillegg og eventuelt fratrekk når standardvarer erstattes.",
+      "Prøv rommalen på én bolig før du fordeler den til resten. Forhåndsvisningen viser hva som legges til og hva som hoppes over. Eksisterende individuelle valg erstattes ikke stille. Kontroller tillegg og eventuelt fratrekk når standardvarer erstattes.",
     later:
       "Beboerkontakt og deling av tilbud kan vente til innholdet er klart.",
     next: "Kontroller varevalg og antall i én eksempelbolig før du bruker samme oppsett på resten.",
@@ -51,7 +51,7 @@ const steps = [
     where: "Bolig → Leilighetsinformasjon / Beboerportal",
     text: "Legg til én kontaktperson per bolig. Klargjør portal og eventuelle tilbud når innholdet er kontrollert. Meldinger kan slås på for hele prosjektet eller bare enkelte boliger.",
     recommend:
-      "Start med meldinger av. Aktiver dialog der det er nyttig, og avklar hvem som følger opp innboksen.",
+      "Start med meldinger av. Aktiver dialog der det er nyttig, og avklar hvem som følger opp innboksen. Ved kontaktbytte stoppes gamle portal- og avtaleslenker. Kontroller delte dokumentlenker før du deler portalen med den nye kontakten.",
     later:
       "Det er mulig å bruke prosjektet uten beboermeldinger. Når meldinger slås av, beholdes tidligere samtaler.",
     next: "Følg meldingsbrikken i byggbildet. «Lest» betyr at meldingen er sett; «Behandlet» betyr at oppfølgingen er avklart.",
@@ -64,7 +64,7 @@ const steps = [
       "Bolig → Bestilling / Levering / Fremdrift og varsler / Ferdigstilling",
     text: "Kontroller varelinjene før bestilling. Registrer leveringer og faktisk utført arbeid separat. Fordel relevante sjekklister til flere boliger eller rom, og samle bilder, avvik og sluttdokumentasjon underveis.",
     recommend:
-      "Bruk samme kontrolloppsett der arbeidet er likt. Velg bevisst hvilke kontroller som er påkrevde. Varemottak alene betyr ikke at arbeidet er utført.",
+      "Bruk samme kontrolloppsett der arbeidet er likt. Velg bevisst hvilke kontroller som er påkrevde. Varemottak alene betyr ikke at arbeidet er utført. Under beboervarsler kan «PDF / oppslag» brukes til varsling på papir.",
     later:
       "Uferdige kontroller og restpunkter forblir synlige. De skal ikke krysses av bare for å komme videre.",
     next: "Gå til ferdigstilling og gjennomgå åpne forhold før overtakelse.",
@@ -86,7 +86,7 @@ const steps = [
     where: "Sjekklister og dokumentasjon → Samlet PDF og ZIP",
     text: "Ta ut dokumentasjonen per bolig, bygg eller prosjekt. PDF-en viser status og prosjektleders vurderinger. ZIP-en inneholder også de lagrede originalfilene og historikken. Ekstern FDV følger som lenker.",
     recommend:
-      "Kontroller at dokumentasjonen svarer til det som faktisk er montert. Følg restpunktene til de er løst, også etter overtakelsen.",
+      "Kontroller at dokumentasjonen svarer til det som faktisk er montert. Åpne «Se åpne forhold» under Ferdigstilling og velg «Oppfølging i fremdriftsplanen». Koble saken til eksisterende arbeid eller opprett en aktivitet med ansvarlig og frist. Følg restpunktene til de er løst, også etter overtakelsen.",
     later:
       "Ny dokumentasjon eller nye saker etter overtakelsen vises som videre oppfølging. Registreringen av den gjennomførte overtakelsen beholdes.",
     next: "Bruk aktivitetenes frister og varsler for videre oppfølging. Nedlasting av dokumentasjon endrer ingen status.",
