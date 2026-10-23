@@ -216,7 +216,7 @@ function PartnerPage({ token }) {
               Hent siste status
             </button>
           </div>
-          <p>
+          <p className="bolig-partner-explainer">
             Prosjektet registrerer faktisk mottak og endrer fremdriftsplanen.
             Ditt svar vises som en bekreftelse eller et avvik på den aktuelle
             raden.
