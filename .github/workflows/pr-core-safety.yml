@@ -210,6 +210,7 @@ jobs:
 
       - name: Verify shared Boligprosjekter structure and access boundaries
         run: |
+          node scripts/bolig-core-boundary-check.mjs "origin/${{ github.base_ref }}"
           export HR_PGLITE_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/@electric-sql/pglite/dist/index.js"
           export KSHMS_JSDOM_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/jsdom/lib/api.js"
           node scripts/bolig-order-email-check.mjs
@@ -225,6 +226,7 @@ jobs:
           node scripts/bolig-catalog-react-check.mjs
           node scripts/bolig-overview-react-check.mjs
           export PLAYWRIGHT_MODULE="$RUNNER_TEMP/company-admin-browser-qa/node_modules/playwright/index.mjs"
+          node scripts/bolig-shared-board-browser-check.mjs "origin/${{ github.base_ref }}"
           node scripts/bolig-builder-browser-check.mjs
           node scripts/bolig-overview-browser-check.mjs
           node scripts/bolig-rooms-browser-check.mjs

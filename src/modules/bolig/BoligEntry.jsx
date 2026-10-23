@@ -86,7 +86,7 @@ function DraftForm({
   name,
   initial,
   onSubmit,
-  submitLabel = "Lagre i firmaet",
+  submitLabel = "Lagre endringer",
   busy,
   children,
 }) {
@@ -274,7 +274,7 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
     try {
       await request(action, options);
       if (alive.current) {
-        setNotice("Lagret i firmaet.");
+        setNotice("Endringene er lagret.");
         if (
           ctx.enabled &&
           ["create", "archive", "block", "entrance", "resize"].includes(action)
@@ -1038,41 +1038,55 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
                                       }
                                     />
                                   </label>
-                                  <button
-                                    type="button"
-                                    disabled={busy}
-                                    onClick={() =>
-                                      request("projects", {
-                                        rootId: record.root.id,
-                                      }).catch((e) => setError(e.message))
-                                    }
-                                  >
-                                    Hent tilgjengelige ProffDok-prosjekter
-                                  </button>
-                                  <label>
-                                    Leilighetsprosjekt
-                                    <select
-                                      value={v.project_id}
-                                      onChange={(e) =>
-                                        c("project_id", e.target.value)
+                                  <details>
+                                    <summary>
+                                      {v.project_id
+                                        ? "Eget prosjekt er koblet til"
+                                        : "Koble til et eget prosjekt (valgfritt)"}
+                                    </summary>
+                                    <p>
+                                      Boligen hører allerede til dette boligprosjektet.
+                                      Har leiligheten også et eget ProffDok-prosjekt,
+                                      kan du koble det til her.
+                                    </p>
+                                    <button
+                                      type="button"
+                                      disabled={busy}
+                                      onClick={() =>
+                                        request("projects", {
+                                          rootId: record.root.id,
+                                        }).catch((e) => setError(e.message))
                                       }
                                     >
-                                      <option value="">Ikke koblet</option>
-                                      {v.project_id &&
-                                      !projects.some(
-                                        (p) => p.id === v.project_id,
-                                      ) ? (
-                                        <option value={v.project_id}>
-                                          Nåværende prosjekt
+                                      Hent prosjekter du kan koble til
+                                    </button>
+                                    <label>
+                                      Eget ProffDok-prosjekt for leiligheten
+                                      <select
+                                        value={v.project_id}
+                                        onChange={(e) =>
+                                          c("project_id", e.target.value)
+                                        }
+                                      >
+                                        <option value="">
+                                          Ingen ekstra prosjektkobling
                                         </option>
-                                      ) : null}
-                                      {projects.map((p) => (
-                                        <option key={p.id} value={p.id}>
-                                          {p.title}
-                                        </option>
-                                      ))}
-                                    </select>
-                                  </label>
+                                        {v.project_id &&
+                                        !projects.some(
+                                          (p) => p.id === v.project_id,
+                                        ) ? (
+                                          <option value={v.project_id}>
+                                            Tilkoblet prosjekt
+                                          </option>
+                                        ) : null}
+                                        {projects.map((p) => (
+                                          <option key={p.id} value={p.id}>
+                                            {p.title}
+                                          </option>
+                                        ))}
+                                      </select>
+                                    </label>
+                                  </details>
                                 </>
                               )}
                             </DraftForm>

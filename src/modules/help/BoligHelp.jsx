@@ -419,7 +419,13 @@ export function BoligHelp() {
           lukker vinduet.
         </li>
         <li>
-          Vent på «Lagret i firmaet». Andre med tilgang kan hente samme
+          I «Leilighetsinformasjon» lagrer du med «Lagre endringer». Boligen
+          hører allerede til boligprosjektet. «Koble til et eget prosjekt
+          (valgfritt)» brukes bare hvis leiligheten også har et separat
+          ProffDok-prosjekt. Du trenger ikke koble til noe for å bruke Bolig.
+        </li>
+        <li>
+          Vent på «Endringene er lagret». Andre med tilgang kan hente samme
           struktur. Hvis noen har endret strukturen, beholdes din kladd. Hent
           siste versjon og se over før ny lagring.
         </li>

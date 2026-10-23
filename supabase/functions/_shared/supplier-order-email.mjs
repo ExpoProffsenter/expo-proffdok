@@ -13,7 +13,6 @@ export function supplierOrderLogo(company) {
  if(String(company.orgNumber||'').replace(/\D/g,'')==='915407692'||name.includes('ringside rorleggerbedrift'))raw='/brands/ringside-rorleggerbedrift.png';
  else if(name.includes('bademiljo expo'))raw='/brands/bademiljo-expo-ringside.png';
  else if(name==='expo proffsenter')raw='/expo-logo.png';
- if(!String(raw||'').trim())return 'https://expo-proffdok.app/expo-logo.png';
  try {
   const url=new URL(String(raw||''),'https://expo-proffdok.app/');
   if(url.protocol==='https:'&&!url.username&&!url.password&&url.href.length<=2048)return url.href;

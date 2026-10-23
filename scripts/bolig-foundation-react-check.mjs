@@ -9,8 +9,9 @@ const cwd = process.cwd(),
   temp = fs.mkdtempSync(path.join(os.tmpdir(), "bolig-react-")),
   entry = path.join(temp, "entry.jsx");
 const main = fs.readFileSync("src/main.jsx", "utf8");
-const { createGlobalAppTabs, createProjectWorkspaceTabs } =
-  await import("../src/modules/project/projectNavigationTabs.mjs");
+const { createGlobalAppTabs, createProjectWorkspaceTabs } = await import(
+  "../src/modules/project/projectNavigationTabs.mjs"
+);
 assert(
   createGlobalAppTabs({ canUseBolig: true }).some(
     ([id, label]) => id === "bolig" && label === "Boligprosjekter",
@@ -341,6 +342,15 @@ try {
         };
       if (args.p_action === "get")
         return { data: { ...structuredClone(record), context: ctx } };
+      if (args.p_action === "projects")
+        return {
+          data: {
+            context: ctx,
+            projects: [
+              { id: "other-project", title: "Eget leilighetsprosjekt" },
+            ],
+          },
+        };
       if (args.p_action === "create_plan") {
         emptyListing = false;
         record = {
@@ -545,6 +555,30 @@ try {
     q('.bolig-task-dialog[aria-label="Leilighetsinformasjon"]'),
     "Apartment information has the requested title",
   );
+  const projectLink = q(".bolig-task-dialog form details");
+  assert(!projectLink.open, "Extra project linking starts folded away");
+  const draftBeforeLink = w.localStorage.getItem(key);
+  const writesBeforeLink = calls.filter((c) => c.p_action === "unit").length;
+  await act(() => {
+    projectLink.open = true;
+    button("Hent prosjekter du kan koble til").click();
+  });
+  assert.equal(projectLink.querySelector("select").value, "");
+  assert.equal(projectLink.querySelectorAll("option").length, 2);
+  assert.equal(
+    w.localStorage.getItem(key),
+    draftBeforeLink,
+    "Loading optional projects does not change the contact draft",
+  );
+  assert.equal(
+    calls.filter((c) => c.p_action === "unit").length,
+    writesBeforeLink,
+    "Opening/loading the optional link never saves automatically",
+  );
+  await act(() => {
+    projectLink.open = false;
+  });
+  assert(input.isConnected && input.value === "Usendt kladd");
   assert.equal(
     [...w.document.querySelectorAll("button")].filter(
       (b) => b.textContent.trim() === "Oppsett",
@@ -655,7 +689,7 @@ try {
   assert.equal(record.units[0].contact_email, "demo@example.invalid");
   assert.equal(record.units[0].contact_phone, "+47 900 00 000");
   assert.equal(w.localStorage.getItem(key), null);
-  assert.equal(q("[role=status]").textContent, "Lagret i firmaet.");
+  assert.equal(q("[role=status]").textContent, "Endringene er lagret.");
   const setInput = async (input, value) =>
     act(() => {
       Object.getOwnPropertyDescriptor(
@@ -828,6 +862,24 @@ try {
   await act(() => button("Åpne boligprosjekter").click());
   await act(() => q(".bolig-home-project").click());
   await act(() => q(".bolig-grid button").click());
+  // A separate fresh visit has no local contact draft; the existing server link
+  // must survive even when it is not in the fetched project choices.
+  await act(() => w.__unmount());
+  w.localStorage.removeItem(key);
+  await act(() => w.__render("self"));
+  await act(() => q(".bolig-home-project").click());
+  await act(() => q(".bolig-grid button").click());
+  const linkedSelect = q(".bolig-task-dialog form details select");
+  assert.equal(
+    linkedSelect.value,
+    "ordinary-project",
+    "An existing link outside the loaded project list stays selected",
+  );
+  assert.equal(linkedSelect.closest("details").open, false);
+  assert.equal(
+    linkedSelect.closest("details").querySelector("summary").textContent.trim(),
+    "Eget prosjekt er koblet til",
+  );
   denied = true;
   await act(() =>
     q(".bolig-task-dialog form").dispatchEvent(

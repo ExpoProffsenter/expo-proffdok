@@ -178,7 +178,7 @@ const fallback = partnerInvitationMail(
 eq(
   fallback.html.includes('src="https://expo-proffdok.app/expo-logo.png"'),
   true,
-  "shared logo helper falls back to an actual image",
+  "Bolig invitation falls back to an actual image",
 );
 const legacy = partnerInvitationMail(
   { ...snapshot, access_mode: "selected" },
