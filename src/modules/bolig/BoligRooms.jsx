@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import BoligPackageChoices from "./BoligPackageChoices.jsx";
 import BoligRoomContent from "./BoligRoomContent.jsx";
+import BoligVisualWorkspace from "./BoligVisualWorkspace.jsx";
 import { boligRoomsRpc } from "./boligRoomsClient.js";
 import {
   boligDraftKey,
@@ -283,6 +284,7 @@ export default function BoligRooms({
               ))}
             </select>
           </label>
+          <BoligVisualWorkspace context={context} root={root} scope={unit.id} kind="plan" refreshKey={data.revision} selected={active?.id} onSelect={select}/>
           {active ? (
             <div className="bolig-room-detail">
               <span className="bolig-room-icon">

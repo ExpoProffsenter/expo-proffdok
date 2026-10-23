@@ -23,6 +23,7 @@ window.__calls=[];window.__deny=false;window.__holdList=false;window.__waiters=[
 window.__client={rpc:async(name,args)=>{
  window.__calls.push({name,args});const ctx={...window.__context};
  if(window.__deny)return {error:{code:'42501',message:'Tilgangen er fjernet.'}};
+ if(name==='bolig_visuals')return {data:{context:ctx,root_id:args.p_root_id,scope_id:args.p_scope_id,kind:'plan',basis:'qa',targets:[],sheets:[]}};
  const unit=args.p_unit_id,s=window.__states[unit];
  const reply=()=>({data:{context:ctx,root_id:args.p_root_id,unit_id:unit,root_archived:false,...JSON.parse(JSON.stringify(s))}});
  if(name==='bolig_package_choices')return {data:{...reply().data,packages:[],options:[],components:[],selection:null,rooms_revision:s.revision}};

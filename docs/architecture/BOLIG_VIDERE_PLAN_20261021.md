@@ -1,5 +1,11 @@
 # Boligprosjekter – arbeidsflate og videre produktkrav
 
+## Avklart 24. oktober 2026
+
+Kenneth valgte bildeplassering med et forslag som kan flyttes. Egne fasader, flere plantegninger per bolig, justerbare felt og kontrollert versjonshistorikk er samlet i pakken beskrevet i `docs/qa/BOLIG_EGNE_BILDER_20261024.md`. JPG/PNG/WebP; PDF må eksporteres som bilde. Nyeste QA/handoff går foran eldre «gjenstår»-setninger.
+
+Kenneth presiserte at booking trolig styres av andre og følger fremdrift, beboermøter og varsler. **Booking skal være valgfri per prosjekt og eventuelt aktiveres i Oppsett. Det samme gjelder faktisk bemanningsoversikt.** Ingen bestemt selvbookingsflyt er valgt. Ikke innfør obligatorisk booking/bemanning eller automatisk booking fra Gantt. Begge motorene er fortsatt senere-arbeid; ingen bryter uten virksom funksjon er laget i bildepakken.
+
 ## Nyeste prioritering – 23. oktober 2026
 
 Sjekklisteprioritering i UE-portalen er levert i Preview: Pågående → Neste sjekklister → sammenfoldet Fullførte. Gjeldende funksjonsstatus og faktisk QA finnes i `docs/qa/BOLIG_PARTNERE_20261023.md`; eldre «neste»-punkter nedenfor er historikk der funksjonen nå er levert.

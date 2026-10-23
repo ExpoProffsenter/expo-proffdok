@@ -25,6 +25,7 @@ import BoligProgress from "./BoligProgress.jsx";
 import BoligPartners from "./BoligPartners.jsx";
 import BoligUnitTasks from "./BoligUnitTasks.jsx";
 import BoligRooms from "./BoligRooms.jsx";
+import { BoligVisualSetup } from "./BoligVisualWorkspace.jsx";
 import BoligBuildingOverview from "./BoligBuildingOverview.jsx";
 import BoligPreparation from "./BoligPreparation.jsx";
 import {
@@ -632,6 +633,9 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
                         </span>
                       </button>
 
+                      <button type="button" aria-pressed={setupArea === "visuals"} onClick={()=>setSetupArea("visuals")}>
+                        <Building2 size={23}/><span><b>Bilder og plantegninger</b><small>Egne fasader og klikkbare romfelt</small></span>
+                      </button>
                       <button
                         type="button"
                         aria-pressed={setupArea === "archive"}
@@ -644,6 +648,7 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
                         </span>
                       </button>
                     </nav>
+                    {setupArea === "visuals" && <BoligVisualSetup context={ctx} record={record}/>}
                     <div hidden={setupArea !== "archive"}>
                       {ctx.role === "manager" ? (
                         <button

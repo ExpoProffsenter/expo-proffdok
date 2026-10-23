@@ -25,6 +25,7 @@ import { BoligCompletionOverview } from "./BoligCompletion.jsx";
 import { completionLabels, completionTone } from "./boligCompletionClient.js";
 import BoligDeliveryOverview from "./BoligDeliveryOverview.jsx";
 import BoligBuildingArt from "./BoligBuildingArt.jsx";
+import BoligVisualWorkspace from "./BoligVisualWorkspace.jsx";
 import { typeInfo } from "./boligStructure.js";
 import { createPortal } from "react-dom";
 import { useBoligUiState } from "./boligUiState.js";
@@ -897,6 +898,15 @@ export default function BoligBuildingOverview({
             </div>
           )}
 
+          <BoligVisualWorkspace context={context} root={record.root} scope={selectedBlock.id} kind="facade"
+            selected={selectGroup ? selectedGroupUnits : unitId}
+            statusFor={id => unitStatus(units.find(u=>u.id===id) || {}, statuses?.[id], layer)}
+            extraFor={id => <DialogueBadge row={dialogueRows.get(id)} onOpen={setDialogueUnit}/>}
+            onSelect={id => {
+              if (selectGroup) { toggleGroupUnit(id); return; }
+              const u=units.find(u=>u.id===id);
+              if (u) { setActiveEntranceId(u.entrance_id); onSelect(id); }
+            }}>
           <div
             className={`bolig-facade-scene bolig-connected-scene ${selectedBlock.building_type === "house" || selectedBlock.building_type === "duplex" ? "bolig-house-scene" : ""}`}
           >
@@ -1013,6 +1023,7 @@ export default function BoligBuildingOverview({
               leiligheter. Rull sideveis når bygget er større enn skjermen.
             </small>
           </div>
+          </BoligVisualWorkspace>
         </>
       ) : (
         <div className="bolig-empty-building">

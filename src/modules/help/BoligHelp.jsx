@@ -174,6 +174,13 @@ export function BoligHelp() {
           ventende utsending. E-post er fortsatt av i Sandbox.
         </p>
       </details>
+      <details>
+        <summary>Egne fasadebilder og plantegninger</summary>
+        <p>Åpne Oppsett → Bilder og plantegninger. Velg bygg for en fasade eller bolig for en plantegning. Du kan også velge Fasadebilde i byggoversikten og Plantegninger i boligens romoversikt.</p>
+        <p>Last opp JPG, PNG eller WebP på inntil 12 MB. Eksporter en PDF-tegning som bilde først. Flytt forslagene til riktig sted, eller velg et felt og trykk i bildet. På mobil kan du også justere plasseringen med tallfeltene. Zoom for å se små felt.</p>
+        <p>Velg Forhåndsvis endringer og deretter Lagre bilde og felt. Boliger og rom beholder sine ID-er, valg og historikk. Et bilde kan vise bare noen av rommene; de andre finnes fortsatt i romlisten. Legg til flere plantegninger for ulike etasjer.</p>
+        <p>Bildehistorikk viser tidligere versjoner. Bruk som nytt bildeutkast åpner en tidligere versjon for ny gjennomgang. Usendt kladd beholdes ved lukking og fanebytte.</p>
+      </details>
       <ol>
         <li>
           Åpne Oppsett → Bygg og boliger for å klargjøre flere boliger samtidig.
