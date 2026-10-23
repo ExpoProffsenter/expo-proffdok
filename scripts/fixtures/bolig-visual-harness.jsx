@@ -156,6 +156,10 @@ window.__client = {
         };
       }
     }
+    if (window.__holdSave)
+      await new Promise((resolve) => {
+        window.__resumeSave = resolve;
+      });
     return {
       data: {
         ...reply().data,

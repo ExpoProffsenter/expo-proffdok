@@ -482,7 +482,7 @@ export default function BoligVisualEditor({
         </div>
       )}
       {error && <p role="alert">{error}</p>}
-      {draft.pending && !conflict && (
+      {draft.pending && !conflict && !busy && (
         <p role="status">
           Denne lagringen er ikke bekreftet. Prøv samme lagring igjen før du
           endrer utkastet.

@@ -266,7 +266,23 @@ try {
     "Usendt før konflikt",
   );
   await btn("Forhåndsvis endringer").click();
+  await page.evaluate(() => {
+    window.__holdSave = true;
+  });
   await btn("Lagre bilde og felt").click();
+  await page.waitForFunction(() => !!window.__resumeSave);
+  eq(
+    await page
+      .getByText("Denne lagringen er ikke bekreftet.", { exact: false })
+      .count(),
+    0,
+    "A normal pending request is not labelled uncertain before a response",
+  );
+  await page.evaluate(() => {
+    window.__holdSave = false;
+    window.__resumeSave();
+    window.__resumeSave = null;
+  });
   await dialog().waitFor({ state: "detached" });
   await btn("Bildehistorikk").click();
   eq(

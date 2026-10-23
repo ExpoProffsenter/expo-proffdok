@@ -43,3 +43,19 @@ Publisert SHA/READY, samlet CI og faktisk innlogget Preview-prøve avleses etter
 ## Brukerprøve
 
 Samme Preview/innlogging: **Oppsett → Bilder og plantegninger → velg bygg → Fasadebilde**. Last opp, flytt et felt og forhåndsvis. Etter lagring skal feltet åpne samme bolig. Under boligens **Rom og oversikt → Plantegninger** skal romfeltet åpne samme rom og rompakke. Prøv Bildehistorikk og kontroller vanlig boligliste/bestilling.
+
+## Faktisk publisert prøve
+
+Kode **01b335aa580b7053995c9d56adc99f35bccf8210**, tree **f220d38e280de08ffe1d21e72a1d931efafe7363**, deployment **dpl_4fg3NAqCxHqmfVsKDDCi28LYM3YH READY**, eksakt SHA og fast alias kontrollert gjennom Vercel-veiledningen. Lokal/ekstern kilde avstemt. Samme demoøkt uten ny innlogging.
+
+Et nytt, isolert syntetisk prosjekt **DEMO – Egne bilder og plantegninger**, root **21c22e66-16af-4b14-8dfe-c6ec48f9df65**, har fire boliger og to rom i H0101. Bevar dette eksemplet til brukerens gjennomgang. Ingen tidligere prosjektdata eller brukergrants endret under prøven.
+
+I faktisk cloud-UI: Oppsett → Bilder og plantegninger → fasadeupload → H0101 flyttet til x20/y60% → lukking/gjenåpning med bevart fil/tekst → forhåndsvisning → lagring med serverkvittering versjon1. Hovedside viste samme fasade og riktig boligstatus; klikk åpnet H0101. Romdialogen hadde de samme Bad1/Vaskerom. PNG-plantegning ble lastet opp og begge felt plassert x20/x65,y45%; etter lagring åpnet Bad1-feltet samme rom og native rompakke/rominnhold. Endret navn gav versjon2. Historikk viste begge. Gjenoppretting av versjon1 gjennom ny kladd/preview gav versjon3, mens Bad1 fortsatt var valgt.
+
+Server-readback: fasade1536×1024,344292bytes WebP; plan1200×800,20271bytes PNG. To immutable filer og fire visual_versions (fasade1 + plan1/2/3). Rom-ID-er beholdt og begge romrevisjoner fortsatt1. Pilotens40 aktive boliger beholdt.0 QA-VISUAL-SMOKE-røtter etter rollback. Faktisk skjermbevis: `evidence/bolig-plantegning-preview-20261024.jpg`.
+
+Under prøven ble en prematur pending-tekst oppdaget: normal pågående lagring kunne vise «ikke bekreftet» før svaret kom. Teksten vises nå bare etter at forespørselen faktisk er avsluttet uten bekreftelse. Ny holdt-svar-assertion beholder de gamle retrykravene; **43 nye Chromium-assertions PASS**.
+
+CI670/40036397609 på01b335aa feilet FØR Bolig-steget i eksisterende `sales-editor-ux-browser-check.mjs`, assertion «inspection updates1363»: kontrollfeltet viste «Ønsker fra server» etter fill. Samme gamle test og Sales-kilder er urørt av denne pakken; lokal test196 PASS både før og etter hendelsen. Dette er ikke grunnlag for å erklære samlet CI grønn eller endre Sales i Bolig-pakken. Test mot faktisk main og ny full kjøring følges separat. Ingen assertion fjernet eller svekket. Nyeste CI/READY må leses på oppfølgings-SHA, ikke på denne første publiseringen.
+
+Etterprøve av CI-stoppet: identisk gammel Sales-test kjørt på separat checkout av faktisk main36462e2b med samme lokale avhengigheter/Chromium gav196 PASS. Ny kjøring av feature gav også196 PASS. Dette støtter at CI-hendelsen er ustabil/miljøavhengig, men erstatter ikke ny grønn samlet CI. Ingen Sales-kode eller Sales-test er endret. Begge Storage-ETag-er i den faktiske bildepiloten samsvarer dessuten med MD5 av de opplastede originalfilene.
