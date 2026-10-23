@@ -297,7 +297,7 @@ try {
     .locator("summary")
     .last()
     .click();
-  await btn("Bruk som nytt bildeutkast").last().click();
+  await btn("Rediger bilde og plassering").last().click();
   eq(
     await page.getByLabel("Navn på bildet").inputValue(),
     "Fasade · kontrollert",

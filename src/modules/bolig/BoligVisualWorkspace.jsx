@@ -296,8 +296,9 @@ function VisualWorkspace({
           ) : (
             <>
               <p>
-                Tidligere bilder og plasseringer beholdes. Gjenoppretting åpner
-                en kladd som må forhåndsvises før lagring.
+                Velg «Rediger bilde og plassering» for å flytte feltene eller
+                bytte bildet. Endringene lagres først når du velger «Lagre bilde
+                og felt». Tidligere versjoner beholdes.
               </p>
               {history.loading && <p role="status">Henter bildehistorikk …</p>}
               {historyError && <p role="alert">{historyError}</p>}
@@ -326,7 +327,7 @@ function VisualWorkspace({
                       type="button"
                       onClick={() => start(history.sheet, v.snapshot)}
                     >
-                      Bruk som nytt bildeutkast
+                      Rediger bilde og plassering
                     </button>
                   )}
                 </details>
