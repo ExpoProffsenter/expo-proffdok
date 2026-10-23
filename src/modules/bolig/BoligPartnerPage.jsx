@@ -240,8 +240,9 @@ function PartnerPage({ token }) {
             activeTab === "checklists" ? (
               <>
                 <p>
-                  Sjekklistene er delt for lesing. Prosjektet registrerer og
-                  oppdaterer kontrollene.
+                  {data.features.includes("quality_write")
+                    ? "Prosjektets sjekklister vises her. Fyll ut egne kontroller og legg til filer under Mine sjekklister og vedlegg."
+                    : "Sjekklistene er delt for lesing. Prosjektet registrerer og oppdaterer kontrollene."}
                 </p>
                 <div className="bolig-partner-items">
                   {items.slice(0, limit).map((x) => (

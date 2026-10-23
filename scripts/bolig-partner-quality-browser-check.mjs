@@ -157,6 +157,32 @@ try {
   await page
     .getByText("Last opp PDF, bilde eller annet vedlegg", { exact: true })
     .click();
+  const fileInput = page.getByLabel("Velg PDF, bilde eller fil", {
+    exact: true,
+  });
+  await page.evaluate(() => window.dispatchEvent(new Event("blur")));
+  eq(
+    await page
+      .getByRole("heading", {
+        name: "Mine sjekklister og vedlegg",
+        exact: true,
+      })
+      .count(),
+    0,
+    "reauthorization hides documentation",
+  );
+  eq(
+    await page.locator('input[type="file"]').count(),
+    1,
+    "native file chooser retains mounted input during blur",
+  );
+  await page.evaluate(() => window.dispatchEvent(new Event("focus")));
+  await fileInput.waitFor({ state: "visible" });
+  eq(
+    await fileInput.isVisible(),
+    true,
+    "upload panel remains open after reauthorization",
+  );
   await page
     .getByLabel("Velg PDF, bilde eller fil", { exact: true })
     .setInputFiles({

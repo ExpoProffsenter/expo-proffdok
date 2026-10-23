@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Dialog from "./BoligEditorDialog.jsx";
 import ChecklistFields from "../checklist/ChecklistFields.jsx";
 import { invalidateFieldConfirmations } from "../checklist/checklistFields.mjs";
@@ -12,7 +12,18 @@ import {
   storePartnerDraft,
   partnerPortalRpc,
 } from "./boligPartnerClient.js";
-export default function PartnerQuality({ token, data, run, busy, load }) {
+export default function PartnerQuality({
+  token,
+  data: liveData,
+  run,
+  busy,
+  load,
+}) {
+  // Keep the file input mounted while its native picker owns focus. Previous
+  // content stays hidden and every server action still requires live authority.
+  const lastData = useRef(null);
+  if (liveData) lastData.current = liveData;
+  const data = liveData || lastData.current;
   const key = `expo.bolig-partner-quality.v1:${token}`;
   const [draft, setDraft] = useState(() => readPartnerDraft(key, null)),
     [upload, setUpload] = useState(null),
@@ -53,6 +64,15 @@ export default function PartnerQuality({ token, data, run, busy, load }) {
     }
   };
   const activeScope = scope || quality.scopes[0]?.id || "";
+  const [expanded, setExpanded] = useState({
+    custom: false,
+    sources: false,
+    upload: false,
+  });
+  const toggle = (name, value) =>
+    setExpanded((previous) =>
+      previous[name] === value ? previous : { ...previous, [name]: value },
+    );
   const [custom, setCustom] = useState(() =>
     readPartnerDraft(key + ":new", { title: "", points: "" }),
   );
@@ -86,6 +106,7 @@ export default function PartnerQuality({ token, data, run, busy, load }) {
       },
     );
   const start = (source) => {
+    if (!liveData) return;
     if (draft) {
       setError("Fullfør eller forkast det lagrede sjekklisteutkastet først.");
       setOpen(true);
@@ -149,7 +170,7 @@ export default function PartnerQuality({ token, data, run, busy, load }) {
   };
   const send = (e) => {
     e.preventDefault();
-    if (!check || !write || working) return;
+    if (!check || !write || working || !liveData) return;
     const p = draft.pending || {
       id: draft.id,
       scope_id: draft.scope_id,
@@ -191,7 +212,7 @@ export default function PartnerQuality({ token, data, run, busy, load }) {
   };
   const uploadFile = async (e) => {
     e.preventDefault();
-    if (!upload || !write || working) return;
+    if (!upload || !write || working || !liveData) return;
     setWorking(true);
     setError("");
     try {
@@ -253,7 +274,11 @@ export default function PartnerQuality({ token, data, run, busy, load }) {
   };
   if (!data || !data.features.includes("checklists")) return null;
   return (
-    <section className="bolig-partner-quality" aria-label="UE-dokumentasjon">
+    <section
+      className="bolig-partner-quality"
+      aria-label="UE-dokumentasjon"
+      hidden={!liveData || !liveData.features.includes("checklists")}
+    >
       <h2>Mine sjekklister og vedlegg</h2>
       <p>
         Egne utfyllinger, PDF-lister og bilder lagres i prosjektets vanlige
@@ -270,7 +295,10 @@ export default function PartnerQuality({ token, data, run, busy, load }) {
         </div>
       )}
       {write && (
-        <details>
+        <details
+          open={expanded.custom}
+          onToggle={(e) => toggle("custom", e.currentTarget.open)}
+        >
           <summary>Lag egen sjekkliste</summary>
           <form
             onSubmit={(e) => {
@@ -321,7 +349,10 @@ export default function PartnerQuality({ token, data, run, busy, load }) {
         </details>
       )}
       {write && (
-        <details>
+        <details
+          open={expanded.sources}
+          onToggle={(e) => toggle("sources", e.currentTarget.open)}
+        >
           <summary>Start egen utfylling fra prosjektets sjekklister</summary>
           {data.checklists
             .filter((x) => !quality.checks.some((y) => y.record.id === x.id))
@@ -363,7 +394,10 @@ export default function PartnerQuality({ token, data, run, busy, load }) {
         </article>
       ))}
       {write && (
-        <details>
+        <details
+          open={expanded.upload}
+          onToggle={(e) => toggle("upload", e.currentTarget.open)}
+        >
           <summary>Last opp PDF, bilde eller annet vedlegg</summary>
           <form onSubmit={uploadFile}>
             <label>
@@ -471,7 +505,7 @@ export default function PartnerQuality({ token, data, run, busy, load }) {
           </button>
         </div>
       ))}
-      {open && draft && (
+      {open && draft && liveData && (
         <Dialog
           className="bolig-partner-dialog"
           title="UE – sjekkliste"
