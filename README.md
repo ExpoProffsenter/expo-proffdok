@@ -1127,3 +1127,7 @@ Boligprosjekter (Preview 23.10.2026): «Fremdrift og varsler» følger planlagt 
 ### Bolig – proporsjonale byggbilder og samlet avtaleflyt (23.10.2026)
 
 Alle boligtyper viser de registrerte boligene som klikkbare felt inne i byggbildet. Bildets proporsjoner beholdes; større bygg kan rulles uten å presse sammen boligfeltene. Leilighetsbyggets typekort og A–Å-eksempel bruker eget ferdig fasadefoto. Boligavtale/endringsordre viser vare- og prisgjennomgang i samme vindu med «Lagre utkast» eller «Opprett beboerlenke». Eksisterende serverkontroller og beboerens egen aksept beholdes. Avbrutt opprettelse fortsetter samme lagrede steg. QA og startpunkt: `docs/qa/BOLIG_BILDER_OG_AVTALEFLYT_20261023.md`. Feature-Preview frem til egen Bolig TEST OK.
+
+### Bolig – endre koblet aktivitet direkte fra saken (23.10.2026)
+
+Se åpne forhold → Oppfølging i fremdriftsplanen → Åpne aktivitet bruker samme aktivitetsvindu som Gantt og aktivitetslisten. Ansvarlig, frist og faktisk utførelse lagres i eksisterende plan; lukking/lagring går tilbake til samme sak. En annen usendt aktivitetskladd krever et eksplisitt valg før den erstattes. Aktivitetsredigering binder planens revisjon og viser ferskt grunnlag før videre lagring ved endringer. Saken og overtakelsesvurderingen lukkes ikke automatisk. QA/startpunkt: `docs/qa/BOLIG_DIREKTE_AKTIVITET_20261023.md`. Kun feature-Preview frem til egen Bolig TEST OK.

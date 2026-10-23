@@ -21,14 +21,14 @@ fs.writeFileSync(
   `
 import React from '${root}/node_modules/react/index.js';import {createRoot} from '${root}/node_modules/react-dom/client.js';import Progress from '${root}/src/modules/bolig/BoligProgress.jsx';import '${root}/src/style.css';import '${root}/src/modules/bolig/bolig.css';
 const ctx={user_id:'qa',company_id:'firm',enabled:true,role:'manager'};let state={context:ctx,root_id:'root',unit_id:null,revision:0,tasks:[],units:[{id:'unit',number:'H0101',address:'Plangata 1',block_id:'block',block_name:'Bygg A',entrance_id:'entrance',contact_name:'QA Resident',contact_email:'qa@example.invalid',notice_basis:'b1'}],rooms:[{id:'room',unit_id:'unit',name:'Bad'}],members:[{id:'qa',name:'QA Prosjektleder'}],notices:[],history:[],deliveries:[],mail_enabled:false};const receipts=new Map();window.__calls=[];window.__lost=false;window.__deny=false;window.__conflict=false;
-window.__client={rpc(name,p){window.__calls.push(p);if(name==='work_profile_company_profile')return Promise.resolve({data:{companyId:'firm',companyName:'QA Bedrift',phone:'12345678',email:'project@example.invalid'}});return Promise.resolve().then(()=>{if(window.__deny)return {error:{code:'42501',message:'Tilgangen er tilbakekalt.'}};if(p.p_action==='get')return {data:structuredClone({...state,context:{...ctx,role:window.__role||'manager'}})};const v=p.p_payload;if(window.__conflict)return {error:{code:'PT409',message:'Planen er endret. Utkastet er beholdt.'}};if(receipts.has(v.request_id))return {data:structuredClone(receipts.get(v.request_id))};state.revision++;
-if(p.p_action==='save'){const i=state.tasks.findIndex(t=>t.id===v.id);const t={...v,active:true,owner_active:true,owner_name:'QA Prosjektleder',room_name:v.room_id?'Bad':null,unit_number:'H0101'};if(i<0)state.tasks.push(t);else state.tasks[i]=t;}
+window.__client={rpc(name,p){window.__calls.push(p);if(name==='work_profile_company_profile')return Promise.resolve({data:{companyId:'firm',companyName:'QA Bedrift',phone:'12345678',email:'project@example.invalid'}});return Promise.resolve().then(()=>{if(window.__deny)return {error:{code:'42501',message:'Tilgangen er tilbakekalt.'}};if(p.p_action==='get')return {data:structuredClone({...state,context:{...ctx,role:window.__role||'manager'}})};const v=p.p_payload;if(window.__conflict)return {error:{code:'PT409',message:'Planen er endret. Utkastet er beholdt.'}};if(receipts.has(v.request_id))return {data:structuredClone(receipts.get(v.request_id))};if(p.p_action==='save'&&v.revision!==state.revision)return {error:{code:'PT409',message:'Planrevisjon må brukes, ikke aktivitetens revisjon.'}};state.revision++;
+if(p.p_action==='save'){const i=state.tasks.findIndex(t=>t.id===v.id);const t={...v,revision:(state.tasks[i]?.revision||0)+1,active:true,owner_active:true,owner_name:'QA Prosjektleder',room_name:v.room_id?'Bad':null,unit_number:'H0101'};if(i<0)state.tasks.push(t);else state.tasks[i]=t;}
 if(p.p_action==='notice')state.notices.unshift({...v,basis:'review-'+state.revision,current:true,valid:false,recipient:'qa@example.invalid',title:state.tasks[0].title,unit_number:'H0101',planned_start:state.tasks[0].planned_start,planned_end:state.tasks[0].planned_end});
 if(p.p_action==='resident_notice'){state.notices.forEach(n=>{if(n.group_id===v.replaces)n.withdrawn=true;});v.unit_ids.forEach(u=>state.notices.unshift({...v,id:v.id+'-'+u,group_id:v.id,unit_id:u,basis:'notice-'+state.revision,current:true,valid:v.mode==='publish',digital:v.mode==='publish',paper_ready:v.mode!=='draft',project_contact:v.contact,recipient:'qa@example.invalid',unit_number:'H0101',planned_start:v.start,planned_end:v.end,published_at:v.mode==='publish'?new Date().toISOString():null}));}
 if(p.p_action==='approve')state.notices.find(n=>n.id===v.id).valid=true;if(p.p_action==='publish')state.notices.find(n=>n.id===v.id).published_at=new Date().toISOString();
 if(p.p_action==='withdraw')state.notices.find(n=>n.id===v.id).withdrawn=true;
 const result=structuredClone(state);receipts.set(v.request_id,result);if(window.__lost){window.__lost=false;throw Error('Forbindelsen ble brutt.');}return {data:result};});}};
-window.__audience=()=>{state.units.push({id:'u2',number:'H0201',address:'Plangata 2',block_id:'block',block_name:'Bygg A',entrance_id:'e2',contact_name:'QA To',contact_email:'two@example.invalid',notice_basis:'b2'},{id:'u3',number:'H0101',address:'Plangata 3',block_id:'b3',block_name:'Bygg B',entrance_id:'e3',contact_name:'',contact_email:'',notice_basis:'b3'});};window.__stale=()=>{state.notices.forEach(n=>{n.current=false;n.valid=false;});state.revision++;};
+window.__planRevision=()=>state.revision;window.__audience=()=>{state.units.push({id:'u2',number:'H0201',address:'Plangata 2',block_id:'block',block_name:'Bygg A',entrance_id:'e2',contact_name:'QA To',contact_email:'two@example.invalid',notice_basis:'b2'},{id:'u3',number:'H0101',address:'Plangata 3',block_id:'b3',block_name:'Bygg B',entrance_id:'e3',contact_name:'',contact_email:'',notice_basis:'b3'});};window.__stale=()=>{state.notices.forEach(n=>{n.current=false;n.valid=false;});state.revision++;};
 const app=createRoot(document.getElementById('app'));window.__show=(role='manager')=>{window.__role=role;app.render(<div style={{maxWidth:1100,margin:'auto',padding:16}}><Progress key={role} context={{...ctx,role}} root={{id:'root'}}/></div>);};window.__show();
 `,
 );
@@ -256,6 +256,31 @@ try {
   );
   await page.getByRole("button", { name: "Oppdater aktivitet" }).click();
   dialog = page.getByRole("dialog", { name: "Aktivitet og faktisk fremdrift" });
+  await dialog
+    .getByLabel("Arbeid", { exact: true })
+    .fill("Montering med siste planrevisjon");
+  const planRevision = await page.evaluate(() => window.__planRevision());
+  await dialog
+    .getByRole("button", { name: "Lagre endringer", exact: true })
+    .click();
+  await page
+    .getByRole("heading", {
+      name: "Montering med siste planrevisjon",
+      exact: true,
+    })
+    .waitFor();
+  eq(
+    await page.evaluate(
+      () =>
+        window.__calls.filter((p) => p.p_action === "save").at(-1).p_payload
+          .revision,
+    ),
+    planRevision,
+    "Ordinary editor uses reviewed plan revision after many notice changes",
+  );
+  await page
+    .getByRole("button", { name: "Oppdater aktivitet", exact: true })
+    .click();
   await dialog.getByLabel("Arbeid", { exact: true }).fill("Kladd ved konflikt");
   await page.evaluate(() => (window.__conflict = true));
   await dialog.getByRole("button", { name: "Lagre endringer" }).click();

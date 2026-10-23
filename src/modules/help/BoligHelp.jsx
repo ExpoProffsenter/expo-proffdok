@@ -50,8 +50,13 @@ export function BoligHelp() {
           aktivitet», legg inn bolig, rom, datoer og ansvarlig, og velg «Lagre
           endringer». «Må utføres etter» knytter arbeidet til en annen aktivitet
           i samme bolig. Registrer faktisk start og slutt når arbeidet er gjort.
-          Påkrevde aktiviteter må være utført før intern sluttkontroll kan
-          godkjennes. Faktisk overtakelse vurderes separat av prosjektleder.
+          Fra «Se åpne forhold» velger du «Oppfølging i fremdriftsplanen». Når
+          saken har en aktivitet, åpner «Åpne aktivitet» det samme
+          aktivitetsvinduet. Endre ansvarlig og frist, og lagre for å komme
+          tilbake til saken. Aktivitetens ansvarlige får fristvarslene. Saken og
+          vurderingsansvarlig endres ikke automatisk. Påkrevde aktiviteter må
+          være utført før intern sluttkontroll kan godkjennes. Faktisk
+          overtakelse vurderes separat av prosjektleder.
         </p>
         <p>
           Velg «Nytt beboervarsel» under «Fremdrift og varsler». Velg hele
@@ -284,19 +289,19 @@ export function BoligHelp() {
         </li>
         <li>
           Åpne «Endringer og beboeraksept» i boligen. «Klargjør beboeraksept»
-          bruker boligens lagrede varer og tilvalgspris. Beskriv grunnlaget,
-          og kontroller varer og pris i samme vindu. Velg «Lagre utkast»
-          for å fortsette senere, eller «Opprett beboerlenke» når det er klart.
-          Del lenken med riktig beboer. Lenken varer i 30 dager.
-          Ingen e-post sendes av disse knappene. Beboeren gjennomgår pris og
-          varer, oppgir navn og bekrefter svaret i to trinn. Kvitteringen viser
-          den aksepterte utgaven. Dette er en lenkebasert beboerbekreftelse.
+          bruker boligens lagrede varer og tilvalgspris. Beskriv grunnlaget, og
+          kontroller varer og pris i samme vindu. Velg «Lagre utkast» for å
+          fortsette senere, eller «Opprett beboerlenke» når det er klart. Del
+          lenken med riktig beboer. Lenken varer i 30 dager. Ingen e-post sendes
+          av disse knappene. Beboeren gjennomgår pris og varer, oppgir navn og
+          bekrefter svaret i to trinn. Kvitteringen viser den aksepterte
+          utgaven. Dette er en lenkebasert beboerbekreftelse.
         </li>
         <li>
           «Ny endringsordre» lar deg velge bestillingen som endres. Samle alle
           vareendringene i samme kladd og angi samlet pristillegg eller fratrekk
-          inkl. mva. Kontroller «Før» og «Etter» før du oppretter beboerlenken. Den
-          opprinnelige bestillingen beholdes. Når beboeren har akseptert,
+          inkl. mva. Kontroller «Før» og «Etter» før du oppretter beboerlenken.
+          Den opprinnelige bestillingen beholdes. Når beboeren har akseptert,
           avklarer du endringen med leverandøren og registrerer hvem som
           bekreftet og hvor endringen er bestilt eller kreditert. «Last ned
           endringsbestilling / kreditering» gir Excel med bare forskjellene.

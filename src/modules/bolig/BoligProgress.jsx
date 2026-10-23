@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import "./boligProgress.css";
 import Dialog from "./BoligEditorDialog.jsx";
+import TaskEditor from "./BoligProgressTaskEditor.jsx";
 import {
   boligDraftKey,
   readBoligDraft,
@@ -41,8 +42,22 @@ const formTask = (unit, owner) => ({
   required: true,
   note: "",
 });
-export default function BoligProgress({ context, root, unit = null }) {
-  const scope = `${context.user_id}/${context.company_id}/${root.id}/${unit?.id || "all"}`;
+const taskForm = (task, revision) => ({
+  ...task,
+  revision,
+  room_id: task.room_id || "",
+  predecessor_id: task.predecessor_id || "",
+  actual_start: task.actual_start || "",
+  actual_end: task.actual_end || "",
+});
+export default function BoligProgress({
+  context,
+  root,
+  unit = null,
+  taskId = null,
+  onTaskClose,
+}) {
+  const scope = `${context.user_id}/${context.company_id}/${root.id}/${unit?.id || "all"}/${context.role}/${context.enabled}`;
   const key = boligDraftKey(context, root.id, `progress-${unit?.id || "all"}`);
   const [draft, setDraft] = useState(() => readBoligDraft(key, empty)),
     [data, setData] = useState(null),
@@ -57,7 +72,8 @@ export default function BoligProgress({ context, root, unit = null }) {
     epoch = useRef(0),
     operating = useRef(false),
     latest = useRef(draft),
-    currentScope = useRef(scope);
+    currentScope = useRef(scope),
+    openedTask = useRef(null);
   latest.current = draft;
   currentScope.current = scope;
   const persist = (next) => {
@@ -99,6 +115,7 @@ export default function BoligProgress({ context, root, unit = null }) {
     alive.current = true;
     setData(null);
     setReview(null);
+    openedTask.current = null;
     const saved = readBoligDraft(key, empty);
     latest.current = saved;
     setDraft(saved);
@@ -123,7 +140,49 @@ export default function BoligProgress({ context, root, unit = null }) {
     context.enabled &&
     context.role === "manager" &&
     data?.context.role === "manager" &&
-    !root.archived;
+    !root.archived &&
+    (!taskId ||
+      !!draft.pending ||
+      data.tasks.some((t) => t.id === taskId && t.active && !t.archived));
+  const openTask = (task, replace = false) => {
+    if (latest.current.pending) {
+      setReview({ kind: "pending" });
+      return;
+    }
+    if (!task || task.archived || !writable) return;
+    const saved = latest.current.editor;
+    if (saved && saved.id !== task.id && !replace) {
+      setReview({ kind: "draft-choice", task });
+      return;
+    }
+    try {
+      persist({
+        ...latest.current,
+        editor:
+          !replace && saved?.id === task.id
+            ? saved
+            : taskForm(task, data.revision),
+      });
+      setReview({ kind: "editor" });
+    } catch (e) {
+      setError(e.message);
+    }
+  };
+  useEffect(() => {
+    if (
+      !taskId ||
+      !data ||
+      !writable ||
+      openedTask.current === `${scope}/${taskId}`
+    )
+      return;
+    openedTask.current = `${scope}/${taskId}`;
+    openTask(data.tasks.find((t) => t.id === taskId));
+  }, [scope, taskId, data, writable]);
+  const closeTask = () => {
+    setReview(null);
+    if (taskId) onTaskClose?.();
+  };
   const run = async (action, payload = {}, retry = false) => {
     if (operating.current || !writable || (!retry && latest.current.pending))
       return;
@@ -175,6 +234,8 @@ export default function BoligProgress({ context, root, unit = null }) {
             ? "Varselet er godkjent. Publiser nå eller la godkjent dato styre publisering når varsling er aktivert."
             : "Endringen er lagret.",
       );
+      if (taskId && ["save", "archive"].includes(attempt.action))
+        onTaskClose?.();
       return true;
     } catch (e) {
       if (alive.current && currentScope.current === scope) {
@@ -195,8 +256,8 @@ export default function BoligProgress({ context, root, unit = null }) {
       }
     }
   };
-  if (!context.enabled || !data)
-    return (
+  if (!context.enabled || !data) {
+    const loading = (
       <section className="bolig-progress">
         <p role="status">{error || "Henter fremdrift …"}</p>
         <button type="button" onClick={load}>
@@ -204,6 +265,14 @@ export default function BoligProgress({ context, root, unit = null }) {
         </button>
       </section>
     );
+    return taskId ? (
+      <Dialog title="Aktivitet og faktisk fremdrift" onClose={closeTask}>
+        {loading}
+      </Dialog>
+    ) : (
+      loading
+    );
+  }
   const tasks = data.tasks.filter((t) => !t.archived),
     done = tasks.filter((t) => t.status === "done" && t.active).length,
     overdue = tasks.filter(
@@ -270,6 +339,65 @@ export default function BoligProgress({ context, root, unit = null }) {
           : n.paper_ready
             ? "Ferdig PDF / oppslag"
             : "Utkast";
+  const taskDialogs = (
+    <TaskEditor
+      {...{
+        writable,
+        edit,
+        review,
+        busy,
+        disabled,
+        unit,
+        data,
+        tasks,
+        draft,
+        error,
+        patch,
+        run,
+        update,
+        setReview,
+        closeTask,
+        openTask,
+      }}
+    />
+  );
+  if (taskId)
+    return (
+      <>
+        {taskDialogs}
+        {(!writable ||
+          !["editor", "archive", "draft-choice"].includes(review?.kind)) && (
+          <Dialog title="Aktivitet og faktisk fremdrift" onClose={closeTask}>
+            {error && <p role="alert">{error}</p>}
+            {draft.pending ? (
+              <>
+                <p>
+                  Lagringen av «
+                  {draft.pending.payload?.title || "tidligere endring"}» er ikke
+                  bekreftet. Prøv det samme forsøket igjen før du åpner
+                  aktiviteten.
+                </p>
+                <button
+                  type="button"
+                  disabled={busy || !writable}
+                  onClick={() => run(null, {}, true)}
+                >
+                  Prøv samme lagring igjen
+                </button>
+              </>
+            ) : (
+              <p>
+                Aktiviteten er ikke tilgjengelig for redigering. Kontroller
+                tilgang og aktiv tilknytning.
+              </p>
+            )}
+            <button type="button" onClick={closeTask} disabled={busy}>
+              Tilbake til saken
+            </button>
+          </Dialog>
+        )}
+      </>
+    );
   return (
     <section className="bolig-progress" aria-label="Fremdrift og varsler">
       <div className="bolig-progress-heading">
@@ -336,7 +464,7 @@ export default function BoligProgress({ context, root, unit = null }) {
           {notice}
         </p>
       )}
-      {draft.pending && (
+      {draft.pending && !["editor", "archive"].includes(review?.kind) && (
         <div className="bolig-progress-pending">
           <strong>
             {busy ? "Lagrer endringen …" : "Lagringen er ikke bekreftet."}
@@ -364,19 +492,7 @@ export default function BoligProgress({ context, root, unit = null }) {
         context={context}
         root={root}
         unit={unit}
-        onEdit={(t) => {
-          if (!t) return;
-          update({
-            editor: {
-              ...t,
-              room_id: t.room_id || "",
-              predecessor_id: t.predecessor_id || "",
-              actual_start: t.actual_start || "",
-              actual_end: t.actual_end || "",
-            },
-          });
-          setReview({ kind: "editor" });
-        }}
+        onEdit={openTask}
       />
       <details className="bolig-progress-activity-list">
         <summary>Aktivitetsliste og enkeltaktiviteter</summary>
@@ -414,7 +530,12 @@ export default function BoligProgress({ context, root, unit = null }) {
               className="primary"
               disabled={disabled}
               onClick={() => {
-                update({ editor: formTask(unit?.id, context.user_id) });
+                update({
+                  editor: {
+                    ...formTask(unit?.id, context.user_id),
+                    revision: data.revision,
+                  },
+                });
                 setReview({ kind: "editor" });
               }}
             >
@@ -472,18 +593,7 @@ export default function BoligProgress({ context, root, unit = null }) {
                     <button
                       type="button"
                       disabled={disabled}
-                      onClick={() => {
-                        update({
-                          editor: {
-                            ...t,
-                            room_id: t.room_id || "",
-                            predecessor_id: t.predecessor_id || "",
-                            actual_start: t.actual_start || "",
-                            actual_end: t.actual_end || "",
-                          },
-                        });
-                        setReview({ kind: "editor" });
-                      }}
+                      onClick={() => openTask(t)}
                     >
                       Oppdater aktivitet
                     </button>
@@ -657,276 +767,7 @@ export default function BoligProgress({ context, root, unit = null }) {
           </p>
         ))}
       </details>
-      {writable && edit && review?.kind === "editor" && (
-        <Dialog
-          title="Aktivitet og faktisk fremdrift"
-          busy={busy}
-          onClose={() => setReview(null)}
-          className="bolig-progress-editor"
-        >
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              run("save", edit);
-            }}
-          >
-            <p>
-              Utkastet beholdes når du lukker. Lagre endringer når datoer og
-              utførelse er kontrollert.
-            </p>
-            <label>
-              Arbeid
-              <input
-                required
-                minLength={2}
-                maxLength={120}
-                value={edit.title}
-                disabled={disabled}
-                onChange={(e) => patch({ title: e.target.value })}
-              />
-            </label>
-            <div className="bolig-progress-fields">
-              <label>
-                Bolig
-                <select
-                  aria-label="Bolig"
-                  required
-                  disabled={
-                    disabled ||
-                    !!unit ||
-                    data.tasks.some((t) => t.id === edit.id)
-                  }
-                  value={edit.unit_id}
-                  onChange={(e) =>
-                    patch({
-                      unit_id: e.target.value,
-                      room_id: "",
-                      predecessor_id: "",
-                    })
-                  }
-                >
-                  <option value="">Velg bolig</option>
-                  {data.units.map((u) => (
-                    <option key={u.id} value={u.id}>
-                      {u.number} · {u.address}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                Rom
-                <select
-                  aria-label="Rom"
-                  value={edit.room_id}
-                  disabled={disabled}
-                  onChange={(e) => patch({ room_id: e.target.value })}
-                >
-                  <option value="">Hele boligen</option>
-                  {data.rooms
-                    .filter((r) => r.unit_id === edit.unit_id)
-                    .map((r) => (
-                      <option key={r.id} value={r.id}>
-                        {r.name}
-                      </option>
-                    ))}
-                </select>
-              </label>
-              <label>
-                Planlagt start
-                <input
-                  required
-                  type="date"
-                  value={edit.planned_start}
-                  disabled={disabled}
-                  onChange={(e) => patch({ planned_start: e.target.value })}
-                />
-              </label>
-              <label>
-                Planlagt slutt
-                <input
-                  required
-                  type="date"
-                  min={edit.planned_start}
-                  value={edit.planned_end}
-                  disabled={disabled}
-                  onChange={(e) => patch({ planned_end: e.target.value })}
-                />
-              </label>
-              <label>
-                Ansvarlig
-                <select
-                  aria-label="Ansvarlig"
-                  required
-                  value={edit.owner_id}
-                  disabled={disabled}
-                  onChange={(e) => patch({ owner_id: e.target.value })}
-                >
-                  <option value="">Velg ansvarlig</option>
-                  {data.members.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                Må utføres etter
-                <select
-                  aria-label="Må utføres etter"
-                  value={edit.predecessor_id}
-                  disabled={disabled}
-                  onChange={(e) => patch({ predecessor_id: e.target.value })}
-                >
-                  <option value="">Ingen avhengighet</option>
-                  {tasks
-                    .filter(
-                      (t) => t.id !== edit.id && t.unit_id === edit.unit_id,
-                    )
-                    .map((t) => (
-                      <option key={t.id} value={t.id}>
-                        {t.title}
-                      </option>
-                    ))}
-                </select>
-              </label>
-              <label>
-                Status
-                <select
-                  aria-label="Status"
-                  value={edit.status}
-                  disabled={disabled}
-                  onChange={(e) =>
-                    patch({
-                      status: e.target.value,
-                      ...(e.target.value !== "done" ? { actual_end: "" } : {}),
-                    })
-                  }
-                >
-                  {Object.entries(labels).map(([k, v]) => (
-                    <option value={k} key={k}>
-                      {v}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                Faktisk startet
-                <input
-                  type="date"
-                  required={["working", "done"].includes(edit.status)}
-                  max={localToday()}
-                  value={edit.actual_start}
-                  disabled={disabled}
-                  onChange={(e) => patch({ actual_start: e.target.value })}
-                />
-              </label>
-              {edit.status === "done" && (
-                <label>
-                  Faktisk ferdig
-                  <input
-                    required
-                    type="date"
-                    min={edit.actual_start}
-                    max={localToday()}
-                    value={edit.actual_end}
-                    disabled={disabled}
-                    onChange={(e) => patch({ actual_end: e.target.value })}
-                  />
-                </label>
-              )}
-            </div>
-            <label className="bolig-progress-check">
-              <input
-                type="checkbox"
-                checked={edit.required}
-                disabled={disabled}
-                onChange={(e) => patch({ required: e.target.checked })}
-              />
-              Påkrevd før ferdigstilling
-            </label>
-            <label>
-              Arbeidsnotat / begrunnelse ved gjenåpning
-              <textarea
-                maxLength={2000}
-                value={edit.note}
-                disabled={disabled}
-                onChange={(e) => patch({ note: e.target.value })}
-              />
-            </label>
-            {error && <p role="alert">{error}</p>}
-            <footer>
-              {data.tasks.some((t) => t.id === edit.id) && (
-                <button
-                  type="button"
-                  disabled={disabled}
-                  onClick={() => setReview({ kind: "archive", id: edit.id })}
-                >
-                  Arkiver aktivitet
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={() => setReview(null)}
-                disabled={busy}
-              >
-                Lukk og behold utkast
-              </button>
-              <button className="primary" type="submit" disabled={disabled}>
-                Lagre endringer
-              </button>
-            </footer>
-          </form>
-        </Dialog>
-      )}
-      {writable && review?.kind === "archive" && (
-        <Dialog
-          title="Arkiver aktivitet"
-          busy={busy}
-          onClose={() => setReview({ kind: "editor" })}
-          className="bolig-progress-editor"
-        >
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              run("archive", {
-                id: review.id,
-                confirmed: true,
-                reason: draft.archive_reason || "",
-              });
-            }}
-          >
-            <p>
-              Aktiviteten og historikken beholdes. Varsler stoppes og
-              aktiviteten tas ut av den aktive planen. Avhengige aktiviteter må
-              avklares først.
-            </p>
-            <label>
-              Begrunnelse
-              <textarea
-                required
-                minLength={3}
-                maxLength={500}
-                value={draft.archive_reason || ""}
-                onChange={(e) => update({ archive_reason: e.target.value })}
-                disabled={disabled}
-              />
-            </label>
-            {error && <p role="alert">{error}</p>}
-            <footer>
-              <button
-                type="button"
-                disabled={busy}
-                onClick={() => setReview({ kind: "editor" })}
-              >
-                Tilbake til aktiviteten
-              </button>
-              <button type="submit" disabled={disabled}>
-                Bekreft arkivering
-              </button>
-            </footer>
-          </form>
-        </Dialog>
-      )}
+      {taskDialogs}
       {writable &&
         ["composer", "notice", "review", "print"].includes(review?.kind) && (
           <NoticeComposer

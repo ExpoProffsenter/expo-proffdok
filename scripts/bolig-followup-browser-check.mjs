@@ -15,9 +15,22 @@ fs.writeFileSync(
   `
 import React from '${cwd}/node_modules/react/index.js';import {createRoot} from '${cwd}/node_modules/react-dom/client.js';import Followup from '${cwd}/src/modules/bolig/BoligCaseFollowup.jsx';import Print from '${cwd}/src/modules/bolig/BoligNoticePrint.jsx';import '${cwd}/src/style.css';import '${cwd}/src/modules/bolig/bolig.css';import '${cwd}/src/modules/bolig/boligProgress.css';
 const ctx={user_id:'qa',company_id:'firm',enabled:true,role:'manager'},source={id:'case',scope_id:'unit',scope_title:'H0101',title:'Rosett etterjusteres'},root={id:'root',title:'Pilotprosjekt'};
-let data={context:ctx,root_id:'root',scope_id:'unit',basis:'b1',units:[{id:'unit',number:'H0101',address:'Demoparken 101',block_id:'block'}],members:[{id:'qa',name:'QA Prosjektleder'},{id:'other',name:'QA Montør'}],tasks:[],links:[],mail_enabled:false};const receipts=new Map();window.__calls=[];window.__lost=false;window.__hold=false;window.__snapshot=()=>structuredClone(data);
-window.__client={rpc:async(name,p)=>{window.__calls.push(structuredClone(p));if(p.p_company_id!=='firm')return {error:{code:'42501',message:'Prosjektet tilhører et annet firma'}};if(window.__hold)await new Promise(r=>window.__release=r);if(p.p_action==='get')return {data:structuredClone({...data,context:{...ctx,company_id:p.p_company_id,role:window.__role}})};const v=p.p_payload;if(receipts.has(v.request_id))return {data:structuredClone(receipts.get(v.request_id))};if(v.basis!==data.basis)return {error:{code:'PT409',message:'Grunnlaget er endret. Kladden beholdes.'}};data.tasks.push({id:v.task_id,title:v.title,owner_id:v.owner_id,owner_name:v.owner_id==='other'?'QA Montør':'QA Prosjektleder',unit_id:v.unit_id,unit_number:'H0101',planned_start:v.planned_start,planned_end:v.planned_end,status:'planned',active:true,archived:false});data.links.push({case_id:'case',task_id:v.task_id,source});data.basis+='x';receipts.set(v.request_id,structuredClone(data));if(window.__lost){window.__lost=false;throw Error('Forbindelsen ble brutt. Prøv lagringen igjen.');}return {data:structuredClone(data)};}};
-const app=createRoot(document.getElementById('app'));window.__role='manager';window.__show=(company='firm',role='manager',kind='followup')=>{window.__role=role;app.render(<main data-qa-company={company} className='bolig-dialog bolig-page' style={{position:'static',display:'block',maxWidth:900}}>{kind==='print'?<Print key={company+role+kind} context={{...ctx,company_id:company,role}} root={root} notice={{id:'n',current:true,valid:false}} onClose={()=>app.render(<p>Lukket</p>)}/>:<Followup key={company+role+kind} context={{...ctx,company_id:company,role}} root={root} scopeId='unit' source={source} onClose={()=>app.render(<p>Lukket</p>)}/>}</main>);};window.__show();
+let data={context:ctx,root_id:'root',scope_id:'unit',basis:'b1',units:[{id:'unit',number:'H0101',address:'Demoparken 101',block_id:'block'}],members:[{id:'qa',name:'QA Prosjektleder'},{id:'other',name:'QA Montør'}],tasks:[],links:[],mail_enabled:false};let planRevision=20;const plan=unit=>({...structuredClone(data),unit_id:unit,revision:planRevision,rooms:[],notices:[],deliveries:[],history:[],context:{...ctx,role:window.__role}});const receipts=new Map();window.__calls=[];window.__lost=false;window.__hold=false;window.__snapshot=()=>structuredClone(data);
+window.__client={rpc:async(name,p)=>{window.__calls.push({name,...structuredClone(p)});if(p.p_company_id!=='firm')return {error:{code:'42501',message:'Prosjektet tilhører et annet firma'}};if(window.__hold)await new Promise(r=>window.__release=r);if(name==='bolig_progress'){
+ if(window.__progressDeny)return {error:{code:'42501',message:'Tilgangen til aktiviteten er tilbakekalt'}};
+ if(p.p_action==='get')return {data:plan(p.p_unit_id)};
+ const v=p.p_payload;if(receipts.has(v.request_id))return {data:structuredClone(receipts.get(v.request_id))};
+ if(v.revision!==planRevision)return {error:{code:'PT409',message:'Planen er endret. Se over siste grunnlag.'}};
+ const i=data.tasks.findIndex(t=>t.id===v.id);if(i<0)return {error:{code:'42501',message:'Ukjent aktivitet'}};
+ planRevision++;data.tasks[i]={...data.tasks[i],...v,revision:data.tasks[i].revision+1,owner_name:v.owner_id==='other'?'QA Montør':'QA Prosjektleder'};
+ if(p.p_action==='archive')data.tasks[i].archived=true;
+ const result=plan(p.p_unit_id);receipts.set(v.request_id,structuredClone(result));
+ if(window.__lost){window.__lost=false;throw Error('Forbindelsen ble brutt etter aktivitetslagring.');}return {data:result};}
+if(p.p_action==='get')return {data:structuredClone({...data,context:{...ctx,company_id:p.p_company_id,role:window.__role}})};const v=p.p_payload;if(receipts.has(v.request_id))return {data:structuredClone(receipts.get(v.request_id))};if(v.basis!==data.basis)return {error:{code:'PT409',message:'Grunnlaget er endret. Kladden beholdes.'}};data.tasks.push({id:v.task_id,title:v.title,owner_id:v.owner_id,owner_name:v.owner_id==='other'?'QA Montør':'QA Prosjektleder',unit_id:v.unit_id,unit_number:'H0101',planned_start:v.planned_start,planned_end:v.planned_end,status:'planned',active:true,archived:false,revision:1,room_id:null,predecessor_id:null,actual_start:null,actual_end:null,required:false,note:'Oppfølging'});data.links.push({case_id:'case',task_id:v.task_id,source});data.basis+='x';receipts.set(v.request_id,structuredClone(data));if(window.__lost){window.__lost=false;throw Error('Forbindelsen ble brutt. Prøv lagringen igjen.');}return {data:structuredClone(data)};}};
+window.__setArchived=value=>{data.tasks[0].archived=value;window.dispatchEvent(new Event('focus'));};
+window.__external=()=>{planRevision++;data.tasks[0].note='Ny serveropplysning';window.dispatchEvent(new Event('focus'));};
+window.__otherDraft=()=>{const key=Object.keys(localStorage).find(k=>k.endsWith('progress-unit'));const v=JSON.parse(localStorage.getItem(key));const t={...data.tasks[0],id:'other-task',title:'Uferdig arbeid på en annen aktivitet'};data.tasks.push(t);v.editor={...t,revision:planRevision};localStorage.setItem(key,JSON.stringify(v));};
+const app=createRoot(document.getElementById('app'));window.__role='manager';window.__show=(company='firm',role='manager',kind='followup')=>{window.__role=role;app.render(<main data-qa-company={company} data-qa-role={role} className='bolig-dialog bolig-page' style={{position:'static',display:'block',maxWidth:900}}>{kind==='print'?<Print key={company+role+kind} context={{...ctx,company_id:company,role}} root={root} notice={{id:'n',current:true,valid:false}} onClose={()=>app.render(<p>Lukket</p>)}/>:<Followup key={company+role+kind} context={{...ctx,company_id:company,role}} root={root} scopeId='unit' source={source} onClose={()=>app.render(<p>Lukket</p>)}/>}</main>);};window.__show();
 `,
 );
 let server,
@@ -159,6 +172,273 @@ try {
     await button("Lagre oppfølging").count(),
     0,
     "Linked activity is read from progress engine",
+  );
+  await button("Åpne aktivitet").click();
+  const editor = () =>
+    page.getByRole("dialog", {
+      name: "Aktivitet og faktisk fremdrift",
+      exact: true,
+    });
+  await editor().getByLabel("Arbeid", { exact: true }).waitFor();
+  await editor().getByLabel("Ansvarlig", { exact: true }).selectOption("qa");
+  await editor()
+    .getByLabel("Planlagt slutt", { exact: true })
+    .fill("2026-11-02");
+  await page.evaluate(() => {
+    window.dispatchEvent(new Event("focus"));
+    document.dispatchEvent(new Event("visibilitychange"));
+  });
+  eq(
+    await editor().getByLabel("Planlagt slutt", { exact: true }).inputValue(),
+    "2026-11-02",
+    "Direct editor preserves draft on focus/visibility",
+  );
+  for (const width of [320, 390, 1366]) {
+    await page.setViewportSize({ width, height: 1000 });
+    eq(
+      await editor().evaluate((d) => d.scrollWidth <= d.clientWidth + 2),
+      true,
+      "Shared task editor fits " + width,
+    );
+  }
+  await editor()
+    .getByRole("button", { name: "Lukk og behold utkast", exact: true })
+    .click();
+  await button("Åpne aktivitet").click();
+  eq(
+    await editor().getByLabel("Planlagt slutt", { exact: true }).inputValue(),
+    "2026-11-02",
+    "Returning to source retains same activity draft",
+  );
+  await page.evaluate(() => (window.__lost = true));
+  await editor()
+    .getByRole("button", { name: "Lagre endringer", exact: true })
+    .click();
+  await editor().getByRole("alert").waitFor();
+  eq(
+    (await page.evaluate(() => window.__snapshot())).tasks.length,
+    1,
+    "Update does not create another activity",
+  );
+  await editor()
+    .getByRole("button", { name: "Prøv samme lagring igjen", exact: true })
+    .click();
+  await button("Åpne aktivitet").waitFor();
+  eq(await editor().count(), 0, "Confirmed save returns to the same case");
+  const updates = await page.evaluate(() =>
+    window.__calls.filter(
+      (c) => c.name === "bolig_progress" && c.p_action === "save",
+    ),
+  );
+  eq(updates.length, 2);
+  eq(
+    updates[0].p_payload,
+    updates[1].p_payload,
+    "Direct editor retries exact saved request",
+  );
+  eq(
+    updates[0].p_payload.revision,
+    20,
+    "Use plan revision, not independent task revision 1",
+  );
+  eq(
+    (await page.evaluate(() => window.__snapshot())).tasks[0].owner_id,
+    "qa",
+    "Responsible person updated in existing plan",
+  );
+  await page.getByText(/QA Prosjektleder · 29.10.2026 – 02.11.2026/).waitFor();
+  checks++;
+  eq(
+    (await page.evaluate(() => window.__snapshot())).links.length,
+    1,
+    "Source link is unchanged",
+  );
+  await button("Åpne aktivitet").click();
+  await editor()
+    .getByLabel("Arbeid", { exact: true })
+    .fill("Behold denne lokale beskrivelsen");
+  await page.evaluate(() => window.__external());
+  await editor()
+    .getByRole("button", {
+      name: "Se over og bruk siste grunnlag",
+      exact: true,
+    })
+    .waitFor();
+  eq(
+    await editor().getByLabel("Arbeid", { exact: true }).inputValue(),
+    "Behold denne lokale beskrivelsen",
+    "Fresh plan never overwrites unsent draft",
+  );
+  eq(
+    await editor()
+      .getByText("Sist lagret arbeidsnotat: Ny serveropplysning", {
+        exact: true,
+      })
+      .isVisible(),
+    true,
+    "Review includes changed server note",
+  );
+  eq(
+    await editor()
+      .getByRole("button", { name: "Lagre endringer", exact: true })
+      .isDisabled(),
+    true,
+    "Changed plan requires explicit review",
+  );
+  await editor()
+    .getByRole("button", {
+      name: "Se over og bruk siste grunnlag",
+      exact: true,
+    })
+    .click();
+  await editor()
+    .getByRole("button", { name: "Lagre endringer", exact: true })
+    .click();
+  await button("Åpne aktivitet").waitFor();
+  eq(
+    (await page.evaluate(() => window.__snapshot())).tasks[0].title,
+    "Behold denne lokale beskrivelsen",
+  );
+  // A different saved activity draft must be preserved until an explicit choice.
+  await page.evaluate(() => window.__otherDraft());
+  await button("Åpne aktivitet").click();
+  const choice = page.getByRole("dialog", {
+    name: "Du har et aktivitetsutkast",
+    exact: true,
+  });
+  await choice.waitFor();
+  eq(
+    await choice.getByText(/Uferdig arbeid på en annen aktivitet/).isVisible(),
+    true,
+    "Another activity draft is named before replacement",
+  );
+  await choice
+    .getByRole("button", { name: "Fortsett lagret utkast", exact: true })
+    .click();
+  eq(
+    await editor().getByLabel("Arbeid", { exact: true }).inputValue(),
+    "Uferdig arbeid på en annen aktivitet",
+  );
+  await editor()
+    .getByRole("button", { name: "Lukk og behold utkast", exact: true })
+    .click();
+  await button("Åpne aktivitet").click();
+  await choice
+    .getByRole("button", {
+      name: "Forkast utkast og åpne valgt aktivitet",
+      exact: true,
+    })
+    .click();
+  eq(
+    await editor().getByLabel("Arbeid", { exact: true }).inputValue(),
+    "Behold denne lokale beskrivelsen",
+    "Explicit replacement opens requested task only",
+  );
+  await editor().screenshot({ path: "/tmp/bolig-direct-activity-desktop.png" });
+  await page.setViewportSize({ width: 390, height: 900 });
+  await editor().screenshot({ path: "/tmp/bolig-direct-activity-mobile.png" });
+  await editor()
+    .getByRole("button", { name: "Lukk og behold utkast", exact: true })
+    .click();
+  await page.evaluate(() => window.__show("firm", "reader"));
+  await page.waitForFunction(
+    () => document.querySelector("main")?.dataset.qaRole === "reader",
+  );
+  await page
+    .getByRole("heading", {
+      name: "Behold denne lokale beskrivelsen",
+      exact: true,
+    })
+    .waitFor();
+  eq(
+    await button("Åpne aktivitet").count(),
+    0,
+    "Reader can see linked task but cannot edit",
+  );
+  await page.evaluate(() => {
+    window.__progressDeny = true;
+    window.__show("firm", "manager");
+  });
+  await page.waitForFunction(
+    () => document.querySelector("main")?.dataset.qaRole === "manager",
+  );
+  await button("Åpne aktivitet").click();
+  await editor()
+    .getByText("Tilgangen til aktiviteten er tilbakekalt", { exact: true })
+    .waitFor();
+  eq(
+    await editor().getByLabel("Arbeid", { exact: true }).count(),
+    0,
+    "Fresh access denial cannot expose cached task editor",
+  );
+  await editor()
+    .getByRole("button", {
+      name: "Lukk aktivitet og faktisk fremdrift",
+      exact: true,
+    })
+    .click();
+  await page.evaluate(() => (window.__progressDeny = false));
+  await button("Åpne aktivitet").click();
+  await editor().getByLabel("Arbeid", { exact: true }).waitFor();
+  await page.evaluate(() => window.__setArchived(true));
+  await editor()
+    .getByText(
+      "Aktiviteten er ikke tilgjengelig for redigering. Kontroller tilgang og aktiv tilknytning.",
+      { exact: true },
+    )
+    .waitFor();
+  eq(
+    await editor().getByLabel("Arbeid", { exact: true }).count(),
+    0,
+    "Fresh archive closes editable fields and explains the changed state",
+  );
+  await editor()
+    .getByRole("button", { name: "Tilbake til saken", exact: true })
+    .click();
+  await page.evaluate(() => window.__setArchived(false));
+  await button("Åpne aktivitet").waitFor();
+  await button("Åpne aktivitet").click();
+  await editor()
+    .getByRole("button", { name: "Arkiver aktivitet", exact: true })
+    .click();
+  const archive = page.getByRole("dialog", {
+    name: "Arkiver aktivitet",
+    exact: true,
+  });
+  await archive
+    .getByLabel("Begrunnelse", { exact: true })
+    .fill("Arbeidet er flyttet etter konkret avklaring");
+  await page.evaluate(() => (window.__lost = true));
+  await archive
+    .getByRole("button", { name: "Bekreft arkivering", exact: true })
+    .click();
+  await archive
+    .getByRole("button", { name: "Prøv samme lagring igjen", exact: true })
+    .waitFor();
+  await archive
+    .getByRole("button", { name: "Prøv samme lagring igjen", exact: true })
+    .click();
+  await page.getByText(/Arkivert/).waitFor();
+  eq(
+    await button("Åpne aktivitet").count(),
+    0,
+    "Archived task is read-only after exact recovered archive",
+  );
+  const archives = await page.evaluate(() =>
+    window.__calls.filter(
+      (c) => c.name === "bolig_progress" && c.p_action === "archive",
+    ),
+  );
+  eq(archives.length, 2);
+  eq(
+    archives[0].p_payload,
+    archives[1].p_payload,
+    "Lost archive receipt remains recoverable after task becomes archived",
+  );
+  eq(
+    (await page.evaluate(() => window.__snapshot())).links.length,
+    1,
+    "Archiving activity never deletes the source link or closes source",
   );
   await page.evaluate(() => window.__show("firm", "manager", "print"));
   await field("Kontaktperson i prosjektet").fill("DEMO – Prosjektleder");
