@@ -1,0 +1,329 @@
+.bolig-partners {
+  color: #18352c;
+  font-family: Inter, system-ui, sans-serif;
+  line-height: 1.5;
+  min-width: 0;
+}
+.bolig-partner-hero {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  border: 1px solid #d8e5df;
+  background: linear-gradient(115deg, #eff7f2, #fff);
+  padding: 26px;
+  border-radius: 18px;
+  margin: 18px 0;
+}
+.bolig-partner-hero h1,
+.bolig-partner-hero h2 {
+  margin: 4px 0;
+  font-size: clamp(23px, 3vw, 30px);
+  line-height: 1.2;
+}
+.bolig-partner-hero p {
+  max-width: 650px;
+  margin: 8px 0 0;
+  color: #50655b;
+}
+.bolig-partner-hero small {
+  letter-spacing: 0.12em;
+  font-size: 11px;
+  font-weight: 750;
+}
+.bolig-partner-icon {
+  display: grid;
+  place-items: center;
+  background: #dceee1;
+  color: #286040;
+  border-radius: 15px;
+  width: 62px;
+  height: 62px;
+  flex-shrink: 0;
+}
+.bolig-partner-hero > button {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.bolig-partners button,
+.bolig-partners input,
+.bolig-partners select,
+.bolig-partners textarea {
+  font: inherit;
+}
+.bolig-partners button {
+  cursor: pointer;
+  border: 1px solid #c7d8cd;
+  border-radius: 9px;
+  padding: 10px 14px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  background: #fff;
+  color: #214c34;
+}
+.bolig-partners button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.bolig-partners button.bolig-primary {
+  background: #245c3d;
+  color: #fff;
+  border-color: #245c3d;
+}
+.bolig-partner-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin: 18px 0;
+  flex-wrap: wrap;
+}
+.bolig-partner-toolbar > span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.bolig-partner-empty {
+  background: #f7faf8;
+  border: 1px dashed #b9cec0;
+  padding: 36px;
+  text-align: center;
+  border-radius: 16px;
+}
+.bolig-partner-empty p {
+  max-width: 620px;
+  margin: 10px auto;
+  color: #55665c;
+}
+.bolig-partner-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+.bolig-partner-cards .bolig-partner-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  padding: 22px;
+  gap: 10px;
+  border-color: #d9e4dd;
+  box-shadow: 0 3px 15px #163a2310;
+}
+.bolig-partner-card b {
+  font-size: 20px;
+}
+.bolig-partner-tag {
+  display: inline-block;
+  background: #e8f1eb;
+  border: 1px solid #d8e5dc;
+  border-radius: 30px;
+  font-size: 12px;
+  padding: 4px 9px;
+  white-space: nowrap;
+}
+.bolig-partner-items {
+  display: grid;
+  gap: 18px;
+  margin: 18px 0;
+}
+.bolig-partner-item {
+  border: 1px solid #d9e4dd;
+  border-radius: 14px;
+  padding: 22px;
+  background: #fff;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.bolig-partner-item h3 {
+  margin: 5px 0;
+  font-size: 20px;
+}
+.bolig-partner-item-head {
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  align-items: start;
+}
+.bolig-partner-item-head small {
+  color: #5b7063;
+}
+.bolig-partner-item details {
+  border-top: 1px solid #e4ebe6;
+  margin: 12px 0;
+  padding: 12px 0;
+}
+.bolig-partner-item summary {
+  cursor: pointer;
+  font-weight: 650;
+  padding: 4px 0;
+}
+.bolig-partner-item li {
+  padding: 8px 0;
+}
+.bolig-partner-item small,
+.bolig-partner-response span {
+  display: block;
+}
+.bolig-partner-response {
+  display: grid;
+  gap: 5px;
+  background: #eff7f1;
+  border-left: 3px solid #4e8b60;
+  padding: 13px 16px;
+  border-radius: 5px;
+  margin: 15px 0;
+}
+.bolig-partner-response.has-issue {
+  background: #fff6e8;
+  border-color: #cb8c32;
+  color: #5a421b;
+}
+.bolig-partner-response p {
+  margin: 3px 0;
+  white-space: pre-wrap;
+}
+.bolig-partner-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.bolig-partner-selection {
+  max-height: 330px;
+  overflow: auto;
+  border: 1px solid #d8e5dd;
+  border-radius: 10px;
+  padding: 8px;
+  margin: 12px 0;
+}
+.bolig-partner-selection > label {
+  display: flex !important;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border-bottom: 1px solid #eef2ef;
+  cursor: pointer;
+}
+.bolig-partner-selection input {
+  width: 20px !important;
+  height: 20px;
+  flex-shrink: 0;
+}
+.bolig-partner-selection small {
+  display: block;
+  color: #5d7063;
+}
+.bolig-partner-portal {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 22px;
+  box-sizing: border-box;
+  background: #f9fbfa;
+  min-height: 100vh;
+}
+.bolig-partner-portal * {
+  box-sizing: border-box;
+}
+.bolig-partner-project {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  background: white;
+  border: 1px solid #e0e9e3;
+  padding: 20px;
+  border-radius: 14px;
+}
+.bolig-partner-project h2,
+.bolig-partner-project p {
+  margin: 5px 0;
+}
+.bolig-partner-tabs {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid #dce6df;
+  padding: 8px 0;
+}
+.bolig-partner-tabs [aria-pressed="true"] {
+  background: #245c3d;
+  color: #fff;
+}
+.bolig-partner-portal [role="alert"] {
+  padding: 14px;
+  background: #fff0e9;
+  color: #803e25;
+  border-radius: 8px;
+}
+.bolig-partner-portal [role="status"] {
+  padding: 12px;
+  background: #e6f4e9;
+}
+.bolig-catalog-dialog .bolig-partner-fields label {
+  margin: 0;
+}
+.bolig-partner-toolbar label {
+  min-width: 0;
+  flex: 1;
+}
+.bolig-partner-toolbar a {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  margin-top: 7px;
+  color: #245c3d;
+}
+:is(.bolig-partner-portal, .bolig-partner-dialog) label {
+  display: grid;
+  gap: 6px;
+  margin: 12px 0;
+}
+:is(.bolig-partner-portal, .bolig-partner-dialog) fieldset {
+  border: 0;
+  padding: 0;
+}
+:is(.bolig-partner-portal, .bolig-partner-dialog) input,
+:is(.bolig-partner-portal, .bolig-partner-dialog) select,
+:is(.bolig-partner-portal, .bolig-partner-dialog) textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #bed0c3;
+  border-radius: 7px;
+}
+.bolig-partner-portal textarea {
+  min-height: 100px;
+}
+@media (max-width: 680px) {
+  .bolig-partner-hero {
+    flex-wrap: wrap;
+    padding: 19px;
+    gap: 13px;
+  }
+  .bolig-partner-hero > div {
+    flex: 1;
+    min-width: 170px;
+  }
+  .bolig-partner-hero > button {
+    width: 100%;
+  }
+  .bolig-partner-item-head,
+  .bolig-partner-project {
+    flex-direction: column;
+  }
+  .bolig-partner-fields {
+    grid-template-columns: 1fr;
+  }
+  .bolig-partner-portal {
+    padding: 12px;
+  }
+  .bolig-partner-item {
+    padding: 17px;
+  }
+  .bolig-partner-selection {
+    max-height: 260px;
+  }
+  .bolig-partner-empty {
+    padding: 23px;
+  }
+}

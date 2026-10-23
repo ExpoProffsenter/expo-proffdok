@@ -22,6 +22,7 @@ import {UnitDialogueSettings} from "./BoligDialogue.jsx";
 import BoligPortalManager from "./BoligPortalManager.jsx";
 import BoligCommerce from "./BoligCommerce.jsx";
 import BoligProgress from "./BoligProgress.jsx";
+import BoligPartners from "./BoligPartners.jsx";
 import BoligUnitTasks from "./BoligUnitTasks.jsx";
 import BoligRooms from "./BoligRooms.jsx";
 import BoligBuildingOverview from "./BoligBuildingOverview.jsx";
@@ -560,6 +561,7 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
                           Hovedside
                         </button>
                         <button type="button" aria-pressed={view === "progress"} onClick={() => setView("progress")}><CalendarDays size={17}/>Fremdrift og varsler</button>
+                        <button type="button" aria-pressed={view === "partners"} onClick={() => setView("partners")}>UE og leverandører</button>
                         <button
                           type="button"
                           aria-pressed={
@@ -869,6 +871,7 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
                     </div>
                   </div>
                   {view === "progress" && <BoligProgress key={`${ctx.user_id}/${ctx.company_id}/${record.root.id}`} context={ctx} root={record.root}/>}
+                  {view === "partners" && <BoligPartners key={`${ctx.user_id}/${ctx.company_id}/${record.root.id}`} context={ctx} root={record.root}/>}
                   <div
                     className={`bolig-main-grid ${unit ? "has-selected" : ""}`}
                     hidden={view !== "overview"}

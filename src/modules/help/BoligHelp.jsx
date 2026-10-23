@@ -10,6 +10,30 @@ export function BoligHelp() {
         «Hovedside» viser bygg og boliger i prosjektet du har valgt.
       </p>
       <details>
+        <summary>UE og leverandører</summary>
+        <p>
+          Åpne «UE og leverandører» i prosjektet. Velg «Gi tilgang», fyll inn
+          kontakt og bedrift og velg ordrene eller aktivitetene som skal deles.
+          Ordren må være faktisk bestilt. Alle varer i en valgt ordre deles uten
+          priser. Bruk separate ordre for ulike leverandører. «Se nøyaktig hva
+          som deles» viser mottakerens grunnlag før du velger «Opprett
+          tilgangslenke».
+        </p>
+        <p>
+          Lenken gir tilgang til den som har den. Del den bare med kontakten du
+          har valgt. Ingen invitasjon sendes automatisk. Tilgangen gjelder i
+          valgt antall dager og kan stoppes med «Trekk tilbake tilgang». Ved
+          nytt omfang eller ny kontakt: trekk tilbake og opprett en ny tilgang.
+        </p>
+        <p>
+          Kontakten åpner «Leveranser» eller «Fremdrift» og velger «Bekreft dato
+          / meld avvik». Svarene vises i oppfølgingen. Endret grunnlag merker
+          tidligere svar som historikk. Bekreftelsen registrerer ikke varemottak
+          og flytter ingen datoer. Prosjektleder følger opp i eksisterende
+          bestilling eller «Fremdrift og varsler».
+        </p>
+      </details>
+      <details>
         <summary>Fremdrift og varsler</summary>
         <p>
           Samlet fremdriftsplan er hovedbildet. Grupper etter leilighet,

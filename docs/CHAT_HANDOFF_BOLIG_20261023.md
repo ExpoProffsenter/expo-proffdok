@@ -96,3 +96,7 @@ Første bokstav lukket kontaktseksjonen i beboervarselet; nå separat UI-tilstan
 
 ### Pilotens etterprøve fullført
 Kode3f5ad246, Vercel dpl_6Jdy15utsGDsHX6JNiCxTmZjJCqa READY og faktisk BoligEntry-BLHHB0ED.js HTTP200. Samme innlogging/utkast; naturlig kontakttyping fungerer. Gantt sortert,161 oppgaver beholdt. Faktisk én-sides byggvarsel med logo generert, gruppe b95a5ac3-9901-4730-8e41-64708e633eed har20 papirrader,digitalfalse,publisert0; mailAV,kø0. Ny PDF/skjermbevis og eksakte grenser i QA-notatet. CI649 kjørte ved etterprøven; siste doc-checkpoint/CI-status leses i PR278. Ingen Production/TEST OK.
+
+## Pågående: UE-/leverandørtilgang
+
+Kenneth ber om å fortsette fra handoff etter pilot. Start05ff9aef, main36462e2b og PR278 OPEN DRAFT bekreftet. Miljømål BEGGE, samme branch/Preview, utvikling kun Sandbox. Ny prosjektflate for eksplisitte ordre-/aktivitetsutvalg og navngitt, tidsbegrenset capability-lenke. Ingen ekte invitasjon, produksjonsmerge eller subagenter. Konkret scope, autorisasjon, sikkerhetsgrenser og testliste i `docs/qa/BOLIG_PARTNERE_20261023.md`. Arbeidet er lokalt til ekstern commit/CI/Preview er registrert der.
