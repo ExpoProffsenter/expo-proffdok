@@ -20,6 +20,7 @@ export default function BoligGantt({
   readOnly,
   onSave,
   dirty,
+  initiallyCollapsed = false,
 }) {
   const key = `${root.id}:${unit?.id || "all"}:gantt`;
   const [view, setView] = useBoligUiState(context, `${key}:view`, "week"),
@@ -29,9 +30,19 @@ export default function BoligGantt({
       tasks[0]?.planned_start || todayOslo(),
     ),
     [groupBy, setGroupBy] = useBoligUiState(context, `${key}:group`, "unit"),
-    [closed, setClosed] = useBoligUiState(context, `${key}:closed`, {}),
-    [query, setQuery] = useState(""),
-    [onlyGroup, setOnlyGroup] = useState("");
+    [closed, setClosed] = useBoligUiState(
+      context,
+      `${key}:closed`,
+      initiallyCollapsed
+        ? Object.fromEntries(tasks.map((t) => [`unit/${t.unit_id}`, true]))
+        : {},
+    ),
+    [query, setQuery] = useBoligUiState(context, `${key}:query`, ""),
+    [onlyGroup, setOnlyGroup] = useBoligUiState(
+      context,
+      `${key}:only-group`,
+      "",
+    );
   const [limit, setLimit] = useState(120),
     [drag, setDrag] = useState(null),
     [error, setError] = useState("");
@@ -258,32 +269,38 @@ export default function BoligGantt({
             onChange={(e) => setGroupBy(e.target.value)}
           >
             <option value="unit">Leilighet</option>
-            <option value="group">Stammegruppe</option>
+            {!!groups.length && <option value="group">Stammegruppe</option>}
             <option value="activity">Arbeid / fag</option>
           </select>
         </label>
-        <label>
-          Stammegruppe
-          <select
-            aria-label="Stammegruppe"
-            value={onlyGroup}
-            onChange={(e) => setOnlyGroup(e.target.value)}
-          >
-            <option value="">Alle grupper</option>
-            {groups.map((g) => (
-              <option key={g.id} value={g.id}>
-                {g.name}
-              </option>
-            ))}
-          </select>
-        </label>
+        {!!groups.length && (
+          <label>
+            Stammegruppe
+            <select
+              aria-label="Stammegruppe"
+              value={onlyGroup}
+              onChange={(e) => setOnlyGroup(e.target.value)}
+            >
+              <option value="">Alle grupper</option>
+              {groups.map((g) => (
+                <option key={g.id} value={g.id}>
+                  {g.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         <label>
           Søk i Gantt
           <input
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Bolig, aktivitet eller ansvarlig"
+            placeholder={
+              readOnly
+                ? "Bolig, adresse eller aktivitet"
+                : "Bolig, aktivitet eller ansvarlig"
+            }
           />
         </label>
         <label>
@@ -320,7 +337,7 @@ export default function BoligGantt({
       <p>
         {shortDate(range.dates[0])}–{shortDate(range.dates.at(-1))}{" "}
         {anchor.slice(0, 4)} · {matching.length} aktiviteter. Trykk en stolpe
-        for detaljer. Dra for å flytte; endene endrer varighet.
+        for detaljer.{!readOnly && " Dra for å flytte; endene endrer varighet."}
       </p>
       {error && <p role="alert">{error}</p>}
       <div className="bolig-gantt-scroll">
@@ -477,8 +494,9 @@ export default function BoligGantt({
           ))}
           {!matching.length && (
             <p>
-              Ingen aktiviteter i utvalget. Velg «Planlegg flere boliger» for å
-              lage en plan.
+              Ingen aktiviteter i utvalget.
+              {!readOnly &&
+                " Velg «Planlegg flere boliger» for å lage en plan."}
             </p>
           )}
         </div>

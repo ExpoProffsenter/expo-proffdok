@@ -128,3 +128,8 @@ Kenneth ber om utfylling av sjekklister, egne PDF-lister/andre filer og bilder. 
 
 
 UE-flyten er faktisk UI-testet på korrigertb45c486e/READY dpl_DyD3ACPmLEKKuiQzQNFS8x4Wev48: egen prosjektliste, PDF1452/PNG2629 bytes, privat nedlasting med lik SHA256, begge på kontrollpunkt, fullført i native kvalitet revision4. Prosjektleder så liste/filer/historikk i Ferdigstilling av prosjekt → Åpne dokumentasjon. Filvelgerens focus/reautorisasjon er rettet med skjult, fortsatt montert input og kontrollerte detaljer;23 UE-browser PASS. Historikkvariabel action skjulte eventkolonnen; Sandbox20261023195824 kvalifiserer kolonnene, nye UE-etiketter,1309 DB+faktisk manager-gateway-smoke PASS. Prøvegrant07e9abb4 tilbakekalt og gammel lenke faktisk avvist;0 aktive grants. Fiktiv liste/to filer/fire historikksteg beholdes, øvrig pilot/ordre/plan/mail bevart. Screenshot og siste testliste i QA. Nyeste SHA/CI/READY avleses fra PR278; ikke erklær siste CI grønn før den er ferdig. Ingen prod/utsending/Bolig TEST OK.
+
+
+### Mottakersiden: Gantt og design
+
+Kenneth fant lenken selv. Automatisk invitasjonsmail finnes ikke; produksjonssetting aktiverer den ikke av seg selv. Ny forespørsel er Gantt fremfor lang aktivitetskortliste og tydelig logo/appdesign. Implementasjonen gjenbruker BoligGantt readOnly, foldet per leilighet, første delte fane Fremdrift, detaljer→eksisterende svar. Kun frontend/QA/docs; ingen SQL/Edge/migrasjoner. Statisk eksisterende Expo-logo er produktprofilering, faktisk prosjektfirma navngis fra eksisterende data. Gantt-søk/gruppefilter persisteres nå i session UI-state som øvrige chartkontroller. Native UE-filinput må fortsatt være montert skjult under reauth. Les siste QA-avsnitt for status; SHA/CI/READY må alltid avleses fra gjeldende head.

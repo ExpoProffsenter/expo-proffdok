@@ -216,12 +216,145 @@
   color: #5d7063;
 }
 .bolig-partner-portal {
-  max-width: 1040px;
+  max-width: 1440px;
   margin: 0 auto;
   padding: 22px;
   box-sizing: border-box;
-  background: #f9fbfa;
+  background: #f4f7f8;
   min-height: 100vh;
+}
+.bolig-partner-brand {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  padding: 12px 4px 20px;
+  border-bottom: 1px solid #d7e2e5;
+}
+.bolig-partner-brand img {
+  width: 250px;
+  max-width: 55%;
+  height: auto;
+  object-fit: contain;
+}
+.bolig-partner-brand > span {
+  text-align: right;
+  font-size: 20px;
+  color: #194851;
+}
+.bolig-partner-brand small {
+  display: block;
+  font-size: 11px;
+  color: #60777d;
+}
+.bolig-partner-portal .bolig-partner-hero {
+  background: linear-gradient(115deg, #173f49, #286573);
+  border: 0;
+  color: #fff;
+  padding: 30px;
+  box-shadow: 0 10px 28px #173f4914;
+}
+.bolig-partner-portal .bolig-partner-hero p {
+  color: #d5e9eb;
+}
+.bolig-partner-portal .bolig-partner-icon {
+  color: #fff;
+  background: #ffffff18;
+}
+.bolig-partner-portal .bolig-partner-project {
+  border-color: #d6e2e5;
+  box-shadow: 0 3px 14px #173f4905;
+}
+.bolig-partner-portal .bolig-partner-tabs {
+  gap: 10px;
+  padding: 18px 0;
+  margin-bottom: 14px;
+}
+.bolig-partner-portal .bolig-partner-tabs button {
+  padding: 12px 20px;
+  font-weight: 700;
+  border-color: #c9d9dd;
+  color: #214f59;
+}
+.bolig-partner-portal .bolig-partner-tabs [aria-pressed="true"] {
+  background: #1c5260;
+  border-color: #1c5260;
+  color: #fff;
+}
+.bolig-partner-portal .bolig-gantt-heading {
+  flex-wrap: wrap;
+}
+.bolig-partner-portal .bolig-gantt-label button {
+  justify-content: flex-start;
+  display: block;
+}
+.bolig-partner-portal .bolig-gantt-bar {
+  cursor: pointer;
+}
+.bolig-partner-portal .bolig-gantt-handle {
+  visibility: hidden;
+}
+.bolig-partner-portal .bolig-gantt {
+  margin-bottom: 12px;
+}
+.bolig-partner-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  font-size: 12px;
+  color: #526b73;
+}
+.bolig-partner-legend span::before {
+  content: "";
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: #4a8594;
+  margin-right: 6px;
+}
+.bolig-partner-legend span:nth-child(2)::before {
+  background: #cb922e;
+}
+.bolig-partner-legend span:nth-child(3)::before {
+  background: #3e8c69;
+}
+.bolig-partner-legend span:nth-child(4)::before {
+  background: #a86458;
+}
+.bolig-partner-task-detail {
+  padding: 16px;
+  border: 1px solid #cbdde0;
+  background: #edf5f4;
+  border-radius: 14px;
+  margin: 18px 0;
+}
+@media (max-width: 680px) {
+  .bolig-partner-brand {
+    gap: 12px;
+  }
+  .bolig-partner-brand > span {
+    font-size: 16px;
+  }
+  .bolig-partner-portal .bolig-partner-hero {
+    padding: 22px 18px;
+    display: block;
+  }
+  .bolig-partner-portal .bolig-partner-hero > div {
+    min-width: 0;
+  }
+  .bolig-partner-portal .bolig-partner-hero h1 {
+    overflow-wrap: anywhere;
+  }
+  .bolig-partner-portal .bolig-partner-icon {
+    margin-bottom: 14px;
+  }
+  .bolig-partner-portal .bolig-gantt-row {
+    grid-template-columns: 160px 1fr;
+  }
+  .bolig-partner-portal .bolig-gantt-heading {
+    padding: 16px;
+  }
 }
 .bolig-partner-portal * {
   box-sizing: border-box;

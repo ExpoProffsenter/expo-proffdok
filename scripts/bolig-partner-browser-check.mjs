@@ -71,7 +71,10 @@ try {
       .map((x) => x.source)
       .join("\n");
   server = http.createServer((req, res) => {
-    if (req.url === "/app.js") {
+    if (req.url === "/expo-logo.png") {
+      res.setHeader("content-type", "image/png");
+      res.end(fs.readFileSync(path.join(cwd, "public/expo-logo.png")));
+    } else if (req.url === "/app.js") {
       res.setHeader("content-type", "text/javascript");
       res.end(script);
     } else if (req.url === "/app.css") {
@@ -279,6 +282,38 @@ try {
   );
   eq(
     await page
+      .getByRole("img", { name: "Expo Proffsenter", exact: true })
+      .count(),
+    1,
+    "visible app branding",
+  );
+  eq(
+    await page.getByRole("region", { name: "Samlet Gantt-skjema" }).count(),
+    1,
+    "progress opens as Gantt",
+  );
+  eq(
+    await page.locator(".bolig-gantt-row.summary").count(),
+    1,
+    "Gantt begins with apartment overview",
+  );
+  eq(
+    await page.locator(".bolig-gantt-bar").count(),
+    0,
+    "activities initially folded",
+  );
+  eq(
+    await button("Se over datoendringer").count(),
+    0,
+    "no external plan editor",
+  );
+  eq(
+    await page.getByText(/Dra for å flytte/).count(),
+    0,
+    "no misleading drag instruction",
+  );
+  eq(
+    await page
       .getByRole("button", { name: "Leveranser (1)", exact: true })
       .count(),
     1,
@@ -337,6 +372,7 @@ try {
   await page
     .getByText("Svaret er registrert hos prosjektet.", { exact: true })
     .waitFor();
+  await button("Leveranser (1)").click();
   eq(
     await page.locator(".bolig-partner-response").count(),
     1,
@@ -354,6 +390,20 @@ try {
     "response does not mark receipt",
   );
   await button("Fremdrift (1)").click();
+  await button("Vis alle aktiviteter").click();
+  const callsBeforeChart = await page.evaluate(() => window.__calls.length);
+  await page.locator(".bolig-gantt-bar").press("Alt+ArrowRight");
+  eq(
+    await page.evaluate(() => window.__calls.length),
+    callsBeforeChart,
+    "readonly keyboard cannot change plan",
+  );
+  await page.locator(".bolig-gantt-bar").press("Enter");
+  eq(
+    await dialog("Aktivitetsdetaljer").count(),
+    1,
+    "chart opens current activity details",
+  );
   await button("Bekreft dato / meld avvik").click();
   d = dialog("Bekreft dato eller meld avvik");
   await d.getByLabel("Svar", { exact: true }).selectOption("issue");
@@ -378,6 +428,10 @@ try {
   );
   await button("Jeg har sett siste grunnlag").click();
   await button("Registrer svar").click();
+  await page
+    .getByText("Svaret er registrert hos prosjektet.", { exact: true })
+    .waitFor();
+  await page.locator(".bolig-gantt-bar").press("Enter");
   await page.getByText("Avvik meldt", { exact: true }).waitFor();
   eq(await page.getByText("Forsinket leveranse", { exact: true }).count(), 1);
   await page.evaluate(() => {
@@ -394,6 +448,7 @@ try {
     1,
     "changed server data keeps historical response",
   );
+  await page.getByLabel("Lukk aktivitetsdetaljer", { exact: true }).click();
   for (const width of [1366, 390, 320]) {
     await page.setViewportSize({ width, height: 900 });
     await page.screenshot({
@@ -408,6 +463,7 @@ try {
       "no horizontal overflow " + width,
     );
   }
+  await page.locator(".bolig-gantt-bar").press("Enter");
   await button("Bekreft dato / meld avvik").click();
   d = dialog("Bekreft dato eller meld avvik");
   await page.screenshot({
@@ -435,6 +491,11 @@ try {
     await page.getByRole("dialog").count(),
     0,
     "revoked access hides open answer form",
+  );
+  eq(
+    await page.getByRole("region", { name: "Samlet Gantt-skjema" }).count(),
+    0,
+    "revoked access hides chart",
   );
   await page.evaluate(() => {
     window.__deny = false;
@@ -494,8 +555,12 @@ try {
     window.dispatchEvent(new Event("focus"));
   });
   await button("Fremdrift (2)").click();
+  await button("Vis alle aktiviteter").click();
   eq(
-    await page.getByText("Ny leilighet", { exact: true }).count(),
+    await page
+      .locator(".bolig-gantt-label")
+      .getByText("Ny leilighet", { exact: true })
+      .count(),
     1,
     "new apartment included without selections",
   );
@@ -510,9 +575,31 @@ try {
   );
   await page.getByRole("searchbox").fill("H0201");
   eq(
-    await page.locator(".bolig-partner-item").count(),
+    await page
+      .locator(".bolig-gantt-row:not(.summary):not(.bolig-gantt-calendar)")
+      .count(),
     1,
     "apartment search filters rows",
+  );
+  await page.evaluate(() => window.dispatchEvent(new Event("blur")));
+  eq(
+    await page.getByRole("region", { name: "Samlet Gantt-skjema" }).count(),
+    0,
+    "sleep hides chart",
+  );
+  await page.evaluate(() => window.dispatchEvent(new Event("focus")));
+  await page.getByRole("region", { name: "Samlet Gantt-skjema" }).waitFor();
+  eq(
+    await page.getByRole("searchbox").inputValue(),
+    "H0201",
+    "chart search survives reauthorization",
+  );
+  eq(
+    await page
+      .locator(".bolig-gantt-row:not(.summary):not(.bolig-gantt-calendar)")
+      .count(),
+    1,
+    "chart expansion survives reauthorization",
   );
   await page.evaluate(() => {
     window.__features(["orders"]);

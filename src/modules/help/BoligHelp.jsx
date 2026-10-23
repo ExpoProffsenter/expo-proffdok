@@ -31,13 +31,15 @@ export function BoligHelp() {
           Eldre lenker med enkeltutvalg beholder sitt opprinnelige omfang.
         </p>
         <p>
-          Kontakten åpner «Leveranser» eller «Fremdrift» og velger «Bekreft dato
-          / meld avvik». Svarene vises i oppfølgingen. Endret grunnlag merker
-          tidligere svar som historikk. Bekreftelsen registrerer ikke varemottak
-          og flytter ingen datoer. Prosjektleder følger opp i eksisterende
-          bestilling eller «Fremdrift og varsler». «Sjekklister» viser
-          kontrollpunkter og status. Kontakten kan søke etter leilighet, adresse
-          eller innhold.
+          «Fremdrift» åpner et samlet Gantt-skjema. Pilene ved leilighetene
+          viser aktivitetene. Velg dag, uke eller måned og søk i planen. Trykk
+          på en aktivitet eller stolpe for detaljer og «Bekreft dato / meld
+          avvik». Under «Leveranser» finnes samme svarknapp på ordren. Svarene
+          vises i oppfølgingen. Endret grunnlag merker tidligere svar som
+          historikk. Bekreftelsen registrerer ikke varemottak og flytter ingen
+          datoer. Prosjektleder følger opp i eksisterende bestilling eller
+          «Fremdrift og varsler». «Sjekklister» viser kontrollpunkter og status.
+          Kontakten kan søke etter leilighet, adresse eller innhold.
         </p>
         <p>
           For UE velger du «Tilgang til sjekklister»: Les, eller utfylling med

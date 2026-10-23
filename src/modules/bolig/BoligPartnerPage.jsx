@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Truck, ShieldCheck } from "lucide-react";
+import { CalendarDays, ShieldCheck } from "lucide-react";
 import Dialog from "./BoligEditorDialog.jsx";
 import Items from "./BoligPartnerItems.jsx";
 import PartnerQuality from "./BoligPartnerQuality.jsx";
+import Gantt from "./BoligGantt.jsx";
 import {
   partnerPortalRpc,
   partnerDate,
@@ -12,6 +13,7 @@ import {
 } from "./boligPartnerClient.js";
 import "./boligPartners.css";
 import "./bolig.css";
+import "./boligProgress.css";
 export default function BoligPartnerPage() {
   const [token, setToken] = useState(() =>
     location.hash.replace(/^#partner=/, ""),
@@ -39,12 +41,13 @@ function PartnerPage({ token }) {
   const [open, setOpen] = useState(false),
     [notice, setNotice] = useState(""),
     [localError, setLocalError] = useState(""),
-    [tab, setTab] = useState("orders"),
+    [tab, setTab] = useState(null),
+    [selectedTask, setSelectedTask] = useState(null),
     [query, setQuery] = useState(""),
     [limit, setLimit] = useState(40);
   const tabs = [
-    { id: "orders", feature: "orders", title: "Leveranser" },
     { id: "tasks", feature: "progress", title: "Fremdrift" },
+    { id: "orders", feature: "orders", title: "Leveranser" },
     { id: "checklists", feature: "checklists", title: "Sjekklister" },
   ].filter((x) =>
     data?.features ? data.features.includes(x.feature) : x.id !== "checklists",
@@ -142,15 +145,36 @@ function PartnerPage({ token }) {
     );
   };
   const changed = target && saved.target?.basis !== target.basis;
+  // Derive chart rows only from the current capability projection. The chart
+  // receives no internal client, manager callbacks or persistent authority.
+  const chartTasks = (data?.tasks || []).map((t) => ({
+    ...t,
+    active: true,
+    unit_number: t.number,
+    unit_id: JSON.stringify([t.address, t.number]),
+  }));
+  const taskDetail = data?.tasks.find((t) => t.id === selectedTask);
   return (
     <main className="bolig-partner-portal bolig-partners">
+      <div className="bolig-partner-brand">
+        <img
+          src="/expo-logo.png"
+          alt="Expo Proffsenter"
+          width="250"
+          height="53"
+        />
+        <span>
+          Expo <b>ProffDok</b>
+          <small>Prosjektsamarbeid</small>
+        </span>
+      </div>
       <header className="bolig-partner-hero">
         <span className="bolig-partner-icon">
-          <Truck size={30} />
+          <CalendarDays size={30} />
         </span>
         <div>
-          <small>PROSJEKTSAMARBEID</small>
-          <h1>Ditt prosjekt</h1>
+          <small>OVERSIKT · SAMARBEID · DOKUMENTASJON</small>
+          <h1>Prosjektsamarbeid</h1>
           <p>
             Følg fremdrift, kontroller og leveranser som prosjektet har delt.
           </p>
@@ -225,18 +249,61 @@ function PartnerPage({ token }) {
               </button>
             ))}
           </nav>
-          <label>
-            Søk etter leilighet, adresse eller innhold
-            <input
-              type="search"
-              value={query}
-              onChange={(e) => {
-                setQuery(e.target.value);
-                setLimit(40);
-              }}
-            />
-          </label>
-          {items.length ? (
+          {activeTab !== "tasks" && (
+            <label>
+              Søk etter leilighet, adresse eller innhold
+              <input
+                type="search"
+                value={query}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  setLimit(40);
+                }}
+              />
+            </label>
+          )}
+          {activeTab === "tasks" ? (
+            <>
+              <Gantt
+                key={data.id}
+                tasks={chartTasks}
+                context={{
+                  user_id: `partner:${data.id}`,
+                  company_id: "shared",
+                }}
+                root={{ id: data.id }}
+                readOnly
+                initiallyCollapsed
+                onEdit={(t) => setSelectedTask(t.id)}
+              />
+              <p className="bolig-partner-legend">
+                <span>Planlagt</span>
+                <span>Pågår</span>
+                <span>Utført</span>
+                <span>Stanset</span>
+              </p>
+              <p>
+                Åpne en leilighet med pilen. Trykk på arbeidet eller stolpen for
+                å se detaljer, bekrefte dato eller melde avvik.
+              </p>
+              {taskDetail && (
+                <Dialog
+                  className="bolig-partner-dialog"
+                  title="Aktivitetsdetaljer"
+                  onClose={() => setSelectedTask(null)}
+                >
+                  <Items
+                    items={[taskDetail]}
+                    events={data.events}
+                    onRespond={(t) => {
+                      setSelectedTask(null);
+                      respond(t);
+                    }}
+                  />
+                </Dialog>
+              )}
+            </>
+          ) : items.length ? (
             activeTab === "checklists" ? (
               <>
                 <p>
@@ -287,7 +354,7 @@ function PartnerPage({ token }) {
           ) : (
             <p>Ingen treff i denne funksjonen.</p>
           )}
-          {items.length > limit && (
+          {activeTab !== "tasks" && items.length > limit && (
             <button type="button" onClick={() => setLimit(limit + 40)}>
               Vis flere
             </button>

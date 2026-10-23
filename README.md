@@ -1160,3 +1160,5 @@ Additiv migrasjon `20261023193507_bolig_partner_quality_writes.sql` og Edge Func
 
 
 UE-flyten er faktisk testet gjennom native filvelger, privat PDF-/bildenedlasting (SHA256 lik original), fullføring med vedlegg og prosjektleders vanlige dokumentasjon. Filvelger og åpne detaljer bevares gjennom skjult reautorisasjon, uten å gi serverhandlinger gammel autoritet. Additiv Sandbox-migrasjon `20261023195824_bolig_quality_history_action.sql` kvalifiserer native historikkolonner som ellers ble skjult av PL/pgSQL-parametere; lagrede hendelser beholdes. UE-oppretting, svarlagring og filregistrering har egne lesbare etiketter. Siste bevis og gjenstående brukerprøve i `docs/qa/BOLIG_PARTNERE_20261023.md`.
+
+UE-/leverandørportal: Fremdrift åpner nå appens samlede Gantt i lesevisning, med foldbare leiligheter, periodevalg/søk og aktivitetsdetaljer med datobekreftelse/avvik. Appens Expo-logo og tydelig ProffDok-toppfelt vises også før tilgangskontroll. Tilgangs- og ordregrenser er uendret; invitasjonsmail er fortsatt ikke koblet til.
