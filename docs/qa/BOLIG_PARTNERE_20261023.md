@@ -52,3 +52,11 @@ Sandbox-readback etter prøven: fortsatt **40 boliger / 161 aktiviteter**; roset
 Etter retting: **29 partner-Chromium-kontroller PASS** og full critical Sandbox-build PASS. Endelig DB-/CI-/Preview-status leses fra den korrigerte committen; CI651 skal ikke omtales som grønn.
 
 Etter klokkerettingen: **1222 DB-kontroller PASS** også med transaksjonsintern utløpstest; faktisk Sandbox rollback-smoke PASS på nytt. Rådgivertall fortsatt uendret fra første partnermigrasjon. Ingen ekstra reell tilgang opprettet under smoke. Siste faktiske innloggede prøve er beskrevet over; ny deploy endrer kun sidetittel i UI, med samme komponentflyt.
+
+### Sluttkontroll: utstederens Prosjekt-tilgang
+
+En siste tilgangsgrense er lukket med additiv Sandbox-migrasjon **20261023184654_bolig_partner_issuer_entitlement**. `partner_active` gjenbruker nå eksisterende `progress_member(company,user)` i tillegg til manager-kravet. En vanlig utsteder som mister Projects-entitlement får sine lenker stanset ved neste serverkall, uten at vedkommende imiteres. Systemadmins eksisterende arvede modulrett følger samme plattformregel som før.
+
+**1224 DB-kontroller PASS**, tidligere1222 beholdt, med ny bortfall-/gjenopprettingstest for vanlig utsteder. Full critical Sandbox-build PASS. Faktisk rollback-smoke PASS også med module entitlement: demo-systemadmin modelleres midlertidig som vanlig leder inne i et savepoint, deretter rulles både profil/modul og alle prøvehandlinger tilbake. Første prøve hadde feil forventning om systemadmins arvede Projects-rett; prøveoppsettet ble rettet, selve plattformregelen beholdt. Ett connector-kall ble avbrutt med Invalid requestState; readback bekreftet ingen restdata/endring, og nytt korrigert forsøk bestod. Ingen offentlig rolle-/modulmekanisme er endret.
+
+Samme faktisk innloggede pilot og29 browser-kontroller gjelder uendret UI. Etterprøve på korrigert70998692 READY viste riktig sidetittel og fortsatt avvist prøvelenke. Ny commit for denne smale SQL-grensen og samlet CI-status skal avleses i PR278. CI652 var fortsatt i firmatilgangssteget ved dette checkpointet og er ikke påstått grønn.

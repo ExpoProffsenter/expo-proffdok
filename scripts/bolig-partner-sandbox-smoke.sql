@@ -26,6 +26,17 @@ begin
  begin perform public.bolig_partner_portal(token,'document',jsonb_build_object('id',s#>>'{orders,0,id}'));raise exception 'Document action allowed';exception when insufficient_privilege then null;end;
 end$smoke$;
 reset role;
+savepoint issuer_module;
+delete from public.user_module_access where user_id='d0000000-0000-4000-8000-000000000001' and module_key='projects';
+-- Systemadmin inherits Projects; model an ordinary manager inside this savepoint.
+update public.profiles set system_role=null where id='d0000000-0000-4000-8000-000000000001';
+set local role anon;
+do $$begin
+ begin perform public.bolig_partner_portal(current_setting('qa.partner.token'));raise exception 'Missing issuer entitlement allowed';exception when insufficient_privilege then null;end;
+end$$;
+reset role;
+rollback to savepoint issuer_module;
+release savepoint issuer_module;
 select set_config('request.jwt.claim.sub','d0000000-0000-4000-8000-000000000001',true);
 set local role authenticated;
 select public.bolig_partners('e0000000-0000-4000-8000-000000000001','80821082-c64a-41a9-91cb-db2aa049ed2e','revoke',jsonb_build_object('id',current_setting('qa.partner.access'),'request_id',gen_random_uuid()))->>'created_id';
@@ -36,4 +47,4 @@ do $$begin
  begin perform public.bolig_partner_portal(current_setting('qa.partner.token'));raise exception 'Revoked link allowed';exception when insufficient_privilege then null;end;
 end$$;
 rollback;
-select 'PASS – narrow authenticated share, anon read/reply/replay, forbidden document action and revoked access; all temporary writes rolled back' result;
+select 'PASS – narrow authenticated share, anon read/reply/replay, forbidden document action, live issuer entitlement and revoked access; all temporary writes rolled back' result;

@@ -1768,3 +1768,5 @@ Migrasjonen `bolig_partner_access` legger til private RLS deny-all-tabeller for 
 Svar appendes med hash av gjennomgått faktisk ordre-/aktivitetsgrunnlag. Endret grunnlag gjør gamle svar historiske, med eksplisitt gjennomgang før nytt svar. Eksakt request-ID og payload sikres lokalt før skriving og gjentas etter tapt svar. Serverkontroll gjøres også før replay av kvittering. Ingen oppdatering av ordre, varemottak, Gantt eller intern ansvarlig; eksisterende ansvarlige/frister og deres progress-varsling forblir kilden. Mottakerens bekreftelsesdato er ingen ny intern oppgavefrist. Ingen nye e-postkøer eller transportbrytere.
 
 Partnerens svar-/tilgangshistorikk bruker `clock_timestamp()` for korrekt rekkefølge under prosjektlåsen. Capability-utløp reevalueres mot faktisk klokke etter låseventing (migrasjon20261023183331). Eksisterende svarhistorikk omskrives ikke.
+
+Utstederkontrollen gjenbruker `progress_member(company,user)` for gjeldende Projects-entitlement uten brukerimitasjon, i tillegg til særskilt manager-krav (migrasjon20261023184654). Systemadmins arvede modulrett følger samme eksisterende plattformregel.

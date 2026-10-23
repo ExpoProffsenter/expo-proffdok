@@ -106,3 +106,7 @@ Kenneth ber om å fortsette fra handoff etter pilot. Start05ff9aef, main36462e2b
 Faktisk app5d7fc026 / Preview dpl_7421nwFqApTUG3dDgMxQ6vNuHi6n READY, innlogget pilot med avgrenset ordre+rosettaktivitet og to faktiske syntetiske svar. Tilgang319bd85a er tilbakekalt, gamle lenken faktisk avvist, to svar beholdt. 40 boliger/161 oppgaver, rosett revision3 og31.10, original ordre partial/mottatt1 og mailAV/kø0 er bevart. Detaljer/bevis i BOLIG_PARTNERE_20261023.md.
 
 CI651 feilet på ny historikkrekkefølge: default now() ga transaksjonsstart i stedet for innsettingstid. Behold testen. Additiv Sandbox-migrasjon20261023183331 bruker faktisk clock_timestamp for svar/tilgang og utløp etter venting på prosjektlåsen. Ny korrekt nettlesertittel på mottakersiden. 29 partnerbrowser og fullbuild PASS; endelig DB/CI/READY må avleses på korrigert commit før grønnstatus. Ingen produksjonssetting eller ekte e-post.
+
+### Nyeste tilgangsgrense
+
+Sandbox20261023184654 kobler partnerlenkens aktive utsteder til eksisterende Projects-entitlement (`progress_member`) i tillegg til manager-rolle. 1224 DB og faktisk rollback-smoke med bortfalt vanlig modulrett PASS; fullbuild PASS. Systemadmins arvede modulrett beholdes. Ingen UI-endring utover tidligere korrekt sidetittel;29 browser PASS beholdt. Dokumentasjon i BOLIG_PARTNERE_20261023.md. Gjeldende SHA/CI/READY leses fra PR278 etter siste publisering; ikke bruk eldre651/652 som grønn fasit.

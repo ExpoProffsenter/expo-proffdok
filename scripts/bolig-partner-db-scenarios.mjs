@@ -25,6 +25,12 @@ export default async function ({
       "utf8",
     ),
   );
+  await db.exec(
+    await fs.readFile(
+      "supabase/migrations/20261023184654_bolig_partner_issuer_entitlement.sql",
+      "utf8",
+    ),
+  );
   await actor(manager);
   const root = (await call("list")).roots.find(
     (r) => r.reference === "QA-PILOT-40-20261023",
@@ -299,6 +305,24 @@ export default async function ({
     "update bolig_private.member_access set access_role='manager' where company_id=$1 and user_id=$2",
     [firm, manager],
   );
+  await db.query(
+    "delete from public.user_module_access where user_id=$1 and module_key='projects'",
+    [manager],
+  );
+  await db.exec("set role anon");
+  await rejects(() => portal(secondToken), "42501");
+  await db.exec("reset role");
+  await db.query(
+    "insert into public.user_module_access(user_id,module_key) values($1,'projects')",
+    [manager],
+  );
+  await db.exec("set role anon");
+  eq(
+    (await portal(secondToken)).tasks.length,
+    1,
+    "issuer entitlement is checked live without impersonation",
+  );
+  await db.exec("reset role");
   await db.query(
     "update bolig_private.progress_tasks set archived=true where id=$1",
     [unshared.id],

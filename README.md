@@ -1139,3 +1139,5 @@ Innlogget gjennomgang av 40-boligpiloten avdekket at kontaktseksjonen i beboerva
 Boligprosjekter Preview: **UE og leverandører** gir navngitte kontakter en tidsbegrenset lenke til eksplisitt valgte bestilte ordre og aktiviteter. «Gi tilgang» viser delingsgrunnlaget og oppretter lenken uten utsending. Svar med dato, leverandørreferanse eller avvik vises på samme ordre/aktivitet med historikk; faktisk mottak og prosjektplan beholdes separat. Se `docs/qa/BOLIG_PARTNERE_20261023.md` for scope, sikkerhet og testgrenser.
 
 Partnerhistorikken bruker faktisk innsettingstid, og utløp kontrolleres etter venting på prosjektlåsen. UI-pilot med to syntetiske svar og tilbakekalt lenke er dokumentert i Bolig-partner-QA.
+
+Partnerlenker stopper også når vanlig utsteder mister Prosjekt-tilgangen; eksisterende modulregel gjenbrukes, med manager-kravet beholdt.
