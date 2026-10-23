@@ -90,6 +90,37 @@ try {
             },
           ],
         };
+      if (name === "bolig_coordination") {
+        if (fail) return { error: { message: "Denied" } };
+        const data = {
+          context: { ...context },
+          root_id: args.p_root_id,
+          revision: 0,
+          groups: [],
+          inbox: [
+            {
+              unit_id: "u1",
+              number: "H0101",
+              address: "Testveien 1",
+              unread: 1,
+              pending: 1,
+              latest_at: "2026-10-23T10:00:00Z",
+              preview:
+                context.company_id === "a"
+                  ? "OLD-FIRM-INBOX"
+                  : "NEW-FIRM-INBOX",
+              enabled: true,
+            },
+          ],
+          members: [],
+          units: [],
+          messaging_enabled: false,
+          manager_id: null,
+        };
+        if (held)
+          return new Promise((resolve) => held.push(() => resolve({ data })));
+        return { data };
+      }
       assert.equal(name, "bolig_overview");
       if (fail) return { error: { message: "Denied" } };
       const data = {
@@ -229,6 +260,14 @@ try {
   assert(
     !d.querySelector("[role=status]"),
     "Old-firm response cannot overwrite latest successful result",
+  );
+  assert(
+    d.body.textContent.includes("NEW-FIRM-INBOX"),
+    "Fresh firm dialogue must be shown",
+  );
+  assert(
+    !d.body.textContent.includes("OLD-FIRM-INBOX"),
+    "Delayed prior-firm dialogue must never reappear",
   );
   await act(() => w.__unmount());
   let used;

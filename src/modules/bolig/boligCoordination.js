@@ -51,7 +51,15 @@ export function useBoligCoordination(context, root, area = "dialogue") {
     state = useRef(null);
   latest.current = draft;
   currentScope.current = scope;
-  state.current = data;
+  const scopedData =
+    context.enabled &&
+    (!context.role || data?.context?.role === context.role) &&
+    data?.context?.user_id === context.user_id &&
+    data.context.company_id === context.company_id &&
+    data.root_id === root.id
+      ? data
+      : null;
+  state.current = scopedData;
   const update = (fields) => {
     const editing = Object.keys(fields).some(
       (k) => !["pending", "basisRevision"].includes(k),
@@ -97,6 +105,12 @@ export function useBoligCoordination(context, root, area = "dialogue") {
   };
   useEffect(() => {
     alive.current = true;
+    const saved = readBoligDraft(key, {});
+    latest.current = saved;
+    setDraft(saved);
+    setData(null);
+    state.current = null;
+    setError("");
     load();
     const refresh = () => {
       if (document.visibilityState !== "hidden") load();
@@ -112,11 +126,12 @@ export function useBoligCoordination(context, root, area = "dialogue") {
       events.forEach((e) => window.removeEventListener(e, refresh));
       document.removeEventListener("visibilitychange", refresh);
     };
-  }, [scope, context.enabled]);
+  }, [scope, context.enabled, context.role]);
   const run = async (action, payload = {}, retry = false) => {
     if (
       operating.current ||
       !context.enabled ||
+      context.role !== "manager" ||
       state.current?.context?.role !== "manager" ||
       root.archived ||
       (!retry && latest.current.pending)
@@ -168,7 +183,7 @@ export function useBoligCoordination(context, root, area = "dialogue") {
     }
   };
   return {
-    data,
+    data: scopedData,
     error,
     busy,
     draft,

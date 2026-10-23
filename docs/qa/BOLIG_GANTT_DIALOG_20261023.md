@@ -28,3 +28,6 @@ Sandbox-migrasjonen er registrert som 20261023110103 (lokal CLI-fil er navngitt 
 
 
 Eget isolert Sandbox-eksempel: **DEMO – Stammeplan og meldinger**, reference QA-STAMME-DIALOG-20261023, root fe2b2a8f-7ee9-495e-82f1-0f18fec8f183. Åtte boliger/fire etasjer, eksplisitt gruppe med H0101/H0201/H0301/H0401, 16 oppgaver med parallelle rør-/elektroaktiviteter, prosjektstandard AV og gruppeboliger PÅ. Kun H0101 har fiktiv kontakt demo.stamme@example.invalid og én tydelig DEMO-melding for markering/oppfølging. Ingen e-post, kundeendring eller reset av tidligere demoer. Seed-scriptet lar eksisterende eksempel stå urørt ved ny kjøring.
+
+
+Ekstern Core Safety #639 passerte alle øvrige modulsteg og 1021 DB-kontroller, men stoppet i eldre bolig-overview-react-fixture: den aksepterte bare bolig_overview og kjente ikke ny koordinering-GET. Den returnerte derfor feil som en ny statusmelding, som traff gammel generisk kontroll mot alle role=status. Fixture støtter nå den faktiske leseforespørselen og forsinker begge svar i firmabytte-scenariet. Den opprinnelige kontrollen beholdes, og egne OLD-FIRM/NEW-FIRM-inbox-assertions er lagt til. Hooken skjuler også data straks scope/tilgang/rolle avviker og laster riktig nøkkel for lokal kladd. Ingen kontroll er fjernet eller svekket. Ny CI-status føres i PR.
