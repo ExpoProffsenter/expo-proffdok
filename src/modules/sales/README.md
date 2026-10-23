@@ -355,3 +355,8 @@ QA: `node scripts/supplier-order-db-check.mjs`, `node scripts/supplier-order-ema
 Plukklisten har en samlet handlingsrad: bestilling, utskrift av plukkliste, Cordel og prisutskrift. Internt prisvalg står under prisutskriften. Lagre, vis/skjul og slett står ved overskriften. På mobil står bestilling øverst i full bredde, med utskrift og Cordel under.
 
 Versjonskonflikt og CPU (22.10.2026): Forventet avvisning fra accept_sales_offer_quantities er PT409, ikke 40001. Null/utdatert versjon avvises fortsatt. Dette retter ikke eller endrer hvilke versjoner som kan aksepteres. Kun SQLSTATE endres; database- og klientregresjon beskytter kontrollen. Sandbox er rettet; produksjon venter TEST OK. Se docs/qa/OFFER_CONFLICT_CPU_20261022.md.
+
+
+### Befaringsbilder i stor visning – 23.10.2026
+
+SalesInspectionNote knytter både vanlige befaringsbilder og lagret Badskisse til eksisterende bootstrap-bildeviser med samme `Åpne større bilde`-lenkekontrakt som kundetilbudets bilder. Viewer bruker gjeldende visnings-URL i samme fane; ingen nye bildedata eller lagring opprettes. Last opp/Fjern/Lagre, IndexedDB-kladd, server-first hydrering og tilbakeknapp er bevart. Sales editor Chromium-suiten kontrollerer nå faktisk bildeåpning, full originalkilde, lukking med knapp/Escape/bakgrunn, tastatur, bevart ulagret tekst og ingen utilsiktet submit ved fire skjermbredder.

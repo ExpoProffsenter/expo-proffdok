@@ -2539,3 +2539,7 @@ section.sales-workspace-intro:has(+ [data-sales-resume-workspace] .sales-editor-
 .sales-inspection-app .sales-inspection-text-choice p { margin: 6px 0 12px; }
 .sales-inspection-app .sales-inspection-text-choice > div { display: flex; flex-wrap: wrap; gap: 10px; }
 .sales-inspection-app .sales-inspection-text-choice button { min-height: 44px; white-space: normal; }
+
+/* Inspection photos reuse the app's existing larger-image viewer. */
+.sales-inspection-photo-open { display:block; cursor:zoom-in; }
+.sales-inspection-photo-open:focus-visible { outline:3px solid #008c9c; outline-offset:3px; border-radius:10px; }
