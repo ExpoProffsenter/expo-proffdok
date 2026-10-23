@@ -104,6 +104,15 @@ export default function BoligHandoverReview({
       "expo-bolig-portal-changed",
     ];
     events.forEach((e) => window.addEventListener(e, load));
+    const openFromControl = (event) => {
+      if (
+        event.detail?.root_id === root.id &&
+        event.detail?.scope_id === scopeId &&
+        context.role === "manager"
+      )
+        setOpen(true);
+    };
+    window.addEventListener("expo-bolig-open-handover-review", openFromControl);
     const interval = window.setInterval(() => {
       if (document.visibilityState !== "hidden") load();
     }, 20000);
@@ -112,6 +121,10 @@ export default function BoligHandoverReview({
       reload.current = null;
       ++ticket.current;
       window.clearInterval(interval);
+      window.removeEventListener(
+        "expo-bolig-open-handover-review",
+        openFromControl,
+      );
       events.forEach((e) => window.removeEventListener(e, load));
     };
   }, [scopeKey]);

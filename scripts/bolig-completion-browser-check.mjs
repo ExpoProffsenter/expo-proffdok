@@ -18,10 +18,10 @@ import Completion from '${cwd}/src/modules/bolig/BoligCompletion.jsx';
 import '${cwd}/src/style.css';import '${cwd}/src/modules/bolig/bolig.css';
 const ctx={user_id:'qa',company_id:'firm',role:'manager',enabled:true},root={id:'root',title:'QA Prosjekt'};
 const initial=()=>({scope_id:'unit',kind:'unit',parent_id:'block',title:'H0101 · QA kontrollgate',revision:0,basis:'basis0',source_basis:'source0',source:{issues:[]},status:'not_started',items:[],issues:['Avklar kontrollene'],done:0,total:0,owner_id:'qa',owner_name:'QA Leder',approval:null,handover:null});
-let row=initial(),history=[];window.__reset=()=>{row=initial();row.restpoints=[{scope_id:'unit',source:'QA Kontroll',title:'Mindre justering',comment:'Rosett justeres'}];row.warnings=['Valgfri liste er under arbeid'];row.source.evidence={checks:2,required_checks:1,completed_required:1,critical:0,minor:1,documents:3,photos:2,fdv:4,fdv_missing:1};history=[];};
+let row=initial(),history=[],managed={revision:0,basis:"review0",cases:[],assessment:null,record:null,history:[]};window.__reset=()=>{row=initial();row.restpoints=[{scope_id:'unit',source:'QA Kontroll',title:'Mindre justering',comment:'Rosett justeres'}];row.warnings=['Valgfri liste er under arbeid'];row.source.evidence={checks:2,required_checks:1,completed_required:1,critical:0,minor:1,documents:3,photos:2,fdv:4,fdv_missing:1};history=[];managed={revision:0,basis:'review0',cases:[],assessment:null,record:null,history:[]};};
 window.__reject=false;window.__foreign=false;window.__calls=[];window.__hold=false;
 const state=()=>({context:ctx,root_id:'root',scope_id:'unit',rows:[{...structuredClone(row),kind:window.__asParent?'block':'unit'},...(window.__asParent?[{scope_id:'child2',parent_id:'unit',kind:'unit',title:'H0102',status:'not_started',issues:['Avklar kontrollene']},{scope_id:'child1',parent_id:'unit',kind:'unit',title:'H0101',status:'ready',issues:[]}]:[])],history,members:[{id:'qa',name:'QA Leder'}],rooms:[{id:'bath',name:'Bad 1'}]});
-window.__client={rpc:async(name,args)=>{window.__calls.push({name,args});if(window.__hold)await new Promise(r=>window.__release=r);if(window.__foreign)return {data:{...state(),context:{...ctx,company_id:'wrong'}}};if(name==='bolig_handover_review')return {data:{context:ctx,root_id:'root',scope_id:'unit',revision:0,basis:'review0',cases:[],assessment:null,record:null,members:[{id:'qa',name:'QA Leder'}],history:[]}};if(args.p_action==='get')return {data:state()};if(window.__reject)return {error:{code:'PT409',message:'QA: Grunnlaget er endret. Kladden er beholdt.'}};
+window.__client={rpc:async(name,args)=>{window.__calls.push({name,args});if(window.__hold)await new Promise(r=>window.__release=r);if(window.__foreign)return {data:{...state(),context:{...ctx,company_id:'wrong'}}};if(name==='bolig_handover_review'){if(args.p_action==='record'){managed.revision++;managed.record={reference:args.p_payload.reference,date:args.p_payload.date,by_name:'QA Leder',at:'2026-10-23T10:00:00Z'};managed.assessment={basis:managed.basis,by_name:'QA Leder',decisions:[]};managed.history.unshift({revision:managed.revision,actor_name:'QA Leder',created_at:'2026-10-23T10:00:00Z',action:'record',snapshot:structuredClone(managed)});row.handover=managed.record;row.status='handed_over';row.manager_handover=true;}return {data:{context:ctx,root_id:'root',scope_id:'unit',...structuredClone(managed),members:[{id:'qa',name:'QA Leder'}]}};}if(args.p_action==='get')return {data:state()};if(window.__reject)return {error:{code:'PT409',message:'QA: Grunnlaget er endret. Kladden er beholdt.'}};
 const p=args.p_payload;
 if(args.p_action==='start')row.items=['Arbeidet er utført','Sjekklister og kontroller er fullført','Avvik og mangler er avklart','Bilder er kontrollert','Sluttdokumentasjon er kontrollert'].map((title,i)=>({id:'item'+i,title,kind:i?'documents':'execution',done:false,valid:false,evidence:''}));
 if(args.p_action==='review_all')row.items=row.items.map(i=>({...i,done:true,valid:true,evidence:p.note||'Samlet gjennomgang'}));
@@ -29,7 +29,7 @@ if(args.p_action==='item')row.items=row.items.map(i=>i.id===p.id?{...i,done:p.do
 if(args.p_action==='add')row.items.push({...p,valid:p.done});
 if(args.p_action==='approve')row.approval={by_name:'QA Leder',at:'2026-10-22T10:00:00Z'};
 if(args.p_action==='handover')row.handover={reference:p.reason,at:'2026-10-22T10:00:00Z'};
-if(args.p_action==='reopen'){row.approval=null;row.handover=null;}
+if(args.p_action==='reopen'){row.approval=null;row.handover=managed.record;}
 row.done=row.items.filter(i=>i.valid).length;row.total=row.items.length;row.issues=row.items.filter(i=>!i.valid).map(i=>i.title+': dokumentasjon mangler.');row.status=row.handover?(row.restpoints?.length?'handed_over_with_rest':'handed_over'):row.approval?(row.restpoints?.length?'ready_with_rest':'ready'):row.done===row.total?'controlled':row.items[0]?.valid?'executed':'in_progress';row.revision++;row.basis='basis'+row.revision;
 history=[{id:row.revision,action:args.p_action,actor_name:'QA Leder',at:'2026-10-22T10:00:00Z',reason:p.reason},...history];return {data:state()};}};
 const app=createRoot(document.getElementById('app'));window.__show=(role='manager')=>app.render(<div className="bolig-dialog" data-qa-role={role} style={{position:'static',display:'block',maxWidth:850,margin:'auto'}}><Completion key={role} context={{...ctx,role}} root={root} scopeId="unit"/></div>);window.__show();
@@ -117,7 +117,7 @@ try {
   await button("Opprett kontrollplan").click();
   await area.locator(".bolig-completion-proof-details > summary").click();
   eq(
-    await button("Godkjenn for overtagelse").isEnabled(),
+    await button("Godkjenn intern sluttkontroll").isEnabled(),
     false,
     "Unfinished proof cannot approve",
   );
@@ -189,11 +189,11 @@ try {
     await area.getByRole("status").waitFor();
   }
   eq(
-    await button("Godkjenn for overtagelse").isEnabled(),
+    await button("Godkjenn intern sluttkontroll").isEnabled(),
     true,
     "Completed evidence enables approval",
   );
-  await button("Godkjenn for overtagelse").click();
+  await button("Godkjenn intern sluttkontroll").click();
   eq(
     await page.evaluate(
       () => window.__calls.filter((c) => c.args.p_action === "approve").length,
@@ -209,32 +209,31 @@ try {
     "Approved evidence locked",
   );
   await button("Registrer overtagelse").click();
+  await page.getByLabel("Hva vil du lagre?").selectOption("record");
   await page
-    .getByLabel("Referanse til overtagelsesprotokoll")
+    .getByLabel("Referanse til gjennomført overtakelsesprotokoll")
     .fill("QA overtagelsesprotokoll 22 oktober");
-  await button("Lagre overtagelse").click();
+  await page.getByLabel("Hva vil du lagre?").selectOption("record");
+  await page.getByLabel("Jeg har gjennomgått alle åpne forhold og står for vurderingene ovenfor.").check();
+  await button("Registrer gjennomført overtakelse").click();
   await area.getByText("Overtatt", { exact: true }).first().waitFor();
   await button("Gjenåpne med begrunnelse").click();
   await page.getByLabel("Begrunnelse").fill("QA endring krever ny kontroll");
   await button("Gjenåpne ferdigstilling").click();
-  await button("Godkjenn for overtagelse").waitFor();
+  await button("Godkjenn intern sluttkontroll").waitFor();
   eq(
     await button("Registrer overtagelse").count(),
     0,
-    "Reopen clears handover",
+    "Legacy entry hidden after actual handover",
   );
-  await area.getByText(/Historikk ·/).click();
-  eq(
-    (await area.innerText()).includes("Overtagelse registrert"),
-    true,
-    "Past handover retained",
-  );
+  await area.getByText(/Historikk for vurdering og overtakelse ·/).click();
+  eq(await area.getByRole("button",{name:/Overtakelse registrert \/ rettet/}).count(),1,"Past actual handover retained after internal reopening");
   await button("Legg til kontrollpunkt").click();
   await page.getByLabel("Navn på kontrollpunkt").fill("QA ekstra badkontroll");
   await page.getByLabel("Rom", { exact: true }).selectOption("bath");
   await button("Lagre kontroll").click();
   eq(
-    await button("Godkjenn for overtagelse").isEnabled(),
+    await button("Godkjenn intern sluttkontroll").isEnabled(),
     false,
     "Added pending room control blocks approval",
   );
@@ -251,8 +250,8 @@ try {
   await button("Samlet gjennomgang").click();
   await page.getByLabel("Jeg har gjennomgått arbeidet, kontrollene, avvikene, bildene og sluttdokumentasjonen.",{exact:true}).check();
   await button("Lagre samlet gjennomgang").click();
-  eq(await button("Godkjenn for overtagelse").isEnabled(),true,"One explicit review covers core requirements without repeated text");
-  await button("Godkjenn for overtagelse").click();
+  eq(await button("Godkjenn intern sluttkontroll").isEnabled(),true,"One explicit review covers core requirements without repeated text");
+  await button("Godkjenn intern sluttkontroll").click();
   await button("Bekreft – klar med restpunkter").click();
   eq(await area.locator(".bolig-completion-badge").innerText(),"Klar med restpunkter","Minor items are disclosed in readiness status");
   eq(await button("Registrer overtagelse").isEnabled(),true,"Actual handover can be recorded with minor remaining work");

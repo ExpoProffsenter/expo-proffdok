@@ -320,7 +320,7 @@ export function BoligHelp() {
           gjennomgang» viser lagrede kontroller, avvik, filer og FDV. Bekreft
           gjennomgangen og legg til notat ved behov. De faste kontrollområdene
           gjennomgås samlet; «Vis kontrollpunkter» åpner detaljene. Egne ekstra
-          kontrollpunkter følges opp hver for seg. «Godkjenn for overtagelse»
+          kontrollpunkter følges opp hver for seg. «Godkjenn intern sluttkontroll»
           krever at påkrevde forhold og kritiske avvik er avklart. Mindre
           restpunkter gir «Klar med restpunkter». Dette gjelder intern sluttkontroll.
           «Vurder åpne forhold og overtakelse» samler mangler, aktiviteter,

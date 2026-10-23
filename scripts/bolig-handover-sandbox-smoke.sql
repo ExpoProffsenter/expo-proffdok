@@ -19,6 +19,10 @@ begin
  tree:=public.bolig_completion(c,root,unit);
  select value into entry from jsonb_array_elements(tree->'rows') where value->>'scope_id'=unit::text;
  if entry->>'status'<>'handed_over_with_rest' or entry->>'control_status'<>'not_started' or entry->'approval'<>'null'::jsonb then raise exception 'Actual handover must not certify controls';end if;
+ begin
+  perform public.bolig_completion(c,root,unit,'handover',0,jsonb_build_object('reason','QA gammel snarvei'));
+  raise exception 'Legacy shortcut unexpectedly allowed';
+ exception when sqlstate 'PT409' then null;end;
  ex:=public.bolig_documentation_export(c,root,unit);
  if not exists(select 1 from jsonb_array_elements(ex->'scopes') s where s->>'id'=unit::text and s#>>'{handover_review,record,reference}'='QA – fiktiv protokoll, ikke en kundesak') then raise exception 'Export must include decision';end if;
  -- A building may be recorded separately after explicit review; no apartment is

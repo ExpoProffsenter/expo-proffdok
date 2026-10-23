@@ -19,6 +19,12 @@ export default async function ({
       "utf8",
     ),
   );
+  await db.exec(
+    await fs.readFile(
+      "supabase/migrations/20261023132013_bolig_handover_single_entry.sql",
+      "utf8",
+    ),
+  );
   await actor(manager);
   const rec = await call("create_plan", null, null, {
     request_id: id(81000),
@@ -88,6 +94,13 @@ export default async function ({
     "Missing internal approval is an explicit open case",
   );
   eq(v.record, null, "No invented actual handover");
+  await rejects(
+    () =>
+      completion(unit, "handover", null, {
+        reason: "Attempt to bypass assessment",
+      }),
+    "PT409",
+  );
   await db.exec("reset role");
   await db.query(
     `insert into bolig_private.quality_states(root_id,scope_id,data) values($1,$2,$3)`,

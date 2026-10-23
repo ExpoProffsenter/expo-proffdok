@@ -32,7 +32,7 @@ Kladd er avgrenset per bruker/firma/område og beholdes ved fokus, lukking og ne
 
 ## Verifikasjon
 
-- PostgreSQL **1073 assertions PASS**, inkludert alle eksisterende Bolig-scenarier. Ny dekning: delvis lagring, kritisk begrunnelse/bekreftelse, manglende/forged/dupliserte saks-ID-er, aktiv eier, ledervalgt hinder, dato, faktiske statuser uten falsk intern godkjenning, urørte meldinger/aktiviteter, retry/revisjon, uforanderlig historikk, endret grunnlag etter overtakelse, retting, nabobolig- og felleseksportvern, reader/firma/anon og tilbakekalt prosjekttilgang. Senere intern godkjenning fungerer og erstatter ikke faktisk overtakelse.
+- PostgreSQL **1074 assertions PASS**, inkludert alle eksisterende Bolig-scenarier. Ny dekning: delvis lagring, kritisk begrunnelse/bekreftelse, manglende/forged/dupliserte saks-ID-er, aktiv eier, ledervalgt hinder, dato, faktiske statuser uten falsk intern godkjenning, urørte meldinger/aktiviteter, retry/revisjon, uforanderlig historikk, endret grunnlag etter overtakelse, retting, nabobolig- og felleseksportvern, reader/firma/anon og tilbakekalt prosjekttilgang. Senere intern godkjenning fungerer og erstatter ikke faktisk overtakelse.
 - Ny faktisk Chromium-suite **34 assertions PASS**: samlet liste, batch unntar kritiske forhold, eksplisitt kritisk vurdering, kladd/fokus/lukking, vurdering uten registrering, nettfeil og eksakt retry, nye forhold etter overtakelse, eksplisitt rebase, firma-/rollebytte, åtte steg og bildevisning, 320/390/1366 px og ingen overflyt.
 - Eksisterende ferdigstilling **29**, byggoversikt **42**, prosjektbygger **103**, Gantt/dialog **48** PASS. Ny read-only gateway er lagt til ferdigstillingsfixture uten å fjerne gamle assertions.
 - PDF/ZIP **40 assertions PASS**; faktisk PDF/ZIP-byte, originaler, SHA-256/CRC og eksisterende eksportvern. Ny vurderingsside rendret og visuelt kontrollert.
@@ -52,3 +52,7 @@ En eksisterende køtest avdekket at to utdaterte burst-jobber kunne få ulik UUI
 5. Se historikk og samlet PDF/ZIP. Endre et underliggende forhold: overtakelsen beholdes, mens oversikten varsler endret grunnlag.
 
 Fysisk Safari og innlogget menneskelig vurdering av oppsett/flyten gjenstår. Reell e-postlevering er fortsatt ikke sluttprøvd og er utenfor denne endringens utsendinger. Ingen produksjonssetting uten egen TEST OK.
+
+## Én inngang til registrering
+
+Sluttkontrollen fanget den eldre «Registrer overtagelse»-snarveien fra intern godkjenning. Den åpner nå samme nye prosjektledervurdering. Den gamle RPC-skrivehandlingen avvises, slik at ingen eldre klient kan omgå en vurdert hindring eller et nytt grunnlag. Intern godkjenningsknapp heter «Godkjenn intern sluttkontroll». Historiske overtakelser beholdes. Additiv migrasjon `20261023132013_bolig_handover_single_entry.sql`, bare Sandbox. Eksisterende ferdigstillingsbrowser følger nå samme vurdering og verifiserer at intern gjenåpning bevarer faktisk overtakelse og historikk. Alle 29 assertions beholdes med den nye produktkontrakten; ny DB-assertion avviser den gamle snarveien.

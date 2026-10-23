@@ -395,9 +395,6 @@ export default function BoligCompletion({
     .filter((r) => r.parent_id === scopeId)
     .sort((a, b) => a.title.localeCompare(b.title, "nb", { numeric: true }));
   const ownMissing = row.items.filter((i) => !i.valid).length;
-  const childrenAwaitHandover = children.some(
-    (r) => !["handed_over", "handed_over_with_rest"].includes(r.status),
-  );
   return (
     <section
       className="bolig-completion"
@@ -808,20 +805,19 @@ export default function BoligCompletion({
                   {date(row.handover.at)}
                 </p>
               )}
-              {childrenAwaitHandover &&
-                ["ready", "ready_with_rest"].includes(row.status) && (
-                  <p>
-                    Registrer overtagelse for alle aktive boliger eller bygg før
-                    du registrerer samlet overtagelse.
-                  </p>
-                )}
               <div className="bolig-completion-actions">
                 {["ready", "ready_with_rest"].includes(row.status) && (
                   <button
                     className="bolig-primary"
                     type="button"
-                    disabled={busy || childrenAwaitHandover}
-                    onClick={() => setEditor({ mode: "handover" })}
+                    disabled={busy}
+                    onClick={() =>
+                      window.dispatchEvent(
+                        new CustomEvent("expo-bolig-open-handover-review", {
+                          detail: { root_id: root.id, scope_id: scopeId },
+                        }),
+                      )
+                    }
                   >
                     Registrer overtagelse
                   </button>
@@ -878,7 +874,7 @@ export default function BoligCompletion({
                 disabled={busy || row.issues.length > 0}
                 onClick={() => setConfirm(true)}
               >
-                Godkjenn for overtagelse
+                Godkjenn intern sluttkontroll
               </button>
             </>
           )}
