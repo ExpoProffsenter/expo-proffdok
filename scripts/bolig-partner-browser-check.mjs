@@ -108,6 +108,7 @@ try {
       body: fs.readFileSync("public/expo-logo.png"),
     }),
   );
+  await page.clock.install();
   await page.goto("http://127.0.0.1:" + server.address().port);
   const button = (name) => page.getByRole("button", { name, exact: true }),
     dialog = (name) => page.getByRole("dialog", { name, exact: true });
@@ -238,6 +239,103 @@ try {
     true,
     "existing app mail style",
   );
+  const dialogBeforePreview = await dialog(
+    "QA Leverandør – oppfølging",
+  ).elementHandle();
+  const previewBefore = await invitation.locator("iframe").elementHandle();
+  const readsBeforePreview = await page.evaluate(() => window.__calls.length);
+  await invitation
+    .frameLocator("iframe")
+    .getByRole("heading", { name: "Tilgang til prosjekt" })
+    .click();
+  eq(
+    await dialogBeforePreview.evaluate((el) => el.isConnected && el.open),
+    true,
+    "clicking actual iframe keeps same open dialog",
+  );
+  eq(
+    await previewBefore.evaluate((el) => el.isConnected),
+    true,
+    "iframe focus does not remount preview",
+  );
+  eq(
+    await page.evaluate(() => window.__calls.length),
+    readsBeforePreview,
+    "iframe focus makes no authorization roundtrip",
+  );
+  await invitation.getByText("Forhåndsvis e-post", { exact: true }).click();
+  eq(
+    await page.evaluate(() => window.__calls.length),
+    readsBeforePreview,
+    "returning from iframe does not reload contact",
+  );
+  await invitation.getByText("Forhåndsvis e-post", { exact: true }).click();
+  await page.evaluate(() => {
+    window.__hold = true;
+  });
+  await page.clock.fastForward(60001);
+  await page.waitForFunction(() => !!window.__release);
+  eq(
+    await dialogBeforePreview.evaluate((el) => el.isConnected && el.open),
+    true,
+    "pending heartbeat preserves same dialog",
+  );
+  eq(
+    await previewBefore.evaluate((el) => el.isConnected),
+    true,
+    "pending heartbeat preserves iframe",
+  );
+  eq(
+    await invitation.locator("button.bolig-primary").isDisabled(),
+    true,
+    "refresh blocks send until new authority arrives",
+  );
+  const readsDuringRefresh = await page.evaluate(() => window.__calls.length);
+  await page.clock.fastForward(60001);
+  eq(
+    await page.evaluate(() => window.__calls.length),
+    readsDuringRefresh + 1,
+    "overlapping parent reads are coalesced; child status refresh runs once",
+  );
+  await page.evaluate(() => window.__release());
+  await page.waitForFunction(
+    () => !document.querySelector(".bolig-partner-invitation button").disabled,
+  );
+  eq(
+    await dialogBeforePreview.evaluate((el) => el.isConnected && el.open),
+    true,
+    "heartbeat response keeps same contact dialog",
+  );
+  // An external focus loss must still hide an iframe that was last selected.
+  await invitation
+    .frameLocator("iframe")
+    .getByRole("heading", { name: "Tilgang til prosjekt" })
+    .click();
+  await page.evaluate(() => {
+    window.__nativeHasFocus = document.hasFocus.bind(document);
+    document.hasFocus = () => false;
+    window.dispatchEvent(new Event("blur"));
+  });
+  await dialog("QA Leverandør – oppfølging").waitFor({ state: "hidden" });
+  const readsWhileAway = await page.evaluate(() => window.__calls.length);
+  await page.clock.fastForward(120001);
+  eq(
+    await invitation.count(),
+    0,
+    "heartbeat cannot reveal a blurred workspace",
+  );
+  eq(
+    await page.evaluate(() => window.__calls.length),
+    readsWhileAway,
+    "no polling while blurred",
+  );
+  await page.evaluate(() => {
+    document.hasFocus = window.__nativeHasFocus;
+    window.dispatchEvent(new Event("focus"));
+  });
+  await invitation
+    .getByRole("button", { name: "Send tilgangslenke", exact: true })
+    .waitFor();
   await page.evaluate(() => (window.__failMail = true));
   await invitation
     .getByRole("button", { name: "Send tilgangslenke", exact: true })

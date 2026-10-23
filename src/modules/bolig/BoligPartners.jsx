@@ -39,8 +39,9 @@ const blank = {
 export default function BoligPartners({ context, root }) {
   const key = `expo.bolig-partners.v1:${context.user_id}:${context.company_id}:${root.id}`;
   const scope = `${key}:${context.role}:${context.enabled}`;
-  const { data, error, busy, load, run } = useLivePartner(scope, () =>
-    partnerManagerRpc(context, root.id),
+  const { data, error, busy, refreshing, load, run } = useLivePartner(
+    scope,
+    () => partnerManagerRpc(context, root.id),
   );
   const [draft, setDraft] = useState(() => ({
       ...blank,
@@ -540,13 +541,15 @@ export default function BoligPartners({ context, root }) {
                           draft.supplier_name.trim().length < 2)))
                   }
                 >
-                  {busy
-                    ? "Lagrer …"
-                    : pending
-                      ? "Prøv samme forsøk igjen"
-                      : editing
-                        ? "Lagre funksjoner"
-                        : "Opprett tilgangslenke"}
+                  {refreshing
+                    ? "Kontrollerer …"
+                    : busy
+                      ? "Lagrer …"
+                      : pending
+                        ? "Prøv samme forsøk igjen"
+                        : editing
+                          ? "Lagre funksjoner"
+                          : "Opprett tilgangslenke"}
                 </button>
               </footer>
             </form>
@@ -640,6 +643,7 @@ export default function BoligPartners({ context, root }) {
               root={root}
               partner={partner}
               link={links[partner.id]}
+              disabled={busy}
               onBusy={setMailBusy}
               onSent={() =>
                 setNotice("E-posttjenesten har bekreftet sendingen.")

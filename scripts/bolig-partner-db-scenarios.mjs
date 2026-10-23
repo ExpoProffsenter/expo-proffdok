@@ -597,7 +597,80 @@ export default async function ({
     rpc,
     portal,
   });
-  const { default: partnerMail } = await import("./bolig-partner-mail-db-scenarios.mjs");
-  await partnerMail({db, actor, eq, rejects, id, firm, other, manager, reader, outsider, root, rpc});
-
+  const { default: partnerMail } = await import(
+    "./bolig-partner-mail-db-scenarios.mjs"
+  );
+  await partnerMail({
+    db,
+    actor,
+    eq,
+    rejects,
+    id,
+    firm,
+    other,
+    manager,
+    reader,
+    outsider,
+    root,
+    rpc,
+  });
+  // Same JSON and privileges across the performance migration, including
+  // selected/project grants, revoked rows, events, checklists and quality.
+  await actor(manager);
+  const beforeProjection = await rpc();
+  await db.exec("reset role");
+  const beforeViews = (
+    await db.query(
+      "select id,bolig_private.partner_view(a) as value from bolig_private.partner_access a where root_id=$1 order by id",
+      [root],
+    )
+  ).rows;
+  const privilegeSql =
+    "select oid::regprocedure::text as signature,proacl::text as acl,prosecdef,provolatile,proconfig from pg_proc where oid in ('bolig_private.partner_view(bolig_private.partner_access)'::regprocedure,'bolig_private.partners_selected_v1(uuid,uuid,text,jsonb)'::regprocedure) order by oid";
+  const beforePrivileges = (await db.query(privilegeSql)).rows;
+  await db.exec(
+    await fs.readFile(
+      "supabase/migrations/20261023212214_bolig_partner_projection_once.sql",
+      "utf8",
+    ),
+  );
+  eq(
+    (await db.query(privilegeSql)).rows,
+    beforePrivileges,
+    "performance fix preserves function privileges and security attributes",
+  );
+  eq(
+    (
+      await db.query(
+        "select id,bolig_private.partner_view(a) as value from bolig_private.partner_access a where root_id=$1 order by id",
+        [root],
+      )
+    ).rows,
+    beforeViews,
+    "all partner projections unchanged by materialization",
+  );
+  await actor(manager);
+  eq(
+    await rpc(),
+    beforeProjection,
+    "complete manager JSON unchanged by performance fix",
+  );
+  await actor(reader);
+  eq(
+    (await rpc()).tasks,
+    beforeProjection.tasks,
+    "reader sees same projection after optimization",
+  );
+  await rejects(
+    () => rpc("revoke", { id: base.id, request_id: id(98900) }),
+    "42501",
+    "reader still cannot mutate",
+  );
+  await actor(outsider);
+  await rejects(
+    () => rpc(),
+    "42501",
+    "foreign actor still rejected before projection",
+  );
+  await actor(manager);
 }

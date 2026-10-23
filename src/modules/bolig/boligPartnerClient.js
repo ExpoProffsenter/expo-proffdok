@@ -76,68 +76,139 @@ export async function partnerPortalRpc(token, action = "get", payload = {}) {
     );
   return data;
 }
-// Hide content during reauthorization, on sleep and after any failed access check.
+// Keep same-scope background refreshes mounted. Real focus loss, reauthorization
+// and failed access checks still hide content immediately.
 // Drafts live outside this hook; a late response can never restore old authority.
 export function useLivePartner(scope, read) {
   const latest = useRef(read);
   latest.current = read;
   const epoch = useRef(0),
     mounted = useRef(false),
-    operating = useRef(false);
+    operating = useRef(false),
+    foreground = useRef(true),
+    internalFrame = useRef(false),
+    reading = useRef(null);
   const [state, setState] = useState({
     scope: "",
     data: null,
     error: "",
     busy: false,
+    refreshing: false,
   });
-  const load = useCallback(async () => {
-    const ticket = ++epoch.current;
-    setState((s) => ({ ...s, scope, data: null, error: "" }));
-    try {
-      const data = await latest.current();
-      if (mounted.current && ticket === epoch.current && !document.hidden)
-        setState((s) => ({ ...s, scope, data, error: "" }));
-    } catch (e) {
-      if (mounted.current && ticket === epoch.current)
-        setState((s) => ({ ...s, scope, data: null, error: e.message }));
-    }
-  }, [scope]);
+  const load = useCallback(
+    async ({ retain = false } = {}) => {
+      if (document.hidden || !foreground.current) return;
+      if (retain && operating.current) return;
+      if (reading.current) return reading.current;
+      const ticket = ++epoch.current;
+      setState((s) => ({
+        ...s,
+        scope,
+        data: retain && s.scope === scope ? s.data : null,
+        error: "",
+        refreshing: true,
+      }));
+      const request = (async () => {
+        try {
+          const data = await latest.current();
+          if (
+            mounted.current &&
+            ticket === epoch.current &&
+            !document.hidden &&
+            foreground.current
+          )
+            setState((s) => ({ ...s, scope, data, error: "" }));
+        } catch (e) {
+          if (mounted.current && ticket === epoch.current)
+            setState((s) => ({ ...s, scope, data: null, error: e.message }));
+        } finally {
+          if (ticket === epoch.current) {
+            reading.current = null;
+            if (mounted.current) setState((s) => ({ ...s, refreshing: false }));
+          }
+        }
+      })();
+      reading.current = request;
+      return request;
+    },
+    [scope],
+  );
   useEffect(() => {
     mounted.current = true;
+    foreground.current = !document.hidden;
+    reading.current = null;
+    internalFrame.current = false;
     load();
     const hide = () => {
+      foreground.current = false;
+      internalFrame.current = false;
       ++epoch.current;
-      setState((s) => ({ ...s, data: null }));
+      reading.current = null;
+      setState((s) => ({ ...s, data: null, refreshing: false }));
     };
-    const visibility = () => (document.hidden ? hide() : load());
-    const blur = () => hide();
-    window.addEventListener("focus", load);
+    const focus = () => {
+      if (internalFrame.current && foreground.current && !document.hidden) {
+        internalFrame.current = false;
+        return;
+      }
+      foreground.current = !document.hidden;
+      load();
+    };
+    const visibility = () => (document.hidden ? hide() : focus());
+    const blur = () => {
+      // Focusing our sandboxed mail iframe blurs the parent window while the
+      // document still has focus. Leaving the browser/window does not.
+      const active = document.activeElement;
+      if (
+        document.hasFocus() &&
+        active?.matches("iframe[data-bolig-preview]")
+      ) {
+        internalFrame.current = true;
+        return;
+      }
+      hide();
+    };
+    window.addEventListener("focus", focus);
     window.addEventListener("blur", blur);
     document.addEventListener("visibilitychange", visibility);
-    const timer = setInterval(load, 60000);
+    const timer = setInterval(() => load({ retain: true }), 60000);
     return () => {
       mounted.current = false;
       ++epoch.current;
       clearInterval(timer);
-      window.removeEventListener("focus", load);
+      window.removeEventListener("focus", focus);
       window.removeEventListener("blur", blur);
       document.removeEventListener("visibilitychange", visibility);
     };
   }, [load]);
   const run = async (write, onDone, onReject) => {
-    if (operating.current || !state.data || state.scope !== scope) return;
+    if (
+      operating.current ||
+      reading.current ||
+      !foreground.current ||
+      document.hidden ||
+      !state.data ||
+      state.scope !== scope
+    )
+      return;
     operating.current = true;
     setState((s) => ({ ...s, busy: true, error: "" }));
     const ticket = epoch.current;
     try {
       const data = await write();
-      if (mounted.current && ticket === epoch.current && !document.hidden) {
+      if (
+        mounted.current &&
+        ticket === epoch.current &&
+        !document.hidden &&
+        foreground.current
+      ) {
         onDone?.(data);
         setState((s) => ({ ...s, scope, data, busy: false, error: "" }));
       }
     } catch (e) {
       if (mounted.current && ticket === epoch.current) {
         onReject?.(e);
+        if (ticket !== epoch.current) return;
         setState((s) => ({
           ...s,
           data: e.code === "42501" ? null : s.data,
@@ -153,7 +224,8 @@ export function useLivePartner(scope, read) {
   return {
     data: state.scope === scope ? state.data : null,
     error: state.scope === scope ? state.error : "",
-    busy: state.busy,
+    busy: state.busy || state.refreshing,
+    refreshing: state.refreshing,
     load,
     run,
   };

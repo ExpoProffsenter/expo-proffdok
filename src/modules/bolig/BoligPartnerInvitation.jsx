@@ -17,6 +17,7 @@ export default function PartnerInvitation({
   root,
   partner,
   link,
+  disabled = false,
   onBusy,
   onSent,
 }) {
@@ -27,7 +28,7 @@ export default function PartnerInvitation({
   const [previewOpen, setPreviewOpen] = useState(() =>
     readPartnerDraft(key + ":preview", false),
   );
-  const { data, busy, error, load, run } = useLivePartner(
+  const { data, busy, refreshing, error, load, run } = useLivePartner(
     `${key}:${context.role}:${context.enabled}`,
     () => partnerMailRpc(context, root.id, partner.id),
   );
@@ -69,7 +70,7 @@ export default function PartnerInvitation({
     }
   }, [data, pending]);
   const send = () => {
-    if (!data || busy || !token || !data.enabled) return;
+    if (!data || disabled || busy || !token || !data.enabled) return;
     const attempt = pending || {
       id: crypto.randomUUID(),
       revision: data.revision,
@@ -156,6 +157,7 @@ export default function PartnerInvitation({
                 <b>Emne:</b> {preview.subject}
               </p>
               <iframe
+                data-bolig-preview="mail"
                 title="Forhåndsvisning av tilgangse-post"
                 sandbox=""
                 referrerPolicy="no-referrer"
@@ -191,6 +193,7 @@ export default function PartnerInvitation({
             className="bolig-primary"
             onClick={send}
             disabled={
+              disabled ||
               !token ||
               !data.enabled ||
               busy ||
@@ -198,13 +201,15 @@ export default function PartnerInvitation({
             }
           >
             <Mail size={17} />{" "}
-            {busy
-              ? "Sender …"
-              : pending
-                ? "Prøv samme sending igjen"
-                : sent.length
-                  ? "Send lenken på nytt"
-                  : "Send tilgangslenke"}
+            {disabled || refreshing
+              ? "Kontrollerer …"
+              : busy
+                ? "Sender …"
+                : pending
+                  ? "Prøv samme sending igjen"
+                  : sent.length
+                    ? "Send lenken på nytt"
+                    : "Send tilgangslenke"}
           </button>
           {!!sent.length && (
             <p className="bolig-partner-mail-sent">

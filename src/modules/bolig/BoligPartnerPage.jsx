@@ -28,8 +28,9 @@ export default function BoligPartnerPage() {
   return <PartnerPage key={token} token={token} />;
 }
 function PartnerPage({ token }) {
-  const { data, error, busy, load, run } = useLivePartner(token, () =>
-    partnerPortalRpc(token),
+  const { data, error, busy, refreshing, load, run } = useLivePartner(
+    token,
+    () => partnerPortalRpc(token),
   );
   const key = `expo.bolig-partner-answer.v1:${token}`;
   const [saved, setSaved] = useState(() =>
@@ -462,11 +463,13 @@ function PartnerPage({ token }) {
                       className="bolig-primary"
                       disabled={busy || (!saved.pending && changed)}
                     >
-                      {busy
-                        ? "Registrerer …"
-                        : saved.pending
-                          ? "Prøv samme svar igjen"
-                          : "Registrer svar"}
+                      {refreshing
+                        ? "Kontrollerer …"
+                        : busy
+                          ? "Registrerer …"
+                          : saved.pending
+                            ? "Prøv samme svar igjen"
+                            : "Registrer svar"}
                     </button>
                   </footer>
                 </form>
