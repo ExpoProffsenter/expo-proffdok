@@ -6,6 +6,7 @@ import { signedCents } from "./boligCustomizationClient.js";
 import { money } from "./boligCatalogClient.js";
 import ContentEditor from "./BoligPackageContentEditor.jsx";
 import Dialog from "./BoligEditorDialog.jsx";
+import ResidentInvitation from "./BoligResidentInvitation.jsx";
 import Summary from "./BoligAgreementSummary.jsx";
 import { agreementOverview, supplierDelta } from "./boligCommerceCore.js";
 import { downloadAmendment } from "./boligAmendmentExport.js";
@@ -18,7 +19,7 @@ export default function BoligCommerce({ context, root, unit }) {
   const [data, setData] = useState(null), [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false), [error, setError] = useState(""), [notice, setNotice] = useState("");
   const [selected, setSelected] = useState(null), [handling, setHandling] = useState(null);
-  const [editing, setEditing] = useState(false);
+  const [editing, setEditing] = useState(false), [mailBusy, setMailBusy] = useState(false);
   const [historyLimit, setHistoryLimit] = useState(10);
   const alive = useRef(true), epoch = useRef(0), operation = useRef(false), latest = useRef(local), hasData = useRef(false);
   latest.current = local;
@@ -49,7 +50,7 @@ export default function BoligCommerce({ context, root, unit }) {
     return () => { alive.current = false; ++epoch.current; window.removeEventListener("focus", refresh); document.removeEventListener("visibilitychange", refresh); };
   }, [context.user_id, context.company_id, root.id, unit.id]);
   const writable = context.role === "manager" && context.enabled && data?.context?.role === "manager" && !root.archived;
-  const disabled = busy || loading || !!local.pending;
+  const disabled = busy || mailBusy || loading || !!local.pending;
   const updateForm = (field, value) => {
     try {
       const form = latest.current.form;
@@ -80,7 +81,7 @@ export default function BoligCommerce({ context, root, unit }) {
       persist({ ...latest.current, pending: null, links, form: attempt.action === "create" || attempt.flow?.created ? null : latest.current.form });
       setData(next); setHandling(null);
       if (attempt.action === "create" || attempt.flow?.created) { setSelected(next.document_id); setEditing(false); }
-      setNotice(attempt.action === "publish" ? "Beboerlenken er klar. Kopier og del den med riktig mottaker." : "Lagret i prosjektets avtalehistorikk.");
+      setNotice(attempt.action === "publish" ? "Beboerlenken er klar. Send den her eller kopier og del med riktig mottaker." : "Lagret i prosjektets avtalehistorikk.");
       window.dispatchEvent(new CustomEvent(COMMERCE_EVENT));
     } catch (e) {
       if (alive.current && ticket === epoch.current) {
@@ -181,7 +182,7 @@ export default function BoligCommerce({ context, root, unit }) {
         <div className="bolig-commerce-list">{overview.history.slice(0,historyLimit).map(row)}</div>
         {overview.history.length > historyLimit && <button type="button" onClick={() => setHistoryLimit(n => n+10)}>Vis flere avtaler · {overview.history.length-historyLimit} til</button>}
       </details>
-      {doc && <Dialog title={`${doc.kind === "change" ? "Endringsordre" : "Beboeraksept"} · utgave ${doc.version}`} busy={busy} onClose={() => setSelected(null)}>
+      {doc && <Dialog title={`${doc.kind === "change" ? "Endringsordre" : "Beboeraksept"} · utgave ${doc.version}`} busy={busy || mailBusy} onClose={() => setSelected(null)}>
         <p><strong>{unit.number}</strong> · <span className={`bolig-commerce-badge ${doc.status}`}>{commerceLabels[doc.status]}</span></p>
         {error && <p role="alert">{error}</p>}{notice && <p role="status">{notice}</p>}
         {local.pending && <button type="button" disabled={busy || loading} onClick={() => run(null, null, true)}>Prøv samme lagring igjen</button>}
@@ -197,6 +198,7 @@ export default function BoligCommerce({ context, root, unit }) {
           }}><Link2 size={16}/>Kopier beboerlenke</button>
           <small>Lenken gir tilgang til denne avtalen i 30 dager. Del den bare med riktig beboer.</small>
         </div>}
+        {writable && doc.status === "published" && local.links[doc.id] && <ResidentInvitation key={`${key}:${doc.id}`} context={context} root={root} unit={unit} targetId={doc.id} kind="agreement" basis={doc.revision} link={local.links[doc.id]} disabled={busy || loading || !!local.pending} onBusy={setMailBusy} onSent={() => setNotice("E-posttjenesten har bekreftet sendingen.")}/>}
         {doc.status === "published" && !local.links[doc.id] && <p>Lenken er laget i en annen nettleser. Hvis den er mistet, tilbakekall denne utgaven og klargjør en ny.</p>}
         {writable && <div className="bolig-commerce-actions">
           {["draft", "approved"].includes(doc.status) && <button type="button" disabled={disabled} onClick={() => run("publish_ready", { document_id: doc.id, revision: doc.revision, document_status: doc.status })}>Opprett beboerlenke</button>}

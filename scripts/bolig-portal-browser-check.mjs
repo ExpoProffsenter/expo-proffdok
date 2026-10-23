@@ -19,14 +19,15 @@ const eq = (a, b, msg) => {
 fs.writeFileSync(
   entry,
   `
-import React from '${root}/node_modules/react/index.js';import {createRoot} from '${root}/node_modules/react-dom/client.js';
+import React from '${root}/node_modules/react/index.js';
+import {residentMailMock} from '${root}/scripts/fixtures/bolig-resident-mail-mock.js';import {createRoot} from '${root}/node_modules/react-dom/client.js';
 import Manager from '${root}/src/modules/bolig/BoligPortalManager.jsx';import Portal from '${root}/src/modules/bolig/BoligPortalPage.jsx';
 import '${root}/src/style.css';import '${root}/src/modules/bolig/bolig.css';import '${root}/src/modules/bolig/boligCommerce.css';import '${root}/src/modules/bolig/boligResident.css';
 const goods=[{key:'a',name:'Servant i eik',sku:'QA-01',quantity:1,unit:'stk',room_name:'Bad'}];
 let state={id:'portal',menu_version:1,expires_at:'2026-11-22T12:00:00Z',identity:{project:'Solgløtt borettslag',company:'QA Firma',block:'Bygg A',unit:'H0101',address:'Solgløttveien 1'},offers:[{id:'base',title:'Grunnpakke',total_cents:0,goods},{id:'oak',title:'Tilvalgspakke i eik',total_cents:15000,goods}],events:[],documents:[{id:'fdv',title:'Brukerveiledning',url:'https://example.invalid/fdv.pdf'}],agreements:[{id:'agreement',kind:'choice',version:1,status:'published',expires_at:'2026-11-22',snapshot:{identity:{},goods,total_cents:15000,reason:'Valgene dine'}}]};
 window.__newReply=()=>state.events.push({id:'external-reply',kind:'reply',sender:'manager',body:'Svar fra prosjektleder etter oppdatering',created_at:'2026-10-22T13:00:00Z'});
 window.__calls=[];window.__lost=false;window.__deny=false;window.__conflict=false;
-window.fetch=async(url,options)=>{const p=JSON.parse(options.body);window.__calls.push(p);if(window.__deny)return new Response(JSON.stringify({code:'42501',message:'Portallenken er tilbakekalt.'}),{status:403});
+window.fetch=async(url,options)=>{if(url.includes('/functions/v1/bolig-resident-link-email'))return mailMock.send(options);const p=JSON.parse(options.body);window.__calls.push(p);if(window.__deny)return new Response(JSON.stringify({code:'42501',message:'Portallenken er tilbakekalt.'}),{status:403});
 if(p.p_action!=='get'){
 const rid=p.p_payload.request_id;
 if(p.p_action==='request'&&!state.events.some(e=>e.rid===rid))state.events.push({id:'req',rid,kind:'request',sender:'resident',offer:state.offers.find(o=>o.id===p.p_payload.offer_id),body:p.p_payload.body,status:'pending',created_at:'2026-10-22T12:00:00Z'});
@@ -36,7 +37,8 @@ if(window.__lost){window.__lost=false;throw Error('lost response');}}
 return new Response(JSON.stringify(state));};
 const context={user_id:'qa',company_id:'firm',enabled:true,role:'manager'};
 let revision=0,managerPortal=null;
-window.__client={rpc(name,p){window.__calls.push(p);return Promise.resolve().then(()=>{
+const mailMock=residentMailMock(context);
+window.__client={auth:mailMock.auth,rpc(name,p){if(name==='bolig_resident_link_mail')return mailMock.rpc(p);window.__calls.push(p);return Promise.resolve().then(()=>{
 if(window.__deny)return {error:{code:'42501',message:'Tilgangen er tilbakekalt.'}};
 if(window.__conflict&&p.p_action!=='get')return {error:{code:'PT409',message:'Portalen er endret. Kladden er beholdt.'}};
 if(p.p_action!=='get'){revision++;if(!managerPortal)managerPortal={...state,offers:[],offers_draft:[],events:[],documents:[],revoked:true};
@@ -141,6 +143,7 @@ try {
   page.setDefaultTimeout(10000);
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
+  await page.route("https://expo-proffdok.app/expo-logo.png", route => route.fulfill({contentType:"image/png",body:fs.readFileSync("public/expo-logo.png")}));
   await page.goto(url + "#portal=" + "a".repeat(64));
   await page
     .getByRole("heading", { name: "Velg det som passer deg" })
@@ -294,6 +297,42 @@ try {
     ),
     true,
   );
+  const invitation = page.getByRole("region", {name:"Send beboerlenke",exact:true});
+  await invitation.getByRole("button", {name:"Send beboerlenke",exact:true}).waitFor();
+  eq(await dialog.isVisible(),true,"publication keeps same invitation dialog open");
+  eq((await invitation.innerText()).includes("qa@example.invalid"),true,"canonical recipient in same window");
+  await invitation.getByText("Forhåndsvis e-post",{exact:true}).click();
+  await invitation.frameLocator("iframe").getByRole("heading",{name:"Velkommen til beboerportalen",exact:true}).click();
+  eq(await dialog.isVisible(),true,"actual iframe click keeps portal dialog open");
+  eq(await invitation.locator("iframe").getAttribute("sandbox"),"","safe preview iframe");
+  await page.evaluate(()=>window.__loseLinkMail=true);
+  await invitation.getByRole("button",{name:"Send beboerlenke",exact:true}).click();
+  await invitation.getByRole("button",{name:"Prøv samme sending igjen",exact:true}).waitFor();
+  await page.evaluate(()=>window.__show("manager","reader"));
+  await dialog.waitFor({state:"hidden"});
+  await page.evaluate(()=>window.__show("manager","manager"));
+  await page.getByRole("button",{name:"Send invitasjon på e-post",exact:true}).click();
+  await invitation.getByRole("button",{name:"Prøv samme sending igjen",exact:true}).click();
+  await invitation.getByRole("button",{name:"Send lenken på nytt",exact:true}).waitFor();
+  eq(await page.evaluate(()=>window.__linkMailCalls[0]),await page.evaluate(()=>window.__linkMailCalls[1]),"exact send retry survives remount");
+  for (const width of [390,320]) {
+    await page.setViewportSize({width,height:900});
+    eq(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,"invitation fits mobile "+width);
+    eq(await invitation.frameLocator("iframe").locator("body").evaluate(el=>el.scrollWidth<=el.ownerDocument.defaultView.innerWidth),true,"mail fits mobile "+width);
+  }
+  eq(await invitation.frameLocator("iframe").locator("h1").evaluate(el=>el.scrollWidth<=el.clientWidth),true,"long email heading wraps instead of being clipped");
+  await dialog.evaluate(el=>el.scrollTo(0,0));
+  await page.screenshot({path:path.join(tmp,"portal-mail-320.png"),fullPage:true});
+  await invitation.frameLocator("iframe").locator("body").screenshot({path:path.join(tmp,"resident-email-320.png")});
+  await page.setViewportSize({width:1280,height:1000});
+  await dialog.getByRole("button",{name:"Lukk invitasjon til beboerportalen",exact:true}).click();
+  await page.getByRole("button",{name:"Klargjør påminnelse",exact:true}).click();
+  await invitation.getByText("Forhåndsvis e-post",{exact:true}).click();
+  eq((await invitation.locator("iframe").getAttribute("srcdoc")).includes("Påminnelse om beboerportalen"),true,"reminder uses same branded template and existing link");
+  await page.evaluate(()=>{window.__linkMailEnabled=false;window.dispatchEvent(new Event("focus"));});
+  await invitation.getByText("E-postutsending er pauset i dette testmiljøet.",{exact:false}).waitFor();
+  eq(await invitation.getByRole("button",{name:"Send lenken på nytt",exact:true}).isDisabled(),true,"paused transport blocks reminder");
+  await dialog.getByRole("button",{name:"Lukk påminnelse til beboeren",exact:true}).click();
   await page.getByText("Meldinger · 0", { exact: true }).click();
   await page
     .getByLabel("Melding til beboeren")

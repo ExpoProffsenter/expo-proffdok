@@ -26,3 +26,6 @@ verify_jwt = false
 [functions.bolig-partner-email]
 # Handler authenticates with Auth.getUser, then the canonical manager/issuer RPC.
 verify_jwt = false
+
+[functions.bolig-resident-link-email]
+verify_jwt = false

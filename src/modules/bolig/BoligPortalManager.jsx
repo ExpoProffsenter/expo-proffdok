@@ -15,6 +15,7 @@ import {
 } from "./boligClient.js";
 import { agreementMoney as money } from "./boligCommerceCore.js";
 import Dialog from "./BoligEditorDialog.jsx";
+import ResidentInvitation from "./BoligResidentInvitation.jsx";
 import { PACKAGE_CHOICES_EVENT } from "./boligPackageChoicesClient.js";
 const initial = {
   title: "",
@@ -44,7 +45,8 @@ export default function BoligPortalManager({
     [busy, setBusy] = useState(false),
     [loading, setLoading] = useState(true),
     [invite, setInvite] = useState(null),
-    [reviewed, setReviewed] = useState(false);
+    [reviewed, setReviewed] = useState(false),
+    [mailBusy, setMailBusy] = useState(false);
   const latest = useRef(draft),
     alive = useRef(false),
     epoch = useRef(0),
@@ -123,7 +125,7 @@ export default function BoligPortalManager({
     context.enabled &&
     data?.context.role === "manager" &&
     !root.archived;
-  const disabled = busy || loading || !!draft.pending;
+  const disabled = busy || mailBusy || loading || !!draft.pending;
   const run = async (action, payload = {}, retry = false) => {
     if (operating.current || !writable || (!retry && latest.current.pending))
       return;
@@ -168,10 +170,14 @@ export default function BoligPortalManager({
           : {}),
       });
       setData(next);
-      setInvite(null);
+      setInvite(
+        attempt.action === "publish"
+          ? { reminder: false, published: true, revision: next.revision }
+          : null,
+      );
       setNotice(
         attempt.action === "publish"
-          ? "Portallenken er klar. Kopier invitasjonen etter gjennomgang. Ingen e-post er sendt."
+          ? "Portallenken er klar. Du kan sende invitasjonen her eller kopiere lenken. Ingen e-post er sendt."
           : attempt.action === "apply"
             ? "Valget er lagret som nytt boligvalg. Klargjør og godkjenn avtalen under Endringer og beboeraksept."
             : "Endringen er lagret.",
@@ -278,6 +284,18 @@ export default function BoligPortalManager({
                     >
                       Åpne beboerportalen ↗
                     </a>
+                    <button
+                      disabled={disabled}
+                      onClick={() =>
+                        setInvite({
+                          published: true,
+                          reminder: false,
+                          revision: data.revision,
+                        })
+                      }
+                    >
+                      Send invitasjon på e-post
+                    </button>
                     <button
                       disabled={disabled}
                       onClick={() => openInvite(true)}
@@ -689,14 +707,17 @@ export default function BoligPortalManager({
               ? "Påminnelse til beboeren"
               : "Invitasjon til beboerportalen"
           }
-          busy={busy}
+          busy={busy || mailBusy}
           onClose={() => setInvite(null)}
         >
-          {invite.revision !== data.revision && (
-            <p role="alert">
-              Portalgrunnlaget er endret. Lukk og klargjør invitasjonen på nytt.
-            </p>
-          )}
+          {!invite.published &&
+            !invite.reminder &&
+            invite.revision !== data.revision && (
+              <p role="alert">
+                Portalgrunnlaget er endret. Lukk og klargjør invitasjonen på
+                nytt.
+              </p>
+            )}
           {error && <p role="alert">{error}</p>}
           <p>
             Mottaker:{" "}
@@ -704,70 +725,114 @@ export default function BoligPortalManager({
               {data.contact.name} · {data.contact.email}
             </strong>
           </p>
-          <p>
-            {invite.reminder
-              ? "Kopier teksten og send den gjennom deres vanlige e-postkanal."
-              : "En ny lenke er gyldig i 30 dager og erstatter tidligere portaltilgang. Gjennomgå valgmulighetene før du lager lenken."}
-          </p>
+          {!invite.published && (
+            <p>
+              {invite.reminder
+                ? "Send påminnelsen på e-post her, eller kopier teksten og del den selv."
+                : "En ny lenke er gyldig i 30 dager og erstatter tidligere portaltilgang. Gjennomgå valgmulighetene før du lager lenken."}
+            </p>
+          )}
           {!invite.reminder &&
-            (data.portal?.offers_draft || []).map((o) => (
+            (invite.published
+              ? data.portal?.offers || []
+              : data.portal?.offers_draft || []
+            ).map((o) => (
               <p key={o.id}>
                 {o.title} · {money(o.total_cents)} inkl. mva.
               </p>
             ))}
-          <label>
-            Forhåndsvisning
-            <textarea
-              readOnly
-              rows={12}
-              value={invitationText(data.contact, unit, link, invite.reminder)}
-            />
-          </label>
-          <label className="bolig-commerce-check">
-            <input
-              type="checkbox"
-              checked={reviewed}
-              onChange={(e) => setReviewed(e.target.checked)}
-            />
-            Jeg har kontrollert mottaker, innhold og valgmuligheter.
-          </label>
-          {invite.reminder ? (
-            <button
-              disabled={
-                !reviewed || disabled || invite.revision !== data.revision
-              }
-              onClick={async () => {
-                try {
-                  await navigator.clipboard.writeText(
-                    invitationText(data.contact, unit, link, true),
-                  );
-                  setNotice("Påminnelsen er kopiert. Ingen e-post er sendt.");
-                  setInvite(null);
-                } catch {
-                  setError(
-                    "Kunne ikke kopiere. Marker og kopier teksten i forhåndsvisningen.",
-                  );
-                }
-              }}
-            >
-              Kopier påminnelsen
-            </button>
-          ) : (
-            <button
-              disabled={
-                !reviewed || disabled || invite.revision !== data.revision
-              }
-              onClick={() =>
-                run("publish", {
-                  token: invite.token,
-                  reviewed: true,
-                  revision: invite.revision,
-                })
-              }
-            >
-              Lag portaltilgang
-            </button>
+          {!invite.published && (
+            <>
+              <label>
+                Forhåndsvisning
+                <textarea
+                  readOnly
+                  rows={12}
+                  value={invitationText(
+                    data.contact,
+                    unit,
+                    link,
+                    invite.reminder,
+                  )}
+                />
+              </label>
+              {!invite.reminder && (
+                <label className="bolig-commerce-check">
+                  <input
+                    type="checkbox"
+                    checked={reviewed}
+                    onChange={(e) => setReviewed(e.target.checked)}
+                  />
+                  Jeg har kontrollert mottaker, innhold og valgmuligheter.
+                </label>
+              )}
+              {invite.reminder ? (
+                <button
+                  disabled={disabled || !currentUrl}
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(
+                        invitationText(data.contact, unit, link, true),
+                      );
+                      setNotice(
+                        "Påminnelsen er kopiert. Ingen e-post er sendt.",
+                      );
+                      setInvite(null);
+                    } catch {
+                      setError(
+                        "Kunne ikke kopiere. Marker og kopier teksten i forhåndsvisningen.",
+                      );
+                    }
+                  }}
+                >
+                  Kopier påminnelsen
+                </button>
+              ) : (
+                <button
+                  disabled={
+                    !reviewed || disabled || invite.revision !== data.revision
+                  }
+                  onClick={() =>
+                    run("publish", {
+                      token: invite.token,
+                      reviewed: true,
+                      revision: invite.revision,
+                    })
+                  }
+                >
+                  Lag portaltilgang
+                </button>
+              )}
+            </>
           )}
+          {(invite.reminder || invite.published) &&
+            (!currentUrl || data.portal?.revoked) && (
+              <p>
+                Portallenken er endret eller trukket tilbake. Lukk vinduet og
+                klargjør en ny invitasjon.
+              </p>
+            )}
+          {writable &&
+            (invite.reminder || invite.published) &&
+            currentUrl &&
+            data.portal &&
+            !data.portal.revoked && (
+              <ResidentInvitation
+                key={`${scope}:${data.portal.id}:${invite.reminder ? "reminder" : "portal"}`}
+                context={context}
+                root={root}
+                unit={unit}
+                targetId={data.portal.id}
+                kind={invite.reminder ? "reminder" : "portal"}
+                basis={data.portal.menu_version}
+                link={currentUrl}
+                disabled={busy || loading || !!draft.pending}
+                onBusy={setMailBusy}
+                onSent={() =>
+                  setNotice("E-posttjenesten har bekreftet sendingen.")
+                }
+              />
+            )}
         </Dialog>
       )}
       {currentUrl && data?.portal && !data.portal.revoked && (

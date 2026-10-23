@@ -10,6 +10,7 @@ const root = process.cwd(), tmp = fs.mkdtempSync(path.join(os.tmpdir(), "bolig-c
 const entry = path.join(tmp, "entry.jsx");
 fs.writeFileSync(entry, `
 import React from '${root}/node_modules/react/index.js';
+import {residentMailMock} from '${root}/scripts/fixtures/bolig-resident-mail-mock.js';
 import {createRoot} from '${root}/node_modules/react-dom/client.js';
 import Commerce from '${root}/src/modules/bolig/BoligCommerce.jsx';
 import Resident from '${root}/src/modules/bolig/BoligResidentPage.jsx';
@@ -20,7 +21,9 @@ const goods=[{key:'common/basin',name:'Servant i eik – langt syntetisk varenav
 const snapshot={identity:{company:'QA Firma',project:'QA Solgløtt',unit:'H0101',block:'Demobygget',address:'Demogate 1'},reason:'QA – ekstra servant til boligen',goods,before_goods:[{...goods[0],quantity:1}],order_id:'order',order_number:'B-1',choice_revision:1,total_cents:125000,delta_cents:125000};
 let docs=[],receipts=new Map();window.__calls=[];window.__foreign=false;window.__hold=false;window.__conflict=false;
 const state=()=>({context:{...context,role:window.__role||'manager',...(window.__foreign?{company_id:'foreign'}:{})},root_id:'root',unit_id:'unit',selection:{goods,total_cents:125000},choice_revision:1,delivery_revision:1,orders:[{id:'order',number:'B-1',status:'ordered',goods}],documents:structuredClone(docs)});
-window.__client={rpc:async(name,args)=>{
+const mailMock=residentMailMock(context);
+window.__client={auth:mailMock.auth,rpc:async(name,args)=>{
+if(name==='bolig_resident_link_mail')return mailMock.rpc(args);
 window.__calls.push({name,args:args||{}});if(name!=="bolig_commerce")return {data:null,error:{message:"QA catalog not used"}};const p=args.p_payload;
 if(window.__hold&&args.p_action==='get')await new Promise(r=>window.__release=r);
 if(args.p_action==='get')return {data:state()};
@@ -39,7 +42,7 @@ window.__duplicate=()=>{docs=[{id:'accepted-choice',group_id:'accepted-group',ve
 window.__asAccepted=()=>{docs[0].status='accepted';docs[0].accepted_name='QA Beboer';docs[0].accepted_at='2026-10-22T18:00:00Z';docs[0].revision++;window.dispatchEvent(new Event('focus'));};
 window.__mode='internal';window.__networkLoss=false;window.__publicCalls=[];
 let publicDoc={id:'public-doc',kind:'change',version:2,status:'published',revision:3,snapshot,expires_at:'2026-11-21T18:00:00Z'};
-window.fetch=async(url,options)=>{const p=JSON.parse(options.body);window.__publicCalls.push(p);
+window.fetch=async(url,options)=>{if(url.includes('/functions/v1/bolig-resident-link-email'))return mailMock.send(options);const p=JSON.parse(options.body);window.__publicCalls.push(p);
 if(p.p_token!=='a'.repeat(64))return new Response(JSON.stringify({message:'Lenken er ikke tilgjengelig.',code:'42501'}),{status:403});
 if(p.p_action!=='get'){
 if(!p.p_document_id||!p.p_payload.confirmed)return new Response(JSON.stringify({message:'Mangler avtaleutgave',code:'22023'}),{status:400});
@@ -89,6 +92,15 @@ try {
   const link=await page.getByLabel("Beboerlenke",{exact:true}).inputValue();
   eq(/^http:\/\/127\.0\.0\.1:\d+\/bolig-kunde\.html#[a-f0-9]{64}$/.test(link),true,"capability stays in fragment");
   eq(await page.evaluate(()=>window.__calls.find(c=>c.args.p_action==='publish').args.p_payload.token.length),64);
+  const mailPanel=page.getByRole("region",{name:"Send beboerlenke",exact:true});
+  await mailPanel.getByRole("button",{name:"Send beboerlenke",exact:true}).waitFor();
+  await mailPanel.getByText("Forhåndsvis e-post",{exact:true}).click();
+  await mailPanel.frameLocator("iframe").getByRole("heading",{name:"Boligavtale til gjennomgang",exact:true}).click();
+  eq(await page.getByRole("dialog",{name:"Beboeraksept · utgave 1",exact:true}).isVisible(),true,"agreement preview keeps original dialog");
+  await mailPanel.getByRole("button",{name:"Send beboerlenke",exact:true}).click();
+  await mailPanel.getByRole("button",{name:"Send lenken på nytt",exact:true}).waitFor();
+  eq(await page.evaluate(()=>window.__linkMailCalls[0].kind),"agreement","agreement uses explicit existing target");
+  eq(await page.evaluate(()=>window.__linkMailCalls[0].token),link.split("#")[1],"same published agreement capability");
   await page.getByRole("button",{name:"Lukk beboeraksept · utgave 1",exact:true}).click();
   await page.getByRole("button",{name:"Ny endringsordre",exact:true}).click();
   await page.getByLabel("Bestillingen som endres").selectOption("order");

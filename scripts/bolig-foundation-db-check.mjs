@@ -964,6 +964,8 @@ try {
   await pilotScenarios({db,call,actor,eq,firm,manager});
   const {default:partnerScenarios}=await import("./bolig-partner-db-scenarios.mjs");
   await partnerScenarios({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider});
+  const {default:residentMail}=await import("./bolig-resident-mail-db-scenarios.mjs");
+  await residentMail({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider});
   const {default:noticeComposer}=await import("./bolig-notice-composer-db-scenarios.mjs");
   await noticeComposer({db,call,actor,eq,rejects,firm,other,manager,reader,outsider});
   await db.exec(

@@ -356,9 +356,10 @@ export function BoligHelp() {
           Åpne «Endringer og beboeraksept» i boligen. «Klargjør beboeraksept»
           bruker boligens lagrede varer og tilvalgspris. Beskriv grunnlaget, og
           kontroller varer og pris i samme vindu. Velg «Lagre utkast» for å
-          fortsette senere, eller «Opprett beboerlenke» når det er klart. Del
-          lenken med riktig beboer. Lenken varer i 30 dager. Ingen e-post sendes
-          av disse knappene. Beboeren gjennomgår pris og varer, oppgir navn og
+          fortsette senere, eller «Opprett beboerlenke» når det er klart. Send
+          med «Send beboerlenke» i avtalevinduet, eller del lenken med riktig
+          beboer. Lenken varer i 30 dager. «Opprett beboerlenke» sender ingen
+          e-post automatisk. Beboeren gjennomgår pris og varer, oppgir navn og
           bekrefter svaret i to trinn. Kvitteringen viser den aksepterte
           utgaven. Dette er en lenkebasert beboerbekreftelse.
         </li>
@@ -431,10 +432,11 @@ export function BoligHelp() {
       <p>
         Åpne «Beboerportal» i boligen. Legg til grunnpakken og ønskede
         valgmuligheter. «Klargjør invitasjon» viser kontakt og innhold før du
-        lager en personlig lenke. Kopier invitasjonen og send den gjennom deres
-        vanlige e-postkanal. Ingen e-post sendes fra portalen. Lenken varer i 30
-        dager. «Tilbakekall portaltilgang» stenger den. Ny kontakt krever ny
-        lenke.
+        lager en personlig lenke. Send invitasjonen fra samme vindu med «Send
+        beboerlenke», eller kopier invitasjonen og del den gjennom deres vanlige
+        e-postkanal. E-post sendes først når du trykker «Send beboerlenke».
+        «Klargjør påminnelse» bruker samme lenke. Lenken varer i 30 dager.
+        «Tilbakekall portaltilgang» stenger den. Ny kontakt krever ny lenke.
       </p>
       <p>
         Beboeren sender et valg til gjennomgang. Se varer og pris under

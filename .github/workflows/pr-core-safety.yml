@@ -246,6 +246,7 @@ jobs:
           node scripts/bolig-customization-browser-check.mjs
           node scripts/bolig-delivery-browser-check.mjs
           node scripts/bolig-partner-email-check.mjs
+          node scripts/bolig-resident-email-check.mjs
           node scripts/bolig-partner-files-check.mjs
           node scripts/bolig-partner-browser-check.mjs
           node scripts/bolig-partner-quality-browser-check.mjs
