@@ -35,3 +35,11 @@ Samme faste Preview: https://expo-proffdok-git-fase45b-boligprosjekter-found-050
 3. Velg Et helt bygg / Pilotbygg A → Last ned PDF / oppslag. Logo, riktig bygg, kontakt og 20 boliger; ingen privat beboerliste på oppslaget.
 
 Fysisk Safari og Kenneths egen Bolig TEST OK gjenstår. Meldings-/beboeraksept og nye leverandørbestillinger er ikke gjennomført med faktiske mottakere. E-postmottak er ikke prøvd. Dette er en innlogget gjennomgang med avgrensede faktiske skrivinger/eksport, ikke påstand om at samtlige stadier ble opprettet på nytt i UI.
+
+## Faktisk Preview etter publisering
+
+Kode-SHA **3f5ad2460b9475fbf8cf6249cb79f3f9197e1bb5**, tree ae82b5bc4d2318af75fc2e34dff29cee390ad11b, Vercel dpl_6Jdy15utsGDsHX6JNiCxTmZjJCqa **READY**, samme faste alias. Faktisk BoligEntry-BLHHB0ED.js HTTP200; eksisterende Åpne aktivitet og Opprett beboerlenke beholdt. CI649 / 39998481237 var i gang ved etterprøven; ingen samlet grønnstatus påstås før ferdig. Forrige CI648 SUCCESS.
+
+Samme innlogging og varselutkast beholdt etter oppdateringen. Native førstebokstav og full «DEMO – Prosjektkontakt» holder kontaktseksjonen åpen. Faktisk Gantt viser H0101–H0504 på Demoparken101, deretter Demoparken103; 161 oppgaver, samme rosett og 29.–31.10. Publisert skjermbevis: evidence/bolig-pilot-varsel-verifisert-20261023.jpg.
+
+Last ned PDF / oppslag fullført i faktisk UI: én side, 32493 byte, én logo. Riktig PilotbyggA, fiktiv melding, dato og prosjektkontakt; ingen beboernavn/e-post på oppslaget. Rendret og visuelt kontrollert. Uendrede bytes: evidence/bolig-pilot-byggvarsel-20261023.pdf, SHA256 86b66f0b5235816317d994fda8e419442e983e88cdf6b6b4d2edac770ac3bcce. Faktisk Sandbox-kvittering: én gruppe b95a5ac3-9901-4730-8e41-64708e633eed, 20 boligrader, alle paper_ready=true, digital=false og 0 publiserte. Mail fortsatt AV og pending/sending0. Ingen ekstra godkjenningsflate eller ekte utsending. Denne avsluttende bevispakken er kun dokumentasjon, ikke ny appkode.
