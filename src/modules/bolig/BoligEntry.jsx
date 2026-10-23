@@ -482,15 +482,11 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
           <button type="button" disabled={busy} onClick={refresh}>
             <RefreshCw size={14} /> Hent siste versjon
           </button>
-          <small>
-            {!ctx.enabled
-              ? !ctx.licensed
-                ? "Firmaet er ikke aktivert"
-                : "Brukertilgang mangler"
-              : ctx.role === "manager"
-                ? "Prosjektledertilgang"
-                : "Lesetilgang"}
-          </small>
+          {!ctx.enabled && (
+            <small>
+              {!ctx.licensed ? "Firmaet er ikke aktivert" : "Brukertilgang mangler"}
+            </small>
+          )}
         </div>
         <BoligStartGuide />
         <BoligHelp />

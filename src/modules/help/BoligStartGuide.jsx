@@ -116,11 +116,11 @@ export default function BoligStartGuide() {
           setOpen(true);
         }}
       >
-        Start her – Boligprosjekter fra A til Å
+        A–Å-veiledning for Boligprosjekter
       </button>
       {open && (
         <Dialog
-          title="Boligprosjekter fra A til Å"
+          title="A–Å-veiledning for Boligprosjekter"
           onClose={() => {
             setOpen(false);
             setImage(false);

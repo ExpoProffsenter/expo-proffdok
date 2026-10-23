@@ -45,7 +45,7 @@ En eksisterende køtest avdekket at to utdaterte burst-jobber kunne få ulik UUI
 
 ## Kort brukertest
 
-1. Samme faste Bolig-Preview → **Start her – Boligprosjekter fra A til Å**. Prøv Neste/Forrige, hopp til steg 4 og 7, forstørr et bilde og gå tilbake til prosjektet.
+1. Samme faste Bolig-Preview → **A–Å-veiledning for Boligprosjekter**. Prøv Neste/Forrige, hopp til steg 4 og 7, forstørr et bilde og gå tilbake til prosjektet.
 2. Åpne **DEMO – Stammeplan og meldinger → H0101 → Ferdigstilling**. **Overtakelse og åpne forhold** viser også uferdige aktiviteter og ubehandlet melding. Intern sluttkontroll ligger nedenfor.
 3. **Vurder åpne forhold og overtakelse** → prøv delvis lagring. Prøv felles vurdering for vanlige forhold. Kritiske forhold må vurderes enkeltvis når de finnes.
 4. I et fiktivt eksempel: vurder alle forhold som videre oppfølging med begrunnelse/ansvarlig, velg **En overtakelse som er gjennomført**, fyll dato og fiktiv protokollreferanse, bekreft og registrer. Arbeid og meldinger skal fortsatt være åpne. Merk ett forhold som hinder for å prøve at lederens vurdering stopper registreringen.
@@ -56,3 +56,7 @@ Fysisk Safari og innlogget menneskelig vurdering av oppsett/flyten gjenstår. Re
 ## Én inngang til registrering
 
 Sluttkontrollen fanget den eldre «Registrer overtagelse»-snarveien fra intern godkjenning. Den åpner nå samme nye prosjektledervurdering. Den gamle RPC-skrivehandlingen avvises, slik at ingen eldre klient kan omgå en vurdert hindring eller et nytt grunnlag. Intern godkjenningsknapp heter «Godkjenn intern sluttkontroll». Historiske overtakelser beholdes. Additiv migrasjon `20261023132013_bolig_handover_single_entry.sql`, bare Sandbox. Eksisterende ferdigstillingsbrowser følger nå samme vurdering og verifiserer at intern gjenåpning bevarer faktisk overtakelse og historikk. Alle 29 assertions beholdes med den nye produktkontrakten; ny DB-assertion avviser den gamle snarveien.
+
+## Tydelig navn på veiledningen
+
+Knapp og dialog heter «A–Å-veiledning for Boligprosjekter». Den åpner hjelp og starter ikke prosjektbyggeren. Rollemerket («Prosjektledertilgang»/«Lesetilgang») er fjernet fra verktøylinjen ved veiledningen, slik at det ikke tolkes som et krav til hjelpen. Beskjed om manglende firma-/brukertilgang vises fortsatt når modulen ikke er aktivert. Kun presentasjon; ingen tilgangsregel eller prosjektopprettelse endres.

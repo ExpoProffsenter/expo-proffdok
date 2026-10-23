@@ -289,9 +289,9 @@ try {
   await button("Lukk prosjektleders vurdering av overtakelse").click();
   for (const width of [320, 390, 1366]) {
     await page.setViewportSize({ width, height: 1000 });
-    await button("Start her – Boligprosjekter fra A til Å").click();
+    await button("A–Å-veiledning for Boligprosjekter").click();
     const guide = page.getByRole("dialog", {
-      name: "Boligprosjekter fra A til Å",
+      name: "A–Å-veiledning for Boligprosjekter",
       exact: true,
     });
     await guide
@@ -336,7 +336,7 @@ try {
       await guide.screenshot({
         path: process.env.BOLIG_HANDOVER_QA + "/guide-" + width + ".png",
       });
-    await button("Lukk boligprosjekter fra a til å").click();
+    await button("Lukk a–å-veiledning for boligprosjekter").click();
     await button("Vurder oppfølging / rett registrering").click();
     eq(
       await dialog.evaluate((e) => e.scrollWidth <= e.clientWidth + 1),
