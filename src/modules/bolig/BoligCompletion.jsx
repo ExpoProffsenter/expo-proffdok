@@ -1,4 +1,5 @@
 import DraftForm from "./BoligDraftForm.jsx";
+import BoligHandoverReview from "./BoligHandoverReview.jsx";
 import BoligQuality from "./BoligQuality.jsx";
 import { QUALITY_EVENT } from "./boligQualityClient.js";
 import { COMMERCE_EVENT } from "./boligCommerceClient.js";
@@ -431,9 +432,16 @@ export default function BoligCompletion({
         </span>
       </div>
       <p>
-        Dokumenter arbeidet, kontroller mangellisten og godkjenn for
-        overtagelse. Varelevering følges separat.
+        Følg opp dokumentasjon og kontroller underveis. Prosjektleder vurderer
+        overtakelse i et eget steg nedenfor. Varelevering følges separat.
       </p>
+      <BoligHandoverReview
+        context={context}
+        root={root}
+        scopeId={scopeId}
+        onRecorded={load}
+      />
+      <h3>Intern sluttkontroll</h3>
       <ol
         className="bolig-completion-steps"
         aria-label="Trinn i ferdigstillingen"
@@ -490,6 +498,13 @@ export default function BoligCompletion({
       {notice && (
         <p role="status" className="bolig-completion-success">
           {notice}
+        </p>
+      )}
+      {row.manager_handover && (
+        <p className="bolig-completion-warning">
+          Overtakelsen er registrert. Intern sluttkontroll:{" "}
+          {labels[row.control_status] || row.control_status}. Åpne forhold
+          følges opp videre.
         </p>
       )}
       {row.status === "review" && (

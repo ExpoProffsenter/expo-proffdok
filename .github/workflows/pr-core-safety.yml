@@ -233,6 +233,7 @@ jobs:
           node scripts/bolig-images-browser-check.mjs
           node scripts/bolig-sections-browser-check.mjs
           node scripts/bolig-completion-browser-check.mjs
+          node scripts/bolig-handover-browser-check.mjs
           node scripts/bolig-commerce-browser-check.mjs
           node scripts/bolig-portal-browser-check.mjs
           node scripts/bolig-progress-browser-check.mjs

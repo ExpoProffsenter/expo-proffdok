@@ -1,3 +1,7 @@
+## Boligprosjekter: Start her og vurdert overtakelse – Preview 23.10.2026
+
+Åtte steg med anbefalt arbeidsmåte, hva som kan vente, neste handling og fire forstørrbare eksempelbilder. Faktisk overtakelse registreres separat fra intern sluttgodkjenning: prosjektleder vurderer samlet liste med åpne kontroller, avvik, aktiviteter, godkjenning og beboermeldinger. Delvis vurdering kan lagres; vanlige forhold kan vurderes samlet, kritiske forhold krever særskilt bekreftelse. Ingen uferdige saker ferdigmeldes automatisk. Begrunnelse, ansvarlig, protokoll, dato, rettinger og historikk følger dokumentasjonen; senere endringer sletter ikke gjennomført overtakelse. Samme Preview/Sandbox, e-post AV, egen TEST OK kreves før produksjon. Se `docs/qa/BOLIG_START_OG_OVERTAKELSE_20261023.md`.
+
 ## Boligprosjekter: Gantt, stammegrupper og styrt beboerdialog – Preview 23.10.2026
 
 Samlet Gantt er hovedvisningen; dag/uke/måned, sammenleggbare leilighets-/stamme-/arbeidsgrupper, søk, dra/resize og datogjennomgang. Kortlisten er valgfri. Stammegrupper velges eksplisitt i byggbildet eller masseoppsettet og lagres med stabile bolig-ID-er, aldri utledet fra bolignummer. Massemalen tillater samtidig og forskjøvet arbeid uten tvungen forgjenger. Eksisterende datoer/varsler/ferdigstilling bruker samme oppgaver.

@@ -230,10 +230,15 @@ function AuditedPdf(options) {
   };
   return doc;
 }
+state.scopes[0].handover_review={record:{date:"2026-10-23",reference:"QA faktisk protokoll",by_name:"QA Prosjektleder"},assessment:{by_name:"QA Prosjektleder",decisions:[{title:"QA åpen aktivitet",scope_title:"H0101",category:"Aktivitet",decision:"carry",reason:"QA avtalt oppfølging etter overtakelse",owner_name:"QA Oppfølger",critical:false}]},history:[]};
 const pdf = buildBoligDocumentationPdf(AuditedPdf, state, profile, {
   logo,
   manifest,
 });
+eq(printed.some(s=>String(s).includes("Prosjektleders vurdering av overtakelse")),true,"Manager review has a visible report page");
+eq(printed.some(s=>String(s).includes("QA faktisk protokoll")),true,"Actual protocol reference is included");
+eq(printed.some(s=>String(s).includes("QA avtalt oppf")),true,"Carried open case reason is visible in PDF");
+eq(printed.some(s=>String(s).includes("QA Oppf")),true,"Follow-up owner is visible in PDF");
 eq(printed.filter((s) => String(s).includes("FDV-oversikt") &&
   String(s).includes("Expo ProffDok")).length, 0,
   "Combined report contains no hidden FDV footer text layer");

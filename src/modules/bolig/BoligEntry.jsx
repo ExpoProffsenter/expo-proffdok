@@ -2,6 +2,7 @@ import BoligQuality from "./BoligQuality.jsx";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { WORK_PROFILE_EVENT } from "../access/workProfileClient.js";
 import { useBoligContext } from "./boligAccess.js";
+import BoligStartGuide from "../help/BoligStartGuide.jsx";
 import { BoligHelp } from "../help/BoligHelp.jsx";
 import {
   boligRpc,
@@ -491,6 +492,7 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
                 : "Lesetilgang"}
           </small>
         </div>
+        <BoligStartGuide />
         <BoligHelp />
       </div>
       {!ctx.enabled ? null : (

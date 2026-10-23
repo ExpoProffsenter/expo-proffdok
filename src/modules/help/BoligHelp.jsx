@@ -50,7 +50,8 @@ export function BoligHelp() {
           aktivitet», legg inn bolig, rom, datoer og ansvarlig, og velg «Lagre
           endringer». «Må utføres etter» knytter arbeidet til en annen aktivitet
           i samme bolig. Registrer faktisk start og slutt når arbeidet er gjort.
-          Påkrevde aktiviteter må være utført før ferdigstilling kan godkjennes.
+          Påkrevde aktiviteter må være utført før intern sluttkontroll kan godkjennes.
+          Faktisk overtakelse vurderes separat av prosjektleder.
         </p>
         <p>
           «Klargjør beboervarsel» lager et eget utkast. Velg «Se over varselet»,
@@ -210,7 +211,7 @@ export function BoligHelp() {
           sjekkpunktene. Lagre underveis. Velg «Fullfør kontrollen ved lagring»
           når listen er ferdig. Merk listen som påkrevd hvis den skal inngå i
           sluttkravene. Valgfrie lister gir påminnelser. Kritiske avvik stopper
-          godkjenning. Mindre restpunkter følger med som «Klar med restpunkter»
+          intern sluttgodkjenning. Mindre restpunkter følger med som «Klar med restpunkter»
           og tas med i sluttdokumentasjonen.
         </li>
         <li>
@@ -300,7 +301,8 @@ export function BoligHelp() {
           bekreftelse og velg «Bekreft og oppdater leveransen». Da oppdateres
           mottaksgrunnlag og FDV, mens tidligere mottak følger riktig vare.
           Originalbestillingen beholdes under historikk. Uavklart oppfølging
-          stopper ferdigstilling. Beboerens svar alene sender ingen bestilling.
+          vises som et åpent forhold ved overtakelsesvurderingen og stopper intern
+          sluttgodkjenning. Beboerens svar alene sender ingen bestilling.
         </li>
         <li>
           «Gjeldende boligavtale» viser én hovedavtale. Tidligere utgaver ligger
@@ -320,7 +322,11 @@ export function BoligHelp() {
           gjennomgås samlet; «Vis kontrollpunkter» åpner detaljene. Egne ekstra
           kontrollpunkter følges opp hver for seg. «Godkjenn for overtagelse»
           krever at påkrevde forhold og kritiske avvik er avklart. Mindre
-          restpunkter gir «Klar med restpunkter». «Registrer overtagelse» viser
+          restpunkter gir «Klar med restpunkter». Dette gjelder intern sluttkontroll.
+          «Vurder åpne forhold og overtakelse» samler mangler, aktiviteter,
+          godkjenning og ubehandlede meldinger. Prosjektleder vurderer hvert forhold
+          som hinder eller videre oppfølging, med begrunnelse og ansvarlig.
+          Kritiske forhold bekreftes enkeltvis. «Registrer overtagelse» viser
           til en allerede gjennomført protokoll. Dette er intern registrering,
           ikke en digital signatur.
         </li>
@@ -329,7 +335,9 @@ export function BoligHelp() {
           statusen. Avklar også egne fellesarbeider, eller velg «Ingen egne
           fellesarbeider». Notat er valgfritt. Ferdige boliger alene er ikke
           nok. Endret arbeids- eller dokumentgrunnlag krever ny godkjenning, men
-          tidligere kontrollbeskrivelser beholdes. Registrering av underliggende
+          tidligere kontrollbeskrivelser beholdes. En faktisk overtakelse registrert
+          gjennom prosjektleders vurdering beholdes også ved senere endringer.
+          Åpne forhold skal følges opp videre. Registrering av underliggende
           overtagelser krever ikke ny gjennomgang av uendret arbeid. «Gjenåpne
           med begrunnelse» beholder tidligere godkjenninger og overtagelser i
           historikken. Usendt kontrollbeskrivelse beholdes når du lukker

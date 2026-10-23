@@ -956,6 +956,8 @@ try {
   await progressScenarios({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider});
   const {default:coordinationScenarios}=await import("./bolig-coordination-db-scenarios.mjs");
   await coordinationScenarios({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider});
+  const {default:handoverScenarios}=await import("./bolig-handover-db-scenarios.mjs");
+  await handoverScenarios({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider});
   await db.exec(
     `reset role;update public.profiles set deactivated=true where id=${q(reader)}`,
   );

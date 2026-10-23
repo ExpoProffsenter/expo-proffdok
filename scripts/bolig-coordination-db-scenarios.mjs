@@ -347,7 +347,12 @@ export default async function scenarios({
   await db.exec(
     "select bolig_private.dialogue_tick();update bolig_private.dialogue_deliveries set available_at=now()-interval '1 second';set role service_role",
   );
-  job = await reserve();
+  // The worker may first consume an older burst entry as suppressed. Queue
+  // UUID ordering is not deterministic when the fixtures share available_at.
+  for (let i = 0; i < 5; i++) {
+    job = await reserve();
+    if (job && !job.suppressed) break;
+  }
   eq(job.kind, "resident_message");
   eq(job.to, "resident@example.invalid");
   eq(

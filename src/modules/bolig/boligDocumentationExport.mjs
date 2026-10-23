@@ -313,6 +313,26 @@ export function buildBoligDocumentationPdf(
         ],
       ],
     });
+    const review = scope.handover_review;
+    if (review?.assessment || review?.record) {
+      add({
+        type: "Prosjektleders vurdering av overtakelse",
+        title: title(scope.title),
+        fields: [
+          ["Faktisk overtakelsesdato", review.record?.date || "Ikke registrert"],
+          ["Protokollreferanse", review.record?.reference || "Ikke registrert"],
+          ["Vurdert av", review.assessment?.by_name || "Ikke vurdert"],
+          ["Registrert av", review.record?.by_name || "Ikke registrert"],
+          ["Intern sluttkontroll", completionLabels[c.control_status || c.status] || c.status],
+          ["Videre oppfølging", "Vurderingen ferdigmelder ingen kontroller, aktiviteter, avvik eller meldinger. Aktuell status og tidligere vurderinger følger datafilen i ZIP."],
+        ],
+        blocks: (review.assessment?.decisions || []).map((d, i) => ({
+          title: `${i + 1}. ${d.title}`,
+          fields: [["Arbeidsområde", d.scope_title], ["Type", d.category], ["Vurdering", d.decision === "block" ? "Hindrer overtakelse" : "Følges opp"], ["Begrunnelse", d.reason], ["Oppfølgingsansvarlig", d.owner_name || "Se vurderingen"], ["Særskilt kritisk vurdering", d.critical ? "Ja – se begrunnelsen" : "Ikke markert kritisk"]],
+          photos: [],
+        })),
+      });
+    }
     for (const check of scope.data.checks) {
       add({
         type: `${check.archived ? "Arkivert sjekkliste" : check.status === "completed" ? "Fullført kontroll" : "Kontroll under arbeid"}`,
