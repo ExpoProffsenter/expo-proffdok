@@ -612,11 +612,20 @@ export default function SalesInspectionNote({
                     <p className="sales-subtitle" style={{ marginTop: 6 }}>
                       Skissen er dokumentert på saken. Tegner du en ny skisse her, erstatter den skissebildet ved neste lagring.
                     </p>
-                    <img
-                      src={sketchPhoto.dataUrl}
-                      alt="Lagret badskisse"
-                      style={{ width: "100%", maxWidth: 720, marginTop: 10, borderRadius: 10, border: "1px solid #e0e7ea" }}
-                    />
+                    <a
+                      className="sales-inspection-photo-open"
+                      href={sketchPhoto.dataUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Åpne større bilde"
+                      aria-label="Åpne større bilde: Lagret badskisse"
+                    >
+                      <img
+                        src={sketchPhoto.dataUrl}
+                        alt="Lagret badskisse"
+                        style={{ width: "100%", maxWidth: 720, marginTop: 10, borderRadius: 10, border: "1px solid #e0e7ea" }}
+                      />
+                    </a>
                   </div>
                 ) : null}
                 <SalesBathroomSketch
@@ -689,7 +698,16 @@ export default function SalesInspectionNote({
                     <div className="sales-photo-grid">
                       {photos.map((photo) => (
                         <div className="sales-photo-card" key={photo.id}>
-                          <img src={photo.dataUrl} alt={photo.name || "Befaringsbilde"} />
+                          <a
+                            className="sales-inspection-photo-open"
+                            href={photo.dataUrl || undefined}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="Åpne større bilde"
+                            aria-label={`Åpne større bilde: ${photo.name || "Befaringsbilde"}`}
+                          >
+                            <img src={photo.dataUrl} alt={photo.name || "Befaringsbilde"} />
+                          </a>
                           <button type="button" className="sales-secondary-button" disabled={busy} onClick={() => void handleRemovePhoto(photo)}>
                             Fjern
                           </button>
