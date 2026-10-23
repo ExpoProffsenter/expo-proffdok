@@ -143,3 +143,14 @@ Gantt/appdesign publisert på3fe86251 / tree69ae0846 / READY dpl_6A4kUapQDjry2WP
 UE-portalens delte prosjektlister og egne utfyllinger grupperes Pågående/Neste sjekklister/Fullførte. Fullførte er sammenfoldet nederst med antall og reell dato. Egen gruppering bruker lagrede svar/kommentarer/felt/dokumenter; delte lister kun den whitelistede punktstatusen. Søk inkluderer egne lister/plasseringer. Uavhengig sidevisning per gruppe hindrer at45 ferdige skjuler neste uferdige. Kort bruker stabile scope+ID-nøkler; delte kontrollpunkter/folding bevares ved refresh. Fullføring flytter etter serverkvittering og neste arbeid fokuseres; native kladd/filinput/retry beholdes. Interne kvalitetskort er gjennomgått og uendret.
 
 Lokal QA:49 UE-browser +60 partnerbrowser +35 native kvalitetsbrowser og full critical Sandbox-build PASS. Ingen SQL/gateway-/e-post-/Production-endring. Faktisk pilottest/Preview/CI oppdateres etter publisering; ikke erklær grønn CI før eksakt SHA er sjekket. Brukerens1 aktive tilgang skal bevares. Samme PR278 og faste Preview. Ingen merge uten Kenneths samlede Bolig TEST OK; fysisk Safari/mobil gjenstår.
+
+
+### Faktisk Preview-prøve av prioriteringen
+
+Kode1bdae9ec7e4f5eec108d786ecda246bd8b36cc47, tree753e17f191b7e0da1e11cfcf483f66c93a2d98dd, Vercel dpl_BXvQZVpvBtEJScGe7DpFaLJXek5D READY med eksakt SHA og fast alias verifisert. Gjeldende main36462e2b er uendret.
+
+Egen fiktiv UE-grantf8701f60-d7a2-4b01-a610-1b9260c8ddf6,1 dag, kun Sjekklister+egen utfylling. Tre syntetiske native prosjektlister ga én fullført, én pågående og én urørt. Faktisk cloud-UI viste Pågående/Neste/Fullførte i begge eksisterende oversikter. En pågående liste ble fullført i UI; serverkvittering ble vist, begge oversikter flyttet listen til Fullførte, og faktisk fokus gikk til neste uferdige utfylling. Fullførte-gruppen åpnet de to tidligere kontrollene med faktisk dato23.10. Bevis: `evidence/bolig-sjekklister-prioritering-20261023.jpg` (uten token).
+
+Alle tre QA-listene er deretter arkivert gjennom native managerfunksjon med begrunnelse; historikken beholdes. Bare egen QA-grant er tilbakekalt, og samme lenke er faktisk åpnet på nytt og avvist uten prosjektinnhold. Readback:1 aktiv tilgang (brukerens beholdt), QA revoked=true,3 QA-lister arkivert og original H0101 fortsatt Avvik. Ingen filer, bestillinger, fremdriftsdatoer, e-post eller produksjonsdata endret av prøven. En første sammensatt QA-transaksjon ble automatisk rullet tilbake ved deadlock; separat avgrenset oppretting/prøve/arkivering lyktes. Ingen endring i backendens låsemekanisme er gjort i denne visningspakken; observasjonen må vurderes i senere concurrency-QA.
+
+CI662/40021028773 på appkoden1bdae9ec er fortsatt in_progress ved denne dokumentasjonen. Sjekk gjeldende HEAD/CI etter dokumentasjonspublisering; grønn lokal QA er ikke en påstand om ferdig samlet CI. Kenneths Bolig TEST OK og fysisk Safari/mobil gjenstår før merge.
