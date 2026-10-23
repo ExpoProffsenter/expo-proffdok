@@ -1,3 +1,7 @@
+## Befaringsbilder i stor visning – Preview 23.10.2026
+
+Bildene i selve befaringsnotatet og en lagret Badskisse kan nå åpnes i appens eksisterende store bildevisning. Klikk/tastatur, lukkeknapp, Escape og bakgrunn er scenario-testet uten skjemalagring eller tap av ulagret tekst. Dette retter manglende kobling i editoren; saksoversiktens egen bildevisning, bildelagring, autosave og hydrering er urørt. Egen hotfix fra main, uten Bolig-kode eller databaseendringer. QA: `docs/qa/INSPECTION_IMAGE_PREVIEW_20261023.md`.
+
 ## Antall på kundevalgte opsjoner – Preview 17.10.2026
 
 Våtromstilbud og Generelt tilbud får et eget valg «Kunden kan velge antall» på tillegg. Kunden velger opsjonen og bruker − / antall / +. Enhetspris og sum vises med tilbudets låste mva.-visning. Aksepten lagrer serverberegnet sum og valgt antall fra publisert versjon. Faste opsjoner og erstatningsalternativer beholder publisert antall. Ny TEST OK kreves før Production og kontrollert main → demo-synk. Se docs/qa/CUSTOMER_OPTION_QUANTITIES_20261017.md.
