@@ -102,6 +102,12 @@ try {
   lastPage = page;
   page.setDefaultTimeout(8000);
   page.on("pageerror", (e) => errors.push(e.message));
+  await page.route("https://expo-proffdok.app/expo-logo.png", (route) =>
+    route.fulfill({
+      contentType: "image/png",
+      body: fs.readFileSync("public/expo-logo.png"),
+    }),
+  );
   await page.goto("http://127.0.0.1:" + server.address().port);
   const button = (name) => page.getByRole("button", { name, exact: true }),
     dialog = (name) => page.getByRole("dialog", { name, exact: true });
@@ -207,6 +213,170 @@ try {
       .count(),
     1,
   );
+  const invitation = page.getByRole("region", {
+    name: "Send tilgangslenke",
+    exact: true,
+  });
+  await invitation
+    .getByRole("button", { name: "Send tilgangslenke", exact: true })
+    .waitFor();
+  eq(
+    await invitation.innerText().then((text) => text.includes(first.email)),
+    true,
+    "same visible named contact is the recipient",
+  );
+  await invitation.getByText("Forhåndsvis e-post", { exact: true }).click();
+  eq(
+    await invitation.locator("iframe").getAttribute("sandbox"),
+    "",
+    "preview cannot run scripts or navigate the parent",
+  );
+  eq(
+    (await invitation.locator("iframe").getAttribute("srcdoc")).includes(
+      "background:#242424",
+    ),
+    true,
+    "existing app mail style",
+  );
+  await page.evaluate(() => (window.__failMail = true));
+  await invitation
+    .getByRole("button", { name: "Send tilgangslenke", exact: true })
+    .click();
+  await invitation
+    .getByRole("button", { name: "Prøv samme sending igjen", exact: true })
+    .waitFor();
+  await page.evaluate(() => window.__managerRemount());
+  await page.getByRole("button", { name: /QA Leverandør/ }).click();
+  await invitation
+    .getByRole("button", { name: "Prøv samme sending igjen", exact: true })
+    .click();
+  await invitation
+    .getByRole("button", { name: "Send lenken på nytt", exact: true })
+    .waitFor();
+  const mailAttempts = await page.evaluate(() => window.__mailCalls);
+  eq(
+    mailAttempts[0],
+    mailAttempts[1],
+    "email retry preserves exact request and token across remount",
+  );
+  eq(
+    await invitation
+      .getByText("E-posttjenesten har bekreftet sendingen.", { exact: true })
+      .count(),
+    1,
+    "honest provider receipt shown",
+  );
+  eq(
+    await page
+      .getByText("Ingen invitasjon er sendt.", { exact: false })
+      .count(),
+    0,
+    "old unsent notice cleared",
+  );
+  await page.evaluate(() => {
+    window.__holdMail = true;
+  });
+  await invitation
+    .getByRole("button", { name: "Send lenken på nytt", exact: true })
+    .click();
+  await page.evaluate(() => window.dispatchEvent(new Event("blur")));
+  await dialog("QA Leverandør – oppfølging").waitFor({ state: "hidden" });
+  await page.evaluate(() => window.__releaseMail());
+  eq(
+    await invitation.count(),
+    0,
+    "late mail response cannot reveal a sleeping workspace",
+  );
+  await page.evaluate(() => window.dispatchEvent(new Event("focus")));
+  await invitation
+    .getByRole("button", { name: "Send lenken på nytt", exact: true })
+    .waitFor();
+  eq(
+    (await page.evaluate(() => window.__mailHistory)).length,
+    2,
+    "late successful receipt recovered without duplicate mail",
+  );
+  await page.evaluate(() => {
+    window.__mailEnabled = false;
+    window.dispatchEvent(new Event("focus"));
+  });
+  await invitation
+    .getByText("E-postutsending er pauset i dette testmiljøet.", {
+      exact: false,
+    })
+    .waitFor();
+  eq(
+    await invitation
+      .getByRole("button", { name: "Send lenken på nytt", exact: true })
+      .isEnabled(),
+    false,
+    "paused transport disables send",
+  );
+  eq(await invitation.locator("iframe").count(), 1, "preview kept after focus");
+  await page.evaluate(() => {
+    window.__mailEnabled = true;
+    window.dispatchEvent(new Event("focus"));
+  });
+  await invitation
+    .getByRole("button", { name: "Send lenken på nytt", exact: true })
+    .waitFor();
+  await page.evaluate(() => {
+    window.__staleInvitationDraft();
+    window.__managerRemount();
+  });
+  await page.getByRole("button", { name: /QA Leverandør/ }).click();
+  await invitation
+    .getByText(
+      "Tilgangen er endret. Se over mottaker og funksjoner før du sender.",
+      { exact: true },
+    )
+    .waitFor();
+  eq(
+    await invitation
+      .getByRole("button", { name: "Send lenken på nytt", exact: true })
+      .count(),
+    1,
+    "stale never-started attempt recovers without a permanent block",
+  );
+  if (
+    (await invitation.locator("details").first().getAttribute("open")) === null
+  )
+    await invitation.getByText("Forhåndsvis e-post", { exact: true }).click();
+  await invitation.locator("iframe").waitFor({ state: "visible" });
+  const mailFrame = page.frames().find((f) => f.url() === "about:srcdoc");
+  await mailFrame
+    .locator("img")
+    .evaluate((img) => img.decode().catch(() => {}));
+  await mailFrame
+    .locator("body")
+    .screenshot({ path: "/tmp/bolig-partner-invitation-email.png" });
+  await page.screenshot({
+    path: "/tmp/bolig-partner-invitation-desktop.png",
+    fullPage: true,
+  });
+  for (const width of [390, 320]) {
+    await page.setViewportSize({ width, height: 900 });
+    eq(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+      true,
+      "invitation mobile layout " + width,
+    );
+    const frame = page.frames().find((f) => f.url() === "about:srcdoc");
+    eq(
+      await frame.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+      true,
+      "email itself fits narrow viewport " + width,
+    );
+  }
+  await page.screenshot({
+    path: "/tmp/bolig-partner-invitation-mobile.png",
+    fullPage: true,
+  });
+  await page.setViewportSize({ width: 1366, height: 900 });
   await button("Endre funksjoner").click();
   d = dialog("Endre funksjoner");
   await d
@@ -327,8 +497,10 @@ try {
   await button("Sjekklister (1)").click();
   // Completed controls now live in the collapsed group; keep the original
   // point/status/readonly assertions after opening it through the user flow.
-  await page.getByRole("region", { name: "Prosjektets sjekklister", exact: true })
-    .getByRole("button", { name: "Fullførte (1)", exact: true }).click();
+  await page
+    .getByRole("region", { name: "Prosjektets sjekklister", exact: true })
+    .getByRole("button", { name: "Fullførte (1)", exact: true })
+    .click();
   await page.getByText("Se kontrollpunkter (1)", { exact: true }).click();
   eq(
     await page.getByText("Servant kontrollert", { exact: true }).count(),

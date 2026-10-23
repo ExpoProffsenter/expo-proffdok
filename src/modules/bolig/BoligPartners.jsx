@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import Dialog from "./BoligEditorDialog.jsx";
 import Items from "./BoligPartnerItems.jsx";
+import PartnerInvitation from "./BoligPartnerInvitation.jsx";
 import {
   partnerManagerRpc,
   partnerToken,
@@ -49,6 +50,7 @@ export default function BoligPartners({ context, root }) {
       readPartnerDraft(key + ":pending", null),
     ),
     [links, setLinks] = useState(() => readPartnerDraft(key + ":links", {}));
+  const [mailBusy, setMailBusy] = useState(false);
   const [editor, setEditor] = useState(false),
     [selected, setSelected] = useState(null),
     [editing, setEditing] = useState(
@@ -555,7 +557,7 @@ export default function BoligPartners({ context, root }) {
         <Dialog
           className="bolig-partner-dialog"
           title={`${partner.organisation} – oppfølging`}
-          busy={busy}
+          busy={busy || mailBusy}
           onClose={() => setSelected(null)}
         >
           <p>
@@ -593,7 +595,7 @@ export default function BoligPartners({ context, root }) {
               {partner.access_mode === "project" && (
                 <button
                   type="button"
-                  disabled={busy || !!pending}
+                  disabled={busy || mailBusy || !!pending}
                   onClick={() => {
                     const next = {
                       ...blank,
@@ -624,12 +626,25 @@ export default function BoligPartners({ context, root }) {
               )}
               <button
                 type="button"
-                disabled={busy}
+                disabled={busy || mailBusy}
                 onClick={() => revoke(partner.id)}
               >
                 Trekk tilbake tilgang
               </button>
             </div>
+          )}
+          {manager && partner.active && (
+            <PartnerInvitation
+              key={`${key}:${partner.id}`}
+              context={context}
+              root={root}
+              partner={partner}
+              link={links[partner.id]}
+              onBusy={setMailBusy}
+              onSent={() =>
+                setNotice("E-posttjenesten har bekreftet sendingen.")
+              }
+            />
           )}
           <p>
             {partner.access_mode === "project"

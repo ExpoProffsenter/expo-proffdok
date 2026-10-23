@@ -575,3 +575,10 @@
 .bolig-partner-checklist-card { padding: 16px; }
 .bolig-partner-checklist-card h3 { font-size: 18px; margin: 8px 0 4px; }
 .bolig-partner-checklist-card p { margin: 6px 0; }
+
+.bolig-partner-invitation { border: 1px solid #c6dcd5; border-radius: 14px; background: #f1f7f4; padding: 18px; margin: 20px 0; min-width: 0; overflow-wrap: anywhere; }
+.bolig-partner-invitation h3 { display: flex; align-items: center; gap: 9px; margin-top: 0; }
+.bolig-partner-mail-recipient { display: grid; gap: 4px; padding: 14px; background: white; border: 1px solid #d8e4de; border-radius: 10px; }
+.bolig-partner-invitation iframe { display: block; width: 100%; height: 600px; border: 1px solid #c5d5cf; border-radius: 10px; background: #51585a; margin: 12px 0; }
+.bolig-partner-mail-paused { color: #64531e; background: #fff8e1; padding: 12px; border-radius: 9px; }
+.bolig-partner-mail-sent { font-size: 13px; color: #36644e; }

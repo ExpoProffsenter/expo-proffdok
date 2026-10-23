@@ -81,6 +81,8 @@ window.__deny = false;
 window.__fail = false;
 window.__received = 1;
 window.__receipts = {};
+window.__mailHistory = [];
+window.__mailEnabled = true;
 const wait = async () => {
   if (window.__hold) {
     window.__hold = false;
@@ -136,8 +138,38 @@ const view = () => ({
     ),
 });
 window.__client = {
+  auth: {
+    getSession: async () => ({ data: { session: { access_token: "qa" } } }),
+  },
   rpc: async (name, args) => {
     window.__calls.push({ name, args });
+    if (name === "bolig_partner_mail") {
+      const partner = state.partners.find((p) => p.id === args.p_access_id);
+      if (!partner || window.__deny)
+        return { error: { code: "42501", message: "Ingen tilgang" } };
+      return {
+        data: {
+          context: ctx,
+          root_id: "root",
+          access_id: partner.id,
+          revision: partner.revision,
+          enabled: window.__mailEnabled,
+          history: structuredClone(window.__mailHistory),
+          snapshot: {
+            origin: "https://expo-proffdok.app",
+            project: root.title,
+            reference: "00420",
+            name: partner.name,
+            organisation: partner.organisation,
+            to: partner.email,
+            expires_at: "2026-12-01T12:00:00Z",
+            access_mode: "project",
+            features: partner.features,
+            company: { companyName: "QA Firma", email: "sender@qa.invalid" },
+          },
+        },
+      };
+    }
     const captured = structuredClone(state);
     await wait();
     if (window.__deny)
@@ -198,6 +230,31 @@ window.__client = {
   },
 };
 window.fetch = async (url, args) => {
+  if (url.includes("/functions/v1/bolig-partner-email")) {
+    const input = JSON.parse(args.body);
+    window.__mailCalls ||= [];
+    window.__mailCalls.push(input);
+    if (window.__holdMail) {
+      window.__holdMail = false;
+      await new Promise((resolve) => (window.__releaseMail = resolve));
+    }
+    let record = window.__mailHistory.find((m) => m.id === input.requestId);
+    if (!record) {
+      record = {
+        id: input.requestId,
+        recipient: input.to,
+        own: true,
+        begun_at: "2026-10-23T20:00:00Z",
+      };
+      window.__mailHistory.unshift(record);
+    }
+    if (window.__failMail) {
+      window.__failMail = false;
+      throw Error("Lost mail receipt");
+    }
+    record.sent_at = "2026-10-23T20:00:01Z";
+    return { ok: true, json: async () => ({ ok: true }) };
+  }
   if (url.includes("/functions/v1/bolig-partner-files")) {
     await wait();
     if (window.__deny)
@@ -390,29 +447,85 @@ const baseChecklists = structuredClone(state.checklists);
 window.__priorityFixture = () => {
   state.quality.scopes.push({ id: "unit2", title: "Demoparken 103 · H0201" });
   const own = (id, title, answers, status = "draft", scope_id = "unit1") => ({
-    scope_id, record: { id, status, answers, completed_at: status === "completed" ? "2026-10-23T18:00:00Z" : null,
-      definition: { title, points: [{ id: "p1", title: "Servant kontrollert", fields: [] }] } },
+    scope_id,
+    record: {
+      id,
+      status,
+      answers,
+      completed_at: status === "completed" ? "2026-10-23T18:00:00Z" : null,
+      definition: {
+        title,
+        points: [{ id: "p1", title: "Servant kontrollert", fields: [] }],
+      },
+    },
   });
   state.quality.checks = [
     own("done", "Ferdig UE", { p1: { status: "OK" } }, "completed"),
     own("new", "Neste UE", {}),
     own("answer", "Pågående UE", { p1: { status: "Avvik" } }),
     own("comment", "Kommentar UE", { p1: { comment: "Lagret merknad" } }),
-    own("field", "Måling UE", { p1: { values: { pressure: 0 } } }, "draft", "unit2"),
-    own("blank", "Tom UE", { p1: { status: "", comment: " ", values: {}, documents: [] } }),
+    own(
+      "field",
+      "Måling UE",
+      { p1: { values: { pressure: 0 } } },
+      "draft",
+      "unit2",
+    ),
+    own("blank", "Tom UE", {
+      p1: { status: "", comment: " ", values: {}, documents: [] },
+    }),
     own("document", "Vedlegg UE", { p1: { documents: ["doc-id"] } }),
   ];
-  state.checklists = Array.from({ length: 45 }, (_, i) => ({ ...baseChecklists[0], id: `done${i}`, title: `Ferdig prosjekt ${i}`, completed_at: "2026-10-23T18:00:00Z" }));
+  state.checklists = Array.from({ length: 45 }, (_, i) => ({
+    ...baseChecklists[0],
+    id: `done${i}`,
+    title: `Ferdig prosjekt ${i}`,
+    completed_at: "2026-10-23T18:00:00Z",
+  }));
   state.checklists.push(
-    { ...baseChecklists[0], id: "shared", title: "Neste prosjekt", status: "draft", points: [{ id: "p1", title: "Kontroll", status: null }] },
-    { ...baseChecklists[0], id: "shared", scope_id: "unit2", title: "Pågående prosjekt", status: "draft", address: "Demoparken 103" },
+    {
+      ...baseChecklists[0],
+      id: "shared",
+      title: "Neste prosjekt",
+      status: "draft",
+      points: [{ id: "p1", title: "Kontroll", status: null }],
+    },
+    {
+      ...baseChecklists[0],
+      id: "shared",
+      scope_id: "unit2",
+      title: "Pågående prosjekt",
+      status: "draft",
+      address: "Demoparken 103",
+    },
   );
 };
-window.__priorityReadback = () => structuredClone({ checks: state.quality.checks, shared: state.checklists });
+window.__priorityReadback = () =>
+  structuredClone({ checks: state.quality.checks, shared: state.checklists });
 window.__resetPriority = () => {
-  state.quality = { scopes: state.quality.scopes.slice(0, 1), checks: [], documents: [] };
+  state.quality = {
+    scopes: state.quality.scopes.slice(0, 1),
+    checks: [],
+    documents: [],
+  };
   state.qualityRevision = 0;
   state.checklists = structuredClone(baseChecklists);
   window.__calls = [];
   window.__receipts = {};
+};
+
+window.__staleInvitationDraft = () => {
+  const partner = state.partners[0];
+  const id = crypto.randomUUID();
+  localStorage.setItem(
+    `expo.bolig-partner-mail.v1:qa:firm:root:${partner.id}`,
+    JSON.stringify({ id, revision: partner.revision, to: partner.email }),
+  );
+  window.__mailHistory.unshift({
+    id,
+    recipient: partner.email,
+    own: true,
+    created_at: "2026-10-23T20:00:00Z",
+  });
+  partner.revision++;
 };

@@ -24,7 +24,16 @@ export function BoligHelp() {
         </p>
         <p>
           Lenken gir tilgang til den som har den. Del den bare med kontakten du
-          har valgt. Ingen invitasjon sendes automatisk. Tilgangen gjelder i
+          har valgt. Når lenken er opprettet, åpner du kontakten og velger
+          «Send tilgangslenke». Mottakeren vises i samme vindu. Du kan åpne
+          «Forhåndsvis e-post» først. Meldingen bruker appens vanlige e-postmal
+          med firmalogo. Sendingsstatus og historikk vises under knappen.
+          «Bekreftet av e-posttjenesten» betyr at tjenesten har tatt imot
+          meldingen, ikke at mottakeren har åpnet den. Ved nettbrudd velger du
+          «Prøv samme sending igjen». Lenken finnes bare i nettleseren der den
+          ble opprettet; bruk denne nettleseren for utsending. I testmiljøet er
+          e-post pauset, men forhåndsvisning og manuell deling fungerer.
+          Tilgangen gjelder i
           valgt antall dager og kan stoppes med «Trekk tilbake tilgang». Ved
           endrede funksjoner: åpne kontakten og velg «Endre funksjoner». Samme
           lenke gjelder. Ved ny kontakt: trekk tilbake og opprett ny tilgang.

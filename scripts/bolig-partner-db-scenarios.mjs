@@ -597,4 +597,7 @@ export default async function ({
     rpc,
     portal,
   });
+  const { default: partnerMail } = await import("./bolig-partner-mail-db-scenarios.mjs");
+  await partnerMail({db, actor, eq, rejects, id, firm, other, manager, reader, outsider, root, rpc});
+
 }

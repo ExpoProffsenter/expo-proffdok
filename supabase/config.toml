@@ -22,3 +22,7 @@ verify_jwt = false
 [functions.bolig-partner-files]
 # Capability token is verified in SQL before and after private Storage access.
 verify_jwt = false
+
+[functions.bolig-partner-email]
+# Handler authenticates with Auth.getUser, then the canonical manager/issuer RPC.
+verify_jwt = false
