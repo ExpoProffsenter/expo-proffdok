@@ -44,6 +44,12 @@ export default async function ({
       "utf8",
     ),
   );
+  await db.exec(
+    await fs.readFile(
+      "supabase/migrations/20261023195824_bolig_quality_history_action.sql",
+      "utf8",
+    ),
+  );
   await actor(manager);
   const root = (await call("list")).roots.find(
     (r) => r.reference === "QA-PILOT-40-20261023",

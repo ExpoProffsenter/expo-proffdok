@@ -353,6 +353,24 @@ export default async function ({
   await actor(manager);
   s = await rpc();
   g = s.partners.find((x) => x.id === grant);
+  const nativeView = (
+    await db.query("select public.bolig_quality($1,$2,$3) v", [
+      firm,
+      root,
+      scope,
+    ])
+  ).rows[0].v;
+  eq(
+    [
+      ...new Set(
+        nativeView.history
+          .filter((h) => h.actor_name.startsWith("UE-lenke:"))
+          .map((h) => h.action),
+      ),
+    ].sort(),
+    ["partner_check_add", "partner_check_save", "partner_document"],
+    "native history reads stored event actions, not the get parameter",
+  );
   await rpc("permissions", {
     id: grant,
     request_id: id(98326),

@@ -54,6 +54,9 @@ const tabs = [
   ["protocols", "Ekstern protokoll", FileCheck2],
 ];
 const actions = {
+  partner_check_add: "UE-sjekkliste opprettet",
+  partner_check_save: "UE-kontroll lagret",
+  partner_document: "UE-fil registrert",
   check_add: "Sjekkliste opprettet",
   check_requirement: "Krav til kontroll oppdatert",
   check_save: "Kontroll lagret",
