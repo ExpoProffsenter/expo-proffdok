@@ -159,9 +159,32 @@ try {
   await dialog
     .getByLabel("Melding til beboerne")
     .fill("Vi kommer på mandag. Sørg for tilgang.");
+  await dialog.getByLabel("Kontaktperson i prosjektet").pressSequentially("Q");
+  eq(
+    await dialog.getByLabel("Kontaktperson i prosjektet").isVisible(),
+    true,
+    "First typed letter keeps contact section open",
+  );
   await dialog
     .getByLabel("Kontaktperson i prosjektet")
-    .fill("QA Prosjektleder");
+    .pressSequentially("A Prosjektleder");
+  eq(
+    await dialog.getByLabel("Kontaktperson i prosjektet").inputValue(),
+    "QA Prosjektleder",
+    "Native typing preserves complete contact name",
+  );
+  await dialog.getByText("Kontaktperson på varslet", { exact: true }).click();
+  eq(
+    await dialog.getByLabel("Kontaktperson i prosjektet").isVisible(),
+    false,
+    "Contact section can be closed manually",
+  );
+  await dialog.getByText("Kontaktperson på varslet", { exact: true }).click();
+  eq(
+    await dialog.getByLabel("Kontaktperson i prosjektet").isVisible(),
+    true,
+    "Contact section reopens manually",
+  );
   await page.screenshot({
     path: "/tmp/bolig-composer-desktop.png",
     fullPage: false,

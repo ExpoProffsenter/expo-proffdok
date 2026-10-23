@@ -14,10 +14,11 @@ export function BoligHelp() {
         <p>
           Samlet fremdriftsplan er hovedbildet. Grupper etter leilighet,
           stammegruppe eller arbeid/fag. Flere aktiviteter kan ligge på samme
-          dag. Fold sammen grupper for oversikt. Trykk en stolpe for detaljer,
-          dra for å flytte eller bruk Alt + piltast. «Se over datoendringer»
-          viser resultatet før lagring. Aktivitetskort og «Ny aktivitet» finnes
-          under «Aktivitetsliste og enkeltaktiviteter».
+          dag. Leilighetene står i rekkefølge etter adresse og bolignummer. Fold
+          sammen grupper for oversikt. Trykk en stolpe for detaljer, dra for å
+          flytte eller bruk Alt + piltast. «Se over datoendringer» viser
+          resultatet før lagring. Aktivitetskort og «Ny aktivitet» finnes under
+          «Aktivitetsliste og enkeltaktiviteter».
         </p>
         <p>
           Velg «Velg leiligheter til stammegruppe» i byggbildet. Trykk boligene,
@@ -61,14 +62,16 @@ export function BoligHelp() {
         <p>
           Velg «Nytt beboervarsel» under «Fremdrift og varsler». Velg hele
           prosjektet, et bygg, en oppgang eller bestemte boliger. Skriv
-          meldingen, datoene og prosjektkontakten. Forhåndsvisningen viser
-          firmalogo og innhold. «Lagre utkast» sender ingenting. «Last ned PDF /
-          oppslag» lager en ferdig papirutgave uten krav om beboerens e-post.
-          «Publiser til beboerne» publiserer eller planlegger varslet og
-          bestiller e-post når utsending er aktivert. Alt gjøres i samme vindu.
-          Endret kontakt eller aktivitetsgrunnlag krever en oppdatert utgave.
-          «Trekk tilbake» stopper visning og ventende utsending; en allerede
-          sendt e-post kan ikke trekkes tilbake.
+          meldingen, datoene og prosjektkontakten. Åpne «Kontaktperson på
+          varslet» for å endre navn, telefon og e-post. Feltet holder seg åpent
+          mens du skriver. Forhåndsvisningen viser firmalogo og innhold. «Lagre
+          utkast» sender ingenting. «Last ned PDF / oppslag» lager en ferdig
+          papirutgave uten krav om beboerens e-post. «Publiser til beboerne»
+          publiserer eller planlegger varslet og bestiller e-post når utsending
+          er aktivert. Alt gjøres i samme vindu. Endret kontakt eller
+          aktivitetsgrunnlag krever en oppdatert utgave. «Trekk tilbake» stopper
+          visning og ventende utsending; en allerede sendt e-post kan ikke
+          trekkes tilbake.
         </p>
         <p>
           Åpne aktiviteter vises i planen. Når e-post er aktivert, får ansvarlig

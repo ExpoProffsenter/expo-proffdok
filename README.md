@@ -1131,3 +1131,7 @@ Alle boligtyper viser de registrerte boligene som klikkbare felt inne i byggbild
 ### Bolig – endre koblet aktivitet direkte fra saken (23.10.2026)
 
 Se åpne forhold → Oppfølging i fremdriftsplanen → Åpne aktivitet bruker samme aktivitetsvindu som Gantt og aktivitetslisten. Ansvarlig, frist og faktisk utførelse lagres i eksisterende plan; lukking/lagring går tilbake til samme sak. En annen usendt aktivitetskladd krever et eksplisitt valg før den erstattes. Aktivitetsredigering binder planens revisjon og viser ferskt grunnlag før videre lagring ved endringer. Saken og overtakelsesvurderingen lukkes ikke automatisk. QA/startpunkt: `docs/qa/BOLIG_DIREKTE_AKTIVITET_20261023.md`. Kun feature-Preview frem til egen Bolig TEST OK.
+
+### Boligpilot: kontaktfelt og Gantt (23. oktober 2026)
+
+Innlogget gjennomgang av 40-boligpiloten avdekket at kontaktseksjonen i beboervarselet lukket seg etter første bokstav. Åpen/lukket visning er nå egen lokal UI-tilstand. Gantt viser boliggrupper naturlig etter adresse og bolignummer; aktiviteters ID-er, datoer og lagringsgrunnlag beholdes. Faktisk pilotbevis og testgrenser: `docs/qa/BOLIG_INNLOGGET_PILOT_20261023.md`.

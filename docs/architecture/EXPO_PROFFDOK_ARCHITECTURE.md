@@ -1754,3 +1754,7 @@ Papir og digital publisering har separate resultattilstander i samme vindu. E-po
 ### Bolig – gjenbruk av aktivitetseditor i oppfølging
 
 `BoligCaseFollowup` kan åpne `BoligProgress` avgrenset til den reelle koblede aktiviteten og dens bolig. `BoligProgressTaskEditor` er en presentasjonell uthenting av den eksisterende editoren; den har ingen egen RPC eller lagringsstate. Vanlig plan, aktivitetsliste og oppfølging bruker samme persist/run/retry og eksisterende `bolig_progress`-gateway. Hver lagring bruker gjennomgått global planrevisjon, mens task.revision fortsatt er aktivitetens versjon. Fokusoppdateringer bevarer kladdens basis og krever eksplisitt fersk gjennomgang ved ny planrevisjon. Eksakt pending-kvittering kan gjenopptas etter arkivering; nye handlinger på arkivert eller utilgjengelig snarveimål sperres. Ukjent/annen lokal kladd erstattes ikke stille. Ingen SQL-, varsel- eller kildeendring: ansvar, varsler, sak, overtakelsesvurdering og utførelse beholder eksisterende kontrakter.
+
+### Boligpilot – lokal visning, 23. oktober 2026
+
+Beboervarselets kontaktseksjon har selvstendig `contactOpen`-tilstand, synkronisert med native details-toggle. Navneendringer styrer ikke lenger seksjonens åpenhet. Gantt sorterer en kopi av gruppebøttene med norsk numerisk sammenligning: adresse → bolignummer → ID for boliger, navn → ID ellers. Oppgavenes rekkefølge innen gruppene og RPC/payload/revisjon endres ikke. Ingen migrasjon, ny utsendingsvei eller godkjenningsflate. Innlogget Sandbox-pilot er dokumentert i `docs/qa/BOLIG_INNLOGGET_PILOT_20261023.md`.

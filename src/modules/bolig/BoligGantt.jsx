@@ -66,11 +66,30 @@ export default function BoligGantt({
         : groupBy === "activity"
           ? t.title
           : `${t.unit_number} · ${t.address || ""}`;
-    if (!buckets.has(id)) buckets.set(id, { id, label, tasks: [] });
+    if (!buckets.has(id))
+      buckets.set(id, {
+        id,
+        label,
+        address: t.address || "",
+        unit_number: t.unit_number || "",
+        tasks: [],
+      });
     buckets.get(id).tasks.push(t);
   }
   const rows = [];
-  for (const b of buckets.values()) {
+  const compare = (a, b) =>
+    String(a).localeCompare(String(b), "nb", {
+      numeric: true,
+      sensitivity: "base",
+    });
+  const orderedBuckets = [...buckets.values()].sort((a, b) =>
+    groupBy === "unit"
+      ? compare(a.address, b.address) ||
+        compare(a.unit_number, b.unit_number) ||
+        compare(a.id, b.id)
+      : compare(a.label, b.label) || compare(a.id, b.id),
+  );
+  for (const b of orderedBuckets) {
     rows.push({ ...b, summary: true });
     if (!closed[`${groupBy}/${b.id}`])
       for (const t of b.tasks)

@@ -92,6 +92,7 @@ export default function BoligResidentNoticeComposer({
     });
   };
   const [draft, setDraft] = useState(initial),
+    [contactOpen, setContactOpen] = useState(() => !draft.contact.name),
     [state, setState] = useState(data),
     [profile, setProfile] = useState(null),
     [error, setError] = useState(""),
@@ -499,7 +500,10 @@ export default function BoligResidentNoticeComposer({
                 />
               </label>
             </div>
-            <details open={!draft.contact.name}>
+            <details
+              open={contactOpen}
+              onToggle={(e) => setContactOpen(e.currentTarget.open)}
+            >
               <summary>Kontaktperson på varslet</summary>
               {[
                 ["name", "Kontaktperson i prosjektet"],
