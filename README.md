@@ -1,3 +1,9 @@
+## Boligprosjekter: Gantt, stammegrupper og styrt beboerdialog – Preview 23.10.2026
+
+Samlet Gantt er hovedvisningen; dag/uke/måned, sammenleggbare leilighets-/stamme-/arbeidsgrupper, søk, dra/resize og datogjennomgang. Kortlisten er valgfri. Stammegrupper velges eksplisitt i byggbildet eller masseoppsettet og lagres med stabile bolig-ID-er, aldri utledet fra bolignummer. Massemalen tillater samtidig og forskjøvet arbeid uten tvungen forgjenger. Eksisterende datoer/varsler/ferdigstilling bruker samme oppgaver.
+
+Beboerdialog har prosjektstandard (nye prosjekter AV), ansvarlig og boligvis arvet/på/av. Byggbildet får separat meldingsbrikke og felles oppfølgingsinnboks. Lest og behandlet skilles; nye svar åpner oppfølging, og tids-/ID-avgrenset behandling kvitterer ikke bort senere meldinger. Avslåing bevarer historikk og oppfølginger. Meldingsvarsler gjenbruker Bolig-worker med kontrollert kø, to minutters samling, mottakerkontroll og privat innhold bare i portalen. Utsending er fortsatt AV i Sandbox. Miljømål BEGGE; kun Preview/Sandbox inntil egen TEST OK. QA og grenser: `docs/qa/BOLIG_GANTT_DIALOG_20261023.md`.
+
 ## Boligprosjekter: masseplan og felles tidslinje – Preview 23.10.2026
 
 Fremdrift har samlet valg av bygg/oppgang/etasje/boliger, lokal arbeidsmal fra appens standardaktiviteter, startdato, takt og forhåndsvisning av alle datoer. Inntil 400 aktiviteter lagres eller flyttes atomisk; påbegynt og utført arbeid avklares enkeltvis. Tidslinjen gjenbruker appens eksisterende planlegger med uke/måned, dra/resize og angre. Boligoppgavene er fortsatt ett autoritativt grunnlag for datoer, ferdigstilling og gjennomgåtte beboervarsler. Ingen dobbeltlagring i prosjekt-/KS-planer eller oppdiktet bemanning. Samme Preview/Sandbox, e-post fortsatt deaktivert og ingen produksjonssetting uten TEST OK. Se `docs/qa/BOLIG_MASSEPLAN_20261023.md` for grenser og testguide.
@@ -19,6 +25,9 @@ Neste operative etappe på samme core-Preview: prosjektleder redigerer grunnpakk
 Miljømål: BEGGE. Egen core-endring fra ren main, adskilt fra prototype-PR #277. Boligprosjekter åpnes fra Meny. Menyvalget vises bare med fersk serverbekreftet tilgang. Systemadmin → Firmaer og prosjekter har eget firmavalg og firmaaktivering, også utenfor aktiv arbeidsprofil. Firmaadmin har individuelle lese-/prosjektlederroller for ansatte i valgt firma. Prosjektflaten viser bare prosjektarbeid og veiledning. Første etappe gir serverlagret hovedprosjekt → blokk → oppgang → bolig, firmaaktivering og individuell lese-/prosjektledertilgang. Etasjeoppsettet har egne felt og total. Eksisterende ProffDok-prosjekter kobles til boliger; eksisterende prosjektinnhold og rettigheter brukes videre.
 
 Seks additive migrasjoner er installert kun i Sandbox. Etter brukerens instruks er Boligprosjekter aktivert for Ringside, Bademiljø Expo og Expo Proffsenter i Sandbox. De tre eksisterende syntetiske ansatte i Expo har prosjektledertilgang. Andre firmaer er ikke aktivert. I Production skal firmaaktivering styres av systemadmin og individuelle tildelinger av firmaadmin. Production er urørt. Grunnpakker, tilvalg og interne boligvalg er beskrevet i den nye etappen øverst. Fremdrift, kundeaksept, portal og e-postbestillinger gjenstår. Ingen merge uten grønn QA, innlogget Preview-prøve og ny TEST OK. Scope, arkitektur, testbevis og videre arbeid: `docs/qa/BOLIG_FOUNDATION_20261020.md`.
+## Befaringsbilder i stor visning – Preview 23.10.2026
+
+Bildene i selve befaringsnotatet og en lagret Badskisse kan nå åpnes i appens eksisterende store bildevisning. Klikk/tastatur, lukkeknapp, Escape og bakgrunn er scenario-testet uten skjemalagring eller tap av ulagret tekst. Dette retter manglende kobling i editoren; saksoversiktens egen bildevisning, bildelagring, autosave og hydrering er urørt. Egen hotfix fra main, uten Bolig-kode eller databaseendringer. QA: `docs/qa/INSPECTION_IMAGE_PREVIEW_20261023.md`.
 
 ## Antall på kundevalgte opsjoner – Preview 17.10.2026
 

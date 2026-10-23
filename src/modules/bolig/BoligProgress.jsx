@@ -346,165 +346,170 @@ export default function BoligProgress({ context, root, unit = null }) {
           setReview({ kind: "editor" });
         }}
       />
-      <div className="bolig-progress-tools">
-        <label>
-          Søk i fremdrift
-          <input
-            type="search"
-            placeholder="Bolig, rom, arbeid eller ansvarlig"
-            value={query}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              setPage(0);
-            }}
-          />
-        </label>
-        <label>
-          Vis
-          <select
-            value={filter}
-            onChange={(e) => {
-              setFilter(e.target.value);
-              setPage(0);
-            }}
-          >
-            <option value="open">Åpne aktiviteter</option>
-            <option value="all">Alle aktiviteter</option>
-            <option value="late">Passert planlagt slutt</option>
-            <option value="done">Utført arbeid</option>
-          </select>
-        </label>
-        {writable && (
-          <button
-            type="button"
-            className="primary"
-            disabled={disabled}
-            onClick={() => {
-              update({ editor: formTask(unit?.id, context.user_id) });
-              setReview({ kind: "editor" });
-            }}
-          >
-            <Plus size={17} />
-            Ny aktivitet
-          </button>
-        )}
-        {writable && edit && (
-          <button type="button" onClick={() => setReview({ kind: "editor" })}>
-            Fortsett aktivitetsutkast
-          </button>
-        )}
-      </div>
-      <div className="bolig-progress-list">
-        {shown.slice(at * 8, at * 8 + 8).map((t) => (
-          <article key={t.id} className={`bolig-progress-task ${t.status}`}>
-            <div>
-              <span className="bolig-progress-status">{labels[t.status]}</span>
-              <small>
-                {t.unit_number} · {t.room_name || "Hele boligen"}
-                {t.address ? ` · ${t.address}` : ""}
-              </small>
-            </div>
-            <h4>{t.title}</h4>
-            <p>
-              {date(t.planned_start)} – {date(t.planned_end)}
-            </p>
-            <p className="bolig-progress-owner">
-              {t.owner_name}
-              {!t.owner_active ? " · Tilgang må avklares" : ""}
-            </p>
-            {t.actual_start && (
-              <small>
-                Faktisk: {date(t.actual_start)}
-                {t.actual_end ? ` – ${date(t.actual_end)}` : ""}
-              </small>
-            )}
-            {t.predecessor_id && (
-              <small>
-                Etter:{" "}
-                {tasks.find((x) => x.id === t.predecessor_id)?.title ||
-                  "Aktivitet må avklares"}
-              </small>
-            )}
-            {!t.active && (
-              <p role="status">
-                Bolig eller rom er endret. Avklar tilknytningen.
-              </p>
-            )}
-            <div className="bolig-progress-task-actions">
-              {writable && (
-                <>
-                  <button
-                    type="button"
-                    disabled={disabled}
-                    onClick={() => {
-                      update({
-                        editor: {
-                          ...t,
-                          room_id: t.room_id || "",
-                          predecessor_id: t.predecessor_id || "",
-                          actual_start: t.actual_start || "",
-                          actual_end: t.actual_end || "",
-                        },
-                      });
-                      setReview({ kind: "editor" });
-                    }}
-                  >
-                    Oppdater aktivitet
-                  </button>
-                  <button
-                    type="button"
-                    disabled={disabled || !t.active}
-                    onClick={() => {
-                      update({
-                        notice: {
-                          id: crypto.randomUUID(),
-                          task_id: t.id,
-                          body: `Vi planlegger ${t.title.toLocaleLowerCase("nb")} i ${t.room_name || "boligen"} fra ${date(t.planned_start)} til ${date(t.planned_end)}.`,
-                          publish_on: localToday(),
-                        },
-                      });
-                      setReview({ kind: "notice" });
-                    }}
-                  >
-                    <Send size={15} />
-                    Klargjør beboervarsel
-                  </button>
-                </>
-              )}
-            </div>
-          </article>
-        ))}
-      </div>
-      {shown.length === 0 && (
-        <div className="bolig-progress-empty">
-          <CalendarDays size={28} />
-          <h4>
-            {tasks.length
-              ? "Ingen aktiviteter i dette utvalget"
-              : "Start med første aktivitet"}
-          </h4>
-          <p>
-            Legg til arbeid, datoer og ansvarlig. Beboervarsel lages og
-            godkjennes separat.
-          </p>
+      <details className="bolig-progress-activity-list">
+        <summary>Aktivitetsliste og enkeltaktiviteter</summary>
+        <div className="bolig-progress-tools">
+          <label>
+            Søk i fremdrift
+            <input
+              type="search"
+              placeholder="Bolig, rom, arbeid eller ansvarlig"
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setPage(0);
+              }}
+            />
+          </label>
+          <label>
+            Vis
+            <select
+              value={filter}
+              onChange={(e) => {
+                setFilter(e.target.value);
+                setPage(0);
+              }}
+            >
+              <option value="open">Åpne aktiviteter</option>
+              <option value="all">Alle aktiviteter</option>
+              <option value="late">Passert planlagt slutt</option>
+              <option value="done">Utført arbeid</option>
+            </select>
+          </label>
+          {writable && (
+            <button
+              type="button"
+              className="primary"
+              disabled={disabled}
+              onClick={() => {
+                update({ editor: formTask(unit?.id, context.user_id) });
+                setReview({ kind: "editor" });
+              }}
+            >
+              <Plus size={17} />
+              Ny aktivitet
+            </button>
+          )}
+          {writable && edit && (
+            <button type="button" onClick={() => setReview({ kind: "editor" })}>
+              Fortsett aktivitetsutkast
+            </button>
+          )}
         </div>
-      )}
-      {pages > 1 && (
-        <nav
-          className="bolig-progress-pagination"
-          aria-label="Sider i fremdrift"
-        >
-          <button disabled={!at} onClick={() => setPage(at - 1)}>
-            Forrige
-          </button>
-          <span>
-            Side {at + 1} av {pages}
-          </span>
-          <button disabled={at + 1 >= pages} onClick={() => setPage(at + 1)}>
-            Neste
-          </button>
-        </nav>
-      )}
+        <div className="bolig-progress-list">
+          {shown.slice(at * 8, at * 8 + 8).map((t) => (
+            <article key={t.id} className={`bolig-progress-task ${t.status}`}>
+              <div>
+                <span className="bolig-progress-status">
+                  {labels[t.status]}
+                </span>
+                <small>
+                  {t.unit_number} · {t.room_name || "Hele boligen"}
+                  {t.address ? ` · ${t.address}` : ""}
+                </small>
+              </div>
+              <h4>{t.title}</h4>
+              <p>
+                {date(t.planned_start)} – {date(t.planned_end)}
+              </p>
+              <p className="bolig-progress-owner">
+                {t.owner_name}
+                {!t.owner_active ? " · Tilgang må avklares" : ""}
+              </p>
+              {t.actual_start && (
+                <small>
+                  Faktisk: {date(t.actual_start)}
+                  {t.actual_end ? ` – ${date(t.actual_end)}` : ""}
+                </small>
+              )}
+              {t.predecessor_id && (
+                <small>
+                  Etter:{" "}
+                  {tasks.find((x) => x.id === t.predecessor_id)?.title ||
+                    "Aktivitet må avklares"}
+                </small>
+              )}
+              {!t.active && (
+                <p role="status">
+                  Bolig eller rom er endret. Avklar tilknytningen.
+                </p>
+              )}
+              <div className="bolig-progress-task-actions">
+                {writable && (
+                  <>
+                    <button
+                      type="button"
+                      disabled={disabled}
+                      onClick={() => {
+                        update({
+                          editor: {
+                            ...t,
+                            room_id: t.room_id || "",
+                            predecessor_id: t.predecessor_id || "",
+                            actual_start: t.actual_start || "",
+                            actual_end: t.actual_end || "",
+                          },
+                        });
+                        setReview({ kind: "editor" });
+                      }}
+                    >
+                      Oppdater aktivitet
+                    </button>
+                    <button
+                      type="button"
+                      disabled={disabled || !t.active}
+                      onClick={() => {
+                        update({
+                          notice: {
+                            id: crypto.randomUUID(),
+                            task_id: t.id,
+                            body: `Vi planlegger ${t.title.toLocaleLowerCase("nb")} i ${t.room_name || "boligen"} fra ${date(t.planned_start)} til ${date(t.planned_end)}.`,
+                            publish_on: localToday(),
+                          },
+                        });
+                        setReview({ kind: "notice" });
+                      }}
+                    >
+                      <Send size={15} />
+                      Klargjør beboervarsel
+                    </button>
+                  </>
+                )}
+              </div>
+            </article>
+          ))}
+        </div>
+        {shown.length === 0 && (
+          <div className="bolig-progress-empty">
+            <CalendarDays size={28} />
+            <h4>
+              {tasks.length
+                ? "Ingen aktiviteter i dette utvalget"
+                : "Start med første aktivitet"}
+            </h4>
+            <p>
+              Legg til arbeid, datoer og ansvarlig. Beboervarsel lages og
+              godkjennes separat.
+            </p>
+          </div>
+        )}
+        {pages > 1 && (
+          <nav
+            className="bolig-progress-pagination"
+            aria-label="Sider i fremdrift"
+          >
+            <button disabled={!at} onClick={() => setPage(at - 1)}>
+              Forrige
+            </button>
+            <span>
+              Side {at + 1} av {pages}
+            </span>
+            <button disabled={at + 1 >= pages} onClick={() => setPage(at + 1)}>
+              Neste
+            </button>
+          </nav>
+        )}
+      </details>
       <details className="bolig-progress-fold">
         <summary>
           Beboervarsler <span>{notices.length}</span>

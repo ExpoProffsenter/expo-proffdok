@@ -954,6 +954,8 @@ try {
   await commerceScenarios({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider});
   await portalScenarios({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider});
   await progressScenarios({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider});
+  const {default:coordinationScenarios}=await import("./bolig-coordination-db-scenarios.mjs");
+  await coordinationScenarios({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider});
   await db.exec(
     `reset role;update public.profiles set deactivated=true where id=${q(reader)}`,
   );

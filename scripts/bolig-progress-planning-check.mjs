@@ -99,6 +99,11 @@ projection.activities[0].sessions.forEach(
   (s) => (s.date = shiftPlanDate(s.date, 1)),
 );
 bad(() => timelineDates(projection, tasks));
+const parallel=buildBulkPlan({...config,cadence:0,steps:[{title:"Rørlegger",duration:2},{title:"Elektro",duration:1,relation:"same"},{title:"Montering",duration:1,relation:"offset",offset:3}]},()=>String(++n));
+eq(parallel[0].planned_start,parallel[1].planned_start);
+eq(parallel[1].predecessor_id,"");eq(parallel[2].planned_start,"2026-10-28");eq(parallel[0].planned_start,parallel[3].planned_start);
+bad(()=>buildBulkPlan({...config,steps:[{title:"Feil",duration:1,relation:"invalid"}]}));
+bad(()=>buildBulkPlan({...config,steps:[{title:"Feil",duration:1,relation:"offset",offset:-1}]}));
 console.log(
   `PASS bolig planning: ${count} date/cadence/template/exception assertions`,
 );

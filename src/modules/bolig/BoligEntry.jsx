@@ -17,6 +17,7 @@ import BoligProjectBuilder from "./BoligProjectBuilder.jsx";
 import BoligProjectHome from "./BoligProjectHome.jsx";
 import BoligCatalog from "./BoligCatalog.jsx";
 import BoligCompletion from "./BoligCompletion.jsx";
+import {UnitDialogueSettings} from "./BoligDialogue.jsx";
 import BoligPortalManager from "./BoligPortalManager.jsx";
 import BoligCommerce from "./BoligCommerce.jsx";
 import BoligProgress from "./BoligProgress.jsx";
@@ -1083,7 +1084,7 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
                           unit={unit}
                           active={view === "overview"}
                           progress={<BoligProgress key={`${ctx.user_id}/${ctx.company_id}/${record.root.id}/${unit.id}`} context={ctx} root={record.root} unit={unit}/>}
-                          portal={<BoligPortalManager key={`${ctx.user_id}/${ctx.company_id}/${record.root.id}/${unit.id}`} context={ctx} root={record.root} unit={unit}/>}
+                          portal={<BoligPortalManager key={`${ctx.user_id}/${ctx.company_id}/${record.root.id}/${unit.id}`} context={ctx} root={record.root} unit={unit} settings={<UnitDialogueSettings context={ctx} root={record.root} unit={unit}/>}/>}
                           commerce={<BoligCommerce context={ctx} root={record.root} unit={unit}/>}
                           onOpenProject={(id, tab) => {
                             onClose();

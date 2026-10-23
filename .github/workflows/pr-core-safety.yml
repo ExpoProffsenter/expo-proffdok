@@ -237,6 +237,7 @@ jobs:
           node scripts/bolig-portal-browser-check.mjs
           node scripts/bolig-progress-browser-check.mjs
           node scripts/bolig-progress-planning-browser-check.mjs
+          node scripts/bolig-coordination-browser-check.mjs
           node scripts/bolig-amendment-export-check.mjs
           node scripts/bolig-quality-browser-check.mjs
           node scripts/bolig-customization-browser-check.mjs

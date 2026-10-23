@@ -12,13 +12,29 @@ export function BoligHelp() {
       <details>
         <summary>Fremdrift og varsler</summary>
         <p>
+          Samlet fremdriftsplan er hovedbildet. Grupper etter leilighet,
+          stammegruppe eller arbeid/fag. Flere aktiviteter kan ligge på samme
+          dag. Fold sammen grupper for oversikt. Trykk en stolpe for detaljer,
+          dra for å flytte eller bruk Alt + piltast. «Se over datoendringer»
+          viser resultatet før lagring. Aktivitetskort og «Ny aktivitet» finnes
+          under «Aktivitetsliste og enkeltaktiviteter».
+        </p>
+        <p>
+          Velg «Velg leiligheter til stammegruppe» i byggbildet. Trykk boligene,
+          også på forskjellige etasjer, og lagre et navn på utvalget. Gruppering
+          endrer ingen datoer. En bolig kan tilhøre én stammegruppe. Flytting
+          fra en annen gruppe må bekreftes. I masseoppsettet kan du velge lagret
+          gruppe og bruke 0 dager mellom boligstarter for felles datoer.
+        </p>
+        <p>
           Mange boliger? Velg «Planlegg flere boliger». Filtrer på bygg, oppgang
           eller etasje og velg boligene. Sett første oppstart og dager mellom
-          boligstarter. Legg arbeidene i riktig rekkefølge, med varighet og
-          ansvarlig. «Forhåndsvis planen» viser alle datoene før du lagrer.
-          Ukeregelen teller mandag–fredag eller alle dager. Juster helligdager
-          selv. Samme oppsett kan brukes på neste utvalg. Inntil 400 aktiviteter
-          lagres samlet.
+          boligstarter. Velg startregel for hvert arbeid: etter forrige
+          aktivitet, samtidig med boligstart eller et bestemt antall dager etter
+          boligstart. Velg varighet og ansvarlig. «Forhåndsvis planen» viser
+          alle datoene før du lagrer. Ukeregelen teller mandag–fredag eller alle
+          dager. Juster helligdager selv. Samme oppsett kan brukes på neste
+          utvalg. Inntil 400 aktiviteter lagres samlet.
         </p>
         <p>
           «Åpne samlet tidslinje» bruker appens felles planlegger. Velg bolig,
@@ -52,6 +68,35 @@ export function BoligHelp() {
           varsler. I testfasen er automatisk publisering og e-post satt på
           pause. Status «akseptert av e-posttjenesten» betyr ikke at e-posten er
           mottatt eller lest.
+        </p>
+      </details>
+      <details>
+        <summary>Beboermeldinger og oppfølging</summary>
+        <p>
+          En pulserende meldingsbrikke på boligen betyr ny melding. Trykk
+          brikken for å åpne samtalen. En fast brikke betyr lest, men ikke
+          ferdig behandlet. «Marker samtalen som lest» beholder oppfølgingen.
+          Svar eller velg «Marker som behandlet» når saken er avklart. Et nytt
+          svar fra beboeren gir ny markering. «Krever oppfølging» samler
+          leilighetene i én innboks. Samtalen oppdateres mens siden er åpen;
+          «Oppdater meldinger» henter status med en gang.
+        </p>
+        <p>
+          Under «Meldinger av/på» velger prosjektleder prosjektets standard og
+          ansvarlig. Nye prosjekter starter med meldinger av. Valgte leiligheter
+          kan arve innstillingen eller ha eget av/på-valg. Historikk og åpne
+          oppfølginger beholdes ved avslåing. Beboeren får kontaktinformasjon.
+          Fremdriftsvarsler, dokumenter, boligvalg og avtaler påvirkes ikke av
+          dette valget.
+        </p>
+        <p>
+          Når e-posttransport er aktivert, samles raske meldinger i samme
+          samtale i to minutter før varsling. Ansvarlig prosjektleder varsles om
+          ny ulest beboermelding; beboeren varsles om svar. E-posten viser ikke
+          meldingsteksten. Beboerens nye varslingslenke er personlig og varer
+          høyst sju dager, aldri lenger enn portaltilgangen. Avslått dialog,
+          endret kontakt, avklart melding eller bortfalt tilgang stopper
+          ventende utsending. E-post er fortsatt av i Sandbox.
         </p>
       </details>
       <ol>

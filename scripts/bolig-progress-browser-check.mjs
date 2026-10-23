@@ -100,6 +100,7 @@ try {
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto("http://127.0.0.1:" + server.address().port);
   await page.getByRole("heading", { name: "Fremdrift og varsler" }).waitFor();
+  await page.getByText("Aktivitetsliste og enkeltaktiviteter",{exact:true}).click();
   eq(
     await page.getByText("Start med første aktivitet").isVisible(),
     true,
@@ -127,6 +128,7 @@ try {
     "Reopened draft has room",
   );
   await page.reload();
+  await page.getByText("Aktivitetsliste og enkeltaktiviteter",{exact:true}).click();
   await page.getByRole("button", { name: "Fortsett aktivitetsutkast" }).click();
   dialog = page.getByRole("dialog", { name: "Aktivitet og faktisk fremdrift" });
   eq(
@@ -277,6 +279,7 @@ try {
     await dialog.getByRole("button", { name: "Lukk og behold utkast" }).click();
   }
   await page.evaluate(() => window.__show("reader"));
+  await page.getByText("Aktivitetsliste og enkeltaktiviteter",{exact:true}).click();
   await page
     .getByRole("button", { name: "Ny aktivitet", exact: true })
     .waitFor({ state: "detached" });

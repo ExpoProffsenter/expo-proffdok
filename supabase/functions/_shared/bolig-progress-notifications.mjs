@@ -17,7 +17,7 @@ const esc = (s) =>
   );
 export function progressMail(job) {
   if (
-    !["owner", "resident"].includes(job.kind) ||
+    !["owner", "resident", "manager_message", "resident_message"].includes(job.kind) ||
     !uuid.test(job.id) ||
     !uuid.test(job.attempt) ||
     typeof job.to !== "string" ||
@@ -25,6 +25,14 @@ export function progressMail(job) {
     !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(job.to)
   )
     throw Error("invalid_job");
+  if (["manager_message", "resident_message"].includes(job.kind)) {
+    const url=new URL(job.url);
+    if(!["https://expo-proffdok.app","https://expo-proffdok-git-fase45b-boligprosjekter-found-0509d8-ringside.vercel.app","https://expo-proffdok-git-demo-ringside.vercel.app"].includes(url.origin)||url.username||url.password||url.search)throw Error("invalid_dialogue_link");
+    if(job.kind==="resident_message"?(url.pathname!=="/bolig-kunde.html"||!/^#portal=[a-f0-9]{64}$/.test(url.hash)):(url.pathname!=="/"||url.hash))throw Error("invalid_dialogue_link");
+    const title=job.kind==="manager_message"?"Ny melding fra en beboer":"Prosjektleder har svart deg";
+    const text=`${title}. Åpne ProffDok for å lese og følge opp meldingen.\n\n${job.url}\n\nDenne e-posten inneholder ikke meldingsteksten. Lenken til beboerportalen er personlig.`;
+    return {to:[job.to],subject:`Expo ProffDok – ${title.toLocaleLowerCase('nb')}`,text,html:`<!doctype html><html lang="nb"><body style="font-family:Arial;background:#edf4f4;padding:24px;color:#173f48"><main style="max-width:620px;margin:auto;background:white;padding:28px;border-radius:16px"><h1>EXPO ProffDok</h1><h2>${esc(title)}</h2><p>Åpne meldingen for å lese og følge opp.</p><p><a href="${esc(job.url)}" style="display:inline-block;padding:14px 20px;background:#204f5d;color:white;border-radius:8px">Åpne ProffDok</a></p><p>Portallenken er personlig. Ikke videresend den.</p></main></body></html>`};
+  }
   const resident = job.kind === "resident";
   if (
     resident &&

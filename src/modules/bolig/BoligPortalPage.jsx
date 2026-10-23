@@ -114,10 +114,12 @@ export default function BoligPortalPage() {
       if (document.visibilityState !== "hidden") load();
     };
     const change = () => window.location.reload();
+    const poll = setInterval(refresh, 20000);
     window.addEventListener("focus", refresh);
     document.addEventListener("visibilitychange", refresh);
     window.addEventListener("hashchange", change);
     return () => {
+      clearInterval(poll);
       alive.current = false;
       ++epoch.current;
       window.removeEventListener("focus", refresh);
@@ -619,27 +621,46 @@ export default function BoligPortalPage() {
                     </article>
                   ))}
               </div>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  run("message", { body: draft.message });
-                }}
-              >
-                <label>
-                  Din melding
-                  <textarea
-                    required
-                    minLength={2}
-                    maxLength={2000}
-                    disabled={disabled}
-                    value={draft.message}
-                    onChange={(e) => update({ message: e.target.value })}
-                  />
-                </label>
-                <button type="submit" disabled={disabled}>
-                  Send melding
-                </button>
-              </form>
+              {data.messaging_enabled === false ? (
+                <p className="bolig-portal-message">
+                  Meldinger er slått av for din bolig. Kontakt prosjektleder
+                  {data.manager_contact ? (
+                    <>
+                      {" "}
+                      på{" "}
+                      <a href={`mailto:${data.manager_contact}`}>
+                        {data.manager_contact}
+                      </a>
+                    </>
+                  ) : (
+                    " via kontaktinformasjonen du har fått"
+                  )}
+                  . Tidligere meldinger og informasjon om planlagt arbeid ligger
+                  fortsatt her.
+                </p>
+              ) : (
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    run("message", { body: draft.message });
+                  }}
+                >
+                  <label>
+                    Din melding
+                    <textarea
+                      required
+                      minLength={2}
+                      maxLength={2000}
+                      disabled={disabled}
+                      value={draft.message}
+                      onChange={(e) => update({ message: e.target.value })}
+                    />
+                  </label>
+                  <button type="submit" disabled={disabled}>
+                    Send melding
+                  </button>
+                </form>
+              )}
             </section>
           )}
           <footer>

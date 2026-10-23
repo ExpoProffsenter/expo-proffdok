@@ -318,7 +318,7 @@ try {
   );
   eq(
     await page.evaluate(() =>
-      window.__calls.every((c) => c.name === "bolig_overview" || (c.name === "bolig_completion" && c.args.p_action === "get")),
+      window.__calls.every((c) => c.name === "bolig_overview" || (["bolig_completion","bolig_coordination"].includes(c.name) && c.args.p_action === "get")),
     ),
     true,
     "Overview is read-only",

@@ -1,4 +1,6 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useRef } from "react";
+import Gantt from "./BoligGantt.jsx";
+import { useBoligCoordination } from "./boligCoordination.js";
 import Board from "../kshms/KshmsProgressBoard.jsx";
 import { STANDARD_PROGRESS_OPERATIONS } from "../progress/progressPlanStandardOperations.js";
 import Dialog from "./BoligEditorDialog.jsx";
@@ -34,6 +36,8 @@ export default function BoligProgressPlanning({
   unit,
   onEdit,
 }) {
+  const coordination = useBoligCoordination(context, root, "planning");
+  const groups = coordination.data?.groups || [];
   const [open, setOpen] = useState(""),
     [timeline, setTimeline] = useState(false),
     [checking, setChecking] = useState(false),
@@ -62,8 +66,21 @@ export default function BoligProgressPlanning({
         .includes(search.toLocaleLowerCase("nb")),
   );
   const selected = form.selected.filter((id) => units.some((u) => u.id === id));
+  const formRef = useRef(form);
+  formRef.current = form;
   const patch = (fields) => {
-    update({ bulk: { ...form, ...fields }, bulkPreview: null });
+    const form = formRef.current;
+    update({
+      bulk: {
+        ...form,
+        ...(fields.groupId !== undefined || fields.groupName !== undefined
+          ? { groupRevision: form.groupRevision ?? coordination.data?.revision }
+          : {}),
+        ...fields,
+        ...(fields.selected !== undefined ? { moveConfirmed: false } : {}),
+      },
+      bulkPreview: null,
+    });
     setError("");
   };
   const launch = (mode) => {
@@ -189,6 +206,57 @@ export default function BoligProgressPlanning({
   );
   return (
     <div className="bolig-plan-workspace">
+      <Gantt
+        tasks={data.tasks.map((t) => ({
+          ...t,
+          ...(schedule?.items || []).find((i) => i.id === t.id),
+        }))}
+        groups={groups}
+        context={context}
+        root={root}
+        unit={unit}
+        disabled={disabled}
+        readOnly={!writable}
+        dirty={!!schedule?.items?.length}
+        onEdit={(t) => (writable ? onEdit(t) : setInspect(t))}
+        onSave={() => setOpen("timeline")}
+        onChange={(next) => {
+          const task = data.tasks.find((t) => t.id === next.id);
+          if (
+            !task ||
+            task.actual_start ||
+            task.actual_end ||
+            !["planned", "blocked"].includes(task.status)
+          )
+            throw Error("Påbegynt arbeid må avklares på aktiviteten.");
+          const items = [
+            ...(schedule?.items || []).filter((i) => i.id !== next.id),
+            {
+              id: next.id,
+              planned_start: next.planned_start,
+              planned_end: next.planned_end,
+            },
+          ].filter((i) => {
+            const old = taskById.get(i.id);
+            return (
+              i.planned_start !== old?.planned_start ||
+              i.planned_end !== old?.planned_end
+            );
+          });
+          if (items.length > 400)
+            throw Error("Lagre høyst 400 datoendringer samlet.");
+          update({
+            schedule: items.length
+              ? {
+                  items,
+                  revision: schedule?.revision ?? data.revision,
+                  mode: "dates",
+                  reviewed: true,
+                }
+              : null,
+          });
+        }}
+      />
       <div className="bolig-plan-launchers">
         <button
           type="button"
@@ -219,6 +287,16 @@ export default function BoligProgressPlanning({
           </>
         )}
       </div>
+      {coordination.error && <p role="alert">{coordination.error}</p>}
+      {coordination.draft.pending && (
+        <button
+          type="button"
+          disabled={coordination.busy}
+          onClick={() => coordination.run(null, {}, true)}
+        >
+          Prøv samme gruppelagring igjen
+        </button>
+      )}
       <p>
         Bruk samme plan for alle boligene. Legg opp arbeidet samlet, og tilpass
         unntak på den enkelte aktiviteten.
@@ -255,6 +333,30 @@ export default function BoligProgressPlanning({
             {!checking ? (
               <fieldset disabled={disabled}>
                 <h3>Velg boliger ({selected.length})</h3>
+                <label>
+                  Bruk stammegruppe
+                  <select
+                    aria-label="Bruk stammegruppe"
+                    value=""
+                    onChange={(e) => {
+                      const group = groups.find((g) => g.id === e.target.value);
+                      if (group)
+                        patch({
+                          selected: group.unit_ids.filter((id) =>
+                            units.some((u) => u.id === id),
+                          ),
+                          cadence: 0,
+                        });
+                    }}
+                  >
+                    <option value="">Velg en lagret gruppe</option>
+                    {groups.map((g) => (
+                      <option key={g.id} value={g.id}>
+                        {g.name} · {g.unit_ids.length} boliger
+                      </option>
+                    ))}
+                  </select>
+                </label>
                 <div className="bolig-plan-fields">
                   <label>
                     Bygg
@@ -394,6 +496,137 @@ export default function BoligProgressPlanning({
                   Rekkefølge: bygg, oppgang, etasje og bolignummer. Utvalget
                   beholdes når du bytter filter.
                 </p>
+                <details className="bolig-group-editor">
+                  <summary>Lagre eller endre stammegruppe</summary>
+                  {form.groupRevision != null &&
+                    coordination.data &&
+                    form.groupRevision !== coordination.data.revision && (
+                      <p role="status">
+                        Gruppeoppsettet er endret. Se gjennom siste grupper før
+                        ny lagring.{" "}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            patch({ groupRevision: coordination.data.revision })
+                          }
+                        >
+                          Jeg har sett gjennom siste grupper
+                        </button>
+                      </p>
+                    )}
+                  <p>
+                    Én bolig tilhører høyst én stammegruppe. Gruppering endrer
+                    ingen datoer. Velg «0» dager mellom boligstarter for felles
+                    fremdrift.
+                  </p>
+                  <label>
+                    Gruppe som skal endres
+                    <select
+                      value={form.groupId || ""}
+                      onChange={(e) => {
+                        const g = groups.find((g) => g.id === e.target.value);
+                        patch({
+                          groupId: g?.id || "",
+                          groupName: g?.name || "",
+                          groupRevision: coordination.data?.revision,
+                          ...(g
+                            ? {
+                                selected: g.unit_ids.filter((id) =>
+                                  units.some((u) => u.id === id),
+                                ),
+                              }
+                            : {}),
+                        });
+                      }}
+                    >
+                      <option value="">Ny stammegruppe</option>
+                      {groups.map((g) => (
+                        <option key={g.id} value={g.id}>
+                          {g.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label>
+                    Navn på stammegruppen
+                    <input
+                      maxLength={80}
+                      value={form.groupName || ""}
+                      onChange={(e) => patch({ groupName: e.target.value })}
+                    />
+                  </label>
+                  {groups.some(
+                    (g) =>
+                      g.id !== form.groupId &&
+                      g.unit_ids.some((id) => selected.includes(id)),
+                  ) && (
+                    <label className="bolig-plan-check">
+                      <input
+                        type="checkbox"
+                        checked={!!form.moveConfirmed}
+                        onChange={(e) =>
+                          patch({ moveConfirmed: e.target.checked })
+                        }
+                      />
+                      Flytt valgte boliger fra andre grupper
+                    </label>
+                  )}
+                  <button
+                    type="button"
+                    disabled={
+                      coordination.disabled ||
+                      !selected.length ||
+                      !(form.groupName || "").trim()
+                    }
+                    onClick={async () => {
+                      const id = form.groupId || crypto.randomUUID();
+                      if (
+                        await coordination.run("group", {
+                          id,
+                          name: form.groupName,
+                          revision:
+                            form.groupRevision ?? coordination.data?.revision,
+                          unit_ids: selected,
+                          move_confirmed: !!form.moveConfirmed,
+                        })
+                      ) {
+                        patch({
+                          groupId: id,
+                          groupRevision: (coordination.data?.revision ?? 0) + 1,
+                          moveConfirmed: false,
+                        });
+                        setError("");
+                      }
+                    }}
+                  >
+                    Lagre stammegruppe
+                  </button>
+                  {form.groupId && (
+                    <button
+                      type="button"
+                      disabled={coordination.disabled}
+                      onClick={async () => {
+                        if (
+                          window.confirm(
+                            "Fjern gruppen? Boliger og aktiviteter beholdes.",
+                          ) &&
+                          (await coordination.run("remove_group", {
+                            id: form.groupId,
+                            revision:
+                              form.groupRevision ?? coordination.data?.revision,
+                          }))
+                        )
+                          patch({
+                            groupId: "",
+                            groupName: "",
+                            groupRevision: null,
+                          });
+                      }}
+                    >
+                      Fjern stammegruppe
+                    </button>
+                  )}
+                </details>
                 <h3>
                   {open === "create" ? "Plan og arbeidsmal" : "Forskyvning"}
                 </h3>
@@ -465,9 +698,9 @@ export default function BoligProgressPlanning({
                 {open === "create" ? (
                   <>
                     <p>
-                      Aktivitetene følger etter hverandre i hver bolig. Varighet
-                      er antall dager med valgt ukeregel. Helligdager må dere
-                      justere selv.
+                      Velg startregel per aktivitet. Flere aktiviteter kan
+                      starte samme dag. Varighet er antall dager med valgt
+                      ukeregel. Helligdager må dere justere selv.
                     </p>
                     <label>
                       Legg til standardaktivitet
@@ -537,6 +770,52 @@ export default function BoligProgressPlanning({
                               }
                             />
                           </label>
+                          <label>
+                            Startregel {i + 1}
+                            <select
+                              aria-label={`Startregel ${i + 1}`}
+                              value={s.relation || "after"}
+                              onChange={(e) =>
+                                patch({
+                                  steps: form.steps.map((v, j) =>
+                                    j === i
+                                      ? { ...v, relation: e.target.value }
+                                      : v,
+                                  ),
+                                })
+                              }
+                            >
+                              <option value="after">
+                                Etter forrige aktivitet
+                              </option>
+                              <option value="same">
+                                Samtidig med boligstart
+                              </option>
+                              <option value="offset">
+                                Dager etter boligstart
+                              </option>
+                            </select>
+                          </label>
+                          {s.relation === "offset" && (
+                            <label>
+                              Dager etter boligstart {i + 1}
+                              <input
+                                type="number"
+                                min="0"
+                                max="365"
+                                value={s.offset ?? 0}
+                                onChange={(e) =>
+                                  patch({
+                                    steps: form.steps.map((v, j) =>
+                                      j === i
+                                        ? { ...v, offset: e.target.value }
+                                        : v,
+                                    ),
+                                  })
+                                }
+                              />
+                            </label>
+                          )}
                           <label className="bolig-plan-check">
                             <input
                               type="checkbox"

@@ -61,9 +61,20 @@ export function buildBulkPlan(
     return { ...s, title, duration: integer(s.duration, 1, 366, "Varighet") };
   });
   return chosen.flatMap((u, index) => {
-    let cursor = shiftPlanDate(first, index * takt, weekdays),
+    const base = shiftPlanDate(first, index * takt, weekdays);
+    let cursor = base,
       previous = "";
     return normalized.map((s) => {
+      const relation = s.relation || "after";
+      if (!["after", "same", "offset"].includes(relation))
+        throw Error("Velg når aktiviteten skal starte.");
+      if (relation === "same") cursor = base;
+      if (relation === "offset")
+        cursor = shiftPlanDate(
+          base,
+          integer(s.offset ?? 0, 0, 365, "Dager fra boligstart"),
+          weekdays,
+        );
       const id = idFactory(),
         end = shiftPlanDate(cursor, s.duration - 1, weekdays);
       const item = {
@@ -74,7 +85,7 @@ export function buildBulkPlan(
         planned_start: cursor,
         planned_end: end,
         required: s.required !== false,
-        predecessor_id: previous,
+        predecessor_id: relation === "after" ? previous : "",
       };
       previous = id;
       cursor = shiftPlanDate(end, 1, weekdays);

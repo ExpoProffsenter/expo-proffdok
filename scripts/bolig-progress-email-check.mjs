@@ -121,3 +121,11 @@ checks++;
 console.log(
   `PASS bolig progress mail: ${checks} assertions; private authentication, canonical content, transport pause, validation, escaping, bounded provider request and stable retry key. No real emails.`,
 );
+
+const notification={...job,kind:'resident_message',url:'https://expo-proffdok.app/bolig-kunde.html#portal='+'a'.repeat(64)};
+eq(progressMail(notification).text.includes(job.body),false);
+eq(progressMail(notification).html.includes(job.title),false);
+eq(progressMail(notification).html.includes(notification.url),true);
+for(const url of ['https://evil.invalid/bolig-kunde.html#portal='+'a'.repeat(64),'https://expo-proffdok.app/bolig-kunde.html?next=evil#portal='+'a'.repeat(64),'javascript:alert(1)']){assert.throws(()=>progressMail({...notification,url}));}
+eq(progressMail({...notification,kind:'manager_message',url:'https://expo-proffdok.app'}).subject.includes('beboer'),true);
+console.log('PASS dialogue mail: private content excluded, approved origins and personal token shape enforced');

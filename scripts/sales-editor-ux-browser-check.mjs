@@ -14,12 +14,18 @@ import{createRoot}from'${root}/node_modules/react-dom/client.js';
 import Inspection from'${root}/src/modules/sales/components/SalesInspectionNote.jsx';
 import Offer from'${root}/src/modules/sales/components/SalesOfferBuilderCore.jsx';
 import'${root}/src/style.css';import'${root}/src/modules/app/mobileResponsive41A.css';import'${root}/src/modules/sales/sales.css';
-const image='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="120" height="80"><rect width="120" height="80" fill="teal"/></svg>');
+const image='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000"><rect width="1600" height="1000" fill="teal"/></svg>');
 const request={inspectionCustomerWishes:'Ønsker fra server',inspectionExistingConditions:'Forhold fra server',inspectionMeasurements:'2,42 x 2,15 m',inspectionObservations:'Observasjoner fra server',id:'QA-EDITOR',title:'Totalrenovering av bad med lange beskrivelser',customer:'QA kunde',address:'Testveien',surveyDate:'2026-10-16',surveyResponsible:'QA',inspectionPhotos:[{id:'photo',name:'Lagret bilde',path:'synthetic/photo',dataUrl:image},{id:'bathroom-sketch-QA-EDITOR',name:'Badskisse.svg',kind:'bathroom-sketch',path:'synthetic/sketch',dataUrl:image}]};
 window.calls=[];const callback=name=>(...args)=>{window.calls.push({name,args:args.map(a=>a?.preventDefault?'event':a)});args[0]?.preventDefault?.();};
 function App(){const[mode,setMode]=useState('inspection');const[revision,setRevision]=useState(0);const[form,setForm]=useState({customerWishes:'Ønsker fra server',existingConditions:'Forhold fra server',measurements:'2,42 x 2,15 m',observations:'Observasjoner fra server',photos:request.inspectionPhotos});const[offer,setOffer]=useState({title:'Syntetisk tilbud',intro:'Innledning',reservations:'Forbehold',included:'Inkludert',excluded:'Unntatt',customerSupplied:'Kundeleveranse',terms:'Vilkår',paymentTerms:'10 dager',validityDays:'30',lines:[{id:'l1',mainPostId:'rorlegger',mainPostTitle:'Rørlegger',description:'Montering av lang beskrevet vare',amount:'1000',quantity:'2',unit:'stk'}],options:[{id:'o1',mainPostId:'rorlegger',mainPostTitle:'Rørlegger',title:'Alternativ',description:'Bevart opsjon',amount:'200',optionType:'addition'}]});
 window.openEmptyInspection=()=>{setForm(f=>({...f,customerWishes:'',existingConditions:'',measurements:'',observations:''}));setMode('inspection');setRevision(n=>n+1);};return <><header style={{height:156}}>Expo ProffDok</header><button id="mode" onClick={()=>setMode(mode==='inspection'?'offer':'inspection')}>Bytt testflate</button><section className="sales-workspace-intro"><h2>Befaring / Tilbud / Aksept</h2><p>Modulintroduksjon</p></section><div data-sales-resume-workspace="true">{mode==='inspection'?<Inspection key={revision} selectedRequest={request} inspectionForm={form} loggedInResponsible="QA" onUpdateInspectionForm={(key,value)=>setForm(f=>({...f,[key]:value}))} onBack={callback('back')} onSubmit={callback('inspectionSave')} onRemoveInspectionPhoto={callback('removePhoto')}/>:<Offer selectedRequest={request} offerForm={offer} offerDraftSaveStatus="saved" offerTemplates={[{id:'template',name:'Eksisterende mal'}]} selectedOfferTemplateId="template" handleSelectOfferTemplate={callback('selectTemplate')} handleApplyOfferTemplate={callback('applyTemplate')} handleDeleteOfferTemplate={callback('deleteTemplate')} onBack={callback('back')} handleSaveOffer={callback('offerSave')} handleSaveOfferTemplate={callback('saveTemplate')} updateOfferForm={(key,value)=>setOffer(f=>({...f,[key]:value}))} updateOfferLine={callback('line')} updateOfferOption={callback('option')} addInspectionContextToOfferIntro={callback('inspectionIntro')} />}</div></>;}
 createRoot(document.getElementById('app')).render(<App/>);`);
+// Execute the existing production viewer/anchor listener, without booting auth/app.
+const bootstrap=fs.readFileSync('src/bootstrap.jsx','utf8');
+const viewerStart=bootstrap.indexOf("const SALES_IMAGE_LIGHTBOX_ID =");
+const viewerEnd=bootstrap.indexOf('function rewritePrivateDocumentAnchorForCurrentOrigin',viewerStart);
+assert(viewerStart>=0&&viewerEnd>viewerStart,'Existing production image viewer must be present');
+const imageViewerRuntime=bootstrap.slice(viewerStart,viewerEnd);
 let browser;
 try{
 const built=await build({root,configFile:false,logLevel:'silent',plugins:[react()],resolve:{alias:{react:path.join(root,'node_modules/react'),'react-dom':path.join(root,'node_modules/react-dom')}},define:{'process.env.NODE_ENV':'"production"'},build:{write:false,minify:false,lib:{entry:path.join(temp,'entry.jsx'),formats:['iife'],name:'EditorQA',cssFileName:'editor-qa'}}});
@@ -30,9 +36,35 @@ for(const width of [1363,768,390,320]){
  await page.route('**/*',route=>route.fulfill({contentType:route.request().url().endsWith('/bundle.js')?'text/javascript':'text/html',body:route.request().url().endsWith('/bundle.js')?js:'<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><div id="app"></div><style>'+css+'</style><script src="/bundle.js"></script>'}));
  await page.goto('https://editor-qa.example.invalid');await page.waitForTimeout(200);if(errors.length)console.log(errors);await page.getByLabel('Kundens ønsker').waitFor({timeout:3000});
  await page.waitForFunction(()=>!document.querySelector('textarea')?.disabled);
+ await page.addScriptTag({content:imageViewerRuntime});
  eq(await page.getByLabel('Kundens ønsker').inputValue(),'Ønsker fra server','existing inspection text '+width);
  eq(await page.getByAltText('Lagret bilde').count(),1,'existing photo '+width);
  eq(await page.getByAltText('Lagret badskisse').count(),1,'stored sketch remains '+width);
+ const photoLink=page.getByRole('link',{name:'Åpne større bilde: Lagret bilde',exact:true});
+ await page.getByLabel('Kundens ønsker').fill('Ulagret tekst mens bildet åpnes');
+ const submitsBefore=await page.evaluate(()=>window.calls.filter(c=>c.name==='inspectionSave').length);
+ await photoLink.click();
+ let enlarged=page.getByRole('dialog',{name:'Lagret bilde',exact:true});await enlarged.waitFor();
+ eq(await enlarged.getByRole('img').getAttribute('src'),await photoLink.getAttribute('href'),'same original saved image '+width);
+ eq(await enlarged.getByRole('img').evaluate(el=>getComputedStyle(el).objectFit),'contain','full uncropped image '+width);
+ eq(await enlarged.getByRole('img').evaluate(el=>el.getBoundingClientRect().width)>(await photoLink.locator('img').boundingBox()).width,true,'photo is actually larger than thumbnail '+width);
+ eq(await page.getByLabel('Kundens ønsker').inputValue(),'Ulagret tekst mens bildet åpnes','viewing keeps unsaved note '+width);
+ eq(await page.evaluate(()=>window.calls.filter(c=>c.name==='inspectionSave').length),submitsBefore,'opening never submits note '+width);
+ eq(page.context().pages().length,1,'viewer stays in same tab '+width);
+ await enlarged.getByRole('button',{name:'Lukk bilde',exact:true}).click();
+ eq(await page.getByRole('dialog').count(),0,'close button works '+width);
+ await photoLink.focus();await photoLink.press('Enter');await enlarged.waitFor();await page.keyboard.press('Escape');
+ eq(await page.getByRole('dialog').count(),0,'keyboard opening and Escape '+width);
+ await photoLink.click();await enlarged.waitFor();await page.mouse.click(2,2);
+ eq(await page.getByRole('dialog').count(),0,'backdrop closes '+width);
+ await page.getByRole('link',{name:'Åpne større bilde: Lagret badskisse',exact:true}).click();
+ const sketchView=page.getByRole('dialog',{name:'Lagret badskisse',exact:true});await sketchView.waitFor();
+ eq(await sketchView.getByRole('img').getAttribute('src'),await page.getByRole('link',{name:'Åpne større bilde: Lagret badskisse',exact:true}).getAttribute('href'),'saved sketch opens original '+width);
+ await sketchView.getByRole('button',{name:'Lukk bilde',exact:true}).click();
+ await page.evaluate(()=>{window.dispatchEvent(new Event('focus'));document.dispatchEvent(new Event('visibilitychange'));});
+ eq(await page.getByLabel('Kundens ønsker').inputValue(),'Ulagret tekst mens bildet åpnes','close/focus keeps note '+width);
+ await page.getByLabel('Kundens ønsker').fill('Ønsker fra server');
+
  for(const mode of ['inspection','offer']){
   if(mode==='offer'){await page.locator('#mode').click();await page.getByLabel('Tilbudstittel',{exact:true}).waitFor();}
   eq(await page.locator('.sales-workspace-intro').isVisible(),false,'redundant intro hidden '+mode+'/'+width);
@@ -66,7 +98,7 @@ for(const width of [1363,768,390,320]){
   }
   if(process.env.EDITOR_QA_OUTPUT){fs.mkdirSync(process.env.EDITOR_QA_OUTPUT,{recursive:true});await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:path.join(process.env.EDITOR_QA_OUTPUT,mode+'-'+width+'.png'),fullPage:true});}
  }
- await page.locator('#mode').click();await page.getByLabel('Kundens ønsker').fill('Ny befaringstekst');eq(await page.getByLabel('Kundens ønsker').inputValue(),'Ny befaringstekst','inspection updates '+width);
+ await page.locator('#mode').click();await page.waitForFunction(()=>!document.querySelector('textarea')?.disabled);await page.getByLabel('Kundens ønsker').fill('Ny befaringstekst');eq(await page.getByLabel('Kundens ønsker').inputValue(),'Ny befaringstekst','inspection updates '+width);
  await page.getByRole('button',{name:/Lagre befaringsnotat/}).click();eq((await page.evaluate(()=>window.calls)).at(-1).name,'inspectionSave','same inspection save '+width);
  await page.waitForFunction(()=>!Array.from(document.querySelectorAll('button')).find(b=>b.textContent.trim()==='Avbryt')?.disabled);await page.getByRole('button',{name:'Avbryt',exact:true}).click();eq((await page.evaluate(()=>window.calls)).at(-1).name,'back','same back '+width);
  await page.evaluate(()=>window.openEmptyInspection());await page.getByRole('button',{name:'Bruk teksten fra saken',exact:true}).waitFor();

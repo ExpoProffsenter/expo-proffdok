@@ -1,3 +1,8 @@
+import Dialogue, {
+  DialogueBadge,
+  CoordinationGroupDialog,
+} from "./BoligDialogue.jsx";
+import { useBoligCoordination } from "./boligCoordination.js";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Building2,
@@ -110,6 +115,18 @@ export default function BoligBuildingOverview({
   onQuery,
   onOpenProject,
 }) {
+  const coordination = useBoligCoordination(context, record.root, "overview");
+  const [dialogueUnit, setDialogueUnit] = useState("");
+  const [selectGroup, setSelectGroup] = useState(false),
+    [selectedGroupUnits, setSelectedGroupUnits] = useState([]),
+    [groupDialog, setGroupDialog] = useState(false);
+  const toggleGroupUnit = (id) =>
+    setSelectedGroupUnits((values) =>
+      values.includes(id) ? values.filter((v) => v !== id) : [...values, id],
+    );
+  const dialogueRows = new Map(
+    (coordination.data?.inbox || []).map((r) => [r.unit_id, r]),
+  );
   const [blockId, setBlockId] = useBoligUiState(
     context,
     `${record.root.id}:block`,
@@ -471,6 +488,54 @@ export default function BoligBuildingOverview({
       className="bolig-building-panel"
       aria-label="Byggoversikt"
     >
+      {context.enabled &&
+        coordination.data?.context.role === "manager" &&
+        !record.root.archived && (
+          <div className="bolig-group-toolbar">
+            <button
+              type="button"
+              aria-pressed={selectGroup}
+              onClick={() => setSelectGroup((v) => !v)}
+            >
+              {selectGroup
+                ? "Avslutt valg av stammegruppe"
+                : "Velg leiligheter til stammegruppe"}
+            </button>
+            {selectGroup && (
+              <>
+                <strong>{selectedGroupUnits.length} valgt</strong>
+                <button
+                  type="button"
+                  disabled={!selectedGroupUnits.length}
+                  onClick={() => setGroupDialog(true)}
+                >
+                  Lagre valgt stammegruppe
+                </button>
+                <button type="button" onClick={() => setSelectedGroupUnits([])}>
+                  Tøm stammeutvalg
+                </button>
+                <small>
+                  Trykk leilighetene i byggbildet eller listen. Du kan bytte
+                  bygg og oppgang underveis.
+                </small>
+              </>
+            )}
+          </div>
+        )}
+      {groupDialog && (
+        <CoordinationGroupDialog
+          coordination={coordination}
+          selected={selectedGroupUnits.filter((id) =>
+            record.units.some((u) => u.id === id && !u.archived),
+          )}
+          onClose={() => setGroupDialog(false)}
+          onSaved={() => {
+            setGroupDialog(false);
+            setSelectedGroupUnits([]);
+            setSelectGroup(false);
+          }}
+        />
+      )}
       <div className="bolig-building-breadcrumb">
         <button
           type="button"
@@ -644,37 +709,51 @@ export default function BoligBuildingOverview({
             const e = entranceMap.get(u.entrance_id),
               b = blocks.find((v) => v.id === e.block_id);
             return (
-              <button
-                className="bolig-overview-row"
-                aria-pressed={unitId === u.id}
-                key={u.id}
-                type="button"
-                onClick={() => {
-                  setBlockId(
-                    entrances.find((e) => e.id === u.entrance_id).block_id,
-                  );
-                  setActiveEntranceId(u.entrance_id);
-                  setAllBuildings(false);
-                  onQuery("");
-                  setStatusFilter("all");
-                  setPresentation("facade");
-                  onSelect(u.id);
-                }}
-              >
-                <span>
-                  <b>{u.number}</b>
-                  <small>
-                    {b.name} · {e.address || "Adresse legges til senere"} ·{" "}
-                    {u.floor}. etg.
-                    {u.official_number ? ` · ${u.official_number}` : ""}
-                  </small>
-                  <small>{u.contact_name || "Kontakt ikke registrert"}</small>
-                </span>
-                <span className={`bolig-status-badge ${status.tone}`}>
-                  <Icon size={15} />
-                  {status.label}
-                </span>
-              </button>
+              <div className="bolig-dialogue-unit-wrap list" key={u.id}>
+                <button
+                  className="bolig-overview-row"
+                  aria-pressed={
+                    selectGroup
+                      ? selectedGroupUnits.includes(u.id)
+                      : unitId === u.id
+                  }
+                  key={u.id}
+                  type="button"
+                  onClick={() => {
+                    if (selectGroup) {
+                      toggleGroupUnit(u.id);
+                      return;
+                    }
+                    setBlockId(
+                      entrances.find((e) => e.id === u.entrance_id).block_id,
+                    );
+                    setActiveEntranceId(u.entrance_id);
+                    setAllBuildings(false);
+                    onQuery("");
+                    setStatusFilter("all");
+                    setPresentation("facade");
+                    onSelect(u.id);
+                  }}
+                >
+                  <span>
+                    <b>{u.number}</b>
+                    <small>
+                      {b.name} · {e.address || "Adresse legges til senere"} ·{" "}
+                      {u.floor}. etg.
+                      {u.official_number ? ` · ${u.official_number}` : ""}
+                    </small>
+                    <small>{u.contact_name || "Kontakt ikke registrert"}</small>
+                  </span>
+                  <span className={`bolig-status-badge ${status.tone}`}>
+                    <Icon size={15} />
+                    {status.label}
+                  </span>
+                </button>
+                <DialogueBadge
+                  row={dialogueRows.get(u.id)}
+                  onOpen={setDialogueUnit}
+                />
+              </div>
             );
           })}
           {results.length > 50 && (
@@ -870,26 +949,43 @@ export default function BoligBuildingOverview({
                                   ),
                                   Icon = icons[status.icon];
                                 return (
-                                  <button
+                                  <div
+                                    className="bolig-dialogue-unit-wrap"
                                     key={u.id}
-                                    type="button"
-                                    className={`bolig-window ${status.tone} ${unitId === u.id ? "selected" : ""}`}
-                                    aria-pressed={unitId === u.id}
-                                    aria-label={`${u.number} · ${e.address || "Adresse legges til senere"} · ${status.label}`}
-                                    title={`${u.number} · ${status.label}`}
-                                    onClick={() => {
-                                      setActiveEntranceId(e.id);
-                                      onSelect(u.id);
-                                    }}
                                   >
-                                    <b>{u.number}</b>
-                                    <span className="bolig-window-status">
-                                      <Icon size={13} />
-                                    </span>
-                                    <span className="bolig-sr-only">
-                                      {status.label}
-                                    </span>
-                                  </button>
+                                    <button
+                                      key={u.id}
+                                      type="button"
+                                      className={`bolig-window ${status.tone} ${(selectGroup ? selectedGroupUnits.includes(u.id) : unitId === u.id) ? "selected" : ""}`}
+                                      aria-pressed={
+                                        selectGroup
+                                          ? selectedGroupUnits.includes(u.id)
+                                          : unitId === u.id
+                                      }
+                                      aria-label={`${u.number} · ${e.address || "Adresse legges til senere"} · ${status.label}`}
+                                      title={`${u.number} · ${status.label}`}
+                                      onClick={() => {
+                                        if (selectGroup) {
+                                          toggleGroupUnit(u.id);
+                                          return;
+                                        }
+                                        setActiveEntranceId(e.id);
+                                        onSelect(u.id);
+                                      }}
+                                    >
+                                      <b>{u.number}</b>
+                                      <span className="bolig-window-status">
+                                        <Icon size={13} />
+                                      </span>
+                                      <span className="bolig-sr-only">
+                                        {status.label}
+                                      </span>
+                                    </button>
+                                    <DialogueBadge
+                                      row={dialogueRows.get(u.id)}
+                                      onOpen={setDialogueUnit}
+                                    />
+                                  </div>
                                 );
                               })}
                           </div>
@@ -924,6 +1020,14 @@ export default function BoligBuildingOverview({
           </p>
         </div>
       )}
+      <Dialogue
+        coordination={coordination}
+        context={context}
+        record={record}
+        openUnit={dialogueUnit}
+        onOpen={setDialogueUnit}
+        onClose={() => setDialogueUnit("")}
+      />
       <BoligCompletionOverview
         context={context}
         root={record.root}
