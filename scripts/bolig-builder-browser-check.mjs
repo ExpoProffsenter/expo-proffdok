@@ -23,7 +23,7 @@ import Overview from '${cwd}/src/modules/bolig/BoligBuildingOverview.jsx';
 import '${cwd}/src/modules/bolig/bolig.css';
 const homeRoots=Array.from({length:15},(_,i)=>({id:'root'+i,title:'Boligprosjekt '+(i+1),reference:'QA-'+(i+1),unit_count:(i+1)*10,archived:i===14}));
 const context={user_id:'qa-user',company_id:'qa-company',company_name:'Eksempelfirma · kun test',enabled:true,role:'manager'};
-const make=(mode)=>{const record={root:{id:mode,revision:1},blocks:[],entrances:[],units:[]};for(let b=0;b<(mode==='fivehundred'?25:mode==='many'?20:1);b++){record.blocks.push({id:'b'+b,name:'Bygg '+(b+1),building_type:'apartment',address:'Eksempelgata '+(b+1)});for(let e=0;e<((mode==='many'||mode==='fivehundred')?2:20);e++){const id='b'+b+'e'+e,counts=mode==='uneven'?[2,3,1]:(mode==='many'||mode==='fivehundred')?[2,2,2,2,2]:[4,4,4,4,4,4];record.entrances.push({id,block_id:'b'+b,address:'Eksempelgata '+(b+1)+' oppgang '+(e+1),counts});counts.forEach((n,f)=>{for(let p=0;p<n;p++)record.units.push({id:id+'f'+f+'p'+p,entrance_id:id,floor:f+1,number:'H'+String(f+1).padStart(2,'0')+String(p+1).padStart(2,'0'),contact_name:b===19&&e===1&&f===4&&p===0?'Siste Eksempel':'',has_project:false});});}}return record;};
+const make=(mode)=>{const record={root:{id:mode,revision:1},blocks:[],entrances:[],units:[]};for(let b=0;b<(mode==='fivehundred'?25:mode==='many'?20:1);b++){record.blocks.push({id:'b'+b,name:'Bygg '+(b+1),building_type:'apartment',address:'Eksempelgata '+(b+1)});for(let e=0;e<((mode==='many'||mode==='fivehundred')?2:20);e++){const id='b'+b+'e'+e,counts=mode==='uneven'?[2,3,1]:(mode==='many'||mode==='fivehundred')?[2,2,2,2,2]:[4,4,4,4,4,4];record.entrances.push({id,block_id:'b'+b,address:'Eksempelgata '+(b+1)+' oppgang '+(e+1),counts});counts.forEach((n,f)=>{for(let p=0;p<n;p++)record.units.push({id:id+'f'+f+'p'+p,entrance_id:id,floor:f+1,number:'H'+String(f+1).padStart(2,'0')+String(p+1).padStart(2,'0'),contact_name:b===19&&e===1&&f===4&&p===0?'Siste Eksempel':'',has_project:false});});}}if(mode.startsWith('type-')){const type=mode.slice(5),b=record.blocks[0],e=record.entrances[0];b.building_type=type;const counts=type==='house'?[1]:type==='duplex'?[2]:type==='multi'?[2,3,1]:[4,3,5,4,2,4];e.counts=counts;record.blocks=[b];record.entrances=[e];record.units=counts.flatMap((n,f)=>Array.from({length:n},(_,p)=>({id:'actual-'+f+'-'+p,entrance_id:e.id,floor:f+1,number:'H'+String(f+1).padStart(2,'0')+String(p+1).padStart(2,'0'),contact_name:'',has_project:false})));}return record;};
 window.__attempts=[];window.__failNext=false;window.__client={rpc:async(name,args)=>({data:{context,root_id:args.p_root_id,units:[]}})};
 function App({mode}){const [q,sq]=useState(''),[unit,su]=useState(''),[busy,sb]=useState(false);return <section className="bolig-dialog bolig-page" style={{maxWidth:'100%',width:'100%',minHeight:'100vh'}}>{mode==='home'?<><ProjectHome roots={homeRoots} activeRoot={homeRoots[0]} active loading={false} busy={false} manager onSelect={su} onResume={()=>su('resume')}><Builder context={context} busy={false} onCreate={async()=>{}}/></ProjectHome><output>{unit}</output></>:mode==='builder'?<div className="bolig-utilities"><div className="bolig-toolbar"><small>Prosjektledertilgang</small></div><BoligHelp/><Builder context={context} busy={busy} onCreate={async payload=>{sb(true);try{window.__attempts.push(payload);if(window.__failNext){window.__failNext=false;throw Error('Forbindelsen ble brutt. Kontroller opprettelsen.');}}finally{sb(false);}}}/></div>:mode==='contact'?<Task title="Leilighetsinformasjon"><label>Kontaktperson<input aria-label="Kontaktperson" defaultValue="Eksempelperson"/></label></Task>:<><Overview context={context} record={make(mode)} query={q} onQuery={sq} unitId={unit} onSelect={su} onSetup={()=>{}}/><output>{unit}</output></>}</section>};
 const root=createRoot(document.getElementById('app'));window.__mode=mode=>root.render(<App key={mode} mode={mode}/>);window.__mode('builder');
@@ -82,6 +82,7 @@ try {
     } else if (
       [
         "/bolig/fasade.webp",
+        "/bolig/leilighetsbygg-v2.webp",
         "/bolig/enebolig-v2.webp",
         "/bolig/tomannsbolig-v2.webp",
         "/bolig/flerfamiliehus-v2.webp",
@@ -183,6 +184,10 @@ try {
     .locator(".bolig-type-card img")
     .evaluateAll((images) => Promise.all(images.map((img) => img.decode())));
   await page.screenshot({ path: path.join(temp, "builder-types.png") });
+  if (process.env.BOLIG_BUILDER_GUIDE_SCREENSHOT)
+    await dialog.screenshot({
+      path: process.env.BOLIG_BUILDER_GUIDE_SCREENSHOT,
+    });
   await dialog
     .getByLabel("Prosjektnavn", { exact: true })
     .fill("Solgløtt · veiviserprøve");
@@ -236,7 +241,11 @@ try {
     (await page.evaluate(() => window.__attempts))[0].buildings[0].house_floors,
     3,
   );
-  eq((await page.evaluate(()=>window.__attempts))[0].buildings[0].address,"","Project can be created with a genuinely unknown address");
+  eq(
+    (await page.evaluate(() => window.__attempts))[0].buildings[0].address,
+    "",
+    "Project can be created with a genuinely unknown address",
+  );
   const saved = await page.evaluate(() =>
     JSON.parse(
       localStorage.getItem(
@@ -320,7 +329,9 @@ try {
     .click();
   await page.getByRole("button", { name: "Fortsett prosjektkladd" }).click();
   eq(
-    await dialog.getByLabel("Oppgangens adresse (valgfritt)", { exact: true }).inputValue(),
+    await dialog
+      .getByLabel("Oppgangens adresse (valgfritt)", { exact: true })
+      .inputValue(),
     "Siste oppgang",
     "Selected entrance and its draft survive closing",
   );
@@ -348,7 +359,9 @@ try {
     .getByRole("button", { name: "Fortsett med kladden", exact: true })
     .click();
   eq(
-    await dialog.getByLabel("Oppgangens adresse (valgfritt)", { exact: true }).inputValue(),
+    await dialog
+      .getByLabel("Oppgangens adresse (valgfritt)", { exact: true })
+      .inputValue(),
     "Siste oppgang",
     "Declining discard keeps the exact previous draft",
   );
@@ -565,6 +578,62 @@ try {
     true,
     "Mobile page change starts at the heading",
   );
+  for (const type of ["house", "duplex", "multi", "apartment", "field"]) {
+    for (const width of [390, 1366]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.evaluate((type) => window.__mode("type-" + type), type);
+      const building = page.locator(".bolig-photo-building");
+      await building.waitFor();
+      const photo = building.locator(":scope > .bolig-facade-photo");
+      await photo.evaluate((img) => img.decode());
+      eq(
+        await photo.evaluate((img) => getComputedStyle(img).objectFit),
+        "cover",
+        "Proportions preserved for " + type + " at " + width,
+      );
+      const expected =
+        type === "house"
+          ? 1
+          : type === "duplex"
+            ? 2
+            : type === "multi"
+              ? 6
+              : 22;
+      eq(
+        await building.locator(".bolig-window").count(),
+        expected,
+        "All actual households inside photo for " + type,
+      );
+      await building.screenshot({path:"/tmp/bolig-photo-"+type+"-"+width+".png"});
+      eq(
+        await building.evaluate((el) => {
+          const p = el
+            .querySelector(".bolig-facade-photo")
+            .getBoundingClientRect();
+          return [...el.querySelectorAll(".bolig-window")].every((w) => {
+            const r = w.getBoundingClientRect();
+            return (
+              r.left >= p.left - 1 &&
+              r.right <= p.right + 1 &&
+              r.top >= p.top - 1 &&
+              r.bottom <= p.bottom + 1
+            );
+          });
+        }),
+        true,
+        "All housing targets stay within image bounds " + type + width,
+      );
+      await building.locator(".bolig-window").last().click();
+      eq(
+        (await page.locator("output").textContent()).startsWith("actual-"),
+        true,
+        "Photo opens actual household ID for " + type,
+      );
+      await building.screenshot({
+        path: "/tmp/bolig-photo-" + type + "-" + width + ".png",
+      });
+    }
+  }
   await page.evaluate(() => window.__mode("contact"));
   await page
     .getByRole("button", { name: "Leilighetsinformasjon", exact: true })

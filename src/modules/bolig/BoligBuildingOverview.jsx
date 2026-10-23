@@ -900,10 +900,6 @@ export default function BoligBuildingOverview({
           <div
             className={`bolig-facade-scene bolig-connected-scene ${selectedBlock.building_type === "house" || selectedBlock.building_type === "duplex" ? "bolig-house-scene" : ""}`}
           >
-            {selectedBlock.building_type === "house" ||
-            selectedBlock.building_type === "duplex" ? (
-              <BoligBuildingArt type={selectedBlock.building_type} />
-            ) : null}
             <div className="bolig-buildings">
               {shownEntrances.map((e) => {
                 const entranceUnits = unitsByEntrance.get(e.id) || [];
@@ -913,18 +909,29 @@ export default function BoligBuildingOverview({
                 return (
                   <article
                     key={e.id}
-                    className={`bolig-building ${activeEntrance?.id === e.id ? "is-active-entrance" : ""}`}
+                    className={`bolig-building bolig-photo-building bolig-photo-${selectedBlock.building_type || "apartment"} ${activeEntrance?.id === e.id ? "is-active-entrance" : ""}`}
                     style={{
                       minWidth: Math.max(
                         240,
                         Math.max(...(e.counts || [4])) * 62 + 80,
+                        // Keep the complete image proportional while leaving room
+                        // for every real floor and a readable, clickable unit target.
+                        Math.ceil(
+                          (floors.length * 82 + 140) /
+                            (2 / 3 -
+                              (["house", "duplex"].includes(selectedBlock.building_type)
+                                ? 0.25
+                                : selectedBlock.building_type === "multi" ? 0.17 : 0)),
+                        ),
                       ),
                       "--row-min-width": `${Math.max(...(e.counts || [4])) * 62 - 10}px`,
-                      "--facade-span": shownEntrances.length,
-                      "--entrance-position":
-                        blockEntrances.indexOf(e) % 2 === 0 ? "left" : "right",
                     }}
                   >
+                    <BoligBuildingArt
+                      type={selectedBlock.building_type}
+                      facade
+                      className="bolig-facade-photo"
+                    />
                     <h4>
                       {e.address || `Oppgang ${blockEntrances.indexOf(e) + 1}`}
                     </h4>
@@ -1003,7 +1010,7 @@ export default function BoligBuildingOverview({
             </div>
             <small className="bolig-illustration-note">
               Illustrert bygg · boligene følger registrerte etasjer og
-              leiligheter
+              leiligheter. Rull sideveis når bygget er større enn skjermen.
             </small>
           </div>
         </>

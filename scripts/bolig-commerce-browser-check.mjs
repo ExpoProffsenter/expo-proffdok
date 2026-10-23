@@ -32,7 +32,9 @@ if(args.p_action==='approve'){d.status='approved';d.revision++;}
 if(args.p_action==='publish'){d.status='published';d.expires_at='2026-11-21T18:00:00Z';d.revision++;}
 if(args.p_action==='revoke'){d.status='revoked';d.revision++;}
 if(args.p_action==='apply'){d.status='handled';d.handling_note=p.note;d.fulfillment_reference=p.reference;d.fulfillment_applied_at='2026-10-22T18:00:00Z';d.revision++;}
-const result={...state(),document_id:d?.id};receipts.set(p.request_id,result);return {data:result};}};
+const result={...state(),document_id:d?.id};receipts.set(p.request_id,result);
+if(window.__holdAction===args.p_action){window.__holdAction=null;await new Promise(r=>window.__releaseMutation=r);}
+if(window.__loseAction===args.p_action){window.__loseAction=null;throw Error('QA mistet svar etter lagring');}return {data:result};}};
 window.__duplicate=()=>{docs=[{id:'accepted-choice',group_id:'accepted-group',version:1,kind:'choice',status:'accepted',revision:4,created_at:'2026-10-22T17:00:00Z',snapshot},{id:'old-choice',group_id:'old-group',version:1,kind:'choice',status:'published',revision:3,created_at:'2026-10-22T16:00:00Z',snapshot}];window.dispatchEvent(new Event('focus'));};
 window.__asAccepted=()=>{docs[0].status='accepted';docs[0].accepted_name='QA Beboer';docs[0].accepted_at='2026-10-22T18:00:00Z';docs[0].revision++;window.dispatchEvent(new Event('focus'));};
 window.__mode='internal';window.__networkLoss=false;window.__publicCalls=[];
@@ -78,11 +80,11 @@ try {
   await page.getByRole("button",{name:"Lukk og behold kladden",exact:true}).click();
   await page.getByRole("button",{name:"Fortsett kladd",exact:true}).click();
   eq(await page.getByLabel("Beskrivelse til beboeren").inputValue(),"QA – behold denne kladden ved fanebytte","closing retains draft");
-  await page.getByRole("button",{name:"Lagre og gjennomgå",exact:true}).click();
-  await page.getByRole("button",{name:"Godkjenn grunnlaget",exact:true}).waitFor();
-  eq(await page.getByRole("button",{name:"Lag beboerlenke",exact:true}).count(),0,"cannot publish unapproved draft");
-  await page.getByRole("button",{name:"Godkjenn grunnlaget",exact:true}).click();
-  await page.getByRole("button",{name:"Lag beboerlenke",exact:true}).click();
+  await page.getByRole("button",{name:"Lagre utkast",exact:true}).click();
+  await page.getByRole("button",{name:"Opprett beboerlenke",exact:true}).waitFor();
+  eq(await page.getByRole("button",{name:"Godkjenn grunnlaget",exact:true}).count(),0,"saved draft shares from its reviewed summary without another approval screen");
+  eq(await page.evaluate(()=>window.__calls.filter(c=>c.args.p_action==='publish').length),0,"saving a draft does not publish");
+  await page.getByRole("button",{name:"Opprett beboerlenke",exact:true}).click();
   await page.getByLabel("Beboerlenke",{exact:true}).waitFor();
   const link=await page.getByLabel("Beboerlenke",{exact:true}).inputValue();
   eq(/^http:\/\/127\.0\.0\.1:\d+\/bolig-kunde\.html#[a-f0-9]{64}$/.test(link),true,"capability stays in fragment");
@@ -92,11 +94,11 @@ try {
   await page.getByLabel("Bestillingen som endres").selectOption("order");
   await page.getByLabel("Pristillegg / fratrekk inkl. mva.").fill("1250");
   await page.getByLabel("Beskrivelse til beboeren").fill("QA – ekstra servant til boligen");
-  await page.getByRole("button",{name:"Lagre og gjennomgå",exact:true}).click();
-  await page.getByRole("button",{name:"Godkjenn grunnlaget",exact:true}).waitFor();
+  await page.locator("summary").filter({hasText:"Servant i eik – langt syntetisk varenavn · 2 stk"}).click();
+  await page.getByLabel("Antall 1",{exact:true}).fill("3");
   eq(await page.getByText("Før",{exact:true}).isVisible(),true);eq(await page.getByText("Etter",{exact:true}).isVisible(),true);
-  await page.getByRole("button",{name:"Godkjenn grunnlaget",exact:true}).click();
-  await page.getByRole("button",{name:"Lag beboerlenke",exact:true}).click();
+  eq(await page.getByRole("region",{name:"Avtalegrunnlag"}).getByText("3 stk",{exact:false}).count()>0,true,"preview reflects the editable quantity");
+  await page.getByRole("button",{name:"Opprett beboerlenke",exact:true}).click();
   await page.getByLabel("Beboerlenke",{exact:true}).waitFor();
   await page.evaluate(()=>window.__asAccepted());
   await page.getByRole("button",{name:"Registrer leverandøroppfølging",exact:true}).click();
@@ -115,7 +117,7 @@ try {
   await page.getByRole("button",{name:"Klargjør beboeraksept",exact:true}).click();
   await page.getByLabel("Beskrivelse til beboeren").fill("QA – bevar ved feil");
   await page.evaluate(()=>window.__conflict=true);
-  await page.getByRole("button",{name:"Lagre og gjennomgå",exact:true}).click();
+  await page.getByRole("button",{name:"Lagre utkast",exact:true}).click();
   await page.getByRole("alert").filter({hasText:"Grunnlaget er endret"}).last().waitFor();
   eq(await page.getByLabel("Beskrivelse til beboeren").inputValue(),"QA – bevar ved feil");
   await page.evaluate(()=>window.__show('internal','reader'));
@@ -135,6 +137,57 @@ try {
   eq(await parallel.getByText("Venter på beboer",{exact:true}).isVisible(),false,"old pending choice is collapsed in history");
   await parallel.getByText(/Avtalehistorikk ·/).click();
   eq(await parallel.getByText("Venter på beboer",{exact:true}).isVisible(),true,"prior agreement remains available in explicit history");
+  // One user action reuses all existing server guards. A lost response at any
+  // step must replay exactly that step, even after remount, without a duplicate.
+  for (const lost of ["create","approve","publish"]) {
+    const recovery=await browser.newPage({viewport:{width:390,height:900}});
+    await recovery.goto(url);
+    await recovery.getByRole("button",{name:"Endringer og beboeraksept",exact:true}).click();
+    await recovery.getByRole("button",{name:"Klargjør beboeraksept",exact:true}).click();
+    await recovery.getByLabel("Beskrivelse til beboeren").fill("QA ett gjennomgått grunnlag ved tapt "+lost);
+    eq(await recovery.getByRole("region",{name:"Avtalegrunnlag"}).isVisible(),true,"review in composer before final action");
+    await recovery.evaluate(action=>window.__loseAction=action,lost);
+    await recovery.getByRole("button",{name:"Opprett beboerlenke",exact:true}).click();
+    await recovery.getByRole("alert").filter({hasText:"QA mistet svar"}).last().waitFor();
+    eq(await recovery.getByLabel("Beboerlenke",{exact:true}).count(),0,"no unconfirmed link after lost "+lost);
+    // Force a scoped component remount while retaining the simulated server.
+    await recovery.evaluate(()=>window.__show('internal','reader'));
+    await recovery.getByRole("button",{name:"Endringer og beboeraksept",exact:true}).click();
+    await recovery.getByText(/Avtalehistorikk ·/).waitFor();
+    await recovery.evaluate(()=>window.__show('internal','manager'));
+    await recovery.getByRole("button",{name:"Endringer og beboeraksept",exact:true}).click();
+    await recovery.getByRole("button",{name:"Prøv samme lagring igjen",exact:true}).waitFor();
+    await recovery.getByRole("button",{name:"Prøv samme lagring igjen",exact:true}).click();
+    await recovery.getByLabel("Beboerlenke",{exact:true}).waitFor();
+    const attempts=await recovery.evaluate(action=>window.__calls.filter(c=>c.args.p_action===action),lost);
+    eq(attempts.length,2,"lost step replay count "+lost);
+    eq(attempts[0].args,attempts[1].args,"same payload, token and request ID after remount "+lost);
+    eq(await recovery.locator(".bolig-commerce-row").count(),1,"only one agreement created "+lost);
+    eq(await recovery.getByRole("button",{name:"Godkjenn grunnlaget",exact:true}).count(),0);
+    eq(await recovery.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,"mobile composer stays in viewport");
+    if(lost==='publish') await recovery.screenshot({path:path.join(tmp,"one-action-mobile.png"),fullPage:true});
+    await recovery.close();
+  }
+  const scopedFlow=await browser.newPage();await scopedFlow.goto(url);
+  await scopedFlow.getByRole("button",{name:"Endringer og beboeraksept",exact:true}).click();
+  await scopedFlow.getByRole("button",{name:"Klargjør beboeraksept",exact:true}).click();
+  await scopedFlow.getByLabel("Beskrivelse til beboeren").fill("QA stopp gammel opprettelse ved tilgangsbytte");
+  await scopedFlow.evaluate(()=>window.__holdAction='create');
+  await scopedFlow.getByRole("button",{name:"Opprett beboerlenke",exact:true}).click();
+  await scopedFlow.waitForFunction(()=>typeof window.__releaseMutation==='function');
+  await scopedFlow.evaluate(()=>window.__show('internal','reader'));
+  await scopedFlow.getByRole("button",{name:"Endringer og beboeraksept",exact:true}).click();
+  await scopedFlow.getByText(/Avtalehistorikk ·/).waitFor();
+  await scopedFlow.evaluate(()=>window.__releaseMutation());
+  await scopedFlow.waitForFunction(()=>window.__calls.some(c=>c.args.p_action==='get'));
+  eq(await scopedFlow.getByRole("button",{name:"Opprett beboerlenke",exact:true}).count(),0,"reader never inherits old flow actions");
+  eq(await scopedFlow.evaluate(()=>window.__calls.filter(c=>['approve','publish'].includes(c.args.p_action)).length),0,"late create response cannot continue in replaced scope");
+  await scopedFlow.evaluate(()=>window.__show('internal','manager'));
+  await scopedFlow.getByRole("button",{name:"Endringer og beboeraksept",exact:true}).click();
+  await scopedFlow.getByRole("button",{name:"Prøv samme lagring igjen",exact:true}).click();
+  await scopedFlow.getByLabel("Beboerlenke",{exact:true}).waitFor();
+  eq(await scopedFlow.locator('.bolig-commerce-row').count(),1,"returning manager can resume exact preserved attempt");
+  await scopedFlow.close();
   const publicPage=await browser.newPage({viewport:{width:390,height:844}});publicPage.setDefaultTimeout(10000);publicPage.on("pageerror",e=>errors.push(e.message));
   await publicPage.goto(url+"/?public#"+"a".repeat(64));
   await publicPage.getByRole("heading",{name:"Endring av leveransen din"}).waitFor();
@@ -170,6 +223,6 @@ try {
   const invalid=await browser.newPage();await invalid.goto(url+"/?public#invalid");await invalid.getByRole("heading",{name:"Avtalen kan ikke åpnes"}).waitFor();checks++;
   eq(await invalid.evaluate(()=>window.__publicCalls.length),0,"incomplete token never reaches server");
   eq(errors,[],"no browser runtime errors");
-  console.log(`PASS Bolig commerce browser: ${checks} assertions; real handlers/adapters, preserved drafts, firm/role denials, two-step publication, before/after, followup, mobile and lost-response acceptance. Visuals: ${tmp}`);
+  console.log(`PASS Bolig commerce browser: ${checks} assertions; real handlers/adapters, preserved drafts, firm/role denials, one-action creation/publication, exact recovery of all three server steps, before/after, followup, mobile and lost-response acceptance. Visuals: ${tmp}`);
 } catch(e) { console.error('Browser QA state:',await debugPage?.locator('body').innerText());throw e;
 } finally { await browser?.close();if(server)await new Promise(r=>server.close(r));fs.rmSync(entry,{force:true});fs.rmSync(publicEntry,{force:true}); }

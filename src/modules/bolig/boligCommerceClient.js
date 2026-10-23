@@ -29,3 +29,23 @@ export function residentUrl(token) {
   url.hash = token;
   return url.toString();
 }
+
+// Each server step keeps its own request ID. Persist before calling it so a
+// lost response or remount replays the exact step, including the original token.
+export function commerceAttempt(action, payload) {
+  const { document_status, ...basis } = payload;
+  const request = (action, payload) => ({ action, payload: { ...payload, request_id: crypto.randomUUID() } });
+  if (action === "create_link") return { ...request("create", basis), flow: { token: newResidentToken(), created: true } };
+  if (action === "publish_ready") {
+    const token = newResidentToken();
+    return { ...request(document_status === "draft" ? "approve" : "publish", { ...basis, ...(document_status === "draft" ? {} : { token }) }), flow: { token, created: false } };
+  }
+  return request(action, basis);
+}
+export function nextCommerceAttempt(attempt, result) {
+  if (!attempt.flow || attempt.action === "publish") return null;
+  const doc = result.documents.find(d => d.id === (result.document_id || attempt.payload.document_id));
+  const action = attempt.action === "create" ? "approve" : "publish";
+  if (!doc || doc.status !== (action === "approve" ? "draft" : "approved")) throw Error("Avtaleutgaven kunne ikke bekreftes. Prøv samme lagring igjen.");
+  return { action, payload: { document_id: doc.id, revision: doc.revision, ...(action === "publish" ? { token: attempt.flow.token } : {}), request_id: crypto.randomUUID() }, flow: attempt.flow };
+}

@@ -10,7 +10,7 @@ const steps = [
     later:
       "Adresser og kontaktpersoner kan legges til senere. Du kan lagre oppsettet som kladd.",
     next: "Åpne prosjektet og kontroller boligene i byggbildet.",
-    image: "bygg-prosjekt.webp",
+    image: "bygg-prosjekt-v2.webp",
     alt: "Eksempel fra prosjektbyggeren med valg av bygningstype.",
   },
   {

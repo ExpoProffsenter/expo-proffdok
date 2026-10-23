@@ -75,3 +75,9 @@ Neste: publiser branch med GitHub create_tree/commit/update_ref, kontroller CI o
 ## Nyeste pakke: beboervarsler uten separat godkjenningsrunde
 
 Se **docs/qa/BOLIG_BEBOERVARSEL_FORENKLING_20261023.md** før videre arbeid. Kenneth ønsket Nytt beboervarsel på et tydelig sted, prosjekt/bygg/oppgang/boligutvalg, logo/design og utkast/papir/digital publisering i samme vindu. Implementert og testet lokalt, installert bare i Sandbox (20261023155220, worker v3). 1154 DB, 34 fremdrift/composer browser, 28 PDF, 30 plan, 34 overtakelse, 16 restpunkt og actual foundation React PASS. Full critical build og faktisk rollback-smoke PASS. Mail AV, pending/sending 0. Publisert commit/CI-status må leses fra siste PR #278. Ikke merge uten egen Bolig TEST OK. Videre forenklingskandidater er kartlagt i QA-notatet, særlig boligavtalenes Lagre→Godkjenn→Lag lenke; ikke implementert nå.
+
+## Seneste pakke: proporsjonale byggbilder og avtaleopprettelse
+
+Kenneths siste styring: boligene må inn i bildet for alle prosjekt-/boligtyper uten forvrengning. Dette er gjort før den autoriserte avtaleforenklingen. Detaljer, scope, testliste og konkrete QA-resultater: `docs/qa/BOLIG_BILDER_OG_AVTALEFLYT_20261023.md`. Alle fem typer har faktiske boligknapper over proporsjonalt foto; ferdig separat leilighetsbygg-eksempel og oppdatert A–Å-bilde. Avtaleeditor har én gjennomgang med Lagre utkast / Opprett beboerlenke. Eksisterende serversteg og uforanderlig beboeraksept beholdes; hvert steg kan gjenopptas etter tapt svar/omstart med samme nøkkel/token. Ingen ny SQL.
+
+Lokalt PASS: bygger/fasade143, oversikt42, overtakelse/guide34, avtaler64, PostgreSQL1154, faktisk foundation React, full critical build/scope/docs/diff. Forrige CI646 CANCELLED i Bolig-steget, derfor ikke samlet grønnstatus. Neste commit/READY/CI leses fra faktisk PR278; ikke stol på eldre HEAD i toppen av dette notatet. Fast Preview og Sandbox uendret. Fortsatt ingen Bolig TEST OK og ingen produksjonsmerge.

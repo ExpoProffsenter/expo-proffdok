@@ -1123,3 +1123,7 @@ Boligprosjekter (Preview 23.10.2026): «Fremdrift og varsler» følger planlagt 
 ### Boligprosjekter – beboervarsler 23.10.2026
 
 «Nytt beboervarsel» samler målgruppe, melding, kontakt, forhåndsvisning, PDF og digital publisering. Velg prosjekt, bygg, oppgang eller boliger. Ferdig papir krever ikke beboer-e-post. Ingen separat godkjenningsrunde; digital publisering binder innhold og gjeldende mottakere i én idempotent transaksjon. Generelle varsler bruker eksisterende varseltabell/portal/worker uten kunstige Gantt-aktiviteter. Se `docs/qa/BOLIG_BEBOERVARSEL_FORENKLING_20261023.md`. Bare feature-Preview/Sandbox frem til egen Bolig TEST OK.
+
+### Bolig – proporsjonale byggbilder og samlet avtaleflyt (23.10.2026)
+
+Alle boligtyper viser de registrerte boligene som klikkbare felt inne i byggbildet. Bildets proporsjoner beholdes; større bygg kan rulles uten å presse sammen boligfeltene. Leilighetsbyggets typekort og A–Å-eksempel bruker eget ferdig fasadefoto. Boligavtale/endringsordre viser vare- og prisgjennomgang i samme vindu med «Lagre utkast» eller «Opprett beboerlenke». Eksisterende serverkontroller og beboerens egen aksept beholdes. Avbrutt opprettelse fortsetter samme lagrede steg. QA og startpunkt: `docs/qa/BOLIG_BILDER_OG_AVTALEFLYT_20261023.md`. Feature-Preview frem til egen Bolig TEST OK.

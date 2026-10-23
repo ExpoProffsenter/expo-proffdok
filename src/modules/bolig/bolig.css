@@ -4846,3 +4846,43 @@
 .bolig-start-guide-button{background:#e8f2ed!important;border:1px solid #bdd4c7!important;color:#1c5140!important;padding:12px 18px!important;min-height:48px;font-size:15px!important;font-weight:750!important;border-radius:12px!important}.bolig-start-guide{max-width:980px;margin:auto;color:#1e4245;font-size:16px;line-height:1.7}.bolig-guide-intro{margin-top:0}.bolig-start-guide nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:20px 0}.bolig-start-guide nav button{display:flex;gap:8px;align-items:center;text-align:left;padding:10px!important;border:1px solid #d3e1df!important;border-radius:10px!important;background:#f4f8f7!important;color:#325a55!important;font-size:13px!important;line-height:1.4;min-height:60px}.bolig-start-guide nav button>span{display:grid;place-items:center;border-radius:50%;min-width:25px;height:25px;background:#deebe6;font-weight:800}.bolig-start-guide nav button[aria-current=step]{background:#1d564a!important;color:#fff!important;border-color:#1d564a!important}.bolig-start-guide nav button[aria-current=step]>span{background:#fff;color:#1d564a}.bolig-start-guide article>small{letter-spacing:.1em;font-weight:800;font-size:12px;color:#5b7b72}.bolig-start-guide h3{font-size:29px;margin:5px 0 10px}.bolig-guide-where{padding:10px 14px;border-radius:8px;background:#edf3f5;font-size:14px;font-weight:700}.bolig-start-guide figure{margin:20px 0}.bolig-start-guide figure button{display:block;width:100%;padding:0!important;border:1px solid #ccdad8!important;border-radius:12px!important;overflow:hidden;background:#f2f6f5!important}.bolig-start-guide figure img{display:block;width:100%;max-height:370px;object-fit:contain}.bolig-start-guide figcaption{font-size:12px;color:#5a7371;margin-top:6px}.bolig-guide-recommend{background:#e7f1e9;border-left:4px solid #6d9d78;padding:16px 20px;border-radius:8px;margin:20px 0}.bolig-guide-recommend p,.bolig-guide-next p{margin:5px 0}.bolig-guide-next{margin-top:18px;padding-top:16px;border-top:1px solid #c9dcda}.bolig-start-guide footer{display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;bottom:0;background:#fff;padding:16px 0 4px;margin-top:20px;border-top:1px solid #d4e0dd}.bolig-start-guide footer button{min-height:46px}.bolig-guide-full-image{display:block;width:100%;height:auto}.bolig-start-guide article{scroll-margin-top:16px}
 @media(max-width:600px){.bolig-start-guide nav{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.bolig-start-guide nav button{font-size:12px!important;min-height:54px}.bolig-start-guide h3{font-size:24px}.bolig-start-guide footer{gap:7px}.bolig-start-guide footer button{padding:10px!important;font-size:13px!important}.bolig-guide-recommend{padding:14px}.bolig-start-guide-button{width:100%;white-space:normal}}
 .bolig-start-guide nav button{min-width:0!important;max-width:100%;white-space:normal!important;overflow-wrap:anywhere;justify-content:flex-start!important}.bolig-start-guide nav button>.bolig-guide-step-title{display:block;min-width:0;height:auto;background:transparent!important;color:inherit!important;font-weight:inherit;border-radius:0;flex:1;text-align:left}.bolig-start-guide nav button>.bolig-guide-step-number{flex:0 0 25px}
+
+/* Actual units belong inside a proportional photo for every housing type.
+   The image may crop to the registered facade; it is never stretched. */
+.bolig-connected-scene .bolig-photo-building {
+  position: relative;
+  isolation: isolate;
+  background: #e5e3d9;
+  min-height: 285px;
+  aspect-ratio: 3 / 2;
+  border-right: 2px solid #b8c7c7;
+  padding-bottom: 78px;
+}
+.bolig-connected-scene .bolig-photo-building > .bolig-facade-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+  object-position: center;
+  z-index: -1;
+  border-radius: 0;
+  margin: 0;
+  pointer-events: none;
+}
+.bolig-connected-scene .bolig-photo-building .bolig-building-floors {
+  position: relative;
+}
+.bolig-connected-scene .bolig-photo-house .bolig-building-floors,
+.bolig-connected-scene .bolig-photo-duplex .bolig-building-floors {
+  margin-top: 25%;
+}
+.bolig-connected-scene .bolig-photo-multi .bolig-building-floors {
+  margin-top: 17%;
+}
+.bolig-connected-scene .bolig-photo-building > h4 {
+  position: relative;
+  margin-top: 12px;
+  z-index: 1;
+}

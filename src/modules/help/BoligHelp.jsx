@@ -285,9 +285,9 @@ export function BoligHelp() {
         <li>
           Åpne «Endringer og beboeraksept» i boligen. «Klargjør beboeraksept»
           bruker boligens lagrede varer og tilvalgspris. Beskriv grunnlaget,
-          velg «Lagre og gjennomgå» og kontroller innholdet. «Godkjenn
-          grunnlaget» er din interne godkjenning. Velg deretter «Lag
-          beboerlenke» og del den med riktig beboer. Lenken varer i 30 dager.
+          og kontroller varer og pris i samme vindu. Velg «Lagre utkast»
+          for å fortsette senere, eller «Opprett beboerlenke» når det er klart.
+          Del lenken med riktig beboer. Lenken varer i 30 dager.
           Ingen e-post sendes av disse knappene. Beboeren gjennomgår pris og
           varer, oppgir navn og bekrefter svaret i to trinn. Kvitteringen viser
           den aksepterte utgaven. Dette er en lenkebasert beboerbekreftelse.
@@ -295,7 +295,7 @@ export function BoligHelp() {
         <li>
           «Ny endringsordre» lar deg velge bestillingen som endres. Samle alle
           vareendringene i samme kladd og angi samlet pristillegg eller fratrekk
-          inkl. mva. Kontroller «Før» og «Etter» før godkjenning og deling. Den
+          inkl. mva. Kontroller «Før» og «Etter» før du oppretter beboerlenken. Den
           opprinnelige bestillingen beholdes. Når beboeren har akseptert,
           avklarer du endringen med leverandøren og registrerer hvem som
           bekreftet og hvor endringen er bestilt eller kreditert. «Last ned

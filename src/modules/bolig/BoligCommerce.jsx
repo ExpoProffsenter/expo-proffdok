@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { FileSignature, Plus, Link2, CheckCircle2, History } from "lucide-react";
-import { commerceRpc, commerceLabels, COMMERCE_EVENT, newResidentToken, residentUrl } from "./boligCommerceClient.js";
+import { commerceRpc, commerceLabels, COMMERCE_EVENT, residentUrl, commerceAttempt, nextCommerceAttempt } from "./boligCommerceClient.js";
 import { boligDraftKey, readBoligDraft, writeBoligDraft } from "./boligClient.js";
 import { signedCents } from "./boligCustomizationClient.js";
 import { money } from "./boligCatalogClient.js";
@@ -40,7 +40,7 @@ export default function BoligCommerce({ context, root, unit }) {
     } finally { if (alive.current && ticket === epoch.current) setLoading(false); }
   };
   useEffect(() => {
-    alive.current = true; hasData.current = false; setData(null); setLoading(true);
+    alive.current = true; operation.current = false; setBusy(false); hasData.current = false; setData(null); setLoading(true);
     setSelected(null); setHandling(null); setEditing(false);
     const scoped = readBoligDraft(key, {form:null,links:{},pending:null}); latest.current = scoped; setLocal(scoped);
     load();
@@ -59,30 +59,38 @@ export default function BoligCommerce({ context, root, unit }) {
   const run = async (action, payload, retry = false) => {
     if (operation.current || !writable || loading) return;
     if (latest.current.pending && !retry) return;
-    operation.current = true; ++epoch.current; setBusy(true); setError(""); setNotice("");
+    const ticket = ++epoch.current; operation.current = ticket; setBusy(true); setError(""); setNotice("");
     try {
-      const attempt = retry ? latest.current.pending : { action, payload: { ...payload, request_id: crypto.randomUUID() } };
-      persist({ ...latest.current, pending: attempt });
-      const next = await commerceRpc(context, root.id, unit.id, attempt.action, attempt.payload);
-      if (!alive.current) return;
+      let attempt = retry ? latest.current.pending : commerceAttempt(action, payload);
+      let next;
+      while (attempt) {
+        persist({ ...latest.current, pending: attempt });
+        next = await commerceRpc(context, root.id, unit.id, attempt.action, attempt.payload);
+        if (!alive.current || ticket !== epoch.current) return;
+        const following = nextCommerceAttempt(attempt, next);
+        if (!following) break;
+        // The successful step's receipt is durable; preserve the next exact
+        // request locally before starting it. A crash can safely replay either.
+        persist({ ...latest.current, pending: following });
+        attempt = following;
+      }
       const links = { ...latest.current.links };
       if (attempt.action === "publish") links[attempt.payload.document_id] = residentUrl(attempt.payload.token);
       if (attempt.action === "revoke") delete links[attempt.payload.document_id];
-      persist({ ...latest.current, pending: null, links, form: attempt.action === "create" ? null : latest.current.form });
+      persist({ ...latest.current, pending: null, links, form: attempt.action === "create" || attempt.flow?.created ? null : latest.current.form });
       setData(next); setHandling(null);
-      if (attempt.action === "create") setSelected(next.document_id);
-      if (attempt.action === "create") setEditing(false);
+      if (attempt.action === "create" || attempt.flow?.created) { setSelected(next.document_id); setEditing(false); }
       setNotice(attempt.action === "publish" ? "Beboerlenken er klar. Kopier og del den med riktig mottaker." : "Lagret i prosjektets avtalehistorikk.");
       window.dispatchEvent(new CustomEvent(COMMERCE_EVENT));
     } catch (e) {
-      if (alive.current) {
+      if (alive.current && ticket === epoch.current) {
         setError(e.message + " Kladden er beholdt.");
         if (["22023", "PT409", "42501", "23505"].includes(e.code)) {
           try { persist({ ...latest.current, pending: null }); } catch {}
         }
         if (e.code === "42501") setData(null);
       }
-    } finally { operation.current = false; if (alive.current) setBusy(false); }
+    } finally { if (operation.current === ticket) operation.current = false; if (alive.current && ticket === epoch.current) setBusy(false); }
   };
   const start = (kind, prior = null) => {
     try {
@@ -103,10 +111,24 @@ export default function BoligCommerce({ context, root, unit }) {
     <span className={`bolig-commerce-badge ${d.status}`}>{d.kind === "change" && d.status === "handled" && !d.fulfillment_applied_at ? "Leveransen må oppdateres" : commerceLabels[d.status]}</span>
   </button>;
   const form = local.form;
+  let preview = null;
+  if (form && data) {
+    try {
+      const order = data.orders.find(o => o.id === form.order_id);
+      const goods = (form.kind === "choice" ? data.selection?.goods || [] : form.lines).map(g => ({
+        key: g.key, name: g.name, sku: g.sku || "", quantity: Number(g.quantity), unit: g.unit,
+        room_name: g.room_name || "", section_name: g.section_name || "",
+      }));
+      preview = { kind: form.kind, snapshot: { reason: form.reason, goods,
+        before_goods: (order?.goods || []).map(g => ({ key:g.key,name:g.name,sku:g.sku||"",quantity:Number(g.quantity),unit:g.unit,room_name:g.room_name||"",section_name:g.section_name||"" })),
+        order_number: order?.number, total_cents: data.selection?.total_cents, delta_cents: signedCents(form.adjustment),
+      } };
+    } catch { /* Invalid price remains editable and cannot be submitted. */ }
+  }
   return <section className="bolig-commerce" aria-label="Endringer og beboeraksept">
     <div className="bolig-commerce-heading"><FileSignature size={27}/><div>
       <h3>Endringer og beboeraksept</h3>
-      <p>Lag et grunnlag, kontroller det og del beboerlenken. Svaret lagres på nøyaktig den utgaven beboeren har sett.</p>
+      <p>Kontroller varer og pris i samme vindu. Lagre utkast eller opprett beboerlenken. Svaret lagres på nøyaktig den utgaven beboeren har sett.</p>
     </div></div>
     {error && <p role="alert" className="bolig-error">{error}</p>}
     {notice && <p role="status" className="bolig-notice">{notice}</p>}
@@ -128,7 +150,7 @@ export default function BoligCommerce({ context, root, unit }) {
         {form.kind === "choice" && form.choice_revision !== data.choice_revision && <p role="alert">Boligvalget er endret. Lukk kladden og klargjør fra siste lagrede boligvalg.</p>}
         {form.kind === "change" && form.delivery_revision !== data.delivery_revision && <p role="alert">Bestillinger eller mottak er endret. Hent siste grunnlag og se over kladden.</p>}
         <form onInvalidCapture={e => { let node = e.target.parentElement; while (node && node !== e.currentTarget) { if (node.tagName === "DETAILS") node.open = true; node = node.parentElement; } }} onSubmit={e => { e.preventDefault(); if (e.currentTarget.querySelector('[data-image-uploading="true"]')) { setError("Vent til bildet er lastet opp."); return; }
-          try { run("create", { ...form, delta_cents: signedCents(form.adjustment), lines: form.lines.map(g => ({ ...g, quantity: Number(g.quantity) })) }); } catch (err) { setError(err.message); } }}>
+          try { run(e.nativeEvent.submitter?.value === "link" ? "create_link" : "create", { ...form, delta_cents: signedCents(form.adjustment), lines: form.lines.map(g => ({ ...g, quantity: Number(g.quantity) })) }); } catch (err) { setError(err.message); } }}>
           <fieldset disabled={disabled}>
             {form.kind === "change" && <>
               <label>Bestillingen som endres<select aria-label="Bestillingen som endres" required value={form.order_id} onChange={e => {
@@ -141,7 +163,10 @@ export default function BoligCommerce({ context, root, unit }) {
             </>}
             {form.kind === "choice" && <p>Lagret boligvalg v{form.choice_revision} · Tilvalg og tilpasninger: <strong>{money(data.selection?.total_cents)}</strong> inkl. mva.</p>}
             <label>Beskrivelse til beboeren<textarea required minLength={3} maxLength={2000} rows={4} value={form.reason} onChange={e => updateForm("reason", e.target.value)}/></label>
-            <div className="bolig-commerce-actions"><button type="submit">Lagre og gjennomgå</button>
+            {preview && (form.kind === "choice" || form.order_id) && <><h4>Se over før du deler</h4><Summary document={preview}/></>}
+            <p>Opprett beboerlenken når innholdet er klart. Ingen e-post sendes. Beboeren gir sitt eget svar.</p>
+            <div className="bolig-commerce-actions"><button type="submit" value="draft">Lagre utkast</button>
+              <button type="submit" value="link" disabled={!preview || (form.kind === "choice" ? form.choice_revision !== data.choice_revision : form.delivery_revision !== data.delivery_revision)}>Opprett beboerlenke</button>
               <button type="button" onClick={() => setEditing(false)}>Lukk og behold kladden</button></div>
           </fieldset>
         </form>
@@ -174,8 +199,7 @@ export default function BoligCommerce({ context, root, unit }) {
         </div>}
         {doc.status === "published" && !local.links[doc.id] && <p>Lenken er laget i en annen nettleser. Hvis den er mistet, tilbakekall denne utgaven og klargjør en ny.</p>}
         {writable && <div className="bolig-commerce-actions">
-          {doc.status === "draft" && <button type="button" disabled={disabled} onClick={() => run("approve", { document_id: doc.id, revision: doc.revision })}>Godkjenn grunnlaget</button>}
-          {doc.status === "approved" && <button type="button" disabled={disabled} onClick={() => run("publish", { document_id: doc.id, revision: doc.revision, token: newResidentToken() })}>Lag beboerlenke</button>}
+          {["draft", "approved"].includes(doc.status) && <button type="button" disabled={disabled} onClick={() => run("publish_ready", { document_id: doc.id, revision: doc.revision, document_status: doc.status })}>Opprett beboerlenke</button>}
           {["draft", "approved", "published", "expired"].includes(doc.status) && <button type="button" disabled={disabled} onClick={() => run("revoke", { document_id: doc.id, revision: doc.revision })}>Tilbakekall utgaven</button>}
           {["draft", "approved", "published", "expired", "declined", "revoked"].includes(doc.status) && <button type="button" disabled={disabled || !!form} onClick={() => start(doc.kind, doc)}>Lag ny utgave</button>}
           {doc.kind === "change" && ["accepted","handled"].includes(doc.status) && <button type="button" disabled={disabled} onClick={() => { try { downloadAmendment(doc,context); } catch (e) { setError(e.message); } }}>Last ned endringsbestilling / kreditering</button>}
