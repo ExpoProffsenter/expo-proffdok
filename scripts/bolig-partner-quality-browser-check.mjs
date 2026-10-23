@@ -106,7 +106,70 @@ try {
   const button = (name) => page.getByRole("button", { name, exact: true }),
     dialog = (name) => page.getByRole("dialog", { name, exact: true });
 
-  await page.evaluate(() => window.__writePortal());
+  await page.evaluate(() => { window.__priorityFixture(); window.__writePortal(); });
+  const mine = page.getByRole("region", { name: "Mine utfyllinger", exact: true });
+  const shared = page.getByRole("region", { name: "Prosjektets sjekklister", exact: true });
+  await mine.waitFor();
+  const cards = (region) => region.locator("article:not([hidden])");
+  eq(await cards(mine).locator("h3").allTextContents(), ["Pågående UE", "Kommentar UE", "Måling UE", "Vedlegg UE", "Neste UE", "Tom UE"], "saved answers, comment, zero field and attachment precede untouched checks");
+  eq(await mine.getByRole("heading", { name: "Pågående (4)", exact: true }).count(), 1, "honest started count");
+  eq(await mine.getByRole("heading", { name: "Neste sjekklister (2)", exact: true }).count(), 1, "empty answer object stays unstarted");
+  eq(await mine.getByRole("button", { name: "Fullførte (1)", exact: true }).getAttribute("aria-expanded"), "false", "completed collapsed by default");
+  eq(await cards(shared).locator("h3").allTextContents(), ["Pågående prosjekt", "Neste prosjekt"], "45 completed rows cannot displace ongoing or next; same ID in different scope");
+  await shared.getByRole("button", { name: "Fullførte (45)", exact: true }).click();
+  eq(await cards(shared).count(), 14, "completed pagination independent of unfinished groups");
+  await shared.getByRole("button", { name: "Vis flere fullførte (33)", exact: true }).click();
+  eq(await cards(shared).count(), 26, "completed can be expanded progressively");
+  const sharedDetails = cards(shared).first().locator("details");
+  await sharedDetails.locator("summary").click();
+  await page.evaluate(() => window.dispatchEvent(new Event("blur")));
+  await shared.waitFor({ state: "hidden" });
+  await page.evaluate(() => window.dispatchEvent(new Event("focus")));
+  await shared.waitFor();
+  eq(await shared.getByRole("button", { name: "Fullførte (45)", exact: true }).getAttribute("aria-expanded"), "true", "folding survives authorization refresh");
+  eq(await cards(shared).count(), 26, "page limit survives authorization refresh");
+  eq(await cards(shared).first().locator("details").getAttribute("open"), "", "open control points survive refresh");
+  const search = page.getByRole("searchbox");
+  await search.fill("Demoparken 103");
+  eq(await cards(shared).locator("h3").allTextContents(), ["Pågående prosjekt"], "search across shared scope");
+  eq(await cards(mine).locator("h3").allTextContents(), ["Måling UE"], "search includes own scope");
+  await search.fill("ingen-treff");
+  eq(await cards(mine).count(), 0, "empty own search has no old rows");
+  await search.fill("");
+  await mine.getByRole("button", { name: "Fullførte (1)", exact: true }).click();
+  eq(await mine.locator('article[data-check-status="completed"]').innerText().then(x => x.includes("23. okt. 2026")), true, "actual saved completion date displayed");
+  await mine.getByRole("button", { name: "Fullførte (1)", exact: true }).click();
+  const unfinished = mine.locator('article[data-check-key="unit1:new"]');
+  await unfinished.getByRole("button", { name: "Fyll ut sjekkliste", exact: true }).click();
+  let priorityDialog = dialog("UE – sjekkliste");
+  await priorityDialog.getByLabel("Resultat: Servant kontrollert", { exact: true }).selectOption("OK");
+  eq(await unfinished.getAttribute("data-check-status"), "next", "unsent draft never claims server progress");
+  await priorityDialog.getByRole("checkbox", { name: "Fullfør sjekklisten ved lagring", exact: true }).check();
+  await page.evaluate(() => (window.__hold = true));
+  await button("Lagre sjekkliste").click();
+  eq(await unfinished.getAttribute("data-check-status"), "next", "completion waits for server receipt");
+  await page.evaluate(() => window.__release());
+  await priorityDialog.waitFor({ state: "hidden" });
+  await mine.getByRole("button", { name: "Fullførte (2)", exact: true }).waitFor();
+  eq(await unfinished.getAttribute("data-check-status"), "completed", "receipt moves only completed row to bottom");
+  eq(await unfinished.isVisible(), false, "completed row no longer blocks next task");
+  eq(await page.evaluate(() => document.activeElement.closest("article")?.dataset.checkKey), "unit1:answer", "focus moves to first remaining work");
+  eq(await cards(mine).locator("h3").allTextContents(), ["Pågående UE", "Kommentar UE", "Måling UE", "Vedlegg UE", "Tom UE"], "remaining work and existing order preserved");
+  await page.screenshot({ path: "/tmp/bolig-checklist-priority-desktop.png", fullPage: true });
+  for (const width of [390, 320]) {
+    await page.setViewportSize({ width, height: 900 });
+    eq(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, "priority layout " + width);
+  }
+  await page.screenshot({ path: "/tmp/bolig-checklist-priority-mobile.png", fullPage: true });
+  await page.setViewportSize({ width: 1366, height: 900 });
+  const snapshot = await page.evaluate(() => window.__priorityReadback());
+  eq(snapshot.shared[0].id, "done0", "display sorting does not mutate shared server order");
+  eq(snapshot.checks.map(x => x.record.id), ["done", "new", "answer", "comment", "field", "blank", "document"], "display sorting never rewrites definitions or history");
+  await page.evaluate(() => { window.__features(["checklists"]); window.dispatchEvent(new Event("focus")); });
+  await mine.waitFor();
+  eq(await mine.getByRole("button", { name: "Fyll ut sjekkliste", exact: true }).count(), 0, "priority groups respect read-only access");
+  eq(await mine.getByRole("button", { name: "Se utfylling", exact: true }).count(), 5, "readers can inspect unfinished controls");
+  await page.evaluate(() => { window.__resetPriority(); window.__writePortal(); });
   await page
     .getByRole("heading", { name: "Mine sjekklister og vedlegg", exact: true })
     .waitFor();

@@ -54,6 +54,13 @@ export function BoligHelp() {
           dokumentasjonen. Fullførte kontroller må gjenåpnes av prosjektleder
           før retting.
         </p>
+        <p>
+          Sjekklistene viser «Pågående» først og «Neste sjekklister» etterpå.
+          Når lagringen er bekreftet, flyttes en fullført liste til «Fullførte»
+          nederst. Trykk på gruppen for å se tidligere kontroller. Tallet viser
+          hvor mange lister gruppen inneholder. Søk etter leilighet, adresse
+          eller navn for å finne både prosjektets og dine egne sjekklister.
+        </p>
       </details>
       <details>
         <summary>Fremdrift og varsler</summary>

@@ -325,6 +325,10 @@ try {
     1,
   );
   await button("Sjekklister (1)").click();
+  // Completed controls now live in the collapsed group; keep the original
+  // point/status/readonly assertions after opening it through the user flow.
+  await page.getByRole("region", { name: "Prosjektets sjekklister", exact: true })
+    .getByRole("button", { name: "Fullførte (1)", exact: true }).click();
   await page.getByText("Se kontrollpunkter (1)", { exact: true }).click();
   eq(
     await page.getByText("Servant kontrollert", { exact: true }).count(),

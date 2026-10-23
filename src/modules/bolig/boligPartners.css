@@ -554,3 +554,24 @@
   max-width: 100%;
   box-sizing: border-box;
 }
+
+/* Keep cards as keyed siblings when their server-confirmed status changes. */
+.bolig-partner-checklist-list { display: grid; gap: 12px; }
+.bolig-partner-checklist-list > [hidden] { display: none; }
+.bolig-partner-checklist-heading { margin: 14px 0 0; font-size: 17px; }
+.bolig-partners .bolig-partner-checklist-heading.completed {
+  justify-content: flex-start; background: #edf5f2; border-color: #cfdfd8;
+  font-weight: 700; width: 100%; text-align: left;
+}
+.bolig-partner-checklist-heading.completed > svg:last-child { margin-left: auto; flex-shrink: 0; }
+.bolig-partner-checklist-guide { color: #50655b; font-size: 14px; }
+.bolig-partner-checklist-card.ongoing { border-left: 4px solid #197b78; }
+.bolig-partner-checklist-card.next { border-left: 4px solid #b3c6c0; }
+.bolig-partner-checklist-card.completed { background: #f7faf8; }
+.bolig-partner-checklist-status { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; padding: 4px 10px; border-radius: 20px; background: #edf1f0; color: #405951; }
+.bolig-partner-checklist-status.ongoing { background: #dff2f0; color: #126260; }
+.bolig-partner-checklist-status.completed { background: #e1efe5; color: #285b3c; }
+
+.bolig-partner-checklist-card { padding: 16px; }
+.bolig-partner-checklist-card h3 { font-size: 18px; margin: 8px 0 4px; }
+.bolig-partner-checklist-card p { margin: 6px 0; }

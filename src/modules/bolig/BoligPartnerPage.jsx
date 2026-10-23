@@ -3,6 +3,7 @@ import { CalendarDays, ShieldCheck } from "lucide-react";
 import Dialog from "./BoligEditorDialog.jsx";
 import Items from "./BoligPartnerItems.jsx";
 import PartnerQuality from "./BoligPartnerQuality.jsx";
+import ChecklistGroups, { partnerChecklistKey } from "./BoligPartnerChecklistGroups.jsx";
 import Gantt from "./BoligGantt.jsx";
 import {
   partnerPortalRpc,
@@ -38,6 +39,8 @@ function PartnerPage({ token }) {
       pending: null,
     }),
   );
+  const [checklistUi, setChecklistUi] = useState({ completed: false });
+  const [checklistDetails, setChecklistDetails] = useState({});
   const [open, setOpen] = useState(false),
     [notice, setNotice] = useState(""),
     [localError, setLocalError] = useState(""),
@@ -311,38 +314,28 @@ function PartnerPage({ token }) {
                     ? "Prosjektets sjekklister vises her. Fyll ut egne kontroller og legg til filer under Mine sjekklister og vedlegg."
                     : "Sjekklistene er delt for lesing. Prosjektet registrerer og oppdaterer kontrollene."}
                 </p>
-                <div className="bolig-partner-items">
-                  {items.slice(0, limit).map((x) => (
-                    <article
-                      className="bolig-partner-item"
-                      key={`${x.scope_id}:${x.id}`}
-                    >
-                      <h3>{x.title}</h3>
-                      <p>
-                        {x.address} · {x.number}
-                        {x.room_name ? ` · ${x.room_name}` : ""}
-                      </p>
-                      <p>
-                        {x.status === "completed" ? "Fullført" : "Under arbeid"}{" "}
-                        · {x.trade}
-                      </p>
-                      <details>
-                        <summary>
-                          Se kontrollpunkter ({x.points.length})
-                        </summary>
-                        <ul>
-                          {x.points.map((p) => (
-                            <li key={p.id}>
-                              <b>{p.title}</b>
-                              {p.guidance && <p>{p.guidance}</p>}
-                              <p>{p.status || "Ikke kontrollert"}</p>
-                            </li>
-                          ))}
-                        </ul>
-                      </details>
-                    </article>
-                  ))}
-                </div>
+                <ChecklistGroups
+                  title="Prosjektets sjekklister"
+                  items={items}
+                  ui={checklistUi}
+                  onUiChange={setChecklistUi}
+                  renderItem={(x) => <>
+                    <h3>{x.title}</h3>
+                    <p>{x.address} · {x.number}{x.room_name ? ` · ${x.room_name}` : ""}</p>
+                    <p>{x.trade} · {x.points.filter((point) => point.status).length} av {x.points.length} besvart</p>
+                    <details open={!!checklistDetails[partnerChecklistKey(x)]}>
+                      <summary onClick={(event) => {
+                        event.preventDefault();
+                        setChecklistDetails((previous) => ({ ...previous,
+                          [partnerChecklistKey(x)]: !previous[partnerChecklistKey(x)] }));
+                      }}>Se kontrollpunkter ({x.points.length})</summary>
+                      <ul>{x.points.map((point) => <li key={point.id}>
+                        <b>{point.title}</b>{point.guidance && <p>{point.guidance}</p>}
+                        <p>{point.status || "Ikke kontrollert"}</p>
+                      </li>)}</ul>
+                    </details>
+                  </>}
+                />
               </>
             ) : (
               <Items
@@ -354,7 +347,7 @@ function PartnerPage({ token }) {
           ) : (
             <p>Ingen treff i denne funksjonen.</p>
           )}
-          {activeTab !== "tasks" && items.length > limit && (
+          {activeTab === "orders" && items.length > limit && (
             <button type="button" onClick={() => setLimit(limit + 40)}>
               Vis flere
             </button>
@@ -514,6 +507,7 @@ function PartnerPage({ token }) {
       )}
       <PartnerQuality
         token={token}
+        query={activeTab === "checklists" ? query : ""}
         data={data}
         run={run}
         busy={busy}

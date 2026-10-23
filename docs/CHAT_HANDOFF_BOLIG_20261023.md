@@ -136,3 +136,10 @@ Kenneth fant lenken selv. Automatisk invitasjonsmail finnes ikke; produksjonsset
 
 
 Gantt/appdesign publisert på3fe86251 / tree69ae0846 / READY dpl_6A4kUapQDjry2WPzHAB9TBWSsk2M, fast Preview-alias og eksakt SHA verifisert.60 partnerbrowser,23 UE-browser,30 intern bulk/Gantt og full critical Sandbox-build PASS, scope/docs/diff PASS. Faktisk syntetisk leselenke viste40/161, H0101 fold/stolpe→Aktivitetsdetaljer→svar med riktige rosettdatoer, usendt prøve forkastet; måned/søk og2 sjekklister pass. Midlertidig DEMO – Gantt QA tilbakekalt. VIKTIG: brukeren har siden forrige tur laget egen aktiv tilgang;1 aktiv skal bevares, ikke rydd til0. Ingen nye svar/ordre/plan/kvalitetsendringer/mail. Skjermbilde docs/qa/evidence/bolig-partner-gantt-20261023.jpg. CI660 under kjøring ved dokumentasjon;659 kansellert ved oppfølgingscommit, baseline658 success. Dokumentasjon/bevis-commit kan gi ny CI; hent faktisk nyeste SHA/CI/READY. Ingen prod/Bolig TEST OK.
+
+
+## Sjekklisteprioritering 23.10 – neste tillegg etter32ff94a4
+
+UE-portalens delte prosjektlister og egne utfyllinger grupperes Pågående/Neste sjekklister/Fullførte. Fullførte er sammenfoldet nederst med antall og reell dato. Egen gruppering bruker lagrede svar/kommentarer/felt/dokumenter; delte lister kun den whitelistede punktstatusen. Søk inkluderer egne lister/plasseringer. Uavhengig sidevisning per gruppe hindrer at45 ferdige skjuler neste uferdige. Kort bruker stabile scope+ID-nøkler; delte kontrollpunkter/folding bevares ved refresh. Fullføring flytter etter serverkvittering og neste arbeid fokuseres; native kladd/filinput/retry beholdes. Interne kvalitetskort er gjennomgått og uendret.
+
+Lokal QA:49 UE-browser +60 partnerbrowser +35 native kvalitetsbrowser og full critical Sandbox-build PASS. Ingen SQL/gateway-/e-post-/Production-endring. Faktisk pilottest/Preview/CI oppdateres etter publisering; ikke erklær grønn CI før eksakt SHA er sjekket. Brukerens1 aktive tilgang skal bevares. Samme PR278 og faste Preview. Ingen merge uten Kenneths samlede Bolig TEST OK; fysisk Safari/mobil gjenstår.

@@ -261,6 +261,7 @@ window.fetch = async (url, args) => {
         const x = state.quality.checks.find((x) => x.record.id === a.id);
         x.record.answers = structuredClone(a.answers);
         x.record.status = a.complete ? "completed" : "draft";
+        x.record.completed_at = a.complete ? "2026-10-23T18:00:00Z" : null;
       }
       if (p.p_action === "document")
         state.quality.documents.push({
@@ -383,3 +384,35 @@ window.__remount = () => {
   app.render(<Portal />);
 };
 window.__render();
+
+// Mixed server states for checklist-priority regression coverage.
+const baseChecklists = structuredClone(state.checklists);
+window.__priorityFixture = () => {
+  state.quality.scopes.push({ id: "unit2", title: "Demoparken 103 · H0201" });
+  const own = (id, title, answers, status = "draft", scope_id = "unit1") => ({
+    scope_id, record: { id, status, answers, completed_at: status === "completed" ? "2026-10-23T18:00:00Z" : null,
+      definition: { title, points: [{ id: "p1", title: "Servant kontrollert", fields: [] }] } },
+  });
+  state.quality.checks = [
+    own("done", "Ferdig UE", { p1: { status: "OK" } }, "completed"),
+    own("new", "Neste UE", {}),
+    own("answer", "Pågående UE", { p1: { status: "Avvik" } }),
+    own("comment", "Kommentar UE", { p1: { comment: "Lagret merknad" } }),
+    own("field", "Måling UE", { p1: { values: { pressure: 0 } } }, "draft", "unit2"),
+    own("blank", "Tom UE", { p1: { status: "", comment: " ", values: {}, documents: [] } }),
+    own("document", "Vedlegg UE", { p1: { documents: ["doc-id"] } }),
+  ];
+  state.checklists = Array.from({ length: 45 }, (_, i) => ({ ...baseChecklists[0], id: `done${i}`, title: `Ferdig prosjekt ${i}`, completed_at: "2026-10-23T18:00:00Z" }));
+  state.checklists.push(
+    { ...baseChecklists[0], id: "shared", title: "Neste prosjekt", status: "draft", points: [{ id: "p1", title: "Kontroll", status: null }] },
+    { ...baseChecklists[0], id: "shared", scope_id: "unit2", title: "Pågående prosjekt", status: "draft", address: "Demoparken 103" },
+  );
+};
+window.__priorityReadback = () => structuredClone({ checks: state.quality.checks, shared: state.checklists });
+window.__resetPriority = () => {
+  state.quality = { scopes: state.quality.scopes.slice(0, 1), checks: [], documents: [] };
+  state.qualityRevision = 0;
+  state.checklists = structuredClone(baseChecklists);
+  window.__calls = [];
+  window.__receipts = {};
+};

@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import Dialog from "./BoligEditorDialog.jsx";
+import ChecklistGroups, { partnerChecklistKey } from "./BoligPartnerChecklistGroups.jsx";
 import ChecklistFields from "../checklist/ChecklistFields.jsx";
 import { invalidateFieldConfirmations } from "../checklist/checklistFields.mjs";
 import {
@@ -18,10 +19,13 @@ export default function PartnerQuality({
   run,
   busy,
   load,
+  query = "",
 }) {
   // Keep the file input mounted while its native picker owns focus. Previous
   // content stays hidden and every server action still requires live authority.
   const lastData = useRef(null);
+  const checklistList = useRef(null);
+  const [savedCheck, setSavedCheck] = useState(null);
   if (liveData) lastData.current = liveData;
   const data = liveData || lastData.current;
   const key = `expo.bolig-partner-quality.v1:${token}`;
@@ -87,6 +91,19 @@ export default function PartnerQuality({
   const check = quality.checks.find(
     (x) => x.record.id === draft?.id && x.scope_id === draft?.scope_id,
   );
+  useEffect(() => {
+    if (!savedCheck || !liveData) return;
+    const saved = quality.checks.find((item) => partnerChecklistKey(item) === savedCheck);
+    if (!saved) return;
+    const cards = [...(checklistList.current?.querySelectorAll("article[data-check-key]") || [])];
+    const next = saved.record.status === "completed"
+      ? cards.find((card) => !card.hidden)
+      : cards.find((card) => card.dataset.checkKey === savedCheck && !card.hidden);
+    const destination = next?.querySelector("button") || checklistList.current?.querySelector("button");
+    destination?.focus({ preventScroll: true });
+    destination?.scrollIntoView({ block: "nearest" });
+    setSavedCheck(null);
+  }, [savedCheck, liveData, quality.checks]);
   const command = (action, payload, onDone) =>
     run(
       () => partnerQualityRpc(token, action, payload),
@@ -183,6 +200,7 @@ export default function PartnerQuality({
     command("check_save", p, () => {
       saveDraft(null);
       setOpen(false);
+      setSavedCheck(`${p.scope_id}:${p.id}`);
       setNotice(
         p.complete
           ? "Sjekklisten er fullført og lagret hos prosjektet."
@@ -375,24 +393,22 @@ export default function PartnerQuality({
             ))}
         </details>
       )}
-      {quality.checks.map((item) => (
-        <article className="bolig-partner-item" key={item.record.id}>
+      <ChecklistGroups
+        title="Mine utfyllinger"
+        listRef={checklistList}
+        items={quality.checks.filter((item) =>
+          `${item.record.definition.title} ${quality.scopes.find((scope) => scope.id === item.scope_id)?.title || ""}`
+            .toLowerCase().includes(query.toLowerCase()),
+        )}
+        renderItem={(item) => <>
           <h3>{item.record.definition.title}</h3>
-          <p>
-            {quality.scopes.find((x) => x.id === item.scope_id)?.title} ·{" "}
-            {item.record.status === "completed" ? "Fullført" : "Under arbeid"}
-          </p>
-          <button
-            type="button"
-            onClick={() => edit(item)}
-            disabled={busy || working}
-          >
-            {item.record.status === "completed" || !write
-              ? "Se utfylling"
-              : "Fyll ut sjekkliste"}
+          <p>{quality.scopes.find((scope) => scope.id === item.scope_id)?.title}</p>
+          <p>{item.record.definition.points.filter((point) => item.record.answers?.[point.id]?.status).length} av {item.record.definition.points.length} besvart</p>
+          <button type="button" onClick={() => edit(item)} disabled={busy || working}>
+            {item.record.status === "completed" || !write ? "Se utfylling" : "Fyll ut sjekkliste"}
           </button>
-        </article>
-      ))}
+        </>}
+      />
       {write && (
         <details
           open={expanded.upload}
