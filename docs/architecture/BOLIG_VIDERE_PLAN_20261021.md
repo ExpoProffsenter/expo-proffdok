@@ -1,5 +1,15 @@
 # Boligprosjekter – arbeidsflate og videre produktkrav
 
+## Ønskeliste: kobling til KS/HMS og Min side – 24. oktober 2026
+
+Kenneth ba om å registrere følgende som senere arbeid. **Kun ønskeliste – ikke implementert eller godkjent som detaljert løsningsvalg.**
+
+- Koble Boligprosjekter til appens eksisterende SJA, RUH og relevante øvrige KS/HMS-funksjoner. Kartlegg eksisterende prosjekt-/bygg-/boligkoblinger før løsning velges, og gjenbruk gjeldende funksjoner, data og tilgangskontroll.
+- Koble relevante oppgaver og oppfølginger fra Boligprosjekter til **Mine oppgaver på Min side**. Avklar hvilke oppgavetyper som skal vises, hvem som eier dem, og hvordan status, frister og åpning av riktig arbeidsflate skal følge eksisterende oppgaveflyt. Unngå dobbeltregistrering.
+- Endelig omfang av «osv.», koblingsnivå og regler for opprettelse, varsling og fullføring avklares med Kenneth før funksjonsendring. Detaljene skal ikke gjettes under nattarbeid.
+
+Kenneth meldte at knappen **Rediger bilde og plassering** nå er OK. Dette gjelder knappeteksten og brukerflyten ved bilderedigering, ikke samlet Bolig TEST OK, produksjonsmerge eller e-postaktivering.
+
 ## Avklart 24. oktober 2026
 
 Kenneth valgte bildeplassering med et forslag som kan flyttes. Egne fasader, flere plantegninger per bolig, justerbare felt og kontrollert versjonshistorikk er samlet i pakken beskrevet i `docs/qa/BOLIG_EGNE_BILDER_20261024.md`. JPG/PNG/WebP; PDF må eksporteres som bilde. Nyeste QA/handoff går foran eldre «gjenstår»-setninger.
