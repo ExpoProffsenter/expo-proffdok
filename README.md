@@ -1119,3 +1119,7 @@ Tilbud: versjonskonflikter i accept_sales_offer_quantities returnerer PT409 i st
 Stabilitet 22.10.2026: Forretningskonflikter bruker PT409 (HTTP 409). CI og build blokkerer nye manuelt hevede transaksjonsfeilkoder. Migrasjonen er avgrenset til 46 kontrollerte funksjoner, med uendrede tilgangssjekker, låser, utkast og rettigheter. Se docs/qa/RPC_CONFLICT_HARDENING_20261022.md.
 
 Boligprosjekter (Preview 23.10.2026): «Fremdrift og varsler» følger planlagt og faktisk arbeid per bolig/rom, ansvarlig og avhengigheter. Påkrevde åpne aktiviteter sperrer ferdigstilling. Beboervarsler må gjennomgås og godkjennes på nøyaktig gjeldende plan/kontakt før publisering. Egen e-postkø er implementert, men automatisk publisering og e-post er deaktivert i testfasen. Se docs/qa/BOLIG_FREMDRIFT_20261023.md.
+
+### Boligprosjekter – beboervarsler 23.10.2026
+
+«Nytt beboervarsel» samler målgruppe, melding, kontakt, forhåndsvisning, PDF og digital publisering. Velg prosjekt, bygg, oppgang eller boliger. Ferdig papir krever ikke beboer-e-post. Ingen separat godkjenningsrunde; digital publisering binder innhold og gjeldende mottakere i én idempotent transaksjon. Generelle varsler bruker eksisterende varseltabell/portal/worker uten kunstige Gantt-aktiviteter. Se `docs/qa/BOLIG_BEBOERVARSEL_FORENKLING_20261023.md`. Bare feature-Preview/Sandbox frem til egen Bolig TEST OK.

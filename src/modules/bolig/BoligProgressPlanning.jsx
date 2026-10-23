@@ -201,7 +201,7 @@ export default function BoligProgressPlanning({
   const reviewInfo = (
     <p className="bolig-progress-paused">
       Kontroller datoene før lagring. Beboervarsler som berøres, krever ny
-      utgave og godkjenning. Denne handlingen publiserer ingen varsler.
+      utgave før ny publisering. Denne handlingen publiserer ingen varsler.
     </p>
   );
   return (

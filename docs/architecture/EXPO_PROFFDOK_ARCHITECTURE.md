@@ -1738,3 +1738,9 @@ Streng intern godkjenning bruker fortsatt sitt opprinnelige kontrollgrunnlag. Pr
 All ny overtakelsesregistrering bruker samme vurdering. Den eldre interne snarveien åpner ny dialog; den tidligere completion-RPC-handlingen kan ikke skrive nye overtakelser. Historiske registreringer bevares. Sandbox-migrasjon `20261023132013` lukker denne alternative inngangen.
 
 Bolig-veiledningens knapp/dialog heter «A–Å-veiledning for Boligprosjekter». Verktøylinjen ved hjelpen viser ikke rollemerket for aktiverte brukere; manglende firma-/brukertilgang vises fortsatt. Dette er en presentasjonsendring uten endring av tilgangskontroll eller prosjektbygger.
+
+### Bolig – samlet beboervarsel
+
+`BoligResidentNoticeComposer` bruker eksisterende `bolig_progress`-gateway. `resident_notice` oppretter boligavgrensede rader i eksisterende `progress_notices`, samlet gjennom `group_id`. Validering, revisjon, immutable utgaver, mottakergrunnlag og forsøkskvittering utføres atomisk. Oppdatering av et utkast erstatter bare forrige aktive utgave; papir/utkast tilbakekaller aldri en tidligere digital utgave. Ingen kunstige aktiviteter i `progress_tasks`. Tidligere aktivitetsvarsler beholder basis-/tilgangskontrakten.
+
+Papir og digital publisering har separate resultattilstander i samme vindu. E-post-/portal-projeksjon gjenbruker varslets effektive bolig/arbeid/datoer; eksisterende transportbryter, mottakerkontroll, arbeidsgivertilgang og service-only worker beholdes. Kontaktbytte stopper nye og gamle digitale varsler, også A→B→A. Firmaprofilen hentes i autorisert firmascope; e-post får et minimalt firmabilde, PDF henter aktuell logo. Nedlasting leser hele varselutvalget på nytt etter lasting av PDF/logo.

@@ -42,23 +42,27 @@ export function BoligHelp() {
           «Angre» gjelder ulagrede endringer. Se over og lagre datoendringene.
           «Flytt datoer samlet» flytter åpne aktiviteter i valgte boliger.
           Påbegynt og utført arbeid avklares enkeltvis. En avhengighet som
-          brytes, stopper hele lagringen. Beboervarsler godkjennes separat etter
-          endret plan.
+          brytes, stopper hele lagringen. Varsler som berøres av datoendringen,
+          må oppdateres før ny publisering.
         </p>
         <p>
           Åpne «Fremdrift og varsler» i prosjektet eller boligen. Velg «Ny
           aktivitet», legg inn bolig, rom, datoer og ansvarlig, og velg «Lagre
           endringer». «Må utføres etter» knytter arbeidet til en annen aktivitet
           i samme bolig. Registrer faktisk start og slutt når arbeidet er gjort.
-          Påkrevde aktiviteter må være utført før intern sluttkontroll kan godkjennes.
-          Faktisk overtakelse vurderes separat av prosjektleder.
+          Påkrevde aktiviteter må være utført før intern sluttkontroll kan
+          godkjennes. Faktisk overtakelse vurderes separat av prosjektleder.
         </p>
         <p>
-          «Klargjør beboervarsel» lager et eget utkast. Velg «Se over varselet»,
-          kontroller mottaker, datoer og tekst, og godkjenn. Publiser manuelt i
-          portalen, eller bruk valgt dato når automatisk varsling er aktivert.
-          Endret plan, kontakt eller innhold krever en ny varselutgave. «Trekk
-          tilbake» stopper videre visning og ventende utsending; en allerede
+          Velg «Nytt beboervarsel» under «Fremdrift og varsler». Velg hele
+          prosjektet, et bygg, en oppgang eller bestemte boliger. Skriv
+          meldingen, datoene og prosjektkontakten. Forhåndsvisningen viser
+          firmalogo og innhold. «Lagre utkast» sender ingenting. «Last ned PDF /
+          oppslag» lager en ferdig papirutgave uten krav om beboerens e-post.
+          «Publiser til beboerne» publiserer eller planlegger varslet og
+          bestiller e-post når utsending er aktivert. Alt gjøres i samme vindu.
+          Endret kontakt eller aktivitetsgrunnlag krever en oppdatert utgave.
+          «Trekk tilbake» stopper visning og ventende utsending; en allerede
           sendt e-post kan ikke trekkes tilbake.
         </p>
         <p>
@@ -211,8 +215,8 @@ export function BoligHelp() {
           sjekkpunktene. Lagre underveis. Velg «Fullfør kontrollen ved lagring»
           når listen er ferdig. Merk listen som påkrevd hvis den skal inngå i
           sluttkravene. Valgfrie lister gir påminnelser. Kritiske avvik stopper
-          intern sluttgodkjenning. Mindre restpunkter følger med som «Klar med restpunkter»
-          og tas med i sluttdokumentasjonen.
+          intern sluttgodkjenning. Mindre restpunkter følger med som «Klar med
+          restpunkter» og tas med i sluttdokumentasjonen.
         </li>
         <li>
           Velg «Fordel sjekklister» for å hente publiserte firmamaler fra
@@ -301,8 +305,8 @@ export function BoligHelp() {
           bekreftelse og velg «Bekreft og oppdater leveransen». Da oppdateres
           mottaksgrunnlag og FDV, mens tidligere mottak følger riktig vare.
           Originalbestillingen beholdes under historikk. Uavklart oppfølging
-          vises som et åpent forhold ved overtakelsesvurderingen og stopper intern
-          sluttgodkjenning. Beboerens svar alene sender ingen bestilling.
+          vises som et åpent forhold ved overtakelsesvurderingen og stopper
+          intern sluttgodkjenning. Beboerens svar alene sender ingen bestilling.
         </li>
         <li>
           «Gjeldende boligavtale» viser én hovedavtale. Tidligere utgaver ligger
@@ -320,28 +324,28 @@ export function BoligHelp() {
           gjennomgang» viser lagrede kontroller, avvik, filer og FDV. Bekreft
           gjennomgangen og legg til notat ved behov. De faste kontrollområdene
           gjennomgås samlet; «Vis kontrollpunkter» åpner detaljene. Egne ekstra
-          kontrollpunkter følges opp hver for seg. «Godkjenn intern sluttkontroll»
-          krever at påkrevde forhold og kritiske avvik er avklart. Mindre
-          restpunkter gir «Klar med restpunkter». Dette gjelder intern sluttkontroll.
-          «Vurder åpne forhold og overtakelse» samler mangler, aktiviteter,
-          godkjenning og ubehandlede meldinger. Prosjektleder vurderer hvert forhold
-          som hinder eller videre oppfølging, med begrunnelse og ansvarlig.
-          Kritiske forhold bekreftes enkeltvis. «Registrer overtagelse» viser
-          til en allerede gjennomført protokoll. Dette er intern registrering,
-          ikke en digital signatur.
+          kontrollpunkter følges opp hver for seg. «Godkjenn intern
+          sluttkontroll» krever at påkrevde forhold og kritiske avvik er
+          avklart. Mindre restpunkter gir «Klar med restpunkter». Dette gjelder
+          intern sluttkontroll. «Vurder åpne forhold og overtakelse» samler
+          mangler, aktiviteter, godkjenning og ubehandlede meldinger.
+          Prosjektleder vurderer hvert forhold som hinder eller videre
+          oppfølging, med begrunnelse og ansvarlig. Kritiske forhold bekreftes
+          enkeltvis. «Registrer overtagelse» viser til en allerede gjennomført
+          protokoll. Dette er intern registrering, ikke en digital signatur.
         </li>
         <li>
           «Ferdigstilling av bygg» og «Ferdigstilling av prosjekt» samler
           statusen. Avklar også egne fellesarbeider, eller velg «Ingen egne
           fellesarbeider». Notat er valgfritt. Ferdige boliger alene er ikke
           nok. Endret arbeids- eller dokumentgrunnlag krever ny godkjenning, men
-          tidligere kontrollbeskrivelser beholdes. En faktisk overtakelse registrert
-          gjennom prosjektleders vurdering beholdes også ved senere endringer.
-          Åpne forhold skal følges opp videre. Registrering av underliggende
-          overtagelser krever ikke ny gjennomgang av uendret arbeid. «Gjenåpne
-          med begrunnelse» beholder tidligere godkjenninger og overtagelser i
-          historikken. Usendt kontrollbeskrivelse beholdes når du lukker
-          vinduet.
+          tidligere kontrollbeskrivelser beholdes. En faktisk overtakelse
+          registrert gjennom prosjektleders vurdering beholdes også ved senere
+          endringer. Åpne forhold skal følges opp videre. Registrering av
+          underliggende overtagelser krever ikke ny gjennomgang av uendret
+          arbeid. «Gjenåpne med begrunnelse» beholder tidligere godkjenninger og
+          overtagelser i historikken. Usendt kontrollbeskrivelse beholdes når du
+          lukker vinduet.
         </li>
         <li>
           Vent på «Lagret i firmaet». Andre med tilgang kan hente samme

@@ -126,6 +126,44 @@ class ExportPDF {
     return doc;
   }
 }
+const groupPath = "/tmp/bolig-composer-final-group.pdf";
+const groupNotice = {
+  ...notice,
+  task_id: null,
+  group_id: "group",
+  paper_ready: true,
+  valid: false,
+  audience_label: "Oppgang A – Demoparken 101",
+};
+const logo =
+  "data:image/png;base64," +
+  fs
+    .readFileSync("public/brands/ringside-rorleggerbedrift.png")
+    .toString("base64");
+const groupPdf = buildResidentNoticePdf(JsPDF, {
+  project: "DEMO Boligpilot",
+  notice: groupNotice,
+  contact,
+  profile: { companyName: "Ringside AS" },
+  logo,
+});
+fs.writeFileSync(groupPath, Buffer.from(groupPdf.output("arraybuffer")));
+const groupText = execFileSync("pdftotext", [groupPath, "-"], {
+  encoding: "utf8",
+});
+eq(
+  groupText.includes("UTKAST"),
+  false,
+  "Deliberate paper action creates final notice without digital approval",
+);
+eq(groupText.includes("Ringside AS"), true, "Company identity in final paper");
+eq(groupText.includes("Oppgang A"), true, "Whole entrance shown");
+eq(
+  groupText.includes("resident-secret"),
+  false,
+  "Final group paper contains no resident recipient",
+);
+eq(groupPdf.getNumberOfPages(), 1, "Branded group notice fits A4");
 const args = {
   context,
   root: { id: "root", title: "QA" },
@@ -133,6 +171,7 @@ const args = {
   contact,
   isCurrent: () => current,
   loadPdf: async () => ({ jsPDF: ExportPDF }),
+  loadProfile: async () => ({ companyId: "firm", companyName: "QA Bedrift" }),
 };
 await downloadResidentNotice(args);
 eq(saved, 1, "Fresh authorized data downloads once");
@@ -164,6 +203,48 @@ deny = true;
 await assert.rejects(() => downloadResidentNotice(args), /Tilgang tilbakekalt/);
 checks++;
 eq(saved, 1, "Revoked access fences download");
+current = true;
+deny = false;
+stale = false;
+const member2 = {
+  ...groupNotice,
+  id: "n2",
+  basis: "b2",
+  unit_number: "H0202",
+  address: "Demoparken 101",
+  current: true,
+};
+registerAppSupabaseClient({
+  rpc: async () => ({
+    data: {
+      context,
+      root_id: "root",
+      unit_id: null,
+      tasks: [],
+      notices: [{ ...groupNotice, current: true }, member2],
+    },
+  }),
+});
+await downloadResidentNotice({
+  ...args,
+  notice: { ...groupNotice, current: true },
+  notices: [{ ...groupNotice, current: true }, member2],
+});
+eq(saved, 2, "General notice PDF validates full audience without fake task");
+await assert.rejects(
+  () =>
+    downloadResidentNotice({
+      ...args,
+      notice: { ...groupNotice, current: true },
+      notices: [
+        { ...groupNotice, current: true },
+        { ...member2, basis: "stale" },
+      ],
+    }),
+  /endret/,
+);
+checks++;
+eq(saved, 2, "Changed member prevents download of entire common notice");
 console.log(
   `PASS resident notice PDF: ${checks} assertions; actual text/privacy/pagination/draft, fresh read, changed plan, scope and revoked access. ${path}`,
 );

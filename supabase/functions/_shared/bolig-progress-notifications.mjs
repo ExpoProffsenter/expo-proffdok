@@ -17,7 +17,9 @@ const esc = (s) =>
   );
 export function progressMail(job) {
   if (
-    !["owner", "resident", "manager_message", "resident_message"].includes(job.kind) ||
+    !["owner", "resident", "manager_message", "resident_message"].includes(
+      job.kind,
+    ) ||
     !uuid.test(job.id) ||
     !uuid.test(job.attempt) ||
     typeof job.to !== "string" ||
@@ -26,12 +28,36 @@ export function progressMail(job) {
   )
     throw Error("invalid_job");
   if (["manager_message", "resident_message"].includes(job.kind)) {
-    const url=new URL(job.url);
-    if(!["https://expo-proffdok.app","https://expo-proffdok-git-fase45b-boligprosjekter-found-0509d8-ringside.vercel.app","https://expo-proffdok-git-demo-ringside.vercel.app"].includes(url.origin)||url.username||url.password||url.search)throw Error("invalid_dialogue_link");
-    if(job.kind==="resident_message"?(url.pathname!=="/bolig-kunde.html"||!/^#portal=[a-f0-9]{64}$/.test(url.hash)):(url.pathname!=="/"||url.hash))throw Error("invalid_dialogue_link");
-    const title=job.kind==="manager_message"?"Ny melding fra en beboer":"Prosjektleder har svart deg";
-    const text=`${title}. Åpne ProffDok for å lese og følge opp meldingen.\n\n${job.url}\n\nDenne e-posten inneholder ikke meldingsteksten. Lenken til beboerportalen er personlig.`;
-    return {to:[job.to],subject:`Expo ProffDok – ${title.toLocaleLowerCase('nb')}`,text,html:`<!doctype html><html lang="nb"><body style="font-family:Arial;background:#edf4f4;padding:24px;color:#173f48"><main style="max-width:620px;margin:auto;background:white;padding:28px;border-radius:16px"><h1>EXPO ProffDok</h1><h2>${esc(title)}</h2><p>Åpne meldingen for å lese og følge opp.</p><p><a href="${esc(job.url)}" style="display:inline-block;padding:14px 20px;background:#204f5d;color:white;border-radius:8px">Åpne ProffDok</a></p><p>Portallenken er personlig. Ikke videresend den.</p></main></body></html>`};
+    const url = new URL(job.url);
+    if (
+      ![
+        "https://expo-proffdok.app",
+        "https://expo-proffdok-git-fase45b-boligprosjekter-found-0509d8-ringside.vercel.app",
+        "https://expo-proffdok-git-demo-ringside.vercel.app",
+      ].includes(url.origin) ||
+      url.username ||
+      url.password ||
+      url.search
+    )
+      throw Error("invalid_dialogue_link");
+    if (
+      job.kind === "resident_message"
+        ? url.pathname !== "/bolig-kunde.html" ||
+          !/^#portal=[a-f0-9]{64}$/.test(url.hash)
+        : url.pathname !== "/" || url.hash
+    )
+      throw Error("invalid_dialogue_link");
+    const title =
+      job.kind === "manager_message"
+        ? "Ny melding fra en beboer"
+        : "Prosjektleder har svart deg";
+    const text = `${title}. Åpne ProffDok for å lese og følge opp meldingen.\n\n${job.url}\n\nDenne e-posten inneholder ikke meldingsteksten. Lenken til beboerportalen er personlig.`;
+    return {
+      to: [job.to],
+      subject: `Expo ProffDok – ${title.toLocaleLowerCase("nb")}`,
+      text,
+      html: `<!doctype html><html lang="nb"><body style="font-family:Arial;background:#edf4f4;padding:24px;color:#173f48"><main style="max-width:620px;margin:auto;background:white;padding:28px;border-radius:16px"><h1>EXPO ProffDok</h1><h2>${esc(title)}</h2><p>Åpne meldingen for å lese og følge opp.</p><p><a href="${esc(job.url)}" style="display:inline-block;padding:14px 20px;background:#204f5d;color:white;border-radius:8px">Åpne ProffDok</a></p><p>Portallenken er personlig. Ikke videresend den.</p></main></body></html>`,
+    };
   }
   const resident = job.kind === "resident";
   if (
@@ -50,11 +76,28 @@ export function progressMail(job) {
   const text = resident
     ? `${job.title}\n\n${job.body}\n\nPlanlagt arbeid: ${job.start} – ${job.end}.\n\nÅpne din personlige beboerlenke og velg Meldinger for å se gjeldende beskjed. Kontakt prosjektleder hvis du har spørsmål. Dette er informasjon om planlagt arbeid, ikke en avtaleaksept.`
     : "Du har en åpen aktivitet i Boligprosjekter. Åpne ProffDok, velg riktig firma og prosjekt og gå til Fremdrift og varsler. Kontroller planlagt sluttdato og registrer faktisk utførelse. Denne e-posten inneholder ikke beboeropplysninger.";
+  const brandName =
+    typeof job.brand?.companyName === "string"
+      ? job.brand.companyName.slice(0, 160)
+      : "Expo ProffDok";
+  let logo = "";
+  if (resident && job.brand?.logoUrl) {
+    try {
+      const u = new URL(job.brand.logoUrl, "https://expo-proffdok.app");
+      if (u.protocol === "https:" && !u.username && !u.password)
+        logo = `<img src="${esc(u.href)}" alt="${esc(brandName)}" style="max-width:180px;max-height:65px;display:block;margin-bottom:12px"/>`;
+    } catch {}
+  }
+  const residentHtml = `<!doctype html><html lang="nb"><body style="margin:0;background:#f2f5f2;font-family:Arial;color:#183b40"><main style="max-width:660px;margin:24px auto;background:white;border:1px solid #d7e1da;border-radius:18px;overflow:hidden"><header style="padding:28px;background:#f1f6f1;border-top:5px solid #155c51">${logo}<strong>${esc(brandName)}</strong><p style="font-size:11px;letter-spacing:1px">INFORMASJON TIL BEBOERNE</p></header><section style="padding:28px"><h1 style="font-size:27px">${esc(job.title)}</h1>${job.audience ? `<p>${esc(job.audience)}</p>` : ""}<p style="background:#e6efe7;border-radius:10px;padding:14px;color:#155c51">${esc(job.start)} – ${esc(job.end)}</p><p style="white-space:pre-wrap;line-height:1.8">${esc(job.body)}</p><div style="border-top:1px solid #d7e1da;padding-top:18px"><strong>Spørsmål? Ta kontakt</strong><p>${esc(job.contact?.name || "Prosjektleder")}<br/>${esc([job.contact?.phone, job.contact?.email].filter(Boolean).join(" · "))}</p><p style="font-size:12px;color:#658074">Du finner gjeldende varsler under Meldinger i din personlige beboerportal.</p></div></section></main></body></html>`;
   return {
     to: [job.to],
     subject,
-    text,
-    html: `<!doctype html><html lang="nb"><body style="margin:0;background:#eef5f5;font-family:Arial;color:#183e46"><main style="max-width:660px;margin:24px auto;background:white;border:1px solid #ccdfe1;border-radius:16px;overflow:hidden"><header style="padding:24px;background:#153e46;color:white;font-size:23px;font-weight:bold">EXPO ProffDok</header><section style="padding:24px"><h1 style="font-size:22px">${resident ? "Planlagt arbeid" : "Din oppfølging"}</h1><p style="white-space:pre-wrap;line-height:1.7">${esc(text)}</p></section></main></body></html>`,
+    text: resident
+      ? `${brandName}\n${text}\n\n${[job.contact?.name, job.contact?.phone, job.contact?.email].filter(Boolean).join(" | ")}`
+      : text,
+    html: resident
+      ? residentHtml
+      : `<!doctype html><html lang="nb"><body style="margin:0;background:#eef5f5;font-family:Arial;color:#183e46"><main style="max-width:660px;margin:24px auto;background:white;border:1px solid #ccdfe1;border-radius:16px;overflow:hidden"><header style="padding:24px;background:#153e46;color:white;font-size:23px;font-weight:bold">EXPO ProffDok</header><section style="padding:24px"><h1 style="font-size:22px">${resident ? "Planlagt arbeid" : "Din oppfølging"}</h1><p style="white-space:pre-wrap;line-height:1.7">${esc(text)}</p></section></main></body></html>`,
   };
 }
 export function createProgressNotifications({

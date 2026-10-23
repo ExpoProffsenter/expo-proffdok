@@ -71,3 +71,7 @@ Pilot er opprettet: 80821082-c64a-41a9-91cb-db2aa049ed2e. Se docs/qa/BOLIG_PILOT
 Pilot avdekket og rettet kontakt-/avtaleslenkegrense samt ugyldig alias i bestillingsopprettelse. Ingen produksjonsendring.
 Cloud-smoke er PASS med alle syntetiske data rullet tilbake; 0 restprosjekter. Eksisterende fremdrift 24 Chromium PASS. Sikkerhetsrådgiver har samme kategorier; kun privat RLS deny-all tabell 151→152. Sandbox mail AV, 0 ventende jobber og én idempotent pilot.
 Neste: publiser branch med GitHub create_tree/commit/update_ref, kontroller CI og READY Preview på eksakt ny SHA, oppdater denne handoffen og filhistorikken. Ingen merge uten Kenneths egen TEST OK.
+
+## Nyeste pakke: beboervarsler uten separat godkjenningsrunde
+
+Se **docs/qa/BOLIG_BEBOERVARSEL_FORENKLING_20261023.md** før videre arbeid. Kenneth ønsket Nytt beboervarsel på et tydelig sted, prosjekt/bygg/oppgang/boligutvalg, logo/design og utkast/papir/digital publisering i samme vindu. Implementert og testet lokalt, installert bare i Sandbox (20261023155220, worker v3). 1154 DB, 34 fremdrift/composer browser, 28 PDF, 30 plan, 34 overtakelse, 16 restpunkt og actual foundation React PASS. Full critical build og faktisk rollback-smoke PASS. Mail AV, pending/sending 0. Publisert commit/CI-status må leses fra siste PR #278. Ikke merge uten egen Bolig TEST OK. Videre forenklingskandidater er kartlagt i QA-notatet, særlig boligavtalenes Lagre→Godkjenn→Lag lenke; ikke implementert nå.

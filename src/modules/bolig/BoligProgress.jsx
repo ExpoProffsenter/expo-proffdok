@@ -23,7 +23,7 @@ import {
   PROGRESS_EVENT,
 } from "./boligProgressClient.js";
 import Planning from "./BoligProgressPlanning.jsx";
-import NoticePrint from "./BoligNoticePrint.jsx";
+import NoticeComposer from "./BoligResidentNoticeComposer.jsx";
 const COMPLETION_EVENT = "expo-proffdok-bolig-completion";
 const empty = { editor: null, notice: null, pending: null };
 const formTask = (unit, owner) => ({
@@ -52,8 +52,7 @@ export default function BoligProgress({ context, root, unit = null }) {
     [filter, setFilter] = useState("open"),
     [query, setQuery] = useState(""),
     [page, setPage] = useState(0),
-    [review, setReview] = useState(null),
-    [confirmed, setConfirmed] = useState(false);
+    [review, setReview] = useState(null);
   const alive = useRef(false),
     epoch = useRef(0),
     operating = useRef(false),
@@ -168,7 +167,7 @@ export default function BoligProgress({ context, root, unit = null }) {
       });
       setData(next);
       setReview(null);
-      setConfirmed(false);
+
       setNotice(
         attempt.action === "publish"
           ? "Varselet er publisert i beboerportalen. E-post følger egen utsendingsstatus."
@@ -229,9 +228,28 @@ export default function BoligProgress({ context, root, unit = null }) {
     nd = draft.notice;
   const patch = (fields) =>
     update({ editor: { ...latest.current.editor, ...fields } });
-  const notices = data.notices.filter((n) => !n.withdrawn);
-  const mailStatus = (n) =>
-    !data.mail_enabled
+  const allNotices = data.notices.filter((n) => !n.withdrawn);
+  const notices = allNotices.filter(
+    (n, i, a) =>
+      !n.group_id || a.findIndex((x) => x.group_id === n.group_id) === i,
+  );
+  const mailStatus = (n) => {
+    if (n.group_id && !n.digital)
+      return n.paper_ready
+        ? "PDF / oppslag – ingen digital utsending"
+        : "Utkast – ingen utsending";
+    if (n.group_id && data.mail_enabled) {
+      const ids = allNotices
+        .filter((x) => x.group_id === n.group_id)
+        .map((x) => x.id);
+      const jobs = (data.deliveries || []).filter(
+        (d) => ids.includes(d.notice_id) && d.kind === "resident",
+      );
+      const count = (status) =>
+        jobs.filter((d) => status.includes(d.status)).length;
+      return `E-post: ${count(["accepted"])} akseptert av e-posttjenesten · ${count(["pending", "sending"])} venter · ${count(["failed", "suppressed"])} krever oppfølging`;
+    }
+    return !data.mail_enabled
       ? "E-post satt på pause"
       : {
           accepted: "E-post akseptert av e-posttjenesten",
@@ -240,15 +258,18 @@ export default function BoligProgress({ context, root, unit = null }) {
           suppressed: "Utsending stoppet etter ny kontroll",
           failed: "Utsending krever oppfølging",
         }[(data.deliveries || []).find((d) => d.notice_id === n.id)?.status] ||
-        "E-post er ikke klargjort ennå";
+          "E-post er ikke klargjort ennå";
+  };
   const cardStatus = (n) =>
     !n.current
-      ? "Ny godkjenning kreves"
+      ? "Grunnlaget er endret"
       : n.published_at
         ? "Publisert i portal"
         : n.valid
-          ? "Godkjent"
-          : "Utkast";
+          ? "Planlagt for publisering"
+          : n.paper_ready
+            ? "Ferdig PDF / oppslag"
+            : "Utkast";
   return (
     <section className="bolig-progress" aria-label="Fremdrift og varsler">
       <div className="bolig-progress-heading">
@@ -260,6 +281,16 @@ export default function BoligProgress({ context, root, unit = null }) {
             utført, og gjennomgå varselet før beboeren får se det.
           </p>
         </div>
+        {writable && (
+          <button
+            className="primary"
+            type="button"
+            disabled={disabled}
+            onClick={() => setReview({ kind: "composer" })}
+          >
+            <Plus size={16} /> Nytt beboervarsel
+          </button>
+        )}
         <button type="button" onClick={load} disabled={busy}>
           Oppdater status
         </button>
@@ -290,8 +321,8 @@ export default function BoligProgress({ context, root, unit = null }) {
       {!data.mail_enabled && (
         <p className="bolig-progress-paused">
           <TriangleAlert size={18} />
-          Automatisk publisering og e-post er satt på pause. Du kan godkjenne og
-          publisere varsler i portalen manuelt. Ingen e-post sendes i denne
+          E-post er satt på pause i testmiljøet. Du kan lage PDF/oppslag og
+          publisere varsler i beboerportalen. Ingen e-post sendes i denne
           testfasen.
         </p>
       )}
@@ -489,8 +520,8 @@ export default function BoligProgress({ context, root, unit = null }) {
                 : "Start med første aktivitet"}
             </h4>
             <p>
-              Legg til arbeid, datoer og ansvarlig. Beboervarsel lages og
-              godkjennes separat.
+              Legg til arbeid, datoer og ansvarlig. Velg «Nytt beboervarsel» for
+              å varsle én bolig eller et større utvalg.
             </p>
           </div>
         )}
@@ -516,9 +547,17 @@ export default function BoligProgress({ context, root, unit = null }) {
           Beboervarsler <span>{notices.length}</span>
         </summary>
         <p>
-          Utkast → gjennomgang → godkjenning → publisering. Endret plan, tekst
-          eller kontakt krever ny gjennomgang.
+          Velg «Nytt beboervarsel». Skriv én melding til prosjektet, et bygg, en
+          oppgang eller valgte boliger. PDF og publisering finnes i samme vindu.
         </p>
+        {writable && (
+          <button
+            disabled={disabled}
+            onClick={() => setReview({ kind: "composer" })}
+          >
+            Nytt beboervarsel
+          </button>
+        )}
         {writable && nd && (
           <button onClick={() => setReview({ kind: "notice" })}>
             Fortsett varselutkast
@@ -528,14 +567,16 @@ export default function BoligProgress({ context, root, unit = null }) {
           <article className="bolig-progress-notice" key={n.id}>
             <div>
               <strong>
-                {n.unit_number} · {n.title}
+                {n.group_id ? n.audience_label : n.unit_number} · {n.title}
               </strong>
               <span>{cardStatus(n)}</span>
             </div>
             <p>{n.body}</p>
             <small>
               Dato for publisering: {date(n.publish_on)} · Mottaker:{" "}
-              {n.recipient || "E-post mangler"}
+              {n.group_id
+                ? `${allNotices.filter((x) => x.group_id === n.group_id).length} boliger`
+                : n.recipient || "E-post mangler"}
             </small>
             <small>{mailStatus(n)}</small>
             {writable && (
@@ -549,11 +590,10 @@ export default function BoligProgress({ context, root, unit = null }) {
                 <button
                   disabled={disabled}
                   onClick={() => {
-                    setConfirmed(false);
                     setReview({ kind: "review", id: n.id });
                   }}
                 >
-                  Se over varselet
+                  Åpne varselet
                 </button>
                 {!n.current && (
                   <button
@@ -575,7 +615,11 @@ export default function BoligProgress({ context, root, unit = null }) {
                 )}
                 <button
                   disabled={disabled}
-                  onClick={() => run("withdraw", { id: n.id })}
+                  onClick={() =>
+                    run(n.group_id ? "notice_group_withdraw" : "withdraw", {
+                      id: n.group_id || n.id,
+                    })
+                  }
                 >
                   Trekk tilbake
                 </button>
@@ -834,64 +878,6 @@ export default function BoligProgress({ context, root, unit = null }) {
           </form>
         </Dialog>
       )}
-      {writable && nd && review?.kind === "notice" && (
-        <Dialog
-          title="Klargjør beboervarsel"
-          busy={busy}
-          onClose={() => setReview(null)}
-          className="bolig-progress-editor"
-        >
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              run("notice", nd);
-            }}
-          >
-            <p>
-              Dette lagrer et utkast. Se over mottaker og datoer før du
-              godkjenner.
-            </p>
-            <label>
-              Melding til beboeren
-              <textarea
-                required
-                minLength={3}
-                maxLength={2000}
-                value={nd.body}
-                disabled={disabled}
-                onChange={(e) =>
-                  update({ notice: { ...nd, body: e.target.value } })
-                }
-              />
-            </label>
-            <label>
-              Dato for publisering
-              <input
-                required
-                type="date"
-                value={nd.publish_on}
-                disabled={disabled}
-                onChange={(e) =>
-                  update({ notice: { ...nd, publish_on: e.target.value } })
-                }
-              />
-            </label>
-            {error && <p role="alert">{error}</p>}
-            <footer>
-              <button
-                disabled={busy}
-                type="button"
-                onClick={() => setReview(null)}
-              >
-                Lukk og behold utkast
-              </button>
-              <button type="submit" className="primary" disabled={disabled}>
-                Lagre varselutkast
-              </button>
-            </footer>
-          </form>
-        </Dialog>
-      )}
       {writable && review?.kind === "archive" && (
         <Dialog
           title="Arkiver aktivitet"
@@ -941,92 +927,28 @@ export default function BoligProgress({ context, root, unit = null }) {
           </form>
         </Dialog>
       )}
-      {writable && review?.kind === "print" && data.notices.some((n) => n.id === review.id) && (
-        <NoticePrint key={scope} context={context} root={root} unit={unit} notice={data.notices.find((n) => n.id === review.id)} onClose={() => setReview(null)} />
-      )}
-      {review?.kind === "review" &&
-        (() => {
-          const n = data.notices.find((x) => x.id === review.id);
-          if (!n) return null;
-          return (
-            <Dialog
-              title="Gjennomgå beboervarsel"
-              busy={busy}
-              onClose={() => setReview(null)}
-              className="bolig-progress-editor"
-            >
-              <div className="bolig-progress-review">
-                <small>{cardStatus(n)}</small>
-                <h3>
-                  {n.unit_number} · {n.title}
-                </h3>
-                <p>
-                  <strong>Mottaker:</strong> {n.recipient || "E-post mangler"}
-                </p>
-                <p>
-                  <strong>Planlagt arbeid:</strong> {date(n.planned_start)} –{" "}
-                  {date(n.planned_end)}
-                </p>
-                <p className="bolig-progress-preview">{n.body}</p>
-                <p>
-                  Publisering {date(n.publish_on)}. Beboeren finner publiserte
-                  varsler under Meldinger i sin personlige portal. E-post er en
-                  egen utsending og er ikke bevis på at meldingen er lest.
-                </p>
-                {!n.current && (
-                  <p role="alert">
-                    Plan eller kontakt er endret. Lag en ny varselutgave.
-                  </p>
-                )}
-                <label className="bolig-progress-check">
-                  <input
-                    type="checkbox"
-                    checked={confirmed}
-                    disabled={disabled}
-                    onChange={(e) => setConfirmed(e.target.checked)}
-                  />
-                  Jeg har kontrollert mottaker, datoer og innhold.
-                </label>
-                {error && <p role="alert">{error}</p>}
-                <footer>
-                  <button disabled={busy} onClick={() => setReview(null)}>
-                    Tilbake
-                  </button>
-                  {!n.valid ? (
-                    <button
-                      className="primary"
-                      disabled={disabled || !confirmed || !n.current}
-                      onClick={() =>
-                        run("approve", {
-                          id: n.id,
-                          basis: n.basis,
-                          reviewed: true,
-                        })
-                      }
-                    >
-                      Godkjenn varselet
-                    </button>
-                  ) : (
-                    <button
-                      className="primary"
-                      disabled={
-                        disabled ||
-                        !confirmed ||
-                        n.publish_on > localToday() ||
-                        !!n.published_at
-                      }
-                      onClick={() =>
-                        run("publish", { id: n.id, reviewed: true })
-                      }
-                    >
-                      Publiser i beboerportalen
-                    </button>
-                  )}
-                </footer>
-              </div>
-            </Dialog>
-          );
-        })()}
+      {writable &&
+        ["composer", "notice", "review", "print"].includes(review?.kind) && (
+          <NoticeComposer
+            key={scope}
+            context={context}
+            root={root}
+            unit={unit}
+            data={data}
+            source={
+              review.id
+                ? data.notices.find((n) => n.id === review.id)
+                : review.kind === "notice"
+                  ? nd
+                  : null
+            }
+            onClose={() => {
+              setReview(null);
+              if (review.kind === "notice") update({ notice: null });
+            }}
+            onSaved={(next) => setData(next)}
+          />
+        )}
     </section>
   );
 }
