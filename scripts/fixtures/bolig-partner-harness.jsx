@@ -53,6 +53,12 @@ let state = {
     partners: [],
     orders: [order],
     tasks: [task],
+    quality: {
+      scopes: [{ id: "unit1", title: "Demoparken 101 · H0101" }],
+      checks: [],
+      documents: [],
+    },
+    qualityRevision: 0,
     unit_count: 40,
     suppliers: ["QA Leverandør"],
     checklists: [
@@ -86,7 +92,7 @@ const view = () => ({
   id: "access1",
   name: "Per Partner",
   organisation: "QA Leverandør",
-  kind: "supplier",
+  kind: state.partners[0]?.kind || "supplier",
   active: true,
   project: {
     title: "Solgløtt borettslag",
@@ -108,6 +114,19 @@ const view = () => ({
   )
     ? state.checklists
     : [],
+  quality: state.partners[0]?.features?.includes("checklists")
+    ? {
+        ...state.quality,
+        checks: state.quality.checks.map((x) => ({
+          ...x,
+          revision: state.qualityRevision,
+        })),
+        documents: state.quality.documents.map((x) => ({
+          ...x,
+          revision: state.qualityRevision,
+        })),
+      }
+    : null,
   events: [...events]
     .reverse()
     .filter((e) =>
@@ -179,7 +198,94 @@ window.__client = {
   },
 };
 window.fetch = async (url, args) => {
+  if (url.includes("/functions/v1/bolig-partner-files")) {
+    await wait();
+    if (window.__deny)
+      return {
+        ok: false,
+        json: async () => ({ code: "42501", message: "Stanset" }),
+      };
+    if (args.body instanceof FormData) {
+      window.__fileCalls ||= [];
+      window.__fileCalls.push({
+        id: args.body.get("id"),
+        scope_id: args.body.get("scope_id"),
+        name: args.body.get("file").name,
+      });
+      if (window.__failFile) {
+        window.__failFile = false;
+        throw Error("Mistet filkvittering");
+      }
+      return { ok: true, json: async () => ({ id: args.body.get("id") }) };
+    }
+    return {
+      ok: true,
+      blob: async () => new Blob(["%PDF-1.4 QA"], { type: "application/pdf" }),
+    };
+  }
   const p = JSON.parse(args.body);
+  if (url.includes("/rpc/bolig_partner_quality")) {
+    window.__calls.push(p);
+    await wait();
+    if (window.__deny || !state.partners[0].features.includes("quality_write"))
+      return {
+        ok: false,
+        json: async () => ({ code: "42501", message: "Utfylling er stanset" }),
+      };
+    const a = p.p_payload;
+    if (!window.__receipts[a.request_id]) {
+      if (p.p_action === "check_save" && a.revision !== state.qualityRevision)
+        return {
+          ok: false,
+          json: async () => ({
+            code: "PT409",
+            message: "Dokumentasjonen er endret",
+          }),
+        };
+      if (p.p_action === "check_add")
+        state.quality.checks.push({
+          scope_id: a.scope_id,
+          record: {
+            id: a.id,
+            partner_id: "access1",
+            status: "draft",
+            answers: {},
+            definition: a.content || {
+              title: "Sluttkontroll",
+              instructions: "Kontroller arbeidet",
+              points: [{ id: "p1", title: "Servant kontrollert", fields: [] }],
+            },
+          },
+        });
+      if (p.p_action === "check_save") {
+        const x = state.quality.checks.find((x) => x.record.id === a.id);
+        x.record.answers = structuredClone(a.answers);
+        x.record.status = a.complete ? "completed" : "draft";
+      }
+      if (p.p_action === "document")
+        state.quality.documents.push({
+          scope_id: a.scope_id,
+          id: a.id,
+          title: a.title,
+          name: window.__fileCalls.find((x) => x.id === a.id).name,
+          kind: window.__fileCalls
+            .find((x) => x.id === a.id)
+            .name.endsWith(".png")
+            ? "photo"
+            : "document",
+        });
+      state.qualityRevision++;
+      window.__receipts[a.request_id] = true;
+    }
+    if (window.__fail) {
+      window.__fail = false;
+      throw Error("Mistet kvittering");
+    }
+    return {
+      ok: true,
+      json: async () => ({ ...structuredClone(view()), saved_id: a.id }),
+    };
+  }
   window.__calls.push(p);
   await wait();
   if (window.__deny)
@@ -223,6 +329,12 @@ window.fetch = async (url, args) => {
 };
 window.__advanceRevision = () => {
   state.partners[0].revision++;
+};
+window.__writePortal = () => {
+  state.partners = [
+    { id: "access1", kind: "ue", features: ["checklists", "quality_write"] },
+  ];
+  window.__portal();
 };
 window.__managerRemount = () => {
   app.unmount();

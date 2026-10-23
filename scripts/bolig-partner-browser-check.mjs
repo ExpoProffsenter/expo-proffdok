@@ -28,6 +28,11 @@ try {
   const r = await build({
     root: cwd,
     configFile: false,
+    resolve: {
+      alias: {
+        "react/jsx-runtime": cwd + "/node_modules/react/jsx-runtime.js",
+      },
+    },
     define: {
       "process.env.NODE_ENV": '"production"',
       "import.meta.env.VITE_SUPABASE_URL": '"https://qa.supabase.co"',
@@ -35,7 +40,7 @@ try {
     },
     logLevel: "silent",
     plugins: [
-      react({ jsxRuntime: "classic" }),
+      react(),
       {
         name: "mock",
         enforce: "pre",

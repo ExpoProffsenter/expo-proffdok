@@ -23,7 +23,9 @@ const featureNames = {
   orders: "Bestillinger og leveranser",
 };
 const defaults = (kind) =>
-  kind === "ue" ? ["progress", "checklists"] : ["progress", "orders"];
+  kind === "ue"
+    ? ["progress", "checklists", "quality_write"]
+    : ["progress", "orders"];
 const blank = {
   name: "",
   email: "",
@@ -264,6 +266,7 @@ export default function BoligPartners({ context, root }) {
                   <small>
                     {p.access_mode === "project"
                       ? (p.features || [])
+                          .filter((x) => featureNames[x])
                           .map((x) => featureNames[x])
                           .join(" · ")
                       : "Eldre tilgang til utvalgte rader"}
@@ -388,7 +391,12 @@ export default function BoligPartners({ context, root }) {
                         update({
                           features: e.target.checked
                             ? [...draft.features, id]
-                            : draft.features.filter((x) => x !== id),
+                            : draft.features.filter(
+                                (x) =>
+                                  x !== id &&
+                                  (id !== "checklists" ||
+                                    x !== "quality_write"),
+                              ),
                         })
                       }
                     />
@@ -398,7 +406,7 @@ export default function BoligPartners({ context, root }) {
                         {id === "progress"
                           ? "Planlagte aktiviteter og datoer. Bekreft dato eller meld avvik."
                           : id === "checklists"
-                            ? "Les sjekklister, kontrollpunkter og status. Ingen redigering."
+                            ? "Se sjekklister, kontrollpunkter og status. UE kan også gis rett til egen utfylling og vedlegg."
                             : "Bestilte varer, leveringsdatoer og mottaksstatus for valgt leverandør. Uten priser."}
                       </small>
                     </span>
@@ -429,6 +437,40 @@ export default function BoligPartners({ context, root }) {
                   </label>
                 )}
               </fieldset>
+              {draft.kind === "ue" && draft.features.includes("checklists") && (
+                <label>
+                  Tilgang til sjekklister
+                  <select
+                    aria-label="Tilgang til sjekklister"
+                    disabled={busy || !!pending}
+                    value={
+                      draft.features.includes("quality_write")
+                        ? "write"
+                        : "read"
+                    }
+                    onChange={(e) =>
+                      update({
+                        features:
+                          e.target.value === "write"
+                            ? [
+                                ...draft.features.filter(
+                                  (x) => x !== "quality_write",
+                                ),
+                                "quality_write",
+                              ]
+                            : draft.features.filter(
+                                (x) => x !== "quality_write",
+                              ),
+                      })
+                    }
+                  >
+                    <option value="read">Les sjekklister</option>
+                    <option value="write">
+                      Fyll ut egne sjekklister og last opp vedlegg og bilder
+                    </option>
+                  </select>
+                </label>
+              )}
               <p>
                 Forslag: UE får fremdrift og sjekklister. Leverandør får
                 fremdrift og bestillinger. Du kan justere valgene.
@@ -441,6 +483,7 @@ export default function BoligPartners({ context, root }) {
                     data.partners.find((x) => x.id === editing.id)?.features ||
                     []
                   )
+                    .filter((x) => featureNames[x])
                     .map((x) => featureNames[x])
                     .join(" · ")}
                   .{" "}
@@ -590,7 +633,12 @@ export default function BoligPartners({ context, root }) {
           )}
           <p>
             {partner.access_mode === "project"
-              ? `Hele prosjektet · ${partner.unit_count} leiligheter · ${(partner.features || []).map((x) => featureNames[x]).join(" · ")}`
+              ? `Hele prosjektet · ${partner.unit_count} leiligheter · ${(
+                  partner.features || []
+                )
+                  .filter((x) => featureNames[x])
+                  .map((x) => featureNames[x])
+                  .join(" · ")}`
               : "Eldre tilgang: Bare tidligere valgte rader deles. Opprett ny tilgang for å dele hele prosjektet."}
           </p>
           <p>

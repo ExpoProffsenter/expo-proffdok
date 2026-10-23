@@ -18,3 +18,7 @@ verify_jwt = true
 [functions.bolig-progress-notifications]
 # Private Vault-token authentication; no client-origin or bearer access.
 verify_jwt = false
+
+[functions.bolig-partner-files]
+# Capability token is verified in SQL before and after private Storage access.
+verify_jwt = false

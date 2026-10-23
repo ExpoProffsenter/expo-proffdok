@@ -120,3 +120,8 @@ Sandbox-migrasjon20261023190621.1265 DB og48 partnerbrowser PASS. Baseline571798
 
 
 Prosjekttilgang publisert på kode4aeb307f / tree6c064e68 / Preview dpl_BFz1WUgK8HeNpw84V3xPJDpRTW5R READY, samme faste alias/økt. Faktisk UI-prøve: UE40 leiligheter/161 aktiviteter+1 lesesjekkliste; deretter Endre funksjoner til fremdrift+egen leverandørs ordre på samme lenke, sjekklistefanen borte. Fiktiv tilgang d40acf45 tilbakekalt og gammel lenke faktisk avvist.0 aktive tilganger, ingen nye svar, gammel pilot/order/plan bevart. Screenshot og readback i siste QA-avsnitt. CI654 først under kjøring; hent nyeste head/CI/READY fra PR278. Ingen produksjonsmerge, mail eller Bolig TEST OK.
+
+
+### Nyeste tillegg: UE skriver og laster opp
+
+Kenneth ber om utfylling av sjekklister, egne PDF-lister/andre filer og bilder. Ny eksplisitt `quality_write` krever UE+checklists; gamle grants er fortsatt read-only. Egne native utfyllinger fra prosjektgrunnlag eller egen liste, egne vedlegg på scope, revisorhistorikk med partner-ID (ingen issuer-imitasjon), native valideringer og fullført-lås. Privat capability-kontrollert filproxy før/etter Storage,20MB PDF/bilder/DOCX/XLSX/TXT/CSV. IndexedDB-filblob før nettverk og eksakte receipts. Migrasjon20261023193507 og Edge bolig-partner-files v1 kun Sandbox.1308 DB,48 gammelpartnerbrowser,20 UE-browser,20 filgateway,35 nativekvalitetsbrowser og fullbuild PASS. Les siste QA-avsnitt for publisering/faktisk UI-prøve. Samme PR/Preview; ingen prod eller TEST OK.

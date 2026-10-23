@@ -16,10 +16,11 @@ export function BoligHelp() {
           kontakt og bedrift og velg funksjonene kontakten får se. Tilgangen
           gjelder alle aktive leiligheter i prosjektet, også nye. Du trenger
           ikke velge leilighetene enkeltvis. UE får forslag om fremdrift og
-          sjekklister. Leverandør får forslag om fremdrift og bestillinger. Du
-          kan endre forslagene. Ved bestillinger velger du leverandørnavnet som
-          brukes på ordrene. Bare denne leverandørens bestilte varer deles, uten
-          priser. Velg «Opprett tilgangslenke» når valgene er klare.
+          sjekklister med egen utfylling og vedlegg. Leverandør får forslag om
+          fremdrift og bestillinger. Du kan endre forslagene. Ved bestillinger
+          velger du leverandørnavnet som brukes på ordrene. Bare denne
+          leverandørens bestilte varer deles, uten priser. Velg «Opprett
+          tilgangslenke» når valgene er klare.
         </p>
         <p>
           Lenken gir tilgang til den som har den. Del den bare med kontakten du
@@ -35,8 +36,21 @@ export function BoligHelp() {
           tidligere svar som historikk. Bekreftelsen registrerer ikke varemottak
           og flytter ingen datoer. Prosjektleder følger opp i eksisterende
           bestilling eller «Fremdrift og varsler». «Sjekklister» viser
-          kontrollpunkter og status for lesing. Kontakten kan søke etter
-          leilighet, adresse eller innhold.
+          kontrollpunkter og status. Kontakten kan søke etter leilighet, adresse
+          eller innhold.
+        </p>
+        <p>
+          For UE velger du «Tilgang til sjekklister»: Les, eller utfylling med
+          vedlegg og bilder. Gamle leselenker får ikke skrivetilgang automatisk.
+          UE åpner «Mine sjekklister og vedlegg». Start egen utfylling fra en
+          prosjektliste, eller velg «Lag egen sjekkliste». Originalen beholdes.
+          Velg plassering når du laster opp PDF, bilder, Word (.docx), Excel
+          (.xlsx) eller tekstfiler. Hver fil kan være inntil 20 MB. Lagre filene
+          før du velger dem på kontrollpunktet. «Lagre sjekkliste» lagrer
+          svarene. Velg «Fullfør sjekklisten ved lagring» når alt er
+          kontrollert. Prosjektleder finner filene og utfyllingen i den vanlige
+          dokumentasjonen. Fullførte kontroller må gjenåpnes av prosjektleder
+          før retting.
         </p>
       </details>
       <details>

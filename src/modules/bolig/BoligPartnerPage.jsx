@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Truck, ShieldCheck } from "lucide-react";
 import Dialog from "./BoligEditorDialog.jsx";
 import Items from "./BoligPartnerItems.jsx";
+import PartnerQuality from "./BoligPartnerQuality.jsx";
 import {
   partnerPortalRpc,
   partnerDate,
@@ -443,6 +444,13 @@ function PartnerPage({ token }) {
           )}
         </>
       )}
+      <PartnerQuality
+        token={token}
+        data={data}
+        run={run}
+        busy={busy}
+        load={load}
+      />
     </main>
   );
 }

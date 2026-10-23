@@ -1,4 +1,5 @@
 import fs from "node:fs/promises";
+import partnerQuality from "./bolig-partner-quality-db-scenarios.mjs";
 export default async function ({
   db,
   call,
@@ -34,6 +35,12 @@ export default async function ({
   await db.exec(
     await fs.readFile(
       "supabase/migrations/20261023190621_bolig_partner_project_features.sql",
+      "utf8",
+    ),
+  );
+  await db.exec(
+    await fs.readFile(
+      "supabase/migrations/20261023193507_bolig_partner_quality_writes.sql",
       "utf8",
     ),
   );
@@ -572,4 +579,16 @@ export default async function ({
   );
   await rejects(() => portal(ueToken), "42501");
   await actor(manager);
+  await partnerQuality({
+    db,
+    actor,
+    eq,
+    rejects,
+    id,
+    firm,
+    manager,
+    root,
+    rpc,
+    portal,
+  });
 }
