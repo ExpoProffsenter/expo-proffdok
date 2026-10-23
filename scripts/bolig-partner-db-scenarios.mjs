@@ -19,6 +19,12 @@ export default async function ({
       "utf8",
     ),
   );
+  await db.exec(
+    await fs.readFile(
+      "supabase/migrations/20261023183331_bolig_partner_response_clock.sql",
+      "utf8",
+    ),
+  );
   await actor(manager);
   const root = (await call("list")).roots.find(
     (r) => r.reference === "QA-PILOT-40-20261023",
@@ -263,7 +269,7 @@ export default async function ({
   eq((await portal(secondToken)).tasks.length, 1);
   await db.exec("reset role");
   await db.query(
-    "update bolig_private.partner_access set expires_at=now()-interval '1 second' where id=$1",
+    "update bolig_private.partner_access set expires_at=clock_timestamp()-interval '1 millisecond' where id=$1",
     [second.id],
   );
   await db.exec("set role anon");

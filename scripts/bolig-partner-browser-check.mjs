@@ -167,6 +167,11 @@ try {
     .getByRole("heading", { name: "Solgløtt borettslag", exact: true })
     .waitFor();
   eq(
+    await page.title(),
+    "Dine leveranser · Expo ProffDok",
+    "partner route has its own title",
+  );
+  eq(
     await page
       .getByRole("button", { name: "Leveranser (1)", exact: true })
       .count(),

@@ -100,3 +100,9 @@ Kode3f5ad246, Vercel dpl_6Jdy15utsGDsHX6JNiCxTmZjJCqa READY og faktisk BoligEntr
 ## Pågående: UE-/leverandørtilgang
 
 Kenneth ber om å fortsette fra handoff etter pilot. Start05ff9aef, main36462e2b og PR278 OPEN DRAFT bekreftet. Miljømål BEGGE, samme branch/Preview, utvikling kun Sandbox. Ny prosjektflate for eksplisitte ordre-/aktivitetsutvalg og navngitt, tidsbegrenset capability-lenke. Ingen ekte invitasjon, produksjonsmerge eller subagenter. Konkret scope, autorisasjon, sikkerhetsgrenser og testliste i `docs/qa/BOLIG_PARTNERE_20261023.md`. Arbeidet er lokalt til ekstern commit/CI/Preview er registrert der.
+
+### Partnerpilot og kontrollert retting
+
+Faktisk app5d7fc026 / Preview dpl_7421nwFqApTUG3dDgMxQ6vNuHi6n READY, innlogget pilot med avgrenset ordre+rosettaktivitet og to faktiske syntetiske svar. Tilgang319bd85a er tilbakekalt, gamle lenken faktisk avvist, to svar beholdt. 40 boliger/161 oppgaver, rosett revision3 og31.10, original ordre partial/mottatt1 og mailAV/kø0 er bevart. Detaljer/bevis i BOLIG_PARTNERE_20261023.md.
+
+CI651 feilet på ny historikkrekkefølge: default now() ga transaksjonsstart i stedet for innsettingstid. Behold testen. Additiv Sandbox-migrasjon20261023183331 bruker faktisk clock_timestamp for svar/tilgang og utløp etter venting på prosjektlåsen. Ny korrekt nettlesertittel på mottakersiden. 29 partnerbrowser og fullbuild PASS; endelig DB/CI/READY må avleses på korrigert commit før grønnstatus. Ingen produksjonssetting eller ekte e-post.

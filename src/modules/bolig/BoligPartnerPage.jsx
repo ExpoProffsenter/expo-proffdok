@@ -16,6 +16,7 @@ export default function BoligPartnerPage() {
     location.hash.replace(/^#partner=/, ""),
   );
   useEffect(() => {
+    document.title = "Dine leveranser · Expo ProffDok";
     const change = () => setToken(location.hash.replace(/^#partner=/, ""));
     window.addEventListener("hashchange", change);
     return () => window.removeEventListener("hashchange", change);
