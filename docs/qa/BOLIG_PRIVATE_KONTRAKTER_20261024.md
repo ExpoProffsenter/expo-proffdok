@@ -33,7 +33,7 @@ Security advisors er kontrollert før/etter. Ingen nye varseltyper. De bevisst l
 |---|---|
 | Full Sandbox-build med eksisterende critical checks | PASS |
 | Bolig PostgreSQL | 1632 assertions PASS, 57 nye kontraktsassertions |
-| Faktisk React → lokal HTTP → faktisk filhandler → faktiske SQL ACL-/versjonsfunksjoner | 25 Chromium assertions PASS ved 320/390/768/1366 px; Auth og Storage er syntetiske |
+| Faktisk React → lokal HTTP → faktisk filhandler → faktiske SQL ACL-/versjonsfunksjoner | 37 Chromium assertions PASS ved 320/390/768/1366 px; Auth og Storage er syntetiske |
 | Samme browser-flyt med vedlagt faktisk skannet PDF | PASS; bytes identiske ved nedlasting, lokal bruk uten publisering av innhold |
 | Filhandler | 25 assertions PASS; kjørt både med syntetisk fil og vedlagt original lokalt |
 | Native Sandbox som authenticated | PASS: privat ACL, prepare/finish/kvittert retry/historikk, direkte tabell-/Storage-/anon-sperre og tilbakekalling; rollback |
@@ -46,7 +46,11 @@ Native Sandbox-prøven bruker eksisterende syntetiske demoidentiteter og bare mi
 
 Det virkelige vedlegget er sju skannede sider uten søkbar tekst. Alle sider er rendret lokalt uten feil. Originalen er uendret; den, skjermbilder av innholdet og kontraktsteksten er ikke lagt i repo, delte demo-/pilotdata eller produksjon. Testene logger ikke innhold eller originalfilens metadata.
 
-Samlet CI og fast Preview verifiseres på nøyaktig publisert HEAD. Kenneths positive feedback fra forrige KS/HMS-etappe er ikke TEST OK for denne nye kontraktspakken. Innlogget filopplasting/lesing i delt Preview og fysisk mobil/Safari gjenstår.
+Kenneth har bekreftet at virkelig filopplasting i Preview fungerer, men meldte blafring ved filvalg. Rettingen er avgrenset til `BoligContracts.jsx`, kontraktens browser-regresjonstest og dette QA-notatet. Et faktisk filechooser-klikk med simulert OS-blur/focus gjenskapte feilen før retting. Nå beholdes samme åpne upload-dialog gjennom filvalg og avbryt, også med forsinket tilgangssvar. Cancel-hendelsen stoppes på filfeltet og lukker ikke den overordnede dialogen. Tittel og tidligere valgt fil beholdes.
+
+Bare brukerens opplastingskladd holdes synlig under filvelgerens fokusrunde. Dokumentlisten skjules og lagring/valg av lagret dokument sperres til fersk ACL er bekreftet. Ekte bakgrunn, firma-/tilgangshendelser og tilbakekalling skjuler fortsatt privat innhold. Nye tester dekker også bakgrunn midt i filvalg og tilbakekalt profil mens filvelgeren er åpen; ingen bytes skrives etter tilbakekalling. Ingen felles dialog, integrasjon, backend eller migrasjon er endret i rettingen.
+
+Samlet CI og fast Preview verifiseres på nøyaktig publisert HEAD. Innlogget brukerprøve av rettingen i den aktuelle nettleseren og fysisk mobil/Safari gjenstår. Positiv opplastingsfeedback er ikke samlet Bolig TEST OK eller produksjonsgodkjenning. Ingen produksjonsmerge.
 
 ## Kort brukerprøve
 
@@ -54,5 +58,6 @@ Fast adresse: https://expo-proffdok-git-fase45b-boligprosjekter-found-0509d8-rin
 
 1. Boligprosjekter → åpne ønsket prosjekt → **Kontrakter**. Prosjektoppretter med prosjektledertilgang skal se **Last opp dokument** og **Tilgang**. Andre uten eksplisitt grant ser bare at området er privat.
 2. **Last opp dokument** → velg PDF, tittel og dokumenttype → **Last opp og lagre**. Se bekreftet versjon 1. **Vis dokument** og **Last ned** skal gi originalen.
+   Prøv også å åpne filvelgeren og avbryte etter et filvalg: samme opplastingsvindu, tittel og tidligere valgte fil skal beholdes uten blafring.
 3. **Ny versjon** → velg revidert fil → **Lagre ny versjon**. **Versjoner (2)** skal vise begge originalene. Prøv fanebytte med usendt tittel/fil og med åpen forhåndsvisning.
 4. **Tilgang** → gi en navngitt person lesetilgang. Personen skal kunne lese, men ikke laste opp/delegere. Tilbakekall med **Ingen tilgang** og kontroller at lesing stanser ved ny kontroll. Ikke bruk ekte personers kontraktsinnsyn som test uten tilsiktet utpeking.

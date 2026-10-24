@@ -13,6 +13,8 @@ export default function BoligContracts({context,root}){
  const scope=`${context.user_id}:${context.company_id}:${root.id}:${context.role}`;
  const epoch=useRef(0),alive=useRef(false),writing=useRef(false),invalidScope=useRef(false),current=useRef(scope);current.current=scope;
  const foreground=useRef(!document.hidden),internalFrame=useRef(false);
+ const picker=useRef(false),[picking,setPicking]=useState(false);
+ const endPicking=useCallback(()=>{picker.current=false;setPicking(false);},[]);
  const [snapshot,setSnapshot]=useState(null),[checking,setChecking]=useState(true),[blocked,setBlocked]=useState(true),[error,setError]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false);
  const [draft,setDraft]=useState(()=>contractDraft(scope)),draftRef=useRef(draft);draftRef.current=draft;
  const [opened,setOpened]=useState(null),[history,setHistory]=useState(null),[selected,setSelected]=useState(null),[query,setQuery]=useState(''),[shown,setShown]=useState(20);
@@ -31,20 +33,23 @@ export default function BoligContracts({context,root}){
     return value;
    }
   }catch(e){if(alive.current&&ticket===epoch.current){setError(e.message);setSnapshot(null);if(e.code==='42501'){forgetContractDraft(scope);setDraft(contractDraft(scope));setOpened(null);setSelected(null);setHistory(null);}}}
-  finally{if(alive.current&&ticket===epoch.current)setChecking(false);}
+  finally{if(alive.current&&ticket===epoch.current){setChecking(false);endPicking();}}
   return null;
- },[scope,root.id,clearBytes]);
+ },[scope,root.id,clearBytes,endPicking]);
  useEffect(()=>{
-  alive.current=true;invalidScope.current=false;foreground.current=!document.hidden;setSnapshot(null);setOpened(null);setSelected(null);setHistory(null);setDraft(contractDraft(scope));load();
+  alive.current=true;invalidScope.current=false;foreground.current=!document.hidden;endPicking();setSnapshot(null);setOpened(null);setSelected(null);setHistory(null);setDraft(contractDraft(scope));load();
   const refresh=event=>{
    if(event?.type==='focus'&&internalFrame.current&&foreground.current&&!document.hidden){internalFrame.current=false;return;}
+   if(event?.type==='focus')picker.current=false;
    if(['focus','visibilitychange'].includes(event?.type))foreground.current=!document.hidden;
+   if(document.hidden||!['focus','visibilitychange'].includes(event?.type))endPicking();
    if(event?.type===WORK_PROFILE_EVENT&&event.detail?.active_company_id!==context.company_id){invalidScope.current=true;forgetContractDraft(scope);setDraft(contractDraft(scope));setSnapshot(null);setOpened(null);setSelected(null);setHistory(null);}
    epoch.current++;setBlocked(true);clearBytes();
    if(!document.hidden)load();
   };
   const blur=()=>{
    if(document.hasFocus()&&document.activeElement?.matches('iframe[data-bolig-contract-preview]')){internalFrame.current=true;return;}
+   if(document.hidden||!picker.current)endPicking();
    foreground.current=false;internalFrame.current=false;epoch.current++;setBlocked(true);setChecking(false);clearBytes();
   };
   const events=['focus',MANAGED_ACCESS_EVENT,MODULE_ACCESS_EVENT,WORK_PROFILE_EVENT,BOLIG_ACCESS_EVENT,CONTRACT_EVENT];
@@ -92,7 +97,11 @@ export default function BoligContracts({context,root}){
  },true);
  const showUpload=doc=>{setError('');if(!draftRef.current.attempt&&doc)change({document_id:doc.id,title:doc.title,kind:doc.kind});setOpened('upload');};
  const showFile=file=>{setSelected(file);setOpened('preview');};
- const close=()=>{clearBytes();setOpened(null);setSelected(null);setHistory(null);};
+ const close=()=>{endPicking();clearBytes();setOpened(null);setSelected(null);setHistory(null);};
+ // A native picker temporarily blurs its page. Keep only the user's upload draft
+ // open through that round trip; writes and stored metadata still await fresh ACL.
+ const beginPicking=()=>{if(data?.manage){picker.current=true;setPicking(true);}};
+ const finishPicking=()=>{if(picker.current&&!document.hidden){picker.current=false;foreground.current=true;load();}};
  const filtered=(data?.documents||[]).filter(d=>(d.title+' '+d.file.name+' '+kinds[d.kind]).toLocaleLowerCase('nb').includes(query.toLocaleLowerCase('nb')));
  const versionActions=file=><div className="bolig-contract-file-actions"><button type="button" className="secondary" onClick={()=>showFile(file)}><Eye size={16}/>Vis dokument</button><button type="button" className="secondary" onClick={()=>fetchBytes(file,'download')}><Download size={16}/>Last ned</button></div>;
  return <section className="bolig-contracts" aria-label="Privat kontraktsområde">
@@ -107,12 +116,12 @@ export default function BoligContracts({context,root}){
    {shown<filtered.length&&<button type="button" className="secondary" onClick={()=>setShown(n=>n+20)}>Vis flere dokumenter</button>}
    <p className="bolig-contract-note">Originalfiler deles ikke gjennom UE-, leverandør- eller beboerlenker og følger ikke prosjektets vanlige FDV-/sluttpakke. Søk i dokumenttekst og kontraktsanalyse kommer senere. Skannede PDF-er kan åpnes som de er.</p>
   </>}
-  {opened==='upload'&&snapshot?.scope===scope&&snapshot.data.allowed&&<Dialog title="Last opp kontraktsdokument" onClose={close} busy={busy} suspended={!data}>
+  {opened==='upload'&&snapshot?.scope===scope&&snapshot.data.allowed&&<Dialog title="Last opp kontraktsdokument" onClose={close} busy={busy} suspended={!data&&!picking}>
    <form className="bolig-contract-form" onSubmit={e=>{e.preventDefault();upload();}}><fieldset disabled={busy||!!draft.attempt}>
-    <label>Dokument<select value={draft.document_id} onChange={e=>{const doc=data?.documents.find(d=>d.id===e.target.value);change({document_id:doc?.id||'',title:doc?.title||'',kind:doc?.kind||'contract'});}}><option value="">Nytt dokument</option>{(snapshot.data.documents||[]).map(d=><option key={d.id} value={d.id}>{d.title} · ny versjon</option>)}</select></label>
+    <label>Dokument<select value={draft.document_id} disabled={!data?.manage} onChange={e=>{const doc=data?.documents.find(d=>d.id===e.target.value);change({document_id:doc?.id||'',title:doc?.title||'',kind:doc?.kind||'contract'});}}><option value="">Nytt dokument</option>{!data&&draft.document_id&&<option value={draft.document_id}>{draft.title} · ny versjon</option>}{(data?.documents||[]).map(d=><option key={d.id} value={d.id}>{d.title} · ny versjon</option>)}</select></label>
     <label>Tittel<input required maxLength={120} value={draft.title} disabled={!!draft.document_id} onChange={e=>change({title:e.target.value})}/></label>
     <label>Dokumenttype<select disabled={!!draft.document_id} value={draft.kind} onChange={e=>change({kind:e.target.value})}>{Object.entries(kinds).map(([k,v])=><option key={k} value={k}>{v}</option>)}</select></label>
-    <label>Fil (PDF, JPG eller PNG – inntil 20 MB)<input type="file" accept="application/pdf,image/jpeg,image/png" onChange={e=>{const file=e.target.files?.[0];if(!file)return;if(!['application/pdf','image/jpeg','image/png'].includes(file.type)||!file.size||file.size>20*1024*1024){setError('Velg PDF, JPG eller PNG på inntil 20 MB.');return;}change({file,title:draft.title||file.name.replace(/\.[^.]+$/,'').slice(0,120)});}}/></label>{draft.file&&<p>{draft.file.name} · {size(draft.file.size)}</p>}
+    <label>Fil (PDF, JPG eller PNG – inntil 20 MB)<input type="file" accept="application/pdf,image/jpeg,image/png" onClick={beginPicking} onCancel={e=>{e.stopPropagation();finishPicking();}} onChange={e=>{finishPicking();const file=e.target.files?.[0];if(!file)return;if(!['application/pdf','image/jpeg','image/png'].includes(file.type)||!file.size||file.size>20*1024*1024){setError('Velg PDF, JPG eller PNG på inntil 20 MB.');return;}change({file,title:draftRef.current.title||file.name.replace(/\.[^.]+$/,'').slice(0,120)});}}/></label>{draft.file&&<p>{draft.file.name} · {size(draft.file.size)}</p>}
     <label>Merknad til versjonen (valgfritt)<textarea value={draft.comment} maxLength={500} onChange={e=>change({comment:e.target.value})}/></label>
    </fieldset>
    <p>Originalen beholdes uendret. En ny versjon erstatter ikke historikken. Opplastingskladden beholdes i denne nettleserøkten, men lagres ikke på enheten.</p>
