@@ -8,6 +8,7 @@ const sandbox=resolveBackendTarget({vercelEnv:process.env.VERCEL_ENV,gitRef:proc
 const url=sandbox?'https://ppvircenkjizeiqdxphj.supabase.co':'https://dqffxflaoyarbxyiyhop.supabase.co';
 const key=sandbox?'sb_publishable_wSw_jYJ6t6StH3p0G10wnA_pjYOXVeR':process.env.VITE_SUPABASE_ANON_KEY;
 const handler=createContractReviewHandler({
+ onProviderError:details=>console.error('bolig_contract_provider_failure',JSON.stringify(details)),
  authenticate:async authorization=>{
   if(!/^Bearer \S+$/.test(authorization)||!key)return null;
   const client=createClient(url,key,{global:{headers:{Authorization:authorization}},auth:{persistSession:false,autoRefreshToken:false}});

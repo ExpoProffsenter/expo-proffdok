@@ -27,7 +27,17 @@ export function validateContractReview(result,sources){
 }
 const origins=new Set(['https://expo-proffdok-git-fase45b-boligprosjekter-found-0509d8-ringside.vercel.app','https://expo-proffdok.app','https://expo-proffdok-git-demo-ringside.vercel.app']);
 const uuid=value=>typeof value==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
-export function createContractReviewHandler({authenticate,generate,allowedOrigins=origins}){
+// Never forward raw errors: provider messages/causes may contain private input.
+export function contractProviderFailure(error){
+ const names=new Set(['GatewayAuthenticationError','GatewayForbiddenError','GatewayInvalidRequestError','GatewayRateLimitError','GatewayModelNotFoundError','GatewayNotFoundError','GatewayInternalServerError','GatewayFailedDependencyError','GatewayResponseError','GatewayTimeoutError','AI_NoObjectGeneratedError','AI_TypeValidationError','AbortError','TimeoutError']);
+ let kind='unknown',status=null;
+ for(let e=error,n=0;e&&typeof e==='object'&&n<4;e=e.cause,n++){
+  if(kind==='unknown'&&names.has(e.name))kind=e.name;
+  if(status===null&&Number.isInteger(e.statusCode)&&e.statusCode>=400&&e.statusCode<=599)status=e.statusCode;
+ }
+ return {kind,status};
+}
+export function createContractReviewHandler({authenticate,generate,allowedOrigins=origins,onProviderError=()=>{}}){
  return async request=>{
   const origin=request.headers.get('origin'),headers={'content-type':'application/json','cache-control':'private, no-store, max-age=0','x-content-type-options':'nosniff','vary':'Origin'};
   const respond=(status,data)=>new Response(JSON.stringify(data),{status,headers});
@@ -51,7 +61,10 @@ export function createContractReviewHandler({authenticate,generate,allowedOrigin
    started=true;
    // The provider needs source text and edition, not uploader/tenant/Storage metadata.
    const sources=job.sources.map(s=>({id:s.id,title:s.title,version:s.file.version,pages:s.pages}));
-   const result=validateContractReview(await generate({question:job.question,sources}),job.sources);
+   let proposal;
+   try{proposal=await generate({question:job.question,sources});}
+   catch(error){try{onProviderError(contractProviderFailure(error));}catch{}throw error;}
+   const result=validateContractReview(proposal,job.sources);
    const pages=job.sources.flatMap(s=>s.pages),uncertain=pages.filter(p=>p.text.trim().length<40||(p.method==='ocr'&&p.confidence<70)).length;
    const limits=[`Grunnlaget er ${job.sources.length} valgte dokumentversjoner og ${pages.length} tekstsider. Dokumentrang er ikke fastsatt.`,
     ...(uncertain?[`${uncertain} sider har usikker eller manglende tekst. Kontroller disse mot originalen før du bruker gjennomgangen.`]:[]),...result.limitations];

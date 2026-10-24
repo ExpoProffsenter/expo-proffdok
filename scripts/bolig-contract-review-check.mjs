@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {randomUUID as uuid} from 'node:crypto';
 import {contractPlatform} from './fixtures/bolig-contract-platform.mjs';
-import {createContractReviewHandler,validateContractReview,contractReviewSystem} from '../supabase/functions/_shared/bolig-contract-review.mjs';
+import {createContractReviewHandler,validateContractReview,contractReviewSystem,contractProviderFailure} from '../supabase/functions/_shared/bolig-contract-review.mjs';
 const p=await contractPlatform();let checks=0;
 const eq=(a,b,m)=>{assert.deepEqual(a,b,m);checks++;};
 const deny=async(fn,code)=>{await assert.rejects(fn,e=>!code||e.code===code);checks++;};
@@ -18,6 +18,9 @@ async function file(id,revision){
  return p.rpc(p.owner,p.company,p.root.id,'finish',{id});
 }
 try{
+ eq(contractProviderFailure({name:'GatewayResponseError',statusCode:402,message:'PRIVATE CONTRACT',responseBody:'PRIVATE RESPONSE',cause:{token:'SECRET'}}),{kind:'GatewayResponseError',status:402},'provider diagnostics contain only approved type and HTTP status');
+ eq(contractProviderFailure({name:'SECRET',statusCode:'PRIVATE',cause:{name:'GatewayAuthenticationError',statusCode:401,message:'SECRET'}}),{kind:'GatewayAuthenticationError',status:401},'unknown names and private nested fields are omitted');
+ const cycle={message:'PRIVATE'};cycle.cause=cycle;eq(contractProviderFailure(cycle),{kind:'unknown',status:null},'diagnostics terminate on cyclic causes without exposing raw errors');
  await file(fid,0);
  await deny(()=>rpc('get',{},p.admin),'42501');await deny(()=>rpc('get',{},p.reader),'42501');
  await p.rpc(p.owner,p.company,p.root.id,'grant',{user_id:p.reader,role:'reader',revision:0});
