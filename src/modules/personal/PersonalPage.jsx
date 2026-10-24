@@ -7,6 +7,7 @@ import HomeFollowups from '../home/HomeFollowups.jsx';
 import './personal.css';
 import SupportSummary from '../support/SupportSummary.jsx';
 import {PersonalTimeCard} from '../time/TimeEntryPoint.jsx';
+const BoligPresenceCard=React.lazy(()=>import('../bolig/BoligPresenceCard.jsx'));
 const KshmsMyProgressPlans=React.lazy(()=>import('../kshms/KshmsMyProgressPlans.jsx'));
 const PersonalTimeWorkspace=React.lazy(()=>import('../time/TimeEntryPoint.jsx'));
 const KshmsModule=React.lazy(()=>import('../kshms/KshmsModule.jsx'));
@@ -31,6 +32,7 @@ export default function PersonalPage({context,kshmsContext,hrContext,userId,auth
  const firstName=fullName.split(/\s+/)[0];
  return <section className={nav?.enabled?'personal-page':undefined} aria-label={nav?.enabled?'Min side':'Min profil / e-postvalg'} aria-busy={pending}>
   {nav?.enabled&&<header className="personal-heading"><div><span className="personal-eyebrow"><ShieldCheck size={16} aria-hidden="true"/> DIN ARBEIDSHVERDAG</span><h2>{firstName?'Hei, '+firstName:'Min side'}{' '}<span>Dette er din plass.</span></h2><p>Håndboka, oppfølgingene og profilen din – enkelt å finne, lett å bruke.</p></div><div className="personal-avatar" aria-hidden="true">{fullName?fullName.split(/\s+/).slice(0,2).map(part=>part[0]).join('').toLocaleUpperCase('nb-NO'):<UserRound/>}</div></header>}
+  {userId&&authUser?.id===userId&&context?.user_id===userId&&context?.company_id&&<Suspense fallback={null}><BoligPresenceCard key={'presence:'+scope} context={context}/></Suspense>}
   {nav?.enabled&&<nav className="personal-tabs" aria-label="Min side visning">{visible.map(id=>{const Icon=sectionIcons[id];return <button key={id} type="button" className={screen===id?'active':'secondary'} aria-pressed={screen===id} disabled={pending} onClick={()=>choose(id)}><Icon size={18} aria-hidden="true"/>{sections[id]}</button>;})}</nav>}
   {authUser?.id===userId&&onOpenSupport&&!pending&&(!nav?.enabled||screen==='overview')&&<SupportSummary supabaseClient={supabaseClient} authUser={authUser} companyId={context?.company_id} onOpen={onOpenSupport}/>}
   <div className="personal-notices" hidden={screen!=='overview'||pending}><HomeFollowups key={nav?.scope||'personal'} hrContext={rights.hr?hrContext:null} userId={userId} onSetup={onOpenHrSetup}/></div>

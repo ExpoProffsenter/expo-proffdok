@@ -1,4 +1,5 @@
 import React from 'react';
+import AttendancePeople from './BoligAttendancePeople.jsx';
 import {useBoligAttendance} from './boligAttendance.js';
 import './boligAttendance.css';
 export function osloInput(value=new Date()) {
@@ -23,7 +24,8 @@ export default function BoligAttendance({context,root}) {
  {!data?<p role="status">Listen må bekreftes mot server før bruk. Kladden er beholdt.</p>:<>
  <p><strong>{data.enabled?'Bemanning er aktivert':'Bemanning er av'}</strong></p>
  <button type="button" disabled={disabled||root.archived||!!form} onClick={()=>run('enable',{enabled:!data.enabled,day,revision:data.revision})}>{data.enabled?'Deaktiver bemanning':'Aktiver bemanning'}</button>
- <p>Deaktivering beholder registreringene og historikken. Prosjektleder registrerer manuelt her. Håndverkerens egen inn-/utregistrering kommer senere.</p>
+ <p>Deaktivering beholder registreringene og historikken. Prosjektleder kan registrere manuelt her. Navngitte deltakere registrerer seg selv på Min side eller sin personlige UE-lenke.</p>
+ <AttendancePeople context={context} root={root} enabled={data.enabled}/>
  <label>Prosjektdag<input type="date" value={day} disabled={disabled||!!form} onChange={e=>{update({day:e.target.value,basisRevision:null});load();}}/></label>
  <p><strong>{data.visits.filter(v=>!v.departed_at).length} registrert inne</strong> · {data.visits.length} registreringer i valgt dag eller fortsatt åpne fra tidligere dager.</p>
  <div className="bolig-attendance-actions"><button type="button" disabled={disabled} onClick={exportList}>Eksporter liste (CSV)</button><button type="button" disabled={disabled||!data.enabled||root.archived||!!form} onClick={()=>update({form:{id:crypto.randomUUID(),name:'',company:'',arrived:osloInput(),departed:'',reason:''}})}>Registrer deltaker inn</button></div>
@@ -41,7 +43,7 @@ export default function BoligAttendance({context,root}) {
  <h4><span className={v.departed_at?'presence-out':'presence-in'}>{v.departed_at?'● Registrert ut':'● Registrert inne'}</span> · {v.name}</h4><p>{v.company}</p><p>Inn: {show(v.arrived_at)} · Ut: {show(v.departed_at)}</p>
  {!v.departed_at&&v.arrived_at.slice(0,10)<day&&<p>Åpen fra tidligere dag. Kontroller faktisk uttid.</p>}
  <button type="button" disabled={disabled||!data.enabled||root.archived||!!form} onClick={()=>update({form:{id:v.id,name:v.name,company:v.company,arrived:osloInput(v.arrived_at),departed:v.departed_at?osloInput(v.departed_at):osloInput(),editing:true,reason:''}})}>{v.departed_at?'Rett tidspunkt':'Registrer ut / rett tidspunkt'}</button>
- <details><summary>Registreringshistorikk</summary>{data.events.filter(e=>e.after_value?.id===v.id).map(e=><p key={e.id}>{show(e.created_at)} · Registrert av {e.actor_label||e.actor} · {e.payload.reason||'Førstegangsregistrering'}<br/>Opprinnelig: {e.before_value?`${show(e.before_value.arrived_at)} – ${show(e.before_value.departed_at)}`:'Ingen'}<br/>Etter: {show(e.after_value.arrived_at)} – {show(e.after_value.departed_at)}</p>)}</details>
+ <details><summary>Registreringshistorikk</summary>{data.events.filter(e=>e.after_value?.id===v.id).map(e=><p key={e.id}>{show(e.created_at)} · Registrert av {e.payload.source_label||e.actor_label||e.actor} · {e.payload.reason||'Førstegangsregistrering'}<br/>Opprinnelig: {e.before_value?`${show(e.before_value.arrived_at)} – ${show(e.before_value.departed_at)}`:'Ingen'}<br/>Etter: {show(e.after_value.arrived_at)} – {show(e.after_value.departed_at)}</p>)}</details>
  </article>)}</div>{!data.visits.length&&<p>Ingen registreringer for denne dagen.</p>}
  </>}
  </section>;

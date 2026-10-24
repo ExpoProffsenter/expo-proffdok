@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { CalendarDays, ShieldCheck } from "lucide-react";
 import Dialog from "./BoligEditorDialog.jsx";
 import Items from "./BoligPartnerItems.jsx";
+import BoligPresenceCard from "./BoligPresenceCard.jsx";
 import PartnerQuality from "./BoligPartnerQuality.jsx";
 import ChecklistGroups, { partnerChecklistKey } from "./BoligPartnerChecklistGroups.jsx";
 import Gantt from "./BoligGantt.jsx";
@@ -220,6 +221,7 @@ function PartnerPage({ token }) {
               Hent siste status
             </button>
           </div>
+          {data.kind === "ue" && <BoligPresenceCard key={token} token={token}/>}
           <p className="bolig-partner-explainer">
             Prosjektet registrerer faktisk mottak og endrer fremdriftsplanen.
             Ditt svar vises som en bekreftelse eller et avvik på den aktuelle

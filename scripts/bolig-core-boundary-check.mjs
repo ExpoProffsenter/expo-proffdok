@@ -34,6 +34,7 @@ const integrations = new Set([
   "src/modules/company/CompanyAdminPanel.jsx",
   "src/modules/kshms/KshmsProgressBoard.jsx",
   "src/modules/project/projectNavigationTabs.mjs",
+  "src/modules/personal/PersonalPage.jsx",
   "src/modules/sales/README.md",
   "supabase/config.toml",
   "vite.config.js",
@@ -57,6 +58,15 @@ assert.deepEqual(
   [],
   "Unreviewed files outside Bolig scope",
 );
+
+// Explicitly requested Min side integration: removing this isolated card must
+// reproduce main byte for byte. No HR, time, navigation or profile behavior changes.
+const personalPath = "src/modules/personal/PersonalPage.jsx";
+const personalBase = git("show", `${base}:${personalPath}`);
+const personalCurrent = fs.readFileSync(personalPath,"utf8").trim()
+ .replace("const BoligPresenceCard=React.lazy(()=>import('../bolig/BoligPresenceCard.jsx'));\n","")
+ .replace("  {userId&&authUser?.id===userId&&context?.user_id===userId&&context?.company_id&&<Suspense fallback={null}><BoligPresenceCard key={'presence:'+scope} context={context}/></Suspense>}\n","");
+assert.equal(personalCurrent,personalBase,"Min side may only mount the isolated presence card");
 
 // Old migrations and all existing critical checks must be byte-identical.
 const existing = new Set(git("ls-tree", "-r", "--name-only", base).split("\n"));
