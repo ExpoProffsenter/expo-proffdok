@@ -18,9 +18,10 @@ async function file(id,revision){
  return p.rpc(p.owner,p.company,p.root.id,'finish',{id});
 }
 try{
- eq(contractProviderFailure({name:'GatewayResponseError',statusCode:402,message:'PRIVATE CONTRACT',responseBody:'PRIVATE RESPONSE',cause:{token:'SECRET'}}),{kind:'GatewayResponseError',status:402},'provider diagnostics contain only approved type and HTTP status');
- eq(contractProviderFailure({name:'SECRET',statusCode:'PRIVATE',cause:{name:'GatewayAuthenticationError',statusCode:401,message:'SECRET'}}),{kind:'GatewayAuthenticationError',status:401},'unknown names and private nested fields are omitted');
- const cycle={message:'PRIVATE'};cycle.cause=cycle;eq(contractProviderFailure(cycle),{kind:'unknown',status:null},'diagnostics terminate on cyclic causes without exposing raw errors');
+ eq(contractProviderFailure({name:'GatewayResponseError',statusCode:402,message:'PRIVATE CONTRACT',responseBody:'PRIVATE RESPONSE',cause:{token:'SECRET'}}),{kind:'GatewayResponseError',status:402,reason:'unknown'},'provider diagnostics contain only approved type, status and reason');
+ eq(contractProviderFailure({name:'SECRET',statusCode:'PRIVATE',cause:{name:'GatewayAuthenticationError',statusCode:401,message:'SECRET'}}),{kind:'GatewayAuthenticationError',status:401,reason:'unknown'},'unknown names and private nested fields are omitted');
+ eq(contractProviderFailure({name:'GatewayInternalServerError',statusCode:403,cause:{responseBody:JSON.stringify({error:{type:'customer_verification_required',message:'PRIVATE CONTRACT',action:'SECRET'}})}}),{kind:'GatewayInternalServerError',status:403,reason:'customer_verification_required'},'only an allowlisted provider reason survives nested response parsing');
+ const cycle={message:'PRIVATE'};cycle.cause=cycle;eq(contractProviderFailure(cycle),{kind:'unknown',status:null,reason:'unknown'},'diagnostics terminate on cyclic causes without exposing raw errors');
  await file(fid,0);
  await deny(()=>rpc('get',{},p.admin),'42501');await deny(()=>rpc('get',{},p.reader),'42501');
  await p.rpc(p.owner,p.company,p.root.id,'grant',{user_id:p.reader,role:'reader',revision:0});

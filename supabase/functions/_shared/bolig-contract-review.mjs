@@ -30,12 +30,16 @@ const uuid=value=>typeof value==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-
 // Never forward raw errors: provider messages/causes may contain private input.
 export function contractProviderFailure(error){
  const names=new Set(['GatewayAuthenticationError','GatewayForbiddenError','GatewayInvalidRequestError','GatewayRateLimitError','GatewayModelNotFoundError','GatewayNotFoundError','GatewayInternalServerError','GatewayFailedDependencyError','GatewayResponseError','GatewayTimeoutError','AI_NoObjectGeneratedError','AI_TypeValidationError','AbortError','TimeoutError']);
- let kind='unknown',status=null;
+ const reasons=new Set(['customer_verification_required','insufficient_funds','quota_for_entity_exceeded','authentication_error','forbidden','invalid_request_error','rate_limit_exceeded','model_not_found','failed_dependency']);
+ let kind='unknown',status=null,reason='unknown';
  for(let e=error,n=0;e&&typeof e==='object'&&n<4;e=e.cause,n++){
   if(kind==='unknown'&&names.has(e.name))kind=e.name;
   if(status===null&&Number.isInteger(e.statusCode)&&e.statusCode>=400&&e.statusCode<=599)status=e.statusCode;
+  let body=e.response;
+  if(typeof e.responseBody==='string'&&e.responseBody.length<=65536){try{body=JSON.parse(e.responseBody);}catch{}}
+  for(const value of [body?.error?.type,body?.error?.code])if(reason==='unknown'&&reasons.has(value))reason=value;
  }
- return {kind,status};
+ return {kind,status,reason};
 }
 export function createContractReviewHandler({authenticate,generate,allowedOrigins=origins,onProviderError=()=>{}}){
  return async request=>{
