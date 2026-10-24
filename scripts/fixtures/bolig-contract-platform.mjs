@@ -32,6 +32,8 @@ export async function contractPlatform(){
  if(reviewMigration)await db.exec(await fs.readFile('supabase/migrations/'+reviewMigration,'utf8'));
  const indexMigration=(await fs.readdir('supabase/migrations')).find(f=>f.endsWith('_bolig_contract_index.sql'));
  if(indexMigration)await db.exec(await fs.readFile('supabase/migrations/'+indexMigration,'utf8'));
+ const financeMigration=(await fs.readdir('supabase/migrations')).find(f=>f.endsWith('_bolig_contract_finance.sql'));
+ if(financeMigration)await db.exec(await fs.readFile('supabase/migrations/'+financeMigration,'utf8'));
  await db.query('insert into bolig_private.firms(company_id,enabled) values($1,true)',[company]);
  await db.query("insert into bolig_private.member_access(company_id,user_id,access_role) values($1,$2,'manager'),($1,$3,'reader')",[company,owner,reader]);
  let queue=Promise.resolve();
@@ -43,5 +45,6 @@ export async function contractPlatform(){
  const system=(query,args=[])=>serial(async()=>{await db.exec('reset role');return (await db.query(query,args)).rows;});
  const review=(user,c,r,action,payload)=>serial(async()=>{await actor(user);return (await db.query('select public.bolig_contract_review($1,$2,$3,$4) v',[c,r,action,payload])).rows[0].v;});
  const index=(user,c,r,action,payload)=>serial(async()=>{await actor(user);return (await db.query('select public.bolig_contract_index($1,$2,$3,$4) v',[c,r,action,payload])).rows[0].v;});
- return {db,company,owner,reader,admin,outsider,root,rpc,review,index,system};
+ const finance=(user,c,r,action,payload)=>serial(async()=>{await actor(user);return (await db.query('select public.bolig_contract_finance($1,$2,$3,$4) v',[c,r,action,payload])).rows[0].v;});
+ return {db,company,owner,reader,admin,outsider,root,rpc,review,index,finance,system};
 }

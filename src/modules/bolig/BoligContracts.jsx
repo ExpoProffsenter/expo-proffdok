@@ -6,6 +6,8 @@ import {BOLIG_ACCESS_EVENT} from './boligAccess.js';
 import Dialog from './BoligEditorDialog.jsx';
 import BoligContractReview from './BoligContractReview.jsx';
 import BoligContractIndex from './BoligContractIndex.jsx';
+import BoligContractFinance from './BoligContractFinance.jsx';
+import {clearFinanceDraft} from './boligContractFinance.js';
 import {contractDraft,rememberContractDraft,forgetContractDraft,contractRpc,contractHash,uploadContract,downloadContract,CONTRACT_EVENT} from './boligContractsClient.js';
 import './boligContracts.css';
 const kinds={contract:'Hovedkontrakt',attachment:'Vedlegg',addition:'Tillegg'};
@@ -36,10 +38,10 @@ export default function BoligContracts({context,root}){
    if(alive.current&&serial===loadSerial.current&&ticket===epoch.current&&current.current===scope&&!document.hidden){
     confirmedAccess.current=value.allowed?scope:null;
     setSnapshot({scope,data:value});setBlocked(false);setError('');
-    if(!value.allowed){clearBytes();forgetContractDraft(scope);setDraft(contractDraft(scope));setOpened(null);setSelected(null);setHistory(null);}
+    if(!value.allowed){clearBytes();forgetContractDraft(scope);clearFinanceDraft(scope);setDraft(contractDraft(scope));setOpened(null);setSelected(null);setHistory(null);}
     return value;
    }
-  }catch(e){if(alive.current&&serial===loadSerial.current&&ticket===epoch.current){confirmedAccess.current=null;setBlocked(true);clearBytes();setError(e.message);setSnapshot(null);if(e.code==='42501'){forgetContractDraft(scope);setDraft(contractDraft(scope));setOpened(null);setSelected(null);setHistory(null);}}}
+  }catch(e){if(alive.current&&serial===loadSerial.current&&ticket===epoch.current){confirmedAccess.current=null;setBlocked(true);clearBytes();setError(e.message);setSnapshot(null);if(e.code==='42501'){forgetContractDraft(scope);clearFinanceDraft(scope);setDraft(contractDraft(scope));setOpened(null);setSelected(null);setHistory(null);}}}
   finally{if(alive.current&&serial===loadSerial.current&&ticket===epoch.current){setChecking(false);endPicking();}}
   return null;
  },[scope,root.id,clearBytes,endPicking]);
@@ -50,7 +52,7 @@ export default function BoligContracts({context,root}){
    if(event?.type==='focus')picker.current=false;
    if(['focus','visibilitychange'].includes(event?.type))foreground.current=!document.hidden;
    if(document.hidden||!['focus','visibilitychange'].includes(event?.type))endPicking();
-   if(event?.type===WORK_PROFILE_EVENT&&event.detail?.active_company_id!==context.company_id){invalidScope.current=true;forgetContractDraft(scope);setDraft(contractDraft(scope));setSnapshot(null);setOpened(null);setSelected(null);setHistory(null);}
+   if(event?.type===WORK_PROFILE_EVENT&&event.detail?.active_company_id!==context.company_id){invalidScope.current=true;forgetContractDraft(scope);clearFinanceDraft(scope);setDraft(contractDraft(scope));setSnapshot(null);setOpened(null);setSelected(null);setHistory(null);}
    confirmedAccess.current=null;epoch.current++;setBlocked(true);clearBytes();
    if(!document.hidden)load();
   };
@@ -88,7 +90,7 @@ export default function BoligContracts({context,root}){
   if(writing.current||!data?.manage||blocked)return;
   writing.current=true;setBusy(true);setError('');setNotice('');const identity=scope,ticket=epoch.current;
   const valid=()=>alive.current&&current.current===identity&&ticket===epoch.current&&!document.hidden;
-  try{await job(valid);}catch(e){if(valid()){setError(e.message);if(e.code==='PT409'&&isUpload)change({conflict:true});if(e.code==='42501'){setBlocked(true);clearBytes();forgetContractDraft(scope);setOpened(null);}}}
+  try{await job(valid);}catch(e){if(valid()){setError(e.message);if(e.code==='PT409'&&isUpload)change({conflict:true});if(e.code==='42501'){setBlocked(true);clearBytes();forgetContractDraft(scope);clearFinanceDraft(scope);setOpened(null);}}}
   finally{writing.current=false;if(alive.current&&current.current===identity){setBusy(false);load();}}
  };
  const upload=()=>run(async valid=>{
@@ -121,12 +123,14 @@ export default function BoligContracts({context,root}){
   {data&&!data.allowed&&<div className="bolig-contract-empty"><LockKeyhole/><h4>Dette området er privat</h4><p>Prosjektoppretteren med prosjektledertilgang starter området og gir navngitte personer tilgang. Vanlig firma- og prosjekttilgang gir ikke kontraktsinnsyn.</p></div>}
   {data?.allowed&&<>
    <div className="bolig-contract-toolbar">{data.manage&&<><button type="button" onClick={()=>showUpload(null)}><Upload size={17}/>{draft.file?'Fortsett opplasting':'Last opp dokument'}</button><button type="button" className="secondary" onClick={()=>setOpened('access')}><Users size={17}/>Tilgang</button></>}{data.documents.length>0&&<button type="button" className="secondary" onClick={()=>setOpened('review')}>Les og gjennomgå kontrakter</button>}<label>Søk dokument<input type="search" value={query} onChange={e=>{setQuery(e.target.value);setShown(20);}} placeholder="Tittel, filnavn eller dokumenttype"/></label></div>
+   <button type="button" className="secondary" onClick={()=>setOpened('finance')}>Fakturert hittil og a konto</button>
    <button type="button" className="secondary" onClick={()=>setOpened('index')}>Indeksregulering mot byggherre</button>
    {!data.documents.length?<div className="bolig-contract-empty"><FileText/><h4>Legg inn kontraktsgrunnlaget</h4><p>Start med hovedkontrakten. Last deretter opp vedlegg og tillegg som egne dokumenter. Dette endrer ingen bestilling eller avtale.</p></div>:<div className="bolig-contract-list">{filtered.slice(0,shown).map(doc=><article key={doc.id}><div><span className="bolig-contract-kind">{kinds[doc.kind]} · Versjon {doc.revision}</span><h4>{doc.title}</h4><p>{doc.file.name} · {size(doc.file.size_bytes)}<br/>{date(doc.file.created_at)} · {doc.file.creator}</p></div><div>{versionActions(doc.file)}<div className="bolig-contract-file-actions"><button type="button" className="secondary" onClick={()=>{setSelected({document_id:doc.id});setHistory(null);setOpened('history');}}><History size={16}/>Versjoner ({doc.revision})</button>{data.manage&&<button type="button" className="secondary" onClick={()=>showUpload(doc)}>Ny versjon</button>}</div></div></article>)}</div>}
    {shown<filtered.length&&<button type="button" className="secondary" onClick={()=>setShown(n=>n+20)}>Vis flere dokumenter</button>}
    <p className="bolig-contract-note">Originalfiler og gjennomganger deles ikke gjennom UE-, leverandør- eller beboerlenker og følger ikke prosjektets vanlige FDV-/sluttpakke. Bruk «Les og gjennomgå kontrakter» for tekstsøk og forslag med kildehenvisninger.</p>
   </>}
   {(opened==='review'||(opened==='preview'&&selected?.fromReview))&&snapshot?.scope===scope&&snapshot.data.allowed&&<Dialog title="Kontraktsgjennomgang" onClose={close} suspended={!data||opened!=='review'}><BoligContractReview context={context} root={root} documents={snapshot.data.documents} active={!!data&&opened==='review'} foreground={foreground.current&&!document.hidden&&opened==='review'} manage={!!data?.manage} onView={showSource} onAccessLost={load}/></Dialog>}
+  {opened==='finance'&&snapshot?.scope===scope&&snapshot.data.allowed&&<Dialog title="Fakturert hittil og a konto" onClose={close} suspended={!data}><BoligContractFinance key={scope} context={context} root={root} active={!!data} foreground={foreground.current&&!document.hidden} manage={!!data?.manage} onAccessLost={load}/></Dialog>}
   {opened==='index'&&snapshot?.scope===scope&&snapshot.data.allowed&&<Dialog title="Indeksregulering mot byggherre" onClose={close} suspended={!data}><BoligContractIndex key={scope} context={context} root={root} documents={snapshot.data.documents} active={!!data} foreground={foreground.current&&!document.hidden} manage={!!data?.manage} onAccessLost={load}/></Dialog>}
   {opened==='upload'&&snapshot?.scope===scope&&snapshot.data.allowed&&<Dialog title="Last opp kontraktsdokument" onClose={close} busy={busy} suspended={!data&&!picking}>
    <form className="bolig-contract-form" onSubmit={e=>{e.preventDefault();upload();}}><fieldset disabled={busy||!!draft.attempt}>

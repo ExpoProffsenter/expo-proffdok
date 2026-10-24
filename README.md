@@ -1185,3 +1185,14 @@ beregner forhåndsvisningen og lagrer eksplisitt godkjent historikk med eksakt
 retry. Ingen automatisk pris-, ordre- eller fakturaendring. Bare Preview/Sandbox;
 AI-tilkoblingen er utsatt og ingen produksjonsmerge er godkjent.
 [Scope, tester og brukerprøve](docs/qa/BOLIG_INDEKSREGULERING_20261024.md).
+
+
+## Boligprosjekter: fakturert hittil og a konto – Preview 24.10.2026
+
+Kontrakter → Fakturert hittil og a konto registrerer eksterne fakturaer og
+kreditnotaer med separat hovedstol/indeks. Begge a konto-metoder støttes:
+utført verdi hittil minus netto fakturert hovedstol, eller periodens avtalte
+beløp/forskudd. Indeks beregnes bare på ny hovedstol for valgte leveransedeler.
+Avtaler og fakturaposter beholder uforanderlige øyeblikksbilder. Ingen utsending,
+bokføring, betalingsstatus eller produksjonsmerge. Presis kontrakt, grenser og
+brukertest: `docs/qa/BOLIG_FAKTURERT_OG_AKONTO_20261024.md`.

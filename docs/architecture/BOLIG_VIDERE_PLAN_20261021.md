@@ -1,5 +1,17 @@
 # Boligprosjekter – arbeidsflate og videre produktkrav
 
+## Fakturert hittil og a konto – 24. oktober 2026
+
+Kenneth valgte manuell registrering fra økonomisystemet, begge a konto-metoder
+og felles indeksavtale med reguleringsmåned per periode. Privat kontraktsøkonomi
+viser netto fakturert hovedstol/indeks og rest hovedstol. Kumulative perioder
+regner fratrekk av tidligere hovedstol; betalingsplan/forskudd føres som periodens
+beløp. Kreditnotaer er koblet til opprinnelig faktura. Avtaleversjoner og
+registreringer er uforanderlig historikk med revisjonskontroll og eksakt retry.
+Ingen faktura sendes eller bokføres. Ingen produksjonsmerge/-migrasjon.
+Se `docs/qa/BOLIG_FAKTURERT_OG_AKONTO_20261024.md` for omfang, grenser og QA.
+
+
 ## Indeksregulering mot byggherre – 24. oktober 2026
 
 Implementert for samme Preview/Sandbox: Boligblokk i alt og begge navngitte

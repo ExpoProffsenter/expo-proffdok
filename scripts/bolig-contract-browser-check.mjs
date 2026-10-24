@@ -8,6 +8,7 @@ import {createContractFiles,contractDigest} from '../supabase/functions/_shared/
 import {createContractReviewHandler} from '../supabase/functions/_shared/bolig-contract-review.mjs';
 import {contractAssetsPlugin} from './bolig-contract-assets.mjs';
 import indexBrowser from './bolig-contract-index-browser-scenarios.mjs';
+import financeBrowser from './bolig-contract-finance-browser-scenarios.mjs';
 const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
 const platform=await contractPlatform();let server,browser,checks=0;
 const eq=(a,b,m)=>{assert.deepEqual(a,b,m);checks++;};
@@ -37,7 +38,7 @@ try{
     if(req.url==='/qa/control'){Object.assign(control,JSON.parse(body));res.end('{}');return;}
     if(req.url==='/rpc'){
      const a=JSON.parse(body);if(control.delay&&a.p_action==='get')await new Promise(resolve=>setTimeout(resolve,control.delay));
-     try{const data=await platform[a.__name==='bolig_contract_review'?'review':a.__name==='bolig_contract_index'?'index':'rpc'](actorFrom(req.headers.authorization),a.p_company_id,a.p_root_id,a.p_action,a.p_payload);if(control.lostIndex&&a.__name==='bolig_contract_index'&&a.p_action==='approve'){control.lostIndex=false;throw Error('QA tapt svar');}res.setHeader('content-type','application/json');res.end(JSON.stringify({data}));}catch(e){res.end(JSON.stringify({error:{code:e.code,message:e.message}}));}return;
+     try{const data=await platform[a.__name==='bolig_contract_review'?'review':a.__name==='bolig_contract_index'?'index':a.__name==='bolig_contract_finance'?'finance':'rpc'](actorFrom(req.headers.authorization),a.p_company_id,a.p_root_id,a.p_action,a.p_payload);if(control.lostIndex&&a.__name==='bolig_contract_index'&&a.p_action==='approve'){control.lostIndex=false;throw Error('QA tapt svar');}if(control.lostFinance&&a.__name==='bolig_contract_finance'&&a.p_action==='register'){control.lostFinance=false;throw Error('QA tapt økonomisvar');}res.setHeader('content-type','application/json');res.end(JSON.stringify({data}));}catch(e){res.end(JSON.stringify({error:{code:e.code,message:e.message}}));}return;
     }
     if(req.url==='/functions/v1/bolig-contract-files'){
      const response=await handler(new Request('http://127.0.0.1:'+server.address().port+req.url,{method:'POST',headers:req.headers,body}));
@@ -185,6 +186,7 @@ try{
  if(reviewQA){await button('Les og gjennomgå kontrakter').click();await button('Gjennomgang').click();await page.locator('.bolig-contract-review-history summary').click();await page.getByRole('button',{name:/Lagret forslag/}).click();await page.getByText('Dette er et historisk grunnlag.',{exact:false}).waitFor();eq(await page.getByText('QA kildebelagt forslag',{exact:true}).count(),1,'new version keeps and labels historical review');await button('Lukk kontraktsgjennomgang').click();}
  await button('Versjoner (2)').click();await page.getByRole('heading',{name:'Versjon 1',exact:true}).waitFor();eq(await page.locator('dialog .bolig-contract-list article').count(),2,'both immutable versions visible');await button('Lukk dokumentets versjoner').click();
  await button('Tilgang').click();await page.getByLabel('Kontraktstilgang for QA Leser').selectOption('reader');await page.getByText('Kontraktstilgangen er lagret.',{exact:true}).waitFor();await button('Lukk tilgang til kontrakter').click();
+ if(process.env.BOLIG_CONTRACT_FINANCE_QA==='1')await financeBrowser({page,platform,eq,setControl,button});
  if(process.env.BOLIG_CONTRACT_INDEX_QA==='1')await indexBrowser({page,platform,eq,setControl,button});
  await page.evaluate(()=>window.__qaSwitch('admin'));await page.getByText('Dette området er privat',{exact:true}).waitFor();eq(await page.getByText('QA avtalegrunnlag',{exact:true}).count(),0,'firmaadmin gets no implicit contract metadata');
  await page.evaluate(()=>window.__qaSwitch('reader'));await page.getByRole('heading',{name:'QA avtalegrunnlag',exact:true}).waitFor();eq(await button('Last opp dokument').count(),0,'explicit reader cannot upload');

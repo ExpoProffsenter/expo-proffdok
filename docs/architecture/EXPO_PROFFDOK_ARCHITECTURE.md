@@ -1823,3 +1823,17 @@ scopekontrollert gateway, numeric-beregning og uforanderlig godkjenningshistorik
 Kun offentlige serie-/månedskoder sendes ved eksplisitt SSB-henting. Ingen endring
 av eksisterende pris-/ordre-/fakturakilder. Bare Preview/Sandbox.
 Se `docs/qa/BOLIG_INDEKSREGULERING_20261024.md`.
+
+
+### Privat byggherreøkonomi (Preview/Sandbox 24.10.2026)
+
+`BoligContractFinance.jsx` og `boligContractFinance.js` monteres isolert fra
+`BoligContracts.jsx`. `bolig_contract_finance` er SECURITY INVOKER foran privat
+`contract_finance_workspace`. Den nye private RLS-tabellen
+`contract_finance_events` lagrer append-only avtaleversjoner, eksterne fakturaer og
+kreditnotaer. Eksisterende privat kontraktstilgang autoriserer hver handling.
+Prosjektlås, global revisjon og forsøks-ID beskytter konkurrerende skriving og
+retry. Kumulative a konto-perioder trekker bare fra tidligere hovedstol; periodens
+indeks bruker eksakt numeric på ny hovedstol. Se
+`docs/qa/BOLIG_FAKTURERT_OG_AKONTO_20261024.md`. Ingen eksisterende fakturakjerne,
+produksjonsdatabase eller e-postmotor endres.
