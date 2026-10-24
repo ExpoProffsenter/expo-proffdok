@@ -81,8 +81,10 @@ export default function BoligPresenceCard({ context, token }) {
   const [selected, setSelected] = useState(""),
     [pending, setPending] = useState(() => readPartnerDraft(key, null)),
     [localError, setLocalError] = useState("");
-  const [knownParticipant,setKnownParticipant]=useState(false);
-  useEffect(()=>{if(data)setKnownParticipant(Boolean(data.entries?.length));},[data]);
+  const [knownParticipant, setKnownParticipant] = useState(false);
+  useEffect(() => {
+    if (data) setKnownParticipant(Boolean(data.entries?.length));
+  }, [data]);
   const pendingRef = useRef(pending);
   const entries = data?.entries || [],
     active = entries.filter((x) => x.visit),
@@ -138,7 +140,11 @@ export default function BoligPresenceCard({ context, token }) {
       setLocalError(e.message);
     }
   };
-  if ((!knownParticipant&&!entries.length&&!pending)||(data&&!entries.length&&!pending)) return null;
+  if (
+    (!knownParticipant && !entries.length && !pending) ||
+    (data && !entries.length && !pending)
+  )
+    return null;
   return (
     <section
       className="bolig-presence-card"
@@ -244,11 +250,13 @@ export default function BoligPresenceCard({ context, token }) {
         <details className="bolig-presence-install">
           <summary>Lagre lenken på telefonen</summary>
           <p>
-            iPhone: Åpne lenken i Safari. Trykk Del → Legg til på Hjem-skjerm.
+            iPhone: Åpne lenken i Safari. Trykk Del → Legg til på Hjem-skjerm →
+            Legg til. Velg Åpne som nettapp hvis valget vises.
           </p>
           <p>
-            Android: Åpne lenken i Chrome. Trykk menyen ⋮ → Legg til på
-            startsiden. Velg snarvei hvis du blir spurt.
+            Android: Åpne lenken i Chrome. Trykk menyen ⋮ → Installer og opprett
+            snarvei → Opprett snarvei. På noen telefoner heter valget Legg til
+            på startsiden.
           </p>
           <p>Bruk din personlige lenke. Ikke del den med andre.</p>
         </details>

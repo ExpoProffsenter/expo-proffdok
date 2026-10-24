@@ -10,7 +10,7 @@ Oppsett → Faktisk bemanning → Hvem kan registrere seg inn og ut? → Legg ti
 
 Bemanning må være aktivert. Personen får Utlogget/grått lys og Logg inn på prosjektet. Etter serverkvittering vises Innlogget/grønt lys, norsk innregistreringstid og Trykk her for utlogging. Flere egne prosjekter gir prosjektvalg, og et pågående besøk prioriteres. Deltakeren ser bare egen status. Prosjektleder får registreringene og historikken i den eksisterende listen/CSV. Utregistrering avslutter bare besøket. Ingen kobling til apputlogging, lønn eller timeføring.
 
-UE-kortet forklarer Safari → Del → Legg til på Hjem-skjerm og Chrome → meny → Legg til på startsiden. Dette er en lenkesnarvei, ikke en ny offline-app eller en ny installasjonsmotor. Faktisk installasjon/åpning på fysisk telefon er ikke testet.
+UE-kortet forklarer Safari → Del → Legg til på Hjem-skjerm og Chrome → meny → Installer og opprett snarvei → Opprett snarvei (eldre menyer kan hete Legg til på startsiden). Dette er en lenkesnarvei, ikke en ny offline-app eller en ny installasjonsmotor. Faktisk installasjon/åpning på fysisk telefon er ikke testet.
 
 ## Avgrensning og bevaring
 
@@ -36,4 +36,8 @@ Fast Preview: https://expo-proffdok-git-fase45b-boligprosjekter-found-0509d8-rin
 
 Eget syntetisk prosjekt DEMO – Inn- og utregistrering, root715c2ae7-604d-45a3-847b-1e05dbfee063. Navngitt demoansatt og QA UE Testperson; kun syntetiske data og eksisterende demoidentitet. Ingen andre pilotprosjekter/grants endret. Den nye QA UE-lenken er avgrenset til dette syntetiske prosjektet, med sju dagers utløp. Ingen invitasjon er sendt.
 
-Faktisk UE-prøve og CI-status føres etter publisering. Skynettets innloggede Min side-prøve krever ny sikker innlogging; lokal faktisk React-/Chromium-prøve og native Auth/gateway-kontroll består. Fysisk Safari/iPhone og lagring på telefonens hjemskjerm gjenstår. Ingen full app-regresjonsgaranti eller produksjonsklarering gis.
+Kode-SHA452acabb6c5218a52e08e7ba0ce347f3311c8a18, tree47c45c7556d7d7399447125575b4d2b997dc5e66. Vercel dpl_BUmtAipQwwQf3jVEFhgfErJhYrMz READY på riktig branch/SHA, target Preview. Fast alias faktisk åpnet.
+
+Faktisk anonym UE-prøve i skynett: egen registreringsflate for QA UE Testperson → Logg inn på prosjektet → grønt Innlogget kl12:08 norsk tid → omlasting → fortsatt Innlogget → Trykk her for utlogging → Utlogget. Deretter åpnet Lagre lenken på telefonen; både iPhone- og Android-teksten synlig. Native etterkontroll viser ett besøk og to ue_link-hendelser, med inn10:08:20.74598Z og ut10:08:52.62511Z. Ingen dobbeltregistrering etter omlasting. Skjermbilde docs/qa/evidence/bolig-ue-innregistrering-20261024.jpg viser faktisk publisert grønn status.
+
+CI40084658709 på kode-SHA452acabb pågår ved QA-oppdateringen. Ingen samlet grønn CI-påstand før avsluttet resultat. Skynettets innloggede Min side-prøve krever ny sikker innlogging; lokal faktisk React-/Chromium-prøve og native Auth/gateway-kontroll består. Fysisk Safari/iPhone og lagring på telefonens hjemskjerm gjenstår. Ingen full app-regresjonsgaranti eller produksjonsklarering gis.
