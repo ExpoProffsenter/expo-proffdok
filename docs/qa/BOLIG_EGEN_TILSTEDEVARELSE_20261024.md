@@ -2,6 +2,14 @@
 
 Miljømål: BEGGE. Kun feature/Preview og Sandbox ppvircenkjizeiqdxphj. Ingen main/Production-merge, ingen permanent demo-synk, ingen e-post. Baseline 50c8863f; main 36462e2b. PR278 forblir OPEN DRAFT.
 
+## Kompakt statuslinje – gjeldende visning
+
+Inn-/utregistreringen er redusert fra et stort kort til én smal linje. Hele linjen er grå ved Utlogget og grønn ved Innlogget, med tilsvarende sirkel og tydelig tekst. Prosjekt og eventuelt norsk innregistreringstid vises. Handlingene heter nå **Registrer inn** og **Registrer ut**. Flere prosjekter gir samme prosjektvalg. Person/firma, forklaring, Hent min status og UE-telefonveiledning ligger bak i-knappen **Info om inn- og utregistrering**. Kvitterings-/feilmeldinger er fortsatt synlige uten å åpne info.
+
+Avgrenset til BoligPresenceCard.jsx, egen boligPresence.css, eksisterende egenregistreringsprøve og dette QA-notatet. Transport, identitet, pending/retry og registreringshandler er byte-identiske med forrige appversjon når den nye lokale infotilstanden fjernes. Ingen database, tilganger, metadatafunksjon, bemanningshistorikk eller annen modul endret.
+
+Kontrollert før Preview: ny browser16 PASS, inkludert maksimal100px for statuslinjen på320/390/768/1366px, fungerende info, intern/UE, inn/ut, tapt svar/reload/retry, fokus/dvale og revokering. Eksisterende manuell bemanning15, Min side/prosjekt-layout108, Min side critical, full critical Sandbox-build, scope-grense og diff-check PASS. Tester er faktiske komponenter/stiler med syntetisk transport. Faktisk UE-visning etter publisering kontrolleres separat; fysisk Safari/telefon gjenstår.
+
 ## Avklart og implementert
 
 Kenneth ønsket kort øverst på Min side, kun for navngitte prosjektdeltakere. UE skal ha samme handling i sin egen lenke og kunne lagre lenken på telefonens hjemskjerm.

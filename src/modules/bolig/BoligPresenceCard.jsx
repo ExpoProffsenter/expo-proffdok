@@ -82,6 +82,7 @@ export default function BoligPresenceCard({ context, token }) {
     [pending, setPending] = useState(() => readPartnerDraft(key, null)),
     [localError, setLocalError] = useState("");
   const [knownParticipant, setKnownParticipant] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
   useEffect(() => {
     if (data) setKnownParticipant(Boolean(data.entries?.length));
   }, [data]);
@@ -147,70 +148,51 @@ export default function BoligPresenceCard({ context, token }) {
     return null;
   return (
     <section
-      className="bolig-presence-card"
+      className={`bolig-presence-card ${data && person?.visit ? "is-in" : "is-out"}`}
       aria-label="Min tilstedeværelse på prosjektet"
     >
-      <div className="bolig-presence-top">
-        <div>
-          <span className="bolig-presence-eyebrow">PÅ PROSJEKTET</span>
-          <h2>Registrer deg inn og ut</h2>
-        </div>
-        <button
-          type="button"
-          className="secondary"
-          disabled={busy}
-          onClick={() => load()}
-        >
-          Hent min status
-        </button>
-      </div>
-      {(error || localError) && <p role="alert">{localError || error}</p>}
-      {!data ? (
-        <p role="status">Kontrollerer din tilstedeværelse …</p>
-      ) : person ? (
-        <>
-          {entries.length > 1 && (
-            <label>
-              Velg prosjekt
-              <select
-                aria-label="Velg prosjekt for innregistrering"
-                disabled={busy || !!pending}
-                value={person.id}
-                onChange={(e) => setSelected(e.target.value)}
-              >
-                {entries.map((x) => (
-                  <option key={x.id} value={x.id}>
-                    {x.project}
-                    {x.visit ? " · Innlogget" : ""}
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
-          <div className="bolig-presence-project">
-            <strong>{person.project}</strong>
-            <span>
-              {person.name} · {person.company}
-            </span>
-          </div>
-          <div
-            className={`bolig-presence-status ${person.visit ? "is-in" : "is-out"}`}
-            role="status"
-          >
-            <span className="bolig-presence-light" aria-hidden="true" />
-            <div>
-              <strong>{person.visit ? "Innlogget" : "Utlogget"}</strong>
-              {person.visit && (
-                <span>Siden {time(person.visit.arrived_at)} · norsk tid</span>
+      <div className="bolig-presence-row">
+        <div className="bolig-presence-identity">
+          <span className="bolig-presence-light" aria-hidden="true" />
+          <div className="bolig-presence-copy">
+            <div className="bolig-presence-title" role="status">
+              <strong>
+                {!data
+                  ? "Kontrollerer …"
+                  : person?.visit
+                    ? "Innlogget"
+                    : "Utlogget"}
+              </strong>
+              {data && person?.visit && (
+                <span className="bolig-presence-since">
+                  siden {time(person.visit.arrived_at)}
+                </span>
               )}
             </div>
+            {data &&
+              person &&
+              (entries.length > 1 ? (
+                <select
+                  aria-label="Velg prosjekt for innregistrering"
+                  disabled={busy || !!pending}
+                  value={person.id}
+                  onChange={(e) => setSelected(e.target.value)}
+                >
+                  {entries.map((x) => (
+                    <option key={x.id} value={x.id}>
+                      {x.project}
+                      {x.visit ? " · Innlogget" : ""}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <span className="bolig-presence-project" title={person.project}>
+                  {person.project}
+                </span>
+              ))}
           </div>
-          {active.length > 1 && (
-            <p>
-              Du er registrert inne på {active.length} prosjekter. Velg
-              prosjektet du vil registrere deg ut av.
-            </p>
-          )}
+        </div>
+        {data && person && (
           <button
             type="button"
             className="bolig-presence-action"
@@ -218,23 +200,30 @@ export default function BoligPresenceCard({ context, token }) {
             onClick={register}
           >
             {busy
-              ? "Kontrollerer …"
+              ? "Venter …"
               : person.visit
-                ? "Trykk her for utlogging"
-                : "Logg inn på prosjektet"}
+                ? "Registrer ut"
+                : "Registrer inn"}
           </button>
-          <p className="bolig-presence-help">
-            Registrer når du kommer og går. Dette gjelder tilstedeværelse på
-            prosjektet.
-          </p>
-        </>
-      ) : null}
+        )}
+        <button
+          type="button"
+          className="bolig-presence-info-toggle"
+          aria-label="Info om inn- og utregistrering"
+          aria-expanded={showInfo}
+          onClick={() => setShowInfo((x) => !x)}
+        >
+          <span aria-hidden="true">i</span>
+        </button>
+      </div>
+      {(error || localError) && (
+        <p className="bolig-presence-message" role="alert">
+          {localError || error}
+        </p>
+      )}
       {pending && (
-        <div role="status">
-          <p>
-            Registreringen er ikke bekreftet. Hent status og prøv samme
-            registrering igjen.
-          </p>
+        <div className="bolig-presence-message" role="status">
+          <span>Registreringen er ikke bekreftet.</span>
           <button
             type="button"
             disabled={
@@ -246,21 +235,48 @@ export default function BoligPresenceCard({ context, token }) {
           </button>
         </div>
       )}
-      {token && (
-        <details className="bolig-presence-install">
-          <summary>Lagre lenken på telefonen</summary>
+      <div className="bolig-presence-info" hidden={!showInfo}>
+        {person && (
           <p>
-            iPhone: Åpne lenken i Safari. Trykk Del → Legg til på Hjem-skjerm →
-            Legg til. Velg Åpne som nettapp hvis valget vises.
+            <strong>{person.project}</strong>
+            <br />
+            {person.name} · {person.company}
           </p>
+        )}
+        <p>
+          Registrer når du kommer og går. Dette gjelder tilstedeværelse på
+          prosjektet. Tidene vises i norsk tid.
+        </p>
+        {active.length > 1 && (
           <p>
-            Android: Åpne lenken i Chrome. Trykk menyen ⋮ → Installer og opprett
-            snarvei → Opprett snarvei. På noen telefoner heter valget Legg til
-            på startsiden.
+            Du er registrert inne på {active.length} prosjekter. Velg prosjektet
+            du vil registrere deg ut av.
           </p>
-          <p>Bruk din personlige lenke. Ikke del den med andre.</p>
-        </details>
-      )}
+        )}
+        <button
+          type="button"
+          className="secondary"
+          disabled={busy}
+          onClick={() => load()}
+        >
+          Hent min status
+        </button>
+        {token && (
+          <details className="bolig-presence-install">
+            <summary>Lagre lenken på telefonen</summary>
+            <p>
+              iPhone: Åpne lenken i Safari. Trykk Del → Legg til på Hjem-skjerm
+              → Legg til. Velg Åpne som nettapp hvis valget vises.
+            </p>
+            <p>
+              Android: Åpne lenken i Chrome. Trykk menyen ⋮ → Installer og
+              opprett snarvei → Opprett snarvei. På noen telefoner heter valget
+              Legg til på startsiden.
+            </p>
+            <p>Bruk din personlige lenke. Ikke del den med andre.</p>
+          </details>
+        )}
+      </div>
     </section>
   );
 }

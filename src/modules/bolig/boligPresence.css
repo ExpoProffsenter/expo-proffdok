@@ -1,122 +1,212 @@
+/* One compact, scoped status line on Min side and the UE portal. */
 .bolig-presence-card {
   box-sizing: border-box;
   min-width: 0;
-  margin: 0 0 20px;
-  padding: 22px;
-  border: 1px solid #cddfdc;
-  border-radius: 20px;
-  background: linear-gradient(135deg, #f0f8f5, #fff);
-  color: #173831;
-  box-shadow: 0 8px 24px #17383108;
+  margin: 0 0 12px;
+  padding: 8px 10px;
+  border: 1px solid #d5dfdc;
+  border-radius: 12px;
+  background: #f2f5f4;
+  color: #244038;
 }
-.bolig-presence-card h2 {
-  margin: 5px 0 0;
-  font-size: 22px;
-  color: #173831;
+.bolig-presence-card.is-in {
+  background: #e8f6ee;
+  border-color: #b6dcc5;
 }
-.bolig-presence-top {
-  display: flex;
-  justify-content: space-between;
-  gap: 14px;
-  align-items: start;
-  flex-wrap: wrap;
-}
-.bolig-presence-eyebrow {
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.09em;
-  color: #51736b;
-}
-.bolig-presence-project {
+.bolig-presence-row {
   display: grid;
-  gap: 4px;
-  margin: 18px 0;
-  overflow-wrap: anywhere;
+  grid-template-columns: minmax(0, 1fr) auto 40px;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
 }
-.bolig-presence-project > span,
-.bolig-presence-help {
-  color: #59706a;
-  font-size: 13px;
-}
-.bolig-presence-card label {
-  display: grid;
-  gap: 7px;
-  margin-top: 16px;
-}
-.bolig-presence-card select {
-  width: 100%;
-  box-sizing: border-box;
-  min-height: 46px;
-  border: 1px solid #bcd0ca;
-  border-radius: 10px;
-  padding: 10px;
-  background: #fff;
-  font: inherit;
-}
-.bolig-presence-status {
+.bolig-presence-identity {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 15px;
-  border: 1px solid #d9e2df;
-  border-radius: 14px;
-  background: #f3f5f4;
-  margin-bottom: 14px;
+  gap: 10px;
+  min-width: 0;
 }
-.bolig-presence-status > div {
+.bolig-presence-copy {
+  min-width: 0;
   display: grid;
-  gap: 3px;
+  gap: 2px;
 }
-.bolig-presence-status strong {
-  font-size: 19px;
+.bolig-presence-title {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+  flex-wrap: wrap;
+  line-height: 1.25;
 }
-.bolig-presence-status span {
-  font-size: 13px;
+.bolig-presence-title strong {
+  font-size: 14px;
+  white-space: nowrap;
+}
+.bolig-presence-since {
+  color: #49685b;
+  font-size: 12px;
+  white-space: nowrap;
 }
 .bolig-presence-light {
   display: block;
-  width: 17px;
-  height: 17px;
+  width: 12px;
+  height: 12px;
   flex-shrink: 0;
-  border-radius: 100%;
-  background: #71817b;
-  box-shadow: 0 0 0 5px #71817b18;
+  border-radius: 50%;
+  background: #798681;
+  box-shadow: 0 0 0 4px #79868114;
 }
-.bolig-presence-status.is-in {
-  background: #e9f7ee;
-  border-color: #b5dec4;
+.bolig-presence-card.is-in .bolig-presence-light {
+  background: #15844b;
+  box-shadow: 0 0 0 4px #15844b15;
 }
-.bolig-presence-status.is-in .bolig-presence-light {
-  background: #16834b;
-  box-shadow: 0 0 0 5px #16834b18;
+.bolig-presence-project {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #496058;
+  font-size: 12px;
+  line-height: 1.25;
 }
-.bolig-presence-action {
-  min-height: 50px;
+.bolig-presence-card .bolig-presence-copy select {
+  box-sizing: border-box;
+  min-height: 26px;
+  height: 26px;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0 20px 0 0;
   border: 0;
-  border-radius: 12px;
-  padding: 12px 18px;
-  background: #17694f;
-  color: #fff;
-  font-size: 16px;
-  font-weight: 800;
+  border-radius: 0;
+  background: transparent;
+  color: #355549;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.25;
+}
+.bolig-presence-card button.bolig-presence-action {
+  box-sizing: border-box;
+  width: auto;
+  min-height: 40px;
+  margin: 0;
+  padding: 8px 12px;
+  border: 1px solid #bdcec7;
+  border-radius: 8px;
+  background: #fff;
+  color: #244b3c;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 750;
+  white-space: nowrap;
   cursor: pointer;
 }
-.bolig-presence-card button {
-  min-height: 44px;
+.bolig-presence-card.is-in button.bolig-presence-action {
+  border-color: #9dcbb0;
+  background: #fff;
+  color: #145b37;
+}
+.bolig-presence-card button.bolig-presence-info-toggle {
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  width: 40px;
+  min-width: 40px;
+  min-height: 40px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #49645a;
+  cursor: pointer;
+}
+.bolig-presence-info-toggle > span {
+  display: grid;
+  place-items: center;
+  width: 17px;
+  height: 17px;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+  font-family: Georgia, serif;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
 }
 .bolig-presence-card button:disabled {
   opacity: 0.55;
   cursor: wait;
 }
+.bolig-presence-card button:focus-visible,
+.bolig-presence-card select:focus-visible {
+  outline: 2px solid #247959;
+  outline-offset: 2px;
+}
+.bolig-presence-info {
+  padding: 8px 2px 2px;
+  border-top: 1px solid #cbdcd3;
+  margin-top: 8px;
+  font-size: 13px;
+  color: #3b594c;
+  overflow-wrap: anywhere;
+}
+.bolig-presence-info[hidden] {
+  display: none;
+}
+.bolig-presence-card .bolig-presence-info p {
+  margin: 6px 0 10px;
+  font-size: 13px;
+}
+.bolig-presence-card .bolig-presence-message {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 6px 0 0;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
 .bolig-presence-install {
   font-size: 13px;
-  margin-top: 16px;
+  margin-top: 10px;
 }
 .bolig-presence-install summary {
   cursor: pointer;
   font-weight: 700;
   min-height: 30px;
+}
+@media (max-width: 480px) {
+  .bolig-presence-card {
+    padding: 7px 8px;
+  }
+  .bolig-presence-row {
+    grid-template-columns: minmax(0, 1fr) auto 36px;
+    gap: 6px;
+  }
+  .bolig-presence-identity {
+    gap: 8px;
+  }
+  .bolig-presence-title {
+    gap: 2px 6px;
+  }
+  .bolig-presence-since {
+    font-size: 11px;
+  }
+  .bolig-presence-card button.bolig-presence-action {
+    min-height: 44px;
+    padding: 7px 9px;
+    font-size: 12px;
+  }
+  .bolig-presence-card button.bolig-presence-info-toggle {
+    width: 36px;
+    min-width: 36px;
+    min-height: 44px;
+  }
+  .bolig-presence-light {
+    width: 10px;
+    height: 10px;
+  }
 }
 .bolig-presence-roster {
   margin: 22px 0;
@@ -162,16 +252,6 @@
   font-weight: 700;
 }
 @media (max-width: 480px) {
-  .bolig-presence-card {
-    padding: 16px;
-    border-radius: 16px;
-  }
-  .bolig-presence-card h2 {
-    font-size: 20px;
-  }
-  .bolig-presence-top > button {
-    width: 100%;
-  }
   .bolig-presence-roster {
     padding: 12px;
   }

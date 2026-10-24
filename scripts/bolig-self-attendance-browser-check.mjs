@@ -80,19 +80,19 @@ try {
   await page.goto(`http://127.0.0.1:${server.address().port}`);
 
   const btn = (n) => page.getByRole("button", { name: n, exact: true });
-  await btn("Logg inn på prosjektet").waitFor();
+  await btn("Registrer inn").waitFor();
   eq(await page.evaluate(() => window.writes), 0, "mount never writes");
   await page
     .getByLabel("Velg prosjekt for innregistrering")
     .selectOption("person");
   await page.evaluate(() => (window.lost = true));
-  await btn("Logg inn på prosjektet").click();
+  await btn("Registrer inn").click();
   await btn("Prøv samme registrering igjen").waitFor();
   eq(await page.evaluate(() => window.writes), 1);
   await page.reload();
   await btn("Prøv samme registrering igjen").waitFor();
   await btn("Prøv samme registrering igjen").click();
-  await btn("Trykk her for utlogging").waitFor();
+  await btn("Registrer ut").waitFor();
   eq(
     await page.evaluate(() => window.writes),
     0,
@@ -106,7 +106,7 @@ try {
     });
     document.dispatchEvent(new Event("visibilitychange"));
   });
-  await btn("Trykk her for utlogging").waitFor({ state: "detached" });
+  await btn("Registrer ut").waitFor({ state: "detached" });
   await page.evaluate(() => {
     Object.defineProperty(document, "hidden", {
       configurable: true,
@@ -114,9 +114,9 @@ try {
     });
     document.dispatchEvent(new Event("visibilitychange"));
   });
-  await btn("Trykk her for utlogging").waitFor();
-  await btn("Trykk her for utlogging").click();
-  await btn("Logg inn på prosjektet").waitFor();
+  await btn("Registrer ut").waitFor();
+  await btn("Registrer ut").click();
+  await btn("Registrer inn").waitFor();
   eq(await page.getByText("Utlogget", { exact: true }).count(), 1);
   await page.getByText("Legg til prosjektdeltaker", { exact: true }).click();
   await page
@@ -135,13 +135,24 @@ try {
   await btn("Deaktiver deltaker").click();
   await btn("Aktiver deltaker").waitFor();
   await btn("Bytt intern / UE").click();
-  await btn("Logg inn på prosjektet").waitFor();
+  await btn("Registrer inn").waitFor();
+  await btn("Info om inn- og utregistrering").click();
   await page.getByText("Lagre lenken på telefonen", { exact: true }).click();
   await page.getByText(/iPhone: Åpne lenken i Safari/).waitFor();
-  await btn("Logg inn på prosjektet").click();
-  await btn("Trykk her for utlogging").waitFor();
+  await btn("Registrer inn").click();
+  await btn("Registrer ut").waitFor();
+  await btn("Info om inn- og utregistrering").click();
   for (const width of [320, 390, 768, 1366]) {
     await page.setViewportSize({ width, height: 950 });
+    eq(
+      (
+        await page
+          .getByRole("region", { name: "Min tilstedeværelse på prosjektet" })
+          .boundingBox()
+      ).height <= 100,
+      true,
+      "compact status line " + width,
+    );
     eq(
       await page.evaluate(
         () => document.documentElement.scrollWidth <= innerWidth,
@@ -162,11 +173,7 @@ try {
     .getByText("Tilgang tilbakekalt", { exact: true })
     .first()
     .waitFor();
-  eq(
-    await btn("Trykk her for utlogging").count(),
-    0,
-    "revocation hides controls",
-  );
+  eq(await btn("Registrer ut").count(), 0, "revocation hides controls");
   eq(errors, []);
   console.log("Self attendance browser: " + checks + " assertions PASS");
 } finally {
