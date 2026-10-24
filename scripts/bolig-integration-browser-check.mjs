@@ -20,7 +20,7 @@ try {
     logLevel: "silent",
     define: { "process.env.NODE_ENV": '"production"' },
     plugins: [
-      react({ jsxRuntime: "classic" }),
+      react(),
       {
         name: "visual-client",
         enforce: "pre",
@@ -28,7 +28,7 @@ try {
           id.endsWith("appSupabaseClientRegistry.js")
             ? "\0client"
             : [
-                  "ProjectSjaEntry.jsx",
+                  "KshmsSja.jsx",
                   "TimeEntryPoint.jsx",
                   "BoligProgress.jsx",
                   "KshmsDeviations.jsx",
@@ -38,7 +38,7 @@ try {
               : null,
         load: (id) =>
           id.startsWith("\0leaf:")
-            ? `import React from 'react';export default function Leaf(p){const name=${JSON.stringify(id)};window.leaves.push({name,projectId:p.projectId,taskId:p.taskId,request:p.request});return React.createElement('section',{'aria-label':'Existing leaf'},React.createElement('p',null,'Existing leaf '+name+' '+(p.projectId||p.taskId||p.context.user_id)),p.onTaskClose?React.createElement('button',{onClick:p.onTaskClose},'Lukk testaktivitet'):null);}`
+            ? `import React from 'react';import Dialog from '${process.cwd()}/src/modules/deviations/DeviationDialog.jsx';export default function Leaf(p){const [draft,setDraft]=React.useState(''),[show,setShow]=React.useState(true);const name=${JSON.stringify(id)},field=React.createElement('textarea',{'aria-label':'Ulagret kontrolltekst',value:draft,onChange:e=>setDraft(e.target.value)});window.leaves.push({name,projectId:p.projectId,taskId:p.taskId,request:p.request});return React.createElement('section',{'aria-label':'Existing leaf'},React.createElement('p',null,'Existing leaf '+name+' '+(p.projectId||p.taskId||p.context.user_id)),name.endsWith('KshmsSja.jsx')?(show?React.createElement(Dialog,{title:'Test-SJA',closeLabel:'Lukk test-SJA',onClose:()=>setShow(false)},field):null):field,p.onTaskClose?React.createElement('button',{onClick:p.onTaskClose},'Lukk testaktivitet'):null);}`
             : id === "\0client"
               ? "export const getAppSupabaseClient=()=>window.__client;"
               : null,
@@ -129,13 +129,36 @@ try {
   await page
     .getByRole("button", { name: /SJA, RUH og HMS-kontroller/ })
     .click();
-  await page.getByText(/Existing leaf.*ProjectSjaEntry/).waitFor();
+  await btn("Åpne SJA").click();
+  await page.getByText(/Existing leaf.*KshmsSja/).waitFor();
   eq(
     (await page.evaluate(() => window.leaves)).at(-1).projectId,
     linked,
     "HMS gets linked project",
   );
-  await btn("Lukk prosjektets ks/hms").click();
+  await page.getByLabel("Ulagret kontrolltekst").fill("Behold åpen SJA og kladd");
+  eq(await page.locator("dialog .deviation-dialog-backdrop").count(),1,"native editor portal is inside the modal top layer and interactive");
+  await page.evaluate(() => window.dispatchEvent(new Event("focus")));
+  await page.waitForTimeout(100);
+  eq(await page.getByRole("button", {name:"Lukk SJA-oversikten",exact:true}).getAttribute("aria-expanded"),"true","focus preserves native document group");
+  eq(await page.getByLabel("Ulagret kontrolltekst").inputValue(),"Behold åpen SJA og kladd","focus preserves mounted native editor");
+  await page.evaluate(() => {
+    Object.defineProperty(document,"hidden",{configurable:true,value:true});
+    document.dispatchEvent(new Event("visibilitychange"));
+  });
+  eq(await page.locator("dialog:visible").count(),0,"hidden page suspends dialog without exposing cached metadata");
+  eq(await page.getByLabel("Ulagret kontrolltekst").isVisible(),false,"nested portal is hidden with its containing dialog");
+  await page.evaluate(() => {
+    Object.defineProperty(document,"hidden",{configurable:true,value:false});
+    document.dispatchEvent(new Event("visibilitychange"));
+  });
+  await page.getByLabel("Ulagret kontrolltekst").waitFor();
+  eq(await page.getByLabel("Ulagret kontrolltekst").inputValue(),"Behold åpen SJA og kladd","background return preserves group and mounted draft");
+  await page.evaluate(() => {window.integrationDelay=250;window.dispatchEvent(new Event("focus"));});
+  await btn("Lukk arbeidsflaten").click();
+  await page.waitForTimeout(350);
+  eq(await page.locator("dialog").count(),0,"explicit close wins over delayed access reply");
+  await page.evaluate(() => {window.integrationDelay=0;});
   await page.getByRole("button", { name: /Prosjektets sjekklister/ }).click();
   eq(
     await page.evaluate(() => window.nav),
@@ -149,12 +172,14 @@ try {
   await page
     .getByRole("button", { name: /SJA, RUH og HMS-kontroller/ })
     .click();
-  await page.getByText(/Existing leaf.*ProjectSjaEntry/).waitFor();
+  await btn("Åpne SJA").click();
+  await page.getByText(/Existing leaf.*KshmsSja/).waitFor();
   eq(
     (await page.evaluate(() => window.leaves)).at(-1).projectId,
     "apartment",
     "preserves apartment project identity",
   );
+  await btn("Lukk test-SJA").click();
   await btn("Lukk prosjektets ks/hms").click();
   await page
     .getByRole("button", { name: /Mine oppgaver i boligprosjekter/ })
@@ -237,6 +262,7 @@ try {
     0,
     "revocation clears tasks",
   );
+  eq(await page.locator("dialog:visible").count(),0,"revocation leaves no stale native dialog visible");
   eq(errors, []);
   console.log(
     "Bolig integration browser: " +

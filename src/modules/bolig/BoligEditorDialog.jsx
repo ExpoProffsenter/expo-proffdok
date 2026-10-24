@@ -8,18 +8,21 @@ export default function BoligEditorDialog({
   onClose,
   children,
   className = "",
+  suspended = false,
 }) {
   const dialog = useRef(null);
   useEffect(() => {
     const node = dialog.current;
-    node.showModal?.();
+    if (suspended) node.close?.();
+    else node.showModal?.();
     return () => node.close?.();
-  }, []);
+  }, [suspended]);
   return createPortal(
     <dialog
       ref={dialog}
       className={`bolig-dialog bolig-catalog-dialog ${className}`}
       aria-label={title}
+      hidden={suspended}
       onCancel={(e) => {
         e.preventDefault();
         e.stopPropagation();

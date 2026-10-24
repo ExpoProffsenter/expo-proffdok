@@ -4,6 +4,7 @@ import { BOLIG_ACCESS_EVENT } from "./boligAccess.js";
 import {
   MANAGED_ACCESS_EVENT,
   MODULE_ACCESS_EVENT,
+  publishManagedAccessChange,
 } from "../access/moduleAccessClient.js";
 import "./bolig.css";
 export default function BoligFirmAccessPanel({ userId }) {
@@ -71,6 +72,7 @@ export default function BoligFirmAccessPanel({ userId }) {
         `Boligprosjekter er ${enabled ? "aktivert" : "deaktivert"} for ${companyName}.`,
       );
       window.dispatchEvent(new CustomEvent(BOLIG_ACCESS_EVENT));
+      publishManagedAccessChange({source:"bolig-module-access",companyId:firm.company_id});
     } catch (err) {
       if (ticket === generation.current) {
         setSnapshot(null);

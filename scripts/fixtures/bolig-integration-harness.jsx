@@ -53,9 +53,13 @@ window.tasks = () => [
 ];
 window.__client = {
   rpc: async (name, a) => {
+    if (name === "bolig_project_integration" && a.p_action === "get" && window.integrationDelay)
+      await new Promise(resolve=>setTimeout(resolve,window.integrationDelay));
     if (window.denied)
       return { error: { code: "42501", message: "Tilgang tilbakekalt" } };
     if (name === "get_hr_context") return { data: hr };
+    if (["kshms_project_report", "kshms_project_execution_report"].includes(name))
+      return {data:{context:{...ks,project_id:a.p_project_id},choices:{sjas:[],ruhs:[],rounds:[],risks:[]}}};
     if (name === "bolig_my_project_tasks") {
       const items = window.tasks();
       return {

@@ -1,5 +1,11 @@
 # Boligprosjekter – arbeidsflate og videre produktkrav
 
+## HR inkludert og gjennomgang av KS/HMS – 24. oktober 2026
+
+Kenneth har avklart at intern Bolig-tilgang skal inkludere hele HR-funksjonen, og prioritert KS/HMS-gjennomgang foran kontraktsområdet. HR-modulrettigheten utledes fra aktiv Bolig-/firma-/Prosjekter-/medlemskapstilgang; vanlige HR-innsynsroller, firmaoppsett og timeregistrering gjelder fortsatt. Ingen automatisk medarbeideropprettelse eller ekstra leder-/leserrettigheter. Separat HR-grant beholdes ved tilbakekalt Bolig-tilgang. Eksterne UE-/leverandør-/beboerlenker har ikke HR-tilgang.
+
+Gjennomgangen retter tap av åpen KS/HMS-dokumentgruppe ved ny prosjektkoblingslesing, og en bekreftet NULL-feil ved manglende leder i HR-innsynskontrollen. Additiv migrasjon `20261024171757_bolig_hr_included_access.sql` er kun installert i Sandbox. Tester/avgrensning: `docs/qa/BOLIG_KSHMS_INTEGRASJON_20261024.md`. Ingen produksjonsmerge/-migrasjon, ingen e-postaktivering. Kontraktsområdet er fortsatt ikke startet. Eldre «ingen ekstra HR-tilgang» og «timeavklaring gjenstår» nedenfor er historikk.
+
 ## Prosjektkobling og egne boligoppgaver – 24. oktober 2026
 
 Implementert i samme feature-branch for Preview/Sandbox. Produksjon/main er ikke endret.

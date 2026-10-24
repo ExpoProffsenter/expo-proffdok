@@ -222,6 +222,7 @@ jobs:
           node scripts/bolig-documentation-export-check.mjs
           node scripts/bolig-resident-notice-pdf-check.mjs
           node scripts/bolig-foundation-db-check.mjs
+          node scripts/bolig-hr-access-db-check.mjs
           node scripts/bolig-foundation-react-check.mjs
           node scripts/bolig-catalog-react-check.mjs
           node scripts/bolig-overview-react-check.mjs

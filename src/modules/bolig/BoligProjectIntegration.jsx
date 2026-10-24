@@ -1,5 +1,6 @@
 import React, { Suspense, useRef, useState } from "react";
 import { useHrAccess } from "../hr/hrAccess.js";
+import { DialogPortalTarget } from "../ui/DialogPortalTarget.js";
 import { integrationRpc } from "./boligIntegrationClient.js";
 import {
   useLivePartner,
@@ -30,6 +31,7 @@ export default function BoligProjectIntegration({
     ),
     [localError, setLocalError] = useState(""),
     [opened, setOpened] = useState(null),
+    [portalTarget, setPortalTarget] = useState(null),
     [scopeId, setScopeId] = useState("root");
   const pendingRef = useRef(pending),
     hr = useHrAccess(context.user_id, true);
@@ -44,6 +46,15 @@ export default function BoligProjectIntegration({
     hr.available
       ? hr
       : null;
+  // Keep only verified scope metadata in memory while rechecking access. The
+  // dialog is closed/hidden during that check; native modules clear private
+  // payloads themselves. Their selected group and unsent editor stay mounted.
+  const workspace = useRef(null);
+  if (workspace.current?.scope !== scope || error) workspace.current = null;
+  if (data) workspace.current = {scope, data, hr:ownHr || workspace.current?.hr};
+  const workspaceData = data || workspace.current?.data;
+  const workspaceKs = workspaceData?.ks_context;
+  const workspaceHr = ownHr || workspace.current?.hr;
   const unit = record.units.find((u) => u.id === scopeId && !u.archived);
   const project =
     scopeId === "root"
@@ -55,6 +66,7 @@ export default function BoligProjectIntegration({
             locked: false,
           }
         : null;
+  const workspaceProject = scopeId === "root" ? workspaceData?.project : project;
   const change = (fields) => {
     try {
       const next = { ...form, ...fields };
@@ -204,8 +216,9 @@ export default function BoligProjectIntegration({
               )}
               {!ownHr && (
                 <p>
-                  Timeføring følger din eksisterende tilgang til Mine timer og
-                  firmaets timeoppsett.
+                  HR er inkludert i Boligprosjekter. Firmaadmin må fullføre
+                  firmaets HR-oppsett før du kan bruke Mine timer. Timeføring
+                  krever også at du er registrert i firmaets HR- og timeoppsett.
                 </p>
               )}
             </>
@@ -329,6 +342,9 @@ export default function BoligProjectIntegration({
           )}
         </>
       )}
+      {opened && (!data || (opened === "time" && !ownHr)) && (
+        <p role="status">Arbeidsflaten er skjult til tilgangen er bekreftet. <button type="button" onClick={()=>setOpened(null)}>Lukk arbeidsflaten</button></p>
+      )}
       {pending && (
         <p role="status">
           Koblingen er ikke bekreftet.{" "}
@@ -337,8 +353,9 @@ export default function BoligProjectIntegration({
           </button>
         </p>
       )}
-      {opened && data && project && (
+      {opened && workspaceData && workspaceProject && (
         <Dialog
+          suspended={!data || (opened === "time" && !ownHr)}
           title={
             opened === "hms"
               ? "Prosjektets KS/HMS"
@@ -346,31 +363,37 @@ export default function BoligProjectIntegration({
           }
           onClose={() => setOpened(null)}
         >
+          <div ref={setPortalTarget} />
+          <DialogPortalTarget.Provider value={portalTarget}>
+          {portalTarget && (
           <Suspense
             fallback={<p role="status">Henter eksisterende arbeidsflate …</p>}
           >
-            {opened === "hms" && ks ? (
+            {opened === "hms" && workspaceKs ? (
               <ProjectHms
-                context={ks}
-                projectId={project.id}
+                key={`${scope}:${workspaceProject.id}:${workspaceKs.manage}`}
+                context={workspaceKs}
+                projectId={workspaceProject.id}
                 readOnly={
-                  context.role !== "manager" || root.archived || project.locked
+                  context.role !== "manager" || root.archived || workspaceProject.locked
                 }
               />
-            ) : opened === "time" && ownHr ? (
+            ) : opened === "time" && workspaceHr ? (
               <>
                 <p>
-                  Velg <strong>{project.title}</strong> i prosjektfeltet når du
+                  Velg <strong>{workspaceProject.title}</strong> i prosjektfeltet når du
                   lager en ny timeregistrering. Kontroller prosjektet før
                   lagring. Eksisterende uker, godkjenning og eksport følger
                   samme timeføring som på Min side.
                 </p>
-                <MyTime context={ownHr} />
+                <MyTime key={`${scope}:${workspaceHr.administer}`} context={workspaceHr} />
               </>
             ) : (
               <p>Tilgangen må bekreftes før arbeidsflaten kan åpnes.</p>
             )}
           </Suspense>
+          )}
+          </DialogPortalTarget.Provider>
         </Dialog>
       )}
     </section>

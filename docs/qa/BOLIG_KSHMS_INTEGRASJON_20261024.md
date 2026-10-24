@@ -1,5 +1,43 @@
 # Boligprosjekter – KS/HMS, timer og Mine oppgaver
 
+## Oppdatert gjennomgang: HR inkludert og bevart KS/HMS-arbeidsflate
+
+Kenneth 24. oktober: «Inkluder HR funksjonen for de som har tilgang til boligprosjekt» og «Prioriter gjennomgang av KS/HMS-integrasjonen først». Miljømål BEGGE, fortsatt bare samme feature/Preview og Sandbox. Ingen produksjonsmerge eller produksjonsmigrasjon. Kontraktsområdet er ikke startet. Dette avsnittet går foran eldre avgrensninger nedenfor.
+
+- Aktiv intern Bolig-rolle (leser/prosjektleder/firmaadmin), aktiv firmalisens og Prosjekter gir HR-modultilgang fra ferske serverrettigheter. Ingen kopiering av grants, medarbeideropprettelse, HR-aktivering eller time-/lønnsskriving. Firmaadmin fullfører firmaets HR- og timeoppsett som før. Egen medarbeider, nærmeste leder, firmaadmin og eksplisitte lesere har fortsatt vanlige innsynsrettigheter. Bolig-prosjektleder blir ikke HR-administrator eller leder for alle ansatte. Eksterne lenker gir ikke HR-tilgang.
+- Tilbakekalt Bolig-rolle/lisens, Prosjekter, medlemskap, profil eller avsluttet arbeidsforhold fjerner avledet tilgang. Separat HR-tilgang beholdes. Bolig-tilgangsskjemaene sender eksisterende managed-access-hendelse etter bekreftet lagring.
+- Administrativ metadata oppgir `bolig_hr_included`. Delt tilgangskomponent får kun én serverstyrt forklaringslinje; de eksisterende avkryssingene gjelder separat HR-tilgang. Scope-kontrollen krever byte-identisk komponent mot main når linjen fjernes.
+- Bolig-integrasjonen demonterte tidligere `ProjectSjaEntry` ved ny prosjektkoblingslesing og mistet valgt dokumentgruppe. Den monterte arbeidsflaten beholdes nå med verifisert metadata i minnet, mens dialogen lukkes/skjules under ny kontroll. Feil/scopebytte rydder gammelt grunnlag. En sen lesing gjenåpner ikke et vindu brukeren har lukket. Native KS/HMS-/timekomponenter og felles partner-refresh-hook er uendret.
+- Den delte `DeviationDialog` får et valgfritt React-context for portalplassering. Kun Bolig-integrasjonen setter et mål inne i sitt native `<dialog>`, slik at underdialoger er interaktive i riktig topplag og skjules sammen med hovedvinduet. Alle øvrige brukere beholder `document.body` som før. Scope-kontrollen krever byte-identisk komponent mot main når disse tre context-linjene og importen fjernes. Browser-testen bruker både faktisk `ProjectSjaEntry` og faktisk `DeviationDialog`.
+- HR-testen fant en eksisterende NULL-feil i `hr_private.can_read`: uten nærmeste leder kunne en uautorisert detaljlesing slippe gjennom `NOT can_read(...)`. Bare lederens likhetstest endres til `coalesce(...,false)`, slik at manglende leder gir avslag. Alle uttrykkelige, lovlige innsynsveier beholdes. Dette er nødvendig før utvidet HR-adgang. Historiske migrasjoner og produksjon er urørt.
+
+Additiv migrasjon `20261024171757_bolig_hr_included_access.sql` er installert kun i Sandbox `ppvircenkjizeiqdxphj`; versjon/navn er kontrollert i `schema_migrations`. Security advisor-typer/antall er uendret. Ingen nye tabeller, RLS-policyer, e-postkøer eller utsendinger.
+
+| Kontroll i denne gjennomgangen | Resultat |
+|---|---|
+| Full Sandbox-build med eksisterende critical checks | PASS |
+| Bolig PostgreSQL | 1575 assertions PASS |
+| HR-modultilgang med ekte HR actor/oppsett/medarbeider/CAS-funksjoner, lokal syntetisk plattform | 41 assertions PASS |
+| Chromium med faktisk `ProjectSjaEntry`/`DeviationDialog`, syntetiske undereditorer/transport | 25 assertions PASS, 320/390/768/1366 px |
+| Regresjonsbevis mot forrige integrasjonskode | Ny dokumentgruppe-/fokustest feiler på gammel kode, består med rettelsen |
+| Ekte timeføring i React | 91 assertions PASS |
+| Ekte SJA-parent, prosjekt-HMS og prosjekt-sjekklister i React | PASS |
+| Bolig-workspace og firma-/medarbeidertilgang i React | PASS |
+| Delt KS/HMS-/HR-tilgangskomponent og Hjelp, inkl. bundlemetadata og tilbakekalling | PASS |
+| Native Sandbox-integrasjon | PASS: prosjekt-ID i SJA/RUH/HMS og timeprosjektliste, egne oppgaver og eksakt retry; rollback |
+| Native Sandbox HR uten separat firma-/brukergrant | PASS: HR-kontekst, Min side, egen medarbeider/timer, avslag på annen medarbeider uten leder, tilbakekalling og separat HR; rollback |
+
+Native prøver bruker bare eksisterende syntetiske demoidentiteter og ruller tilbake alle testendringer. Ingen private medarbeiderdata er lagt i repoet. Innlogget samlet brukerprøve og fysisk iPhone/Safari gjenstår. Agentens testnettleser viser vanlig innlogging; dette sier ingenting om Kenneths økt. Ingen TEST OK. Siste publiserte CI og Preview kontrolleres separat.
+
+Kort brukerprøve:
+
+1. Boligprosjekter → velg prosjekt → **KS/HMS og timer**. Kontroller riktig koblet prosjektnavn.
+2. **SJA, RUH og HMS-kontroller** → **Åpne SJA**. Åpne et utkast, skriv en testtekst, bytt nettleserfane og gå tilbake. Samme gruppe/utkast skal være åpent.
+3. **Prosjektets sjekklister** og **Før timer og utlegg**: kontroller samme prosjekt og bevart innhold/uker.
+4. Med aktiv intern Bolig-tilgang og ferdig HR-oppsett: Min side → **Mine timer** / **Mine oppfølginger**, og eksisterende HR-inngang for firmaadmin/leder. Vanlige personrettigheter gjelder. Firmaadmin viser at HR er inkludert via Boligprosjekter.
+
+## Forrige integrasjonsetappe – historisk leveransegrunnlag
+
 24. oktober 2026. Kenneth: «Kjør og pass på at ingen andre funksjoner i appen berøres».
 Miljømål: BEGGE. Levert som feature for samme Preview og Sandbox; ingen merge til main eller produksjonsmigrasjon. PR #278 beholdes som draft.
 

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { boligRpc } from "./boligClient.js";
 import { BOLIG_ACCESS_EVENT, useBoligContext } from "./boligAccess.js";
+import { publishManagedAccessChange } from "../access/moduleAccessClient.js";
 import "./bolig.css";
 
 export default function BoligAccessPanel({ userId, mode, expectedCompanyId }) {
@@ -60,6 +61,7 @@ export default function BoligAccessPanel({ userId, mode, expectedCompanyId }) {
       setSnapshot(value);
       setNotice("Tilgangen er lagret.");
       window.dispatchEvent(new CustomEvent(BOLIG_ACCESS_EVENT));
+      publishManagedAccessChange({source:"bolig-module-access",companyId:context.company_id,userId:options.payload?.user_id||""});
     } catch (err) {
       if (ticket === generation.current) {
         setError(
@@ -100,6 +102,7 @@ export default function BoligAccessPanel({ userId, mode, expectedCompanyId }) {
         {context.company_name}. Den ansatte trenger også «Prosjekter og
         dokumentasjon». Endringen lagres med en gang.
       </p>
+      <p>HR er inkludert for brukere med aktiv Bolig-tilgang. Firmaadmin setter opp HR og timer. Innsyn i personalopplysninger følger de vanlige HR-rettighetene.</p>
       {error && <p role="alert">{error}</p>}
       {notice && <p role="status">{notice}</p>}
       {!current && !error && <p role="status">Henter tilganger …</p>}

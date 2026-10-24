@@ -35,11 +35,15 @@ const integrations = new Set([
   "src/modules/kshms/KshmsProgressBoard.jsx",
   "src/modules/project/projectNavigationTabs.mjs",
   "src/modules/personal/PersonalPage.jsx",
+  "src/modules/access/PeopleModuleAccess.jsx",
+  "src/modules/deviations/DeviationDialog.jsx",
+  "src/modules/ui/DialogPortalTarget.js",
   "src/modules/sales/README.md",
   "supabase/config.toml",
   "vite.config.js",
   "supabase/functions/_shared/supplier-order-email.mjs",
   "scripts/project-mobile-header-browser-check.mjs",
+  "scripts/people-module-access-react-check.mjs",
   "scripts/fixtures/rpc-retry-legacy-migrations.json",
 ]);
 const inScope = (p) =>
@@ -69,6 +73,20 @@ const personalCurrent = fs.readFileSync(personalPath,"utf8").trim()
  .replace("  {userId&&authUser?.id===userId&&context?.user_id===userId&&context?.company_id&&<Suspense fallback={null}><BoligPresenceCard key={'presence:'+scope} context={context}/></Suspense>}\n","")
  .replace("   {rights.enabled&&<Suspense fallback={null}><BoligMyTasks key={'tasks:'+scope} context={context}/></Suspense>}\n","");
 assert.equal(personalCurrent,personalBase,"Min side may only mount the isolated Bolig presence and task cards");
+
+// Kenneth explicitly included HR for Bolig users. This shared card may only
+// display the server-confirmed bundle source; all existing grant controls stay.
+const peoplePath="src/modules/access/PeopleModuleAccess.jsx";
+const peopleNote='  {saved?.bolig_hr_included&&<p className="note" data-bolig-hr-included>HR er inkludert via Boligprosjekter{userId?\' for denne brukeren\':\'\'}. Avkryssingen for HR nedenfor gjelder separat HR-tilgang. Firmaets HR-oppsett og vanlige innsynsrettigheter gjelder fortsatt.</p>}\n';
+assert.equal(fs.readFileSync(peoplePath,"utf8").replace(peopleNote,"").trim(),git("show",`${base}:${peoplePath}`),"Shared people controls may only add the explicit Bolig HR source note");
+
+const dialogPath="src/modules/deviations/DeviationDialog.jsx";
+const originalDialog=fs.readFileSync(dialogPath,"utf8")
+ .replace("useContext, ","")
+ .replace("import {DialogPortalTarget} from '../ui/DialogPortalTarget.js';\n","")
+ .replace("  const portalTarget = useContext(DialogPortalTarget);\n","")
+ .replace("portalTarget || document.body","document.body").trim();
+assert.equal(originalDialog,git("show",`${base}:${dialogPath}`),"Native dialog may only accept the optional containing portal; all default behavior stays identical");
 
 // Old migrations and all existing critical checks must be byte-identical.
 const existing = new Set(git("ls-tree", "-r", "--name-only", base).split("\n"));
