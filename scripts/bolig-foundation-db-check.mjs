@@ -970,6 +970,8 @@ try {
   await noticeComposer({db,call,actor,eq,rejects,firm,other,manager,reader,outsider});
   const {default:visualScenarios}=await import("./bolig-visuals-db-scenarios.mjs");
   await visualScenarios({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider});
+  const {default:attendanceScenarios}=await import("./bolig-attendance-db-scenarios.mjs");
+  await attendanceScenarios({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider});
   await db.exec(
     `reset role;update public.profiles set deactivated=true where id=${q(reader)}`,
   );

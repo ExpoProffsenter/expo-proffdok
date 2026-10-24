@@ -1,3 +1,7 @@
+## Nyest: bemanning 24. oktober 2026
+
+Kenneth utvidet nattoppdraget til faktisk utvikling. Prosjektleders valgfrie bemanningsliste er implementert i samme branch; se `docs/qa/BOLIG_BEMANNING_20261024.md` for kilde, QA, CI og publisering. Tilgangen er avgrenset til eksisterende Bolig-manager. Håndverkeridentitet/booking/kontraktsrettigheter og SJA/Min side-regler er fortsatt avklaringer, ikke implementerte gjetninger. Produksjonsstopp og OPEN DRAFT gjelder fortsatt.
+
 # Boligprosjekter – historikk og gjenopptakelse 23. oktober 2026
 
 ## Avtalen nå

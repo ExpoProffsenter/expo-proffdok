@@ -1,3 +1,4 @@
+import BoligAttendance from "./BoligAttendance.jsx";
 import BoligQuality from "./BoligQuality.jsx";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { WORK_PROFILE_EVENT } from "../access/workProfileClient.js";
@@ -633,6 +634,7 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
                         </span>
                       </button>
 
+                      {ctx.role === "manager" && <button type="button" aria-pressed={setupArea === "attendance"} onClick={()=>setSetupArea("attendance")}><Settings2 size={23}/><span><b>Faktisk bemanning</b><small>Aktiver, registrer inn og ut, se historikk</small></span></button>}
                       <button type="button" aria-pressed={setupArea === "visuals"} onClick={()=>setSetupArea("visuals")}>
                         <Building2 size={23}/><span><b>Bilder og plantegninger</b><small>Egne fasader og klikkbare romfelt</small></span>
                       </button>
@@ -648,6 +650,7 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
                         </span>
                       </button>
                     </nav>
+                    {setupArea === "attendance" && <BoligAttendance key={`${ctx.user_id}/${ctx.company_id}/${record.root.id}`} context={ctx} root={record.root}/> }
                     {setupArea === "visuals" && <BoligVisualSetup context={ctx} record={record}/>}
                     <div hidden={setupArea !== "archive"}>
                       {ctx.role === "manager" ? (
