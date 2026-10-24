@@ -1,5 +1,14 @@
 # Boligprosjekter – arbeidsflate og videre produktkrav
 
+## Avklart: firma med Boligprosjekter har også KS/HMS – 24. oktober 2026
+
+Kenneth presiserte at firmaer som får Boligprosjekter, også vil ha KS/HMS-tilgang. Videre integrasjon skal derfor gjenbruke appens eksisterende timeføring, sjekklister, SJA, RUH og øvrige relevante HMS-funksjoner med kobling til boligprosjektet. Dette er en avklart forutsetning for firmapakken og et ønske om felles prosjektkobling; selve koblingene er fortsatt ikke implementert.
+
+- Unngå parallelle registreringssystemer i Bolig. Eksisterende funksjoner, historikk og personrettigheter skal gjenbrukes. Firmaets modulaktivering alene utvider ikke automatisk ansattes eller UE-lenkers innsyn.
+- Teknisk kartlegging: timeføring bruker ordinær `project_id` via `time_projects`. SJA/RUH har også ordinær prosjektkobling. Bolig-hovedprosjektets `root_id` er en annen ID-type; enkelte boliger har allerede `project_id`. Integrasjonen må bruke en eksplisitt kobling og bevare eksisterende bolig-/prosjektkoblinger og historikk. Detaljert koblingsnivå og hvilke oppgaver som vises på Min side må fortsatt avklares.
+- **Åpent produktvalg:** I gjeldende app ligger Mine timer/Timer og utlegg under HR-tilgangen, og KS/HMS-tilgang alene åpner ikke timeføringen. Avklar om timeføring også skal følge Boligprosjekter + KS/HMS for firmaer uten resten av HR-modulen. En slik endring må avgrenses fra tilgang til øvrige HR-opplysninger.
+- Ingen firmalisenser, personrettigheter, UE-grants, timeføringskode eller prosjektkoblinger er endret ved denne planoppdateringen.
+
 ## Ønskeliste: kobling til KS/HMS og Min side – 24. oktober 2026
 
 Kenneth ba om å registrere følgende som senere arbeid. **Kun ønskeliste – ikke implementert eller godkjent som detaljert løsningsvalg.**
