@@ -1,0 +1,21 @@
+.bolig-contract-index{display:grid;gap:14px;min-width:0;color:var(--text,#e8eef7)}
+.bolig-contract-index fieldset{border:0;padding:0;min-width:0;display:grid;gap:12px}
+.bolig-contract-index label{display:grid;gap:6px;font-weight:600;min-width:0}
+.bolig-contract-index input:not([type=checkbox]),.bolig-contract-index textarea,.bolig-contract-index select{box-sizing:border-box;width:100%;min-width:0;max-width:100%}
+.bolig-contract-index input[type=checkbox]{width:20px;height:20px;flex:0 0 auto;accent-color:#54d7bf}
+.bolig-contract-index .bolig-index-check{display:flex;align-items:center;gap:10px}
+.bolig-index-check span,.bolig-contract-index button,.bolig-index-result p{overflow-wrap:anywhere}
+.bolig-index-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.bolig-index-setup,.bolig-index-result,.bolig-index-lines>article{border:1px solid #405064;border-radius:10px;padding:14px;background:#14202c}
+.bolig-index-setup>summary{font-weight:700;padding:4px 0 12px;cursor:pointer}
+.bolig-index-lines>legend{font-weight:700;font-size:1.1rem;margin:10px 0}
+.bolig-index-lines>article{display:grid;gap:10px;background:#1b2a39}
+.bolig-index-result-lines{display:grid;gap:10px}
+.bolig-index-result-lines article{border-top:1px solid #405064;padding:12px 0}
+.bolig-index-result-lines article>span{display:block;color:#c9d5df;margin-top:4px}
+.bolig-contract-index dl{display:grid;gap:7px;margin:10px 0}
+.bolig-contract-index dl>div{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.bolig-contract-index dd{margin:0;font-weight:700}
+.bolig-index-totals{border-top:2px solid #54d7bf;padding-top:14px}
+.bolig-contract-index>details:last-child>button{display:block;margin-top:8px;text-align:left;white-space:normal}
+@media(max-width:480px){.bolig-index-grid{grid-template-columns:1fr}.bolig-index-result,.bolig-index-setup,.bolig-index-lines>article{padding:11px}.bolig-contract-index dl>div{display:block}.bolig-contract-index dd{margin-top:3px}}

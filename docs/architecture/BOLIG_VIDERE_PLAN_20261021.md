@@ -1,5 +1,16 @@
 # Boligprosjekter – arbeidsflate og videre produktkrav
 
+## Indeksregulering mot byggherre – 24. oktober 2026
+
+Implementert for samme Preview/Sandbox: Boligblokk i alt og begge navngitte
+rørindekser, SSB-henting/manuell føring, reduksjonsfaktor og egne avkryssinger
+for grunnleveranse til byggherre og hver opsjon. Serverberegnet forhåndsvisning
+og uforanderlig godkjenningshistorikk i privat kontraktsområde. Ingen automatisk
+faktura-, pakke-, beboer- eller ordreendring. Se
+`docs/qa/BOLIG_INDEKSREGULERING_20261024.md` for presist omfang og testgrenser.
+AI Gateway/alternativ leverandør er uttrykkelig utsatt av Kenneth; se
+`docs/qa/BOLIG_KONTRAKTTEKST_OG_GJENNOMGANG_20261024.md`. Ingen produksjonsmerge.
+
 ## Privat kontraktstekst og gjennomgang – 24. oktober 2026
 
 Etter Kenneths «kjør» er tekstgjenkjenning, privat søk og arbeidsforslag med

@@ -225,6 +225,7 @@ jobs:
           node scripts/bolig-hr-access-db-check.mjs
           node scripts/bolig-contract-files-check.mjs
           node scripts/bolig-contract-review-check.mjs
+          node scripts/bolig-contract-index-check.mjs
           node scripts/bolig-foundation-react-check.mjs
           node scripts/bolig-catalog-react-check.mjs
           node scripts/bolig-overview-react-check.mjs
@@ -241,7 +242,7 @@ jobs:
           node scripts/bolig-attendance-browser-check.mjs
           node scripts/bolig-self-attendance-browser-check.mjs
           node scripts/bolig-integration-browser-check.mjs
-          BOLIG_CONTRACT_REVIEW_QA=1 node scripts/bolig-contract-browser-check.mjs
+          BOLIG_CONTRACT_REVIEW_QA=1 BOLIG_CONTRACT_INDEX_QA=1 node scripts/bolig-contract-browser-check.mjs
           node scripts/bolig-sections-browser-check.mjs
           node scripts/bolig-completion-browser-check.mjs
           node scripts/bolig-handover-browser-check.mjs

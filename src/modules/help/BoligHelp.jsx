@@ -479,6 +479,16 @@ export function BoligHelp() {
         oppgave endres automatisk. Opplastingskladden beholdes i nettleserøkten; ikke last siden
         på nytt før filen er bekreftet lagret.
       </p>
+      <p>
+        Under «Kontrakter → Indeksregulering mot byggherre» velger du avtalt
+        indeks, basismåned, reguleringsmåned og eventuell reduksjonsfaktor.
+        Hent publiserte indekstall fra SSB eller før inn kontrollerte tall.
+        Oppgi opprinnelig grunnleveranse og egne opsjoner ekskl. mva. Kryss av
+        hvilke deler som skal reguleres. «Forhåndsvis regulering» viser
+        beregningen før «Godkjenn og lagre beregning» lagrer den i historikken.
+        Bruk opprinnelige beløp fra basismåneden. Beregningen gjelder avtalen
+        mot byggherre og endrer ikke fakturaer eller beboerpriser automatisk.
+      </p>
     </details>
   );
 }

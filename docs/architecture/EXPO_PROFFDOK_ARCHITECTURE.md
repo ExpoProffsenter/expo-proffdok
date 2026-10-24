@@ -1814,3 +1814,12 @@ Additiv `20261023210201_bolig_partner_invitation_mail.sql`: deny-all private `pa
 ### Bolig: valgfri prosjektkobling og core-avgrensning
 
 Leilighetsinformasjon beholder eksisterende bolig_workspace/payload/revision/lokal kladd, men sammenfolder ekstra ordinær prosjektkobling og forklarer at boligen allerede hører til aktivt boligprosjekt. Lagring heter «Lagre endringer». `bolig-core-boundary-check.mjs` kontrollerer alle PR-stier mot faktisk main, uendrede gamle migrasjoner/critical-checks og identisk etablert leverandørmailkode/resultat (eneste tillegg er export av helper). `bolig-shared-board-browser-check.mjs` kompilerer både main og gjeldende KshmsProgressBoard og sammenligner de ordinære dato/klokkeslett-/bemannings-/drawer-/eksportreisene med samme handlinger ved390/1366px. Boligs valgfrie adapter bevarer standardens eksport også uten callback. Ingen ny SQL eller aktivering av transport i tekst-/avgrensningspakken. Full testscope og tilsiktede felles integrasjoner: `docs/qa/BOLIG_AVGRENSNING_OG_TEKSTER_20261023.md`. Uttrykkelig ingen produksjonsmerge ennå.
+## Boligprosjekter: privat indeksberegning – 24.10.2026
+
+Ny additiv privat kontrakts-RPC gjenbruker eksisterende kontraktstilgang.
+Grunnleveranse til byggherre og navngitte opsjoner reguleres bare ved avkryssing,
+med valgt SSB-serie, måneder og faktor. Public SECURITY INVOKER foran privat
+scopekontrollert gateway, numeric-beregning og uforanderlig godkjenningshistorikk.
+Kun offentlige serie-/månedskoder sendes ved eksplisitt SSB-henting. Ingen endring
+av eksisterende pris-/ordre-/fakturakilder. Bare Preview/Sandbox.
+Se `docs/qa/BOLIG_INDEKSREGULERING_20261024.md`.

@@ -1177,3 +1177,11 @@ UE-popup, ytelse og e-postkart: [QA og prioritering](docs/qa/BOLIG_REFRESH_OG_EP
 
 
 Prosjektkobling og regresjonsavgrensning: [QA](docs/qa/BOLIG_AVGRENSNING_OG_TEKSTER_20261023.md). Leilighetsinformasjon bruker «Lagre endringer» og skiller aktivt boligprosjekt fra en valgfri ekstra prosjektkobling. Nye CI-kontroller sammenligner delte standardbrukerreiser og vanlig leverandørmail direkte med main. Ingen produksjonsmerge ennå.
+## Boligprosjekter: indeksregulering mot byggherre – Preview 24.10.2026
+
+Privat kontraktsområde har SSB-serie/måned, reduksjonsfaktor og separate
+avkryssinger/beløp for grunnleveranse til byggherre og egne opsjoner. Serveren
+beregner forhåndsvisningen og lagrer eksplisitt godkjent historikk med eksakt
+retry. Ingen automatisk pris-, ordre- eller fakturaendring. Bare Preview/Sandbox;
+AI-tilkoblingen er utsatt og ingen produksjonsmerge er godkjent.
+[Scope, tester og brukerprøve](docs/qa/BOLIG_INDEKSREGULERING_20261024.md).
