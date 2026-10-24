@@ -63,7 +63,7 @@ try{
  let generations=0;
  await p.system("update bolig_private.contract_reviews set created_at=now()-interval '1 minute'");
  const origin='https://qa.invalid',allowedOrigins=new Set([origin]);
- const handler=createContractReviewHandler({allowedOrigins,authenticate:async token=>token==='Bearer qa'?{rpc:(c,r,a,v)=>p.review(p.owner,c,r,a,v)}:null,generate:async input=>{generations++;eq(input.sources[0].id,tid,'model only receives server-loaded immutable text');return result;}});
+ const handler=createContractReviewHandler({allowedOrigins,authenticate:async token=>token==='Bearer qa'?{rpc:(c,r,a,v)=>p.review(p.owner,c,r,a,v)}:null,generate:async input=>{generations++;eq(input.sources[0].id,tid,'model only receives server-loaded immutable text');eq(Object.keys(input.sources[0]).sort(),['id','pages','title','version'],'provider receives no uploader, tenant or Storage metadata');return result;}});
  const http=(body,authorization='Bearer qa',extra={})=>handler(new Request(origin+'/api',{method:'POST',headers:{origin,authorization,'content-type':'application/json',...extra},body:JSON.stringify(body)}));
  const input={company_id:p.company,root_id:p.root.id,id:uuid(),text_ids:[tid],question:''};
  eq((await http(input,'')).status,401,'auth precedes body and model');eq(generations,0);

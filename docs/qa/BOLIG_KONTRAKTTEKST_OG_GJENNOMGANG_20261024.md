@@ -63,6 +63,8 @@ aldri stille. Oppsettet foldes sammen etter lagring slik at funn kommer først.
   CDN/OCR-tjeneste. Ingen nye private data i localStorage/sessionStorage/IndexedDB.
 - Bare eksplisitt **Start gjennomgang** sender en forespørsel til egen Vercel-
   funksjon. Browseren sender ID-er/spørsmål; API-et laster tekst fra privat SQL.
+  Bare tittel, kilde-ID, versjon og tekstsider sendes videre til modelltilbyderen;
+  opplasteridentitet, firmakontekst og Storage-metadata utelates.
   Brukersupplert alternativ tekst eller backend-URL aksepteres ikke.
 - API-et validerer JWT med Auth.getUser før privat SQL. Samme eksplisitte
   miljøbinding som appen velger Sandbox for denne feature-Preview-en. Ingen
@@ -90,7 +92,7 @@ aldri stille. Oppsettet foldes sammen etter lagring slik at funn kommer først.
 
 | Kontroll | Resultat |
 |---|---|
-| Faktisk SQL og faktisk HTTP-handler | 67 assertions PASS; syntetisk modell, Auth-transport og Storage |
+| Faktisk SQL og faktisk HTTP-handler | 68 assertions PASS; syntetisk modell, Auth-transport og Storage |
 | Faktisk React → HTTP → SQL/filhandler/PDF/OCR → gjennomgang | 62 Chromium assertions PASS, inkludert filvelgerregresjon, faktisk bilde-OCR med avbrudd/ny start og 320/390/768/1366 px; modellen er syntetisk |
 | Vedlagt virkelig skannet PDF, samme browser-flyt | PASS: sju sider lesbare, ingen under OCR-terskelen; ingen dokumentforespørsler til ekstern host |
 | Original ved nedlasting | Samme SHA-256 som opplastet original |

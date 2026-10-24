@@ -49,7 +49,9 @@ export function createContractReviewHandler({authenticate,generate,allowedOrigin
    const job=(await rpc('begin',{id:input.id,text_ids:input.text_ids,question:input.question})).data;
    if(job.state==='ready')return respond(200,await rpc('review',{id:input.id}));
    started=true;
-   const result=validateContractReview(await generate({question:job.question,sources:job.sources}),job.sources);
+   // The provider needs source text and edition, not uploader/tenant/Storage metadata.
+   const sources=job.sources.map(s=>({id:s.id,title:s.title,version:s.file.version,pages:s.pages}));
+   const result=validateContractReview(await generate({question:job.question,sources}),job.sources);
    const pages=job.sources.flatMap(s=>s.pages),uncertain=pages.filter(p=>p.text.trim().length<40||(p.method==='ocr'&&p.confidence<70)).length;
    const limits=[`Grunnlaget er ${job.sources.length} valgte dokumentversjoner og ${pages.length} tekstsider. Dokumentrang er ikke fastsatt.`,
     ...(uncertain?[`${uncertain} sider har usikker eller manglende tekst. Kontroller disse mot originalen før du bruker gjennomgangen.`]:[]),...result.limitations];
