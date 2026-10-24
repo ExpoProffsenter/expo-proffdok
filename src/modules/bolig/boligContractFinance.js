@@ -3,7 +3,7 @@ import {indexNumber} from './boligContractIndex.js';
 const drafts=new Map();let owner='';
 export function financeDraft(scope){
  const identity=scope.split(':').slice(0,2).join(':');if(identity!==owner){drafts.clear();owner=identity;}
- return drafts.get(scope)||{tab:'period',setup:null,form:{method:'earned',number:'',date:'',period:'',reason:'',credit_of:'',apply_index:true,target_month:'',target_index:'',origin:'manual',values:{}},attempt:null};
+ return drafts.get(scope)||{tab:'period',setup:null,form:{method:'payment',number:'',date:'',period:'',reason:'',credit_of:'',apply_index:false,target_month:'',target_index:'',origin:'manual',values:{}},attempt:null};
 }
 export const keepFinanceDraft=(scope,value)=>drafts.set(scope,value);
 export const clearFinanceDraft=scope=>drafts.delete(scope);

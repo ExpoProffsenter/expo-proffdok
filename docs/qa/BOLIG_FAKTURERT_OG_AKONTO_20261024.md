@@ -1,6 +1,11 @@
 # Fakturert hittil og a konto – 24. oktober 2026
 
-Oppdatert 25. oktober: kontraktssummen står først, merknaden er valgfri og
+Oppdatert 25. oktober: periodens betalingsplan-/dokumenterte beløp er standard,
+og summer akkumuleres når fakturaer registreres. Se
+`BOLIG_BETALINGSPLAN_OG_PERIODER_20261025.md` for gjeldende metodevalg.
+Tidligere kumulativ «utført hittil»-beskrivelse nedenfor gjelder historisk metode.
+
+Kontraktssummen står først, merknaden er valgfri og
 popupene bevares ved utklipp. Se `BOLIG_KONTRAKT_UX_OG_UTKLIPP_20261025.md`.
 
 Miljømål BEGGE. Utført bare på feature/Preview og Sandbox ppvircenkjizeiqdxphj.

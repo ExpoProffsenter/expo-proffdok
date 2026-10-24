@@ -34,6 +34,8 @@ export async function contractPlatform(){
  if(indexMigration)await db.exec(await fs.readFile('supabase/migrations/'+indexMigration,'utf8'));
  const financeMigration=(await fs.readdir('supabase/migrations')).find(f=>f.endsWith('_bolig_contract_finance.sql'));
  if(financeMigration)await db.exec(await fs.readFile('supabase/migrations/'+financeMigration,'utf8'));
+ const monthlyMigration=(await fs.readdir('supabase/migrations')).find(f=>f.endsWith('_bolig_contract_monthly_basis.sql'));
+ if(monthlyMigration)await db.exec(await fs.readFile('supabase/migrations/'+monthlyMigration,'utf8'));
  await db.query('insert into bolig_private.firms(company_id,enabled) values($1,true)',[company]);
  await db.query("insert into bolig_private.member_access(company_id,user_id,access_role) values($1,$2,'manager'),($1,$3,'reader')",[company,owner,reader]);
  let queue=Promise.resolve();

@@ -22,6 +22,10 @@ begin
  perform public.bolig_contract_finance(c,root,'register',jsonb_build_object('id',gen_random_uuid(),'revision',3,'input',i));
  r:=public.bolig_contract_finance(c,root);
  assert r#>>'{data,totals,0,principal_cents}'='30000000','Credits not deducted';assert r#>>'{data,totals,0,index_cents}'='2700000','Index credit not deducted';
+ i:=i||jsonb_build_object('mode','period','method','documented','number','QA-DOC-MONTH','date','2026-03-31','period','2026-03','reason','QA dokumentert denne måneden','credit_of',null,'apply_index',true,'target_month','2026-03','target_index',110,'values',jsonb_build_array(jsonb_build_object('id',line,'principal_cents',5000000,'index_cents',0)));
+ r:=public.bolig_contract_finance(c,root,'preview',jsonb_build_object('input',i));assert r#>>'{data,result,principal_cents}'='5000000','Documented month reduced by prior invoicing';
+ r:=public.bolig_contract_finance(c,root,'register',jsonb_build_object('id',gen_random_uuid(),'revision',4,'input',i));assert r#>>'{data,entry,input,method}'='documented','Billing basis not retained';
+ r:=public.bolig_contract_finance(c,root);assert r#>>'{data,totals,0,principal_cents}'='35000000','Documented month not accumulated';assert r#>>'{data,totals,0,index_cents}'='3150000','Documented index not accumulated';
  begin perform 1 from bolig_private.contract_finance_events;exception when insufficient_privilege then denied:=true;end;assert denied,'Raw private table accessible';
  perform public.bolig_contracts(c,root,'grant',jsonb_build_object('user_id','d0000000-0000-4000-8000-000000000101','role','reader','revision',0));
  perform set_config('qa.finance.root',root::text,true);perform set_config('qa.finance.payload',p::text,true);
@@ -30,7 +34,7 @@ reset role;
 select set_config('request.jwt.claim.sub','d0000000-0000-4000-8000-000000000101',true);
 set local role authenticated;
 do $$declare c uuid:='e0000000-0000-4000-8000-000000000001';root uuid:=current_setting('qa.finance.root')::uuid;denied boolean:=false;begin
- assert jsonb_array_length(public.bolig_contract_finance(c,root)#>'{data,entries}')=3,'Reader missing history';
+ assert jsonb_array_length(public.bolig_contract_finance(c,root)#>'{data,entries}')=4,'Reader missing history';
  begin perform public.bolig_contract_finance(c,root,'register',current_setting('qa.finance.payload')::jsonb);exception when insufficient_privilege then denied:=true;end;assert denied,'Reader can register';
 end$$;
 reset role;

@@ -67,10 +67,17 @@ try{
  await deny(()=>rpc('register',{id:randomUUID(),revision:oldPreview.revision,input:{...lower,number:'STALE'}}),'PT409');
  eq((await rpc('entry',{id:first.id})).entry.result,first.result,'later agreement changes never alter invoice result');
 
+ const monthlyBefore=(await rpc('get')).totals[0].principal_cents;
+ for(const [n,method,cents] of [[1,'payment',1000000],[2,'payment',2500000],[3,'documented',2000000]]){
+  const month=String(4+n).padStart(2,'0');const i=input({number:'MONTHLY-'+n,method,period:'2026-'+month,date:'2026-'+month+'-28',apply_index:false,target_index:null,values:[{id:base,principal_cents:cents,index_cents:0},{id:option,principal_cents:0,index_cents:0}]});
+  const invoice=await save(i);eq(invoice.result.principal_cents,cents,'monthly input is never reduced by earlier invoices');eq(invoice.input.method,method,'invoice retains billing basis');
+ }
+ eq((await rpc('get')).totals[0].principal_cents,monthlyBefore+5500000,'all three monthly invoices accumulate in billed-to-date');
+ await deny(()=>rpc('preview',{input:input({mode:'manual',method:'documented',number:'WRONG-MODE',apply_index:false})}),'22023');
  await deny(()=>rpc('entry',{id:randomUUID()}),'42501');
  await deny(()=>rpc('get',{},p.owner,randomUUID()),'42501');
  await p.rpc(p.owner,p.company,p.root.id,'grant',{user_id:p.reader,role:'none',revision:1});await deny(()=>rpc('get',{},p.reader),'42501');
- await p.system('update bolig_private.roots set archived=true where id=$1',[p.root.id]);eq((await rpc('get')).entries.length,7);await deny(()=>rpc('register',{id:randomUUID(),revision:rev,input:input()}),'42501');
+ await p.system('update bolig_private.roots set archived=true where id=$1',[p.root.id]);eq((await rpc('get')).entries.length,10);await deny(()=>rpc('register',{id:randomUUID(),revision:rev,input:input()}),'42501');
  await p.system('set role authenticated');await deny(()=>p.db.query('select * from bolig_private.contract_finance_events'),'42501');
  await p.system('set role anon');await deny(()=>p.db.query('select public.bolig_contract_finance($1,$2)',[p.company,p.root.id]),'42501');
  eq(moneyCents('1 234,56'),123456);eq(moneyCents('-0,01',true),-1);for(const s of ['-1','1.234,50','1e3','1,001']){assert.throws(()=>moneyCents(s));checks++;}
