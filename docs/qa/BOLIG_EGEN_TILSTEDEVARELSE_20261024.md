@@ -10,6 +10,8 @@ Avgrenset til BoligPresenceCard.jsx, egen boligPresence.css, eksisterende egenre
 
 Kontrollert før Preview: ny browser16 PASS, inkludert maksimal100px for statuslinjen på320/390/768/1366px, fungerende info, intern/UE, inn/ut, tapt svar/reload/retry, fokus/dvale og revokering. Eksisterende manuell bemanning15, Min side/prosjekt-layout108, Min side critical, full critical Sandbox-build, scope-grense og diff-check PASS. Tester er faktiske komponenter/stiler med syntetisk transport. Faktisk UE-visning etter publisering kontrolleres separat; fysisk Safari/telefon gjenstår.
 
+Faktisk kompakt UE-prøve: app-SHA769eec6546584bb8bb896f5e659419fefe30e19f, tree4677301d502d9792a9596df4d12e950c2d0153ca, deployment dpl_CnPcXK4K81Abg3Epv6GGdv6FwDCc READY på fast Preview. Statuslinjen målt til77px høy i faktisk publisert desktopvisning. Registrer inn → grønn Innlogget; i-knapp → person/firma og telefonveiledning; lukk info → smal linje; Registrer ut → grå Utlogget og Registrer inn. Bare syntetisk QA UE Testperson ble brukt. Skjermbilde docs/qa/evidence/bolig-ue-kompakt-20261024.jpg. Samlet CI for forrige funksjonsversjon e34c8f5b er SUCCESS (40084984709); samlet CI for denne presentasjonsendringen må kontrolleres mot siste kode-SHA og er ikke erklært grønn her.
+
 ## Avklart og implementert
 
 Kenneth ønsket kort øverst på Min side, kun for navngitte prosjektdeltakere. UE skal ha samme handling i sin egen lenke og kunne lagre lenken på telefonens hjemskjerm.
