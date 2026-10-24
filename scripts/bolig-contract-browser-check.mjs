@@ -102,7 +102,7 @@ try{
  await page.getByLabel('Merknad til versjonen (valgfritt)').fill('QA original');
  await page.evaluate(()=>window.dispatchEvent(new Event('focus')));await page.getByLabel('Tittel',{exact:true}).waitFor();
  eq(await page.getByLabel('Tittel',{exact:true}).inputValue(),'QA avtalegrunnlag','focus preserves unsent form');
- await page.evaluate(()=>window.dispatchEvent(new Event('blur')));eq(await page.locator('dialog:visible').count(),0,'real blur hides unsent contract form');
+ await page.evaluate(()=>window.dispatchEvent(new Event('blur')));eq(await page.locator('dialog:visible').count(),1,'snipping blur keeps unsent contract form visible');
  await page.evaluate(()=>window.dispatchEvent(new Event('focus')));await page.getByLabel('Tittel',{exact:true}).waitFor();eq(await page.getByLabel('Tittel',{exact:true}).inputValue(),'QA avtalegrunnlag','blur return preserves scoped draft');
  await page.evaluate(()=>window.__qaShow(false));await page.getByText('QA annet arbeidsområde').waitFor();await page.evaluate(()=>window.__qaShow(true));await button('Fortsett opplasting').click();
  eq(await page.getByLabel('Tittel',{exact:true}).inputValue(),'QA avtalegrunnlag','navigation remount preserves RAM-only title/file draft');
@@ -122,8 +122,8 @@ try{
   // still has to read real words and leave exactly one complete text snapshot.
   const ocrStarted=page.waitForRequest(req=>req.url()===base+'/bolig/ocr/nor.traineddata.gz',{timeout:120000});
   await scanCard.getByRole('button',{name:'Gjør søkbar',exact:true}).click();await ocrStarted;
-  await page.evaluate(()=>window.dispatchEvent(new Event('blur')));eq(await page.locator('dialog:visible').count(),0,'background cancels OCR and hides scan draft');
-  await page.evaluate(()=>window.dispatchEvent(new Event('focus')));await scanCard.getByRole('button',{name:'Gjør søkbar',exact:true}).click();
+  await page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:true});document.dispatchEvent(new Event('visibilitychange'));});eq(await page.locator('dialog:visible').count(),0,'background cancels OCR and hides scan draft');
+  await page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:false});document.dispatchEvent(new Event('visibilitychange'));});await scanCard.getByRole('button',{name:'Gjør søkbar',exact:true}).click();
   await page.waitForFunction(()=>document.querySelector('.bolig-contract-review [role="alert"]')||Array.from(document.querySelectorAll('.bolig-contract-review [role="status"]')).some(e=>e.textContent.startsWith('Tekstutgaven er lagret.')),null,{timeout:120000});
   eq(await page.locator('.bolig-contract-review [role="alert"]').allTextContents(),[],'actual OCR can restart after background abort');
   const scanText=(await platform.system('select pages from bolig_private.contract_texts where file_id=$1',[scanId]))[0].pages;
@@ -153,8 +153,8 @@ try{
   await setControl({delay:0});await page.setViewportSize({width:1366,height:1000});
   await page.getByRole('button',{name:'Åpne kildeside',exact:true}).first().click();await page.locator('iframe').waitFor();eq((await page.locator('iframe').getAttribute('src')).includes('#page='),true,'source opens exact original PDF page');
   await button('Tilbake til gjennomgang').click();await button('Gjennomgang').click();await page.getByLabel('Spørsmål til kontrakten (valgfritt)').fill('QA: Hva står det om varsling?');
-  await setControl({delay:500});await page.evaluate(()=>window.dispatchEvent(new Event('blur')));eq(await page.locator('dialog:visible').count(),0,'background hides private review');
-  await page.evaluate(()=>window.dispatchEvent(new Event('focus')));await page.getByLabel('Spørsmål til kontrakten (valgfritt)').waitFor();eq(await page.getByLabel('Spørsmål til kontrakten (valgfritt)').inputValue(),'QA: Hva står det om varsling?','delayed authorization preserves unsent review question and tab');await setControl({delay:0});
+  await setControl({delay:500});await page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:true});document.dispatchEvent(new Event('visibilitychange'));});eq(await page.locator('dialog:visible').count(),0,'background hides private review');
+  await page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:false});document.dispatchEvent(new Event('visibilitychange'));});await page.getByLabel('Spørsmål til kontrakten (valgfritt)').waitFor();eq(await page.getByLabel('Spørsmål til kontrakten (valgfritt)').inputValue(),'QA: Hva står det om varsling?','delayed authorization preserves unsent review question and tab');await setControl({delay:0});
   await setControl({reviewDelay:1200});await button('Start gjennomgang (1)').click();await page.getByText('Gjennomgår valgte tekstutgaver og kontrollerer kildeutdrag …',{exact:true}).waitFor();await page.evaluate(()=>window.dispatchEvent(new Event('focus')));
   await page.getByText('QA kildebelagt forslag',{exact:true}).waitFor();eq(reviewCalls,1,'foreground ACL refresh keeps the same generation without duplicate or lost result');await setControl({reviewDelay:0});
   await page.locator('.bolig-contract-review-finding summary').click();eq(await page.locator('.bolig-contract-review-finding blockquote').count(),1,'saved finding carries verified quote and version/page');
@@ -172,6 +172,9 @@ try{
  await page.waitForFunction(()=>!Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Hent siste oversikt')?.disabled);
  eq(await page.evaluate(()=>document.querySelector('iframe')===window.__qaOriginalFrame),true,'periodic authorization keeps the original PDF frame mounted');
  eq(await page.locator('iframe').getAttribute('src'),url1,'periodic authorization does not reload the PDF or reset its page');
+ await page.evaluate(()=>{window.__qaScreenshotFrame=document.querySelector('iframe');window.dispatchEvent(new Event('blur'));});eq(await page.locator('dialog:visible').count(),1,'snipping keeps private original visible');
+ await setControl({delay:250});await page.evaluate(()=>window.dispatchEvent(new Event('focus')));await page.waitForFunction(()=>!Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Hent siste oversikt')?.disabled);
+ eq(await page.evaluate(()=>document.querySelector('iframe')===window.__qaScreenshotFrame),true,'snipping keeps the same original frame after focus');eq(await page.locator('iframe').getAttribute('src'),url1,'snipping does not recreate or reload private original');await setControl({delay:0});
  await page.locator('iframe').click({position:{x:20,y:20}});eq(await page.locator('iframe').getAttribute('src'),url1,'focusing PDF frame does not close or reload private preview');
  await page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:true});document.dispatchEvent(new Event('visibilitychange'));});
  await page.locator('dialog').waitFor({state:'hidden',timeout:3000});

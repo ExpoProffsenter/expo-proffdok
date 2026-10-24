@@ -49,7 +49,12 @@ export default function BoligContracts({context,root}){
   alive.current=true;confirmedAccess.current=null;invalidScope.current=false;foreground.current=!document.hidden;endPicking();setSnapshot(null);setOpened(null);setSelected(null);setHistory(null);setDraft(contractDraft(scope));load();
   const refresh=event=>{
    if(event?.type==='focus'&&internalFrame.current&&foreground.current&&!document.hidden){internalFrame.current=false;return;}
-   if(event?.type==='focus')picker.current=false;
+   if(event?.type==='focus'){
+    picker.current=false;
+    // Snipping tools and other visible windows cause blur without hiding the
+    // document. Revalidate quietly so the same popup and reading state remain.
+    if(foreground.current&&!document.hidden&&confirmedAccess.current===scope){load({background:true});return;}
+   }
    if(['focus','visibilitychange'].includes(event?.type))foreground.current=!document.hidden;
    if(document.hidden||!['focus','visibilitychange'].includes(event?.type))endPicking();
    if(event?.type===WORK_PROFILE_EVENT&&event.detail?.active_company_id!==context.company_id){invalidScope.current=true;forgetContractDraft(scope);clearFinanceDraft(scope);setDraft(contractDraft(scope));setSnapshot(null);setOpened(null);setSelected(null);setHistory(null);}
@@ -57,6 +62,9 @@ export default function BoligContracts({context,root}){
    if(!document.hidden)load();
   };
   const blur=()=>{
+   // A visible page must remain available for screenshots. Real tab changes
+   // and sleep still suspend private content through visibilitychange.
+   if(!document.hidden)return;
    if(document.hasFocus()&&document.activeElement?.matches('iframe[data-bolig-contract-preview]')){internalFrame.current=true;return;}
    if(document.hidden||!picker.current)endPicking();
    confirmedAccess.current=null;foreground.current=false;internalFrame.current=false;epoch.current++;setBlocked(true);setChecking(false);clearBytes();

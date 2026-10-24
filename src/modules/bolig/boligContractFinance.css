@@ -17,3 +17,8 @@
 .bolig-finance-tabs{display:flex;gap:8px;flex-wrap:wrap}
 .bolig-finance-history>button{display:block;margin-top:8px;text-align:left;white-space:normal}
 @media(max-width:480px){.bolig-finance-grid{grid-template-columns:1fr}.bolig-finance-summary,.bolig-finance-result,.bolig-finance-setup,.bolig-finance-line{padding:11px}.bolig-contract-finance dl>div{display:block}.bolig-contract-finance dd{margin-top:3px}}
+
+.bolig-contract-finance>p{margin:0;line-height:1.4}
+.bolig-finance-setup>p{margin:10px 0}
+.bolig-finance-setup small{color:#d3deeb;font-size:.9rem;font-weight:400;line-height:1.4}
+.bolig-finance-setup textarea{min-height:64px}

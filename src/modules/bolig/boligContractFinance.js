@@ -17,7 +17,7 @@ export const amountText=n=>String(n/100).replace('.',',');
 export function newFinanceSetup(){return {reference:'',series:'block_total',base_month:'',base_index:'',factor:'1,00',origin:'manual',lines:[{id:crypto.randomUUID(),kind:'base',name:'Grunnleveranse til byggherre',amount:'',selected:true}]};}
 export function setupFromBasis(b){return {...b,base_index:amountless(b.base_index),factor:amountless(b.factor),lines:b.lines.map(l=>({...l,amount:amountText(l.amount_cents)}))};}
 const amountless=n=>String(n).replace('.',',');
-export function financeAgreement(d){return {reference:d.reference.trim(),file_id:null,series:d.series,base_month:d.base_month,target_month:d.base_month,base_index:indexNumber(d.base_index),target_index:indexNumber(d.base_index),factor:indexNumber(d.factor),origin:d.origin,lines:d.lines.map(l=>({id:l.id,kind:l.kind,name:l.name.trim(),amount_cents:moneyCents(l.amount),selected:l.selected}))};}
+export function financeAgreement(d){return {reference:d.reference.trim()||'Kontraktsgrunnlag',file_id:null,series:d.series,base_month:d.base_month,target_month:d.base_month,base_index:indexNumber(d.base_index),target_index:indexNumber(d.base_index),factor:indexNumber(d.factor),origin:d.origin,lines:d.lines.map(l=>({id:l.id,kind:l.kind,name:l.name.trim(),amount_cents:moneyCents(l.amount),selected:l.selected}))};}
 export function financeInput(d,agreement){
  const f=d.form,mode=d.tab==='period'?'period':d.tab==='credit'?'credit':'manual';
  return {mode,method:mode==='period'?f.method:mode,number:f.number.trim(),date:f.date,period:f.period,reason:f.reason.trim(),credit_of:mode==='credit'?f.credit_of:null,apply_index:mode==='period'&&f.apply_index,

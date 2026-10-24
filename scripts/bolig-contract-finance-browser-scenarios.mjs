@@ -1,13 +1,24 @@
 export default async function financeBrowser({page,platform,eq,setControl,button}){
- await button('Fakturert hittil og a konto').click();await page.getByLabel('Henvisning til økonomiavtalen').waitFor();
+ await button('Fakturert hittil og a konto').click();await page.getByLabel('Merknad til kontrakten (valgfritt)').waitFor();
  eq((await platform.finance(platform.owner,platform.company,platform.root.id,'get',{})).data.agreement,null,'opening finance never writes');
- await page.getByLabel('Henvisning til økonomiavtalen').fill('QA månedlig utført verdi, felles indeks');
- await page.getByLabel('Basismåned for avtalen').fill('2025-01');await page.getByLabel('Basisindeks for avtalen').fill('100');await page.getByLabel('Avtalt reduksjonsfaktor').fill('0,90');await page.getByLabel('Avtalt hovedstol for del 1').fill('1000000');
- await button('Legg til avtalt opsjon').click();await page.getByLabel('Navn på leveransedel 2').fill('QA opsjon');await page.getByLabel('Avtalt hovedstol for del 2').fill('200000');
- await page.evaluate(()=>window.__qaContractInterval());eq(await page.getByLabel('Avtalt hovedstol for del 1').inputValue(),'1000000','periodic ACL preserves unsaved finance setup');
- await page.evaluate(()=>window.dispatchEvent(new Event('blur')));eq(await page.locator('dialog:visible').count(),0,'background hides financial data');
- await setControl({delay:180});await page.evaluate(()=>window.dispatchEvent(new Event('focus')));await page.getByLabel('Avtalt hovedstol for del 1').waitFor();eq(await page.getByLabel('Avtalt hovedstol for del 1').inputValue(),'1000000','delayed authorization preserves finance setup');await setControl({delay:0});
- await button('Lagre avtalegrunnlag').click();await page.getByRole('status').filter({hasText:'Avtalegrunnlaget er lagret.'}).waitFor();
+ eq(await page.getByLabel('Merknad til kontrakten (valgfritt)').getAttribute('required'),null,'contract note is optional');
+ eq(await page.locator('.bolig-finance-setup label').first().innerText().then(t=>t.startsWith('Kontraktssum ekskl. mva.')),true,'contract sum is the first field');
+ await page.getByLabel('Basismåned for avtalen').fill('2025-01');await page.getByLabel('Basisindeks for avtalen').fill('100');await page.getByLabel('Avtalt reduksjonsfaktor').fill('0,90');await page.getByLabel('Kontraktssum ekskl. mva.').fill('1000000');
+ await button('Legg til avtalt opsjon').click();await page.getByLabel('Navn på opsjon 1').fill('QA opsjon');await page.getByLabel('Beløp for opsjon 1 ekskl. mva.').fill('200000');
+ await page.evaluate(()=>window.__qaContractInterval());eq(await page.getByLabel('Kontraktssum ekskl. mva.').inputValue(),'1000000','periodic ACL preserves unsaved finance setup');
+ await page.evaluate(()=>{window.__qaFinanceDialog=document.querySelector('dialog[open]');window.__qaFinanceInput=document.querySelector('.bolig-finance-setup textarea');window.__qaFinanceDialog.scrollTop=100;window.__qaFinanceScroll=window.__qaFinanceDialog.scrollTop;window.dispatchEvent(new Event('blur'));});
+ eq(await page.locator('dialog:visible').count(),1,'snipping-tool blur must keep finance popup visible');
+ eq(await page.evaluate(()=>document.querySelector('dialog[open]')===window.__qaFinanceDialog),true,'snipping keeps the same dialog');
+
+ await setControl({delay:180});await page.evaluate(()=>window.dispatchEvent(new Event('focus')));await page.getByLabel('Kontraktssum ekskl. mva.').waitFor();eq(await page.getByLabel('Kontraktssum ekskl. mva.').inputValue(),'1000000','delayed authorization preserves finance setup');await page.waitForFunction(()=>!Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Hent siste økonomioversikt')?.disabled);
+ eq(await page.evaluate(()=>document.querySelector('dialog[open]')===window.__qaFinanceDialog&&document.querySelector('.bolig-finance-setup textarea')===window.__qaFinanceInput),true,'focus return keeps the same finance DOM');
+ eq(await page.evaluate(()=>window.__qaFinanceDialog.scrollTop),await page.evaluate(()=>window.__qaFinanceScroll),'focus return preserves finance scroll');
+ await setControl({delay:0});
+ await page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:true});document.dispatchEvent(new Event('visibilitychange'));});eq(await page.locator('dialog:visible').count(),0,'actual hidden document still hides finance');
+ await page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:false});document.dispatchEvent(new Event('visibilitychange'));});await page.getByLabel('Kontraktssum ekskl. mva.').waitFor();eq(await page.getByLabel('Kontraktssum ekskl. mva.').inputValue(),'1000000','actual tab return preserves contract sum');
+ if(process.env.BOLIG_CONTRACT_EVIDENCE_DIR){for(const width of [390,1366]){await page.setViewportSize({width,height:1000});await page.locator('dialog[open]').evaluate(d=>{d.scrollTop=0;});await page.screenshot({path:process.env.BOLIG_CONTRACT_EVIDENCE_DIR+'/finance-setup-'+width+'.png',fullPage:true});}}
+ await button('Lagre kontraktssum og vilkår').click();await page.getByRole('status').filter({hasText:'Kontraktssum og vilkår er lagret.'}).waitFor();
+ eq((await platform.finance(platform.owner,platform.company,platform.root.id,'get',{})).data.agreement.reference,'Kontraktsgrunnlag','blank optional note saves through actual SQL without invented agreement terms');
  await page.locator('.bolig-finance-setup summary').click();
  const summary=page.getByRole('region',{name:'Fakturert hittil'});eq((await summary.textContent()).includes('0,00'),true);
  await page.getByLabel('Fakturanummer fra økonomisystemet').fill('QA-BROWSER-1');await page.getByLabel('Fakturadato',{exact:true}).fill('2026-01-31');await page.getByLabel('Avregningsperiode',{exact:true}).fill('2026-01');
@@ -19,6 +30,9 @@ export default async function financeBrowser({page,platform,eq,setControl,button
  eq((await platform.finance(platform.owner,platform.company,platform.root.id,'get',{})).data.entries.length,0,'period preview never counts as billed');
  eq((await page.getByRole('region',{name:'Periodens avregning'}).textContent()).includes('18 000,00'),true,'index on selected new principal only');
  for(const width of [320,390,768,1366]){await page.setViewportSize({width,height:1000});eq(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'finance fits '+width);}
+ await page.evaluate(()=>{window.__qaFinanceResult=document.querySelector('.bolig-finance-result');window.dispatchEvent(new Event('blur'));});eq(await page.locator('dialog:visible').count(),1,'snipping keeps period preview visible');
+ await setControl({delay:150});await page.evaluate(()=>window.dispatchEvent(new Event('focus')));await page.waitForFunction(()=>!Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Hent siste oversikt')?.disabled);
+ eq(await page.evaluate(()=>document.querySelector('.bolig-finance-result')===window.__qaFinanceResult),true,'snipping focus return preserves same calculated preview');await setControl({delay:0});
  if(process.env.BOLIG_CONTRACT_EVIDENCE_DIR)await page.screenshot({path:process.env.BOLIG_CONTRACT_EVIDENCE_DIR+'/finance-preview-1366.png',fullPage:true});
  await setControl({lostFinance:true});await button('Registrer utstedt faktura').click();await button('Prøv samme registrering igjen').waitFor();
  eq((await platform.finance(platform.owner,platform.company,platform.root.id,'get',{})).data.entries.length,1,'lost response writes only one immutable invoice');
@@ -32,7 +46,8 @@ export default async function financeBrowser({page,platform,eq,setControl,button
  await button('Kreditnota').click();const first=state.entries.find(e=>e.input.number==='QA-BROWSER-1');await page.getByLabel('Opprinnelig faktura').selectOption(first.id);await page.getByLabel('Kreditnotanummer').fill('QA-BROWSER-C1');await page.getByLabel('Fakturadato',{exact:true}).fill('2026-03-01');await page.getByLabel('Avregningsperiode',{exact:true}).fill('2026-03');await page.getByLabel('Hovedstol – Grunnleveranse til byggherre',{exact:true}).fill('100000');await page.getByLabel('Indeksbeløp – Grunnleveranse til byggherre',{exact:true}).fill('9000');await page.getByLabel('Årsak til kreditnota').fill('QA delkreditering');await button('Forhåndsvis avregning').click();await button('Registrer kreditnota').waitFor();await button('Registrer kreditnota').click();await page.getByRole('status').filter({hasText:'Registreringen er lagret.'}).waitFor();
  state=(await platform.finance(platform.owner,platform.company,platform.root.id,'get',{})).data;eq(state.totals[0].principal_cents,30000000);eq(state.totals[0].index_cents,4500000);
  await button('Tidligere faktura').click();await page.getByLabel('Fakturanummer fra økonomisystemet').fill('QA bevart utkast');await button('Lukk fakturert hittil og a konto').click();await button('Fakturert hittil og a konto').click();await page.getByLabel('Fakturanummer fra økonomisystemet').waitFor();eq(await page.getByLabel('Fakturanummer fra økonomisystemet').inputValue(),'QA bevart utkast','deliberate close/reopen preserves RAM draft');await button('Lukk fakturert hittil og a konto').click();
- await page.evaluate(()=>window.__qaSwitch('reader'));await button('Fakturert hittil og a konto').click();await page.getByRole('region',{name:'Fakturert hittil'}).waitFor();eq(await button('Lagre avtalegrunnlag').count(),0,'private reader gets overview but no write controls');
+ await page.evaluate(()=>window.__qaSwitch('reader'));await button('Fakturert hittil og a konto').click();await page.getByRole('region',{name:'Fakturert hittil'}).waitFor();eq(await button('Lagre kontraktssum og vilkår').count(),0,'private reader gets overview but no write controls');
+ await page.evaluate(()=>window.dispatchEvent(new Event('blur')));eq(await page.locator('dialog:visible').count(),1,'reader can capture a visible finance popup');
  await platform.rpc(platform.owner,platform.company,platform.root.id,'grant',{user_id:platform.reader,role:'none',revision:1});await page.evaluate(()=>window.__qaContractInterval());await page.getByText('Dette området er privat',{exact:true}).waitFor();eq(await page.locator('.bolig-contract-finance').count(),0,'revocation clears visible finance workspace');
  await platform.rpc(platform.owner,platform.company,platform.root.id,'grant',{user_id:platform.reader,role:'reader',revision:2});
  // Existing contract scenarios below expect the original ACL revision.

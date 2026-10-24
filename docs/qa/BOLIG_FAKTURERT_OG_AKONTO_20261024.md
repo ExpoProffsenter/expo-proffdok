@@ -1,5 +1,8 @@
 # Fakturert hittil og a konto – 24. oktober 2026
 
+Oppdatert 25. oktober: kontraktssummen står først, merknaden er valgfri og
+popupene bevares ved utklipp. Se `BOLIG_KONTRAKT_UX_OG_UTKLIPP_20261025.md`.
+
 Miljømål BEGGE. Utført bare på feature/Preview og Sandbox ppvircenkjizeiqdxphj.
 PR #278 skal fortsatt være OPEN DRAFT. Ingen produksjonsmerge/-migrasjon.
 
@@ -103,7 +106,7 @@ bevis for remote CI.
 
 ## Kort brukertest
 
-1. Kontrakter → Fakturert hittil og a konto → Avtalegrunnlag og felles indeksavtale.
+1. Kontrakter → Fakturert hittil og a konto → Kontraktssum og opsjoner.
    Oppgi grunnleveranse og en opsjon; kryss bare grunnleveransen av for indeks.
 2. Tidligere faktura: før hovedstol og indeks hver for seg. Registrer og sjekk
    at fakturert hittil og rest hovedstol er riktige.

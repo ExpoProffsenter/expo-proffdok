@@ -32,8 +32,8 @@ export default async function indexBrowser({page,platform,eq,setControl,button})
  await page.waitForFunction(()=>!Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Hent siste oversikt')?.disabled);
  eq(await page.evaluate(()=>document.querySelector('.bolig-contract-index textarea')===window.__qaIndexField),true,'periodic ACL retains index editor DOM');
  eq(await button('Godkjenn og lagre beregning').count(),1,'periodic ACL retains current preview');
- await page.evaluate(()=>window.dispatchEvent(new Event('blur')));eq(await page.locator('dialog:visible').count(),0,'background hides private financial data');
- await page.evaluate(()=>window.dispatchEvent(new Event('focus')));await label('Avtalehenvisning').waitFor({timeout:7000}).catch(async e=>{console.log('Index resume diagnostic:',await page.locator('body').innerText());throw e;});
+ await page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:true});document.dispatchEvent(new Event('visibilitychange'));});eq(await page.locator('dialog:visible').count(),0,'hidden document hides private financial data');
+ await page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:false});document.dispatchEvent(new Event('visibilitychange'));});await label('Avtalehenvisning').waitFor({timeout:7000}).catch(async e=>{console.log('Index resume diagnostic:',await page.locator('body').innerText());throw e;});
  eq(await label('Avtalehenvisning').inputValue(),'QA hovedkontrakt punkt 8','return preserves draft after reauthorization');
  eq(await button('Godkjenn og lagre beregning').count(),0,'return requires a fresh preview');
  await button('Lukk indeksregulering mot byggherre').click();await button('Indeksregulering mot byggherre').click();
