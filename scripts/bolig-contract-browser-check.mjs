@@ -115,7 +115,11 @@ try{
   files.set(scan.path,png);await platform.system("insert into storage.objects values('bolig-contracts',$1,$2)",[scan.path,{size:png.length,mimetype:'image/png'}]);await platform.rpc(platform.owner,platform.company,platform.root.id,'finish',{id:scanId});
   await page.evaluate(()=>window.dispatchEvent(new Event('focus')));await button('Les og gjennomgå kontrakter').click();
   const scanCard=page.locator('.bolig-contract-review-docs article').filter({hasText:'QA OCR test'});
-  await scanCard.getByRole('button',{name:'Gjør søkbar',exact:true}).click();await page.getByText(/gjenkjenner skannet tekst/).waitFor();
+  // Synchronize with actual worker I/O, not a short-lived progress label. Cold
+  // worker startup differs between CI and local Chromium; the following restart
+  // still has to read real words and leave exactly one complete text snapshot.
+  const ocrStarted=page.waitForRequest(req=>req.url()===base+'/bolig/ocr/nor.traineddata.gz',{timeout:120000});
+  await scanCard.getByRole('button',{name:'Gjør søkbar',exact:true}).click();await ocrStarted;
   await page.evaluate(()=>window.dispatchEvent(new Event('blur')));eq(await page.locator('dialog:visible').count(),0,'background cancels OCR and hides scan draft');
   await page.evaluate(()=>window.dispatchEvent(new Event('focus')));await scanCard.getByRole('button',{name:'Gjør søkbar',exact:true}).click();
   await page.waitForFunction(()=>document.querySelector('.bolig-contract-review [role="alert"]')||Array.from(document.querySelectorAll('.bolig-contract-review [role="status"]')).some(e=>e.textContent.startsWith('Tekstutgaven er lagret.')),null,{timeout:120000});

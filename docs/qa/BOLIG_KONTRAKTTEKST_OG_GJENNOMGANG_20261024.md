@@ -92,7 +92,7 @@ aldri stille. Oppsettet foldes sammen etter lagring slik at funn kommer først.
 
 | Kontroll | Resultat |
 |---|---|
-| Faktisk SQL og faktisk HTTP-handler | 68 assertions PASS; syntetisk modell, Auth-transport og Storage |
+| Faktisk SQL og faktisk HTTP-handler | 72 assertions PASS; syntetisk modell, Auth-transport og Storage; avgrenset feildiagnose uten rå feilmeldinger |
 | Faktisk React → HTTP → SQL/filhandler/PDF/OCR → gjennomgang | 62 Chromium assertions PASS, inkludert filvelgerregresjon, faktisk bilde-OCR med avbrudd/ny start og 320/390/768/1366 px; modellen er syntetisk |
 | Vedlagt virkelig skannet PDF, samme browser-flyt | PASS: sju sider lesbare, ingen under OCR-terskelen; ingen dokumentforespørsler til ekstern host |
 | Original ved nedlasting | Samme SHA-256 som opplastet original |
@@ -114,9 +114,27 @@ delte pilotdata eller produksjon. Lokale tester bruker midlertidig database og
 logger bare kvalitetstall. Native smoke bruker syntetisk tekst og Storage-
 metadata, uten faktiske Storage-bytes; alle testskrivinger rulles tilbake.
 
-**Gjenstår som separat bevis:** første autentiserte reelle modellkjøring i delt
-Preview med teamets OIDC/kreditt/ZDR, innlogget brukerprøve og fysisk mobil/Safari.
-En grønn browser-test med syntetisk modell er ikke bevis for disse. Utsending,
+**Innlogget delt Preview:** en tydelig fiktiv prøve-PDF er lastet opp i
+«DEMO – Boligpilot med 40 leiligheter». Tekstutgaven er lagret. Søk etter
+«Payment» gir riktig utdrag på side 1, og originalvisningen åpner `#page=1`.
+Tilbake til gjennomgang beholder spørsmål og valgt arbeidsbilde.
+
+Reelle modellforespørsler er forsøkt og avvist av AI Gateway med HTTP 403 og
+`customer_verification_required`. Kontoeier må fullføre Vercels kunde-/
+betalingsverifisering før et faktisk modellresultat kan bekreftes. Forsøkene
+er kontrollert som `failed` uten resultat i Sandbox; tekst og søk er beholdt.
+Diagnosen logger bare tillatt feiltype, numerisk status og forhåndsdefinert
+feilkode, aldri rå providerfeil, tekst, spørsmål, svar, token eller filbane.
+
+CI 40126455680 bestod alle øvrige modultrinn og kontraktens 72 SQL/API-kontroller,
+men stoppet mens OCR-testen ventet på en kortvarig statustekst. Samme kode bestod
+62 browser-kontroller lokalt. Avbruddstesten synkroniseres nå med faktisk lasting
+av norsk OCR-språkdata; omstart må fortsatt gjenkjenne ord og gi nøyaktig én
+fullstendig tekstutgave. Samlet CI på siste HEAD må kontrolleres separat i PR-en.
+
+**Gjenstår som separat bevis:** vellykket faktisk modellresultat med teamets
+OIDC/kreditt/ZDR etter kontoverifisering, brukerprøve på faktisk kontrakt og
+fysisk mobil/Safari. Syntetiske modellsvar bekrefter ikke disse. Utsending,
 betalings-/kredittoppsett og produksjonsmerge er ikke gjennomført.
 
 ## Kort brukerprøve
