@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { resolve } from "path";
+import {contractAssetsPlugin} from './scripts/bolig-contract-assets.mjs';
 import {
   BACKEND_TARGET_PRODUCTION,
   BACKEND_TARGET_SANDBOX,
@@ -105,7 +106,7 @@ function environmentBindingGuard() {
 }
 
 export default defineConfig({
-  plugins: [environmentBindingGuard(), react()],
+  plugins: [environmentBindingGuard(), react(), contractAssetsPlugin()],
   define: {
     "import.meta.env.VITE_SUPABASE_URL": JSON.stringify(runtimeBinding.url),
     "import.meta.env.VITE_SUPABASE_ANON_KEY": JSON.stringify(runtimeBinding.key),

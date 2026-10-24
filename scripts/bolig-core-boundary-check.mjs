@@ -45,6 +45,9 @@ const integrations = new Set([
   "scripts/project-mobile-header-browser-check.mjs",
   "scripts/people-module-access-react-check.mjs",
   "scripts/fixtures/rpc-retry-legacy-migrations.json",
+  "api/bolig-contract-review.mjs",
+  "package.json",
+  "package-lock.json",
 ]);
 const inScope = (p) =>
   integrations.has(p) ||
@@ -62,6 +65,17 @@ assert.deepEqual(
   [],
   "Unreviewed files outside Bolig scope",
 );
+// Private contract OCR/analysis adds only pinned libraries. Existing scripts,
+// dependencies and package settings retain their exact main values.
+const basePackage=JSON.parse(git('show',`${base}:package.json`));
+const contractPackage=JSON.parse(fs.readFileSync('package.json','utf8'));
+for(const [name,version] of Object.entries({'ai':'7.0.153','@hyzyla/pdfium':'3.0.0','tesseract.js':'7.0.0','@tesseract.js-data/nor':'1.0.0','@tesseract.js-data/eng':'1.0.0'})){
+ assert.equal(contractPackage.dependencies[name],version,'Only reviewed pinned contract libraries may be added');
+ delete contractPackage.dependencies[name];
+}
+assert.deepEqual(contractPackage,basePackage,'Existing package behavior must remain identical');
+const baseLock=JSON.parse(git('show',`${base}:package-lock.json`)),contractLock=JSON.parse(fs.readFileSync('package-lock.json','utf8'));
+for(const [name,entry] of Object.entries(baseLock.packages||{}))if(name&&entry.version)assert.equal(contractLock.packages[name]?.version,entry.version,`Existing dependency ${name} must not be upgraded or removed`);
 
 // Explicitly requested Min side integration: removing this isolated card must
 // reproduce main byte for byte. No HR, time, navigation or profile behavior changes.

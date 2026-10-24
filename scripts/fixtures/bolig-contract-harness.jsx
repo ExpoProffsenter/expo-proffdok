@@ -6,7 +6,7 @@ import '../../src/modules/bolig/bolig.css';
 const cfg=window.__qaConfig;
 window.__qaActor='owner';
 window.__client={supabaseUrl:location.origin,auth:{getSession:async()=>({data:{session:{user:{id:cfg[window.__qaActor]},access_token:'qa-'+window.__qaActor}}})},rpc:async(name,args)=>{
- const r=await fetch('/rpc',{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer qa-'+window.__qaActor},body:JSON.stringify(args)});return r.json();
+ const r=await fetch('/rpc',{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer qa-'+window.__qaActor},body:JSON.stringify({...args,__name:name})});return r.json();
 }};
 const App=()=>{
  const [actor,setActor]=useState('owner'),[visible,setVisible]=useState(true);window.__qaSwitch=value=>{window.__qaActor=value;setActor(value);};window.__qaShow=setVisible;

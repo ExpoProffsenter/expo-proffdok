@@ -44,3 +44,18 @@ export async function downloadContract(context,root,file,signal){
  if(fresh.file.sha256!==file.sha256)throw Error('Dokumentet er endret. Hent siste oversikt.');
  return blob;
 }
+export async function contractReviewRpc(context,root,action='get',payload={}){
+ const client=getAppSupabaseClient();if(!client)throw Error('Innloggingen er ikke klar.');
+ const request=client.rpc('bolig_contract_review',{p_company_id:context.company_id,p_root_id:root,p_action:action,p_payload:payload});
+ const {data,error}=await(typeof request.retry==='function'?request.retry(false):request);
+ if(error)throw Object.assign(Error(error.message),{code:error.code});return verify(data,context,root).data;
+}
+export async function analyzeContract(context,root,input,signal){
+ const client=getAppSupabaseClient();if(!client)throw Error('Innloggingen er ikke klar.');
+ const {data,error}=await client.auth.getSession();
+ if(error||data?.session?.user?.id!==context.user_id||!data.session.access_token)throw Object.assign(Error('Innloggingen må bekreftes.'),{code:'42501'});
+ const response=await fetch('/api/bolig-contract-review',{method:'POST',cache:'no-store',signal,headers:{authorization:'Bearer '+data.session.access_token,'content-type':'application/json'},body:JSON.stringify({...input,company_id:context.company_id,root_id:root})});
+ const value=await response.json().catch(()=>null);
+ if(!response.ok)throw Object.assign(Error(value?.message||'Gjennomgangen kunne ikke bekreftes.'),{code:value?.code});
+ const saved=verify(value,context,root).data;if(saved?.state!=='ready'||!saved.result)throw Error('Gjennomgangen er ikke ferdig lagret.');return saved;
+}

@@ -471,8 +471,12 @@ export function BoligHelp() {
         original. Bruk «Ny versjon» når samme dokument endres. «Versjoner»
         beholder tidligere utgaver. PDF, JPG og PNG støttes. Kontraktene deles
         ikke gjennom eksterne lenker eller vanlig FDV/sluttpakke. Opplasting
-        innebærer ingen kontraktsaksept. Søk i dokumenttekst og analyse kommer
-        senere. Opplastingskladden beholdes i nettleserøkten; ikke last siden
+        innebærer ingen kontraktsaksept. «Les og gjennomgå kontrakter» åpner
+        tekstsøk og gjennomgang. Velg «Gjør søkbar» for å lese tekst fra en fil.
+        Kontroller usikre sider mot originalen. Under «Gjennomgang» velger du
+        tekstutgaver og eventuelt et spørsmål. Funnene er forslag med dokument,
+        versjon og side. Åpne kildesiden før du bruker et funn. Ingen avtale eller
+        oppgave endres automatisk. Opplastingskladden beholdes i nettleserøkten; ikke last siden
         på nytt før filen er bekreftet lagret.
       </p>
     </details>

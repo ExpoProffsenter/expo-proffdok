@@ -1,5 +1,17 @@
 # Boligprosjekter – arbeidsflate og videre produktkrav
 
+## Privat kontraktstekst og gjennomgang – 24. oktober 2026
+
+Etter Kenneths «kjør» er tekstgjenkjenning, privat søk og arbeidsforslag med
+dokument-/versjons-/sidehenvisninger implementert for samme feature/Preview og
+Sandbox. Originaler beholdes. Modellarbeid krever eksplisitt start og gir ingen
+automatisk kontraktsaksept, oppgave eller bestilling. Ny fil-/tekstutgave gjør
+tidligere gjennomgang historisk. Ingen produksjonsmerge eller indeksregulering.
+Se `docs/qa/BOLIG_KONTRAKTTEKST_OG_GJENNOMGANG_20261024.md` for faktisk lokal og
+native Sandbox-QA, avgrensning og det separate gjenstående beviset for autentisert
+live modellkjøring/teamtilgang i Preview. Eldre «OCR/analyse senere» nedenfor er
+historikk for den første originalfilpakken.
+
 ## Privat kontraktsområde – 24. oktober 2026
 
 Kenneth bestilte første etappe og ga en virkelig kontrakt som lokalt fileksempel. Privat dokumentopplasting/versjoner/forhåndsvisning/nedlasting og uttrykkelig navngitt tilgang er implementert for samme feature/Preview og Sandbox. Prosjektoppretter med aktiv prosjektlederrolle starter området; vanlig firma-/Bolig-/systemadmin-rolle alene gir ikke andre personers kontraktsinnsyn. Originaler bevares og blandes ikke i UE-/leverandør-/beboerflater eller ordinær FDV/sluttpakke. Den virkelige filen er ikke lagt i delte pilotdata eller repo. Se `docs/qa/BOLIG_PRIVATE_KONTRAKTER_20261024.md` for kontrakt, sikkerhet, faktisk QA og gjenstående innlogget brukerprøve. Ingen produksjonsmerge/-migrasjon. OCR, tekstanalyse og indeksregulering er fortsatt senere etapper. Eldre «ikke startet»-avsnitt er historikk for dette første dokumentområdet.
