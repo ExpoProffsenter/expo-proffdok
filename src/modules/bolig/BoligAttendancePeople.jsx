@@ -155,7 +155,11 @@ export default function BoligAttendancePeople({ context, root, enabled }) {
             open={expanded}
             onToggle={(e) => setExpanded(e.currentTarget.open)}
           >
-            <summary>Legg til prosjektdeltaker</summary>
+            <summary onClick={(event) => {
+              // Native toggle is deferred; remember the explicit click before a focus read can unmount details.
+              event.preventDefault();
+              setExpanded((value) => !value);
+            }}>Legg til prosjektdeltaker</summary>
             <form
               onSubmit={(e) => {
                 e.preventDefault();

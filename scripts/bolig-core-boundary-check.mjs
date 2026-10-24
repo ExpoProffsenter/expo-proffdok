@@ -64,9 +64,11 @@ assert.deepEqual(
 const personalPath = "src/modules/personal/PersonalPage.jsx";
 const personalBase = git("show", `${base}:${personalPath}`);
 const personalCurrent = fs.readFileSync(personalPath,"utf8").trim()
+ .replace("const BoligMyTasks=React.lazy(()=>import('../bolig/BoligMyTasks.jsx'));\n","")
  .replace("const BoligPresenceCard=React.lazy(()=>import('../bolig/BoligPresenceCard.jsx'));\n","")
- .replace("  {userId&&authUser?.id===userId&&context?.user_id===userId&&context?.company_id&&<Suspense fallback={null}><BoligPresenceCard key={'presence:'+scope} context={context}/></Suspense>}\n","");
-assert.equal(personalCurrent,personalBase,"Min side may only mount the isolated presence card");
+ .replace("  {userId&&authUser?.id===userId&&context?.user_id===userId&&context?.company_id&&<Suspense fallback={null}><BoligPresenceCard key={'presence:'+scope} context={context}/></Suspense>}\n","")
+ .replace("   {rights.enabled&&<Suspense fallback={null}><BoligMyTasks key={'tasks:'+scope} context={context}/></Suspense>}\n","");
+assert.equal(personalCurrent,personalBase,"Min side may only mount the isolated Bolig presence and task cards");
 
 // Old migrations and all existing critical checks must be byte-identical.
 const existing = new Set(git("ls-tree", "-r", "--name-only", base).split("\n"));

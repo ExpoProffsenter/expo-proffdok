@@ -22,6 +22,7 @@ window.lost = false;
 window.empty = false;
 window.__client = {
   rpc: async (n, a) => {
+    if (window.readDelay && a.p_action === "get") await new Promise(resolve => setTimeout(resolve, window.readDelay));
     if (window.denied)
       return { error: { code: "42501", message: "Tilgang tilbakekalt" } };
     const p = a.p_payload || {},

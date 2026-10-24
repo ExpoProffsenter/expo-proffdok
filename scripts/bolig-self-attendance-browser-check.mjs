@@ -123,8 +123,12 @@ try {
     .getByLabel("Ansatt eller personlig UE-lenke")
     .selectOption("user:user");
   await page.getByLabel("Deltakerens navn").fill("QA Ansatt");
-  await page.evaluate(() => window.dispatchEvent(new Event("focus")));
-  await btn("Legg til deltaker").waitFor();
+  for (let attempt = 0; attempt < 3; attempt++) {
+    await page.evaluate(() => { window.readDelay = 75; window.dispatchEvent(new Event("focus")); });
+    await btn("Legg til deltaker").waitFor();
+    eq(await page.getByText("Legg til prosjektdeltaker", { exact: true }).evaluate(el => el.parentElement.open), true, "explicitly opened participant form survives delayed focus read");
+  }
+  await page.evaluate(() => { window.readDelay = 0; });
   eq(
     await page.getByLabel("Deltakerens navn").inputValue(),
     "QA Ansatt",

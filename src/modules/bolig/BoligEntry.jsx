@@ -1,3 +1,4 @@
+import BoligProjectIntegration from "./BoligProjectIntegration.jsx";
 import BoligAttendance from "./BoligAttendance.jsx";
 import BoligQuality from "./BoligQuality.jsx";
 import React, { useCallback, useEffect, useRef, useState } from "react";
@@ -563,6 +564,7 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
                           Hovedside
                         </button>
                         <button type="button" aria-pressed={view === "progress"} onClick={() => setView("progress")}><CalendarDays size={17}/>Fremdrift og varsler</button>
+                        <button type="button" aria-pressed={view === "integration"} onClick={()=>setView("integration")}>KS/HMS og timer</button>
                         <button type="button" aria-pressed={view === "partners"} onClick={() => setView("partners")}>UE og leverandører</button>
                         <button
                           type="button"
@@ -878,6 +880,7 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
                       ) : null}
                     </div>
                   </div>
+                  {view === "integration" && <BoligProjectIntegration key={`${ctx.user_id}/${ctx.company_id}/${record.root.id}`} context={ctx} record={record} onOpenProject={(id,tab)=>{onClose();onOpenProject?.(id,tab);}}/>}
                   {view === "progress" && <BoligProgress key={`${ctx.user_id}/${ctx.company_id}/${record.root.id}`} context={ctx} root={record.root}/>}
                   {view === "partners" && <BoligPartners key={`${ctx.user_id}/${ctx.company_id}/${record.root.id}`} context={ctx} root={record.root}/>}
                   <div

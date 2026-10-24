@@ -1,17 +1,29 @@
 # Boligprosjekter – arbeidsflate og videre produktkrav
 
+## Prosjektkobling og egne boligoppgaver – 24. oktober 2026
+
+Implementert i samme feature-branch for Preview/Sandbox. Produksjon/main er ikke endret.
+
+- Ny «KS/HMS og timer»-flate i boligprosjektet. Prosjektleder oppretter et navngitt ordinært prosjekt eller kobler et eksisterende prosjekt én gang. Eksisterende prosjektdata og boligkoblinger skrives ikke om.
+- SJA, RUH, vernerunder og risikovurderinger åpnes i uendrede eksisterende KS/HMS-komponenter. Sjekklister åpner det ordinære prosjektets sjekklisteflate.
+- Timer og utlegg bruker eksisterende Mine timer. Brukeren velger det viste prosjektet i det vanlige prosjektfeltet. Gjeldende HR-/timerettigheter og godkjenning gjelder fortsatt; ingen ekstra HR-tilgang er gitt.
+- Min side har et sammenfoldet kort for oppgaver hvor brukeren er registrert ansvarlig: uferdig Bolig-fremdrift, åpne native RUH/avvik og utkast til vernerunde/risikovurdering på koblede prosjekter. Lukking/status/ansvarlig leses fra kilden. Ingen ny oppgave- eller varslingsmotor.
+- SJA og ikke-tildelte sjekklister gjøres ikke automatisk om til personlige oppgaver. UE-lenker får ikke ny intern KS/HMS-/HR-tilgang. Hovedprosjektets kobling må brukes for hovedprosjektet; ikke koble samme ordinære prosjekt separat til en bolig.
+
+QA og konkret brukerprøve: `docs/qa/BOLIG_KSHMS_INTEGRASJON_20261024.md`. Innlogget brukerprøve i delt Preview gjenstår før TEST OK. Native Sandbox-gatewayer og mobil-/desktop-komponenter er testet separat; dette er ikke en påstand om full innlogget ende-til-ende-test i delt Preview.
+
 ## Avklart: firma med Boligprosjekter har også KS/HMS – 24. oktober 2026
 
-Kenneth presiserte at firmaer som får Boligprosjekter, også vil ha KS/HMS-tilgang. Videre integrasjon skal derfor gjenbruke appens eksisterende timeføring, sjekklister, SJA, RUH og øvrige relevante HMS-funksjoner med kobling til boligprosjektet. Dette er en avklart forutsetning for firmapakken og et ønske om felles prosjektkobling; selve koblingene er fortsatt ikke implementert.
+Kenneth presiserte at firmaer som får Boligprosjekter, også vil ha KS/HMS-tilgang. Videre integrasjon skal derfor gjenbruke appens eksisterende timeføring, sjekklister, SJA, RUH og øvrige relevante HMS-funksjoner med kobling til boligprosjektet. Dette er en avklart forutsetning for firmapakken og et ønske om felles prosjektkobling; prosjektkoblingen er nå implementert i feature/Preview-etappen beskrevet nedenfor.
 
 - Unngå parallelle registreringssystemer i Bolig. Eksisterende funksjoner, historikk og personrettigheter skal gjenbrukes. Firmaets modulaktivering alene utvider ikke automatisk ansattes eller UE-lenkers innsyn.
-- Teknisk kartlegging: timeføring bruker ordinær `project_id` via `time_projects`. SJA/RUH har også ordinær prosjektkobling. Bolig-hovedprosjektets `root_id` er en annen ID-type; enkelte boliger har allerede `project_id`. Integrasjonen må bruke en eksplisitt kobling og bevare eksisterende bolig-/prosjektkoblinger og historikk. Detaljert koblingsnivå og hvilke oppgaver som vises på Min side må fortsatt avklares.
+- Teknisk kartlegging: timeføring bruker ordinær `project_id` via `time_projects`. SJA/RUH har også ordinær prosjektkobling. Bolig-hovedprosjektets `root_id` er en annen ID-type; enkelte boliger har allerede `project_id`. Integrasjonen må bruke en eksplisitt kobling og bevare eksisterende bolig-/prosjektkoblinger og historikk. Hovedprosjektet får eksplisitt ordinær prosjektkobling. Eksisterende koblinger per bolig gjenbrukes. Min side leser egne åpne fremdrifts-, RUH-/avviks- og HMS-kontrolloppgaver.
 - **Åpent produktvalg:** I gjeldende app ligger Mine timer/Timer og utlegg under HR-tilgangen, og KS/HMS-tilgang alene åpner ikke timeføringen. Avklar om timeføring også skal følge Boligprosjekter + KS/HMS for firmaer uten resten av HR-modulen. En slik endring må avgrenses fra tilgang til øvrige HR-opplysninger.
 - Ingen firmalisenser, personrettigheter, UE-grants, timeføringskode eller prosjektkoblinger er endret ved denne planoppdateringen.
 
-## Ønskeliste: kobling til KS/HMS og Min side – 24. oktober 2026
+## Opprinnelig ønskeliste: kobling til KS/HMS og Min side – 24. oktober 2026
 
-Kenneth ba om å registrere følgende som senere arbeid. **Kun ønskeliste – ikke implementert eller godkjent som detaljert løsningsvalg.**
+Historisk bestilling før Kenneths «Kjør og pass på at ingen andre funksjoner i appen berøres». Første integrasjonsetappe er nå implementert som beskrevet ovenfor. Punkter utover denne etappen er fortsatt senere arbeid.
 
 - Koble Boligprosjekter til appens eksisterende SJA, RUH og relevante øvrige KS/HMS-funksjoner. Kartlegg eksisterende prosjekt-/bygg-/boligkoblinger før løsning velges, og gjenbruk gjeldende funksjoner, data og tilgangskontroll.
 - Koble relevante oppgaver og oppfølginger fra Boligprosjekter til **Mine oppgaver på Min side**. Avklar hvilke oppgavetyper som skal vises, hvem som eier dem, og hvordan status, frister og åpning av riktig arbeidsflate skal følge eksisterende oppgaveflyt. Unngå dobbeltregistrering.
@@ -33,7 +45,7 @@ Pågående funksjonspakke etter Kenneths «kjør»: send UE-/leverandørens eksi
 
 ## Egen inn- og utregistrering – implementert 24. oktober 2026
 
-Kenneth avklarte Min side for ansatte og samme funksjon i personlig UE-lenke. Navngitte deltakere legges til per boligprosjekt under Oppsett → Faktisk bemanning. Kortet krever aktiv bemanning og deltakelse, viser eget prosjekt, Utlogget/Innlogget med grått/grønt lys og én handling. UE kan lagre lenken som snarvei på hjemskjermen; én personlig lenke per person. Egenstatus og historikk gjenbruker bemanningslisten. Se docs/qa/BOLIG_EGEN_TILSTEDEVARELSE_20261024.md. Dette lukker ikke ønsket om SJA/RUH eller Mine oppgaver-integrasjon; disse avklares fortsatt separat. Felles bemanning for ordinære prosjekter utenfor Bolig er ikke innført.
+Kenneth avklarte Min side for ansatte og samme funksjon i personlig UE-lenke. Navngitte deltakere legges til per boligprosjekt under Oppsett → Faktisk bemanning. Kortet krever aktiv bemanning og deltakelse, viser eget prosjekt, Utlogget/Innlogget med grått/grønt lys og én handling. UE kan lagre lenken som snarvei på hjemskjermen; én personlig lenke per person. Egenstatus og historikk gjenbruker bemanningslisten. Se docs/qa/BOLIG_EGEN_TILSTEDEVARELSE_20261024.md. SJA/RUH og Mine oppgaver har nå en separat integrasjonsetappe beskrevet ovenfor. Felles bemanning for ordinære prosjekter utenfor Bolig er ikke innført.
 
 ## Dagens bemanning – prosjektlederdel implementert 24. oktober 2026
 

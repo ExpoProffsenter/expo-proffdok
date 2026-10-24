@@ -7,6 +7,7 @@ import HomeFollowups from '../home/HomeFollowups.jsx';
 import './personal.css';
 import SupportSummary from '../support/SupportSummary.jsx';
 import {PersonalTimeCard} from '../time/TimeEntryPoint.jsx';
+const BoligMyTasks=React.lazy(()=>import('../bolig/BoligMyTasks.jsx'));
 const BoligPresenceCard=React.lazy(()=>import('../bolig/BoligPresenceCard.jsx'));
 const KshmsMyProgressPlans=React.lazy(()=>import('../kshms/KshmsMyProgressPlans.jsx'));
 const PersonalTimeWorkspace=React.lazy(()=>import('../time/TimeEntryPoint.jsx'));
@@ -38,6 +39,7 @@ export default function PersonalPage({context,kshmsContext,hrContext,userId,auth
   <div className="personal-notices" hidden={screen!=='overview'||pending}><HomeFollowups key={nav?.scope||'personal'} hrContext={rights.hr?hrContext:null} userId={userId} onSetup={onOpenHrSetup}/></div>
   {pending&&<div className="personal-checking" role="status"><ShieldCheck aria-hidden="true"/><div><strong>Kontrollerer tilgangen din …</strong><p>Du kommer tilbake til samme visning når kontrollen er ferdig.</p></div></div>}
   {screen==='overview'&&!pending&&<div className="personal-cards">
+   {rights.enabled&&<Suspense fallback={null}><BoligMyTasks key={'tasks:'+scope} context={context}/></Suspense>}
    {rights.enabled&&<article className="personal-card personal-plans-card" aria-label="Mine aktive planer">
     <div className="personal-plans-heading"><div className="personal-card-icon"><CalendarDays aria-hidden="true"/></div><div><span className="personal-card-eyebrow">DITT PLANLAGTE ARBEID</span><h3>Mine aktive planer</h3></div></div>
     <p>Planene vises fra første til siste dato på dine uferdige oppgaver. Åpne en plan for å se oppgavene dine. Datoene følger norsk tid.</p>
