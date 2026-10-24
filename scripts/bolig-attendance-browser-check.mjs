@@ -92,6 +92,8 @@ try {
  await page.getByText('Registreringshistorikk',{exact:true}).click();await page.getByText(/Glemte å registrere ut/).waitFor();
  const dl=page.waitForEvent('download');await btn('Eksporter liste (CSV)').click();eq((await dl).suggestedFilename().startsWith('bemanning-'),true);
  for(const width of [320,390,768,1366]){await page.setViewportSize({width,height:950});eq(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'no overflow '+width);}
+ await page.getByLabel('Prosjektdag',{exact:true}).fill('2026-01-01');await page.getByText('Ingen registreringer for denne dagen.',{exact:true}).waitFor();eq(await page.getByLabel('Prosjektdag',{exact:true}).inputValue(),'2026-01-01','selected day persists after server read');
+ await page.getByLabel('Prosjektdag',{exact:true}).fill(new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Oslo'}).format(new Date()));await btn('Rett tidspunkt').waitFor();
  await btn('Registrer deltaker inn').click();await page.getByLabel('Navn',{exact:true}).fill('Usendt kladd');
  await page.evaluate(()=>{Object.defineProperty(document,'visibilityState',{configurable:true,value:'hidden'});document.dispatchEvent(new Event('visibilitychange'));});await btn('Lagre registrering').waitFor({state:'detached'});
  await page.evaluate(()=>{Object.defineProperty(document,'visibilityState',{configurable:true,value:'visible'});document.dispatchEvent(new Event('visibilitychange'));});await btn('Lagre registrering').waitFor();eq(await page.getByLabel('Navn',{exact:true}).inputValue(),'Usendt kladd','resume preserves draft after authorization');

@@ -1,3 +1,4 @@
+import '../../src/style.css';import '../../src/modules/bolig/bolig.css';
 import React from 'react';import {createRoot} from 'react-dom/client';import Attendance from '../../src/modules/bolig/BoligAttendance.jsx';
 const ctx={enabled:true,role:'manager',user_id:'user',company_id:'company'},root={id:'root',title:'QA Bemanning'};
 let state=JSON.parse(localStorage.getItem('qa.attendance')||'null')||{context:ctx,root_id:root.id,enabled:false,revision:0,visits:[],events:[]},receipts={};window.denied=false;window.lost=false;window.writes=0;
@@ -15,6 +16,7 @@ window.__client={rpc:async(n,a)=>{
   }
   if(window.lost){window.lost=false;return {error:{message:'Tapt svar'}};}
  }
- return {data:structuredClone({...state,receipt_id:a.p_action==='get'?null:p.request_id})};
+ const day=p.day||new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Oslo'}).format(new Date());
+ return {data:structuredClone({...state,day,visits:state.visits.filter(v=>v.arrived_at.slice(0,10)<=day&&(!v.departed_at||v.departed_at.slice(0,10)>=day)),receipt_id:a.p_action==='get'?null:p.request_id})};
 }};
 createRoot(document.getElementById('app')).render(<Attendance context={ctx} root={root}/>);

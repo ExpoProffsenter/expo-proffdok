@@ -17,7 +17,7 @@ Eget aktiverings-/revisjonsgrunnlag per hovedprosjekt, registreringer med stabil
 ## Faktisk QA før publisering
 
 - DB1492 assertions PASS (1458 tidligere +34 nye): av/på, inn/ut, opprinnelig historikk, obligatorisk begrunnelse, replay/endret replay, konflikt, datoavgrensning, disable-bevaring, reader/fremmed firma/revokering/arkiv, eksisterende prosjekt uendret.
-- Ny Chromium14 PASS: mount uten skriv, kladd ved fokus/reload, tapt svar med eksakt retry, konflikt/gjennomgang, retting/historikk, CSV-download, mobilbredder320/390/768 og desktop1366, simulert skjuling/gjenopptak og revokering. Mocked RPC; dette er ikke innlogget ende-til-ende.
+- Ny Chromium15 PASS: mount uten skriv, kladd ved fokus/reload, tapt svar med eksakt retry, konflikt/gjennomgang, retting/historikk, CSV-download, mobilbredder320/390/768 og desktop1366, simulert skjuling/gjenopptak og revokering. Mocked RPC; dette er ikke innlogget ende-til-ende.
 - Eksisterende Foundation React, overview42, rooms51, boundary51, scope/release-docs PASS. Full critical Sandbox-build PASS. Fysisk Safari/iPhone er ikke testet.
 - Sandbox migration først syntaksprøvd i rollback, deretter additivt installert. Filnavn avstemt med serverens faktiske versjon.
 
@@ -36,6 +36,17 @@ Min side (PersonalPage.jsx) har Oversikt, Mine timer, Mine oppfølginger og Mine
 3. Håndverkerens egen registrering: hvilke eksisterende navngitte identiteter skal brukes? UE-lenker alene gir ikke sikker personidentitet.
 4. Bookingstyring og selvbooking, og privat kontraktsområdes særskilte personrettigheter, er fortsatt uavklart. Excel sist.
 
-Publiserings-SHA, CI, Sandbox-smoke og faktisk Preview-prøve oppdateres etter publisering. Ingen påstand om full app-regresjonsgaranti.
+## Publisert og faktisk prøvd
+
+App-SHA **eb298691a083a680e4d341e7a7e84cf07a2850a9**, tree034ff4350cc94470a3f401acffa1e1c0ab9c6773, deployment **dpl_BYRUQMgXJZ5bTz9Sf2TniPvotqw4 READY**, riktig SHA og fast alias kontrollert gjennom Vercel. Samme innloggede demoøkt beholdt. Git-push manglet credentials; GitHub-connector publiserte nøyaktig samme lokale tree via forventet parent/HEAD-lease. Ingen overskriving av nyere arbeid.
+
+Faktisk cloud-UI i syntetisk prosjekt **DEMO – Egne bilder og plantegninger**, root21c22e66-16af-4b14-8dfe-c6ec48f9df65: Oppsett → Faktisk bemanning → aktivering → QA–Testmontør/QA–Testfirma → Hovedside/Oppsett-detour med bevart usendt kladd → lagring med serverkvittering → grønn Registrert inne → utregistrering med begrunnelse → rød Registrert ut og historikk med før/etter + demoaktør. Faktisk CSV lastet ned og lest: riktig prosjekt, dato, norsk tid03:18/03:19 og én deltaker. Tidligere dag tom, dagens liste gjenfunnet. Deaktivering beholdt registrering/historikk og sperret endringer. Ingen reelle personer, gamle pilotdata eller grants endret.
+
+Cloud-verktøyets direkte fill av native date bekreftet ikke React-endring; vanlig tastaturpil og blur ga riktig valgt dag og fersk serverliste. Ny lokal date-regresjon PASS med faktiske globale appstiler; ingen appkode endret for å tilpasse testen.
+
+Tilbuds-/befaringseditor196 og mobilheader91 PASS på denne apppakken. Lokale mobiltester er Chromium/touch-bredder, ikke fysisk Safari/iPhone. Ingen påstand om full app-regresjonsgaranti. CI674/40049090248 på app-SHA kjører ved denne dokumentasjonsoppdateringen; full critical build og eksisterende steg gjennom time-/HR/leverandørkontroll har bestått. Siste status må leses fra GitHub før samlet grønn erklæres.
+
+Fast Preview: https://expo-proffdok-git-fase45b-boligprosjekter-found-0509d8-ringside.vercel.app/?progressTest=safe
+
 
 Sandbox native Auth/gateway/direct-table rollback-smoke PASS: aktivering, registrering, retting, eksakt retry og uendret ordinært prosjekt. Alle prøveskriver rullet tilbake. Security-advisors: WARN-antall uendret i alle fem kategorier; tre nye INFO for bevisst deny-all private tabeller.
