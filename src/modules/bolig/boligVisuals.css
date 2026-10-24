@@ -1,0 +1,321 @@
+.bolig-visual-workspace,
+.bolig-visual-setup {
+  min-width: 0;
+}
+.bolig-visual-toolbar,
+.bolig-visual-zoom,
+.bolig-visual-footer,
+.bolig-visual-group-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.bolig-visual-toolbar {
+  margin: 10px 0;
+}
+.bolig-visual-toolbar button,
+.bolig-visual-zoom button,
+.bolig-visual-controls button,
+.bolig-visual-footer button,
+.bolig-visual-unplaced button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 42px;
+}
+.bolig-visual-toolbar label {
+  flex: 1 1 170px;
+}
+.bolig-visual-surface {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #365873;
+  border-radius: 14px;
+  background: #0b1a29;
+}
+.bolig-visual-zoom {
+  padding: 8px;
+  background: #142b40;
+  border-bottom: 1px solid #365873;
+}
+.bolig-visual-zoom span {
+  min-width: 48px;
+  text-align: center;
+  font-size: 14px;
+  color: #e4f3ff;
+}
+.bolig-visual-scroll {
+  overflow: auto;
+  max-height: 70vh;
+  overscroll-behavior: contain;
+}
+.bolig-visual-plane {
+  position: relative;
+  min-width: 100%;
+  flex-shrink: 0;
+  background: #e5e7eb;
+  isolation: isolate;
+}
+.bolig-visual-plane > img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: contain;
+  user-select: none;
+}
+.bolig-visual-marker-wrap {
+  position: absolute;
+  min-width: 0;
+}
+.bolig-visual-marker {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  padding: 2px 3px !important;
+  border: 2px solid #d5f9ff !important;
+  border-radius: 6px !important;
+  background: rgba(8, 34, 54, 0.88) !important;
+  color: #fff !important;
+  box-shadow: 0 1px 8px #0008;
+  font-size: clamp(10px, 1.1vw, 15px) !important;
+  line-height: 1.1;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.bolig-visual-marker span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+.bolig-visual-marker[aria-pressed="true"] {
+  outline: 3px solid #ffcf69;
+  outline-offset: 2px;
+  z-index: 1;
+}
+.bolig-visual-marker.ready {
+  border-color: #70ecc6 !important;
+  background: rgba(6, 70, 54, 0.9) !important;
+}
+.bolig-visual-marker.review {
+  border-color: #ffce75 !important;
+  background: rgba(88, 53, 10, 0.93) !important;
+}
+.bolig-visual-marker.pending {
+  border-color: #9bc7ff !important;
+}
+.bolig-visual-marker:focus-visible {
+  outline: 3px solid #ffcf69;
+  outline-offset: 3px;
+}
+.bolig-visual-plane.is-editing .bolig-visual-marker {
+  cursor: move;
+  touch-action: none;
+}
+.bolig-visual-surface > small {
+  display: block;
+  padding: 9px 12px;
+  color: #c6dbe9;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.bolig-visual-version {
+  display: block;
+  padding: 7px 0;
+  color: #526b78;
+}
+.bolig-visual-plan > details,
+.bolig-visual-unplaced,
+.bolig-visual-history details {
+  border: 1px solid #bed6df;
+  border-radius: 12px;
+  padding: 12px;
+  margin: 10px 0;
+  background: #fff;
+  color: #133c4b;
+}
+.bolig-visual-plan > details > summary {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.bolig-visual-plan > details > summary span {
+  font-size: 13px;
+  color: #526b78;
+}
+.bolig-visual-unplaced > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+.bolig-dialog.bolig-visual-editor {
+  width: min(1240px, calc(100vw - 24px));
+  max-width: 1240px;
+  box-sizing: border-box;
+}
+.bolig-visual-editor fieldset {
+  min-width: 0;
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+.bolig-visual-editor label,
+.bolig-visual-setup label,
+.bolig-visual-toolbar label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+.bolig-visual-editor input:not([type="checkbox"]),
+.bolig-visual-editor select,
+.bolig-visual-setup select,
+.bolig-visual-toolbar select {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  min-height: 42px;
+}
+.bolig-visual-editor-top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 14px;
+}
+.bolig-visual-editor-top > label {
+  flex: 1 1 220px;
+}
+.bolig-visual-editor-top > small {
+  flex-basis: 100%;
+  color: #526b78;
+}
+.bolig-visual-edit-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 235px;
+  gap: 14px;
+  align-items: start;
+}
+.bolig-visual-controls {
+  display: grid;
+  gap: 12px;
+  background: #e6f3f6;
+  color: #133c4b;
+  border: 1px solid #bed6df;
+  border-radius: 12px;
+  padding: 12px;
+  min-width: 0;
+}
+.bolig-visual-coordinates {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.bolig-visual-controls details {
+  border-top: 1px solid #426077;
+  padding-top: 10px;
+}
+.bolig-visual-controls summary {
+  cursor: pointer;
+  font-weight: 650;
+  font-size: 14px;
+}
+.bolig-visual-group-actions {
+  margin-top: 10px;
+}
+.bolig-visual-controls button {
+  font-size: 13px;
+}
+.bolig-visual-editor label.bolig-visual-check {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 0;
+}
+.bolig-visual-check input[type="checkbox"] {
+  width: 22px !important;
+  height: 22px !important;
+  min-height: 22px;
+  flex: none;
+}
+.bolig-visual-review,
+.bolig-visual-conflict {
+  padding: 12px;
+  border: 1px solid #78c8b6;
+  border-radius: 10px;
+  background: #e3f7f1;
+  color: #125b4d;
+}
+.bolig-visual-conflict {
+  border-color: #e2bb6c;
+  background: #fff5df;
+  color: #714b15;
+}
+.bolig-visual-footer {
+  border-top: 1px solid #365873;
+  margin-top: 18px;
+  padding-top: 14px;
+  justify-content: flex-end;
+}
+.bolig-visual-footer button.bolig-primary-action {
+  background: #2ac5bc;
+  color: #062a35;
+  font-weight: 750;
+}
+.bolig-visual-history {
+  width: min(1000px, calc(100vw - 24px));
+}
+.bolig-visual-history > details > summary {
+  cursor: pointer;
+  font-weight: 650;
+  margin-bottom: 10px;
+}
+.bolig-visual-setup-select {
+  display: grid;
+  grid-template-columns: minmax(140px, 1fr) minmax(170px, 2fr);
+  gap: 12px;
+}
+@media (max-width: 700px) {
+  .bolig-visual-edit-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .bolig-dialog.bolig-visual-editor {
+    width: calc(100vw - 16px);
+    padding: 14px;
+  }
+  .bolig-visual-editor > header {
+    align-items: start;
+  }
+  .bolig-visual-editor h2 {
+    font-size: 20px;
+  }
+  .bolig-visual-editor-top,
+  .bolig-visual-setup-select {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .bolig-visual-footer button {
+    flex: 1 1 160px;
+  }
+  .bolig-visual-marker {
+    font-size: 10px !important;
+  }
+  .bolig-visual-scroll {
+    max-height: 55vh;
+  }
+}

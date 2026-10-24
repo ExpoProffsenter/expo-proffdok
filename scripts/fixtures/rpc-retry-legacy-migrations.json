@@ -57,5 +57,7 @@
   "supabase/migrations/20261016142124_project_progress_workspace.sql": "af6c19af1ef377c6114a23cf774ca3887450b73fdc5b2866779f299da9cdd535",
   "supabase/migrations/20261016212201_support_cases.sql": "27aade2cb1a141fd24c9841221ca762fbb3ddec6b09ef7b10b29c861db3493b7",
   "supabase/migrations/20261017124151_customer_option_quantities.sql": "43623b979008823e1e862293e36c41ce7c29377f873d654b9cd52e4a8c43049a",
-  "supabase/migrations/20261017133759_flexible_checklist_fields_hot_work.sql": "0d9a4859e8977ebd2ccebbedde70153c4ec2c45f895f5ede4e59106def7838e5"
+  "supabase/migrations/20261017133759_flexible_checklist_fields_hot_work.sql": "0d9a4859e8977ebd2ccebbedde70153c4ec2c45f895f5ede4e59106def7838e5",
+  "supabase/migrations/20261020201453_boligprosjekter_foundation.sql": "6ece2853c7984b87c763f151cd19f3295667efe77daa55f493c9f657c2ae2073",
+  "supabase/migrations/20261020203617_boligprosjekter_root_list_scope.sql": "c89fd3056dc315fc0a516d3f13e4dcef696f4053f84968c1357f2f5c6a689083"
 }

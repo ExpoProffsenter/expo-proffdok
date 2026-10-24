@@ -1,3 +1,38 @@
+## Boligprosjekter: realistisk pilot og oppfølging – Preview 23.10.2026
+
+Åpne forhold kan kobles til eksisterende fremdriftsarbeid eller opprette en vanlig aktivitet med ansvarlig og frist. Ingen sak lukkes eller ny overtakelsessperre innføres ved kobling. Beboervarsler kan lastes ned som PDF/oppslag med prosjektkontakt og tydelig utkastmerking. Kontaktbytte stopper gamle portal- og avtaleslenker, også ved A→B→A; intern avtale-/bestillingshistorikk beholdes. Ny bestillingsopprettelse etter endringsordre-migrasjonen har fått reparert en aliasfeil. Gjenbruk forklares gjennom eksisterende rommaler, pakker og masseoppsett. Realistisk Sandbox-pilot med to bygg/40 boliger/161 aktiviteter er opprettet. Miljømål BEGGE, kun Preview/Sandbox, utsending AV og egen Bolig TEST OK før produksjon. Se `docs/qa/BOLIG_PILOT_OG_OPPFOLGING_20261023.md` og `docs/CHAT_HANDOFF_BOLIG_20261023.md`.
+
+## Boligprosjekter: A–Å-veiledning og vurdert overtakelse – Preview 23.10.2026
+
+«A–Å-veiledning for Boligprosjekter» gir åtte steg med anbefalt arbeidsmåte, hva som kan vente, neste handling og fire forstørrbare eksempelbilder. Faktisk overtakelse registreres separat fra intern sluttgodkjenning: prosjektleder vurderer samlet liste med åpne kontroller, avvik, aktiviteter, godkjenning og beboermeldinger. Delvis vurdering kan lagres; vanlige forhold kan vurderes samlet, kritiske forhold krever særskilt bekreftelse. Ingen uferdige saker ferdigmeldes automatisk. Alle registreringsinnganger går gjennom samme vurdering. Begrunnelse, ansvarlig, protokoll, dato, rettinger og historikk følger dokumentasjonen; senere endringer sletter ikke gjennomført overtakelse. Samme Preview/Sandbox, e-post AV, egen TEST OK kreves før produksjon. Se `docs/qa/BOLIG_START_OG_OVERTAKELSE_20261023.md`.
+
+## Boligprosjekter: Gantt, stammegrupper og styrt beboerdialog – Preview 23.10.2026
+
+Samlet Gantt er hovedvisningen; dag/uke/måned, sammenleggbare leilighets-/stamme-/arbeidsgrupper, søk, dra/resize og datogjennomgang. Kortlisten er valgfri. Stammegrupper velges eksplisitt i byggbildet eller masseoppsettet og lagres med stabile bolig-ID-er, aldri utledet fra bolignummer. Massemalen tillater samtidig og forskjøvet arbeid uten tvungen forgjenger. Eksisterende datoer/varsler/ferdigstilling bruker samme oppgaver.
+
+Beboerdialog har prosjektstandard (nye prosjekter AV), ansvarlig og boligvis arvet/på/av. Byggbildet får separat meldingsbrikke og felles oppfølgingsinnboks. Lest og behandlet skilles; nye svar åpner oppfølging, og tids-/ID-avgrenset behandling kvitterer ikke bort senere meldinger. Avslåing bevarer historikk og oppfølginger. Meldingsvarsler gjenbruker Bolig-worker med kontrollert kø, to minutters samling, mottakerkontroll og privat innhold bare i portalen. Utsending er fortsatt AV i Sandbox. Miljømål BEGGE; kun Preview/Sandbox inntil egen TEST OK. QA og grenser: `docs/qa/BOLIG_GANTT_DIALOG_20261023.md`.
+
+## Boligprosjekter: masseplan og felles tidslinje – Preview 23.10.2026
+
+Fremdrift har samlet valg av bygg/oppgang/etasje/boliger, lokal arbeidsmal fra appens standardaktiviteter, startdato, takt og forhåndsvisning av alle datoer. Inntil 400 aktiviteter lagres eller flyttes atomisk; påbegynt og utført arbeid avklares enkeltvis. Tidslinjen gjenbruker appens eksisterende planlegger med uke/måned, dra/resize og angre. Boligoppgavene er fortsatt ett autoritativt grunnlag for datoer, ferdigstilling og gjennomgåtte beboervarsler. Ingen dobbeltlagring i prosjekt-/KS-planer eller oppdiktet bemanning. Samme Preview/Sandbox, e-post fortsatt deaktivert og ingen produksjonssetting uten TEST OK. Se `docs/qa/BOLIG_MASSEPLAN_20261023.md` for grenser og testguide.
+
+## Boligprosjekter: endringsordre og beboeraksept – Preview 22.10.2026
+
+Ny etappe på samme feature-branch/PR #278. Boligens «Endringer og beboeraksept» gir prosjektleder en egen avtalehistorikk. Beboeraksept fryser siste lagrede boligvalg og serverens tilvalgspris. Endringsordre viser opprinnelige bestillingsvarer mot foreslått leveranse, med eksplisitt pristillegg/fratrekk inkl. mva. Prosjektleder lagrer kladd, gjennomgår, godkjenner og lager en 30-dagers beboerlenke. Beboeren ser én bestemt utgave og bekrefter navn og svar før innsending. Kvitteringen kommer først etter serverbekreftelse. En tidligere publisert, gyldig utgave kan aksepteres; andre uavklarte utgaver i samme avtalerekke sperres etter aksept.
+
+Aksept og leverandørbestilling er separate handlinger. Originalordren, mottak og boligvalg omskrives ikke av en beboeraksept. Akseptert endringsordre stopper ferdigstilling til prosjektleder har dokumentert leverandøravklaring og hvordan endringen er bestilt/kreditert. Endret avtalegrunnlag krever ny sluttkontroll. Kundesiden er en separat, liten side uten intern navigasjon eller innloggingsavhengighet. Token lagres hashet; kundesiden viser bare godkjent avtaleinnhold. Ingen e-post sendes automatisk. Dette er aksept av et forberedt grunnlag, ikke full beboerportal med frie tilvalgsvalg, chat eller dokumentarkiv. Ingen produksjonsmigrasjon eller merge er gjort. QA og grenser: `docs/qa/BOLIG_ENDRINGSORDRE_AKSEPT_20261022.md`.
+
+Eldre «gjenstår»-beskrivelser nedenfor er historikk der denne etappen har levert funksjonen.
+
+## Boligprosjekter: grunnpakker og boligvalg – Preview 20.10.2026
+
+Neste operative etappe på samme core-Preview: prosjektleder redigerer grunnpakker og prosjektets tilvalgsliste. Grunnpakken kan stå uten sum og bevarer vareinnhold, varenummer, antall og enhet. Tilvalg skiller Tillegg til fra Alternativ til standardvare, med valgfritt fratrekk av oppgitt grunnsum. Serveren beregner mellomlegget og fjerner erstattet standardvare fra lagret varegrunnlag. Boligvalg lagres som interne, versjonerte utkast; senere pakke-/pris-/kontaktendringer omskriver ikke lagrede valg. Bestillingsutkast har alle varelinjer valgt første gang og lar prosjektleder utelate enkeltlinjer uten å endre boligvalget. Varekort har valgfritt produktbilde via bilde-adresse og produktlenke. Ingen kundeaksept, beboerlenke, indeksregulering eller bestilling sendes av denne etappen. Se `docs/qa/BOLIG_FOUNDATION_20261020.md` for scope og kontroll. Production er urørt.
+
+## Boligprosjekter: felles grunnlag – Preview 20.10.2026
+
+Miljømål: BEGGE. Egen core-endring fra ren main, adskilt fra prototype-PR #277. Boligprosjekter åpnes fra Meny. Menyvalget vises bare med fersk serverbekreftet tilgang. Systemadmin → Firmaer og prosjekter har eget firmavalg og firmaaktivering, også utenfor aktiv arbeidsprofil. Firmaadmin har individuelle lese-/prosjektlederroller for ansatte i valgt firma. Prosjektflaten viser bare prosjektarbeid og veiledning. Første etappe gir serverlagret hovedprosjekt → blokk → oppgang → bolig, firmaaktivering og individuell lese-/prosjektledertilgang. Etasjeoppsettet har egne felt og total. Eksisterende ProffDok-prosjekter kobles til boliger; eksisterende prosjektinnhold og rettigheter brukes videre.
+
+Seks additive migrasjoner er installert kun i Sandbox. Etter brukerens instruks er Boligprosjekter aktivert for Ringside, Bademiljø Expo og Expo Proffsenter i Sandbox. De tre eksisterende syntetiske ansatte i Expo har prosjektledertilgang. Andre firmaer er ikke aktivert. I Production skal firmaaktivering styres av systemadmin og individuelle tildelinger av firmaadmin. Production er urørt. Grunnpakker, tilvalg og interne boligvalg er beskrevet i den nye etappen øverst. Fremdrift, kundeaksept, portal og e-postbestillinger gjenstår. Ingen merge uten grønn QA, innlogget Preview-prøve og ny TEST OK. Scope, arkitektur, testbevis og videre arbeid: `docs/qa/BOLIG_FOUNDATION_20261020.md`.
 ## Befaringsbilder i stor visning – Preview 23.10.2026
 
 Bildene i selve befaringsnotatet og en lagret Badskisse kan nå åpnes i appens eksisterende store bildevisning. Klikk/tastatur, lukkeknapp, Escape og bakgrunn er scenario-testet uten skjemalagring eller tap av ulagret tekst. Dette retter manglende kobling i editoren; saksoversiktens egen bildevisning, bildelagring, autosave og hydrering er urørt. Egen hotfix fra main, uten Bolig-kode eller databaseendringer. QA: `docs/qa/INSPECTION_IMAGE_PREVIEW_20261023.md`.
@@ -1077,6 +1112,87 @@ Systemadmin kunne åpne ML Flis-prosjektet, mens sjekklistene brukte administrat
 
 Ny `project_checklist_support_state(uuid)` kontrollerer fersk aktiv systemadmin og eksisterende prosjektleserett, avleder firma fra prosjektet og returnerer bare prosjektets kontroller og svar. Vanlig `project_checklist_state`, alle skrive-RPC-er og private tabellrettigheter er uendret. Supportflaten bruker ingen privat lokal kladd, lagrer ikke og importerer ikke nye maler. Eksisterende PDF-verifisering bruker samme autoriserte leserute før/etter generering; firmaprofilens etablerte systemadminregel beholdes. Ordinær fullføring/historikk/lokal sikring har eget regresjonsvern.
 
+Boligprosjekter har en avgrenset beboerportal i feature/Preview: fryste valgmuligheter med serverberegnet pris, innsending til prosjektleder, versjonsaksept og kvitteringer, eksplisitt delte https-dokumentlenker og meldinger. Invitasjon/påminnelse forhåndsvises og kopieres for separat utsending. Tilgang er tidsbegrenset og tilbakekallbar, og endret kontakt stenger gammel lenke. Se `docs/qa/BOLIG_BEBOERPORTAL_20261022.md`.
+
 Tilbud: versjonskonflikter i accept_sales_offer_quantities returnerer PT409 i stedet for 40001, for å unngå PostgREST 14s ubegrensede transaksjonsretry. Kontroll av versjon og ordinær aksept beholdes. Rettet og verifisert kun i Sandbox; produksjon venter TEST OK. Se docs/qa/OFFER_CONFLICT_CPU_20261022.md.
 
 Stabilitet 22.10.2026: Forretningskonflikter bruker PT409 (HTTP 409). CI og build blokkerer nye manuelt hevede transaksjonsfeilkoder. Migrasjonen er avgrenset til 46 kontrollerte funksjoner, med uendrede tilgangssjekker, låser, utkast og rettigheter. Se docs/qa/RPC_CONFLICT_HARDENING_20261022.md.
+
+Boligprosjekter (Preview 23.10.2026): «Fremdrift og varsler» følger planlagt og faktisk arbeid per bolig/rom, ansvarlig og avhengigheter. Påkrevde åpne aktiviteter sperrer ferdigstilling. Beboervarsler må gjennomgås og godkjennes på nøyaktig gjeldende plan/kontakt før publisering. Egen e-postkø er implementert, men automatisk publisering og e-post er deaktivert i testfasen. Se docs/qa/BOLIG_FREMDRIFT_20261023.md.
+
+### Boligprosjekter – beboervarsler 23.10.2026
+
+«Nytt beboervarsel» samler målgruppe, melding, kontakt, forhåndsvisning, PDF og digital publisering. Velg prosjekt, bygg, oppgang eller boliger. Ferdig papir krever ikke beboer-e-post. Ingen separat godkjenningsrunde; digital publisering binder innhold og gjeldende mottakere i én idempotent transaksjon. Generelle varsler bruker eksisterende varseltabell/portal/worker uten kunstige Gantt-aktiviteter. Se `docs/qa/BOLIG_BEBOERVARSEL_FORENKLING_20261023.md`. Bare feature-Preview/Sandbox frem til egen Bolig TEST OK.
+
+### Bolig – proporsjonale byggbilder og samlet avtaleflyt (23.10.2026)
+
+Alle boligtyper viser de registrerte boligene som klikkbare felt inne i byggbildet. Bildets proporsjoner beholdes; større bygg kan rulles uten å presse sammen boligfeltene. Leilighetsbyggets typekort og A–Å-eksempel bruker eget ferdig fasadefoto. Boligavtale/endringsordre viser vare- og prisgjennomgang i samme vindu med «Lagre utkast» eller «Opprett beboerlenke». Eksisterende serverkontroller og beboerens egen aksept beholdes. Avbrutt opprettelse fortsetter samme lagrede steg. QA og startpunkt: `docs/qa/BOLIG_BILDER_OG_AVTALEFLYT_20261023.md`. Feature-Preview frem til egen Bolig TEST OK.
+
+### Bolig – endre koblet aktivitet direkte fra saken (23.10.2026)
+
+Se åpne forhold → Oppfølging i fremdriftsplanen → Åpne aktivitet bruker samme aktivitetsvindu som Gantt og aktivitetslisten. Ansvarlig, frist og faktisk utførelse lagres i eksisterende plan; lukking/lagring går tilbake til samme sak. En annen usendt aktivitetskladd krever et eksplisitt valg før den erstattes. Aktivitetsredigering binder planens revisjon og viser ferskt grunnlag før videre lagring ved endringer. Saken og overtakelsesvurderingen lukkes ikke automatisk. QA/startpunkt: `docs/qa/BOLIG_DIREKTE_AKTIVITET_20261023.md`. Kun feature-Preview frem til egen Bolig TEST OK.
+
+### Boligpilot: kontaktfelt og Gantt (23. oktober 2026)
+
+Innlogget gjennomgang av 40-boligpiloten avdekket at kontaktseksjonen i beboervarselet lukket seg etter første bokstav. Åpen/lukket visning er nå egen lokal UI-tilstand. Gantt viser boliggrupper naturlig etter adresse og bolignummer; aktiviteters ID-er, datoer og lagringsgrunnlag beholdes. Faktisk pilotbevis og testgrenser: `docs/qa/BOLIG_INNLOGGET_PILOT_20261023.md`.
+
+Boligprosjekter Preview: **UE og leverandører** gir navngitte kontakter en tidsbegrenset lenke til eksplisitt valgte bestilte ordre og aktiviteter. «Gi tilgang» viser delingsgrunnlaget og oppretter lenken uten utsending. Svar med dato, leverandørreferanse eller avvik vises på samme ordre/aktivitet med historikk; faktisk mottak og prosjektplan beholdes separat. Se `docs/qa/BOLIG_PARTNERE_20261023.md` for scope, sikkerhet og testgrenser.
+
+Partnerhistorikken bruker faktisk innsettingstid, og utløp kontrolleres etter venting på prosjektlåsen. UI-pilot med to syntetiske svar og tilbakekalt lenke er dokumentert i Bolig-partner-QA.
+
+Partnerlenker stopper også når vanlig utsteder mister Prosjekt-tilgangen; eksisterende modulregel gjenbrukes, med manager-kravet beholdt.
+
+
+### Prosjektomfattende UE-/leverandørtilgang (23.10.2026)
+
+Oppdatert etter Kenneths presisering: tilgang gjelder alle aktive leiligheter i prosjektet, også fremtidige. Manager velger funksjoner, ikke enkeltleiligheter eller rader. UE foreslås `progress` + `checklists`; leverandør foreslås `progress` + `orders`. Valgene kan justeres. Bestillinger avgrenses server-side til valgt leverandørnavn fra ordren på tvers av prosjektet; priser og andre leverandørers ordre deles ikke. Sjekklister er en hvitelistet leseprojeksjon av kontrollpunkter og status, uten svarverdier, kommentarer, aktørdata eller dokumentstier. Kontakt, gyldighet og bearer-lenkens eierskap følger eksisterende modell. Prosjektleder kan endre funksjoner på samme lenke med revisjonskontroll og eksakt retry. Fjernede funksjoner stenges også før tidligere svarforsøk kan replayes. Eldre selected-row-lenker utvides aldri automatisk.
+
+Additiv migrasjon `20261023190621_bolig_partner_project_features.sql` er installert kun i Sandbox. Ingen endring av ordre, mottak eller fremdriftsplan fra mottakersvar. Portal viser bare tillatte faner, søk og sidevisning på 40 rader. Tidligere beskrivelse av obligatorisk enkeltutvalg gjelder kun eldre lenker. QA og konkret brukertest: `docs/qa/BOLIG_PARTNERE_20261023.md`; overlevering: `docs/CHAT_HANDOFF_BOLIG_20261023.md`. Samme PR278/Preview; produksjonsløp krever grønn critical QA og eksplisitt Bolig TEST OK.
+
+
+### UE: egne sjekklisteutfyllinger, PDF-lister og bilder (23.10.2026)
+
+`quality_write` er en eksplisitt rett som krever UE og `checklists`. Nye UE-forslag inkluderer retten; eksisterende lenker utvides ikke. Prosjektleder velger Les / Fyll ut egne sjekklister og last opp vedlegg og bilder. UE kan starte egen utfylling fra et prosjektgrunnlag eller opprette en egen liste på valgt prosjekt/bygg/leilighet. Native `quality_states`/`quality_events` brukes; tidligere kontroller og andre UE sine svar overskrives ikke. Bare egne utfyllinger kan redigeres, og fullførte kontroller må gjenåpnes internt. Native krav til svar, felt, bilder, kommentarer, avvik og bekreftelsesgrunnlag gjenbrukes. Revisjonskontroll og eksakt retry forhindrer overskriving og duplikater. Signaturstempel merkes sannferdig som UE-lenke med partner-ID; ingen innlogget ansatt eller utsteder imiteres. Native historikk har ekstern partner-ID og null intern actor-ID, med identitetskrav bevart.
+
+Privat `bolig-partner-files`-gateway kontrollerer aktiv lenke/funksjon/prosjekt før og etter Storage-kall. Direkte anon-Storage er fortsatt stengt, og ingen offentlig eller varig signert filadresse utstedes. Opplasting er uforanderlig, knyttet til UE/scope/ID/type/størrelse/hash og må eksistere før native dokumentregistrering. Bare egne registrerte filer kan hentes/vedlegges. PDF, JPG, PNG, WebP, DOCX, XLSX, TXT og CSV, inntil20 MB. Filformat og størrelse valideres; eksisterende private dokumentbøtte utvides bare med de nye typene. Filkladder sikres i IndexedDB før overføring; svar/pending commands sikres lokalt før nettverk. Dvale og sen respons bruker eksisterende tilgangsepoke.
+
+Additiv migrasjon `20261023193507_bolig_partner_quality_writes.sql` og Edge Function er installert kun i Sandbox. E-postmotor/ordre/Gantt og interne kvalitetsroller endres ikke. Detaljer og bevis i `docs/qa/BOLIG_PARTNERE_20261023.md`. Samme PR278/Preview; ingen produksjonsmerge uten Bolig TEST OK.
+
+
+UE-flyten er faktisk testet gjennom native filvelger, privat PDF-/bildenedlasting (SHA256 lik original), fullføring med vedlegg og prosjektleders vanlige dokumentasjon. Filvelger og åpne detaljer bevares gjennom skjult reautorisasjon, uten å gi serverhandlinger gammel autoritet. Additiv Sandbox-migrasjon `20261023195824_bolig_quality_history_action.sql` kvalifiserer native historikkolonner som ellers ble skjult av PL/pgSQL-parametere; lagrede hendelser beholdes. UE-oppretting, svarlagring og filregistrering har egne lesbare etiketter. Siste bevis og gjenstående brukerprøve i `docs/qa/BOLIG_PARTNERE_20261023.md`.
+
+UE-/leverandørportal: Fremdrift åpner nå appens samlede Gantt i lesevisning, med foldbare leiligheter, periodevalg/søk og aktivitetsdetaljer med datobekreftelse/avvik. Appens Expo-logo og tydelig ProffDok-toppfelt vises også før tilgangskontroll. Tilgangs- og ordregrenser er uendret; tilgangslenken kan sendes eksplisitt fra kontaktvinduet, med separat sendingsstatus og vanlig e-postmal.
+
+
+UE-portalens sjekklister prioriteres nå i eksisterende visning: Pågående → Neste sjekklister → sammenfoldet Fullførte (antall). `BoligPartnerChecklistGroups.jsx` grupperer en kopi av fersk serverprojeksjon; opprinnelig rekkefølge innen gruppene, ID-er og historikk bevares. Egne native svar regnes som påbegynt ved lagret resultat, kommentar, feltverdi eller dokumentreferanse. Delte prosjektlister bruker bare whitelistede punktstatuser; private kommentarer/felt hentes ikke. Fullføringsdato vises bare når den faktisk finnes. Egne/ delte grupper har uavhengig sidevisning; fullførte kan ikke fortrenge uferdige ved 40-radsgrensen. Søk dekker også egne lister og plasseringer. Kontrollpunkter, åpen gruppe og sidevalg bevares ved reautorisasjon; native editor/filinput/retry og tilgangsepoke beholdes. Etter lagringskvittering får neste gjenværende arbeid fokus. Interne kvalitetsvisninger er gjennomgått og uendret i denne avgrensede pakken. Ingen DB-, rettighets-, e-post- eller produksjonsendring. QA: `docs/qa/BOLIG_PARTNERE_20261023.md`.
+
+
+### UE-/leverandørlenke på e-post – Preview 23.10.2026
+
+Samme kontaktvindu har nå mottaker, valgfri «Forhåndsvis e-post», «Send tilgangslenke»/«Send lenken på nytt» og sendingshistorikk. Appens etablerte mørke invitasjonsmal, firmaets logo, knapp og signatur gjenbrukes visuelt; logo-/avsenderhelper er delt med eksisterende leverandørmailer. Mottakeren kommer fra aktiv tilgang; klienten kan ikke sende til vilkårlig adresse eller angi annen lenkeorigin/HTML. Opprinnelig rålenke må fortsatt finnes lokalt. E-postsendingsmetadata fryses uten råtoken i privat tabell. Manager/firma/prosjekt, utstederrett, aktiv tilgang, revisjon, tokenhash og mottaker kontrolleres på nytt før sending. Resend og eksisterende CHAT_FROM_EMAIL/RESEND_API_KEY brukes med stabil idempotens-ID og varig kvittering; maksimalt23 timer for et uavklart forsøk. Ingen separat godkjenningsflate eller automatisk opprettingssending. Providerkvittering betyr ikke mottak/lest e-post. Native reautorisasjon og lokal eksakt retry er bevart; et foreldet, aldri startet forsøk kan oppdateres ved dokumentert ny tilgangsrevisjon.
+
+Sandbox-migrasjon `20261023210201_bolig_partner_invitation_mail.sql` og Edge `bolig-partner-email`. Egen transportbryter er AV; forhåndsvisning virker. Operativ site_origin er satt til den faste Preview-adressen kun i Sandbox. Ved senere godkjent produksjonslansering må funksjon/transport konfigureres og kontrollert e-postprøve utføres; eksisterende bakgrunnsmotorer påvirkes ikke. Ingen ekte sending i denne pakken. Bemanningsønsket med grønn/rød sirkel og diskret mobilplassering står fortsatt på senere-listen i videreplanen. QA og testgrenser: `docs/qa/BOLIG_PARTNERE_20261023.md`.
+
+UE-popup, ytelse og e-postkart: [QA og prioritering](docs/qa/BOLIG_REFRESH_OG_EPOST_20261023.md). Bakgrunnslesing og klikk i e-postforhåndsvisning beholder kontaktvinduet; ekte dvale/tilbakekalling sperres fortsatt. Direkte e-post for beboerportal-/avtalelenker er implementert i eksisterende mottakervinduer; se QA for beboerlenke-e-post. Preview/Sandbox, ingen produksjonsmerge eller generell e-postaktivering.
+
+
+Prosjektkobling og regresjonsavgrensning: [QA](docs/qa/BOLIG_AVGRENSNING_OG_TEKSTER_20261023.md). Leilighetsinformasjon bruker «Lagre endringer» og skiller aktivt boligprosjekt fra en valgfri ekstra prosjektkobling. Nye CI-kontroller sammenligner delte standardbrukerreiser og vanlig leverandørmail direkte med main. Ingen produksjonsmerge ennå.
+## Boligprosjekter: indeksregulering mot byggherre – Preview 24.10.2026
+
+Privat kontraktsområde har SSB-serie/måned, reduksjonsfaktor og separate
+avkryssinger/beløp for grunnleveranse til byggherre og egne opsjoner. Serveren
+beregner forhåndsvisningen og lagrer eksplisitt godkjent historikk med eksakt
+retry. Ingen automatisk pris-, ordre- eller fakturaendring. Bare Preview/Sandbox;
+AI-tilkoblingen er utsatt og ingen produksjonsmerge er godkjent.
+[Scope, tester og brukerprøve](docs/qa/BOLIG_INDEKSREGULERING_20261024.md).
+
+
+## Boligprosjekter: fakturert hittil og a konto – Preview 24.10.2026
+
+Kontrakter → Fakturert hittil og a konto registrerer eksterne fakturaer og
+kreditnotaer med separat hovedstol/indeks. Begge a konto-metoder støttes:
+utført verdi hittil minus netto fakturert hovedstol, eller periodens avtalte
+beløp/forskudd. Indeks beregnes bare på ny hovedstol for valgte leveransedeler.
+Avtaler og fakturaposter beholder uforanderlige øyeblikksbilder. Ingen utsending,
+bokføring, betalingsstatus eller produksjonsmerge. Presis kontrakt, grenser og
+brukertest: `docs/qa/BOLIG_FAKTURERT_OG_AKONTO_20261024.md`.

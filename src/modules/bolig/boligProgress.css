@@ -1,0 +1,579 @@
+.bolig-progress {
+  --progress-ink: #183e46;
+  --progress-muted: #516970;
+  display: grid;
+  gap: 18px;
+  padding: 22px 0;
+  color: var(--progress-ink);
+  min-width: 0;
+}
+.bolig-progress-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+}
+.bolig-progress-heading h3 {
+  font-size: 26px;
+  margin: 5px 0 8px;
+}
+.bolig-progress-heading small {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  color: #537d83;
+}
+.bolig-progress-heading p {
+  max-width: 660px;
+  margin: 0;
+  line-height: 1.6;
+  color: var(--progress-muted);
+}
+.bolig-progress-heading button {
+  flex-shrink: 0;
+}
+.bolig-progress-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.bolig-progress-metrics > div {
+  background: #eef6f5;
+  border: 1px solid #cfe1df;
+  border-radius: 14px;
+  padding: 16px;
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  gap: 6px 12px;
+  align-items: center;
+}
+.bolig-progress-metrics strong {
+  font-size: 26px;
+  line-height: 1;
+}
+.bolig-progress-metrics span {
+  grid-column: 2;
+  font-size: 13px;
+  color: var(--progress-muted);
+}
+.bolig-progress-explainer {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--progress-muted);
+}
+.bolig-progress-paused {
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #fff7e7;
+  border: 1px solid #e8d5aa;
+  font-size: 13px;
+  line-height: 1.6;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: #73531b;
+  margin: 0;
+}
+.bolig-progress-paused svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.bolig-progress-tools {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.bolig-progress-tools label:first-child {
+  flex: 1;
+  min-width: 160px;
+}
+.bolig-progress label,
+.bolig-progress-editor label {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 650;
+  min-width: 0;
+}
+.bolig-progress input,
+.bolig-progress select,
+.bolig-progress-editor input,
+.bolig-progress-editor select,
+.bolig-progress-editor textarea {
+  box-sizing: border-box;
+  max-width: 100%;
+  width: 100%;
+  background: #fff;
+  border: 1px solid #b6ced0;
+  border-radius: 9px;
+  min-height: 42px;
+  padding: 10px 12px;
+  font: inherit;
+  color: #173e45;
+}
+.bolig-progress button,
+.bolig-progress-editor button {
+  min-height: 40px;
+  border: 1px solid #a9c9cd;
+  background: white;
+  color: #18515a;
+  border-radius: 9px;
+  font-weight: 700;
+  padding: 10px 13px;
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.bolig-progress button.primary,
+.bolig-progress-editor button.primary {
+  background: #087d84;
+  border-color: #087d84;
+  color: white;
+}
+.bolig-progress button:disabled,
+.bolig-progress-editor button:disabled {
+  opacity: 0.52;
+  cursor: default;
+}
+.bolig-progress-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.bolig-progress-task {
+  border: 1px solid #ccdcde;
+  border-left: 4px solid #91b5bb;
+  background: white;
+  border-radius: 12px;
+  padding: 17px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.bolig-progress-task.working {
+  border-left-color: #159ea7;
+}
+.bolig-progress-task.done {
+  border-left-color: #36a277;
+}
+.bolig-progress-task.blocked {
+  border-left-color: #c18a3b;
+}
+.bolig-progress-task > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.bolig-progress-task h4 {
+  font-size: 17px;
+  margin: 3px 0;
+}
+.bolig-progress-task p {
+  margin: 0;
+  font-size: 14px;
+}
+.bolig-progress-task small {
+  color: var(--progress-muted);
+  font-size: 12px;
+}
+.bolig-progress-status {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 4px 8px;
+  background: #eaf2f3;
+  border-radius: 20px;
+}
+.done .bolig-progress-status {
+  background: #e7f5eb;
+  color: #21663f;
+}
+.blocked .bolig-progress-status {
+  background: #fff1d9;
+  color: #85571e;
+}
+.bolig-progress-task-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 9px;
+}
+.bolig-progress-task-actions button {
+  font-size: 12px;
+  padding: 8px 11px;
+  min-height: 36px;
+}
+.bolig-progress-empty {
+  text-align: center;
+  border: 1px dashed #abc9ce;
+  border-radius: 14px;
+  background: #f4f9f9;
+  padding: 30px 20px;
+}
+.bolig-progress-empty h4 {
+  font-size: 18px;
+  margin: 10px 0;
+}
+.bolig-progress-empty p {
+  font-size: 14px;
+  color: var(--progress-muted);
+}
+.bolig-progress-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  font-size: 13px;
+}
+.bolig-progress-fold {
+  border: 1px solid #cfdee0;
+  border-radius: 12px;
+  background: #f9fbfb;
+  padding: 15px 18px;
+}
+.bolig-progress-fold > summary {
+  font-weight: 750;
+  cursor: pointer;
+  font-size: 15px;
+}
+.bolig-progress-fold > summary span {
+  margin-left: 7px;
+  padding: 2px 7px;
+  border-radius: 20px;
+  background: #e2eeee;
+  font-size: 12px;
+}
+.bolig-progress-fold > p {
+  font-size: 13px;
+  line-height: 1.6;
+}
+.bolig-progress-notice {
+  background: white;
+  border: 1px solid #d4e3e5;
+  border-radius: 10px;
+  padding: 15px;
+  margin-top: 12px;
+  overflow-wrap: anywhere;
+}
+.bolig-progress-notice > div:first-child {
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+.bolig-progress-notice > div > span {
+  font-size: 12px;
+  color: #5c737a;
+}
+.bolig-progress-notice p {
+  white-space: pre-wrap;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.bolig-progress-notice small {
+  font-size: 12px;
+  color: var(--progress-muted);
+}
+.bolig-progress-editor {
+  width: min(780px, calc(100vw - 32px)) !important;
+  height: auto !important;
+  max-height: 90dvh !important;
+  color: #183e46 !important;
+  background: #fff !important;
+}
+.bolig-progress-editor form,
+.bolig-progress-review {
+  display: grid;
+  gap: 17px;
+  padding: 20px;
+  min-width: 0;
+}
+.bolig-progress-editor form > p,
+.bolig-progress-review > p {
+  font-size: 14px;
+  line-height: 1.65;
+  margin: 0;
+}
+.bolig-progress-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 15px;
+}
+.bolig-progress-editor textarea {
+  min-height: 115px;
+  resize: vertical;
+  line-height: 1.5;
+}
+.bolig-progress-check {
+  display: flex !important;
+  align-items: flex-start;
+  gap: 9px !important;
+  line-height: 1.5;
+}
+.bolig-progress-check input {
+  width: 18px !important;
+  min-height: 18px !important;
+  height: 18px !important;
+  flex-shrink: 0;
+  margin: 1px 0;
+  accent-color: #087d84;
+}
+.bolig-progress-preview {
+  white-space: pre-wrap;
+  background: #eef6f5;
+  border-left: 3px solid #198d93;
+  padding: 18px;
+  border-radius: 8px;
+}
+.bolig-progress-editor footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.bolig-progress-pending {
+  background: #fff7e7;
+  padding: 15px;
+  border-radius: 10px;
+}
+.bolig-progress-pending p {
+  font-size: 13px;
+}
+@media (max-width: 680px) {
+  .bolig-progress {
+    padding: 15px 0;
+    gap: 14px;
+  }
+  .bolig-progress-heading {
+    display: block;
+  }
+  .bolig-progress-heading > button {
+    margin-top: 12px;
+  }
+  .bolig-progress-heading h3 {
+    font-size: 22px;
+  }
+  .bolig-progress-metrics {
+    gap: 6px;
+  }
+  .bolig-progress-metrics > div {
+    padding: 11px 8px;
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+  .bolig-progress-metrics svg {
+    display: none;
+  }
+  .bolig-progress-metrics strong {
+    font-size: 23px;
+  }
+  .bolig-progress-metrics span {
+    grid-column: auto;
+    font-size: 11px;
+  }
+  .bolig-progress-list,
+  .bolig-progress-fields {
+    grid-template-columns: 1fr;
+  }
+  .bolig-progress-editor form,
+  .bolig-progress-review {
+    padding: 16px;
+  }
+  .bolig-progress-tools {
+    display: grid;
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+  .bolig-progress-editor {
+    width: calc(100vw - 20px) !important;
+    max-height: 94dvh !important;
+  }
+  .bolig-progress-notice > div:first-child {
+    display: grid;
+  }
+  .bolig-progress-task-actions button {
+    flex: 1;
+  }
+  .bolig-progress-editor footer button {
+    flex: 1;
+  }
+}
+
+.bolig-progress-notice > small {
+  display: block;
+  margin-top: 5px;
+}
+
+.bolig-plan-workspace {
+  padding: 16px;
+  border: 1px solid #d8e1e8;
+  border-radius: 14px;
+  background: #f7f9fc;
+  margin-bottom: 18px;
+}
+.bolig-plan-launchers,
+.bolig-plan-dialog-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.bolig-plan-dialog {
+  width: min(1000px, 96vw);
+}
+.bolig-plan-dialog-body {
+  padding: 20px;
+  max-height: 78dvh;
+  overflow: auto;
+}
+.bolig-plan-dialog-body fieldset {
+  border: 0;
+  padding: 0;
+  min-width: 0;
+}
+.bolig-plan-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin: 12px 0;
+}
+.bolig-plan-dialog-body label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-weight: 600;
+}
+.bolig-plan-dialog-body input,
+.bolig-plan-dialog-body select {
+  width: 100%;
+  padding: 9px;
+  min-height: 42px;
+  border: 1px solid #bdcbd7;
+  border-radius: 7px;
+  background: #fff;
+  color: #172d43;
+  box-sizing: border-box;
+}
+.bolig-plan-dialog-body small {
+  font-weight: 400;
+  font-size: 12px;
+  color: #4f6275;
+}
+.bolig-plan-unit-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  max-height: 230px;
+  overflow: auto;
+  gap: 8px;
+  margin: 12px 0;
+  border: 1px solid #d8e1e8;
+  padding: 10px;
+  border-radius: 8px;
+}
+.bolig-plan-unit-list label,
+.bolig-plan-check {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 8px !important;
+}
+.bolig-plan-unit-list input,
+.bolig-plan-check input {
+  width: 18px;
+  height: 18px;
+  min-height: 18px;
+  flex: none;
+}
+.bolig-plan-unit-list small {
+  display: block;
+}
+.bolig-plan-step {
+  display: grid;
+  grid-template-columns: minmax(150px, 1fr) 100px auto auto;
+  gap: 10px;
+  align-items: end;
+  padding: 10px 0;
+  border-bottom: 1px solid #e4e9ee;
+}
+.bolig-plan-steps {
+  margin: 12px 0;
+}
+.bolig-plan-dialog-actions {
+  justify-content: flex-end;
+  margin-top: 20px;
+  padding: 14px 0 0;
+  border-top: 1px solid #d8e1e8;
+}
+.bolig-plan-preview-scroll {
+  max-height: 45dvh;
+  overflow: auto;
+  border: 1px solid #d8e1e8;
+  border-radius: 8px;
+}
+.bolig-plan-preview-scroll table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 13px;
+}
+.bolig-plan-preview-scroll th {
+  position: sticky;
+  top: 0;
+  background: #edf2f7;
+  text-align: left;
+}
+.bolig-plan-preview-scroll th,
+.bolig-plan-preview-scroll td {
+  padding: 10px;
+  border-bottom: 1px solid #e4e9ee;
+}
+.bolig-plan-preview-scroll strong {
+  display: block;
+}
+@media (max-width: 600px) {
+  .bolig-plan-step {
+    grid-template-columns: minmax(130px, 1fr) 85px;
+  }
+  .bolig-plan-dialog-body {
+    padding: 12px;
+  }
+  .bolig-plan-preview-scroll {
+    font-size: 12px;
+  }
+  .bolig-plan-dialog-actions button {
+    flex: 1;
+  }
+}
+
+/* Scoped above the module's generic full-height dialog and label rules. */
+.bolig-dialog.bolig-plan-dialog {
+  height: fit-content;
+  min-height: 0;
+  max-height: calc(100dvh - 24px);
+  overflow: hidden;
+}
+.bolig-dialog.bolig-plan-dialog .bolig-plan-dialog-body {
+  max-height: calc(100dvh - 140px);
+}
+.bolig-dialog.bolig-plan-dialog .bolig-plan-dialog-body label {
+  display: flex;
+}
+.bolig-dialog.bolig-plan-dialog .bolig-plan-unit-list label {
+  margin: 0;
+  padding: 6px;
+  min-height: 44px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.bolig-dialog.bolig-plan-dialog .bolig-plan-unit-list label:has(input:checked) {
+  background: #e1f1f2;
+}
+.bolig-gantt{margin:20px 0;background:#fff;border:1px solid #cbdde0;border-radius:18px;overflow:hidden;box-shadow:0 5px 22px #133f4509}.bolig-gantt-heading{display:flex;gap:16px;align-items:center;justify-content:space-between;padding:20px;background:#edf5f4}.bolig-gantt-heading small{font-weight:800;color:#4f7278;letter-spacing:.08em}.bolig-gantt-heading h4{margin:6px 0;font-size:22px}.bolig-gantt-filters{display:flex;flex-wrap:wrap;gap:12px;padding:16px}.bolig-gantt-filters label{display:grid;gap:5px;flex:1 1 145px;font-size:13px;font-weight:750}.bolig-gantt>.bolig-plan-launchers,.bolig-gantt>p{padding:0 16px}.bolig-gantt-scroll{overflow:auto;max-height:610px;border-top:1px solid #cbdde0;overscroll-behavior:contain}.bolig-gantt-row{display:grid;grid-template-columns:230px 1fr;min-height:49px;border-bottom:1px solid #e0e9ea}.bolig-gantt-row.summary{background:#edf3f4;min-height:44px}.bolig-gantt-label,.bolig-gantt-calendar>strong{position:sticky;left:0;z-index:2;background:inherit;padding:6px 12px;border-right:1px solid #cbdde0;background-color:#fff}.bolig-gantt-row.summary .bolig-gantt-label{background:#edf3f4}.bolig-gantt-label button{width:100%;text-align:left;background:transparent!important;border:0!important;color:#173f48!important;padding:3px!important;font-size:13px;font-weight:700;min-height:32px}.bolig-gantt-label small{display:block;color:#647d83;font-size:11px;font-weight:500}.bolig-gantt-track{position:relative;background-image:linear-gradient(to right,#dfe9eb 1px,transparent 1px)}.bolig-gantt-bar{position:absolute;top:8px;height:31px;border-radius:5px;display:flex;align-items:center;justify-content:space-between;background:#4a8594;border:1px solid #336975;color:white;font-size:12px;font-weight:650;cursor:grab;touch-action:pan-y;min-width:12px;z-index:1;outline-offset:3px}.bolig-gantt-bar>span:nth-child(2){overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.bolig-gantt-bar:focus-visible{outline:3px solid #d99d26}.bolig-gantt-bar.working,.bolig-gantt-summary.working{background:#cb922e}.bolig-gantt-bar.done,.bolig-gantt-summary.done{background:#3e8c69}.bolig-gantt-bar.blocked,.bolig-gantt-summary.blocked{background:#a86458}.bolig-gantt-handle{width:9px;height:100%;cursor:ew-resize;flex-shrink:0;touch-action:none}.bolig-gantt-summary{position:absolute;height:5px;background:#6d919b;border-radius:3px;opacity:.7}.bolig-gantt-calendar{position:sticky;top:0;z-index:3;background:#1c4650;color:white;min-height:38px;font-size:12px}.bolig-gantt-calendar>strong{background:#1c4650;padding:10px 14px}.bolig-gantt-days{display:grid;text-align:center;align-items:center}.bolig-gantt-days>span{padding:9px 0}.bolig-gantt-days .today{background:#42716e}.bolig-progress-activity-list{margin:20px 0;border:1px solid #cbdde0;border-radius:14px;padding:15px}.bolig-progress-activity-list>summary,.bolig-group-editor>summary{font-size:16px;font-weight:750;cursor:pointer}.bolig-group-editor{border:1px solid #cbdde0;border-radius:12px;padding:14px;margin:18px 0}.bolig-group-editor>label{display:grid;gap:6px;margin:12px 0}.bolig-plan-step{flex-wrap:wrap}.bolig-plan-step>label{min-width:130px}
+@media(max-width:600px){.bolig-gantt-heading{display:block;padding:14px}.bolig-gantt-heading .bolig-plan-launchers{margin-top:10px}.bolig-gantt-row{grid-template-columns:180px 1fr}.bolig-gantt-filters{padding:12px;gap:10px}.bolig-gantt-heading h4{font-size:19px}}
+.bolig-plan-workspace,.bolig-gantt,.bolig-gantt-scroll,.bolig-gantt-filters,.bolig-gantt-filters>label{min-width:0;max-width:100%;box-sizing:border-box}.bolig-gantt-filters input,.bolig-gantt-filters select{min-width:0;width:100%;box-sizing:border-box}.bolig-progress .bolig-gantt-label button{display:block;box-shadow:none;line-height:1.25;white-space:normal}.bolig-progress .bolig-gantt-label small{display:block;margin-top:3px}.bolig-progress .bolig-gantt-label{background-color:#fff}
+@media(max-width:600px){.bolig-plan-workspace{padding:10px}.bolig-gantt-filters label{flex-basis:120px}.bolig-progress .bolig-gantt-heading button{font-size:12px;padding:8px 10px}.bolig-gantt-row{grid-template-columns:145px 1fr}}

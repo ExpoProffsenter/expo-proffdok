@@ -1,0 +1,253 @@
+# Boligprosjekter – arbeidsflate og videre produktkrav
+
+## Fakturert hittil og a konto – 24. oktober 2026
+
+Kenneth valgte manuell registrering fra økonomisystemet, begge a konto-metoder
+og felles indeksavtale med reguleringsmåned per periode. Privat kontraktsøkonomi
+viser netto fakturert hovedstol/indeks og rest hovedstol. Kumulative perioder
+regner fratrekk av tidligere hovedstol; betalingsplan/forskudd føres som periodens
+beløp. Kreditnotaer er koblet til opprinnelig faktura. Avtaleversjoner og
+registreringer er uforanderlig historikk med revisjonskontroll og eksakt retry.
+Ingen faktura sendes eller bokføres. Ingen produksjonsmerge/-migrasjon.
+Se `docs/qa/BOLIG_FAKTURERT_OG_AKONTO_20261024.md` for omfang, grenser og QA.
+
+
+## Indeksregulering mot byggherre – 24. oktober 2026
+
+Implementert for samme Preview/Sandbox: Boligblokk i alt og begge navngitte
+rørindekser, SSB-henting/manuell føring, reduksjonsfaktor og egne avkryssinger
+for grunnleveranse til byggherre og hver opsjon. Serverberegnet forhåndsvisning
+og uforanderlig godkjenningshistorikk i privat kontraktsområde. Ingen automatisk
+faktura-, pakke-, beboer- eller ordreendring. Se
+`docs/qa/BOLIG_INDEKSREGULERING_20261024.md` for presist omfang og testgrenser.
+AI Gateway/alternativ leverandør er uttrykkelig utsatt av Kenneth; se
+`docs/qa/BOLIG_KONTRAKTTEKST_OG_GJENNOMGANG_20261024.md`. Ingen produksjonsmerge.
+
+## Privat kontraktstekst og gjennomgang – 24. oktober 2026
+
+Etter Kenneths «kjør» er tekstgjenkjenning, privat søk og arbeidsforslag med
+dokument-/versjons-/sidehenvisninger implementert for samme feature/Preview og
+Sandbox. Originaler beholdes. Modellarbeid krever eksplisitt start og gir ingen
+automatisk kontraktsaksept, oppgave eller bestilling. Ny fil-/tekstutgave gjør
+tidligere gjennomgang historisk. Ingen produksjonsmerge eller indeksregulering.
+Se `docs/qa/BOLIG_KONTRAKTTEKST_OG_GJENNOMGANG_20261024.md` for faktisk lokal og
+native Sandbox-QA, avgrensning og det separate gjenstående beviset for autentisert
+live modellkjøring/teamtilgang i Preview. Eldre «OCR/analyse senere» nedenfor er
+historikk for den første originalfilpakken.
+
+## Privat kontraktsområde – 24. oktober 2026
+
+Kenneth bestilte første etappe og ga en virkelig kontrakt som lokalt fileksempel. Privat dokumentopplasting/versjoner/forhåndsvisning/nedlasting og uttrykkelig navngitt tilgang er implementert for samme feature/Preview og Sandbox. Prosjektoppretter med aktiv prosjektlederrolle starter området; vanlig firma-/Bolig-/systemadmin-rolle alene gir ikke andre personers kontraktsinnsyn. Originaler bevares og blandes ikke i UE-/leverandør-/beboerflater eller ordinær FDV/sluttpakke. Den virkelige filen er ikke lagt i delte pilotdata eller repo. Se `docs/qa/BOLIG_PRIVATE_KONTRAKTER_20261024.md` for kontrakt, sikkerhet, faktisk QA og gjenstående innlogget brukerprøve. Ingen produksjonsmerge/-migrasjon. OCR, tekstanalyse og indeksregulering er fortsatt senere etapper. Eldre «ikke startet»-avsnitt er historikk for dette første dokumentområdet.
+
+## HR inkludert og gjennomgang av KS/HMS – 24. oktober 2026
+
+Kenneth har avklart at intern Bolig-tilgang skal inkludere hele HR-funksjonen, og prioritert KS/HMS-gjennomgang foran kontraktsområdet. HR-modulrettigheten utledes fra aktiv Bolig-/firma-/Prosjekter-/medlemskapstilgang; vanlige HR-innsynsroller, firmaoppsett og timeregistrering gjelder fortsatt. Ingen automatisk medarbeideropprettelse eller ekstra leder-/leserrettigheter. Separat HR-grant beholdes ved tilbakekalt Bolig-tilgang. Eksterne UE-/leverandør-/beboerlenker har ikke HR-tilgang.
+
+Gjennomgangen retter tap av åpen KS/HMS-dokumentgruppe ved ny prosjektkoblingslesing, og en bekreftet NULL-feil ved manglende leder i HR-innsynskontrollen. Additiv migrasjon `20261024171757_bolig_hr_included_access.sql` er kun installert i Sandbox. Tester/avgrensning: `docs/qa/BOLIG_KSHMS_INTEGRASJON_20261024.md`. Ingen produksjonsmerge/-migrasjon, ingen e-postaktivering. Kontraktsområdet er fortsatt ikke startet. Eldre «ingen ekstra HR-tilgang» og «timeavklaring gjenstår» nedenfor er historikk.
+
+## Prosjektkobling og egne boligoppgaver – 24. oktober 2026
+
+Implementert i samme feature-branch for Preview/Sandbox. Produksjon/main er ikke endret.
+
+- Ny «KS/HMS og timer»-flate i boligprosjektet. Prosjektleder oppretter et navngitt ordinært prosjekt eller kobler et eksisterende prosjekt én gang. Eksisterende prosjektdata og boligkoblinger skrives ikke om.
+- SJA, RUH, vernerunder og risikovurderinger åpnes i uendrede eksisterende KS/HMS-komponenter. Sjekklister åpner det ordinære prosjektets sjekklisteflate.
+- Timer og utlegg bruker eksisterende Mine timer. Brukeren velger det viste prosjektet i det vanlige prosjektfeltet. Gjeldende HR-/timerettigheter og godkjenning gjelder fortsatt; ingen ekstra HR-tilgang er gitt.
+- Min side har et sammenfoldet kort for oppgaver hvor brukeren er registrert ansvarlig: uferdig Bolig-fremdrift, åpne native RUH/avvik og utkast til vernerunde/risikovurdering på koblede prosjekter. Lukking/status/ansvarlig leses fra kilden. Ingen ny oppgave- eller varslingsmotor.
+- SJA og ikke-tildelte sjekklister gjøres ikke automatisk om til personlige oppgaver. UE-lenker får ikke ny intern KS/HMS-/HR-tilgang. Hovedprosjektets kobling må brukes for hovedprosjektet; ikke koble samme ordinære prosjekt separat til en bolig.
+
+QA og konkret brukerprøve: `docs/qa/BOLIG_KSHMS_INTEGRASJON_20261024.md`. Innlogget brukerprøve i delt Preview gjenstår før TEST OK. Native Sandbox-gatewayer og mobil-/desktop-komponenter er testet separat; dette er ikke en påstand om full innlogget ende-til-ende-test i delt Preview.
+
+## Avklart: firma med Boligprosjekter har også KS/HMS – 24. oktober 2026
+
+Kenneth presiserte at firmaer som får Boligprosjekter, også vil ha KS/HMS-tilgang. Videre integrasjon skal derfor gjenbruke appens eksisterende timeføring, sjekklister, SJA, RUH og øvrige relevante HMS-funksjoner med kobling til boligprosjektet. Dette er en avklart forutsetning for firmapakken og et ønske om felles prosjektkobling; prosjektkoblingen er nå implementert i feature/Preview-etappen beskrevet nedenfor.
+
+- Unngå parallelle registreringssystemer i Bolig. Eksisterende funksjoner, historikk og personrettigheter skal gjenbrukes. Firmaets modulaktivering alene utvider ikke automatisk ansattes eller UE-lenkers innsyn.
+- Teknisk kartlegging: timeføring bruker ordinær `project_id` via `time_projects`. SJA/RUH har også ordinær prosjektkobling. Bolig-hovedprosjektets `root_id` er en annen ID-type; enkelte boliger har allerede `project_id`. Integrasjonen må bruke en eksplisitt kobling og bevare eksisterende bolig-/prosjektkoblinger og historikk. Hovedprosjektet får eksplisitt ordinær prosjektkobling. Eksisterende koblinger per bolig gjenbrukes. Min side leser egne åpne fremdrifts-, RUH-/avviks- og HMS-kontrolloppgaver.
+- **Åpent produktvalg:** I gjeldende app ligger Mine timer/Timer og utlegg under HR-tilgangen, og KS/HMS-tilgang alene åpner ikke timeføringen. Avklar om timeføring også skal følge Boligprosjekter + KS/HMS for firmaer uten resten av HR-modulen. En slik endring må avgrenses fra tilgang til øvrige HR-opplysninger.
+- Ingen firmalisenser, personrettigheter, UE-grants, timeføringskode eller prosjektkoblinger er endret ved denne planoppdateringen.
+
+## Opprinnelig ønskeliste: kobling til KS/HMS og Min side – 24. oktober 2026
+
+Historisk bestilling før Kenneths «Kjør og pass på at ingen andre funksjoner i appen berøres». Første integrasjonsetappe er nå implementert som beskrevet ovenfor. Punkter utover denne etappen er fortsatt senere arbeid.
+
+- Koble Boligprosjekter til appens eksisterende SJA, RUH og relevante øvrige KS/HMS-funksjoner. Kartlegg eksisterende prosjekt-/bygg-/boligkoblinger før løsning velges, og gjenbruk gjeldende funksjoner, data og tilgangskontroll.
+- Koble relevante oppgaver og oppfølginger fra Boligprosjekter til **Mine oppgaver på Min side**. Avklar hvilke oppgavetyper som skal vises, hvem som eier dem, og hvordan status, frister og åpning av riktig arbeidsflate skal følge eksisterende oppgaveflyt. Unngå dobbeltregistrering.
+- Endelig omfang av «osv.», koblingsnivå og regler for opprettelse, varsling og fullføring avklares med Kenneth før funksjonsendring. Detaljene skal ikke gjettes under nattarbeid.
+
+Kenneth meldte at knappen **Rediger bilde og plassering** nå er OK. Dette gjelder knappeteksten og brukerflyten ved bilderedigering, ikke samlet Bolig TEST OK, produksjonsmerge eller e-postaktivering.
+
+## Avklart 24. oktober 2026
+
+Kenneth valgte bildeplassering med et forslag som kan flyttes. Egne fasader, flere plantegninger per bolig, justerbare felt og kontrollert versjonshistorikk er samlet i pakken beskrevet i `docs/qa/BOLIG_EGNE_BILDER_20261024.md`. JPG/PNG/WebP; PDF må eksporteres som bilde. Nyeste QA/handoff går foran eldre «gjenstår»-setninger.
+
+Kenneth presiserte at booking trolig styres av andre og følger fremdrift, beboermøter og varsler. **Booking skal være valgfri per prosjekt og eventuelt aktiveres i Oppsett. Det samme gjelder faktisk bemanningsoversikt.** Ingen bestemt selvbookingsflyt er valgt. Ikke innfør obligatorisk booking/bemanning eller automatisk booking fra Gantt. Begge motorene er fortsatt senere-arbeid; ingen bryter uten virksom funksjon er laget i bildepakken.
+
+## Nyeste prioritering – 23. oktober 2026
+
+Sjekklisteprioritering i UE-portalen er levert i Preview: Pågående → Neste sjekklister → sammenfoldet Fullførte. Gjeldende funksjonsstatus og faktisk QA finnes i `docs/qa/BOLIG_PARTNERE_20261023.md`; eldre «neste»-punkter nedenfor er historikk der funksjonen nå er levert.
+
+Pågående funksjonspakke etter Kenneths «kjør»: send UE-/leverandørens eksisterende tilgangslenke på e-post fra kontaktvinduet, med tydelig mottaker, firmaprofil og én enkel Send-handling. Gjenbruk eksisterende utsendingsmotor og samme tilgangsmodell; unngå separat godkjenningssted eller dobbeltregistrering. Utsending må gi korrekt kvittering og bruke gjeldende tilgang/mottaker. Funksjonen er implementert for Preview/Sandbox med utsending pauset; faktisk e-postmottak og produksjonslansering gjenstår. Denne planen autoriserer ingen ekte utsending. E-postkartleggingen23.10 avdekket at portalinvitasjon/påminnelse og beboeravtale-/endringsordrelenker fortsatt deles manuelt. Direkte sending fra samme mottakervindu prioriteres før neste større visuelle funksjon; se `docs/qa/BOLIG_REFRESH_OG_EPOST_20261023.md`. Deretter vurderes egne fasader/plantegninger med stabile bolig-/rommarkører, booking av beboertilgang og privat kontraktsområde/analyse/indeksregulering. Excel-import er fortsatt sist. Kenneths nye bemanningsønske nedenfor ligger på senere-listen; plassering i rekkefølgen avtales når det tas opp.
+
+## Egen inn- og utregistrering – implementert 24. oktober 2026
+
+Kenneth avklarte Min side for ansatte og samme funksjon i personlig UE-lenke. Navngitte deltakere legges til per boligprosjekt under Oppsett → Faktisk bemanning. Kortet krever aktiv bemanning og deltakelse, viser eget prosjekt, Utlogget/Innlogget med grått/grønt lys og én handling. UE kan lagre lenken som snarvei på hjemskjermen; én personlig lenke per person. Egenstatus og historikk gjenbruker bemanningslisten. Se docs/qa/BOLIG_EGEN_TILSTEDEVARELSE_20261024.md. SJA/RUH og Mine oppgaver har nå en separat integrasjonsetappe beskrevet ovenfor. Felles bemanning for ordinære prosjekter utenfor Bolig er ikke innført.
+
+## Dagens bemanning – prosjektlederdel implementert 24. oktober 2026
+
+Prosjektleders manuelle del er implementert i samme feature/Preview/Sandbox: valgfri aktivering i Oppsett, inn/ut, navn/firma, prosjektdag, begrunnede rettinger med uendret historikk og CSV. Se `docs/qa/BOLIG_BEMANNING_20261024.md` for faktisk QA/publisering. Egen håndverkerregistrering for Bolig er nå implementert som beskrevet ovenfor. Eventuell felles funksjon utenfor Bolig er fortsatt senere arbeid. Ingen lønn/timeføring, nye roller eller UE-grants.
+
+- UI-forslag fra Kenneth: grønn sirkel for inn og rød sirkel for ut, med tydelig tekst/ikon og registreringsstatus. Plasseringen vurderes ved implementering slik at den ikke dekker eller forstyrrer øvrige arbeidsfunksjoner i daglig mobilbruk.
+- Håndverkeren registrerer seg inn på prosjektet ved ankomst om morgenen og ut når vedkommende reiser hjem. Svært enkel mobilflyt med tydelige «Logg inn på prosjektet» / «Logg ut av prosjektet» og synlig gjeldende registreringsstatus. Identifikasjon og gjenbruk av eksisterende prosjekt-/UE-tilgang avklares ved implementering, med færrest mulig steg.
+- Prosjektets bemanningsoversikt viser hvem som er registrert inne nå, antall til stede og dagens inn-/uttider. Navn og firma skal være lette å finne. Skill faktisk registrert tilstedeværelse fra planlagt bemanning i fremdriftsplanen.
+- Dagens bemanningsliste skal kunne brukes overfor byggherre, tilsyn og andre relevante prosjektaktører, med en enkel utskrifts-/eksportmulighet når funksjonen bygges.
+- Prosjektleder kan manuelt registrere deltagere inn eller ut og rette tidspunkt når noen har glemt å registrere seg. Historikken skal vise hvem som gjorde rettingen, opprinnelig registrering og korrigering.
+- Bevar historikk per prosjektdag, slik at tidligere bemanning kan dokumenteres. Visningen beskriver registrert tilstedeværelse; glemte registreringer må kunne følges opp og rettes.
+- Hovedkravet er enkel daglig bruk og lite administrasjon. Eventuell kobling til eksisterende timeføring vurderes senere; første behov er en lett tilgjengelig bemanningsliste for prosjektet.
+
+## Samlet avtale- og leveranseflyt – 22. oktober
+
+Kenneth ønsker større samlede leveranser. Én gjeldende hovedavtale og sammenfoldet
+historikk erstatter parallelle like kort. Flere vareendringer samles før aksept.
+Etter leverandørens bekreftelse oppdaterer en eksplisitt handling effektiv leveranse,
+mottak og FDV, mens originalordre og historikk beholdes. Endringsbestilling/kreditering
+kan lastes ned som Excel med bare forskjellene. Dette erstatter eldre beskrivelser
+nedenfor om at mottak/FDV ikke kan følge endringer. Leverandørsending og kreditering
+må fortsatt faktisk utføres og bekreftes. Se `docs/qa/BOLIG_SAMLET_LEVERANSE_20261022.md`.
+
+## Boligprosjekter: endringsordre og beboeraksept – Preview 22.10.2026
+
+Ny etappe på samme feature-branch/PR #278. Boligens «Endringer og beboeraksept» gir prosjektleder en egen avtalehistorikk. Beboeraksept fryser siste lagrede boligvalg og serverens tilvalgspris. Endringsordre viser opprinnelige bestillingsvarer mot foreslått leveranse, med eksplisitt pristillegg/fratrekk inkl. mva. Prosjektleder lagrer kladd, gjennomgår, godkjenner og lager en 30-dagers beboerlenke. Beboeren ser én bestemt utgave og bekrefter navn og svar før innsending. Kvitteringen kommer først etter serverbekreftelse. En tidligere publisert, gyldig utgave kan aksepteres; andre uavklarte utgaver i samme avtalerekke sperres etter aksept.
+
+Aksept og leverandørbestilling er separate handlinger. Originalordren, mottak og boligvalg omskrives ikke av en beboeraksept. Akseptert endringsordre stopper ferdigstilling til prosjektleder har dokumentert leverandøravklaring og hvordan endringen er bestilt/kreditert. Endret avtalegrunnlag krever ny sluttkontroll. Kundesiden er en separat, liten side uten intern navigasjon eller innloggingsavhengighet. Token lagres hashet; kundesiden viser bare godkjent avtaleinnhold. Ingen e-post sendes automatisk. Dette er aksept av et forberedt grunnlag, ikke full beboerportal med frie tilvalgsvalg, chat eller dokumentarkiv. Ingen produksjonsmigrasjon eller merge er gjort. QA og grenser: `docs/qa/BOLIG_ENDRINGSORDRE_AKSEPT_20261022.md`.
+
+Eldre «gjenstår»-beskrivelser nedenfor er historikk der denne etappen har levert funksjonen.
+
+
+## Oppdatert 22. oktober: dokumentert ferdigstilling i Preview-etappen
+
+Ferdigstillingsmotor for bolig, bygg og prosjekt er implementert med kontrollbevis, ansvarlig, manuell dokumentreferanse, native prosjekt-/sjekkliste-/avvikskontroll, egne fellesarbeider, godkjenning, intern overtagelsesregistrering og begrunnet gjenåpning. Endret grunnlag opphever gyldig grønn status og påvirker foreldre. Se `docs/qa/BOLIG_FERDIGSTILLING_20261022.md` for kontrakt, grenser, tester og publiseringsstatus. Eldre formuleringer nedenfor om at motoren mangler er historiske. Automatisk FDV/filverifisering, kontrollmaler/massefordeling og Bolig-frister med varsling er ikke levert i denne etappen.
+
+
+Kenneths instruks 21. oktober 2026: så nær den godkjente Solgløtt-konseptskissen som mulig. Førsteinntrykket av foundation var svakt, med mye luft og lange skjemaer. Denne filen skiller nåværende leveranse fra ønskelisten.
+
+## Oppfølging: individuelle avvik, boligkort og samlede leveranser
+
+Neste prioritering etter denne Preview-runden: samlet, dokumentert ferdigstilling per bolig med sjekklister/kontroller, avklarte avvik, bilder/sluttdokumentasjon og overtagelse som grunnlag. Vis antall faktisk ferdige boliger mot aktive boliger i valgt bygg og hele hovedprosjektet. Et bygg er først ferdig når alle relevante boliger og byggets fellesarbeider er ferdigstilt. Prosjektet følger alle aktive bygg og prosjektets fellesarbeider. Ingen fri grønn status fra et utkast eller fra varemottak. Avklar regler for gjenåpning, godkjenner og endringer etter overtagelse i denne etappen.
+
+Individuell vare-/mengdetilpasning ligger nå i Preview/Sandbox med begrunnelse, forhåndsvisning, ny boligvalgsversjon, separat pristillegg/fratrekk og gjenoppretting av opprinnelig fryst pakkevalg. Delte grunnpakker/tilvalgspakker og andre boliger beholdes. Aktive ordre sperrer tilpasningen for eksplisitt avklaring. Høyrekolonnen har korte, ugjennomsiktige handlingskort som åpner popuper for rom/pakker, bestilling/levering, sjekklister/dokumentasjon og ferdigstilling. Sjekklister og overtagelse gjenbruker eksisterende koblede prosjektflater, med eksisterende prosjekttilgang. Samlede leveransetall og boligliste finnes per bygg og prosjekt. Ferdigstillingsdialogen forklarer kontrollene og åpner eksisterende overtagelse, men oppretter ingen ny ferdigstatus. Se docs/qa/BOLIG_INDIVIDUELLE_AVVIK_20261021.md.
+
+## Nå: prosjektoversikt, bygg, rom og varevalg
+
+Bestilling/levering er utvidet i samme Preview: felles/egen leveringsadresse, samlet/delt bestilling og levering, valgfritt leverandørordrenummer, frosset ordregrunnlag og mengdeført varemottak med historikk. Eksplisitt bestillingsmail har to vedlegg (eksisterende Cordel ASCII-format og Excel), firmalayout og tydelig leilighets-/leveringsinformasjon. Ingen sending uten brukerens sendeknapp. Reell provider-sending er ikke utført under QA. Faktiske statuskoder er koblet til byggoversikten. Se docs/qa/BOLIG_BESTILLING_LEVERING_20261021.md for gjeldende scope og begrensninger. «Neste anbefalte»-avsnitt om dette nedenfor er historisk; neste etappe er faktisk fremdrift/sjekklister per bolig/rom, kundeaksept og eksterne roller. Excel-import forblir sist.
+
+Ny pakkeetappe: grunnpakker og Tilvalgspakker får egendefinerte, ordnede avsnitt med kort kundetekst. Tilvalgspakker kan inneholde flere varer som velges samlet til én pakkepris. Pris/fratrekk beholdes, mens hver vare forblir selvstendig i bestillingsutkastet. Gamle enkeltvarer og lokale utkast oppgraderes uten endring av historiske valg. Nullfordeling på tom bolig er rettet. Rediger bygg har nå Lagre endringer som hovedhandling før eksplisitt gjennomgang/bekreftelse. Se docs/qa/BOLIG_AVSNITT_20261021.md.
+
+Neste anbefalte samlede funksjonspakke er bestilling og levering: kjøpers Vårt ordrenummer, separat leverandørordrenummer, felles/individuell leveringsadresse, delleveranser og tydelig overgang fra utkast til faktisk bestilling. Etterpå kobles faktisk fremdrift/sjekklister til bolig og rom, deretter kundeaksept og avgrenset ekstern tilgang. Excel-import forblir sist.
+
+Siste UX-pakke: én Oppsett-knapp øverst i prosjektet, «Leilighetsinformasjon» som navn på boligdialogen og kompakte glassvinduer med små statusmerker på fasaden. «Boligliste» og «Filtrer boliger» søker samlet i hele hovedprosjektet med kontakt, offisielt bolignummer og status. Resultatet har 50 boliger per side. Fasade nullstiller søk/filter. Se docs/qa/BOLIG_OVERSIKT_20261021.md.
+
+Samlet klargjøring er lagt til under Oppsett → Bygg og boliger: Rediger bygg, Nummerer boliger og Rom og pakker til flere boliger. Prosjektlagrede rommaler kan tilføre rompakker/fellespakke til utvalgte boliger etter forhåndsvisning. Egne valg beholdes som standard; eksplisitt tillegg fyller bare manglende innhold. Eget offisielt bolignummer er separat fra prosjektets leilighetsnummer. Se docs/qa/BOLIG_KLARGJORING_20261021.md for gjeldende status og begrensninger. Eldre «gjenstår»-avsnitt nedenfor er historiske der denne leveransen dekker dem. Kenneth har uttrykkelig utsatt Excel-import til slutt.
+
+Oppdatert pakkeinngang: «Grunnpakker og tilvalg» er et eget arbeidsområde øverst i prosjektet, ved siden av Hovedside og Oppsett. Ny grunnpakke/Legg til tilvalg er synlige samtidig. Rompakke-dialogen har snarvei til opprettelse/redigering med bevart utkast. Se docs/qa/BOLIG_PAKKEINNGANG_20261021.md.
+
+Siste brukerjustering: samme kompakte varekortmønster som tilbudsbyggeren, sammenlagte varelinjer og tilvalg, direkte bildeopplasting i begge editortyper og ingen utgående produktlenker. Menyvalgene er ugjennomsiktig blå/turkis. Bytt prosjekt er fjernet fra prosjektbildet; Hovedside viser bygg/boliger og Prosjektoversikt velger/oppretter prosjekt. Ny modulåpning eller sideoppdatering starter på Prosjektoversikt, mens tilgangsoppfriskning/fanebytte i samme besøk bevarer arbeidsstedet. Privat bildebucket er kun migrert i Sandbox. Se docs/qa/BOLIG_PAKKEBILDER_20261021.md.
+
+Miljømål BEGGE, først eksisterende foundation-Preview/Sandbox i PR #278. Scope: egne boligkomponenter/CSS, boligveiledning, fasadeillustrasjon, egne tester og én additiv lesefunksjon for status. Ingen endring i eksisterende Sales, innlogging, prosjektlagring, menyer, HR, e-post, eksisterende katalogrettigheter eller øvrige critical checks.
+
+- «Prosjektoversikt» øverst i et åpent prosjekt går til modulens forside med prosjektvalg/nytt prosjekt. Appens globale Startside er separat. Nye fotorealistiske eksempelbilder for hus/boligfelt følger blokkens stil; egne prosjektbilder er fortsatt et senere steg. Se docs/qa/BOLIG_NAV_BILDER_20261021.md for UX-gjennomgang og prioritering.
+- Kompakt prosjektvalg og prosjektets bolig-/blokk-/oppgangstall. Første åpning viser Prosjektoversikt; et arbeidssted i samme besøk kan gjenopptas uten å miste kladd. Bygg nytt prosjekt og Fortsett prosjektkladd er separate innganger. Veiledning tilgjengelig, sammenlagt som standard.
+- Byggoversikt som hovedflate. Faktiske etasjer og bolig-ID-er danner klikkbare vinduer over en illustrert fasade. Boligpanelet står ved siden av på desktop. På mobil kan man gå tilbake til bygget.
+- Egne arbeidsområder Hovedside, Grunnpakker og tilvalg og Oppsett. Oppsett samler struktur og arkiv. Skjulte arbeidsområder beholder monterte skjemaer og lokal kladd.
+- Boligpanelet skiller Boligvalg fra Bestilling. Lagret boligvalg vises før redigering; kontakt/prosjektkobling ligger under eget valg.
+- Statuslag for lagrede boligvalg, bestillingsutkast og prosjektkobling. Aldri vis «Bestilt», «Ferdig» eller fremdriftsstatus basert på et utkast. Ny lesefunksjon returnerer kun statussammendrag for godkjent firma/prosjekt. Utdatert kildevalg og endret katalog markeres.
+- Katalogoppslag bruker eksisterende serverrettigheter: interne brukere med intern katalogtilgang kan søke internt; proffoppslag følger firmaets aktive leverandører og nødvendige modultilganger. Prisinnsyn gir ingen ekstra katalogtilgang. Kun varebeskrivelse, varenummer, bilde/produktlenke og eventuell salgspris kopieres. Innkjøpsnetto og rabatter følger aldri boligvalg/bestillingsgrunnlag.
+- Eksisterende revisjoner, historikk, kildevalg og bestillingsutvalg beholdes. Ingen reell utsending eller kundeaksept.
+
+## Første rometappe levert i Preview/Sandbox
+
+«Rom og oversikt» har Alle rom, egne romnavn, standardtyper, valgfri etasje og Legg til/Rediger rom i popup. Stabile ID-er, romrevisjoner, arkiv/gjenopprett og varig versjonshistorikk er implementert. Ett ordinært prosjekt per bolig beholdes. Eksisterende boligvalg og bestillingsutkast gjelder fortsatt hele boligen og er uendret. Varefordeling er beskrevet i andre rometappe nedenfor. Egne rompakker, sjekklister, rommal og plantegninger gjenstår. Se docs/qa/BOLIG_ROOMS_20261021.md for scope, migrasjoner, QA og begrensninger. Ingen produksjonsmerge er utført.
+
+## Andre rometappe: varer på rom og enklere pakkeeditor
+
+«Ny grunnpakke» og «Nytt tilvalg» er synlige uten å åpne biblioteket. Redigering skjer i egne native dialoger og bevarer lokale utkast ved lukking/retur. «Legg innhold på rommet» fordeler vareantall fra lagret boligvalg til aktive rom. Antall kan deles mellom rom; rest vises som Ikke fordelt. Forhåndsvisning kreves før lagring. Egen immutable fordelingshistorikk med kildevalg og romrevisjon bevarer priser, boligvalg og ordrenes utelatte linjer. Et nytt boligvalg arver aldri gammel fordeling stille.
+
+Dette første steget var mengdefordeling av boligvalget. Uavhengige rompakker og fellespakke er nå lagt til i tredje etappe nedenfor. Flerboligfordeling, rommaler med romstruktur og neste faktiske bestillingsprosess gjenstår. Se docs/qa/BOLIG_ROMINNHOLD_20261021.md. Preview/Sandbox, ingen produksjonsmerge.
+
+## Tredje rometappe: egne rompakker og felles boligpakke
+
+Kenneth valgte 21. oktober støtte for begge deler. «Alle rom» har Velg/Endre fellespakke. Hvert rom har Velg/Endre rompakke, med gjenbruk av prosjektets grunnpakker og uavhengige alternativer/tillegg. Preview viser hele boligens foreslåtte grunnlag før lagring. Hvert rom fryses separat i én samlet boligvalgsversjon. Varelinjene har stabile nøkler per rom/fellespakke; bestillingen viser rom og holder samme vare i to rom adskilt.
+
+Eksisterende boligvalg beholdes som fellespakke ved eksplisitt første lagring. Historiske valg/ordre skrives aldri om. Manuell fordeling av uendrede fellesvarer beholdes, eller kan eksplisitt fjernes med varene beholdt. Gamle klienter kan ikke skrive over et rombasert valg med et enkelt boligvalg. Eldre manuell fordeling er bevart for eldre valg. Utelatte uendrede varer mappes til nye posisjoner; nye/endrede varer velges. Lokal usendt utelatelse følger også riktig rom ved bevisst gjennomgang. Se docs/qa/BOLIG_ROMPAKKER_20261021.md.
+
+Flerboligfordeling med målgruppe/forhåndsvisning, struktur-/sjekkliste-/dokumentasjonsmaler per rom, egne prosjektbilder/plantegninger og faktisk ordre/aksept/fremdrift gjenstår. Ingen produksjonsmerge.
+
+## Ønskeliste: privat kontraktsgrunnlag og analyse
+
+Entreprisekontrakt med vedlegg kan lastes opp som PDF og brukes som salgs-/leveransegrunnlag. Dette er ikke bygget i denne etappen.
+
+- Eget privat område per hovedprosjekt. Kun prosjektleder eller uttrykkelig utpekt person får lese kontrakten. Vanlig prosjekt-/firmatilgang og leverandørtilgang gir ikke kontraktsinnsyn.
+- Samme rettighet kreves ved søk, tekstuttrekk, OCR, vektorindeks, analysesvar, eksport, vedlegg og eventuelle forhåndsvisninger. Private kontraktopplysninger skal ikke lekke i generelle statussammendrag eller leverandør-/beboerflater.
+- Versjonert original og tilhørende analyse. Tekstbaserte og skannede PDF-er håndteres, med OCR-kvalitet og uleselige sider synliggjort. Tillegg/revisjoner beholdes; gjeldende dokumentrekkefølge angis av prosjektleder.
+- Søk med vanlige ord og spørsmål. Svar og kravkort skal vise dokument, versjon og side, med mulighet til å åpne originalen.
+- Strukturert uttrekk: leveransegrenser, unntak, særlige tekniske krav, produkter/systemer, kontroll/dokumentasjon, frister, varsling, betaling, endringer og garantier. Skill uttrykkelige krav fra forslag og usikre tolkninger.
+- Forslag til røde flagg: motstrid mellom dokumenter, uklart ansvar, uavklarte leveranser, manglende vedlegg og vilkår som bør gjennomgås nærmere. Analysen skal kunne si at svaret ikke finnes eller ikke kan fastslås.
+- Prosjektleder gjennomgår og godkjenner før krav blir oppgaver, sjekkpunkter eller endringsgrunnlag. Ingen automatisk kontraktsaksept, bestilling eller endring. Dokumentinnhold behandles som data, aldri som systeminstruksjoner.
+
+## Ønskeliste: hus, boligfelt, rom og plantegninger
+
+- Prosjekttype velges: blokk/leiligheter, enkeltbolig eller boligfelt. Byggbildet skal følge typen; et hus skal ikke fremstilles som en blokk.
+- Struktur: hovedprosjekt → bygg/hus → bolig ved behov → rom. En enkeltbolig trenger ikke kunstig oppgang/leilighetsstruktur.
+- Rom: Bad 1, Bad 2, vaskerom, WC 1/WC 2, teknisk rom og egendefinerte navn. Pakker, varer, valg, kontroller og dokumentasjon skal kunne knyttes til riktig rom.
+- Last opp versjonerte plantegninger. Start med at prosjektleder definerer rom manuelt, med navn og område/markør på riktig side/etasje. Senere automatisk romforslag må bekreftes, særlig ved uklare tegninger.
+- Rom-ID-er og tidligere valg beholdes ved omdøping eller ny tegning. Ingen automatisk skalamåling eller mengdebestilling fra en ubekreftet tegning.
+
+## Ønskeliste: leverandørtilgang for saksbehandlere
+
+- Prosjektleder kan invitere navngitte saksbehandlere hos leverandør til et bestemt prosjekt, eventuelt bare utvalgte boliger/rom eller leveranser.
+- Lesetilgang til relevant fremdrift, eget bestillingsgrunnlag, leveringsadresser og leveringsoppfølging. Egen bekreftelse eller datoendring kan innføres som avgrenset handling med historikk; ikke generell prosjektlederrolle.
+- Tilgangen skal være serverkontrollert, tilbakekallbar og kunne tidsbegrenses. Identitet, firma, faktisk innsyn og endringer logges.
+- Entreprisekontrakt, kontraktsanalyse, interne marginer/priser, HR og andre leverandørers fortrolige opplysninger er utilgjengelige. Minimer beboerkontakt til det som trengs for leveransen.
+- Kundens «Vårt ordrenummer» er kjøpers referanse. Expo/Ringside registrerer sitt eget leverandør-/Cordel-ordrenummer separat.
+
+## Rekkefølge
+
+1. Ferdigstill og brukertest byggoversikt, boligpanel og katalogoppslag.
+2. Etabler hus-/romstruktur og plantegningskobling uten å miste eksisterende leiligheter.
+3. Koble faktisk fremdrift og leveranser, og gi leverandører avgrenset tilgang.
+4. Bygg privat dokumentområde og deretter kontraktsanalyse med kildehenvisninger.
+
+Rekkefølgen kan justeres etter kundebehov. Ingen produksjonsmerge uten relevant QA og Kenneths uttrykkelige TEST OK. Varsle om ny chat før en stor ny etappe, med repo-basert overlevering. Den separate Sandbox-feilen `list_managed_work_profiles` fra brukeradministrasjonen er registrert for egen undersøkelse; den endres ikke som sideeffekt av boliglayouten.
+
+## Presisering fra Kenneth: skalerbar bygning og eget prosjektbilde
+
+- Byggets høyde skal følge etasjeantallet; bredde og vindusfordeling følger antall leiligheter i hver etasje. Ulike antall per etasje må kunne vises uten at boliger eller ID-er flyttes. Mange leiligheter skal gi horisontal panorering fremfor uleselig små klikkfelt.
+- Dagens fase har dynamisk etasje-/boligrutenett og en felles dekorativ fasadeillustrasjon som skaleres. Det er ikke en full parametrisk arkitekturmodell; dekorative balkonger er ikke registrerte boliger.
+- Prosjekttype velger passende standardbilde: blokk eller flott enebolig. Boligfelt skal ha oversiktsbilde og klikkbare hus, med videre valg av riktig hus og rom. Dette inngår i neste hus-/rometappe.
+- Prosjektleder skal kunne laste opp prosjektets eget bilde/visualisering. Originalens sideforhold beholdes. Bildeutsnitt skal ikke endres automatisk slik at feltene forskyves.
+- Enkel redigering for å flytte og skalere innholdsrammen over fasaden. Hvert felt kan ved behov finjusteres. Lagre posisjon og størrelse som prosent av selve bildet, ikke av hele nettleservinduet. Ta hensyn til tomme marger ved proporsjonal visning. Samme transformasjon brukes på bilde og felter ved zoom/panorering.
+- Felt bindes til stabile bygg-/hus-/bolig-/rom-ID-er. Vinduer/rom/hus trenger ikke ligge i et perfekt rutenett; senere støtte for frie polygoner kan brukes ved skrå fotografier eller situasjonsplaner.
+- Ny bildeversjon skal ha egen kontrollert tilpasning/forhåndsvisning før den erstatter gjeldende bilde. Bytt bilde uten å endre bolig-/romhistorikk. Prosjektleder bekrefter forslag til plassering.
+
+## Kenneths prosjektveiviser: «Bygg prosjekt»
+
+Avklart retning 21. oktober 2026: start med å bygge prosjektet gjennom korte trinn med Tilbake/Neste, en visuell forhåndsvisning og en avsluttende kontroll. Veiviseren er neste produktetappe; den nåværende popupvelgeren og designforbedringen implementerer ikke denne byggeflyten.
+
+1. Prosjekt: navn, nummer og valgt firma. Angi boligtype med tydelige bildekort: leilighetsbygg, enebolig, tomannsbolig, flerfamiliehus og boligfelt. Tillat senere ulike typer per bygg i samme hovedprosjekt. Bildene er eksempler, ikke ferdige prosjektbilder.
+2. Bygg: antall bygg. Hvert bygg har eget navn/nummer, adresse og boligtype. Vis kompakte kort «Bygg 1», «Bygg 2» med «Rediger bygg». «Kopier oppsett fra bygg 1» fyller bare struktur og skal ikke kopiere personer, boligvalg eller historikk.
+3. Boliger: konfigurer hvert bygg separat. Antall oppganger ved behov, adresse per oppgang der den avviker, etasjer og antall boliger per etasje. Ulike etasjetall per bygg og oppgang støttes. Boligtotal beregnes fra etasjene; «leiligheter per oppgang» skal ikke være en separat motstridende sum. Enebolig hopper over oppgang, tomannsbolig foreslår to boenheter og flerfamiliehus et redigerbart antall. Eneboligens etasjer er romplan, ikke én ny husstand per etasje.
+4. Rom: foreslå Bad 1, vaskerom, WC og teknisk rom, med avkryssing/egendefinerte rom og mulighet for en rommal per boligtype. Tegning/bilde og romdefinisjon kan komme etter første prosjektopprettelse, slik at veiviseren ikke blir for lang.
+5. Kontroller: vis hvert bygg, adresse, oppganger, etasjer og boligtotal. «Opprett prosjektforside» oppretter den visuelle oversikten. Tillat endring av ett bygg fra kontrollbildet uten å begynne på nytt.
+
+Prosjektforsiden blir arbeidsstedet etterpå, med tydelige neste handlinger: Grunnpakker → Tilvalgspakker → Fremdrift → Sjekklister per husstand/rom → Bestillinger. Innhold kan forberedes felles og tildeles utvalgte boliger. Endring av felles mal må aldri overskrive allerede lagrede individuelle valg eller utfylte sjekklister. Reelle fremdrifts-/leveringsdata skal kobles før de vises som status. «Manglende oppsett» må skilles fra faktisk byggeframdrift.
+
+Dagens foundation gjenbrukes: flere blokker/oppganger, eget etasje-/boligoppsett per oppgang, stabile bolig-ID-er, kontakter, grunnpakker, tilvalg og bestillingsutkast. Nye boligtyper/byggadresse/rom og kobling mot fremdrift/sjekklister krever egen gjennomarbeidet modell; ingen hus skal få en kunstig blokkstruktur bare for å passe dagens skjema.
+
+Veiviserkladd skal lagres per bruker/firma, tåle fanebytte og kunne fortsettes. Endelig opprettelse trenger en validert, idempotent serverkommando med entydig kvittering; ingen dubletter eller skjulte halvferdige prosjekter hvis forbindelsen brytes. Ved senere strukturendring beholdes ID-er, kontakter, bestillinger og historikk; reduksjon skjuler med eksplisitt kontroll. Brukeren skal alltid kunne gå tilbake og kontrollere før endelig opprettelse.
+
+### Native dokumentasjon og FDV – 22. oktober
+
+Oppfølgingen er bygget videre i samme feature-branch: egne kontroller og privat dokumentasjon per bolig/bygg/prosjekt, publisert firmamal eller manuell bygger, FDV-lenker og aggregert PDF-oversikt, valgfri ekstern protokoll med dokumentert retting og eksplisitt e-postreview/sending. Se `docs/qa/BOLIG_DOKUMENTASJON_20261022.md` for kontrakt og QA. Kontroller og protokoller er nå en del av serverberegnet ferdigstillingsgrunnlag. Neste utvidelse må avklare eventuell frist-/varslingsflyt, arkivert eksportpakke med faktiske dokumentfiler og kontroll av montert leveranse; ikke anta at et lagret varevalg alene er slutt-FDV.
+
+### Enkel flyt og samlet dokumentasjon – 22. oktober
+
+Kenneth har valgt progressiv prosjektstart uten adressekrav, bare eksplisitt påkrevde sjekklister som sluttkrav, kritiske avvik som stopper og mindre restpunkter med egen status, massefordeling fra sentral/prosjektlister, samlet PDF/ZIP og valgfri bekreft-og-send-flyt. Denne etappen erstatter de tidligere generelle sperrene for alle native kladder/avvik. Se `docs/qa/BOLIG_ENKEL_FLYT_20261022.md` for ferdig kontrakt, verifikasjon og gjenstående grenser.

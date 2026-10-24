@@ -22,6 +22,7 @@ import React, {useState} from '${cwd}/node_modules/react/index.js';
 import {createRoot} from '${cwd}/node_modules/react-dom/client.js';
 import * as jsxRuntime from '${cwd}/node_modules/react/jsx-runtime.js';
 import Chrome,{ProjectHeaderActions} from '${cwd}/src/modules/project/ProjectWorkspaceChrome.jsx';
+import WorkspaceViewMode from '${cwd}/src/modules/app/WorkspaceViewMode.jsx';
 import {createProjectWorkspaceTabs} from '${cwd}/src/modules/project/projectNavigationTabs.mjs';
 import Workspace from '${cwd}/src/modules/checklist/ProjectChecklistWorkspace.jsx';
 import '${cwd}/src/style.css';
@@ -38,10 +39,10 @@ function App(){
  const [request,setRequest]=useState(null);
  window.changeKind=setKind;window.showProfile=setProfile;
  const saved=kind!=='new',readOnly=kind==='support';
- const scope={import_jsx_runtime:jsxRuntime,ProjectHeaderActions,company:{logoUrl:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="260" height="80"><text x="0" y="45">QA Firma</text></svg>'},name:'QA Firma',projectId:saved?'qa':null,currentStatus:{icon:'🟡',label:'Pågår'},authUser:{email:'qa@example.invalid'},hasActiveProjectWorkspace:true,isProjectSupportReadOnly:readOnly,mobileCreatingProject:!saved,projectDirty:kind==='dirty',isProjectLocked:kind==='locked',project:{},isSimpleOrderProject:()=>kind==='order',signOut:()=>window.calls.logout++,createNewProject:()=>window.calls.new++,cancelNewProject:()=>window.calls.exit++,leaveProjectWorkspace:()=>window.calls.exit++,saveProject:()=>window.calls.save++,saveAsNewProject:()=>window.calls.copy++,downloadClickablePdfReport:()=>window.calls.pdf++,setProjectLockedState:value=>window.calls.lock.push(value)};
+ const scope={import_jsx_runtime:jsxRuntime,ProjectHeaderActions,WorkspaceViewMode,company:{logoUrl:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="260" height="80"><text x="0" y="45">QA Firma</text></svg>'},name:'QA Firma',projectId:saved?'qa':null,currentStatus:{icon:'🟡',label:'Pågår'},authUser:{email:'qa@example.invalid'},hasActiveProjectWorkspace:true,isProjectSupportReadOnly:readOnly,mobileCreatingProject:!saved,projectDirty:kind==='dirty',isProjectLocked:kind==='locked',project:{},isSimpleOrderProject:()=>kind==='order',signOut:()=>window.calls.logout++,createNewProject:()=>window.calls.new++,cancelNewProject:()=>window.calls.exit++,leaveProjectWorkspace:()=>window.calls.exit++,saveProject:()=>window.calls.save++,saveAsNewProject:()=>window.calls.copy++,downloadClickablePdfReport:()=>window.calls.pdf++,setProjectLockedState:value=>window.calls.lock.push(value)};
  const tabs=createProjectWorkspaceTabs({isNewProject:!saved,hasSalesOrigin:saved,canUseKshms:true});
  const goToTab=target=>actualNavigation({target,tab,tabs,projectId:scope.projectId,kshmsContext:{company_id:'company'},authUser:{id:'user'},setChecklistEntryRequest:setRequest,setMobileStatusOpen(){},hasActiveProjectWorkspace:true,setTab,setMobileMenuOpen(){},scrollToMobileTabTarget(){},confirmLeaveWithUnsavedChanges:async()=>true,syncInternalProjectUrl(){},setTimeout(){}});
- return <div data-expo-project-shell="1"><header>{actualHeader(scope)}{profile&&<div id="expo-work-profile-switcher"><div className="workProfileControl"><button className="secondary workProfileButton"><span><small>Representerer</small><b>Et firma med et svært langt navn som må passe på mobil</b></span></button></div></div>}</header><Chrome tabs={tabs} activeTab={tab} project={{projectName:'Modernisering av bad',customer:'QA Kunde',address:'Testveien 6',postnr:'0001',city:'Oslo'}} saved={saved} simpleOrder={kind==='order'} status={{icon:'🟡',label:'Pågår'}} deviations={0} unread={0} onNavigate={goToTab} onExit={()=>window.calls.exit++} onStatus={()=>{}} readOnly={readOnly}/><main><h2>Sjekklister og vedlegg</h2><label>Kladd<input aria-label="Kladd" defaultValue="Behold arbeidet mitt"/></label>{tab==='sjekklister'&&<Workspace Editor={Editor} companyId="company" userId="user" projectId={scope.projectId} activeChecklistTemplate={checklistGroups} checklist={{}} showTools={false} readOnly={readOnly||kind==='locked'} entryRequest={request} onEntryHandled={id=>setRequest(current=>current?.id===id?null:current)}/>}</main></div>;
+ return <div data-expo-app-shell="true" data-expo-project-shell="1"><header>{actualHeader(scope)}{profile&&<div id="expo-work-profile-switcher"><div className="workProfileControl"><button className="secondary workProfileButton"><span><small>Representerer</small><b>Et firma med et svært langt navn som må passe på mobil</b></span></button></div></div>}</header><Chrome tabs={tabs} activeTab={tab} project={{projectName:'Modernisering av bad',customer:'QA Kunde',address:'Testveien 6',postnr:'0001',city:'Oslo'}} saved={saved} simpleOrder={kind==='order'} status={{icon:'🟡',label:'Pågår'}} deviations={0} unread={0} onNavigate={goToTab} onExit={()=>window.calls.exit++} onStatus={()=>{}} readOnly={readOnly}/><main><h2>Sjekklister og vedlegg</h2><label>Kladd<input aria-label="Kladd" defaultValue="Behold arbeidet mitt"/></label>{tab==='sjekklister'&&<Workspace Editor={Editor} companyId="company" userId="user" projectId={scope.projectId} activeChecklistTemplate={checklistGroups} checklist={{}} showTools={false} readOnly={readOnly||kind==='locked'} entryRequest={request} onEntryHandled={id=>setRequest(current=>current?.id===id?null:current)}/>}</main></div>;
 }
 createRoot(document.getElementById('app')).render(<App/>);
 `);
@@ -117,6 +118,25 @@ try {
  eq(await dialog.getByLabel('Kontrollkommentar').inputValue(),'Behold mobilkladden','mobile tab return resumes the same local draft');
  await dialog.getByRole('button',{name:'Lukk',exact:true}).click();
  eq(errors,[],'no browser exceptions after actual mobile checklist flow');
+ await page.getByLabel('Kladd',{exact:true}).fill('Usendt kladd i fullskjerm');
+ const beforeViewCalls=await page.evaluate(()=>{window.__viewDraftNode=document.querySelector('[aria-label="Kladd"]');const spacer=document.createElement('div');spacer.id='view-scroll-probe';spacer.style.height='1800px';document.querySelector('main').append(spacer);return JSON.stringify(window.calls);});
+ for(const width of [320,390,1363]) {
+  await page.setViewportSize({width,height:844});
+  await page.getByRole('button',{name:'Fullskjermvisning',exact:true}).click();
+  eq(await page.locator('header .head h1').isVisible(),false,'app heading hides in full view '+width);
+  await page.evaluate(()=>window.scrollTo(0,document.documentElement.scrollHeight));
+  const returnButton=page.getByRole('button',{name:'Tilbake til vanlig visning',exact:true});
+  const box=await returnButton.boundingBox();
+  eq(box.y>=0&&box.y+box.height<=844&&box.x>=0&&box.x+box.width<=width,true,'fixed return remains inside viewport after deep scroll '+width);
+  eq(await page.getByLabel('Kladd',{exact:true}).inputValue(),'Usendt kladd i fullskjerm','draft preserved while expanded '+width);
+  await returnButton.click();
+  eq(await page.locator('header .head h1').isVisible(),true,'app heading returns '+width);
+  eq(await page.getByLabel('Kladd',{exact:true}).evaluate(e=>e===window.__viewDraftNode),true,'same editor DOM after return '+width);
+  eq(await page.evaluate(()=>JSON.stringify(window.calls)),beforeViewCalls,'view never saves or navigates '+width);
+ }
+ await page.evaluate(()=>document.getElementById('view-scroll-probe').remove());
+ eq(errors,[],'no browser exceptions after full view and deep scroll');
+
  if(process.env.PROJECT_HEADER_SCREENSHOT){await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:process.env.PROJECT_HEADER_SCREENSHOT,fullPage:true});}
  console.log('Project mobile header browser QA: PASS ('+checks+' assertions) — actual main header, complete labels, profile padding, dropdown and existing callbacks');
 } finally {await browser?.close();await new Promise(resolve=>server.close(resolve));fs.rmSync(temp,{recursive:true,force:true});}

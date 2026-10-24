@@ -100,6 +100,9 @@ const PersonalPage = React.lazy(() => import('./modules/personal/PersonalPage.js
 const MobileTimeShortcut = React.lazy(() => import('./modules/time/MobileTimeShortcut.jsx'));
 const HrModule = React.lazy(() => import('./modules/hr/HrModule.jsx'));
 const HomeFollowups = React.lazy(() => import('./modules/home/HomeFollowups.jsx'));
+import WorkspaceViewMode from './modules/app/WorkspaceViewMode.jsx';
+import { useBoligContext } from './modules/bolig/boligAccess.js';
+const BoligEntry = React.lazy(() => import('./modules/bolig/BoligEntry.jsx'));
   var supabase = getAppSupabaseClient() || (0, import_supabase_js.createClient)(
     "https://dqffxflaoyarbxyiyhop.supabase.co",
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxZmZ4Zmxhb3lhcmJ4eWl5aG9wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NzcxNTEsImV4cCI6MjA5MzA1MzE1MX0.5fkVNPooHGlayw4NgYM3fUVrAiv0XbUyTixkfeToMSE"
@@ -1953,10 +1956,12 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       totalChatCount
     });
     const ownRights = personalRights(personalContext,kshmsContext,hrContext,authUser?.id);
+    const { context: boligContext } = useBoligContext(authUser?.id);
     const globalTabs = createGlobalAppTabs({
       isCompanyAdminUser,
       canUseKshms: Boolean(kshmsContext?.enabled),
       canUseHr: ownRights.hrManagement,
+      canUseBolig: Boolean(boligContext?.enabled && boligContext.user_id === authUser?.id),
       personalPage: ownRights.enabled,
       canUseAdminProjectSync
     });
@@ -6168,7 +6173,7 @@ ${appLink}`;
         bathroomEquipment
       });
     }
-    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { "data-expo-project-shell": hasActiveProjectWorkspace ? "1" : void 0, onClick: openImageLightboxFromClick, children: [
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { "data-expo-app-shell": "true", "data-expo-project-shell": hasActiveProjectWorkspace ? "1" : void 0, onClick: openImageLightboxFromClick, children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(MobileScrollShortcuts, {}),
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("style", { children: APP_RUNTIME_STYLES }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AppNewsNotice, { supabaseClient: supabase, authUser }),
@@ -6191,7 +6196,8 @@ ${appLink}`;
           !hasActiveProjectWorkspace && !isProjectSupportReadOnly && !mobileCreatingProject && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: createNewProject, children: "+ Nytt prosjekt" }),
           !projectId && mobileCreatingProject && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: cancelNewProject, children: "← Avbryt nytt prosjekt" }),
           projectId && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: leaveProjectWorkspace, children: isProjectSupportReadOnly ? "← Supportoversikt" : "← Til startside" }),
-          hasActiveProjectWorkspace && (0, import_jsx_runtime.jsx)(ProjectHeaderActions, { dirty: projectDirty, saved: Boolean(projectId), readOnly: isProjectSupportReadOnly, locked: isProjectLocked, simpleOrder: isSimpleOrderProject(project), onSave: saveProject, onCopy: projectId && !isProjectSupportReadOnly ? saveAsNewProject : void 0, onPdf: downloadClickablePdfReport, onLock: setProjectLockedState, onNew: createNewProject }, projectId || "new")
+          hasActiveProjectWorkspace && (0, import_jsx_runtime.jsx)(ProjectHeaderActions, { dirty: projectDirty, saved: Boolean(projectId), readOnly: isProjectSupportReadOnly, locked: isProjectLocked, simpleOrder: isSimpleOrderProject(project), onSave: saveProject, onCopy: projectId && !isProjectSupportReadOnly ? saveAsNewProject : void 0, onPdf: downloadClickablePdfReport, onLock: setProjectLockedState, onNew: createNewProject }, projectId || "new"),
+          (0, import_jsx_runtime.jsx)(WorkspaceViewMode, {}, authUser?.id)
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("nav", { children: tabs.map(([id, l]) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { "data-expo-nav-label": l, className: tab === id ? "on" : "", onClick: () => goToTab(id), children: l }, id)) }),
         projectDirty && hasActiveProjectWorkspace && !isReadOnly && !isProjectSupportReadOnly && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { maxWidth: "1180px", margin: "0 auto 10px", padding: "10px 14px", background: "#fffbeb", border: "1px solid #facc15", borderRadius: "14px", color: "#92400e", fontWeight: 800, display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px", flexWrap: "wrap" }, children: [
@@ -6314,6 +6320,7 @@ ${appLink}`;
         children: [
         tab === "prosjekt" && !hasActiveProjectWorkspace && !mobileCreatingProject && !isProjectSupportReadOnly && (0, import_jsx_runtime.jsx)(WorkdayShortcuts,{canPersonal:ownRights.enabled,canHr:ownRights.hr,canKshms:ownRights.kshms,onPersonal:()=>goToTab("innlogging"),onHr:()=>goToTab("hr"),onKshms:()=>goToTab("kshms")}),
         tab === "prosjekt" && !hasActiveProjectWorkspace && !mobileCreatingProject && !isProjectSupportReadOnly && (0, import_jsx_runtime.jsx)(React.Suspense, { fallback: null, children: (0, import_jsx_runtime.jsx)(HomeFollowups, { hrContext: ownRights.hr ? hrContext : null, kshmsContext, userId: authUser?.id, onOpenDeviation: openKshmsDeviation, onSetup: () => goToTab("hr") }, authUser?.id) }),
+        authUser?.id && !hasActiveProjectWorkspace && !mobileCreatingProject && !isProjectSupportReadOnly && tab === "bolig" && (0, import_jsx_runtime.jsx)(React.Suspense, { fallback: "Henter Boligprosjekter …", children: (0, import_jsx_runtime.jsx)(BoligEntry, { userId: authUser.id, onOpenProject: openProjectById, onExit: () => goToTab("prosjekt") }) }),
         !projectId && !mobileCreatingProject && tab === "prosjekt" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { className: "mobileProjectChooser", children: [
           authUser?.id && !hasActiveProjectWorkspace && !isProjectSupportReadOnly && (0, import_jsx_runtime.jsx)(React.Suspense, { fallback: null, children: (0, import_jsx_runtime.jsx)(MobileTimeShortcut, { personalContext, hrContext, userId: authUser?.id }) }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileHomeHero", children: [
