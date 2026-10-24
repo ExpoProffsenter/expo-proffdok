@@ -120,9 +120,11 @@ metadata, uten faktiske Storage-bytes; alle testskrivinger rulles tilbake.
 Tilbake til gjennomgang beholder spørsmål og valgt arbeidsbilde.
 
 Reelle modellforespørsler er forsøkt og avvist av AI Gateway med HTTP 403 og
-`customer_verification_required`. Kontoeier må fullføre Vercels kunde-/
-betalingsverifisering før et faktisk modellresultat kan bekreftes. Forsøkene
-er kontrollert som `failed` uten resultat i Sandbox; tekst og søk er beholdt.
+`customer_verification_required`. Årsaken og en fungerende aktiveringsvei er
+ikke bekreftet av et menneske hos Vercel; betalingsverifisering eller kjøp av
+kreditt skal ikke omtales som en dokumentert løsning. Se utsatt punkt under.
+Forsøkene er kontrollert som `failed` uten resultat i Sandbox; tekst og søk er
+beholdt.
 Diagnosen logger bare tillatt feiltype, numerisk status og forhåndsdefinert
 feilkode, aldri rå providerfeil, tekst, spørsmål, svar, token eller filbane.
 
@@ -133,9 +135,40 @@ av norsk OCR-språkdata; omstart må fortsatt gjenkjenne ord og gi nøyaktig én
 fullstendig tekstutgave. Samlet CI på siste HEAD må kontrolleres separat i PR-en.
 
 **Gjenstår som separat bevis:** vellykket faktisk modellresultat med teamets
-OIDC/kreditt/ZDR etter kontoverifisering, brukerprøve på faktisk kontrakt og
+OIDC/kreditt/ZDR etter at leverandørtilgang er avklart, brukerprøve på faktisk kontrakt og
 fysisk mobil/Safari. Syntetiske modellsvar bekrefter ikke disse. Utsending,
 betalings-/kredittoppsett og produksjonsmerge er ikke gjennomført.
+
+## Utsatt: AI Gateway-tilgang og eventuell alternativ leverandør
+
+Beslutning 24. oktober 2026: Kenneth ønsker utfordringen notert og utsatt til
+behovet er der, med mindre en løsning kan dokumenteres som enkel og uten store
+kostnader. Ingen leverandørendring, konto-/betalingsoppsett eller videre
+supportforsøk startes som del av denne dokumentasjonsoppgaven.
+
+- Bekreftet teknisk blokkering: reell AI Gateway-forespørsel gir HTTP 403 med
+  `customer_verification_required`, selv med observert Pro-plan, registrert
+  betalingskort og 5 USD gratiskreditt. En vellykket faktisk analyse er fortsatt
+  ikke levert. Opplasting, tekstgjenkjenning, søk og originalvisning er tilgjengelig
+  uavhengig av denne blokkeringen i testet Preview/Sandbox.
+- Vercels innloggede automatiske support hevdet at teamets AI Gateway-tilgang
+  var suspendert grunnet mistenkt misbruk, og avviste supportsak og menneskelig
+  eskalering. Dette er botens opplysning; årsak, hendelse og grunnlag er ikke
+  uavhengig bekreftet. Kenneth meldte samme svar etter eget forsøk. Ingen
+  supportsak eller saksnummer er bekreftet opprettet. Ingen kreditt er kjøpt,
+  automatisk påfyll er ikke aktivert og ingen ny API-nøkkel er opprettet.
+- Mulig senere løsning: direkte API-tilkobling til en modellleverandør, mens
+  appen fortsatt hostes på Vercel. Selve providerbyttet vurderes som avgrenset
+  kodearbeid, men er ikke implementert eller verifisert. Lav samlet kostnad kan
+  ikke bekreftes før kontotilgang, modellpris, forventet volum og håndtering av
+  feil/retry er avklart.
+- Før aktivering: avklar egen API-fakturering, tilgang og behandling/lagring av
+  kontraktinnhold. Eksisterende krav til ingen datalagring hos modellruten skal
+  ikke automatisk svekkes ved leverandørbytte. Verifiser ekte modellresultat,
+  kildeutdrag og feilflyt i isolert Preview/Sandbox før eventuell produksjonsbruk.
+- Støtte for 150–250 tett skrevne sider er en separat fremtidig etappe. Et
+  providerbytte opphever ikke dagens side-/tegngrenser og gir ikke alene
+  fullstendig analyse av slike kontraktspakker.
 
 ## Kort brukerprøve
 
