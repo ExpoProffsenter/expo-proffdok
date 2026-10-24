@@ -14,6 +14,7 @@ export default function BoligContracts({context,root}){
  const scope=`${context.user_id}:${context.company_id}:${root.id}:${context.role}`;
  const epoch=useRef(0),alive=useRef(false),writing=useRef(false),invalidScope=useRef(false),current=useRef(scope);current.current=scope;
  const foreground=useRef(!document.hidden),internalFrame=useRef(false);
+ const confirmedAccess=useRef(null),loadSerial=useRef(0);
  const picker=useRef(false),[picking,setPicking]=useState(false);
  const endPicking=useCallback(()=>{picker.current=false;setPicking(false);},[]);
  const [snapshot,setSnapshot]=useState(null),[checking,setChecking]=useState(true),[blocked,setBlocked]=useState(true),[error,setError]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false);
@@ -23,40 +24,44 @@ export default function BoligContracts({context,root}){
  const data=!blocked&&snapshot?.scope===scope?snapshot.data:null;
  const change=fields=>{const next={...draftRef.current,...fields};draftRef.current=next;rememberContractDraft(scope,next);setDraft(next);};
  const clearBytes=useCallback(()=>{downloadSerial.current++;downloadAbort.current?.abort();downloadAbort.current=null;if(urlRef.current)URL.revokeObjectURL(urlRef.current);urlRef.current='';setViewUrl('');},[]);
- const load=useCallback(async()=>{
+ const load=useCallback(async(options)=>{
   if(writing.current||document.hidden||!foreground.current||invalidScope.current)return null;
-  const ticket=++epoch.current;setChecking(true);setBlocked(true);clearBytes();
+  const inPlace=options?.background===true&&confirmedAccess.current===scope;
+  const serial=++loadSerial.current,ticket=inPlace?epoch.current:++epoch.current;
+  setChecking(true);
+  if(!inPlace){confirmedAccess.current=null;setBlocked(true);clearBytes();}
   try{
    const value=await contractRpc(context,root.id);
-   if(alive.current&&ticket===epoch.current&&current.current===scope&&!document.hidden){
+   if(alive.current&&serial===loadSerial.current&&ticket===epoch.current&&current.current===scope&&!document.hidden){
+    confirmedAccess.current=value.allowed?scope:null;
     setSnapshot({scope,data:value});setBlocked(false);setError('');
-    if(!value.allowed){forgetContractDraft(scope);setDraft(contractDraft(scope));setOpened(null);setSelected(null);setHistory(null);}
+    if(!value.allowed){clearBytes();forgetContractDraft(scope);setDraft(contractDraft(scope));setOpened(null);setSelected(null);setHistory(null);}
     return value;
    }
-  }catch(e){if(alive.current&&ticket===epoch.current){setError(e.message);setSnapshot(null);if(e.code==='42501'){forgetContractDraft(scope);setDraft(contractDraft(scope));setOpened(null);setSelected(null);setHistory(null);}}}
-  finally{if(alive.current&&ticket===epoch.current){setChecking(false);endPicking();}}
+  }catch(e){if(alive.current&&serial===loadSerial.current&&ticket===epoch.current){confirmedAccess.current=null;setBlocked(true);clearBytes();setError(e.message);setSnapshot(null);if(e.code==='42501'){forgetContractDraft(scope);setDraft(contractDraft(scope));setOpened(null);setSelected(null);setHistory(null);}}}
+  finally{if(alive.current&&serial===loadSerial.current&&ticket===epoch.current){setChecking(false);endPicking();}}
   return null;
  },[scope,root.id,clearBytes,endPicking]);
  useEffect(()=>{
-  alive.current=true;invalidScope.current=false;foreground.current=!document.hidden;endPicking();setSnapshot(null);setOpened(null);setSelected(null);setHistory(null);setDraft(contractDraft(scope));load();
+  alive.current=true;confirmedAccess.current=null;invalidScope.current=false;foreground.current=!document.hidden;endPicking();setSnapshot(null);setOpened(null);setSelected(null);setHistory(null);setDraft(contractDraft(scope));load();
   const refresh=event=>{
    if(event?.type==='focus'&&internalFrame.current&&foreground.current&&!document.hidden){internalFrame.current=false;return;}
    if(event?.type==='focus')picker.current=false;
    if(['focus','visibilitychange'].includes(event?.type))foreground.current=!document.hidden;
    if(document.hidden||!['focus','visibilitychange'].includes(event?.type))endPicking();
    if(event?.type===WORK_PROFILE_EVENT&&event.detail?.active_company_id!==context.company_id){invalidScope.current=true;forgetContractDraft(scope);setDraft(contractDraft(scope));setSnapshot(null);setOpened(null);setSelected(null);setHistory(null);}
-   epoch.current++;setBlocked(true);clearBytes();
+   confirmedAccess.current=null;epoch.current++;setBlocked(true);clearBytes();
    if(!document.hidden)load();
   };
   const blur=()=>{
    if(document.hasFocus()&&document.activeElement?.matches('iframe[data-bolig-contract-preview]')){internalFrame.current=true;return;}
    if(document.hidden||!picker.current)endPicking();
-   foreground.current=false;internalFrame.current=false;epoch.current++;setBlocked(true);setChecking(false);clearBytes();
+   confirmedAccess.current=null;foreground.current=false;internalFrame.current=false;epoch.current++;setBlocked(true);setChecking(false);clearBytes();
   };
   const events=['focus',MANAGED_ACCESS_EVENT,MODULE_ACCESS_EVENT,WORK_PROFILE_EVENT,BOLIG_ACCESS_EVENT,CONTRACT_EVENT];
   events.forEach(name=>window.addEventListener(name,refresh));document.addEventListener('visibilitychange',refresh);
   window.addEventListener('blur',blur);
-  const timer=setInterval(load,60000);
+  const timer=setInterval(()=>load({background:true}),60000);
   return()=>{alive.current=false;epoch.current++;downloadSerial.current++;downloadAbort.current?.abort();if(urlRef.current)URL.revokeObjectURL(urlRef.current);urlRef.current='';clearInterval(timer);events.forEach(name=>window.removeEventListener(name,refresh));window.removeEventListener('blur',blur);document.removeEventListener('visibilitychange',refresh);};
  },[load,scope]);
  useEffect(()=>{
@@ -77,7 +82,7 @@ export default function BoligContracts({context,root}){
    }else{urlRef.current=url;setViewUrl(url);}
   }catch(e){if(alive.current&&serial===downloadSerial.current&&e.name!=='AbortError'){setError(e.message);if(e.code==='42501')load();}}
  };
- useEffect(()=>{if(opened==='preview'&&selected&&data?.allowed){fetchBytes(selected);return()=>{downloadSerial.current++;downloadAbort.current?.abort();if(urlRef.current)URL.revokeObjectURL(urlRef.current);urlRef.current='';};}},[opened,selected?.id,data]);
+ useEffect(()=>{if(opened==='preview'&&selected&&data?.allowed){fetchBytes(selected);return()=>{downloadSerial.current++;downloadAbort.current?.abort();if(urlRef.current)URL.revokeObjectURL(urlRef.current);urlRef.current='';};}},[opened,selected?.id,!!data?.allowed,scope]);
  const run=async(job,isUpload=false)=>{
   if(writing.current||!data?.manage||blocked)return;
   writing.current=true;setBusy(true);setError('');setNotice('');const identity=scope,ticket=epoch.current;

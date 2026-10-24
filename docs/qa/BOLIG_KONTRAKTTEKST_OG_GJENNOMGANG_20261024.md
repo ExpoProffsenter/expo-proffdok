@@ -139,6 +139,35 @@ betalings-/kredittoppsett og produksjonsmerge er ikke gjennomført.
 
 ## Kort brukerprøve
 
+### Rettelse: leseposisjon ved periodisk tilgangskontroll
+
+Kenneth meldte at popupen etter en stund gikk tilbake til sideoversikten.
+Feilen er gjenskapt før retting: minuttkontrollen sperret og bygde opp
+leseinnholdet på nytt, slik at åpen tekstside og leseposisjon forsvant.
+
+Samme autoriserte bruker/firma/prosjekt kontrolleres nå periodisk i bakgrunnen.
+Dialog, ekspandert tekstside, søketreff, rulleposisjon og eksisterende PDF-iframe
+beholdes under denne kontrollen. Avvist kontroll eller feil skjuler privat innhold
+og rydder fil-URL-er. Reelt bakgrunns-/firma-/tilgangsbytte bruker fortsatt den
+strenge sperren. Tekstsidenes åpne/lukkede tilstand beholdes i avgrenset RAM ved
+ny autorisert lesing. Ingen backend-, database- eller global dialogendring.
+
+70 lokale Chromium-kontroller PASS, inkludert nøyaktig minutt-callback, forsinket
+ACL-svar, samme sidenode og scroll, uendret PDF-iframe/URL og tilbakekalling ved
+periodisk kontroll. Full critical Sandbox-build og 51 core-boundary-kontroller
+PASS. Samlet CI og publisert HEAD føres i PR #278.
+
+Kontroll av faktisk Vercel-konto viste Pro-plan, et eksisterende betalingskort,
+5 USD AI-gratiskreditt og automatisk påfyll AV. Dette opphevet ikke den tidligere
+observerte `customer_verification_required`-feilen. Ingen kort, kjøp, API-nøkkel,
+budsjett eller automatisk påfyll er opprettet eller endret.
+
+Opplyst fremtidig dokumentomfang: 150–250 tett skrevne sider med beskrivelser og
+vedlegg. Nåværende grense på 200 PDF-sider og 160 000 tegn per gjennomgang dekker
+ikke dette som en samlet fullstendig analyse. Behandling i deler med dokumentert
+dekningsoversikt og samlet kildekontroll må leveres som en egen etappe før dette
+kan omtales som støtte for hele slike dokumentpakker.
+
 Samme faste Preview-adresse som før.
 
 1. **Kontrakter → Les og gjennomgå kontrakter → Gjør søkbar** på eksempel-PDF-en.

@@ -138,6 +138,17 @@ try{
   const textBody=await page.locator('.bolig-contract-review-page-text').first().textContent();const word=textBody.match(/[A-Za-zÆØÅæøå]{6,}/)?.[0];assert.ok(word,'local extraction found searchable text');checks++;
   await page.getByLabel('Søk i kontraktstekst',{exact:true}).fill(word);await button('Søk i teksten').click();await page.locator('.bolig-contract-review-source').first().waitFor();
   eq(await page.locator('.bolig-contract-review-source').count()>0,true,'search finds private page text');
+  await page.setViewportSize({width:390,height:600});
+  await page.locator('.bolig-contract-review-pages>details').first().locator('summary').click();
+  await page.evaluate(()=>{window.__qaReadingDialog=document.querySelector('dialog[open]');window.__qaReadingPage=document.querySelector('.bolig-contract-review-pages>details');window.__qaReadingDialog.scrollTop=140;window.__qaReadingScroll=window.__qaReadingDialog.scrollTop;});
+  await setControl({delay:300});await page.evaluate(()=>window.__qaContractInterval());
+  await page.waitForTimeout(50);
+  eq(await page.locator('dialog:visible').count(),1,'periodic ACL check keeps authorized reading dialog open');
+  await page.waitForFunction(()=>!Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Hent siste oversikt')?.disabled);
+  eq(await page.evaluate(()=>document.querySelector('.bolig-contract-review-pages>details')===window.__qaReadingPage&&window.__qaReadingPage.open),true,'periodic check keeps the same expanded text page');
+  eq(await page.evaluate(()=>window.__qaReadingDialog.scrollTop),await page.evaluate(()=>window.__qaReadingScroll),'periodic check preserves reading scroll');
+  eq(await page.locator('.bolig-contract-review-source').count()>0,true,'periodic check preserves current search results');
+  await setControl({delay:0});await page.setViewportSize({width:1366,height:1000});
   await page.getByRole('button',{name:'Åpne kildeside',exact:true}).first().click();await page.locator('iframe').waitFor();eq((await page.locator('iframe').getAttribute('src')).includes('#page='),true,'source opens exact original PDF page');
   await button('Tilbake til gjennomgang').click();await button('Gjennomgang').click();await page.getByLabel('Spørsmål til kontrakten (valgfritt)').fill('QA: Hva står det om varsling?');
   await setControl({delay:500});await page.evaluate(()=>window.dispatchEvent(new Event('blur')));eq(await page.locator('dialog:visible').count(),0,'background hides private review');
@@ -155,6 +166,10 @@ try{
  if(process.env.BOLIG_CONTRACT_EVIDENCE_DIR){await fs.mkdir(process.env.BOLIG_CONTRACT_EVIDENCE_DIR,{recursive:true});await page.setViewportSize({width:390,height:1000});await page.screenshot({path:process.env.BOLIG_CONTRACT_EVIDENCE_DIR+'/contracts-390.png',fullPage:true});await page.setViewportSize({width:1366,height:1000});}
  await button('Vis dokument').click();await page.locator('iframe[title="Originalt kontraktsdokument"]').waitFor();
  const url1=await page.locator('iframe').getAttribute('src');eq(url1.startsWith('blob:'),true,'preview uses private local bytes, no signed/public URL');
+ await page.evaluate(()=>{window.__qaOriginalFrame=document.querySelector('iframe');window.__qaContractInterval();});
+ await page.waitForFunction(()=>!Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Hent siste oversikt')?.disabled);
+ eq(await page.evaluate(()=>document.querySelector('iframe')===window.__qaOriginalFrame),true,'periodic authorization keeps the original PDF frame mounted');
+ eq(await page.locator('iframe').getAttribute('src'),url1,'periodic authorization does not reload the PDF or reset its page');
  await page.locator('iframe').click({position:{x:20,y:20}});eq(await page.locator('iframe').getAttribute('src'),url1,'focusing PDF frame does not close or reload private preview');
  await page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:true});document.dispatchEvent(new Event('visibilitychange'));});
  await page.locator('dialog').waitFor({state:'hidden',timeout:3000});
@@ -173,6 +188,13 @@ try{
  await page.evaluate(()=>window.__qaSwitch('reader'));await page.getByRole('heading',{name:'QA avtalegrunnlag',exact:true}).waitFor();eq(await button('Last opp dokument').count(),0,'explicit reader cannot upload');
  if(reviewQA){await button('Les og gjennomgå kontrakter').click();eq(await button('Gjør søkbar').count(),0,'reader cannot create private text');await button('Gjennomgang').click();await page.locator('.bolig-contract-review-history summary').click();await page.getByRole('button',{name:/Lagret forslag/}).click();await page.getByText('QA kildebelagt forslag',{exact:true}).waitFor();eq(await page.getByRole('button',{name:/Start gjennomgang/,includeHidden:true}).isDisabled(),true,'reader may read existing report but cannot spend generation');await button('Lukk kontraktsgjennomgang').click();}
  for(const width of [320,390,768,1366]){await page.setViewportSize({width,height:1000});eq(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'fits '+width);}
+ await button('Vis dokument').click();await page.locator('iframe').waitFor();
+ await platform.rpc(platform.owner,platform.company,platform.root.id,'grant',{user_id:platform.reader,role:'none',revision:1});
+ await page.evaluate(()=>window.__qaContractInterval());await page.getByText('Dette området er privat',{exact:true}).waitFor();
+ eq(await page.locator('iframe').count(),0,'periodic ACL denial removes cached original bytes');
+ eq(await page.locator('dialog:visible').count(),0,'periodic ACL denial closes private reading view');
+ await platform.rpc(platform.owner,platform.company,platform.root.id,'grant',{user_id:platform.reader,role:'reader',revision:2});
+ await page.evaluate(()=>window.dispatchEvent(new Event('focus')));await page.getByRole('heading',{name:'QA avtalegrunnlag',exact:true}).waitFor();
  await setControl({revokeOnDownload:true});await button('Vis dokument').click();await page.getByText('Dette området er privat',{exact:true}).waitFor();eq(await page.locator('iframe').count(),0,'revoke while reading returns no viewer bytes');
  await page.evaluate(()=>window.__qaSwitch('owner'));await button('Last opp dokument').waitFor();await button('Last opp dokument').click();await page.getByLabel('Tittel',{exact:true}).fill('QA usendt kladd');
  const revokedChooser=page.waitForEvent('filechooser');await page.getByLabel(/Fil \(PDF/).click();const revokedPicker=await revokedChooser;

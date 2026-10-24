@@ -4,6 +4,8 @@ import Contracts from '../../src/modules/bolig/BoligContracts.jsx';
 import '../../src/style.css';
 import '../../src/modules/bolig/bolig.css';
 const cfg=window.__qaConfig;
+const nativeInterval=window.setInterval.bind(window);
+window.setInterval=(callback,ms,...args)=>{if(ms===60000)window.__qaContractInterval=()=>callback(...args);return nativeInterval(callback,ms,...args);};
 window.__qaActor='owner';
 window.__client={supabaseUrl:location.origin,auth:{getSession:async()=>({data:{session:{user:{id:cfg[window.__qaActor]},access_token:'qa-'+window.__qaActor}}})},rpc:async(name,args)=>{
  const r=await fetch('/rpc',{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer qa-'+window.__qaActor},body:JSON.stringify({...args,__name:name})});return r.json();
