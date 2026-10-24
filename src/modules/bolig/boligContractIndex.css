@@ -1,4 +1,4 @@
-.bolig-contract-index{display:grid;gap:14px;min-width:0;color:var(--text,#e8eef7)}
+.bolig-contract-index{display:grid;gap:14px;min-width:0;color:inherit}
 .bolig-contract-index fieldset{border:0;padding:0;min-width:0;display:grid;gap:12px}
 .bolig-contract-index label{display:grid;gap:6px;font-weight:600;min-width:0}
 .bolig-contract-index input:not([type=checkbox]),.bolig-contract-index textarea,.bolig-contract-index select{box-sizing:border-box;width:100%;min-width:0;max-width:100%}
@@ -6,7 +6,7 @@
 .bolig-contract-index .bolig-index-check{display:flex;align-items:center;gap:10px}
 .bolig-index-check span,.bolig-contract-index button,.bolig-index-result p{overflow-wrap:anywhere}
 .bolig-index-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.bolig-index-setup,.bolig-index-result,.bolig-index-lines>article{border:1px solid #405064;border-radius:10px;padding:14px;background:#14202c}
+.bolig-index-setup,.bolig-index-result,.bolig-index-lines>article{border:1px solid #405064;border-radius:10px;padding:14px;background:#14202c;color:#e8eef7}
 .bolig-index-setup>summary{font-weight:700;padding:4px 0 12px;cursor:pointer}
 .bolig-index-lines>legend{font-weight:700;font-size:1.1rem;margin:10px 0}
 .bolig-index-lines>article{display:grid;gap:10px;background:#1b2a39}

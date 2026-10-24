@@ -1,6 +1,14 @@
 import assert from 'node:assert/strict';
 export default async function indexBrowser({page,platform,eq,setControl,button}){
  await button('Indeksregulering mot byggherre').click();
+ eq(await page.locator('.bolig-contract-index>p').first().evaluate(el=>{
+  const rgb=s=>{const n=s.match(/[\d.]+/g).map(Number);return [n[0],n[1],n[2],n[3]??1];};
+  const over=(c,b)=>c.slice(0,3).map((v,i)=>v*c[3]+b[i]*(1-c[3]));
+  const layers=[];for(let p=el;p;p=p.parentElement)layers.push(rgb(getComputedStyle(p).backgroundColor));
+  const bg=layers.reverse().reduce((b,c)=>over(c,b),[255,255,255]),fg=over(rgb(getComputedStyle(el).color),bg);
+  const luminance=c=>c.map(v=>{v/=255;return v<=0.04045?v/12.92:((v+0.055)/1.055)**2.4;}).reduce((s,v,i)=>s+v*[0.2126,0.7152,0.0722][i],0);
+  const a=luminance(bg),b=luminance(fg);return (Math.max(a,b)+0.05)/(Math.min(a,b)+0.05)>=4.5;
+ }),true,'intro text has at least 4.5:1 contrast on its rendered background');
  const label=name=>page.getByLabel(name,{exact:true});
  await label('Avtalehenvisning').fill('QA hovedkontrakt punkt 8');
  await label('Basismåned').fill('2025-01');await label('Reguleringsmåned').fill('2026-01');

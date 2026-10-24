@@ -78,7 +78,7 @@ Tilbakekalt tilgang fjerner beløp fra arbeidsflaten.
   positiv/negativ/halvøre-avrunding, nullfaktor, tre serier, validering,
   godkjenning, eksakt replay, konflikt, privat reader/admin-/anon-/tabellsperre,
   arkivering og offentlig SSB-request uten kontraktsdata.
-- 97 Chromium-kontroller PASS: faktisk React → HTTP → PostgreSQL og gammel
+- 98 Chromium-kontroller PASS: faktisk React → HTTP → PostgreSQL og gammel
   originalfil-/OCR-/analyseflyt; SSB-svaret, Auth/Storage og AI-svar er syntetiske.
   Nye reiser inkluderer avkryssing, invalidert forhåndsvisning, SSB-henting,
   kladd ved close/remount/bakgrunn, uendret DOM ved periodisk ACL, tapt
@@ -95,8 +95,14 @@ Tilbakekalt tilgang fjerner beløp fra arbeidsflaten.
 - Sikkerhetsrådgiver gir ingen nye ERROR-/WARN-kategorier. Ny tabell er bevisst
   privat med RLS uten direkte klientpolicy.
 
-Innlogget faktisk Preview-prøve, fysisk Safari/mobil og Kenneths relevante
-brukerprøve er egne bevis. Ingen samlet Bolig TEST OK eller produksjonsgodkjenning.
+Innlogget faktisk Preview-prøve på 3299969b: SSB-knappen hentet 143,1 og 151,0
+for januar 2025/januar 2026. Forhåndsvisning med fiktiv grunnleveranse 1 000 000
+og ukrysset opsjon 200 000, faktor 0,90, ga 49 685,53 i tillegg og uendret opsjon.
+Ingen beregning ble godkjent eller lagret i den delte piloten. Visuell kontroll
+avdekket lys intro-/footertekst på lys dialogbakgrunn; root arver nå dialogens
+tekstfarge, og mørke paneler har egen lys tekst. Ny kontrastassertion er lagt til.
+Fysisk Safari/mobil og Kenneths relevante brukerprøve er egne bevis.
+Ingen samlet Bolig TEST OK eller produksjonsgodkjenning.
 AI Gateway-tilgang og full analyse av 150–250 sider er fortsatt utsatt.
 
 ## Kort brukerprøve
