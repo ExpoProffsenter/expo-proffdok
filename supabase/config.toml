@@ -29,3 +29,7 @@ verify_jwt = false
 
 [functions.bolig-resident-link-email]
 verify_jwt = false
+
+[functions.bolig-contract-files]
+# Gateway JWT plus Auth.getUser; fresh private contract RPC before/after bytes.
+verify_jwt = true

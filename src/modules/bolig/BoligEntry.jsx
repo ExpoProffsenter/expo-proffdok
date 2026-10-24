@@ -1,4 +1,5 @@
 import BoligProjectIntegration from "./BoligProjectIntegration.jsx";
+import BoligContracts from "./BoligContracts.jsx";
 import BoligAttendance from "./BoligAttendance.jsx";
 import BoligQuality from "./BoligQuality.jsx";
 import React, { useCallback, useEffect, useRef, useState } from "react";
@@ -566,6 +567,7 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
                         <button type="button" aria-pressed={view === "progress"} onClick={() => setView("progress")}><CalendarDays size={17}/>Fremdrift og varsler</button>
                         <button type="button" aria-pressed={view === "integration"} onClick={()=>setView("integration")}>KS/HMS og timer</button>
                         <button type="button" aria-pressed={view === "partners"} onClick={() => setView("partners")}>UE og leverandører</button>
+                        <button type="button" aria-pressed={view === "contracts"} onClick={()=>setView("contracts")}>Kontrakter</button>
                         <button
                           type="button"
                           aria-pressed={
@@ -883,6 +885,7 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
                   {view === "integration" && <BoligProjectIntegration key={`${ctx.user_id}/${ctx.company_id}/${record.root.id}`} context={ctx} record={record} onOpenProject={(id,tab)=>{onClose();onOpenProject?.(id,tab);}}/>}
                   {view === "progress" && <BoligProgress key={`${ctx.user_id}/${ctx.company_id}/${record.root.id}`} context={ctx} root={record.root}/>}
                   {view === "partners" && <BoligPartners key={`${ctx.user_id}/${ctx.company_id}/${record.root.id}`} context={ctx} root={record.root}/>}
+                  {view === "contracts" && <BoligContracts key={`${ctx.user_id}/${ctx.company_id}/${record.root.id}/${ctx.role}`} context={ctx} root={record.root}/>}
                   <div
                     className={`bolig-main-grid ${unit ? "has-selected" : ""}`}
                     hidden={view !== "overview"}

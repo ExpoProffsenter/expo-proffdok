@@ -223,6 +223,7 @@ jobs:
           node scripts/bolig-resident-notice-pdf-check.mjs
           node scripts/bolig-foundation-db-check.mjs
           node scripts/bolig-hr-access-db-check.mjs
+          node scripts/bolig-contract-files-check.mjs
           node scripts/bolig-foundation-react-check.mjs
           node scripts/bolig-catalog-react-check.mjs
           node scripts/bolig-overview-react-check.mjs
@@ -239,6 +240,7 @@ jobs:
           node scripts/bolig-attendance-browser-check.mjs
           node scripts/bolig-self-attendance-browser-check.mjs
           node scripts/bolig-integration-browser-check.mjs
+          node scripts/bolig-contract-browser-check.mjs
           node scripts/bolig-sections-browser-check.mjs
           node scripts/bolig-completion-browser-check.mjs
           node scripts/bolig-handover-browser-check.mjs

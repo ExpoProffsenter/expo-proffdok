@@ -1,5 +1,9 @@
 # Boligprosjekter – arbeidsflate og videre produktkrav
 
+## Privat kontraktsområde – 24. oktober 2026
+
+Kenneth bestilte første etappe og ga en virkelig kontrakt som lokalt fileksempel. Privat dokumentopplasting/versjoner/forhåndsvisning/nedlasting og uttrykkelig navngitt tilgang er implementert for samme feature/Preview og Sandbox. Prosjektoppretter med aktiv prosjektlederrolle starter området; vanlig firma-/Bolig-/systemadmin-rolle alene gir ikke andre personers kontraktsinnsyn. Originaler bevares og blandes ikke i UE-/leverandør-/beboerflater eller ordinær FDV/sluttpakke. Den virkelige filen er ikke lagt i delte pilotdata eller repo. Se `docs/qa/BOLIG_PRIVATE_KONTRAKTER_20261024.md` for kontrakt, sikkerhet, faktisk QA og gjenstående innlogget brukerprøve. Ingen produksjonsmerge/-migrasjon. OCR, tekstanalyse og indeksregulering er fortsatt senere etapper. Eldre «ikke startet»-avsnitt er historikk for dette første dokumentområdet.
+
 ## HR inkludert og gjennomgang av KS/HMS – 24. oktober 2026
 
 Kenneth har avklart at intern Bolig-tilgang skal inkludere hele HR-funksjonen, og prioritert KS/HMS-gjennomgang foran kontraktsområdet. HR-modulrettigheten utledes fra aktiv Bolig-/firma-/Prosjekter-/medlemskapstilgang; vanlige HR-innsynsroller, firmaoppsett og timeregistrering gjelder fortsatt. Ingen automatisk medarbeideropprettelse eller ekstra leder-/leserrettigheter. Separat HR-grant beholdes ved tilbakekalt Bolig-tilgang. Eksterne UE-/leverandør-/beboerlenker har ikke HR-tilgang.

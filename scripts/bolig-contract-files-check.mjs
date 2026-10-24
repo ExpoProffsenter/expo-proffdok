@@ -1,0 +1,42 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import {createContractFiles,validContractFile,contractDigest} from '../supabase/functions/_shared/bolig-contract-files.mjs';
+let checks=0;const eq=(a,b,m)=>{assert.deepEqual(a,b,m);checks++;};
+const origin='https://preview.invalid',ctx={user_id:'self',company_id:'firm',enabled:true};
+const sample=process.env.BOLIG_CONTRACT_SAMPLE_FILE;
+const bytes=sample?new Uint8Array(await fs.readFile(sample)):new TextEncoder().encode('%PDF-1.4\nQA original\n%%EOF');
+const hash=await contractDigest(bytes);
+const payload={id:'file',document_id:'doc',revision:0,title:'QA original',kind:'contract',name:'original.pdf',mime:'application/pdf',size:bytes.length,sha256:hash,comment:''};
+let auth=true,allowed=true,deniedAfter=false,writes=0,reads=0,finished=false,stored=null,duplicate=false,conflict=false,sequence=[];
+const handler=createContractFiles({origins:[origin],authenticate:async()=>{
+ sequence.push('auth');if(!auth)return null;
+ return {user_id:'self',rpc:async(c,r,action,p)=>{
+  sequence.push(action);if(!allowed||(deniedAfter&&['file','finish'].includes(action)&&reads+writes>0))throw Object.assign(Error('Tilgang avslått'),{code:'42501'});
+  if(conflict&&action==='finish')throw Object.assign(Error('Ny versjon finnes'),{code:'PT409'});
+  if(action==='finish')finished=true;
+  return {context:ctx,root_id:'root',allowed:true,manage:true,id:'file',path:'firm/root/doc/file.pdf',ready:finished,receipt_id:p.id,file:{id:p.id,name:'original.pdf',mime:'application/pdf',size_bytes:bytes.length,sha256:hash,version:1}};
+ },upload:async(path,b)=>{writes++;stored=b;return {ok:!duplicate,status:duplicate?409:200};},download:async()=>{reads++;return new Response(stored||bytes);}};
+}});
+const upload=(token='valid',p=payload,data=bytes,mime='application/pdf')=>{
+ const f=new FormData();f.set('company_id','firm');f.set('root_id','root');f.set('payload',JSON.stringify(p));f.set('file',new File([data],'original.pdf',{type:mime}));
+ return new Request(origin,{method:'POST',headers:{origin,...(token?{authorization:'Bearer '+token}:{})},body:f});
+};
+const download=()=>new Request(origin,{method:'POST',headers:{origin,authorization:'Bearer valid','content-type':'application/json'},body:JSON.stringify({action:'download',company_id:'firm',root_id:'root',id:'file'})});
+eq(validContractFile(bytes,'application/pdf','original.pdf'),true);
+eq(validContractFile(new Uint8Array([1,2,3]),'application/pdf','x.pdf'),false);
+eq(validContractFile(bytes,'text/html','x.html'),false);
+eq(validContractFile(bytes,'application/pdf','../x.pdf'),false);
+eq((await handler(upload(''))).status,401);eq(writes,0);
+auth=false;eq((await handler(upload())).status,401);eq(writes,0);auth=true;
+allowed=false;eq((await handler(upload())).status,403);eq(writes,0);allowed=true;
+sequence=[];eq((await handler(upload())).status,200);eq(writes,1);eq(sequence,['auth','get','prepare','finish']);
+eq((await handler(upload())).status,200);eq(writes,1,'ready replay never writes twice');
+let result=await handler(download());eq(result.status,200);eq(result.headers.get('cache-control'),'private, no-store, max-age=0');eq(await contractDigest(new Uint8Array(await result.arrayBuffer())),hash,'original bytes roundtrip unchanged');
+deniedAfter=true;eq((await handler(download())).status,403,'revoke after storage read denies bytes');deniedAfter=false;
+finished=false;duplicate=true;eq((await handler(upload())).status,200,'immutable duplicate is hash verified');
+finished=false;duplicate=false;conflict=true;eq((await handler(upload())).status,409);conflict=false;
+eq((await handler(upload('valid',{...payload,sha256:'b'.repeat(64)}))).status,400);
+eq((await handler(new Request(origin,{method:'GET'}))).status,405);
+eq((await handler(new Request(origin,{method:'POST',headers:{origin:'https://untrusted.invalid'}}))).status,403);
+eq((await handler(new Request(origin,{method:'OPTIONS',headers:{origin}}))).headers.get('access-control-allow-headers').includes('authorization'),true);
+console.log(`Contract file gateway: ${checks} assertions PASS; Auth first, private ACL, immutable retry, hash/readback, revoke-before-bytes and no-store. ${sample?'User-provided PDF used locally; bytes and metadata not persisted.':'Synthetic file/transport.'}`);

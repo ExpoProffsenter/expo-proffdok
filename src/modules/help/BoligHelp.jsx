@@ -464,6 +464,17 @@ export function BoligHelp() {
         portalen. Automatisk e-postvarsling og deling av private prosjektfiler
         inngår ikke i denne versjonen.
       </p>
+      <p>
+        «Kontrakter» samler private originaler for hovedprosjektet.
+        Prosjektoppretteren med prosjektledertilgang starter området og velger
+        navngitte personer under «Tilgang». «Last opp dokument» lagrer en ny
+        original. Bruk «Ny versjon» når samme dokument endres. «Versjoner»
+        beholder tidligere utgaver. PDF, JPG og PNG støttes. Kontraktene deles
+        ikke gjennom eksterne lenker eller vanlig FDV/sluttpakke. Opplasting
+        innebærer ingen kontraktsaksept. Søk i dokumenttekst og analyse kommer
+        senere. Opplastingskladden beholdes i nettleserøkten; ikke last siden
+        på nytt før filen er bekreftet lagret.
+      </p>
     </details>
   );
 }
