@@ -74,10 +74,34 @@ try{
  }
  eq((await rpc('get')).totals[0].principal_cents,monthlyBefore+5500000,'all three monthly invoices accumulate in billed-to-date');
  await deny(()=>rpc('preview',{input:input({mode:'manual',method:'documented',number:'WRONG-MODE',apply_index:false})}),'22023');
+ const beforeSplit=await rpc('get');
+ const split=input({number:'SPLIT-MAIN',method:'payment',period:'2026-08',separate_index:true,values:[{id:base,principal_cents:1000000,index_cents:0},{id:option,principal_cents:200000,index_cents:0}]});
+ const splitPreview=await rpc('preview',{input:split});eq(splitPreview.result.index_cents,0,'main invoice excludes separately billed index');eq(splitPreview.result.index_invoice.result.index_cents,90000,'separate index still uses exact server formula');eq((await rpc('get')).totals,beforeSplit.totals,'neither preview counts as invoiced');
+ const main=await save(split);let splitState=await rpc('get');eq(splitState.index_invoices.length,1,'unbilled basis is durable');eq(splitState.totals[0].index_cents,beforeSplit.totals[0].index_cents,'main invoice never bills separate index');
+ const ownIndex=input({mode:'manual',method:'manual',number:'SPLIT-INDEX',period:'2026-08',apply_index:false,target_index:null,index_of:main.id,values:[{id:base,principal_cents:0,index_cents:90000},{id:option,principal_cents:0,index_cents:0}]});
+ await deny(()=>rpc('preview',{input:{...ownIndex,values:[{id:base,principal_cents:1,index_cents:90000},{id:option,principal_cents:0,index_cents:0}]}}),'22023');
+ await deny(()=>rpc('preview',{input:{...ownIndex,values:[{id:base,principal_cents:0,index_cents:90001},{id:option,principal_cents:0,index_cents:0}]}}),'22023');
+ await deny(()=>rpc('preview',{input:{...ownIndex,index_of:hist.id}}),'42501');
+ await deny(()=>rpc('preview',{input:{...ownIndex,index_of:main.id.toUpperCase()}}),'22023');
+ await deny(()=>rpc('preview',{input:ownIndex},p.reader),'42501');
+ await setup({...agreement,reference:'QA avtale endret før indeksfaktura',factor:.8});
+ eq((await rpc('get')).index_invoices[0].result.index_basis.factor,.9,'pending index retains saved terms');
+ const indexPre=await rpc('preview',{input:ownIndex});const indexAttempt={id:randomUUID(),revision:indexPre.revision,input:ownIndex};const indexSaved=await rpc('register',indexAttempt);rev=indexSaved.revision;
+ eq(indexSaved.entry.result.index_basis.factor,.9,'separate invoice keeps original index terms');eq((await rpc('register',indexAttempt)).entry.id,indexSaved.entry.id,'lost response retry does not duplicate index');
+ splitState=await rpc('get');eq(splitState.index_invoices.length,0);eq(splitState.totals[0].principal_cents,beforeSplit.totals[0].principal_cents+1000000,'index invoice never repeats main principal');eq(splitState.totals[0].index_cents,beforeSplit.totals[0].index_cents+90000,'index billed only on separate registration');
+ await deny(()=>rpc('preview',{input:{...ownIndex,number:'DUPLICATE-INDEX'}}),'PT409');
+ const cancelIndex={...ownIndex,mode:'credit',method:'credit',number:'CREDIT-SPLIT-INDEX',index_of:undefined,credit_of:indexSaved.entry.id,reason:'QA separat indekskreditering',values:ownIndex.values};delete cancelIndex.index_of;
+ await save(cancelIndex);eq((await rpc('get')).totals[0].index_cents,beforeSplit.totals[0].index_cents,'separate index credit reduces only index total');
+ const split2=await save({...split,number:'SPLIT-CANCELLED',period:'2026-09'});await save({...cancelIndex,number:'CREDIT-SPLIT-MAIN',period:'2026-09',credit_of:split2.id,values:split.values});eq((await rpc('get')).index_invoices.length,0,'credited main removes obsolete index proposal');await deny(()=>rpc('preview',{input:{...ownIndex,number:'INDEX-CANCELLED',period:'2026-09',index_of:split2.id}}),'22023');
+ await deny(()=>rpc('preview',{input:{...split,separate_index:'true'}}),'22023');
+ await deny(()=>rpc('preview',{input:{...ownIndex,index_of:null}}),'22023');
+ await deny(()=>rpc('preview',{input:{...ownIndex,number:'INVALID-SOURCE-MODE',index_of:main.id,mode:'period',method:'payment'}}),'22023');
+ const declineSplit={...split,number:'SPLIT-DECLINE',period:'2026-10',target_index:90};eq((await rpc('preview',{input:declineSplit})).result.index_invoice.result.index_cents,-80000,'separate preview shows a negative adjustment');await deny(()=>rpc('register',{id:randomUUID(),revision:rev,input:declineSplit}),'22023');
+ const finalEntries=(await rpc('get')).entries.length;
  await deny(()=>rpc('entry',{id:randomUUID()}),'42501');
  await deny(()=>rpc('get',{},p.owner,randomUUID()),'42501');
  await p.rpc(p.owner,p.company,p.root.id,'grant',{user_id:p.reader,role:'none',revision:1});await deny(()=>rpc('get',{},p.reader),'42501');
- await p.system('update bolig_private.roots set archived=true where id=$1',[p.root.id]);eq((await rpc('get')).entries.length,10);await deny(()=>rpc('register',{id:randomUUID(),revision:rev,input:input()}),'42501');
+ await p.system('update bolig_private.roots set archived=true where id=$1',[p.root.id]);eq((await rpc('get')).entries.length,finalEntries);await deny(()=>rpc('register',{id:randomUUID(),revision:rev,input:input()}),'42501');
  await p.system('set role authenticated');await deny(()=>p.db.query('select * from bolig_private.contract_finance_events'),'42501');
  await p.system('set role anon');await deny(()=>p.db.query('select public.bolig_contract_finance($1,$2)',[p.company,p.root.id]),'42501');
  eq(moneyCents('1 234,56'),123456);eq(moneyCents('-0,01',true),-1);for(const s of ['-1','1.234,50','1e3','1,001']){assert.throws(()=>moneyCents(s));checks++;}

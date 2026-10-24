@@ -22,3 +22,7 @@
 .bolig-finance-setup>p{margin:10px 0}
 .bolig-finance-setup small{color:#d3deeb;font-size:.9rem;font-weight:400;line-height:1.4}
 .bolig-finance-setup textarea{min-height:64px}
+.bolig-finance-setup h3,.bolig-finance-setup h4,.bolig-finance-result h4{color:#e8eef7}
+.bolig-contract-finance section[hidden]{display:none}
+.bolig-finance-tabs button[aria-pressed=true]{font-weight:700}
+.bolig-index-history>button{display:block;margin-top:8px;white-space:normal;text-align:left}

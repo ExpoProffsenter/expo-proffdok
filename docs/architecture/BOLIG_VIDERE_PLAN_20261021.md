@@ -1,5 +1,22 @@
 # Boligprosjekter – arbeidsflate og videre produktkrav
 
+## Samlet kontraktsøkonomi – 25. oktober 2026
+
+Etter Kenneths «kjør» er de to økonomiinngangene samlet i Kontraktsøkonomi.
+Kontraktssum og vilkår lagres ett sted og brukes både for periodens a konto og
+indeks på hele kontrakten. Fakturert og a konto bruker denne periodens beløp iht.
+betalingsplan eller dokumentert utført/medgått, og summerer registrerte fakturaer
+minus kreditnotaer automatisk. Historikk samler fakturaer og godkjente
+indeksberegninger; gamle beregninger beholder sitt opprinnelige grunnlag.
+
+Separat indeksfaktura har eget fakturanummer og varig kilde fra a konto.
+Oversikten skiller fakturert a konto fra fakturert indeksregulering hittil.
+Additive migrasjoner er installert bare i Sandbox. Ingen produksjonsmerge. Den røde bemanningstesten er rettet i syntetisk transport: Oslo-dag
+og riktig vinter-/sommertid erstatter UTC-dato og fast +02. Produksjonens
+bemanningskode er uendret. Siste QA og konkret brukerprøve:
+`docs/qa/BOLIG_KONTRAKTSOKONOMI_OG_CI_20261025.md`.
+Eldre etappebeskrivelser nedenfor er historikk.
+
 ## Fakturert hittil og a konto – 24. oktober 2026
 
 Kenneth valgte manuell registrering fra økonomisystemet, begge a konto-metoder

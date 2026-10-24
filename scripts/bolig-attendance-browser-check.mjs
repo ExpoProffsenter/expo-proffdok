@@ -3,6 +3,7 @@ import fs from "node:fs";
 import http from "node:http";
 import { build } from "vite";
 import react from "@vitejs/plugin-react";
+import {osloDay,utcFromOslo} from "./fixtures/bolig-attendance-time.mjs";
 const { chromium } = await import(
   process.env.PLAYWRIGHT_MODULE || "playwright"
 );
@@ -15,6 +16,10 @@ const eq = (a, b, m) => {
   checks++;
 };
 try {
+  eq(utcFromOslo('2026-01-15T00:30'),'2026-01-14T23:30:00.000Z','winter civil time uses +01');
+  eq(utcFromOslo('2026-07-15T00:30'),'2026-07-14T22:30:00.000Z','summer civil time uses +02');
+  eq(osloDay('2026-01-14T23:30:00Z'),'2026-01-15','project day is not the UTC date');
+  eq(osloDay('2026-07-14T22:30:00Z'),'2026-07-15','summer midnight uses Oslo day');
   const built = await build({
     configFile: false,
     logLevel: "silent",
@@ -75,6 +80,9 @@ try {
     viewport: { width: 1366, height: 1000 },
     hasTouch: true,
   });
+  // Fixed winter midnight reproduces the former CI failure all year round.
+  const attendanceNow=new Date(process.env.QA_ATTENDANCE_NOW||'2026-01-14T23:30:00Z');
+  await page.clock.setFixedTime(attendanceNow);
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto(`http://127.0.0.1:${server.address().port}`);
@@ -93,7 +101,7 @@ try {
  const dl=page.waitForEvent('download');await btn('Eksporter liste (CSV)').click();eq((await dl).suggestedFilename().startsWith('bemanning-'),true);
  for(const width of [320,390,768,1366]){await page.setViewportSize({width,height:950});eq(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'no overflow '+width);}
  await page.getByLabel('Prosjektdag',{exact:true}).fill('2026-01-01');await page.getByText('Ingen registreringer for denne dagen.',{exact:true}).waitFor();eq(await page.getByLabel('Prosjektdag',{exact:true}).inputValue(),'2026-01-01','selected day persists after server read');
- await page.getByLabel('Prosjektdag',{exact:true}).fill(new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Oslo'}).format(new Date()));await btn('Rett tidspunkt').waitFor();
+ await page.getByLabel('Prosjektdag',{exact:true}).fill(new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Oslo'}).format(attendanceNow));await btn('Rett tidspunkt').waitFor();
  await btn('Registrer deltaker inn').click();await page.getByLabel('Navn',{exact:true}).fill('Usendt kladd');
  await page.evaluate(()=>{Object.defineProperty(document,'visibilityState',{configurable:true,value:'hidden'});document.dispatchEvent(new Event('visibilitychange'));});await btn('Lagre registrering').waitFor({state:'detached'});
  await page.evaluate(()=>{Object.defineProperty(document,'visibilityState',{configurable:true,value:'visible'});document.dispatchEvent(new Event('visibilitychange'));});await btn('Lagre registrering').waitFor();eq(await page.getByLabel('Navn',{exact:true}).inputValue(),'Usendt kladd','resume preserves draft after authorization');

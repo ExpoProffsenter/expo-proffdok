@@ -6,8 +6,9 @@ måneden. Ingen ny samlepost kalt «utført og fakturert» innføres: betalingsp
 kan avvike fra faktisk utført arbeid, og dette systemet må ikke likestille dem.
 
 Miljømål BEGGE. Kun feature/Preview og Sandbox ppvircenkjizeiqdxphj.
-Ingen produksjonsmerge/-migrasjon. Samling av de to inngangene til
-«Kontraktsøkonomi» er foreløpig et forslag, ikke implementert eller bestilt her.
+Ingen produksjonsmerge/-migrasjon. Etter Kenneths «kjør» er inngangene samlet i
+«Kontraktsøkonomi», med ett lagret avtalegrunnlag. Se
+`BOLIG_KONTRAKTSOKONOMI_OG_CI_20261025.md` for siste flyt og QA.
 
 ## Brukerflyt
 
