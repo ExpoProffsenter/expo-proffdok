@@ -39,7 +39,7 @@ const result={...state(),document_id:d?.id};receipts.set(p.request_id,result);
 if(window.__holdAction===args.p_action){window.__holdAction=null;await new Promise(r=>window.__releaseMutation=r);}
 if(window.__loseAction===args.p_action){window.__loseAction=null;throw Error('QA mistet svar etter lagring');}return {data:result};}};
 window.__duplicate=()=>{docs=[{id:'accepted-choice',group_id:'accepted-group',version:1,kind:'choice',status:'accepted',revision:4,created_at:'2026-10-22T17:00:00Z',snapshot},{id:'old-choice',group_id:'old-group',version:1,kind:'choice',status:'published',revision:3,created_at:'2026-10-22T16:00:00Z',snapshot}];window.dispatchEvent(new Event('focus'));};
-window.__asAccepted=()=>{docs[0].status='accepted';docs[0].accepted_name='QA Beboer';docs[0].accepted_at='2026-10-22T18:00:00Z';docs[0].revision++;window.dispatchEvent(new Event('focus'));};
+window.__asAccepted=(notify=true)=>{docs[0].status='accepted';docs[0].accepted_name='QA Beboer';docs[0].accepted_at='2026-10-22T18:00:00Z';docs[0].revision++;if(notify)window.dispatchEvent(new Event('focus'));};
 window.__mode='internal';window.__networkLoss=false;window.__publicCalls=[];
 let publicDoc={id:'public-doc',kind:'change',version:2,status:'published',revision:3,snapshot,expires_at:'2026-11-21T18:00:00Z'};
 window.fetch=async(url,options)=>{if(url.includes('/functions/v1/bolig-resident-link-email'))return mailMock.send(options);const p=JSON.parse(options.body);window.__publicCalls.push(p);
@@ -140,6 +140,22 @@ try {
   await page.evaluate(()=>{window.__foreign=true;window.dispatchEvent(new Event('focus'));});
   await page.getByRole("alert").filter({hasText:"Firma eller bolig er endret"}).waitFor();
   eq(await page.getByText(/Avtalehistorikk ·/).count(),0,"foreign response hides previous firm data");
+  // A resident may answer while the manager keeps this page in the foreground.
+  // Opening a cached row must fetch the answer, without a focus event or a write.
+  const staleStatus=await browser.newPage();debugPage=staleStatus;await staleStatus.goto(url);
+  await staleStatus.getByRole("button",{name:"Endringer og beboeraksept",exact:true}).click();
+  await staleStatus.getByRole("button",{name:"Klargjør beboeraksept",exact:true}).click();
+  await staleStatus.getByLabel("Beskrivelse til beboeren").fill("QA fiktiv avtale for fersk ekstern svarstatus");
+  await staleStatus.getByRole("button",{name:"Opprett beboerlenke",exact:true}).click();
+  await staleStatus.getByLabel("Beboerlenke",{exact:true}).waitFor();
+  await staleStatus.getByRole("button",{name:"Lukk beboeraksept · utgave 1",exact:true}).click();
+  await staleStatus.evaluate(()=>window.__asAccepted(false));
+  eq(await staleStatus.getByText("Venter på beboer",{exact:true}).isVisible(),true,"cached row reproduces the stale remote answer before opening");
+  await staleStatus.getByRole("button",{name:/Boligvalg · v1/}).click();
+  await staleStatus.getByText("Akseptert av QA Beboer",{exact:false}).waitFor({timeout:1500});
+  eq(await staleStatus.getByRole("dialog").getByText("Venter på beboer",{exact:true}).count(),0,"opening fetches the current remote answer");
+  eq(await staleStatus.evaluate(()=>window.__calls.filter(c=>c.args.p_action==='publish').length),1,"status refresh never republishes an agreement");
+  await staleStatus.close();debugPage=page;
   const parallel=await browser.newPage();await parallel.goto(url);
   await parallel.getByRole("button",{name:"Endringer og beboeraksept",exact:true}).click();
   await parallel.getByRole("button",{name:"Klargjør beboeraksept",exact:true}).waitFor();

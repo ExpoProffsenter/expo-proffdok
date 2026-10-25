@@ -107,7 +107,7 @@ export default function BoligCommerce({ context, root, unit }) {
   };
   const doc = data?.documents.find(d => d.id === selected);
   const overview = agreementOverview(data?.documents);
-  const row = d => <button type="button" key={d.id} className="bolig-commerce-row" onClick={() => { setSelected(d.id); setHandling(null); }}>
+  const row = d => <button type="button" key={d.id} className="bolig-commerce-row" onClick={() => { setSelected(d.id); setHandling(null); load(); }}>
     <span><strong>{d.kind === "change" ? `Endringsordre · ${d.snapshot.order_number}` : "Boligvalg"} · v{d.version}</strong><small>{stamp(d.created_at)}{d.kind === "change" ? ` · ${supplierDelta(d.snapshot.before_goods,d.snapshot.goods).length} vareendringer` : ""}</small></span>
     <span className={`bolig-commerce-badge ${d.status}`}>{d.kind === "change" && d.status === "handled" && !d.fulfillment_applied_at ? "Leveransen må oppdateres" : commerceLabels[d.status]}</span>
   </button>;

@@ -3,10 +3,16 @@ begin;
 select set_config('request.jwt.claim.sub','d0000000-0000-4000-8000-000000000001',true);
 set local role authenticated;
 do $test$
-declare s jsonb;p jsonb;token text:=replace(gen_random_uuid()::text,'-','')||replace(gen_random_uuid()::text,'-','');a uuid:=gen_random_uuid();
+declare c uuid:='e0000000-0000-4000-8000-000000000001';s jsonb;p jsonb;r jsonb;root uuid;unit uuid;point uuid:=gen_random_uuid();token text:=replace(gen_random_uuid()::text,'-','')||replace(gen_random_uuid()::text,'-','');a uuid:=gen_random_uuid();
 begin
+ -- Build an independent source: user testing can add required fields or change
+ -- the order of checklists in the shared pilot, which must not be reset by QA.
+ r:=public.bolig_workspace(c,'create_plan',null,null,jsonb_build_object('request_id',gen_random_uuid(),'title','QA UE – rollback','reference','QA-UE-ROLLBACK','buildings',jsonb_build_array(jsonb_build_object('name','QA Bygg','building_type','apartment','address','','house_floors',1,'entrances',jsonb_build_array(jsonb_build_object('address','','counts','[1]'::jsonb))))));
+ root:=(r#>>'{root,id}')::uuid;unit:=(r#>>'{units,0,id}')::uuid;
+ s:=public.bolig_quality(c,root,unit,'check_add',0,jsonb_build_object('required',false,'content',jsonb_build_object('title','QA UE kilde','trade','Felles – alle fag','instructions','Kun fiktiv test','points',jsonb_build_array(jsonb_build_object('id',point,'title','Funksjon kontrollert','guidance','','image_required',false,'comment_required',false)))));
+ perform set_config('qa.ue.root',root::text,true);perform set_config('qa.ue.scope',unit::text,true);perform set_config('qa.ue.source',(s#>'{data,checks,0}')::text,true);
  p:=jsonb_build_object('id',a,'request_id',gen_random_uuid(),'name','QA UE ROLLBACK','email','ue@qa.invalid','organisation','QA UE Firma','kind','ue','days',7,'token',token,'access_mode','project','features',jsonb_build_array('checklists','quality_write'),'reviewed',true);
- s:=public.bolig_partners('e0000000-0000-4000-8000-000000000001','80821082-c64a-41a9-91cb-db2aa049ed2e','create',p);
+ s:=public.bolig_partners(c,root,'create',p);
  perform set_config('qa.ue.token',token,true);perform set_config('qa.ue.grant',a::text,true);
 end$test$;
 reset role;
@@ -32,7 +38,7 @@ end$test$;
 reset role;
 do $test$begin
  if (select count(*) from bolig_private.quality_events where partner_id=current_setting('qa.ue.grant')::uuid and actor_id is null)<>2 then raise exception 'Native external audit missing';end if;
- if (select data#>>'{checks,0,answers,76ee820a-6748-4385-bfa7-5e4886f8dbae,status}' from bolig_private.quality_states where root_id='80821082-c64a-41a9-91cb-db2aa049ed2e' and scope_id='03bdda5f-72de-4908-b7cc-87eca578ec0c')<>'Avvik' then raise exception 'Original changed';end if;
+ if (select original.node from bolig_private.quality_states q cross join lateral jsonb_array_elements(q.data->'checks') as original(node) where q.root_id=current_setting('qa.ue.root')::uuid and q.scope_id=current_setting('qa.ue.scope')::uuid and original.node->>'id'=current_setting('qa.ue.source')::jsonb->>'id') is distinct from current_setting('qa.ue.source')::jsonb then raise exception 'Original changed';end if;
 end$test$;
 rollback;
 select 'PASS – real native UE copy/save/replay, external audit without issuer impersonation, original unchanged, upload reservation and unuploaded/unregistered denial; all rolled back' result;
