@@ -25,7 +25,7 @@ export function BoligHelp() {
             Registrer faktisk overtakelse med dato og protokollreferanse. Restpunkter beholdes.</li>
           <li><strong>Dokumentasjon og økonomi:</strong> Ta ut PDF/ZIP for bolig, bygg eller prosjekt.
             Følg restpunktene til de er løst. Registrer a konto og indeks under
-            «Kontrakter → Fakturert og a konto» når dette området er tatt i bruk.</li>
+            «Kontrakter → Kontraktsøkonomi → Fakturert og a konto» når dette området er tatt i bruk.</li>
         </ol>
         <p>Prosjektleder styrer oppsett, vurderinger og overtakelse. Lesebrukere får innsyn.
           UE og leverandører bruker sin tildelte lenke; beboere bruker beboerportalen.
@@ -518,7 +518,7 @@ export function BoligHelp() {
         bruk originalene og tekstsøket som grunnlag for egen gjennomgang.
       </p>
       <p>
-        Under «Kontrakter → Kontraktssum og vilkår» lagrer du opprinnelig
+        Under «Kontrakter → Kontraktsøkonomi → Kontraktssum og vilkår» lagrer du opprinnelig
         grunnleveranse og opsjoner ekskl. mva., avtalt indeks, basismåned og
         eventuell reduksjonsfaktor. Kryss av hvilke deler som reguleres.
         Bruk opprinnelige beløp fra basismåneden.

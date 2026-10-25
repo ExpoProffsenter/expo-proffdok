@@ -2,7 +2,7 @@
 
 Den ene eksisterende `BoligCompletionOverview` er flyttet foran statusfanene i `BoligBuildingOverview`. Ingen ekstra RPC eller remount ved byggvalg. Tellingen avleder bare aktive boliger i valgt bygg fra eksisterende struktur og serverbekreftet ferdigstillingsrespons; «Alle bygg» viser prosjektet. Delvis eller begrenset status blir en tydelig utilgjengelig status, ikke et falskt antall. Faktisk overtakelse teller etter eksisterende `isHandedOver`, uavhengig av intern sluttkontroll. De samme bygg-/prosjektdialogene brukes.
 
-Bolig-hjelpen forblir inne i den aktiveringsstyrte modulen. `BoligWorkspace` skjuler i tillegg begge hjelpeinnganger når egen fersk serverkontekst har `enabled=false`. Veiledningen beskriver store prosjekter, plassering av overtakelsesinngangen og gjeldende fakturaregister. Globale menyer, modulgrants, backend, ordinære prosjekter og e-postmotorer endres ikke. QA: `docs/qa/BOLIG_OVERTAKELSESINNGANG_OG_HJELP_20261025.md`.
+Bolig-hjelpen forblir inne i den aktiveringsstyrte modulen. `BoligWorkspace` skjuler i tillegg begge hjelpeinnganger når egen fersk serverkontekst har `enabled=false`. Veiledningen er utvidet til 18 eksplisitte steg med native stegvelger, eget innhold om interne/eksterne tilganger og fordeling/utfylling av sjekklister, samt plassering av overtakelsesinngangen og gjeldende fakturaregister. Globale menyer, modulgrants, backend, ordinære prosjekter og e-postmotorer endres ikke. QA: `docs/qa/BOLIG_OVERTAKELSESINNGANG_OG_HJELP_20261025.md`.
 
 ## Boligprosjekter: realistisk pilot og oppfølging – Preview 23.10.2026
 

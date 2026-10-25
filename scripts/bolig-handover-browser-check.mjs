@@ -306,9 +306,9 @@ try {
       .getByRole("heading", { name: "Bygg prosjektet", exact: true })
       .waitFor();
     eq(
-      await guide.getByRole("navigation").getByRole("button").count(),
-      8,
-      "Eight start-to-finish steps " + width,
+      await guide.getByLabel("Velg steg i boligveiledningen").locator("option").count(),
+      18,
+      "Eighteen explicit start-to-finish steps " + width,
     );
     eq(
       await guide.evaluate((e) => e.scrollWidth <= e.clientWidth + 1),
@@ -317,7 +317,7 @@ try {
     );
     await button("Neste steg").click();
     await guide
-      .getByRole("heading", { name: "Lag grunnpakken", exact: true })
+      .getByRole("heading", { name: "Avklar interne roller", exact: true })
       .waitFor();
     await button("Forrige steg").click();
     await guide
@@ -334,9 +334,24 @@ try {
       "Illustration loads and enlarges " + width,
     );
     await button("Lukk eksempel fra boligveiledningen").click();
-    await guide
-      .getByRole("button", { name: "7 Vurder overtakelsen", exact: true })
-      .click();
+    const guideSelect = guide.getByLabel("Velg steg i boligveiledningen");
+    const phaseTitles = ["Bygg prosjektet", "Avklar interne roller", "Kontrakter og innsyn", "Lag grunnpakken", "Lag tilvalg og fordel", "Fordel sjekklister", "Planlegg mange boliger samlet", "Sett opp faktisk bemanning", "Gi UE og leverandører tilgang", "Velg kontakt og beboerdialog", "Del avtaler med beboerne", "Bestill og følg leveringer", "Utfør og dokumenter sjekklistene", "Følg avvik, meldinger og frister", "Varsle beboerne", "Følg kontraktsøkonomien", "Vurder overtakelsen", "Lever dokumentasjon og følg opp"];
+    for (let index = 0; index < phaseTitles.length; index++) {
+      await guideSelect.selectOption(String(index));
+      await guide.getByRole('heading', {name: phaseTitles[index], exact: true}).waitFor();
+      eq(await guide.locator('article .bolig-guide-where').textContent().then(t=>t.length>5),true,'Every phase has its own concrete location '+index+' at '+width);
+      eq(await guide.locator('.bolig-guide-next p').textContent().then(t=>t.length>15),true,'Every phase explains the next action '+index+' at '+width);
+      eq(await guide.evaluate(e=>e.scrollWidth<=e.clientWidth+1),true,'Expanded guide fits '+width+' at phase '+index);
+    }
+    await guideSelect.selectOption('1');
+    eq((await guide.locator('article').textContent()).includes('Lesetilgang eller Prosjektledertilgang'),true,'Internal role guidance is explicit');
+    await guideSelect.selectOption('5');
+    eq((await guide.locator('article').textContent()).includes('påkrevd'),true,'Checklist distribution explains required controls');
+    await guideSelect.selectOption('8');
+    eq((await guide.locator('article').textContent()).includes('alle aktive boliger'),true,'External access guidance explains project-wide scope');
+    await guideSelect.selectOption('15');
+    eq((await guide.locator('article').textContent()).includes('Fakturaoversikt → Rediger'),true,'Finance guide explains editable invoice numbers');
+    await guideSelect.selectOption('16');
     await guide
       .getByRole("heading", { name: "Vurder overtakelsen", exact: true })
       .waitFor();
@@ -394,7 +409,7 @@ try {
   console.log(
     "PASS Bolig handover/guide: " +
       checks +
-      " actual Chromium assertions; manager assessment, critical explicit decision, no false completion, retry, changed source, scoped state, eight illustrated steps and mobile layout.",
+      " actual Chromium assertions; manager assessment, critical explicit decision, no false completion, retry, changed source, scoped state, eighteen explicit guide steps, existing illustrations and mobile layout.",
   );
 } catch (e) {
   await page?.screenshot({

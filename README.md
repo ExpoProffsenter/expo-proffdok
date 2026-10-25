@@ -1,6 +1,6 @@
 ## Boligprosjekter: tydelig overtakelsesinngang og oppdatert hjelp – Preview 25.10.2026
 
-«Løpende overtakelse» ligger øverst i byggoversikten, før statusvalg og fasade. Tellingen gjelder valgt bygg; «Alle bygg» viser prosjektet. Knappene åpner eksisterende ferdigstillingsdialog. Hjelpen har anbefalt arbeidsrekkefølge for store prosjekter og gjeldende fakturaregister. Begge hjelpeinnganger følger også arbeidsflatens ferske tilgangsstatus. Ingen nye lagringshandlinger, databaseregler eller e-postendringer. Se `docs/qa/BOLIG_OVERTAKELSESINNGANG_OG_HJELP_20261025.md`.
+«Løpende overtakelse» ligger øverst i byggoversikten, før statusvalg og fasade. Tellingen gjelder valgt bygg; «Alle bygg» viser prosjektet. Knappene åpner eksisterende ferdigstillingsdialog. A–Å-veiledningen har 18 egne steg, blant annet interne roller, kontraktsinnsyn, fordeling/utfylling av sjekklister, UE-/leverandørtilgang, beboeravtaler, bemanning, varsling og økonomi. En kompakt stegvelger erstatter en lang knapprekke. Detaljhjelpen har anbefalt arbeidsrekkefølge for store prosjekter og gjeldende fakturaregister. Begge hjelpeinnganger følger også arbeidsflatens ferske tilgangsstatus. Ingen nye lagringshandlinger, databaseregler eller e-postendringer. Se `docs/qa/BOLIG_OVERTAKELSESINNGANG_OG_HJELP_20261025.md`.
 
 ## Boligprosjekter: realistisk pilot og oppfølging – Preview 23.10.2026
 

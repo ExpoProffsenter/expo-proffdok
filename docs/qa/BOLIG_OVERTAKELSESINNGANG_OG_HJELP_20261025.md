@@ -23,7 +23,11 @@ interne arbeidsflatens `ctx.enabled`, også etter en avvist operasjon før ytre
 kontekst er oppdatert. Dette gir ingen ny tilgang.
 
 «Slik styrer du prosjektet» har ny anbefalt arbeidsrekkefølge for store prosjekter.
-Åtte steg i A–Å-veiledningen beholdes med oppdatert inngang til overtakelse.
+Etter brukerens gjennomgang er A–Å-veiledningen utvidet fra åtte til 18 egne steg.
+Interne roller, kontraktsinnsyn, sjekklistefordeling, utfylling, faktisk bemanning,
+UE-/leverandørtilgang, beboeravtaler, bestilling, avvik, varsler og økonomi har
+egen plassering, anbefaling, hva som kan vente og neste handling. En native
+stegvelger hindrer at 18 knapper skyver innholdet langt ned på mobil.
 Økonomihjelpen forklarer kontraktsvilkår, Fakturert og a konto, separat indeks,
 fakturadato, historisk indeksbekreftelse og senere fakturanummer uten dobbeltelling.
 Excel-import er fortsatt utsatt. Ingen ny funksjon loves i hjelpen.
@@ -47,8 +51,11 @@ Utviklerkontroller og fersk CI/Preview-status føres i PR278. Ingen merge før
 relevant Preview-prøve, grønn QA og Kenneths samlede TEST OK.
 
 Lokal verifisering: 59 Chromium-assertions i byggoversikten (42 tidligere
-beholdt, 17 nye), 40 ferdigstillingsassertions og 39 overtakelses-/guideassertions
-PASS. Eksisterende React-harnesser for tilgang og fasade PASS, med nye
+beholdt, 17 nye), 40 ferdigstillingsassertions og 213 overtakelses-/guideassertions
+PASS. De 39 tidligere kontrollene er beholdt; alle 18 faser er gjennomgått på
+320/390/1366 px, med valg, neste/forrige, egne plasseringer og neste handling,
+interne roller, sjekklister, eksternt innsyn og fakturaredigering.
+Eksisterende React-harnesser for tilgang og fasade PASS, med nye
 hjelpeassertions for aktiv og deaktivert kontekst. Fersk core-boundary mot
 main 36462e2b: 55 PASS. Mobil 320/390 og desktop 1366 inngår; skjermbildet på
 390 er visuelt inspisert. Ingen runtime-feil eller lagringskall i visningsprøven.
