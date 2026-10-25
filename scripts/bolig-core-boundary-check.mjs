@@ -44,6 +44,7 @@ const integrations = new Set([
   "supabase/functions/_shared/supplier-order-email.mjs",
   "scripts/project-mobile-header-browser-check.mjs",
   "scripts/people-module-access-react-check.mjs",
+  "scripts/time-registration-db-check.mjs",
   "scripts/fixtures/rpc-retry-legacy-migrations.json",
   "api/bolig-contract-review.mjs",
   "package.json",
@@ -104,6 +105,13 @@ assert.equal(originalDialog,git("show",`${base}:${dialogPath}`),"Native dialog m
 
 // Old migrations and all existing critical checks must be byte-identical.
 const existing = new Set(git("ls-tree", "-r", "--name-only", base).split("\n"));
+// CI ran in the repeated Oslo hour on 25 October. Only deterministic fixture
+// setup and additional DST assertions may differ; all prior time checks remain.
+const timeTestPath='scripts/time-registration-db-check.mjs';
+const originalTimeTest=fs.readFileSync(timeTestPath,'utf8')
+ .replace(/^ \/\/ BEGIN deterministic time QA clock\n[\s\S]*?^ \/\/ END deterministic time QA clock\n/m,'')
+ .replace(/^ \/\/ BEGIN explicit DST QA scenarios\n[\s\S]*?^ \/\/ END explicit DST QA scenarios\n/m,'').trim();
+assert.equal(originalTimeTest,git('show',`${base}:${timeTestPath}`),'All existing time-registration assertions must remain byte-identical');
 const forbidden = files.filter(
   (p) =>
     existing.has(p) &&
