@@ -8,6 +8,13 @@ eq(supplierDelta([a],[{...a,sku:'00999',name:'Ny servant'}]).map(g=>[g.sku,g.qua
 eq(supplierDelta([a],[{...a,fdv_url:'https://example.com/fdv.pdf'}]),[],'documentation changes do not duplicate order quantities');
 const docs=[{id:'pending',kind:'choice',group_id:'old',version:1,status:'published',created_at:'2026-10-21'}, {id:'accepted',kind:'choice',group_id:'new',version:1,status:'accepted',created_at:'2026-10-20'}];
 const view=agreementOverview(docs);eq(view.choice.id,'accepted');eq(view.history.map(d=>d.id),['pending']);eq(view.changes,[]);
+const expired={id:'expired',kind:'choice',group_id:'choice',version:2,status:'expired',created_at:'2026-10-22'};
+const expiredView=agreementOverview([expired]);
+eq(expiredView.choice?.id,'expired','last expired agreement must remain visible instead of a false empty state');
+eq(expiredView.history,[],'visible expired agreement must not also be repeated in history');
+eq(agreementOverview([expired,...docs]).choice.id,'accepted','an accepted agreement remains authoritative over an expired version');
+eq(agreementOverview([expired,{...expired,id:'draft',status:'draft',version:3,created_at:'2026-10-23'}]).choice.id,'draft','new active draft takes priority over expired history');
+eq(agreementOverview([expired,{...expired,id:'revoked',status:'revoked',version:3,created_at:'2026-10-23'}]).choice,null,'a newer withdrawn version must not resurrect older expired history');
 const changes=agreementOverview([{id:'new',group_id:'new-change',kind:'change',version:1,status:'draft',created_at:'2026-10-22',snapshot:{order_id:'order'}},{id:'old',group_id:'old-change',kind:'change',version:1,status:'handled',created_at:'2026-10-21',snapshot:{order_id:'order'}}]);
 eq(changes.changes.map(d=>d.id),['new'],'latest amendment per order is shown');eq(changes.history.map(d=>d.id),['old'],'earlier applied amendments remain in history');
 const document={kind:'change',version:2,snapshot:{order_number:'B-2',identity:{company:'QA',unit:'H0101',project:'QA hus',address:'Boligadresse'},supplier_order:{reference:'ORDRE-001',supplier:'QA Leverandør',address:'Riktig varemottak'},before_goods:[a,b],goods:[{...a,quantity:3}],delta_cents:-35000,reason:'QA tillegg og kredit'}};

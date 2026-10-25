@@ -24,7 +24,7 @@ export function agreementOverview(documents = []) {
   const ordered = [...documents].sort((a,b) => String(b.created_at).localeCompare(String(a.created_at)) || b.version-a.version);
   const live = d => !["revoked","superseded","declined","expired"].includes(d.status);
   const choices = ordered.filter(d => d.kind === "choice");
-  const choice = choices.find(d => d.status === "accepted") || choices.find(live) || null;
+  const choice = choices.find(d => d.status === "accepted") || choices.find(live) || (choices[0]?.status === "expired" ? choices[0] : null);
   const groups = new Set();
   const changes = ordered.filter(d => d.kind === "change" && live(d)).filter(d => {
     const key = d.snapshot?.order_id || d.snapshot?.order_number || d.group_id || d.id;

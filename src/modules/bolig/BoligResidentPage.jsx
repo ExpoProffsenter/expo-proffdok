@@ -80,6 +80,7 @@ export default function BoligResidentPage() {
       {doc.status === "published" && draft && <section className="bolig-resident-card">
         <h2>{confirming ? "Kontroller svaret ditt" : "Gi ditt svar"}</h2>
         <p>Se gjennom varer, antall og pris før du svarer. Svaret gjelder denne utgaven.</p>
+        <p className="bolig-resident-deadline"><strong>Svarfrist: {acceptanceDeadline(doc.expires_at)} (norsk tid).</strong> Etter fristen kan du ikke akseptere her. Kontakt prosjektleder.</p>
         {confirming ? <div>
           <p><strong>{draft.name}</strong> · {draft.decision === "accept" ? "Aksepterer" : "Avslår"} utgave {doc.version}</p>
           <p>{doc.kind === "change" ? "Pristillegg / fratrekk" : "Tilvalg og tilpasninger"}: <strong>{money(doc.kind === "change" ? doc.snapshot.delta_cents : doc.snapshot.total_cents)}</strong> inkl. mva.</p>
@@ -97,7 +98,6 @@ export default function BoligResidentPage() {
             <button type="submit">Kontroller svaret</button>
           </fieldset>
         </form>}
-        <p className="bolig-resident-deadline">Svarfrist: {acceptanceDeadline(doc.expires_at)} (norsk tid). Etter fristen kan du ikke akseptere her. Kontakt prosjektleder.</p>
       </section>}
       <footer>Avtalen lagres hos {doc.snapshot.identity.company}. Lenken gjelder bare denne avtalen.</footer>
     </>}

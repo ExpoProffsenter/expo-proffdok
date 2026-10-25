@@ -74,7 +74,8 @@ demo tilbake til main. Rutine-e-post forblir permanent stoppet.
 
 - Faktisk innboksmottak for de nye Bolig-utsendingene er ikke attestert.
   Ingen generell transportaktivering eller ekte leverandørordre som QA.
-- Excel-import av bygg/oppganger/etasjer/boliger er uttrykkelig lagt sist.
+- Excel-import av bygg/oppganger/etasjer/boliger er satt på vent av Kenneth
+  25. oktober. Videre arbeid prioriterer stabilitet og polering.
 - Valgfri booking/befaring krever avklart arbeidsflyt før implementering.
 - Reell AI-kontraktsanalyse er utsatt pga. Gateway 403. Full dekning av 150–250
   tett skrevne sider krever egen etappe; original/OCR/søk er allerede levert.

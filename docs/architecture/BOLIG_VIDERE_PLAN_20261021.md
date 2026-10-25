@@ -1,5 +1,13 @@
 # Boligprosjekter – arbeidsflate og videre produktkrav
 
+## Gjeldende prioritet – 25. oktober 2026
+
+Kenneth har satt Excel-import på vent. Videre arbeid gjelder stabilitet og
+polering av eksisterende funksjoner i Preview/Sandbox. Eldre «Excel neste/sist»
+er historikk og er ikke fullmakt til å starte importen nå. Ingen produksjonsmerge
+eller e-postaktivering. Se `docs/qa/BOLIG_AVTALEFRIST_UX_20261025.md` for siste
+avgrensede rettelse av utløpt avtale og tydeligere svarfrist.
+
 ## Redigerbart fakturaregister – 25. oktober 2026
 
 Kenneth har erstattet det tidligere ERP-lignende løpet med ett åpent register:

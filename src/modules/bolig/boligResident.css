@@ -29,7 +29,8 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 .bolig-resident-confirm input { flex:none; margin:2px 0 0; width:22px; height:22px; accent-color:#155c51; }
 .bolig-resident-actions { display:flex; flex-wrap:wrap; gap:10px; }
 .bolig-resident-actions button+button { background:white; color:#155c51; }
-.bolig-resident-card .bolig-resident-deadline { color:#60776e; font-size:13px; margin:22px 0 0; }
+.bolig-resident-card .bolig-resident-deadline { color:#234c40; background:#edf5ee; border:1px solid #9ebfb0; border-radius:10px; font-size:14px; line-height:1.6; padding:13px 15px; margin:18px 0; }
+.bolig-resident-deadline strong { display:block; margin-bottom:4px; }
 .bolig-resident-receipt { border:1px solid #9fceba; background:#e3f4e9; padding:25px; border-radius:17px; margin-bottom:22px; }
 .bolig-resident-receipt h2 { margin:0 0 12px; font-size:25px; }
 .bolig-resident-receipt p { line-height:1.6; }

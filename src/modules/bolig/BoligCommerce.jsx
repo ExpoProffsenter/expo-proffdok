@@ -175,8 +175,9 @@ export default function BoligCommerce({ context, root, unit }) {
           </fieldset>
         </form>
       </Dialog>}
-      <h4>Gjeldende boligavtale</h4>
-      {overview.choice ? row(overview.choice) : <p>Ingen boligavtale er klargjort ennå.</p>}
+      <h4>{overview.choice?.status === "expired" ? "Siste boligavtale · svarfrist utløpt" : "Gjeldende boligavtale"}</h4>
+      {overview.choice ? row(overview.choice) : <p>{data.documents.some(d => d.kind === "choice") ? "Ingen aktiv boligavtale. Tidligere utgaver finner du i Avtalehistorikk." : "Ingen boligavtale er klargjort ennå."}</p>}
+      {overview.choice?.status === "expired" && <p className="bolig-commerce-guidance">Svarfristen er utløpt. Beboeren må kontakte prosjektleder.{writable && " Åpne avtalen og velg «Lag ny utgave» hvis dere avtaler en ny frist."}</p>}
       {overview.choice?.status === "accepted" && <p className="bolig-commerce-guidance">Boligvalget er akseptert. Samle videre vare- og prisendringer i en ny endringsordre.</p>}
       <h4>Siste endringsgrunnlag · {overview.changes.length}</h4>
       <p>Gjør alle ønskede vareendringer i samme kladd. Gjennomgå samlet pris før du lager beboerlenken.</p>
