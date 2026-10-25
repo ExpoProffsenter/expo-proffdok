@@ -7,14 +7,19 @@
     "check:support": "node scripts/support-mail-check.mjs && node scripts/support-db-check.mjs && node scripts/support-browser-check.mjs && node scripts/support-layout-browser-check.mjs"
   },
   "dependencies": {
+    "@hyzyla/pdfium": "3.0.0",
+    "@supabase/supabase-js": "^2.45.0",
+    "@tesseract.js-data/eng": "1.0.0",
+    "@tesseract.js-data/nor": "1.0.0",
     "@vitejs/plugin-react": "latest",
-    "vite": "latest",
     "@zxing/browser": "0.2.1",
     "@zxing/library": "0.23.0",
+    "ai": "7.0.153",
+    "lucide-react": "latest",
     "react": "latest",
     "react-dom": "latest",
-    "lucide-react": "latest",
-    "@supabase/supabase-js": "^2.45.0"
+    "tesseract.js": "7.0.0",
+    "vite": "latest"
   },
   "devDependencies": {}
 }

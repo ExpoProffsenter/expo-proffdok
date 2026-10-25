@@ -12,6 +12,14 @@ const rpc=async(name,args=[])=>((await sql(`select public.${name}(${args.map(v=>
 const actor=async u=>db.exec(`reset role;select set_config('request.jwt.claim.sub',${q(u)},false);set role authenticated;`);
 const reject=async(fn,code)=>{await assert.rejects(fn,e=>e.code===code,code);checks++;};
 try{
+ // BEGIN deterministic time QA clock
+ // This disposable PGlite instance must not inherit the CI runner's DST hour.
+ const qaNow=process.env.TIME_QA_NOW||'2026-11-18T12:00:00.000Z';
+ assert.equal(new Date(qaNow).toISOString(),qaNow,'QA clock must be a canonical UTC instant');
+ await db.query("select set_config('qa.time_now',$1,false)",[qaNow]);
+ await db.exec(`create or replace function pg_catalog.now() returns timestamptz language sql stable as $$select current_setting('qa.time_now')::timestamptz$$;`);
+ eq((await sql("select to_char(now() at time zone 'UTC','YYYY-MM-DD\"T\"HH24:MI:SS.MS\"Z\"') v"))[0].v,qaNow,'server fixture uses the explicit QA instant');
+ // END deterministic time QA clock
  await db.exec(await fs.readFile('scripts/fixtures/hr-restore-platform.sql','utf8'));
  await db.exec(`alter table auth.users add raw_user_meta_data jsonb;alter table public.sales_company_scopes add normalized_name text,add display_name text;alter table storage.buckets add allowed_mime_types text[];alter table storage.objects add metadata jsonb;alter table storage.objects enable row level security;grant select,insert,update,delete on storage.objects to authenticated;
  create table public.user_active_company_scope(user_id uuid primary key,company_id uuid);create or replace function public.current_active_company_scope_id() returns uuid language sql as $$select company_id from public.user_active_company_scope where user_id=auth.uid()$$;
@@ -44,6 +52,19 @@ try{
  const week='2026-10-12',work=settings.categories[0],internal=settings.categories[1],expense=settings.categories.at(-1);
  let state=await rpc('time_sheet_get',[company,week,null]);eq(state.employee.id,employee.id);eq(state.sheet,null);eq(state.settings.employee_numbers,undefined,'personal settings exclude employee numbers');
  const row={id:id(20),on:week,category_id:work.id,project_id:project,mode:'clock',quantity:'',start:'07:00',end:'15:30',pause:30,next_day:false,note:'QA arbeid',files:[]};
+ // BEGIN explicit DST QA scenarios
+ // Keep the real server's rejection of nonexistent/ambiguous civil times.
+ await db.exec('reset role;begin;');await actor(self);
+ for(const [dstWeek,on] of [['2026-03-23','2026-03-29'],['2026-10-19','2026-10-25']]){
+  const dstRow={...row,on,start:'02:15',end:'02:45',pause:0};
+  await db.exec('savepoint dst_negative');
+  await reject(()=>rpc('time_sheet_command',[company,dstWeek,employee.id,0,crypto.randomUUID(),'save',[dstRow],false,'']),'22023');
+  await db.exec('rollback to savepoint dst_negative;release savepoint dst_negative');
+  const measured=await rpc('time_sheet_command',[company,dstWeek,employee.id,0,crypto.randomUUID(),'save',[{...dstRow,mode:'quantity',quantity:'0.50'}],false,'']);
+  eq(measured.sheet.entries[0].quantity,0.5,'explicit measured hours remain available on the DST date');
+ }
+ await db.exec('reset role;rollback;');await actor(self);
+ // END explicit DST QA scenarios
  const command=(action,rows=[row],revision=state.sheet?.revision||0,who=employee.id,op=crypto.randomUUID(),empty=false,note='')=>rpc('time_sheet_command',[company,week,who,revision,op,action,rows,empty,note]);
  // External ERP references require no project row, and preserve exact text in review/history/export.
  await db.exec('reset role;begin;');await actor(self);

@@ -1,9 +1,11 @@
-import { useEffect, useId, useRef } from 'react';
+import { useContext, useEffect, useId, useRef } from 'react';
+import {DialogPortalTarget} from '../ui/DialogPortalTarget.js';
 import { createPortal } from 'react-dom';
 import './deviationDialog.css';
 
 // React owns the complete dialog. Legacy DOM adapters must not move its fields.
 export default function DeviationDialog({ title, context, children, onClose, busy = false, closeLabel = 'Lukk avviksdialog' }) {
+  const portalTarget = useContext(DialogPortalTarget);
   const titleId = useId();
   const panel = useRef(null);
   const close = useRef(onClose);
@@ -43,7 +45,7 @@ export default function DeviationDialog({ title, context, children, onClose, bus
       </header>
       <div className="deviation-dialog-body">{children}</div>
     </section>
-  </div>, document.body);
+  </div>, portalTarget || document.body);
 }
 
 export function DeviationEditorSurface({ modal, editorRef, children, onClose, busy, title = 'Registrer avvik', context = 'KS/HMS · Ansvar og oppfølging', ...props }) {

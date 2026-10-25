@@ -5,6 +5,7 @@ import {MANAGED_ACCESS_EVENT, MODULE_ACCESS_EVENT, MODULE_CATALOG, publishManage
 import {WORK_PROFILE_EVENT} from '../access/workProfileClient.js';
 import {companyAdminRpc, sendCompanyInvitation} from './companyAdminClient.js';
 import './CompanyAdminPanel.css';
+import BoligAccessPanel from '../bolig/BoligAccessPanel.jsx';
 
 function defaultInviteAccess(options={}) {
   const allowed=options.allowed_modules||[];
@@ -112,6 +113,7 @@ export default function CompanyAdminPanel({authUser}) {
       <button type="button" className="secondary" disabled={loading||busy} onClick={()=>load()}>{loading?'Henter firmaoversikt …':'Oppdater firmaoversikt'}</button>
     </div>
     {error&&<p role="alert">{error}</p>}{message&&<p role="status">{message}</p>}
+    {current&&<BoligAccessPanel userId={authUser.id} mode="company" expectedCompanyId={current.company_id}/>}
     {current&&<fieldset disabled={loading||busy} key={current.company_id}>
       <details className="company-invite-disclosure"><summary className="ux-readable-summary">Inviter en ansatt · velg rolle og tilganger</summary><form className="item" onSubmit={e=>{
         e.preventDefault();const wanted=email.trim();

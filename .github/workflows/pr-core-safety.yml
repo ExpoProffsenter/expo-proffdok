@@ -207,3 +207,63 @@ jobs:
           export PLAYWRIGHT_MODULE="$RUNNER_TEMP/company-admin-browser-qa/node_modules/playwright/index.mjs"
           node scripts/flexible-checklist-fields-db-check.mjs
           node scripts/flexible-checklist-fields-browser-check.mjs
+
+      - name: Verify shared Boligprosjekter structure and access boundaries
+        run: |
+          node scripts/bolig-core-boundary-check.mjs "origin/${{ github.base_ref }}"
+          export HR_PGLITE_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/@electric-sql/pglite/dist/index.js"
+          export KSHMS_JSDOM_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/jsdom/lib/api.js"
+          node scripts/bolig-release-origins-check.mjs
+          node scripts/bolig-order-email-check.mjs
+          node scripts/bolig-protocol-email-check.mjs
+          node scripts/bolig-progress-email-check.mjs
+          node scripts/bolig-progress-planning-check.mjs
+          export KSHMS_JSPDF_NODE_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/jspdf/dist/jspdf.node.min.js"
+          node scripts/bolig-fdv-pdf-check.mjs
+          node scripts/bolig-documentation-export-check.mjs
+          node scripts/bolig-resident-notice-pdf-check.mjs
+          node scripts/bolig-foundation-db-check.mjs
+          node scripts/bolig-hr-access-db-check.mjs
+          BOLIG_RELEASE_BASELINE=docs/qa/evidence/bolig-release-baseline-20261025.json node scripts/bolig-hr-access-db-check.mjs
+          node scripts/bolig-release-preflight-check.mjs "origin/${{ github.base_ref }}"
+          node scripts/bolig-release-migrations-check.mjs "origin/${{ github.base_ref }}"
+          node scripts/bolig-contract-files-check.mjs
+          node scripts/bolig-contract-review-check.mjs
+          node scripts/bolig-contract-index-check.mjs
+          node scripts/bolig-contract-finance-check.mjs
+          node scripts/bolig-foundation-react-check.mjs
+          node scripts/bolig-catalog-react-check.mjs
+          node scripts/bolig-overview-react-check.mjs
+          export PLAYWRIGHT_MODULE="$RUNNER_TEMP/company-admin-browser-qa/node_modules/playwright/index.mjs"
+          node scripts/bolig-shared-board-browser-check.mjs "origin/${{ github.base_ref }}"
+          node scripts/bolig-builder-browser-check.mjs
+          node scripts/bolig-overview-browser-check.mjs
+          node scripts/bolig-rooms-browser-check.mjs
+          node scripts/bolig-room-content-browser-check.mjs
+          node scripts/bolig-package-choices-browser-check.mjs
+          node scripts/bolig-catalog-navigation-browser-check.mjs
+          node scripts/bolig-images-browser-check.mjs
+          node scripts/bolig-visuals-browser-check.mjs
+          node scripts/bolig-attendance-browser-check.mjs
+          node scripts/bolig-self-attendance-browser-check.mjs
+          node scripts/bolig-integration-browser-check.mjs
+          BOLIG_CONTRACT_REVIEW_QA=1 BOLIG_CONTRACT_INDEX_QA=1 BOLIG_CONTRACT_FINANCE_QA=1 node scripts/bolig-contract-browser-check.mjs
+          node scripts/bolig-sections-browser-check.mjs
+          node scripts/bolig-completion-browser-check.mjs
+          node scripts/bolig-handover-browser-check.mjs
+          node scripts/bolig-followup-browser-check.mjs
+          node scripts/bolig-commerce-browser-check.mjs
+          node scripts/bolig-portal-browser-check.mjs
+          node scripts/bolig-progress-browser-check.mjs
+          node scripts/bolig-progress-planning-browser-check.mjs
+          node scripts/bolig-coordination-browser-check.mjs
+          node scripts/bolig-amendment-export-check.mjs
+          node scripts/bolig-quality-browser-check.mjs
+          node scripts/bolig-customization-browser-check.mjs
+          node scripts/bolig-delivery-browser-check.mjs
+          node scripts/bolig-partner-email-check.mjs
+          node scripts/bolig-resident-email-check.mjs
+          node scripts/bolig-partner-files-check.mjs
+          node scripts/bolig-partner-browser-check.mjs
+          node scripts/bolig-partner-quality-browser-check.mjs
+          node scripts/bolig-preparation-browser-check.mjs

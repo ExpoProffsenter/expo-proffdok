@@ -1,0 +1,16 @@
+[
+  {
+    "version": "20261021145842",
+    "name": "bolig_room_fk_indexes",
+    "statements": [
+      "create index bolig_room_states_unit_root on bolig_private.room_states(unit_id,root_id); create index bolig_rooms_unit_root on bolig_private.rooms(unit_id,root_id); create index bolig_room_versions_unit_root on bolig_private.room_versions(unit_id,root_id);"
+    ]
+  },
+  {
+    "version": "20261021205112",
+    "name": "bolig_delivery_fk_indexes",
+    "statements": [
+      "create index bolig_delivery_events_unit on bolig_private.delivery_events(unit_id); create index bolig_order_mail_unit on bolig_private.order_mail_attempts(unit_id);"
+    ]
+  }
+]

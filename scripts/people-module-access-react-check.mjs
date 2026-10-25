@@ -60,6 +60,11 @@ try{
   user={...user,firmaadmin:false};late={};await act(async()=>w.dispatchEvent(new w.Event('focus')));assert(!w.document.querySelector('input'),'fresh access read clears old controls');
   const old=late.resolve;late=null;await render('access',{companyId:'new',userId:'other'});assert(w.document.querySelector('[role=alert]'),'mismatched response refused');await act(async()=>old({data:user}));assert(!w.document.querySelector('input'),'late old response refused');
   await render('access',{companyId:'c'});assert(input('HR').checked);await act(async()=>input('HR').click());await act(async()=>button('Lagre firmaets moduler').click());assert.equal(company.hr,false);assert(w.document.body.textContent.includes('Ikke aktivert på firmaet.'));assert.equal(writes.at(-1).name,'people_modules_company_set');
+  company={...company,bolig_hr_included:true};await act(async()=>w.dispatchEvent(new w.Event('focus')));
+  assert(w.document.querySelector('[data-bolig-hr-included]')?.textContent.includes('separat HR-tilgang'),'company bundle is clearly separate from raw checkbox');assert(!input('HR').checked,'bundle does not change independent contract checkbox');
+  user={...user,company,hr:false,bolig_hr_included:true};await render('access',{companyId:'c',userId:'u'});
+  assert(w.document.querySelector('[data-bolig-hr-included]')?.textContent.includes('for denne brukeren'),'user bundle source displayed');assert(!input('HR').checked,'included access does not fabricate independent grant');
+  user={...user,bolig_hr_included:false};await act(async()=>w.dispatchEvent(new w.Event('focus')));assert(!w.document.querySelector('[data-bolig-hr-included]'),'revoked bundle note disappears after fresh read');
   await act(async()=>w.__unmount());assert.equal(w.localStorage.length,0);assert.equal(w.sessionStorage.length,0);
   console.log('People access / complete Help React PASS: every root icon, workflow order, effective generic/module/role and supplemental gates, old actor rejection, company activation, atomic scoped user save, inherited firmaadmin, unavailable license, failed CAS, fresh clearing and late response refusal. Synthetic transport.');
  }finally{dom.window.close();}

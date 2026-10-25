@@ -5,6 +5,7 @@ import SupportWorkspace from '../support/SupportWorkspace.jsx';
 import SupportSummary from '../support/SupportSummary.jsx';
 import SystemAdminSalesSupport from './SystemAdminSalesSupport.jsx';
 import './systemAdminWorkspace.css';
+import BoligFirmAccessPanel from '../bolig/BoligFirmAccessPanel.jsx';
 const groups=[
  {label:'Oppfølging',icon:BriefcaseBusiness,items:[['overview','Oversikt',LayoutDashboard],['support','Supportsaker',MessagesSquare],['projects','Firmaer og prosjekter',Building2]]},
  {label:'Forvaltning',icon:Layers,items:[['users','Brukere og roller',UsersRound],['products','Produktmaster',Package],['store','Internt vareregister',Package]]},
@@ -28,6 +29,7 @@ export default function SystemAdminWorkspace({children,supabaseClient,authUser,a
    </>:id==='support'?<SupportWorkspace supabaseClient={supabaseClient} authUser={authUser} admin standalone/>:<>
     {!['news','broadcast','store'].includes(id)&&<div className="pd-admin-panel-heading"><h3>{label}</h3><p>{description[id]}</p></div>}
     {id==='store'&&<div data-systemadmin-store-catalog-slot/>}
+    {id==='projects'&&<BoligFirmAccessPanel userId={authUser?.id}/>}
     {original.filter(child=>child.props['data-admin-area']===id)}
     {id==='projects'&&<SystemAdminSalesSupport supabaseClient={supabaseClient} authUser={authUser}/>}
     {['news','broadcast'].includes(id)&&<AppNewsAdmin supabaseClient={supabaseClient} authUser={authUser} area={id}/>}
