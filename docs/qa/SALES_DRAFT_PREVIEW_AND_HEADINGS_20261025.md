@@ -33,3 +33,5 @@ Ingen melding er sendt til avsenderen av feilrapporten. Ingen kundetilbud er pub
 4. På en allerede publisert egnet testversjon: **Last ned tilbud PDF v…**. Kontroller de to mellomtitlene mot Rørleggerarbeider/Snekkerarbeider. En gammel nedlastet PDF endres ikke. Ikke publiser eller send et nytt kundetilbud bare for denne prøven.
 
 Preview/CI-status og eventuell senere Production/demo-verifisering dokumenteres i PR-en. Denne filen dokumenterer kode og utført lokal QA, ikke en gjennomført produksjonssetting.
+
+Kenneth ga TEST OK 25.10.2026 på den publiserte appkoden i 8f83a476. Etterpå er bare CI-argumentene for Bolig-release-repetisjonen korrigert: begge uendrede kontrollene bruker nå den frosne før-release-SHA-en fra manifestet, 36462e2b05ecd8e53dcdd7818c4b791b7c7cb2ed. Mot dagens main ble den allerede mergede SQL-diffen tom og kontrollen feilet. Alle 72 kildehashes, installasjons-, bevarings- og rollback-kontroller kjøres fremdeles. Appkoden fra TEST OK er uendret.
