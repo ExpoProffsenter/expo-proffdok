@@ -1,5 +1,7 @@
 import DraftForm from "./BoligDraftForm.jsx";
 import BoligHandoverReview from "./BoligHandoverReview.jsx";
+import { isHandedOver, internalControlStatus, completionOrder, nextOpenUnit } from "./boligCompletionView.js";
+import "./boligCompletionFlow.css";
 import BoligQuality from "./BoligQuality.jsx";
 import { QUALITY_EVENT } from "./boligQualityClient.js";
 import { COMMERCE_EVENT } from "./boligCommerceClient.js";
@@ -395,6 +397,8 @@ export default function BoligCompletion({
     .filter((r) => r.parent_id === scopeId)
     .sort((a, b) => a.title.localeCompare(b.title, "nb", { numeric: true }));
   const ownMissing = row.items.filter((i) => !i.valid).length;
+  const controlStatus = internalControlStatus(row);
+  const nextUnit = row.kind === "unit" ? nextOpenUnit(data.rows, row.scope_id) : null;
   return (
     <section
       className="bolig-completion"
@@ -438,6 +442,10 @@ export default function BoligCompletion({
         scopeId={scopeId}
         onRecorded={load}
       />
+      {verified && isHandedOver(row) && nextUnit && onScope && <div className="bolig-completion-next-unit">
+        <div><strong>Denne boligen er overtatt</strong><p>Åpne forhold beholdes til oppfølging. Fortsett med neste bolig uten registrert overtakelse.</p></div>
+        <button type="button" disabled={busy} onClick={() => onScope(nextUnit.scope_id)}>Neste bolig · {nextUnit.title}{nextUnit.parent_id !== row.parent_id ? ` · ${data.rows.find(r => r.scope_id === nextUnit.parent_id)?.title || "Neste bygg"}` : ""}</button>
+      </div>}
       <h3>Intern sluttkontroll</h3>
       <ol
         className="bolig-completion-steps"
@@ -474,14 +482,13 @@ export default function BoligCompletion({
               "handed_over_with_rest",
             ],
           ],
-          ["Overtatt", ["handed_over", "handed_over_with_rest"]],
         ].map(([name, states], i) => (
           <li
             key={name}
-            className={verified && states.includes(row.status) ? "is-done" : ""}
+            className={verified && states.includes(controlStatus) ? "is-done" : ""}
           >
             <span>
-              {verified && states.includes(row.status) ? (
+              {verified && states.includes(controlStatus) ? (
                 <CheckCircle2 size={18} />
               ) : (
                 i + 1
@@ -910,15 +917,23 @@ export default function BoligCompletion({
 }
 function CompletionChildren({ rows, onScope }) {
   const [search, setSearch] = useState(""),
-    [limit, setLimit] = useState(30);
-  const filtered = rows.filter((r) =>
-    r.title.toLowerCase().includes(search.toLowerCase().trim()),
+    [limit, setLimit] = useState(30), [filter, setFilter] = useState("all");
+  const units = rows[0]?.kind === "unit";
+  const over = rows.filter(isHandedOver).length;
+  const filtered = completionOrder(rows).filter((r) =>
+    r.title.toLowerCase().includes(search.toLowerCase().trim()) && (!units || filter === "all" || (filter === "over") === isHandedOver(r)),
   );
   return (
     <div className="bolig-completion-children">
       <h3>
         {rows[0]?.kind === "unit" ? "Boliger i bygget" : "Bygg i prosjektet"}
       </h3>
+      {units && <>
+        <p className="bolig-completion-list-summary"><strong>{over} av {rows.length} boliger overtatt</strong> · {rows.length - over} gjenstår. Restpunkter følges opp også etter overtakelse.</p>
+        <div className="bolig-completion-filters" role="group" aria-label="Vis boliger i ferdigstillingen">
+          {[["all", "Alle boliger", rows.length], ["open", "Gjenstår", rows.length - over], ["over", "Overtatt", over]].map(([key, label, count]) => <button type="button" key={key} aria-pressed={filter === key} onClick={() => { setFilter(key); setLimit(30); }}>{label} · {count}</button>)}
+        </div>
+      </>}
       {rows.length > 10 && (
         <label>
           Søk i ferdigstilling
@@ -950,6 +965,7 @@ function CompletionChildren({ rows, onScope }) {
           </li>
         ))}
       </ul>
+      {!filtered.length && <p>Ingen boliger passer dette utvalget.</p>}
       {filtered.length > limit && (
         <button type="button" onClick={() => setLimit(limit + 30)}>
           Vis 30 flere
@@ -1015,7 +1031,8 @@ export function BoligCompletionOverview({
   ]);
   const project = data?.rows.find((r) => r.scope_id === root.id);
   const units = data?.rows.filter((r) => r.kind === "unit") || [];
-  const ready = units.filter((r) =>
+  const overtatt = units.filter(isHandedOver).length;
+  const ready = units.filter((r) => !isHandedOver(r) &&
     [
       "ready",
       "ready_with_rest",
@@ -1028,11 +1045,11 @@ export function BoligCompletionOverview({
       <div>
         <FileCheck2 size={23} />
         <span>
-          <strong>Dokumentert ferdigstilling</strong>
+          <strong>Løpende overtakelse</strong>
           <small>
             {error ||
               (project
-                ? `${ready} av ${units.length} boliger klare · Prosjekt: ${labels[project.status]}`
+                ? `${overtatt} av ${units.length} boliger overtatt · ${ready} klare for overtakelse`
                 : "Henter kontrollstatus …")}
           </small>
         </span>

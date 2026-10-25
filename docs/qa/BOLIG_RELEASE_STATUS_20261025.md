@@ -4,6 +4,19 @@
 og Sandbox. Ingen produksjonsmerge, produksjonsmigrasjon eller e-postaktivering.
 PR #278 skal fortsatt være OPEN DRAFT. Ingen samlet TEST OK er gitt.
 
+## Siste ferdigstillingspakke: løpende overtakelse
+
+Gjeldende produktregel, fiktiv 12-boligers pilot og konkret brukerprøve står i
+`BOLIG_LOPENDE_OVERTAKELSE_20261025.md`. Kenneth valgte «Overtatt, med videre
+oppfølging». Direkte registrering, filtre og neste bolig gir løpende avslutning;
+restpunkter forblir åpne og fristene hentes fra eksisterende fremdriftsaktiviteter.
+Intern sluttkontroll blir ikke godkjent av at faktisk overtakelse registreres.
+
+Core-boundary styrkes til 55 assertions med bytekontroll av fire ekstra felles
+innganger mot faktisk main. Tidligere CI705 på 4885fd9 er fullført grønn; fersk
+CI og Preview-status på den nye pakken avleses i PR278. Ingen gammel grønn
+kjøring attesterer ny kode. Ingen produksjonsmerge eller nye migrasjoner her.
+
 ## Fakturaregisteret
 
 Gjeldende produktkontrakt og kort brukerprøve finnes i

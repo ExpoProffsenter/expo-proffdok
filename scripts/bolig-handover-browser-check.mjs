@@ -17,8 +17,8 @@ import React from '${cwd}/node_modules/react/index.js';import {createRoot} from 
 import Review from '${cwd}/src/modules/bolig/BoligHandoverReview.jsx';import Guide from '${cwd}/src/modules/help/BoligStartGuide.jsx';import '${cwd}/src/style.css';import '${cwd}/src/modules/bolig/bolig.css';
 const ctx={user_id:'qa',company_id:'firm',role:'manager',enabled:true},root={id:'root',title:'Eksempelprosjekt'};
 let data={context:ctx,root_id:'root',scope_id:'unit',revision:0,basis:'b0',cases:[{id:'control',scope_title:'H0101',category:'Kontroll',title:'Påkrevd sjekkliste er ikke fullført',critical:false},{id:'critical',scope_title:'H0101',category:'Avvik',title:'Kritisk avvik: gjennomføring må vurderes',critical:true},{id:'message',scope_title:'H0101',category:'Beboermelding',title:'Ubehandlet beboermelding',critical:false}],assessment:null,record:null,members:[{id:'qa',name:'Eksempel – prosjektleder'}],history:[]};
-window.__calls=[];window.__fail=false;window.__hold=false;window.__snapshot=()=>structuredClone(data);window.__change=()=>{data.basis+='x';data.cases.push({id:'new'+data.basis,scope_title:'H0102',category:'Aktivitet',title:'Ny uferdig aktivitet',critical:false});window.dispatchEvent(new Event('focus'));};
-window.__client={rpc:async(name,args)=>{window.__calls.push(structuredClone(args));if(window.__hold)await new Promise(r=>window.__release=r);if(args.p_action==='get')return {data:structuredClone({...data,context:{...ctx,company_id:args.p_company_id}})};const p=args.p_payload;if(window.__fail){window.__fail=false;return {error:{message:'Forbindelsen brutt – prøv samme lagring igjen'}};}
+window.__freshRole=(role)=>{ctx.role=role;window.dispatchEvent(new Event('focus'));};window.__calls=[];window.__fail=false;window.__hold=false;window.__snapshot=()=>structuredClone(data);window.__change=()=>{data.basis+='x';data.cases.push({id:'new'+data.basis,scope_title:'H0102',category:'Aktivitet',title:'Ny uferdig aktivitet',critical:false});window.dispatchEvent(new Event('focus'));};
+window.__client={rpc:async(name,args)=>{window.__calls.push(structuredClone(args));if(name==='bolig_handover_followup')return {data:{context:{...ctx,company_id:args.p_company_id},root_id:'root',scope_id:'unit',links:[{case_id:'control',task_id:'followup'}],tasks:[{id:'followup',owner_id:'qa',owner_name:'Eksempel – prosjektleder',planned_end:'2026-10-30'}]}};if(window.__hold)await new Promise(r=>window.__release=r);if(args.p_action==='get')return {data:structuredClone({...data,context:{...ctx,company_id:args.p_company_id}})};const p=args.p_payload;if(window.__fail){window.__fail=false;return {error:{message:'Forbindelsen brutt – prøv samme lagring igjen'}};}
 if(p.basis!==data.basis||args.p_revision!==data.revision)return {error:{code:'PT409',message:'Åpne forhold er endret. Kladden beholdes.'}};
 if(p.decisions.some(d=>!d.decision||!d.reason||!d.owner_id)||(p.decisions.find(d=>d.id==='critical') && p.decisions.find(d=>d.id==='critical').critical_confirmed!==true))return {error:{message:'Vurder alle forhold, inkludert kritisk bekreftelse.'}};
 if(args.p_action==='record'&&p.decisions.some(d=>d.decision==='block'))return {error:{code:'PT409',message:'Et forhold er vurdert som til hinder for overtakelse.'}};
@@ -109,14 +109,19 @@ try {
   await page.goto("http://127.0.0.1:" + server.address().port);
   const button = (name) => page.getByRole("button", { name, exact: true });
   await button("Vurder åpne forhold og overtakelse").waitFor();
+  await button('Registrer overtakelse').click();
+  await page.getByLabel('Referanse til gjennomført overtakelsesprotokoll').waitFor();
+  eq(await page.getByLabel('Hva vil du lagre?').inputValue(),'record','direct handover action opens actual registration without an intermediate assessment save');
+  eq(await page.evaluate(()=>window.__calls.filter(c=>c.p_action!=='get').length),0,'opening registration changes no status');
+  await button('Lukk prosjektleders vurdering av overtakelse').click();
   eq(
     await page.getByText("3 åpne forhold", { exact: true }).count(),
     1,
     "Unified case count",
   );
+  await page.locator(".bolig-handover-list > summary").click();
   if (process.env.BOLIG_HANDOVER_QA) {
     fs.mkdirSync(process.env.BOLIG_HANDOVER_QA, { recursive: true });
-    await page.locator(".bolig-handover-list > summary").click();
     await page
       .getByRole("region", { name: "Overtakelse og åpne forhold" })
       .screenshot({
@@ -237,6 +242,9 @@ try {
     .getByText("Overtakelse registrert", { exact: false })
     .first()
     .waitFor();
+  await page.getByText("Eksempel – prosjektleder · Frist 30.10.2026", {exact:true}).waitFor({state:"attached"});
+  eq(await button("Se ansvarlig og frist").count(),1,"Recorded handover immediately loads the actual linked activity deadline");
+  eq(await page.getByText("Oppfølgingsfrist mangler",{exact:true}).count(),2,"Unlinked cases show missing follow-up deadlines without inventing dates");
   await page.getByText("Historikk for vurdering og overtakelse · 3",{exact:true}).click();
   await page.getByRole("button",{name:/Overtakelse registrert \/ rettet/}).click();
   const historic=page.getByRole("dialog",{name:"Tidligere vurdering av overtakelse",exact:true});
@@ -352,6 +360,11 @@ try {
     );
     await button("Lukk prosjektleders vurdering av overtakelse").click();
   }
+  await page.evaluate(() => window.__freshRole("reader"));
+  await button("Vurder oppfølging / rett registrering").waitFor({state:"hidden"});
+  eq(await page.getByRole("dialog",{name:"Prosjektleders vurdering av overtakelse",exact:true}).count(),0,"Fresh role downgrade hides editing even while the outer context still says manager");
+  await page.evaluate(() => window.__freshRole("manager"));
+  await button("Vurder oppfølging / rett registrering").waitFor();
   await page.evaluate(() => {
     window.__hold = true;
     window.__show("other");

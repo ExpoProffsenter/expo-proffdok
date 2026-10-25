@@ -81,6 +81,39 @@ for(const [name,entry] of Object.entries(baseLock.packages||{}))if(name&&entry.v
 // Explicitly requested Min side integration: removing this isolated card must
 // reproduce main byte for byte. No HR, time, navigation or profile behavior changes.
 const personalPath = "src/modules/personal/PersonalPage.jsx";
+let sharedIntegrationChecks = 0;
+// Reconstruct actual main by removing only the reviewed Bolig integration.
+// Every other byte in these shared entry points must remain unchanged.
+for (const [path, edits] of [
+ ["src/main.jsx", [
+  ["import WorkspaceViewMode from './modules/app/WorkspaceViewMode.jsx';\nimport { useBoligContext } from './modules/bolig/boligAccess.js';\nconst BoligEntry = React.lazy(() => import('./modules/bolig/BoligEntry.jsx'));\n", ""],
+  ["    const { context: boligContext } = useBoligContext(authUser?.id);\n", ""],
+  ["      canUseBolig: Boolean(boligContext?.enabled && boligContext.user_id === authUser?.id),\n", ""],
+  ['"data-expo-app-shell": "true", ', ""],
+  [',\n          (0, import_jsx_runtime.jsx)(WorkspaceViewMode, {}, authUser?.id)', ""],
+  ['        authUser?.id && !hasActiveProjectWorkspace && !mobileCreatingProject && !isProjectSupportReadOnly && tab === "bolig" && (0, import_jsx_runtime.jsx)(React.Suspense, { fallback: "Henter Boligprosjekter …", children: (0, import_jsx_runtime.jsx)(BoligEntry, { userId: authUser.id, onOpenProject: openProjectById, onExit: () => goToTab("prosjekt") }) }),\n', ""],
+ ]],
+ ["src/modules/app/SystemAdminWorkspace.jsx", [
+  ["import BoligFirmAccessPanel from '../bolig/BoligFirmAccessPanel.jsx';\n", ""],
+  ["    {id==='projects'&&<BoligFirmAccessPanel userId={authUser?.id}/>}\n", ""],
+ ]],
+ ["src/modules/company/CompanyAdminPanel.jsx", [
+  ["import BoligAccessPanel from '../bolig/BoligAccessPanel.jsx';\n", ""],
+  ['    {current&&<BoligAccessPanel userId={authUser.id} mode="company" expectedCompanyId={current.company_id}/>}\n', ""],
+ ]],
+ ["src/modules/project/projectNavigationTabs.mjs", [
+  ["  canUseBolig = false,\n", ""],
+  ['    ...(canUseBolig ? [["bolig", "Boligprosjekter"]] : []),\n', ""],
+ ]],
+]) {
+ let current = fs.readFileSync(path, "utf8");
+ for (const [anchor, replacement] of edits) {
+  assert.equal(current.split(anchor).length, 2, `Exactly one reviewed Bolig anchor in ${path}`);
+  current = current.replace(anchor, replacement);
+ }
+ assert.equal(current.trim(), git("show", `${base}:${path}`), `Unrelated shared behavior changed in ${path}`);
+ sharedIntegrationChecks++;
+}
 const personalBase = git("show", `${base}:${personalPath}`);
 const personalCurrent = fs.readFileSync(personalPath,"utf8").trim()
  .replace("const BoligMyTasks=React.lazy(()=>import('../bolig/BoligMyTasks.jsx'));\n","")
@@ -132,7 +165,7 @@ assert.equal(
 const baseline = await import(
   `data:text/javascript;base64,${Buffer.from(before).toString("base64")}`
 );
-let checks = 3;
+let checks = 3 + sharedIntegrationChecks;
 for (const companyName of [
   "QA Firma",
   "Expo Proffsenter",

@@ -5,6 +5,7 @@ import path from "node:path";
 import http from "node:http";
 import { build } from "vite";
 import react from "@vitejs/plugin-react";
+import { internalControlStatus, completionOrder, nextOpenUnit } from "../src/modules/bolig/boligCompletionView.js";
 const { chromium } = await import(
   process.env.PLAYWRIGHT_MODULE || "playwright"
 );
@@ -19,9 +20,10 @@ import '${cwd}/src/style.css';import '${cwd}/src/modules/bolig/bolig.css';
 const ctx={user_id:'qa',company_id:'firm',role:'manager',enabled:true},root={id:'root',title:'QA Prosjekt'};
 const initial=()=>({scope_id:'unit',kind:'unit',parent_id:'block',title:'H0101 · QA kontrollgate',revision:0,basis:'basis0',source_basis:'source0',source:{issues:[]},status:'not_started',items:[],issues:['Avklar kontrollene'],done:0,total:0,owner_id:'qa',owner_name:'QA Leder',approval:null,handover:null});
 let row=initial(),history=[],managed={revision:0,basis:"review0",cases:[],assessment:null,record:null,history:[]};window.__reset=()=>{row=initial();row.restpoints=[{scope_id:'unit',source:'QA Kontroll',title:'Mindre justering',comment:'Rosett justeres'}];row.warnings=['Valgfri liste er under arbeid'];row.source.evidence={checks:2,required_checks:1,completed_required:1,critical:0,minor:1,documents:3,photos:2,fdv:4,fdv_missing:1};history=[];managed={revision:0,basis:'review0',cases:[],assessment:null,record:null,history:[]};};
+window.__externalHandover=()=>{row=initial();row.status='handed_over_with_rest';row.control_status='not_started';row.manager_handover=true;managed.record={date:'2026-10-23',reference:'QA ekstern faktisk overtakelse',by_name:'QA Leder'};row.handover=managed.record;window.__asParent=false;window.__withSiblings=true;window.dispatchEvent(new Event('focus'));};window.__scopes=[];
 window.__reject=false;window.__foreign=false;window.__calls=[];window.__hold=false;
-const state=()=>({context:ctx,root_id:'root',scope_id:'unit',rows:[{...structuredClone(row),kind:window.__asParent?'block':'unit'},...(window.__asParent?[{scope_id:'child2',parent_id:'unit',kind:'unit',title:'H0102',status:'not_started',issues:['Avklar kontrollene']},{scope_id:'child1',parent_id:'unit',kind:'unit',title:'H0101',status:'ready',issues:[]}]:[])],history,members:[{id:'qa',name:'QA Leder'}],rooms:[{id:'bath',name:'Bad 1'}]});
-window.__client={rpc:async(name,args)=>{window.__calls.push({name,args});if(window.__hold)await new Promise(r=>window.__release=r);if(window.__foreign)return {data:{...state(),context:{...ctx,company_id:'wrong'}}};if(name==='bolig_handover_review'){if(args.p_action==='record'){managed.revision++;managed.record={reference:args.p_payload.reference,date:args.p_payload.date,by_name:'QA Leder',at:'2026-10-23T10:00:00Z'};managed.assessment={basis:managed.basis,by_name:'QA Leder',decisions:[]};managed.history.unshift({revision:managed.revision,actor_name:'QA Leder',created_at:'2026-10-23T10:00:00Z',action:'record',snapshot:structuredClone(managed)});row.handover=managed.record;row.status='handed_over';row.manager_handover=true;}return {data:{context:ctx,root_id:'root',scope_id:'unit',...structuredClone(managed),members:[{id:'qa',name:'QA Leder'}]}};}if(args.p_action==='get')return {data:state()};if(window.__reject)return {error:{code:'PT409',message:'QA: Grunnlaget er endret. Kladden er beholdt.'}};
+const state=()=>({context:ctx,root_id:'root',scope_id:'unit',rows:[{...structuredClone(row),kind:window.__asParent?'block':'unit'},...((window.__asParent||window.__withSiblings)?[{scope_id:'child2',parent_id:window.__asParent?'unit':'block',kind:'unit',title:'H0102',status:'not_started',issues:['Avklar kontrollene']},{scope_id:'child1',parent_id:window.__asParent?'unit':'block',kind:'unit',title:'H0101',status:'ready',issues:[]}]:[])],history,members:[{id:'qa',name:'QA Leder'}],rooms:[{id:'bath',name:'Bad 1'}]});
+window.__client={rpc:async(name,args)=>{window.__calls.push({name,args});if(window.__hold)await new Promise(r=>window.__release=r);if(window.__foreign)return {data:{...state(),context:{...ctx,company_id:'wrong'}}};if(name==='bolig_handover_review'){if(args.p_action==='record'){managed.revision++;managed.record={reference:args.p_payload.reference,date:args.p_payload.date,by_name:'QA Leder',at:'2026-10-23T10:00:00Z'};managed.assessment={basis:managed.basis,by_name:'QA Leder',decisions:[]};managed.history.unshift({revision:managed.revision,actor_name:'QA Leder',created_at:'2026-10-23T10:00:00Z',action:'record',snapshot:structuredClone(managed)});row.control_status=row.status;row.handover=managed.record;row.status='handed_over';row.manager_handover=true;}return {data:{context:ctx,root_id:'root',scope_id:'unit',...structuredClone(managed),members:[{id:'qa',name:'QA Leder'}]}};}if(args.p_action==='get')return {data:state()};if(window.__reject)return {error:{code:'PT409',message:'QA: Grunnlaget er endret. Kladden er beholdt.'}};
 const p=args.p_payload;
 if(args.p_action==='start')row.items=['Arbeidet er utført','Sjekklister og kontroller er fullført','Avvik og mangler er avklart','Bilder er kontrollert','Sluttdokumentasjon er kontrollert'].map((title,i)=>({id:'item'+i,title,kind:i?'documents':'execution',done:false,valid:false,evidence:''}));
 if(args.p_action==='review_all')row.items=row.items.map(i=>({...i,done:true,valid:true,evidence:p.note||'Samlet gjennomgang'}));
@@ -32,7 +34,7 @@ if(args.p_action==='handover')row.handover={reference:p.reason,at:'2026-10-22T10
 if(args.p_action==='reopen'){row.approval=null;row.handover=managed.record;}
 row.done=row.items.filter(i=>i.valid).length;row.total=row.items.length;row.issues=row.items.filter(i=>!i.valid).map(i=>i.title+': dokumentasjon mangler.');row.status=row.handover?(row.restpoints?.length?'handed_over_with_rest':'handed_over'):row.approval?(row.restpoints?.length?'ready_with_rest':'ready'):row.done===row.total?'controlled':row.items[0]?.valid?'executed':'in_progress';row.revision++;row.basis='basis'+row.revision;
 history=[{id:row.revision,action:args.p_action,actor_name:'QA Leder',at:'2026-10-22T10:00:00Z',reason:p.reason},...history];return {data:state()};}};
-const app=createRoot(document.getElementById('app'));window.__show=(role='manager')=>app.render(<div className="bolig-dialog" data-qa-role={role} style={{position:'static',display:'block',maxWidth:850,margin:'auto'}}><Completion key={role} context={{...ctx,role}} root={root} scopeId="unit"/></div>);window.__show();
+const app=createRoot(document.getElementById('app'));window.__show=(role='manager')=>app.render(<div className="bolig-dialog" data-qa-role={role} style={{position:'static',display:'block',maxWidth:850,margin:'auto'}}><Completion key={role} context={{...ctx,role}} root={root} scopeId="unit" onScope={id=>window.__scopes.push(id)}/></div>);window.__show();
 `,
 );
 let server,
@@ -42,6 +44,17 @@ const eq = (a, b, m) => {
   assert.deepEqual(a, b, m);
   checks++;
 };
+const closed={scope_id:'one',kind:'unit',title:'H0101',status:'handed_over_with_rest',manager_handover:true,control_status:'not_started'},openUnit={scope_id:'two',kind:'unit',title:'H0102',status:'in_progress'};
+eq(internalControlStatus(closed),'not_started','actual handover must never imply internal approval');
+eq(completionOrder([closed,openUnit]).map(r=>r.scope_id),['two','one'],'unfinished apartments stay above handed-over apartments');
+eq(nextOpenUnit([closed,openUnit],closed.scope_id)?.scope_id,'two','continue to next apartment without waiting for the building');
+eq(nextOpenUnit([closed,{...openUnit,source:{restricted:true}}],closed.scope_id),null,'next-apartment action cannot reveal restricted scope');
+eq(nextOpenUnit([
+ {scope_id:'a',title:'Bygg A'}, {scope_id:'b',title:'Bygg B'},
+ {...closed,parent_id:'a',title:'H0101'},
+ {...openUnit,parent_id:'a',title:'H0102'},
+ {...openUnit,scope_id:'three',parent_id:'b',title:'H0101'},
+],closed.scope_id)?.scope_id,'two','finish apartments in the same building before moving to a similarly numbered apartment in another building');
 try {
   const r = await build({
     root: cwd,
@@ -260,15 +273,15 @@ try {
     window.__show("manager");
     window.dispatchEvent(new Event("focus"));
   });
-  await page.locator(".bolig-completion-children strong").first().waitFor();
+  await page.locator(".bolig-completion-children .bolig-summary-list strong").first().waitFor();
   eq(
-    await page.locator(".bolig-completion-children strong").first().innerText(),
+    await page.locator(".bolig-completion-children .bolig-summary-list strong").first().innerText(),
     "H0101",
     "Natural dwelling order",
   );
   eq(
     await page
-      .locator(".bolig-completion-children strong")
+      .locator(".bolig-completion-children .bolig-summary-list strong")
       .first()
       .evaluate((el) => parseFloat(getComputedStyle(el).fontSize)),
     16,
@@ -276,12 +289,23 @@ try {
   );
   eq(
     await page
-      .locator(".bolig-completion-children button")
+      .locator(".bolig-completion-children .bolig-summary-list button")
       .first()
       .evaluate((el) => el.getBoundingClientRect().height >= 72),
     true,
     "Comfortable dwelling target",
   );
+  await button('Overtatt · 0').click();
+  eq(await page.locator('.bolig-completion-children .bolig-summary-list button').count(),0,'handed-over filter excludes active apartments');
+  await button('Gjenstår · 2').click();
+  eq(await page.locator('.bolig-completion-children .bolig-summary-list button').count(),2,'remaining apartments stay available independently');
+  await page.evaluate(()=>window.__externalHandover());
+  await area.getByText('QA ekstern faktisk overtakelse',{exact:true}).first().waitFor();
+  eq(await area.locator('.bolig-completion-steps .is-done').count(),0,'a real handover with incomplete control must show zero falsely completed control steps');
+  eq(await area.locator('.bolig-completion-steps li').count(),3,'internal control has three stages; actual handover is separate');
+  await button('Neste bolig · H0102').click();
+  eq(await page.evaluate(()=>window.__scopes.at(-1)),'child2','one click continues to the next eligible apartment');
+  eq((await page.evaluate(()=>window.__calls)).filter(c=>c.args.p_action==='handover').length,0,'next-apartment navigation never records another handover');
   await page.evaluate(() => window.__show("reader"));
   await page.evaluate(() => {
     window.__foreign = true;

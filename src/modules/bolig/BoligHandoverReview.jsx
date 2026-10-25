@@ -7,6 +7,7 @@ import { PROGRESS_EVENT } from "./boligProgressClient.js";
 import { COORDINATION_EVENT } from "./boligCoordination.js";
 import Dialog from "./BoligEditorDialog.jsx";
 import CaseFollowup from "./BoligCaseFollowup.jsx";
+import "./boligCompletionFlow.css";
 
 async function rpc(
   context,
@@ -57,9 +58,11 @@ export default function BoligHandoverReview({
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false),
     [open, setOpen] = useState(false),
+    [openMode, setOpenMode] = useState("assess"),
     [notice, setNotice] = useState(""),
     [historyRevision, setHistoryRevision] = useState(null),
-    [followup, setFollowup] = useState(null);
+    [followup, setFollowup] = useState(null),
+    [followupData, setFollowupData] = useState(null);
   const ticket = useRef(0),
     activeScope = useRef(scopeKey),
     working = useRef(false),
@@ -76,6 +79,7 @@ export default function BoligHandoverReview({
     setNotice("");
     setHistoryRevision(null);
     setFollowup(null);
+    setFollowupData(null);
     working.current = false;
     pending.current = null;
     if (!context.enabled) return;
@@ -87,6 +91,17 @@ export default function BoligHandoverReview({
         if (active && run === ticket.current) {
           setState({ scopeKey, data });
           setError("");
+          if (data.record && data.cases.length) {
+            const request = getAppSupabaseClient().rpc("bolig_handover_followup", { p_company_id: context.company_id, p_root_id: root.id, p_scope_id: scopeId, p_action: "get", p_payload: {} });
+            const result = await Promise.resolve(typeof request.retry === "function" ? request.retry(false) : request).catch(error => ({ error }));
+            if (!active || run !== ticket.current) return;
+            if (result.error) {
+              if (result.error.code === "42501") { setState(null); setFollowupData(null); }
+              else setFollowupData({ error: "Oppfølgingsfrister kunne ikke hentes. Åpne aktiviteten for å kontrollere fristen." });
+            } else if (result.data?.context?.user_id === context.user_id && result.data.context.company_id === context.company_id && result.data.root_id === root.id && result.data.scope_id === scopeId && result.data.context.enabled) {
+              setFollowupData(result.data);
+            } else { setState(null); setFollowupData(null); setError("Firma eller arbeidsområde er endret."); }
+          }
         }
       } catch (e) {
         if (active && run === ticket.current) {
@@ -112,8 +127,7 @@ export default function BoligHandoverReview({
         event.detail?.root_id === root.id &&
         event.detail?.scope_id === scopeId &&
         context.role === "manager"
-      )
-        setOpen(true);
+      ) { setOpenMode("record"); setOpen(true); }
     };
     window.addEventListener("expo-bolig-open-handover-review", openFromControl);
     const interval = window.setInterval(() => {
@@ -132,7 +146,7 @@ export default function BoligHandoverReview({
     };
   }, [scopeKey]);
   const save = async (action, value, basis) => {
-    if (working.current) return false;
+    if (working.current || context.role !== "manager" || current?.context?.role !== "manager") return false;
     working.current = true;
     const run = ++ticket.current;
     setBusy(true);
@@ -184,6 +198,7 @@ export default function BoligHandoverReview({
       if (run === ticket.current && activeScope.current === scopeKey) {
         working.current = false;
         setBusy(false);
+        if (action === "record" && !pending.current) reload.current?.();
       }
     }
   };
@@ -194,7 +209,7 @@ export default function BoligHandoverReview({
     >
       <div className="bolig-handover-heading">
         <div>
-          <small>PROSJEKTLEDERS VURDERING</small>
+          <small>LØPENDE OVERLEVERING</small>
           <h3>Overtakelse og åpne forhold</h3>
         </div>
         {current && <span>{current.cases.length} åpne forhold</span>}
@@ -207,8 +222,9 @@ export default function BoligHandoverReview({
         Oppdater åpne forhold
       </button>
       <p>
-        Her vurderer du om åpne forhold hindrer overtakelse, eller kan følges
-        opp etterpå. Intern sluttkontroll følges opp separat.
+        Registrer hver bolig når overtakelsen er gjennomført. Prosjektleder
+        vurderer hvilke åpne forhold som hindrer overtakelse, og hvilke som
+        følges opp etterpå. Resten av prosjektet trenger ikke være ferdig.
       </p>
       {error && !open && <p role="alert">{error}</p>}
       {notice && <p role="status">{notice}</p>}
@@ -243,20 +259,23 @@ export default function BoligHandoverReview({
             <CaseList
               cases={current.cases}
               decisions={current.assessment?.decisions}
+              followupData={followupData}
+              showDeadlines={!!current.record}
               onFollowup={setFollowup}
             />
-            {context.role === "manager" && !current.root_archived && (
+            {context.role === "manager" && current.context.role === "manager" && !current.root_archived && <div className="bolig-handover-actions">
+              {!current.record && <button type="button" className="bolig-primary" disabled={busy} onClick={() => { setOpenMode("record"); setOpen(true); }}>Registrer overtakelse</button>}
               <button
                 type="button"
-                className="bolig-primary"
+                className="bolig-secondary"
                 disabled={busy}
-                onClick={() => setOpen(true)}
+                onClick={() => { setOpenMode("assess"); setOpen(true); }}
               >
                 {current.record
                   ? "Vurder oppfølging / rett registrering"
                   : "Vurder åpne forhold og overtakelse"}
               </button>
-            )}
+            </div>}
           </>
         )
       )}
@@ -320,7 +339,7 @@ export default function BoligHandoverReview({
             </Dialog>
           );
         })()}
-      {open && current && (
+      {open && current && context.role === "manager" && current.context.role === "manager" && (
         <Dialog
           title="Prosjektleders vurdering av overtakelse"
           busy={busy}
@@ -328,7 +347,8 @@ export default function BoligHandoverReview({
         >
           {error && <p role="alert">{error}</p>}
           <ReviewForm
-            key={scopeKey}
+            key={`${scopeKey}:${openMode}`}
+            initialMode={openMode}
             context={context}
             root={root}
             scopeId={scopeId}
@@ -341,7 +361,7 @@ export default function BoligHandoverReview({
     </section>
   );
 }
-function CaseList({ cases, decisions, onFollowup }) {
+function CaseList({ cases, decisions, onFollowup, followupData, showDeadlines = false }) {
   const [search, setSearch] = useState(""),
     [limit, setLimit] = useState(10);
   const map = new Map((decisions || []).map((d) => [d.id, d]));
@@ -353,6 +373,8 @@ function CaseList({ cases, decisions, onFollowup }) {
   return (
     <details className="bolig-handover-list">
       <summary>Se åpne forhold · {cases.length}</summary>
+      {showDeadlines && <p>Boligen er overtatt. Punktene nedenfor beholdes åpne til de er fulgt opp. Manglende frist vises her og kan settes i den vanlige fremdriftsplanen.</p>}
+      {followupData?.error && <p role="status">{followupData.error}</p>}
       <label>
         Søk i åpne forhold
         <input
@@ -367,6 +389,8 @@ function CaseList({ cases, decisions, onFollowup }) {
       <ul>
         {filtered.slice(0, limit).map((c) => {
           const d = map.get(c.id);
+          const link = followupData?.links?.find(l => l.case_id === c.id);
+          const task = followupData?.tasks?.find(t => t.id === (link?.task_id || (c.id.startsWith("task:") ? c.id.slice(5) : "")));
           return (
             <li key={c.id}>
               <small>
@@ -383,7 +407,8 @@ function CaseList({ cases, decisions, onFollowup }) {
                   : "Ikke vurdert"}
               </span>
               {d?.reason && <p>{d.reason}</p>}
-              {onFollowup && <button type="button" onClick={() => onFollowup({ ...c, owner_id: d?.owner_id })}>Oppfølging i fremdriftsplanen</button>}
+              {showDeadlines && <small className={task?.planned_end ? "bolig-handover-deadline" : "bolig-handover-missing-deadline"}>{task?.planned_end ? `${task.owner_name || d?.owner_name || "Ansvarlig må kontrolleres"} · Frist ${displayDate(task.planned_end)}${task.archived ? " · Aktiviteten er arkivert" : ""}` : followupData ? "Oppfølgingsfrist mangler" : "Henter oppfølgingsfrist …"}</small>}
+              {onFollowup && <button type="button" onClick={() => onFollowup({ ...c, owner_id: task?.owner_id || d?.owner_id })}>{showDeadlines ? task ? "Se ansvarlig og frist" : "Sett ansvarlig og frist" : "Oppfølging i fremdriftsplanen"}</button>}
             </li>
           );
         })}
@@ -402,10 +427,10 @@ function CaseList({ cases, decisions, onFollowup }) {
     </details>
   );
 }
-function ReviewForm({ context, root, scopeId, data, busy, onSave }) {
+function ReviewForm({ context, root, scopeId, data, busy, onSave, initialMode = "assess" }) {
   const [search, setSearch] = useState(""),
     [limit, setLimit] = useState(20),
-    [mode, setMode] = useState("assess");
+    [mode, setMode] = useState(initialMode);
   const saved = Object.fromEntries(
     (data.assessment?.decisions || []).map((d) => [d.id, d]),
   );
