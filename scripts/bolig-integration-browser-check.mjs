@@ -92,6 +92,8 @@ try {
   await page.goto(`http://127.0.0.1:${server.address().port}`);
 
   const btn = (n) => page.getByRole("button", { name: n, exact: true });
+  if (process.env.BOLIG_TASKS_ONLY_QA) page.setDefaultTimeout(6000);
+  if (!process.env.BOLIG_TASKS_ONLY_QA) {
   await btn("Opprett prosjektkobling").waitFor();
   eq(await page.evaluate(() => window.writes), 0, "no mount write");
   await page
@@ -263,6 +265,26 @@ try {
     "revocation clears tasks",
   );
   eq(await page.locator("dialog:visible").count(),0,"revocation leaves no stale native dialog visible");
+  }
+  await page.goto(`http://127.0.0.1:${server.address().port}?tasks-error=1`);
+  await page.getByText('Kunne ikke hente oppgavene.', {exact:true}).waitFor();
+  eq(await page.locator('.bolig-my-tasks article').count(),0,'initial read failure exposes no task data');
+  await page.evaluate(()=>{window.taskReadFailure=false;});
+  await btn('Prøv å hente oppgavene igjen').click();
+  await page.getByRole('button',{name:/Mine oppgaver i boligprosjekter/}).click();
+  await page.getByText('Monter bad',{exact:true}).waitFor();
+  eq(await page.getByText('Kunne ikke hente oppgavene.',{exact:true}).count(),0,'successful retry clears read failure');
+  await page.evaluate(()=>{window.taskReadFailure=true;window.dispatchEvent(new Event('focus'));});
+  await page.getByText('Kunne ikke hente oppgavene.',{exact:true}).waitFor();
+  eq(await page.locator('.bolig-my-tasks article').count(),0,'failed refresh clears stale task data and offers retry');
+  eq(await page.evaluate(()=>window.writes),0,'task retries do not write');
+  await page.evaluate(()=>{window.denied=true;window.dispatchEvent(new Event('focus'));});
+  await page.waitForFunction(()=>!document.querySelector('.bolig-my-tasks'));
+  eq(await page.locator('.bolig-my-tasks').count(),0,'unavailable or revoked module does not expose task card');
+  await page.goto(`http://127.0.0.1:${server.address().port}?tasks-empty=1`);
+  await page.waitForFunction(()=>window.taskReads>0);
+  await page.waitForTimeout(100);
+  eq(await page.locator('.bolig-my-tasks').count(),0,'confirmed empty list remains hidden');
   eq(errors, []);
   console.log(
     "Bolig integration browser: " +

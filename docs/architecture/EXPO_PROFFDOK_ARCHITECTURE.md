@@ -1,3 +1,9 @@
+## Beboerportal og egne oppgaver – Preview 25.10.2026
+
+Miljømål BEGGE. Baseline er publisert main `5127795f` (PR285); PR278/Boligprosjekter er allerede installert og publisert. Eldre «ikke merget / Production urørt»-notater nedenfor er historikk. Denne nye UX-rettelsen er **ikke produksjonsmerget**.
+
+Portalen viser firma/bolig tydelig, ikoner på de fire etablerte fanene og «Neste steg» basert på eksisterende avtale-/valgstatus. Ingen ny aksept, sending, prisberegning, tilgang eller datalagring innføres. Egne boligoppgaver tilbyr synlig retry ved nettverksfeil, mens tom liste og manglende tilgang fortsatt skjules. Se `docs/qa/BOLIG_PORTAL_POLISH_20261025.md` for avgrensning, faktisk QA og neste steg. Bemanning finnes under Oppsett → Faktisk bemanning; gapet til komplett oversiktsliste ved tilsyn er dokumentert der og i Hjelp.
+
 ## Isolert Sales-kundepreview – Preview 25.10.2026
 
 `SalesDraftCustomerPreview` bruker egen `salesDraftPreviewSession.mjs` til session-livsløpet. Auth-callbacks er synkrone; SDK-lesing utsettes til neste oppgave. Foreground validerer session og eksisterende firmascope, men samme bruker/firma remounter ikke kundeinnholdet. Utlogging/identitetsbytte og gamle async-svar sperres; session/firma kontrolleres på nytt før data vises. Eksisterende read-only henting, RLS og klientregister beholdes. Main, SalesModule/recovery og editor/autosave berøres ikke. Aktiv tilbuds-PDF får to avgrensede ekstra mellomtitler. Additive scenario-/SDK-/React-/PDF-tester og veiledning: `../qa/SALES_DRAFT_PREVIEW_AND_HEADINGS_20261025.md`. Miljømål BEGGE, Preview inntil ny TEST OK.

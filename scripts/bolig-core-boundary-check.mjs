@@ -10,6 +10,10 @@ import {
 // The generic Demo guard remains unchanged and is not a Bolig scope guard.
 const base = process.argv[2] || "origin/main";
 const git = (...args) => execFileSync("git", args, { encoding: "utf8" }).trim();
+// After PR278 is released, main already contains the reviewed integrations.
+// Compare those files byte for byte. The original pre-release reconstruction
+// remains available when checking the frozen installation baseline.
+const releasedBaseline = Boolean(git("ls-tree", base, "src/modules/bolig/BoligEntry.jsx"));
 const files = git("diff", "--name-only", base).split("\n").filter(Boolean);
 if (
   !files.some(
@@ -25,6 +29,7 @@ const integrations = new Set([
   ".github/workflows/pr-core-safety.yml",
   "PROJECT_GUARDRAILS.md",
   "README.md",
+  "CURRENT_RELEASE_STATUS.md",
   "bolig-kunde.html",
   "src/boligResident.jsx",
   "src/main.jsx",
@@ -72,7 +77,7 @@ const basePackage=JSON.parse(git('show',`${base}:package.json`));
 const contractPackage=JSON.parse(fs.readFileSync('package.json','utf8'));
 for(const [name,version] of Object.entries({'ai':'7.0.153','@hyzyla/pdfium':'3.0.0','tesseract.js':'7.0.0','@tesseract.js-data/nor':'1.0.0','@tesseract.js-data/eng':'1.0.0'})){
  assert.equal(contractPackage.dependencies[name],version,'Only reviewed pinned contract libraries may be added');
- delete contractPackage.dependencies[name];
+ if (!releasedBaseline) delete contractPackage.dependencies[name];
 }
 assert.deepEqual(contractPackage,basePackage,'Existing package behavior must remain identical');
 const baseLock=JSON.parse(git('show',`${base}:package-lock.json`)),contractLock=JSON.parse(fs.readFileSync('package-lock.json','utf8'));
@@ -107,7 +112,7 @@ for (const [path, edits] of [
  ]],
 ]) {
  let current = fs.readFileSync(path, "utf8");
- for (const [anchor, replacement] of edits) {
+ for (const [anchor, replacement] of releasedBaseline ? [] : edits) {
   assert.equal(current.split(anchor).length, 2, `Exactly one reviewed Bolig anchor in ${path}`);
   current = current.replace(anchor, replacement);
  }
@@ -120,13 +125,13 @@ const personalCurrent = fs.readFileSync(personalPath,"utf8").trim()
  .replace("const BoligPresenceCard=React.lazy(()=>import('../bolig/BoligPresenceCard.jsx'));\n","")
  .replace("  {userId&&authUser?.id===userId&&context?.user_id===userId&&context?.company_id&&<Suspense fallback={null}><BoligPresenceCard key={'presence:'+scope} context={context}/></Suspense>}\n","")
  .replace("   {rights.enabled&&<Suspense fallback={null}><BoligMyTasks key={'tasks:'+scope} context={context}/></Suspense>}\n","");
-assert.equal(personalCurrent,personalBase,"Min side may only mount the isolated Bolig presence and task cards");
+assert.equal(releasedBaseline ? fs.readFileSync(personalPath,"utf8").trim() : personalCurrent,personalBase,"Min side may only mount the isolated Bolig presence and task cards");
 
 // Kenneth explicitly included HR for Bolig users. This shared card may only
 // display the server-confirmed bundle source; all existing grant controls stay.
 const peoplePath="src/modules/access/PeopleModuleAccess.jsx";
 const peopleNote='  {saved?.bolig_hr_included&&<p className="note" data-bolig-hr-included>HR er inkludert via Boligprosjekter{userId?\' for denne brukeren\':\'\'}. Avkryssingen for HR nedenfor gjelder separat HR-tilgang. Firmaets HR-oppsett og vanlige innsynsrettigheter gjelder fortsatt.</p>}\n';
-assert.equal(fs.readFileSync(peoplePath,"utf8").replace(peopleNote,"").trim(),git("show",`${base}:${peoplePath}`),"Shared people controls may only add the explicit Bolig HR source note");
+assert.equal((releasedBaseline ? fs.readFileSync(peoplePath,"utf8") : fs.readFileSync(peoplePath,"utf8").replace(peopleNote,"")).trim(),git("show",`${base}:${peoplePath}`),"Shared people controls may only add the explicit Bolig HR source note");
 
 const dialogPath="src/modules/deviations/DeviationDialog.jsx";
 const originalDialog=fs.readFileSync(dialogPath,"utf8")
@@ -134,7 +139,7 @@ const originalDialog=fs.readFileSync(dialogPath,"utf8")
  .replace("import {DialogPortalTarget} from '../ui/DialogPortalTarget.js';\n","")
  .replace("  const portalTarget = useContext(DialogPortalTarget);\n","")
  .replace("portalTarget || document.body","document.body").trim();
-assert.equal(originalDialog,git("show",`${base}:${dialogPath}`),"Native dialog may only accept the optional containing portal; all default behavior stays identical");
+assert.equal(releasedBaseline ? fs.readFileSync(dialogPath,"utf8").trim() : originalDialog,git("show",`${base}:${dialogPath}`),"Native dialog may only accept the optional containing portal; all default behavior stays identical");
 
 // Old migrations and all existing critical checks must be byte-identical.
 const existing = new Set(git("ls-tree", "-r", "--name-only", base).split("\n"));
@@ -144,7 +149,7 @@ const timeTestPath='scripts/time-registration-db-check.mjs';
 const originalTimeTest=fs.readFileSync(timeTestPath,'utf8')
  .replace(/^ \/\/ BEGIN deterministic time QA clock\n[\s\S]*?^ \/\/ END deterministic time QA clock\n/m,'')
  .replace(/^ \/\/ BEGIN explicit DST QA scenarios\n[\s\S]*?^ \/\/ END explicit DST QA scenarios\n/m,'').trim();
-assert.equal(originalTimeTest,git('show',`${base}:${timeTestPath}`),'All existing time-registration assertions must remain byte-identical');
+assert.equal(releasedBaseline ? fs.readFileSync(timeTestPath,'utf8').trim() : originalTimeTest,git('show',`${base}:${timeTestPath}`),'All existing time-registration assertions must remain byte-identical');
 const forbidden = files.filter(
   (p) =>
     existing.has(p) &&

@@ -1,3 +1,9 @@
+## Beboerportal og egne oppgaver – Preview 25.10.2026
+
+Miljømål BEGGE. Baseline er publisert main `5127795f` (PR285); PR278/Boligprosjekter er allerede installert og publisert. Eldre «ikke merget / Production urørt»-notater nedenfor er historikk. Denne nye UX-rettelsen er **ikke produksjonsmerget**.
+
+Portalen viser firma/bolig tydelig, ikoner på de fire etablerte fanene og «Neste steg» basert på eksisterende avtale-/valgstatus. Ingen ny aksept, sending, prisberegning, tilgang eller datalagring innføres. Egne boligoppgaver tilbyr synlig retry ved nettverksfeil, mens tom liste og manglende tilgang fortsatt skjules. Se `docs/qa/BOLIG_PORTAL_POLISH_20261025.md` for avgrensning, faktisk QA og neste steg. Bemanning finnes under Oppsett → Faktisk bemanning; gapet til komplett oversiktsliste ved tilsyn er dokumentert der og i Hjelp.
+
 # Support – TEST OK og Production 17.10.2026
 
 Kenneth ga eksplisitt TEST OK kl. 01:23 Europe/Oslo på siste Preview-head

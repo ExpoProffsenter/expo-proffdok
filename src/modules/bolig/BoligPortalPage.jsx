@@ -1,4 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
+import { ArrowRight, Building2, Check, ClipboardCheck, FileText, Home, MessageSquare, RefreshCw, ShieldCheck, SlidersHorizontal } from "lucide-react";
+import "./boligPortalPresentation.css";
 import {
   portalResidentRpc,
   portalStamp,
@@ -16,6 +18,7 @@ const sections = [
   ["documents", "Dokumenter"],
   ["messages", "Meldinger"],
 ];
+const sectionIcons = { choices: SlidersHorizontal, agreements: ClipboardCheck, documents: FileText, messages: MessageSquare };
 export default function BoligPortalPage() {
   const token = useRef(window.location.hash.replace(/^#portal=/, "")),
     alive = useRef(false),
@@ -197,6 +200,24 @@ export default function BoligPortalPage() {
     );
   const disabled = busy || !!pending;
   const overview = agreementOverview(data?.agreements);
+  const unanswered = [overview.choice, ...overview.changes].filter(d => d?.status === "published").length;
+  const nextStep = unanswered ? {
+    title: "En avtale venter på svar",
+    text: "Se innhold, pris og svarfrist før du svarer.",
+    button: "Se avtaler som venter", tab: "agreements",
+  } : waiting ? {
+    title: "Valget ditt er til gjennomgang",
+    text: "Prosjektleder går gjennom ønsket ditt. En eventuell avtale kommer her når den er klar.",
+    button: "Se innsendte valg", tab: "choices",
+  } : data?.offers.length ? {
+    title: "Se mulighetene for boligen din",
+    text: "Utforsk valgene og send ønsket ditt til prosjektleder. En avtale aksepteres separat.",
+    button: "Utforsk dine valg", tab: "choices",
+  } : {
+    title: "Alt samlet på ett sted",
+    text: "Her finner du det prosjektleder har delt. Bruk fanene for avtaler, dokumenter og meldinger.",
+    button: "Se dine avtaler", tab: "agreements",
+  };
   const agreementRow = (d) => (
     <article className="bolig-portal-event" key={d.id}>
       <strong>
@@ -224,10 +245,10 @@ export default function BoligPortalPage() {
   return (
     <main className="bolig-resident-page bolig-portal-page">
       <header className="bolig-resident-brand">
-        <span>EP</span>
+        <span aria-hidden="true"><Building2 size={24}/></span>
         <div>
-          <strong>Expo ProffDok</strong>
-          <small>Din beboerportal</small>
+          <strong>{data?.identity.company || "Beboerportal"}</strong>
+          <small>Din beboerportal · Expo ProffDok</small>
         </div>
       </header>
       {error && (
@@ -261,38 +282,46 @@ export default function BoligPortalPage() {
       {!busy && (
         <button
           className="bolig-portal-refresh"
+          aria-label="Hent siste status"
           onClick={load}
           disabled={loading || refreshing}
         >
-          Hent siste status
+          <RefreshCw size={16} aria-hidden="true"/><span>Hent siste status</span>
         </button>
       )}
       {data && (
         <>
-          <section className="bolig-resident-intro">
-            <small>
-              {data.identity.company} · {data.identity.project}
-            </small>
-            <h1>Hei! Dette er din bolig.</h1>
-            <p>
-              {data.identity.block} · <strong>{data.identity.unit}</strong> ·{" "}
-              {data.identity.address}
-            </p>
-            <span className="bolig-resident-version">
-              Personlig tilgang · til{" "}
-              {new Date(data.expires_at).toLocaleDateString("nb-NO", {
-                timeZone: "Europe/Oslo",
-              })}
-            </span>
+          <section className="bolig-resident-intro bolig-portal-welcome">
+            <div className="bolig-portal-welcome-copy">
+              <small>{data.identity.project}</small>
+              <h1>Din bolig.<br/><span>Din oversikt.</span></h1>
+              <p>Valgene, avtalene og dialogen om boligen din – samlet her.</p>
+            </div>
+            <div className="bolig-portal-home-card">
+              <Home size={27} aria-hidden="true"/>
+              <small>DIN BOLIG</small>
+              <strong>{data.identity.unit}</strong>
+              <span>{data.identity.block}</span>
+              {data.identity.address && <span>{data.identity.address}</span>}
+            </div>
           </section>
+          <div className="bolig-portal-access"><ShieldCheck size={15} aria-hidden="true"/><span>Personlig tilgang · til {new Date(data.expires_at).toLocaleDateString("nb-NO", {timeZone:"Europe/Oslo"})}</span></div>
+          <aside className="bolig-portal-next" aria-label="Neste steg">
+            <span className="bolig-portal-next-icon" aria-hidden="true"><ClipboardCheck size={24}/></span>
+            <div><small>NESTE STEG</small><h2>{nextStep.title}</h2><p>{nextStep.text}</p></div>
+            <button type="button" onClick={() => setTab(nextStep.tab)}>{nextStep.button}<ArrowRight size={18} aria-hidden="true"/></button>
+          </aside>
           <nav className="bolig-portal-tabs" aria-label="Beboerportal">
-            {sections.map(([id, label]) => (
+            {sections.map(([id, label]) => {
+              const Icon = sectionIcons[id];
+              return (
               <button
                 key={id}
                 type="button"
                 aria-current={tab === id ? "page" : undefined}
                 onClick={() => setTab(id)}
               >
+                <Icon size={18} aria-hidden="true"/>
                 {label}
                 {id === "agreements" &&
                   data.agreements.filter((d) => d.status === "published")
@@ -305,7 +334,8 @@ export default function BoligPortalPage() {
                     </span>
                   )}
               </button>
-            ))}
+              );
+            })}
           </nav>
           {tab === "choices" && (
             <>
@@ -334,6 +364,7 @@ export default function BoligPortalPage() {
                       key={o.id}
                       className={draft.offer_id === o.id ? "selected" : ""}
                     >
+                      {draft.offer_id === o.id && <span className="bolig-portal-selected"><Check size={14} aria-hidden="true"/>Valgt til gjennomgang</span>}
                       <label className="bolig-portal-choice">
                         <input
                           type="radio"
