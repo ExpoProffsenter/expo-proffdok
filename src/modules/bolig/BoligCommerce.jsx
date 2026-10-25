@@ -8,7 +8,7 @@ import ContentEditor from "./BoligPackageContentEditor.jsx";
 import Dialog from "./BoligEditorDialog.jsx";
 import ResidentInvitation from "./BoligResidentInvitation.jsx";
 import Summary from "./BoligAgreementSummary.jsx";
-import { agreementOverview, supplierDelta } from "./boligCommerceCore.js";
+import { agreementOverview, supplierDelta, acceptanceDate, acceptanceDeadline, osloDate } from "./boligCommerceCore.js";
 import { downloadAmendment } from "./boligAmendmentExport.js";
 import "./boligCommerce.css";
 
@@ -99,6 +99,7 @@ export default function BoligCommerce({ context, root, unit }) {
         kind, group_id: prior?.group_id || null, order_id: prior?.snapshot.order_id || "",
         choice_revision: data.choice_revision, delivery_revision: data.delivery_revision,
         reason: prior?.snapshot.reason || "", adjustment: prior ? String(prior.snapshot.delta_cents / 100) : "0",
+        acceptance_deadline: acceptanceDate(),
         sections: [], lines: prior?.kind === "change" ? (prior.snapshot.fulfillment_goods || prior.snapshot.goods).map(g => ({ ...g, section_id: "" })) : [],
       } });
       setSelected(null);
@@ -164,6 +165,8 @@ export default function BoligCommerce({ context, root, unit }) {
             </>}
             {form.kind === "choice" && <p>Lagret boligvalg v{form.choice_revision} · Tilvalg og tilpasninger: <strong>{money(data.selection?.total_cents)}</strong> inkl. mva.</p>}
             <label>Beskrivelse til beboeren<textarea required minLength={3} maxLength={2000} rows={4} value={form.reason} onChange={e => updateForm("reason", e.target.value)}/></label>
+            <label>Svarfrist for beboeren<input type="date" required min={osloDate()} value={form.acceptance_deadline || ""} onChange={e => updateForm("acceptance_deadline", e.target.value)}/>
+              <small>Fristen gjelder til slutten av dagen, norsk tid. Etter fristen må beboeren kontakte prosjektleder.</small></label>
             {preview && (form.kind === "choice" || form.order_id) && <><h4>Se over før du deler</h4><Summary document={preview}/></>}
             <p>Opprett beboerlenken når innholdet er klart. Ingen e-post sendes. Beboeren gir sitt eget svar.</p>
             <div className="bolig-commerce-actions"><button type="submit" value="draft">Lagre utkast</button>
@@ -187,6 +190,7 @@ export default function BoligCommerce({ context, root, unit }) {
         {error && <p role="alert">{error}</p>}{notice && <p role="status">{notice}</p>}
         {local.pending && <button type="button" disabled={busy || loading} onClick={() => run(null, null, true)}>Prøv samme lagring igjen</button>}
         <Summary document={doc}/>
+        {doc.expires_at && <p><strong>Svarfrist: {acceptanceDeadline(doc.expires_at)} (norsk tid).</strong> Etter fristen må beboeren kontakte prosjektleder.</p>}
         {doc.accepted_at && <p className="bolig-notice"><CheckCircle2 size={18}/> {doc.status === "declined" ? "Avslått" : "Akseptert"} av {doc.accepted_name} · {stamp(doc.accepted_at)}</p>}
         {doc.kind === "change" && <p className="bolig-notice">Last ned endringsgrunnlaget og avklar tilleggsbestilling eller kreditering med leverandøren. Bekreft deretter for å oppdatere mottak og FDV. Originalbestillingen beholdes i historikken.</p>}
         {doc.fulfillment_applied_at && <p className="bolig-notice"><strong>Leveranse, mottak og FDV er oppdatert</strong><br/>{doc.fulfillment_reference} · {stamp(doc.fulfillment_applied_at)}</p>}
@@ -196,12 +200,16 @@ export default function BoligCommerce({ context, root, unit }) {
           <button type="button" disabled={disabled} onClick={async () => {
             try { await navigator.clipboard.writeText(local.links[doc.id]); setNotice("Beboerlenken er kopiert."); } catch { setNotice("Marker og kopier beboerlenken fra feltet."); }
           }}><Link2 size={16}/>Kopier beboerlenke</button>
-          <small>Lenken gir tilgang til denne avtalen i 30 dager. Del den bare med riktig beboer.</small>
+          <small>Del lenken bare med riktig beboer. Svaret må registreres innen svarfristen.</small>
         </div>}
         {writable && doc.status === "published" && local.links[doc.id] && <ResidentInvitation key={`${key}:${doc.id}`} context={context} root={root} unit={unit} targetId={doc.id} kind="agreement" basis={doc.revision} link={local.links[doc.id]} disabled={busy || loading || !!local.pending} onBusy={setMailBusy} onSent={() => setNotice("E-posttjenesten har bekreftet sendingen.")}/>}
         {doc.status === "published" && !local.links[doc.id] && <p>Lenken er laget i en annen nettleser. Hvis den er mistet, tilbakekall denne utgaven og klargjør en ny.</p>}
         {writable && <div className="bolig-commerce-actions">
-          {["draft", "approved"].includes(doc.status) && <button type="button" disabled={disabled} onClick={() => run("publish_ready", { document_id: doc.id, revision: doc.revision, document_status: doc.status })}>Opprett beboerlenke</button>}
+          {["draft", "approved"].includes(doc.status) && <form onSubmit={e => { e.preventDefault(); run("publish_ready", { document_id: doc.id, revision: doc.revision, document_status: doc.status, acceptance_deadline: local.deadlines?.[doc.id] ?? acceptanceDate(doc.expires_at) }); }}>
+            <label>Svarfrist for beboeren<input type="date" required min={osloDate()} disabled={disabled} value={local.deadlines?.[doc.id] ?? acceptanceDate(doc.expires_at)} onChange={e => { try { persist({ ...latest.current, deadlines: { ...latest.current.deadlines, [doc.id]: e.target.value } }); } catch (err) { setError(err.message); } }}/></label>
+            <small>Fristen gjelder til slutten av dagen, norsk tid. Etter fristen må beboeren kontakte prosjektleder.</small>
+            <button type="submit" disabled={disabled}>Opprett beboerlenke</button>
+          </form>}
           {["draft", "approved", "published", "expired"].includes(doc.status) && <button type="button" disabled={disabled} onClick={() => run("revoke", { document_id: doc.id, revision: doc.revision })}>Tilbakekall utgaven</button>}
           {["draft", "approved", "published", "expired", "declined", "revoked"].includes(doc.status) && <button type="button" disabled={disabled || !!form} onClick={() => start(doc.kind, doc)}>Lag ny utgave</button>}
           {doc.kind === "change" && ["accepted","handled"].includes(doc.status) && <button type="button" disabled={disabled} onClick={() => { try { downloadAmendment(doc,context); } catch (e) { setError(e.message); } }}>Last ned endringsbestilling / kreditering</button>}

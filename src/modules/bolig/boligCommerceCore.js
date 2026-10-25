@@ -1,4 +1,15 @@
 export const agreementMoney = cents => new Intl.NumberFormat("nb-NO", { style: "currency", currency: "NOK" }).format(Number(cents || 0) / 100);
+export function osloDate(value = new Date()) {
+  const parts = new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Oslo", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date(value));
+  return ["year", "month", "day"].map(type => parts.find(p => p.type === type).value).join("-");
+}
+export function acceptanceDate(expiresAt) {
+  if (expiresAt) return osloDate(new Date(expiresAt).getTime() - 1);
+  const date = new Date(`${osloDate()}T12:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + 30);
+  return date.toISOString().slice(0, 10);
+}
+export const acceptanceDeadline = expiresAt => new Date(new Date(expiresAt).getTime() - 1).toLocaleString("nb-NO", { timeZone: "Europe/Oslo", dateStyle: "long", timeStyle: "short" });
 export function goodsDiff(before = [], after = []) {
   const old = new Map(before.map(g => [g.key, g]));
   const next = new Map(after.map(g => [g.key, g]));

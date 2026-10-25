@@ -107,7 +107,44 @@ stoppes ved bestilling, tillate prosjektleders begrunnede overstyring, eller bar
 gi varsel? Dagens første bestillingsopprettelse krever ikke en slik aksept.
 Endring av denne forretningsregelen er ikke del av statusrettelsen.
 
-Pågående: publisering av den smale statusrettelsen. Siste SHA, READY og CI skal
-avleses på sluttcommit. De tre smoke-rettelsene endrer kun QA, ingen database.
+Statusrettelsen ble publisert som 7e76c4519abadc7ee8b2785b69619e3196cb7d7f,
+tree de3f4197694fddba5b984011f8aeb19fb1f0ba72, Vercel READY.
+Fristkravet nedenfor er en separat, etterfølgende endring i samme draft-PR.
 Fysisk Windows Utklippsverktøy, Safari og Kenneths samlede TEST OK gjenstår.
 Excel-import er fortsatt lagt sist. Booking og virkelig AI-analyse er utsatt.
+
+## Avklart svarfrist per avtale
+
+Kenneth krevde frist for beboerens tilvalgsaksept og kontakt med prosjektleder
+etter utløp. På spørsmål med svaralternativer valgte han **Dato for hver avtale**.
+Opprettelse av første bestilling og eventuell overstyring er fortsatt et eget,
+uavklart produktvalg. Det er ikke lagt inn en ny bestillingssperre på antakelse.
+
+- Prosjektleder velger «Svarfrist for beboeren» ved klargjøring. Utgangspunktet
+  er 30 kalenderdager. Datoen kan endres før deling, også på et lagret utkast.
+- Valgt dag er inkludert til kl. 23:59 norsk tid. Serveren lagrer neste midnatt
+  i Europe/Oslo som eksklusiv grense; vinter- og sommertid håndteres i Postgres.
+- Eksisterende delte/aksepterte avtaler og deres frister endres ikke. Gammelt
+  klientforsøk uten nytt datofelt følger eksisterende 30-dagerskontrakt, eller
+  den allerede lagrede utkastfristen. Eksakt retry forlenger aldri fristen.
+- Begge beboerinnganger viser dato/tid og at beboeren må kontakte prosjektleder.
+  Direkte lenke og portal avviser aksept etter utløp på serveren. Prosjektleder
+  beholder historikken; allerede aksepterte avtaler beholder kvitteringen.
+- Native regresjonsprøve avdekket at now() brukte transaksjonens starttid:
+  et svar som ventet over fristen, kunne aksepteres sent. Separat additiv
+  migrasjon bruker clock_timestamp() etter låsen. Samme prøve feilet før
+  rettelsen («Expired direct acceptance succeeded») og passerer etterpå.
+- Ingen varsling er aktivert eller sendt. Dette innfører ikke automatiske
+  påminnelser om akseptfrister. De eksisterende invitasjonsbryterne er fortsatt av.
+
+Begge nye migrasjoner er generert med Supabase CLI 2.122.0 og lagt i Sandbox.
+Den første migrasjonens lagrede SQL er beholdt; klokkerettelsen er en ny migrasjon.
+Historiske avtaler før/etter første migrasjon: 8 poster med identisk fingerprint
+4e85cdcc9fd66321746f7a8d44d1b4df. Security advisors har ingen nye funn.
+Native frist-smoke oppretter eget fiktivt prosjekt og ruller alt tilbake.
+
+Lokalt: hele PostgreSQL-kjeden, publisering/retry/tilgang, utløpt direkte/portal-
+aksept og uendret kvittering er testet. Nettlesertesten dekker beholdt fristkladd,
+lagret utkast, ny dato ved deling, mobil, tapt svar i alle tre publiseringssteg,
+og fristutløp mens beboerens svar står åpent. Full critical Sandbox-build og
+core-boundary passerer. Sluttcommit/READY/CI avleses etter publisering.

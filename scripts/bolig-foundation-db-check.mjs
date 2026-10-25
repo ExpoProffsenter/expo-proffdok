@@ -978,6 +978,8 @@ try {
   await integrationScenarios({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider});
   const {default:contractScenarios}=await import("./bolig-contract-db-scenarios.mjs");
   await contractScenarios({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider});
+  const {default:deadlineScenarios}=await import("./bolig-deadline-db-scenarios.mjs");
+  await deadlineScenarios({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider});
   await db.exec(
     `reset role;update public.profiles set deactivated=true where id=${q(reader)}`,
   );

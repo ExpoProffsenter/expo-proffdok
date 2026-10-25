@@ -30,9 +30,9 @@ if(args.p_action==='get')return {data:state()};
 if(window.__conflict)return {error:{code:'PT409',message:'Grunnlaget er endret. Hent siste grunnlag.'}};
 if(receipts.has(p.request_id))return {data:receipts.get(p.request_id)};
 let d=docs.find(d=>d.id===p.document_id);
-if(args.p_action==='create'){d={id:'document-'+(docs.length+1),group_id:p.kind+'-group',version:docs.length+1,kind:p.kind,status:'draft',revision:1,created_at:'2026-10-22T18:00:00Z',snapshot:{...snapshot,reason:p.reason}};docs.unshift(d);}
+if(args.p_action==='create'){d={id:'document-'+(docs.length+1),group_id:p.kind+'-group',version:docs.length+1,kind:p.kind,status:'draft',revision:1,expires_at:p.acceptance_deadline?p.acceptance_deadline+'T23:00:00Z':null,created_at:'2026-10-22T18:00:00Z',snapshot:{...snapshot,reason:p.reason}};docs.unshift(d);}
 if(args.p_action==='approve'){d.status='approved';d.revision++;}
-if(args.p_action==='publish'){d.status='published';d.expires_at='2026-11-21T18:00:00Z';d.revision++;}
+if(args.p_action==='publish'){d.status='published';d.expires_at=p.acceptance_deadline?p.acceptance_deadline+'T23:00:00Z':'2026-11-21T18:00:00Z';d.revision++;}
 if(args.p_action==='revoke'){d.status='revoked';d.revision++;}
 if(args.p_action==='apply'){d.status='handled';d.handling_note=p.note;d.fulfillment_reference=p.reference;d.fulfillment_applied_at='2026-10-22T18:00:00Z';d.revision++;}
 const result={...state(),document_id:d?.id};receipts.set(p.request_id,result);
@@ -44,6 +44,7 @@ window.__mode='internal';window.__networkLoss=false;window.__publicCalls=[];
 let publicDoc={id:'public-doc',kind:'change',version:2,status:'published',revision:3,snapshot,expires_at:'2026-11-21T18:00:00Z'};
 window.fetch=async(url,options)=>{if(url.includes('/functions/v1/bolig-resident-link-email'))return mailMock.send(options);const p=JSON.parse(options.body);window.__publicCalls.push(p);
 if(p.p_token!=='a'.repeat(64))return new Response(JSON.stringify({message:'Lenken er ikke tilgjengelig.',code:'42501'}),{status:403});
+if(window.__expired)return new Response(JSON.stringify({message:'Svarfristen er utløpt. Kontakt prosjektleder.',code:'42501'}),{status:403});
 if(p.p_action!=='get'){
 if(!p.p_document_id||!p.p_payload.confirmed)return new Response(JSON.stringify({message:'Mangler avtaleutgave',code:'22023'}),{status:400});
 publicDoc={...publicDoc,status:p.p_action==='accept'?'accepted':'declined',accepted_name:p.p_payload.name,accepted_at:'2026-10-22T18:00:00Z'};
@@ -78,20 +79,26 @@ try {
   await page.getByRole("button",{name:"Klargjør beboeraksept",exact:true}).waitFor();
   await page.getByRole("button",{name:"Klargjør beboeraksept",exact:true}).click();
   await page.getByLabel("Beskrivelse til beboeren").fill("QA – behold denne kladden ved fanebytte");
+  await page.getByLabel("Svarfrist for beboeren").fill("2030-11-15");
   await page.evaluate(()=>window.dispatchEvent(new Event("focus")));
   eq(await page.getByLabel("Beskrivelse til beboeren").inputValue(),"QA – behold denne kladden ved fanebytte","focus preserves draft");
   await page.getByRole("button",{name:"Lukk og behold kladden",exact:true}).click();
   await page.getByRole("button",{name:"Fortsett kladd",exact:true}).click();
   eq(await page.getByLabel("Beskrivelse til beboeren").inputValue(),"QA – behold denne kladden ved fanebytte","closing retains draft");
+  eq(await page.getByLabel("Svarfrist for beboeren").inputValue(),"2030-11-15","closing and focus retain chosen deadline");
   await page.getByRole("button",{name:"Lagre utkast",exact:true}).click();
   await page.getByRole("button",{name:"Opprett beboerlenke",exact:true}).waitFor();
   eq(await page.getByRole("button",{name:"Godkjenn grunnlaget",exact:true}).count(),0,"saved draft shares from its reviewed summary without another approval screen");
   eq(await page.evaluate(()=>window.__calls.filter(c=>c.args.p_action==='publish').length),0,"saving a draft does not publish");
+  eq(await page.getByLabel("Svarfrist for beboeren").inputValue(),"2030-11-15","server draft retains chosen deadline");
+  await page.getByLabel("Svarfrist for beboeren").fill("2030-11-16");
   await page.getByRole("button",{name:"Opprett beboerlenke",exact:true}).click();
   await page.getByLabel("Beboerlenke",{exact:true}).waitFor();
   const link=await page.getByLabel("Beboerlenke",{exact:true}).inputValue();
   eq(/^http:\/\/127\.0\.0\.1:\d+\/bolig-kunde\.html#[a-f0-9]{64}$/.test(link),true,"capability stays in fragment");
   eq(await page.evaluate(()=>window.__calls.find(c=>c.args.p_action==='publish').args.p_payload.token.length),64);
+  eq(await page.evaluate(()=>window.__calls.find(c=>c.args.p_action==='publish').args.p_payload.acceptance_deadline),"2030-11-16","publication uses manager's final date through approval step");
+  eq(await page.getByText(/Svarfrist: 16\. november 2030 kl\. 23:59/).count(),1,"manager sees the last included Oslo minute");
   const mailPanel=page.getByRole("region",{name:"Send beboerlenke",exact:true});
   await mailPanel.getByRole("button",{name:"Send beboerlenke",exact:true}).waitFor();
   await mailPanel.getByText("Forhåndsvis e-post",{exact:true}).click();
@@ -173,6 +180,7 @@ try {
     await recovery.getByRole("button",{name:"Endringer og beboeraksept",exact:true}).click();
     await recovery.getByRole("button",{name:"Klargjør beboeraksept",exact:true}).click();
     await recovery.getByLabel("Beskrivelse til beboeren").fill("QA ett gjennomgått grunnlag ved tapt "+lost);
+    await recovery.getByLabel("Svarfrist for beboeren").fill("2031-02-15");
     eq(await recovery.getByRole("region",{name:"Avtalegrunnlag"}).isVisible(),true,"review in composer before final action");
     await recovery.evaluate(action=>window.__loseAction=action,lost);
     await recovery.getByRole("button",{name:"Opprett beboerlenke",exact:true}).click();
@@ -190,6 +198,7 @@ try {
     const attempts=await recovery.evaluate(action=>window.__calls.filter(c=>c.args.p_action===action),lost);
     eq(attempts.length,2,"lost step replay count "+lost);
     eq(attempts[0].args,attempts[1].args,"same payload, token and request ID after remount "+lost);
+    eq(await recovery.evaluate(()=>window.__calls.filter(c=>c.args.p_action==='publish').every(c=>c.args.p_payload.acceptance_deadline==='2031-02-15')),true,"chosen deadline survives all recovered steps "+lost);
     eq(await recovery.locator(".bolig-commerce-row").count(),1,"only one agreement created "+lost);
     eq(await recovery.getByRole("button",{name:"Godkjenn grunnlaget",exact:true}).count(),0);
     eq(await recovery.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,"mobile composer stays in viewport");
@@ -248,6 +257,14 @@ try {
   await publicPage.goto(url+"/?public#"+"a".repeat(64));
   await publicPage.getByRole("heading",{name:"Endring av leveransen din"}).waitFor();
   eq(await publicPage.getByLabel("Fullt navn").inputValue(),"","replacement agreement starts with its own answer");
+  await publicPage.getByLabel("Fullt navn").fill("QA Etter fristen");
+  await publicPage.getByRole("checkbox").check();
+  await publicPage.getByRole("button",{name:"Kontroller svaret",exact:true}).click();
+  await publicPage.evaluate(()=>window.__expired=true);
+  await publicPage.getByRole("button",{name:"Registrer aksept",exact:true}).click();
+  await publicPage.getByText("Svarfristen er utløpt. Kontakt prosjektleder.",{exact:true}).waitFor();
+  eq(await publicPage.getByRole("button",{name:"Registrer aksept",exact:true}).count(),0,"server expiry while answer is open removes acceptance controls");
+  eq(await publicPage.getByRole("heading",{name:"Aksepten din er registrert"}).count(),0,"expired answer never shows an acceptance receipt");
   const invalid=await browser.newPage();await invalid.goto(url+"/?public#invalid");await invalid.getByRole("heading",{name:"Avtalen kan ikke åpnes"}).waitFor();checks++;
   eq(await invalid.evaluate(()=>window.__publicCalls.length),0,"incomplete token never reaches server");
   eq(errors,[],"no browser runtime errors");

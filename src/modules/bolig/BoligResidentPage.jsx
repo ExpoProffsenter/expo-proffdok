@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import Summary from "./BoligAgreementSummary.jsx";
 import { residentRpc } from "./boligResidentClient.js";
-import { agreementMoney as money } from "./boligCommerceCore.js";
+import { agreementMoney as money, acceptanceDeadline } from "./boligCommerceCore.js";
 
 export default function BoligResidentPage() {
   const token = useRef(window.location.hash.slice(1));
@@ -54,7 +54,7 @@ export default function BoligResidentPage() {
       setDoc(next); setUncertain(false); setConfirming(false);
       try { sessionStorage.removeItem(key); } catch {}
     } catch (e) {
-      if (alive.current) { setError(e.message); setUncertain(!e.code); }
+      if (alive.current) { setError(e.message); setUncertain(!e.code); if (e.code === "42501") { setDoc(null); setConfirming(false); } }
     } finally { operating.current = false; if (alive.current) setBusy(false); }
   };
   const decided = doc && ["accepted", "declined", "handled"].includes(doc.status);
@@ -97,7 +97,7 @@ export default function BoligResidentPage() {
             <button type="submit">Kontroller svaret</button>
           </fieldset>
         </form>}
-        <p className="bolig-resident-deadline">Svarfrist: {new Date(doc.expires_at).toLocaleDateString("nb-NO", { timeZone: "Europe/Oslo" })}. Kontakt prosjektleder ved spørsmål.</p>
+        <p className="bolig-resident-deadline">Svarfrist: {acceptanceDeadline(doc.expires_at)} (norsk tid). Etter fristen kan du ikke akseptere her. Kontakt prosjektleder.</p>
       </section>}
       <footer>Avtalen lagres hos {doc.snapshot.identity.company}. Lenken gjelder bare denne avtalen.</footer>
     </>}

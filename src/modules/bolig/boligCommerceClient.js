@@ -35,10 +35,10 @@ export function residentUrl(token) {
 export function commerceAttempt(action, payload) {
   const { document_status, ...basis } = payload;
   const request = (action, payload) => ({ action, payload: { ...payload, request_id: crypto.randomUUID() } });
-  if (action === "create_link") return { ...request("create", basis), flow: { token: newResidentToken(), created: true } };
+  if (action === "create_link") return { ...request("create", basis), flow: { token: newResidentToken(), created: true, acceptance_deadline: basis.acceptance_deadline } };
   if (action === "publish_ready") {
     const token = newResidentToken();
-    return { ...request(document_status === "draft" ? "approve" : "publish", { ...basis, ...(document_status === "draft" ? {} : { token }) }), flow: { token, created: false } };
+    return { ...request(document_status === "draft" ? "approve" : "publish", { ...basis, ...(document_status === "draft" ? {} : { token }) }), flow: { token, created: false, acceptance_deadline: basis.acceptance_deadline } };
   }
   return request(action, basis);
 }
@@ -47,5 +47,5 @@ export function nextCommerceAttempt(attempt, result) {
   const doc = result.documents.find(d => d.id === (result.document_id || attempt.payload.document_id));
   const action = attempt.action === "create" ? "approve" : "publish";
   if (!doc || doc.status !== (action === "approve" ? "draft" : "approved")) throw Error("Avtaleutgaven kunne ikke bekreftes. Prøv samme lagring igjen.");
-  return { action, payload: { document_id: doc.id, revision: doc.revision, ...(action === "publish" ? { token: attempt.flow.token } : {}), request_id: crypto.randomUUID() }, flow: attempt.flow };
+  return { action, payload: { document_id: doc.id, revision: doc.revision, ...(action === "publish" ? { token: attempt.flow.token, ...(attempt.flow.acceptance_deadline ? { acceptance_deadline: attempt.flow.acceptance_deadline } : {}) } : {}), request_id: crypto.randomUUID() }, flow: attempt.flow };
 }

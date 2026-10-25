@@ -8,6 +8,7 @@ import Summary from "./BoligAgreementSummary.jsx";
 import {
   agreementMoney as money,
   agreementOverview,
+  acceptanceDeadline,
 } from "./boligCommerceCore.js";
 const sections = [
   ["choices", "Mine valg"],
@@ -468,6 +469,7 @@ export default function BoligPortalPage() {
                 utgave {doc.version}
               </h2>
               <Summary document={doc} />
+              {doc.status === "published" && <p>Svarfrist: {acceptanceDeadline(doc.expires_at)} (norsk tid). Etter fristen kan du ikke akseptere her. Kontakt prosjektleder.</p>}
               {doc.status !== "published" ? (
                 <section className="bolig-resident-receipt">
                   <h3>
