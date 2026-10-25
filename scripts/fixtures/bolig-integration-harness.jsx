@@ -24,6 +24,9 @@ window.lost = false;
 window.nav = [];
 window.leaves = [];
 window.caseClosed = false;
+window.taskReadFailure = new URLSearchParams(location.search).has('tasks-error');
+window.tasksEmpty = new URLSearchParams(location.search).has('tasks-empty');
+window.taskReads = 0;
 window.tasks = () => [
   {
     id: "progress1",
@@ -61,7 +64,9 @@ window.__client = {
     if (["kshms_project_report", "kshms_project_execution_report"].includes(name))
       return {data:{context:{...ks,project_id:a.p_project_id},choices:{sjas:[],ruhs:[],rounds:[],risks:[]}}};
     if (name === "bolig_my_project_tasks") {
-      const items = window.tasks();
+      window.taskReads++;
+      if (window.taskReadFailure) return {error:{message:'Midlertidig nettverksfeil'}};
+      const items = window.tasksEmpty ? [] : window.tasks();
       return {
         data: {
           context: ctx,
