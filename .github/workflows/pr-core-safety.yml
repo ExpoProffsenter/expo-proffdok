@@ -170,6 +170,7 @@ jobs:
             sudo apt-get install -y poppler-utils
           fi
           node scripts/customer-option-quantity-pdf-check.mjs
+          node scripts/sales-draft-preview-browser-check.mjs
           export KSHMS_JSPDF_NODE_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/jspdf/dist/jspdf.node.min.js"
           node scripts/project-progress-db-check.mjs
           node scripts/project-progress-react-check.mjs
