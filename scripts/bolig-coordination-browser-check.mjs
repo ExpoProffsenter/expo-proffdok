@@ -17,7 +17,7 @@ const eq = (a, b, m) => {
 fs.writeFileSync(
   path.join(temp, "entry.jsx"),
   `
-import React,{useState} from '${root}/node_modules/react/index.js';import{createRoot}from'${root}/node_modules/react-dom/client.js';import Progress from '${root}/src/modules/bolig/BoligProgress.jsx';import Overview from '${root}/src/modules/bolig/BoligBuildingOverview.jsx';import Resident from '${root}/src/modules/bolig/BoligPortalPage.jsx';import '${root}/src/style.css';import '${root}/src/modules/bolig/bolig.css';import '${root}/src/modules/bolig/boligResident.css';
+import React,{useState} from '${root}/node_modules/react/index.js';import{createRoot}from'${root}/node_modules/react-dom/client.js';import Progress from '${root}/src/modules/bolig/BoligProgress.jsx';import Overview from '${root}/src/modules/bolig/BoligBuildingOverview.jsx';import Resident from '${root}/src/modules/bolig/BoligPortalPage.jsx';import Tasks from '${root}/src/modules/bolig/BoligUnitTasks.jsx';import {UnitDialogueIndicator} from '${root}/src/modules/bolig/BoligDialogue.jsx';import '${root}/src/style.css';import '${root}/src/modules/bolig/bolig.css';import '${root}/src/modules/bolig/boligResident.css';
 const ctx={user_id:'qa',company_id:'firm',role:'manager',enabled:true};const record={root:{id:'root',title:'Stammeprosjekt',revision:1},blocks:[{id:'b',name:'Bygg A',building_type:'apartment'}],entrances:[{id:'e',block_id:'b',address:'Plangata 1',counts:[2,2]}],units:[1,2,3,4].map((n)=>({id:'u'+n,root_id:'root',entrance_id:'e',floor:n>2?2:1,number:n===1?'H0101':n===2?'H0102':n===3?'H0201':'H0202',contact_name:'QA beboer',contact_email:'qa@example.invalid'}))};const units=record.units.map(u=>({...u,address:'Plangata 1',block_id:'b',block_name:'Bygg A',position:1}));
 const state={context:ctx,root_id:'root',unit_id:null,revision:1,tasks:units.slice(0,2).flatMap((u,n)=>['Rørlegger','Elektro','Montering'].map((title,i)=>({id:u.id+'-'+i,unit_id:u.id,unit_number:u.number,address:u.address,title,owner_id:'qa',owner_name:'QA leder',owner_active:true,planned_start:i===2?'2026-10-27':'2026-10-26',planned_end:i===2?'2026-10-27':'2026-10-26',status:'planned',active:true,required:true}))).reverse(),units,rooms:[],members:[{id:'qa',name:'QA leder'}],notices:[],history:[],deliveries:[],mail_enabled:false};
 const coord={context:ctx,root_id:'root',revision:0,groups:[{id:'g',name:'Stamme A',unit_ids:['u1','u3']}],units:units.map(u=>({...u,override:null,enabled:true})),members:state.members,inbox:[{unit_id:'u1',number:'H0101',address:'Plangata 1',unread:1,pending:1,latest_at:'2026-10-23T10:00:00Z',preview:'Kan vi avtale tilgang?',through_id:'msg',enabled:true}],messaging_enabled:true,manager_id:'qa'};
@@ -28,7 +28,7 @@ if(name==='bolig_resident_portal'){if(action==='read'){portal.portal.events[0].r
 if(name==='bolig_completion')return {data:{context:ctx,root_id:'root',scope_id:null,rows:[]}};if(name==='bolig_overview')return {data:{context:ctx,root_id:'root',units:units.map(u=>({unit_id:u.id}))}};throw Error(name);}};
 const origFetch=window.fetch;window.fetch=(url,p)=>String(url).includes('/rest/v1/rpc/bolig_portal')?Promise.resolve(new Response(JSON.stringify({id:'p',identity:{unit:'H0101',project:'Stammeprosjekt',company:'QA',block:'Bygg A',address:'Plangata 1'},messaging_enabled:coord.units[0].enabled,manager_contact:'leder@example.invalid',offers:[],agreements:[],documents:[],events:portal.portal.events}),{status:200,headers:{'content-type':'application/json'}})):origFetch(url,p);
 window.__snapshot=()=>({state:structuredClone(state),coord:structuredClone(coord)});window.__bumpCoord=()=>{coord.revision++;window.dispatchEvent(new Event('focus'));};window.__setOff=()=>{coord.units[0].enabled=false;};window.__reopen=()=>{coord.inbox=[{unit_id:'u1',number:'H0101',address:'Plangata 1',unread:1,pending:1,latest_at:'2026-10-23T11:20:00Z',preview:'Et nytt svar',enabled:true}];window.dispatchEvent(new Event('focus'));};
-function App(){const[mode,setMode]=useState('progress'),[q,sq]=useState(''),[u,su]=useState('');window.__mode=setMode;return <div className="bolig-dialog bolig-page" style={{maxWidth:1120,margin:'auto',padding:12}}>{mode==='progress'?<Progress context={ctx} root={record.root}/>:mode==='overview'?<Overview context={ctx} record={record} unitId={u} onSelect={su} query={q} onQuery={sq}/>:<Resident/>}</div>};window.location.hash='portal='+'a'.repeat(64);createRoot(document.getElementById('app')).render(<App/>);
+function App(){const[mode,setMode]=useState('progress'),[q,sq]=useState(''),[u,su]=useState('');window.__mode=setMode;window.__selectUnit=su;return <div data-qa-unit={u} className="bolig-dialog bolig-page" style={{maxWidth:1120,margin:'auto',padding:12}}>{mode==='progress'?<Progress context={ctx} root={record.root}/>:mode==='overview'?<><Overview context={ctx} record={record} unitId={u} onSelect={su} query={q} onQuery={sq}/>{u&&<Tasks unit={record.units.find(x=>x.id===u)} active rooms={<p>Rom</p>} order={<p>Bestilling</p>} quality={<p>Kontroll</p>} portal={<p>QA – Meldinger for valgt bolig</p>} portalIndicator={<UnitDialogueIndicator context={ctx} root={record.root} unit={record.units.find(x=>x.id===u)}/>}/>}</>:<Resident/>}</div>};window.location.hash='portal='+'a'.repeat(64);createRoot(document.getElementById('app')).render(<App/>);
 `,
 );
 let browser, lastPage;
@@ -280,6 +280,24 @@ try {
       "graphic selection persists chosen apartments only",
     );
 
+    await page.evaluate(() => window.__selectUnit("u1"));
+    const portalTile = page.locator('.bolig-unit-task-card[aria-label="Beboerportal"]');
+    const menuBadge = portalTile.locator('.bolig-unit-message-indicator');
+    await menuBadge.getByText("1 ulest melding", {exact:true}).waitFor();
+    eq(await portalTile.getAttribute("aria-describedby"),"bolig-unit-messages-u1","message count is exposed as the portal card description");
+    eq(await page.locator('.bolig-unit-task-card:not([aria-label="Beboerportal"]) .bolig-unit-message-indicator').count(),0,"message marker belongs only on the actual message destination");
+    eq(await page.evaluate(()=>window.__calls.filter(c=>c.name==='bolig_resident_portal'&&c.p_action==='read').length),0,"displaying the menu marker does not mark messages read");
+    await portalTile.click();
+    const taskDialog=page.getByRole("dialog",{name:"Beboerportal",exact:true});
+    eq(await taskDialog.getByText("QA – Meldinger for valgt bolig",{exact:true}).isVisible(),true,"marked card opens the existing portal destination");
+    await taskDialog.getByRole("button",{name:"Lukk boligens arbeidsområde",exact:true}).click();
+    await page.evaluate(()=>window.__selectUnit("u2"));
+    await page.locator('[data-qa-unit="u2"]').waitFor();
+    eq(await page.locator('.bolig-unit-message-indicator').count(),0,"switching apartments immediately hides the other apartment's unread marker");
+    await page.evaluate(()=>window.__selectUnit("u1"));
+    await menuBadge.getByText("1 ulest melding",{exact:true}).waitFor();
+    eq(await portalTile.evaluate(e=>e.scrollWidth<=e.clientWidth+1),true,"message hint wraps within the menu card on mobile and desktop");
+
     const badge = page.getByRole("button", {
       name: "Meldinger for H0101: 1 uleste",
       exact: true,
@@ -299,6 +317,8 @@ try {
       1,
       "read is distinct from handled",
     );
+    await menuBadge.getByText("1 melding til oppfølging",{exact:true}).waitFor({state:"attached"});
+    eq(await menuBadge.textContent(),"1 melding til oppfølging","reading changes the menu marker to follow-up without removing the case");
     await dialog
       .getByRole("button", { name: "Marker som behandlet", exact: true })
       .click();
@@ -316,9 +336,17 @@ try {
       0,
       "handled marker removed",
     );
+    eq(await menuBadge.count(),0,"handled message removes the marker from the right menu too");
     await page.evaluate(() => window.__reopen());
     await badge.waitFor();
     eq(await badge.count(), 1, "new answer reopens marker");
+    await menuBadge.getByText("1 ulest melding",{exact:true}).waitFor();
+    eq(await menuBadge.count(),1,"a new resident answer restores the right-menu marker");
+    await page.evaluate(()=>{window.__deny=true;window.dispatchEvent(new Event("focus"));});
+    await menuBadge.waitFor({state:"hidden"});
+    eq(await menuBadge.count(),0,"server access denial removes message information from the menu");
+    await page.evaluate(()=>{window.__deny=false;window.dispatchEvent(new Event("focus"));});
+    await menuBadge.getByText("1 ulest melding",{exact:true}).waitFor();
     await page
       .getByText("Meldinger av/på · prosjektstandard På", { exact: true })
       .click();

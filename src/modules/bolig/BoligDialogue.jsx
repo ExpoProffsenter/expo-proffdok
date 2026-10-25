@@ -24,6 +24,28 @@ export function DialogueBadge({ row, onOpen }) {
     </button>
   );
 }
+// Same server-derived inbox and refresh events as the facade badge.
+// Rendering the hint never marks a conversation as read or handled.
+export function UnitDialogueIndicator({ context, root, unit }) {
+  const { data } = useBoligCoordination(context, root, `unit-menu-${unit.id}`);
+  const row = data?.inbox.find((r) => r.unit_id === unit.id);
+  if (!row?.pending) return null;
+  const count = row.unread || row.pending;
+  const text = row.unread
+    ? `${count} ${count === 1 ? "ulest melding" : "uleste meldinger"}`
+    : `${count} ${count === 1 ? "melding" : "meldinger"} til oppfølging`;
+  return (
+    <span
+      id={`bolig-unit-messages-${unit.id}`}
+      className={`bolig-unit-message-indicator ${row.unread ? "is-unread" : "is-pending"}`}
+      aria-live="polite"
+    >
+      <MessageCircle size={14} aria-hidden="true" />
+      {text}
+    </span>
+  );
+}
+
 export function CoordinationConflict({ coordination }) {
   const { data, draft, update } = coordination;
   if (

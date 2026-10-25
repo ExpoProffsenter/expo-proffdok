@@ -10,6 +10,7 @@ import {
   FileSignature,
   UserRound,
 } from "lucide-react";
+import "./boligUnitMessageIndicator.css";
 export default function BoligUnitTasks({
   unit,
   active,
@@ -19,6 +20,7 @@ export default function BoligUnitTasks({
   quality,
   commerce,
   portal,
+  portalIndicator,
   progress,
 }) {
   const [panel, setPanel] = useState(null),
@@ -53,6 +55,7 @@ export default function BoligUnitTasks({
       type="button"
       className="bolig-unit-task-card"
       aria-label={title}
+      aria-describedby={id === "portal" && portalIndicator ? `bolig-unit-messages-${unit.id}` : undefined}
       aria-haspopup="dialog"
       onClick={(e) => open(id, e)}
     >
@@ -62,6 +65,7 @@ export default function BoligUnitTasks({
       <span>
         <strong>{title}</strong>
         <small>{text}</small>
+        {id === "portal" && portalIndicator}
       </span>
       <ChevronRight size={19} />
     </button>
