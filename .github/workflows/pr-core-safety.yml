@@ -170,6 +170,7 @@ jobs:
             sudo apt-get install -y poppler-utils
           fi
           node scripts/customer-option-quantity-pdf-check.mjs
+          node scripts/sales-draft-preview-browser-check.mjs
           export KSHMS_JSPDF_NODE_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/jspdf/dist/jspdf.node.min.js"
           node scripts/project-progress-db-check.mjs
           node scripts/project-progress-react-check.mjs
@@ -225,8 +226,11 @@ jobs:
           node scripts/bolig-foundation-db-check.mjs
           node scripts/bolig-hr-access-db-check.mjs
           BOLIG_RELEASE_BASELINE=docs/qa/evidence/bolig-release-baseline-20261025.json node scripts/bolig-hr-access-db-check.mjs
-          node scripts/bolig-release-preflight-check.mjs "origin/${{ github.base_ref }}"
-          node scripts/bolig-release-migrations-check.mjs "origin/${{ github.base_ref }}"
+          # Rehearse the frozen PR278 release against its recorded pre-release
+          # commit, also after that release has become part of main.
+          bolig_release_base="$(node -p "require('./docs/qa/evidence/bolig-release-manifest-20261025.json').main")"
+          node scripts/bolig-release-preflight-check.mjs "$bolig_release_base"
+          node scripts/bolig-release-migrations-check.mjs "$bolig_release_base"
           node scripts/bolig-contract-files-check.mjs
           node scripts/bolig-contract-review-check.mjs
           node scripts/bolig-contract-index-check.mjs

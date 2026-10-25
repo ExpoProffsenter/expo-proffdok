@@ -1,3 +1,7 @@
+## Kundepreview: ny innloggingskontroll og PDF-overskrifter – Preview 25.10.2026
+
+Den skrivebeskyttede kladdevisningen gjenopptar etter ny innlogging og tilbyr Prøv igjen ved feil. Eget session-abonnement og foreground-kontroll bevarer prøvevalg ved samme bruker/firma, sperrer gamle bruker-/firmadata og ignorerer sene svar etter cleanup. Ingen tokens overføres mellom adresser, og ingen editor/recovery-runtime monteres. Aktiv tilbuds-PDF gjenkjenner også «Oppstart, tildekking og riving» og «Gulv og membran» som mellomtitler. Øvrig tekst/pris/aksept er uendret. Miljømål BEGGE, ny TEST OK før Production. Se `docs/qa/SALES_DRAFT_PREVIEW_AND_HEADINGS_20261025.md` for bevis, kjente begrensninger og konkret brukertest.
+
 ## Boligprosjekter – separat avtalehistorikk 22.10.2026
 
 Boligprosjekter har egne katalog-/avtale-RPC-er og en separat `bolig-kunde.html` for beboeraksept og endringsordre. Dette bruker ikke Sales-tilbudets aksepthandler, versjoner eller recovery. Se `docs/qa/BOLIG_ENDRINGSORDRE_AKSEPT_20261022.md`. Sales-rettelsene i main fra PR #279/#280 er synkronisert uendret inn i boligbranchens Preview.

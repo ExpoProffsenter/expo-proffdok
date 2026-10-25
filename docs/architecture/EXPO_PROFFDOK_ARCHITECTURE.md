@@ -1,3 +1,7 @@
+## Isolert Sales-kundepreview – Preview 25.10.2026
+
+`SalesDraftCustomerPreview` bruker egen `salesDraftPreviewSession.mjs` til session-livsløpet. Auth-callbacks er synkrone; SDK-lesing utsettes til neste oppgave. Foreground validerer session og eksisterende firmascope, men samme bruker/firma remounter ikke kundeinnholdet. Utlogging/identitetsbytte og gamle async-svar sperres; session/firma kontrolleres på nytt før data vises. Eksisterende read-only henting, RLS og klientregister beholdes. Main, SalesModule/recovery og editor/autosave berøres ikke. Aktiv tilbuds-PDF får to avgrensede ekstra mellomtitler. Additive scenario-/SDK-/React-/PDF-tester og veiledning: `../qa/SALES_DRAFT_PREVIEW_AND_HEADINGS_20261025.md`. Miljømål BEGGE, Preview inntil ny TEST OK.
+
 ## Boligprosjekter: tydelig overtakelsesinngang og oppdatert hjelp – Preview 25.10.2026
 
 Den ene eksisterende `BoligCompletionOverview` er flyttet foran statusfanene i `BoligBuildingOverview`. Ingen ekstra RPC eller remount ved byggvalg. Tellingen avleder bare aktive boliger i valgt bygg fra eksisterende struktur og serverbekreftet ferdigstillingsrespons; «Alle bygg» viser prosjektet. Delvis eller begrenset status blir en tydelig utilgjengelig status, ikke et falskt antall. Faktisk overtakelse teller etter eksisterende `isHandedOver`, uavhengig av intern sluttkontroll. De samme bygg-/prosjektdialogene brukes.

@@ -1,6 +1,6 @@
 import React from "react";
 
-const UPDATED = "Sist oppdatert: 19.10.2026";
+const UPDATED = "Sist oppdatert: 25.10.2026";
 
 function List({ items = [] }) {
   return React.createElement(
@@ -18,6 +18,7 @@ export function createHelp45BSection({ Section }) {
       "Kundepris eks. mva. brukes samtidig som foreslått salgspris når varen legges i tilbudet. Salgsprisen kan endres før tilbudet sendes.",
       "Interne brukere kan på mobil skanne EAN/GTIN i varesøket på en aktiv tilbudspost eller opsjon. Velg riktig treff før varen legges inn; manuelt søk fungerer fortsatt.",
       "Bruk «Forhåndsvis som kunde» før utsending for å kontrollere logo, priser inkl. mva., opsjoner, vilkår og totalsum uten å publisere tilbudet eller sende e-post.",
+      "Får du beskjed om manglende innlogging i forhåndsvisningen? Åpne Expo ProffDok fra lenken i feilmeldingen og logg inn på samme adresse. Gå tilbake til forhåndsvisningen og trykk Prøv igjen. Vanlig fanebytte bevarer opsjonene du prøver. Prøvevalg lagres ikke i tilbudet.",
       "Hvis tilbudet er endret mens kunden ser på det, vises en beskjed om å hente tilbudet på nytt. En avvist aksept gir ingen kvittering.",
       "Når kunden aksepterer kan mindre oppdrag videreføres som Enkel ordre, mens større oppdrag kan aktiveres som ordinært prosjekt.",
       "Aksepterte varetilbud har Bestillingsgrunnlag med varenummer, antall og relevante produktidentifikatorer. Pris og intern nto-pris skal ikke være med i bestillingslisten.",
