@@ -1,3 +1,4 @@
+import {boligAllowedOrigins} from './bolig-origins.mjs';
 export const contractReviewSchema={type:'object',additionalProperties:false,required:['findings','not_found','limitations'],properties:{
  findings:{type:'array',maxItems:60,items:{type:'object',additionalProperties:false,required:['kind','topic','title','explanation','sources'],properties:{
   kind:{type:'string',enum:['requirement','risk','uncertain']},topic:{type:'string',enum:['delivery','deadline','payment','notification','documentation','change','guarantee','other']},
@@ -25,7 +26,7 @@ export function validateContractReview(result,sources){
  }
  return result;
 }
-const origins=new Set(['https://expo-proffdok-git-fase45b-boligprosjekter-found-0509d8-ringside.vercel.app','https://expo-proffdok.app','https://expo-proffdok-git-demo-ringside.vercel.app']);
+const origins=new Set(boligAllowedOrigins);
 const uuid=value=>typeof value==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 // Never forward raw errors: provider messages/causes may contain private input.
 export function contractProviderFailure(error){

@@ -40,6 +40,17 @@ try{
  await db.exec('revoke all on function public.get_my_personal_context() from public,anon;grant execute on function public.get_my_personal_context() to authenticated;');
  // Install the actual self-attendance metadata addition on a minimal platform.
  await db.exec('create table bolig_private.attendance_people(root_id uuid,user_id uuid,enabled boolean);create table bolig_private.attendance_states(root_id uuid,enabled boolean);');
+ // Release rehearsal can use captured actual Production definitions instead
+ // of assuming that the migration fixtures equal the installed shared code.
+ const releaseNames=['hr_private.can_read','hr_private.has_module_access','public.get_my_personal_context','public.people_modules_company_get','public.people_modules_user_get'];
+ let releaseDefinitions=[];
+ if(process.env.BOLIG_RELEASE_BASELINE){
+  const baseline=JSON.parse(await fs.readFile(process.env.BOLIG_RELEASE_BASELINE,'utf8'));
+  assert.equal(baseline.production_project,'dqffxflaoyarbxyiyhop','Expected Production source snapshot');
+  releaseDefinitions=baseline.production_shared.filter(f=>releaseNames.includes(f.schema+'.'+f.proname));
+  assert.equal(releaseDefinitions.length,5,'Exactly the reviewed shared functions');
+  for(const f of releaseDefinitions)await db.exec(f.definition);
+ }
  const attendance=await fs.readFile('supabase/migrations/20261024100223_bolig_named_self_attendance.sql','utf8');
  await db.exec(attendance.slice(attendance.indexOf('do $patch$')));
  await db.exec("insert into bolig_private.firms(company_id,enabled) values('"+firm+"',true);insert into bolig_private.member_access(company_id,user_id,access_role) values('"+firm+"','"+reader+"','reader'),('"+firm+"','"+manager+"','manager');");
@@ -93,5 +104,19 @@ try{
  await db.exec('reset role;set role anon');await denied(context);
  await denied(()=>sql('select bolig_private.hr_included($1,$2) v',[firm,reader]));
  await db.exec('reset role');eq(await sql("select has_function_privilege('authenticated','bolig_private.hr_included(uuid,uuid)','execute') v"),false);
+ if(releaseDefinitions.length){
+  await db.exec('reset role');
+  // Back out only the five shared entry points; retain additive Bolig data.
+  for(const f of releaseDefinitions.filter(f=>f.proname!=='can_read'))await db.exec(f.definition);
+  for(const f of releaseDefinitions){
+   const restored=await sql('select pg_get_functiondef(p.oid) v from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname=$1 and p.proname=$2',[f.schema,f.proname]);
+   const expected=f.proname==='can_read'?f.definition.replace('e.leader_id=u','coalesce(e.leader_id=u,false)'):f.definition;
+   eq(restored,expected,'Safe rollback preserves NULL-leader denial and otherwise restores Production: '+f.schema+'.'+f.proname);
+  }
+  eq(await sql("select to_regclass('bolig_private.firms') is not null v"),true,'Rollback retains additive tables and their data');
+  eq(await access(reader),true,'Independent HR grant still works after rollback');
+  await actor(reader);
+  eq((await personal()).company_hr,true,'Original Min side metadata still works after rollback');
+ }
  console.log(`Bolig HR access: ${checks} assertions PASS; real HR actor/setup/employee gates and CAS, derived license, independent grants, tenant/role/revocation/closed-employment isolation. Platform/Auth fixtures synthetic.`);
 }finally{await db.close();}

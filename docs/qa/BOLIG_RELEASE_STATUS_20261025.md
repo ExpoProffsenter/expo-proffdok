@@ -4,6 +4,23 @@
 og Sandbox. Ingen produksjonsmerge, produksjonsmigrasjon eller e-postaktivering.
 PR #278 skal fortsatt være OPEN DRAFT. Ingen samlet TEST OK er gitt.
 
+## Produksjonsklargjøring – kontrollert plan, ingen merge
+
+Gjeldende utrullings-/gjenopprettingsplan står i
+`BOLIG_PRODUKSJONSKLARGJORING_20261025.md`. Alle 72 migrasjoner er avstemt mot
+faktisk Sandbox-payload, og lesende preflight mot faktisk produksjon består.
+Lokal installasjon/recovery, felles HR-funksjoner og bevaring av Storage er prøvd.
+
+En konkret produksjonsfeil er rettet: nye Bolig-filgatewayer og kontraktsruten
+godtar også det verifiserte www-domenet. Kun de to filgatewayene er oppdatert i
+Sandbox, med uendrede JWT-/egne innsynskontroller. Ingen produksjonsfunksjon er
+installert eller endret. Nye kontrolltrinn er lagt til CI uten å fjerne gamle.
+
+**Backupporten er fortsatt åpen:** Supabase krevde CAPTCHA etter
+sikker innlogging; innloggingen ble ikke fullført. Ingen backupdato, PITR eller faktisk restore er attestert.
+Ingen betalt ressurs er opprettet. Kenneths samlede TEST OK og tidligere avtalte
+fysiske prøver gjenstår. PR278 forblir OPEN DRAFT; ny CI/status føres i PR-en.
+
 ## Siste ferdigstillingspakke: løpende overtakelse
 
 Gjeldende produktregel, fiktiv 12-boligers pilot og konkret brukerprøve står i

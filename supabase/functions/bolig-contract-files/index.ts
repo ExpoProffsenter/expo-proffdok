@@ -1,9 +1,10 @@
+import {boligAllowedOrigins} from '../_shared/bolig-origins.mjs';
 import {createClient} from 'npm:@supabase/supabase-js@2.45.0';
 import {createContractFiles} from '../_shared/bolig-contract-files.mjs';
 const url=Deno.env.get('SUPABASE_URL')||'',anon=Deno.env.get('SUPABASE_ANON_KEY')||'',service=Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')||'';
 const path=(value:string)=>value.split('/').map(encodeURIComponent).join('/');
 Deno.serve(createContractFiles({
- origins:['https://expo-proffdok-git-fase45b-boligprosjekter-found-0509d8-ringside.vercel.app','https://expo-proffdok.app','https://expo-proffdok-git-demo-ringside.vercel.app'],
+ origins:boligAllowedOrigins,
  authenticate:async(authorization:string)=>{
   const user=createClient(url,anon,{global:{headers:{Authorization:authorization}},auth:{persistSession:false,autoRefreshToken:false}});
   const {data,error}=await user.auth.getUser();if(error||!data.user)return null;

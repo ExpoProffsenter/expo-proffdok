@@ -1,3 +1,4 @@
+import {boligAllowedOrigins} from '../_shared/bolig-origins.mjs';
 import { createPartnerFiles } from "../_shared/bolig-partner-files.mjs";
 const url = Deno.env.get("SUPABASE_URL") || "",
   anon = Deno.env.get("SUPABASE_ANON_KEY") || "",
@@ -60,10 +61,6 @@ Deno.serve(
         { method: "GET" },
         service,
       ),
-    origins: [
-      "https://expo-proffdok-git-fase45b-boligprosjekter-found-0509d8-ringside.vercel.app",
-      "https://expo-proffdok.app",
-      "https://expo-proffdok-git-demo-ringside.vercel.app",
-    ],
+    origins: boligAllowedOrigins,
   }),
 );
