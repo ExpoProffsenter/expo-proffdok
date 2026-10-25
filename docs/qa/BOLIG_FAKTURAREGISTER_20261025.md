@@ -117,3 +117,38 @@ innloggede prøve gjenstår. Ingen samlet TEST OK. PR #278 skal forbli OPEN DRAF
    tidligere beløpet. Kontroller at samme data finnes etter omlasting.
 5. Ved eldre fakturadato: kontroller og bekreft riktig indeksmåned når appen ber om
    det. Prøv Utklippsverktøy og et faktisk fanebytte med usendt arbeid.
+
+## Rettelse: fakturaoversikt og skjermklipp
+
+Fanen heter nå Fakturaoversikt. Fakturalisten lå tidligere inni seksjonen som
+ble skjult ved bytte fra Fakturert og a konto. Den ligger nå utenfor den skjulte
+seksjonen og viser lagrede fakturaer/kreditnotaer, også for lesere. Tom liste får
+en tydelig forklaring. Rediger bruker samme lagrede faktura; ingen ny post lages.
+Tidligere godkjente indeksberegninger er fortsatt tilgjengelige nedenfor.
+
+Den tidligere blur-testen dekket ikke hele appens hendelsesrekke. Appen henter
+arbeidsprofil på focus og publiserer WORK_PROFILE_EVENT også når firmaet er likt.
+Kontraktsområdet behandlet dette som en blokkerende tilgangsendring og lukket
+popupen mens ny kontroll pågikk. Samme bekreftede firma i et synlig dokument
+kontrolleres nå i bakgrunnen, på samme måte som vanlig focus/minuttkontroll.
+Tilbakekalt tilgang, feil, faktisk skjult dokument og reelt firmabytte beholder
+sperren. Ingen global arbeidsprofil-, dialog-, tilgangs- eller databasekode endres.
+
+Før-/etterbevis fra Chromium:
+
+- Ny test for blur → focus → samme arbeidsprofil med forsinket tilgangssvar feilet
+  før rettelsen med 0 synlige dialoger mot forventet 1. Etter rettelsen beholder
+  samme native dialog både open-status, skjemadata og resultat uten lukkeflimt.
+- Ny test av lagret faktura i den gamle Historikk-fanen feilet med timeout fordi
+  fakturalisten var skjult. Ny Fakturaoversikt viser den samme posten og åpner
+  den til redigering. Tom liste og 320/390/1366 px inngår.
+- Ny kontroll av samme-firma-oppdatering etter tilbakekalling bekrefter at både
+  dialogen og privat økonomiinnhold fjernes. Leser får liste uten Rediger-knapper.
+
+Fysisk Windows Utklippsverktøy må fortsatt prøves av Kenneth. Hendelsesrekken
+er gjenskapt lokalt; dette er ikke en attestasjon av det faktiske OS-verktøyet.
+
+Sluttkode: 178 samlede kontraktsnettleserkontroller PASS (økonomi, indeks,
+original/OCR og tilgang), full critical Sandbox-build PASS, 51 core-boundary
+kontroller PASS mot main 36462e2b og diff --check PASS. Nyeste Preview/CI avleses
+på publisert commit; ingen produksjonsmerge eller migrasjon inngår i rettelsen.

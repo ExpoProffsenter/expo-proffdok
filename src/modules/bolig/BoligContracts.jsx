@@ -47,6 +47,10 @@ export default function BoligContracts({context,root}){
  useEffect(()=>{
   alive.current=true;confirmedAccess.current=null;invalidScope.current=false;foreground.current=!document.hidden;endPicking();setSnapshot(null);setOpened(null);setSelected(null);setHistory(null);setDraft(contractDraft(scope));load();
   const refresh=event=>{
+   // The app republishes its confirmed work profile after window focus. Keep
+   // the current dialog during a same-company check, as for a focus refresh.
+   // A real company change, hidden document or lost access still blocks it.
+   if(event?.type===WORK_PROFILE_EVENT&&event.detail?.active_company_id===context.company_id&&foreground.current&&!document.hidden&&confirmedAccess.current===scope){load({background:true});return;}
    if(event?.type==='focus'&&internalFrame.current&&foreground.current&&!document.hidden){internalFrame.current=false;return;}
    if(event?.type==='focus'){
     picker.current=false;

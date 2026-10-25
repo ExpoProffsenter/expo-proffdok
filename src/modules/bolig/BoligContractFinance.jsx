@@ -79,7 +79,7 @@ export default function BoligContractFinance({context,root,documents,active,fore
   {error&&<p role="alert" className="bolig-contract-error">{error}</p>}{notice&&<p role="status">{notice}</p>}
   {!meta&&<p>Henter økonomioversikten …</p>}
   {meta&&<>
-   <div className="bolig-finance-tabs" role="group" aria-label="Kontraktsøkonomi">{[...(manage?[['agreement','Kontraktssum og vilkår']]:[]),['overview','Fakturert og a konto'],['history','Historikk']].map(([id,label])=><button key={id} type="button" aria-pressed={surface===id} disabled={busy} className={surface===id?'':'secondary'} onClick={()=>showSurface(id)}>{label}</button>)}<button type="button" className="secondary" disabled={busy} onClick={()=>run(async valid=>{const value=await load(valid);if(valid())change({form_revision:value.revision});})}>Hent siste økonomioversikt</button></div>
+   <div className="bolig-finance-tabs" role="group" aria-label="Kontraktsøkonomi">{[...(manage?[['agreement','Kontraktssum og vilkår']]:[]),['overview','Fakturert og a konto'],['history','Fakturaoversikt']].map(([id,label])=><button key={id} type="button" aria-pressed={surface===id} disabled={busy} className={surface===id?'':'secondary'} onClick={()=>showSurface(id)}>{label}</button>)}<button type="button" className="secondary" disabled={busy} onClick={()=>run(async valid=>{const value=await load(valid);if(valid())change({form_revision:value.revision});})}>Hent siste økonomioversikt</button></div>
    {surface==='overview'&&meta.agreement&&<Summary lines={meta.totals}/>}
    {surface==='overview'&&!meta.agreement&&<p>Legg inn kontraktssummen under Kontraktssum og vilkår først.</p>}
    {!manage&&<p>Du kan lese fakturaene. En kontraktsadministrator kan lagre og redigere.</p>}
@@ -115,10 +115,10 @@ export default function BoligContractFinance({context,root,documents,active,fore
      <label>Merknad (valgfritt)<textarea rows={2} maxLength={500} value={f.reason} onChange={e=>form({reason:e.target.value})}/></label>
     </fieldset>
     <div className="bolig-finance-save"><span>{draft.attempt&&!busy?'Svar på lagring mangler. Trykk Lagre igjen for samme forsøk.':'Lagre oppdaterer begge hittil-summene. Fakturanumrene kan fylles inn senere.'}</span><button disabled={busy||indexBusy||(!draft.attempt&&!indexReady)} type="submit">{busy?'Lagrer …':'Lagre'}</button></div>
-   </form>}
+   </form>}</section>
+   {surface==='history'&&<p>Her finner du lagrede fakturaer og kreditnotaer. {manage?'Velg Rediger for å se eller endre en faktura. ':''}Tidligere godkjente indeksberegninger vises nedenfor og teller ikke som fakturert.</p>}
    {(surface==='overview'||surface==='history')&&<section aria-label="Lagrede fakturaer" className="bolig-finance-history"><h3>Lagrede fakturaer</h3>{!meta.entries.length&&<p>Ingen fakturaer er lagret ennå.</p>}{meta.entries.map(e=><article key={e.id} className="bolig-finance-line"><strong>{e.kind==='credit'?'Kreditnota':'Fakturaer'} · {e.input.date}</strong><p>A konto: {e.input.number||'Nummer ikke fylt inn'} · {money(e.result.principal_cents)}<br/>Indeksregulering: {e.input.index_number||(e.result.principal_cents===0?e.input.number:'')||'Nummer ikke fylt inn'} · {money(e.result.index_cents)}</p>{manage&&<button type="button" className="secondary" disabled={busy||!!draft.attempt} onClick={()=>edit(e)}>Rediger {e.input.number||e.input.index_number||e.input.date}</button>}</article>)}{meta.entries.length>0&&meta.entries.length%50===0&&<button type="button" className="secondary" disabled={busy} onClick={()=>run(async valid=>{const value=await contractFinanceRpc(context,root.id,'get',{before_revision:meta.entries.at(-1).revision});if(valid())setMeta(old=>({...value,entries:[...old.entries,...value.entries]}));})}>Vis eldre registreringer</button>}</section>}
    {surface==='overview'&&meta.agreement&&<button type="button" className="secondary" onClick={()=>showSurface('index')}>Beregn indeks for hele kontrakten</button>}
-  </section>
   </>}
   <section hidden={!meta||(surface!=='history'&&surface!=='index')}><BoligContractIndex context={context} root={root} documents={documents} agreement={lastAgreement.current} active={active&&!!meta} foreground={foreground} manage={manage} historyOnly={surface!=='index'} onEditAgreement={()=>showSurface('agreement')} onAccessLost={onAccessLost}/></section>
  </div>;
