@@ -1,4 +1,5 @@
-import React from 'react';
+import React, {Suspense,useState} from 'react';
+const SiteRoster=React.lazy(()=>import('./BoligSiteRoster.jsx'));
 import AttendancePeople from './BoligAttendancePeople.jsx';
 import {useBoligAttendance} from './boligAttendance.js';
 import './boligAttendance.css';
@@ -13,12 +14,15 @@ export function attendanceCsv(title, day, visits) {
 }
 export default function BoligAttendance({context,root}) {
  const {data,error,busy,draft,update,run,load,disabled}=useBoligAttendance(context,root);
+ const [rosterOpen,setRosterOpen]=useState(false);
  const day=draft.day||osloInput().slice(0,10), form=draft.form;
  const set=(key,value)=>update({form:{...form,[key]:value}});
  const exportList=()=>{const url=URL.createObjectURL(new Blob([attendanceCsv(root.title,day,data.visits)],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download=`bemanning-${day}.csv`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
  if(context.role!=='manager') return <p>Bemanningslisten er tilgjengelig for prosjektleder.</p>;
  return <section className="bolig-attendance" aria-label="Faktisk bemanning">
- <h3>Faktisk bemanning</h3><p>Registrer hvem som er på prosjektet. Dette er registrert tilstedeværelse, uavhengig av planlagt bemanning. Tidene vises i norsk tid.</p>
+ <h3>Faktisk bemanning</h3>
+ <button type="button" onClick={()=>setRosterOpen(true)}>Oversiktsliste ved tilsyn</button>
+ {rosterOpen&&<Suspense fallback={<p role="status">Henter oversiktslisten …</p>}><SiteRoster context={context} root={root} onClose={()=>setRosterOpen(false)}/></Suspense>}<p>Registrer hvem som er på prosjektet. Dette er registrert tilstedeværelse, uavhengig av planlagt bemanning. Tidene vises i norsk tid.</p>
  {error&&<p role="alert">{error}</p>}<button type="button" disabled={busy} onClick={load}>Hent siste liste</button>
  {draft.pending&&<p role="status">Lagring er ikke bekreftet. <button type="button" disabled={busy||!data} onClick={()=>run(null,{},true)}>Prøv samme lagring igjen</button></p>}
  {!data?<p role="status">Listen må bekreftes mot server før bruk. Kladden er beholdt.</p>:<>
