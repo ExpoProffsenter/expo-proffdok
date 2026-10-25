@@ -1,0 +1,1800 @@
+{
+  "date": "2026-10-25",
+  "timezone": "Europe/Oslo",
+  "source": "Controlled release and Sandbox mail verification recorded in the same authorized session; this is an observation at release time, not a live monitor.",
+  "status": "PRODUCTION_DEPLOYED_AND_VERIFIED; MAIN_TO_DEMO_SYNCED; SANDBOX_BACKEND_PREFLIGHT_PASS; BOLIG_LICENSES_AND_TRANSPORTS_OFF",
+  "candidate": {
+    "commit": "f39d374c28242b941ebf18f1f265560bc44f9752",
+    "tree": "d7612864810712e1f7212072f9f91d80b2275e6e",
+    "main": "36462e2b05ecd8e53dcdd7818c4b791b7c7cb2ed",
+    "ci": 40200801530,
+    "ci_after_ready": 40206639042,
+    "ci_after_ready_result": {
+      "status": "completed",
+      "conclusion": "success",
+      "all_returned_steps_success": true
+    }
+  },
+  "production_project": "dqffxflaoyarbxyiyhop",
+  "preflight": "PASS before installation; 312 manifest assertions + 55 core boundary assertions PASS",
+  "migrations": [
+    {
+      "order": 1,
+      "path": "supabase/migrations/20261020201453_boligprosjekter_foundation.sql",
+      "file_version": "20261020201453",
+      "migration_name": "boligprosjekter_foundation",
+      "sha256": "6ece2853c7984b87c763f151cd19f3295667efe77daa55f493c9f657c2ae2073",
+      "sandbox_version": "20261020202112",
+      "sandbox_name": "boligprosjekter_foundation",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025142409",
+        "name": "boligprosjekter_foundation",
+        "sql_md5": "52cf326ab19f059650f9dd2f6a0a2eac"
+      }
+    },
+    {
+      "order": 2,
+      "path": "supabase/migrations/20261020202637_boligprosjekter_fk_indexes.sql",
+      "file_version": "20261020202637",
+      "migration_name": "boligprosjekter_fk_indexes",
+      "sha256": "8257e49786cc222886fa61dd20b0908b6414c17bc4c25fbc4ef54f49120aab91",
+      "sandbox_version": "20261020202709",
+      "sandbox_name": "boligprosjekter_fk_indexes",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025142411",
+        "name": "boligprosjekter_fk_indexes",
+        "sql_md5": "33e44d2896150f99f006dfe5791bfa78"
+      }
+    },
+    {
+      "order": 3,
+      "path": "supabase/migrations/20261020203617_boligprosjekter_root_list_scope.sql",
+      "file_version": "20261020203617",
+      "migration_name": "boligprosjekter_root_list_scope",
+      "sha256": "c89fd3056dc315fc0a516d3f13e4dcef696f4053f84968c1357f2f5c6a689083",
+      "sandbox_version": "20261020203641",
+      "sandbox_name": "boligprosjekter_root_list_scope",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025142413",
+        "name": "boligprosjekter_root_list_scope",
+        "sql_md5": "bf4790362751177a2347815d3ced81c0"
+      }
+    },
+    {
+      "order": 4,
+      "path": "supabase/migrations/20261020204107_boligprosjekter_conflict_http_status.sql",
+      "file_version": "20261020204107",
+      "migration_name": "boligprosjekter_conflict_http_status",
+      "sha256": "2a9da53d3f1fc863919a3f23b81780e69c6a111aeebe690151c2138149c63066",
+      "sandbox_version": "20261020204137",
+      "sandbox_name": "boligprosjekter_conflict_http_status",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025142415",
+        "name": "boligprosjekter_conflict_http_status",
+        "sql_md5": "20a309e90459e762c3b30d22e05dc8af"
+      }
+    },
+    {
+      "order": 5,
+      "path": "supabase/migrations/20261020205027_boligprosjekter_project_link_lifecycle.sql",
+      "file_version": "20261020205027",
+      "migration_name": "boligprosjekter_project_link_lifecycle",
+      "sha256": "3c657700c6a93ed36c1492b295d494042fd458f890ff04c0f8fd7fb7685ed6c6",
+      "sandbox_version": "20261020205119",
+      "sandbox_name": "boligprosjekter_project_link_lifecycle",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025142417",
+        "name": "boligprosjekter_project_link_lifecycle",
+        "sql_md5": "6f0dded0d41860911f35dae4e02b62a2"
+      }
+    },
+    {
+      "order": 6,
+      "path": "supabase/migrations/20261020212755_boligprosjekter_systemadmin_firm_access.sql",
+      "file_version": "20261020212755",
+      "migration_name": "boligprosjekter_systemadmin_firm_access",
+      "sha256": "8ea2a9af8cd6ab4132334c8cab2a154633fd0744d58fb8fd434355e7790eede3",
+      "sandbox_version": "20261020212953",
+      "sandbox_name": "boligprosjekter_systemadmin_firm_access",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025142419",
+        "name": "boligprosjekter_systemadmin_firm_access",
+        "sql_md5": "818405992cbbf231348b4ca15a11e459"
+      }
+    },
+    {
+      "order": 7,
+      "path": "supabase/migrations/20261020214210_boligprosjekter_packages_choices.sql",
+      "file_version": "20261020214210",
+      "migration_name": "boligprosjekter_packages_choices",
+      "sha256": "b556b4adbcae9bcd03fd2901b154a7b0c21ab64610892bbd5ec8ba6f3afd2e80",
+      "sandbox_version": "20261020215241",
+      "sandbox_name": "boligprosjekter_packages_choices",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025142421",
+        "name": "boligprosjekter_packages_choices",
+        "sql_md5": "7565e2d906514aa65b533983d6f160fd"
+      }
+    },
+    {
+      "order": 8,
+      "path": "supabase/migrations/20261020215336_boligprosjekter_choice_unit_index.sql",
+      "file_version": "20261020215336",
+      "migration_name": "boligprosjekter_choice_unit_index",
+      "sha256": "d4a0b2136d4168c1003fbceed7b3c8dc3f4d029435bb549327dc382f6d79425b",
+      "sandbox_version": "20261020215408",
+      "sandbox_name": "boligprosjekter_choice_unit_index",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025142423",
+        "name": "boligprosjekter_choice_unit_index",
+        "sql_md5": "85f942e2c2dae31a974f09299177a05d"
+      }
+    },
+    {
+      "order": 9,
+      "path": "supabase/migrations/20261020220230_boligprosjekter_order_drafts_product_images.sql",
+      "file_version": "20261020220230",
+      "migration_name": "boligprosjekter_order_drafts_product_images",
+      "sha256": "2fddb5251f093b4fe6ecf521e639b6d53544a301685201b486e8f5d15f85798c",
+      "sandbox_version": "20261020220723",
+      "sandbox_name": "boligprosjekter_order_drafts_product_images",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025142425",
+        "name": "boligprosjekter_order_drafts_product_images",
+        "sql_md5": "88787b26d4ede148d9df940eeb539277"
+      }
+    },
+    {
+      "order": 10,
+      "path": "supabase/migrations/20261020223523_boligprosjekter_overview_status.sql",
+      "file_version": "20261020223523",
+      "migration_name": "boligprosjekter_overview_status",
+      "sha256": "b957a0dfb2330a95141b6091ef91138bc9b63c1f28fd967949225d465112469f",
+      "sandbox_version": "20261020224107",
+      "sandbox_name": "boligprosjekter_overview_status",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025142427",
+        "name": "boligprosjekter_overview_status",
+        "sql_md5": "589cd53676f5edc1391eb7a63f3e710b"
+      }
+    },
+    {
+      "order": 11,
+      "path": "supabase/migrations/20261020230426_boligprosjekter_unit_contact.sql",
+      "file_version": "20261020230426",
+      "migration_name": "boligprosjekter_unit_contact",
+      "sha256": "4e349b2e285574718ea41ff0b65d2611aa87dd7383f81f1189e03d904229c6f5",
+      "sandbox_version": "20261020230720",
+      "sandbox_name": "boligprosjekter_unit_contact",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025142444",
+        "name": "boligprosjekter_unit_contact",
+        "sql_md5": "3bbfc3874a8cb992adf4f5bbe95f28cc"
+      }
+    },
+    {
+      "order": 12,
+      "path": "supabase/migrations/20261021000023_bolig_project_builder.sql",
+      "file_version": "20261021000023",
+      "migration_name": "bolig_project_builder",
+      "sha256": "3753149b44b5fc85f050857bedef278339ccd4af5ab494871eae78bba623428a",
+      "sandbox_version": "20261021000642",
+      "sandbox_name": "bolig_project_builder",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025142446",
+        "name": "bolig_project_builder",
+        "sql_md5": "cf14ec67d787c46bc5377707ed753456"
+      }
+    },
+    {
+      "order": 13,
+      "path": "supabase/migrations/20261021001124_bolig_building_household_guard.sql",
+      "file_version": "20261021001124",
+      "migration_name": "bolig_building_household_guard",
+      "sha256": "422d7d299d3cd2b0fd28763f1ef9ea92852d89f27bff68cbae1274a5b3693555",
+      "sandbox_version": "20261021001226",
+      "sandbox_name": "bolig_building_household_guard",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025142448",
+        "name": "bolig_building_household_guard",
+        "sql_md5": "b98500c90c710c293a54f66a0658c66d"
+      }
+    },
+    {
+      "order": 14,
+      "path": "supabase/migrations/20261021145003_bolig_rooms.sql",
+      "file_version": "20261021145003",
+      "migration_name": "bolig_rooms",
+      "sha256": "0f456fa6238bfc7aed375c355158d000aa45bda9a4985d2e094c53676c5ce365",
+      "sandbox_version": "20261021145751",
+      "sandbox_name": "bolig_rooms",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025142450",
+        "name": "bolig_rooms",
+        "sql_md5": "f6ee31cc6eb972e38dd5d67099a1ea9c"
+      }
+    },
+    {
+      "order": 15,
+      "path": "supabase/migrations/20261021145829_bolig_room_fk_indexes.sql",
+      "file_version": "20261021145829",
+      "migration_name": "bolig_room_fk_indexes",
+      "sha256": "96c0879e6f3ae88530b2b0f68ddc30b5eb98e8893404f23a0f92f664db76e029",
+      "sandbox_version": "20261021145842",
+      "sandbox_name": "bolig_room_fk_indexes",
+      "sql_match": "index_comments_and_whitespace",
+      "actual": {
+        "version": "20261025142452",
+        "name": "bolig_room_fk_indexes",
+        "sql_md5": "1e95eb4ca0987eab7aad93e7ed6d52eb"
+      }
+    },
+    {
+      "order": 16,
+      "path": "supabase/migrations/20261021155350_bolig_room_contents.sql",
+      "file_version": "20261021155350",
+      "migration_name": "bolig_room_contents",
+      "sha256": "5ff724865a90e69e499c210b09b4d5cab15694df3c7495e1818d57599d00a5ba",
+      "sandbox_version": "20261021161355",
+      "sandbox_name": "bolig_room_contents",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025142454",
+        "name": "bolig_room_contents",
+        "sql_md5": "6c5cf24349b836d8725cbd515e23c69b"
+      }
+    },
+    {
+      "order": 17,
+      "path": "supabase/migrations/20261021163256_bolig_scoped_package_choices.sql",
+      "file_version": "20261021163256",
+      "migration_name": "bolig_scoped_package_choices",
+      "sha256": "4835e9f61fe946b293c984c25d19769d6fbfb4e7be20afc76b457118ebdeaa7b",
+      "sandbox_version": "20261021164838",
+      "sandbox_name": "bolig_scoped_package_choices",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025142456",
+        "name": "bolig_scoped_package_choices",
+        "sql_md5": "2319546cec8ad01ce994c72821296efa"
+      }
+    },
+    {
+      "order": 18,
+      "path": "supabase/migrations/20261021173913_bolig_catalog_image_uploads.sql",
+      "file_version": "20261021173913",
+      "migration_name": "bolig_catalog_image_uploads",
+      "sha256": "f712db1c735eea1d484c518ad5f039e9266525e04d0ca6f4042d483e04560587",
+      "sandbox_version": "20261021174611",
+      "sandbox_name": "bolig_catalog_image_uploads",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025142458",
+        "name": "bolig_catalog_image_uploads",
+        "sql_md5": "f222ff0fdd41a47817deb620b07fb246"
+      }
+    },
+    {
+      "order": 19,
+      "path": "supabase/migrations/20261021182208_bolig_project_preparation.sql",
+      "file_version": "20261021182208",
+      "migration_name": "bolig_project_preparation",
+      "sha256": "b08c5a862779950ae660dfa8a64cac3c7da1da6f83ca4ea2e644fa43e0a2b4fb",
+      "sandbox_version": "20261021183932",
+      "sandbox_name": "bolig_project_preparation",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025142500",
+        "name": "bolig_project_preparation",
+        "sql_md5": "6997e8335ff992f8c1abdad470954c2e"
+      }
+    },
+    {
+      "order": 20,
+      "path": "supabase/migrations/20261021194409_bolig_catalog_sections.sql",
+      "file_version": "20261021194409",
+      "migration_name": "bolig_catalog_sections",
+      "sha256": "deb4b1e1e4dbb967878ef29ab43991edc83cd7571ec11d8275a14b0132857878",
+      "sandbox_version": "20261021195933",
+      "sandbox_name": "bolig_catalog_sections",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025142504",
+        "name": "bolig_catalog_sections",
+        "sql_md5": "7989ed74a352c126c366feaa2c08ccd0"
+      }
+    },
+    {
+      "order": 21,
+      "path": "supabase/migrations/20261021202352_bolig_orders_deliveries.sql",
+      "file_version": "20261021202352",
+      "migration_name": "bolig_orders_deliveries",
+      "sha256": "317aa1e0415cd398f085a03c4a2208d6140b4c76e8cf2f35ad5565add4154055",
+      "sandbox_version": "20261021203854",
+      "sandbox_name": "bolig_orders_deliveries",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025142506",
+        "name": "bolig_orders_deliveries",
+        "sql_md5": "26649ab394f85a2a444b2551c7ebe906"
+      }
+    },
+    {
+      "order": 22,
+      "path": "supabase/migrations/20261021203036_bolig_order_email_attachments.sql",
+      "file_version": "20261021203036",
+      "migration_name": "bolig_order_email_attachments",
+      "sha256": "170b3024ec16ed86e082966867e4c079b8d6c0f7e2ce420e2fd953b8d635d244",
+      "sandbox_version": "20261021203900",
+      "sandbox_name": "bolig_order_email_attachments",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025142508",
+        "name": "bolig_order_email_attachments",
+        "sql_md5": "13b5a79eb0b3e0f665f0bc1ad1b927c2"
+      }
+    },
+    {
+      "order": 23,
+      "path": "supabase/migrations/20261021204213_bolig_delivery_overview.sql",
+      "file_version": "20261021204213",
+      "migration_name": "bolig_delivery_overview",
+      "sha256": "edcc0ddc62b99cb9653b2a6e1dd58c86d66525bab82d3c4e2b540b3c29b38742",
+      "sandbox_version": "20261021204341",
+      "sandbox_name": "bolig_delivery_overview",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025142509",
+        "name": "bolig_delivery_overview",
+        "sql_md5": "e114bcf0909eb36fcf5aa66e5a38ec0d"
+      }
+    },
+    {
+      "order": 24,
+      "path": "supabase/migrations/20261021205031_bolig_delivery_fk_indexes.sql",
+      "file_version": "20261021205031",
+      "migration_name": "bolig_delivery_fk_indexes",
+      "sha256": "b225f1c25518a09dbffb6c22b2350127553f341a7574ee3e2c968e743c866516",
+      "sandbox_version": "20261021205112",
+      "sandbox_name": "bolig_delivery_fk_indexes",
+      "sql_match": "index_comments_and_whitespace",
+      "actual": {
+        "version": "20261025142512",
+        "name": "bolig_delivery_fk_indexes",
+        "sql_md5": "2764143fcf43a46201234f5604140e25"
+      }
+    },
+    {
+      "order": 25,
+      "path": "supabase/migrations/20261021213014_bolig_unit_customization.sql",
+      "file_version": "20261021213014",
+      "migration_name": "bolig_unit_customization",
+      "sha256": "9431e090376c1c3c8f0aa323245d1cb73f5a1b81c62e36b6db52fc997235cfcd",
+      "sandbox_version": "20261021213929",
+      "sandbox_name": "bolig_unit_customization",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025142514",
+        "name": "bolig_unit_customization",
+        "sql_md5": "4a51c370e8b4fbdd126df49e81133e25"
+      }
+    },
+    {
+      "order": 26,
+      "path": "supabase/migrations/20261021215044_bolig_order_mail_sender_access.sql",
+      "file_version": "20261021215044",
+      "migration_name": "bolig_order_mail_sender_access",
+      "sha256": "9c4d7a149678bd0fb784c9d61cdd1a145db39a110fbe70228e457922904a9d11",
+      "sandbox_version": "20261021215306",
+      "sandbox_name": "bolig_order_mail_sender_access",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025142519",
+        "name": "bolig_order_mail_sender_access",
+        "sql_md5": "4cc98452e9fbf7aeec099ac08f5da13f"
+      }
+    },
+    {
+      "order": 27,
+      "path": "supabase/migrations/20261021222820_bolig_documented_completion.sql",
+      "file_version": "20261021222820",
+      "migration_name": "bolig_documented_completion",
+      "sha256": "612e8c2b595d64d679b41a8620e9bca8375dd3790ea755b9b905d77a6706fb69",
+      "sandbox_version": "20261021223700",
+      "sandbox_name": "bolig_documented_completion",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025142522",
+        "name": "bolig_documented_completion",
+        "sql_md5": "37002990221d2ec3f4433652d252c11e"
+      }
+    },
+    {
+      "order": 28,
+      "path": "supabase/migrations/20261021223812_bolig_completion_aggregate_handover.sql",
+      "file_version": "20261021223812",
+      "migration_name": "bolig_completion_aggregate_handover",
+      "sha256": "f46f469079490f63a5f11147049958b85b306cd659189118a386c1fb7fbb603c",
+      "sandbox_version": "20261021224007",
+      "sandbox_name": "bolig_completion_aggregate_handover",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025142524",
+        "name": "bolig_completion_aggregate_handover",
+        "sql_md5": "023ab5c9f940258b985f5d7e1155efc6"
+      }
+    },
+    {
+      "order": 29,
+      "path": "supabase/migrations/20261021231138_bolig_native_documentation.sql",
+      "file_version": "20261021231138",
+      "migration_name": "bolig_native_documentation",
+      "sha256": "ffa08e2363c20c8391a5af91d4f483e9b71c27f1c7c967ac80d2c725e2004383",
+      "sandbox_version": "20261021233354",
+      "sandbox_name": "bolig_native_documentation",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025142526",
+        "name": "bolig_native_documentation",
+        "sql_md5": "a7e77a34c43db69a56310aae5b653545"
+      }
+    },
+    {
+      "order": 30,
+      "path": "supabase/migrations/20261021231808_bolig_protocol_confirmation_email.sql",
+      "file_version": "20261021231808",
+      "migration_name": "bolig_protocol_confirmation_email",
+      "sha256": "28bdb35f7a0a0125e133e234ba2e21edfd5f4128004ce4049a3091ff7cbedbc6",
+      "sandbox_version": "20261021233409",
+      "sandbox_name": "bolig_protocol_confirmation_email",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025142528",
+        "name": "bolig_protocol_confirmation_email",
+        "sql_md5": "ba2fe3df2f001c57d94a04427e3fbd37"
+      }
+    },
+    {
+      "order": 31,
+      "path": "supabase/migrations/20261022001627_bolig_streamlined_workflow.sql",
+      "file_version": "20261022001627",
+      "migration_name": "bolig_streamlined_workflow",
+      "sha256": "55ed240bfbf9ea96f61e3dc9a9d37afe940c5c9491d139c76fc183af4519981c",
+      "sandbox_version": "20261022004107",
+      "sandbox_name": "bolig_streamlined_workflow",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025142530",
+        "name": "bolig_streamlined_workflow",
+        "sql_md5": "5ab67d393d7c737a5dc66a603c1263c8"
+      }
+    },
+    {
+      "order": 32,
+      "path": "supabase/migrations/20261022002024_bolig_quality_distribution.sql",
+      "file_version": "20261022002024",
+      "migration_name": "bolig_quality_distribution",
+      "sha256": "49e489e41593b8caa04123d0bdbf34daf8538f69498bced9cd83eded6fa58cae",
+      "sandbox_version": "20261022004109",
+      "sandbox_name": "bolig_quality_distribution",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025142533",
+        "name": "bolig_quality_distribution",
+        "sql_md5": "27f3facda41a0eb1ee4258960581952b"
+      }
+    },
+    {
+      "order": 33,
+      "path": "supabase/migrations/20261022002357_bolig_documentation_export.sql",
+      "file_version": "20261022002357",
+      "migration_name": "bolig_documentation_export",
+      "sha256": "b4b20f9d0f726e5a02bb526e43abcd0175c7cf738e880d37a5c6b2734d0a020f",
+      "sandbox_version": "20261022004110",
+      "sandbox_name": "bolig_documentation_export",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025142535",
+        "name": "bolig_documentation_export",
+        "sql_md5": "80c98f46149de734e8a45afa2fce6a7b"
+      }
+    },
+    {
+      "order": 34,
+      "path": "supabase/migrations/20261022185121_bolig_change_orders_resident_acceptance.sql",
+      "file_version": "20261022185121",
+      "migration_name": "bolig_change_orders_resident_acceptance",
+      "sha256": "f6cffaa6266a21cf40bc071fbcb181a9760620e96cc9dcbc5618b3f8e5703b09",
+      "sandbox_version": "20261022191516",
+      "sandbox_name": "bolig_change_orders_resident_acceptance",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025142537",
+        "name": "bolig_change_orders_resident_acceptance",
+        "sql_md5": "8bfdcd1917f8898ba0abae479c591743"
+      }
+    },
+    {
+      "order": 35,
+      "path": "supabase/migrations/20261022195339_bolig_agreement_fulfillment.sql",
+      "file_version": "20261022195339",
+      "migration_name": "bolig_agreement_fulfillment",
+      "sha256": "a3fbb6ab6d7420bb86fa249e477e55065e1c6f2a0187495fadce1c4c30b7f126",
+      "sandbox_version": "20261022200530",
+      "sandbox_name": "bolig_agreement_fulfillment",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025142539",
+        "name": "bolig_agreement_fulfillment",
+        "sql_md5": "df6c6493d2998393b92093b03ff176f1"
+      }
+    },
+    {
+      "order": 36,
+      "path": "supabase/migrations/20261022203739_bolig_resident_portal.sql",
+      "file_version": "20261022203739",
+      "migration_name": "bolig_resident_portal",
+      "sha256": "b4318da6b2b4002292ca612d914e5f10fa5a1e51eb70e915967dfe8ad5279d51",
+      "sandbox_version": "20261022204906",
+      "sandbox_name": "bolig_resident_portal",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025142541",
+        "name": "bolig_resident_portal",
+        "sql_md5": "50d2e6610e283b8dfc71914695ca7b6b"
+      }
+    },
+    {
+      "order": 37,
+      "path": "supabase/migrations/20261022222308_bolig_progress_notices.sql",
+      "file_version": "20261022222308",
+      "migration_name": "bolig_progress_notices",
+      "sha256": "85258179aa3962d563e1a658a030f810e262a058f5a647b79afa5c32960b288a",
+      "sandbox_version": "20261022223746",
+      "sandbox_name": "bolig_progress_notices",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025142543",
+        "name": "bolig_progress_notices",
+        "sql_md5": "066666f82e23f087cc88179a0db10449"
+      }
+    },
+    {
+      "order": 38,
+      "path": "supabase/migrations/20261022224451_bolig_progress_read_projection_alias.sql",
+      "file_version": "20261022224451",
+      "migration_name": "bolig_progress_read_projection_alias",
+      "sha256": "1b5abacb39fb61bc6ea153ac10c4c79cf4ed68d8fd66a5582734883e18632b61",
+      "sandbox_version": "20261022224555",
+      "sandbox_name": "bolig_progress_read_projection_alias",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025142545",
+        "name": "bolig_progress_read_projection_alias",
+        "sql_md5": "71c255d65f1efd4064cbc1fc3d510f4d"
+      }
+    },
+    {
+      "order": 39,
+      "path": "supabase/migrations/20261022225347_bolig_progress_recipient_module_access.sql",
+      "file_version": "20261022225347",
+      "migration_name": "bolig_progress_recipient_module_access",
+      "sha256": "bdbfc606eeea352af7bf33c9ea69b30063ce0f31713cc865a3ac8965738c5f4d",
+      "sandbox_version": "20261022225528",
+      "sandbox_name": "bolig_progress_recipient_module_access",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025142547",
+        "name": "bolig_progress_recipient_module_access",
+        "sql_md5": "67abf5d491fee763dae552166e57e226"
+      }
+    },
+    {
+      "order": 40,
+      "path": "supabase/migrations/20261022231401_bolig_progress_bulk_planning.sql",
+      "file_version": "20261022231401",
+      "migration_name": "bolig_progress_bulk_planning",
+      "sha256": "6ce8688abe7d5e8bf7bdfe1958ac5cd4cb4465a602a665747c5d803d5b3d13ed",
+      "sandbox_version": "20261022232238",
+      "sandbox_name": "bolig_progress_bulk_planning",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025142549",
+        "name": "bolig_progress_bulk_planning",
+        "sql_md5": "7d0f9b9abd7f9b9e0f71f59d03a2713b"
+      }
+    },
+    {
+      "order": 41,
+      "path": "supabase/migrations/20261022232949_bolig_progress_gateway_invoker.sql",
+      "file_version": "20261022232949",
+      "migration_name": "bolig_progress_gateway_invoker",
+      "sha256": "7ed68908acb732f8d24847b366fc77f67c16e31b193f425b7c0713dee6b2b264",
+      "sandbox_version": "20261022233041",
+      "sandbox_name": "bolig_progress_gateway_invoker",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025142559",
+        "name": "bolig_progress_gateway_invoker",
+        "sql_md5": "2225770340b5acebb22e012e2cbb7f95"
+      }
+    },
+    {
+      "order": 42,
+      "path": "supabase/migrations/20261023110103_bolig_planning_groups_dialogue.sql",
+      "file_version": "20261023110103",
+      "migration_name": "bolig_planning_groups_dialogue",
+      "sha256": "807e8a256c8a622bd1643f5b8f7f97609c16343aef21b7e2d37f42cb8f4b2022",
+      "sandbox_version": "20261023110103",
+      "sandbox_name": "bolig_planning_groups_dialogue",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025143450",
+        "name": "bolig_planning_groups_dialogue",
+        "sql_md5": "6bcf547574166281a8359deca122c518"
+      }
+    },
+    {
+      "order": 43,
+      "path": "supabase/migrations/20261023130433_bolig_manager_handover_review.sql",
+      "file_version": "20261023130433",
+      "migration_name": "bolig_manager_handover_review",
+      "sha256": "4960996b1fe4a15f8dc22285e661bf0568d3c12e44d97b433726304c1d023ccf",
+      "sandbox_version": "20261023130433",
+      "sandbox_name": "bolig_manager_handover_review",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025143453",
+        "name": "bolig_manager_handover_review",
+        "sql_md5": "1f5d017a138597ba3f84858740150da1"
+      }
+    },
+    {
+      "order": 44,
+      "path": "supabase/migrations/20261023132013_bolig_handover_single_entry.sql",
+      "file_version": "20261023132013",
+      "migration_name": "bolig_handover_single_entry",
+      "sha256": "5576655f23c4bdfa707f5e3746c2b76ae3411d18525887523f69d4b6b19cdfbb",
+      "sandbox_version": "20261023132013",
+      "sandbox_name": "bolig_handover_single_entry",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025143456",
+        "name": "bolig_handover_single_entry",
+        "sql_md5": "5324ad42b266811795f62c4c8ddc7699"
+      }
+    },
+    {
+      "order": 45,
+      "path": "supabase/migrations/20261023144403_bolig_handover_followup.sql",
+      "file_version": "20261023144403",
+      "migration_name": "bolig_handover_followup",
+      "sha256": "e4b3b2bcec4e032c20a5115bb72a9e8d5176f2c35a6cb2a7c4998b2d0f38ff95",
+      "sandbox_version": "20261023144403",
+      "sandbox_name": "bolig_handover_followup",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025143458",
+        "name": "bolig_handover_followup",
+        "sql_md5": "0ddcaf99136c0beb9152d40564d9c08d"
+      }
+    },
+    {
+      "order": 46,
+      "path": "supabase/migrations/20261023144404_bolig_contact_agreement_boundary.sql",
+      "file_version": "20261023144404",
+      "migration_name": "bolig_contact_agreement_boundary",
+      "sha256": "6e6d3a42bc42e361754002166e3fa3eb3750eb455e3a23cf399f4c6836600304",
+      "sandbox_version": "20261023144404",
+      "sandbox_name": "bolig_contact_agreement_boundary",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025143459",
+        "name": "bolig_contact_agreement_boundary",
+        "sql_md5": "706f6ade222930bb89686af22efbf2e3"
+      }
+    },
+    {
+      "order": 47,
+      "path": "supabase/migrations/20261023144405_bolig_delivery_effective_order_alias.sql",
+      "file_version": "20261023144405",
+      "migration_name": "bolig_delivery_effective_order_alias",
+      "sha256": "ede5000ab2e93ca0d2a3d1d0346273466c9ac5ccb6e0a6f50144e0268a82af4c",
+      "sandbox_version": "20261023144405",
+      "sandbox_name": "bolig_delivery_effective_order_alias",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025143502",
+        "name": "bolig_delivery_effective_order_alias",
+        "sql_md5": "c5b0b09a5c0e796e091d26b643581773"
+      }
+    },
+    {
+      "order": 48,
+      "path": "supabase/migrations/20261023155220_bolig_resident_notice_composer.sql",
+      "file_version": "20261023155220",
+      "migration_name": "bolig_resident_notice_composer",
+      "sha256": "271d5c154a4b0fbca3c3efedcfa57a4a59fbf719d6e0b72842e467c537f62758",
+      "sandbox_version": "20261023155220",
+      "sandbox_name": "bolig_resident_notice_composer",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025143504",
+        "name": "bolig_resident_notice_composer",
+        "sql_md5": "e3552aaaaa7b2376dd3f856c2a849ee4"
+      }
+    },
+    {
+      "order": 49,
+      "path": "supabase/migrations/20261023181847_bolig_partner_access.sql",
+      "file_version": "20261023181847",
+      "migration_name": "bolig_partner_access",
+      "sha256": "d58a45054b6db3908c311d28368bcc9633999148c0258ab92d0435187361f6d7",
+      "sandbox_version": "20261023181847",
+      "sandbox_name": "bolig_partner_access",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025143506",
+        "name": "bolig_partner_access",
+        "sql_md5": "17c5ffb8fe4c548e3246b079e1452367"
+      }
+    },
+    {
+      "order": 50,
+      "path": "supabase/migrations/20261023183331_bolig_partner_response_clock.sql",
+      "file_version": "20261023183331",
+      "migration_name": "bolig_partner_response_clock",
+      "sha256": "aea271504b91fea1b5995f566426dea8777acefaf2e386289ad016e99e6cd6ca",
+      "sandbox_version": "20261023183331",
+      "sandbox_name": "bolig_partner_response_clock",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025143508",
+        "name": "bolig_partner_response_clock",
+        "sql_md5": "b25f922251e5cf10e906c3b7239174a6"
+      }
+    },
+    {
+      "order": 51,
+      "path": "supabase/migrations/20261023184654_bolig_partner_issuer_entitlement.sql",
+      "file_version": "20261023184654",
+      "migration_name": "bolig_partner_issuer_entitlement",
+      "sha256": "6b07ed4b208c307ed4d8f402e7286c56a883a185f20c3619a4175db583b60e3f",
+      "sandbox_version": "20261023184654",
+      "sandbox_name": "bolig_partner_issuer_entitlement",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025143510",
+        "name": "bolig_partner_issuer_entitlement",
+        "sql_md5": "5be3ccf25e62724dc6ea3c95364e3753"
+      }
+    },
+    {
+      "order": 52,
+      "path": "supabase/migrations/20261023190621_bolig_partner_project_features.sql",
+      "file_version": "20261023190621",
+      "migration_name": "bolig_partner_project_features",
+      "sha256": "a80982af7bb65bd5efaffc6170de8d259baa1ff697d9ada4e2ae90b65a24c5e6",
+      "sandbox_version": "20261023190621",
+      "sandbox_name": "bolig_partner_project_features",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025143512",
+        "name": "bolig_partner_project_features",
+        "sql_md5": "8431e716b0a74b6b5c1234cfefdd04c8"
+      }
+    },
+    {
+      "order": 53,
+      "path": "supabase/migrations/20261023193507_bolig_partner_quality_writes.sql",
+      "file_version": "20261023193507",
+      "migration_name": "bolig_partner_quality_writes",
+      "sha256": "d6ab8950d94c1e1a2b9f5a50112b779ee6fe43400c003ee74ddc8bef91d7389f",
+      "sandbox_version": "20261023193507",
+      "sandbox_name": "bolig_partner_quality_writes",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025143514",
+        "name": "bolig_partner_quality_writes",
+        "sql_md5": "f93bb33b05626b67920f9486b1a7a8d3"
+      }
+    },
+    {
+      "order": 54,
+      "path": "supabase/migrations/20261023195824_bolig_quality_history_action.sql",
+      "file_version": "20261023195824",
+      "migration_name": "bolig_quality_history_action",
+      "sha256": "542eb087fecf8f82ce4ae71f0ca30fbee89836e4425e4ee148dff0d541147277",
+      "sandbox_version": "20261023195824",
+      "sandbox_name": "bolig_quality_history_action",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025143516",
+        "name": "bolig_quality_history_action",
+        "sql_md5": "d5ff35b0e1a28456e941180727bf5721"
+      }
+    },
+    {
+      "order": 55,
+      "path": "supabase/migrations/20261023210201_bolig_partner_invitation_mail.sql",
+      "file_version": "20261023210201",
+      "migration_name": "bolig_partner_invitation_mail",
+      "sha256": "80e08c4760b60f7def769052f09959acdc791b31daf67fe237ac9bd156776621",
+      "sandbox_version": "20261023210201",
+      "sandbox_name": "bolig_partner_invitation_mail",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025143518",
+        "name": "bolig_partner_invitation_mail",
+        "sql_md5": "0f030ab70905f84efc013cc6bf9b8861"
+      }
+    },
+    {
+      "order": 56,
+      "path": "supabase/migrations/20261023212214_bolig_partner_projection_once.sql",
+      "file_version": "20261023212214",
+      "migration_name": "bolig_partner_projection_once",
+      "sha256": "f473bca4872643f940e1ea03c30b5c5d7962b57d427d3d779f21c06e3b4056a2",
+      "sandbox_version": "20261023212214",
+      "sandbox_name": "bolig_partner_projection_once",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025143520",
+        "name": "bolig_partner_projection_once",
+        "sql_md5": "b24d06f4dabc4a1c84141c80121bc7a1"
+      }
+    },
+    {
+      "order": 57,
+      "path": "supabase/migrations/20261023214107_bolig_resident_invitation_mail.sql",
+      "file_version": "20261023214107",
+      "migration_name": "bolig_resident_invitation_mail",
+      "sha256": "bb46ff712b41abb219ba567a048b6f4ea7482b5013e1e37ead08e6ea6d7396d3",
+      "sandbox_version": "20261023214107",
+      "sandbox_name": "bolig_resident_invitation_mail",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025143539",
+        "name": "bolig_resident_invitation_mail",
+        "sql_md5": "cce1ecf901c172cdda6cc03da007c991"
+      }
+    },
+    {
+      "order": 58,
+      "path": "supabase/migrations/20261023224653_bolig_project_visuals.sql",
+      "file_version": "20261023224653",
+      "migration_name": "bolig_project_visuals",
+      "sha256": "40b01bfd4eab9e3f82e21ad1d4b6cb162e948d2560cc5e9dd7047bf6e6611c52",
+      "sandbox_version": "20261023224653",
+      "sandbox_name": "bolig_project_visuals",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025143543",
+        "name": "bolig_project_visuals",
+        "sql_md5": "3f49688eeeef5c46a9a8ede4c3395bbb"
+      }
+    },
+    {
+      "order": 59,
+      "path": "supabase/migrations/20261024011416_bolig_attendance.sql",
+      "file_version": "20261024011416",
+      "migration_name": "bolig_attendance",
+      "sha256": "6e1d6e16571227a8c7be703b58d1c9e676941c03e110341a12051c41e00349d6",
+      "sandbox_version": "20261024011416",
+      "sandbox_name": "bolig_attendance",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025143545",
+        "name": "bolig_attendance",
+        "sql_md5": "d3c7686e128741bbd6decbe47c987221"
+      }
+    },
+    {
+      "order": 60,
+      "path": "supabase/migrations/20261024100223_bolig_named_self_attendance.sql",
+      "file_version": "20261024100223",
+      "migration_name": "bolig_named_self_attendance",
+      "sha256": "3fc387d2ef7c5d9dfa4e1b915cfac906d5146d7d7ab823f14946a83b2725db9c",
+      "sandbox_version": "20261024100223",
+      "sandbox_name": "bolig_named_self_attendance",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025143547",
+        "name": "bolig_named_self_attendance",
+        "sql_md5": "07448352cb4ba333b43ab3e5801bea2e"
+      }
+    },
+    {
+      "order": 61,
+      "path": "supabase/migrations/20261024115852_bolig_project_integration.sql",
+      "file_version": "20261024115852",
+      "migration_name": "bolig_project_integration",
+      "sha256": "6ec8c654129795a1ac7c14d8592d4e099d245f9ad54474dc780ab56ed91e7d87",
+      "sandbox_version": "20261024115852",
+      "sandbox_name": "bolig_project_integration",
+      "sql_match": "trailing_whitespace",
+      "actual": {
+        "version": "20261025143549",
+        "name": "bolig_project_integration",
+        "sql_md5": "e92b8cc6d9fad0b3682e8471b6fcb13e"
+      }
+    },
+    {
+      "order": 62,
+      "path": "supabase/migrations/20261024171757_bolig_hr_included_access.sql",
+      "file_version": "20261024171757",
+      "migration_name": "bolig_hr_included_access",
+      "sha256": "c0836d3c92dddc861da357b4d9bec2b43f646ddb6eabd9b1057323da85c23714",
+      "sandbox_version": "20261024171757",
+      "sandbox_name": "bolig_hr_included_access",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025143552",
+        "name": "bolig_hr_included_access",
+        "sql_md5": "cc0e32ba560999eb2c365358a86aab13"
+      }
+    },
+    {
+      "order": 63,
+      "path": "supabase/migrations/20261024181231_bolig_private_contracts.sql",
+      "file_version": "20261024181231",
+      "migration_name": "bolig_private_contracts",
+      "sha256": "35d56fa95cfd71d45699dbf61a24d9c8017d4619f1180dda68109e62518884f3",
+      "sandbox_version": "20261024181231",
+      "sandbox_name": "bolig_private_contracts",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025143553",
+        "name": "bolig_private_contracts",
+        "sql_md5": "288b9a2c2ccf10da11788ac6bd3604ae"
+      }
+    },
+    {
+      "order": 64,
+      "path": "supabase/migrations/20261024191654_bolig_contract_reviews.sql",
+      "file_version": "20261024191654",
+      "migration_name": "bolig_contract_reviews",
+      "sha256": "59e1e947e8f8ec21c007dfe9b8ca2fd46c980525d88b959af9420ed5b337b0e4",
+      "sandbox_version": "20261024191654",
+      "sandbox_name": "bolig_contract_reviews",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025143556",
+        "name": "bolig_contract_reviews",
+        "sql_md5": "0f2a7f4cbf53746a9a846b9d44536dbb"
+      }
+    },
+    {
+      "order": 65,
+      "path": "supabase/migrations/20261024210413_bolig_contract_index.sql",
+      "file_version": "20261024210413",
+      "migration_name": "bolig_contract_index",
+      "sha256": "7b35a5ece9152b427001d43f6ba4642110168441f3fd8ec8172474ef9bb252ee",
+      "sandbox_version": "20261024210413",
+      "sandbox_name": "bolig_contract_index",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025143558",
+        "name": "bolig_contract_index",
+        "sql_md5": "22c947a629cd9e078e952a7c1bd0d227"
+      }
+    },
+    {
+      "order": 66,
+      "path": "supabase/migrations/20261024213720_bolig_contract_finance.sql",
+      "file_version": "20261024213720",
+      "migration_name": "bolig_contract_finance",
+      "sha256": "881bb54556044ec10bc0cd94ed61a5166a567523a44207a46e6e6d5706b1ed02",
+      "sandbox_version": "20261024213720",
+      "sandbox_name": "bolig_contract_finance",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025143600",
+        "name": "bolig_contract_finance",
+        "sql_md5": "dcc4ab60419d12d6a677d79bab396ed2"
+      }
+    },
+    {
+      "order": 67,
+      "path": "supabase/migrations/20261024225233_bolig_contract_monthly_basis.sql",
+      "file_version": "20261024225233",
+      "migration_name": "bolig_contract_monthly_basis",
+      "sha256": "54eb39fc2b5e82805964e3191cb5eb6d05ac037fccef70f76aa8aa0e49315dc0",
+      "sandbox_version": "20261024225233",
+      "sandbox_name": "bolig_contract_monthly_basis",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025143603",
+        "name": "bolig_contract_monthly_basis",
+        "sql_md5": "9590494b161092bfe82ec312bd6d3392"
+      }
+    },
+    {
+      "order": 68,
+      "path": "supabase/migrations/20261024232138_bolig_separate_index_invoice.sql",
+      "file_version": "20261024232138",
+      "migration_name": "bolig_separate_index_invoice",
+      "sha256": "4f74f55d9926a46f33497c205d568588cc53b9390eb1ba9f90314670b9ce1b3f",
+      "sandbox_version": "20261024232138",
+      "sandbox_name": "20261024231829_bolig_separate_index_invoice",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025143605",
+        "name": "bolig_separate_index_invoice",
+        "sql_md5": "68b3c640c37a888a4663ffc68897d704"
+      }
+    },
+    {
+      "order": 69,
+      "path": "supabase/migrations/20261024232319_bolig_index_invoice_canonical_source.sql",
+      "file_version": "20261024232319",
+      "migration_name": "bolig_index_invoice_canonical_source",
+      "sha256": "9478ac479289c2b7508045c103bdc320c2f11f8069f2112fe50feb463eb8ae17",
+      "sandbox_version": "20261024232319",
+      "sandbox_name": "bolig_index_invoice_canonical_source",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025143606",
+        "name": "bolig_index_invoice_canonical_source",
+        "sql_md5": "26158f900dfe27eacded33af8fb17d24"
+      }
+    },
+    {
+      "order": 70,
+      "path": "supabase/migrations/20261025001234_bolig_editable_invoice_register.sql",
+      "file_version": "20261025001234",
+      "migration_name": "bolig_editable_invoice_register",
+      "sha256": "bafaa03360b5f02df9ba14750ddf8b42f24efb4ca476756e060a85f9da2bc275",
+      "sandbox_version": "20261025001234",
+      "sandbox_name": "bolig_editable_invoice_register",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025143608",
+        "name": "bolig_editable_invoice_register",
+        "sql_md5": "40ad2435356c07ea6511d4f7fe445b80"
+      }
+    },
+    {
+      "order": 71,
+      "path": "supabase/migrations/20261025011609_bolig_agreement_answer_deadline.sql",
+      "file_version": "20261025011609",
+      "migration_name": "bolig_agreement_answer_deadline",
+      "sha256": "1bd8eb030b398fe11347a52a89799ddd2ae6067e9190065c3112ba41865f1841",
+      "sandbox_version": "20261025011942",
+      "sandbox_name": "bolig_agreement_answer_deadline",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025143610",
+        "name": "bolig_agreement_answer_deadline",
+        "sql_md5": "e232d5d842717ff376b03db432c401dd"
+      }
+    },
+    {
+      "order": 72,
+      "path": "supabase/migrations/20261025012032_bolig_agreement_deadline_decision_clock.sql",
+      "file_version": "20261025012032",
+      "migration_name": "bolig_agreement_deadline_decision_clock",
+      "sha256": "57eea2d62fc63025e4a863ba72f976ee3e349f84560ee7f619ddd245e576ea55",
+      "sandbox_version": "20261025012058",
+      "sandbox_name": "bolig_agreement_deadline_decision_clock",
+      "sql_match": "exact",
+      "actual": {
+        "version": "20261025143627",
+        "name": "bolig_agreement_deadline_decision_clock",
+        "sql_md5": "57f5591d9193435d6c65a658b97d3e6b"
+      }
+    }
+  ],
+  "edge_functions": [
+    {
+      "name": "bolig-order-email",
+      "verify_jwt": true,
+      "hashes": {
+        "supabase/functions/bolig-order-email/index.ts": "55452f26a999b238792aa7c5fe376630e9d2379220670d508dfad45136c5cdca",
+        "supabase/functions/_shared/bolig-order-email.mjs": "7daf1584d0f75773df864d8796ab9a3088ab99cb0354a08bed6bdce5a35be2e3",
+        "supabase/functions/_shared/supplier-order-email.mjs": "e8d59e3e990f3fcffa7ffb1815033791b18155232109399eea4cf70a88831417",
+        "supabase/functions/_shared/bolig-order-attachments.mjs": "ee22962383594b5f3e7a51bde8d5d7a0877a7772a2ad09d42a15939725be9f60",
+        "src/modules/cordel/picklistCordel.mjs": "634e5bae602026147b2bc07ffbd4ce404c0380e1962d1f40e42944eaac2b81d3",
+        "src/modules/cordel/cordelFiles.mjs": "36a7e132b07640faf0cf9daef3bed02b7f7dac5779c2a8dc706290ddb0477692"
+      },
+      "deployment": {
+        "id": "a6bf9f28-6351-4643-8db6-b91bd375663a",
+        "slug": "bolig-order-email",
+        "name": "bolig-order-email",
+        "status": "ACTIVE",
+        "version": 1,
+        "created_at": 1792939061538,
+        "updated_at": 1792939061538,
+        "verify_jwt": true,
+        "import_map": false,
+        "entrypoint_path": "file:///tmp/user_fn_dqffxflaoyarbxyiyhop_a6bf9f28-6351-4643-8db6-b91bd375663a_1/source/supabase/functions/bolig-order-email/index.ts",
+        "ezbr_sha256": "1e96bd2a7dbcdaee89abdadf400c94d1966cee57b7b76aaf5643e7803f2d8239"
+      }
+    },
+    {
+      "name": "bolig-protocol-email",
+      "verify_jwt": true,
+      "hashes": {
+        "supabase/functions/bolig-protocol-email/index.ts": "02fdd85e32d51978d992a6ee9acad2816ca17595009e1bf85b1f2898588d3dda",
+        "supabase/functions/_shared/bolig-protocol-email.mjs": "3fd1487ac61ff72b4654975fd0d0ffbc5dbd6035cc1f77b15d22cfec4613530b",
+        "supabase/functions/_shared/supplier-order-email.mjs": "e8d59e3e990f3fcffa7ffb1815033791b18155232109399eea4cf70a88831417"
+      },
+      "deployment": {
+        "id": "f63e71de-7717-46f5-bc17-d51b2b54df45",
+        "slug": "bolig-protocol-email",
+        "name": "bolig-protocol-email",
+        "status": "ACTIVE",
+        "version": 1,
+        "created_at": 1792939063725,
+        "updated_at": 1792939063725,
+        "verify_jwt": true,
+        "import_map": false,
+        "entrypoint_path": "file:///tmp/user_fn_dqffxflaoyarbxyiyhop_f63e71de-7717-46f5-bc17-d51b2b54df45_1/source/supabase/functions/bolig-protocol-email/index.ts",
+        "ezbr_sha256": "1bc4a0c17e8c8735de4900cf405ffd5228cfb277773e6a218c468232b1387ab3"
+      }
+    },
+    {
+      "name": "bolig-progress-notifications",
+      "verify_jwt": false,
+      "hashes": {
+        "supabase/functions/bolig-progress-notifications/index.ts": "9458c4e378408c10fd01edc19060ccef416c5d5b79ab4a3329f9ffe56bb2a001",
+        "supabase/functions/_shared/bolig-progress-notifications.mjs": "5f3add472473a07a446eb252f00204f683f2f7fa04372c28c60eb7a01dfe725d"
+      },
+      "deployment": {
+        "id": "d25021cb-18a6-44ac-9151-f447f8c67690",
+        "slug": "bolig-progress-notifications",
+        "name": "bolig-progress-notifications",
+        "status": "ACTIVE",
+        "version": 1,
+        "created_at": 1792939065633,
+        "updated_at": 1792939065633,
+        "verify_jwt": false,
+        "import_map": false,
+        "entrypoint_path": "file:///tmp/user_fn_dqffxflaoyarbxyiyhop_d25021cb-18a6-44ac-9151-f447f8c67690_1/source/supabase/functions/bolig-progress-notifications/index.ts",
+        "ezbr_sha256": "eadd970997ae7f06422da90462e7e3f2eedd74abbe4c26e5b351650945d6eac7"
+      }
+    },
+    {
+      "name": "bolig-partner-files",
+      "verify_jwt": false,
+      "hashes": {
+        "supabase/functions/bolig-partner-files/index.ts": "92cf9160d4b5e1b0c5c152b7b45ce44632abce18defe94396b933e98b3523e9c",
+        "supabase/functions/_shared/bolig-origins.mjs": "364ec4784657923338a23453edd478a20af445b416a2cd2dcf261b4cf162e1ef",
+        "supabase/functions/_shared/bolig-partner-files.mjs": "fc7855ddaba5f49132f3d361f2ae9f8182ce850ad5048baf6dc19fdbcf289e68"
+      },
+      "deployment": {
+        "id": "5561bc76-1652-4edd-8417-1ab383b6e845",
+        "slug": "bolig-partner-files",
+        "name": "bolig-partner-files",
+        "status": "ACTIVE",
+        "version": 1,
+        "created_at": 1792939067223,
+        "updated_at": 1792939067223,
+        "verify_jwt": false,
+        "import_map": false,
+        "entrypoint_path": "file:///tmp/user_fn_dqffxflaoyarbxyiyhop_5561bc76-1652-4edd-8417-1ab383b6e845_1/source/supabase/functions/bolig-partner-files/index.ts",
+        "ezbr_sha256": "6594d83052e512ca81b23216a6d72c838d18aeca6b76d4ba548bd1598eb3e3ca"
+      }
+    },
+    {
+      "name": "bolig-partner-email",
+      "verify_jwt": false,
+      "hashes": {
+        "supabase/functions/bolig-partner-email/index.ts": "cfd1a2e17cbda2e4b6f9ab577f83b69a9d1e7ecf89aaf05f4b907527288a1627",
+        "supabase/functions/_shared/bolig-partner-email.mjs": "1c9a9fcfc4e20b0467c6ed8e947e32c59733a352f9fc11708777b5fb2b9f9947",
+        "supabase/functions/_shared/supplier-order-email.mjs": "e8d59e3e990f3fcffa7ffb1815033791b18155232109399eea4cf70a88831417"
+      },
+      "deployment": {
+        "id": "f152a0f1-4cb3-4468-8b5c-29ba4defb9c5",
+        "slug": "bolig-partner-email",
+        "name": "bolig-partner-email",
+        "status": "ACTIVE",
+        "version": 1,
+        "created_at": 1792939069762,
+        "updated_at": 1792939069762,
+        "verify_jwt": false,
+        "import_map": false,
+        "entrypoint_path": "file:///tmp/user_fn_dqffxflaoyarbxyiyhop_f152a0f1-4cb3-4468-8b5c-29ba4defb9c5_1/source/supabase/functions/bolig-partner-email/index.ts",
+        "ezbr_sha256": "13bd0fe7b621b98c3649753b52ca862703bbd3a416c6638fad21792df4f65c81"
+      }
+    },
+    {
+      "name": "bolig-resident-link-email",
+      "verify_jwt": false,
+      "hashes": {
+        "supabase/functions/bolig-resident-link-email/index.ts": "2abf9fff1d8f31c8ef5c80cb00bca281a391062962605d66ef204597b4cbad45",
+        "supabase/functions/_shared/bolig-resident-link-email.mjs": "3d2ae5745a7d8765cd3ad82a99cab9e13d3b4e3d081eafcf66583efecfbe2346",
+        "supabase/functions/_shared/bolig-partner-email.mjs": "1c9a9fcfc4e20b0467c6ed8e947e32c59733a352f9fc11708777b5fb2b9f9947",
+        "supabase/functions/_shared/supplier-order-email.mjs": "e8d59e3e990f3fcffa7ffb1815033791b18155232109399eea4cf70a88831417"
+      },
+      "deployment": {
+        "id": "2be75fed-6ebd-4172-a54e-420ac95107be",
+        "slug": "bolig-resident-link-email",
+        "name": "bolig-resident-link-email",
+        "status": "ACTIVE",
+        "version": 1,
+        "created_at": 1792939071867,
+        "updated_at": 1792939071867,
+        "verify_jwt": false,
+        "import_map": false,
+        "entrypoint_path": "file:///tmp/user_fn_dqffxflaoyarbxyiyhop_2be75fed-6ebd-4172-a54e-420ac95107be_1/source/supabase/functions/bolig-resident-link-email/index.ts",
+        "ezbr_sha256": "5f5be0a4e8016137f03590d8a10002d6cc4ddac7b7fcd2c93811ac9a5d89387f"
+      }
+    },
+    {
+      "name": "bolig-contract-files",
+      "verify_jwt": true,
+      "hashes": {
+        "supabase/functions/bolig-contract-files/index.ts": "3d837c36422909c089fea9b3cd6683680e7f254f1b536a7faa8dc262830acf49",
+        "supabase/functions/_shared/bolig-origins.mjs": "364ec4784657923338a23453edd478a20af445b416a2cd2dcf261b4cf162e1ef",
+        "supabase/functions/_shared/bolig-contract-files.mjs": "82ba4658339264a762cd6e02f5198ca6baf37e79c103d235f00ade529062a625"
+      },
+      "deployment": {
+        "id": "2c6a3065-9c3f-4ac8-abe2-c733dac843d0",
+        "slug": "bolig-contract-files",
+        "name": "bolig-contract-files",
+        "status": "ACTIVE",
+        "version": 1,
+        "created_at": 1792939073495,
+        "updated_at": 1792939073495,
+        "verify_jwt": true,
+        "import_map": false,
+        "entrypoint_path": "file:///tmp/user_fn_dqffxflaoyarbxyiyhop_2c6a3065-9c3f-4ac8-abe2-c733dac843d0_1/source/supabase/functions/bolig-contract-files/index.ts",
+        "ezbr_sha256": "7a610ff4c58417d23085bb4a2b9fc5f1e5785574b5d686a64efaeb94eb3bd1cf"
+      }
+    }
+  ],
+  "preservation_checks": {
+    "existing_function_count": 626,
+    "existing_functions_changed": [
+      "hr_private.can_read",
+      "hr_private.has_module_access",
+      "public.get_my_personal_context",
+      "public.people_modules_company_get",
+      "public.people_modules_user_get"
+    ],
+    "shared_acl_unchanged": true,
+    "other_621_functions_unchanged": true,
+    "existing_buckets_preserved": 8,
+    "existing_storage_policies_preserved": 22,
+    "existing_edges_unchanged": 21,
+    "deployed_source_files_identical": 24,
+    "hr_and_rls": [
+      {
+        "checks": {
+          "missing_rls": 0,
+          "bolig_tables": 78,
+          "memberships_checked": 62,
+          "hr_access_differences": 0
+        }
+      }
+    ],
+    "backend_state": [
+      {
+        "result": {
+          "firms": 0,
+          "roots": 0,
+          "transport": {
+            "partner": true,
+            "progress": true,
+            "resident": true
+          },
+          "bolig_count": 72,
+          "migration_count": 285
+        }
+      }
+    ],
+    "negative_edge_tests": [
+      {
+        "name": "bolig-order-email",
+        "status": 401,
+        "body": "{\"code\":\"UNAUTHORIZED_NO_AUTH_HEADER\",\"message\":\"Missing authorization header\"}"
+      },
+      {
+        "name": "bolig-protocol-email",
+        "status": 401,
+        "body": "{\"code\":\"UNAUTHORIZED_NO_AUTH_HEADER\",\"message\":\"Missing authorization header\"}"
+      },
+      {
+        "name": "bolig-progress-notifications",
+        "status": 403,
+        "body": "{\"error\":\"server_only\"}"
+      },
+      {
+        "name": "bolig-partner-files",
+        "status": 400,
+        "body": "{\"message\":\"Ukjent filhandling.\"}"
+      },
+      {
+        "name": "bolig-partner-email",
+        "status": 401,
+        "body": "{\"error\":\"Logg inn før du sender tilgangslenken.\",\"uncertain\":false}"
+      },
+      {
+        "name": "bolig-resident-link-email",
+        "status": 401,
+        "body": "{\"error\":\"Logg inn før du sender beboerlenken.\",\"uncertain\":false}"
+      },
+      {
+        "name": "bolig-contract-files",
+        "status": 401,
+        "body": "{\"code\":\"UNAUTHORIZED_NO_AUTH_HEADER\",\"message\":\"Missing authorization header\"}"
+      }
+    ]
+  },
+  "production": {
+    "deployment": "dpl_51R2ojvH3KCgTbu2LcidjkzWn9SG",
+    "state": "READY",
+    "commit": "a939d332918d5cd2daed3e14788188b3f50597fe",
+    "tree": "d7612864810712e1f7212072f9f91d80b2275e6e",
+    "approved_tree_identical": true,
+    "live_domains": [
+      {
+        "domain": "expo-proffdok.app",
+        "id": "dpl_51R2ojvH3KCgTbu2LcidjkzWn9SG",
+        "state": "READY",
+        "sha": "a939d332918d5cd2daed3e14788188b3f50597fe"
+      },
+      {
+        "domain": "www.expo-proffdok.app",
+        "id": "dpl_51R2ojvH3KCgTbu2LcidjkzWn9SG",
+        "state": "READY",
+        "sha": "a939d332918d5cd2daed3e14788188b3f50597fe"
+      }
+    ],
+    "binding": {
+      "status": 200,
+      "path": "/assets/main-CcpBd8FL.js",
+      "sha256": "4d8f182c144de143ba9515435267897f340baa98c9b829eeac89e639d22ef80f",
+      "production_url": true,
+      "sandbox_url": false
+    },
+    "rollback_deployment": "dpl_8WUDQuMtEBcq8EExKrRbaHKppbWE",
+    "bolig_state": [
+      {
+        "enabled_firms": 0,
+        "projects": 0,
+        "progress_paused": true,
+        "partner_paused": true,
+        "resident_paused": true
+      }
+    ],
+    "autosave_observation": {
+      "request_ref": "F-2026-0072",
+      "cause": "Opening existing offer editor in staged Production invoked preexisting on-mount autosave without manual content edits; Sales product source is byte-identical to prior main.",
+      "before": {
+        "payload_md5": "1d8adaf3559ca8ac294f1cbe72078e33",
+        "updated_at": "2026-10-05T12:52:26.219+00:00"
+      },
+      "after": {
+        "payload_md5": "1ecf636a87c77dba9206859ef0d81462",
+        "updated_at": "2026-10-25T15:10:48.995+00:00",
+        "offerDraftSavedAt": "2026-10-25T15:10:48.309Z"
+      },
+      "immutable_published_version_md5": "09edde60b2fe4f5be28d4ce9dd07724a",
+      "published_version_unchanged": true,
+      "visible_lines": 17,
+      "visible_options": 25,
+      "limit": "Entire request payload delta was not fully attributed; do not claim only a timestamp changed or that all Production data remained unchanged. Live checks afterward did not reopen editor; request hash remained same after live checks."
+    }
+  },
+  "staging": {
+    "id": "dpl_FyFJRfS4FpAnpr8eVX4brEMcJgDX",
+    "url": "https://expo-proffdok-6fo1d43bq-ringside.vercel.app/?progressTest=safe",
+    "state": "READY",
+    "target": "production",
+    "commit": "f39d374c28242b941ebf18f1f265560bc44f9752",
+    "production_binding_log": "✅ Explicit backend target: Production Supabase only",
+    "emitted_entry": {
+      "path": "/assets/main-CcpBd8FL.js",
+      "bytes": 275359,
+      "sha256": "4d8f182c144de143ba9515435267897f340baa98c9b829eeac89e639d22ef80f",
+      "production_url": true,
+      "sandbox_url": false
+    },
+    "method": "Documented Vercel staged Production flow: project autoAssignCustomDomains temporarily false, Production deployment from exact Git SHA, restore true after READY; no custom production domains moved.",
+    "autoAssignCustomDomains_restored": true,
+    "authenticated_ui_complete": true
+  },
+  "demo": {
+    "commit": "d61132db0e874358a4fc75e45a8a02cd075c9f19",
+    "tree": "a8da00de08d550c8b31e2f9c3d5d414f2850126b",
+    "parents": [
+      "df94b2823fdefc7f303d5804bced1f3051a4a8df",
+      "a939d332918d5cd2daed3e14788188b3f50597fe"
+    ],
+    "deployment": "dpl_FLdskdKaMwvruXGPRpqZuLbiHmXa",
+    "state": "READY",
+    "host": "https://expo-proffdok-git-demo-ringside.vercel.app",
+    "overlay": "Same53 overlay paths;48 existing overlay files byte-preserved; only baseline, build integration and automatic shared doc/navigation merges differ. All remaining main files exact.",
+    "local_checks": [
+      "Full critical Sandbox build PASS",
+      "critical-demo-course-preflight-check PASS",
+      "git diff --check PASS",
+      "GitHub uploaded blobs and tree exact local hash match;expected-SHA non-force branch update"
+    ],
+    "binding_log": "✅ Explicit backend target: Sandbox Supabase only",
+    "http": {
+      "pages": [
+        {
+          "path": "/",
+          "status": 200,
+          "demo_overlay": true,
+          "bundle": "/assets/main-DsnviT_6.js",
+          "sha256": "738501c9333e6033d18551f132ce5322653286e24c1338fd56b7221f3bc91535",
+          "sandbox": true,
+          "production": false
+        },
+        {
+          "path": "/demo-control.html",
+          "status": 200,
+          "demo_overlay": true,
+          "bundle": "/assets/demoControl-BhMwAgsh.js",
+          "sha256": "8c98b0a5814f0476f1ee94de83067d4cedfeb2554e161fc7ad33d987c0639653",
+          "sandbox": true,
+          "production": false,
+          "baseline": "a939d332918d5cd2daed3e14788188b3f50597fe"
+        }
+      ],
+      "assets": [
+        {
+          "path": "/demo-course.html",
+          "status": 200
+        },
+        {
+          "path": "/demo-documents/DEMO-kurs-SJA.pdf",
+          "status": 200
+        },
+        {
+          "path": "/demo-images/badskisse.svg",
+          "status": 200
+        },
+        {
+          "path": "/bolig/pdf/pdfium.wasm",
+          "status": 200
+        },
+        {
+          "path": "/bolig/ocr/worker.min.js",
+          "status": 200
+        }
+      ]
+    },
+    "preflight_after_sync": [
+      {
+        "infrastructure": {
+          "ok": true,
+          "checks": [
+            {
+              "ok": true,
+              "key": "sales",
+              "detail": "10 DEMO-saker"
+            },
+            {
+              "ok": true,
+              "key": "offer",
+              "detail": "12 linjer / 38 opsjoner"
+            },
+            {
+              "ok": true,
+              "key": "main_project",
+              "detail": "DEMO – HOVED – Badrenovering i arbeid"
+            },
+            {
+              "ok": true,
+              "key": "reserve_project",
+              "detail": "DEMO – RESERVE – Ferdig våtrom med garanti"
+            },
+            {
+              "ok": true,
+              "key": "portal",
+              "detail": "2/2 roller"
+            },
+            {
+              "ok": true,
+              "key": "participants",
+              "detail": "3 involverte"
+            },
+            {
+              "ok": true,
+              "key": "progress_main",
+              "detail": "0 aktiviteter – klar for live import"
+            },
+            {
+              "ok": true,
+              "key": "progress_finished",
+              "detail": "7 ferdige aktiviteter"
+            },
+            {
+              "ok": true,
+              "key": "contract",
+              "detail": "1 signert kontrakt"
+            },
+            {
+              "ok": true,
+              "key": "contract_backend",
+              "detail": "11/11 funksjoner · RLS på · policy 1/1 · triggere 2/2"
+            },
+            {
+              "ok": true,
+              "key": "demo_media",
+              "detail": "befaring 2 inkl. Badskisse · HOVED 6 · RESERVE 7"
+            },
+            {
+              "ok": true,
+              "key": "warranty_docs",
+              "detail": "14/14 garantipunkter dokumentert"
+            },
+            {
+              "ok": true,
+              "key": "finished_deviations",
+              "detail": "0 åpne avvik"
+            },
+            {
+              "ok": true,
+              "key": "handover",
+              "detail": "signert reserveovertagelse"
+            },
+            {
+              "ok": true,
+              "key": "warranty",
+              "detail": "DEMO-GARANTI-2026-002"
+            },
+            {
+              "ok": true,
+              "key": "storage",
+              "detail": "5/5 buckets"
+            },
+            {
+              "ok": true,
+              "key": "snapshot",
+              "detail": "Golden snapshot finnes"
+            },
+            {
+              "ok": true,
+              "key": "sales_projection_backend",
+              "detail": "2/2 triggere · 2/2 funksjoner · 0 tomme list_payload"
+            },
+            {
+              "ok": true,
+              "key": "warranty_contract",
+              "detail": "Aktiv demo: 0 garanti(er) uten kontrakt · Golden: 0 av 1 mangler kontrakt"
+            }
+          ],
+          "checkedAt": "2026-10-25T15:42:34.016306+00:00"
+        },
+        "course": {
+          "ok": true,
+          "checks": [
+            {
+              "ok": true,
+              "key": "course_hr_templates",
+              "detail": "3/3 generelle HR-maler med bevart originalutgave"
+            },
+            {
+              "ok": true,
+              "key": "course_safety_examples",
+              "detail": "SJA, vernerunde, risiko, sjekkliste og RUH er lagret i demofirmaet"
+            },
+            {
+              "ok": true,
+              "key": "course_privacy_transport",
+              "detail": "Ingen KS/HMS-, HR-slette- eller fristmail; samtaler åpne, ingen HR-filer"
+            },
+            {
+              "ok": true,
+              "key": "course_hr_conversation",
+              "detail": "Fiktiv medarbeider og leder med delt DEMO-samtale"
+            },
+            {
+              "ok": true,
+              "key": "course_sick_leave",
+              "detail": "Fiktiv sykefraværsplan med frister og ubekreftet møtekladd"
+            }
+          ]
+        }
+      }
+    ],
+    "preflight_method": "Read-only transaction invoking actual preflight RPCs with dedicated demo actor auth context; rolled back. No reset/Golden/data writes.",
+    "ui_limit": "Fresh browser on permanent demo host was signed out. No new sign-in requested. Logged-in control-page aggregate including per-browser local editable-sketch check was not executed; do not present SQL/artifact checks as signed-in demo UI proof."
+  },
+  "email_test": {
+    "date": "2026-10-25",
+    "timezone": "Europe/Oslo",
+    "status": "SANDBOX_CONFIGURED; FOUR_EMAILS_DELIVERED; THREE_INVITATIONS_USER_CONFIRMED; TRANSPORTS_PAUSED",
+    "authorization": {
+      "approved": true,
+      "user_message": "ja kjør",
+      "scope": "Dedicated Sandbox key, sending-only verified domain; test recipient kenneth@ringside.no"
+    },
+    "setup": {
+      "key_id": "768ee4df-57cd-4ac7-b7a4-853cc49ce960",
+      "key_name": "Expo ProffDok Sandbox mailtest 20261025",
+      "permission": "sending_access",
+      "domain": "expoproffsenter.no",
+      "sandbox_project": "ppvircenkjizeiqdxphj",
+      "from": "Expo ProffDok Sandbox <noreply@expoproffsenter.no>",
+      "secrets_set": [
+        "RESEND_API_KEY",
+        "CHAT_FROM_EMAIL"
+      ],
+      "no_production_secret_read": true,
+      "temporary_key_cleared": true
+    },
+    "recipient": "kenneth@ringside.no",
+    "project": "ppvircenkjizeiqdxphj",
+    "root": "e31d3dcb-0642-4922-936a-62ad42266a5b",
+    "final_state": {
+      "partners": [
+        {
+          "id": "7b54b9b3-756f-4820-8ddd-6b01f0858f7e",
+          "kind": "supplier",
+          "revoked": false,
+          "sent_at": "2026-10-25T16:28:42.448499+00:00",
+          "access_id": "2af57366-d9cf-438f-86d0-5ccf3b7eda17",
+          "recipient": "kenneth@ringside.no",
+          "expires_at": "2026-11-01T16:28:13.69232+00:00",
+          "provider_id": "01a173e4-936e-7ea5-abe0-c5009f0d231c"
+        },
+        {
+          "id": "8b7053e5-4570-497c-aa8a-3ee56c5c402c",
+          "kind": "ue",
+          "revoked": false,
+          "sent_at": "2026-10-25T16:27:10.330666+00:00",
+          "access_id": "60e2a8fe-fbfd-4abd-bc6c-6ff384207890",
+          "recipient": "kenneth@ringside.no",
+          "expires_at": "2026-11-01T16:26:46.451929+00:00",
+          "provider_id": "01a173e3-2ac2-7136-b27a-3d31bc74520b"
+        }
+      ],
+      "resident": [
+        {
+          "id": "33d37f4e-fe6c-4b8b-8bab-4b3a152ffd1f",
+          "kind": "reminder",
+          "sent_at": "2026-10-25T16:34:50.142883+00:00",
+          "portal_id": "23bbead2-7361-444b-ad14-fa5689f3f436",
+          "recipient": "kenneth@ringside.no",
+          "provider_id": "01a173ea-2e56-79f1-a09a-0f2112397bc5"
+        },
+        {
+          "id": "8b26e3ff-b199-4262-9616-f50947af884e",
+          "kind": "portal",
+          "sent_at": "2026-10-25T16:32:22.09256+00:00",
+          "portal_id": "23bbead2-7361-444b-ad14-fa5689f3f436",
+          "recipient": "kenneth@ringside.no",
+          "provider_id": "01a173e7-eb72-74e2-b6cb-497876aaced8"
+        }
+      ],
+      "partner_paused": true,
+      "progress_paused": true,
+      "resident_paused": true,
+      "other_workers_paused": true
+    },
+    "inbox_ack": {
+      "ue": true,
+      "supplier": true,
+      "resident_portal": true,
+      "user_message": "Mottatt alle tre. Vi må senere finpusse layout på beboerportalen. Den er alt for kjedelig",
+      "later_ux": "Improve resident portal layout/visual quality in separate later UX scope; no design changes in current email verification."
+    },
+    "provider_delivery": "Resend shows delivered for all four matching provider IDs. Only three invitations are separately user-confirmed.",
+    "link_checks": {
+      "ue": "Correct synthetic project; Fremdrift and Sjekklister including own documentation; no order view",
+      "supplier": "Correct synthetic project; Fremdrift and Leveranser; no checklist view",
+      "resident": "Correct H0202/QA Bygg A; Mine valg, Avtaler, Dokumenter, Meldinger; no submission",
+      "origin": "Existing fixed feature Sandbox Preview; tokens excluded from report"
+    },
+    "data_changes": {
+      "partners": "Two new labeled test accesses retained until1November; previous unsuccessful attempt access revoked",
+      "resident": "Previously blank synthetic unit20747717-b577-477c-b671-8bcea42b744f now TEST – Kenneth beboer/kenneth@ringside.no. New portal23bbead2-7361-444b-ad14-fa5689f3f436 retained until24November so user can inspect. No existing contact or portal replaced",
+      "metadata": "Four receipts retained; old blocked attempt never begun. No deletions, resets or Golden update"
+    },
+    "untested_actual_email": [
+      "Agreement/change invitations",
+      "Automatic work/dialogue/owner notices",
+      "Supplier order/attachments",
+      "Protocol confirmation",
+      "Generic Production test email"
+    ],
+    "production_after": [
+      {
+        "enabled_firms": 0,
+        "bolig_projects": 0,
+        "partner_mail": false,
+        "resident_mail": false,
+        "progress_mail": false
+      }
+    ],
+    "later_ux": {
+      "requested_by": "Kenneth",
+      "request": "Vi må senere finpusse layout på beboerportalen. Den er alt for kjedelig",
+      "scope": "Separate later improvement of resident portal layout and visual profile; preserve access, links, agreements and storage; no design changes now"
+    },
+    "blockers": []
+  },
+  "initial_blocked_mail_attempt": {
+    "date": "2026-10-25",
+    "status": "BLOCKED_BEFORE_PROVIDER; SANDBOX_EMAIL_CONFIGURATION_MISSING; NO_EMAIL_SENT",
+    "recipient": "kenneth@ringside.no",
+    "sandbox_project": "ppvircenkjizeiqdxphj",
+    "sandbox_root": "e31d3dcb-0642-4922-936a-62ad42266a5b",
+    "scope": "Existing synthetic Sandbox project only. No Production company activation, project or mail changes.",
+    "provider_config_missing": [
+      "RESEND_API_KEY",
+      "CHAT_FROM_EMAIL"
+    ],
+    "configuration_evidence": "Signed-in Sandbox Edge Function Secrets page listed only SUPPORT_INTERNAL_TO, SUPPORT_MAIL_MODE, SUPPORT_APP_URL as custom secrets. Values were not read.",
+    "ui_test": {
+      "kind": "UE invitation",
+      "access_id": "532dc349-9c29-4de1-a20d-f05d1fd84f41",
+      "request_id": "9405459d-15a8-466c-8db2-222bed9203d1",
+      "error": "E-posttjenesten er ikke konfigurert.",
+      "begun_at": null,
+      "sent_at": null,
+      "provider_id": null,
+      "access_revoked": true,
+      "revision": 2,
+      "preview_checked": true,
+      "preview_details": "Only agreed recipient; correct synthetic project, company branding, UE features and Sandbox link."
+    },
+    "test_matrix": [
+      "UE invitation",
+      "Supplier invitation with supplier-specific order scope",
+      "Resident portal invitation",
+      "Resident portal reminder",
+      "Resident agreement invitation",
+      "Resident change-order invitation",
+      "Resident planned-work notice",
+      "Resident message notification",
+      "Manager message notification",
+      "Responsible owner progress followup",
+      "Supplier order with Cordel ASCII and Excel attachments",
+      "Protocol rectification confirmation"
+    ],
+    "automated_checks": {
+      "partner": 56,
+      "resident": 62,
+      "progress": 22,
+      "order": 46,
+      "protocol": 24,
+      "additional": "Dialogue privacy and branded resident notice checks PASS; mock provider only."
+    },
+    "safe_state": {
+      "sandbox_partner_paused": true,
+      "sandbox_resident_paused": true,
+      "sandbox_progress_paused": true,
+      "production_enabled_firms": 0,
+      "production_bolig_projects": 0,
+      "production_transports_paused": true,
+      "other_recipients_contacted": false
+    },
+    "next": "Set up a dedicated restricted sending-only Resend key and verified sender in Sandbox after approval for creating new API access. No Production key copied. Then test actual role-specific mails only to agreed recipient; keep automatic transports scoped and paused outside tests. A generic production test is not evidence for full Bolig production flow."
+  },
+  "not_performed": [
+    "Specific Production company/license/roles activation",
+    "Physical Windows/mobile/Safari testing",
+    "Physical database/Storage restore",
+    "Signed-in full demo control-page preflight including per-browser local editable-sketch check",
+    "Actual email inbox tests beyond UE/supplier invitation, resident portal and reminder. Generic Production test email not performed."
+  ],
+  "resume": [
+    "Release and main→demo synchronization completed on the recorded commits. Do not replay72 installed migrations or run clean-install preflight.",
+    "For activation, identify exact Production company and named roles first; do not use Sandbox IDs/data.",
+    "Before next live demo, use existing dedicated demo login on fixed host and run control-page preflight; browser-local sketch availability may need its existing install action. No demo reset or Golden update was done.",
+    "Approved Sandbox mail setup and four test sends complete. Preserve paused transports. Later resident portal UX improvement requested. Do not ask again for the same key/test authorization."
+  ],
+  "publication_note": "Customer names, addresses, commercial totals, raw request payloads, secrets and personal capability URLs are excluded. Refer to hashes/IDs for controlled follow-up. Application data and backup bytes are not stored in GitHub."
+}
