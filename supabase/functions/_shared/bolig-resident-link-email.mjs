@@ -26,15 +26,16 @@ export function residentLinkMail(snapshot, token) {
     ["Mottaker", snapshot.name],
     ...(agreement ? [["Utgave", snapshot.version]] : []),
     [
-      "Gyldig til",
+      agreement ? "Svarfrist (norsk tid)" : "Gyldig til",
       new Intl.DateTimeFormat("nb-NO", {
         dateStyle: "long",
+        ...(agreement ? { timeStyle: "short" } : {}),
         timeZone: "Europe/Oslo",
-      }).format(new Date(snapshot.expires_at)),
+      }).format(new Date(new Date(snapshot.expires_at).getTime() - (agreement ? 1 : 0))),
     ],
   ];
   const instructions = agreement
-    ? "Se gjennom innholdet og prisene i avtalen før du svarer. Å åpne lenken er ingen aksept. Lenken er personlig og skal ikke videresendes."
+    ? "Se gjennom innholdet og prisene i avtalen før du svarer. Å åpne lenken er ingen aksept. Etter svarfristen må du kontakte prosjektleder. Lenken er personlig og skal ikke videresendes."
     : "Her finner du prosjektets delte boligvalg, avtaler, dokumentlenker og meldinger. Valg sendes til gjennomgang. Avtaler må aksepteres separat. Lenken er personlig og skal ikke videresendes.";
   return brandedInvitationMail({
     snapshot,

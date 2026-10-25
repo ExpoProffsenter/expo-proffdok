@@ -210,6 +210,9 @@ for (const kind of ["reminder", "agreement"]) {
     true,
   );
 }
+const midnightMail = residentLinkMail({ ...snapshot, kind: "agreement", expires_at: "2026-10-25T23:00:00Z" }, token);
+eq(midnightMail.text.includes("25. oktober 2026 kl. 23:59"), true, "agreement email includes the last accepted minute in Oslo");
+eq(midnightMail.text.includes("Etter svarfristen må du kontakte prosjektleder."), true, "expired acceptance requires project manager contact");
 await fs.writeFile("/tmp/bolig-resident-invitation.html", mail.body.html);
 console.log(
   `PASS resident invitation mail: ${checks} assertions; established style, canonical recipient/link, paused transport, fresh permission check, private errors and exact retry (mock provider; no email sent).`,

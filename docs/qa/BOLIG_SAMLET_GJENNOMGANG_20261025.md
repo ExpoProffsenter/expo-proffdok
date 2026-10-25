@@ -148,3 +148,24 @@ aksept og uendret kvittering er testet. Nettlesertesten dekker beholdt fristklad
 lagret utkast, ny dato ved deling, mobil, tapt svar i alle tre publiseringssteg,
 og fristutløp mens beboerens svar står åpent. Full critical Sandbox-build og
 core-boundary passerer. Sluttcommit/READY/CI avleses etter publisering.
+
+Innlogget prøve på 8262753b bekreftet valgt publiseringsdato via vanlig
+datotastatur: frist 25.10.2026 gir expires_at 2026-10-25 23:00Z og visning
+25. oktober kl. 23:59 både for prosjektleder og offentlig beboerside.
+Fiktiv endringsordre 5b266a46-c4b3-4be5-b8dc-a253f57c5eb5 er publisert, ikke
+akseptert, ikke sendt på e-post og ikke anvendt mot leveransen. Original B-2
+og akseptert boligvalg er beholdt. Cloud-browserens fill() på native datofelt
+endret bare DOM-verdi uten React-hendelse; vanlig datotastatur ble brukt for
+den faktiske prøven. Dette er ikke en apprettelse.
+
+E-postfeltet hadde en egen datoformatering som viste neste midnatt som neste
+kalenderdag. Det viser nå samme svarfrist som avtalen. Både forhåndsvisning og
+mailtekst bruker siste inkluderte minutt og kontakt med prosjektleder etter
+utløp. 62 mailkontroller PASS (syntetisk provider, ingen utsending). Sandbox
+Edge-funksjonen bolig-resident-link-email er oppdatert til v3 med kun denne
+tekstfilen endret; entrypoint, eksisterende JWT-oppsett og øvrige avhengigheter
+er beholdt byte for byte. Uautorisert POST avvises fortsatt, og mail-bryteren er
+false. Etterkontroll: 0 QA-DEADLINE-ROLLBACK-røtter. Skjermbevis ligger i
+evidence/bolig-svarfrist-20261025.jpg. Lokalt: 1 662 SQL-, 79 avtale-/nettleser-
+og 39 portal-assertions PASS. Run702 på forrige statusrettelse er grønn;
+siste head sin CI-status avleses og oppdateres i PR278, ikke fra eldre kjøring.

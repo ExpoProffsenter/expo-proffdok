@@ -13,6 +13,7 @@ import {
 } from "./boligResidentMailClient.js";
 import "./boligPartners.css";
 import { residentLinkMail } from "../../../supabase/functions/_shared/bolig-resident-link-email.mjs";
+import { acceptanceDeadline } from "./boligCommerceCore.js";
 export default function ResidentInvitation({
   context,
   root,
@@ -156,8 +157,7 @@ export default function ResidentInvitation({
           </p>
           <p>
             {data.snapshot.company.companyName} sender lenken til denne
-            kontakten. Tilgangen gjelder til{" "}
-            {partnerDate(data.snapshot.expires_at)}.
+            kontakten. {kind === "agreement" ? <>Svarfristen er {acceptanceDeadline(data.snapshot.expires_at)} (norsk tid).</> : <>Tilgangen gjelder til {partnerDate(data.snapshot.expires_at)}.</>}
           </p>
           {preview && (
             <details
