@@ -42,3 +42,27 @@ export async function fetchIndexValues(seriesId,from,to,signal){
   const value=month=>{const key=month.replace('-','M'),i=Array.isArray(tid)?tid.indexOf(key):tid[key],n=data.value[i];if(i===undefined||i<0||typeof n!=='number'||!Number.isFinite(n)||n<=0)throw Error('SSB mangler et indekstall for valgt måned.');return String(n).replace('.',',');};
   return {base_index:value(from),target_index:value(to),origin:'ssb-client'};
 }
+// Public series data only. The cache never holds contract amounts or identities.
+const invoiceSeriesCache=new Map();
+export async function fetchInvoiceIndex(seriesId,from,date,signal,confirmedMonth=''){
+ const series=indexSeries.find(s=>s.id===seriesId);
+ if(!series||!/^\d{4}-\d{2}-\d{2}$/.test(date)||!/^\d{4}-\d{2}$/.test(from))throw Error('Velg en gyldig fakturadato og basismåned.');
+ let cached=invoiceSeriesCache.get(seriesId),data;
+ if(cached&&Date.now()-cached.at<300000)data=cached.data;
+ else{
+  const query=[...Object.entries(series.dimensions).map(([code,value])=>({code,selection:{filter:'item',values:[value]}})),{code:'Tid',selection:{filter:'all',values:['*']}}];
+  const response=await fetch('https://data.ssb.no/api/v0/no/table/'+series.table,{method:'POST',credentials:'omit',referrerPolicy:'no-referrer',headers:{'content-type':'application/json'},body:JSON.stringify({query,response:{format:'json-stat2'}}),signal});
+  if(!response.ok)throw Error('SSB kunne ikke nås. Beløpene er beholdt. Prøv å hente indeks igjen.');
+  data=await response.json();const tid=data.dimension?.Tid?.category?.index;
+  if(!Array.isArray(data.id)||data.id.some((id,i)=>id!=='Tid'&&data.size?.[i]!==1)||!tid||!Array.isArray(data.value)||!/^\d{4}-\d{2}-\d{2}T/.test(data.updated||''))throw Error('SSB-svaret mangler bekreftet publiseringsdato eller månedsdata.');
+  invoiceSeriesCache.set(seriesId,{at:Date.now(),data});
+ }
+ const tid=data.dimension.Tid.category.index,months=(Array.isArray(tid)?tid:Object.keys(tid)).filter(m=>/^\d{4}M\d{2}$/.test(m)).sort();
+ const number=month=>{const key=month.replace('-','M'),i=Array.isArray(tid)?tid.indexOf(key):tid[key],n=data.value[i];if(i===undefined||i<0||typeof n!=='number'||!Number.isFinite(n)||n<=0)throw Error('SSB mangler indekstall for måneden.');return String(n).replace('.',',');};
+ const latest=months.at(-1)?.replace('M','-'),published=data.updated.slice(0,10);
+ const automatic=published<=date&&latest<date.slice(0,7);
+ const candidates=months.map(m=>m.replace('M','-')).filter(m=>m>=from&&m<date.slice(0,7));
+ const target=automatic&&!confirmedMonth?latest:confirmedMonth||candidates.at(-1);
+ if(!target||!candidates.includes(target))throw Error('Ingen tilgjengelig indeks mellom basismåned og fakturadato.');
+ return {base_index:number(from),target_month:target,target_index:number(target),index_published:automatic&&!confirmedMonth?published:null,index_confirmed:false,origin:automatic&&!confirmedMonth?'ssb-client':'manual',needs_confirmation:!automatic||!!confirmedMonth,candidates};
+}

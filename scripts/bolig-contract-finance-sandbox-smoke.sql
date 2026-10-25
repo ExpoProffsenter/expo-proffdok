@@ -35,6 +35,14 @@ begin
  p:=jsonb_build_object('id',gen_random_uuid(),'revision',6,'input',i);r:=public.bolig_contract_finance(c,root,'register',p);assert public.bolig_contract_finance(c,root,'register',p)#>'{data,entry}'=r#>'{data,entry}','Separate index retry duplicated receipt';
  r:=public.bolig_contract_finance(c,root);assert r#>>'{data,totals,0,principal_cents}'='45000000','Index repeated principal';assert r#>>'{data,totals,0,index_cents}'='4050000','Separate index missing';assert jsonb_array_length(r#>'{data,index_invoices}')=0,'Issued index still pending';
  begin perform public.bolig_contract_finance(c,root,'preview',jsonb_build_object('input',i||'{"number":"QA-DUPLICATE-INDEX"}'));exception when sqlstate 'PT409' then denied:=true;end;assert denied,'Same index source could be billed twice';denied:=false;
+ i:=(i-'index_of')||jsonb_build_object('mode','period','method','payment','number','','index_number','','date','2026-10-28','period','2026-10','apply_index',true,'target_month','2026-09','target_index',110,'index_published','2026-10-13','index_confirmed',false,'values',jsonb_build_array(jsonb_build_object('id',line,'principal_cents',1000000,'index_cents',0)));
+ ident:=gen_random_uuid();p:=jsonb_build_object('id',ident,'request_id',gen_random_uuid(),'entry_revision',0,'revision',7,'input',i);r:=public.bolig_contract_finance(c,root,'save',p);
+ assert r#>>'{data,entry,result,principal_cents}'='1000000','Save omitted principal';assert r#>>'{data,entry,result,index_cents}'='90000','Save omitted simultaneous index';assert public.bolig_contract_finance(c,root,'save',p)#>'{data,entry}'=r#>'{data,entry}','Editable save retry changed receipt';
+ i:=i||jsonb_build_object('number','QA-EDIT-MAIN','index_number','QA-EDIT-INDEX');p:=jsonb_build_object('id',ident,'request_id',gen_random_uuid(),'entry_revision',8,'revision',8,'input',i);perform public.bolig_contract_finance(c,root,'save',p);
+ r:=public.bolig_contract_finance(c,root);assert r#>>'{data,totals,0,principal_cents}'='46000000','Later number duplicated principal';assert r#>>'{data,totals,0,index_cents}'='4140000','Later number duplicated index';
+ i:=jsonb_set(i,'{values,0,principal_cents}','2000000');p:=jsonb_build_object('id',ident,'request_id',gen_random_uuid(),'entry_revision',9,'revision',9,'input',i);perform public.bolig_contract_finance(c,root,'save',p);
+ r:=public.bolig_contract_finance(c,root);assert r#>>'{data,totals,0,principal_cents}'='47000000','Edited principal was added instead of replaced';assert r#>>'{data,totals,0,index_cents}'='4230000','Edited index incorrect';
+ begin perform 1 from bolig_private.contract_finance_changes;exception when insufficient_privilege then denied:=true;end;assert denied,'Private edit receipts exposed';denied:=false;
  begin perform 1 from bolig_private.contract_finance_events;exception when insufficient_privilege then denied:=true;end;assert denied,'Raw private table accessible';
  perform public.bolig_contracts(c,root,'grant',jsonb_build_object('user_id','d0000000-0000-4000-8000-000000000101','role','reader','revision',0));
  perform set_config('qa.finance.root',root::text,true);perform set_config('qa.finance.payload',p::text,true);
@@ -43,8 +51,8 @@ reset role;
 select set_config('request.jwt.claim.sub','d0000000-0000-4000-8000-000000000101',true);
 set local role authenticated;
 do $$declare c uuid:='e0000000-0000-4000-8000-000000000001';root uuid:=current_setting('qa.finance.root')::uuid;denied boolean:=false;begin
- assert jsonb_array_length(public.bolig_contract_finance(c,root)#>'{data,entries}')=6,'Reader missing history';
- begin perform public.bolig_contract_finance(c,root,'register',current_setting('qa.finance.payload')::jsonb);exception when insufficient_privilege then denied:=true;end;assert denied,'Reader can register';
+ assert jsonb_array_length(public.bolig_contract_finance(c,root)#>'{data,entries}')=7,'Reader missing history';
+ begin perform public.bolig_contract_finance(c,root,'save',current_setting('qa.finance.payload')::jsonb);exception when insufficient_privilege then denied:=true;end;assert denied,'Reader can register';
 end$$;
 reset role;
 select set_config('request.jwt.claim.sub','d0000000-0000-4000-8000-000000000001',true);
@@ -60,5 +68,5 @@ reset role;set local role anon;
 do $$declare denied boolean:=false;begin
  begin perform public.bolig_contract_finance('e0000000-0000-4000-8000-000000000001',current_setting('qa.finance.root')::uuid);exception when insufficient_privilege then denied:=true;end;assert denied,'Anonymous finance RPC accessible';
 end$$;
-select 'PASS native finance: agreement, cumulative/monthly a konto, separate index invoice, durable source, no duplicate index/principal, credit, immutable retry, reader/write/table/anon gates and revocation; all changes rollback' result;
+select 'PASS native finance: editable one-save invoice pair, blank/later numbers, corrected totals, exact retry, legacy history, credit and ACL; all changes rollback' result;
 rollback;

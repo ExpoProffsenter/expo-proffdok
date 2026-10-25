@@ -40,6 +40,8 @@ export async function contractPlatform(){
  if(separateMigration)await db.exec(await fs.readFile('supabase/migrations/'+separateMigration,'utf8'));
  const canonicalMigration=(await fs.readdir('supabase/migrations')).find(f=>f.endsWith('_bolig_index_invoice_canonical_source.sql'));
  if(canonicalMigration)await db.exec(await fs.readFile('supabase/migrations/'+canonicalMigration,'utf8'));
+ const registerMigration=(await fs.readdir('supabase/migrations')).find(f=>f.endsWith('_bolig_editable_invoice_register.sql'));
+ if(registerMigration)await db.exec(await fs.readFile('supabase/migrations/'+registerMigration,'utf8'));
  await db.query('insert into bolig_private.firms(company_id,enabled) values($1,true)',[company]);
  await db.query("insert into bolig_private.member_access(company_id,user_id,access_role) values($1,$2,'manager'),($1,$3,'reader')",[company,owner,reader]);
  let queue=Promise.resolve();

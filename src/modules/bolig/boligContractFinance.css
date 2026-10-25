@@ -26,3 +26,10 @@
 .bolig-contract-finance section[hidden]{display:none}
 .bolig-finance-tabs button[aria-pressed=true]{font-weight:700}
 .bolig-index-history>button{display:block;margin-top:8px;white-space:normal;text-align:left}
+.bolig-contract-finance h3{margin:8px 0}
+.bolig-finance-summary article{border-top:1px solid #405064;padding:8px 0}
+.bolig-finance-history{display:grid;gap:10px;margin-top:16px}
+.bolig-finance-save{position:sticky;bottom:0;z-index:2;display:flex;align-items:center;gap:16px;justify-content:space-between;background:#edf7fa;color:#173340;border:1px solid #a7c4cf;border-radius:10px;padding:12px;margin-top:12px}
+.bolig-finance-save span{font-size:.9rem;line-height:1.4}
+.bolig-finance-save button{min-width:120px}
+@media(max-width:480px){.bolig-finance-save{flex-wrap:wrap;gap:8px}.bolig-finance-save button{width:100%}}

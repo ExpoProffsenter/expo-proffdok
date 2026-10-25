@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
 import {contractPlatform} from './fixtures/bolig-contract-platform.mjs';
-import {moneyCents} from '../src/modules/bolig/boligContractFinance.js';
+import {moneyCents,newInvoiceForm,invoiceAmounts} from '../src/modules/bolig/boligContractFinance.js';
+import {fetchInvoiceIndex} from '../src/modules/bolig/boligContractIndex.js';
 const p=await contractPlatform();let checks=0;
 const eq=(a,b,m)=>{assert.deepEqual(a,b,m);checks++;};
 const deny=async(fn,code)=>{await assert.rejects(fn,e=>e.code===code);checks++;};
@@ -97,6 +98,36 @@ try{
  await deny(()=>rpc('preview',{input:{...ownIndex,index_of:null}}),'22023');
  await deny(()=>rpc('preview',{input:{...ownIndex,number:'INVALID-SOURCE-MODE',index_of:main.id,mode:'period',method:'payment'}}),'22023');
  const declineSplit={...split,number:'SPLIT-DECLINE',period:'2026-10',target_index:90};eq((await rpc('preview',{input:declineSplit})).result.index_invoice.result.index_cents,-80000,'separate preview shows a negative adjustment');await deny(()=>rpc('register',{id:randomUUID(),revision:rev,input:declineSplit}),'22023');
+ const registerBefore=await rpc('get');
+ const editable=input({method:'payment',number:'',index_number:'',date:'2026-10-28',period:'2026-10',target_month:'2026-09',index_published:'2026-10-13',values:[{id:base,principal_cents:1000000,index_cents:0},{id:option,principal_cents:200000,index_cents:0}]});
+ const editId=randomUUID(),attempt={id:editId,entry_revision:0,request_id:randomUUID(),revision:rev,input:editable};const created=await rpc('save',attempt);rev=created.revision;
+ eq(created.entry.result.principal_cents,1200000,'one save stores this period principal');eq(created.entry.result.index_cents,80000,'one save includes index at saved .8 factor');eq(created.entry.input.number,'','main number can follow later');eq(created.entry.input.index_number,'','index number can follow later');
+ eq((await rpc('save',attempt)).entry,created.entry,'lost save reply replays exact receipt');
+ let editState=await rpc('get');eq(editState.totals[0].principal_cents,registerBefore.totals[0].principal_cents+1000000);eq(editState.totals[0].index_cents,registerBefore.totals[0].index_cents+80000);
+ await setup({...agreement,reference:'QA nye vilkår etter faktura',factor:.5});
+ const numbered={id:editId,entry_revision:created.entry.revision,request_id:randomUUID(),revision:rev,input:{...editable,number:'EDITABLE-MAIN',index_number:'EDITABLE-INDEX'}};const numberedReply=await rpc('save',numbered);rev=numberedReply.revision;
+ eq((await rpc('get')).totals,editState.totals,'adding both numbers changes no financial totals even after new contract terms');eq(numberedReply.entry.result.index_basis.factor,.8,'metadata edit keeps original factor');eq((await rpc('get')).entries.filter(e=>e.id===editId).length,1,'edit replaces one entry');
+ const adjusted={...numbered,entry_revision:numberedReply.entry.revision,request_id:randomUUID(),revision:rev,input:{...numbered.input,values:[{id:base,principal_cents:2000000,index_cents:0},{id:option,principal_cents:200000,index_cents:0}]}};const adjustedReply=await rpc('save',adjusted);rev=adjustedReply.revision;
+ eq(adjustedReply.entry.result.index_cents,160000);eq((await rpc('get')).totals[0].principal_cents,registerBefore.totals[0].principal_cents+2000000,'amount edit replaces, never adds previous version');eq((await rpc('save',attempt)).entry,created.entry,'old request returns its original receipt after later edit');
+ await deny(()=>rpc('save',{...adjusted,request_id:randomUUID()}),'PT409');
+ await deny(()=>rpc('save',{...adjusted,request_id:randomUUID(),revision:rev,entry_revision:created.entry.revision}),'PT409');
+ await deny(()=>rpc('register',{id:randomUUID(),revision:rev,input:input({number:'EDITABLE-INDEX',method:'payment',period:'2026-11',apply_index:false,target_index:null,values:[{id:base,principal_cents:1,index_cents:0},{id:option,principal_cents:0,index_cents:0}]})}),'PT409');
+ await deny(()=>rpc('save',{...attempt,input:{...editable,number:'FORGED'}}),'PT409');
+ await deny(()=>rpc('save',{id:randomUUID(),request_id:randomUUID(),revision:rev,input:numbered.input}),'PT409');
+ await deny(()=>rpc('save',{id:randomUUID(),request_id:randomUUID(),revision:rev,input:{...editable,index_number:'EDITABLE-MAIN'}}),'PT409');
+ await deny(()=>rpc('save',{id:randomUUID(),request_id:randomUUID(),revision:rev,input:{...editable,number:'SAME',index_number:'same'}}),'PT409');
+ await deny(()=>rpc('save',{id:randomUUID(),request_id:randomUUID(),revision:rev,input:{...editable,index_published:'2026-10-29'}}),'22023');
+ await deny(()=>rpc('save',{id:randomUUID(),request_id:randomUUID(),revision:rev,input:editable},p.reader),'42501');
+ await deny(()=>rpc('save',{id:randomUUID(),request_id:randomUUID(),revision:rev,input:editable},p.owner,randomUUID()),'42501');
+ eq((await p.system('select count(*)::int n from bolig_private.contract_finance_changes where entry_id=$1',[editId]))[0].n,3,'each explicit save has a private change receipt');
+ await p.system('set role authenticated');await deny(()=>p.db.query('select * from bolig_private.contract_finance_changes'),'42501');await p.system('reset role');
+ const historical={...editable,number:'HISTORIC-CHECKED',index_number:'',date:'2026-09-28',period:'2026-09',target_month:'2026-08',target_index:105,index_published:null,index_confirmed:true,origin:'manual'};
+ const historicalSaved=await rpc('save',{id:randomUUID(),request_id:randomUUID(),revision:rev,input:historical});rev=historicalSaved.revision;eq(historicalSaved.entry.input.index_published,null,'historic confirmation never invents publication date');eq(historicalSaved.entry.result.index_cents,25000,'confirmed historical index uses current agreement for new invoice');
+ await deny(()=>rpc('save',{id:randomUUID(),request_id:randomUUID(),revision:rev,input:{...historical,number:'FUTURE-CONFIRMED',index_published:'2026-10-29'}}),'22023');
+ await deny(()=>rpc('save',{id:randomUUID(),request_id:randomUUID(),revision:rev,input:{...historical,number:'INVALID-CONFIRMED',index_confirmed:'true'}}),'22023');
+ const legacyTotals=(await rpc('get')).totals;
+ const legacyEdit={...hist.input,number:'OLD-1-EDITED',index_number:'',index_published:null,index_confirmed:false};
+ const legacySaved=await rpc('save',{id:hist.id,entry_revision:hist.revision,request_id:randomUUID(),revision:rev,input:legacyEdit});rev=legacySaved.revision;eq(legacySaved.entry.id,hist.id,'old invoices are editable too');eq((await rpc('get')).totals,legacyTotals,'editing a legacy number leaves original amounts unchanged');
  const finalEntries=(await rpc('get')).entries.length;
  await deny(()=>rpc('entry',{id:randomUUID()}),'42501');
  await deny(()=>rpc('get',{},p.owner,randomUUID()),'42501');
@@ -105,5 +136,16 @@ try{
  await p.system('set role authenticated');await deny(()=>p.db.query('select * from bolig_private.contract_finance_events'),'42501');
  await p.system('set role anon');await deny(()=>p.db.query('select public.bolig_contract_finance($1,$2)',[p.company,p.root.id]),'42501');
  eq(moneyCents('1 234,56'),123456);eq(moneyCents('-0,01',true),-1);for(const s of ['-1','1.234,50','1e3','1,001']){assert.throws(()=>moneyCents(s));checks++;}
+ eq(newInvoiceForm(agreement).apply_index,true,'new invoice follows saved index terms');eq(newInvoiceForm({...agreement,lines:agreement.lines.map(l=>({...l,selected:false}))}).apply_index,false,'no repeated index choice when contract has no index');eq(newInvoiceForm({...agreement,factor:0}).apply_index,false,'zero factor needs no SSB request');
+ const originalFetch=globalThis.fetch;
+ try{
+  globalThis.fetch=async(url,options)=>{const body=JSON.parse(options.body);assert.deepEqual(Object.keys(body).sort(),['query','response']);return new Response(JSON.stringify({id:['Arbeidstype','ContentsCode','Tid'],size:[1,1,3],updated:'2026-10-13T06:00:00Z',dimension:{Tid:{category:{index:{'2025M01':0,'2026M08':1,'2026M09':2}}}},value:[100,105,110]}));};
+  const current=await fetchInvoiceIndex('block_total','2025-01','2026-10-28');eq(current.target_month,'2026-09','28th selects actually published index');eq(current.index_published,'2026-10-13');eq(current.needs_confirmation,false);
+  const early=await fetchInvoiceIndex('block_total','2025-01','2026-10-05');eq(early.needs_confirmation,true,'date before known publication requires explicit historic check');eq(early.index_published,null,'never invent a historic publication date');
+  const checked=await fetchInvoiceIndex('block_total','2025-01','2026-10-05',undefined,'2026-08');eq(checked.target_index,'105');eq(checked.origin,'manual');
+  await assert.rejects(()=>fetchInvoiceIndex('block_total','2025-01','2026-10-05',undefined,'2026-11'));checks++;
+  const f={...newInvoiceForm(),target_index:'110',values:{[base]:{principal:'200000'},[option]:{principal:'50000'}}};eq(invoiceAmounts(f,agreement).index_cents,1800000,'visible invoice amount uses same selected lines and factor as SQL');
+  eq(invoiceAmounts({...f,target_index:'1',values:{[base]:{principal:'0,03'}}},{...agreement,base_index:2,factor:1}).index_cents,-2,'visible negative half-cent rounding matches PostgreSQL');
+ }finally{globalThis.fetch=originalFetch;}
  console.log(`Contract finance: ${checks} assertions PASS (actual PostgreSQL; periods, cumulative values, options, prepaid, historical invoices, partial credits, immutable replay and ACL).`);
 }finally{await p.db.close();}

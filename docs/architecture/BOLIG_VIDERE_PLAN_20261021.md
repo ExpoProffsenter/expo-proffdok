@@ -1,5 +1,17 @@
 # Boligprosjekter – arbeidsflate og videre produktkrav
 
+## Redigerbart fakturaregister – 25. oktober 2026
+
+Kenneth har erstattet det tidligere ERP-lignende løpet med ett åpent register:
+Lagre fører a konto og indeks samtidig. Begge fakturanumre kan stå tomme og fylles
+inn senere. Rediger korrigerer beløp uten dobbeltelling. Fakturadato styrer valg av
+publisert indeks; eldre datoer som ikke kan bevises fra SSBs siste oppdatering må
+bekreftes uttrykkelig. Kontraktsgrunnlag og gamle hele-kontrakten-rapporter beholdes.
+Ny additiv Sandbox-migrasjon bevarer endringskvitteringer privat. Ingen produksjons-
+merge eller -migrasjon. Gjeldende kontrakt/QA:
+`docs/qa/BOLIG_FAKTURAREGISTER_20261025.md`. Eldre etapper nedenfor er historikk.
+
+
 ## Samlet kontraktsøkonomi – 25. oktober 2026
 
 Etter Kenneths «kjør» er de to økonomiinngangene samlet i Kontraktsøkonomi.

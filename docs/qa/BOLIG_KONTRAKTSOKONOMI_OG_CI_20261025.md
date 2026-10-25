@@ -1,5 +1,9 @@
 # Samlet kontraktsøkonomi og CI – 25. oktober 2026
 
+Senere avklaring fra Kenneth har erstattet det separate registreringsløpet og
+uredigerbare fakturaer. Se `BOLIG_FAKTURAREGISTER_20261025.md` for gjeldende flyt.
+Beskrivelsen nedenfor gjelder den tidligere etappen.
+
 Miljømål BEGGE. Nå kun eksisterende feature/Preview og Sandbox. Ingen
 produksjonsmerge eller produksjonsmigrasjon. Separat indeksfaktura er utvidet etter
 Kenneths tilleggsbestilling, med additive migrasjoner bare i Sandbox.
