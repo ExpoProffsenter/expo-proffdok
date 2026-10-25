@@ -85,6 +85,17 @@ try {
   const btn = (n) => page.getByRole("button", { name: n, exact: true });
   await btn("Rediger byggeplass").waitFor();
   eq(await page.evaluate(() => window.writes), 0, "mount is read only");
+  await btn("Rediger byggeplass").click();
+  const editor = page.locator("form.roster-editor");
+  eq(
+    await editor.evaluate((el) => {
+      const rect = el.getBoundingClientRect();
+      return rect.top >= 0 && rect.top < innerHeight - 80;
+    }),
+    true,
+    "editor opens in visible dialog area without searching below the overview",
+  );
+  await btn("Forkast kladden").click();
   await btn("Virksomheter (0)").click();
   await btn("Legg til virksomhet").click();
   await page.getByLabel("Virksomhetens navn", { exact: true }).fill("QA Firma");

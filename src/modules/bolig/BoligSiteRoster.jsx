@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useLayoutEffect, useRef, useState } from "react";
 import Dialog from "./BoligEditorDialog.jsx";
 import { useSiteRoster } from "./boligSiteRoster.js";
 import {
@@ -43,6 +43,15 @@ function Roster({ context, root, onClose }) {
     [closing, setClosing] = useState(false),
     [exporting, setExporting] = useState(false),
     [exportError, setExportError] = useState("");
+  const editorRef = useRef(null);
+  const editorKey = draft
+    ? `${draft.action}/${draft.values.id || root.id}`
+    : "";
+  useLayoutEffect(() => {
+    if (!editorKey || !editorRef.current) return;
+    editorRef.current.scrollIntoView({ block: "start" });
+    editorRef.current.focus({ preventScroll: true });
+  }, [editorKey]);
   const doc = data?.document,
     locked = busy || !!pending || exporting,
     readonly = !data || data.readonly,
@@ -276,7 +285,7 @@ function Roster({ context, root, onClose }) {
                   </span>
                 )}
               </div>
-              {tab === "overview" && (
+              {tab === "overview" && !draft && (
                 <>
                   <article>
                     <h3>{doc.site.name || "Byggeplass mangler navn"}</h3>
@@ -518,6 +527,9 @@ function Roster({ context, root, onClose }) {
               {draft && (
                 <form
                   className="roster-editor"
+                  ref={editorRef}
+                  tabIndex={-1}
+                  aria-label="Rediger opplysninger i oversiktslisten"
                   onSubmit={(e) => {
                     e.preventDefault();
                     save();

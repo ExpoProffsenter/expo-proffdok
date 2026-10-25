@@ -74,7 +74,7 @@ inn før gjennomgang. Ingen utført-testpåstand før prøven faktisk består.
 - Full PostgreSQL/PGlite-suite: 1727 assertions PASS på endelig lokal kilde.
   Nye scenarier beskytter revisjon/replay, fullstendighet, innleie/HMS-søknad,
   uforanderlige versjoner, deltakerimport og tilgang/privat tabell-ACL.
-- Ny nettleserflyt: 21 assertions PASS, med mobilbredder 320/390/768 og desktop
+- Ny nettleserflyt: 22 assertions PASS, med mobilbredder 320/390/768 og desktop
   1366, fanebytte/dvale med kladd, usikkert lagringssvar/replay, konflikt og
   tilbakekalt tilgang. Endelig antall og CI føres i PR.
 - Eksport: 24 assertions PASS. Faktisk 12-siders PDF med 45 fiktive personer,
@@ -116,3 +116,19 @@ Gamle urelaterte funn er uendret. Se
 Innlogget brukerprøve med eget firma og reell mobil Safari/iOS/Android gjenstår.
 Automatisert Chromium gir ikke dekning av alle nettlesere eller faktisk registerkontroll.
 Ny TEST OK gjelder denne leveransen, ikke den allerede publiserte PR286.
+
+## Sluttkontroll av skjema og historisk CI-repetisjon
+
+En ny nettlesertest viste at byggeplass-editoren kunne havne under hele
+oversikten. Editor erstatter nå oversiktsinnhold under redigering og rulles
+inn i synsfeltet. Regresjonen feilet før rettelsen og består etterpå.
+
+CI719 stoppet på den historiske PR278-installasjonsøvelsen: den sammenlignet
+den låste pakken på 72 migrasjoner med dagens kilde som også har ny roster-migrasjon.
+Workflow kjører nå de uendrede øvelsene i en midlertidig detached worktree på
+den allerede registrerte PR278-kandidaten f39d374c. Alle gamle assertions og
+releasehashene er beholdt. Dagens fulle foundation-suite tester fortsatt alle
+migrasjoner inkludert roster. Ingen produksjonsinstallasjon gjentas.
+
+Historisk PR278-prøve i den registrerte worktreen: manifest 312 PASS,
+installasjon/rollback 108 PASS. Ingen eksisterende testfiler endret.
