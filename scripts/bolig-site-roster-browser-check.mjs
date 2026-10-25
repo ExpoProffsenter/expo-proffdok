@@ -80,6 +80,13 @@ try {
   await page.clock.setFixedTime(attendanceNow);
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
+  await page.addInitScript(() => {
+    const interval = window.setInterval;
+    window.setInterval = (fn, ms, ...args) => {
+      if (ms === 60000) window.rosterIdleRefresh = fn;
+      return interval(fn, ms, ...args);
+    };
+  });
   await page.goto(`http://127.0.0.1:${server.address().port}`);
 
   const btn = (n) => page.getByRole("button", { name: n, exact: true });
@@ -110,6 +117,14 @@ try {
     .getByLabel("Personens navn", { exact: true })
     .fill("QA Łukasz Жуков");
   await page.getByLabel("Fødselsdato", { exact: true }).fill("1990-01-02");
+  await page.evaluate(() => window.rosterIdleRefresh());
+  eq(
+    await page
+      .getByLabel("Fødselsdato", { exact: true })
+      .evaluate((el) => document.activeElement === el),
+    true,
+    "idle refresh keeps input and keyboard focus during editing",
+  );
   await page
     .getByLabel("Arbeidsgiver / enmannsbedrift", { exact: true })
     .selectOption({ label: "QA Firma · 999888777" });

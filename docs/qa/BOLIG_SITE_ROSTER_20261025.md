@@ -74,7 +74,7 @@ inn før gjennomgang. Ingen utført-testpåstand før prøven faktisk består.
 - Full PostgreSQL/PGlite-suite: 1727 assertions PASS på endelig lokal kilde.
   Nye scenarier beskytter revisjon/replay, fullstendighet, innleie/HMS-søknad,
   uforanderlige versjoner, deltakerimport og tilgang/privat tabell-ACL.
-- Ny nettleserflyt: 22 assertions PASS, med mobilbredder 320/390/768 og desktop
+- Ny nettleserflyt: 23 assertions PASS, med mobilbredder 320/390/768 og desktop
   1366, fanebytte/dvale med kladd, usikkert lagringssvar/replay, konflikt og
   tilbakekalt tilgang. Endelig antall og CI føres i PR.
 - Eksport: 24 assertions PASS. Faktisk 12-siders PDF med 45 fiktive personer,
@@ -132,3 +132,7 @@ migrasjoner inkludert roster. Ingen produksjonsinstallasjon gjentas.
 
 Historisk PR278-prøve i den registrerte worktreen: manifest 312 PASS,
 installasjon/rollback 108 PASS. Ingen eksisterende testfiler endret.
+
+Passiv minuttoppdatering utsettes mens en kladd/lagring er aktiv, slik at
+markør og tastaturfokus ikke forsvinner midt i skriving. Focus/visibility og
+tilgangshendelser kontrollerer fortsatt umiddelbart. Egen runtime-regresjon inngår.

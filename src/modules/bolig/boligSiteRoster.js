@@ -118,7 +118,16 @@ export function useSiteRoster(context, root) {
     ];
     events.forEach((e) => window.addEventListener(e, refresh));
     document.addEventListener("visibilitychange", refresh);
-    const timer = setInterval(refresh, 60000);
+    // Passive refresh must never unmount a form while the user is typing.
+    // Focus, visibility and explicit access events always revalidate immediately.
+    const timer = setInterval(() => {
+      if (
+        !live.current.draft &&
+        !live.current.pending &&
+        !live.current.operating
+      )
+        refresh();
+    }, 60000);
     const unload = (e) => {
       if (live.current.draft || live.current.pending) {
         e.preventDefault();
