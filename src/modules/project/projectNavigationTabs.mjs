@@ -10,6 +10,7 @@ export function createGlobalAppTabs({
   canUseAdminProjectSync = false,
   canUseKshms = false,
   canUseHr = false,
+  canUseBolig = false,
   personalPage = false,
 } = {}) {
   return [
@@ -19,6 +20,7 @@ export function createGlobalAppTabs({
     ...(personalPage ? [["innlogging", "Min side"]] : [["innlogging", "Min profil / e-postvalg"]]),
     ...(isCompanyAdminUser ? [["firmaadmin", "Firma"]] : []),
     ["prosjektliste", "Prosjektliste"],
+    ...(canUseBolig ? [["bolig", "Boligprosjekter"]] : []),
     ...(canUseKshms ? [["kshms", "KS/HMS"]] : []),
     ...(canUseHr ? [["hr", "HR"]] : []),
     ["hjelp", "Hjelp"],

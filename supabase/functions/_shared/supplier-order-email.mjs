@@ -6,7 +6,7 @@ export function supplierOrderFrom(configured,companyName) {
  return `${name} via Expo ProffDok <${address}>`;
 }
 export const formatOrderNet = value => new Intl.NumberFormat('nb-NO',{style:'currency',currency:'NOK',minimumFractionDigits:2,maximumFractionDigits:2}).format(Number(value));
-function supplierOrderLogo(company) {
+export function supplierOrderLogo(company) {
  const name=String(company.companyName||'').toLowerCase().replaceAll('ø','o').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
  let raw=company.logoUrl;
  // Established internal sender brands use the same bundled logos as the app.

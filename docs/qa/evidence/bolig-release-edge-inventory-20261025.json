@@ -1,0 +1,227 @@
+[
+  {
+    "slug": "bolig-order-email",
+    "sandbox_version": 2,
+    "verify_jwt": true,
+    "files": [
+      {
+        "path": "supabase/functions/bolig-order-email/index.ts",
+        "local_sha256": "55452f26a999b238792aa7c5fe376630e9d2379220670d508dfad45136c5cdca",
+        "sandbox_sha256": "55452f26a999b238792aa7c5fe376630e9d2379220670d508dfad45136c5cdca",
+        "equal": true
+      },
+      {
+        "path": "supabase/functions/_shared/bolig-order-email.mjs",
+        "local_sha256": "7daf1584d0f75773df864d8796ab9a3088ab99cb0354a08bed6bdce5a35be2e3",
+        "sandbox_sha256": "7daf1584d0f75773df864d8796ab9a3088ab99cb0354a08bed6bdce5a35be2e3",
+        "equal": true
+      },
+      {
+        "path": "supabase/functions/_shared/supplier-order-email.mjs",
+        "local_sha256": "e8d59e3e990f3fcffa7ffb1815033791b18155232109399eea4cf70a88831417",
+        "sandbox_sha256": "933d68f66a3cdf1b2b837942deffc398fd725b758c77f2d06fdf59be7891f622",
+        "equal": false
+      },
+      {
+        "path": "supabase/functions/_shared/bolig-order-attachments.mjs",
+        "local_sha256": "ee22962383594b5f3e7a51bde8d5d7a0877a7772a2ad09d42a15939725be9f60",
+        "sandbox_sha256": "ee22962383594b5f3e7a51bde8d5d7a0877a7772a2ad09d42a15939725be9f60",
+        "equal": true
+      },
+      {
+        "path": "src/modules/cordel/picklistCordel.mjs",
+        "local_sha256": "634e5bae602026147b2bc07ffbd4ce404c0380e1962d1f40e42944eaac2b81d3",
+        "sandbox_sha256": "634e5bae602026147b2bc07ffbd4ce404c0380e1962d1f40e42944eaac2b81d3",
+        "equal": true
+      },
+      {
+        "path": "src/modules/cordel/cordelFiles.mjs",
+        "local_sha256": "36a7e132b07640faf0cf9daef3bed02b7f7dac5779c2a8dc706290ddb0477692",
+        "sandbox_sha256": "36a7e132b07640faf0cf9daef3bed02b7f7dac5779c2a8dc706290ddb0477692",
+        "equal": true
+      }
+    ]
+  },
+  {
+    "slug": "bolig-protocol-email",
+    "sandbox_version": 1,
+    "verify_jwt": true,
+    "files": [
+      {
+        "path": "supabase/functions/bolig-protocol-email/index.ts",
+        "local_sha256": "02fdd85e32d51978d992a6ee9acad2816ca17595009e1bf85b1f2898588d3dda",
+        "sandbox_sha256": "02fdd85e32d51978d992a6ee9acad2816ca17595009e1bf85b1f2898588d3dda",
+        "equal": true
+      },
+      {
+        "path": "supabase/functions/_shared/bolig-protocol-email.mjs",
+        "local_sha256": "3fd1487ac61ff72b4654975fd0d0ffbc5dbd6035cc1f77b15d22cfec4613530b",
+        "sandbox_sha256": "3fd1487ac61ff72b4654975fd0d0ffbc5dbd6035cc1f77b15d22cfec4613530b",
+        "equal": true
+      },
+      {
+        "path": "supabase/functions/_shared/supplier-order-email.mjs",
+        "local_sha256": "e8d59e3e990f3fcffa7ffb1815033791b18155232109399eea4cf70a88831417",
+        "sandbox_sha256": "933d68f66a3cdf1b2b837942deffc398fd725b758c77f2d06fdf59be7891f622",
+        "equal": false
+      }
+    ]
+  },
+  {
+    "slug": "bolig-progress-notifications",
+    "sandbox_version": 3,
+    "verify_jwt": false,
+    "files": [
+      {
+        "path": "supabase/functions/bolig-progress-notifications/index.ts",
+        "local_sha256": "9458c4e378408c10fd01edc19060ccef416c5d5b79ab4a3329f9ffe56bb2a001",
+        "sandbox_sha256": "9458c4e378408c10fd01edc19060ccef416c5d5b79ab4a3329f9ffe56bb2a001",
+        "equal": true
+      },
+      {
+        "path": "supabase/functions/_shared/bolig-progress-notifications.mjs",
+        "local_sha256": "5f3add472473a07a446eb252f00204f683f2f7fa04372c28c60eb7a01dfe725d",
+        "sandbox_sha256": "5f3add472473a07a446eb252f00204f683f2f7fa04372c28c60eb7a01dfe725d",
+        "equal": true
+      }
+    ]
+  },
+  {
+    "slug": "bolig-partner-files",
+    "sandbox_version": 1,
+    "verify_jwt": false,
+    "files": [
+      {
+        "path": "supabase/functions/bolig-partner-files/index.ts",
+        "local_sha256": "92cf9160d4b5e1b0c5c152b7b45ce44632abce18defe94396b933e98b3523e9c",
+        "sandbox_sha256": "f6fab1f3317fb259efd789eff32687768bec5eccae8381a3408308e39a828c60",
+        "equal": false
+      },
+      {
+        "path": "supabase/functions/_shared/bolig-partner-files.mjs",
+        "local_sha256": "fc7855ddaba5f49132f3d361f2ae9f8182ce850ad5048baf6dc19fdbcf289e68",
+        "sandbox_sha256": "fc7855ddaba5f49132f3d361f2ae9f8182ce850ad5048baf6dc19fdbcf289e68",
+        "equal": true
+      }
+    ],
+    "candidate_sandbox": {
+      "version": 2,
+      "verify_jwt": false,
+      "ezbr_sha256": "91d3f15cfd39c1b10f89b8dc14df146c281add079e6273f376a5ae6aa93a5a36",
+      "files": [
+        {
+          "path": "supabase/functions/bolig-partner-files/index.ts",
+          "sha256": "92cf9160d4b5e1b0c5c152b7b45ce44632abce18defe94396b933e98b3523e9c",
+          "exact": true
+        },
+        {
+          "path": "supabase/functions/_shared/bolig-origins.mjs",
+          "sha256": "364ec4784657923338a23453edd478a20af445b416a2cd2dcf261b4cf162e1ef",
+          "exact": true
+        },
+        {
+          "path": "supabase/functions/_shared/bolig-partner-files.mjs",
+          "sha256": "fc7855ddaba5f49132f3d361f2ae9f8182ce850ad5048baf6dc19fdbcf289e68",
+          "exact": true
+        }
+      ]
+    }
+  },
+  {
+    "slug": "bolig-partner-email",
+    "sandbox_version": 3,
+    "verify_jwt": false,
+    "files": [
+      {
+        "path": "supabase/functions/bolig-partner-email/index.ts",
+        "local_sha256": "cfd1a2e17cbda2e4b6f9ab577f83b69a9d1e7ecf89aaf05f4b907527288a1627",
+        "sandbox_sha256": "cfd1a2e17cbda2e4b6f9ab577f83b69a9d1e7ecf89aaf05f4b907527288a1627",
+        "equal": true
+      },
+      {
+        "path": "supabase/functions/_shared/bolig-partner-email.mjs",
+        "local_sha256": "1c9a9fcfc4e20b0467c6ed8e947e32c59733a352f9fc11708777b5fb2b9f9947",
+        "sandbox_sha256": "a6ae9d0c162e446f39bce7804352bd3365a6f7a07b12f1f18008503b197d520d",
+        "equal": false
+      },
+      {
+        "path": "supabase/functions/_shared/supplier-order-email.mjs",
+        "local_sha256": "e8d59e3e990f3fcffa7ffb1815033791b18155232109399eea4cf70a88831417",
+        "sandbox_sha256": "585f448ab69c56a7941ec4fdb9d4ce0221953c18250be555d0e3cf6b9b8384a6",
+        "equal": false
+      }
+    ]
+  },
+  {
+    "slug": "bolig-resident-link-email",
+    "sandbox_version": 3,
+    "verify_jwt": false,
+    "files": [
+      {
+        "path": "supabase/functions/bolig-resident-link-email/index.ts",
+        "local_sha256": "2abf9fff1d8f31c8ef5c80cb00bca281a391062962605d66ef204597b4cbad45",
+        "sandbox_sha256": "2abf9fff1d8f31c8ef5c80cb00bca281a391062962605d66ef204597b4cbad45",
+        "equal": true
+      },
+      {
+        "path": "supabase/functions/_shared/bolig-resident-link-email.mjs",
+        "local_sha256": "3d2ae5745a7d8765cd3ad82a99cab9e13d3b4e3d081eafcf66583efecfbe2346",
+        "sandbox_sha256": "3d2ae5745a7d8765cd3ad82a99cab9e13d3b4e3d081eafcf66583efecfbe2346",
+        "equal": true
+      },
+      {
+        "path": "supabase/functions/_shared/bolig-partner-email.mjs",
+        "local_sha256": "1c9a9fcfc4e20b0467c6ed8e947e32c59733a352f9fc11708777b5fb2b9f9947",
+        "sandbox_sha256": "a6ae9d0c162e446f39bce7804352bd3365a6f7a07b12f1f18008503b197d520d",
+        "equal": false
+      },
+      {
+        "path": "supabase/functions/_shared/supplier-order-email.mjs",
+        "local_sha256": "e8d59e3e990f3fcffa7ffb1815033791b18155232109399eea4cf70a88831417",
+        "sandbox_sha256": "585f448ab69c56a7941ec4fdb9d4ce0221953c18250be555d0e3cf6b9b8384a6",
+        "equal": false
+      }
+    ]
+  },
+  {
+    "slug": "bolig-contract-files",
+    "sandbox_version": 1,
+    "verify_jwt": true,
+    "files": [
+      {
+        "path": "supabase/functions/bolig-contract-files/index.ts",
+        "local_sha256": "3d837c36422909c089fea9b3cd6683680e7f254f1b536a7faa8dc262830acf49",
+        "sandbox_sha256": "573339316250d4dcf13287731a8f086738a07d7263d2962b7f08651af1c886d0",
+        "equal": false
+      },
+      {
+        "path": "supabase/functions/_shared/bolig-contract-files.mjs",
+        "local_sha256": "82ba4658339264a762cd6e02f5198ca6baf37e79c103d235f00ade529062a625",
+        "sandbox_sha256": "82ba4658339264a762cd6e02f5198ca6baf37e79c103d235f00ade529062a625",
+        "equal": true
+      }
+    ],
+    "candidate_sandbox": {
+      "version": 2,
+      "verify_jwt": true,
+      "ezbr_sha256": "0b57cea8da4deb45da22b29f0e32d4ab05809014036b5e67c582f0d04798f4d8",
+      "files": [
+        {
+          "path": "supabase/functions/bolig-contract-files/index.ts",
+          "sha256": "3d837c36422909c089fea9b3cd6683680e7f254f1b536a7faa8dc262830acf49",
+          "exact": true
+        },
+        {
+          "path": "supabase/functions/_shared/bolig-origins.mjs",
+          "sha256": "364ec4784657923338a23453edd478a20af445b416a2cd2dcf261b4cf162e1ef",
+          "exact": true
+        },
+        {
+          "path": "supabase/functions/_shared/bolig-contract-files.mjs",
+          "sha256": "82ba4658339264a762cd6e02f5198ca6baf37e79c103d235f00ade529062a625",
+          "exact": true
+        }
+      ]
+    }
+  }
+]

@@ -1,0 +1,23 @@
+.bolig-completion .bolig-completion-next-unit {
+  display:flex; align-items:center; justify-content:space-between; gap:16px;
+  padding:18px; margin:18px 0; border:1px solid #a9cbbd; border-left:5px solid #247968;
+  border-radius:14px; background:#eff8f3; color:#214c40;
+}
+.bolig-completion .bolig-completion-next-unit p { margin:5px 0 0; font-size:14px; line-height:1.5; }
+.bolig-completion .bolig-completion-next-unit button { flex:0 0 auto; min-height:46px; background:#1e6255; color:white; }
+.bolig-completion .bolig-completion-filters { display:flex; flex-wrap:wrap; gap:7px; margin:12px 0 18px; padding:6px; background:#edf3f2; border-radius:13px; }
+.bolig-completion .bolig-completion-filters button { flex:1; min-height:44px; border:1px solid transparent; border-radius:9px; background:transparent; color:#315a54; font-weight:750; }
+.bolig-completion .bolig-completion-filters button[aria-pressed=true] { background:#fff; border-color:#a9c7bf; color:#174e43; box-shadow:0 2px 5px #173e3510; }
+.bolig-completion .bolig-completion-list-summary { margin:8px 0; line-height:1.6; font-size:14px; color:#345a51; }
+.bolig-handover .bolig-handover-actions { display:flex; flex-wrap:wrap; gap:9px; margin:16px 0 4px; }
+.bolig-handover .bolig-handover-actions button { min-height:46px; border-radius:11px; font-weight:750; }
+.bolig-handover .bolig-handover-actions button.bolig-primary { background:#1d6253!important; color:#fff!important; border:1px solid #1d6253!important; }
+.bolig-handover .bolig-handover-actions button.bolig-secondary { background:#fff!important; color:#285b51!important; border:1px solid #a4c2b9!important; }
+.bolig-handover .bolig-handover-deadline, .bolig-handover .bolig-handover-missing-deadline { display:block; padding:8px 10px; border-radius:7px; margin:7px 0; font-size:13px; line-height:1.5; }
+.bolig-handover .bolig-handover-deadline { background:#e8f3ed; color:#265a48; }
+.bolig-handover .bolig-handover-missing-deadline { background:#fff3d8; color:#78500b; }
+@media(max-width:600px) {
+  .bolig-completion .bolig-completion-next-unit { align-items:stretch; flex-direction:column; padding:15px; }
+  .bolig-completion .bolig-completion-filters button { flex-basis:calc(50% - 7px); white-space:normal; }
+  .bolig-handover .bolig-handover-actions button { flex:1 1 100%; }
+}

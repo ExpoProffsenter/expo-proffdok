@@ -1,0 +1,788 @@
+{
+  "captured_date": "2026-10-25",
+  "main": "36462e2b05ecd8e53dcdd7818c4b791b7c7cb2ed",
+  "feature": "e6105d582f8150a794457303aabf1101ddb03167",
+  "production_project": "dqffxflaoyarbxyiyhop",
+  "sandbox_project": "ppvircenkjizeiqdxphj",
+  "sandbox_history": [
+    {
+      "version": "20261020202112",
+      "name": "boligprosjekter_foundation",
+      "statement_count": 1,
+      "bytes": 18334,
+      "sql_md5": "52cf326ab19f059650f9dd2f6a0a2eac",
+      "compact_md5": "d6d426118bf6a1283be420f594896455"
+    },
+    {
+      "version": "20261020202709",
+      "name": "boligprosjekter_fk_indexes",
+      "statement_count": 1,
+      "bytes": 262,
+      "sql_md5": "33e44d2896150f99f006dfe5791bfa78",
+      "compact_md5": "f9ea0c34e9b74a7bcb040b35dbdc23d9"
+    },
+    {
+      "version": "20261020203641",
+      "name": "boligprosjekter_root_list_scope",
+      "statement_count": 1,
+      "bytes": 11543,
+      "sql_md5": "bf4790362751177a2347815d3ced81c0",
+      "compact_md5": "9a4ae8b77c65cf3498657ade035c5635"
+    },
+    {
+      "version": "20261020204137",
+      "name": "boligprosjekter_conflict_http_status",
+      "statement_count": 1,
+      "bytes": 11534,
+      "sql_md5": "20a309e90459e762c3b30d22e05dc8af",
+      "compact_md5": "ae1e40c5bd630e76007bcb0198c26c0b"
+    },
+    {
+      "version": "20261020205119",
+      "name": "boligprosjekter_project_link_lifecycle",
+      "statement_count": 1,
+      "bytes": 11859,
+      "sql_md5": "6f0dded0d41860911f35dae4e02b62a2",
+      "compact_md5": "da8497b16815673987d3291193b52205"
+    },
+    {
+      "version": "20261020212953",
+      "name": "boligprosjekter_systemadmin_firm_access",
+      "statement_count": 1,
+      "bytes": 2667,
+      "sql_md5": "818405992cbbf231348b4ca15a11e459",
+      "compact_md5": "c355b5e9b58cd495ec219fb0e5a7e644"
+    },
+    {
+      "version": "20261020215241",
+      "name": "boligprosjekter_packages_choices",
+      "statement_count": 1,
+      "bytes": 14749,
+      "sql_md5": "7565e2d906514aa65b533983d6f160fd",
+      "compact_md5": "22abed7d5e33cf492f23dbc53551cea0"
+    },
+    {
+      "version": "20261020215408",
+      "name": "boligprosjekter_choice_unit_index",
+      "statement_count": 1,
+      "bytes": 88,
+      "sql_md5": "85f942e2c2dae31a974f09299177a05d",
+      "compact_md5": "9a5f9d1adde5bfa560a837bd3a146218"
+    },
+    {
+      "version": "20261020220723",
+      "name": "boligprosjekter_order_drafts_product_images",
+      "statement_count": 1,
+      "bytes": 18591,
+      "sql_md5": "88787b26d4ede148d9df940eeb539277",
+      "compact_md5": "92e511aea7f96d619c0b3b1e89ea32cd"
+    },
+    {
+      "version": "20261020224107",
+      "name": "boligprosjekter_overview_status",
+      "statement_count": 1,
+      "bytes": 2264,
+      "sql_md5": "589cd53676f5edc1391eb7a63f3e710b",
+      "compact_md5": "e81d0d137b7c83530e8a5548d1133a6d"
+    },
+    {
+      "version": "20261020230720",
+      "name": "boligprosjekter_unit_contact",
+      "statement_count": 1,
+      "bytes": 12472,
+      "sql_md5": "3bbfc3874a8cb992adf4f5bbe95f28cc",
+      "compact_md5": "367da58fbd6aa1b0148c012da45d117d"
+    },
+    {
+      "version": "20261021000642",
+      "name": "bolig_project_builder",
+      "statement_count": 1,
+      "bytes": 8352,
+      "sql_md5": "cf14ec67d787c46bc5377707ed753456",
+      "compact_md5": "406a25388e80de6f481d3fabccd9fb77"
+    },
+    {
+      "version": "20261021001226",
+      "name": "bolig_building_household_guard",
+      "statement_count": 1,
+      "bytes": 1283,
+      "sql_md5": "b98500c90c710c293a54f66a0658c66d",
+      "compact_md5": "a82258c593a988e1d27c543a6be81b43"
+    },
+    {
+      "version": "20261021145751",
+      "name": "bolig_rooms",
+      "statement_count": 1,
+      "bytes": 7527,
+      "sql_md5": "f6ee31cc6eb972e38dd5d67099a1ea9c",
+      "compact_md5": "0762f2c3070ed3242f0433683e4ab057"
+    },
+    {
+      "version": "20261021145842",
+      "name": "bolig_room_fk_indexes",
+      "statement_count": 1,
+      "bytes": 255,
+      "sql_md5": "d29be9142ae488617391486d2bcc5323",
+      "compact_md5": "d29cef12be46fdbad00cb6668403b0e4"
+    },
+    {
+      "version": "20261021161355",
+      "name": "bolig_room_contents",
+      "statement_count": 1,
+      "bytes": 6838,
+      "sql_md5": "6c5cf24349b836d8725cbd515e23c69b",
+      "compact_md5": "72f9885c06d020732bbcdb62958c6b06"
+    },
+    {
+      "version": "20261021164838",
+      "name": "bolig_scoped_package_choices",
+      "statement_count": 1,
+      "bytes": 19518,
+      "sql_md5": "2319546cec8ad01ce994c72821296efa",
+      "compact_md5": "f980239ab602acf0a1cf2988cdcd5634"
+    },
+    {
+      "version": "20261021174611",
+      "name": "bolig_catalog_image_uploads",
+      "statement_count": 1,
+      "bytes": 1917,
+      "sql_md5": "f222ff0fdd41a47817deb620b07fb246",
+      "compact_md5": "3ef5ea536d474f93f325d3a64a03a5c8"
+    },
+    {
+      "version": "20261021183932",
+      "name": "bolig_project_preparation",
+      "statement_count": 1,
+      "bytes": 22975,
+      "sql_md5": "6997e8335ff992f8c1abdad470954c2e",
+      "compact_md5": "96dfc9c035e02cb7c8a1e8083a63302d"
+    },
+    {
+      "version": "20261021195933",
+      "name": "bolig_catalog_sections",
+      "statement_count": 1,
+      "bytes": 10258,
+      "sql_md5": "7989ed74a352c126c366feaa2c08ccd0",
+      "compact_md5": "5ccdb1c6402b20007035114f8b4ef288"
+    },
+    {
+      "version": "20261021203854",
+      "name": "bolig_orders_deliveries",
+      "statement_count": 1,
+      "bytes": 17845,
+      "sql_md5": "26649ab394f85a2a444b2551c7ebe906",
+      "compact_md5": "b85bd22e5b0933b081629d3783900106"
+    },
+    {
+      "version": "20261021203900",
+      "name": "bolig_order_email_attachments",
+      "statement_count": 1,
+      "bytes": 11138,
+      "sql_md5": "13b5a79eb0b3e0f665f0bc1ad1b927c2",
+      "compact_md5": "9e550aba179d7e7a7ffd89337bfb1836"
+    },
+    {
+      "version": "20261021204341",
+      "name": "bolig_delivery_overview",
+      "statement_count": 1,
+      "bytes": 2552,
+      "sql_md5": "e114bcf0909eb36fcf5aa66e5a38ec0d",
+      "compact_md5": "c29bdcb3337aca26dbde839a84fa4749"
+    },
+    {
+      "version": "20261021205112",
+      "name": "bolig_delivery_fk_indexes",
+      "statement_count": 1,
+      "bytes": 164,
+      "sql_md5": "f04cd9fe178f149965b0db2a4ce29fef",
+      "compact_md5": "aa914c1b96378817f5d1e2bb299e4a82"
+    },
+    {
+      "version": "20261021213929",
+      "name": "bolig_unit_customization",
+      "statement_count": 1,
+      "bytes": 10688,
+      "sql_md5": "4a51c370e8b4fbdd126df49e81133e25",
+      "compact_md5": "ca3715d2155c34d9387ccc0c568a9b64"
+    },
+    {
+      "version": "20261021215306",
+      "name": "bolig_order_mail_sender_access",
+      "statement_count": 1,
+      "bytes": 1214,
+      "sql_md5": "4cc98452e9fbf7aeec099ac08f5da13f",
+      "compact_md5": "90e345d542d340fbf701fc874f99a348"
+    },
+    {
+      "version": "20261021223700",
+      "name": "bolig_documented_completion",
+      "statement_count": 1,
+      "bytes": 21033,
+      "sql_md5": "37002990221d2ec3f4433652d252c11e",
+      "compact_md5": "c7e8be77cbc137f52d795101b62b29e7"
+    },
+    {
+      "version": "20261021224007",
+      "name": "bolig_completion_aggregate_handover",
+      "statement_count": 1,
+      "bytes": 1597,
+      "sql_md5": "023ab5c9f940258b985f5d7e1155efc6",
+      "compact_md5": "91707bdff0d3b8eed379fada5e537b3c"
+    },
+    {
+      "version": "20261021233354",
+      "name": "bolig_native_documentation",
+      "statement_count": 1,
+      "bytes": 30886,
+      "sql_md5": "a7e77a34c43db69a56310aae5b653545",
+      "compact_md5": "c5b5ae338100f1148b8c3b4af8fb865c"
+    },
+    {
+      "version": "20261021233409",
+      "name": "bolig_protocol_confirmation_email",
+      "statement_count": 1,
+      "bytes": 8145,
+      "sql_md5": "ba2fe3df2f001c57d94a04427e3fbd37",
+      "compact_md5": "98e1cb6fffbf967862ef2e397b7f259c"
+    },
+    {
+      "version": "20261022004107",
+      "name": "bolig_streamlined_workflow",
+      "statement_count": 1,
+      "bytes": 20383,
+      "sql_md5": "5ab67d393d7c737a5dc66a603c1263c8",
+      "compact_md5": "e166e05de5bac3fb6e0982babce1479a"
+    },
+    {
+      "version": "20261022004109",
+      "name": "bolig_quality_distribution",
+      "statement_count": 1,
+      "bytes": 11106,
+      "sql_md5": "27f3facda41a0eb1ee4258960581952b",
+      "compact_md5": "0023495084c86714928f85bb02b30eae"
+    },
+    {
+      "version": "20261022004110",
+      "name": "bolig_documentation_export",
+      "statement_count": 1,
+      "bytes": 5350,
+      "sql_md5": "80c98f46149de734e8a45afa2fce6a7b",
+      "compact_md5": "060b787e6bc7f8127d166bae668604c8"
+    },
+    {
+      "version": "20261022191516",
+      "name": "bolig_change_orders_resident_acceptance",
+      "statement_count": 1,
+      "bytes": 21768,
+      "sql_md5": "8bfdcd1917f8898ba0abae479c591743",
+      "compact_md5": "b308ab7bdb746f627f2038de6d48ee93"
+    },
+    {
+      "version": "20261022200530",
+      "name": "bolig_agreement_fulfillment",
+      "statement_count": 1,
+      "bytes": 26459,
+      "sql_md5": "df6c6493d2998393b92093b03ff176f1",
+      "compact_md5": "7de86f90ece8acd5e086a537dd3105f2"
+    },
+    {
+      "version": "20261022204906",
+      "name": "bolig_resident_portal",
+      "statement_count": 1,
+      "bytes": 21949,
+      "sql_md5": "50d2e6610e283b8dfc71914695ca7b6b",
+      "compact_md5": "f806255f883ba4d3789ccdffe35d1be6"
+    },
+    {
+      "version": "20261022223746",
+      "name": "bolig_progress_notices",
+      "statement_count": 1,
+      "bytes": 32689,
+      "sql_md5": "066666f82e23f087cc88179a0db10449",
+      "compact_md5": "dd5a5e32a358f2bec54e626267de6372"
+    },
+    {
+      "version": "20261022224555",
+      "name": "bolig_progress_read_projection_alias",
+      "statement_count": 1,
+      "bytes": 1994,
+      "sql_md5": "71c255d65f1efd4064cbc1fc3d510f4d",
+      "compact_md5": "11884535bedd664395892fee73388a3c"
+    },
+    {
+      "version": "20261022225528",
+      "name": "bolig_progress_recipient_module_access",
+      "statement_count": 1,
+      "bytes": 1089,
+      "sql_md5": "67abf5d491fee763dae552166e57e226",
+      "compact_md5": "ad1ff5085c144ea8bceeaa193bf7f15f"
+    },
+    {
+      "version": "20261022232238",
+      "name": "bolig_progress_bulk_planning",
+      "statement_count": 1,
+      "bytes": 9877,
+      "sql_md5": "7d0f9b9abd7f9b9e0f71f59d03a2713b",
+      "compact_md5": "2eaa4d6b3de00dff493c3e2bcd8b6fa4"
+    },
+    {
+      "version": "20261022233041",
+      "name": "bolig_progress_gateway_invoker",
+      "statement_count": 1,
+      "bytes": 1042,
+      "sql_md5": "2225770340b5acebb22e012e2cbb7f95",
+      "compact_md5": "7a97b503a5b279c871e99a1c96892371"
+    },
+    {
+      "version": "20261023110103",
+      "name": "bolig_planning_groups_dialogue",
+      "statement_count": 1,
+      "bytes": 27289,
+      "sql_md5": "6bcf547574166281a8359deca122c518",
+      "compact_md5": "6c242daab242d91a0c9c5a59dba1e3c9"
+    },
+    {
+      "version": "20261023130433",
+      "name": "bolig_manager_handover_review",
+      "statement_count": 1,
+      "bytes": 18231,
+      "sql_md5": "1f5d017a138597ba3f84858740150da1",
+      "compact_md5": "4d5dac75cfdc8731ff04204d8a9b3120"
+    },
+    {
+      "version": "20261023132013",
+      "name": "bolig_handover_single_entry",
+      "statement_count": 1,
+      "bytes": 789,
+      "sql_md5": "5324ad42b266811795f62c4c8ddc7699",
+      "compact_md5": "110b0ff84532c8c81bbcee1c17584ce2"
+    },
+    {
+      "version": "20261023144403",
+      "name": "bolig_handover_followup",
+      "statement_count": 1,
+      "bytes": 6902,
+      "sql_md5": "0ddcaf99136c0beb9152d40564d9c08d",
+      "compact_md5": "57f93c7984c8957d5e4a9a897c94aa94"
+    },
+    {
+      "version": "20261023144404",
+      "name": "bolig_contact_agreement_boundary",
+      "statement_count": 1,
+      "bytes": 2154,
+      "sql_md5": "706f6ade222930bb89686af22efbf2e3",
+      "compact_md5": "3be7ff0354116d98c9ad7b02f4901da0"
+    },
+    {
+      "version": "20261023144405",
+      "name": "bolig_delivery_effective_order_alias",
+      "statement_count": 1,
+      "bytes": 566,
+      "sql_md5": "c5b0b09a5c0e796e091d26b643581773",
+      "compact_md5": "bb818c9be1d5a392eaf67708b768a86c"
+    },
+    {
+      "version": "20261023155220",
+      "name": "bolig_resident_notice_composer",
+      "statement_count": 1,
+      "bytes": 19955,
+      "sql_md5": "e3552aaaaa7b2376dd3f856c2a849ee4",
+      "compact_md5": "b0b1c6cfc923fe46e2ee7243eb9dc7da"
+    },
+    {
+      "version": "20261023181847",
+      "name": "bolig_partner_access",
+      "statement_count": 1,
+      "bytes": 17463,
+      "sql_md5": "17c5ffb8fe4c548e3246b079e1452367",
+      "compact_md5": "48b83776c6cdaaa5dea1906ad61ba558"
+    },
+    {
+      "version": "20261023183331",
+      "name": "bolig_partner_response_clock",
+      "statement_count": 1,
+      "bytes": 864,
+      "sql_md5": "b25f922251e5cf10e906c3b7239174a6",
+      "compact_md5": "0ae0c4f4d717095c0942ecd4577daf6e"
+    },
+    {
+      "version": "20261023184654",
+      "name": "bolig_partner_issuer_entitlement",
+      "statement_count": 1,
+      "bytes": 586,
+      "sql_md5": "5be3ccf25e62724dc6ea3c95364e3753",
+      "compact_md5": "13bff3f197f6d61dcd7fefb8c02b5f37"
+    },
+    {
+      "version": "20261023190621",
+      "name": "bolig_partner_project_features",
+      "statement_count": 1,
+      "bytes": 12376,
+      "sql_md5": "8431e716b0a74b6b5c1234cfefdd04c8",
+      "compact_md5": "060bf73e088fbbacc6da9e957f7063be"
+    },
+    {
+      "version": "20261023193507",
+      "name": "bolig_partner_quality_writes",
+      "statement_count": 1,
+      "bytes": 18057,
+      "sql_md5": "f93bb33b05626b67920f9486b1a7a8d3",
+      "compact_md5": "8b64490079fa35bdb739bcc92866ce1c"
+    },
+    {
+      "version": "20261023195824",
+      "name": "bolig_quality_history_action",
+      "statement_count": 1,
+      "bytes": 800,
+      "sql_md5": "d5ff35b0e1a28456e941180727bf5721",
+      "compact_md5": "0f72969faa7f90374c9137ad511c3ee6"
+    },
+    {
+      "version": "20261023210201",
+      "name": "bolig_partner_invitation_mail",
+      "statement_count": 1,
+      "bytes": 9082,
+      "sql_md5": "0f030ab70905f84efc013cc6bf9b8861",
+      "compact_md5": "5d6a3b87887001c870499f2b0c1e0be3"
+    },
+    {
+      "version": "20261023212214",
+      "name": "bolig_partner_projection_once",
+      "statement_count": 1,
+      "bytes": 2767,
+      "sql_md5": "b24d06f4dabc4a1c84141c80121bc7a1",
+      "compact_md5": "29561bf81ee137f9873dc7dba6cc5034"
+    },
+    {
+      "version": "20261023214107",
+      "name": "bolig_resident_invitation_mail",
+      "statement_count": 1,
+      "bytes": 10846,
+      "sql_md5": "cce1ecf901c172cdda6cc03da007c991",
+      "compact_md5": "4faf6a549461df2ea42a5494bd6de3f0"
+    },
+    {
+      "version": "20261023224653",
+      "name": "bolig_project_visuals",
+      "statement_count": 1,
+      "bytes": 14646,
+      "sql_md5": "3f49688eeeef5c46a9a8ede4c3395bbb",
+      "compact_md5": "8be4079196e47e17e967dbe369069256"
+    },
+    {
+      "version": "20261024011416",
+      "name": "bolig_attendance",
+      "statement_count": 1,
+      "bytes": 7487,
+      "sql_md5": "d3c7686e128741bbd6decbe47c987221",
+      "compact_md5": "e646a207976751bf55610b1872fa5c5d"
+    },
+    {
+      "version": "20261024100223",
+      "name": "bolig_named_self_attendance",
+      "statement_count": 1,
+      "bytes": 16498,
+      "sql_md5": "07448352cb4ba333b43ab3e5801bea2e",
+      "compact_md5": "3a5ea429d6a84b00c4cdd32d16b20ce3"
+    },
+    {
+      "version": "20261024115852",
+      "name": "bolig_project_integration",
+      "statement_count": 1,
+      "bytes": 12311,
+      "sql_md5": "e9e526663d3172d93727fac7be13b1c6",
+      "compact_md5": "1d34125294696afe6c64a5072f97922f",
+      "trim_end_md5": "651e350f7d50a1b787265f7f404c549f"
+    },
+    {
+      "version": "20261024171757",
+      "name": "bolig_hr_included_access",
+      "statement_count": 1,
+      "bytes": 6074,
+      "sql_md5": "cc0e32ba560999eb2c365358a86aab13",
+      "compact_md5": "1131f88d8701d36dd26b0b7091fda977"
+    },
+    {
+      "version": "20261024181231",
+      "name": "bolig_private_contracts",
+      "statement_count": 1,
+      "bytes": 15486,
+      "sql_md5": "288b9a2c2ccf10da11788ac6bd3604ae",
+      "compact_md5": "8b93d56bf5129392b0bef25cdb1be4b6"
+    },
+    {
+      "version": "20261024191654",
+      "name": "bolig_contract_reviews",
+      "statement_count": 1,
+      "bytes": 14722,
+      "sql_md5": "0f2a7f4cbf53746a9a846b9d44536dbb",
+      "compact_md5": "ecd9a9e126fa4b814b846e2916e85104"
+    },
+    {
+      "version": "20261024210413",
+      "name": "bolig_contract_index",
+      "statement_count": 1,
+      "bytes": 9973,
+      "sql_md5": "22c947a629cd9e078e952a7c1bd0d227",
+      "compact_md5": "5e9f56df6c9b063d6f891ed29d4b453b"
+    },
+    {
+      "version": "20261024213720",
+      "name": "bolig_contract_finance",
+      "statement_count": 1,
+      "bytes": 17030,
+      "sql_md5": "dcc4ab60419d12d6a677d79bab396ed2",
+      "compact_md5": "5b1a666f60c673268ccb7e560f179c44"
+    },
+    {
+      "version": "20261024225233",
+      "name": "bolig_contract_monthly_basis",
+      "statement_count": 1,
+      "bytes": 15854,
+      "sql_md5": "9590494b161092bfe82ec312bd6d3392",
+      "compact_md5": "430f57a3fca8c8597cbeba393c62a35e"
+    },
+    {
+      "version": "20261024232138",
+      "name": "20261024231829_bolig_separate_index_invoice",
+      "statement_count": 1,
+      "bytes": 19344,
+      "sql_md5": "68b3c640c37a888a4663ffc68897d704",
+      "compact_md5": "b960cdc284b88b4cc1ae67ae5ddd70aa"
+    },
+    {
+      "version": "20261024232319",
+      "name": "bolig_index_invoice_canonical_source",
+      "statement_count": 1,
+      "bytes": 19485,
+      "sql_md5": "26158f900dfe27eacded33af8fb17d24",
+      "compact_md5": "85f5e22755c46a42edd909740c7556ef"
+    },
+    {
+      "version": "20261025001234",
+      "name": "bolig_editable_invoice_register",
+      "statement_count": 1,
+      "bytes": 15356,
+      "sql_md5": "40ad2435356c07ea6511d4f7fe445b80",
+      "compact_md5": "855ad3f21310eca3455ac8b2eb410c8d"
+    },
+    {
+      "version": "20261025011942",
+      "name": "bolig_agreement_answer_deadline",
+      "statement_count": 1,
+      "bytes": 2774,
+      "sql_md5": "e232d5d842717ff376b03db432c401dd",
+      "compact_md5": "813377f13882ca4b6492535f31bfb052"
+    },
+    {
+      "version": "20261025012058",
+      "name": "bolig_agreement_deadline_decision_clock",
+      "statement_count": 1,
+      "bytes": 1153,
+      "sql_md5": "57f5591d9193435d6c65a658b97d3e6b",
+      "compact_md5": "1ebe2b34ea18561912a9381419f9525b"
+    }
+  ],
+  "production_shared": [
+    {
+      "schema": "hr_private",
+      "proname": "active_member",
+      "args": "c uuid, u uuid",
+      "definition": "CREATE OR REPLACE FUNCTION hr_private.active_member(c uuid, u uuid)\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\n select exists(select 1 from public.sales_company_memberships m join public.profiles p on p.id=m.user_id\n where m.company_id=c and m.user_id=u and m.workspace_role in ('firmaadmin','ansatt')\n and p.approved and not coalesce(p.deactivated,false) and p.role in ('admin','member','ansatt','firmaadmin'))\n and not exists(select 1 from hr_private.closed_employments d where d.company_id=c and d.user_id=u)\n$function$\n",
+      "security_definer": true,
+      "proconfig": [
+        "search_path=\"\""
+      ],
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "hr_private",
+      "proname": "can_read",
+      "args": "c uuid, e hr_private.employees, u uuid",
+      "definition": "CREATE OR REPLACE FUNCTION hr_private.can_read(c uuid, e hr_private.employees, u uuid)\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\n select e.company_id=c and hr_private.active_member(c,e.user_id) and hr_private.active_member(c,u)\n and (e.user_id=u or e.leader_id=u or exists(select 1 from public.sales_company_memberships m\n where m.company_id=c and m.user_id=u and m.workspace_role='firmaadmin')\n or exists(select 1 from hr_private.readers r where r.company_id=c and r.employee_id=e.id and r.user_id=u))\n$function$\n",
+      "security_definer": true,
+      "proconfig": [
+        "search_path=\"\""
+      ],
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "hr_private",
+      "proname": "has_module_access",
+      "args": "c uuid, u uuid",
+      "definition": "CREATE OR REPLACE FUNCTION hr_private.has_module_access(c uuid, u uuid)\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\n select exists(select 1 from public.company_module_access where company_id=c and module_key='hr' and enabled)\n and hr_private.active_member(c,u) and (exists(select 1 from public.sales_company_memberships where company_id=c and user_id=u and workspace_role='firmaadmin')\n or exists(select 1 from hr_private.module_access where company_id=c and user_id=u and enabled))\n$function$\n",
+      "security_definer": true,
+      "proconfig": [
+        "search_path=\"\""
+      ],
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "proname": "current_active_company_scope_id",
+      "args": "",
+      "definition": "CREATE OR REPLACE FUNCTION public.current_active_company_scope_id()\n RETURNS uuid\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\n  select case\n    when not exists (\n      select 1 from public.profiles p\n      where p.id = auth.uid()\n        and coalesce(p.approved,false) = true\n        and coalesce(p.deactivated,false) = false\n    ) then null::uuid\n    when public.current_profile_is_systemadmin() then coalesce(\n      (\n        select a.company_id\n        from public.user_active_company_scope a\n        where a.user_id = auth.uid()\n          and public.is_internal_work_profile_company(a.company_id)\n        limit 1\n      ),\n      public.current_primary_company_scope_id()\n    )\n    else coalesce(\n      (\n        select a.company_id\n        from public.user_active_company_scope a\n        join public.sales_company_memberships m\n          on m.user_id = a.user_id\n         and m.company_id = a.company_id\n        where a.user_id = auth.uid()\n        limit 1\n      ),\n      public.current_primary_company_scope_id(),\n      (\n        select m.company_id\n        from public.sales_company_memberships m\n        where m.user_id = auth.uid()\n        order by m.is_primary desc, m.created_at\n        limit 1\n      )\n    )\n  end;\n$function$\n",
+      "security_definer": true,
+      "proconfig": [
+        "search_path=public, pg_temp"
+      ],
+      "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "proname": "current_user_has_module_access",
+      "args": "p_module_key text",
+      "definition": "CREATE OR REPLACE FUNCTION public.current_user_has_module_access(p_module_key text)\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\n  select\n    public.module_access_valid_key(p_module_key)\n    and exists (\n      select 1\n      from public.profiles p\n      where p.id = auth.uid()\n        and coalesce(p.approved, false) = true\n        and coalesce(p.deactivated, false) = false\n        and (\n          p.system_role = 'systemadmin'\n          or (\n            trim(p_module_key) <> 'store_offers'\n            and exists (\n              select 1\n              from public.user_module_access uma\n              where uma.user_id = p.id\n                and uma.module_key = trim(p_module_key)\n            )\n          )\n          or (\n            trim(p_module_key) = 'store_offers'\n            and public.company_has_store_offers_access(public.current_active_company_scope_id())\n            and exists (\n              select 1\n              from public.user_module_access sales_access\n              where sales_access.user_id = p.id\n                and sales_access.module_key = 'sales'\n            )\n            and (\n              public.is_internal_work_profile_company(public.current_active_company_scope_id())\n              or public.company_has_pro_store_catalog_access(public.current_active_company_scope_id())\n            )\n          )\n        )\n    );\n$function$\n",
+      "security_definer": true,
+      "proconfig": [
+        "search_path=public, pg_temp"
+      ],
+      "acl": "{postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "proname": "get_my_personal_context",
+      "args": "",
+      "definition": "CREATE OR REPLACE FUNCTION public.get_my_personal_context()\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare c uuid:=public.current_active_company_scope_id();u uuid:=auth.uid();admin boolean;ks boolean;hr boolean;usable_hr boolean;\nbegin\n if u is null or c is null or not exists(select 1 from public.sales_company_memberships m join public.profiles p on p.id=m.user_id\n  where m.company_id=c and m.user_id=u and m.workspace_role in ('firmaadmin','ansatt')\n  and p.approved and not coalesce(p.deactivated,false) and p.role in ('admin','member','ansatt','firmaadmin'))\n then raise exception 'Aktiv intern bruker og arbeidsprofil kreves.' using errcode='42501';end if;\n select workspace_role='firmaadmin' into admin from public.sales_company_memberships where company_id=c and user_id=u;\n ks:=exists(select 1 from public.company_module_access where company_id=c and module_key='kshms' and enabled);\n hr:=exists(select 1 from public.company_module_access where company_id=c and module_key='hr' and enabled);\n usable_hr:=hr_private.has_module_access(c,u) and (admin or exists(select 1 from hr_private.firms where company_id=c and enabled));\n return jsonb_build_object('company_id',c,'user_id',u,'company_name',(select display_name from public.sales_company_scopes where id=c),\n  'personal_page',ks or hr or exists(select 1 from progress_private.assignments x join public.projects pr on pr.id=x.project_id where x.user_id=u and pr.company_scope_id=c and not coalesce(pr.locked,false)),'company_kshms',ks,'company_hr',hr,\n  'hr_management',usable_hr and (admin or exists(select 1 from hr_private.employees e\n   where e.company_id=c and e.leader_id=u and hr_private.active_member(c,e.user_id))), 'content_enabled',false);\nend$function$\n",
+      "security_definer": true,
+      "proconfig": [
+        "search_path=\"\""
+      ],
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "proname": "people_modules_company_get",
+      "args": "p_company_id uuid",
+      "definition": "CREATE OR REPLACE FUNCTION public.people_modules_company_get(p_company_id uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nbegin\n perform kshms_private.require_module_manager(p_company_id);\n return jsonb_build_object('company_id',p_company_id,'kshms',coalesce((select enabled from public.company_module_access where company_id=p_company_id and module_key='kshms'),false),\n 'hr',coalesce((select enabled from public.company_module_access where company_id=p_company_id and module_key='hr'),false));\nend $function$\n",
+      "security_definer": true,
+      "proconfig": [
+        "search_path=\"\""
+      ],
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "proname": "people_modules_user_get",
+      "args": "p_company_id uuid, p_user_id uuid",
+      "definition": "CREATE OR REPLACE FUNCTION public.people_modules_user_get(p_company_id uuid, p_user_id uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare r text; x jsonb;\nbegin\n perform kshms_private.require_module_manager(p_company_id);\n select m.workspace_role into r from public.sales_company_memberships m join public.profiles p on p.id=m.user_id\n where m.company_id=p_company_id and m.user_id=p_user_id and m.workspace_role in ('firmaadmin','ansatt') and p.role in ('admin','member','ansatt','firmaadmin');\n if r is null then raise exception 'Brukeren er ikke intern medarbeider i dette firmaet.' using errcode='42501'; end if;\n if not public.current_profile_is_systemadmin() and exists(select 1 from public.profiles where id=p_user_id and system_role='systemadmin')\n then raise exception 'Bare systemadministrator kan endre denne brukeren.' using errcode='42501'; end if;\n x:=public.people_modules_company_get(p_company_id);\n return jsonb_build_object('company_id',p_company_id,'user_id',p_user_id,'company',x,'firmaadmin',r='firmaadmin',\n 'kshms',coalesce((select enabled from public.kshms_member_access where company_id=p_company_id and user_id=p_user_id),false),\n 'kshms_role',coalesce((select role from public.kshms_member_access where company_id=p_company_id and user_id=p_user_id),'reader'),\n 'hr',coalesce((select enabled from hr_private.module_access where company_id=p_company_id and user_id=p_user_id),false));\nend $function$\n",
+      "security_definer": true,
+      "proconfig": [
+        "search_path=\"\""
+      ],
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "proname": "project_row_access_allowed",
+      "args": "p_company_scope_id uuid, p_user_id uuid",
+      "definition": "CREATE OR REPLACE FUNCTION public.project_row_access_allowed(p_company_scope_id uuid, p_user_id uuid)\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\n  select exists (\n    select 1 from public.profiles p\n    where p.id=auth.uid() and coalesce(p.approved,false)=true and coalesce(p.deactivated,false)=false\n      and (p.system_role='systemadmin' or (\n        public.current_user_has_module_access('projects')\n        and p_company_scope_id=public.current_active_company_scope_id()\n        and (p_user_id=auth.uid() or public.current_active_company_role()='firmaadmin' or (public.current_user_has_multiple_work_profiles() and public.is_internal_work_profile_company(p_company_scope_id)))\n      ))\n  );\n$function$\n",
+      "security_definer": true,
+      "proconfig": [
+        "search_path=public, pg_temp"
+      ],
+      "acl": "{postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}"
+    }
+  ],
+  "sandbox_shared": [
+    {
+      "schema": "hr_private",
+      "proname": "active_member",
+      "args": "c uuid, u uuid",
+      "definition": "CREATE OR REPLACE FUNCTION hr_private.active_member(c uuid, u uuid)\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\n select exists(select 1 from public.sales_company_memberships m join public.profiles p on p.id=m.user_id\n where m.company_id=c and m.user_id=u and m.workspace_role in ('firmaadmin','ansatt')\n and p.approved and not coalesce(p.deactivated,false) and p.role in ('admin','member','ansatt','firmaadmin'))\n and not exists(select 1 from hr_private.closed_employments d where d.company_id=c and d.user_id=u)\n$function$\n",
+      "security_definer": true,
+      "proconfig": [
+        "search_path=\"\""
+      ],
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "hr_private",
+      "proname": "can_read",
+      "args": "c uuid, e hr_private.employees, u uuid",
+      "definition": "CREATE OR REPLACE FUNCTION hr_private.can_read(c uuid, e hr_private.employees, u uuid)\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\n select e.company_id=c and hr_private.active_member(c,e.user_id) and hr_private.active_member(c,u)\n and (e.user_id=u or coalesce(e.leader_id=u,false) or exists(select 1 from public.sales_company_memberships m\n where m.company_id=c and m.user_id=u and m.workspace_role='firmaadmin')\n or exists(select 1 from hr_private.readers r where r.company_id=c and r.employee_id=e.id and r.user_id=u))\n$function$\n",
+      "security_definer": true,
+      "proconfig": [
+        "search_path=\"\""
+      ],
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "hr_private",
+      "proname": "has_module_access",
+      "args": "c uuid, u uuid",
+      "definition": "CREATE OR REPLACE FUNCTION hr_private.has_module_access(c uuid, u uuid)\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\n select hr_private.active_member(c,u) and (\n  bolig_private.hr_included(c,u) or (\n   exists(select 1 from public.company_module_access where company_id=c and module_key='hr' and enabled)\n   and (exists(select 1 from public.sales_company_memberships where company_id=c and user_id=u and workspace_role='firmaadmin')\n    or exists(select 1 from hr_private.module_access where company_id=c and user_id=u and enabled))\n  )\n )\n$function$\n",
+      "security_definer": true,
+      "proconfig": [
+        "search_path=\"\""
+      ],
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "proname": "current_active_company_scope_id",
+      "args": "",
+      "definition": "CREATE OR REPLACE FUNCTION public.current_active_company_scope_id()\n RETURNS uuid\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\n  select case\n    when not exists (\n      select 1 from public.profiles p\n      where p.id = auth.uid()\n        and coalesce(p.approved,false) = true\n        and coalesce(p.deactivated,false) = false\n    ) then null::uuid\n    when public.current_profile_is_systemadmin() then coalesce(\n      (\n        select a.company_id\n        from public.user_active_company_scope a\n        where a.user_id = auth.uid()\n          and public.is_internal_work_profile_company(a.company_id)\n        limit 1\n      ),\n      public.current_primary_company_scope_id()\n    )\n    else coalesce(\n      (\n        select a.company_id\n        from public.user_active_company_scope a\n        join public.sales_company_memberships m\n          on m.user_id = a.user_id\n         and m.company_id = a.company_id\n        where a.user_id = auth.uid()\n        limit 1\n      ),\n      public.current_primary_company_scope_id(),\n      (\n        select m.company_id\n        from public.sales_company_memberships m\n        where m.user_id = auth.uid()\n        order by m.is_primary desc, m.created_at\n        limit 1\n      )\n    )\n  end;\n$function$\n",
+      "security_definer": true,
+      "proconfig": [
+        "search_path=public, pg_temp"
+      ],
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "proname": "current_user_has_module_access",
+      "args": "p_module_key text",
+      "definition": "CREATE OR REPLACE FUNCTION public.current_user_has_module_access(p_module_key text)\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\n  select\n    public.module_access_valid_key(p_module_key)\n    and exists (\n      select 1\n      from public.profiles p\n      where p.id = auth.uid()\n        and coalesce(p.approved, false) = true\n        and coalesce(p.deactivated, false) = false\n        and (\n          p.system_role = 'systemadmin'\n          or (\n            trim(p_module_key) <> 'store_offers'\n            and exists (\n              select 1\n              from public.user_module_access uma\n              where uma.user_id = p.id\n                and uma.module_key = trim(p_module_key)\n            )\n          )\n          or (\n            trim(p_module_key) = 'store_offers'\n            and public.company_has_store_offers_access(public.current_active_company_scope_id())\n            and exists (\n              select 1\n              from public.user_module_access sales_access\n              where sales_access.user_id = p.id\n                and sales_access.module_key = 'sales'\n            )\n            and (\n              public.is_internal_work_profile_company(public.current_active_company_scope_id())\n              or public.company_has_pro_store_catalog_access(public.current_active_company_scope_id())\n            )\n          )\n        )\n    );\n$function$\n",
+      "security_definer": true,
+      "proconfig": [
+        "search_path=public, pg_temp"
+      ],
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "proname": "get_my_personal_context",
+      "args": "",
+      "definition": "CREATE OR REPLACE FUNCTION public.get_my_personal_context()\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare c uuid:=public.current_active_company_scope_id();u uuid:=auth.uid();admin boolean;ks boolean;hr boolean;usable_hr boolean;\nbegin\n if u is null or c is null or not exists(select 1 from public.sales_company_memberships m join public.profiles p on p.id=m.user_id\n  where m.company_id=c and m.user_id=u and m.workspace_role in ('firmaadmin','ansatt')\n  and p.approved and not coalesce(p.deactivated,false) and p.role in ('admin','member','ansatt','firmaadmin'))\n then raise exception 'Aktiv intern bruker og arbeidsprofil kreves.' using errcode='42501';end if;\n select workspace_role='firmaadmin' into admin from public.sales_company_memberships where company_id=c and user_id=u;\n ks:=exists(select 1 from public.company_module_access where company_id=c and module_key='kshms' and enabled);\n hr:=exists(select 1 from public.company_module_access where company_id=c and module_key='hr' and enabled) or (hr_private.active_member(c,u) and bolig_private.hr_included(c,u));\n usable_hr:=hr_private.has_module_access(c,u) and (admin or exists(select 1 from hr_private.firms where company_id=c and enabled));\n return jsonb_build_object('company_id',c,'user_id',u,'company_name',(select display_name from public.sales_company_scopes where id=c),\n  'personal_page',ks or hr or exists(select 1 from bolig_private.attendance_people a join bolig_private.roots r on r.id=a.root_id join bolig_private.attendance_states s on s.root_id=r.id join bolig_private.firms f on f.company_id=r.company_id where a.user_id=u and a.enabled and r.company_id=c and not r.archived and s.enabled and f.enabled) or exists(select 1 from progress_private.assignments x join public.projects pr on pr.id=x.project_id where x.user_id=u and pr.company_scope_id=c and not coalesce(pr.locked,false)),'company_kshms',ks,'company_hr',hr,\n  'hr_management',usable_hr and (admin or exists(select 1 from hr_private.employees e\n   where e.company_id=c and e.leader_id=u and hr_private.active_member(c,e.user_id))), 'content_enabled',false);\nend$function$\n",
+      "security_definer": true,
+      "proconfig": [
+        "search_path=\"\""
+      ],
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "proname": "people_modules_company_get",
+      "args": "p_company_id uuid",
+      "definition": "CREATE OR REPLACE FUNCTION public.people_modules_company_get(p_company_id uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nbegin\n perform kshms_private.require_module_manager(p_company_id);\n return jsonb_build_object('company_id',p_company_id,\n  'kshms',coalesce((select enabled from public.company_module_access where company_id=p_company_id and module_key='kshms'),false),\n  'hr',coalesce((select enabled from public.company_module_access where company_id=p_company_id and module_key='hr'),false),\n  'bolig_hr_included',exists(select 1 from bolig_private.firms where company_id=p_company_id and enabled));\nend $function$\n",
+      "security_definer": true,
+      "proconfig": [
+        "search_path=\"\""
+      ],
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "proname": "people_modules_user_get",
+      "args": "p_company_id uuid, p_user_id uuid",
+      "definition": "CREATE OR REPLACE FUNCTION public.people_modules_user_get(p_company_id uuid, p_user_id uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare r text;x jsonb;\nbegin\n perform kshms_private.require_module_manager(p_company_id);\n select m.workspace_role into r from public.sales_company_memberships m join public.profiles p on p.id=m.user_id\n where m.company_id=p_company_id and m.user_id=p_user_id and m.workspace_role in ('firmaadmin','ansatt') and p.role in ('admin','member','ansatt','firmaadmin');\n if r is null then raise exception 'Brukeren er ikke intern medarbeider i dette firmaet.' using errcode='42501';end if;\n if not public.current_profile_is_systemadmin() and exists(select 1 from public.profiles where id=p_user_id and system_role='systemadmin')\n then raise exception 'Bare systemadministrator kan endre denne brukeren.' using errcode='42501';end if;\n x:=public.people_modules_company_get(p_company_id);\n return jsonb_build_object('company_id',p_company_id,'user_id',p_user_id,'company',x,'firmaadmin',r='firmaadmin',\n  'kshms',coalesce((select enabled from public.kshms_member_access where company_id=p_company_id and user_id=p_user_id),false),\n  'kshms_role',coalesce((select role from public.kshms_member_access where company_id=p_company_id and user_id=p_user_id),'reader'),\n  'hr',coalesce((select enabled from hr_private.module_access where company_id=p_company_id and user_id=p_user_id),false),\n  'bolig_hr_included',hr_private.active_member(p_company_id,p_user_id) and bolig_private.hr_included(p_company_id,p_user_id));\nend $function$\n",
+      "security_definer": true,
+      "proconfig": [
+        "search_path=\"\""
+      ],
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "schema": "public",
+      "proname": "project_row_access_allowed",
+      "args": "p_company_scope_id uuid, p_user_id uuid",
+      "definition": "CREATE OR REPLACE FUNCTION public.project_row_access_allowed(p_company_scope_id uuid, p_user_id uuid)\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\n  select exists (\n    select 1 from public.profiles p\n    where p.id=auth.uid() and coalesce(p.approved,false)=true and coalesce(p.deactivated,false)=false\n      and (p.system_role='systemadmin' or (\n        public.current_user_has_module_access('projects')\n        and p_company_scope_id=public.current_active_company_scope_id()\n        and (p_user_id=auth.uid() or public.current_active_company_role()='firmaadmin' or (public.current_user_has_multiple_work_profiles() and public.is_internal_work_profile_company(p_company_scope_id)))\n      ))\n  );\n$function$\n",
+      "security_definer": true,
+      "proconfig": [
+        "search_path=public, pg_temp"
+      ],
+      "acl": "{postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}"
+    }
+  ]
+}

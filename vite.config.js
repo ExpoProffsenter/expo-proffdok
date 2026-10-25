@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { resolve } from "path";
+import {contractAssetsPlugin} from './scripts/bolig-contract-assets.mjs';
 import {
   BACKEND_TARGET_PRODUCTION,
   BACKEND_TARGET_SANDBOX,
@@ -141,7 +142,7 @@ function demoSandboxOverlay() {
 }
 
 export default defineConfig({
-  plugins: [environmentBindingGuard(), demoSandboxOverlay(), react()],
+  plugins: [environmentBindingGuard(), demoSandboxOverlay(), react(), contractAssetsPlugin()],
   define: {
     "import.meta.env.VITE_SUPABASE_URL": JSON.stringify(runtimeBinding.url),
     "import.meta.env.VITE_SUPABASE_ANON_KEY": JSON.stringify(runtimeBinding.key),
@@ -153,6 +154,7 @@ export default defineConfig({
         main: resolve(__dirname, "index.html"),
         salesPreview: resolve(__dirname, "sales-preview.html"),
         demoControl: resolve(__dirname, "demo-control.html"),
+        boligResident: resolve(__dirname, "bolig-kunde.html"),
       },
     },
   },
