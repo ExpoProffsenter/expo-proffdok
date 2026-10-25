@@ -15,12 +15,24 @@ const labels = {
 export default function BoligMyTasks({ context }) {
   const scope = `${context.user_id}:${context.company_id}`;
   const selectedRef = useRef(null);
-  const { data, error, busy, load } = useLivePartner(scope, () =>
-    integrationRpc(context, null, "get", {
-      selected_id: selectedRef.current?.id,
-      selected_kind: selectedRef.current?.kind,
-    }),
-  );
+  const readFailure = useRef(null);
+  const readSequence = useRef(0);
+  const { data, error, busy, load } = useLivePartner(scope, async () => {
+    const ticket = ++readSequence.current;
+    try {
+      const result = await integrationRpc(context, null, "get", {
+        selected_id: selectedRef.current?.id,
+        selected_kind: selectedRef.current?.kind,
+      });
+      if (ticket === readSequence.current) readFailure.current = null;
+      return result;
+    } catch (e) {
+      // Keep the shared access/foreground reader unchanged. An unavailable
+      // module still stays hidden; a failed permitted read must offer retry.
+      if (ticket === readSequence.current) readFailure.current = { scope, code: e.code };
+      throw e;
+    }
+  });
   const [expanded, setExpanded] = useState(false),
     [opened, setOpened] = useState(null),
     [limit, setLimit] = useState(8),
@@ -87,6 +99,16 @@ export default function BoligMyTasks({ context }) {
       ? data.selected
       : null) ||
       rows.find((x) => x.id === opened.id && x.kind === opened.kind));
+  const loadFailed = error && readFailure.current?.scope === scope && readFailure.current.code !== "42501";
+  if (!data && loadFailed) return (
+    <section className="bolig-my-tasks" aria-label="Mine oppgaver i boligprosjekter">
+      <div className="bolig-my-tasks-content">
+        <h3>Mine oppgaver i boligprosjekter</h3>
+        <p role="alert"><strong>Kunne ikke hente oppgavene.</strong> Listen er ikke bekreftet. Prøv igjen når forbindelsen er tilbake.</p>
+        <button type="button" disabled={busy} onClick={() => load()}>Prøv å hente oppgavene igjen</button>
+      </div>
+    </section>
+  );
   if (!data?.count && !opened) return null;
   return (
     <section

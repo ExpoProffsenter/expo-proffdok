@@ -39,6 +39,32 @@ export function BoligHelp() {
         «Hovedside» viser bygg og boliger i prosjektet du har valgt.
       </p>
       <details>
+        <summary>Beboerportal – oversikt og neste steg</summary>
+        <p>Beboeren ser firma, prosjekt og egen bolig øverst. «Neste steg» viser
+          vei til en avtale som venter på svar, et innsendt valg eller tilgjengelige
+          valgmuligheter. Knappen åpner riktig fane. Den sender eller aksepterer ingenting.</p>
+        <p>«Mine valg», «Avtaler», «Dokumenter» og «Meldinger» fungerer som før.
+          Et valg sendes først til gjennomgang. En avtale aksepteres separat etter
+          gjennomgang av varer, pris og svarfrist. Bruk «Hent siste status» ved behov.</p>
+        <p>På Min side vises «Prøv å hente oppgavene igjen» hvis boligoppgavene
+          ikke kunne hentes. En tom eller feilende henting skal ikke tolkes som
+          at alle oppgaver er ferdige. Manglende tilgang gir ikke innsyn i oppgaver.</p>
+      </details>
+      <details>
+        <summary>Bemanning og oversiktsliste ved tilsyn</summary>
+        <p>Prosjektleder åpner prosjektet → «Oppsett» → «Faktisk bemanning».
+          Her vises registrert tilstedeværelse med navn, firma, inn- og uttid,
+          valgt prosjektdag og rettingshistorikk. «Eksporter liste (CSV)» laster ned listen.</p>
+        <p>Aktiver bemanning og legg til navngitte deltakere. Ansatte registrerer
+          seg på Min side. UE bruker sin personlige lenke. Prosjektleder kan også
+          registrere manuelt. Kontroller åpne registreringer fra tidligere dager.</p>
+        <p>Dagens bemanningsliste er ikke en komplett oversiktsliste etter
+          byggherreforskriften § 15. Den mangler blant annet fødselsdato,
+          HMS-kortnummer, organisasjonsnummer og et samlet grunnlag for byggeplass
+          og byggherre. Bruk prosjektets fullstendige oversiktsliste ved tilsyn.
+          Se <a href="https://www.arbeidstilsynet.no/hms/hms-i-bygg-og-anlegg/byggherreforskriften/elektroniske-oversiktslister/" target="_blank" rel="noopener noreferrer">Arbeidstilsynets veiledning om oversiktslister</a>.</p>
+      </details>
+      <details>
         <summary>UE og leverandører</summary>
         <p>
           Åpne «UE og leverandører» i prosjektet. Velg «Gi tilgang», fyll inn

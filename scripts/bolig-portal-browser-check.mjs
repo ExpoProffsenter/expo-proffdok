@@ -26,6 +26,7 @@ import '${root}/src/style.css';import '${root}/src/modules/bolig/bolig.css';impo
 const goods=[{key:'a',name:'Servant i eik',sku:'QA-01',quantity:1,unit:'stk',room_name:'Bad'}];
 let state={id:'portal',menu_version:1,expires_at:'2026-11-22T12:00:00Z',identity:{project:'Solgløtt borettslag',company:'QA Firma',block:'Bygg A',unit:'H0101',address:'Solgløttveien 1'},offers:[{id:'base',title:'Grunnpakke',total_cents:0,goods},{id:'oak',title:'Tilvalgspakke i eik',total_cents:15000,goods}],events:[],documents:[{id:'fdv',title:'Brukerveiledning',url:'https://example.invalid/fdv.pdf'}],agreements:[{id:'agreement',kind:'choice',version:1,status:'published',expires_at:'2026-11-22',snapshot:{identity:{},goods,total_cents:15000,reason:'Valgene dine'}}]};
 window.__newReply=()=>state.events.push({id:'external-reply',kind:'reply',sender:'manager',body:'Svar fra prosjektleder etter oppdatering',created_at:'2026-10-22T13:00:00Z'});
+window.__identity=fields=>Object.assign(state.identity,fields);
 window.__calls=[];window.__lost=false;window.__deny=false;window.__conflict=false;
 window.fetch=async(url,options)=>{if(url.includes('/functions/v1/bolig-resident-link-email'))return mailMock.send(options);const p=JSON.parse(options.body);window.__calls.push(p);if(window.__deny)return new Response(JSON.stringify({code:'42501',message:'Portallenken er tilbakekalt.'}),{status:403});
 if(p.p_action!=='get'){
@@ -149,6 +150,26 @@ try {
     .getByRole("heading", { name: "Velg det som passer deg" })
     .waitFor();
   eq(await page.getByRole("radio").count(), 2);
+  eq(await page.locator('.bolig-resident-brand strong').innerText(),'QA Firma','portal presents the server-authorized company');
+  eq(await page.locator('.bolig-portal-home-card strong').innerText(),'H0101','unit identity is visible');
+  await page.getByRole('button',{name:'Se avtaler som venter',exact:true}).click();
+  await page.getByRole('heading',{name:'Dine avtaler og kvitteringer'}).waitFor();
+  eq(await page.evaluate(()=>window.__calls.every(p=>p.p_action==='get')),true,'next-step navigation neither accepts nor sends');
+  await page.getByRole('button',{name:'Mine valg',exact:true}).click();
+  for (const width of [1366,390,320]) {
+    await page.setViewportSize({width,height:1000});
+    eq(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'welcome and next step fit '+width);
+    const targets=await page.locator('.bolig-portal-tabs button').evaluateAll(nodes=>nodes.map(n=>({height:n.getBoundingClientRect().height,focusable:n.tabIndex>=0})));
+    eq(targets.every(t=>t.height>=44&&t.focusable),true,'all portal tabs are keyboard reachable and touch-sized at '+width);
+    await page.screenshot({path:path.join(tmp,'portal-welcome-'+width+'.png'),fullPage:true});
+  }
+  await page.evaluate(()=>window.__identity({company:'Et langt entreprenørnavn for rehabilitering og tekniske installasjoner AS',unit:'Leilighet H0101 – første etasje',address:'Borettslagets svært lange gatenavn 123, oppgang B, 1234 Eksempelsted'}));
+  await page.getByRole('button',{name:'Hent siste status',exact:true}).click();
+  await page.locator('.bolig-resident-brand strong').filter({hasText:'Et langt entreprenørnavn'}).waitFor();
+  eq(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'long authorized identity does not overflow at 320px');
+  await page.evaluate(()=>window.__identity({company:'QA Firma',unit:'H0101',address:'Solgløttveien 1'}));
+  await page.getByRole('button',{name:'Hent siste status',exact:true}).click();
+  await page.locator('.bolig-resident-brand strong').filter({hasText:'QA Firma'}).waitFor();
   await page.getByRole("radio", { name: /Tilvalgspakke i eik/ }).check();
   await page
     .getByLabel("Merknad til valget (valgfritt)")
@@ -259,6 +280,8 @@ try {
     0,
     "revoked capability clears data",
   );
+  eq(await page.locator('.bolig-portal-home-card,.bolig-portal-next').count(),0,'revocation removes the complete personal welcome');
+  eq(await page.locator('.bolig-resident-brand strong').innerText(),'Beboerportal','revocation removes company identity from header');
   await page.goto(url + "?manager");
   await page
     .getByLabel("Navn på valgmuligheten")
