@@ -1,3 +1,7 @@
+## Kundepreview og PDF-overskrifter – Preview 25.10.2026
+
+Miljømål BEGGE, egen rettelse fra main. Kundepreview kan hente kladden etter senere innlogging eller «Prøv igjen». Samme bruker/firma ved fanebytte og tokenfornyelse beholder lokale opsjonsvalg; utlogging/bruker-/firmabytte sperrer gammelt innhold. PDF-overskriftene «Oppstart, tildekking og riving» og «Gulv og membran» får samme mellomtittelstil som øvrige fag. Ingen endringer i editor, autosave, publisering, e-post eller database. Ny Preview-test og TEST OK før Production. Se `docs/qa/SALES_DRAFT_PREVIEW_AND_HEADINGS_20261025.md` for funn, grenser og QA.
+
 ## Boligprosjekter: tydelig overtakelsesinngang og oppdatert hjelp – Preview 25.10.2026
 
 «Løpende overtakelse» ligger øverst i byggoversikten, før statusvalg og fasade. Tellingen gjelder valgt bygg; «Alle bygg» viser prosjektet. Knappene åpner eksisterende ferdigstillingsdialog. A–Å-veiledningen har 18 egne steg, blant annet interne roller, kontraktsinnsyn, fordeling/utfylling av sjekklister, UE-/leverandørtilgang, beboeravtaler, bemanning, varsling og økonomi. En kompakt stegvelger erstatter en lang knapprekke. Detaljhjelpen har anbefalt arbeidsrekkefølge for store prosjekter og gjeldende fakturaregister. Begge hjelpeinnganger følger også arbeidsflatens ferske tilgangsstatus. Ingen nye lagringshandlinger, databaseregler eller e-postendringer. Se `docs/qa/BOLIG_OVERTAKELSESINNGANG_OG_HJELP_20261025.md`.

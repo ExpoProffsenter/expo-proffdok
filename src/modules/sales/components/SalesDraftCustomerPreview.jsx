@@ -3,7 +3,7 @@
 // kundepresentasjon som publisert tilbud. Denne komponenten publiserer ikke,
 // oppretter ingen kundelenke og sender ingen e-post.
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import SalesCustomerView from "./SalesCustomerView.jsx";
 import { fetchSalesCompanyProfile } from "../services/salesCommunication.js";
 import {
@@ -13,6 +13,7 @@ import {
   resolveSalesCompanyScope,
 } from "../services/salesSupabase.js";
 import { buildOfferSnapshot } from "../utils/salesOfferLogic.js";
+import { observeSalesDraftPreviewSession } from "../services/salesDraftPreviewSession.mjs";
 
 function getPreviewRequestRef() {
   if (typeof window === "undefined") return "";
@@ -73,6 +74,7 @@ export default function SalesDraftCustomerPreview() {
   const [error, setError] = useState("");
   const [request, setRequest] = useState(null);
   const [companyProfile, setCompanyProfile] = useState(null);
+  const previewSession = useRef(null);
   const [acceptanceForm, setAcceptanceForm] = useState({
     name: "",
     confirmed: false,
@@ -80,23 +82,12 @@ export default function SalesDraftCustomerPreview() {
   });
 
   useEffect(() => {
-    let active = true;
-
-    async function loadPreview() {
-      setLoading(true);
-      setError("");
-      try {
+    const observer = observeSalesDraftPreviewSession({
+      client,
+      getSession: getSalesSession,
+      resolveScope: resolveSalesCompanyScope,
+      async loadContent(companyId) {
         if (!client || !requestRef) throw new Error("Tilbudet kunne ikke identifiseres.");
-
-        const { data: sessionData } = await getSalesSession(client);
-        if (!sessionData?.session?.user?.id) {
-          throw new Error("Du må være innlogget i Expo ProffDok for å forhåndsvise en tilbudskladd.");
-        }
-
-        const { data: companyId, error: companyError } = await resolveSalesCompanyScope(client);
-        if (companyError || !companyId) {
-          throw companyError || new Error("Firmaet kunne ikke bekreftes.");
-        }
 
         const [{ data: row, error: requestError }, profile] = await Promise.all([
           fetchSalesRequestDetailRow(client, companyId, requestRef),
@@ -114,21 +105,26 @@ export default function SalesDraftCustomerPreview() {
           throw new Error("Tilbudet har ingen kundesynlige poster ennå.");
         }
 
-        if (!active) return;
+        return { profile, payload };
+      },
+      onReset() {
+        setRequest(null);
+        setCompanyProfile(null);
+        setAcceptanceForm({ name: "", confirmed: false, selectedOptionIds: [] });
+      },
+      onLoading() { setLoading(true); setError(""); },
+      onReady({ profile, payload }) {
         setCompanyProfile(profile);
         setRequest(buildPreviewRequest(payload, profile));
-      } catch (loadError) {
-        if (!active) return;
-        setError(loadError?.message || "Kunne ikke åpne kundens forhåndsvisning.");
-        setRequest(null);
-      } finally {
-        if (active) setLoading(false);
-      }
-    }
-
-    void loadPreview();
+        setError("");
+        setLoading(false);
+      },
+      onError(message) { setError(message); setLoading(false); },
+    });
+    previewSession.current = observer;
     return () => {
-      active = false;
+      observer.dispose();
+      previewSession.current = null;
     };
   }, [client, requestRef]);
 
@@ -166,6 +162,10 @@ export default function SalesDraftCustomerPreview() {
               <p className="sales-eyebrow">Forhåndsvisning</p>
               <h1 className="sales-title">{error ? "Kundetilbudet kunne ikke forhåndsvises" : "Henter tilbudskladden …"}</h1>
               <p className="sales-subtitle">{error || "Visningen bygges direkte fra den lagrede kladden uten publisering eller utsending."}</p>
+              {error ? <div className="sales-hero-actions">
+                <button type="button" className="sales-primary-button" onClick={() => previewSession.current?.retry()}>Prøv igjen</button>
+                <a className="sales-secondary-button" href="/" target="_blank" rel="noopener noreferrer">Åpne Expo ProffDok for å logge inn</a>
+              </div> : null}
             </section>
           </main>
         </div>

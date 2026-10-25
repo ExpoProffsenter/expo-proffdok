@@ -59,9 +59,12 @@ function qty(item={}, multiplier=1.25) {
   return `${canChooseOptionQuantity(item) ? "Kunden kan velge antall. Vist antall: " : ""}${formatOfferQuantity(item)} x ${formatNok(getOfferUnitPrice(item)*multiplier)} pr. enhet`;
 }
 
-function subheading(text="") {
+export function isOfferPdfSubheading(text="") {
   const t=clean(text); if(!t) return false;
-  return t.endsWith(":") || (t.length<56 && !/[.!?]$/.test(t) && /arbeider$|arbeid$|kvalitet$|gjennomføring$|tidslinje$/i.test(t));
+  return t.endsWith(":") || (t.length<56 && !/[.!?]$/.test(t) && (
+    /arbeider$|arbeid$|kvalitet$|gjennomføring$|tidslinje$/i.test(t) ||
+    /^(oppstart,\s*tildekking og riving|gulv og membran)$/i.test(t)
+  ));
 }
 
 export async function createPublishedOfferPdfPolishedV2({ selectedRequest }) {
@@ -106,7 +109,7 @@ export async function createPublishedOfferPdfPolishedV2({ selectedRequest }) {
 
   const textRows=(text)=>{
     const rows=[]; const paras=String(text??"").replace(/\r/g,"").split(/\n+/).map(clean).filter(Boolean);
-    paras.forEach((p,pi)=>{ const t=p.replace(/^·\s*/,"- "); const head=subheading(t); font(head?8.7:8.6,head?"bold":"normal",head?C.ink:C.text); const wrap=pdf.splitTextToSize(t,W-14);
+    paras.forEach((p,pi)=>{ const t=p.replace(/^·\s*/,"- "); const head=isOfferPdfSubheading(t); font(head?8.7:8.6,head?"bold":"normal",head?C.ink:C.text); const wrap=pdf.splitTextToSize(t,W-14);
       wrap.forEach((r,ri)=>rows.push({text:r,head,gap:pi>0&&ri===0?(head?2.6:1.9):0,h:head?4.45:4.55})); });
     return rows;
   };

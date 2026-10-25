@@ -1,5 +1,7 @@
 # Boligprosjekter – sluttkontroll og gjenstående arbeid
 
+> **Oppdatert etter faktisk produksjonsutrulling 25. oktober:** PR278 er merget, backend og Production er verifisert, og main → demo er synkronisert. Fire avgrensede Sandbox-mailer er levert; Kenneth har bekreftet mottak av de tre invitasjonene. Produksjonslisenser og alle Bolig-transporter er fortsatt av. Les [faktisk produksjonslogg og videreføring](BOLIG_PRODUKSJONSLOGG_20261025.md) og [utførelsesgrunnlaget](evidence/bolig-production-execution-20261025.json). Resten av denne filen beskriver den historiske klargjøringen før TEST OK/utrulling.
+
 25. oktober 2026. Miljømål BEGGE; denne leveransen gjelder bare feature-Preview
 og Sandbox. Ingen produksjonsmerge, produksjonsmigrasjon eller e-postaktivering.
 PR #278 skal fortsatt være OPEN DRAFT. Ingen samlet TEST OK er gitt.
