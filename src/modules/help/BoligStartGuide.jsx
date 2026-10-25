@@ -67,7 +67,7 @@ const steps = [
     "text": "Aktiver bemanningslisten når prosjektet skal bruke inn- og utregistrering. Prosjektleder kan registrere deltakere manuelt. Egne ansatte må være knyttet til prosjektet for å bruke sin prosjektinngang på Min side. UE bruker sin tildelte lenke.",
     "recommend": "Skill planlagt bemanning i fremdriften fra hvem som faktisk er inne på prosjektet. Kontroller hvem som er innlogget, og rett en glemt utregistrering med begrunnelse.",
     "later": "Bemanning kan stå av til prosjektet trenger den. Inn- og utregistrering erstatter ikke automatisk timeføringen.",
-    "next": "Gi eksterne samarbeidspartnere tilgang til funksjonene de skal bruke."
+    "next": "Åpne Oversiktsliste ved tilsyn. Fyll ut byggeplass, virksomheter og personer, lagre og bekreft daglig kontroll. Listen kan brukes selv om inn- og utregistrering er av. Last ned PDF/CSV ved tilsyn. Gi deretter eksterne samarbeidspartnere tilgang til funksjonene de skal bruke."
   },
   {
     "title": "Gi UE og leverandører tilgang",

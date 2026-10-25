@@ -1,3 +1,17 @@
+## Oversiktsliste ved tilsyn – arbeid på samme branch 25.10.2026
+
+Miljømål **BEGGE**. Baseline er publisert main `fb486c58` (PR286).
+PR286 er ferdig i Production og demo; eldre ventende notater nedenfor er historikk.
+Denne endringen bruker samme `fase45b-bolig-portal-polish-20261025` og faste Preview.
+Ny TEST OK kreves før produksjonsinstallasjon/merge.
+
+Oppsett → Faktisk bemanning → **Oversiktsliste ved tilsyn** åpner en privat
+prosjektlederflate for byggeplass/byggherre, virksomheter, personer, daglig kontroll,
+uforanderlige lagrede versjoner og PDF/CSV. Fødselsdato/HMS-data deles ikke med
+portaler eller nettleserlagring. Eksisterende inn-/utregistrering beholdes.
+Én additiv migrasjon; ingen gamle migrasjoner eller delte kjerner endres.
+Faktisk QA og installasjon føres i `docs/qa/BOLIG_SITE_ROSTER_20261025.md`.
+
 ## Beboerportal og egne oppgaver – Preview 25.10.2026
 
 Miljømål BEGGE. Baseline er publisert main `5127795f` (PR285); PR278/Boligprosjekter er allerede installert og publisert. Eldre «ikke merget / Production urørt»-notater nedenfor er historikk. Denne nye UX-rettelsen er **ikke produksjonsmerget**.

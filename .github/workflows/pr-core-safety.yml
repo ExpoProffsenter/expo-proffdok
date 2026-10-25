@@ -223,14 +223,24 @@ jobs:
           node scripts/bolig-fdv-pdf-check.mjs
           node scripts/bolig-documentation-export-check.mjs
           node scripts/bolig-resident-notice-pdf-check.mjs
+          node scripts/bolig-site-roster-export-check.mjs
           node scripts/bolig-foundation-db-check.mjs
           node scripts/bolig-hr-access-db-check.mjs
           BOLIG_RELEASE_BASELINE=docs/qa/evidence/bolig-release-baseline-20261025.json node scripts/bolig-hr-access-db-check.mjs
           # Rehearse the frozen PR278 release against its recorded pre-release
-          # commit, also after that release has become part of main.
+          # commit in its exact released tree. Later additive migrations must
+          # not be mixed into the 72-migration installation rehearsal.
+          # Current migrations are tested above by the full foundation suite.
           bolig_release_base="$(node -p "require('./docs/qa/evidence/bolig-release-manifest-20261025.json').main")"
-          node scripts/bolig-release-preflight-check.mjs "$bolig_release_base"
-          node scripts/bolig-release-migrations-check.mjs "$bolig_release_base"
+          bolig_release_candidate="$(node -p "require('./docs/qa/evidence/bolig-production-execution-20261025.json').candidate.commit")"
+          bolig_release_dir="$RUNNER_TEMP/bolig-frozen-release"
+          git worktree add --detach "$bolig_release_dir" "$bolig_release_candidate"
+          (
+            cd "$bolig_release_dir"
+            node scripts/bolig-release-preflight-check.mjs "$bolig_release_base"
+            node scripts/bolig-release-migrations-check.mjs "$bolig_release_base"
+          )
+          git worktree remove "$bolig_release_dir"
           node scripts/bolig-contract-files-check.mjs
           node scripts/bolig-contract-review-check.mjs
           node scripts/bolig-contract-index-check.mjs
@@ -249,6 +259,7 @@ jobs:
           node scripts/bolig-images-browser-check.mjs
           node scripts/bolig-visuals-browser-check.mjs
           node scripts/bolig-attendance-browser-check.mjs
+          node scripts/bolig-site-roster-browser-check.mjs
           node scripts/bolig-self-attendance-browser-check.mjs
           node scripts/bolig-integration-browser-check.mjs
           BOLIG_CONTRACT_REVIEW_QA=1 BOLIG_CONTRACT_INDEX_QA=1 BOLIG_CONTRACT_FINANCE_QA=1 node scripts/bolig-contract-browser-check.mjs
