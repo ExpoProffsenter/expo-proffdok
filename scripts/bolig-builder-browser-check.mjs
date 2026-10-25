@@ -578,6 +578,12 @@ try {
     true,
     "Mobile page change starts at the heading",
   );
+  eq(
+    await page.locator(".bolig-building-toolbar h3").evaluate((e) =>
+      document.activeElement === e && e.getBoundingClientRect().bottom <= innerHeight),
+    true,
+    "Mobile page change leaves the complete heading focused in the viewport",
+  );
   for (const type of ["house", "duplex", "multi", "apartment", "field"]) {
     for (const width of [390, 1366]) {
       await page.setViewportSize({ width, height: 900 });

@@ -3,7 +3,7 @@ import Dialogue, {
   CoordinationGroupDialog,
 } from "./BoligDialogue.jsx";
 import { useBoligCoordination } from "./boligCoordination.js";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   Building2,
   ArrowLeft,
@@ -238,13 +238,17 @@ export default function BoligBuildingOverview({
     [capacity, setCapacity] = useState(1),
     [resultPage, setResultPage] = useState(0);
   const titleRef = useRef(null);
+  const focusBuildingPage = useRef(false);
   const changeBuildingPage = (offset) => {
+    focusBuildingPage.current = true;
     setBuildingOffset(offset);
-    requestAnimationFrame(() => {
-      titleRef.current?.focus({ preventScroll: true });
-      titleRef.current?.scrollIntoView({ block: "start" });
-    });
   };
+  useLayoutEffect(() => {
+    if (!focusBuildingPage.current) return;
+    focusBuildingPage.current = false;
+    titleRef.current?.focus({ preventScroll: true });
+    titleRef.current?.scrollIntoView({ block: "start" });
+  }, [buildingOffset]);
   const surface = useRef(null),
     picker = useRef(null),
     pickerTrigger = useRef(null),

@@ -60,5 +60,21 @@ hjelpeassertions for aktiv og deaktivert kontekst. Fersk core-boundary mot
 main 36462e2b: 55 PASS. Mobil 320/390 og desktop 1366 inngår; skjermbildet på
 390 er visuelt inspisert. Ingen runtime-feil eller lagringskall i visningsprøven.
 Full critical Sandbox-build og diff --check PASS. React-gjennomgang: samme
-komponentinstans og datakilde, ingen ny effekt/RPC, navnede regioner og native
+komponentinstans og datakilde, ingen ny RPC, navnede regioner og native
 knapper, ingen utvidet tilgang eller påvirkning av andre moduler.
+
+## Mobil sidebytte – CI710
+
+CI710 stoppet på eksisterende krav om at overskriften er synlig etter bytte av
+byggside på mobil. Fokus/rulling ble planlagt med requestAnimationFrame fra
+klikkhandleren, uten garanti for at React hadde lagt ut den nye kortsiden.
+Kontrollert forsinkelse av animasjonsrammer gjenskapte den samme avvisningen.
+Fokus og rulling er nå knyttet til ferdig DOM-oppdatering med useLayoutEffect,
+bare etter et bevisst sidebytte. Søk/firma-/byggvalg får ingen ny automatisk
+rulling. Den eksisterende viewport-assertionen beholdes uendret; en ekstra
+kontroll krever også fokus og at hele overskriften er innenfor skjermen.
+
+Etter retting: 144 ordinære Chromium-assertions i bygger/oversikt PASS. Den
+separate timingproben med forsinkede animasjonsrammer består alle 143 tidligere
+assertions uten å endre tersklene. Full critical Sandbox-build, core-boundary
+55 og diff --check PASS. Ingen database-, tilgangs- eller e-postendring.
