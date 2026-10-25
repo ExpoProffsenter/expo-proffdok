@@ -58,10 +58,24 @@ export function BoligHelp() {
         <p>Aktiver bemanning og legg til navngitte deltakere. Ansatte registrerer
           seg på Min side. UE bruker sin personlige lenke. Prosjektleder kan også
           registrere manuelt. Kontroller åpne registreringer fra tidligere dager.</p>
-        <p>Dagens bemanningsliste er ikke en komplett oversiktsliste etter
-          byggherreforskriften § 15. Den mangler blant annet fødselsdato,
-          HMS-kortnummer, organisasjonsnummer og et samlet grunnlag for byggeplass
-          og byggherre. Bruk prosjektets fullstendige oversiktsliste ved tilsyn.
+        <p>Velg «Oversiktsliste ved tilsyn» for byggeplassens elektroniske oversiktsliste.
+          Åpne «Rediger byggeplass» og fyll inn adresse, byggherre og listefører.
+          Legg deretter til virksomheter med organisasjonsnummer og personer med
+          fødselsdato, arbeidsgiver, HMS-kort og arbeidsperiode. Innleide får også
+          innleievirksomhet. En person trenger ingen appkonto.</p>
+        <p>Under «Personer» kan du hente navngitte deltakere eller dagens manuelle
+          registreringer. Fyll inn opplysningene som mangler og velg «Lagre endringer».
+          Kladden holdes i minnet ved fanebytte. Lagre før du lukker eller laster siden på nytt.
+          Disse personopplysningene vises ikke i UE- eller beboerportalen.</p>
+        <p>Se over manglene under «Oversikt». Bekreft hver dag at opplysningene er
+          riktige og at alle som skal arbeide på plassen er med. Velg «Bekreft daglig kontroll».
+          En endring etter kontroll krever ny kontroll. Utfylte felt bekrefter ikke
+          gyldig HMS-kort eller at virksomheten er kontrollert i et register.</p>
+        <p>Velg «Last ned oversiktsliste (PDF)» eller CSV ved tilsyn. Eksporten bruker
+          lagrede opplysninger og merkes som utkast når kontroll ikke er bekreftet.
+          «Historikk» viser tidligere lagrede versjoner. Registrer faktisk avslutningsdato
+          under byggeplassen for å se minste oppbevaringstid. Del eksporten bare med
+          dem som skal ha innsyn. Byggherren har ansvaret; føring kan delegeres skriftlig.
           Se <a href="https://www.arbeidstilsynet.no/hms/hms-i-bygg-og-anlegg/byggherreforskriften/elektroniske-oversiktslister/" target="_blank" rel="noopener noreferrer">Arbeidstilsynets veiledning om oversiktslister</a>.</p>
       </details>
       <details>
