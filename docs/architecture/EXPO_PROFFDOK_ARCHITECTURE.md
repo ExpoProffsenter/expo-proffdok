@@ -1,3 +1,9 @@
+## Boligprosjekter: tydelig overtakelsesinngang og oppdatert hjelp – Preview 25.10.2026
+
+Den ene eksisterende `BoligCompletionOverview` er flyttet foran statusfanene i `BoligBuildingOverview`. Ingen ekstra RPC eller remount ved byggvalg. Tellingen avleder bare aktive boliger i valgt bygg fra eksisterende struktur og serverbekreftet ferdigstillingsrespons; «Alle bygg» viser prosjektet. Delvis eller begrenset status blir en tydelig utilgjengelig status, ikke et falskt antall. Faktisk overtakelse teller etter eksisterende `isHandedOver`, uavhengig av intern sluttkontroll. De samme bygg-/prosjektdialogene brukes.
+
+Bolig-hjelpen forblir inne i den aktiveringsstyrte modulen. `BoligWorkspace` skjuler i tillegg begge hjelpeinnganger når egen fersk serverkontekst har `enabled=false`. Veiledningen beskriver store prosjekter, plassering av overtakelsesinngangen og gjeldende fakturaregister. Globale menyer, modulgrants, backend, ordinære prosjekter og e-postmotorer endres ikke. QA: `docs/qa/BOLIG_OVERTAKELSESINNGANG_OG_HJELP_20261025.md`.
+
 ## Boligprosjekter: realistisk pilot og oppfølging – Preview 23.10.2026
 
 Åpne forhold kan kobles til eksisterende fremdriftsarbeid eller opprette en vanlig aktivitet med ansvarlig og frist. Ingen sak lukkes eller ny overtakelsessperre innføres ved kobling. Beboervarsler kan lastes ned som PDF/oppslag med prosjektkontakt og tydelig utkastmerking. Kontaktbytte stopper gamle portal- og avtaleslenker, også ved A→B→A; intern avtale-/bestillingshistorikk beholdes. Ny bestillingsopprettelse etter endringsordre-migrasjonen har fått reparert en aliasfeil. Gjenbruk forklares gjennom eksisterende rommaler, pakker og masseoppsett. Realistisk Sandbox-pilot med to bygg/40 boliger/161 aktiviteter er opprettet. Miljømål BEGGE, kun Preview/Sandbox, utsending AV og egen Bolig TEST OK før produksjon. Se `docs/qa/BOLIG_PILOT_OG_OPPFOLGING_20261023.md` og `docs/CHAT_HANDOFF_BOLIG_20261023.md`.

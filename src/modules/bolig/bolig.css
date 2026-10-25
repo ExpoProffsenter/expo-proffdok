@@ -4498,6 +4498,21 @@
   color: #526a79;
   margin-top: 4px;
 }
+.bolig-building-panel > .bolig-completion-overview {
+  margin: 12px 0;
+  padding: 12px 14px;
+  background: #edf8f7;
+  border-color: #94c5c5;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+}
+.bolig-completion-overview > div:first-child > span { min-width: 0; }
+.bolig-handover-counts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px; }
+.bolig-handover-counts > span { padding: 4px 9px; border-radius: 8px; font-size: 14px; font-weight: 700; color: #244d5b; background: #fff; }
+.bolig-handover-counts > span:last-child { color: #176343; background: #d9efe5; }
+@media (max-width: 850px) {
+  .bolig-building-panel > .bolig-completion-overview { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+}
 .bolig-completion-children {
   display: grid;
   gap: 12px;

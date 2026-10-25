@@ -444,6 +444,7 @@ try {
     button("Bygg nytt prosjekt"),
     "New-project entry is visible on the module home",
   );
+  assert(q(".bolig-start-guide-button") && q(".bolig-help"), "Enabled user has both Bolig guides");
   await act(() =>
     q('.bolig-home-project[aria-label="Åpne Felles prosjekt"]').click(),
   );
@@ -881,13 +882,16 @@ try {
     "Eget prosjekt er koblet til",
   );
   denied = true;
+  enabled = false;
   await act(() =>
     q(".bolig-task-dialog form").dispatchEvent(
       new w.Event("submit", { bubbles: true, cancelable: true }),
     ),
   );
   assert.equal(q(".bolig-unit"), null, "Server denial clears old record");
+  assert(!q(".bolig-start-guide-button") && !q(".bolig-help"), "Fresh inactive context after denial hides both help surfaces");
   denied = false;
+  enabled = true;
   company = "firm-b";
   await act(() =>
     w.dispatchEvent(
@@ -906,6 +910,7 @@ try {
     "Unavailable user must not enter workspace",
   );
   assert.equal(q("[data-bolig-enabled]").dataset.boligEnabled, "false");
+  assert(!q(".bolig-start-guide-button") && !q(".bolig-help"), "Unavailable firm/user has no Bolig help");
   assert(!w.document.body.textContent.includes("Aktivering og tilganger"));
   await act(() => w.__unmount());
   enabled = true;

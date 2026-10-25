@@ -70,6 +70,13 @@ try {
   w.__client = {
     rpc: async (name, args) => {
       calls.push({ name, args });
+      if (name === "bolig_completion") {
+        if (fail) return { error: { message: "Denied" } };
+        return { data: {
+          context: { ...context }, root_id: args.p_root_id, scope_id: args.p_scope_id,
+          rows: record.units.map((unit) => ({ scope_id: unit.id, kind: "unit", status: "not_started" })),
+        } };
+      }
       if (name === "bolig_workspace") return { data: { ...context } };
       if (name === "current_user_has_internal_store_catalog_access")
         return { data: false };

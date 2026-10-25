@@ -1029,35 +1029,41 @@ export function BoligCompletionOverview({
     root.id,
     root.revision,
   ]);
-  const project = data?.rows.find((r) => r.scope_id === root.id);
-  const units = data?.rows.filter((r) => r.kind === "unit") || [];
+  const verified = data?.context?.company_id === context.company_id &&
+    data?.context?.user_id === context.user_id && data?.root_id === root.id;
+  const selectedBlock = record.blocks.find((b) => b.id === selectedBlockId && !b.archived);
+  const activeBlockIds = new Set(record.blocks.filter((b) => !b.archived &&
+    (!selectedBlockId || b.id === selectedBlockId)).map((b) => b.id));
+  const entranceIds = new Set(record.entrances.filter((e) => !e.archived &&
+    activeBlockIds.has(e.block_id)).map((e) => e.id));
+  const unitIds = new Set(record.units.filter((u) => !u.archived &&
+    entranceIds.has(u.entrance_id)).map((u) => u.id));
+  const units = verified ? data.rows.filter((r) => r.kind === "unit" && unitIds.has(r.scope_id)) : [];
+  const statusAvailable = verified && units.length === unitIds.size &&
+    !units.some((r) => r.source?.restricted);
   const overtatt = units.filter(isHandedOver).length;
-  const ready = units.filter((r) => !isHandedOver(r) &&
-    [
-      "ready",
-      "ready_with_rest",
-      "handed_over",
-      "handed_over_with_rest",
-    ].includes(r.status),
-  ).length;
   return (
-    <div className="bolig-completion-overview">
+    <div className="bolig-completion-overview" role="region" aria-label="Løpende overtakelse">
       <div>
         <FileCheck2 size={23} />
         <span>
           <strong>Løpende overtakelse</strong>
-          <small>
-            {error ||
-              (project
-                ? `${overtatt} av ${units.length} boliger overtatt · ${ready} klare for overtakelse`
-                : "Henter kontrollstatus …")}
-          </small>
+          <small>{selectedBlock?.name || "Hele prosjektet"}</small>
+          {statusAvailable && !error ? (
+            <span className="bolig-handover-counts">
+              <span>{units.length - overtatt} gjenstår</span>
+              <span>{overtatt} overtatt</span>
+            </span>
+          ) : <small role="status">{error || (verified
+            ? "Kontrollstatus er ikke tilgjengelig for alle boligene."
+            : "Henter kontrollstatus …")}</small>}
         </span>
       </div>
       <div className="bolig-completion-actions">
         <button
           type="button"
-          disabled={!selectedBlockId}
+          className="bolig-primary"
+          disabled={!selectedBlock}
           onClick={() => setScope(selectedBlockId)}
         >
           <Building2 size={17} />

@@ -3,6 +3,35 @@ export function BoligHelp() {
   return (
     <details className="bolig-help">
       <summary>Slik styrer du prosjektet</summary>
+      <details>
+        <summary>Start her – arbeidsrekkefølge for store boligprosjekter</summary>
+        <p>Bruk «A–Å-veiledning for Boligprosjekter» for ett steg om gangen.
+          Du kan ta én bolig i bruk først og deretter bruke samme oppsett på flere.</p>
+        <ol>
+          <li><strong>Bygg og boliger:</strong> Opprett hovedprosjektet. Kontroller bygg, oppganger,
+            etasjer og bolignumre før du fordeler innhold. Excel-import er foreløpig satt på vent.</li>
+          <li><strong>Grunnpakker og tilvalg:</strong> Lag rom, avsnitt, varer og bilder.
+            Prøv på én bolig før du fordeler til flere. Behold individuelle unntak.</li>
+          <li><strong>Plan og kontroller:</strong> Lag arbeidsrekkefølge, ansvar og datoer under
+            «Fremdrift og varsler». Bruk stammegrupper for boliger som følger samme arbeid.
+            Fordel sjekklister og velg hvilke som er påkrevde.</li>
+          <li><strong>Avklar og del:</strong> Legg inn beboerkontakt, avklar boligvalg og del avtalen.
+            Gi UE og leverandører tilgang til funksjonene de trenger. Kontroller mottaker,
+            innhold og sendingsstatus ved utsending.</li>
+          <li><strong>Utfør og følg opp:</strong> Bestill varer, registrer leveringer og dokumenter
+            arbeidet med sjekklister, bilder og avvik. Følg meldinger og frister underveis.</li>
+          <li><strong>Overta fortløpende:</strong> Bruk «Løpende overtakelse» øverst i byggoversikten.
+            Velg «Ferdigstilling av bygg», åpne boligen og vurder åpne forhold.
+            Registrer faktisk overtakelse med dato og protokollreferanse. Restpunkter beholdes.</li>
+          <li><strong>Dokumentasjon og økonomi:</strong> Ta ut PDF/ZIP for bolig, bygg eller prosjekt.
+            Følg restpunktene til de er løst. Registrer a konto og indeks under
+            «Kontrakter → Fakturert og a konto» når dette området er tatt i bruk.</li>
+        </ol>
+        <p>Prosjektleder styrer oppsett, vurderinger og overtakelse. Lesebrukere får innsyn.
+          UE og leverandører bruker sin tildelte lenke; beboere bruker beboerportalen.
+          Firmaets aktivering og den enkelte brukerens tilgang styrer hvem som får åpne modulen.
+          Private kontrakter har i tillegg navngitt tilgang.</p>
+      </details>
       <p>
         Start i prosjektoversikten. Velg «Bygg nytt prosjekt», fortsett en
         kladd, eller åpne et av firmaets prosjekter. «Prosjektoversikt» tar deg
@@ -413,8 +442,14 @@ export function BoligHelp() {
           protokoll. Dette er intern registrering, ikke en digital signatur.
         </li>
         <li>
-          «Ferdigstilling av bygg» og «Ferdigstilling av prosjekt» samler
-          statusen. Avklar også egne fellesarbeider, eller velg «Ingen egne
+          «Løpende overtakelse» ligger øverst i byggoversikten, før fasaden.
+          Tellingen gjelder valgt bygg. «Gjenstår» betyr boliger uten registrert
+          faktisk overtakelse; «Overtatt» betyr at overtakelsen er registrert.
+          Ved «Alle bygg» gjelder tellingen hele prosjektet.
+          «Ferdigstilling av bygg» åpner boliglisten med «Alle boliger»,
+          «Gjenstår» og «Overtatt». «Ferdigstilling av prosjekt» samler hele
+          prosjektet. En bolig kan overtas mens andre fortsatt er under arbeid.
+          Avklar også egne fellesarbeider, eller velg «Ingen egne
           fellesarbeider». Notat er valgfritt. Ferdige boliger alene er ikke
           nok. Endret arbeids- eller dokumentgrunnlag krever ny godkjenning, men
           tidligere kontrollbeskrivelser beholdes. En faktisk overtakelse
@@ -478,16 +513,31 @@ export function BoligHelp() {
         versjon og side. Åpne kildesiden før du bruker et funn. Ingen avtale eller
         oppgave endres automatisk. Opplastingskladden beholdes i nettleserøkten; ikke last siden
         på nytt før filen er bekreftet lagret.
+        AI-baserte funn krever at analysetjenesten er tilgjengelig. Full
+        automatisk kontroll av store kontrakter er fortsatt under utprøving;
+        bruk originalene og tekstsøket som grunnlag for egen gjennomgang.
       </p>
       <p>
-        Under «Kontrakter → Indeksregulering mot byggherre» velger du avtalt
-        indeks, basismåned, reguleringsmåned og eventuell reduksjonsfaktor.
-        Hent publiserte indekstall fra SSB eller før inn kontrollerte tall.
-        Oppgi opprinnelig grunnleveranse og egne opsjoner ekskl. mva. Kryss av
-        hvilke deler som skal reguleres. «Forhåndsvis regulering» viser
-        beregningen før «Godkjenn og lagre beregning» lagrer den i historikken.
-        Bruk opprinnelige beløp fra basismåneden. Beregningen gjelder avtalen
-        mot byggherre og endrer ikke fakturaer eller beboerpriser automatisk.
+        Under «Kontrakter → Kontraktssum og vilkår» lagrer du opprinnelig
+        grunnleveranse og opsjoner ekskl. mva., avtalt indeks, basismåned og
+        eventuell reduksjonsfaktor. Kryss av hvilke deler som reguleres.
+        Bruk opprinnelige beløp fra basismåneden.
+      </p>
+      <p>
+        «Fakturert og a konto» brukes når du registrerer periodens fakturering.
+        Oppgi fakturadato og a konto-beløp. Indeksberegningen bruker tilgjengelig
+        publisert indeks på fakturadatoen. For eldre datoer uten sikker
+        publiseringshistorikk må indeksmåneden bekreftes. Kontroller grunnlaget
+        før du trykker «Lagre». A konto og indeks lagres som separate
+        fakturalinjer med én lagring. Fakturanummer kan stå tomt og fylles inn
+        senere via «Fakturaoversikt → Rediger», uten at beløpet telles to ganger.
+        Oversikten skiller fakturert a konto fra fakturert indeksregulering.
+        Fakturert betyr ikke betalt. Appen sender eller bokfører ikke fakturaene.
+      </p>
+      <p>
+        «Indeksregulering mot byggherre» kan også vise beregning på hele
+        kontraktsgrunnlaget og tidligere godkjente beregninger. Disse teller
+        ikke som fakturert. Kontraktsøkonomi endrer ikke beboerprisene automatisk.
       </p>
     </details>
   );

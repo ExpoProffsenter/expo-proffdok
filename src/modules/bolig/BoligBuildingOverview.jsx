@@ -625,6 +625,14 @@ export default function BoligBuildingOverview({
           )}
         </>
       )}
+      <BoligCompletionOverview
+        context={context}
+        root={record.root}
+        record={record}
+        selectedBlockId={allBuildings ? null : selectedBlock?.id}
+        onData={setCompletionData}
+        onOpenProject={onOpenProject}
+      />
       <nav className="bolig-layer-tabs" aria-label="Vis boligstatus">
         {[
           ["choice", "Boligvalg", FileCheck2],
@@ -1045,14 +1053,6 @@ export default function BoligBuildingOverview({
         openUnit={dialogueUnit}
         onOpen={setDialogueUnit}
         onClose={() => setDialogueUnit("")}
-      />
-      <BoligCompletionOverview
-        context={context}
-        root={record.root}
-        record={record}
-        selectedBlockId={selectedBlock?.id}
-        onData={setCompletionData}
-        onOpenProject={onOpenProject}
       />
       <BoligDeliveryOverview
         blocks={blocks}

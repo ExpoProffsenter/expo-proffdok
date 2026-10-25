@@ -22,7 +22,7 @@ import '${cwd}/src/modules/bolig/bolig.css';
 const context={user_id:'qa',company_id:'firm',role:'manager',enabled:true};
 const record={root:{id:'overview',revision:1},blocks:[{id:'a',name:'Blokk A',building_type:'apartment'},{id:'b',name:'Blokk B',building_type:'apartment'}],entrances:[{id:'ea',block_id:'a',address:'Eksempelgata 1',counts:[4,4,4]},{id:'eb',block_id:'b',address:'Eksempelgata 2',counts:[32,32,28]}],units:[]};
 for(let i=0;i<104;i++)record.units.push({id:'u'+i,entrance_id:i<12?'ea':'eb',floor:1+Math.floor(i%12/4),number:(i<12?'A-':'B-')+(101+i),official_number:i===103?'H9999':'',has_project:i%2===0,contact_name:i===0?'Komplett Eksempel':'',contact_email:i===0?'eksempel@example.invalid':'',contact_phone:i===0?'00000000':''});
-window.__fail=false;window.__calls=[];window.__client={rpc:async(name,args)=>{window.__calls.push({name,args});if(name==='bolig_visuals')return {data:{context,root_id:record.root.id,scope_id:args.p_scope_id,kind:'facade',basis:'qa',targets:[],sheets:[]}};if(!window.__fail && name==='bolig_completion')return {data:{context,root_id:record.root.id,scope_id:null,rows:[...record.units.map(u=>({scope_id:u.id,kind:'unit',status:'not_started'})),{scope_id:record.root.id,kind:'project',status:'not_started'}]}};return window.__fail?{error:{message:'Denied'}}:{data:{context,root_id:record.root.id,units:record.units.map((u,i)=>({unit_id:u.id,choice_revision:i%3===0?1:0,catalog_changed:i%6===0,order_revision:i%4===0?1:0,order_outdated:i%8===0}))}};}};
+window.__handoverFixture=false;window.__completionMissing=false;window.__completionRestricted=false;window.__fail=false;window.__calls=[];window.__client={rpc:async(name,args)=>{window.__calls.push({name,args});if(name==='bolig_visuals')return {data:{context,root_id:record.root.id,scope_id:args.p_scope_id,kind:'facade',basis:'qa',targets:[],sheets:[]}};if(!window.__fail && name==='bolig_completion')return {data:{context,root_id:record.root.id,scope_id:args.p_scope_id,members:[],history:[],rows:[...record.units.filter(u=>!window.__completionMissing||u.id!=='u0').map((u)=>({scope_id:u.id,parent_id:u.entrance_id==='ea'?'a':'b',title:u.number,kind:'unit',source:{restricted:window.__completionRestricted&&u.id==='u0'},items:[],issues:[],done:0,total:0,status:window.__handoverFixture&&u.id==='u0'?'handed_over_with_rest':window.__handoverFixture&&u.id==='u2'?'ready':'not_started',manager_handover:window.__handoverFixture&&u.id==='u1',control_status:'not_started'})),...record.blocks.map(b=>({scope_id:b.id,parent_id:record.root.id,title:b.name,kind:'block',status:'not_started',source:{},items:[],issues:[],done:0,total:0})),{scope_id:record.root.id,title:'QA Prosjekt',kind:'project',status:'not_started',source:{},items:[],issues:[],done:0,total:0}]}};return window.__fail?{error:{message:'Denied'}}:{data:{context,root_id:record.root.id,units:record.units.map((u,i)=>({unit_id:u.id,choice_revision:i%3===0?1:0,catalog_changed:i%6===0,order_revision:i%4===0?1:0,order_outdated:i%8===0}))}};}};
 function App(){const [q,sq]=useState(''),[unit,su]=useState('');return <section className="bolig-dialog bolig-page"><Overview context={context} record={record} query={q} onQuery={sq} unitId={unit} onSelect={su}/><output aria-label="Valgt ID">{unit}</output></section>}
 createRoot(document.getElementById('app')).render(<App/>);`,
 );
@@ -329,6 +329,47 @@ try {
   eq((await filter.locator("option").allTextContents()).some(t=>t.startsWith("Klar for overtagelse / overtatt")),true,"Completion filter uses handover language");
   eq((await filter.locator("option").allTextContents()).some(t=>t.includes("Boligvalg")),false,"Completion filter does not label controls as package choices");
   eq((await page.locator(".bolig-overview-row").first().innerText()).includes("Ikke startet"),true,"Completion layer shows documented state rather than delivery state");
+  await btn("Bytt bygg").click();
+  await page.getByRole("dialog", { name: "Bytt bygg", exact: true }).getByRole("button", { name: "Åpne Blokk A", exact: true }).click();
+  await page.evaluate(() => { window.__handoverFixture = true; window.dispatchEvent(new Event("focus")); });
+  const handover = page.getByRole("region", { name: "Løpende overtakelse", exact: true });
+  await handover.getByText("2 overtatt", { exact: true }).waitFor();
+  eq(await handover.getByText("10 gjenstår", { exact: true }).count(), 1, "Selected building counts include unhanded-over ready units and exclude other buildings");
+  eq(await page.locator(".bolig-completion-overview").count(), 1, "One stable handover entry");
+  eq(await handover.evaluate(e => Boolean(e.compareDocumentPosition(document.querySelector('.bolig-layer-tabs')) & Node.DOCUMENT_POSITION_FOLLOWING)), true, "Handover entry precedes the status tabs and facade");
+  eq(await handover.evaluate(e => Boolean(e.compareDocumentPosition(document.querySelector('.bolig-dialogue-inbox')) & Node.DOCUMENT_POSITION_FOLLOWING)), true, "Handover entry is above resident dialogue");
+  for (const width of [320, 390, 1366]) {
+    await page.setViewportSize({ width, height: 1000 });
+    await handover.scrollIntoViewIfNeeded();
+    eq(await handover.isVisible(), true, "Entry visible at " + width);
+    eq(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, "Handover entry fits viewport " + width);
+    await page.screenshot({path:path.join(temp,'handover-entry-'+width+'.png'),fullPage:true});
+  }
+  const writesBefore = await page.evaluate(() => window.__calls.filter(c => c.args.p_action && c.args.p_action !== 'get' && c.args.p_action !== 'list').length);
+  await handover.getByRole('button',{name:'Ferdigstilling av bygg',exact:true}).click();
+  const completionDialog = page.getByRole('dialog',{name:'Ferdigstilling av bygg og prosjekt',exact:true});
+  await completionDialog.getByRole('button',{name:'Gjenstår · 10',exact:true}).waitFor();
+  eq(await completionDialog.getByRole('button',{name:'Overtatt · 2',exact:true}).count(),1,'Entry opens the existing selected-building handover list');
+  await btn('Tilbake til byggoversikten').click();
+  await completionDialog.waitFor({state:'hidden'});
+  await btn('Bytt bygg').click();
+  await page.getByRole('dialog',{name:'Bytt bygg',exact:true}).getByRole('button',{name:'Åpne Blokk B',exact:true}).click();
+  await handover.getByText('92 gjenstår',{exact:true}).waitFor();
+  eq(await handover.getByText('0 overtatt',{exact:true}).count(),1,'Building switch does not retain the previous counts');
+  await btn('Alle bygg 2').click();
+  await handover.getByText('Hele prosjektet',{exact:true}).waitFor();
+  eq(await handover.getByText('102 gjenstår',{exact:true}).count(),1,'All-buildings view shows project totals');
+  eq(await handover.getByRole('button',{name:'Ferdigstilling av bygg',exact:true}).isDisabled(),true,'All-buildings view does not silently target an old building');
+  await page.locator('.bolig-all-buildings').getByRole('button',{name:'Åpne Blokk A',exact:true}).click();
+  await page.evaluate(() => { window.__completionMissing = true; window.dispatchEvent(new Event('focus')); });
+  await handover.getByText('Kontrollstatus er ikke tilgjengelig for alle boligene.',{exact:true}).waitFor();
+  eq(await handover.locator('.bolig-handover-counts').count(),0,'Incomplete status response never claims a smaller number remains');
+  await page.evaluate(() => { window.__completionMissing = false; window.__completionRestricted = true; window.dispatchEvent(new Event('focus')); });
+  await handover.getByText('Kontrollstatus er ikke tilgjengelig for alle boligene.',{exact:true}).waitFor();
+  eq(await handover.locator('.bolig-handover-counts').count(),0,'Restricted completion status is not turned into a false count');
+  await page.evaluate(() => { window.__completionRestricted = false; window.dispatchEvent(new Event('focus')); });
+  await handover.getByText('10 gjenstår',{exact:true}).waitFor();
+  eq(await page.evaluate(() => window.__calls.filter(c => c.args.p_action && c.args.p_action !== 'get' && c.args.p_action !== 'list').length),writesBefore,'Opening and switching handover views never writes');
   eq(errors, [], "No runtime errors");
   console.log(
     "PASS overview Chromium: " + checks + " assertions. Screenshots: " + temp,

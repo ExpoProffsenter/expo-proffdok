@@ -493,8 +493,10 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
             </small>
           )}
         </div>
-        <BoligStartGuide />
-        <BoligHelp />
+        {ctx.enabled && <>
+          <BoligStartGuide />
+          <BoligHelp />
+        </>}
       </div>
       {!ctx.enabled ? null : (
         <>

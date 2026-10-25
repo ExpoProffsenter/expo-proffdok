@@ -71,8 +71,8 @@ const steps = [
   },
   {
     title: "Vurder overtakelsen",
-    where: "Ferdigstilling → Vurder åpne forhold og overtakelse",
-    text: "Se manglende kontroller, avvik, uferdige aktiviteter, intern godkjenning og ubehandlede beboermeldinger i samme oversikt. Vurder om hvert forhold hindrer overtakelse eller skal følges opp.",
+    where: "Byggoversikt → Løpende overtakelse → Ferdigstilling av bygg",
+    text: "Øverst i byggoversikten ser du hvor mange boliger i valgt bygg som gjenstår og er overtatt. Åpne boliglisten, velg en bolig og vurder åpne forhold. Kontroller, avvik, aktiviteter, intern godkjenning og ubehandlede meldinger samles her.",
     recommend:
       "Gi hvert restpunkt en begrunnelse og oppfølgingsansvarlig. Vanlige forhold kan vurderes samlet; kritiske forhold må vurderes og bekreftes enkeltvis.",
     later:
