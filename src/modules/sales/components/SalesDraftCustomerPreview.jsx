@@ -67,8 +67,9 @@ function buildPreviewRequest(request, companyProfile) {
   };
 }
 
-export default function SalesDraftCustomerPreview() {
-  const requestRef = useMemo(getPreviewRequestRef, []);
+export default function SalesDraftCustomerPreview({ requestId, onBack } = {}) {
+  const queryRequestRef = useMemo(getPreviewRequestRef, []);
+  const requestRef = String(requestId || queryRequestRef || "").trim();
   const [client] = useState(() => createDefaultSalesSupabaseClient());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -194,7 +195,7 @@ export default function SalesDraftCustomerPreview() {
         setAcceptanceForm={setAcceptanceForm}
         toggleAcceptedOption={toggleAcceptedOption}
         handleAcceptOffer={(event) => event?.preventDefault?.()}
-        onBack={() => window.close()}
+        onBack={onBack || (() => window.close())}
       />
     </div>
   );

@@ -1,3 +1,17 @@
+## Kundepreview med appens innlogging – Preview 26.10.2026
+
+Miljømål **BEGGE**. Baseline er publisert main `3ba4d228` (PR287, fullført i
+Production og demo). Ny rettelse bruker samme arbeidsbranch og faste Preview.
+Ny TEST OK kreves før denne rettelsen merges eller publiseres i Production.
+
+«Forhåndsvis som kunde» åpner den lagrede kladden i en dialog i samme dokument
+på PC og mobil. Visningen gjenbruker appens registrerte Supabase-klient og
+krever ikke at en ny fane kan lese lagret innlogging. Tilbake/Escape lukker bare
+forhåndsvisningen. Serverhenting, firma-/tilgangskontroll og skrivebeskyttet
+kundevisning beholdes. Ingen auth-kjerne, editor/autosave, publisering, aksept,
+e-post, database eller visning av allerede publiserte kundetilbud endres.
+Avgrensning, feildiagnose og faktiske tester: `docs/qa/SALES_INLINE_PREVIEW_20261026.md`.
+
 ## Kundepreview: ny innloggingskontroll og PDF-overskrifter – Preview 25.10.2026
 
 Den skrivebeskyttede kladdevisningen gjenopptar etter ny innlogging og tilbyr Prøv igjen ved feil. Eget session-abonnement og foreground-kontroll bevarer prøvevalg ved samme bruker/firma, sperrer gamle bruker-/firmadata og ignorerer sene svar etter cleanup. Ingen tokens overføres mellom adresser, og ingen editor/recovery-runtime monteres. Aktiv tilbuds-PDF gjenkjenner også «Oppstart, tildekking og riving» og «Gulv og membran» som mellomtitler. Øvrig tekst/pris/aksept er uendret. Miljømål BEGGE, ny TEST OK før Production. Se `docs/qa/SALES_DRAFT_PREVIEW_AND_HEADINGS_20261025.md` for bevis, kjente begrensninger og konkret brukertest.
