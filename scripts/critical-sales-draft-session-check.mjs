@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { observeSalesDraftPreviewSession } from "../src/modules/sales/services/salesDraftPreviewSession.mjs";
 import { isOfferPdfSubheading } from "../src/modules/sales/services/salesOfferPdfPolishedV2.js";
 import { createClient } from "@supabase/supabase-js";
+import { registerAppSupabaseClient } from "../src/modules/access/appSupabaseClientRegistry.js";
+import { createDefaultSalesSupabaseClient } from "../src/modules/sales/services/salesSupabase.js";
 
 const turn = () => new Promise((resolve) => setTimeout(resolve, 5));
 const deferred = () => { let resolve; const promise = new Promise(r => { resolve = r; }); return { promise, resolve }; };
@@ -94,6 +96,29 @@ for (const action of ["logout", "user", "company", "dispose"]) {
   await turn();assert.equal(loaded,0,"real SDK refresh must finish before loading offer");refresh.resolve();
   for(let i=0;i<50&&loaded===0;i++)await turn();
   assert.equal(loaded,1);assert.equal(requests,1,"SDK refresh is reused by preview auth reads");observer.dispose();await client.auth.stopAutoRefresh();
+}
+// A valid app session need not exist in persistent browser storage. Reusing the
+// registered client works; an independent document/client has no such session.
+{
+  const user={id:"00000000-0000-4000-8000-000000000002",email:"memory@example.invalid"};
+  const token=[Buffer.from('{"alg":"HS256"}').toString("base64url"),Buffer.from(JSON.stringify({sub:user.id,exp:Math.floor(Date.now()/1000)+3600})).toString("base64url"),"c3ludGhldGlj"].join(".");
+  const make=()=>createClient("https://memory-qa.example.invalid","synthetic-public-key",{
+    auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false},
+    global:{fetch:async url=>{assert(String(url).endsWith("/auth/v1/user"));return new Response(JSON.stringify(user),{status:200,headers:{"Content-Type":"application/json"}});}},
+  });
+  const app=make(),separate=make();
+  await app.auth.setSession({access_token:token,refresh_token:"synthetic-only"});
+  assert.equal((await app.auth.getSession()).data.session.user.id,user.id);
+  assert.equal((await separate.auth.getSession()).data.session,null,"old new-client boundary loses an in-memory app session");
+  registerAppSupabaseClient(app);
+  try {
+    assert.equal(createDefaultSalesSupabaseClient(),app,"inline preview shares the actual registered app client");
+    let loaded=false;
+    const observer=observeSalesDraftPreviewSession({client:createDefaultSalesSupabaseClient(),getSession:c=>c.auth.getSession(),resolveScope:async()=>({data:"company-a"}),loadContent:async()=>({}),onReset(){},onLoading(){},onReady(){loaded=true;},onError(message){throw Error(message);},foreground:null,visibility:null});
+    for(let i=0;i<50&&!loaded;i++)await turn();
+    assert(loaded,"in-memory app session can load preview without credential transfer");
+    observer.dispose();
+  } finally {registerAppSupabaseClient(null);await app.auth.stopAutoRefresh();await separate.auth.stopAutoRefresh();}
 }
 for (const title of ["Oppstart, tildekking og riving", "Oppstart,  tildekking og riving", "Gulv og membran", "Rørleggerarbeider", "Snekkerarbeider", "Flisarbeider", "Kompetanse og kvalitet", "Tidslinje", "Egen overskrift:"]) assert.equal(isOfferPdfSubheading(title), true, title);
 for (const body of ["", "Kunden sørger for tildekking og riving.", "Dette gjelder gulv og membran.", "Riving av eksisterende bad", "Oppstart, tildekking og riving er inkludert", "Gulv og membran er inkludert"]) assert.equal(isOfferPdfSubheading(body), false, body);

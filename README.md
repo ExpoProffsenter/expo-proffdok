@@ -1,3 +1,17 @@
+## Kundepreview med appens innlogging – Preview 26.10.2026
+
+Miljømål **BEGGE**. Baseline er publisert main `3ba4d228` (PR287, fullført i
+Production og demo). Ny rettelse bruker samme arbeidsbranch og faste Preview.
+Ny TEST OK kreves før denne rettelsen merges eller publiseres i Production.
+
+«Forhåndsvis som kunde» åpner den lagrede kladden i en dialog i samme dokument
+på PC og mobil. Visningen gjenbruker appens registrerte Supabase-klient og
+krever ikke at en ny fane kan lese lagret innlogging. Tilbake/Escape lukker bare
+forhåndsvisningen. Serverhenting, firma-/tilgangskontroll og skrivebeskyttet
+kundevisning beholdes. Ingen auth-kjerne, editor/autosave, publisering, aksept,
+e-post, database eller visning av allerede publiserte kundetilbud endres.
+Avgrensning, feildiagnose og faktiske tester: `docs/qa/SALES_INLINE_PREVIEW_20261026.md`.
+
 ## Oversiktsliste ved tilsyn – arbeid på samme branch 25.10.2026
 
 Miljømål **BEGGE**. Baseline er publisert main `fb486c58` (PR286).

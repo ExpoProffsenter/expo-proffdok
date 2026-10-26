@@ -67,8 +67,9 @@ assert(
 );
 
 assert(detail.includes("Forhåndsvis som kunde"), "Tilbudssaken mangler forhåndsvisningsknapp.");
-assert(detail.includes("/sales-preview.html"), "Forhåndsvisningsknappen må bruke isolert preview-side.");
-assert(detail.includes('"_blank"'), "Kundepreview skal åpnes i egen fane.");
+assert(detail.includes("SalesDraftPreviewDialog"), "Kladdpreview må bruke appens egen dialog og registrerte innlogging.");
+assert(detail.includes("setDraftPreviewRequestId(String(request.id))"), "Knappen må åpne akkurat den valgte saken.");
+assert(preview.includes("requestId || queryRequestRef"), "Dialogen må bruke eksplisitt saks-ID; separat side beholder URL-fallback.");
 assert(detail.includes("data-internal-product-number"), "Intern tilbudsvisning skal kunne vise varenummer.");
 assert(!customerCore.includes("supplierProductNumber"), "Kundens tilbud skal ikke vise eller bruke leverandørvarenummer i presentasjonen.");
 assert(!customerCore.includes("internalProductNumber"), "Kundens tilbud skal ikke vise internt varenummer i presentasjonen.");
