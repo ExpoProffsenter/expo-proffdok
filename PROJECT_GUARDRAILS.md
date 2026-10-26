@@ -27,7 +27,7 @@ Etter implementering skal branch alltid sammenlignes mot `main`. Hvis diffen inn
 
 **Ny funksjonalitet eller UX-endring er aldri ferdig bare fordi den nye funksjonen virker. Alle eksisterende brukerreiser som kan påvirkes av endringen skal verifiseres som fortsatt fungerende før `TEST OK` og merge. Grønn build alene er ikke tilstrekkelig.** Der det er praktisk mulig skal en feil som faktisk har nådd demo/produksjon få et permanent regresjonsvern i samme runde.
 
-Ingen merge uten:
+For app-/backendendringer: ingen merge uten:
 - grønn critical QA
 - relevant Preview-test
 - verifisering av både ny funksjon og berørte eksisterende brukerreiser
@@ -91,6 +91,17 @@ Dersom en test må endres fordi ønsket funksjonalitet faktisk endres, skal års
 
 Strukturelle kildekodesjekker er nyttige, men kritiske brukerreiser skal så langt mulig dekkes av scenario-/runtime-tester som faktisk simulerer hendelsesforløpet.
 
+### 5.1 Testomfang og dokumentasjon uten dobbeltarbeid
+
+- `PR Core Safety` kjører de eksisterende kontrollene i uavhengige parallelle pakker. Den faste sluttkontrollen krever at alle valgte pakker er grønne. Feil, avbrudd eller uventet hopp over en pakke blokkerer merge.
+- Bare kjente, rene dokumentasjonsstier kan få kortløpet. Regler, CI, app, database, konfigurasjon, kjørbare testdata og ukjente stier får full pakke. Modulbasert utelating av runtime-tester er ikke innført; eventuell senere endring krever separat scope og selvtester.
+- En produksjonspåvirkende endring trenger ett `docs/changes/<endring>.json` med endring, faktisk verifisering og begrunnede dokumentasjonsvalg. Hjelp oppdateres ved endret brukerflyt/knapp, arkitektur ved endret arkitektur/dataflyt, README ved relevant oppsett/bruk og modulens README ved endret modulkontrakt. Rene feilrettinger skal ikke tvinge frem fire parallelle releasebeskrivelser.
+- Siste status vedlikeholdes kort i `CURRENT_RELEASE_STATUS.md`; PR/releasegrunnlag er historikken. Eldre status kan arkiveres uten å miste bevis. Ikke tolk historiske «gjenstår»-tekster som aktuell status.
+- `TEST OK` kan bygge på dokumenterte utviklertester når brukeren ikke kan gjenskape feilen. Det er fortsatt brukerens uttrykkelige godkjenning av app-/backendpublisering; ikke et krav om at brukeren selv har opplevd feiltilstanden.
+- Grønn kontroll kan gjenbrukes for uendret kandidat med samme relevante grunnlag. Endret relevant kode/avhengighet/integrasjon krever ny vurdering. En grønn omkjøring etter feil må dokumentere feilen og hvorfor omkjøring var forsvarlig.
+- Rene dokumentasjons-, regel- og CI-endringer som brukeren har bestilt, uten endring i app/backend/miljøkonfigurasjon, trenger ikke egen innlogget Preview-prøve eller ny app-`TEST OK`. Passende CI og kontroll av reglenes faktiske virkning skal bestå. Dette er ikke unntak for appkode forkledd som dokumentasjon.
+
+
 ## 6. Demo-/produksjonsfreeze
 
 Før demo, kurs eller annen viktig produksjonsbruk prioriteres stabilitet fremfor nye funksjoner. Etter siste godkjente produksjonstest innføres midlertidig freeze: ingen nye funksjonsendringer før demoen er ferdig, med mindre det gjelder en kritisk feil.
@@ -115,9 +126,9 @@ Gamle muntlige løfter eller chatminne er ikke nok. Repoets guardrails og tester
 
 ## 8. Ansvarlige skal få fristvarsler
 
-Kenneths krav 11. oktober 2026: ansvarlig leder skal også få e-postvarsling på frister og åpne oppfølginger. Dette gjelder overalt i appen der en oppgave har utpekt ansvarlig.
+Funksjonskravet fra 11. oktober 2026 er at ansvarlige skal kunne følges opp på frister og åpne oppfølginger i alle relevante moduler. Gjeldende utsendingspolicy har forrang: **rutineutsending av e-post forblir deaktivert**. Denne regelen gir ikke tillatelse til å aktivere en transport, planlagt jobb eller reell testutsending. Bare uttrykkelig avtalte og aktiverte utsendinger kan brukes. Dokumenter øvrige hull uten å slå på e-post som sideeffekt.
 
-- Appvarsel og e-post skal gå til den faktisk registrerte ansvarlige. HR-leder får også oppfølging av medarbeiderens åpne tiltak.
+- Appvarsel og eventuell uttrykkelig aktivert e-post skal gå til den faktisk registrerte ansvarlige. HR-leder får også oppfølging av medarbeiderens åpne tiltak.
 - Planlagte, aktuelle og passerte frister skal ha en dokumentert varslingsregel. Innhold som mangler arbeidsfrist, skal ikke gis en oppdiktet lovfrist.
 - Ny ansvarlig og gjeldende tilgang kontrolleres ved utsending. Ferdige/avsluttede oppgaver, endrede frister og bortfalt tilgang stopper ventende varsler.
 - Særskilt HR-innhold skal leses i appen. E-post skal ikke avsløre navn, diagnose, fravær eller planinnhold.
