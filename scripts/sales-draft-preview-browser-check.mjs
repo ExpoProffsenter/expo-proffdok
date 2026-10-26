@@ -97,3 +97,6 @@ try {
   }
   console.log(`PASS draft preview: ${checks} actual React/Chromium and real jsPDF assertions at 390/1366px; late login, retry, same-user options, company change, logout, delayed restore, readonly decisions, no outbound API/email; matching scope heading styles and preserved body/total.`);
 } finally { await browser?.close(); fs.rmSync(temp,{recursive:true,force:true}); }
+
+// Exercise the button-to-preview boundary with the real registry and SDK too.
+await import("./sales-draft-inline-preview-browser-check.mjs");

@@ -1,4 +1,3 @@
-import {openMobileCustomerPreview} from "../services/salesMobilePreview.mjs";
 // Expo ProffDok – FASE 45B
 // Tynn wrapper rundt verifisert SalesDetailViewLegacy. Ordinær/våtroms-/legacy
 // Butikktilbud-logikk er uendret og delegert til legacy-komponenten.
@@ -30,6 +29,7 @@ import SalesContractActions from "./SalesContractActions.jsx";
 import SalesContractWizard from "./SalesContractWizard.jsx";
 import SalesDetailViewLegacy from "./SalesDetailViewLegacy.jsx";
 import StoreOfferOrderBasis from "./StoreOfferOrderBasis.jsx";
+import SalesDraftPreviewDialog from "./SalesDraftPreviewDialog.jsx";
 import {
   isSimpleOrderRequest,
   isStoreOfferRequest,
@@ -67,18 +67,6 @@ function hasCustomerPreviewContent(request = {}) {
           (String(line?.description || "").trim() || String(line?.amount ?? "").trim())
       )
   );
-}
-
-function openDraftCustomerPreview(requestId = "") {
-  if (typeof window === "undefined" || !requestId) return;
-  const url = new URL("/sales-preview.html", window.location.origin);
-  url.searchParams.set("offerPreview", String(requestId));
-  const supportCompanyId = getSalesSupportCompanyId();
-  if (supportCompanyId) url.searchParams.set("salesSupportCompany", supportCompanyId);
-  const currentParams = new URLSearchParams(window.location.search);
-  const vercelShare = currentParams.get("_vercel_share");
-  if (vercelShare) url.searchParams.set("_vercel_share", vercelShare);
-  if (!openMobileCustomerPreview(url.toString())) window.open(url.toString(), "_blank", "noopener,noreferrer");
 }
 
 function productNumber(item = {}) {
@@ -153,6 +141,7 @@ export default function SalesDetailView(props) {
   const rootRef = useRef(null);
   const request = props?.selectedRequest || {};
   const [activatedContractWizardOpen, setActivatedContractWizardOpen] = useState(false);
+  const [draftPreviewRequestId, setDraftPreviewRequestId] = useState("");
   const storeOffer = isStoreOfferRequest(request);
   const simpleOrderAccepted = Boolean(request?.status === "Akseptert" && isSimpleOrderRequest(request));
   const supportMode = Boolean(getSalesSupportCompanyId());
@@ -162,6 +151,7 @@ export default function SalesDetailView(props) {
 
   useEffect(() => {
     setActivatedContractWizardOpen(false);
+    setDraftPreviewRequestId("");
   }, [request?.id]);
 
   useEffect(() => {
@@ -258,12 +248,16 @@ export default function SalesDetailView(props) {
         >
           <strong style={{ display:"block", fontSize:16, color:"#10212b" }}>Kontroller kundens visning før utsending</strong>
           <p style={{ margin:"6px 0 12px", color:"#52616b", lineHeight:1.45 }}>Åpner den lagrede tilbudskladden i kundens layout. Ingen versjon publiseres og ingen e-post sendes.</p>
-          <button className="sales-secondary-button" type="button" onClick={() => openDraftCustomerPreview(request.id)}><Eye size={18}/>Forhåndsvis som kunde</button>
+          <button className="sales-secondary-button" type="button" onClick={() => setDraftPreviewRequestId(String(request.id))}><Eye size={18}/>Forhåndsvis som kunde</button>
         </aside>
       ) : null}
 
 
       <SalesDetailViewLegacy {...delegatedProps} />
+
+      {canPreviewDraft && draftPreviewRequestId === String(request.id) ? (
+        <SalesDraftPreviewDialog requestId={draftPreviewRequestId} onClose={() => setDraftPreviewRequestId("")} />
+      ) : null}
 
       {activatedContractFallback ? (
         <div
