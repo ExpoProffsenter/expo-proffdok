@@ -190,6 +190,7 @@ jobs:
     - uses: ./.github/actions/core-safety-setup
       with:
         browser: 'true'
+        pdf: 'true'
     - name: Verify active company administration and unified cards
       run: |-
         node scripts/company-admin-db-check.mjs
@@ -210,10 +211,6 @@ jobs:
         node scripts/smart-price-search-browser-check.mjs
         node scripts/price-search-mobile-check.mjs
         node scripts/progress-layout-react-check.mjs
-        if ! command -v pdftotext >/dev/null 2>&1; then
-          sudo apt-get update -qq
-          sudo apt-get install -y poppler-utils
-        fi
         node scripts/customer-option-quantity-pdf-check.mjs
         node scripts/sales-draft-preview-browser-check.mjs
         node scripts/project-progress-db-check.mjs
@@ -275,6 +272,7 @@ jobs:
     - uses: ./.github/actions/core-safety-setup
       with:
         browser: 'false'
+        pdf: 'true'
     - name: Verify shared Boligprosjekter structure and access boundaries (database/React)
       run: |-
         node scripts/bolig-core-boundary-check.mjs "$QA_BASE_REF"
