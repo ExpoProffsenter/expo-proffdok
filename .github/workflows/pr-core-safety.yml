@@ -2,8 +2,7 @@ name: PR Core Safety
 
 on:
   pull_request:
-    branches:
-      - main
+    branches: [main]
     types: [opened, synchronize, reopened, ready_for_review]
 
 permissions:
@@ -14,271 +13,376 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  core-safety:
-    name: Core safety + critical build
+  plan:
+    name: Scope and workflow contracts
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      full: ${{ steps.plan.outputs.full }}
+    steps:
+    - name: Checkout full history
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 24
+    - name: Verify permanent guards and documentation
+      env:
+        QA_BASE_REF: origin/${{ github.base_ref }}
+      run: |-
+        node scripts/critical-pr-scope-guard.mjs --self-test
+        node scripts/critical-rpc-error-codes-check.mjs --self-test
+        node scripts/critical-rpc-error-codes-check.mjs
+        node scripts/critical-pr-scope-guard.mjs "$QA_BASE_REF"
+        node scripts/critical-release-docs-check.mjs --self-test
+        node scripts/critical-release-docs-check.mjs "$QA_BASE_REF"
+        node scripts/core-safety-workflow-check.mjs
+        node scripts/qa-plan.mjs --self-test
+        node scripts/qa-gate.mjs --self-test
+    - name: Choose full suite or documentation checks
+      id: plan
+      env:
+        QA_BASE_REF: origin/${{ github.base_ref }}
+      run: node scripts/qa-plan.mjs "$QA_BASE_REF" >> "$GITHUB_OUTPUT"
+  build:
+    name: build
+    needs: plan
+    if: needs.plan.outputs.full == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
-
+    env:
+      QA_BASE_REF: origin/${{ github.base_ref }}
     steps:
-      - name: Checkout full history
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: npm
-
-      - name: Verify scope guard logic
-        run: node scripts/critical-pr-scope-guard.mjs --self-test
-
-      - name: Block retryable SQL codes for business conflicts
-        run: |
-          node scripts/critical-rpc-error-codes-check.mjs --self-test
-          node scripts/critical-rpc-error-codes-check.mjs
-
-      - name: Enforce PR scope isolation
-        run: node scripts/critical-pr-scope-guard.mjs "origin/${{ github.base_ref }}"
-
-      - name: Install dependencies
-        run: npm install --no-audit --no-fund
-
-      - name: Run full critical build
-        run: npm run build
-
-      - name: Verify KS/HMS and HR navigation recovery
-        run: |
-          npm install --prefix "$RUNNER_TEMP/module-navigation-qa" --no-audit --no-fund --ignore-scripts jsdom@26.1.0
-          export KSHMS_JSDOM_PATH="$RUNNER_TEMP/module-navigation-qa/node_modules/jsdom/lib/api.js"
-          node scripts/module-navigation-resume-react-check.mjs
-          node scripts/hr-register-react-check.mjs
-          node scripts/personal-page-react-check.mjs
-          node scripts/hr-followup-notice-react-check.mjs
-          node scripts/hr-templates-react-check.mjs
-          node scripts/critical-people-module-access-check.mjs
-          node scripts/people-module-access-react-check.mjs
-          node scripts/people-workspace-module-access-react-check.mjs
-          node scripts/kshms-sja-parent-react-check.mjs
-          node scripts/kshms-executions-react-check.mjs
-          node scripts/kshms-review-reminders-react-check.mjs
-          node scripts/kshms-publication-react-check.mjs
-          node scripts/kshms-source-updates-react-check.mjs
-          KSHMS_SOURCE_PROPOSAL=store_lifting node scripts/kshms-source-updates-react-check.mjs
-
-      - name: Verify HR practice and existing HR React flows
-        run: |
-          npm install --prefix "$RUNNER_TEMP/hr-practice-qa" --no-audit --no-fund --ignore-scripts jsdom@26.1.0 jspdf@2.5.1
-          export KSHMS_JSDOM_PATH="$RUNNER_TEMP/hr-practice-qa/node_modules/jsdom/lib/api.js"
-          export HR_PRACTICE_JSPDF_PATH="$RUNNER_TEMP/hr-practice-qa/node_modules/jspdf/dist/jspdf.node.min.js"
-          node scripts/hr-practice-check.mjs
-          node scripts/hr-practice-react-check.mjs
-          HR_PRACTICE_TARGET=production node scripts/hr-practice-react-check.mjs
-          node scripts/hr-register-react-check.mjs
-          node scripts/critical-hr-templates-check.mjs
-          node scripts/critical-hr-purge-check.mjs
-
-      - name: Verify personal HR conversations and deletion alerts
-        run: |
-          npm install --prefix "$RUNNER_TEMP/hr-conversations-qa" --no-audit --no-fund --ignore-scripts @electric-sql/pglite@0.5.8 jsdom@26.1.0 jspdf@2.5.1
-          export HR_PGLITE_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/@electric-sql/pglite/dist/index.js"
-          export KSHMS_JSDOM_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/jsdom/lib/api.js"
-          export HR_PRACTICE_JSPDF_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/jspdf/dist/jspdf.node.min.js"
-          node scripts/hr-conversations-db-check.mjs
-          node scripts/hr-conversations-runtime-check.mjs
-          node scripts/hr-conversations-react-check.mjs
-          KSHMS_JSPDF_PATH="$HR_PRACTICE_JSPDF_PATH" node scripts/kshms-handbook-pdf-react-check.mjs
-
-      - name: Verify HTTP409 migration and existing module conflicts
-        run: |
-          export HR_PGLITE_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/@electric-sql/pglite/dist/index.js"
-          node scripts/rpc-business-conflicts-db-check.mjs
-          node scripts/rpc-conflict-module-regression-check.mjs
-
-      - name: Verify private sick-leave followup and reminder transport
-        run: |
-          export HR_PGLITE_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/@electric-sql/pglite/dist/index.js"
-          export KSHMS_JSDOM_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/jsdom/lib/api.js"
-          export HR_PRACTICE_JSPDF_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/jspdf/dist/jspdf.node.min.js"
-          node scripts/hr-sick-leave-db-check.mjs
-          node scripts/hr-sick-leave-runtime-check.mjs
-          node scripts/hr-sick-leave-react-check.mjs
-
-      - name: Verify private time registration and existing payroll boundaries
-        run: |
-          export HR_PGLITE_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/@electric-sql/pglite/dist/index.js"
-          export KSHMS_JSDOM_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/jsdom/lib/api.js"
-          node scripts/kshms-progress-db-check.mjs
-          node scripts/stocktake-db-check.mjs
-          node scripts/smart-price-search-db-check.mjs
-          node scripts/time-registration-db-check.mjs
-          node scripts/time-registration-react-check.mjs
-          node scripts/time-notifications-check.mjs
-          node scripts/time-cleanup-check.mjs
-
-      - name: Verify company display-name identity and chart guidance
-        run: |
-          export HR_PGLITE_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/@electric-sql/pglite/dist/index.js"
-          export KSHMS_JSDOM_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/jsdom/lib/api.js"
-          node scripts/company-display-name-db-check.mjs
-          node scripts/company-display-name-react-check.mjs
-          node scripts/company-project-identity-check.mjs
-          node scripts/organization-react-check.mjs
-
-      - name: Verify shared organization chart access and persisted order
-        run: |
-          export ORG_PGLITE_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/@electric-sql/pglite/dist/index.js"
-          export ORG_JSPDF_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/jspdf/dist/jspdf.node.min.js"
-          node scripts/critical-organization-check.mjs
-          ORG_GROUP_QA=1 node scripts/organization-local-sql-check.mjs
-          node scripts/organization-pdf-check.mjs
-
-      - name: Verify supplier-order isolation and email retry contract
-        run: |
-          export KSHMS_PGLITE_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/@electric-sql/pglite/dist/index.js"
-          node scripts/supplier-order-db-check.mjs
-          node scripts/supplier-order-email-check.mjs
-
-      - name: Verify active company administration and unified cards
-        run: |
-          export HR_PGLITE_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/@electric-sql/pglite/dist/index.js"
-          node scripts/company-admin-db-check.mjs
-          node scripts/kshms-auto-assignment-db-check.mjs
-          node scripts/kshms-primary-ack-db-check.mjs
-          npm install --prefix "$RUNNER_TEMP/company-admin-browser-qa" --no-audit --no-fund --ignore-scripts playwright@1.58.2
-          node "$RUNNER_TEMP/company-admin-browser-qa/node_modules/playwright/cli.js" install --with-deps chromium
-          export PLAYWRIGHT_MODULE="$RUNNER_TEMP/company-admin-browser-qa/node_modules/playwright/index.mjs"
-          node scripts/company-admin-react-check.mjs
-          node scripts/systemadmin-company-selection-react-check.mjs
-          node scripts/hr-contact-reminder-react-check.mjs
-          node scripts/home-followups-react-check.mjs
-          node scripts/app-ux-review-browser-check.mjs
-          node scripts/compact-reference-browser-check.mjs
-          node scripts/personal-project-layout-browser-check.mjs
-          node scripts/sales-overview-ux-browser-check.mjs
-          node scripts/sales-editor-ux-browser-check.mjs
-          node scripts/customer-option-quantity-db-check.mjs
-          node scripts/offer-conflict-retry-db-check.mjs
-          node scripts/customer-option-quantity-browser-check.mjs
-          node scripts/smart-price-search-browser-check.mjs
-          node scripts/price-search-mobile-check.mjs
-          node scripts/progress-layout-react-check.mjs
-          export KSHMS_JSPDF_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/jspdf/dist/jspdf.es.min.js"
-          if ! command -v pdftotext >/dev/null 2>&1; then
-            sudo apt-get update -qq
-            sudo apt-get install -y poppler-utils
-          fi
-          node scripts/customer-option-quantity-pdf-check.mjs
-          node scripts/sales-draft-preview-browser-check.mjs
-          export KSHMS_JSPDF_NODE_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/jspdf/dist/jspdf.node.min.js"
-          node scripts/project-progress-db-check.mjs
-          node scripts/project-progress-react-check.mjs
-          node scripts/progress-focus-react-check.mjs
-          node scripts/page-scroll-memory-check.mjs
-          node scripts/kshms-progress-pdf-check.mjs
-          node scripts/kshms-progress-timeline-check.mjs
-          node scripts/kshms-progress-react-check.mjs
-
-      - name: Verify guided projects and mobile checklists
-        run: |
-          export KSHMS_JSDOM_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/jsdom/lib/api.js"
-          export PLAYWRIGHT_MODULE="$RUNNER_TEMP/company-admin-browser-qa/node_modules/playwright/index.mjs"
-          node scripts/project-step-save-check.mjs
-          node scripts/project-workspace-browser-check.mjs
-          node scripts/project-mobile-header-browser-check.mjs
-          node scripts/project-customer-fields-browser-check.mjs
-          node scripts/project-participants-workspace-react-check.mjs
-          node scripts/project-checklist-resume-react-check.mjs
-          node scripts/project-checklist-workspace-react-check.mjs
-          node scripts/project-menu-return-react-check.mjs
-
-      - name: Verify private support cases and two-way mail boundaries
-        run: |
-          export HR_PGLITE_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/@electric-sql/pglite/dist/index.js"
-          export PLAYWRIGHT_MODULE="$RUNNER_TEMP/company-admin-browser-qa/node_modules/playwright/index.mjs"
-          node scripts/support-db-check.mjs
-          node scripts/support-mail-check.mjs
-          node scripts/support-browser-check.mjs
-          node scripts/support-layout-browser-check.mjs
-
-      - name: Verify flexible checklist fields and hot-work template
-        run: |
-          export HR_PGLITE_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/@electric-sql/pglite/dist/index.js"
-          export PLAYWRIGHT_MODULE="$RUNNER_TEMP/company-admin-browser-qa/node_modules/playwright/index.mjs"
-          node scripts/flexible-checklist-fields-db-check.mjs
-          node scripts/flexible-checklist-fields-browser-check.mjs
-
-      - name: Verify shared Boligprosjekter structure and access boundaries
-        run: |
-          node scripts/bolig-core-boundary-check.mjs "origin/${{ github.base_ref }}"
-          export HR_PGLITE_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/@electric-sql/pglite/dist/index.js"
-          export KSHMS_JSDOM_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/jsdom/lib/api.js"
-          node scripts/bolig-release-origins-check.mjs
-          node scripts/bolig-order-email-check.mjs
-          node scripts/bolig-protocol-email-check.mjs
-          node scripts/bolig-progress-email-check.mjs
-          node scripts/bolig-progress-planning-check.mjs
-          export KSHMS_JSPDF_NODE_PATH="$RUNNER_TEMP/hr-conversations-qa/node_modules/jspdf/dist/jspdf.node.min.js"
-          node scripts/bolig-fdv-pdf-check.mjs
-          node scripts/bolig-documentation-export-check.mjs
-          node scripts/bolig-resident-notice-pdf-check.mjs
-          node scripts/bolig-site-roster-export-check.mjs
-          node scripts/bolig-foundation-db-check.mjs
-          node scripts/bolig-hr-access-db-check.mjs
-          BOLIG_RELEASE_BASELINE=docs/qa/evidence/bolig-release-baseline-20261025.json node scripts/bolig-hr-access-db-check.mjs
-          # Rehearse the frozen PR278 release against its recorded pre-release
-          # commit in its exact released tree. Later additive migrations must
-          # not be mixed into the 72-migration installation rehearsal.
-          # Current migrations are tested above by the full foundation suite.
-          bolig_release_base="$(node -p "require('./docs/qa/evidence/bolig-release-manifest-20261025.json').main")"
-          bolig_release_candidate="$(node -p "require('./docs/qa/evidence/bolig-production-execution-20261025.json').candidate.commit")"
-          bolig_release_dir="$RUNNER_TEMP/bolig-frozen-release"
-          git worktree add --detach "$bolig_release_dir" "$bolig_release_candidate"
-          (
-            cd "$bolig_release_dir"
-            node scripts/bolig-release-preflight-check.mjs "$bolig_release_base"
-            node scripts/bolig-release-migrations-check.mjs "$bolig_release_base"
-          )
-          git worktree remove "$bolig_release_dir"
-          node scripts/bolig-contract-files-check.mjs
-          node scripts/bolig-contract-review-check.mjs
-          node scripts/bolig-contract-index-check.mjs
-          node scripts/bolig-contract-finance-check.mjs
-          node scripts/bolig-foundation-react-check.mjs
-          node scripts/bolig-catalog-react-check.mjs
-          node scripts/bolig-overview-react-check.mjs
-          export PLAYWRIGHT_MODULE="$RUNNER_TEMP/company-admin-browser-qa/node_modules/playwright/index.mjs"
-          node scripts/bolig-shared-board-browser-check.mjs "origin/${{ github.base_ref }}"
-          node scripts/bolig-builder-browser-check.mjs
-          node scripts/bolig-overview-browser-check.mjs
-          node scripts/bolig-rooms-browser-check.mjs
-          node scripts/bolig-room-content-browser-check.mjs
-          node scripts/bolig-package-choices-browser-check.mjs
-          node scripts/bolig-catalog-navigation-browser-check.mjs
-          node scripts/bolig-images-browser-check.mjs
-          node scripts/bolig-visuals-browser-check.mjs
-          node scripts/bolig-attendance-browser-check.mjs
-          node scripts/bolig-site-roster-browser-check.mjs
-          node scripts/bolig-self-attendance-browser-check.mjs
-          node scripts/bolig-integration-browser-check.mjs
-          BOLIG_CONTRACT_REVIEW_QA=1 BOLIG_CONTRACT_INDEX_QA=1 BOLIG_CONTRACT_FINANCE_QA=1 node scripts/bolig-contract-browser-check.mjs
-          node scripts/bolig-sections-browser-check.mjs
-          node scripts/bolig-completion-browser-check.mjs
-          node scripts/bolig-handover-browser-check.mjs
-          node scripts/bolig-followup-browser-check.mjs
-          node scripts/bolig-commerce-browser-check.mjs
-          node scripts/bolig-portal-browser-check.mjs
-          node scripts/bolig-progress-browser-check.mjs
-          node scripts/bolig-progress-planning-browser-check.mjs
-          node scripts/bolig-coordination-browser-check.mjs
-          node scripts/bolig-amendment-export-check.mjs
-          node scripts/bolig-quality-browser-check.mjs
-          node scripts/bolig-customization-browser-check.mjs
-          node scripts/bolig-delivery-browser-check.mjs
-          node scripts/bolig-partner-email-check.mjs
-          node scripts/bolig-resident-email-check.mjs
-          node scripts/bolig-partner-files-check.mjs
-          node scripts/bolig-partner-browser-check.mjs
-          node scripts/bolig-partner-quality-browser-check.mjs
-          node scripts/bolig-preparation-browser-check.mjs
+    - name: Checkout full history
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - uses: ./.github/actions/core-safety-setup
+      with:
+        browser: 'false'
+    - name: Run full critical build
+      run: npm run build
+  hr-react:
+    name: hr-react
+    needs: plan
+    if: needs.plan.outputs.full == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      QA_BASE_REF: origin/${{ github.base_ref }}
+    steps:
+    - name: Checkout full history
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - uses: ./.github/actions/core-safety-setup
+      with:
+        browser: 'false'
+    - name: Verify KS/HMS and HR navigation recovery
+      run: |-
+        node scripts/module-navigation-resume-react-check.mjs
+        node scripts/hr-register-react-check.mjs
+        node scripts/personal-page-react-check.mjs
+        node scripts/hr-followup-notice-react-check.mjs
+        node scripts/hr-templates-react-check.mjs
+        node scripts/critical-people-module-access-check.mjs
+        node scripts/people-module-access-react-check.mjs
+        node scripts/people-workspace-module-access-react-check.mjs
+        node scripts/kshms-sja-parent-react-check.mjs
+        node scripts/kshms-executions-react-check.mjs
+        node scripts/kshms-review-reminders-react-check.mjs
+        node scripts/kshms-publication-react-check.mjs
+        node scripts/kshms-source-updates-react-check.mjs
+        KSHMS_SOURCE_PROPOSAL=store_lifting node scripts/kshms-source-updates-react-check.mjs
+    - name: Verify HR practice and existing HR React flows
+      run: |-
+        node scripts/hr-practice-check.mjs
+        node scripts/hr-practice-react-check.mjs
+        HR_PRACTICE_TARGET=production node scripts/hr-practice-react-check.mjs
+        node scripts/hr-register-react-check.mjs
+        node scripts/critical-hr-templates-check.mjs
+        node scripts/critical-hr-purge-check.mjs
+  hr-db:
+    name: hr-db
+    needs: plan
+    if: needs.plan.outputs.full == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      QA_BASE_REF: origin/${{ github.base_ref }}
+    steps:
+    - name: Checkout full history
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - uses: ./.github/actions/core-safety-setup
+      with:
+        browser: 'false'
+    - name: Verify personal HR conversations and deletion alerts
+      run: |-
+        node scripts/hr-conversations-db-check.mjs
+        node scripts/hr-conversations-runtime-check.mjs
+        node scripts/hr-conversations-react-check.mjs
+        KSHMS_JSPDF_PATH="$HR_PRACTICE_JSPDF_PATH" node scripts/kshms-handbook-pdf-react-check.mjs
+    - name: Verify HTTP409 migration and existing module conflicts
+      run: |-
+        node scripts/rpc-business-conflicts-db-check.mjs
+        node scripts/rpc-conflict-module-regression-check.mjs
+    - name: Verify private sick-leave followup and reminder transport
+      run: |-
+        node scripts/hr-sick-leave-db-check.mjs
+        node scripts/hr-sick-leave-runtime-check.mjs
+        node scripts/hr-sick-leave-react-check.mjs
+  company-db:
+    name: company-db
+    needs: plan
+    if: needs.plan.outputs.full == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      QA_BASE_REF: origin/${{ github.base_ref }}
+    steps:
+    - name: Checkout full history
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - uses: ./.github/actions/core-safety-setup
+      with:
+        browser: 'false'
+    - name: Verify private time registration and existing payroll boundaries
+      run: |-
+        node scripts/kshms-progress-db-check.mjs
+        node scripts/stocktake-db-check.mjs
+        node scripts/smart-price-search-db-check.mjs
+        node scripts/time-registration-db-check.mjs
+        node scripts/time-registration-react-check.mjs
+        node scripts/time-notifications-check.mjs
+        node scripts/time-cleanup-check.mjs
+    - name: Verify company display-name identity and chart guidance
+      run: |-
+        node scripts/company-display-name-db-check.mjs
+        node scripts/company-display-name-react-check.mjs
+        node scripts/company-project-identity-check.mjs
+        node scripts/organization-react-check.mjs
+    - name: Verify shared organization chart access and persisted order
+      run: |-
+        node scripts/critical-organization-check.mjs
+        ORG_GROUP_QA=1 node scripts/organization-local-sql-check.mjs
+        node scripts/organization-pdf-check.mjs
+    - name: Verify supplier-order isolation and email retry contract
+      run: |-
+        node scripts/supplier-order-db-check.mjs
+        node scripts/supplier-order-email-check.mjs
+  app-browser:
+    name: app-browser
+    needs: plan
+    if: needs.plan.outputs.full == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      QA_BASE_REF: origin/${{ github.base_ref }}
+    steps:
+    - name: Checkout full history
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - uses: ./.github/actions/core-safety-setup
+      with:
+        browser: 'true'
+    - name: Verify active company administration and unified cards
+      run: |-
+        node scripts/company-admin-db-check.mjs
+        node scripts/kshms-auto-assignment-db-check.mjs
+        node scripts/kshms-primary-ack-db-check.mjs
+        node scripts/company-admin-react-check.mjs
+        node scripts/systemadmin-company-selection-react-check.mjs
+        node scripts/hr-contact-reminder-react-check.mjs
+        node scripts/home-followups-react-check.mjs
+        node scripts/app-ux-review-browser-check.mjs
+        node scripts/compact-reference-browser-check.mjs
+        node scripts/personal-project-layout-browser-check.mjs
+        node scripts/sales-overview-ux-browser-check.mjs
+        node scripts/sales-editor-ux-browser-check.mjs
+        node scripts/customer-option-quantity-db-check.mjs
+        node scripts/offer-conflict-retry-db-check.mjs
+        node scripts/customer-option-quantity-browser-check.mjs
+        node scripts/smart-price-search-browser-check.mjs
+        node scripts/price-search-mobile-check.mjs
+        node scripts/progress-layout-react-check.mjs
+        if ! command -v pdftotext >/dev/null 2>&1; then
+          sudo apt-get update -qq
+          sudo apt-get install -y poppler-utils
+        fi
+        node scripts/customer-option-quantity-pdf-check.mjs
+        node scripts/sales-draft-preview-browser-check.mjs
+        node scripts/project-progress-db-check.mjs
+        node scripts/project-progress-react-check.mjs
+        node scripts/progress-focus-react-check.mjs
+        node scripts/page-scroll-memory-check.mjs
+        node scripts/kshms-progress-pdf-check.mjs
+        node scripts/kshms-progress-timeline-check.mjs
+        node scripts/kshms-progress-react-check.mjs
+  projects-support:
+    name: projects-support
+    needs: plan
+    if: needs.plan.outputs.full == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      QA_BASE_REF: origin/${{ github.base_ref }}
+    steps:
+    - name: Checkout full history
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - uses: ./.github/actions/core-safety-setup
+      with:
+        browser: 'true'
+    - name: Verify guided projects and mobile checklists
+      run: |-
+        node scripts/project-step-save-check.mjs
+        node scripts/project-workspace-browser-check.mjs
+        node scripts/project-mobile-header-browser-check.mjs
+        node scripts/project-customer-fields-browser-check.mjs
+        node scripts/project-participants-workspace-react-check.mjs
+        node scripts/project-checklist-resume-react-check.mjs
+        node scripts/project-checklist-workspace-react-check.mjs
+        node scripts/project-menu-return-react-check.mjs
+    - name: Verify private support cases and two-way mail boundaries
+      run: |-
+        node scripts/support-db-check.mjs
+        node scripts/support-mail-check.mjs
+        node scripts/support-browser-check.mjs
+        node scripts/support-layout-browser-check.mjs
+    - name: Verify flexible checklist fields and hot-work template
+      run: |-
+        node scripts/flexible-checklist-fields-db-check.mjs
+        node scripts/flexible-checklist-fields-browser-check.mjs
+  bolig-db:
+    name: bolig-db
+    needs: plan
+    if: needs.plan.outputs.full == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      QA_BASE_REF: origin/${{ github.base_ref }}
+    steps:
+    - name: Checkout full history
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - uses: ./.github/actions/core-safety-setup
+      with:
+        browser: 'false'
+    - name: Verify shared Boligprosjekter structure and access boundaries (database/React)
+      run: |-
+        node scripts/bolig-core-boundary-check.mjs "$QA_BASE_REF"
+        node scripts/bolig-release-origins-check.mjs
+        node scripts/bolig-order-email-check.mjs
+        node scripts/bolig-protocol-email-check.mjs
+        node scripts/bolig-progress-email-check.mjs
+        node scripts/bolig-progress-planning-check.mjs
+        node scripts/bolig-fdv-pdf-check.mjs
+        node scripts/bolig-documentation-export-check.mjs
+        node scripts/bolig-resident-notice-pdf-check.mjs
+        node scripts/bolig-site-roster-export-check.mjs
+        node scripts/bolig-foundation-db-check.mjs
+        node scripts/bolig-hr-access-db-check.mjs
+        BOLIG_RELEASE_BASELINE=docs/qa/evidence/bolig-release-baseline-20261025.json node scripts/bolig-hr-access-db-check.mjs
+        # Rehearse the frozen PR278 release against its recorded pre-release
+        # commit in its exact released tree. Later additive migrations must
+        # not be mixed into the 72-migration installation rehearsal.
+        # Current migrations are tested above by the full foundation suite.
+        bolig_release_base="$(node -p "require('./docs/qa/evidence/bolig-release-manifest-20261025.json').main")"
+        bolig_release_candidate="$(node -p "require('./docs/qa/evidence/bolig-production-execution-20261025.json').candidate.commit")"
+        bolig_release_dir="$RUNNER_TEMP/bolig-frozen-release"
+        git worktree add --detach "$bolig_release_dir" "$bolig_release_candidate"
+        (
+          cd "$bolig_release_dir"
+          node scripts/bolig-release-preflight-check.mjs "$bolig_release_base"
+          node scripts/bolig-release-migrations-check.mjs "$bolig_release_base"
+        )
+        git worktree remove "$bolig_release_dir"
+        node scripts/bolig-contract-files-check.mjs
+        node scripts/bolig-contract-review-check.mjs
+        node scripts/bolig-contract-index-check.mjs
+        node scripts/bolig-contract-finance-check.mjs
+        node scripts/bolig-foundation-react-check.mjs
+        node scripts/bolig-catalog-react-check.mjs
+        node scripts/bolig-overview-react-check.mjs
+  bolig-browser:
+    name: bolig-browser
+    needs: plan
+    if: needs.plan.outputs.full == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      QA_BASE_REF: origin/${{ github.base_ref }}
+    steps:
+    - name: Checkout full history
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - uses: ./.github/actions/core-safety-setup
+      with:
+        browser: 'true'
+    - name: Verify shared Boligprosjekter structure and access boundaries (browser)
+      run: |-
+        node scripts/bolig-shared-board-browser-check.mjs "$QA_BASE_REF"
+        node scripts/bolig-builder-browser-check.mjs
+        node scripts/bolig-overview-browser-check.mjs
+        node scripts/bolig-rooms-browser-check.mjs
+        node scripts/bolig-room-content-browser-check.mjs
+        node scripts/bolig-package-choices-browser-check.mjs
+        node scripts/bolig-catalog-navigation-browser-check.mjs
+        node scripts/bolig-images-browser-check.mjs
+        node scripts/bolig-visuals-browser-check.mjs
+        node scripts/bolig-attendance-browser-check.mjs
+        node scripts/bolig-site-roster-browser-check.mjs
+        node scripts/bolig-self-attendance-browser-check.mjs
+        node scripts/bolig-integration-browser-check.mjs
+        BOLIG_CONTRACT_REVIEW_QA=1 BOLIG_CONTRACT_INDEX_QA=1 BOLIG_CONTRACT_FINANCE_QA=1 node scripts/bolig-contract-browser-check.mjs
+        node scripts/bolig-sections-browser-check.mjs
+        node scripts/bolig-completion-browser-check.mjs
+        node scripts/bolig-handover-browser-check.mjs
+        node scripts/bolig-followup-browser-check.mjs
+        node scripts/bolig-commerce-browser-check.mjs
+        node scripts/bolig-portal-browser-check.mjs
+        node scripts/bolig-progress-browser-check.mjs
+        node scripts/bolig-progress-planning-browser-check.mjs
+        node scripts/bolig-coordination-browser-check.mjs
+        node scripts/bolig-amendment-export-check.mjs
+        node scripts/bolig-quality-browser-check.mjs
+        node scripts/bolig-customization-browser-check.mjs
+        node scripts/bolig-delivery-browser-check.mjs
+        node scripts/bolig-partner-email-check.mjs
+        node scripts/bolig-resident-email-check.mjs
+        node scripts/bolig-partner-files-check.mjs
+        node scripts/bolig-partner-browser-check.mjs
+        node scripts/bolig-partner-quality-browser-check.mjs
+        node scripts/bolig-preparation-browser-check.mjs
+  core-safety:
+    name: Core safety + critical build
+    needs:
+    - plan
+    - build
+    - hr-react
+    - hr-db
+    - company-db
+    - app-browser
+    - projects-support
+    - bolig-db
+    - bolig-browser
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 24
+    - name: Require every selected pack to pass
+      env:
+        RESULTS: ${{ toJSON(needs) }}
+      run: node scripts/qa-gate.mjs

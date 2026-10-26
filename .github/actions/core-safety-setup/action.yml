@@ -1,0 +1,46 @@
+name: Pinned critical QA setup
+description: Install repository and shared QA dependencies; reuse the pinned browser download.
+inputs:
+  browser:
+    description: Whether this pack uses Chromium
+    default: 'false'
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 24
+        cache: npm
+        cache-dependency-path: |
+          package-lock.json
+          scripts/qa/package-lock.json
+    - name: Install locked dependencies
+      shell: bash
+      run: |
+        npm ci --no-audit --no-fund
+        npm ci --prefix scripts/qa --no-audit --no-fund --ignore-scripts
+    - name: Shared isolated QA paths
+      shell: bash
+      run: |
+        qa="$GITHUB_WORKSPACE/scripts/qa/node_modules"
+        {
+          echo "HR_PGLITE_PATH=$qa/@electric-sql/pglite/dist/index.js"
+          echo "ORG_PGLITE_PATH=$qa/@electric-sql/pglite/dist/index.js"
+          echo "KSHMS_PGLITE_PATH=$qa/@electric-sql/pglite/dist/index.js"
+          echo "KSHMS_JSDOM_PATH=$qa/jsdom/lib/api.js"
+          echo "HR_PRACTICE_JSPDF_PATH=$qa/jspdf/dist/jspdf.node.min.js"
+          echo "ORG_JSPDF_PATH=$qa/jspdf/dist/jspdf.node.min.js"
+          echo "KSHMS_JSPDF_PATH=$qa/jspdf/dist/jspdf.es.min.js"
+          echo "KSHMS_JSPDF_NODE_PATH=$qa/jspdf/dist/jspdf.node.min.js"
+          echo "PLAYWRIGHT_MODULE=$qa/playwright/index.mjs"
+        } >> "$GITHUB_ENV"
+    - name: Reuse pinned Chromium download
+      if: inputs.browser == 'true'
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/ms-playwright
+        key: critical-chromium-${{ runner.os }}-${{ hashFiles('scripts/qa/package-lock.json') }}
+    - name: Install browser and system dependencies
+      if: inputs.browser == 'true'
+      shell: bash
+      run: node scripts/qa/node_modules/playwright/cli.js install --with-deps chromium
