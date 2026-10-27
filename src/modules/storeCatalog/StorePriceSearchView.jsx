@@ -13,6 +13,7 @@ import { WORK_PROFILE_EVENT, getMyWorkProfileState, readCachedWorkProfileState }
 import { deleteMobilePicklist, listMobilePicklists, saveMobilePicklist } from "./mobilePicklistClient.js";
 import CordelPicklistExport from "../cordel/CordelPicklistExport.jsx";
 import SupplierOrder from "./SupplierOrder.jsx";
+import ProCatalogOrderShortcut from "./ProCatalogOrderShortcut.jsx";
 import {
   MAX_PICKLIST_ITEMS, MAX_SAVED_PICKLISTS, deleteLegacyPicklist, normalizePickQuantity,
   picklistReferences, readLegacyPicklist, samePicklistContents, toPicklistReference,
@@ -1006,6 +1007,7 @@ export default function StorePriceSearchView({ onClose }) {
         ) : null}
         <small>Expo ProffDok</small>
         <h2>Prissøk</h2>
+        <ProCatalogOrderShortcut/>
         <p>{isMobile
           ? "Skann eller søk varer, angi antall og lagre en midlertidig plukkliste til senere registrering i Cordel."
           : "Søk varer og priser, angi antall og lagre en plukkliste til senere manuell registrering i Cordel."}</p>

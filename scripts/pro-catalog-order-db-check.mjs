@@ -1,0 +1,55 @@
+import assert from 'node:assert/strict';import fs from 'node:fs/promises';
+const {PGlite}=await import(process.env.HR_PGLITE_PATH||'./qa/node_modules/@electric-sql/pglite/dist/index.js');
+const db=new PGlite();let checks=0;const id=n=>`87000000-0000-4000-8000-${String(n).padStart(12,'0')}`,q=v=>v==null?'null':"'"+String(typeof v==='object'?JSON.stringify(v):v).replaceAll("'","''")+"'";
+const [user,other,company,foreign,product,deniedProduct]=[1,2,3,4,5,6].map(id),eq=(a,b,m)=>{assert.deepEqual(a,b,m);checks++;};
+const rpc=async(n,a=[])=>(await db.query(`select public.${n}(${a.map(q).join(',')}) v`)).rows[0].v;
+const actor=async(u=user)=>db.exec(`reset role;select set_config('request.jwt.claim.sub',${q(u)},false);set role authenticated`);
+const rejects=async(fn,code)=>{await assert.rejects(fn,e=>e.code===code);checks++;};
+try{
+ await db.exec(`create role anon;create role authenticated;create role service_role;create schema auth;
+ create function auth.uid() returns uuid language sql as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
+ create table auth.users(id uuid primary key,email text);create table public.profiles(id uuid primary key,approved boolean,deactivated boolean,modules text[]);
+ create table public.sales_company_scopes(id uuid primary key);create table public.sales_company_memberships(company_id uuid,user_id uuid);create table public.user_active_company_scope(user_id uuid,company_id uuid);
+ create function public.current_active_company_scope_id() returns uuid language sql as $$select company_id from public.user_active_company_scope where user_id=auth.uid()$$;
+ create function public.current_user_has_module_access(text) returns boolean language sql as $$select $1=any(modules) and approved and not deactivated from public.profiles where id=auth.uid()$$;
+ create table public.store_catalog_company_supplier_access(company_id uuid,supplier_key text,is_active boolean);
+ create function public.company_has_pro_store_catalog_access(uuid) returns boolean language sql as $$select exists(select 1 from public.store_catalog_company_supplier_access where company_id=$1 and is_active)$$;
+ create function public.work_profile_company_profile(uuid) returns jsonb language sql as $$select jsonb_build_object('companyName','QA Firma','orgNumber','000000001')$$;
+ create table public.internal_store_catalog_items(id uuid primary key,supplier_name text,supplier_key text,supplier_product_number text,description text,is_active boolean,purchase_net_ex_vat numeric);
+ grant usage on schema public,auth to authenticated;grant execute on function auth.uid() to authenticated;
+ insert into auth.users values(${q(user)},'customer@example.invalid'),(${q(other)},'other@example.invalid');
+ insert into public.profiles values(${q(user)},true,false,array['sales','store_offers']),(${q(other)},true,false,array['sales','store_offers']);
+ insert into public.sales_company_scopes values(${q(company)}),(${q(foreign)});
+ insert into public.sales_company_memberships values(${q(company)},${q(user)}),(${q(foreign)},${q(other)});
+ insert into public.user_active_company_scope values(${q(user)},${q(company)}),(${q(other)},${q(foreign)});
+ insert into public.store_catalog_company_supplier_access values(${q(company)},'allowed',true),(${q(foreign)},'foreign',true);
+ insert into public.internal_store_catalog_items values(${q(product)},'QA Rør','allowed','0012','QA Ø-vare',true,987654),(${q(deniedProduct)},'Other','foreign','0012','Other vare',true,987654);`);
+ await db.exec(await fs.readFile('supabase/migrations/20260923151500_fase45b_pro_catalog_module_gate.sql','utf8'));
+ const file=(await fs.readdir('supabase/migrations')).find(x=>x.endsWith('_pro_catalog_goods_orders.sql'));await db.exec(await fs.readFile('supabase/migrations/'+file,'utf8'));
+ await actor();let c=await rpc('pro_catalog_order_context');eq(c.company_id,company);eq(c.replyTo,'customer@example.invalid');eq(c.contacts,[]);
+ c=await rpc('pro_catalog_order_contact',[company,'save',{name:'Expo QA',email:' QA@example.invalid '}]);eq(c.contacts.length,1);eq(c.contacts[0].email,'qa@example.invalid');const contactId=c.contacts[0].id;
+ const order={to:'QA@example.invalid',recipient_name:'Expo QA',address:'QA gate 1',reference:'0007',requested_date:'2026-12-11',requested_time:'10:30',note:'Ring først',items:[{id:product,quantity:'2,5',purchase_net_ex_vat:123}]};
+ const prepared=await rpc('pro_catalog_order_prepare',[company,id(10),order]);eq(prepared.snapshot.goods[0].sku,'0012');eq(prepared.snapshot.goods[0].quantity,2.5);eq(prepared.snapshot.requested_time,'10:30');eq(prepared.snapshot.to,'qa@example.invalid');eq(JSON.stringify(prepared).includes('987654'),false,'internal price never exposed');eq(JSON.stringify(prepared).includes('purchase_net'),false);eq(prepared.snapshot.replyTo,'customer@example.invalid');eq(prepared.sent,false);
+ eq((await rpc('pro_catalog_order_prepare',[company,id(10),order])).snapshot,prepared.snapshot,'same retry exact snapshot');
+ await rejects(()=>rpc('pro_catalog_order_prepare',[company,id(10),{...order,to:'changed@example.invalid'}]),'22023');
+ await rejects(()=>rpc('pro_catalog_order_prepare',[foreign,id(11),order]),'42501');
+ await rejects(()=>rpc('pro_catalog_order_prepare',[company,id(12),{...order,items:[{id:deniedProduct,quantity:'1'}]}]),'42501');
+ for(const quantity of ['0','-1','100000','1.0001','NaN','1e3'])await rejects(()=>rpc('pro_catalog_order_prepare',[company,id(13),{...order,items:[{id:product,quantity}]}]),'22023');
+ await rejects(()=>rpc('pro_catalog_order_prepare',[company,id(13),{...order,items:[...order.items,...order.items]}]),'22023');
+ for(const to of ['bad','a@example.invalid,b@example.invalid','a@example.invalid\r\nBcc:b@example.invalid'])await rejects(()=>rpc('pro_catalog_order_prepare',[company,id(13),{...order,to}]),'22023');
+ await rejects(()=>rpc('pro_catalog_order_prepare',[company,id(13),{...order,requested_time:'25:00'}]),'22023');
+ await rejects(()=>rpc('pro_catalog_order_prepare',[company,id(13),{...order,requested_date:'',requested_time:'10:30'}]),'22023');
+ eq((await rpc('pro_catalog_order_prepare',[company,id(14),{...order,requested_date:'',requested_time:''}])).snapshot.requested_date,'','delivery by agreement');
+ await rejects(()=>db.query('select * from pro_catalog_order_private.orders'),'42501');await rejects(()=>rpc('pro_catalog_order_complete',[id(10),'forged']),'42501');
+ await actor(other);eq((await rpc('pro_catalog_order_context')).contacts,[]);await rejects(()=>rpc('pro_catalog_order_contact',[company,'delete',{id:contactId}]),'42501');await rejects(()=>rpc('pro_catalog_order_prepare',[foreign,id(10),order]),'22023');await actor();
+ for(const update of ["update public.profiles set approved=false where id="+q(user),"update public.profiles set deactivated=true where id="+q(user),"update public.profiles set modules=array['sales'] where id="+q(user),"update public.store_catalog_company_supplier_access set is_active=false where company_id="+q(company)]){
+  await db.exec('reset role;'+update);await actor();await rejects(()=>rpc('pro_catalog_order_context'),'42501');await rejects(()=>rpc('pro_catalog_order_begin',[company,id(10),order]),'42501');
+  await db.exec(`reset role;update public.profiles set approved=true,deactivated=false,modules=array['sales','store_offers'];update public.store_catalog_company_supplier_access set is_active=true;`);await actor();
+ }
+ await db.exec('reset role;update public.internal_store_catalog_items set is_active=false where id='+q(product));await actor();await rejects(()=>rpc('pro_catalog_order_begin',[company,id(10),order]),'42501');await db.exec('reset role;update public.internal_store_catalog_items set is_active=true;');await actor();
+ await rpc('pro_catalog_order_begin',[company,id(10),order]);await db.exec('reset role;set role service_role;');await rpc('pro_catalog_order_complete',[id(10),'provider-1']);await actor();eq((await rpc('pro_catalog_order_prepare',[company,id(10),order])).sent,true);
+ await rpc('pro_catalog_order_prepare',[company,id(15),order]);await db.exec(`reset role;update pro_catalog_order_private.orders set created_at=now()-interval '24 hours' where id=${q(id(15))}`);await actor();await rejects(()=>rpc('pro_catalog_order_begin',[company,id(15),order]),'PT409');
+ eq((await rpc('pro_catalog_order_contact',[company,'delete',{id:contactId}])).contacts,[]);
+ await db.exec('reset role;set role anon;');await rejects(()=>rpc('pro_catalog_order_context'),'42501');
+ console.log(`Pro-catalog order DB: ${checks} assertions PASS; actual additive migration, actual catalog gate, isolated synthetic data, no email`);
+}finally{await db.close();}
