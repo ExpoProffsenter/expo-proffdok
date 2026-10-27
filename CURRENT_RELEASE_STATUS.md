@@ -1,13 +1,21 @@
-# Gjeldende release – 26.10.2026
+# Gjeldende leveranse – 27.10.2026
 
-## Publisert app
+## Varebestilling
 
-- Production: `ba248996e8abe29c26fc3a0bc812605d6151a298` – kundepreview deler appens innlogging i samme dokument.
-- Demo: `814ddc036867b92c8cf27ef2e8fc79e6fc5e68a1` – kontrollert main → demo, overlay bevart, preflight 19/19 + 5/5 bestått.
-- Kenneths TEST OK, CI, faktiske deployment-/artefaktkontroller og rollback: [PR288](https://github.com/ExpoProffsenter/expo-proffdok/pull/288). Ingen ny database- eller e-postendring.
+Varebestilling er publisert for proffkunder med eksisterende katalogtilgang og interne Ringside/Expo-brukere med Prissøk. Interne brukere finner Prissøk → Varebestilling → Firmaprofil, samt Åpne varebestilling i Prissøk. Proffkunder beholder sitt avgrensede vareutvalg.
 
-## Arbeidsprosess
+Funksjonsrelease: main `4a33cef5d791a7bc804e7acfdad4d59dae772601`, fra godkjent kandidat `7ce1a3f21a53617c9e977e32006f6191387894e3`. Full Core Safety #729 / 40580430716 er grønn. E-postlayouten følger etablert mal; Cordel ASCII og Excel er prisfrie. Rutine-e-post er fortsatt deaktivert.
 
-Regel-/CI-forenklingen beskrives i `docs/DEVELOPMENT_WORKFLOW.md`. [PR289](https://github.com/ExpoProffsenter/expo-proffdok/pull/289) viser faktisk kandidat, CI- og mergestatus. Endringen gjelder arbeidsprosess; den endrer ikke den publiserte appfunksjonen.
+Kenneth har gitt TEST OK og bedt om reell e-postprøve i Production. Faktisk mottak hos testmottaker gjenstår til det er bekreftet. Det er ikke sendt prøve-e-post fra Sandbox eller via utviklertestene.
 
-Historisk status er bevart i [arkivet](docs/archive/RELEASE_STATUS_BEFORE_PROCESS_20261026.md). Gamle ventende punkter der beskriver tidligere tidspunkt og overstyrer ikke statusen ovenfor eller senere godkjente PR-er.
+- [Produksjonslogg og tilbakeføring](docs/qa/PRO_CATALOG_ORDERS_RELEASE_20261027.md)
+- [PR290 – siste faktiske deployment-, demo- og teststatus](https://github.com/ExpoProffsenter/expo-proffdok/pull/290)
+- [Arkitektur og tilgang](docs/architecture/PRO_CATALOG_ORDERS.md)
+
+Senere dokumentasjonscommits endrer ikke funksjonsreleasen over. Aktuell main/demo-SHA og faktisk publisert versjon føres i PR290.
+
+## Arbeidsprosess og historikk
+
+Følg `docs/DEVELOPMENT_WORKFLOW.md`: én varig endringsbeskrivelse, relevante dokumenter og kontrollert main → demo med bevart overlay og preflight. PR289 dokumenterer prosessforenklingen, PR288 tidligere kundepreview-rettelse.
+
+Eldre releasebevis finnes i Git-historikken og [arkivet](docs/archive/RELEASE_STATUS_BEFORE_PROCESS_20261026.md). Historiske ventende punkter overstyrer ikke senere verifiserte PR-er.
