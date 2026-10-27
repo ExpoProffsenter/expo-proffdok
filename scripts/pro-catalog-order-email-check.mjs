@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';import fs from 'node:fs';
 import {handleProCatalogOrder,proCatalogOrderMail} from '../supabase/functions/_shared/pro-catalog-order-email.mjs';
 import {proCatalogOrderAttachments} from '../supabase/functions/_shared/pro-catalog-order-files.mjs';
+import {supplierOrderMail} from '../supabase/functions/_shared/supplier-order-email.mjs';
 import {createCordelPicklist} from '../src/modules/cordel/picklistCordel.mjs';
 let checks=0;const eq=(a,b,m)=>{assert.deepEqual(a,b,m);checks++;};
-const order={order_number:'V-QA-001',company:{companyName:'QA Ø & <Firma>',orgNumber:'000000001'},replyTo:'buyer@example.invalid',to:'orders@example.invalid',recipient_name:'Expo QA',reference:'0007',address:'QA gate 1',requested_date:'2026-12-11',requested_time:'10:30',note:'=not a formula <script>',goods:[{id:'p1',sku:'0012',supplier:'QA Rør',name:'Vare med ø og æ',quantity:2.5},{id:'p2',sku:'0012',supplier:'Annen',name:'Annen vare',quantity:1}]};
+const order={order_number:'V-QA-001',company:{companyName:'QA Ø & <Firma>',orgNumber:'000000001',logoUrl:'/expo-logo.png'},replyTo:'buyer@example.invalid',to:'orders@example.invalid',recipient_name:'Expo QA',reference:'0007',address:'QA gate 1',requested_date:'2026-12-11',requested_time:'10:30',note:'=not a formula <script>',goods:[{id:'p1',sku:'0012',supplier:'QA Rør',name:'Vare med ø og æ',quantity:2.5},{id:'p2',sku:'0012',supplier:'Annen',name:'Annen vare',quantity:1}]};
 const files=proCatalogOrderAttachments(order);eq(files.length,2);eq(files[0].bytes,createCordelPicklist(order.goods.map(g=>({supplier_product_number:g.sku,supplier_name:g.supplier,quantity:g.quantity}))),'exact existing Cordel encoding/delimiters/decimal/CRLF');
 // Independently read the stored ZIP entries and inspect the actual Excel cells.
 const zip=files[1].bytes,view=new DataView(zip.buffer,zip.byteOffset,zip.byteLength);let offset=0,sheet='';
@@ -20,6 +21,13 @@ assert(sheet.includes('11.12.2026 kl. 10:30 (norsk tid)'),'Excel delivery date a
 assert(sheet.includes('=not a formula &lt;script&gt;')&&!sheet.includes('<f>'),'Excel text never becomes formula');checks++;
 fs.writeFileSync('/tmp/pro-catalog-order-control.xlsx',files[1].bytes);fs.writeFileSync('/tmp/pro-catalog-order-cordel.txt',files[0].bytes);
 const mail=proCatalogOrderMail(order);eq(mail.to,[order.to]);eq(mail.reply_to,order.replyTo);assert(mail.html.includes('Husk å sende ordrebekreftelse'));checks++;assert(mail.html.includes('11.12.2026 kl. 10:30'));checks++;assert(!mail.html.includes('<script>'));checks++;assert(mail.html.includes('&lt;script&gt;'));checks++;assert(mail.text.includes('Send ordrebekreftelse med bekreftet leveringstidspunkt'));checks++;
+// Exact established mail frame, header and signature, while order content stays price-free.
+const established=supplierOrderMail({...order,supplierName:'QA',deliveryAddress:order.address,items:[],totalNet:0},order.order_number);
+eq(mail.html.slice(0,mail.html.indexOf('<h1')),established.html.slice(0,established.html.indexOf('<h1')),'same established outer frame and company header');
+eq(mail.html.slice(mail.html.indexOf('<hr ')),established.html.slice(established.html.indexOf('<hr ')),'same established signature and footer');
+eq(mail.html.includes('width="150"'),true,'established company-logo sizing');
+assert(!/Netto eks|Linjesum|Sum varer|purchase_net/.test(mail.html));checks++;
+fs.writeFileSync('/tmp/pro-catalog-order-mail.html',mail.html);fs.writeFileSync('/tmp/pro-catalog-order-established-mail.html',established.html);
 let calls=[],providerBodies=[],complete=0;let rejectAuth=false,revoke=false,already=false,providerFail=false,ackFail=false,configured=true;
 const deps={env:n=>configured?(n==='CHAT_FROM_EMAIL'?'Expo <qa@example.invalid>':'test-key'):'',userClient:()=>({auth:{getUser:async()=>({data:rejectAuth?null:{user:{id:'u'}},error:null})},rpc:async(n,a)=>{calls.push(n);return revoke&&n==='pro_catalog_order_begin'?{error:{code:'42501',message:'Revoked'}}:{data:{id:'frozen-id',snapshot:order,sent:already}};}}),adminClient:()=>({rpc:async()=>{complete++;return {error:ackFail?{message:'lost ack'}:null};}}),fetch:async(url,args)=>{providerBodies.push(JSON.parse(args.body));eq(args.headers['Idempotency-Key'],'pro-catalog-order/frozen-id');return new Response(JSON.stringify(providerFail?{}:{id:'provider-id'}),{status:providerFail?503:200});}};
 const req=(body={companyId:'87000000-0000-4000-8000-000000000003',requestId:'87000000-0000-4000-8000-000000000010',order:{items:[]}},origin='https://expo-proffdok.app')=>new Request('https://qa.invalid/send',{method:'POST',headers:{Origin:origin,Authorization:'Bearer synthetic'},body:JSON.stringify(body)});

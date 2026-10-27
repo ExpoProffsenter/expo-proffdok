@@ -48,3 +48,9 @@ Verifisert før ny Preview-publisering:
 - Lokal Chromium krevde CPU-rendering/systemfontkonfigurasjon i denne kjøreflaten; testassertionene er uendret. GitHub kjører sin låste Chromium-konfigurasjon.
 
 Endelig GitHub-CI og faktisk Preview-deployment føres i PR #290. Ny TEST OK kreves før Production.
+
+## Kenneths TEST OK og e-postprofil
+
+Kenneth ga TEST OK for produksjonssetting etter at også interne brukere ble tatt med, med krav om at e-postlayout følger etablerte appmailer. Han avklarte at faktisk e-post skal prøves i Production. Den nye mailen er derfor tilpasset eksisterende leverandørbestillingsmal: identisk ytre tabellramme, EXPO/ProffDok-toppfelt, firmalogo, størrelser, farger, bekreftelsesboks og signatur/bunntekst. Egen regresjon sammenligner faktisk HTML-prefiks og hele bunnteksten byteeksakt mot eksisterende mal. Prisfri varetabell, ordrebekreftelsespåminnelse og begge vedlegg beholdes. 39 mail-/vedleggstester PASS. Faktisk mail er rendret ved 390/900 px og kontrollert visuelt. Ingen påstand om Outlook-rendering eller faktisk mottak før reell Production-prøve. Ingen e-post er sendt fra Sandbox.
+
+Frontendtreet er identisk med forrige grønt testede kandidat 344b83d9, som bestod full Core Safety #728 / 40579513132. Siste kandidat endrer bare ny e-postmal, tilhørende test og dette QA-grunnlaget; ny full CI må være grønn før merge.
