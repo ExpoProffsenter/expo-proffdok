@@ -12,7 +12,11 @@ Kenneth har gitt TEST OK og deretter uttrykkelig bestilt én testmail til seg se
 - [PR290 – siste faktiske deployment-, demo- og teststatus](https://github.com/ExpoProffsenter/expo-proffdok/pull/290)
 - [Arkitektur og tilgang](docs/architecture/PRO_CATALOG_ORDERS.md)
 
-Senere dokumentasjonscommits endrer ikke funksjonsreleasen over. Aktuell main/demo-SHA og faktisk publisert versjon føres i PR290.
+## Varebestilling: antall og Enter – publisert
+
+Kenneths nye TEST OK gjelder kandidat `bbe67f1a`, publisert som main `a31c0673ba917a677954dc94bfd5ead0dbd0471f` etter grønn Core Safety #731 / 40585298385 og faktisk innlogget Preview-prøve. Pluss/minus, piltaster, Enter til neste varesøk og fokus i antall er publisert. Vercel `dpl_FVLJFLV6UJtwQ6NZ8wW9F3dbqFgZ` READY på eksakt SHA; faktisk Production-HTML/hovedapp/ordrekomponent er identiske med lokal Production-build, og innlogget Production viser nye kontroller og bevart låst sendekvittering. Ingen backend, database eller ny e-postsending.
+
+[PR292](https://github.com/ExpoProffsenter/expo-proffdok/pull/292) er varig logg for godkjenning, faktisk main/demo-SHA, deployment, preflight og tilbakeføring. Rene dokumentasjonscommits endrer ikke funksjonsreleasen. Se [QA og release](docs/qa/PRO_CATALOG_ORDER_ENTRY_20261027.md).
 
 ## Arbeidsprosess og historikk
 
