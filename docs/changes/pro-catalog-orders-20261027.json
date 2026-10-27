@@ -1,12 +1,24 @@
 {
   "version": 1,
   "title": "Varebestilling fra proffkatalog med Cordel ASCII og Excel",
-  "change": "Alle med eksisterende proffkatalogtilgang får Varesøk og Varebestilling, firmaets lagrede mottakere, valgfritt leveringsønske og manuell e-post med to vedlegg. Serveren velger varer fra tillatt katalog og beskytter firmaskille, prisinnsyn og sendeforsøk.",
+  "change": "Alle med eksisterende proffkatalogtilgang får Varesøk og Varebestilling, firmaets lagrede mottakere, valgfritt leveringsønske og manuell e-post med to vedlegg. Serveren velger varer fra tillatt katalog og beskytter firmaskille, prisinnsyn og sendeforsøk. Etter eksplisitt avklaring får også interne Ringside/Expo-brukere med Prissøk bestille fra sitt eksisterende aktive vareutvalg. Varebestilling ligger direkte etter Prissøk, før Firmaprofil, med snarvei i søket.",
   "verification": "Nye PostgreSQL-, Edge-/fil- og Chromium-scenarier er lagt til CI. Faktisk status, Sandbox-installasjon, filkontroll og Preview føres i docs/qa/PRO_CATALOG_ORDERS_20261027.md og PR. Ingen reell e-post er sendt i utviklertest.",
   "documentation": {
-    "help": {"required": true, "reason": "Ny meny, varesøk, bestilling, mottakerlagring og leveringsvalg krever veiledning."},
-    "architecture": {"required": true, "reason": "Ny privat gateway og Edge Function for proffkunders bestillinger."},
-    "setup": {"required": false, "reason": "Generelt appoppsett er uendret; ny ressursinstallasjon beskrives i funksjonens arkitektur og QA."},
-    "module": {"required": true, "reason": "Varekatalogmodulen får ny bestillingskontrakt og egne innganger."}
+    "help": {
+      "required": true,
+      "reason": "Ny meny, varesøk, bestilling, mottakerlagring og leveringsvalg krever veiledning."
+    },
+    "architecture": {
+      "required": true,
+      "reason": "Ny privat gateway og Edge Function for proffkunders bestillinger."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Generelt appoppsett er uendret; ny ressursinstallasjon beskrives i funksjonens arkitektur og QA."
+    },
+    "module": {
+      "required": true,
+      "reason": "Varekatalogmodulen får ny bestillingskontrakt og egne innganger."
+    }
   }
 }

@@ -31,5 +31,30 @@ try{
   await page.evaluate(()=>{window.qa.company='87000000-0000-4000-8000-000000000004';window.qa.contacts=[];window.dispatchEvent(new Event('expo-proffdok-work-profile'));});await page.getByText('Bestillingen er tom.',{exact:false}).waitFor();eq(await page.getByLabel('Antall QA Ø-vare').count(),0,'company switch never reuses previous cart');
   await page.evaluate(()=>{window.qa.allowed=false;window.dispatchEvent(new Event('expo-proffdok-module-access'));});await page.getByText('Ingen katalogtilgang',{exact:true}).waitFor();eq(await page.locator('nav button').count(),0,'revocation hides menus');eq(await page.locator('.pro-catalog-orders').count(),0,'revocation clears private surface');eq(errors,[]);await page.close();
  }
+ // Regression for the user's actual entry point: real Prissøk adapter, real menu and shortcut.
+ for(const width of [390,1366]){
+  const page=await browser.newPage({viewport:{width,height:950},locale:'nb-NO'}),errors=[];
+  page.on('pageerror',e=>errors.push(e.message));
+  await page.route('**/*',r=>r.fulfill({contentType:r.request().url().endsWith('/bundle.js')?'text/javascript':'text/html',body:r.request().url().endsWith('/bundle.js')?js:'<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><div id="app"></div><style>'+css+'</style><script src="/bundle.js"></script>'}));
+  await page.goto('https://orders-qa.example.invalid/?internal=1');
+  await page.getByRole('heading',{name:'Varebestilling',exact:true}).waitFor();await page.locator('#expo-price-search-nav-button').waitFor();
+  const labels=await page.locator('nav button').allTextContents(),index=labels.indexOf('Prissøk');
+  eq(labels.slice(index,index+3),['Prissøk','Varebestilling','Firmaprofil'],'internal order directly below Prissøk before company profile');
+  eq(labels.includes('Varesøk'),false,'no duplicate catalog menu for internal users');
+  await page.locator('#expo-price-search-nav-button').click();await page.getByRole('heading',{name:'Prissøk',exact:true}).waitFor();
+  await page.getByRole('button',{name:'Åpne varebestilling',exact:true}).click();await page.getByRole('heading',{name:'Varebestilling',exact:true}).waitFor();
+  eq(await page.locator('#expo-price-search-inline').count(),0,'shortcut closes existing price-search surface');
+  await page.getByPlaceholder('Søk og legg varer i bestillingen').fill('vare');await page.getByRole('button',{name:/QA Ø-vare.*eks/}).click();
+  eq(await page.getByLabel('Antall QA Ø-vare').inputValue(),'1','internal lookup adds actual item');
+  await page.getByLabel('Antall QA Ø-vare').fill('3');await page.evaluate(()=>window.dispatchEvent(new Event('focus')));
+  await page.waitForFunction(()=>!document.querySelector('[aria-label="Varebestilling"]')?.getAttribute('aria-busy')?.includes('true'));
+  eq(await page.getByLabel('Antall QA Ø-vare').inputValue(),'3','internal focus preserves quantity');
+  await page.reload();await page.getByRole('heading',{name:'Varebestilling',exact:true}).waitFor();eq(await page.getByLabel('Antall QA Ø-vare').inputValue(),'3','internal reload preserves order');
+  eq(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,'internal order has no horizontal overflow');
+  await page.screenshot({path:'/tmp/pro-order-screens/internal-'+width+'.png',fullPage:true});
+  await page.evaluate(()=>{window.qa.allowed=false;window.dispatchEvent(new Event('expo-proffdok-module-access'));});
+  await page.getByText('Ingen katalogtilgang',{exact:true}).waitFor();eq(await page.locator('nav [data-order-nav]').count(),0,'internal revoke removes order menu');
+  eq(await page.locator('.pro-catalog-orders').count(),0,'internal revoke removes order surface');eq(errors,[],'internal menu/shortcut no runtime errors');await page.close();
+ }
  console.log(`Pro catalog order browser: ${count} assertions PASS, actual menus/components/hooks, 390/1366px, recipients, date/time, focus, persistent uncertain retry and revoked access; no live transport.`);
 }finally{await browser?.close();fs.rmSync(temp,{recursive:true,force:true});}

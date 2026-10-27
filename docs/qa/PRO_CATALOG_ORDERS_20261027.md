@@ -29,3 +29,22 @@ Bruk samme faste Sandbox Preview. Velg et firma/en bruker med proffkatalogtilgan
 4. Sending må være bevisst. Ingen reell sending inngår i automatiserte tester. Sjekk at bruker uten proffkatalog ikke ser menyene/snarveien og avvises på serveren.
 
 Ny TEST OK kreves før Production-installasjon og merge. Etter godkjent Production-verifisering: kontrollert main → demo med bevart overlay og preflight. Ingen nye bakgrunnsjobber eller rutineutsendinger.
+
+## Oppfølging – manglende inngang for intern testkonto
+
+Kenneth testet riktig Preview som demo@expo-proffdok.no. Faktisk lesende Sandbox-kontroll viste Prissøk=true, proffkatalog=false; den nye gatewayen avviste dermed kontoen som tilsiktet etter den første, for snevre avklaringen. Kenneth avklarte eksplisitt at interne Ringside/Expo-brukere med Prissøk også skal ha Varebestilling.
+
+Utvidet scope: bare ny ordre-gateway/søk, egen ordre-oppslagskomponent og de nye navigasjonsinngangene. Eksisterende tilgangsfunksjoner, kontorettigheter, supplier grants, Prissøk-plukklister/leverandørbestilling, Sales-oppslag, Bolig, priser, PDF og rutine-e-post er uendret. Ny additiv migrasjon `20261027202648_pro_catalog_internal_orders.sql` endrer bare funksjoner opprettet i denne PR-en og legger til et privat varefilter og et eksplisitt prisavgrenset søke-API. Production er uendret.
+
+Interne brukere får Prissøk → Varebestilling → Firmaprofil. Bestillingen har eget varesøk på samme flate. Proffkunder beholder Varesøk → Varebestilling og eksisterende leverandørutvalg. Direkte serverkall krever fortsatt aktiv bruker, riktig aktivt medlemsfirma, fersk tilgang og gyldig vare. Ingen reell e-post inngår i testen.
+
+Verifisert før ny Preview-publisering:
+- 65 PostgreSQL-kontroller PASS, inkludert uendret proffleverandøravgrensning, intern bestilling uten proffgrant, tilbakekalt intern tilgang, aktiv import, firmaavgrensning og direkte ACL.
+- 50 faktiske Chromium-kontroller PASS ved 390/1366 px. Ny regresjon bruker faktisk Prissøk-adapter, full globalmeny, tilgangshook, snarvei og ordresøk: Prissøk → Varebestilling → Firmaprofil, ingen duplisert Varesøk-meny for internbruker, bytte fra Prissøk, kladd ved fokus/reload og tilbakekalling. Skjermbilder gjennomgått. Testtransporten sender ingen mail.
+- 35 e-post-/vedleggskontroller fortsatt PASS. Full critical/Sandbox-build og full critical/Production-build PASS. React-gjennomgang: samme appklient, egne firma-/brukerkladdnøkler, avvisning av sene svar, tastaturtilgjengelige handlinger og ingen nye bakgrunnsutsendinger. Eksisterende scope-/dokumentasjons-/143-kallskontrakt PASS.
+- Ny migrasjon installert bare i Sandbox som versjon 20261027203247. Faktisk authenticated test med demo-kontoen: internal_catalog=true, gammel proffkatalogtilgang fortsatt false, faktisk vareoppslag og grunnlag med korrekt vare og antall 2. Alle syntetiske ordrer rullet tilbake; ingen sendekall.
+- Alle public-funksjoner utenfor PR-ens nye pro_catalog_order_*-API-er og deres ACL er byteidentiske før/etter: fingerprint 0234ebfd860d4aca8a5f0c8ec0f5df56. Ingen kontorettigheter endret.
+- Security-advisors før/etter: gjennomgått; ny authenticated definer-gateway er tilsiktet, med fresh-access og eksplisitt feltavgrensning. Ingen nye anon-grants, privat helper kan ikke kalles direkte.
+- Lokal Chromium krevde CPU-rendering/systemfontkonfigurasjon i denne kjøreflaten; testassertionene er uendret. GitHub kjører sin låste Chromium-konfigurasjon.
+
+Endelig GitHub-CI og faktisk Preview-deployment føres i PR #290. Ny TEST OK kreves før Production.

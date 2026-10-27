@@ -13,7 +13,7 @@ function List({ items = [] }) {
 export function createHelp45BSection({ Section }) {
   return function Help45BSection({ isSystemAdmin = false, isCompanyAdmin = false }) {
     const workflow = [
-      "Alle med proffkatalogtilgang kan bruke Varesøk og Varebestilling i hovedmenyen. Finn en vare og velg den for å legge den i bestillingen. Åpne Varebestilling for å justere antall.",
+      "Alle med proffkatalogtilgang kan bruke Varesøk og Varebestilling i hovedmenyen. Interne Ringside/Expo-brukere med Prissøk finner Varebestilling rett under Prissøk, før Firmaprofil, og som Åpne varebestilling inne i Prissøk. Finn en vare og velg den for å legge den i bestillingen. Åpne Varebestilling for å justere antall.",
       "Velg eller skriv inn mottakeradresse. Lagre mottaker gjør adressen tilgjengelig for senere bestillinger i firmaet. Fyll ut leveringsadresse og velg om tidspunktet skal avtales eller om du ønsker dato og klokkeslett (norsk tid).",
       "Trykk Se over bestillingen og kontroller varene og mottakeren før Send bestilling. Bestillingsmailen har Cordel ASCII og Excel med samme varer og antall, og ber mottakeren sende ordrebekreftelse med leveringstidspunkt til bestillerens registrerte e-postadresse.",
       "Hvis svar på sendingen mangler: bruk Prøv samme sending igjen. Samme bestillings-ID beholdes også etter omlasting, slik at et usikkert sendesvar ikke lager en ny bestilling. Sending bekreftet av e-posttjenesten betyr ikke at mottakeren har bekreftet ordren.",

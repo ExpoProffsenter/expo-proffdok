@@ -2,7 +2,7 @@
 
 ## Tilgang og innganger
 
-Alle brukere med eksisterende `current_user_has_pro_store_catalog_access()` får Varesøk og Varebestilling som to påfølgende globale menypunkter. Samme serverkontroll brukes i den nye leseren, mottakerregisteret, bestillingsgrunnlaget og før e-post sendes. Dette gir ingen intern ERP-/nettopristilgang og krever ingen ny rettighet. Menyene inngår ikke i et aktivt prosjekt eller supportmodus. Intern Prissøk har en tilgangsstyrt snarvei til samme bestillingsflate.
+Alle brukere med eksisterende `current_user_has_pro_store_catalog_access()` får Varesøk og Varebestilling som to påfølgende globale menypunkter. Etter Kenneths avklaring 27.10 får også interne brukere med `current_user_has_internal_store_price_search_access()` Varebestilling rett under eksisterende Prissøk, før Firmaprofil. Interne brukere får ingen ekstra Varesøk-meny. Samme serverkontroll brukes i den nye leseren, mottakerregisteret, bestillingsgrunnlaget og før e-post sendes. Dette gir ingen intern ERP-/nettopristilgang og krever ingen ny rettighet. Menyene inngår ikke i et aktivt prosjekt eller supportmodus. Intern Prissøk har knappen Åpne varebestilling til samme bestillingsflate. Ingen kontotilganger eller leverandøravtaler tildeles.
 
 `useProCatalogOrderAccess` bruker hovedappens registrerte SDK-klient og verifiserer identitet/firma ved fokus, synlighet og tilgangshendelser. Gamle/sene svar avvises. Hver varekurv har separat bruker-/firmaidentitet; ingen token overføres til et nytt dokument. Hovedappen monterer samme komponent for varesøk og varebestilling. Bevisst tabbytte respekteres.
 
@@ -13,9 +13,11 @@ Ny privat schema `pro_catalog_order_private` har RLS og ingen direkte klientrett
 - `contacts`: firmaets eksplisitt lagrede mottakere; e-postadresse og navn. Ingen automatisk lagring av en engangsmottaker.
 - `orders`: uforanderlig bestillingsgrunnlag, bestiller, firma, sendeforsøk og provider-kvittering. Ingen interne priser.
 
-Nye RPC-er `pro_catalog_order_context`, `pro_catalog_order_contact`, `pro_catalog_order_prepare` og `pro_catalog_order_begin` revaliderer aktivt firma, medlemskap, godkjent/aktiv bruker og den eksisterende proffkatalogrettigheten. Hver vare må finnes i firmaets aktive leverandørutvalg; varenummer, leverandør og beskrivelse kommer fra databasen. Klienten sender bare vare-ID/antall og bestillingsopplysninger. Prisinnsyn er ikke en forutsetning for bestilling.
+Nye RPC-er `pro_catalog_order_context`, `pro_catalog_order_contact`, `pro_catalog_order_prepare` og `pro_catalog_order_begin` revaliderer aktivt firma, medlemskap, godkjent/aktiv bruker og enten eksisterende proffkatalogrettighet eller internt Prissøk. For proffkunden må hver vare finnes i firmaets aktive leverandørutvalg; internbrukeren kan velge aktive varer fra en aktiv import, som i Prissøk. Begge kontrolleres på nytt ved gjentatt forsøk og før transport; varenummer, leverandør og beskrivelse kommer fra databasen. Klienten sender bare vare-ID/antall og bestillingsopplysninger. Prisinnsyn er ikke en forutsetning for bestilling.
 
 Bare service_role får kalle `pro_catalog_order_complete`. Funksjonenes definer-privilegier brukes kun for den private gatewayen; alle har lukket search_path, eksplisitt ACL og serverkontroller. Eksisterende tilgangs-, katalog-, Bolig- og intern bestillingslogikk endres ikke.
+
+`pro_catalog_order_search` kaller eksisterende søk innenfor brukerens eksisterende adgang og returnerer bare varenummer, beskrivelse, leverandør og tillatte salgsprisfelter. Interne kjøps-/rabatt-/avansefelt returneres aldri. Egen OrderCatalogLookup brukes bare i bestillingen; Sales/tilbudets eksisterende proffoppslag er uendret. Utvidelsen er en separat additiv migrasjon `pro_catalog_internal_orders`, etter opprinnelig ordre-migrasjon. Ingen eksisterende tilgangsfunksjon erstattes.
 
 ## Filer og manuell sending
 

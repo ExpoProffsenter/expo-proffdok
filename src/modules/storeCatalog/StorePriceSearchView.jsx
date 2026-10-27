@@ -1007,13 +1007,13 @@ export default function StorePriceSearchView({ onClose }) {
         ) : null}
         <small>Expo ProffDok</small>
         <h2>Prissøk</h2>
-        <ProCatalogOrderShortcut/>
         <p>{isMobile
           ? "Skann eller søk varer, angi antall og lagre en midlertidig plukkliste til senere registrering i Cordel."
           : "Søk varer og priser, angi antall og lagre en plukkliste til senere manuell registrering i Cordel."}</p>
       </section>
 
       <div className="priceSearchSurfaces" role="group" aria-label="Varearbeid">
+        <ProCatalogOrderShortcut/>
         <button type="button" className={surface==='search'?'':'secondary'} aria-pressed={surface==='search'} onClick={()=>setSurface('search')}>Søk varer</button>
         <button type="button" className={surface==='lists'?'':'secondary'} aria-pressed={surface==='lists'} onClick={()=>setSurface('lists')}>Plukklister ({selectedProducts.length})</button>
         {stocktakeAvailable&&<button type="button" className={surface==='stocktake'?'':'secondary'} aria-pressed={surface==='stocktake'} onClick={()=>setSurface('stocktake')}>Varetelling</button>}

@@ -1967,6 +1967,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       canUseBolig: Boolean(boligContext?.enabled && boligContext.user_id === authUser?.id),
       personalPage: ownRights.enabled,
       canUseProCatalogOrders: Boolean(proCatalogOrderAccess.context && !isProjectSupportReadOnly),
+      internalCatalogOrders: proCatalogOrderAccess.context?.internal_catalog === true,
       canUseAdminProjectSync
     });
     const tabs = hasActiveProjectWorkspace ? projectTabs : globalTabs;

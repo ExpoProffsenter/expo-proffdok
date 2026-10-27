@@ -1,10 +1,11 @@
 import React,{useRef,useState} from 'react';
-import ProStoreCatalogInlineLookup from './ProStoreCatalogInlineLookup.jsx';
+import OrderCatalogLookup from './OrderCatalogLookup.jsx';
 import {orderRpc,orderScope,readOrderDraft,writeOrderDraft,sendProCatalogOrder} from './proCatalogOrderClient.js';
 import './proCatalogOrders.css';
 const empty=()=>({query:'',items:[],to:'',recipient_name:'',reference:'',address:'',requested_date:'',requested_time:'',note:'',deliveryChoice:'agreed',attempt:null,preview:null,uncertain:false,sent:false});
 export default function ProCatalogOrders({context,pending=false,mode='search',onSearch,onOrder}){
  const [draft,setDraft]=useState(()=>({...empty(),...readOrderDraft(context)})),[contacts,setContacts]=useState(context.contacts||[]),[error,setError]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false);
+ const internal=context.internal_catalog===true,[internalSearch,setInternalSearch]=useState(!draft.items.length);
  const latest=useRef(draft),alive=useRef(true),scope=orderScope(context),scopeRef=useRef(scope),lock=useRef(false);latest.current=draft;scopeRef.current=scope;
  React.useEffect(()=>{alive.current=true;return()=>{alive.current=false;};},[]);
  React.useEffect(()=>setContacts(context.contacts||[]),[context.contacts]);
@@ -26,9 +27,9 @@ export default function ProCatalogOrders({context,pending=false,mode='search',on
  const reset=()=>{try{persist(empty());setError('');setNotice('Ny bestilling er klar.');}catch{setError('Kunne ikke rydde kladden.');}};
  const preview=draft.preview;
  return <section className="pro-catalog-orders" aria-label={mode==='search'?'Varesøk':'Varebestilling'} aria-busy={busy||pending}>
-  <header><div><small>{context.company.companyName}</small><h2>{mode==='search'?'Varesøk':'Varebestilling'}</h2><p>Finn varer i firmaets katalog, velg antall og send en bestilling. Mottakeren bekrefter ordren og leveringstidspunktet.</p></div><button type="button" className="secondary" onClick={mode==='search'?onOrder:onSearch}>{mode==='search'?`Se varebestilling (${draft.items.length})`:'Finn flere varer'}</button></header>
+  <header><div><small>{context.company.companyName}</small><h2>{mode==='search'?'Varesøk':'Varebestilling'}</h2><p>Finn varer i firmaets katalog, velg antall og send en bestilling. Mottakeren bekrefter ordren og leveringstidspunktet.</p></div><button type="button" className="secondary" onClick={internal?()=>setInternalSearch(s=>!s):mode==='search'?onOrder:onSearch}>{internal?(internalSearch?'Skjul varesøk':'Finn flere varer'):mode==='search'?`Se varebestilling (${draft.items.length})`:'Finn flere varer'}</button></header>
   {pending&&<p role="status">Kontrollerer tilgangen …</p>}{error&&<p role="alert">{error}</p>}{notice&&<p role="status">{notice}</p>}
-  {mode==='search'&&!disabled&&<ProStoreCatalogInlineLookup initialQuery={draft.query||''} onQueryChange={query=>change({query})} onUse={add} placeholder="Søk og legg varer i bestillingen"/>}
+  {(mode==='search'||(internal&&internalSearch))&&!disabled&&<OrderCatalogLookup internal={internal} initialQuery={draft.query||''} onQueryChange={query=>change({query})} onUse={add} placeholder="Søk og legg varer i bestillingen"/>}
   {mode==='search'&&disabled&&<p>{draft.sent?'Bestillingen er sendt. Åpne varebestillingen for å starte en ny.':draft.uncertain?'Sendingen må avklares. Åpne varebestillingen og prøv samme sending igjen.':'Vent mens tilgangen kontrolleres.'}</p>}
   <div className="pro-order-cart"><h3>Varer i bestillingen · {draft.items.length}</h3>{!draft.items.length&&<p>Bestillingen er tom. Finn varer i varesøk og velg varen du vil legge til.</p>}
    {draft.items.map(i=><article key={i.id}><div><strong>{i.description}</strong><small>{i.supplier_name} · varenr. {i.supplier_product_number}</small></div><label>Antall<input aria-label={'Antall '+i.description} inputMode="decimal" value={i.quantity} disabled={disabled} onChange={e=>change({items:draft.items.map(x=>x.id===i.id?{...x,quantity:e.target.value}:x)})}/></label><button type="button" className="secondary" disabled={disabled} onClick={()=>change({items:draft.items.filter(x=>x.id!==i.id)})}>Fjern</button></article>)}
