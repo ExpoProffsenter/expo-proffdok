@@ -12,23 +12,36 @@ try{
   eq(await page.locator('.pro-catalog-orders>header').evaluate(el=>getComputedStyle(el).position),'static','header never overlaps fields');
   eq(await page.locator('nav button').allTextContents(),['Varesøk','Varebestilling'],'adjacent authorized menus');
   await page.getByPlaceholder('Søk og legg varer i bestillingen').fill('vare');await page.getByRole('button',{name:/QA Ø-vare.*eks/}).click();
-  await page.getByLabel('Antall QA Ø-vare').fill('2,5');await page.getByRole('button',{name:'Se varebestilling (1)'}).click();
+  const quantity=page.getByLabel('Antall QA Ø-vare',{exact:true});
+  eq(await quantity.evaluate(el=>el===document.activeElement),true,'selected item focuses and selects quantity');
+  await page.getByRole('button',{name:'Øk antall QA Ø-vare',exact:true}).click();eq(await quantity.inputValue(),'2','plus increases quantity');
+  await page.getByRole('button',{name:'Reduser antall QA Ø-vare',exact:true}).click();eq(await quantity.inputValue(),'1','minus reduces quantity');
+  eq(await page.getByRole('button',{name:'Reduser antall QA Ø-vare',exact:true}).isDisabled(),true,'minus cannot create zero');
+  await quantity.fill('2,5');await quantity.press('ArrowUp');eq(await quantity.inputValue(),'3,5','keyboard increase preserves decimal comma');await quantity.press('ArrowDown');eq(await quantity.inputValue(),'2,5','keyboard decrease has no float noise');
+  await quantity.press('Enter');const nextSearch=page.getByLabel('Søk etter neste vare',{exact:true});
+  eq(await nextSearch.evaluate(el=>el===document.activeElement),true,'Enter opens and focuses new-item search');eq(await page.locator('.pro-order-cart article').count(),1,'search draft is not a ghost order line');
+  await page.evaluate(()=>{window.qa.delay=120;});await nextSearch.fill('andre');await nextSearch.press('Enter');await page.getByLabel('Antall QA andre vare',{exact:true}).waitFor();
+  eq(await page.getByLabel('Antall QA andre vare',{exact:true}).evaluate(el=>el===document.activeElement),true,'fast search Enter adds next item and focuses its quantity');eq(await quantity.inputValue(),'2,5','next item leaves previous quantity unchanged');
+  await page.locator('.pro-order-cart article').filter({hasText:'QA andre vare'}).getByRole('button',{name:'Fjern',exact:true}).click();await page.evaluate(()=>{window.qa.delay=0;});
+  await quantity.fill('0');await quantity.press('Enter');eq(await quantity.evaluate(el=>el===document.activeElement),true,'invalid quantity stays in its field');eq(await page.locator('.pro-order-cart article').count(),1,'invalid Enter never adds a blank line');
+  await quantity.fill('99998,5');await page.getByRole('button',{name:'Øk antall QA Ø-vare',exact:true}).click();eq(await quantity.inputValue(),'99999','plus respects server maximum');eq(await page.getByRole('button',{name:'Øk antall QA Ø-vare',exact:true}).isDisabled(),true,'max disables plus');
+  await quantity.fill('2,5');await page.getByRole('button',{name:'Se varebestilling (1)'}).click();
   await page.getByLabel('Mottakernavn',{exact:true}).fill('Expo QA');await page.getByLabel('E-post til mottaker').fill('orders@example.invalid');await page.getByRole('button',{name:'Lagre mottaker',exact:true}).click();await page.getByText('Mottakeren er lagret for firmaet.',{exact:true}).waitFor();eq(await page.getByLabel('Lagret mottaker').locator('option').count(),2);
   await page.getByLabel('Bestillingsreferanse').fill('0007');await page.getByLabel('Leveringsadresse').fill('QA gate 1');await page.getByLabel('Leveringstidspunkt',{exact:true}).selectOption('requested');await page.getByLabel('Ønsket leveringsdato').fill('2026-12-11');await page.getByLabel('Ønsket klokkeslett').fill('10:30');
   await page.evaluate(()=>{window.qa.delay=120;window.dispatchEvent(new Event('focus'));});await page.waitForFunction(()=>!document.querySelector('[aria-label="Varebestilling"]')?.getAttribute('aria-busy')?.includes('true'));
-  eq(await page.getByLabel('Leveringsadresse').inputValue(),'QA gate 1','focus keeps draft');eq(await page.getByLabel('Antall QA Ø-vare').inputValue(),'2,5');
+  eq(await page.getByLabel('Leveringsadresse').inputValue(),'QA gate 1','focus keeps draft');eq(await page.getByLabel('Antall QA Ø-vare',{exact:true}).inputValue(),'2,5');
   fs.mkdirSync('/tmp/pro-order-screens',{recursive:true});await page.screenshot({path:'/tmp/pro-order-screens/form-'+width+'.png',fullPage:true});await page.getByRole('button',{name:'Se over bestillingen',exact:true}).click();await page.getByRole('heading',{name:'Se over bestillingen'}).waitFor();
   eq((await page.locator('.pro-order-preview').innerText()).includes('10:30'),true,'delivery time in preview');eq((await page.locator('.pro-order-preview').innerText()).includes('buyer@example.invalid'),true,'confirmation to real buyer');
   await page.getByRole('button',{name:'Send bestilling',exact:true}).click();await page.getByRole('button',{name:'Prøv samme sending igjen'}).waitFor();
-  eq(await page.getByLabel('Antall QA Ø-vare').isDisabled(),true,'uncertain send freezes exact order');
+  eq(await page.getByLabel('Antall QA Ø-vare',{exact:true}).isDisabled(),true,'uncertain send freezes exact order');eq(await page.getByRole('button',{name:'Øk antall QA Ø-vare',exact:true}).isDisabled(),true,'uncertain send also freezes stepper');
   await page.reload();await page.getByRole('button',{name:'Se varebestilling (1)'}).click();await page.getByRole('button',{name:'Prøv samme sending igjen'}).click();await page.getByRole('heading',{name:'Bestillingen er sendt'}).waitFor();
   // Reload resets the synthetic provider, so the first retry is uncertain again.
   if(await page.getByRole('button',{name:'Prøv samme sending igjen'}).count()){await page.getByRole('button',{name:'Prøv samme sending igjen'}).click();}
-  eq(await page.getByLabel('Antall QA Ø-vare').isDisabled(),true);
+  eq(await page.getByLabel('Antall QA Ø-vare',{exact:true}).isDisabled(),true);
   eq(await page.evaluate(()=>new Set(window.qa.sentIds).size),1,'durable same retry identity after reload');
   eq(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,'no sideways scroll');
   fs.mkdirSync('/tmp/pro-order-screens',{recursive:true});await page.screenshot({path:'/tmp/pro-order-screens/sent-'+width+'.png',fullPage:true});
-  await page.evaluate(()=>{window.qa.company='87000000-0000-4000-8000-000000000004';window.qa.contacts=[];window.dispatchEvent(new Event('expo-proffdok-work-profile'));});await page.getByText('Bestillingen er tom.',{exact:false}).waitFor();eq(await page.getByLabel('Antall QA Ø-vare').count(),0,'company switch never reuses previous cart');
+  await page.evaluate(()=>{window.qa.company='87000000-0000-4000-8000-000000000004';window.qa.contacts=[];window.dispatchEvent(new Event('expo-proffdok-work-profile'));});await page.getByText('Bestillingen er tom.',{exact:false}).waitFor();eq(await page.getByLabel('Antall QA Ø-vare',{exact:true}).count(),0,'company switch never reuses previous cart');
   await page.evaluate(()=>{window.qa.allowed=false;window.dispatchEvent(new Event('expo-proffdok-module-access'));});await page.getByText('Ingen katalogtilgang',{exact:true}).waitFor();eq(await page.locator('nav button').count(),0,'revocation hides menus');eq(await page.locator('.pro-catalog-orders').count(),0,'revocation clears private surface');eq(errors,[]);await page.close();
  }
  // Regression for the user's actual entry point: real Prissøk adapter, real menu and shortcut.
@@ -45,11 +58,12 @@ try{
   await page.getByRole('button',{name:'Åpne varebestilling',exact:true}).click();await page.getByRole('heading',{name:'Varebestilling',exact:true}).waitFor();
   eq(await page.locator('#expo-price-search-inline').count(),0,'shortcut closes existing price-search surface');
   await page.getByPlaceholder('Søk og legg varer i bestillingen').fill('vare');await page.getByRole('button',{name:/QA Ø-vare.*eks/}).click();
-  eq(await page.getByLabel('Antall QA Ø-vare').inputValue(),'1','internal lookup adds actual item');
-  await page.getByLabel('Antall QA Ø-vare').fill('3');await page.evaluate(()=>window.dispatchEvent(new Event('focus')));
+  eq(await page.getByLabel('Antall QA Ø-vare',{exact:true}).inputValue(),'1','internal lookup adds actual item');
+  await page.getByRole('button',{name:'Øk antall QA Ø-vare',exact:true}).click();eq(await page.getByLabel('Antall QA Ø-vare',{exact:true}).inputValue(),'2','internal stepper works');await page.getByLabel('Antall QA Ø-vare',{exact:true}).press('Enter');eq(await page.getByLabel('Søk etter neste vare').evaluate(el=>el===document.activeElement),true,'internal Enter focuses next search');
+  await page.getByLabel('Antall QA Ø-vare',{exact:true}).fill('3');await page.evaluate(()=>window.dispatchEvent(new Event('focus')));
   await page.waitForFunction(()=>!document.querySelector('[aria-label="Varebestilling"]')?.getAttribute('aria-busy')?.includes('true'));
-  eq(await page.getByLabel('Antall QA Ø-vare').inputValue(),'3','internal focus preserves quantity');
-  await page.reload();await page.getByRole('heading',{name:'Varebestilling',exact:true}).waitFor();eq(await page.getByLabel('Antall QA Ø-vare').inputValue(),'3','internal reload preserves order');
+  eq(await page.getByLabel('Antall QA Ø-vare',{exact:true}).inputValue(),'3','internal focus preserves quantity');
+  await page.reload();await page.getByRole('heading',{name:'Varebestilling',exact:true}).waitFor();eq(await page.getByLabel('Antall QA Ø-vare',{exact:true}).inputValue(),'3','internal reload preserves order');
   eq(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,'internal order has no horizontal overflow');
   await page.screenshot({path:'/tmp/pro-order-screens/internal-'+width+'.png',fullPage:true});
   await page.evaluate(()=>{window.qa.allowed=false;window.dispatchEvent(new Event('expo-proffdok-module-access'));});

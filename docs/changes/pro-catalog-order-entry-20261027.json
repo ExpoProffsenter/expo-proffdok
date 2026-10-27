@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Varebestilling: antallsøkning og Enter til neste varesøk",
+  "change": "Avgrenset UX-rettelse i bestillingsflaten. Pluss/minus og pil opp/ned for antall, Enter fra antall til et nytt søk under varelinjene, fokus på antall etter varevalg og Enter som velger første treff. Ingen blanke varelinjer, ingen endret server-/sendekontrakt.",
+  "verification": "Reelle React/Chromium-scenarier utvider eksisterende bestillingsregresjon for begge brukergrupper og mobil/PC, pluss direkte grense-/desimalprøver. Faktisk innlogget skynettprøve av publisert Preview må gjennomføres og registreres i PR før brukerens nye TEST OK etterspørres. Produksjonse-post er prøvd særskilt på brukerens konkrete bestilling.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "Brukeren får nye antallskontroller og en eksplisitt tastaturflyt."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Ingen endring i arkitektur, backend, autentisering, firmaavgrensning eller sendekontrakt."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen ny avhengighet, konfigurasjon eller installasjon."
+    },
+    "module": {
+      "required": true,
+      "reason": "Dokumenterer den nye registreringsflyten og bevarte sperrer for bestilling."
+    }
+  }
+}

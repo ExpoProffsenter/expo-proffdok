@@ -19,7 +19,7 @@ const client={auth:{getUser:async()=>({data:{user:{id:window.qa.user}}}),onAuthS
  if(!qa.allowed)return {error:{code:'42501',message:'Ingen tilgang'}};
  if(name==='pro_catalog_order_context')return {data:context()};
  if(name==='current_user_has_pro_store_catalog_access')return {data:qa.allowed};
- if(name==='pro_catalog_order_search')return {data:[item]};
+ if(name==='pro_catalog_order_search')return {data:args.p_query==='andre'?[{...item,id:'87000000-0000-4000-8000-000000000006',description:'QA andre vare',supplier_product_number:'0013'}]:[item]};
  if(name==='pro_catalog_order_contact'){qa.contacts=args.p_action==='save'?[{id:'contact-1',...args.p_contact}]:[];return {data:context()};}
  if(name==='pro_catalog_order_prepare')return {data:{snapshot:{...args.p_order,company:context().company,replyTo:context().replyTo,goods:[{id:item.id,name:item.description,sku:item.supplier_product_number,supplier:item.supplier_name,quantity:Number(args.p_order.items[0].quantity.replace(',','.'))}]}}};
  throw Error('Unexpected '+name);

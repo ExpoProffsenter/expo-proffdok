@@ -12,3 +12,7 @@ Serverkontrollene gjelder også ved direkte RPC-/Edge-kall og ved bortfalt tilga
 
 Arkitektur/API: `docs/architecture/PRO_CATALOG_ORDERS.md`.
 Tester: `scripts/pro-catalog-order-db-check.mjs`, `scripts/pro-catalog-order-email-check.mjs`, `scripts/pro-catalog-order-browser-check.mjs`.
+
+## Rask registrering av flere varer
+
+Når en vare velges, får antallet fokus og kan overskrives. +/− og pil opp/ned endrer antallet med én; desimalkomma og punktum kan skrives manuelt. Enter i antall åpner et fokusert søk etter neste vare under de registrerte varelinjene. Enter i søket velger første treff, også når søket må hentes først. Et tomt søk blir aldri en tom varelinje. Ugyldig antall beholdes for retting; maks 99999 og inntil tre desimaler som på serveren. Usikker eller sendt bestilling er låst som før.
