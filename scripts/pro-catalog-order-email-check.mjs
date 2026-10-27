@@ -5,6 +5,19 @@ import {createCordelPicklist} from '../src/modules/cordel/picklistCordel.mjs';
 let checks=0;const eq=(a,b,m)=>{assert.deepEqual(a,b,m);checks++;};
 const order={order_number:'V-QA-001',company:{companyName:'QA Ø & <Firma>',orgNumber:'000000001'},replyTo:'buyer@example.invalid',to:'orders@example.invalid',recipient_name:'Expo QA',reference:'0007',address:'QA gate 1',requested_date:'2026-12-11',requested_time:'10:30',note:'=not a formula <script>',goods:[{id:'p1',sku:'0012',supplier:'QA Rør',name:'Vare med ø og æ',quantity:2.5},{id:'p2',sku:'0012',supplier:'Annen',name:'Annen vare',quantity:1}]};
 const files=proCatalogOrderAttachments(order);eq(files.length,2);eq(files[0].bytes,createCordelPicklist(order.goods.map(g=>({supplier_product_number:g.sku,supplier_name:g.supplier,quantity:g.quantity}))),'exact existing Cordel encoding/delimiters/decimal/CRLF');
+// Independently read the stored ZIP entries and inspect the actual Excel cells.
+const zip=files[1].bytes,view=new DataView(zip.buffer,zip.byteOffset,zip.byteLength);let offset=0,sheet='';
+while(offset+30<=zip.length&&view.getUint32(offset,true)===0x04034b50){
+ const size=view.getUint32(offset+18,true),nameLength=view.getUint16(offset+26,true),extraLength=view.getUint16(offset+28,true),start=offset+30+nameLength+extraLength;
+ const name=new TextDecoder().decode(zip.slice(offset+30,offset+30+nameLength));
+ if(name==='xl/worksheets/sheet1.xml')sheet=new TextDecoder().decode(zip.slice(start,start+size));
+ offset=start+size;
+}
+assert(/<c r="B11" t="inlineStr">.*?>0012<\/t>/.test(sheet),'Excel keeps leading-zero SKU as text');checks++;
+assert(sheet.includes('<c r="D11"><v>2.5</v></c>')&&sheet.includes('<c r="D12"><v>1</v></c>'),'Excel exact canonical quantities');checks++;
+assert(sheet.includes('QA Rør')&&sheet.includes('Annen')&&sheet.includes('Vare med ø og æ'),'Excel supplier identity and Norwegian description');checks++;
+assert(sheet.includes('11.12.2026 kl. 10:30 (norsk tid)'),'Excel delivery date and time');checks++;
+assert(sheet.includes('=not a formula &lt;script&gt;')&&!sheet.includes('<f>'),'Excel text never becomes formula');checks++;
 fs.writeFileSync('/tmp/pro-catalog-order-control.xlsx',files[1].bytes);fs.writeFileSync('/tmp/pro-catalog-order-cordel.txt',files[0].bytes);
 const mail=proCatalogOrderMail(order);eq(mail.to,[order.to]);eq(mail.reply_to,order.replyTo);assert(mail.html.includes('Husk å sende ordrebekreftelse'));checks++;assert(mail.html.includes('11.12.2026 kl. 10:30'));checks++;assert(!mail.html.includes('<script>'));checks++;assert(mail.html.includes('&lt;script&gt;'));checks++;assert(mail.text.includes('Send ordrebekreftelse med bekreftet leveringstidspunkt'));checks++;
 let calls=[],providerBodies=[],complete=0;let rejectAuth=false,revoke=false,already=false,providerFail=false,ackFail=false,configured=true;
