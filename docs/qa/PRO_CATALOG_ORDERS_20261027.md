@@ -9,10 +9,10 @@ Scope: nye proffordre-/mottaker-/transportfiler, liten eksplisitt navigasjonsint
 ## Utviklertest
 
 - PostgreSQL: 48 assertions PASS med faktisk ny migrasjon og eksisterende kataloggate. Firma-/aktørskille, gjentatt ID, uforanderlig grunnlag, aktive varer/leverandører, mengder, e-post, dato/tid, rolle-ACL og utløpt retry. Ingen intern pris i snapshot, heller ikke når klienten injiserer en pris.
-- Edge/vedlegg: 34 assertions PASS. Faktisk ASCII-byteidentitet mot eksisterende eksportør, to vedlegg, mottaker/reply-to, ordrebekreftelsestekst, escaping, manglende auth, revoke før provider, idempotent ID, providerfeil og tapt kvittering. Syntetisk provider; ingen mail sendt.
+- Edge/vedlegg: 35 assertions PASS. Faktisk ASCII-byteidentitet mot eksisterende eksportør, to vedlegg, mottaker/reply-to, ordrebekreftelsestekst, escaping, manglende auth, revoke før provider, idempotent ID, providerfeil og tapt kvittering. Syntetisk provider; ingen mail sendt.
 - Uavhengig XLSX-leser (openpyxl): PASS. Varenummer med innledende nuller er tekst, antall numerisk, norsk tekst, leverandørskille, dato/tid og tekst som begynner med = er ikke en formel.
 - Ny migrasjon `20261027194442_pro_catalog_goods_orders.sql` installert kun i Sandbox via apply_migration. Ingen eksisterende funksjoner erstattet.
-- Ny Sandbox Edge Function `pro-catalog-order-email` v1 ACTIVE. Auth.getUser og ferske katalogkontroller i handler; ingen reell sending testet.
+- Ny Sandbox Edge Function `pro-catalog-order-email` v2 ACTIVE. Auth.getUser og ferske katalogkontroller i handler; ingen reell sending testet.
 - Faktisk React/Chromium: 30 assertions PASS ved 390/1366 px, globalmenyenes rekkefølge og adgang, faktisk proffoppslag, mottakerlagring, leveringstidspunkt, fanefokus, varig usikkert sendeforsøk etter reload, firmabytte, tilbakekalt tilgang og ingen sideveis scrolling. Alle sendekall før og etter reload må ha samme ID; faktiske Excel-celler kontrolleres også direkte i CI. Hele prøveflyten bruker syntetisk transport. Skjermbilder mobil/PC er visuelt kontrollert; global sticky header ble avgrenset bort i den nye flaten og fikk regresjonsassertion.
 - Full critical/Production-build og full critical/Sandbox-build PASS. Ingen eksisterende assertions svekket. Alle nye tester er lagt til eksisterende parallelle CI-pakker.
 - Sandbox-migrasjons-ID `20261027195111` svarer til kildefilen `20261027194442_pro_catalog_goods_orders.sql`. Ingen registreringshistorikk er omskrevet.

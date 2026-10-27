@@ -20,6 +20,8 @@ export async function handleProCatalogOrder(req,deps){
   const client=deps.userClient(req.headers.get('Authorization')||'');const {data:auth,error:authError}=await client.auth.getUser();
   if(authError||!auth?.user)return response({error:'Logg inn før du bestiller.',uncertain:false},401);
   const raw=await req.text();if(raw.length>40000)return response({error:'For stor bestilling.',uncertain:false},413);const b=JSON.parse(raw);
+  const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if(!uuid.test(b?.companyId||'')||!uuid.test(b?.requestId||'')||!b?.order||typeof b.order!=='object'||Array.isArray(b.order))return response({error:'Bestillingen mangler gyldig firma eller bestillings-ID.',uncertain:false},400);
   const args={p_company_id:b.companyId,p_request_id:b.requestId,p_order:b.order};
   const {data:prepared,error}=await client.rpc('pro_catalog_order_prepare',args);
   if(error)return response({error:error.message,uncertain:false},error.code==='42501'?403:409);
