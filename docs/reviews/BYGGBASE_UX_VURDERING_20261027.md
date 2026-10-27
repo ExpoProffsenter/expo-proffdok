@@ -2,13 +2,26 @@
 
 Dato: 27.10.2026. Bestilt av Kenneth Skogsrud. Dette er en vurdering og prioritert forslagsliste, ikke en godkjent implementeringsplan.
 
+## Avklart med Kenneth – designskisse 01
+
+Oppfølging 28.10.2026 (Europe/Oslo). Kenneth korrigerte prioriteringen: fasadebildene er en styrke, og målet er en gjennomført, moderne UX i absolutt hele appen med alle funksjoner bevart.
+
+- **Bolig:** Behold fasaden som standard. Tett liste er et valgfritt supplement. Reduser samtidig informasjonsmengde med faner, boligdetaljer og utvidbar arbeidsflate. «Krever handling» på tvers av boliger er ikke avtalt som erstatning eller ny hovedvisning.
+- **HR:** HR og medarbeidersamtaler er produktstyrker. Bevar hele dybden og rolleflyten, og gi dem samme moderne ramme.
+- **Økonomi:** Ny prosjektøkonomi er lavt prioritert fordi kundene allerede bruker ERP. Mulig API-inngang vurderes senere. Dagens økonomifunksjoner fjernes ikke.
+- **Helhet:** Én rød tråd i navigasjon, typografi, knapper, status, tabeller, faner, detaljer og mobilflyt. Alle eksisterende funksjoner og innganger må kartlegges og videreføres før noen modul erstattes.
+
+[Åpne separat, privat designskisse 01](https://proffdok-designskisse.warmyak16384.chatgpt.site/). Visningen bruker ChatGPT-innlogging og fiktive eksempeldata. Ingen forbindelse til produksjonsdata eller utsendinger. Site-kilde: `a19c1bca05da5288e1c82b74c2972953ac4e263a`.
+
+Skissen prøver felles ramme i oversikt, Min side, prosjekt/prosjektkart, bolig, plan, tilbud, vareflyt, KS/HMS og HR. Detaljfunksjoner er delvis illustrerte paneler. Den dokumenterer verken implementert funksjonsparitet eller TEST OK for en ny appversjon. Neste beslutning er visuell retning og informasjonsstruktur. Produksjonsimplementering er ikke utført.
+
 ## Konklusjon
 
 Kundetilbakemeldingen er forståelig: Byggbase formidler en tydeligere, roligere og mer sammenhengende arbeidshverdag. Særlig arbeidsdeling mellom kontor og montør, oversikter og overgangen mellom oppgavene gir et moderne inntrykk. Dette er min designvurdering av det offentlige materialet, ikke en måling av faktisk brukervennlighet eller kvalitet i deres innloggede app.
 
 ProffDoks viktigste mulighet er å gjøre eksisterende funksjoner enklere å finne og bruke som én arbeidsflyt. Vi har allerede mye av funksjonaliteten. En ny omgang med mange enkeltknapper eller store introduksjonskort vil gi mindre effekt enn en gjennomført arbeidsflate. Behold fagdybden, garantien, boligflytene og firmaskillet. Prioriter helhet og færre beslutninger per oppgave.
 
-De første kandidatene bør være navigasjon, rollebasert arbeidsdag, prosjektets dagligvisning og tilbudets arbeidsflate. Samlet økonomi og kapasitetsplanlegging vurderes som egne produktoppgaver, med reelt datagrunnlag, etter den første UX-runden.
+De første kandidatene bør være navigasjon, rollebasert arbeidsdag, prosjektets dagligvisning og tilbudets arbeidsflate. Ny prosjektøkonomi har lav prioritet; mulig ERP/API vurderes på sikt. Kapasitetsplanlegging vurderes separat med reelt datagrunnlag.
 
 ## Grunnlag og avgrensning
 
@@ -70,11 +83,11 @@ Vi bør hente prinsippene. ProffDoks egen petrol-/turkisprofil og godkjente Min 
 | KS/HMS, SJA, RUH og rutiner | Maler, rutiner, lesebekreftelser og avviksbehandling. | Rutinebibliotek, versjoner, godkjenning, lesebekreftelser, SJA/RUH, risiko og avvik finnes. | Gjør «Mitt arbeid» tydeligere enn «Forvaltning». Skjul forklaringer ved behov, men behold krav og konsekvenser synlige ved handlingen. |
 | Bilder | Bildestrøm, kommentarer, kameraopptak og synk-kø beskrives. | Bildearkiv, bildeoptimalisering, stor visning og samlet oversikt fra bilder/sjekkpunkter finnes. | Tydelig bildestrøm med kilde, dato og kommentar. Vis per fil om bildet bare er lokalt, venter eller er bekreftet lagret. En offline-kø må først verifiseres/bygges, ikke bare loves med tekst. |
 | Dokumenter og FDV | Firma-/prosjektdokumenter og tydelige delingsnivåer. | Produktdokumentasjon, FDV, rapporter og eksterne portaler finnes. | Lag én lesende dokumentinngang med kilder og status. En samling i grensesnittet skal ikke kopiere dokumentene eller utvide tilgangen. |
-| Prosjektøkonomi | Budsjett, faktiske kostnader og prognose samles. | Salgspriser og Bolig sitt fakturaregister/a konto/indeks er dokumentert. En tilsvarende samlet kostnadsprognose er ikke bekreftet i gjennomgått flate. | Viktig separat produktvurdering: avtalt verdi, endringer, fakturert og gjenstående først. Fortjeneste krever faktisk kostnadsdekning og tydelig prognosemetode. Ikke gjør ProffDok til ERP som sideeffekt. |
+| Prosjektøkonomi | Budsjett, faktiske kostnader og prognose samles. | Salgspriser og Bolig sitt fakturaregister/a konto/indeks er dokumentert. En tilsvarende samlet kostnadsprognose er ikke bekreftet i gjennomgått flate. | Lav prioritet etter Kenneths avklaring. Bevar eksisterende funksjoner; vurder ERP/API på sikt. Ingen ny økonomioversikt i denne UX-runden. |
 | Kunder og firma | Kunderegister, ansatte og innstillinger. | Firmaavgrensede kundeprofiler, HR, organisasjon, flerfirmatilgang og rolle-/modulstyring finnes. | Samme språk for kontakt og tilgang overalt. Kontakttildeling skal aldri se ut som en portalinvitasjon eller modulrettighet. |
 | HR | Fravær, ansatte og lønnsgrunnlag beskrives. | Egen HR-modul med oppfølging, håndbok og timer/utlegg finnes. | Behold særskilt HR-innsyn. Vis bare oppgaver/antall som passer rollen i en samlet oversikt; ikke flytt privat innhold ut på en generell startside. |
 | Varesøk, ordre og telling | Leverandørprisfiler til kalkyle beskrives. | Prissøk, strekkode, plukklister, varetelling og ny proffvarebestilling finnes. | Gjenbruk siste leveranse som mønster: tastaturflyt, fokus på antall, bevart kladd og tydelig sendestatus. Samme varekort/antallsgrep der betydningen er den samme. |
-| Boligprosjekter og eksterne | Underprosjekter beskrives; tilsvarende bolighierarki og beboerflyt er ikke dokumentert i materialet. | Bygg/boliger, grunnpakker, tilvalg, endringsaksept, ordre, Gantt, portaler, løpende overtakelse og indeks/a konto finnes. | Løft frem dagens oppfølging på tvers av boliger. Behold fasadevisningen, men gi valgfri tett liste for store prosjekter. Viderefør rollebestemt UE-/leverandør-/beboerflyt. |
+| Boligprosjekter og eksterne | Underprosjekter beskrives; tilsvarende bolighierarki og beboerflyt er ikke dokumentert i materialet. | Bygg/boliger, grunnpakker, tilvalg, endringsaksept, ordre, Gantt, portaler, løpende overtakelse og indeks/a konto finnes. | Behold fasaden som standard og gi valgfri tett liste. Relevant informasjon åpnes gjennom faner og boligdetaljer. Viderefør rollebestemt UE-/leverandør-/beboerflyt. |
 | Garanti og overlevering | Generell prosjektdokumentasjon vises. | Dokumentert tetthetsgaranti, sluttkontroll og rapportgrunnlag er en egen fagstyrke. | Én forståelig liste med reelle mangler, direkte åpning og status. Ikke fjern fagkrav for å gjøre skjermen grønn. |
 | Hjelp, støtte og gjenoppretting | Oppgaveorienterte guider, skjermbilder og gjenoppretting fra papirkurv beskrives. | Søkbart hjelpesenter, Bolig A–Å, support, arkiv og versjonshistorikk finnes. | Kort hjelp ved oppgaven og lenke til full guide. Enhetlig Arkiv/Angre/Gjenopprett må kartlegges per datatype; ikke innfør generell automatisk sletting. |
 | AI | Sju fremtidskonsepter med kilde og brukerens godkjenning. | Flere regel-/tekstforslag finnes; kontrakt-AI er tidligere utsatt. | Start eventuelt med avgrenset søk eller tekstutkast med kilde. Ingen automatisk pris, sikkerhetsvurdering, rutinepublisering eller dokumentasjon av arbeid som ikke er utført. |
@@ -90,9 +103,9 @@ Vi bør hente prinsippene. ProffDoks egen petrol-/turkisprofil og godkjente Min 
 | 1 | Lik visning av lokal kladd, lagring og serverbekreftelse. | Brukeren vet om arbeidet faktisk er trygt lagret. | Visning som må følge reell lagringstilstand; eventuell kø er ny funksjon. | Appen skiller «lagret på enheten» fra «lagret på server», og gir nyttig retry uten dobbeltføring. |
 | 2 | Felles arbeidslister og oppfølging med ansvar, frist og neste handling. | Det som haster blir lettere å finne. | Presentasjon/integrasjon med kontroll av kilder og tilgang. | Samme sak telles én gang, ukjent status vises ikke som null, og direkte åpning bevarer riktig modul/prosjekt. |
 | 2 | Samlet plan- og kapasitetsoversikt. | Bedre ressursfordeling på flere jobber. | Funksjon/produktkartlegging; potensielt større databehov. | Reell tildeling, fravær og arbeidstid definerer kapasitet; tilstedeværelse alene gjør det ikke. |
-| 2 | En forståelig økonomioversikt fra tilgjengelige kilder. | Prosjektleder ser avtalt, endret, fakturert og gjenstående. | Egen økonomikontrakt, ingen nye summer uten kilde. | Kildene, eks./inkl. mva., periode og manglende grunnlag er synlige. Fortjeneste vises bare når den kan beregnes forsvarlig. |
+| Senere | Eventuell ERP/API-inngang. | Bruk kundens eksisterende økonomisystem. | Separat produkt- og integrasjonsoppgave; lav prioritet. | Datakilder, tilgang og behov er avklart før noe bygges. |
 | 2 | Ensartet bildestrøm og dokumentinngang. | Mindre leting, enklere dokumentasjon. | Først lesende oversikt; eventuell ny offline-kø separat. | Bilder finnes én gang med kilde, og feil/opplastingskø kan følges opp uten tapt kladd. |
-| 2 | Bolig: «Krever handling» og tett tabell som alternativ til fasaden. | Bedre oversikt over mange boliger og løpende overtakelse. | Rollebasert visning over eksisterende status. | Valgt bygg styrer tall; kritisk hinder, restpunkt og faktisk overtakelse holdes adskilt. |
+| 2 | Bolig: fasaden som standard, valgfri tett liste og gradvis åpning av detaljer. | Roligere oversikt med all relevant informasjon tilgjengelig. | Visningsendring med alle boligfunksjoner bevart. | Fasaden er bevart, liste er valgfri, og pakker, bestillinger, samarbeid, dokumentasjon og overtakelse er lette å nå. |
 | 3 | Enkel førstegangsveiledning og korte videoer fra den faktiske appen. | Potensielle kunder og nye ansatte forstår verdien raskere. | Onboarding/hjelp, etter stabilisering av valgt UX. | Oppgavene kan løses uten opplæring i alle moduler og filmen viser det som faktisk finnes. |
 | 3 | Kildebasert AI-hjelp der et dokumentert tidsproblem finnes. | Mindre søk-/skrivearbeid. | Ny funksjon med egen kostnads-/tilgangsvurdering. | Kilde, begrensninger og brukerens endelige handling er tydelige. Ingen automatisk godkjenning. |
 
@@ -196,4 +209,4 @@ Alle kildekodereferanser i vurderingen gjelder main-SHA oppgitt over.
 
 ## Endringsstatus
 
-Bare denne rapporten er skrevet. Ingen appkode, database, tilgang, e-post, produksjon, demo, WordPress eller eksterne kundedata er endret. Ingen nye utsendinger er gjort. Vurderingen krever ikke en ny app-release. Implementering er ikke bestilt eller utført gjennom rapporten.
+Rapporten er oppdatert med Kenneths føringer, og en separat privat designprototype er opprettet. Ingen appkode, database, tilgang, e-post, ProffDok-produksjon, demo, WordPress eller eksterne kundedata er endret. Ingen nye utsendinger er gjort. Vurderingen og skissen krever ikke en ny app-release.
