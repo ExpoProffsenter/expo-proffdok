@@ -12,10 +12,13 @@ export function createGlobalAppTabs({
   canUseHr = false,
   canUseBolig = false,
   personalPage = false,
+  canUseProCatalogOrders = false,
+  internalCatalogOrders = false,
 } = {}) {
   return [
     ["prosjekt", "Startside"],
     ["sales", "Befaring/Tilbud"],
+    ...(canUseProCatalogOrders ? [...(internalCatalogOrders ? [] : [["pro_catalog", "Varesøk"]]), ["catalog_order", "Varebestilling"]] : []),
     ["firma", "Firmaprofil"],
     ...(personalPage ? [["innlogging", "Min side"]] : [["innlogging", "Min profil / e-postvalg"]]),
     ...(isCompanyAdminUser ? [["firmaadmin", "Firma"]] : []),

@@ -13,6 +13,7 @@ import { WORK_PROFILE_EVENT, getMyWorkProfileState, readCachedWorkProfileState }
 import { deleteMobilePicklist, listMobilePicklists, saveMobilePicklist } from "./mobilePicklistClient.js";
 import CordelPicklistExport from "../cordel/CordelPicklistExport.jsx";
 import SupplierOrder from "./SupplierOrder.jsx";
+import ProCatalogOrderShortcut from "./ProCatalogOrderShortcut.jsx";
 import {
   MAX_PICKLIST_ITEMS, MAX_SAVED_PICKLISTS, deleteLegacyPicklist, normalizePickQuantity,
   picklistReferences, readLegacyPicklist, samePicklistContents, toPicklistReference,
@@ -1012,6 +1013,7 @@ export default function StorePriceSearchView({ onClose }) {
       </section>
 
       <div className="priceSearchSurfaces" role="group" aria-label="Varearbeid">
+        <ProCatalogOrderShortcut/>
         <button type="button" className={surface==='search'?'':'secondary'} aria-pressed={surface==='search'} onClick={()=>setSurface('search')}>Søk varer</button>
         <button type="button" className={surface==='lists'?'':'secondary'} aria-pressed={surface==='lists'} onClick={()=>setSurface('lists')}>Plukklister ({selectedProducts.length})</button>
         {stocktakeAvailable&&<button type="button" className={surface==='stocktake'?'':'secondary'} aria-pressed={surface==='stocktake'} onClick={()=>setSurface('stocktake')}>Varetelling</button>}

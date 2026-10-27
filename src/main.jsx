@@ -102,6 +102,8 @@ const HrModule = React.lazy(() => import('./modules/hr/HrModule.jsx'));
 const HomeFollowups = React.lazy(() => import('./modules/home/HomeFollowups.jsx'));
 import WorkspaceViewMode from './modules/app/WorkspaceViewMode.jsx';
 import { useBoligContext } from './modules/bolig/boligAccess.js';
+import { useProCatalogOrderAccess } from './modules/storeCatalog/useProCatalogOrderAccess.js';
+const ProCatalogOrders = React.lazy(() => import('./modules/storeCatalog/ProCatalogOrders.jsx'));
 const BoligEntry = React.lazy(() => import('./modules/bolig/BoligEntry.jsx'));
   var supabase = getAppSupabaseClient() || (0, import_supabase_js.createClient)(
     "https://dqffxflaoyarbxyiyhop.supabase.co",
@@ -786,6 +788,7 @@ const BoligEntry = React.lazy(() => import('./modules/bolig/BoligEntry.jsx'));
     const kshmsContext = useKshmsAccess(authUser?.id);
     const hrContext = useHrAccess(authUser?.id, tab === "innlogging");
     const personalContext = usePersonalAccess(authUser?.id);
+    const proCatalogOrderAccess = useProCatalogOrderAccess(authUser?.id);
     const [openedKshmsScope, setOpenedKshmsScope] = (0, import_react.useState)(null);
     const [kshmsDeviationRequest, setKshmsDeviationRequest] = (0, import_react.useState)(null);
     const kshmsScopeKey = kshmsContext?.enabled ? `${kshmsContext.user_id}:${kshmsContext.company_id}` : null;
@@ -1963,6 +1966,8 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       canUseHr: ownRights.hrManagement,
       canUseBolig: Boolean(boligContext?.enabled && boligContext.user_id === authUser?.id),
       personalPage: ownRights.enabled,
+      canUseProCatalogOrders: Boolean(proCatalogOrderAccess.context && !isProjectSupportReadOnly),
+      internalCatalogOrders: proCatalogOrderAccess.context?.internal_catalog === true,
       canUseAdminProjectSync
     });
     const tabs = hasActiveProjectWorkspace ? projectTabs : globalTabs;
@@ -6986,6 +6991,7 @@ ${appLink}`;
         tab === "hr" && ownRights.hrManagement && !hasActiveProjectWorkspace && (0, import_jsx_runtime.jsx)(React.Suspense, { fallback: "Henter HR …", children: (0, import_jsx_runtime.jsx)(HrModule, { context: hrContext, audience: "management" }, `${hrContext.user_id}:${hrContext.company_id}:${hrContext.administer}`) }),
         tab === "hr" && !ownRights.hrManagement && (0, import_jsx_runtime.jsx)("p", { role: "status", children: "HR i hovedmenyen er for firmaadmin og registrerte nærmeste ledere. Egne oppfølginger finner du på Min side. Kontroller arbeidsprofilen eller kontakt firmaadmin hvis tilgangen er feil." }),
                 tab === "hjelp" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(HelpCenter, { isAdmin: isAdminUser, isCompanyAdmin: isCompanyAdminUser, isSystemAdmin: isSystemAdminUser, termsAccepted, termsAcceptanceRecord, authUser, formatTermsAcceptedAt, kshmsContext, hrContext }),
+        (tab === "pro_catalog" || tab === "catalog_order") && !hasActiveProjectWorkspace && !isProjectSupportReadOnly && (proCatalogOrderAccess.context ? (0, import_jsx_runtime.jsx)(React.Suspense, { fallback: "Henter varebestilling …", children: (0, import_jsx_runtime.jsx)(ProCatalogOrders, { context: proCatalogOrderAccess.context, pending: proCatalogOrderAccess.pending, mode: tab === "pro_catalog" ? "search" : "order", onSearch: () => goToTab("pro_catalog"), onOrder: () => goToTab("catalog_order") }, `${proCatalogOrderAccess.context.user_id}:${proCatalogOrderAccess.context.company_id}`) }) : (0, import_jsx_runtime.jsx)("p", { role: "status", children: proCatalogOrderAccess.pending ? "Kontrollerer katalogtilgangen …" : "Varebestilling er ikke tilgjengelig i aktivt firma." })),
         tab === "support" && !isProjectSupportReadOnly && (0, import_jsx_runtime.jsx)(SupportWorkspace, { supabaseClient: supabase, authUser, standalone: true, requestedTicket: supportRequest }, authUser?.id),
         tab === "support" && isProjectSupportReadOnly && (0, import_jsx_runtime.jsx)("p", { role: "status", children: "Avslutt prosjektets supportmodus for å åpne dine egne supportsaker." }),
         tab === "admin" && canUseAdminProjectSync && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Systemadmin", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: (0, import_jsx_runtime.jsx)(SystemAdminWorkspace, { supabaseClient: supabase, authUser, area: adminArea, onAreaChange: (area) => { setAdminArea(area); const key = {sync: "dokument", projects: "support", users: "brukere", products: "produktmaster"}[area]; if (key) setOpenAdminSections(prev => ({...prev, [key]: true})); }, children: [(0, import_jsx_runtime.jsx)("p", { className: "note", children: isAdminUser ? "Her kan systemadministrator godkjenne brukere, vedlikeholde Produktmaster og synke aktive prosjekter mot Produktmaster. Låste prosjekter røres ikke." : "Her kan du synke åpnet prosjekt mot Produktmaster." }),
