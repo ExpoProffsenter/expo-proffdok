@@ -1,5 +1,6 @@
 /* Same controls and state; groups adapt to the room actually available. */
 .bolig-building-panel{container-type:inline-size}
+.bolig-dialog .bolig-workspace-toolbar button{min-height:44px!important}
 .bolig-workspace-toolbar{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"building stats" "tools tools";align-items:center;gap:14px 20px;margin:12px 0 18px}
 .bolig-building-panel .bolig-workspace-building{grid-area:building;display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0;margin:0}
 .bolig-workspace-building h3{display:flex;align-items:center;gap:8px;margin:0;font-size:20px;overflow-wrap:anywhere}

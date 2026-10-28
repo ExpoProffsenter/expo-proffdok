@@ -1,5 +1,6 @@
 /* App package 01: presentation of the authenticated shell only.
    Existing navigation, work-profile controls and login keep their own behavior. */
+body:has([data-expo-app-shell="true"]){min-width:0}
 [data-expo-app-shell="true"]{min-height:100dvh;background:#f4f7f8;color:#10212b}
 [data-expo-app-shell="true"]>header{background:#fff;border-bottom:1px solid #cbdce4;box-shadow:0 2px 12px #10212b08}
 [data-expo-app-shell="true"]>header>.head{max-width:1800px;gap:14px;padding:12px 24px;flex-wrap:wrap}
