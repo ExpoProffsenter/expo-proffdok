@@ -24,3 +24,10 @@
  [data-expo-app-shell="true"]>header>.head>div:first-child{width:122px!important;height:48px!important;flex:0 0 122px!important}
  [data-expo-app-shell="true"]>header>.head h1{font-size:18px!important}
 }
+@media(min-width:1181px){
+ [data-expo-app-shell="true"]>header>.expoDesktopMenuBar{background:#10212b;color:#e8f3f5;border-bottom:1px solid #244551;padding:8px 24px}
+ [data-expo-app-shell="true"] .expoDesktopMenuToggle{min-height:44px;background:#083f49;border:1px solid #10c7cf;border-radius:7px;font-size:16px}
+ [data-expo-app-shell="true"] .expoDesktopMenuCurrent{color:#e8f3f5;font-size:16px}
+ [data-expo-app-shell="true"] .expoDesktopHeaderShortcut{min-height:44px;background:#ffffff0d;color:#fff;border-color:#ffffff40;font-size:16px;border-radius:7px;box-shadow:none}
+ body:has([data-expo-app-shell="true"]) .expoDesktopDrawerButton{font-size:16px}
+}
