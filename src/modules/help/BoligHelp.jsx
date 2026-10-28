@@ -274,7 +274,7 @@ export function BoligHelp() {
           senere. En enebolig registreres som én husstand, uansett etasjeantall.
         </li>
         <li>
-          Bruk «Alle bygg» eller «Bytt bygg» for å finne riktig bygg. Lange
+          Byggvalg, søk, boligfilter og Fasade/Boligliste er samlet i verktøylinjen. På bred skjerm bruker verktøyene midten og boligstatistikken høyre side. På smal skjerm deles de i lesbare grupper. Små prosjekter har også direkte byggknapper. Bruk «Alle bygg» eller «Bytt bygg» for å finne riktig bygg. Lange
           blokker har oppgangsvelger og et oversiktsbånd. Søk finner boliger,
           adresser og kontaktpersoner på tvers av byggene. «Boligliste» viser
           alle boliger med kontakt og status. «Filtrer boliger» finner manglende
@@ -582,3 +582,4 @@ export function BoligHelp() {
     </details>
   );
 }
+
