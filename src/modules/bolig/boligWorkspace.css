@@ -37,3 +37,13 @@
  .bolig-workspace-tools .bolig-overview-view button{flex:1;justify-content:center}
  .bolig-workspace-stats{justify-content:flex-start;max-width:none;gap:24px}
 }
+
+/* The overview uses the available width until a unit is selected. */
+[data-expo-app-shell="true"]:has(.bolig-page)>main{max-width:1800px}
+.bolig-main-grid:not(.has-selected){grid-template-columns:minmax(0,1fr)}
+.bolig-main-grid:not(.has-selected)>.bolig-select-unit{padding:0 16px;box-shadow:none;background:transparent}
+.bolig-start-help>summary{min-height:44px;cursor:pointer;font-size:16px;color:#496372;display:flex;align-items:center;list-style:none;gap:10px}
+.bolig-start-help>summary::after{content:'+';margin-left:auto;font-size:22px}
+.bolig-start-help[open]>summary::after{content:'−'}
+.bolig-start-help>div{padding:12px 0;font-size:16px}
+.bolig-start-help>summary:focus-visible{outline:3px solid #10c7cf;outline-offset:3px}
