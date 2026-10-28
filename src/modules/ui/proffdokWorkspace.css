@@ -3,7 +3,7 @@
 [data-expo-app-shell="true"]{min-height:100dvh;background:#f4f7f8;color:#10212b}
 [data-expo-app-shell="true"]>header{background:#fff;border-bottom:1px solid #cbdce4;box-shadow:0 2px 12px #10212b08}
 [data-expo-app-shell="true"]>header>.head{max-width:1800px;gap:14px;padding:12px 24px;flex-wrap:wrap}
-[data-expo-app-shell="true"]>header>.head h1{font-size:28px;letter-spacing:-.7px;line-height:1.2}
+[data-expo-app-shell="true"]>header>.head h1{font-size:30px;letter-spacing:-.7px;line-height:1.2}
 [data-expo-app-shell="true"]>header>.head p{font-size:14px;color:#496372}
 [data-expo-app-shell="true"]>header>nav{max-width:1800px;padding:10px 24px;gap:6px;background:#10212b}
 [data-expo-app-shell="true"]>header>nav button{font-size:16px;min-height:44px;padding:10px 14px;border-radius:7px;background:transparent;color:#e8f3f5;border:1px solid transparent;box-shadow:none}
@@ -14,13 +14,14 @@
 [data-expo-app-shell="true"]>main>section{border-radius:13px;box-shadow:0 3px 14px #10212b08}
 [data-expo-app-shell="true"]>header button:focus-visible{outline:3px solid #10c7cf;outline-offset:3px}
 @media(max-width:700px){
- [data-expo-app-shell="true"]>header>.head{padding:10px 14px!important;gap:10px!important}
+ [data-expo-app-shell="true"]>header>.head{padding:10px 14px!important;gap:10px!important;grid-template-columns:144px minmax(0,1fr)!important}
  [data-expo-app-shell="true"]>header>.head>div:first-child{width:144px!important;height:52px!important;flex:0 0 144px!important}
  [data-expo-app-shell="true"]>header>.head h1{font-size:20px!important}
  [data-expo-app-shell="true"]>header>.head p{font-size:14px!important}
  [data-expo-app-shell="true"]>main{padding:16px 14px}
 }
 @media(max-width:360px){
+ [data-expo-app-shell="true"]>header>.head{grid-template-columns:122px minmax(0,1fr)!important}
  [data-expo-app-shell="true"]>header>.head>div:first-child{width:122px!important;height:48px!important;flex:0 0 122px!important}
  [data-expo-app-shell="true"]>header>.head h1{font-size:18px!important}
 }
