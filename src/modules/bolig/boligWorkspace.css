@@ -47,3 +47,10 @@
 .bolig-start-help[open]>summary::after{content:'−'}
 .bolig-start-help>div{padding:12px 0;font-size:16px}
 .bolig-start-help>summary:focus-visible{outline:3px solid #10c7cf;outline-offset:3px}
+
+@media(min-width:1001px){
+ .bolig-building-panel>.bolig-group-toolbar:not(:has([aria-pressed="true"])){float:right;width:auto;padding:0;border:0;background:none;margin:0 0 8px 12px}
+ .bolig-building-panel>.bolig-group-toolbar:not(:has([aria-pressed="true"]))>button{min-height:44px;font-size:14px}
+ .bolig-building-panel>.bolig-building-breadcrumb{min-height:44px;align-items:center}
+ .bolig-building-panel>.bolig-workspace-toolbar{clear:both}
+}
