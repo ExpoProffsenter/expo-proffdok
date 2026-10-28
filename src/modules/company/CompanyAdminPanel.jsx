@@ -108,13 +108,13 @@ export default function CompanyAdminPanel({authUser}) {
   </div>;
   const users=(current?.users||[]).filter(u=>`${u.email} ${u.name}`.toLocaleLowerCase('nb-NO').includes(search.toLocaleLowerCase('nb-NO')));
   return <div data-company-admin="unified" className="company-admin-panel">
-    <div className="item"><h3>Firmaadministrasjon</h3>
+    <div className="item company-admin-heading"><h3>Firmaadministrasjon</h3>
       {current?<><h4>{current.company_name}</h4><p>Invitasjoner og firmaroller nedenfor gjelder {current.company_name}.{current.can_switch_company?' Velg et annet firma i firmavalget øverst for å administrere det.':' Du administrerer bare ditt eget firma.'}</p></>:null}
       <button type="button" className="secondary" disabled={loading||busy} onClick={()=>load()}>{loading?'Henter firmaoversikt …':'Oppdater firmaoversikt'}</button>
     </div>
     {error&&<p role="alert">{error}</p>}{message&&<p role="status">{message}</p>}
-    {current&&<BoligAccessPanel userId={authUser.id} mode="company" expectedCompanyId={current.company_id}/>}
-    {current&&<fieldset disabled={loading||busy} key={current.company_id}>
+    {current&&<details className="company-admin-housing" key={'housing:'+current.company_id}><summary>Boligprosjekter – brukertilgang</summary><BoligAccessPanel userId={authUser.id} mode="company" expectedCompanyId={current.company_id}/></details>}
+    {current&&<fieldset className="company-admin-body" disabled={loading||busy} key={current.company_id}>
       <details className="company-invite-disclosure"><summary className="ux-readable-summary">Inviter en ansatt · velg rolle og tilganger</summary><form className="item" onSubmit={e=>{
         e.preventDefault();const wanted=email.trim();
         run(async (c,stillCurrent)=>{
@@ -134,7 +134,7 @@ export default function CompanyAdminPanel({authUser}) {
         <InviteAccessChoices options={current.invite_options} role={role} value={inviteAccess} onChange={value=>setAccessDraft({companyId:current.company_id,value})}/>
         <button disabled={!email.trim()||busy||!current.invite_options} type="submit">{busy?'Behandler …':'Inviter ansatt'}</button>
       </form></details>
-      <div className="item"><h3>Brukere og tilganger</h3><p>Velg rolle og moduler på den ansatte. Rolle lagres når du bekrefter. Modulvalg lagres med knappen under valgene. KS/HMS og HR må først være aktivert på firmaet.</p>
+      <div className="item company-admin-directory"><h3>Brukere og tilganger</h3><p>Velg rolle og moduler på den ansatte. Rolle lagres når du bekrefter. Modulvalg lagres med knappen under valgene. KS/HMS og HR må først være aktivert på firmaet.</p>
         <label>Søk etter ansatt<input type="search" value={search} onChange={e=>setSearch(e.target.value)} placeholder="Navn eller e-post"/></label>
         <div className="company-admin-users">{users.map(user=>{
           const core=user.core_access;
@@ -147,7 +147,7 @@ export default function CompanyAdminPanel({authUser}) {
           </details>;
         })}{!users.length&&<p>Ingen brukere funnet i dette firmaet.</p>}</div>
       </div>
-      {!!current.invites?.length&&<div className="item"><h3>Inviterte brukere</h3><p>Disse venter på registrering. Send invitasjonen på nytt hvis den ansatte ikke har kommet i gang. Rolle og tilganger beholdes.</p>{current.invites.map(i=><div key={i.id}><p><b>{i.email}</b> · {i.company_role==='firmaadmin'?'Firmaadmin':'Ansatt'} · Venter på registrering</p><p className="note">{invitationSummary(i.access)}{i.company_role==='firmaadmin'?' · Firmaadmin arver firmaets aktiverte KS/HMS og HR.':''}</p>
+      {!!current.invites?.length&&<div className="item company-admin-invitations"><h3>Inviterte brukere</h3><p>Disse venter på registrering. Send invitasjonen på nytt hvis den ansatte ikke har kommet i gang. Rolle og tilganger beholdes.</p>{current.invites.map(i=><div key={i.id}><p><b>{i.email}</b> · {i.company_role==='firmaadmin'?'Firmaadmin':'Ansatt'} · Venter på registrering</p><p className="note">{invitationSummary(i.access)}{i.company_role==='firmaadmin'?' · Firmaadmin arver firmaets aktiverte KS/HMS og HR.':''}</p>
         <button type="button" className="secondary" disabled={busy||loading} aria-label={`Send invitasjon på nytt til ${i.email}`} onClick={()=>{
           setResendFeedback(null);
           run(async(c,stillCurrent)=>{
@@ -161,3 +161,4 @@ export default function CompanyAdminPanel({authUser}) {
     </fieldset>}
   </div>;
 }
+

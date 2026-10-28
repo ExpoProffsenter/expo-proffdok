@@ -1,6 +1,6 @@
 import React from "react";
 
-const UPDATED = "Sist oppdatert: 27.10.2026";
+const UPDATED = "Sist oppdatert: 29.10.2026";
 
 function List({ items = [] }) {
   return React.createElement(
@@ -37,11 +37,11 @@ export function createHelp45BSection({ Section }) {
       "Kun Systemadministrator kan aktivere Generelle tilbud / Proff-vareregister for et firma. Tilgangen gjelder automatisk alle nåværende og nye brukere i firmaet. Enkel ordre velges først etter kundeaksept.",
       "Tilgang til Expo ProffDok forutsetter at virksomheten oppfyller gjeldende brukervilkår, inkludert SoPro-forutsetningen."
     ];
-    const companyAdminGuide = "Firmaadmin viser firmaet du har valgt øverst. Velg e-post, rolle og moduler i Legg til ansatt før du trykker Inviter ansatt. Valgene vises under Inviterte brukere og settes for en ny bruker ved bekreftet registrering. Eksisterende kontoer beholder hovedmodulene sine; KS/HMS og HR følger de nye firmavalgene. Med HR valgt legges brukeren automatisk til i firmaets HR-register når kontoen er aktiv og registeret er satt opp. Eksisterende medarbeider og leder beholdes. Velg ellers nærmeste leder i HR etterpå. Tilgangene kan senere endres på samme brukerkort. En vanlig proffkunde administrerer bare sitt eget firma. Trykk Lagre tilgang for hovedmoduler og Lagre KS/HMS- og HR-tilgang for firmatilgang. Hovedmoduler gjelder kontoen; KS/HMS og HR gjelder firmaet på siden. Systemadmin kan legge til et ekstra internt arbeidsfirma uten å flytte primærfirma eller historikk. Kontostatus gjelder alle firmaer og styres av systemadministrator.";
+    const companyAdminGuide = "Firmaadmin viser firmaet du har valgt øverst. På PC ligger invitasjoner ved siden av Brukere og tilganger. På mobil kommer de under hverandre. Åpne Inviter en ansatt · velg rolle og tilganger. Velg e-post, rolle og moduler i Legg til ansatt før du trykker Inviter ansatt. Boligprosjekter – brukertilgang kan foldes ut over oversikten. Boligtilganger lagres med en gang når du endrer dem. Valgene vises under Inviterte brukere og settes for en ny bruker ved bekreftet registrering. Eksisterende kontoer beholder hovedmodulene sine; KS/HMS og HR følger de nye firmavalgene. Med HR valgt legges brukeren automatisk til i firmaets HR-register når kontoen er aktiv og registeret er satt opp. Eksisterende medarbeider og leder beholdes. Velg ellers nærmeste leder i HR etterpå. Tilgangene kan senere endres på samme brukerkort. En vanlig proffkunde administrerer bare sitt eget firma. Trykk Lagre tilgang for hovedmoduler og Lagre KS/HMS- og HR-tilgang for firmatilgang. Hovedmoduler gjelder kontoen; KS/HMS og HR gjelder firmaet på siden. Systemadmin kan legge til et ekstra internt arbeidsfirma uten å flytte primærfirma eller historikk. Kontostatus gjelder alle firmaer og styres av systemadministrator.";
     const admin = isSystemAdmin
       ? [
           companyAdminGuide,
-          "Systemadmin administrerer firma, brukere, roller, modultilganger, prisinnsyn og proffleverandører fra Systemadmin → Firmaer, brukere og tilganger.",
+          "Systemadmin har ni arbeidsområder. På PC står områdevalgene ved siden av innholdet. Velg Firmaer og prosjekter for firmatilgang og prosjektstøtte. Velg Brukere og roller for godkjenning, roller, moduler, prisinnsyn og proffleverandører. I appen vises hovedmenyen fast til venstre på brede PC-skjermer. På mindre skjermer bruker du den vanlige menyen. Fullskjermvisning skjuler toppfeltet og hovedmenyen; Vanlig visning tar dem tilbake.",
           "Firma på brukerkortet viser brukerens lagrede firma også når navnet har ekstra mellomrom eller ulik bruk av store og små bokstaver. Velg et annet registrert firma og bekreft for å flytte brukeren. Å velge samme firma på nytt endrer ingenting.",
           "«Generelle tilbud / Proff vareregister» aktiveres én gang på firmaet og gjelder alle firmaets brukere. Enkel ordre er ikke en egen modultilgang, men et valg etter kundeaksept.",
           "Brukervilkårstatus vises separat fra firmaets leverandørtilgang og brukerens modultilgang. Brukeren må fortsatt godkjenne gjeldende vilkår i den ordinære innloggingsflyten.",
@@ -72,3 +72,4 @@ export function createHelp45BSection({ Section }) {
     );
   };
 }
+

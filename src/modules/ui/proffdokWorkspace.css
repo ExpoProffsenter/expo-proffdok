@@ -33,3 +33,105 @@ body:has([data-expo-app-shell="true"]){min-width:0}
  [data-expo-app-shell="true"] .expoDesktopHeaderShortcut{min-height:44px;background:#ffffff0d;color:#fff;border-color:#ffffff40;font-size:16px;border-radius:7px;box-shadow:none}
  body:has([data-expo-app-shell="true"]) .expoDesktopDrawerButton{font-size:16px}
 }
+
+/* The native, access-filtered navigation is also the desktop sidebar.
+   No cloned menu, callback, navigation state or access decision is introduced. */
+@media screen and (min-width:1181px){
+ [data-expo-app-shell="true"]:not([data-expo-project-shell="1"]):not([data-expo-fullscreen]):has(>header>nav.expoDesktopSourceNavHidden){--pd-sidebar-width:216px}
+ [data-expo-app-shell="true"]:not([data-expo-project-shell="1"]):not([data-expo-fullscreen]):has(>header>nav.expoDesktopSourceNavHidden)>header{backdrop-filter:none}
+ [data-expo-app-shell="true"]:not([data-expo-project-shell="1"]):not([data-expo-fullscreen]):has(>header>nav.expoDesktopSourceNavHidden)>header>.head{max-width:none;margin-left:var(--pd-sidebar-width)}
+ [data-expo-app-shell="true"]:not([data-expo-project-shell="1"]):not([data-expo-fullscreen]):has(>header>nav.expoDesktopSourceNavHidden)>main{max-width:1800px;width:calc(100% - var(--pd-sidebar-width));margin-left:var(--pd-sidebar-width);margin-right:0}
+ [data-expo-app-shell="true"]:not([data-expo-project-shell="1"]):not([data-expo-fullscreen])>header>nav.expoDesktopSourceNavHidden{display:flex!important;position:fixed;inset:0 auto 0 0;z-index:40;flex-direction:column;flex-wrap:nowrap;align-items:stretch;width:216px;max-width:none;margin:0;padding:22px 12px;gap:4px;overflow-y:auto;overscroll-behavior:contain;background:#10212b;border-right:1px solid #244551;scrollbar-width:thin}
+ [data-expo-app-shell="true"]:not([data-expo-project-shell="1"]):not([data-expo-fullscreen])>header>nav.expoDesktopSourceNavHidden::before{content:"Arbeidsrom";padding:0 12px 16px;color:#b3d5de;font-size:16px;font-weight:700;letter-spacing:.03em}
+ [data-expo-app-shell="true"]:not([data-expo-project-shell="1"]):not([data-expo-fullscreen])>header>nav.expoDesktopSourceNavHidden>button{flex:0 0 auto;justify-content:flex-start;text-align:left;white-space:normal;overflow-wrap:anywhere;line-height:1.35;min-height:44px;padding:11px 12px;font-size:16px;font-weight:600;color:#e8f3f5;border-radius:8px;background:transparent;border:1px solid transparent;box-shadow:none}
+ [data-expo-app-shell="true"]:not([data-expo-project-shell="1"]):not([data-expo-fullscreen])>header>nav.expoDesktopSourceNavHidden>button:hover{background:#20424e}
+ [data-expo-app-shell="true"]:not([data-expo-project-shell="1"]):not([data-expo-fullscreen])>header>nav.expoDesktopSourceNavHidden>button.on{background:#083f49;border-color:#10c7cf;color:#fff}
+ [data-expo-app-shell="true"]:not([data-expo-project-shell="1"]):not([data-expo-fullscreen]):has(>header>nav.expoDesktopSourceNavHidden)>header>.expoDesktopMenuBar{display:none!important}
+ body:has([data-expo-app-shell="true"]:not([data-expo-project-shell="1"]):not([data-expo-fullscreen])>header>nav.expoDesktopSourceNavHidden)>.expoDesktopMenuDrawer,
+ body:has([data-expo-app-shell="true"]:not([data-expo-project-shell="1"]):not([data-expo-fullscreen])>header>nav.expoDesktopSourceNavHidden)>.expoDesktopMenuBackdrop{display:none!important}
+}
+
+/* Common presentation for daily work. Existing conditional content stays put. */
+[data-expo-app-shell="true"] .ux-workday-shortcuts{padding:14px 16px;border:1px solid #d4e3e8;border-radius:12px;background:#fff;box-shadow:none}
+[data-expo-app-shell="true"] .ux-workday-shortcuts .ux-toolbar{gap:12px}
+[data-expo-app-shell="true"] .ux-workday-shortcuts :is(select,button){font-size:16px;min-height:44px}
+[data-expo-app-shell="true"] .mobileProjectChooser{padding:20px;border-radius:13px}
+[data-expo-app-shell="true"] .mobileProjectChooser .mobileHomeHero{padding:22px;border-radius:12px;background:#123c4d;box-shadow:none}
+[data-expo-app-shell="true"] .mobileHomeHero h2{margin:8px 0;font-size:30px;line-height:1.2;color:#fff}
+[data-expo-app-shell="true"] .mobileHomeHero p{margin:8px 0 16px;font-size:16px;line-height:1.5}
+[data-expo-app-shell="true"] .mobileHomeActions{gap:10px}
+[data-expo-app-shell="true"] .mobileHomeActions button{font-size:16px;min-height:44px;border-radius:8px;box-shadow:none}
+[data-expo-app-shell="true"] .personal-page{max-width:none;padding:0;background:transparent;border:0;box-shadow:none}
+[data-expo-app-shell="true"] .personal-page>header.personal-heading{padding:18px 20px;border-radius:12px;margin-bottom:12px;box-shadow:none}
+[data-expo-app-shell="true"] .personal-heading p{font-size:16px}
+[data-expo-app-shell="true"] .personal-page .personal-tabs{border-radius:10px;padding:4px;margin-bottom:12px}
+[data-expo-app-shell="true"] .personal-page .personal-tabs button{font-size:16px;border-radius:7px;min-height:44px}
+[data-expo-app-shell="true"] .personal-card{padding:16px;gap:10px;border-radius:12px;box-shadow:none;background:#fff}
+[data-expo-app-shell="true"] .personal-card :is(p,.personal-note,.personal-upcoming p){font-size:16px;line-height:1.5}
+[data-expo-app-shell="true"] .personal-page .personal-card button{font-size:16px;min-height:44px;border-radius:8px}
+[data-expo-app-shell="true"] .personal-plan-source>p{font-size:16px}
+[data-expo-app-shell="true"] .personal-card-eyebrow{font-size:13px;letter-spacing:.05em}
+
+/* Company administration: people first; infrequent housing settings unfold. */
+[data-expo-app-shell="true"] .company-admin-panel{min-width:0}
+[data-expo-app-shell="true"] .company-admin-panel .company-admin-heading{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:20px;align-items:start;padding:0 0 16px;margin:0 0 12px;border:0;border-bottom:1px solid #d7e4ea;background:transparent}
+[data-expo-app-shell="true"] .company-admin-heading :is(h3,h4,p){grid-column:1;margin:0 0 8px;overflow-wrap:anywhere}
+[data-expo-app-shell="true"] .company-admin-heading>button{grid-column:2;grid-row:1 / span 3;align-self:center;min-height:44px;font-size:16px}
+[data-expo-app-shell="true"] .company-admin-panel :is(input,select,button){font-size:16px;min-height:44px;max-width:100%}
+[data-expo-app-shell="true"] .company-admin-panel :is(input[type="checkbox"],input[type="radio"]){min-height:24px}
+[data-expo-app-shell="true"] .company-admin-panel p{font-size:16px;line-height:1.5}
+[data-expo-app-shell="true"] .company-admin-housing{padding:0 14px;border:1px solid #d7e4ea;border-radius:10px;background:#f8fbfc;margin:0 0 14px}
+[data-expo-app-shell="true"] .company-admin-housing:not(:has(.bolig-admin-access)){display:none}
+[data-expo-app-shell="true"] .company-admin-housing>summary{min-height:48px;align-content:center;font-size:16px;font-weight:700;cursor:pointer}
+[data-expo-app-shell="true"] .company-admin-housing .bolig-admin-access{margin:0 0 14px;padding:14px;box-shadow:none}
+[data-expo-app-shell="true"] .company-admin-panel .company-admin-body{display:grid;gap:16px;align-items:start}
+[data-expo-app-shell="true"] .company-admin-directory{margin:0;padding:16px;border-radius:12px}
+[data-expo-app-shell="true"] .company-admin-directory>h3{margin-top:0}
+[data-expo-app-shell="true"] .company-admin-panel .company-admin-users{gap:8px;margin-top:12px}
+[data-expo-app-shell="true"] .company-admin-panel :is(.company-user-disclosure,.company-invite-disclosure){min-width:0;border:1px solid #d7e4ea;border-radius:10px;background:#fff}
+[data-expo-app-shell="true"] .company-admin-panel :is(.company-user-disclosure,.company-invite-disclosure)>summary{padding:12px;min-height:48px;font-size:16px;line-height:1.5;overflow-wrap:anywhere;cursor:pointer}
+[data-expo-app-shell="true"] .company-admin-panel .company-user-disclosure[open]{border-color:#089aa3}
+[data-expo-app-shell="true"] .company-admin-panel :is(.company-admin-invitations,.company-invite-disclosure>.item){margin:0;padding:14px;border-radius:10px;min-width:0}
+[data-expo-app-shell="true"] .company-admin-housing>summary:focus-visible{outline:3px solid #089aa3;outline-offset:3px}
+
+/* System administration: keep all nine areas; put navigation beside content. */
+[data-expo-app-shell="true"] .pd-admin-workspace{max-width:none}
+[data-expo-app-shell="true"] .pd-admin-heading{padding:0 0 12px}
+[data-expo-app-shell="true"] .pd-admin-heading h2{margin:8px 0;font-size:28px}
+[data-expo-app-shell="true"] .pd-admin-workspace :is(.pd-admin-heading p,.pd-admin-panel-heading p){font-size:16px;line-height:1.5}
+[data-expo-app-shell="true"] .pd-admin-navigation{gap:10px;margin-bottom:16px;padding:0}
+[data-expo-app-shell="true"] .pd-admin-group{padding:12px;border:1px solid #d7e4ea;border-radius:10px;background:#f7fafb}
+[data-expo-app-shell="true"] .pd-admin-group-label{margin-bottom:8px;font-size:15px}
+[data-expo-app-shell="true"] .pd-admin-navigation button{font-size:16px;padding:10px;min-height:44px;border-radius:7px}
+[data-expo-app-shell="true"] .pd-admin-panel{padding:16px;border-radius:12px}
+[data-expo-app-shell="true"] .pd-admin-overview{gap:10px;margin-top:12px}
+[data-expo-app-shell="true"] .pd-admin-overview button{padding:14px;border-radius:10px;background:#fff;font-size:16px}
+[data-expo-app-shell="true"] .pd-admin-overview button span{font-size:16px;line-height:1.5}
+[data-expo-app-shell="true"] .pd-admin-panel :is(input,select,textarea,button){font-size:16px}
+@media screen and (min-width:1181px){
+ [data-expo-app-shell="true"] .pd-admin-workspace{display:grid;grid-template-columns:208px minmax(0,1fr);column-gap:16px;align-items:start}
+ [data-expo-app-shell="true"] .pd-admin-heading{grid-column:1 / -1}
+ [data-expo-app-shell="true"] .pd-admin-navigation{grid-column:1;grid-row:2;grid-template-columns:1fr;margin:0}
+ [data-expo-app-shell="true"] .pd-admin-group>div{grid-template-columns:1fr}
+ [data-expo-app-shell="true"] .pd-admin-panel{grid-column:2;grid-row:2}
+ [data-expo-app-shell="true"] .company-admin-panel .company-admin-body{grid-template-columns:minmax(240px,1fr) minmax(0,2fr)}
+ [data-expo-app-shell="true"] .company-invite-disclosure{grid-column:1;grid-row:1}
+ [data-expo-app-shell="true"] .company-admin-invitations{grid-column:1;grid-row:2}
+ [data-expo-app-shell="true"] .company-admin-directory{grid-column:2;grid-row:1 / span 2}
+ [data-expo-app-shell="true"] .personal-page .personal-cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media screen and (min-width:1600px){
+ [data-expo-app-shell="true"] .personal-page .personal-cards{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media screen and (max-width:700px){
+ [data-expo-app-shell="true"] .mobileProjectChooser{padding:14px}
+ [data-expo-app-shell="true"] .mobileProjectChooser .mobileHomeHero{padding:18px}
+ [data-expo-app-shell="true"] .mobileHomeHero h2{font-size:28px}
+ [data-expo-app-shell="true"] .personal-heading .personal-avatar{width:48px;height:48px;flex-shrink:0}
+ [data-expo-app-shell="true"] .company-admin-panel .company-admin-heading{grid-template-columns:minmax(0,1fr)}
+ [data-expo-app-shell="true"] .company-admin-heading>button{grid-column:1;grid-row:auto;justify-self:start}
+ [data-expo-app-shell="true"] .pd-admin-panel{padding:12px}
+ [data-expo-app-shell="true"] .pd-admin-group>div{grid-template-columns:repeat(2,minmax(0,1fr))}
+ [data-expo-app-shell="true"] .pd-admin-overview{grid-template-columns:1fr}
+}
+
