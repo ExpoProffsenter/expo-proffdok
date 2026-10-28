@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Designpakke 01: felles innlogget app-ramme i separat core-Preview",
+  "change": "Miljømål BEGGE, foreløpig bare feature/Preview. Marine/petrol/turkis presentasjon, bredere arbeidsramme og tydeligere eksisterende menylinje. Kun én CSS-import i main.jsx og én ny, avgrenset CSS-fil. Innlogging, eksterne portaler, navigasjon, work-profile, state, recovery, API og lagring er uendret. Egen PR fra ren main fordi Bolig core-boundary krever byte-identisk main.jsx i boligpakken. Vakten endres ikke.",
+  "verification": "main 5f58b1c6, demo dcff082f og eksisterende branch-Preview verifisert. main.jsx er sammenlignet eksakt: bare CSS-import er lagt til; syntakskontroll bestått. Første integrerte kandidat hadde grønn build og åtte grønne QA-pakker, men bolig-db stoppet på filisolasjon før React-prøvene. Leveransen splittes derfor i isolerte PR-er uten testsvekkelse. Innlogget skynettprøve på samme kilde-CSS gjennomføres samlet med boligpakken; eksakte kilde-SHA-er, full CI og Preview-resultat registreres i PR. Ingen produksjonsmerge, sending eller tilgangsendring.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Eksisterende menypunkter og funksjoner har samme navn og handling. Bare farger, avstand og ramme endres; ingen ny brukerflyt."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Ingen endring i arkitektur, komponentansvar, datalagring, API, tilgang eller recovery."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen nye avhengigheter, konfigurasjon, miljøvariabler eller installasjonssteg."
+    },
+    "module": {
+      "required": false,
+      "reason": "Ingen modulkontrakt endres. Boligverktøylinjen leveres separat med egen hjelp og regresjonskontroll."
+    }
+  }
+}
