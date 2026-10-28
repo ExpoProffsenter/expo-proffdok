@@ -39,7 +39,13 @@ body:has([data-expo-app-shell="true"]){min-width:0}
 @media screen and (min-width:1181px){
  [data-expo-app-shell="true"]:not([data-expo-project-shell="1"]):not([data-expo-fullscreen]):has(>header>nav.expoDesktopSourceNavHidden){--pd-sidebar-width:216px}
  [data-expo-app-shell="true"]:not([data-expo-project-shell="1"]):not([data-expo-fullscreen]):has(>header>nav.expoDesktopSourceNavHidden)>header{backdrop-filter:none}
- [data-expo-app-shell="true"]:not([data-expo-project-shell="1"]):not([data-expo-fullscreen]):has(>header>nav.expoDesktopSourceNavHidden)>header>.head{max-width:none;margin-left:var(--pd-sidebar-width)}
+ [data-expo-app-shell="true"]:not([data-expo-project-shell="1"]):not([data-expo-fullscreen]):has(>header>nav.expoDesktopSourceNavHidden)>header>.head{display:grid;grid-template-columns:260px minmax(0,1fr) auto auto;grid-template-rows:auto auto;max-width:none;margin-left:var(--pd-sidebar-width);gap:8px 14px;align-items:center}
+ [data-expo-app-shell="true"]:not([data-expo-project-shell="1"]):not([data-expo-fullscreen]):has(>header>nav.expoDesktopSourceNavHidden)>header>.head>div:first-child{grid-column:1;grid-row:1 / span 2}
+ [data-expo-app-shell="true"]:not([data-expo-project-shell="1"]):not([data-expo-fullscreen]):has(>header>nav.expoDesktopSourceNavHidden)>header>.head>div:nth-child(2){grid-column:2;grid-row:1;min-width:0}
+ [data-expo-app-shell="true"]:not([data-expo-project-shell="1"]):not([data-expo-fullscreen]):has(>header>nav.expoDesktopSourceNavHidden)>header>.head>div:nth-child(2) h1{overflow-wrap:anywhere}
+ [data-expo-app-shell="true"]:not([data-expo-project-shell="1"]):not([data-expo-fullscreen]):has(>header>nav.expoDesktopSourceNavHidden)>header>.head>button{grid-row:1}
+ [data-expo-app-shell="true"]:not([data-expo-project-shell="1"]):not([data-expo-fullscreen]):has(>header>nav.expoDesktopSourceNavHidden)>header>.head>.workspace-view-control{grid-column:4;grid-row:2;margin-left:0;justify-self:end}
+ [data-expo-app-shell="true"]:not([data-expo-project-shell="1"]):not([data-expo-fullscreen]):has(>header>nav.expoDesktopSourceNavHidden)>header>.head>#expo-work-profile-switcher{grid-column:2 / span 2;grid-row:2;min-width:0;width:auto!important}
  [data-expo-app-shell="true"]:not([data-expo-project-shell="1"]):not([data-expo-fullscreen]):has(>header>nav.expoDesktopSourceNavHidden)>main{max-width:1800px;width:calc(100% - var(--pd-sidebar-width));margin-left:var(--pd-sidebar-width);margin-right:0}
  [data-expo-app-shell="true"]:not([data-expo-project-shell="1"]):not([data-expo-fullscreen])>header>nav.expoDesktopSourceNavHidden{display:flex!important;position:fixed;inset:0 auto 0 0;z-index:40;flex-direction:column;flex-wrap:nowrap;align-items:stretch;width:216px;max-width:none;margin:0;padding:22px 12px;gap:4px;overflow-y:auto;overscroll-behavior:contain;background:#10212b;border-right:1px solid #244551;scrollbar-width:thin}
  [data-expo-app-shell="true"]:not([data-expo-project-shell="1"]):not([data-expo-fullscreen])>header>nav.expoDesktopSourceNavHidden::before{content:"Arbeidsrom";padding:0 12px 16px;color:#b3d5de;font-size:16px;font-weight:700;letter-spacing:.03em}
@@ -74,7 +80,7 @@ body:has([data-expo-app-shell="true"]){min-width:0}
 
 /* Company administration: people first; infrequent housing settings unfold. */
 [data-expo-app-shell="true"] .company-admin-panel{min-width:0}
-[data-expo-app-shell="true"] .company-admin-panel .company-admin-heading{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:20px;align-items:start;padding:0 0 16px;margin:0 0 12px;border:0;border-bottom:1px solid #d7e4ea;background:transparent}
+[data-expo-app-shell="true"] .company-admin-panel .company-admin-heading{box-shadow:none;display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:20px;align-items:start;padding:0 0 16px;margin:0 0 12px;border:0;border-bottom:1px solid #d7e4ea;background:transparent}
 [data-expo-app-shell="true"] .company-admin-heading :is(h3,h4,p){grid-column:1;margin:0 0 8px;overflow-wrap:anywhere}
 [data-expo-app-shell="true"] .company-admin-heading>button{grid-column:2;grid-row:1 / span 3;align-self:center;min-height:44px;font-size:16px}
 [data-expo-app-shell="true"] .company-admin-panel :is(input,select,button){font-size:16px;min-height:44px;max-width:100%}
@@ -88,7 +94,7 @@ body:has([data-expo-app-shell="true"]){min-width:0}
 [data-expo-app-shell="true"] .company-admin-directory{margin:0;padding:16px;border-radius:12px}
 [data-expo-app-shell="true"] .company-admin-directory>h3{margin-top:0}
 [data-expo-app-shell="true"] .company-admin-panel .company-admin-users{gap:8px;margin-top:12px}
-[data-expo-app-shell="true"] .company-admin-panel :is(.company-user-disclosure,.company-invite-disclosure){min-width:0;border:1px solid #d7e4ea;border-radius:10px;background:#fff}
+[data-expo-app-shell="true"] .company-admin-panel :is(.company-user-disclosure,.company-invite-disclosure){margin:0;min-width:0;border:1px solid #d7e4ea;border-radius:10px;background:#fff}
 [data-expo-app-shell="true"] .company-admin-panel :is(.company-user-disclosure,.company-invite-disclosure)>summary{padding:12px;min-height:48px;font-size:16px;line-height:1.5;overflow-wrap:anywhere;cursor:pointer}
 [data-expo-app-shell="true"] .company-admin-panel .company-user-disclosure[open]{border-color:#089aa3}
 [data-expo-app-shell="true"] .company-admin-panel :is(.company-admin-invitations,.company-invite-disclosure>.item){margin:0;padding:14px;border-radius:10px;min-width:0}
@@ -96,11 +102,11 @@ body:has([data-expo-app-shell="true"]){min-width:0}
 
 /* System administration: keep all nine areas; put navigation beside content. */
 [data-expo-app-shell="true"] .pd-admin-workspace{max-width:none}
-[data-expo-app-shell="true"] .pd-admin-heading{padding:0 0 12px}
+[data-expo-app-shell="true"] .pd-admin-heading{position:static;z-index:auto;backdrop-filter:none;padding:0 0 12px;border:0}
 [data-expo-app-shell="true"] .pd-admin-heading h2{margin:8px 0;font-size:28px}
 [data-expo-app-shell="true"] .pd-admin-workspace :is(.pd-admin-heading p,.pd-admin-panel-heading p){font-size:16px;line-height:1.5}
 [data-expo-app-shell="true"] .pd-admin-navigation{gap:10px;margin-bottom:16px;padding:0}
-[data-expo-app-shell="true"] .pd-admin-group{padding:12px;border:1px solid #d7e4ea;border-radius:10px;background:#f7fafb}
+[data-expo-app-shell="true"] .pd-admin-navigation>.pd-admin-group{padding:12px;border:1px solid #d7e4ea;border-radius:10px;background:#f7fafb}
 [data-expo-app-shell="true"] .pd-admin-group-label{margin-bottom:8px;font-size:15px}
 [data-expo-app-shell="true"] .pd-admin-navigation button{font-size:16px;padding:10px;min-height:44px;border-radius:7px}
 [data-expo-app-shell="true"] .pd-admin-panel{padding:16px;border-radius:12px}
@@ -114,13 +120,19 @@ body:has([data-expo-app-shell="true"]){min-width:0}
  [data-expo-app-shell="true"] .pd-admin-navigation{grid-column:1;grid-row:2;grid-template-columns:1fr;margin:0}
  [data-expo-app-shell="true"] .pd-admin-group>div{grid-template-columns:1fr}
  [data-expo-app-shell="true"] .pd-admin-panel{grid-column:2;grid-row:2}
- [data-expo-app-shell="true"] .company-admin-panel .company-admin-body{grid-template-columns:minmax(240px,1fr) minmax(0,2fr)}
+ [data-expo-app-shell="true"] .company-admin-panel .company-admin-body{grid-template-columns:minmax(0,1fr)}
+ [data-expo-app-shell="true"] .company-admin-panel .company-admin-body:has(>.company-invite-disclosure[open]),
+ [data-expo-app-shell="true"] .company-admin-panel .company-admin-body:has(>.company-admin-invitations){grid-template-columns:minmax(240px,1fr) minmax(0,2fr)}
  [data-expo-app-shell="true"] .company-invite-disclosure{grid-column:1;grid-row:1}
  [data-expo-app-shell="true"] .company-admin-invitations{grid-column:1;grid-row:2}
- [data-expo-app-shell="true"] .company-admin-directory{grid-column:2;grid-row:1 / span 2}
+ [data-expo-app-shell="true"] .company-admin-directory{grid-column:1;grid-row:2}
+ [data-expo-app-shell="true"] .company-admin-body:has(>.company-invite-disclosure[open])>.company-admin-directory,
+ [data-expo-app-shell="true"] .company-admin-body:has(>.company-admin-invitations)>.company-admin-directory{grid-column:2;grid-row:1 / span 2}
  [data-expo-app-shell="true"] .personal-page .personal-cards{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media screen and (min-width:1600px){
+ [data-expo-app-shell="true"]:not([data-expo-project-shell="1"]):not([data-expo-fullscreen]):has(>header>nav.expoDesktopSourceNavHidden)>header>.head{display:flex;flex-wrap:nowrap;gap:14px}
+ [data-expo-app-shell="true"]:not([data-expo-project-shell="1"]):not([data-expo-fullscreen]):has(>header>nav.expoDesktopSourceNavHidden)>header>.head>.workspace-view-control{margin-left:auto}
  [data-expo-app-shell="true"] .personal-page .personal-cards{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
 @media screen and (max-width:700px){
