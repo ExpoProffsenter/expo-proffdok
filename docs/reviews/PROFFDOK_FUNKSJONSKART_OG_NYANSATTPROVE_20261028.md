@@ -129,6 +129,195 @@ Dette gjelder den separate private prototypen, ikke produksjonsappen.
 
 Skissen viser retning og arbeidsmønster. Den implementerer ikke alle 339 bevaringspunkter. Den innloggede demoens brede demokonto representerer ikke alle tilgangskombinasjoner. Systemadmin er kildekartlagt, ikke prøvd som full operativ flyt i denne runden.
 
+## Samlet UX/UI-vurdering – utvidet gjennomgang 28.10.2026
+
+**Kenneth trenger ikke godkjenne noe nå.** Dette er en UX-gjennomgang og en separat, privat designprototype. Neste reelle appgodkjenning skal gjelde en navngitt Preview-kandidat med konkrete, fungerende brukerreiser og dokumenterte regresjonsprøver. Designliking eller dette oppdraget er ikke appens TEST OK.
+
+### Hovedvurdering
+
+ProffDok har stor faglig bredde. Den viktigste forbedringen er å gjøre brukerens neste handling tydelig og å redusere det som vises samtidig. Flere gode mønstre finnes allerede: HRs fire samtalesteg, redigerbare malforslag, KS/HMS-grupperingen, boligens fasade/liste, grunnpakker og løpende overtakelse. De bør få en felles presentasjon og forutsigbar flyt.
+
+Forslaget er å videreføre egen marine/turkise profil og eksisterende firmalogoer. Den nye rammen skal brukes i hele appen, firmaadmin og systemadmin. Innloggingen beholdes. Dette er en egen produktretning; ingen konkurrentstruktur skal kopieres som mal for appens datamodell eller navigasjon.
+
+### Ny føring: valgfri timeføring
+
+- Firmaadmin styrer om firmaet bruker timeføring i ProffDok. HR og medarbeidersamtaler skal fortsatt være tilgjengelige uten timeføring.
+- Kilden og faktisk demo bekrefter at Timeoppsett allerede har «Aktiver timeregistrering i firmaet» og separat mobilvalg. Dette er en eksisterende funksjon; ikke grunnlag for å bygge en ny modulmotor.
+- I demo var timeregistrering aktivert og mobilsnarveien av. Ingen av valgene er endret i demo.
+- `PersonalPage.jsx` viser timekort og timefane med HR-tilgang som inngang. `HrTimeEntry` er en fast lederinngang. `MobileTimeShortcut.jsx` bruker allerede ferskt resultat med `enabled`, `registered` og `mobile_shortcut`. UI-redesignen må bruke samme faktiske firmavalg konsekvent på alle innganger, og beholde egen administrasjonsinngang for firmaadmin.
+- Ny eller deaktivert funksjon skal gi en ryddig arbeidsflate: ingen timekort, registreringssnarveier eller manglende-uke-oppgaver for ansatte som ikke bruker funksjonen. Søk og «Alle områder» skal følge valget. Direkte gammel lenke skal ha en forståelig avgrenset tilstand.
+- Ingen automatisk deaktivering hos eksisterende kunder. Ingen sletting av historikk ved avvalg. Gjeldende regler for tilgang, eksport og oppbevaring består; redesignen endrer dem ikke.
+- Tilstedeværelse/inn-ut i boligprosjekt er en separat, eksisterende prosjektfunksjon. Den skal ikke bli skjult eller aktivert fordi timeføring slås av/på.
+
+### Én rød tråd gjennom appen
+
+| Felles mønster | Kontrakt i ny presentasjon |
+| --- | --- |
+| Hvor er jeg? | Aktivt arbeidsfirma, sak/prosjekt/bygg/bolig og meningsfull tittel. |
+| Hva skal jeg gjøre? | En kort forklaring og én tydelig hovedhandling som passer rolle, fase og faktisk status. |
+| Hvordan starter jeg? | Relevant forslag eller lagret innhold; brukeren velger og redigerer. Et forslag er ikke automatisk godkjent. |
+| Hvor finnes resten? | Samme «Alle funksjoner»-inngang i hver modul, med forståelige grupper. Prosjektkart og fasade bevares. |
+| Hva er lagret? | Skill lokalt sikret, lagret på server, firmagodkjent, personlig bekreftet, sendt og mottatt. |
+| Hvordan går jeg tilbake? | Samme listefilter, valgt sak, fane og kladd. Ingen global recovery som vinner over bevisst navigasjon. |
+| Hvordan bruker jeg mobil? | Kort hovedflate, store tydelige handlinger, én oppgave per dialog og bevart arbeidskontekst. |
+| Hvordan får jeg hjelp? | Kort forklaring ved oppgaven og søkbar full veiledning. Lange fagtekster kan åpnes ved behov. |
+
+### Prioriterte funn
+
+| ID / prioritet | Bevis og betydning | Anbefalt behandling |
+| --- | --- | --- |
+| UX-01 · P1 | Min arbeidsdag, Min side og global start har overlappende navn/innganger. | Én konsekvent Min side; dagens prosjekt, egne oppgaver og oppfølginger. Retning prøvd i skisse. |
+| UX-02 · P1 | Timeføring er valgfri, men hadde stor plass i skissen. Aktivering finnes allerede i faktisk Timeoppsett. | Firmaadminvalg med konsekvent visning av/på. Skisse rettet og prøvd per firma. Faktisk appintegrasjon gjenstår. |
+| UX-03 · P1 | Prosjektoversikten viser prosjektkart, redigerbare grunndata, KS/HMS, garantivalg og kontaktlister samtidig. | Daglig faseflate med oppsett tilgjengelig separat. Behold alle eksisterende innganger og felt. |
+| UX-04 · P1 | Flere timeprosjektvalg het bare «Prosjekt». | Avklar data/feltmapping separat. Ikke gjett navn eller endre prosjekt-ID. |
+| UX-05 · P1 | Boligvelger i «KS/HMS og timer» viste H0101, H0102 osv. to ganger i prosjekt med to bygg. | Vis «Bygg / adresse · bolignummer» i alle velgere; behold samme stabile ID-er. |
+| UX-06 · P1 | Sjekklistedialog sier «4/4 utfylt · Ferdig», mens listen ber om kontroll/fullføring. | Standardiser punkter vurdert, kontroll fullført og avvik lukket mot reelt lagrede tilstander. |
+| UX-07 · P1 | «Salgsgrunnlag» inne i HOVED viste salgsinnhold først, men var tomt ved neste lesing. Gjentatt via Oversikt → Salgsgrunnlag ga samme forløp. Global Befaring/Tilbud fungerte. | Konkret gjenskapt visningsavvik i demo. Finn rotårsak i egen avgrenset core-rettelse; ikke løs ved å endre Sales recovery som del av prototypen. Ingen datatap påvist. |
+| UX-08 · P1 | Prosjektlisten viste «Garanti aktiv», mens garantiflaten viste «Ikke klar til garanti» og sperret utstedelse. | Skill garanti valgt/aktivert fra garanti faktisk utstedt. Krav og utstedelse skal bevares. |
+| UX-09 · P2 | Tilbake fra salgssak gikk til Forespørsler etter åpning fra Under arbeid. | Bevar statusfilter og plassering på vei tilbake. Verifiser med samme sak og samme konto før integrasjon. |
+| UX-10 · P2 | Store demotall, blant annet 458 boligoppgaver, er vanskelige å prioritere. | Vis eget arbeid nå, deretter kommende og resten. Demotall sier ikke hvor stor produksjonsbelastningen er. |
+| UX-11 · P2 | Produkt, overflate/innredning og fag/utstyr er ulike innganger med faglig overlapp i ordlyden. | Gi hver flate et klart formål og gjenbruk vare-/dokumentmønster; behold datafeltene og koblingene. |
+| UX-12 · P2 | HRs maler og KS/HMS-oppsett har gode forberedte forslag, men mye veiledning og forvaltning kan stå åpent på samme side. | Behold eksisterende motor, versjoner og roller. Vis én oppgave av gangen og gjør langt oppsett tilgjengelig ved behov. |
+| UX-13 · P2 | Badskisse åpnet tom lokal tegneflate, mens saken forklarte at tidligere tegning var lagret som bilde fra annen økt/enhet. | Gjør «Se lagret skisse» og «Lag/rediger tegning» tydeligere. Ingen attest på Kenneths lokale redigerbare tegning. |
+| UX-14 · P2 / demo | Demoens faste kontrollmerke lå over deler av Badskisse-Lukk. Lukk-forsøk endte på demo-control. | Vurder badgeplassering i separat demo-overlay-scope. Ikke behandle dette som en produksjonsfeil eller endre produksjonens tegneverktøy av den grunn. Ingen reset utført. |
+| UX-15 · P2 | Et tidlig Produkt-valg endte i sjekkliste/dialog. Etter lukking og stabil ny åpning kom korrekt Produkt-flate. | Avvikende navigasjonsobservasjon; rotårsak og påvirkning fra dialog, rendering og skyinput er uavklart. Ikke en bevist Produkt-feil. Ta med i senere scenario-prøve. |
+| UX-16 · P2 | Dialoger, sidearbeidsflater og helside-editorer bruker ulike mønstre. | Felles fokus, lukk/tilbake, utvidelse og lagringsstatus. Bakgrunnshandlinger må ikke konkurrere med åpen dialog. |
+| UX-17 · P3 | Økonomi finnes i avtaler og bolig, men er lite prioritert av målgruppen ifølge Kenneth. | Behold funksjonene tilgjengelige. Ikke gi dem dominerende dashboardplass. ERP/API vurderes separat senere. |
+
+P1 er arbeid som bør løses eller avklares før en bred UI-pilot godkjennes. Ingen kritisk datakorrupsjon eller ny sikkerhetsfeil er bevist i denne gjennomgangen. Det er ikke en sikkerhetsattest.
+
+### Vurdering av alle 35 funksjonsområder
+
+| Område | Behold / ny presentasjon | Konkret UX-arbeid | Grunnlag |
+| --- | --- | --- | --- |
+| Innlogging | Behold dagens bilde og sikre innlogging. | Ny økt, feil innlogging og utløpt økt må ha konkrete neste steg. | D01; kilde |
+| Felles ramme | Én hovednavigasjon, ett aktivt firma og tydelig arbeidskontekst. | Fjern konkurrerende menyer; tilbake skal bevare sak, filter og kladd. | D02, P01–P14, S01–S08 |
+| Min side | Dagens arbeid, egne oppfølginger og oppslag først. | Vis bare aktiverte funksjoner. Store demooppgavetall må kunne prioriteres. | D02–D05; skisse av/på |
+| Timer og utlegg | Valgfritt per firma; inngang under Firmaadmin. | Gjenbruk eksisterende timeoppsett. HR må fungere uten synlige timekrav. | T01, D03; kilde |
+| HR og medarbeidere | Behold forberedelse, møte, tiltak og referat. | Skill medarbeiderens private svar, lederens arbeid og felles referat visuelt. Vis én oppgave av gangen. | D05, H01–H03 |
+| KS/HMS | Behold Daglig arbeid, Mine rutiner og Forvaltning. | Ansatte starter i egne oppgaver; forvalter starter i relevant oversikt. Lange veiledninger åpnes ved behov. | K01–K10 |
+| Prosjekt | Kort daglig arbeidsflate og beholdt prosjektkart. | Neste handling følger faktisk fase og ansvar. Redigerbare grunndata får egen inngang. | P01–P14; skisse fasevalg |
+| Prosjektering | Redigerbare forslag sammen med dagens strukturerte felt. | Avklar omfang før redigering. Kilde, malversjon, prosjektvalg og kontrollgrunnlag må følge hverandre. | D08; skisse lagring/sammendrag |
+| Fremdrift og bemanning | Samme plan med tydelig valg mellom arbeid og bemanning. | Planlagt, utført og overtatt er egne tilstander. Behold Gantt og arbeidsoperasjoner. | K06, P13, B01 |
+| Produkter og FDV | Gjenkjennelig varevalg og samlet dokumentstatus. | Behold kategorier, kilder og alle dokumenttyper. Antall manglende dokumenter må forklare hva som mangler. | P05; kilde |
+| Overflater og innredning | Behold faginndelingen; vis utfylt innhold først. | Gjør skillet mellom produktvalg og prosjektets synlige overflater forståelig. | P06 |
+| Fag og utstyr | Fagposter og firmalister med samme redigeringsmønster. | Forklar når brukeren trenger denne flaten, Produkter eller Overflater. | P07 |
+| Bilder | Ta bilde direkte ved oppgaven; samlet bildebibliotek. | Behold fase, kontrollkobling og kommentar. Vis opplasting, lokal sikring og serverlagring tydelig. | P08; kilde |
+| Sjekklister | Én kontroll av gangen med tydelig lagring og fullføring. | Alle punkter vurdert er ikke det samme som kontroll fullført eller avvik lukket. | D07; P05-observation |
+| Avvik og sikkerhet | Samme saksmønster med ansvar, frist, tiltak og egen kontroll. | Vis forskjellen mellom sjekklisteavvik, prosjektavvik, RUH, SJA og risikovurdering. Behold koblinger. | K02–K05; prosjekt-/garantivisning |
+| Kommunikasjon | Meldinger i relevant prosjekt/bolig med tydelig mottaker. | Lest, krever oppfølging, sendt og mottatt holdes adskilt. Unngå personopplysninger i globale varsler. | B01–B07 kontekst; kilde. Ingen ny chat sendt eller lest for å nullstille ulest. |
+| Avtalegrunnlag | Opprinnelig avtale, endringer og gjeldende sum samlet. | Behold låste aksepterte utgaver, mva.-grunnlag og visning til kunden. | P04 |
+| Overlevering | En gjennomgang av dokumenter, åpne mangler og signaturer. | Ingen grønn overtakelse før krav og lagring er oppfylt. Velg dato og faktisk overtakelse skilles. | P10, D09 |
+| Garanti | Behold alle krav og systemspesifikke kontrollpunkter. | Bruk ulike tekster for ønsket/valgt garanti, klar til utstedelse og faktisk utstedt. | P11 |
+| Rapporter | Avgrenset dokumentvalg og forståelig forhåndsvisning. | Behold alle rapportdeler, vedlegg og historiske kilder. Vis hva PDF og ZIP inneholder hver for seg. | P12, K09. Ingen nye PDF-/ZIP-filer attestert. |
+| Befaring og tilbud | Behold felles sak gjennom forespørsel, befaring, tilbud og avtale. | Vis neste steg tydelig; bevar listefilter og plassering ved tilbake. Redigering, kundevisning og publisering skilles. | S01–S08, P14 |
+| Prissøk og plukkliste | Raskt søk med gjenkjennelige varer og antall. | Forklar forskjellen mellom lokal arbeidsliste, lagret plukkliste og sendt bestilling. | V01–V02 |
+| Varebestilling | Behold siste godkjente antalls- og Enter-flyt. | Samme varelinjemønster som ellers; mottaker, levering og kontroll før sending tydelig. | V04; tidligere releasebevis er historikk |
+| Varetelling | Egen arbeidsflate per lager med område/hylle på varen. | Behold telling, mobilregistrering og eksport. Oppretting av telling skal være en tydelig handling. | V03; kilde |
+| Boligstruktur | Fasaden er standard; boligliste beholdes. | Vis valgt bygg og bolig tydelig i alle arbeidsflater. Bruk bygg/adresse når bolignumre gjentas. | D09–D10, B02, B07 |
+| Boligpakker og tilvalg | Redigerbare grunnpakker og rommaler med gjenbruk. | Behold prosjektmal, individuell tilpasning og akseptert utgave som ulike nivåer. | B05–B06; kilde |
+| Boligbestilling og levering | Ordre og mottak ved valgt bolig; samlet logistikk tilgjengelig. | Varevalg, sendt ordre, bekreftet levering og faktisk mottatt holdes adskilt. | D09 inngang; kilde. Ordre/mottak ikke utført. |
+| Boligplan og samarbeid | Behold samlet Gantt, UE, leverandører og beboervarsler. | Filtrer relevant arbeid og vis hvem varselet gjelder før publisering. Bruk identisk statusmønster. | B01–B03 |
+| Boligkontroll og overtakelse | Boligens dokumentasjon og løpende overtakelse beholdes. | Vis mangler for én bolig før bygg/prosjekt. Ingen skjult endring i krav for å gi grønn status. | D09–D10, B01; kilde |
+| Boligkontrakt og fakturaregister | Tilgjengelig for riktige personer under avtaler. | Kontraktøkonomi får lav visuell prioritet. Behold registeret; ingen ny ERP-erstatning i redesignen. | B04; kilde. Registerets skriveflyt ikke prøvd. |
+| Eksterne flater | Samme visuelle språk, egne oppgaver for kunde, UE, leverandør og beboer. | Behold selvstendige tilgangsgrenser, versjoner, aksept og signaturer. Ikke eksponer intern appmeny. | Kildekartlagt; intern kundevisning S08. Eksterne innlogginger ikke testet. |
+| Firma og profil | Riktig firma/logo, tydelig Firmaadmin og valgfri timeføring. | Behold forskjellen mellom kontomoduler, firmatilgang, HR-innsyn og prosjektroller. Ikke én global av/på-motor som erstatter disse. | A01, A11, T01; skisse firmaskille |
+| Systemadmin | Behold ni arbeidsområder med samme designramme. | Egne operasjoner og konsekvenser innenfor felles søk, liste, detalj og lagringsstatus. | A02–A10; kun lesing |
+| Organisasjon | Behold felles Ringside AS-kart og firma-/avdelingsdetaljer. | Kartet forklarer organisasjon; personvern og HR-innsyn avgjøres fortsatt av egne tilganger. | K11 |
+| Hjelp og support | Søk etter oppgave og kort hjelp ved riktig arbeidsflate. | Behold full veiledning; én tydelig støtteinngang og synlig status på egne saker. | U01–U03 |
+
+### Faktisk dekning i den utvidede skyprøven
+
+Det ble registrert 65 skjerm-/navigasjonsobservasjoner i denne fortsettelsen, i tillegg til D01–D10 fra første nyansattprøve. Observasjoner omfatter også gjenåpninger og avvik; de er ikke 65 uavhengige beståtte funksjonstester.
+
+| ID | Åpnet/lest |
+| --- | --- |
+| `B01` | Bolig fremdrift og varsler |
+| `B02` | Bolig KS/HMS og timer |
+| `B03` | Bolig UE og leverandører |
+| `B04` | Bolig kontrakter |
+| `B05` | Bolig pakker |
+| `B06` | Grunnpakke editor lest |
+| `B07` | Bolig oppsett |
+| `A01` | Firmaadmin |
+| `H01` | HR hovedflate |
+| `T01` | Timeoppsett lest |
+| `H02` | Samtalemaler |
+| `H03` | Sykefraværsveiledning |
+| `K01` | KS/HMS hovedflate |
+| `K02` | Avvik og RUH |
+| `K03` | SJA |
+| `K04` | Vernerunder |
+| `K05` | Risikovurderinger |
+| `K06` | Fremdriftsplaner |
+| `K07` | Sjekklistesentral |
+| `K08` | Oppfølging og revisjon |
+| `K09` | Dokumentuttrekk |
+| `K10` | Oppstart og tilgang |
+| `K11` | Organisasjonskart |
+| `P01` | Ordinært prosjekt |
+| `P02` | Deltakere og tilganger |
+| `P03` | Prosjektbeskrivelse |
+| `P04` | Avtalegrunnlag |
+| `P05-observation` | Uventet sjekklistedialog etter Produkt-valg |
+| `P05` | Produkter bekreftet |
+| `P06` | Overflater og innredning |
+| `P07` | Fag/utstyr |
+| `P08` | Bilder |
+| `P09` | Interne notater |
+| `P10` | Overtagelse |
+| `P11` | Garanti |
+| `P12` | Rapport |
+| `P13` | Prosjekt fremdrift |
+| `P14` | Salgsgrunnlag |
+| `P14-recheck` | Salgsgrunnlag gjenåpnet |
+| `S01` | Global Befaring/Tilbud |
+| `S02` | Salg under arbeid |
+| `S03` | Salgssak befaring |
+| `S04` | Befaringsnotat lest |
+| `S05` | Badskisse inngang |
+| `S05-demo-overlay` | Kontrollside etter Lukk i Badskisse |
+| `S06` | Generelt tilbud sak |
+| `S07` | Generelt tilbud editor lest |
+| `S08` | Kundevisning uten publisering |
+| `V01` | Prissøk |
+| `V02` | Prissøk servant |
+| `V03` | Varetelling |
+| `V04` | Varebestilling tom kladd |
+| `A02` | Systemadmin oversikt |
+| `A03` | Supportsaker |
+| `A04` | Firmaer og prosjekter |
+| `A05` | Brukere og roller |
+| `A06` | Produktmaster |
+| `A07` | Internt vareregister |
+| `A08` | Nyheter i appen |
+| `A09` | E-postutsending |
+| `A10` | Dokumentsynk |
+| `A11` | Firmaprofil |
+| `U01` | Hjelp |
+| `U02` | Hjelpesøk bestilling |
+| `U03` | Support |
+
+Ingen innholdsfelt i appen ble endret i denne fortsettelsen. Ingen nye tilbud, tellinger, timer, bestillinger, signaturer eller tilgangsendringer ble lagret med handlingsknappene. Ingen testmail, supportmelding, publisering, reset eller dokumentsynk ble utført. Åpning av editorer er ikke en egen attest på fravær av alle automatiske bakgrunnsskrivinger. Lokal prøvesamtale fra første runde består som fiktivt prøveinnhold.
+
+### Skisse 03.2 – konkret resultat
+
+- Timeføring er av som standard i denne designprøven. Firmaadmin → Aktiver timeføring for firmaet → Lagre firmavalg i skissen slår på eksempelet for valgt firma. Dette er nettleserlagring, ikke appens innstillinger eller autorisasjon.
+- Min side, registreringsknapper, søk, Alle områder og modulverktøy følger firmavalget. Mobilmenyen viser Plan når timefunksjon/snarvei er av. Egen mobilinnstilling kan vise Timer når begge er på.
+- Aktivert for ett eksempelﬁrma, lagret og reload-prøvd. Bytte til et annet firma viste ingen timekort. Søk «timer» ga ingen treff når av. Direkte `#time` ga forklaring og vei tilbake, uten registreringsskjema.
+- Deaktivering prøvd i mobilrammen. Min side beholdt prosjekt, bilder, sjekklister og HR, og mobilmenyen viste Plan.
+- Prosjektet har Planlegg, Utfør og Overlever med ulike hovedhandlinger. Standard i eksempelprosjektet er Utfør. Fasevalg og piltastnavigasjon er prøvd. Prosjektkart beholdes som full inngang.
+- Mobilrammer 390×844 og 320×844: Min side og Firmaadmin lest visuelt; ingen horisontal dokumentoverflyt, 375/375 og 305/305 px med rullefelt. Dette er smal Chrome-ramme, ikke fysisk telefon.
+- Syntaks kontrollert i alle tre endrede JavaScript-filer. Dette er en prototypekontroll, ikke grønn app-CI eller produksjonsregresjon.
+
+### Hva som fortsatt må prøves før appgodkjenning
+
+En faktisk Preview-pilot skal bruke dagens komponenter og autorisasjon. Start med Min side både med og uten timeføring, et ordinært prosjekt fra fasevalg til prosjektering/kontroll/dokumentasjon, og én bolig fra fasade/liste til dokumentasjon. Deretter dekkes alle bevaringspunktene med eksisterende ID, callback, dataflyt og relevant prøve.
+
+Følgende er fortsatt utestet i denne gjennomgangen: alle rollekombinasjoner og nektet tilgang; direkte eksterne kunde-/UE-/leverandør-/beboer-/kontrollørinnlogginger; private HR-sakers fulle skriveflyt; faktisk signering/aksept; alle PDF/ZIP/ASCII/Excel-eksporter; mottatt e-post; kamera/opplasting; fakturaregisterets skriveflyt; fysisk mobil/Safari; full offline-, fokus-, dvale- og konfliktregresjon. Kenneths lokale Badskisse er ikke attestert. Ingen full videobibliotekgjennomgang inngår som bevis i denne utvidede ProffDok-prøven.
+
+Ingen lansering av en ny helhet før funksjoner og tilganger er bevart. En designprototype erstatter ikke den faktiske appen.
+
 ## Implementeringsrekkefølge
 
 1. **Felles ramme:** navigasjon, arbeidsfirma/logo, Min side, knapper, status, dialoger, hjelp, lagringsstatus og mobil. Presentasjonsadapter over dagens skjerm-ID-er og callbacks. Behold innlogging.
