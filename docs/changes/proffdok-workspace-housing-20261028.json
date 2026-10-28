@@ -1,12 +1,24 @@
 {
   "version": 1,
-  "title": "Designpakke 01: felles ramme og kompakt boligverktøylinje i app-Preview",
-  "change": "Miljømål BEGGE, foreløpig bare feature/Preview. Felles marine/petrol/turkis ramme er avgrenset til innlogget data-expo-app-shell; innlogging og eksterne portaler omfattes ikke. main.jsx får bare én CSS-import. Byggvalg, søk, eksisterende boligfilter og Fasade/Boligliste grupperes i en responsiv verktøylinje med statistikk for valgt bygg til høyre. Inntil tre bygg får direkte knapper; eksisterende søkbar Bytt bygg-dialog beholdes. Verktøy og felt bruker 16 px og minst 44 px høyde. Statistikken beregnes fra eksisterende oversiktsdata og viser ikke en ferdigstatus når statusgrunnlaget mangler. Eksisterende tilstand, serverkall, tilgang, datalagring, søkets automatiske liste og Fasade/Bytt bygg-nullstilling videreføres uendret; skissens forenklede datalogikk er ikke overført. Eksisterende overtakelsesinngang og alle øvrige funksjoner er beholdt.",
-  "verification": "Før endring: main 5f58b1c6, demo dcff082f og arbeidsbranch 67a8135b kontrollert via GitHub; Vercel Production dpl_5rvFAAsZ4WDeDwWj7Gg6qa3NLfkm og fast branch-Preview dpl_5LurN9VTPTbrVUXimwur5vpGvUaq var READY på tilsvarende SHA. Arbeidsbranch hadde bare to gjennomgangsdokumenter foran main; gjeldende main tas med som mergeforelder uten demo-overlay. Lokalt: main.jsx syntakskontroll, nøyaktig sammenligning som bekrefter bare CSS-import i main.jsx og uendret state/access/loading-kode og eksisterende innholdshåndtering i boligoversikten; dokumentasjons- og PR-scope-selvtester bestått. Eksisterende full PR Core Safety, Vercel-build og faktisk innlogget Preview-prøve skal registreres med eksakt kandidat og resultater i PR før TEST OK. Innlogget skynettøkt mangler på Preview-adressen ved oppstart; ingen attest på innlogget app-/mobilprøve er gitt her. Ingen kritiske tester svekkes. Ingen produksjonsmerge, demo-reset, tilgangsendring, sending, signering eller bestilling er utført.",
+  "title": "Designpakke 01: kompakt boligoversikt, isolert fra felles app-ramme",
+  "change": "Miljømål BEGGE, foreløpig bare feature/Preview. Byggvalg til venstre, søk/statusfilter/Fasade/Boligliste i midten og byggstatistikk til høyre. Én rad når panelbredden tillater det; grupperte rader på mindre skjermer. Ingen reduksjon i tekststørrelse; verktøy 16–17 px og minst 44 px knappehøyde. Eksisterende søkbare Bytt bygg-dialog beholdes; opptil tre bygg får direkte knapper til eksisterende callback. Fasaden bruker hele tilgjengelig bredde før boligvalg; eksisterende startveiledning ligger i utbrettbar detalj. Valgt bolig beholder opprinnelig detaljkolonne og mobilretur. Manglende statusgrunnlag vises ikke som ferdigstatus. Eksisterende state, tilgang, serverkall, lagring og søk-/fasade-/byggbytte-kontrakter er uendret. Felles ramme er isolert i PR 295.",
+  "verification": "Faktisk innlogget skynettprøve av samlet designpakke på commit 05ddd775a113994ee51b70cfeb5241b67c0d46b8, med identisk ramme-CSS som PR 295 commit 84dbc745e96d62be163a4c7c627a726c92dbf76c. Kontrollert 1920/1440/1360/1024/768/390/320 px: ingen dokumentoverflyt, ingen kollisjon mellom logo og tittel, minst 44 px toolbar-knapper. 1440/1920 én verktøylinje; mindre bredder grupperes. Prøvd bygg A/B, søk H0302 med statusfilter (to riktige bygg/adresser), valgt bolig Demoparken 103 H0302 på desktop/mobil, mobilretur, fasade/liste, søkbar byggvelger, åpne/lukke ferdigstilling og Fremdrift → Hovedside. Ingen sending, bestilling, signering eller lagring utført. Første kombinerte CI ble korrekt stoppet av boliggrensekontrollen; kode deles uten å endre tester. Denne bolig-PR-en gjenoppretter main.jsx byte-identisk med main og fjerner felles CSS og midlertidig QA-side. Slutt-CI og eksakt ren kandidat registreres i PR. Produksjon/main/demo er ikke endret. Fysisk mobil/Safari og øvrige roller er ikke attestert. Ingen app-TEST OK.",
   "documentation": {
-    "help": {"required": true, "reason": "Boligverktøyene og de direkte byggknappene får en ny plassering. BoligHelp beskriver dette og beholder forklaringen av eksisterende søk-/fasadeoppførsel."},
-    "architecture": {"required": false, "reason": "Kun presentasjon og direkte innganger til eksisterende byggvelger. Ingen endring i API, tilgang, state, recovery, datalagring eller arkitektur."},
-    "setup": {"required": false, "reason": "Ingen nye avhengigheter, installasjon, miljøvariabler eller endring i oppsett. Eksisterende branch og fast Preview brukes."},
-    "module": {"required": false, "reason": "Boligmodulens data-, tilgangs-, lagrings- og filterkontrakter beholdes. Ingen funksjoner flyttes til en ny modul eller erstattes med skissepaneler."}
+    "help": {
+      "required": true,
+      "reason": "BoligHelp er oppdatert for verktøylinje, byggknapper, full bredde før valg og utbrettbar veiledning. Eksisterende søke-/fasadeoppførsel er forklart."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Kun presentasjon og direkte innganger til eksisterende byggvelger. Ingen endring i API, tilgang, state, recovery, datalagring eller arkitektur."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen nye avhengigheter, installasjon, miljøvariabler eller endring i oppsett. Eksisterende branch og fast Preview brukes."
+    },
+    "module": {
+      "required": false,
+      "reason": "Boligmodulens data-, tilgangs-, lagrings- og filterkontrakter beholdes. Ingen funksjoner flyttes til en ny modul eller erstattes med skissepaneler."
+    }
   }
 }

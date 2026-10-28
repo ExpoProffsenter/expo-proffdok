@@ -25,7 +25,6 @@ import { createRoot } from 'react-dom/client';
 import { createClient } from '@supabase/supabase-js';
 import { Camera, FileText, Plus, Trash2, Download, Building2, ClipboardCheck, BadgeCheck } from 'lucide-react';
 import './style.css';
-import './modules/ui/proffdokWorkspace.css';
 import SalesModule from './modules/sales/SalesModule.jsx';
 import SalesHomeFollowUp, { useSalesHomeFollowUpData } from './modules/sales/components/SalesHomeFollowUp.jsx';
 import { createReportTools } from './modules/report/reportTools.js';
