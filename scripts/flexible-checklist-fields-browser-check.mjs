@@ -43,7 +43,11 @@ try{
   eq(await page.getByLabel('Arbeidssted, bygg og område *',{exact:true}).inputValue(),'Behold arbeidssted etter dvale','short dialog retains answers '+width+'x'+height);
   if(process.env.PROJECT_UX_SCREENSHOTS)await page.screenshot({path:path.join(process.env.PROJECT_UX_SCREENSHOTS,'checklist-'+width+'-short-'+height+'.png'),fullPage:false});
  }
+ const opener=await page.getByRole('button',{name:'Åpne sjekkliste',exact:true}).elementHandle();
  await page.getByRole('dialog').press('Escape');eq(await page.getByRole('dialog').count(),0,'Escape dismisses checklist');
+ // Portal removal precedes React's passive effect cleanup, which restores focus.
+ // Observe that cleanup's result; a missing restoration must still time out.
+ await page.waitForFunction(element=>document.activeElement===element,opener);
  eq(await page.getByRole('button',{name:'Åpne sjekkliste',exact:true}).evaluate(e=>document.activeElement===e),true,'checklist returns focus to its opener');
  eq(errors,[]);console.log('Flexible checklist Chromium PASS: '+checks+' assertions; actual builder, all-trade intake, required/conditional fields, four widths, focus, draft reopening. RPC is synthetic; database authority covered separately.');
 }finally{await browser?.close();await new Promise(r=>server.close(r));fs.rmSync(tmp,{recursive:true,force:true});}
