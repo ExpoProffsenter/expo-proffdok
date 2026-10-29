@@ -778,6 +778,40 @@ try {
       .count(),
     0,
   );
+  // Regression: the former 16-building fixture covered the saved overview,
+  // not the wizard. Exercise the real wizard with loaded photos at every step.
+  await page.getByRole("button", { name: "Bygg nytt prosjekt", exact: true }).click();
+  await dialog.getByLabel("Prosjektnavn", { exact: true }).fill("Kun lokal layoutprøve");
+  for (const type of ["Flerfamiliehus", "Enebolig", "Tomannsbolig", "Leilighetsbygg"]) {
+    await dialog.getByRole("button", { name: new RegExp("^" + type + " ") }).click();
+    await dialog.getByRole("button", { name: "Neste", exact: true }).click();
+    await dialog.getByLabel("Antall bygg", { exact: true }).fill("16");
+    for (const step of [1, 2, 3]) {
+      for (const width of [320, 390, 768, 1024, 1366, 1920]) {
+        await page.setViewportSize({ width, height: 900 });
+        await dialog.locator("img").evaluateAll(images => Promise.all(images.map(img => img.decode())));
+        const layout = await dialog.evaluate(d => {
+          const body = d.querySelector(".bolig-builder-body");
+          const photos = [...d.querySelectorAll(".bolig-builder-building-head > img, .bolig-builder-review article > img")];
+          return {
+            bodyFits: body.scrollWidth <= body.clientWidth + 1,
+            photosFit: photos.length > 0 && photos.every(img => {
+              const r = img.getBoundingClientRect(), p = img.parentElement.getBoundingClientRect();
+              return img.naturalWidth > 0 && r.width <= 131 && r.height <= 76 && r.left >= p.left && r.right <= p.right;
+            }),
+          };
+        });
+        eq(layout.bodyFits, true, `${type}: step ${step}, ${width}px has no inner horizontal overflow`);
+        eq(layout.photosFit, true, `${type}: step ${step}, ${width}px photos stay compact and inside their row`);
+        if (type === "Flerfamiliehus" && width === 1366)
+          await page.screenshot({ path: path.join(temp, `sixteen-wizard-step-${step}.png`) });
+      }
+      if (step < 3) await dialog.getByRole("button", { name: "Neste", exact: true }).click();
+    }
+    for (let step = 3; step > 0; step--)
+      await dialog.getByRole("button", { name: "Tilbake", exact: true }).click();
+  }
+  await dialog.press("Escape");
   eq(errors, []);
   console.log(
     `PASS builder/browser: ${checks} assertions; atomic-attempt recovery, house floors, saved draft, close/Escape/focus, 400/480/500 households, last-building search, scoped rendering and 320/390/1024/1366px. Internal visual evidence: ${temp}`,
