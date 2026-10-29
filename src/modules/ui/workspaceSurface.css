@@ -34,3 +34,50 @@ body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.hr-employee-dialog
  body:has([data-expo-app-shell="true"]) .pd-workspace-drawer-header h2,
  body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.hr-employee-dialog-036,.sja-editor,.ks-executions)>.deviation-dialog-header h2{font-size:25px}
 }
+
+/* Catalog work uses the same open heading and controls, including the legacy
+   price-search mount. No search, draft, permission or sending owner changes. */
+body:has([data-expo-app-shell="true"]) :is(.priceSearchInlineView,.pro-catalog-orders){max-width:none;min-width:0;margin:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;color:var(--pd-ink)}
+body:has([data-expo-app-shell="true"]) :is(.priceSearchInlineView,.pro-catalog-orders) :is(button,input,select,textarea){font-size:16px;line-height:1.4;box-sizing:border-box;max-width:100%}
+body:has([data-expo-app-shell="true"]) :is(.priceSearchInlineView,.pro-catalog-orders) button{min-width:44px;min-height:44px;border-radius:7px;box-shadow:none;transform:none;white-space:normal}
+body:has([data-expo-app-shell="true"]) :is(.priceSearchIntro,.pro-catalog-orders>header){position:static;min-height:0;margin:0 0 20px;padding:0 0 16px;border:0;border-radius:0;background:transparent;box-shadow:none}
+body:has([data-expo-app-shell="true"]) :is(.priceSearchIntro,.pro-catalog-orders>header) h2{font-size:var(--pd-title);font-weight:600;line-height:1.2;letter-spacing:-.7px;margin:6px 0 8px}
+body:has([data-expo-app-shell="true"]) :is(.priceSearchIntro,.pro-catalog-orders>header) :is(p,small){color:var(--pd-muted);line-height:1.5}
+body:has([data-expo-app-shell="true"]) :is(.priceSearchIntro,.pro-catalog-orders>header) small{font-size:14px;font-weight:600}
+body:has([data-expo-app-shell="true"]) :is(.priceSearchIntro,.pro-catalog-orders>header) p{font-size:16px;max-width:none;margin:0}
+body:has([data-expo-app-shell="true"]) .priceSearchSurfaces{gap:8px 24px;padding:0 0 10px;margin:0 0 18px;border-bottom:1px solid var(--pd-line);align-items:center}
+body:has([data-expo-app-shell="true"]) .priceSearchSurfaces button[aria-pressed]{position:relative;background:transparent;border:0;border-radius:0;padding:10px 0;color:var(--pd-muted);font-weight:600}
+body:has([data-expo-app-shell="true"]) .priceSearchSurfaces button[aria-pressed="true"]{color:var(--pd-accent);border-bottom:3px solid #10c7cf}
+body:has([data-expo-app-shell="true"]) .priceSearchInlineView :is(.priceSearchCard,.priceSearchSelected,.priceSearchSavedLists,.priceSearchSelectedProduct,.priceSearchResult,.priceSearchSavedRow){padding:16px;border:1px solid var(--pd-line);border-radius:var(--pd-radius);background:#fff;box-shadow:none}
+body:has([data-expo-app-shell="true"]) .priceSearchInputWrap input{border-radius:7px;min-height:48px}
+body:has([data-expo-app-shell="true"]) .priceSearchInlineView :is(p,.priceSearchMeta,.priceSearchMeta small,.priceSearchSmartOptions){font-size:16px;line-height:1.5}
+body:has([data-expo-app-shell="true"]) .pro-catalog-orders :is(.pro-order-cart,.pro-order-preview,.pro-order-receipt,form){padding:18px;margin:0 0 18px;border:1px solid var(--pd-line);border-radius:var(--pd-radius);box-shadow:none;min-width:0}
+body:has([data-expo-app-shell="true"]) .pro-catalog-orders h3{font-size:20px;font-weight:600;line-height:1.35;margin:0 0 12px}
+body:has([data-expo-app-shell="true"]) .pro-catalog-orders :is(p,small,.pro-order-entry-help){font-size:16px;line-height:1.5;color:var(--pd-muted)}
+body:has([data-expo-app-shell="true"]) .pro-catalog-orders .pro-store-catalog-lookup{border-radius:7px;box-shadow:none}
+@media(min-width:1100px){
+ body:has([data-expo-app-shell="true"]) .pro-catalog-orders:has(>form,>.pro-order-preview,>.pro-order-receipt){display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:0 20px;align-items:start}
+ body:has([data-expo-app-shell="true"]) .pro-catalog-orders>*{grid-column:1/-1}
+ body:has([data-expo-app-shell="true"]) .pro-catalog-orders:has(>form,>.pro-order-preview,>.pro-order-receipt)>.pro-order-cart{grid-column:1}
+ body:has([data-expo-app-shell="true"]) .pro-catalog-orders>:is(form,.pro-order-preview,.pro-order-receipt){grid-column:2}
+}
+
+/* Housing's ordinary page follows the same frame; facade, unit placement and
+   the separate builder keep their existing layout and interaction owners. */
+body:has([data-expo-app-shell="true"]) .bolig-dialog.bolig-page{padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;color:var(--pd-ink)}
+body:has([data-expo-app-shell="true"]) .bolig-page>header{position:static;margin:0;padding:0 0 16px;border:0;border-radius:0;background:transparent;box-shadow:none}
+body:has([data-expo-app-shell="true"]) .bolig-page>header h2{font-size:var(--pd-title);line-height:1.2;font-weight:600;letter-spacing:-.7px;margin:6px 0 8px}
+body:has([data-expo-app-shell="true"]) .bolig-page>header :is(p,small){font-size:16px;line-height:1.5;color:var(--pd-muted)}
+body:has([data-expo-app-shell="true"]) :is(.bolig-page>header,.bolig-page>.bolig-toolbar,.bolig-page .bolig-home) button{font-size:16px;min-height:44px;border-radius:7px;box-shadow:none;transform:none}
+body:has([data-expo-app-shell="true"]) .bolig-page>.bolig-home{padding:0;margin-top:16px;border:0;border-radius:0;background:transparent;box-shadow:none}
+body:has([data-expo-app-shell="true"]) .bolig-home-welcome{grid-template-columns:minmax(0,1fr) 220px;gap:20px;padding:18px;border-radius:8px;background:#edf4f7;box-shadow:none}
+body:has([data-expo-app-shell="true"]) .bolig-home-welcome h3{font-size:28px;line-height:1.25;margin:8px 0}
+body:has([data-expo-app-shell="true"]) .bolig-home-welcome p{font-size:16px;line-height:1.5;margin:8px 0 14px;max-width:none}
+body:has([data-expo-app-shell="true"]) .bolig-home-welcome small{font-size:14px;line-height:1.5}
+body:has([data-expo-app-shell="true"]) .bolig-home-welcome .bolig-building-art{width:220px;height:140px;min-height:0;border-radius:7px}
+body:has([data-expo-app-shell="true"]) .bolig-home :is(.bolig-home-list-head p,.bolig-home-project small,.bolig-home-filters){font-size:16px;line-height:1.5}
+body:has([data-expo-app-shell="true"]) .bolig-home-projects>.bolig-home-project{border-radius:8px;box-shadow:none}
+@media(max-width:800px){
+ body:has([data-expo-app-shell="true"]) .bolig-home-welcome{grid-template-columns:minmax(0,1fr);padding:16px}
+ body:has([data-expo-app-shell="true"]) .bolig-home-welcome>.bolig-building-art{display:none}
+}

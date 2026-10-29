@@ -95,7 +95,7 @@ try {
       res.end(fs.readFileSync("public" + req.url));
     } else
       res.end(
-        '<!doctype html><html lang="nb"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0;font-family:Arial,sans-serif}button,input,select{font:inherit}button{cursor:pointer}</style><link rel="stylesheet" href="/style.css"><div id="app"></div><script src="/app.js"></script></html>',
+        '<!doctype html><html lang="nb"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0;font-family:Arial,sans-serif}button,input,select{font:inherit}button{cursor:pointer}</style><link rel="stylesheet" href="/style.css"><div id="app" data-expo-app-shell="true"></div><script src="/app.js"></script></html>',
       );
   });
   await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
@@ -751,6 +751,10 @@ try {
       true,
       "Module home fits each viewport",
     );
+    const surface=await home.evaluate(el=>({shadow:getComputedStyle(el).boxShadow,background:getComputedStyle(el).backgroundColor,font:parseFloat(getComputedStyle(el.querySelector('.bolig-home-welcome p')).fontSize)}));
+    eq(surface.shadow,'none','housing home uses the shared open frame');
+    eq(surface.background,'rgba(0, 0, 0, 0)','housing home removes the legacy outer card');
+    eq(surface.font>=16,true,'housing home keeps readable shared body text');
     eq(
       await home.locator(".bolig-home-project").count(),
       width <= 680 ? 3 : 6,
