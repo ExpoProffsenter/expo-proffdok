@@ -16,7 +16,7 @@ export default function WorkspaceTools(props){
  const open=()=>{
   const shortcuts=[];
   const templatePanel=document.querySelector('.sales-offer-template-panel,.store-complete-template-inline');
-  if(templatePanel)shortcuts.push({label:'Tilbudsmaler – bruk og rediger',onClick:()=>{templatePanel.scrollIntoView({block:'start',behavior:'instant'});templatePanel.querySelector('select')?.focus({preventScroll:true});}});
+  if(templatePanel)shortcuts.push({label:'Tilbudsmaler – bruk og rediger',onClick:()=>{templatePanel.scrollIntoView({block:'center',behavior:'instant'});templatePanel.querySelector('select')?.focus({preventScroll:true});}});
   const saveTemplate=Array.from(document.querySelectorAll('.sales-app button')).find(button=>button.textContent.trim()==='Lagre som mal'&&!button.disabled&&button.getBoundingClientRect().height>0);
   if(saveTemplate)shortcuts.push({label:'Lagre tilbudet som mal',onClick:()=>saveTemplate.click()});
   setEditorTools(shortcuts);setWide(false);dialog.current?.showModal();
