@@ -1,7 +1,7 @@
 {
   "date": "2026-10-29",
   "app_candidate": "afe9daed6ed69bb0b491fd04633510b8fa672eac",
-  "housing_candidate": "66ddc336f73c62a38b5c59387c9c2cba7af1b585",
+  "housing_candidate": "435510c6871007ad511f87a573c8f4244ea640b7",
   "reference": "03.6 / f67f236784b4de9a92f52c5b74b67335ec94606a",
   "baseline_evidence": "PR Core Safety #751 run 40795525333 SUCCESS, as recorded in PR295. Fresh candidate result must be recorded separately in PR.",
   "limits": [
@@ -72,7 +72,7 @@
         "people-module-access-react-check.mjs",
         "people-workspace-module-access-react-check.mjs"
       ],
-      "status": "inventoried; related baseline CI exists; not equivalent to manual completion",
+      "status": "Full PR Core Safety #754 PASS on verified frame candidate; full #756 PASS on housing candidate. Related-check mapping is not proof of every individual function branch.",
       "manual_this_run": "Not manually exercised in this run"
     },
     {
@@ -131,8 +131,8 @@
         "module-navigation-resume-react-check.mjs",
         "systemadmin-company-selection-react-check.mjs"
       ],
-      "status": "inventoried; related baseline CI exists; not equivalent to manual completion",
-      "manual_this_run": "Not manually exercised in this run"
+      "status": "Full PR Core Safety #754 PASS on verified frame candidate; full #756 PASS on housing candidate. Related-check mapping is not proof of every individual function branch.",
+      "manual_this_run": "Systemadmin overview loaded all nine areas in three groups; no role/import/mail/sync actions"
     },
     {
       "module": "auth",
@@ -192,7 +192,7 @@
         "people-module-access-react-check.mjs",
         "people-workspace-module-access-react-check.mjs"
       ],
-      "status": "inventoried; related baseline CI exists; not equivalent to manual completion",
+      "status": "Full PR Core Safety #754 PASS on verified frame candidate; full #756 PASS on housing candidate. Related-check mapping is not proof of every individual function branch.",
       "manual_this_run": "Not manually exercised in this run"
     },
     {
@@ -407,8 +407,8 @@
         "bolig-site-roster-export-check.mjs",
         "bolig-visuals-browser-check.mjs"
       ],
-      "status": "inventoried; related baseline CI exists; not equivalent to manual completion",
-      "manual_this_run": "Pilot 12 units loaded on PR295 baseline; structure/status/address controls visible; no mutations"
+      "status": "Full PR Core Safety #754 PASS on verified frame candidate; full #756 PASS on housing candidate. Related-check mapping is not proof of every individual function branch.",
+      "manual_this_run": "Latest isolated housing Preview loaded with preserved login; Pilot A/B selected; address focus confirmed 12px below actual sticky header, facade 328px; all six actual unit buttons present. 16-house/four-width scenario passed in CI. No project data changed."
     },
     {
       "module": "chat",
@@ -472,7 +472,7 @@
         "project-step-save-check.mjs",
         "project-workspace-browser-check.mjs"
       ],
-      "status": "inventoried; related baseline CI exists; not equivalent to manual completion",
+      "status": "Full PR Core Safety #754 PASS on verified frame candidate; full #756 PASS on housing candidate. Related-check mapping is not proof of every individual function branch.",
       "manual_this_run": "Not manually exercised in this run"
     },
     {
@@ -519,7 +519,7 @@
         "project-checklist-resume-react-check.mjs",
         "project-checklist-workspace-react-check.mjs"
       ],
-      "status": "inventoried; related baseline CI exists; not equivalent to manual completion",
+      "status": "Full PR Core Safety #754 PASS on verified frame candidate; full #756 PASS on housing candidate. Related-check mapping is not proof of every individual function branch.",
       "manual_this_run": "Not manually exercised in this run"
     },
     {
@@ -565,8 +565,8 @@
         "organization-react-check.mjs",
         "systemadmin-company-selection-react-check.mjs"
       ],
-      "status": "inventoried; related baseline CI exists; not equivalent to manual completion",
-      "manual_this_run": "Not manually exercised in this run"
+      "status": "Full PR Core Safety #754 PASS on verified frame candidate; full #756 PASS on housing candidate. Related-check mapping is not proof of every individual function branch.",
+      "manual_this_run": "Firmaadmin loaded Expo Proffsenter and user/invitation/access sections; no invitations or changes"
     },
     {
       "module": "config",
@@ -607,7 +607,7 @@
         "people-module-access-react-check.mjs",
         "people-workspace-module-access-react-check.mjs"
       ],
-      "status": "inventoried; related baseline CI exists; not equivalent to manual completion",
+      "status": "Full PR Core Safety #754 PASS on verified frame candidate; full #756 PASS on housing candidate. Related-check mapping is not proof of every individual function branch.",
       "manual_this_run": "Not manually exercised in this run"
     },
     {
@@ -675,7 +675,7 @@
         "sales-mobile-offer-ui-check.mjs",
         "sales-overview-ux-browser-check.mjs"
       ],
-      "status": "inventoried; related baseline CI exists; not equivalent to manual completion",
+      "status": "Full PR Core Safety #754 PASS on verified frame candidate; full #756 PASS on housing candidate. Related-check mapping is not proof of every individual function branch.",
       "manual_this_run": "Not manually exercised in this run"
     },
     {
@@ -713,7 +713,7 @@
         "customer-option-quantity-pdf-check.mjs",
         "project-customer-fields-browser-check.mjs"
       ],
-      "status": "inventoried; related baseline CI exists; not equivalent to manual completion",
+      "status": "Full PR Core Safety #754 PASS on verified frame candidate; full #756 PASS on housing candidate. Related-check mapping is not proof of every individual function branch.",
       "manual_this_run": "Not manually exercised in this run"
     },
     {
@@ -756,7 +756,7 @@
         "supplier-order-email-check.mjs",
         "supplier-order-react-check.mjs"
       ],
-      "status": "inventoried; related baseline CI exists; not equivalent to manual completion",
+      "status": "Full PR Core Safety #754 PASS on verified frame candidate; full #756 PASS on housing candidate. Related-check mapping is not proof of every individual function branch.",
       "manual_this_run": "Not manually exercised in this run"
     },
     {
@@ -822,7 +822,7 @@
         "sales-mobile-offer-ui-check.mjs",
         "sales-overview-ux-browser-check.mjs"
       ],
-      "status": "inventoried; related baseline CI exists; not equivalent to manual completion",
+      "status": "Full PR Core Safety #754 PASS on verified frame candidate; full #756 PASS on housing candidate. Related-check mapping is not proof of every individual function branch.",
       "manual_this_run": "Not manually exercised in this run"
     },
     {
@@ -909,7 +909,7 @@
         "people-module-access-react-check.mjs",
         "people-workspace-module-access-react-check.mjs"
       ],
-      "status": "inventoried; related baseline CI exists; not equivalent to manual completion",
+      "status": "Full PR Core Safety #754 PASS on verified frame candidate; full #756 PASS on housing candidate. Related-check mapping is not proof of every individual function branch.",
       "manual_this_run": "Not manually exercised in this run"
     },
     {
@@ -975,7 +975,7 @@
         "project-step-save-check.mjs",
         "project-workspace-browser-check.mjs"
       ],
-      "status": "inventoried; related baseline CI exists; not equivalent to manual completion",
+      "status": "Full PR Core Safety #754 PASS on verified frame candidate; full #756 PASS on housing candidate. Related-check mapping is not proof of every individual function branch.",
       "manual_this_run": "Not manually exercised in this run"
     },
     {
@@ -1005,7 +1005,7 @@
         "app-ux-review-browser-check.mjs",
         "bolig-builder-browser-check.mjs"
       ],
-      "status": "inventoried; related baseline CI exists; not equivalent to manual completion",
+      "status": "Full PR Core Safety #754 PASS on verified frame candidate; full #756 PASS on housing candidate. Related-check mapping is not proof of every individual function branch.",
       "manual_this_run": "Not manually exercised in this run"
     },
     {
@@ -1028,7 +1028,7 @@
         "home-followups-react-check.mjs",
         "personal-project-layout-browser-check.mjs"
       ],
-      "status": "inventoried; related baseline CI exists; not equivalent to manual completion",
+      "status": "Full PR Core Safety #754 PASS on verified frame candidate; full #756 PASS on housing candidate. Related-check mapping is not proof of every individual function branch.",
       "manual_this_run": "Startside loaded; compact follow-up visible; no mutations"
     },
     {
@@ -1122,7 +1122,7 @@
         "people-module-access-react-check.mjs",
         "people-workspace-module-access-react-check.mjs"
       ],
-      "status": "inventoried; related baseline CI exists; not equivalent to manual completion",
+      "status": "Full PR Core Safety #754 PASS on verified frame candidate; full #756 PASS on housing candidate. Related-check mapping is not proof of every individual function branch.",
       "manual_this_run": "HR loaded as existing demo firmadmin; employee list and six shortcuts visible; Samtalemaler opened without saving"
     },
     {
@@ -1189,7 +1189,7 @@
         "project-step-save-check.mjs",
         "project-workspace-browser-check.mjs"
       ],
-      "status": "inventoried; related baseline CI exists; not equivalent to manual completion",
+      "status": "Full PR Core Safety #754 PASS on verified frame candidate; full #756 PASS on housing candidate. Related-check mapping is not proof of every individual function branch.",
       "manual_this_run": "Not manually exercised in this run"
     },
     {
@@ -1254,7 +1254,7 @@
         "project-step-save-check.mjs",
         "project-workspace-browser-check.mjs"
       ],
-      "status": "inventoried; related baseline CI exists; not equivalent to manual completion",
+      "status": "Full PR Core Safety #754 PASS on verified frame candidate; full #756 PASS on housing candidate. Related-check mapping is not proof of every individual function branch.",
       "manual_this_run": "Not manually exercised in this run"
     },
     {
@@ -1411,7 +1411,7 @@
         "people-module-access-react-check.mjs",
         "people-workspace-module-access-react-check.mjs"
       ],
-      "status": "inventoried; related baseline CI exists; not equivalent to manual completion",
+      "status": "Full PR Core Safety #754 PASS on verified frame candidate; full #756 PASS on housing candidate. Related-check mapping is not proof of every individual function branch.",
       "manual_this_run": "Håndbok loaded with 73 routines, role-labelled daily/mine/management tabs; Sjekklistesentral opened; no publication"
     },
     {
@@ -1453,7 +1453,7 @@
         "organization-react-check.mjs",
         "systemadmin-company-selection-react-check.mjs"
       ],
-      "status": "inventoried; related baseline CI exists; not equivalent to manual completion",
+      "status": "Full PR Core Safety #754 PASS on verified frame candidate; full #756 PASS on housing candidate. Related-check mapping is not proof of every individual function branch.",
       "manual_this_run": "Not manually exercised in this run"
     },
     {
@@ -1518,7 +1518,7 @@
         "project-step-save-check.mjs",
         "project-workspace-browser-check.mjs"
       ],
-      "status": "inventoried; related baseline CI exists; not equivalent to manual completion",
+      "status": "Full PR Core Safety #754 PASS on verified frame candidate; full #756 PASS on housing candidate. Related-check mapping is not proof of every individual function branch.",
       "manual_this_run": "Not manually exercised in this run"
     },
     {
@@ -1546,7 +1546,7 @@
         "personal-page-react-check.mjs",
         "personal-project-layout-browser-check.mjs"
       ],
-      "status": "inventoried; related baseline CI exists; not equivalent to manual completion",
+      "status": "Full PR Core Safety #754 PASS on verified frame candidate; full #756 PASS on housing candidate. Related-check mapping is not proof of every individual function branch.",
       "manual_this_run": "Not manually exercised in this run"
     },
     {
@@ -1584,7 +1584,7 @@
         "customer-option-quantity-pdf-check.mjs",
         "project-customer-fields-browser-check.mjs"
       ],
-      "status": "inventoried; related baseline CI exists; not equivalent to manual completion",
+      "status": "Full PR Core Safety #754 PASS on verified frame candidate; full #756 PASS on housing candidate. Related-check mapping is not proof of every individual function branch.",
       "manual_this_run": "Not manually exercised in this run"
     },
     {
@@ -1650,7 +1650,7 @@
         "project-step-save-check.mjs",
         "project-workspace-browser-check.mjs"
       ],
-      "status": "inventoried; related baseline CI exists; not equivalent to manual completion",
+      "status": "Full PR Core Safety #754 PASS on verified frame candidate; full #756 PASS on housing candidate. Related-check mapping is not proof of every individual function branch.",
       "manual_this_run": "Not manually exercised in this run"
     },
     {
@@ -1731,7 +1731,7 @@
         "project-step-save-check.mjs",
         "project-workspace-browser-check.mjs"
       ],
-      "status": "inventoried; related baseline CI exists; not equivalent to manual completion",
+      "status": "Full PR Core Safety #754 PASS on verified frame candidate; full #756 PASS on housing candidate. Related-check mapping is not proof of every individual function branch.",
       "manual_this_run": "Not manually exercised in this run"
     },
     {
@@ -1815,8 +1815,8 @@
         "project-step-save-check.mjs",
         "project-workspace-browser-check.mjs"
       ],
-      "status": "inventoried; related baseline CI exists; not equivalent to manual completion",
-      "manual_this_run": "Not manually exercised in this run"
+      "status": "Full PR Core Safety #754 PASS on verified frame candidate; full #756 PASS on housing candidate. Related-check mapping is not proof of every individual function branch.",
+      "manual_this_run": "Existing DEMO HOVED opened; 12 navigation buttons exercised. Confirmed headings for description, agreement, products, surfaces, images, equipment, handover, warranty and report; engineering and internal notes additionally confirmed after settled rendering. Progress last content not manually attested. No edits/save/export/sends."
     },
     {
       "module": "report",
@@ -1895,7 +1895,7 @@
         "project-step-save-check.mjs",
         "project-workspace-browser-check.mjs"
       ],
-      "status": "inventoried; related baseline CI exists; not equivalent to manual completion",
+      "status": "Full PR Core Safety #754 PASS on verified frame candidate; full #756 PASS on housing candidate. Related-check mapping is not proof of every individual function branch.",
       "manual_this_run": "Not manually exercised in this run"
     },
     {
@@ -2056,7 +2056,7 @@
         "sales-mobile-offer-ui-check.mjs",
         "sales-overview-ux-browser-check.mjs"
       ],
-      "status": "inventoried; related baseline CI exists; not equivalent to manual completion",
+      "status": "Full PR Core Safety #754 PASS on verified frame candidate; full #756 PASS on housing candidate. Related-check mapping is not proof of every individual function branch.",
       "manual_this_run": "Not manually exercised in this run"
     },
     {
@@ -2096,7 +2096,7 @@
         "supplier-order-email-check.mjs",
         "supplier-order-react-check.mjs"
       ],
-      "status": "inventoried; related baseline CI exists; not equivalent to manual completion",
+      "status": "Full PR Core Safety #754 PASS on verified frame candidate; full #756 PASS on housing candidate. Related-check mapping is not proof of every individual function branch.",
       "manual_this_run": "Not manually exercised in this run"
     },
     {
@@ -2186,7 +2186,7 @@
         "sales-mobile-offer-ui-check.mjs",
         "sales-overview-ux-browser-check.mjs"
       ],
-      "status": "inventoried; related baseline CI exists; not equivalent to manual completion",
+      "status": "Full PR Core Safety #754 PASS on verified frame candidate; full #756 PASS on housing candidate. Related-check mapping is not proof of every individual function branch.",
       "manual_this_run": "Not manually exercised in this run"
     },
     {
@@ -2214,7 +2214,7 @@
         "support-layout-browser-check.mjs",
         "support-mail-check.mjs"
       ],
-      "status": "inventoried; related baseline CI exists; not equivalent to manual completion",
+      "status": "Full PR Core Safety #754 PASS on verified frame candidate; full #756 PASS on housing candidate. Related-check mapping is not proof of every individual function branch.",
       "manual_this_run": "Not manually exercised in this run"
     },
     {
@@ -2279,7 +2279,7 @@
         "project-step-save-check.mjs",
         "project-workspace-browser-check.mjs"
       ],
-      "status": "inventoried; related baseline CI exists; not equivalent to manual completion",
+      "status": "Full PR Core Safety #754 PASS on verified frame candidate; full #756 PASS on housing candidate. Related-check mapping is not proof of every individual function branch.",
       "manual_this_run": "Not manually exercised in this run"
     },
     {
@@ -2343,7 +2343,7 @@
         "people-module-access-react-check.mjs",
         "people-workspace-module-access-react-check.mjs"
       ],
-      "status": "inventoried; related baseline CI exists; not equivalent to manual completion",
+      "status": "Full PR Core Safety #754 PASS on verified frame candidate; full #756 PASS on housing candidate. Related-check mapping is not proof of every individual function branch.",
       "manual_this_run": "Not manually exercised in this run"
     },
     {
@@ -2386,7 +2386,7 @@
         "module-navigation-resume-react-check.mjs",
         "systemadmin-company-selection-react-check.mjs"
       ],
-      "status": "inventoried; related baseline CI exists; not equivalent to manual completion",
+      "status": "Full PR Core Safety #754 PASS on verified frame candidate; full #756 PASS on housing candidate. Related-check mapping is not proof of every individual function branch.",
       "manual_this_run": "Not manually exercised in this run"
     },
     {
@@ -2452,7 +2452,7 @@
         "project-step-save-check.mjs",
         "project-workspace-browser-check.mjs"
       ],
-      "status": "inventoried; related baseline CI exists; not equivalent to manual completion",
+      "status": "Full PR Core Safety #754 PASS on verified frame candidate; full #756 PASS on housing candidate. Related-check mapping is not proof of every individual function branch.",
       "manual_this_run": "Not manually exercised in this run"
     }
   ],
@@ -2605,5 +2605,32 @@
     "dist/index.html",
     "UX_REVIEW_03_6.md"
   ],
-  "reference_source_unchanged": true
+  "reference_source_unchanged": true,
+  "verified_frame_candidate": "7875524eaa762e304a4110d83887da7aa1ce3d12",
+  "verified_ci": {
+    "frame": {
+      "run": 40803212792,
+      "number": 754,
+      "result": "success"
+    },
+    "housing": {
+      "run": 40803430458,
+      "number": 756,
+      "result": "success"
+    }
+  },
+  "deployments": {
+    "frame": "dpl_J1zLrwTA88nuqPrg7guVLmMoKLu5",
+    "housing": "dpl_9GvsMa7BooEieQEgbaBdejHG5tRd"
+  },
+  "binding": "Actual emitted main bundles on both fixed hosts contain Sandbox URL and exclude Production URL. No environment changes.",
+  "housing_ui_proof": {
+    "candidate": "435510c6871007ad511f87a573c8f4244ea640b7",
+    "project": "existing synthetic PILOT 12 units",
+    "facade_height_px": 328,
+    "header_bottom_px": 169,
+    "address_top_px": 181.078125,
+    "focused": true,
+    "screenshot": "proffdok-bolig-adresse-20261029.jpg"
+  }
 }

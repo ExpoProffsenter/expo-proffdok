@@ -52,3 +52,11 @@ Bolig: en ny fixture med 16 flerfamiliehus og seks boliger per bygg kontrollerer
 Fast ramme-Preview: https://expo-proffdok-git-design01-app-ramme-20261028-ringside.vercel.app/
 
 Isolert bolig-Preview: https://expo-proffdok-git-fase45b-bolig-portal-polish-20261025-ringside.vercel.app/
+
+## Sluttbevis
+
+Ramme 7875524e: full PR Core Safety #754 / 40803212792 SUCCESS. Bolig 435510c6: full #756 / 40803430458 SUCCESS, inkludert den nye 16-hus-prøven ved fire bredder. Begge faste Preview-er er READY på eksakt kandidat og faktiske main-bundler inneholder bare Sandbox-binding.
+
+Faktisk siste boligprøve: innlogging beholdt etter deploy; bygg A/B velger riktig adresse og fokuserer den 12 px under faktisk sticky header (169 → 181 px). Fasade 328 px, seks boligknapper beholdt. Skjermbevis: proffdok-bolig-adresse-20261029.jpg. Firmaadmin og Systemadmin lastet i eksisterende autorisert konto; ingen rolle-/bruker-/invitasjonsendringer. Prosjektets 12 navigasjonsknapper er prøvd lesende, med konkrete bekreftelser/begrensninger i JSON.
+
+Disse bevisene erstatter foreløpig CI-status ovenfor. Nye dokumentasjonscommits endrer ikke de verifiserte appfilene; gjeldende full CI følges i PR295. Portaler, konsekvensfulle handlinger og rollevarianter er testet syntetisk i CI, ikke manuelt attestert som alle reelle roller/enheter. Full visuell detaljgjennomgang av alle underdialoger gjenstår.
