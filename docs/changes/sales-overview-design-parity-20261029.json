@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Befaring/Tilbud: samme designspråk i oversikt og sak som på startsiden",
+  "change": "Miljømål BEGGE, foreløpig bare eksisterende design-Preview/PR295. Brukerens observasjon var riktig: forrige pakke omfattet editorene, mens oversikt og sak fortsatt hadde legacy hero, skygger, gradienter, kort-i-kort og tunge knappestiler. Rettes i det eksisterende, app-avgrensede presentasjonslaget proffdokWorkspace.css. Eksisterende JSX, callbacks, søk/filter, tilstand, tilgang, data, server-first, kladd, kundeaksept og e-post beholdes. Den lesende e-postundersøkelsen er dokumentert separat uten person-/saksidentifikatorer og uten runtimeendring.",
+  "verification": "Førbildene fra faktiske liste-/sakskomponenter viste legacy-stilen med faktisk design-CSS. Endelig sales-overview-ux-browser-check:311 Chromium-kontroller PASS. Oversikt og sak måles på320/390/768/1363/1920px og korte1363x600/390x600-skjermer. Lange titler, alle synlige44px handlinger, interne bredder,16px handlingstekst, hero uten gradient/skygge/avrunding, h1vekt600 og fravær av ekstra branding kontrolleres. Alle tidligere funksjonsassertions beholdes; også Generelt/Våtrom-typefilter, søk og retur, ny forespørsel og PDF-callback er prøvd. Visuell kontroll fanget i tillegg ordkløyving i Befaringsnotat på mobil, lav ikonkontrast og tung kundetekst; rettet med én handlingskolonne under420px, currentColor og400vekt, med egne regresjonsmål. Ekstern transport er sperret utenom127.0.0.1. Før/etterbilder er inspisert; headeren er tydelig merket som isolert fixture. Full build, CI og publisert Preview føres i PR før ferdigstatus. Ingen innlogget helapp- eller fysisk Safari-attest gis.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Samme knappnavn og arbeidsflyt. Ingen nye brukerhandlinger innføres."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Ingen endring i komponentlivssyklus, tilgang, lagring eller backend/dataflyt."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen nye avhengigheter, miljøvariabler eller installasjonssteg."
+    },
+    "module": {
+      "required": false,
+      "reason": "Komponentenes props, callbacks, state og funksjonskontrakter er uendret."
+    }
+  }
+}

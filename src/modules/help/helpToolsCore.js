@@ -52,7 +52,7 @@ const BASE_SECTIONS = [
     [
       "Når et prosjekt er åpent, ligger Oversikt, Sjekklister, Bilder, Avvik og Meny fast nederst. Trykk Sjekklister for å fortsette en påbegynt liste, ellers åpnes den første uferdige listen. En åpen kladd beholdes. Hvis alle er fullført, vises oversikten med de lagrede kontrollene.",
       "Åpne Status og mangler ved behov for full prosjektstatus og manglende dokumentasjon. Oppdater prosjekt og Flere handlinger står ved siden av hverandre øverst. Flere handlinger åpner en liten nedtrekksmeny.",
-      "Bruk Prosjektmeny eller Meny når du trenger øvrige prosjektfaner. Lukk sjekklistedialogen for å velge en annen liste eller se tidligere kontroller.",
+      "Bruk Prosjektmeny eller Meny når du trenger øvrige prosjektfaner. På mobil finner du også Hjelp og Support i denne menyen. Lukk sjekklistedialogen for å velge en annen liste eller se tidligere kontroller.",
       "På lange sider viser pilene midt på høyre side veien til toppen og bunnen. De finnes også i HR, KS/HMS, Min profil og øvrige moduler. Pilene skjules mens du skriver.",
       "Velg HR eller en annen modul i menyen for å åpne den direkte. Hva vil du jobbe med vises bare på Startsiden."
     ],

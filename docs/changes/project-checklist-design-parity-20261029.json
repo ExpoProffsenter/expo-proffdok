@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Prosjekt og sjekklister: lesbare handlinger og kompakt mobilflate",
+  "change": "Miljømål BEGGE, foreløpig bare design-Preview/PR295. Neste parallelle UX/UI-gjennomgang avdekket36–42px sentrale prosjektknapper,39–40px sjekklisteknapper og prosjektinnhold som ble skjøvet til omtrent1190px fra sidetoppen ved320px bredde med faktisk designstil. Avgrenset presentasjonsrettelse i ny proffdokProjectWorkspace.css, importert av eksisterende designstil. Ingen endring i JSX, navigasjon, lagring, sjekklisteutkast, hydrering, tilgang eller backend. Eksisterende prosjekt-/sjekklisteprøver bruker nå den faktiske app-wrapperen og designstilen. Mobilens dupliserte Hjelp/Support-knapper samles i eksisterende Prosjektmeny, der begge native callbacks er kontrollert. Hjelpeteksten viser nå denne plasseringen. Ingen autorisert funksjon fjernes.",
+  "verification": "Førtest med faktisk ProjectWorkspaceChrome og designstil gjenskapte content reachable320-feil og36–42px handlinger. Endelig prosjektprøve:193 Chromium-kontroller PASS, inkludert alle138opprinnelige assertions og55nye. Alle3fasekort, alle handlinger og hjelpetekster beholdes; desktopkontekst532.89px består den uendrede560px-grensen. Mobilinnhold blir tilgjengelig innen den opprinnelige800px-grensen. Sju bredder320/390/768/1181/1280/1363/1920 prøves;44px sentrale handlinger,16px tekst/14px hele ord på ikonsnarveier, internt overflow, lange titler, kort skjerm480/320, fokus og beholdt kladd. Sjekklisteprøve:66PASS (alle28opprinnelige +38nye), fem bredder,44px/16px, betingede og påkrevde svar, close/reopen, Escape/fokusretur og390/320x480/320-dialoger med fast header og egen scrollkropp; Lagre/Fullført/Lukk holder seg innenfor dialogen. Opprinnelig kortdialog stakk8px under viewport; rettet med flex/geometri. Ekstern transport sperres utenom127.0.0.1. Checklist-resume React-prøve:36 assertions PASS for samme lagrede/lokale kladd, sikrede endringer, fokus/scroll, uforanderlige fullførte kontroller og lesetilgang. Kjørt med identisk låst jsdom26.1.0 i isolert midlertidig installasjon, uten avhengighetsendring i repoet. Bilder inspiseres ved avsluttet180ms drawertransition; kortdialog fanges som faktisk viewport. Prosjektfixture har syntetisk profilknapp; dette er ikke en innlogget helappattest. Full build, eksakt CI/deployment og publisertCSS dokumenteres i PR.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "Mobilens Hjelp og Support nås i eksisterende Prosjektmeny. Den korte prosjektveiledningen oppdateres med nøyaktig plassering."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Ingen endring i tilstand, livssyklus, navigasjon, lagring eller backend."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen nye avhengigheter, miljøvariabler eller installasjonssteg."
+    },
+    "module": {
+      "required": false,
+      "reason": "Prosjekt- og sjekklistekomponentenes props/callback-kontrakter beholdes."
+    }
+  }
+}
