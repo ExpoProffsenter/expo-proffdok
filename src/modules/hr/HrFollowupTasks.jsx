@@ -5,10 +5,11 @@ import {WORK_PROFILE_EVENT} from '../access/workProfileClient.js';
 import {osloToday} from './hrPracticeConversation.mjs';
 import './hrSickLeaveCases.css';
 const titles={'hr-review':'Kontroll av HR-oppsett og tilgang',preparation:'Forbered medarbeidersamtalen',plan:'Oppfølgingsplan',meeting1:'Dialogmøte 1 – vurdering og oppfølging',activity:'Underlag til NAVs aktivitetsvurdering',meeting2:'Forberedelse til NAVs dialogmøte 2',next:'Neste oppfølging'};
-export default function HrFollowupTasks({context,onOpen,onSetup}){
+export default function HrFollowupTasks({context,onOpen,onSetup,onSummaryChange}){
  const {company_id:companyId,user_id:userId}=context;
  const [value,setValue]=useState(null),[error,setError]=useState(''),[busy,setBusy]=useState(false);
  const epoch=useRef(0),busyRef=useRef(false),alive=useRef(false);
+ useEffect(()=>{onSummaryChange?.({count:value?.tasks.length??null,more:Boolean(value?.next),error:Boolean(error)});},[value,error,onSummaryChange]);
  const check=v=>{if(v?.context?.company_id!==companyId||v.context.user_id!==userId||!Array.isArray(v.tasks)
   ||v.tasks.some(t=>!t.case_id||(!t.employee_id&&t.task_key!=='hr-review')||typeof t.task_key!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(t.due_on)))throw Error('Firma eller fristtilgang er endret. Oppdater listen.');return v;};
  useEffect(()=>{

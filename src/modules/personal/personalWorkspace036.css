@@ -2,7 +2,7 @@
    Scoped to Min side; native modules keep their data, permissions and callbacks. */
 .personal-page.personal-workspace036{max-width:none;min-width:0;padding:0;color:#10212b}
 body .personal-page.personal-workspace036>header.personal-heading{position:static;padding:0 0 22px;margin:0;border:0;border-radius:0;background:transparent;box-shadow:none;color:#10212b;gap:20px}
-body .personal-page.personal-workspace036 .personal-heading h2{color:#10212b;font-size:36px;font-weight:600;line-height:1.2;letter-spacing:-1px;margin:8px 0}
+body .personal-page.personal-workspace036 .personal-heading h2{color:#10212b;font-size:var(--pd-title,32px);font-weight:600;line-height:1.2;letter-spacing:-1px;margin:8px 0}
 .personal-page.personal-workspace036 .personal-heading p{font-size:16px;line-height:1.5;color:#617b89;max-width:none}
 .personal-workspace036 .personal-eyebrow{font-size:14px;font-weight:500;letter-spacing:.1em;color:#6b8592}
 .personal-workspace036 .personal-avatar{width:48px;height:48px;border-radius:50%;font-size:18px;font-weight:500;background:#e7f2f4;color:#007681;border:1px solid #c9dfe5}

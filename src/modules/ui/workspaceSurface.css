@@ -1,0 +1,33 @@
+/* Shared 03.6 measurements. Module layouts may reflect their task, but their
+   headings, controls, borders and contextual panels use this one baseline. */
+body:has([data-expo-app-shell="true"]){--pd-ink:#10212b;--pd-muted:#4e6876;--pd-line:#d5e3e9;--pd-accent:#007681;--pd-radius:8px;--pd-gap:20px;--pd-control:44px;--pd-copy:16px;--pd-title:32px}
+body:has([data-expo-app-shell="true"]) [data-expo-app-shell="true"]>main{max-width:1744px}
+body:has([data-expo-app-shell="true"]) :is(.hr-workspace-036,.ks-workspace-036,.personal-workspace036,.company-admin-panel,.pd-admin-workspace) :is(button,input,select,textarea){font-size:var(--pd-copy);line-height:1.4}
+body:has([data-expo-app-shell="true"]) :is(.hr-workspace-036,.ks-workspace-036,.personal-workspace036,.company-admin-panel,.pd-admin-workspace) button{min-height:var(--pd-control);border-radius:7px;box-shadow:none;transform:none}
+body:has([data-expo-app-shell="true"]) :is(.hr-workspace-036>header.hr-heading,.ks-workspace-036>header.module-heading,.personal-workspace036>header.personal-heading) h2,
+body:has([data-expo-app-shell="true"]) :is(.pd-admin-heading h2,.company-admin-heading>h3){font-size:var(--pd-title);font-weight:600;line-height:1.2;letter-spacing:-.7px}
+body:has([data-expo-app-shell="true"]) :is(.hr-workspace-036>header.hr-heading,.ks-workspace-036>header.module-heading,.personal-workspace036>header.personal-heading){padding-bottom:16px;margin-bottom:0}
+body:has([data-expo-app-shell="true"]) :is(.ks-workspace-navigation,.personal-workspace036 .personal-tabs){margin-top:0;margin-bottom:20px}
+body:has([data-expo-app-shell="true"]) :is(.hr-register-controls,.company-admin-directory,.ks-workspace-navigation) button.secondary{background:#fff;color:var(--pd-accent);border:1px solid var(--pd-line)}
+body:has([data-expo-app-shell="true"]) .pd-workspace-drawer{--pd-copy:16px;border-radius:0;color:var(--pd-ink)}
+body:has([data-expo-app-shell="true"]) .pd-workspace-drawer-header{position:static;min-height:0;border-radius:0;box-shadow:none;padding:20px 24px}
+body:has([data-expo-app-shell="true"]) .pd-workspace-drawer-header h2{font-size:28px;line-height:1.2}
+body:has([data-expo-app-shell="true"]) .pd-workspace-drawer-body{padding:20px 24px}
+body:has([data-expo-app-shell="true"]) .pd-workspace-drawer :is(button,input,select,textarea){font-size:16px;line-height:1.4}
+body:has([data-expo-app-shell="true"]) .pd-workspace-drawer button{min-height:44px;box-shadow:none;transform:none}
+body:has([data-expo-app-shell="true"]) .pd-workspace-drawer [hidden]{display:none!important}
+/* The same frame on native employee, SJA and checklist panels. Their existing
+   scroll, focus, close and nested-dialog owners remain unchanged. */
+body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.hr-employee-dialog-036,.sja-editor,.ks-executions)>.deviation-dialog-header{padding:20px 24px;background:var(--pd-ink);color:#fff;border-radius:0;box-shadow:none;flex:none}
+body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.hr-employee-dialog-036,.sja-editor,.ks-executions)>.deviation-dialog-header :is(h2,p){color:#fff}
+body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.hr-employee-dialog-036,.sja-editor,.ks-executions)>.deviation-dialog-header h2{font-size:28px;font-weight:600;line-height:1.2}
+body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.hr-employee-dialog-036,.sja-editor,.ks-executions)>.deviation-dialog-header p{color:#bdd7e2;font-size:14px}
+body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.hr-employee-dialog-036,.sja-editor,.ks-executions) .deviation-dialog-close{min-width:44px;min-height:44px;color:#bdd7e2;background:transparent;border:1px solid #ffffff30;border-radius:6px;box-shadow:none}
+@media(max-width:620px){
+ body:has([data-expo-app-shell="true"]){--pd-title:29px}
+ body:has([data-expo-app-shell="true"]) .pd-workspace-drawer-header,
+ body:has([data-expo-app-shell="true"]) .pd-workspace-drawer-body,
+ body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.hr-employee-dialog-036,.sja-editor,.ks-executions)>.deviation-dialog-header{padding:16px}
+ body:has([data-expo-app-shell="true"]) .pd-workspace-drawer-header h2,
+ body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.hr-employee-dialog-036,.sja-editor,.ks-executions)>.deviation-dialog-header h2{font-size:25px}
+}

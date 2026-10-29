@@ -33,7 +33,8 @@ window.qa.client={rpc:async(name,args={})=>{
     if(window.qa.holdDetail)return new Promise(resolve=>window.qa.held.push(()=>resolve(response)));
     return response;
   }
-  if(name==='hr_followup_tasks')return result({tasks:window.qa.empty?[]:[{case_id:'c-e0',employee_id:'e0',task_key:'action:qa',due_on:'2026-11-02'}],next:null,email_enabled:false});
+  if(name==='hr_followup_tasks')return result({tasks:window.qa.empty?[]:Array.from({length:7},(_,i)=>({case_id:'c-e0',employee_id:'e0',task_key:'action:qa'+i,due_on:'2026-11-02'})),next:null,email_enabled:false});
+  if(name==='time_tasks_get')return result({enabled:true,registered:true,review_count:0,can_manage:true,missing_week:null});
   if(name==='hr_contact_get')return result({registered:true,available:false,employee:clone(employee)});
   if(name==='hr_template_list')return result({templates:[],next:null,content_enabled:true});
   if(name==='hr_conversation_list')return result({employee:clone(employee),conversations:[{...clone(conversation(employee.id)),title:template.title}],next:null,can_start:context.user_id===employee.leader_id});

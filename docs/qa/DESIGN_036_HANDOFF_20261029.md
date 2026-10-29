@@ -2,6 +2,14 @@
 
 Totaloppdraget er **ikke fullført**. Dette er et faktisk kode- og QA-checkpoint, ikke ny plan eller brukerens TEST OK. Miljømål BEGGE; bare design-Preview er autorisert for denne pakken. Root er eneste publisher. Production/main/permanent demo får ingen redesign før uttrykkelig godkjenning.
 
+## Siste styring: samlet layout, ikke én-og-én-fiks
+
+Brukeren avviste29.10 de gjentatte erkjennelsene og HR som separat leveranse. Original03.6 skal brukes på tvers av hele appen; ikke oppfinn modulvise varianter eller be om godkjenning for hver skjerm. HR-bildene viste en reell visuell mangel selv om funksjonstestene var grønne. Tidligere formuleringer om tilfredsstillende visuell gjennomgang er ikke en godkjenning.
+
+Ny samlet pakke: `WorkspacePanel` deles av alle arbeidsverktøy og HR-støtte; `workspaceSurface.css` samler mål for ramme/typografi/bredde på tvers av modulene. Den lange HR-fristkolonnen og nederste oppsettstabel er flyttet til samme høyrepanel, med native skjemaer montert og kladder bevart. Felles dialogportalcontext er brukt så eksisterende timeadministrasjon ikke havner bak en native modal. Samlet lokalkjede1633, prosjekt/Personal253, kundepreview936 og HR-registerReact PASS. Kandidat, ny CI/deploy og faktisk visuell kontroll vedlikeholdes i PR295. Endringsgrunnlag: `docs/changes/shared-workspace-layout-036-20261029.json`.
+
+Dette lukker ikke totaloppdraget. Visuell sammenligning av hele appen og de åpne reisene nedenfor gjenstår; ikke tell felleskomponent eller CI som attest på hver underflyt. Ingen redesign-TEST OK/merge. Ikke start en ny HR-only oppgave etter brudd.
+
 ## Les først etter brudd
 
 1. Les CURRENT_RELEASE_STATUS.md, denne filen og fersk PR295/head/CI. Arbeidsbranch: `design01-app-ramme-20261028`. Baseline før denne pakken: `50a8dda399198198c8cad3b9b08b0223cae4c7f1`; main-grunnlag `71d157f7bdf5e5ff87fe4bdf6bf4ce86674e8e2b`. Eksakt ny kandidat/deployment/CI vedlikeholdes i [PR295](https://github.com/ExpoProffsenter/expo-proffdok/pull/295), slik at denne kildefilen ikke må peke på sin egen SHA.

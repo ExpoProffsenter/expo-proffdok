@@ -2,6 +2,7 @@
 @import './proffdokPeopleWorkspace.css';
 @import './proffdokProjectListWorkspace.css';
 @import './proffdokHomeFollowupWorkspace.css';
+@import './workspaceSurface.css';
 
 /* Keep photos compact in the actual housing wizard as well as the type picker.
    This presentation layer is loaded by the design Preview. */

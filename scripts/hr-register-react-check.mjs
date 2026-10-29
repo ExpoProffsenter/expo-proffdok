@@ -11,7 +11,7 @@ try{
  const bundled=await build({root:rootDir,configFile:false,logLevel:'silent',define:{'process.env.NODE_ENV':'"development"'},build:{write:false,minify:false,lib:{entry,formats:['iife'],name:'HrProof',cssFileName:'hr-proof'}},plugins:[react(),{name:'app-client',enforce:'pre',resolveId(id){if(/cordelAccess\.js$/.test(id))return '\0cordel';if(/appSupabaseClientRegistry\.js$/.test(id))return '\0client';},load(id){if(id==='\0cordel')return 'export const useCordelAccess=()=>false;';if(id==='\0client')return 'export const getAppSupabaseClient=()=>globalThis.__client;';}}]});
  const dom=new JSDOM('<div id="app"></div>',{url:'https://example.invalid',runScripts:'outside-only',pretendToBeVisual:true});
  try{
-  const {window}=dom;window.IS_REACT_ACT_ENVIRONMENT=true;window.HTMLElement.prototype.scrollIntoView=function(){};
+  const {window}=dom;window.IS_REACT_ACT_ENVIRONMENT=true;window.HTMLDialogElement.prototype.showModal=function(){this.open=true;};window.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new window.Event('close'));};window.HTMLElement.prototype.scrollIntoView=function(){};
   window.MessageChannel=class{constructor(){this.port1={onmessage:null};this.port2={postMessage:()=>setImmediate(()=>this.port1.onmessage?.())};}};
   const context={company_id:'firm',user_id:'admin',company_name:'Syntetisk firma',available:true,enabled:false,administer:true};
   const members=['admin','self','old','new','reader'].map(id=>({id,email:id+'@example.invalid'}));
@@ -78,7 +78,7 @@ try{
   const ksSelection=()=>window.document.querySelector('[aria-label="Velg KS/HMS-visning"]');
   assert.equal(ksSelection().value,'handbook');await click('Avvik/RUH');assert.equal(ksSelection().value,'deviations');assert.equal(button('Avvik og RUH').getAttribute('aria-current'),'page');assert.equal(button('Rutiner og håndbok').hasAttribute('aria-current'),false);
   await act(async()=>window.__render('hr',{context}));
-  assert.equal(window.document.querySelectorAll('.hr-workspace-card').length,5);assert(window.document.querySelector('.module-heading'));assert(button('Åpne samtalemaler').disabled);
+  assert.equal(window.document.querySelectorAll('.hr-workspace-card').length,6);assert(window.document.querySelector('.module-heading'));assert(button('Åpne samtalemaler').disabled);
   await click('Åpne sykefravær');assert(window.document.querySelector('.hr-sick-leave').open);assert.equal(window.document.activeElement,window.document.querySelector('.hr-sick-leave'));assert(button('Tilpass sykefraværsmal').disabled);
   await click('Se medarbeidere');assert.equal(window.document.activeElement,window.document.querySelector('.hr-register-target'));
   await click('Se slettekvitteringer');const emptyReceipts=[...window.document.querySelectorAll('details')].find(d=>d.querySelector('summary')?.textContent==='Slettekvitteringer');assert(emptyReceipts.open);assert(emptyReceipts.textContent.includes('Ingen slettekvitteringer ennå'));
@@ -103,7 +103,7 @@ try{
   lateGet={};let opening;await act(async()=>{window.document.querySelector('.hr-employee').click();});assert(lateGet.resolve);const old=lateGet.resolve;lateGet=null;
   await act(async()=>window.__unmount());await act(async()=>old({data:{context,employee:employees[0]}}));assert(!window.document.querySelector('.hr-detail'),'Late personal data revived unmounted UI');
   const selfContext={...context,user_id:'self',administer:false};context.user_id='self';context.administer=false;
-  await act(async()=>window.__render('hr',{context:selfContext}));assert.equal(window.document.querySelectorAll('.hr-workspace-card').length,3,'Non-admin retains register/sick-leave guidance and gets the scoped time entry');assert(button('Åpne timer og utlegg'));assert(!buttons().some(b=>['Åpne oppsett','Se slettekvitteringer','Åpne samtalemaler','Tilpass sykefraværsmal'].includes(b.textContent.trim())));assert(!window.document.body.textContent.includes('Ekstra lesetilgang'));assert(!buttons().some(b=>b.textContent==='Lagre HR-oppsett'));assert(window.document.body.textContent.includes('Mine oppfølginger'));
+  await act(async()=>window.__render('hr',{context:selfContext}));assert.equal(window.document.querySelectorAll('.hr-workspace-card').length,4,'Non-admin retains register/sick-leave guidance and gets the scoped time entry');assert(button('Åpne timer og utlegg'));assert(!buttons().some(b=>['Åpne oppsett','Se slettekvitteringer','Åpne samtalemaler','Tilpass sykefraværsmal'].includes(b.textContent.trim())));assert(!window.document.body.textContent.includes('Ekstra lesetilgang'));assert(!buttons().some(b=>b.textContent==='Lagre HR-oppsett'));assert(window.document.body.textContent.includes('Mine oppfølginger'));
   revoked=true;await act(async()=>window.dispatchEvent(new window.Event('focus')));assert(!window.document.querySelector('.hr-employee'));assert(window.document.querySelector('[role=alert]'));
   assert.equal(window.localStorage.length,0);assert.equal(window.sessionStorage.length,0);
   await act(async()=>window.__unmount());
