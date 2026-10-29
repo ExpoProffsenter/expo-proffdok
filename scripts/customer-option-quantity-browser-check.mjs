@@ -69,3 +69,4 @@ try {
   }
   console.log(`PASS customer option quantities: ${checks} actual Chromium checks at four widths, real customer wrapper/editors/acceptance/order basis; synthetic state and no live requests.`);
 } finally { await browser?.close();fs.rmSync(temp,{recursive:true,force:true}); }
+await import('./sales-case-handler-browser-check.mjs');

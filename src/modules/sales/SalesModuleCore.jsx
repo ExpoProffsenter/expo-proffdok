@@ -1,4 +1,7 @@
 import { inspectionInitialForm } from "./services/salesInspectionInitialForm.mjs";
+import { salesCaseHandlerFields, validateSalesCaseHandler } from "./services/salesCaseHandlers.js";
+import SalesCaseHandlerControl from "./components/SalesCaseHandlerControl.jsx";
+import { isStoreOfferRequest, isStoreOfferSource } from "./services/salesStoreOffers.js";
 import {openMobileCustomerPreview} from "./services/salesMobilePreview.mjs";
 // FASE 28C2 STARTSIDE-TILBUD: Tillater direkte åpning av en konkret salgssak fra Startsiden via signal. Ingen SQL/RLS/Storage/e-postendring.
 // FASE 28A3 TILBUDSMALER: Henter, bruker og sletter firmadelte tilbudsmaler. Malbruk kopierer kun tilbudsinnhold til redigerbar kladd; kunde/befaring/publisert historikk berøres ikke.
@@ -331,6 +334,12 @@ export default function SalesModule({
   const [publicOfferLoading, setPublicOfferLoading] = useState(false);
   const [publicOfferError, setPublicOfferError] = useState("");
   const [salesCompanyId, setSalesCompanyId] = useState(null);
+  const caseHandlerRequestScopeRef = useRef({ key: "", active: true });
+  caseHandlerRequestScopeRef.current.key = `${salesStorageKey}:${salesCompanyId || ""}:${authUser?.id || ""}:${mode}:${selectedRequestId || ""}`;
+  useEffect(() => {
+    caseHandlerRequestScopeRef.current.active = true;
+    return () => { caseHandlerRequestScopeRef.current.active = false; };
+  }, []);
   const [salesStorageError, setSalesStorageError] = useState("");
   const [offerDraftSaveStatus, setOfferDraftSaveStatus] = useState("idle");
   const [offerRecoveryRetry, setOfferRecoveryRetry] = useState(0);
@@ -3293,6 +3302,17 @@ export default function SalesModule({
     event.preventDefault();
     if (!validateRequiredCustomerFields()) return;
 
+    const handlerScope = caseHandlerRequestScopeRef.current.key;
+    let handler;
+    try {
+      handler = await validateSalesCaseHandler(activeSupabase, salesCompanyId, form.responsibleUserId, isStoreOfferSource(form.source));
+      if (!caseHandlerRequestScopeRef.current.active || caseHandlerRequestScopeRef.current.key !== handlerScope) return;
+    } catch (error) {
+      if (!caseHandlerRequestScopeRef.current.active || caseHandlerRequestScopeRef.current.key !== handlerScope) return;
+      alert(error.message || "Velg saksbehandler før du oppretter tilbudet.");
+      return;
+    }
+
     const customerName = form.customer.trim();
     const nextRequest = {
       id: createRequestId(requests),
@@ -3305,8 +3325,7 @@ export default function SalesModule({
       city: form.city.trim(),
       source: form.source,
       note: form.note.trim(),
-      responsible: loggedInResponsible,
-      projectResponsible: loggedInResponsible,
+      ...salesCaseHandlerFields({ ...handler, revision: 1 }),
       directOffer: true,
       offerTitle: `Tilbud – ${form.title}`,
       offerIntro: `Vi tilbyr med dette følgende arbeider for ${customerName}.`,
@@ -3345,6 +3364,17 @@ export default function SalesModule({
     event.preventDefault();
     if (!validateRequiredCustomerFields()) return;
 
+    const handlerScope = caseHandlerRequestScopeRef.current.key;
+    let handler;
+    try {
+      handler = await validateSalesCaseHandler(activeSupabase, salesCompanyId, form.responsibleUserId);
+      if (!caseHandlerRequestScopeRef.current.active || caseHandlerRequestScopeRef.current.key !== handlerScope) return;
+    } catch (error) {
+      if (!caseHandlerRequestScopeRef.current.active || caseHandlerRequestScopeRef.current.key !== handlerScope) return;
+      alert(error.message || "Velg saksbehandler før du oppretter forespørselen.");
+      return;
+    }
+
     const nextRequest = {
       id: createRequestId(requests),
       title: form.title,
@@ -3356,8 +3386,7 @@ export default function SalesModule({
       city: form.city.trim(),
       source: form.source,
       note: form.note.trim(),
-      responsible: loggedInResponsible,
-      projectResponsible: loggedInResponsible,
+      ...salesCaseHandlerFields({ ...handler, revision: 1 }),
       status: "Forespørsel",
       statusClass: "sales-status-new",
       nextStep: "Planlegg befaring",
@@ -3400,6 +3429,9 @@ export default function SalesModule({
               : handleCreateRequest
         }
         onUpdateForm={updateForm}
+        caseHandlerClient={activeSupabase}
+        caseHandlerCompanyId={salesCompanyId}
+        onChooseCaseHandler={handler => setForm(current => ({ ...current, responsibleUserId: handler.userId, responsibleName: handler.displayName }))}
       />
     );
   }
@@ -3516,6 +3548,12 @@ if (mode === "survey-plan" && selectedRequest) {
   if (mode === "detail" && selectedRequest) {
     return (
       <SalesDetailView
+        caseHandlerControl={integrationMode === "app" ? <SalesCaseHandlerControl request={selectedRequest} client={activeSupabase} companyId={salesCompanyId} storeOffer={isStoreOfferRequest(selectedRequest)} onSaved={handler => {
+          const nextRequests = latestRequestsRef.current.map(request => request.id === selectedRequest.id ? { ...request, ...salesCaseHandlerFields(handler) } : request);
+          latestRequestsRef.current = nextRequests;
+          setRequests(nextRequests);
+          saveRequests(nextRequests, salesStorageKey);
+        }} /> : null}
         {...{
           acceptanceProofBusy,
           acceptanceProofError,

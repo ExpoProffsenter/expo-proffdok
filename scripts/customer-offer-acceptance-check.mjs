@@ -85,3 +85,5 @@ for (const missing of [undefined, null, '']) {
   eq(payload.expected_version_id, null, 'missing version reaches the existing server rejection as explicit null');
 }
 console.log(`PASS customer offer acceptance: ${checks} actual mapper → submit handler → RPC adapter checks; serialized version identity, quantities, server receipt, rejection and internal flow.`);
+await import('./sales-acceptance-routing-check.mjs');
+await import('./sales-case-handler-check.mjs');

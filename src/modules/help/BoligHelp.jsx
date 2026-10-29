@@ -47,6 +47,9 @@ export function BoligHelp() {
         <p>«Mine valg», «Avtaler», «Dokumenter» og «Meldinger» fungerer som før.
           Et valg sendes først til gjennomgang. En avtale aksepteres separat etter
           gjennomgang av varer, pris og svarfrist. Bruk «Hent siste status» ved behov.</p>
+        <p>På Min side vises de første fire boligoppgavene. Velg «Vis flere boligoppgaver»
+          eller «Hent flere boligoppgaver» for resten. Trykk på overskriften for å folde
+          listen sammen eller åpne den igjen. «Åpne oppgave» går til den vanlige arbeidsflaten.</p>
         <p>På Min side vises «Prøv å hente oppgavene igjen» hvis boligoppgavene
           ikke kunne hentes. En tom eller feilende henting skal ikke tolkes som
           at alle oppgaver er ferdige. Manglende tilgang gir ikke innsyn i oppgaver.</p>
@@ -57,7 +60,9 @@ export function BoligHelp() {
           Her vises registrert tilstedeværelse med navn, firma, inn- og uttid,
           valgt prosjektdag og rettingshistorikk. «Eksporter liste (CSV)» laster ned listen.</p>
         <p>Aktiver bemanning og legg til navngitte deltakere. Ansatte registrerer
-          seg på Min side. UE bruker sin personlige lenke. Prosjektleder kan også
+          seg på Min side. «Registrert på prosjektet» gjelder tilstedeværelse på byggeplassen.
+          Velg «Registrer inn» når du kommer og «Registrer ut» når du går.
+          UE bruker sin personlige lenke. Prosjektleder kan også
           registrere manuelt. Kontroller åpne registreringer fra tidligere dager.</p>
         <p>Velg «Oversiktsliste ved tilsyn» for byggeplassens elektroniske oversiktsliste.
           Åpne «Rediger byggeplass» og fyll inn adresse, byggherre og listefører.
