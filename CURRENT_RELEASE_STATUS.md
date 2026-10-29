@@ -1,6 +1,6 @@
 # Preview-gjennomgang – 29.10.2026
 
-PR295: app-ramme/startside er fortsatt draft. Sist fullgrønne kandidat før dagens videre rettelser er 92035a78 / Core Safety #762. Designparitet for salgsoversikt/sak og prosjekt/sjekklister kontrolleres samlet; eksakt ny kandidat, CI og fast Preview føres i PR. Full funksjonsinventering: [kontrollmatrise](docs/qa/proffdok-full-function-matrix-20261029.md) med 36 moduler, 605 kildefiler og navngitte eksisterende kontroller. Inventar er ikke full manuell attest.
+PR295: app-ramme/startside er fortsatt draft. Kandidaten omfatter også designparitet for salgsoversikt/sak og prosjekt/sjekklister, samt fokusretur etter venting på sjekklistedata. Eksakt kandidat, samlet CI og fast Preview vedlikeholdes i [PR295](https://github.com/ExpoProffsenter/expo-proffdok/pull/295). Full funksjonsinventering: [kontrollmatrise](docs/qa/proffdok-full-function-matrix-20261029.md) med 36 moduler, 605 kildefiler og navngitte eksisterende kontroller. Inventar er ikke full manuell attest.
 
 Lesende e-postundersøkelse: [mottakerlogikk og HR-finnbarhet](docs/qa/MAIL_ROUTING_AUDIT_20261029.md). Ingen endring i mottakere eller utsendingsoppsett. HRs egen aktiverte fristmotor er adskilt fra KS/HMS-rutineutsendingens sperre.
 

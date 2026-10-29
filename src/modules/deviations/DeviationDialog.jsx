@@ -4,7 +4,7 @@ import { createPortal } from 'react-dom';
 import './deviationDialog.css';
 
 // React owns the complete dialog. Legacy DOM adapters must not move its fields.
-export default function DeviationDialog({ title, context, children, onClose, busy = false, closeLabel = 'Lukk avviksdialog' }) {
+export default function DeviationDialog({ title, context, children, onClose, busy = false, closeLabel = 'Lukk avviksdialog', returnFocusTarget }) {
   const portalTarget = useContext(DialogPortalTarget);
   const titleId = useId();
   const panel = useRef(null);
@@ -35,7 +35,10 @@ export default function DeviationDialog({ title, context, children, onClose, bus
     return () => {
       dialog.removeEventListener('keydown', keydown);
       document.body.style.overflow = previousOverflow;
-      if (previousFocus?.isConnected) previousFocus.focus({ preventScroll: true });
+      // Async openers may lose focus while loading. An explicit resolver can
+      // retain the original trigger and reject it after a workspace change.
+      const target = typeof returnFocusTarget === 'function' ? returnFocusTarget() : returnFocusTarget || previousFocus;
+      if (target?.isConnected) target.focus({ preventScroll: true });
     };
   }, []);
   return createPortal(<div className="deviation-dialog-backdrop">
