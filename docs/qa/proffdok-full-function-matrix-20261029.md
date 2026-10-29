@@ -1,5 +1,46 @@
 # Expo ProffDok – kontrollmatrise 29.10.2026
 
+## Gjeldende vurdering: totalgjennomgangen er ikke fullført
+
+Denne statusen presiserer eldre inventar og testoppsummeringer nedenfor. De 36 modulene og 605 kildefilene er et kildeinventar, ikke 605 gjennomførte brukerprøver eller visuell godkjenning. Grønn CI er et separat funksjons-/regresjonsbevis. Ingen samlet designgodkjenning eller redesign-TEST OK er gitt.
+
+### Fast referanse og godkjente tilpasninger
+
+- Originalskisse 03.6 er uendret kilde `f67f236784b4de9a92f52c5b74b67335ec94606a`, Sites-prosjekt `appgprj_6ae13253b87c8191ba560175fcd6c3d9`. Skissen skal ikke endres for å få appen til å se riktig ut i en sammenligning.
+- Senere uttrykkelige brukeravklaringer skal følge referansen. Kenneth prioriterte seks arbeidsområder og svarte 29.10 «Mye bedre, bortsett fra nederste delen. Kjør videre» etter bildet av den nye Startsiden. **Seksområdestrukturen beholdes.** Den skal ikke rulles tilbake til conceptHome bare fordi denne delen av skissen har en annen oppbygning. Nederste oppfølgingsdel er et eget avvik.
+- Behold innloggingsbildet, firmaenes logoer, større/tydelig tekst, god breddeutnyttelse og alle eksisterende autoriserte funksjoner. Valgfri firmaadminstyrt timeføring er et funksjonskrav, ikke noe styling kan erklære gjennomført.
+
+### Hva nattkjøringen faktisk gjorde
+
+Oppgaven «Gjennomgå hele ProffDok», ID `6ae2954cd7b8819189ee7818e6ab5a54`, krevde alle funksjoner, inkludert adminområder og portaler, og trygge syntetiske transportprøver. Registrert kjøring `396d7276-5a5c-8331-a4ee-fc88e8a971fc` startet 29.10 kl.02:44 og sluttet kl.03:08 Europe/Oslo. Den tekniske kjøringen står som completed. Resultatet beskrev boligrettelse, inventar og regresjonstester, og sa uttrykkelig at alle underdialoger og rollevarianter ikke var manuelt kontrollert. **Teknisk fullført kjøring er ikke fullført totaloppdrag.** Oppgaven har ingen neste kjøring registrert; denne statusoppdateringen oppretter eller starter ingen ny nattjobb.
+
+### Åpne designområder etter brukerens fem bilder
+
+Bildene fra 29.10 dokumenterer avvik, ikke bestått designkontroll. Nyere kode må sammenlignes og testes før et punkt kan lukkes; en påfølgende CSS-endring lukker ikke punktet i seg selv.
+
+| Område | Fast utgangspunkt | Hva som fortsatt må dokumenteres |
+|---|---|---|
+| Startside | Brukergodkjente seks arbeidsområder beholdes. | Kompakt nederste oppfølging med faktiske varsler og eksisterende handlinger; ingen tilbakeføring av godkjent struktur. |
+| Min side | Skissens prioriterte arbeidsdag, planer og oppfølging, med brukerens godkjente funksjoner. | Sammenhengende oversikt og alle tilgjengelige underfaner; støtte, planer, håndbok, oppfølging og profil må fortsatt kunne nås. |
+| Prosjektliste | Kompakt prosjektoverblikk og samlet søk/filter. | Faktisk radstruktur, tilgjengelig informasjon, åpne/arkiv/detaljer, varsler, responsivitet og retur med bevart filter. |
+| HR | Medarbeidere, samtaler og tiltak foran sjeldnere oppsett. | Register og hele medarbeider-/samtale-/tiltaksflyten mot skissen; prøvefunksjon og verktøy skal være tilgjengelige uten å dominere arbeidsstarten. |
+| KS/HMS | Daglig arbeid og aktuelle kontroller/oppfølging, med rutiner og forvaltning tilgjengelig. | Sammenhengende arbeidsflate, underfunksjoner og høyrepaneler; rolleavgrensning og alle native handlinger beholdes. |
+
+### Krav til bevis og gjenopptakelse
+
+Dette konkretiserer den eksisterende UX/UI-listen; det er ingen ny produktdesign eller endring i CI-regler.
+
+1. Del modulene i navngitte brukerreiser, underdialoger og relevante tilstander/roller. Fil- eller testantall alene kan ikke lukke en funksjon. Utestede kombinasjoner står åpne.
+2. Før **designstatus og funksjonsstatus hver for seg**. Visuell kontroll krever faktisk sammenligning med fast referanse og godkjente tilpasninger ved samme skjermstørrelse, med skjermbevis og eksakt kodekandidat. Oppgi om bildet er fra innlogget Preview eller syntetisk komponentprøve.
+3. Funksjonskontroll skal navngi handling og forventet resultat, inkludert lagring/gjenåpning, tilbakevei, kladd, dvale/fanebytte og fersk tilgang der dette er relevant. Sending/bestilling/signering prøves med isolert transport; ingen ekte utsendinger eller tilgangsendringer innføres som test.
+4. Delarbeid kan fordeles parallelt på avgrensede filer, men én hovedkjøring samler og publiserer kandidaten. Kontroller fersk branch-head før skriving; ikke konkurrer med en annen aktiv publiseringsflyt eller overskriv nyere arbeid. En separat kontroll skal forsøke å finne avvik i det sammensatte resultatet.
+5. Etter hver ferdig avgrensede pakke lagres faktisk kode og tilhørende resultat i GitHub: kandidat, berørte funksjoner, design-/funksjonsbevis, åpne feil, konkrete blokkeringer og neste navngitte oppgave. Uferdig arbeid må være synlig før en kjøring avsluttes.
+6. Ved chatbrudd leses CURRENT_RELEASE_STATUS, denne matrisen og fersk PR/branch før videre arbeid. Start ved første åpne brukerreise; ikke lag ny designretning eller gjenta uendret grønn QA. En innloggingsblokk skal stå som blokkering, ikke omskrives til bestått innlogget prøve.
+
+Appgrunnlag ved denne statuskontrollen: designbranch `5680c9bf4f5cff9cdb001374683cb044b07a9873`, med tidligere fullgrønn kandidat `dfb7656c` / CI771. Nyere HR/KS/HMS-kode har eget testgrunnlag; denne dokumentasjonskontrollen attesterer ikke dens visuelle samsvar med hele skissen. Gjeldende kandidat og CI føres i PR295. Neste implementasjonspakke må avgrenses mot åpne brukerreiser ovenfor før nye appendringer.
+
+## Historisk inventar og tidligere bevis
+
 Miljømål BEGGE, kun Preview. Produksjon/main/demo er urørt. Denne matrisen skiller kildeinventar fra faktisk testbevis. Ingen påstand om 100 % manuell funksjonskontroll.
 
 Felles visuelle og praktiske kriterier er samlet i [UX/UI-kontrollisten](UX_UI_REVIEW_CHECKLIST.md). Dialogpakken 29.10 utvider faktiske komponentprøver med knappegeometri, korte skjermer og høyrepanelets lukkekontroller; eksakt kandidat, CI og publisering logges i PR295. Dette utvider ikke automatisk den manuelle dekningen i tabellen.
