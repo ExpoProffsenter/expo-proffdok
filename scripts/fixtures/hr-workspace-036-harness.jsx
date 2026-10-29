@@ -1,6 +1,7 @@
-import React, {useLayoutEffect,useState} from 'react';
+import React, {useLayoutEffect,useRef,useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import HrModule from '../../src/modules/hr/HrModule.jsx';
+import DeviationDialog from '../../src/modules/deviations/DeviationDialog.jsx';
 import '../../src/style.css';
 import '../../src/modules/app/mobileResponsive41A.css';
 import '../../src/modules/ui/proffdokWorkspace.css';
@@ -14,7 +15,7 @@ rows[0].readers=[{user_id:'reader',reason:'Syntetisk delt tilgang',granted_by:'a
 const template={title:'Årlig medarbeidersamtale',intro:'Syntetiske spørsmål',questions:[{id:'prep',phase:'preparation',topic:'Arbeidshverdagen',prompt:'Hvordan fungerer arbeidet?',required:false},{id:'meeting',phase:'meeting',topic:'Avtaler',prompt:'Hva er avtalt?',required:false}]};
 const conversations=new Map();
 const clone=value=>JSON.parse(JSON.stringify(value));
-window.qa={calls:[],commands:[],revoked:false,empty:false,enabled:true,held:[],context:null,rows,transition:0,unexpected:[]};
+window.qa={calls:[],commands:[],revoked:false,empty:false,enabled:true,held:[],heldConversationCommands:[],context:null,rows,transition:0,unexpected:[]};
 function conversation(id){if(!conversations.has(id))conversations.set(id,{id:'c-'+id,revision:1,title:template.title,template,on:'2026-11-02',meeting_time:'10:00',meeting_location:'QA møterom',stage:'meeting',shared:true,preparation:{prep:'Lagret forberedelse'},meeting:{meeting:'Lagret avtale'},actions:[],next_on:'',comments:{employee:'',leader:''},confirmations:{employee:null,leader:null}});return conversations.get(id);}
 window.qa.client={rpc:async(name,args={})=>{
   window.qa.calls.push({name,args:clone(args)});
@@ -46,6 +47,7 @@ window.qa.client={rpc:async(name,args={})=>{
       if(args.p_action==='meeting'){c.meeting=args.p_data.answers;c.actions=args.p_data.actions;c.next_on=args.p_data.next_on;}
       if(args.p_action==='preparation')c.preparation=args.p_data.answers;
       c.revision++;
+      if(window.qa.holdConversationCommand)await new Promise(resolve=>window.qa.heldConversationCommands.push(resolve));
     }
     return result({employee:clone(employee),conversation:clone(c),current_revision:c.revision,historical:false,permissions:{prepare:context.user_id===employee.user_id,meeting:context.user_id===employee.leader_id,comment:false,confirm:false}});
   }
@@ -60,13 +62,23 @@ window.qa.client={rpc:async(name,args={})=>{
   }
   window.qa.unexpected.push(name);throw Error('Unexpected synthetic HR request: '+name);
 }};
+function NativeDialogProbe({onClose}){
+  const ref=useRef(null);useLayoutEffect(()=>{ref.current.showModal();},[]);
+  return <dialog ref={ref} aria-label="QA native dialog" onCancel={()=>{window.qa.nativeCancels++;onClose();}}><button onClick={()=>{ref.current.close();onClose();}}>Lukk native dialog</button></dialog>;
+}
+function NestedDialogProbe({onClose}){
+  const [child,setChild]=useState(false),[native,setNative]=useState(false);
+  return <><DeviationDialog title="QA forelderdialog" onClose={()=>{window.qa.dialogCloses.push('parent');onClose();}}><button onClick={()=>setChild(true)}>Åpne QA underdialog</button><button onClick={()=>setNative(true)}>Åpne QA native dialog</button>{child&&<DeviationDialog title="QA underdialog" onClose={()=>{window.qa.dialogCloses.push('child');setChild(false);}}><button>Første underkontroll</button><button>Siste underkontroll</button></DeviationDialog>}</DeviationDialog>{native&&<NativeDialogProbe onClose={()=>setNative(false)}/>}</>;
+}
 function App(){
-  const [role,setRole]=useState('admin'),[generation,setGeneration]=useState(0);
+  const [role,setRole]=useState('admin'),[generation,setGeneration]=useState(0),[nested,setNested]=useState(false);
   const context={company_id:'firm',user_id:role==='personal'?'self':role==='management'?'leader':role==='reader'?'reader':'admin',company_name:'QA firma',available:true,enabled:window.qa.enabled,administer:role==='admin'};
   window.qa.context=context;
   useLayoutEffect(()=>{window.qa.committed={role,generation};});
   window.qa.show=(nextRole='admin',options={})=>{window.qa.empty=Boolean(options.empty);window.qa.enabled=options.enabled!==false;window.qa.revoked=false;window.qa.requested=++window.qa.transition;setRole(nextRole);setGeneration(window.qa.requested);};
   window.qa.release=()=>{window.qa.holdDetail=false;for(const resolve of window.qa.held.splice(0))resolve();};
-  return <div data-expo-app-shell="true"><main><HrModule key={role+generation} context={context} audience={role==='personal'?'personal':role==='management'?'management':'legacy'}/></main></div>;
+  window.qa.releaseConversationCommand=()=>{window.qa.holdConversationCommand=false;for(const resolve of window.qa.heldConversationCommands.splice(0))resolve();};
+  window.qa.showNested=()=>{window.qa.dialogCloses=[];window.qa.nativeCancels=0;setNested(true);};
+  return <div data-expo-app-shell="true"><main><HrModule key={role+generation} context={context} audience={role==='personal'?'personal':role==='management'?'management':'legacy'}/></main>{nested&&<NestedDialogProbe onClose={()=>setNested(false)}/>}</div>;
 }
 createRoot(document.getElementById('app')).render(<App/>);

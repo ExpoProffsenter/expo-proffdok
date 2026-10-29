@@ -12,7 +12,7 @@ Sjekklistemaler bruker en transient engangsforespørsel fra App til KS/HMS. Den 
 
 Tilbudsmaler i panelet peker til den eksisterende tilbudsbyggeren. Ingen tilbudslinjer, maler eller kladder kopieres til panelets state. Native details rundt ekstra varefelter beholder feltene og deres handlers; opplastingsflaten står åpen når varen allerede har bilde eller vedlegg.
 
-`DeviationDialog` kan få et eksplisitt returmål for fokus når åpningshandlingen laster asynkront. Sjekklistearbeidsflaten husker åpningsknappen før lasting deaktiverer den. Målet beholdes gjennom samme dialogøkt og nullstilles ved nytt bruker-/firma-/prosjektscope. Ved lukking brukes bare et tilkoblet, gyldig element. Uten eksplisitt mål beholder øvrige dialoger dagens fokusoppførsel. Dette endrer ingen lagring, kladd eller tilgang.
+`DeviationDialog` kan få et eksplisitt returmål for fokus når åpningshandlingen laster asynkront. Sjekklistearbeidsflaten husker åpningsknappen før lasting deaktiverer den. Målet beholdes gjennom samme dialogøkt og nullstilles ved nytt bruker-/firma-/prosjektscope. Ved lukking brukes bare et tilkoblet, gyldig element. Uten eksplisitt mål beholder øvrige dialoger dagens fokusoppførsel. Dette endrer ingen lagring, kladd eller tilgang. Når deaktivering av fokusert kontroll flytter browserfokus til BODY, håndterer bare øverste monterte DeviationDialog Escape/Tab via en avgrenset document-fallback. En separat native modal har forrang. Forelderens onClose/busy-vakt beholdes; cleanup fjerner både listener og dialogstack-oppføring.
 
 ## HR og KS/HMS etter skisse 03.6
 

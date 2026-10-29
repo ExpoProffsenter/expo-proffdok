@@ -73,9 +73,19 @@ try{
  await page.evaluate(()=>window.qa.show('admin'));await ready();await page.locator('.hr-employee').first().click();
  let employeePanel=page.getByRole('dialog',{name:'Emma Berg',exact:true});await employeePanel.getByRole('button',{name:/Årlig medarbeidersamtale ·/}).click();
  await employeePanel.getByRole('navigation',{name:'Steg i medarbeidersamtalen'}).getByRole('button',{name:/Felles møte/}).click();
- let savedNote=employeePanel.getByRole('textbox',{name:/^Hva er avtalt\?/});await savedNote.fill('Avtale lagret med syntetisk transport');await employeePanel.getByRole('button',{name:'Lagre samtale',exact:true}).click();await employeePanel.getByText('Lagret på serveren · utgave 2.',{exact:true}).waitFor();
+ let savedNote=employeePanel.getByRole('textbox',{name:/^Hva er avtalt\?/});await savedNote.fill('Avtale lagret med syntetisk transport');
+ // A controlled transport gate forces the real disabled render. An immediately
+ // resolved mock can batch busy away and hide focus loss after the save button
+ // becomes disabled. No focus is injected before the user's Escape below.
+ await page.evaluate(()=>{window.qa.holdConversationCommand=true;});
+ await employeePanel.getByRole('button',{name:'Lagre samtale',exact:true}).click();await page.waitForFunction(()=>window.qa.heldConversationCommands.length===1);
+ await page.waitForFunction(()=>document.querySelector('.hr-real-conversation textarea')?.disabled);
+ eq(await savedNote.isDisabled(),true,'pending native conversation save commits its disabled form before transport is released');
+ await page.evaluate(()=>window.qa.releaseConversationCommand());await employeePanel.getByText('Lagret på serveren · utgave 2.',{exact:true}).waitFor();
+ await page.waitForFunction(()=>{const field=document.querySelector('.hr-real-conversation textarea');return Boolean(field&&!field.disabled);});
+ eq(await employeePanel.getAttribute('aria-busy'),'false','outer employee transaction is idle before post-save Escape');
  eq(await page.evaluate(()=>window.qa.commands.at(-1).args.p_action),'meeting','actual native conversation save uses its existing command');
- await page.keyboard.press('Escape');await employeePanel.waitFor({state:'hidden'});await page.locator('.hr-employee').first().click();employeePanel=page.getByRole('dialog',{name:'Emma Berg',exact:true});await employeePanel.getByRole('button',{name:/Årlig medarbeidersamtale ·/}).click();
+ await page.keyboard.press('Escape');await employeePanel.waitFor({state:'hidden'});eq(await page.locator('.hr-employee').first().evaluate(node=>node===document.activeElement),true,'post-save Escape closes without injected focus and restores the employee trigger');await page.locator('.hr-employee').first().click();employeePanel=page.getByRole('dialog',{name:'Emma Berg',exact:true});await employeePanel.getByRole('button',{name:/Årlig medarbeidersamtale ·/}).click();
  await employeePanel.getByRole('navigation',{name:'Steg i medarbeidersamtalen'}).getByRole('button',{name:/Felles møte/}).click();eq(await employeePanel.getByRole('textbox',{name:/^Hva er avtalt\?/}).inputValue(),'Avtale lagret med syntetisk transport','native saved conversation reopens from the synthetic server snapshot');
  await employeePanel.locator('.hr-access-036>summary').click();await employeePanel.getByLabel('Nærmeste leder',{exact:true}).selectOption('leader');await employeePanel.getByRole('button',{name:'Lagre nærmeste leder',exact:true}).click();await employeePanel.getByText('Nærmeste leder er oppdatert.',{exact:true}).waitFor();
  eq(await page.evaluate(()=>window.qa.rows[0].leader_id),'leader','native leader command remains available after layout changes');
@@ -96,6 +106,20 @@ try{
  await page.evaluate(()=>{window.qa.holdDetail=true;});await page.locator('.hr-employee').first().click();await page.waitForFunction(()=>window.qa.held.length>0);
  await page.evaluate(()=>{window.qa.revoked=true;window.dispatchEvent(new Event('focus'));});await page.locator('.hr-employee').waitFor({state:'hidden'});await page.evaluate(()=>window.qa.release());
  eq(await page.getByRole('dialog').count(),0,'late employee read cannot revive revoked data');
+ // Real nested custom dialogs exercise the body fallback without another
+ // business contract. Blur reproduces a focusable control being disabled.
+ await page.evaluate(()=>window.qa.showNested());const parentDialog=page.getByRole('dialog',{name:'QA forelderdialog',exact:true});await parentDialog.waitFor();await parentDialog.getByRole('button',{name:'Åpne QA underdialog',exact:true}).click();const childDialog=page.getByRole('dialog',{name:'QA underdialog',exact:true});await childDialog.waitFor();
+ const loseFocus=async()=>{await page.evaluate(()=>document.activeElement.blur());eq(await page.evaluate(()=>document.activeElement===document.body),true,'nested regression deliberately starts with focus on BODY');};
+ await loseFocus();await page.keyboard.press('Tab');eq(await childDialog.getByRole('button',{name:'Lukk avviksdialog',exact:true}).evaluate(node=>node===document.activeElement),true,'BODY Tab reaches the top dialog first native control');
+ await loseFocus();await page.keyboard.press('Shift+Tab');eq(await childDialog.getByRole('button',{name:'Siste underkontroll',exact:true}).evaluate(node=>node===document.activeElement),true,'BODY Shift+Tab reaches the top dialog last native control');
+ await loseFocus();await page.keyboard.press('Escape');await childDialog.waitFor({state:'hidden'});eq(await parentDialog.isVisible(),true,'BODY Escape keeps the parent dialog open');eq(await page.evaluate(()=>window.qa.dialogCloses),['child'],'one BODY Escape closes only the top custom dialog');
+ await loseFocus();await page.keyboard.press('Escape');await parentDialog.waitFor({state:'hidden'});eq(await page.evaluate(()=>window.qa.dialogCloses),['child','parent'],'the next BODY Escape closes the remaining parent dialog');
+ await page.evaluate(()=>window.qa.showNested());await parentDialog.waitFor();await parentDialog.getByRole('button',{name:'Åpne QA native dialog',exact:true}).click();const nativeDialog=page.getByRole('dialog',{name:'QA native dialog',exact:true});await nativeDialog.waitFor();
+ eq(await nativeDialog.evaluate(node=>node.matches(':modal')),true,'native child is genuinely in the browser modal top layer');
+ await page.evaluate(()=>document.body.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true,cancelable:true})));
+ eq(await page.evaluate(()=>window.qa.dialogCloses),[],'BODY-dispatched Escape cannot close a custom dialog underneath a native modal');eq(await nativeDialog.isVisible(),true,'synthetic BODY Escape leaves the native modal under native ownership');
+ await page.keyboard.press('Escape');await nativeDialog.waitFor({state:'hidden'});eq(await page.evaluate(()=>window.qa.nativeCancels),1,'real native Escape runs its own cancel handler');eq(await parentDialog.isVisible(),true,'native cancellation leaves the parent custom dialog open');
+ await loseFocus();await page.keyboard.press('Escape');await parentDialog.waitFor({state:'hidden'});eq(await page.evaluate(()=>window.qa.dialogCloses),['parent'],'after native cancellation the parent handles its own BODY Escape');
  eq(await page.evaluate(()=>window.qa.commands.map(command=>command.args.p_action)),['meeting','leader','reader','revoke_reader','create'],'only the five explicitly exercised native writes reached synthetic transport');eq(await page.evaluate(()=>window.qa.unexpected),[],'all actual native requests have an explicit synthetic contract');eq(outbound,[],'all transport remains synthetic and local');eq(errors,[],'no browser runtime errors');
  console.log(`PASS HR workspace 03.6: ${checks} Chromium checks; real register, employee/conversation/practice, filters, roles, empty data, late/revoked access; five widths and short viewport`);
 }finally{await browser?.close();await new Promise(resolve=>server.close(resolve));}

@@ -28,6 +28,12 @@ En uavhengig kilde-/bildekontroll fant og fikk rettet hele mobilord i HR/KS, pro
 
 To testintegrasjonsfeil ble rettet uten svakere funksjonsassertions: Personal-prøven bruker nå faktiske åpneplan/Mine planer/I dag-innganger før de samme asserts; KS-fixturen venter på en unik React-commitserial, ikke allerede sann rolleverdi som kunne måle en nettopp frakoblet DOM. Opprinnelig44px/font/DOM/kladd/tilgangskrav beholdes. PDF-JSDOM får kun browser-native structuredClone.
 
+## CI774 fant en faktisk dialogfeil
+
+Første publiserte strukturelle kandidat er68a22e0, trebf390da8. Lokal samlekjede ovenfor var grønn, men faktisk CI774/40957638451 app-browser feilet på Escape etter lagret HR-samtale. Holdt faktisk mock-RPC gjenskapte disabled-render→BODY-fokus→Escape uten lokal dialoglytter. Dette er en produktfeil, ikke en assertion som skal fjernes. Ny avgrenset fellesdialog-fallback og deterministisk regresjonsfixture inngår i neste kandidat. Top-dialog, Tab/ShiftTab, native modal og eksisterende onClose/busy-gater skal bevares. Ny lokal samlekjede122+89+51+1031+132+197PASS, full Sandbox critical/buildPASS og eksisterende checklist-resume36PASS. Ny HR132 beholder alle tidligere113 og legger19 konkrete regresjonsassertions til. Faktisk ny CI/deploy-kvittering vedlikeholdes i PR295. Ikke erklær68a22 samlet grønn.
+
+Separat Dokumentuttrekk-rettelse er nå konkret draft [PR298](https://github.com/ExpoProffsenter/expo-proffdok/pull/298), ac54c32d9910729ae3311e34eb677fbe9ec921fb fra main71d157. Én produktlinje,13 additive regresjonslinjer og ett grunnlag. Før/etter-faktisk React/Storage/jsPDF og full lokal critical/build består etter fiks; ingen merge/Production er gitt. Feilen står fortsatt i PR295 til separat rettelse er godkjent/integrert.
+
 ## Kjente åpne funn og neste arbeid
 
 1. **BOLIG-002:16 flerfamiliehus i faktisk Preview.** Bruk separat Bolig-branch/PR294 og fast Bolig-Preview. Verifiser16bygg, adressefokus, fasadehøyde, boligvalg og tilbakevei ved320/390/768/1363. Ikke bland `src/modules/bolig/**` inn i PR295; eksisterende Bolig-grensevakt krever isolert scope. Tidligere boligbevis er baseline, ikke ny attest.
