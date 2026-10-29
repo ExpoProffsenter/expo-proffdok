@@ -323,6 +323,12 @@ export default function BoligBuildingOverview({
   useEffect(() => {
     if (!focusChosenBuilding.current || allBuildings || pickerOpen) return;
     focusChosenBuilding.current = false;
+    const address = addressRef.current;
+    const top = Math.max(0, ...Array.from(document.querySelectorAll("header")).map(node => {
+      const style = getComputedStyle(node), rect = node.getBoundingClientRect();
+      return ["sticky", "fixed"].includes(style.position) && rect.top <= 1 && rect.bottom > 0 ? rect.bottom : 0;
+    }));
+    if (address) address.style.scrollMarginTop = `${top + 12}px`;
     addressRef.current?.focus({ preventScroll: true });
     addressRef.current?.scrollIntoView({ block: "start", behavior: "instant" });
   }, [selectedBlock?.id, allBuildings, pickerOpen, presentation]);
