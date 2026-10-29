@@ -21,6 +21,7 @@ import {BoligHelp} from '${cwd}/src/modules/help/BoligHelp.jsx';
 import Task from '${cwd}/src/modules/bolig/BoligTaskDialog.jsx';
 import Overview from '${cwd}/src/modules/bolig/BoligBuildingOverview.jsx';
 import '${cwd}/src/modules/bolig/bolig.css';
+import '${cwd}/src/modules/ui/proffdokWorkspace.css';
 const homeRoots=Array.from({length:15},(_,i)=>({id:'root'+i,title:'Boligprosjekt '+(i+1),reference:'QA-'+(i+1),unit_count:(i+1)*10,archived:i===14}));
 const context={user_id:'qa-user',company_id:'qa-company',company_name:'Eksempelfirma · kun test',enabled:true,role:'manager'};
 const make=(mode)=>{const record={root:{id:mode,revision:1},blocks:[],entrances:[],units:[]};for(let b=0;b<(mode==='fivehundred'?25:mode==='many'?20:1);b++){record.blocks.push({id:'b'+b,name:'Bygg '+(b+1),building_type:'apartment',address:'Eksempelgata '+(b+1)});for(let e=0;e<((mode==='many'||mode==='fivehundred')?2:20);e++){const id='b'+b+'e'+e,counts=mode==='uneven'?[2,3,1]:(mode==='many'||mode==='fivehundred')?[2,2,2,2,2]:[4,4,4,4,4,4];record.entrances.push({id,block_id:'b'+b,address:'Eksempelgata '+(b+1)+' oppgang '+(e+1),counts});counts.forEach((n,f)=>{for(let p=0;p<n;p++)record.units.push({id:id+'f'+f+'p'+p,entrance_id:id,floor:f+1,number:'H'+String(f+1).padStart(2,'0')+String(p+1).padStart(2,'0'),contact_name:b===19&&e===1&&f===4&&p===0?'Siste Eksempel':'',has_project:false});});}}if(mode.startsWith('type-')){const type=mode.slice(5),b=record.blocks[0],e=record.entrances[0];b.building_type=type;const counts=type==='house'?[1]:type==='duplex'?[2]:type==='multi'?[2,3,1]:[4,3,5,4,2,4];e.counts=counts;record.blocks=[b];record.entrances=[e];record.units=counts.flatMap((n,f)=>Array.from({length:n},(_,p)=>({id:'actual-'+f+'-'+p,entrance_id:e.id,floor:f+1,number:'H'+String(f+1).padStart(2,'0')+String(p+1).padStart(2,'0'),contact_name:'',has_project:false})));}return record;};
@@ -765,6 +766,40 @@ try {
       .count(),
     0,
   );
+  // Regression: the former 16-building fixture covered the saved overview,
+  // not the wizard. Exercise the real wizard with loaded photos at every step.
+  await page.getByRole("button", { name: "Bygg nytt prosjekt", exact: true }).click();
+  await dialog.getByLabel("Prosjektnavn", { exact: true }).fill("Kun lokal layoutprøve");
+  for (const type of ["Flerfamiliehus", "Enebolig", "Tomannsbolig", "Leilighetsbygg"]) {
+    await dialog.getByRole("button", { name: new RegExp("^" + type + " ") }).click();
+    await dialog.getByRole("button", { name: "Neste", exact: true }).click();
+    await dialog.getByLabel("Antall bygg", { exact: true }).fill("16");
+    for (const step of [1, 2, 3]) {
+      for (const width of [320, 390, 768, 1024, 1366, 1920]) {
+        await page.setViewportSize({ width, height: 900 });
+        await dialog.locator("img").evaluateAll(images => Promise.all(images.map(img => img.decode())));
+        const layout = await dialog.evaluate(d => {
+          const body = d.querySelector(".bolig-builder-body");
+          const photos = [...d.querySelectorAll(".bolig-builder-building-head > img, .bolig-builder-review article > img")];
+          return {
+            bodyFits: body.scrollWidth <= body.clientWidth + 1,
+            photosFit: photos.length > 0 && photos.every(img => {
+              const r = img.getBoundingClientRect(), p = img.parentElement.getBoundingClientRect();
+              return img.naturalWidth > 0 && r.width <= 131 && r.height <= 76 && r.left >= p.left && r.right <= p.right;
+            }),
+          };
+        });
+        eq(layout.bodyFits, true, `${type}: step ${step}, ${width}px has no inner horizontal overflow`);
+        eq(layout.photosFit, true, `${type}: step ${step}, ${width}px photos stay compact and inside their row`);
+        if (type === "Flerfamiliehus" && width === 1366)
+          await page.screenshot({ path: path.join(temp, `sixteen-wizard-step-${step}.png`) });
+      }
+      if (step < 3) await dialog.getByRole("button", { name: "Neste", exact: true }).click();
+    }
+    for (let step = 3; step > 0; step--)
+      await dialog.getByRole("button", { name: "Tilbake", exact: true }).click();
+  }
+  await dialog.press("Escape");
   eq(errors, []);
   console.log(
     `PASS builder/browser: ${checks} assertions; atomic-attempt recovery, house floors, saved draft, close/Escape/focus, 400/480/500 households, last-building search, scoped rendering and 320/390/1024/1366px. Internal visual evidence: ${temp}`,

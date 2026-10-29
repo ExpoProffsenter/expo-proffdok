@@ -1,3 +1,17 @@
+/* Keep photos compact in the actual housing wizard as well as the type picker.
+   This presentation layer is loaded by the design Preview. */
+.bolig-builder-dialog .bolig-builder-building-head>.bolig-building-art{width:130px;height:75px;flex:0 0 130px;border-radius:6px}
+.bolig-builder-dialog .bolig-builder-building-head>div{min-width:0;overflow-wrap:anywhere}
+.bolig-builder-dialog .bolig-builder-review article>.bolig-building-art{width:90px;height:62px;flex-shrink:0;border-radius:5px}
+.bolig-builder-dialog .bolig-builder-fields{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr)}
+.bolig-builder-dialog .bolig-builder-sidebar nav{grid-template-columns:minmax(0,1fr)}
+@media(max-width:760px){.bolig-builder-dialog .bolig-builder-sidebar nav{grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}}
+@media(max-width:500px){
+ .bolig-builder-dialog .bolig-builder-building-head>.bolig-building-art{width:80px;height:60px;flex-basis:80px}
+ .bolig-builder-dialog .bolig-builder-review article>.bolig-building-art{width:65px}
+ .bolig-builder-dialog .bolig-builder-fields{grid-template-columns:1fr}
+}
+
 /* Presentation mapped from approved sketch 03.6, source f67f2367.
    Native app controls, live access filtering and every data mechanism stay owned
    by the existing modules. No prototype data, routing or storage is imported. */
