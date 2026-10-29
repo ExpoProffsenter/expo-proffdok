@@ -1,4 +1,5 @@
 import { CompanyCustomerProvider, CompanyCustomerSearch, CompanyCustomerSave } from "../../customers/CompanyCustomerPicker.jsx";
+import SalesCaseHandlerField from "./SalesCaseHandlerField.jsx";
 // Expo ProffDok – FASE 42J / FASE 38A1 / FASE 37D1 / FASE 23I / FASE 29C1 / FASE 45B
 // Presentasjonskomponent for ny og redigert forespørsel.
 // FASE 42J bevarer kunde-/adressefelter ved PC-fanebytte og mobil appbytte før
@@ -43,6 +44,8 @@ const ENTRY_FIELDS = [
   "title",
   "source",
   "note",
+  "responsibleUserId",
+  "responsibleName",
 ];
 
 export default function SalesRequestForm({
@@ -53,6 +56,9 @@ export default function SalesRequestForm({
   onCancel,
   onSubmit,
   onUpdateForm,
+  caseHandlerClient,
+  caseHandlerCompanyId,
+  onChooseCaseHandler,
 }) {
   const supportMode = Boolean(getSalesSupportCompanyId());
   const entryMode = isEditingRequest
@@ -269,6 +275,7 @@ export default function SalesRequestForm({
               Felter merket * må fylles ut.
             </p>
             <div className="sales-form-grid">
+              {!isEditingRequest ? <SalesCaseHandlerField client={caseHandlerClient} companyId={caseHandlerCompanyId} storeOffer={isStoreOffer} userId={form.responsibleUserId || ""} onChoose={onChooseCaseHandler} /> : null}
               <CompanyCustomerSearch />
               <label className="sales-field">
                 <span>Kundenavn *</span>

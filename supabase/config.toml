@@ -1,4 +1,8 @@
 
+[functions.sales-offer-acceptance-notify]
+# Public offer capability is validated against a persisted accepted version in the handler.
+verify_jwt = false
+
 [functions.supplier-order-email]
 # The handler validates the user's token through Auth, then rechecks company/access via RPC.
 verify_jwt = false
