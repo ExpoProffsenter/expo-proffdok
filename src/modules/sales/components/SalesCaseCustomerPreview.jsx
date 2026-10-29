@@ -3,6 +3,7 @@ import { ArrowLeft, Eye, Maximize2 } from "lucide-react";
 import SalesCustomerView from "./SalesCustomerView.jsx";
 import { buildSalesCaseCustomerPreview } from "../utils/salesCaseCustomerPreview.js";
 import { formatNok } from "../utils/salesUtils.js";
+import useSalesCaseStoredPreview from "./useSalesCaseStoredPreview.js";
 
 const noChange = () => {};
 
@@ -12,7 +13,8 @@ export default function SalesCaseCustomerPreview({ request, companyProfile = {},
   const opener = useRef(null);
   const [mobile, setMobile] = useState(() => typeof window !== "undefined" && window.matchMedia("(max-width: 1000px)").matches);
   const [expanded, setExpanded] = useState(false);
-  const preview = useMemo(() => buildSalesCaseCustomerPreview(request, companyProfile), [request, companyProfile]);
+  const base = useMemo(() => buildSalesCaseCustomerPreview(request, companyProfile), [request, companyProfile]);
+  const { preview, loading, error, retry } = useSalesCaseStoredPreview(request, base);
 
   useEffect(() => {
     const query = window.matchMedia("(max-width: 1000px)");
@@ -57,8 +59,11 @@ export default function SalesCaseCustomerPreview({ request, companyProfile = {},
       </div>
       <div className="sales-case-preview-paper">
         <p className="sales-case-preview-safety">Skrivebeskyttet visning. Ingen publisering, utsending eller nye kundevalg.</p>
-        {preview.kind === "empty" ? <p>{preview.message}</p> : <>
-          {preview.kind === "accepted" ? <p className="sales-case-preview-acceptance">Akseptert av {request.acceptedBy || "kunde"}.{preview.acceptedTotal != null ? ` Registrert sum: ${formatNok(Number(preview.acceptedTotal) * (preview.request.offerShowPricesExVat ? 1 : 1.25))} ${preview.request.offerShowPricesExVat ? "eks." : "inkl."} mva.` : ""}</p> : null}
+        {preview.kind === "empty" ? <>
+          <p role={error ? "alert" : loading ? "status" : undefined}>{error || (loading ? "Henter den lagrede kundeversjonen …" : preview.message)}</p>
+          {error ? <button type="button" className="sales-secondary-button" onClick={retry}>Prøv kundevisningen igjen</button> : null}
+        </> : <>
+          {preview.kind === "accepted" ? <p className="sales-case-preview-acceptance">Akseptert av {preview.request.acceptedBy || "kunde"}.{preview.acceptedTotal != null ? ` Registrert sum: ${formatNok(Number(preview.acceptedTotal) * (preview.request.offerShowPricesExVat ? 1 : 1.25))} ${preview.request.offerShowPricesExVat ? "eks." : "inkl."} mva.` : ""}</p> : null}
           <SalesCustomerView mode="customer-offer" embedded hideDecisionControls readOnlyOptions
             selectedRequest={preview.request} companyProfile={{}}
             acceptanceForm={{ name: "", confirmed: false, selectedOptionIds: preview.selectedOptionIds || [] }}

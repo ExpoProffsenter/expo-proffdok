@@ -227,3 +227,7 @@ try {
   if (outputDir) fs.writeFileSync(path.join(outputDir, "geometry.json"), JSON.stringify(measurements, null, 2));
   console.log(`PASS sales case customer preview: ${checks} Chromium assertions, ${expected.length} states ×5 viewports + actual wetroom/general/inspection/plan/customer/activation form geometry and DOM preservation`);
 } finally { await browser?.close(); await new Promise((resolve) => server.close(resolve)); }
+
+// Legacy cases missing embedded immutable snapshots use a separate read-only path.
+await import('./sales-case-stored-preview-check.mjs');
+await import('./sales-case-stored-preview-browser-check.mjs');
