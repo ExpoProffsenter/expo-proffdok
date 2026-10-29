@@ -33,3 +33,5 @@ Min side har **I dag** og **Mine planer** med de samme eksisterende plankomponen
 
 
 Felles mål gjelder også den eksisterende Prissøk-mounten og Varesøk/Varebestilling. De arvede ytre kortrammene erstattes med åpen overskrift; søk, arbeidsliste, sensitive priser, antall, usikker sending og kvittering beholder sine native komponenter/handlers. På PC ligger ordrevarene og mottaker/levering ved siden av hverandre; på mobil under hverandre. Boligprosjektenes ordinære hovedinngang bruker samme åpne sideramme og lesbare overskrift/innhold; velkomstbildet er mindre. Disse reglene endrer ikke fasade, enhetsplassering, veiviser eller den isolerte funksjonsrettelsen i PR294.
+
+Native planers sidepanel bruker en egen skrollende `ks-plan-drawer-body` under samme fulle header. Den eksisterende PlanDialog eier fortsatt native modalitet, fokus/retur og bodylocks. Min sides mørke plankort farger bare sin faktiske korttekst; regelen må ikke treffe p-elementer i native plan-/arbeidsoperasjonsdialoger. Lesepanelenes perioder heter **Se periode**, mens redigerbare planer beholder **Rediger periode**.
