@@ -2,6 +2,9 @@
    headings, controls, borders and contextual panels use this one baseline. */
 body:has([data-expo-app-shell="true"]){--pd-ink:#10212b;--pd-muted:#4e6876;--pd-line:#d5e3e9;--pd-accent:#007681;--pd-radius:8px;--pd-gap:20px;--pd-control:44px;--pd-copy:16px;--pd-title:32px}
 body:has([data-expo-app-shell="true"]) [data-expo-app-shell="true"]>main{max-width:1744px}
+/* Modules with their own contextual tools must expose one tools entry. */
+[data-expo-app-shell="true"]>main:has(.hr-workspace-036,.ks-workspace-036,.sales-case-workspace)>.pd-workspace-tool-row{display:none}
+body:has([data-expo-app-shell="true"]) :is(.hr-workspace-036-actions,.ks-workspace-navigation,.personal-tabs){max-width:none}
 body:has([data-expo-app-shell="true"]) :is(.hr-workspace-036,.ks-workspace-036,.personal-workspace036,.company-admin-panel,.pd-admin-workspace) :is(button,input,select,textarea){font-size:var(--pd-copy);line-height:1.4}
 body:has([data-expo-app-shell="true"]) :is(.hr-workspace-036,.ks-workspace-036,.personal-workspace036,.company-admin-panel,.pd-admin-workspace) button{min-height:var(--pd-control);border-radius:7px;box-shadow:none;transform:none}
 body:has([data-expo-app-shell="true"]) :is(.hr-workspace-036>header.hr-heading,.ks-workspace-036>header.module-heading,.personal-workspace036>header.personal-heading) h2,

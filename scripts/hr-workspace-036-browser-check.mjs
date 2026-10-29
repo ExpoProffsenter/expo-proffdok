@@ -23,6 +23,8 @@ try{
  for(const [width,height]of[[320,936],[390,600],[768,936],[1363,600],[1920,936]]){
   await page.setViewportSize({width,height});
   eq(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,`${width}: no page overflow`);
+  eq(await page.locator('[data-qa-global-tools]').isVisible(),false,`${width}: module-owned contextual tools replace the duplicate global tools row`);
+  eq(await page.locator('.hr-workspace-036-actions').evaluate(node=>Math.abs(node.getBoundingClientRect().right-document.querySelector('.hr-register-036').getBoundingClientRect().right)<2),true,`${width}: action row uses the same full working width as the register`);
   eq(await page.locator('.hr-support-dialog-036').isVisible(),false,`${width}: long tasks, setup and practice are outside the initial workspace`);
   eq(await page.locator('.hr-support-dialog-036').evaluate(node=>node.open),false,`${width}: contextual panel starts closed`);
   eq(await page.locator('.hr-register-036').evaluate((node,desktop)=>{const register=node.getBoundingClientRect(),support=document.querySelector('.hr-followup-036').getBoundingClientRect();return desktop?register.left>=support.right:register.top<support.top;},width>1000),true,`${width}: register/support placement follows the frozen reference`);

@@ -80,6 +80,6 @@ function App(){
   window.qa.release=()=>{window.qa.holdDetail=false;for(const resolve of window.qa.held.splice(0))resolve();};
   window.qa.releaseConversationCommand=()=>{window.qa.holdConversationCommand=false;for(const resolve of window.qa.heldConversationCommands.splice(0))resolve();};
   window.qa.showNested=()=>{window.qa.dialogCloses=[];window.qa.nativeCancels=0;setNested(true);};
-  return <div data-expo-app-shell="true"><main><HrModule key={role+generation} context={context} audience={role==='personal'?'personal':role==='management'?'management':'legacy'}/></main>{nested&&<NestedDialogProbe onClose={()=>setNested(false)}/>}</div>;
+  return <div data-expo-app-shell="true"><main><div className="pd-workspace-tool-row" data-qa-global-tools><span>Arbeidsrom HR</span><button>Generelle verktøy</button></div><HrModule key={role+generation} context={context} audience={role==='personal'?'personal':role==='management'?'management':'legacy'}/></main>{nested&&<NestedDialogProbe onClose={()=>setNested(false)}/>}</div>;
 }
 createRoot(document.getElementById('app')).render(<App/>);
