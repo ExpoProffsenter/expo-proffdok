@@ -1,8 +1,12 @@
 # Gjeldende leveranse – 27.10.2026
 
-## Saksbehandler for akseptvarsel – Sandbox-backend installert 29.10.2026
+## Saksbehandler for akseptvarsel – publisert 29.10.2026
 
-Miljømål BEGGE. Eget rent corecheckout fra main `5f58b1c6`, uten designendringer. Eksplisitt UUID-valg/binding for nye og eksisterende saker, privat revisjonsvern mot gamle kladder og fail-closed internrouting er implementert. Kilden til Production-funksjonen acceptance-notify v7 er hentet inn; kundekvitteringen beholdes. Sandbox har fått migrering `20261029191431` og acceptance-notify v6 med `verify_jwt=false`, verifisert ACL og 0 opprettede bindinger. Production og eksisterende saker er uendret; ingen e-post er sendt. Relevant lokal SQL-/Edge-/React-QA er grønn. Publisert app-Preview med innlogget Sandbox-integrasjonsprøve, full CI og TEST OK gjenstår. Se `docs/architecture/SALES_CASE_HANDLER_IDENTITY.md`.
+Kenneth autoriserte Production på grunnlag av utviklertester. PR296 er merget som `fd87265d2b4b9a4556287b157f0ca77f785827fc`, etter full Core Safety #768 / 40940249573 SUCCESS. Vercel `dpl_Bif1ZERHqyLfnETAJ7ruFdE8Jecy` er READY på eksakt commit og expo-proffdok.app. Hovedapp og SalesModule er byteidentiske med lokal Production-build; ingen Sandbox-binding i hovedappen.
+
+Production har migrering `20261029193247` og acceptance-notify v8. Nye funksjoner er identiske med Sandbox, eksisterende public-funksjoner uendret, privat RLS/ACL kontrollert. 20 reelle kandidater i lesende databaseprøve med eksisterende Kenneth-kontekst. Dette er ikke en faktisk innlogget nettleserøkt. Ingen saksbinding/backfill eller prøve-e-post er utført. Eldre fritekstsaker må få ett eksplisitt lagret saksbehandlervalg; navn blir ikke automatisk oversatt til bruker-ID.
+
+[Release, QA og tilbakeføring](docs/qa/SALES_CASE_HANDLER_RELEASE_20261029.md). Gjeldende demo-SHA og sluttkontroll vedlikeholdes i [PR296](https://github.com/ExpoProffsenter/expo-proffdok/pull/296). Design-PR295 er fortsatt separat Preview og har ingen produksjonsgodkjenning.
 
 ## Varebestilling
 

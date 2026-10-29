@@ -1,6 +1,6 @@
 # Saksbehandler og akseptvarsel
 
-Miljømål: BEGGE. Dette er en separat core-rettelse fra ren `origin/main` (`5f58b1c6`). Sandbox fikk migrering `20261029191431` og acceptance-notify v6 med `verify_jwt=false` etter lokal QA og lesende miljø-/ACL-kontroll. Migreringsfilen heter `supabase/migrations/20261029191431_sales_case_handler_identity.sql` og følger serverens registrerte versjon. Production er ikke endret. Ingen saksbinding, tilbakefylling eller utsending er utført; den private Sandbox-tabellen har 0 bindinger. App-Preview og innlogget integrasjonsprøve mot Sandbox gjenstår.
+Miljømål: BEGGE. Separat core-rettelse fra ren main `5f58b1c6`, godkjent og publisert i PR296 som main `fd87265d`. Sandbox fikk migrering `20261029191431` og acceptance-notify v6; Production har samme migrering registrert som `20261029193247` og acceptance-notify v8. Begge beholder eksisterende verify_jwt=false. Repoets migreringsfil følger Sandbox-versjonen; kontroller faktiske objekter/registrert migreringsnavn før fremtidig installasjon, og ikke installer dette på nytt. Ingen saksbinding, tilbakefylling eller prøve-e-post er utført. Se `docs/qa/SALES_CASE_HANDLER_RELEASE_20261029.md` for eksakt CI/deployment og avgrensninger. Innlogget fullappøkt og reell e-postleveranse er ikke attestert.
 
 ## Identitet og lagring
 
@@ -28,7 +28,7 @@ Production `sales-offer-acceptance-notify` v7 ble hentet lesende 29.10.2026. Kil
 
 v7 brukte akseptert versjons `published_by` til intern mottaker. Dette forklarer valgt teknisk bruker, men beviser ikke hvem som fysisk utførte en handling eller hvilken knapp/flyt som utløste RPC-en. Rettelsen baserer seg derfor ikke på publiseringsattribusjon.
 
-Deployrekkefølge ved en senere særskilt godkjent Production-release: migrering og verifisert resolver/ACL først, deretter Edge-kandidat og app med eksisterende `verify_jwt=false`/public-capability-kontrakt. Sandbox-backend er installert: eksisterende notifications-kontrakt er kontrollert, privat RLS/ACL er verifisert og ingen bindinger er opprettet. Sandbox-versjon v6 og Production-baseline v7 er versjonsnumre i hvert sitt prosjekt. App-Preview, full innlogget integrasjonsprøve mot Sandbox og Production-release er fortsatt ikke utført. Full kritisk CI, relevant isolert Preview/Sandbox-prøve og brukerens TEST OK kreves før merge/Production. Ved tilbakeføring må internrouting forbli sperret eller bruke kanonisk mottaker; den gamle publisherfallbacken må ikke gjeninnføres som en stille rollback.
+Gjennomført deployrekkefølge i PR296: grønn full CI og verifisert Sandbox-Preview, deretter Production-migrering med resolver/ACL-kontroll, Edge-kandidat og app. Production-kilden samsvarer med Sandbox; øvrige public-funksjoner er uendret. Reelle kandidatlister er kontrollert i lesende databasekontekst, uten binding eller sending. Ved tilbakeføring må internrouting forbli sperret eller bruke kanonisk mottaker; gammel publisherfallback må ikke gjeninnføres stille. Eksakte versjoner og tilbakeføring er dokumentert i releaseloggen.
 
 ## Verifisering
 
