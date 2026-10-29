@@ -1,3 +1,9 @@
+# Preview-gjennomgang – 29.10.2026
+
+PR295: app-ramme/startside er fortsatt draft; sist fullgrønne appkandidat afe9daed. Full funksjonsinventering: [kontrollmatrise](docs/qa/proffdok-full-function-matrix-20261029.md) med 36 moduler, 605 kildefiler og navngitte eksisterende kontroller. Inventar er ikke full manuell attest.
+
+PR294: isolert boligrettelse for fasadehøyde og adressefokus ved byggvalg, ny 16-hus-fixture. Eksakte kandidater/CI/Preview-bevis vedlikeholdes i PR-ene. Ingen app-TEST OK, merge eller produksjonssetting.
+
 # Gjeldende leveranse – 27.10.2026
 
 ## Varebestilling
