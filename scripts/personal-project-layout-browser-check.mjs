@@ -21,6 +21,7 @@ import {installWorkProfileProjectListUx} from '${cwd}/src/modules/access/workPro
 import {createProjectListTools,projectMatchesSearch} from '${cwd}/src/modules/project/projectListTools.js';
 import {matchesProjectStatus} from '${cwd}/src/modules/project/projectListStatus.mjs';
 import '${cwd}/src/style.css';
+import '${cwd}/src/modules/ui/proffdokWorkspace.css';
 import {APP_RUNTIME_STYLES} from '${cwd}/src/modules/app/appRuntimeStyles.js';
 document.head.insertAdjacentHTML('beforeend','<style>'+APP_RUNTIME_STYLES+'</style>');
 const sectionSource=${JSON.stringify(fs.readFileSync('src/main.jsx','utf8').split('  function Section(')[1].split('  function CollapsibleBlock')[0])};
@@ -35,7 +36,8 @@ function Projects(){const [q,setQ]=useState(''),[status,setStatus]=useState('all
  return tools.renderProjectListPanel({projectListStats:{total:2,active:1,unread:2,finished:1,visible:filtered.length},projectSearch:q,setProjectSearch:setQ,projectStatusFilter:status,setProjectStatusFilter:setStatus,projectUnreadOnly:unread,setProjectUnreadOnly:setUnread,loadProjects:()=>window.refreshes++,authUser:{id:'self'},projects:rows,filteredProjectListRows:filtered,isSystemAdminUser:false,statusStyle:()=>({}),openProjectById:(...args)=>window.opened.push(args),deleteProject:id=>window.deleted.push(id)});}
 const root=createRoot(document.getElementById('app'));
 function PersonalHarness(){const personal=usePersonalAccess('self'),hr=useHrAccess('self',true),ks=useKshmsAccess('self');return <Personal context={personal} hrContext={hr} kshmsContext={ks} userId="self" authUser={{id:'self',email:'qa@example.invalid',user_metadata:{full_name:'QA Medarbeider'}}} supabaseClient={window.client}/>;}
-window.render=(kind='personal')=>root.render(kind==='projects'?<Projects/>:<PersonalHarness/>);
+function Followup(){return <div data-expo-app-shell="true">{tools.renderProjectFollowUpPanel({projectRows:[...rows,{row:{id:'ready',title:'Prosjekt klart for kunde'},listProject:{customer:'QA Kunde',address:'Testveien 2'},listStatus:{tone:'customer_ready'},unreadForAdminInList:0,openDeviationCount:0}],openProjectById:(...args)=>window.opened.push(args)})}</div>;}
+window.render=(kind='personal')=>root.render(kind==='followup'?<Followup/>:kind==='projects'?<Projects/>:<PersonalHarness/>);
 window.render();installWorkProfileProjectListUx();
 `);
 const result=await build({root:cwd,configFile:false,logLevel:'silent',resolve:{alias:{'react/jsx-runtime':cwd+'/node_modules/react/jsx-runtime.js'}},plugins:[react(),{name:'synthetic-transport',enforce:'pre',resolveId(id,importer){if(importer?.endsWith('/workProfileProjectListUx.jsx')&&id.endsWith('/moduleAccessClient.js'))return '\0shared-client';if(importer?.endsWith('/workProfileProjectListUx.jsx')&&id.endsWith('/workProfileClient.js'))return '\0shared-profile';if(id.endsWith('/appSupabaseClientRegistry.js'))return '\0client';},load(id){if(id==='\0shared-client')return 'export const getStoredSupabaseSession=()=>({userId:"self"});export const rpcWithStoredSession=()=>{window.sharedReads++;return Promise.resolve({company_id:"a",company_name:"QA Firma",projects:window.sharedFixtures||[]});};';if(id==='\0shared-profile')return 'export const WORK_PROFILE_EVENT="qa-work-profile";export const readCachedWorkProfileState=()=>({can_switch:true,active_company_id:"a"});export const getMyWorkProfileState=async()=>readCachedWorkProfileState();';if(id==='\0client')return 'export const getAppSupabaseClient=()=>window.client;';}}],build:{write:false,minify:false,cssCodeSplit:false,rollupOptions:{input:path.join(temp,'entry.jsx'),output:{inlineDynamicImports:true}}}});
@@ -179,6 +181,19 @@ try{
  await page.getByRole('button',{name:'Alle',exact:true}).click();await page.waitForFunction(()=>document.querySelectorAll('.workProfileSharedCard').length===3);eq(await page.locator('.projectListAdvancedFilters>summary').innerText(),'Søk og filtre\nAlle statuser','active filter is visible when collapsed');
  eq(await page.evaluate(()=>window.sharedReads),2,'presentation and filter changes never reload shared projects');
  eq(await page.evaluate(()=>window.deleted),[],'no accidental delete from navigation');
+ // Same follow-up selection, counts and callbacks; compact row on wide screens.
+ await page.evaluate(()=>window.render('followup'));await page.locator('.pd-followup-row').first().waitFor();
+ eq(await page.locator('.pd-followup-row').count(),2,'only projects needing attention');
+ for(const width of [1363,768,390,320]){
+  await page.setViewportSize({width,height:936});
+  eq(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'follow-up fits '+width);
+  eq(await page.locator('.pd-followup-row').first().getByText('2 uleste kundemeldinger',{exact:false}).isVisible(),true,'unread count retained '+width);
+  eq(await page.locator('.pd-followup-row').first().getByRole('button',{name:'Se avvik',exact:true}).isVisible(),true,'action retained '+width);
+  if(width===1363)eq((await page.locator('.pd-followup-row').first().boundingBox()).height<115,true,'desktop uses one compact row');
+ }
+ for(const [label,args] of [['Åpne chat',['p0','chat']],['Se avvik',['p0','sjekklister',{showOpenDeviationsOnly:true}]],['Åpne prosjekt',['ready','prosjekt']]]){
+  await page.locator('.pd-project-followup').getByRole('button',{name:label,exact:true}).click();eq(await page.evaluate(()=>window.opened.at(-1)),args,'same follow-up callback '+label);
+ }
  eq(errors,[],'no browser errors');
  console.log('Personal/project layout: '+checks+' Chromium checks PASS. Actual components/CSS; synthetic transport, no live writes.');
 }finally{await browser?.close();server.close();fs.rmSync(temp,{recursive:true,force:true});}

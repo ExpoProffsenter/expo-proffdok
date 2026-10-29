@@ -232,7 +232,7 @@ export function createProjectListTools({
     if (!followUpRows.length) return null;
 
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-      className: "item",
+      className: "item pd-project-followup",
       style: {
         marginTop: compact ? "12px" : "18px",
         borderColor: "#f0d98f",
@@ -249,6 +249,7 @@ export function createProjectListTools({
           children: "Prosjekter med ulest kundemelding, åpne avvik eller status Klar for kunde."
         }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+          className: "pd-followup-list",
           style: { display: "grid", gap: 10 },
           children: followUpRows.map((item) => {
             const p = item.row || {};
@@ -257,6 +258,7 @@ export function createProjectListTools({
             const customerLine = [listProject.customer, listProject.address].filter(Boolean).join(" · ");
 
             return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+              className: "pd-followup-row",
               style: {
                 display: "grid",
                 gap: 10,
@@ -267,6 +269,7 @@ export function createProjectListTools({
               },
               children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+                  className: "pd-followup-identity",
                   children: [
                     /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", {
                       style: { display: "block", fontSize: compact ? 15 : 16 },
@@ -281,6 +284,7 @@ export function createProjectListTools({
                   ]
                 }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+                  className: "pd-followup-signals",
                   style: { display: "flex", gap: 8, flexWrap: "wrap" },
                   children: [
                     item.unreadCount > 0
@@ -327,6 +331,7 @@ export function createProjectListTools({
                   ]
                 }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+                  className: "pd-followup-actions",
                   style: { display: "flex", gap: 8, flexWrap: "wrap" },
                   children: [
                     item.unreadCount > 0
