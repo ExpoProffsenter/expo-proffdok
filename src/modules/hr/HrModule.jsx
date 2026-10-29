@@ -24,7 +24,10 @@ import {HrTimeEntry} from '../time/TimeEntryPoint.jsx';
 
 const emptyConfig={purpose:'',legalBasis:'',reviewOn:'',enabled:false};
 const selectionMemory=createModuleNavigationMemory(id=>typeof id==='string'&&id.length>0&&id.length<=80);
-function Field({label,children}) {return <label className="hr-field"><span>{label}</span>{children}</label>;}
+function Field({label,children}) {
+ const generatedId=React.useId(),inputId=children.props.id||generatedId,labelId=generatedId+'-label';
+ return <label className="hr-field" htmlFor={inputId}><span id={labelId}>{label}</span>{React.cloneElement(children,{id:inputId,'aria-labelledby':children.props['aria-labelledby']||labelId})}</label>;
+}
 function UserSelect({label,value,onChange,members,exclude=[],required=false}) {
  return <Field label={label}><select value={value} onChange={event=>onChange(event.target.value)} required={required}>
   <option value="">{required?'Velg bruker':'Ingen leder valgt'}</option>
@@ -134,14 +137,14 @@ export default function HrModule({context,audience='legacy',initialEmployeeId=nu
     <li><strong>3. Klargjør oppfølgingen</strong><span>Trykk Åpne samtalemaler for å tilpasse og lagre spørsmål. Åpne sykefravær viser rutiner, tilrettelegging og frister. Nærmeste leder starter den personlige oppfølgingen i medarbeidervinduet.</span></li>
    </ol><p className="hr-hint">En mal er bare spørsmålene. Å lagre en mal starter ingen samtale og sender ingenting til ansatte. Nærmeste leder starter en medarbeidersamtale inne i medarbeidervinduet. Nærmeste leder kan også starte sykefraværsoppfølging her. Vedlegg kommer senere.</p></>:<><p>{audience==='management'?'Trykk Se medarbeidere og åpne en rad. Kontroller at personens nærmeste leder er registrert. Firmaadmin retter leder og lesetilgang.':'Trykk Se medarbeidere og åpne egen oppføring eller en oppføring som er delt med deg. Firmaadmin retter leder og lesetilgang.'}</p><p className="hr-hint">Du kan se tilgjengelige registeroppføringer nå. Egne oppfølginger ligger på Min side. Nærmeste leder starter en medarbeidersamtale inne i medarbeidervinduet. Nærmeste leder kan også starte sykefraværsoppfølging her. Vedlegg kommer senere.</p></>}
   </details>}
-  {audience!=='personal'&&data&&<nav className="hr-workspace-cards" aria-label="HR snarveier">
+  {audience!=='personal'&&data&&<details className="hr-tools-disclosure" open={!data.enabled}><summary>Verktøy og oppsett</summary><nav className="hr-workspace-cards" aria-label="HR snarveier">
    {data.enabled&&<HrTimeEntry context={context}/>}
    <article className="hr-workspace-card"><span className="hr-workspace-icon"><UsersRound aria-hidden="true"/></span><h3>{administer?'Medarbeiderregister':audience==='management'?'Dine medarbeidere':'Dine oppføringer'}</h3><p>{administer?'Finn medarbeideren og kontroller leder og lesetilgang.':audience==='management'?'Åpne en medarbeider du er registrert som nærmeste leder for.':'Se egen oppføring og medarbeidere du har fått lesetilgang til.'}</p><button type="button" className="secondary" onClick={()=>goTo(registerRef)}>Se medarbeidere <ArrowRight aria-hidden="true"/></button></article>
    {administer&&<article className="hr-workspace-card hr-workspace-templates"><span className="hr-workspace-icon"><BookOpen aria-hidden="true"/></span><h3>Samtalemaler</h3><p>{data.enabled?'Velg et forslag, tilpass spørsmålene og lagre firmaets mal.':'Aktiver medarbeiderregisteret under Oppsett og kontrollfrist først.'}</p><button type="button" className="secondary" disabled={!data.enabled} onClick={()=>goTo(templatesRef)}>Åpne samtalemaler <ArrowRight aria-hidden="true"/></button></article>}
    <article className="hr-workspace-card hr-workspace-sick"><span className="hr-workspace-icon"><HeartPulse aria-hidden="true"/></span><h3>Sykefravær</h3><p>Klargjør oppfølgingen og se hva som skal gjøres underveis.</p><button type="button" className="secondary" onClick={()=>goTo(sickLeaveRef)}>Åpne sykefravær <ArrowRight aria-hidden="true"/></button></article>
    {administer&&<><article className="hr-workspace-card hr-workspace-setup"><span className="hr-workspace-icon"><Settings aria-hidden="true"/></span><h3>Oppsett og kontrollfrist</h3><p>Se over firmaets formål, grunnlag og neste kontroll av tilgangen.</p><button type="button" className="secondary" onClick={()=>goTo(setupCardRef)}>Åpne oppsett <ArrowRight aria-hidden="true"/></button></article>
    <article className="hr-workspace-card hr-workspace-purge"><span className="hr-workspace-icon"><FileCheck2 aria-hidden="true"/></span><h3>Slettekvitteringer</h3><p>Kontroller om en avslutning er ferdig slettet eller om filsletting pågår.</p><button type="button" className="secondary" onClick={()=>goTo(purgeCardRef)}>Se slettekvitteringer <ArrowRight aria-hidden="true"/></button></article></>}
-  </nav>}
+  </nav></details>}
   <div className="hr-toolbar hr-register-target" ref={registerRef} tabIndex={-1}><h3>{administer?'Medarbeiderregister':audience==='personal'?'Dine oppføringer':'Mine oppfølginger'}</h3><button type="button" className="secondary" disabled={busy} onClick={refresh}>Oppdater registeret</button></div>
   {!detail&&error&&<p className="hr-error" role="alert">{error}</p>}{!detail&&notice&&<p className="hr-notice" role="status">{notice}</p>}
   {busy&&<p role="status">Kontrollerer tilgang og register …</p>}

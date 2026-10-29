@@ -102,3 +102,5 @@ try{
  eq(await work.inputValue(),'Samme felt og samme kladd','changing tools context does not remount unrelated work');
  eq(errors,[]);console.log('App UX review: '+checks+' checks PASS — preserved 18 native destinations, dynamic group, task callbacks, native right dialog/focus/draft preservation, permission revocation, read-only filters, deduplicated photos, documentation links and four widths; no live writes.');
 }finally{await browser?.close();await new Promise(r=>server.close(r));fs.rmSync(tmp,{recursive:true,force:true});}
+
+await import("./people-workspace-browser-check.mjs");

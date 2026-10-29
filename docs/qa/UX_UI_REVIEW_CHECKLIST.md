@@ -54,3 +54,11 @@ Kontrollgrunnlag: `sales-case-customer-preview-check.mjs` for mapper/versjonsval
 QA for denne pakken er rapportert med 34 rene mapperkontroller, 772 nye Chromium-kontroller av ni tilstander på fem viewporter og faktiske komponenter for Våtromstilbud, Generelt tilbud, notat, plan, kunderedigering og aktivering. Eksisterende inline-preview har 84 kontroller; arbeidsverktøy har 122 og salgsoversikt/sak 311. Disse resultatene beskriver lokale komponent-/adapterprøver med syntetisk transport. Full build, CI og publisert kandidat kontrolleres og føres separat i PR295.
 
 Neste samlede arbeidsflater følger brukerens prioritering: forespørsel/befaring og begge tilbudstyper; varesøk/bestilling og varetillegging; prosjekt og sjekklister; HR/HMS/KS; Firmaadmin/Systemadmin og portaler. Før hver pakke avgrenses hva som faktisk prøves. Ingen full manuell appdekning er attestert av denne listen.
+
+## Videreføring 29.10 – HR/KS og salg gjennom fasene
+
+Produksjonsrettelsen for saksbehandler er ferdig i PR296/297 og permanent demo. Designet er fortsatt separat Preview. Gjeldende Production er hentet inn i designkandidaten, uten ny backenddiff mot main.
+
+Salgprøven venter på en DOM-markør for riktig faktisk skjema, og bekrefter kontrollert React-verdi før panelet åpnes. CI #769 hadde ellers kunnet fylle forrige skjema mens React byttet arbeidsflate. Ingen bevaringsassertion er fjernet. Lokal sluttprøve: 857 Chromium-kontroller på ni tilstander/fem bredder og de seks editorene.
+
+HR og KS/HMS: kontroller samme åpne sidehode, lesbare 16px felt/handlinger og 44px mål ved 320/390/768/1363/1920. HR skal vise registeret før ekstra snarveier. Åpne Verktøy og oppsett, kontroller samme oppsett, søk, medarbeider-ID og bevart tekst ved breddebytte. Under første oppstart er verktøyene åpne. KS/HMS har samme autoriserte skjerm-ID-er i Visning på smal skjerm og grupper på PC. Ingen prototypeforslag erstatter faktisk innhold. Ny lokal prøve: 88 kontroller av faktiske HR-/KS-komponenter; private samtale-/sykefraværs- og eksportgrenser er ikke attestert av denne isolerte prøven. Før/etterbilder inspiseres; visuell ordkløyving og for smalt rollemerke er rettet. Slutt-CI/publisert kandidat vedlikeholdes i PR295.

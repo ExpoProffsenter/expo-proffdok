@@ -13,3 +13,9 @@ Sjekklistemaler bruker en transient engangsforespørsel fra App til KS/HMS. Den 
 Tilbudsmaler i panelet peker til den eksisterende tilbudsbyggeren. Ingen tilbudslinjer, maler eller kladder kopieres til panelets state. Native details rundt ekstra varefelter beholder feltene og deres handlers; opplastingsflaten står åpen når varen allerede har bilde eller vedlegg.
 
 `DeviationDialog` kan få et eksplisitt returmål for fokus når åpningshandlingen laster asynkront. Sjekklistearbeidsflaten husker åpningsknappen før lasting deaktiverer den. Målet beholdes gjennom samme dialogøkt og nullstilles ved nytt bruker-/firma-/prosjektscope. Ved lukking brukes bare et tilkoblet, gyldig element. Uten eksplisitt mål beholder øvrige dialoger dagens fokusoppførsel. Dette endrer ingen lagring, kladd eller tilgang.
+
+## HR og KS/HMS etter skisse 03.6
+
+`proffdokPeopleWorkspace.css` er en presentasjonsflate under den eksisterende app-wrapperen; kroppsscope når også eksisterende React-dialoger. HR beholder register, søk, leder og alle callbacks. Ekstra snarveier ligger i native **Verktøy og oppsett**, åpent under oppstart når registeret er avslått. HRs `Field` bruker stabilt felt-ID/etikett; barns verdi, events og øvrige props beholdes.
+
+KS/HMS bruker samme `kshmsNavigationGroups` for grupper på PC og **Visning** på mobil/nettbrett. Begge sender samme skjerm-ID til eksisterende `onNavigate`, så roller, dirty-sjekk og navigasjonsminne styres fortsatt av modulen. Ingen ny data-, tilgangs-, e-post- eller lagringsmekanikk. `people-workspace-browser-check.mjs` prøver faktiske register-, dialog-, håndbok- og oppsettkomponenter med isolert transport; private samtale-/sykefraværskomponenter følger sine egne eksisterende prøver.
