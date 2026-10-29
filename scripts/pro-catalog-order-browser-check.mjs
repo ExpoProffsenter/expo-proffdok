@@ -1,18 +1,27 @@
 import assert from 'node:assert/strict';import fs from 'node:fs';import os from 'node:os';import path from 'node:path';import {build} from 'vite';import react from '@vitejs/plugin-react';
 const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'./qa/node_modules/playwright/index.mjs');
 const root=process.cwd(),temp=fs.mkdtempSync(path.join(os.tmpdir(),'pro-order-browser-'));let browser,count=0;const eq=(a,b,m)=>{assert.deepEqual(a,b,m);count++;};
+
+async function assertDesignLayout(page,label){
+ const layout=await page.locator('.pro-catalog-orders').evaluate(el=>({count:[...el.querySelectorAll('button')].filter(b=>b.getClientRects().length).length,small:[...el.querySelectorAll('button,.pro-order-quantity input')].filter(b=>b.getClientRects().length).map(b=>({name:b.getAttribute('aria-label')||b.textContent.trim(),width:b.getBoundingClientRect().width,height:b.getBoundingClientRect().height})).filter(b=>b.width<44||b.height<44),overflow:[el,...el.querySelectorAll('.pro-order-cart,.pro-order-preview,.pro-order-fields')].filter(b=>b.getClientRects().length&&b.scrollWidth>b.clientWidth+1).map(b=>b.className)}));
+ eq(layout.count>0,true,'visible native order actions measured '+label);
+ eq(layout.small,[],'order buttons and quantity targets are at least 44px '+label);
+ eq(layout.overflow,[],'no internal order overflow '+label);
+}
+
 try{
  const built=await build({root,configFile:false,logLevel:'silent',plugins:[react()],define:{'process.env.NODE_ENV':'"production"'},build:{write:false,minify:false,lib:{entry:path.join(root,'scripts/fixtures/pro-catalog-order-harness.jsx'),formats:['iife'],name:'ProOrdersQA',cssFileName:'pro-orders-qa'}}});
  const output=(Array.isArray(built)?built[0]:built).output,js=output.find(x=>x.type==='chunk'&&x.isEntry).code,css=output.filter(x=>x.type==='asset'&&x.fileName.endsWith('.css')).map(x=>x.source).join('\n');
  browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_PATH,args:['--no-sandbox','--disable-dev-shm-usage']});
- for(const width of [390,1366]){
+ for(const width of [320,390,768,1366]){
   const page=await browser.newPage({viewport:{width,height:950},locale:'nb-NO'}),errors=[];page.on('pageerror',e=>{errors.push(e.message);console.log('PAGEERROR',e.message);});
-  await page.route('**/*',r=>r.fulfill({contentType:r.request().url().endsWith('/bundle.js')?'text/javascript':'text/html',body:r.request().url().endsWith('/bundle.js')?js:'<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><div id="app"></div><style>'+css+'</style><script src="/bundle.js"></script>'}));
+  await page.route('**/*',r=>r.fulfill({contentType:r.request().url().endsWith('/bundle.js')?'text/javascript':'text/html',body:r.request().url().endsWith('/bundle.js')?js:'<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><div id="app" data-expo-app-shell="true"></div><style>'+css+'</style><script src="/bundle.js"></script>'}));
   await page.goto('https://orders-qa.example.invalid/');await page.getByRole('heading',{name:'Varesøk',exact:true}).waitFor();
   eq(await page.locator('.pro-catalog-orders>header').evaluate(el=>getComputedStyle(el).position),'static','header never overlaps fields');
   eq(await page.locator('nav button').allTextContents(),['Varesøk','Varebestilling'],'adjacent authorized menus');
   await page.getByPlaceholder('Søk og legg varer i bestillingen').fill('vare');await page.getByRole('button',{name:/QA Ø-vare.*eks/}).click();
   const quantity=page.getByLabel('Antall QA Ø-vare',{exact:true});
+  await assertDesignLayout(page,'cart '+width);
   eq(await quantity.evaluate(el=>el===document.activeElement),true,'selected item focuses and selects quantity');
   await page.getByRole('button',{name:'Øk antall QA Ø-vare',exact:true}).click();eq(await quantity.inputValue(),'2','plus increases quantity');
   await page.getByRole('button',{name:'Reduser antall QA Ø-vare',exact:true}).click();eq(await quantity.inputValue(),'1','minus reduces quantity');
@@ -30,7 +39,9 @@ try{
   await page.getByLabel('Bestillingsreferanse').fill('0007');await page.getByLabel('Leveringsadresse').fill('QA gate 1');await page.getByLabel('Leveringstidspunkt',{exact:true}).selectOption('requested');await page.getByLabel('Ønsket leveringsdato').fill('2026-12-11');await page.getByLabel('Ønsket klokkeslett').fill('10:30');
   await page.evaluate(()=>{window.qa.delay=120;window.dispatchEvent(new Event('focus'));});await page.waitForFunction(()=>!document.querySelector('[aria-label="Varebestilling"]')?.getAttribute('aria-busy')?.includes('true'));
   eq(await page.getByLabel('Leveringsadresse').inputValue(),'QA gate 1','focus keeps draft');eq(await page.getByLabel('Antall QA Ø-vare',{exact:true}).inputValue(),'2,5');
+  await assertDesignLayout(page,'delivery form '+width);
   fs.mkdirSync('/tmp/pro-order-screens',{recursive:true});await page.screenshot({path:'/tmp/pro-order-screens/form-'+width+'.png',fullPage:true});await page.getByRole('button',{name:'Se over bestillingen',exact:true}).click();await page.getByRole('heading',{name:'Se over bestillingen'}).waitFor();
+  await assertDesignLayout(page,'preview '+width);
   eq((await page.locator('.pro-order-preview').innerText()).includes('10:30'),true,'delivery time in preview');eq((await page.locator('.pro-order-preview').innerText()).includes('buyer@example.invalid'),true,'confirmation to real buyer');
   await page.getByRole('button',{name:'Send bestilling',exact:true}).click();await page.getByRole('button',{name:'Prøv samme sending igjen'}).waitFor();
   eq(await page.getByLabel('Antall QA Ø-vare',{exact:true}).isDisabled(),true,'uncertain send freezes exact order');eq(await page.getByRole('button',{name:'Øk antall QA Ø-vare',exact:true}).isDisabled(),true,'uncertain send also freezes stepper');
@@ -45,10 +56,10 @@ try{
   await page.evaluate(()=>{window.qa.allowed=false;window.dispatchEvent(new Event('expo-proffdok-module-access'));});await page.getByText('Ingen katalogtilgang',{exact:true}).waitFor();eq(await page.locator('nav button').count(),0,'revocation hides menus');eq(await page.locator('.pro-catalog-orders').count(),0,'revocation clears private surface');eq(errors,[]);await page.close();
  }
  // Regression for the user's actual entry point: real Prissøk adapter, real menu and shortcut.
- for(const width of [390,1366]){
+ for(const width of [320,390,768,1366]){
   const page=await browser.newPage({viewport:{width,height:950},locale:'nb-NO'}),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
-  await page.route('**/*',r=>r.fulfill({contentType:r.request().url().endsWith('/bundle.js')?'text/javascript':'text/html',body:r.request().url().endsWith('/bundle.js')?js:'<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><div id="app"></div><style>'+css+'</style><script src="/bundle.js"></script>'}));
+  await page.route('**/*',r=>r.fulfill({contentType:r.request().url().endsWith('/bundle.js')?'text/javascript':'text/html',body:r.request().url().endsWith('/bundle.js')?js:'<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><div id="app" data-expo-app-shell="true"></div><style>'+css+'</style><script src="/bundle.js"></script>'}));
   await page.goto('https://orders-qa.example.invalid/?internal=1');
   await page.getByRole('heading',{name:'Varebestilling',exact:true}).waitFor();await page.locator('#expo-price-search-nav-button').waitFor();
   const labels=await page.locator('nav button').allTextContents(),index=labels.indexOf('Prissøk');
@@ -63,12 +74,13 @@ try{
   await page.getByLabel('Antall QA Ø-vare',{exact:true}).fill('3');await page.evaluate(()=>window.dispatchEvent(new Event('focus')));
   await page.waitForFunction(()=>!document.querySelector('[aria-label="Varebestilling"]')?.getAttribute('aria-busy')?.includes('true'));
   eq(await page.getByLabel('Antall QA Ø-vare',{exact:true}).inputValue(),'3','internal focus preserves quantity');
-  await page.reload();await page.getByRole('heading',{name:'Varebestilling',exact:true}).waitFor();eq(await page.getByLabel('Antall QA Ø-vare',{exact:true}).inputValue(),'3','internal reload preserves order');
+  await page.reload();await page.getByRole('heading',{name:'Varebestilling',exact:true}).waitFor();eq(await page.getByLabel('Antall QA Ø-vare',{exact:true}).inputValue(),'3','internal reload preserves order');await assertDesignLayout(page,'internal restored cart '+width);
+  if(!await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)) console.error('Internal order overflow',width,await page.evaluate(()=>[...document.querySelectorAll('body *')].filter(el=>el.getClientRects().length).map(el=>({tag:el.tagName,cls:el.className,id:el.id,text:el.textContent.trim().slice(0,60),left:el.getBoundingClientRect().left,right:el.getBoundingClientRect().right,scroll:el.scrollWidth,client:el.clientWidth})).filter(el=>el.left<0||el.right>innerWidth+1||el.scroll>el.client+1).slice(0,18)));
   eq(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,'internal order has no horizontal overflow');
   await page.screenshot({path:'/tmp/pro-order-screens/internal-'+width+'.png',fullPage:true});
   await page.evaluate(()=>{window.qa.allowed=false;window.dispatchEvent(new Event('expo-proffdok-module-access'));});
   await page.getByText('Ingen katalogtilgang',{exact:true}).waitFor();eq(await page.locator('nav [data-order-nav]').count(),0,'internal revoke removes order menu');
   eq(await page.locator('.pro-catalog-orders').count(),0,'internal revoke removes order surface');eq(errors,[],'internal menu/shortcut no runtime errors');await page.close();
  }
- console.log(`Pro catalog order browser: ${count} assertions PASS, actual menus/components/hooks, 390/1366px, recipients, date/time, focus, persistent uncertain retry and revoked access; no live transport.`);
+ console.log(`Pro catalog order browser: ${count} assertions PASS, actual menus/components/hooks, 320/390/768/1366px with actual design CSS/app wrapper, 44px actions/internal overflow, recipients, date/time, focus, persistent uncertain retry and revoked access; no live transport.`);
 }finally{await browser?.close();fs.rmSync(temp,{recursive:true,force:true});}

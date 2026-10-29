@@ -212,6 +212,12 @@ body:has([data-expo-app-shell="true"]){min-width:0;background:#f4f7f8}
  [data-expo-app-shell="true"]:has(.pd-home-workspace)>header>.head>button:nth-of-type(2){display:none}
 }
 /* Sales forms retain all fields, calculations and callbacks in a denser layout. */
+[data-expo-app-shell="true"] :is(.sales-editor-app,.store-grouped-builder) .sales-shell{width:min(100%,1600px);max-width:1600px}
+[data-expo-app-shell="true"] :is(.sales-editor-app,.store-grouped-builder) .sales-main{max-width:none;padding:0;margin:0;gap:16px}
+[data-expo-app-shell="true"] :is(.sales-editor-app,.store-grouped-builder) .sales-form-hero{padding:0 0 14px;margin:0;border:0;border-bottom:1px solid #d5e4eb;border-radius:0;background:transparent;box-shadow:none}
+[data-expo-app-shell="true"] :is(.sales-editor-app,.store-grouped-builder) .sales-form-panel{padding:16px;border-radius:9px;box-shadow:none;background:#fff}
+[data-expo-app-shell="true"] .sales-editor-app .sales-form-panel .sales-note-field{padding:0;border:0;border-radius:0;background:transparent}
+[data-expo-app-shell="true"] .sales-editor-app .sales-field>span{font-size:16px}
 [data-expo-app-shell="true"] .store-product-identity-compact{display:grid;gap:8px}
 [data-expo-app-shell="true"] .store-product-extra{padding:0;border:0;background:transparent;min-width:0}
 [data-expo-app-shell="true"] .store-product-extra>summary{min-height:44px;align-content:center;color:#48616c;font-size:16px;cursor:pointer}
@@ -222,6 +228,10 @@ body:has([data-expo-app-shell="true"]){min-width:0;background:#f4f7f8}
 [data-expo-app-shell="true"] .store-product-container.is-open{border-width:1px;box-shadow:none}
 [data-expo-app-shell="true"] .store-product-body .store-line-total{min-height:44px;padding:7px 10px}
 [data-expo-app-shell="true"] .store-product-body :is(input,select,button){min-height:44px;font-size:16px}
+[data-expo-app-shell="true"] .store-grouped-builder .store-icon-button{min-width:44px;width:44px;min-height:44px;height:44px;padding:0;flex-shrink:0}
+[data-expo-app-shell="true"] .store-grouped-builder .store-workbar button{min-height:44px}
+[data-expo-app-shell="true"] .store-grouped-builder .store-room-add{max-width:100%;min-width:0;white-space:normal;overflow-wrap:anywhere;text-align:left}
+[data-expo-app-shell="true"] .priceSearchInlineView button{min-width:44px;min-height:44px}
 [data-expo-app-shell="true"] .store-product-body .sales-field>span{font-size:16px}
 [data-expo-app-shell="true"] .store-product-body .sales-field{gap:5px}
 [data-expo-app-shell="true"] .store-product-body .pro-store-catalog-lookup{margin:0;padding:10px;border-radius:7px}

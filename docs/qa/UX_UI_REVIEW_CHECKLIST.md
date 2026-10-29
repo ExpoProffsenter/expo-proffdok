@@ -37,4 +37,6 @@ Registrer branch/commit, faktisk Preview-adresse, arbeidsflate/tilstand, bredde/
 
 Relevante automatiske vern: `scripts/bolig-builder-browser-check.mjs` (bilder, bunnknapper, korte skjermer, kladd/opprettelse) og `scripts/app-ux-review-browser-check.mjs` (høyrepanel, kontekst, kontrollplassering, fokus og bevaring av arbeid). Øvrige modulers eksisterende kontroller beholdes.
 
+Salg og vareflyt: `sales-editor-ux-browser-check.mjs` laster faktisk app-ramme og design-CSS og kjører også `sales-store-layout-browser-check.mjs` for Generelt tilbud. `sales-overview-ux-browser-check.mjs` prøver liste/sak/retur. `smart-price-search-browser-check.mjs`, `price-search-mobile-check.mjs` og `pro-catalog-order-browser-check.mjs` måler også faktisk designstil og interne bredder. Dette er komponent-/adapterprøver med syntetisk transport, ikke bevis på innlogget brukerreise eller fysisk kamera/tastatur.
+
 Neste samlede arbeidsflater følger brukerens prioritering: forespørsel/befaring og begge tilbudstyper; varesøk/bestilling og varetillegging; prosjekt og sjekklister; HR/HMS/KS; Firmaadmin/Systemadmin og portaler. Før hver pakke avgrenses hva som faktisk prøves. Ingen full manuell appdekning er attestert av denne listen.
