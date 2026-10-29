@@ -10,7 +10,7 @@
 .pd-workspace-drawer-header h2{font-size:28px;font-weight:600;line-height:1.2;margin:10px 0 0;color:#fff}
 .pd-workspace-drawer-header button{display:grid;place-items:center;min-width:44px;min-height:44px;padding:8px;background:transparent;color:#bdd7e2;border:1px solid #ffffff30;border-radius:6px;box-shadow:none}
 .pd-workspace-drawer-body{padding:24px;overflow:auto;flex:1;min-height:0;font-size:16px;line-height:1.5}
-.pd-workspace-drawer-body>p{margin:0 0 24px;color:#4e6876}.pd-workspace-drawer-body section{margin:0 0 26px}
+.pd-workspace-drawer-body>p{margin:0 0 24px;color:#4e6876}.pd-workspace-drawer-body section{margin:0 0 26px;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none}
 .pd-workspace-drawer h3{font-size:18px;font-weight:600;margin:0 0 8px}.pd-workspace-drawer section>p{color:#4e6876;margin:0 0 12px}
 .pd-workspace-tool-action{display:flex;width:100%;align-items:center;justify-content:space-between;gap:16px;min-height:52px;padding:12px 14px;margin:0 0 8px;border:1px solid #d5e4eb;border-radius:8px;background:#fff;color:#214b5d;font-size:16px;font-weight:600;box-shadow:none;text-align:left;white-space:normal}
 .pd-workspace-tool-action:hover{border-color:#8cc8d1;background:#f1fbfc;transform:none}.pd-workspace-tool-action>svg{flex:none;color:#007681}

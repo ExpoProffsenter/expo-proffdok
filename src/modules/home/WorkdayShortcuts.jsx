@@ -24,7 +24,7 @@ export default function WorkdayShortcuts(props){
   <div className="pd-home-heading"><div><h2 id="pd-home-title">Hva vil du jobbe med?</h2><p>Start noe nytt eller fortsett der du slapp.</p></div>{props.canPersonal&&<button type="button" className="secondary" onClick={props.onPersonal}>Min side <ArrowRight size={17} aria-hidden="true"/></button>}</div>
   <div className="pd-home-tasks">{tasks.map(({id,title,icon:Icon,description,actions})=><article className="pd-home-task" key={id}>
    <div className="pd-home-task-title"><Icon size={21} aria-hidden="true"/><h3>{title}</h3></div><p>{description}</p>
-   <div className="pd-home-task-actions">{actions.map(({label,onClick},index)=><button key={label} type="button" className={index===0?'pd-task-main':'pd-task-link'} onClick={onClick}>{label}{index===0&&<ArrowRight size={16} aria-hidden="true"/>}</button>)}</div>
+   <div className="pd-home-task-actions">{(id==='projects'?actions.slice(0,2):actions).map(({label,onClick},index)=><button key={label} type="button" className={index===0?'pd-task-main':'pd-task-link'} onClick={onClick}>{label}{index===0&&<ArrowRight size={16} aria-hidden="true"/>}</button>)}</div>
   </article>)}</div>
  </section>;
 }
