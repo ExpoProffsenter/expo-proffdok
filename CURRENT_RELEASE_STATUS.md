@@ -2,11 +2,19 @@
 
 PR295: app-ramme/startside er fortsatt draft. Kandidaten omfatter også designparitet for salgsoversikt/sak og prosjekt/sjekklister, samt fokusretur etter venting på sjekklistedata. Saksarbeid og begge tilbudsbyggere bruker nå arbeid til venstre, passiv kundevisning til høyre på PC og samme kontekstuelle høyrepanel. Se docs/changes/sales-case-workspace-036-20261029.json. Eksakt kandidat, samlet CI og fast Preview vedlikeholdes i [PR295](https://github.com/ExpoProffsenter/expo-proffdok/pull/295). Full funksjonsinventering: [kontrollmatrise](docs/qa/proffdok-full-function-matrix-20261029.md) med 36 moduler, 605 kildefiler og navngitte eksisterende kontroller. Inventar er ikke full manuell attest.
 
-Lesende e-postundersøkelse: [mottakerlogikk og HR-finnbarhet](docs/qa/MAIL_ROUTING_AUDIT_20261029.md). Designpakken endrer ingen mottakere eller utsendingsoppsett. Separat [PR296](https://github.com/ExpoProffsenter/expo-proffdok/pull/296) retter internt akseptvarsel til eksplisitt valgt gjeldende saksbehandler; migrering og funksjon er kun installert i Sandbox, uten binding/backfill eller sending. Production er uendret. HRs egen aktiverte fristmotor er adskilt fra KS/HMS-rutineutsendingens sperre.
+Lesende e-postundersøkelse: [mottakerlogikk og HR-finnbarhet](docs/qa/MAIL_ROUTING_AUDIT_20261029.md). Designpakken endrer ingen mottakere eller utsendingsoppsett. Separat [PR296](https://github.com/ExpoProffsenter/expo-proffdok/pull/296) retter internt akseptvarsel til eksplisitt valgt gjeldende saksbehandler; rettelsen er publisert separat i Production. Ingen binding/backfill eller prøve-e-post er utført. Se docs/qa/SALES_CASE_HANDLER_RELEASE_20261029.md. Design-Preview synkroniseres med gjeldende main. HRs egen aktiverte fristmotor er adskilt fra KS/HMS-rutineutsendingens sperre.
 
 PR294: isolert boligrettelse for fasadehøyde og adressefokus ved byggvalg, ny 16-hus-fixture. Eksakte kandidater/CI/Preview-bevis vedlikeholdes i PR-ene. Ingen app-TEST OK, merge eller produksjonssetting.
 
 # Gjeldende leveranse – 27.10.2026
+
+## Saksbehandler for akseptvarsel – publisert 29.10.2026
+
+Kenneth autoriserte Production på grunnlag av utviklertester. PR296 er merget som `fd87265d2b4b9a4556287b157f0ca77f785827fc`, etter full Core Safety #768 / 40940249573 SUCCESS. Vercel `dpl_Bif1ZERHqyLfnETAJ7ruFdE8Jecy` er READY på eksakt commit og expo-proffdok.app. Hovedapp og SalesModule er byteidentiske med lokal Production-build; ingen Sandbox-binding i hovedappen.
+
+Production har migrering `20261029193247` og acceptance-notify v8. Nye funksjoner er identiske med Sandbox, eksisterende public-funksjoner uendret, privat RLS/ACL kontrollert. 20 reelle kandidater i lesende databaseprøve med eksisterende Kenneth-kontekst. Dette er ikke en faktisk innlogget nettleserøkt. Ingen saksbinding/backfill eller prøve-e-post er utført. Eldre fritekstsaker må få ett eksplisitt lagret saksbehandlervalg; navn blir ikke automatisk oversatt til bruker-ID.
+
+[Release, QA og tilbakeføring](docs/qa/SALES_CASE_HANDLER_RELEASE_20261029.md). Gjeldende demo-SHA og sluttkontroll vedlikeholdes i [PR296](https://github.com/ExpoProffsenter/expo-proffdok/pull/296). Design-PR295 er fortsatt separat Preview og har ingen produksjonsgodkjenning.
 
 ## Varebestilling
 

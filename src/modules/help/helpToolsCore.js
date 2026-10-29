@@ -89,6 +89,8 @@ const BASE_SECTIONS = [
       "Bruk søkefeltet for å finne saker på blant annet kunde, adresse, e-post, telefon, saksreferanse, ansvarlig, tilbudstype og innhold. Statusfaner og eget Befaring-filter snevrer inn resultatet.",
       "Bruk fanen Forespørsler for nye saker som er registrert, men hvor befaring ennå ikke er planlagt. Saken blir liggende der til befaring bookes.",
       "Registrer kunde, kontaktinformasjon, adresse, ansvarlig og neste steg i forespørselen.",
+      "Velg Saksbehandler når du oppretter en ny sak eller et tilbud. Navn og e-post vises sammen så du kan velge riktig person. Internt akseptvarsel går til denne brukeren når brukeren fortsatt har tilgang.",
+      "På en eksisterende sak finner du feltet Saksbehandler og knappen Lagre saksbehandler. Eldre saker viser tydelig hvis en bruker ikke er valgt. Velg riktig person og lagre; et gammelt fritekstnavn blir aldri tolket automatisk. Dette endrer ikke kundens aksept og sender ingen gammel e-post på nytt.",
       "Planlegg befaring og samle notater, bilder og nødvendige avklaringer i samme sak.",
       "I befaringsnotatet står tekstfeltene samlet før Badskisse og bilder. På PC står feltene to og to; på mobil står de under hverandre. Dra i nederste hjørne hvis du trenger større skrivefelt. Velg Lagre befaringsnotat når du er ferdig.",
       "Trykk på et bilde eller en lagret Badskisse i befaringsnotatet for å se det større. Lukk med krysset, Escape eller ved å trykke utenfor bildet. Notatet beholdes mens du ser på bildet.",

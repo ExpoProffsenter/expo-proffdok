@@ -24,4 +24,4 @@ HR har en egen `followup_settings.enabled`, som var aktiv ved lesingen. Dette er
 
 Undersøkelsen er avsluttet etter brukerens instruks. Videre arbeid fortsetter med designparitet for Befaring/Tilbud. Endring av e-postmottakere, oppgavelenker eller transport krever eget avgrenset scope og relevant QA; ingen slik runtime-endring er blandet inn i designpakken.
 
-Senere arbeid med eksplisitt saksbehandler-ID og mottakerruting ligger separat i PR296 med eget Preview- og Sandbox-grunnlag. Mottakerendringen er bare prøvepublisert i Sandbox. Denne historiske kontrollen av Production-v7 dokumenterer ikke at core-rettelsen er publisert i Production eller at en ny e-post er mottatt.
+Senere arbeid med eksplisitt saksbehandler-ID og mottakerruting ligger separat i PR296 med eget Preview- og Sandbox-grunnlag. Ved denne første kontrollen var mottakerendringen bare prøvepublisert i Sandbox. Den senere Production-releasen er dokumentert i docs/qa/SALES_CASE_HANDLER_RELEASE_20261029.md. Denne historiske kontrollen av Production-v7 er ikke bevis på ny e-postleveranse.

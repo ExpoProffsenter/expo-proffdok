@@ -97,6 +97,7 @@ function getOfferFollowUpInfo(request) {
 }
 
 export default function SalesDetailView({
+  caseHandlerControl,
   acceptanceProofBusy,
   acceptanceProofError,
   offerPdfBusy,
@@ -446,6 +447,7 @@ export default function SalesDetailView({
             </section>
 
             <section className="sales-detail-grid">
+              {caseHandlerControl}
               <article className="sales-detail-card">
                 <h2>Kunde</h2>
                 <div className="sales-detail-lines">

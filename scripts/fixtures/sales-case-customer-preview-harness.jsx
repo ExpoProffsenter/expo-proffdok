@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useLayoutEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import Detail from "../../src/modules/sales/components/SalesDetailView.jsx";
 import Workspace from "../../src/modules/sales/components/SalesCaseWorkspace.jsx";
@@ -33,8 +33,12 @@ const cases = [
   { ...base, status: "Aktivert", sentOfferVersionId: "later", offerVersions: [{ ...published, id: "later", title: "Kun publisert, ikke bekreftet akseptert" }] },
 ];
 const profile = { companyName: "Dagens QA firma", email: "firma@example.invalid", logoUrl: logo };
-window.qa = { calls: [], source: JSON.stringify(cases), cases };
+window.qa = { calls: [], updates: [], source: JSON.stringify(cases), cases };
 const callback = (name) => (...args) => { args[0]?.preventDefault?.(); window.qa.calls.push(name); };
+const update = (form, setter) => (key, value) => {
+  window.qa.updates.push({ form, key, value });
+  setter((current) => ({ ...current, [key]: value }));
+};
 
 function App() {
   const [index, setIndex] = useState(0), [mode, setMode] = useState("detail");
@@ -46,7 +50,18 @@ function App() {
   const [general, setGeneral] = useState({ title: "Generelt tilbud", intro: "Ulagret generell innledning", terms: "Vilkår", paymentTerms: "10 dager", validityDays: "30", lines: [{ ...line, lineType: "store_product", mainPostId: "butikk-varer", storeUnitPriceInclVat: "1250" }], options: [] });
   const request = cases[index];
   window.qa.rendered = { index, mode };
-  window.qa.show = (caseIndex, nextMode = "detail") => { setIndex(caseIndex); setMode(nextMode); };
+  window.qa.show = (caseIndex, nextMode = "detail") => {
+    const commit = () => { setIndex(caseIndex); setMode(nextMode); };
+    if (window.qa.holdNextMode) { window.qa.holdNextMode = false; window.qa.pendingMode = commit; }
+    else commit();
+  };
+  window.qa.releaseMode = () => { const commit = window.qa.pendingMode; delete window.qa.pendingMode; commit?.(); };
+  useLayoutEffect(() => {
+    window.qa.committed = {
+      index, mode, input: document.querySelector(".sales-case-work-content textarea"),
+      values: { offer: offer.intro, inspection: inspection.customerWishes, plan: plan.note, customer: customer.note, activation: project.note, general: general.intro },
+    };
+  });
   const tools = <Tools tab="sales" rowClassName="sales-case-tools" rowLabel={`Sak ${request.id}`} contextTitle={request.title}
     actionGroups={[{ id: "case", title: "Arbeid med saken", description: "Fiktive callbacks i isolert prøve.", actions: [{ label: "Native handling", onClick: callback("tool") }] }]} />;
   const detail = <Detail selectedRequest={request} companyProfile={profile} workspaceTools={tools} summary={{}} goToList={callback("back")} loggedInResponsible="QA"
@@ -54,17 +69,17 @@ function App() {
     openCustomerOfferFromRequestId={callback("customerOffer")} copyCustomerOfferLink={callback("copy")} sendOfferEmail={callback("send")} handleDownloadPublishedOfferPdf={callback("pdf")} handleCreateOfferRevisionAfterAcceptance={callback("revision")} />;
   let editor;
   if (mode === "offer") editor = <Offer selectedRequest={request} offerForm={offer} offerDraftSaveStatus="saved" offerTemplates={[]} onBack={callback("back")} handleSaveOffer={callback("save")}
-    updateOfferForm={(key, value) => setOffer((current) => ({ ...current, [key]: value }))} updateOfferLine={callback("line")} updateOfferOption={callback("option")} />;
+    updateOfferForm={update("offer", setOffer)} updateOfferLine={callback("line")} updateOfferOption={callback("option")} />;
   if (mode === "inspection") editor = <Inspection selectedRequest={request} inspectionForm={inspection} loggedInResponsible="QA" onBack={callback("back")} onSubmit={callback("save")}
-    onUpdateInspectionForm={(key, value) => setInspection((current) => ({ ...current, [key]: value }))} />;
+    onUpdateInspectionForm={update("inspection", setInspection)} />;
   if (mode === "plan") editor = <Plan selectedRequest={request} surveyForm={plan} loggedInResponsible="QA" onBack={callback("back")} onSubmit={callback("save")}
-    onUpdateSurveyForm={(key, value) => setPlan((current) => ({ ...current, [key]: value }))} />;
+    onUpdateSurveyForm={update("plan", setPlan)} />;
   if (mode === "customer") editor = <RequestForm form={customer} isEditingRequest onBack={callback("back")} onCancel={callback("back")} onSubmit={callback("save")}
-    onUpdateForm={(key, value) => setCustomer((current) => ({ ...current, [key]: value }))} />;
+    onUpdateForm={update("customer", setCustomer)} />;
   if (mode === "activation") editor = <Activation selectedRequest={request} projectForm={project} onBack={callback("back")} onSubmit={callback("save")}
-    onUpdateProjectForm={(key, value) => setProject((current) => ({ ...current, [key]: value }))} />;
+    onUpdateProjectForm={update("activation", setProject)} />;
   if (mode === "general") editor = <GeneralOffer selectedRequest={request} offerForm={general} offerDraftSaveStatus="saved" onBack={callback("back")} handleSaveOffer={callback("save")}
-    updateOfferForm={(key, value) => setGeneral((current) => ({ ...current, [key]: value }))} />;
+    updateOfferForm={update("general", setGeneral)} />;
   return <div data-expo-app-shell="true"><main>{mode === "detail" ? detail : <Workspace request={request} companyProfile={profile} tools={tools}>{editor}</Workspace>}</main></div>;
 }
 createRoot(document.getElementById("app")).render(<App />);

@@ -46,13 +46,32 @@ try {
   });
   await page.goto(`http://127.0.0.1:${server.address().port}`);
   await page.waitForFunction(() => Boolean(window.qa?.show));
+  const waitForWorkspace = (mode, index = 2) => page.waitForFunction(({ mode, index }) => {
+    const committed = window.qa.committed;
+    const input = document.querySelector('.sales-case-work-content textarea');
+    return committed?.mode === mode && committed.index === index && committed.input === input && (!input || input.isConnected);
+  }, { mode, index });
+  const waitForReadingLayout = () => page.waitForFunction(() => {
+    const dialog = document.querySelector('.sales-case-preview-drawer');
+    return dialog && dialog.open === (innerWidth > 1000) && !dialog.classList.contains('is-expanded');
+  });
+  const draftState = (phase) => page.evaluate((phase) => ({ phase, mode: window.qa.committed.mode, values: window.qa.committed.values, current: document.querySelector('.sales-case-work-content textarea')?.value, sameNode: window.qa.committed.input === window.qa.editorNode, updates: window.qa.updates.slice(-6) }), phase);
+  const waitForFormUpdate = async (mode, value, from) => {
+    try {
+      await page.waitForFunction(({ mode, value, from }) => {
+        const committed = window.qa.committed;
+        return committed?.mode === mode && committed.values[mode] === value && committed.input === document.querySelector('.sales-case-work-content textarea') &&
+          window.qa.updates.slice(from).some(update => update.form === mode && update.value === value);
+      }, { mode, value, from });
+    } catch (error) { throw new Error(`${mode}: native update/React commit not acknowledged ${JSON.stringify(await draftState('fill-timeout'))}`, { cause: error }); }
+  };
   const expected = ["empty", "draft", "draft", "published", "accepted", "accepted", "draft", "accepted", "empty"];
   for (const [width, height] of [[320, 936], [390, 600], [768, 936], [1363, 600], [1920, 936]]) {
     await page.setViewportSize({ width, height });
     for (let index = 0; index < expected.length; index++) {
       await page.evaluate((value) => window.qa.show(value), index);
       const panel = page.locator(".sales-case-customer-preview");
-      await page.waitForFunction((value) => window.qa.rendered.index === value, index);
+      await waitForWorkspace("detail", index);
       await page.waitForFunction((kind) => document.querySelector(".sales-case-customer-preview")?.dataset.previewKind === kind, expected[index]);
       eq(await panel.getAttribute("data-preview-kind"), expected[index], `${width}/${index}: correct source state`);
       eq(await page.locator(".sales-detail-hero .sales-title").evaluate((node, minimum) => parseFloat(getComputedStyle(node).fontSize) >= minimum, width <= 760 ? 29 : 34), true, `${width}/${index}: case title retains approved mobile/desktop text size`);
@@ -97,10 +116,39 @@ try {
       if (width <= 1000) { await page.keyboard.press("Escape"); eq(await drawer.evaluate((node) => node.open), false, `${width}/${index}: Escape closes only reading panel`); }
     }
   }
+  // Reproduce the former readiness bug deterministically: an old textarea can
+  // satisfy waitFor() while a different form's React commit is still pending.
+  await page.setViewportSize({ width: 390, height: 600 });
+  await page.evaluate(() => window.qa.show(2, 'plan'));
+  await waitForWorkspace('plan');
+  await waitForReadingLayout();
+  const staleInput = page.locator('.sales-case-work-content textarea').first();
+  await staleInput.evaluate(node => { window.qa.previousFormNode = node; });
+  const beforeLostFill = await page.evaluate(() => window.qa.updates.length);
+  await page.evaluate(() => { window.qa.holdNextMode = true; window.qa.show(2, 'customer'); });
+  await staleInput.waitFor();
+  eq(await staleInput.evaluate(node => node === window.qa.previousFormNode), true, 'former textarea-only readiness succeeds against the previous form');
+  const wrongFormText = 'Gated fill sent to the previous plan';
+  await staleInput.fill(wrongFormText);
+  await waitForFormUpdate('plan', wrongFormText, beforeLostFill);
+  eq(await page.evaluate(() => window.qa.updates.at(-1).form), 'plan', 'real onChange proves the previous form received the premature fill');
+  await page.evaluate(() => window.qa.releaseMode());
+  await waitForWorkspace('customer');
+  eq(await staleInput.inputValue(), 'Ulagret kundenotat', 'after delayed customer commit the original note is correctly unchanged');
+  eq(await staleInput.inputValue() === wrongFormText, false, 'the former draft-retained assertion would fail after a wrong-form fill');
+  // The new commit barrier waits for the correct DOM node before any fill.
+  await page.evaluate(() => { window.qa.holdNextMode = true; window.qa.show(2, 'plan'); });
+  const pendingWorkspace = waitForWorkspace('plan');
+  eq(await page.evaluate(() => window.qa.committed.mode), 'customer', 'correct-mode barrier does not mistake the previous form for a completed transition');
+  await page.evaluate(() => window.qa.releaseMode());
+  await pendingWorkspace;
+  eq(await staleInput.evaluate(node => node === window.qa.previousFormNode), false, 'commit barrier observes the newly mounted form node');
   // Exercise the actual native form components inside the shared stable wrapper.
   for (const mode of ["offer", "inspection", "plan", "customer", "activation", "general"]) for (const width of [390, 1363]) {
     await page.setViewportSize({ width, height: 600 });
     await page.evaluate((nextMode) => window.qa.show(nextMode === "general" ? 6 : 2, nextMode), mode);
+    await waitForWorkspace(mode, mode === 'general' ? 6 : 2);
+    await waitForReadingLayout();
     const input = page.locator(".sales-case-work-content textarea").first();
     await input.waitFor();
     eq(await page.locator(".sales-case-work-content .sales-form-hero .sales-title").evaluate((node, minimum) => parseFloat(getComputedStyle(node).fontSize) >= minimum && getComputedStyle(node).fontWeight === "600", width <= 620 ? 29 : 34), true, `${mode}/${width}: native work title matches the approved heading scale`);
@@ -133,19 +181,27 @@ try {
     eq(formControls.filter((control) => control.tag === "BUTTON").every((control) => round(control.width) >= 44 && round(control.height) >= 44), true, `${mode}/${width}: actual native form buttons >=44px ${JSON.stringify(formControls.filter(control=>control.tag==='BUTTON'))}`);
     const textControls = formControls.filter((control) => control.tag !== "BUTTON" || control.visibleText);
     eq(textControls.every((control) => control.font >= 16), true, `${mode}/${width}: actual visible form control text >=16px ${JSON.stringify(textControls.filter(control=>control.font<16))}`);
-    const text = `${mode} · behold ulagret tekst`;
+    const text = `${mode}/${width} · behold ulagret tekst`;
+    const updatesBeforeFill = await page.evaluate(() => window.qa.updates.length);
     await input.fill(text);
+    await waitForFormUpdate(mode, text, updatesBeforeFill);
+    eq(await page.evaluate((currentMode) => window.qa.updates.at(-1).form === currentMode, mode), true, `${mode}/${width}: actual native onChange received the fill for the committed form`);
+    eq(await page.evaluate((currentMode) => window.qa.committed.values[currentMode], mode), text, `${mode}/${width}: React state committed typed draft before resizing or opening preview`);
     await input.focus();
     await input.evaluate((node) => { window.qa.editorNode = node; });
+    const draftTrace = [await draftState('filled')];
     // Cross the tablet/desktop boundary with the caret in the native form.
     await page.setViewportSize({ width: width <= 1000 ? 1363 : 768, height: 600 });
-    await page.waitForTimeout(30);
+    await waitForReadingLayout();
+    draftTrace.push(await draftState('resized'));
     eq(await input.evaluate((node) => node === document.activeElement), true, `${mode}/${width}: sidebar initialization/resize keeps editor focus`);
     eq(await input.evaluate((node) => node === window.qa.editorNode), true, `${mode}/${width}: resize keeps editor DOM node`);
     await page.setViewportSize({ width, height: 600 });
-    await page.waitForTimeout(30);
+    await waitForReadingLayout();
+    draftTrace.push(await draftState('resized-back'));
     const reading = page.locator(".sales-case-preview-drawer");
     await page.getByRole("button", { name: width <= 1000 ? "Kundevisning" : "Utvid kundevisning", exact: true }).click();
+    draftTrace.push(await draftState('preview-open'));
     if (mode === "offer" && width <= 1000) eq(await reading.evaluate((node) => {
       const bar=document.querySelector('.sales-offer-mobile-save').getBoundingClientRect();
       return node.contains(document.elementFromPoint(bar.left+bar.width/2,bar.top+bar.height/2));
@@ -155,7 +211,8 @@ try {
     await page.keyboard.press("Escape");
     await page.waitForFunction(() => !document.querySelector(".sales-case-preview-drawer")?.classList.contains("is-expanded"));
     eq(await page.getByRole("button", { name: width <= 1000 ? "Kundevisning" : "Utvid kundevisning", exact: true }).evaluate((node) => node === document.activeElement), true, `${mode}/${width}: closing preview restores its trigger focus`);
-    eq(await input.inputValue(), text, `${mode}/${width}: draft retained`);
+    draftTrace.push(await draftState('preview-closed'));
+    eq(await input.inputValue(), text, `${mode}/${width}: draft retained ${JSON.stringify(draftTrace)}`);
     eq(await input.evaluate((node) => node === window.qa.editorNode), true, `${mode}/${width}: same editor DOM node after preview`);
     await page.getByRole("button", { name: "Verktøy og maler", exact: true }).click();
     await page.getByRole("button", { name: "Native handling", exact: true }).click();

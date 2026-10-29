@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Akseptvarsel til eksplisitt valgt, gjeldende saksbehandler",
+  "change": "Separat core-rettelse med privat UUID-binding/revisjon, eksplisitt valg ved ny og eksisterende sak, servervalidering og fail-closed service-resolver. Deployed acceptance-notify v7 er hentet inn i repo. Intern routing bruker dagens saksbehandler uten publisher/navne/signaturfallback og beholder historisk dedupslot. Kundekvittering og akseptinnhold er uendret. Miljø BEGGE, kun Sandbox/Preview nå. Sandbox-migrering 20261029191431 og acceptance-notify v6 er installert; ingen Production-endring, eksisterende saksbinding/backfill eller e-postsending.",
+  "verification": "105 faktiske lokale SQL-migreringskontroller, 111 Edge-/wrapper-mocks, 31 kontrakt-/opprettingskontroller og 23 faktiske React/Chromium-kontroller. Eksisterende 41 database- og 116 nettleserkontroller for kundeopsjoner/aksept samt server-first/recovery/auth/entry-checks er grønne. Publisert app-Preview og innlogget integrasjon mot Sandbox, full critical CI og TEST OK gjenstår før release. Se docs/architecture/SALES_CASE_HANDLER_IDENTITY.md for kilder, begrensninger og deployrekkefølge. Sandboxforutsetninger og eksisterende notifications-unique/enum er kontrollert lesende før installasjon. Ny privat tabell har RLS, ingen authenticated SELECT/INSERT, anonym setter og klientresolver er sperret, service_role har resolver. Migrering opprettet 0 bindinger. Sandbox-funksjonen v6 beholder eksisterende verify_jwt=false og egen public-token-kontroll. Ingen faktisk e-postinvokasjon. Kilde/migreringsfil følger serverens returnerte versjon. CI #766 avdekket den eksisterende datoavhengige boligfixture-feilen: deviation kunne ligge etter første 100 treff. De samme to assertionene for tre typer og tre oppgaver er flyttet etter eksisterende komplett paginering, identisk allerede kontrollert rettelse i designpakken; ingen produktkode eller assertion svekkes. Kenneth autoriserte Production 29.10.2026 på grunnlag av utviklertester fordi mottakerruting ikke kan prøves manuelt av ham. Ny samlet CI kreves etter fixture-rettelsen. Uavhengig kildekontroll bekrefter sidegrensen: pilot-fixturen oppretter 156 manageroppgaver med frist 26.–28. oktober, mens avvikets frist er current_date. Fra 29. oktober ligger avviket derfor deterministisk etter første side med 100 treff. Førbevis er CI #766; den ekstra lokale førkjøringen ble avbrutt da dette beviset allerede forelå.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "Brukeren skal velge og lagre saksbehandler og kunne binde eldre saker uten navnegjetting."
+    },
+    "architecture": {
+      "required": true,
+      "reason": "Privat kanonisk ID/revisjon, service-resolver og historisk dedupslot endrer intern ansvarskontrakt."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen ny prosjektavhengighet eller endret lokal installasjon; release-rekkefølge dokumenteres i arkitekturgrunnlaget."
+    },
+    "module": {
+      "required": true,
+      "reason": "Sales får eksplisitt saksbehandlerbinding og en ny fail-closed varslingskontrakt."
+    }
+  }
+}

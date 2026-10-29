@@ -8,7 +8,7 @@ Lesefeltet har skrivebeskyttede opsjoner og ingen aksept-, avvisnings-, publiser
 
 **Verktøy og maler** er knyttet til saken og aktuell arbeidsflate. Panelet bruker eksplisitte grupper med eksisterende callbacks: eksempelvis tilbake til oversikt/sak, kunde, befaring og tilbud. Handlingene følger saksstatus og tilgjengelige funksjoner. Å velge en handling bruker også dagens eventuell lagre-/forlat-kontroll. Firma-, saks- eller arbeidsflatebytte lukker verktøypanelet. Uten eksplisitte grupper beholder `WorkspaceTools` dagens kontekstverktøy og tilbudsmalsnarveier.
 
-Varig scope og testnivå: `docs/changes/sales-case-workspace-036-20261029.json` og `docs/qa/UX_UI_REVIEW_CHECKLIST.md`. Lokale mapper-/komponentprøver med syntetisk transport skilles fra CI, faktisk innlogget app og fysisk mobil/Safari. Denne dokumentasjonen attesterer ikke en full innlogget brukerreise eller e-postleveranse. Saksbehandler-/e-postrettelsen ligger separat i PR296; mottakerendringen er bare prøvepublisert i Sandbox og er ikke inkludert i denne designpakken eller dokumentert som en Production-release.
+Varig scope og testnivå: `docs/changes/sales-case-workspace-036-20261029.json` og `docs/qa/UX_UI_REVIEW_CHECKLIST.md`. Lokale mapper-/komponentprøver med syntetisk transport skilles fra CI, faktisk innlogget app og fysisk mobil/Safari. Denne dokumentasjonen attesterer ikke en full innlogget brukerreise eller e-postleveranse. Saksbehandler-/e-postrettelsen er publisert separat gjennom PR296. Design-Preview bygger videre på gjeldende main og viser den samme saksbehandlerkontrollen i venstre arbeidsflate. Production-releasen har eget bevis i docs/qa/SALES_CASE_HANDLER_RELEASE_20261029.md; designet har fortsatt ikke Production-godkjenning.
 
 ## Kundepreview med appens innlogging – Preview 26.10.2026
 
@@ -84,6 +84,12 @@ Scope: SalesListView, SalesDetailViewCore, lokal CSS, én klasse på direkte til
 **Oppdatert:** 03.10.2026
 
 Sales håndterer både ordinær Befaring/Tilbud-flyt og Generelt tilbud for varer, arbeid, underentreprenører og andre leveranser. Den tekniske legacy-identiteten `Butikktilbud`/`store offer` beholdes der det trengs for kompatibilitet.
+
+## Saksbehandler og intern akseptkvittering – publisert 29.10.2026
+
+Nye saker krever et eksplisitt valg av saksbehandler fra godkjente brukere med riktig firmatilgang. UUID og visningsnavn velges sammen. Eksisterende saker, også Akseptert/Aktivert, har feltet Saksbehandler og Lagre saksbehandler for sikker nybinding. Gamle fritekstnavn og publiserings-/signaturhistorikk gir aldri automatisk brukerbinding.
+
+Kanonisk binding og revisjon ligger privat på server; stale bulk-autosave kan ikke bytte ansvarlig, og et foreldet eksplisitt valg avvises med HTTP409. Intern akseptmail bruker dagens bekreftede Auth-identitet med fersk tilgang, uten fallback til publisist. Kundekvitteringen og historisk deduplisering beholdes. Ingen retroaktive utsendinger eller tilbakefylling inngår. Arkitektur, testgrunnlag og begrensninger: [SALES_CASE_HANDLER_IDENTITY.md](../../../docs/architecture/SALES_CASE_HANDLER_IDENTITY.md). Sandbox har migrering `20261029191431` og acceptance-notify v6; Production har registrert samme migrering som `20261029193247` og acceptance-notify v8. Ingen binding/backfill eller prøve-e-post er utført. Releasebevis, faktiske testnivåer og begrensninger: [SALES_CASE_HANDLER_RELEASE_20261029.md](../../../docs/qa/SALES_CASE_HANDLER_RELEASE_20261029.md).
 
 Ordinære tilbud kan etter aksept gå videre til Expo-kontrakt, egen opplastet kontrakt eller direkte prosjekt. Et nytt Generelt tilbud kan etter aksept aktiveres som Enkel ordre eller ordinært prosjekt. Eksisterende historiske Butikktilbud beholder sin opprinnelige avslutning og skal ikke konverteres automatisk.
 
