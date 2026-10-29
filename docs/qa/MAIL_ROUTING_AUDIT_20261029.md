@@ -6,7 +6,7 @@ Miljø: eksisterende Production, kun lesing. Ingen funksjon, kø, konfigurasjon,
 
 Den publiserte `sales-offer-acceptance-notify` v7 ble lest og sammenholdt med den aksepterte versjonen og leveringsloggen for den ene oppgitte saken. Meldingen er intern publisistvarsling, separat fra kundens kvittering.
 
-Mottakeren velges fra den **aksepterte versjonens `published_by`**, med profilens e-post og auth-brukeren som fallback. `responsible` / `projectResponsible` påvirker ikke dette oppslaget. I den undersøkte saken var publisist og saksbehandler forskjellige; loggen bekrefter at publisisten mottok meldingen. Dette forklarer leveransen, men er ikke en bekreftelse på at mottakerregelen er ønsket produktatferd.
+Mottakeren velges fra den **aksepterte versjonens `published_by`**, med profilens e-post og auth-brukeren som fallback. `responsible` / `projectResponsible` påvirker ikke dette oppslaget. I den undersøkte saken var den lagrede publiseringskontoen og navnet på saksbehandler forskjellige; loggen bekrefter utsending til publiseringskontoens adresse. `published_by = auth.uid()` dokumenterer hvilken autentisert bruker-ID/sesjon serveren registrerte. Det beviser ikke hvilken fysisk person som trykket publiser. Dette forklarer leveransen, men er ikke en bekreftelse på at mottakerregelen er ønsket produktatferd.
 
 Den kjørende acceptance-funksjonens kilde og opprettelsen av notification-tabellen mangler på undersøkt `main` (`5f58b1c6`). Klientens kall finnes. Dette er et eget kilde-/testgap som må håndteres i et avgrenset backend-scope, ikke som sideeffekt av design-PR295. Klientens acceptance-test traverserer heller ikke notify-wrapperens mottakerregel.
 
@@ -23,3 +23,5 @@ HR har en egen `followup_settings.enabled`, som var aktiv ved lesingen. Dette er
 ## Avslutning av sidesporet
 
 Undersøkelsen er avsluttet etter brukerens instruks. Videre arbeid fortsetter med designparitet for Befaring/Tilbud. Endring av e-postmottakere, oppgavelenker eller transport krever eget avgrenset scope og relevant QA; ingen slik runtime-endring er blandet inn i designpakken.
+
+Senere arbeid med eksplisitt saksbehandler-ID og mottakerruting ligger separat i PR296 med eget Preview- og Sandbox-grunnlag. Mottakerendringen er bare prøvepublisert i Sandbox. Denne historiske kontrollen av Production-v7 dokumenterer ikke at core-rettelsen er publisert i Production eller at en ny e-post er mottatt.

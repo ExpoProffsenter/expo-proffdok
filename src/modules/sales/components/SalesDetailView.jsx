@@ -24,12 +24,13 @@
 // rewriteStoreOfferDeclinedFlow(tree, coreProps?.selectedRequest)
 
 import { useEffect, useRef, useState } from "react";
-import { Eye, Home, ShoppingBag } from "lucide-react";
+import { Home, ShoppingBag } from "lucide-react";
 import SalesContractActions from "./SalesContractActions.jsx";
 import SalesContractWizard from "./SalesContractWizard.jsx";
 import SalesDetailViewLegacy from "./SalesDetailViewLegacy.jsx";
 import StoreOfferOrderBasis from "./StoreOfferOrderBasis.jsx";
 import SalesDraftPreviewDialog from "./SalesDraftPreviewDialog.jsx";
+import SalesCaseCustomerPreview from "./SalesCaseCustomerPreview.jsx";
 import {
   isSimpleOrderRequest,
   isStoreOfferRequest,
@@ -107,6 +108,7 @@ function showInternalProductNumbers(root, request = {}) {
   entries.forEach(({ title, sku }) => {
     candidates
       .filter((node) => directText(node) === title)
+      .filter((node) => !node.closest(".sales-case-customer-preview"))
       .forEach((node) => {
         let marker = node.querySelector(":scope > [data-internal-product-number='true']");
         if (!marker) {
@@ -146,7 +148,6 @@ export default function SalesDetailView(props) {
   const simpleOrderAccepted = Boolean(request?.status === "Akseptert" && isSimpleOrderRequest(request));
   const supportMode = Boolean(getSalesSupportCompanyId());
   const canPreviewDraft = hasCustomerPreviewContent(request);
-  const floatingActionBottom = supportMode ? 178 : 20;
   const activatedContractFallback = needsActivatedContractFallback(request, { storeOffer });
 
   useEffect(() => {
@@ -236,24 +237,12 @@ export default function SalesDetailView(props) {
   const delegatedProps = simpleOrderAccepted
     ? { ...props, selectedRequest: presentationRequest(request), openProjectActivation: () => void chooseActivationMode("project") }
     : props;
+  const customerPreview = <SalesCaseCustomerPreview request={request} companyProfile={props.companyProfile} savedDraftLabel="Forhåndsvis som kunde"
+    onOpenSavedDraft={canPreviewDraft ? () => setDraftPreviewRequestId(String(request.id)) : undefined} />;
 
   return (
     <div ref={rootRef} className={simpleOrderAccepted ? "simple-order-accepted-shell" : undefined}>
-      {canPreviewDraft ? (
-        <aside
-          data-draft-customer-preview-action="true"
-          data-draft-customer-preview-request-id={String(request.id || "")}
-          className="sales-customer-preview-callout"
-          style={{ position:"fixed", right:20, bottom:floatingActionBottom, zIndex:23000, width:"min(390px, calc(100vw - 32px))", padding:15, border:"1px solid #b9dde2", borderRadius:16, background:"#ffffff", boxShadow:"0 18px 44px rgba(15,72,82,.20)" }}
-        >
-          <strong style={{ display:"block", fontSize:16, color:"#10212b" }}>Kontroller kundens visning før utsending</strong>
-          <p style={{ margin:"6px 0 12px", color:"#52616b", lineHeight:1.45 }}>Åpner den lagrede tilbudskladden i kundens layout. Ingen versjon publiseres og ingen e-post sendes.</p>
-          <button className="sales-secondary-button" type="button" onClick={() => setDraftPreviewRequestId(String(request.id))}><Eye size={18}/>Forhåndsvis som kunde</button>
-        </aside>
-      ) : null}
-
-
-      <SalesDetailViewLegacy {...delegatedProps} />
+      <SalesDetailViewLegacy {...delegatedProps} customerPreview={customerPreview} />
 
       {canPreviewDraft && draftPreviewRequestId === String(request.id) ? (
         <SalesDraftPreviewDialog requestId={draftPreviewRequestId} onClose={() => setDraftPreviewRequestId("")} />

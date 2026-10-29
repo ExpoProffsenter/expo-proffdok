@@ -1,3 +1,15 @@
+## Saksarbeidsflate etter skisse 03.6 – design-Preview 29.10.2026
+
+Miljømål **BEGGE**, foreløpig bare den eksisterende design-Previewen. Saksoversikt, kundeopplysninger, befaring og tilbud bruker samme sak videre. På brede skjermer står arbeidet til venstre og «Kundens tilbud» til høyre. På skjermer opptil 1000 px åpnes lesefeltet med **Kundevisning**. **Utvid kundevisning** åpner et større panel fra høyre på PC. **Tilbake til arbeidet** og Escape lukker den utvidede visningen og tar fokus tilbake uten å montere editoren på nytt.
+
+`SalesCaseWorkspace` beholder den opprinnelige editoren som barn. `SalesCaseCustomerPreview` viser en passiv kopi av saksgrunnlaget gjennom den eksisterende kunderendereren. Felter under redigering blir med i dette grunnlaget når de er lagret på saken. Etiketten skiller **Lagret tilbudsgrunnlag · kladd**, **Publisert kundetilbud** og **Akseptert kundetilbud · låst**. Versjonsnummer vises når det finnes. Mapperen prioriterer låst akseptgrunnlag og publisert versjon fremfor en nyere redigerbar kladd. Aksepterte og aktiverte saker krever tilgjengelig låst akseptgrunnlag; mangler det, vises en egen beskjed også når en annen publisert versjon finnes. Ingen lagret versjon opprettes av lesefeltet.
+
+Lesefeltet har skrivebeskyttede opsjoner og ingen aksept-, avvisnings-, publiserings- eller sendehandling. Det oppretter ingen Supabase-klient og gjør ingen serverhenting, lagring eller nye kundevalg. Der **Forhåndsvis som kunde** vises, brukes fortsatt den eksisterende innloggede forhåndsvisningen av lagret kladd med sin egen tilgangskontroll.
+
+**Verktøy og maler** er knyttet til saken og aktuell arbeidsflate. Panelet bruker eksplisitte grupper med eksisterende callbacks: eksempelvis tilbake til oversikt/sak, kunde, befaring og tilbud. Handlingene følger saksstatus og tilgjengelige funksjoner. Å velge en handling bruker også dagens eventuell lagre-/forlat-kontroll. Firma-, saks- eller arbeidsflatebytte lukker verktøypanelet. Uten eksplisitte grupper beholder `WorkspaceTools` dagens kontekstverktøy og tilbudsmalsnarveier.
+
+Varig scope og testnivå: `docs/changes/sales-case-workspace-036-20261029.json` og `docs/qa/UX_UI_REVIEW_CHECKLIST.md`. Lokale mapper-/komponentprøver med syntetisk transport skilles fra CI, faktisk innlogget app og fysisk mobil/Safari. Denne dokumentasjonen attesterer ikke en full innlogget brukerreise eller e-postleveranse. Saksbehandler-/e-postrettelsen ligger separat i PR296; mottakerendringen er bare prøvepublisert i Sandbox og er ikke inkludert i denne designpakken eller dokumentert som en Production-release.
+
 ## Kundepreview med appens innlogging – Preview 26.10.2026
 
 Miljømål **BEGGE**. Baseline er publisert main `3ba4d228` (PR287, fullført i
