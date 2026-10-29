@@ -358,21 +358,11 @@ function ProductIdentityFields({
   titleLabel = "Varenavn *",
   titleField = "description",
   titleInputProps = {},
+  compact = false,
 }) {
   const nobbUrl = buildNobbItemUrl(item.nobbNumber);
 
-  return (
-    <div className="store-product-grid">
-      <label className="sales-field store-product-name">
-        <span>{titleLabel}</span>
-        <input
-          {...titleInputProps}
-          value={item[titleField] || ""}
-          onChange={(event) => onPatch({ [titleField]: event.target.value })}
-          placeholder="F.eks. servantskap 80 cm"
-        />
-      </label>
-
+  const extraFields = <>
       <label className="sales-field">
         <span>NOBB-nr.</span>
         <div className="store-link-field">
@@ -433,6 +423,21 @@ function ProductIdentityFields({
           ) : null}
         </div>
       </label>
+  </>;
+
+  return (
+    <div className={compact ? "store-product-identity-compact" : "store-product-grid"}>
+      <label className="sales-field store-product-name">
+        <span>{titleLabel}</span>
+        <input
+          {...titleInputProps}
+          value={item[titleField] || ""}
+          onChange={(event) => onPatch({ [titleField]: event.target.value })}
+          placeholder="F.eks. servantskap 80 cm"
+        />
+      </label>
+
+      {compact ? <details className="store-product-extra"><summary>Varenummer, NOBB og produktlenke</summary><div className="store-product-grid">{extraFields}</div></details> : extraFields}
     </div>
   );
 }
@@ -1870,6 +1875,7 @@ export default function SalesStoreOfferBuilderGrouped(props) {
             })}
 
             <ProductIdentityFields
+              compact
               item={product}
               onPatch={(patch) => patchProduct(product.id, patch)}
               titleInputProps={{ "data-store-product-title": product.id }}
@@ -1883,12 +1889,15 @@ export default function SalesStoreOfferBuilderGrouped(props) {
               }
             />
 
+            <details className="store-product-extra" open={product.imageDataUrl || product.attachmentFile?.url ? true : undefined}>
+              <summary>Bilde og vedlegg{product.imageDataUrl || product.attachmentFile?.url ? ' · lagt til' : ''}</summary>
             <DropZone
               item={product}
               onFiles={(files) => sendFiles("line", product.id, files)}
               onRemoveImage={() => removeOfferLineImage?.(product.id)}
               onRemoveAttachment={() => removeOfferLineAttachment?.(product.id)}
             />
+            </details>
 
             <div className="store-product-actions">
               <button
@@ -2583,3 +2592,4 @@ export default function SalesStoreOfferBuilderGrouped(props) {
     </div>
   );
 }
+

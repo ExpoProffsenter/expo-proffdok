@@ -1,24 +1,24 @@
 {
   "version": 1,
-  "title": "Designpakke 01: korrigert etter godkjent skisse 03.6",
-  "change": "Miljømål BEGGE, foreløpig bare feature/Preview. Referanse er uendret originalskisse 03.6, Sites-kilde f67f236784b4de9a92f52c5b74b67335ec94606a. Tidligere fast venstremeny er fjernet. Appen får lyst, kompakt merke-/firmatoppfelt, mørk horisontal hovednavigasjon og Alle områder med alle autoriserte eksisterende innganger. Primærmenyen følger arbeidsrekkefølgen i referansen og løser hver handling mot den aktuelle native React-knappen; ingen ny navigasjons- eller tilgangsstate. Prosjekt og mobil beholder dagens navigasjonsmekanikk. Systemadmin har de tre åpne gruppene fra skissen, alle ni innganger og ingen gjentatt oversiktsgrid. I et valgt adminområde er de samme ni byttemulighetene kompakte, mens besøkte originalpaneler forblir montert. Firmaadmin, Min side og Startside bruker åpne flater og samme typografi/knappemønster. Ingen prototype-data, eksempelhandlinger, lagring eller tilgang kopieres inn i appen.",
-  "verification": "Utgangspunkt for korrigeringen: c7f391ace6b6a007e86cf5b38c38f8fb9ebafcda, visuelt avvik dokumentert i PR295; den gamle grønne CI-en er ikke bevis på korrigert design. Originalskissen er åpnet direkte fra uendret source i intern Sites-preview, inkludert Systemadmin. Relevante support-/admin-/navigasjonskontroller er lest. Native navigasjon brukes som autoritativ liste og klikkmål; ingen callback i main.jsx endres utover tidligere CSS-import. Lokalt kjøres JS-syntaks for navigasjon og Hjelp og scope-selvtest. Eksakt ny kandidat, full uendret CI og faktisk side-ved-side-kontroll i skynett føres i PR295. Ingen app-TEST OK eller produksjonsendring.",
+  "title": "Designpakke 01: oppgavebasert startside og høyrepanel etter skisse 03.6",
+  "change": "Miljømål BEGGE, foreløpig bare feature/Preview. Referanse er uendret originalskisse 03.6, Sites-kilde f67f236784b4de9a92f52c5b74b67335ec94606a. Tidligere fast venstremeny er fjernet. Appen får lyst, kompakt merke-/firmatoppfelt, mørk horisontal hovednavigasjon og Alle områder med alle autoriserte eksisterende innganger. Primærmenyen følger arbeidsrekkefølgen i referansen og løser hver handling mot den aktuelle native React-knappen; ingen ny navigasjons- eller tilgangsstate. Prosjekt og mobil beholder dagens navigasjonsmekanikk. Systemadmin har de tre åpne gruppene fra skissen, alle ni innganger og ingen gjentatt oversiktsgrid. I et valgt adminområde er de samme ni byttemulighetene kompakte, mens besøkte originalpaneler forblir montert. Firmaadmin, Min side og Startside bruker åpne flater og samme typografi/knappemønster. Ingen prototype-data, eksempelhandlinger, lagring eller tilgang kopieres inn i appen. 29.10: Brukerens prioriterte oppgaver samles i én felles Startside-komponent for mobil/desktop i stedet for dobbelt oppgavevelger/hero. Tilgjengelige moduler styres av eksisterende moduleAccess-hendelser og aktuelle kontekstprops. Toppmenyen prioriterer salg, varer og prosjekter. Verktøy og maler åpner et native dialog-panel fra høyre; det gjenbruker eksisterende callbacks, kan utvides og avsluttes uten å remounte arbeidsflaten. Tilbudsmaler nås gjennom eksisterende editor, ikke en konkurrerende maldatabase. Sjekklistemaler har en engangsforespørsel bundet til bruker/firma og kontrollert mot fersk KS/HMS-kontekst; den forbrukes etter behandling og overstyrer ikke ulagret rutineutkast. Generelt tilbud samler sekundære vareidentitetsfelter og filopplasting i native details uten å fjerne felter eller endre priser, filer, kladd eller handlers.",
+  "verification": "Utgangspunkt 11bd807931f17d235f48f83214de6e900f61290c med grønn full CI #744. Relevante eksisterende navigasjons-, mobile shell-, sales editor-, recovery-, katalog- og sjekklistekontroller er lest. Originalskissens høyrepanel er lest fra uendret kilde. JS-syntaks, diff mot main og scope-selvtest kjøres lokalt; full uendret PR Core Safety og innlogget Preview kontrollerer den nye kandidaten. Eksakte SHA, CI-resultat og faktisk skynett-test føres i PR295. Ingen app-TEST OK eller produksjonsendring.",
   "documentation": {
     "help": {
       "required": true,
-      "reason": "Hjelp beskriver toppnavigasjon/Alle områder, Systemadmins tre grupper, bevart fullskjerm og Firmaadmins faktiske innganger."
+      "reason": "Nye faktiske innganger på Startside, Verktøy og maler, Sjekklistemaler og kompakte varefelter forklares."
     },
     "architecture": {
       "required": false,
-      "reason": "Presentasjonsadapteren gjenbruker samme live native navigasjonskilde og callbacks som eksisterende desktopmeny. Ingen ny state, datamodell, lagring, tilgang eller arkitektur innføres."
+      "reason": "Ingen ny datamodell, backend, tilgang eller lagring. Høyrepanelet er en native dialog med eksisterende callbacks. Sjekklistesnarveien er en transient, bruker-/firmabundet engangsforespørsel, kontrollert mot eksisterende fersk modulstate og deretter konsumert."
     },
     "setup": {
       "required": false,
       "reason": "Ingen nye avhengigheter, konfigurasjon, miljøvariabler eller installasjonssteg."
     },
     "module": {
-      "required": false,
-      "reason": "Kun presentasjon. Eksisterende callbacks, modul-/firmatilgang, invitasjon, automatisk lagring og alle ni adminområder beholdes. Ingen ny modulkontrakt."
+      "required": true,
+      "reason": "Dokumenterer engangsforespørsel og bevaring av skjema/kladd i felles arbeidsverktøy; eksisterende modul-API-er og datalagring er ellers uendret."
     }
   }
 }

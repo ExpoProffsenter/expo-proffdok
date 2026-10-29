@@ -171,3 +171,39 @@ body:has([data-expo-app-shell="true"]){min-width:0;background:#f4f7f8}
  [data-expo-app-shell="true"]>header>.head{grid-template-columns:110px minmax(0,1fr)!important}
  [data-expo-app-shell="true"]>header>.head>div:first-child{width:110px!important;height:44px!important;flex:0 0 110px!important}
 }
+
+/* Home task overview: one chooser, real follow-ups, restrained status. */
+[data-expo-app-shell="true"]:has(.pd-home-workspace)>main{max-width:1800px}
+[data-expo-app-shell="true"]:has(.pd-home-workspace) .home-followups{max-width:none;margin:0 0 18px;border-radius:8px}
+[data-expo-app-shell="true"]:has(.pd-home-workspace) .home-followups-toggle{min-height:62px;border-radius:8px}
+[data-expo-app-shell="true"]:has(.pd-home-workspace) .home-followups-copy{display:flex;align-items:center;flex-wrap:wrap;gap:6px 16px}
+[data-expo-app-shell="true"] .desktopNoProjectWelcome>.guideGrid{display:flex;flex-wrap:wrap;gap:8px 28px;margin:0 0 16px!important;padding:0 0 16px;border-bottom:1px solid #d7e4ea}
+[data-expo-app-shell="true"] .desktopNoProjectWelcome>.guideGrid>.guideCard{display:flex;align-items:baseline;gap:8px;padding:0;background:transparent;border:0;border-radius:0}
+[data-expo-app-shell="true"] .desktopNoProjectWelcome>.guideGrid>.guideCard b{font-size:18px}
+[data-expo-app-shell="true"] .desktopNoProjectWelcome>.guideGrid>.guideCard span{font-size:16px;color:#4e6876}
+[data-expo-app-shell="true"] .mobileProjectChooser>.mobileHomeStats{gap:8px}
+@media(min-width:1181px){
+ [data-expo-app-shell="true"]>header>nav.expoDesktopPrimaryNav{gap:20px!important}
+ [data-expo-app-shell="true"]:has(.pd-home-workspace)>header>.head>button:nth-of-type(2){display:none}
+}
+/* Sales forms retain all fields, calculations and callbacks in a denser layout. */
+[data-expo-app-shell="true"] .store-product-identity-compact{display:grid;gap:8px}
+[data-expo-app-shell="true"] .store-product-extra{padding:0;border:0;background:transparent;min-width:0}
+[data-expo-app-shell="true"] .store-product-extra>summary{min-height:44px;align-content:center;color:#48616c;font-size:16px;cursor:pointer}
+[data-expo-app-shell="true"] .store-product-extra>.store-product-grid{grid-template-columns:repeat(3,minmax(0,1fr));padding:8px 0 12px}
+[data-expo-app-shell="true"] .store-product-extra .store-product-link{grid-column:auto}
+[data-expo-app-shell="true"] .store-product-body{gap:8px;padding:12px}
+[data-expo-app-shell="true"] .store-product-container{border-radius:9px}
+[data-expo-app-shell="true"] .store-product-container.is-open{border-width:1px;box-shadow:none}
+[data-expo-app-shell="true"] .store-product-body .store-line-total{min-height:44px;padding:7px 10px}
+[data-expo-app-shell="true"] .store-product-body :is(input,select,button){min-height:44px;font-size:16px}
+[data-expo-app-shell="true"] .store-product-body .sales-field>span{font-size:16px}
+[data-expo-app-shell="true"] .store-product-body .sales-field{gap:5px}
+[data-expo-app-shell="true"] .store-product-body .pro-store-catalog-lookup{margin:0;padding:10px;border-radius:7px}
+[data-expo-app-shell="true"] :is(.sales-offer-template-panel,.store-complete-template-inline){padding:16px;border-radius:9px;box-shadow:none;background:#fff;border:1px solid #d5e4eb}
+[data-expo-app-shell="true"] :is(.sales-offer-template-panel,.store-complete-template-inline)>h2{font-size:22px}
+[data-expo-app-shell="true"] :is(.sales-offer-template-panel,.store-complete-template-inline) .sales-template-controls{grid-template-columns:minmax(180px,1fr) auto!important;align-items:end}
+@media(max-width:700px){
+ [data-expo-app-shell="true"] .store-product-extra>.store-product-grid{grid-template-columns:1fr}
+ [data-expo-app-shell="true"] :is(.sales-offer-template-panel,.store-complete-template-inline) .sales-template-controls{grid-template-columns:1fr!important}
+}

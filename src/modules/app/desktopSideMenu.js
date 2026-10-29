@@ -353,7 +353,7 @@ function syncPrimaryNavigation(sourceNav, sourceButtons, shell, projectWorkspace
   }
   if (primary.previousElementSibling !== sourceNav) sourceNav.after(primary);
   if (shell.bar.previousElementSibling !== primary) primary.after(shell.bar);
-  const order = ['Startside','Min side','Min profil / e-postvalg','Prosjektliste','Boligprosjekter','HR','KS/HMS','Befaring/Tilbud','Prissøk','Varesøk'];
+  const order = ['Startside','Befaring/Tilbud','Prissøk','Varesøk','Varebestilling','Prosjektliste','Boligprosjekter','HR','KS/HMS','Min side','Min profil / e-postvalg'];
   const targets = order.map(label => sourceButtons.find(button => cleanLabel(button.textContent) === label)).filter(Boolean);
   const signature = targets.map(button => `${cleanLabel(button.textContent)}:${button.classList.contains('on')}:${button.disabled}`).join('|');
   if (primary.dataset.sourceSignature === signature) return;

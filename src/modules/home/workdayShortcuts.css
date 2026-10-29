@@ -1,0 +1,16 @@
+.pd-home-workspace{margin:0 0 22px;min-width:0;color:#172f35}
+.pd-home-heading{display:flex;align-items:center;justify-content:space-between;gap:20px;margin:0 0 22px}
+.pd-home-heading h2{font-size:32px;font-weight:600;line-height:1.2;letter-spacing:-.8px;margin:0 0 8px}
+.pd-home-heading p{font-size:16px;color:#4e6876;margin:0;line-height:1.5}
+.pd-home-heading>button{display:inline-flex;align-items:center;gap:10px;white-space:nowrap}
+.pd-home-tasks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.pd-home-task{padding:19px 20px 10px;border:1px solid #d5e4eb;border-radius:9px;background:#fff;min-width:0;display:flex;flex-direction:column}
+.pd-home-task-title{display:flex;align-items:center;gap:11px}.pd-home-task-title>svg{color:#007681;flex-shrink:0}
+.pd-home-task h3{font-size:18px;font-weight:600;margin:0;line-height:1.35}
+.pd-home-task p{font-size:16px;line-height:1.5;color:#4e6876;margin:12px 0;flex:1}
+.pd-home-task-actions{display:flex;align-items:center;flex-wrap:wrap;gap:0 16px;border-top:1px solid #e7edef;padding-top:5px}
+.pd-home-task-actions>button{display:inline-flex;align-items:center;justify-content:flex-start;gap:9px;min-height:44px;font-size:16px;font-weight:500;padding:8px 0;background:transparent;border:0;border-radius:3px;box-shadow:none;color:#48616c;text-align:left;white-space:normal}
+.pd-home-task-actions>.pd-task-main{color:#007681;font-weight:600}.pd-home-task-actions>button:hover{color:#004f59;background:transparent;text-decoration:underline;transform:none}
+.pd-home-workspace button:focus-visible{outline:3px solid #089aa3;outline-offset:3px}
+@media(max-width:1000px){.pd-home-tasks{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){.pd-home-tasks{grid-template-columns:1fr;gap:12px}.pd-home-heading{align-items:flex-start}.pd-home-heading h2{font-size:28px}.pd-home-task{padding:16px 16px 8px}.pd-home-heading>button{padding:8px;font-size:16px}}
