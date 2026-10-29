@@ -150,14 +150,6 @@ export default async function ({
   s = await mine();
   eq(s.count, priorTaskCount + 3);
   eq(
-    s.items
-      .filter((x) => x.root_id === root)
-      .map((x) => x.kind)
-      .sort(),
-    ["deviation", "progress", "round"],
-  );
-  eq(s.items.filter((x) => x.root_id === root).length, 3);
-  eq(
     (await mine({ selected_id: task, selected_kind: "progress" })).selected.id,
     task,
   );
@@ -168,6 +160,17 @@ export default async function ({
     page = page.next ? await mine({ after: page.next }) : null;
   } while (page);
   eq(all.length, priorTaskCount + 3, "pagination includes all own tasks");
+  // Due-date ordering can put today's deviation beyond the first 100 tasks.
+  // Verify the same three assigned kinds after the existing full pagination.
+  eq(
+    all
+      .filter((x) => x.root_id === root)
+      .map((x) => x.kind)
+      .sort(),
+    ["deviation", "progress", "round"],
+  );
+  eq(all.filter((x) => x.root_id === root).length, 3);
+
   eq(
     new Set(all.map((x) => x.kind + ":" + x.id)).size,
     all.length,
@@ -292,3 +295,4 @@ export default async function ({
   await rejects(() => mine(), "42501");
   await actor(manager);
 }
+
