@@ -55,3 +55,11 @@
  .bolig-building-panel>.bolig-building-breadcrumb{min-height:44px;align-items:center}
  .bolig-building-panel>.bolig-workspace-toolbar{clear:both}
 }
+
+/* Keep address and real unit targets in view instead of stretching a decorative photo. */
+.bolig-selected-address{display:flex;gap:8px 20px;flex-wrap:wrap;align-items:center;margin:12px 0;scroll-margin-top:150px;font-size:16px}
+.bolig-selected-address>span{display:flex;align-items:center;gap:7px;overflow-wrap:anywhere;min-width:0}
+.bolig-selected-address:focus-visible{outline:3px solid #087b85;outline-offset:4px}
+.bolig-building-panel .bolig-connected-scene .bolig-photo-building{aspect-ratio:auto;min-height:240px;padding-bottom:24px}
+.bolig-building-panel .bolig-connected-scene .bolig-photo-building .bolig-building-floors{margin-top:12px}
+.bolig-building-panel .bolig-connected-scene .bolig-photo-building>.bolig-facade-photo{object-fit:cover}

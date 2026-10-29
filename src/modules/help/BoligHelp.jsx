@@ -36,7 +36,8 @@ export function BoligHelp() {
         Start i prosjektoversikten. Velg «Bygg nytt prosjekt», fortsett en
         kladd, eller åpne et av firmaets prosjekter. «Prosjektoversikt» tar deg
         tilbake uten å fjerne usendt arbeid. En ny åpning starter her.
-        «Hovedside» viser bygg og boliger i prosjektet du har valgt.
+        «Hovedside» viser bygg og boliger i prosjektet du har valgt. Velg et bygg for å sette
+        byggnavn og adresser i fokus over fasaden. Boligknappene beholder lesbar størrelse.
       </p>
       <details>
         <summary>Beboerportal – oversikt og neste steg</summary>

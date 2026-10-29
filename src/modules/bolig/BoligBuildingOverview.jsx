@@ -318,7 +318,16 @@ export default function BoligBuildingOverview({
     segmentStart,
     segmentStart + capacity,
   );
+  const addressRef = useRef(null), focusChosenBuilding = useRef(false);
+  // Only explicit building selection moves focus; refresh/recovery never does.
+  useEffect(() => {
+    if (!focusChosenBuilding.current || allBuildings || pickerOpen) return;
+    focusChosenBuilding.current = false;
+    addressRef.current?.focus({ preventScroll: true });
+    addressRef.current?.scrollIntoView({ block: "start", behavior: "instant" });
+  }, [selectedBlock?.id, allBuildings, pickerOpen, presentation]);
   const chooseBlock = (id) => {
+    focusChosenBuilding.current = true;
     setPresentation("facade");
     setStatusFilter("all");
     setBlockId(id);
@@ -934,6 +943,10 @@ export default function BoligBuildingOverview({
             </div>
           )}
 
+          <div className="bolig-selected-address" ref={addressRef} tabIndex={-1} role="region" aria-label="Valgt bygg og adresse">
+            <strong>{selectedBlock.name}</strong>
+            <span><MapPin size={17} aria-hidden="true" />{shownEntrances.map(e => e.address || "Adresse legges til senere").join(" · ")}</span>
+          </div>
           <BoligVisualWorkspace context={context} root={record.root} scope={selectedBlock.id} kind="facade"
             selected={selectGroup ? selectedGroupUnits : unitId}
             statusFor={id => unitStatus(units.find(u=>u.id===id) || {}, statuses?.[id], layer)}
@@ -960,15 +973,7 @@ export default function BoligBuildingOverview({
                       minWidth: Math.max(
                         240,
                         Math.max(...(e.counts || [4])) * 62 + 80,
-                        // Keep the complete image proportional while leaving room
-                        // for every real floor and a readable, clickable unit target.
-                        Math.ceil(
-                          (floors.length * 82 + 140) /
-                            (2 / 3 -
-                              (["house", "duplex"].includes(selectedBlock.building_type)
-                                ? 0.25
-                                : selectedBlock.building_type === "multi" ? 0.17 : 0)),
-                        ),
+
                       ),
                       "--row-min-width": `${Math.max(...(e.counts || [4])) * 62 - 10}px`,
                     }}
