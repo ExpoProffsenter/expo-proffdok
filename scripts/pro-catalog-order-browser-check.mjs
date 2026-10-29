@@ -2,8 +2,10 @@ import assert from 'node:assert/strict';import fs from 'node:fs';import os from 
 const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'./qa/node_modules/playwright/index.mjs');
 const root=process.cwd(),temp=fs.mkdtempSync(path.join(os.tmpdir(),'pro-order-browser-'));let browser,count=0;const eq=(a,b,m)=>{assert.deepEqual(a,b,m);count++;};
 
+// Normalize only Chromium numerical noise (e.g.43.99997px for computed44px).
+// The44px target remains; actual40/42px controls still fail.
 async function assertDesignLayout(page,label){
- const layout=await page.locator('.pro-catalog-orders').evaluate(el=>({count:[...el.querySelectorAll('button')].filter(b=>b.getClientRects().length).length,small:[...el.querySelectorAll('button,.pro-order-quantity input')].filter(b=>b.getClientRects().length).map(b=>({name:b.getAttribute('aria-label')||b.textContent.trim(),width:b.getBoundingClientRect().width,height:b.getBoundingClientRect().height})).filter(b=>b.width<44||b.height<44),overflow:[el,...el.querySelectorAll('.pro-order-cart,.pro-order-preview,.pro-order-fields')].filter(b=>b.getClientRects().length&&b.scrollWidth>b.clientWidth+1).map(b=>b.className)}));
+ const layout=await page.locator('.pro-catalog-orders').evaluate(el=>({count:[...el.querySelectorAll('button')].filter(b=>b.getClientRects().length).length,small:[...el.querySelectorAll('button,.pro-order-quantity input')].filter(b=>b.getClientRects().length).map(b=>({name:b.getAttribute('aria-label')||b.textContent.trim(),width:b.getBoundingClientRect().width,height:b.getBoundingClientRect().height})).filter(b=>b.width+0.001<44||b.height+0.001<44),overflow:[el,...el.querySelectorAll('.pro-order-cart,.pro-order-preview,.pro-order-fields')].filter(b=>b.getClientRects().length&&b.scrollWidth>b.clientWidth+1).map(b=>b.className)}));
  eq(layout.count>0,true,'visible native order actions measured '+label);
  eq(layout.small,[],'order buttons and quantity targets are at least 44px '+label);
  eq(layout.overflow,[],'no internal order overflow '+label);

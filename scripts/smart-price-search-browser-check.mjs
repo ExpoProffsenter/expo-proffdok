@@ -6,8 +6,10 @@ const output=(Array.isArray(result)?result[0]:result).output,js=output.find(x=>x
 
 // Measure the actual design cascade, including the app wrapper. The RPC/scanner
 // fixtures remain synthetic; no network transport or camera access is enabled.
+// Normalize only Chromium numerical noise (e.g.43.99997px for computed44px).
+// The44px target remains; actual40/42px controls still fail.
 async function assertDesignLayout(page,label){
- const layout=await page.locator('.priceSearchInlineView').evaluate(el=>({count:[...el.querySelectorAll('button')].filter(b=>b.getClientRects().length).length,small:[...el.querySelectorAll('button')].filter(b=>b.getClientRects().length).map(b=>({name:b.getAttribute('aria-label')||b.textContent.trim(),width:b.getBoundingClientRect().width,height:b.getBoundingClientRect().height})).filter(b=>b.width<44||b.height<44),overflow:[el,...el.querySelectorAll('.priceSearchCard,.priceSearchResults,.priceSearchSelected,.priceSearchSavedLists')].filter(b=>b.getClientRects().length&&b.scrollWidth>b.clientWidth+1).map(b=>b.className)}));
+ const layout=await page.locator('.priceSearchInlineView').evaluate(el=>({count:[...el.querySelectorAll('button')].filter(b=>b.getClientRects().length).length,small:[...el.querySelectorAll('button')].filter(b=>b.getClientRects().length).map(b=>({name:b.getAttribute('aria-label')||b.textContent.trim(),width:b.getBoundingClientRect().width,height:b.getBoundingClientRect().height})).filter(b=>b.width+0.001<44||b.height+0.001<44),overflow:[el,...el.querySelectorAll('.priceSearchCard,.priceSearchResults,.priceSearchSelected,.priceSearchSavedLists')].filter(b=>b.getClientRects().length&&b.scrollWidth>b.clientWidth+1).map(b=>b.className)}));
  eq(layout.count>0,true,'visible native buttons measured '+label);
  eq(layout.small,[],'central actions are at least 44px '+label);
  eq(layout.overflow,[],'no internal horizontal overflow '+label);
