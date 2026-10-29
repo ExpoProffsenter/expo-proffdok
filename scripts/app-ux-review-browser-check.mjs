@@ -104,3 +104,7 @@ try{
 }finally{await browser?.close();await new Promise(r=>server.close(r));fs.rmSync(tmp,{recursive:true,force:true});}
 
 await import("./people-workspace-browser-check.mjs");
+await import("./home-followup-036-browser-check.mjs");
+await import("./personal-workspace-036-browser-check.mjs");
+await import("./hr-workspace-036-browser-check.mjs");
+await import("./kshms-workspace-036-browser-check.mjs");

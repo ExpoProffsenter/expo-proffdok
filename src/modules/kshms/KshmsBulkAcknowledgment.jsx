@@ -61,9 +61,12 @@ export default function KshmsBulkAcknowledgment({data,companyId,userId,busy,onBu
  if(!scopeValid)return null;
  return <section className="ks-card ks-bulk-ack" aria-label="Samlet bekreftelse av egne rutiner">
   <h3>Bekreft alle rutiner ett sted</h3>
-  <p>Du kan bekrefte dine tildelte rutiner samlet etter at du har lest og forstått dem. Du kan også åpne og bekrefte én rutine om gangen. Samme mulighet gjelder medarbeider, KS/HMS-ansvarlig og firmaadmin.</p>
-  <p>Samlet bekreftelse gjelder alle aktive utgaver som er tildelt deg og mangler din bekreftelse, også utgaver der ny bekreftelse er valgfri. Søket i håndboka begrenser ikke listen. Tidligere bekreftelser beholdes.</p>
+  <p>Les rutinene først. Bekreft deretter din egen gjennomgang.</p>
   {!snapshot&&<button type="button" disabled={busy||!pending.length} onClick={open}>{pending.length?`Se og bekreft alle ${pending.length} rutineutgaver`:'Alle dine aktive rutineutgaver er bekreftet'}</button>}
+  <details className="ks-handbook-explanation"><summary>Om samlet bekreftelse</summary>
+   <p>Du kan bekrefte dine tildelte rutiner samlet etter at du har lest og forstått dem. Du kan også åpne og bekrefte én rutine om gangen. Samme mulighet gjelder medarbeider, KS/HMS-ansvarlig og firmaadmin.</p>
+   <p>Samlet bekreftelse gjelder alle aktive utgaver som er tildelt deg og mangler din bekreftelse, også utgaver der ny bekreftelse er valgfri. Søket i håndboka begrenser ikke listen. Tidligere bekreftelser beholdes.</p>
+  </details>
   {snapshot&&<div className="ks-selection-review ks-flow-target" ref={confirmationRef} tabIndex={-1} aria-labelledby={`${id}-heading`}>
    <h4 id={`${id}-heading`}>Din bekreftelse gjelder disse {snapshot.length} rutineutgavene</h4>
    <p>Kontroller hele listen. Åpne rutiner du trenger å lese, og spør ansvarlig hvis noe er uklart. Du bekrefter på din egen bruker.</p>

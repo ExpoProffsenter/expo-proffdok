@@ -241,7 +241,7 @@ export default function SalesHomeFollowUp({
   if (error) {
     return (
       <section
-        className="item"
+        className="item pd-sales-followup pd-sales-followup-error"
         style={{
           marginTop: 16,
           borderColor: "#fde68a",
@@ -263,7 +263,7 @@ export default function SalesHomeFollowUp({
 
   return (
     <section
-      className="item"
+      className="item pd-sales-followup"
       style={{
         marginTop: 16,
         borderColor: "#fed7aa",
@@ -278,10 +278,11 @@ export default function SalesHomeFollowUp({
         </p>
       </div>
 
-      <div style={{ display: "grid", gap: 10 }}>
+      <div className="pd-sales-followup-list" style={{ display: "grid", gap: 10 }}>
         {visibleItems.map((item) => (
           <article
             key={item.id}
+            className="pd-sales-followup-row"
             style={{
               padding: compact ? "11px 12px" : "13px 14px",
               border: "1px solid #fed7aa",
@@ -290,6 +291,7 @@ export default function SalesHomeFollowUp({
             }}
           >
             <div
+              className="pd-sales-followup-content"
               style={{
                 display: "flex",
                 gap: 12,
@@ -298,7 +300,7 @@ export default function SalesHomeFollowUp({
                 flexWrap: "wrap",
               }}
             >
-              <div style={{ minWidth: 0, flex: "1 1 260px" }}>
+              <div className="pd-sales-followup-identity" style={{ minWidth: 0, flex: "1 1 260px" }}>
                 <b style={{ display: "block", fontSize: compact ? 15 : 16 }}>
                   {item.title}
                 </b>
@@ -311,6 +313,7 @@ export default function SalesHomeFollowUp({
                     .join(" · ")}
                 </small>
                 <span
+                  className="pd-sales-followup-age"
                   style={{
                     display: "inline-flex",
                     alignItems: "center",

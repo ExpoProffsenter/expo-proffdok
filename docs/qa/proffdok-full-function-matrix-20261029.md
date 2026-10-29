@@ -8,7 +8,7 @@ Denne statusen presiserer eldre inventar og testoppsummeringer nedenfor. De 36 m
 
 - Originalskisse 03.6 er uendret kilde `f67f236784b4de9a92f52c5b74b67335ec94606a`, Sites-prosjekt `appgprj_6ae13253b87c8191ba560175fcd6c3d9`. Skissen skal ikke endres for å få appen til å se riktig ut i en sammenligning.
 - Senere uttrykkelige brukeravklaringer skal følge referansen. Kenneth prioriterte seks arbeidsområder og svarte 29.10 «Mye bedre, bortsett fra nederste delen. Kjør videre» etter bildet av den nye Startsiden. **Seksområdestrukturen beholdes.** Den skal ikke rulles tilbake til conceptHome bare fordi denne delen av skissen har en annen oppbygning. Nederste oppfølgingsdel er et eget avvik.
-- Behold innloggingsbildet, firmaenes logoer, større/tydelig tekst, god breddeutnyttelse og alle eksisterende autoriserte funksjoner. Valgfri firmaadminstyrt timeføring er et funksjonskrav, ikke noe styling kan erklære gjennomført.
+- Behold innloggingsbildet, firmaenes logoer, større/tydelig tekst, god breddeutnyttelse og alle eksisterende autoriserte funksjoner. Firmaadminstyrt timeføring finnes allerede i Timeoppsett og er avslått som standard. Det åpne kravet er faktisk off→on→off-verifikasjon og samsvar mellom lagret aktivering og synlige personlige innganger; styling lukker ikke dette.
 
 ### Hva nattkjøringen faktisk gjorde
 
@@ -38,6 +38,10 @@ Dette konkretiserer den eksisterende UX/UI-listen; det er ingen ny produktdesign
 6. Ved chatbrudd leses CURRENT_RELEASE_STATUS, denne matrisen og fersk PR/branch før videre arbeid. Start ved første åpne brukerreise; ikke lag ny designretning eller gjenta uendret grønn QA. En innloggingsblokk skal stå som blokkering, ikke omskrives til bestått innlogget prøve.
 
 Appgrunnlag ved denne statuskontrollen: designbranch `5680c9bf4f5cff9cdb001374683cb044b07a9873`, med tidligere fullgrønn kandidat `dfb7656c` / CI771. Nyere HR/KS/HMS-kode har eget testgrunnlag; denne dokumentasjonskontrollen attesterer ikke dens visuelle samsvar med hele skissen. Gjeldende kandidat og CI føres i PR295. Neste implementasjonspakke må avgrenses mot åpne brukerreiser ovenfor før nye appendringer.
+
+### Ny strukturell pakke etter statuspresiseringen
+
+Startoppfølging, Min side, prosjektliste, HR og KS/HMS har nå reelle strukturelle endringer og permanente komponentprøver. Dette erstatter den tidligere rene flatejusteringen for disse inngangene. Brukerens seksområdestruktur og originalskissen beholdes. [Handoff med konkret bevis og neste arbeid](DESIGN_036_HANDOFF_20261029.md) og [145 navngitte kontrollreiser](proffdok-journey-review-20261029.md) skiller faktisk test fra manglende dekning. **Pakken lukker ikke totalgjennomgangen.** Eksakt kandidat, CI og deploy finnes i PR295.
 
 ## Historisk inventar og tidligere bevis
 
@@ -90,7 +94,7 @@ Fullt filinventar, navngitte kontroller og CI-kommandoer finnes i JSON-filen ved
 
 Bolig: en ny fixture med 16 flerfamiliehus og seks boliger per bygg kontrollerer adressefokus etter byggvalg, synlighet og høyde ved 1366/768/390/320. Eksisterende fem boligtypeprøver beholdes. Lokal build av PR295 er grønn; lokal Bolig-grensekontroll gir 55 assertions. Chromium-nedlasting lokalt ga ugyldig arkiv; ingen lokal nettlesertest er ført som bestått.
 
-Åpne begrensninger: fysisk mobil/Safari, alle rollevarianter manuelt, reell transport/mottak, full visuell detaljgjennomgang av alle underdialoger og nye PDF/ZIP fra alle portaler. Rutineutsending forblir deaktivert. Valgfri timeføring er ikke implementert gjennom styling.
+Åpne begrensninger: fysisk mobil/Safari, alle rollevarianter manuelt, reell transport/mottak, full visuell detaljgjennomgang av alle underdialoger og nye PDF/ZIP fra alle portaler. Rutineutsending forblir deaktivert. Timeoppsett har eksisterende valgfri aktivering; personlig inngangsvisning og av/på-reisen er fortsatt en egen åpen kontroll.
 
 Fast ramme-Preview: https://expo-proffdok-git-design01-app-ramme-20261028-ringside.vercel.app/
 

@@ -47,7 +47,9 @@ try{
   await act(async()=>w.__render('page',{context:null,userId:undefined,authUser:null,supabaseClient:w.__client}));
   assert(!doc.querySelector('.personal-page'),'anonymous loading must not crash or expose Min side');
   await act(async()=>w.__render('page',props()));
-  assert.equal(doc.querySelectorAll('.personal-card').length,5,'progress plan card joins time and all three preserved overview cards');
+  // 03.6 reorganizes the cards into daily work and secondary tools; preserve native entries semantically.
+  for(const selector of ['.personal-plans-card','.time-personal-card','.personal-card-handbook','.personal-card-hr','.personal-card-profile'])assert(doc.querySelector(selector),'native entry preserved: '+selector);
+  assert(button('Mine planer'),'explicit plans navigation remains available');
   assert(button('Mine timer'),'employee time entry is a personal route');
   assert.equal(doc.querySelectorAll('.personal-upcoming').length,2,'available HR types are grouped');
   assert.equal(doc.querySelectorAll('.personal-status').length,2);
@@ -60,13 +62,13 @@ try{
   lateList={};await act(async()=>w.dispatchEvent(new w.Event('focus')));assert(!doc.querySelector('.hr-detail'),'background payload clears immediately');const resumeList=lateList.resolve;lateList=null;await act(async()=>resumeList({data:{context,employees:structuredClone(employees),next:null}}));assert(doc.querySelector('.hr-detail'));
   Object.defineProperty(doc,'visibilityState',{value:'hidden',configurable:true});await act(async()=>doc.dispatchEvent(new w.Event('visibilitychange')));assert(!doc.querySelector('.hr-detail'));assert(!doc.querySelector('.hr-employee'));Object.defineProperty(doc,'visibilityState',{value:'visible',configurable:true});await act(async()=>doc.dispatchEvent(new w.Event('visibilitychange')));assert(doc.querySelector('.hr-detail'),'background return requires fresh reads and retains only chosen ID');
   revoked=true;await act(async()=>w.dispatchEvent(new w.Event('focus')));assert(!doc.querySelector('.hr-employee'));assert(!doc.querySelector('.hr-detail'));revoked=false;
-  await act(async()=>w.__render('page',{...props(),context:{...personal,company_id:'b'},hrContext:{...context,company_id:'b'},kshmsContext:{...context,company_id:'b'}}));assert.equal(button('Oversikt').getAttribute('aria-pressed'),'true','company switch resets old record selection');
+  await act(async()=>w.__render('page',{...props(),context:{...personal,company_id:'b'},hrContext:{...context,company_id:'b'},kshmsContext:{...context,company_id:'b'}}));assert.equal(button('I dag').getAttribute('aria-pressed'),'true','company switch resets old record selection');
   await act(async()=>w.__render('page',props()));
   await click('Profil og e-post');assert.equal(input('Fullt navn').value,'QA Medarbeider');assert.equal(input('E-postadresse').readOnly,true);
   assert(!doc.querySelector('input[autocomplete="street-address"]'),'closed private gate must not collect data');
   await write('Fullt navn','QA Endret navn');await write('Mobilnummer','11223344');
   const optIn=doc.querySelector('input[type=checkbox]');assert(optIn);await act(async()=>optIn.click());assert(optIn.checked);
-  await click('Oversikt');await click('Personalhåndbok');assert(doc.body.textContent.includes('Handbook personal route'));
+  await click('I dag');await click('Personalhåndbok');assert(doc.body.textContent.includes('Handbook personal route'));
   await click('Profil og e-post');assert.equal(input('Fullt navn').value,'QA Endret navn');assert(optIn.checked,'email draft survives navigation');
   await act(async()=>w.__render('page',{...props(),context:null}));assert.equal(input('Fullt navn').value,'QA Endret navn');assert(optIn.checked,'email draft survives temporary access refresh');
   await act(async()=>w.__render('page',props()));await click('Profil og e-post');

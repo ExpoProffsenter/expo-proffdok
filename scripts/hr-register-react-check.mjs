@@ -70,9 +70,13 @@ try{
   await act(async()=>window.__render('help',{authUser:{id:'admin'},helpAccess:{userId:'admin',moduleKeys:['sales']},hrContext:{user_id:'admin',available:true}}));if(helpRoot('HR').getAttribute('aria-expanded')!=='true')await act(async()=>helpRoot('HR').click());assert(window.document.body.textContent.includes('Før timer øverst på Startsiden'),'ordinary authorized HR user receives mobile time guidance');
   const salesHelp=buttons().find(b=>b.querySelector('b')?.textContent.includes('Befaring / Våtromstilbud'));assert(salesHelp);await act(async()=>salesHelp.click());assert(window.document.body.textContent.includes('Publiserte og aksepterte tilbudsversjoner'));assert.equal(window.document.querySelectorAll('.help-topic-chapter').length,0);
   await act(async()=>window.__render('nav',{}));
-  assert.deepEqual([...window.document.querySelectorAll('[role=group]')].map(g=>g.getAttribute('aria-label')),['Daglig arbeid','Mine rutiner','Forvaltning']);
-  assert([...window.document.querySelectorAll('.ks-tabs button')].every(button=>button.querySelector('svg[aria-hidden=true]')),'All existing KS screens need a visible decorative icon without replacing the accessible label');
-  assert.equal(button('Håndbok').getAttribute('aria-pressed'),'true');await click('Avvik/RUH');assert.equal(button('Avvik/RUH').getAttribute('aria-pressed'),'true');assert.equal(button('Håndbok').getAttribute('aria-pressed'),'false');
+  // The same three native destination groups now live in the contextual tools
+  // drawer. Check the full set and controlled destination, not the old grid.
+  assert.deepEqual([...window.document.querySelectorAll('.pd-workspace-drawer-body>section>h3')].map(g=>g.textContent),['Daglig arbeid','Mine rutiner','Forvaltning']);
+  const ksDestinations=[...window.document.querySelectorAll('.pd-workspace-tool-action')];assert.equal(ksDestinations.length,13,'All original KS destinations remain in the contextual drawer');
+  assert(ksDestinations.every(button=>button.querySelector('svg[aria-hidden=true]')),'All existing KS destinations keep a decorative icon without replacing the accessible label');
+  const ksSelection=()=>window.document.querySelector('[aria-label="Velg KS/HMS-visning"]');
+  assert.equal(ksSelection().value,'handbook');await click('Avvik/RUH');assert.equal(ksSelection().value,'deviations');assert.equal(button('Avvik og RUH').getAttribute('aria-current'),'page');assert.equal(button('Rutiner og håndbok').hasAttribute('aria-current'),false);
   await act(async()=>window.__render('hr',{context}));
   assert.equal(window.document.querySelectorAll('.hr-workspace-card').length,5);assert(window.document.querySelector('.module-heading'));assert(button('Åpne samtalemaler').disabled);
   await click('Åpne sykefravær');assert(window.document.querySelector('.hr-sick-leave').open);assert.equal(window.document.activeElement,window.document.querySelector('.hr-sick-leave'));assert(button('Tilpass sykefraværsmal').disabled);

@@ -22,6 +22,7 @@ const ks={context,settings:{revision:1,trades:['vvs'],responsible_user_id:u,acti
 window.qa={calls:[],mode:'hr'};
 window.rpc=async(name,args)=>{window.qa.calls.push(name);const data={context,content_enabled:false};
  if(name==='kshms_get_state')return structuredClone(ks);
+ if(name==='kshms_execution_tasks')return {company_id:c,user_id:u,count:0,overdue:0,items:[]};
  if(name==='hr_foundation_state')return {...data,settings:{revision:1,enabled:true,purpose:'QA registerformål',legal_basis:'QA vurdert grunnlag',review_on:'2027-01-01'},members:ks.members,next:null};
  if(name==='hr_employee_list')return {...data,employees,next:null};
  if(name==='hr_purge_status')return {...data,receipts:[],next:null};
@@ -59,7 +60,10 @@ try{
    await page.keyboard.press('Escape');await page.getByRole('dialog').waitFor({state:'hidden'});eq(await page.getByLabel('Søk etter medarbeider').inputValue(),'QA Medarbeider','search survives employee dialog');
    await page.getByText('Verktøy og oppsett',{exact:true}).click();await page.getByRole('button',{name:'Åpne oppsett',exact:true}).click();const purpose=page.getByLabel('Formål med registeret',{exact:true});await purpose.fill('Behold dette usendte oppsettet');await page.setViewportSize({width:390,height:568});eq(await purpose.inputValue(),'Behold dette usendte oppsettet','setup draft survives responsive layout');
   }else{
-   const nav=page.getByRole('navigation',{name:'KS/HMS visning'});const names=await nav.getByRole('button').allTextContents();eq(names.length>=10,true,'authorized KS/HMS destinations retained');
+   const nav=page.getByRole('navigation',{name:'KS/HMS visning'});const names=await nav.getByRole('button').allTextContents();eq(names,['Daglig arbeid','Rutiner og håndbok','Avvik og RUH','Forvaltning'],'approved KS/HMS work phases');
+   await page.setViewportSize({width:390,height:568});
+   const nativeIds=await page.getByRole('combobox',{name:'Velg KS/HMS-visning',exact:true}).locator('option').evaluateAll(nodes=>nodes.map(node=>node.value).filter(Boolean));
+   eq(nativeIds,['deviations','sja','rounds','risk','progress','reading','personal','organization','handbook','checklists','followup','extract','setup'],'all thirteen authorized native destinations retained behind the work phases');
    await page.setViewportSize({width:390,height:568});await page.getByRole('combobox',{name:'Velg KS/HMS-visning',exact:true}).selectOption('setup');await page.getByRole('heading',{name:'1. Velg KS/HMS-ansvarlig',exact:true}).waitFor();eq(await page.getByLabel('Utpekt KS/HMS-ansvarlig (firmaadmin velger)').inputValue(),'91000000-0000-4000-8000-000000000002','native setup and selected identity retained');
   }
  }
