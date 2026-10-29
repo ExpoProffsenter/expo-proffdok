@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Dokumentuttrekk frigir operasjonslås ved nytt bruker-/firmascope",
+  "change": "Miljømål BEGGE, separat corebranch fra ren main71d157. Nytt autorisert scope nullstiller den gamle operasjonslåsen sammen med øvrig lokal visning. Sequence, owner, active, fingerprint, fersk tilgang og finally-vakt beholdes, så gammel operasjon aldri kan frigjøre nyere lås eller eksportere etter bytte. Ingen backend, API, tilgang, dokumentvalg, eksportinnhold, transport eller designendring.",
+  "verification": "Samme faktiske eksisterende React/Storage/jsPDF-suite feiler på både main71d157 og designbaseline50a8 ved retur etter firmabytte. Additiv negativtest feiler før rettelsen på Fresh catalog must load after company. Etter én produktlinje består hele faktiske suite med2 PDF-filer/15sider og alle tidligere asserts, samt nye company/user/revoke→fresh pending operation→old response cannot clear current busy/disabled/export. Nye operasjoner blir mulige ved gyldig returscope; gamle svar gir ingen fil. Full critical-kshms består. Full build/CI/deployment føres i separat PR. Denne ekstra PDF-React-suiten kjøres lokalt med isolert jsPDF/JSDOM/pdfjs; eksisterende CI dekker ikke automatisk dette eksakte scenarioet. Ingen reell nedlasting fra kundedata eller utsending.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Eksisterende knapper og brukerflyt beholdes; feilrettingen gjenoppretter forventet handling etter firmabytte."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Eksisterende scope-, sequence- og finallykontrakt beholdes. Ingen ny datamekanisme."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen app-/QA-avhengigheter eller konfigurasjon endres; lokal test bruker eksisterende isolerte verktøy."
+    },
+    "module": {
+      "required": false,
+      "reason": "Ingen ekstern modulkontrakt endres; én lokal lås nullstilles sammen med eksisterende scope-reset."
+    }
+  }
+}

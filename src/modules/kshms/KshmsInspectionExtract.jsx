@@ -15,7 +15,7 @@ export default function KshmsInspectionExtract({context,active=true}){
  const owner=useRef(null),sequence=useRef(0),locked=useRef(false),latest=useRef(''),cursors=useRef(new Set());
  const fingerprint=JSON.stringify([companyId,userId,context.enabled,context.manage,active,selected,scopeText,confirmed,attachmentConfirmed]);latest.current=fingerprint;
  useEffect(()=>{
-  const token={active:true};owner.current=token;
+  const token={active:true};owner.current=token;locked.current=false;
   clearAttachments();setBusy(false);setError('');setNotice('');setCatalog(null);setSelected([]);setProjectId('');setConfirmed(false);setScopeText('');setQuery('');cursors.current.clear();
   return()=>{token.active=false;sequence.current++;};
  },[companyId,userId,context.enabled,context.manage]);
