@@ -588,7 +588,7 @@ try {
     await page.setViewportSize({width,height:800});
     await page.evaluate(() => window.__mode('sixteen'));
     await page.getByRole('button',{name:/Alle bygg/}).click();
-    await page.getByRole('button',{name:/Bygg 2 .*Eksempelgata 2 /}).click();
+    await page.locator('.bolig-building-card').filter({has:page.getByText('Bygg 2',{exact:true})}).click();
     const address = page.getByRole('region',{name:'Valgt bygg og adresse'});
     eq(await address.textContent(), 'Bygg 2Eksempelgata 2 oppgang 1', 'Explicit choice exposes correct building address');
     eq(await address.evaluate(el=>el===document.activeElement),true,'Building address receives focus');
