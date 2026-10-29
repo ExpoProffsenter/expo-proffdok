@@ -2,6 +2,8 @@
 
 Miljømål BEGGE, kun Preview. Produksjon/main/demo er urørt. Denne matrisen skiller kildeinventar fra faktisk testbevis. Ingen påstand om 100 % manuell funksjonskontroll.
 
+Felles visuelle og praktiske kriterier er samlet i [UX/UI-kontrollisten](UX_UI_REVIEW_CHECKLIST.md). Dialogpakken 29.10 utvider faktiske komponentprøver med knappegeometri, korte skjermer og høyrepanelets lukkekontroller; eksakt kandidat, CI og publisering logges i PR295. Dette utvider ikke automatisk den manuelle dekningen i tabellen.
+
 | Område | Brukerreiser som må bevares | Kilde / relaterte tester | Faktisk status |
 |---|---|---|---|
 | access · Innlogging/økt/flerfirma/roller | Innlogging; serverprofil; firmabytte; tilgang tilbakekalt; fanebytte/dvale; recovery; utlogging | 21 filer / 20 relaterte kontroller i JSON | Not manually exercised in this run |

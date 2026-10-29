@@ -20,6 +20,7 @@ import ProjectHome from '${cwd}/src/modules/bolig/BoligProjectHome.jsx';
 import {BoligHelp} from '${cwd}/src/modules/help/BoligHelp.jsx';
 import Task from '${cwd}/src/modules/bolig/BoligTaskDialog.jsx';
 import Overview from '${cwd}/src/modules/bolig/BoligBuildingOverview.jsx';
+import '${cwd}/src/style.css';
 import '${cwd}/src/modules/bolig/bolig.css';
 import '${cwd}/src/modules/ui/proffdokWorkspace.css';
 const homeRoots=Array.from({length:15},(_,i)=>({id:'root'+i,title:'Boligprosjekt '+(i+1),reference:'QA-'+(i+1),unit_count:(i+1)*10,archived:i===14}));
@@ -156,6 +157,29 @@ try {
     exact: true,
   });
   eq(await dialog.isVisible(), true);
+  const checkFooter = async label => {
+    const geometry = await dialog.evaluate(d => {
+      const footer = d.querySelector('.bolig-builder-footer'),
+        box = footer.getBoundingClientRect(),
+        buttons = [...footer.querySelectorAll('button')].map(b => {
+          const r = b.getBoundingClientRect();
+          return {top:r.top,bottom:r.bottom,left:r.left,right:r.right,height:r.height,width:r.width};
+        });
+      return {buttons, footer: {top:box.top,bottom:box.bottom}, dialogBottom:d.getBoundingClientRect().bottom,width:innerWidth,height:innerHeight};
+    });
+    const [back,next] = geometry.buttons;
+    eq(Math.abs(back.top-next.top)<1 && Math.abs(back.bottom-next.bottom)<1,true,`${label}: footer buttons share top and bottom edges: ${JSON.stringify(geometry)}`);
+    eq(geometry.buttons.every(b=>b.height>=44 && b.width>=44),true,`${label}: footer touch targets are at least 44px`);
+    eq(geometry.buttons.every(b=>b.top>=0 && b.bottom<=geometry.height && b.left>=0 && b.right<=geometry.width),true,`${label}: footer actions remain within viewport`);
+    eq(geometry.footer.bottom<=geometry.dialogBottom+1,true,`${label}: footer is not clipped by dialog: ${JSON.stringify(geometry)}`);
+  };
+  for (const width of [320,390,768,1024,1366,1920]) {
+    for (const height of [320,480,640,900]) {
+      await page.setViewportSize({width,height});
+      await checkFooter(`Initial step ${width}x${height}`);
+    }
+  }
+  await page.setViewportSize({width:1366,height:900});
   await page.waitForFunction(() => {
     const images = [...document.querySelectorAll(".bolig-type-card img")];
     return (
@@ -791,6 +815,7 @@ try {
         });
         eq(layout.bodyFits, true, `${type}: step ${step}, ${width}px has no inner horizontal overflow`);
         eq(layout.photosFit, true, `${type}: step ${step}, ${width}px photos stay compact and inside their row`);
+        await checkFooter(`${type}: step ${step}, ${width}px`);
         if (type === "Flerfamiliehus" && width === 1366)
           await page.screenshot({ path: path.join(temp, `sixteen-wizard-step-${step}.png`) });
       }

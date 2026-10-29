@@ -6,6 +6,9 @@
 .pd-workspace-drawer-inner{display:flex;flex-direction:column;height:100%;min-width:0}
 .pd-workspace-drawer-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:24px;background:#10212b;color:#fff}
 .pd-workspace-drawer-header>div:last-child{display:flex;gap:8px}
+.pd-workspace-drawer-header,.pd-workspace-drawer-footer{flex-shrink:0}
+.pd-workspace-drawer-header>div:first-child{flex:1;min-width:0;overflow-wrap:anywhere}
+.pd-workspace-drawer-header>div:last-child{flex:none}
 .pd-workspace-drawer-header span{font-size:12px;font-weight:600;letter-spacing:.08em;color:#bdd7e2}
 .pd-workspace-drawer-header h2{font-size:28px;font-weight:600;line-height:1.2;margin:10px 0 0;color:#fff}
 .pd-workspace-drawer-header button{display:grid;place-items:center;min-width:44px;min-height:44px;padding:8px;background:transparent;color:#bdd7e2;border:1px solid #ffffff30;border-radius:6px;box-shadow:none}
