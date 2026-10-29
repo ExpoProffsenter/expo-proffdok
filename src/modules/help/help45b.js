@@ -1,6 +1,7 @@
 import React from "react";
+import {HELP_UPDATED_LABEL} from './workspaceHelp.mjs';
 
-const UPDATED = "Sist oppdatert: 29.10.2026";
+const UPDATED = HELP_UPDATED_LABEL;
 
 function List({ items = [] }) {
   return React.createElement(

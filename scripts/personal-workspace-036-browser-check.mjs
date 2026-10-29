@@ -109,3 +109,5 @@ try{
  }
  console.log(`PASS Personal 03.6 workspace: ${checks} Chromium assertions; actual native components, five widths/short viewports/long titles, synthetic transport. Screenshots: ${output}`);
 }finally{await browser?.close();server.close();}
+
+await import('./personal-time-opt-in-browser-check.mjs');

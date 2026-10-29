@@ -63,7 +63,7 @@ try{
    if(name==='hr_followup_tasks')return {data:{context,tasks:Array.from({length:7},(_,i)=>({case_id:'c'+i,kind:'review',task_key:'hr-review',due_on:i?'2026-10-18':'2026-01-01'})),next:null}};
    if(name==='hr_conversation_feedback_notices')return {data:{context,tasks:[],next:null}};
    if(name==='hr_contact_get')return {data:{context,registered:true,available:true,editable:true,employee:{id:'e',revision:1},revision:1,data:{}}};
-   if(name==='time_tasks_get')return {data:{context,enabled:false,missing_week:null,returned_count:0,review_count:0,can_manage:false}};
+   if(name==='time_tasks_get')return {data:{context,enabled:true,missing_week:null,returned_count:0,review_count:0,can_manage:false}};
    if(name==='kshms_progress_mine'||name==='project_progress_mine'){if(window.holdPlans)await new Promise(resolve=>window.planWaiters.push(resolve));const plan={version:2,excludeSundays:true,activities:[{id:'own-task',title:'Min oppgave',trade:'Rørlegger',status:'Ikke startet',sessions:[{id:'s',date:'2026-10-16',startTime:'08:00',endTime:'16:00'}]}]};return {data:{context,active_date:'2026-10-16',record:args.p_id?{id:name,company_id:context.company_id,title:'Egen plan',revision:1,plan}:null,plans:[{id:name,title:name==='project_progress_mine'?'Mitt prosjekt':'Min KS/HMS-plan',address:'QA sted',first_date:'2026-10-16',last_date:'2026-12-16'}],next:null}};}
    return {error:{message:'Synthetic unavailable: '+name}};
   }};

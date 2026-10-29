@@ -8,6 +8,8 @@ import './personal.css';
 import './personalWorkspace036.css';
 import SupportSummary from '../support/SupportSummary.jsx';
 import {PersonalTimeCard} from '../time/TimeEntryPoint.jsx';
+import usePersonalTimeAccess from '../time/usePersonalTimeAccess.js';
+import {DialogPortalTarget} from '../ui/DialogPortalTarget.js';
 const BoligMyTasks=React.lazy(()=>import('../bolig/BoligMyTasks.jsx'));
 const BoligPresenceCard=React.lazy(()=>import('../bolig/BoligPresenceCard.jsx'));
 const KshmsMyProgressPlans=React.lazy(()=>import('../kshms/KshmsMyProgressPlans.jsx'));
@@ -16,6 +18,10 @@ const KshmsModule=React.lazy(()=>import('../kshms/KshmsModule.jsx'));
 const HrModule=React.lazy(()=>import('../hr/HrModule.jsx'));
 const sections={overview:'I dag',plans:'Mine planer',handbook:'Personalhåndbok',time:'Mine timer',hr:'Mine oppfølginger',profile:'Profil og e-post'};
 const sectionIcons={overview:LayoutDashboard,plans:CalendarDays,handbook:BookOpen,time:FileClock,hr:UserRound,profile:Settings};
+function TimeSurface({visible,children}){
+ const [target,setTarget]=useState(null);
+ return <div className="personal-time-surface" ref={setTarget} hidden={!visible}><DialogPortalTarget.Provider value={target}>{children}</DialogPortalTarget.Provider></div>;
+}
 export default function PersonalPage({context,kshmsContext,hrContext,userId,authUser,supabaseClient,onOpenHrSetup,onOpenSupport,children}){
  const rights=personalRights(context,kshmsContext,hrContext,userId);
  // Remember only navigation, never an access context or HR payload. Fresh rights still gate every module.
@@ -26,7 +32,9 @@ export default function PersonalPage({context,kshmsContext,hrContext,userId,auth
  const nav=scope?{scope,userId,enabled:rights.enabled,kshms:rights.kshms||Boolean(!kshmsContext&&previous?.scope===scope&&previous.kshms&&context.company_kshms),hr:rights.hr||Boolean(!hrContext&&previous?.scope===scope&&previous.hr&&context.company_hr)}:context===null&&userId&&authUser?.id===userId?previous:null;
  if(JSON.stringify(nav)!==JSON.stringify(navigation))setNavigation(nav);
  if(selection.scope!==nav?.scope&&selection.scope!==null)setSelection({scope:nav?.scope||null,screen:'overview',employeeId:null});
- const visible=['overview','plans',...(nav?.hr?['time']:[]),...(nav?.kshms?['handbook']:[]),...(nav?.hr?['hr']:[]),'profile'];
+ const timeAccess=usePersonalTimeAccess({context:rights.hr?hrContext:null,scope:nav?.scope,eligible:Boolean(nav?.hr)});
+ const visible=['overview','plans',...(nav?.hr&&timeAccess.listed?['time']:[]),...(nav?.kshms?['handbook']:[]),...(nav?.hr?['hr']:[]),'profile'];
+ if(selection.scope===nav?.scope&&selection.screen==='time'&&!timeAccess.pending&&!timeAccess.error&&!timeAccess.listed)setSelection({...selection,screen:'overview'});
  const selected=selection.scope===nav?.scope?selection.screen:'overview';
  const screen=!nav?.enabled?'profile':visible.includes(selected)?selected:'overview';
  const choose=id=>setSelection({scope:nav?.scope,screen:id,employeeId:null});
@@ -59,7 +67,8 @@ export default function PersonalPage({context,kshmsContext,hrContext,userId,auth
       <div className="personal-upcoming"><HeartPulse aria-hidden="true"/><div><strong>Sykefraværsoppfølging <span className="personal-status">Tilgjengelig</span></strong><p>Se egne oppfølginger når nærmeste leder har åpnet saken.</p></div></div>
       <button type="button" className="secondary" onClick={()=>choose('hr')}>Se mine oppfølginger <ArrowRight aria-hidden="true"/></button>
      </article>}
-     {screen==='overview'&&!pending&&rights.hr&&<PersonalTimeCard context={hrContext} onOpen={()=>choose('time')}/>}
+     {screen==='overview'&&!pending&&rights.hr&&<PersonalTimeCard context={hrContext} access={timeAccess} onOpen={()=>choose('time')}/>}
+     {screen==='overview'&&!pending&&rights.hr&&timeAccess.error&&<p role="alert">{timeAccess.error} <button type="button" onClick={timeAccess.retry}>Kontroller timeføring igjen</button></p>}
      {screen==='overview'&&!pending&&!rights.kshms&&!rights.hr&&<article className="personal-card"><UserRound aria-hidden="true"/><h3>Dine modulvalg</h3><p>Her finner du profilen din og eventuelle egne prosjektplaner. Firmaadmin styrer tilgangen til andre moduler.</p></article>}
     </aside>
     {screen==='overview'&&!pending&&<div className="personal-secondary-links">
@@ -70,7 +79,11 @@ export default function PersonalPage({context,kshmsContext,hrContext,userId,auth
    {authUser?.id===userId&&onOpenSupport&&!pending&&screen==='overview'&&<SupportSummary supabaseClient={supabaseClient} authUser={authUser} companyId={context?.company_id} onOpen={onOpenSupport}/>}
   </div>
   {authUser?.id===userId&&onOpenSupport&&!pending&&!nav?.enabled&&<SupportSummary supabaseClient={supabaseClient} authUser={authUser} companyId={context?.company_id} onOpen={onOpenSupport}/>}
-  {screen==='time'&&rights.hr&&<Suspense fallback={<p role="status">Henter mine timer …</p>}><PersonalTimeWorkspace key={scope} context={hrContext}/></Suspense>}
+  {screen==='time'&&rights.hr&&timeAccess.listed&&<>
+   {timeAccess.pending&&<p role="status">Kontrollerer firmaets timeføring …</p>}
+   {timeAccess.error&&<p role="alert">{timeAccess.error} <button type="button" onClick={timeAccess.retry}>Kontroller timeføring igjen</button></p>}
+   <TimeSurface visible={timeAccess.allowed}><Suspense fallback={<p role="status">Henter mine timer …</p>}><PersonalTimeWorkspace key={scope} context={hrContext}/></Suspense></TimeSurface>
+  </>}
   {screen==='handbook'&&rights.kshms&&<Suspense fallback={<p role="status">Henter personalhåndboka …</p>}><KshmsModule context={kshmsContext} personalOnly/></Suspense>}
   {screen==='hr'&&rights.hr&&<Suspense fallback={<p role="status">Kontrollerer dine oppfølginger …</p>}><HrModule key={scope} context={hrContext} audience="personal" initialEmployeeId={selection.scope===scope?selection.employeeId:null} onEmployeeSelect={id=>setSelection(previous=>previous.scope===scope?{...previous,employeeId:id}:previous)}/></Suspense>}
   <div hidden={screen!=='profile'}>

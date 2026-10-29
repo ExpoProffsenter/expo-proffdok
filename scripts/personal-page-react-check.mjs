@@ -30,7 +30,7 @@ try{
    }
    if(name==='hr_contact_save'){assert.equal(args.p_contact_revision,contactRev);assert.equal(args.p_employee_revision,employeeRev);contactData=structuredClone(args.p_data);contactRev++;return {data:{context,employee:{id:'e',revision:employeeRev},revision:contactRev}};}
    if(name==='hr_followup_tasks')return {data:{context,tasks:[],next:null,email_enabled:false}};
-   if(name==='time_tasks_get')return {data:{context,enabled:false,missing_week:null,returned_count:0,review_count:0,can_manage:false}};
+   if(name==='time_tasks_get')return {data:{context,enabled:true,missing_week:null,returned_count:0,review_count:0,can_manage:false}};
    if(name==='hr_personal_list'){if(revoked)return {error:{code:'42501',message:'revoked'}};if(lateList)return new Promise(resolve=>lateList.resolve=resolve);return {data:{context,employees:structuredClone(employees),next:null}};}
    if(name==='hr_employee_get')return {data:{context,employee:structuredClone(employees.find(e=>e.id===args.p_employee_id))}};
    throw new Error('Unexpected RPC '+name);

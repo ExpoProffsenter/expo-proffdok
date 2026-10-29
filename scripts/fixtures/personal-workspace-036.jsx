@@ -11,7 +11,7 @@ import '../../src/modules/ui/proffdokWorkspace.css';
 
 // Actual native components. This fixture replaces transport only, uses no real accounts,
 // and marks all examples QA. Scenario controls never ship in the application.
-window.qa={company:'qa-firm',actor:'qa-user',empty:false,long:false,denied:false,hr:true,ks:true,hold:false,waiters:[],calls:[],opened:[],updates:[]};
+window.qa={company:'qa-firm',actor:'qa-user',empty:false,long:false,denied:false,hr:true,ks:true,hold:false,waiters:[],calls:[],opened:[],updates:[],timeEnabled:new URL(location.href).searchParams.get('time')!=='off',holdTime:false,timeDenied:false,timeReadError:new URL(location.href).searchParams.get('time')==='error',timeWaiters:[],timeReads:0};
 const q=()=>window.qa;
 const context=()=>({company_id:q().company,user_id:q().actor,company_name:'QA Prøvefirma',personal_page:true,company_hr:q().hr,company_kshms:q().ks,available:true,enabled:true,administer:false,manage:false,role:'reader'});
 const title=base=>base+(q().long?' med et langt prosjektnavn, flere leveranser og en sammenhengendeprosjektbetegnelseutenmellomrom':'');
@@ -42,8 +42,8 @@ window.client={auth:{getUser:async()=>({data:{user:user()}}),updateUser:async va
  if(name==='hr_foundation_state')return {data:{context:c,content_enabled:false,settings:{enabled:true,revision:1,purpose:'QA Prøveformål',legal_basis:'QA Prøvegrunnlag',review_on:'2026-12-01'},members:[],next:null}};
  if(name==='hr_template_list')return {data:{context:c,templates:[],next:null}};
  if(name==='hr_purge_status')return {data:{context:c,receipts:[],next:null}};
- if(name==='time_tasks_get')return {data:{context:c,enabled:true,missing_week:null,returned_count:0,review_count:0,can_manage:false}};
- if(name==='time_sheet_get')return {data:{context:c,employee:employee(),settings:{enabled:true,categories:[{id:'qa-work',name:'Arbeid',label:'Arbeid',kind:'work',active:true,unit:'hours'}]},sheet:{id:'qa-sheet',week:args.p_week,revision:1,state:'draft',entries:[]}}};
+ if(name==='time_tasks_get'){q().timeReads++;const response=q().timeDenied?{error:{code:'42501',message:'QA Time access revoked'}}:q().timeReadError?{error:{message:'QA network unavailable'}}:{data:{context:c,enabled:q().timeEnabled,missing_week:null,returned_count:0,review_count:0,can_manage:false}};if(q().holdTime)return new Promise(resolve=>q().timeWaiters.push(()=>resolve(response)));return response;}
+ if(name==='time_sheet_get')return {data:{context:c,employee:employee(),settings:{enabled:q().timeEnabled,categories:[{id:'qa-work',name:'Arbeid',label:'Arbeid',kind:'work',active:true,unit:'hours'}]},sheet:{id:'qa-sheet',week:args.p_week,revision:1,state:'draft',entries:[]}}};
  if(name==='time_timer_get')return {data:{context:c,timer:null}};
  if(name==='time_projects')return {data:{context:c,projects:[],next:null}};
  if(name==='kshms_get_state')return {data:{context:c,settings:{trades:[],revision:1,responsible_user_id:c.user_id,next_review_on:'2026-12-01'},routines:[],versions:[],members:[],assignments:[],acknowledgments:[],reviews:[]}};
@@ -61,3 +61,6 @@ const root=createRoot(document.getElementById('app'));
 window.configure=patch=>{Object.assign(q(),patch);root.render(<App/>);window.dispatchEvent(new CustomEvent(WORK_PROFILE_EVENT,{detail:{active_company_id:q().company}}));};
 window.release=()=>{q().hold=false;q().waiters.splice(0).forEach(resolve=>resolve());};
 root.render(<App/>);
+
+window.timeSettings=patch=>{Object.assign(q(),patch);window.dispatchEvent(new CustomEvent('expo:time-settings-updated',{detail:{companyId:q().company}}));};
+window.releaseTime=()=>{q().holdTime=false;q().timeWaiters.splice(0).forEach(resolve=>resolve());};
