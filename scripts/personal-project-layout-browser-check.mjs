@@ -11,7 +11,7 @@ let checks=0,browser;
 const eq=(a,b,label)=>{assert.deepEqual(a,b,label);checks++;};
 // Actual components, actual global/local CSS, synthetic read transport. No signed-in data.
 fs.writeFileSync(path.join(temp,'entry.jsx'),`
-import React,{useState} from '${cwd}/node_modules/react/index.js';
+import React,{useState,useLayoutEffect} from '${cwd}/node_modules/react/index.js';
 import {createRoot} from '${cwd}/node_modules/react-dom/client.js';
 import Personal from '${cwd}/src/modules/personal/PersonalPage.jsx';
 import {usePersonalAccess} from '${cwd}/src/modules/personal/personalAccess.js';
@@ -35,7 +35,7 @@ const Select=native('Select','const { ProjectImagesPanel');
 const tools=createProjectListTools({Section,Grid,Input,Select,getWarrantyYears:()=>10});
 const rows=['Pågående prosjekt','Arkivprosjekt'].map((title,i)=>({row:{id:'p'+i,title,updated_at:'2026-10-16T12:00:00Z'},listProject:{customer:'QA Kunde',customerEmail:'qa.customer@example.invalid',customerPhone:'90000000',address:'Testveien 1',responsible:'QA Leder'},listStatus:{tone:i?'done':'progress',label:i?'Ferdigstilt':'Pågår',icon:'●'},unreadForAdminInList:i?0:2,latestMessage:null,imageSummary:{total:i?0:5,photos:1,checklist:2,install:1,chat:1,previews:i?[]:[{url:'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="80" height="60"%3E%3Crect width="80" height="60" fill="%23bcdde1"/%3E%3C/svg%3E',label:'Syntetisk prosjektbilde',source:'Bilder'}]},openDeviationCount:i?0:3,productSummary:{total:4},listWarranty:{enabled:true,issued:true},projectCompanyName:'QA firma'}));
 window.setProjectName=value=>{rows[0].row.title=value;window.render('projects');};
-function Projects(){const [q,setQ]=useState(''),[status,setStatus]=useState('alle'),[unread,setUnread]=useState(false),[view,setView]=useState(null);if(view)return <section aria-label="Åpnet prosjektprøve"><h2>{view[0]}</h2><button onClick={()=>setView(null)}>Tilbake til prosjektlisten</button></section>;
+function Projects(){const [q,setQ]=useState(''),[status,setStatus]=useState('alle'),[unread,setUnread]=useState(false),[view,setView]=useState(null);useLayoutEffect(()=>{window.committedProjectName=rows[0].row.title;});if(view)return <section aria-label="Åpnet prosjektprøve"><h2>{view[0]}</h2><button onClick={()=>setView(null)}>Tilbake til prosjektlisten</button></section>;
  const filtered=rows.filter(r=>projectMatchesSearch(r.row.title,q)&&matchesProjectStatus(r.listStatus.tone,status)&&(!unread||r.unreadForAdminInList));
  return tools.renderProjectListPanel({projectListStats:{total:2,active:1,unread:2,finished:1,visible:filtered.length},projectSearch:q,setProjectSearch:setQ,projectStatusFilter:status,setProjectStatusFilter:setStatus,projectUnreadOnly:unread,setProjectUnreadOnly:setUnread,loadProjects:()=>window.refreshes++,authUser:{id:'self'},projects:rows,filteredProjectListRows:filtered,isSystemAdminUser:false,statusStyle:()=>({}),openProjectById:(...args)=>{window.opened.push(args);if(window.testReturn)setView(args);},deleteProject:id=>window.deleted.push(id)});}
 const root=createRoot(document.getElementById('app'));
@@ -239,6 +239,11 @@ try{
  // Long real-world identity strings must wrap, never cover the existing actions.
  const longName='Rehabilitering av hovedbad og vaskerom i Strandveien 48 – første etasje og tilbygg';
  await page.evaluate(name=>window.setProjectName(name),longName);
+ // root.render schedules an update; a resolved evaluate is not a React commit.
+ // Wait for the fixture's layout effect before all original DOM/geometry asserts.
+ await page.waitForFunction(name=>window.committedProjectName===name,longName);
+ // root.render schedules React work; wait for this unique title's actual DOM commit.
+ await page.waitForFunction(name=>document.querySelector('.projectListCard .projectListTitleBlock>b')?.textContent===name,longName);
  for(const width of [1920,1363,768,390,320]){
   await page.setViewportSize({width,height:600});await page.evaluate(()=>scrollTo(0,0));
   const first=page.locator('.projectListCard').first();
@@ -251,6 +256,7 @@ try{
   if(process.env.UX_LAYOUT_SCREENSHOTS)await page.screenshot({path:path.join(process.env.UX_LAYOUT_SCREENSHOTS,'projects-long-'+width+'.png'),fullPage:true,animations:'disabled'});
  }
  await page.evaluate(()=>window.setProjectName('Pågående prosjekt'));
+ await page.waitForFunction(()=>window.committedProjectName==='Pågående prosjekt');
  // Same follow-up selection, counts and callbacks; compact row on wide screens.
  await page.evaluate(()=>window.render('followup'));await page.locator('.pd-followup-row').first().waitFor();
  eq(await page.locator('.pd-followup-row').count(),2,'only projects needing attention');
