@@ -73,6 +73,12 @@ Scope: SalesListView, SalesDetailViewCore, lokal CSS, én klasse på direkte til
 
 Sales håndterer både ordinær Befaring/Tilbud-flyt og Generelt tilbud for varer, arbeid, underentreprenører og andre leveranser. Den tekniske legacy-identiteten `Butikktilbud`/`store offer` beholdes der det trengs for kompatibilitet.
 
+## Saksbehandler og intern akseptkvittering – review 29.10.2026
+
+Nye saker krever et eksplisitt valg av saksbehandler fra godkjente brukere med riktig firmatilgang. UUID og visningsnavn velges sammen. Eksisterende saker, også Akseptert/Aktivert, har feltet Saksbehandler og Lagre saksbehandler for sikker nybinding. Gamle fritekstnavn og publiserings-/signaturhistorikk gir aldri automatisk brukerbinding.
+
+Kanonisk binding og revisjon ligger privat på server; stale bulk-autosave kan ikke bytte ansvarlig, og et foreldet eksplisitt valg avvises med HTTP409. Intern akseptmail bruker dagens bekreftede Auth-identitet med fersk tilgang, uten fallback til publisist. Kundekvitteringen og historisk deduplisering beholdes. Ingen retroaktive utsendinger eller tilbakefylling inngår. Arkitektur, testgrunnlag og begrensninger: [SALES_CASE_HANDLER_IDENTITY.md](../../../docs/architecture/SALES_CASE_HANDLER_IDENTITY.md). Sandbox har migrering `20261029191431` og acceptance-notify v6, med 0 bindinger og ingen utsendinger. Production er uendret. Publisert app-Preview, innlogget Sandbox-integrasjon og TEST OK gjenstår.
+
 Ordinære tilbud kan etter aksept gå videre til Expo-kontrakt, egen opplastet kontrakt eller direkte prosjekt. Et nytt Generelt tilbud kan etter aksept aktiveres som Enkel ordre eller ordinært prosjekt. Eksisterende historiske Butikktilbud beholder sin opprinnelige avslutning og skal ikke konverteres automatisk.
 
 **Kontrakt er ikke et generelt prosjektkrav.** Signert kontrakt kreves først når dokumentert tetthetsgaranti faktisk skal utstedes.
