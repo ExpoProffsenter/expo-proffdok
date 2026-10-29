@@ -1,5 +1,9 @@
 # Gjeldende leveranse – 27.10.2026
 
+## Saksbehandler for akseptvarsel – Sandbox-backend installert 29.10.2026
+
+Miljømål BEGGE. Eget rent corecheckout fra main `5f58b1c6`, uten designendringer. Eksplisitt UUID-valg/binding for nye og eksisterende saker, privat revisjonsvern mot gamle kladder og fail-closed internrouting er implementert. Kilden til Production-funksjonen acceptance-notify v7 er hentet inn; kundekvitteringen beholdes. Sandbox har fått migrering `20261029191431` og acceptance-notify v6 med `verify_jwt=false`, verifisert ACL og 0 opprettede bindinger. Production og eksisterende saker er uendret; ingen e-post er sendt. Relevant lokal SQL-/Edge-/React-QA er grønn. Publisert app-Preview med innlogget Sandbox-integrasjonsprøve, full CI og TEST OK gjenstår. Se `docs/architecture/SALES_CASE_HANDLER_IDENTITY.md`.
+
 ## Varebestilling
 
 Varebestilling er publisert for proffkunder med eksisterende katalogtilgang og interne Ringside/Expo-brukere med Prissøk. Interne brukere finner Prissøk → Varebestilling → Firmaprofil, samt Åpne varebestilling i Prissøk. Proffkunder beholder sitt avgrensede vareutvalg.

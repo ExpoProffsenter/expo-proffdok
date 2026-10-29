@@ -67,3 +67,4 @@ try {
   }
   console.log(`PASS customer option quantity database: ${checks} PostgreSQL checks; real migration, anon/authenticated, tampering, legacy/fixed/alternative, decimals, expiry, immutable snapshot and version lock.`);
 } finally { await db.close(); }
+await import('./sales-case-handler-db-check.mjs');
