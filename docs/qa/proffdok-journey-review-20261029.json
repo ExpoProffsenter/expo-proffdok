@@ -3441,15 +3441,25 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "current-project-subflows-036",
+            "mapping": "scoped actual child/fields/presentation and native command gates; see explicit limitations"
+          }
+        ]
       },
       "design_review": {
         "status": "delvis",
         "reason": "Åpent bruker-/referanseavvik er identifisert i området. Ingen lukking av den enkelte reisen uten sluttbilder.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "current-project-subflows-036"
+        ]
       },
-      "remaining_checks": []
+      "remaining_checks": [
+        "Denne pakkens native delbevis lukker ikke hele brukerreisen. Fortsett faktisk rolle-/server-/PDF-/enhetskontroll; prosjekteringens sjekkliste og deltakeradapter er særskilte barn."
+      ]
     },
     {
       "id": "PROJECT-003",
@@ -3507,6 +3517,10 @@
           {
             "ref": "current-project-read-baseline-068a52",
             "mapping": "explicitly scoped reading; inner writes and role/device/error flows remain open"
+          },
+          {
+            "ref": "current-project-subflows-036",
+            "mapping": "scoped actual child/fields/presentation and native command gates; see explicit limitations"
           }
         ]
       },
@@ -3514,9 +3528,14 @@
         "status": "delvis",
         "reason": "Åpent bruker-/referanseavvik er identifisert i området. Ingen lukking av den enkelte reisen uten sluttbilder.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "current-project-subflows-036"
+        ]
       },
-      "remaining_checks": []
+      "remaining_checks": [
+        "Denne pakkens native delbevis lukker ikke hele brukerreisen. Fortsett faktisk rolle-/server-/PDF-/enhetskontroll; prosjekteringens sjekkliste og deltakeradapter er særskilte barn."
+      ]
     },
     {
       "id": "PROJECT-004",
@@ -3593,6 +3612,10 @@
           {
             "ref": "current-project-read-baseline-068a52",
             "mapping": "explicitly scoped reading; inner writes and role/device/error flows remain open"
+          },
+          {
+            "ref": "current-project-subflows-036",
+            "mapping": "scoped actual child/fields/presentation and native command gates; see explicit limitations"
           }
         ]
       },
@@ -3600,10 +3623,14 @@
         "status": "delvis",
         "reason": "Åpent bruker-/referanseavvik er identifisert i området. Ingen lukking av den enkelte reisen uten sluttbilder.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "current-project-subflows-036"
+        ]
       },
       "remaining_checks": [
-        "Ingen produsert PDF, sidebrudd eller lesbar tekst visuelt inspisert av denne statiske sjekken."
+        "Ingen produsert PDF, sidebrudd eller lesbar tekst visuelt inspisert av denne statiske sjekken.",
+        "Denne pakkens native delbevis lukker ikke hele brukerreisen. Fortsett faktisk rolle-/server-/PDF-/enhetskontroll; prosjekteringens sjekkliste og deltakeradapter er særskilte barn."
       ]
     },
     {
@@ -3662,6 +3689,10 @@
           {
             "ref": "current-project-read-baseline-068a52",
             "mapping": "explicitly scoped reading; inner writes and role/device/error flows remain open"
+          },
+          {
+            "ref": "current-project-subflows-036",
+            "mapping": "scoped actual child/fields/presentation and native command gates; see explicit limitations"
           }
         ]
       },
@@ -3669,9 +3700,14 @@
         "status": "delvis",
         "reason": "Åpent bruker-/referanseavvik er identifisert i området. Ingen lukking av den enkelte reisen uten sluttbilder.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "current-project-subflows-036"
+        ]
       },
-      "remaining_checks": []
+      "remaining_checks": [
+        "Denne pakkens native delbevis lukker ikke hele brukerreisen. Fortsett faktisk rolle-/server-/PDF-/enhetskontroll; prosjekteringens sjekkliste og deltakeradapter er særskilte barn."
+      ]
     },
     {
       "id": "PROJECT-006",
@@ -3822,17 +3858,26 @@
             }
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "current-project-subflows-036",
+            "mapping": "scoped actual child/fields/presentation and native command gates; see explicit limitations"
+          }
+        ]
       },
       "design_review": {
         "status": "delvis",
         "reason": "Åpent bruker-/referanseavvik er identifisert i området. Ingen lukking av den enkelte reisen uten sluttbilder.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "current-project-subflows-036"
+        ]
       },
       "remaining_checks": [
         "En navigasjonsassertion beviser inngangen, ikke redigering/lagring av innholdet bak fanen.",
-        "Navigasjonsmarkør er ikke lagre-/lesebevis for produktdata eller dokumentlenker; egen document-overview-test er separat delbevis."
+        "Navigasjonsmarkør er ikke lagre-/lesebevis for produktdata eller dokumentlenker; egen document-overview-test er separat delbevis.",
+        "Denne pakkens native delbevis lukker ikke hele brukerreisen. Fortsett faktisk rolle-/server-/PDF-/enhetskontroll; prosjekteringens sjekkliste og deltakeradapter er særskilte barn."
       ]
     },
     {
@@ -3893,16 +3938,25 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "current-project-subflows-036",
+            "mapping": "scoped actual child/fields/presentation and native command gates; see explicit limitations"
+          }
+        ]
       },
       "design_review": {
         "status": "delvis",
         "reason": "Åpent bruker-/referanseavvik er identifisert i området. Ingen lukking av den enkelte reisen uten sluttbilder.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "current-project-subflows-036"
+        ]
       },
       "remaining_checks": [
-        "En navigasjonsassertion beviser inngangen, ikke redigering/lagring av innholdet bak fanen."
+        "En navigasjonsassertion beviser inngangen, ikke redigering/lagring av innholdet bak fanen.",
+        "Denne pakkens native delbevis lukker ikke hele brukerreisen. Fortsett faktisk rolle-/server-/PDF-/enhetskontroll; prosjekteringens sjekkliste og deltakeradapter er særskilte barn."
       ]
     },
     {
@@ -4074,6 +4128,10 @@
           {
             "ref": "current-project-read-baseline-068a52",
             "mapping": "explicitly scoped reading; inner writes and role/device/error flows remain open"
+          },
+          {
+            "ref": "current-project-subflows-036",
+            "mapping": "scoped actual child/fields/presentation and native command gates; see explicit limitations"
           }
         ]
       },
@@ -4081,10 +4139,14 @@
         "status": "delvis",
         "reason": "Åpent bruker-/referanseavvik er identifisert i området. Ingen lukking av den enkelte reisen uten sluttbilder.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "current-project-subflows-036"
+        ]
       },
       "remaining_checks": [
-        "Kontrollørdelmengde: ikke full deltaker-/rolle- og delingsmatrise; project-participants-workspace er separat mer direkte delbevis."
+        "Kontrollørdelmengde: ikke full deltaker-/rolle- og delingsmatrise; project-participants-workspace er separat mer direkte delbevis.",
+        "Denne pakkens native delbevis lukker ikke hele brukerreisen. Fortsett faktisk rolle-/server-/PDF-/enhetskontroll; prosjekteringens sjekkliste og deltakeradapter er særskilte barn."
       ]
     },
     {
@@ -4157,17 +4219,26 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "current-project-subflows-036",
+            "mapping": "scoped actual child/fields/presentation and native command gates; see explicit limitations"
+          }
+        ]
       },
       "design_review": {
         "status": "delvis",
         "reason": "Åpent bruker-/referanseavvik er identifisert i området. Ingen lukking av den enkelte reisen uten sluttbilder.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "current-project-subflows-036"
+        ]
       },
       "remaining_checks": [
         "En navigasjonsassertion beviser inngangen, ikke redigering/lagring av innholdet bak fanen.",
-        "Ingen felt-/verdibevaring ved redigering dokumentert av denne menymarkøren."
+        "Ingen felt-/verdibevaring ved redigering dokumentert av denne menymarkøren.",
+        "Denne pakkens native delbevis lukker ikke hele brukerreisen. Fortsett faktisk rolle-/server-/PDF-/enhetskontroll; prosjekteringens sjekkliste og deltakeradapter er særskilte barn."
       ]
     },
     {
@@ -4230,16 +4301,25 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "current-project-subflows-036",
+            "mapping": "scoped actual child/fields/presentation and native command gates; see explicit limitations"
+          }
+        ]
       },
       "design_review": {
         "status": "delvis",
         "reason": "Åpent bruker-/referanseavvik er identifisert i området. Ingen lukking av den enkelte reisen uten sluttbilder.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "current-project-subflows-036"
+        ]
       },
       "remaining_checks": [
-        "En navigasjonsassertion beviser inngangen, ikke redigering/lagring av innholdet bak fanen."
+        "En navigasjonsassertion beviser inngangen, ikke redigering/lagring av innholdet bak fanen.",
+        "Denne pakkens native delbevis lukker ikke hele brukerreisen. Fortsett faktisk rolle-/server-/PDF-/enhetskontroll; prosjekteringens sjekkliste og deltakeradapter er særskilte barn."
       ]
     },
     {
@@ -4313,17 +4393,26 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "current-project-subflows-036",
+            "mapping": "scoped actual child/fields/presentation and native command gates; see explicit limitations"
+          }
+        ]
       },
       "design_review": {
         "status": "delvis",
         "reason": "Åpent bruker-/referanseavvik er identifisert i området. Ingen lukking av den enkelte reisen uten sluttbilder.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "current-project-subflows-036"
+        ]
       },
       "remaining_checks": [
         "En navigasjonsassertion beviser inngangen, ikke redigering/lagring av innholdet bak fanen.",
-        "Ingen usendt tekst/scopebytte dokumentert av denne menymarkøren; workspace-test må brukes konkret."
+        "Ingen usendt tekst/scopebytte dokumentert av denne menymarkøren; workspace-test må brukes konkret.",
+        "Denne pakkens native delbevis lukker ikke hele brukerreisen. Fortsett faktisk rolle-/server-/PDF-/enhetskontroll; prosjekteringens sjekkliste og deltakeradapter er særskilte barn."
       ]
     },
     {
@@ -4390,6 +4479,10 @@
           {
             "ref": "current-project-read-baseline-068a52",
             "mapping": "explicitly scoped reading; inner writes and role/device/error flows remain open"
+          },
+          {
+            "ref": "current-project-subflows-036",
+            "mapping": "scoped actual child/fields/presentation and native command gates; see explicit limitations"
           }
         ]
       },
@@ -4397,9 +4490,14 @@
         "status": "delvis",
         "reason": "Åpent bruker-/referanseavvik er identifisert i området. Ingen lukking av den enkelte reisen uten sluttbilder.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "current-project-subflows-036"
+        ]
       },
-      "remaining_checks": []
+      "remaining_checks": [
+        "Denne pakkens native delbevis lukker ikke hele brukerreisen. Fortsett faktisk rolle-/server-/PDF-/enhetskontroll; prosjekteringens sjekkliste og deltakeradapter er særskilte barn."
+      ]
     },
     {
       "id": "PROJECT-015",
@@ -4464,6 +4562,10 @@
           {
             "ref": "current-project-read-baseline-068a52",
             "mapping": "explicitly scoped reading; inner writes and role/device/error flows remain open"
+          },
+          {
+            "ref": "current-project-subflows-036",
+            "mapping": "scoped actual child/fields/presentation and native command gates; see explicit limitations"
           }
         ]
       },
@@ -4471,9 +4573,14 @@
         "status": "delvis",
         "reason": "Åpent bruker-/referanseavvik er identifisert i området. Ingen lukking av den enkelte reisen uten sluttbilder.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "current-project-subflows-036"
+        ]
       },
-      "remaining_checks": []
+      "remaining_checks": [
+        "Denne pakkens native delbevis lukker ikke hele brukerreisen. Fortsett faktisk rolle-/server-/PDF-/enhetskontroll; prosjekteringens sjekkliste og deltakeradapter er særskilte barn."
+      ]
     },
     {
       "id": "PROJECT-016",
@@ -16325,6 +16432,27 @@
           "PROJECT-015"
         ],
         "limitations": "Only existing demo admin, PC, no saved inner form/contract/upload/signature/warranty attestation; current legacy project layout still needs matching real-component and visual tests."
+      },
+      "current-project-subflows-036": {
+        "source": "docs/changes/project-subflows-design-036-20261030.json",
+        "candidate": "PR295 next after f469c5d4; exact head/CI/deploy/live in PR",
+        "level": "531 actual Chromium assertions /85 named state×width views; native primitives/components/wrappers, synthetic client transport",
+        "scope": "Native description/information/design prefix and own points/products/surfaces/installation/contract/chat/notes/handover/warranty/access plus legacy deviation and controller dialogs",
+        "ids": [
+          "PROJECT-002",
+          "PROJECT-003",
+          "PROJECT-004",
+          "PROJECT-005",
+          "PROJECT-007",
+          "PROJECT-008",
+          "PROJECT-010",
+          "PROJECT-011",
+          "PROJECT-012",
+          "PROJECT-013",
+          "PROJECT-014",
+          "PROJECT-015"
+        ],
+        "limitations": "No full journey closure. Design prefix excludes ProjectChecklistWorkspace and drawings display. Header fixture follows native structure but is not full App. Project participants adapter, actual backend roles/commands/server persistence, all devices/Safari and PDF remain separately scoped. PROJECT006 planner not included."
       }
     },
     "unmapped_journey_ids": [

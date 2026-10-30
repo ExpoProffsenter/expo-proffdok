@@ -6,6 +6,10 @@ Miljømål BEGGE; bare feature/Preview/Sandbox er innenfor denne runden. Ingen a
 
 Kildegrunnlag: `50a8dda399198198c8cad3b9b08b0223cae4c7f1`. Original 03.6: `f67f236784b4de9a92f52c5b74b67335ec94606a`. Arbeidstreet kan inneholde senere parallelle endringer; assertionlinjene under viser den uendrede baseline-versjonen.
 
+## Prosjektbarn30.10 – avgrenset nytt bevis
+
+Eksisterende145-reisers JSON har eget `current-project-subflows-036`-delbevis for PROJECT002/003/004/005/007/008/010/011/012/013/014/015. Faktiske native komponenter og main-primitiver,531 assertions/85 tilstand×bredde-visninger. Kun klienttransport/testdata er isolert. Ingen helreise lukkes. Prosjekteringsprefikset inkluderer ikke sjekklisteeditoren, og prosjektets deltakeradapter/fremdrift er separate barn. Eksakt kandidat, fullCI og innlogget etterkontroll vedlikeholdes i PR295.
+
 ## Avstemt checkpoint30.10
 
 De historiske radene og tabellen nedenfor beskriver kildeauditen29.10. De er ikke dagens utførelsesstatus. JSON-registerets `reconciliation_20261030` knytter nyere delbevis til 58 av145 ID-er, med eksplisitt liste over de øvrige. Hver kilde oppgir faktisk kandidat, bevisnivå og avgrensning. Rapport/sjekkliste/Varetelling har ferske komponentprøver; øvrige koblinger er rapporterte checkpointbevis som ikke er kjørt om igjen uten ny risiko. Ingen helreise er lukket automatisk.

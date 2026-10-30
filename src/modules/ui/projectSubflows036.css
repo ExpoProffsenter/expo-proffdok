@@ -1,0 +1,58 @@
+/* Native project forms, scoped to the existing project shell. Screen-only:
+   report/PDF layout, component lifetime and all commands retain their owners. */
+@media screen {
+ [data-expo-app-shell="true"][data-expo-project-shell="1"]>main>:is(section:not(.ks-module):not(.project-contact-overview):not(.report),.project-info-editor){padding:0!important;margin:0 0 20px!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;min-width:0}
+ [data-expo-app-shell="true"][data-expo-project-shell="1"]>main>:is(section:not(.ks-module):not(.report),.project-info-editor)>h2{font-size:28px!important;line-height:1.25;font-weight:600;letter-spacing:-.5px;margin:0 0 12px;overflow-wrap:anywhere}
+ [data-expo-app-shell="true"][data-expo-project-shell="1"]>main>:is(section:not(.ks-module):not(.report),.project-info-editor) :is(.item,.out,.tile,.collapsibleBlock,.project-deviation-record,.checklistPoint,.checklistSummaryCard,.deviationClosedBox){border:1px solid #d5e3e9!important;border-radius:8px!important;box-shadow:none;min-width:0;max-width:100%;box-sizing:border-box}
+ [data-expo-app-shell="true"][data-expo-project-shell="1"]>main>:is(section:not(.ks-module):not(.report),.project-info-editor) :is(.item,.out,.tile,.checklistPoint,.checklistSummaryCard,.deviationClosedBox){padding:16px!important}
+ [data-expo-app-shell="true"][data-expo-project-shell="1"]>main>:is(section:not(.ks-module):not(.report),.project-info-editor) .collapsibleBlock{padding:0!important;background:#fff}
+ [data-expo-app-shell="true"][data-expo-project-shell="1"]>main>:is(section:not(.ks-module):not(.report),.project-info-editor) .collapsibleBlockBody{padding:16px!important;min-width:0}
+ [data-expo-app-shell="true"][data-expo-project-shell="1"]>main>:is(section:not(.ks-module):not(.report),.project-info-editor) :is(p,li,label,summary,.note){font-size:16px!important;line-height:1.45;overflow-wrap:anywhere}
+ [data-expo-app-shell="true"][data-expo-project-shell="1"]>main>:is(section:not(.ks-module):not(.report),.project-info-editor) :is(h3,h4){font-size:18px;line-height:1.35;overflow-wrap:anywhere}
+ [data-expo-app-shell="true"][data-expo-project-shell="1"]>main>:is(section:not(.ks-module):not(.report),.project-info-editor) :is(input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=hidden]),select,textarea){font-size:16px!important;line-height:1.4!important;min-height:44px!important;max-width:100%;min-width:0;border-radius:7px!important;box-sizing:border-box}
+ [data-expo-app-shell="true"][data-expo-project-shell="1"]>main>:is(section:not(.ks-module):not(.report),.project-info-editor) :is(button,summary,.upload,a.secondary){font-size:16px!important;line-height:1.4!important;min-height:44px!important;max-width:100%;min-width:0;box-sizing:border-box;white-space:normal;overflow-wrap:anywhere;box-shadow:none;transform:none}
+ [data-expo-app-shell="true"][data-expo-project-shell="1"]>main>:is(section:not(.ks-module):not(.report),.project-info-editor) :is(button,.upload,a.secondary){border-radius:7px!important}
+ [data-expo-app-shell="true"][data-expo-project-shell="1"]>main>:is(section:not(.ks-module):not(.report),.project-info-editor) input:is([type=checkbox],[type=radio]){width:20px!important;height:20px!important;min-height:20px!important;flex:0 0 20px;accent-color:#007681}
+ [data-expo-app-shell="true"][data-expo-project-shell="1"]>main>:is(section:not(.ks-module):not(.report),.project-info-editor) :is(.grid,.cards){gap:12px;min-width:0}
+ [data-expo-app-shell="true"][data-expo-project-shell="1"]>main>:is(section:not(.ks-module):not(.report),.project-info-editor) :is(.grid,.cards)>*{min-width:0;max-width:100%;box-sizing:border-box}
+ [data-expo-app-shell="true"][data-expo-project-shell="1"]>main>:is(section:not(.ks-module):not(.report),.project-info-editor) .check{border-radius:8px!important}
+ /* The native header's second div inherited flex:1 and consumed an entire
+    desktop row. All original controls remain in the same DOM/tab order. */
+ @media(min-width:1181px){
+  [data-expo-app-shell="true"][data-expo-project-shell="1"]>header>.head{display:flex;flex-wrap:nowrap;gap:12px;padding:8px 28px}
+  [data-expo-app-shell="true"][data-expo-project-shell="1"]>header>.head>div:nth-child(2){flex:0 1 auto!important;min-width:0;width:auto!important;margin-right:auto}
+  [data-expo-app-shell="true"][data-expo-project-shell="1"]>header>.head>div:first-child{width:176px!important;height:60px!important;flex:0 0 176px!important}
+  [data-expo-app-shell="true"][data-expo-project-shell="1"]>header>.head>.project-header-actions{flex:0 0 auto;gap:8px}
+  [data-expo-app-shell="true"][data-expo-project-shell="1"]>header>.head .workspace-view-control{flex:0 0 auto}
+ }
+ @media(min-width:1181px) and (max-width:1350px){
+  [data-expo-app-shell="true"][data-expo-project-shell="1"]>header>.head{flex-wrap:wrap}
+ }
+ @media(max-width:700px){
+  [data-expo-app-shell="true"][data-expo-project-shell="1"]>header>.head>.workspace-view-control{flex:1 1 100%;width:100%;max-width:100%;min-width:0}
+  [data-expo-app-shell="true"][data-expo-project-shell="1"]>header>.head>.workspace-view-control button{width:100%;white-space:normal;overflow-wrap:anywhere}
+  [data-expo-app-shell="true"][data-expo-project-shell="1"]>main>:is(section:not(.ks-module):not(.report),.project-info-editor)>h2{font-size:25px!important}
+  [data-expo-app-shell="true"][data-expo-project-shell="1"]>main>:is(section:not(.ks-module):not(.report),.project-info-editor) :is(.item,.out,.tile,.checklistPoint,.checklistSummaryCard,.deviationClosedBox,.collapsibleBlockBody){padding:12px!important}
+  [data-expo-app-shell="true"][data-expo-project-shell="1"]>main>:is(section:not(.ks-module):not(.report),.project-info-editor) :is(.grid,.cards){grid-template-columns:minmax(0,1fr)!important}
+ }
+}
+
+@media screen {
+ body:has([data-expo-app-shell="true"][data-expo-project-shell="1"]) .deviation-dialog-backdrop:has(.controller-access-panel,.deviation-dialog-field){display:flex;justify-content:flex-end;align-items:stretch;padding:0!important}
+ body:has([data-expo-app-shell="true"][data-expo-project-shell="1"]) .deviation-dialog:has(.controller-access-panel,.deviation-dialog-field){display:flex;flex-direction:column;width:min(680px,100vw)!important;max-width:100vw;height:100dvh!important;max-height:100dvh!important;margin:0!important;padding:0!important;border:0;border-radius:0!important;background:#fff;overflow:hidden}
+ body:has([data-expo-app-shell="true"][data-expo-project-shell="1"]) .deviation-dialog:has(.controller-access-panel,.deviation-dialog-field)>.deviation-dialog-header{position:static;flex:none;margin:0;padding:20px 24px;background:#0f222d!important;color:#fff;border:0;border-radius:0;min-width:0}
+ body:has([data-expo-app-shell="true"][data-expo-project-shell="1"]) .deviation-dialog:has(.controller-access-panel,.deviation-dialog-field)>.deviation-dialog-header :is(h2,p){color:inherit;font-size:16px!important}
+ body:has([data-expo-app-shell="true"][data-expo-project-shell="1"]) .deviation-dialog:has(.controller-access-panel,.deviation-dialog-field)>.deviation-dialog-header h2{font-size:28px!important;line-height:1.2}
+ body:has([data-expo-app-shell="true"][data-expo-project-shell="1"]) .deviation-dialog:has(.controller-access-panel,.deviation-dialog-field)>.deviation-dialog-body{flex:1;min-height:0;padding:20px 24px;overflow:auto;overscroll-behavior:contain}
+ body:has([data-expo-app-shell="true"][data-expo-project-shell="1"]) .deviation-dialog:has(.controller-access-panel,.deviation-dialog-field) :is(fieldset,.item){min-width:0;border:1px solid #d5e3e9;border-radius:8px!important;padding:16px;max-width:100%;box-sizing:border-box}
+ body:has([data-expo-app-shell="true"][data-expo-project-shell="1"]) .deviation-dialog:has(.controller-access-panel,.deviation-dialog-field) :is(p,label,legend,input,select,textarea,button){font-size:16px!important;line-height:1.45;box-sizing:border-box}
+ body:has([data-expo-app-shell="true"][data-expo-project-shell="1"]) .deviation-dialog:has(.controller-access-panel,.deviation-dialog-field) :is(button,input:not([type=checkbox]):not([type=radio]),select,textarea){min-height:44px!important;max-width:100%;min-width:0}
+ body:has([data-expo-app-shell="true"][data-expo-project-shell="1"]) .deviation-dialog:has(.controller-access-panel,.deviation-dialog-field) button{white-space:normal;overflow-wrap:anywhere;border-radius:7px;box-shadow:none;transform:none}
+ body:has([data-expo-app-shell="true"][data-expo-project-shell="1"]) .deviation-dialog:has(.controller-access-panel,.deviation-dialog-field) .deviation-dialog-footer{position:static;flex-wrap:wrap;gap:10px;margin:16px 0 0;padding:12px 0 0;bottom:auto}
+ body:has([data-expo-app-shell="true"][data-expo-project-shell="1"]) .deviation-dialog:has(.controller-access-panel,.deviation-dialog-field) .deviation-dialog-close{flex:0 0 44px;width:44px;height:44px;padding:0!important;background:transparent;color:#fff;border:1px solid #48606b;font-size:24px!important}
+ @media(max-width:700px){
+  body:has([data-expo-app-shell="true"][data-expo-project-shell="1"]) .deviation-dialog:has(.controller-access-panel,.deviation-dialog-field)>:is(.deviation-dialog-header,.deviation-dialog-body){padding:16px}
+  body:has([data-expo-app-shell="true"][data-expo-project-shell="1"]) .deviation-dialog:has(.controller-access-panel,.deviation-dialog-field)>.deviation-dialog-header h2{font-size:25px!important}
+  body:has([data-expo-app-shell="true"][data-expo-project-shell="1"]) .deviation-dialog:has(.controller-access-panel,.deviation-dialog-field) .deviation-dialog-grid{grid-template-columns:minmax(0,1fr)}
+ }
+}

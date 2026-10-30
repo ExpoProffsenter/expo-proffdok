@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Samle faktiske prosjektbarn i design03.6",
+  "change": "Miljømål BEGGE, kun PR295/Preview. Nytt projectSubflows036.css og én import samler native prosjektbeskrivelse, kundeinfo, prosjekteringsfelt/egne punkter, avtalegrunnlag, produkter, overflater/innredning, fag/utstyr, chat/notater, overtagelse og garanti. Prosjektavvik og kontrollørtilgang får samme native680px høyrepanel. Kun screen-scopet presentasjon; report-root og KS-modulens egne flater holdes utenfor. Native DOM, callbacks, tilgang, kommandosperrer, recovery, autosave, signering, priser, PDF- og e-postmotor endres ikke. Prosjekttoppens arvede flex:1 på titteldiv skaper en unødig desktoprad; lokal prosjekt-CSS samler eksisterende masthead uten ny navigasjonseier.",
+  "verification": "Ny faktisk Chromium-prøve531 assertions/85 navngitte tilstand×bredde-visninger PASS på eldre Chromium143/Playwright1.58.2. Native moduler og wrappers, originale main-primitiver og prosjekteringsprefiks/handlers; kun klienttransport og testdata isolert. Fem bredder320/390/768/1363/1920, åpne underkategorier og avviksgrupper, vegghengtWC/sisterne, egne prosjekteringspunkter, kladd og samme textareaDOM ved disclosure, låste produkter, overtagelsessperre, garantiens manglende dokumentasjon, native required før avvikskommando og kontrollørvalidering før tilgangskommando. Begge dialogers native Escape/close/reopen bevarer usendt kladd uten transport. Negativt foreldrestilsett uten den nye importen feiler på faktisk avklippet Fullskjermvisning. Eksisterende prosjektworkspace193/kunderegister36/faktisksave98, prosjektkontrakt og production-closeout PASS. Full eksplisitt Sandbox critical/build PASS. Samlet app-UX, ny CI/Preview og innlogget etterkontroll føres på eksakt kandidat i PR295. Ingen helapp-/alle-roller-/fysiskmobil-/Safari-/backendattest. Prosjekteringsprefikset inneholder ikke sjekklisteeditoren eller dens13kontrollpunkter; de beholder tidligere separat actual-child-bevis. Fremdrift/bemanning er separat neste pakke.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Ingen knappnavn, oppgaverekkefølge eller brukerkommando endres; bare eksisterende presentasjon."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Ingen nye data-/tilgangs-/lagrings-/rute-/dialogeiere; bare screen-scopet CSS."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen avhengigheter, miljøverdier eller installasjonssteg endres."
+    },
+    "module": {
+      "required": true,
+      "reason": "UI README beskriver skjema-, dialog- og PDF-avgrensningen samt faktisk native testgrunnlag."
+    }
+  }
+}
