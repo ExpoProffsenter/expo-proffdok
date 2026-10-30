@@ -6,6 +6,8 @@ export const HELP_UPDATED_LABEL='Sist oppdatert: 30.10.2026';
 const workflow={
  start:['Verktøy og maler åpner et panel fra høyre for arbeidsflaten du står i. Escape eller Tilbake til arbeidet lukker panelet. Å åpne eller lukke panelet lagrer ikke arbeidet.'],
  sales:[
+  'Ny forespørsel og Nytt tilbud åpner et panel fra høyre. Velg tilbudstype ved Nytt tilbud. Registrer kunden og velg saksbehandler. Hent fra kunderegister, Kontroller opplysningene og Lagre kunde for senere bruk kan åpnes ved behov. Kundelagring krever eget valg og egen Lagre kunde-knapp.',
+  'Lagre forespørsel åpner saken, der du kan planlegge befaring. Opprett våtromstilbud eller Opprett tilbud åpner den valgte tilbudsbyggeren. Opprettelsen sender ikke tilbudet. Avbryt rydder skjemaet via den vanlige avbryt-handlingen. Tilbake eller Escape bruker den vanlige tilbakeveien.',
   'Kundevisning: I en salgssak ligger Kundens tilbud til høyre på PC. På mobil åpner Kundevisning det samme lesefeltet. Utvid kundevisning gir mer plass. Escape eller Tilbake til arbeidet lukker det store panelet og beholder editoren og kladden.',
   'Etiketten viser om du leser lagret kladd, publisert kundetilbud eller et låst akseptert tilbud. Lesefeltet endrer ingen kundevalg og publiserer eller sender ingenting. Lagre endringer før du kontrollerer dem. Prøv kundevisningen igjen henter den lagrede kundeversjonen på nytt ved hentefeil. Er versjonen eller tilgangen endret, gå tilbake til sakslisten og åpne saken på nytt.',
   'Verktøy og maler inne i saken følger samme kunde og tilbud. Rediger kunde, Planlegg befaring og Arbeid med tilbudet vises når handlingene er tilgjengelige i dette steget.'

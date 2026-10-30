@@ -400,3 +400,9 @@ Versjonskonflikt og CPU (22.10.2026): Forventet avvisning fra accept_sales_offer
 ### Befaringsbilder i stor visning – 23.10.2026
 
 SalesInspectionNote knytter både vanlige befaringsbilder og lagret Badskisse til eksisterende bootstrap-bildeviser med samme `Åpne større bilde`-lenkekontrakt som kundetilbudets bilder. Viewer bruker gjeldende visnings-URL i samme fane; ingen nye bildedata eller lagring opprettes. Last opp/Fjern/Lagre, IndexedDB-kladd, server-first hydrering og tilbakeknapp er bevart. Sales editor Chromium-suiten kontrollerer nå faktisk bildeåpning, full originalkilde, lukking med knapp/Escape/bakgrunn, tastatur, bevart ulagret tekst og ingen utilsiktet submit ved fire skjermbredder.
+
+### Opprettelse i 03.6-arbeidsflaten (30.10.2026)
+
+Ny forespørsel, tilbudstypevalg og begge direkte tilbudsskjemaene bruker samme native SalesEntryPanel/WorkspacePanel. Originale felt, obligatorisk saksbehandler, handler-UUID, validering, kunderegister og Core-kommandoer beholdes. Submit-knappen i fast footer er knyttet til det samme skjemaet med useId/form. Kundesøk, oppsummering og valgfri kundelagring er montert i native details; redigering av eksisterende kunde beholder sine åpne felter. Escape/lukk bruker onBack; Avbryt bruker onCancel. Opprydding etter vellykket opprettelse må ikke utløse onBack fra en sen dialog-close. Ingen ny recovery-/hydrering-/lagringseier. Befaringsplan bruker eksisterende editor-ramme og samme bekreftelsesvalg.
+
+Testgrunnlag og faktiske begrensninger: docs/changes/sales-entry-workspace-036-20261030.json. Bare Preview, ingen redesign-TEST OK.

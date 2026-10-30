@@ -1428,7 +1428,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/sales-case-handler-check.mjs",
@@ -1447,13 +1447,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "current-sales-entry",
+            "mapping": "scoped partial result; actual scope and limits in evidence registry"
+          }
+        ]
       },
       "design_review": {
-        "status": "ikke-startet",
-        "reason": "Ingen selvstendig visuell sluttkontroll attestert i denne auditen.",
+        "status": "delvis",
+        "reason": "Avgrenset 03.6-opprettelse/editorramme kontrollert med ekte CSS og PC/mobilbilder; samlet innlogget helreise og enhets-/rollematrise ikke attestert.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "current-sales-entry"
+        ]
       },
       "remaining_checks": []
     },
@@ -1574,7 +1582,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/sales-editor-ux-browser-check.mjs",
@@ -1593,13 +1601,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "current-sales-entry",
+            "mapping": "scoped partial result; actual scope and limits in evidence registry"
+          }
+        ]
       },
       "design_review": {
-        "status": "ikke-startet",
-        "reason": "Ingen selvstendig visuell sluttkontroll attestert i denne auditen.",
+        "status": "delvis",
+        "reason": "Avgrenset 03.6-opprettelse/editorramme kontrollert med ekte CSS og PC/mobilbilder; samlet innlogget helreise og enhets-/rollematrise ikke attestert.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "current-sales-entry"
+        ]
       },
       "remaining_checks": []
     },
@@ -1827,16 +1843,21 @@
           {
             "ref": "checkpoint-sales",
             "mapping": "scoped partial result; see evidence_registry and limitations"
+          },
+          {
+            "ref": "current-sales-entry",
+            "mapping": "scoped partial result; actual scope and limits in evidence registry"
           }
         ]
       },
       "design_review": {
         "status": "delvis",
-        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
+        "reason": "Avgrenset 03.6-opprettelse/editorramme kontrollert med ekte CSS og PC/mobilbilder; samlet innlogget helreise og enhets-/rollematrise ikke attestert.",
         "screenshots": [],
         "reviewer": null,
         "partial_evidence_refs": [
-          "checkpoint-sales"
+          "checkpoint-sales",
+          "current-sales-entry"
         ]
       },
       "remaining_checks": []
@@ -1912,16 +1933,21 @@
           {
             "ref": "checkpoint-sales",
             "mapping": "scoped partial result; see evidence_registry and limitations"
+          },
+          {
+            "ref": "current-sales-entry",
+            "mapping": "scoped partial result; actual scope and limits in evidence registry"
           }
         ]
       },
       "design_review": {
         "status": "delvis",
-        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
+        "reason": "Avgrenset 03.6-opprettelse/editorramme kontrollert med ekte CSS og PC/mobilbilder; samlet innlogget helreise og enhets-/rollematrise ikke attestert.",
         "screenshots": [],
         "reviewer": null,
         "partial_evidence_refs": [
-          "checkpoint-sales"
+          "checkpoint-sales",
+          "current-sales-entry"
         ]
       },
       "remaining_checks": [
@@ -15862,6 +15888,19 @@
           "PORTAL-001",
           "HELP-001"
         ]
+      },
+      "current-sales-entry": {
+        "source": "docs/changes/sales-entry-workspace-036-20261030.json",
+        "candidate": "PR295 next candidate after97d56a51; exact final SHA/CI/live result in PR",
+        "level": "fresh production-component/actual-handler Chromium with isolated transport, visual PC/mobile; live evidence separately in PR",
+        "scope": "new request/type picker/direct wetroom/general creation, entry recovery and first destination; survey form presentation and synthetic submit",
+        "ids": [
+          "SALES-002",
+          "SALES-004",
+          "SALES-007",
+          "SALES-008"
+        ],
+        "limitations": "Does not attest full saved editing lifecycle, real calendar/mail/acceptance, all roles, physical mobile or Safari."
       }
     },
     "unmapped_journey_ids": [
@@ -15934,8 +15973,6 @@
       "PROJECT-013",
       "PROJECT-014",
       "PROJECT-015",
-      "SALES-002",
-      "SALES-004",
       "SALES-005",
       "SALES-006",
       "SALES-010",
@@ -15952,6 +15989,7 @@
       "TIME-003"
     ],
     "next_packages": [
+      "SALES: remaining authenticated saved-case lifecycle, calendar, offer publication/acceptance and role/device variants; current entry panel evidence is partial only",
       "PROJECT-003..015: remaining actual subdialogs/roles and visual review; reuse existing source-correlated suites",
       "PORTAL-001..002: private/customer/controller read routes with isolated fixtures; no link creation or real recipient transport",
       "KSHMS-012: inspection extract firm-switch fix stays isolated in PR298",

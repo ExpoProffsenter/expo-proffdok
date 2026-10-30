@@ -1,5 +1,11 @@
 # Design 03.6 – gjenoppta uten ny runde
 
+## Samlepakke30.10 – opprettelse og salg
+
+Fersk baseline97d56a51, draft PR295, full CI798SUCCESS og main71d157f7. Innlogget baseline bekreftet gammel lang Ny forespørsel med stor hero/fullt kunderegister og et eget sentrert tilbudstypevalg. Original03.6 f67f2367 har opprettelse i felles høyrepanel. Ny forespørsel, tilbudstypevalg og begge direkte tilbudsskjemaene bruker derfor eksisterende WorkspacePanel. Samme felt, saksbehandler, kunderegister og Core-kommandoer; foldbart tilleggsinnhold uten avmontering og fast submit-footer. Eksisterende tilbudsbyggere beholder arbeidsflaten. Befaringsplan bruker samme editor-ramme. Ingen endring av recovery/hydrering/autolagring eller backend, og godkjent Startside beholdes.
+
+Ny110-assertions browserprøve kjører faktisk chooser, faktiske opprettelsesfunksjoner, reelle felt, begge tilbudsbyggere og befaring med isolert transport. Fem bredder/kort skjerm, samme DOM ved utvidelse, required, registry/opt-in, UUID/navn/revisjon, feil/late-scope, focus/visibility/samme profil, ekte entry-recovery-remount, back/cancel/Escape og ingen utilsiktet Back etter vellykket lagring. Handler23+31, editor277/general229 og kundepreview875+35+26PASS; eksplisitt Sandbox critical/buildPASS. Full app-UX, ny eksakt CI/deploy og innlogget sluttkontroll føres i PR295. Varig grunnlag docs/changes/sales-entry-workspace-036-20261030.json. SALES-002/004/007/008 får bare avgrensede delbevis; kalender, faktisk utsending/aksept, roller og fysiskmobil/Safari står fortsatt åpne. Ingen redesign-TEST OK, merge, Production eller demo-sync.
+
 ## Samlepakke30.10 – prosjektbilder, kundeportal og privat dokumentinngang
 
 Baseline2a6bf955/CI795SUCCESS, fast Preview og samme demoøkt. Bilder har nå en felles lesende større-bildeinngang fra samlet oversikt, galleri og kundeportal, med native WorkspacePanel/fokus/utvidelse og originale kilder. Legg til bilder samler de samme monterte filfeltene; opplasting/autolagring eies fortsatt av prosjektet. Kundeportal har åpen side, kompakt oversiktsstatistikk, ni uendrede native faner og én vannrett mobilrad. Privat dokumentkode/feil/venting får lesbar ramme og nettleserens Tilbake; ingen Auth/Storage/Function-/salgsreferanselogikk er endret.
@@ -81,7 +87,7 @@ Dette lukker ikke totaloppdraget. Visuell sammenligning av hele appen og de åpn
 | KS/HMS | Daglig arbeid med faktiske oppgaver/revisjoner; fire PC-faser; Visning og native rollefiltrert høyrepanel; kompakt utvidbar håndbokforklaring | KS197 Chromium, manager/reader/personal×fem bredder, komplett13/8/2målsett; SJA/oppsettkladd, hidden/active-portaler, firma/sene svar/tilgang |
 | Felles drawer | Ren WorkspaceToolDrawer med appadapter WorkspaceTools; samme native dialog, fokus/Escape/backdrop, disabled, callbacks og kontekstlukking |122 opprinnelige app-UX; ekstra lokal adapter8/pureleaf37; ny samlekjede nedenfor |
 
-Root kjørte `scripts/app-ux-review-browser-check.mjs` på samlet frosset tre: **122+89+51+1031+113+197 PASS**. Nye permanente prøver er importert fra dette eksisterende scriptet, uten workflow-/avhengighetsendring. Root kjørte også samlet prosjektprøve253, HR-registerReact, HR-conversationsReact105, HR conversation session/actual-jsPDF runtime131 og full `npm run build` med eksplisitt Sandbox/Preview-binding: PASS.
+Root kjørte `scripts/app-ux-review-browser-check.mjs` på samlet frosset tre: **122+89+51+1031+113+197 PASS**. Nye permanente prøver er importert fra dette eksisterende scriptet, uten workflow-/avhengighetsendring. Root kjørte også samlet prosjektprøve253, HR-registerReact, HR-conversationsReact110, HR conversation session/actual-jsPDF runtime131 og full `npm run build` med eksplisitt Sandbox/Preview-binding: PASS.
 
 KS-agentens øvrige eksisterende kontroller: module-navigation-resume, SJA-parent, job-links, review/task-reminders, bulk-ack87utgaver/3roller, handbook-jsPDF, document5PDF, SJA3PDF, execution3PDF og RUH/privateStorage/PDF: PASS. Full relevante KS-critical PASS. HR foundation/navigation/templates/sickleave/practice critical PASS. Bevar eksisterende CI-pakker; full ny CI på faktisk publisert kandidat kreves og føres i PR.
 

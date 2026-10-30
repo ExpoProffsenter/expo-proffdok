@@ -115,3 +115,5 @@ await import("./profile-support-register-browser-check.mjs");
 await import("./report-choice-workspace-browser-check.mjs");
 
 await import("./project-media-portal-browser-check.mjs");
+
+await import("./sales-entry-workspace-browser-check.mjs");
