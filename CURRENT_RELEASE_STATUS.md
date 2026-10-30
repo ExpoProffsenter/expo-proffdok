@@ -1,8 +1,10 @@
-# Sjekklister for eksterne prosjekter – korrigert krav30.10
+# Sjekklister for eksterne prosjekter – TEST OK31.10.2026
 
-PR299 oppdateres etter Kenneths presisering: ordrenummer er påkrevd, med arbeidssted/adresse og valgfrie eksternt prosjektnavn/kunde på lagret kontroll og PDF. Egen Meny → Sjekklister og Startside → Fyll ut sjekkliste; ingen ProffDok-prosjektopprettelse. Lokal DB92/mail-PDF43/nativebrowser111 og full Sandbox critical/buildPASS. Ny additive migrering/Edge og faktisk Preview-sluttprøve føres på eksakt kandidat i [PR299](https://github.com/ExpoProffsenter/expo-proffdok/pull/299). Tidligere blank-ordre-test bevares som historikk. Ingen Production-publisering eller faktisk e-post.
+Kenneth har gitt TEST OK for funksjonen i PR299 på appkandidat c791a7c1, full Core Safety814/41140874080SUCCESS10/10 og innlogget Preview-prøve. Egen Meny → Sjekklister / Startside → Fyll ut sjekkliste. Ordrenummer og arbeidssted/adresse kreves; eksternt prosjektnavn og kunde følger også kontroll/PDF når utfylt. Ingen ProffDok-prosjektopprettelse. Faktisk main-/Production-/demo-SHA, migrerings-/Edge-status og kontrollert main→demo føres i [PR299](https://github.com/ExpoProffsenter/expo-proffdok/pull/299). Nettleserfilbroens PDF-overføring og reell e-postlevering er avgrenset i godkjenningsgrunnlaget; ingen prøve-e-post er bestilt.
 
-Testgrenen har eksplisitt EXPO_BACKEND_TARGET=sandbox kun for Preview. Den tidligere feilkoblingen til Production er rettet og kontrollert i faktisk publisert kode på ca0a7f62/fullCI812SUCCESS; demo-innlogging ble deretter bekreftet. DesignPR295 fortsetter separat fra sitt maleditor-/vedleggscheckpoint. Ingen redesign-TEST OK.
+Neste krav er varig registrert i [oppgave300](https://github.com/ExpoProffsenter/expo-proffdok/issues/300): alle nye og eksisterende sjekklister skal ha påkrevd tegnet mobilsignatur fra fullfører, lik Overtagelse i prosjektet, og separat valgfri ekstern signatur. Samme inngang skal la brukeren opprette ny sjekkliste og velge Lagre som mal. Disse tilleggene er ikke implementert i den godkjente PR299-kandidaten; fullført historikk skal bevares uten oppdiktet signatur/backfill.
+
+DesignPR295 fortsetter separat fra sitt maleditor-/vedleggscheckpoint. Ingen redesign-TEST OK.
 
 # Gjeldende leveranse – 27.10.2026
 
