@@ -12,6 +12,29 @@ export default async function ({
   reader,
   outsider,
 }) {
+  // Calendar months clamp to the last day of the target month. Date.setUTCMonth
+  // overflows (31 October + 6 months becomes 1 May), unlike PostgreSQL.
+  const sixCalendarMonths = (day) => {
+    const date = new Date(`${day}T00:00:00Z`);
+    const target = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 7, 0));
+    target.setUTCDate(Math.min(date.getUTCDate(), target.getUTCDate()));
+    return target.toISOString().slice(0, 10);
+  };
+  for (const [day, expected] of [
+    ["2026-10-31", "2027-04-30"],
+    ["2026-10-30", "2027-04-30"],
+    ["2026-08-31", "2027-02-28"],
+    ["2023-08-31", "2024-02-29"],
+    ["2024-02-29", "2024-08-29"],
+    ["2026-01-31", "2026-07-31"],
+  ]) {
+    eq(sixCalendarMonths(day), expected, `six calendar months from ${day}`);
+    eq(
+      (await db.query("select (($1::date + interval '6 months')::date)::text v", [day])).rows[0].v,
+      expected,
+      `PostgreSQL calendar retention from ${day}`,
+    );
+  }
   await db.exec("reset role");
   const fingerprints = (
     await db.query(
@@ -95,9 +118,7 @@ export default async function ({
   const settingsVersion = s.history[0].id;
   eq(
     s.retain_until,
-    new Date(new Date(today).setUTCMonth(new Date(today).getUTCMonth() + 6))
-      .toISOString()
-      .slice(0, 10),
+    sixCalendarMonths(today),
   );
   const employer = {
     id: id(995010),

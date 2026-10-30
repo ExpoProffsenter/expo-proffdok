@@ -2,6 +2,8 @@
 
 Kenneth har gitt TEST OK for funksjonen i PR299 på appkandidat c791a7c1, full Core Safety814/41140874080SUCCESS10/10 og innlogget Preview-prøve. Egen Meny → Sjekklister / Startside → Fyll ut sjekkliste. Ordrenummer og arbeidssted/adresse kreves; eksternt prosjektnavn og kunde følger også kontroll/PDF når utfylt. Ingen ProffDok-prosjektopprettelse. Faktisk main-/Production-/demo-SHA, migrerings-/Edge-status og kontrollert main→demo føres i [PR299](https://github.com/ExpoProffsenter/expo-proffdok/pull/299). Nettleserfilbroens PDF-overføring og reell e-postlevering er avgrenset i godkjenningsgrunnlaget; ingen prøve-e-post er bestilt.
 
+CI816 traff en eksisterende månedssluttfeil i Bolig-testens JS-forventning (31.10 + seks kalendermåneder). QA-beregningen og faste månedsslutt-/skuddårsprøver er rettet uten å endre Bolig-produktkode. Ny full CI før merge føres i PR299.
+
 Neste krav er varig registrert i [oppgave300](https://github.com/ExpoProffsenter/expo-proffdok/issues/300): alle nye og eksisterende sjekklister skal ha påkrevd tegnet mobilsignatur fra fullfører, lik Overtagelse i prosjektet, og separat valgfri ekstern signatur. Samme inngang skal la brukeren opprette ny sjekkliste og velge Lagre som mal. Disse tilleggene er ikke implementert i den godkjente PR299-kandidaten; fullført historikk skal bevares uten oppdiktet signatur/backfill.
 
 DesignPR295 fortsetter separat fra sitt maleditor-/vedleggscheckpoint. Ingen redesign-TEST OK.
