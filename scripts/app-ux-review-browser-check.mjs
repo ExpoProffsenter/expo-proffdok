@@ -111,3 +111,5 @@ await import("./kshms-workspace-036-browser-check.mjs");
 
 await import("./systemadmin-company-panel-browser-check.mjs");
 await import("./profile-support-register-browser-check.mjs");
+
+await import("./report-choice-workspace-browser-check.mjs");

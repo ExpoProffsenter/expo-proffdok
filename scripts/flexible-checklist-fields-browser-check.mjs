@@ -38,6 +38,12 @@ try{
   eq(await dialog.evaluate(el=>[...el.querySelectorAll('button')].filter(e=>{const r=e.getBoundingClientRect();return r.width&&r.height&&(r.height+.001<44||r.width+.001<44)}).map(e=>e.textContent)),[],'checklist controls44 '+width);
   eq(await dialog.evaluate(el=>[...el.querySelectorAll('button')].filter(e=>e.getBoundingClientRect().width&&parseFloat(getComputedStyle(e).fontSize)<16).map(e=>e.textContent)),[],'readable checklist actions '+width);
   eq(await dialog.evaluate(el=>el.scrollWidth<=el.clientWidth+1),true,'design checklist internal width '+width);
+  const frame=await dialog.boundingBox();
+  eq(Math.abs(frame.x+frame.width-width)<1&&frame.y===0,true,'checklist right edge and top '+width);
+  eq(frame.height,900,'checklist full viewport '+width);
+  eq(await dialog.locator('.deviation-dialog-header').evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(16, 33, 43)','same navy checklist header '+width);
+  eq(await dialog.locator('.deviation-dialog-header h2').evaluate(e=>parseFloat(getComputedStyle(e).fontSize)),width<=620?25:28,'same checklist title '+width);
+
   eq(await page.getByLabel('Arbeidssted, bygg og område *',{exact:true}).inputValue(),'Behold arbeidssted etter dvale','design resize retains answers '+width);
   if(process.env.PROJECT_UX_SCREENSHOTS)await page.screenshot({path:path.join(process.env.PROJECT_UX_SCREENSHOTS,'checklist-'+width+'.png'),fullPage:true});
  }
@@ -48,7 +54,8 @@ try{
   eq(header.y>=box.y&&header.y+header.height<=height,true,'checklist title and close remain visible '+width+'x'+height);
   await dialog.locator('.deviation-dialog-body').evaluate(el=>el.scrollTo(0,el.scrollHeight));
   const footer=await dialog.locator('.project-checklist-footer').boundingBox();
-  eq(footer.y>=header.y+header.height&&footer.y+footer.height<=height+.001,true,'checklist actions stay within short dialog '+width+'x'+height);
+  if(process.env.PROJECT_UX_SCREENSHOTS)await page.screenshot({path:path.join(process.env.PROJECT_UX_SCREENSHOTS,'short-diagnostic-'+width+'-'+height+'.png')});
+  eq(footer.y>=header.y+header.height&&footer.y+footer.height<=height+.001,true,'checklist actions stay within short dialog '+width+'x'+height+' '+JSON.stringify({footer,header}));
   eq(await page.getByLabel('Arbeidssted, bygg og område *',{exact:true}).inputValue(),'Behold arbeidssted etter dvale','short dialog retains answers '+width+'x'+height);
   if(process.env.PROJECT_UX_SCREENSHOTS)await page.screenshot({path:path.join(process.env.PROJECT_UX_SCREENSHOTS,'checklist-'+width+'-short-'+height+'.png'),fullPage:false});
  }

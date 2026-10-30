@@ -229,3 +229,53 @@ body:has([data-expo-app-shell="true"]) .company-admin-panel-content :is(input,se
 body:has([data-expo-app-shell="true"]) .company-admin-panel-content button:not(.secondary){background:var(--pd-accent);color:#fff}
 body:has([data-expo-app-shell="true"]) .company-admin-panel-content button.secondary{background:#fff;color:var(--pd-accent);border:1px solid var(--pd-line)}
 @media(max-width:800px){body:has([data-expo-app-shell="true"]) .help-topic-index{grid-template-columns:minmax(0,1fr)}}
+
+/* Native report selection and project controls share the workspace frame.
+   Keep the existing dialog owners, fields, focus and export commands. */
+@media screen{
+ body:has([data-expo-app-shell="true"]) .ks-report-backdrop{padding:0;align-items:stretch;justify-content:flex-end}
+ body:has([data-expo-app-shell="true"]) .ks-report-dialog{display:flex;flex-direction:column;width:min(900px,100vw);max-width:100vw;height:100dvh;max-height:100dvh;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:#fff!important;color:var(--pd-ink);overflow:hidden;box-shadow:-12px 0 40px #10212b24}
+ body:has([data-expo-app-shell="true"]) .ks-report-dialog>.ks-report-dialog-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;position:static;flex:none;margin:0;padding:20px 24px;background:var(--pd-ink);color:#fff;border:0;border-radius:0;box-shadow:none}
+ body:has([data-expo-app-shell="true"]) .ks-report-dialog-head h2{margin:0;font-size:28px!important;line-height:1.2;font-weight:600;color:#fff;overflow-wrap:anywhere}
+ body:has([data-expo-app-shell="true"]) .ks-report-dialog-head button{flex:none;width:44px;min-height:44px!important;margin:0;padding:0;border:1px solid #ffffff30;border-radius:6px;background:transparent;color:#fff;font-size:24px;box-shadow:none}
+ body:has([data-expo-app-shell="true"]) .ks-report-dialog-body{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding:20px 24px}
+ body:has([data-expo-app-shell="true"]) .ks-report-dialog :is(p,label,legend,button){font-size:16px!important;line-height:1.45}
+ body:has([data-expo-app-shell="true"]) .ks-report-dialog fieldset{margin:16px 0;padding:12px;border:1px solid var(--pd-line);border-radius:8px;min-width:0}
+ body:has([data-expo-app-shell="true"]) .ks-report-dialog .ks-report-option{min-height:44px!important;overflow-wrap:anywhere}
+ body:has([data-expo-app-shell="true"]) .ks-report-dialog .ks-report-option input{width:20px;height:20px;min-height:20px;flex:0 0 20px}
+ body:has([data-expo-app-shell="true"]) .ks-report-dialog>.ks-report-dialog-footer{flex:none;display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:16px 24px;background:#fff;border-top:1px solid var(--pd-line)}
+ body:has([data-expo-app-shell="true"]) .ks-report-dialog-footer button{min-height:44px!important;margin:0;max-width:100%;white-space:normal;border-radius:7px;box-shadow:none;transform:none}
+ body:has([data-expo-project-shell="1"]) .project-checklist-footer{top:0}
+ body:has([data-expo-project-shell="1"]) .deviation-dialog-backdrop:has(.project-checklist-footer){padding:0;align-items:stretch;justify-content:flex-end}
+ body:has([data-expo-project-shell="1"]) .deviation-dialog:has(.project-checklist-footer){width:min(980px,100vw);max-width:100vw;height:100dvh;max-height:100dvh;border:0;border-radius:0!important;background:#fff!important}
+ body:has([data-expo-project-shell="1"]) .deviation-dialog:has(.project-checklist-footer)>.deviation-dialog-header{padding:20px 24px;background:var(--pd-ink);color:#fff}
+ body:has([data-expo-project-shell="1"]) .deviation-dialog:has(.project-checklist-footer)>.deviation-dialog-header h2{font-size:28px!important;line-height:1.2;font-weight:600;color:#fff}
+ body:has([data-expo-project-shell="1"]) .deviation-dialog:has(.project-checklist-footer)>.deviation-dialog-header p{color:#bdd7e2}
+ body:has([data-expo-project-shell="1"]) .deviation-dialog:has(.project-checklist-footer) .deviation-dialog-close{width:44px;min-height:44px!important;color:#fff;border:1px solid #ffffff30;background:transparent}
+ @media(max-width:620px){
+  body:has([data-expo-app-shell="true"]) .ks-report-dialog>:is(.ks-report-dialog-head,.ks-report-dialog-body,.ks-report-dialog-footer),
+  body:has([data-expo-project-shell="1"]) .deviation-dialog:has(.project-checklist-footer)>.deviation-dialog-header{padding:16px}
+  body:has([data-expo-app-shell="true"]) .ks-report-dialog-head h2,
+  body:has([data-expo-project-shell="1"]) .deviation-dialog:has(.project-checklist-footer)>.deviation-dialog-header h2{font-size:25px!important}
+  body:has([data-expo-app-shell="true"]) .ks-report-dialog-footer button{flex:1 1 auto;padding:8px 10px}
+ }
+}
+
+/* Stocktake uses the same open page and readable controls as the catalog. */
+body:has([data-expo-app-shell="true"]) .stocktake{margin:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;color:var(--pd-ink)}
+body:has([data-expo-app-shell="true"]) .stocktakeHeader{position:static;margin:0 0 20px;padding:0 0 16px;background:transparent;border:0;border-radius:0;box-shadow:none}
+body:has([data-expo-app-shell="true"]) .stocktakeHeader h2{font-size:var(--pd-title)!important;font-weight:600;line-height:1.2;letter-spacing:-.7px;margin:6px 0 8px}
+body:has([data-expo-app-shell="true"]) .stocktake :is(p,label,legend,input,select,button){font-size:16px!important;line-height:1.45}
+body:has([data-expo-app-shell="true"]) .stocktake small{font-size:14px;line-height:1.45}
+body:has([data-expo-app-shell="true"]) .stocktake button{min-height:44px!important;border-radius:7px;box-shadow:none;transform:none;font-weight:600}
+body:has([data-expo-app-shell="true"]) .stocktakeWorkspace>section,
+body:has([data-expo-app-shell="true"]) .stocktakeCreate{margin:0;padding:18px;border:1px solid var(--pd-line);border-radius:8px;background:#fff;box-shadow:none;min-width:0}
+body:has([data-expo-app-shell="true"]) .stocktake :is(.stocktakeHeader,.stocktakeSession)>div{min-width:0;overflow-wrap:anywhere}
+body:has([data-expo-app-shell="true"]) .stocktake .stocktakeSmart{display:flex;align-items:center;gap:10px;margin-top:12px}
+body:has([data-expo-app-shell="true"]) .stocktake input[type="checkbox"]{flex:0 0 20px;width:20px;height:20px;min-height:20px;padding:0}
+@media(min-width:1100px){
+ body:has([data-expo-app-shell="true"]) .stocktakeWorkspace:has(.stocktakeCount){grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);align-items:start}
+ body:has([data-expo-app-shell="true"]) .stocktakeWorkspace>*{grid-column:1/-1}
+ body:has([data-expo-app-shell="true"]) .stocktakeWorkspace>.stocktakeCount{grid-column:1}
+ body:has([data-expo-app-shell="true"]) .stocktakeWorkspace>.stocktakeCount+section{grid-column:2}
+}

@@ -1,6 +1,16 @@
 # Design 03.6 – gjenoppta uten ny runde
 
-## Gjeldende checkpoint – 30.10.2026
+## Samlepakke30.10 – rapport, sjekklister og varetelling
+
+Fersk oppstart bekreftet draft PR295/head5f297c1c, main71d157f7, CI792/40988649502SUCCESS og fungerende demoøkt på fast Preview. Ingen ny innlogging nødvendig.145-reisers JSON er avstemt mot nyere checkpoints med kilde, kandidat, bevisnivå, eksplisitte ID-koblinger og umappede reiser. Ingen automatisk totalattest fra gammel CI.
+
+Innlogget fant root en faktisk gjennomsiktig Velg KS/HMS til rapport-dialog på DEMO HOVED. Negativ test med opprinnelig CSS gjenskaper rgba(0,0,0,0). Rapportvalget får samme navy topp/høyrekant/fullhøyde/egen scroll/fast footer som øvrige paneler, med samme hook, tilgang og eksportkommandoer. Native sjekkliste beholder980px oppgavebredde og får samme ramme; kortskjerm-foten får øvre sticky-grense. Varetelling bruker åpen side,16px/44px, riktig20px søkeavkryssing og to PC-kolonner. Ingen Startside-/Bolig-kjerne-/backendendring.
+
+Ferske lokale prøver: report73, checklist88 (alle68tidligere beholdt), stock73 (alle27tidligere beholdt); ekte app/runtime-CSS og320/390/768/1363/1920. Samme faktiske kladd/felt, fokus/close/reopen, påkrevd/betinget svar, read-error/retry, firma/revoke, syntetisk scan, ukjent svar/idempotens,122rader/alle sider i eksport og avslutning. Faktisk React/jsPDF7PDF/4utskriftsforløpPASS og full eksplisitt Sandbox critical/buildPASS. Samlet app-UXPASS. Kandidat/ny CI/deploy/innlogget etterkontroll vedlikeholdes i PR295; grunnlag docs/changes/report-checklist-stock-workspace-036-20261030.json.
+
+Live baseline: eksisterende sjekklistesvar/gjenopptatt kontroll, rapportens fire dokumenttyper, Avbryt/fokus, Hjelp fra rapport og tilbake, Prissøk→Varetelling→åpne registreringsskjema. Ingen Lagre/Fullført/Opprett telling, filimport, e-post eller utsending. Varetelling har ingen lagrede tellinger i denne økten; registrering/eksport er bare syntetisk komponenttestet. Fortsett konkrete udekkede prosjekt-/portal-/dokumentreiser fra avstemt JSON. PR294/PR298 forblir isolerte, fysisk mobil/Safari og alle Help-innganger/A–Å er ikke ferdig. Bare Preview, ingen redesign-TEST OK.
+
+## Forrige verifiserte checkpoint – 30.10.2026
 
 **Ingen totalattest.** Siste appkandidat er `10df694ef4848cfefa255c6ed9fdca760eef2481`, tre `b611f45d36951255e672e65abe46a128d8c969ba`. Full CI791 /40987763038 er SUCCESS, alle åtte pakker, scope og påkrevd sluttkontroll:10/10 jobber. PR295 er draft, branch `design01-app-ramme-20261028`, main-grunnlag `71d157f7`. Ingen redesign-TEST OK, merge, Production eller main→demo er gitt/utført. Miljømål BEGGE, foreløpig bare Preview. Denne handoff-oppdateringen er ren dokumentasjon over uendret appkode.
 

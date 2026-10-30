@@ -6,7 +6,7 @@
   "branch": "design01-app-ramme-20261028",
   "pull_request": 295,
   "preview": "https://expo-proffdok-git-design01-app-ramme-20261028-ringside.vercel.app/",
-  "purpose": "Konkret brukerreise-/funksjonskart og kildekorrelasjon for videre prøving. Ingen nye runtime- eller visuelle bestått-påstander.",
+  "purpose": "Konkret145-reisers register med baseline-kildeanker og avstemt, avgrenset nyere bevis per ID. Ingen totalattest.",
   "review_status": "ikke-fullført",
   "scope_claim": {
     "all_named_user_domains_represented": true,
@@ -590,7 +590,7 @@
         "mapping_gap": true
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/app-ux-review-browser-check.mjs",
@@ -601,13 +601,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "checkpoint-shared",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
         "status": "delvis",
-        "reason": "Åpent bruker-/referanseavvik er identifisert i området. Ingen lukking av den enkelte reisen uten sluttbilder.",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "checkpoint-shared"
+        ]
       },
       "remaining_checks": [
         "Skissen har ikke en fullstendig én-til-én-funksjonsflate for hele denne reisen; anvend felles design uten å fjerne eksisterende native funksjoner eller finne på forretningsregler."
@@ -653,7 +661,7 @@
         "mapping_gap": true
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/personal-project-layout-browser-check.mjs",
@@ -664,13 +672,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "checkpoint-shared",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
         "status": "delvis",
-        "reason": "Åpent bruker-/referanseavvik er identifisert i området. Ingen lukking av den enkelte reisen uten sluttbilder.",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "checkpoint-shared"
+        ]
       },
       "remaining_checks": [
         "Skissen har ikke en fullstendig én-til-én-funksjonsflate for hele denne reisen; anvend felles design uten å fjerne eksisterende native funksjoner eller finne på forretningsregler."
@@ -715,7 +731,7 @@
         "mapping_gap": true
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/home-followups-react-check.mjs",
@@ -726,13 +742,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "checkpoint-shared",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
         "status": "delvis",
-        "reason": "Åpent bruker-/referanseavvik er identifisert i området. Ingen lukking av den enkelte reisen uten sluttbilder.",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "checkpoint-shared"
+        ]
       },
       "remaining_checks": [
         "Skissen har ikke en fullstendig én-til-én-funksjonsflate for hele denne reisen; anvend felles design uten å fjerne eksisterende native funksjoner eller finne på forretningsregler."
@@ -778,7 +802,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/personal-page-react-check.mjs",
@@ -789,13 +813,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "checkpoint-shared",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
         "status": "delvis",
-        "reason": "Åpent bruker-/referanseavvik er identifisert i området. Ingen lukking av den enkelte reisen uten sluttbilder.",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "checkpoint-shared"
+        ]
       },
       "remaining_checks": [
         "Firmaets enabled-opt-in finnes i TimeSetup (default false), og TimeSheet sperrer føring når deaktivert. PersonalTimeCard/Mine timer-fanen følger fortsatt HR-gate. Sluttkandidat trenger off→on→off-/rolle- og synlighetskontroll; eksisterende oppsett må gjenbrukes."
@@ -840,7 +872,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/personal-project-layout-browser-check.mjs",
@@ -859,13 +891,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "checkpoint-shared",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
         "status": "delvis",
-        "reason": "Åpent bruker-/referanseavvik er identifisert i området. Ingen lukking av den enkelte reisen uten sluttbilder.",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "checkpoint-shared"
+        ]
       },
       "remaining_checks": []
     },
@@ -1014,7 +1054,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/personal-page-react-check.mjs",
@@ -1032,13 +1072,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "checkpoint-shared",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
         "status": "delvis",
-        "reason": "Åpent bruker-/referanseavvik er identifisert i området. Ingen lukking av den enkelte reisen uten sluttbilder.",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "checkpoint-shared"
+        ]
       },
       "remaining_checks": []
     },
@@ -1082,7 +1130,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/personal-page-react-check.mjs",
@@ -1101,13 +1149,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "checkpoint-shared",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
         "status": "delvis",
-        "reason": "Åpent bruker-/referanseavvik er identifisert i området. Ingen lukking av den enkelte reisen uten sluttbilder.",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "checkpoint-shared"
+        ]
       },
       "remaining_checks": []
     },
@@ -1150,7 +1206,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/personal-page-react-check.mjs",
@@ -1169,13 +1225,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "checkpoint-shared",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
         "status": "delvis",
-        "reason": "Åpent bruker-/referanseavvik er identifisert i området. Ingen lukking av den enkelte reisen uten sluttbilder.",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "checkpoint-shared"
+        ]
       },
       "remaining_checks": []
     },
@@ -1216,7 +1280,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/support-browser-check.mjs",
@@ -1235,13 +1299,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "checkpoint-shared",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
         "status": "delvis",
-        "reason": "Åpent bruker-/referanseavvik er identifisert i området. Ingen lukking av den enkelte reisen uten sluttbilder.",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "checkpoint-shared"
+        ]
       },
       "remaining_checks": []
     },
@@ -1286,7 +1358,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/sales-overview-ux-browser-check.mjs",
@@ -1297,13 +1369,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "checkpoint-sales",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
-        "status": "ikke-startet",
-        "reason": "Ingen selvstendig visuell sluttkontroll attestert i denne auditen.",
+        "status": "delvis",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "checkpoint-sales"
+        ]
       },
       "remaining_checks": []
     },
@@ -1417,7 +1497,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/project-customer-fields-browser-check.mjs",
@@ -1436,13 +1516,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "checkpoint-sales",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
-        "status": "ikke-startet",
-        "reason": "Ingen selvstendig visuell sluttkontroll attestert i denne auditen.",
+        "status": "delvis",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "checkpoint-sales"
+        ]
       },
       "remaining_checks": []
     },
@@ -1716,7 +1804,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/sales-editor-ux-browser-check.mjs",
@@ -1735,13 +1823,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "checkpoint-sales",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
-        "status": "ikke-startet",
-        "reason": "Ingen selvstendig visuell sluttkontroll attestert i denne auditen.",
+        "status": "delvis",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "checkpoint-sales"
+        ]
       },
       "remaining_checks": []
     },
@@ -1785,7 +1881,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/sales-store-layout-browser-check.mjs",
@@ -1812,13 +1908,21 @@
             }
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "checkpoint-sales",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
-        "status": "ikke-startet",
-        "reason": "Ingen selvstendig visuell sluttkontroll attestert i denne auditen.",
+        "status": "delvis",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "checkpoint-sales"
+        ]
       },
       "remaining_checks": [
         "Kan ikke dekke vare/montering/avsnitt-redigering; eksisterende sales-store-layout-browser er riktig separat delbevis."
@@ -1864,7 +1968,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/critical-store-template-check.mjs",
@@ -1883,13 +1987,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "checkpoint-sales",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
-        "status": "ikke-startet",
-        "reason": "Ingen selvstendig visuell sluttkontroll attestert i denne auditen.",
+        "status": "delvis",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "checkpoint-sales"
+        ]
       },
       "remaining_checks": []
     },
@@ -2003,7 +2115,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/sales-case-customer-preview-browser-check.mjs",
@@ -2022,13 +2134,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "checkpoint-sales",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
-        "status": "ikke-startet",
-        "reason": "Ingen selvstendig visuell sluttkontroll attestert i denne auditen.",
+        "status": "delvis",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "checkpoint-sales"
+        ]
       },
       "remaining_checks": []
     },
@@ -2435,7 +2555,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/smart-price-search-browser-check.mjs",
@@ -2454,13 +2574,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "checkpoint-catalog",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
-        "status": "ikke-startet",
-        "reason": "Ingen selvstendig visuell sluttkontroll attestert i denne auditen.",
+        "status": "delvis",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "checkpoint-catalog"
+        ]
       },
       "remaining_checks": []
     },
@@ -2505,7 +2633,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/price-search-mobile-check.mjs",
@@ -2524,13 +2652,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "checkpoint-catalog",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
-        "status": "ikke-startet",
-        "reason": "Ingen selvstendig visuell sluttkontroll attestert i denne auditen.",
+        "status": "delvis",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "checkpoint-catalog"
+        ]
       },
       "remaining_checks": []
     },
@@ -2573,7 +2709,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/critical-price-search-check.mjs",
@@ -2605,13 +2741,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "checkpoint-catalog",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
-        "status": "ikke-startet",
-        "reason": "Ingen selvstendig visuell sluttkontroll attestert i denne auditen.",
+        "status": "delvis",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "checkpoint-catalog"
+        ]
       },
       "remaining_checks": [
         "Plukkliste antall og Cordel/filbytes må bevises av egne eksporttester, ikke denne kildemarkørlisten."
@@ -2658,7 +2802,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/supplier-order-db-check.mjs",
@@ -2685,13 +2829,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "checkpoint-catalog",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
-        "status": "ikke-startet",
-        "reason": "Ingen selvstendig visuell sluttkontroll attestert i denne auditen.",
+        "status": "delvis",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "checkpoint-catalog"
+        ]
       },
       "remaining_checks": [
         "Reell transport eller kundesignering skal ikke brukes som QA-bevis uten særskilt autorisasjon; denne reisen krever isolert syntetisk transport."
@@ -2739,7 +2891,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/pro-catalog-order-browser-check.mjs",
@@ -2758,13 +2910,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "checkpoint-catalog",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
-        "status": "ikke-startet",
-        "reason": "Ingen selvstendig visuell sluttkontroll attestert i denne auditen.",
+        "status": "delvis",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "checkpoint-catalog"
+        ]
       },
       "remaining_checks": []
     },
@@ -2876,7 +3036,7 @@
         "mapping_gap": true
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/stocktake-db-check.mjs",
@@ -2895,13 +3055,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "current-report-checklist-stock",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
-        "status": "ikke-startet",
-        "reason": "Ingen selvstendig visuell sluttkontroll attestert i denne auditen.",
+        "status": "delvis",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "current-report-checklist-stock"
+        ]
       },
       "remaining_checks": [
         "Skissen har ikke en fullstendig én-til-én-funksjonsflate for hele denne reisen; anvend felles design uten å fjerne eksisterende native funksjoner eller finne på forretningsregler."
@@ -2947,7 +3115,7 @@
         "mapping_gap": true
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/stocktake-db-check.mjs",
@@ -2966,13 +3134,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "current-report-checklist-stock",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
-        "status": "ikke-startet",
-        "reason": "Ingen selvstendig visuell sluttkontroll attestert i denne auditen.",
+        "status": "delvis",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "current-report-checklist-stock"
+        ]
       },
       "remaining_checks": [
         "Skissen har ikke en fullstendig én-til-én-funksjonsflate for hele denne reisen; anvend felles design uten å fjerne eksisterende native funksjoner eller finne på forretningsregler."
@@ -3015,7 +3191,7 @@
         "mapping_gap": true
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/stocktake-check.mjs",
@@ -3034,13 +3210,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "current-report-checklist-stock",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
-        "status": "ikke-startet",
-        "reason": "Ingen selvstendig visuell sluttkontroll attestert i denne auditen.",
+        "status": "delvis",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "current-report-checklist-stock"
+        ]
       },
       "remaining_checks": [
         "Skissen har ikke en fullstendig én-til-én-funksjonsflate for hele denne reisen; anvend felles design uten å fjerne eksisterende native funksjoner eller finne på forretningsregler."
@@ -3089,7 +3273,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/personal-project-layout-browser-check.mjs",
@@ -3108,13 +3292,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "checkpoint-shared",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
         "status": "delvis",
-        "reason": "Åpent bruker-/referanseavvik er identifisert i området. Ingen lukking av den enkelte reisen uten sluttbilder.",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "checkpoint-shared"
+        ]
       },
       "remaining_checks": []
     },
@@ -3437,7 +3629,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/project-progress-react-check.mjs",
@@ -3456,13 +3648,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "checkpoint-plan-time",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
         "status": "delvis",
-        "reason": "Åpent bruker-/referanseavvik er identifisert i området. Ingen lukking av den enkelte reisen uten sluttbilder.",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "checkpoint-plan-time"
+        ]
       },
       "remaining_checks": []
     },
@@ -4209,7 +4409,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/critical-kshms-project-report-check.mjs",
@@ -4228,13 +4428,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "current-report-checklist-stock",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
         "status": "delvis",
-        "reason": "Åpent bruker-/referanseavvik er identifisert i området. Ingen lukking av den enkelte reisen uten sluttbilder.",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "current-report-checklist-stock"
+        ]
       },
       "remaining_checks": []
     },
@@ -4279,7 +4487,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/kshms-checklist-central-react-check.mjs",
@@ -4297,13 +4505,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "current-report-checklist-stock",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
-        "status": "ikke-startet",
-        "reason": "Ingen selvstendig visuell sluttkontroll attestert i denne auditen.",
+        "status": "delvis",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "current-report-checklist-stock"
+        ]
       },
       "remaining_checks": []
     },
@@ -4349,7 +4565,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/flexible-checklist-fields-browser-check.mjs",
@@ -4395,13 +4611,21 @@
             }
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "current-report-checklist-stock",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
-        "status": "ikke-startet",
-        "reason": "Ingen selvstendig visuell sluttkontroll attestert i denne auditen.",
+        "status": "delvis",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "current-report-checklist-stock"
+        ]
       },
       "remaining_checks": [
         "SQL-fixture dekker serverregler, ikke kontrollenes synlighet/betingede krav og kladd i browser."
@@ -4448,7 +4672,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/project-checklist-resume-react-check.mjs",
@@ -4467,13 +4691,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "current-report-checklist-stock",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
-        "status": "ikke-startet",
-        "reason": "Ingen selvstendig visuell sluttkontroll attestert i denne auditen.",
+        "status": "delvis",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "current-report-checklist-stock"
+        ]
       },
       "remaining_checks": []
     },
@@ -4517,7 +4749,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/project-checklist-popup-react-check.mjs",
@@ -4536,13 +4768,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "current-report-checklist-stock",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
-        "status": "ikke-startet",
-        "reason": "Ingen selvstendig visuell sluttkontroll attestert i denne auditen.",
+        "status": "delvis",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "current-report-checklist-stock"
+        ]
       },
       "remaining_checks": []
     },
@@ -4588,7 +4828,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/bolig-overview-browser-check.mjs",
@@ -4607,13 +4847,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "checkpoint-systemadmin",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
-        "status": "ikke-startet",
-        "reason": "Ingen selvstendig visuell sluttkontroll attestert i denne auditen.",
+        "status": "delvis",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "checkpoint-systemadmin"
+        ]
       },
       "remaining_checks": []
     },
@@ -6945,7 +7193,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/hr-register-react-check.mjs",
@@ -6956,13 +7204,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "checkpoint-shared",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
         "status": "delvis",
-        "reason": "Åpent bruker-/referanseavvik er identifisert i området. Ingen lukking av den enkelte reisen uten sluttbilder.",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "checkpoint-shared"
+        ]
       },
       "remaining_checks": []
     },
@@ -7009,7 +7265,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/hr-register-react-check.mjs",
@@ -7028,13 +7284,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "checkpoint-shared",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
         "status": "delvis",
-        "reason": "Åpent bruker-/referanseavvik er identifisert i området. Ingen lukking av den enkelte reisen uten sluttbilder.",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "checkpoint-shared"
+        ]
       },
       "remaining_checks": []
     },
@@ -7081,7 +7345,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/hr-register-react-check.mjs",
@@ -7092,13 +7356,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "checkpoint-shared",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
         "status": "delvis",
-        "reason": "Åpent bruker-/referanseavvik er identifisert i området. Ingen lukking av den enkelte reisen uten sluttbilder.",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "checkpoint-shared"
+        ]
       },
       "remaining_checks": []
     },
@@ -7146,7 +7418,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/hr-templates-react-check.mjs",
@@ -7190,13 +7462,21 @@
             }
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "checkpoint-shared",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
         "status": "delvis",
-        "reason": "Åpent bruker-/referanseavvik er identifisert i området. Ingen lukking av den enkelte reisen uten sluttbilder.",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "checkpoint-shared"
+        ]
       },
       "remaining_checks": [
         "Ikke browserforslag/redigering, layout eller faktisk cloud Auth/RLS; SQL-adapter er eksplisitt syntetisk."
@@ -7319,7 +7599,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/hr-conversations-browser-check.mjs",
@@ -7366,13 +7646,21 @@
             }
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "checkpoint-shared",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
         "status": "delvis",
-        "reason": "Åpent bruker-/referanseavvik er identifisert i området. Ingen lukking av den enkelte reisen uten sluttbilder.",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "checkpoint-shared"
+        ]
       },
       "remaining_checks": [
         "Denne browserfilen avslutter ikke samtalen. Eksisterende hr-conversations-react L78 tester begge bekreftelser og completed; lagt til som eget delbevis."
@@ -7423,7 +7711,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/hr-followup-notice-react-check.mjs",
@@ -7442,13 +7730,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "checkpoint-shared",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
         "status": "delvis",
-        "reason": "Åpent bruker-/referanseavvik er identifisert i området. Ingen lukking av den enkelte reisen uten sluttbilder.",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "checkpoint-shared"
+        ]
       },
       "remaining_checks": []
     },
@@ -7642,7 +7938,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/hr-practice-react-check.mjs",
@@ -7661,13 +7957,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "checkpoint-shared",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
         "status": "delvis",
-        "reason": "Åpent bruker-/referanseavvik er identifisert i området. Ingen lukking av den enkelte reisen uten sluttbilder.",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "checkpoint-shared"
+        ]
       },
       "remaining_checks": []
     },
@@ -7786,7 +8090,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/kshms-navigation-dom-check.mjs",
@@ -7805,13 +8109,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "checkpoint-shared",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
         "status": "delvis",
-        "reason": "Åpent bruker-/referanseavvik er identifisert i området. Ingen lukking av den enkelte reisen uten sluttbilder.",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "checkpoint-shared"
+        ]
       },
       "remaining_checks": []
     },
@@ -7931,7 +8243,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/kshms-sja-react-check.mjs",
@@ -7950,13 +8262,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "checkpoint-shared",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
         "status": "delvis",
-        "reason": "Åpent bruker-/referanseavvik er identifisert i området. Ingen lukking av den enkelte reisen uten sluttbilder.",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "checkpoint-shared"
+        ]
       },
       "remaining_checks": [
         "Reell transport eller kundesignering skal ikke brukes som QA-bevis uten særskilt autorisasjon; denne reisen krever isolert syntetisk transport."
@@ -8152,7 +8472,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/kshms-progress-react-check.mjs",
@@ -8179,13 +8499,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "checkpoint-plan-time",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
         "status": "delvis",
-        "reason": "Åpent bruker-/referanseavvik er identifisert i området. Ingen lukking av den enkelte reisen uten sluttbilder.",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "checkpoint-plan-time"
+        ]
       },
       "remaining_checks": []
     },
@@ -8682,7 +9010,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/critical-kshms-check.mjs",
@@ -8701,13 +9029,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "checkpoint-shared",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
         "status": "delvis",
-        "reason": "Åpent bruker-/referanseavvik er identifisert i området. Ingen lukking av den enkelte reisen uten sluttbilder.",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "checkpoint-shared"
+        ]
       },
       "remaining_checks": []
     },
@@ -8754,7 +9090,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/company-display-name-react-check.mjs",
@@ -8772,13 +9108,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "checkpoint-profile-register",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
-        "status": "ikke-startet",
-        "reason": "Ingen selvstendig visuell sluttkontroll attestert i denne auditen.",
+        "status": "delvis",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "checkpoint-profile-register"
+        ]
       },
       "remaining_checks": []
     },
@@ -8823,7 +9167,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/company-admin-react-check.mjs",
@@ -8842,13 +9186,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "checkpoint-company-help",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
-        "status": "ikke-startet",
-        "reason": "Ingen selvstendig visuell sluttkontroll attestert i denne auditen.",
+        "status": "delvis",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "checkpoint-company-help"
+        ]
       },
       "remaining_checks": []
     },
@@ -8894,7 +9246,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/company-invitation-db-check.mjs",
@@ -8921,13 +9273,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "checkpoint-company-help",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
-        "status": "ikke-startet",
-        "reason": "Ingen selvstendig visuell sluttkontroll attestert i denne auditen.",
+        "status": "delvis",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "checkpoint-company-help"
+        ]
       },
       "remaining_checks": [
         "Reell transport eller kundesignering skal ikke brukes som QA-bevis uten særskilt autorisasjon; denne reisen krever isolert syntetisk transport."
@@ -8975,7 +9335,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/company-admin-db-check.mjs",
@@ -9033,13 +9393,21 @@
             }
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "checkpoint-company-help",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
-        "status": "ikke-startet",
-        "reason": "Ingen selvstendig visuell sluttkontroll attestert i denne auditen.",
+        "status": "delvis",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "checkpoint-company-help"
+        ]
       },
       "remaining_checks": [
         "Relevant statisk pristilgangstest funnet og lagt til; faktisk firmaadmin endre andres og sperre egen netto må fortsatt kjøres.",
@@ -9268,7 +9636,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/time-registration-react-check.mjs",
@@ -9310,13 +9678,21 @@
             }
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "checkpoint-plan-time",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
-        "status": "ikke-startet",
-        "reason": "Ingen selvstendig visuell sluttkontroll attestert i denne auditen.",
+        "status": "delvis",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "checkpoint-plan-time"
+        ]
       },
       "remaining_checks": [
         "Firmaets enabled-opt-in finnes i TimeSetup (default false), og TimeSheet sperrer føring når deaktivert. PersonalTimeCard/Mine timer-fanen følger fortsatt HR-gate. Sluttkandidat trenger off→on→off-/rolle- og synlighetskontroll; eksisterende oppsett må gjenbrukes."
@@ -9364,7 +9740,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/app-ux-review-browser-check.mjs",
@@ -9375,13 +9751,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "checkpoint-systemadmin",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
-        "status": "ikke-startet",
-        "reason": "Ingen selvstendig visuell sluttkontroll attestert i denne auditen.",
+        "status": "delvis",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "checkpoint-systemadmin"
+        ]
       },
       "remaining_checks": []
     },
@@ -9428,7 +9812,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/systemadmin-company-selection-react-check.mjs",
@@ -9455,13 +9839,21 @@
             }
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "checkpoint-systemadmin",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
-        "status": "ikke-startet",
-        "reason": "Ingen selvstendig visuell sluttkontroll attestert i denne auditen.",
+        "status": "delvis",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "checkpoint-systemadmin"
+        ]
       },
       "remaining_checks": [
         "Bruk systemadmin-company-selection og project-scope-guard for faktiske delbevis; denne koblingen teller ikke."
@@ -9509,7 +9901,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/critical-mobile-access-security-check.mjs",
@@ -9541,13 +9933,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "checkpoint-systemadmin",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
-        "status": "ikke-startet",
-        "reason": "Ingen selvstendig visuell sluttkontroll attestert i denne auditen.",
+        "status": "delvis",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "checkpoint-systemadmin"
+        ]
       },
       "remaining_checks": [
         "Ingen full browsergodkjenning med pending/revoked/late response bevises av requireNeedles."
@@ -9666,7 +10066,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/critical-store-catalog-check.mjs",
@@ -9685,13 +10085,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "checkpoint-profile-register",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
-        "status": "ikke-startet",
-        "reason": "Ingen selvstendig visuell sluttkontroll attestert i denne auditen.",
+        "status": "delvis",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "checkpoint-profile-register"
+        ]
       },
       "remaining_checks": []
     },
@@ -9738,7 +10146,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/critical-store-catalog-check.mjs",
@@ -9757,13 +10165,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "checkpoint-profile-register",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
-        "status": "ikke-startet",
-        "reason": "Ingen selvstendig visuell sluttkontroll attestert i denne auditen.",
+        "status": "delvis",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "checkpoint-profile-register"
+        ]
       },
       "remaining_checks": []
     },
@@ -9809,7 +10225,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/app-ux-review-browser-check.mjs",
@@ -9837,13 +10253,21 @@
             }
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "checkpoint-systemadmin",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
-        "status": "ikke-startet",
-        "reason": "Ingen selvstendig visuell sluttkontroll attestert i denne auditen.",
+        "status": "delvis",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "checkpoint-systemadmin"
+        ]
       },
       "remaining_checks": [
         "Nyhetskladd→forhåndsvis→publiser/avpubliser er et annet scenario og står åpent."
@@ -10174,7 +10598,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/time-registration-react-check.mjs",
@@ -10193,13 +10617,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "checkpoint-plan-time",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
-        "status": "ikke-startet",
-        "reason": "Ingen selvstendig visuell sluttkontroll attestert i denne auditen.",
+        "status": "delvis",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "checkpoint-plan-time"
+        ]
       },
       "remaining_checks": [
         "Firmaets enabled-opt-in finnes i TimeSetup (default false), og TimeSheet sperrer føring når deaktivert. PersonalTimeCard/Mine timer-fanen følger fortsatt HR-gate. Sluttkandidat trenger off→on→off-/rolle- og synlighetskontroll; eksisterende oppsett må gjenbrukes."
@@ -10382,7 +10814,7 @@
         "mapping_gap": true
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/support-browser-check.mjs",
@@ -10401,13 +10833,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "checkpoint-profile-register",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
-        "status": "ikke-startet",
-        "reason": "Ingen selvstendig visuell sluttkontroll attestert i denne auditen.",
+        "status": "delvis",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "checkpoint-profile-register"
+        ]
       },
       "remaining_checks": [
         "Skissen har ikke en fullstendig én-til-én-funksjonsflate for hele denne reisen; anvend felles design uten å fjerne eksisterende native funksjoner eller finne på forretningsregler."
@@ -10516,7 +10956,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/app-ux-review-browser-check.mjs",
@@ -10544,13 +10984,31 @@
             }
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "checkpoint-plan-time",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          },
+          {
+            "ref": "checkpoint-company-help",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          },
+          {
+            "ref": "current-report-checklist-stock",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
-        "status": "ikke-startet",
-        "reason": "Ingen selvstendig visuell sluttkontroll attestert i denne auditen.",
+        "status": "delvis",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "checkpoint-plan-time",
+          "checkpoint-company-help",
+          "current-report-checklist-stock"
+        ]
       },
       "remaining_checks": [
         "Konteksthjelp, søk og A–Å gjennom faktiske modulmål må fortsatt kjøres."
@@ -10678,7 +11136,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/app-ux-review-browser-check.mjs",
@@ -10697,13 +11155,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "checkpoint-shared",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
-        "status": "ikke-startet",
-        "reason": "Ingen selvstendig visuell sluttkontroll attestert i denne auditen.",
+        "status": "delvis",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "checkpoint-shared"
+        ]
       },
       "remaining_checks": []
     },
@@ -10750,7 +11216,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/app-ux-review-browser-check.mjs",
@@ -10761,13 +11227,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "checkpoint-shared",
+            "mapping": "scoped partial result; see evidence_registry and limitations"
+          }
+        ]
       },
       "design_review": {
-        "status": "ikke-startet",
-        "reason": "Ingen selvstendig visuell sluttkontroll attestert i denne auditen.",
+        "status": "delvis",
+        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "checkpoint-shared"
+        ]
       },
       "remaining_checks": []
     }
@@ -15227,5 +15701,232 @@
     "test_catalog_files": 184,
     "unique_source_anchors": 531
   },
-  "review_freeze": "FROZEN 2026-10-29: Ingen flere endringer i disse to auditfilene uten melding til root."
+  "review_freeze": "FROZEN 2026-10-29: Ingen flere endringer i disse to auditfilene uten melding til root.",
+  "reconciliation_20261030": {
+    "base_head": "5f297c1c6827bbc4385dacfbc11a30b0a9d30198",
+    "latest_previous_full_ci": "PR Core Safety792 /40988649502 SUCCESS",
+    "meaning": "All145 IDs compared with current checkpoint sources. References below are scoped partial evidence, never complete journey attestation. Earlier reported results are distinguished from fresh execution. Unmapped IDs retain baseline and must not be called newly failed or fully untested solely from old statuses. Physical mobile/Safari and real transport remain open.",
+    "evidence_registry": {
+      "checkpoint-shared": {
+        "source": "docs/qa/DESIGN_036_HANDOFF_20261029.md",
+        "candidate": "10df694ef4848cfefa255c6ed9fdca760eef2481",
+        "level": "reported component/runtime and selected logged-in evidence; see exact per-surface limitations in handoff",
+        "scope": "Home six areas/followup; project list; Personal I dag/Mine planer; HR register/support/employee dialogs; KS daily work/navigation; shared tools",
+        "ids": [
+          "HOME-001",
+          "HOME-002",
+          "HOME-003",
+          "PERSONAL-001",
+          "PERSONAL-002",
+          "PERSONAL-004",
+          "PERSONAL-005",
+          "PERSONAL-006",
+          "PERSONAL-007",
+          "PROJECT-001",
+          "HR-001",
+          "HR-002",
+          "HR-003",
+          "HR-004",
+          "HR-006",
+          "HR-007",
+          "HR-010",
+          "KSHMS-001",
+          "KSHMS-003",
+          "KSHMS-013",
+          "SHELL-001",
+          "SHELL-002"
+        ]
+      },
+      "checkpoint-sales": {
+        "source": "docs/qa/DESIGN_036_HANDOFF_20261029.md",
+        "candidate": "10df694ef4848cfefa255c6ed9fdca760eef2481",
+        "level": "reported component/runtime and selected logged-in draft/published/accepted preview evidence",
+        "scope": "Overview, native customer draft, general offer/editor DOM, passive customer preview and exact stored version. No new send/accept evidence.",
+        "ids": [
+          "SALES-001",
+          "SALES-003",
+          "SALES-007",
+          "SALES-008",
+          "SALES-009",
+          "SALES-011"
+        ]
+      },
+      "checkpoint-plan-time": {
+        "source": "docs/changes/plan-time-help-workspace-036-20261030.json",
+        "candidate": "10df694ef4848cfefa255c6ed9fdca760eef2481",
+        "level": "reported component/runtime plus scoped logged-in plan evidence in PR295",
+        "scope": "Period reader, personal company time-opt-in, Help search/access and native frames. No real time submission.",
+        "ids": [
+          "PROJECT-006",
+          "KSHMS-006",
+          "TIME-001",
+          "COMPANY-007",
+          "HELP-001"
+        ]
+      },
+      "checkpoint-catalog": {
+        "source": "docs/qa/DESIGN_036_HANDOFF_20261029.md",
+        "candidate": "10df694ef4848cfefa255c6ed9fdca760eef2481",
+        "level": "reported component/runtime plus selected logged-in empty order/search evidence",
+        "scope": "Price search and cart, order recipient/amount/receipt frames. No real sending in this design review.",
+        "ids": [
+          "COMMERCE-001",
+          "COMMERCE-002",
+          "COMMERCE-003",
+          "COMMERCE-004",
+          "COMMERCE-005"
+        ]
+      },
+      "checkpoint-profile-register": {
+        "source": "docs/changes/profile-support-register-036-20261030.json",
+        "candidate": "10df694ef4848cfefa255c6ed9fdca760eef2481",
+        "level": "reported 88 component Chromium assertions and scoped logged-in review in PR295",
+        "scope": "Company profile, support, productmaster and internal register frames. Search/import not mounted for tested demo user; no import attestation.",
+        "ids": [
+          "COMPANY-001",
+          "SUPPORT-001",
+          "SYSTEMADMIN-005",
+          "SYSTEMADMIN-006"
+        ]
+      },
+      "checkpoint-company-help": {
+        "source": "docs/changes/company-help-panel-036-20261030.json",
+        "candidate": "10df694ef4848cfefa255c6ed9fdca760eef2481",
+        "level": "reported 165 component Chromium assertions and exact candidate logged-in review in PR295",
+        "scope": "Native invite/user/access panel and Help search/HR chapter. No invite, role/module write; missing Sandbox list_managed_work_profiles remains separate.",
+        "ids": [
+          "COMPANY-002",
+          "COMPANY-003",
+          "COMPANY-004",
+          "HELP-001"
+        ]
+      },
+      "checkpoint-systemadmin": {
+        "source": "docs/changes/photo-company-panel-036-20261030.json",
+        "candidate": "10df694ef4848cfefa255c6ed9fdca760eef2481",
+        "level": "reported 63 native-adapter Chromium assertions and selected logged-in drafts in PR295",
+        "scope": "Company/user panel frame and dirty/error/retry/Escape; no real access change. Bolig larger decorative photo only.",
+        "ids": [
+          "SYSTEMADMIN-001",
+          "SYSTEMADMIN-002",
+          "SYSTEMADMIN-003",
+          "SYSTEMADMIN-007",
+          "BOLIG-001"
+        ]
+      },
+      "current-report-checklist-stock": {
+        "source": "docs/changes/report-checklist-stock-workspace-036-20261030.json",
+        "candidate": "New package on PR295 after base 5f297c1c; exact frozen app SHA and CI/deploy binding maintained in PR295",
+        "level": "fresh actual-component Chromium, actual React/jsPDF; logged-in baseline observations and later exact candidate verification recorded separately in PR",
+        "scope": "Report73, checklist88, stocktake73. Negative original CSS reproduces transparent dialog. 7 actual PDFs/4 print paths. No real send, record, close, sign, invite or import in live QA.",
+        "ids": [
+          "PROJECT-016",
+          "CHECKLIST-001",
+          "CHECKLIST-002",
+          "CHECKLIST-003",
+          "CHECKLIST-004",
+          "STOCK-001",
+          "STOCK-002",
+          "STOCK-003",
+          "HELP-001"
+        ]
+      }
+    },
+    "unmapped_journey_ids": [
+      "ACCESS-001",
+      "ACCESS-002",
+      "ACCESS-003",
+      "ACCESS-004",
+      "ACCESS-005",
+      "ACCESS-006",
+      "BOLIG-002",
+      "BOLIG-003",
+      "BOLIG-004",
+      "BOLIG-005",
+      "BOLIG-006",
+      "BOLIG-007",
+      "BOLIG-008",
+      "BOLIG-009",
+      "BOLIG-010",
+      "BOLIG-011",
+      "BOLIG-012",
+      "BOLIG-013",
+      "BOLIG-014",
+      "BOLIG-015",
+      "BOLIG-016",
+      "BOLIG-017",
+      "BOLIG-018",
+      "BOLIG-019",
+      "BOLIG-020",
+      "BOLIG-021",
+      "BOLIG-022",
+      "BOLIG-023",
+      "BOLIG-024",
+      "BOLIG-025",
+      "BOLIG-026",
+      "BOLIG-027",
+      "BOLIG-028",
+      "BOLIG-029",
+      "BOLIG-030",
+      "BOLIG-031",
+      "BOLIG-032",
+      "BOLIG-033",
+      "COMMERCE-006",
+      "COMPANY-005",
+      "COMPANY-006",
+      "HELP-002",
+      "HR-005",
+      "HR-008",
+      "HR-009",
+      "HR-011",
+      "KSHMS-002",
+      "KSHMS-004",
+      "KSHMS-005",
+      "KSHMS-007",
+      "KSHMS-008",
+      "KSHMS-009",
+      "KSHMS-010",
+      "KSHMS-011",
+      "KSHMS-012",
+      "PERSONAL-003",
+      "PORTAL-001",
+      "PORTAL-002",
+      "PROJECT-002",
+      "PROJECT-003",
+      "PROJECT-004",
+      "PROJECT-005",
+      "PROJECT-007",
+      "PROJECT-008",
+      "PROJECT-009",
+      "PROJECT-010",
+      "PROJECT-011",
+      "PROJECT-012",
+      "PROJECT-013",
+      "PROJECT-014",
+      "PROJECT-015",
+      "SALES-002",
+      "SALES-004",
+      "SALES-005",
+      "SALES-006",
+      "SALES-010",
+      "SALES-012",
+      "SALES-013",
+      "SALES-014",
+      "SALES-015",
+      "SALES-016",
+      "SUPPORT-002",
+      "SYSTEMADMIN-004",
+      "SYSTEMADMIN-008",
+      "SYSTEMADMIN-009",
+      "TIME-002",
+      "TIME-003"
+    ],
+    "next_packages": [
+      "PROJECT-003..015: remaining actual subdialogs/roles and visual review; reuse existing source-correlated suites",
+      "PORTAL-001..002: private/customer/controller read routes with isolated fixtures; no link creation or real recipient transport",
+      "KSHMS-012: inspection extract firm-switch fix stays isolated in PR298",
+      "BOLIG-002:16-house actual Preview journey stays isolated in PR294",
+      "HELP-001..002: remaining contextual entries and whole A–Å route; current report entry is only partial"
+    ]
+  }
 }
