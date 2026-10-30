@@ -12,4 +12,6 @@ PDF-mapping og eksisterende boxed renderer er delt mellom browser og Edge. E-pos
 
 E-post gjenbruker RESEND_API_KEY/CHAT_FROM_EMAIL og firmaets avsendernavn. Firmalogo hentes bare fra kjent apphost/aktiv Supabase-host, med HTTPS, uten videresending og med størrelsesgrense. Dokumentasjonsbilder følger lagret inline-data. En providerkvittering er ikke attest på levering i innboksen. Ingen generell KS/HMS-utsending eller planlagt jobb aktiveres.
 
+Previewgrenen må ha eksplisitt `EXPO_BACKEND_TARGET=sandbox` for target preview i Vercel. Ordinære feature-grener har ellers eksisterende Production-standard. Kontroller den faktisk publiserte hovedbundle for bare Sandbox-URL før innlogget prøve; READY og grønn CI bekrefter ikke dette alene. Sandbox-kontoer og produksjonskontoer er separate. Ingen brukere/passord kopieres eller opprettes automatisk.
+
 Release: kjør ny migrering og deploy bare den nye standalone-checklist-email-funksjonen til Sandbox først. Behold JWT-verifisering. Test ny RPC/ACL/Edge og native Preview; ingen ekte e-post uten konkret godkjent mottaker. Produksjon følger egen funksjons-PR/TEST OK og deretter kontrollert main→demo. DesignPR295 skal ikke følge med som sideeffekt.

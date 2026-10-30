@@ -1,4 +1,6 @@
-# Frittstående sjekklister – egen Preview-kandidat30.10
+# Frittstående sjekklister – Preview-binding rettes30.10
+
+PR299/405a3a7a har full CI811SUCCESS10/10. Etter Kenneths innloggingsproblem ble faktisk publisert hovedbundle kontrollert: dpl_5xnUjMLyzxqgjC5XauzAh23FfWCD/main-DQ1CHGGh.js var Production-bundet, i strid med tidligere Preview-status. Ingen ny sjekkliste eller e-post ble laget. Manglende branch-override er rettet med EXPO_BACKEND_TARGET=sandbox kun for preview/standalone-checklists-20261030. Nytt ordinært grenbygg og faktisk bundleverifisering kreves før ny innlogget prøve. Sandbox har eksisterende bekreftet demo-konto; produksjonskontoen finnes ikke automatisk der. Ingen passord-/konto-/rollemutasjon. [Fersk kandidat, deploy, miljøbevis og begrensninger i PR299](https://github.com/ExpoProffsenter/expo-proffdok/pull/299).
 
 Ny separat funksjonsbranch fra main71d157f7: Prosjektliste → Fyll ut sjekkliste uten prosjekt, valgfritt ordrenummer, lagret PDF og uttrykkelig e-post til valgt mottaker. Privat lagring, sikker lokal kladd og frosne PDF-byte ved gjentakelse. DB79, mail/PDF36, native browser97 og full critical/buildPASS; eksisterende prosjektpopup, resume36 og feltbrowser28PASS. Ny Sandbox-migrering/eierindeks og Edge v1 lagt til. Ingen faktisk e-post eller Production-endring. CI, fast Preview og innlogget prøve føres i separat funksjons-PR. Design03.6 i PR295/6b409d8f/CI809SUCCESS fortsetter separat fra maleditor-/vedleggscheckpointet.
 
