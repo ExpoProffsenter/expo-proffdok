@@ -15,10 +15,10 @@
 .pd-project-photo-panel :is(p,li){font-size:16px;line-height:1.5;overflow-wrap:anywhere}
 .pd-project-photo-upload{margin:16px 0}
 .pd-project-photo-upload>.pd-workspace-disclosure-trigger{display:inline-flex;align-items:center;gap:12px;min-height:44px;padding:10px 16px;font-size:16px;border-radius:7px;box-shadow:none}
-.pd-project-photo-upload .imageUploadTiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.pd-project-photo-upload .imageUploadTiles .tile{min-width:0;padding:12px!important;border-radius:7px!important;box-shadow:none!important;background:#fff!important}
-.pd-project-photo-upload .imageUploadTiles :is(b,span,input){font-size:16px!important;line-height:1.4!important;max-width:100%;overflow-wrap:anywhere}
-.pd-project-photo-upload .imageUploadTiles input{min-height:44px;box-sizing:border-box}
+.pd-workspace-drawer:has(.imageUploadTiles) .imageUploadTiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px}
+.pd-workspace-drawer:has(.imageUploadTiles) .imageUploadTiles .tile{min-width:0;padding:12px!important;border-radius:7px!important;box-shadow:none!important;background:#fff!important}
+.pd-workspace-drawer:has(.imageUploadTiles) .imageUploadTiles :is(b,span,input){font-size:16px!important;line-height:1.4!important;max-width:100%;overflow-wrap:anywhere}
+.pd-workspace-drawer:has(.imageUploadTiles) .imageUploadTiles input{min-height:44px;box-sizing:border-box}
 .pd-project-photo-overview .ux-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:16px}
 .pd-project-photo-overview article{min-width:0;border:1px solid #d5e4eb;border-radius:7px;padding:12px;background:#fff}
 .pd-project-photo-overview :is(p,li,label,select){font-size:16px!important;line-height:1.5}
@@ -27,5 +27,5 @@
 [data-expo-project-shell="1"] .photo small{font-size:14px!important;line-height:1.4!important}
 @media(max-width:620px){
  .pd-project-photo-panel .pd-workspace-drawer-header h2{font-size:25px!important}
- .pd-project-photo-upload .imageUploadTiles{grid-template-columns:minmax(0,1fr)}
+ .pd-workspace-drawer:has(.imageUploadTiles) .imageUploadTiles{grid-template-columns:minmax(0,1fr)!important}
 }

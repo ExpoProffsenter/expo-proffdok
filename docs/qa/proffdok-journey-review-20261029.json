@@ -15855,7 +15855,7 @@
       "current-project-media-portal": {
         "source": "docs/changes/project-media-portal-036-20261030.json",
         "candidate": "current PR295 candidate; exact commit and CI maintained in PR295",
-        "level": "139 component/Chromium assertions plus scoped logged-in post-deploy evidence maintained in PR295",
+        "level": "149 component/Chromium assertions plus scoped logged-in post-deploy evidence maintained in PR295",
         "scope": "Project photo panels/upload fields and sources; native customer portal tabs/code gate/chat draft; private-document route with synthetic Auth/Storage/Function transport. No server/RLS/real upload, customer-code, PDF or physical device attestation. Live Preview photo contents remain unverified: synthetic demo image files are absent on the design branch. Real private contract opens in Sandbox; PDF first page inspected. Final image error/retry coverage is synthetic.",
         "ids": [
           "PROJECT-009",

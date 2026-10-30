@@ -58,3 +58,5 @@ Prosjektgalleriet, samlet bildeoversikt og kundeportal bruker `ProjectPhotoPrevi
 En utilgjengelig bildefil gir tydelig feil i panelet. Prøv bildet igjen gjør bare et nytt leseforsøk mot den samme URL-en. Bildeidentitet, kilde og prosjektkladd erstattes ikke av en reservefil. Syntetiske demobilder må ligge i sitt avtalte miljø; manglende demo-overlay skal ikke løses ved å kopiere det inn i vanlig appkode.
 
 `portalWorkspace.css` gjelder bare kunde-/UE-kodeinngangen, kundeportal og privat dokumentrute. De opprinnelige portaldataene, fanene og handlingene beholdes. Samlet prosjektstatistikk vises på Oversikt, mens valgt fane får plass under prosjekt/status. Dokumentrutens Tilbake bruker nettleserhistorikken, uten ny URL-/tilgangsmotor. Private dokumenter bruker fortsatt eksisterende Auth/Function/Storage-kontroll og kortlevd lenke.
+
+Opplastingsrutene avgrenses fra dialogen som faktisk inneholder `.imageUploadTiles`, fordi portalinnholdet ligger utenfor inngangsknappens DOM-forelder. Nettleserprøven bruker alle ti `imageCats` fra gjeldende konfigurasjon og kontrollerer én mobilkolonne, to PC-kolonner og16px kategori-/filtekst.
