@@ -1,5 +1,9 @@
 # Preview-gjennomgang – 29.10.2026
 
+Faktisk stoppunkt30.10: ny KS-forvaltningspakke21c4d087 har full lokal app-UX/critical/buildPASS, men GitHub-push ble avvist av automatisk godkjenningskontroll som utilstrekkelig uttrykkelig autorisert. Remote PR295 er fortsatt068a52cc, CI803FAILURE. Ingen ny Preview eller CI finnes for den lokale pakken ennå. Ikke omgå kontrollen med annen transport; få uttrykkelig tillatelse til push til samme designbranch. Se handoffens øverste stoppunkt og docs/changes/kshms-governance-design-036-20261030.json. Production/main/demo er urørt.
+
+KS-rutineforvaltning30.10: faktisk editor/bibliotek, åtte kildefelt, enkelt/samlet firmagodkjenning og egen lesing, revisjon/historikk og oppsett samles med samme03.6-rammer. Ny401-assertions/100-visninger-prøve uten UI-stubber, negativ gammelCSS og eksisterende publiserings-/bulk-/kilderegresjonerPASS. CI803s fokusmåling venter nå på faktisk native fokus etter passiv cleanup; alle979 tidligere krav beholdes og to forsinket-lesing-prøver tilføyes. Ingen produkt-/tilgangs-/lagrings-/mailkjerneendring. Full ny CI/Preview/live og konkret restliste i PR295. Grunnlag docs/changes/kshms-governance-design-036-20261030.json. Bare Preview; totalgjennomgangen er fortsatt åpen.
+
 KS-underflater30.10: faktisk RUH/SJA/vernerunde/risiko og åpne underpunkter samles i original03.6-høyrepanel. Ny979-assertions-prøve/221 tilstand×bredde-visninger og eksisterende197 med full sen runtimeCSSPASS. Kun CSS/import, QA og dokumentasjon. Ingen nye funksjons-/lagrings-/tilgangs-/sendingseiere. Fersk kandidat/full CI/Preview og innlogget kontroll i PR295. Handoffens nye topp gir konkret samtaleinngang, e-postgrense og navngitte resterende KS-/prosjektbarn. Grunnlag docs/changes/kshms-subflows-design-036-20261030.json. Fortsatt bare Preview og ingen redesign-TEST OK.
 
 

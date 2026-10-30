@@ -1,5 +1,25 @@
 # Design 03.6 – gjenoppta uten ny runde
 
+## Faktisk stoppunkt30.10 – lokal pakke klar, push stoppet automatisk
+
+App-/QA-commit21c4d087c4671a75439afe612bfe909bbf03edae, tre fbc2f544eae24e086c5c1af6592841ac3fac73ad. Full lokal app-UXPASS med ny KS401/100 og KS981/221 samt alle tidligere suiter; faktisk publisering87/bulk87/kildeflytPASS, full eksplisitt Sandbox critical/buildPASS. Release-docs/scopePASS etter commit. Arbeidsbranch er ren og én commit foran origin ved denne avlesningen.
+
+Push til samme origin/design01-app-ramme-20261028 ble AVVIST av automatisk godkjenningskontroll: kontrollen anså kodeoverføringen til ekstern GitHub-repo som utilstrekkelig uttrykkelig autorisert. Ingen push/publisering er utført. Fersk connectoravlesning bekrefter remote PR295 fortsatt068a52cc/draft/ikke merget. Ikke omgå med GitHub-write-API eller annen transport. Neste avhengige steg krever uttrykkelig tillatelse til å pushe den ferdig testede pakken til ExpoProffsenter/expo-proffdok sin designbranch for Preview. Ingen redesign-TEST OK/Production er gitt.
+
+Supplerende levende prosjektlesing på uendret068a52: Deltakere/rolleforklaring/kontrollørdialog med utløpte/tilbaketrukne oppføringer; beskrivelse/standardtekster/portalvalg; akseptert avtale/signert kontrakt/vedlegg/kontrakthandlinger; prosjekteringens seks native felt og alle13 kontrollpunkter i native dialog; overtagelse/signaturfelt uten endring, fire konkrete oppfølgingslenker; garantiens sperrede utstedelse, mangelliste og14 Sopro-punkters status. Ikke klikk på lagring/fullføring/signering/opplasting/utsending. Prosjektets fortsatt store topp og ulike indre rammer står som faktisk designfunn til neste pakke; ingen totalattest fra disse lesestegene.
+
+Etter fjerning av den tomme QA-tilgangsraden er prosjektet reloadet fra Preview. Serverlest UI viser Ingen ekstra tilganger er lagt til ennå, kontrollør0aktive og Autolagring: Ingen endringer å lagre. Ingen faktisk mottaker/portaltilgang er opprettet. Den tidligere19:10-autolagringen er dokumentert; ikke påstå null bakgrunnsskriving. Skynettfane4 er innlogget på det samme prosjektets Deltakere og tilganger, beholdt for fortsettelse.
+
+## Videreført30.10 – KS-rutineforvaltning og neste prosjektbarn
+
+Baseline068a52cc, main71d157f7. CI803 er faktisk FAILURE i app-browser på sja1920-fokus etter skjult DOM; øvrige sju utføringspakkerSUCCESS. Ikke kall803 grønn. Isolert holdt SJA-lesekall og native fokusreturPASS. Fokuskravet er uendret, men venter eksplisitt på faktisk passiv cleanup-fokus i stedet for bare skjult dialog. KS981 beholder979 og legger to forsinket-lesing-assertions til. Ingen appkode endret for dette.
+
+Ny rutinepakke: CSS/import og to presentasjonsattributter i KshmsModule. Native editor/bibliotek/kilder/publisering/egen lesing/revisjon/historikk/oppsett, 401 assertions/100 navngitte tilstand×bredde-visninger uten UI-stubber. Negative gammelCSS feiler. Sen mobilCSS fjernet én kant; faktisk stil er rettet. Eksisterende publisering87/bulk87/tre roller og kildeflytPASS. Full Sandbox critical/buildPASS. Ny samlet app-UX/CI/deploy/live og eksakt kandidat vedlikeholdes i PR295; ingen redesign-TEST OK.
+
+Innlogget baseline: blank editor; samlet firmagodkjenning til siste bekreftelse uten samtykke; alle åtte kildediff-felter; revisjonsform, tom historikk og medarbeiderstatus; egne10 rutineutgaver samlet/enkelt; oppstart/tilgang lest. Ingen KS-skriving, signering, publisering eller sending. Prosjektets deltakere/kontrollør og beskrivelse/standardtekster/portalvalg/avtalegrunnlag er også åpnet. «Legg til person/firma» lager straks tom prosjektstate; den tomme QA-raden ble fjernet igjen. Prosjektet viste Autolagret19:10 etter tilbakeføring, ingen ekstra tilgang står igjen. Dette er derfor ikke bevis på null bakgrunnsskriving; ikke gjenta slik levende opprettelse. Videre opprettelse/lagring prøves isolert. Kontrollørlenke/kode/mail ble ikke opprettet eller sendt.
+
+Fortsett PROJECT002..015 med faktisk native innhold: kontrakt, prosjektering/fremdrift, overtagelse/garanti, interne notater/chat, produkter/utstyr og prosjektets legacyHMS/sjekkpunkter. Kun innlogget navigasjon gir ikke helreiseattest. KS006/011/012, PR29416hus, PR298uttrekk, fysiskmobil/Safari og øvrige åpne registerpunkter beholdes. Ikke nyinventer eller avslutt totaloppdraget etter én KS-pakke.
+
 ## Gjeldende handoff30.10 – fortsett med faktiske underpunkter
 
 Repo ExpoProffsenter/expo-proffdok, draft PR295, branch `design01-app-ramme-20261028`. Fast Preview: https://expo-proffdok-git-design01-app-ramme-20261028-ringside.vercel.app/?progressTest=safe. **Bare Preview. Ingen redesign-TEST OK. Ingen merge/main/Production/demo-sync.** Behold original03.6/f67f2367 og godkjent seksområders Startside. Tilbudets eksisterende valg av logo skal beholdes.

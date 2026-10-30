@@ -76,3 +76,9 @@ Nettleserprøven må laste både statiske appstiler og den sene `APP_RUNTIME_STY
 `kshmsSubflows036.css` samler native RUH-, SJA-, vernerunde- og risikodialoger i det eksisterende680px høyrepanelet, også når de åpnes fra et prosjekt. Samme mørke03.6-topp og nøytrale8px underseksjoner brukes for forslag, sjekkpunkter, historikk, gjenåpning og dokumentasjon. Feltene forblir montert; de eksisterende modulene eier kladd, tilgang, lagring, signering og lukking. Hele KS-modulens kontroller beholder16px/44px også under den sene mobilkaskaden.
 
 `kshms-subflows-036-browser-check.mjs` monterer faktiske barn uten UI-stubber, med isolert transport, og åpner underpunktene på fem bredder. KS-hovedflatens navigasjonsprøve har fortsatt adaptere for andre destinasjoner og kan ikke attestere deres innhold. Begge prøvene må laste statisk CSS og sen `APP_RUNTIME_STYLES`. Rutineforvaltning og de øvrige prosjektformene krever egne navngitte underflatebevis.
+
+### KS/HMS-rutineforvaltning
+
+`kshmsGovernance036.css` avgrenser de samme nøytrale03.6-rammene til native håndbok, oppfølging/revisjon, egen lesing og oppsett. Rutineeditoren bruker samme monterte felt i to PC-kolonner, full bredde på fremgangsmåten og én kolonne på mobil. Lagre-/lukk-raden er synlig nederst ved PC-redigering. Kildeeditor, sammenligning, bibliotek, individuelle/samlede godkjenninger og historikk beholder egne handlinger; firmagodkjenning og egen lesebekreftelse er fortsatt separate samtykker. Datatilgang og lagring eies fortsatt av de opprinnelige modulene.
+
+`kshms-governance-036-browser-check.mjs` monterer hele KshmsModule og faktiske barn med isolert transport, ingen UI-stubber. Den åpner kildefelter, bibliotekfiltre/preview, underhistorikk, begge godkjenningsformer og revisjon/lesestatus/tilgangsoppsett med alle statiske og sene runtime-stiler. Dette gir navngitte delbevis, ikke attest på alle levende roller, serverhandlinger, fysisk mobil ellerSafari.

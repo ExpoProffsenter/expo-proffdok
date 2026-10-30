@@ -25,7 +25,7 @@ window.rpc=async(name,args)=>{
  if(name==='kshms_deviation_detail'){const row=record(window.qa.closed?'closed':'open');return {case:row,events:[{id:'event',action:'create',created_at:row.created_at,actor_identity:members[0].identity,snapshot:row}],next:null};}
  if(name==='kshms_deviation_files')return [];
  if(name==='kshms_job_choices')return {context,projects:[],routines:[],project_total:0};
- if(name==='kshms_sja_detail')return {context,sja:window.qa.saved?savedSja():null};
+ if(name==='kshms_sja_detail'){if(window.qa.holdSja)await new Promise(resolve=>{window.qa.releaseSja=resolve;});return {context,sja:window.qa.saved?savedSja():null};}
  if(name==='kshms_sja_state')return {context,items:window.qa.saved?[savedSja()]:[],total:window.qa.saved?1:0,next:null,members};
  if(name==='kshms_execution_state')return {context,records:window.qa.saved?[savedExecution()]:[],templates:[],members,next:null};
  if(name==='kshms_execution_detail')return {context,record:savedExecution(),links:[]};

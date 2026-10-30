@@ -44,7 +44,20 @@ try{
     const summary=disclosures.nth(i);await summary.click();await inspect(kind+'-'+width+'-underpunkt-'+i);await summary.click();
    }
    eq(await input.inputValue(),'QA lokal tekst '+kind,kind+' '+width+' original field text retained');eq(await input.evaluate((node,original)=>node===original,handle),true,kind+' '+width+' same original field DOM');
-   await page.keyboard.press('Escape');await panel().waitFor({state:'hidden'});eq(await start.evaluate(n=>n===document.activeElement),true,kind+' '+width+' focus returned');
+   await page.keyboard.press('Escape');await panel().waitFor({state:'hidden'});
+   // Dialog removal commits before React's passive cleanup restores focus.
+   // Observe the actual keyboard contract, not an intermediate commit frame.
+   await page.waitForFunction(node=>node===document.activeElement,await start.elementHandle());
+   eq(await start.evaluate(n=>n===document.activeElement),true,kind+' '+width+' focus returned');
+  }
+  if(width===1920){
+   await render('sja');await page.evaluate(()=>{window.qa.holdSja=true;});
+   const resume=page.locator('.sja-intro').getByRole('button',{name:'Fortsett lokal kladd',exact:true});
+   await resume.click();await page.waitForFunction(()=>typeof window.qa.releaseSja==='function');
+   eq(await resume.isDisabled(),true,'held actual SJA read disables original opener');
+   await page.evaluate(()=>{window.qa.holdSja=false;window.qa.releaseSja();});await panel().waitFor();
+   await page.keyboard.press('Escape');await panel().waitFor({state:'hidden'});
+   eq(await resume.evaluate(n=>n===document.activeElement),true,'held async SJA read returns focus to original resume button');
   }
   for(const kind of ['sja','round','risk']){
    await render(kind,false,true);

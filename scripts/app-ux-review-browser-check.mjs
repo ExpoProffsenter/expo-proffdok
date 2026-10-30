@@ -110,6 +110,7 @@ await import("./hr-workspace-036-browser-check.mjs");
 await import("./hr-subflows-036-browser-check.mjs");
 await import("./kshms-workspace-036-browser-check.mjs");
 await import("./kshms-subflows-036-browser-check.mjs");
+await import("./kshms-governance-036-browser-check.mjs");
 
 await import("./systemadmin-company-panel-browser-check.mjs");
 await import("./profile-support-register-browser-check.mjs");
