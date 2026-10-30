@@ -65,7 +65,7 @@ export function createHelp45BSection({ Section }) {
 
     return React.createElement(
       Section,
-      { title: "🛒 Proff vareregister, Generelt tilbud og Enkel ordre" },
+      { title: "Proff vareregister, Generelt tilbud og Enkel ordre", className:"help-reference-workspace" },
       React.createElement(
         "details",
         { className: "module-guide ux-reference helpCommerceReference", style: { borderColor: "#b9dde2", background: "#f8feff" } },

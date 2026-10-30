@@ -183,3 +183,46 @@ body:has([data-expo-app-shell="true"]) #expo-systemadmin-store-catalog :is(.cata
  body:has([data-expo-app-shell="true"]) .pd-admin-panel[aria-label="Produktmaster"] .projectListHeaderCards{grid-template-columns:repeat(2,minmax(0,1fr))}
  body:has([data-expo-app-shell="true"]) .pd-support .pd-support-form{padding:16px}
 }
+
+/* Company administration and Help use the same index + contextual panel.
+   The real module forms/readers remain their only state and command owners. */
+body:has([data-expo-app-shell="true"]) .company-admin-heading>h3{overflow-wrap:anywhere}
+body:has([data-expo-app-shell="true"]) :is(.help-workspace-036,.help-reference-workspace){margin:0 0 24px;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;min-width:0}
+body:has([data-expo-app-shell="true"]) :is(.help-workspace-036,.help-reference-workspace)>h2{font-size:var(--pd-title);font-weight:600;line-height:1.2;letter-spacing:-.7px;margin:6px 0 16px}
+body:has([data-expo-app-shell="true"]) .help-reference-workspace>h2{font-size:20px;letter-spacing:0}
+body:has([data-expo-app-shell="true"]) .help-workspace-036>h2>svg{display:none}
+body:has([data-expo-app-shell="true"]) .help-workspace-036 .helpQuickStart{padding:0;margin:0 0 20px;border:0;border-radius:0;background:transparent!important;box-shadow:none;color:var(--pd-ink)!important}
+body:has([data-expo-app-shell="true"]) .helpQuickStart :is(h3,p){color:var(--pd-muted)!important;font-size:16px;line-height:1.5;margin:8px 0;font-weight:400}
+body:has([data-expo-app-shell="true"]) .helpQuickStart :is(span,time){padding:0!important;border-radius:0!important;background:transparent!important;color:var(--pd-muted);font-size:14px;font-weight:500!important}
+body:has([data-expo-app-shell="true"]) .help-workspace-036>.ux-toolbar{display:grid;gap:8px;margin:0 0 20px;font-size:16px;line-height:1.5}
+body:has([data-expo-app-shell="true"]) :is(.help-workspace-036,.help-reference-workspace) :is(input,button,summary){font-size:16px;line-height:1.5;min-height:44px}
+body:has([data-expo-app-shell="true"]) .help-workspace-036 input{border-radius:7px}
+body:has([data-expo-app-shell="true"]) .help-topic-index{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 24px;border-top:1px solid var(--pd-line);margin-bottom:24px}
+body:has([data-expo-app-shell="true"]) .help-topic-index>.help-topic-row{margin:0;padding:0;border:0;border-bottom:1px solid var(--pd-line);border-radius:0;background:transparent;box-shadow:none;min-width:0}
+body:has([data-expo-app-shell="true"]) .pd-workspace-disclosure-trigger{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:52px;padding:14px 16px;border:0;border-radius:0;background:transparent;color:var(--pd-ink);font-size:16px;line-height:1.5;font-weight:500;box-shadow:none;text-align:left;white-space:normal}
+body:has([data-expo-app-shell="true"]) .pd-workspace-disclosure-trigger>svg{flex:none;color:var(--pd-accent)}
+body:has([data-expo-app-shell="true"]) .pd-workspace-disclosure-trigger>span{min-width:0;overflow-wrap:anywhere}
+body:has([data-expo-app-shell="true"]) .pd-workspace-disclosure-trigger:hover{background:#edf5f6;transform:none;box-shadow:none}
+body:has([data-expo-app-shell="true"]) .pd-workspace-disclosure-trigger:focus-visible{outline:3px solid #089aa3;outline-offset:-3px}
+body:has([data-expo-app-shell="true"]) .help-topic-label{display:flex;align-items:center;gap:12px;min-width:0;overflow-wrap:anywhere}
+body:has([data-expo-app-shell="true"]) .help-topic-label svg{flex:none;color:var(--pd-accent)}
+body:has([data-expo-app-shell="true"]) .help-topic-label b{font-weight:600}
+body:has([data-expo-app-shell="true"]) .pd-workspace-disclosure-content{padding:0;margin:0;border:0;min-width:0}
+body:has([data-expo-app-shell="true"]) :is(.help-panel-content,.help-reference-workspace,.help-workspace-036) :is(p,li){font-size:16px;line-height:1.6;overflow-wrap:anywhere}
+body:has([data-expo-app-shell="true"]) .help-panel-content :is(h3,h4){font-size:20px;font-weight:600;line-height:1.4;margin:20px 0 8px}
+body:has([data-expo-app-shell="true"]) :is(.help-panel-content,.help-workspace-036,.help-reference-workspace) :is(.item,.help-topic-chapter,.ux-reference){border-radius:8px!important;box-shadow:none}
+body:has([data-expo-app-shell="true"]) .company-admin-body>.company-invite-disclosure{grid-column:1/-1;grid-row:auto;margin:0 0 16px}
+body:has([data-expo-app-shell="true"]) .company-admin-body>.company-admin-directory{grid-column:1/-1;grid-row:auto}
+body:has([data-expo-app-shell="true"]) .company-admin-panel>.company-admin-housing{display:block}
+body:has([data-expo-app-shell="true"]):not(:has(.company-housing-panel .bolig-admin-access)) .company-admin-housing{display:none}
+body:has([data-expo-app-shell="true"]) .company-admin-panel-content :is(.item,.company-invite-access,.company-invite-modules .company-admin-check){margin:0 0 16px;padding:16px;border:1px solid var(--pd-line);border-radius:8px;background:#fff;box-shadow:none;min-width:0}
+body:has([data-expo-app-shell="true"]) .company-admin-panel-content form.item{padding:0;border:0}
+body:has([data-expo-app-shell="true"]) .company-admin-panel-content .company-admin-invite-form>h3{display:none}
+body:has([data-expo-app-shell="true"]) .company-admin-panel-content :is(p,label){font-size:16px;line-height:1.5}
+body:has([data-expo-app-shell="true"]) .company-admin-panel-content small{font-size:14px;line-height:1.5;color:var(--pd-muted)}
+body:has([data-expo-app-shell="true"]) .company-admin-panel-content .company-admin-check{align-items:flex-start}
+body:has([data-expo-app-shell="true"]) .company-admin-panel-content .company-admin-check>span{min-width:0;font-size:16px;line-height:1.5;margin:0}
+body:has([data-expo-app-shell="true"]) .company-admin-panel-content :is(input,select){border-radius:7px;min-width:0}
+body:has([data-expo-app-shell="true"]) .company-admin-panel-content button:not(.secondary){background:var(--pd-accent);color:#fff}
+body:has([data-expo-app-shell="true"]) .company-admin-panel-content button.secondary{background:#fff;color:var(--pd-accent);border:1px solid var(--pd-line)}
+@media(max-width:800px){body:has([data-expo-app-shell="true"]) .help-topic-index{grid-template-columns:minmax(0,1fr)}}

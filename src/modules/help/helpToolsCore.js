@@ -1,7 +1,7 @@
 import {filterHelpSections} from './helpSearch.mjs';
 import {appendWorkspaceHelp,HELP_UPDATED_ON,HELP_UPDATED_LABEL} from './workspaceHelp.mjs';
 // Expo ProffDok – FASE 42M / FASE 42K / FASE 42J / FASE 42H / FASE 42D HJELP
-// Én React-basert hjelpestruktur. Ingen DOM-innsprøyting, timere eller programmatisk åpning/lukking.
+// Én React-basert hjelpestruktur. Temaer bruker felles native høyrepanel fra React-state.
 // Brukerrettede funksjonsendringer skal oppdateres her når arbeidsflyt, begreper eller tilgang påvirkes.
 import React, * as ReactNS from "react";
 import { FileText, Home, Smartphone, ClipboardList, BriefcaseBusiness, Building2, Mail, Users, FolderOpen, ShieldCheck, UserRound, CircleHelp, Settings, Camera, MessageSquare, KeyRound, Package, Ruler, TriangleAlert } from "lucide-react";
@@ -10,6 +10,7 @@ import { rpcWithStoredSession } from "../access/moduleAccessClient.js";
 import { useCordelAccess } from "../cordel/cordelAccess.js";
 import CordelGuide from "../cordel/CordelGuide.jsx";
 import HelpTopicGroup from "./HelpTopicGroup.jsx";
+import WorkspaceDisclosure from "../ui/WorkspaceDisclosure.jsx";
 import { groupHelpTopics } from "./helpTopicGroups.mjs";
 
 const import_react = { default: React, ...ReactNS };
@@ -484,6 +485,9 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
       ...(effectiveSystemAdmin ? SYSTEM_ADMIN_SECTIONS : [])
     ])),{moduleKeys:helpAccess?.userId===authUser?.id?helpAccess.moduleKeys:[],canUseKshms:Boolean(kshmsContext?.user_id===authUser?.id&&kshmsContext?.enabled),canUseHr:Boolean(hrContext?.user_id===authUser?.id&&hrContext?.available),isCompanyAdmin:effectiveCompanyAdmin,isSystemAdmin:effectiveSystemAdmin,canExportCordel,canUseInternalCommerce});
 
+    const visibleTopicKeys=visibleGuideSections.map(item=>item.key).join("|");
+    (0, import_react.useEffect)(()=>setOpenGuideKey(previous=>visibleTopicKeys.split("|").includes(previous)?previous:""),[visibleTopicKeys]);
+    (0, import_react.useEffect)(()=>setOpenGuideKey(""),[authUser?.id]);
     const guideRoleLabel = effectiveSystemAdmin ? "Systemadministrator" : effectiveCompanyAdmin ? "Firmaadministrator" : "Vanlig bruker";
     const renderList = (items = []) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("ul", { style: { marginTop: "8px" }, children: items.map((item, index) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: item }, index)) });
     const renderGuideContent = (item) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { marginTop: "14px" }, children: [
@@ -498,20 +502,16 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
     const renderGuideSection = (item) => {
       const isOpen = openGuideKey === item.key;
       const Icon=HELP_ICONS[item.key]||FileText;
-      return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", "data-help-topic":item.key, style: { borderColor: isOpen ? "#08b9c3" : "#e2e8f0", background: isOpen ? "#f8feff" : "#ffffff" }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", "aria-expanded": isOpen ? "true" : "false", onClick: () => setOpenGuideKey(isOpen ? "" : item.key), style: { width: "100%", justifyContent: "space-between", textAlign: "left", background: "transparent", color: "#0f172a", border: "none", padding: "0", boxShadow: "none", fontSize: "16px" }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", width: "100%" }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {style:{display:"flex",alignItems:"center",gap:10},children:[(0, import_jsx_runtime.jsx)(Icon,{"aria-hidden":true,size:20,style:{flexShrink:0,color:"#007f89"}}),(0, import_jsx_runtime.jsx)("b", { children: plainHelpTitle(item.title) })]}),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { fontWeight: 900, color: "#007f89" }, children: isOpen ? "Lukk" : "Åpne" })
-        ] }) }),
+      return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(WorkspaceDisclosure, { className: "item help-topic-row", dataTopic:item.key, title:plainHelpTitle(item.title), subtitle:"HJELP / BRUKERVEILEDNING", open:isOpen, keepMounted:false, contentClassName:"help-panel-content", onOpenChange:open=>setOpenGuideKey(previous=>open?item.key:previous===item.key?"":previous), label:(0, import_jsx_runtime.jsxs)("span",{className:"help-topic-label",children:[(0, import_jsx_runtime.jsx)(Icon,{"aria-hidden":true,size:20}),(0, import_jsx_runtime.jsx)("b",{children:plainHelpTitle(item.title)})]}), children: [
         isOpen && (item.chapters ? (0, import_jsx_runtime.jsx)(HelpTopicGroup, {item,renderContent:renderGuideContent}) : item.key === "cordel" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CordelGuide, {}) : renderGuideContent(item))
       ] }, item.key);
     };
 
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Hjelp og dokumentasjon", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.FileText, {}), children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Hjelp og dokumentasjon", className:"help-workspace-036", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.FileText, {}), children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item helpQuickStart", style: { background: "linear-gradient(135deg,#0f172a,#164e63)", color: "#ffffff", borderColor: "#0f766e" }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { style: { marginTop: 0, color: "#ffffff" }, children: "📘 Digital brukerveiledning" }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { style: { color: "#dbeafe", lineHeight: 1.6 }, children: "Søk etter det du vil gjøre. Åpne et tema og følg trinnene. Brukervilkår og installasjonsveiledning kan åpnes nederst. Innholdet følger rollen og tilgangen din. Prosjektmenyen er gruppert i Oppstart, Gjennomføring og Overlevering og garanti. Garanti ligger i den siste gruppen i vanlige prosjekter. Åpne Status og mangler for detaljene." }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { style: { marginTop: 0, color: "#ffffff" }, children: "Digital brukerveiledning" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { style: { color: "#dbeafe", lineHeight: 1.6 }, children: "Søk etter det du vil gjøre. Temaet åpnes i høyrepanelet. Følg trinnene og lukk panelet for å komme tilbake til listen. Brukervilkår og installasjonsveiledning kan åpnes nederst. Innholdet følger rollen og tilgangen din. Prosjektmenyen er gruppert i Oppstart, Gjennomføring og Overlevering og garanti. Garanti ligger i den siste gruppen i vanlige prosjekter. Åpne Status og mangler for detaljene." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", flexWrap: "wrap", gap: "10px", marginTop: "12px" }, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { style: { padding: "8px 12px", borderRadius: "999px", background: "rgba(255,255,255,.14)", fontWeight: 900 }, children: ["Rolle: ", guideRoleLabel] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("time", { dateTime: HELP_UPDATED_ON, style: { padding: "8px 12px", borderRadius: "999px", background: "rgba(255,255,255,.14)", fontWeight: 900 }, children: HELP_UPDATED_LABEL })
@@ -519,7 +519,7 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
         ] }),
         (0, import_jsx_runtime.jsxs)("label",{className:"ux-toolbar",children:["Søk i hjelpen",(0, import_jsx_runtime.jsx)("input",{type:"search",value:helpQuery,placeholder:"For eksempel timer, garanti eller Cordel",onChange:e=>setHelpQuery(e.target.value)})]}),
         !filterHelpSections(visibleGuideSections,helpQuery).length && (0, import_jsx_runtime.jsx)("p",{role:"status",children:"Ingen hjelpetema passer søket. Prøv et kortere søkeord."}),
-        (0, import_jsx_runtime.jsx)("div", { style: { display: "grid", gap: "12px" }, children: filterHelpSections(visibleGuideSections,helpQuery).map(renderGuideSection) }),
+        (0, import_jsx_runtime.jsx)("div", { className:"help-topic-index", children: filterHelpSections(visibleGuideSections,helpQuery).map(renderGuideSection) }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "📄 Brukervilkår og personvern" }),

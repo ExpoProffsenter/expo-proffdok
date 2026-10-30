@@ -1,5 +1,5 @@
 // FASE 42D / 45B STABILISERING: Hjelp rendres kun gjennom React-kjernen.
-// Ingen DOM-innsprøyting, globale klikklyttere, timere eller programmatisk åpne/lukk.
+// Ingen DOM-innsprøyting, globale klikklyttere eller timere. Temaenes paneler eies av React-kjernen.
 //
 // Kompatibilitetsmarkører for eksisterende kritiske recovery-tester.
 // "Nytt i denne versjonen – tilbudssikkerhet"
