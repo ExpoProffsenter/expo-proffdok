@@ -4,6 +4,8 @@ Prosjektbarn: native beskrivelse/kundeinfo/prosjekteringsfelt/avtale/produkter/i
 
 Forrige appkandidat f469c5d4 har fullCI805SUCCESS og faktisk innlogget KS-etterkontroll. Skynettleseren svarer igjen. Gjenoppta neste faktiske barn etter handoff og145-reisers register; PROJECT006/KSHMS006/011/012 og gjenstående roller/Help/PDF/enheter er åpne. Ikke start tidligere KS-pakke på nytt.
 
+Innlogget5992a1a1/CI806SUCCESS avdekket et ekstra native div-nivå rundt kundeeditoren. Den manglende nesting-fixturen er gjenskapt som negativ, og selektor/fixtur/kundekort/kunderegister er korrigert.531/85 består fortsatt. Endelig oppfølgings-SHA/fullCI/live er i PR295; CI806 attesterer bare første prosjektkandidat.
+
 ## Tidligere avgrensede leveranser – historikk
 
 KS-underflater30.10: faktisk RUH/SJA/vernerunde/risiko og åpne underpunkter samles i original03.6-høyrepanel. Ny979-assertions-prøve/221 tilstand×bredde-visninger og eksisterende197 med full sen runtimeCSSPASS. Kun CSS/import, QA og dokumentasjon. Ingen nye funksjons-/lagrings-/tilgangs-/sendingseiere. Fersk kandidat/full CI/Preview og innlogget kontroll i PR295. Handoffens nye topp gir konkret samtaleinngang, e-postgrense og navngitte resterende KS-/prosjektbarn. Grunnlag docs/changes/kshms-subflows-design-036-20261030.json. Fortsatt bare Preview og ingen redesign-TEST OK.
