@@ -20,6 +20,16 @@ På5992 ble øvrige nye flater faktisk lest innlogget: masthead72px/én rad; all
 
 Fortsett etter grønn QA fra eksisterende DEMO – VVS – fremdrift og bemanning3måneder:21 lagrede oppgaver. Første oppgave åpnet faktisk native editor480px høyrepanel med16px/min44, deltakere/personer og rekkefølgevalg; Escape lukket uten redigering eller save. Bemanningsplan og eksport-/prosjektvalg-disclosures lest uten nedlasting/import/deling. Lagret forble deaktivert. Eksportknappenes tomme AX-navn var verktøyvisning: DOM/skjermbilde hadde alle seks navn korrekt. Ingen produktrapportert feil utledes av dette. Resterende faktisk plan-/bemannings-/mal-/vedleggsreise og eksisterende restliste står fortsatt åpne.
 
+## Planvelger og faktiske uttrekk30.10
+
+f678d343/tre268ac53a har fullCI808/41123153873SUCCESS10/10 og READYdpl_EbwfFhesCmUzn2TV2xxzkkFygfz6. Tilbudsfeilen er løst kun i test; produktkode identisk med etterkontrollert92afd. Nyeste PR-topp fører videre eksakt kandidat/CI.
+
+Innlogget VVS-case21oppgaver avdekket native operasjonsvelger sentrert720px/14px. Avgrenset oppfølging bruker kun eksisterende PlanDialog side-prop og scoped CSS,680px/fullhøyde/navy28/25/16/44; hovedplan/tidslinje beholdes. Native layoutprøve212 med alle tidligere krav og faktisk13-standardliste/NS332, feilbaseline top37, mobile cascade-funn rettet uten å svekke krav. Prosjektplan39/KS-plan159 og full Sandbox critical/buildPASS; final CSS-build/nyCI/live føres i PR295. Ingen virkelig oppgave ble lagt til eller lagret; valg/edit/save er isolert lokalt. Hovedplanens14px-felt og øvrige reiser er fortsatt åpne.
+
+Før endringen ble faktisk lagret VVS-plan eksportert via appens fire native downloadkommandoer: planPDF6sider, bemanningPDF8sider, CSV og ICS. Alle14 sider visuelt inspisert. Uavhengig dagutvidelse av21PDF-oppgaveperioder/personantall uten søndager stemmer med alle79CSV-/bemanningPDF-dager og282ICS-perioder/21unike oppgaver: topp23personer og6408persontimer. Unike kalenderUID-er, Oslo-tid og14korrekte sideføtter. Ingen kalenderimport/deling/epost; Lagret forble deaktivert. Browserfilbroen fjernet første midlertidige download ved neste download; etter bekreftet fravær ble planen lastet én gang til og QA-kopier bevart. Ingen appfeil utledet av filbroen. Uttrekkene er intern QA; hashes/status føres i PR.
+
+Eksisterende145-reisers register beholdes; PROJECT006/KSHMS006 har bare dette scoped delbeviset. KSHMS011/012 faktiske sjekkliste-/vedleggsbarn og øvrige Help/rolle/server-/enhetsreiser gjenstår. Ingen redesign-TEST OK/merge/Production/demo-sync.
+
 ## Historiske stoppunkter – nyere PR-topp og avsnittet ovenfor har forrang
 
 ## Videreført etter brukerens ja – publisert tre, virkelig SJA-fokusfeil

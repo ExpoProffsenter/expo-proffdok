@@ -8,6 +8,8 @@ Innlogget5992a1a1/CI806SUCCESS avdekket et ekstra native div-nivå rundt kundeed
 
 QA-oppfølging: CI807 på92afd1e7 stoppet i tilbudsprøvens klikk før native rAF-effekt. Timingfeilen er gjenskapt; testen avventer nå ferdig native aktiveringsvisning og beholder alle55 krav, med fire ekstra remount-countkrav. Ingen produktkode endres.59PASS både med normal scheduler og120ms QA-schedulerforsinkelse; ny fullCI føres i PR295. Grunnlag docs/changes/sales-flow-frame-sync-20261030.json.
 
+Planvelger-oppfølging: f678d343 har fullCI808SUCCESS10/10; tilbud59 og prosjekt531 er bekreftet i CI. Ny native arbeidsoperasjonsvelger følger samme høyrepanel med bevart PlanDialog/kladd/fokus og scoped16/44. Layout212/prosjektplan39/KS-plan159 og Sandbox critical/buildPASS; sluttkandidat/CI/innlogget velger i PR295. Faktisk eksport fra lagret VVS-case er kontrollert:21oppgaver/79dager/282kalenderperioder,14PDF-sider, konsistente PDF/CSV/ICS-tall. Grunnlag docs/changes/progress-picker-design-036-20261030.json. Hovedplanens resterende14px-kontroller, øvrige rolle-/mal-/vedleggsreiser og fysisk mobil/Safari er fortsatt åpne; ingen totalattest.
+
 ## Tidligere avgrensede leveranser – historikk
 
 KS-underflater30.10: faktisk RUH/SJA/vernerunde/risiko og åpne underpunkter samles i original03.6-høyrepanel. Ny979-assertions-prøve/221 tilstand×bredde-visninger og eksisterende197 med full sen runtimeCSSPASS. Kun CSS/import, QA og dokumentasjon. Ingen nye funksjons-/lagrings-/tilgangs-/sendingseiere. Fersk kandidat/full CI/Preview og innlogget kontroll i PR295. Handoffens nye topp gir konkret samtaleinngang, e-postgrense og navngitte resterende KS-/prosjektbarn. Grunnlag docs/changes/kshms-subflows-design-036-20261030.json. Fortsatt bare Preview og ingen redesign-TEST OK.

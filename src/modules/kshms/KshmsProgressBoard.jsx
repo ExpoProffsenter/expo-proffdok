@@ -33,7 +33,7 @@ function OperationPicker({onAdd,onClose,operations,standardOperations=[]}){
  const [search,setSearch]=useState(''),[trade,setTrade]=useState('');
  const groups=useMemo(()=>progressCodeGroups(search,trade),[search,trade]);
  const choice=o=><button type="button" key={o.id} className="secondary ks-code-choice" onClick={()=>onAdd({...o,trade:trade||o.trade})}><b>{o.nsCode}</b><span>{o.title.split(' · ').slice(1).join(' · ')}<small>{o.nsKind==='system'?'Systemkode':'Bygningsdel'} · {o.trades.join(', ')}</small></span><span aria-hidden="true">+</span></button>;
- return <PlanDialog title="Legg til arbeidsoperasjon" onClose={onClose}>
+ return <PlanDialog title="Legg til arbeidsoperasjon" side onClose={onClose}>
   <div className="ks-plan-standard-choices">{standardOperations.length>0&&<details open><summary>Standardoppgaver fra tilbudsbyggeren</summary><div className="ks-plan-more">{standardOperations.map(o=><button type="button" className="secondary" key={o.id} onClick={()=>onAdd(o)}>{o.title}</button>)}</div></details>}</div>
   <p className="ks-plan-hint">Søk etter kode eller navn. Åpne en hovedkode for å velge underkode. Du kan tilpasse navn og fag etterpå.</p>
   <div className="ks-plan-picker-filters"><label>Søk i NS 3451<input type="search" autoFocus value={search} onChange={e=>setSearch(e.target.value)} placeholder="F.eks. 322, rørnett eller belysning"/></label><label>Fag<select aria-label="Fag" value={trade} onChange={e=>setTrade(e.target.value)}><option value="">Alle fag</option>{[...new Set(operations.flatMap(o=>o.trades||[o.trade]))].map(t=><option key={t}>{t}</option>)}</select></label></div>
