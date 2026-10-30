@@ -123,8 +123,6 @@ body:has([data-expo-app-shell="true"]){min-width:0;background:#f4f7f8}
 [data-expo-app-shell="true"] .company-admin-panel :is(input,select){min-height:44px}
 [data-expo-app-shell="true"] .company-admin-panel :is(input[type="checkbox"],input[type="radio"]){min-height:24px}
 [data-expo-app-shell="true"] .company-admin-housing{padding:0 14px;border:1px solid #d5e4eb;border-radius:8px;background:#fff;margin:0 0 16px}
-[data-expo-app-shell="true"] .company-admin-housing:not(:has(.bolig-admin-access)){display:none}
-[data-expo-app-shell="true"] .company-admin-housing>summary{min-height:48px;align-content:center;font-size:16px;font-weight:600;cursor:pointer}
 [data-expo-app-shell="true"] .company-admin-housing .bolig-admin-access{margin:0 0 14px;padding:14px;box-shadow:none}
 [data-expo-app-shell="true"] .company-admin-panel .company-admin-body{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start}
 [data-expo-app-shell="true"] .company-admin-directory{margin:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none}
@@ -132,12 +130,8 @@ body:has([data-expo-app-shell="true"]){min-width:0;background:#f4f7f8}
 [data-expo-app-shell="true"] .company-admin-panel .company-admin-users{gap:0;margin-top:14px;border:1px solid #d5e4eb;border-radius:9px;overflow:hidden;background:#fff}
 [data-expo-app-shell="true"] .company-admin-panel .company-user-disclosure{margin:0;border:0;border-bottom:1px solid #e2e8e9;border-radius:0;background:#fff;min-width:0}
 [data-expo-app-shell="true"] .company-admin-panel .company-user-disclosure:last-child{border-bottom:0}
-[data-expo-app-shell="true"] .company-admin-panel .company-user-disclosure>summary{padding:14px 16px;min-height:48px;font-size:16px;line-height:1.5;font-weight:500;overflow-wrap:anywhere;cursor:pointer}
-[data-expo-app-shell="true"] .company-admin-panel .company-user-disclosure[open]>summary{background:#e9f4f4}
 [data-expo-app-shell="true"] .company-admin-panel .company-invite-disclosure{margin:0;border:1px solid #d5e4eb;border-radius:8px;background:#fff;min-width:0}
-[data-expo-app-shell="true"] .company-invite-disclosure>summary{padding:14px;min-height:48px;font-size:16px;font-weight:600;line-height:1.5;cursor:pointer}
 [data-expo-app-shell="true"] .company-admin-panel :is(.company-admin-invitations,.company-invite-disclosure>.item){margin:0;padding:16px;min-width:0;border-radius:8px;box-shadow:none}
-[data-expo-app-shell="true"] .company-admin-housing>summary:focus-visible{outline:3px solid #089aa3;outline-offset:3px}
 
 /* Systemadmin: the reference's three groups, with no repeated overview grid. */
 [data-expo-app-shell="true"] .pd-admin-workspace{display:block;max-width:none;min-width:0}

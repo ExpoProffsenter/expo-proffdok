@@ -1,5 +1,12 @@
 # Design 03.6 – gjenoppta uten ny runde
 
+## Firmaadmin-oversikt – brukeroppfølging30.10
+
+Brukerens ferske bilde viste en faktisk fortsatt luftig Firmaadmin-oversikt på siste412c9566. Root gjenskapte samme bilde innlogget; dette var ikke dokumentert som en cachefeil. Forrige Firmaadmin-pakke hadde først og fremst dekket høyrepanelene. Ny avgrenset oppfølging samler eksisterende invitasjon/boligtilgang i én handlingsrad og gir native brukerindeks identitet, rolle, status, faktisk antall og søk ved overskriften på PC. Mobil stabler samme innhold;29/32px sidetittel og16px hovedtekst beholdes. Skjema-/panel-/tilgangs-/lagrings-/invitasjonseiere er uendret. Ingen main/Startside/Bolig-kjerne/backendendring.
+
+Company-admin247 Chromium-assertions inkluderer alle165 tidligere og en produksjonslignende vert med faktisk Firma-Section og APP_RUNTIME_STYLES; alle52 opprinnelige funksjons-/scope-/mailassertions beholdes. Fem bredder, lang identitet, faktisk søk1av2,44px handlinger, responsiv rolletabell, native panel/kladd/fokus og revoke. Full eksplisitt Sandbox critical/buildPASS. PC/mobilbilder kontrolleres. Eksakt kandidat/ny full CI/deploy/innlogget sluttbevis oppdateres i PR295, grunnlag docs/changes/company-admin-index-036-20261030.json. Bare Preview, ingen redesign-TEST OK. Originalreferansef67f2367 er hentet på nytt og uendret; ingen prototype-timer eller fiktive funksjonsvalg kopieres inn.
+
+
 ## Samlepakke30.10 – rapport, sjekklister og varetelling
 
 Fersk oppstart bekreftet draft PR295/head5f297c1c, main71d157f7, CI792/40988649502SUCCESS og fungerende demoøkt på fast Preview. Ingen ny innlogging nødvendig.145-reisers JSON er avstemt mot nyere checkpoints med kilde, kandidat, bevisnivå, eksplisitte ID-koblinger og umappede reiser. Ingen automatisk totalattest fra gammel CI.

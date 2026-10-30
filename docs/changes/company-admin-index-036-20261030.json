@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Firmaadmin: samlet handlingsrad og kompakt brukeroversikt etter03.6",
+  "change": "Miljømål BEGGE, bare PR295/Preview. Brukerens bilde og fersk innlogget kontroll på412c9566 viste at Firmaadmins oversikt fortsatt hadde store separate handlingsrader, fullbredde søk og sammenhengende navn/rolle/status. Forrige rettelse hadde først og fremst dekket høyrepanelene. De eksisterende invitasjons- og boligtilgangsinngangene er nå samlet i én handlingsrad. Brukerlisten får søk ved overskriften på PC, faktisk filtrert antall og native rader med identitet, firmarolle og kontostatus. Smal skjerm stabler de samme opplysningene. Firmaadministrasjon har naturlig orddelingspunkt uten redusert tekst. Oppdater-knapp beholder44px. Lange veiledningstekster om lagring flyttes til det eksisterende brukerpanelet. Skjema, native WorkspaceDisclosure, companyAdminRpc, busy/loading, firma-/brukerscope, rollebekreftelse, CAS, invitasjon/e-post og lagrekommandoer beholdes. Ingen main-/Startside-/Bolig-kjerne-/backend-/SQL-/workflowendring. Gammel summary-CSS som ikke lenger treffer native button-inngangene er fjernet; boligtilgangens samme faktiske komponent-/CSS-gate beholdes med ny forelder.",
+  "verification": "Fersk innlogget baseline gjenskapte brukerens bilde i fast Preview med demo@expo-proffdok.no/Expo Proffsenter. Lokal company-admin-react-check er utvidet fra165 til247 Chromium assertions, alle52 opprinnelige tilgangs-/lagrings-/invitasjons-/e-post-/scopeassertions beholdt. Testen bruker nå den faktiske ytre Firma-Section, appens APP_RUNTIME_STYLES og produksjons-CSS, ikke bare komponentens egen ramme. Fem bredder320/390/768/1363/1920 kontrollerer action44/16, sidetittel29/32, refresh44, native identitet/rolle16, synlig status, samme e-post, responsive listeoverskrifter, søk i samme PC-rad/mobilstabling, faktisk filtrert1av2, ingen sideoverflow og samme eksisterende native panel/kladd/fokus/scope/mailgrenser. Den tidligere ordlyden om bare eget firma er beholdt så den opprinnelige autorisasjonsassertionen består uendret. PC-/mobiloversikt og native panelbilder visuelt inspiseres; full eksplisitt Sandbox critical/buildPASS. Siste kildetre, ny full CI, deployment og faktisk innlogget sluttkontroll vedlikeholdes i PR295. Testtransport er syntetisk; ingen faktisk invitasjon, lagring, rolle-/tilgangsendring eller utsending inngår i live kontroll.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "Firma-veiledningen beskriver den faktiske handlingsraden, søk, native brukerkort og tilbakevei."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Ingen endring i dataflyt, API, sikkerhetsgrenser eller eierskap til lagring."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen runtime-avhengigheter eller miljøkonfigurasjon endres; lokal QA-runtime er midlertidig."
+    },
+    "module": {
+      "required": true,
+      "reason": "UI-kontrakten beskriver kompakt Firmaadmin-indeks, mobilstabling og produksjonslignende testvert."
+    }
+  }
+}

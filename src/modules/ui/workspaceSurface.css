@@ -211,9 +211,7 @@ body:has([data-expo-app-shell="true"]) .pd-workspace-disclosure-content{padding:
 body:has([data-expo-app-shell="true"]) :is(.help-panel-content,.help-reference-workspace,.help-workspace-036) :is(p,li){font-size:16px;line-height:1.6;overflow-wrap:anywhere}
 body:has([data-expo-app-shell="true"]) .help-panel-content :is(h3,h4){font-size:20px;font-weight:600;line-height:1.4;margin:20px 0 8px}
 body:has([data-expo-app-shell="true"]) :is(.help-panel-content,.help-workspace-036,.help-reference-workspace) :is(.item,.help-topic-chapter,.ux-reference){border-radius:8px!important;box-shadow:none}
-body:has([data-expo-app-shell="true"]) .company-admin-body>.company-invite-disclosure{grid-column:1/-1;grid-row:auto;margin:0 0 16px}
-body:has([data-expo-app-shell="true"]) .company-admin-body>.company-admin-directory{grid-column:1/-1;grid-row:auto}
-body:has([data-expo-app-shell="true"]) .company-admin-panel>.company-admin-housing{display:block}
+body:has([data-expo-app-shell="true"]) .company-admin-actions>.company-admin-housing{display:block}
 body:has([data-expo-app-shell="true"]):not(:has(.company-housing-panel .bolig-admin-access)) .company-admin-housing{display:none}
 body:has([data-expo-app-shell="true"]) .company-admin-panel-content :is(.item,.company-invite-access,.company-invite-modules .company-admin-check){margin:0 0 16px;padding:16px;border:1px solid var(--pd-line);border-radius:8px;background:#fff;box-shadow:none;min-width:0}
 body:has([data-expo-app-shell="true"]) .company-admin-panel-content form.item{padding:0;border:0}
@@ -279,4 +277,46 @@ body:has([data-expo-app-shell="true"]) .stocktake input[type="checkbox"]{flex:0 
  body:has([data-expo-app-shell="true"]) .stocktakeWorkspace>*{grid-column:1/-1}
  body:has([data-expo-app-shell="true"]) .stocktakeWorkspace>.stocktakeCount{grid-column:1}
  body:has([data-expo-app-shell="true"]) .stocktakeWorkspace>.stocktakeCount+section{grid-column:2}
+}
+
+/* Firmaadmin's page index uses the same compact action row and readable list
+   as the other 03.6 workspaces. Native disclosures still own all forms. */
+body:has([data-expo-app-shell="true"]) .company-admin-heading>h3{font-size:var(--pd-title)!important;line-height:1.2}
+body:has([data-expo-app-shell="true"]) .company-admin-heading>button{min-height:44px!important;font-size:16px!important}
+body:has([data-expo-app-shell="true"]) .company-admin-panel .company-admin-body{gap:20px}
+body:has([data-expo-app-shell="true"]) .company-admin-actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px 12px;margin:0;padding:0 0 20px;border-bottom:1px solid var(--pd-line)}
+body:has([data-expo-app-shell="true"]) .company-admin-actions>:is(.company-invite-disclosure,.company-admin-housing){flex:0 1 auto;width:auto;max-width:100%;min-width:0;margin:0;padding:0;border:0;border-radius:7px;background:transparent}
+body:has([data-expo-app-shell="true"]) .company-admin-actions .pd-workspace-disclosure-trigger{width:auto;max-width:100%;min-height:44px!important;padding:10px 16px;border:1px solid var(--pd-line);border-radius:7px;background:#fff;color:var(--pd-accent);font-size:16px!important;font-weight:600;line-height:1.4}
+body:has([data-expo-app-shell="true"]) .company-admin-actions .company-invite-disclosure>.pd-workspace-disclosure-trigger{background:var(--pd-accent);border-color:var(--pd-accent);color:#fff}
+body:has([data-expo-app-shell="true"]) .company-admin-actions .company-invite-disclosure>.pd-workspace-disclosure-trigger>svg{color:#fff}
+body:has([data-expo-app-shell="true"]) .company-admin-directory-toolbar{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin:0 0 16px;min-width:0}
+body:has([data-expo-app-shell="true"]) .company-admin-directory-toolbar>div{min-width:0}
+body:has([data-expo-app-shell="true"]) .company-admin-directory-toolbar h3{margin:0 0 6px;font-size:20px!important;font-weight:600;line-height:1.35}
+body:has([data-expo-app-shell="true"]) .company-admin-directory-toolbar p{margin:0;font-size:16px;line-height:1.5}
+body:has([data-expo-app-shell="true"]) .company-admin-directory-toolbar>label{display:grid;gap:6px;flex:0 1 340px;min-width:220px;font-size:16px;line-height:1.4}
+body:has([data-expo-app-shell="true"]) .company-admin-directory-toolbar input{width:100%;min-height:44px;font-size:16px;border-radius:7px}
+body:has([data-expo-app-shell="true"]) .company-admin-list-head{display:grid;grid-template-columns:minmax(0,1fr) 125px 200px 18px;gap:12px;padding:10px 16px;font-size:14px;line-height:1.4;color:var(--pd-muted)}
+body:has([data-expo-app-shell="true"]) .company-admin-panel .company-admin-users{margin:0;border-radius:8px}
+body:has([data-expo-app-shell="true"]) .company-user-disclosure>.pd-workspace-disclosure-trigger{display:grid;grid-template-columns:minmax(0,1fr) 18px;gap:12px;min-height:64px!important;padding:12px 16px}
+body:has([data-expo-app-shell="true"]) .company-user-summary{display:grid;grid-template-columns:minmax(0,1fr) 125px 200px;gap:12px;align-items:center;width:100%;min-width:0}
+body:has([data-expo-app-shell="true"]) .company-user-identity{display:grid;gap:3px;min-width:0}
+body:has([data-expo-app-shell="true"]) .company-user-identity strong{font-size:16px!important;font-weight:600;line-height:1.4;overflow-wrap:anywhere;color:var(--pd-ink)}
+body:has([data-expo-app-shell="true"]) .company-user-identity small{font-size:14px;line-height:1.4;font-weight:400;color:var(--pd-muted);overflow-wrap:anywhere}
+body:has([data-expo-app-shell="true"]) .company-user-role{font-size:16px!important;line-height:1.4;font-weight:400;color:var(--pd-muted)}
+body:has([data-expo-app-shell="true"]) .company-user-status{justify-self:start;padding:4px 9px;border-radius:5px;background:#f1f5f6;color:#4e6876;font-size:14px!important;line-height:1.4;font-weight:600;overflow-wrap:anywhere}
+body:has([data-expo-app-shell="true"]) .company-user-status[data-status="active"]{background:#e6f5ee;color:#246046}
+body:has([data-expo-app-shell="true"]) .company-user-status[data-status="pending"]{background:#fff4df;color:#79551a}
+@media(max-width:900px){
+ body:has([data-expo-app-shell="true"]) .company-admin-directory-toolbar{flex-wrap:wrap;align-items:stretch}
+ body:has([data-expo-app-shell="true"]) .company-admin-directory-toolbar>label{flex:1 1 100%;min-width:0}
+ body:has([data-expo-app-shell="true"]) .company-admin-list-head{display:none}
+ body:has([data-expo-app-shell="true"]) .company-user-summary{grid-template-columns:minmax(0,1fr) auto;gap:8px 12px}
+ body:has([data-expo-app-shell="true"]) .company-user-identity{grid-column:1/-1}
+ body:has([data-expo-app-shell="true"]) .company-user-status{justify-self:end;max-width:180px}
+}
+@media(max-width:620px){
+ body:has([data-expo-app-shell="true"]) .company-admin-actions{gap:8px;padding-bottom:16px}
+ body:has([data-expo-app-shell="true"]) .company-admin-actions>:is(.company-invite-disclosure,.company-admin-housing),
+ body:has([data-expo-app-shell="true"]) .company-admin-actions .pd-workspace-disclosure-trigger{width:100%}
+ body:has([data-expo-app-shell="true"]) .company-user-disclosure>.pd-workspace-disclosure-trigger{padding:12px}
 }
