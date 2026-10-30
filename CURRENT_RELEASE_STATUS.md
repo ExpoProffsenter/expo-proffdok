@@ -1,6 +1,6 @@
 # Preview-gjennomgang – 29.10.2026
 
-Neste samlepakke: prosjektbilder, kundeportal og privat dokumentinngang. Ny134-assertions runtimeprøve og visuell PC/mobilkontroll; eksisterende tilgang/lagring beholdes. Eksakt kandidat/CI/innlogget resultat i [PR295](https://github.com/ExpoProffsenter/expo-proffdok/pull/295), varig grunnlag docs/changes/project-media-portal-036-20261030.json. Bare Preview, ingen redesign-TEST OK.
+Neste samlepakke: prosjektbilder, kundeportal og privat dokumentinngang. Ny139-assertions runtimeprøve og visuell PC/mobilkontroll; eksisterende tilgang/lagring beholdes. Eksakt kandidat/CI/innlogget resultat i [PR295](https://github.com/ExpoProffsenter/expo-proffdok/pull/295), varig grunnlag docs/changes/project-media-portal-036-20261030.json. Bare Preview, ingen redesign-TEST OK.
 
 Firmaadmin-oppfølging etter brukerens bilde30.10: oversikten var fortsatt for luftig selv om høyrepanelene var oppdatert. Native invitasjon/boligtilgang er samlet i handlingsrad; brukerlisten viser identitet, rolle og status med søk i PC-høyrekant og samme innhold stablet på mobil. Faktisk count og samme panel-/skjemaeiere. Company-admin-prøven247 inneholder alle165 tidligere assertions og ekte ytre Firma-seksjon/runtime-stil. Full Sandbox critical/buildPASS; kandidat/ny CI/deploy og innlogget sluttkontroll føres i PR295. Bare Preview; ingen redesign-TEST OK.
 

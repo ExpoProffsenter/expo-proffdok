@@ -7,6 +7,7 @@ import './projectPhotos.css';
 // state belongs here. Unmounting/replacing the source removes its open panel.
 export default function ProjectPhotoPreview({photo,children}){
  const [activeUrl,setActiveUrl]=useState(''),[wide,setWide]=useState(false);
+ const [failedUrl,setFailedUrl]=useState(''),[attempt,setAttempt]=useState(0);
  const dialog=useRef(null);
  const url=photo?.url||'';
  const title=photo?.comment||photo?.name||photo?.item||photo?.cat||photo?.category||'Prosjektbilde';
@@ -20,10 +21,10 @@ export default function ProjectPhotoPreview({photo,children}){
  if(!url)return null;
  return <>
   <button type="button" className="pd-project-photo-open" aria-label={`Åpne større bilde: ${title}`} aria-haspopup="dialog" onClick={event=>{event.stopPropagation();setWide(false);setActiveUrl(url);}}>
-   <img src={url} alt={title} loading="lazy" draggable={false}/><span><Maximize2 size={16} aria-hidden="true"/>Vis større bilde</span>
+   {failedUrl===url?<span className="pd-project-photo-missing">Bildet kunne ikke lastes</span>:<img key={attempt} src={url} alt={title} loading="lazy" draggable={false} onError={()=>setFailedUrl(url)}/>}<span><Maximize2 size={16} aria-hidden="true"/>Vis større bilde</span>
   </button>
   {open&&<WorkspacePanel dialogRef={dialog} title={title} subtitle="PROSJEKT / BILDER" className="pd-project-photo-panel" wide={wide} onExpand={()=>setWide(value=>!value)} onClose={()=>setActiveUrl('')} closeLabel="Lukk bilde">
-   <figure><img src={url} alt={title}/><figcaption>{title}</figcaption></figure>
+   <figure>{failedUrl===url?<div className="pd-project-photo-error" role="alert"><p>Bildet kunne ikke lastes. Kontroller forbindelsen og prøv igjen. Hvis bildet fortsatt mangler, kontakt prosjektansvarlig.</p><button type="button" onClick={()=>{setAttempt(value=>value+1);setFailedUrl('');}}>Prøv bildet igjen</button></div>:<img key={attempt} src={url} alt={title} onError={()=>setFailedUrl(url)}/>}<figcaption>{title}</figcaption></figure>
    {children}
   </WorkspacePanel>}
  </>;

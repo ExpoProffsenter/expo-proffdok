@@ -1,6 +1,9 @@
 .pd-project-photo-open{display:flex!important;flex-direction:column;gap:8px;align-items:stretch;width:100%;padding:0!important;border:0!important;border-radius:7px;background:#f4f7f8!important;color:#007681!important;box-shadow:none!important;transform:none!important;overflow:hidden;cursor:zoom-in;white-space:normal!important}
 .pd-project-photo-open>img{display:block;width:100%;height:180px;object-fit:contain;border-radius:0!important}
 .pd-project-photo-open>span{display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;font-size:16px!important;font-weight:600;padding:0 10px}
+.pd-project-photo-open>.pd-project-photo-missing{min-height:180px;color:#4e6876;font-weight:400}
+.pd-project-photo-error{padding:16px;background:#f4f7f8;border:1px solid #d5e4eb;border-radius:7px}
+.pd-project-photo-error p{margin:0 0 12px}
 .pd-project-photo-open:focus-visible{outline:3px solid #089aa3;outline-offset:3px}
 .pd-project-photo-panel figure{margin:0;min-width:0}
 .pd-project-photo-panel figure>img{display:block;width:100%;height:auto;max-height:65dvh;object-fit:contain;background:#f4f7f8}

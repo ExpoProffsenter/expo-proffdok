@@ -217,7 +217,7 @@ const BASE_SECTIONS = [
     "bilder",
     "📷 Bilder",
     "Bildedokumentasjon viser eksisterende forhold, skjulte arbeider, kritiske detaljer og ferdig resultat.",
-    ["Åpne Bilder → Legg til bilder. Velg kategori og ta bilder, velg fra galleriet eller dra bildene til kategorien. Se lagringsstatusen i panelet. Tilbake til arbeidet lukker panelet uten å laste opp noe ekstra.", "Trykk Vis større bilde på et bilde i galleriet eller i Samlet bildeoversikt. Høyrepanelet viser samme bilde uten beskjæring. Utvid arbeidsflaten gir mer plass. Lukk bilde eller Tilbake til arbeidet går tilbake til bildet. Samlet bildeoversikt viser hvert bilde én gang og beholder kildene og sjekkpunktene.", "Kommentar og valg av ferdigbilde som rapportheading gjøres i det opprinnelige prosjektgalleriet. Et bilde i samlet oversikt flyttes ikke fra sjekkpunktet."],
+    ["Åpne Bilder → Legg til bilder. Velg kategori og ta bilder, velg fra galleriet eller dra bildene til kategorien. Se lagringsstatusen i panelet. Tilbake til arbeidet lukker panelet uten å laste opp noe ekstra.", "Trykk Vis større bilde på et bilde i galleriet eller i Samlet bildeoversikt. Høyrepanelet viser samme bilde uten beskjæring. Utvid arbeidsflaten gir mer plass. Lukk bilde eller Tilbake til arbeidet går tilbake til bildet. Hvis bildefilen ikke kan lastes, viser panelet en forklaring og Prøv bildet igjen. Samlet bildeoversikt viser hvert bilde én gang og beholder kildene og sjekkpunktene.", "Kommentar og valg av ferdigbilde som rapportheading gjøres i det opprinnelige prosjektgalleriet. Et bilde i samlet oversikt flyttes ikke fra sjekkpunktet."],
     ["Ta bilder av skjulte arbeider før de bygges inn."],
     ["Dokumenter sluk, mansjetter, membran og gjennomføringer spesielt godt."]
   ),

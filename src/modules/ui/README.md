@@ -55,4 +55,6 @@ Firmaadmins oversikt har en samlet handlingsrad for eksisterende invitasjon og r
 
 Prosjektgalleriet, samlet bildeoversikt og kundeportal bruker `ProjectPhotoPreview` med samme native `WorkspacePanel`, større arbeidsflate, fokusretur og original bildekilde. Panelet er lesende og lager ingen filkopi eller ny dokumenttilgang. Når eieren fjerner innholdet eller skifter prosjekt, fjernes også bildevisningen. `ProjectPhotoUpload` samler de opprinnelige filfeltene i samme panel, og beholder dem montert ved lukking. Opplastings-/lagringskommandoene eies fortsatt av prosjektet.
 
+En utilgjengelig bildefil gir tydelig feil i panelet. Prøv bildet igjen gjør bare et nytt leseforsøk mot den samme URL-en. Bildeidentitet, kilde og prosjektkladd erstattes ikke av en reservefil. Syntetiske demobilder må ligge i sitt avtalte miljø; manglende demo-overlay skal ikke løses ved å kopiere det inn i vanlig appkode.
+
 `portalWorkspace.css` gjelder bare kunde-/UE-kodeinngangen, kundeportal og privat dokumentrute. De opprinnelige portaldataene, fanene og handlingene beholdes. Samlet prosjektstatistikk vises på Oversikt, mens valgt fane får plass under prosjekt/status. Dokumentrutens Tilbake bruker nettleserhistorikken, uten ny URL-/tilgangsmotor. Private dokumenter bruker fortsatt eksisterende Auth/Function/Storage-kontroll og kortlevd lenke.
