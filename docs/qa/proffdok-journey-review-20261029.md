@@ -10,7 +10,7 @@ Kildegrunnlag: `50a8dda399198198c8cad3b9b08b0223cae4c7f1`. Original 03.6: `f67f2
 
 De historiske radene og tabellen nedenfor beskriver kildeauditen29.10. De er ikke dagens utførelsesstatus. JSON-registerets `reconciliation_20261030` knytter nyere delbevis til 58 av145 ID-er, med eksplisitt liste over de øvrige. Hver kilde oppgir faktisk kandidat, bevisnivå og avgrensning. Rapport/sjekkliste/Varetelling har ferske komponentprøver; øvrige koblinger er rapporterte checkpointbevis som ikke er kjørt om igjen uten ny risiko. Ingen helreise er lukket automatisk.
 
-Konkret ny pakke: PROJECT-016, CHECKLIST-001..004, STOCK-001..003 og rapportinngangen i HELP-001. Rapportvalg73, sjekkliste88, Varetelling73 Chromium-assertions; faktisk React/jsPDF7PDF/4utskriftsforløp. Innlogget baseline avdekket gjennomsiktig rapportvalg. Eksakt endelig kandidat/CI/deploy og innlogget sluttkontroll føres i PR295. Ingen reell telling, eksport, invitasjon eller e-post i live kontroll. Fysisk mobil/Safari, underroller, portalhelreiser, separat PR294/298 og resten av A–Å er fortsatt åpne.
+Konkret ny pakke: PROJECT-016, CHECKLIST-001..004, STOCK-001..003 og rapportinngangen i HELP-001. Rapportvalg78, sjekkliste88, Varetelling73 Chromium-assertions; faktisk React/jsPDF7PDF/4utskriftsforløp. Innlogget baseline avdekket gjennomsiktig rapportvalg. Eksakt endelig kandidat/CI/deploy og innlogget sluttkontroll føres i PR295. Ingen reell telling, eksport, invitasjon eller e-post i live kontroll. Fysisk mobil/Safari, underroller, portalhelreiser, separat PR294/298 og resten av A–Å er fortsatt åpne.
 
 ## Fast design og beviskrav
 

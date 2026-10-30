@@ -32,6 +32,7 @@ try{
   eq(await page.locator('.ks-report-dialog-head').evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(16, 33, 43)','shared navy report header '+width);
   eq(await page.locator('#ks-report-title').evaluate(e=>parseFloat(getComputedStyle(e).fontSize)),width<=620?25:28,'readable report title '+width);
   eq(await dialog.evaluate(e=>e.scrollWidth<=e.clientWidth+1),true,'no report horizontal overflow '+width);
+  eq(await dialog.locator('.ks-report-option :is(span,strong)').evaluateAll(els=>els.every(e=>getComputedStyle(e).fontSize==='16px')),true,'native document titles and statuses16 '+width);
   eq(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'no page overflow '+width);
   eq(await page.locator('.ks-report-option input').first().isChecked(),true,'same selection after resize '+width);
   eq(await page.locator('.ks-report-dialog-body').evaluate(e=>getComputedStyle(e).overflowY),'auto','independent report body '+width);

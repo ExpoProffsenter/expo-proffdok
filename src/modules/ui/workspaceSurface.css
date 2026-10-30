@@ -241,6 +241,7 @@ body:has([data-expo-app-shell="true"]) .company-admin-panel-content button.secon
  body:has([data-expo-app-shell="true"]) .ks-report-dialog-body{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding:20px 24px}
  body:has([data-expo-app-shell="true"]) .ks-report-dialog :is(p,label,legend,button){font-size:16px!important;line-height:1.45}
  body:has([data-expo-app-shell="true"]) .ks-report-dialog fieldset{margin:16px 0;padding:12px;border:1px solid var(--pd-line);border-radius:8px;min-width:0}
+ body:has([data-expo-app-shell="true"]) .ks-report-dialog .ks-report-option :is(span,strong){font-size:16px!important;line-height:1.45}
  body:has([data-expo-app-shell="true"]) .ks-report-dialog .ks-report-option{min-height:44px!important;overflow-wrap:anywhere}
  body:has([data-expo-app-shell="true"]) .ks-report-dialog .ks-report-option input{width:20px;height:20px;min-height:20px;flex:0 0 20px}
  body:has([data-expo-app-shell="true"]) .ks-report-dialog>.ks-report-dialog-footer{flex:none;display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:16px 24px;background:#fff;border-top:1px solid var(--pd-line)}
