@@ -3862,7 +3862,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/critical-project-navigation-check.mjs",
@@ -3891,13 +3891,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "current-project-media-portal",
+            "mapping": "scoped partial runtime result; source record and PR295 specify live limitations"
+          }
+        ]
       },
       "design_review": {
         "status": "delvis",
-        "reason": "Åpent bruker-/referanseavvik er identifisert i området. Ingen lukking av den enkelte reisen uten sluttbilder.",
+        "reason": "PC/mobilbilder for relevante panel/portal/dokumentinngang visuelt inspisert med faktisk app-CSS. Ingen samlet server-/rolle-/kundeøkt-/fysiskmobilattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "current-project-media-portal"
+        ]
       },
       "remaining_checks": [
         "En navigasjonsassertion beviser inngangen, ikke redigering/lagring av innholdet bak fanen.",
@@ -10448,7 +10456,7 @@
         "mapping_gap": true
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/critical-mobile-access-security-check.mjs",
@@ -10473,13 +10481,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "current-project-media-portal",
+            "mapping": "scoped partial runtime result; source record and PR295 specify live limitations"
+          }
+        ]
       },
       "design_review": {
-        "status": "ikke-startet",
-        "reason": "Ingen selvstendig visuell sluttkontroll attestert i denne auditen.",
+        "status": "delvis",
+        "reason": "PC/mobilbilder for relevante panel/portal/dokumentinngang visuelt inspisert med faktisk app-CSS. Ingen samlet server-/rolle-/kundeøkt-/fysiskmobilattest.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "current-project-media-portal"
+        ]
       },
       "remaining_checks": [
         "Skissen har ikke en fullstendig én-til-én-funksjonsflate for hele denne reisen; anvend felles design uten å fjerne eksisterende native funksjoner eller finne på forretningsregler.",
@@ -10996,18 +11012,23 @@
           {
             "ref": "current-report-checklist-stock",
             "mapping": "scoped partial result; see evidence_registry and limitations"
+          },
+          {
+            "ref": "current-project-media-portal",
+            "mapping": "scoped partial runtime result; source record and PR295 specify live limitations"
           }
         ]
       },
       "design_review": {
         "status": "delvis",
-        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
+        "reason": "PC/mobilbilder for relevante panel/portal/dokumentinngang visuelt inspisert med faktisk app-CSS. Ingen samlet server-/rolle-/kundeøkt-/fysiskmobilattest.",
         "screenshots": [],
         "reviewer": null,
         "partial_evidence_refs": [
           "checkpoint-plan-time",
           "checkpoint-company-help",
-          "current-report-checklist-stock"
+          "current-report-checklist-stock",
+          "current-project-media-portal"
         ]
       },
       "remaining_checks": [
@@ -15830,6 +15851,17 @@
           "STOCK-003",
           "HELP-001"
         ]
+      },
+      "current-project-media-portal": {
+        "source": "docs/changes/project-media-portal-036-20261030.json",
+        "candidate": "current PR295 candidate; exact commit and CI maintained in PR295",
+        "level": "134 component/Chromium assertions plus scoped logged-in post-deploy evidence maintained in PR295",
+        "scope": "Project photo panels/upload fields and sources; native customer portal tabs/code gate/chat draft; private-document route with synthetic Auth/Storage/Function transport. No server/RLS/real upload, customer-code, PDF or physical device attestation.",
+        "ids": [
+          "PROJECT-009",
+          "PORTAL-001",
+          "HELP-001"
+        ]
       }
     },
     "unmapped_journey_ids": [
@@ -15889,7 +15921,6 @@
       "KSHMS-011",
       "KSHMS-012",
       "PERSONAL-003",
-      "PORTAL-001",
       "PORTAL-002",
       "PROJECT-002",
       "PROJECT-003",
@@ -15897,7 +15928,6 @@
       "PROJECT-005",
       "PROJECT-007",
       "PROJECT-008",
-      "PROJECT-009",
       "PROJECT-010",
       "PROJECT-011",
       "PROJECT-012",

@@ -1,3 +1,5 @@
+import ProjectPhotoPreview from '../images/ProjectPhotoPreview.jsx';
+import './portalWorkspace.css';
 // FASE 24B PORTALMODUL: Flytter eksisterende tilgangskode-logikk og kundeportalvisning ut av main.jsx uten funksjonsendring.
 import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
 import { Camera, FileText, Building2, ClipboardCheck, BadgeCheck, Download } from 'lucide-react';
@@ -304,7 +306,7 @@ export function renderCustomerPortal(ctx = {}) {
   const customerPortalPrimaryStatus = customerPortalDisplayStatus.label;
   const customerPortalNextAction = customerPortalWarrantyIssued ? "Last ned sluttrapport eller se garantidokumentasjonen." : customerPortalOpenDeviationTotal > 0 ? "Lukk eller avklar åpne avvik før prosjektet kan ferdigstilles." : customerPortalLimitedChecklistScope && customerPortalChecklistDone === 0 ? "Vurder minst ett relevant kontrollpunkt for dette mindre prosjektet før det kan ferdigstilles." : customerPortalChecklistMissing > 0 ? `Fullfør ${customerPortalChecklistMissing} gjenstående kontrollpunkt før prosjektet kan regnes som ferdigstilt.` : !projectHasOvertagelse(overtagelse) ? "Overtagelse må registreres når prosjektet er klart og signert av begge parter." : customerPortalWarrantyActive && !customerPortalWarrantyIssued ? "Garantibevis utstedes når alle garantikrav er oppfylt." : "Se rapport, bilder og produktdokumentasjon.";
   if (!portalAccessOk) return renderPortalAccessGate("kunde");
-  return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "pd-customer-portal", "data-portal-tab": customerTab, children: [
     /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("header", { children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "head", children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Brand, { logo: company.logoUrl, name }),
@@ -336,7 +338,7 @@ export function renderCustomerPortal(ctx = {}) {
       ] })
     ] }),
     /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("main", { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: project.projectName || project.address || "Prosjektoversikt", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { className: "pd-portal-project-summary", title: project.projectName || project.address || "Prosjektoversikt", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", gap: "12px", flexWrap: "wrap", alignItems: "flex-start" }, children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: 0 }, children: customerPortalAddress || project.customer || "Prosjektdokumentasjon" }),
@@ -425,7 +427,7 @@ export function renderCustomerPortal(ctx = {}) {
       customerTab === "bilder" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Bilder", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Camera, {}), children: [
         customerPortalPhotos.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Ingen bilder er delt på prosjektet ennå." }),
         customerPortalPhotos.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "photos", children: customerPortalPhotos.map((photo) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "photo", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: photo.url, target: "_blank", rel: "noopener noreferrer", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: photo.url, alt: photo.comment || photo.cat || "Prosjektbilde" }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProjectPhotoPreview, { photo }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: photo.cat || "Prosjektbilde" }),
           (photo.comment || photo.name) && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: photo.comment || photo.name })
         ] }, photo.id || photo.url)) })

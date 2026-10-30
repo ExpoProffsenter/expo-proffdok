@@ -217,7 +217,7 @@ const BASE_SECTIONS = [
     "bilder",
     "📷 Bilder",
     "Bildedokumentasjon viser eksisterende forhold, skjulte arbeider, kritiske detaljer og ferdig resultat.",
-    ["Last opp bilder fortløpende i riktig kategori og velg eventuelt ferdigbilde som rapportheading."],
+    ["Åpne Bilder → Legg til bilder. Velg kategori og ta bilder, velg fra galleriet eller dra bildene til kategorien. Se lagringsstatusen i panelet. Tilbake til arbeidet lukker panelet uten å laste opp noe ekstra.", "Trykk Vis større bilde på et bilde i galleriet eller i Samlet bildeoversikt. Høyrepanelet viser samme bilde uten beskjæring. Utvid arbeidsflaten gir mer plass. Lukk bilde eller Tilbake til arbeidet går tilbake til bildet. Samlet bildeoversikt viser hvert bilde én gang og beholder kildene og sjekkpunktene.", "Kommentar og valg av ferdigbilde som rapportheading gjøres i det opprinnelige prosjektgalleriet. Et bilde i samlet oversikt flyttes ikke fra sjekkpunktet."],
     ["Ta bilder av skjulte arbeider før de bygges inn."],
     ["Dokumenter sluk, mansjetter, membran og gjennomføringer spesielt godt."]
   ),
@@ -226,7 +226,7 @@ const BASE_SECTIONS = [
     "🔑 Tilgang",
     "Tilgang brukes til å dele prosjektet med kunde, underentreprenører og en uavhengig kontrollør gjennom separate portaler.",
     ["For kontrollør: åpne prosjektets Tilgang. I kortet Kontrollørportal trykker du Administrer kontrollørtilgang. I vinduet skriver du navn/firma og velger Gyldig til – dato og klokkeslett. Trykk Lag kontrollørlenke og deretter Kopier kontrollørlenke og kode. Del begge med kontrolløren. Du kan også skrive Kontrollørens e-postadresse og trykke Send kontrollørlenke på e-post. E-posten får samme layout og firmalogo som tilbud, med lenke, kode og utløpsdato. Kontroller e-postadressen før du sender. Det sendes ingen e-post bare fordi du lager eller endrer tilgangen.", "Kontrolløren åpner lenken og skriver koden. Han kan lese prosjektering, tegninger, bilder, registrerte sjekklister og lagret kontrollhistorikk. Han kan ikke endre prosjektet.", "Bruk Endre utløpsdato for å forlenge eller forkorte. Bruk Trekk tilbake tilgang for å stoppe tilgangen tidligere. Lag ny kode stopper bruk av den gamle koden. Koden lagres ikke i lenken og vises bare når den lages.", "Send riktig kunde-/UE-portaltilgang til mottakeren og kontroller e-postadressen før utsending."],
-    ["Tilgangskode skal ikke ligge i URL, og kunder skal ikke se interne notater."],
+    ["Kunden bruker Oversikt for samlet status og fanene øverst for bilder, dokumentasjon og chat. Vis større bilde åpner samme høyrepanel. En usendt chatmelding er fortsatt en kladd til kunden trykker Send melding.", "Private dokumenter kontrolleres før de åpnes. Ved behov brukes samme tilgangskode som til portalen. Tilbake går til forrige side; Lukk lukker en separat dokumentfane. Feil eller utløpt kode gir ingen dokumenttilgang. Kontakt prosjektansvarlig hvis tilgangen er utløpt.", "Tilgangskode skal ikke ligge i URL, og kunder skal ikke se interne notater."],
     ["Hold tilgangslisten ryddig og fjern tilganger som ikke lenger er nødvendige." ]
   ),
   section(

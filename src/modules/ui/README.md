@@ -51,3 +51,8 @@ Varetelling bruker samme åpne side, 16px felt og 44px handlinger som katalogen.
 
 
 Firmaadmins oversikt har en samlet handlingsrad for eksisterende invitasjon og rollefiltrert boligtilgang. Søk og faktisk antall brukere står ved listen. Native brukerkort åpnes fra rader med identitet, firmarolle og kontostatus; smal skjerm stabler samme opplysninger. Lange navn/e-poster brytes uten å redusere hovedtekst under16px. Den samme WorkspaceDisclosure og samme kontroller/kommandoer eier høyrepanelene. Listen skaper ingen ny tilgangs- eller lagringstilstand. Nettleserprøven monterer den faktiske ytre Firma-seksjonen og appens runtime-stil i tillegg til modul-CSS, slik at sideoversikten også kontrolleres.
+# Prosjektbilder og eksterne leseflater
+
+Prosjektgalleriet, samlet bildeoversikt og kundeportal bruker `ProjectPhotoPreview` med samme native `WorkspacePanel`, større arbeidsflate, fokusretur og original bildekilde. Panelet er lesende og lager ingen filkopi eller ny dokumenttilgang. Når eieren fjerner innholdet eller skifter prosjekt, fjernes også bildevisningen. `ProjectPhotoUpload` samler de opprinnelige filfeltene i samme panel, og beholder dem montert ved lukking. Opplastings-/lagringskommandoene eies fortsatt av prosjektet.
+
+`portalWorkspace.css` gjelder bare kunde-/UE-kodeinngangen, kundeportal og privat dokumentrute. De opprinnelige portaldataene, fanene og handlingene beholdes. Samlet prosjektstatistikk vises på Oversikt, mens valgt fane får plass under prosjekt/status. Dokumentrutens Tilbake bruker nettleserhistorikken, uten ny URL-/tilgangsmotor. Private dokumenter bruker fortsatt eksisterende Auth/Function/Storage-kontroll og kortlevd lenke.

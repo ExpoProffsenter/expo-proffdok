@@ -1,5 +1,14 @@
 # Design 03.6 – gjenoppta uten ny runde
 
+## Samlepakke30.10 – prosjektbilder, kundeportal og privat dokumentinngang
+
+Baseline2a6bf955/CI795SUCCESS, fast Preview og samme demoøkt. Bilder har nå en felles lesende større-bildeinngang fra samlet oversikt, galleri og kundeportal, med native WorkspacePanel/fokus/utvidelse og originale kilder. Legg til bilder samler de samme monterte filfeltene; opplasting/autolagring eies fortsatt av prosjektet. Kundeportal har åpen side, kompakt oversiktsstatistikk, ni uendrede native faner og én vannrett mobilrad. Privat dokumentkode/feil/venting får lesbar ramme og nettleserens Tilbake; ingen Auth/Storage/Function-/salgsreferanselogikk er endret.
+
+Ny134-assertions Chromium-suite bruker ekte komponenter/Section og app/runtime-CSS. Den dekker blant annet kilde/deduplisering, tastatur/Escape/fokus, prosjektkladd/samme DOM, samme valgte filfelt etter reopen, opplastingscallback/låsing, native portalsteg/chatkladd og ekte dokumentrute med syntetisk transport. Mobilsluttbilder avdekket headerklipping uten sideoverflow; egen headergeometriassertion beskytter dette. PC/mobilbilder for bildepanel, opplasting, portal og dokumentkode er visuelt inspisert. Eksisterende app-UX-kjedePASS med første122-variant; siste134 kjørt separat. Full eksplisitt Sandbox critical/buildPASS. Endelig kandidat, ny full CI, deployment og faktisk innlogget etterkontroll føres i PR295, uten selvrefererende SHA-commit.
+
+PROJECT-009, PORTAL-001 og HELP-001 får avgrensede delbevis i reiseregisteret; ingen helreise lukkes automatisk. Kundeportalens rapport-/informasjonsadaptere er syntetiske i prøven; server/RLS, faktisk kundekode og fysisk mobil/Safari står fortsatt åpne. Demoens Kopier kundelenke og kode kaller saveProjectForLink først og er ikke en ren lesetest; ingen ny kode eller tilgang genereres bare for QA. Privat dokumentlenke kan følges fra faktisk Avtalegrunnlag etter Preview-deploy; bootstrap skal beholde Preview-origin. Bevis kun det faktisk observerte utfallet. Ingen e-post/invitasjon/signering/tilgangsendring, ingen redesign-TEST OK/main/Production/demo-sync. Godkjent Startside og original03.6 beholdes. Grunnlag: docs/changes/project-media-portal-036-20261030.json.
+
+
 ## Firmaadmin-oversikt – brukeroppfølging30.10
 
 Brukerens ferske bilde viste en faktisk fortsatt luftig Firmaadmin-oversikt på siste412c9566. Root gjenskapte samme bilde innlogget; dette var ikke dokumentert som en cachefeil. Forrige Firmaadmin-pakke hadde først og fremst dekket høyrepanelene. Ny avgrenset oppfølging samler eksisterende invitasjon/boligtilgang i én handlingsrad og gir native brukerindeks identitet, rolle, status, faktisk antall og søk ved overskriften på PC. Mobil stabler samme innhold;29/32px sidetittel og16px hovedtekst beholdes. Skjema-/panel-/tilgangs-/lagrings-/invitasjonseiere er uendret. Ingen main/Startside/Bolig-kjerne/backendendring.

@@ -1,5 +1,7 @@
 # Preview-gjennomgang – 29.10.2026
 
+Neste samlepakke: prosjektbilder, kundeportal og privat dokumentinngang. Ny134-assertions runtimeprøve og visuell PC/mobilkontroll; eksisterende tilgang/lagring beholdes. Eksakt kandidat/CI/innlogget resultat i [PR295](https://github.com/ExpoProffsenter/expo-proffdok/pull/295), varig grunnlag docs/changes/project-media-portal-036-20261030.json. Bare Preview, ingen redesign-TEST OK.
+
 Firmaadmin-oppfølging etter brukerens bilde30.10: oversikten var fortsatt for luftig selv om høyrepanelene var oppdatert. Native invitasjon/boligtilgang er samlet i handlingsrad; brukerlisten viser identitet, rolle og status med søk i PC-høyrekant og samme innhold stablet på mobil. Faktisk count og samme panel-/skjemaeiere. Company-admin-prøven247 inneholder alle165 tidligere assertions og ekte ytre Firma-seksjon/runtime-stil. Full Sandbox critical/buildPASS; kandidat/ny CI/deploy og innlogget sluttkontroll føres i PR295. Bare Preview; ingen redesign-TEST OK.
 
 Ny samlepakke30.10: innlogget gjennomgang avdekket gjennomsiktig KS/HMS-rapportvalg. Rapportvalg, native sjekklister og Varetelling følger nå felles03.6-ramme. Faktisk komponent-CSS-test report78/checklist88/stock73PASS; negativ original gjenskaper feilen. Ekte React/jsPDF7PDF/4utskriftsforløp og eksplisitt Sandbox critical/buildPASS; samlet app-UXPASS.145-reisers register er avstemt med nyere delbevis per ID, uten totalattest. Eksakt kandidat/CI/deploy/innlogget sluttkontroll i PR295 og konkret handoff. Bare Preview, ingen redesign-TEST OK.

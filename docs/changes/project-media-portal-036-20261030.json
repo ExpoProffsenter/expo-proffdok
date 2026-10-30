@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Samlet 03.6-pakke for prosjektbilder, kundeportal og privat dokumentinngang",
+  "change": "Miljømål BEGGE, bare PR295/Preview. Fersk innlogget baseline viste ingen større-bildehandling i samlet oversikt. Prosjektgalleriets eldre IMG-klikk hadde ingen tilsvarende tastaturinngang. ProjectPhotoPreview gjenbruker samme native WorkspacePanel fra galleri, samlet oversikt og kundeportal, med uendret bilde-URL, kildetekst/sjekkpunkt, utvidelse og fokusretur. ProjectPhotoUpload flytter bare de eksisterende kategorifeltene til samme ramme og beholder feltene montert ved lukking. Kundeportalens åpne side og kompakte statistikk bruker samme lesbare mål; alle ni faner beholdes, med én vannrett rullbar rad på mobil. Gjentatt oversiktsstatistikk skjules visuelt på underfanene, mens prosjekt/status består. Privat dokumentrute får samme typografi, tydelig vente-/kode-/feilside og nettleserens Tilbake. Den eksisterende Auth/portal-/salgsreferanse-/signeringskontrollen er urørt. Ingen main.jsx/bootstrap/Startside/Bolig-kjerne/backend/SQL/workflow-/avhengighetsendring.",
+  "verification": "Ny permanent Chromium-suite134PASS med faktisk Section, bildekomponenter, kundeportalrender/kodeport og hele privateDocumentRedirect. Ekte app/runtime-CSS ved320/390/768/1363/1920 og kort skjerm. Native modal,44px/16px, ikke beskåret bilde, åpne/utvide/lukke/Escape/fokus, prosjektkladd/DOM, deduplisering/kilder, opplastingscallback, samme filfelt/filvalg etter reopen, låsing og eiers remount/revoke, ni portalsteg og usendt chatkladd. Testen avslørte og beholdt vern for mobile arvregler som krympet knapper, stablet ni menyrader og klippet header selv uten sideoverflow. Syntetisk Auth/Storage/Functions kontrollerer feil kode/retry, riktig signert URL, eksakt prosjekt, fremmed salgssak uten signering og intern avvisning uten portal-fallback,600sekunder og faktisk nettleserhistorikk. De ti eksisterende app-UX-delsuitenePASS sammen med første122-variant av den nye testen; siste134-variant kjørt separat etter siste CSS/tekst. Full eksplisitt Sandbox critical/buildPASS; endelig Vite, ny full CI, deploy og innlogget sluttkontroll vedlikeholdes i PR295. Ingen ekte opplasting, invitasjon, sending eller tilgangsendring. Kundeportalens rapport-/informasjonsadaptere er stubber i denne prøven; dette er ikke ny rapport-PDF-/RLS-/server- eller fysiskmobilattest. Innlogget kundeportal med kode er fortsatt separat: appens kopieringsinngang lagrer prosjektet før den henter lenken og ble ikke brukt som en ren lesetest.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "Bilder beskriver nye faktiske innganger, native panel/lagringsstatus og portal/dokumentets tilbakevei."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Ingen dataflyt, lagringseier, tilgangsmodell, RPC, RLS eller signeringsmotor endres."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen ny avhengighet, miljøkonfigurasjon eller brukeroppsett."
+    },
+    "module": {
+      "required": true,
+      "reason": "UI-kontrakten beskriver lesende bildepanel, monterte filfelt og avgrensede portal/dokumentflater."
+    }
+  }
+}

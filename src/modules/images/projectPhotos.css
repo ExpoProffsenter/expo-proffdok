@@ -1,0 +1,28 @@
+.pd-project-photo-open{display:flex!important;flex-direction:column;gap:8px;align-items:stretch;width:100%;padding:0!important;border:0!important;border-radius:7px;background:#f4f7f8!important;color:#007681!important;box-shadow:none!important;transform:none!important;overflow:hidden;cursor:zoom-in;white-space:normal!important}
+.pd-project-photo-open>img{display:block;width:100%;height:180px;object-fit:contain;border-radius:0!important}
+.pd-project-photo-open>span{display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;font-size:16px!important;font-weight:600;padding:0 10px}
+.pd-project-photo-open:focus-visible{outline:3px solid #089aa3;outline-offset:3px}
+.pd-project-photo-panel figure{margin:0;min-width:0}
+.pd-project-photo-panel figure>img{display:block;width:100%;height:auto;max-height:65dvh;object-fit:contain;background:#f4f7f8}
+.pd-project-photo-panel figcaption{font-size:16px;line-height:1.5;color:#4e6876;margin:12px 0;overflow-wrap:anywhere}
+.pd-project-photo-panel .pd-workspace-drawer-header{position:static}
+.pd-project-photo-panel .pd-workspace-drawer-header h2{font-size:28px!important}
+.pd-project-photo-panel .pd-workspace-drawer-header button{min-width:44px!important;min-height:44px!important}
+.pd-project-photo-panel button,.pd-workspace-drawer:has(.imageUploadTiles) button{min-height:44px!important;font-size:16px!important}
+.pd-project-photo-panel :is(p,li){font-size:16px;line-height:1.5;overflow-wrap:anywhere}
+.pd-project-photo-upload{margin:16px 0}
+.pd-project-photo-upload>.pd-workspace-disclosure-trigger{display:inline-flex;align-items:center;gap:12px;min-height:44px;padding:10px 16px;font-size:16px;border-radius:7px;box-shadow:none}
+.pd-project-photo-upload .imageUploadTiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.pd-project-photo-upload .imageUploadTiles .tile{min-width:0;padding:12px!important;border-radius:7px!important;box-shadow:none!important;background:#fff!important}
+.pd-project-photo-upload .imageUploadTiles :is(b,span,input){font-size:16px!important;line-height:1.4!important;max-width:100%;overflow-wrap:anywhere}
+.pd-project-photo-upload .imageUploadTiles input{min-height:44px;box-sizing:border-box}
+.pd-project-photo-overview .ux-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:16px}
+.pd-project-photo-overview article{min-width:0;border:1px solid #d5e4eb;border-radius:7px;padding:12px;background:#fff}
+.pd-project-photo-overview :is(p,li,label,select){font-size:16px!important;line-height:1.5}
+.pd-project-photo-overview ul{padding-left:20px;overflow-wrap:anywhere}
+[data-expo-project-shell="1"] .photo :is(b,textarea){font-size:16px!important;line-height:1.4!important}
+[data-expo-project-shell="1"] .photo small{font-size:14px!important;line-height:1.4!important}
+@media(max-width:620px){
+ .pd-project-photo-panel .pd-workspace-drawer-header h2{font-size:25px!important}
+ .pd-project-photo-upload .imageUploadTiles{grid-template-columns:minmax(0,1fr)}
+}
