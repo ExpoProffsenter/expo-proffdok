@@ -138,7 +138,9 @@ try{
  await page.getByRole('button',{name:'profile',exact:true}).click();
  eq(await page.getByLabel('Adresse *',{exact:true}).evaluate((el,node)=>el===node,address),true,'profile retains actual field');
  eq(await page.getByLabel('Adresse *',{exact:true}).inputValue(),'Bevart usendt profiladresse','profile keeps unsaved value');
- await page.evaluate(()=>window.setEdit(false));eq(await page.getByLabel('Adresse *',{exact:true}).isDisabled(),true,'profile read-only fields remain disabled');
+ await page.evaluate(()=>window.setEdit(false));
+ await page.getByText('Firmaprofilen kan endres av Firmaadmin.',{exact:true}).waitFor();
+ eq(await page.getByLabel('Adresse *',{exact:true}).isDisabled(),true,'profile read-only fields remain disabled');
  eq(await page.getByRole('button',{name:'Lagre firmaprofil',exact:true}).count(),0,'read-only profile has no save');
  eq(await page.evaluate(()=>window.writes),[],'no profile/product/upload callbacks during layout and navigation');
  eq(await page.evaluate(()=>window.calls.filter(c=>!['support_context','support_list','support_get','current_user_has_internal_store_catalog_access','current_user_can_manage_internal_store_catalog','get_pending_internal_store_catalog_import','search_internal_store_catalog'].includes(c.name))),[],'read-only transport only');
