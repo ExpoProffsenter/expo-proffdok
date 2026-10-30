@@ -1153,19 +1153,32 @@
           {
             "ref": "checkpoint-shared",
             "mapping": "scoped partial result; see evidence_registry and limitations"
+          },
+          {
+            "ref": "current-hr-subflows",
+            "mapping": "scoped child-surface runtime; native business command coverage remains in existing suites"
           }
         ]
       },
       "design_review": {
         "status": "delvis",
-        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
+        "reason": "Scoped child-surface component/visual evidence plus separately recorded logged-in checks. A successful landing page or functional command never attests unopened child surfaces. Live role/device and state combinations remain partial.",
         "screenshots": [],
         "reviewer": null,
         "partial_evidence_refs": [
-          "checkpoint-shared"
+          "checkpoint-shared",
+          "current-hr-subflows"
+        ],
+        "child_surfaces_checked": [
+          "same employee panel",
+          "editable own contact",
+          "conversation and followup rights retained"
         ]
       },
-      "remaining_checks": []
+      "remaining_checks": [
+        "Finish live role/state combinations for these child surfaces; no live HR grant, termination, invitation or sending is authorized by this QA.",
+        "Physical mobile/Safari remains separate from Chromium viewport coverage."
+      ]
     },
     {
       "id": "PERSONAL-006",
@@ -7313,19 +7326,32 @@
           {
             "ref": "checkpoint-shared",
             "mapping": "scoped partial result; see evidence_registry and limitations"
+          },
+          {
+            "ref": "current-hr-subflows",
+            "mapping": "scoped child-surface runtime; native business command coverage remains in existing suites"
           }
         ]
       },
       "design_review": {
         "status": "delvis",
-        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
+        "reason": "Scoped child-surface component/visual evidence plus separately recorded logged-in checks. A successful landing page or functional command never attests unopened child surfaces. Live role/device and state combinations remain partial.",
         "screenshots": [],
         "reviewer": null,
         "partial_evidence_refs": [
-          "checkpoint-shared"
+          "checkpoint-shared",
+          "current-hr-subflows"
+        ],
+        "child_surfaces_checked": [
+          "register",
+          "search",
+          "private contact closed/open/read-only"
         ]
       },
-      "remaining_checks": []
+      "remaining_checks": [
+        "Finish live role/state combinations for these child surfaces; no live HR grant, termination, invitation or sending is authorized by this QA.",
+        "Physical mobile/Safari remains separate from Chromium viewport coverage."
+      ]
     },
     {
       "id": "HR-002",
@@ -7393,19 +7419,33 @@
           {
             "ref": "checkpoint-shared",
             "mapping": "scoped partial result; see evidence_registry and limitations"
+          },
+          {
+            "ref": "current-hr-subflows",
+            "mapping": "scoped child-surface runtime; native business command coverage remains in existing suites"
           }
         ]
       },
       "design_review": {
         "status": "delvis",
-        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
+        "reason": "Scoped child-surface component/visual evidence plus separately recorded logged-in checks. A successful landing page or functional command never attests unopened child surfaces. Live role/device and state combinations remain partial.",
         "screenshots": [],
         "reviewer": null,
         "partial_evidence_refs": [
-          "checkpoint-shared"
+          "checkpoint-shared",
+          "current-hr-subflows"
+        ],
+        "child_surfaces_checked": [
+          "leader/access closed/open",
+          "reader reason collapse/reopen",
+          "existing grants",
+          "termination confirmation disabled"
         ]
       },
-      "remaining_checks": []
+      "remaining_checks": [
+        "Finish live role/state combinations for these child surfaces; no live HR grant, termination, invitation or sending is authorized by this QA.",
+        "Physical mobile/Safari remains separate from Chromium viewport coverage."
+      ]
     },
     {
       "id": "HR-003",
@@ -7465,19 +7505,32 @@
           {
             "ref": "checkpoint-shared",
             "mapping": "scoped partial result; see evidence_registry and limitations"
+          },
+          {
+            "ref": "current-hr-subflows",
+            "mapping": "scoped child-surface runtime; native business command coverage remains in existing suites"
           }
         ]
       },
       "design_review": {
         "status": "delvis",
-        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
+        "reason": "Scoped child-surface component/visual evidence plus separately recorded logged-in checks. A successful landing page or functional command never attests unopened child surfaces. Live role/device and state combinations remain partial.",
         "screenshots": [],
         "reviewer": null,
         "partial_evidence_refs": [
-          "checkpoint-shared"
+          "checkpoint-shared",
+          "current-hr-subflows"
+        ],
+        "child_surfaces_checked": [
+          "purpose/legal-basis suggestions",
+          "review date",
+          "setup fields"
         ]
       },
-      "remaining_checks": []
+      "remaining_checks": [
+        "Finish live role/state combinations for these child surfaces; no live HR grant, termination, invitation or sending is authorized by this QA.",
+        "Physical mobile/Safari remains separate from Chromium viewport coverage."
+      ]
     },
     {
       "id": "HR-004",
@@ -7571,20 +7624,34 @@
           {
             "ref": "checkpoint-shared",
             "mapping": "scoped partial result; see evidence_registry and limitations"
+          },
+          {
+            "ref": "current-hr-subflows",
+            "mapping": "scoped child-surface runtime; native business command coverage remains in existing suites"
           }
         ]
       },
       "design_review": {
         "status": "delvis",
-        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
+        "reason": "Scoped child-surface component/visual evidence plus separately recorded logged-in checks. A successful landing page or functional command never attests unopened child surfaces. Live role/device and state combinations remain partial.",
         "screenshots": [],
         "reviewer": null,
         "partial_evidence_refs": [
-          "checkpoint-shared"
+          "checkpoint-shared",
+          "current-hr-subflows"
+        ],
+        "child_surfaces_checked": [
+          "template list",
+          "saved editor",
+          "preview",
+          "history",
+          "old version"
         ]
       },
       "remaining_checks": [
-        "Ikke browserforslag/redigering, layout eller faktisk cloud Auth/RLS; SQL-adapter er eksplisitt syntetisk."
+        "Ikke browserforslag/redigering, layout eller faktisk cloud Auth/RLS; SQL-adapter er eksplisitt syntetisk.",
+        "Finish live role/state combinations for these child surfaces; no live HR grant, termination, invitation or sending is authorized by this QA.",
+        "Physical mobile/Safari remains separate from Chromium viewport coverage."
       ]
     },
     {
@@ -7630,7 +7697,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/hr-conversations-react-check.mjs",
@@ -7649,15 +7716,32 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "current-hr-subflows",
+            "mapping": "scoped child-surface runtime; native business command coverage remains in existing suites"
+          }
+        ]
       },
       "design_review": {
         "status": "delvis",
-        "reason": "Åpent bruker-/referanseavvik er identifisert i området. Ingen lukking av den enkelte reisen uten sluttbilder.",
+        "reason": "Scoped child-surface component/visual evidence plus separately recorded logged-in checks. A successful landing page or functional command never attests unopened child surfaces. Live role/device and state combinations remain partial.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "current-hr-subflows"
+        ],
+        "child_surfaces_checked": [
+          "new conversation form",
+          "schedule edit",
+          "calendar help",
+          "invitation status"
+        ]
       },
-      "remaining_checks": []
+      "remaining_checks": [
+        "Finish live role/state combinations for these child surfaces; no live HR grant, termination, invitation or sending is authorized by this QA.",
+        "Physical mobile/Safari remains separate from Chromium viewport coverage."
+      ]
     },
     {
       "id": "HR-006",
@@ -7755,20 +7839,34 @@
           {
             "ref": "checkpoint-shared",
             "mapping": "scoped partial result; see evidence_registry and limitations"
+          },
+          {
+            "ref": "current-hr-subflows",
+            "mapping": "scoped child-surface runtime; native business command coverage remains in existing suites"
           }
         ]
       },
       "design_review": {
         "status": "delvis",
-        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
+        "reason": "Scoped child-surface component/visual evidence plus separately recorded logged-in checks. A successful landing page or functional command never attests unopened child surfaces. Live role/device and state combinations remain partial.",
         "screenshots": [],
         "reviewer": null,
         "partial_evidence_refs": [
-          "checkpoint-shared"
+          "checkpoint-shared",
+          "current-hr-subflows"
+        ],
+        "child_surfaces_checked": [
+          "preparation",
+          "meeting",
+          "actions",
+          "minutes",
+          "historical read-only"
         ]
       },
       "remaining_checks": [
-        "Denne browserfilen avslutter ikke samtalen. Eksisterende hr-conversations-react L78 tester begge bekreftelser og completed; lagt til som eget delbevis."
+        "Denne browserfilen avslutter ikke samtalen. Eksisterende hr-conversations-react L78 tester begge bekreftelser og completed; lagt til som eget delbevis.",
+        "Finish live role/state combinations for these child surfaces; no live HR grant, termination, invitation or sending is authorized by this QA.",
+        "Physical mobile/Safari remains separate from Chromium viewport coverage."
       ]
     },
     {
@@ -7839,19 +7937,32 @@
           {
             "ref": "checkpoint-shared",
             "mapping": "scoped partial result; see evidence_registry and limitations"
+          },
+          {
+            "ref": "current-hr-subflows",
+            "mapping": "scoped child-surface runtime; native business command coverage remains in existing suites"
           }
         ]
       },
       "design_review": {
         "status": "delvis",
-        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
+        "reason": "Scoped child-surface component/visual evidence plus separately recorded logged-in checks. A successful landing page or functional command never attests unopened child surfaces. Live role/device and state combinations remain partial.",
         "screenshots": [],
         "reviewer": null,
         "partial_evidence_refs": [
-          "checkpoint-shared"
+          "checkpoint-shared",
+          "current-hr-subflows"
+        ],
+        "child_surfaces_checked": [
+          "task list",
+          "native employee entry",
+          "conversation action step"
         ]
       },
-      "remaining_checks": []
+      "remaining_checks": [
+        "Finish live role/state combinations for these child surfaces; no live HR grant, termination, invitation or sending is authorized by this QA.",
+        "Physical mobile/Safari remains separate from Chromium viewport coverage."
+      ]
     },
     {
       "id": "HR-008",
@@ -7898,7 +8009,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/hr-sick-leave-react-check.mjs",
@@ -7925,15 +8036,36 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "current-hr-subflows",
+            "mapping": "scoped child-surface runtime; native business command coverage remains in existing suites"
+          }
+        ]
       },
       "design_review": {
         "status": "delvis",
-        "reason": "Åpent bruker-/referanseavvik er identifisert i området. Ingen lukking av den enkelte reisen uten sluttbilder.",
+        "reason": "Scoped child-surface component/visual evidence plus separately recorded logged-in checks. A successful landing page or functional command never attests unopened child surfaces. Live role/device and state combinations remain partial.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "current-hr-subflows"
+        ],
+        "child_surfaces_checked": [
+          "new followup form",
+          "preparation",
+          "joint plan",
+          "actions",
+          "review",
+          "deadlines",
+          "sharing/closure",
+          "history"
+        ]
       },
-      "remaining_checks": []
+      "remaining_checks": [
+        "Finish live role/state combinations for these child surfaces; no live HR grant, termination, invitation or sending is authorized by this QA.",
+        "Physical mobile/Safari remains separate from Chromium viewport coverage."
+      ]
     },
     {
       "id": "HR-009",
@@ -8066,19 +8198,34 @@
           {
             "ref": "checkpoint-shared",
             "mapping": "scoped partial result; see evidence_registry and limitations"
+          },
+          {
+            "ref": "current-hr-subflows",
+            "mapping": "scoped child-surface runtime; native business command coverage remains in existing suites"
           }
         ]
       },
       "design_review": {
         "status": "delvis",
-        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
+        "reason": "Scoped child-surface component/visual evidence plus separately recorded logged-in checks. A successful landing page or functional command never attests unopened child surfaces. Live role/device and state combinations remain partial.",
         "screenshots": [],
         "reviewer": null,
         "partial_evidence_refs": [
-          "checkpoint-shared"
+          "checkpoint-shared",
+          "current-hr-subflows"
+        ],
+        "child_surfaces_checked": [
+          "practice entry",
+          "preparation",
+          "meeting",
+          "actions",
+          "minutes"
         ]
       },
-      "remaining_checks": []
+      "remaining_checks": [
+        "Finish live role/state combinations for these child surfaces; no live HR grant, termination, invitation or sending is authorized by this QA.",
+        "Physical mobile/Safari remains separate from Chromium viewport coverage."
+      ]
     },
     {
       "id": "HR-011",
@@ -8123,7 +8270,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/critical-hr-purge-check.mjs",
@@ -8142,15 +8289,29 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "current-hr-subflows",
+            "mapping": "scoped child-surface runtime; native business command coverage remains in existing suites"
+          }
+        ]
       },
       "design_review": {
         "status": "delvis",
-        "reason": "Åpent bruker-/referanseavvik er identifisert i området. Ingen lukking av den enkelte reisen uten sluttbilder.",
+        "reason": "Scoped child-surface component/visual evidence plus separately recorded logged-in checks. A successful landing page or functional command never attests unopened child surfaces. Live role/device and state combinations remain partial.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "current-hr-subflows"
+        ],
+        "child_surfaces_checked": [
+          "purge receipt list"
+        ]
       },
-      "remaining_checks": []
+      "remaining_checks": [
+        "Finish live role/state combinations for these child surfaces; no live HR grant, termination, invitation or sending is authorized by this QA.",
+        "Physical mobile/Safari remains separate from Chromium viewport coverage."
+      ]
     },
     {
       "id": "KSHMS-001",
@@ -16000,6 +16161,26 @@
           "SALES-016"
         ],
         "limitations": "Not a completed journey attestation. Full logged-in workflow, role matrix, physical mobile/Safari and real external transport remain open."
+      },
+      "current-hr-subflows": {
+        "source": "docs/changes/hr-subflows-design-036-20261030.json",
+        "candidate": "PR295 after189109f3; exact SHA/CI/live results in PR",
+        "level": "actual native-component Chromium with full static and late runtime CSS, isolated transport; live results separately in PR",
+        "scope": "Employee contact/access and destructive confirmation; every conversation/sick-leave step; creation/schedule/calendar/history forms; templates/editor/preview/history; tools/setup/purge/practice; personal employee. Existing functional, scope and command suites retained.",
+        "ids": [
+          "HR-001",
+          "HR-002",
+          "HR-003",
+          "HR-004",
+          "HR-005",
+          "HR-006",
+          "HR-007",
+          "HR-008",
+          "HR-010",
+          "HR-011",
+          "PERSONAL-005"
+        ],
+        "limitations": "No real HR access change, employee creation, termination, invitation, mail, medical content or legal confirmation. Physical devices/Safari and complete live role/state combinations remain open."
       }
     },
     "unmapped_journey_ids": [
@@ -16040,10 +16221,7 @@
       "COMPANY-005",
       "COMPANY-006",
       "HELP-002",
-      "HR-005",
-      "HR-008",
       "HR-009",
-      "HR-011",
       "KSHMS-002",
       "KSHMS-004",
       "KSHMS-005",
@@ -16081,12 +16259,25 @@
       "TIME-003"
     ],
     "next_packages": [
+      "KSHMS-002..012 and PROJECT-002..015: same child-surface sweep (tabs, forms, confirmations and history), not landing-page-only checks. HR component child sweep is scoped partial evidence, live barriers recorded in PR.",
       "SALES: remaining authenticated saved-case lifecycle, calendar, offer publication/acceptance and role/device variants; current entry panel evidence is partial only",
       "PROJECT-003..015: remaining actual subdialogs/roles and visual review; reuse existing source-correlated suites",
       "PORTAL-001..002: private/customer/controller read routes with isolated fixtures; no link creation or real recipient transport",
       "KSHMS-012: inspection extract firm-switch fix stays isolated in PR298",
       "BOLIG-002:16-house actual Preview journey stays isolated in PR294",
       "HELP-001..002: remaining contextual entries and whole A–Å route; current report entry is only partial"
-    ]
+    ],
+    "child_surface_gate": {
+      "trigger": "User screenshot30.10: leader/access still had a different frame despite prior HR success.",
+      "failure_in_prior_evidence": "Register/dialog and business callbacks were tested; sibling and nested surfaces were not checked together. Old HR fixture also omitted APP_RUNTIME_STYLES.",
+      "required_per_journey": [
+        "enumerate native child disclosures/dialogs/tabs",
+        "open relevant normal/empty/error/readonly states",
+        "load real app/runtime cascade",
+        "compare visited child views to the unchanged03.6 reference",
+        "record component, live, role and device evidence separately"
+      ],
+      "does_not_close": "No parent journey closes from module landing, build, CI count or a screenshot of another child view."
+    }
   }
 }

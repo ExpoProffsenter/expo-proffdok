@@ -7,6 +7,7 @@ import {MANAGED_ACCESS_EVENT,MODULE_ACCESS_EVENT,publishManagedAccessChange} fro
 import {WORK_PROFILE_EVENT} from '../access/workProfileClient.js';
 import './hr.css';
 import './hrWorkspace036.css';
+import './hrSurfaces036.css';
 import ModuleHeading from '../ui/ModuleHeading.jsx';
 import WorkspacePanel from '../ui/WorkspacePanel.jsx';
 import DeviationDialog from '../deviations/DeviationDialog.jsx';
@@ -240,7 +241,7 @@ export default function HrModule({context,audience='legacy',initialEmployeeId=nu
    </div></div></WorkspacePanel>}
   {audience==='personal'&&<details className="hr-personal-roadmap"><summary><UserRound size={18} aria-hidden="true"/>Slik følger du opp</summary><p>Åpne egen medarbeideroppføring og en lagret medarbeidersamtale. Skriv forberedelsen og trykk Lagre samtale. Klar til samtale deler svarene med leder. Du og leder går gjennom referatet og bekrefter hver for dere. Ved sykefravær åpner du den lagrede oppfølgingen samme sted. Forberedelse, plan og frister vises i egne steg. Vedlegg kommer senere.</p></details>}
   {audience==='personal'&&data?.enabled&&<HrFollowupTasks key={'followup-tasks:'+companyId+':'+userId} context={context} onOpen={open} onSetup={administer?()=>goTo(setupCardRef):null}/>}
-  {detail&&<DeviationDialog title={hrEmployeeLabel(detail)} context={'HR · '+(context.company_name||'Medarbeiderregister')} closeLabel="Lukk medarbeidervindu" busy={busy} onClose={closeEmployee} returnFocusTarget={audience!=='personal'?returnEmployeeFocus:undefined}><div className={audience==='personal'?'hr-module hr-employee-dialog':'hr-module hr-employee-dialog hr-employee-dialog-036'}><article className="hr-detail" aria-label="Medarbeiderens tilgang"><div className="hr-toolbar"><h3>{audience==='personal'?'Leder og tilgang':'Medarbeider og oppfølging'}</h3><button type="button" className="secondary" disabled={busy} onClick={closeEmployee}>Lukk medarbeider</button></div>
+  {detail&&<DeviationDialog title={hrEmployeeLabel(detail)} context={'HR · '+(context.company_name||'Medarbeiderregister')} closeLabel="Lukk medarbeidervindu" busy={busy} onClose={closeEmployee} returnFocusTarget={audience!=='personal'?returnEmployeeFocus:undefined}><div className="hr-module hr-employee-dialog hr-employee-dialog-036"><article className="hr-detail" aria-label="Medarbeiderens tilgang"><div className="hr-toolbar"><h3>{audience==='personal'?'Leder og tilgang':'Medarbeider og oppfølging'}</h3><button type="button" className="secondary" disabled={busy} onClick={closeEmployee}>Lukk medarbeider</button></div>
    {error&&<p role="alert" className="hr-error">{error}</p>}{notice&&<p role="status" className="hr-notice">{notice}</p>}
    <PrivateContact key={detail.id+':'+detail.revision} context={context} employee={detail}/>
    <HrConversations key={'conversations:'+detail.id+':'+detail.revision} context={context} employee={detail}/>

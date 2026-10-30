@@ -1,0 +1,68 @@
+/* Same 03.6 paper, disclosure rows and controls throughout native HR work.
+   No display/order changes to fields or permission-dependent commands. This
+   scope reaches both the register and Min side's existing employee portal. */
+body:has([data-expo-app-shell="true"]) .hr-employee-dialog.hr-module .hr-detail > :is(.hr-private-contact,.hrp,.hr-access-036){
+ margin:16px 0;padding:16px;border:1px solid #d7e4ea;border-radius:8px;background:#fff;box-shadow:none;color:#172f35;min-width:0;
+}
+body:has([data-expo-app-shell="true"]) :is(.hr-employee-dialog,.hr-support-036).hr-module :is(.hrp,.hr-template-workbench){
+ background:#fff;color:#172f35;border-radius:8px;box-shadow:none;min-width:0;
+}
+body:has([data-expo-app-shell="true"]) :is(.hr-employee-dialog,.hr-support-036).hr-module :is(p,li,.hr-hint,.hrp-toolbar>span,.hrp-field>span,.hr-field>span){font-size:16px;line-height:1.5}
+body:has([data-expo-app-shell="true"]) :is(.hr-employee-dialog,.hr-support-036).hr-module :is(.hrp-field>span,.hr-field>span){font-size:16px!important}
+body:has([data-expo-app-shell="true"]) :is(.hr-employee-dialog,.hr-support-036).hr-module :is(h3,h4){color:#10212b;line-height:1.35;overflow-wrap:anywhere}
+body:has([data-expo-app-shell="true"]) :is(.hr-employee-dialog,.hr-support-036).hr-module summary{font-size:16px;min-height:44px;line-height:1.4;cursor:pointer}
+body:has([data-expo-app-shell="true"]) :is(.hr-employee-dialog,.hr-support-036).hr-module .hrp-banner{display:block;margin:0;padding:0;background:none;border:0;box-shadow:none}
+body:has([data-expo-app-shell="true"]) :is(.hr-employee-dialog,.hr-support-036).hr-module .hrp-banner h3{font-size:20px;font-weight:600;margin:0 0 12px}
+body:has([data-expo-app-shell="true"]) .hr-employee-dialog.hr-module .hr-detail>.hrp>h3{font-size:20px;font-weight:600;margin:0 0 12px}
+body:has([data-expo-app-shell="true"]) :is(.hr-employee-dialog,.hr-support-036).hr-module :is(.hr-private-contact,.hr-access-036,.hrp-saved,.hrp-history,.hr-template-history,.hr-ending){
+ padding:0;border:1px solid #d7e4ea;border-radius:8px;background:#fff;box-shadow:none;overflow-wrap:anywhere;
+}
+body:has([data-expo-app-shell="true"]) :is(.hr-employee-dialog,.hr-support-036).hr-module :is(.hrp-saved,.hrp-history,.hr-template-history,.hr-ending){margin:16px 0}
+body:has([data-expo-app-shell="true"]) :is(.hr-employee-dialog,.hr-support-036).hr-module :is(.hr-private-contact,.hr-access-036,.hrp-saved,.hrp-history,.hr-template-history,.hr-ending)>summary{
+ box-sizing:border-box;min-height:44px;padding:12px 14px;font-size:16px;font-weight:600;line-height:1.4;color:#173d50;background:#f5f9fa;border-radius:7px;cursor:pointer;
+}
+body:has([data-expo-app-shell="true"]) .hr-employee-dialog.hr-module .hr-detail > :is(.hr-private-contact,.hr-access-036)>summary{font-size:20px}
+body:has([data-expo-app-shell="true"]) .hr-employee-dialog.hr-module .hr-private-contact>summary{display:list-item}
+body:has([data-expo-app-shell="true"]) .hr-employee-dialog.hr-module .hr-private-contact>summary svg{vertical-align:middle;margin-right:6px}
+body:has([data-expo-app-shell="true"]) :is(.hr-employee-dialog,.hr-support-036).hr-module :is(.hr-private-contact,.hr-access-036,.hrp-saved,.hrp-history,.hr-template-history,.hr-ending)[open]>summary{border-bottom:1px solid #d7e4ea;border-radius:7px 7px 0 0}
+body:has([data-expo-app-shell="true"]) .hr-employee-dialog.hr-module .hr-detail > :is(.hr-private-contact,.hr-access-036)>summary{margin:-16px}
+body:has([data-expo-app-shell="true"]) .hr-employee-dialog.hr-module .hr-detail > :is(.hr-private-contact,.hr-access-036)[open]>summary{margin-bottom:16px}
+body:has([data-expo-app-shell="true"]) :is(.hr-employee-dialog,.hr-support-036).hr-module summary:focus-visible{outline:3px solid #08b9c3;outline-offset:3px}
+body:has([data-expo-app-shell="true"]) :is(.hr-employee-dialog,.hr-support-036).hr-module :is(.hrp-saved,.hrp-history,.hr-template-history,.hr-ending)>:not(summary){margin:14px}
+body:has([data-expo-app-shell="true"]) :is(.hr-employee-dialog,.hr-support-036).hr-module :is(.hrp-saved,.hrp-history,.hr-template-history,.hr-ending)>button{max-width:calc(100% - 28px)}
+body:has([data-expo-app-shell="true"]) :is(.hr-employee-dialog,.hr-support-036).hr-module .hrp-saved>form{padding:0}
+body:has([data-expo-app-shell="true"]) :is(.hr-employee-dialog,.hr-support-036).hr-module :is(button,input,select,textarea){font-size:16px;line-height:1.4;box-sizing:border-box;max-width:100%}
+body:has([data-expo-app-shell="true"]) :is(.hr-employee-dialog,.hr-support-036).hr-module :is(input,select,textarea){font-weight:400!important}
+/* The late app runtime applies 15px/42px/14px-radius with !important on
+   phones. Override only these HR surfaces, not the global runtime contract. */
+body:has([data-expo-app-shell="true"]) :is(.hr-employee-dialog,.hr-support-036).hr-module button{
+ font-size:16px!important;line-height:1.4!important;min-height:44px!important;min-width:44px;padding:10px 14px;background:#007f89;background-image:none;color:#fff;border:1px solid #007f89;border-radius:7px!important;box-shadow:none;white-space:normal;overflow-wrap:anywhere;
+}
+body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.hr-employee-dialog-036)>.deviation-dialog-header button{font-size:16px!important;min-height:44px!important;border-radius:7px!important}
+body:has([data-expo-app-shell="true"]) .deviation-dialog-backdrop:has(.hr-employee-dialog-036){padding:0!important}
+body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.hr-employee-dialog-036.hr-module){margin:0!important;padding:0!important;border-radius:0!important;height:100dvh!important;max-height:100dvh!important}
+body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.hr-employee-dialog-036.hr-module)>.deviation-dialog-header{margin:0!important;border-radius:0!important}
+body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.hr-employee-dialog-036.hr-module)>.deviation-dialog-header p{color:#bdd7e2}
+body:has([data-expo-app-shell="true"]) .hr-workspace-036.hr-module button{font-size:16px!important;min-height:44px!important;border-radius:7px!important}
+body:has([data-expo-app-shell="true"]) .hr-workspace-036.hr-module>header.hr-heading h2{font-size:32px!important}
+body:has([data-expo-app-shell="true"]) .hr-support-dialog-036 button{font-size:16px!important;min-height:44px!important;border-radius:7px!important}
+body:has([data-expo-app-shell="true"]) :is(.hr-employee-dialog,.hr-support-036).hr-module :is(button.secondary,.hr-template-catalog button,.hr-template-question-grid nav button){background:#fff;color:#173d50;border-color:#bfd3de}
+body:has([data-expo-app-shell="true"]) :is(.hr-employee-dialog,.hr-support-036).hr-module button.hr-danger{background:#9f2439;border-color:#9f2439;color:#fff}
+body:has([data-expo-app-shell="true"]) :is(.hr-employee-dialog,.hr-support-036).hr-module :is(input:not([type=checkbox]):not([type=radio]),select){min-height:44px!important;border-radius:7px!important}
+body:has([data-expo-app-shell="true"]) :is(.hr-employee-dialog,.hr-support-036).hr-module .hrp-steps{display:flex;flex-wrap:nowrap;gap:6px;padding:0 0 4px;margin:16px 0;overflow-x:auto;max-width:100%;min-width:0}
+body:has([data-expo-app-shell="true"]) :is(.hr-employee-dialog,.hr-support-036).hr-module .hrp-steps button{flex:0 0 auto;display:flex;align-items:center;gap:8px;background:#fff;color:#173d50;border-color:#bfd3de;overflow-wrap:normal}
+body:has([data-expo-app-shell="true"]) :is(.hr-employee-dialog,.hr-support-036).hr-module .hrp-steps button[aria-current]{background:#007f89;color:#fff;border-color:#007f89}
+body:has([data-expo-app-shell="true"]) :is(.hr-employee-dialog,.hr-support-036).hr-module :is(.hrp-question,.hrp-action,.hrp-review,.hrp-calendar,.hr-template-question,.hr-template-savebar,.hr-sick-next,.hr-sick-preparation>section,.hr-sick-followthrough>section){border:1px solid #d7e4ea;border-radius:8px;background:#fff;box-shadow:none;min-width:0}
+body:has([data-expo-app-shell="true"]) :is(.hr-employee-dialog,.hr-support-036).hr-module :is(.hrp-stage-guide,.hrp-employee-identity,.hrp-readonly,.hr-sick-boundary){background:#edf6f6;border-color:#bcdadd;border-radius:7px;color:#173d50}
+body:has([data-expo-app-shell="true"]) .hr-support-036.hr-module :is(.hr-template-starters strong,.hr-template-starters small,.hr-template-catalog small,.hr-template-question-grid nav button,.hr-template-question-grid nav small,.hr-template-savebar small){font-size:16px;line-height:1.4}
+body:has([data-expo-app-shell="true"]) .hr-support-036.hr-module .hr-template-savebar{bottom:0}
+body:has([data-expo-app-shell="true"]) .hr-support-036.hr-module .hr-template-question-grid nav{display:block;position:static;padding:0;margin:0;border:0;background:none;box-shadow:none}
+body:has([data-expo-app-shell="true"]) .hr-support-036.hr-module .hr-template-question-grid nav>button{width:100%;margin-top:8px}
+body:has([data-expo-app-shell="true"]) .hr-support-036.hr-module .hr-template-question-grid nav button[aria-pressed=true]{background:#edf6f6;border-color:#007f89;color:#075961}
+@media(max-width:620px){
+ body:has([data-expo-app-shell="true"]) .hr-workspace-036.hr-module>header.hr-heading h2{font-size:29px!important}
+ body:has([data-expo-app-shell="true"]) .hr-employee-dialog.hr-module .hr-detail > :is(.hr-private-contact,.hrp,.hr-access-036){padding:12px}
+ body:has([data-expo-app-shell="true"]) .hr-employee-dialog.hr-module .hr-detail > :is(.hr-private-contact,.hr-access-036)>summary{margin:-12px;font-size:18px}
+ body:has([data-expo-app-shell="true"]) .hr-employee-dialog.hr-module .hr-detail > :is(.hr-private-contact,.hr-access-036)[open]>summary{margin-bottom:12px}
+}
+@media(max-height:500px){body:has([data-expo-app-shell="true"]) .hr-support-036.hr-module .hr-template-savebar{position:static}}

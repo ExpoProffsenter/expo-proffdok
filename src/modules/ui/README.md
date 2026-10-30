@@ -64,3 +64,9 @@ Opplastingsrutene avgrenses fra dialogen som faktisk inneholder `.imageUploadTil
 ### Boligprosjektets første skjermbilde
 
 På bred PC samles modul-/hjelpetopp og prosjektfaner tettere. Når ingen bolig er valgt og den native fasaden vises, ligger fasade til venstre og ferdigstilling/beboerdialog til høyre. Samme byggvelger, søk, visningsvalg og statusfilter står over bildet; de samme native kontrollene er montert. Valgt bolig og andre visninger bruker sitt ordinære oppsett. Det tomme valg-hjelpekortet beholdes etter oversikten. På smale skjermer ruller de syv prosjektfanene i én rad. Dette er ikke en ny fasade- eller navigasjonseier og endrer ikke diagrammets boligplassering. Se docs/changes/housing-first-screen-036-20261030.json.
+
+### HR-underflater
+
+`hrSurfaces036.css` gir de faktiske kontakt-, samtale-, sykefraværs- og tilgangsseksjonene samme hvite flate, ramme og typografi. Native `details`/skjemaer og deres lagrings-/tilgangseiere beholdes. HR-panelet fra Min side bruker den samme medarbeiderrammen. Samtalesteg ruller i én vannrett rad; de eksisterende Neste/Forrige-valgene beholdes. Oppsett, samtalemaler, malhistorikk, prøvesamtale og andre HR-verktøy bruker samme kontrollmål. Avslutning beholder sin tydelige destruktive knapp og bekreftelse.
+
+Nettleserprøven må laste både statiske appstiler og den sene `APP_RUNTIME_STYLES`. Test oversikt og åpne underflater hver for seg: en korrekt inngang bekrefter ikke automatisk innholdet bak den. `hr-subflows-036-browser-check.mjs` åpner de faktiske komponentene med isolert transport og kontrollerer hvert samtale-/sykefraværssteg, tilgangens åpne/lukkede tilstand, malredigering/-historikk og egne/administrerte oppføringer på PC og smal skjerm. Dette erstatter ikke server-/rolletester eller faktisk innlogget kontroll.
