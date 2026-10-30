@@ -47,7 +47,7 @@ const server=http.createServer(async(req,res)=>{try{
  }catch(e){res.statusCode=400;res.setHeader('Content-Type','application/json');res.end(JSON.stringify({message:e.message,code:e.code}));}
 });await new Promise(r=>server.listen(0,'127.0.0.1',r));
 try{
- browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_PATH||'/tmp/proffdok-chromium143',args:['--no-sandbox']});const page=await browser.newPage({viewport:{width:1363,height:936}}),errors=[],external=[];page.setDefaultTimeout(12000);page.on('pageerror',e=>errors.push(e.message));
+ browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_PATH||undefined,args:['--no-sandbox']});const page=await browser.newPage({viewport:{width:1363,height:936}}),errors=[],external=[];page.setDefaultTimeout(12000);page.on('pageerror',e=>errors.push(e.message));
  await page.route('**/*',route=>{if(new URL(route.request().url()).hostname==='127.0.0.1')return route.continue();external.push(route.request().url());return route.abort();});
  const base=`http://127.0.0.1:${server.address().port}`,open=async()=>{await page.getByRole('button',{name:'Fyll ut sjekkliste',exact:true}).click();await page.getByRole('button',{name:'Start sjekkliste',exact:true}).waitFor();};
  await page.goto(base);
