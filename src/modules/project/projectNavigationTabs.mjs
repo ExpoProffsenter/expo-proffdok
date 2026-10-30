@@ -14,6 +14,7 @@ export function createGlobalAppTabs({
   personalPage = false,
   canUseProCatalogOrders = false,
   internalCatalogOrders = false,
+  canUseStandaloneChecklists = false,
 } = {}) {
   return [
     ["prosjekt", "Startside"],
@@ -23,6 +24,7 @@ export function createGlobalAppTabs({
     ...(personalPage ? [["innlogging", "Min side"]] : [["innlogging", "Min profil / e-postvalg"]]),
     ...(isCompanyAdminUser ? [["firmaadmin", "Firma"]] : []),
     ["prosjektliste", "Prosjektliste"],
+    ...(canUseStandaloneChecklists ? [["standalone_checklists", "Sjekklister"]] : []),
     ...(canUseBolig ? [["bolig", "Boligprosjekter"]] : []),
     ...(canUseKshms ? [["kshms", "KS/HMS"]] : []),
     ...(canUseHr ? [["hr", "HR"]] : []),
