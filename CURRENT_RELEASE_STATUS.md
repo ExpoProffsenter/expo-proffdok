@@ -1,6 +1,6 @@
 # Sjekklister for eksterne prosjekter – korrigert krav30.10
 
-PR299 oppdateres etter Kenneths presisering: ordrenummer er påkrevd, med arbeidssted/adresse og valgfrie eksternt prosjektnavn/kunde på lagret kontroll og PDF. Egen Meny → Sjekklister og Startside → Fyll ut sjekkliste; ingen ProffDok-prosjektopprettelse. Lokal DB92/mail-PDF43/nativebrowser106 og full Sandbox critical/buildPASS. Ny additive migrering/Edge og faktisk Preview-sluttprøve føres på eksakt kandidat i [PR299](https://github.com/ExpoProffsenter/expo-proffdok/pull/299). Tidligere blank-ordre-test bevares som historikk. Ingen Production-publisering eller faktisk e-post.
+PR299 oppdateres etter Kenneths presisering: ordrenummer er påkrevd, med arbeidssted/adresse og valgfrie eksternt prosjektnavn/kunde på lagret kontroll og PDF. Egen Meny → Sjekklister og Startside → Fyll ut sjekkliste; ingen ProffDok-prosjektopprettelse. Lokal DB92/mail-PDF43/nativebrowser111 og full Sandbox critical/buildPASS. Ny additive migrering/Edge og faktisk Preview-sluttprøve føres på eksakt kandidat i [PR299](https://github.com/ExpoProffsenter/expo-proffdok/pull/299). Tidligere blank-ordre-test bevares som historikk. Ingen Production-publisering eller faktisk e-post.
 
 Testgrenen har eksplisitt EXPO_BACKEND_TARGET=sandbox kun for Preview. Den tidligere feilkoblingen til Production er rettet og kontrollert i faktisk publisert kode på ca0a7f62/fullCI812SUCCESS; demo-innlogging ble deretter bekreftet. DesignPR295 fortsetter separat fra sitt maleditor-/vedleggscheckpoint. Ingen redesign-TEST OK.
 
