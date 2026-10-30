@@ -14,6 +14,12 @@ Innlogget sluttkontroll av første prosjektkandidat5992a1a1 har fullCI806SUCCESS
 
 På5992 ble øvrige nye flater faktisk lest innlogget: masthead72px/én rad; alle åtte innredningskategorier190felt16px/8px rammer/ingen overflow; native beskrivelse, seks prosjekteringsfelt, avtale/signert kontraktstatus/Cordel, eksisterende deltakeradapter15felt16px, fag/sjekklisteinngang, interne notater, chat fortsatt2uleste, overtagelse/garanti og ni eksisterende avviksrader8px/1px. Begge nye dialoger680×936/top0/navy/16px. Ingen faktisk save/signering/publisering/tilgang/utsending. Native ny-avvik åpning/lukking etterlater tom lokal Hent avvikskladd uten serverregistrering. Eksisterende prosjektmount viste Lagret lokalt20:59; ingen påstand om null bakgrunnsskriving. Ikke slett denne eller eksisterende data som opprydding. Ny etterkontroll må bekrefte også kundeeditoren på sluttkandidaten.
 
+## CI807 – avgrenset QA-oppfølging
+
+92afd1e7 er READY og faktisk innlogget kundeeditor er etterkontrollert med14 synlige felt16px/min44 og korrekt nesting. CI807/41121061233 feilet før prosjektprøven fordi tilbudsprøven klikket før native rAF-effekt skjulte to legacyknapper. Deterministisk120ms QA-scheduler gjenskaper3!=1 på opprinnelig assertion. Bare testen avventer nå fersk React-commit og én synlig native videreføring. Alle55 gamle krav beholdes; fire remount-countkrav gir59PASS med normal og forsinket scheduler. Ingen app-/workflow-/avhengighetsendring. Ny kandidat/fullCI føres i PR295.
+
+Fortsett etter grønn QA fra eksisterende DEMO – VVS – fremdrift og bemanning3måneder:21 lagrede oppgaver. Første oppgave åpnet faktisk native editor480px høyrepanel med16px/min44, deltakere/personer og rekkefølgevalg; Escape lukket uten redigering eller save. Bemanningsplan og eksport-/prosjektvalg-disclosures lest uten nedlasting/import/deling. Lagret forble deaktivert. Eksportknappenes tomme AX-navn var verktøyvisning: DOM/skjermbilde hadde alle seks navn korrekt. Ingen produktrapportert feil utledes av dette. Resterende faktisk plan-/bemannings-/mal-/vedleggsreise og eksisterende restliste står fortsatt åpne.
+
 ## Historiske stoppunkter – nyere PR-topp og avsnittet ovenfor har forrang
 
 ## Videreført etter brukerens ja – publisert tre, virkelig SJA-fokusfeil
