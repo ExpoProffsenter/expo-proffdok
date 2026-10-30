@@ -8436,7 +8436,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/critical-kshms-deviations-check.mjs",
@@ -8455,15 +8455,25 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "current-kshms-subflows",
+            "mapping": "actual child presentation and retained native field DOM; business commands remain covered by existing suites"
+          }
+        ]
       },
       "design_review": {
         "status": "delvis",
-        "reason": "Åpent bruker-/referanseavvik er identifisert i området. Ingen lukking av den enkelte reisen uten sluttbilder.",
+        "reason": "Actual native child panels and separately named underpoints at five widths with full runtime CSS. No complete live-role/device/transport attestation.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "current-kshms-subflows"
+        ]
       },
-      "remaining_checks": []
+      "remaining_checks": [
+        "Actual live device/role/server/PDF/attachment state combinations remain open; do not infer full journey coverage from the child presentation sweep."
+      ]
     },
     {
       "id": "KSHMS-003",
@@ -8532,20 +8542,26 @@
           {
             "ref": "checkpoint-shared",
             "mapping": "scoped partial result; see evidence_registry and limitations"
+          },
+          {
+            "ref": "current-kshms-subflows",
+            "mapping": "actual child presentation and retained native field DOM; business commands remain covered by existing suites"
           }
         ]
       },
       "design_review": {
         "status": "delvis",
-        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
+        "reason": "Actual native child panels and separately named underpoints at five widths with full runtime CSS. No complete live-role/device/transport attestation.",
         "screenshots": [],
         "reviewer": null,
         "partial_evidence_refs": [
-          "checkpoint-shared"
+          "checkpoint-shared",
+          "current-kshms-subflows"
         ]
       },
       "remaining_checks": [
-        "Reell transport eller kundesignering skal ikke brukes som QA-bevis uten særskilt autorisasjon; denne reisen krever isolert syntetisk transport."
+        "Reell transport eller kundesignering skal ikke brukes som QA-bevis uten særskilt autorisasjon; denne reisen krever isolert syntetisk transport.",
+        "Actual live device/role/server/PDF/attachment state combinations remain open; do not infer full journey coverage from the child presentation sweep."
       ]
     },
     {
@@ -8592,7 +8608,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/kshms-executions-react-check.mjs",
@@ -8611,15 +8627,25 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "current-kshms-subflows",
+            "mapping": "actual child presentation and retained native field DOM; business commands remain covered by existing suites"
+          }
+        ]
       },
       "design_review": {
         "status": "delvis",
-        "reason": "Åpent bruker-/referanseavvik er identifisert i området. Ingen lukking av den enkelte reisen uten sluttbilder.",
+        "reason": "Actual native child panels and separately named underpoints at five widths with full runtime CSS. No complete live-role/device/transport attestation.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "current-kshms-subflows"
+        ]
       },
-      "remaining_checks": []
+      "remaining_checks": [
+        "Actual live device/role/server/PDF/attachment state combinations remain open; do not infer full journey coverage from the child presentation sweep."
+      ]
     },
     {
       "id": "KSHMS-005",
@@ -8664,7 +8690,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/kshms-executions-react-check.mjs",
@@ -8683,15 +8709,25 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "current-kshms-subflows",
+            "mapping": "actual child presentation and retained native field DOM; business commands remain covered by existing suites"
+          }
+        ]
       },
       "design_review": {
         "status": "delvis",
-        "reason": "Åpent bruker-/referanseavvik er identifisert i området. Ingen lukking av den enkelte reisen uten sluttbilder.",
+        "reason": "Actual native child panels and separately named underpoints at five widths with full runtime CSS. No complete live-role/device/transport attestation.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "current-kshms-subflows"
+        ]
       },
-      "remaining_checks": []
+      "remaining_checks": [
+        "Actual live device/role/server/PDF/attachment state combinations remain open; do not infer full journey coverage from the child presentation sweep."
+      ]
     },
     {
       "id": "KSHMS-006",
@@ -16181,6 +16217,18 @@
           "PERSONAL-005"
         ],
         "limitations": "No real HR access change, employee creation, termination, invitation, mail, medical content or legal confirmation. Physical devices/Safari and complete live role/state combinations remain open."
+      },
+      "current-kshms-subflows": {
+        "source": "docs/changes/kshms-subflows-design-036-20261030.json",
+        "candidate": "PR295 current candidate; parent0f58ebdac0c12142cbeccec202e4d96faed25cbe",
+        "level": "fresh actual child-component Chromium with full runtime CSS; separately logged-in evidence in PR295",
+        "scope": "979 assertions/221 state-width views. RUH/SJA/round/risk: nested suggestions, required, saved/closed/history/reopen, signed/completed read-only, same native field DOM/text and focus. Synthetic reads only. Not whole routines/project/PDF/server or all role states.",
+        "ids": [
+          "KSHMS-002",
+          "KSHMS-003",
+          "KSHMS-004",
+          "KSHMS-005"
+        ]
       }
     },
     "unmapped_journey_ids": [

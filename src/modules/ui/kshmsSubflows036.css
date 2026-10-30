@@ -1,0 +1,39 @@
+/* Original 03.6 f67f2367: native KS child panels and nested disclosures.
+   Presentation only; draft, focus, save, close and sign remain native.
+   Specificity includes the late mobile APP_RUNTIME_STYLES cascade. */
+body:has([data-expo-app-shell="true"]) .deviation-dialog-backdrop:has(.ks-case-fields,.ks-case-history,.sja-editor,.ks-executions){display:flex;justify-content:flex-end;align-items:stretch;padding:0!important}
+body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.ks-case-fields,.ks-case-history,.sja-editor,.ks-executions){display:flex;flex-direction:column;width:min(680px,100vw)!important;max-width:100vw;height:100dvh!important;max-height:100dvh!important;margin:0!important;padding:0!important;border:0;border-radius:0!important;overflow:hidden;background:#fff;color:#172f35}
+body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.ks-case-fields,.ks-case-history,.sja-editor,.ks-executions) > .deviation-dialog-header{position:static;flex:none;margin:0;padding:20px 24px;background:#0f222d!important;color:#fff;border:0;border-radius:0;box-shadow:none;min-width:0}
+body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.ks-case-fields,.ks-case-history,.sja-editor,.ks-executions) > .deviation-dialog-header h2{font-size:28px!important;line-height:1.2;color:#fff}
+body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.ks-case-fields,.ks-case-history,.sja-editor,.ks-executions) > .deviation-dialog-header p{font-size:16px!important;color:#bdd1da}
+body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.ks-case-fields,.ks-case-history,.sja-editor,.ks-executions) .deviation-dialog-close{width:44px;min-width:44px;height:44px;padding:0!important;border:1px solid #48606b;border-radius:8px;background:transparent;color:#fff;font-size:24px!important}
+body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.ks-case-fields,.ks-case-history,.sja-editor,.ks-executions) > .deviation-dialog-body{flex:1;min-height:0;padding:20px 24px;overflow:auto;overscroll-behavior:contain}
+body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.ks-case-fields,.ks-case-history,.sja-editor,.ks-executions) :is(form,fieldset,section,details,.ks-field,.sja-field,.ks-actions,.ks-execution-actions){min-width:0;max-width:100%;box-sizing:border-box}
+body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.ks-case-fields,.ks-case-history,.sja-editor,.ks-executions) :is(button,input:not([type=checkbox]):not([type=radio]),select,textarea,summary){min-height:44px!important;font-size:16px!important;box-sizing:border-box}
+body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.ks-case-fields,.ks-case-history,.sja-editor,.ks-executions) :is(button,summary){white-space:normal;overflow-wrap:anywhere;line-height:1.4}
+body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.ks-case-fields,.ks-case-history,.sja-editor,.ks-executions) button:not(.deviation-dialog-close){margin:0;max-width:100%;padding:10px 14px!important;border-radius:6px}
+body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.ks-case-fields,.ks-case-history,.sja-editor,.ks-executions) :is(.ks-field,.sja-field,.ks-field-hint,.sja-field>label,.ks-field>span,.ks-field>label){font-size:16px!important;line-height:1.5}
+body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.ks-case-fields,.ks-case-history,.sja-editor,.ks-executions) :is(.ks-case-closure,.ks-case-files,.ks-case-history,.sja-section,.sja-step,.sja-signing,.ks-execution-point,.ks-risk-phase,.ks-execution-completion){background:#fff;border:1px solid #d7e4ea;border-radius:8px!important;padding:16px;margin:14px 0;box-shadow:none}
+body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.ks-case-fields,.ks-case-history,.sja-editor,.ks-executions) details{background:#fff;border:1px solid #d7e4ea;border-radius:8px;padding:12px;margin:12px 0;box-shadow:none}
+body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.ks-case-fields,.ks-case-history,.sja-editor,.ks-executions) details>summary{padding:10px 12px;margin:-12px;cursor:pointer;color:#183c4b;font-weight:650;background:#f4f7f8;border-radius:7px}
+body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.ks-case-fields,.ks-case-history,.sja-editor,.ks-executions) details[open]>summary{margin-bottom:14px;border-bottom:1px solid #d7e4ea;border-radius:7px 7px 0 0}
+body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.ks-case-fields,.ks-case-history,.sja-editor,.ks-executions) :is(.ks-case-closure,.ks-case-files,.ks-case-history,.sja-section,.ks-execution-completion)>:first-child{margin-top:0}
+body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.ks-case-fields,.ks-case-history,.sja-editor,.ks-executions) :is(.sja-step,.ks-execution-point,.ks-risk-phase){min-width:0;overflow-wrap:anywhere}
+body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.ks-case-fields,.ks-case-history,.sja-editor,.ks-executions) .deviation-dialog-footer{position:static;margin:16px 0 0;padding:14px 0 0;bottom:auto;gap:10px}
+body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.ks-case-fields,.ks-case-history,.sja-editor,.ks-executions) :is(.ks-actions,.ks-execution-actions){gap:10px;flex-wrap:wrap}
+body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.ks-case-fields,.ks-case-history,.sja-editor,.ks-executions) :is(input,select,textarea){max-width:100%}
+body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.ks-case-fields,.ks-case-history,.sja-editor,.ks-executions) :is(.ks-check,.sja-confirm,.ks-options){min-height:44px;font-size:16px;line-height:1.5}
+body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.ks-case-fields,.ks-case-history,.sja-editor,.ks-executions) :is(.ks-check,.sja-confirm,.ks-options) input[type=checkbox]{width:24px;min-width:24px;height:24px;min-height:24px;flex:0 0 24px}
+body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.ks-case-fields,.ks-case-history,.sja-editor,.ks-executions) :is(.ks-case-snapshot,.sja-comparison){overflow-wrap:anywhere}
+body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.ks-case-fields,.ks-case-history,.sja-editor,.ks-executions) .ks-case-snapshot dd{margin-left:0;white-space:pre-wrap}
+@media(max-width:620px){
+body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.ks-case-fields,.ks-case-history,.sja-editor,.ks-executions) > .deviation-dialog-header{padding:16px}
+body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.ks-case-fields,.ks-case-history,.sja-editor,.ks-executions) > .deviation-dialog-header h2{font-size:25px!important}
+body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.ks-case-fields,.ks-case-history,.sja-editor,.ks-executions) > .deviation-dialog-body{padding:16px}
+body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.ks-case-fields,.ks-case-history,.sja-editor,.ks-executions) :is(.sja-grid,.ks-case-grid){grid-template-columns:minmax(0,1fr)}
+body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.ks-case-fields,.ks-case-history,.sja-editor,.ks-executions) :is(.ks-case-closure,.ks-case-files,.ks-case-history,.sja-section,.ks-execution-completion){padding:12px}
+}
+
+/* The real late phone stylesheet also applies to parent and support screens. */
+body:has([data-expo-app-shell="true"]) :is(.ks-workspace-036.ks-module,.ks-module) :is(button,summary,input:not([type=checkbox]):not([type=radio]),select,textarea){font-size:16px!important;min-height:44px!important}
+body:has([data-expo-app-shell="true"]) :is(.ks-workspace-036.ks-module,.ks-module) button{white-space:normal;overflow-wrap:anywhere}

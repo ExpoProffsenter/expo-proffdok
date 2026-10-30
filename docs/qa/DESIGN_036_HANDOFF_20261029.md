@@ -1,5 +1,26 @@
 # Design 03.6 – gjenoppta uten ny runde
 
+## Gjeldende handoff30.10 – fortsett med faktiske underpunkter
+
+Repo ExpoProffsenter/expo-proffdok, draft PR295, branch `design01-app-ramme-20261028`. Fast Preview: https://expo-proffdok-git-design01-app-ramme-20261028-ringside.vercel.app/?progressTest=safe. **Bare Preview. Ingen redesign-TEST OK. Ingen merge/main/Production/demo-sync.** Behold original03.6/f67f2367 og godkjent seksområders Startside. Tilbudets eksisterende valg av logo skal beholdes.
+
+Siste bekreftede kandidat før denne KS-pakken er **0f58ebdac0c12142cbeccec202e4d96faed25cbe**, tre092291579032716ad1f63287dcb8c2c837953b62, full CI802/41092611145SUCCESS og READY dpl_A84yr4KyNHSZKmo7PpyRr8JpCV7U. main71d157f7. Endelig KS-kandidat, tre, full CI og innlogget etterkontroll står øverst i fersk PR295; les den før videre arbeid. Ikke utled gjeldende SHA av eldre avsnitt nedenfor.
+
+**Medarbeidersamtale i Preview:** HR → velg medarbeider → Medarbeidersamtaler → Opprett ny medarbeidersamtale. Bare registrert nærmeste leder starter; velg mal og fyll tidspunkt/sted før opprettelse. Innlogget demo@expo-proffdok.no/Kenneth Demo kan starte for **Demo medarbeider2**, ikke for egen Kenneth-rad som har en annen registrert leder. Det faktiske startskjemaet er åpnet uten opprettelse eller sending. Etter opprettelse vises varslingsstatus; appvarsel på medarbeiderens Min side forutsetter riktig HR-tilgang. **E-postutsending er avslått i dette miljøet.** Knappen Send e-postinvitasjon vises bare når can_notify tillater det; ikke aktiver e-post eller endre HR-tilgang for visuell QA. Kalenderhjelp er ikke bevis på sendt e-post.
+
+**Ny samlet KS-pakke:** Innlogget RUH var fortsatt980px sentrert/18px-rund, ulik SJA/vernerunde. Bare felles CSS/import samler de fire native dialogene, forslag/tiltak/sjekkpunkter/historikk/gjenåpning og skrivebeskyttet dokumentasjon. Ingen callbacks/kjerne/backend endres. Negativ gammelCSS-prøve feiler. Ny faktisk underflateprøve979 assertions/221 tilstand×bredde-visningerPASS, ikke221 funksjoner. Fem bredder med kort skjerm, alle native barn uten UI-stubber, full sen runtimeCSS, samme felt-DOM/tekst og fokus. Native RUH-required og lukk/gjenåpningskrav beholdes. Eksisterende KS-workspace197 med tre roller/full kaskadePASS; den gamle prøven hadde15px/39px-mobilavvik som ikke var synlig uten runtimeCSS. Relevante critical/ReactSJA/gjennomføring/prosjektgjennomføring og eksplisitt Sandbox critical/buildPASS. Samlet app-UX/ny full CI/deploy/live sluttsjekk føres i PR295. Grunnlag docs/changes/kshms-subflows-design-036-20261030.json.
+
+**Neste samlepakker, behold underpunktene:**
+
+1. KSHMS-007..010/013: faktisk rutineeditor/egen kladd, firmagodkjenning og samlet publiseringsbekreftelse, individuell/samlet lesebekreftelse, revisjon/kildeforslag/historikk/frist og oppsett. Test reelle komponenter og les levende eksisterende data; ingen ekte publisering, signering eller utsending for designkontroll.
+2. PROJECT-002..015: deltakere/tilgang, beskrivelse, avtalegrunnlag med opplastet/signert kontrakt, overtagelse, garanti, internnote/chat og øvrige faktiske skjemaer/underpunkter. Eksisterende project-workspace-prøve tester chrome, ikke disse skjemaene. Prosjektets legacyHMS-/sjekkpunktavvik må skilles fra de native KS-dialogene. Bilder/portal/sjekklister/rapport har egne avgrensede tidligere bevis.
+3. KSHMS-006/011/012: faktiske fremdrifts-/bemanningsbarn, sjekklisteforvaltning, vedlegg/dokumentuttrekk og PDF. Hold PR298-låserettelsen isolert; Bolig16hus tilhører PR294.
+
+145-reisers JSON er hovedregisteret; oppdater konkrete barns delbevis der. Ikke opprett ny overlappende inventering eller likestill oversikt/navigasjon/grønnCI med gjennomgått innhold. Test åpne/lukkede underpunkter, redigering, required/feil, historikk, readonly, tilbake/kladd/fokus og relevant rolle/arbeidsfirma med hele appkaskaden. Faktisk utførelse og juridiske/access/mail-handlinger dekkes med isolert transport og eksisterende kommandotester; innlogget QA leser eksisterende demooppføringer.
+
+Åpen tidligere observasjon: Min side-snarveien Se mine oppfølginger nådde én gang ikke HR etter profillasting; direkte HR-fane virket. Ikke erklær den fikset eller endre recovery-/navigasjonskjerne i CSS-pakken. Bruk tidligere grønne tester for uendret grunnlag. Ingen subagenter er autorisert.
+
+
 ## Samlepakke30.10 – HR-underfunksjoner etter brukerens bilde
 
 Baseline189109f3, full CI800SUCCESS og uendret main71d157f7. Brukerens Leder og tilgang-bilde er gjenskapt innlogget. De fire faktiske HR-seksjonene hadde ulike flater/radier/padding selv om register og tilgangskommandoer var testet. Dette er et reelt hull i tidligere visuell dekning. Nytt `hrSurfaces036.css` samler kontakt/samtale/sykefravær/tilgang og relaterte HR-verktøy, og Min side bruker samme medarbeiderramme. Ingen forretningscallback, tilgangsregel, lagring, autosave/recovery eller backend er endret.

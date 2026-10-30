@@ -4,7 +4,11 @@ import Module from '../../src/modules/kshms/KshmsModule.jsx';
 import {ROUTINE_CATALOG} from '../../src/modules/kshms/kshmsCatalog.mjs';
 import {newExecution} from '../../src/modules/kshms/kshmsExecutions.mjs';
 import '../../src/style.css';
+import '../../src/modules/app/mobileResponsive41A.css';
 import '../../src/modules/ui/proffdokWorkspace.css';
+
+import {APP_RUNTIME_STYLES} from '../../src/modules/app/appRuntimeStyles.js';
+const runtime=document.createElement('style');runtime.textContent=APP_RUNTIME_STYLES;document.head.appendChild(runtime);
 
 const company='91000000-0000-4000-8000-000000000001',other='91000000-0000-4000-8000-000000000002';
 const makeUser=serial=>'92000000-0000-4000-8000-'+String(serial).padStart(12,'0');
