@@ -124,6 +124,8 @@ try{
  await page.keyboard.press('Escape');await practice.waitFor({state:'hidden'});
  await page.evaluate(()=>window.qa.show('personal'));await page.locator('.hr-employee').first().waitFor();await openEmployee();
  eq(await employee().locator('.hr-employee-dialog-036').count(),1,'Min side uses the same employee panel frame');
+ eq(await employee().locator('.hr-detail>.hr-access-036').count(),1,'Min side also groups its read-only leader/access information in the shared frame');
+ eq(await employee().locator('.hr-detail>.hr-access-036').evaluate(el=>{const s=getComputedStyle(el);return s.backgroundColor==='rgb(255, 255, 255)'&&s.borderRadius==='8px'&&s.borderTopWidth==='1px';}),true,'personal leader/access shares the sibling section style');
  await employee().locator('.hr-private-contact>summary').click();eq(await employee().getByRole('textbox',{name:'Adresse',exact:true}).getAttribute('readonly'),null,'self retains native editable contact form');await fits(employee(),'personal employee');await capture('personal-contact');
  await page.keyboard.press('Escape');await employee().waitFor({state:'hidden'});
  eq(await page.evaluate(()=>window.qa.commands.length),0,'entire reading/design sweep has no HR business writes');

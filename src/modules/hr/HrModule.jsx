@@ -154,7 +154,7 @@ export default function HrModule({context,audience='legacy',initialEmployeeId=nu
  const employees=data?.employees||[],shown=employees.filter(employee=>(hrEmployeeLabel(employee)+' '+(employee.email||'')).toLocaleLowerCase('nb-NO').includes(query.trim().toLocaleLowerCase('nb-NO')));
  const oldHasReader=Boolean(detail?.leader_id&&detail.readers?.some(grant=>grant.user_id===detail.leader_id));
  const selectedLeaderMissing=Boolean(leader&&!members.some(member=>member.id===leader));
- const AccessContainer=audience==='personal'?React.Fragment:'details';
+ const AccessContainer=audience==='personal'?'div':'details';
  const moreMembersButton=administer&&memberNext&&<button type="button" className="secondary" disabled={busy} onClick={()=>run(async(session,current)=>{const page=await session.state(memberNext);if(current()){setMembers(previous=>[...previous,...page.members.filter(member=>!previous.some(p=>p.id===member.id))]);setMemberNext(page.next);}})}>Hent flere appbrukere til valgene</button>;
  return <section className={audience==='personal'?'hr-module hr-personal':'hr-module hr-workspace-036'} aria-label={audience==='personal'?'Mine oppfølginger':'HR'} data-hr-workspace-scope={audience!=='personal'?navigationScope:undefined}>
   {audience==='personal'&&practiceAvailable(context,import.meta.env.VITE_EXPO_BACKEND_TARGET)&&<HrPracticeConversation key={'practice:'+companyId+':'+userId} context={context}/>}
@@ -246,7 +246,7 @@ export default function HrModule({context,audience='legacy',initialEmployeeId=nu
    <PrivateContact key={detail.id+':'+detail.revision} context={context} employee={detail}/>
    <HrConversations key={'conversations:'+detail.id+':'+detail.revision} context={context} employee={detail}/>
    <HrSickLeaveCases key={'sick-cases:'+detail.id+':'+detail.revision} context={context} employee={detail}/>
-   <AccessContainer {...(audience!=='personal'?{className:'hr-access-036'}:{})}>{audience!=='personal'&&<summary>Leder og tilgang</summary>}
+   <AccessContainer className="hr-access-036">{audience!=='personal'&&<summary>Leder og tilgang</summary>}
    <p>{administer?'Kontroller leder og ekstra lesere. Endringen lagres først når du trykker knappen.':'Dette er din tilgjengelige registeroppføring. Firmaadmin styrer leder og ekstra lesetilgang.'}</p>
    {moreMembersButton}
    {!administer&&<p>{detail.leader_id?'Nærmeste leder er registrert.':'Nærmeste leder er ikke registrert. Kontakt firmaadmin.'}</p>}
