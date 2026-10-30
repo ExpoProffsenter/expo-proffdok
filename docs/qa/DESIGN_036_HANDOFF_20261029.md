@@ -1,5 +1,13 @@
 # Design 03.6 – gjenoppta uten ny runde
 
+## Videreført etter brukerens ja – publisert tre, virkelig SJA-fokusfeil
+
+Brukeren godkjente uttrykkelig Preview-push. Direkte git manglet credential; tilkoblet GitHub publiserte5b2525f8723f3407a192f0222fd48eeb2e93460a, komplett tre3aad0245a56ccd6b0ebd2fd902ae5db401508847, alle12 blobs identiske med lokal7bdc9cdf. Vercel dpl_At63R6qm64oFsGMh4H4a4NT2xMWqREADY, target=null og samme fastalias. Den tidligere pushavvisningen er løst; ikke be om samme tillatelse igjen. Lokal checkout/origin er justert til eksakt GitHub-commit, samme tre. Tidligere lokal historikk ligger i refs/codex/checkpoints/pre-connector-publication.
+
+CI804/41108009746 er FAILURE i faktisk SJA-fokusretur, sju øvrige pakkerSUCCESS. Dette avkrefter tidligere antakelse om at venting alene var nok. Lokal Chromium153/Playwright1.62.1 besto, mens eldre Chromium143/Playwright1.58.2 gjenskaper sja1920-timeout. Diagnosen: BODY-fokus, opprinnelig knapp fortsatt connected/enabled. Native mount fanget fokus etter at loading hadde deaktivert knappen. Ny avgrenset SJA-fokusresolver fanger trigger før loading og bruker eksisterende DeviationDialog-prop med active/scope/connected/disabled/hidden-gater. Ingen lagring/signering/recovery/backendendring. Samme981 består på143 etter produktfiks. Tre ekstra inactive/draft/reactivated-return-krav gir984. Faktisk SJAReactPASS. Full sluttkode-appUX på eldre143PASS, inkludert984 KS-underflatekrav/401 KS-forvaltning. Samme984 ogsåPASS på153, og full eksplisitt Sandbox critical/buildPASS. NyCI og publisering oppdateres i PR295, grunnlag docs/changes/sja-opener-focus-20261030.json.
+
+Skynett-tab4 beholdt fra forrige økt fikk timeout ved reload; dokumentert troubleshooting-oppslag fikk også300s timeout. Dette er en begrensning i nettlesertjenesten, ikke påvist feil eller nedetid i appen. Ikke påstå innlogget etterkontroll av5b2525f8 eller den kommende fokusfiksen. Fortsett lokale og CI-baserte oppgaver; ingen credential-/auth-/rollemutasjon for å få testbevis. Bare Preview, ingen redesign-TEST OK/merge/Production/demo-sync.
+
 ## Faktisk stoppunkt30.10 – lokal pakke klar, push stoppet automatisk
 
 App-/QA-commit21c4d087c4671a75439afe612bfe909bbf03edae, tre fbc2f544eae24e086c5c1af6592841ac3fac73ad. Full lokal app-UXPASS med ny KS401/100 og KS981/221 samt alle tidligere suiter; faktisk publisering87/bulk87/kildeflytPASS, full eksplisitt Sandbox critical/buildPASS. Release-docs/scopePASS etter commit. Arbeidsbranch er ren og én commit foran origin ved denne avlesningen.

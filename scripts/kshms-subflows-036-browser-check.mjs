@@ -45,9 +45,10 @@ try{
    }
    eq(await input.inputValue(),'QA lokal tekst '+kind,kind+' '+width+' original field text retained');eq(await input.evaluate((node,original)=>node===original,handle),true,kind+' '+width+' same original field DOM');
    await page.keyboard.press('Escape');await panel().waitFor({state:'hidden'});
-   // Dialog removal commits before React's passive cleanup restores focus.
-   // Observe the actual keyboard contract, not an intermediate commit frame.
-   await page.waitForFunction(node=>node===document.activeElement,await start.elementHandle());
+   // Observe the native focus contract after closing. Missing return still
+   // fails; CI804 and Chromium143 proved that waiting alone cannot fix it.
+   try{await page.waitForFunction(node=>node===document.activeElement,await start.elementHandle());}
+   catch(error){console.error('Native focus failure',kind,width,await start.evaluate(node=>({active:document.activeElement?.tagName,activeText:document.activeElement?.textContent?.slice(0,100),connected:node.isConnected,disabled:node.disabled,events:window.qa.focusEvents.slice(-12)})));throw error;}
    eq(await start.evaluate(n=>n===document.activeElement),true,kind+' '+width+' focus returned');
   }
   if(width===1920){
@@ -58,6 +59,15 @@ try{
    await page.evaluate(()=>{window.qa.holdSja=false;window.qa.releaseSja();});await panel().waitFor();
    await page.keyboard.press('Escape');await panel().waitFor({state:'hidden'});
    eq(await resume.evaluate(n=>n===document.activeElement),true,'held async SJA read returns focus to original resume button');
+   await resume.click();await panel().waitFor();
+   const draftField=panel().locator('textarea').first(),draftText=await draftField.inputValue(),resumeNode=await resume.elementHandle();
+   await page.evaluate(()=>window.qa.setActive(false));await panel().waitFor({state:'hidden'});
+   eq(await resumeNode.evaluate(n=>n!==document.activeElement),true,'inactive SJA never restores focus to hidden opener');
+   await page.evaluate(()=>window.qa.setActive(true));await panel().waitFor();
+   eq(await draftField.inputValue(),draftText,'inactive/active keeps original SJA draft text');
+   await page.keyboard.press('Escape');await panel().waitFor({state:'hidden'});
+   await page.waitForFunction(node=>node===document.activeElement,await resume.elementHandle());
+   eq(await resume.evaluate(n=>n===document.activeElement),true,'reactivated SJA returns to original authorized opener');
   }
   for(const kind of ['sja','round','risk']){
    await render(kind,false,true);

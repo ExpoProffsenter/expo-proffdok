@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "SJA: bevar åpningsknapp før asynkron lasting",
+  "change": "Miljømål BEGGE, kun eksisterende PR295/Preview. KshmsSja fanger nå den opprinnelige fokuserte åpningsknappen før choose deaktiverer den ved lasting. Eksisterende DeviationDialog returnFocusTarget får samme scoped resolver som brukes i HR og prosjektsjekklister. Aktiv arbeidsflate, samme request-scope, tilkoblet/aktiv/synlig node kreves. Ingen endring i dialogens felles motor, choose/read/save/sign/close-kommandoer, tilgang, lokal kladd eller recovery. To refs, én fokusresolver, innfanging og én eksisterende prop.",
+  "verification": "CI803 på068a52 feilet sja1920-fokus. Den første ventingen i5b2525f8 var utilstrekkelig: CI804/41108009746 fikk samme timeout, sju øvrige utføringspakkerSUCCESS. Eldre lokal Chromium143/Playwright1.58.2 gjenskaper nøyaktig sja1920-fokuskravet som timeout på uendret5b2525f8. Diagnosen viser BODY som activeElement, originalknapp fortsatt connected og enabled. Chromium153/Playwright1.62.1 skjulte problemet. Native dialog fanget fokus etter at loading hadde deaktivert åpningsknappen. Etter avgrenset produktrettelse består samme981-assertions-prøve på143. Tre additive krav dekker at inaktiv SJA ikke fokuserer skjult åpningsknapp, at kladdeteksten beholdes ved reaktivering, og at Escape deretter returnerer til opprinnelig knapp:984. Ingen gammel assertion fjernet. Faktisk SJAReact save/fail/retry/server-first/conflict/revoked-read/signature/hidden/company-scenarierPASS. Full samlet app-UX på eldre143PASS, inkludert984 KS-underflatekrav og401 KS-forvaltning. Samme984 består også på153. Full eksplisitt Sandbox critical/buildPASS på sluttkode. Ny faktisk CI/Preview føres i PR295. Skynett er for øyeblikket utilgjengelig etter reload/troubleshooting-timeout, så ingen ny innlogget sluttattest gis. Ingen faktisk sending/signering/lukking/tilgangsendring.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Ingen ny knapp eller oppgaveflyt; rettelse av forventet tastaturfokus etter lukking."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Eksisterende scoped dialogresolver gjenbrukes. Ingen ny data-/lagrings-/tilgangseier."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen prosjektavhengighet eller miljøendring. Eldre lokal nettleser ligger bare i midlertidig QA-runtime."
+    },
+    "module": {
+      "required": true,
+      "reason": "UI README beskriver før-lasting-innfanging og forskjellen mellom deaktivert åpningsknapp og dialogens mounttidspunkt."
+    }
+  }
+}
