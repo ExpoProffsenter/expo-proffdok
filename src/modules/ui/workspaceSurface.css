@@ -222,6 +222,9 @@ body:has([data-expo-app-shell="true"]) .company-admin-panel-content :is(p,label)
 body:has([data-expo-app-shell="true"]) .company-admin-panel-content small{font-size:14px;line-height:1.5;color:var(--pd-muted)}
 body:has([data-expo-app-shell="true"]) .company-admin-panel-content .company-admin-check{align-items:flex-start}
 body:has([data-expo-app-shell="true"]) .company-admin-panel-content .company-admin-check>span{min-width:0;font-size:16px;line-height:1.5;margin:0}
+body:has([data-expo-app-shell="true"]) .company-admin-panel-content label b{font-size:16px!important;line-height:1.5}
+body:has([data-expo-app-shell="true"]) .company-admin-panel-content article{padding:16px!important;border-radius:8px!important;box-shadow:none}
+body:has([data-expo-app-shell="true"]) .company-admin-panel-content label:has(>input[type="checkbox"]){border-radius:8px!important}
 body:has([data-expo-app-shell="true"]) .company-admin-panel-content :is(input,select){border-radius:7px;min-width:0}
 body:has([data-expo-app-shell="true"]) .company-admin-panel-content button:not(.secondary){background:var(--pd-accent);color:#fff}
 body:has([data-expo-app-shell="true"]) .company-admin-panel-content button.secondary{background:#fff;color:var(--pd-accent);border:1px solid var(--pd-line)}

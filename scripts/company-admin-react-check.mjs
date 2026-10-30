@@ -75,6 +75,15 @@ try{
  const shared=page.locator('article').filter({has:page.locator('strong',{hasText:'shared@example.invalid'})});
  eq(await employee.count(),1,'single card for role and grants');eq(await shared.count(),1);
  await openUser(0);
+ for(const width of [320,390,768,1363,1920]){
+  await page.setViewportSize({width,height:800});
+  eq(await employee.locator('label b').first().evaluate(el=>getComputedStyle(el).fontSize),'16px','native user-card module text '+width);
+  eq(await employee.evaluate(el=>getComputedStyle(el).borderRadius),'8px','native user-card radius '+width);
+  eq(await page.locator('dialog[open]').evaluate(el=>el.scrollWidth<=el.getBoundingClientRect().width),true,'native user-card no side scrolling '+width);
+  eq(await page.locator('dialog[open] h2').evaluate(el=>getComputedStyle(el).fontSize),width<=620?'25px':'28px','long native user title '+width);
+  if(width===390||width===1363)await page.screenshot({path:screenshotDir+'/user-'+width+'.png',fullPage:false});
+ }
+ await page.setViewportSize({width:1280,height:950});
  await employee.getByLabel('Rolle for employee@example.invalid').selectOption('firmaadmin');await page.waitForFunction(()=>window.calls.some(x=>x.n==='company_admin_set_role'));eq((await page.evaluate(()=>window.calls.find(x=>x.n==='company_admin_set_role'))).a.p_company_id,'b');
  await openUser(1);
  const hr=shared.locator('label').filter({has:page.locator('b',{hasText:/^HR$/})}).locator('input');await hr.check();await shared.getByRole('button',{name:'Lagre KS/HMS- og HR-tilgang',exact:true}).click();await shared.getByRole('status').waitFor();eq((await page.evaluate(()=>window.calls.find(x=>x.n==='people_modules_user_set'))).a.p_company_id,'b','shared employee grant belongs to selected company');
