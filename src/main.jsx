@@ -42,6 +42,7 @@ import { createHelpCenter } from './modules/help/helpTools.js';
 import { createChecklistEditor } from './modules/checklist/checklistTools.js';
 import ProjectChecklistPicker from './modules/checklist/ProjectChecklistPicker.jsx';
 import ProjectChecklistWorkspace from './modules/checklist/ProjectChecklistWorkspace.jsx';
+import StandaloneChecklists from './modules/checklist/StandaloneChecklists.jsx';
 import ProjectSjaEntry from './modules/kshms/ProjectSjaEntry.jsx';
 import { appendProjectChecklist,projectChecklistTemplate,sameChecklistContent } from './modules/kshms/kshmsChecklists.mjs';
 import { createImageDocumentationTools } from './modules/images/imageDocumentationTools.js';
@@ -707,6 +708,7 @@ const BoligEntry = React.lazy(() => import('./modules/bolig/BoligEntry.jsx'));
     const [mobileMenuOpen, setMobileMenuOpen] = (0, import_react.useState)(false);
     const [mobileStatusOpen, setMobileStatusOpen] = (0, import_react.useState)(false);
     const [checklistEntryRequest, setChecklistEntryRequest] = (0, import_react.useState)(null);
+    const [standaloneChecklistsOpen, setStandaloneChecklistsOpen] = (0, import_react.useState)(false);
     const [projectDirty, setProjectDirty] = (0, import_react.useState)(false);
     const defaultCompanyProfile = { companyName: "Expo Proffsenter", address: "", orgNumber: "", phone: "", email: "", website: "", logoUrl: "" };
     const [company, setCompany] = (0, import_react.useState)({ ...defaultCompanyProfile });
@@ -6948,6 +6950,8 @@ ${appLink}`;
           setInternalNotes,
           saveProject
         }),
+        tab === "prosjektliste" && authUser?.id === kshmsContext?.user_id && kshmsContext?.company_id && !isProjectSupportReadOnly && (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => setStandaloneChecklistsOpen(true), children: "Fyll ut sjekkliste" }),
+        standaloneChecklistsOpen && tab === "prosjektliste" && authUser?.id === kshmsContext?.user_id && kshmsContext?.company_id && !isProjectSupportReadOnly && (0, import_jsx_runtime.jsx)(StandaloneChecklists, { companyId: kshmsContext.company_id, userId: authUser.id, onClose: () => setStandaloneChecklistsOpen(false) }, `${authUser.id}:${kshmsContext.company_id}`),
         tab === "prosjektliste" && renderProjectListPanel({
           projectListStats,
           projectSearch,

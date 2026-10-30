@@ -1,0 +1,34 @@
+import {checklistContent} from '../kshms/kshmsChecklists.mjs';
+import {fieldProblem,verifyFieldReadback} from './checklistFields.mjs';
+import {sameRunValue} from './checklistRuns.mjs';
+export const standaloneDraftKey=(user,company)=>`expo:standalone-checklist:v1:${user}:${company}`;
+export const standaloneMailKey=(user,company,id)=>`expo:standalone-checklist-mail:v1:${user}:${company}:${id}`;
+export function readStandaloneDraft(storage,user,company){
+ try{const row=JSON.parse(storage.getItem(standaloneDraftKey(user,company)));return row?.id&&row.requestId&&Array.isArray(row.definition?.points)&&row.answers?row:null;}catch{return null;}
+}
+export function checkStandaloneScope(state,company,user){
+ if(state?.context?.company_id!==company||state.context.user_id!==user||!state.context.enabled)throw Error('Firmatilgangen er endret. Kladden er beholdt.');return state;
+}
+export function standaloneProblem(draft){
+ for(const p of draft.definition.points){const a=draft.answers[p.id]||{};
+  if(!a.status)return `Svar på «${p.title}».`;
+  if(a.status==='Ikke aktuelt'){if(p.allow_na===false)return `«${p.title}» må vurderes.`;continue;}
+  const missing=fieldProblem(p.fields,a.values);if(missing)return `Fyll ut «${missing.label}» i «${p.title}».`;
+  if((p.comment_required||a.status==='Avvik')&&!a.comment?.trim())return `Skriv kommentar til «${p.title}».`;
+  if(p.image_required&&!a.photos?.length)return `Legg til bilde på «${p.title}».`;
+ }return '';
+}
+export async function saveStandaloneChecklist({rpc,companyId,userId,draft,action,isCurrent=()=>true}){
+ const definition=draft.version_id?draft.definition:checklistContent(draft.definition);
+ const payload={id:draft.id,revision:draft.revision,version_id:draft.version_id||null,definition,order_number:draft.order_number.trim(),answers:draft.answers};
+ const result=await rpc('standalone_checklist_command',{p_company_id:companyId,p_action:action,p_request_id:draft.requestId,p_payload:payload});
+ if(!isCurrent())return null;checkStandaloneScope(result,companyId,userId);
+ const read=await rpc('standalone_checklist_workspace',{p_company_id:companyId,p_id:draft.id});
+ if(!isCurrent())return null;checkStandaloneScope(read,companyId,userId);const row=read.record;
+ if(row?.id!==draft.id||row.company_id!==companyId||row.created_by!==userId||row.revision!==result.record?.revision||row.status!==(action==='complete'?'completed':'draft')||row.order_number!==payload.order_number||!sameRunValue(row.definition,definition)||!sameRunValue(row.answers,result.record.answers))throw Error('Lagringen kunne ikke bekreftes. Kladden er beholdt. Prøv samme lagring igjen.');
+ for(const p of definition.points){const a=draft.answers[p.id]||{},b=row.answers[p.id]||{};
+  if((a.status||'')!==b.status||(a.comment||'')!==b.comment||!sameRunValue(a.photos||[],b.photos||[]))throw Error('Svarene kunne ikke bekreftes lagret. Kladden er beholdt.');
+  verifyFieldReadback(p.fields||[],a.values||{},b.values||{},userId);
+ }
+ return read;
+}

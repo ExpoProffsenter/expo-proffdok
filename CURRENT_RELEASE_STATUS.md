@@ -1,3 +1,7 @@
+# Frittstående sjekklister – egen Preview-kandidat30.10
+
+Ny separat funksjonsbranch fra main71d157f7: Prosjektliste → Fyll ut sjekkliste uten prosjekt, valgfritt ordrenummer, lagret PDF og uttrykkelig e-post til valgt mottaker. Privat lagring, sikker lokal kladd og frosne PDF-byte ved gjentakelse. DB79, mail/PDF36, native browser97 og full critical/buildPASS; eksisterende prosjektpopup, resume36 og feltbrowser28PASS. Ny Sandbox-migrering/eierindeks og Edge v1 lagt til. Ingen faktisk e-post eller Production-endring. CI, fast Preview og innlogget prøve føres i separat funksjons-PR. Design03.6 i PR295/6b409d8f/CI809SUCCESS fortsetter separat fra maleditor-/vedleggscheckpointet.
+
 # Gjeldende leveranse – 27.10.2026
 
 ## Saksbehandler for akseptvarsel – publisert 29.10.2026

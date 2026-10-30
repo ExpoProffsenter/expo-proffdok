@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Fyll ut sjekklister uten prosjekt med valgfritt ordrenummer og PDF/e-post",
+  "change": "Miljømål BEGGE. Isolert funksjonsbranch fra produksjon/main71d157f7. Prosjektliste får én egen inngang Fyll ut sjekkliste. Ny komponent gjenbruker native DeviationDialog, ChecklistFields/FieldBuilder, bildekomprimering, malvalidering og PDF-ramme. En publisert firmaversjon eller egen liste lagres i privat firma-/brukerscopet kontrolltabell uten prosjekt. Valgfritt ordrenummer følger lagring/PDF/e-post. Kun eksplisitt Send PDF sender til én valgt kontrollert mottaker; ingen rutineutsending aktiveres. Egen Edge-funksjon bruker eksisterende serverstyrt avsender/firmaoppsett og leverandør. Lagret revisjon/identitet, CAS, immutable fullføring, sikker lokal kladd, eksplisitt readback og frosne vedleggsbyte/provider-key ved gjentakelse. Ingen eksisterende prosjekt-, bolig-, Sales- eller KS/HMS-kommando endres.",
+  "verification": "PostgreSQL79 og faktisk SQL/jsPDF/mail36PASS. Native React→HTTP→PostgreSQL→PDF/Edge97 kontroller omfatter fem bredder320–1920, alle åtte svartypene, betingelser/bilder/bekreftelser, egen liste uten ordre, kladd/fokus/firma, eksplisitt forkasting og beskyttelse mot annen liste, readback-/CAS-konflikt, fullføring og tapt sendingskvittering. Syntetisk provider; ingen faktisk e-post. Full npm build/critical grønn. Eksisterende prosjektpopupPASS, resume36 og fleksible felter28PASS. Faktisk ny Sandbox-migrering + eierindeks og standalone-checklist-email v1 med JWT er lagt til; RLS/ACL kontrollert. Sikkerhetsrådgiverens RLS-uten-direkte-policy og kontrollerte SECURITY DEFINER RPC-er er tilsiktet; ubrukt indeks forventes før bruk. Ny FK-indeks lagt til etter ytelseskontroll. PDF visuelt kontrollert. Full CI og innlogget Preview-evidens føres på eksakt kandidat i funksjons-PR; ingen Production-endring.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "Ny brukerinngang, valgfritt ordrenummer, lagring/fullføring og eksplisitt mottakerkontroll beskrives i faktisk Hjelp."
+    },
+    "architecture": {
+      "required": true,
+      "reason": "Nye private kontroller/receipts/mailrequests og ny transaksjonsstyrt e-posttransport beskrives."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen nye npm-avhengigheter eller installasjonssteg. Eksisterende e-postmiljøverdier brukes; ny migrations-/Edge-release beskrives i arkitekturen."
+    },
+    "module": {
+      "required": true,
+      "reason": "Ny frittstående komponent, tilgang, kladd/readback/PDF-/retry-kontrakt dokumenteres i sjekklistemodulens README."
+    }
+  }
+}
