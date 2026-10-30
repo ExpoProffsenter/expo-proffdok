@@ -5,9 +5,10 @@ const identity=v=>v?.name||v?.email||'Ikke oppgitt';
 const time=v=>v?new Date(v).toLocaleString('nb-NO',{timeZone:'Europe/Oslo'}):'Ikke fullført';
 export function standaloneChecklistDocument(record){
  if(!record?.id||!record.revision||!['draft','completed'].includes(record.status)||!Array.isArray(record.definition?.points))throw Error('Åpne en lagret sjekkliste før PDF.');
+ if(!record.order_number?.trim()||!record.work_site?.trim())throw Error('Sjekklisten må ha ordrenummer og arbeidssted/adresse før PDF.');
  const c=record.definition;
  return {id:record.id,type:'Utfylt sjekkliste',title:c.title,fields:[
-  ['Status',record.status==='completed'?'Fullført':'UTKAST – IKKE FULLFØRT'],['Ordrenummer',record.order_number||'Ikke oppgitt'],['Fag',c.trade],
+  ['Status',record.status==='completed'?'Fullført':'UTKAST – IKKE FULLFØRT'],['Ordrenummer',record.order_number],['Arbeidssted/adresse',record.work_site],['Eksternt prosjektnavn',record.external_project||'Ikke oppgitt'],['Kunde/oppdragsgiver',record.customer_name||'Ikke oppgitt'],['Fag',c.trade],
   ['Veiledning',c.instructions||''],['Lagret av',identity(record.updated_identity)],['Lagret tidspunkt',time(record.updated_at)],
   ['Kontroll-ID / revisjon',`${record.id} / ${record.revision}`],['Fast malutgave',record.version_id||'Egen sjekkliste']
  ],blocks:c.points.map((p,i)=>{const a=record.answers[p.id]||{};return {title:`${i+1}. ${p.title}`,fields:[['Veiledning',p.guidance||''],['Svar',a.status||'Ikke besvart'],['Kommentar',a.comment||''],...fieldsReport(p.fields,a.values)],photos:(a.photos||[]).map(photo=>({data:photo.data}))};}),closing:[['Fullført tidspunkt',time(record.completed_at)],['Oppfølging','Sjekklisten dokumenterer de lagrede svarene. Registrerte avvik må følges opp.']]};

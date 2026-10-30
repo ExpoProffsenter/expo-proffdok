@@ -9,6 +9,11 @@ export function readStandaloneDraft(storage,user,company){
 export function checkStandaloneScope(state,company,user){
  if(state?.context?.company_id!==company||state.context.user_id!==user||!state.context.enabled)throw Error('Firmatilgangen er endret. Kladden er beholdt.');return state;
 }
+export function standaloneDetailsProblem(draft){
+ if(!draft?.order_number?.trim())return 'Fyll inn ordrenummer.';
+ if(!draft?.work_site?.trim())return 'Fyll inn arbeidssted/adresse.';
+ return '';
+}
 export function standaloneProblem(draft){
  for(const p of draft.definition.points){const a=draft.answers[p.id]||{};
   if(!a.status)return `Svar på «${p.title}».`;
@@ -19,13 +24,14 @@ export function standaloneProblem(draft){
  }return '';
 }
 export async function saveStandaloneChecklist({rpc,companyId,userId,draft,action,isCurrent=()=>true}){
+ const detailsProblem=standaloneDetailsProblem(draft);if(detailsProblem)throw Object.assign(Error(detailsProblem),{code:'22023'});
  const definition=draft.version_id?draft.definition:checklistContent(draft.definition);
- const payload={id:draft.id,revision:draft.revision,version_id:draft.version_id||null,definition,order_number:draft.order_number.trim(),answers:draft.answers};
+ const payload={id:draft.id,revision:draft.revision,version_id:draft.version_id||null,definition,order_number:draft.order_number.trim(),work_site:(draft.work_site||'').trim(),external_project:(draft.external_project||'').trim(),customer_name:(draft.customer_name||'').trim(),answers:draft.answers};
  const result=await rpc('standalone_checklist_command',{p_company_id:companyId,p_action:action,p_request_id:draft.requestId,p_payload:payload});
  if(!isCurrent())return null;checkStandaloneScope(result,companyId,userId);
  const read=await rpc('standalone_checklist_workspace',{p_company_id:companyId,p_id:draft.id});
  if(!isCurrent())return null;checkStandaloneScope(read,companyId,userId);const row=read.record;
- if(row?.id!==draft.id||row.company_id!==companyId||row.created_by!==userId||row.revision!==result.record?.revision||row.status!==(action==='complete'?'completed':'draft')||row.order_number!==payload.order_number||!sameRunValue(row.definition,definition)||!sameRunValue(row.answers,result.record.answers))throw Error('Lagringen kunne ikke bekreftes. Kladden er beholdt. Prøv samme lagring igjen.');
+ if(row?.id!==draft.id||row.company_id!==companyId||row.created_by!==userId||row.revision!==result.record?.revision||row.status!==(action==='complete'?'completed':'draft')||['order_number','work_site','external_project','customer_name'].some(k=>row[k]!==payload[k])||!sameRunValue(row.definition,definition)||!sameRunValue(row.answers,result.record.answers))throw Error('Lagringen kunne ikke bekreftes. Kladden er beholdt. Prøv samme lagring igjen.');
  for(const p of definition.points){const a=draft.answers[p.id]||{},b=row.answers[p.id]||{};
   if((a.status||'')!==b.status||(a.comment||'')!==b.comment||!sameRunValue(a.photos||[],b.photos||[]))throw Error('Svarene kunne ikke bekreftes lagret. Kladden er beholdt.');
   verifyFieldReadback(p.fields||[],a.values||{},b.values||{},userId);

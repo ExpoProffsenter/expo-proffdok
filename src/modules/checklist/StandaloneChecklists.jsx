@@ -10,7 +10,7 @@ import {WORK_PROFILE_EVENT} from '../access/workProfileClient.js';
 import {MANAGED_ACCESS_EVENT,MODULE_ACCESS_EVENT} from '../access/moduleAccessClient.js';
 import {loadCompanyLogo} from '../report/kshmsExecutionReport.mjs';
 import {createStandaloneChecklistPdf} from '../../../supabase/functions/_shared/standalone-checklist-pdf.mjs';
-import {checkStandaloneScope,readStandaloneDraft,saveStandaloneChecklist,standaloneDraftKey,standaloneMailKey,standaloneProblem} from './standaloneChecklists.mjs';
+import {checkStandaloneScope,readStandaloneDraft,saveStandaloneChecklist,standaloneDraftKey,standaloneMailKey,standaloneDetailsProblem,standaloneProblem} from './standaloneChecklists.mjs';
 import {sameRunValue} from './checklistRuns.mjs';
 import './standaloneChecklists.css';
 
@@ -49,7 +49,7 @@ export default function StandaloneChecklists({companyId,userId,onClose}){
  const start=()=>{
   if(lock.current||denied)return;
   const v=data.versions.find(row=>row.id===version),own=blankChecklist();
-  const next={id:crypto.randomUUID(),revision:0,requestId:crypto.randomUUID(),version_id:v?.id||null,definition:v?.content||own.content,answers:{},order_number:'',status:'draft'};
+  const next={id:crypto.randomUUID(),revision:0,requestId:crypto.randomUUID(),version_id:v?.id||null,definition:v?.content||own.content,answers:{},order_number:'',work_site:'',external_project:'',customer_name:'',status:'draft'};
   if(cached&&cached.id!==next.id){setNotice('Du har en usendt kladd. Fortsett den før du starter en ny liste.');return;}
   choose(next);remember(next);
  };
@@ -70,7 +70,7 @@ export default function StandaloneChecklists({companyId,userId,onClose}){
    if(!viewSaved&&local?.id===row.id&&local.revision!==state.record.revision)setError('Det finnes en nyere lagret utgave. Kladden er beholdt. Velg Vis lagret sjekkliste for å sammenligne.');
   }catch(e){if(current(token))setError(e.message);}finally{lock.current=false;if(current(token))setBusy(false);}
  };
- const change=patch=>{if(lock.current||pending||selected?.pendingAction||selected?.viewSaved||selected?.status==='completed')return;const row=selection.current;if(patch.definition&&row.definition.points.length)patch.answers=invalidateFieldConfirmations(row.definition.points.map(p=>p.id),Object.fromEntries(row.definition.points.map(p=>[p.id,p])),row.answers,row.definition.points[0].id);remember({...row,...patch,requestId:crypto.randomUUID(),pendingAction:null});};
+ const change=patch=>{if(lock.current||pending||selected?.pendingAction||selected?.viewSaved||selected?.status==='completed')return;const row=selection.current;if((patch.definition||['order_number','work_site','external_project','customer_name'].some(k=>Object.hasOwn(patch,k)))&&row.definition.points.length)patch.answers=invalidateFieldConfirmations(row.definition.points.map(p=>p.id),Object.fromEntries(row.definition.points.map(p=>[p.id,p])),row.answers,row.definition.points[0].id);remember({...row,...patch,requestId:crypto.randomUUID(),pendingAction:null});};
  const answer=(id,patch,confirmationId=null)=>{
   const row=selection.current,points=row.definition.points;
   const answers=invalidateFieldConfirmations(points.map(p=>p.id),Object.fromEntries(points.map(p=>[p.id,p])),{...row.answers,[id]:{...row.answers[id],...patch}},id,confirmationId);
@@ -79,6 +79,7 @@ export default function StandaloneChecklists({companyId,userId,onClose}){
  const save=async action=>{
   if(lock.current||pending||denied||!selection.current)return;const token=scope.current;
   let row={...selection.current,pendingAction:selection.current.pendingAction||action};
+  const detailsProblem=standaloneDetailsProblem(row);if(detailsProblem){setError(detailsProblem);return;}
   try{if(!row.version_id)row={...row,definition:checklistContent(row.definition)};}catch(e){setError(e.message);return;}
   if(action==='complete'){const problem=standaloneProblem(row);if(problem){setError(problem);return;}}
   remember(row);lock.current=true;setBusy(true);setError('');
@@ -113,23 +114,28 @@ export default function StandaloneChecklists({companyId,userId,onClose}){
   try{const photos=[...(selection.current.answers[id]?.photos||[])];for(const file of files)photos.push(await prepareKshmsPhoto(file));if(photos.length>3)throw Error('Bruk inntil tre bilder per sjekkpunkt.');if(current(token)){lock.current=false;answer(id,{photos});}}
   catch(e){if(current(token))setError(e.message);}finally{lock.current=false;if(current(token))setBusy(false);}
  };
+ const missingDetails=selected?standaloneDetailsProblem(selected):'';
  const readonly=selected?.status==='completed'||selected?.viewSaved||Boolean(pending),editableDefinition=!selected?.revision&&!selected?.version_id;
- return <DeviationDialog title="Sjekklister uten prosjekt" context="Fyll ut, lagre og send PDF" onClose={()=>{if(!lock.current)onClose();}} busy={busy} closeLabel="Lukk sjekklister">
+ return <DeviationDialog title="Sjekklister" context="Eksterne prosjekter · Fyll ut, lagre og send PDF" onClose={()=>{if(!lock.current)onClose();}} busy={busy} closeLabel="Lukk sjekklister">
   <div className="standalone-checklists">
-   <p>Fyll ut en sjekkliste uten å opprette prosjekt. Ordrenummer er valgfritt. Lagre svarene før du laster ned eller sender PDF.</p>
+   <p>Fyll ut en sjekkliste for et eksternt prosjekt, uten å opprette et ProffDok-prosjekt. Ordrenummer og arbeidssted/adresse er påkrevd. Opplysningene følger PDF-en. Lagre før du laster ned eller sender.</p>
    {error&&<p role="alert">{error}</p>}{notice&&<p role="status">{notice}</p>}
    {denied?<p>Firmatilgangen må kontrolleres før du fortsetter. Din lokale kladd er beholdt.</p>:!data?<p role="status">Henter sjekklister …</p>:!selected?<>
     <label>Velg sjekkliste<select aria-label="Velg sjekkliste" value={version} onChange={e=>setVersion(e.target.value)}><option value="">Egen sjekkliste</option>{data.versions.map(v=><option key={v.id} value={v.id}>{v.content.title} · v{v.number}</option>)}</select></label>
     <div className="standalone-actions"><button type="button" disabled={busy||Boolean(cached)} onClick={start}>Start sjekkliste</button>{cached&&<><button type="button" disabled={busy} onClick={()=>choose(cached,true)}>Fortsett lokal kladd</button><button type="button" disabled={busy||Boolean(cached.pendingAction)} onClick={discard}>Forkast lokal kladd</button></>}</div>
     <h3>Mine lagrede sjekklister</h3>{!data.records.length&&<p>Du har ingen lagrede sjekklister i dette firmaet.</p>}
-    {data.records.map(r=><article key={r.id}><h4>{r.title}</h4><p>{r.status==='completed'?'Fullført':'Under arbeid'}{r.order_number?` · Ordre ${r.order_number}`:''} · {new Date(r.updated_at).toLocaleString('nb-NO',{timeZone:'Europe/Oslo'})}</p><button type="button" disabled={busy} onClick={()=>open(r)}>Åpne sjekkliste</button></article>)}
+    {data.records.map(r=><article key={r.id}><h4>{r.title}</h4><p>{r.status==='completed'?'Fullført':'Under arbeid'}{r.order_number?` · Ordre ${r.order_number}`:''}{r.work_site?` · ${r.work_site}`:''}{r.external_project?` · ${r.external_project}`:''} · {new Date(r.updated_at).toLocaleString('nb-NO',{timeZone:'Europe/Oslo'})}</p><button type="button" disabled={busy} onClick={()=>open(r)}>Åpne sjekkliste</button></article>)}
     {data.next&&<button type="button" disabled={busy} onClick={()=>load(scope.current,true).catch(e=>setError(e.message))}>Vis flere sjekklister</button>}
    </>:<>
     <div className="standalone-actions"><button type="button" className="secondary" disabled={busy} onClick={()=>{selection.current=null;setSelected(null);setError('');setNotice('');}}>Tilbake til sjekklistene</button>{dirty&&(selected.revision>0||selected.pendingAction)&&<button type="button" disabled={busy} onClick={()=>open(selected,true)}>Vis lagret sjekkliste</button>}</div>
     {selected.viewSaved&&selected.status==='draft'&&cached?.id===selected.id&&sameRunValue(cached.definition,selected.definition)&&<button type="button" disabled={busy} onClick={()=>{const points=cached.definition.points;const answers=points.length?invalidateFieldConfirmations(points.map(p=>p.id),Object.fromEntries(points.map(p=>[p.id,p])),cached.answers,points[0].id):cached.answers;remember({...cached,revision:selected.revision,status:'draft',answers,viewSaved:false,pendingAction:null,requestId:crypto.randomUUID()});}}>Fortsett med min kladd på nyeste revisjon</button>}
+    {selected.status==='completed'&&missingDetails&&<p role="status">Denne tidligere listen mangler ordrenummer eller arbeidssted. Opprett en ny sporbar sjekkliste før PDF-eksport.</p>}
     <p>{selected.status==='completed'?'Fullført sjekkliste – lagret dokumentasjon':dirty?'Kladd – lagre før PDF eller e-post':'Svarene er lagret'}</p>
     <fieldset disabled={busy||readonly||Boolean(selected.pendingAction)}>
-     <label>Ordrenummer (valgfritt)<input value={selected.order_number} maxLength={100} onChange={e=>change({order_number:e.target.value})}/></label>
+     <label>Ordrenummer (påkrevd)<input required value={selected.order_number||''} maxLength={100} onChange={e=>change({order_number:e.target.value})}/></label>
+     <label>Arbeidssted/adresse (påkrevd)<input required value={selected.work_site||''} maxLength={400} onChange={e=>change({work_site:e.target.value})}/></label>
+     <label>Eksternt prosjektnavn (valgfritt)<input value={selected.external_project||''} maxLength={200} onChange={e=>change({external_project:e.target.value})}/></label>
+     <label>Kunde/oppdragsgiver (valgfritt)<input value={selected.customer_name||''} maxLength={160} onChange={e=>change({customer_name:e.target.value})}/></label>
      {editableDefinition?<><label>Navn på sjekklisten<input value={selected.definition.title} maxLength={160} onChange={e=>change({definition:{...selected.definition,title:e.target.value}})}/></label><label>Fag<select value={selected.definition.trade} onChange={e=>change({definition:{...selected.definition,trade:e.target.value}})}>{CHECKLIST_TRADES.map(t=><option key={t}>{t}</option>)}</select></label></>:<h3>{selected.definition.title}</h3>}
      {selected.definition.instructions&&<p>{selected.definition.instructions}</p>}
      {selected.definition.points.map((p,i)=>{const a=selected.answers[p.id]||{};const pointChange=patch=>change({definition:{...selected.definition,points:selected.definition.points.map(point=>point.id===p.id?{...point,...patch}:point)}});return <fieldset className="standalone-point" key={p.id}><legend>Sjekkpunkt {i+1}</legend>
@@ -144,8 +150,8 @@ export default function StandaloneChecklists({companyId,userId,onClose}){
      {editableDefinition&&<button type="button" disabled={selected.definition.points.length>=100} onClick={()=>change({definition:{...selected.definition,points:[...selected.definition.points,{id:crypto.randomUUID(),title:'',guidance:'',image_required:false,comment_required:false}]}})}>Legg til sjekkpunkt</button>}
     </fieldset>
     {!readonly&&<div className="standalone-actions"><button type="button" disabled={busy||!dirty} onClick={()=>save('save')}>{selected.pendingAction?'Prøv samme lagring igjen':'Lagre sjekkliste'}</button><button type="button" disabled={busy||Boolean(selected.pendingAction)} onClick={()=>save('complete')}>Fullfør sjekkliste</button></div>}
-    <div className="standalone-actions"><button type="button" disabled={busy||dirty||!selected.revision} onClick={pdf}>Last ned PDF</button></div>
-    <fieldset disabled={busy||dirty||!selected.revision}><legend>Send PDF på e-post</legend>
+    <div className="standalone-actions"><button type="button" disabled={busy||dirty||!selected.revision||Boolean(missingDetails)} onClick={pdf}>Last ned PDF</button></div>
+    <fieldset disabled={busy||dirty||!selected.revision||Boolean(missingDetails)}><legend>Send PDF på e-post</legend>
      <label>E-postadresse<input type="email" maxLength={254} value={recipient} disabled={Boolean(pending)} onChange={e=>{setRecipient(e.target.value);setConfirmed(false);}}/></label>
      <label className="standalone-choice"><input type="checkbox" checked={confirmed} disabled={Boolean(pending)} onChange={e=>setConfirmed(e.target.checked)}/>Jeg har kontrollert mottakeren og vil sende denne lagrede sjekklisten.</label>
      <button type="button" disabled={busy||!pending&&!confirmed} onClick={send}>{pending?'Prøv samme sending igjen':'Send PDF'}</button>

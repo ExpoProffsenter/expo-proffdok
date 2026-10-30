@@ -31,12 +31,17 @@ try{
  await loadFunction('supabase/migrations/20261007180955_project_checklist_runs.sql','kshms_private.protect_completed_checklist');
  await db.exec(await fs.readFile('supabase/migrations/20261030212323_standalone_checklists.sql','utf8'));
  await db.exec(await fs.readFile('supabase/migrations/20261030215202_standalone_checklist_owner_index.sql','utf8'));
+ await db.query('insert into checklist_private.runs(id,company_id,created_by,definition,answers,updated_identity,status,completed_at) values($1,$2,$3,$4,$5,$6,$7,now())',[id(980),other,foreign,{title:'Historisk test',trade:'Rørlegger',points:[]},{},{name:'Historisk QA'},'completed']);
+ const legacyBefore=(await db.query('select to_jsonb(r) value from checklist_private.runs r where id=$1',[id(980)])).rows[0].value;
+ await db.exec(await fs.readFile('supabase/migrations/20261030223853_standalone_checklist_external_project_details.sql','utf8'));
+ const legacyAfter=(await db.query('select to_jsonb(r) value from checklist_private.runs r where id=$1',[id(980)])).rows[0].value;
+ const {work_site:legacySite,external_project:legacyProject,customer_name:legacyCustomer,...oldFields}=legacyAfter;eq(oldFields,legacyBefore,'migration leaves completed historical content and identity untouched');eq([legacySite,legacyProject,legacyCustomer],['','',''],'no invented historical work details');
  const definition={title:'Kontroll før innbygging',trade:'Rørlegger',instructions:'Syntetisk kontroll',points:[{id:point,title:'Kontroller rør',guidance:'Se over',image_required:false,comment_required:true,fields:[{id:field,label:'Trykk',type:'number',required:true,min:1}]}]};
  const answer={status:'Ok',comment:'Kontrollert',photos:[],values:{[field]:'6'}};
- let payload={id:run,revision:0,version_id:null,definition,answers:{[point]:answer},order_number:''};
- let request=30;const command=(action='save',p=payload,r=id(++request))=>rpc('standalone_checklist_command',[firm,action,r,p]);
+ let payload={id:run,revision:0,version_id:null,definition,answers:{[point]:answer},order_number:'EXT-2026-001',work_site:'Eksternveien 42, bygg B',external_project:'Eksternt testprosjekt',customer_name:'QA Kunde'};
+ let request=1000;const command=(action='save',p=payload,r=id(++request))=>rpc('standalone_checklist_command',[firm,action,r,p]);
  await actor();await db.exec('begin');let state=await rpc('standalone_checklist_workspace',[firm]);eq(state.records,[]);eq(state.versions,[]);
- let result=await command();eq(result.record.order_number,'','order number optional');eq(result.record.revision,1);eq(result.record.status,'draft');eq(result.record.created_by,owner);
+ await reject(()=>command('save',{...payload,order_number:''}),'22023');await reject(()=>command('save',{...payload,work_site:''}),'22023');let result=await command();eq(result.record.order_number,'EXT-2026-001','required order retained');eq(result.record.work_site,payload.work_site);eq(result.record.external_project,payload.external_project);eq(result.record.customer_name,payload.customer_name);eq(result.record.revision,1);eq(result.record.status,'draft');eq(result.record.created_by,owner);
  eq((await rpc('standalone_checklist_workspace',[firm,run])).record.answers[point],answer);
  const retryId=id(40);payload={...payload,revision:1,order_number:'ORD-2026-123'};
  result=await command('save',payload,retryId);eq(result.record.revision,2);eq(result.record.order_number,'ORD-2026-123');eq(await command('save',payload,retryId),result,'same request exact receipt');
@@ -47,7 +52,7 @@ try{
  await actor(owner,other);await reject(()=>rpc('standalone_checklist_workspace',[firm]),'42501');await actor(foreign,other);await reject(()=>rpc('standalone_checklist_workspace',[firm,run]),'42501');
  await actor();await reject(()=>db.query('select * from checklist_private.runs'),'42501');await reject(()=>rpc('standalone_checklist_mail_file',[id(40),'JVBERi0fake']),'42501');
  for(const bad of ['bad','a@b.example\r\nBcc: bad@a.example','first@a.example;other@b.example'])await reject(()=>rpc('standalone_checklist_mail',[firm,run,2,id(++request),bad]),'22023');
- const mailId=id(80);let mail=await rpc('standalone_checklist_mail',[firm,run,2,mailId,'chosen@example.invalid']);eq(mail.snapshot.record.order_number,'ORD-2026-123');eq(mail.snapshot.company.companyId,firm);eq(mail.recipient,'chosen@example.invalid');
+ const mailId=id(80);let mail=await rpc('standalone_checklist_mail',[firm,run,2,mailId,'chosen@example.invalid']);eq(mail.snapshot.record.order_number,'ORD-2026-123');eq(mail.snapshot.record.work_site,payload.work_site);eq(mail.snapshot.record.external_project,payload.external_project);eq(mail.snapshot.record.customer_name,payload.customer_name);eq(mail.snapshot.company.companyId,firm);eq(mail.recipient,'chosen@example.invalid');
  await reject(()=>rpc('standalone_checklist_mail',[firm,run,2,mailId,'changed@example.invalid']),'PT409');
  await actor(owner,firm,'service_role');const pdf='JVBERi0'+Buffer.alloc(100,'a').toString('base64');let file=await rpc('standalone_checklist_mail_file',[mailId,pdf]);eq(file.content,pdf);file=await rpc('standalone_checklist_mail_file',[mailId,pdf+'abcd']);eq(file.content,pdf,'first PDF frozen across retries');await reject(()=>rpc('standalone_checklist_mail_file',[id(999),null]));
  await rpc('standalone_checklist_mail_complete',[mailId,'provider-qa']);await actor();eq((await rpc('standalone_checklist_mail',[firm,run,2,mailId,'chosen@example.invalid'])).sent,true);eq((await rpc('standalone_checklist_workspace',[firm,run])).mail_history[0].recipient,'chosen@example.invalid');
@@ -60,6 +65,7 @@ try{
  const confirmation=id(101),confirmPoint=id(102),confirmDef={...definition,points:[{...definition.points[0],allow_na:false,fields:[...definition.points[0].fields,{id:confirmation,label:'Egen kontroll',type:'confirmation',required:true}]}]};
  const confirmPayload={...payload,id:id(103),revision:0,version_id:null,definition:confirmDef,answers:{[point]:{...answer,values:{[field]:'6',[confirmation]:{confirmed:true,confirmation_id:id(104)}}}}};
  result=await command('save',confirmPayload);eq(result.record.answers[point].values[confirmation].signed_by,owner);eq(Boolean(result.record.answers[point].values[confirmation].content_hash),true);
+ await reject(()=>command('save',{...confirmPayload,revision:1,work_site:'Annen adresse',answers:result.record.answers}));
  await reject(()=>command('complete',{...confirmPayload,id:id(105),answers:{[point]:{status:'Ikke aktuelt'}}}));
  const photoDef={...definition,points:[{...definition.points[0],image_required:true}]};await reject(()=>command('complete',{...payload,id:id(106),revision:0,definition:photoDef}));
  // Fresh membership/profiles decide every read and write.
