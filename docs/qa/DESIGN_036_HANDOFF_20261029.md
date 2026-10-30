@@ -1,5 +1,7 @@
 # Design 03.6 – gjenoppta uten ny runde
 
+Samlepakke30.10 etter boligfoto/firma-panel: Firmaprofil, Support, Produktmaster og Internt vareregister følger felles03.6-mål i workspaceSurface.css. Produktstatus blir én PC-rad/to mobilrader; native produkt-/garantipunktkontroller og logoopplasting har riktig bredde uten overlapping. Ny faktisk Chromium-kontroll88PASS over fem bredder og bevart DOM/kladd. Selve Nytt produkt-skjemaet og feltprimitiver trekkes fra gjeldende main-kilde i testen. Full app-UX/support/build og innlogget eksaktkandidatbevis føres i PR295. Ingen tilgangs-/databaseendring eller totalattest; Sandbox list_managed_work_profiles-feilen er fortsatt separat og åpen.
+
 Totaloppdraget er **ikke fullført**. Dette er et faktisk kode- og QA-checkpoint, ikke ny plan eller brukerens TEST OK. Miljømål BEGGE; bare design-Preview er autorisert for denne pakken. Root er eneste publisher. Production/main/permanent demo får ingen redesign før uttrykkelig godkjenning.
 
 ## Siste styring: samlet layout, ikke én-og-én-fiks

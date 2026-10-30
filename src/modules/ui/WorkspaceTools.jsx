@@ -2,7 +2,7 @@ import React from 'react';
 import {useWorkspaceTasks} from '../home/WorkdayShortcuts.jsx';
 import WorkspaceToolDrawer from './WorkspaceToolDrawer.jsx';
 
-const names={prosjekt:'Startside',sales:'Forespørsel og tilbud',prosjektliste:'Prosjekter',bolig:'Boligprosjekter',hr:'HR',kshms:'HMS/KS',innlogging:'Min side',catalog_order:'Varebestilling',pro_catalog:'Varesøk',admin:'Systemadmin',firmaadmin:'Firmaadmin'};
+const names={prosjekt:'Startside',sales:'Forespørsel og tilbud',prosjektliste:'Prosjekter',bolig:'Boligprosjekter',hr:'HR',kshms:'HMS/KS',innlogging:'Min side',catalog_order:'Varebestilling',pro_catalog:'Varesøk',admin:'Systemadmin',firmaadmin:'Firmaadmin',firma:'Firmaprofil',support:'Support',hjelp:'Hjelp'};
 // Module bindings and native template discovery stay outside the presentation drawer.
 export default function WorkspaceTools(props){
  const tasks=useWorkspaceTasks(props);

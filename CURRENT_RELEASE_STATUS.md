@@ -10,6 +10,8 @@ Ny presentasjonspakke30.10: boligfotoet bruker mer ledig PC-bredde uten økt sid
 
 Åpent: resterende innloggede helappreiser og16 flerfamiliehus i egen Bolig-Preview. Dokumentuttrekkets eksisterende låsefeil ved firmabytte under nedlasting følger separat PR298, ingen skjult rettelse i designpakken.
 
+Neste samlepakke30.10 omfatter fire resterende flater: Firmaprofil, Support, Produktmaster og Internt vareregister. Åpne overskrifter og felles felt-/tekst-/rammemål; kompakte produktstatuser, riktig avkryssingsbredde og logokontroller uten overlapping. Faktisk Chromium88PASS over fem bredder, med kildehentet native Nytt produkt-/garantipunktskjema og samme DOM/kladd ved områdeskifte. Native eiere/kommandoer uendret. Full app-UX/support/build, eksakt kandidat og innlogget sluttkontroll føres i PR295. Totalgjennomgangen står fortsatt åpen.
+
 Lesende e-postundersøkelse: [mottakerlogikk og HR-finnbarhet](docs/qa/MAIL_ROUTING_AUDIT_20261029.md). Designpakken endrer ingen mottakere eller utsendingsoppsett. Separat [PR296](https://github.com/ExpoProffsenter/expo-proffdok/pull/296) retter internt akseptvarsel til eksplisitt valgt gjeldende saksbehandler; rettelsen er godkjent og publisert i Production og permanent demo i PR296/297. Ingen binding/backfill eller prøve-e-post er utført. Designkandidaten har tatt inn gjeldende main, og endrer ikke denne backendrettelsen. HRs egen aktiverte fristmotor er adskilt fra KS/HMS-rutineutsendingens sperre.
 
 PR294: isolert boligrettelse for fasadehøyde og adressefokus ved byggvalg, ny 16-hus-fixture. Eksakte kandidater/CI/Preview-bevis vedlikeholdes i PR-ene. Ingen app-TEST OK, merge eller produksjonssetting.
