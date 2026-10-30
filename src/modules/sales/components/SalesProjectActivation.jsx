@@ -21,7 +21,7 @@ import { getSimpleOrderActivationMode } from "../services/salesSimpleOrder.js";
 
 function BlockedActivation({ selectedRequest, onBack, storeOffer = false }) {
   return (
-    <div className="sales-app">
+    <div className="sales-app sales-editor-app sales-activation-app">
       <div className="sales-shell">
         <header className="sales-header">
           <button
@@ -124,7 +124,7 @@ export default function SalesProjectActivation({
     : "Aktiver som ProffDok-prosjekt";
 
   return (
-    <div className="sales-app">
+    <div className="sales-app sales-editor-app sales-activation-app">
       <div className="sales-shell">
         <header className="sales-header">
           <button

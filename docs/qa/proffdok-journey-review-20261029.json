@@ -1937,17 +1937,22 @@
           {
             "ref": "current-sales-entry",
             "mapping": "scoped partial result; actual scope and limits in evidence registry"
+          },
+          {
+            "ref": "current-sales-continued-flow",
+            "mapping": "scoped partial result; see registry and change record"
           }
         ]
       },
       "design_review": {
         "status": "delvis",
-        "reason": "Avgrenset 03.6-opprettelse/editorramme kontrollert med ekte CSS og PC/mobilbilder; samlet innlogget helreise og enhets-/rollematrise ikke attestert.",
+        "reason": "Nye avgrensede komponent-/bildebevis; se konkret scope og åpne live-/rolle-/enhetspunkter. Ingen helreise lukkes automatisk.",
         "screenshots": [],
         "reviewer": null,
         "partial_evidence_refs": [
           "checkpoint-sales",
-          "current-sales-entry"
+          "current-sales-entry",
+          "current-sales-continued-flow"
         ]
       },
       "remaining_checks": [
@@ -2017,16 +2022,21 @@
           {
             "ref": "checkpoint-sales",
             "mapping": "scoped partial result; see evidence_registry and limitations"
+          },
+          {
+            "ref": "current-sales-continued-flow",
+            "mapping": "scoped partial result; see registry and change record"
           }
         ]
       },
       "design_review": {
         "status": "delvis",
-        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
+        "reason": "Nye avgrensede komponent-/bildebevis; se konkret scope og åpne live-/rolle-/enhetspunkter. Ingen helreise lukkes automatisk.",
         "screenshots": [],
         "reviewer": null,
         "partial_evidence_refs": [
-          "checkpoint-sales"
+          "checkpoint-sales",
+          "current-sales-continued-flow"
         ]
       },
       "remaining_checks": []
@@ -2164,16 +2174,21 @@
           {
             "ref": "checkpoint-sales",
             "mapping": "scoped partial result; see evidence_registry and limitations"
+          },
+          {
+            "ref": "current-sales-continued-flow",
+            "mapping": "scoped partial result; see registry and change record"
           }
         ]
       },
       "design_review": {
         "status": "delvis",
-        "reason": "Nyere avgrensede design-/runtimebevis er knyttet til ID. Ingen samlet visuell/innlogget/rolle-/enhetsattest.",
+        "reason": "Nye avgrensede komponent-/bildebevis; se konkret scope og åpne live-/rolle-/enhetspunkter. Ingen helreise lukkes automatisk.",
         "screenshots": [],
         "reviewer": null,
         "partial_evidence_refs": [
-          "checkpoint-sales"
+          "checkpoint-sales",
+          "current-sales-continued-flow"
         ]
       },
       "remaining_checks": []
@@ -2218,7 +2233,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/critical-sales-contract-pdf-check.mjs",
@@ -2248,13 +2263,21 @@
             }
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "current-sales-continued-flow",
+            "mapping": "scoped partial result; see registry and change record"
+          }
+        ]
       },
       "design_review": {
-        "status": "ikke-startet",
-        "reason": "Ingen selvstendig visuell sluttkontroll attestert i denne auditen.",
+        "status": "delvis",
+        "reason": "Nye avgrensede komponent-/bildebevis; se konkret scope og åpne live-/rolle-/enhetspunkter. Ingen helreise lukkes automatisk.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "current-sales-continued-flow"
+        ]
       },
       "remaining_checks": [
         "Ingen faktisk publiser/kopier kundelenke eller produsert tilbuds-PDF i denne testfilen."
@@ -2512,7 +2535,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/critical-project-contract-entry-check.mjs",
@@ -2530,13 +2553,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "current-sales-continued-flow",
+            "mapping": "scoped partial result; see registry and change record"
+          }
+        ]
       },
       "design_review": {
-        "status": "ikke-startet",
-        "reason": "Ingen selvstendig visuell sluttkontroll attestert i denne auditen.",
+        "status": "delvis",
+        "reason": "Nye avgrensede komponent-/bildebevis; se konkret scope og åpne live-/rolle-/enhetspunkter. Ingen helreise lukkes automatisk.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "current-sales-continued-flow"
+        ]
       },
       "remaining_checks": [
         "Reell transport eller kundesignering skal ikke brukes som QA-bevis uten særskilt autorisasjon; denne reisen krever isolert syntetisk transport."
@@ -5005,7 +5036,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/bolig-overview-browser-check.mjs",
@@ -5024,13 +5055,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "current-housing-first-screen",
+            "mapping": "scoped partial result; see registry and change record"
+          }
+        ]
       },
       "design_review": {
-        "status": "ikke-startet",
-        "reason": "Ingen selvstendig visuell sluttkontroll attestert i denne auditen.",
+        "status": "delvis",
+        "reason": "Nye avgrensede komponent-/bildebevis; se konkret scope og åpne live-/rolle-/enhetspunkter. Ingen helreise lukkes automatisk.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "current-housing-first-screen"
+        ]
       },
       "remaining_checks": []
     },
@@ -5146,7 +5185,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/bolig-visuals-browser-check.mjs",
@@ -5165,13 +5204,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "current-housing-first-screen",
+            "mapping": "scoped partial result; see registry and change record"
+          }
+        ]
       },
       "design_review": {
-        "status": "ikke-startet",
-        "reason": "Ingen selvstendig visuell sluttkontroll attestert i denne auditen.",
+        "status": "delvis",
+        "reason": "Nye avgrensede komponent-/bildebevis; se konkret scope og åpne live-/rolle-/enhetspunkter. Ingen helreise lukkes automatisk.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "current-housing-first-screen"
+        ]
       },
       "remaining_checks": []
     },
@@ -6206,7 +6253,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/bolig-coordination-browser-check.mjs",
@@ -6224,13 +6271,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "current-housing-first-screen",
+            "mapping": "scoped partial result; see registry and change record"
+          }
+        ]
       },
       "design_review": {
-        "status": "ikke-startet",
-        "reason": "Ingen selvstendig visuell sluttkontroll attestert i denne auditen.",
+        "status": "delvis",
+        "reason": "Nye avgrensede komponent-/bildebevis; se konkret scope og åpne live-/rolle-/enhetspunkter. Ingen helreise lukkes automatisk.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "current-housing-first-screen"
+        ]
       },
       "remaining_checks": []
     },
@@ -6628,7 +6683,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/bolig-followup-browser-check.mjs",
@@ -6680,13 +6735,21 @@
             }
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "current-housing-first-screen",
+            "mapping": "scoped partial result; see registry and change record"
+          }
+        ]
       },
       "design_review": {
-        "status": "ikke-startet",
-        "reason": "Ingen selvstendig visuell sluttkontroll attestert i denne auditen.",
+        "status": "delvis",
+        "reason": "Nye avgrensede komponent-/bildebevis; se konkret scope og åpne live-/rolle-/enhetspunkter. Ingen helreise lukkes automatisk.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "current-housing-first-screen"
+        ]
       },
       "remaining_checks": [
         "Erstattet beviskobling med bolig-coordination-browser L287–347; ingen funksjonslukking uten fersk kjøring.",
@@ -6797,7 +6860,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/bolig-completion-browser-check.mjs",
@@ -6808,13 +6871,21 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "current-housing-first-screen",
+            "mapping": "scoped partial result; see registry and change record"
+          }
+        ]
       },
       "design_review": {
-        "status": "ikke-startet",
-        "reason": "Ingen selvstendig visuell sluttkontroll attestert i denne auditen.",
+        "status": "delvis",
+        "reason": "Nye avgrensede komponent-/bildebevis; se konkret scope og åpne live-/rolle-/enhetspunkter. Ingen helreise lukkes automatisk.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "current-housing-first-screen"
+        ]
       },
       "remaining_checks": []
     },
@@ -15901,6 +15972,34 @@
           "SALES-008"
         ],
         "limitations": "Does not attest full saved editing lifecycle, real calendar/mail/acceptance, all roles, physical mobile or Safari."
+      },
+      "current-housing-first-screen": {
+        "source": "docs/changes/housing-first-screen-036-20261030.json",
+        "candidate": "PR295 next after4be5f274; exact final SHA/CI/live evidence in PR",
+        "level": "fresh actual component/runtime and isolated transport; visual review",
+        "scope": "48 actual Entry/Overview/visual/coordination checks; CSS-only PC first-screen layout, native selected building/search/filter/stamme and same-profile state; completion/dialogue only reading, no writes",
+        "ids": [
+          "BOLIG-003",
+          "BOLIG-005",
+          "BOLIG-020",
+          "BOLIG-026",
+          "BOLIG-028"
+        ],
+        "limitations": "Not a completed journey attestation. Full logged-in workflow, role matrix, physical mobile/Safari and real external transport remain open."
+      },
+      "current-sales-continued-flow": {
+        "source": "docs/changes/sales-continued-flow-036-20261030.json",
+        "candidate": "PR295 next after4be5f274; exact final SHA/CI/live evidence in PR",
+        "level": "fresh actual component/runtime and isolated transport; visual review",
+        "scope": "55 actual router/template/logo/publish mapper/customer/PDF/accepted continuation checks; synthetic transports, actual four PDF files; no live customer acceptance or final project activation",
+        "ids": [
+          "SALES-008",
+          "SALES-009",
+          "SALES-011",
+          "SALES-012",
+          "SALES-016"
+        ],
+        "limitations": "Not a completed journey attestation. Full logged-in workflow, role matrix, physical mobile/Safari and real external transport remain open."
       }
     },
     "unmapped_journey_ids": [
@@ -15911,9 +16010,7 @@
       "ACCESS-005",
       "ACCESS-006",
       "BOLIG-002",
-      "BOLIG-003",
       "BOLIG-004",
-      "BOLIG-005",
       "BOLIG-006",
       "BOLIG-007",
       "BOLIG-008",
@@ -15928,15 +16025,12 @@
       "BOLIG-017",
       "BOLIG-018",
       "BOLIG-019",
-      "BOLIG-020",
       "BOLIG-021",
       "BOLIG-022",
       "BOLIG-023",
       "BOLIG-024",
       "BOLIG-025",
-      "BOLIG-026",
       "BOLIG-027",
-      "BOLIG-028",
       "BOLIG-029",
       "BOLIG-030",
       "BOLIG-031",
@@ -15976,11 +16070,9 @@
       "SALES-005",
       "SALES-006",
       "SALES-010",
-      "SALES-012",
       "SALES-013",
       "SALES-014",
       "SALES-015",
-      "SALES-016",
       "SUPPORT-002",
       "SYSTEMADMIN-004",
       "SYSTEMADMIN-008",

@@ -117,3 +117,6 @@ await import("./report-choice-workspace-browser-check.mjs");
 await import("./project-media-portal-browser-check.mjs");
 
 await import("./sales-entry-workspace-browser-check.mjs");
+
+await import("./housing-first-screen-036-browser-check.mjs");
+await import("./sales-flow-036-browser-check.mjs");

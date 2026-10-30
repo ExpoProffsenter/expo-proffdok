@@ -24,6 +24,7 @@
 // rewriteStoreOfferDeclinedFlow(tree, coreProps?.selectedRequest)
 
 import { useEffect, useRef, useState } from "react";
+import "../salesContinuationWorkspace.css";
 import { Home, ShoppingBag } from "lucide-react";
 import SalesContractActions from "./SalesContractActions.jsx";
 import SalesContractWizard from "./SalesContractWizard.jsx";
@@ -289,7 +290,7 @@ export default function SalesDetailView(props) {
       ) : null}
 
       {simpleOrderAccepted ? (
-        <aside data-simple-order-accepted-actions="true" data-support-read-only={supportMode ? "true" : "false"} style={{ position:"fixed", right:20, bottom:floatingActionBottom, zIndex:23000, width:"min(430px, calc(100vw - 32px))", padding:16, border:"1px solid #b9dde2", borderRadius:16, background:"#ffffff", boxShadow:"0 18px 44px rgba(15,72,82,.20)" }}>
+        <aside data-simple-order-accepted-actions="true" data-support-read-only={supportMode ? "true" : "false"} className="sales-continuation-actions">
           <strong style={{ display:"block", fontSize:17, color:"#10212b" }}>Hva skal oppdraget bli?</strong>
           <p style={{ margin:"6px 0 14px", color:"#52616b", lineHeight:1.45 }}>Enkel ordre er for raske/mindre oppdrag. Velg prosjekt hvis jobben har blitt større og trenger ordinær prosjektflyt.</p>
           {supportMode ? <p className="note" style={{ margin:"0 0 12px" }}>Systemadmin-visning: Du ser valgene kunden/firmaet får, men kan ikke aktivere på vegne av firmaet.</p> : null}

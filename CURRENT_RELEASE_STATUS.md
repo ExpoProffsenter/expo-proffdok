@@ -1,5 +1,7 @@
 # Preview-gjennomgang – 29.10.2026
 
+Ny samlepakke30.10: brukerens Bolig-pilot er gjenskapt; CSS samler toppen og gir fasade/varsler første PC-skjermbilde med bevart bildestørrelse. Ny48-prøve med reell Entry/Overview/native tilstanderPASS. Tilbudets faktiske router/malmotor/logovalg/kunde/PDF og akseptert videreføring har ny55-prøve; krasj på floatingActionBottom og enslig PDF-seksjonsoverskrift er gjenskapt og rettet. Eksisterende Bolig762, tilbud277/229, kunde875+35+26 og aksept44/routing111/handler31PASS. Eksakt sluttkandidat/CI/Preview/innlogget kontroll i PR295. Ingen ny backend-/tilgangs-/sendingsmotor, ingen redesign-TEST OK.
+
 Ny samlepakke30.10: Ny forespørsel, tilbudstypevalg og begge direkte tilbud følger original03.6 sitt høyrepanel, med samme felt/kundesøk/UUID/validering/lagringskommandoer. Befaringsplan får eksisterende editor-ramme. Ny110-assertions faktisk komponent-/handlerprøve og eksisterende salgsregresjonerPASS; eksplisitt Sandbox critical/buildPASS. Full app-UX, ny CI/deploy og innlogget sluttkontroll i PR295. Grunnlag docs/changes/sales-entry-workspace-036-20261030.json. Bare Preview, ingen redesign-TEST OK eller totalattest.
 
 Neste samlepakke: prosjektbilder, kundeportal og privat dokumentinngang. Ny149-assertions runtimeprøve og visuell PC/mobilkontroll; eksisterende tilgang/lagring beholdes. Eksakt kandidat/CI/innlogget resultat i [PR295](https://github.com/ExpoProffsenter/expo-proffdok/pull/295), varig grunnlag docs/changes/project-media-portal-036-20261030.json. Bare Preview, ingen redesign-TEST OK.

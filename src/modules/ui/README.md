@@ -60,3 +60,7 @@ En utilgjengelig bildefil gir tydelig feil i panelet. Prøv bildet igjen gjør b
 `portalWorkspace.css` gjelder bare kunde-/UE-kodeinngangen, kundeportal og privat dokumentrute. De opprinnelige portaldataene, fanene og handlingene beholdes. Samlet prosjektstatistikk vises på Oversikt, mens valgt fane får plass under prosjekt/status. Dokumentrutens Tilbake bruker nettleserhistorikken, uten ny URL-/tilgangsmotor. Private dokumenter bruker fortsatt eksisterende Auth/Function/Storage-kontroll og kortlevd lenke.
 
 Opplastingsrutene avgrenses fra dialogen som faktisk inneholder `.imageUploadTiles`, fordi portalinnholdet ligger utenfor inngangsknappens DOM-forelder. Nettleserprøven bruker alle ti `imageCats` fra gjeldende konfigurasjon og kontrollerer én mobilkolonne, to PC-kolonner og16px kategori-/filtekst.
+
+### Boligprosjektets første skjermbilde
+
+På bred PC samles modul-/hjelpetopp og prosjektfaner tettere. Når ingen bolig er valgt og den native fasaden vises, ligger fasade til venstre og ferdigstilling/beboerdialog til høyre. Samme byggvelger, søk, visningsvalg og statusfilter står over bildet; de samme native kontrollene er montert. Valgt bolig og andre visninger bruker sitt ordinære oppsett. Det tomme valg-hjelpekortet beholdes etter oversikten. På smale skjermer ruller de syv prosjektfanene i én rad. Dette er ikke en ny fasade- eller navigasjonseier og endrer ikke diagrammets boligplassering. Se docs/changes/housing-first-screen-036-20261030.json.
