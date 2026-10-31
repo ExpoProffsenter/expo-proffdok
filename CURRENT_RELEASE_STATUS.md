@@ -1,3 +1,11 @@
+# Befaring, tilbud og prosjektets underflater –31.10
+
+Samme PR295/faste Preview/Sandbox, miljømål BEGGE. Befaring og begge tilbudsbyggere kontrolleres nå med appens faktiske sene mobilregler. De avdekket39px knapper; avgrenset CSS sikrer16px/minst45px. En lagret badskisse får ærlig status i den tomme lokale forhåndsvisningen. Tegning, lagring, server-first, recovery, priser og tilgang beholdes. [Scope og tester](docs/changes/sales-subflows-runtime-036-20261031.json): editor292/General229, opprettelse110, tilbudsrouter/mal/PDF59, uendrede prosjektunderflater573/90visninger og deltakeradapter21PASS, full critical Sandbox-buildPASS. Eksakt kandidat/fullCI/READY/levende etterkontroll føres i PR295. Ingen global design-TEST OK, merge, Production eller demo-synk.
+
+Dette er delbevis i den eksisterende samlede gjennomgangen, ikke en nullstilling eller komplett attest for Sales/prosjekt. Fysisk mobil/Safari, reelle rolle-/signerings-/transportforløp og gjenstående underfunksjoner står fortsatt åpne. HR/KS/HMS/sjekklister og de øvrige områdene fortsetter i samme kø. Solgløtt avventer avtalt design- og releaseforløp.
+
+---
+
 # Hele appen – design og videoer31.10
 
 Brukeren har presisert alle funksjoner og underfunksjoner, ikke bare Bolig. [Felles status/neste kontroller for18områder](docs/qa/APP_DESIGN_VIDEO_STATUS_20261031.md) og [videoregister](docs/qa/proffdok-video-coverage-20261031.json) omfatter145kjente reiser/tre nyere sjekklistefunksjoner. To avgrensede filmer er produsert: godkjent pilot og ny Min side-film. Inventaret/alle underhandlinger er ikke uttømmende sluttattestert.

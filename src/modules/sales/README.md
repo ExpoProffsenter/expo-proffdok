@@ -410,3 +410,7 @@ Testgrunnlag og faktiske begrensninger: docs/changes/sales-entry-workspace-036-2
 ### Logovalg, videreføring og PDF-seksjoner (30.10.2026)
 
 Dagens avsenderpolicy beholdes gjennom hele routeren: Ringside/Bademiljø velger tilgjengelig intern merkevare; øvrige firmaer bruker arbeidsfirmaets profil. Komplett firmamal beholder gjeldende metadata. Publisering låser avsender og logo; en senere kladdendring skal ikke omskrive gammel kunde-/PDF-versjon. Akseptert enkel ordre viser de eksisterende videreføringsvalgene som en vanlig saksseksjon. Ingen viewport-avhengig plassering eller ekstra aktiveringskommando. Aktiveringsskjemaet og General-byggeren bruker samme editor-ramme som de andre salgsstegene. PDF-seksjonsstart reserverer også første tekstkortets minimumshøyde. Grunnlag: docs/changes/sales-continued-flow-036-20261030.json.
+
+### Native underflater og lagret skissestatus (31.10.2026)
+
+Editor-/General-kontrollene laster både felles CSS og appens sene mobilregler. `salesSubflows036.css` avgrenser16px felt og minst45px handlinger til interne native Sales-arbeidsflater; eksterne kundevisninger har fortsatt egne regler. `SalesBathroomSketch.storedImageAvailable` er en valgfri presentasjonsprop. Befaringsnotatet setter den bare når et lagret skissebilde vises og lokal redigerbar skisse mangler. Det endrer bare tomstatusen; tegneverktøy, skissedata, serverbilde og kladd/recovery følger dagens eiere. Varig avgrensning og tester: `docs/changes/sales-subflows-runtime-036-20261031.json`.

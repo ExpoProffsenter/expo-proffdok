@@ -20,6 +20,9 @@ const eq = (actual, expected, message) => {
 // Supabase transport, mail, file upload or customer decision is used.
 const entry = path.join(temp, "entry.jsx");
 fs.writeFileSync(entry, `
+import {APP_RUNTIME_STYLES} from '${root}/src/modules/app/appRuntimeStyles.js';
+const runtime=document.createElement('style');runtime.textContent=APP_RUNTIME_STYLES;document.head.appendChild(runtime);
+
 import React,{useState} from '${root}/node_modules/react/index.js';
 import {createRoot} from '${root}/node_modules/react-dom/client.js';
 import Grouped from '${root}/src/modules/sales/components/SalesStoreOfferBuilderGrouped.jsx';
