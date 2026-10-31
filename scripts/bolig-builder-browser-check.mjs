@@ -144,9 +144,11 @@ try {
       true,
       "Header actions fit mobile and desktop",
     );
-    await help.locator(":scope > summary").click();
-    eq(await help.getAttribute("open"), "", "Help opens after header styling");
-    await help.locator(":scope > summary").click();
+    await help.click();
+    const helpDialog=page.getByRole('dialog',{name:'Slik styrer du prosjektet',exact:true});
+    eq(await helpDialog.isVisible(),true,'Help opens in the shared panel after header styling');
+    await helpDialog.getByRole('button',{name:'Tilbake til prosjektet',exact:true}).click();
+    eq(await help.getAttribute('aria-expanded'),'false','Fixed return closes help and restores the workspace');
   }
   await page.setViewportSize({ width: 1366, height: 900 });
   await page

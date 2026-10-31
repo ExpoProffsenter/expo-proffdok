@@ -1,3 +1,17 @@
+# Boligveiledning31.10 – brukerens manglende retur
+
+Baseline259c18a5, samme PR295/designbranch/fastalias, BEGGE, bare Preview/Sandbox. Feilen er gjenskapt innlogget på «Slik styrer du prosjektet»: inline details fyller siden med lang tekst og ingen egen retur. Nå er bare hjelpekomponentene endret: felles WorkspacePanel med fast kryss/«Tilbake til prosjektet»/Escape, åtte temaområder, søk i full tekst og én forklaring om gangen. A–Å-guidens18steg og bilder er bevart i samme ramme.
+
+69opprinnelige tekstblokker er fordelt til selvstendig redigerbare temaer med stabileIDer i boligHelpContent.jsx. Uavhengig baselinehash fra259c18a5 kontrollerer alle69 og ekstern lenke i faktisk rendret tekst. Første QA-normalisering satte inn et kunstig mellomrom foran lenkepunktum; rettet til opprinnelig tekstnodekonkatenering og browser-innerText for listesepartorer. Ingen tekst er fjernet. Gammel app-mobilregel krympet kontroller til39/40px og runde former; scoped hjelpe-CSS gir16/44 og samme ramme.
+
+Sluttkode lokalt:233native assertionsPASS på faktisk Entry/Overview/CSS og syntetiske lesekall. Åtte områder, alle69tekster, søk/tomt treff, én åpen forklaring, seks viewportvarianter320/390/768/1363/1920/390x320, topp/bunnretur/Escape/fokus, valgt byggB og faktisk H0301-søk/to listeresultater/samme DOM bevart, same-profile og revoke. Escape-test avventer close-eventens React-commit før samme aria-expanded=false-assert; ingen krav fjernet. Foreldreguiden feiler konkret på manglende dialog/retur. Eksisterende foundationPASS, builder766PASS (inline-open erstattet av ny panelåpning/retur samt ekstra lukketilstandsassert), handover/18steg213PASS. Full eksplisitt critical Sandbox-buildPASS; ny233inngår i eksisterende app-UX/CI. Endelig publisert kandidat/tre/fullCI/READY/faktisk økt og bilder føres i PR295 etter kontroll.
+
+Ingen src/modules/bolig- eller backend-/rolle-/tilgangs-/lagrings-/eksport-/transportendring; Bolig-core-boundary derfor ikke relevant. Behold PR294/298/305 og oppgave306 som separate. Alle øvrige145-reise-/filbro-/FDF-/rolle-/fysiskSafari-/signert snapshot-grenser står. Ingen redesign-TEST OK eller Production/demo.
+
+Brukeren vurderer videoveiledning med faktiske skjermbilder. Anbefaling: korte opptak per arbeidsoppgave i faktisk Preview med demodata, separate redigerbare scener/manus/tekst/stemme, versjonsmerking og bytte bare av berørte scener. Video er et supplement til den fungerende tekst-/returhjelpen. Ikke produsert eller lagt inn avspillingsknapp i denne pakken.
+
+---
+
 # Fortsettelse31.10 – dokumentvalg og separat eksportrettelse
 
 BEGGE; kun Preview/Sandbox. Eksisterende PR298 er oppdatert med publisert main b389c707: kandidat338094b1, tre d3340818, fullCI833/run41209872004SUCCESS10/10. Produktdiff mot main er én lås-resetlinje; additive PDF-/ZIP-tester prøver company/user/revoke og gammel respons mot ny operasjon. Seks native PDF-er115sider og tre ZIP-er7/9/11filer; ingen virkelig transport eller databaseendring. Sandbox-build/Production-buildPASS. Egen fast core-Preview har eksplisitt Sandbox-buildkommando i den ene deployen, READYHqT5RtyXMLcqCGmCWTKtKTFxzaS1. Ny ordinær git-deploy kan igjen følge standard Production-binding; bekreft faktisk mål før enhver innlogget coreprøve. Ingen coreintegrasjon i PR295 eller Production-godkjenning.

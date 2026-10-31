@@ -1,3 +1,7 @@
+# Boligveiledning – fast retur og temaer31.10
+
+Samme PR295/fast design-Preview/Sandbox, BEGGE. «Slik styrer du prosjektet» bruker nå felles høyrepanel med åtte temaområder, fulltekstsøk, én forklaring og fast «Tilbake til prosjektet»/kryss/Escape. A–Å-guidens18steg har samme ramme.233native assertionsPASS,69opprinnelige tekstblokker bevart, foundation/builder766/guide213 og full critical Sandbox-buildPASS. Ingen Bolig-kjerne-/data-/tilgangsendring. [Omfang og testgrunnlag](docs/changes/bolig-guidance-workspace-036-20261031.json). Endelig kandidat/fullCI/READY/innlogget kontroll/bilder i PR295. Ingen TEST OK/merge/Production/demo-synk. Video er vurdert som korte, selvstendig redigerbare klipp per arbeidsoppgave; ingen video er produsert ennå.
+
 # Fortsettelse31.10 – dokumentvalg og eksportprøve
 
 Samme PR295/Preview/Sandbox, BEGGE. Full veiledning er nå utvidbar, og omfang/søk deler PC-rad. Native36PASS og time-opt-in63PASS. [Endring og presise begrensninger](docs/changes/inspection-extract-workspace-036-20261031.json). Separat PR298338094b1 har fullCI83310/10 og egen bekreftet Sandbox-Preview; låsrettelsen er ikke flyttet inn i designen. Innlogget fire-siders eksport ble laget, men filbroen leverte ikke filen til visuell etterkontroll. Endelig kandidat/CI/READY og innlogget status i PR295/298. Ingen TEST OK, merge, Production eller demosynk.

@@ -1051,8 +1051,8 @@ try {
   );
   assert(!q(".bolig-page").textContent.includes("Firmaadmin"));
   assert(
-    q(".bolig-help:not([open])"),
-    "Guide is available but collapsed so the facade is the first workspace",
+    q('button.bolig-help[aria-expanded="false"]'),
+    "Guide is available as a closed panel so the facade is the first workspace",
   );
   await act(() => w.__unmount());
   role = "manager";
