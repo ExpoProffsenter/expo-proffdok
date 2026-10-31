@@ -7,6 +7,27 @@ export const standaloneMailKey=(user,company,id)=>`expo:standalone-checklist-mai
 export function readStandaloneDraft(storage,user,company){
  try{const row=JSON.parse(storage.getItem(standaloneDraftKey(user,company)));return row?.id&&row.requestId&&Array.isArray(row.definition?.points)&&row.answers?row:null;}catch{return null;}
 }
+export const standaloneDraftsKey=(user,company)=>`expo:standalone-checklist-drafts:v2:${user}:${company}`;
+const validDraft=row=>row?.id&&row.requestId&&Array.isArray(row.definition?.points)&&row.answers;
+export function readStandaloneDrafts(storage,user,company){
+ let rows=[];try{const saved=JSON.parse(storage.getItem(standaloneDraftsKey(user,company))||'[]');if(Array.isArray(saved))rows=saved.filter(validDraft);}catch{}
+ const active=readStandaloneDraft(storage,user,company);return active?[active,...rows.filter(r=>r.id!==active.id)]:rows;
+}
+export function persistStandaloneDraft(storage,user,company,next){
+ if(storage.getItem(standaloneDraftKey(user,company))&&!readStandaloneDraft(storage,user,company))throw Error('En tidligere lokal kladd kunne ikke leses. Ingen kladder er overskrevet.');
+ if(!validDraft(next))throw Error('Kladden mangler gyldig innhold.');
+ const raw=storage.getItem(standaloneDraftsKey(user,company));if(raw){const value=JSON.parse(raw);if(!Array.isArray(value)||value.some(r=>!validDraft(r)))throw Error('En tidligere kladd må avklares før du starter en ny.');}
+ const rows=readStandaloneDrafts(storage,user,company);const saved=[next,...rows.filter(r=>r.id!==next.id)];
+ // Archive old and new together before moving the legacy active pointer.
+ storage.setItem(standaloneDraftsKey(user,company),JSON.stringify(saved));
+ storage.setItem(standaloneDraftKey(user,company),JSON.stringify(next));return saved;
+}
+export function removeStandaloneDraft(storage,user,company,id){
+ const raw=storage.getItem(standaloneDraftsKey(user,company));if(raw){const value=JSON.parse(raw);if(!Array.isArray(value)||value.some(r=>!validDraft(r)))throw Error('Kladdene må avklares før en av dem fjernes.');}
+ const rows=readStandaloneDrafts(storage,user,company).filter(r=>r.id!==id);
+ storage.setItem(standaloneDraftsKey(user,company),JSON.stringify(rows));
+ if(readStandaloneDraft(storage,user,company)?.id===id)storage.removeItem(standaloneDraftKey(user,company));return rows;
+}
 export function checkStandaloneScope(state,company,user){
  if(state?.context?.company_id!==company||state.context.user_id!==user||!state.context.enabled)throw Error('Firmatilgangen er endret. Kladden er beholdt.');return state;
 }

@@ -1238,3 +1238,7 @@ beløp/forskudd. Indeks beregnes bare på ny hovedstol for valgte leveransedeler
 Avtaler og fakturaposter beholder uforanderlige øyeblikksbilder. Ingen utsending,
 bokføring, betalingsstatus eller produksjonsmerge. Presis kontrakt, grenser og
 brukertest: `docs/qa/BOLIG_FAKTURERT_OG_AKONTO_20261024.md`.
+
+### Egne sjekklister og forslag til firmamal
+
+Meny → Sjekklister → Egen sjekkliste → Start sjekkliste lar alle godkjente ansatte i aktivt firma bygge egne sjekkpunkter. Nye lister kan startes mens eldre lokale kladder beholdes. Foreslå som firmamal sender bare oppsettet til firmaets godkjenningskø; firmaadmin vurderer Forslag til firmamaler i samme oversikt. Godkjenning gir en publisert firmamal, avslag krever en begrunnelse. Ingen e-postvarsel sendes. Ordre/adresse/signering og eksport følger den vanlige kontrollen. Se [modulkontrakten](src/modules/checklist/README.md) og [dataflyten](docs/architecture/STANDALONE_CHECKLISTS.md). Ny funksjon prøves først i Sandbox/Preview; den krever egen TEST OK.
