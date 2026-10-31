@@ -1,3 +1,4 @@
+import {signatureA} from './fixtures/checklist-signatures.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -12,7 +13,7 @@ const {db,actor,rpc,firm,owner,colleague}=await standaloneTestPlatform();let che
 const eq=(a,b,label)=>{assert.deepEqual(a,b,label);checks++;};
 const args={standalone_checklist_mail:['p_company_id','p_id','p_revision','p_request_id','p_to'],standalone_checklist_mail_file:['p_request_id','p_content'],standalone_checklist_mail_complete:['p_request_id','p_provider_id']};
 const address='chosen@example.invalid',run=id(20),point=id(21);
-const payload={id:run,revision:0,definition:{title:'Trykkprøve <QA>',trade:'Rørlegger',instructions:'Isolert test',points:[{id:point,title:'Trykk',guidance:'Les av',image_required:false,comment_required:false}]},answers:{[point]:{status:'Ok',comment:'Dokumentert',photos:[],values:{}}},order_number:'ORD-42',work_site:'Testveien 42, bygg B',external_project:'Eksternt prosjekt <QA>',customer_name:'QA Oppdragsgiver'};
+const payload={signatures:{own:{image:signatureA}},id:run,revision:0,definition:{title:'Trykkprøve <QA>',trade:'Rørlegger',instructions:'Isolert test',points:[{id:point,title:'Trykk',guidance:'Les av',image_required:false,comment_required:false}]},answers:{[point]:{status:'Ok',comment:'Dokumentert',photos:[],values:{}}},order_number:'ORD-42',work_site:'Testveien 42, bygg B',external_project:'Eksternt prosjekt <QA>',customer_name:'QA Oppdragsgiver'};
 const records=[];let user=owner,acksFail=0,providerMode='ok',logoMode=0;
 const client=role=>({auth:{getUser:async()=>({data:{user:user?{id:user}:null},error:null})},rpc:async(name,b)=>{
  try{await actor(user||owner,firm,role);if(name==='standalone_checklist_mail_complete'&&acksFail-- >0)throw Error('synthetic ack lost');return {data:await rpc(name,args[name].map(k=>b[k]??null)),error:null};}catch(e){return {data:null,error:{message:e.message,code:e.code}};}

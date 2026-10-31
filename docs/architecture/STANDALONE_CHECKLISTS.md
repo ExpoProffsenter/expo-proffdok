@@ -15,3 +15,19 @@ E-post gjenbruker RESEND_API_KEY/CHAT_FROM_EMAIL og firmaets avsendernavn. Firma
 Previewgrenen må ha eksplisitt `EXPO_BACKEND_TARGET=sandbox` for target preview i Vercel. Ordinære feature-grener har ellers eksisterende Production-standard. Kontroller den faktisk publiserte hovedbundle for bare Sandbox-URL før innlogget prøve; READY og grønn CI bekrefter ikke dette alene. Sandbox-kontoer og produksjonskontoer er separate. Ingen brukere/passord kopieres eller opprettes automatisk.
 
 Release: kjør ny migrering og deploy bare den nye standalone-checklist-email-funksjonen til Sandbox først. Behold JWT-verifisering. Test ny RPC/ACL/Edge og native Preview; ingen ekte e-post uten konkret godkjent mottaker. Produksjon følger egen funksjons-PR/TEST OK og deretter kontrollert main→demo. Den additive oppfølgingsmigreringen tilfører tre felt og erstatter bare de nye standalone-RPC-ene. Tidligere fullførte testkontroller endres ikke og får ingen oppdiktet ordre/adresse. De kan leses som historikk; ny eksport krever sporingsopplysningene. DesignPR295 skal ikke følge med som sideeffekt.
+
+## Utførelsessignatur og firmamal (oppgave300)
+
+Omfatter bare vanlige utførelseskontroller i prosjekt og eksterne oppdrag. Prosjekteringskategorien beholder sin tidligere fullføringskontrakt. Signaturfelt er kontrollmetadata og endrer ingen låst garanti-/fagdefinisjon. `signatures` tilføyes med tom standard i begge run-tabeller; eksisterende historikk oppdateres ikke. PDF/readback bruker samme lagrede signatur som kontrollens revisjon.
+
+Privat `execution_checklist_signatures` normaliserer avgrenset PNG-input, setter innlogget bruker/identitet, kontroll-ID/revisjon og servertid, og binder det til SHA256 av kanonisk firma-/prosjekt-/definisjons-/svar-/sporingsgrunnlag. En uendret gammel tegning kan ikke følge endret grunnlag eller ny ekstern identitet. En annen fullfører kan ikke gjenbruke den forrige personens tegning. Ingen klientlevert signaturidentitet/tid/hash tas som fasit. Dette er tegnet e-signatur med sporbar kontobinding, ikke en påstand om kryptografisk/biometrisk bevis for håndskriftens opphav.
+
+Nye signerte public-RPC-er er SECURITY INVOKER med authenticated EXECUTE og setter selv `signature_contract=execution-v1` før etablerte kommandoer. Alle gamle tilgangs-/firma-/CAS-/kvitterings-/immutable-vakter beholdes. Nye private hjelpefunksjoner og rollout-tabell er utilgjengelige for klientroller. Signert RPC kan aldri slå av kravet.
+
+### Kontrollert utrulling
+
+Sandbox brukes av både feature-Preview og permanent demo. Derfor opprettes privat `kshms_private.execution_signature_rollout(singleton=true,enforced=false)`. Signed-RPC håndhever kravet allerede i Preview. Eldre kommandoer beholder kompatibilitet mens demo bruker eldre UI. Ingen brukerrolle kan endre rollout. Etter ny TEST OK: installer tre uendrede migreringer i Production med rollout=false, deploy PDF-Edge med ny avhengighet, merge og bekreft ny Production-UI/binding, synk eksakt main→demo og bekreft ny Demo-UI/binding. Aktiver så `enforced=true` i begge miljøer og verifiser at eldre kommando ikke kan fullføre uten signatur. Aktivering hører til godkjent funksjonsrelease, ikke Preview-klargjøring. Gamle idempotente kvitteringer returneres fortsatt før ny signaturvalidering og behandles som historikk. Ikke skriv i gamle fullførte kontroller.
+
+Ved tilbakeføring: sett privat rollout=false før eldre UI tas i bruk igjen; behold lagrede signaturer, tabeller, historikk og kvitteringer. Ingen destruktiv nedmigrering.
+
+Firmamalvalg bruker eksisterende KS/HMS-kontekst, mal-/publiseringskommando og versjonsvern. Bare definisjonens tillatte nøkler kopieres. Utkast lagres med management-tilgang; publisering krever faktisk utpekt ansvarlig. Ingen ny grant, rolle eller utsending. Ukjent malutfall beholder samme request-ID, definisjon og handling til egen readback bekrefter resultatet.

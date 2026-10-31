@@ -31,5 +31,8 @@ const loadFunction=async(file,name)=>{const sql=await fs.readFile(file,'utf8');c
  await db.exec(await fs.readFile('supabase/migrations/20261030215202_standalone_checklist_owner_index.sql','utf8'));
  await db.exec(await fs.readFile('supabase/migrations/20261030223853_standalone_checklist_external_project_details.sql','utf8'));
 
+ await db.exec(await fs.readFile('supabase/migrations/20261030233753_execution_checklist_signatures_core.sql','utf8'));
+ await db.exec(await fs.readFile('supabase/migrations/20261030233847_standalone_checklist_signatures.sql','utf8'));
+
  return {db,actor,rpc,firm,other,owner,colleague,foreign};
 }
