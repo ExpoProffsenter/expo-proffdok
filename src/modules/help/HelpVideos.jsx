@@ -41,7 +41,7 @@ export function HelpVideoLibrary({guides,query='',onQueryChange}){
    <p>Velg oppgaven du trenger hjelp til. Filmene viser eksempler. Du kan alltid bruke teksthjelpen i stedet.</p>
    <label className="help-video-search">Søk i videoene<input type="search" value={query} onChange={event=>onQueryChange(event.target.value)} placeholder="For eksempel planer eller prøvesamtale"/></label>
    <label className="help-video-search">Område<select value={module} onChange={event=>setModule(event.target.value)}><option value="all">Alle områder</option>{modules.map(name=><option key={name} value={name}>{name}</option>)}</select></label>
-   <p role="status">{matches.length?`${matches.length} videoer passer søket.`:'Ingen videoer passer søket. Prøv et kortere søkeord, eller bruk teksthjelpen.'}</p>
+   <p role="status">{matches.length?`${matches.length} ${matches.length===1?'video':'videoer'} passer søket.`:'Ingen videoer passer søket. Prøv et kortere søkeord, eller bruk teksthjelpen.'}</p>
    {!matches.length&&<button type="button" className="help-video-open" onClick={()=>{onQueryChange('');setModule('all');}}>Vis alle videoer</button>}
    <div className="help-video-cards">{matches.map(guide=><article key={guide.id}><span>{guide.module}</span><HelpVideoButton guide={guide}/><p>{guide.description}</p></article>)}</div>
   </WorkspacePanel>

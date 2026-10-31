@@ -501,13 +501,13 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
     const renderList = (items = []) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("ul", { style: { marginTop: "8px" }, children: items.map((item, index) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: item }, index)) });
     const renderGuideContent = (item) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { marginTop: "14px" }, children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: 0 }, children: item.purpose }),
+          ...videoGuides.filter(guide=>guide.topics.includes(item.key)).map(guide=>(0, import_jsx_runtime.jsx)(HelpVideoButton,{guide,compact:true},videoScope+guide.id)),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", { children: "Arbeidsflyt" }),
           renderList(item.workflow),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", { children: "Viktig" }),
           renderList(item.important),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", { children: "Anbefalt bruk" }),
-          renderList(item.best),
-          ...videoGuides.filter(guide=>guide.topics.includes(item.key)).map(guide=>(0, import_jsx_runtime.jsx)(HelpVideoButton,{guide,compact:true},videoScope+guide.id))
+          renderList(item.best)
         ] });
     const renderGuideSection = (item) => {
       const isOpen = openGuideKey === item.key;
