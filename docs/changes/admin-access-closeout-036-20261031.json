@@ -1,8 +1,8 @@
 {
   "version": 1,
   "title": "Lesbare Systemadmin-tilgangskort og verifisert Sandbox-arbeidsprofilparitet",
-  "change": "Miljømål BEGGE for scoped adminAccess036.css, import i proffdokWorkspace.css, native nettleserprøve og CI-import. Faste24px avkryssinger erstatter globale100%-bredder som presset tekst til høyre på PC. Native tilgangs-/arbeidsprofilkort får16px navn,14px forklaringer,6px rammer og minst44px etiketter. Ingen React-handler, tilgangsklient, setter, recovery, autosave, hydration, rapportmotor eller SQL-kildefil endres i PR295. Separat miljømål SANDBOX/DEMO: manglende list_managed_work_profiles() er gjenopprettet fra eksakt eksisterende kanonisk main-migrering20260910151800. Samme funksjonskropp finnes allerede i Production; ingen Production-mutasjon, ny medlemskapstildeling eller ny backendfunksjon. Sandbox apply_migration20261031211714 restore_canonical_managed_work_profile_metadata gjenbruker uendret kilde, ikke demo→main-synk.",
-  "verification": "Baseline60118fde/fullCI85110/10. Live førkode etter gjenopprettet RPC:210px brede checkbox-elementer og13px firmanavn i native arbeidsprofilkort. Negativ native CSS-prøve gjenskaper40px kontrollhøyde ved320px; riktig24px/16px/14px/6px/min44 etter. Begge faktiske React-adaptere med sen APP_RUNTIME_STYLES, fem bredder320/390/768/1363/1920, faktiske PeopleModuleAccess-barn og isolert transport:370kravPASS. Påkrevd primærfirma, ingen arbeidsprofilvalg for ventende/systemadmin, uendret DOM/kladd, utenfor-skall-topologi med intakt Systemadmin-seksjon, null setterkall ved åpning/resize/avkryssing, eksplisitt save/feil/retry og korrekt opprinnelig module-setter er kontrollert. Testhosten beholder hele native oppdagelsesseksjonen; å flytte bare ett kort var ikke en gyldig fixture. Eksisterende firmapanel67kravPASS. Fersk native jsPDF:4signaturvarianter63krav, samlet KS/HMS7PDF/4utskriftsforløp, bolig-FDV12kravPASS. Åtte bevarte PDF-er/40sider er rendret med Poppler og alle sider visuelt kontrollert; syntetisk transport og QA-data, ikke levende nedlasting. Signaturproporsjoner, norsk tekst, lange kommentarer, siste felt, avsender, risikomatrise, lenker og sidefortsettelse beholdt. Sandbox-readonly transaksjon med eksisterende aktører: systemadmin får3interne firma/6brukere; ordinær bruker og manglende aktør får tomme lister; anon EXECUTE avvist. Profiles/scopes/memberships-antall og hashes samt eksisterende offentlige funksjonsdefinisjoner identiske før/etter. SECURITY DEFINER/search_path/STABLE/kun authenticated-ACL kontrollert. Advisors etter: bare forventet ny authenticated-security-definer-oppføring; eksplisitt systemadminvakt bevist, ingen ny anonym tilgang eller søkestiadvarsel. Baselineinnlogget sammePreview: Systemadmin→Brukere og roller→Expo Proffsenter laster arbeidsprofiler, ingen RPC-feil; ingen checkbox eller setter brukt live. Endelig kandidat/fullCI/READY/live-CSS-etterkontroll vedlikeholdes i PR295. Eksplisitt EXPO_BACKEND_TARGET=sandbox npm run build (hele critical-kjeden + Vite) PASS. Video145reise-register og release-docs/PR-scope-selftester PASS.",
+  "change": "Miljømål BEGGE for scoped adminAccess036.css, import i proffdokWorkspace.css, native nettleserprøve og CI-import. Faste24px avkryssinger erstatter globale100%-bredder som presset tekst til høyre på PC. Native tilgangs-/arbeidsprofilkort får16px navn,14px forklaringer,6px rammer og minst44px etiketter. Ingen React-handler, tilgangsklient, setter, recovery, autosave, hydration, rapportdatakilde eller SQL-kildefil endres i PR295. Separat miljømål SANDBOX/DEMO: manglende list_managed_work_profiles() er gjenopprettet fra eksakt eksisterende kanonisk main-migrering20260910151800. Samme funksjonskropp finnes allerede i Production; ingen Production-mutasjon, ny medlemskapstildeling eller ny backendfunksjon. Sandbox apply_migration20261031211714 restore_canonical_managed_work_profile_metadata gjenbruker uendret kilde, ikke demo→main-synk. Tillegg innen samme PDF-scope: reportTools.js får to betingede innholdslistelinjer for valgte vernerunder/kontroller og risikovurderinger. Ingen endring i dokumentvalg, snapshot, signatur, utskrift eller siste tilgangskontroll.",
+  "verification": "Baseline60118fde/fullCI85110/10. Live førkode etter gjenopprettet RPC:210px brede checkbox-elementer og13px firmanavn i native arbeidsprofilkort. Negativ native CSS-prøve gjenskaper40px kontrollhøyde ved320px; riktig24px/16px/14px/6px/min44 etter. Begge faktiske React-adaptere med sen APP_RUNTIME_STYLES, fem bredder320/390/768/1363/1920, faktiske PeopleModuleAccess-barn og isolert transport:370kravPASS. Påkrevd primærfirma, ingen arbeidsprofilvalg for ventende/systemadmin, uendret DOM/kladd, utenfor-skall-topologi med intakt Systemadmin-seksjon, null setterkall ved åpning/resize/avkryssing, eksplisitt save/feil/retry og korrekt opprinnelig module-setter er kontrollert. Testhosten beholder hele native oppdagelsesseksjonen; å flytte bare ett kort var ikke en gyldig fixture. Eksisterende firmapanel67kravPASS. Fersk native jsPDF:4signaturvarianter63krav, samlet KS/HMS7PDF/4utskriftsforløp, bolig-FDV12kravPASS. Åtte bevarte PDF-er/40sider er rendret med Poppler og alle sider visuelt kontrollert; syntetisk transport og QA-data, ikke levende nedlasting. Signaturproporsjoner, norsk tekst, lange kommentarer, siste felt, avsender, risikomatrise, lenker og sidefortsettelse beholdt. Sandbox-readonly transaksjon med eksisterende aktører: systemadmin får3interne firma/6brukere; ordinær bruker og manglende aktør får tomme lister; anon EXECUTE avvist. Profiles/scopes/memberships-antall og hashes samt eksisterende offentlige funksjonsdefinisjoner identiske før/etter. SECURITY DEFINER/search_path/STABLE/kun authenticated-ACL kontrollert. Advisors etter: bare forventet ny authenticated-security-definer-oppføring; eksplisitt systemadminvakt bevist, ingen ny anonym tilgang eller søkestiadvarsel. Baselineinnlogget sammePreview: Systemadmin→Brukere og roller→Expo Proffsenter laster arbeidsprofiler, ingen RPC-feil; ingen checkbox eller setter brukt live. Endelig kandidat/fullCI/READY/live-CSS-etterkontroll vedlikeholdes i PR295. Eksplisitt EXPO_BACKEND_TARGET=sandbox npm run build (hele critical-kjeden + Vite) PASS. Video145reise-register og release-docs/PR-scope-selftester PASS. Visuell kontroll av fersk combined-control-risk.pdf avdekket at begge utførelsestyper manglet i innholdslisten, selv om de var med i kroppen. Ny faktisk PDF-assert feilet før rettelsen på manglende Vernerunder/kontroller. Etter rettelsen er valgte typer med, ikke-valgte typer ute og bare valgt utkast-vernerunde med i ny kombinasjon; alle7PDF/4print og gamle kilde-/rolle-/revoke-/stale-krav PASS med både PDF.js og Poppler. Poppler-fallback leser samme jsPDF-bytes, beholder indre blanke sider og bruker allerede installert CI-verktøy; ingen ny avhengighet. PDF-prøven er nå importert sist i eksisterende app-ux-kjede. Berørte20sider er rendret og visuelt kontrollert på nytt, inkl lesbar innholdsliste på side2. Sandbox Golden19/19 og HR/KS-kurs5/5 preflight PASS i read-only transaksjon med rollback. Live16150d41:37synlige etiketter oppfyller24x24/16/14/6/min44 og tekst ved siden av feltet;14kollapsede etiketter ble riktig holdt utenfor geometrimåling. Samme innlogging, Lukk firma og Startside uten tilgangsendring. Mellomkandidat16150d41 fikk fullCI852/run41243639038 SUCCESS10/10 og READYdpl_A9oLvSXA2Z5EvirYEikERq52Muqv på samme alias; ny370-prøve er bekreftet i ferdig app-browser-logg. Etter innholdslistens to linjer er full lokal Sandbox critical/buildPASS på nytt. Bare neste sluttkandidat/fullCI/READY er releasegrunnlag.",
   "documentation": {
     "help": {
       "required": false,
@@ -42,14 +42,25 @@
       }
     },
     "advisor_review": "Authenticated SECURITY DEFINER is intentional for the existing systemadmin-only read; ordinary/missing actor returns no data, anon denied. No other advisor delta.",
-    "advisor_url": "https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable"
+    "advisor_url": "https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable",
+    "preflight": {
+      "golden": {
+        "passed": 19,
+        "total": 19
+      },
+      "people_course": {
+        "passed": 5,
+        "total": 5
+      },
+      "read_only_transaction_rolled_back": true
+    }
   },
   "pdf_evidence": [
     {
       "file": "combined-control-risk.pdf",
       "pages": 9,
-      "bytes": 30567,
-      "sha256": "9bca98ecac61ee1446542f2d0414668625e508396dea3bf2811b1e860488935e"
+      "bytes": 30676,
+      "sha256": "19349c231d387c4064bee50bc1bc8b49502a0ca7339be8c025eb2d0bcaa59911"
     },
     {
       "file": "fdv-bolig.pdf",
@@ -91,7 +102,7 @@
       "file": "selected-report.pdf",
       "pages": 11,
       "bytes": 29427,
-      "sha256": "c44d1f50169aedbed66bf7d2655026d9acf17d1ed28aae5f10c1394fe3d11274"
+      "sha256": "67972cd8fdda74d465ce5d164c3e0424ce8e7ad629562e4de5d9447b6aca3569"
     }
   ],
   "remaining": [

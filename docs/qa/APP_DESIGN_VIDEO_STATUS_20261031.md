@@ -8,7 +8,7 @@ Brukeren31.10: «Vi har hengt oss litt opp i boligprosjekt og må ikke glemme b�
 
 Systemadminens faktiske tilgangs-/arbeidsprofilkort har370native kravPASS med full CSS/sen runtime og fem bredder; eksisterende firmapanel67PASS. Sandbox-RPC list_managed_work_profiles er gjenopprettet fra uendret main-SQL som20261031211714, med identiske brukere/firmaer/medlemskap/andre funksjoner og read-only roller. Live sammePreview laster profiler uten feil, uten ny tilgangstildeling. Tidligere «RPC mangler» nedenfor er historisk. [Scope/bevis](../changes/admin-access-closeout-036-20261031.json).
 
-Ferske kontrollfiler:8PDF-er/40sider visuelt kontrollert fra native generatorer; signert kontroll63krav, samlet KS/HMS7PDF/4print og bolig-FDV12kravPASS. Reell transport og separate innlogginger er fortsatt åpne. Samlet sluttrapport mangler valg av signerte prosjektkontrollers snapshot; dette holdes som eget core-punkt. Fem scoped filmer/godkjent mal beholdes; øvrige filmer og appavspiller gjenstår. Ingen helreise totalattesteres.
+Ferske kontrollfiler:8PDF-er/40sider visuelt kontrollert fra native generatorer; signert kontroll63krav, samlet KS/HMS7PDF/4print og bolig-FDV12kravPASS. Reell transport og separate innlogginger er fortsatt åpne. Samlet sluttrapport mangler valg av signerte prosjektkontrollers snapshot; dette holdes som eget core-punkt. Vernerunde-/risikooverskrifter i samlet PDFs innholdsliste er nå betinget rettet og faktisk PDF-testet før/etter. Golden19/19 og HR/KS-kurs5/5 preflight PASS, read-only/rollback. Fem scoped filmer/godkjent mal beholdes; øvrige filmer og appavspiller gjenstår. Ingen helreise totalattesteres.
 
 ## Felles kontrollgrunnlag
 

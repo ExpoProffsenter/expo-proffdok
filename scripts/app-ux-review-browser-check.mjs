@@ -147,3 +147,4 @@ await import('./proffdok-video-coverage-check.mjs');
 
 await import("./shell-workprofile-036-browser-check.mjs");
 await import("./time-subflows-036-browser-check.mjs");
+await import("./kshms-project-report-react-pdf-check.mjs");

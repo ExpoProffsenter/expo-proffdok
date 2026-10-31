@@ -1981,6 +1981,8 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         addTocSection("Avviksliste", hasDeviationContent);
         addTocSection("SJA – sikker jobbanalyse", kshmsReport.sjas.length > 0);
         addTocSection("RUH – rapport om uønsket hendelse", kshmsReport.ruhs.length > 0);
+        addTocSection("Vernerunder / kontroller", (kshmsReport.rounds || []).length > 0);
+        addTocSection("Risikovurderinger 5x5", (kshmsReport.risks || []).length > 0);
         addTocSection("Tilbud / kontrakt", hasOfferContent);
         addTocSection("Overtagelse", projectHasOvertagelse(overtagelse));
         addTocSection("Vedlegg", hasAttachmentContent);

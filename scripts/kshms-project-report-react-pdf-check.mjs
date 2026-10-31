@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import {execFileSync} from 'node:child_process';
 import { build } from 'vite';
 import react from '@vitejs/plugin-react';
 import {round as roundFixture,risk as riskFixture} from './critical-kshms-execution-pdf-check.mjs';
@@ -9,7 +10,7 @@ import {round as roundFixture,risk as riskFixture} from './critical-kshms-execut
 // Real hook, dialog, Report/CustomerReport, print handlers and complete PDF
 // generator. Only transport and browser download are replaced. jsPDF is real.
 const { JSDOM } = await import(process.env.KSHMS_JSDOM_PATH || 'jsdom');
-const { getDocument } = await import(process.env.KSHMS_PDFJS_PATH || 'pdfjs-dist/legacy/build/pdf.mjs');
+const getDocument=process.env.KSHMS_PDFJS_PATH?(await import(process.env.KSHMS_PDFJS_PATH)).getDocument:null;
 const jspdf = process.env.KSHMS_JSPDF_PATH;
 assert(jspdf, 'Set KSHMS_JSPDF_PATH to jsPDF 2.5.1 dist/jspdf.es.min.js');
 const root = process.cwd(), temp = fs.mkdtempSync(path.join(os.tmpdir(), 'ks-project-report-'));
@@ -64,7 +65,13 @@ const button = title => [...doc.querySelectorAll('button')].find(node => node.te
 const click = async node => { assert(node, 'Missing actual button'); await act(async () => { node.dispatchEvent(new window.MouseEvent('click', { bubbles: true })); await pause(25); }); };
 const choose = async index => click([...doc.querySelectorAll('[role="dialog"] input')][index]);
 const settle = () => act(async () => { await pause(200); });
-const textOf = async item => { const pdf = await getDocument({ data: new Uint8Array(item.bytes), useSystemFonts: true }).promise; const pages = []; for (let i = 1; i <= pdf.numPages; i++) pages.push((await (await pdf.getPage(i)).getTextContent()).items.map(item => item.str).join(' ')); await pdf.destroy(); return { pages, text: pages.join(' ') }; };
+const textOf = async item => {
+ if(getDocument){const pdf=await getDocument({data:new Uint8Array(item.bytes),useSystemFonts:true}).promise,pages=[];for(let i=1;i<=pdf.numPages;i++)pages.push((await(await pdf.getPage(i)).getTextContent()).items.map(item=>item.str).join(' '));await pdf.destroy();return {pages,text:pages.join(' ')};}
+ // The existing CI PDF setup supplies Poppler. Read the same real jsPDF bytes
+ // without adding a second PDF dependency; retain interior blank pages.
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'ks-report-read-'));
+ try{const file=path.join(dir,'report.pdf');fs.writeFileSync(file,item.bytes);const pages=execFileSync('pdftotext',['-layout','-enc','UTF-8',file,'-'],{encoding:'utf8'}).split('\f');if(!pages.at(-1).trim())pages.pop();return {pages,text:pages.join(' ')};}finally{fs.rmSync(dir,{recursive:true,force:true});}
+};
 
 await render({ ...props, context: { ...context, enabled: false } }); assert(!button('Velg KS/HMS til rapport'));
 await click(button('Lag test-PDF')); await settle(); assert.equal(calls.length, 0); assert.equal(exports.length, 1, alerts.join('\n'));
@@ -74,6 +81,8 @@ await choose(0); await choose(2); await click(button('Lag PDF med valget')); awa
 assert.equal(exports.length, 2, alerts.join('\n')); pdf = await textOf(exports.at(-1));
 for (const required of ['QA SIGNERT FLISKAPPING', 'R-012', 'versjon 3', 'QA historisk signatur', 'QA deltaker Ærlig', 'QA medvirkning om støv', 'QA kontroll før arbeid', '08.10.2026 kl. 00:00:00', 'QA LUKKET RUH', 'QA HENDELSE SLUTT', 'QA historisk lukker', 'QA egen kontroll dokumentert', '10.10.2026', 'QA LEGACY AVVIK BEVART']) assert(pdf.text.replace(/\s+/g,'').includes(required.replace(/\s+/g,'')), `Actual PDF missing ${required}`);
 assert(!pdf.text.includes('QA UTKAST TØMRERJOBB')); assert(!pdf.text.includes('QA ÅPEN RUH')); assert(!pdf.text.includes('QA LEGACY RUH SPEIL'), 'Selected RUH duplicated its project mirror'); assert(pdf.pages.length > 6);
+const unselectedContents=pdf.pages.slice(0,2).join(' ').replace(/\s+/g,'');
+for(const title of ['Vernerunder / kontroller','Risikovurderinger 5x5'])assert(!unselectedContents.includes(title.replace(/\s+/g,'')),`Unselected execution appeared in actual PDF contents: ${title}`);
 const output = process.env.KSHMS_REPORT_PDF_OUTPUT || path.join(temp, 'kshms-selected-report.pdf'); fs.writeFileSync(output, exports.at(-1).bytes);
 assert(doc.querySelector('.report').textContent.includes('QA historisk signatur')); assert(!doc.querySelector('.report').textContent.includes('QA ÅPEN RUH'));
 assert.equal(JSON.stringify({ rows:{sjas:rows.sjas,ruhs:rows.ruhs}, project }), before, 'Report/PDF mutated source or project JSON');
@@ -101,8 +110,12 @@ await render({ ...props, portal: true, disabled: true }); assert(!doc.querySelec
 await click(button('Skriv ut test')); await settle(); assert.equal(printed.length, 3, 'Ordinary portal print was blocked');
 await render(props);await click(button('Lag test-PDF'));await choose(4);await choose(6);await click(button('Lag PDF med valget'));await settle();pdf=await textOf(exports.at(-1));
 for(const required of ['QA SAVED ROUND','QA SAVED RISK','Lagret fullfører','Lagret egen bekreftelse','R-001 utgave 2','forventet effekt - ikke kontrollert','Videre tiltak kreves','5x5: sannsynlighet x konsekvens'])assert(pdf.text.replace(/\s+/g,'').includes(required.replace(/\s+/g,'')),`Actual combined PDF missing ${required}`);
-assert(!pdf.text.includes('QA DRAFT ROUND'));assert.equal(doc.querySelectorAll('.ks-project-report-documents img').length,2);assert(doc.querySelector('.ks-project-report-documents table'));fs.writeFileSync(path.join(path.dirname(output),'combined-control-risk.pdf'),exports.at(-1).bytes);
+assert(!pdf.text.includes('QA DRAFT ROUND'));assert.equal(doc.querySelectorAll('.ks-project-report-documents img').length,2);assert(doc.querySelector('.ks-project-report-documents table'));
+const selectedContents=pdf.pages.slice(0,2).join(' ').replace(/\s+/g,'');
+for(const title of ['Vernerunder / kontroller','Risikovurderinger 5x5'])assert(selectedContents.includes(title.replace(/\s+/g,'')),`Selected execution missing from actual PDF contents: ${title}`);
+fs.writeFileSync(path.join(path.dirname(output),'combined-control-risk.pdf'),exports.at(-1).bytes);
 await click(button('Skriv ut test'));await click(button('Skriv ut med valget'));await settle();assert(printed.at(-1).includes('data:image/png;base64,'));assert(printed.at(-1).includes('sannsynlighet'));
 await click(button('Lag test-PDF'));await choose(4);await choose(6);await choose(5);await click(button('Lag PDF med valget'));await settle();pdf=await textOf(exports.at(-1));assert(pdf.text.includes('QA DRAFT ROUND'));assert(pdf.text.includes('IKKE FULLFØRT'));assert(!pdf.text.includes('QA SAVED RISK'));assert(!pdf.text.includes('QA SAVED ROUND'));
+const draftContents=pdf.pages.slice(0,2).join(' ').replace(/\s+/g,'');assert(draftContents.includes('Vernerunder/kontroller'));assert(!draftContents.includes('Risikovurderinger5x5'));
 await act(async () => window.__unmount()); dom.window.close(); fs.rmSync(temp, { recursive: true, force: true });
 console.log(JSON.stringify({ result: 'PASS', actualPdfs: exports.length, actualPrints: printed.length, selectedPdfPages: (await textOf(exports[1])).pages.length, pdf: output, scenarios: 'module-only chooser; initially empty selection; exact signature/routines/participants; closure and dates; unselected and mirrored exclusion; draft/open markers; both print paths; cancel; revoked/malformed-scope export; explicit skip during stalled fetch; late response/project switch and return; role downgrade clears choice; support/portal gates; no source mutation' }));

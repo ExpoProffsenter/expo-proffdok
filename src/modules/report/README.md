@@ -12,3 +12,5 @@ Boxed PDF-er måler avsenderen i plassen ved logoen og på fortsettelsessider. H
 Signatarens felt og tegning holdes samlet når hele den målte blokken får plass på en ny side. Lange signatarfelt deles fortsatt kontrollert med gjentatt seksjonsoverskrift.
 
 Komplett rapport måler Sopro-/sjekklistekategorier med faktisk overskriftsfont, reserverer plass før første kontrollrad og gjentar full kategori ved kontrollradens sidebrudd. Samme originaltekst/antall og svar beholdes. Native garanti-PDF-prøven bruker begge uendrede AEB-/FDF-kilder med14/19punkter. Den nettverksisolerte QR-providerfeilen er bare fallback-bevis.
+
+PDF-innholdslisten tar med Vernerunder / kontroller og Risikovurderinger 5x5 når de finnes i det valgte rapportgrunnlaget. Uvalgte typer får ingen tom innholdsrad. Den faktiske React/jsPDF-prøven kontrollerer valgt, ikke-valgt og bare utkast-vernerunde, og inngår i app-ux-kjeden. Den kan lese bytegrunnlaget med PDF.js eller CI-oppsettets eksisterende Poppler uten nye avhengigheter. Dette endrer ikke hvilke dokumenter velgeren eller snapshot-lesingen tillater.
