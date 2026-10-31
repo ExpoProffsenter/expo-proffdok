@@ -1,0 +1,102 @@
+{
+  "version": 1,
+  "title": "Lesbare Systemadmin-tilgangskort og verifisert Sandbox-arbeidsprofilparitet",
+  "change": "Miljømål BEGGE for scoped adminAccess036.css, import i proffdokWorkspace.css, native nettleserprøve og CI-import. Faste24px avkryssinger erstatter globale100%-bredder som presset tekst til høyre på PC. Native tilgangs-/arbeidsprofilkort får16px navn,14px forklaringer,6px rammer og minst44px etiketter. Ingen React-handler, tilgangsklient, setter, recovery, autosave, hydration, rapportmotor eller SQL-kildefil endres i PR295. Separat miljømål SANDBOX/DEMO: manglende list_managed_work_profiles() er gjenopprettet fra eksakt eksisterende kanonisk main-migrering20260910151800. Samme funksjonskropp finnes allerede i Production; ingen Production-mutasjon, ny medlemskapstildeling eller ny backendfunksjon. Sandbox apply_migration20261031211714 restore_canonical_managed_work_profile_metadata gjenbruker uendret kilde, ikke demo→main-synk.",
+  "verification": "Baseline60118fde/fullCI85110/10. Live førkode etter gjenopprettet RPC:210px brede checkbox-elementer og13px firmanavn i native arbeidsprofilkort. Negativ native CSS-prøve gjenskaper40px kontrollhøyde ved320px; riktig24px/16px/14px/6px/min44 etter. Begge faktiske React-adaptere med sen APP_RUNTIME_STYLES, fem bredder320/390/768/1363/1920, faktiske PeopleModuleAccess-barn og isolert transport:370kravPASS. Påkrevd primærfirma, ingen arbeidsprofilvalg for ventende/systemadmin, uendret DOM/kladd, utenfor-skall-topologi med intakt Systemadmin-seksjon, null setterkall ved åpning/resize/avkryssing, eksplisitt save/feil/retry og korrekt opprinnelig module-setter er kontrollert. Testhosten beholder hele native oppdagelsesseksjonen; å flytte bare ett kort var ikke en gyldig fixture. Eksisterende firmapanel67kravPASS. Fersk native jsPDF:4signaturvarianter63krav, samlet KS/HMS7PDF/4utskriftsforløp, bolig-FDV12kravPASS. Åtte bevarte PDF-er/40sider er rendret med Poppler og alle sider visuelt kontrollert; syntetisk transport og QA-data, ikke levende nedlasting. Signaturproporsjoner, norsk tekst, lange kommentarer, siste felt, avsender, risikomatrise, lenker og sidefortsettelse beholdt. Sandbox-readonly transaksjon med eksisterende aktører: systemadmin får3interne firma/6brukere; ordinær bruker og manglende aktør får tomme lister; anon EXECUTE avvist. Profiles/scopes/memberships-antall og hashes samt eksisterende offentlige funksjonsdefinisjoner identiske før/etter. SECURITY DEFINER/search_path/STABLE/kun authenticated-ACL kontrollert. Advisors etter: bare forventet ny authenticated-security-definer-oppføring; eksplisitt systemadminvakt bevist, ingen ny anonym tilgang eller søkestiadvarsel. Baselineinnlogget sammePreview: Systemadmin→Brukere og roller→Expo Proffsenter laster arbeidsprofiler, ingen RPC-feil; ingen checkbox eller setter brukt live. Endelig kandidat/fullCI/READY/live-CSS-etterkontroll vedlikeholdes i PR295. Eksplisitt EXPO_BACKEND_TARGET=sandbox npm run build (hele critical-kjeden + Vite) PASS. Video145reise-register og release-docs/PR-scope-selftester PASS.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Ingen ny knapp, brukerflyt, publiseringsregel eller rolle; kun lesbarhet og gjenoppretting av avtalt miljøkontrakt."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Eksisterende kanonisk lesefunksjon og eierskap gjenbrukes; ingen ny arkitektur eller rapportdataflyt."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen avhengighet, ny miljøvariabel eller endret oppsett; eksakt miljøgjenoppretting er dokumentert her."
+    },
+    "module": {
+      "required": true,
+      "reason": "UI-modulens README beskriver begge native mountmål og mål etter sen runtimekaskade."
+    }
+  },
+  "sandbox_restore": {
+    "project_ref": "ppvircenkjizeiqdxphj",
+    "migration_version": "20261031211714",
+    "source": "supabase/migrations/20260910151800_fase41b3_managed_work_profile_metadata.sql",
+    "source_sha256": "6095be000ef445a5c0f02e9779d70894e6367dd0c8058febb9b016393c0b7d77",
+    "other_public_functions_md5": "c8643770f1c3305a26a3c116cc976ca0",
+    "unchanged_data": {
+      "profiles": {
+        "count": 6,
+        "md5": "f83497b8f082fde92149a69266ef8af3"
+      },
+      "scopes": {
+        "count": 4,
+        "md5": "cbea7dfeea72861c3b46549b5a3ee629"
+      },
+      "memberships": {
+        "count": 6,
+        "md5": "11baeef8020fe36bd763674f2577e087"
+      }
+    },
+    "advisor_review": "Authenticated SECURITY DEFINER is intentional for the existing systemadmin-only read; ordinary/missing actor returns no data, anon denied. No other advisor delta.",
+    "advisor_url": "https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable"
+  },
+  "pdf_evidence": [
+    {
+      "file": "combined-control-risk.pdf",
+      "pages": 9,
+      "bytes": 30567,
+      "sha256": "9bca98ecac61ee1446542f2d0414668625e508396dea3bf2811b1e860488935e"
+    },
+    {
+      "file": "fdv-bolig.pdf",
+      "pages": 1,
+      "bytes": 12687,
+      "sha256": "f5fda7b178d4b20aec713e3c8ef987474b9a4c7250610c4a4aedb82c16334499"
+    },
+    {
+      "file": "fdv-prosjekt.pdf",
+      "pages": 10,
+      "bytes": 64260,
+      "sha256": "ad7cabfb98bd1bada62bf1bdc424a7737b6b96eb18b578da1c24d9ecf61b2077"
+    },
+    {
+      "file": "prosjektkontroll-draft.pdf",
+      "pages": 2,
+      "bytes": 12258,
+      "sha256": "788d4283deb541ddc4beac688f6689ee3c2ac4c2ef45522478174146534670d2"
+    },
+    {
+      "file": "prosjektkontroll-dual-long.pdf",
+      "pages": 4,
+      "bytes": 17154,
+      "sha256": "996602f501d5973476cda36c819e57a474db3450629779dcfde6f12424a80a91"
+    },
+    {
+      "file": "prosjektkontroll-legacy.pdf",
+      "pages": 1,
+      "bytes": 10577,
+      "sha256": "5c6500c5365d818849542301a077941c3582cb2b88586858dc0016f7e97ce5d6"
+    },
+    {
+      "file": "prosjektkontroll-own-short.pdf",
+      "pages": 2,
+      "bytes": 12310,
+      "sha256": "28ddeebfa3fffcd6f1ee5c5c62bb17885427e163b6ac6fc8930f891829014d2b"
+    },
+    {
+      "file": "selected-report.pdf",
+      "pages": 11,
+      "bytes": 29427,
+      "sha256": "c44d1f50169aedbed66bf7d2655026d9acf17d1ed28aae5f10c1394fe3d11274"
+    }
+  ],
+  "remaining": [
+    "Samlet prosjektrapports velger/hook/mapper omfatter fortsatt SJA, RUH, vernerunder og risiko. Signerte prosjektkontrollers frosne snapshots er tilgjengelig separat og i kontrolluttrekk, men er ikke integrert i samlet sluttrapport. Krever eget core-scope, ikke CSS-sideeffekt.",
+    "Fysisk mobil/Safari, reelle separate innlogginger og live transport/nedlastingsbro er ikke sluttattestert.",
+    "145reiseinventaret er ikke uttømmende sluttkontrollert; fem scoped videoer finnes, øvrige videoer og avspiller gjenstår. Ingen global TEST OK/merge/Production/demo-synk eller Solgløtt-opprettelse."
+  ]
+}

@@ -1,3 +1,17 @@
+# Tilgangskort, Sandbox-paritet og ferske sluttpakke-PDF-er –31.10
+
+Samme PR295/faste Preview. Scoped UI-mål BEGGE; utførelse bare Preview. Native Systemadmin-tilgangs-/arbeidsprofilkort har faste24px avkryssinger,16px navn,14px forklaringer,6px rammer og44px etiketter etter sen runtimeCSS. Begge faktiske React-adaptere370krav og eksisterende firmapanel67kravPASS. Native felt, primærfirma, ventende/systemadmin-vakt og eksplisitt save/feil/retry beholdes. Ingen tilgangs-/rapport-/recovery-kode endres. [Scope og konkret bevis](docs/changes/admin-access-closeout-036-20261031.json); endelig fullCI/READY/innlogget CSS-etterkontroll i PR295.
+
+Separat SANDBOX/DEMO-reparasjon utført: list_managed_work_profiles() manglet i pg_proc. Eksakt eksisterende main-SQL gjenbrukt som Sandbox-migrering20261031211714, samme kropp som Production. Eksisterende systemadmin/ordinær/ingen aktør/anon er prøvd i read-only transaksjon med rollback. Brukere, firmaer, medlemskap og andre offentlige funksjoner er uendret. Samme innloggede Preview laster nå arbeidsprofiler uten RPC-feil; ingen live valg eller lagring. Tidligere omtale av denne RPC-en som åpen er historisk.
+
+Fersk native QA:4signerte/legacy/utkast-PDF-er63krav; samlet KS/HMS7PDF/4print; bolig-FDV12kravPASS. Åtte bevarte filer/40sider er rendret og alle sider visuelt kontrollert. Dette gjelder syntetisk transport, ikke attest på live nedlastingsbro. Signerte prosjektkontrollers snapshot kan fortsatt ikke velges i samlet sluttrapport; velger/hook/mapper omfatter bare SJA/RUH/vernerunder/risiko. Separat kontroll-PDF og kontrolluttrekk finnes. Dette er eget core-arbeid, ikke en skjult designrettelse.
+
+Neste: avgrens samlet sluttrapports signerte kontrollhistorikk og gjenstående roller/transport, deretter resterende videoer i godkjent mal. Tidligere bevis og fem videoer beholdes. Ingen global redesign-TEST OK, merge, Production eller demo-synk. Solgløtt venter avtalt releaseforløp.
+
+Kort prøve: Alle områder → Systemadmin → Brukere og roller → Expo Proffsenter. Arbeidsprofilnavn og avkryssing skal stå ved siden av hverandre og tidligere feil være borte. Lukk firma uten å endre tilgang.
+
+---
+
 # Startside, profil-/menyretur, Prissøk og timeunderflater –31.10
 
 Samme PR295/faste Preview/Sandbox, miljømål BEGGE. Valgfri Representerer-/arbeidsprofilmeny lukkes med Escape eller klikk utenfor; Escape returnerer fokus uten firmabytte. Rask åpne/Escape i hovedmenyen kan ikke gjenopplive bakgrunnen fra en sen animasjon. Faktiske sene mobilregler er med i Home-/Prissøk-prøvene; de beviste for små handlinger/overskrift. Scoped CSS beholder16px/minst44px og samme6/8px rammer; et påkrevd førstevalg forblir påkrevd og passer også kort skjerm. TimeField får stabil etikettkobling, med samme barn/handlers og bevart notat. Innloggingsbildet er beholdt.

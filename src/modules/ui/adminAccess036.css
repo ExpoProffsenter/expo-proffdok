@@ -1,0 +1,9 @@
+/* Native Systemadmin adapters also mount in the company portal, outside the
+   shell. Fixed checkbox width must apply on desktop as well as mobile. */
+body:has([data-expo-app-shell="true"]) :is([data-systemadmin-unified-access],[data-systemadmin-work-profiles]){min-width:0;max-width:100%}
+body:has([data-expo-app-shell="true"]) :is([data-systemadmin-unified-access],[data-systemadmin-work-profiles]) label:has(>input[type="checkbox"]){display:flex!important;align-items:flex-start!important;gap:10px!important;min-width:0;min-height:44px;padding:12px!important;border-radius:6px!important;box-sizing:border-box}
+body:has([data-expo-app-shell="true"]) :is([data-systemadmin-unified-access],[data-systemadmin-work-profiles]) input[type="checkbox"]{width:24px!important;min-width:24px!important;max-width:24px!important;height:24px!important;min-height:24px!important;max-height:24px!important;flex:0 0 24px!important;padding:0!important;margin:2px 0 0!important;accent-color:#087f88}
+body:has([data-expo-app-shell="true"]) :is([data-systemadmin-unified-access],[data-systemadmin-work-profiles]) label:has(>input[type="checkbox"])>span{flex:1;min-width:0;overflow-wrap:anywhere}
+body:has([data-expo-app-shell="true"]) :is([data-systemadmin-unified-access],[data-systemadmin-work-profiles]) b{font-size:16px!important;line-height:1.4}
+body:has([data-expo-app-shell="true"]) :is([data-systemadmin-unified-access],[data-systemadmin-work-profiles]) small{font-size:14px!important;line-height:1.45}
+body:has([data-expo-app-shell="true"]) :is([data-systemadmin-unified-access],[data-systemadmin-work-profiles]) button{font-size:16px;min-height:44px;border-radius:6px}

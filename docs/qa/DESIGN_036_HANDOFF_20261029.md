@@ -1,3 +1,7 @@
+## Neste overlevering: tilgangskort og sluttpakker31.10
+
+Native adaptere370/firmapanel67PASS. Sandbox lesefunksjon gjenopprettet fra eksisterende main-SQL som20261031211714; read-only rolleprøve og identiske data/funksjonsfingeravtrykk før/etter. Samme Preview laster arbeidsprofiler uten feil. Åtte ferske native PDF-er/40sider visuelt kontrollert. Samlet rapports signerte prosjektkontroll-snapshots er fortsatt et eget core-punkt; reelle roller/transport/fysisk mobil og resterende videoer/avspiller er åpne. Se [gjeldende status](../../CURRENT_RELEASE_STATUS.md) og [scope/bevis](../changes/admin-access-closeout-036-20261031.json). Endelig kandidat/fullCI/READY/levende CSS i PR295. Ingen global TEST OK/Production/demo-synk; Solgløtt venter. Tidligere RPC-åpenstatus nedenfor er historisk.
+
 ## Neste overlevering: Startside/meny/arbeidsprofil/vare-/timeunderflater31.10
 
 Shell57/Home67/Prissøk70/time125over40visninger +91funksjon/opt-in63/varetelling73PASS, sen runtimeCSS. Bare UI-retur/mål/TimeField-etikett; påkrevd profilvalg/bekreftelse/setter/reload og lagrings-/tilgangseiere beholdt. Se [gjeldende status](../../CURRENT_RELEASE_STATUS.md) og [scope/bevis](../changes/shell-commerce-time-036-20261031.json); fullCI/READY/sluttetterkontroll føres i PR295. Bevar tidligere479admin-/HR-/KS-/Sales-/Boligbevis og fem scoped filmer. Ny innlogging/fysiskmobil/Safari/kamera/reelle rolle-/transportforløp, navngitte sluttpakke-/PDF-punkter, Sandbox-RPC og øvrig video/avspiller er åpne. Ingen global TEST OK/merge/Production/demo-synk; Solgløtt venter avtalt forløp.
