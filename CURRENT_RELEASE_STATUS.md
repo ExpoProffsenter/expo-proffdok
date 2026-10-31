@@ -1,3 +1,7 @@
+# Grunnpakke-/tilvalgseditor –31.10
+
+Samme PR295/Preview/Sandbox, BEGGE. Faktisk innlogget editor hadde fortsatt gammel960px sentrert dialog/12px felt. De to native pakkeskjemaene får nå samme680px høyrepanel/navy/16-44/8px-rammer og synlig Lagre ved langt innhold.328native krav/24visningerPASS, negativ gammelCSS feiler, eksisterende catalogReact og navigation24PASS, full critical Sandbox-buildPASS. [Scope og presise tester](docs/changes/housing-catalog-editor-workspace-036-20261031.json). Ingen Bolig-kjerne-/pris-/tilgangs-/lagrings-/backendendring. Eksakt sluttkandidat/CI/READY/live føres i PR295. Totaldesign og tidligere restpunkter er fortsatt åpne; ingen TEST OK/Production/demo-synk.
+
 # Sølgløtt-visning og boligoversiktens søkelayout –31.10
 
 Kenneth har bestilt kundedemo tirsdag3. november: Sølgløtt,6navngitte firemannsboliger/24boliger, FlisLab og Baden Haus som grunnpakke og Dansani som tilvalg. Designet ferdigstilles først. Han oppgir konkrete produkter selv og har valgt faktiske salgspriser. [Avklaringer, faktisk katalogkontroll, foreslått struktur og komplett videoserie](https://chatgpt.com/library?file_id=libfile_a6ce8e2d49648191ba9d6648f04a95a3&account_id=personal). Ingen demooppretting/import/videoavspiller/ny film ennå. Godkjent videomal1.0 og pilot beholdes; den eldre formuleringen nedenfor om ingen produsert video er historikk.

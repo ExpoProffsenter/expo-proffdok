@@ -65,6 +65,10 @@ Opplastingsrutene avgrenses fra dialogen som faktisk inneholder `.imageUploadTil
 
 På bred PC samles modul-/hjelpetopp og prosjektfaner tettere. Når ingen bolig er valgt, ligger den native fasaden eller søk-/listetreffene til venstre og ferdigstilling/beboerdialog til høyre. Et boligsøk skal ikke falle tilbake til en høy stablet PC-layout. Samme byggvelger, søk, visningsvalg og statusfilter står over bildet; de samme native kontrollene er montert. Valgt bolig og andre visninger bruker sitt ordinære oppsett. Det tomme valg-hjelpekortet beholdes etter oversikten. På smale skjermer ruller de syv prosjektfanene i én rad. Dette er ikke en ny fasade- eller navigasjonseier og endrer ikke diagrammets boligplassering. Se docs/changes/housing-first-screen-036-20261030.json og docs/changes/housing-search-layout-036-20261031.json. Treff beholder16px hovedtekst/14px metadata også under mobilens runtime-stiler.
 
+### Boligprosjektets pakkeeditorer
+
+Kun native dialoger med `.bolig-package-editor` eller `.bolig-option-editor` får felles680px høyrepanel, marineblå topp og fast synlig kryss. De eksisterende skjemaene ruller i egen flate med16px/44px felt/knapper,14px hjelpetekst, to feltkolonner på PC og én på mobil. Native lagreknapp er synlig også når vareinnholdet er langt. Andre Bolig-dialoger, bildevisninger og private kontrakter endres ikke av selektoren. Pris, fratrekk, feltverdier, kladd, revisjonskontroll, opplasting og lagring har samme eiere. Se docs/changes/housing-catalog-editor-workspace-036-20261031.json og den faktiske328krav-prøven i housing-catalog-editor-workspace-browser-check.mjs.
+
 ### HR-underflater
 
 `hrSurfaces036.css` gir de faktiske kontakt-, samtale-, sykefraværs- og tilgangsseksjonene samme hvite flate, ramme og typografi. Native `details`/skjemaer og deres lagrings-/tilgangseiere beholdes. HR-panelet fra Min side bruker den samme medarbeiderrammen. Samtalesteg ruller i én vannrett rad; de eksisterende Neste/Forrige-valgene beholdes. Oppsett, samtalemaler, malhistorikk, prøvesamtale og andre HR-verktøy bruker samme kontrollmål. Avslutning beholder sin tydelige destruktive knapp og bekreftelse.

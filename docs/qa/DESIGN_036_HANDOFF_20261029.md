@@ -1,3 +1,9 @@
+# Native pakkeeditorer31.10 – samlet designfortsettelse
+
+Grunnpakke og tilvalg ble faktisk åpnet innlogget og hadde fortsatt gammel sentrert960px-ramme med12px/38px felt. To native skjemaer får nå samme03.6-høyrepanel:680px/fullhøyde/navy/16-44/8px og beholdt form med egen scroll/synlig Lagre. Bare shared workspaceSurface.css; ingen src/modules/bolig-/pris-/state-/tilgangs-/lagrings-/backendendring. Ny faktisk Catalog-editorprøve328krav/24nye/redigerte visningerPASS, negative gammelCSS feiler. Eksisterende catalogReact og navigation24/fullcriticalSandbox-buildPASS; alle gamle krav beholdt. Bilder er native komponent/syntetiske lesekall. Ingen kataloglagring/opplasting i levende gjennomgang. Endelig kandidat/fullCI/READY/live dokumenteres i PR295. Sølgløtt er fortsatt klargjøringsplan etter design, ikke opprettet demo eller ferdige nye videoer. Totalrevisjon/PR294/andre tidligere grenser nedenfor består.
+
+---
+
 # Videreføring31.10 – Sølgløtt og bred søkevisning
 
 Ny bestilling: design ferdig først; deretter egen Sølgløtt-demo til visning tirsdag3. november.6bygg/24boliger,2etasjer×2, foreslå realistiske navn. Brukeren oppgir produktene selv; faktiske salgspriser er valgt. FlisLab/Baden Haus grunnpakke, Dansani tilvalg. Ingen oppretting/import ennå. Read-only katalogkontroll viser begrenset Sandbox-utvalg; kopier senere bare valgte produktdata, aldri kunde-/ordredata. Se https://chatgpt.com/library?file_id=libfile_a6ce8e2d49648191ba9d6648f04a95a3&account_id=personal for produktbehov, foreslåtte navn, komplett videoflyt og anbefalte innganger. Godkjent videomal1.0/pilot beholdes; ingen ny stilgodkjenning. Filmene anbefales i konteksthjelp, samlet boligserie og søkbar Hjelp, med stor avspiller/fullskjerm. Ingen avspiller implementert.
