@@ -133,3 +133,5 @@ await import("./report-warranty-pdf-check.mjs");
 await import("./project-checklist-signed-pdf-check.mjs");
 
 await import("./warranty-workspace-browser-check.mjs");
+
+await import("./kshms-extract-workspace-browser-check.mjs");

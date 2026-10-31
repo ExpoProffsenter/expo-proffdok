@@ -1,3 +1,4 @@
+import './kshmsInspectionExtract036.css';
 import {useEffect,useRef,useState} from 'react';
 import {kshmsRpc} from './kshmsAccess.js';
 import {getAppSupabaseClient} from '../access/appSupabaseClientRegistry.js';
@@ -80,7 +81,7 @@ export default function KshmsInspectionExtract({context,active=true}){
   if(result&&current())setNotice(`ZIP er laget med ${result.files} vedlegg og manifest. Kontroller innholdet før deling.`);
  });
  if(!context.enabled||!context.manage)return null;
- return <section className="ks-card" aria-label="Dokumentuttrekk">
+ return <section className="ks-card ks-inspection-extract" aria-label="Dokumentuttrekk">
   <h3>Samlet dokument- og tilsynsuttrekk</h3>
   <p>Beskriv hva du vil dokumentere. Hent listen og huk av dokumentene du trenger. Du kan laste ned en PDF med dokumentene, en ZIP-pakke med vedleggene, eller begge. Bruk «Last ned samlet PDF» for rapporten. For bilder og originalfiler: trykk «Vis vedleggslisten» lenger ned, bekreft listen og trykk «Last ned vedlegg (ZIP)».</p>
   <p className="ks-field-hint">Du får lagret dokumentasjon. Ulagrede endringer følger ikke med. RUH, kvalitet- og HMS-avvik inkluderer hele historikken og lagrede bilder. Disse gruppene viser saker fra KS/HMS-avvikssentralen. Ukoblede eldre prosjektavvik kan hentes for valgt prosjekt. De viser lagret tilstand uten versjonert historikk eller KS/HMS-signatur. Andre originalfiler følger ikke PDF-en. Bruk vedleggslisten nedenfor for en egen ZIP-pakke. HR, fortrolige varslinger, ansattes lesebekreftelser og opplæringsbevis tas ikke med. Uttrekket er ingen tilsynsgodkjenning.</p>
@@ -93,7 +94,7 @@ export default function KshmsInspectionExtract({context,active=true}){
    {catalog.projectTotal>catalog.projects.length&&<p className="ks-field-hint">Viser de {catalog.projects.length} senest tilgjengelige prosjektene av {catalog.projectTotal}. Prosjektlisten er avgrenset.</p>}
    <button type="button" className="secondary" disabled={busy||!projectId} onClick={loadProject}>Hent prosjektkontroller</button>
    <button type="button" className="secondary" disabled={busy||!projectId} onClick={loadLegacy}>Hent eldre prosjektavvik</button>
-   {Object.entries(EXTRACT_GROUPS).map(([kind,label])=><details className="ks-followup-section" key={kind}>
+   <div className="ks-extract-groups">{Object.entries(EXTRACT_GROUPS).map(([kind,label])=><details className="ks-followup-section" key={kind}>
     <summary>{label} ({catalog.groups[kind].rows.length})</summary>
     <fieldset disabled={busy}><legend>Velg {label.toLowerCase()}</legend>
      {!catalog.groups[kind].rows.length&&<p>Ingen dokumenter hentet i denne gruppen.</p>}
@@ -101,9 +102,9 @@ export default function KshmsInspectionExtract({context,active=true}){
     </fieldset>
     {catalog.groups[kind].next&&<button type="button" className="secondary" disabled={busy} onClick={()=>more(kind)}>Hent flere {label.toLowerCase()}</button>}
     {kind==='sjas'&&catalog.groups.sjas.total>catalog.groups.sjas.rows.length&&<p>Viser {catalog.groups.sjas.rows.length} av {catalog.groups.sjas.total} treff. Bruk søket og hent listen på nytt for å finne eldre analyser.</p>}
-   </details>)}
+   </details>)}</div>
    <h4>Dette blir med i PDF-en ({selected.length})</h4>
-   {selected.length?<ul>{selected.map(row=><li key={extractKey(row)}>{EXTRACT_GROUPS[row.kind]}: {row.title} · {status(row)} <button type="button" className="secondary" disabled={busy} onClick={()=>toggle(row)} aria-label={`Fjern ${row.title} fra uttrekket`}>Fjern</button></li>)}</ul>:<p>Velg dokumenter i gruppene over.</p>}
+   {selected.length?<ul className="ks-extract-selection">{selected.map(row=><li key={extractKey(row)}>{EXTRACT_GROUPS[row.kind]}: {row.title} · {status(row)} <button type="button" className="secondary" disabled={busy} onClick={()=>toggle(row)} aria-label={`Fjern ${row.title} fra uttrekket`}>Fjern</button></li>)}</ul>:<p>Velg dokumenter i gruppene over.</p>}
    <label className="ks-report-option"><input type="checkbox" checked={confirmed} disabled={busy} onChange={event=>setConfirmed(event.target.checked)}/><span>Jeg har kontrollert omfanget og dokumentvalget. Jeg vurderer innhold og mottaker før jeg deler filen.</span></label>
    <div className="ks-actions"><button type="button" disabled={busy||!confirmed||!scopeText.trim()||!selected.length||selected.length>50} onClick={download}>{busy?'Arbeider …':'Last ned samlet PDF'}</button><button type="button" className="secondary" disabled={busy||!selected.length} onClick={()=>{clearAttachments();setSelected([]);setConfirmed(false);setNotice('');}}>Tøm dokumentvalget</button></div>
    {selected.length>50&&<p role="alert">Velg maksimalt 50 dokumenter per uttrekk.</p>}
@@ -112,7 +113,7 @@ export default function KshmsInspectionExtract({context,active=true}){
    <button type="button" className="secondary" disabled={busy||!selected.length||selected.length>50} onClick={previewAttachments}>Vis vedleggslisten</button>
    {attachmentPreview&&<>
     <p>{attachmentPreview.entries.length} vedlegg. Maksimalt 100 vedlegg, 10 MB per fil og 50 MB per pakke. Pakken inneholder mappen «vedlegg» og filen «manifest.json». Manifestet er en filoversikt som viser hvilket dokument og punkt hver fil hører til, og en kontrollsum for filinnholdet. Behold filoversikten sammen med vedleggene.</p>
-    {attachmentPreview.entries.length?<ul aria-label="Vedleggslisten">{attachmentPreview.entries.map((entry,index)=><li key={`${entry.documentId}:${index}`}><strong>{entry.name}</strong> · {entry.documentTitle}{entry.point?` / ${entry.point}`:''} · {entry.type} · {entry.size?`${entry.size} byte`:'Størrelse kontrolleres ved nedlasting'}</li>)}</ul>:<p>Ingen støttede vedlegg er lagret på de valgte dokumentene. Ingen ZIP kan lastes ned.</p>}
+    {attachmentPreview.entries.length?<ul className="ks-extract-attachments" aria-label="Vedleggslisten">{attachmentPreview.entries.map((entry,index)=><li key={`${entry.documentId}:${index}`}><strong>{entry.name}</strong> · {entry.documentTitle}{entry.point?` / ${entry.point}`:''} · {entry.type} · {entry.size?`${entry.size} byte`:'Størrelse kontrolleres ved nedlasting'}</li>)}</ul>:<p>Ingen støttede vedlegg er lagret på de valgte dokumentene. Ingen ZIP kan lastes ned.</p>}
     <label className="ks-report-option"><input type="checkbox" checked={attachmentConfirmed} disabled={busy||!attachmentPreview.entries.length} onChange={event=>setAttachmentConfirmed(event.target.checked)}/><span>Jeg har kontrollert vedleggslisten. Jeg vurderer innhold og mottaker før jeg deler filene.</span></label>
     <button type="button" disabled={busy||!attachmentConfirmed||!attachmentPreview.entries.length||!scopeText.trim()} onClick={downloadAttachments}>Last ned vedlegg (ZIP)</button>
    </>}

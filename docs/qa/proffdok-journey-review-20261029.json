@@ -9502,7 +9502,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/kshms-inspection-extract-react-check.mjs",
@@ -9529,15 +9529,25 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "inspection-extract-workspace-036-20261031",
+            "mapping": "Native valg/omfang/bekreftelsesgate/browser23; to eksportfiler før kjent separat PR298 firmabytte-lås. Ikke grønn helreise; presise PDF-sider/visuell/CI/READY i PR295."
+          }
+        ]
       },
       "design_review": {
         "status": "delvis",
         "reason": "Åpent bruker-/referanseavvik er identifisert i området. Ingen lukking av den enkelte reisen uten sluttbilder.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "inspection-extract-workspace-036-20261031"
+        ]
       },
-      "remaining_checks": []
+      "remaining_checks": [
+        "PR298 firmabytte-lås separat; innlogget/alle roller/revoke/filbro og samlet PDF/ZIP-helreise gjenstår."
+      ]
     },
     {
       "id": "KSHMS-013",

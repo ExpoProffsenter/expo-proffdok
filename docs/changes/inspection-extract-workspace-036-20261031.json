@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Dokumentuttrekk: samlet valg- og vedleggsflate",
+  "change": "BEGGE; bare PR295 Preview/Sandbox. Native dokumentgrupper får responsivt to-kolonners PC-grid/én mobilkolonne;20px avkrysning med44px trefflate, lesbare fulle dokumentnavn/utgave-IDer og samme utvalgs-/vedleggsoversikt. Kun CSS-import/scopet klasse/presentasjonswrapper. Ingen callbacks, state/effect/operasjonslås, tilgang, innhold, eksportdata, bekreftelser, lagring, PDF/ZIP-renderer eller backend endres. PR298 firmabytte-lås holdes separat.",
+  "verification": "Native browser23 assertions PASS: fem bredder320/390/768/1363/1920,600px høyde, samme dokumentvalg/bekreftelsesgate, bevart omfang/valg ved blur/focus/active-flagg, tastaturdisclosure, fjerning og manager-gate. Original91ce har samme18 ikke-designassertions. Faktiske før/etter-PC/mobilbilder er tatt i native komponent med syntetisk lesetransport. Eksisterende critical uttrekk/vedleggsarkiv/legacy/deviation/PDF-gater består. Den utvidede manuelle native eksportprøven lager to PDF-er før den feiler ved kjent company-return-lås; dette er ikke grønn helreise, og sammenlignes med uendret91ce. QR/filbro/innlogget/full rolleattest er ikke inkludert. Presise eksporter/sider, baselinefeil, build/fullCI/READY og varige bilder kvitteres i PR295.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Ingen knappnavn, kommandoer eller rekkefølge endres."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Ingen data-/tilgangs-/state-/eksporteier endres."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen nye avhengigheter eller konfigurasjon."
+    },
+    "module": {
+      "required": true,
+      "reason": "Scoped presentasjon og separat PR298-begrensning dokumenteres i kshms/README.md."
+    }
+  }
+}

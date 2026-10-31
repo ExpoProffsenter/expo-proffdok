@@ -1,3 +1,7 @@
+# Dokumentuttrekk – native valgflate31.10
+
+Samme PR295/Preview/Sandbox, BEGGE. [Scope/tester og separat PR298-begrensning](docs/changes/inspection-extract-workspace-036-20261031.json). Kandidat/CI/READY/bilder i PR295. Ingen redesign-TEST OK/Production/main/demo.
+
 # Garanti – kategorier og PDF-fortsettelse31.10.2026
 
 Samme PR295/Preview/Sandbox: originale Sopro-mangler per kategori, lesbar full kvittering og gjentatt målt PDF-kategori ved sideskift. [Endring og presise grenser](docs/changes/warranty-point-groups-pdf-continuations-20261031.json). Endelig kandidat/CI/READY/tester/bilder i PR295. BEGGE; ingen redesign-TEST OK/Production/main/demo.
