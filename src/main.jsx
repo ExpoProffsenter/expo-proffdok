@@ -42,6 +42,7 @@ import { createHelpCenter } from './modules/help/helpTools.js';
 import { createChecklistEditor } from './modules/checklist/checklistTools.js';
 import ProjectChecklistPicker from './modules/checklist/ProjectChecklistPicker.jsx';
 import ProjectChecklistWorkspace from './modules/checklist/ProjectChecklistWorkspace.jsx';
+import StandaloneChecklists from './modules/checklist/StandaloneChecklists.jsx';
 import ProjectSjaEntry from './modules/kshms/ProjectSjaEntry.jsx';
 import { appendProjectChecklist,projectChecklistTemplate,sameChecklistContent } from './modules/kshms/kshmsChecklists.mjs';
 import { createImageDocumentationTools } from './modules/images/imageDocumentationTools.js';
@@ -707,6 +708,7 @@ const BoligEntry = React.lazy(() => import('./modules/bolig/BoligEntry.jsx'));
     const [mobileMenuOpen, setMobileMenuOpen] = (0, import_react.useState)(false);
     const [mobileStatusOpen, setMobileStatusOpen] = (0, import_react.useState)(false);
     const [checklistEntryRequest, setChecklistEntryRequest] = (0, import_react.useState)(null);
+    const [standaloneChecklistsOpen, setStandaloneChecklistsOpen] = (0, import_react.useState)(false);
     const [projectDirty, setProjectDirty] = (0, import_react.useState)(false);
     const defaultCompanyProfile = { companyName: "Expo Proffsenter", address: "", orgNumber: "", phone: "", email: "", website: "", logoUrl: "" };
     const [company, setCompany] = (0, import_react.useState)({ ...defaultCompanyProfile });
@@ -1960,7 +1962,9 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
     });
     const ownRights = personalRights(personalContext,kshmsContext,hrContext,authUser?.id);
     const { context: boligContext } = useBoligContext(authUser?.id);
+    const canUseStandaloneChecklists = Boolean(authUser?.id && authUser.id === kshmsContext?.user_id && kshmsContext?.company_id && !isProjectSupportReadOnly);
     const globalTabs = createGlobalAppTabs({
+      canUseStandaloneChecklists,
       isCompanyAdminUser,
       canUseKshms: Boolean(kshmsContext?.enabled),
       canUseHr: ownRights.hrManagement,
@@ -1979,7 +1983,8 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       ["sjekklister", "Sjekklister", "✅"]
     ] : [
       ["sales", "Befaring/Tilbud", "🧾"],
-      ["prosjektliste", "Prosjektliste", "📁"]
+      ["prosjektliste", "Prosjektliste", "📁"],
+      ...(canUseStandaloneChecklists ? [["standalone_checklists", "Sjekklister", "✅"]] : [])
     ];
     const mobilePrimaryTabIds = new Set(mobilePrimaryTabs.map(([id]) => id));
     const mobileOtherTabs = tabs.filter(([id]) => !mobilePrimaryTabIds.has(id));
@@ -6341,7 +6346,8 @@ ${appLink}`;
                 setTab("prosjekt");
                 setTimeout(() => scrollToMobileTabTarget("prosjekt"), 120);
               }, children: "+ Nytt prosjekt" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => goToTab("prosjektliste"), children: "Åpne prosjektliste" })
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => goToTab("prosjektliste"), children: "Åpne prosjektliste" }),
+              canUseStandaloneChecklists && (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => goToTab("standalone_checklists"), children: "Fyll ut sjekkliste" })
             ] })
           ] }),
           warrantyTemplateProjectRows.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileHomeSearchCard", style: { marginTop: "12px" }, children: [
@@ -6558,7 +6564,8 @@ ${appLink}`;
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: startNewSalesOffer, children: "+ Nytt tilbud" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: openSalesOverview, children: "Åpne Befaring/Tilbud" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => { createNewProject(); setTab("prosjekt"); }, children: "+ Nytt prosjekt" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => goToTab("prosjektliste"), children: "Åpne prosjektliste" })
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => goToTab("prosjektliste"), children: "Åpne prosjektliste" }),
+              canUseStandaloneChecklists && (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => goToTab("standalone_checklists"), children: "Fyll ut sjekkliste" })
             ] })
           ] }),
           warrantyTemplateProjectRows.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { marginTop: "18px", background: "#f8fbff" }, children: [
@@ -6948,6 +6955,8 @@ ${appLink}`;
           setInternalNotes,
           saveProject
         }),
+        tab === "prosjektliste" && authUser?.id === kshmsContext?.user_id && kshmsContext?.company_id && !isProjectSupportReadOnly && (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => setStandaloneChecklistsOpen(true), children: "Fyll ut sjekkliste" }),
+        (tab === "standalone_checklists" || standaloneChecklistsOpen && tab === "prosjektliste") && canUseStandaloneChecklists && (0, import_jsx_runtime.jsx)(StandaloneChecklists, { companyId: kshmsContext.company_id, userId: authUser.id, onClose: () => { if (tab === "standalone_checklists") goToTab("prosjekt"); else setStandaloneChecklistsOpen(false); } }, `${authUser.id}:${kshmsContext.company_id}`),
         tab === "prosjektliste" && renderProjectListPanel({
           projectListStats,
           projectSearch,

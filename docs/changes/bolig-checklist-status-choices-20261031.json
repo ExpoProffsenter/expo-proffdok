@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Kompakte grønne og oransje resultatvalg i Bolig og UE-sjekklister",
+  "change": "Miljømål BEGGE, bare eksisterende PR294/Preview/Sandbox. Oppdaterer kontrollert fra mainb389c707 før avgrenset Bolig-diff. Begge native resultat-nedtrekk erstattes med én isolert Bolig-komponent,20px statusboks,16px tekst og44px trykkflate. OK/Ikke aktuelt er grønne, Avvik oransje. Samme valgte svar kan tømmes som tidligere tomt dropdownvalg. Ikke aktuelt og Lukket avvik vises med samme opprinnelige betingelser. Editorens patch/invalidering, serverstatus, readOnly/busyfieldset, lokal kladd, lagring, fullføringskrav, historikk, kvittering og eksakt retry er uendret. Ingen SQL/RLS/Auth/Storage/Edge/workflow/avhengighetsendring som del av rettelsen; main-integrasjonen beholder nyere signaturkode byteidentisk.",
+  "verification": "Originale native Bolig35 og UE49 browserassertions PASS før endring; faktiske førbilder390/1363. Utvidet native komponentprøve med alle tidligere krav dekker320/390/768/1363/1920, kort600px skjerm, alle resultatvalg/tømming/farger/mål/tastatur/fokus, intet save fra valg, tillatt avvikslukking etter fullført/gjenåpnet kontroll, templateforbud mot NA, completed/reader/pending disabled, usendt kladd og dvale/focus, konflikt/eksakt retry og firmabortfall. Alle resterende gamle protokoll/FDV/vedlegg/fordeling/portal-rettigheter beholdes i test. Syntetisk backend/provider; ingen virkelig registrering eller e-post. Bolig109 og UE121assertions PASS; boundary55/release-docs/scope PASS og full eksplisitt critical Sandbox-build PASS. Eksisterende native FDV12 og samlet dokumenteksport40assertions PASS. Fire faktiske native PDF-er (FDV kort1/lang10 og samlet dokumentasjon kort7/lang11) er rendret alle29sider med Poppler og visuelt inspisert, pluss innhold/sidetall/sidegrenser. Ingen ny PDF-layoutendring var nødvendig i disse fire. FullCI/READY/Sandbox-binding og bildeidentiteter føres i PR294. Innlogget Bolig/UE-helreise og fysisk mobil/Safari er ikke attestert av isolert komponentprøve.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "Nye direkte resultatknapper og tømming forklares med faktisk lagreknapp i begge arbeidsflater."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Ingen ny dataflyt eller eier; eksisterende editor eier alle status- og lagringsregler."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen avhengigheter, installasjon eller miljøendring."
+    },
+    "module": {
+      "required": true,
+      "reason": "Modulkontrakt avgrenser isolert presentasjon og de native sperrene."
+    }
+  }
+}

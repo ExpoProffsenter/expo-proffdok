@@ -32,6 +32,11 @@ export function BoligHelp() {
           Firmaets aktivering og den enkelte brukerens tilgang styrer hvem som får åpne modulen.
           Private kontrakter har i tillegg navngitt tilgang.</p>
       </details>
+      <details>
+        <summary>Svar på kontrollpunkter i Bolig og UE-portalen</summary>
+        <p>Velg «OK», «Ikke aktuelt» eller «Avvik» ved punktet. Valgt OK og Ikke aktuelt får en grønn hake. Avvik får en oransje hake. Noen punkter tillater ikke Ikke aktuelt. Trykk på valgt svar igjen for å tømme det.</p>
+        <p>Et avvik trenger fortsatt de vanlige opplysningene og eventuell dokumentasjon. «Lukket avvik» vises når det lagrede avviket kan følges opp. Bruk «Lagre kontroll» i Bolig eller «Lagre sjekkliste» i UE-portalen. Et valg alene lagrer eller fullfører ikke kontrollen.</p>
+      </details>
       <p>
         Start i prosjektoversikten. Velg «Bygg nytt prosjekt», fortsett en
         kladd, eller åpne et av firmaets prosjekter. «Prosjektoversikt» tar deg

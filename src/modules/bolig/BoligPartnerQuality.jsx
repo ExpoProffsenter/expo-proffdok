@@ -1,3 +1,4 @@
+import BoligChecklistStatusChoices from "./BoligChecklistStatusChoices.jsx";
 import React, { useEffect, useState, useRef } from "react";
 import Dialog from "./BoligEditorDialog.jsx";
 import ChecklistGroups, { partnerChecklistKey } from "./BoligPartnerChecklistGroups.jsx";
@@ -567,24 +568,16 @@ export default function PartnerQuality({
                     <fieldset key={p.id}>
                       <legend>{p.title}</legend>
                       {p.guidance && <p>{p.guidance}</p>}
-                      <label>
-                        Resultat
-                        <select
-                          aria-label={`Resultat: ${p.title}`}
+                      <div>
+                        <span className="bolig-checklist-result-label">Resultat</span>
+                        <BoligChecklistStatusChoices
+                          label={`Resultat: ${p.title}`}
                           value={a.status || ""}
-                          onChange={(e) => patch(p, { status: e.target.value })}
-                        >
-                          <option value="">Velg resultat</option>
-                          <option>OK</option>
-                          <option>Avvik</option>
-                          {p.allow_na !== false && (
-                            <option>Ikke aktuelt</option>
-                          )}
-                          {["Avvik", "Lukket avvik"].includes(
-                            check.record.answers[p.id]?.status,
-                          ) && <option>Lukket avvik</option>}
-                        </select>
-                      </label>
+                          allowNa={p.allow_na !== false}
+                          allowClosed={["Avvik", "Lukket avvik"].includes(check.record.answers[p.id]?.status)}
+                          onChange={status => patch(p, { status })}
+                        />
+                      </div>
                       {a.status === "Avvik" && (
                         <label>
                           Alvorlighetsgrad

@@ -258,3 +258,10 @@ if (failures.length) {
 }
 
 console.log("✅ Expo ProffDok project navigation check OK – anbefalt løp, Help og legacy prosjektmeny bruker samme trygge native flyt");
+
+// External checklists are an authorized global destination, independent of project tabs.
+const standaloneGlobal=createGlobalAppTabs({canUseStandaloneChecklists:true});
+if(!standaloneGlobal.some(([id,label])=>id==='standalone_checklists'&&label==='Sjekklister'))throw Error('Missing standalone global destination');
+if(createGlobalAppTabs().some(([id])=>id==='standalone_checklists'))throw Error('Standalone destination requires scoped access');
+if(createProjectWorkspaceTabs().some(([id])=>id==='standalone_checklists'))throw Error('External route must not replace project checklist route');
+if(!main.includes('goToTab("standalone_checklists"), children: "Fyll ut sjekkliste"'))throw Error('Missing native home shortcut');

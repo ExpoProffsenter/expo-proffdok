@@ -1,3 +1,4 @@
+import {installChecklistCanvas,drawChecklistSignature,mockChecklistSignatures} from './fixtures/checklist-signatures.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -25,15 +26,17 @@ window.__rpc=async(name,args)=>{
   if(lateResolve){await new Promise(resolve=>{lateResolve.resolve=resolve;});}
   return {context:{company_id:company,project_id:project,user_id:'user'},runs:structuredClone(runs),checklist:structuredClone(checklist)};
  }
- assert.equal(name,'project_checklist_command');lastRequest=args.p_request_id;
+ assert(['project_checklist_command','project_checklist_signed_command'].includes(name));lastRequest=args.p_request_id;
  if(receipts.has(args.p_request_id))return receipts.get(args.p_request_id);
  const old=runs.find(row=>row.id===args.p_payload.id);
  if(old&&old.revision!==args.p_payload.revision){const error=Error('En annen person har lagret. Kladden er beholdt.');error.code='PT409';throw error;}
  const row={...structuredClone(args.p_payload),category:args.p_payload.definition.category,company_id:company,project_id:project,revision:(old?.revision||0)+1,status:args.p_action==='complete'?'completed':'draft',updated_at:'2026-10-07T19:00:00Z',updated_identity:identity,...(args.p_action==='complete'?{completed_at:'2026-10-07T19:00:00Z',completed_identity:identity}:{})};
+ row.signatures=mockChecklistSignatures(args.p_payload.signatures,row.id,row.revision,'user');
  runs=[row,...runs.filter(value=>value.id!==row.id)];checklist={...checklist,[row.category]:row.answers};
  const result={context:{company_id:company,project_id:project,user_id:'user'},run:row,answers:row.answers};receipts.set(args.p_request_id,result);
  if(failAfterCommit){failAfterCommit=false;throw Error('Svaret ble borte etter lagring');}return result;
 };
+installChecklistCanvas(window);
 window.eval((Array.isArray(bundle)?bundle[0]:bundle).output.find(value=>value.type==='chunk').code);
 const act=window.__act,button=text=>[...window.document.querySelectorAll('button')].find(node=>node.textContent.trim()===text);
 const click=async node=>{assert(node,'Missing button');await act(async()=>node.click());};
@@ -46,7 +49,7 @@ const dialog=window.document.querySelector('[role="dialog"]');dialog.scrollTop=1
 assert.equal(window.document.querySelector('[role="dialog"]'),dialog);assert.equal(dialog.scrollTop,120);assert.equal(runs[0].answers['Kontroller rør'].status,'Ok');
 await click(button('Lukk'));await act(async()=>window.__unmount());await act(async()=>window.__render(props()));await click(button('Åpne sjekkliste'));
 assert.equal(runs.length,1);assert(window.document.body.textContent.includes('Kontroll under arbeid'));await choose('Ikke aktuelt',1);
-await click(button('Sjekkliste fullført'));assert.equal(runs[0].status,'completed');assert(window.document.body.textContent.includes('QA Utførende'));
+await act(async()=>drawChecklistSignature(window));await click(button('Sjekkliste fullført'));assert.equal(runs[0].status,'completed');assert(window.document.body.textContent.includes('QA Utførende'));
 const first=structuredClone(runs[0]);await click(button('Start ny kontroll'));assert.equal(window.document.querySelector('fieldset:disabled'),null);assert.equal(window.document.querySelectorAll('button.statusOn').length,0);
 await choose('Avvik');await choose('Ikke aktuelt',1);failAfterCommit=true;await click(button('Lagre'));assert(window.document.body.textContent.includes('Svaret ble borte'));const retry=lastRequest;
 await click(button('Prøv lagring igjen'));assert.equal(lastRequest,retry);assert.equal(runs.length,2);assert.deepEqual(runs[1],first);
@@ -56,8 +59,8 @@ await choose('Ok');runs[0]={...runs[0],revision:runs[0].revision+1,answers:{...r
 await click(button('Lagre'));assert(window.document.body.textContent.includes('En annen person har lagret'));
 await click(button('Vis lagret kontroll'));await click(button('Fortsett med lagret kontroll'));assert(window.document.body.textContent.includes('Kollegas retting'));
 await click(button('Vis tidligere kladd'));assert(window.document.querySelector('fieldset:disabled'));await click(button('Tilbake til kladden'));
-await click(button('✅ Lukk avvik'));await click(button('Sjekkliste fullført'));assert.equal(runs[0].answers['Kontroller rør'].status,'Lukket avvik');assert.deepEqual(runs[1],first);
-await click(button('Start ny kontroll'));await choose('Avvik');await choose('Ikke aktuelt',1);await click(button('Sjekkliste fullført'));
+await click(button('✅ Lukk avvik'));await act(async()=>drawChecklistSignature(window));await click(button('Sjekkliste fullført'));assert.equal(runs[0].answers['Kontroller rør'].status,'Lukket avvik');assert.deepEqual(runs[1],first);
+await click(button('Start ny kontroll'));await choose('Avvik');await choose('Ikke aktuelt',1);await act(async()=>drawChecklistSignature(window));await click(button('Sjekkliste fullført'));
 const deviationControl=structuredClone(runs[0]);await click(button('Lukk'));
 await act(async()=>{window.sessionStorage.setItem('expoProffDokChecklistJumpTarget',JSON.stringify({category,item:'Kontroller rør'}));window.dispatchEvent(new window.Event('expoProffDokChecklistJump'));});
 assert.equal(window.document.querySelector('fieldset:disabled'),null,'Go to point opened an immutable control instead of a follow-up');await click(button('✅ Lukk avvik'));await click(button('Lagre'));assert.equal(runs[0].answers['Kontroller rør'].status,'Lukket avvik');assert.deepEqual(runs[1],deviationControl);
@@ -74,7 +77,7 @@ await click(button('Åpne sjekkliste'));assert(window.document.body.textContent.
 await choose('Ok');await click(button('Lagre'));assert.equal(runs[0].category,design.category);assert.equal(runs[0].answers[design.items[0]].status,'Ok');assert.deepEqual(runs.slice(1),beforeDesign);
 await click(button('Lukk'));await act(async()=>window.__unmount());await act(async()=>window.__render(designProps()));await click(button('Åpne sjekkliste'));assert.equal([...window.document.querySelectorAll('button')].filter(b=>b.textContent.trim()==='Ok'&&!b.classList.contains('secondary')).length,1);assert.equal(runs[0].answers[design.items[0]].status,'Ok');
 for(let n=1;n<design.items.length;n++)await choose('Ikke aktuelt',n);
-await click(button('Sjekkliste fullført'));assert.equal(runs[0].status,'completed');assert.deepEqual(runs.slice(1),beforeDesign);await click(button('Lukk'));await act(async()=>window.__unmount());
+await act(async()=>drawChecklistSignature(window));await click(button('Sjekkliste fullført'));assert.equal(runs[0].status,'completed');assert.deepEqual(runs.slice(1),beforeDesign);await click(button('Lukk'));await act(async()=>window.__unmount());
 await act(async()=>window.__render({...designProps(),readOnly:true}));await click(button('Åpne fullført sjekkliste'));assert(window.document.querySelector('fieldset:disabled'));assert(!button('Start ny kontroll'));assert(!button('Lagre'));await click(button('Lukk'));await act(async()=>window.__unmount());
 console.log('Design checklist real React PASS: shared save/reopen/full completion/read-only, no cross-category answers or overwritten execution history.');
 // Support stays read-only even without the caller also setting readOnly.

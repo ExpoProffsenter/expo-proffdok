@@ -1,3 +1,4 @@
+import BoligChecklistStatusChoices from "./BoligChecklistStatusChoices.jsx";
 import React, { useEffect, useRef, useState } from "react";
 import {
   ClipboardCheck,
@@ -974,25 +975,16 @@ export default function BoligQuality({ context, root, scopeId, onChange }) {
                                       </select>
                                     </label>
                                   )}
-                                  <label>
-                                    Resultat
-                                    <select
+                                  <div>
+                                    <span className="bolig-checklist-result-label">Resultat</span>
+                                    <BoligChecklistStatusChoices
+                                      label={`Resultat: ${p.title}`}
                                       value={a.status || ""}
-                                      onChange={(e) =>
-                                        patch({ status: e.target.value })
-                                      }
-                                    >
-                                      <option value="">Velg resultat</option>
-                                      <option>OK</option>
-                                      <option>Avvik</option>
-                                      {p.allow_na !== false && (
-                                        <option>Ikke aktuelt</option>
-                                      )}
-                                      {["Avvik", "Lukket avvik"].includes(
-                                        row.answers[p.id]?.status,
-                                      ) && <option>Lukket avvik</option>}
-                                    </select>
-                                  </label>
+                                      allowNa={p.allow_na !== false}
+                                      allowClosed={["Avvik", "Lukket avvik"].includes(row.answers[p.id]?.status)}
+                                      onChange={status => patch({ status })}
+                                    />
+                                  </div>
                                   <label>
                                     Kommentar
                                     {p.comment_required ? " (påkrevd)" : ""}

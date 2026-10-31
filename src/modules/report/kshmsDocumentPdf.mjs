@@ -1,3 +1,4 @@
+import {isExecutionChecklist,signatureReportBlocks} from '../checklist/checklistSignatures.mjs';
 import {fieldsReport} from '../checklist/checklistFields.mjs';
 import {appendExecutionPdf,loadCompanyLogo} from './kshmsExecutionReport.mjs';
 import {routineNumber} from '../kshms/kshmsJobChoices.mjs';
@@ -35,7 +36,7 @@ export function checklistRunPdfDocument(run){
  return {id:run.id,type:'Prosjektets sjekklistekontroll',title:definition.category.replace(/^KS\/HMS sjekkliste – /,''),fields:[['Status',completed?'Fullført':'UNDER ARBEID - IKKE FULLFØRT'],['Prosjekt-ID',run.project_id],['Kontroll-ID / lagret revisjon',`${run.id} / ${run.revision}`],['Kontrollnummer',run.sequence],['Fast malutgave-ID',definition.source_version_id||'Prosjektets egne / ordinære sjekkpunkter'],['Veiledning',definition.instructions],['Sist lagret av',identityText(run.updated_identity,run.updated_by)],['Sist lagret tidspunkt',when(run.updated_at)]],blocks:definition.items.map((item,i)=>{
   const a=run.answers?.[item]||{};
   return {title:`Sjekkpunkt ${i+1}: ${item}`,fields:[['Veiledning',definition.requirements?.[item]?.guidance],['Dokumentasjonskrav',requirements(definition.requirements?.[item]||{})],['Lagret svar',a.status||'Ikke besvart'],['Kommentar',a.comment],...fieldsReport(definition.requirements?.[item]?.fields,a.values),...(a.ks_deviation_id?[['Koblet KS/HMS-avvik-ID',a.ks_deviation_id]]:[]),...(['Avvik','Lukket avvik'].includes(a.status)?[['Avviksoppfølging','Dette er kontrollens lagrede svar. Se Avvik/RUH for gjeldende status; fullført kontroll lukker ikke avvik.']]:[]),...(a.photos||[]).filter(isDocument).map(file=>['Dokumentvedlegg',`${file.name||'Uten filnavn'} - filen følger ikke denne PDF-en. Åpne originalen i prosjektet.`])],photos:(a.photos||[]).filter(file=>!isDocument(file)).map(file=>({file}))};
- }),closing:completed?[['Fullført av - lagret identitet',identityText(run.completed_identity,run.completed_by)],['Fullført tidspunkt',when(run.completed_at)],['Fullføring','Punktenes svar ble lagret ved fullføring. Åpne avvik følges opp separat.']]:[['Fullføring','Ikke fullført. Utkastet dokumenterer ikke bekreftet gjennomføring.']]};
+ }).concat(isExecutionChecklist(definition)?signatureReportBlocks(run.signatures,run.status):[]),closing:completed?[['Fullført av - lagret identitet',identityText(run.completed_identity,run.completed_by)],['Fullført tidspunkt',when(run.completed_at)],['Fullføring','Punktenes svar ble lagret ved fullføring. Åpne avvik følges opp separat.']]:[['Fullføring','Ikke fullført. Utkastet dokumenterer ikke bekreftet gjennomføring.']]};
 }
 
 function savedRow(kind,state,expected,{companyId,userId,projectId}){
@@ -44,7 +45,7 @@ function savedRow(kind,state,expected,{companyId,userId,projectId}){
  const row=(kind==='run'?state.runs:state.versions)?.find(value=>value.id===expected.id);
  if(!row||row.company_id!==companyId)throw Error('Utgaven er ikke tilgjengelig i dette firmaet. Åpne dokumentet på nytt.');
  if(kind==='run'){
-  if(row.project_id!==projectId||row.revision!==expected.revision||row.status!==expected.status||!sameRunValue(row.definition,expected.definition)||!sameRunValue(answersForDefinition(row.definition,row.answers),answersForDefinition(expected.definition,expected.answers)))throw Error('Kontrollen har ulagrede endringer eller en nyere lagret utgave. Lagre eller åpne den lagrede kontrollen på nytt før PDF.');
+  if(row.project_id!==projectId||row.revision!==expected.revision||row.status!==expected.status||!sameRunValue(row.signatures,expected.signatures)||!sameRunValue(row.definition,expected.definition)||!sameRunValue(answersForDefinition(row.definition,row.answers),answersForDefinition(expected.definition,expected.answers)))throw Error('Kontrollen har ulagrede endringer eller en nyere lagret utgave. Lagre eller åpne den lagrede kontrollen på nytt før PDF.');
  }else if(row.content_hash!==expected.content_hash||row.number!==expected.number||!sameRunValue(row.content,expected.content)||(kind==='routine'?row.routine_id!==expected.routine_id:row.template_id!==expected.template_id))throw Error('Rutine- eller sjekklisteutgaven er endret. Åpne den på nytt.');
  if(kind==='routine'&&!x.manage&&!state.assignments?.some(a=>a.user_id===userId&&a.version_id===row.id&&a.company_id===companyId))throw Error('Denne rutineutgaven er ikke tildelt deg.');
  if(kind==='template'&&!x.manage)throw Error('Du har ikke tilgang til sjekklistesentralen.');
@@ -63,6 +64,7 @@ export async function downloadDocumentPdf({kind,expected,rpc,companyId,userId,pr
  const document=kind==='routine'?routinePdfDocument(row,state.routines?.find(r=>r.id===row.routine_id)):kind==='template'?checklistTemplatePdfDocument(row,state.templates?.find(t=>t.id===row.template_id)):checklistRunPdfDocument(row);
  // Source URLs (including short-lived tokens) never enter exported text/links.
  for(const block of document.blocks)for(const photo of block.photos){
+  if(photo.data)continue;
   const url=resolveFileUrl(photo.file);if(!url)throw Error('Et lagret bilde mangler filadresse. PDF er ikke laget.');
   const data=await loadImage(url);if(!isCurrent())return null;
   if(!data)throw Error('Et lagret bilde kunne ikke hentes. PDF er ikke laget. Prøv igjen når bildet er tilgjengelig.');
