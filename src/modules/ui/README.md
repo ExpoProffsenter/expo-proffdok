@@ -67,7 +67,7 @@ På bred PC samles modul-/hjelpetopp og prosjektfaner tettere. Når ingen bolig 
 
 ### Boligprosjektets pakkeeditorer
 
-Kun native dialoger med `.bolig-package-editor` eller `.bolig-option-editor` får felles680px høyrepanel, marineblå topp og fast synlig kryss. De eksisterende skjemaene ruller i egen flate med16px/44px felt/knapper,14px hjelpetekst, to feltkolonner på PC og én på mobil. Native lagreknapp er synlig også når vareinnholdet er langt. Andre Bolig-dialoger, bildevisninger og private kontrakter endres ikke av selektoren. Pris, fratrekk, feltverdier, kladd, revisjonskontroll, opplasting og lagring har samme eiere. Se docs/changes/housing-catalog-editor-workspace-036-20261031.json og den faktiske328krav-prøven i housing-catalog-editor-workspace-browser-check.mjs.
+Kun native dialoger med `.bolig-package-editor` eller `.bolig-option-editor` får felles680px høyrepanel, marineblå topp og fast synlig kryss. De eksisterende skjemaene ruller i egen flate med16px/44px felt/knapper,14px hjelpetekst, to feltkolonner på PC og én på mobil. Native lagreknapp er synlig også når vareinnholdet er langt. Pakkeoversiktens native bibliotek har samme lesbare knapper/faner/innholdskort og8px rammer. Bibliotekselektoren gjelder ikke boligens individuelle valgskjema. Andre Bolig-dialoger, bildevisninger og private kontrakter endres ikke av selektoren. Pris, fratrekk, feltverdier, kladd, revisjonskontroll, opplasting og lagring har samme eiere. Se docs/changes/housing-catalog-editor-workspace-036-20261031.json og den faktiske376krav-prøven i housing-catalog-editor-workspace-browser-check.mjs.
 
 ### HR-underflater
 

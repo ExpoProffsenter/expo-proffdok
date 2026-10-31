@@ -1,6 +1,6 @@
 # Grunnpakke-/tilvalgseditor –31.10
 
-Samme PR295/Preview/Sandbox, BEGGE. Faktisk innlogget editor hadde fortsatt gammel960px sentrert dialog/12px felt. De to native pakkeskjemaene får nå samme680px høyrepanel/navy/16-44/8px-rammer og synlig Lagre ved langt innhold.328native krav/24visningerPASS, negativ gammelCSS feiler, eksisterende catalogReact og navigation24PASS, full critical Sandbox-buildPASS. [Scope og presise tester](docs/changes/housing-catalog-editor-workspace-036-20261031.json). Ingen Bolig-kjerne-/pris-/tilgangs-/lagrings-/backendendring. Eksakt sluttkandidat/CI/READY/live føres i PR295. Totaldesign og tidligere restpunkter er fortsatt åpne; ingen TEST OK/Production/demo-synk.
+Samme PR295/Preview/Sandbox, BEGGE. Faktisk innlogget editor hadde fortsatt gammel960px sentrert dialog/12px felt. De to native pakkeskjemaene får nå samme680px høyrepanel/navy/16-44/8px-rammer og synlig Lagre ved langt innhold.376native krav/24editorvisninger og begge pakkeoversikterPASS, negativ gammelCSS feiler, eksisterende catalogReact og navigation24PASS, full critical Sandbox-buildPASS. [Scope og presise tester](docs/changes/housing-catalog-editor-workspace-036-20261031.json). Ingen Bolig-kjerne-/pris-/tilgangs-/lagrings-/backendendring. Eksakt sluttkandidat/CI/READY/live føres i PR295. Totaldesign og tidligere restpunkter er fortsatt åpne; ingen TEST OK/Production/demo-synk.
 
 # Sølgløtt-visning og boligoversiktens søkelayout –31.10
 

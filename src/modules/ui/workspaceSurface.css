@@ -437,3 +437,17 @@ body:has([data-expo-app-shell="true"]) .company-user-status[data-status="pending
  body:has([data-expo-app-shell="true"]) .bolig-catalog-dialog>form:is(.bolig-package-editor,.bolig-option-editor){padding:16px}
  body:has([data-expo-app-shell="true"]) .bolig-catalog-dialog>form:is(.bolig-package-editor,.bolig-option-editor) .bolig-section-line-fields{grid-template-columns:minmax(0,1fr)}
 }
+
+/* The package library shares the same readable controls as its native editors.
+   Unit choices do not contain this library and retain their existing layout. */
+@media screen {
+ [data-expo-app-shell="true"] .bolig-catalog:has(>.bolig-catalog-library){padding:0;border:0;border-radius:0;box-shadow:none;background:transparent;font-size:16px;line-height:1.45}
+ [data-expo-app-shell="true"] .bolig-catalog:has(>.bolig-catalog-library) :is(button,summary){font-size:16px!important;min-height:45px!important;border-radius:6px!important;white-space:normal}
+ [data-expo-app-shell="true"] .bolig-catalog:has(>.bolig-catalog-library) summary{display:flex;align-items:center;overflow-wrap:anywhere}
+ [data-expo-app-shell="true"] .bolig-catalog:has(>.bolig-catalog-library) p{font-size:16px!important;line-height:1.45}
+ [data-expo-app-shell="true"] .bolig-catalog:has(>.bolig-catalog-library) small{font-size:14px!important;line-height:1.4}
+ [data-expo-app-shell="true"] .bolig-catalog:has(>.bolig-catalog-library) h4{font-size:18px!important;line-height:1.3}
+ [data-expo-app-shell="true"] .bolig-catalog:has(>.bolig-catalog-library) .bolig-catalog-library{padding:0;border:0;background:transparent}
+ [data-expo-app-shell="true"] .bolig-catalog:has(>.bolig-catalog-library) .bolig-catalog-cards>article{min-width:0;padding:16px;border:1px solid #d4e2e6;border-radius:8px;box-shadow:none;background:#fff}
+ [data-expo-app-shell="true"] .bolig-catalog:has(>.bolig-catalog-library) .bolig-catalog-cards .bolig-toolbar{gap:8px;flex-wrap:wrap}
+}
