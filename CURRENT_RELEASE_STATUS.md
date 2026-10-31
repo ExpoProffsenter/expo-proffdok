@@ -1,3 +1,7 @@
+# Egne sjekkpunkter og godkjenningskø – Preview-arbeid
+
+[Oppgave304](https://github.com/ExpoProffsenter/expo-proffdok/issues/304) gjelder flere bevarte lokale kladder, egne punkter for alle aktive ansatte og forslag til firmamal med separat firmagodkjenning. Eksisterende core-branch gjenbrukes fra publisert main; ingen ny branch. Migrering prøves kun i Sandbox før ny TEST OK. Ingen Production- eller demo-synk er godkjent for denne funksjonen. DesignPR295 viser funksjonen som Preview-integrasjon av [corePR305](https://github.com/ExpoProffsenter/expo-proffdok/pull/305). Ingen ny backend skjules som en ren designendring. Nøyaktig kandidat, CI, Preview og innloggede begrensninger vedlikeholdes i PR/oppgave304. [Endring og tester](docs/changes/checklist-template-proposals-20261031.json).
+
 # Designfortsettelse – 31.10.2026
 
 Samme draftPR295/branch/Preview, miljømål BEGGE. Gjeldende main b389c707 er integrert med publiserte eksterne sjekklister/signaturer/firmamal. Seks arbeidsområder på Startside beholdes; Fyll ut sjekkliste legges i eksisterende sjekklisteområde. Ny samlet pakke: kompakte svarvalg, native maleditor og planfelt. Faktisk kandidat/QA/deploy/live dokumenteres i PR295. Ingen redesign-TEST OK eller Production-publisering.

@@ -1,3 +1,15 @@
+# Ansattes egne sjekkpunkter – Preview-integrasjon31.10
+
+Brukerens nye oppdrag i oppgave304: Start sjekkliste skal virke selv med en tidligere kladd, alle aktive ansatte kan bygge egne punkter og foreslå dem til firmaadmin. Egen corePR305 fra publisert main eier den additive Sandbox-migreringen og nye smale RPC-er. Eksakt core09b1ece3839a367c2e61faeea3f184999f6a88d1 integreres her for samme faste Preview. Dette er uttrykkelig en funksjonsavhengighet, ikke en ren CSS-endring eller en Production-godkjenning. Ingen ny branch; PR295/fast Preview beholdes. Begge PR-er trenger relevant TEST OK. Production/main b389c707 og demo8ee9c23d er urørt.
+
+Konfliktene er løst med begge imports (kompakte svarvalg og forslagskø), samme design-Home med seks områder, eksisterende statusknapper og alle nye employee/admin-assertions. Gamle kladder, signaturer, firmamalrettigheter og native PDF/mailprøver bevares. Core lokal166browser/44SQL/kladdbibliotek/fullbuildPASS. Endelig integrasjons-QA/CI/READY/innlogget status vedlikeholdes i PR295. Ingen reell mail, tilgangsgrant eller historisk kontroll endres.
+
+Prøve i Sjekklister: Egen sjekkliste→Start sjekkliste→Navn på sjekklisten/Tekst for sjekkpunkt/Legg til sjekkpunkt. Andre lokale kladder bevares. Foreslå som firmamal→Send forslag til firmaadmin. Ansatt: Mine malforslag. Firmaadmin: Forslag til firmamaler→Se malforslag→bekreft gjennomgang→Godkjenn som firmamal, eller Avslå forslag med begrunnelse. Godkjent definisjon blir valgbar firmamal. Ingen kunde-/ordre-/svar-/signaturdata sendes til køen.
+
+Den tidligere145-reisers gjennomgangen og alle øvrige åpne grenser nedenfor består. Bolig/UE i oppgave302, PR294 og PR298 er fortsatt separat.
+
+---
+
 # Design 03.6 – gjenoppta uten ny runde
 
 ## Samlet fortsettelse31.10 – sjekklistesvar, maleditor og planfiltre

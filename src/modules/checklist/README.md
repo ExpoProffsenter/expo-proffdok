@@ -21,3 +21,11 @@ Nye UI-kommandoer er `project_checklist_signed_command` og `standalone_checklist
 ### Kompakte svarvalg i design-Preview
 
 ChecklistStatusChoices er en ren kontrollert visning. Den bruker eksisterende Ok/Ikke aktuelt/Avvik-verdier og onChange; lagring, signaturinvalidasjon og avvikslenker blir hos opprinnelig editor. Native knapper har aria-pressed,20px visuell boks og minst44px trykkflate. Avvik er oransje, øvrige valgte svar grønne. Foreldres disabled/fieldset og definisjonens allow_na beholdes. Prosjektets felles editor (inkludert prosjektering/fag/garanti) og eksterne sjekklister bruker samme visning. Bolig/UE har egen komponent og er fortsatt en separat, åpen del av oppgave302; ingen Bolig-kjerne endres i design-PR295.
+
+## Egne punkter og malforslag
+
+Alle godkjente ansatte i aktivt arbeidsfirma kan starte Egen sjekkliste og bygge punkter/underfelt uten personlig KS/HMS-tilgang. En eksisterende kladd blokkerer ikke Start sjekkliste. `standaloneDraftsKey` avgrenser flere lokale kladder per bruker/firma. Ny og gammel kladd arkiveres atomisk før aktiv legacy-nøkkel flyttes; feil eller korrupt innhold sperrer byttet. Kun den bekreftede/forkastede kladdens ID fjernes. Eksakt ventende request/payload bevares. Lokal sikring er ikke serverlagring; enhetsbytte krever Lagre sjekkliste.
+
+`ChecklistTemplateProposal` sender bare kanonisk definisjon via `checklist_template_proposal_submit`. Ingen ordre, kunde, besvarelse eller signatur kopieres. Forslaget er privat til forslagsstiller og firmaets behandlere. `ChecklistProposalInbox` viser Mine malforslag for ansatte og Forslag til firmamaler for firmaadmin/utpekt KS/HMS-ansvarlig. Eksakt detalj leses før behandling. Punkter/underfelt vises uendret. Godkjenning krever bevisst gjennomgang; avslag krever begrunnelse. Frosne forespørsler og separat readback håndterer forbindelsesbrudd uten doble maler. Usendt behandlingsmerknad sikres lokalt. Eksisterende direkte malutkast/publisering beholder sine tidligere rettigheter.
+
+Migrering `20261031012504_checklist_template_proposals.sql` er additiv. Kjør først i Sandbox, deretter Production først etter ny TEST OK. Nye DB- og kladdbiblioteksprøver importeres fra den eksisterende standalone-nettleserprøven slik at samme CI-pakke dekker dem. Ingen e-post sendes for malforslag; køen er selve leveringen til firmaadmin.
