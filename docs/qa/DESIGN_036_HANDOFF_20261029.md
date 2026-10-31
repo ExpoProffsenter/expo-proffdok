@@ -1,3 +1,17 @@
+# HR, KS/HMS og sjekklister –31.10
+
+Miljømål BEGGE, samme PR295/Preview/Sandbox. Native HR-underflater655krav/133visninger, HR-forside153, KS/HMS-forside197, rutineforvaltning401/100visninger og RUH/SJA/vernerunde/risiko984/221visningerPASS. Live HR-samtale4steg, leder/tilgang og sjekklistemal/underfelt er kontrollert. En faktisk18px-underpunktsrad/14px-etiketter i sjekklistemalen får44px/16px og like8px rammer. Alle143gamle feltkrav beholdt pluss15nye; rettet158PASS. Frittstående sjekkliste170 og44forslags-SQL PASS før/etter CSS. KS984består også etter CSS. Full Sandbox critical/buildPASS. [Avgrensning og bevis](../changes/people-checklist-subflows-036-20261031.json). Eksakt kandidat/fullCI/READY/levende sjekklisteetterkontroll føres i PR295.
+
+Ny video: [Prøvesamtale: opprett, fullfør og gå tilbake](https://chatgpt.com/library?file_id=libfile_c30fe07312e0819197e3637b5957ecd8&account_id=personal) · [Redigerbare kilder](https://chatgpt.com/library?file_id=libfile_ef608f09d0508191bdc8fad094c8bc27&account_id=personal).171sekunder/18scener/H264/1920x1080/24fps/uten lyd,4104frames dekodet og virkelig Chromium-start/spoling/sluttPASS. Faktiske HR-opptak fraa722cc4f; HR-kilder/opptatt UI er uendret av denne sjekkliste-CSS-pakken. Alle fire temaer i forberedelse og samtale, begge tiltak/ansvar/frister, lagring/gjenåpning av4utgaver, PDF-knapp/appbeskjed og begge returer. Fire avgrensede filmer finnes nå. Ikke reset/sletting, videre redigering, ekte HR-oppfølging eller hele HR-010.
+
+PDF-begrensning: Appen viste eksportbekreftelse, men skynettens nedlastingshenting ga Download failed; ingen fil fra den innloggede fanen er attestert. Separat faktisk React/Chromium/Web Locks-prøve lastet ned PDF og bestod gjenåpning/2fanekonflikt. Ingen reell invitasjon, e-post, signering, tilgangsendring eller HR-backendlagring. Kun én ny lokal prøve med4utgaver.
+
+Neste designpakke: Firmaadmin, Systemadmin, Hjelp, Support og portaler. Behold tidligere HR/KS/HMS-/sjekklistebevis; ikke start disse om igjen som ukontrollert. Reelle separate roller, fysiskmobil/Safari, resterende videoer og avspiller samt navngitte sluttpakke-/PDF-grenser er fortsatt åpne. Ingen global redesign-TEST OK, merge, Production eller demo-synk. Solgløtt avventer avtalt design- og releaseforløp.
+
+Kort prøve: KS/HMS → Sjekklister → Rediger sjekkliste → Underpunkter og svarfelt. Raden og etikettene skal være lett lesbare, og eksisterende malinnhold skal stå der. Lukk uten å publisere. HR → Alle HR-funksjoner → Åpne prøvesamtale følger filmen.
+
+---
+
 # Befaring, tilbud og prosjektets underflater –31.10
 
 Samme PR295/faste Preview/Sandbox, miljømål BEGGE. Befaring og begge tilbudsbyggere kontrolleres nå med appens faktiske sene mobilregler. De avdekket39px knapper; avgrenset CSS sikrer16px/minst45px. En lagret badskisse får ærlig status i den tomme lokale forhåndsvisningen. Tegning, lagring, server-first, recovery, priser og tilgang beholdes. [Scope og tester](docs/changes/sales-subflows-runtime-036-20261031.json): editor292/General229, opprettelse110, tilbudsrouter/mal/PDF59, uendrede prosjektunderflater573/90visninger og deltakeradapter21PASS, full critical Sandbox-buildPASS. Eksakt kandidat/fullCI/READY/levende etterkontroll føres i PR295. Ingen global design-TEST OK, merge, Production eller demo-synk.

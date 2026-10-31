@@ -23,8 +23,8 @@ Brukeren31.10: «Vi har hengt oss litt opp i boligprosjekt og må ikke glemme b�
 | Prosjektets faser og underfunksjoner | 16 | Hver fase med faktiske redigerere, underdialoger, historikk, roller og rapport/PDF. |
 | Sjekklister og firmamaler | 4 | Egne punkter, kladder, betingede felt, firmamalforslag/godkjenning, signert historikk/PDF. |
 | Boligprosjekter | 33 | Tidligere delbevis beholdes; PR294/live16bygg, roller/portaler og sluttpakker står separat. |
-| HR | 11 | Ansatt/leder, samtale/sykefravær, maler, historikk og tilgang; ingen ekte sending eller tilgangsendring. |
-| KS/HMS | 13 | Rutiner, SJA, avvik, fremdrift, ansatte, kontrollfrister, vedlegg og uttrekk. |
+| HR | 11 | Native kontakt/leder/samtale4steg/sykefravær6steg/maler/historikk/prøve kontrollert:655krav/133visninger. Reelle separate roller, fysisk mobil og resterende filmer gjenstår. |
+| KS/HMS | 13 | Native forside197, rutineforvaltning401/100visninger og RUH/SJA/vernerunde/risiko984/221visninger kontrollert. Reelle rolleforløp, fysisk mobil og øvrige filmer/uttrekk gjenstår. |
 | Firmaadmin | 7 | Invitasjoner, tilgang, firmaprofil/logo og eksisterende time-opt-in. |
 | Systemadmin | 9 | Alle adminfaner, underhandlinger og firma-/rollegrenser. |
 | Kunde- og kontrollørportaler | 2 | Kunde/kontrollør og egne PDF-/leseruter uten reell signering eller ny lenketilgang. |
@@ -54,3 +54,9 @@ Ny avgrenset film: [Les Kundens tilbud og gå tilbake](https://chatgpt.com/libra
 Appkandidat8003e7c7 har fullCI84410/10SUCCESS og READYdpl_GQv79n8zp9WgpqXx8PnZ3Aq23ABG på samme faste alias. Statisk binding Sandboxtrue/Productionfalse. Innlogget General16px/45px og returPASS; befaringsbildene lastet, rettet skissetekst1/gammel tomtekst0 og AvbrytPASS. Kundepreview-regresjon875+35+26PASS. Dagens case/innlogging beholdt ved reload. Dokumentasjon etter dette endrer ikke appen.
 
 Kort prøve i samme Preview: Åpne eksisterende befaring → Se/endre befaringsnotat. En lagret skisse skal vises med «Den lagrede badskissen vises ovenfor.» Velg Avbryt. Åpne et Generelt tilbud → Rediger tilbud; felt og handlinger skal være lett lesbare. Kontroller Kundens tilbud → Utvid kundevisning → Tilbake til arbeidet. Ikke publiser eller send som del av designprøven.
+
+## HR/KS/HMS/sjekklister – samlet kontroll31.10
+
+Native underflatebevis og aktuelle restpunkter er ført i videoregisterets design_review_batches og [endringsgrunnlaget](../changes/people-checklist-subflows-036-20261031.json). Neste designpakke går videre til Firmaadmin/Systemadmin/Hjelp/Support/portaler; denne kontrollen nullstiller ikke tidligere delbevis og attesterer ikke alle reelle roller eller hele reiser.
+
+Ny film: [Prøvesamtale: opprett, fullfør og gå tilbake](https://chatgpt.com/library?file_id=libfile_c30fe07312e0819197e3637b5957ecd8&account_id=personal) · [Redigerbare kilder](https://chatgpt.com/library?file_id=libfile_ef608f09d0508191bdc8fad094c8bc27&account_id=personal).171sekunder/18scener, godkjent mal1.0, full dekoding4104frames og faktisk Chromium-avspillingPASS. Fire avgrensede filmer totalt; ikke full videodekning. Prøven bruker bare lokalt eksempelinnhold. Appens PDF-beskjed er vist, men skynettens filhenting feilet; separat Chromium-nedlasting er grønn.

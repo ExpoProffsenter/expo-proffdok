@@ -22,6 +22,9 @@ try{
   eq(await d.locator('.deviation-dialog-header h2').evaluate(e=>parseFloat(getComputedStyle(e).fontSize)),width<=620?25:28,'builder readable title '+width);
   eq(await d.evaluate(e=>e.scrollWidth<=e.clientWidth+1),true,'builder has no horizontal overflow '+width);
   eq(await d.locator('input:not([type=checkbox]),select,textarea').evaluateAll(nodes=>nodes.every(n=>parseFloat(getComputedStyle(n).fontSize)>=16&&n.getBoundingClientRect().height>=44)),true,'builder fields16/44 '+width);
+  eq(await d.locator('.checklist-field-builder>summary').evaluateAll(nodes=>nodes.length>0&&nodes.every(n=>parseFloat(getComputedStyle(n).fontSize)>=16&&n.getBoundingClientRect().height>=44)),true,'native underpoint disclosures16/44 '+width);
+  eq(await d.locator('.ks-field>span,.checklist-field>label,.ks-checklist-point>legend').evaluateAll(nodes=>nodes.length>0&&nodes.every(n=>parseFloat(getComputedStyle(n).fontSize)>=16)),true,'native checklist and underpoint labels16 '+width);
+  eq(await d.locator('.checklist-field,.checklist-field-builder').evaluateAll(nodes=>nodes.length>0&&nodes.every(n=>getComputedStyle(n).borderRadius==='8px')),true,'same8px underpoint frames '+width);
   eq(await d.locator('label>input[type=checkbox]').evaluateAll(nodes=>nodes.length>0&&nodes.every(n=>{const r=n.getBoundingClientRect();return r.width===20&&r.height===20&&getComputedStyle(n.parentElement).display==='flex'&&n.parentElement.getBoundingClientRect().height>=44})),true,'compact aligned template checkboxes with finger target '+width);
   if(process.env.PROJECT_UX_SCREENSHOTS&&[1363,390].includes(width))await page.screenshot({path:path.join(process.env.PROJECT_UX_SCREENSHOTS,'builder-'+width+'.png')});
  }

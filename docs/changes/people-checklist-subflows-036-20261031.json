@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "HR/KS/HMS-underflater kontrollert; sjekklistens underpunkter følger samme design",
+  "change": "Miljømål BEGGE, kun PR295/fast Preview/Sandbox. Live sjekklistemal hadde18px Underpunkter og svarfelt-rader og14px etiketter. Ny screen-CSS avgrenset til appens native sjekklistemaler/felt gir44px native disclosure-rader,16px etiketter/underfelt og ensartede8px felt-/sentralrammer. Samme innhold, DOM, handlers, kladd, betingede krav, gjeldende malversjoner, publisering, signering og persistens. Ingen HR-, KS/HMS-, sjekklistekjerne, backend, RLS, tilgang, varslings- eller sendingendring. Godkjent videomal1.0 brukes videre; lokalt prøveinnhold i egen nettleser er eneste nye QA-data.",
+  "verification": "Faktisk HR-workspace153 og HR-underflater655/133visninger PASS med full sen runtimeCSS og isolert transport; kontakt/leder/tilgang/samtale/sykefravær/mal/historikk/oppsett/prøve/Min side. KS/HMS-workspace197, governance401/100visninger og RUH/SJA/vernerunde/risiko984/221visninger PASS før sjekkliste-CSS. Faktisk fleksibel sjekkliste143gamle krav beholdt pluss15nye: negativ før-CSS feilet native18px-underpunktsrad ved1920; rettet158PASS over5byggerbredder og utfylling, betingelser, fokus og gjenåpning. Standalone170 React→HTTP→PostgreSQL→PDF, kladdbibliotek og44SQL-forslagskrav PASS både før/etter CSS. Full Sandbox critical/build PASS. HR-practice direkte første kjøring manglet sine egne miljøstier/bygde fixture (ERR_MODULE_NOT_FOUND playwright), ingen appfeil; korrekt eksisterende React-fixture bygget og faktisk Chromium/Web Locks/PDF-nedlasting/gjenåpning/2fanekonflikt/1280-360-740 PASS. Live eksisterende HR-samtale i4steg, leder/tilgang og native sjekklistemal/underfelt lest uten notat-/mal-/tilgangslagring. Native lokal HR-prøve4utgaver, eksempelinnhold, PDF-beskjed, gjenåpning og retur kontrollert. Skynettens nedlastingshenting ga Download failed; ingen fil fra den innloggede fanen er attestert. Reelle ansatte, utsending, signering, alle roller, fysiskmobil/Safari og hele appen er ikke sluttattestert. Eksakt sluttkandidat/fullCI/READY/levende sjekklisteetterkontroll føres i PR295.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Kun presentasjon og eksisterende veiledede steg; ingen ny knapp eller arbeidsflyt."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Ingen endret dataflyt, modell, state- eller persistenseier."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen ny avhengighet eller miljøkonfigurasjon."
+    },
+    "module": {
+      "required": true,
+      "reason": "UI-kontrakten beskriver native sjekklisteunderfelt og sen runtime-kaskade."
+    }
+  }
+}
