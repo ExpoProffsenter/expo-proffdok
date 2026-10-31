@@ -402,3 +402,8 @@ body:has([data-expo-app-shell="true"]) .company-user-status[data-status="pending
  body:has([data-expo-app-shell="true"]) .deviation-dialog:has(form.ks-checklists)>.deviation-dialog-header h2{font-size:25px!important}
  body:has([data-expo-app-shell="true"]) .deviation-dialog:has(form.ks-checklists)>.deviation-dialog-body{padding:16px}
 }
+
+@media screen {
+ body:has([data-expo-app-shell="true"]) .deviation-dialog:has(form.ks-checklists) label:has(>input[type=checkbox]){display:flex;align-items:center;gap:8px;min-height:44px;line-height:1.4}
+ body:has([data-expo-app-shell="true"]) .deviation-dialog:has(form.ks-checklists) label>input[type=checkbox]{width:20px!important;height:20px!important;min-height:20px!important;padding:0!important;margin:0!important;flex:none;accent-color:#21834c}
+}
