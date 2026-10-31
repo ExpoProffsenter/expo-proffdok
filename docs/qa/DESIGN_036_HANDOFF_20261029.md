@@ -4,6 +4,12 @@ Samme PR295/faste Preview/Sandbox, miljømål BEGGE. Befaring og begge tilbudsby
 
 Dette er delbevis i den eksisterende samlede gjennomgangen, ikke en nullstilling eller komplett attest for Sales/prosjekt. Fysisk mobil/Safari, reelle rolle-/signerings-/transportforløp og gjenstående underfunksjoner står fortsatt åpne. HR/KS/HMS/sjekklister og de øvrige områdene fortsetter i samme kø. Solgløtt avventer avtalt design- og releaseforløp.
 
+Ny avgrenset film: [Les Kundens tilbud og gå tilbake](https://chatgpt.com/library?file_id=libfile_318eae345e1481918194b3ed7365050e&account_id=personal),75sekunder/8scener/1920x1080/H264/24fps/uten lyd. Faktiske Preview-bilder fra8003e7c7: eksisterende General-demoutkast, kladdemerke, kunde/leveranse/pris/forbehold/betaling og to returer.1800frames full dekoding og faktisk Chromium-start/spoling/sluttPASS. [Redigerbare kilder](https://chatgpt.com/library?file_id=libfile_3a666465acd08191923085c8f5d1a1e0&account_id=personal). Tre avgrensede filmer finnes nå; ikke full SALES-011 eller hele appens videodekning. Avspiller i appen og fysisk mobil/Safari gjenstår.
+
+Appkandidat8003e7c7 har fullCI84410/10SUCCESS og READYdpl_GQv79n8zp9WgpqXx8PnZ3Aq23ABG på samme faste alias. Statisk binding Sandboxtrue/Productionfalse. Innlogget General16px/45px og returPASS; befaringsbildene lastet, rettet skissetekst1/gammel tomtekst0 og AvbrytPASS. Kundepreview-regresjon875+35+26PASS. Dagens case/innlogging beholdt ved reload. Dokumentasjon etter dette endrer ikke appen.
+
+Kort prøve i samme Preview: Åpne eksisterende befaring → Se/endre befaringsnotat. En lagret skisse skal vises med «Den lagrede badskissen vises ovenfor.» Velg Avbryt. Åpne et Generelt tilbud → Rediger tilbud; felt og handlinger skal være lett lesbare. Kontroller Kundens tilbud → Utvid kundevisning → Tilbake til arbeidet. Ikke publiser eller send som del av designprøven.
+
 ---
 
 # Hele appen – design og videoer31.10
