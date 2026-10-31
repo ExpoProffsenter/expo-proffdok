@@ -47,6 +47,18 @@ await fill(document.querySelector('textarea'),'Ny avgrensning');assert(!button('
 await choose('runs');assert(!button('Last ned vedlegg (ZIP)'));await click('Vis vedleggslisten');assert.equal(document.querySelectorAll('[aria-label="Vedleggslisten"] li').length,(deviationQA?10:6)+(legacyQA?2:0));assert(button('Last ned vedlegg (ZIP)').disabled);
 if(legacyQA)for(const label of [...document.querySelectorAll('fieldset label')].filter(l=>l.textContent.includes(project+':old-')))await check(label.querySelector('input'));if(deviationQA)await choose('deviations');await choose('ruhs');await choose('rounds');await choose('sjas');await click('Vis vedleggslisten');assert.equal(document.querySelectorAll('[aria-label="Vedleggslisten"] li').length,1);assert(document.body.textContent.includes('Risiko-1-bilde-1.png'));assert(button('Last ned vedlegg (ZIP)').disabled);await choose('risks');await choose('sjas');await choose('ruhs');await click('Vis vedleggslisten');await confirm();
 const defer=()=>{let resolve;return {promise:new Promise(r=>resolve=r),resolve};};
+// Both exports share the operation lock. A retired ZIP must neither retain it
+// nor release a newer ZIP when its final access check eventually returns.
+for(const transition of ['company','user','revoke']){
+ contexts=0;const oldRequest=defer();deferred=oldRequest;await click('Last ned vedlegg (ZIP)');assert(button('Last ned vedlegg (ZIP)').disabled);
+ const changed=transition==='company'?{...context,company_id:crypto.randomUUID()}:transition==='user'?{...context,user_id:crypto.randomUUID()}:{...context,manage:false};
+ await render({context:changed});await render();assert.equal(document.querySelector('textarea').value,'');assert(!button('Last ned vedlegg (ZIP)'));
+ await fill(document.querySelector('textarea'),'QA ny vedleggspakke etter '+transition);await click('Hent dokumentlisten');await choose('ruhs');await click('Vis vedleggslisten');await confirm();
+ contexts=0;const newRequest=defer();deferred=newRequest;await click('Last ned vedlegg (ZIP)');assert(button('Last ned vedlegg (ZIP)').disabled);
+ oldRequest.resolve();await act(async()=>pause(80));assert.equal(exports.length,1,'Retired '+transition+' ZIP must not export');assert(button('Last ned vedlegg (ZIP)')?.disabled,'Old finally must not unlock newer '+transition+' ZIP');assert(button('Oppdater dokumentlisten')?.disabled,'Fresh catalog must remain locked by newer ZIP');
+ await render({active:false});newRequest.resolve();deferred=null;await act(async()=>pause(80));assert.equal(exports.length,1,'Canceled new '+transition+' ZIP must not export');await render({active:true});
+ await click('Vis vedleggslisten');await confirm();
+}
 for(const action of ['company','user','unmount']){
  contexts=0;deferred=defer();await click('Last ned vedlegg (ZIP)');assert(button('Last ned vedlegg (ZIP)').disabled);
  if(action==='company')await render({context:{...context,company_id:crypto.randomUUID()}});if(action==='user')await render({context:{...context,user_id:crypto.randomUUID()}});if(action==='unmount')await act(async()=>window.__unmount());

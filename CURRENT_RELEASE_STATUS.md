@@ -1,3 +1,15 @@
+# Utførelsessjekklister – TEST OK og publisert 31.10.2026
+
+Brukerens TEST OK gjelder signatur- og firmamalkandidat `2ccecedf`. Full Core Safety820/41150527338 SUCCESS10/10; PR301 er merget som `7c22018d3054b3bad31004bb556ada0af2e1e2c6`. Vercel `dpl_HDuQQSbhmBqTFPbr2L49n9CmW46R` er READY på samme commit og expo-proffdok.app. Faktisk Production-HTML/loader/bootstrap/app er sammenlignet med eksplisitt lokal Production-build; produksjonsbinding kontrolleres ved publisering. Gjeldende main-/demo-SHA, fullført main → demo, privat rollout-aktivering, preflight og eventuelle begrensninger vedlikeholdes i [PR301](https://github.com/ExpoProffsenter/expo-proffdok/pull/301).
+
+Vanlige utførelsessjekklister har påkrevd tegnet signatur fra fullfører og separat valgfri ekstern signatur. Lagre som firmamal ligger rett etter punktene, før Signering, med eksisterende rettigheter og skille mellom utkast/publisering. Prosjektering, Bolig/UE, vernerunder, risiko og Overtagelse er utenfor. Fullført historikk er urørt. Tre additive SQL-filer er installert atomisk i Production som migrering20261031003022. PDF-Edge standalone-checklist-email v2 er ACTIVE/JWTtrue og har samme eksakte bundle som Sandbox v3. RLS/ACL og uendret historikk er kontrollert. Teknisk Production-prøve av signert kommando avviste manglende signatur og bekreftet kladd/readback med tilbakerulling; ingen nye testkontroller, prøve-e-post eller falsk reell signering. [Endring og tester](docs/changes/execution-checklist-signatures-20261031.json).
+
+Eksterne sjekklister fra [PR299](https://github.com/ExpoProffsenter/expo-proffdok/pull/299) finnes via Meny → Sjekklister / Startside → Fyll ut sjekkliste. Ordrenummer og arbeidssted/adresse kreves; eksternt prosjektnavn og kunde følger også kontroll/PDF når utfylt. Ingen ProffDok-prosjektopprettelse. Nettleserfilbroens PDF-overføring, fysisk mobil/Safari, faktisk innlogget Production-prøve og reell e-postlevering er avgrenset i godkjenningsgrunnlaget.
+
+Neste UX-ønske er notert i [oppgave302](https://github.com/ExpoProffsenter/expo-proffdok/issues/302): kompakte, stilige avkrysningsbokser i alle sjekklister, fingervennlig trykkflate, tydelig grønn V for OK/Ikke aktuelt og oransje Avvik. Ikke implementert som del av signaturreleasen.
+
+DesignPR295 fortsetter separat fra sitt maleditor-/vedleggscheckpoint. Ingen redesign-TEST OK.
+
 # Gjeldende leveranse – 27.10.2026
 
 ## Saksbehandler for akseptvarsel – publisert 29.10.2026

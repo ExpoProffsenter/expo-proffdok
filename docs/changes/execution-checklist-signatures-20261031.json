@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Utførelsessjekklister med tegnet signatur og lagre som firmamal",
+  "change": "Miljømål BEGGE. Eksisterende branch og Preview fra main8cc6ca95. Etter presisering gjelder bare vanlige utførelsessjekklister: prosjektets egne/firma-/fag-/produkt-/garantigrupper og eksterne kontroller. Prosjektering, Bolig/UE, vernerunder, risiko, Overtagelse, meny og Startside endres ikke. Scope er src/modules/checklist sine nye signatur-/firmamal-komponenter og to eksisterende arbeidsflater/transporthjelpere, de to individuelle PDF-mapperne, tre nye additive migrations og relevante tester/fixture/CI-registrering/Hjelp/arkitektur/modul-README. Hver utførelseskontroll får påkrevd egen tegnet signatur ved fullføring og separat valgfri ekstern signatur med navn/rolle. Server binder faktisk bruker, firma/kontroll/revisjon, innholdshash og tidspunkt. Endret grunnlag eller ekstern identitet tillater ikke gammel tegning. Gamle fullførte kontroller endres ikke. Firmamal går gjennom eksisterende kshms_checklist_command/saveChecklistTemplate, med separat utkast og eksplisitt publisering av utpekt ansvarlig; bare definisjon kopieres. Ingen personlig mal-tabell, nye roller eller faktiske e-poster. Signert kommando er alltid streng; privat rollout=false beholder eldre Sandbox-demo til den nye UI-en er godkjent og publisert.",
+  "verification": "Ny PostgreSQL48PASS på faktisk migreringsgrunnlag: gamle fullførte/ufullførte kontroller, obligatorisk egen signatur, valgfri ekstern identitet, endret grunnlag/ekstern identitet, fullførers identitet, immutable historie, retry, uendret prosjektering, faktisk firmamalpublisering/tilgang og kompatibel før-/streng etter-rollout. Faktisk native React→HTTP→PostgreSQL→PDF/Edge131PASS i Chromium153: canvas, tap uten strek gir ingen signatur, mobilrotasjon, bevart kladd, invalidasjon av egen/ekstern tegning, firmautkast, ukjent readback/retry og eksplisitt publisering, to synlige signaturbilder og metadata i faktisk nedlastet to-siders PDF, fem bredder320–1920 og alle tidligere brukerreiser. Begge PDF-sider er visuelt kontrollert. Mail/PDF43PASS med faktisk tegnet test-PNG; bare provider syntetisk. Eksisterende prosjekt-React/pop-up/recovery og full npm critical/buildPASS; coveragevakten beholder147tidligere direkte invokasjoner/varianter. Sandbox-migrering20261031000008 består av tre eksakte SQL-filer i én atomisk apply; alle fire eksisterende fullførte run-rader er hashidentiske når ny tom kolonne utelates. Rollout=false, nye RPC auth=true/anon=false, private helper/klientaktivering=false. Sandbox Edgev3ACTIVE/JWTtrue med ny delt mapper, SHA639fddeedf5b613213e50ff0ba0b3b1350b172108ebc93735b10502d0e82c3e2. Fersk CI/eksakt Preview/innlogget prøve føres i ny PR. Ingen ny TEST OK, Production-endring eller virkelig e-post. Fysisk mobil og faktisk e-postlevering er ikke attestert.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "Nye faktiske signatur- og firmamalvalg må forklares, med forskjell på lagring og publisering."
+    },
+    "architecture": {
+      "required": true,
+      "reason": "Nye signaturkolonner, streng versjonert kommando, serverbinding, privat rollout og PDF-kontrakt."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen nye avhengigheter eller generelt oppsett. Avgrenset rollout er dokumentert i arkitekturen."
+    },
+    "module": {
+      "required": true,
+      "reason": "Utførelsesomfang, kladd/retry, historikk og firmamaldefinisjonens grenser endres."
+    }
+  }
+}

@@ -1,3 +1,4 @@
+import {installChecklistCanvas,drawChecklistSignature,mockChecklistSignatures} from './fixtures/checklist-signatures.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {build} from 'vite';
@@ -25,17 +26,19 @@ window.__rpc=async(name,args)=>{
  if(previous&&(previous.revision!==p.revision||previous.status==='completed'))throw Object.assign(Error('En annen person har lagret kontrollen.'),{code:'PT409'});
  const now=new Date().toISOString(),identity={id:userId,name:userId,email:userId+'@example.invalid'};
  const row={...p,category:p.definition.category,company_id:company,project_id:projectId,revision:(previous?.revision||0)+1,status:args.p_action==='complete'?'completed':'draft',updated_at:now,updated_identity:identity,...(args.p_action==='complete'?{completed_at:now,completed_identity:identity}:{})};
+ row.signatures=mockChecklistSignatures(p.signatures,row.id,row.revision,userId);
  runs=[row,...runs.filter(run=>run.id!==row.id)];answers={...answers,[category]:row.answers};
  const result={context:state().context,run:row,answers:row.answers};receipts.set(args.p_request_id,structuredClone(result));
  if(loseResponse){loseResponse=false;throw Error('Response lost after commit');}return structuredClone(result);
 };
+installChecklistCanvas(window);
 window.eval((Array.isArray(bundled)?bundled[0]:bundled).output.find(item=>item.type==='chunk').code);
 const act=window.__act,button=text=>[...window.document.querySelectorAll('button')].find(node=>node.textContent.trim()===text),dialog=()=>window.document.querySelector('[role="dialog"]');
 const click=async node=>{assert(node,'Missing button');await act(async()=>node.click());};
 const write=async(field,value)=>{assert(field,'Missing input');await act(async()=>{const proto=field.tagName==='TEXTAREA'?window.HTMLTextAreaElement.prototype:window.HTMLInputElement.prototype;Object.getOwnPropertyDescriptor(proto,'value').set.call(field,value);field.dispatchEvent(new window.Event('input',{bubbles:true}));});};
 let adopted={};const props=()=>({companyId:company,userId,projectId,checklist:adopted,activeChecklistTemplate:groups,readOnly:readonly,customChecklistAllowed:true,files:[],setFiles:()=>{},addFiles:()=>{},addChecklistPhoto:()=>{},customChecklistGroups:[],onAddCustomChecklistPoint:(trade,text)=>{groups=[{category,items:[...groups[0].items,text]}];window.__render(props());},uploadImages:async()=>[{id:'photo',url:'https://example.invalid/photo.png',name:'bevis'}],onSaved:(group,value)=>{adopted={...adopted,[group]:value};window.__render(props());}});
 await act(async()=>window.__render(props()));assert.equal(dialog(),null);assert.equal(window.document.querySelector('.project-checklist-heading').getAttribute('aria-expanded'),'false');assert(!button('Ok'),'Initial overview expanded fields');
-await click(button('Åpne sjekkliste'));assert(dialog());assert(button('Lagre'));await click(button('Sjekkliste fullført'));assert(window.document.querySelector('[role="alert"]').textContent.includes('Vurder punktet'));
+await click(button('Åpne sjekkliste'));assert(dialog());assert(button('Lagre'));await act(async()=>drawChecklistSignature(window));await click(button('Sjekkliste fullført'));assert(window.document.querySelector('[role="alert"]').textContent.includes('Vurder punktet'));
 await click(button('Ok'));await write(dialog().querySelector('textarea'),'Sikret før fanebytte');assert.deepEqual(adopted,{},'Popup draft triggered old autosave');
 await click(button('Lukk'));await act(async()=>window.__unmount());await act(async()=>window.__render(props()));await click(button('Åpne sjekkliste'));assert.equal(dialog().querySelector('textarea').value,'Sikret før fanebytte');
 await click(button('Lagre'));assert(dialog(),'Failed response discarded draft');assert(button('Prøv lagring igjen'));assert(button('Ok').matches(':disabled'),'Unknown save allowed a changed retry');
@@ -44,10 +47,10 @@ await click(button('Lukk'));userId='colleague';await act(async()=>window.__rende
 await write(dialog().querySelector('textarea'),'Kollega fortsatte');await click(button('Lagre'));assert.equal(runs[0].updated_identity.id,'colleague');
 // A new own point joins an unfinished control, without requiring warranty/KS.
 await click(button('Lukk'));const custom=window.document.querySelector('details');custom.open=true;await write(custom.querySelector('input'),'Kontroller merking');await click(button('+ Legg til eget sjekkpunkt'));await click(button('Åpne sjekkliste'));assert.equal(dialog().querySelectorAll('.checklistPoint').length,2);
-const statuses=[...dialog().querySelectorAll('.checklistStatusButtons button')].filter(node=>node.textContent==='Ok');await click(statuses[1]);await click(button('Sjekkliste fullført'));assert.equal(runs[0].status,'completed');assert.equal(runs[0].definition.items.length,2);assert(button('Ok').matches(':disabled'));const frozen=structuredClone(runs[0]);
+const statuses=[...dialog().querySelectorAll('.checklistStatusButtons button')].filter(node=>node.textContent==='Ok');await click(statuses[1]);await act(async()=>drawChecklistSignature(window));await click(button('Sjekkliste fullført'));assert.equal(runs[0].status,'completed');assert.equal(runs[0].definition.items.length,2);assert(button('Ok').matches(':disabled'));const frozen=structuredClone(runs[0]);
 await click(button('Start ny kontroll'));assert.equal(dialog().querySelector('textarea').value,'','New control reused ordinary answers');
 await click(button('Avvik'));await write(dialog().querySelector('textarea'),'Ny kontroll fant avvik');const upload=dialog().querySelector('input[type="file"]');await act(async()=>{Object.defineProperty(upload,'files',{configurable:true,value:[new window.File(['x'],'proof.png',{type:'image/png'})]});upload.dispatchEvent(new window.Event('change',{bubbles:true}));});
-const secondOk=[...dialog().querySelectorAll('.checklistStatusButtons button')].filter(node=>node.textContent==='Ok')[1];await click(secondOk);await click(button('Sjekkliste fullført'));assert.equal(runs.length,2);assert.deepEqual(structuredClone(runs[1]),frozen,'Second completion changed old control');assert.equal(runs[0].answers['Kontroller rør'].status,'Avvik');assert.equal(runs[0].answers['Kontroller rør'].photos[0].name,'bevis');
+const secondOk=[...dialog().querySelectorAll('.checklistStatusButtons button')].filter(node=>node.textContent==='Ok')[1];await click(secondOk);await act(async()=>drawChecklistSignature(window));await click(button('Sjekkliste fullført'));assert.equal(runs.length,2);assert.deepEqual(structuredClone(runs[1]),frozen,'Second completion changed old control');assert.equal(runs[0].answers['Kontroller rør'].status,'Avvik');assert.equal(runs[0].answers['Kontroller rør'].photos[0].name,'bevis');
 await click(button('Start ny kontroll'));assert.equal(dialog().querySelector('textarea').value,'Ny kontroll fant avvik','Next control lost open deviation');await click(button('Lagre'));
 await write(dialog().querySelector('textarea'),'Min lokale kladd');runs[0]={...runs[0],revision:runs[0].revision+1,answers:{...runs[0].answers,'Kontroller rør':{...runs[0].answers['Kontroller rør'],comment:'Serverens kollega'}}};answers[category]=runs[0].answers;
 await click(button('Lagre'));assert(window.document.querySelector('[role="alert"]').textContent.includes('annen person'));assert.equal(dialog().querySelector('textarea').value,'Min lokale kladd');await click(button('Vis lagret kontroll'));assert.equal(dialog().querySelector('textarea').value,'Serverens kollega');await click(button('Tilbake til kladden'));assert.equal(dialog().querySelector('textarea').value,'Min lokale kladd');
