@@ -54,6 +54,19 @@ for(const failure of ['storage','role-final']){mode=failure;contextReads=0;await
 await click([...document.querySelectorAll('button')].find(b=>b.getAttribute('aria-label')===`Fjern ${selection[0].title} fra uttrekket`)||[...document.querySelectorAll('li')].find(l=>l.textContent.includes('Godkjente rutineutgaver:'))?.querySelector('button'));assert(button('Last ned samlet PDF').disabled);assert.equal(document.querySelectorAll('input:checked').length,selection.length-1+(legacyQA?2:0));
 await check([...document.querySelectorAll('label')].find(l=>l.textContent.includes('Jeg har kontrollert omfanget')).querySelector('input'));contextReads=0;await click('Last ned samlet PDF');assert.equal(exports.length,2);pdf=await readPdf(exports[1]);assert(!pdf.text.includes('Firmaets lagrede fremgangsmåte'));fs.writeFileSync(path.join(output,'extract-without-routine.pdf'),exports[1].bytes);
 const defer=()=>{let resolve;return {promise:new Promise(r=>resolve=r),resolve};};
+// A retired scope must release its own lock without letting its late finally
+// release a newer operation. Exercise actual React identity/access transitions.
+for(const transition of ['company','user','revoke']){
+ contextReads=0;const oldRequest=defer();deferred=oldRequest;await click('Last ned samlet PDF');assert(button('Arbeider …').disabled);
+ const changed=transition==='company'?{...context,company_id:crypto.randomUUID()}:transition==='user'?{...context,user_id:crypto.randomUUID()}:{...context,manage:false};
+ await render({context:changed});await render();assert.equal(document.querySelector('textarea').value,'');assert(!button('Last ned samlet PDF'));
+ await fill(document.querySelector('textarea'),'QA ny operasjon etter '+transition);await click('Hent dokumentlisten');
+ const label=[...document.querySelectorAll('fieldset label')].find(l=>l.textContent.includes(selection.find(row=>row.kind==='ruhs').id));assert(label,'Fresh catalog must load after '+transition);await check(label.querySelector('input'));
+ await check([...document.querySelectorAll('label')].find(l=>l.textContent.includes('Jeg har kontrollert omfanget')).querySelector('input'));
+ contextReads=0;const newRequest=defer();deferred=newRequest;await click('Last ned samlet PDF');assert(button('Arbeider …').disabled);
+ oldRequest.resolve();await act(async()=>pause(80));assert.equal(exports.length,2,'Retired '+transition+' request must not export');assert(button('Arbeider …')?.disabled,'Old finally must not unlock current '+transition+' operation');assert(!button('Last ned samlet PDF'));
+ await render({active:false});newRequest.resolve();deferred=null;await act(async()=>pause(80));assert.equal(exports.length,2,'Canceled new '+transition+' request must not export');await render({active:true});
+}
 for(const action of ['company','user','unmount']){
  contextReads=0;deferred=defer();await click('Last ned samlet PDF');assert(button('Arbeider …').disabled);
  if(action==='company')await render({context:{...context,company_id:crypto.randomUUID()}});if(action==='user')await render({context:{...context,user_id:crypto.randomUUID()}});if(action==='unmount')await act(async()=>window.__unmount());
