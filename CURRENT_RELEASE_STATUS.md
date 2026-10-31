@@ -1,3 +1,9 @@
+# Sølgløtt-visning og boligoversiktens søkelayout –31.10
+
+Kenneth har bestilt kundedemo tirsdag3. november: Sølgløtt,6navngitte firemannsboliger/24boliger, FlisLab og Baden Haus som grunnpakke og Dansani som tilvalg. Designet ferdigstilles først. Han oppgir konkrete produkter selv og har valgt faktiske salgspriser. [Avklaringer, faktisk katalogkontroll, foreslått struktur og komplett videoserie](docs/qa/SOLGLOTT_DEMO_20261103.md). Ingen demooppretting/import/videoavspiller/ny film ennå. Godkjent videomal1.0 og pilot beholdes; den eldre formuleringen nedenfor om ingen produsert video er historikk.
+
+Samme PR295/Preview/Sandbox, BEGGE: søk/liste beholder nå fasadens brede arbeidslayout og lesbar trefftekst. Faktisk førfeil gjenskapt innlogget og i native prøve;85native søk/fasade/regresjonskrav,233veiledningskrav,766builderkrav og full critical Sandbox-buildPASS. [Endring og presise begrensninger](docs/changes/housing-search-layout-036-20261031.json). Endelig commit/CI/READY/levende etterkontroll vedlikeholdes i PR295. PR294holdes separat. Totaldesign/rolle-/PDF-/enhetspunktene er fortsatt åpne; ingen redesign-TEST OK/merge/Production/demo-synk.
+
 # Boligveiledning – fast retur og temaer31.10
 
 Samme PR295/fast design-Preview/Sandbox, BEGGE. «Slik styrer du prosjektet» bruker nå felles høyrepanel med åtte temaområder, fulltekstsøk, én forklaring og fast «Tilbake til prosjektet»/kryss/Escape. A–Å-guidens18steg har samme ramme.233native assertionsPASS,69opprinnelige tekstblokker bevart, foundation/builder766/guide213 og full critical Sandbox-buildPASS. Ingen Bolig-kjerne-/data-/tilgangsendring. [Omfang og testgrunnlag](docs/changes/bolig-guidance-workspace-036-20261031.json). Endelig kandidat/fullCI/READY/innlogget kontroll/bilder i PR295. Ingen TEST OK/merge/Production/demo-synk. Video er vurdert som korte, selvstendig redigerbare klipp per arbeidsoppgave; ingen video er produsert ennå.

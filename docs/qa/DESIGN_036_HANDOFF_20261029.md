@@ -1,3 +1,11 @@
+# Videreføring31.10 – Sølgløtt og bred søkevisning
+
+Ny bestilling: design ferdig først; deretter egen Sølgløtt-demo til visning tirsdag3. november.6bygg/24boliger,2etasjer×2, foreslå realistiske navn. Brukeren oppgir produktene selv; faktiske salgspriser er valgt. FlisLab/Baden Haus grunnpakke, Dansani tilvalg. Ingen oppretting/import ennå. Read-only katalogkontroll viser begrenset Sandbox-utvalg; kopier senere bare valgte produktdata, aldri kunde-/ordredata. Se docs/qa/SOLGLOTT_DEMO_20261103.md for produktbehov, foreslåtte navn, komplett videoflyt og anbefalte innganger. Godkjent videomal1.0/pilot beholdes; ingen ny stilgodkjenning. Filmene anbefales i konteksthjelp, samlet boligserie og søkbar Hjelp, med stor avspiller/fullskjerm. Ingen avspiller implementert.
+
+Samme PR295, BEGGE, utførelse bare Preview/Sandbox. H0301-søk er faktisk gjenskapt innlogget: layouten mistet fasadebetingelsen og stablet alle kontroller over to treff. Bare workspaceSurface.css deler den eksisterende brede layouten med native søk/listetreff, og sikrer16/14px trefftekst under mobilkaskaden.85native kravPASS med alle48tidligere beholdt; gammelCSS feiler på resultatstart975px.233guide/766builder/fullcriticalSandbox-buildPASS. Ingen src/modules/bolig-, native handler-/tilgangs-/data-/backendendring; PR294holdes separat. Endelig kandidat/CI/READY/live føres i PR295. Totalrevisjonen og tidligere navngitte grenser nedenfor står fortsatt åpne. Ingen redesign-TEST OK/Production/demo-synk.
+
+---
+
 # Boligveiledning31.10 – brukerens manglende retur
 
 Baseline259c18a5, samme PR295/designbranch/fastalias, BEGGE, bare Preview/Sandbox. Feilen er gjenskapt innlogget på «Slik styrer du prosjektet»: inline details fyller siden med lang tekst og ingen egen retur. Nå er bare hjelpekomponentene endret: felles WorkspacePanel med fast kryss/«Tilbake til prosjektet»/Escape, åtte temaområder, søk i full tekst og én forklaring om gangen. A–Å-guidens18steg og bilder er bevart i samme ramme.
