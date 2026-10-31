@@ -112,7 +112,8 @@ export function KshmsProjectReportDialog({ chooser }) {
     if (event.shiftKey && (document.activeElement === first || document.activeElement === container.current)) { event.preventDefault(); last?.focus(); }
     else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
   }}>
-    <h2 id="ks-report-title">Velg KS/HMS til rapport</h2>
+    <header className="ks-report-dialog-head"><h2 id="ks-report-title">Velg KS/HMS til rapport</h2><button type="button" className="secondary" aria-label="Lukk rapportvalg" onClick={chooser.cancel}>×</button></header>
+    <div className="ks-report-dialog-body">
     <p>Bare avkryssede dokumenter fra dette prosjektet tas med. SJA-utkast er ikke signert. Åpne RUH-er merkes med status og gjenstående oppfølging.</p>
     {busy && <p role="status">Henter prosjektets dokumenter …</p>}
     {error && <p role="alert">{error}</p>}
@@ -121,7 +122,8 @@ export function KshmsProjectReportDialog({ chooser }) {
       {!choices[key].length && <p>Ingen tilgjengelige {headings[key]} på prosjektet.</p>}
       {choices[key].map(row => <label key={row.id} className="ks-report-option"><input type="checkbox" checked={selection[key].includes(row.id)} onChange={() => chooser.toggle(key, row.id)} /><span><strong>{row.title || 'Uten navn'}</strong><br />{key === 'sjas' ? row.status === 'signed' ? `Signert ${formatDeviationDateTime(row.signed_at)}` : 'Utkast – ikke signert' : key==='ruhs'?({ open: 'Åpen', in_progress: 'Under behandling', closed: 'Lukket' }[row.status]):row.status==='completed'?`Fullført ${formatDeviationDateTime(row.completed_at)}`:'Under arbeid – ikke fullført'}</span></label>)}
     </fieldset>)}
-    <div className="ks-actions">
+    </div>
+    <div className="ks-actions ks-report-dialog-footer">
       <button type="button" disabled={busy || !choices} onClick={chooser.confirm}>{kind === 'pdf' ? 'Lag PDF med valget' : kind === 'print' ? 'Skriv ut med valget' : 'Bruk valget i rapporten'}</button>
       <button type="button" className="secondary" onClick={chooser.without}>{kind === 'preview' ? 'Bruk rapport uten KS/HMS' : 'Fortsett uten KS/HMS'}</button>
       {error && <button type="button" className="secondary" disabled={busy} onClick={chooser.refresh}>Oppdater listen</button>}

@@ -264,4 +264,5 @@ const standaloneGlobal=createGlobalAppTabs({canUseStandaloneChecklists:true});
 if(!standaloneGlobal.some(([id,label])=>id==='standalone_checklists'&&label==='Sjekklister'))throw Error('Missing standalone global destination');
 if(createGlobalAppTabs().some(([id])=>id==='standalone_checklists'))throw Error('Standalone destination requires scoped access');
 if(createProjectWorkspaceTabs().some(([id])=>id==='standalone_checklists'))throw Error('External route must not replace project checklist route');
-if(!main.includes('goToTab("standalone_checklists"), children: "Fyll ut sjekkliste"'))throw Error('Missing native home shortcut');
+const sharedHome=fs.readFileSync('src/modules/home/WorkdayShortcuts.jsx','utf8');
+if(!main.includes('canStandaloneChecklists: canUseStandaloneChecklists, onStandaloneChecklists: () => goToTab("standalone_checklists")')||!main.includes('(WorkdayShortcuts, workspaceActions)')||!sharedHome.includes("props.canStandaloneChecklists?[action('Fyll ut sjekkliste',props.onStandaloneChecklists)]"))throw Error('Missing access-scoped native shortcut on the shared six-area home');

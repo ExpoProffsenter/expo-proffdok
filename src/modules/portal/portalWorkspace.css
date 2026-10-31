@@ -1,0 +1,60 @@
+/* External readers use the same 03.6 type, open page and native controls.
+   All portal contents, commands and authorization remain in their owners. */
+.pd-customer-portal{min-height:100dvh;background:#f4f7f8;color:#172f35;font-size:16px;line-height:1.5}
+.pd-customer-portal>header{position:static;box-shadow:none;background:#fff}
+.pd-customer-portal>header>.head{max-width:1500px;margin:auto;padding:20px 28px;gap:20px;display:flex!important;align-items:center;flex-wrap:wrap}
+.pd-customer-portal>header>.head>div{min-width:0;flex:1}
+.pd-customer-portal>header>.head>div:first-child{flex:0 1 180px}
+.pd-customer-portal>header>.head>button{flex:0 0 auto;width:auto!important}
+.pd-customer-portal :is(h1,h2,h3){overflow-wrap:anywhere;line-height:1.25}
+.pd-customer-portal>header>.head h1{font-size:32px!important;font-weight:600;letter-spacing:-.7px;margin:0 0 6px}
+.pd-customer-portal>header>.head p{display:block!important;font-size:16px!important;margin:0;color:#4e6876}
+.pd-customer-portal>header>nav{display:flex!important;flex-direction:row!important;flex-wrap:wrap;gap:4px;max-width:none;width:100%;margin:0!important;box-sizing:border-box;padding:8px max(16px,calc((100vw - 1444px)/2));background:#10212b}
+.pd-customer-portal>header>nav button{background:transparent;color:#bdd7e2;border-color:transparent;border-radius:6px;flex:0 1 auto}
+.pd-customer-portal>header>nav button.on{background:#214b5d;color:#fff}
+.pd-customer-portal>main{max-width:1500px;margin:auto;padding:24px 28px;box-sizing:border-box;min-width:0}
+.pd-customer-portal>main>section{margin:0 0 24px;padding:0 0 24px;border:0;border-bottom:1px solid #d5e4eb;border-radius:0;box-shadow:none;background:transparent;min-width:0}
+.pd-customer-portal>main>section>h2{font-size:28px!important;font-weight:600;letter-spacing:-.4px;margin:0 0 12px}
+.pd-customer-portal :is(button,a.upload,input,select,textarea){font-size:16px!important;line-height:1.4!important;min-height:44px!important;max-width:100%;box-sizing:border-box;box-shadow:none!important;transform:none!important;border-radius:7px;white-space:normal;overflow-wrap:anywhere}
+.pd-customer-portal :is(p,label,.note,.photo b){font-size:16px!important;line-height:1.5!important}
+.pd-customer-portal .photo small{font-size:14px!important;line-height:1.4!important}
+.pd-customer-portal :is(.grid,.cards,.photos){gap:16px;min-width:0}
+.pd-customer-portal .grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important}
+.pd-customer-portal .grid>.item{padding:12px!important;border-radius:7px!important;box-shadow:none!important}
+.pd-customer-portal .grid>.item p{margin:8px 0 0}
+.pd-customer-portal :is(.grid,.cards,.photos)>*{min-width:0;overflow-wrap:anywhere}
+.pd-customer-portal .photos{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr))}
+.pd-customer-portal .photo{padding:12px!important;border-radius:7px!important;background:#fff!important}
+/* Keep the same project/status heading on other tabs. The full overview and
+   its original actions remain available on Oversikt, without repeating them. */
+.pd-customer-portal:not([data-portal-tab="oversikt"]) .pd-portal-project-summary{padding-bottom:16px;margin-bottom:20px}
+.pd-customer-portal:not([data-portal-tab="oversikt"]) .pd-portal-project-summary>:is(.grid,.customerPortalActions,.customerChatFocusNote){display:none!important}
+.pd-document-access{min-height:100dvh;background:#f4f7f8;color:#172f35;font:16px/1.5 Arial,Helvetica,sans-serif;box-sizing:border-box}
+.pd-document-access>header{padding:24px;background:#10212b;color:#bdd7e2;font-size:14px;font-weight:600;letter-spacing:.06em}
+.pd-document-access>main{max-width:680px;margin:0 auto;padding:32px 24px;box-sizing:border-box}
+.pd-document-access h1{font-size:32px;line-height:1.2;font-weight:600;letter-spacing:-.6px;margin:0 0 16px;overflow-wrap:anywhere}
+.pd-document-access p{color:#4e6876;margin:0 0 20px}
+.pd-document-access label{display:block;font-weight:600;margin:0 0 6px}
+.pd-document-access input{width:100%;min-height:44px;box-sizing:border-box;font-size:18px;line-height:1.4;text-transform:uppercase;padding:10px 12px;margin-bottom:12px;border:1px solid #bdd1da;border-radius:7px;background:#fff;color:#172f35}
+.pd-document-access button{min-height:44px!important;padding:10px 16px;font-size:16px!important;line-height:1.4!important;font-weight:600;border:1px solid #007681;border-radius:7px!important;background:#007681;color:#fff;cursor:pointer;box-shadow:none!important;transform:none!important}
+.pd-document-access .pd-document-back{display:block;background:#fff;color:#214b5d;border-color:#d5e4eb;margin-top:16px}
+.pd-document-access :is(input,button):focus-visible{outline:3px solid #089aa3;outline-offset:3px}
+.pd-document-access [role="alert"]{color:#991b1b;font-weight:600;margin-bottom:12px}
+@media(max-width:1100px){.pd-customer-portal .grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:700px){
+ .pd-customer-portal>header>.head{padding:16px!important;gap:12px;flex-direction:column;flex-wrap:nowrap;align-items:flex-start!important;width:100%;box-sizing:border-box}
+ .pd-customer-portal>header>.head>div{width:100%;max-width:100%;flex:none!important}
+ .pd-customer-portal>header>.head>div:first-child{width:180px!important;height:48px!important;flex:none!important;align-self:flex-start}
+ .pd-customer-portal>header>.head>button{align-self:flex-start}
+ .pd-customer-portal>header>.head h1,.pd-document-access h1{font-size:29px!important}
+ .pd-customer-portal>header>.head :is(h1,p){white-space:normal!important;overflow:visible!important;text-overflow:clip!important;max-width:100%!important}
+ .pd-customer-portal>header>nav{flex-wrap:nowrap!important;overflow-x:auto;overscroll-behavior-x:contain;padding:8px 16px}
+ .pd-customer-portal>header>nav button{width:auto!important;flex:none!important;white-space:nowrap!important}
+ .pd-customer-portal>main{padding:20px 16px}
+ .pd-customer-portal>main>section>h2{font-size:25px!important}
+ .pd-customer-portal .grid{grid-template-columns:minmax(0,1fr)!important}
+ .pd-customer-portal .customerPortalActions{display:flex!important}
+ .pd-customer-portal .customerPortalActions button{width:auto!important;flex:1 1 180px}
+ .pd-document-access>header{padding:16px}
+ .pd-document-access>main{padding:24px 16px}
+}

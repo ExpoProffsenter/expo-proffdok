@@ -50,7 +50,7 @@ assert.equal(window.document.querySelector('[role="dialog"]'),dialog);assert.equ
 await click(button('Lukk'));await act(async()=>window.__unmount());await act(async()=>window.__render(props()));await click(button('Åpne sjekkliste'));
 assert.equal(runs.length,1);assert(window.document.body.textContent.includes('Kontroll under arbeid'));await choose('Ikke aktuelt',1);
 await act(async()=>drawChecklistSignature(window));await click(button('Sjekkliste fullført'));assert.equal(runs[0].status,'completed');assert(window.document.body.textContent.includes('QA Utførende'));
-const first=structuredClone(runs[0]);await click(button('Start ny kontroll'));assert.equal(window.document.querySelector('fieldset:disabled'),null);assert.equal(window.document.querySelectorAll('button.statusOn').length,0);
+const first=structuredClone(runs[0]);await click(button('Start ny kontroll'));assert.equal(window.document.querySelector('fieldset:disabled'),null);assert.equal(window.document.querySelectorAll('button.statusOn').length,0);assert.equal(window.document.querySelectorAll('.checklist-status-choices button[aria-pressed=true]').length,0,'unanswered checklist has no selected choice');
 await choose('Avvik');await choose('Ikke aktuelt',1);failAfterCommit=true;await click(button('Lagre'));assert(window.document.body.textContent.includes('Svaret ble borte'));const retry=lastRequest;
 await click(button('Prøv lagring igjen'));assert.equal(lastRequest,retry);assert.equal(runs.length,2);assert.deepEqual(runs[1],first);
 await click(button('Lukk'));await click(button('Åpne sjekkliste'));
@@ -73,9 +73,9 @@ const {PROJECT_DESIGN_CHECKLIST:design}=await import('../src/modules/config/proj
 const beforeDesign=structuredClone(runs);
 const designProps=()=>({...props(),activeChecklistTemplate:[design],showTools:false,showPrevious:false,customChecklistAllowed:false});
 await act(async()=>window.__render(designProps()));assert(!window.document.body.textContent.includes('Egne sjekkpunkter og vedlegg'));assert(!window.document.body.textContent.includes('Tidligere dokumentasjon'));
-await click(button('Åpne sjekkliste'));assert(window.document.body.textContent.includes(design.category));assert.equal(window.document.querySelectorAll('button.statusOn').length,0);
+await click(button('Åpne sjekkliste'));assert(window.document.body.textContent.includes(design.category));assert.equal(window.document.querySelectorAll('button.statusOn').length,0);assert.equal(window.document.querySelectorAll('.checklist-status-choices button[aria-pressed=true]').length,0,'unanswered checklist has no selected choice');
 await choose('Ok');await click(button('Lagre'));assert.equal(runs[0].category,design.category);assert.equal(runs[0].answers[design.items[0]].status,'Ok');assert.deepEqual(runs.slice(1),beforeDesign);
-await click(button('Lukk'));await act(async()=>window.__unmount());await act(async()=>window.__render(designProps()));await click(button('Åpne sjekkliste'));assert.equal([...window.document.querySelectorAll('button')].filter(b=>b.textContent.trim()==='Ok'&&!b.classList.contains('secondary')).length,1);assert.equal(runs[0].answers[design.items[0]].status,'Ok');
+await click(button('Lukk'));await act(async()=>window.__unmount());await act(async()=>window.__render(designProps()));await click(button('Åpne sjekkliste'));assert.equal([...window.document.querySelectorAll('button')].filter(b=>b.textContent.trim()==='Ok'&&b.getAttribute('aria-pressed')==='true').length,1);assert.equal(runs[0].answers[design.items[0]].status,'Ok');
 for(let n=1;n<design.items.length;n++)await choose('Ikke aktuelt',n);
 await act(async()=>drawChecklistSignature(window));await click(button('Sjekkliste fullført'));assert.equal(runs[0].status,'completed');assert.deepEqual(runs.slice(1),beforeDesign);await click(button('Lukk'));await act(async()=>window.__unmount());
 await act(async()=>window.__render({...designProps(),readOnly:true}));await click(button('Åpne fullført sjekkliste'));assert(window.document.querySelector('fieldset:disabled'));assert(!button('Start ny kontroll'));assert(!button('Lagre'));await click(button('Lukk'));await act(async()=>window.__unmount());

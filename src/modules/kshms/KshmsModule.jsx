@@ -28,6 +28,9 @@ import { acknowledgmentOverview,pendingAssignmentOptions } from './kshmsFollowup
 import { filterFirmRoutines,matchesRoutineSearch } from './kshmsSearch.mjs';
 import { SETUP_TEXT_FIELDS,ROUTINE_TEXT_SUGGESTIONS,fillEmptySetup,changeSetupTrades,routineWithSuggestions,fillEmptyRoutine,ROUTINE_WRITING_TIPS } from './kshmsWriting.mjs';
 import './kshms.css';
+import './kshmsWorkspace036.css';
+import './kshmsGovernance036.css';
+import KshmsExecutionTasks from './KshmsExecutionTasks.jsx';
 import ModuleHeading from '../ui/ModuleHeading.jsx';
 import {ShieldCheck,Info} from 'lucide-react';
 import KshmsDeviations from './KshmsDeviations.jsx';
@@ -42,11 +45,13 @@ const dateTime = value => new Date(value).toLocaleString('nb-NO');
 const sourceTypes = {law:'Lov eller forskrift',professional:'Fag, veiledning eller kontrakt',company:'Firmaets egne regler',product:'ProffDoks valg'};
 const navigationScreens=new Set(kshmsNavigationGroups({canManage:true}).flatMap(group=>group.items.map(([id])=>id)));
 const navigation=createModuleNavigationMemory(value=>navigationScreens.has(value));
+// This remembers presentation only, never a record, draft or access context.
+const workspaceNavigation=createModuleNavigationMemory(value=>value==='overview'||value==='detail');
 const emptySetup = {trades:[],activities:'',responsibilities:'',risks:'',responsible_user_id:'',revision:0};
-export function ExecutionSurfaces({screen,companyId,userId,context}){
+export function ExecutionSurfaces({screen,companyId,userId,context,active=true}){
  const [opened,setOpened]=useState({});
  useEffect(()=>{if(['rounds','risk'].includes(screen))setOpened(previous=>({...previous,[screen]:true}));},[screen]);
- return <>{[['rounds','round'],['risk','risk']].map(([key,kind])=>(opened[key]||screen===key)&&<div key={key} hidden={screen!==key}><KshmsExecutions key={`${companyId}:${userId}:${kind}:${Boolean(context.manage)}`} context={context} kind={kind} active={screen===key}/></div>)}</>;
+ return <>{[['rounds','round'],['risk','risk']].map(([key,kind])=>(opened[key]||screen===key)&&<div key={key} hidden={!active||screen!==key}><KshmsExecutions key={`${companyId}:${userId}:${kind}:${Boolean(context.manage)}`} context={context} kind={kind} active={active&&screen===key}/></div>)}</>;
 }
 function Field({label,hint,value,onChange,type='text',multiline=false,required=false}) {
  const id=useId();
@@ -71,13 +76,19 @@ function References({value,onChange}) {
   <button type="button" className="secondary" onClick={()=>onChange(value.filter((_,index)=>index!==i))}>Fjern kilde {i+1}</button>
  </div>)}<button type="button" className="secondary" onClick={()=>onChange([...value,{title:'',url:'',kind:'law',checked_on:new Date().toISOString().slice(0,10)}])}>Legg til kilde</button></fieldset>;
 }
-export default function KshmsModule({context,deviationRequest,personalOnly=false}) {
+export default function KshmsModule({context,deviationRequest,personalOnly=false,checklistEntryRequest,onChecklistEntryHandled}) {
  const companyId=context.company_id,userId=context.user_id;
  const navigationScope=JSON.stringify([companyId,userId,personalOnly?'personal':'management']);
  const allowedScreens=manage=>kshmsNavigationGroups({canManage:manage,personalOnly}).flatMap(group=>group.items.map(([id])=>id));
  const rememberedScreen=navigation.read(navigationScope);
  const resumeScreen=allowedScreens(context.manage).includes(rememberedScreen)?rememberedScreen:null;
  const emailLink=readNotificationLink(window.location?.search||'',companyId);
+ const [workspaceView,setWorkspaceView]=useState(()=>({scope:navigationScope,view:emailLink?'detail':workspaceNavigation.read(navigationScope)||(!personalOnly&&context.manage&&!resumeScreen?'overview':'detail')}));
+ const workspaceOverview=!personalOnly&&(workspaceView.scope===navigationScope?workspaceView.view==='overview':Boolean(context.manage&&!resumeScreen&&!emailLink));
+ const openWorkspace=target=>{setWorkspaceView({scope:navigationScope,view:'detail'});setScreen(target);};
+ useEffect(()=>{if(workspaceView.scope===navigationScope)workspaceNavigation.remember(navigationScope,workspaceView.view);},[navigationScope,workspaceView]);
+ // External/native entry intents must reveal their existing destination.
+ useEffect(()=>{if(deviationRequest?.companyId===companyId&&deviationRequest.userId===userId||checklistEntryRequest?.companyId===companyId&&checklistEntryRequest.userId===userId)setWorkspaceView({scope:navigationScope,view:'detail'});},[deviationRequest?.nonce,checklistEntryRequest?.nonce,navigationScope]);
  const [data,setData]=useState(null),[screen,setScreen]=useState(()=>resumeScreen||(personalOnly?'personal':context.manage?'handbook':'reading')),[error,setError]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false);
  useEffect(()=>{if(data)navigation.remember(navigationScope,screen);},[navigationScope,screen,data]);
  const [deviationsOpened,setDeviationsOpened]=useState(false);
@@ -103,9 +114,18 @@ export default function KshmsModule({context,deviationRequest,personalOnly=false
  const [findings,setFindings]=useState(''),[followUp,setFollowUp]=useState(''),[nextReview,setNextReview]=useState(''),[reviewChecked,setReviewChecked]=useState(false);
  const [selectedKeys,setSelectedKeys]=useState([]),[libraryFilter,setLibraryFilter]=useState('recommended'),[libraryPreview,setLibraryPreview]=useState(null),[libraryProgress,setLibraryProgress]=useState(null),[libraryFeedback,setLibraryFeedback]=useState(null),[libraryOpen,setLibraryOpen]=useState(false);
  const requestScope=useRef(null),editorRef=useRef(null),libraryPreviewRef=useRef(null),firstView=useRef(false),flowRef=useRef(null),setupRef=useRef(null),libraryRef=useRef(null),followupRef=useRef(null),[editorFocus,setEditorFocus]=useState(0),[flowFocus,setFlowFocus]=useState(0),[libraryFocus,setLibraryFocus]=useState(0);
+ // A deliberate home/tools action is consumed once, after fresh scope/access is known.
+ useEffect(()=>{
+  if(!checklistEntryRequest?.nonce||!data)return;
+  if(checklistEntryRequest.companyId!==companyId||checklistEntryRequest.userId!==userId){onChecklistEntryHandled?.();return;}
+  if(data.context.company_id!==companyId||data.context.user_id!==userId)return;
+  if(data.context.manage&&!personalOnly&&!busy&&!dirty){firstView.current=true;setChecklistsOpened(true);setScreen('checklists');}
+  else if(busy||dirty)setNotice('Lagre eller avslutt rutineutkastet før du åpner Sjekklistemaler. Utkastet ditt er beholdt.');
+  onChecklistEntryHandled?.();
+ },[checklistEntryRequest?.nonce,data,companyId,userId,personalOnly,busy,dirty,onChecklistEntryHandled]);
  const load = async()=>{const value=await kshmsRpc('kshms_get_state',{p_company_id:companyId});setData(value);return value;};
  useEffect(()=>{let active=true;const scope={active:true};requestScope.current=scope;setData(null);setError('');setBusy(false);setLibraryProgress(null);
-  kshmsRpc('kshms_get_state',{p_company_id:companyId}).then(value=>{if(active){setData(value);const prepared=fillEmptySetup(value.settings||emptySetup);setupSuggestionFields.current=new Set(prepared.filled);setSetup(prepared.setup);if(!firstView.current||!allowedScreens(value.context.manage).includes(screen)){const linkedTab=emailLink?.matchingCompany?emailLink.kind==='sja'?'sja':emailLink.kind==='reading'?'reading':emailLink.kind==='review'&&value.context.manage?'followup':null:null;const remembered=navigation.read(navigationScope);const restored=allowedScreens(value.context.manage).includes(remembered)?remembered:null;setScreen(restored||(personalOnly?'personal':linkedTab||(value.context.manage?value.settings?'handbook':'setup':'reading')));firstView.current=true;}setCached(readDraft(window.localStorage,userId,companyId));setNextReview(value.settings?.next_review_on||new Date(Date.now()+360*86400000).toISOString().slice(0,10));}}).catch(e=>{if(active)setError(e.message)});
+  kshmsRpc('kshms_get_state',{p_company_id:companyId}).then(value=>{if(active){setData(value);const prepared=fillEmptySetup(value.settings||emptySetup);setupSuggestionFields.current=new Set(prepared.filled);setSetup(prepared.setup);if(!firstView.current||!allowedScreens(value.context.manage).includes(screen)){const linkedTab=emailLink?.matchingCompany?emailLink.kind==='sja'?'sja':emailLink.kind==='reading'?'reading':emailLink.kind==='review'&&value.context.manage?'followup':null:null;const remembered=navigation.read(navigationScope);const restored=allowedScreens(value.context.manage).includes(remembered)?remembered:null;setScreen((!personalOnly&&linkedTab)||restored||(personalOnly?'personal':value.context.manage?value.settings?'handbook':'setup':'reading'));firstView.current=true;}setCached(readDraft(window.localStorage,userId,companyId));setNextReview(value.settings?.next_review_on||new Date(Date.now()+360*86400000).toISOString().slice(0,10));}}).catch(e=>{if(active)setError(e.message)});
   return()=>{active=false;scope.active=false};
  },[companyId,userId,context.manage,context.publish,context.administer,personalOnly]);
  useEffect(()=>{const warn=e=>{if(dirty){e.preventDefault();e.returnValue='';}};window.addEventListener('beforeunload',warn);return()=>window.removeEventListener('beforeunload',warn);},[dirty]);
@@ -226,20 +246,44 @@ export default function KshmsModule({context,deviationRequest,personalOnly=false
  const ownAssignments=data.assignments.filter(assignment=>assignment.user_id===userId&&data.versions.some(version=>version.id===assignment.version_id));
  const visibleAssignments=ownAssignments.filter(assignment=>matchesRoutineSearch(data.versions.find(version=>version.id===assignment.version_id)?.content,readingQuery));
  const changeSetupText=(field,value)=>{setupSuggestionFields.current.delete(field);setSetup(previous=>({...previous,[field]:value}));};
- return <section className="ks-module" aria-label="KS/HMS håndbok">
-  {personalOnly?<header className="ks-heading"><div><span className="ks-eyebrow">{context.company_name}</span><h2>Personalhåndboka</h2><p>Dine tildelte rutiner og egen gjennomgang</p></div><span className="ks-badge">Ansatt</span></header>:<ModuleHeading className="ks-heading" companyName={context.company_name} title="KS/HMS" description="Rutiner, trygt arbeid og dokumentasjon – samlet for firmaet." role={canManage?canAdmin?'Firmaadmin':'KS/HMS-ansvarlig':'Ansatt'} icon={ShieldCheck}/>}
+ return <section className={personalOnly?"ks-module":"ks-module ks-workspace-036"} aria-label="KS/HMS håndbok">
+  {personalOnly?<header className="ks-heading"><div><span className="ks-eyebrow">{context.company_name}</span><h2>Personalhåndboka</h2><p>Dine tildelte rutiner og egen gjennomgang</p></div><span className="ks-badge">Ansatt</span></header>:<ModuleHeading className="ks-heading" companyName={context.company_name} title="KS/HMS" description="Daglig arbeid først. Rutiner og forvaltning er tilgjengelig når du trenger dem." role={canManage?canAdmin?'Firmaadmin':'KS/HMS-ansvarlig':'Ansatt'} icon={ShieldCheck}/>}
   <details className="module-guide"><summary><Info aria-hidden="true"/>{personalOnly?'Slik bruker du personalhåndboka':'Slik bruker du KS/HMS'}</summary><p className="ks-scope">{canManage?'Du bygger firmaets KS/HMS-håndbok. Både firmaadmin og KS/HMS-ansvarlig kan velge, skrive, endre og godkjenne rutiner. En rutine forklarer hvordan en oppgave skal gjøres. Firmaadmin styrer ansattes tilgang. Firmaet må lære opp ansatte og følge rutinene i arbeidet.':'Her finner du rutinene du har fått. De forklarer hvordan du skal jobbe trygt og gjøre oppgavene riktig. I «Les og bekreft» ser du hva du skal lese og hva du allerede har bekreftet.'}</p></details>
   {data.context.primary_company_id&&['reading','personal'].includes(screen)&&<p className="ks-notice">{data.context.primary_company_id===companyId?'Bekreft rutinene én gang her i hovedfirmaet. Samme rutinetekst blir også regnet som bekreftet i de andre firmaene du har tilgang til.':`Du kan bekrefte én gang i hovedfirmaet ${data.context.primary_company_name}. Velg firmaet øverst. Samme rutinetekst gjelder da også her.`} Rutiner med ulik tekst må bekreftes separat.</p>}
-  <KshmsNavigation screen={screen} canManage={canManage} pendingCount={pending.length} onNavigate={setScreen} personalOnly={personalOnly}/>
-  {!personalOnly&&<KshmsAssignmentReminders key={`assignment-reminders:${companyId}:${userId}`} context={data.context} refreshKey={data.acknowledgments.length} busy={busy} onOpen={target=>setScreen(target)}/>}
-  {!personalOnly&&<KshmsReviewReminder key={`${companyId}:${userId}`} context={data.context} settingsRevision={data.settings?.revision} busy={busy} onOpen={openReview}/>}
+  <KshmsNavigation screen={screen} canManage={canManage} pendingCount={pending.length} onNavigate={openWorkspace} personalOnly={personalOnly} overview={workspaceOverview} onOverview={()=>setWorkspaceView({scope:navigationScope,view:'overview'})} scopeKey={navigationScope}/>
+  {!personalOnly&&<div className="ks-daily-workspace" hidden={!workspaceOverview}>
+   <section className="ks-daily-controls" aria-label="Daglig arbeid og kontroller">
+    <div className="ks-workspace-section-heading"><h3>Aktuelle kontroller</h3><button type="button" className="ks-workspace-link" onClick={()=>openWorkspace('rounds')}>Se kontrollene</button></div>
+    {workspaceOverview&&<KshmsExecutionTasks key={`daily-executions:${companyId}:${userId}`} context={data.context}/>}
+    <p>Åpne kontrollene for å planlegge, fortsette eller lese en gjennomføring. Her vises bare oppgaver som er hentet for deg i dette firmaet.</p>
+    <div className="ks-daily-entries">
+     <button type="button" onClick={()=>openWorkspace('rounds')}><span><strong>Vernerunder og kontroller</strong><small>Planlagte, pågående og fullførte gjennomføringer</small></span><span aria-hidden="true">→</span></button>
+     <button type="button" onClick={()=>openWorkspace('risk')}><span><strong>Risikovurdering</strong><small>Vurder risiko og dokumenter tiltak</small></span><span aria-hidden="true">→</span></button>
+     <button type="button" onClick={()=>openWorkspace('sja')}><span><strong>Sikker jobb-analyse</strong><small>Forbered arbeidet sammen med deltakerne</small></span><span aria-hidden="true">→</span></button>
+    </div>
+   </section>
+   <section className="ks-daily-followups" aria-label="Oppfølging i KS/HMS">
+    <div className="ks-workspace-section-heading"><h3>Oppfølging</h3></div>
+    <button type="button" className="ks-routine-task" onClick={()=>openWorkspace('reading')}><span><strong>{pending.length?`${pending.length} ${pending.length===1?'rutine':'rutiner'} venter på din gjennomgang`:'Dine rutiner og bekreftelser'}</strong><small>{pending.length?'Les utgaven og bekreft din egen gjennomgang.':'Åpne tildelte utgaver og tidligere bekreftelser.'}</small></span><span aria-hidden="true">→</span></button>
+    {canManage&&progress.step==='setup'&&<div className="ks-workspace-start"><h4>Fullfør oppstarten</h4><p>Velg ansvarlig og beskriv firmaets arbeid før håndboken klargjøres.</p><button type="button" className="secondary" disabled={busy} onClick={()=>openWorkspace('setup')}>Åpne oppstart og tilgang</button></div>}
+    <KshmsAssignmentReminders key={`assignment-reminders:${companyId}:${userId}`} context={data.context} refreshKey={data.acknowledgments.length} busy={busy} onOpen={openWorkspace}/>
+    <KshmsReviewReminder key={`${companyId}:${userId}`} context={data.context} settingsRevision={data.settings?.revision} busy={busy} onOpen={()=>{setWorkspaceView({scope:navigationScope,view:'detail'});openReview();}}/>
+   </section>
+   <div className="ks-daily-shortcuts">
+    <button type="button" className="secondary" onClick={()=>openWorkspace('deviations')}>Avvik og RUH <span aria-hidden="true">→</span></button>
+    {canManage&&<button type="button" className="secondary" onClick={()=>openWorkspace('checklists')}>Sjekklister <span aria-hidden="true">→</span></button>}
+    <button type="button" className="secondary" onClick={()=>openWorkspace('personal')}>Min personalhåndbok <span aria-hidden="true">→</span></button>
+    {canManage&&<button type="button" className="secondary" onClick={()=>openWorkspace('extract')}>Dokumentuttrekk <span aria-hidden="true">→</span></button>}
+   </div>
+  </div>}
+  <div className="ks-native-workspace" data-ks-screen={screen} hidden={workspaceOverview}>
   {!personalOnly&&screen==='organization'&&<OrganizationChart key={`organization:${companyId}:${userId}`} context={data.context}/>}
   {!personalOnly&&screen==='progress'&&<KshmsProgressPlans key={`progress:${companyId}:${userId}`} context={data.context}/>}
-  {canManage&&(screen==='extract'||extractOpened)&&<div hidden={screen!=='extract'}><KshmsInspectionExtract key={`extract:${companyId}:${userId}`} context={data.context} active={screen==='extract'}/></div>}
-  <ExecutionSurfaces screen={screen} companyId={companyId} userId={userId} context={context}/>
-  {canManage&&(screen==='checklists'||checklistsOpened)&&<div hidden={screen!=='checklists'}><KshmsChecklistCentral key={`${companyId}:${userId}`} context={data.context} active={screen==='checklists'}/></div>}
-  {(screen==='deviations'||deviationsOpened)&&<div hidden={screen!=='deviations'}><KshmsDeviations context={context} request={deviationRequest}/></div>}
-  {(screen==='sja'||sjaOpened)&&<div hidden={screen!=='sja'}><KshmsSja key={`${companyId}:${userId}`} context={context} active={screen==='sja'}/></div>}
+  {canManage&&(screen==='extract'||extractOpened)&&<div hidden={screen!=='extract'}><KshmsInspectionExtract key={`extract:${companyId}:${userId}`} context={data.context} active={!workspaceOverview&&screen==='extract'}/></div>}
+  <ExecutionSurfaces screen={screen} companyId={companyId} userId={userId} context={context} active={!workspaceOverview}/>
+  {canManage&&(screen==='checklists'||checklistsOpened)&&<div hidden={screen!=='checklists'}><KshmsChecklistCentral key={`${companyId}:${userId}`} context={data.context} active={!workspaceOverview&&screen==='checklists'}/></div>}
+  {(screen==='deviations'||deviationsOpened)&&<div hidden={screen!=='deviations'}><KshmsDeviations context={context} request={deviationRequest} active={!workspaceOverview&&screen==='deviations'}/></div>}
+  {(screen==='sja'||sjaOpened)&&<div hidden={screen!=='sja'}><KshmsSja key={`${companyId}:${userId}`} context={context} active={!workspaceOverview&&screen==='sja'}/></div>}
   {error&&!(screen==='handbook'&&publication)&&<p role="alert" className="ks-error">{error}</p>}{notice && <p role="status" className="ks-notice">{notice}</p>}
   {screen==='setup'&&canManage&&<>
    <div className="ks-card ks-flow-target" ref={setupRef} tabIndex={-1}><h3>1. Velg KS/HMS-ansvarlig</h3><p>Start med personen som skal følge opp håndboken og signere den årlige kontrollen. Firmaadmin velger en aktiv bruker i firmaet og kan velge seg selv.</p>
@@ -280,7 +324,7 @@ export default function KshmsModule({context,deviationRequest,personalOnly=false
    {editor&&canManage&&<div className="ks-card ks-editor" ref={editorRef} tabIndex={-1}><h3>{editor.id?`Rediger rutine: ${editor.draft.title}`:'Skriv en ny rutine'}</h3><p>Her endrer du teksten så den passer firmaet. Trykk «Lagre utkast» når du er ferdig. Firmaadmin eller KS/HMS-ansvarlig må godkjenne før ansatte får rutinen. Tidligere godkjente utgaver beholdes.</p><p className="ks-field-hint">Rutinene er felles for firmaet. Hold private opplysninger om enkeltansatte utenfor teksten.</p>
     <aside className="ks-writing-help"><strong>Skrivehjelp – vises bare her</strong><p>KS/HMS-ansvarlig eller firmaadmin bør tilpasse teksten til egen bedrift før godkjenning. Tipsene utenfor boksene lagres ikke som del av rutinen og vises ikke for ansatte eller i rapportgrunnlaget.</p><p>{ROUTINE_WRITING_TIPS[editor.draft.source_key]||'Tekstforslaget er en generell start. Beskriv den konkrete oppgaven, når rutinen gjelder, hvem som gjør hva, og hvordan dere kontrollerer resultatet.'}</p></aside>
     {Object.keys(ROUTINE_TEXT_SUGGESTIONS).some(field=>!editor.draft[field]?.trim())&&<button type="button" className="secondary" disabled={busy} onClick={()=>cacheEditor({...editor,draft:fillEmptyRoutine(editor.draft)})}>Fyll tomme rutinefelt med tekstforslag</button>}
-    <form id={routineEditorFormId} onSubmit={save}>{[['Tittel','title','Gi rutinen et kort navn som sier hva den handler om.'],['Kapittel','chapter','Skriv hvor rutinen skal ligge, for eksempel HMSK eller Personal og arbeidsforhold.'],['Mål','goal','Hva skal rutinen hjelpe dere å få til eller unngå?'],['Ansvar – hvem gjør hva?','responsibility','Skriv hvem som gjør arbeidet, og hvem som følger det opp.'],['I vår bedrift har vi følgende rutine','procedure','Beskriv oppgaven steg for steg. Ta med når rutinen skal brukes og hva en ansatt trenger å vite.'],['Dokumentasjon – hva skal lagres?','documentation','Skriv hva som skal dokumenteres, for eksempel bilder, en sjekkliste eller en kontroll.'],['Gjennomgang – hva skal den ansatte avklare?','confirmation','Skriv hva den ansatte skal lese og spørre om før arbeidet starter.']].map(([label,key,hint])=><Field key={key} label={label} hint={hint} value={editor.draft[key]} required multiline={!['title','chapter'].includes(key)} onChange={v=>cacheEditor({...editor,draft:{...editor.draft,[key]:v}})}/>)}
+    <form className="ks-routine-form-036" id={routineEditorFormId} onSubmit={save}>{[['Tittel','title','Gi rutinen et kort navn som sier hva den handler om.'],['Kapittel','chapter','Skriv hvor rutinen skal ligge, for eksempel HMSK eller Personal og arbeidsforhold.'],['Mål','goal','Hva skal rutinen hjelpe dere å få til eller unngå?'],['Ansvar – hvem gjør hva?','responsibility','Skriv hvem som gjør arbeidet, og hvem som følger det opp.'],['I vår bedrift har vi følgende rutine','procedure','Beskriv oppgaven steg for steg. Ta med når rutinen skal brukes og hva en ansatt trenger å vite.'],['Dokumentasjon – hva skal lagres?','documentation','Skriv hva som skal dokumenteres, for eksempel bilder, en sjekkliste eller en kontroll.'],['Gjennomgang – hva skal den ansatte avklare?','confirmation','Skriv hva den ansatte skal lese og spørre om før arbeidet starter.']].map(([label,key,hint])=><Field key={key} label={label} hint={hint} value={editor.draft[key]} required multiline={!['title','chapter'].includes(key)} onChange={v=>cacheEditor({...editor,draft:{...editor.draft,[key]:v}})}/>)}
      <References value={sources} onChange={v=>{setSources(v);cacheEditor(editor,v)}}/>
      <div className="ks-actions"><button disabled={busy}>Lagre utkast</button><button type="button" className="secondary" onClick={()=>{setEditor(null);setDirty(false)}}>Lukk redigering</button>{editor.draft.source_key&&<button type="button" className="secondary" onClick={()=>setProposal(ROUTINE_CATALOG.find(r=>r.key===editor.draft.source_key)||null)}>Vurder ProffDoks tekstforslag</button>}</div>
     </form>
@@ -308,9 +352,9 @@ export default function KshmsModule({context,deviationRequest,personalOnly=false
     const newerProposal=canManage&&ROUTINE_CATALOG.find(template=>template.key===r.draft?.source_key&&template.source_revision>r.draft.source_revision);
     return <article className="ks-card" key={r.id}><div className="ks-row"><h4>{routineNumber(r.reference_number)&&`${routineNumber(r.reference_number)} · `}{r.draft?.title||current?.content.title}</h4><span className={`ks-badge ks-status-${approval.status}`}>{approval.label}</span></div>
      {newerProposal&&<p className="ks-field-hint">ProffDoks tekstforslag er oppdatert. Firmaets tekst er beholdt. Åpne «Rediger her» og «Vurder ProffDoks tekstforslag» hvis du vil se eller bruke endringene.</p>}
-     {current&&<details><summary>Les publisert versjon {current.number}</summary><p>Endring: {current.change_summary}</p><KshmsVersionIdentity version={current} acknowledgment={data.acknowledgments.find(row=>row.user_id===userId&&row.version_id===current.id)} data={data} userId={userId}/><Content content={current.content}/><KshmsDocumentPdfButton kind="routine" row={current} companyId={companyId} userId={userId}/></details>}
+     {current&&<details><summary>Les publisert versjon {current.number}</summary><p>Endring: {current.change_summary}</p><KshmsVersionIdentity version={current} acknowledgment={data.acknowledgments.find(row=>row.user_id===userId&&row.version_id===current.id)} data={data} userId={userId}/><Content content={current.content}/><KshmsDocumentPdfButton kind="routine" row={current} companyId={companyId} userId={userId} active={!workspaceOverview}/></details>}
      {canManage&&<div className="ks-actions">{!r.archived&&<button type="button" className="secondary" disabled={busy} aria-label={`Rediger her: ${r.draft.title}`} onClick={()=>chooseEditor(r.draft,r)}>Rediger her</button>}<button type="button" className="secondary" onClick={()=>chooseEditor({...r.draft,title:`${r.draft.title} (kopi)`})}>Kopier</button>{!r.archived&&canPublish&&approval.status!=='approved'&&<button type="button" disabled={busy||dirty||progress.step==='setup'} aria-label={`Åpne godkjenning: ${r.draft.title}`} onClick={()=>choosePublication(r)}>{approval.status==='changed'?'Godkjenn endringene':'Åpne godkjenning'}</button>}{!r.archived&&canAdmin&&<button type="button" className="secondary" disabled={busy} onClick={()=>{if(window.confirm('Arkiver rutinen? Publiserte versjoner og bekreftelser beholdes.'))run('archive',{id:r.id,revision:r.revision},'Rutinen er arkivert; historikken er bevart.')}}>Arkiver</button>}</div>}
-     {versions.length>0&&<details><summary>Versjonshistorikk ({versions.length})</summary>{versions.map(v=><details key={v.id}><summary>Versjon {v.number} · {dateTime(v.published_at)} · {v.change_summary}</summary><Content content={v.content}/><KshmsDocumentPdfButton kind="routine" row={v} companyId={companyId} userId={userId}/><p>Godkjenner: {data.members.find(m=>m.id===v.published_by)?.email||v.published_by} · innholdskontroll: {v.content_hash}</p></details>)}</details>}
+     {versions.length>0&&<details><summary>Versjonshistorikk ({versions.length})</summary>{versions.map(v=><details key={v.id}><summary>Versjon {v.number} · {dateTime(v.published_at)} · {v.change_summary}</summary><Content content={v.content}/><KshmsDocumentPdfButton kind="routine" row={v} companyId={companyId} userId={userId} active={!workspaceOverview}/><p>Godkjenner: {data.members.find(m=>m.id===v.published_by)?.email||v.published_by} · innholdskontroll: {v.content_hash}</p></details>)}</details>}
     </article>;
    })}</details>)}
    {canManage&&progress.step==='followup'&&!dirty&&<KshmsHandbookProgress progress={progress} dirty={dirty} busy={busy} canPublish={canPublish} onNext={nextStep} targetRef={completionRef} feedback={publicationFeedback} label="Neste steg etter siste godkjenning" announce={false}/>}
@@ -322,7 +366,7 @@ export default function KshmsModule({context,deviationRequest,personalOnly=false
    <KshmsRoutineSearch label="Søk i rutinene du har fått" query={readingQuery} onChange={setReadingQuery} count={visibleAssignments.length} total={ownAssignments.length}/>
    {readingQuery.trim()&&!visibleAssignments.length&&<p>Ingen av rutinene dine passer søket. Prøv et annet ord eller tøm søket.</p>}
    {visibleAssignments.map(a=>{const v=data.versions.find(v=>v.id===a.version_id),ack=data.acknowledgments.find(k=>k.user_id===userId&&k.version_id===a.version_id);if(!v)return null;return <div key={v.id} className="ks-reading-row"><button type="button" className="secondary" disabled={busy} onClick={()=>chooseReading(v)}>{v.content.title} · v{v.number}</button><span>{ack?<>Bekreftet <time dateTime={ack.acknowledged_at}>{acknowledgmentTime(ack.acknowledged_at)}</time></>:v.requires_ack||v.number===1?'Gjennomgang mangler':'Informasjon – ny bekreftelse valgfri'}</span></div>})}
-   {reading&&<article className="ks-reading ks-flow-target" ref={readingRef} tabIndex={-1}><h3>{reading.content.title} · versjon {reading.number}</h3>{readingFeedback&&<p className="ks-notice" role="status">{readingFeedback}</p>}<KshmsVersionIdentity version={reading} acknowledgment={data.acknowledgments.find(row=>row.user_id===userId&&row.version_id===reading.id)} data={data} userId={userId}/><Content content={reading.content}/><KshmsDocumentPdfButton kind="routine" row={reading} companyId={companyId} userId={userId}/><p className="ks-confirmation">{ACK_STATEMENT}</p>{data.acknowledgments.some(a=>a.version_id===reading.id&&a.user_id===userId)?<p>Din bekreftelse er registrert.</p>:<><label className="ks-check"><input type="checkbox" checked={checked} disabled={busy} onChange={e=>setChecked(e.target.checked)}/>Jeg bekrefter egen gjennomgang og teksten over.</label>{error&&<p role="alert" className="ks-error">{error}</p>}<button type="button" disabled={!checked||busy} onClick={acknowledgeRoutine}>{busy?'Lagrer bekreftelsen …':`Bekreft versjon ${reading.number}`}</button></>}</article>}
+   {reading&&<article className="ks-reading ks-flow-target" ref={readingRef} tabIndex={-1}><h3>{reading.content.title} · versjon {reading.number}</h3>{readingFeedback&&<p className="ks-notice" role="status">{readingFeedback}</p>}<KshmsVersionIdentity version={reading} acknowledgment={data.acknowledgments.find(row=>row.user_id===userId&&row.version_id===reading.id)} data={data} userId={userId}/><Content content={reading.content}/><KshmsDocumentPdfButton kind="routine" row={reading} companyId={companyId} userId={userId} active={!workspaceOverview}/><p className="ks-confirmation">{ACK_STATEMENT}</p>{data.acknowledgments.some(a=>a.version_id===reading.id&&a.user_id===userId)?<p>Din bekreftelse er registrert.</p>:<><label className="ks-check"><input type="checkbox" checked={checked} disabled={busy} onChange={e=>setChecked(e.target.checked)}/>Jeg bekrefter egen gjennomgang og teksten over.</label>{error&&<p role="alert" className="ks-error">{error}</p>}<button type="button" disabled={!checked||busy} onClick={acknowledgeRoutine}>{busy?'Lagrer bekreftelsen …':`Bekreft versjon ${reading.number}`}</button></>}</article>}
    {!reading&&ownAssignments.length>0&&!pending.length&&<div className="ks-card ks-handbook-progress ready ks-flow-target" ref={readingDoneRef} tabIndex={-1} role="region" aria-label="Gjennomgangen er fullført"><h3>Du er ferdig med gjennomgangen</h3><p>Alle rutineutgaver som krever bekreftelse, er bekreftet. Du kan åpne rutinene over når du trenger dem. Nye eller viktige endringer kan gi deg en ny utgave å lese og bekrefte.</p><button type="button" className="secondary" onClick={()=>setScreen('personal')}>Åpne Min personalhåndbok</button>{readingFeedback&&<p className="ks-notice" role="status">{readingFeedback}</p>}</div>}
   </div>}
   {screen==='followup'&&canManage&&<>
@@ -345,5 +389,7 @@ export default function KshmsModule({context,deviationRequest,personalOnly=false
     <details><summary>Revisjonshistorikk ({data.reviews.length})</summary>{data.reviews.map(r=><article key={r.id}><h4>{dateTime(r.signed_at)} · {data.members.find(m=>m.id===r.signed_by)?.email||r.signed_by}</h4><p>{r.statement}</p><p className="ks-text">{r.findings}</p><p className="ks-text">{r.follow_up}</p><p>Neste revisjon: {r.next_review_on} · {r.version_snapshot.length} versjoner</p>{r.version_snapshot.map(s=>{const v=data.versions.find(v=>v.id===s.id);return <p key={s.id}>{v?`${v.content.title} · v${v.number}`:s.id}</p>})}</article>)}</details>
    </div>
   </>}
+  </div>
  </section>;
 }
+

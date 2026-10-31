@@ -66,5 +66,5 @@ const other={key:'sales',title:'Unchanged sales'},grouped=groupHelpTopics([...re
 assert.deepEqual(grouped.map(row=>row.key),['kshms','hr','sales']);assert.equal(grouped[2],other);
 assert.equal(grouped.flatMap(row=>row.chapters||[]).length,records.length);
 for(const original of records){const chapter=grouped.flatMap(row=>row.chapters||[]).find(row=>row.key===original.key);for(const key of ['purpose','workflow','important','best'])assert.deepEqual(chapter[key],original[key]);}
-assert(help.includes('groupHelpTopics(['));assert(help.includes('HelpTopicGroup, {item,renderContent:renderGuideContent}'));
+assert(help.includes('groupHelpTopics(appendWorkspaceHelp(['));assert(help.includes('HelpTopicGroup, {item,renderContent:renderGuideContent}'));
 console.log('✅ HR H3: buffered file delivery/final fresh grant/hash/no cache, purge failures/fencing, closed restore/content gate and complete single-entry Help families PASS');

@@ -4,6 +4,8 @@ import {useProCatalogOrderAccess} from '../../src/modules/storeCatalog/useProCat
 import {createGlobalAppTabs} from '../../src/modules/project/projectNavigationTabs.mjs';
 import Orders from '../../src/modules/storeCatalog/ProCatalogOrders.jsx';
 import '../../src/style.css';
+import '../../src/modules/app/mobileResponsive41A.css';
+import '../../src/modules/ui/proffdokWorkspace.css';
 import {installStorePriceSearchUx} from '../../src/modules/storeCatalog/storePriceSearchUx.jsx';
 const company='87000000-0000-4000-8000-000000000003';
 window.qa={internal:new URL(location.href).searchParams.get('internal')==='1',allowed:true,company,user:'user-a',contacts:[],sentIds:JSON.parse(sessionStorage.getItem('qa-sent-ids')||'[]'),unknown:sessionStorage.getItem('qa-provider-accepted')!=='1',delay:0,reads:0};
@@ -33,10 +35,12 @@ if(window.qa.internal){
  };
  installStorePriceSearchUx();
 }
+// This harness mounts native destinations, not the app header/mobile drawer.
+// Let its synthetic navigation labels wrap instead of manufacturing page overflow.
 function App(){
  const access=useProCatalogOrderAccess(window.qa.user),[tab,setTab]=useState(window.qa.internal?'catalog_order':'pro_catalog');
  const tabs=createGlobalAppTabs({canUseProCatalogOrders:!!access.context,internalCatalogOrders:access.context?.internal_catalog===true});
  const visibleTabs=window.qa.internal?tabs:tabs.filter(([id])=>['pro_catalog','catalog_order'].includes(id));
- return <><nav>{visibleTabs.map(([id,label])=><button data-order-nav={['pro_catalog','catalog_order'].includes(id)?'true':undefined} key={id} onClick={()=>setTab(id)}>{label}</button>)}</nav><main>{access.context&&['pro_catalog','catalog_order'].includes(tab)?<Orders key={access.context.user_id+':'+access.context.company_id} context={access.context} pending={access.pending} mode={tab==='pro_catalog'?'search':'order'} onSearch={()=>setTab('pro_catalog')} onOrder={()=>setTab('catalog_order')}/>:<p>Ingen katalogtilgang</p>}</main></>;
+ return <><nav>{visibleTabs.map(([id,label])=><button style={{whiteSpace:'normal',overflowWrap:'anywhere'}} data-order-nav={['pro_catalog','catalog_order'].includes(id)?'true':undefined} key={id} onClick={()=>setTab(id)}>{label}</button>)}</nav><main>{access.context&&['pro_catalog','catalog_order'].includes(tab)?<Orders key={access.context.user_id+':'+access.context.company_id} context={access.context} pending={access.pending} mode={tab==='pro_catalog'?'search':'order'} onSearch={()=>setTab('pro_catalog')} onOrder={()=>setTab('catalog_order')}/>:<p>Ingen katalogtilgang</p>}</main></>;
 }
 createRoot(document.getElementById('app')).render(<App/>);

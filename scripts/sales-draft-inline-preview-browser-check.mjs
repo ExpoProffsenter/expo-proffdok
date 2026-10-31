@@ -12,7 +12,7 @@ try {
   name:"inline-preview-boundaries",enforce:"pre",
   resolveId(id){if(/\/(SalesDetailViewLegacy|SalesContractActions|SalesContractWizard|StoreOfferOrderBasis)\.jsx$/.test(id))return "\0qa-"+id.split("/").pop();},
   load(id){
-   if(id==="\0qa-SalesDetailViewLegacy.jsx")return "import{createElement as h}from'react';export default function Legacy(){return h('section',{'data-original-case':'true'},h('input',{'aria-label':'Ulagret notat',defaultValue:'Opprinnelig kladd'}));}";
+   if(id==="\0qa-SalesDetailViewLegacy.jsx")return "import{createElement as h}from'react';export default function Legacy(props){return h('section',{'data-original-case':'true'},h('input',{'aria-label':'Ulagret notat',defaultValue:'Opprinnelig kladd'}),props.customerPreview);}";
    if(id.startsWith("\0qa-"))return "export default function Unused(){return null;}";
   }
  }],resolve:{alias:{react:path.join(root,"node_modules/react"),"react-dom":path.join(root,"node_modules/react-dom")}},
@@ -38,7 +38,11 @@ try {
   eq(await page.evaluate(()=>window.qa.mainSignedIn),true,"actual SDK app session exists");
   eq(await page.evaluate(()=>window.qa.isolatedSignedIn),quota==="normal","isolated-client session disappears when persistence is unavailable");
   const launch=page.getByRole("button",{name:"Forhåndsvis som kunde",exact:true}),note=page.getByRole("textbox",{name:"Ulagret notat"});
-  await note.fill("Behold denne ulagrede kladden");await launch.click();
+  await note.fill("Behold denne ulagrede kladden");
+  // The saved-preview action now lives in the shared customer panel. Narrow
+  // workspaces open that panel without unmounting the original editor.
+  if(width<=1000)await page.getByRole("button",{name:"Kundevisning",exact:true}).click();
+  await launch.click();
   const dialog=page.getByRole("dialog",{name:"Forhåndsvis som kunde",exact:true});
   await dialog.getByText("Forhåndsvisning – ikke sendt til kunde",{exact:true}).waitFor();
   eq(await dialog.getByText("Lagret grunnarbeid",{exact:true}).count(),1,"saved server content rendered inside dialog");
@@ -56,18 +60,20 @@ try {
    await dialog.screenshot({path:path.join(process.env.SALES_DRAFT_QA_OUTPUT,"inline-"+quota+"-"+width+".png")});
   }
   await dialog.getByRole("button",{name:"Tilbake til tilbudet",exact:true}).click();
-  eq(await page.getByRole("dialog").count(),0,"back closes only preview");
+  eq(await page.getByRole("dialog",{name:"Forhåndsvis som kunde",exact:true}).count(),0,"back closes only saved preview");
+  eq(await page.locator(".sales-case-preview-drawer").evaluate(node=>node.open),true,"shared reading panel remains mounted after saved dialog closes");
   eq(await note.inputValue(),"Behold denne ulagrede kladden","original input and unsaved draft preserved");
   eq(await launch.evaluate(el=>el===document.activeElement),true,"focus restored to preview trigger");
   await launch.click();await dialog.getByText("Forhåndsvisning – ikke sendt til kunde",{exact:true}).waitFor();await page.keyboard.press("Escape");
-  eq(await page.getByRole("dialog").count(),0,"Escape closes dialog");
+  eq(await page.getByRole("dialog",{name:"Forhåndsvis som kunde",exact:true}).count(),0,"Escape closes saved dialog");
   await launch.click();await dialog.getByText("Forhåndsvisning – ikke sendt til kunde",{exact:true}).waitFor();
   await page.evaluate(()=>{window.qa.access=false;window.dispatchEvent(new Event("focus"));});
   await dialog.getByRole("button",{name:"Prøv igjen",exact:true}).waitFor();
   eq(await dialog.getByText("Lagret grunnarbeid",{exact:true}).count(),0,"revoked access hides old data");
   await page.evaluate(()=>{window.qa.access=true;});await dialog.getByRole("button",{name:"Prøv igjen",exact:true}).click();
   await dialog.getByText("Forhåndsvisning – ikke sendt til kunde",{exact:true}).waitFor();
-  await page.evaluate(()=>window.qa.switchRequest());eq(await page.getByRole("dialog").count(),0,"switching case closes previous preview");
+  await page.evaluate(()=>window.qa.switchRequest());eq(await page.getByRole("dialog",{name:"Forhåndsvis som kunde",exact:true}).count(),0,"switching case closes previous saved preview");
+  if(width<=1000)await page.getByRole("button",{name:"Kundevisning",exact:true}).click();
   await launch.click();await dialog.getByText("Forhåndsvisning – ikke sendt til kunde",{exact:true}).waitFor();
   await page.evaluate(()=>window.qa.client.auth.signOut({scope:"local"}));await dialog.getByRole("button",{name:"Prøv igjen",exact:true}).waitFor();
   eq(await dialog.getByText("Lagret grunnarbeid",{exact:true}).count(),0,"actual SDK logout clears preview");
@@ -79,3 +85,7 @@ try {
  }
  console.log("PASS inline draft preview: "+checks+" actual React/SDK/Chromium assertions; normal/quota-blocked storage, 390/1366px, saved content, focus, back/Escape, case switch, revocation, logout, no outbound transport.");
 } finally {await browser?.close();}
+
+// Shared case/editor reading column: version selection, passive customer
+// controls, tablet/desktop layout and preservation of the native form DOM.
+await import("./sales-case-customer-preview-browser-check.mjs");

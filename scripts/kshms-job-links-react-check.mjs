@@ -91,14 +91,14 @@ assert(doc.querySelector('.ks-case-list').textContent.includes('frist 11.10.2026
 // Email links select authorized reads in the real module, with no implicit signatures/acknowledgments.
 await act(async () => window.__unmount()); const linkedSja = [...sjas.values()][0];
 window.history.replaceState({}, '', `/?kshmsSja=${linkedSja.id}&kshmsCompany=${company}`); await render('module');
-assert.equal(button('SJA').getAttribute('aria-pressed'), 'true'); await click(button('Åpne SJA fra e-posten')); assert.equal(doc.querySelector('[data-sja-field="title"]').value, linkedSja.content.title); await click(button('Lukk'));
+assert.equal(doc.querySelector('[aria-label="Velg KS/HMS-visning"]').value, 'sja'); await click(button('Åpne SJA fra e-posten')); assert.equal(doc.querySelector('[data-sja-field="title"]').value, linkedSja.content.title); await click(button('Lukk'));
 await act(async () => window.__unmount());
 handbook = {...handbook,versions:[{...routines[0],requires_ack:true}],assignments:[{company_id:company,version_id:routines[0].id,user_id:user}]};
 window.history.replaceState({}, '', `/?kshmsVersion=${routines[0].id}&kshmsCompany=${company}`); await render('module');
-assert.equal(button('Les og bekreft (1)').getAttribute('aria-pressed'), 'true'); const acknowledgmentsBefore = calls.filter(row => row.name === 'kshms_command').length;
+assert.equal(doc.querySelector('[aria-label="Velg KS/HMS-visning"]').value, 'reading'); const acknowledgmentsBefore = calls.filter(row => row.name === 'kshms_command').length;
 await click(button('Åpne rutinen fra e-posten')); assert(doc.body.textContent.includes('Støv ved mur og flis')); assert(!doc.querySelector('input[type="checkbox"]:checked')); assert.equal(calls.filter(row => row.name === 'kshms_command').length, acknowledgmentsBefore);
 window.history.replaceState({}, '', `/?kshmsVersion=${routines[0].id}&kshmsCompany=${otherProject}`); await render('module'); assert(doc.body.textContent.includes('Lenken gjelder et annet firma')); assert(!button('Åpne rutinen fra e-posten'));
 await act(async () => window.__unmount()); handbook = {...handbook,settings:{revision:1,trades:['mur_flis'],responsible_user_id:user,next_review_on:'2026-10-07'}};
-window.history.replaceState({}, '', `/?kshmsReview=${company}&kshmsCompany=${company}`); await render('module'); assert.equal(button('Oppfølging og revisjon').getAttribute('aria-pressed'), 'true'); assert(doc.body.textContent.includes('Datoen er passert'));
+window.history.replaceState({}, '', `/?kshmsReview=${company}&kshmsCompany=${company}`); await render('module'); assert.equal(doc.querySelector('[aria-label="Velg KS/HMS-visning"]').value, 'followup'); assert(doc.body.textContent.includes('Datoen er passert'));
 await act(async () => window.__unmount()); dom.window.close(); fs.rmSync(temp, { recursive: true, force: true });
 console.log('Real React project/SJA/RUH: PASS – module-only navigation/actions, direct blank creation, real project choices/manual references, numbered exact routine edition, optional trade prompts, complete missing-field alert, network retry/draft retention, own closure, scoped history and read-only actions.');

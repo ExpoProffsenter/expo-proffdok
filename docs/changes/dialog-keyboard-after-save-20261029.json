@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Escape og Tab i øverste dialog etter deaktivert lagreknapp",
+  "change": "Miljømål BEGGE, eksisterende design-Preview. Reell CI774-feil: actual HR samtale-lagring deaktiverer fokusert knapp, browserfokus faller til BODY, lokal dialog-keydown får da ikke Escape. Beholder lokallytter og legger en avgrenset document-fallback kun fra BODY/documentElement for øverste monterte DeviationDialog. Native modal over dialogen har forrang. Tab fra tapt fokus går til første/siste aktive kontroll. Listener/stack ryddes ved unmount. Eksisterende onClose, busy-avvisning, returresolver, data og native callbacks beholdes.",
+  "verification": "CI774 app-browser feiler deterministisk linje78; ny permanent HR-fixture holder faktisk syntetisk hr_conversation_command til disabled-state er committet, slipper RPC, venter på faktisk kvittering og readiness, og prøver Escape uten fokusinjeksjon eller retry. Negativ diagnose bekrefter BODY som keydown-target med åpent idle-panel. Ny suite legger nestet dialog-/Tab-/ShiftTab-/native-modal-beskyttelse til alle tidligere assertions. Lokal og faktisk ny CI-status føres i PR295; tidligere lokal113PASS var ikke tilstrekkelig fordi umiddelbar mock kunne skjule fokusfeilen. Ingen svekking av Escape/close/44px/kladd/tilgangskrav. Endelig lokal HR Chromium:132PASS, med19 nye regresjonsassertions. Root samlet app-UX122+89+51+1031+132+197PASS, full Sandbox critical/buildPASS og eksisterende checklist-resume36PASS. Ny faktisk CI kreves på publisert fiks.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Ingen ny knapp eller brukerflyt; eksisterende Escape og Tab virker etter lagring."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Avgrenset tastatur- og mountlivsløp i eksisterende presentasjonsdialog, ingen data-/tilgangsendring."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen ny avhengighet, miljøbinding eller konfigurasjon."
+    },
+    "module": {
+      "required": true,
+      "reason": "UI README presiserer top-dialog/fallback/native-modal-gate og bevarte onClose/returmål."
+    }
+  }
+}

@@ -2,6 +2,7 @@ import './desktopSideMenu.css';
 
 const DESKTOP_QUERY = '(min-width: 1181px)';
 const BAR_ID = 'expo-desktop-menu-bar';
+const PRIMARY_ID = 'expo-desktop-primary-nav';
 const HOME_ID = 'expo-desktop-home-button';
 const HELP_ID = 'expo-desktop-help-button';
 const SUPPORT_ID = 'expo-desktop-support-button';
@@ -304,6 +305,7 @@ function buildMenuShell() {
     if (open) {
       backdrop.hidden = false;
       requestAnimationFrame(() => {
+        if (toggle.getAttribute('aria-expanded') !== 'true') return;
         backdrop.classList.add('isOpen');
         drawer.classList.add('isOpen');
         closeButton.focus();
@@ -333,19 +335,61 @@ function buildMenuShell() {
   return { bar, homeButton, helpButton, supportButton, drawer, backdrop };
 }
 
+// Presentation only. Every header target is taken from the currently rendered
+// native navigation, and a click resolves that native target again.
+function syncPrimaryNavigation(sourceNav, sourceButtons, shell, projectWorkspaceNav) {
+  let primary = document.getElementById(PRIMARY_ID);
+  if (projectWorkspaceNav) {
+    primary?.remove();
+    if (shell.bar.previousElementSibling !== sourceNav && shell.bar.nextElementSibling !== sourceNav) {
+      sourceNav.parentNode?.insertBefore(shell.bar, sourceNav);
+    }
+    return;
+  }
+  if (!primary) {
+    primary = document.createElement('nav');
+    primary.id = PRIMARY_ID;
+    primary.className = 'expoDesktopPrimaryNav';
+    primary.setAttribute('aria-label', 'Hovedområder');
+  }
+  if (primary.previousElementSibling !== sourceNav) sourceNav.after(primary);
+  if (shell.bar.previousElementSibling !== primary) primary.after(shell.bar);
+  const order = ['Startside','Befaring/Tilbud','Prissøk','Varesøk','Varebestilling','Prosjektliste','Boligprosjekter','HR','KS/HMS','Min side','Min profil / e-postvalg'];
+  const targets = order.map(label => sourceButtons.find(button => cleanLabel(button.textContent) === label)).filter(Boolean);
+  const signature = targets.map(button => `${cleanLabel(button.textContent)}:${button.classList.contains('on')}:${button.disabled}`).join('|');
+  if (primary.dataset.sourceSignature === signature) return;
+  primary.dataset.sourceSignature = signature;
+  primary.replaceChildren();
+  targets.forEach(sourceButton => {
+    const label = cleanLabel(sourceButton.textContent);
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = label;
+    button.disabled = sourceButton.disabled;
+    button.className = sourceButton.classList.contains('on') ? 'on' : '';
+    button.setAttribute('data-expo-nav-label', label);
+    if (sourceButton.classList.contains('on')) button.setAttribute('aria-current', 'page');
+    button.addEventListener('click', () => {
+      const target = findSourceNavButton([label]);
+      if (target instanceof HTMLButtonElement && !target.disabled && !target.hidden && target.style.display !== 'none') target.click();
+    });
+    primary.append(button);
+  });
+}
+
 function syncDrawerWithSource(sourceNav, shell) {
   if (!(sourceNav instanceof HTMLElement)) return;
 
   sourceNav.classList.add('expoDesktopSourceNavHidden');
 
-  if (shell.bar.previousElementSibling !== sourceNav && shell.bar.nextElementSibling !== sourceNav) {
-    sourceNav.parentNode?.insertBefore(shell.bar, sourceNav);
-  }
-
   const sourceButtons = Array.from(sourceNav.querySelectorAll(':scope > button'))
     .filter((button) => !button.hidden && button.style.display !== 'none');
   const sourceLabels = sourceButtons.map((button) => cleanLabel(button.textContent));
   const projectWorkspaceNav = isProjectWorkspaceLabels(sourceLabels);
+  syncPrimaryNavigation(sourceNav, sourceButtons, shell, projectWorkspaceNav);
+  const caption = shell.bar.querySelector('.expoDesktopMenuToggle > span:last-child');
+  const wantedCaption = projectWorkspaceNav ? 'Meny' : 'Alle områder';
+  if (caption && caption.textContent !== wantedCaption) caption.textContent = wantedCaption;
   const drawerSourceButtons = projectWorkspaceNav
     ? sourceButtons.filter((button) => !['Hjelp','Support'].includes(cleanLabel(button.textContent)))
     : sourceButtons;
@@ -415,6 +459,7 @@ export function installDesktopSideMenu() {
     restoreNativeHomeSourceButtons();
     sourceNav?.classList.remove('expoDesktopSourceNavHidden');
     sourceNav = null;
+    document.getElementById(PRIMARY_ID)?.remove();
     document.getElementById(BAR_ID)?.remove();
     document.getElementById(HOME_ID)?.remove();
     document.getElementById(HELP_ID)?.remove();
@@ -473,3 +518,4 @@ export function installDesktopSideMenu() {
 
   scheduleEnsure();
 }
+

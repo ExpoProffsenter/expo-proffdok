@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Valgt bolig bruker felles arbeidsflate",
+  "change": "Miljømål BEGGE, bare samme PR295/Preview/Sandbox. Ny housingUnitWorkspace.css avgrenser de faktiske native bolig-unit-work/task/room/package-choice/allocation-dialogene til680px/fullhøyde høyrepanel, navy topp,28/25px titler,16px/45px kontroller,8px underseksjoner og synlig retur. Bare CSS/import og tillegg til eksisterende testkjede; ingen src/modules/bolig-, data-, handler-, pris-, kladd-, tilgangs-, portaltransport-, lagrings- eller backendendring. Native hidden-paneler holdes skjult. Indre overskrifter følger innholdet, slik at de ikke dekker fast topp/kryss. Eksterne beboer-/UE-sider og andre dialogklasser er utenfor.",
+  "verification": "1167 nye native assertionsPASS: faktisk Entry med alle sju boligarbeidsflater, kontakt, romeditor og pakkevalg i seks vinduer1920/1363/768/390/320 og390x320; eldre romfordelingsdialog i fire vinduer. Geometri, synlig/uoverdekket44px kryss, indre overskrifter, ingen sideoverflow,16px/44px faktiske kontroller, scroll, retur/fokus, usendt kontaktkladd, same-profile og tilbakekalt tilgang. Kun syntetiske lesekall og faktiske komponenter, ingen UI-stubber eller virkelige skrivinger. Første QA-fixture manglet units i fremdriftsresponsen; rettet til native kontrakt. Native Bestilling har både status- og arbeidsknapp; lokator avgrenset til Valgt bolig. Mobil APP_RUNTIME_STYLES overstyrte sticky-headerens top; CSS rettet med eksplisitt top/z-index. Visuell etterkontroll fanget indre overskrift over paneltoppen; ny obstruksjons-/posisjonskontroll beholdt i testen. Opprinnelig pakkevalg36/rominnhold35/rom51PASS med pris/fratrekk/kladd/konflikt/rolle/revoke. Full critical Sandbox-buildPASS. Representative PC-/mobilbilder visuelt kontrollert. Ny prøve inngår i app-UX/CI. Sluttkandidat/fullCI/READY/innlogget kontroll føres i PR295. Ingen attest på alle levende roller, reelle serverkommandoer, fysisk Safari eller totaldesign.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Eksisterende knappnavn og oppgaver beholdes; ingen ny brukerflyt."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Bare avgrenset presentasjon; uendrede komponent- og dataeiere."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen konfigurasjon eller avhengighet endres."
+    },
+    "module": {
+      "required": true,
+      "reason": "Felles UI-kontrakt beskriver native dialogfamilie, skjulte flater og uendrede eiere."
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Befaring og begge tilbud: faktiske mobilregler og ærlig skissestatus",
+  "change": "Miljømål BEGGE, utførelse bare samme PR295/Preview/Sandbox. Ny avgrenset screen-CSS for native sales-editor-app, store-grouped-builder og sales-case-app sikrer 16px felt og minst45px knapper også etter appens sene mobilregler, 6px felt og 8px paneler. SalesBathroomSketch får kun valgfri storedImageAvailable-presentasjonsprop fra eksisterende lagret-bildebetingelse i SalesInspectionNote. Når en lagret skisse vises ovenfor, sier den tomme lokale forhåndsvisningen dette i stedet for at ingen skisse finnes. Tegnemodell, editor, bilder, lagring, kladd/recovery, hydrering, priser, maler, tilgang, e-post og backend har samme eiere. Ingen native prosjekt- eller Bolig-endring.",
+  "verification": "Begge eksisterende editor-/General-harnessene laster nå også faktisk APP_RUNTIME_STYLES. Før CSS-rettelsen feilet eksisterende høydekrav på39px Avbryt/Tilbake og General-handlinger. Samme krav består etter scoped CSS: native Sales editor292 (alle tidligere277 beholdt,15 nye lagret/tom skissestatuskrav over5bredder) og General229. Befaringsinitialisering21, critical Badskisse og server-first-hydreringPASS. Ny forespørsel/typevalg/begge direkte skjemaer110 og tilbudsrouter/mal/logo/publisering/syntetisk transport/faktiske PDF-er59PASS. Prosjektets uendrede native underflater573krav/90state-breddevisninger og deltakeradapter21PASS. Innlogget eksisterende DEMO02-befaring hadde den motstridende skisseteksten; plan/notat åpnet og avbrutt uten redigering eller sending. Prosjektdeltakere har faktisk16px/44px; prosjektbeskrivelse, avtalegrunnlag og prosjektering lest. Sandbox critical/buildPASS. Eksakt fullCI/READY og etterkontroll føres i PR295. Ingen helreise-, fysiskmobil-/Safari-, faktisk sending/signering-/rolleattest.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Ingen ny knapp eller arbeidsflyt; eksisterende statusbeskjed korrigeres."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Ingen endret dataflyt, lagrings- eller funksjonseier."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen avhengighet eller miljøkonfigurasjon endres."
+    },
+    "module": {
+      "required": true,
+      "reason": "Moduldokumentasjonen beskriver den avgrensede presentasjonspropen og bevarte eiere."
+    }
+  }
+}

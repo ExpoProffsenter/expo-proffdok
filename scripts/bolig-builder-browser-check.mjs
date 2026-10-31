@@ -20,12 +20,14 @@ import ProjectHome from '${cwd}/src/modules/bolig/BoligProjectHome.jsx';
 import {BoligHelp} from '${cwd}/src/modules/help/BoligHelp.jsx';
 import Task from '${cwd}/src/modules/bolig/BoligTaskDialog.jsx';
 import Overview from '${cwd}/src/modules/bolig/BoligBuildingOverview.jsx';
+import '${cwd}/src/style.css';
 import '${cwd}/src/modules/bolig/bolig.css';
+import '${cwd}/src/modules/ui/proffdokWorkspace.css';
 const homeRoots=Array.from({length:15},(_,i)=>({id:'root'+i,title:'Boligprosjekt '+(i+1),reference:'QA-'+(i+1),unit_count:(i+1)*10,archived:i===14}));
 const context={user_id:'qa-user',company_id:'qa-company',company_name:'Eksempelfirma · kun test',enabled:true,role:'manager'};
 const make=(mode)=>{const record={root:{id:mode,revision:1},blocks:[],entrances:[],units:[]};for(let b=0;b<(mode==='fivehundred'?25:mode==='many'?20:1);b++){record.blocks.push({id:'b'+b,name:'Bygg '+(b+1),building_type:'apartment',address:'Eksempelgata '+(b+1)});for(let e=0;e<((mode==='many'||mode==='fivehundred')?2:20);e++){const id='b'+b+'e'+e,counts=mode==='uneven'?[2,3,1]:(mode==='many'||mode==='fivehundred')?[2,2,2,2,2]:[4,4,4,4,4,4];record.entrances.push({id,block_id:'b'+b,address:'Eksempelgata '+(b+1)+' oppgang '+(e+1),counts});counts.forEach((n,f)=>{for(let p=0;p<n;p++)record.units.push({id:id+'f'+f+'p'+p,entrance_id:id,floor:f+1,number:'H'+String(f+1).padStart(2,'0')+String(p+1).padStart(2,'0'),contact_name:b===19&&e===1&&f===4&&p===0?'Siste Eksempel':'',has_project:false});});}}if(mode.startsWith('type-')){const type=mode.slice(5),b=record.blocks[0],e=record.entrances[0];b.building_type=type;const counts=type==='house'?[1]:type==='duplex'?[2]:type==='multi'?[2,3,1]:[4,3,5,4,2,4];e.counts=counts;record.blocks=[b];record.entrances=[e];record.units=counts.flatMap((n,f)=>Array.from({length:n},(_,p)=>({id:'actual-'+f+'-'+p,entrance_id:e.id,floor:f+1,number:'H'+String(f+1).padStart(2,'0')+String(p+1).padStart(2,'0'),contact_name:'',has_project:false})));}return record;};
 window.__attempts=[];window.__failNext=false;window.__client={rpc:async(name,args)=>({data:{context,root_id:args.p_root_id,units:[]}})};
-function App({mode}){const [q,sq]=useState(''),[unit,su]=useState(''),[busy,sb]=useState(false);return <section className="bolig-dialog bolig-page" style={{maxWidth:'100%',width:'100%',minHeight:'100vh'}}>{mode==='home'?<><ProjectHome roots={homeRoots} activeRoot={homeRoots[0]} active loading={false} busy={false} manager onSelect={su} onResume={()=>su('resume')}><Builder context={context} busy={false} onCreate={async()=>{}}/></ProjectHome><output>{unit}</output></>:mode==='builder'?<div className="bolig-utilities"><div className="bolig-toolbar"><small>Prosjektledertilgang</small></div><BoligHelp/><Builder context={context} busy={busy} onCreate={async payload=>{sb(true);try{window.__attempts.push(payload);if(window.__failNext){window.__failNext=false;throw Error('Forbindelsen ble brutt. Kontroller opprettelsen.');}}finally{sb(false);}}}/></div>:mode==='contact'?<Task title="Leilighetsinformasjon"><label>Kontaktperson<input aria-label="Kontaktperson" defaultValue="Eksempelperson"/></label></Task>:<><Overview context={context} record={make(mode)} query={q} onQuery={sq} unitId={unit} onSelect={su} onSetup={()=>{}}/><output>{unit}</output></>}</section>};
+function App({mode}){const [q,sq]=useState(''),[unit,su]=useState(''),[busy,sb]=useState(false);return <section className="bolig-dialog bolig-page" style={{maxWidth:'100%',width:'100%',minHeight:'100vh'}}>{(mode==='home'||mode==='home-reader')?<><ProjectHome roots={homeRoots} activeRoot={homeRoots[0]} active loading={false} busy={false} manager={mode==='home'} onSelect={su} onResume={()=>su('resume')}>{mode==='home'&&<Builder context={context} busy={false} onCreate={async()=>{}}/>}</ProjectHome><output>{unit}</output></>:mode==='builder'?<div className="bolig-utilities"><div className="bolig-toolbar"><small>Prosjektledertilgang</small></div><BoligHelp/><Builder context={context} busy={busy} onCreate={async payload=>{sb(true);try{window.__attempts.push(payload);if(window.__failNext){window.__failNext=false;throw Error('Forbindelsen ble brutt. Kontroller opprettelsen.');}}finally{sb(false);}}}/></div>:mode==='contact'?<Task title="Leilighetsinformasjon"><label>Kontaktperson<input aria-label="Kontaktperson" defaultValue="Eksempelperson"/></label></Task>:<><Overview context={context} record={make(mode)} query={q} onQuery={sq} unitId={unit} onSelect={su} onSetup={()=>{}}/><output>{unit}</output></>}</section>};
 const root=createRoot(document.getElementById('app'));window.__mode=mode=>root.render(<App key={mode} mode={mode}/>);window.__mode('builder');
 `,
 );
@@ -93,7 +95,7 @@ try {
       res.end(fs.readFileSync("public" + req.url));
     } else
       res.end(
-        '<!doctype html><html lang="nb"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0;font-family:Arial,sans-serif}button,input,select{font:inherit}button{cursor:pointer}</style><link rel="stylesheet" href="/style.css"><div id="app"></div><script src="/app.js"></script></html>',
+        '<!doctype html><html lang="nb"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0;font-family:Arial,sans-serif}button,input,select{font:inherit}button{cursor:pointer}</style><link rel="stylesheet" href="/style.css"><div id="app" data-expo-app-shell="true"></div><script src="/app.js"></script></html>',
       );
   });
   await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
@@ -142,9 +144,11 @@ try {
       true,
       "Header actions fit mobile and desktop",
     );
-    await help.locator(":scope > summary").click();
-    eq(await help.getAttribute("open"), "", "Help opens after header styling");
-    await help.locator(":scope > summary").click();
+    await help.click();
+    const helpDialog=page.getByRole('dialog',{name:'Slik styrer du prosjektet',exact:true});
+    eq(await helpDialog.isVisible(),true,'Help opens in the shared panel after header styling');
+    await helpDialog.getByRole('button',{name:'Tilbake til prosjektet',exact:true}).click();
+    eq(await help.getAttribute('aria-expanded'),'false','Fixed return closes help and restores the workspace');
   }
   await page.setViewportSize({ width: 1366, height: 900 });
   await page
@@ -155,6 +159,29 @@ try {
     exact: true,
   });
   eq(await dialog.isVisible(), true);
+  const checkFooter = async label => {
+    const geometry = await dialog.evaluate(d => {
+      const footer = d.querySelector('.bolig-builder-footer'),
+        box = footer.getBoundingClientRect(),
+        buttons = [...footer.querySelectorAll('button')].map(b => {
+          const r = b.getBoundingClientRect();
+          return {top:r.top,bottom:r.bottom,left:r.left,right:r.right,height:r.height,width:r.width};
+        });
+      return {buttons, footer: {top:box.top,bottom:box.bottom}, dialogBottom:d.getBoundingClientRect().bottom,width:innerWidth,height:innerHeight};
+    });
+    const [back,next] = geometry.buttons;
+    eq(Math.abs(back.top-next.top)<1 && Math.abs(back.bottom-next.bottom)<1,true,`${label}: footer buttons share top and bottom edges: ${JSON.stringify(geometry)}`);
+    eq(geometry.buttons.every(b=>b.height>=44 && b.width>=44),true,`${label}: footer touch targets are at least 44px`);
+    eq(geometry.buttons.every(b=>b.top>=0 && b.bottom<=geometry.height && b.left>=0 && b.right<=geometry.width),true,`${label}: footer actions remain within viewport`);
+    eq(geometry.footer.bottom<=geometry.dialogBottom+1,true,`${label}: footer is not clipped by dialog: ${JSON.stringify(geometry)}`);
+  };
+  for (const width of [320,390,768,1024,1366,1920]) {
+    for (const height of [320,480,640,900]) {
+      await page.setViewportSize({width,height});
+      await checkFooter(`Initial step ${width}x${height}`);
+    }
+  }
+  await page.setViewportSize({width:1366,height:900});
   await page.waitForFunction(() => {
     const images = [...document.querySelectorAll(".bolig-type-card img")];
     return (
@@ -712,7 +739,11 @@ try {
   await home
     .getByLabel("Vis prosjekter", { exact: true })
     .selectOption("active");
-  for (const width of [320, 390, 1024, 1366]) {
+  const measureWelcome=()=>home.evaluate(el=>{
+    const hero=el.querySelector('.bolig-home-welcome'),image=hero.querySelector('.bolig-building-art'),copy=hero.firstElementChild,r=hero.getBoundingClientRect(),i=image.getBoundingClientRect(),c=copy.getBoundingClientRect();
+    return {height:Math.round(r.height),listTop:Math.round(el.querySelector('.bolig-home-list-head').getBoundingClientRect().top+scrollY),buttons:[...hero.querySelectorAll('button')].map(b=>Math.round(b.getBoundingClientRect().top+scrollY)),pageHeight:document.documentElement.scrollHeight,imageWidth:i.width,imageHeight:i.height,decoded:image.complete&&image.naturalWidth>0,src:image.currentSrc,inside:i.left>=r.left&&i.right<=r.right&&i.top>=r.top&&i.bottom<=r.bottom,noOverlap:i.width===0||i.left>=c.right+10};
+  });
+  for (const width of [320, 390, 768, 1024, 1280, 1366, 1536, 1920]) {
     await page.setViewportSize({ width, height: 900 });
     await page.waitForFunction(
       (expected) =>
@@ -726,16 +757,37 @@ try {
       true,
       "Module home fits each viewport",
     );
+    const surface=await home.evaluate(el=>({shadow:getComputedStyle(el).boxShadow,background:getComputedStyle(el).backgroundColor,font:parseFloat(getComputedStyle(el.querySelector('.bolig-home-welcome p')).fontSize)}));
+    eq(surface.shadow,'none','housing home uses the shared open frame');
+    eq(surface.background,'rgba(0, 0, 0, 0)','housing home removes the legacy outer card');
+    eq(surface.font>=16,true,'housing home keeps readable shared body text');
     eq(
       await home.locator(".bolig-home-project").count(),
       width <= 680 ? 3 : 6,
       "Mobile home shows at most three project cards",
     );
+    const current=await measureWelcome();
+    const oldImage=await page.addStyleTag({content:'@media(min-width:1280px){body:has([data-expo-app-shell="true"]) .bolig-home-welcome{position:static;min-height:0;grid-template-columns:minmax(0,1fr) 220px}body:has([data-expo-app-shell="true"]) .bolig-home-welcome .bolig-building-art{position:static;inset:auto;width:220px;height:140px}}'});
+    const previous=await measureWelcome();await oldImage.evaluate(n=>n.remove());
+    eq(current.height,previous.height,'larger photo never increases welcome height at '+width);
+    eq(current.listTop,previous.listTop,'larger photo never pushes project list down at '+width);
+    eq(current.buttons,previous.buttons,'larger photo keeps action buttons at the same height at '+width);
+    eq(current.pageHeight,previous.pageHeight,'larger photo adds no page scroll at '+width);
+    eq(current.src,previous.src,'existing quality photo is preserved at '+width);
+    if(width>=1280){eq(current.imageWidth>=previous.imageWidth*1.7,true,'photo uses available desktop width at '+width);eq(current.imageHeight>previous.imageHeight,true,'photo fills existing content height at '+width);eq(current.inside&&current.noOverlap&&current.decoded,true,'decoded photo stays inside its area without covering text/actions at '+width);}
     await page.screenshot({
       path: path.join(temp, `home-${width}.png`),
       fullPage: true,
     });
   }
+  await page.evaluate(()=>window.__mode('home-reader'));
+  await home.getByRole('heading',{name:'Finn boligprosjektet ditt',exact:true}).waitFor();
+  for(const width of [1280,1920]){
+    await page.setViewportSize({width,height:900});const current=await measureWelcome();
+    const oldImage=await page.addStyleTag({content:'@media(min-width:1280px){body:has([data-expo-app-shell="true"]) .bolig-home-welcome{position:static;min-height:0;grid-template-columns:minmax(0,1fr) 220px}body:has([data-expo-app-shell="true"]) .bolig-home-welcome .bolig-building-art{position:static;inset:auto;width:220px;height:140px}}'});const previous=await measureWelcome();await oldImage.evaluate(n=>n.remove());
+    eq(current.height,previous.height,'reader welcome retains its existing height '+width);eq(current.imageHeight>=140&&current.imageWidth>=previous.imageWidth*1.7,true,'reader photo retains quality size '+width);eq(current.listTop,previous.listTop,'reader list is not pushed down '+width);
+  }
+  await page.evaluate(()=>window.__mode('home'));await home.getByRole('heading',{name:'Her begynner boligprosjektet',exact:true}).waitFor();
   await home
     .getByRole("button", { name: "Bygg nytt prosjekt", exact: true })
     .click();
@@ -765,6 +817,41 @@ try {
       .count(),
     0,
   );
+  // Regression: the former 16-building fixture covered the saved overview,
+  // not the wizard. Exercise the real wizard with loaded photos at every step.
+  await page.getByRole("button", { name: "Bygg nytt prosjekt", exact: true }).click();
+  await dialog.getByLabel("Prosjektnavn", { exact: true }).fill("Kun lokal layoutprøve");
+  for (const type of ["Flerfamiliehus", "Enebolig", "Tomannsbolig", "Leilighetsbygg"]) {
+    await dialog.getByRole("button", { name: new RegExp("^" + type + " ") }).click();
+    await dialog.getByRole("button", { name: "Neste", exact: true }).click();
+    await dialog.getByLabel("Antall bygg", { exact: true }).fill("16");
+    for (const step of [1, 2, 3]) {
+      for (const width of [320, 390, 768, 1024, 1366, 1920]) {
+        await page.setViewportSize({ width, height: 900 });
+        await dialog.locator("img").evaluateAll(images => Promise.all(images.map(img => img.decode())));
+        const layout = await dialog.evaluate(d => {
+          const body = d.querySelector(".bolig-builder-body");
+          const photos = [...d.querySelectorAll(".bolig-builder-building-head > img, .bolig-builder-review article > img")];
+          return {
+            bodyFits: body.scrollWidth <= body.clientWidth + 1,
+            photosFit: photos.length > 0 && photos.every(img => {
+              const r = img.getBoundingClientRect(), p = img.parentElement.getBoundingClientRect();
+              return img.naturalWidth > 0 && r.width <= 131 && r.height <= 76 && r.left >= p.left && r.right <= p.right;
+            }),
+          };
+        });
+        eq(layout.bodyFits, true, `${type}: step ${step}, ${width}px has no inner horizontal overflow`);
+        eq(layout.photosFit, true, `${type}: step ${step}, ${width}px photos stay compact and inside their row`);
+        await checkFooter(`${type}: step ${step}, ${width}px`);
+        if (type === "Flerfamiliehus" && width === 1366)
+          await page.screenshot({ path: path.join(temp, `sixteen-wizard-step-${step}.png`) });
+      }
+      if (step < 3) await dialog.getByRole("button", { name: "Neste", exact: true }).click();
+    }
+    for (let step = 3; step > 0; step--)
+      await dialog.getByRole("button", { name: "Tilbake", exact: true }).click();
+  }
+  await dialog.press("Escape");
   eq(errors, []);
   console.log(
     `PASS builder/browser: ${checks} assertions; atomic-attempt recovery, house floors, saved draft, close/Escape/focus, 400/480/500 households, last-building search, scoped rendering and 320/390/1024/1366px. Internal visual evidence: ${temp}`,

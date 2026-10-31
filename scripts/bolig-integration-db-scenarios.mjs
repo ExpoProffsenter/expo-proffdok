@@ -295,3 +295,4 @@ export default async function ({
   await rejects(() => mine(), "42501");
   await actor(manager);
 }
+

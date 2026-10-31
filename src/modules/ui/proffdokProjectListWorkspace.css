@@ -1,0 +1,158 @@
+/* Ordinary project list, mapped to the fixed 03.6 projectList reference.
+   All data, filters, disclosures and actions remain owned by the native list. */
+.projectListUx.projectListWorkspace{padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;min-width:0;color:#172f35}
+.projectListUx.projectListWorkspace>h2{margin:0 0 8px;font-size:32px!important;font-weight:600!important;letter-spacing:-.8px;line-height:1.2}
+.projectListUx.projectListWorkspace>.note{font-size:16px!important;line-height:1.5;margin:0 0 18px;color:#4e6876}
+.projectListWorkspace.projectListUx .projectListHeaderCards{display:flex!important;gap:8px 22px!important;margin:0 0 18px;flex-wrap:wrap}
+.projectListWorkspace.projectListUx .projectListHeaderCards .tile{border:0!important;border-radius:0!important;padding:0!important;background:transparent!important;gap:6px!important}
+.projectListWorkspace.projectListUx .projectListHeaderCards .tile :is(b,span){font-size:16px!important;line-height:1.4!important}
+.projectListWorkspace.projectListUx .projectListHeaderCards .tile span{color:#4e6876}
+.projectListWorkspace.projectListUx .projectListSearchPanel{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px!important;padding:0 0 18px!important;margin:0!important;background:transparent;border:0}
+.projectListWorkspace .projectListSearchPanel>.grid{order:-1;display:grid!important;grid-template-columns:minmax(0,2fr) minmax(200px,1fr)!important;gap:14px;width:100%}
+.projectListWorkspace .projectListSearchPanel label{font-size:16px;display:grid;gap:6px;min-width:0;color:#4e6876}
+.projectListWorkspace .projectListSearchPanel :is(input,select){min-height:44px!important;width:100%;min-width:0;border:1px solid #d5e1e4;border-radius:7px;background:#fff;padding:9px 12px;font-size:16px!important;color:#172f35}
+.projectListWorkspace .projectListViewControls{display:contents}
+.projectListWorkspace.projectListUx :is(.projectListQuickFilters button,.projectListExpandAll,.projectListToolbar button){font-size:16px!important;min-height:44px!important;padding:8px 12px;border-radius:6px;box-shadow:none;white-space:normal;line-height:1.35}
+.projectListWorkspace .projectListQuickFilters{gap:0;padding:0;background:#fff;border:1px solid #d5e1e4;border-radius:7px}
+.projectListWorkspace.projectListUx .projectListQuickFilters button{border:0;border-radius:6px;min-width:0}
+.projectListWorkspace .projectListVisibleCount{font-size:14px;color:#4e6876;white-space:normal}
+.projectListWorkspace.projectListUx .projectListExpandAll{margin-left:auto!important;display:inline-flex;gap:6px;align-items:center}
+.projectListWorkspace.projectListUx .projectListToolbar{display:flex;flex-wrap:wrap;gap:8px;margin:0}
+.projectListWorkspace.projectListUx .projectListSearchPanel>.note{font-size:14px!important;line-height:1.5;margin:0!important;color:#4e6876}
+.projectListWorkspace .projectListSearchPanel>.note:not(.projectListActiveFilters){flex-basis:100%}
+.projectListWorkspace .projectListActiveFilters{order:2}
+.projectListWorkspace .projectListColumnHead{display:grid;grid-template-columns:minmax(0,2fr) minmax(170px,1fr) minmax(140px,1fr);gap:22px;padding:12px 124px 12px 18px;border:1px solid #d5e1e4;border-bottom:0;border-radius:9px 9px 0 0;background:#f8fafb;font-size:14px;color:#4e6876;font-weight:600}
+.projectListWorkspace.projectListUx .projectListDisclosureCard{position:relative;padding:16px 18px!important;margin:0!important;border:1px solid #d5e1e4!important;border-top:0!important;border-radius:0!important;background:#fff!important;box-shadow:none}
+.projectListWorkspace.projectListUx .projectListDisclosureCard:last-child{border-radius:0 0 9px 9px!important}
+.projectListWorkspace.projectListUx .projectListDisclosureCard .projectListCardTop{display:grid!important;grid-template-columns:minmax(0,2fr) minmax(170px,1fr) minmax(140px,1fr);align-items:start;gap:22px;padding-right:106px}
+.projectListWorkspace.projectListUx .projectListTitleBlock{display:block;min-width:0}
+.projectListWorkspace.projectListUx .projectListTitleBlock>b{font-size:16px!important;font-weight:600;line-height:1.4!important}
+.projectListWorkspace.projectListUx .projectListTitleBlock>p{font-size:16px!important;line-height:1.4!important;margin:4px 0 0!important;color:#4e6876}
+.projectListWorkspace.projectListUx .projectListTitleBlock>small.projectListLocation{display:block!important;font-size:14px!important;line-height:1.4;margin-top:3px;color:#4e6876}
+.projectListWorkspace.projectListUx .projectListBadges{justify-content:flex-start;align-items:flex-start;gap:6px}
+.projectListWorkspace.projectListUx .projectListBadges>span{font-size:14px!important;font-weight:500!important;line-height:1.35;padding:4px 8px!important;border-radius:5px!important;max-width:100%;overflow-wrap:anywhere}
+.projectListWorkspace .projectListResponsible{display:grid;gap:3px;min-width:0;font-size:16px;line-height:1.4;overflow-wrap:anywhere}
+.projectListWorkspace .projectListResponsible>small{display:none}
+.projectListWorkspace.projectListUx .projectListPrimaryOpen{top:16px;right:18px;min-height:44px!important;font-size:16px!important;border:0;border-radius:5px;color:#007681;background:transparent;box-shadow:none;min-width:0;padding:8px 6px}
+.projectListWorkspace .projectListDisclosureLine{margin-top:10px;gap:8px 20px;font-size:14px;line-height:1.4;min-height:24px;padding-right:106px}
+.projectListWorkspace .projectListAttention{font-size:14px;line-height:1.4;color:#a13b2c}
+.projectListWorkspace .projectListDetailContent{padding-top:16px;margin-top:14px;border-color:#e2e8e9}
+.projectListWorkspace .projectListContactDetails{display:flex;flex-wrap:wrap;gap:6px 20px;overflow-wrap:anywhere}
+.projectListWorkspace .projectListContactDetails small{font-size:16px;line-height:1.45}
+.projectListWorkspace.projectListUx .projectImageCounts>button{min-height:44px!important;font-size:16px!important;padding:8px 12px;line-height:1.35;white-space:normal}
+.projectListWorkspace.projectListUx .projectListMetaCards .tile :is(b,span){font-size:16px!important;line-height:1.45}
+.projectListWorkspace.projectListUx .projectListActions button{font-size:16px!important;min-height:44px!important;line-height:1.35;white-space:normal;overflow-wrap:normal}
+.projectListWorkspace.projectListUx .workProfileSharedProjects{padding:16px!important;margin:0 0 18px!important;border:1px solid #d5e1e4;border-radius:9px!important;background:#fff}
+.projectListWorkspace.projectListUx .workProfileSharedProjects :is(h3,p,small,button){font-size:16px!important;line-height:1.45}
+.projectListWorkspace.projectListUx .workProfileSharedProjects button{min-height:44px!important;white-space:normal}
+.projectListWorkspace.projectListUx .workProfileSharedCard{border:0;border-top:1px solid #e2e8e9;border-radius:0;padding:14px 0;margin:0;box-shadow:none;background:#fff}
+.projectListWorkspace.projectListUx .workProfileSharedTitleRow strong{font-size:16px;font-weight:600}
+.projectListWorkspace.projectListUx .workProfileSharedTitleRow span{font-size:14px;border-radius:5px;font-weight:500}
+.projectListWorkspace :is(button,summary):focus-visible{outline:3px solid #089aa3;outline-offset:3px}
+
+/* Compact native project follow-up, below the six approved work areas. */
+[data-expo-app-shell="true"] .pd-project-followup.pd-project-followup-workspace{margin:20px 0 0!important}
+[data-expo-app-shell="true"] .pd-project-followup-workspace>h3{font-size:20px!important;font-weight:600;margin-bottom:6px}
+[data-expo-app-shell="true"] .pd-project-followup-workspace .pd-followup-list{border-color:#d5e1e4;border-radius:9px}
+[data-expo-app-shell="true"] .pd-project-followup-workspace .pd-followup-row{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr) auto;gap:10px 18px!important;padding:12px 16px!important}
+[data-expo-app-shell="true"] .pd-project-followup-workspace .pd-followup-signals{gap:5px!important}
+[data-expo-app-shell="true"] .pd-project-followup-workspace .pd-followup-signals .projectMiniBadge{padding:2px 0;background:transparent!important;border:0;border-radius:0;font-size:14px;line-height:1.5}
+[data-expo-app-shell="true"] .pd-project-followup-workspace .pd-followup-actions{flex-wrap:wrap!important;min-width:0;gap:6px!important}
+[data-expo-app-shell="true"] .pd-project-followup-workspace .pd-followup-actions button{border-color:transparent;padding:8px 6px;white-space:normal;text-align:left}
+@media(max-width:1050px){
+ [data-expo-app-shell="true"] .pd-project-followup-workspace .pd-followup-row{grid-template-columns:minmax(0,1fr) auto}
+}
+@media(max-width:900px){
+ .projectListWorkspace .projectListColumnHead{grid-template-columns:minmax(0,1.5fr) minmax(120px,1fr) minmax(100px,1fr);gap:14px}
+ .projectListWorkspace.projectListUx .projectListDisclosureCard .projectListCardTop{grid-template-columns:minmax(0,1.5fr) minmax(120px,1fr) minmax(100px,1fr);gap:14px}
+}
+@media(max-width:620px){
+ .projectListUx.projectListWorkspace>h2{font-size:28px!important}
+ .projectListWorkspace .projectListSearchPanel>.grid{grid-template-columns:1fr!important;gap:12px}
+ .projectListWorkspace.projectListUx .projectListHeaderCards{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px 12px!important}
+ .projectListWorkspace.projectListUx .projectListExpandAll{margin-left:0!important}
+ .projectListWorkspace .projectListColumnHead{display:none}
+ .projectListWorkspace.projectListUx .projectListDisclosureCard{padding:16px!important;border-top:1px solid #d5e1e4!important}
+ .projectListWorkspace.projectListUx .projectListDisclosureCard+.projectListDisclosureCard{border-top:0!important}
+ .projectListWorkspace.projectListUx .projectListDisclosureCard .projectListCardTop{grid-template-columns:minmax(0,1fr);padding-right:0;gap:10px}
+ .projectListWorkspace.projectListUx .projectListTitleBlock{padding-right:112px}
+ .projectListWorkspace.projectListUx .projectListPrimaryOpen{top:12px;right:12px}
+ .projectListWorkspace.projectListUx .projectListBadges{display:flex;flex-wrap:wrap}
+ .projectListWorkspace .projectListResponsible{display:flex;flex-wrap:wrap;gap:6px}
+ .projectListWorkspace .projectListResponsible>small{display:inline;font-size:16px;color:#4e6876}
+ .projectListWorkspace .projectListDisclosureLine{padding-right:0}
+ .projectListWorkspace.projectListUx .projectListActionsV2{grid-template-columns:1fr!important}
+ .projectListWorkspace.projectListUx .projectListMetaCards{grid-template-columns:1fr!important}
+ .projectListWorkspace.projectListUx .projectImageCounts>button{flex-basis:100%}
+ [data-expo-app-shell="true"] .pd-project-followup-workspace .pd-followup-row{grid-template-columns:minmax(0,1fr);padding:12px!important}
+ [data-expo-app-shell="true"] .pd-project-followup-workspace .pd-followup-actions{grid-column:1;grid-row:auto;justify-content:flex-start}
+}
+
+.projectListWorkspace.projectListUx .workProfileSharedProjects:has(>.workProfileSharedEmpty) .workProfileSharedHeader button{font-size:16px!important;min-height:44px!important}
+.projectListWorkspace.projectListUx .workProfileSharedProjects>.workProfileSharedEmpty{font-size:14px!important;line-height:1.5}
+.projectListWorkspace.projectListUx :is(button,input,select){font-weight:500!important}
+.projectListWorkspace.projectListUx .projectListQuickFilters button:not(.secondary){background:#087582;color:white}
+.projectListWorkspace.projectListUx label>span{font-size:16px!important}
+
+.projectListWorkspace .projectListExtraFilters{width:100%;min-width:0;border:0;border-radius:0;background:transparent}
+.projectListWorkspace .projectListExtraFilters>summary{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;min-height:44px;padding:6px 0;cursor:pointer;list-style:none;color:#007681;font-size:16px;font-weight:600}
+.projectListWorkspace .projectListExtraFilters>summary::-webkit-details-marker{display:none}
+.projectListWorkspace .projectListExtraFilters>summary>span{font-size:14px;font-weight:400;color:#4e6876}
+.projectListWorkspace .projectListExtraContent{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:12px 0;border-top:1px solid #d5e1e4}
+.projectListWorkspace .projectListExtraContent>.note{font-size:14px!important;line-height:1.5;flex-basis:100%;margin:0}
+.projectListWorkspace .projectListExtraContent>.projectListToolbar{flex-basis:100%;display:flex!important;flex-wrap:wrap;margin:0!important}
+.projectListWorkspace .projectListExtraContent>.projectListToolbar>button{width:auto!important}
+.projectListWorkspace .projectListSearchPanel>.projectListActiveFilters{margin-left:auto!important}
+[data-expo-app-shell="true"] .pd-project-followup-workspace .pd-followup-actions button{min-height:44px!important;font-size:16px!important;font-weight:500!important}
+@media(min-width:1051px){
+ .projectListUx.projectListWorkspace{display:grid;grid-template-columns:minmax(240px,1fr) minmax(0,1.6fr);column-gap:32px;align-items:start}
+ .projectListUx.projectListWorkspace>h2{grid-column:1;grid-row:1}
+ .projectListUx.projectListWorkspace>.note{grid-column:1;grid-row:2}
+ .projectListWorkspace.projectListUx .projectListHeaderCards{grid-column:1;grid-row:3}
+ .projectListWorkspace.projectListUx .projectListSearchPanel{grid-column:2;grid-row:1/span 3}
+ .projectListWorkspace.projectListUx>:is(#expo-work-profile-project-list,.projectListColumnHead,.projectListCard){grid-column:1/-1}
+}
+
+[data-expo-app-shell="true"] .pd-project-followup-workspace>p.note{font-size:16px!important;line-height:1.5!important}
+[data-expo-app-shell="true"] .pd-project-followup-workspace .pd-followup-actions>button{width:auto!important}
+@media(max-width:620px){
+ .projectListWorkspace.projectListUx .workProfileSharedProjects:has(>.workProfileSharedEmpty) .workProfileSharedHeader{flex-wrap:wrap}
+ .projectListWorkspace.projectListUx .workProfileSharedProjects:has(>.workProfileSharedEmpty) .workProfileSharedHeader>div{flex-basis:100%}
+}
+
+.projectListWorkspace .projectListExtraFilters>summary>.projectListActiveFilters{margin-left:auto;overflow-wrap:anywhere}
+@media(min-width:1051px){
+ .projectListWorkspace.projectListUx .projectListDisclosureCard{padding:14px 18px!important}
+ .projectListWorkspace.projectListUx .projectListPrimaryOpen{top:14px}
+ .projectListWorkspace .projectListColumnHead{padding-right:258px}
+ .projectListWorkspace.projectListUx .projectListDisclosureCard .projectListCardTop{padding-right:240px}
+ .projectListWorkspace.projectListUx .projectListTitleBlock{display:flex;flex-wrap:wrap;align-items:baseline;gap:3px 10px}
+ .projectListWorkspace.projectListUx .projectListTitleBlock>b{flex-basis:100%}
+ .projectListWorkspace.projectListUx .projectListTitleBlock>p{flex-basis:auto;margin:0!important}
+ .projectListWorkspace.projectListUx .projectListTitleBlock>small.projectListLocation{margin:0;font-size:16px!important}
+ .projectListWorkspace .projectListDisclosureLine{display:contents}
+ .projectListWorkspace .projectListDisclosureLabel{position:absolute;right:104px;top:14px;display:inline-flex;align-items:center;min-height:44px;padding:8px 6px;font-size:16px;font-weight:500;color:#007681}
+ .projectListWorkspace .projectListAttention{display:block;margin-top:6px;font-weight:500;line-height:1.4}
+}
+.projectListWorkspace.projectListUx .workProfileSharedProjects button{padding:8px 12px!important;border:1px solid #d5e1e4;border-radius:7px!important;background:#fff;background-image:none;color:#007681;box-shadow:none!important;transform:none;line-height:1.35}
+/* An empty shared list keeps its scope and refresh action in one quiet row. */
+.projectListWorkspace.projectListUx .workProfileSharedProjects:has(>.workProfileSharedEmpty){display:grid;grid-template-columns:minmax(200px,1fr) minmax(240px,1.5fr) auto;align-items:center;gap:8px 18px;padding:8px 0!important;border:0;border-bottom:1px solid #d5e1e4;border-radius:0!important;background:transparent}
+.projectListWorkspace.projectListUx .workProfileSharedProjects:has(>.workProfileSharedEmpty) .workProfileSharedHeader,
+.projectListWorkspace.projectListUx .workProfileSharedProjects:has(>.workProfileSharedEmpty) .workProfileSharedHeader>div{display:contents!important}
+.projectListWorkspace.projectListUx .workProfileSharedProjects:has(>.workProfileSharedEmpty) .workProfileSharedHeader h3{grid-column:1;grid-row:1;margin:0!important;font-size:16px!important;line-height:1.4}
+.projectListWorkspace.projectListUx .workProfileSharedProjects:has(>.workProfileSharedEmpty) .workProfileSharedHeader button{grid-column:3;grid-row:1;width:auto!important}
+.projectListWorkspace.projectListUx .workProfileSharedProjects>.workProfileSharedEmpty{grid-column:2;grid-row:1;margin:0;padding:0;font-size:14px!important;line-height:1.5}
+@media(max-width:1050px){
+ .projectListWorkspace.projectListUx .workProfileSharedProjects:has(>.workProfileSharedEmpty){grid-template-columns:minmax(0,1fr) auto;gap:6px 12px}
+ .projectListWorkspace.projectListUx .workProfileSharedProjects:has(>.workProfileSharedEmpty) .workProfileSharedHeader button{grid-column:2}
+ .projectListWorkspace.projectListUx .workProfileSharedProjects>.workProfileSharedEmpty{grid-column:1/-1;grid-row:2}
+}
+
+.projectListWorkspace.projectListUx .projectListPrimaryOpen{display:inline-flex;align-items:center;gap:6px}
+.projectListWorkspace.projectListUx .projectListBadges>span{display:inline-flex;align-items:center;gap:5px}
+.projectListWorkspace .projectListBadges svg{flex:none}
+@media(max-width:760px){
+ /* Native shared-project actions use two rows when both complete labels fit. */
+ .projectListWorkspace.projectListUx .workProfileSharedActions{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(min(100%,112px),1fr))!important;gap:8px;width:100%;justify-content:stretch}
+ .projectListWorkspace.projectListUx .workProfileSharedActions>button{width:100%!important;min-width:0;min-height:44px!important;font-size:16px!important;white-space:normal;overflow-wrap:normal;word-break:normal}
+}

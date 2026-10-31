@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Saksarbeidsflate med passiv kundevisning etter originalskisse 03.6",
+  "change": "Miljømål BEGGE, foreløpig bare eksisterende design-Preview/PR295. En åpnet salgssak får arbeid til venstre og Kundens tilbud til høyre over 1000 px. På mindre skjermer åpnes kundevisningen i et panel fra høyre; på PC kan samme lesefelt utvides. SalesCaseWorkspace beholder native editor som barn gjennom åpne/lukke/utvide. SalesCaseCustomerPreview gjenbruker eksisterende kunderenderer med skrivebeskyttede opsjoner og uten aksept-/avvisningskontroller. Ren presentasjonsmapper velger lagret kladd, publisert versjon eller låst akseptgrunnlag og skiller dem med etikett; den skriver ingen syntetisk versjon tilbake. Eksisterende Forhåndsvis som kunde beholder sin egen innloggede lagret-kladd-flyt. WorkspaceTools kan få eksplisitte grupper bundet til samme sak/arbeidssteg og bruker eksisterende callbacks og deres eventuelle lagre-/forlat-kontroll. Firma-/sak-/arbeidsflatebytte lukker panelet. Ingen backend, SQL, mottakerregel, e-posttransport, prisberegning, lagringsmotor eller offentlig kundeautorisasjon endres i denne pakken. Saksbehandler-/e-postrettelsen ligger separat med eget Sandbox-grunnlag.",
+  "verification": "Kildekontroll av faktiske komponenter, mapper, kunderenderer og design-CSS er utført. QA har rapportert 34 rene mapperkontroller PASS, inkludert at akseptert/aktivert sak uten låst grunnlag viser tomtilstand også når en annen publisert versjon finnes. sales-case-customer-preview-browser-check.mjs:845 Chromium-kontroller PASS av ni tilstander på fem viewporter og reelle komponenter for Våtromstilbud, Generelt tilbud, notat, plan, kunderedigering og aktivering. Eksisterende sales-draft-inline-preview-browser-check.mjs:84 kontroller PASS. app-ux-review-browser-check.mjs:122 og sales-overview-ux-browser-check.mjs:311 PASS. Prøvene dekker versjonsvalg/kildeimmutabilitet, native panel/fokus/retur, responsive interne bredder og bevaring av editorarbeid med syntetisk transport. Full build, CI, eksakt kandidat-SHA og publisert Preview føres separat i PR295 etter kontroll av sluttkandidaten. Ingen innlogget helappattest gis. Fysisk mobil/Safari, skjermtastatur, ekte kundeaksept og mottatt e-post er ikke attestert av komponentprøvene. E-postaudit er presisert: published_by og auth.uid identifiserer lagret konto/sesjon, ikke fysisk person ved tastaturet. Separat mottakerrettelse i PR296 er bare prøvepublisert i Sandbox. CI769 avdekket en race i den nye fixture-prøven: samme textarea-selector kunne finne forrige editor før React-commit. Prøven venter nå eksplisitt på DOM-markør for valgt modus og på den kontrollerte React-verdien før panel-/breddeprøven. Alle opprinnelige assertions beholdes, og 12 nye verdibekreftelser er lagt til: lokal 857 PASS. Mottakerrettelsen er senere publisert separat i PR296/297 og hentet fra main inn i designkandidaten. Konsolidert sluttprøve med samtidig oppdatert commit-/hendelsesfixture: 875 salgskontroller PASS, med deterministisk sperret modusbytte og alle opprinnelige bevaringsassertioner. HR/KS-prøvens kontroll uten appens nye design-scope feiler på det opprinnelige gradienthodet, mens 88 kontroller består med designet. Full lokal Sandbox critical/build består. Ny full CI kreves på publisert sluttkandidat.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "Ny faktisk kundevisning, utvidelse/retur og saksspesifikke verktøy beskrives med brukerens knappnavn."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Ingen ny backend, autorisasjon, datamodell eller varig lagring. Lokal presentasjonskopi og panelkontrakt dokumenteres i modulenes README."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen nye avhengigheter, miljøvariabler, konfigurasjon eller installasjonssteg."
+    },
+    "module": {
+      "required": true,
+      "reason": "Dokumenterer SalesCaseWorkspace, den passive versjonsmapperen og eksplisitte WorkspaceTools-grupper/fokus uten remount eller nye datahandlinger."
+    }
+  }
+}

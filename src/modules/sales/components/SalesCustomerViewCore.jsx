@@ -178,6 +178,7 @@ export default function SalesCustomerView({
   optionQuantitiesReadOnly = false,
   handleAcceptOffer,
   hideDecisionControls = false,
+  readOnlyPreview = false,
   onBack,
 }) {
   if (publicOfferLoading) {
@@ -319,10 +320,10 @@ export default function SalesCustomerView({
                 <p className="sales-eyebrow">Tilbud</p>
                 <h1 className="sales-title sales-customer-title">{offerTitle}</h1>
                 <p className="sales-subtitle sales-customer-lead">
-                  Her finner du leveransen, prisene og vilkårene samlet. Opsjoner
+                  {readOnlyPreview ? "Leveranse, priser og vilkår fra tilbudsgrunnlaget. Kundens valg kan ikke endres her." : <>Her finner du leveransen, prisene og vilkårene samlet. Opsjoner
                   kan være tillegg/oppgraderinger eller alternativer som erstatter
                   en konkret underpost. Gjør eventuelle valg før du aksepterer
-                  tilbudet nederst på siden.
+                  tilbudet nederst på siden.</>}
                 </p>
 
                 <div className="sales-customer-meta-grid">
@@ -415,9 +416,9 @@ export default function SalesCustomerView({
                     <h2>Arbeider og priser</h2>
                   </div>
                   <span className="sales-customer-section-note">
-                    Alle priser er oppgitt {vat.label} En opsjon kan være et tillegg
+                    {readOnlyPreview ? <>Priser er oppgitt {vat.label} Registrerte kundevalg vises låst.</> : <>Alle priser er oppgitt {vat.label} En opsjon kan være et tillegg
                     til grunnprisen eller et alternativ som erstatter en konkret
-                    underpost. Valget oppdaterer totalsummen automatisk.
+                    underpost. Valget oppdaterer totalsummen automatisk.</>}
                   </span>
                 </div>
 
@@ -631,13 +632,13 @@ export default function SalesCustomerView({
                                           type="checkbox"
                                           checked={isSelected}
                                           disabled={optionQuantitiesReadOnly}
-                                          aria-label={`Velg ${option.title || "opsjon"}`}
+                                          aria-label={`${readOnlyPreview ? "Opsjon:" : "Velg"} ${option.title || "opsjon"}`}
                                           onChange={() =>
                                             toggleAcceptedOption(option.id)
                                           }
                                         />
                                         <span className="sales-customer-option-state">
-                                          {isSelected ? "Valgt" : "Velg opsjon"}
+                                          {isSelected ? "Valgt" : readOnlyPreview ? "Ikke valgt" : "Velg opsjon"}
                                         </span>
                                       </label>
 

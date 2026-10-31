@@ -1,0 +1,41 @@
+/* Native checklist disclosures and fields; persistence and signing stay owned
+   by the existing builders/workspaces. Screen-only, inside the app shell. */
+@media screen {
+ body:has([data-expo-app-shell="true"]) .ks-checklists .ks-card {
+  border-radius:8px!important;box-shadow:none;
+ }
+ body:has([data-expo-app-shell="true"]) .deviation-dialog:has(form.ks-checklists) button {
+  border-radius:6px!important;transform:none!important;
+ }
+ body:has([data-expo-app-shell="true"]) .deviation-dialog:has(form.ks-checklists)>.deviation-dialog-header>.deviation-dialog-close {
+  width:44px;min-width:44px;height:44px;min-height:44px;padding:0!important;border:1px solid #48606b;background:transparent!important;color:#fff!important;box-sizing:border-box;
+ }
+ body:has([data-expo-app-shell="true"]) .deviation-dialog:has(form.ks-checklists) :is(.ks-field>span,.ks-checklist-point>legend,.ks-field-hint),
+ body:has([data-expo-app-shell="true"]) :is(.checklist-field>label,.checklist-field>legend,.checklist-field>span,.checklist-field-builder>p) {
+  font-size:16px!important;line-height:1.5;
+ }
+ body:has([data-expo-app-shell="true"]) :is(.checklist-field,.checklist-field-confirm,.checklist-field-builder,.checklist-field-section) {
+  box-sizing:border-box;min-width:0;max-width:100%;border:1px solid #d7e4ea;border-radius:8px!important;background:#fff;box-shadow:none;
+ }
+ body:has([data-expo-app-shell="true"]) .checklist-field-builder {
+  padding:12px;
+ }
+ body:has([data-expo-app-shell="true"]) :is(.checklist-field-builder,.checklist-field-section)>summary {
+  box-sizing:border-box;min-height:44px;font-size:16px!important;line-height:1.5;padding:10px 12px;color:#173d50;background:#f4f7f8;cursor:pointer;border-radius:7px;
+ }
+ body:has([data-expo-app-shell="true"]) .checklist-field-builder>summary {
+  margin:-12px;list-style-position:inside;
+ }
+ body:has([data-expo-app-shell="true"]) .checklist-field-builder[open]>summary {
+  margin-bottom:0;border-bottom:1px solid #d7e4ea;border-radius:7px 7px 0 0;
+ }
+ body:has([data-expo-app-shell="true"]) :is(.checklist-field-choice,.checklist-field-confirm label) {
+  min-height:44px;font-size:16px!important;line-height:1.5;
+ }
+ body:has([data-expo-app-shell="true"]) .checklist-field :is(input:not([type="checkbox"]):not([type="radio"]),select,textarea) {
+  min-height:44px!important;font-size:16px!important;border-radius:6px!important;
+ }
+ body:has([data-expo-app-shell="true"]) .checklist-field-builder>summary:focus-visible {
+  outline:3px solid #08b9c3;outline-offset:3px;
+ }
+}

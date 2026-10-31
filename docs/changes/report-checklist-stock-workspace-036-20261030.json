@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Samlet 03.6-ramme for rapportvalg, sjekklister og varetelling",
+  "change": "Miljømål BEGGE; bare PR295/Preview. Innlogget på baseline 5f297c1c viste Velg KS/HMS til rapport en faktisk gjennomsiktig dialog: åpne sideflater overstyrte modalens bakgrunn. Rapportvalget har nå eksplisitt hvit flate, navy topp, separat scrollbody og fast footer i høyrekant. Eksisterende hook, data, scope, fokusfelle og kommandoer beholdes; Lukk rapportvalg kaller samme cancel. Prosjektets native sjekkliste får samme ramme med 980px oppgavebredde og begrenset sticky-footer på kort skjerm. Varetelling får åpen side, 16px felt/44px handlinger, 20px søkeavkryssing og registrering/telte varer i PC-kolonner. Ingen main.jsx, Startside, Bolig-kjerne, backend, SQL, tilgangs-, lagrings-, pris-, signerings- eller e-postendring.",
+  "verification": "Innlogget baseline: DEMO HOVED sjekkliste med eksisterende svar åpnet/gjenopptatt og lukket uten lagring; rapport viste alle fire KS/HMS-typer, avbryt returnerte fokus og 0 valgt; Hjelp fra rapport og tilbake bevart prosjekt/rapport; Varetelling åpnet gjennom Prissøk uten Opprett telling. Permanent ny rapportprøve78 Chromium assertions PASS: ekte hook/dialog med faktisk app/runtime-CSS, 320/390/768/1363/1920, opak bakgrunn, høyrekant/full høyde, navy topp, lesbar tittel/44px kontroller, 320x320, utvalg/kladd/fokus, feil/retry, firma/revoke. Kontroll med opprinnelig CSS feiler eksplisitt på rgba(0,0,0,0) i stedet for hvit bakgrunn. Alle tidligere sjekkliste68 assertions beholdt og20 lagt til:88PASS, inkludert påkrevde/betingede felt, gated loading/fokusretur, faktisk samme kladd og kort skjerm. Opprinnelige stocktake27 assertions beholdt og46 lagt til:73PASS, faktisk app/runtime-CSS, fem bredder, samme manuelle felt/antall, to/enkolonne, native scanning med syntetisk kamera, null/deimaltall, tapt svar/idempotent retry, konflikt,122 linjer/alle sider i eksport, avslutning og firma/revoke. Full eksplisitt Sandbox critical/build PASS. Eksisterende faktisk hook/React/jsPDF/utskrift:7 PDF-er,4 utskrifter, valgt11-siders PDF, cancel/scope/revoke/portal og ingen kildemutasjon PASS. Innlogget etterkontroll på1e62d3a4 avdekket at native dokumentnavn/status fortsatt arvet14px fra label span. Kun denne presentasjonen er eksplisitt satt til16px; fem nye assertions over alle bredder skal følge opp. Samlet app-UX og publisert kandidat/CI/innlogget sluttbevis dokumenteres i PR295. Syntetisk transport i automatiske tester; ingen reell telling/registrering, e-post, invitasjon eller eksportkommando er sendt i live QA. Ingen totalattest eller fysisk mobil/Safari-bevis.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "Rapportveiledningen beskriver panelets scroll, fast handlingsrad og Lukk rapportvalg/Avbryt."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Dataflyt, RPC-er, eksportmotor og eksisterende dialog-/scopeeiere er uendret."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen nye avhengigheter, miljøvariabler eller installasjonssteg."
+    },
+    "module": {
+      "required": true,
+      "reason": "Felles UI-kontrakt dokumenterer native report/checklist og Varetellings presentasjonsgrense."
+    }
+  }
+}

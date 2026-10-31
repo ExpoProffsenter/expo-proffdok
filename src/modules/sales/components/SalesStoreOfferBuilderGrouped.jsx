@@ -358,21 +358,11 @@ function ProductIdentityFields({
   titleLabel = "Varenavn *",
   titleField = "description",
   titleInputProps = {},
+  compact = false,
 }) {
   const nobbUrl = buildNobbItemUrl(item.nobbNumber);
 
-  return (
-    <div className="store-product-grid">
-      <label className="sales-field store-product-name">
-        <span>{titleLabel}</span>
-        <input
-          {...titleInputProps}
-          value={item[titleField] || ""}
-          onChange={(event) => onPatch({ [titleField]: event.target.value })}
-          placeholder="F.eks. servantskap 80 cm"
-        />
-      </label>
-
+  const extraFields = <>
       <label className="sales-field">
         <span>NOBB-nr.</span>
         <div className="store-link-field">
@@ -433,6 +423,21 @@ function ProductIdentityFields({
           ) : null}
         </div>
       </label>
+  </>;
+
+  return (
+    <div className={compact ? "store-product-identity-compact" : "store-product-grid"}>
+      <label className="sales-field store-product-name">
+        <span>{titleLabel}</span>
+        <input
+          {...titleInputProps}
+          value={item[titleField] || ""}
+          onChange={(event) => onPatch({ [titleField]: event.target.value })}
+          placeholder="F.eks. servantskap 80 cm"
+        />
+      </label>
+
+      {compact ? <details className="store-product-extra"><summary>Varenummer, NOBB og produktlenke</summary><div className="store-product-grid">{extraFields}</div></details> : extraFields}
     </div>
   );
 }
@@ -1870,6 +1875,7 @@ export default function SalesStoreOfferBuilderGrouped(props) {
             })}
 
             <ProductIdentityFields
+              compact
               item={product}
               onPatch={(patch) => patchProduct(product.id, patch)}
               titleInputProps={{ "data-store-product-title": product.id }}
@@ -1883,12 +1889,15 @@ export default function SalesStoreOfferBuilderGrouped(props) {
               }
             />
 
+            <details className="store-product-extra" open={product.imageDataUrl || product.attachmentFile?.url ? true : undefined}>
+              <summary>Bilde og vedlegg{product.imageDataUrl || product.attachmentFile?.url ? ' · lagt til' : ''}</summary>
             <DropZone
               item={product}
               onFiles={(files) => sendFiles("line", product.id, files)}
               onRemoveImage={() => removeOfferLineImage?.(product.id)}
               onRemoveAttachment={() => removeOfferLineAttachment?.(product.id)}
             />
+            </details>
 
             <div className="store-product-actions">
               <button
@@ -1986,7 +1995,7 @@ export default function SalesStoreOfferBuilderGrouped(props) {
   let runningIndex = 0;
 
   return (
-    <div className="sales-app store-offer-builder-app store-grouped-builder">
+    <div className="sales-app sales-editor-app store-offer-builder-app store-grouped-builder">
       <style>{`
         .store-grouped-builder .sales-shell{max-width:1180px}.store-grouped-builder .sales-form-panel{display:grid;gap:18px}.store-builder-section{border:1px solid #d7e4ea;border-radius:18px;padding:18px;background:#fff}.store-section-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:14px}.store-section-head h2{margin:0 0 4px;font-size:22px}.store-section-head p{margin:0;color:#60727a}
         .store-workspace{display:grid;gap:14px}.store-room{border:1px solid #cddfe5;border-radius:18px;background:#f8fcfd;overflow:hidden}.store-room.is-active{border-color:#16aeb9;box-shadow:0 0 0 3px rgba(22,174,185,.08)}.store-room-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 15px;background:#eef8fa;cursor:pointer}.store-room-title{display:grid;grid-template-columns:minmax(220px,.7fr) minmax(280px,1.3fr);gap:12px;min-width:0;flex:1}.store-room-title label{display:grid;gap:3px;min-width:0}.store-room-title label>span{font-size:11px;font-weight:850;letter-spacing:.03em;text-transform:uppercase;color:#66808a}.store-room-title input{font:inherit;font-size:18px;font-weight:900;border:1px solid transparent;background:transparent;min-width:180px;outline:none;padding:5px 7px;border-radius:8px}.store-room-title textarea{font:inherit;border:1px solid transparent;background:transparent;resize:vertical;color:#60727a;min-height:34px;outline:none;padding:5px 7px;border-radius:8px}.store-room-title input:focus,.store-room-title textarea:focus{background:#fff;border-color:#b9d8de}.store-room-actions{display:flex;gap:8px;align-items:center}.store-room-body{display:grid;gap:12px;padding:14px}.store-room-add{justify-self:start}
@@ -2583,3 +2592,4 @@ export default function SalesStoreOfferBuilderGrouped(props) {
     </div>
   );
 }
+

@@ -2,6 +2,7 @@ import { continueAfterProjectSave, projectStepDataConfirmed } from './modules/pr
 import ProjectWorkspaceChrome, { ProjectHeaderActions, ProjectStatusDialog, ProjectWorkspaceFooter } from './modules/project/ProjectWorkspaceChrome.jsx';
 import SupportLinkEntry from './modules/support/SupportLinkEntry.jsx';
 import WorkdayShortcuts from './modules/home/WorkdayShortcuts.jsx';
+import WorkspaceTools from './modules/ui/WorkspaceTools.jsx';
 import DeliverySummary from './modules/report/DeliverySummary.jsx';
 import {isActiveProjectStatus, isArchivedProjectStatus, matchesProjectStatus} from './modules/project/projectListStatus.mjs';
 import './modules/ui/appUxReview.css';
@@ -25,6 +26,7 @@ import { createRoot } from 'react-dom/client';
 import { createClient } from '@supabase/supabase-js';
 import { Camera, FileText, Plus, Trash2, Download, Building2, ClipboardCheck, BadgeCheck } from 'lucide-react';
 import './style.css';
+import './modules/ui/proffdokWorkspace.css';
 import SalesModule from './modules/sales/SalesModule.jsx';
 import SalesHomeFollowUp, { useSalesHomeFollowUpData } from './modules/sales/components/SalesHomeFollowUp.jsx';
 import { createReportTools } from './modules/report/reportTools.js';
@@ -793,6 +795,7 @@ const BoligEntry = React.lazy(() => import('./modules/bolig/BoligEntry.jsx'));
     const proCatalogOrderAccess = useProCatalogOrderAccess(authUser?.id);
     const [openedKshmsScope, setOpenedKshmsScope] = (0, import_react.useState)(null);
     const [kshmsDeviationRequest, setKshmsDeviationRequest] = (0, import_react.useState)(null);
+    const [workspaceChecklistEntry, setWorkspaceChecklistEntry] = (0, import_react.useState)(null);
     const kshmsScopeKey = kshmsContext?.enabled ? `${kshmsContext.user_id}:${kshmsContext.company_id}` : null;
     (0, import_react.useEffect)(() => {
       if (tab === "kshms" && kshmsScopeKey) setOpenedKshmsScope(kshmsScopeKey);
@@ -2235,6 +2238,29 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       setSalesStartNewOfferSignal(0);
       setSalesOpenRequestSignal(cleanRequestId);
       openSalesOverview();
+    };
+    const workspaceActions = {
+      canStandaloneChecklists: canUseStandaloneChecklists, onStandaloneChecklists: () => goToTab("standalone_checklists"),
+      canPersonal: ownRights.enabled, canHr: ownRights.hrManagement, canKshms: ownRights.kshms,
+      canManageChecklists: Boolean(ownRights.kshms && kshmsContext?.manage),
+      canCatalog: Boolean(proCatalogOrderAccess.context),
+      canBolig: Boolean(boligContext?.enabled && boligContext.user_id === authUser?.id),
+      onPersonal: () => goToTab("innlogging"), onHr: () => goToTab("hr"), onKshms: () => goToTab("kshms"),
+      onRequest: startNewSalesRequest, onOffer: startNewSalesOffer, onSales: openSalesOverview,
+      onProjects: () => goToTab("prosjektliste"), onBolig: () => goToTab("bolig"),
+      onNewProject: () => { createNewProject(); setTab("prosjekt"); },
+      onOrder: () => goToTab("catalog_order"),
+      onCatalog: () => {
+        if (!proCatalogOrderAccess.context) return;
+        if (!proCatalogOrderAccess.context.internal_catalog) return goToTab("pro_catalog");
+        const source = Array.from(document.querySelectorAll('nav > button')).find(button => button.textContent.trim() === 'Prissøk' && !button.disabled && !button.hidden && button.style.display !== 'none' && !button.closest('#expo-desktop-primary-nav, #expo-desktop-menu-drawer'));
+        source?.click();
+      },
+      onChecklists: () => {
+        if (!ownRights.kshms || !kshmsContext?.manage) return;
+        setWorkspaceChecklistEntry({companyId:kshmsContext.company_id,userId:authUser?.id,nonce:crypto.randomUUID()});
+        goToTab("kshms");
+      }
     };
     const appendProjectDescriptionTemplate = (templateText) => {
       const currentText = project.projectDescription || "";
@@ -6328,28 +6354,12 @@ ${appLink}`;
           if (!projectId && mobileCreatingProject) newProjectTouchedRef.current = true;
         },
         children: [
-        tab === "prosjekt" && !hasActiveProjectWorkspace && !mobileCreatingProject && !isProjectSupportReadOnly && (0, import_jsx_runtime.jsx)(WorkdayShortcuts,{canPersonal:ownRights.enabled,canHr:ownRights.hr,canKshms:ownRights.kshms,onPersonal:()=>goToTab("innlogging"),onHr:()=>goToTab("hr"),onKshms:()=>goToTab("kshms")}),
+        !isProjectSupportReadOnly && (0, import_jsx_runtime.jsx)(WorkspaceTools, { ...workspaceActions, tab, projectWorkspace: hasActiveProjectWorkspace || mobileCreatingProject, projectTabs: tabs, onNavigate: goToTab, scopeKey: `${authUser?.id}:${company.companyName}`, }, `${authUser?.id}:${company.companyName}`),
+        tab === "prosjekt" && !hasActiveProjectWorkspace && !mobileCreatingProject && !isProjectSupportReadOnly && (0, import_jsx_runtime.jsx)(WorkdayShortcuts, workspaceActions),
         tab === "prosjekt" && !hasActiveProjectWorkspace && !mobileCreatingProject && !isProjectSupportReadOnly && (0, import_jsx_runtime.jsx)(React.Suspense, { fallback: null, children: (0, import_jsx_runtime.jsx)(HomeFollowups, { hrContext: ownRights.hr ? hrContext : null, kshmsContext, userId: authUser?.id, onOpenDeviation: openKshmsDeviation, onSetup: () => goToTab("hr") }, authUser?.id) }),
         authUser?.id && !hasActiveProjectWorkspace && !mobileCreatingProject && !isProjectSupportReadOnly && tab === "bolig" && (0, import_jsx_runtime.jsx)(React.Suspense, { fallback: "Henter Boligprosjekter …", children: (0, import_jsx_runtime.jsx)(BoligEntry, { userId: authUser.id, onOpenProject: openProjectById, onExit: () => goToTab("prosjekt") }) }),
         !projectId && !mobileCreatingProject && tab === "prosjekt" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { className: "mobileProjectChooser", children: [
           authUser?.id && !hasActiveProjectWorkspace && !isProjectSupportReadOnly && (0, import_jsx_runtime.jsx)(React.Suspense, { fallback: null, children: (0, import_jsx_runtime.jsx)(MobileTimeShortcut, { personalContext, hrContext, userId: authUser?.id }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileHomeHero", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "mobileHomeEyebrow", children: "Expo ProffDok" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Hva vil du jobbe med?" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "Opprett en ny forespørsel, lag et tilbud direkte, fortsett med befaring og tilbud, eller åpne et eksisterende ProffDok-prosjekt." }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileHomeActions", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: startNewSalesRequest, children: "+ Ny forespørsel" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: startNewSalesOffer, children: "+ Nytt tilbud" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: openSalesOverview, children: "Åpne Befaring/Tilbud" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => {
-                createNewProject();
-                setTab("prosjekt");
-                setTimeout(() => scrollToMobileTabTarget("prosjekt"), 120);
-              }, children: "+ Nytt prosjekt" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => goToTab("prosjektliste"), children: "Åpne prosjektliste" }),
-              canUseStandaloneChecklists && (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => goToTab("standalone_checklists"), children: "Fyll ut sjekkliste" })
-            ] })
-          ] }),
           warrantyTemplateProjectRows.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileHomeSearchCard", style: { marginTop: "12px" }, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Start garantiprosjekt fra mal" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { margin: "6px 0 10px" }, children: "Malene er kun tilgjengelige for garantiprosjekter med valgt Sopro-system." }),
@@ -6555,19 +6565,6 @@ ${appLink}`;
         tab === "prosjekt" && projectId && renderProjectOverviewPanel({ project, goToTab, leaveProjectWorkspace }),
         (tab === "prosjekt" || tab === "avvik") && projectId && authUser?.id === kshmsContext?.user_id && kshmsContext?.enabled && !isProjectSupportReadOnly && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProjectSjaEntry, { context: kshmsContext, projectId, readOnly: isProjectLocked || isReadOnly }, `${kshmsScopeKey}:${projectId}`),
         tab === "prosjekt" && (!hasActiveProjectWorkspace ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { className: "desktopOnlyWhenNoProject desktopNoProjectWelcome", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "desktopNoProjectHero", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "mobileHomeEyebrow", children: "Expo ProffDok" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Hva vil du jobbe med?" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Opprett en ny forespørsel, lag et tilbud direkte, fortsett med befaring og tilbud, eller åpne et eksisterende ProffDok-prosjekt." }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", flexWrap: "wrap", marginTop: "16px" }, children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: startNewSalesRequest, children: "+ Ny forespørsel" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: startNewSalesOffer, children: "+ Nytt tilbud" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: openSalesOverview, children: "Åpne Befaring/Tilbud" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => { createNewProject(); setTab("prosjekt"); }, children: "+ Nytt prosjekt" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => goToTab("prosjektliste"), children: "Åpne prosjektliste" }),
-              canUseStandaloneChecklists && (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => goToTab("standalone_checklists"), children: "Fyll ut sjekkliste" })
-            ] })
-          ] }),
           warrantyTemplateProjectRows.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { marginTop: "18px", background: "#f8fbff" }, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { style: { marginTop: 0 }, children: "Start garantiprosjekt fra mal" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Her vises kun prosjekter som er merket som mal og samtidig er satt opp som garantiprosjekt med valgt Sopro-system." }),
@@ -6995,7 +6992,7 @@ ${appLink}`;
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)(KshmsProjectReportChoice, { report: kshmsProjectReport }),
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Report, { company, name, project, selected, manualProducts: manualSelected, other, surf, bathroomEquipment, photos, access, inst, files, checklist, tilbud: projectScopedTilbud, overtagelse, projectLog, kshmsReport: kshmsProjectReport.reportData })
                 ] }),
-        kshmsContext?.enabled && (tab === "kshms" || openedKshmsScope === kshmsScopeKey) && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { hidden: tab !== "kshms", children: (0, import_jsx_runtime.jsx)(React.Suspense, { fallback: tab === "kshms" ? "Henter KS/HMS …" : null, children: (0, import_jsx_runtime.jsx)(KshmsModule, { context: kshmsContext, deviationRequest: kshmsDeviationRequest }, kshmsScopeKey) }) }),
+        kshmsContext?.enabled && (tab === "kshms" || openedKshmsScope === kshmsScopeKey) && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { hidden: tab !== "kshms", children: (0, import_jsx_runtime.jsx)(React.Suspense, { fallback: tab === "kshms" ? "Henter KS/HMS …" : null, children: (0, import_jsx_runtime.jsx)(KshmsModule, { context: kshmsContext, deviationRequest: kshmsDeviationRequest, checklistEntryRequest: workspaceChecklistEntry, onChecklistEntryHandled: () => setWorkspaceChecklistEntry(null) }, kshmsScopeKey) }) }),
         tab === "kshms" && !kshmsContext?.enabled && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { role: "status", children: "KS/HMS er ikke tilgjengelig i aktivt firma. Kontroller arbeidsprofil og modulgrant hos firmaadmin." }),
         tab === "hr" && ownRights.hrManagement && !hasActiveProjectWorkspace && (0, import_jsx_runtime.jsx)(React.Suspense, { fallback: "Henter HR …", children: (0, import_jsx_runtime.jsx)(HrModule, { context: hrContext, audience: "management" }, `${hrContext.user_id}:${hrContext.company_id}:${hrContext.administer}`) }),
         tab === "hr" && !ownRights.hrManagement && (0, import_jsx_runtime.jsx)("p", { role: "status", children: "HR i hovedmenyen er for firmaadmin og registrerte nærmeste ledere. Egne oppfølginger finner du på Min side. Kontroller arbeidsprofilen eller kontakt firmaadmin hvis tilgangen er feil." }),
@@ -7798,3 +7795,4 @@ ${appLink}`;
       })
     })
   );
+

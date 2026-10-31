@@ -4,6 +4,9 @@ import { createClient } from "@supabase/supabase-js";
 import { registerAppSupabaseClient } from "../../src/modules/access/appSupabaseClientRegistry.js";
 import Detail from "../../src/modules/sales/components/SalesDetailView.jsx";
 import "../../src/modules/sales/sales.css";
+import "../../src/style.css";
+import "../../src/modules/app/mobileResponsive41A.css";
+import "../../src/modules/ui/proffdokWorkspace.css";
 
 const user = { id: "00000000-0000-4000-8000-000000000001", email: "qa@example.invalid" };
 const token = [btoa('{"alg":"HS256"}'), btoa(JSON.stringify({ sub: user.id, exp: Math.floor(Date.now()/1000)+3600 })), "c3ludGhldGlj"].map(x=>x.replaceAll("=","").replaceAll("+","-").replaceAll("/","_")).join(".");
@@ -36,6 +39,6 @@ const isolated=makeClient();window.qa.isolatedSignedIn=Boolean((await isolated.a
 function App(){
  const [id,setId]=useState("QA-SAVED");
  window.qa.switchRequest=()=>{window.qa.saved={...window.qa.saved,id:"QA-OTHER"};setId("QA-OTHER");};
- return <Detail selectedRequest={{...window.qa.saved,id,offerLines:[{...window.qa.saved.offerLines[0],description:"Ulagret varetekst"}]}}/>;
+ return <div data-expo-app-shell="true"><main><Detail selectedRequest={{...window.qa.saved,id,offerLines:[{...window.qa.saved.offerLines[0],description:"Ulagret varetekst"}]}}/></main></div>;
 }
 createRoot(document.getElementById("app")).render(<React.StrictMode><App/></React.StrictMode>);window.qa.ready=true;

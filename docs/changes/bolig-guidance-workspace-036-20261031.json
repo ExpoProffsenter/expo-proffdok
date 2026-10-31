@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Boligveiledning med fast retur og søkbare temaer",
+  "change": "BEGGE, først eksisterende PR295/fast design-Preview/Sandbox. Slik styrer du prosjektet åpner felles WorkspacePanel i stedet for å utvide tusenvis av ord inline. Åtte temaområder, søk i full tekst, én forklaring om gangen, Alle temaer og fast Tilbake til prosjektet, toppkryss og Escape. A–Å-guidens 18 steg bruker samme panelramme med uendrede steg, bildevisning og neste/forrige. Kun hjelpens egne komponenter/CSS/innhold og relevante tester/dokumentasjon; ingen src/modules/bolig, prosjektstate, backend, aktivering, roller, lagring, eksport eller transport endres.",
+  "verification": "Feilen gjenskapt innlogget på259c18a5: lang inline forklaring uten egen returhandling. Faktiske Native Entry/Overview-komponenter og full app-CSS, syntetiske lesekall: opprinnelige69tekstblokker og ekstern lenke sammenlignes mot259c18a5; søk, åtte områder, én forklaring, topp-/bunnretur/Escape/fokus, samme underliggende søk/bygg/listeresultat/DOM, same-profile revalidering og revoke. Seks viewportvarianter inkludert320/390/768/1363/1920 og390x320. Gammel mobilregel krympet kontrollene til39/40px; rettet bare for de to hjelpepanelene med16px/44px. Eksisterende foundation og builder PASS; builderens gamle inline-open-assert er erstattet av faktisk panelåpning/retur og en ekstra lukketilstandsassert, ikke fjernet. Foundation bruker semantisk lukket guideknapp i stedet for lukket details. Eksisterende213 handover/18-guide-step assertions beholdes. Endelig antall/negativtest/build/fullCI/READY/innlogget etterkontroll og bilder føres i PR295 etter faktisk kontroll. Ingen produksjonsendring eller reell utsending. Sluttkode lokalt:233native browserassertionsPASS, alle69tekstblokker og ekstern lenke identiske etter korrekt whitespace-normalisering. Testen avventer native close-eventens React-commit før samme aria-expanded=false-assert; ingen funksjonskrav svekket. Foreldrekoden feiler konkret fordi intet lukkbart panel åpnes. FoundationPASS, builder766PASS og handover/guide213PASS. Full eksplisitt Sandbox critical/buildPASS. Bolig-core-boundary: ikke relevant fordi ingen Bolig-kjernefil endres. Nye native233 er koblet til eksisterende app-UX-kjede/CI.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "Ny søkbar hjelp og returflyt er selve brukerendringen i src/modules/help; teksten er bevart og fordelt i selvstendige temaer."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Eksisterende felles panel gjenbrukes. Ingen data-, lagrings-, tilgangs- eller systemarkitektur endres."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen ny avhengighet, konfigurasjon, migrering eller oppsett."
+    },
+    "module": {
+      "required": true,
+      "reason": "src/modules/help/README.md beskriver retur, temaer, uendrede A–Å-steg og redigering av innhold."
+    }
+  }
+}

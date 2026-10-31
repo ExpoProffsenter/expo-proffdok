@@ -37,7 +37,14 @@ export default function KshmsSja({ context, active = true, projectId = null, sco
   const choices = useKshmsJobChoices(context, Boolean(editor));
   const handledCreate = useRef(null);
   const scopeRef = useRef(null), locked = useRef(false), listRequest = useRef(0), openRequest = useRef(0), formRef = useRef(null), missingRef = useRef(null);
+  const openerRef = useRef(null), activeRef = useRef(active);
+  activeRef.current = active;
   const current = scope => scope?.active && scopeRef.current === scope;
+  const returnSjaFocus = () => {
+    const target = openerRef.current;
+    return target && activeRef.current && current(target.scope) && target.node?.isConnected &&
+      !target.node.matches(':disabled') && !target.node.closest('[hidden],[inert]') ? target.node : null;
+  };
   const allowedState = value => value?.context?.company_id === companyId && value.context.user_id === userId && value.context.enabled;
   const load = async () => {
     const scope = scopeRef.current, request = ++listRequest.current;
@@ -80,6 +87,9 @@ export default function KshmsSja({ context, active = true, projectId = null, sco
   const close = () => { if (locked.current) return; ++openRequest.current; setEditor(null); setRecord(null); setConflict(null); setChecked(false); setAttempted(false); setDirty(false); setOpening(false); setVerified(false); setDiscarding(false); };
   const choose = async (row, resume = false) => {
     if (locked.current) return;
+    // Remember the trigger before loading disables it. Some Chromium versions
+    // move focus to BODY before the dialog's mount effect can capture it.
+    if (!editor) openerRef.current = { node: document.activeElement, scope: scopeRef.current };
     if (!row && !resume) {
       if (scopeReadOnly || data?.project?.locked) return;
       if (cached) { setError('Du har en lokal kladd. Fortsett og lagre den før du starter en ny SJA.'); return; }
@@ -150,7 +160,7 @@ export default function KshmsSja({ context, active = true, projectId = null, sco
     <div className="sja-list">{data?.items.map(row => <button type="button" className="secondary sja-list-row" key={row.id} disabled={busy} onClick={() => choose(row)}><div><strong>{row.title}</strong><span>{row.workplace || 'Arbeidssted ikke utfylt'}{row.project_name ? ` · Prosjekt: ${row.project_name}` : row.project_reference ? ` · ${row.project_reference}` : ''}</span></div><div><span className="ks-badge">{row.status === 'signed' ? 'Signert' : 'Utkast'}</span><span>{row.status === 'signed' ? `${row.signed_identity?.name} · ${dateTime(row.signed_at)}` : row.leader_identity?.name ? `Ansvarlig: ${row.leader_identity.name}` : 'Ansvarlig ikke valgt'}</span></div></button>)}</div>
     {data && !data.items.length && <p>Ingen SJA-er i dette søket. Bruk Ny SJA for å starte med et tomt skjema.</p>}
     <details className="sja-sources"><summary>Faglig grunnlag for skjemaet</summary><p>Veiledningen er skrevet for ProffDok med disse kildene som grunnlag. Dere må selv vurdere jobben og forholdene på stedet. Én prosjektleders signatur og dokumentert medvirkning er firmaets valgte arbeidsflyt i appen.</p><ul>{SJA_SOURCES.map(source => <li key={source.url}><a href={source.url} target="_blank" rel="noreferrer">{source.title}</a> · kontrollert {source.checked_on}</li>)}</ul></details>
-    {editor && active && <DeviationDialog title={readOnly ? 'Lagret SJA' : 'Sikker jobbanalyse'} context={`${context.company_name} · ${readOnly ? 'Dokumentasjon' : 'Utkast og gjennomgang'}`} busy={busy} closeLabel="Lukk SJA" onClose={close}>
+    {editor && active && <DeviationDialog title={readOnly ? 'Lagret SJA' : 'Sikker jobbanalyse'} context={`${context.company_name} · ${readOnly ? 'Dokumentasjon' : 'Utkast og gjennomgang'}`} busy={busy} closeLabel="Lukk SJA" onClose={close} returnFocusTarget={returnSjaFocus}>
       <form className="sja-editor" ref={formRef} onSubmit={event => { event.preventDefault(); save('save'); }}>
         {error && <p className="ks-error" role="alert">{error}</p>}{notice && <p className="ks-notice" role="status">{notice}</p>}
         {opening && <p role="status">Henter lagret SJA før du kan fortsette …</p>}

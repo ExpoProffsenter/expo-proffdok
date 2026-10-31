@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 export const id=n=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
-export async function executionChecklistPlatform({signatures=true}={}){
+export async function executionChecklistPlatform({signatures=true,proposals=false}={}){
  const {PGlite}=await import(process.env.HR_PGLITE_PATH||'../qa/node_modules/@electric-sql/pglite/dist/index.js');
  const db=await PGlite.create();
  let platform=await fs.readFile('scripts/fixtures/hr-restore-platform.sql','utf8');
@@ -50,6 +50,7 @@ export async function executionChecklistPlatform({signatures=true}={}){
  for(const name of ['20261030212323_standalone_checklists.sql','20261030215202_standalone_checklist_owner_index.sql','20261030223853_standalone_checklist_external_project_details.sql'])await db.exec(await fs.readFile('supabase/migrations/'+name,'utf8'));
  const migrate=async()=>{await db.exec('reset role');for(const name of ['20261030233753_execution_checklist_signatures_core.sql','20261030233847_standalone_checklist_signatures.sql','20261030233912_project_execution_checklist_signatures.sql'])await db.exec(await fs.readFile('supabase/migrations/'+name,'utf8'));};
  if(signatures)await migrate();
+ if(proposals)await db.exec(await fs.readFile('supabase/migrations/20261031012504_checklist_template_proposals.sql','utf8'));
  const actor=async(user=owner,company=firm,role='authenticated')=>{await db.exec('reset role');await db.query('insert into public.user_active_company_scope values($1,$2) on conflict(user_id) do update set company_id=excluded.company_id',[user,company]);await db.query("select set_config('request.jwt.claim.sub',$1,false)",[user]);await db.exec('set role '+role);};
  const rpc=async(name,args=[])=>{const values=args.map((v,i)=>'$'+(i+1)+(typeof v==='object'&&v!==null?'::jsonb':''));return (await db.query('select public.'+name+'('+values.join(',')+') v',args)).rows[0].v;};
  return {db,actor,rpc,migrate,firm,other,owner,colleague,foreign,project};

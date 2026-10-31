@@ -11,7 +11,7 @@ try{
  const bundled=await build({root:rootDir,configFile:false,logLevel:'silent',define:{'process.env.NODE_ENV':'"development"'},build:{write:false,minify:false,lib:{entry,formats:['iife'],name:'HrProof',cssFileName:'hr-proof'}},plugins:[react(),{name:'app-client',enforce:'pre',resolveId(id){if(/cordelAccess\.js$/.test(id))return '\0cordel';if(/appSupabaseClientRegistry\.js$/.test(id))return '\0client';},load(id){if(id==='\0cordel')return 'export const useCordelAccess=()=>false;';if(id==='\0client')return 'export const getAppSupabaseClient=()=>globalThis.__client;';}}]});
  const dom=new JSDOM('<div id="app"></div>',{url:'https://example.invalid',runScripts:'outside-only',pretendToBeVisual:true});
  try{
-  const {window}=dom;window.IS_REACT_ACT_ENVIRONMENT=true;window.HTMLElement.prototype.scrollIntoView=function(){};
+  const {window}=dom;window.IS_REACT_ACT_ENVIRONMENT=true;window.HTMLDialogElement.prototype.showModal=function(){this.open=true;};window.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new window.Event('close'));};window.HTMLElement.prototype.scrollIntoView=function(){};
   window.MessageChannel=class{constructor(){this.port1={onmessage:null};this.port2={postMessage:()=>setImmediate(()=>this.port1.onmessage?.())};}};
   const context={company_id:'firm',user_id:'admin',company_name:'Syntetisk firma',available:true,enabled:false,administer:true};
   const members=['admin','self','old','new','reader'].map(id=>({id,email:id+'@example.invalid'}));
@@ -49,6 +49,12 @@ try{
   const tick=async text=>act(async()=>{const label=[...window.document.querySelectorAll('label')].find(l=>l.textContent.includes(text));assert(label,text);label.querySelector('input[type=checkbox]').click();});
   const submit=async text=>act(async()=>button(text).closest('form').dispatchEvent(new window.Event('submit',{bubbles:true,cancelable:true})));
   await act(async()=>window.__render('help',{isSystemAdmin:true,authUser:{id:'admin'},helpAccess:{userId:'admin',isSystemAdmin:true,isCompanyAdmin:true,moduleKeys:['projects','sales','store_offers']},kshmsContext:{user_id:'admin',enabled:true},hrContext:{user_id:'admin',available:true}}));
+  const helpSearch=()=>window.document.querySelector('input[type=search]');
+  const searchHelp=async value=>act(async()=>{const input=helpSearch();Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype,'value').set.call(input,value);input.dispatchEvent(new window.Event('input',{bubbles:true}));});
+  assert(window.document.querySelector('time[datetime="2026-10-30"]'),'help update label and machine date share one current source');
+  await searchHelp('Kundevisning');const salesReading=window.document.querySelector('[data-help-topic="sales"]>button');assert(salesReading,'search exposes the authorized Sales topic');await act(async()=>salesReading.click());assert(window.document.body.textContent.includes('Prøv kundevisningen igjen'),'main help search indexes the actual customer reading workflow');
+  await act(async()=>window.__render('help',{authUser:{id:'admin'},helpAccess:{userId:'admin',moduleKeys:['projects']}}));assert(!window.document.body.textContent.includes('Prøv kundevisningen igjen'),'workspace help does not bypass Sales access');assert(!window.document.querySelector('[data-help-topic="sales"]'),'search cannot introduce the inaccessible Sales topic');await searchHelp('ikke-eksisterende-hjelpetema');assert(window.document.body.textContent.includes('Ingen hjelpetema passer søket'));
+  await act(async()=>window.__render('help',{isSystemAdmin:true,authUser:{id:'admin'},helpAccess:{userId:'admin',isSystemAdmin:true,isCompanyAdmin:true,moduleKeys:['projects','sales','store_offers']},kshmsContext:{user_id:'admin',enabled:true},hrContext:{user_id:'admin',available:true}}));await searchHelp('');
   const helpRoot=title=>buttons().find(b=>b.querySelector('b')?.textContent===title);
   assert.equal(buttons().filter(b=>b.querySelector('b')?.textContent==='KS/HMS').length,1);assert.equal(buttons().filter(b=>b.querySelector('b')?.textContent==='HR').length,1);
   assert(!buttons().some(b=>/^KS\/HMS –/.test(b.querySelector('b')?.textContent||'')));assert.equal(window.document.querySelectorAll('.help-topic-chapter').length,0);
@@ -70,11 +76,15 @@ try{
   await act(async()=>window.__render('help',{authUser:{id:'admin'},helpAccess:{userId:'admin',moduleKeys:['sales']},hrContext:{user_id:'admin',available:true}}));if(helpRoot('HR').getAttribute('aria-expanded')!=='true')await act(async()=>helpRoot('HR').click());assert(window.document.body.textContent.includes('Før timer øverst på Startsiden'),'ordinary authorized HR user receives mobile time guidance');
   const salesHelp=buttons().find(b=>b.querySelector('b')?.textContent.includes('Befaring / Våtromstilbud'));assert(salesHelp);await act(async()=>salesHelp.click());assert(window.document.body.textContent.includes('Publiserte og aksepterte tilbudsversjoner'));assert.equal(window.document.querySelectorAll('.help-topic-chapter').length,0);
   await act(async()=>window.__render('nav',{}));
-  assert.deepEqual([...window.document.querySelectorAll('[role=group]')].map(g=>g.getAttribute('aria-label')),['Daglig arbeid','Mine rutiner','Forvaltning']);
-  assert([...window.document.querySelectorAll('.ks-tabs button')].every(button=>button.querySelector('svg[aria-hidden=true]')),'All existing KS screens need a visible decorative icon without replacing the accessible label');
-  assert.equal(button('Håndbok').getAttribute('aria-pressed'),'true');await click('Avvik/RUH');assert.equal(button('Avvik/RUH').getAttribute('aria-pressed'),'true');assert.equal(button('Håndbok').getAttribute('aria-pressed'),'false');
+  // The same three native destination groups now live in the contextual tools
+  // drawer. Check the full set and controlled destination, not the old grid.
+  assert.deepEqual([...window.document.querySelectorAll('.pd-workspace-drawer-body>section>h3')].map(g=>g.textContent),['Daglig arbeid','Mine rutiner','Forvaltning']);
+  const ksDestinations=[...window.document.querySelectorAll('.pd-workspace-tool-action')];assert.equal(ksDestinations.length,13,'All original KS destinations remain in the contextual drawer');
+  assert(ksDestinations.every(button=>button.querySelector('svg[aria-hidden=true]')),'All existing KS destinations keep a decorative icon without replacing the accessible label');
+  const ksSelection=()=>window.document.querySelector('[aria-label="Velg KS/HMS-visning"]');
+  assert.equal(ksSelection().value,'handbook');await click('Avvik/RUH');assert.equal(ksSelection().value,'deviations');assert.equal(button('Avvik og RUH').getAttribute('aria-current'),'page');assert.equal(button('Rutiner og håndbok').hasAttribute('aria-current'),false);
   await act(async()=>window.__render('hr',{context}));
-  assert.equal(window.document.querySelectorAll('.hr-workspace-card').length,5);assert(window.document.querySelector('.module-heading'));assert(button('Åpne samtalemaler').disabled);
+  assert.equal(window.document.querySelectorAll('.hr-workspace-card').length,6);assert(window.document.querySelector('.module-heading'));assert(button('Åpne samtalemaler').disabled);
   await click('Åpne sykefravær');assert(window.document.querySelector('.hr-sick-leave').open);assert.equal(window.document.activeElement,window.document.querySelector('.hr-sick-leave'));assert(button('Tilpass sykefraværsmal').disabled);
   await click('Se medarbeidere');assert.equal(window.document.activeElement,window.document.querySelector('.hr-register-target'));
   await click('Se slettekvitteringer');const emptyReceipts=[...window.document.querySelectorAll('details')].find(d=>d.querySelector('summary')?.textContent==='Slettekvitteringer');assert(emptyReceipts.open);assert(emptyReceipts.textContent.includes('Ingen slettekvitteringer ennå'));
@@ -99,7 +109,7 @@ try{
   lateGet={};let opening;await act(async()=>{window.document.querySelector('.hr-employee').click();});assert(lateGet.resolve);const old=lateGet.resolve;lateGet=null;
   await act(async()=>window.__unmount());await act(async()=>old({data:{context,employee:employees[0]}}));assert(!window.document.querySelector('.hr-detail'),'Late personal data revived unmounted UI');
   const selfContext={...context,user_id:'self',administer:false};context.user_id='self';context.administer=false;
-  await act(async()=>window.__render('hr',{context:selfContext}));assert.equal(window.document.querySelectorAll('.hr-workspace-card').length,3,'Non-admin retains register/sick-leave guidance and gets the scoped time entry');assert(button('Åpne timer og utlegg'));assert(!buttons().some(b=>['Åpne oppsett','Se slettekvitteringer','Åpne samtalemaler','Tilpass sykefraværsmal'].includes(b.textContent.trim())));assert(!window.document.body.textContent.includes('Ekstra lesetilgang'));assert(!buttons().some(b=>b.textContent==='Lagre HR-oppsett'));assert(window.document.body.textContent.includes('Mine oppfølginger'));
+  await act(async()=>window.__render('hr',{context:selfContext}));assert.equal(window.document.querySelectorAll('.hr-workspace-card').length,4,'Non-admin retains register/sick-leave guidance and gets the scoped time entry');assert(button('Åpne timer og utlegg'));assert(!buttons().some(b=>['Åpne oppsett','Se slettekvitteringer','Åpne samtalemaler','Tilpass sykefraværsmal'].includes(b.textContent.trim())));assert(!window.document.body.textContent.includes('Ekstra lesetilgang'));assert(!buttons().some(b=>b.textContent==='Lagre HR-oppsett'));assert(window.document.body.textContent.includes('Mine oppfølginger'));
   revoked=true;await act(async()=>window.dispatchEvent(new window.Event('focus')));assert(!window.document.querySelector('.hr-employee'));assert(window.document.querySelector('[role=alert]'));
   assert.equal(window.localStorage.length,0);assert.equal(window.sessionStorage.length,0);
   await act(async()=>window.__unmount());

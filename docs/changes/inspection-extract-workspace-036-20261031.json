@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Dokumentuttrekk: samlet valg- og vedleggsflate",
+  "change": "BEGGE; bare PR295 Preview/Sandbox. Native dokumentgrupper får responsivt to-kolonners PC-grid/én mobilkolonne;20px avkrysning med44px trefflate, lesbare fulle dokumentnavn/utgave-IDer og samme utvalgs-/vedleggsoversikt. Kun CSS-import/scopet klasse/presentasjonswrapper. Ingen callbacks, state/effect/operasjonslås, tilgang, innhold, eksportdata, bekreftelser, lagring, PDF/ZIP-renderer eller backend endres. PR298 firmabytte-lås holdes separat. Oppfølging31.10: original komplett veiledning beholdes i en native details-boks, med kort handlingsforklaring over. Omfang og søk deler PC-rad og stables på mobil. Ingen eksisterende tilstands-/callback-/eksporteier endres.",
+  "verification": "Native browser23 assertions PASS: fem bredder320/390/768/1363/1920,600px høyde, samme dokumentvalg/bekreftelsesgate, bevart omfang/valg ved blur/focus/active-flagg, tastaturdisclosure, fjerning og manager-gate. Original91ce har samme18 ikke-designassertions. Faktiske før/etter-PC/mobilbilder er tatt i native komponent med syntetisk lesetransport. Eksisterende critical uttrekk/vedleggsarkiv/legacy/deviation/PDF-gater består. Den utvidede manuelle native eksportprøven lager to PDF-er før den feiler ved kjent company-return-lås; dette er ikke grønn helreise, og sammenlignes med uendret91ce. QR/filbro/innlogget/full rolleattest er ikke inkludert. Presise eksporter/sider, baselinefeil, build/fullCI/READY og varige bilder kvitteres i PR295. Ny native Chromium153-prøve36PASS inkluderer opprinnelige23 krav, lukket veiledning, full original personvern-/omfangstekst, tastaturåpning/-lukking og fem bredder med riktig feltplassering. Eksisterende personal-time-opt-in63PASS i samme fem bredder. Innlogget baseline2a16434c: demorapport valgt uttrykkelig og fire-siders PDF laget; download-event returnerer path, men filbroen synkroniserte ikke innen fem sekunder. Ingen filbytes/visuell PDF-attest fra denne levende prøven. Separat PR298 er oppdatert med main og består PDF/ZIP/regresjon og fullCI83310/10 på338094b1, kun egen Sandbox-Preview. Designen tar ikke inn operasjonslåsen.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Ingen knappnavn, kommandoer eller rekkefølge endres."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Ingen data-/tilgangs-/state-/eksporteier endres."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen nye avhengigheter eller konfigurasjon."
+    },
+    "module": {
+      "required": true,
+      "reason": "Scoped presentasjon og separat PR298-begrensning dokumenteres i kshms/README.md."
+    }
+  }
+}

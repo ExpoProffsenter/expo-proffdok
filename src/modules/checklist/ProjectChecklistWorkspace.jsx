@@ -19,7 +19,7 @@ export default function ProjectChecklistWorkspace({Editor,companyId,userId,proje
  const readRpc=projectChecklistReadRpc(kshmsRpc,{supportReadOnly,companyId,projectId});
  const [displayFilter,setDisplayFilter]=useState('all');
  const [data,setData]=useState(null),[selected,setSelected]=useState(null),[expanded,setExpanded]=useState({}),[error,setError]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false),[uploads,setUploads]=useState(0);
- const owner=useRef(null),locked=useRef(false),selection=useRef(null),cached=useRef(new Map());
+ const owner=useRef(null),locked=useRef(false),selection=useRef(null),cached=useRef(new Map()),dialogReturnFocus=useRef(null);
  selection.current=selected;
  const current=scope=>scope?.active&&owner.current===scope;
  const key=category=>checklistRunDraftKey(userId,companyId,projectId,category);
@@ -36,18 +36,25 @@ export default function ProjectChecklistWorkspace({Editor,companyId,userId,proje
   setData(state);return state;
  };
  useEffect(()=>{
-  const scope={active:true};owner.current=scope;cached.current=new Map();setData(null);setSelected(null);setExpanded({});setError('');setNotice('');setBusy(false);
+  const scope={active:true};owner.current=scope;dialogReturnFocus.current=null;cached.current=new Map();setData(null);setSelected(null);setExpanded({});setError('');setNotice('');setBusy(false);
   const refresh=event=>{
-   if(event?.type===WORK_PROFILE_EVENT&&event.detail?.active_company_id!==companyId){scope.active=false;owner.current=null;setSelected(null);setData(null);return;}
+   if(event?.type===WORK_PROFILE_EVENT&&event.detail?.active_company_id!==companyId){scope.active=false;owner.current=null;dialogReturnFocus.current=null;setSelected(null);setData(null);return;}
    load(scope).catch(cause=>{if(current(scope))setError(cause.message);});
   };
   refresh();const events=['focus',MANAGED_ACCESS_EVENT,MODULE_ACCESS_EVENT,WORK_PROFILE_EVENT];events.forEach(event=>window.addEventListener(event,refresh));
-  return()=>{scope.active=false;events.forEach(event=>window.removeEventListener(event,refresh));};
+  return()=>{scope.active=false;dialogReturnFocus.current=null;events.forEach(event=>window.removeEventListener(event,refresh));};
  },[companyId,userId,projectId,supportReadOnly]);
- const select=value=>{selection.current=value;setSelected(value);setError('');setNotice('');};
+ const captureDialogFocus=()=>{
+  if(!selection.current)dialogReturnFocus.current={element:document.activeElement,scope:owner.current};
+ };
+ const returnDialogFocus=()=>{
+  const target=dialogReturnFocus.current;
+  return target&&current(target.scope)&&target.element?.isConnected&&!target.element.matches(':disabled')&&!target.element.closest('[hidden],[inert]')?target.element:null;
+ };
+ const select=value=>{if(!locked.current)captureDialogFocus();selection.current=value;setSelected(value);setError('');setNotice('');};
  const begin=async(group,{fresh=false,run=null,viewSaved=false,followPoint=null,nextUnfinished=false,isIntentCurrent=()=>true}={})=>{
   if(locked.current)return;
-  const scope=owner.current;locked.current=true;setBusy(true);setError('');
+  const scope=owner.current;captureDialogFocus();locked.current=true;setBusy(true);setError('');
   try {
    const state=await load(scope);if(!state||!current(scope)||!isIntentCurrent())return;
    if(nextUnfinished){
@@ -197,7 +204,7 @@ export default function ProjectChecklistWorkspace({Editor,companyId,userId,proje
    </article>;
   })}
   {showPrevious&&!!previousGroups.length&&<details className="item"><summary>Tidligere dokumentasjon</summary><p>Lagrede svar fra lister som ikke brukes her nå, er beholdt.</p>{previousGroups.map(([category,answers])=><button type="button" className="secondary" key={category} onClick={()=>select({id:`legacy:${category}`,definition:{category,items:Object.keys(answers)},answers,readOnly:true})}>{category}</button>)}</details>}
-  {selected&&<DeviationDialog title={title(selected.definition)} context={selected.readOnly?'Lagret kontroll':`Kontroll under arbeid${selected.revision?' · lagret versjon '+selected.revision:''}`} onClose={dismiss} busy={busy||uploads>0} closeLabel="Lukk sjekklistedialog">
+  {selected&&<DeviationDialog title={title(selected.definition)} context={selected.readOnly?'Lagret kontroll':`Kontroll under arbeid${selected.revision?' · lagret versjon '+selected.revision:''}`} onClose={dismiss} busy={busy||uploads>0} closeLabel="Lukk sjekklistedialog" returnFocusTarget={returnDialogFocus}>
    {error&&<p role="alert" className="ks-error">{error}</p>}{notice&&<p role="status" className="ks-notice">{notice}</p>}
    {selected.completed_identity&&<p>Fullført av {identityText(selected.completed_identity)} · {new Date(selected.completed_at).toLocaleString('nb-NO')}</p>}
    <fieldset disabled={readOnly||selected.readOnly||busy||uploads>0||!!selected.pendingAction}><Editor {...editorProps} key={selected.id} userId={userId} readOnlyFields={readOnly||selected.readOnly} embedded initiallyExpanded consumeChecklistJump={false} customChecklistEnabled={false} showOpenDeviationsOnly={false} setShowOpenDeviationsOnly={null} activeChecklistTemplate={[selected.definition]} checklist={{[selected.definition.category]:selected.answers}} setChecklistValue={change} addChecklistPhoto={addPhoto} onOpenKshmsDeviation={editorProps.onOpenKshmsDeviation?id=>{if(remember(selection.current)){setSelected(null);selection.current=null;editorProps.onOpenKshmsDeviation(id);}}:null}/></fieldset>

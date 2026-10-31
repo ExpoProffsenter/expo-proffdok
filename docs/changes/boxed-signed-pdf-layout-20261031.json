@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Lesbare avsendere, komplette fortsettelsestitler og kompakte signaturer i native PDF-er",
+  "change": "Miljømål BEGGE, kun eksisterende PR295/Preview/Sandbox. Felles kshmsBoxedPdf måler firmanavn ved logo og uten logo, og bryter full avsender/dokumenttype/tittel på fortsettelsessider uten100tegns avkutting. Signaturmappingen legger bare til en presentasjonsmarkør kind=signature; samme bildedata tegnes proporsjonalt innen80x24mm med korrekt bildetekst, mens ordinære bilder beholder størrelse. Målt signaturblokk holder signatarens metadata og tegning samlet på neste side når hele blokken får plass der; genuint lange blokker beholder linjevis videreføring. Ingen signaturinput/-validering/-binding/-historikk, status, svar, fullføringskrav, datakilder, lagring, scope, RPC, retry eller eksisterende PDF-knapp endres. Ingen SQL/RLS/Auth/Storage/Edge-/workflow-/avhengighetsendring eller deploy av provider.",
+  "verification": "Native project-control signed PDF63 PASS: egen signatur/kort2sider, dobbel signatur/lang4sider (før5), historisk uten tegning1side og signert kladd2sider. Ekte eksisterende downloadDocumentPdf/jsPDF2.5.1; syntetisk backend, ekte firmalogo og eksplisitt syntetiske streker. Fullt signert grunnlag, revidert sistelesing, norske/lange felt, hvert fortsettelseshodes siste tittelverdi, marger, status, eksakte tegninger og null kildemutasjon. Fersk signaturendring etter asset-load stopper eksport. Eksakt før-renderer fra21f0019e feiler konkret på92tegns avsender (x57+162mm utenfor høyremarg). Innbygget testbaseline bevarer40 øvrige krav for visuell sammenligning. Eksisterende native rutine/personal/mal/prosjektknapper5PDF-forløp PASS og KS-prosjektrapport7PDF/4print PASS, inkludert konflikt/revoke/avbryt/sen respons/firmaskille. Gammel manuell Reactfixture manglet nåværende canvas.fillRect og databasefeltets signatures={}standard; bare disse fixtureverdiene er rettet, alle gamle krav beholdt. Alle14bevarte etter-PDF-er/52sider og firefør-PDF-er/10sider er rendret med Poppler Cairo og visuelt inspisert, med tekst/sidetall/sidegrenser og ingen tomme sider i etterfilene. Sluttkode63/native kritiske PDF-tester PASS, ordinær/ekstern HTTP/PostgreSQL-browser170 + forslagSQL44 + kladdregresjon PASS, full critical Sandbox-build PASS. UI-suitene fra full lokal appUX er uendret, og ny63-PDF-prøve er koblet inn i samme eksisterende CI-inngang. FullCI/READY og varige bilder/identiteter føres i PR295. Egen signert kontroll-PDF attesterer ikke signerte kontrollsnapshot-vedlegg i komplett sluttrapport, innlogget filbro eller publisert Edge-eksport.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Bare utskriftslayout og bildestørrelse; samme knapper og arbeidsrekkefølge."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Ingen ny dataflyt eller sikkerhetseier. Layoutmarkøren ligger bare i den eksisterende pure rapportmappingen."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen avhengighet, installasjon eller miljøendring."
+    },
+    "module": {
+      "required": true,
+      "reason": "Rapport- og sjekkliste-README avgrenser layoutmarkør og uendrede signaturregler."
+    }
+  }
+}

@@ -1,3 +1,4 @@
+import SalesEntryPanel from './SalesEntryPanel.jsx';
 import { CompanyCustomerProvider, CompanyCustomerSearch, CompanyCustomerSave } from "../../customers/CompanyCustomerPicker.jsx";
 import SalesCaseHandlerField from "./SalesCaseHandlerField.jsx";
 // Expo ProffDok – FASE 42J / FASE 38A1 / FASE 37D1 / FASE 23I / FASE 29C1 / FASE 45B
@@ -11,7 +12,7 @@ import SalesCaseHandlerField from "./SalesCaseHandlerField.jsx";
 // Nye saker opprettes ikke i Systemadmin-supportmodus fordi målbedriftens
 // ansvarlige bruker ikke er valgt i denne flyten.
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import {
   ArrowLeft,
   ClipboardList,
@@ -33,6 +34,10 @@ import {
   clearStoreOfferLaunch,
   readStoreOfferLaunch,
 } from "../services/salesStoreOffers.js";
+
+function EntryDisclosure({ inline, title, children }) {
+  return inline ? children : <details className="sales-entry-disclosure"><summary>{title}</summary>{children}</details>;
+}
 
 const ENTRY_FIELDS = [
   "customer",
@@ -60,6 +65,7 @@ export default function SalesRequestForm({
   caseHandlerCompanyId,
   onChooseCaseHandler,
 }) {
+  const formId = useId();
   const supportMode = Boolean(getSalesSupportCompanyId());
   const entryMode = isEditingRequest
     ? "edit-request"
@@ -205,8 +211,37 @@ export default function SalesRequestForm({
     );
   }
 
+  const formActions = (
+    <div className="sales-form-actions">
+              <button
+                className="sales-secondary-button"
+                type="button"
+                onClick={onCancel}
+              >
+                Avbryt
+              </button>
+
+              <button
+                className="sales-primary-button"
+                type="submit"
+                form={formId}
+                data-general-offer-submit={isStoreOffer ? "true" : undefined}
+              >
+                <Save size={18} />
+                {isEditingRequest
+                  ? "Lagre endringer"
+                  : isStoreOffer
+                    ? "Opprett tilbud"
+                    : isDirectOffer
+                      ? "Opprett våtromstilbud"
+                      : "Lagre forespørsel"}
+              </button>
+            </div>
+  );
   return (
-    <div className="sales-app">
+    <SalesEntryPanel inline={isEditingRequest} title={isStoreOffer ? "Nytt generelt tilbud" : isDirectOffer ? "Nytt våtromstilbud" : "Ny forespørsel"} onBack={onBack} footer={formActions}>
+    <div className={`sales-app sales-request-app${isEditingRequest ? " sales-editor-app" : ""}`}>
+      {!isEditingRequest && <p className="sales-entry-intro">{isDirectOffer ? "Registrer kunden og velg saksbehandler. Deretter bygger du tilbudet. Tilbudet sendes først når du velger det senere." : "Registrer kunden og velg saksbehandler. Lagre forespørsel oppretter saken. Du kan planlegge befaring etterpå."}</p>}
       <div className="sales-shell">
         <header className="sales-header">
           <button className="sales-back-button" type="button" onClick={onBack}>
@@ -270,13 +305,13 @@ export default function SalesRequestForm({
           </section>
 
           <CompanyCustomerProvider disabled={supportMode} value={Object.fromEntries(["customer", "phone", "email", "address", "postnr", "city"].map(key => [key, form[key] || ""]))} onUse={customer => { for (const key of ["customer", "phone", "email", "address", "postnr", "city"]) onUpdateForm(key, customer[key] || ""); }}>
-          <form className="sales-form-panel" onSubmit={onSubmit}>
+          <form id={formId} className="sales-form-panel" onSubmit={onSubmit}>
             <p className="sales-offer-price-guidance" style={{ marginBottom: 16 }}>
               Felter merket * må fylles ut.
             </p>
             <div className="sales-form-grid">
               {!isEditingRequest ? <SalesCaseHandlerField client={caseHandlerClient} companyId={caseHandlerCompanyId} storeOffer={isStoreOffer} userId={form.responsibleUserId || ""} onChoose={onChooseCaseHandler} /> : null}
-              <CompanyCustomerSearch />
+              <EntryDisclosure inline={isEditingRequest} title="Hent fra kunderegister"><CompanyCustomerSearch /></EntryDisclosure>
               <label className="sales-field">
                 <span>Kundenavn *</span>
                 <input
@@ -409,6 +444,7 @@ export default function SalesRequestForm({
               </label>
             </div>
 
+            <EntryDisclosure inline={isEditingRequest} title="Kontroller opplysningene">
             <div className="sales-form-preview">
               <h2>Oppsummering</h2>
 
@@ -433,36 +469,15 @@ export default function SalesRequestForm({
                 </span>
               </div>
             </div>
+            </EntryDisclosure>
 
-            <CompanyCustomerSave />
-            <div className="sales-form-actions">
-              <button
-                className="sales-secondary-button"
-                type="button"
-                onClick={onCancel}
-              >
-                Avbryt
-              </button>
-
-              <button
-                className="sales-primary-button"
-                type="submit"
-                data-general-offer-submit={isStoreOffer ? "true" : undefined}
-              >
-                <Save size={18} />
-                {isEditingRequest
-                  ? "Lagre endringer"
-                  : isStoreOffer
-                    ? "Opprett tilbud"
-                    : isDirectOffer
-                      ? "Opprett våtromstilbud"
-                      : "Lagre forespørsel"}
-              </button>
-            </div>
+            <EntryDisclosure inline={isEditingRequest} title="Lagre kunde for senere bruk"><CompanyCustomerSave /></EntryDisclosure>
+            {isEditingRequest ? formActions : null}
           </form>
           </CompanyCustomerProvider>
         </main>
       </div>
     </div>
+    </SalesEntryPanel>
   );
 }

@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "HR og KS/HMS følger arbeidsflaten fra design 03.6",
+  "change": "Miljømål BEGGE, bare design-Preview. Samme åpne toppfelt, lesbare felt/knapper og flate kort som Start. HR-snarveier samles i native Verktøy og oppsett, åpne under første oppstart. HR-felt får eksplisitt stabil etikett uten endret verdi/event. KS/HMS har Visning-velger på smal skjerm og samme grupper på PC; samme rollefiltrerte navigasjonsdata og native callback. Ingen backend, datamodell, tilgang, priser, e-post eller lagringsmotor endres. Publisert saksbehandlerrettelse er hentet inn fra main, og beholdes uendret.",
+  "verification": "Lokal faktisk Chromium: 88 nye HR/KS-kontroller på fem bredder (320–1920), register/søk, medarbeiderdialog, oppsett, bevart usendt tekst, native navigasjon, ingen runtimefeil eller utgående nettverk. Privat samtale-/sykefraværsinnhold er utelatt i denne isolerte flateprøven, og deres eksisterende suiter beholdes. HR-register-React og firmaets KS-publiserings-React består. Salgsflateprøven består 857 kontroller etter deterministisk venting på riktig skjemas DOM-commit og kontrollert state; CI769s race er bevart i historikken, ingen opprinnelig assertion fjernes. Skjermbilder viste ordkløyving og smalt rollemerke; begge rettet og inspisert. Nye browserkontroller kjøres fra eksisterende app-UX-suite uten workflowendring. Full critical/build og samlet CI/publiseringsstatus føres i PR295. Lokal browser bruker isolert npm Chromium153 etter at ordinær nedlasting ga ugyldig arkiv; CI bruker eksisterende låst runtime. Ingen innlogget helappreise, fysisk Safari eller reell utsending hevdes. Konsolidert sluttprøve med samtidig oppdatert commit-/hendelsesfixture: 875 salgskontroller PASS, med deterministisk sperret modusbytte og alle opprinnelige bevaringsassertioner. HR/KS-prøvens kontroll uten appens nye design-scope feiler på det opprinnelige gradienthodet, mens 88 kontroller består med designet. Full lokal Sandbox critical/build består. Ny full CI kreves på publisert sluttkandidat.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "HR Verktøy og oppsett og mobil KS/HMS Visning er nye brukerinnganger."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Kun presentasjon og samme eksisterende skjerm-ID/callback; ingen ny dataflyt eller backend."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen endring i prosjektets avhengigheter, miljø eller installasjon. Isolert lokal testbrowser er ikke en appavhengighet."
+    },
+    "module": {
+      "required": true,
+      "reason": "UI README forklarer native details, stabile HR-etiketter og felles navigasjonskilde."
+    }
+  }
+}

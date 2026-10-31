@@ -1,5 +1,5 @@
 import React,{createContext,useContext,useState} from 'react';
-import {ChevronDown,ChevronsUpDown,Search} from 'lucide-react';
+import {ChevronDown,ChevronsUpDown,Search,FolderOpen} from 'lucide-react';
 
 // View state only. All project data, searches and original action callbacks stay in the caller.
 const ListDisplay=createContext({expanded:false,revision:0});
@@ -26,6 +26,6 @@ export function ProjectListCardDisclosure({children,heading,onOpen,attention,cla
       <summary>{heading}<span className="projectListDisclosureLine"><span className="projectListDisclosureLabel">{open?'Skjul detaljer':'Vis detaljer'}<ChevronDown className="projectListChevron" size={15}/></span>{attention&&<span className="projectListAttention">{attention}</span>}</span></summary>
       <div className="projectListDetailContent">{children}</div>
     </details>
-    <button type="button" className="projectListPrimaryOpen" onClick={onOpen}>📂 Åpne</button>
+    <button type="button" className="projectListPrimaryOpen" onClick={onOpen}><FolderOpen size={17} aria-hidden="true"/>Åpne</button>
   </div>;
 }

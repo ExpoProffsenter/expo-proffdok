@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "KS/HMS rutineforvaltning og faktiske underflater i03.6",
+  "change": "Miljømål BEGGE, kun PR295/Preview. Ny scoped kshmsGovernance036.css samler faktiske rutineeditor/bibliotek, kildesammenligning, individuell/samlet firmagodkjenning, egne lesebekreftelser, oppfølging/revisjon/historikk og oppsett. To klasse/data-attributter og CSS-import i KshmsModule; ingen funksjonscallback eller forretningslogikk endret. PC bruker to feltkolonner og synlig lagrerad i rutineeditor, mobil samme felter i én kolonne. Nøytrale8px/1px rammer og lesbar16px/44px med full sen runtimeCSS. Ingen tilgangs-/navigasjons-/recovery-/backend-/mailendring.",
+  "verification": "Ny faktisk Chromium-prøve401 assertions/100 navngitte tilstand×bredde-visninger, ikke100 funksjoner. Ekte KshmsModule og native barn uten UI-stubber; isolert transport. Bibliotekets tre filtre/søk/valg/preview, egne tekstforslag/required/kilde-add-remove/samme DOM og kladd, enkelt/samlet publisering med tomt samtykke/tilbake, publisertv2/tidligerev1, alle åtte kildefelt/partial adoption, revisjonskladd/historikk/ansattes status, oppsett og egen enkelt/samlet bekreftelse. Fem bredder320/390/768/1363/1920 med kort skjerm. Negativ gammelCSS feiler på PC-kolonner; faktisk sen mobilCSS fjernet én kortkant, produktstilen er rettet uten svakere krav. Eksisterende publiseringReact87utkast/to managerroller og bulkReact87utgaver/tre roller samt faktisk source-updateReactPASS. CI803 feilet sja1920-fokusassertion som målte rett etter skjult DOM; separat holdt faktisk lesekall og native fokusretur består. Samme opprinnelige fokusassertion beholder kravet, men venter eksplisitt på faktisk fokusretur etter passiv React-cleanup, uten retry eller produktendring. KS981 beholder alle979 og legger to forsinket-lesing-assertions til. Full eksplisitt Sandbox critical/buildPASS. Samlet app-UX og ny CI/deploy/livebevis vedlikeholdes i PR295. Innlogget baseline068a52: rutineeditor, siste firmagodkjenningssteg uten samtykke, alle åtte kildefelt, revisjonsform/tom historikk, ansattes10-lesestatus, egne enkelt/samlet bekreftelser og tilgangsoppsett lest uten publisering/signering/mail/tilgangsvalg. Ny kandidats etterkontroll er separat. Fysiskmobil/Safari, alle levende roller/feil, PDF og resterende prosjekt-/plan-/dokumentreiser er ikke samlet attestert.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Samme knapper, native skjema og oppgaveflyt. Ingen ny funksjon eller endret veiledningskontrakt."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Kun scoped presentasjon/attributter og additive prøver; ingen ny eier eller dataflyt."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen avhengighets-, installasjons-, backend- eller miljøendring."
+    },
+    "module": {
+      "required": true,
+      "reason": "UI README beskriver native forvaltningsflate, PC-/mobiloppsett og full faktisk barnedekning."
+    }
+  }
+}
