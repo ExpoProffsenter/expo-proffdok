@@ -1,4 +1,5 @@
 import {fieldProblem,verifyFieldReadback} from './checklistFields.mjs';
+import {isExecutionChecklist,signatureInput,signatureProblem,verifySignatureReadback} from './checklistSignatures.mjs';
 export const checklistRunDraftKey = (userId,companyId,projectId,category) =>
  `expo:checklist-run:v1:${userId}:${companyId||'local'}:${projectId||'new'}:${category}`;
 export function readRunDraft(storage,key) {
@@ -38,8 +39,11 @@ export function completionProblem(definition,answers) {
  return '';
 }
 export async function commitChecklistRun({companyId,projectId,userId,draft,action,rpc,isCurrent=()=>true}) {
+ const legacyRetry=Boolean(draft.pendingAction)&&draft.signatureContract!=='execution-v1';
+ if(action==='complete'&&!legacyRetry&&isExecutionChecklist(draft.definition)){const missing=signatureProblem(draft.signatures,userId);if(missing)throw Object.assign(Error(missing),{code:'22023'});}
  const payload={id:draft.id,revision:draft.revision,predecessor_id:draft.predecessor_id||null,definition:draft.definition,answers:draft.answers};
- const result=await rpc('project_checklist_command',{p_company_id:companyId,p_project_id:projectId,p_action:action,p_request_id:draft.requestId,p_payload:payload});
+ if(!legacyRetry&&isExecutionChecklist(draft.definition))payload.signatures=signatureInput(draft.signatures);
+ const result=await rpc(!legacyRetry&&isExecutionChecklist(draft.definition)?'project_checklist_signed_command':'project_checklist_command',{p_company_id:companyId,p_project_id:projectId,p_action:action,p_request_id:draft.requestId,p_payload:payload});
  if(!isCurrent())return null;
  const state=await rpc('project_checklist_state',{p_company_id:companyId,p_project_id:projectId});
  if(!isCurrent())return null;
@@ -51,5 +55,6 @@ export async function commitChecklistRun({companyId,projectId,userId,draft,actio
   ||!sameRunValue(row.definition,draft.definition)||!sameRunValue(row.answers,result.run.answers))
   throw new Error('Lagringen kunne ikke bekreftes. Kladden er beholdt. Prøv samme lagring igjen.');
  for(const item of draft.definition.items)if(draft.definition.requirements?.[item]?.fields)verifyFieldReadback(draft.definition.requirements[item].fields,draft.answers[item]?.values,row.answers[item]?.values,userId);
+ if(!legacyRetry&&isExecutionChecklist(draft.definition))verifySignatureReadback(row.signatures,payload.signatures,{recordId:row.id,revision:row.revision,userId});
  return {state,run:row,answers:result.answers};
 }

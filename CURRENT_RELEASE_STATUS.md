@@ -4,7 +4,7 @@ Kenneth har gitt TEST OK for funksjonen i PR299 på appkandidat c791a7c1, full C
 
 CI816 traff en eksisterende månedssluttfeil i Bolig-testens JS-forventning (31.10 + seks kalendermåneder). QA-beregningen og faste månedsslutt-/skuddårsprøver er rettet uten å endre Bolig-produktkode. Ny full CI før merge føres i PR299.
 
-Neste krav er varig registrert i [oppgave300](https://github.com/ExpoProffsenter/expo-proffdok/issues/300): alle nye og eksisterende sjekklister skal ha påkrevd tegnet mobilsignatur fra fullfører, lik Overtagelse i prosjektet, og separat valgfri ekstern signatur. Samme inngang skal la brukeren opprette ny sjekkliste og velge Lagre som mal. Disse tilleggene er ikke implementert i den godkjente PR299-kandidaten; fullført historikk skal bevares uten oppdiktet signatur/backfill.
+Signatur-/firmamaloppfølging [oppgave300](https://github.com/ExpoProffsenter/expo-proffdok/issues/300) er under implementering på samme branch/Preview. Kenneth har presisert **bare vanlige sjekklister for utførelse**. Påkrevd tegnet signatur fra fullfører og separat valgfri ekstern signatur; mal kan legges til firmaets eksisterende sentral med dagens rettigheter og skille utkast/publisering. Prosjektering, Bolig/UE, vernerunder, risiko og Overtagelse er utenfor. Ingen backfill av fullført historikk. Ingen TEST OK for dette tillegget; Production er fortsatt PR299-versjonen. Signert Preview-kommando er streng, mens privat rollout=false bevarer nåværende demos gamle kommando til begge godkjente UI-er er oppdatert. [Endring og tester](docs/changes/execution-checklist-signatures-20261031.json).
 
 DesignPR295 fortsetter separat fra sitt maleditor-/vedleggscheckpoint. Ingen redesign-TEST OK.
 

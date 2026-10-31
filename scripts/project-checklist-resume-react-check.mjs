@@ -1,3 +1,4 @@
+import {installChecklistCanvas,drawChecklistSignature,mockChecklistSignatures} from './fixtures/checklist-signatures.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -36,6 +37,7 @@ let hold=false,resolveRead,pending=[],failRead=false;
 window.rpc=async(name)=>{assert.equal(name,'project_checklist_state','resume must not write data');if(hold)await new Promise(resolve=>{resolveRead=resolve;pending.push(resolve);});if(failRead)throw Error('QA network failure');return {context:{company_id:'company',project_id:'project',user_id:'user'},runs,checklist:{}};};
 const local={id:'local',revision:0,requestId:'local-request',definition:groups[2],answers:{Point:{comment:'Local retained draft'}}};
 window.localStorage.setItem(checklistRunDraftKey('user','company','project','Local'),JSON.stringify(local));
+installChecklistCanvas(window);
 window.eval((Array.isArray(bundle)?bundle[0]:bundle).output.find(value=>value.type==='chunk').code);
 const act=window.act,props={companyId:'company',projectId:'project',userId:'user',activeChecklistTemplate:groups,checklist:{},onSaved:async()=>{},showTools:false};
 const buttons=()=>[...window.document.querySelectorAll('button')];

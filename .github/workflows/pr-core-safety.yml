@@ -216,6 +216,7 @@ jobs:
         node scripts/customer-option-quantity-pdf-check.mjs
         node scripts/sales-draft-preview-browser-check.mjs
         node scripts/pro-catalog-order-browser-check.mjs
+        node scripts/execution-checklist-signatures-db-check.mjs
         node scripts/standalone-checklists-db-check.mjs
         node scripts/standalone-checklist-email-check.mjs
         node scripts/standalone-checklists-browser-check.mjs
