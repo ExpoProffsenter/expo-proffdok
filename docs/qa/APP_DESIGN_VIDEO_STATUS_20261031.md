@@ -4,6 +4,10 @@
 
 Brukeren31.10: «Vi har hengt oss litt opp i boligprosjekt og må ikke glemme både design og videoer av appen alle andre funksjoner og undermapper. KJØR». Fortsett i samlepakker på tvers, med samme PR295/Preview. «Virker ok» på boligpakken er ikke en uttrykkelig global redesign-TEST OK. Solgløtt forblir utsatt til design+QA, TEST OK, Production og kontrollert main→demo er fullført.
 
+## Samlet kontrollrapport – 31.10
+
+Fullførte prosjektkontroll-snapshots er nå integrert i samme rapports valg/PDF/utskrift, også uten KS/HMS-pakke. Lagret innhold, ordinære bilder og eventuelle begge tegninger følger med; historisk manglende tegning merkes. Eksakt valgt sett leses igjen etter bildehenting og før fil/utskrift. Native helper 58/dialog 88 krav og 9 PDF-/5 utskriftsforløp PASS, inklusive endret grunnlag/tilgang. Fire native filer/39 sider visuelt kontrollert, også CI-identisk Poppler PASS. [Scope/bevis](../changes/project-controls-combined-report-20261031.json). FullCI/READY og live etterkontroll dokumenteres i PR295. Tidligere åpenstatus for selve integrasjonen nedenfor er historisk; reelle roller/filbro/fysisk mobil og full app-/videodekning står fortsatt åpne.
+
 ## Ny samlet kontroll: roller og sluttpakker31.10
 
 Systemadminens faktiske tilgangs-/arbeidsprofilkort har370native kravPASS med full CSS/sen runtime og fem bredder; eksisterende firmapanel67PASS. Sandbox-RPC list_managed_work_profiles er gjenopprettet fra uendret main-SQL som20261031211714, med identiske brukere/firmaer/medlemskap/andre funksjoner og read-only roller. Live sammePreview laster profiler uten feil, uten ny tilgangstildeling. Tidligere «RPC mangler» nedenfor er historisk. [Scope/bevis](../changes/admin-access-closeout-036-20261031.json).

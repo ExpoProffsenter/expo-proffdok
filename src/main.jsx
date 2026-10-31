@@ -1297,7 +1297,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
     const portalAccessStorageKey = projectId && portalAccessRoleParam ? `expoProffDokPortalAccess:${projectId}:${portalAccessRoleParam}` : "";
     const isSystemAdminUser = !!authUser && profile?.system_role === "systemadmin";
     const isProjectSupportReadOnly = supportModeExplicit && isSystemAdminUser && !!projectId;
-    const kshmsProjectReport = useKshmsProjectReport({ context: kshmsContext, userId: authUser?.id, projectId, disabled: isReadOnly || isUnderleverandorView || isProjectSupportReadOnly });
+    const kshmsProjectReport = useKshmsProjectReport({ context: kshmsContext, userId: authUser?.id, projectId, resolveFileUrl: publicProjectFileUrl, disabled: isReadOnly || isUnderleverandorView || isProjectSupportReadOnly });
     const supportReadOnlyMainIsInteractive =
       isProjectSupportReadOnly && ["sales", "tilbud"].includes(tab);
     const supportProjectReadOnlyMessage = "Supportprosjekter er skrivebeskyttet. Avslutt supportmodus før du oppretter eller endrer prosjektdata.";

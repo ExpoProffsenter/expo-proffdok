@@ -1,3 +1,11 @@
+# Fullførte prosjektkontroller i samlet rapport – 31.10
+
+Samme PR295/faste Preview, miljømål BEGGE. Prosjektets fullførte lagrede kontroller kan nå velges i samlet rapport/PDF/utskrift, også for prosjektbrukere uten KS/HMS-pakken. Svar, bilder, historisk signatar, dato og eventuelle begge tegninger følger kontrollen. Eldre kontroller uten tegnet signatur merkes, utkast utelates og vanlige vedlegg listes med separat originaldeling. Hele valgt sett leses på nytt etter bildene og før fil/utskrift; endringer eller bortfalt tilgang stopper eksporten. Ingen ny signering, tilgang eller databasemigrering. [Scope og bevis](docs/changes/project-controls-combined-report-20261031.json).
+
+Ny native QA: helper 58, rapportdialog 88 krav, 9 PDF-forløp/5 utskriftsforløp PASS, inkludert prosjektbruker uten KS og samme revisjon med endret svar/tegning. CI-identisk Poppler PASS. Fire faktiske filer/39 sider rendret og visuelt kontrollert. Sandbox-lesekontrakt PASS med eksisterende aktør/prosjekt i read-only/rollback; prosjektet har ingen lagrede kontrollrader. Innlogget nettleser er tilgjengelig igjen i ny fane med samme økt. Sluttkandidat/fullCI/READY/live etterkontroll føres i PR295. Tidligere beskrivelser nedenfor av manglende samlet kontrollintegrasjon er historiske.
+
+Reelle roller/transport/fysisk mobil, resten av appens designavstemming og øvrige videoer/avspiller gjenstår. Fem eksisterende filmer og tidligere bevis beholdes. Ingen global TEST OK/Production/demo-synk; Solgløtt venter avtalt forløp.
+
 # Tilgangskort, Sandbox-paritet og ferske sluttpakke-PDF-er –31.10
 
 Samme PR295/faste Preview. Scoped UI-mål BEGGE; utførelse bare Preview. Native Systemadmin-tilgangs-/arbeidsprofilkort har faste24px avkryssinger,16px navn,14px forklaringer,6px rammer og44px etiketter etter sen runtimeCSS. Begge faktiske React-adaptere370krav og eksisterende firmapanel67kravPASS. Native felt, primærfirma, ventende/systemadmin-vakt og eksplisitt save/feil/retry beholdes. Ingen tilgangskode, rapportdatakilde eller recovery endres. [Scope og konkret bevis](docs/changes/admin-access-closeout-036-20261031.json); endelig fullCI/READY/innlogget CSS-etterkontroll i PR295.

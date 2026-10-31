@@ -1,8 +1,9 @@
 import {executionReportDocument,appendExecutionPdf,reportPhoto} from './kshmsExecutionReport.mjs';
 import { formatDeviationDate, formatDeviationDateTime } from '../deviations/deviationDates.mjs';
+import {checklistRunPdfDocument} from './kshmsDocumentPdf.mjs';
 
-export const emptyKshmsReport = () => ({ sjas: [], ruhs: [], rounds: [], risks: [] });
-export const kshmsReportSelectionKey = data => JSON.stringify(['sjas','ruhs','rounds','risks'].map(key=>(data?.[key]||[]).map(row=>[row.id,row.revision])));
+export const emptyKshmsReport = () => ({ sjas: [], ruhs: [], rounds: [], risks: [], runs: [] });
+export const kshmsReportSelectionKey = data => JSON.stringify(['sjas','ruhs','rounds','risks','runs'].map(key=>(data?.[key]||[]).map(row=>[row.id,row.revision])));
 const identity = value => value?.name || value?.email || 'Ikke oppgitt';
 const date = value => formatDeviationDate(value) || 'Ikke oppgitt';
 const when = value => formatDeviationDateTime(value) || 'Ikke oppgitt';
@@ -38,6 +39,13 @@ export function kshmsReportDocuments(data) {
     ] })),
     ...(data?.rounds||[]).map(executionReportDocument),
     ...(data?.risks||[]).map(executionReportDocument),
+    ...(data?.runs||[]).map(row=>{
+      const prepared=data.runDocuments?.find(document=>document.id===row.id);
+      if(prepared)return prepared;
+      const document=checklistRunPdfDocument(row);
+      if(document.blocks.some(block=>block.photos?.some(photo=>photo.file)))throw Error('Kontrollbildene er ikke klargjort. Åpne rapportvalget på nytt.');
+      return document;
+    }),
   ];
 }
 

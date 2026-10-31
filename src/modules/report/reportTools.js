@@ -51,7 +51,12 @@ export function createReportTools(deps = {}) {
     warrantyReadiness
   } = deps;
 
-    const writePrintableReport = (printWindow, kshmsReport = emptyKshmsReport(), title = "Expo ProffDok rapport") => {
+    const verifyPreparedReport=async snapshot=>{
+      if(snapshot.revalidate&&!await snapshot.revalidate())throw Error('Prosjekt eller tilgang er endret. Åpne rapporten på nytt.');
+      if(isKshmsReportCurrent&&!isKshmsReportCurrent(snapshot))throw Error('Prosjekt eller tilgang er endret. Åpne rapporten på nytt.');
+    };
+    const writePrintableReport = async (printWindow, kshmsReport = emptyKshmsReport(), title = "Expo ProffDok rapport") => {
+      try{await verifyPreparedReport(kshmsReport);}catch(error){if(printWindow&&!printWindow.closed)printWindow.close();alert(error.message);return;}
       const reportNode = document.querySelector(".report");
       if (!reportNode || (isKshmsReportCurrent && !isKshmsReportCurrent(kshmsReport)) || (kshmsReport.checkSelection && reportNode.dataset.kshmsReportSelection !== kshmsReportSelectionKey(kshmsReport))) {
         if (printWindow && !printWindow.closed) printWindow.close();
@@ -1983,6 +1988,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         addTocSection("RUH – rapport om uønsket hendelse", kshmsReport.ruhs.length > 0);
         addTocSection("Vernerunder / kontroller", (kshmsReport.rounds || []).length > 0);
         addTocSection("Risikovurderinger 5x5", (kshmsReport.risks || []).length > 0);
+        addTocSection("Fullførte prosjektkontroller", (kshmsReport.runs || []).length > 0);
         addTocSection("Tilbud / kontrakt", hasOfferContent);
         addTocSection("Overtagelse", projectHasOvertagelse(overtagelse));
         addTocSection("Vedlegg", hasAttachmentContent);
@@ -2442,6 +2448,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         }
 
         const generatedFileName = `${filenameSafe(project.projectName || project.address || project.customer || "FDV-rapport")}.pdf`;
+        await verifyPreparedReport(kshmsReport);
         if (isKshmsReportCurrent && !isKshmsReportCurrent(kshmsReport)) throw new Error('Prosjekt eller tilgang er endret. PDF-en ble ikke lastet ned. Åpne rapporten på nytt.');
         doc.save(generatedFileName);
         setPdfProgress("✅ Rapport klar", "PDF-en er generert og lastes ned.");
