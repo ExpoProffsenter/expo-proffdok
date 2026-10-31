@@ -27,7 +27,7 @@ window.client={auth:{getUser:async()=>({data:{user:user()}}),updateUser:async va
  const c=context();
  if(['get_my_personal_context','get_hr_context','get_kshms_context'].includes(name))return {data:c};
  if(['project_progress_mine','kshms_progress_mine'].includes(name)){
-  const plan={version:2,excludeSundays:true,activities:[{id:'qa-activity',title:'QA Min registrerte oppgave',trade:'Rørlegger',status:'Ikke startet',sessions:[{id:'qa-session',date:'2026-10-29',startTime:'08:00',endTime:'16:00'}]}]};
+  const plan={version:2,excludeSundays:true,activities:[{id:'qa-activity',title:'QA Min registrerte oppgave',trade:'Rørlegger',status:'Ikke startet',sessions:[{id:'qa-session',date:'2026-10-29',startTime:'08:00',endTime:'16:00',note:'QA Lang merknad skal vises helt, med hele instruksjonen og siste ord bevart. '+('Ekstra kontrolltekst for smal skjerm. '.repeat(8))+'SLUTTORD'}]}]};
   return {data:{context:c,active_date:'2026-10-29',plans:q().empty?[]:[{id:name,title:title(name==='project_progress_mine'?'QA Prosjektplan':'QA HMS-plan'),reference:'QA-001',address:'QA Prøveadresse',first_date:'2026-10-29',last_date:'2026-11-06'}],record:args.p_id?{id:name,title:title('QA Egen plan'),company_id:c.company_id,revision:1,plan}:null,next:null}};
  }
  if(name==='bolig_my_project_tasks')return {data:{context:c,ks_context:null,count:q().empty?0:1,items:q().empty?[]:[{id:'qa-bolig-task',kind:'progress',root_id:'qa-root',unit_id:'qa-unit',title:title('QA Kontroll av leveranse'),project_title:'QA Boligprosjekt',unit_number:'A101',date_label:'Planlagt ferdig',due_on:'2026-10-29'}],next:null}};

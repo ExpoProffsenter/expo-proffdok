@@ -85,7 +85,7 @@ function ActivityDrawer({participantHint,people=[],excludeSundays,activity,readO
    {band&&<section className="ks-plan-period-editor" aria-label={readOnly?'Planlagt periode':'Rediger periode'}>
     <div className="ks-plan-editor-pair"><label>Startdato<input type="date" value={band.from} onChange={e=>e.target.value&&applyPeriod({from:e.target.value})}/></label><label>Sluttdato<input type="date" value={band.to} onChange={e=>e.target.value&&applyPeriod({to:e.target.value})}/></label></div>
     <div className="ks-plan-editor-pair"><label>Fra kl.<input type="time" value={band.startTime} onChange={e=>e.target.value&&applyPeriod({startTime:e.target.value})}/></label><label>Til kl.<input type="time" value={band.endTime} onChange={e=>e.target.value&&applyPeriod({endTime:e.target.value})}/></label></div>
-    <label>Merknad<input maxLength={5000} value={band.note} onChange={e=>applyPeriod({note:e.target.value})}/></label>
+    {readOnly?<div className="ks-plan-readonly-note"><strong>Merknad</strong><p>{band.note||'Ingen merknad registrert.'}</p></div>:<label>Merknad<input maxLength={5000} value={band.note} onChange={e=>applyPeriod({note:e.target.value})}/></label>}
     <small>{excludeSundays?'Søndager er utelatt. Lørdager er med.':'Perioden omfatter alle datoene, også helg.'}{!readOnly&&' Del opp perioder for andre fridager.'}</small>
     {!readOnly&&<button type="button" className="secondary" onClick={()=>onChange(replaceBand(activity,band,[]))}>Fjern valgt periode</button>}
    </section>}

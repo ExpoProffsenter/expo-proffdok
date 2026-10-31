@@ -98,3 +98,5 @@
 .ks-plan-project-buttons{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .ks-plan-project-tools-content .progress-export-toolbar{margin:0}
 @media(max-width:700px){.ks-plan-project-identity{gap:4px}.ks-plan-project-tools-content{gap:6px}.ks-plan-project-buttons>button{flex:1;min-width:130px;white-space:normal}}
+
+.ks-plan-readonly-note{min-width:0}.ks-plan-readonly-note p{white-space:pre-wrap;overflow-wrap:anywhere;padding:10px;border:1px solid #d5e3e9;border-radius:8px;background:#fff;color:#10212b;line-height:1.5}
