@@ -1239,28 +1239,28 @@ export function createReportTools(deps = {}) {
           if (warrantyIssuedForReport()) addParagraph(`✓ ${getWarrantyYears(warranty)} års dokumentert tetthetsgaranti er utstedt. Garantinummer: ${warranty.guaranteeNumber || "Ikke oppgitt"}.`, { size: 8.5, lineHeight: 4.4, bold: true });
           else if (warranty?.enabled) addParagraph("Tetthetsgaranti er aktivert for prosjektet, men er ikke utstedt. Garantibevis inngår derfor ikke i denne rapporten.", { size: 8.5, lineHeight: 4.4 });
         };
-        const addChecklistCategoryTitle = (category, count = 0) => {
-          if (y > pageHeight - 54) {
-            doc.addPage();
-            y = 16;
-          } else {
-            y += 4;
-          }
-          ensureSpace(18);
+        const addChecklistCategoryTitle = (category, count = 0, continued = false) => {
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(10.5);
+          const lines = doc.splitTextToSize(safeText(`${category}${continued ? " – fortsettelse" : ""}`), contentWidth - (count ? 33 : 10));
+          const height = Math.max(12, 7 + lines.length * 4.5);
+          // Keep the measured heading and at least the first ordinary row together.
+          if (y + height + 22 > pageHeight - 18) { doc.addPage(); y = 16; }
+          else y += 4;
           doc.setDrawColor(191, 219, 254);
           doc.setFillColor(239, 246, 255);
-          doc.roundedRect(margin, y, contentWidth, 12, 2.5, 2.5, "FD");
+          doc.roundedRect(margin, y, contentWidth, height, 2.5, 2.5, "FD");
           doc.setFont("helvetica", "bold");
           doc.setFontSize(10.5);
           doc.setTextColor(12, 42, 82);
-          doc.text(safeText(category), margin + 5, y + 7.7);
+          doc.text(lines, margin + 5, y + 7.7, { lineHeightFactor: 1.215 });
           if (count) {
             doc.setFont("helvetica", "normal");
             doc.setFontSize(7.4);
             doc.setTextColor(71, 85, 105);
             doc.text(`${count} punkt`, pageWidth - margin - 5, y + 7.7, { align: "right" });
           }
-          y += 17;
+          y += height + 5;
         };
         const addChecklistStatusCard = async (category, item, value = {}) => {
           const status = value?.status || "";
@@ -1274,6 +1274,8 @@ export function createReportTools(deps = {}) {
           const isNotRelevant = cleanStatus === "ikke aktuelt";
           const isOk = ["ok", "utført", "utfort"].includes(cleanStatus);
           const statusLabel = isOk ? "OK" : isClosedDeviation ? "LUKKET AVVIK" : isOpenDeviation ? "ÅPENT AVVIK" : isNotRelevant ? "IKKE AKTUELT" : (status || "IKKE VURDERT");
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(isOk || isNotRelevant ? 8.8 : 9.2);
           const textLines = doc.splitTextToSize(safeText(item), contentWidth - 38);
           const commentLabel = isOpenDeviation || isClosedDeviation ? "Opprinnelig avvik" : "Kommentar";
           const commentLines = comment ? doc.splitTextToSize(`${commentLabel}: ${comment}`, contentWidth - 20) : [];
@@ -1282,7 +1284,16 @@ export function createReportTools(deps = {}) {
           const rowH = isCompact
             ? Math.max(10.5, 7.2 + textLines.length * 4.2)
             : Math.max(18, 12 + textLines.length * 4.5 + commentLines.length * 3.8 + closeLines.length * 3.8);
+          const beforeRowPage = doc.internal.getCurrentPageInfo().pageNumber;
           ensureSpace(rowH + (pointPhotos.length ? 49 : 4));
+          if (doc.internal.getCurrentPageInfo().pageNumber !== beforeRowPage) {
+            doc.setFont("helvetica", "bold"); doc.setFontSize(10.5);
+            const headingLines = doc.splitTextToSize(safeText(`${category} – fortsettelse`), contentWidth - 10);
+            const headingSpace = Math.max(12, 7 + headingLines.length * 4.5) + 9;
+            // Oversized legacy cards retain their existing flow; a repeated heading
+            // must never push a formerly fitting card beyond the bottom margin.
+            if (y + headingSpace + rowH + (pointPhotos.length ? 49 : 4) <= pageHeight - 18) addChecklistCategoryTitle(category, 0, true);
+          }
 
           if (isCompact) {
             const iconColor = isOk ? [22, 163, 74] : [100, 116, 139];

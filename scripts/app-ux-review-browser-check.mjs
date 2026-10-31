@@ -131,3 +131,5 @@ await import("./warranty-terms-pdf-check.mjs");
 await import("./report-warranty-pdf-check.mjs");
 
 await import("./project-checklist-signed-pdf-check.mjs");
+
+await import("./warranty-workspace-browser-check.mjs");

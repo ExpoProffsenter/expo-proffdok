@@ -4589,6 +4589,10 @@
           {
             "ref": "closeout-warranty-report-layout-20261031",
             "mapping": "Native full renderer24:13/15/13sider, locked/no writes, unlocked existing receipt, full certificate fields and long handover remarks. Helreise/alle roller/signerte prosjekt-snapshots/filbro fortsatt åpent."
+          },
+          {
+            "ref": "warranty-point-groups-pdf-continuations-20261031",
+            "mapping": "Scoped native garantiwrapper/editor: AEB14/FDF19 + dynamisk produktpunkt, samme kontraktgater og låst/legacy-historikk. Native komplett PDF bruker alle originale punkter og gjentar kategorier. Presise sluttfiler/sider/CI/bilder i PR295; innlogget FDF/all-role/filbro/full-app picker fortsatt åpent."
           }
         ]
       },
@@ -4598,7 +4602,8 @@
         "screenshots": [],
         "reviewer": null,
         "partial_evidence_refs": [
-          "current-project-subflows-036"
+          "current-project-subflows-036",
+          "warranty-point-groups-pdf-continuations-20261031"
         ]
       },
       "remaining_checks": [
@@ -4682,6 +4687,10 @@
           {
             "ref": "boxed-signed-pdf-layout-20261031",
             "mapping": "Egen prosjektkontroll-PDF63 nativekrav,2/4/1/2sider, egen/dobbel/historisk/kladd, full avsender/tittel, native signaturbilder og revidert sistelesing. Øvrige native eksport-/printregresjoner i PR295. Ikke komplett signert kontrollhistorikk i samlerapport."
+          },
+          {
+            "ref": "warranty-point-groups-pdf-continuations-20261031",
+            "mapping": "Scoped native garantiwrapper/editor: AEB14/FDF19 + dynamisk produktpunkt, samme kontraktgater og låst/legacy-historikk. Native komplett PDF bruker alle originale punkter og gjentar kategorier. Presise sluttfiler/sider/CI/bilder i PR295; innlogget FDF/all-role/filbro/full-app picker fortsatt åpent."
           }
         ]
       },
@@ -4691,7 +4700,8 @@
         "screenshots": [],
         "reviewer": null,
         "partial_evidence_refs": [
-          "current-report-checklist-stock"
+          "current-report-checklist-stock",
+          "warranty-point-groups-pdf-continuations-20261031"
         ]
       },
       "remaining_checks": [
@@ -16721,6 +16731,17 @@
       "baseline_pages": 10,
       "machine_page_check": "No empty pages or text beyond page edge in after PDFs; exact native sources and hashes retained in artifact manifest",
       "signature_layout": "Metadata and original drawing stay together when measured block fits on a fresh page; original image bytes and basis retained"
+    },
+    {
+      "ref": "warranty-point-groups-pdf-continuations-20261031",
+      "baseline": "cd4f31bbda2422ab524c0e7f5b1d5ae7f99efdf5",
+      "scope": "Native garanti screen + measured/repeated checklist category only",
+      "source_preservation": "Original AEB14/FDF19, dynamic product point; no changed text/status/guarantee/signature/receipt/export source",
+      "limitations": [
+        "Not logged-in FDF/all-role/full-app picker proof",
+        "Native network-isolated QR-provider fallback only",
+        "No actual issue/signature/mail/customer writes; PR294/298 separate"
+      ]
     }
   ]
 }

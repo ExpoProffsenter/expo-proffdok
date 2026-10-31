@@ -127,7 +127,8 @@ try{
  eq(await page.getByRole('button',{name:'Trekk tilbake utstedelse',exact:true}).count(),0,'locked history cannot withdraw issuance');
  eq(await page.getByText('QA-LEGACY-ONLY',{exact:true}).count(),1,'native archive retains original guarantee number');
  await page.getByText('Vis mottaker og vilkårsforklaring',{exact:true}).click();
- eq(await page.getByLabel('Mottaker',{exact:true}).isDisabled(),true,'receipt remains read only');
+ eq(await page.locator('.warrantyReceiptValue').first().innerText(),'Mottaker\n\nQA kunde','receipt remains complete read-only text');
+ eq(await page.locator('.warrantyReceipt input,.warrantyReceipt textarea').count(),0,'receipt has no editable control');
  for(const width of [320,390,768,1363,1920]){
   await page.setViewportSize({width,height:600});await measure('warranty-issued-'+width);
   eq(await page.locator('.warranty-workspace .checklistSummaryBadges>span').evaluateAll(es=>es.every(e=>e.scrollWidth<=e.clientWidth+1&&getComputedStyle(e).fontSize==='16px')),true,'issued requirements remain readable '+width);

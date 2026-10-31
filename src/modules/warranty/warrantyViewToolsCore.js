@@ -140,6 +140,14 @@ export function createWarrantyViewTools({
     const warrantyValidUntil = makeWarrantyValidUntil(overtagelse?.dato || project?.date || "", warranty);
     const warrantyStatusText = issued ? (warrantyValidUntil && new Date(warrantyValidUntil) < /* @__PURE__ */ new Date() ? "Utgått" : "Gyldig") : readiness?.ready ? "Klar til utstedelse" : "Ikke utstedt";
     const warrantyCanEdit = !isProjectLocked && !issued;
+    // Presentation only: preserve source order, original point objects and jump handlers.
+    const missingPointGroups = (readiness?.missingSystemChecklistPoints || []).reduce((groups, point) => {
+      const category = point.category || "Andre garantipunkter";
+      let group = groups.find((item) => item.category === category);
+      if (!group) { group = { category, points: [] }; groups.push(group); }
+      group.points.push(point);
+      return groups;
+    }, []);
     const downloadWarrantyTermsPdf = async () => {
       try {
         const module = await import("https://esm.sh/jspdf@2.5.1");
@@ -206,9 +214,15 @@ export function createWarrantyViewTools({
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: `📑 Garantivilkår ${warrantyYears} år` }),
           (0, import_jsx_runtime.jsxs)("details", {className:"module-guide ux-reference", children:[(0, import_jsx_runtime.jsx)("summary", {children:"Vis mottaker og vilkårsforklaring"}),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Garantivilkår aksepteres automatisk når kunden signerer overtagelsen og prosjektet fullføres. Kunden trenger ikke signere eller bekrefte vilkår et eget sted." }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Mottaker", value: warranty?.termsReceiptName || overtagelse?.signKunde || project?.customer || "Kunde", disabled: true, onChange: () => {} }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Kvitteringsstatus", value: warranty?.termsAccepted || readiness?.termsAccepted ? `Bekreftet sammen med overtagelse${warranty?.termsAcceptedAt ? " " + new Date(warranty.termsAcceptedAt).toLocaleString("no-NO") : ""}` : "Bekreftes automatisk ved fullført overtagelse", disabled: true, onChange: () => {} })
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "grid warrantyReceipt", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "out warrantyReceiptValue", children: [
+              (0, import_jsx_runtime.jsx)("b", { children: "Mottaker" }),
+              (0, import_jsx_runtime.jsx)("p", { children: warranty?.termsReceiptName || overtagelse?.signKunde || project?.customer || "Kunde" })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "out warrantyReceiptValue", children: [
+              (0, import_jsx_runtime.jsx)("b", { children: "Kvitteringsstatus" }),
+              (0, import_jsx_runtime.jsx)("p", { children: warranty?.termsAccepted || readiness?.termsAccepted ? `Bekreftet sammen med overtagelse${warranty?.termsAcceptedAt ? " " + new Date(warranty.termsAcceptedAt).toLocaleString("no-NO") : ""}` : "Bekreftes automatisk ved fullført overtagelse" })
+            ] })
           ] })
           ]}),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", flexWrap: "wrap" }, children: [
@@ -270,7 +284,12 @@ export function createWarrantyViewTools({
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: selectedSystem.id === "sopro-aeb-815" ? "Grunnlaget er Sopro AEB 815 foliemembran med SINTEF TG 20918." : "Grunnlaget er Sopro FDF 525/527 smøremembran med SINTEF TG 20987." }),
           (readiness?.missingSystemChecklistPoints || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "warrantyMissingList", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Manglende garantipunkter:" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "warrantyMissingButtons", children: readiness.missingSystemChecklistPoints.map((point) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary warrantyJumpButton", onClick: () => goToWarrantyPoint(point), children: `Gå til: ${point.item}` }, point.anchorId)) })
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "warrantyMissingGroups", children: missingPointGroups.map((group) =>
+              (0, import_jsx_runtime.jsxs)("div", { className: "warrantyMissingGroup", children: [
+                (0, import_jsx_runtime.jsx)("h4", { children: group.category }),
+                (0, import_jsx_runtime.jsx)("div", { className: "warrantyMissingButtons", children: group.points.map((point) => (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary warrantyJumpButton", onClick: () => goToWarrantyPoint(point), children: `Gå til: ${point.item}` }, point.anchorId)) })
+              ] }, group.category)
+            ) })
           ] })
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("details", { className: "module-guide ux-reference warrantyGrounding", children: [

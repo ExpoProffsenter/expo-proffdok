@@ -1,3 +1,7 @@
+# Garanti – kategorier og PDF-fortsettelse31.10.2026
+
+Samme PR295/Preview/Sandbox: originale Sopro-mangler per kategori, lesbar full kvittering og gjentatt målt PDF-kategori ved sideskift. [Endring og presise grenser](docs/changes/warranty-point-groups-pdf-continuations-20261031.json). Endelig kandidat/CI/READY/tester/bilder i PR295. BEGGE; ingen redesign-TEST OK/Production/main/demo.
+
 # Native PDF – avsender, titler og signaturstørrelse31.10.2026
 
 Eksisterende PR295 fortsetter med målt avsender/fulle fortsettelsestitler og proporsjonale signaturbilder i delt boxed-renderer. Egen kontroll-PDF beholder samme signerte data og sistelesing; komplett sluttrapports kontrollhistorikk er et separat åpent punkt. [Endring og native tester](docs/changes/boxed-signed-pdf-layout-20261031.json). Full kandidat/CI/READY og varige bilder vedlikeholdes i PR295. Miljømål BEGGE, utførelse bare Preview/Sandbox. Ingen redesign-TEST OK eller Production/merge/demo-synk.
