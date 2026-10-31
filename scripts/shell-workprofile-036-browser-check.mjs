@@ -61,7 +61,17 @@ try{
  for(const width of [320,390,768,1363,1920]){
   await page.setViewportSize({width,height:360});
   eq(await required.locator('.workProfileRequiredCard').evaluate(n=>{const r=n.getBoundingClientRect();return r.top>=0&&r.left>=0&&r.right<=innerWidth&&r.bottom<=innerHeight&&n.scrollHeight>=n.clientHeight;}),true,'required selection fits short screen '+width);
-  eq(await required.getByRole('button').evaluateAll(nodes=>nodes.every(n=>n.getBoundingClientRect().height>=44&&getComputedStyle(n).fontSize==='16px')),true,'required options remain readable '+width);
+  // Responsive adapters can reattach the same surface after the viewport
+  // changes. Snapshot connected nodes together, then measure the layout box:
+  // a translateY hover transition can quantize a 44px rect to 43.999984px.
+  const optionHandle=await page.waitForFunction(()=>{
+   const nodes=[...document.querySelectorAll('.workProfileRequiredCard button')];
+   if(nodes.length!==3||nodes.some(n=>!n.isConnected||n.offsetHeight===0))return null;
+   return nodes.map(n=>({height:n.offsetHeight,minHeight:getComputedStyle(n).minHeight,font:getComputedStyle(n).fontSize}));
+  });
+  const options=await optionHandle.jsonValue();await optionHandle.dispose();
+  eq(options.length,3,'all required choices remain mounted '+width);
+  eq(options.every(n=>n.height>=44&&Number.parseFloat(n.minHeight)>=44&&n.font==='16px'),true,'required options remain readable '+width);
  }
  await page.keyboard.press('Escape');eq(await required.isVisible(),true,'required initial selection cannot be bypassed by Escape');
  await required.getByRole('button',{name:'QA Firma C',exact:true}).click();await page.getByText('QA byttefeil – ingen lagring',{exact:true}).waitFor();eq(await required.isVisible(),true,'existing failed-selection state remains open');eq(await page.evaluate(()=>window.qa.writes),['c'],'only deliberate fixture choice invokes existing setter');

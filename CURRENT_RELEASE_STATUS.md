@@ -8,6 +8,8 @@ Fersk native QA:4signerte/legacy/utkast-PDF-er63krav; samlet KS/HMS7PDF/4print; 
 
 Fersk PDF-kontroll avdekket manglende vernerunde-/risikooverskrifter i innholdslisten. To betingede linjer er rettet, og ny faktisk PDF-prøve beviste feil før og valgt/ikke-valgt/utkast etter. Begge PDF-lesere PASS; berørte20sider visuelt kontrollert på nytt. Prøven inngår nå i eksisterende app-ux-CI med allerede installert Poppler. Sandbox Golden19/19 og HR/KS-kurs5/5 preflight PASS, read-only/rollback.
 
+CI853 stoppet på profiltestens måleartefakt ved768: hover-translate gav43.999984px for en44px knapp. Diagnostikk gjenskapte dette og frakoblede elementer under responsive reattach. Testen måler nå atomisk tilkoblede layoutbokser og krever alle3valg, minst44px høyde/min-height og16px; normal62 og500responsive visninger/1547kravPASS. Appkoden er uendret etter51fe2501. Full nesteCI/READY føres i PR295;853 er ikke grønn. Live låst reserveprosjekts Rapport/4tomme KS/HMS-grupper ble lest; skynettleseren stoppet ved eksisterende PDF-bekreftelse, ingen fil er attestert. Prosjektrad/data/lås/tidspunkt er identisk før/etter.
+
 Neste: avgrens samlet sluttrapports signerte kontrollhistorikk og gjenstående roller/transport, deretter resterende videoer i godkjent mal. Tidligere bevis og fem videoer beholdes. Ingen global redesign-TEST OK, merge, Production eller demo-synk. Solgløtt venter avtalt releaseforløp.
 
 Kort prøve: Alle områder → Systemadmin → Brukere og roller → Expo Proffsenter. Arbeidsprofilnavn og avkryssing skal stå ved siden av hverandre og tidligere feil være borte. Lukk firma uten å endre tilgang.
