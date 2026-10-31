@@ -1,3 +1,4 @@
+import {signatureA,mockChecklistSignatures} from './fixtures/checklist-signatures.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {checklistRunDraftKey,runDefinition,answersForDefinition,commitChecklistRun,completionProblem,currentRunAnswers,readRunDraft,sameRunValue} from '../src/modules/checklist/checklistRuns.mjs';
@@ -18,12 +19,13 @@ assert.equal(answersForDefinition(definition,{Point:{status:'Ok',comment:'Previo
 assert.equal(answersForDefinition(definition,{Point:{status:'Avvik',comment:'Unresolved'}},true).Point.comment,'Unresolved');
 assert.equal(currentRunAnswers({category:'Control',status:'draft',definition,answers:{Point:{status:'Avvik',comment:'Local'}}},{Control:{Point:{ks_deviation_id:'case',status:'Lukket avvik'}}}).Point.status,'Lukket avvik');
 assert.equal(readRunDraft({getItem:()=>'{broken'},'key'),null);assert(sameRunValue({b:1,a:2},{a:2,b:1}));
-const draft={id:'run',revision:0,requestId:'request',definition,answers:{Point:{status:'Ok'}}};
+const draft={signatures:{own:{image:signatureA}},id:'run',revision:0,requestId:'request',definition,answers:{Point:{status:'Ok'}}};
 for(const failure of ['write','read','foreign','changed','late','']){
  let calls=0;
  const result=commitChecklistRun({companyId:'company',projectId:'project',userId:'user',draft,action:'save',isCurrent:()=>failure!=='late',rpc:async name=>{
   calls++;const run={...draft,company_id:'company',project_id:'project',revision:1,status:'draft'},context={company_id:'company',project_id:'project',user_id:'user'};
-  if(name==='project_checklist_command'){if(failure==='write')throw Error('Failed write');return {context,run,answers:draft.answers};}
+  run.signatures=mockChecklistSignatures(draft.signatures,draft.id,run.revision,'user');
+  if(['project_checklist_command','project_checklist_signed_command'].includes(name)){if(failure==='write')throw Error('Failed write');return {context,run,answers:draft.answers};}
   if(failure==='read')throw Error('Failed read');
   return {context:{...context,company_id:failure==='foreign'?'other':'company'},runs:[{...run,answers:failure==='changed'?{Point:{status:'Avvik'}}:run.answers}]};
  }});
@@ -39,7 +41,7 @@ console.log('critical-project-checklist-runs-check: OK — actual order template
 
 {
 const definition={category:'Egne sjekkpunkter – Rørlegger',items:['Rør','Merking'],requirements:{Rør:{comment_required:true}}};
-const draft={id:'run',revision:0,requestId:'request',definition,answers:{Rør:{status:'Ok',comment:'Kontrollert'},Merking:{status:'Ikke aktuelt'}}};
+const draft={signatures:{own:{image:signatureA}},id:'run',revision:0,requestId:'request',definition,answers:{Rør:{status:'Ok',comment:'Kontrollert'},Merking:{status:'Ikke aktuelt'}}};
 assert.equal(completionProblem(definition,draft.answers),'');
 assert.match(completionProblem(definition,{...draft.answers,Rør:{status:'Ok'}}),/kommentar/);
 assert.match(completionProblem(definition,{...draft.answers,Merking:{}}),/Vurder/);
@@ -57,10 +59,11 @@ assert.equal(currentRunAnswers({...draft,category:definition.category,status:'co
 for(const failure of ['', 'command','read','foreign','changed','late']){
  let calls=0;
  const row={...draft,company_id:'company',project_id:'project',revision:1,status:'completed'};
+ row.signatures=mockChecklistSignatures(draft.signatures,draft.id,row.revision,'user');
  const context={company_id:'company',project_id:'project',user_id:'user'};
  const result=commitChecklistRun({companyId:'company',projectId:'project',userId:'user',draft,action:'complete',isCurrent:()=>failure!=='late',rpc:async(name,args)=>{
   calls++;
-  if(name==='project_checklist_command'){
+  if(['project_checklist_command','project_checklist_signed_command'].includes(name)){
    assert.equal(args.p_request_id,'request');assert.equal(args.p_payload.revision,0);
    if(failure==='command')throw Error('lost response');
    return {context,run:row,answers:row.answers};
@@ -119,3 +122,19 @@ assert.deepEqual(supportCalls[0],{name:'project_checklist_support_state',args:{p
 supportRpc('work_profile_company_profile',{p_company_id:'target'});
 for(const [name,args] of [['project_checklist_command',{}],['project_checklist_state',{p_company_id:'wrong',p_project_id:'project'}],['work_profile_company_profile',{p_company_id:'wrong'}]])assert.throws(()=>supportRpc(name,args));
 console.log('Support read adapter PASS: exact project/firm only, verified PDF read route and no command forwarding.');
+
+// An upgrade must not change the fingerprint of a pre-upgrade, unacknowledged
+// completion. Only that existing pending attempt uses the legacy transport.
+{
+ const legacy={id:'legacy-run',revision:0,requestId:'legacy-request',pendingAction:'complete',definition:{category:'Utførelse',items:['Point']},answers:{Point:{status:'Ok'}}};
+ let writes=0;
+ const context={company_id:'company',project_id:'project',user_id:'user'};
+ const row={...legacy,company_id:'company',project_id:'project',revision:1,status:'completed'};
+ const result=await commitChecklistRun({companyId:'company',projectId:'project',userId:'user',draft:legacy,action:'complete',rpc:async(name,args)=>{
+  if(name==='project_checklist_state')return {context,runs:[row]};
+  assert.equal(name,'project_checklist_command');assert.equal(args.p_request_id,'legacy-request');assert(!Object.hasOwn(args.p_payload,'signatures'));writes++;return {context,run:row,answers:row.answers};
+ }});
+ assert.equal(result.run.status,'completed');assert.equal(writes,1);
+ await assert.rejects(commitChecklistRun({companyId:'company',projectId:'project',userId:'user',draft:{...legacy,pendingAction:null},action:'complete',rpc:async()=>{throw Error('Unsigned new completion must not reach transport');}}),/Tegn din signatur/);
+ console.log('Execution signature contract PASS: legacy unknown completion keeps exact endpoint/request/payload; new completion cannot omit own ink.');
+}
