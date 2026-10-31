@@ -493,7 +493,7 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
 
     const visibleTopicKeys=visibleGuideSections.map(item=>item.key).join("|");
     const videoScope=[authUser?.id,helpAccess?.userId,visibleTopicKeys,kshmsContext?.company_id,hrContext?.company_id,boligContext?.company_id,boligContext?.enabled,boligContext?.user_id].join(':');
-    const videoGuides=availableVideoGuides({authenticated:!!authUser?.id&&helpAccess?.userId===authUser.id,topics:visibleGuideSections.map(item=>item.key),backendTarget:import.meta.env.VITE_EXPO_BACKEND_TARGET,canUseBolig:boligContext?.user_id===authUser?.id&&boligContext?.enabled===true});
+    const videoGuides=availableVideoGuides({authenticated:!!authUser?.id,topics:visibleGuideSections.map(item=>item.key),backendTarget:import.meta.env.VITE_EXPO_BACKEND_TARGET,canUseBolig:boligContext?.user_id===authUser?.id&&boligContext?.enabled===true});
 
     (0, import_react.useEffect)(()=>setOpenGuideKey(previous=>visibleTopicKeys.split("|").includes(previous)?previous:""),[visibleTopicKeys]);
     (0, import_react.useEffect)(()=>setOpenGuideKey(""),[authUser?.id]);
