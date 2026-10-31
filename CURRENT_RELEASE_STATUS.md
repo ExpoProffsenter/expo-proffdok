@@ -1,3 +1,7 @@
+# Komplett sluttrapport/garanti – nattcheckpoint2
+
+Kun PR295/Preview/Sandbox. [Endring og faktisk testdekning](docs/changes/closeout-warranty-report-layout-20261031.json). Full kandidat/CI/READY/bildeleveranse vedlikeholdes i PR295. Ingen redesign-TEST OK eller Production/main/demo-endring.
+
 # Nattarbeid31.10 – garanti/PDF i PR295
 
 Ny avgrenset garanti/PDF-pakke, kun Preview/Sandbox. [Endring/tester](docs/changes/warranty-pdf-design-036-20261031.json). Eksakt kandidat, CI og deploy/live føres i PR295; øvrige145-reiser og separatePR294/298/305 forblir åpne. Ingen redesign-TEST OK eller produksjonsendring.

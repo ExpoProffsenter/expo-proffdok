@@ -581,6 +581,10 @@ export function createReportTools(deps = {}) {
           doc.setFillColor(255, 255, 255);
           doc.roundedRect(8, 8, pageWidth - 16, pageHeight - 20, 5, 5, "F");
 
+          if (!coverImageUrl) {
+            doc.setFillColor(12,42,82);
+            doc.roundedRect(12,12,pageWidth-24,122,3,3,"F");
+          }
           if (coverImageUrl) {
             const cover = await loadPdfImage(coverImageUrl);
             if (cover && !cover.error) {
@@ -632,9 +636,14 @@ export function createReportTools(deps = {}) {
 
           const coverTextX = margin + 7;
           const coverTextMaxWidth = pageWidth - 58;
-          const coverTitleLines = doc.splitTextToSize(safeText(productTitle).toUpperCase(), coverTextMaxWidth).slice(0, 2);
           doc.setFont("helvetica", "bold");
-          doc.setFontSize(18.2);
+          let coverTitleSize = 18.2;
+          doc.setFontSize(coverTitleSize);
+          let coverTitleLines = doc.splitTextToSize(safeText(productTitle).toUpperCase(), coverTextMaxWidth);
+          while (coverTitleLines.length > 4 && coverTitleSize > 10) {
+            coverTitleSize -= 1; doc.setFontSize(coverTitleSize);
+            coverTitleLines = doc.splitTextToSize(safeText(productTitle).toUpperCase(), coverTextMaxWidth);
+          }
           // FASE 15.1.7C: tittel skaleres tryggere og brytes innenfor tekstfeltet.
           // Dette hindrer at lange prosjektnavn forsvinner ut av høyre kant.
           if (doc.setGState) doc.setGState(new doc.GState({ opacity: 0.50 }));
@@ -643,10 +652,9 @@ export function createReportTools(deps = {}) {
           if (doc.setGState) doc.setGState(new doc.GState({ opacity: 1 }));
           doc.setTextColor(255, 255, 255);
           doc.text(coverTitleLines, coverTextX, 66, { lineHeightFactor: 1.06 });
-          const coverAddressLines = doc.splitTextToSize(safeText(addressLine || project.customer || "Prosjekt"), coverTextMaxWidth).slice(0, 1);
-          doc.setFont("helvetica", "normal");
-          doc.setFontSize(10.2);
-          const addressY = coverTitleLines.length > 1 ? 94 : 90;
+          doc.setFont("helvetica", "normal"); doc.setFontSize(10.2);
+          const coverAddressLines = doc.splitTextToSize(safeText(addressLine || project.customer || "Prosjekt"), coverTextMaxWidth);
+          const addressY = Math.max(90, 66 + coverTitleLines.length * coverTitleSize * .352778 * 1.06 + 8);
           if (doc.setGState) doc.setGState(new doc.GState({ opacity: 0.42 }));
           doc.setTextColor(0, 0, 0);
           doc.text(coverAddressLines, coverTextX + 0.45, addressY + 0.45);
@@ -1595,6 +1603,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           y += h + 7;
         };
 
+        const warrantyFooterPages = new Set();
         const addWarrantyCertificatePages = async () => {
           if (!warrantyIssuedForReport() || !warrantyReadiness?.selectedSystem || !hasValue(warranty?.guaranteeNumber)) return;
           const selectedSystem = warrantyReadiness.selectedSystem;
@@ -1618,19 +1627,20 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           const green = [22, 163, 74];
           const gray = [100, 116, 139];
           const border = [214, 226, 236];
-          const pageBottom = pageHeight - 16;
+          const pageBottom = pageHeight - 22;
           const resetPage = () => {
             y = 16;
             doc.setDrawColor(...border);
             doc.setFillColor(255, 255, 255);
           };
           const drawFooterBand = (pageLabel = "Garantisertifikat") => {
+            warrantyFooterPages.add(doc.internal.getCurrentPageInfo().pageNumber);
             doc.setFillColor(...darkBlue);
             doc.rect(0, pageHeight - 14, pageWidth, 14, "F");
             doc.setFont("helvetica", "normal");
             doc.setFontSize(7);
             doc.setTextColor(255, 255, 255);
-            doc.text(`Expo ProffDok • ${pageLabel}`, margin, pageHeight - 6);
+            doc.text(`Expo ProffDok • ${pageLabel}`, margin, pageHeight - 11);
           };
           const addImageFit = async (url, x, yy, maxW, maxH) => {
             const cleanUrl = normalizePdfUrl(url);
@@ -1675,10 +1685,22 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             doc.setFontSize(8.8);
             doc.setTextColor(15, 23, 42);
             const lines = doc.splitTextToSize(safeText(value || "Ikke oppgitt"), w - 8);
-            doc.text(lines.slice(0, 2), x + 4, yy + 11);
+            doc.text(lines, x + 4, yy + 11);
+          };
+          const certificateSpace = (height) => {
+            if (y + height <= pageBottom) return;
+            drawFooterBand("Garantidokumentasjon");
+            doc.addPage(); resetPage(); drawHeader("GARANTIDOKUMENTASJON - FORTSETTELSE");
+          };
+          const infoHeight = (value, width) => {
+            doc.setFont("helvetica", "bold"); doc.setFontSize(8.8);
+            return Math.max(22, 14 + doc.splitTextToSize(safeText(value || "Ikke oppgitt"), width - 8).length * 4);
           };
           const drawCheckCard = (label, text) => {
-            const h = 18;
+            doc.setFont("helvetica", "normal"); doc.setFontSize(7.8);
+            const textLines = doc.splitTextToSize(safeText(text), contentWidth - 24);
+            const h = Math.max(18, 13 + textLines.length * 3.8);
+            certificateSpace(h + 4);
             doc.setDrawColor(...border);
             doc.setFillColor(255, 255, 255);
             doc.roundedRect(margin, y, contentWidth, h, 2.5, 2.5, "FD");
@@ -1696,27 +1718,21 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             doc.setFont("helvetica", "normal");
             doc.setFontSize(7.8);
             doc.setTextColor(51, 65, 85);
-            doc.text(doc.splitTextToSize(safeText(text), contentWidth - 24), margin + 17, y + 12.2);
+            doc.text(textLines, margin + 17, y + 12.2);
             y += h + 4;
           };
           const drawTerm = (heading, body) => {
-            if (y > pageBottom - 34) {
-              doc.addPage();
-              resetPage();
-              drawHeader("GARANTIDOKUMENTASJON");
-            }
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(10.2);
-            doc.setTextColor(...darkBlue);
-            doc.text(safeText(heading), margin, y);
-            y += 5.3;
-            doc.setFont("helvetica", "normal");
-            doc.setFontSize(9.1);
-            doc.setTextColor(31, 41, 55);
+            certificateSpace(20);
+            doc.setFont("helvetica", "bold"); doc.setFontSize(10.2); doc.setTextColor(...darkBlue);
+            doc.text(safeText(heading), margin, y); y += 5.3;
+            doc.setFont("helvetica", "normal"); doc.setFontSize(9.1);
             const lines = doc.splitTextToSize(safeText(body), contentWidth);
-            ensureSpace(lines.length * 4.8 + 8);
-            doc.text(lines, margin, y);
-            y += lines.length * 4.8 + 7;
+            for (const line of lines) {
+              certificateSpace(4.8);
+              doc.setFont("helvetica", "normal"); doc.setFontSize(9.1); doc.setTextColor(31,41,55);
+              doc.text(line, margin, y); y += 4.8;
+            }
+            y += 7;
           };
 
           doc.addPage();
@@ -1770,20 +1786,25 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           doc.text("TETTHETSGARANTI", pageWidth / 2, 106, { align: "center" });
           doc.setFontSize(12);
           doc.setTextColor(...blue);
-          doc.text(project.projectName || "Prosjekt", pageWidth / 2, 118, { align: "center" });
-
-          const cardTop = 130;
-          const cardGap = 4;
-          const cardW = (contentWidth - cardGap) / 2;
-          drawInfoCard(margin, cardTop, cardW, 22, "Utstedt til", project.customer || "Ikke oppgitt");
-          drawInfoCard(margin + cardW + cardGap, cardTop, cardW, 22, "Utført av", `${name || company.companyName || "Ikke oppgitt"}${company.orgNumber ? "\nOrg.nr. " + company.orgNumber : ""}`);
-          drawInfoCard(margin, cardTop + 26, cardW, 22, "Adresse", [project.address, project.postnr, project.city].filter(Boolean).join(", "));
-          drawInfoCard(margin + cardW + cardGap, cardTop + 26, cardW, 22, "Garantinummer", guaranteeNumber);
-          drawInfoCard(margin, cardTop + 52, cardW, 22, "Utstedelsesdato", issuedDateText);
-          drawInfoCard(margin + cardW + cardGap, cardTop + 52, cardW, 22, "Gyldig til", warrantyValidTo || `${getWarrantyYears(warranty)} år fra overtakelse`);
-          drawInfoCard(margin, cardTop + 78, contentWidth, 22, "Godkjent membransystem", `${selectedSystem.product} · ${selectedSystem.sintefApproval}`);
-
-          const qrY = cardTop + 108;
+          const projectTitleLines = doc.splitTextToSize(safeText(project.projectName || "Prosjekt"), contentWidth);
+          doc.text(projectTitleLines, pageWidth / 2, 118, { align: "center", lineHeightFactor: 1.35 });
+          y = Math.max(130, 124 + projectTitleLines.length * 5.8);
+          const cardGap = 4, cardW = (contentWidth - cardGap) / 2;
+          const certificateRows = [
+            [["Utstedt til", project.customer], ["Utført av", `${name || company.companyName || "Ikke oppgitt"}${company.orgNumber ? " · Org.nr. " + company.orgNumber : ""}`]],
+            [["Adresse", [project.address, project.postnr, project.city].filter(Boolean).join(", ")], ["Garantinummer", guaranteeNumber]],
+            [["Utstedelsesdato", issuedDateText], ["Gyldig til", warrantyValidTo || `${getWarrantyYears(warranty)} år fra overtakelse`]],
+            [["Godkjent membransystem", `${selectedSystem.product} · ${selectedSystem.sintefApproval}`]]
+          ];
+          for (const row of certificateRows) {
+            const w = row.length === 1 ? contentWidth : cardW;
+            const h = Math.max(...row.map(([, value]) => infoHeight(value, w)));
+            certificateSpace(h + (row.length === 1 ? 44 : 4));
+            row.forEach(([label, value], i) => drawInfoCard(margin + i * (cardW + cardGap), y, w, h, label, value));
+            y += h + 4;
+          }
+          certificateSpace(40);
+          const qrY = y + 4;
           const qrDrawn = await addImageFit(qrUrl, margin + 2, qrY, 34, 34) || await addImageFit(qrFallbackUrl, margin + 2, qrY, 34, 34);
           if (!qrDrawn) {
             doc.setDrawColor(...border);
@@ -1863,8 +1884,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           y += 8;
           addParagraph("Denne garantien er utstedt elektronisk og bygger på registrert prosjektdata, signert overtakelse, sjekklister og bildedokumentasjon i Expo ProffDok.");
 
-          const tableY = y + 4;
-          const rowH = 10;
+          y += 4;
           const labelW = 48;
           const tableRows = [
             ["Utførende firma", name || company.companyName || ""],
@@ -1874,41 +1894,32 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             ["Telefon", companyPhoneForReport || ""],
             ["E-post", company.email || ""]
           ];
-          doc.setDrawColor(...border);
-          doc.setFillColor(255, 255, 255);
-          doc.roundedRect(margin, tableY, contentWidth, tableRows.length * rowH, 2.5, 2.5, "FD");
-          tableRows.forEach(([label, value], index) => {
-            const yy = tableY + index * rowH;
-            if (index > 0) doc.line(margin, yy, pageWidth - margin, yy);
-            doc.line(margin + labelW, yy, margin + labelW, yy + rowH);
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(8);
-            doc.setTextColor(...darkBlue);
-            doc.text(label, margin + 4, yy + 6.5);
-            doc.setFont("helvetica", "normal");
-            doc.setTextColor(31, 41, 55);
-            doc.text(doc.splitTextToSize(safeText(value || "Ikke oppgitt"), contentWidth - labelW - 8), margin + labelW + 4, yy + 6.5);
-          });
-          y = tableY + tableRows.length * rowH + 14;
-
-          doc.setDrawColor(...border);
-          doc.setFillColor(255, 255, 255);
-          doc.roundedRect(margin, y, contentWidth, 34, 2.5, 2.5, "FD");
-          doc.setFont("helvetica", "normal");
-          doc.setFontSize(8);
-          doc.setTextColor(51, 65, 85);
-          doc.text(`Bekreftet av ${name || company.companyName || "utførende firma"}`, pageWidth / 2, y + 8, { align: "center" });
-          doc.setFont("helvetica", "bold");
-          doc.setFontSize(14);
-          doc.setTextColor(...blue);
-          doc.text(project.responsible || user.name || "Elektronisk utstedt", pageWidth / 2, y + 20, { align: "center" });
-          doc.setDrawColor(148, 163, 184);
-          doc.line(margin + 36, y + 24, pageWidth - margin - 36, y + 24);
-          doc.setFont("helvetica", "normal");
-          doc.setFontSize(7.5);
-          doc.setTextColor(...gray);
-          doc.text("Elektronisk bekreftelse", pageWidth / 2, y + 29, { align: "center" });
-          y += 44;
+          for (const [label, value] of tableRows) {
+            doc.setFont("helvetica", "normal"); doc.setFontSize(8);
+            const lines = doc.splitTextToSize(safeText(value || "Ikke oppgitt"), contentWidth - labelW - 8);
+            const h = Math.max(10, lines.length * 3.8 + 7);
+            certificateSpace(h);
+            doc.setDrawColor(...border); doc.setFillColor(255,255,255);
+            doc.rect(margin,y,contentWidth,h,"FD"); doc.line(margin+labelW,y,margin+labelW,y+h);
+            doc.setFont("helvetica","bold");doc.setTextColor(...darkBlue);doc.text(label,margin+4,y+6.5);
+            doc.setFont("helvetica","normal");doc.setTextColor(31,41,55);doc.text(lines,margin+labelW+4,y+6.5);
+            y += h;
+          }
+          y += 14;
+          doc.setFont("helvetica", "bold"); doc.setFontSize(11);
+          const signerLines = doc.splitTextToSize(safeText(project.responsible || user.name || "Elektronisk utstedt"), contentWidth - 16);
+          const confirmationHeight = Math.max(34, 24 + signerLines.length * 5);
+          certificateSpace(confirmationHeight + 12);
+          doc.setDrawColor(...border); doc.setFillColor(255,255,255);
+          doc.roundedRect(margin,y,contentWidth,confirmationHeight,2.5,2.5,"FD");
+          doc.setFont("helvetica","normal");doc.setFontSize(8);doc.setTextColor(51,65,85);
+          doc.text(`Bekreftet av ${name || company.companyName || "utførende firma"}`,pageWidth/2,y+8,{align:"center"});
+          doc.setFont("helvetica","bold");doc.setFontSize(11);doc.setTextColor(...blue);
+          doc.text(signerLines,pageWidth/2,y+17,{align:"center"});
+          doc.setDrawColor(148,163,184);doc.line(margin+36,y+confirmationHeight-10,pageWidth-margin-36,y+confirmationHeight-10);
+          doc.setFont("helvetica","normal");doc.setFontSize(7.5);doc.setTextColor(...gray);
+          doc.text("Elektronisk bekreftelse",pageWidth/2,y+confirmationHeight-5,{align:"center"});
+          y += confirmationHeight + 10;
 
           drawNoteBox("Takk for tilliten. Ta vare på garantidokumentet sammen med komplett FDV-rapport og øvrig prosjektdokumentasjon.");
           drawFooterBand("Bekreftelse");
@@ -2157,19 +2168,22 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         if (projectHasOvertagelse(overtagelse)) {
           addSectionPageBreak("Overtagelse");
           const hasRemarks = hasValue(overtagelse.kommentar) && !/^ingen\s*(bemerkninger|merknader)?$/i.test(String(overtagelse.kommentar).trim());
-          ensureSpace(54);
-          doc.setDrawColor(...(hasRemarks ? [251, 191, 36] : [74, 222, 128]));
-          doc.setFillColor(...(hasRemarks ? [255, 251, 235] : [236, 253, 245]));
-          doc.roundedRect(margin, y, contentWidth, 28, 3, 3, "FD");
-          doc.setFont("helvetica", "bold");
-          doc.setFontSize(13);
-          doc.setTextColor(...(hasRemarks ? [146, 64, 14] : [6, 95, 70]));
-          doc.text(hasRemarks ? "OVERTATT MED MERKNAD" : "OVERTATT UTEN MERKNAD", margin + 6, y + 11);
-          doc.setFont("helvetica", "normal");
-          doc.setFontSize(8.3);
-          doc.setTextColor(51, 65, 85);
-          doc.text(doc.splitTextToSize(hasRemarks ? overtagelse.kommentar : "Prosjektet er registrert overtatt av kunde og utførende.", contentWidth - 12), margin + 6, y + 19);
-          y += 34;
+          doc.setFont("helvetica", "normal"); doc.setFontSize(8.3);
+          const remarkLines = doc.splitTextToSize(safeText(hasRemarks ? overtagelse.kommentar : "Prosjektet er registrert overtatt av kunde og utførende."), contentWidth - 12);
+          let remaining = [...remarkLines];
+          do {
+            ensureSpace(35);
+            const count = Math.min(remaining.length, Math.max(1, Math.floor((pageHeight - 18 - y - 24) / 4)));
+            const lines = remaining.splice(0,count), height = Math.max(28,24+lines.length*4);
+            doc.setDrawColor(...(hasRemarks ? [251,191,36] : [74,222,128]));
+            doc.setFillColor(...(hasRemarks ? [255,251,235] : [236,253,245]));
+            doc.roundedRect(margin,y,contentWidth,height,3,3,"FD");
+            doc.setFont("helvetica","bold");doc.setFontSize(13);doc.setTextColor(...(hasRemarks?[146,64,14]:[6,95,70]));
+            doc.text(hasRemarks?"OVERTATT MED MERKNAD":"OVERTATT UTEN MERKNAD",margin+6,y+11);
+            doc.setFont("helvetica","normal");doc.setFontSize(8.3);doc.setTextColor(51,65,85);doc.text(lines,margin+6,y+19);
+            y += height+6;
+          } while (remaining.length);
+          ensureSpace(warranty?.enabled ? 115 : 85);
           const signGap = 5;
           const signW = (contentWidth - signGap) / 2;
           drawInfoCardPdf(margin, y, signW, 22, "Dato", overtagelse.dato || "Ikke oppgitt");
@@ -2409,6 +2423,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           doc.setFontSize(7);
           doc.setTextColor(100, 116, 139);
           doc.text("Expo ProffDok rapport", pageWidth / 2, 7, { align: "center" });
+          if (warrantyFooterPages.has(i)) doc.setTextColor(255,255,255);
           doc.text(`${i}/${pageCount}`, pageWidth - margin, pageHeight - 7, { align: "right" });
           doc.text("© 2026 Expo Proffsenter – Expo ProffDok. Alle rettigheter forbeholdt.", pageWidth / 2, pageHeight - 7, { align: "center" });
         }

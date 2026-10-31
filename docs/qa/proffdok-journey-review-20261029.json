@@ -4494,6 +4494,10 @@
           {
             "ref": "current-project-subflows-036",
             "mapping": "scoped actual child/fields/presentation and native command gates; see explicit limitations"
+          },
+          {
+            "ref": "closeout-warranty-report-layout-20261031",
+            "mapping": "Native full renderer24:13/15/13sider, locked/no writes, unlocked existing receipt, full certificate fields and long handover remarks. Helreise/alle roller/signerte prosjekt-snapshots/filbro fortsatt åpent."
           }
         ]
       },
@@ -4581,6 +4585,10 @@
           {
             "ref": "warranty-pdf-design-036-20261031",
             "mapping": "Garanti-status/legacy/locked/inactive native572; kun garantivilkår actual-jsPDF48/seks filer15sider visuelt. Andre eksporttyper/rolle/revoke/helreise fortsatt åpne."
+          },
+          {
+            "ref": "closeout-warranty-report-layout-20261031",
+            "mapping": "Native full renderer24:13/15/13sider, locked/no writes, unlocked existing receipt, full certificate fields and long handover remarks. Helreise/alle roller/signerte prosjekt-snapshots/filbro fortsatt åpent."
           }
         ]
       },
@@ -4666,6 +4674,10 @@
           {
             "ref": "warranty-pdf-design-036-20261031",
             "mapping": "Garanti-status/legacy/locked/inactive native572; kun garantivilkår actual-jsPDF48/seks filer15sider visuelt. Andre eksporttyper/rolle/revoke/helreise fortsatt åpne."
+          },
+          {
+            "ref": "closeout-warranty-report-layout-20261031",
+            "mapping": "Native full renderer24:13/15/13sider, locked/no writes, unlocked existing receipt, full certificate fields and long handover remarks. Helreise/alle roller/signerte prosjekt-snapshots/filbro fortsatt åpent."
           }
         ]
       },
