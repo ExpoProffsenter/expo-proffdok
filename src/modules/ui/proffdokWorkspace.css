@@ -5,6 +5,7 @@
 @import './workspaceSurface.css';
 @import './kshmsSubflows036.css';
 @import './projectSubflows036.css';
+@import './housingUnitWorkspace.css';
 
 /* Keep photos compact in the actual housing wizard as well as the type picker.
    This presentation layer is loaded by the design Preview. */

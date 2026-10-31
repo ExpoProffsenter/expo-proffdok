@@ -105,3 +105,8 @@ Arbeidsoperasjonsvelgeren i prosjekt-/KS-planer bruker den samme native `PlanDia
 Malbyggerens native DeviationDialog bruker samme flush navy høyrepanel,680px/fullhøyde,28/25px tittel,16px felt og44px trykkmål. Feltgrupper har8px radius. Hele mobil-/workspace-/sene runtime-kaskaden inngår i flexible-checklist-fields-browser-check. Hovedplanens eksisterende søk-/filterfelt har16px/44px; tidslinje, data og PDF er uendret.
 
 Statusvalgene er små20px bokser inne i44px native knapper. Grønn V betyr valgt Ok/Ikke aktuelt, oransje valgt Avvik. Tekst og aria-pressed gjør valg lesbare uten bare farge. Keyboard, disabled/readonly og allow_na følger etablerte eiere. Redusert bevegelse slår av overganger.
+
+
+## Valgt bolig – native arbeidsflater
+
+`housingUnitWorkspace.css` gjelder bare interne native `.bolig-unit-work-dialog`, `.bolig-task-dialog`, `.bolig-room-dialog`, `.bolig-package-choice-dialog` og `.bolig-allocation-dialog` under app-skallet. De beholder DOM, native forms, hidden-state, lokale kladder, prisgrunnlag, rolle-/tilgangseiere og kommandoer. Rammen er680px/fullhøyde på PC og full bredde på mobil, navy fast topp/kryss og synlig native retur; indre overskrifter er statiske og dekker ikke toppfeltet. Andre dialogklasser, utskrift og eksterne portalflater er utenfor. Native Entry med alle sju boligbarn samt kontakt/rom/pakke/eldre romfordeling inngår i `housing-unit-workspace-browser-check.mjs` og app-UX-kjeden. Transporten er syntetisk og lesende; prøven attesterer layout og navngitt lokal tilstandsbevaring, ikke alle levende server-/rollehandlinger.

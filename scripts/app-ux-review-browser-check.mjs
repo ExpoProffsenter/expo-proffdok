@@ -124,6 +124,7 @@ await import("./sales-entry-workspace-browser-check.mjs");
 await import("./housing-first-screen-036-browser-check.mjs");
 
 await import("./housing-catalog-editor-workspace-browser-check.mjs");
+await import("./housing-unit-workspace-browser-check.mjs");
 await import("./sales-flow-036-browser-check.mjs");
 
 await import("./project-subflows-036-browser-check.mjs");

@@ -1,3 +1,9 @@
+# Boligens arbeidsflater og utsatt Solgløtt –31.10
+
+Samme PR295/Preview/Sandbox, BEGGE. Kontakt, sju boligarbeidsflater og rom-/pakke-/fordelingsdialoger følger nå felles680px høyrepanel med fast navy topp/retur og16px felt.1167native kravPASS, eksisterende pakkevalg36/rominnhold35/rom51 og critical Sandbox-buildPASS. [Scope og presise tester](docs/changes/housing-unit-workspace-036-20261031.json). FullCI/READY/levende kontroll føres i PR295. Ingen Bolig-kjerne-/backend-/pris-/tilgangsendring. Totaldesign og tidligere restpunkter er fortsatt åpne.
+
+Kenneth har bedt om å fortsette design og notere Solgløtt til vi er klare. Rekkefølge: design og QA → hans TEST OK → merge og Production-verifisering → kontrollert main→demo med bevart overlay/preflight → opprette Solgløtt → komplette videoer. Prosjekt/productimport/filmproduksjon avventer denne fasen. [Oppdatert plan](https://chatgpt.com/library?file_id=libfile_a6ce8e2d49648191ba9d6648f04a95a3&account_id=personal). Ingen TEST OK/merge/Production/demo-synk utført.
+
 # Grunnpakke-/tilvalgseditor –31.10
 
 Samme PR295/Preview/Sandbox, BEGGE. Faktisk innlogget editor hadde fortsatt gammel960px sentrert dialog/12px felt. De to native pakkeskjemaene får nå samme680px høyrepanel/navy/16-44/8px-rammer og synlig Lagre ved langt innhold.376native krav/24editorvisninger og begge pakkeoversikterPASS, negativ gammelCSS feiler, eksisterende catalogReact og navigation24PASS, full critical Sandbox-buildPASS. [Scope og presise tester](docs/changes/housing-catalog-editor-workspace-036-20261031.json). Ingen Bolig-kjerne-/pris-/tilgangs-/lagrings-/backendendring. Eksakt sluttkandidat/CI/READY/live føres i PR295. Totaldesign og tidligere restpunkter er fortsatt åpne; ingen TEST OK/Production/demo-synk.
