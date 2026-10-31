@@ -1,3 +1,11 @@
+# Hele appen – Min side, vareflyt og videoer31.10
+
+Brukeren har presisert samlet design/video for alle funksjoner og underfunksjoner. [Felles status og neste kontroller for18områder](docs/qa/APP_DESIGN_VIDEO_STATUS_20261031.md) og [videoregister](docs/qa/proffdok-video-coverage-20261031.json) bevarer145kjente reiser, tre nyere sjekklistefunksjoner og godkjent videomal/pilot. Inventaret er ikke uttømmende sluttattestert. Neste film utenfor Bolig: åpne og lese egne planer, uten planredigering/eksport/bemanning.
+
+Samme PR295/Preview/Sandbox, BEGGE. Samlepakke retter leverandørunderflate, planpanel og Min side/time-mobilkaskade. [Presist scope og faktiske tester](docs/changes/appwide-personal-commerce-subflows-036-20261031.json). Sluttkandidat/fullCI/READY/live/ny film føres i PR295. «Virker ok» på forrige delpakke er ikke global redesign-TEST OK. Ingen merge/Production/demo-synk. Solgløtt avventer fortsatt den avtalte rekkefølgen.
+
+---
+
 # Boligens arbeidsflater og utsatt Solgløtt –31.10
 
 Samme PR295/Preview/Sandbox, BEGGE. Kontakt, sju boligarbeidsflater og rom-/pakke-/fordelingsdialoger følger nå felles680px høyrepanel med fast navy topp/retur og16px felt.1167native kravPASS, eksisterende pakkevalg36/rominnhold35/rom51 og critical Sandbox-buildPASS. [Scope og presise tester](docs/changes/housing-unit-workspace-036-20261031.json). FullCI/READY/levende kontroll føres i PR295. Ingen Bolig-kjerne-/backend-/pris-/tilgangsendring. Totaldesign og tidligere restpunkter er fortsatt åpne.

@@ -89,7 +89,7 @@ body:has([data-expo-app-shell="true"]) .bolig-home-projects>.bolig-home-project{
 }
 
 /* Time entry and plan reading share the same contextual drawer frame. */
-body:has([data-expo-app-shell="true"]) .ks-plan-drawer[open]{display:flex;flex-direction:column;margin:0 0 0 auto;padding:0;border:0;border-radius:0;background:#fff;overflow:hidden}
+body:has([data-expo-app-shell="true"]) .ks-plan-drawer[open]{width:min(680px,100%);max-width:100%;display:flex;flex-direction:column;margin:0 0 0 auto;padding:0;border:0;border-radius:0;background:#fff;overflow:hidden}
 body:has([data-expo-app-shell="true"]) .ks-plan-drawer-body{min-height:0;flex:1;overflow:auto;overscroll-behavior:contain;padding:20px 24px;color:var(--pd-ink)}
 body:has([data-expo-app-shell="true"]) .ks-plan-drawer-body :is(p,label,input,select,button,summary){font-size:16px;line-height:1.45}
 body:has([data-expo-app-shell="true"]) .ks-plan-drawer .ks-plan-drawer-body .ks-plan-hint{color:var(--pd-muted)!important}
@@ -98,9 +98,9 @@ body:has([data-expo-app-shell="true"]) .deviation-dialog-backdrop:has(.time-edit
 body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.time-editor,.time-workspace){width:min(900px,100vw);max-width:100vw;height:100dvh;max-height:100dvh;margin:0!important;padding:0!important;border:0!important;background:#fff!important;border-radius:0;display:flex;flex-direction:column;overflow:hidden}
 body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.time-editor,.time-workspace)>.deviation-dialog-body{min-height:0;flex:1;overflow:auto;overscroll-behavior:contain;padding:20px 24px}
 body:has([data-expo-app-shell="true"]) .ks-plan-drawer>.ks-plan-dialog-head{background:var(--pd-ink);color:#fff;border-radius:0;padding:20px 24px;margin:0;flex:none}
-body:has([data-expo-app-shell="true"]) .ks-plan-drawer>.ks-plan-dialog-head h3{font-size:28px;line-height:1.2;font-weight:600;color:#fff}
+body:has([data-expo-app-shell="true"]) .ks-plan-drawer>.ks-plan-dialog-head h3{font-size:28px!important;min-width:0;overflow-wrap:anywhere;line-height:1.2;font-weight:600;color:#fff}
 body:has([data-expo-app-shell="true"]) .ks-plan-drawer>.ks-plan-dialog-head button{min-width:44px;min-height:44px;background:transparent;color:#fff;border:1px solid #ffffff30;border-radius:6px;box-shadow:none}
-@media(max-width:620px){body:has([data-expo-app-shell="true"]) .ks-plan-drawer>.ks-plan-dialog-head,body:has([data-expo-app-shell="true"]) .ks-plan-drawer-body,body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.time-editor,.time-workspace)>.deviation-dialog-body{padding:16px}body:has([data-expo-app-shell="true"]) .ks-plan-drawer>.ks-plan-dialog-head h3{font-size:25px}}
+@media(max-width:620px){body:has([data-expo-app-shell="true"]) .ks-plan-drawer>.ks-plan-dialog-head,body:has([data-expo-app-shell="true"]) .ks-plan-drawer-body,body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.time-editor,.time-workspace)>.deviation-dialog-body{padding:16px}body:has([data-expo-app-shell="true"]) .ks-plan-drawer>.ks-plan-dialog-head h3{font-size:25px!important}}
 
 /* The operation picker uses the same native PlanDialog drawer as its editor.
    Code choices keep their original handlers and remain inside its scroll body. */
@@ -451,3 +451,9 @@ body:has([data-expo-app-shell="true"]) .company-user-status[data-status="pending
  [data-expo-app-shell="true"] .bolig-catalog:has(>.bolig-catalog-library) .bolig-catalog-cards>article{min-width:0;padding:16px;border:1px solid #d4e2e6;border-radius:8px;box-shadow:none;background:#fff}
  [data-expo-app-shell="true"] .bolig-catalog:has(>.bolig-catalog-library) .bolig-catalog-cards .bolig-toolbar{gap:8px;flex-wrap:wrap}
 }
+
+/* Native time dialogs retain the shared title after late mobile runtime styles. */
+@media screen{body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.time-editor,.time-workspace)>.deviation-dialog-header h2{font-size:28px!important}}
+@media screen and (max-width:620px){body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.time-editor,.time-workspace)>.deviation-dialog-header h2{font-size:25px!important}}
+
+@media screen{body:has([data-expo-app-shell="true"]) .ks-plan-drawer>.ks-plan-dialog-head button{border-radius:6px!important;font-size:16px!important;min-height:45px!important;flex:none}body:has([data-expo-app-shell="true"]) .ks-plan-drawer-body :is(button,select,textarea,input:not([type="checkbox"]):not([type="radio"])){font-size:16px!important;min-height:45px!important;border-radius:6px!important}body:has([data-expo-app-shell="true"]) .ks-plan-drawer-body :is(label,p,summary){font-size:16px!important}}

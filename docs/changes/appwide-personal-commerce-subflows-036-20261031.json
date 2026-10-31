@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Min side, plan- og leverandørunderflater og felles videoregister",
+  "change": "Miljømål BEGGE, samme PR295/Preview/Sandbox. Fersk brukerbestilling gjelder hele appen og alle underfunksjoner, ikke bare Bolig. Ny commerceSubflows036.css gir eksisterende native leverandørskjema/preview/kvittering hvit8px ramme,24/22px oppgaveoverskrift,16px tekst/felt/tabell og minst44px handlinger/velgere/checkboxrader. Faktisk innlogget førtilstand hadde eldre turkis12px ramme og41px leverandørvalg. Min side beholder minst44px native handlinger også etter sen mobilkaskade. Native planleser/-editor får samme680px bredde/navy28/25px topp og16/44-felt; timeeditor beholder28/25px overskrift etter sen runtime-CSS. Ingen native handlers, priser, snapshots, kladder, time-opt-in, rettigheter, servertransport eller src/modules/bolig endres. Alle145 registrerte reiser/18områder og tre nyere sjekklistefunksjoner får samme vedlikeholdte videoregister, godkjent mal1.0/pilot bevart. Ny planlesefilm er under produksjon og attesterer bare en avgrenset oppgave. Ingen videoavspiller, tom videoknapp, demooppretting eller Production-endring.",
+  "verification": "Leverandørprøve200native assertionsPASS over24form/preview/ukjent-svar/kvittering-visninger i seks vinduer, ekte komponent med full CSS og sen APP_RUNTIME_STYLES, syntetisk transport. Lagret kontakt, utvalgte varer, ledende varenummernull, kanonisk desimalantall, kladd/cancel/reopen/foreground, serverpreview, samme retry-ID og ingen virkelig sending. Negativ uendret før-CSS feiler på eldre turkis bakgrunn; baseline-transformen må fjerne @import før CSS-resolveren (tom CSS-load dekker ikke PostCSS-innhenting). Playwrights eksakte tekstarealabel endres etter React-defaultValue-oppdatering; anchored label-lokator beholder samme faktiske felt. Personlig prøve utvidet fra1031 til1074native assertionsPASS med alle gamle krav beholdt, ekte readonly planbarn i seks vinduer, scroll/retur/forelder/geometri/28-25/16px. Fixturen laster nå også sen runtime-CSS; den fanget ekte små mobile handlinger og19/16px time-/planoverskrifter. CSS rettet, ingen forventning svekket. Readonlyassert bruker native :disabled for felter under disabled fieldset. Personlig time-opt-in63PASS med av/på/av og beholdt kladd/firmaskille. Eksisterende proffordre280, varetelling73 og leverandør34PASS. Eksisterende KS/progress159 og planlayout219PASS samt full critical Sandbox-buildPASS. SluttCI/READY/live føres i PR295. Videoregistervakten kontrollerer alle145 reiser/18områder, tre nyere funksjoner, unike IDer, godkjent mal og at et delklipp ikke erklærer en helreise ferdig. Representative PC-/mobilbilder visuelt kontrollert. Dette er ikke full sluttattest på alle reiser/roller/fysisk Safari/transport/PDF.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Ingen nye knapper eller endret ordre-/plan-/timeflyt. Videoenes planlagte innganger er dokumentert i egen arbeidsliste; ingen tomme appinnganger publiseres."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Bare presentasjon og QA-/videoregister; ingen endret dataflyt eller eierskap."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen nye appavhengigheter eller miljøinnstillinger."
+    },
+    "module": {
+      "required": true,
+      "reason": "UI-kontrakten dokumenterer native leverandør- og planfamilie samt Min side/mobil og uendrede eiere."
+    }
+  }
+}

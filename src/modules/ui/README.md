@@ -110,3 +110,10 @@ Statusvalgene er små20px bokser inne i44px native knapper. Grønn V betyr valgt
 ## Valgt bolig – native arbeidsflater
 
 `housingUnitWorkspace.css` gjelder bare interne native `.bolig-unit-work-dialog`, `.bolig-task-dialog`, `.bolig-room-dialog`, `.bolig-package-choice-dialog` og `.bolig-allocation-dialog` under app-skallet. De beholder DOM, native forms, hidden-state, lokale kladder, prisgrunnlag, rolle-/tilgangseiere og kommandoer. Rammen er680px/fullhøyde på PC og full bredde på mobil, navy fast topp/kryss og synlig native retur; indre overskrifter er statiske og dekker ikke toppfeltet. Andre dialogklasser, utskrift og eksterne portalflater er utenfor. Native Entry med alle sju boligbarn samt kontakt/rom/pakke/eldre romfordeling inngår i `housing-unit-workspace-browser-check.mjs` og app-UX-kjeden. Transporten er syntetisk og lesende; prøven attesterer layout og navngitt lokal tilstandsbevaring, ikke alle levende server-/rollehandlinger.
+
+
+## Vareflyt, egne planer og mobilkaskade
+
+`commerceSubflows036.css` gjelder interne `.supplierOrderPanel` under app-skallet: hvit8px ramme,16px felt/tekst/tabell og minst44px kontroller i eksisterende inline-skjema, preview og kvittering. Native kontaktvalg, vareutvalg, serverpreview, ordresnapshot, usendt kladd, Avbryt og samme-ID retry beholdes. Ingen modalitet simuleres med CSS. Den native planens `.ks-plan-drawer` har680px/full bredde og samme28/25px marineblå topp og16/44-kontroller, både lesing og redigering. Native modalitet, fokus, perioder, disabled/readonly og bodylocks er uendret. Min side og timeoverskriften beholder disse målene også når sene APP_RUNTIME_STYLES legges til på mobil.
+
+Faktisk leverandørkomponent og Min sides faktiske planbarn testes med hele CSS-kaskaden, syntetisk transport og uten UI-stubber. Videodekning ligger i `docs/qa/proffdok-video-coverage-20261031.json`; `proffdok-video-coverage-check.mjs` hindrer at en registrert reise eller modul faller ut. Arbeidslisten sier uttrykkelig at funksjonsinventaret ikke er ferdig avstemt mot alle konkrete underhandlinger. Ingen videoavspiller eller videopublisering følger av registreringen.

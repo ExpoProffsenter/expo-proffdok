@@ -63,6 +63,16 @@ try{
  eq(await page.getByRole('heading',{name:'Mine aktive planer',exact:true}).isVisible(),true,'plans route uses actual plan sources');
  eq(await page.locator('.personal-day-side').isVisible(),false,'plans route gives native lists the full workspace');
  await page.getByRole('region',{name:'Fra ProffDok-prosjekter',exact:true}).locator('.ks-progress-list button').click();await page.locator('dialog.ks-plan-expanded[open]').waitFor();
+ await page.locator('button.ks-timeline-label').first().click();
+ const reading=page.getByRole('dialog',{name:'Se arbeidsoperasjon',exact:true});await reading.waitFor();
+ for(const [width,height]of [[1920,936],[1363,936],[768,600],[390,600],[320,600],[390,320]]){
+  await page.setViewportSize({width,height});const m=await reading.evaluate(n=>{const r=n.getBoundingClientRect(),head=n.querySelector('.ks-plan-dialog-head'),body=n.querySelector('.ks-plan-drawer-body'),close=head.querySelector('button').getBoundingClientRect();return {width:Math.round(r.width),right:Math.round(r.right),top:r.top,height:Math.round(r.height),overflow:body.scrollWidth>body.clientWidth+1,close:close.height>=44&&close.width>=44&&close.bottom<=innerHeight,title: getComputedStyle(head.querySelector('h3')).fontSize,small:[...body.querySelectorAll('input,select,textarea,button,label,p')].filter(e=>e.checkVisibility()&&parseFloat(getComputedStyle(e).fontSize)<16).map(e=>e.textContent),enabledFields:[...body.querySelectorAll('input,select,textarea')].filter(e=>!e.matches(':disabled')).length};});
+  eq([m.width,m.right,m.top,m.height],[Math.min(680,width),width,0,height],'actual personal plan drawer shared geometry '+width+'x'+height);eq(m.overflow,false,'plan body fits '+width);eq(m.close,true,'native plan close stays visible44 '+width);eq(m.enabledFields,0,'personal plan stays readonly '+width);eq(m.title,width<=620?'25px':'28px','actual plan title after runtime '+width);eq(m.small,[],'actual plan text/fields readable '+width);
+  await reading.locator('.ks-plan-drawer-body').evaluate(n=>n.scrollTop=n.scrollHeight);eq(await reading.getByRole('button',{name:'Tilbake til oversikten',exact:true}).isVisible(),true,'native return reachable '+width);
+  if([390,1363].includes(width)&&height>320)await page.screenshot({path:path.join(output,'plan-reading-'+width+'.png')});
+ }
+ await reading.getByRole('button',{name:'Tilbake til oversikten',exact:true}).click();await reading.waitFor({state:'hidden'});eq(await page.locator('dialog.ks-plan-expanded[open]').count(),1,'nested return retains parent plan');
+ await page.setViewportSize({width:1363,height:936});
  await page.getByRole('button',{name:'Måned',exact:true}).click();
  await page.evaluate(()=>{window.qa.hold=true;window.dispatchEvent(new Event('focus'));});
  await page.waitForFunction(()=>window.qa.waiters.length>=3);

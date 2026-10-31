@@ -8,6 +8,8 @@ import {useKshmsAccess} from '../../src/modules/kshms/kshmsAccess.js';
 import {WORK_PROFILE_EVENT} from '../../src/modules/access/workProfileClient.js';
 import '../../src/style.css';
 import '../../src/modules/ui/proffdokWorkspace.css';
+import {APP_RUNTIME_STYLES} from '../../src/modules/app/appRuntimeStyles.js';
+const runtime=document.createElement('style');runtime.textContent=APP_RUNTIME_STYLES;document.head.appendChild(runtime);
 
 // Actual native components. This fixture replaces transport only, uses no real accounts,
 // and marks all examples QA. Scenario controls never ship in the application.

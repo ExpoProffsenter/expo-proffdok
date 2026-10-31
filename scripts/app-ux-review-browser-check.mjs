@@ -140,3 +140,6 @@ await import("./warranty-workspace-browser-check.mjs");
 await import("./kshms-extract-workspace-browser-check.mjs");
 
 await import("./bolig-guidance-workspace-browser-check.mjs");
+
+await import('./supplier-order-workspace-browser-check.mjs');
+await import('./proffdok-video-coverage-check.mjs');
