@@ -1,3 +1,7 @@
+# Egne sjekkpunkter og godkjenningskø – Preview-arbeid
+
+[Oppgave304](https://github.com/ExpoProffsenter/expo-proffdok/issues/304) gjelder flere bevarte lokale kladder, egne punkter for alle aktive ansatte og forslag til firmamal med separat firmagodkjenning. Eksisterende core-branch gjenbrukes fra publisert main; ingen ny branch. Migrering prøves kun i Sandbox før ny TEST OK. Ingen Production- eller demo-synk er godkjent for denne funksjonen. DesignPR295 kan vise funksjonen med uttrykkelig avhengighet til egen core-PR. Nøyaktig kandidat, CI, Preview og innloggede begrensninger vedlikeholdes i PR/oppgave304. [Endring og tester](docs/changes/checklist-template-proposals-20261031.json).
+
 # Utførelsessjekklister – TEST OK og publisert 31.10.2026
 
 Brukerens TEST OK gjelder signatur- og firmamalkandidat `2ccecedf`. Full Core Safety820/41150527338 SUCCESS10/10; PR301 er merget som `7c22018d3054b3bad31004bb556ada0af2e1e2c6`. Vercel `dpl_HDuQQSbhmBqTFPbr2L49n9CmW46R` er READY på samme commit og expo-proffdok.app. Faktisk Production-HTML/loader/bootstrap/app er sammenlignet med eksplisitt lokal Production-build; produksjonsbinding kontrolleres ved publisering. Gjeldende main-/demo-SHA, fullført main → demo, privat rollout-aktivering, preflight og eventuelle begrensninger vedlikeholdes i [PR301](https://github.com/ExpoProffsenter/expo-proffdok/pull/301).

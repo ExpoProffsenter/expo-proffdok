@@ -20,3 +20,21 @@
 .standalone-checklists input[type=checkbox]{width:20px!important;height:20px!important;min-height:20px!important;flex:none}.standalone-checklists .standalone-choice{min-height:44px}
 
 .deviation-dialog:has(.standalone-checklists)>.deviation-dialog-header p{color:#d1e0e7;font-size:16px!important}.deviation-dialog:has(.standalone-checklists)>.deviation-dialog-header .deviation-dialog-close{color:#fff;background:transparent;border:1px solid #49606b;border-radius:6px;min-height:44px!important;min-width:44px!important}.standalone-checklists .checklist-field-choice{display:flex;align-items:center;gap:8px;min-height:44px}
+
+/* Proposal review is a separate, scoped task panel. */
+.deviation-dialog-backdrop:has(.checklist-proposal-review){justify-content:flex-end;align-items:stretch;padding:0!important}
+.deviation-dialog:has(.checklist-proposal-review){display:flex;flex-direction:column;width:min(680px,100vw)!important;max-width:100vw!important;height:100dvh!important;max-height:100dvh!important;margin:0!important;padding:0!important;border:0;border-radius:0!important;overflow:hidden}
+.deviation-dialog:has(.checklist-proposal-review)>.deviation-dialog-header{flex:none;margin:0;padding:20px 24px;background:#10212b;color:#fff}
+.deviation-dialog:has(.checklist-proposal-review)>.deviation-dialog-header h2{color:#fff;font-size:28px!important;line-height:1.2}
+.deviation-dialog:has(.checklist-proposal-review)>.deviation-dialog-header p{color:#d1e0e7;font-size:16px}
+.deviation-dialog:has(.checklist-proposal-review)>.deviation-dialog-header button{color:#fff;background:transparent;border:1px solid #49606b;min-width:44px;min-height:44px}
+.deviation-dialog:has(.checklist-proposal-review)>.deviation-dialog-body{flex:1;min-height:0;overflow:auto;padding:20px 24px;overscroll-behavior:contain}
+.checklist-proposal-review{font-size:16px;line-height:1.5;min-width:0;overflow-wrap:anywhere}
+.checklist-proposal-review :is(button,textarea,summary){font-size:16px!important;min-height:44px;max-width:100%;box-sizing:border-box}
+.checklist-proposal-review textarea{width:100%;min-height:100px}
+.checklist-proposal-review>label:has(input[type=checkbox]){display:flex;align-items:center;gap:10px;min-height:44px;margin:16px 0}
+.checklist-proposal-review input[type=checkbox]{width:20px!important;height:20px!important;min-height:20px!important;flex:none;accent-color:#087c54}
+.checklist-proposal-review>button{margin:8px 8px 8px 0}
+.standalone-checklists .checklist-proposal{border:1px solid #cfdbdf;border-radius:8px;padding:12px 16px;margin:16px 0}
+.standalone-checklists .checklist-proposal summary{display:list-item;align-content:center;cursor:pointer;font-weight:700}
+@media(max-width:620px){.deviation-dialog:has(.checklist-proposal-review)>.deviation-dialog-header,.deviation-dialog:has(.checklist-proposal-review)>.deviation-dialog-body{padding:16px}.deviation-dialog:has(.checklist-proposal-review)>.deviation-dialog-header h2{font-size:25px!important}}
