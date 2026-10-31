@@ -1,3 +1,7 @@
+## Neste overlevering: videotilgang i Hjelp – 31.10
+
+Fem eksisterende originalfilmer koblet til Hjelps søk/områdefilter og relevante temaer; stor native avspiller med kapitler/fullskjerm/tekstalternativ. Returfeil gjennom React-portalen er bevist og rettet lokalt i filmkomponenten. Kun én main-prop for eksisterende Bolig-kontekst, ingen tilgangskjerne eller ny backend. HR-prøvefilmen følger Sandbox-avgrensningen. [Scope/bevis](../changes/help-video-player-20261031.json); eksakt kandidat/fullCI/READY/live vedlikeholdes i PR295. Gamle248krav og tidligere rapport-/designbevis beholdes. Ingen full app-/videodekning, global TEST OK/Production/demo-synk eller Solgløtt-opprettelse.
+
 ## Neste overlevering: fullførte prosjektkontroller i samlet rapport – 31.10
 
 Samme PR295/Preview. Ny eksplisitt fullførte-gruppe med historiske svar/bilder/signaturer, også uten KS/HMS. Hele valgt snapshot leses etter bilder og før PDF/begge printveier; endringer/tilgangstap blokkerer. Helper 58, native dialog 88, 9 PDF-/5 printforløp og CI-identisk Poppler PASS; fire filer/39 sider visuelt kontrollert. Kun eksisterende lesefunksjon/resolver, én main-prop, ingen lagring/signering/SQL. Se [scope/bevis](../changes/project-controls-combined-report-20261031.json) og gjeldende PR295 for eksakt sluttkandidat/fullCI/READY/live. Eldre omtale av manglende integrasjon nedenfor er historisk. Behold tidligere designbevis/fem filmer; ingen global TEST OK/Production/demo-synk, Solgløtt venter.

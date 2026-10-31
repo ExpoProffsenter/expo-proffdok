@@ -149,3 +149,5 @@ await import("./shell-workprofile-036-browser-check.mjs");
 await import("./time-subflows-036-browser-check.mjs");
 await import("./kshms-project-report-react-pdf-check.mjs");
 await import("./project-control-report-check.mjs");
+
+await import("./help-video-browser-check.mjs");

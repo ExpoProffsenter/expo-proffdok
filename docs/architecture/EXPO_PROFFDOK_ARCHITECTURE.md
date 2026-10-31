@@ -1886,3 +1886,8 @@ produksjonsdatabase eller e-postmotor endres.
 ### Samlet rapport: fullførte prosjektkontroller (31.10.2026)
 
 Rapporthooken eier eksplisitt valg og frosset råsett fra eksisterende `project_checklist_state`, uavhengig av kjøpt KS/HMS for denne prosjektgruppen. KS/HMS-lesningene beholder sine egne tilgangsgater. `projectControlReport.mjs` validerer fullførte rader, gjenbruker den native kontrollmapperen og klargjør bilder med eksisterende filresolver. Backend/signering og historikkens eierskap endres ikke. Hooken leser hele valgt sett på nytt etter klargjøringen; `createReportTools` kaller samme verifikasjon rett før PDF-save og før begge utskriftsveiers HTML-skriving. Hele snapshot samt scope/eksportsekvens må fortsatt stemme. Feil avviser eksporten uten ny signering eller rapportrelatert tilgangstildeling.
+
+
+### Hjelpens videoer (31.10.2026)
+
+`HelpVideos.jsx` eier kun galleri-/avspillingsvindu og native HTML-video, uten ny navigasjon eller backend. Katalogen har versjonerte statiske eksempelressurser, kildehash og kapitler fra filmens redigerbare tidslinje. Eksisterende Hjelp-/Bolig-kontekst styrer presentasjonen; Sandbox-prøvefilm følger samme miljøavgrensning som funksjonen. Bruker-/firma-/rettighetsendring monterer ned avspilleren. Native dialoger beholder teksthjelp og arbeid under, mens film avsluttes ved lukking. Filmene er offentlige syntetiske opplæringsressurser, ikke private vedlegg eller et nytt tilgangssystem.

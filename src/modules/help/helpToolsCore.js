@@ -1,3 +1,5 @@
+import {HelpVideoButton,HelpVideoLibrary} from './HelpVideos.jsx';
+import {availableVideoGuides} from './videoGuides.mjs';
 import {filterHelpSections} from './helpSearch.mjs';
 import {appendWorkspaceHelp,HELP_UPDATED_ON,HELP_UPDATED_LABEL} from './workspaceHelp.mjs';
 // Expo ProffDok – FASE 42M / FASE 42K / FASE 42J / FASE 42H / FASE 42D HJELP
@@ -439,7 +441,7 @@ const BASE_ORDER = [
 ];
 
 export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK_TERMS_VERSION, expoProffDokTermsSections }) {
-  return function HelpCenter({ isAdmin = false, isCompanyAdmin = false, isSystemAdmin = false, termsAccepted = false, termsAcceptanceRecord = null, authUser = null, helpAccess = null, kshmsContext = null, hrContext = null, formatTermsAcceptedAt = (value) => value || "" }) {
+  return function HelpCenter({ isAdmin = false, isCompanyAdmin = false, isSystemAdmin = false, termsAccepted = false, termsAcceptanceRecord = null, authUser = null, helpAccess = null, kshmsContext = null, hrContext = null, boligContext = null, formatTermsAcceptedAt = (value) => value || "" }) {
     const effectiveSystemAdmin=helpAccess?.userId===authUser?.id&&helpAccess?.isSystemAdmin===true;
     const effectiveCompanyAdmin=helpAccess?.userId===authUser?.id&&helpAccess?.isCompanyAdmin===true;
     const canExportCordel = useCordelAccess();
@@ -490,6 +492,9 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
     ])),{moduleKeys:helpAccess?.userId===authUser?.id?helpAccess.moduleKeys:[],canUseKshms:Boolean(kshmsContext?.user_id===authUser?.id&&kshmsContext?.enabled),canUseHr:Boolean(hrContext?.user_id===authUser?.id&&hrContext?.available),isCompanyAdmin:effectiveCompanyAdmin,isSystemAdmin:effectiveSystemAdmin,canExportCordel,canUseInternalCommerce});
 
     const visibleTopicKeys=visibleGuideSections.map(item=>item.key).join("|");
+    const videoScope=[authUser?.id,helpAccess?.userId,visibleTopicKeys,kshmsContext?.company_id,hrContext?.company_id,boligContext?.company_id,boligContext?.enabled,boligContext?.user_id].join(':');
+    const videoGuides=availableVideoGuides({authenticated:!!authUser?.id&&helpAccess?.userId===authUser.id,topics:visibleGuideSections.map(item=>item.key),backendTarget:import.meta.env.VITE_EXPO_BACKEND_TARGET,canUseBolig:boligContext?.user_id===authUser?.id&&boligContext?.enabled===true});
+
     (0, import_react.useEffect)(()=>setOpenGuideKey(previous=>visibleTopicKeys.split("|").includes(previous)?previous:""),[visibleTopicKeys]);
     (0, import_react.useEffect)(()=>setOpenGuideKey(""),[authUser?.id]);
     const guideRoleLabel = effectiveSystemAdmin ? "Systemadministrator" : effectiveCompanyAdmin ? "Firmaadministrator" : "Vanlig bruker";
@@ -501,12 +506,14 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", { children: "Viktig" }),
           renderList(item.important),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", { children: "Anbefalt bruk" }),
-          renderList(item.best)
+          renderList(item.best),
+          ...videoGuides.filter(guide=>guide.topics.includes(item.key)).map(guide=>(0, import_jsx_runtime.jsx)(HelpVideoButton,{guide,compact:true},videoScope+guide.id))
         ] });
     const renderGuideSection = (item) => {
       const isOpen = openGuideKey === item.key;
       const Icon=HELP_ICONS[item.key]||FileText;
       return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(WorkspaceDisclosure, { className: "item help-topic-row", dataTopic:item.key, title:plainHelpTitle(item.title), subtitle:"HJELP / BRUKERVEILEDNING", open:isOpen, keepMounted:false, contentClassName:"help-panel-content", onOpenChange:open=>setOpenGuideKey(previous=>open?item.key:previous===item.key?"":previous), label:(0, import_jsx_runtime.jsxs)("span",{className:"help-topic-label",children:[(0, import_jsx_runtime.jsx)(Icon,{"aria-hidden":true,size:20}),(0, import_jsx_runtime.jsx)("b",{children:plainHelpTitle(item.title)})]}), children: [
+        isOpen && item.chapters && videoGuides.filter(guide=>guide.topics.includes(item.key)).map(guide=>(0, import_jsx_runtime.jsx)(HelpVideoButton,{guide,compact:true},videoScope+guide.id)),
         isOpen && (item.chapters ? (0, import_jsx_runtime.jsx)(HelpTopicGroup, {item,renderContent:renderGuideContent}) : item.key === "cordel" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CordelGuide, {}) : renderGuideContent(item))
       ] }, item.key);
     };
@@ -516,12 +523,14 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item helpQuickStart", style: { background: "linear-gradient(135deg,#0f172a,#164e63)", color: "#ffffff", borderColor: "#0f766e" }, children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { style: { marginTop: 0, color: "#ffffff" }, children: "Digital brukerveiledning" }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { style: { color: "#dbeafe", lineHeight: 1.6 }, children: "Søk etter det du vil gjøre. Temaet åpnes i høyrepanelet. Følg trinnene og lukk panelet for å komme tilbake til listen. Brukervilkår og installasjonsveiledning kan åpnes nederst. Innholdet følger rollen og tilgangen din. Prosjektmenyen er gruppert i Oppstart, Gjennomføring og Overlevering og garanti. Garanti ligger i den siste gruppen i vanlige prosjekter. Åpne Status og mangler for detaljene." }),
+          (0, import_jsx_runtime.jsx)("p",{style:{color:"#dbeafe"},children:"Velg Vis videoer for å se ferdige filmer. Du kan søke, velge område og hoppe til et kapittel. Se video ved et hjelpetema åpner en relevant film. Teksthjelpen er alltid tilgjengelig."}),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", flexWrap: "wrap", gap: "10px", marginTop: "12px" }, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { style: { padding: "8px 12px", borderRadius: "999px", background: "rgba(255,255,255,.14)", fontWeight: 900 }, children: ["Rolle: ", guideRoleLabel] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("time", { dateTime: HELP_UPDATED_ON, style: { padding: "8px 12px", borderRadius: "999px", background: "rgba(255,255,255,.14)", fontWeight: 900 }, children: HELP_UPDATED_LABEL })
           ] })
         ] }),
         (0, import_jsx_runtime.jsxs)("label",{className:"ux-toolbar",children:["Søk i hjelpen",(0, import_jsx_runtime.jsx)("input",{type:"search",value:helpQuery,placeholder:"For eksempel timer, garanti eller Cordel",onChange:e=>setHelpQuery(e.target.value)})]}),
+        (0, import_jsx_runtime.jsx)(HelpVideoLibrary,{guides:videoGuides,query:helpQuery,onQueryChange:setHelpQuery},videoScope),
         !filterHelpSections(visibleGuideSections,helpQuery).length && (0, import_jsx_runtime.jsx)("p",{role:"status",children:"Ingen hjelpetema passer søket. Prøv et kortere søkeord."}),
         (0, import_jsx_runtime.jsx)("div", { className:"help-topic-index", children: filterHelpSections(visibleGuideSections,helpQuery).map(renderGuideSection) }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [

@@ -1,3 +1,11 @@
+# Videoveiledninger i Hjelp – 31.10
+
+Samme PR295/faste Preview, miljømål BEGGE. Hjelp får søkbar videooversikt med områdefilter, relevante filmknapper ved hjelpetemaer og stor native avspiller med kapitler/fullskjerm/tekstalternativ. De fem eksisterende godkjent formaterte originalfilmene beholdes uendret; HR-prøvefilmen tilbys bare i Sandbox som funksjonen selv. Ingen automatisk avspilling eller filmnedlasting ved åpning av Hjelp. Bruker-/firma-/tilgangsendring lukker filmen; søk, hjelpetema og arbeid under beholdes. [Scope/bevis](docs/changes/help-video-player-20261031.json).
+
+Gamle Firmaadmin/Hjelp248-krav PASS. Ny faktisk avspillings-/retur-/rolle-/feilprøve og sluttkandidat/fullCI/READY/live dokumenteres i PR295. React-portalens child-close-feil ble funnet og rettet før publisering; lukking skal returnere til samme tema. Tidligere omtale av ingen appavspiller nedenfor er historisk etter denne pakken. Dette er tilgang til fem avgrensede filmer, ikke full videodekning eller alle modulenes kontekstinnganger.
+
+Fysisk mobil/Safari, reelle rolle-/transportforløp og videre designavstemming/filmer gjenstår. Tidligere QA og rapportintegrasjonen fra c716d0d3/fullCI855 beholdes. Ingen global TEST OK/Production/demo-synk; Solgløtt venter avtalt rekkefølge.
+
 # Fullførte prosjektkontroller i samlet rapport – 31.10
 
 Samme PR295/faste Preview, miljømål BEGGE. Prosjektets fullførte lagrede kontroller kan nå velges i samlet rapport/PDF/utskrift, også for prosjektbrukere uten KS/HMS-pakken. Svar, bilder, historisk signatar, dato og eventuelle begge tegninger følger kontrollen. Eldre kontroller uten tegnet signatur merkes, utkast utelates og vanlige vedlegg listes med separat originaldeling. Hele valgt sett leses på nytt etter bildene og før fil/utskrift; endringer eller bortfalt tilgang stopper eksporten. Ingen ny signering, tilgang eller databasemigrering. [Scope og bevis](docs/changes/project-controls-combined-report-20261031.json).

@@ -4,6 +4,10 @@
 
 Brukeren31.10: «Vi har hengt oss litt opp i boligprosjekt og må ikke glemme både design og videoer av appen alle andre funksjoner og undermapper. KJØR». Fortsett i samlepakker på tvers, med samme PR295/Preview. «Virker ok» på boligpakken er ikke en uttrykkelig global redesign-TEST OK. Solgløtt forblir utsatt til design+QA, TEST OK, Production og kontrollert main→demo er fullført.
 
+## Videotilgang i appen – 31.10
+
+Samme Preview får faktisk avspiller for de fem eksisterende filmene: Hjelp → Vis videoer, felles søk/områdefilter og relevante tema-knapper. Kapitler kommer fra de redigerbare tidslinjene; fullskjerm og tekstalternativ beholdes ved filmfeil. Native lukking returnerer til samme foreldrepanel og scopeendring fjerner avspilleren. [Avgrenset scope/bevis](../changes/help-video-player-20261031.json), sluttkandidat/fullCI/READY/live i PR295. Eldre «ingen avspiller» nedenfor er historikk. Antall filmer er fortsatt fem; øvrige funksjoner/undermapper, direkte modul-kontekstinnganger og fysisk mobil/Safari er ikke fullført.
+
 ## Samlet kontrollrapport – 31.10
 
 Fullførte prosjektkontroll-snapshots er nå integrert i samme rapports valg/PDF/utskrift, også uten KS/HMS-pakke. Lagret innhold, ordinære bilder og eventuelle begge tegninger følger med; historisk manglende tegning merkes. Eksakt valgt sett leses igjen etter bildehenting og før fil/utskrift. Native helper 58/dialog 88 krav og 9 PDF-/5 utskriftsforløp PASS, inklusive endret grunnlag/tilgang. Fire native filer/39 sider visuelt kontrollert, også CI-identisk Poppler PASS. [Scope/bevis](../changes/project-controls-combined-report-20261031.json). FullCI/READY og live etterkontroll dokumenteres i PR295. Tidligere åpenstatus for selve integrasjonen nedenfor er historisk; reelle roller/filbro/fysisk mobil og full app-/videodekning står fortsatt åpne.
