@@ -1,3 +1,11 @@
+# Bolig/UE – kompakte resultatvalg31.10.2026
+
+Eksisterende PR294 oppdateres fra mainb389c707 og får samme kompakte grønne/oransje resultatvalg i Bolig- og UE-sjekklister. Miljømål BEGGE, utførelse bare Preview/Sandbox. Native statusverdier, kladd, avvikslukking, tillatelser og lagring/retry beholdes. Faktiske komponenttester og full build/CI/READY føres i PR294. [Endring og avgrensninger](docs/changes/bolig-checklist-status-choices-20261031.json). Garantipakkene og PDF-bevisene ligger fortsatt separat i PR295; ingen redesign-TEST OK eller Production/merge/demo-synk.
+
+# Bolig-Preview – samlet oppfølging30.10.2026
+
+PR294 integrerer gjeldende main71d157 og retter Min sides boligoppgaver/presence i isolert Bolig-scope. Fire første oppgaver vises, videre liste/paginering og native kilder beholdes. Status beskriver prosjektregistrering. Lokalt tasks53, presence21 og boundary55PASS; kandidat/full CI/Preview og faktisk innlogget bevis føres i PR294. Felles designpakke følger PR295. Ingen redesign-TEST OK eller Production-publisering.
+
 # Utførelsessjekklister – TEST OK og publisert 31.10.2026
 
 Brukerens TEST OK gjelder signatur- og firmamalkandidat `2ccecedf`. Full Core Safety820/41150527338 SUCCESS10/10; PR301 er merget som `7c22018d3054b3bad31004bb556ada0af2e1e2c6`. Vercel `dpl_HDuQQSbhmBqTFPbr2L49n9CmW46R` er READY på samme commit og expo-proffdok.app. Faktisk Production-HTML/loader/bootstrap/app er sammenlignet med eksplisitt lokal Production-build; produksjonsbinding kontrolleres ved publisering. Gjeldende main-/demo-SHA, fullført main → demo, privat rollout-aktivering, preflight og eventuelle begrensninger vedlikeholdes i [PR301](https://github.com/ExpoProffsenter/expo-proffdok/pull/301).

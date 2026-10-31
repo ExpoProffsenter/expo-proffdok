@@ -66,16 +66,17 @@ window.__client = {
     if (name === "bolig_my_project_tasks") {
       window.taskReads++;
       if (window.taskReadFailure) return {error:{message:'Midlertidig nettverksfeil'}};
-      const items = window.tasksEmpty ? [] : window.tasks();
+      const all = window.tasksEmpty ? [] : new URLSearchParams(location.search).has('tasks-many') ? Array.from({length:24},(_,i)=>({...window.tasks()[i%2],id:'many-'+i,kind:['progress','deviation','round','risk'][i%4],title:'Boligoppgave '+(i+1)})) : window.tasks();
+      const start=Number(a.p_payload?.after||0),items=all.slice(start,start+8);
       return {
         data: {
           context: ctx,
           ks_context: ks,
-          count: items.length,
+          count: all.length,
           items,
-          next: null,
+          next: start+8<all.length?String(start+8):null,
           selected:
-            items.find(
+            all.find(
               (x) =>
                 x.id === a.p_payload?.selected_id &&
                 x.kind === a.p_payload?.selected_kind,

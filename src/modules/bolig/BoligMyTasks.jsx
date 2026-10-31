@@ -33,9 +33,9 @@ export default function BoligMyTasks({ context }) {
       throw e;
     }
   });
-  const [expanded, setExpanded] = useState(false),
+  const [expanded, setExpanded] = useState(true),
     [opened, setOpened] = useState(null),
-    [limit, setLimit] = useState(8),
+    [limit, setLimit] = useState(4),
     [extra, setExtra] = useState({ basis: null, items: [], next: null }),
     [moreBusy, setMoreBusy] = useState(false),
     [localError, setLocalError] = useState("");

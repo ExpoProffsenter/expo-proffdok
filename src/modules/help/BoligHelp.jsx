@@ -32,11 +32,17 @@ export function BoligHelp() {
           Firmaets aktivering og den enkelte brukerens tilgang styrer hvem som får åpne modulen.
           Private kontrakter har i tillegg navngitt tilgang.</p>
       </details>
+      <details>
+        <summary>Svar på kontrollpunkter i Bolig og UE-portalen</summary>
+        <p>Velg «OK», «Ikke aktuelt» eller «Avvik» ved punktet. Valgt OK og Ikke aktuelt får en grønn hake. Avvik får en oransje hake. Noen punkter tillater ikke Ikke aktuelt. Trykk på valgt svar igjen for å tømme det.</p>
+        <p>Et avvik trenger fortsatt de vanlige opplysningene og eventuell dokumentasjon. «Lukket avvik» vises når det lagrede avviket kan følges opp. Bruk «Lagre kontroll» i Bolig eller «Lagre sjekkliste» i UE-portalen. Et valg alene lagrer eller fullfører ikke kontrollen.</p>
+      </details>
       <p>
         Start i prosjektoversikten. Velg «Bygg nytt prosjekt», fortsett en
         kladd, eller åpne et av firmaets prosjekter. «Prosjektoversikt» tar deg
         tilbake uten å fjerne usendt arbeid. En ny åpning starter her.
-        «Hovedside» viser bygg og boliger i prosjektet du har valgt.
+        «Hovedside» viser bygg og boliger i prosjektet du har valgt. Velg et bygg for å sette
+        byggnavn og adresser i fokus over fasaden. Boligknappene beholder lesbar størrelse.
       </p>
       <details>
         <summary>Beboerportal – oversikt og neste steg</summary>
@@ -46,6 +52,9 @@ export function BoligHelp() {
         <p>«Mine valg», «Avtaler», «Dokumenter» og «Meldinger» fungerer som før.
           Et valg sendes først til gjennomgang. En avtale aksepteres separat etter
           gjennomgang av varer, pris og svarfrist. Bruk «Hent siste status» ved behov.</p>
+        <p>På Min side vises de første fire boligoppgavene. Velg «Vis flere boligoppgaver»
+          eller «Hent flere boligoppgaver» for resten. Trykk på overskriften for å folde
+          listen sammen eller åpne den igjen. «Åpne oppgave» går til den vanlige arbeidsflaten.</p>
         <p>På Min side vises «Prøv å hente oppgavene igjen» hvis boligoppgavene
           ikke kunne hentes. En tom eller feilende henting skal ikke tolkes som
           at alle oppgaver er ferdige. Manglende tilgang gir ikke innsyn i oppgaver.</p>
@@ -56,7 +65,9 @@ export function BoligHelp() {
           Her vises registrert tilstedeværelse med navn, firma, inn- og uttid,
           valgt prosjektdag og rettingshistorikk. «Eksporter liste (CSV)» laster ned listen.</p>
         <p>Aktiver bemanning og legg til navngitte deltakere. Ansatte registrerer
-          seg på Min side. UE bruker sin personlige lenke. Prosjektleder kan også
+          seg på Min side. «Registrert på prosjektet» gjelder tilstedeværelse på byggeplassen.
+          Velg «Registrer inn» når du kommer og «Registrer ut» når du går.
+          UE bruker sin personlige lenke. Prosjektleder kan også
           registrere manuelt. Kontroller åpne registreringer fra tidligere dager.</p>
         <p>Velg «Oversiktsliste ved tilsyn» for byggeplassens elektroniske oversiktsliste.
           Åpne «Rediger byggeplass» og fyll inn adresse, byggherre og listefører.
@@ -274,7 +285,7 @@ export function BoligHelp() {
           senere. En enebolig registreres som én husstand, uansett etasjeantall.
         </li>
         <li>
-          Bruk «Alle bygg» eller «Bytt bygg» for å finne riktig bygg. Lange
+          Byggvalg, søk, boligfilter og Fasade/Boligliste er samlet i verktøylinjen. På bred skjerm bruker verktøyene midten og boligstatistikken høyre side. På smal skjerm deles de i lesbare grupper. Før du velger en bolig, bruker fasaden hele bredden. De tre stegene i boligleveransen kan åpnes under oversikten. Små prosjekter har også direkte byggknapper. Bruk «Alle bygg» eller «Bytt bygg» for å finne riktig bygg. Lange
           blokker har oppgangsvelger og et oversiktsbånd. Søk finner boliger,
           adresser og kontaktpersoner på tvers av byggene. «Boligliste» viser
           alle boliger med kontakt og status. «Filtrer boliger» finner manglende
@@ -582,3 +593,4 @@ export function BoligHelp() {
     </details>
   );
 }
+

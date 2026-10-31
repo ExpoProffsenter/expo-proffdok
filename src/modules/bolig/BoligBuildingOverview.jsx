@@ -4,6 +4,7 @@ import Dialogue, {
 } from "./BoligDialogue.jsx";
 import { useBoligCoordination } from "./boligCoordination.js";
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import "./boligWorkspace.css";
 import {
   Building2,
   ArrowLeft,
@@ -317,7 +318,22 @@ export default function BoligBuildingOverview({
     segmentStart,
     segmentStart + capacity,
   );
+  const addressRef = useRef(null), focusChosenBuilding = useRef(false);
+  // Only explicit building selection moves focus; refresh/recovery never does.
+  useEffect(() => {
+    if (!focusChosenBuilding.current || allBuildings || pickerOpen) return;
+    focusChosenBuilding.current = false;
+    const address = addressRef.current;
+    const top = Math.max(0, ...Array.from(document.querySelectorAll("header")).map(node => {
+      const style = getComputedStyle(node), rect = node.getBoundingClientRect();
+      return ["sticky", "fixed"].includes(style.position) && rect.top <= 1 && rect.bottom > 0 ? rect.bottom : 0;
+    }));
+    if (address) address.style.scrollMarginTop = `${top + 12}px`;
+    addressRef.current?.focus({ preventScroll: true });
+    addressRef.current?.scrollIntoView({ block: "start", behavior: "instant" });
+  }, [selectedBlock?.id, allBuildings, pickerOpen, presentation]);
   const chooseBlock = (id) => {
+    focusChosenBuilding.current = true;
     setPresentation("facade");
     setStatusFilter("all");
     setBlockId(id);
@@ -487,6 +503,10 @@ export default function BoligBuildingOverview({
       {!filteredBlocks.length && <p>Ingen bygg passer til søket.</p>}
     </div>
   );
+  const quickBuildings = blocks.length > 1 && blocks.length <= 3 && !allBuildings;
+  const summaryUnits = allBuildings ? units : units.filter(unit => entranceMap.get(unit.entrance_id)?.block_id === selectedBlock?.id);
+  const summaryAvailable = Boolean(statuses) && summaryUnits.every(unit => unitStatus(unit, statuses?.[unit.id], layer).tone !== "unknown");
+  const summaryReady = summaryUnits.filter(unit => unitStatus(unit, statuses?.[unit.id], layer).tone === "ready").length;
   return (
     <section
       ref={surface}
@@ -563,36 +583,99 @@ export default function BoligBuildingOverview({
           </>
         )}
       </div>
-      <div className="bolig-building-toolbar">
-        <h3 ref={titleRef} tabIndex={-1}>
-          <Building2 size={20} />
-          {allBuildings ? "Alle bygg" : selectedBlock?.name || "Byggoversikt"}
-        </h3>
-        <label className="bolig-overview-search">
-          <Search size={16} />
-          <span className="bolig-sr-only">Søk i hele hovedprosjektet</span>
-          <input
-            type="search"
-            placeholder="Søk bolig, adresse eller kontakt"
-            value={query}
-            onChange={(e) => onQuery(e.target.value)}
-          />
-        </label>
+      <div className="bolig-workspace-toolbar" aria-label="Boligverktøy">
+        <div className="bolig-workspace-building bolig-building-toolbar">
+          <h3 ref={titleRef} tabIndex={-1} className={quickBuildings ? "bolig-sr-only" : ""}>
+            <Building2 size={20} />
+            {allBuildings ? "Alle bygg" : selectedBlock?.name || "Byggoversikt"}
+          </h3>
+          {quickBuildings && (
+            <div className="bolig-workspace-building-tabs" role="group" aria-label="Velg bygg">
+              {blocks.map(block => (
+                <button key={block.id} type="button" aria-label={`Velg ${block.name}`}
+                  aria-pressed={!allBuildings && selectedBlock?.id === block.id}
+                  onClick={() => chooseBlock(block.id)}>{block.name}</button>
+              ))}
+            </div>
+          )}
+          {blocks.length > 1 && (
+            <button
+              ref={pickerTrigger}
+              className="bolig-switch-building"
+              type="button"
+              aria-haspopup="dialog"
+              aria-expanded={pickerOpen}
+              onClick={() => setPickerOpen(true)}
+            >
+              <Building2 size={16} />
+              <span>Bytt bygg</span>
+              <ChevronDown size={15} />
+            </button>
+          )}
+        </div>
+        <div className="bolig-workspace-tools">
+          <label className="bolig-overview-search">
+            <Search size={16} />
+            <span className="bolig-sr-only">Søk i hele hovedprosjektet</span>
+            <input
+              type="search"
+              placeholder="Søk bolig, adresse eller kontakt"
+              value={query}
+              onChange={(e) => onQuery(e.target.value)}
+            />
+          </label>
+          <div className="bolig-overview-tools">
+            <div
+              role="group"
+              aria-label="Visning av boliger"
+              className="bolig-overview-view"
+            >
+              <button
+                type="button"
+                aria-pressed={!listVisible}
+                onClick={() => {
+                  setPresentation("facade");
+                  setStatusFilter("all");
+                  onQuery("");
+                }}
+              >
+                <Building2 size={16} />
+                Fasade
+              </button>
+              <button
+                type="button"
+                aria-pressed={!!listVisible}
+                onClick={() => setPresentation("list")}
+              >
+                <List size={16} />
+                Boligliste
+              </button>
+            </div>
+            <label>
+              Filtrer boliger
+              <select
+                aria-label="Filtrer boliger"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+              >
+                <option value="all">Alle statuser · {units.length}</option>
+                {Object.entries(statusLabels).map(([tone, label]) => (
+                  <option key={tone} value={tone}>
+                    {label} · {statusCounts[tone] || 0}
+                  </option>
+                ))}
+                <option value="contact">Mangler kontaktinfo</option>
+              </select>
+            </label>
+          </div>
+        </div>
+        <div className="bolig-workspace-stats" aria-label={allBuildings ? "Boligstatistikk for hele prosjektet" : "Boligstatistikk for valgt bygg"}>
+          <span><strong>{summaryUnits.length}</strong>boliger</span>
+          {summaryAvailable ? <span><strong>{summaryReady}</strong>{statusLabels.ready}</span> : <small>Status ikke tilgjengelig ennå</small>}
+        </div>
       </div>
       {blocks.length > 1 && (
         <>
-          <button
-            ref={pickerTrigger}
-            className="bolig-switch-building"
-            type="button"
-            aria-haspopup="dialog"
-            aria-expanded={pickerOpen}
-            onClick={() => setPickerOpen(true)}
-          >
-            <Building2 size={16} />
-            Bytt bygg
-            <ChevronDown size={15} />
-          </button>
           {createPortal(
             <dialog
               ref={picker}
@@ -655,50 +738,6 @@ export default function BoligBuildingOverview({
           </button>
         ))}
       </nav>
-      <div className="bolig-overview-tools">
-        <div
-          role="group"
-          aria-label="Visning av boliger"
-          className="bolig-overview-view"
-        >
-          <button
-            type="button"
-            aria-pressed={!listVisible}
-            onClick={() => {
-              setPresentation("facade");
-              setStatusFilter("all");
-              onQuery("");
-            }}
-          >
-            <Building2 size={16} />
-            Fasade
-          </button>
-          <button
-            type="button"
-            aria-pressed={!!listVisible}
-            onClick={() => setPresentation("list")}
-          >
-            <List size={16} />
-            Boligliste
-          </button>
-        </div>
-        <label>
-          Filtrer boliger
-          <select
-            aria-label="Filtrer boliger"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-          >
-            <option value="all">Alle statuser · {units.length}</option>
-            {Object.entries(statusLabels).map(([tone, label]) => (
-              <option key={tone} value={tone}>
-                {label} · {statusCounts[tone] || 0}
-              </option>
-            ))}
-            <option value="contact">Mangler kontaktinfo</option>
-          </select>
-        </label>
-      </div>
       {error && (
         <p role="status" className="bolig-overview-error">
           {error}
@@ -910,6 +949,10 @@ export default function BoligBuildingOverview({
             </div>
           )}
 
+          <div className="bolig-selected-address" ref={addressRef} tabIndex={-1} role="region" aria-label="Valgt bygg og adresse">
+            <strong>{selectedBlock.name}</strong>
+            <span><MapPin size={17} aria-hidden="true" />{shownEntrances.map(e => e.address || "Adresse legges til senere").join(" · ")}</span>
+          </div>
           <BoligVisualWorkspace context={context} root={record.root} scope={selectedBlock.id} kind="facade"
             selected={selectGroup ? selectedGroupUnits : unitId}
             statusFor={id => unitStatus(units.find(u=>u.id===id) || {}, statuses?.[id], layer)}
@@ -936,15 +979,7 @@ export default function BoligBuildingOverview({
                       minWidth: Math.max(
                         240,
                         Math.max(...(e.counts || [4])) * 62 + 80,
-                        // Keep the complete image proportional while leaving room
-                        // for every real floor and a readable, clickable unit target.
-                        Math.ceil(
-                          (floors.length * 82 + 140) /
-                            (2 / 3 -
-                              (["house", "duplex"].includes(selectedBlock.building_type)
-                                ? 0.25
-                                : selectedBlock.building_type === "multi" ? 0.17 : 0)),
-                        ),
+
                       ),
                       "--row-min-width": `${Math.max(...(e.counts || [4])) * 62 - 10}px`,
                     }}
@@ -1104,3 +1139,4 @@ export default function BoligBuildingOverview({
     </section>
   );
 }
+

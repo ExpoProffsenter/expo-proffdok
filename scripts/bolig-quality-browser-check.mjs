@@ -1,3 +1,4 @@
+import { exerciseBoligStatusChoices } from "./fixtures/bolig-status-choice-check.mjs";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -19,7 +20,7 @@ import '${cwd}/src/style.css';import '${cwd}/src/modules/bolig/bolig.css';
 const ctx={user_id:'qa',company_id:'firm',role:'manager',enabled:true},root={id:'root',title:'QA Prosjekt'};
 let d={checks:[],documents:[],protocols:[],fdv:{}},revision=0,history=[],fdv=[{key:'tap',unit_id:'unit',unit:'H0101',block:'Bygg A',name:'QA Blandebatteri',sku:'00123',quantity:1,unit_name:'stk',fdv_url:'',choice_revision:1}];
 window.__calls=[];window.__foreign=false;window.__deny=false;window.__hold=false;window.__role='manager';window.__mailSent=false;
-const templates=[{id:'published',number:3,content_hash:'hash',content:{title:'Firmaets kontroll',trade:'Felles – alle fag',instructions:'Gjeldende mal',points:[{id:'published-point',title:'Publisert sjekkpunkt'}]}}];
+const templates=[{id:'published',number:3,content_hash:'hash',content:{title:'Firmaets kontroll',trade:'Felles – alle fag',instructions:'Gjeldende mal',points:[{id:'published-point',title:'Publisert sjekkpunkt',allow_na:false}]}}];
 const state=()=>({context:{...ctx,role:window.__role},root_id:'root',scope_id:'unit',kind:'unit',title:'H0101 · QA Gate',revision,data:structuredClone(d),templates,rooms:[],history,fdv:structuredClone(fdv),basis:'basis'+revision});
 let prepared=null;
 window.__client={storage:{from:()=>({upload:async()=>({}),createSignedUrl:async()=>({data:{signedUrl:'https://example.invalid/private-file'}})})},functions:{invoke:async(name,args)=>{window.__calls.push({name,args});return {data:{ok:true}};}},rpc:async(name,args)=>{
@@ -194,7 +195,9 @@ try {
   await button(/QA Egen kontroll/).waitFor();
   await button(/QA Egen kontroll/).click();
   modal = dialog("QA Egen kontroll");
-  await modal.getByLabel("Resultat").selectOption("Avvik");
+  await exerciseBoligStatusChoices(page, modal.getByRole("group", { name: "Resultat: Kontroller montering", exact: true }), eq, { name: "bolig-quality" });
+  eq(await page.evaluate(()=>window.__calls.filter(c=>c.args.p_action==='check_save').length),0,"Status selection never saves or completes a control");
+  await modal.getByRole("group", {name:"Resultat: Kontroller montering",exact:true}).getByRole("button",{name:"Avvik",exact:true}).click();
   await modal.getByLabel("Kommentar").fill("Mangler justering");
   await modal.getByLabel("Målt trykk *", { exact: true }).fill("3");
   await modal.getByLabel("Fullfør kontrollen ved lagring").check();
@@ -206,6 +209,8 @@ try {
   );
   await button(/QA Egen kontroll/).click();
   eq(await button("Lagre kontroll").count(), 0, "Completed run is read-only");
+  eq(await dialog("QA Egen kontroll").getByRole("group",{name:"Resultat: Kontroller montering",exact:true}).getByRole("button").evaluateAll(ns=>ns.every(n=>n.matches(":disabled"))),true,"Every completed result action is disabled");
+  eq(await dialog("QA Egen kontroll").getByRole("button",{name:"Avvik",exact:true}).getAttribute("aria-pressed"),"true","Completed result stays visible");
   await button("Gjenåpne kontroll").click();
   eq(
     await dialog("Gjenåpne kontroll").evaluate(
@@ -218,7 +223,8 @@ try {
   await button("Gjenåpne").click();
   await button(/QA Egen kontroll/).click();
   modal = dialog("QA Egen kontroll");
-  await modal.getByLabel("Resultat").selectOption("Lukket avvik");
+  eq(await modal.getByRole("group",{name:"Resultat: Kontroller montering",exact:true}).getByRole("button").allTextContents(), ["OK", "Ikke aktuelt", "Avvik", "Lukket avvik"], "Server deviation enables closing only after save/reopen");
+  await modal.getByRole("button",{name:"Lukket avvik",exact:true}).click();
   await modal.getByLabel("Kommentar").fill("Justert og kontrollert");
   await modal.getByLabel("Fullfør kontrollen ved lagring").check();
   await button("Lagre kontroll").click();
@@ -230,6 +236,10 @@ try {
     1,
     "Import retains published edition",
   );
+  await button(/Firmaets kontroll/).click();
+  const noNa = dialog("Firmaets kontroll").getByRole("group", {name:"Resultat: Publisert sjekkpunkt",exact:true});
+  eq(await noNa.getByRole("button").allTextContents(),["OK","Avvik"],"NA forbidden by actual published template");
+  await page.keyboard.press("Escape");
   await button(/Filer og bilder/).click();
   await button("Last opp fil").click();
   modal = dialog("Last opp dokument");
@@ -415,7 +425,7 @@ try {
   eq(await page.evaluate(start => window.__calls.slice(start).filter(call => call.args.p_action !== "get").length, readerCallStart), 0, "Reader render makes no mutation calls");
   await button(/QA Egen kontroll/).click();
   eq(
-    await page.getByLabel("Resultat").isEnabled(),
+    await page.getByRole("group", {name:"Resultat: Kontroller montering",exact:true}).getByRole("button", {name:"OK",exact:true}).isEnabled(),
     false,
     "Reader sees saved answers only",
   );

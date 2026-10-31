@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Kompakt førstegangsvisning av boligoppgaver og tydelig prosjektregistrering",
+  "change": "Miljømål BEGGE, bare eksisterende Bolig-Preview/PR294. Min side viser de fire første boligoppgavene uten et ekstra klikk. Brukeren kan folde sammen og vise/hente flere gjennom eksisterende paginering. Alle fire native kilder og fersk valgt-ID-kontroll beholdes. Presence sier Registrert på prosjektet eller Ikke registrert på prosjektet, også i prosjektvelger, med uendrede Registrer inn/ut, kvittering og retry. Gjeldende main71d157 integreres uten konflikter før denne avgrensede Bolig-diffen. Ingen time-, HR-, tilgangs-, backend-, sending- eller global menyendring.",
+  "verification": "Lokalt faktisk Chromium: Bolig-integration53 assertions PASS (opprinnelige kontrakter beholdt, åpning endret fra bevisst ekstra toggle til synlig første liste). Ny24-oppgavefixture: fire første på fem bredder320–1920, foldvalg over focus, lastet liste vs neste serverpage uten duplikater, alle fire native kilder får eksaktID, null writes. Eksisterende nettfeil/retry/empty/revoke og hidden/focus beholdt. Native bladkomponenter stubbes kun på eksisterende testgrense. Self-attendance21PASS med eksisterende reell syntetisk in/out/retrykvittering og nye entydige statusassertions. Boundary55PASS mot gjeldende main. Full build/CI og eksakt Preview/live-kontroll kvitteres i PR294; ikke totalattest for alle Bolig-reiser.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "Brukeren må finne de faktiske listevalgene og forstå status for tilstedeværelse."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Ingen ny dataflyt; eksisterende scoped reader, kilder, kvittering og paginering beholdes."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen ny installasjon, avhengighet eller administratorinnstilling."
+    },
+    "module": {
+      "required": true,
+      "reason": "Modulbeskrivelsen angir standard fire rader, brukerens foldvalg og uendrede native eiere."
+    }
+  }
+}

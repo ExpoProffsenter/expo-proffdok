@@ -23,9 +23,9 @@ import Overview from '${cwd}/src/modules/bolig/BoligBuildingOverview.jsx';
 import '${cwd}/src/modules/bolig/bolig.css';
 const homeRoots=Array.from({length:15},(_,i)=>({id:'root'+i,title:'Boligprosjekt '+(i+1),reference:'QA-'+(i+1),unit_count:(i+1)*10,archived:i===14}));
 const context={user_id:'qa-user',company_id:'qa-company',company_name:'Eksempelfirma · kun test',enabled:true,role:'manager'};
-const make=(mode)=>{const record={root:{id:mode,revision:1},blocks:[],entrances:[],units:[]};for(let b=0;b<(mode==='fivehundred'?25:mode==='many'?20:1);b++){record.blocks.push({id:'b'+b,name:'Bygg '+(b+1),building_type:'apartment',address:'Eksempelgata '+(b+1)});for(let e=0;e<((mode==='many'||mode==='fivehundred')?2:20);e++){const id='b'+b+'e'+e,counts=mode==='uneven'?[2,3,1]:(mode==='many'||mode==='fivehundred')?[2,2,2,2,2]:[4,4,4,4,4,4];record.entrances.push({id,block_id:'b'+b,address:'Eksempelgata '+(b+1)+' oppgang '+(e+1),counts});counts.forEach((n,f)=>{for(let p=0;p<n;p++)record.units.push({id:id+'f'+f+'p'+p,entrance_id:id,floor:f+1,number:'H'+String(f+1).padStart(2,'0')+String(p+1).padStart(2,'0'),contact_name:b===19&&e===1&&f===4&&p===0?'Siste Eksempel':'',has_project:false});});}}if(mode.startsWith('type-')){const type=mode.slice(5),b=record.blocks[0],e=record.entrances[0];b.building_type=type;const counts=type==='house'?[1]:type==='duplex'?[2]:type==='multi'?[2,3,1]:[4,3,5,4,2,4];e.counts=counts;record.blocks=[b];record.entrances=[e];record.units=counts.flatMap((n,f)=>Array.from({length:n},(_,p)=>({id:'actual-'+f+'-'+p,entrance_id:e.id,floor:f+1,number:'H'+String(f+1).padStart(2,'0')+String(p+1).padStart(2,'0'),contact_name:'',has_project:false})));}return record;};
+const make=(mode)=>{const record={root:{id:mode,revision:1},blocks:[],entrances:[],units:[]};for(let b=0;b<(mode==='sixteen'?16:mode==='fivehundred'?25:mode==='many'?20:1);b++){record.blocks.push({id:'b'+b,name:'Bygg '+(b+1),building_type:mode==='sixteen'?'multi':'apartment',address:'Eksempelgata '+(b+1)});for(let e=0;e<(mode==='sixteen'?1:(mode==='many'||mode==='fivehundred')?2:20);e++){const id='b'+b+'e'+e,counts=(mode==='uneven'||mode==='sixteen')?[2,3,1]:(mode==='many'||mode==='fivehundred')?[2,2,2,2,2]:[4,4,4,4,4,4];record.entrances.push({id,block_id:'b'+b,address:'Eksempelgata '+(b+1)+' oppgang '+(e+1),counts});counts.forEach((n,f)=>{for(let p=0;p<n;p++)record.units.push({id:id+'f'+f+'p'+p,entrance_id:id,floor:f+1,number:'H'+String(f+1).padStart(2,'0')+String(p+1).padStart(2,'0'),contact_name:b===19&&e===1&&f===4&&p===0?'Siste Eksempel':'',has_project:false});});}}if(mode.startsWith('type-')){const type=mode.slice(5),b=record.blocks[0],e=record.entrances[0];b.building_type=type;const counts=type==='house'?[1]:type==='duplex'?[2]:type==='multi'?[2,3,1]:[4,3,5,4,2,4];e.counts=counts;record.blocks=[b];record.entrances=[e];record.units=counts.flatMap((n,f)=>Array.from({length:n},(_,p)=>({id:'actual-'+f+'-'+p,entrance_id:e.id,floor:f+1,number:'H'+String(f+1).padStart(2,'0')+String(p+1).padStart(2,'0'),contact_name:'',has_project:false})));}return record;};
 window.__attempts=[];window.__failNext=false;window.__client={rpc:async(name,args)=>({data:{context,root_id:args.p_root_id,units:[]}})};
-function App({mode}){const [q,sq]=useState(''),[unit,su]=useState(''),[busy,sb]=useState(false);return <section className="bolig-dialog bolig-page" style={{maxWidth:'100%',width:'100%',minHeight:'100vh'}}>{mode==='home'?<><ProjectHome roots={homeRoots} activeRoot={homeRoots[0]} active loading={false} busy={false} manager onSelect={su} onResume={()=>su('resume')}><Builder context={context} busy={false} onCreate={async()=>{}}/></ProjectHome><output>{unit}</output></>:mode==='builder'?<div className="bolig-utilities"><div className="bolig-toolbar"><small>Prosjektledertilgang</small></div><BoligHelp/><Builder context={context} busy={busy} onCreate={async payload=>{sb(true);try{window.__attempts.push(payload);if(window.__failNext){window.__failNext=false;throw Error('Forbindelsen ble brutt. Kontroller opprettelsen.');}}finally{sb(false);}}}/></div>:mode==='contact'?<Task title="Leilighetsinformasjon"><label>Kontaktperson<input aria-label="Kontaktperson" defaultValue="Eksempelperson"/></label></Task>:<><Overview context={context} record={make(mode)} query={q} onQuery={sq} unitId={unit} onSelect={su} onSetup={()=>{}}/><output>{unit}</output></>}</section>};
+function App({mode}){const [q,sq]=useState(''),[unit,su]=useState(''),[busy,sb]=useState(false);return <section className="bolig-dialog bolig-page" style={{maxWidth:'100%',width:'100%',minHeight:'100vh'}}>{mode==='home'?<><ProjectHome roots={homeRoots} activeRoot={homeRoots[0]} active loading={false} busy={false} manager onSelect={su} onResume={()=>su('resume')}><Builder context={context} busy={false} onCreate={async()=>{}}/></ProjectHome><output>{unit}</output></>:mode==='builder'?<div className="bolig-utilities"><div className="bolig-toolbar"><small>Prosjektledertilgang</small></div><BoligHelp/><Builder context={context} busy={busy} onCreate={async payload=>{sb(true);try{window.__attempts.push(payload);if(window.__failNext){window.__failNext=false;throw Error('Forbindelsen ble brutt. Kontroller opprettelsen.');}}finally{sb(false);}}}/></div>:mode==='contact'?<Task title="Leilighetsinformasjon"><label>Kontaktperson<input aria-label="Kontaktperson" defaultValue="Eksempelperson"/></label></Task>:<>{mode==='sixteen'&&<header data-qa-sticky style={{position:'sticky',top:0,height:180,zIndex:20}}>QA app-header</header>}<Overview context={context} record={make(mode)} query={q} onQuery={sq} unitId={unit} onSelect={su} onSetup={()=>{}}/><output>{unit}</output></>}</section>};
 const root=createRoot(document.getElementById('app'));window.__mode=mode=>root.render(<App key={mode} mode={mode}/>);window.__mode('builder');
 `,
 );
@@ -584,6 +584,19 @@ try {
     true,
     "Mobile page change leaves the complete heading focused in the viewport",
   );
+  for (const width of [1366, 768, 390, 320]) {
+    await page.setViewportSize({width,height:800});
+    await page.evaluate(() => window.__mode('sixteen'));
+    await page.getByRole('button',{name:/Alle bygg/}).click();
+    await page.locator('.bolig-all-buildings').getByRole('button',{name:'Åpne Bygg 2',exact:true}).click();
+    const address = page.getByRole('region',{name:'Valgt bygg og adresse'});
+    eq(await address.textContent(), 'Bygg 2Eksempelgata 2 oppgang 1', 'Explicit choice exposes correct building address');
+    eq(await address.evaluate(el=>el===document.activeElement),true,'Building address receives focus');
+    eq(await address.evaluate(el=>el.getBoundingClientRect().top>=document.querySelector('[data-qa-sticky]').getBoundingClientRect().bottom+8&&el.getBoundingClientRect().bottom<innerHeight),true,'Address is within viewport');
+    eq(await page.locator('.bolig-photo-building').evaluate(el=>el.getBoundingClientRect().height<500),true,'Three-floor multi-family facade stays compact');
+    eq(await page.locator('.bolig-window').count(),6,'All six real units retained');
+    eq(await page.locator('.bolig-window').first().evaluate(el=>el.getBoundingClientRect().height>=44),true,'Targets remain readable and touchable');
+  }
   for (const type of ["house", "duplex", "multi", "apartment", "field"]) {
     for (const width of [390, 1366]) {
       await page.setViewportSize({ width, height: 900 });
@@ -765,6 +778,40 @@ try {
       .count(),
     0,
   );
+  // Regression: the former 16-building fixture covered the saved overview,
+  // not the wizard. Exercise the real wizard with loaded photos at every step.
+  await page.getByRole("button", { name: "Bygg nytt prosjekt", exact: true }).click();
+  await dialog.getByLabel("Prosjektnavn", { exact: true }).fill("Kun lokal layoutprøve");
+  for (const type of ["Flerfamiliehus", "Enebolig", "Tomannsbolig", "Leilighetsbygg"]) {
+    await dialog.getByRole("button", { name: new RegExp("^" + type + " ") }).click();
+    await dialog.getByRole("button", { name: "Neste", exact: true }).click();
+    await dialog.getByLabel("Antall bygg", { exact: true }).fill("16");
+    for (const step of [1, 2, 3]) {
+      for (const width of [320, 390, 768, 1024, 1366, 1920]) {
+        await page.setViewportSize({ width, height: 900 });
+        await dialog.locator("img").evaluateAll(images => Promise.all(images.map(img => img.decode())));
+        const layout = await dialog.evaluate(d => {
+          const body = d.querySelector(".bolig-builder-body");
+          const photos = [...d.querySelectorAll(".bolig-builder-building-head > img, .bolig-builder-review article > img")];
+          return {
+            bodyFits: body.scrollWidth <= body.clientWidth + 1,
+            photosFit: photos.length > 0 && photos.every(img => {
+              const r = img.getBoundingClientRect(), p = img.parentElement.getBoundingClientRect();
+              return img.naturalWidth > 0 && r.width <= 131 && r.height <= 76 && r.left >= p.left && r.right <= p.right;
+            }),
+          };
+        });
+        eq(layout.bodyFits, true, `${type}: step ${step}, ${width}px has no inner horizontal overflow`);
+        eq(layout.photosFit, true, `${type}: step ${step}, ${width}px photos stay compact and inside their row`);
+        if (type === "Flerfamiliehus" && width === 1366)
+          await page.screenshot({ path: path.join(temp, `sixteen-wizard-step-${step}.png`) });
+      }
+      if (step < 3) await dialog.getByRole("button", { name: "Neste", exact: true }).click();
+    }
+    for (let step = 3; step > 0; step--)
+      await dialog.getByRole("button", { name: "Tilbake", exact: true }).click();
+  }
+  await dialog.press("Escape");
   eq(errors, []);
   console.log(
     `PASS builder/browser: ${checks} assertions; atomic-attempt recovery, house floors, saved draft, close/Escape/focus, 400/480/500 households, last-building search, scoped rendering and 320/390/1024/1366px. Internal visual evidence: ${temp}`,
