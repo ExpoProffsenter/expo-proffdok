@@ -61,6 +61,7 @@ function App(){
  const [tilbud,setTilbud]=React.useState({...emptyTilbud(),sum:'100000',files:[{id:'contract',name:'Signert kontrakt.pdf',url:'/contract.pdf',documentType:'contract'}]}),[warranty,setWarranty]=React.useState({enabled:true,system:system.id,issued:false});
  const [overtagelse,setOvertagelse]=React.useState({enabled:false,dato:'2026-10-30',kommentar:'',signKunde:'',signUtførende:''}),[access,setAccess]=React.useState([]),[message,setMessage]=React.useState('');
  window.showProject036=(m,l=false)=>{setMode(m);setLocked(l);};
+ window.setWarranty036=setWarranty;
  React.useEffect(()=>{window.committed=mode+':'+locked;},[mode,locked]);
  const call=(name)=>(...args)=>window.calls.push({name,args});
  const common={Section,Grid,Input,Textarea,SignaturePad,project,setProject,projectId:'qa-project',isProjectLocked:locked};
@@ -118,6 +119,23 @@ try{
   await page.keyboard.press('Escape');await dialog.waitFor({state:'hidden'});await page.getByRole('button',{name:openName,exact:true}).click();await dialog.waitFor();eq(await dialog.getByLabel(mode==='deviations'?'Kort tittel':'Kontrollørens navn / firma',{exact:true}).inputValue(),mode==='deviations'?'Usendt QA avvik':'Usendt QA kontrollør',mode+' native close/reopen keeps draft');await page.keyboard.press('Escape');await dialog.waitFor({state:'hidden'});
  }
  eq(await page.evaluate(()=>window.calls.filter(c=>c.name==='save-deviation'||c.name==='controller_access_command')),[],'dialog validation and close/reopen never save/create access');
+ await show('warranty',true);
+ await page.evaluate(()=>window.setWarranty036({enabled:true,system:'sopro-aeb-815',issued:false,status:'draft',guaranteeNumber:'QA-LEGACY-ONLY',issuedAt:'2026-09-15T12:00:00Z'}));
+ await page.getByRole('heading',{name:'Garanti utstedt',exact:true}).waitFor();
+ eq(await page.getByRole('button',{name:'✅ Garanti utstedt',exact:true}).isDisabled(),true,'legacy guarantee number remains issued and cannot issue again');
+ eq(await page.locator('label').filter({has:page.getByText('Godkjent Sopro-system',{exact:true})}).locator('select').isDisabled(),true,'issued system remains immutable');
+ eq(await page.getByRole('button',{name:'Trekk tilbake utstedelse',exact:true}).count(),0,'locked history cannot withdraw issuance');
+ eq(await page.getByText('QA-LEGACY-ONLY',{exact:true}).count(),1,'native archive retains original guarantee number');
+ await page.getByText('Vis mottaker og vilkårsforklaring',{exact:true}).click();
+ eq(await page.getByLabel('Mottaker',{exact:true}).isDisabled(),true,'receipt remains read only');
+ for(const width of [320,390,768,1363,1920]){
+  await page.setViewportSize({width,height:600});await measure('warranty-issued-'+width);
+  eq(await page.locator('.warranty-workspace .checklistSummaryBadges>span').evaluateAll(es=>es.every(e=>e.scrollWidth<=e.clientWidth+1&&getComputedStyle(e).fontSize==='16px')),true,'issued requirements remain readable '+width);
+  if(process.env.PROJECT_UX_SCREENSHOTS)await page.screenshot({path:path.join(process.env.PROJECT_UX_SCREENSHOTS,'warranty-issued-'+width+'.png'),fullPage:true});
+ }
+ await page.evaluate(()=>window.setWarranty036({enabled:false}));
+ await page.getByText('Garantien er ikke aktivert. Prosjektet kan fortsatt dokumenteres som vanlig uten garanti.',{exact:true}).waitFor();
+ eq(await page.getByRole('button',{name:/Utsted .*tetthetsgaranti/}).count(),0,'inactive warranty has no issue command');
  eq(errors,[],'no native React runtime errors');
  console.log('Project native subflows036 PASS: '+checks+' assertions / '+visits.length+' state×width views. Actual tools and wrappers; native main primitives; full static/runtime CSS; synthetic client transport only. No all-role/server/mobile/Safari attestation.');
 }finally{await browser?.close();await new Promise(r=>server.close(r));fs.rmSync(tmp,{recursive:true,force:true});}

@@ -1,3 +1,4 @@
+import { renderWarrantyTermsPdf } from './warrantyTermsPdf.mjs';
 // FASE 27D GARANTI: Mekanisk uttrekk av eksisterende ProjectWarrantySetup og WarrantyPanel fra main.jsx. Ingen funksjons-, garanti-, PDF-, database-, RLS-, Storage-, Edge Function- eller e-postendring.
 import React, * as ReactNS from 'react';
 import { BadgeCheck } from 'lucide-react';
@@ -145,31 +146,7 @@ export function createWarrantyViewTools({
         const JsPDF = module.jsPDF || module.default?.jsPDF;
         if (!JsPDF) throw new Error("Kunne ikke laste PDF-motor.");
         const doc = new JsPDF({ unit: "mm", format: "a4", compress: true });
-        const pageWidth = doc.internal.pageSize.getWidth();
-        const pageHeight = doc.internal.pageSize.getHeight();
-        const margin = 16;
-        const contentWidth = pageWidth - margin * 2;
-        let y = 18;
-        const addTitle = (text, size = 18) => { doc.setFont("helvetica", "bold"); doc.setFontSize(size); doc.setTextColor(12, 42, 82); doc.text(text, margin, y); y += size === 18 ? 12 : 8; };
-        const addText = (text, opts = {}) => { doc.setFont("helvetica", opts.bold ? "bold" : "normal"); doc.setFontSize(opts.size || 9); doc.setTextColor(31, 41, 55); const lines = doc.splitTextToSize(String(text || ""), contentWidth); if (y + lines.length * 4.6 > pageHeight - 18) { doc.addPage(); y = 18; } doc.text(lines, margin, y); y += lines.length * 4.6 + 4; };
-        const addSection = (heading, body) => { addTitle(heading, 12); addText(body); };
-        doc.setFillColor(248, 250, 252); doc.rect(0, 0, pageWidth, pageHeight, "F"); doc.setFillColor(255,255,255); doc.roundedRect(9, 9, pageWidth-18, pageHeight-18, 4, 4, "F");
-        addTitle(`Garantivilkår – ${warrantyYears} års dokumentert tetthetsgaranti`, 18);
-        addText(`Prosjekt: ${project?.projectName || project?.address || "Ikke oppgitt"}`, { bold: true });
-        addText(`Kunde: ${project?.customer || "Ikke oppgitt"} · Utførende: ${name || company?.companyName || "Ikke oppgitt"}`);
-        addText(`System: ${selectedSystem ? selectedSystem.product + " · " + selectedSystem.sintefApproval : warranty?.sintefApproval || "Ikke valgt"}`);
-        addSection("1. Garantien", `Garantien gjelder tettheten i det dokumenterte membransystemet i ${warrantyYears} år fra dato for signert overtagelse. Garantien gjelder kun for det arbeidet som er dokumentert i Expo ProffDok.`);
-        addSection("2. Forutsetninger", "Garantien forutsetter at godkjent Sopro-system er valgt, sjekklister og garantipunkter er fullført, nødvendig bildedokumentasjon foreligger, alle avvik er lukket og komplett sluttrapport er generert og arkivert.");
-        addSection("3. Hva garantien omfatter", "Garantien omfatter dokumenterte feil i membransystemets tetthet når feilen skyldes utførelse eller installasjon av det dokumenterte systemet.");
-        addSection("4. Hva garantien ikke omfatter", "Garantien omfatter ikke mekanisk skade, påboring, inngrep i konstruksjonen, skader etter overtagelse, brann, naturhendelser, manglende vedlikehold eller arbeider utført av andre etter overtagelse.");
-        addSection("5. Varsling", "Forhold som kan omfattes av garantien skal meldes til garantigiver uten ugrunnet opphold etter at forholdet er oppdaget.");
-        addSection("6. Dokumentasjon og arkiv", "Garantibeviset er gyldig sammen med komplett prosjekt­dokumentasjon, inkludert bilder, sjekklister, produktdokumentasjon og signert overtagelse. Utførende firma er ansvarlig for langsiktig arkivering.");
-        addTitle("Kvittering for mottak", 12);
-        addText(`Mottatt og akseptert av: ${warranty?.termsReceiptName || warranty?.termsAcceptedBy || "________________________"}`);
-        addText(`Rolle: ${warranty?.termsReceiptRole || "Kunde"}     Dato: ${warranty?.termsAcceptedAt ? new Date(warranty.termsAcceptedAt).toLocaleString("no-NO") : "________________"}`);
-        addText("Signatur: _______________________________________________");
-        const pageCount = doc.internal.getNumberOfPages();
-        for (let i = 1; i <= pageCount; i += 1) { doc.setPage(i); doc.setFont("helvetica", "normal"); doc.setFontSize(7); doc.setTextColor(100,116,139); doc.text(`Expo ProffDok · Garantivilkår ${warrantyYears} år`, pageWidth / 2, pageHeight - 8, { align: "center" }); doc.text(`${i}/${pageCount}`, pageWidth - margin, pageHeight - 8, { align: "right" }); }
+        renderWarrantyTermsPdf({ doc, warrantyYears, project, name, company, selectedSystem, warranty });
         doc.save(warrantyTermsPdfFileName);
       } catch (error) {
         alert("Kunne ikke lage garantivilkår-PDF: " + (error?.message || String(error)));
@@ -180,7 +157,7 @@ export function createWarrantyViewTools({
       if (!receiptName) return alert("Fyll inn navn på den som bekrefter mottak av garantivilkår.");
       setWarranty({ ...emptyWarranty(), ...warranty, termsAccepted: true, termsAcceptedAt: new Date().toISOString(), termsAcceptedBy: receiptName, termsReceiptName: receiptName, termsReceiptRole: warranty?.termsReceiptRole || "Kunde" });
     };
-    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: enabled ? `${warrantyYears} års dokumentert tetthetsgaranti` : "Dokumentert tetthetsgaranti", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { className: "warranty-workspace", title: enabled ? `${warrantyYears} års dokumentert tetthetsgaranti` : "Dokumentert tetthetsgaranti", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Garantien er valgfri og kan bare utstedes når overtagelse er signert, alle avvik er lukket, sjekklister er fullført, bildedokumentasjon er lastet opp og godkjent Sopro-system er valgt." }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", alignItems: "center", gap: "10px" }, children: [
@@ -190,8 +167,8 @@ export function createWarrantyViewTools({
         !enabled && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Garantien er ikke aktivert. Prosjektet kan fortsatt dokumenteres som vanlig uten garanti." })
       ] }),
       enabled && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: readiness?.ready ? { borderColor: "#bbf7d0", background: "#ecfdf5" } : { borderColor: "#fecaca", background: "#fff7f7" }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: readiness?.ready ? "Klar til garanti" : "Ikke klar til garanti" }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item warrantyStatusCard", style: readiness?.ready ? { borderColor: "#bbf7d0", background: "#ecfdf5" } : { borderColor: "#fecaca", background: "#fff7f7" }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: issued ? "Garanti utstedt" : readiness?.ready ? "Klar til garanti" : "Ikke klar til garanti" }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "checklistSummaryBadges", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: readiness?.overtagelseSigned ? "✅ Overtagelse signert" : "⚠️ Overtagelse mangler" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: readiness?.openDeviationCount === 0 ? "✅ Ingen åpne sjekklisteavvik" : `⚠️ ${readiness?.openDeviationCount || 0} åpne sjekklisteavvik` }),

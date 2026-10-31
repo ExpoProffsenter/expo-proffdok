@@ -1,3 +1,7 @@
+# Nattarbeid31.10 – garanti/PDF i PR295
+
+Ny avgrenset garanti/PDF-pakke, kun Preview/Sandbox. [Endring/tester](docs/changes/warranty-pdf-design-036-20261031.json). Eksakt kandidat, CI og deploy/live føres i PR295; øvrige145-reiser og separatePR294/298/305 forblir åpne. Ingen redesign-TEST OK eller produksjonsendring.
+
 # Egne sjekkpunkter og godkjenningskø – Preview-arbeid
 
 [Oppgave304](https://github.com/ExpoProffsenter/expo-proffdok/issues/304) gjelder flere bevarte lokale kladder, egne punkter for alle aktive ansatte og forslag til firmamal med separat firmagodkjenning. Eksisterende core-branch gjenbrukes fra publisert main; ingen ny branch. Migrering prøves kun i Sandbox før ny TEST OK. Ingen Production- eller demo-synk er godkjent for denne funksjonen. DesignPR295 viser funksjonen som Preview-integrasjon av [corePR305](https://github.com/ExpoProffsenter/expo-proffdok/pull/305). Ingen ny backend skjules som en ren designendring. Nøyaktig kandidat, CI, Preview og innloggede begrensninger vedlikeholdes i PR/oppgave304. [Endring og tester](docs/changes/checklist-template-proposals-20261031.json).

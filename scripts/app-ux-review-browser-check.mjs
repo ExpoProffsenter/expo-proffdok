@@ -125,3 +125,5 @@ await import("./housing-first-screen-036-browser-check.mjs");
 await import("./sales-flow-036-browser-check.mjs");
 
 await import("./project-subflows-036-browser-check.mjs");
+
+await import("./warranty-terms-pdf-check.mjs");
