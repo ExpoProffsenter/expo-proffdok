@@ -15,6 +15,8 @@
  body:has([data-expo-app-shell="true"]) .priceSearchInlineView :is(.priceSearchCard,.priceSearchSelected,.priceSearchSavedLists,.priceSearchSelectedProduct,.priceSearchResult,.priceSearchSavedRow){border-radius:8px!important}
  body:has([data-expo-app-shell="true"]) :is(.time-workspace,.time-editor) :is(button,select,textarea,input:not([type="checkbox"]):not([type="radio"])){font-size:16px!important;min-height:44px!important;border-radius:6px!important}
  body:has([data-expo-app-shell="true"]) :is(.time-workspace,.time-editor) label{font-size:16px!important}
+ body:has([data-expo-app-shell="true"]) :is(.time-workspace,.time-editor) summary{font-size:16px!important;min-height:44px!important;box-sizing:border-box;align-content:center}
+ body:has([data-expo-app-shell="true"]) :is(.time-summary article,.time-actions details,.time-day,.time-error,.time-notice,.time-return,.time-task-banner,.time-empty,.time-tabs,.time-review-row,.time-config-section,.time-category,.time-archive-row,.time-review-return,.time-history,.time-project-search,.time-upload){border-radius:8px!important}
 }
 @media screen and (max-width:620px){
  [data-expo-app-shell="true"] .pd-home-heading h2{font-size:29px!important}

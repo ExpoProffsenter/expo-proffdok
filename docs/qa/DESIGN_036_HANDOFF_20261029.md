@@ -1,6 +1,6 @@
 ## Neste overlevering: Startside/meny/arbeidsprofil/vare-/timeunderflater31.10
 
-Shell57/Home67/Prissøk70/time85over40visninger +91funksjon/opt-in63/varetelling73PASS, sen runtimeCSS. Bare UI-retur/mål/TimeField-etikett; påkrevd profilvalg/bekreftelse/setter/reload og lagrings-/tilgangseiere beholdt. Se [gjeldende status](../../CURRENT_RELEASE_STATUS.md) og [scope/bevis](../changes/shell-commerce-time-036-20261031.json); fullCI/READY/sluttetterkontroll føres i PR295. Bevar tidligere479admin-/HR-/KS-/Sales-/Boligbevis og fem scoped filmer. Ny innlogging/fysiskmobil/Safari/kamera/reelle rolle-/transportforløp, navngitte sluttpakke-/PDF-punkter, Sandbox-RPC og øvrig video/avspiller er åpne. Ingen global TEST OK/merge/Production/demo-synk; Solgløtt venter avtalt forløp.
+Shell57/Home67/Prissøk70/time125over40visninger +91funksjon/opt-in63/varetelling73PASS, sen runtimeCSS. Bare UI-retur/mål/TimeField-etikett; påkrevd profilvalg/bekreftelse/setter/reload og lagrings-/tilgangseiere beholdt. Se [gjeldende status](../../CURRENT_RELEASE_STATUS.md) og [scope/bevis](../changes/shell-commerce-time-036-20261031.json); fullCI/READY/sluttetterkontroll føres i PR295. Bevar tidligere479admin-/HR-/KS-/Sales-/Boligbevis og fem scoped filmer. Ny innlogging/fysiskmobil/Safari/kamera/reelle rolle-/transportforløp, navngitte sluttpakke-/PDF-punkter, Sandbox-RPC og øvrig video/avspiller er åpne. Ingen global TEST OK/merge/Production/demo-synk; Solgløtt venter avtalt forløp.
 
 ## Neste overlevering: admin/Hjelp/Support/portaler31.10
 

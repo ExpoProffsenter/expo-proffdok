@@ -16,8 +16,9 @@ try{
  const measure=async label=>{for(const [width,height] of [[320,600],[390,360],[768,600],[1363,600],[1920,936]]){
   await page.setViewportSize({width,height});views++;
   eq(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,label+' page fits '+width);
-  const styles=await page.locator('.time-workspace,.time-editor,.time-setup').evaluateAll(nodes=>nodes.flatMap(node=>[...node.querySelectorAll('button,input:not([type="checkbox"]):not([type="radio"]),select,textarea')]).filter(n=>n.checkVisibility()).map(n=>({name:n.getAttribute('aria-label')||n.textContent?.slice(0,45),height:n.getBoundingClientRect().height,font:parseFloat(getComputedStyle(n).fontSize)})));
+  const styles=await page.locator('.time-workspace,.time-editor,.time-setup').evaluateAll(nodes=>nodes.flatMap(node=>[...node.querySelectorAll('button,summary,input:not([type="checkbox"]):not([type="radio"]),select,textarea')]).filter(n=>n.checkVisibility()).map(n=>({name:n.getAttribute('aria-label')||n.textContent?.slice(0,45),height:n.getBoundingClientRect().height,font:parseFloat(getComputedStyle(n).fontSize)})));
   eq(styles.filter(n=>n.height<43.99||n.font<16),[],label+' native controls remain readable '+width);
+  eq(await page.locator('.time-config-section,.time-category,.time-day,.time-summary article,.time-history,.time-project-search,.time-upload,.time-archive-row,.time-review-row').evaluateAll(nodes=>nodes.filter(n=>n.checkVisibility()).every(n=>getComputedStyle(n).borderRadius==='8px')),true,label+' native card frames '+width);
  }};
  await measure('own week');await page.getByRole('button',{name:'Ny registrering',exact:true}).click();await page.getByLabel('Merknad',{exact:true}).fill('Bevart usendt time- og utleggstekst');
  const note=await page.getByLabel('Merknad',{exact:true}).elementHandle();await measure('work entry');
