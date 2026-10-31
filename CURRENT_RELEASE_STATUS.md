@@ -1,3 +1,17 @@
+# Startside, profil-/menyretur, Prissøk og timeunderflater –31.10
+
+Samme PR295/faste Preview/Sandbox, miljømål BEGGE. Valgfri Representerer-/arbeidsprofilmeny lukkes med Escape eller klikk utenfor; Escape returnerer fokus uten firmabytte. Rask åpne/Escape i hovedmenyen kan ikke gjenopplive bakgrunnen fra en sen animasjon. Faktiske sene mobilregler er med i Home-/Prissøk-prøvene; de beviste for små handlinger/overskrift. Scoped CSS beholder16px/minst44px og samme6/8px rammer; et påkrevd førstevalg forblir påkrevd og passer også kort skjerm. TimeField får stabil etikettkobling, med samme barn/handlers og bevart notat. Innloggingsbildet er beholdt.
+
+Shell/profil57, Home67, Prissøk70, timeunderflater85/40visninger, eksisterende Time React91, valgfri timeføring63 og varetelling73PASS. Alle gamle krav er bevart; faktisk DOM/kladd/retur, null/desimaler,122linjer/alle-sider-eksport, konflikter, retry og tilgangsgrenser er dekket på sine isolerte grunnlag. Full lokal Sandbox critical/buildPASS. [Scope og bevis](docs/changes/shell-commerce-time-036-20261031.json). Eksakt sluttkandidat/fullCI/READY og innlogget etterkontroll føres i PR295.
+
+Live baseline: Representerer-feilen gjenskapt, faktisk varesøk fant2eksisterende Oras-demovarer, varetelling/veiledning åpnet uten opprettelse eller registrering og Min side lest uten å aktivere timer. Ingen reell invitasjon, ny tilgang, lagring av telling/timer, sending, signering, eksport eller sletting. Ingen ny innlogging prøvd; eksisterende økt og originalt innloggingsdesign beholdes. Fysisk mobil/Safari, virkelig kamera, separate roller/transport og tidligere konkrete sluttpakke-/PDF-/backendgrenser er fortsatt åpne. Sandbox-feilen list_managed_work_profiles er ikke rettet av denne UI-pakken.
+
+Tidligere designbevis og fem godkjent formaterte, avgrensede filmer beholdes. Nye videoer/avspiller og full avstemming av resterende underhandlinger gjenstår; denne runden prioriterer ferdig design som avtalt. Solgløtt står fortsatt på vent til design+QA → TEST OK → Production → kontrollert main→demo. Ingen global redesign-TEST OK, merge, Production eller demo-synk.
+
+Kort prøve: Representerer → Escape skal lukke og returnere fokus uten firmabytte. Alle områder → Escape → åpne igjen skal fungere uten sperrende bakgrunn. Prissøk og eventuelt Mine timer skal ha lesbare handlinger. Ikke opprett telling eller send/eksporter som del av designprøven.
+
+---
+
 # Admin, Hjelp, Support og portaler –31.10
 
 Samme PR295/faste Preview/Sandbox, miljømål BEGGE. Faktisk sen runtime-CSS er nå med i de berørte prøvene. Den gjenskapte19px titler,17px felt og fire små nøkkeltall på mobil. Avgrensede 03.6-regler verner de opprinnelige målene. Firmaadmin/Hjelp248, firmapaneladapter67, profil/Support/register113 og systemadmin/Support51PASS:479krav, fem bredder og korte520/600px-skjermer. Gamle krav er bevart. Uendrede prosjektbilde-/portalprøver149, kontrollørens faktiske React og Support60 samt critical support55/Sandbox critical-buildPASS. [Scope og presise begrensninger](docs/changes/admin-help-support-portals-036-20261031.json). Kandidat/fullCI/READY og levende etterkontroll føres i PR295.

@@ -421,6 +421,7 @@ const SYSTEM_ADMIN_SECTIONS = [
     "Brukere med tilgang til flere interne firmaer kan velge hvilket firma de arbeider på vegne av.",
     [
       "Velg riktig firma i Representerer før du starter arbeid som skal tilhøre et bestemt firma.",
+      "Trykk Escape eller utenfor firmalisten for å lukke den uten å bytte firma. Escape setter fokus tilbake på firmavelgeren. Et påkrevd førstevalg må fortsatt fullføres.",
       "Kontroller valgt arbeidsprofil før nye salgssaker eller andre firmaspesifikke handlinger opprettes."
     ],
     ["Arbeidsprofil er ikke det samme som Systemadmin supportmodus og skal ikke brukes som skrivebypass."],

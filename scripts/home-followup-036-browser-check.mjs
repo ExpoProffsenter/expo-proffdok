@@ -31,6 +31,8 @@ try {
   for (const width of [320, 390, 768, 1363, 1920]) {
     await page.setViewportSize({ width, height: 600 });
     eq(await page.locator('.pd-home-task').count(), 6, `approved six work areas retained at ${width}`);
+    eq(await page.locator('.pd-home-workspace button').evaluateAll(nodes=>nodes.every(n=>n.getBoundingClientRect().height>=44&&getComputedStyle(n).fontSize==='16px')),true,`all six-area native actions remain readable at ${width}`);
+    eq(await page.locator('#pd-home-title').evaluate(n=>getComputedStyle(n).fontSize),width<=620?'29px':'32px',`home heading after late CSS at ${width}`);
     if (width >= 1363) {
       const positions = await page.locator('.pd-home-task').evaluateAll(nodes => nodes.slice(0, 3).map(node => node.querySelector('.pd-task-main').getBoundingClientRect().top));
       eq(Math.max(...positions) - Math.min(...positions) <= 1, true, `approved home task actions align across the first row at ${width}: ${positions}`);

@@ -9,6 +9,7 @@
 @import './commerceSubflows036.css';
 @import './salesSubflows036.css';
 @import './checklistSubflows036.css';
+@import './shellCommerce036.css';
 
 /* Keep photos compact in the actual housing wizard as well as the type picker.
    This presentation layer is loaded by the design Preview. */

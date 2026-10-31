@@ -1,3 +1,7 @@
+## Neste overlevering: Startside/meny/arbeidsprofil/vare-/timeunderflater31.10
+
+Shell57/Home67/Prissøk70/time85over40visninger +91funksjon/opt-in63/varetelling73PASS, sen runtimeCSS. Bare UI-retur/mål/TimeField-etikett; påkrevd profilvalg/bekreftelse/setter/reload og lagrings-/tilgangseiere beholdt. Se [gjeldende status](../../CURRENT_RELEASE_STATUS.md) og [scope/bevis](../changes/shell-commerce-time-036-20261031.json); fullCI/READY/sluttetterkontroll føres i PR295. Bevar tidligere479admin-/HR-/KS-/Sales-/Boligbevis og fem scoped filmer. Ny innlogging/fysiskmobil/Safari/kamera/reelle rolle-/transportforløp, navngitte sluttpakke-/PDF-punkter, Sandbox-RPC og øvrig video/avspiller er åpne. Ingen global TEST OK/merge/Production/demo-synk; Solgløtt venter avtalt forløp.
+
 ## Neste overlevering: admin/Hjelp/Support/portaler31.10
 
 479 native kravPASS med sen runtimeCSS; samme PR295/Preview. Manglende Sandbox-RPC list_managed_work_profiles er et eget åpent backend-/miljøpunkt, ikke grønn funksjonsattest. Fem avgrensede filmer finnes nå, sist Hjelp/søk/kapittel/retur med redigerbare kilder. Se [gjeldende status](../../CURRENT_RELEASE_STATUS.md) og [avgrenset endringsgrunnlag](../changes/admin-help-support-portals-036-20261031.json). Fortsett innlogging/arbeidsprofil/Startside/meny og resterende vare-/timeunderflater. Tidligere HR/KS/HMS/sjekkliste-/Sales-/Boligbevis beholdes. Ingen redesign-TEST OK, merge, Production eller demo-synk.

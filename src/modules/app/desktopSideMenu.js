@@ -305,6 +305,7 @@ function buildMenuShell() {
     if (open) {
       backdrop.hidden = false;
       requestAnimationFrame(() => {
+        if (toggle.getAttribute('aria-expanded') !== 'true') return;
         backdrop.classList.add('isOpen');
         drawer.classList.add('isOpen');
         closeButton.focus();

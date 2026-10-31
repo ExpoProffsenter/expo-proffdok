@@ -4,7 +4,7 @@
 // etterfølges av kontrollert reload slik at RLS, Sales og prosjektflyt henter
 // samme aktive firmascope. Supportmodus er fortsatt separat.
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { Building2, ChevronDown } from "lucide-react";
 import {
@@ -62,6 +62,8 @@ function WorkProfileSwitcher({ initialState }) {
   const [open, setOpen] = useState(false);
   const [switching, setSwitching] = useState(false);
   const [error, setError] = useState("");
+  const controlRef = useRef(null);
+  const openerRef = useRef(null);
 
   useEffect(() => {
     const handler = (event) => setState(event?.detail || readCachedWorkProfileState());
@@ -77,6 +79,26 @@ function WorkProfileSwitcher({ initialState }) {
     () => workspaces.find((workspace) => String(workspace.company_id) === activeId) || workspaces[0] || null,
     [activeId, workspaces]
   );
+
+  useEffect(() => {
+    if (!open || !state?.can_switch || workspaces.length < 2) return;
+    const dismiss = (event) => {
+      if (event.type === "keydown") {
+        if (event.key !== "Escape") return;
+        event.preventDefault();
+        setOpen(false);
+        openerRef.current?.focus();
+      } else if (!controlRef.current?.contains(event.target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("keydown", dismiss);
+    document.addEventListener("pointerdown", dismiss);
+    return () => {
+      document.removeEventListener("keydown", dismiss);
+      document.removeEventListener("pointerdown", dismiss);
+    };
+  }, [open, activeId, state?.can_switch, workspaces.length]);
 
   if (!state?.can_switch || workspaces.length < 2) return null;
 
@@ -115,10 +137,11 @@ function WorkProfileSwitcher({ initialState }) {
   return (
     <>
       {!state?.selection_required ? (
-        <div className="workProfileControl">
+        <div className="workProfileControl" ref={controlRef}>
           <button
             type="button"
             className="secondary workProfileButton"
+            ref={openerRef}
             onClick={() => setOpen((current) => !current)}
             aria-expanded={open}
             aria-label={`${selectorLabel}: ${active?.company_name || "Velg firma"}`}

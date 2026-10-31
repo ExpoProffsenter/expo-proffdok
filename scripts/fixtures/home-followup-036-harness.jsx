@@ -5,6 +5,8 @@ import SalesFollowup from '../../src/modules/sales/components/SalesHomeFollowUp.
 import { createProjectListTools } from '../../src/modules/project/projectListTools.js';
 import '../../src/style.css';
 import '../../src/modules/ui/proffdokWorkspace.css';
+import {APP_RUNTIME_STYLES} from '../../src/modules/app/appRuntimeStyles.js';
+const runtimeStyle=document.createElement('style');runtimeStyle.textContent=APP_RUNTIME_STYLES;document.head.appendChild(runtimeStyle);
 
 window.qa = { calls: [], source: null, committed: null };
 const rows = Array.from({ length: 3 }, (_, index) => ({

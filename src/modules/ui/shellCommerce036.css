@@ -1,0 +1,22 @@
+/* Shared screen measurements after the app's late mobile styles. Native
+   navigation, profile selection, catalog queries and data owners are retained. */
+@media screen {
+ body:has([data-expo-app-shell="true"]) .workProfileMenu{border-radius:8px!important;max-height:calc(100dvh - 140px);overflow:auto}
+ body:has([data-expo-app-shell="true"]) :is(.workProfileMenu,.workProfileRequiredCard) button{font-size:16px!important;min-height:44px!important;border-radius:6px!important;white-space:normal;overflow-wrap:anywhere}
+ body:has([data-expo-app-shell="true"]) .workProfileMenu small{font-size:14px!important}
+ body:has([data-expo-app-shell="true"]) .workProfileRequiredCard{box-sizing:border-box;max-width:calc(100vw - 36px);max-height:calc(100dvh - 36px);overflow:auto;border-radius:8px}
+ body:has([data-expo-app-shell="true"]) .workProfileRequiredCard h2{font-size:28px!important;line-height:1.2}
+ body:has([data-expo-app-shell="true"]) .workProfileRequiredCard p{font-size:16px!important;line-height:1.5}
+ [data-expo-app-shell="true"] :is(.pd-home-workspace,.pd-sales-followup-row) button{font-size:16px!important;min-height:44px!important;border-radius:6px!important}
+ [data-expo-app-shell="true"] .pd-home-heading h2{font-size:32px!important;line-height:1.2}
+ body:has([data-expo-app-shell="true"]) .priceSearchInlineView :is(button,input,select,textarea){font-size:16px!important}
+ body:has([data-expo-app-shell="true"]) .priceSearchInlineView :is(button,select,textarea,input:not([type="checkbox"]):not([type="radio"])){min-height:44px!important;border-radius:6px!important}
+ body:has([data-expo-app-shell="true"]) .priceSearchIntro h2{font-size:var(--pd-title)!important}
+ body:has([data-expo-app-shell="true"]) .priceSearchInlineView :is(.priceSearchCard,.priceSearchSelected,.priceSearchSavedLists,.priceSearchSelectedProduct,.priceSearchResult,.priceSearchSavedRow){border-radius:8px!important}
+ body:has([data-expo-app-shell="true"]) :is(.time-workspace,.time-editor) :is(button,select,textarea,input:not([type="checkbox"]):not([type="radio"])){font-size:16px!important;min-height:44px!important;border-radius:6px!important}
+ body:has([data-expo-app-shell="true"]) :is(.time-workspace,.time-editor) label{font-size:16px!important}
+}
+@media screen and (max-width:620px){
+ [data-expo-app-shell="true"] .pd-home-heading h2{font-size:29px!important}
+ body:has([data-expo-app-shell="true"]) .workProfileRequiredCard h2{font-size:25px!important}
+}

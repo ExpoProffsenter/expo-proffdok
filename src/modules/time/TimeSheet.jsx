@@ -9,7 +9,17 @@ import {dateLabel,emptyRow,entryQuantity,moveDate,osloToday,readTimeDraft,rememb
 import './time.css';
 const fields=['id','on','category_id','project_id','external_project','mode','quantity','start','end','pause','next_day','note','files'];
 const writable=rows=>rows.map(row=>Object.fromEntries(fields.map(key=>[key,key==='quantity'?String(row[key]??'').replace(',','.'):row[key]])));
-export function TimeField({label,children}){return <label className="time-field"><span>{label}</span>{children}</label>;}
+export function TimeField({label,children}){
+ const generatedId=React.useId(),labelId=generatedId+'-label';
+ const isControl=child=>React.isValidElement(child)&&['input','select','textarea'].includes(child.type);
+ const first=React.Children.toArray(children).find(isControl),inputId=first?.props.id||generatedId;
+ let index=0;
+ return <label className="time-field" htmlFor={first?inputId:undefined}><span id={labelId}>{label}</span>{React.Children.map(children,child=>{
+  if(!isControl(child))return child;
+  const id=child.props.id||(index===0?inputId:generatedId+'-'+index);index++;
+  return React.cloneElement(child,{id,'aria-labelledby':child.props['aria-labelledby']||(child.props['aria-label']?undefined:labelId)});
+ })}</label>;
+}
 const fmt=n=>Number(n||0).toLocaleString('nb-NO',{maximumFractionDigits:2});
 export default function TimeSheet({context,employeeId=null,initialWeek=null,onBack}){
  const [week,setWeek]=useState(initialWeek||weekStart()),[loaded,setValue]=useState(null),[editor,setEditor]=useState(null),[projects,setProjects]=useState([]),[projectNext,setProjectNext]=useState(null),[projectQuery,setProjectQuery]=useState('');
