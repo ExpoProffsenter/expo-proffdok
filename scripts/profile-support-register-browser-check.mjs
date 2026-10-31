@@ -85,6 +85,7 @@ try{
   eq(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'profile no horizontal overflow '+width);
   eq(await page.locator('.company-profile-workspace>h2').evaluate(el=>getComputedStyle(el).fontSize),width<=620?'29px':'32px','profile shared title '+width);
   eq(await page.getByLabel('Adresse *',{exact:true}).evaluate(el=>getComputedStyle(el).fontSize),'16px','profile input text '+width);
+  eq(await page.getByLabel('Adresse *',{exact:true}).evaluate(el=>getComputedStyle(el).borderRadius),'6px','profile native field corners '+width);
   eq(await page.locator('.logoBox').evaluate(el=>{const nodes=[...el.children].map(n=>n.getBoundingClientRect());return nodes.every((rect,i)=>i===0||rect.top>=nodes[i-1].bottom);}),true,'logo controls never overlap '+width);
   eq(await page.getByRole('button',{name:'Lagre firmaprofil',exact:true}).evaluate(el=>el.getBoundingClientRect().height>=44),true,'profile target '+width);
  }
@@ -115,6 +116,7 @@ try{
   await page.setViewportSize({width,height:936});
   eq(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'native product form no overflow '+width);
   eq(await page.getByLabel('Produktnavn',{exact:true}).evaluate(el=>getComputedStyle(el).fontSize),'16px','native product input text '+width);
+  eq(await page.getByLabel('Produktnavn',{exact:true}).evaluate(el=>getComputedStyle(el).borderRadius),'6px','native product native field corners '+width);
   eq(await page.getByLabel('Legg til Sopro garantikontrollpunkt samtidig',{exact:true}).evaluate(el=>el.getBoundingClientRect().width),20,'checkbox uses native compact width '+width);
   eq(await page.locator('.projectListHeaderCards').evaluate(el=>new Set([...el.children].map(child=>child.getBoundingClientRect().top)).size),width<=760?2:1,'compact product metrics '+width);
   eq(await page.locator('.projectListHeaderCards .tile span').evaluateAll(nodes=>nodes.every(el=>getComputedStyle(el).fontSize==='14px')),true,'readable product metric labels '+width);

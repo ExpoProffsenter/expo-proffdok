@@ -1,6 +1,6 @@
 ## Neste overlevering: admin/Hjelp/Support/portaler31.10
 
-469 native kravPASS med sen runtimeCSS; samme PR295/Preview. Manglende Sandbox-RPC list_managed_work_profiles er et eget åpent backend-/miljøpunkt, ikke grønn funksjonsattest. Fem avgrensede filmer finnes nå, sist Hjelp/søk/kapittel/retur med redigerbare kilder. Se [gjeldende status](../../CURRENT_RELEASE_STATUS.md) og [avgrenset endringsgrunnlag](../changes/admin-help-support-portals-036-20261031.json). Fortsett innlogging/arbeidsprofil/Startside/meny og resterende vare-/timeunderflater. Tidligere HR/KS/HMS/sjekkliste-/Sales-/Boligbevis beholdes. Ingen redesign-TEST OK, merge, Production eller demo-synk.
+479 native kravPASS med sen runtimeCSS; samme PR295/Preview. Manglende Sandbox-RPC list_managed_work_profiles er et eget åpent backend-/miljøpunkt, ikke grønn funksjonsattest. Fem avgrensede filmer finnes nå, sist Hjelp/søk/kapittel/retur med redigerbare kilder. Se [gjeldende status](../../CURRENT_RELEASE_STATUS.md) og [avgrenset endringsgrunnlag](../changes/admin-help-support-portals-036-20261031.json). Fortsett innlogging/arbeidsprofil/Startside/meny og resterende vare-/timeunderflater. Tidligere HR/KS/HMS/sjekkliste-/Sales-/Boligbevis beholdes. Ingen redesign-TEST OK, merge, Production eller demo-synk.
 
 # HR, KS/HMS og sjekklister –31.10
 
@@ -115,7 +115,7 @@ Oppgave302 gjelder alle sjekklister, men Bolig/UE har separat komponent og grens
 
 ## Prosjektbarn30.10 – samlet presentasjon, klart for Preview-kontroll
 
-Baseline f469c5d4/main71d157f7, samme draftPR295/branch og fast Preview. Brukeren har bedt om å fortsette etter manus uten deloppgave-spørsmål. Miljømål BEGGE, foreløpig bare Preview. Ingen redesign-TEST OK, merge, Production eller main→demo. Den tidligere skynettblokkeringen er opphevet: f469c5d4 ble faktisk etterkontrollert innlogget (SJA-fokus, rutineeditor/kildediff, siste publiseringssteg uten samtykke, revisjon og egen lesing); fullCI805SUCCESS. Fersk sluttkandidat/CI/deploy/live for prosjektpakken føres øverst i PR295.
+Baseline f479c5d4/main71d157f7, samme draftPR295/branch og fast Preview. Brukeren har bedt om å fortsette etter manus uten deloppgave-spørsmål. Miljømål BEGGE, foreløpig bare Preview. Ingen redesign-TEST OK, merge, Production eller main→demo. Den tidligere skynettblokkeringen er opphevet: f479c5d4 ble faktisk etterkontrollert innlogget (SJA-fokus, rutineeditor/kildediff, siste publiseringssteg uten samtykke, revisjon og egen lesing); fullCI805SUCCESS. Fersk sluttkandidat/CI/deploy/live for prosjektpakken føres øverst i PR295.
 
 Produktendringen i denne pakken er bare nytt projectSubflows036.css og én import. Faktisk levende baseline viste14px prosjektfelt,22px ytre kort og16px disclosures, og mastheadens arvede tittel-flex tvang Fullskjermvisning til ekstra PC-rad. Native hovedskjemaer samles nå i åpen oppgaveramme/8px/1px underseksjoner/16px felt/44px handlinger. Ingen ny hovednavigasjon eller felt-/lagrings-/tilgangs-/pris-/PDF-/signerings-/sendingseier. Rapport-root og KS-modulens egne flater holdes utenfor; ny CSS er kun screen-scopet. Prosjektavvik og kontrollørtilgang får samme native680px høyrepanel/navy topp.
 

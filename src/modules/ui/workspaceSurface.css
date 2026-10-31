@@ -2,6 +2,9 @@
    headings, controls, borders and contextual panels use this one baseline. */
 body:has([data-expo-app-shell="true"]){--pd-ink:#10212b;--pd-muted:#4e6876;--pd-line:#d5e3e9;--pd-accent:#007681;--pd-radius:8px;--pd-gap:20px;--pd-control:44px;--pd-copy:16px;--pd-title:32px}
 body:has([data-expo-app-shell="true"]) [data-expo-app-shell="true"]>main{max-width:1744px}
+@media screen{
+ body:has([data-expo-app-shell="true"]) :is(.company-admin-panel,.pd-admin-workspace,.company-profile-workspace,.pd-support,[data-company-admin-modal-open="1"]) :is(button,select,textarea,input:not([type="checkbox"]):not([type="radio"])){border-radius:6px!important}
+}
 /* Admin controls must retain the shared measurements after late mobile styles. */
 @media screen{
  body:has([data-expo-app-shell="true"]) :is(.company-admin-panel,.pd-admin-workspace) :is(button,input,select,textarea){font-size:16px!important}
