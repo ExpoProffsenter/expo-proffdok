@@ -83,10 +83,15 @@ export default function KshmsInspectionExtract({context,active=true}){
  if(!context.enabled||!context.manage)return null;
  return <section className="ks-card ks-inspection-extract" aria-label="Dokumentuttrekk">
   <h3>Samlet dokument- og tilsynsuttrekk</h3>
+  <p>Beskriv omfanget, hent dokumentlisten og velg dokumentene. Last ned rapporten som PDF eller originalfilene som ZIP.</p>
+  <details className="ks-extract-help"><summary>Slik velger og eksporterer du dokumenter</summary>
   <p>Beskriv hva du vil dokumentere. Hent listen og huk av dokumentene du trenger. Du kan laste ned en PDF med dokumentene, en ZIP-pakke med vedleggene, eller begge. Bruk «Last ned samlet PDF» for rapporten. For bilder og originalfiler: trykk «Vis vedleggslisten» lenger ned, bekreft listen og trykk «Last ned vedlegg (ZIP)».</p>
   <p className="ks-field-hint">Du får lagret dokumentasjon. Ulagrede endringer følger ikke med. RUH, kvalitet- og HMS-avvik inkluderer hele historikken og lagrede bilder. Disse gruppene viser saker fra KS/HMS-avvikssentralen. Ukoblede eldre prosjektavvik kan hentes for valgt prosjekt. De viser lagret tilstand uten versjonert historikk eller KS/HMS-signatur. Andre originalfiler følger ikke PDF-en. Bruk vedleggslisten nedenfor for en egen ZIP-pakke. HR, fortrolige varslinger, ansattes lesebekreftelser og opplæringsbevis tas ikke med. Uttrekket er ingen tilsynsgodkjenning.</p>
+  </details>
+  <div className="ks-extract-filters">
   <label className="ks-field"><span>Omfang / hva skal dokumenteres?</span><textarea value={scopeText} disabled={busy} maxLength={2000} rows={2} onChange={event=>{clearAttachments();setScopeText(event.target.value);setConfirmed(false);setNotice('');}} placeholder="For eksempel: Kontroll av arbeid på testprosjekt, oktober 2026"/></label>
   <label className="ks-field"><span>Søk etter SJA, avvik, RUH, kontroller og risiko</span><input value={query} disabled={busy} maxLength={160} onChange={event=>setQuery(event.target.value)}/></label>
+  </div>
   <button type="button" disabled={busy} onClick={load}>{catalog?'Oppdater dokumentlisten':'Hent dokumentlisten'}</button>
   {catalog&&<>
    <p>Ingen dokumenter velges automatisk. Oppdatering av listen tømmer valget. Rutine- og malutgaver vises også når de er historiske; kontroller status i PDF-en.</p>

@@ -1,5 +1,9 @@
 /* Presentation only. Native selection, export, permission and retry owners stay intact. */
 @media screen {
+ [data-expo-app-shell="true"] .ks-module .ks-inspection-extract .ks-extract-help {margin:12px 0;background:#f5f9fb;border:1px solid #d5e3e9;border-radius:8px;padding:0}
+ [data-expo-app-shell="true"] .ks-module .ks-inspection-extract .ks-extract-help>summary {padding:12px;min-height:44px;box-sizing:border-box;font-size:16px;line-height:1.45;cursor:pointer;overflow-wrap:anywhere}
+ [data-expo-app-shell="true"] .ks-module .ks-inspection-extract .ks-extract-help>p {margin:12px;line-height:1.5}
+ [data-expo-app-shell="true"] .ks-module .ks-inspection-extract .ks-extract-filters {display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:16px;align-items:start}
  [data-expo-app-shell="true"] .ks-module .ks-inspection-extract .ks-extract-groups {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start;margin:16px 0}
  [data-expo-app-shell="true"] .ks-module .ks-inspection-extract .ks-extract-groups>details {min-width:0;margin:0;background:#fff;border:1px solid #d5e3e9;border-radius:8px;padding:0}
  [data-expo-app-shell="true"] .ks-module .ks-inspection-extract .ks-extract-groups summary {padding:12px;line-height:1.45;overflow-wrap:anywhere;cursor:pointer}
@@ -11,6 +15,6 @@
  [data-expo-app-shell="true"] .ks-module .ks-inspection-extract :is(.ks-extract-selection,.ks-extract-attachments)>li {padding:12px;background:#f5f9fb;border:1px solid #d5e3e9;border-radius:8px;overflow-wrap:anywhere;line-height:1.45}
  [data-expo-app-shell="true"] .ks-module .ks-inspection-extract .ks-extract-selection>li {display:flex;align-items:center;flex-wrap:wrap;gap:8px}
  [data-expo-app-shell="true"] .ks-module .ks-inspection-extract :is(button,summary,input):focus-visible {outline:3px solid #007681;outline-offset:3px}
- @media(max-width:760px){[data-expo-app-shell="true"] .ks-module .ks-inspection-extract .ks-extract-groups {grid-template-columns:minmax(0,1fr)}}
+ @media(max-width:760px){[data-expo-app-shell="true"] .ks-module .ks-inspection-extract :is(.ks-extract-groups,.ks-extract-filters) {grid-template-columns:minmax(0,1fr)}[data-expo-app-shell="true"] .ks-module .ks-inspection-extract .ks-extract-filters {gap:0}}
 }
 @media screen {[data-expo-app-shell="true"] .ks-module .ks-inspection-extract .ks-field {display:grid;gap:6px;margin:12px 0;min-width:0}}

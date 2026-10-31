@@ -1,3 +1,7 @@
+# Fortsettelse31.10 – dokumentvalg og eksportprøve
+
+Samme PR295/Preview/Sandbox, BEGGE. Full veiledning er nå utvidbar, og omfang/søk deler PC-rad. Native36PASS og time-opt-in63PASS. [Endring og presise begrensninger](docs/changes/inspection-extract-workspace-036-20261031.json). Separat PR298338094b1 har fullCI83310/10 og egen bekreftet Sandbox-Preview; låsrettelsen er ikke flyttet inn i designen. Innlogget fire-siders eksport ble laget, men filbroen leverte ikke filen til visuell etterkontroll. Endelig kandidat/CI/READY og innlogget status i PR295/298. Ingen TEST OK, merge, Production eller demosynk.
+
 # Dokumentuttrekk – native valgflate31.10
 
 Samme PR295/Preview/Sandbox, BEGGE. [Scope/tester og separat PR298-begrensning](docs/changes/inspection-extract-workspace-036-20261031.json). Kandidat/CI/READY/bilder i PR295. Ingen redesign-TEST OK/Production/main/demo.

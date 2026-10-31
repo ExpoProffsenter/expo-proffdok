@@ -1,3 +1,13 @@
+# Fortsettelse31.10 – dokumentvalg og separat eksportrettelse
+
+BEGGE; kun Preview/Sandbox. Eksisterende PR298 er oppdatert med publisert main b389c707: kandidat338094b1, tre d3340818, fullCI833/run41209872004SUCCESS10/10. Produktdiff mot main er én lås-resetlinje; additive PDF-/ZIP-tester prøver company/user/revoke og gammel respons mot ny operasjon. Seks native PDF-er115sider og tre ZIP-er7/9/11filer; ingen virkelig transport eller databaseendring. Sandbox-build/Production-buildPASS. Egen fast core-Preview har eksplisitt Sandbox-buildkommando i den ene deployen, READYHqT5RtyXMLcqCGmCWTKtKTFxzaS1. Ny ordinær git-deploy kan igjen følge standard Production-binding; bekreft faktisk mål før enhver innlogget coreprøve. Ingen coreintegrasjon i PR295 eller Production-godkjenning.
+
+Designoppfølgingen rører kun KshmsInspectionExtract.jsx sin presentasjon, samme scopedCSS og native browserprøve. Full opprinnelig veiledning er i native details, kort handlingsforklaring over, omfang/søk i PC-rad og stablet mobil.36native assertionsPASS med tidligere23beholdt. Time-opt-in63nativePASS. Innlogget demoøkt er gjenopprettet via sikker innlogging. På uendret2a16434c ble én eksisterende DEMO-RUH valgt, bekreftet og fire-siders PDF laget. Download-event returnerte filsti, men filbroen synkroniserte ikke innen fem sekunder: dette er fortsatt ikke visuell attest på faktisk innlogget PDF-fil. Ingen kundedata, garanti, signatur, rolle eller serverkonfigurasjon endret. Eksakt designkandidat/fullCI/READY/sluttprøve føres i PR295 etter publisering.
+
+Hele145-manuset og fysiske enheter/øvrige roller/FDF-live/Bolig-UE/signerte run-snapshots er fortsatt åpne. Ingen tidligere delbevis oppgraderes til helreise.
+
+---
+
 # Ansattes egne sjekkpunkter – Preview-integrasjon31.10
 
 Brukerens nye oppdrag i oppgave304: Start sjekkliste skal virke selv med en tidligere kladd, alle aktive ansatte kan bygge egne punkter og foreslå dem til firmaadmin. Egen corePR305 fra publisert main eier den additive Sandbox-migreringen og nye smale RPC-er. Eksakt core09b1ece3839a367c2e61faeea3f184999f6a88d1 integreres her for samme faste Preview. Dette er uttrykkelig en funksjonsavhengighet, ikke en ren CSS-endring eller en Production-godkjenning. Ingen ny branch; PR295/fast Preview beholdes. Begge PR-er trenger relevant TEST OK. Production/main b389c707 og demo8ee9c23d er urørt.
