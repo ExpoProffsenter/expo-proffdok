@@ -129,3 +129,5 @@ await import("./project-subflows-036-browser-check.mjs");
 await import("./warranty-terms-pdf-check.mjs");
 
 await import("./report-warranty-pdf-check.mjs");
+
+await import("./project-checklist-signed-pdf-check.mjs");

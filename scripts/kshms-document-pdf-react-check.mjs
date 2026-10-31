@@ -15,9 +15,12 @@ const dom=new JSDOM('<div id="app"></div>',{url:'https://qa.example.invalid',pre
 window.MessageChannel=class{constructor(){this.port1={};this.port2={postMessage:()=>window.setTimeout(()=>this.port1.onmessage?.({data:null}),0)};}};window.IS_REACT_ACT_ENVIRONMENT=true;window.structuredClone=structuredClone;window.TextEncoder=TextEncoder;window.confirm=()=>true;window.HTMLElement.prototype.scrollIntoView=()=>{};
 const logo='data:image/png;base64,'+fs.readFileSync(process.env.KSHMS_QA_LOGO).toString('base64'),photo='data:image/png;base64,'+fs.readFileSync(process.env.KSHMS_QA_PHOTO).toString('base64');
 window.Image=class{set src(url){this.width=url.includes('logo')?400:500;this.height=url.includes('logo')?100:400;window.__imageUrl=url;window.setTimeout(()=>this.onload?.(),0);}};
-window.HTMLCanvasElement.prototype.getContext=()=>({drawImage(){}});window.HTMLCanvasElement.prototype.toDataURL=()=>window.__imageUrl.includes('logo')?logo:photo;
+// The current native checklist signature pad paints its existing surface on mount.
+window.HTMLCanvasElement.prototype.getContext=()=>({drawImage(){},fillRect(){}});window.HTMLCanvasElement.prototype.toDataURL=()=>window.__imageUrl.includes('logo')?logo:photo;
 const savedState=structuredClone(state),savedCentral=structuredClone(central),savedControls=structuredClone(controls);savedState.versions[0].content.procedure='Firmaets fremgangsmåte for kontroll av arbeid. '.repeat(600)+'QA RUTINETEKST SLUTT';savedControls.runs[0].answers.Koblinger.comment='Kontroller hele koblingen før innbygging. '.repeat(100)+'QA KONTROLLTEKST SLUTT';
 savedCentral.templates[0].draft={...savedCentral.versions[0].content,title:'NYTT UPUBLISERT UTKAST'};
+// Real project_checklist_runs rows now always carry the database default {}.
+savedControls.runs[0].signatures={};
 const prior=JSON.stringify({savedState,savedCentral,savedControls}),exports=[],calls=[];let fail=false,newer=false,deferred=null,revokedFinal=false,exportReads=0;
 window.__save=(name,bytes)=>exports.push({name,bytes:new Uint8Array(bytes)});
 window.__rpc=async(name,args)=>{

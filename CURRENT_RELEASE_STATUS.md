@@ -1,3 +1,7 @@
+# Native PDF – avsender, titler og signaturstørrelse31.10.2026
+
+Eksisterende PR295 fortsetter med målt avsender/fulle fortsettelsestitler og proporsjonale signaturbilder i delt boxed-renderer. Egen kontroll-PDF beholder samme signerte data og sistelesing; komplett sluttrapports kontrollhistorikk er et separat åpent punkt. [Endring og native tester](docs/changes/boxed-signed-pdf-layout-20261031.json). Full kandidat/CI/READY og varige bilder vedlikeholdes i PR295. Miljømål BEGGE, utførelse bare Preview/Sandbox. Ingen redesign-TEST OK eller Production/merge/demo-synk.
+
 # Komplett sluttrapport/garanti – nattcheckpoint2
 
 Kun PR295/Preview/Sandbox. [Endring og faktisk testdekning](docs/changes/closeout-warranty-report-layout-20261031.json). Full kandidat/CI/READY/bildeleveranse vedlikeholdes i PR295. Ingen redesign-TEST OK eller Production/main/demo-endring.
