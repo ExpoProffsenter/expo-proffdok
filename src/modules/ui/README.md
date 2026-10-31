@@ -120,4 +120,4 @@ Faktisk leverandørkomponent og Min sides faktiske planbarn testes med hele CSS-
 
 ## Sjekklistenes underpunkter og svarfelt
 
-`checklistSubflows036.css` bruker screen-regler innen appskallet. Native `details`/`summary` i sjekklistemalen beholder åpen/lukket-state og underfeltene, med minst44px rader og16px etiketter. Samme rammer brukes for fleksible underfelt i prosjekt/KS/HMS/frittstående utfylling. `ChecklistFields`, validering, betingelser, publisert snapshot, kladd, signering og PDF beholder dagens eiere. Varig grunnlag: `docs/changes/people-checklist-subflows-036-20261031.json`.
+`checklistSubflows036.css` bruker screen-regler innen appskallet. Native `details`/`summary` i sjekklistemalen beholder åpen/lukket-state og underfeltene, med minst44px rader og16px etiketter. Malbyggerens knapper har6px hjørner og samme44px lukkeknapp i mørk topp. Samme rammer brukes for fleksible underfelt i prosjekt/KS/HMS/frittstående utfylling. `ChecklistFields`, validering, betingelser, publisert snapshot, kladd, signering og PDF beholder dagens eiere. Varig grunnlag: `docs/changes/people-checklist-subflows-036-20261031.json`.

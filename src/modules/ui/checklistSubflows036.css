@@ -4,6 +4,12 @@
  body:has([data-expo-app-shell="true"]) .ks-checklists .ks-card {
   border-radius:8px!important;box-shadow:none;
  }
+ body:has([data-expo-app-shell="true"]) .deviation-dialog:has(form.ks-checklists) button {
+  border-radius:6px!important;transform:none!important;
+ }
+ body:has([data-expo-app-shell="true"]) .deviation-dialog:has(form.ks-checklists)>.deviation-dialog-header>.deviation-dialog-close {
+  width:44px;min-width:44px;height:44px;min-height:44px;padding:0!important;border:1px solid #48606b;background:transparent!important;color:#fff!important;box-sizing:border-box;
+ }
  body:has([data-expo-app-shell="true"]) .deviation-dialog:has(form.ks-checklists) :is(.ks-field>span,.ks-checklist-point>legend,.ks-field-hint),
  body:has([data-expo-app-shell="true"]) :is(.checklist-field>label,.checklist-field>legend,.checklist-field>span,.checklist-field-builder>p) {
   font-size:16px!important;line-height:1.5;
