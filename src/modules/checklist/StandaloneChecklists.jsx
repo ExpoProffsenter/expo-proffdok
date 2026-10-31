@@ -152,6 +152,7 @@ export default function StandaloneChecklists({companyId,userId,onClose}){
      </fieldset>;})}
      {editableDefinition&&<button type="button" disabled={selected.definition.points.length>=100} onClick={()=>change({definition:{...selected.definition,points:[...selected.definition.points,{id:crypto.randomUUID(),title:'',guidance:'',image_required:false,comment_required:false}]}})}>Legg til sjekkpunkt</button>}
     </fieldset>
+    <ChecklistFirmTemplate key={selected.id} companyId={companyId} userId={userId} recordId={selected.id} definition={selected.definition} disabled={busy||Boolean(selected.pendingAction)||Boolean(pending)} onPublished={()=>load(scope.current)}/>
     <ChecklistSignatures value={selected.signatures} onChange={signatures=>change({signatures})} readOnly={readonly} disabled={busy||Boolean(selected.pendingAction)} status={selected.status}/>
     {!readonly&&<div className="standalone-actions"><button type="button" disabled={busy||!dirty} onClick={()=>save('save')}>{selected.pendingAction?'Prøv samme lagring igjen':'Lagre sjekkliste'}</button><button type="button" disabled={busy||Boolean(selected.pendingAction)} onClick={()=>save('complete')}>Fullfør sjekkliste</button></div>}
     <div className="standalone-actions"><button type="button" disabled={busy||dirty||!selected.revision||Boolean(missingDetails)} onClick={pdf}>Last ned PDF</button></div>
@@ -161,7 +162,6 @@ export default function StandaloneChecklists({companyId,userId,onClose}){
      <button type="button" disabled={busy||!pending&&!confirmed} onClick={send}>{pending?'Prøv samme sending igjen':'Send PDF'}</button>
      {pending&&<p>En sending må avklares. Samme dokument og mottaker brukes ved nytt forsøk.</p>}
     </fieldset>
-    <ChecklistFirmTemplate key={selected.id} companyId={companyId} userId={userId} recordId={selected.id} definition={selected.definition} disabled={busy||Boolean(selected.pendingAction)||Boolean(pending)} onPublished={()=>load(scope.current)}/>
     {!!history.length&&<details><summary>Sendingshistorikk</summary><ul>{history.map(h=><li key={h.id}>{h.recipient} · revisjon {h.revision} · {h.sent_at?'Tatt imot av e-posttjenesten':'Ikke avklart'}</li>)}</ul></details>}
    </>}
   </div>

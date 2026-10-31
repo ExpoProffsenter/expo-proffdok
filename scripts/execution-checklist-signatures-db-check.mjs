@@ -1,3 +1,9 @@
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import {execFileSync} from 'node:child_process';
+import {createRequire} from 'node:module';
+import {downloadDocumentPdf} from '../src/modules/report/kshmsDocumentPdf.mjs';
 import assert from 'node:assert/strict';
 import {executionChecklistPlatform,id} from './fixtures/execution-checklist-platform.mjs';
 import {signatureA,signatureB} from './fixtures/checklist-signatures.mjs';
@@ -59,6 +65,13 @@ try{
  for(const image of ['data:image/svg+xml;base64,PHN2Zz4=','data:image/png;base64,broken','data:image/png;base64,'+'A'.repeat(190000)])await deny(()=>ext({...standalone(),signatures:{own:{image}}},'complete'));
  await deny(()=>ext({...standalone(),signatures:{own:{image:signatureA},external:{requested:true,name:'Name'}}},'complete'));
  eq(signatureProblem({own:{image:signatureA}}),'');eq(Boolean(signatureProblem({})),true);
+ const pdfPath=path.join(fs.mkdtempSync(path.join(os.tmpdir(),'project-execution-signature-')),'signed-project.pdf');
+ const {jsPDF}=createRequire(import.meta.url)('./qa/node_modules/jspdf/dist/jspdf.node.min.js');
+ function SavedPdf(options){const doc=new jsPDF(options);doc.save=()=>fs.writeFileSync(pdfPath,Buffer.from(doc.output('arraybuffer')));return doc;}
+ await downloadDocumentPdf({kind:'run',expected:completed,companyId:firm,userId:owner,projectId:project,rpc:async(name,args)=>rpc(name,name==='project_checklist_state'?[args.p_company_id,args.p_project_id]:[args.p_company_id]),loadPdf:async()=>({jsPDF:SavedPdf}),loadImage:async()=>{throw Error('Inline signature must not be fetched through a photo URL');}});
+ const signedPdfText=execFileSync('pdftotext',['-layout',pdfPath,'-'],{encoding:'utf8'});
+ for(const text of ['Signatur fra fullfører','Ekstern signatur','TEST – Ekstern','TEST – Oppdragsgiver'])eq(signedPdfText.includes(text),true,'actual project PDF '+text);
+ console.log('Actual project command/readback/PDF with both inline signatures PASS: '+pdfPath);
  const templateEditor={id:id(n++),revision:0,requestId:id(n++),content};
  const namedRpc=(name,args)=>rpc(name,name==='kshms_checklist_command'?[args.p_company_id,args.p_action,args.p_request_id,args.p_payload]:[args.p_company_id]);
  const saved=await saveChecklistTemplate({companyId:firm,userId:owner,editor:templateEditor,action:'publish',rpc:namedRpc});
