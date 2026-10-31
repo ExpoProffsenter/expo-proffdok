@@ -1,3 +1,7 @@
+## Neste overlevering: admin/Hjelp/Support/portaler31.10
+
+469 native kravPASS med sen runtimeCSS; samme PR295/Preview. Manglende Sandbox-RPC list_managed_work_profiles er et eget åpent backend-/miljøpunkt, ikke grønn funksjonsattest. Fem avgrensede filmer finnes nå, sist Hjelp/søk/kapittel/retur med redigerbare kilder. Se [gjeldende status](../../CURRENT_RELEASE_STATUS.md) og [avgrenset endringsgrunnlag](../changes/admin-help-support-portals-036-20261031.json). Fortsett innlogging/arbeidsprofil/Startside/meny og resterende vare-/timeunderflater. Tidligere HR/KS/HMS/sjekkliste-/Sales-/Boligbevis beholdes. Ingen redesign-TEST OK, merge, Production eller demo-synk.
+
 # HR, KS/HMS og sjekklister –31.10
 
 Miljømål BEGGE, samme PR295/Preview/Sandbox. Native HR-underflater655krav/133visninger, HR-forside153, KS/HMS-forside197, rutineforvaltning401/100visninger og RUH/SJA/vernerunde/risiko984/221visningerPASS. Live HR-samtale4steg, leder/tilgang og sjekklistemal/underfelt er kontrollert. En faktisk18px-underpunktsrad/14px-etiketter i sjekklistemalen får44px/16px og like8px rammer. Alle143gamle feltkrav beholdt pluss15nye; rettet158PASS. Frittstående sjekkliste170 og44forslags-SQL PASS før/etter CSS. KS984består også etter CSS. Full Sandbox critical/buildPASS. [Avgrensning og bevis](../changes/people-checklist-subflows-036-20261031.json). Eksakt kandidat/fullCI/READY/levende sjekklisteetterkontroll føres i PR295.

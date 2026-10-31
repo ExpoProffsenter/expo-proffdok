@@ -2,13 +2,18 @@
    headings, controls, borders and contextual panels use this one baseline. */
 body:has([data-expo-app-shell="true"]){--pd-ink:#10212b;--pd-muted:#4e6876;--pd-line:#d5e3e9;--pd-accent:#007681;--pd-radius:8px;--pd-gap:20px;--pd-control:44px;--pd-copy:16px;--pd-title:32px}
 body:has([data-expo-app-shell="true"]) [data-expo-app-shell="true"]>main{max-width:1744px}
+/* Admin controls must retain the shared measurements after late mobile styles. */
+@media screen{
+ body:has([data-expo-app-shell="true"]) :is(.company-admin-panel,.pd-admin-workspace) :is(button,input,select,textarea){font-size:16px!important}
+ body:has([data-expo-app-shell="true"]) :is(.company-admin-panel,.pd-admin-workspace) button{min-height:44px!important}
+}
 /* Modules with their own contextual tools must expose one tools entry. */
 [data-expo-app-shell="true"]>main:has(.hr-workspace-036,.ks-workspace-036,.sales-case-workspace)>.pd-workspace-tool-row{display:none}
 body:has([data-expo-app-shell="true"]) :is(.hr-workspace-036-actions,.ks-workspace-navigation,.personal-tabs){max-width:none}
 body:has([data-expo-app-shell="true"]) :is(.hr-workspace-036,.ks-workspace-036,.personal-workspace036,.company-admin-panel,.pd-admin-workspace) :is(button,input,select,textarea){font-size:var(--pd-copy);line-height:1.4}
 body:has([data-expo-app-shell="true"]) :is(.hr-workspace-036,.ks-workspace-036,.personal-workspace036,.company-admin-panel,.pd-admin-workspace) button{min-height:var(--pd-control);border-radius:7px;box-shadow:none;transform:none}
-body:has([data-expo-app-shell="true"]) :is(.hr-workspace-036>header.hr-heading,.ks-workspace-036>header.module-heading,.personal-workspace036>header.personal-heading) h2,
-body:has([data-expo-app-shell="true"]) :is(.pd-admin-heading h2,.company-admin-heading>h3){font-size:var(--pd-title);font-weight:600;line-height:1.2;letter-spacing:-.7px}
+body:has([data-expo-app-shell="true"]) :is(.hr-workspace-036>header.hr-heading,.ks-workspace-036>header.module-heading,.personal-workspace036>header.personal-heading) h2{font-size:var(--pd-title);font-weight:600;line-height:1.2;letter-spacing:-.7px}
+body:has([data-expo-app-shell="true"]) :is(.pd-admin-heading h2,.company-admin-heading>h3){font-size:var(--pd-title)!important;font-weight:600;line-height:1.2;letter-spacing:-.7px}
 body:has([data-expo-app-shell="true"]) :is(.hr-workspace-036>header.hr-heading,.ks-workspace-036>header.module-heading,.personal-workspace036>header.personal-heading){padding-bottom:16px;margin-bottom:0}
 body:has([data-expo-app-shell="true"]) :is(.ks-workspace-navigation,.personal-workspace036 .personal-tabs){margin-top:0;margin-bottom:20px}
 body:has([data-expo-app-shell="true"]) :is(.hr-register-controls,.company-admin-directory,.ks-workspace-navigation) button.secondary{background:#fff;color:var(--pd-accent);border:1px solid var(--pd-line)}
@@ -122,18 +127,18 @@ body:has([data-expo-app-shell="true"]) .ks-plan-drawer>.ks-plan-dialog-head butt
    Only its outer frame follows the same contextual workspace measurements. */
 body:has([data-expo-app-shell="true"]) [data-company-admin-modal-open="1"]{inset:0 0 0 auto!important;top:0!important;left:auto!important;transform:none!important;width:min(1120px,100vw)!important;max-width:100vw!important;height:100dvh!important;max-height:100dvh!important;padding:0 24px 24px!important;border:0!important;border-radius:0!important}
 body:has([data-expo-app-shell="true"]) #expo-systemadmin-company-modal-header{margin:0 -24px 20px;padding:20px 24px;background:var(--pd-ink);color:#fff;border-radius:0;box-shadow:none;backdrop-filter:none}
-body:has([data-expo-app-shell="true"]) #expo-systemadmin-company-modal-header h2{font-size:28px;line-height:1.2;font-weight:600;color:#fff}
+body:has([data-expo-app-shell="true"]) #expo-systemadmin-company-modal-header h2{font-size:28px!important;line-height:1.2;font-weight:600;color:#fff}
 body:has([data-expo-app-shell="true"]) #expo-systemadmin-company-modal-header p{font-size:14px;color:#bdd7e2}
 body:has([data-expo-app-shell="true"]) #expo-systemadmin-company-modal-header .company-modal-close{width:44px!important;height:44px!important;min-height:44px!important;background:transparent!important;color:#bdd7e2!important;border:1px solid #ffffff30!important;border-radius:6px!important}
-body:has([data-expo-app-shell="true"]) [data-company-admin-modal-open="1"] :is(button,input,select,textarea,label,p,summary){font-size:16px;line-height:1.45}
-body:has([data-expo-app-shell="true"]) [data-company-admin-modal-open="1"] button{min-height:44px;box-shadow:none;transform:none}
+body:has([data-expo-app-shell="true"]) [data-company-admin-modal-open="1"] :is(button,input,select,textarea,label,p,summary){font-size:16px!important;line-height:1.45}
+body:has([data-expo-app-shell="true"]) [data-company-admin-modal-open="1"] button{min-height:44px!important;box-shadow:none;transform:none}
 body:has([data-expo-app-shell="true"]) [data-company-admin-modal-open="1"] small{font-size:14px;line-height:1.45}
 body:has([data-expo-app-shell="true"]) #expo-systemadmin-company-modal-footer{bottom:-24px;margin:18px -24px -24px;padding:16px 24px;background:#fff;backdrop-filter:none}
 body:has([data-expo-app-shell="true"]) #expo-systemadmin-company-modal-footer small{font-size:14px;line-height:1.45;color:var(--pd-muted)}
 @media(max-width:620px){
  body:has([data-expo-app-shell="true"]) [data-company-admin-modal-open="1"]{padding:0 16px 16px!important}
  body:has([data-expo-app-shell="true"]) #expo-systemadmin-company-modal-header{margin:0 -16px 16px;padding:16px}
- body:has([data-expo-app-shell="true"]) #expo-systemadmin-company-modal-header h2{font-size:25px}
+ body:has([data-expo-app-shell="true"]) #expo-systemadmin-company-modal-header h2{font-size:25px!important}
  body:has([data-expo-app-shell="true"]) #expo-systemadmin-company-modal-footer{bottom:-16px;margin:16px -16px -16px;padding:16px}
 }
 /* Remaining profile, support and register surfaces share the same presentation.
@@ -141,11 +146,11 @@ body:has([data-expo-app-shell="true"]) #expo-systemadmin-company-modal-footer sm
 body:has([data-expo-app-shell="true"]) :is(.company-profile-workspace,.pd-support:has(>.pd-support-page-heading)){
  margin:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;color:var(--pd-ink);min-width:0
 }
-body:has([data-expo-app-shell="true"]) :is(.company-profile-workspace,.pd-support,.pd-admin-panel[aria-label="Produktmaster"],.pd-admin-panel[aria-label="Internt vareregister"]) :is(button,input,select,textarea){font-size:16px;line-height:1.4;max-width:100%;box-sizing:border-box}
-body:has([data-expo-app-shell="true"]) :is(.company-profile-workspace,.pd-support,.pd-admin-panel[aria-label="Produktmaster"],.pd-admin-panel[aria-label="Internt vareregister"]) button{min-height:44px;border-radius:7px;box-shadow:none;transform:none;white-space:normal}
+body:has([data-expo-app-shell="true"]) :is(.company-profile-workspace,.pd-support,.pd-admin-panel[aria-label="Produktmaster"],.pd-admin-panel[aria-label="Internt vareregister"]) :is(button,input,select,textarea){font-size:16px!important;line-height:1.4;max-width:100%;box-sizing:border-box}
+body:has([data-expo-app-shell="true"]) :is(.company-profile-workspace,.pd-support,.pd-admin-panel[aria-label="Produktmaster"],.pd-admin-panel[aria-label="Internt vareregister"]) button{min-height:44px!important;border-radius:7px;box-shadow:none;transform:none;white-space:normal}
 body:has([data-expo-app-shell="true"]) :is(.company-profile-workspace,.pd-support,.pd-admin-panel[aria-label="Produktmaster"]) button:not(.secondary):not(.pd-support-ticket):not(.pd-support-launch){background:var(--pd-accent);color:#fff}
 body:has([data-expo-app-shell="true"]) :is(.company-profile-workspace,.pd-support,.pd-admin-panel[aria-label="Produktmaster"]) button.secondary{background:#fff;color:var(--pd-accent);border:1px solid var(--pd-line)}
-body:has([data-expo-app-shell="true"]) :is(.company-profile-workspace>h2,.pd-support-page-heading h2,.pd-admin-panel[aria-label="Produktmaster"]>.pd-admin-panel-heading h3,#expo-systemadmin-store-catalog>div>h3){font-size:var(--pd-title);font-weight:600;line-height:1.2;letter-spacing:-.7px;margin:6px 0 16px}
+body:has([data-expo-app-shell="true"]) :is(.company-profile-workspace>h2,.pd-support-page-heading h2,.pd-admin-panel[aria-label="Produktmaster"]>.pd-admin-panel-heading h3,#expo-systemadmin-store-catalog>div>h3){font-size:var(--pd-title)!important;font-weight:600;line-height:1.2;letter-spacing:-.7px;margin:6px 0 16px}
 body:has([data-expo-app-shell="true"]) .company-profile-workspace>h2>svg{display:none}
 body:has([data-expo-app-shell="true"]) :is(.company-profile-workspace,.pd-support,.pd-admin-panel[aria-label="Produktmaster"],.pd-admin-panel[aria-label="Internt vareregister"]) :is(p,label,.note){font-size:16px;line-height:1.5;overflow-wrap:anywhere}
 body:has([data-expo-app-shell="true"]) :is(.company-profile-workspace,.pd-support,.pd-admin-panel[aria-label="Produktmaster"],.pd-admin-panel[aria-label="Internt vareregister"]) :is(small,.pd-support-message-meta,.pd-support-delivery,.pd-support-badge){font-size:14px;line-height:1.5;overflow-wrap:anywhere}
@@ -179,13 +184,13 @@ body:has([data-expo-app-shell="true"]) :is(.pd-admin-panel[aria-label="Produktma
 body:has([data-expo-app-shell="true"]) .pd-admin-panel[aria-label="Produktmaster"] .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
 body:has([data-expo-app-shell="true"]) .pd-admin-panel[aria-label="Produktmaster"] .grid>*{min-width:0}
 body:has([data-expo-app-shell="true"]) .pd-admin-panel[aria-label="Produktmaster"] label.check{min-height:44px;border:0;border-radius:0;background:transparent;box-shadow:none}
-body:has([data-expo-app-shell="true"]) .pd-admin-panel[aria-label="Produktmaster"] label.check input{width:20px;height:20px;min-height:20px;flex:0 0 20px;padding:0;margin:0}
+body:has([data-expo-app-shell="true"]) .pd-admin-panel[aria-label="Produktmaster"] label.check input{width:20px!important;min-width:20px!important;height:20px!important;min-height:20px!important;flex:0 0 20px;padding:0;margin:0}
 body:has([data-expo-app-shell="true"]) .pd-admin-panel[aria-label="Produktmaster"] label.check span{font-size:16px;line-height:1.5;margin:0;min-width:0}
 body:has([data-expo-app-shell="true"]) .pd-admin-panel[aria-label="Produktmaster"]>.adminAccordionItem>.item>h3{display:none}
-body:has([data-expo-app-shell="true"]) .pd-admin-panel[aria-label="Produktmaster"] .projectListHeaderCards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:16px 0}
+body:has([data-expo-app-shell="true"]) .pd-admin-panel[aria-label="Produktmaster"] .projectListHeaderCards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:12px;margin:16px 0}
 body:has([data-expo-app-shell="true"]) .pd-admin-panel[aria-label="Produktmaster"] .tile{min-height:0;padding:12px 16px;border:1px solid var(--pd-line);border-radius:8px;background:#fff;box-shadow:none}
-body:has([data-expo-app-shell="true"]) .pd-admin-panel[aria-label="Produktmaster"] .tile b{font-size:24px;font-weight:600}
-body:has([data-expo-app-shell="true"]) .pd-admin-panel[aria-label="Produktmaster"] .tile span{font-size:14px;line-height:1.5}
+body:has([data-expo-app-shell="true"]) .pd-admin-panel[aria-label="Produktmaster"] .tile b{font-size:24px!important;font-weight:600}
+body:has([data-expo-app-shell="true"]) .pd-admin-panel[aria-label="Produktmaster"] .tile span{font-size:14px!important;line-height:1.5}
 body:has([data-expo-app-shell="true"]) #expo-systemadmin-store-catalog{margin-top:0!important}
 body:has([data-expo-app-shell="true"]) #expo-systemadmin-store-catalog .catalog-title{margin:20px 0 12px}
 body:has([data-expo-app-shell="true"]) #expo-systemadmin-store-catalog .catalog-title strong{font-size:20px;font-weight:600}
@@ -196,7 +201,7 @@ body:has([data-expo-app-shell="true"]) #expo-systemadmin-store-catalog :is(.cata
 @media(max-width:760px){
  body:has([data-expo-app-shell="true"]) .company-profile-workspace :is(.two,.grid),
  body:has([data-expo-app-shell="true"]) .pd-admin-panel[aria-label="Produktmaster"] .grid{grid-template-columns:minmax(0,1fr)}
- body:has([data-expo-app-shell="true"]) .pd-admin-panel[aria-label="Produktmaster"] .projectListHeaderCards{grid-template-columns:repeat(2,minmax(0,1fr))}
+ body:has([data-expo-app-shell="true"]) .pd-admin-panel[aria-label="Produktmaster"] .projectListHeaderCards{grid-template-columns:repeat(2,minmax(0,1fr))!important}
  body:has([data-expo-app-shell="true"]) .pd-support .pd-support-form{padding:16px}
 }
 
@@ -204,8 +209,8 @@ body:has([data-expo-app-shell="true"]) #expo-systemadmin-store-catalog :is(.cata
    The real module forms/readers remain their only state and command owners. */
 body:has([data-expo-app-shell="true"]) .company-admin-heading>h3{overflow-wrap:anywhere}
 body:has([data-expo-app-shell="true"]) :is(.help-workspace-036,.help-reference-workspace){margin:0 0 24px;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;min-width:0}
-body:has([data-expo-app-shell="true"]) :is(.help-workspace-036,.help-reference-workspace)>h2{font-size:var(--pd-title);font-weight:600;line-height:1.2;letter-spacing:-.7px;margin:6px 0 16px}
-body:has([data-expo-app-shell="true"]) .help-reference-workspace>h2{font-size:20px;letter-spacing:0}
+body:has([data-expo-app-shell="true"]) :is(.help-workspace-036,.help-reference-workspace)>h2{font-size:var(--pd-title)!important;font-weight:600;line-height:1.2;letter-spacing:-.7px;margin:6px 0 16px}
+body:has([data-expo-app-shell="true"]) .help-reference-workspace>h2{font-size:20px!important;letter-spacing:0}
 body:has([data-expo-app-shell="true"]) .help-workspace-036>h2>svg{display:none}
 body:has([data-expo-app-shell="true"]) .help-workspace-036 .helpQuickStart{padding:0;margin:0 0 20px;border:0;border-radius:0;background:transparent!important;box-shadow:none;color:var(--pd-ink)!important}
 body:has([data-expo-app-shell="true"]) .helpQuickStart :is(h3,p){color:var(--pd-muted)!important;font-size:16px;line-height:1.5;margin:8px 0;font-weight:400}

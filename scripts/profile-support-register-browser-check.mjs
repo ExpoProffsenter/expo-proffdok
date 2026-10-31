@@ -27,7 +27,7 @@ import Admin from '${root}/src/modules/app/SystemAdminWorkspace.jsx';
 import Support from '${root}/src/modules/support/SupportWorkspace.jsx';
 import {registerAppSupabaseClient} from '${root}/src/modules/access/appSupabaseClientRegistry.js';
 import {installSystemAdminStoreCatalogUx} from '${root}/src/modules/storeCatalog/systemAdminStoreCatalogUx.jsx';
-import '${root}/src/style.css';
+import '${root}/src/style.css';import {APP_RUNTIME_STYLES} from '${root}/src/modules/app/appRuntimeStyles.js';const runtimeStyle=document.createElement('style');runtimeStyle.textContent=APP_RUNTIME_STYLES;document.head.appendChild(runtimeStyle);
 import '${root}/src/modules/ui/appUxReview.css';
 import '${root}/src/modules/ui/proffdokWorkspace.css';
 window.calls=[];window.writes=[];window.selected=[];
@@ -117,6 +117,9 @@ try{
   eq(await page.getByLabel('Produktnavn',{exact:true}).evaluate(el=>getComputedStyle(el).fontSize),'16px','native product input text '+width);
   eq(await page.getByLabel('Legg til Sopro garantikontrollpunkt samtidig',{exact:true}).evaluate(el=>el.getBoundingClientRect().width),20,'checkbox uses native compact width '+width);
   eq(await page.locator('.projectListHeaderCards').evaluate(el=>new Set([...el.children].map(child=>child.getBoundingClientRect().top)).size),width<=760?2:1,'compact product metrics '+width);
+  eq(await page.locator('.projectListHeaderCards .tile span').evaluateAll(nodes=>nodes.every(el=>getComputedStyle(el).fontSize==='14px')),true,'readable product metric labels '+width);
+  eq(await page.locator('.projectListHeaderCards .tile b').evaluateAll(nodes=>nodes.every(el=>getComputedStyle(el).fontSize==='24px')),true,'readable product metrics '+width);
+  eq(await page.getByRole('button',{name:'Lagre nytt produkt',exact:true}).evaluate(el=>el.getBoundingClientRect().height>=44&&getComputedStyle(el).fontSize==='16px'),true,'native product save target '+width);
  }
  await page.setViewportSize({width:1363,height:936});await page.screenshot({path:'/tmp/product-workspace-036.png',fullPage:true});
  await page.getByRole('button',{name:'Internt vareregister',exact:true}).click();

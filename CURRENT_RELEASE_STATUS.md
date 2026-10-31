@@ -1,3 +1,17 @@
+# Admin, Hjelp, Support og portaler –31.10
+
+Samme PR295/faste Preview/Sandbox, miljømål BEGGE. Faktisk sen runtime-CSS er nå med i de berørte prøvene. Den gjenskapte19px titler,17px felt og fire små nøkkeltall på mobil. Avgrensede 03.6-regler verner de opprinnelige målene. Firmaadmin/Hjelp248, firmapaneladapter67, profil/Support/register103 og systemadmin/Support51PASS:469krav, fem bredder og korte520/600px-skjermer. Gamle krav er bevart. Uendrede prosjektbilde-/portalprøver149, kontrollørens faktiske React og Support60 samt critical support55/Sandbox critical-buildPASS. [Scope og presise begrensninger](docs/changes/admin-help-support-portals-036-20261031.json). Kandidat/fullCI/READY og levende etterkontroll føres i PR295.
+
+Live firmaadmin invitasjon/ansatt/retur, alle ni systemadminfaner, native firmapanel, produkt-/garantiunderfelt, bruker-Support/ny sak/avbryt og Hjelp/søk/kapittel/tomt søk/retur er lest uten utsending eller tilgangsendring. Åpent: Sandbox mangler list_managed_work_profiles-RPC i systemadminens firmapanel; egen backend-/miljørettelse må avklares separat. Internt vareregister viste kun innledning live; isolert ekte importkomponent er kontrollert. Support-vedlegg støttes ennå ikke. Separate roller, ekte lenke-/transportforløp og fysisk mobil/Safari er ikke sluttattestert. To Hjelp-henvisninger er rettet til Min side → Mine planer.
+
+Ny [hjelpevideo: Finn hjelp, åpne tema og gå tilbake](https://chatgpt.com/library?file_id=libfile_e4b4d6d0d7d081918df997946b1b4c13&account_id=personal) · [redigerbare kilder](https://chatgpt.com/library?file_id=libfile_505b605cc2408191988d185c15caeb20&account_id=personal).95sekunder/12scener/H264/1920x1080/24fps/uten lyd.2280frames full dekoding og faktisk Chromium-start/spoling/sluttPASS. Faktiske Preview-bilder fra21634439 og uendret godkjent renderer. Ikke sammenhengende skjermopptak, komplett Prissøk/HR-opplæring eller alle A–Å-/kontekstinnganger. Fem avgrensede filmer totalt; øvrige filmer og avspiller i appen gjenstår.
+
+Neste samlepakke er innlogging/arbeidsprofil, Startside/meny og gjenstående prissøk/varetelling/time-/utleggsunderflater med tidligere delbevis beholdt. Kjente sluttpakke-/PDF-/rollegrenser og videokøen står fortsatt åpne. Ingen global redesign-TEST OK, merge, Production eller demo-synk. Solgløtt avventer avtalt design- og releaseforløp.
+
+Kort prøve i fast Preview: Alle områder → Firmaprofil og Systemadmin → Produktmaster; tekst og handlinger skal være lesbare, mobilnøkkeltall skal stå i to kolonner. Hjelp → søk medarbeider → HR → åpne/lukk kapittel → Tilbake til arbeidet; samme søk skal stå igjen. Prøven krever ingen lagring eller sending.
+
+---
+
 # HR, KS/HMS og sjekklister –31.10
 
 Miljømål BEGGE, samme PR295/Preview/Sandbox. Native HR-underflater655krav/133visninger, HR-forside153, KS/HMS-forside197, rutineforvaltning401/100visninger og RUH/SJA/vernerunde/risiko984/221visningerPASS. Live HR-samtale4steg, leder/tilgang og sjekklistemal/underfelt er kontrollert. En faktisk18px-underpunktsrad/14px-etiketter i sjekklistemalen får44px/16px og like8px rammer. Alle143gamle feltkrav beholdt pluss15nye; rettet158PASS. Frittstående sjekkliste170 og44forslags-SQL PASS før/etter CSS. KS984består også etter CSS. Full Sandbox critical/buildPASS. [Avgrensning og bevis](docs/changes/people-checklist-subflows-036-20261031.json). Eksakt kandidat/fullCI/READY/levende sjekklisteetterkontroll føres i PR295.

@@ -153,7 +153,7 @@ try{
  eq(await page.locator('[data-company-admin=unified] [data-company-admin-navigator]').count(),0,'system and company surfaces can coexist');
  await page.evaluate(()=>{document.getElementById('real-systemadmin').remove();window.dispatchEvent(new Event('focus'));});await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));eq(await page.locator('[data-company-admin=unified] [data-company-admin-navigator]').count(),0,'removing Systemadmin cannot move global navigator into Firmaadmin');
  await page.evaluate(()=>{window.hold=true;window.dispatchEvent(new Event('focus'));});await page.waitForFunction(()=>window.waiters.length>0);await page.evaluate(()=>window.render('different-actor'));await page.evaluate(()=>{window.hold=false;window.waiters.splice(0).forEach(f=>f());});await page.getByRole('alert').filter({hasText:'Innlogging eller firma er endret'}).waitFor();eq(await page.locator('input').count(),0,'old actor cannot restore cards');eq(errors,[]);
- await page.evaluate(()=>window.renderHelp());await page.getByRole('heading',{name:'Hjelp og dokumentasjon',exact:true}).waitFor();
+ await page.evaluate(()=>window.renderHelp());await page.getByRole('heading',{name:'Hjelp og dokumentasjon',exact:true}).waitFor();eq(await page.getByRole('heading',{name:'Hjelp og dokumentasjon',exact:true}).evaluate(el=>getComputedStyle(el).fontSize),page.viewportSize().width<=620?'29px':'32px','Help index title after late runtime CSS');
  const searchHelp=page.getByRole('searchbox',{name:'Søk i hjelpen',exact:true});
  await searchHelp.fill('medarbeider');await page.locator('[data-help-topic="hr"]>button').click();
  const helpDialog=page.getByRole('dialog',{name:'HR',exact:true});await helpDialog.waitFor();
