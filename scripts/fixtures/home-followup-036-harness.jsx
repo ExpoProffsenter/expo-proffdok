@@ -27,7 +27,7 @@ function App() {
   useLayoutEffect(() => { window.qa.committed = state; }, [state]);
   return <div data-expo-app-shell="true"><main>
     <p data-qa-note="true">Isolert komponentprøve med syntetiske data. Ingen innlogget brukerøkt.</p>
-    <Shortcuts {...actions} canCatalog canHr canKshms canManageChecklists canPersonal canBolig />
+    <Shortcuts canStandaloneChecklists={state!=='noStandalone'} onStandaloneChecklists={()=>record('standalone')()} {...actions} canCatalog canHr canKshms canManageChecklists canPersonal canBolig />
     {tools.renderProjectFollowUpPanel({ projectRows: rows, openProjectById: record('project'), limit: 6 })}
     <SalesFollowup items={state === 'empty' ? [] : offers} error={state === 'error' ? 'Synthetic error' : ''} loading={state === 'loading'} compact={state === 'compact'} onOpenRequest={record('offer')} />
   </main></div>;

@@ -385,3 +385,20 @@ body:has([data-expo-app-shell="true"]) .company-user-status[data-status="pending
 [data-expo-app-shell="true"] .bolig-project-actions>nav{display:flex;flex-direction:row;flex-wrap:nowrap;overflow-x:auto;max-width:100%;min-width:0}
 [data-expo-app-shell="true"] .bolig-project-actions>nav>button{flex:none;width:auto;white-space:nowrap}
 [data-expo-app-shell="true"] .bolig-project-actions{width:100%;max-width:100%;min-width:0}
+
+/* Native checklist builder and main-plan fields, same 03.6 frame. */
+@media screen {
+ body:has([data-expo-app-shell="true"]) .deviation-dialog:has(form.ks-checklists){width:min(680px,100vw)!important;height:100dvh!important;max-height:100dvh!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;position:fixed!important;top:0!important;right:0!important;left:auto!important;display:flex;flex-direction:column}
+ body:has([data-expo-app-shell="true"]) .deviation-dialog:has(form.ks-checklists)>.deviation-dialog-header{background:#10212b!important;color:#fff;padding:24px 28px!important;flex:none;align-items:flex-start}
+ body:has([data-expo-app-shell="true"]) .deviation-dialog:has(form.ks-checklists)>.deviation-dialog-header h2{font-size:28px!important;color:#fff;line-height:1.18;overflow-wrap:anywhere}
+ body:has([data-expo-app-shell="true"]) .deviation-dialog:has(form.ks-checklists)>.deviation-dialog-header p{color:#bdd7e2}
+ body:has([data-expo-app-shell="true"]) .deviation-dialog:has(form.ks-checklists)>.deviation-dialog-body{flex:1;min-height:0;overflow:auto;padding:24px 28px}
+ body:has([data-expo-app-shell="true"]) .deviation-dialog:has(form.ks-checklists) :is(button,input:not([type=checkbox]),select,textarea){font-size:16px!important;min-height:44px!important;box-sizing:border-box}
+ body:has([data-expo-app-shell="true"]) .deviation-dialog:has(form.ks-checklists) .ks-checklist-point{border-radius:8px;border:1px solid #cbd5e1;padding:12px!important;margin:14px 0!important}
+ body:has([data-expo-app-shell="true"]) .ks-plan-filters :is(input,select){font-size:16px!important;min-height:44px!important;box-sizing:border-box}
+}
+@media screen and (max-width:620px){
+ body:has([data-expo-app-shell="true"]) .deviation-dialog:has(form.ks-checklists)>.deviation-dialog-header{padding:18px 16px!important}
+ body:has([data-expo-app-shell="true"]) .deviation-dialog:has(form.ks-checklists)>.deviation-dialog-header h2{font-size:25px!important}
+ body:has([data-expo-app-shell="true"]) .deviation-dialog:has(form.ks-checklists)>.deviation-dialog-body{padding:16px}
+}

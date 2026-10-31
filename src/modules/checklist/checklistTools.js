@@ -1,3 +1,4 @@
+import ChecklistStatusChoices from './ChecklistStatusChoices.jsx';
 import ChecklistFields from './ChecklistFields.jsx';
 import {fieldProblem} from './checklistFields.mjs';
 // FASE 24E SJEKKLISTEMODUL: Mekanisk uttrekk av eksisterende ChecklistEditor fra main.jsx. Ingen funksjons-, garanti-, rapport-, database-, RLS-, Storage-, Edge Function- eller e-postendring.
@@ -349,17 +350,7 @@ export function createChecklistEditor({
                     (value.photos || []).length > 0 ? ` · 📷 ${(value.photos || []).length} bilder` : ""
                   ] })
                 ] }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "checklistStatusButtons", children: ["Ok", ...(pointRequirement.allow_na===false?[]:["Ikke aktuelt"]), "Avvik"].map((status) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-                  "button",
-                  {
-                    type: "button",
-                    className: value.status === status ? "" : "secondary",
-                    disabled: Boolean(value.ks_deviation_id),
-                    onClick: () => handleStatusClick(group.category, item, status),
-                    children: status
-                  },
-                  status
-                )) })
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChecklistStatusChoices, { value: value.status, allowNa: pointRequirement.allow_na !== false, disabled: Boolean(value.ks_deviation_id), onChange: status => handleStatusClick(group.category, item, status), label: `Svar på ${item}` })
               ] }),
               pointRequirement.fields?.length > 0 && (0, import_jsx_runtime.jsx)(ChecklistFields, {fields:pointRequirement.fields,values:value.values||{},readOnly:readOnlyFields,userId,onChange:(values,confirmationId)=>setChecklistValue(group.category,item,{values},{confirmationId})}),
               (String(group.category || "").startsWith(customChecklistCategoryPrefix) || value.status || value.comment || (value.photos || []).length > 0) && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(

@@ -1,3 +1,7 @@
+# Designfortsettelse – 31.10.2026
+
+Samme draftPR295/branch/Preview, miljømål BEGGE. Gjeldende main b389c707 er integrert med publiserte eksterne sjekklister/signaturer/firmamal. Seks arbeidsområder på Startside beholdes; Fyll ut sjekkliste legges i eksisterende sjekklisteområde. Ny samlet pakke: kompakte svarvalg, native maleditor og planfelt. Faktisk kandidat/QA/deploy/live dokumenteres i PR295. Ingen redesign-TEST OK eller Production-publisering.
+
 # Preview-gjennomgang – 30.10.2026
 
 Prosjektbarn: native beskrivelse/kundeinfo/prosjekteringsfelt/avtale/produkter/innredning/fag-utstyr/chat/notater/overtagelse/garanti får samme03.6-ramme, og prosjektavvik/kontrollør native høyrepanel. Bare ny scoped screenCSS/import, QA og dokumentasjon.531 assertions/85 tilstand×bredde-visningerPASS, negativt foreldrestilsett feiler, eksisterende workspace193/kunde36/save98 og kontrakt/closeoutPASS. Samlet app-UXPASS og eksplisitt Sandbox critical/buildPASS. Eksakt sluttkandidat/CI/Preview/innlogget kontroll vedlikeholdes øverst i [PR295](https://github.com/ExpoProffsenter/expo-proffdok/pull/295). Grunnlag docs/changes/project-subflows-design-036-20261030.json. Ingen redesign-TEST OK eller Production.
@@ -78,3 +82,16 @@ Kenneths nye TEST OK gjelder kandidat `bbe67f1a`, publisert som main `a31c0673ba
 Følg `docs/DEVELOPMENT_WORKFLOW.md`: én varig endringsbeskrivelse, relevante dokumenter og kontrollert main → demo med bevart overlay og preflight. PR289 dokumenterer prosessforenklingen, PR288 tidligere kundepreview-rettelse.
 
 Eldre releasebevis finnes i Git-historikken og [arkivet](docs/archive/RELEASE_STATUS_BEFORE_PROCESS_20261026.md). Historiske ventende punkter overstyrer ikke senere verifiserte PR-er.
+
+
+## Separat publisert funksjonalitet
+
+# Utførelsessjekklister – TEST OK og publisert 31.10.2026
+
+Brukerens TEST OK gjelder signatur- og firmamalkandidat `2ccecedf`. Full Core Safety820/41150527338 SUCCESS10/10; PR301 er merget som `7c22018d3054b3bad31004bb556ada0af2e1e2c6`. Vercel `dpl_HDuQQSbhmBqTFPbr2L49n9CmW46R` er READY på samme commit og expo-proffdok.app. Faktisk Production-HTML/loader/bootstrap/app er sammenlignet med eksplisitt lokal Production-build; produksjonsbinding kontrolleres ved publisering. Gjeldende main-/demo-SHA, fullført main → demo, privat rollout-aktivering, preflight og eventuelle begrensninger vedlikeholdes i [PR301](https://github.com/ExpoProffsenter/expo-proffdok/pull/301).
+
+Vanlige utførelsessjekklister har påkrevd tegnet signatur fra fullfører og separat valgfri ekstern signatur. Lagre som firmamal ligger rett etter punktene, før Signering, med eksisterende rettigheter og skille mellom utkast/publisering. Prosjektering, Bolig/UE, vernerunder, risiko og Overtagelse er utenfor. Fullført historikk er urørt. Tre additive SQL-filer er installert atomisk i Production som migrering20261031003022. PDF-Edge standalone-checklist-email v2 er ACTIVE/JWTtrue og har samme eksakte bundle som Sandbox v3. RLS/ACL og uendret historikk er kontrollert. Teknisk Production-prøve av signert kommando avviste manglende signatur og bekreftet kladd/readback med tilbakerulling; ingen nye testkontroller, prøve-e-post eller falsk reell signering. [Endring og tester](docs/changes/execution-checklist-signatures-20261031.json).
+
+Eksterne sjekklister fra [PR299](https://github.com/ExpoProffsenter/expo-proffdok/pull/299) finnes via Meny → Sjekklister / Startside → Fyll ut sjekkliste. Ordrenummer og arbeidssted/adresse kreves; eksternt prosjektnavn og kunde følger også kontroll/PDF når utfylt. Ingen ProffDok-prosjektopprettelse. Nettleserfilbroens PDF-overføring, fysisk mobil/Safari, faktisk innlogget Production-prøve og reell e-postlevering er avgrenset i godkjenningsgrunnlaget.
+
+Neste UX-ønske er notert i [oppgave302](https://github.com/ExpoProffsenter/expo-proffdok/issues/302): kompakte, stilige avkrysningsbokser i alle sjekklister, fingervennlig trykkflate, tydelig grønn V for OK/Ikke aktuelt og oransje Avvik. Ikke implementert som del av signaturreleasen.

@@ -35,6 +35,7 @@ try {
       const positions = await page.locator('.pd-home-task').evaluateAll(nodes => nodes.slice(0, 3).map(node => node.querySelector('.pd-task-main').getBoundingClientRect().top));
       eq(Math.max(...positions) - Math.min(...positions) <= 1, true, `approved home task actions align across the first row at ${width}: ${positions}`);
     }
+    await page.getByRole('button',{name:'Fyll ut sjekkliste',exact:true}).click();eq(await page.evaluate(()=>window.qa.calls.at(-1)),{label:'standalone',args:[]},'shared native checklist entry '+width);
     eq(await page.locator('.pd-followup-row').count(), 3, `all project priorities remain at ${width}`);
     eq(await page.locator('.pd-sales-followup-row').count(), 6, `native desktop item limit retained at ${width}`);
     eq(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), true, `home document fits at ${width}`);
@@ -56,6 +57,7 @@ try {
     eq(await page.locator('.pd-sales-followup-row').count(), count, `native ${state} renderer retained`);
     if (state === 'error') eq(await page.getByText('Kunne ikke hente tilbud som bør følges opp.', { exact: false }).isVisible(), true, 'failure remains explicit');
   }
+  await page.evaluate(()=>window.qa.show('noStandalone'));await page.waitForFunction(()=>window.qa.committed==='noStandalone');eq(await page.getByRole('button',{name:'Fyll ut sjekkliste',exact:true}).count(),0,'lost standalone access removes shared home entry');
   eq(outbound, [], 'hard boundary: no remote transport');
   eq(errors, [], 'no runtime errors');
   console.log(`PASS home followup 03.6: ${checks} actual component/Chromium assertions, approved six-area home and native project/offer callbacks; synthetic read-only data.`);

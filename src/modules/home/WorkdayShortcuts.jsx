@@ -14,7 +14,7 @@ export function useWorkspaceTasks(props){
   props.canCatalog&&{id:'catalog',title:'Varesøk og bestilling',icon:PackageSearch,description:'Finn varer, juster antall og samle bestillingen.',actions:[action('Varesøk',props.onCatalog),action('Varebestilling',props.onOrder)]},
   projects&&{id:'projects',title:'Prosjekter',icon:FolderOpen,description:'Fortsett prosjektarbeidet med dokumentasjon og sjekklister.',actions:[action('Åpne prosjekter',props.onProjects),action('Nytt prosjekt',props.onNewProject),...(props.canBolig?[action('Boligprosjekter',props.onBolig)]:[])]},
   (props.canHr||props.canKshms)&&{id:'people',title:'HR og HMS/KS',icon:UsersRound,description:'Medarbeidere, rutiner, sikkert arbeid og oppfølging.',actions:[...(props.canHr?[action('HR',props.onHr)]:[]),...(props.canKshms?[action('HMS/KS',props.onKshms)]:[])]},
-  (projects||props.canManageChecklists)&&{id:'checklists',title:'Sjekklister',icon:ShieldCheck,description:'Fyll ut i prosjektet. Lag og vedlikehold firmaets sjekklistemaler.',actions:[...(projects?[action('Prosjektsjekklister',props.onProjects)]:[]),...(props.canManageChecklists?[action('Sjekklistemaler',props.onChecklists)]:[])]},
+  (projects||props.canManageChecklists||props.canStandaloneChecklists)&&{id:'checklists',title:'Sjekklister',icon:ShieldCheck,description:'Fyll ut i et prosjekt eller på en ekstern jobb. Lag og vedlikehold firmaets sjekklistemaler.',actions:[...(props.canStandaloneChecklists?[action('Fyll ut sjekkliste',props.onStandaloneChecklists)]:[]),...(projects?[action('Prosjektsjekklister',props.onProjects)]:[]),...(props.canManageChecklists?[action('Sjekklistemaler',props.onChecklists)]:[])]},
  ].filter(Boolean);
 }
 

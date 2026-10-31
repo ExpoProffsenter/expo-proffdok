@@ -1,5 +1,16 @@
 # Design 03.6 – gjenoppta uten ny runde
 
+## Samlet fortsettelse31.10 – sjekklistesvar, maleditor og planfiltre
+
+Samme PR295/branch/Preview. Publisert main b389c707 tas kontrollert inn, inkludert PR299/301/303. Ingen ny backendendring; de nå strenge signaturkommandoene krever at design-UI også bruker den publiserte signaturimplementasjonen. Behold Startsidens seks arbeidsområder og flytt allerede publisert Fyll ut sjekkliste til det eksisterende sjekklistekortet med samme tilgang/callback. Ingen redesign-TEST OK eller Production-publisering.
+
+Ny komponent ChecklistStatusChoices er en ren visning for den felles prosjekteditoren og eksterne sjekklister:20px bokser i44px trykkflate, grønn V for Ok/Ikke aktuelt og oransje Avvik, aria-pressed og redusert bevegelse. Native handlers/lagring/signaturinvalidasjon beholdes. NA vises fortsatt ikke når definisjonen forbyr det. Malbyggerens native dialog får flush680px/navy/fullhøyde/28-25/16-44 og8px grupper. Hovedplanens14px-filtre er korrigert til16/44 uten endret tidslinje/PDF/kommandoer.
+
+Lokalt fleksibel138, ekstern faktisk React/HTTP/PGlite/PDF135, Home57 og plan219PASS. Hele eksisterende app-UX-samlekjede består. Visuell maltest fant inntrukket topp og arvet feltpadding; rettet med permanent flush-header-geometri, ingen krav svekket. Home-kontrakten er oppdatert fra to gamle hero-trær til faktisk felles seksområde-komponent og bekreftet i både kilde og native fem-bredde/runtime med adgangsbortfall. Ingen eksisterende funksjonsassertions er fjernet. Gjeldende kandidat/fullCI/READY/faktisk innlogget kontroll står i PR295.
+
+Oppgave302 gjelder alle sjekklister, men Bolig/UE har separat komponent og grensevakt. Denne pakken lukker ikke den delen. Bevar alle resterende145-reise-/rolle-/Help-/vedleggs-/PDF-/fysiskmobil/Safari-punkter. KSHMS011 har nå konkret native maleditor-delbevis; KSHMS012s tomme vedleggs-/filbrobegrensning er ikke nyprøvd eller lukket. Viderefør gjeldende manus fremfor å starte inventering på nytt.
+
+
 ## Prosjektbarn30.10 – samlet presentasjon, klart for Preview-kontroll
 
 Baseline f469c5d4/main71d157f7, samme draftPR295/branch og fast Preview. Brukeren har bedt om å fortsette etter manus uten deloppgave-spørsmål. Miljømål BEGGE, foreløpig bare Preview. Ingen redesign-TEST OK, merge, Production eller main→demo. Den tidligere skynettblokkeringen er opphevet: f469c5d4 ble faktisk etterkontrollert innlogget (SJA-fokus, rutineeditor/kildediff, siste publiseringssteg uten samtykke, revisjon og egen lesing); fullCI805SUCCESS. Fersk sluttkandidat/CI/deploy/live for prosjektpakken føres øverst i PR295.

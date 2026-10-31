@@ -1,3 +1,5 @@
+import ChecklistSignatures from './ChecklistSignatures.jsx';
+import {emptySignatures,isExecutionChecklist,signatureProblem,signaturesForEditor,signatureInput} from './checklistSignatures.mjs';
 import {projectChecklistReadRpc} from './projectChecklistRead.mjs';
 import {invalidateFieldConfirmations} from './checklistFields.mjs';
 import {checklistResumeEntries,firstUnfinishedChecklist} from './checklistResume.mjs';
@@ -66,7 +68,7 @@ export default function ProjectChecklistWorkspace({Editor,companyId,userId,proje
     select({...saved,definition:saved.definition,answers:currentRunAnswers(saved,state.checklist),readOnly:true});return;
    }
    const local=readRunDraft(window.localStorage,key(group.category));
-   const meaningfulLocal=local&&(local.pendingAction||Object.values(local.answers).some(answer=>answer?.status||answer?.comment||answer?.photos?.length||Object.keys(answer?.values||{}).length));
+   const meaningfulLocal=local&&(local.signatures?.own?.image||local.signatures?.external?.image||local.pendingAction||Object.values(local.answers).some(answer=>answer?.status||answer?.comment||answer?.photos?.length||Object.keys(answer?.values||{}).length));
    if(!fresh&&local&&!readOnly&&(meaningfulLocal||!latest)){
     const definition=!local.pendingAction&&group.category.startsWith('Egne sjekkpunkter')?{...local.definition,items:[...new Set([...local.definition.items,...group.items])]}:local.definition;
     select({...local,definition,answers:answersForDefinition(definition,local.answers)});
@@ -78,7 +80,7 @@ export default function ProjectChecklistWorkspace({Editor,companyId,userId,proje
    if(fresh&&meaningfulLocal){select(local);setNotice('Du har en kladd til denne sjekklisten. Lagre eller fullfør den før du starter en ny kontroll.');return;}
    if(saved?.status==='draft'){
     const definition=group.category.startsWith('Egne sjekkpunkter')?{...saved.definition,items:[...new Set([...saved.definition.items,...group.items])]}:saved.definition;
-    select({...saved,definition,answers:answersForDefinition(definition,currentRunAnswers(saved,state.checklist)),requestId:crypto.randomUUID(),readOnly});
+    select({...saved,signatures:signaturesForEditor(saved.signatures,userId),definition,answers:answersForDefinition(definition,currentRunAnswers(saved,state.checklist)),requestId:crypto.randomUUID(),readOnly});
     if(fresh)setNotice('En kontroll er allerede påbegynt. Du fortsetter den lagrede kontrollen.');return;
    }
    const definition=runDefinition(group,instances,isWarrantyPoint(group.category));
@@ -116,9 +118,10 @@ export default function ProjectChecklistWorkspace({Editor,companyId,userId,proje
  const change=(category,item,patch,options={})=>{
   const value=selection.current;if(!value||value.readOnly||readOnly||locked.current||value.pendingAction)return;
   const answers={...value.answers,[item]:{...value.answers[item],...patch}};
-  const next={...value,answers:invalidateFieldConfirmations(value.definition.items,value.definition.requirements||{},answers,item,options.confirmationId),requestId:crypto.randomUUID()};
+  const next={...value,signatures:emptySignatures(),answers:invalidateFieldConfirmations(value.definition.items,value.definition.requirements||{},answers,item,options.confirmationId),requestId:crypto.randomUUID()};
   selection.current=next;setSelected(next);remember(next);setError('');
  };
+ const changeSignatures=signatures=>{const value=selection.current;if(!value||value.readOnly||readOnly||locked.current||value.pendingAction)return;const next={...value,signatures,requestId:crypto.randomUUID()};selection.current=next;setSelected(next);remember(next);setError('');};
  const addPhoto=async(category,item,files)=>{
   const value=selection.current,scope=owner.current;
   if(!value||value.readOnly||readOnly||locked.current||value.pendingAction)return;
@@ -132,9 +135,9 @@ export default function ProjectChecklistWorkspace({Editor,companyId,userId,proje
   const value=selection.current,scope=owner.current;
   if(!value||value.readOnly||readOnly||locked.current||uploads)return;
   if(!companyId||!projectId){setError('Lagre ordren eller prosjektet først. Kladden er beholdt.');remember(value);return;}
-  const actual=value.pendingAction||action,problem=actual==='complete'?completionProblem(value.definition,value.answers):'';
+  const actual=value.pendingAction||action,problem=actual==='complete'?completionProblem(value.definition,value.answers)||(isExecutionChecklist(value.definition)&&(!value.pendingAction||value.signatureContract==='execution-v1')?signatureProblem(value.signatures,userId):''):'';
   if(problem){setError(problem);return;}
-  const attempt={...value,pendingAction:actual};remember(attempt);selection.current=attempt;setSelected(attempt);locked.current=true;setBusy(true);setError('');
+  const attempt={...value,signatureContract:value.pendingAction?value.signatureContract:'execution-v1',pendingAction:actual};remember(attempt);selection.current=attempt;setSelected(attempt);locked.current=true;setBusy(true);setError('');
   try {
    const result=await commitChecklistRun({companyId,userId,projectId,draft:attempt,action:actual,rpc:kshmsRpc,isCurrent:()=>current(scope)});
    if(!result||!current(scope))return;
@@ -175,7 +178,7 @@ export default function ProjectChecklistWorkspace({Editor,companyId,userId,proje
  const historical=(data?.runs||[]).filter(value=>value.status==='completed');
  const previousGroups=Object.entries(data?.checklist||checklist||{}).filter(([category,answers])=>!groups.some(group=>group.category===category)&&Object.values(answers||{}).some(answer=>answer?.status||answer?.comment||answer?.photos?.length||Object.keys(answer?.values||{}).length));
  const savedSelection=selected&&data?.runs?.find(row=>row.id===selected.id);
- const pdfReady=Boolean(savedSelection&&!selected.earlierDraft&&!selected.pendingAction&&savedSelection.revision===selected.revision&&sameRunValue(savedSelection.definition,selected.definition)&&sameRunValue(answersForDefinition(savedSelection.definition,savedSelection.answers),answersForDefinition(selected.definition,selected.answers)));
+ const pdfReady=Boolean(savedSelection&&!selected.earlierDraft&&!selected.pendingAction&&savedSelection.revision===selected.revision&&sameRunValue(savedSelection.definition,selected.definition)&&sameRunValue(signatureInput(savedSelection.signatures),signatureInput(selected.signatures))&&sameRunValue(answersForDefinition(savedSelection.definition,savedSelection.answers),answersForDefinition(selected.definition,selected.answers)));
  const title=definition=>definition.category.replace(/^KS\/HMS sjekkliste – /,'');
  return <div className="project-checklist-workspace">
   <p className="note">Åpne en sjekkliste for å fylle den ut. «Lagre» lar deg eller en kollega fortsette senere. «Sjekkliste fullført» lagrer en ferdig kontroll.</p>
@@ -205,6 +208,7 @@ export default function ProjectChecklistWorkspace({Editor,companyId,userId,proje
    {error&&<p role="alert" className="ks-error">{error}</p>}{notice&&<p role="status" className="ks-notice">{notice}</p>}
    {selected.completed_identity&&<p>Fullført av {identityText(selected.completed_identity)} · {new Date(selected.completed_at).toLocaleString('nb-NO')}</p>}
    <fieldset disabled={readOnly||selected.readOnly||busy||uploads>0||!!selected.pendingAction}><Editor {...editorProps} key={selected.id} userId={userId} readOnlyFields={readOnly||selected.readOnly} embedded initiallyExpanded consumeChecklistJump={false} customChecklistEnabled={false} showOpenDeviationsOnly={false} setShowOpenDeviationsOnly={null} activeChecklistTemplate={[selected.definition]} checklist={{[selected.definition.category]:selected.answers}} setChecklistValue={change} addChecklistPhoto={addPhoto} onOpenKshmsDeviation={editorProps.onOpenKshmsDeviation?id=>{if(remember(selection.current)){setSelected(null);selection.current=null;editorProps.onOpenKshmsDeviation(id);}}:null}/></fieldset>
+   {isExecutionChecklist(selected.definition)&&<ChecklistSignatures value={selected.signatures} onChange={changeSignatures} readOnly={selected.readOnly||readOnly} disabled={busy||uploads>0||!!selected.pendingAction} status={selected.status}/>}
    {savedSelection&&!selected.earlierDraft&&<KshmsDocumentPdfButton rpc={readRpc} kind="run" row={selected} companyId={companyId} userId={userId} projectId={projectId} resolveFileUrl={resolveFileUrl} disabled={!pdfReady||busy||uploads>0}/> }
    {!savedSelection&&<p className="note">Lagre kontrollen først for å laste ned egen PDF. Tidligere dokumentasjon uten kontrollhistorikk finnes i prosjektets ordinære rapport.</p>}
    <div className="project-checklist-footer">

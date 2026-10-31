@@ -29,6 +29,7 @@ try{
   if(baseline){await page.goto('http://127.0.0.1:'+server.address().port+'/before');await page.locator('dialog[open]').waitFor();await page.getByRole('button',{name:'Måned',exact:true}).click();before=await measure();}
   await page.goto('http://127.0.0.1:'+server.address().port+'/after');await page.locator('dialog[open]').waitFor();await page.getByRole('button',{name:'Måned',exact:true}).click();
   if(process.env.PROGRESS_LAYOUT_SCREENSHOTS){fs.mkdirSync(process.env.PROGRESS_LAYOUT_SCREENSHOTS,{recursive:true});await page.screenshot({path:path.join(process.env.PROGRESS_LAYOUT_SCREENSHOTS,'layout-'+width+'x'+height+'.png')});}
+  eq(await page.locator('.ks-plan-filters input,.ks-plan-filters select').evaluateAll(nodes=>nodes.length>0&&nodes.every(n=>parseFloat(getComputedStyle(n).fontSize)>=16&&n.getBoundingClientRect().height>=44)),true,'main plan filters16/44 '+width);
   const after=await measure();console.log(JSON.stringify({width,height,before,after}));
   eq(after.dialogFits,true,'popup fits '+width);eq(after.horizontalOverflow,false,'controls fit '+width);eq(await page.locator('.ks-timeline-row').count(),21,'all rows remain at '+width);eq(after.rowHeight>=66,true,'readable row height '+width);
   if(width>=1280){eq(after.timelineTop<310,true,'timeline starts near top '+width);eq(after.visibleRows>=Math.floor((height-380)/70),true,'more full task rows '+width);eq(after.bottomGap<=20,true,'timeline uses remaining height '+width);}

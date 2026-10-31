@@ -605,6 +605,17 @@
           {
             "ref": "checkpoint-shared",
             "mapping": "scoped partial result; see evidence_registry and limitations"
+          },
+          {
+            "date": "2026-10-31",
+            "environment": "isolated-native-browser",
+            "scope": "Samlet sjekkliste/plan/home-pakke med faktisk komponent og full sen app-CSS. Kun avgrenset delbevis, ikke lukket helreise.",
+            "test": "scripts/home-followup-036-browser-check.mjs:57PASS; seks områder, fem bredder, callback og bortfalt tilgang",
+            "limitations": [
+              "Ingen reell publisering/signering/tilgang/utsending",
+              "Ingen totalattest på alle roller, fysisk mobil eller Safari",
+              "Eksakt CI/Preview og innlogget etterkontroll i PR295"
+            ]
           }
         ]
       },
@@ -8942,6 +8953,17 @@
           {
             "ref": "checkpoint-plan-time",
             "mapping": "scoped partial result; see evidence_registry and limitations"
+          },
+          {
+            "date": "2026-10-31",
+            "environment": "isolated-native-browser",
+            "scope": "Samlet sjekkliste/plan/home-pakke med faktisk komponent og full sen app-CSS. Kun avgrenset delbevis, ikke lukket helreise.",
+            "test": "scripts/progress-layout-react-check.mjs:219PASS; alle tidligere212 + hovedfiltre16/44",
+            "limitations": [
+              "Ingen reell publisering/signering/tilgang/utsending",
+              "Ingen totalattest på alle roller, fysisk mobil eller Safari",
+              "Eksakt CI/Preview og innlogget etterkontroll i PR295"
+            ]
           }
         ]
       },
@@ -9348,7 +9370,19 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "date": "2026-10-31",
+            "environment": "isolated-native-browser",
+            "scope": "Samlet sjekkliste/plan/home-pakke med faktisk komponent og full sen app-CSS. Kun avgrenset delbevis, ikke lukket helreise.",
+            "test": "scripts/flexible-checklist-fields-browser-check.mjs:138PASS; faktisk mal-/underfeltbygger og prosjektstatus, fem malrammebredder, topp/kant/16/44 og kladd/fokus/required",
+            "limitations": [
+              "Ingen reell publisering/signering/tilgang/utsending",
+              "Ingen totalattest på alle roller, fysisk mobil eller Safari",
+              "Eksakt CI/Preview og innlogget etterkontroll i PR295"
+            ]
+          }
+        ]
       },
       "design_review": {
         "status": "delvis",

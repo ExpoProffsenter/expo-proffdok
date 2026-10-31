@@ -95,3 +95,9 @@ Prosjektets nye avvik og kontrollørdialog bruker fortsatt DeviationDialog og op
 Prosjektets kundeeditor ligger faktisk i `main > div > section.project-info-editor`. Stilsettet avgrenser denne navngitte editoren også under mellomlaget, mens andre prosjektseksjoner fortsatt krever direkte main-parent. Native prosjekt-/kundekort, kunderegister og garantitilvalg er med i den samme faktiske nesting-fixturen. Dette hindrer at en enklere testvert skjuler gammel feltstil i den virkelige appen.
 
 Arbeidsoperasjonsvelgeren i prosjekt-/KS-planer bruker den samme native `PlanDialog` med `side`,680px på PC/full bredde på mobil, navy28/25px header og skrollende `ks-plan-drawer-body`. Bare velgerens egne kode-/standardoppgaver følger16px/44px og8px undergrupper. Søke-/valg-/kladd-/lagre-/fokus-/bodylock-eiere beholdes. Layoutprøven laster både workspace/mobil-CSS og sen `APP_RUNTIME_STYLES`, og åpner de faktiske13 standardoppgavene/NS-underkodene i seks vinduer inkludert320×320.
+
+## Sjekklister og planfiltre – 03.6
+
+Malbyggerens native DeviationDialog bruker samme flush navy høyrepanel,680px/fullhøyde,28/25px tittel,16px felt og44px trykkmål. Feltgrupper har8px radius. Hele mobil-/workspace-/sene runtime-kaskaden inngår i flexible-checklist-fields-browser-check. Hovedplanens eksisterende søk-/filterfelt har16px/44px; tidslinje, data og PDF er uendret.
+
+Statusvalgene er små20px bokser inne i44px native knapper. Grønn V betyr valgt Ok/Ikke aktuelt, oransje valgt Avvik. Tekst og aria-pressed gjør valg lesbare uten bare farge. Keyboard, disabled/readonly og allow_na følger etablerte eiere. Redusert bevegelse slår av overganger.
