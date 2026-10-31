@@ -6741,7 +6741,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/bolig-quality-browser-check.mjs",
@@ -6752,15 +6752,25 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "bolig-checklist-status-choices-20261031-pr294",
+            "mapping": "Isolert native Bolig109/UE121 med gamle kontrakter, min44/16/20, fem bredder/kortskjerm, tastatur/tømming, busy/readOnly/dvale/retry/firmaskille. Native FDV12/dokumenteksport40 og firePDF29sider visuelt sett. Ikke innlogget portal/alle roller/helreise."
+          }
+        ]
       },
       "design_review": {
-        "status": "ikke-startet",
-        "reason": "Ingen selvstendig visuell sluttkontroll attestert i denne auditen.",
+        "status": "delvis",
+        "reason": "Scoped native før-/etterbilder og PDF-sider på separat PR294/c3594f10. Innlogget helreise, fysisk Safari og øvrige underflater beholdes åpne.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "bolig-checklist-status-choices-20261031-pr294"
+        ]
       },
-      "remaining_checks": []
+      "remaining_checks": [
+        "PR294/c3594f10 har bare avgrenset komponent-/PDF-bevis. Fersk full CI-status og READY står i PR294; CI828 førstefeil i uendret Befaring-test er dokumentert. Ingen helreise lukkes fra dette."
+      ]
     },
     {
       "id": "BOLIG-025",
@@ -6803,7 +6813,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/bolig-partner-quality-browser-check.mjs",
@@ -6813,15 +6823,25 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "bolig-checklist-status-choices-20261031-pr294",
+            "mapping": "Isolert native Bolig109/UE121 med gamle kontrakter, min44/16/20, fem bredder/kortskjerm, tastatur/tømming, busy/readOnly/dvale/retry/firmaskille. Native FDV12/dokumenteksport40 og firePDF29sider visuelt sett. Ikke innlogget portal/alle roller/helreise."
+          }
+        ]
       },
       "design_review": {
-        "status": "ikke-startet",
-        "reason": "Ingen selvstendig visuell sluttkontroll attestert i denne auditen.",
+        "status": "delvis",
+        "reason": "Scoped native før-/etterbilder og PDF-sider på separat PR294/c3594f10. Innlogget helreise, fysisk Safari og øvrige underflater beholdes åpne.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "bolig-checklist-status-choices-20261031-pr294"
+        ]
       },
-      "remaining_checks": []
+      "remaining_checks": [
+        "PR294/c3594f10 har bare avgrenset komponent-/PDF-bevis. Fersk full CI-status og READY står i PR294; CI828 førstefeil i uendret Befaring-test er dokumentert. Ingen helreise lukkes fra dette."
+      ]
     },
     {
       "id": "BOLIG-026",
@@ -7112,7 +7132,7 @@
         "mapping_gap": false
       },
       "function_review": {
-        "status": "ikke-startet",
+        "status": "delvis",
         "evidence": [
           {
             "path": "scripts/bolig-documentation-export-check.mjs",
@@ -7131,15 +7151,25 @@
             "mapping": "source-correlated"
           }
         ],
-        "runtime_evidence": []
+        "runtime_evidence": [
+          {
+            "ref": "bolig-checklist-status-choices-20261031-pr294",
+            "mapping": "Isolert native Bolig109/UE121 med gamle kontrakter, min44/16/20, fem bredder/kortskjerm, tastatur/tømming, busy/readOnly/dvale/retry/firmaskille. Native FDV12/dokumenteksport40 og firePDF29sider visuelt sett. Ikke innlogget portal/alle roller/helreise."
+          }
+        ]
       },
       "design_review": {
-        "status": "ikke-startet",
-        "reason": "Ingen selvstendig visuell sluttkontroll attestert i denne auditen.",
+        "status": "delvis",
+        "reason": "Scoped native før-/etterbilder og PDF-sider på separat PR294/c3594f10. Innlogget helreise, fysisk Safari og øvrige underflater beholdes åpne.",
         "screenshots": [],
-        "reviewer": null
+        "reviewer": null,
+        "partial_evidence_refs": [
+          "bolig-checklist-status-choices-20261031-pr294"
+        ]
       },
-      "remaining_checks": []
+      "remaining_checks": [
+        "PR294/c3594f10 har bare avgrenset komponent-/PDF-bevis. Fersk full CI-status og READY står i PR294; CI828 førstefeil i uendret Befaring-test er dokumentert. Ingen helreise lukkes fra dette."
+      ]
     },
     {
       "id": "BOLIG-030",
@@ -16605,5 +16635,60 @@
       ],
       "does_not_close": "No parent journey closes from module landing, build, CI count or a screenshot of another child view."
     }
+  },
+  "reconciliation_20261031_bolig": {
+    "ref": "bolig-checklist-status-choices-20261031-pr294",
+    "repository": "ExpoProffsenter/expo-proffdok",
+    "pr": 294,
+    "branch": "fase45b-bolig-portal-polish-20261025",
+    "candidate": "c3594f108d605aeae0d895b9d8e71b1824d1f854",
+    "tree": "7323d371c5973515bdc5dc66d6061d4f510280c2",
+    "main_integrated": "b389c7071b03f7e1d96a0ff0c0d5458edeebca3f",
+    "change_record_at_candidate": "docs/changes/bolig-checklist-status-choices-20261031.json",
+    "journeys": [
+      "BOLIG-024",
+      "BOLIG-025",
+      "BOLIG-029"
+    ],
+    "scope": "Kompakte resultatvalg i BoligQuality og BoligPartnerQuality; native PDF-regresjon i samme modul. Ingen Bolig-kjerne kopieres til PR295.",
+    "runtime": {
+      "bolig": 109,
+      "ue": 121,
+      "boundary": 55,
+      "fdv_pdf": 12,
+      "documentation_export": 40,
+      "pdf_files": 4,
+      "pdf_pages": 29,
+      "full_local_critical_sandbox_build": "PASS",
+      "ci": "828/41168106406 SUCCESS10/10 after one documented failed-job-only retry; initial timing failure remains a QA follow-up in PR294",
+      "deployment": "dpl_BobKmYatr7tzNk9Tgr5rhUijUgNt READY exact SHA/fixed alias; published Sandbox binding and new component verified"
+    },
+    "screenshots": [
+      {
+        "library_file_id": "libfile_3a9c60108b0081918744028c7329fd86",
+        "name": "Bolig_UE_for_etter_c3594f10.png",
+        "viewport": "390x900",
+        "source": "actual components / synthetic transport"
+      },
+      {
+        "library_file_id": "libfile_564a44aa7ea48191a47c92a1e9501f6e",
+        "name": "Bolig_UE_PC_c3594f10.png",
+        "viewport": "1363x900",
+        "source": "actual components / synthetic transport"
+      },
+      {
+        "library_file_id": "libfile_863b3605d2b88191a1eea068dbda30bd",
+        "name": "Bolig_PDF_sider_c3594f10.png",
+        "source": "same native app renderer in isolated runtime; Poppler Cairo"
+      }
+    ],
+    "original_archive_library_file_id": "libfile_6598bc7cce58819199a927be49c56d70",
+    "limitations": [
+      "Bolig Preview has separate sign-in wall; no credential copied/guessed, no new role or login.",
+      "No actual customer write, issue/signing/mail/order/access grant. Existing two local checklist drafts untouched.",
+      "CI828 first app-browser attempt failed in unchanged immediate controlled-input assertion; isolated delayed fixture reproduces and eventually gets expected value. One scoped failed-job retry; no assertion weakened.",
+      "Poppler Splash has local Standard14 substitution spacing defect; Cairo and MuPDF agree. All29 pages rendered/visually inspected, Splash originals retained.",
+      "All145 journeys remain in place; scoped partial evidence does not close any whole journey."
+    ]
   }
 }
