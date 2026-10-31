@@ -1,8 +1,12 @@
-# Hele appen – Min side, vareflyt og videoer31.10
+# Hele appen – design og videoer31.10
 
-Brukeren har presisert samlet design/video for alle funksjoner og underfunksjoner. [Felles status og neste kontroller for18områder](docs/qa/APP_DESIGN_VIDEO_STATUS_20261031.md) og [videoregister](docs/qa/proffdok-video-coverage-20261031.json) bevarer145kjente reiser, tre nyere sjekklistefunksjoner og godkjent videomal/pilot. Inventaret er ikke uttømmende sluttattestert. Neste film utenfor Bolig: åpne og lese egne planer, uten planredigering/eksport/bemanning.
+Brukeren har presisert alle funksjoner og underfunksjoner, ikke bare Bolig. [Felles status/neste kontroller for18områder](docs/qa/APP_DESIGN_VIDEO_STATUS_20261031.md) og [videoregister](docs/qa/proffdok-video-coverage-20261031.json) omfatter145kjente reiser/tre nyere sjekklistefunksjoner. To avgrensede filmer er produsert: godkjent pilot og ny Min side-film. Inventaret/alle underhandlinger er ikke uttømmende sluttattestert.
 
-Samme PR295/Preview/Sandbox, BEGGE. Samlepakke retter leverandørunderflate, planpanel og Min side/time-mobilkaskade. [Presist scope og faktiske tester](docs/changes/appwide-personal-commerce-subflows-036-20261031.json). Sluttkandidat/fullCI/READY/live/ny film føres i PR295. «Virker ok» på forrige delpakke er ikke global redesign-TEST OK. Ingen merge/Production/demo-synk. Solgløtt avventer fortsatt den avtalte rekkefølgen.
+Samme PR295/Preview/Sandbox, BEGGE. Leverandørbestilling, Min side, personlige planpaneler og time-mobilkaskade er samlet rettet. Lang periodemerknad vises hel i native lesemodus; redigerings-/lagringseier er beholdt. [Scope og tester](docs/changes/appwide-personal-commerce-subflows-036-20261031.json). Appkandidat430b1f66 har fullCI84210/10 og egen READY/Sandbox/livekontroll. Endelig dokumentasjonskandidat/CI føres i PR295; appen er uendret etter430b1f66. Ingen global redesign-TEST OK/merge/Production/demo-synk.
+
+[Ny video: Finn egne planer, les oppgaven og gå tilbake](https://chatgpt.com/library?file_id=libfile_e1f75f1c86648191bbfbdb7406c24940&account_id=personal),95sekunder/10scener/H264/1920x1080/24fps/uten lyd. To plankilder, oppgavedetaljer, deltakere, hele periodemerknaden og begge returer. Hele filen og faktisk Chromium-avspilling/start/seek/slutt er kontrollert. [Redigerbare kilder](https://chatgpt.com/library?file_id=libfile_a6bcd192278c8191bef76968681d8c06&account_id=personal). Ikke hele PERSONAL-002 eller planredigering/bemanning/eksport. Fysisk mobil/Safari og avspiller i appen gjenstår.
+
+Neste samlepakke utenfor Bolig: Forespørsel/befaring/begge tilbud, prosjekt og HR/KS/HMS/sjekklister; deretter resterende admin/support/hjelp/portaler og navngitte områder. Bevar tidligere delbevis og bruk faktisk reiseregister, ikke en ny nullstilling. Solgløtt avventer avtalt design+QA → TEST OK → Production → kontrollert main→demo → prosjekt → komplette prosjektvideoer.
 
 # Boligens arbeidsflater og utsatt Solgløtt –31.10
 
