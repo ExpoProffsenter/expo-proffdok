@@ -1,3 +1,11 @@
+# Releaseforberedelse 1. november 2026
+
+Samme PR295 og faste Preview, miljømål BEGGE. Appkoden er fortsatt e1f93ce0; denne oppdateringen legger bare til dokumentasjon og en lokal integrasjonsreferanse. [Konkret releaseplan, rekkefølge og tilbakeføring](docs/qa/DESIGN_036_RELEASE_PLAN_20261101.md). Separat lokal kombinasjon av PR294/298/305/295 består begge eksplisitte miljøbygg, 1 372 berørte native krav og seks PDF-er/115 sider samt tre kontrollerte ZIP-er. Tre konflikthunker er løst i øvingskandidaten med alle 69 opprinnelige hjelpetekster og eksisterende testkrav beholdt. Ingen samlet kombinasjon er publisert eller sendt inn som en omgåelse av de isolerte PR-ene.
+
+Production og permanent demo er bekreftet READY på henholdsvis b389c707 og 8ee9c23d. PR305s ene nye migrering mangler i Production og må installeres kontrollert etter relevant TEST OK. Innlogget rapportvalg fungerer; fersk live PDF-overføring er fortsatt ubekreftet etter nettleserstyringens tidsavbrudd. Full videodekning og fysiske/reelle rolleprøver er ikke totalattestert. Ingen redesign-TEST OK, merge, Production-endring, demosynk eller Solgløtt-opprettelse er utført. Nye docs-CI-/deployment-kvitteringer vedlikeholdes i PR295.
+
+---
+
 # Videoveiledninger i Hjelp – 31.10
 
 Samme PR295/faste Preview, miljømål BEGGE. Hjelp får søkbar videooversikt med områdefilter, relevante filmknapper ved hjelpetemaer og stor native avspiller med kapitler/fullskjerm/tekstalternativ. De fem eksisterende godkjent formaterte originalfilmene beholdes uendret; HR-prøvefilmen tilbys bare i Sandbox som funksjonen selv. Ingen automatisk avspilling eller filmnedlasting ved åpning av Hjelp. Bruker-/firma-/tilgangsendring lukker filmen; søk, hjelpetema og arbeid under beholdes. [Scope/bevis](docs/changes/help-video-player-20261031.json).
