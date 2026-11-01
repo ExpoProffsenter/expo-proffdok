@@ -45,6 +45,7 @@ import { createOvertagelseCompletionTools, renderOvertagelsePanel } from './modu
 import { createHelpCenter } from './modules/help/helpTools.js';
 import { createChecklistEditor } from './modules/checklist/checklistTools.js';
 import ProjectChecklistPicker from './modules/checklist/ProjectChecklistPicker.jsx';
+import ProjectChecklistPanel from './modules/checklist/ProjectChecklistPanel.jsx';
 import ProjectChecklistWorkspace from './modules/checklist/ProjectChecklistWorkspace.jsx';
 import StandaloneChecklists from './modules/checklist/StandaloneChecklists.jsx';
 import ProjectSjaEntry from './modules/kshms/ProjectSjaEntry.jsx';
@@ -2065,13 +2066,14 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       }
       return false;
     };
-    const leaveProjectWorkspace = async () => {
+    const leaveProjectWorkspace = async (destination = "prosjekt") => {
+      const target = destination === "prosjektliste" ? "prosjektliste" : "prosjekt";
       if (!projectId && !mobileCreatingProject) {
         setTab("prosjekt");
         setMobileMenuOpen(false);
         return;
       }
-      const canLeave = await confirmLeaveWithUnsavedChanges("går tilbake til startsiden");
+      const canLeave = await confirmLeaveWithUnsavedChanges(target === "prosjektliste" ? "bytter prosjekt" : "går tilbake til startsiden");
       if (!canLeave) return;
       const returnToSupportOverview = isProjectSupportReadOnly;
       const supportCompanyForOverview = String(
@@ -2129,11 +2131,11 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
         setTimeout(() => scrollToMobileTabTarget("admin"), 320);
         return;
       }
-      setTab("prosjekt");
+      setTab(target);
       setMobileMenuOpen(false);
       window.history.replaceState({}, document.title, window.location.pathname);
-      setTimeout(() => scrollToMobileTabTarget("prosjekt"), 90);
-      setTimeout(() => scrollToMobileTabTarget("prosjekt"), 320);
+      setTimeout(() => scrollToMobileTabTarget(target), 90);
+      setTimeout(() => scrollToMobileTabTarget(target), 320);
     };
     const cancelNewProject = () => {
       if (projectId || !mobileCreatingProject) return;
@@ -6305,7 +6307,7 @@ ${appLink}`;
           ] })
         ] }) })
       ] }),
-      hasActiveProjectWorkspace && (0, import_jsx_runtime.jsx)(ProjectWorkspaceChrome, { tabs: projectTabs, activeTab: tab, project, saved: Boolean(projectId), simpleOrder: isSimpleOrderProject(project), status: currentStatus, deviations: projectGuideStats.openDeviationCount, unread: unreadForAdmin, onNavigate: goToTab, onStatus: openMobileStatus, onExit: projectId ? leaveProjectWorkspace : cancelNewProject, onContinue: continueProjectStep, continuing: projectStepBusy, continueNotice: projectStepNotice, readOnly: isProjectSupportReadOnly || isProjectLocked, contractRequired: Boolean(warranty?.enabled || warranty?.issued) }, projectId || "new"),
+      hasActiveProjectWorkspace && (0, import_jsx_runtime.jsx)(ProjectWorkspaceChrome, { tabs: projectTabs, activeTab: tab, project, saved: Boolean(projectId), simpleOrder: isSimpleOrderProject(project), status: currentStatus, deviations: projectGuideStats.openDeviationCount, unread: unreadForAdmin, onNavigate: goToTab, onStatus: openMobileStatus, onExit: projectId ? () => leaveProjectWorkspace("prosjektliste") : cancelNewProject, onContinue: continueProjectStep, continuing: projectStepBusy, continueNotice: projectStepNotice, readOnly: isProjectSupportReadOnly || isProjectLocked, contractRequired: Boolean(warranty?.enabled || warranty?.issued) }, projectId || "new"),
       !hasActiveProjectWorkspace && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "mobileFieldBar", "aria-label": "Mobil arbeidsmeny", children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileFieldBarInner", children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", className: "mobileFieldBarToggle", "aria-expanded": mobileMenuOpen, onClick: () => setMobileMenuOpen((open) => !open), children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: ["☰ ", tabs.find(([id]) => id === tab)?.[1] || "Velg side"] }),
@@ -6849,19 +6851,7 @@ ${appLink}`;
           onImport: saveProjectChecklist,
           onOpen: openProjectChecklist
         }, `${authUser.id}:${kshmsContext.company_id}:${projectId}`)] }),
-        tab === "sjekklister" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Sjekklister og vedlegg", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.FileText, {}), children: [
-          authUser && kshmsContext?.company_id && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProjectChecklistPicker, {
-            collapsed: true,
-            companyId: projectChecklistCompanyId,
-            userId: authUser.id,
-            projectId,
-            instances: project.kshmsChecklistInstances || [],
-            readOnly: isProjectLocked || isReadOnly || isProjectSupportReadOnly,
-            supportReadOnly: isProjectSupportReadOnly,
-            onImport: saveProjectChecklist,
-            onOpen: openProjectChecklist
-          }, `${authUser.id}:${kshmsContext.company_id}:${projectId}`),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Åpne en sjekkliste for å fylle den ut. Lagre underveis, eller fullfør kontrollen når punktene er vurdert." }),
+        tab === "sjekklister" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(ProjectChecklistPanel, { projectName: project.projectName, onClose: () => goToTab("prosjekt"), children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
             ProjectChecklistWorkspace,
             {
@@ -6870,6 +6860,7 @@ ${appLink}`;
               userId: authUser?.id,
               projectId,
               entryRequest: checklistEntryRequest,
+              autoOpenOnEntry: false,
               onEntryHandled: (id) => setChecklistEntryRequest(current => current?.id === id ? null : current),
               instances: project.kshmsChecklistInstances || [],
               readOnly: isProjectLocked || isReadOnly || isProjectSupportReadOnly,
@@ -6895,7 +6886,18 @@ ${appLink}`;
               onAddCustomChecklistPoint: addCustomChecklistPoint,
               onRemoveCustomChecklistPoint: removeCustomChecklistPoint
             }
-          )
+          ),
+          authUser && kshmsContext?.company_id && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProjectChecklistPicker, {
+            collapsed: true,
+            companyId: projectChecklistCompanyId,
+            userId: authUser.id,
+            projectId,
+            instances: project.kshmsChecklistInstances || [],
+            readOnly: isProjectLocked || isReadOnly || isProjectSupportReadOnly,
+            supportReadOnly: isProjectSupportReadOnly,
+            onImport: saveProjectChecklist,
+            onOpen: openProjectChecklist
+          }, `${authUser.id}:${kshmsContext.company_id}:${projectId}`)
         ] }),
         tab === "avvik" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Section, { title: kshmsContext?.enabled && authUser?.id === kshmsContext?.user_id && !isProjectSupportReadOnly ? "Avvik/SJA/RUH" : "Avvik", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
           DeviationCenter,

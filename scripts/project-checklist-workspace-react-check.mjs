@@ -42,18 +42,18 @@ const act=window.__act,button=text=>[...window.document.querySelectorAll('button
 const click=async node=>{assert(node,'Missing button');await act(async()=>node.click());};
 const choose=async(value,index=0)=>click([...window.document.querySelectorAll('button')].filter(node=>node.textContent.trim()===value)[index]);
 const props=()=>({companyId:company,userId:'user',projectId:project,checklist,activeChecklistTemplate:[group],customChecklistAllowed:true,files:[],setFiles(){},addFiles(){},customChecklistGroups:[],onSaved:async(cat,answers)=>{checklist={...checklist,[cat]:answers};},uploadImages:async()=>[{id:'photo',url:'https://example.invalid/proof.jpg'}]});
-await act(async()=>window.__render(props()));assert.equal(window.document.querySelector('.project-checklist-heading').getAttribute('aria-expanded'),'false');
+await act(async()=>window.__render(props()));assert.equal(button('Vis punkter og historikk').getAttribute('aria-expanded'),'false');
 assert(!window.document.body.textContent.includes('Kontroller rør'),'Collapsed list leaked points');
 await click(button('Åpne sjekkliste'));assert(window.document.querySelector('[role="dialog"]'));await choose('Ok');
 const dialog=window.document.querySelector('[role="dialog"]');dialog.scrollTop=120;await click(button('Lagre'));
 assert.equal(window.document.querySelector('[role="dialog"]'),dialog);assert.equal(dialog.scrollTop,120);assert.equal(runs[0].answers['Kontroller rør'].status,'Ok');
-await click(button('Lukk'));await act(async()=>window.__unmount());await act(async()=>window.__render(props()));await click(button('Åpne sjekkliste'));
+await click(button('Lukk'));await act(async()=>window.__unmount());await act(async()=>window.__render(props()));await click(button('Fortsett utfylling →'));
 assert.equal(runs.length,1);assert(window.document.body.textContent.includes('Kontroll under arbeid'));await choose('Ikke aktuelt',1);
 await act(async()=>drawChecklistSignature(window));await click(button('Sjekkliste fullført'));assert.equal(runs[0].status,'completed');assert(window.document.body.textContent.includes('QA Utførende'));
 const first=structuredClone(runs[0]);await click(button('Start ny kontroll'));assert.equal(window.document.querySelector('fieldset:disabled'),null);assert.equal(window.document.querySelectorAll('button.statusOn').length,0);assert.equal(window.document.querySelectorAll('.checklist-status-choices button[aria-pressed=true]').length,0,'unanswered checklist has no selected choice');
 await choose('Avvik');await choose('Ikke aktuelt',1);failAfterCommit=true;await click(button('Lagre'));assert(window.document.body.textContent.includes('Svaret ble borte'));const retry=lastRequest;
 await click(button('Prøv lagring igjen'));assert.equal(lastRequest,retry);assert.equal(runs.length,2);assert.deepEqual(runs[1],first);
-await click(button('Lukk'));await click(button('Åpne sjekkliste'));
+await click(button('Lukk'));await click(button('Fortsett utfylling →'));
 // A second colleague saves while this person's local draft is open.
 await choose('Ok');runs[0]={...runs[0],revision:runs[0].revision+1,answers:{...runs[0].answers,'Kontroller rør':{status:'Avvik',comment:'Kollegas retting'}}};checklist={[category]:runs[0].answers};
 await click(button('Lagre'));assert(window.document.body.textContent.includes('En annen person har lagret'));
@@ -75,10 +75,10 @@ const designProps=()=>({...props(),activeChecklistTemplate:[design],showTools:fa
 await act(async()=>window.__render(designProps()));assert(!window.document.body.textContent.includes('Egne sjekkpunkter og vedlegg'));assert(!window.document.body.textContent.includes('Tidligere dokumentasjon'));
 await click(button('Åpne sjekkliste'));assert(window.document.body.textContent.includes(design.category));assert.equal(window.document.querySelectorAll('button.statusOn').length,0);assert.equal(window.document.querySelectorAll('.checklist-status-choices button[aria-pressed=true]').length,0,'unanswered checklist has no selected choice');
 await choose('Ok');await click(button('Lagre'));assert.equal(runs[0].category,design.category);assert.equal(runs[0].answers[design.items[0]].status,'Ok');assert.deepEqual(runs.slice(1),beforeDesign);
-await click(button('Lukk'));await act(async()=>window.__unmount());await act(async()=>window.__render(designProps()));await click(button('Åpne sjekkliste'));assert.equal([...window.document.querySelectorAll('button')].filter(b=>b.textContent.trim()==='Ok'&&b.getAttribute('aria-pressed')==='true').length,1);assert.equal(runs[0].answers[design.items[0]].status,'Ok');
+await click(button('Lukk'));await act(async()=>window.__unmount());await act(async()=>window.__render(designProps()));await click(button('Fortsett utfylling →'));assert.equal([...window.document.querySelectorAll('button')].filter(b=>b.textContent.trim()==='Ok'&&b.getAttribute('aria-pressed')==='true').length,1);assert.equal(runs[0].answers[design.items[0]].status,'Ok');
 for(let n=1;n<design.items.length;n++)await choose('Ikke aktuelt',n);
 await act(async()=>drawChecklistSignature(window));await click(button('Sjekkliste fullført'));assert.equal(runs[0].status,'completed');assert.deepEqual(runs.slice(1),beforeDesign);await click(button('Lukk'));await act(async()=>window.__unmount());
-await act(async()=>window.__render({...designProps(),readOnly:true}));await click(button('Åpne fullført sjekkliste'));assert(window.document.querySelector('fieldset:disabled'));assert(!button('Start ny kontroll'));assert(!button('Lagre'));await click(button('Lukk'));await act(async()=>window.__unmount());
+await act(async()=>window.__render({...designProps(),readOnly:true}));await click(button('Vis dokumentasjon'));assert(window.document.querySelector('fieldset:disabled'));assert(!button('Start ny kontroll'));assert(!button('Lagre'));await click(button('Lukk'));await act(async()=>window.__unmount());
 console.log('Design checklist real React PASS: shared save/reopen/full completion/read-only, no cross-category answers or overwritten execution history.');
 // Support stays read-only even without the caller also setting readOnly.
 const ordinaryRpc=window.__rpc,supportCalls=[],savedRuns=structuredClone(runs);
@@ -92,7 +92,7 @@ window.__rpc=async(name,args)=>{
  throw Error('Ordinary project route must not be used in cross-company support');
 };
 await act(async()=>window.__render({...designProps(),readOnly:false,supportReadOnly:true}));
-await click(button('Åpne fullført sjekkliste'));
+await click(button('Vis dokumentasjon'));
 assert(window.document.querySelector('fieldset:disabled'));
 for(const label of ['Lagre','Sjekkliste fullført','Start ny kontroll','Fortsett med lagret kontroll','Vis tidligere kladd'])assert(!button(label),label+' is forbidden in support');
 await click(button('Lukk'));await act(async()=>window.__unmount());

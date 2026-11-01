@@ -44,7 +44,7 @@ const buttons=()=>[...window.document.querySelectorAll('button')];
 const button=name=>buttons().find(node=>node.textContent.trim()===name||node.getAttribute('aria-label')===name);
 const click=async name=>{const node=button(name);assert(node,'Missing '+name);await act(async()=>node.click());};
 await act(async()=>window.render(props));
-eq([...window.document.querySelectorAll('.project-checklist-heading b')].map(node=>node.textContent),['Saved','Local','Untouched','Completed'],'pending lists appear first');
+eq([...window.document.querySelectorAll('.project-checklist-heading h3')].map(node=>node.textContent),['Saved','Local','Untouched','Completed'],'pending lists appear first');
 eq(window.document.querySelectorAll('.project-checklist-resume button').length,2,'one-click resume actions for server and local drafts');
 await click('Fortsett utfylling: Local');
 let dialog=window.document.querySelector('[role=dialog]');assert(dialog);checks++;

@@ -14,7 +14,7 @@ import {answersForDefinition,checklistRunDraftKey,commitChecklistRun,completionP
 import './projectChecklistWorkspace.css';
 import KshmsDocumentPdfButton from '../kshms/KshmsDocumentPdfButton.jsx';
 
-export default function ProjectChecklistWorkspace({Editor,companyId,userId,projectId,checklist,activeChecklistTemplate,instances=[],readOnly=false,supportReadOnly=false,showTools=true,showPrevious=true,customChecklistAllowed=false,isWarrantyPoint=()=>false,onSaved,uploadImages,resolveFileUrl,entryRequest=null,onEntryHandled,...editorProps}) {
+export default function ProjectChecklistWorkspace({Editor,companyId,userId,projectId,checklist,activeChecklistTemplate,instances=[],readOnly=false,supportReadOnly=false,showTools=true,showPrevious=true,customChecklistAllowed=false,isWarrantyPoint=()=>false,onSaved,uploadImages,resolveFileUrl,entryRequest=null,autoOpenOnEntry=true,onEntryHandled,...editorProps}) {
  readOnly=readOnly||supportReadOnly;
  const readRpc=projectChecklistReadRpc(kshmsRpc,{supportReadOnly,companyId,projectId});
  const [displayFilter,setDisplayFilter]=useState('all');
@@ -108,13 +108,13 @@ export default function ProjectChecklistWorkspace({Editor,companyId,userId,proje
   const finish=()=>entryContext.current.onEntryHandled?.(entryRequest.id);
   const matches=entryRequest.projectId===projectId&&entryRequest.companyId===companyId&&entryRequest.userId===userId;
   // Existing exact checkpoint links take the same begin lock before this effect.
-  if(!matches||readOnly||!projectId||!companyId||!userId||selection.current||locked.current){finish();return;}
+  if(!autoOpenOnEntry||!matches||readOnly||!projectId||!companyId||!userId||selection.current||locked.current){finish();return;}
   const cancel=()=>{active=false;finish();};
   const events=['pointerdown','keydown','blur'];
   events.forEach(event=>window.addEventListener(event,cancel,true));
   beginRef.current(null,{nextUnfinished:true,isIntentCurrent:()=>active}).finally(()=>{if(active)finish();});
   return()=>{active=false;events.forEach(event=>window.removeEventListener(event,cancel,true));};
- },[entryRequest,companyId,userId,projectId,readOnly]);
+ },[entryRequest,companyId,userId,projectId,readOnly,autoOpenOnEntry]);
  const change=(category,item,patch,options={})=>{
   const value=selection.current;if(!value||value.readOnly||readOnly||locked.current||value.pendingAction)return;
   const answers={...value.answers,[item]:{...value.answers[item],...patch}};
@@ -181,30 +181,35 @@ export default function ProjectChecklistWorkspace({Editor,companyId,userId,proje
  const pdfReady=Boolean(savedSelection&&!selected.earlierDraft&&!selected.pendingAction&&savedSelection.revision===selected.revision&&sameRunValue(savedSelection.definition,selected.definition)&&sameRunValue(signatureInput(savedSelection.signatures),signatureInput(selected.signatures))&&sameRunValue(answersForDefinition(savedSelection.definition,savedSelection.answers),answersForDefinition(selected.definition,selected.answers)));
  const title=definition=>definition.category.replace(/^KS\/HMS sjekkliste – /,'');
  return <div className="project-checklist-workspace">
-  <p className="note">Åpne en sjekkliste for å fylle den ut. «Lagre» lar deg eller en kollega fortsette senere. «Sjekkliste fullført» lagrer en ferdig kontroll.</p>
+  <p className="note">{readOnly?'Dette prosjektet er skrivebeskyttet. Velg «Vis dokumentasjon» for å lese sjekkpunktene. Registrerte svar uten fullført kontrollhistorikk vises som dokumentasjon.':'Fortsett en påbegynt sjekkliste, eller velg en ny nedenfor. «Lagre» lar deg eller en kollega fortsette senere. «Sjekkliste fullført» lagrer en ferdig kontroll.'}</p>
   {!selected&&error&&<p role="alert" className="ks-error">{error}</p>}
   {!selected&&notice&&<p role="status" className="ks-notice">{notice}</p>}
-  {showTools&&<details className="item"><summary>Egne sjekkpunkter og vedlegg</summary><fieldset disabled={readOnly}><Editor {...editorProps} checklist={checklist} activeChecklistTemplate={[]} customChecklistEnabled={customChecklistAllowed} toolsOnly consumeChecklistJump={false}/></fieldset></details>}
   {!groups.length&&<p>Ingen sjekklister er lagt til. Legg til egne sjekkpunkter, eller hent en publisert liste fra KS/HMS når firmaet har tilgang.</p>}
   <div className="ux-toolbar"><label>Vis sjekklister<select value={displayFilter} onChange={e=>setDisplayFilter(e.target.value)}><option value="all">Alle</option><option value="unfinished">Uferdige</option><option value="deviations">Med åpne avvik</option><option value="images">Mangler påkrevd bilde eller dokumentasjon</option></select></label><span className="ux-inline-note">Filtrering endrer ingen svar. Lagring og rapport bruker fortsatt hele kontrollen.</span></div>
   {!selected&&!!resumable.length&&['all','unfinished'].includes(displayFilter)&&<div className="project-checklist-resume" role="region" aria-label="Påbegynte sjekklister"><strong>Fortsett der du slapp</strong>{resumable.map(({group})=><button key={group.category} type="button" disabled={busy} aria-label={`Fortsett utfylling: ${title(group)}`} onClick={()=>begin(group)}><span>{title(group)}</span><b>Fortsett utfylling →</b></button>)}</div>}
-  {displayGroups.map(({group})=>{
-   const latest=data?.runs?.find(run=>run.category===group.category),answers=latest?.answers||checklist?.[group.category]||{},done=group.items.filter(item=>answers[item]?.status).length;
-   const display=checklistDisplayState(latest?.definition||runDefinition(group,instances,isWarrantyPoint(group.category)),answers,latest?.status==='completed');
+  {displayGroups.map(({group,resumable})=>{
+   const latest=data?.runs?.find(run=>run.category===group.category);
+   const local=readOnly?null:readRunDraft(window.localStorage,key(group.category));
+   const localWork=local&&(local.pendingAction||Object.values(local.answers||{}).some(answer=>answer?.status||answer?.comment||answer?.photos?.length||Object.keys(answer?.values||{}).length));
+   const localUnsaved=localWork&&(!latest||local.id!==latest.id||local.revision!==latest.revision||!sameRunValue(local.answers,latest.answers)||!sameRunValue(signatureInput(local.signatures),signatureInput(latest.signatures)));
+   const answers=localWork?local.answers:latest?.answers||data?.checklist?.[group.category]||checklist?.[group.category]||{},done=group.items.filter(item=>answers[item]?.status).length;
+   const display=checklistDisplayState(latest?.definition||runDefinition(group,instances,isWarrantyPoint(group.category)),answers,latest?.status==='completed'&&!resumable);
    const visible=displayFilter==='all'||(displayFilter==='unfinished'&&!display.complete)||(displayFilter==='deviations'&&display.deviations>0)||(displayFilter==='images'&&display.missingImages>0);
    return <article className="item project-checklist-card" key={group.category} hidden={!visible}>
-    <button type="button" className="secondary project-checklist-heading" aria-expanded={!!expanded[group.category]} onClick={()=>setExpanded(value=>({...value,[group.category]:!value[group.category]}))}>
-     <span aria-hidden="true">{expanded[group.category]?'▾':'▸'}</span><b>{title(group)}</b><span>{done}/{group.items.length} vurdert · {latest?.status==='completed'?'Fullført':display.ready?'Alle punkter vurdert – kontroller og fullfør':done?'Pågår':'Ikke påbegynt'}</span>
-    </button>
-    <div className="project-checklist-card-actions"><button type="button" disabled={busy} onClick={()=>begin(group)}>{latest?.status==='completed'?'Åpne fullført sjekkliste':'Åpne sjekkliste'}</button></div>
+    <div className="project-checklist-heading"><h3>{title(group)}</h3><span>{done}/{group.items.length} vurdert · {localUnsaved?'Lokal kladd':latest?.status==='completed'&&!resumable?'Fullført':readOnly?(done?'Registrert dokumentasjon':'Ingen vurderte punkter'):display.ready?'Klar til sluttkontroll':done?'Under arbeid':'Ikke påbegynt'}</span></div>
+    {localUnsaved&&<p className="note">Kladden finnes på denne enheten. Lagre kontrollen for at en kollega skal kunne fortsette.</p>}
+    {latest?.updated_identity&&<p className="note">Sist lagret av {identityText(latest.updated_identity)} · {new Date(latest.updated_at).toLocaleString('nb-NO')}</p>}
+    <div className="project-checklist-card-actions"><button type="button" disabled={busy} aria-label={resumable?`Fortsett sjekkliste: ${title(group)}`:undefined} onClick={()=>begin(group)}>{readOnly?'Vis dokumentasjon':resumable?'Fortsett utfylling →':latest?.status==='completed'?'Åpne fullført sjekkliste':'Åpne sjekkliste'}</button>
+     <button type="button" className="secondary" aria-label={`Vis punkter og historikk: ${title(group)}`} aria-expanded={!!expanded[group.category]} onClick={()=>setExpanded(value=>({...value,[group.category]:!value[group.category]}))}>{expanded[group.category]?'Skjul punkter og historikk':'Vis punkter og historikk'}</button></div>
     {expanded[group.category]&&<div><p>{group.instructions||'Kontroller punktene og legg til dokumentasjon der det trengs.'}</p><ul>{group.items.map(item=><li key={item}>{item}</li>)}</ul>
      {latest?.updated_identity&&<p className="note">Sist lagret av {identityText(latest.updated_identity)} · {new Date(latest.updated_at).toLocaleString('nb-NO')}</p>}
      {historical.filter(run=>run.category===group.category).map(run=><button type="button" className="secondary" key={run.id} disabled={busy} onClick={()=>begin(group,{run})}>Fullført {new Date(run.completed_at).toLocaleString('nb-NO')} · {identityText(run.completed_identity)}</button>)}
     </div>}
    </article>;
   })}
+  {showTools&&<details className="item"><summary>Egne sjekkpunkter og vedlegg</summary><fieldset disabled={readOnly}><Editor {...editorProps} checklist={checklist} activeChecklistTemplate={[]} customChecklistEnabled={customChecklistAllowed} toolsOnly consumeChecklistJump={false}/></fieldset></details>}
   {showPrevious&&!!previousGroups.length&&<details className="item"><summary>Tidligere dokumentasjon</summary><p>Lagrede svar fra lister som ikke brukes her nå, er beholdt.</p>{previousGroups.map(([category,answers])=><button type="button" className="secondary" key={category} onClick={()=>select({id:`legacy:${category}`,definition:{category,items:Object.keys(answers)},answers,readOnly:true})}>{category}</button>)}</details>}
-  {selected&&<DeviationDialog title={title(selected.definition)} context={selected.readOnly?'Lagret kontroll':`Kontroll under arbeid${selected.revision?' · lagret versjon '+selected.revision:''}`} onClose={dismiss} busy={busy||uploads>0} closeLabel="Lukk sjekklistedialog" returnFocusTarget={returnDialogFocus}>
+  {selected&&<DeviationDialog title={title(selected.definition)} context={selected.readOnly?(selected.status==='completed'?'Fullført kontroll':'Registrert dokumentasjon'):`Kontroll under arbeid${selected.revision?' · lagret versjon '+selected.revision:''}`} onClose={dismiss} busy={busy||uploads>0} closeLabel="Lukk sjekklistedialog" returnFocusTarget={returnDialogFocus}>
    {error&&<p role="alert" className="ks-error">{error}</p>}{notice&&<p role="status" className="ks-notice">{notice}</p>}
    {selected.completed_identity&&<p>Fullført av {identityText(selected.completed_identity)} · {new Date(selected.completed_at).toLocaleString('nb-NO')}</p>}
    <fieldset disabled={readOnly||selected.readOnly||busy||uploads>0||!!selected.pendingAction}><Editor {...editorProps} key={selected.id} userId={userId} readOnlyFields={readOnly||selected.readOnly} embedded initiallyExpanded consumeChecklistJump={false} customChecklistEnabled={false} showOpenDeviationsOnly={false} setShowOpenDeviationsOnly={null} activeChecklistTemplate={[selected.definition]} checklist={{[selected.definition.category]:selected.answers}} setChecklistValue={change} addChecklistPhoto={addPhoto} onOpenKshmsDeviation={editorProps.onOpenKshmsDeviation?id=>{if(remember(selection.current)){setSelected(null);selection.current=null;editorProps.onOpenKshmsDeviation(id);}}:null}/></fieldset>

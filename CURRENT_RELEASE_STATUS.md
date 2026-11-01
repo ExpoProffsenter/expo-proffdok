@@ -1,3 +1,11 @@
+# 1. november – prosjektflyt etter Kenneths RESERVE-gjennomgang
+
+PR295, miljømål BEGGE, foreløpig bare Preview. Store fasekort er samlet i Prosjektmeny i samme høyrepanel som appens øvrige arbeidsverktøy. Sjekklister åpner en eksplisitt oversikt til høyre. Påbegynte kontroller vises først med Fortsett utfylling, fremdrift, lokal kladd og eventuell sist lagret-identitet. Navn utvider ikke alle punktene; Vis punkter og historikk er et eget valg. Låst/support viser Vis dokumentasjon, uten råd om å fullføre eller falsk fullført-status på historiske svar. Bytt prosjekt går til Prosjektliste; Startside-/supportretur beholdes.
+
+Lokal build/critical PASS. Native prosjektmeny196 + sjekklistepanel52 + fleksible felt158 + resume36krav PASS, i tillegg eksisterende React-lagring/signatur/historikk/konflikt/support og menyretur. Korte skjermer320×480 og nested Escape/kladd er prøvd. Lokalt Chromium153 er supplement til full CI. Publisert kandidat/full CI/READY/innlogget RESERVE-kontroll føres i PR295. [Samlet scope og QA](docs/changes/project-workspace-ux-20261101.json).
+
+Faktisk korrigert PDF og sju installerte AI-bilder beholdes; ingen ny installasjon/eksport behøves for denne UX-pakken. Samlet redesign-TEST OK mangler. Production/main og permanent demo er uendret. Videre videoserie og Solgløtt følger etter godkjent release.
+
 # 1. november – PDF-sluttsiden korrigert etter faktisk nedlasting
 
 Faktisk21sidersPDF med nye bilder er mottatt og native OK-varsel håndtert. Nærkontroll fant at QR-kortet på siste side dekket fire statusrader. Bare denne sluttsiden er komprimert vertikalt; alle fem rader og QR vises nå uten overlapp. Ny native prøve feiler på førkilden, sluttkilden består476krav/12PDF-er190sider. Alle12 endrede sluttsider er visuelt gjennomgått. [Ett scope-/testgrunnlag](docs/changes/report-final-qr-layout-20261101.json). Ny appkandidats CI/READY og faktisk nedlastet etterfil føres i PR295. Ingen demobildeinstallasjon, backend eller Production-endring.

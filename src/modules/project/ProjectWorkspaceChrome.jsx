@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { FolderOpen, Menu, MoreHorizontal, ClipboardCheck, Camera, TriangleAlert, Home } from 'lucide-react';
 import DeviationDialog from '../deviations/DeviationDialog.jsx';
+import WorkspacePanel from '../ui/WorkspacePanel.jsx';
 import { projectWorkspaceGroups, projectSetupSteps, projectWorkspaceFlow } from './projectWorkspacePresentation.mjs';
 import './projectWorkspace.css';
 
@@ -74,18 +75,10 @@ export default function ProjectWorkspaceChrome({ tabs, activeTab, project, saved
       <p>{[project.customer, [project.address, project.postnr, project.city].filter(Boolean).join(' ')].filter(Boolean).join(' · ') || 'Fyll inn prosjektopplysningene nedenfor.'}</p>
     </div><button type="button" className="project-workspace-exit" data-project-navigation="true" onClick={onExit}>{saved ? 'Bytt prosjekt' : 'Avbryt nytt prosjekt'}</button></div>
     <div className="project-workspace-status"><span>{workStatus.icon} {workStatus.label}</span>{saved && <><span>{deviations} åpne avvik · {unread} uleste meldinger</span><button type="button" className="secondary" onClick={onStatus}><ClipboardCheck size={16}/>Status og mangler</button></>}</div>
-    <div className="project-workspace-mobile"><button type="button" aria-haspopup="dialog" aria-expanded={menuOpen} onClick={() => setMenuOpen(true)}><Menu size={18}/>{menuName}<span>{currentLabel}</span></button>
-      <div>{buttons(tabs.filter(([id]) => ['hjelp','support'].includes(id)))}</div></div>
-    <div className="project-workspace-navigation" aria-label={menuName}>
-      <p className="project-map-intro">Registrer prosjektet. Legg til deltakerne. Dokumenter arbeidet. Overlever når alt er klart.</p>
-      <div className="project-workspace-map">{groups.map((item, index) => <div key={item.title} className={`project-phase-card${activeGroup === item.title ? ' is-current' : ''}`} role="group" aria-label={item.title}>
-        <h3><span>{index + 1}</span>{item.title}</h3>
-        <p>{phasePurpose(item.title)}</p>
-        <div className="project-workspace-tabs">{buttons(item.items)}</div>
-      </div>)}</div>
-    </div>
+    <div className="project-workspace-mobile project-workspace-toolbar"><button type="button" aria-haspopup="dialog" aria-expanded={menuOpen} onClick={() => setMenuOpen(true)}><Menu size={18}/>{menuName}<span>{currentLabel}</span></button>
+      <div className="project-workspace-shortcuts">{buttons(tabs.filter(([id]) => ['prosjekt','sjekklister','bilder'].includes(id)))}</div></div>
     {flow && <div className="project-step-guide" role="region" aria-label="Anbefalt neste steg">
-      <div><span>Du er her: {flow.label}{flow.requirement ? ` · ${flow.requirement}` : flow.optional ? ' · Ved behov' : ''}</span><p>{flow.purpose}</p></div>
+      <div><span>Du er her: {flow.label}{flow.requirement ? ` · ${flow.requirement}` : flow.optional ? ' · Ved behov' : ''}</span><p>{readOnly?'Prosjektet er skrivebeskyttet. Åpne prosjektmenyen for å lese dokumentasjonen.':flow.purpose}</p></div>
       <ProjectFlowActions flow={flow} onNavigate={select} onContinue={onContinue} continuing={continuing} readOnly={readOnly}/>
       {continueNotice && <p className="project-step-notice" role="status">{continueNotice}</p>}
     </div>}
@@ -93,11 +86,20 @@ export default function ProjectWorkspaceChrome({ tabs, activeTab, project, saved
       {[["prosjekt", "Oversikt", Home], ["sjekklister", "Sjekklister", ClipboardCheck], ["bilder", "Bilder", Camera], ["avvik", "Avvik", TriangleAlert]].map(([id, label, Icon]) => <button key={id} type="button" data-project-navigation="true" disabled={!saved && id !== 'prosjekt'} aria-current={activeTab === id ? 'page' : undefined} onClick={() => select(id)}><Icon size={20}/><span>{label}</span></button>)}
       <button type="button" aria-haspopup="dialog" aria-expanded={menuOpen} onClick={() => setMenuOpen(true)}><Menu size={20}/><span>Meny</span></button>
     </div>
-    {menuOpen && <DeviationDialog title={menuName} context={project.projectName || project.address || 'Nytt prosjekt'} onClose={() => setMenuOpen(false)} closeLabel="Lukk prosjektmeny"><div className="project-dialog-content project-menu-dialog">
-      {groups.map(item => <div key={item.title}><h3>{item.title}</h3><p className="project-menu-purpose">{phasePurpose(item.title)}</p>{buttons(item.items)}</div>)}
-      <div><h3>Hjelp og support</h3>{buttons(tabs.filter(([id]) => ['hjelp','support'].includes(id)))}</div>
-    </div></DeviationDialog>}
+    {menuOpen && <ProjectNavigationPanel title={menuName} projectName={project.projectName || project.address || 'Nytt prosjekt'} onClose={() => setMenuOpen(false)}>
+      <div className="project-workspace-navigation project-menu-dialog" aria-label={menuName}>
+        {groups.map((item,index) => <div key={item.title} className={`project-phase-card${activeGroup === item.title ? ' is-current' : ''}`} role="group" aria-label={item.title}><h3><span>{index+1}</span>{item.title}</h3><p className="project-menu-purpose">{phasePurpose(item.title)}</p><div className="project-workspace-tabs">{buttons(item.items)}</div></div>)}
+        <div><h3>Hjelp og support</h3>{buttons(tabs.filter(([id]) => ['hjelp','support'].includes(id)))}</div>
+      </div>
+    </ProjectNavigationPanel>}
+
   </section>;
+}
+
+function ProjectNavigationPanel({title,projectName,onClose,children}) {
+  const dialog=useRef(null);
+  useEffect(()=>{const node=dialog.current;node.showModal();return()=>{if(node.open)node.close();};},[]);
+  return <WorkspacePanel dialogRef={dialog} title={title} subtitle={projectName} className="project-navigation-panel" closeLabel="Lukk prosjektmeny" onClose={event=>{if(event.target===event.currentTarget)onClose();}}>{children}</WorkspacePanel>;
 }
 
 export function ProjectStatusDialog({ open, onClose, projectName, children }) {

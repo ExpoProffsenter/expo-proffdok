@@ -31,3 +31,9 @@ Alle godkjente ansatte i aktivt arbeidsfirma kan starte Egen sjekkliste og bygge
 Migrering `20261031012504_checklist_template_proposals.sql` er additiv. Kjør først i Sandbox, deretter Production først etter ny TEST OK. Nye DB- og kladdbiblioteksprøver importeres fra den eksisterende standalone-nettleserprøven slik at samme CI-pakke dekker dem. Ingen e-post sendes for malforslag; køen er selve leveringen til firmaadmin.
 
 Rapportmappingen merker bare signaturbildets presentasjon med `kind: signature`, slik at boxed PDF-rendereren kan begrense bildet proporsjonalt til80×24mm. Signaturinput, bruker-/revisjons-/grunnlagsbinding, krav, readback og historiske verdier er uendret.
+
+## Prosjektets sjekklisteoversikt
+
+Prosjektets Sjekklister åpnes i felles native WorkspacePanel til høyre, likt på PC og mobil. Oversikten velger ingen vilkårlig kontroll ved innsteg (`autoOpenOnEntry=false`); eksakte hopp fra avvik/punkt beholdes. Påbegynte lister står først med Fortsett utfylling, fremdrift og eventuell sist lagret-identitet. Lagrede kontroller bruker eksisterende editor/RPC og lokal sikring. Navn utvider ikke punkter; Vis punkter og historikk er et eget valg. Escape lukker innerste editor før oversikt. Avbrutt navigasjon beholder oversikten.
+
+Låst/support tilbyr Vis dokumentasjon. Historiske svar uten fullført run merkes Registrert dokumentasjon, aldri som fullført kontroll. Ingen historikk eller status opprettes for å endre etikettene. Tillegg og egne punkter ligger etter kontrollene. Prosjektering beholder automatisk innsteg og samme lagringskontrakt.
