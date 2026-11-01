@@ -299,7 +299,7 @@ const BASE_SECTIONS = [
   section(
     "prosjektliste",
     "📑 Prosjektliste",
-    "Prosjektlisten starter med kompakte prosjektkort. Prosjektnavn, kunde, status, avvik og uleste meldinger vises med en gang. Åpne går rett inn i prosjektet.",
+    "Prosjektlisten starter med kompakte prosjektkort. Prosjektnavn, kunde, status, avvik og uleste meldinger vises med en gang. Åpne går rett inn i prosjektet. Prosjektoverskriften er informasjon og utvider ikke raden. Bare Vis detaljer åpner detaljene under kortet.",
     [
       "Trykk Vis detaljer på et kort for kontaktinfo, ansvarlig, bilder og alle snarveiene. Vis alle detaljer åpner innholdet på alle kort. Kollaps alle detaljer gir den korte oversikten igjen.",
       "Alle, Aktive og Arkiv står alltid fremme. Åpne Søk og filtre for søk, eksakte statusvalg, kun uleste, oppdatering og nullstilling. Gjeldende filtre vises også når feltet er lukket.",

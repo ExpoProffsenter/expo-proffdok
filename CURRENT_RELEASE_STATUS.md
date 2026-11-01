@@ -1,3 +1,9 @@
+# Nattoppfølging 1. november – prosjektlisten skiller informasjon fra handling
+
+Miljømål BEGGE, kun Preview/Sandbox. Hele prosjektoverskriften lå i native Vis detaljer-summary og kunne utvide raden ved navneklikk. Overskriften er nå separat informasjon; Vis detaljer styrer bare detaljene og Åpne beholder original prosjektcallback. Hjelp er presisert. Ny React-regresjon feiler på førkilden og består på rettelsen med samme monterte kladd og gamle menyruter. [Ett scope-/testgrunnlag](docs/changes/project-list-expansion-target-20261101.json). Begge bygg, eksakt kandidat-CI/READY og publisert kontroll føres i PR295.
+
+Dette er én dokumentert årsak til innhold under raden, ikke full forklaring på Kenneths overgang. Kortskjerm/browsergeometri avventer kandidat-CI: lokal Chromium-installasjon er blokkert, uten omgåelse. Bildepakke er ikke installert; levende PDF-filbro og full overgang/fullskjerm står åpne. Ferdig72sfilm/fem originaler og tidligere PDF-rettelser beholdes. Ingen TEST OK, merge, Production eller demosynk.
+
 # Nattoppfølging 1. november – ny film om videoavspilleren
 
 Miljømål BEGGE, bare fast Preview/Sandbox. Ny separat film er ferdig: VID-HELP-002-PLAYER, ni trinn/72sekunder i godkjent PROFFDOK-VIDEO-1.0. Faktiske Preview-bilder med demodata viser søk, originalfilm, kapitler, tekstalternativ og retur. MP4, redigerbare kilder og kontaktark er bevart; [ett scope-/testgrunnlag med filidentiteter](docs/changes/help-player-film-20261101.json). Filmen er ikke lagt i appregisteret; fem originalfilmer er uendret.

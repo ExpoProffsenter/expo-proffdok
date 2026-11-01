@@ -164,3 +164,12 @@
  .projectListWorkspace.projectListUx .workProfileSharedActions{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(min(100%,112px),1fr))!important;gap:8px;width:100%;justify-content:stretch}
  .projectListWorkspace.projectListUx .workProfileSharedActions>button{width:100%!important;min-width:0;min-height:44px!important;font-size:16px!important;white-space:normal;overflow-wrap:normal;word-break:normal}
 }
+
+/* The project heading is informational; only the named disclosure expands a row. */
+.projectListWorkspace .projectListDisclosureCard>details>summary{min-height:44px}
+.projectListWorkspace .projectListDisclosureCard>details>summary .projectListDisclosureLine{margin-top:0}
+@media(min-width:1051px){
+ .projectListWorkspace .projectListDisclosureCard>details>summary{position:absolute;right:104px;top:14px;min-height:44px;display:inline-flex;align-items:center;width:126px}
+ .projectListWorkspace .projectListDisclosureCard>details>summary .projectListDisclosureLabel{position:static}
+ .projectListWorkspace .projectListDisclosureCard>.projectListAttention{margin-top:6px;line-height:1.4}
+}

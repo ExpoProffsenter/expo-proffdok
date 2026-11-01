@@ -22,8 +22,10 @@ export function ProjectListCardDisclosure({children,heading,onOpen,attention,cla
   const display=useContext(ListDisplay),[local,setLocal]=useState({revision:-1,open:false});
   const open=local.revision===display.revision?local.open:display.expanded;
   return <div className={className+' projectListDisclosureCard'} style={style}>
+    {heading}
+    {attention&&<span className="projectListAttention">{attention}</span>}
     <details open={open} onToggle={event=>{const next=event.currentTarget.open;setLocal(value=>value.revision===display.revision&&value.open===next?value:{revision:display.revision,open:next});}}>
-      <summary>{heading}<span className="projectListDisclosureLine"><span className="projectListDisclosureLabel">{open?'Skjul detaljer':'Vis detaljer'}<ChevronDown className="projectListChevron" size={15}/></span>{attention&&<span className="projectListAttention">{attention}</span>}</span></summary>
+      <summary><span className="projectListDisclosureLine"><span className="projectListDisclosureLabel">{open?'Skjul detaljer':'Vis detaljer'}<ChevronDown className="projectListChevron" size={15}/></span></span></summary>
       <div className="projectListDetailContent">{children}</div>
     </details>
     <button type="button" className="projectListPrimaryOpen" onClick={onOpen}><FolderOpen size={17} aria-hidden="true"/>Åpne</button>
