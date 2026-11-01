@@ -652,19 +652,13 @@ export function createReportTools(deps = {}) {
           }
           // FASE 15.1.7C: tittel skaleres tryggere og brytes innenfor tekstfeltet.
           // Dette hindrer at lange prosjektnavn forsvinner ut av høyre kant.
-          if (doc.setGState) doc.setGState(new doc.GState({ opacity: 0.50 }));
-          doc.setTextColor(0, 0, 0);
-          doc.text(coverTitleLines, coverTextX + 0.55, 66.55, { lineHeightFactor: 1.06 });
-          if (doc.setGState) doc.setGState(new doc.GState({ opacity: 1 }));
+          // The dark text panel supplies contrast; offset duplicate text makes
+          // small address lines look overlapping in native PDF viewers.
           doc.setTextColor(255, 255, 255);
           doc.text(coverTitleLines, coverTextX, 66, { lineHeightFactor: 1.06 });
           doc.setFont("helvetica", "normal"); doc.setFontSize(10.2);
           const coverAddressLines = doc.splitTextToSize(safeText(addressLine || project.customer || "Prosjekt"), coverTextMaxWidth);
           const addressY = Math.max(90, 66 + coverTitleLines.length * coverTitleSize * .352778 * 1.06 + 8);
-          if (doc.setGState) doc.setGState(new doc.GState({ opacity: 0.42 }));
-          doc.setTextColor(0, 0, 0);
-          doc.text(coverAddressLines, coverTextX + 0.45, addressY + 0.45);
-          if (doc.setGState) doc.setGState(new doc.GState({ opacity: 1 }));
           doc.setTextColor(241, 245, 249);
           doc.text(coverAddressLines, coverTextX, addressY);
 

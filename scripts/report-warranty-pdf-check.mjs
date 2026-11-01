@@ -44,6 +44,10 @@ for(const system of soproWarrantySystems.filter(s=>!process.env.WARRANTY_SYSTEM|
  const out=Buffer.from(docs[0].doc.output('arraybuffer'));const all=docs[0].doc.internal.pages.flat().join('\n');
  eq(out.subarray(0,5).toString(),'%PDF-','real PDF bytes');eq(out.includes(Buffer.from('/Subtype /Image')),true,'actual logo, photo and synthetic signature assets embedded');
  if(process.env.REPORT_WARRANTY_OUTPUT){fs.mkdirSync(process.env.REPORT_WARRANTY_OUTPUT,{recursive:true});fs.writeFileSync(path.join(process.env.REPORT_WARRANTY_OUTPUT,`sluttrapport-${system.id}-${long?'lang':'kort'}-${locked?'last':'apen'}.pdf`),out);}
+ const coverTexts=docs[0].doc._texts.filter(t=>t.page===1&&t.y>50&&t.y<135);
+ const addressTexts=coverTexts.filter(t=>t.text==='Testveien 10, 0001, Oslo');
+ eq(addressTexts.length,1,'cover address is drawn once, without an offset duplicate');
+ eq(coverTexts.some((a,i)=>coverTexts.slice(i+1).some(b=>a.text===b.text&&Math.abs(a.y-b.y)<1&&Math.abs(a.x-b.x)<1)),false,'cover has no nearly coincident duplicate text');
  const visibleText=docs[0].doc._texts.map(t=>t.text).join(' ').replace(/\s+/g,' ');
  eq(visibleText.includes(system.product),true,'native system retained');
  eq(visibleText.includes(system.sintefApproval),true,'native TG retained');

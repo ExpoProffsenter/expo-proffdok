@@ -1,3 +1,9 @@
+# Nattoppfølging 1. november – rapportforside
+
+Samme PR295/faste Preview/Sandbox, miljømål BEGGE. Forsidens doble teksttegning er gjenskapt og rettet. Native198 PDF-krav PASS; seks syntetiske rapporter/88 sider rendret og visuelt kontrollert. Begge eksplisitte critical/build-miljøer PASS. [Avgrenset endring og bildeårsak](docs/changes/report-cover-single-text-20261101.json). Eksakt kandidat/CI/READY og etterkontroll føres i PR295.
+
+Innlogget 7c-forløp: Vis detaljer utvider raden; separat Åpne navigerer til prosjektet. Rapport åpner høyrepanel; Tilbake til prosjektet beholder samme prosjekt-ID/tab/URL. Dette beviser ikke at brukerens rapporterte visningshopp er løst. Alle syv prosjektbilder er ulastet i levende DOM; to relative demoressurser mangler i Preview, fem absolutte JPG-er krever videre årsakskontroll. Ingen demo-overlay flyttet, ingen prosjektdata endret. Avviksliste, kort skjerm/Listevalg og ny film står åpne. Fem eksisterende filmer beholdes; ikke spill inn feilflyten. Ingen TEST OK, merge, Production/DB eller demosynk.
+
 # Rapport og PDF – ny rettelse 1. november 2026
 
 Miljømål BEGGE, kun PR295/fast Preview. Brukerfeilen er gjenskapt: Rapport brukte egen side og skjulte PDF under Flere handlinger. Nytt høyrepanel lar samme prosjektarbeid stå og viser Last ned PDF i fast footer. Prosjektlistens åpne Listevalg strekker ikke lenger tittel/formål/statistikk. [Endrings- og testgrunnlag](docs/changes/project-report-panel-and-list-header-20261101.json).
