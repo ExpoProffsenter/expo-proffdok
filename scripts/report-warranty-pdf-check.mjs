@@ -12,8 +12,8 @@ const entry=path.join(tmp,'entry.js');
 fs.writeFileSync(entry,`import {createReportTools} from '${root}/src/modules/report/reportTools.js';window.runReport=d=>createReportTools(d).downloadClickablePdfReport();`);
 const bundle=await build({root,configFile:false,logLevel:'silent',plugins:[{name:'native-pdf-engine',enforce:'pre',transform(code,id){if(process.env.REPORT_WARRANTY_SOURCE&&id.endsWith('/reportTools.js'))return fs.readFileSync(process.env.REPORT_WARRANTY_SOURCE,'utf8');},resolveId(id){if(id==='https://esm.sh/jspdf@2.5.1')return '\0native-pdf';},load(id){if(id==='\0native-pdf')return `import {jsPDF as Real} from '${pdfPath}';export function jsPDF(args){const d=new Real(args);window.instrumentPdf(d);d.save=name=>window.recordPdf(name,d);return d;}`;}}],build:{write:false,minify:false,lib:{entry,formats:['iife'],name:'ReportQA'}}});
 let checks=0;const eq=(a,b,m)=>{assert.deepEqual(a,b,m);checks++;};
-for(const system of soproWarrantySystems.filter(s=>!process.env.WARRANTY_SYSTEM||s.id===process.env.WARRANTY_SYSTEM)) for(const scenario of [{long:false,locked:true},{long:true,locked:true},{long:false,locked:false}]){
- const {long,locked}=scenario;
+for(const system of soproWarrantySystems.filter(s=>!process.env.WARRANTY_SYSTEM||s.id===process.env.WARRANTY_SYSTEM)) for(const scenario of [{long:false,locked:true},{long:true,locked:true},{long:false,locked:false},{long:false,locked:true,deviations:true},{long:true,locked:true,deviations:true}]){
+ const {long,locked,deviations}=scenario;
  if(process.env.REPORT_WARRANTY_BASELINE&&(!long||!locked))continue;
  const dom=new JSDOM('<div class="report"></div>',{url:'https://qa.invalid/',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window;
  let docs=[],writes=0,updated=null;const alerts=[];w.alert=v=>alerts.push(v);w.confirm=()=>true;
@@ -23,7 +23,7 @@ for(const system of soproWarrantySystems.filter(s=>!process.env.WARRANTY_SYSTEM|
  w.Image=class{constructor(){this.width=400;this.height=160;}set src(v){this._src=v;w.setTimeout(()=>this.onload?.(),0);}get src(){return this._src;}};
  w.HTMLCanvasElement.prototype.getContext=function(){const c=this;return {fillRect(){},drawImage(img){c._data=img.src;},fillStyle:''};};w.HTMLCanvasElement.prototype.toDataURL=function(){return this._data||data;};
  w.instrumentPdf=d=>{
-  d._texts=[];const native=d.text.bind(d);
+  d._texts=[];d._cards=[];const rect=d.roundedRect.bind(d);d.roundedRect=(x,y,w,h,...args)=>{d._cards.push({x,y,w,h,page:d.internal.getCurrentPageInfo().pageNumber});return rect(x,y,w,h,...args);};const native=d.text.bind(d);
   d.text=(value,x,y,opts={})=>{
    if(typeof x==='number'&&typeof y==='number'){
     const lines=Array.isArray(value)?value:[value],lineHeight=d.getFontSize()*.352778*(opts.lineHeightFactor||d.getLineHeightFactor());
@@ -39,11 +39,20 @@ for(const system of soproWarrantySystems.filter(s=>!process.env.WARRANTY_SYSTEM|
  const warranty={enabled:true,system:system.id,issued:true,status:'issued',guaranteeNumber:'QA-GARANTI-001',durationYears:15,issuedAt:'2026-10-02T10:00:00Z',termsAccepted:true,termsAcceptedBy:repeat('QA mottaker ÆØÅ',15)};
  const overtagelse={enabled:true,dato:'2026-10-02',signKunde:'QA kunde',signUtførende:'QA utførende',signKundeImage:'https://qa.invalid/sign-kunde.png',signUtførendeImage:'https://qa.invalid/sign-firma.png',kommentar:repeat('QA lang overtagelsesmerknad',120)};
  const deps={project,company:{companyName:'QA firma',orgNumber:'999999999',email:repeat('kontakt',22)+'@example.invalid',logoUrl:'https://qa.invalid/logo.png'},name:'QA firma',user:{name:'QA leder'},authUser:{id:'QA-user'},projectId:'QA-project',warranty,overtagelse,warrantyReadiness:{selectedSystem:{...system,sintefUrl:'https://qa.invalid/tg'},termsAccepted:true},isProjectLocked:locked,getWarrantyYears:()=>15,hasValue:v=>v!=null&&String(v).trim()!=='',projectHasOvertagelse:()=>true,getOpenDeviationCount:()=>0,emptyWarranty:()=>({}),setWarranty:fn=>{writes++;updated=fn(warranty);},setTab:()=>{},activeChecklistTemplate:SOPRO_SYSTEM_CHECKLIST_TEMPLATES[system.id],checklist:Object.fromEntries(SOPRO_SYSTEM_CHECKLIST_TEMPLATES[system.id].map(g=>[g.category,Object.fromEntries(g.items.map(item=>[item,{status:'Ok',comment:'Syntetisk dokumentert – æøå'}]))])),selected:[{item:system.product,section:'Membran'}],manualSelected:[],manualProducts:{},other:{},surf:{},bathroomEquipment:{},photos:[{url:'https://qa.invalid/photo.png',category:'Ferdig',name:'QA ferdigbilde'}],files:[],inst:[],access:[],tilbud:{enabled:false},getPhotoIdentity:p=>p.url,buildBathroomEquipmentReportGroups:()=>[],publicProjectFileUrl:p=>p.url||'',normalizeExternalUrl:v=>/^https?:/.test(v||'')?v:'',shouldIncludeProductReportDoc:()=>false,productReportDocumentOptions:[],makeProjectLink:()=>'',DEFAULT_REPORT_HERO_IMAGE_URL:''};
+ if(deviations){
+  const prose=(s,n)=>long?(s+' ').repeat(n)+'END-'+s:s;
+  deps.project.projectDeviations=[
+   {id:'open',includeInReport:true,title:prose('Åpent prosjektavvik ÆØÅ',12),status:'Åpent',type:'Kvalitet',severity:'Middels',responsible:'QA ansvarlig ÆØÅ',dueDate:'2026-11-09',description:prose('QA beskrivelse',650),action:prose('QA tiltak',180),affectsWarranty:true,photos:[{url:'https://qa.invalid/photo.png'}]},
+   {id:'closed',includeInReport:true,title:'Lukket prosjektavvik ÆØÅ',status:'Lukket',type:'Leveranse',severity:'Lav',responsible:'QA lukker',dueDate:'2026-10-19',description:'QA opprinnelig feil',action:'QA utført tiltak',closeComment:prose('QA lukkekommentar',170),closedBy:'QA historisk lukker',closedAt:'2026-10-20T10:00:00Z'},
+   {id:'excluded',includeInReport:false,title:'MUST-NOT-APPEAR',description:'MUST-NOT-APPEAR'}
+  ];
+  deps.checklist['QA avvikskategori']={'Åpent sjekkpunkt':{status:'Avvik',comment:'QA opprinnelig sjekkfeil'},'Lukket sjekkpunkt':{status:'Lukket avvik',comment:'QA opprinnelig lukket sjekkfeil',closeComment:'QA utbedret sjekkpunkt',closedBy:'QA kontrollør',closedAt:'2026-10-21T09:00:00Z'}};
+ }
  const before=JSON.stringify(deps);await w.runReport(deps);
  eq(docs.length,1,alerts.join('\n'));eq(writes,locked?0:1,'only unlocked final report stamps existing receipt');if(!locked){eq(updated.guaranteeNumber,warranty.guaranteeNumber,'guarantee number retained');eq(updated.status,'issued','issued state retained');eq(Number.isNaN(Date.parse(updated.reportGeneratedAt)),false,'fresh generation time');}eq(JSON.stringify(deps),before,'source data unchanged');
  const out=Buffer.from(docs[0].doc.output('arraybuffer'));const all=docs[0].doc.internal.pages.flat().join('\n');
  eq(out.subarray(0,5).toString(),'%PDF-','real PDF bytes');eq(out.includes(Buffer.from('/Subtype /Image')),true,'actual logo, photo and synthetic signature assets embedded');
- if(process.env.REPORT_WARRANTY_OUTPUT){fs.mkdirSync(process.env.REPORT_WARRANTY_OUTPUT,{recursive:true});fs.writeFileSync(path.join(process.env.REPORT_WARRANTY_OUTPUT,`sluttrapport-${system.id}-${long?'lang':'kort'}-${locked?'last':'apen'}.pdf`),out);}
+ if(process.env.REPORT_WARRANTY_OUTPUT){fs.mkdirSync(process.env.REPORT_WARRANTY_OUTPUT,{recursive:true});fs.writeFileSync(path.join(process.env.REPORT_WARRANTY_OUTPUT,`sluttrapport-${system.id}-${long?'lang':'kort'}-${locked?'last':'apen'}${deviations?'-avvik':''}.pdf`),out);}
  const coverTexts=docs[0].doc._texts.filter(t=>t.page===1&&t.y>50&&t.y<135);
  const addressTexts=coverTexts.filter(t=>t.text==='Testveien 10, 0001, Oslo');
  eq(addressTexts.length,1,'cover address is drawn once, without an offset duplicate');
@@ -52,6 +61,23 @@ for(const system of soproWarrantySystems.filter(s=>!process.env.WARRANTY_SYSTEM|
  eq(visibleText.includes(system.product),true,'native system retained');
  eq(visibleText.includes(system.sintefApproval),true,'native TG retained');
  for(const group of SOPRO_SYSTEM_CHECKLIST_TEMPLATES[system.id]) for(const item of group.items) eq(visibleText.includes(item),true,'full original Sopro point retained: '+item);
+ if(deviations){
+  const texts=docs[0].doc._texts;
+  const sectionStart=texts.find(t=>t.text==='Avviksliste');
+  const sectionEnd=texts.find(t=>t.page>=sectionStart.page&&t.text==='Overtagelse');
+  const region=texts.filter(t=>t.page>=sectionStart.page&&(!sectionEnd||t.page<sectionEnd.page)&&t.text!=='Expo ProffDok rapport'&&!t.text.startsWith('© 2026 Expo Proffsenter')&&!/^\d+\/\d+$/.test(t.text));
+  const text=region.map(t=>t.text).join(' ').replace(/\s+/g,' ');
+  for(const value of ['QA ansvarlig ÆØÅ','2026-11-09','QA opprinnelig feil','QA historisk lukker','QA utbedret sjekkpunkt','QA kontrollør','2 åpne avvik','2 lukkede avvik'])eq(text.includes(value),true,'deviation field retained: '+value);
+  eq(visibleText.includes('MUST-NOT-APPEAR'),false,'excluded project deviation stays excluded');
+  eq(region.every(t=>t.y>=14&&t.y<=279&&t.x>=13&&t.x+t.width<=197),true,'all deviation text stays within page margins');
+  const typeLabel=region.find(t=>t.text==='Type');
+  eq(docs[0].doc._cards.some(c=>c.page===typeLabel.page&&c.y<typeLabel.y&&c.y+c.h>=typeLabel.y&&c.x<=typeLabel.x&&c.x+c.w>=typeLabel.x+typeLabel.width),true,'deviation fields render inside native rounded cards');
+  if(long){
+   for(const label of ['QA beskrivelse','QA tiltak','QA lukkekommentar'])eq(text.includes('END-'+label),true,'long field has complete trailing sentinel: '+label);
+   const pages=[...new Set(region.map(t=>t.page))];eq(pages.length>2,true,'long deviations continue over several pages');
+   for(const page of pages.slice(1))eq(region.some(t=>t.page===page&&t.text.includes('Avviksliste')),true,'deviation section repeats on continuation page '+page);
+  }
+ }
  // A continuation page must identify its original category before its first row.
  if(!process.env.REPORT_WARRANTY_BASELINE){
   for(const group of SOPRO_SYSTEM_CHECKLIST_TEMPLATES[system.id]){
@@ -74,7 +100,7 @@ for(const system of soproWarrantySystems.filter(s=>!process.env.WARRANTY_SYSTEM|
   eq(late.includes('END-QA utf'),true,'certificate must retain full contact value');
   eq(docs[0].doc._texts.filter(t=>t.page===1&&t.y>50&&t.y<135).every(t=>t.x>=14&&t.x+t.width<=196),true,'cover title wraps with actual font metrics');
  }
- console.log(`Native warranty report ${system.id} ${long?'long':'short'}/${locked?'locked':'unlocked'}: ${docs[0].doc.internal.getNumberOfPages()} pages; no mutation.`);
+ console.log(`Native warranty report ${system.id} ${long?'long':'short'}/${locked?'locked':'unlocked'}${deviations?' deviations':''}: ${docs[0].doc.internal.getNumberOfPages()} pages; no mutation.`);
  dom.window.close();
 }
 console.log(`Native warranty/closeout PDF PASS: ${checks} checks. Synthetic transport only; existing createReportTools/jsPDF.`);

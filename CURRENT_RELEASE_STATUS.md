@@ -1,3 +1,9 @@
+# Nattoppfølging 1. november – avvikslisten
+
+Samme PR295/faste Preview/Sandbox, miljømål BEGGE. Avviksliste i PDF får kompakte kort, egen sidestart og full videreføring av lange felt. Native390krav/tiPDF-er162sider, eksisterende React9PDF/5print, kritisk rapport/closeout og begge eksplisitte critical/build-miljøer PASS. [Scope og testgrunnlag](docs/changes/report-deviation-cards-20261101.json). Eksakt kandidat/CI/READY og publisert etterkontroll føres i PR295.
+
+Forsiderettelsen3ec907b5 har fullCI862SUCCESS10/10. Nyeste PR-checkpoint avklarer bildeårsaken: to relative SVG-ressurser mangler i Preview og femJPG-er i demo-overlayet er ugyldige bildefiler. Ingen av disse er reparert eller flyttet til main. Overgang/kort skjerm/Listevalg, levende nedlastingsbro og nye filmer står fortsatt åpne. To manus og fem originalfilmer beholdes. Ingen TEST OK, merge, Production/DB/kundedata eller demosynk.
+
 # Nattoppfølging 1. november – rapportforside
 
 Samme PR295/faste Preview/Sandbox, miljømål BEGGE. Forsidens doble teksttegning er gjenskapt og rettet. Native198 PDF-krav PASS; seks syntetiske rapporter/88 sider rendret og visuelt kontrollert. Begge eksplisitte critical/build-miljøer PASS. [Avgrenset endring og bildeårsak](docs/changes/report-cover-single-text-20261101.json). Eksakt kandidat/CI/READY og etterkontroll føres i PR295.

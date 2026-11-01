@@ -2118,6 +2118,61 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           }
         }
 
+        const addDeviationReportCard = (title, entries, closed) => {
+          const wrap = (text, width, size, bold = false) => {
+            doc.setFont("helvetica", bold ? "bold" : "normal");
+            doc.setFontSize(size);
+            return doc.splitTextToSize(safeText(text), width);
+          };
+          const titleLines = wrap(title, contentWidth - 10, 9.2, true);
+          const titleHeight = 6 + titleLines.length * 4.2;
+          const rows = entries.map(([label, value]) => ({
+            labels: wrap(label, 43, 7.5, true),
+            lines: wrap(value, contentWidth - 57, 9),
+          }));
+          const rowHeight = row => 6 + Math.max(row.labels.length, row.lines.length) * 4.2;
+          const totalHeight = titleHeight + rows.reduce((sum, row) => sum + rowHeight(row), 0) + 5;
+          // Ordinary cards stay together. Oversized legacy text is continued,
+          // with a repeated section, full card title and field label.
+          const startPage = doc.internal.getCurrentPageInfo().pageNumber;
+          if (totalHeight <= pageHeight - 48) ensureSpace(totalHeight);
+          const header = (continued = false) => {
+            const lines = continued ? wrap(`${title} – fortsettelse`, contentWidth - 10, 9.2, true) : titleLines;
+            const h = 6 + lines.length * 4.2;
+            doc.setDrawColor(191, 219, 254);
+            doc.setFillColor(239, 246, 255);
+            doc.roundedRect(margin, y, contentWidth, h, 2.5, 2.5, "FD");
+            doc.setFont("helvetica", "bold"); doc.setFontSize(9.2); doc.setTextColor(12, 42, 82);
+            lines.forEach((line, i) => doc.text(line, margin + 5, y + 5 + i * 4.2));
+            y += h;
+          };
+          const next = () => {
+            doc.addPage(); y = 16;
+            addSectionTitle("Avviksliste – fortsettelse");
+            header(true);
+          };
+          ensureSpace(titleHeight + 6 + Math.max(...rows.map(row => row.labels.length), 1) * 4.2);
+          if (doc.internal.getCurrentPageInfo().pageNumber !== startPage) addSectionTitle("Avviksliste – fortsettelse");
+          header();
+          for (const row of rows) {
+            let offset = 0;
+            do {
+              const minimum = 6 + Math.max(row.labels.length, 1) * 4.2;
+              if (y + minimum > pageHeight - 18) next();
+              const take = Math.min(row.lines.length - offset, Math.floor((pageHeight - 18 - y - 6) / 4.2));
+              const height = 6 + Math.max(row.labels.length, take) * 4.2;
+              doc.setDrawColor(214, 226, 236); doc.setFillColor(248, 250, 252);
+              doc.roundedRect(margin, y, contentWidth, height, 2, 2, "FD");
+              doc.setFont("helvetica", "bold"); doc.setFontSize(7.5); doc.setTextColor(71, 85, 105);
+              row.labels.forEach((line, i) => doc.text(line, margin + 4, y + 5 + i * 4.2));
+              doc.setFont("helvetica", "normal"); doc.setFontSize(9);
+              doc.setTextColor(...(closed ? [6, 95, 70] : [15, 23, 42]));
+              row.lines.slice(offset, offset + take).forEach((line, i) => doc.text(line, margin + 53, y + 5 + i * 4.2));
+              y += height; offset += take;
+            } while (offset < row.lines.length);
+          }
+          y += 5;
+        };
         const deviations = [];
         Object.entries(checklist || {}).forEach(([category, items]) => {
           Object.entries(items || {}).forEach(([item, value]) => {
@@ -2126,41 +2181,40 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         });
         const projectDeviationsForReport = (Array.isArray(project?.projectDeviations) ? project.projectDeviations : []).filter((entry) => !!entry?.includeInReport && !kshmsReport.ruhs.some(ruh => ruh.id === entry.ks_deviation_id));
         if (deviations.length || projectDeviationsForReport.length) {
-          addSectionTitle("Avviksliste");
+          addSectionPageBreak("Avviksliste");
           const openDeviationTotal = deviations.filter((d) => d.status === "Avvik").length + projectDeviationsForReport.filter((d) => (d?.status || "Åpent") !== "Lukket").length;
           const closedDeviationTotal = deviations.filter((d) => d.status === "Lukket avvik").length + projectDeviationsForReport.filter((d) => (d?.status || "Åpent") === "Lukket").length;
           addParagraph(`Avviksoppsummering: ${openDeviationTotal} åpne avvik · ${closedDeviationTotal} lukkede avvik`, { bold: true });
           if (deviations.length) addParagraph("Sjekkpunktavvik blir alltid tatt med i rapporten.", { size: 8.5, lineHeight: 4.2 });
           deviations.forEach((d) => {
-            addSubTitle(`${d.status === "Lukket avvik" ? "✅ Lukket avvik" : "⚠️ Åpent avvik"} – ${d.category} / ${d.item}`);
-            if (d.comment) addKeyValue("Opprinnelig avvik", d.comment);
-            if (d.status === "Lukket avvik") {
-              addKeyValue("Utbedring / lukkekommentar", d.closeComment || "Lukket uten egen lukkekommentar");
-              addKeyValue("Lukket av", d.closedBy || "Ikke oppgitt");
-              addKeyValue("Lukket dato", d.closedAt ? new Date(d.closedAt).toLocaleString("no-NO") : "Ikke oppgitt");
-            } else if (!d.comment) {
-              addParagraph("Avvik registrert uten kommentar.");
-            }
-            addDivider();
+            const closed = d.status === "Lukket avvik";
+            const entries = [];
+            if (d.comment) entries.push(["Opprinnelig avvik", d.comment]);
+            if (closed) entries.push(
+              ["Utbedring / lukkekommentar", d.closeComment || "Lukket uten egen lukkekommentar"],
+              ["Lukket av", d.closedBy || "Ikke oppgitt"],
+              ["Lukket dato", d.closedAt ? new Date(d.closedAt).toLocaleString("no-NO") : "Ikke oppgitt"]
+            );
+            else if (!d.comment) entries.push(["Opprinnelig avvik", "Avvik registrert uten kommentar."]);
+            addDeviationReportCard(`${closed ? "Lukket avvik" : "Åpent avvik"} – ${d.category} / ${d.item}`, entries, closed);
           });
           projectDeviationsForReport.forEach((d) => {
             const isClosed = (d?.status || "Åpent") === "Lukket";
-            addSubTitle(`${isClosed ? "✅ Lukket" : "⚠️ Åpent"} HMS-/prosjektavvik – ${d?.title || d?.type || "Avvik"}`);
-            addKeyValue("Type", d?.type || "Ikke oppgitt");
-            addKeyValue("Alvorlighet", d?.severity || "Ikke oppgitt");
-            addKeyValue("Status", d?.status || "Åpent");
-            addKeyValue("Ansvarlig", d?.responsible || "Ikke oppgitt");
-            addKeyValue("Frist", d?.dueDate || "Ikke oppgitt");
-            if (d?.description) addKeyValue("Beskrivelse", d.description);
-            if (d?.action) addKeyValue("Tiltak / oppfølging", d.action);
-            if (d?.affectsWarranty) addKeyValue("Påvirker garanti/sluttdokumentasjon", "Ja");
-            if (isClosed) {
-              addKeyValue("Utbedring / lukkekommentar", d?.closeComment || "Lukket uten egen lukkekommentar");
-              addKeyValue("Lukket av", d?.closedBy || "Ikke oppgitt");
-              addKeyValue("Lukket dato", d?.closedAt ? new Date(d.closedAt).toLocaleString("no-NO") : "Ikke oppgitt");
-            }
-            if ((d?.photos || []).length) addParagraph(`Bildedokumentasjon registrert: ${(d.photos || []).length} bilde${(d.photos || []).length === 1 ? "" : "r"}.`, { size: 8.5, lineHeight: 4.2 });
-            addDivider();
+            const entries = [
+              ["Type", d?.type || "Ikke oppgitt"], ["Alvorlighet", d?.severity || "Ikke oppgitt"],
+              ["Status", d?.status || "Åpent"], ["Ansvarlig", d?.responsible || "Ikke oppgitt"],
+              ["Frist", d?.dueDate || "Ikke oppgitt"]
+            ];
+            if (d?.description) entries.push(["Beskrivelse", d.description]);
+            if (d?.action) entries.push(["Tiltak / oppfølging", d.action]);
+            if (d?.affectsWarranty) entries.push(["Påvirker garanti/sluttdokumentasjon", "Ja"]);
+            if (isClosed) entries.push(
+              ["Utbedring / lukkekommentar", d?.closeComment || "Lukket uten egen lukkekommentar"],
+              ["Lukket av", d?.closedBy || "Ikke oppgitt"],
+              ["Lukket dato", d?.closedAt ? new Date(d.closedAt).toLocaleString("no-NO") : "Ikke oppgitt"]
+            );
+            if ((d?.photos || []).length) entries.push(["Bildedokumentasjon registrert", `${d.photos.length} bilde${d.photos.length === 1 ? "" : "r"}.`]);
+            addDeviationReportCard(`${isClosed ? "Lukket" : "Åpent"} HMS-/prosjektavvik – ${d?.title || d?.type || "Avvik"}`, entries, isClosed);
           });
         }
 

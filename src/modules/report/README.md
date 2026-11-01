@@ -33,3 +33,7 @@ Rapportkommandoen i `goToTab` åpner `ProjectReportWorkspace` uten å endre fane
 Den synlige Last ned PDF-knappen kaller eksisterende `downloadClickablePdfReport`, med uendrede arkiv-/garanti-/signaturgater. KS/HMS-velgeren monteres inne i native dialogens topplag når rapportpanelet er åpent; Escape avbryter kun dokumentvalget og returnerer fokus til rapporten. Global PDF-snarvei beholder sin eksisterende velger. Fremdriftsvisningen bruker det åpne rapportpanelets topplag. Ingen serverkommando eller datamapping er innført.
 
 Appens eksisterende arkivbekreftelse vises med samme fulle tekst i `ReportArchiveConfirmation` før PDF-motoren startes. Generer PDF må velges eksplisitt; Avbryt, Escape, bruker-/firma-/prosjektbytte eller avmontering løser ventende eksport med false. Rapportmotoren revaliderer scope også rett etter bekreftelsen. Native window.confirm er bare fallback for andre eksisterende kallere; interne appkall bruker scopeavgrenset bekreftelse. Dette fjerner nettleserens blokkerende JS-prompt uten å hoppe over bekreftelsen.
+
+## Avviksliste i PDF
+
+Prosjekt- og sjekkpunktavvik beholder eksisterende utvalg, status, ansvarlig, frister, lukkedata og bildedokumentasjonens antall. Listen begynner på en egen side med kompakte kort. Vanlige kort holdes samlet; lange felt fortsetter linjevis med gjentatt Avviksliste, full korttittel og feltetikett. Ingen garanti-, arkiv-, signatur-, data- eller tilgangsregel endres. Denne layouten reparerer ikke utilgjengelige eller ugyldige demobildefiler.
