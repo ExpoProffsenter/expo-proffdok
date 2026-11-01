@@ -46,7 +46,7 @@ await act(async()=>window.__render(props()));assert.equal(button('Vis punkter og
 assert(!window.document.body.textContent.includes('Kontroller rør'),'Collapsed list leaked points');
 await click(button('Åpne sjekkliste'));assert(window.document.querySelector('[role="dialog"]'));await choose('Ok');
 const dialog=window.document.querySelector('[role="dialog"]');dialog.scrollTop=120;await click(button('Lagre'));
-assert.equal(window.document.querySelector('[role="dialog"]'),dialog);assert.equal(dialog.scrollTop,120);assert.equal(runs[0].answers['Kontroller rør'].status,'Ok');
+assert.equal(window.document.querySelector('[role="dialog"]'),dialog);assert.equal(dialog.scrollTop,120);assert.equal(runs[0].answers['Kontroller rør'].status,'Ok');assert(!window.document.querySelector('[role=dialog]').textContent.includes('✅ Ferdig'),'assessed points do not claim a completed control');
 await click(button('Lukk'));await act(async()=>window.__unmount());await act(async()=>window.__render(props()));await click(button('Fortsett utfylling →'));
 assert.equal(runs.length,1);assert(window.document.body.textContent.includes('Kontroll under arbeid'));await choose('Ikke aktuelt',1);
 await act(async()=>drawChecklistSignature(window));await click(button('Sjekkliste fullført'));assert.equal(runs[0].status,'completed');assert(window.document.body.textContent.includes('QA Utførende'));
@@ -78,7 +78,7 @@ await choose('Ok');await click(button('Lagre'));assert.equal(runs[0].category,de
 await click(button('Lukk'));await act(async()=>window.__unmount());await act(async()=>window.__render(designProps()));await click(button('Fortsett utfylling →'));assert.equal([...window.document.querySelectorAll('button')].filter(b=>b.textContent.trim()==='Ok'&&b.getAttribute('aria-pressed')==='true').length,1);assert.equal(runs[0].answers[design.items[0]].status,'Ok');
 for(let n=1;n<design.items.length;n++)await choose('Ikke aktuelt',n);
 await act(async()=>drawChecklistSignature(window));await click(button('Sjekkliste fullført'));assert.equal(runs[0].status,'completed');assert.deepEqual(runs.slice(1),beforeDesign);await click(button('Lukk'));await act(async()=>window.__unmount());
-await act(async()=>window.__render({...designProps(),readOnly:true}));await click(button('Vis dokumentasjon'));assert(window.document.querySelector('fieldset:disabled'));assert(!button('Start ny kontroll'));assert(!button('Lagre'));await click(button('Lukk'));await act(async()=>window.__unmount());
+await act(async()=>window.__render({...designProps(),readOnly:true}));await click(button('Vis dokumentasjon'));assert(window.document.querySelector('fieldset:disabled'));assert(!window.document.querySelector('[role=dialog]').textContent.includes('Tegn egen signatur før fullføring'));assert(!window.document.querySelector('[role=dialog]').textContent.includes('Lagre kontrollen først'));assert(!button('Start ny kontroll'));assert(!button('Lagre'));await click(button('Lukk'));await act(async()=>window.__unmount());
 console.log('Design checklist real React PASS: shared save/reopen/full completion/read-only, no cross-category answers or overwritten execution history.');
 // Support stays read-only even without the caller also setting readOnly.
 const ordinaryRpc=window.__rpc,supportCalls=[],savedRuns=structuredClone(runs);

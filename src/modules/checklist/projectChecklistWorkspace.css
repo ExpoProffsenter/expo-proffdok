@@ -24,3 +24,5 @@
 .project-checklist-panel .project-checklist-workspace>.note{padding:12px;background:#eef5f8;border-radius:10px;font-size:14px;color:#294959}
 .project-checklist-panel .project-checklist-workspace .project-checklist-heading{background:transparent;padding:0}
 @media(max-width:500px){.project-checklist-card-actions{flex-direction:column}.project-checklist-card-actions>button{width:100%}}
+
+.project-checklist-resume>.note{margin:0;font-size:14px;color:#365c69}.project-checklist-resume>button>b{font-size:16px}

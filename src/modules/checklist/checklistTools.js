@@ -32,7 +32,7 @@ export function createChecklistEditor({
   checklistAttachmentDocumentTypeOptions,
   publicProjectFileUrl
 }) {
-  return function ChecklistEditor({ checklist, setChecklistValue, addChecklistPhoto, addFiles, files, setFiles, closedByName = "Utførende", showOpenDeviationsOnly = false, setShowOpenDeviationsOnly = null, warranty = {}, activeChecklistTemplate: providedActiveChecklistTemplate = null, customChecklistGroups = [], onAddCustomChecklistPoint = null, onRemoveCustomChecklistPoint = null, onSaveChecklistNow = null, checklistSaveStatus = "", onOpenKshmsDeviation = null, customChecklistEnabled, embedded = false, toolsOnly = false, initiallyExpanded = false, consumeChecklistJump = true, userId, readOnlyFields=false }) {
+  return function ChecklistEditor({ checklist, setChecklistValue, addChecklistPhoto, addFiles, files, setFiles, closedByName = "Utførende", showOpenDeviationsOnly = false, setShowOpenDeviationsOnly = null, warranty = {}, activeChecklistTemplate: providedActiveChecklistTemplate = null, customChecklistGroups = [], onAddCustomChecklistPoint = null, onRemoveCustomChecklistPoint = null, onSaveChecklistNow = null, checklistSaveStatus = "", onOpenKshmsDeviation = null, customChecklistEnabled, embedded = false, toolsOnly = false, initiallyExpanded = false, consumeChecklistJump = true, userId, readOnlyFields=false, completionStatus=null }) {
     const activeChecklistTemplate = providedActiveChecklistTemplate || getActiveChecklistTemplate(warranty);
     const customChecklistAllowed = !embedded && (customChecklistEnabled ?? canUseCustomChecklistForWarranty(warranty));
     const [newCustomChecklistTrade, setNewCustomChecklistTrade] = import_react.default.useState(customChecklistTradeOptions[0] || "Rørlegger");
@@ -326,7 +326,7 @@ export function createChecklistEditor({
                 stats.photos ? ` · ${stats.photos} bilder` : ""
               ] })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: `checklistGroupBadge checklistGroupBadge-${groupTone}`, children: stats.deviations > 0 ? "⚠️ Avvik" : stats.missing === 0 ? "✅ Ferdig" : stats.done > 0 ? "🟡 Pågår" : "⚪ Mangler" })
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: `checklistGroupBadge checklistGroupBadge-${groupTone}`, children: stats.deviations > 0 ? "⚠️ Avvik" : stats.missing === 0 ? (completionStatus ? (completionStatus === "completed" ? "✅ Fullført kontroll" : "Alle punkter vurdert") : "✅ Ferdig") : stats.done > 0 ? "🟡 Pågår" : "⚪ Mangler" })
           ] }),
           isOpen && group.instructions && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "ks-checklist-instructions", children: group.instructions }),
           isOpen && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "checklistGroupBody", children: group.items.filter((item) => !showOpenDeviationsOnly || checklist?.[group.category]?.[item]?.status === "Avvik").map((item) => {
