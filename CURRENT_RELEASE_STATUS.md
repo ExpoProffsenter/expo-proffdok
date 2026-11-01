@@ -1,3 +1,9 @@
+# Nattoppfølging 1. november – bildegrunnlag forberedt
+
+Isolert SANDBOX/DEMO-reviewpakke er laget: syv validerte bildevarianter fra bevarte SVG-er og binær reparasjonsdiff for fem ugyldigeJPEG-er. Native59krav/toPDF-er28sider, faktisk7unike bilder/10plasseringer og ærlig feilfallbackPASS. [Scope og presise prøvegrenser](docs/changes/report-image-resource-rehearsal-20261101.json). Leveranse/kildehash/CI føres i PR295. Ingen ressurser eller patch er installert live eller ført inn i produksjonskilden.
+
+Appkoden er uendret9d54000b/fullCI863SUCCESS10/10. Forside og avviksliste er rettet i fast Preview. To manglendeSVG-er i Preview, fem ugyldigeJPG-er på demovert, kortskjerm-/overgangsavstemming, levende PDF-filbro og nye filmer står fortsatt åpne. Ingen TEST OK, merge, Production/DB/kundedata, tilgangs- eller miljøendring eller demosynk.
+
 # Nattoppfølging 1. november – avvikslisten
 
 Samme PR295/faste Preview/Sandbox, miljømål BEGGE. Avviksliste i PDF får kompakte kort, egen sidestart og full videreføring av lange felt. Native390krav/tiPDF-er162sider, eksisterende React9PDF/5print, kritisk rapport/closeout og begge eksplisitte critical/build-miljøer PASS. [Scope og testgrunnlag](docs/changes/report-deviation-cards-20261101.json). Eksakt kandidat/CI/READY og publisert etterkontroll føres i PR295.
