@@ -1,24 +1,12 @@
 {
   "version": 1,
   "title": "Prosjektets sjekklister: samsvar mellom gjenstående arbeid, dokumentasjon og sluttkontroll",
-  "change": "Miljømål BEGGE, først kun PR295/fast design-Preview med Sandbox. Scope er checklistDisplay.mjs, ProjectChecklistWorkspace.jsx, ny avgrenset CSS, eksisterende Hjelp-tillegg og tester/dokumentasjon. Klar til sluttkontroll bruker eksisterende completionProblem. Dokumentasjonsfilter omfatter bilde, kommentar og påkrevd underfelt. Påbegynte kontroller med manglende dokumentasjon blir igjen fremhevet, mens innholdsklare kontroller har egen filterinngang. Tomt filter forklares med Vis alle sjekklister. Alle lagrings-, signatur-, opplastings-, konflikt-, readback- og innstegsfunksjoner i workspace er byte-identiske med ea225b20. Ingen main.jsx, global navigasjon, database, e-post, garanti, overtagelse, rapportmotor eller demobildeinstallasjon.",
-  "verification": "Førkilden fra ea225b20 er blob-hash-verifisert. Lokal isolert Node-prøve gjenskaper ready=true ved manglende påkrevd bilde. Rettet kilde består 287 krav om bilde/kommentar/alternativ dokumentasjon/underfelt/NA/historikk og filter; signaturkravet består. JSX-transpilering og scriptsyntax består lokalt, ikke en full build. Eksisterende 53-kravs native paneltest er bevart byte for byte, med tillegg som kjører ny ren prøve og ny faktisk React/Chromium-prøve på 1363x936, 390x844 og 320x480 i ordinær CI. CI-status og eksakt Preview-deploy føres i PR295 etter publisering. Ny innlogget live-test kan ikke attesteres: denne øktens administrerte Chromium har URLBlocklist=[\"*\"]. Ingen policy er endret eller omgått, og brukeren avslo TinyFish. Ny browserprøve bruker syntetisk transport og er ikke innlogget RESERVE/HOVED eller full prosjektattest.",
+  "change": "Miljømål BEGGE, først kun PR295/fast design-Preview med Sandbox. Scope er prosjektspesifikk veiledningsfunksjon i checklistDisplay.mjs, ProjectChecklistWorkspace.jsx, ny avgrenset CSS, eksisterende Hjelp-tillegg og tester/dokumentasjon. Klar til sluttkontroll bruker eksisterende completionProblem. Den opprinnelige checklistDisplayState beholder eksakt femfeltskontrakt og vurdert-status for øvrige brukere; bare prosjektoversikten bruker den nye projectChecklistDisplayState. Dokumentasjonsfilter omfatter bilde, kommentar og påkrevd underfelt. Påbegynte kontroller med manglende dokumentasjon blir igjen fremhevet, mens innholdsklare kontroller har egen filterinngang. Tomt filter forklares med Vis alle sjekklister. Alle lagrings-, signatur-, opplastings-, konflikt-, readback- og innstegsfunksjoner i workspace er byte-identiske med ea225b20. Ingen main.jsx, global navigasjon, database, e-post, garanti, overtagelse, rapportmotor eller demobildeinstallasjon.",
+  "verification": "Førkilden fra ea225b20 er blob-hash-verifisert. Lokal isolert Node-prøve gjenskaper den gamle prosjektetiketten ved manglende påkrevd bilde. Ny veiledning består 288 krav, inkludert eksakt uendret legacy-API. JSX-transpilering og scriptsyntax består lokalt, ikke en full build. CI875 på 7b3ad133 beviste 196 prosjektmenykrav, eksisterende 53 native panelkrav, 287 nye logikkkrav, 84 nye faktiske React/Chromiumkrav på 1363x936,390x844,320x480, 91 mobilheader,36 kontaktfelt,23 deltaker og38 resume. Kjøringen stoppet samtidig fordi første endring feilaktig endret den delte statuskontrakten; originalfunksjonen er derfor gjenopprettet med eget regresjonskrav og ny prosjektspesifikk funksjon, ikke ved å svekke de gamle kontrakttestene. To eksisterende UI-tester hadde dessuten hardkodet gammel Hjelp-dato og gammel Fortsett-etikett for en innholdsklar kontroll. Før endring er ny kontrakt avklart her: Hjelp-test skal kontrollere både datetime og synlig etikett mot samme publiserte kilde; kontrolltesten skal klikke Åpne for sluttkontroll etter lagrede ferdige svar og beholde hele eksisterende konflikt-/signatur-/historikkforløpet. Ingen krav fjernes. Ny kandidat-CI og READY føres i PR295. Ny innlogget live-test kan ikke attesteres: denne øktens administrerte Chromium har URLBlocklist=[\"*\"]. Ingen policy er endret eller omgått, og brukeren avslo TinyFish. CI-nettleseren bruker syntetisk transport og er ikke innlogget RESERVE/HOVED eller full prosjektattest.",
   "documentation": {
-    "help": {
-      "required": true,
-      "reason": "Statusboksene, dokumentasjonsfilteret, sluttkontroll og retur beskrives under eksisterende sjekklistehjelp."
-    },
-    "architecture": {
-      "required": false,
-      "reason": "Samme data-, sikkerhets- og lagringsarkitektur, ingen nye tjenester."
-    },
-    "setup": {
-      "required": false,
-      "reason": "Ingen avhengighets-, miljø- eller installasjonsendring."
-    },
-    "module": {
-      "required": false,
-      "reason": "Eksisterende persistenskontrakt er uendret; veiledning og presise testgrenser ligger i Hjelp og dette ene QA-grunnlaget."
-    }
+    "help": {"required": true,"reason": "Statusboksene, dokumentasjonsfilteret, sluttkontroll og retur beskrives under eksisterende sjekklistehjelp."},
+    "architecture": {"required": false,"reason": "Samme data-, sikkerhets- og lagringsarkitektur, ingen nye tjenester."},
+    "setup": {"required": false,"reason": "Ingen avhengighets-, miljø- eller installasjonsendring."},
+    "module": {"required": false,"reason": "Eksisterende persistenskontrakt er uendret; veiledning og presise testgrenser ligger i Hjelp og dette ene QA-grunnlaget."}
   }
 }

@@ -4,6 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import {build} from 'vite';
 import react from '@vitejs/plugin-react';
+import {HELP_UPDATED_ON,HELP_UPDATED_LABEL} from '../src/modules/help/workspaceHelp.mjs';
 const {JSDOM}=await import(process.env.KSHMS_JSDOM_PATH||'jsdom');
 const rootDir=process.cwd(),temp=fs.mkdtempSync(path.join(os.tmpdir(),'hr-react-')),entry=path.join(temp,'entry.jsx');
 try{
@@ -51,7 +52,7 @@ try{
   await act(async()=>window.__render('help',{isSystemAdmin:true,authUser:{id:'admin'},helpAccess:{userId:'admin',isSystemAdmin:true,isCompanyAdmin:true,moduleKeys:['projects','sales','store_offers']},kshmsContext:{user_id:'admin',enabled:true},hrContext:{user_id:'admin',available:true}}));
   const helpSearch=()=>window.document.querySelector('input[type=search]');
   const searchHelp=async value=>act(async()=>{const input=helpSearch();Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype,'value').set.call(input,value);input.dispatchEvent(new window.Event('input',{bubbles:true}));});
-  assert(window.document.querySelector('time[datetime="2026-10-30"]'),'help update label and machine date share one current source');
+  const updated=window.document.querySelector(`time[datetime="${HELP_UPDATED_ON}"]`);assert(updated,'help update label and machine date share one current source');assert.equal(updated.textContent,HELP_UPDATED_LABEL,'visible help date uses the same published source');
   await searchHelp('Kundevisning');const salesReading=window.document.querySelector('[data-help-topic="sales"]>button');assert(salesReading,'search exposes the authorized Sales topic');await act(async()=>salesReading.click());assert(window.document.body.textContent.includes('Prøv kundevisningen igjen'),'main help search indexes the actual customer reading workflow');
   await act(async()=>window.__render('help',{authUser:{id:'admin'},helpAccess:{userId:'admin',moduleKeys:['projects']}}));assert(!window.document.body.textContent.includes('Prøv kundevisningen igjen'),'workspace help does not bypass Sales access');assert(!window.document.querySelector('[data-help-topic="sales"]'),'search cannot introduce the inaccessible Sales topic');await searchHelp('ikke-eksisterende-hjelpetema');assert(window.document.body.textContent.includes('Ingen hjelpetema passer søket'));
   await act(async()=>window.__render('help',{isSystemAdmin:true,authUser:{id:'admin'},helpAccess:{userId:'admin',isSystemAdmin:true,isCompanyAdmin:true,moduleKeys:['projects','sales','store_offers']},kshmsContext:{user_id:'admin',enabled:true},hrContext:{user_id:'admin',available:true}}));await searchHelp('');

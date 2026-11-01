@@ -3,7 +3,7 @@ import {emptySignatures,isExecutionChecklist,signatureProblem,signaturesForEdito
 import {projectChecklistReadRpc} from './projectChecklistRead.mjs';
 import {invalidateFieldConfirmations} from './checklistFields.mjs';
 import {checklistResumeEntries,firstUnfinishedChecklist} from './checklistResume.mjs';
-import {checklistDisplayState,matchesChecklistFilter} from './checklistDisplay.mjs';
+import {projectChecklistDisplayState as checklistDisplayState,matchesChecklistFilter} from './checklistDisplay.mjs';
 import {useEffect,useRef,useState} from 'react';
 import DeviationDialog from '../deviations/DeviationDialog.jsx';
 import {kshmsRpc} from '../kshms/kshmsAccess.js';

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {checklistDisplayState,matchesChecklistFilter} from '../src/modules/checklist/checklistDisplay.mjs';
+import {projectChecklistDisplayState as checklistDisplayState,checklistDisplayState as legacyDisplayState,matchesChecklistFilter} from '../src/modules/checklist/checklistDisplay.mjs';
 import {completionProblem} from '../src/modules/checklist/checklistRuns.mjs';
 import {signatureProblem} from '../src/modules/checklist/checklistSignatures.mjs';
 let checks=0;
@@ -58,4 +58,6 @@ eq(checklistDisplayState({}).ready,false,'missing items is not ready');
 eq(checklistDisplayState({items:['Punkt']},{Punkt:{status:'Avvik'}}).deviations,1,'open deviation remains visible');
 eq(checklistDisplayState({items:['Punkt']},{Punkt:{status:'Lukket avvik'}}).deviations,0,'closed deviation not reopened');
 eq(Boolean(signatureProblem({})),true,'content-ready still requires own signature');
+// Existing callers retain the exact legacy shape and assessed-only ready signal.
+eq(legacyDisplayState({items:['A','B','C'],requirements:{A:{image_required:true}}},{A:{status:'Ok'},B:{status:'Avvik'},C:{status:'Ikke aktuelt'}}),{assessed:3,deviations:1,missingImages:1,complete:false,ready:true},'legacy display API remains exactly compatible');
 console.log(`Checklist guidance: ${checks} assertions PASS — content requirements, documentation, filters, immutable history and unchanged signature requirement`);

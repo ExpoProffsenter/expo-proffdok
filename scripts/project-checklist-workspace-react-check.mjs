@@ -53,7 +53,7 @@ await act(async()=>drawChecklistSignature(window));await click(button('Sjekklist
 const first=structuredClone(runs[0]);await click(button('Start ny kontroll'));assert.equal(window.document.querySelector('fieldset:disabled'),null);assert.equal(window.document.querySelectorAll('button.statusOn').length,0);assert.equal(window.document.querySelectorAll('.checklist-status-choices button[aria-pressed=true]').length,0,'unanswered checklist has no selected choice');
 await choose('Avvik');await choose('Ikke aktuelt',1);failAfterCommit=true;await click(button('Lagre'));assert(window.document.body.textContent.includes('Svaret ble borte'));const retry=lastRequest;
 await click(button('Prøv lagring igjen'));assert.equal(lastRequest,retry);assert.equal(runs.length,2);assert.deepEqual(runs[1],first);
-await click(button('Lukk'));await click(button('Fortsett utfylling →'));
+await click(button('Lukk'));await click(button('Åpne for sluttkontroll'));
 // A second colleague saves while this person's local draft is open.
 await choose('Ok');runs[0]={...runs[0],revision:runs[0].revision+1,answers:{...runs[0].answers,'Kontroller rør':{status:'Avvik',comment:'Kollegas retting'}}};checklist={[category]:runs[0].answers};
 await click(button('Lagre'));assert(window.document.body.textContent.includes('En annen person har lagret'));
