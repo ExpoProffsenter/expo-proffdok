@@ -38,6 +38,7 @@ let hold=false,resolveRead,pending=[],failRead=false;
 window.rpc=async(name)=>{assert.equal(name,'project_checklist_state','resume must not write data');if(hold)await new Promise(resolve=>{resolveRead=resolve;pending.push(resolve);});if(failRead)throw Error('QA network failure');return {context:{company_id:'company',project_id:'project',user_id:'user'},runs,checklist:{}};};
 const local={id:'local',revision:0,requestId:'local-request',definition:groups[2],answers:{Point:{comment:'Local retained draft'}}};
 window.localStorage.setItem(checklistRunDraftKey('user','company','project','Local'),JSON.stringify(local));
+window.localStorage.setItem(checklistRunDraftKey('user','company','project','Ready'),JSON.stringify({...local,id:'empty-ready',definition:groups[4],answers:{}}));
 installChecklistCanvas(window);
 window.eval((Array.isArray(bundle)?bundle[0]:bundle).output.find(value=>value.type==='chunk').code);
 const act=window.act,props={companyId:'company',projectId:'project',userId:'user',activeChecklistTemplate:groups,checklist:{},onSaved:async()=>{},showTools:false};
@@ -46,7 +47,7 @@ const button=name=>buttons().find(node=>node.textContent.trim()===name||node.get
 const click=async name=>{const node=button(name);assert(node,'Missing '+name);await act(async()=>node.click());};
 await act(async()=>window.render(props));
 eq([...window.document.querySelectorAll('.project-checklist-heading h3')].map(node=>node.textContent),['Saved','Local','Ready','Untouched','Completed'],'pending lists appear first');
-eq(window.document.querySelectorAll('.project-checklist-resume button').length,2,'one-click resume actions for server and local drafts');eq(window.document.querySelector('.project-checklist-resume').textContent.includes('Ready'),false,'fully assessed list does not crowd unfinished work');eq(window.document.body.textContent.includes('Klar til sluttkontroll'),true,'assessed draft remains clearly available for final control');
+eq(window.document.querySelectorAll('.project-checklist-resume button').length,2,'one-click resume actions for server and local drafts');eq(window.document.querySelector('.project-checklist-resume').textContent.includes('Ready'),false,'fully assessed list does not crowd unfinished work despite empty local draft');eq(window.document.body.textContent.includes('Klar til sluttkontroll'),true,'assessed draft remains clearly available for final control');
 await click('Fortsett utfylling: Local');
 let dialog=window.document.querySelector('[role=dialog]');assert(dialog);checks++;
 eq(dialog.textContent.includes('Local retained draft'),true,'local content restored without new run');

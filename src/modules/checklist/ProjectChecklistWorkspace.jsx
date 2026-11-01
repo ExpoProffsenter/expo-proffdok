@@ -177,7 +177,8 @@ export default function ProjectChecklistWorkspace({Editor,companyId,userId,proje
  const resumable=displayGroups.filter(({group,resumable})=>{
   if(!resumable)return false;
   const local=readRunDraft(window.localStorage,key(group.category));
-  const answers=local?.answers||data?.runs?.find(run=>run.category===group.category)?.answers||data?.checklist?.[group.category]||checklist?.[group.category]||{};
+  const meaningfulLocal=local&&(local.pendingAction||Object.values(local.answers||{}).some(answer=>answer?.status||answer?.comment||answer?.photos?.length||Object.keys(answer?.values||{}).length));
+  const answers=meaningfulLocal?local.answers:data?.runs?.find(run=>run.category===group.category)?.answers||data?.checklist?.[group.category]||checklist?.[group.category]||{};
   return group.items.some(item=>!answers[item]?.status);
  });
  const historical=(data?.runs||[]).filter(value=>value.status==='completed');
