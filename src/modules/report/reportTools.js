@@ -12,6 +12,7 @@ import { emptyKshmsReport, kshmsReportSelectionKey, appendKshmsPdfReport } from 
 export function createReportTools(deps = {}) {
   const {
     prepareKshmsReport,
+    confirmArchiveReport,
     isKshmsReportCurrent,
     DEFAULT_REPORT_HERO_IMAGE_URL,
     access,
@@ -260,8 +261,8 @@ export function createReportTools(deps = {}) {
       try {
         const kshmsReport = prepareKshmsReport ? await prepareKshmsReport('pdf') : emptyKshmsReport();
         if (!kshmsReport) return;
-        const archiveConfirmed = window.confirm("Viktig før nedlasting:\n\nNår prosjektet er ferdig skal komplett PDF-rapport lagres lokalt hos utførende firma, og gjerne også oversendes kunde. Expo ProffDok benytter skylagring, men kan ikke garantere ubegrenset lagringstid eller tilgjengelighet av prosjektdata i hele garanti- eller byggets levetid.\n\nVil du fortsette og generere komplett PDF-rapport nå?");
-        if (!archiveConfirmed) return;
+        const archiveConfirmed = await (confirmArchiveReport || window.confirm)("Viktig før nedlasting:\n\nNår prosjektet er ferdig skal komplett PDF-rapport lagres lokalt hos utførende firma, og gjerne også oversendes kunde. Expo ProffDok benytter skylagring, men kan ikke garantere ubegrenset lagringstid eller tilgjengelighet av prosjektdata i hele garanti- eller byggets levetid.\n\nVil du fortsette og generere komplett PDF-rapport nå?");
+        if (!archiveConfirmed || (isKshmsReportCurrent && !isKshmsReportCurrent(kshmsReport))) return;
         setPdfProgress("Genererer rapport…", "Starter PDF-motor og klargjør rapporten.");
         await new Promise((resolve) => setTimeout(resolve, 60));
         const module = await import("https://esm.sh/jspdf@2.5.1");

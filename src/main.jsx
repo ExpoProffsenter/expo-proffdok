@@ -1,3 +1,4 @@
+import ReportArchiveConfirmation, {useReportArchiveConfirmation} from './modules/report/ReportArchiveConfirmation.jsx';
 import ProjectReportWorkspace, {useProjectReportWorkspace} from './modules/report/ProjectReportWorkspace.jsx';
 import { continueAfterProjectSave, projectStepDataConfirmed } from './modules/project/projectStepContinue.mjs';
 import ProjectWorkspaceChrome, { ProjectHeaderActions, ProjectStatusDialog, ProjectWorkspaceFooter } from './modules/project/ProjectWorkspaceChrome.jsx';
@@ -1299,6 +1300,10 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
     const isSystemAdminUser = !!authUser && profile?.system_role === "systemadmin";
     const isProjectSupportReadOnly = supportModeExplicit && isSystemAdminUser && !!projectId;
     const kshmsProjectReport = useKshmsProjectReport({ context: kshmsContext, userId: authUser?.id, projectId, resolveFileUrl: publicProjectFileUrl, disabled: isReadOnly || isUnderleverandorView || isProjectSupportReadOnly });
+    const reportArchive = useReportArchiveConfirmation({
+      scopeKey: `${authUser?.id}:${company.companyName}:${projectId || "new"}`,
+      enabled: hasActiveProjectWorkspace && !isReadOnly && !isUnderleverandorView
+    });
     const reportWorkspace = useProjectReportWorkspace({
       scopeKey: `${authUser?.id}:${company.companyName}:${projectId || "new"}`,
       tab, available: hasActiveProjectWorkspace && !isReadOnly && !isUnderleverandorView
@@ -5521,6 +5526,7 @@ ${appLink}`;
     };
     // FASE 24A: Rapport/PDF ligger nå i egen modul.
     const { printVisibleReport, printReport, downloadClickablePdfReport } = createReportTools({
+      confirmArchiveReport: !isReadOnly && !isUnderleverandorView ? reportArchive.confirm : undefined,
       prepareKshmsReport: kshmsProjectReport.prepareExport,
       isKshmsReportCurrent: kshmsProjectReport.isCurrent,
       DEFAULT_REPORT_HERO_IMAGE_URL,
@@ -6997,6 +7003,7 @@ ${appLink}`;
           companyInvites
         }),
                 tab === "garanti" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(WarrantyPanel, { warranty, setWarranty, readiness: warrantyReadiness, issueWarranty, systems: soproWarrantySystems, goToTab, project, company, name, overtagelse, isProjectLocked, downloadClickablePdfReport }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ReportArchiveConfirmation, { confirmation: reportArchive.confirmation }),
                 !reportWorkspace.isOpen && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(KshmsProjectReportDialog, { chooser: kshmsProjectReport.chooser }),
                 tab === "rapport" && !reportWorkspace.isOpen && (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: reportWorkspace.open, children: "Åpne rapport" }),
                 reportWorkspace.isOpen && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(ProjectReportWorkspace, { projectName: project.projectName || project.address, onClose: () => { kshmsProjectReport.chooser?.cancel(); reportWorkspace.close(); }, onPdf: downloadClickablePdfReport, chooserOpen: !!kshmsProjectReport.chooser, children: [
