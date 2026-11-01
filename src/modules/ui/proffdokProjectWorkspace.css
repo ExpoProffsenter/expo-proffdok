@@ -112,3 +112,23 @@ body:has([data-expo-project-shell="1"]) .deviation-dialog:has(.project-dialog-co
  body:has([data-expo-project-shell="1"]) .project-checklist-footer{bottom:-12px;padding:10px 0 max(6px,env(safe-area-inset-bottom));gap:8px}
  body:has([data-expo-project-shell="1"]) .project-checklist-footer button{flex:1 1 auto}
 }
+
+/* Same native back control and shared masthead as Sales. */
+.project-workspace-back{display:flex;align-items:center;margin:0 0 14px;gap:8px}
+.project-workspace-back>.project-workspace-exit{display:inline-flex;align-items:center;gap:8px;padding:10px 13px}
+[data-expo-project-global-shell="1"]>header>.head>.project-header-actions{order:4;margin-left:auto;flex-wrap:nowrap}
+[data-expo-project-global-shell="1"]>header>.note{grid-column:1/-1;background:#f4f7f8;margin:0!important;max-width:none!important;padding:2px 28px!important;line-height:1.3}
+[data-expo-project-shell="1"] .project-workspace-toolbar{padding:8px 0;gap:8px}
+[data-expo-project-shell="1"] .project-step-guide{gap:8px;padding:6px 0!important}
+[data-expo-project-shell="1"] .project-step-guide p{margin:3px 0}
+[data-expo-project-shell="1"]>main{padding-top:8px!important}
+@media(min-width:1181px){
+ [data-expo-project-global-shell="1"]>header>.head{flex-wrap:wrap!important;gap:10px 16px!important}
+ [data-expo-project-global-shell="1"]>header>.head .project-header-actions button{padding:10px 13px;border-radius:7px}
+}
+@media(max-width:700px){.project-workspace-back{margin-bottom:10px}}
+
+.project-workspace-app-menu,.project-global-mobile{display:none!important}
+@media(max-width:1180px){.project-workspace-app-menu{display:inline-flex!important;gap:8px;align-items:center}.project-global-mobile{display:block!important}}
+
+header nav[data-expo-global-nav-source="1"]{display:none!important}

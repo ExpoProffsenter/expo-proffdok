@@ -173,3 +173,9 @@
  .projectListWorkspace .projectListDisclosureCard>details>summary .projectListDisclosureLabel{position:static}
  .projectListWorkspace .projectListDisclosureCard>.projectListAttention{margin-top:6px;line-height:1.4}
 }
+
+/* A project row behaves like a Sales row; native details and controls stay separate. */
+.projectListDisclosureCard{cursor:pointer}
+.projectListDisclosureCard>details{cursor:default}
+.projectListDisclosureCard:hover{border-color:#8cc8d1}
+.projectListDisclosureCard:focus-within{outline:2px solid #089aa3;outline-offset:2px}

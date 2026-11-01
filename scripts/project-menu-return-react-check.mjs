@@ -130,16 +130,16 @@ const heading=window.document.querySelector('h3'),details=window.document.queryS
 assert(!heading.closest('summary'),'Project name must not be a disclosure trigger');
 const tick=()=>new Promise(resolve=>setTimeout(resolve,0));
 await act(async()=>{heading.click();await tick();});
-assert.equal(details.open,false);assert.deepEqual(selections,[]);
+assert.equal(details.open,false);assert.deepEqual(selections,['p0:prosjekt']);
 await act(async()=>[...window.document.querySelectorAll('button')].find(e=>e.textContent==='Åpne').click());
-assert.deepEqual(selections,['p0:prosjekt']);assert.equal(details.open,false);
+assert.deepEqual(selections,['p0:prosjekt','p0:prosjekt']);assert.equal(details.open,false);
 await act(async()=>{summary.click();await tick();});
 assert.equal(details.open,true);assert.match(summary.textContent,/Skjul detaljer/);
 const draft=window.document.querySelector('textarea');draft.value='Bevart usendt kladd';
 await act(async()=>{summary.click();await tick();});assert.equal(details.open,false);
 await act(async()=>{summary.click();await tick();});assert.equal(details.open,true);
 assert.equal(window.document.querySelector('textarea'),draft);assert.equal(draft.value,'Bevart usendt kladd');
-await act(async()=>details.querySelector('button').click());assert.deepEqual(selections,['p0:prosjekt','p0:rapport']);
+await act(async()=>details.querySelector('button').click());assert.deepEqual(selections,['p0:prosjekt','p0:prosjekt','p0:rapport']);
 for(const label of ['Vis alle detaljer','Kollaps alle detaljer']){
  await act(async()=>{[...window.document.querySelectorAll('button')].find(e=>e.textContent===label).click();await tick();});
  assert.equal(details.open,label==='Vis alle detaljer');
@@ -147,7 +147,7 @@ for(const label of ['Vis alle detaljer','Kollaps alle detaljer']){
 assert.equal(window.document.querySelector('textarea'),draft);assert.equal(draft.value,'Bevart usendt kladd');
 await act(async()=>{await tick();await tick();});
 await act(async()=>window.__unmount());
-console.log('Native disclosure: PASS — informational heading, open/details/global toggle, original callbacks, same mounted draft');
+console.log('Native disclosure: PASS — clickable project heading, independent details/global toggle, original callbacks, same mounted draft');
 dom.window.close();
 fs.rmSync(temporary,{recursive:true,force:true});
 console.log('Project menu real React flow: PASS — order → Startside, order → wetroom, native KS/HMS navigation, without KS/HMS and mobile labels');

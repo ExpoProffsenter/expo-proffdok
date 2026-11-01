@@ -1891,3 +1891,7 @@ Rapporthooken eier eksplisitt valg og frosset råsett fra eksisterende `project_
 ### Hjelpens videoer (31.10.2026)
 
 `HelpVideos.jsx` eier kun galleri-/avspillingsvindu og native HTML-video, uten ny navigasjon eller backend. Katalogen har versjonerte statiske eksempelressurser, kildehash og kapitler fra filmens redigerbare tidslinje. Eksisterende Hjelp-/Bolig-kontekst styrer presentasjonen; Sandbox-prøvefilm følger samme miljøavgrensning som funksjonen. Bruker-/firma-/rettighetsendring monterer ned avspilleren. Native dialoger beholder teksthjelp og arbeid under, mens film avsluttes ved lukking. Filmene er offentlige syntetiske opplæringsressurser, ikke private vedlegg eller et nytt tilgangssystem.
+
+### Felles appmeny i prosjektarbeidsflaten (Design 036, Preview)
+
+Prosjektfaner (`projectTabs`) og globale funksjoner (`globalTabs`) er fortsatt separate. I ordinær prosjektvisning rendrer React en egen skjult, tilgangsfiltrert hovedmenykilde. Desktopadapteren viser samme hovedområder/Alle områder som i salg; den kopierer ikke gamle tilgangsvalg fra annen kontekst. Globalt valg delegeres til `leaveProjectWorkspace`, som beholder ulagret-kontrollen, opprinnelig opprydding og en ekstra kontroll av bruker/firma/prosjekt/fane etter venting. Systemadmin-support får ikke denne hovedmenykilden og beholder avgrenset supportretur. Prissøk bruker samme kontrollerte avslutning før sitt eksisterende tilgangskontrollerte arbeidsområde åpnes. På mobil ligger globale områder som egen gruppe i prosjektmenyen. Ingen ny lagrings- eller tilgangsmotor.

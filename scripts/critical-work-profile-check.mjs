@@ -234,7 +234,7 @@ const leaveWorkspaceSource = mainSource.slice(leaveWorkspaceStart, leaveWorkspac
 if (
   leaveWorkspaceStart < 0 ||
   leaveWorkspaceEnd < 0 ||
-  !leaveWorkspaceSource.includes('const target = destination === "prosjektliste" ? "prosjektliste" : "prosjekt";') ||
+  !leaveWorkspaceSource.includes('const target = typeof destination === "string" && globalTabs.some(([id]) => id === destination) ? destination : "prosjekt";') ||
   leaveWorkspaceSource.lastIndexOf('setTab(target)') < 0 ||
   leaveWorkspaceSource.indexOf("if (returnToSupportOverview) {") < 0 ||
   leaveWorkspaceSource.indexOf("if (profile) applyProfile(profile);") < 0 ||

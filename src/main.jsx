@@ -1989,7 +1989,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       canUseAdminProjectSync
     });
     const tabs = hasActiveProjectWorkspace ? projectTabs : globalTabs;
-    projectStepContextRef.current = { projectId, tab, userId: authUser?.id, companyName: company.companyName, readOnly: isProjectSupportReadOnly, locked: isProjectLocked };
+    projectStepContextRef.current = { projectId, tab, userId: authUser?.id, companyName: company.companyName, readOnly: isProjectSupportReadOnly, locked: isProjectLocked, globalTabIds: globalTabs.map(([id]) => id) };
     const mobilePrimaryTabs = hasActiveProjectWorkspace ? [
       ["prosjekt", "Oversikt", "📋"],
       ["prosjektering", "Prosjektering", "📐"],
@@ -2067,14 +2067,16 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       return false;
     };
     const leaveProjectWorkspace = async (destination = "prosjekt") => {
-      const target = destination === "prosjektliste" ? "prosjektliste" : "prosjekt";
+      const target = typeof destination === "string" && globalTabs.some(([id]) => id === destination) ? destination : "prosjekt";
+      const origin = { ...projectStepContextRef.current };
       if (!projectId && !mobileCreatingProject) {
         setTab("prosjekt");
         setMobileMenuOpen(false);
         return;
       }
       const canLeave = await confirmLeaveWithUnsavedChanges(target === "prosjektliste" ? "bytter prosjekt" : "går tilbake til startsiden");
-      if (!canLeave) return;
+      const current = projectStepContextRef.current;
+      if (!canLeave || !current || ["projectId", "tab", "userId", "companyName", "readOnly"].some(key => current[key] !== origin[key]) || !current.globalTabIds.includes(target)) return false;
       const returnToSupportOverview = isProjectSupportReadOnly;
       const supportCompanyForOverview = String(
         supportProjectCompanyName || supportSelectedCompany || ""
@@ -2136,6 +2138,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       window.history.replaceState({}, document.title, window.location.pathname);
       setTimeout(() => scrollToMobileTabTarget(target), 90);
       setTimeout(() => scrollToMobileTabTarget(target), 320);
+      return true;
     };
     const cancelNewProject = () => {
       if (projectId || !mobileCreatingProject) return;
@@ -6227,7 +6230,7 @@ ${appLink}`;
         bathroomEquipment
       });
     }
-    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { "data-expo-app-shell": "true", "data-expo-project-shell": hasActiveProjectWorkspace ? "1" : void 0, onClick: openImageLightboxFromClick, children: [
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { "data-expo-app-shell": "true", "data-expo-project-shell": hasActiveProjectWorkspace ? "1" : void 0, "data-expo-project-global-shell": hasActiveProjectWorkspace && !isProjectSupportReadOnly ? "1" : void 0, onClick: openImageLightboxFromClick, children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(MobileScrollShortcuts, {}),
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("style", { children: APP_RUNTIME_STYLES }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AppNewsNotice, { supabaseClient: supabase, authUser }),
@@ -6254,6 +6257,7 @@ ${appLink}`;
           (0, import_jsx_runtime.jsx)(WorkspaceViewMode, {}, authUser?.id)
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("nav", { children: tabs.map(([id, l]) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { "data-expo-nav-label": l, className: tab === id ? "on" : "", onClick: () => goToTab(id), children: l }, id)) }),
+        hasActiveProjectWorkspace && !isProjectSupportReadOnly && (0, import_jsx_runtime.jsx)("nav", { "data-expo-global-nav-source": "1", hidden: true, ref: node => { if (node) node.expoLeaveProjectWorkspace = leaveProjectWorkspace; }, children: globalTabs.map(([id, label]) => (0, import_jsx_runtime.jsx)("button", { type: "button", "data-expo-nav-label": label, className: id === "prosjektliste" ? "on" : "", onClick: () => leaveProjectWorkspace(id), children: label }, id)) }),
         projectDirty && hasActiveProjectWorkspace && !isReadOnly && !isProjectSupportReadOnly && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { maxWidth: "1180px", margin: "0 auto 10px", padding: "10px 14px", background: "#fffbeb", border: "1px solid #facc15", borderRadius: "14px", color: "#92400e", fontWeight: 800, display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px", flexWrap: "wrap" }, children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "🟡 Ulagrede endringer i prosjektet" }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: saveProject, children: "Lagre nå" })
@@ -6307,7 +6311,7 @@ ${appLink}`;
           ] })
         ] }) })
       ] }),
-      hasActiveProjectWorkspace && (0, import_jsx_runtime.jsx)(ProjectWorkspaceChrome, { tabs: projectTabs, activeTab: tab, project, saved: Boolean(projectId), simpleOrder: isSimpleOrderProject(project), status: currentStatus, deviations: projectGuideStats.openDeviationCount, unread: unreadForAdmin, onNavigate: goToTab, onStatus: openMobileStatus, onExit: projectId ? () => leaveProjectWorkspace("prosjektliste") : cancelNewProject, onContinue: continueProjectStep, continuing: projectStepBusy, continueNotice: projectStepNotice, readOnly: isProjectSupportReadOnly || isProjectLocked, contractRequired: Boolean(warranty?.enabled || warranty?.issued) }, projectId || "new"),
+      hasActiveProjectWorkspace && (0, import_jsx_runtime.jsx)(ProjectWorkspaceChrome, { appTabs: isProjectSupportReadOnly ? [] : globalTabs, onAppNavigate: leaveProjectWorkspace, tabs: projectTabs, activeTab: tab, project, saved: Boolean(projectId), simpleOrder: isSimpleOrderProject(project), status: currentStatus, deviations: projectGuideStats.openDeviationCount, unread: unreadForAdmin, onNavigate: goToTab, onStatus: openMobileStatus, onExit: projectId ? () => leaveProjectWorkspace("prosjektliste") : cancelNewProject, onContinue: continueProjectStep, continuing: projectStepBusy, continueNotice: projectStepNotice, readOnly: isProjectSupportReadOnly || isProjectLocked, contractRequired: Boolean(warranty?.enabled || warranty?.issued) }, projectId || "new"),
       !hasActiveProjectWorkspace && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "mobileFieldBar", "aria-label": "Mobil arbeidsmeny", children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileFieldBarInner", children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", className: "mobileFieldBarToggle", "aria-expanded": mobileMenuOpen, onClick: () => setMobileMenuOpen((open) => !open), children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: ["☰ ", tabs.find(([id]) => id === tab)?.[1] || "Velg side"] }),

@@ -1,3 +1,7 @@
+## 1. november 2026 – prosjekt følger felles appmeny (Preview, ikke releasegodkjent)
+
+Ny samlet rettelse fra e168d7fb: mørk hovedmeny beholdes i prosjekt, prosjektnavn/ledig rad åpner originalt prosjekt, og Tilbake står på samme sted som i Tilbud. Separate prosjektfaner og alle ulagret-/supportgrenser beholdes. Ny kontrollert nettleser i Vercel Sandbox virker; faktisk fast Preview viser innlogging, men den tidligere innloggede økten er ikke gjenopprettet. 99 nye hovedrammekrav og berørte eksisterende tester/build består. Ingen TEST OK, merge, DB, e-post, demobildeinstallasjon eller permanent demosynk. Eksakt ny commit/CI/READY skal leses i fersk PR295-status. Se [samlet QA](docs/qa/DESIGN_036_PROJECT_COMMON_FRAME_20261101.md).
+
 # 1. november – prosjektflyt etter Kenneths RESERVE-gjennomgang
 
 PR295, miljømål BEGGE, foreløpig bare Preview. Store fasekort er samlet i Prosjektmeny i samme høyrepanel som appens øvrige arbeidsverktøy. Sjekklister åpner en eksplisitt oversikt til høyre. Påbegynte kontroller vises først med Fortsett utfylling, fremdrift, lokal kladd og eventuell sist lagret-identitet. Snarveiene øverst avgrenser lister med uvurderte punkter; øvrige vurderte lister beholdes nedenfor til sluttkontroll. Navn utvider ikke alle punktene; Vis punkter og historikk er et eget valg. Låst/support viser Vis dokumentasjon, uten råd om å fullføre eller falsk fullført-status på historiske svar. Bytt prosjekt går til Prosjektliste; Startside-/supportretur beholdes.

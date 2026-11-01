@@ -279,3 +279,5 @@ try{
 
 // Native project checklist panel is part of this same project-navigation package.
 await import('./project-checklist-panel-browser-check.mjs');
+
+await import('./project-common-frame-browser-check.mjs');

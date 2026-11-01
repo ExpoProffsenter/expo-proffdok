@@ -25,7 +25,7 @@ function findInternalAppNav() {
 
   return Array.from(document.querySelectorAll('nav')).find((nav) => {
     if (!(nav instanceof HTMLElement)) return false;
-    if (nav.closest('[data-expo-auth-shell]')) return false;
+    if (nav.closest('[data-expo-auth-shell]') || nav.hasAttribute('data-expo-global-nav-source')) return false;
 
     const labels = Array.from(nav.querySelectorAll(':scope > button')).map((button) =>
       cleanLabel(button.textContent)
@@ -40,8 +40,12 @@ function findInternalAppNav() {
   }) || null;
 }
 
+function appNavigationSource(fallback) {
+  return document.querySelector('header nav[data-expo-global-nav-source="1"]') || fallback;
+}
+
 function findSourceNavButton(labels = []) {
-  const sourceNav = findInternalAppNav();
+  const sourceNav = appNavigationSource(findInternalAppNav());
   if (!(sourceNav instanceof HTMLElement)) return null;
   const accepted = new Set((Array.isArray(labels) ? labels : [labels]).map((label) => cleanLabel(label)));
   return Array.from(sourceNav.querySelectorAll(':scope > button')).find(
@@ -339,7 +343,7 @@ function buildMenuShell() {
 // native navigation, and a click resolves that native target again.
 function syncPrimaryNavigation(sourceNav, sourceButtons, shell, projectWorkspaceNav) {
   let primary = document.getElementById(PRIMARY_ID);
-  if (projectWorkspaceNav) {
+  if (projectWorkspaceNav && appNavigationSource(sourceNav) === sourceNav) {
     primary?.remove();
     if (shell.bar.previousElementSibling !== sourceNav && shell.bar.nextElementSibling !== sourceNav) {
       sourceNav.parentNode?.insertBefore(shell.bar, sourceNav);
@@ -386,11 +390,14 @@ function syncDrawerWithSource(sourceNav, shell) {
     .filter((button) => !button.hidden && button.style.display !== 'none');
   const sourceLabels = sourceButtons.map((button) => cleanLabel(button.textContent));
   const projectWorkspaceNav = isProjectWorkspaceLabels(sourceLabels);
-  syncPrimaryNavigation(sourceNav, sourceButtons, shell, projectWorkspaceNav);
+  const globalSource = appNavigationSource(sourceNav);
+  const hasGlobalSource = globalSource !== sourceNav;
+  const appButtons = hasGlobalSource ? Array.from(globalSource.querySelectorAll(":scope > button")).filter(button => !button.hidden && !button.disabled && button.style.display !== "none") : sourceButtons;
+  syncPrimaryNavigation(sourceNav, appButtons, shell, projectWorkspaceNav);
   const caption = shell.bar.querySelector('.expoDesktopMenuToggle > span:last-child');
-  const wantedCaption = projectWorkspaceNav ? 'Meny' : 'Alle områder';
+  const wantedCaption = projectWorkspaceNav && !hasGlobalSource ? 'Meny' : 'Alle områder';
   if (caption && caption.textContent !== wantedCaption) caption.textContent = wantedCaption;
-  const drawerSourceButtons = projectWorkspaceNav
+  const drawerSourceButtons = hasGlobalSource ? appButtons : projectWorkspaceNav
     ? sourceButtons.filter((button) => !['Hjelp','Support'].includes(cleanLabel(button.textContent)))
     : sourceButtons;
   const drawerNav = shell.drawer.querySelector('.expoDesktopDrawerNav');
@@ -430,13 +437,13 @@ function syncDrawerWithSource(sourceNav, shell) {
     if (isActive) button.setAttribute('aria-current', 'page');
 
     button.addEventListener('click', () => {
-      const liveNav = findInternalAppNav();
+      const liveNav = appNavigationSource(findInternalAppNav());
       const target = liveNav instanceof HTMLElement
         ? Array.from(liveNav.querySelectorAll(':scope > button')).find(
             (candidate) => cleanLabel(candidate.textContent) === label
           )
         : null;
-      if (target instanceof HTMLButtonElement) target.click();
+      if (target instanceof HTMLButtonElement && !target.disabled && !target.hidden && target.style.display !== "none") target.click();
       shell.drawer._expoSetOpen?.(false);
     });
 

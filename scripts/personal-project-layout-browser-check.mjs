@@ -179,7 +179,7 @@ try{
  eq(await page.locator('.projectListCardTop').first().evaluate(e=>e.closest('summary')===null),true,'project heading is separate from disclosure');
  await page.locator('.projectListCardTop').first().click();
  eq(await page.locator('.projectListDisclosureCard>details[open]').count(),0,'clicking informational heading never reveals another view underneath');
- eq(await page.evaluate(()=>window.opened.length),0,'heading never silently opens a project');
+ eq(await page.evaluate(()=>window.opened.length),1,'project name opens exactly once through original callback');
  await page.locator('.projectListCard').first().getByRole('button',{name:'Åpne',exact:true}).click();eq(await page.evaluate(()=>window.opened.at(-1)),['p0','prosjekt'],'compact primary uses same project callback');eq(await page.locator('.projectListDisclosureCard>details[open]').count(),0,'opening project does not toggle presentation');
  await page.locator('.projectListCard').first().locator('summary').click();eq(await page.locator('.projectListCard').first().getByText('QA Leder',{exact:true}).first().isVisible(),true,'one card reveals original metadata');await page.locator('.projectListCard').first().locator('summary').press('Enter');eq(await page.locator('.projectListDisclosureCard>details[open]').count(),0,'keyboard collapses card');
  await listChoice('Vis alle detaljer');await page.waitForFunction(()=>document.querySelectorAll('.projectListDisclosureCard>details[open]').length===2);checks++;

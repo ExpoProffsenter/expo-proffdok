@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react';
-import { FolderOpen, Menu, MoreHorizontal, ClipboardCheck, Camera, TriangleAlert, Home } from 'lucide-react';
+import { FolderOpen, Menu, MoreHorizontal, ClipboardCheck, Camera, TriangleAlert, Home, ArrowLeft } from 'lucide-react';
 import DeviationDialog from '../deviations/DeviationDialog.jsx';
 import WorkspacePanel from '../ui/WorkspacePanel.jsx';
 import { projectWorkspaceGroups, projectSetupSteps, projectWorkspaceFlow } from './projectWorkspacePresentation.mjs';
@@ -46,7 +46,7 @@ export function ProjectHeaderActions({ dirty, saved, readOnly, locked, simpleOrd
   </div>;
 }
 
-export default function ProjectWorkspaceChrome({ tabs, activeTab, project, saved, simpleOrder, status, deviations, unread, onNavigate, onStatus, onExit, onContinue, continuing = false, continueNotice = '', readOnly = false, contractRequired = false }) {
+export default function ProjectWorkspaceChrome({ tabs, activeTab, project, saved, simpleOrder, status, deviations, unread, onNavigate, onStatus, onExit, onContinue, continuing = false, continueNotice = '', readOnly = false, contractRequired = false, appTabs = [], onAppNavigate }) {
   const workStatus = status.label === 'Avvik åpent'
     ? { label: project.workflowStatus || 'Pågår', icon: { Utkast: '📝', Pågår: '🟡', Avventer: '⏸️', 'Klar for kunde': '🟢', Ferdigstilt: '✅' }[project.workflowStatus || 'Pågår'] || '🟡' }
     : status;
@@ -70,10 +70,11 @@ export default function ProjectWorkspaceChrome({ tabs, activeTab, project, saved
     });
   };
   return <section className="project-workspace" data-expo-project-workspace="1" aria-label={simpleOrder ? 'Ordrearbeidsflate' : 'Prosjektarbeidsflate'}>
+    <div className="project-workspace-back"><button type="button" className="secondary project-workspace-exit" data-project-navigation="true" onClick={onExit}><ArrowLeft size={18} aria-hidden="true"/>{saved ? "Tilbake" : "Avbryt nytt prosjekt"}</button>{appTabs.length > 0 && <button type="button" className="secondary project-workspace-app-menu" onClick={()=>setMenuOpen(true)}><Menu size={18}/>Alle områder</button>}</div>
     <div className="project-workspace-heading"><div><span className="project-workspace-eyebrow"><FolderOpen size={16}/>{simpleOrder ? 'Enkel ordre' : saved ? 'Prosjekt' : 'Nytt prosjekt'}</span>
       <h2>{project.projectName || project.address || (saved ? 'Uten navn' : 'Gi prosjektet et navn')}</h2>
       <p>{[project.customer, [project.address, project.postnr, project.city].filter(Boolean).join(' ')].filter(Boolean).join(' · ') || 'Fyll inn prosjektopplysningene nedenfor.'}</p>
-    </div><button type="button" className="project-workspace-exit" data-project-navigation="true" onClick={onExit}>{saved ? 'Bytt prosjekt' : 'Avbryt nytt prosjekt'}</button></div>
+    </div></div>
     <div className="project-workspace-status"><span>{workStatus.icon} {workStatus.label}</span>{saved && <><span>{deviations} åpne avvik · {unread} uleste meldinger</span><button type="button" className="secondary" onClick={onStatus}><ClipboardCheck size={16}/>Status og mangler</button></>}</div>
     <div className="project-workspace-mobile project-workspace-toolbar"><button type="button" aria-haspopup="dialog" aria-expanded={menuOpen} onClick={() => setMenuOpen(true)}><Menu size={18}/>{menuName}<span>{currentLabel}</span></button>
       <div className="project-workspace-shortcuts">{buttons(tabs.filter(([id]) => ['prosjekt','sjekklister','bilder'].includes(id)))}</div></div>
@@ -89,6 +90,7 @@ export default function ProjectWorkspaceChrome({ tabs, activeTab, project, saved
     {menuOpen && <ProjectNavigationPanel title={menuName} projectName={project.projectName || project.address || 'Nytt prosjekt'} onClose={() => setMenuOpen(false)}>
       <div className="project-workspace-navigation project-menu-dialog" aria-label={menuName}>
         {groups.map((item,index) => <div key={item.title} className={`project-phase-card${activeGroup === item.title ? ' is-current' : ''}`} role="group" aria-label={item.title}><h3><span>{index+1}</span>{item.title}</h3><p className="project-menu-purpose">{phasePurpose(item.title)}</p><div className="project-workspace-tabs">{buttons(item.items)}</div></div>)}
+        {appTabs.length > 0 && <div className="project-global-mobile"><h3>Andre områder i appen</h3><div className="project-workspace-tabs">{appTabs.map(([id,label])=><button key={id} type="button" className="secondary" onClick={()=>onAppNavigate?.(id)}>{label}</button>)}</div></div>}
         <div><h3>Hjelp og support</h3>{buttons(tabs.filter(([id]) => ['hjelp','support'].includes(id)))}</div>
       </div>
     </ProjectNavigationPanel>}

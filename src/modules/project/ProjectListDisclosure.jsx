@@ -21,7 +21,11 @@ export function ProjectListFilters({children,activeLabel,controls}) {
 export function ProjectListCardDisclosure({children,heading,onOpen,attention,className,style}) {
   const display=useContext(ListDisplay),[local,setLocal]=useState({revision:-1,open:false});
   const open=local.revision===display.revision?local.open:display.expanded;
-  return <div className={className+' projectListDisclosureCard'} style={style}>
+  const openRow = event => {
+    if (event.defaultPrevented || event.button !== 0 || event.target.closest('button,a,input,select,textarea,summary,details,[role=button],[contenteditable=true]') || window.getSelection()?.toString()) return;
+    onOpen?.();
+  };
+  return <div className={className+' projectListDisclosureCard'} style={style} onClick={openRow}>
     {heading}
     {attention&&<span className="projectListAttention">{attention}</span>}
     <details open={open} onToggle={event=>{const next=event.currentTarget.open;setLocal(value=>value.revision===display.revision&&value.open===next?value:{revision:display.revision,open:next});}}>
