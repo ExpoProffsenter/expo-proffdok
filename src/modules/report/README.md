@@ -25,3 +25,9 @@ Vanlige bilder hentes gjennom eksisterende filresolver og bildelaster før mappe
 Valgt råsett dypkopieres og sammenlignes i sin helhet mot fersk lesning etter bildene og rett før `doc.save`/HTML-skriving i begge utskriftsveier. Samme revisjon med endret innhold, bortfalt tilgang eller endret scope/eksportsekvens avviser eksporten. Garanti-/arkivgater og eksisterende rapportmotor eier fortsatt lagring. Prosjektkontroller er ikke automatisk inkludert.
 
 `project-control-report-check.mjs` dekker kontrakt/metadata/bilder/feil og native React/PDF-prøven dekker prosjektbruker uten KS/HMS, signert og historisk kontroll, siste lesegate og feil i PDF/begge printveier. Syntetisk transport er ikke attest på separate live innlogginger eller skyens filbro.
+
+## Rapport i høyrepanelet
+
+Rapportkommandoen i `goToTab` åpner `ProjectReportWorkspace` uten å endre fane, prosjekt-URL eller montert kladd. Eldre `tab=rapport`-lenker åpner samme panel, med en gjenåpningsknapp etter lukking. Paneltilstand er avgrenset til bruker/firma/prosjekt/fane og fjernes ved endring. Fersk rapporttilgang og eksportgrunnlag kontrolleres fortsatt av den eksisterende rapport-hooken og eksportmotoren.
+
+Den synlige Last ned PDF-knappen kaller eksisterende `downloadClickablePdfReport`, med uendrede arkiv-/garanti-/signaturgater. KS/HMS-velgeren monteres inne i native dialogens topplag når rapportpanelet er åpent; Escape avbryter kun dokumentvalget og returnerer fokus til rapporten. Global PDF-snarvei beholder sin eksisterende velger. Fremdriftsvisningen bruker det åpne rapportpanelets topplag. Ingen serverkommando eller datamapping er innført.

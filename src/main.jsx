@@ -1,3 +1,4 @@
+import ProjectReportWorkspace, {useProjectReportWorkspace} from './modules/report/ProjectReportWorkspace.jsx';
 import { continueAfterProjectSave, projectStepDataConfirmed } from './modules/project/projectStepContinue.mjs';
 import ProjectWorkspaceChrome, { ProjectHeaderActions, ProjectStatusDialog, ProjectWorkspaceFooter } from './modules/project/ProjectWorkspaceChrome.jsx';
 import SupportLinkEntry from './modules/support/SupportLinkEntry.jsx';
@@ -1298,6 +1299,10 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
     const isSystemAdminUser = !!authUser && profile?.system_role === "systemadmin";
     const isProjectSupportReadOnly = supportModeExplicit && isSystemAdminUser && !!projectId;
     const kshmsProjectReport = useKshmsProjectReport({ context: kshmsContext, userId: authUser?.id, projectId, resolveFileUrl: publicProjectFileUrl, disabled: isReadOnly || isUnderleverandorView || isProjectSupportReadOnly });
+    const reportWorkspace = useProjectReportWorkspace({
+      scopeKey: `${authUser?.id}:${company.companyName}:${projectId || "new"}`,
+      tab, available: hasActiveProjectWorkspace && !isReadOnly && !isUnderleverandorView
+    });
     const supportReadOnlyMainIsInteractive =
       isProjectSupportReadOnly && ["sales", "tilbud"].includes(tab);
     const supportProjectReadOnlyMessage = "Supportprosjekter er skrivebeskyttet. Avslutt supportmodus før du oppretter eller endrer prosjektdata.";
@@ -2178,6 +2183,11 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
         alert("Åpne et prosjekt fra Prosjektliste før du går til denne fanen.");
         setTimeout(() => scrollToMobileTabTarget("prosjekt"), 90);
         return;
+      }
+      if (id === "rapport") {
+        reportWorkspace.open();
+        setMobileMenuOpen(false);
+        return true;
       }
       if (id === tab) {
         requestChecklistEntry(id);
@@ -6987,8 +6997,10 @@ ${appLink}`;
           companyInvites
         }),
                 tab === "garanti" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(WarrantyPanel, { warranty, setWarranty, readiness: warrantyReadiness, issueWarranty, systems: soproWarrantySystems, goToTab, project, company, name, overtagelse, isProjectLocked, downloadClickablePdfReport }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(KshmsProjectReportDialog, { chooser: kshmsProjectReport.chooser }),
-                tab === "rapport" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+                !reportWorkspace.isOpen && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(KshmsProjectReportDialog, { chooser: kshmsProjectReport.chooser }),
+                tab === "rapport" && !reportWorkspace.isOpen && (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: reportWorkspace.open, children: "Åpne rapport" }),
+                reportWorkspace.isOpen && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(ProjectReportWorkspace, { projectName: project.projectName || project.address, onClose: () => { kshmsProjectReport.chooser?.cancel(); reportWorkspace.close(); }, onPdf: downloadClickablePdfReport, chooserOpen: !!kshmsProjectReport.chooser, children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(KshmsProjectReportDialog, { chooser: kshmsProjectReport.chooser }),
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)(KshmsProjectReportChoice, { report: kshmsProjectReport }),
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Report, { company, name, project, selected, manualProducts: manualSelected, other, surf, bathroomEquipment, photos, access, inst, files, checklist, tilbud: projectScopedTilbud, overtagelse, projectLog, kshmsReport: kshmsProjectReport.reportData })
                 ] }),

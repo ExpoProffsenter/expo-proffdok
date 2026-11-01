@@ -131,7 +131,7 @@ export function KshmsProjectReportDialog({ chooser }) {
   const { choices, selection, busy, error, kind,kshmsEnabled } = chooser;
   const visibleKeys=kshmsEnabled?documentKeys:['runs'];
   return <div className="ks-report-backdrop"><section ref={container} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="ks-report-title" className="ks-module ks-report-dialog" onKeyDown={event => {
-    if (event.key === 'Escape') chooser.cancel();
+    if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); chooser.cancel(); }
     if (event.key !== 'Tab') return;
     const elements = [...container.current.querySelectorAll('button:not([disabled]), input:not([disabled])')], first = elements[0], last = elements.at(-1);
     if (event.shiftKey && (document.activeElement === first || document.activeElement === container.current)) { event.preventDefault(); last?.focus(); }

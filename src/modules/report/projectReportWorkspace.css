@@ -1,0 +1,13 @@
+@media screen {
+ .project-report-workspace .pd-workspace-drawer-footer{display:flex;flex-wrap:wrap;gap:12px}
+ .project-report-workspace .pd-workspace-drawer-footer>button{min-height:44px;font-size:16px;flex:1;white-space:normal}
+ .project-report-workspace .report{min-width:0;overflow-wrap:anywhere}
+ .project-report-workspace .report img{max-width:100%;height:auto}
+ .project-report-workspace .report .grid{grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr))}
+ .project-report-workspace .ks-report-backdrop{z-index:2}
+}
+@media print {
+ .project-report-workspace{position:static!important;width:100%!important;max-width:none!important;height:auto!important;max-height:none!important;overflow:visible!important;box-shadow:none!important}
+ .project-report-workspace .pd-workspace-drawer-inner,.project-report-workspace .pd-workspace-drawer-body{height:auto;overflow:visible;display:block;padding:0}
+ .project-report-workspace .pd-workspace-drawer-header,.project-report-workspace .pd-workspace-drawer-footer,.project-report-workspace .pd-workspace-drawer-body>p{display:none!important}
+}

@@ -108,8 +108,16 @@
  .projectListUx.projectListWorkspace{display:grid;grid-template-columns:minmax(240px,1fr) minmax(0,1.6fr);column-gap:32px;align-items:start}
  .projectListUx.projectListWorkspace>h2{grid-column:1;grid-row:1}
  .projectListUx.projectListWorkspace>.note{grid-column:1;grid-row:2}
- .projectListWorkspace.projectListUx .projectListHeaderCards{grid-column:1;grid-row:3}
- .projectListWorkspace.projectListUx .projectListSearchPanel{grid-column:2;grid-row:1/span 3}
+ .projectListWorkspace.projectListUx .projectListHeaderCards{grid-column:2;grid-row:1/span 2;align-self:center;justify-content:flex-end;margin:0!important}
+ .projectListWorkspace.projectListUx .projectListSearchPanel{grid-column:1/-1;grid-row:3;display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,.5fr);gap:12px 24px;margin-top:16px!important}
+ .projectListWorkspace .projectListSearchPanel>.grid{margin:0!important}
+ .projectListWorkspace .projectListExtraFilters:not([open]){align-self:end}
+ .projectListWorkspace .projectListSearchPanel:has(.projectListExtraFilters[open])>.grid{grid-column:1/-1}
+ .projectListWorkspace .projectListExtraFilters[open]{grid-column:1/-1}
+ .projectListWorkspace .projectListExtraContent>.projectListToolbar{flex-basis:auto;margin-left:auto!important}
+ .projectListWorkspace .projectListExtraContent>.note{order:2}
+ .projectListUx.projectListWorkspace>h2,.projectListUx.projectListWorkspace>.note{margin:0!important}
+ .projectListUx.projectListWorkspace>.note{margin-top:8px!important}
  .projectListWorkspace.projectListUx>:is(#expo-work-profile-project-list,.projectListColumnHead,.projectListCard){grid-column:1/-1}
 }
 

@@ -159,6 +159,22 @@ try{
  eq(await page.locator('.projectListDisclosureCard>details[open]').count(),0,'project cards start compact');eq(await page.getByLabel('Søk i prosjektlisten',{exact:true}).isVisible(),true,'search and status always visible together');
  eq(await page.getByRole('combobox',{name:/^Statusfilter/}).isVisible(),true,'all native statuses directly available');
  eq(await page.locator('.projectListCard').first().getByRole('button',{name:'Åpne',exact:true}).isVisible(),true,'primary open stays visible');
+ // Regression: expanded Listevalg must not stretch heading/note/stats across its height.
+ for(const width of [1920,1861,1488,1363]){
+  await page.setViewportSize({width,height:936});
+  for(const expanded of [false,true]){
+   const details=page.locator('.projectListExtraFilters');
+   if(await details.evaluate(e=>e.open)!==expanded)await details.locator('summary').click();
+   const geometry=await page.locator('.projectListWorkspace').evaluate(panel=>{
+    const title=panel.querySelector(':scope>h2').getBoundingClientRect(),note=panel.querySelector(':scope>.note').getBoundingClientRect(),search=panel.querySelector('.projectListSearchPanel').getBoundingClientRect(),card=panel.querySelector('.projectListCard').getBoundingClientRect();
+    return {gap:note.top-title.bottom,headerHeight:search.top-title.top,firstRow:card.top-title.top,filterGap:card.top-search.bottom};
+   });
+   eq(geometry.gap>=0&&geometry.gap<=12,true,'heading and purpose remain together '+width+' expanded='+expanded);
+   eq(geometry.headerHeight<95,true,'compact title/stats above filters '+width+' expanded='+expanded);
+   eq(geometry.filterGap<150,true,'first project follows filters without stretched rows '+width+' expanded='+expanded);
+  }
+ }
+ await page.locator('.projectListExtraFilters>summary').click();
  const listChoice=async(name)=>{const details=page.locator('.projectListExtraFilters');if(!await details.evaluate(e=>e.open))await details.locator('summary').click();await details.getByRole('button',{name,exact:true}).click();if(await details.evaluate(e=>e.open))await details.locator('summary').click();};
  await page.locator('.projectListCard').first().getByRole('button',{name:'Åpne',exact:true}).click();eq(await page.evaluate(()=>window.opened.at(-1)),['p0','prosjekt'],'compact primary uses same project callback');eq(await page.locator('.projectListDisclosureCard>details[open]').count(),0,'opening project does not toggle presentation');
  await page.locator('.projectListCard').first().locator('summary').click();eq(await page.locator('.projectListCard').first().getByText('QA Leder',{exact:true}).first().isVisible(),true,'one card reveals original metadata');await page.locator('.projectListCard').first().locator('summary').press('Enter');eq(await page.locator('.projectListDisclosureCard>details[open]').count(),0,'keyboard collapses card');

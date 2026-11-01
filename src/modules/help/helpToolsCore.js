@@ -313,6 +313,7 @@ const BASE_SECTIONS = [
     "📄 Rapport",
     "Rapporten samler prosjektets dokumentasjon til PDF.",
     [
+      "Velg Rapport i prosjektmenyen. Høyrepanelet Rapport og PDF åpnes over prosjektet. Last ned PDF ligger fast nederst. Tilbake til prosjektet lukker panelet og lar arbeidet stå. Utvid arbeidsflaten gir mer plass til forhåndsvisningen.",
       "Kontroller prosjektdata, produkter, bilder, sjekklister og avvik før rapport genereres.",
       "Åpne Velg prosjektkontroller til rapport. Med KS/HMS heter knappen Velg KS/HMS til rapport. Kryss av ønskede dokumenter før PDF eller utskrift; ingenting tas med automatisk.",
       "Fullførte prosjektkontroller hentes fra lagret historikk med svar, bilder og eventuelle signaturer. Eldre kontroller uten tegnet signatur merkes tydelig. Vanlige vedlegg følger som oversikt; originalfilene må deles separat.",

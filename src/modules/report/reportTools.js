@@ -235,7 +235,7 @@ export function createReportTools(deps = {}) {
         overlay.style.alignItems = "center";
         overlay.style.justifyContent = "center";
         overlay.style.padding = "18px";
-        document.body.appendChild(overlay);
+        (document.querySelector("dialog.project-report-workspace[open]") || document.body).appendChild(overlay);
       }
       overlay.innerHTML = `
         <div style="width:min(420px, calc(100vw - 32px)); background:#ffffff; border-radius:18px; box-shadow:0 24px 70px rgba(15,23,42,.28); padding:22px; font-family:Arial, Helvetica, sans-serif; color:#0f172a;">

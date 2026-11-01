@@ -1,3 +1,11 @@
+# Rapport og PDF – ny rettelse 1. november 2026
+
+Miljømål BEGGE, kun PR295/fast Preview. Brukerfeilen er gjenskapt: Rapport brukte egen side og skjulte PDF under Flere handlinger. Nytt høyrepanel lar samme prosjektarbeid stå og viser Last ned PDF i fast footer. Prosjektlistens åpne Listevalg strekker ikke lenger tittel/formål/statistikk. [Endrings- og testgrunnlag](docs/changes/project-report-panel-and-list-header-20261101.json).
+
+Lokalt: native rapportpanel39, gammel rapportvelger88, full Min side/prosjektliste277, ekte rapportmotor9PDF/5print og begge eksplisitte critical/build-miljøer PASS. Native browser-downloaded PDF:5A4/18757byte, rendret og visuelt kontrollert. Syntetisk transport er skilt fra innlogget Preview; eksakt CI/READY og levende nedlasting avventes og føres i PR295. Den tidligere e1/82-integrasjonsdiffen nedenfor er historisk og må vurderes mot denne nye appkandidaten før merge. Ingen TEST OK/merge/Production/migrering/demo-synk er utført.
+
+---
+
 # Releaseforberedelse 1. november 2026
 
 Samme PR295 og faste Preview, miljømål BEGGE. Appkoden er fortsatt e1f93ce0; denne oppdateringen legger bare til dokumentasjon og en lokal integrasjonsreferanse. [Konkret releaseplan, rekkefølge og tilbakeføring](docs/qa/DESIGN_036_RELEASE_PLAN_20261101.md). Separat lokal kombinasjon av PR294/298/305/295 består begge eksplisitte miljøbygg, 1 372 berørte native krav og seks PDF-er/115 sider samt tre kontrollerte ZIP-er. Tre konflikthunker er løst i øvingskandidaten med alle 69 opprinnelige hjelpetekster og eksisterende testkrav beholdt. Ingen samlet kombinasjon er publisert eller sendt inn som en omgåelse av de isolerte PR-ene.
