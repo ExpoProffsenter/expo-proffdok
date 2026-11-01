@@ -1,3 +1,9 @@
+# Nattoppfølging 1. november – ny film om videoavspilleren
+
+Miljømål BEGGE, bare fast Preview/Sandbox. Ny separat film er ferdig: VID-HELP-002-PLAYER, ni trinn/72sekunder i godkjent PROFFDOK-VIDEO-1.0. Faktiske Preview-bilder med demodata viser søk, originalfilm, kapitler, tekstalternativ og retur. MP4, redigerbare kilder og kontaktark er bevart; [ett scope-/testgrunnlag med filidentiteter](docs/changes/help-player-film-20261101.json). Filmen er ikke lagt i appregisteret; fem originalfilmer er uendret.
+
+Live originalfilm spiller; kapittel0:41, søk/fokus/URL-retur, områdefilter og teksttrinn PASS. Ny MP4 består full FFmpeg-dekoding og format/timing/layoutkontroll. Skynettets file:-policy blokkerer egen avspilling av ny MP4; fullskjerm viste eksisterende fallback og er ikke attestert eller med i filmen. Appkode uendret9d; forelder55/fullCI864SUCCESS10/10/READY. Eksakt ny docs-kandidat/CI/READY føres i PR295. Bildepakken er fortsatt ikke installert live; overgang/kort skjerm, levende PDF og rapportfilm står åpne. Ingen TEST OK, merge, Production eller demosynk.
+
 # Nattoppfølging 1. november – bildegrunnlag forberedt
 
 Isolert SANDBOX/DEMO-reviewpakke er laget: syv validerte bildevarianter fra bevarte SVG-er og binær reparasjonsdiff for fem ugyldigeJPEG-er. Native59krav/toPDF-er28sider, faktisk7unike bilder/10plasseringer og ærlig feilfallbackPASS. [Scope og presise prøvegrenser](docs/changes/report-image-resource-rehearsal-20261101.json). Leveranse/kildehash/CI føres i PR295. Ingen ressurser eller patch er installert live eller ført inn i produksjonskilden.

@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "title": "Ny avgrenset film om videoavspilleren i Hjelp",
+  "change": "Miljømål BEGGE, utførelse bare fast Preview/Sandbox. Separat VID-HELP-002-PLAYER følger PROFFDOK-VIDEO-1.0: ni trinn/72sekunder fra faktiske innloggede Preview-bilder med demodata, forklaring/peker/klikk lagt på etterpå, uten lyd. Godkjent renderer/fonter/mal er uendret. Ingen appkode, filmregister, public-filer, fem originalfilmer, kundedata, prosjektkladd, tilgang, backend eller miljøbinding endres. Filmen er en reviewleveranse og er ikke installert i appen.",
+  "verification": "Faktisk originalfilm i Preview: readyState4,95s, avspilling0→22.705583s, pause og kapittel0:41→currentTime41. Søk hjelp, fokus på filmen og samme prosjekt-ID/tab/URL beholdes ved retur; områdefilter Hjelp gir1film; teksttrinn åpnet/rullet. Fullskjerm viste eksisterende fallback og er ikke bekreftet eller med i filmen. Ny MP4: H264/yuv420p,1920x1080,24fps,1728bilder/72s, ingen lyd; hele filen dekodes med FFmpeg uten feil. Alle9reviewbilder visuelt kontrollert, tekst/markeringer innenfor malgrenser og kapitteltider samsvarer. Lokal ny MP4 kunne ikke åpnes i skynettleseren fordi URL-policy blokkerer file:-protokoll; ingen omgåelse eller avspillingspåstand. Appkode uendret fra9d/fullCI863; dokumentasjonsforelder55/fullCI864SUCCESS10/10/READY. Ny eksakt kandidat-CI/READY føres i PR295.",
+  "artifacts": [
+    {
+      "name": "ProffDok_videoavspiller_v1.mp4",
+      "library_file_id": "libfile_0fb95f0dba5c81919cbc4cf3ec1aee5f",
+      "sha256": "c571fc7839f3a815cb2eaba5238ba771e2266243be38030c97f5eee0349e317e",
+      "bytes": 4128226
+    },
+    {
+      "name": "ProffDok_videoavspiller_redigerbare_kilder.zip",
+      "library_file_id": "libfile_a49c6fad48288191bcbca8d2cab2bfdd",
+      "sha256": "80560a62e38e632de4e256af0973f1c641ca28bef543da8344df3406997a0244"
+    },
+    {
+      "name": "ProffDok_videoavspiller_kontaktark.jpg",
+      "library_file_id": "libfile_4a558aee44bc8191971fe840ca55ed77"
+    }
+  ],
+  "remaining": "Kort skjerm/overgangsårsak, levende PDF-bro og installasjon av separat bildepakke står åpne. Rapportfilm tas ikke av kjent bildefeil. Fullskjerm/fysisk Safari/alle roller/total appdekning er ikke attestert. Ingen TEST OK/merge/main/demo-synk/Production/DB-endring.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Ingen publisert brukerflyt eller filmknapp endres. Filmen har eget manus og kapittelfiler."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Ingen dataflyt, komponent, eierskap eller tilgangskontrakt endres."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen appavhengighet eller miljøkonfigurasjon endres. Kildepakken har egen README og gjenskapbar renderer."
+    },
+    "module": {
+      "required": false,
+      "reason": "Eksisterende videoavspiller og kontrakt beholdes; leveransen lagres separat."
+    }
+  }
+}
