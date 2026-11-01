@@ -1,9 +1,15 @@
-export const HELP_UPDATED_ON='2026-10-30';
-export const HELP_UPDATED_LABEL='Sist oppdatert: 30.10.2026';
+export const HELP_UPDATED_ON='2026-11-01';
+export const HELP_UPDATED_LABEL='Sist oppdatert: 01.11.2026';
 
 // Add context to the existing topics before grouping and access filtering.
 // Search can never introduce a topic that the current role cannot already see.
 const workflow={
+ sjekklister:[
+  'I prosjektets Sjekklister viser Arbeid gjenstår, Til sluttkontroll og Fullført hvor langt kontrollene har kommet. Trykk på en boks for å filtrere. Velg Alle under Vis sjekklister for å vise hele oversikten igjen.',
+  'Fortsett der du slapp viser påbegynte kontroller som mangler svar eller påkrevd dokumentasjon. Manglende bilde, kommentar eller underfelt vises på kortet. Filteret Mangler påkrevd bilde eller dokumentasjon finner også kontroller som bare mangler kommentar eller underfelt.',
+  'Klar til sluttkontroll betyr at svar og påkrevd dokumentasjon er fylt ut, ikke at kontrollen er fullført eller lagret på server. Velg Åpne for sluttkontroll. Gå gjennom svarene, signer utførelseskontrollen og velg Sjekkliste fullført. Prosjekteringskontrollen krever ikke signatur. Fullføring lukker ikke åpne avvik.',
+  'Lagre i sjekklistedialogen gjør arbeidet tilgjengelig for kolleger. Lokal kladd finnes bare på denne enheten. Lukk eller Escape går tilbake til oversikten og beholder filteret. Låste prosjekter bruker Vis dokumentasjon; historiske svar får ikke automatisk status Fullført.'
+ ],
  start:['Verktøy og maler åpner et panel fra høyre for arbeidsflaten du står i. Escape eller Tilbake til arbeidet lukker panelet. Å åpne eller lukke panelet lagrer ikke arbeidet.'],
  sales:[
   'Ny forespørsel og Nytt tilbud åpner et panel fra høyre. Velg tilbudstype ved Nytt tilbud. Registrer kunden og velg saksbehandler. Hent fra kunderegister, Kontroller opplysningene og Lagre kunde for senere bruk kan åpnes ved behov. Kundelagring krever eget valg og egen Lagre kunde-knapp.',

@@ -3,7 +3,7 @@ import {emptySignatures,isExecutionChecklist,signatureProblem,signaturesForEdito
 import {projectChecklistReadRpc} from './projectChecklistRead.mjs';
 import {invalidateFieldConfirmations} from './checklistFields.mjs';
 import {checklistResumeEntries,firstUnfinishedChecklist} from './checklistResume.mjs';
-import {checklistDisplayState} from './checklistDisplay.mjs';
+import {checklistDisplayState,matchesChecklistFilter} from './checklistDisplay.mjs';
 import {useEffect,useRef,useState} from 'react';
 import DeviationDialog from '../deviations/DeviationDialog.jsx';
 import {kshmsRpc} from '../kshms/kshmsAccess.js';
@@ -12,12 +12,14 @@ import {MANAGED_ACCESS_EVENT,MODULE_ACCESS_EVENT} from '../access/moduleAccessCl
 import {WORK_PROFILE_EVENT} from '../access/workProfileClient.js';
 import {answersForDefinition,checklistRunDraftKey,commitChecklistRun,completionProblem,currentRunAnswers,readRunDraft,runDefinition,sameRunValue} from './checklistRuns.mjs';
 import './projectChecklistWorkspace.css';
+import './projectChecklistGuidance.css';
 import KshmsDocumentPdfButton from '../kshms/KshmsDocumentPdfButton.jsx';
 
 export default function ProjectChecklistWorkspace({Editor,companyId,userId,projectId,checklist,activeChecklistTemplate,instances=[],readOnly=false,supportReadOnly=false,showTools=true,showPrevious=true,customChecklistAllowed=false,isWarrantyPoint=()=>false,onSaved,uploadImages,resolveFileUrl,entryRequest=null,autoOpenOnEntry=true,onEntryHandled,...editorProps}) {
  readOnly=readOnly||supportReadOnly;
  const readRpc=projectChecklistReadRpc(kshmsRpc,{supportReadOnly,companyId,projectId});
  const [displayFilter,setDisplayFilter]=useState('all');
+ useEffect(()=>setDisplayFilter('all'),[companyId,userId,projectId,readOnly]);
  const [data,setData]=useState(null),[selected,setSelected]=useState(null),[expanded,setExpanded]=useState({}),[error,setError]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false),[uploads,setUploads]=useState(0);
  const owner=useRef(null),locked=useRef(false),selection=useRef(null),cached=useRef(new Map()),dialogReturnFocus=useRef(null);
  selection.current=selected;
@@ -174,13 +176,18 @@ export default function ProjectChecklistWorkspace({Editor,companyId,userId,proje
  };
  const groups=activeChecklistTemplate;
  const displayGroups=checklistResumeEntries(groups,data?.runs||[],data?.checklist||checklist,category=>readRunDraft(window.localStorage,key(category)),readOnly);
- const resumable=displayGroups.filter(({group,resumable})=>{
-  if(!resumable)return false;
-  const local=readRunDraft(window.localStorage,key(group.category));
-  const meaningfulLocal=local&&(local.pendingAction||Object.values(local.answers||{}).some(answer=>answer?.status||answer?.comment||answer?.photos?.length||Object.keys(answer?.values||{}).length));
-  const answers=meaningfulLocal?local.answers:data?.runs?.find(run=>run.category===group.category)?.answers||data?.checklist?.[group.category]||checklist?.[group.category]||{};
-  return group.items.some(item=>!answers[item]?.status);
+ const progressGroups=displayGroups.map(entry=>{
+   const {group,resumable}=entry;
+   const latest=data?.runs?.find(run=>run.category===group.category);
+   const local=readOnly?null:readRunDraft(window.localStorage,key(group.category));
+   const localWork=local&&(local.pendingAction||Object.values(local.answers||{}).some(answer=>answer?.status||answer?.comment||answer?.photos?.length||Object.keys(answer?.values||{}).length));
+   const localUnsaved=localWork&&(!latest||local.id!==latest.id||local.revision!==latest.revision||!sameRunValue(local.answers,latest.answers)||!sameRunValue(signatureInput(local.signatures),signatureInput(latest.signatures)));
+   const answers=localWork?local.answers:latest?.answers||data?.checklist?.[group.category]||checklist?.[group.category]||{},done=group.items.filter(item=>answers[item]?.status).length;
+   const display=checklistDisplayState(latest?.definition||runDefinition(group,instances,isWarrantyPoint(group.category)),answers,latest?.status==='completed'&&!resumable);
+   return {...entry,latest,localUnsaved,done,display};
  });
+ const resumable=progressGroups.filter(entry=>entry.resumable&&entry.group.items.length>0&&!entry.display.complete&&!entry.display.ready);
+ const counts=progressGroups.reduce((total,{display})=>({...total,[display.stage]:total[display.stage]+1}),{work:0,ready:0,completed:0});
  const historical=(data?.runs||[]).filter(value=>value.status==='completed');
  const previousGroups=Object.entries(data?.checklist||checklist||{}).filter(([category,answers])=>!groups.some(group=>group.category===category)&&Object.values(answers||{}).some(answer=>answer?.status||answer?.comment||answer?.photos?.length||Object.keys(answer?.values||{}).length));
  const savedSelection=selected&&data?.runs?.find(row=>row.id===selected.id);
@@ -191,21 +198,22 @@ export default function ProjectChecklistWorkspace({Editor,companyId,userId,proje
   {!selected&&error&&<p role="alert" className="ks-error">{error}</p>}
   {!selected&&notice&&<p role="status" className="ks-notice">{notice}</p>}
   {!groups.length&&<p>Ingen sjekklister er lagt til. Legg til egne sjekkpunkter, eller hent en publisert liste fra KS/HMS når firmaet har tilgang.</p>}
-  <div className="ux-toolbar"><label>Vis sjekklister<select value={displayFilter} onChange={e=>setDisplayFilter(e.target.value)}><option value="all">Alle</option><option value="unfinished">Uferdige</option><option value="deviations">Med åpne avvik</option><option value="images">Mangler påkrevd bilde eller dokumentasjon</option></select></label><span className="ux-inline-note">Filtrering endrer ingen svar. Lagring og rapport bruker fortsatt hele kontrollen.</span></div>
-  {!selected&&!!resumable.length&&['all','unfinished'].includes(displayFilter)&&<div className="project-checklist-resume" role="region" aria-label="Påbegynte sjekklister"><strong>Fortsett der du slapp</strong><p className="note">Disse listene har punkter igjen å vurdere. Lister med alle punkter vurdert ligger nedenfor til sluttkontroll.</p>{resumable.map(({group})=><button key={group.category} type="button" disabled={busy} aria-label={`Fortsett utfylling: ${title(group)}`} onClick={()=>begin(group)}><span>{title(group)}</span><b>Fortsett utfylling →</b></button>)}</div>}
-  {displayGroups.map(({group,resumable})=>{
-   const latest=data?.runs?.find(run=>run.category===group.category);
-   const local=readOnly?null:readRunDraft(window.localStorage,key(group.category));
-   const localWork=local&&(local.pendingAction||Object.values(local.answers||{}).some(answer=>answer?.status||answer?.comment||answer?.photos?.length||Object.keys(answer?.values||{}).length));
-   const localUnsaved=localWork&&(!latest||local.id!==latest.id||local.revision!==latest.revision||!sameRunValue(local.answers,latest.answers)||!sameRunValue(signatureInput(local.signatures),signatureInput(latest.signatures)));
-   const answers=localWork?local.answers:latest?.answers||data?.checklist?.[group.category]||checklist?.[group.category]||{},done=group.items.filter(item=>answers[item]?.status).length;
-   const display=checklistDisplayState(latest?.definition||runDefinition(group,instances,isWarrantyPoint(group.category)),answers,latest?.status==='completed'&&!resumable);
-   const visible=displayFilter==='all'||(displayFilter==='unfinished'&&!display.complete)||(displayFilter==='deviations'&&display.deviations>0)||(displayFilter==='images'&&display.missingImages>0);
+  {!readOnly&&!!groups.length&&<div className="project-checklist-stages" role="group" aria-label="Hva gjenstår i sjekklistene?">
+   {[["work","Arbeid gjenstår"],["ready","Til sluttkontroll"],["completed","Fullført"]].map(([value,label])=><button key={value} type="button" className="secondary" aria-pressed={displayFilter===value} aria-label={`${label}: ${counts[value]}`} onClick={()=>setDisplayFilter(value)}><strong>{counts[value]}</strong><span>{label}</span></button>)}
+  </div>}
+  <div className="ux-toolbar"><label>Vis sjekklister<select value={displayFilter} onChange={e=>setDisplayFilter(e.target.value)}><option value="all">Alle</option><option value="unfinished">Uferdige</option>{!readOnly&&<><option value="work">Arbeid gjenstår</option><option value="ready">Klar til sluttkontroll</option></>}<option value="completed">Fullført</option><option value="deviations">Med åpne avvik</option><option value="images">Mangler påkrevd bilde eller dokumentasjon</option></select></label><span className="ux-inline-note">Filtrering endrer ingen svar. Lagring og rapport bruker fortsatt hele kontrollen.</span></div>
+  {!!groups.length&&!progressGroups.some(({display})=>matchesChecklistFilter(display,displayFilter))&&<div className="project-checklist-filter-empty" role="status"><p>Ingen sjekklister passer dette filteret.</p><button type="button" className="secondary" onClick={()=>setDisplayFilter('all')}>Vis alle sjekklister</button></div>}
+  {!selected&&!!resumable.length&&['all','unfinished','work'].includes(displayFilter)&&<div className="project-checklist-resume" role="region" aria-label="Påbegynte sjekklister"><strong>Fortsett der du slapp</strong><p className="note">Her gjenstår svar eller påkrevd dokumentasjon. Velg Til sluttkontroll for lister som er klare til gjennomgang og signering.</p>{resumable.map(({group})=><button key={group.category} type="button" disabled={busy} aria-label={`Fortsett utfylling: ${title(group)}`} onClick={()=>begin(group)}><span>{title(group)}</span><b>Fortsett utfylling →</b></button>)}</div>}
+  {progressGroups.map(({group,resumable,latest,localUnsaved,done,display})=>{
+   const visible=matchesChecklistFilter(display,displayFilter);
    return <article className="item project-checklist-card" key={group.category} hidden={!visible}>
-    <div className="project-checklist-heading"><h3>{title(group)}</h3><span>{done}/{group.items.length} vurdert · {localUnsaved?'Lokal kladd':latest?.status==='completed'&&!resumable?'Fullført':readOnly?(done?'Registrert dokumentasjon':'Ingen vurderte punkter'):display.ready?'Klar til sluttkontroll':done?'Under arbeid':'Ikke påbegynt'}</span></div>
+    <div className="project-checklist-heading"><h3>{title(group)}</h3><span>{done}/{group.items.length} vurdert · {localUnsaved?'Lokal kladd':latest?.status==='completed'&&!resumable?'Fullført':readOnly?(done?'Registrert dokumentasjon':'Ingen vurderte punkter'):display.ready?'Klar til sluttkontroll':done&&display.missingDocumentation?'Mangler dokumentasjon':done?'Under arbeid':'Ikke påbegynt'}</span></div>
     {localUnsaved&&<p className="note">Kladden finnes på denne enheten. Lagre kontrollen for at en kollega skal kunne fortsette.</p>}
+    {!readOnly&&!display.complete&&done>0&&display.problem&&<p className="project-checklist-next-issue"><strong>Gjenstår:</strong> {display.problem}</p>}
+    {!readOnly&&display.ready&&<p className="note">{isExecutionChecklist(latest?.definition||group)?'Svar og påkrevd dokumentasjon er fylt ut. Gå gjennom kontrollen og signer før du fullfører.':'Svar og påkrevd dokumentasjon er fylt ut. Gå gjennom kontrollen før du fullfører.'}</p>}
+
     {latest?.updated_identity&&<p className="note">Sist lagret av {identityText(latest.updated_identity)} · {new Date(latest.updated_at).toLocaleString('nb-NO')}</p>}
-    <div className="project-checklist-card-actions"><button type="button" disabled={busy} aria-label={resumable?`Fortsett sjekkliste: ${title(group)}`:undefined} onClick={()=>begin(group)}>{readOnly?'Vis dokumentasjon':resumable?'Fortsett utfylling →':latest?.status==='completed'?'Åpne fullført sjekkliste':'Åpne sjekkliste'}</button>
+    <div className="project-checklist-card-actions"><button type="button" disabled={busy} aria-label={resumable?`Fortsett sjekkliste: ${title(group)}`:undefined} onClick={()=>begin(group)}>{readOnly?'Vis dokumentasjon':display.ready?'Åpne for sluttkontroll':resumable?'Fortsett utfylling →':latest?.status==='completed'?'Åpne fullført sjekkliste':'Åpne sjekkliste'}</button>
      <button type="button" className="secondary" aria-label={`Vis punkter og historikk: ${title(group)}`} aria-expanded={!!expanded[group.category]} onClick={()=>setExpanded(value=>({...value,[group.category]:!value[group.category]}))}>{expanded[group.category]?'Skjul punkter og historikk':'Vis punkter og historikk'}</button></div>
     {expanded[group.category]&&<div><p>{group.instructions||'Kontroller punktene og legg til dokumentasjon der det trengs.'}</p><ul>{group.items.map(item=><li key={item}>{item}</li>)}</ul>
      {latest?.updated_identity&&<p className="note">Sist lagret av {identityText(latest.updated_identity)} · {new Date(latest.updated_at).toLocaleString('nb-NO')}</p>}
