@@ -1,0 +1,72 @@
+[
+  {
+    "key": "befaring-for",
+    "file": "befaring-for.jpg",
+    "width": 1200,
+    "height": 800,
+    "bytes": 108781,
+    "sha256": "04f701266c74dd598a74d1fac01944f187913cd0353f45758e88330b255e0800",
+    "prompt": "Wide photo taken from bathroom doorway, the OLD 1980s bathroom before renovation: dated small beige tiles, old white wall-mounted basin, worn shower corner and small high frosted window. Clearly an ordinary lived-in Norwegian apartment, clean but aged.",
+    "old_url": "/demo-images/befaring-for.svg"
+  },
+  {
+    "key": "underlag-primer",
+    "file": "underlag-primer.jpg",
+    "width": 1200,
+    "height": 800,
+    "bytes": 114126,
+    "sha256": "a1e9eb96176b206cc8ba5efa2cbe27ef7afb4963cd3f0ea428cbf8dd3a82d8ca",
+    "prompt": "Photo from a bathroom doorway during renovation, stripped empty Norwegian bathroom, raw dry grey cement-board walls and level screed floor, neatly taped doorway, roller tray with primer and a roller nearby. Focus is clean prepared substrate, no waterproofing installed yet, natural worksite detail.",
+    "old_url": "https://expo-proffdok-git-demo-ringside.vercel.app/demo-images/underlag-primer.jpg"
+  },
+  {
+    "key": "membran-tetteband",
+    "file": "membran-tetteband.jpg",
+    "width": 1200,
+    "height": 800,
+    "bytes": 131221,
+    "sha256": "3a12e98ac3256fc7b8fedcc4777137d05fda11a26bc0188b792ce13ea96e8860",
+    "prompt": "Close photographic view of the floor-to-wall inside corner during bathroom waterproofing, red-pink sheet waterproofing membrane on walls and floor and wider matching sealing tape neatly bonded at the corner. Tile substrate visible just beyond the working area. Show texture and realistic hand-tool marks. No brands or technical labels.",
+    "old_url": "https://expo-proffdok-git-demo-ringside.vercel.app/demo-images/membran-tetteband.jpg"
+  },
+  {
+    "key": "slukmansjett",
+    "file": "slukmansjett.jpg",
+    "width": 1200,
+    "height": 800,
+    "bytes": 144124,
+    "sha256": "d701e64256dbbe818457169f983c5e492fdf574639d96bf1699aa0e33d432b27",
+    "prompt": "Close photographic view straight down toward a circular Nordic floor drain during bathroom renovation, red-pink waterproofing sheet and matching drain collar surrounding a circular clamping-ring drain in a grey floor. Show a clearly visible circular metal clamping ring, realistic construction textures. Educational demo image only, not a technical installation diagram. No brands.",
+    "old_url": "https://expo-proffdok-git-demo-ringside.vercel.app/demo-images/slukmansjett.jpg"
+  },
+  {
+    "key": "ror-mansjett",
+    "file": "ror-mansjett.jpg",
+    "width": 1200,
+    "height": 800,
+    "bytes": 125737,
+    "sha256": "6cc9a46546ab9a776a8257db5fb01a1d968c1b88528dfd748df411e46360618e",
+    "prompt": "Close photographic view of one plumbing wall penetration in a bathroom during waterproofing. A short realistic threaded brass pipe connection protrudes straight through the center of a square flexible red-pink sealing collar neatly bonded into matching red-pink waterproofing sheet on a flat wall. Tactile material detail, plausible scale, simple single fitting. No brands.",
+    "old_url": "https://expo-proffdok-git-demo-ringside.vercel.app/demo-images/ror-mansjett.jpg"
+  },
+  {
+    "key": "elektro-varmekabel",
+    "file": "elektro-varmekabel.jpg",
+    "width": 1200,
+    "height": 800,
+    "bytes": 192779,
+    "sha256": "5d1f24a9ddc3a5562ba9abcedba1e4908790400ac0e7bf28910a4e5600127c3c",
+    "prompt": "Wide oblique photographic view of an unfinished Norwegian bathroom floor before screed. Evenly spaced electrical heating cable in parallel serpentine runs attached to a metal reinforcement mesh over grey subfloor, with clear clearance around a single floor drain. Plain cement-board walls, small high frosted window. No people or branding. Worksite demo photo, not an installation guide.",
+    "old_url": "/demo-images/elektro-varmekabel.svg"
+  },
+  {
+    "key": "ferdig-bad",
+    "file": "ferdig-bad.jpg",
+    "width": 1200,
+    "height": 800,
+    "bytes": 112020,
+    "sha256": "6e355e1c85de6b20fd8bf4785ce5f49c86cca11121ca450d536be1706f9c281f",
+    "prompt": "Professional but natural interior photograph from the doorway of a finished compact Norwegian bathroom: large warm light-grey tiles, oak wall-hung vanity with white rectangular basin, round illuminated mirror, clear glass walk-in shower, chrome fixtures, wall-hung white toilet, small high frosted window. Restrained Scandinavian style, plausible compact layout, realistic daylight, no accessories clutter.",
+    "old_url": "https://expo-proffdok-git-demo-ringside.vercel.app/demo-images/ferdig-bad.jpg"
+  }
+]

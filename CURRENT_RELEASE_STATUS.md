@@ -1,3 +1,7 @@
+# Reserveprosjektets demobilder – 1. november 2026
+
+Miljømål SANDBOX/DEMO. Etter brukerens valg er sju tydelig AI-merkede demobilder installert kun i RESERVE-prosjektets galleri, fem sjekkpunktreferanser og tilsvarende bildedeler i Golden-starttilstanden. Innlogget design-Preview bekrefter alle tolv plasseringer lastet i 1200×800 og stor bildevisning/ny fane. Vernede data, låst status og kontrollsvar er uendret. Backup og eksakte kilder/prompts er bevart i [avgrenset grunnlag](docs/qa/demo-reserve-ai-media-20261101/README.md). Ingen appkode, Production, main, utsending, reset eller full Golden-capture er endret. PDF-nedlasting utløser fortsatt nettleserstyringens tidsavbrudd; ingen ny levende PDF er mottatt eller attestert.
+
 # Utførelsessjekklister – TEST OK og publisert 31.10.2026
 
 Brukerens TEST OK gjelder signatur- og firmamalkandidat `2ccecedf`. Full Core Safety820/41150527338 SUCCESS10/10; PR301 er merget som `7c22018d3054b3bad31004bb556ada0af2e1e2c6`. Vercel `dpl_HDuQQSbhmBqTFPbr2L49n9CmW46R` er READY på samme commit og expo-proffdok.app. Faktisk Production-HTML/loader/bootstrap/app er sammenlignet med eksplisitt lokal Production-build; produksjonsbinding kontrolleres ved publisering. Gjeldende main-/demo-SHA, fullført main → demo, privat rollout-aktivering, preflight og eventuelle begrensninger vedlikeholdes i [PR301](https://github.com/ExpoProffsenter/expo-proffdok/pull/301).
