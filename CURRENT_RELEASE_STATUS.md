@@ -1,3 +1,11 @@
+# 1. november – faktisk PDF-nedlasting bekreftet, CI-testgrunnlag rettes
+
+PR295/appkode 61076b47 er uendret. Innlogget fast design-Preview/Sandbox har nå lastet ned en ny RESERVE-PDF: 21 sider, 8 815 729 byte, sju unike demobilder og fem sjekkpunktplasseringer. Alle sider er rendret og visuelt gjennomgått. Nettleserens ettervarsel må lukkes med OK; tidligere timeout var ikke bevis på generatorfeil. Ingen rapport-/arkiv-/garantikode eller demobilder er endret. [Eksakt fil, SHA og avgrensninger](docs/qa/DESIGN_036_LIVE_PDF_20261101.md).
+
+Handoffhodet 6fc516d3 hadde READY, men full CI868 feilet i to tester. HR-testens faste møte 2. november kom innenfor korrekt påminnelsesvindu; datoene er nå relativt til testdatabasens Oslo-dato. Alle 267 PostgreSQL-krav består lokalt. Prissøk-testen leste en frakoblet input under Reacts breddebytte; samme font-/radiuskrav leser nå gjeldende DOM-element atomisk. Nettleserprøven må bekreftes i ny CI; lokal Chromium-nedlasting er ugyldig/trunkert. Ingen app-/backend-/miljøendring. Fersk kandidat/CI føres i PR295 etter resultat.
+
+Production/main er fortsatt b389c707/READY; demo fd04ac9a har bare isolerte bildekilder/QA fra forrige arbeid. Ingen samlet TEST OK, merge eller produksjonsinstallasjon. Videre videoer og Solgløtt etter godkjent release beholdes.
+
 # Nattoppfølging 1. november – prosjektlisten skiller informasjon fra handling
 
 Miljømål BEGGE, kun Preview/Sandbox. Hele prosjektoverskriften lå i native Vis detaljer-summary og kunne utvide raden ved navneklikk. Overskriften er nå separat informasjon; Vis detaljer styrer bare detaljene og Åpne beholder original prosjektcallback. Hjelp er presisert. Ny React-regresjon feiler på førkilden og består på rettelsen med samme monterte kladd og gamle menyruter. [Ett scope-/testgrunnlag](docs/changes/project-list-expansion-target-20261101.json). Appkandidat61076b47caf55d5ccfbe018a464408951aed0b1a, treec64e53ed8a03409b3799df9ea6f19a83e1da359f: begge eksplisitte critical/build-miljøer PASS, fullCI866/run41278778149SUCCESS10/10 uten omkjøring og READYdpl_5rmpXfkiRadbwK88Domyp79S8LNa på fast Preview. Eksakte bevis i PR295.

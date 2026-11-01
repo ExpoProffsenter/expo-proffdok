@@ -83,3 +83,7 @@ Eksisterende originalfilm er live-testet for avspilling/kapitler/retur. Ny MP4 e
 7. Fullfør flere funksjonsvideoer i naturlige pakker. Ingen branchopprydding inngår nå.
 
 Bevar utsendingsbegrensninger. Ingen prøve-e-post/invitasjon/bestilling til reelle mottakere uten konkret autorisasjon. Ikke slett/nullstill data eller merge for å rydde.
+
+## Senere oppfølging – faktisk PDF mottatt
+
+Punktet «PDF-nedlasting: fortsatt åpent» over er nå historisk. Innlogget eksport er gjennomført, native OK-varsel lukket, og faktisk21sidersPDF med alle sju bilder/fem sjekkpunktplasseringer mottatt og visuelt gjennomgått. [Presise bevis og korrigert årsakstolkning](DESIGN_036_LIVE_PDF_20261101.md). Ingen eksportkode eller demobilder ble endret. CI868 på dette handoffhodet var rød i to tester; oppfølgende kandidat retter testdatoer/DOM-måling, uten å svekke krav. Ikke bruk forelders grønne kjøring som ny attest.
