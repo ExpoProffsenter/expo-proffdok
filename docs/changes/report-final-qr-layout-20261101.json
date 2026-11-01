@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Sluttrapportens QR-kort må ikke dekke statusradene",
+  "change": "Miljømål BEGGE, bare PR295/Preview. Faktisk nedlastet RESERVE-PDF viste QR-kort over fire statusrader på siste side. Kun addFinalDocumentationCertificatePage i reportTools.js endres: lavere proporsjonalt bilde og mindre vertikale mellomrom gir plass til alle fem statusrader og QR. ensureSpace erstatter bakoverflytting av QR-kortet. Ingen forside, dokumentvalg, arkivvarsel, garanti/signatur, lagring, tilgang, data, e-post eller database endres.",
+  "verification": "Førkilde feiler ny native jsPDF-regresjon med QR block must follow, never cover final status row: Produktdokumentasjon / FDV. Alle390 tidligere krav er beholdt; to ekstra digital-scenarioer for AEB/FDF gir476krav/12PDF-er190sider PASS. Sju kontrollverdier og fem statusrader/QR-geometri bevares. Første rettelsesforsøk reserverte tre millimeter for mye og laget ny QR-side; ny test avviste dette. Sluttkilde holder status og QR på samme side. Alle12 siste sider er rendret og visuelt sett; QR-provider er isolert fallback i disse lokale prøvene. Fersk innlogget eksport, faktisk QR, CI og READY registreres i PR295 etter publisert kandidat. Ingen app-TEST OK eller produksjonsmerge.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Eksisterende knapper, valg og nedlastingsflyt er uendret; bare PDF-layout rettes."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Samme rapportmotor og datagrunnlag; ingen dataflyt eller ansvar flyttes."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen ny avhengighet, oppsett eller miljøkonfigurasjon."
+    },
+    "module": {
+      "required": true,
+      "reason": "Rapportmodulens README beskriver at QR følger de fem statusradene uten bakoverplassering."
+    }
+  }
+}

@@ -2389,21 +2389,21 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           doc.roundedRect(8, 8, pageWidth - 16, pageHeight - 20, 5, 5, "F");
           const hero = await loadPdfImage(coverImageUrl);
           if (hero && !hero.error) {
-            const heroDataUrl = await makeReportHeroPremiumImage(hero, pageWidth - 24, 96);
-            doc.addImage(heroDataUrl, "JPEG", 12, 12, pageWidth - 24, 96);
+            const heroDataUrl = await makeReportHeroPremiumImage(hero, pageWidth - 24, 64);
+            doc.addImage(heroDataUrl, "JPEG", 12, 12, pageWidth - 24, 64);
           } else {
             doc.setFillColor(12, 42, 82);
-            doc.roundedRect(12, 12, pageWidth - 24, 92, 3, 3, "F");
+            doc.roundedRect(12, 12, pageWidth - 24, 60, 3, 3, "F");
           }
           doc.setFillColor(255, 255, 255);
           doc.setGState && doc.setGState(new doc.GState({ opacity: 0.92 }));
-          doc.roundedRect(margin, 70, contentWidth, 24, 3, 3, "F");
+          doc.roundedRect(margin, 48, contentWidth, 24, 3, 3, "F");
           doc.setGState && doc.setGState(new doc.GState({ opacity: 1 }));
           doc.setFont("helvetica", "bold");
           doc.setFontSize(17);
           doc.setTextColor(12, 42, 82);
-          doc.text(reportFinal ? "SLUTTDOKUMENTASJON" : "DOKUMENTASJONSOVERSIKT", pageWidth / 2, 90, { align: "center" });
-          y = 114;
+          doc.text(reportFinal ? "SLUTTDOKUMENTASJON" : "DOKUMENTASJONSOVERSIKT", pageWidth / 2, 68, { align: "center" });
+          y = 82;
           doc.setFont("helvetica", "normal");
           doc.setFontSize(10);
           doc.setTextColor(51, 65, 85);
@@ -2416,14 +2416,14 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           y += 28;
           drawInfoCardPdf(margin, y, certW, 22, "Utførende", name || company.companyName || "Ikke oppgitt");
           drawInfoCardPdf(margin + certW + 6, y, certW, 22, "Rapportnummer", makeReportDocumentNumber());
-          y += 34;
+          y += 30;
           const metricGap = 4;
           const metricW = (contentWidth - metricGap * 3) / 4;
           drawMetricCard(margin, y, metricW, 20, "Dokumentasjonsgrad", `${status.percent} %`, status.percent >= 90 ? "green" : "blue");
           drawMetricCard(margin + (metricW + metricGap), y, metricW, 20, "Bilder", String(status.photoTotal), "blue");
           drawMetricCard(margin + (metricW + metricGap) * 2, y, metricW, 20, "Produkter", String(status.productTotal), "neutral");
           drawMetricCard(margin + (metricW + metricGap) * 3, y, metricW, 20, "Avvik", String(status.openDeviationTotal), status.openDeviationTotal ? "red" : "green");
-          y += 34;
+          y += 28;
           const checklistComplete = status.checklistCompleteForFinal;
           const certItems = [
             { label: "Bildedokumentasjon", ok: status.photoTotal > 0, detail: status.photoTotal > 0 ? `${status.photoTotal} bilde${status.photoTotal === 1 ? "" : "r"} registrert` : "Ingen bilder registrert" },
@@ -2455,7 +2455,9 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             const qrImage = await loadPdfImage(qrUrl);
             const qrSize = 24;
             const qrBlockH = 36;
-            if (y + qrBlockH > pageHeight - 28) y = pageHeight - 28 - qrBlockH;
+            // Keep the QR card after every status row. Never move it backwards
+            // over content when the final certificate reaches the footer.
+            ensureSpace(qrBlockH + 10);
             doc.setDrawColor(191, 219, 254);
             doc.setFillColor(248, 250, 252);
             doc.roundedRect(margin, y, contentWidth, qrBlockH, 3, 3, "FD");

@@ -37,3 +37,7 @@ Appens eksisterende arkivbekreftelse vises med samme fulle tekst i `ReportArchiv
 ## Avviksliste i PDF
 
 Prosjekt- og sjekkpunktavvik beholder eksisterende utvalg, status, ansvarlig, frister, lukkedata og bildedokumentasjonens antall. Listen begynner på en egen side med kompakte kort. Vanlige kort holdes samlet; lange felt fortsetter linjevis med gjentatt Avviksliste, full korttittel og feltetikett. Ingen garanti-, arkiv-, signatur-, data- eller tilgangsregel endres. Denne layouten reparerer ikke utilgjengelige eller ugyldige demobildefiler.
+
+## Sluttsidens QR-kort
+
+Sluttoversikten holder alle fem statusrader over QR-kortet. Banneret vises fortsatt proporsjonalt, med lavere høyde på denne siden; forsiden og bildekildene er uendret. QR-kortet bruker vanlig plasskontroll og må aldri flyttes bakover over innhold. `report-warranty-pdf-check.mjs` har egne digitale AEB/FDF-scenarioer som avviser overlapp, manglende rader, unødig separat QR-side og kollisjon med bunntekst. Samme låste/åpne skrivevern og opprinnelige garantikrav beholdes.

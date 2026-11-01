@@ -12,8 +12,9 @@ const entry=path.join(tmp,'entry.js');
 fs.writeFileSync(entry,`import {createReportTools} from '${root}/src/modules/report/reportTools.js';window.runReport=d=>createReportTools(d).downloadClickablePdfReport();`);
 const bundle=await build({root,configFile:false,logLevel:'silent',plugins:[{name:'native-pdf-engine',enforce:'pre',transform(code,id){if(process.env.REPORT_WARRANTY_SOURCE&&id.endsWith('/reportTools.js'))return fs.readFileSync(process.env.REPORT_WARRANTY_SOURCE,'utf8');},resolveId(id){if(id==='https://esm.sh/jspdf@2.5.1')return '\0native-pdf';},load(id){if(id==='\0native-pdf')return `import {jsPDF as Real} from '${pdfPath}';export function jsPDF(args){const d=new Real(args);window.instrumentPdf(d);d.save=name=>window.recordPdf(name,d);return d;}`;}}],build:{write:false,minify:false,lib:{entry,formats:['iife'],name:'ReportQA'}}});
 let checks=0;const eq=(a,b,m)=>{assert.deepEqual(a,b,m);checks++;};
-for(const system of soproWarrantySystems.filter(s=>!process.env.WARRANTY_SYSTEM||s.id===process.env.WARRANTY_SYSTEM)) for(const scenario of [{long:false,locked:true},{long:true,locked:true},{long:false,locked:false},{long:false,locked:true,deviations:true},{long:true,locked:true,deviations:true}]){
- const {long,locked,deviations}=scenario;
+for(const system of soproWarrantySystems.filter(s=>!process.env.WARRANTY_SYSTEM||s.id===process.env.WARRANTY_SYSTEM)) for(const scenario of [{long:false,locked:true},{long:true,locked:true},{long:false,locked:false},{long:false,locked:true,deviations:true},{long:true,locked:true,deviations:true},{long:false,locked:true,digital:true}]){
+ const {long,locked,deviations,digital}=scenario;
+ if(process.env.REPORT_QR_ONLY&&!digital)continue;
  if(process.env.REPORT_WARRANTY_BASELINE&&(!long||!locked))continue;
  const dom=new JSDOM('<div class="report"></div>',{url:'https://qa.invalid/',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window;
  let docs=[],writes=0,updated=null;const alerts=[];w.alert=v=>alerts.push(v);w.confirm=()=>true;
@@ -38,7 +39,7 @@ for(const system of soproWarrantySystems.filter(s=>!process.env.WARRANTY_SYSTEM|
  const project={projectName:repeat('Øvingsbad ÆØÅ',8),address:'Testveien 10',postnr:'0001',city:'Oslo',customer:repeat('QA mottaker ÆØÅ',15),responsible:repeat('QA utførende',12),date:'2026-10-01',locked:true};
  const warranty={enabled:true,system:system.id,issued:true,status:'issued',guaranteeNumber:'QA-GARANTI-001',durationYears:15,issuedAt:'2026-10-02T10:00:00Z',termsAccepted:true,termsAcceptedBy:repeat('QA mottaker ÆØÅ',15)};
  const overtagelse={enabled:true,dato:'2026-10-02',signKunde:'QA kunde',signUtførende:'QA utførende',signKundeImage:'https://qa.invalid/sign-kunde.png',signUtførendeImage:'https://qa.invalid/sign-firma.png',kommentar:repeat('QA lang overtagelsesmerknad',120)};
- const deps={project,company:{companyName:'QA firma',orgNumber:'999999999',email:repeat('kontakt',22)+'@example.invalid',logoUrl:'https://qa.invalid/logo.png'},name:'QA firma',user:{name:'QA leder'},authUser:{id:'QA-user'},projectId:'QA-project',warranty,overtagelse,warrantyReadiness:{selectedSystem:{...system,sintefUrl:'https://qa.invalid/tg'},termsAccepted:true},isProjectLocked:locked,getWarrantyYears:()=>15,hasValue:v=>v!=null&&String(v).trim()!=='',projectHasOvertagelse:()=>true,getOpenDeviationCount:()=>0,emptyWarranty:()=>({}),setWarranty:fn=>{writes++;updated=fn(warranty);},setTab:()=>{},activeChecklistTemplate:SOPRO_SYSTEM_CHECKLIST_TEMPLATES[system.id],checklist:Object.fromEntries(SOPRO_SYSTEM_CHECKLIST_TEMPLATES[system.id].map(g=>[g.category,Object.fromEntries(g.items.map(item=>[item,{status:'Ok',comment:'Syntetisk dokumentert – æøå'}]))])),selected:[{item:system.product,section:'Membran'}],manualSelected:[],manualProducts:{},other:{},surf:{},bathroomEquipment:{},photos:[{url:'https://qa.invalid/photo.png',category:'Ferdig',name:'QA ferdigbilde'}],files:[],inst:[],access:[],tilbud:{enabled:false},getPhotoIdentity:p=>p.url,buildBathroomEquipmentReportGroups:()=>[],publicProjectFileUrl:p=>p.url||'',normalizeExternalUrl:v=>/^https?:/.test(v||'')?v:'',shouldIncludeProductReportDoc:()=>false,productReportDocumentOptions:[],makeProjectLink:()=>'',DEFAULT_REPORT_HERO_IMAGE_URL:''};
+ const deps={project,company:{companyName:'QA firma',orgNumber:'999999999',email:repeat('kontakt',22)+'@example.invalid',logoUrl:'https://qa.invalid/logo.png'},name:'QA firma',user:{name:'QA leder'},authUser:{id:'QA-user'},projectId:'QA-project',warranty,overtagelse,warrantyReadiness:{selectedSystem:{...system,sintefUrl:'https://qa.invalid/tg'},termsAccepted:true},isProjectLocked:locked,getWarrantyYears:()=>15,hasValue:v=>v!=null&&String(v).trim()!=='',projectHasOvertagelse:()=>true,getOpenDeviationCount:()=>0,emptyWarranty:()=>({}),setWarranty:fn=>{writes++;updated=fn(warranty);},setTab:()=>{},activeChecklistTemplate:SOPRO_SYSTEM_CHECKLIST_TEMPLATES[system.id],checklist:Object.fromEntries(SOPRO_SYSTEM_CHECKLIST_TEMPLATES[system.id].map(g=>[g.category,Object.fromEntries(g.items.map(item=>[item,{status:'Ok',comment:'Syntetisk dokumentert – æøå'}]))])),selected:[{item:system.product,section:'Membran'}],manualSelected:[],manualProducts:{},other:{},surf:{},bathroomEquipment:{},photos:[{url:'https://qa.invalid/photo.png',category:'Ferdig',name:'QA ferdigbilde'}],files:[],inst:[],access:[],tilbud:{enabled:false},getPhotoIdentity:p=>p.url,buildBathroomEquipmentReportGroups:()=>[],publicProjectFileUrl:p=>p.url||'',normalizeExternalUrl:v=>/^https?:/.test(v||'')?v:'',shouldIncludeProductReportDoc:()=>false,productReportDocumentOptions:[],makeProjectLink:()=>digital?'https://qa.invalid/customer-report':'',DEFAULT_REPORT_HERO_IMAGE_URL:''};
  if(deviations){
   const prose=(s,n)=>long?(s+' ').repeat(n)+'END-'+s:s;
   deps.project.projectDeviations=[
@@ -52,7 +53,21 @@ for(const system of soproWarrantySystems.filter(s=>!process.env.WARRANTY_SYSTEM|
  eq(docs.length,1,alerts.join('\n'));eq(writes,locked?0:1,'only unlocked final report stamps existing receipt');if(!locked){eq(updated.guaranteeNumber,warranty.guaranteeNumber,'guarantee number retained');eq(updated.status,'issued','issued state retained');eq(Number.isNaN(Date.parse(updated.reportGeneratedAt)),false,'fresh generation time');}eq(JSON.stringify(deps),before,'source data unchanged');
  const out=Buffer.from(docs[0].doc.output('arraybuffer'));const all=docs[0].doc.internal.pages.flat().join('\n');
  eq(out.subarray(0,5).toString(),'%PDF-','real PDF bytes');eq(out.includes(Buffer.from('/Subtype /Image')),true,'actual logo, photo and synthetic signature assets embedded');
- if(process.env.REPORT_WARRANTY_OUTPUT){fs.mkdirSync(process.env.REPORT_WARRANTY_OUTPUT,{recursive:true});fs.writeFileSync(path.join(process.env.REPORT_WARRANTY_OUTPUT,`sluttrapport-${system.id}-${long?'lang':'kort'}-${locked?'last':'apen'}${deviations?'-avvik':''}.pdf`),out);}
+ if(process.env.REPORT_WARRANTY_OUTPUT){fs.mkdirSync(process.env.REPORT_WARRANTY_OUTPUT,{recursive:true});fs.writeFileSync(path.join(process.env.REPORT_WARRANTY_OUTPUT,`sluttrapport-${system.id}-${long?'lang':'kort'}-${locked?'last':'apen'}${deviations?'-avvik':''}${digital?'-digital':''}.pdf`),out);}
+ if(digital){
+  const page=docs[0].doc.internal.getNumberOfPages();
+  const text=docs[0].doc._texts.filter(t=>t.page===page);
+  const heading=text.find(t=>t.text==='Digital sluttrapport');
+  eq(!!heading,true,'digital final report retains its QR heading');
+  const card=docs[0].doc._cards.find(c=>c.page===page&&c.h===36&&c.y<heading.y&&c.y+c.h>heading.y);
+  eq(!!card,true,'native QR block is drawn on final certificate page');
+  for(const label of ['Bildedokumentasjon','Produktdokumentasjon / FDV','Sjekklister og kontrollpunkter','Overtagelse','Garanti']){
+   const row=text.find(t=>t.text===label);
+   eq(!!row,true,'final status row is retained: '+label);
+   eq(row.y+2<card.y,true,'QR block must follow, never cover final status row: '+label);
+  }
+  eq(card.y+card.h<=docs[0].doc.internal.pageSize.getHeight()-28,true,'QR block leaves footer space');
+ }
  const coverTexts=docs[0].doc._texts.filter(t=>t.page===1&&t.y>50&&t.y<135);
  const addressTexts=coverTexts.filter(t=>t.text==='Testveien 10, 0001, Oslo');
  eq(addressTexts.length,1,'cover address is drawn once, without an offset duplicate');

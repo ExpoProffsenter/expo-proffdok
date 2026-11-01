@@ -2,7 +2,17 @@
 
 Status: forberedt og lokalt integrasjonstestet. Ikke produksjonsgodkjent. Ingen merge, migrering eller demosynk er utført av denne planen. Alle fire PR-er er fremdeles separate. Full videodekning er en egen restleveranse.
 
-## Låst grunnlag
+## Oppdatert kontroll etter rapport-/listeendringene
+
+Den opprinnelige e1f93ce0-tabellen og testhistorikken nedenfor beholdes som historikk. Ny lokal avstemming bruker d18681fb pluss sluttsidens rapportkildeblob `7eda4af5a848269ef876cc255927f03a12bdb90f` og PDF-testblob `905113e1004058bb17b970aac866fe3ffa6a187f`. Ferske PR294/298/305-hoder er uendret. Selve PR295-kandidaten, fullCI og READY registreres i PR295 etter push.
+
+Eksisterende integrasjonsdiff SHA256 `09736927b104843ea529f38243b3c0c30ea7729a7b15e0b1cd5b21a8a2f192f8` er eksplisitt kontrollert med git apply --check mot d18681f og påført bare i separat detached worktree. Ingen av de nyere runtime-stiene overlapper diffens integrasjonspunkter. Siste rapportkilde og regresjonstest er kopiert identisk inn i øvingskandidaten. Hele critical/build består både eksplisitt Sandbox- og Production-binding. [Nytt maskinlesbart grunnlag](evidence/design036-integration-recheck-20261101.json).
+
+De1372 tidligere browserassertions gjenbrukes for uendret patch/komponentgrunnlag; de fremstilles ikke som nye kjøringer. Nye rapportprøver består476krav/12PDF-er190sider. To kjente EOF-blanklinjer fra PR294 består. Ingen isolert Bolig-/uttrekkskode er lagt i PR295; ingen kombinert Preview eller merge utført. Ved faktisk integrering må fersk main og endelig CI fremdeles kontrolleres.
+
+Faktisk ny innlogget RESERVE-PDF er mottatt; OK-varselet er håndtert. Nærlesing fant QR-overlapp på sluttsiden, og den konkrete rettelsen er dokumentert i [rapportgrunnlaget](../changes/report-final-qr-layout-20261101.json). En ny etterfil må kontrolleres fra publisert Preview før denne apprettelsen regnes som live-verifisert. Ingen reinstallasjon av de sju bildene.
+
+## Opprinnelig låst grunnlag
 
 | Pakke | Eksakt appkandidat | Kontrollert CI |
 | --- | --- | --- |
@@ -71,6 +81,6 @@ Den additive forslagskøen skal beholdes hvis noen forslag er lagret. Ikke dropp
 
 ## Ærlige, åpne grenser
 
-Innlogget Preview viste rapporten og alle fem dokumentgruppene. Eksportforsøket gikk videre til rapportvalget, men nettleserstyringen tidsavbrøt og kunne deretter ikke fokusere fanen. Ingen ny live-PDF ble mottatt. Dette er et fortsatt ubekreftet ende-til-ende-punkt; det er verken bevist generatorfeil eller vellykket filoverføring.
+Innlogget Preview viste rapporten og alle fem dokumentgruppene. Eksportforsøket gikk videre til rapportvalget, men nettleserstyringen tidsavbrøt og kunne deretter ikke fokusere fanen. Dette var tidligere status. Ny faktisk PDF er nå mottatt, med håndtert native OK-varsel; se oppdateringen over og DESIGN_036_LIVE_PDF_20261101.md. Førforsøket er ikke grunnlag for å hevde generatorfeil.
 
 Fysisk mobil/Safari/kamera/dvale, separate ekte rolleøkter, alle portal-/transportforløp og hele funksjons-/undermappe-videoserien er ikke sluttattestert av disse prøvene. Reiseregisterets gamle åpne statuser skal avstemmes mot nyere konkrete bevis; ingen totalprosent eller «alt er testet» gis. Ingen global redesign-TEST OK er registrert.

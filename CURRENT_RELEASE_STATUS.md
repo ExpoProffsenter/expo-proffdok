@@ -1,6 +1,12 @@
+# 1. november – PDF-sluttsiden korrigert etter faktisk nedlasting
+
+Faktisk21sidersPDF med nye bilder er mottatt og native OK-varsel håndtert. Nærkontroll fant at QR-kortet på siste side dekket fire statusrader. Bare denne sluttsiden er komprimert vertikalt; alle fem rader og QR vises nå uten overlapp. Ny native prøve feiler på førkilden, sluttkilden består476krav/12PDF-er190sider. Alle12 endrede sluttsider er visuelt gjennomgått. [Ett scope-/testgrunnlag](docs/changes/report-final-qr-layout-20261101.json). Ny appkandidats CI/READY og faktisk nedlastet etterfil føres i PR295. Ingen demobildeinstallasjon, backend eller Production-endring.
+
+Den eldre integrasjonsdiffen er eksplisitt prøvd mot nyere rapport-/listekode i separat lokal worktree, uten å legge isolert Bolig-/uttrekkskode inn i PR295. Se fersk tilleggsvurdering i releaseplanen. Full redesign-TEST OK mangler fortsatt.
+
 # 1. november – faktisk PDF-nedlasting bekreftet, CI-testgrunnlag rettes
 
-PR295/appkode 61076b47 er uendret. Innlogget fast design-Preview/Sandbox har nå lastet ned en ny RESERVE-PDF: 21 sider, 8 815 729 byte, sju unike demobilder og fem sjekkpunktplasseringer. Alle sider er rendret og visuelt gjennomgått. Nettleserens ettervarsel må lukkes med OK; tidligere timeout var ikke bevis på generatorfeil. Ingen rapport-/arkiv-/garantikode eller demobilder er endret. [Eksakt fil, SHA og avgrensninger](docs/qa/DESIGN_036_LIVE_PDF_20261101.md).
+PR295/appkode 61076b47 er uendret. Innlogget fast design-Preview/Sandbox har nå lastet ned en ny RESERVE-PDF: 21 sider, 8 815 729 byte, sju unike demobilder og fem sjekkpunktplasseringer. Alle sider er rendret; senere nærkontroll fant QR-overlapp på siste side, rettet i neste pakke over. Nettleserens ettervarsel må lukkes med OK; tidligere timeout var ikke bevis på generatorfeil. Ingen rapport-/arkiv-/garantikode eller demobilder er endret. [Eksakt fil, SHA og avgrensninger](docs/qa/DESIGN_036_LIVE_PDF_20261101.md).
 
 Handoffhodet 6fc516d3 hadde READY, men full CI868 feilet i to tester. HR-testens faste møte 2. november kom innenfor korrekt påminnelsesvindu; datoene er nå relativt til testdatabasens Oslo-dato. Alle 267 PostgreSQL-krav består lokalt. Prissøk-testen leste en frakoblet input under Reacts breddebytte; samme font-/radiuskrav leser nå gjeldende DOM-element atomisk. Nettleserprøven må bekreftes i ny CI; lokal Chromium-nedlasting er ugyldig/trunkert. Ingen app-/backend-/miljøendring. Fersk kandidat/CI føres i PR295 etter resultat.
 
