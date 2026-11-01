@@ -84,3 +84,9 @@ Den additive forslagskøen skal beholdes hvis noen forslag er lagret. Ikke dropp
 Innlogget Preview viste rapporten og alle fem dokumentgruppene. Eksportforsøket gikk videre til rapportvalget, men nettleserstyringen tidsavbrøt og kunne deretter ikke fokusere fanen. Dette var tidligere status. Ny faktisk PDF er nå mottatt, med håndtert native OK-varsel; se oppdateringen over og DESIGN_036_LIVE_PDF_20261101.md. Førforsøket er ikke grunnlag for å hevde generatorfeil.
 
 Fysisk mobil/Safari/kamera/dvale, separate ekte rolleøkter, alle portal-/transportforløp og hele funksjons-/undermappe-videoserien er ikke sluttattestert av disse prøvene. Reiseregisterets gamle åpne statuser skal avstemmes mot nyere konkrete bevis; ingen totalprosent eller «alt er testet» gis. Ingen global redesign-TEST OK er registrert.
+
+## Tillegg etter prosjekt-UX 1. november
+
+Appkandidat25739417 innfører kompakt prosjektmeny og eksplisitt sjekklisteoversikt i samme høyrepanel, med ærlig legacy-/låstvisning og riktig Bytt prosjekt-retur. I en ny detached worktree består den historiske integrasjonsdiffen `git apply --check` mot denne kandidaten. Etter lokal påføring består full critical/build med både eksplisitt Sandbox- og Production-binding. Ingen av de nye prosjekt-/sjekklistefilene overlapper patchens Bolig-/uttrekksfiler. [Maskinlesbart recheck-grunnlag](evidence/design036-integration-recheck-20261101.json) er oppdatert.
+
+Dette er lokal kompatibilitet, ingen ny samlet Preview-/rolleattest eller publisering. Uendrede1372 integrasjonskrav gjentas ikke. Før merge må faktisk main, påkrevde sjekker og sluttkandidat vurderes som beskrevet ovenfor. Samlet TEST OK mangler, produksjon/demo er uendret; videre videoer og Solgløtt følger avtalt release.

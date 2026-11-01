@@ -82,8 +82,9 @@ try{
  await page.waitForFunction(()=>{const e=document.querySelector('.expoDesktopMenuDrawer');return e?.getAttribute('aria-hidden')==='true'&&e.getBoundingClientRect().right<=0;});
  if(process.env.PROJECT_UX_SCREENSHOTS)fs.mkdirSync(process.env.PROJECT_UX_SCREENSHOTS,{recursive:true});
  const nav=page.locator('.project-workspace-navigation');
+ const dismissDialog=async dialog=>{const node=await dialog.elementHandle();await dialog.press('Escape');await page.waitForFunction(element=>!element.isConnected,node);};
  const openMenu=async()=>{await button(/Prosjektmeny/).click();await page.getByRole('dialog',{name:'Prosjektmeny',exact:true}).waitFor();};
- const selectTab=async name=>{await openMenu();await nav.getByRole('button',{name,exact:true}).click();};
+ const selectTab=async name=>{await openMenu();await nav.getByRole('button',{name,exact:true}).click();await page.locator('.project-navigation-panel').waitFor({state:'detached'});};
  eq(await page.locator('#expo-project-workspace-guide').count(),0,'legacy duplicate guide removed');
  eq(await page.locator('.expoDesktopMenuToggle').isVisible(),false,'project drawer not duplicated');
  await openMenu();
@@ -93,7 +94,7 @@ try{
  const cards=await nav.locator('.project-phase-card').evaluateAll(els=>els.map(e=>{const r=e.getBoundingClientRect();return {top:r.top,bottom:r.bottom,width:r.width};}));
  eq(cards.length,3,'three phases retained in right menu');eq(cards[1].top>=cards[0].bottom,true,'phases follow reading order');eq(Math.max(...cards.map(c=>c.width))-Math.min(...cards.map(c=>c.width))<1,true,'phases use shared panel width');
  const menuFrame=await page.getByRole('dialog',{name:'Prosjektmeny',exact:true}).boundingBox();eq(menuFrame.x+menuFrame.width,1363,'project menu shares right edge with app tools');
- await page.getByRole('dialog',{name:'Prosjektmeny',exact:true}).press('Escape');
+ await dismissDialog(page.getByRole('dialog',{name:'Prosjektmeny',exact:true}));
  eq((await page.locator('.head').boundingBox()).height<=80,true,'desktop app header stays in one compact row');
 
  eq((await page.locator('.project-workspace').boundingBox()).height<400,true,'project context and requested step guide stay compact');
@@ -109,7 +110,7 @@ try{
  await resize(1363);
  await openMenu();
  eq(await nav.getByRole('group',{name:'Oppstart',exact:true}).locator('button').allTextContents().then(labels=>labels.map(text=>text.replace(/^[1-5]/,'').replace('Ved behov','').replace('Historikk','').trim())),['Oversikt','Deltakere og tilganger','Prosjektbeskrivelse','Avtalegrunnlag','Prosjektering','Fremdrift','Salgsgrunnlag'],'contacts and portal access precede work description; history is separate');
- await page.getByRole('dialog',{name:'Prosjektmeny',exact:true}).press('Escape');
+ await dismissDialog(page.getByRole('dialog',{name:'Prosjektmeny',exact:true}));
  eq(await page.getByRole('region',{name:'Anbefalt neste steg'}).getByText('Du er her: Oversikt',{exact:true}).isVisible(),true,'current setup position explicit');
  await page.getByRole('region',{name:'Anbefalt neste steg'}).getByRole('button',{name:'Lagre og fortsett →',exact:true}).click();
  await page.getByText('Du er her: Deltakere og tilganger',{exact:true}).waitFor();
@@ -159,7 +160,7 @@ try{
    eq(await dialog.getByRole('button',{name:'Avvik/SJA/RUH (2)',exact:true}).count(),1,'dynamic deviation count '+width);
    eq(await dialog.getByRole('button',{name:'Chat (3 ulest)',exact:true}).count(),1,'unread label '+width);
    if(width<=700)eq(Math.round((await dialog.boundingBox()).height),1000,'full screen mobile '+width);
-   await dialog.press('Escape');
+   await dismissDialog(dialog);
    eq(await page.getByLabel('Kladd',{exact:true}).inputValue(),'Arbeidet mitt','close preserves draft '+width);
   }
   await button('Status og mangler').click();
@@ -179,7 +180,7 @@ try{
  eq(await page.evaluate(()=>window.navCalls.at(-1)),'sjekklister','field user opens checklists in one click');
  await fieldBar.getByRole('button',{name:'Bilder',exact:true}).click();
  await fieldBar.getByRole('button',{name:'Meny',exact:true}).click();
- await page.getByRole('dialog').press('Escape');
+ await dismissDialog(page.getByRole('dialog'));
  await button(/Prosjektmeny/).click();
  await page.evaluate(()=>window.cancelNavigation=true);
  await page.getByRole('dialog').getByRole('button',{name:'Prosjektbeskrivelse',exact:true}).click();
@@ -233,10 +234,10 @@ try{
    for(const label of ['Prosjektering','Overflater og innredning','Chat (3 ulest)','Overtagelse','Garanti'])eq(await dialog.getByRole('button',{name:label,exact:true}).count(),0,'order hides '+label);
   }
   if(kind==='direct'||kind==='new')eq(await dialog.getByRole('button',{name:'Salgsgrunnlag',exact:true}).count(),0,'no invented sales source '+kind);
-  await dialog.press('Escape');
+  await dismissDialog(dialog);
   if(kind==='support'){
    eq(await button('● Lagre endringer').count(),0,'support cannot save');
-   await button('Status og mangler').click();eq(await page.getByRole('dialog').getByLabel('Arbeidsstatus',{exact:true}).isEnabled(),false,'support status remains read only');await page.getByRole('dialog').press('Escape');
+   await button('Status og mangler').click();eq(await page.getByRole('dialog').getByLabel('Arbeidsstatus',{exact:true}).isEnabled(),false,'support status remains read only');await dismissDialog(page.getByRole('dialog'));
    await button('Flere handlinger').click();eq(await page.getByRole('menu',{name:'Flere handlinger',exact:true}).getByRole('menuitem',{name:'Lagre som kopi',exact:true}).count(),0,'support cannot copy');eq(await page.getByRole('menu',{name:'Flere handlinger',exact:true}).getByRole('menuitem',{name:'🔒 Avslutt prosjekt',exact:true}).count(),0,'support cannot lock');await page.getByRole('menu',{name:'Flere handlinger',exact:true}).press('Escape');
   }
   if(kind==='locked'){await button('Flere handlinger').click();await page.getByRole('menu',{name:'Flere handlinger',exact:true}).getByRole('menuitem',{name:'🔓 Lås opp prosjekt',exact:true}).click();eq(await page.evaluate(()=>window.locks),[true,false],'unlock callback retained');}
@@ -259,7 +260,7 @@ try{
    eq(await page.locator('.project-field-bar button span').evaluateAll(els=>els.every(e=>e.scrollWidth<=e.clientWidth+1)),true,'mobile shortcut labels fit whole words '+width);
    await button(/Prosjektmeny/).click();const menu=page.getByRole('dialog',{name:'Prosjektmeny',exact:true});
    for(const label of ['Hjelp','Support']){await menu.getByRole('button',{name:label,exact:true}).click();eq(await page.evaluate(()=>window.navCalls.at(-1)),label==='Hjelp'?'hjelp':'support','same help/support callback '+label+' '+width);await button(/Prosjektmeny/).click();}
-   await menu.press('Escape');
+   await dismissDialog(menu);
   }
   if(process.env.PROJECT_UX_SCREENSHOTS)await page.screenshot({path:path.join(process.env.PROJECT_UX_SCREENSHOTS,'project-final-'+width+'.png'),fullPage:true,animations:'disabled'});
  }
