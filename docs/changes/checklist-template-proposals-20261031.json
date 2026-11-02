@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Egne sjekklistepunkter, flere trygge kladder og forslag til firmamal",
+  "change": "Fjerner én-kladd-sperren med bevart bruker-/firmascopet kladdbibliotek. Alle aktive ansatte kan foreslå kanoniske sjekkpunkter; firmaadmin får privat gjennomgang/godkjenning/avslag uten utvidelse av direkte malrettigheter. Additiv migrering og egne RPC-er. Issue304; BEGGE, først Sandbox/Preview.",
+  "verification": "44 PostgreSQL-assertioner for roller, eget innsyn, modul av, nullbeslutning, tidslik paginering, definisjon uten jobbdata, idempotens, publisering og tilbakekalt/utenlandsk/anon-tilgang. Kladdbibliotek prøver gammelt ventende payload, flere kladder, quota og korrupt lagring. Native React/HTTP/PostgreSQL-nettleserprøve utvides med ansatt → admin → publisert valg og tapt readback ved begge steg; full CI og nøyaktig Preview-status vedlikeholdes i PR. Ingen reell e-post eller Production-endring før ny TEST OK.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "Nye knapper, egne punkter og eksplisitt godkjenningsflyt må forklares."
+    },
+    "architecture": {
+      "required": true,
+      "reason": "Privat forslagskø, transaksjonell publisering og flere lokale kladder endrer dataflyten."
+    },
+    "setup": {
+      "required": true,
+      "reason": "Egne sjekkpunkter og køens plassering endrer ordinær bruk."
+    },
+    "module": {
+      "required": true,
+      "reason": "Utvider standalone-kontrakten med ansatteforslag og egne RPC-er."
+    }
+  }
+}

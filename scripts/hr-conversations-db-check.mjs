@@ -50,6 +50,11 @@ try{
  await db.exec(`reset role;update auth.users set raw_user_meta_data=jsonb_build_object('full_name','Syntetisk medarbeider') where id=${q(self)};`);
  for(const role of ['anon','authenticated','service_role'])eq((await sql(`select has_function_privilege('${role}','hr_private.employee_json(hr_private.employees)','execute') v`))[0].v,false,'name helper remains private');
  for(const user of [outsider,system]){await actor(user);await reject(()=>rpc('hr_employee_get',[company,employee.id]),'42501');}
+ // Keep the appointment/reminder scenario in the future relative to the
+ // database clock. Fixed November 2026 dates made the no-early-send assertion
+ // expire while the unchanged production scheduler correctly allowed delivery.
+ const meetingDays=(await sql("select to_char((now() at time zone 'Europe/Oslo')::date+6+n,'YYYY-MM-DD') as fixture_date from generate_series(1,21) n order by n")).map(row=>row.fixture_date);
+ const meetingDay=n=>meetingDays[n-1];
  await actor(admin);
  const template=id(20),question=id(21),meeting=id(22),conversation=id(30);
  const tpl={title:'Årlig samtale',kind:'annual',intro:'Syntetisk test',questions:[
@@ -57,22 +62,22 @@ try{
  {id:meeting,topic:'Oppsummering',prompt:'Hva er vi enige om?',phase:'meeting',required:true}]};
  await rpc('hr_template_save',[company,template,0,tpl,false]);
  await actor(leader);
- await reject(()=>rpc('hr_conversation_start',[company,employee.id,1,conversation,template,1,'2026-11-01']),'42501');
+ await reject(()=>rpc('hr_conversation_start',[company,employee.id,1,conversation,template,1,meetingDay(1)]),'42501');
  await db.exec('reset role;update hr_private.runtime_state set content_enabled=true,restore_quarantined=false;');
- await actor(admin);await reject(()=>rpc('hr_conversation_start',[company,employee.id,1,conversation,template,1,'2026-11-01']),'42501');
+ await actor(admin);await reject(()=>rpc('hr_conversation_start',[company,employee.id,1,conversation,template,1,meetingDay(1)]),'42501');
  await actor(leader);
- for(const time of [null,'','9:00','24:00','12:60','09:00:00','09:00Z'])await reject(()=>rpc('hr_conversation_start_at',[company,employee.id,1,conversation,template,1,'2026-11-01',time]),'22023');
- let state=await rpc('hr_conversation_start_at_place',[company,employee.id,1,conversation,template,1,'2026-11-01','13:30',' Sted A ']);eq(state.conversation.meeting_location,'Sted A');
+ for(const time of [null,'','9:00','24:00','12:60','09:00:00','09:00Z'])await reject(()=>rpc('hr_conversation_start_at',[company,employee.id,1,conversation,template,1,meetingDay(1),time]),'22023');
+ let state=await rpc('hr_conversation_start_at_place',[company,employee.id,1,conversation,template,1,meetingDay(1),'13:30',' Sted A ']);eq(state.conversation.meeting_location,'Sted A');
  eq(state.employee.full_name,'Syntetisk medarbeider','conversation returns correct named employee');
  eq(state.conversation.meeting_time,'13:30');eq(state.conversation.meeting_timezone,'Europe/Oslo');
- eq((await rpc('hr_conversation_start_at',[company,employee.id,1,conversation,template,1,'2026-11-02','14:45'])).conversation.meeting_time,'13:30','same ID retry cannot silently reschedule');
+ eq((await rpc('hr_conversation_start_at',[company,employee.id,1,conversation,template,1,meetingDay(2),'14:45'])).conversation.meeting_time,'13:30','same ID retry cannot silently reschedule');
  eq(state.conversation.revision,1,'server case created');
- eq((await rpc('hr_conversation_start',[company,employee.id,1,conversation,template,1,'2026-11-01'])).conversation.revision,1,'same ID retry does not create duplicate');
- const schedule=(revision,on='2026-11-02',time='14:45')=>rpc('hr_conversation_schedule',[company,employee.id,1,conversation,revision,on,time]);
+ eq((await rpc('hr_conversation_start',[company,employee.id,1,conversation,template,1,meetingDay(1)])).conversation.revision,1,'same ID retry does not create duplicate');
+ const schedule=(revision,on=meetingDay(2),time='14:45')=>rpc('hr_conversation_schedule',[company,employee.id,1,conversation,revision,on,time]);
  await actor(self);await reject(()=>schedule(1),'42501');
  await actor(admin);await reject(()=>schedule(1),'42501');
- await actor(leader);await reject(()=>schedule(0),CONFLICT_CODE);await reject(()=>schedule(1,'2026-11-02','24:00'),'22023');
- state=await schedule(1);eq(state.current_revision,2);eq(state.conversation.on,'2026-11-02');eq(state.conversation.meeting_time,'14:45');
+ await actor(leader);await reject(()=>schedule(0),CONFLICT_CODE);await reject(()=>schedule(1,meetingDay(2),'24:00'),'22023');
+ state=await schedule(1);eq(state.current_revision,2);eq(state.conversation.on,meetingDay(2));eq(state.conversation.meeting_time,'14:45');
  eq((await schedule(2)).current_revision,2,'unchanged time is idempotent');
  eq((await rpc('hr_conversation_get',[company,employee.id,conversation,1])).conversation.meeting_time,'13:30','original time remains in immutable history');
  await actor(self);eq((await rpc('hr_conversation_get',[company,employee.id,conversation])).conversation.meeting_time,'14:45','employee reads agreed time');
@@ -90,10 +95,10 @@ try{
  await actor(leader);eq((await notify()).email_status,'pending');eq((await notify()).email_status,'pending','same appointment retries deduplicate');
  await db.exec('reset role;');eq((await sql('select count(*)::int n from hr_private.followup_deliveries'))[0].n,1);
  await db.exec('set role service_role;');eq(await rpc('hr_followup_worker_reserve'),null,'deadline worker cannot take invitation');
- let inviteJob=await rpc('hr_conversation_invitation_reserve');eq(Object.keys(inviteJob).sort(),['attempt','branding','id','location','on','time','to']);eq(inviteJob.on,'2026-11-02');eq(inviteJob.time,'14:45');
+ let inviteJob=await rpc('hr_conversation_invitation_reserve');eq(Object.keys(inviteJob).sort(),['attempt','branding','id','location','on','time','to']);eq(inviteJob.on,meetingDay(2));eq(inviteJob.time,'14:45');
  eq(await rpc('hr_conversation_invitation_validate',[inviteJob.id,inviteJob.attempt,inviteJob.on,inviteJob.time]),true);
  eq(await rpc('hr_conversation_invitation_validate',[inviteJob.id,inviteJob.attempt,inviteJob.on,'14:46']),false);
- eq(await rpc('hr_conversation_invitation_validate',[inviteJob.id,inviteJob.attempt,'2026-11-03',inviteJob.time]),false);
+ eq(await rpc('hr_conversation_invitation_validate',[inviteJob.id,inviteJob.attempt,meetingDay(3),inviteJob.time]),false);
  eq(await rpc('hr_followup_worker_finish',[inviteJob.id,id(999),true]),false);
  eq(await rpc('hr_followup_worker_finish',[inviteJob.id,inviteJob.attempt,false]),true);
  eq(await rpc('hr_conversation_invitation_reserve'),null,'failed transport backs off');
@@ -102,10 +107,10 @@ try{
  eq(await rpc('hr_followup_worker_finish',[retryInvite.id,retryInvite.attempt,true]),true);
  await actor(leader);eq((await status()).email_status,'sent');eq((await status()).can_notify,false);
  // A clock change must not claim the new invitation has been sent.
- state=await schedule(2,'2026-11-02','15:00');eq((await status()).email_status,'not_queued');
+ state=await schedule(2,meetingDay(2),'15:00');eq((await status()).email_status,'not_queued');
  await rpc('hr_conversation_notify',[company,employee.id,1,conversation,3]);
  await db.exec('reset role;set role service_role;');inviteJob=await rpc('hr_conversation_invitation_reserve');eq(inviteJob.time,'15:00');
- await actor(leader);state=await schedule(3,'2026-11-02','14:45');
+ await actor(leader);state=await schedule(3,meetingDay(2),'14:45');
  await db.exec('reset role;set role service_role;');eq(await rpc('hr_conversation_invitation_validate',[inviteJob.id,inviteJob.attempt,inviteJob.on,inviteJob.time]),false,'changed clock stops old invitation before provider');
  await actor(leader);eq((await status()).email_status,'sent','original appointment sent history retained');
  await reject(()=>rpc('hr_conversation_invitation_reserve'),'42501','worker is server only');
@@ -193,8 +198,8 @@ try{
  const saved=revision;
  await reject(()=>rpc('hr_conversation_command',[company,employee.id,employeeRevision,conversation,saved-1,'meeting',{answers:{[meeting]:'stale'},actions:[],next_on:''}]),CONFLICT_CODE);
  eq((await get()).conversation.meeting[meeting],'Shared summary');
- await reject(()=>command('meeting',{answers:{[meeting]:'summary'},actions:[{id:id(40),task:'Do it',owner_id:outsider,due_on:'2026-11-20',done:false}],next_on:'2026-11-21'}),'22023');
- await command('meeting',{answers:{[meeting]:'Shared summary'},actions:[{id:id(40),task:'Follow up',owner_id:self,due_on:'2026-11-20',done:false}],next_on:'2026-11-21'});
+ await reject(()=>command('meeting',{answers:{[meeting]:'summary'},actions:[{id:id(40),task:'Do it',owner_id:outsider,due_on:meetingDay(20),done:false}],next_on:meetingDay(21)}),'22023');
+ await command('meeting',{answers:{[meeting]:'Shared summary'},actions:[{id:id(40),task:'Follow up',owner_id:self,due_on:meetingDay(20),done:false}],next_on:meetingDay(21)});
  await command('ready');await command('confirm');eq(state.conversation.stage,'awaiting','one confirmation is insufficient');
  const reviewSnapshot=structuredClone(state);await db.exec('reset role;');const reviewCounts=(await sql('select (select count(*) from hr_private.artifacts)::int history,(select count(*) from hr_private.followup_deliveries)::int mail,(select count(*) from hr_private.conversation_feedback_receipts)::int receipts'))[0];await actor(leader);
  await command('ready');eq(state,reviewSnapshot,'same awaiting review keeps revision/content/confirmation/feedback/saved fields byte-for-byte');
@@ -206,7 +211,7 @@ try{
  eq(state.conversation.confirmations.leader,null,'comment changes require renewed confirmation');
  await command('confirm');eq(state.conversation.stage,'awaiting');
  await actor(leader);const employeeConfirmed=structuredClone(state);await command('ready');eq(state.conversation,employeeConfirmed.conversation,'review retry preserves employee confirmation too');await command('confirm');eq(state.conversation.stage,'completed');await reject(()=>command('ready'),'22023');
- await reject(()=>rpc('hr_conversation_schedule',[company,employee.id,employeeRevision,conversation,revision,'2026-11-03','15:00']),'22023');
+ await reject(()=>rpc('hr_conversation_schedule',[company,employee.id,employeeRevision,conversation,revision,meetingDay(3),'15:00']),'22023');
  const finalVersion=revision;
  eq((await command('confirm')).current_revision,finalVersion,'confirmation retry idempotent');
  await actor(admin);const changed=await rpc('hr_employee_command',[company,'leader',{id:employee.id,revision:employeeRevision,leader_id:next,clear_old_leader_reader:false}]);employeeRevision=changed.employee.revision;
@@ -226,16 +231,16 @@ try{
  // Place is mandatory for new invitations; immutable event snapshots deduplicate sends independently of comments/revisions.
  await db.exec("reset role;delete from hr_private.followup_deliveries;update hr_private.followup_settings set enabled=true,endpoint='';");
  await actor(next);const placeCase=id(31),oldCase=id(32);
- const startPlace=location=>rpc('hr_conversation_start_at_place',[company,employee.id,employeeRevision,placeCase,template,1,'2026-11-04','12:00',location]);
+ const startPlace=location=>rpc('hr_conversation_start_at_place',[company,employee.id,employeeRevision,placeCase,template,1,meetingDay(4),'12:00',location]);
  for(const location of [null,'','   ','x'.repeat(201),'A\nB','A\tB'])await reject(()=>startPlace(location),'22023');
  await actor(self);await reject(()=>startPlace('Sted A'),'42501');await actor(admin);await reject(()=>startPlace('Sted A'),'42501');await actor(next);
  let placeState=await startPlace(' Sted A ');eq(placeState.conversation.meeting_location,'Sted A');eq((await startPlace('Sted B')).conversation.meeting_location,'Sted A','unknown creation response cannot reschedule the same ID');
- await rpc('hr_conversation_start_at',[company,employee.id,employeeRevision,oldCase,template,1,'2026-11-05','12:00']);
+ await rpc('hr_conversation_start_at',[company,employee.id,employeeRevision,oldCase,template,1,meetingDay(5),'12:00']);
  eq((await rpc('hr_conversation_invitation_status',[company,employee.id,oldCase])).location_required,true);await reject(()=>rpc('hr_conversation_notify',[company,employee.id,employeeRevision,oldCase,1]),'22023');
  const placeStatus=()=>rpc('hr_conversation_invitation_status',[company,employee.id,placeCase]);
  const placeNotify=()=>rpc('hr_conversation_notify',[company,employee.id,employeeRevision,placeCase,placeState.current_revision]);
- const changePlace=location=>rpc('hr_conversation_schedule_at_place',[company,employee.id,employeeRevision,placeCase,placeState.current_revision,'2026-11-04','12:00',location]);
- eq((await changePlace('Sted A')).current_revision,1,'unchanged place is idempotent');await reject(()=>rpc('hr_conversation_schedule_at_place',[company,employee.id,employeeRevision,placeCase,0,'2026-11-04','12:00','Sted B']),CONFLICT_CODE);
+ const changePlace=location=>rpc('hr_conversation_schedule_at_place',[company,employee.id,employeeRevision,placeCase,placeState.current_revision,meetingDay(4),'12:00',location]);
+ eq((await changePlace('Sted A')).current_revision,1,'unchanged place is idempotent');await reject(()=>rpc('hr_conversation_schedule_at_place',[company,employee.id,employeeRevision,placeCase,0,meetingDay(4),'12:00','Sted B']),CONFLICT_CODE);
  await placeNotify();await placeNotify();await db.exec('reset role;');eq((await sql('select count(*)::int n from hr_private.followup_deliveries'))[0].n,1);
  await db.exec('set role service_role;');eq(await rpc('hr_followup_worker_reserve'),null,'deadline worker cannot take a place invitation');let placeJob=await rpc('hr_conversation_invitation_reserve');eq(placeJob.location,'Sted A');eq(placeJob.branding.name,'Synthetic');
  eq(await rpc('hr_conversation_invitation_validate_place',[placeJob.id,placeJob.attempt,placeJob.on,placeJob.time,'Sted A']),true);eq(await rpc('hr_conversation_invitation_validate_place',[placeJob.id,placeJob.attempt,placeJob.on,placeJob.time,'Sted B']),false,'reserved place cannot be substituted');
@@ -244,7 +249,7 @@ try{
  await actor(next);await placeNotify();await placeNotify();await db.exec('reset role;set role service_role;');placeJob=await rpc('hr_conversation_invitation_reserve');eq(placeJob.location,'Sted B');await rpc('hr_followup_worker_finish',[placeJob.id,placeJob.attempt,true]);await actor(next);eq((await placeStatus()).email_status,'sent');
  placeState=await changePlace('Sted A');eq((await placeStatus()).can_notify,true,'return to never-sent suppressed place can create a fresh invitation');await placeNotify();await db.exec('reset role;set role service_role;');placeJob=await rpc('hr_conversation_invitation_reserve');eq(placeJob.location,'Sted A');await rpc('hr_followup_worker_finish',[placeJob.id,placeJob.attempt,true]);
  await actor(next);placeState=await changePlace('Sted B');eq((await placeStatus()).email_status,'sent','return to already-sent date/time/place does not resend');await placeNotify();await db.exec('reset role;');eq((await sql('select count(*)::int n from hr_private.followup_deliveries'))[0].n,3,'only the three explicitly requested event invitations exist');
- await actor(next);placeState=await rpc('hr_conversation_schedule',[company,employee.id,employeeRevision,placeCase,placeState.current_revision,'2026-11-06','13:00']);eq(placeState.conversation.meeting_location,'Sted B','legacy clock editor preserves saved place');
+ await actor(next);placeState=await rpc('hr_conversation_schedule',[company,employee.id,employeeRevision,placeCase,placeState.current_revision,meetingDay(6),'13:00']);eq(placeState.conversation.meeting_location,'Sted B','legacy clock editor preserves saved place');
  await actor(self);await reject(()=>changePlace('Sted C'),'42501');await actor(next);
  const backup=await db.dumpDataDir();
  await actor(admin);const receipt=await rpc('hr_employee_command',[company,'end',{id:employee.id,revision:employeeRevision,confirm:'END_AND_DELETE'}]);eq(receipt.deleted,true);
