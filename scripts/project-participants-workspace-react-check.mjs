@@ -56,3 +56,5 @@ try{
  await act(async()=>w.history.replaceState({},'', '/?project=other&role=kunde'));await act(async()=>w.qaRender({version:3}));await settle();eq(panel(),null,'participant editor is never injected into customer portal');
  console.log('Participants workspace React: '+checks+' assertions PASS — shared placement, retained input, existing save, dirty guards, mobile, focus and project/portal isolation');
 }finally{await act(async()=>w.qaUnmount());dom.window.close();fs.rmSync(temp,{recursive:true,force:true});}
+
+await import('./project-participants-typography-browser-check.mjs');
