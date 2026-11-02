@@ -111,6 +111,7 @@ try{
  await openMenu();
  eq(await nav.getByRole('group',{name:'Oppstart',exact:true}).locator('button').allTextContents().then(labels=>labels.map(text=>text.replace(/^[1-5]/,'').replace('Ved behov','').replace('Historikk','').trim())),['Oversikt','Deltakere og tilganger','Prosjektbeskrivelse','Avtalegrunnlag','Prosjektering','Fremdrift','Salgsgrunnlag'],'contacts and portal access precede work description; history is separate');
  await dismissDialog(page.getByRole('dialog',{name:'Prosjektmeny',exact:true}));
+ await button('Vis veiledning').click();
  eq(await page.getByRole('region',{name:'Anbefalt neste steg'}).getByText('Du er her: Oversikt',{exact:true}).isVisible(),true,'current setup position explicit');
  await page.getByRole('region',{name:'Anbefalt neste steg'}).getByRole('button',{name:'Lagre og fortsett →',exact:true}).click();
  await page.getByText('Du er her: Deltakere og tilganger',{exact:true}).waitFor();
@@ -123,6 +124,7 @@ try{
  eq(await page.getByRole('region',{name:'Anbefalt neste steg'}).getByRole('button',{name:'Lagrer …',exact:true}).isEnabled(),false,'saving button blocks duplicate clicks');
  await selectTab('Oversikt');
  await page.evaluate(()=>{window.holdSave=false;window.finishSave();});
+ await button('Vis veiledning').click();
  await page.getByRole('region',{name:'Anbefalt neste steg'}).getByRole('button',{name:'Lagre og fortsett →',exact:true}).waitFor();
  eq(await page.evaluate(()=>window.navCalls.at(-1)),'prosjekt','delayed save never overrides explicit tab choice');
 
@@ -281,3 +283,5 @@ try{
 await import('./project-checklist-panel-browser-check.mjs');
 
 await import('./project-common-frame-browser-check.mjs');
+
+await import('./project-compact-header-browser-check.mjs');

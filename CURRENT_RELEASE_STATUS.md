@@ -1,3 +1,7 @@
+## 2. november – siste kompakte prosjekttopp og releaseforberedelse
+
+Fra dc4601a6: færre topprader, eksplisitt Vis veiledning på lagret oversikt og ingen misvisende Neste-flyt i skrivebeskyttet prosjekt. 246nye nettleserkrav, berørte tidligere prøver og fullbuild med begge miljøbindinger består. Production mangler fortsatt malforslagsmigreringen; ingen DB-endring er utført. Reell Sandbox er ikke synlig i dagens Supabase-tilkobling, og innlogget sluttkontroll er ikke attestert. Ingen TEST OK/merge/demosynk. Eksakt ny kandidat/fullCI/READY leses i PR295. [Låst leveranse og releasesteg](docs/qa/DESIGN_036_RELEASE_CANDIDATE_20261102.md).
+
 ## 1. november 2026 – prosjekt følger felles appmeny (Preview, ikke releasegodkjent)
 
 Ny samlet rettelse fra e168d7fb: mørk hovedmeny beholdes i prosjekt, prosjektnavn/ledig rad åpner originalt prosjekt, og Tilbake står på samme sted som i Tilbud. Separate prosjektfaner og alle ulagret-/supportgrenser beholdes. Ny kontrollert nettleser i Vercel Sandbox virker; faktisk fast Preview viser innlogging, men den tidligere innloggede økten er ikke gjenopprettet. 99 nye hovedrammekrav og berørte eksisterende tester/build består. Ingen TEST OK, merge, DB, e-post, demobildeinstallasjon eller permanent demosynk. Eksakt ny commit/CI/READY skal leses i fersk PR295-status. Se [samlet QA](docs/qa/DESIGN_036_PROJECT_COMMON_FRAME_20261101.md).
