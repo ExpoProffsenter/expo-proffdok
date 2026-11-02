@@ -1750,7 +1750,7 @@
 }
 .bolig-builder-fields {
   display: grid;
-  grid-template-columns: 1.4fr 1fr;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
   gap: 14px;
 }
 .bolig-span-all {
@@ -1829,6 +1829,7 @@
   max-height: 300px;
   overflow: auto;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 5px;
   margin: 12px 0;
 }
@@ -1877,10 +1878,15 @@
   background: #f1f8f9;
   border-radius: 10px 10px 0 0;
 }
-.bolig-builder-building-head > svg {
+.bolig-builder-building-head > .bolig-building-art {
   width: 130px;
   height: 75px;
+  flex: 0 0 130px;
   border-radius: 6px;
+}
+.bolig-builder-building-head > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .bolig-builder-building-head small {
   font-size: 11px;
@@ -2001,7 +2007,7 @@
   border-radius: 9px;
   min-width: 0;
 }
-.bolig-builder-review article > svg {
+.bolig-builder-review article > .bolig-building-art {
   width: 90px;
   height: 62px;
   flex-shrink: 0;
@@ -2377,7 +2383,12 @@
     font-size: 11px;
     padding: 9px;
   }
-  .bolig-builder-review article > svg {
+  .bolig-builder-building-head > .bolig-building-art {
+    width: 80px;
+    height: 60px;
+    flex-basis: 80px;
+  }
+  .bolig-builder-review article > .bolig-building-art {
     width: 65px;
   }
   .bolig-plan-totals {

@@ -1167,6 +1167,9 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
                       </section>
                     ) : (
                       <aside className="bolig-select-unit">
+                        <details className="bolig-start-help">
+                          <summary>Se de tre stegene i boligleveransen</summary>
+                          <div>
                         <Home size={34} />
                         <h3>Velg en bolig i bygget</h3>
                         <p>
@@ -1178,6 +1181,8 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
                           <li>Velg og lagre grunnpakke og tilvalgspakker.</li>
                           <li>Klargjør varebestillingen.</li>
                         </ol>
+                                                </div>
+                        </details>
                       </aside>
                     )}
                   </div>
@@ -1226,3 +1231,4 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
     </section>
   );
 }
+

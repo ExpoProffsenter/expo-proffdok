@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "title": "Boligveiviser: avgrens husbilder og fjern innvendig breddeoverflyt",
+  "change": "Miljømål BEGGE, bare eksisterende PR294/Preview før TEST OK. Kenneths skjermbilde viser Bygg nytt prosjekt, steg 2 med 16 flerfamiliehus. Gamle SVG-selektorer begrenset ikke img-elementene i byggeditor og oppsummering. Rettet til bolig-building-art, låst thumbnail-størrelse, gitt tittel plass til linjebryting og begrenset minimumsbredde i skjema/bygglisten. Ingen JSX, state, autosave, tilgang, serverkall, database eller sending endres.",
+  "verification": "npm run build PASS og bolig-core-boundary-check origin/main PASS 55 assertions. Faktisk komponent i lokal headless Chromium 153: bolig-builder-browser-check PASS 312 assertions, inkludert bevarte recovery-/opprettelses-/skaleringstester og nye prøver av alle fire boligtyper med 16 bygg, bygg/adresse, etasjer og oppsummering på 320/390/768/1024/1366/1920 px. Bildene dekodes før måling; kontrollerer intern scrollbredde og alle bildenes geometri mot foreldreraden. Samme nye test mot opprinnelig CSS på 435510c6 feiler på Flerfamiliehus, bygg/adresse, 320 px. Rettet CSS gjenopprettet etter førtest. Skjermbilder av flerfamiliehus i byggsteget og oppsummering visuelt inspisert. Playwrights standardnedlasting var ugyldig; lokal nettleser kom fra separat @sparticuz/chromium, uten endring av repoavhengigheter. CI/deployment-status føres i PR. Ingen ekte prosjekt opprettet. Ingen innlogget skynettprøve i denne økten; nettleseren har ingen eksisterende faner/økt. Tidligere 16-hus-test dekket lagret oversikt, ikke veiviseren, og dokumenterer ikke full appdekning.",
+  "documentation": {
+    "help": {"required": false, "reason": "Retter eksisterende bildestørrelse og overflyt; knappnavn og brukerflyt er uendret."},
+    "architecture": {"required": false, "reason": "Bare modulens CSS og regresjonstest endres; dataflyt og ansvar er uendret."},
+    "setup": {"required": false, "reason": "Ingen endring av appoppsett, avhengigheter eller bruksmåte."},
+    "module": {"required": false, "reason": "Boligmodulens grensesnitt, state, datakontrakt og lagring er uendret."}
+  }
+}

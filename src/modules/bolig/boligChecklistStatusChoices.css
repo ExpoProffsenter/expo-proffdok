@@ -1,0 +1,14 @@
+.bolig-checklist-status{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0;align-items:center}
+.bolig-checklist-status button.bolig-checklist-status-choice{display:inline-flex;align-items:center;justify-content:flex-start;gap:8px;min-height:44px;min-width:44px;width:auto;flex:0 1 auto;margin:0;padding:7px 10px;border:1px solid #ccd7d9;border-radius:8px;background:#fff;color:#243f47;box-shadow:none;font-size:16px;line-height:1.35;font-weight:600;touch-action:manipulation;transition:background-color .14s,border-color .14s}
+.bolig-checklist-status .bolig-checklist-status-box{display:inline-grid;place-items:center;width:20px;height:20px;flex:none;box-sizing:border-box;border:1.5px solid #91a7ad;border-radius:5px;background:#fff;color:#fff}
+.bolig-checklist-status-box svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2.7;stroke-linecap:round;stroke-linejoin:round;opacity:0;transform:scale(.7);transition:transform .14s,opacity .14s}
+.bolig-checklist-status button.bolig-checklist-status-choice[aria-pressed=true]{border-color:#77ac8c;background:#eff9f2;color:#14532d}
+.bolig-checklist-status button.bolig-checklist-status-choice[aria-pressed=true] .bolig-checklist-status-box{background:#21834c;border-color:#21834c}
+.bolig-checklist-status button.bolig-checklist-status-choice[data-tone=deviation][aria-pressed=true]{border-color:#d68b41;background:#fff4e8;color:#7c3c08}
+.bolig-checklist-status button.bolig-checklist-status-choice[data-tone=deviation][aria-pressed=true] .bolig-checklist-status-box{background:#be650d;border-color:#be650d}
+.bolig-checklist-status button.bolig-checklist-status-choice[aria-pressed=true] svg{opacity:1;transform:scale(1)}
+.bolig-checklist-status button.bolig-checklist-status-choice:focus-visible{outline:3px solid #167b8f;outline-offset:3px}
+.bolig-checklist-status button.bolig-checklist-status-choice:disabled{opacity:.7;cursor:default}
+@media(prefers-reduced-motion:reduce){.bolig-checklist-status button.bolig-checklist-status-choice,.bolig-checklist-status-box svg{transition:none}}
+
+.bolig-checklist-result-label{display:block;margin:12px 0 6px;font-size:16px;font-weight:600}

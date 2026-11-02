@@ -1,3 +1,4 @@
+import { exerciseBoligStatusChoices } from "./fixtures/bolig-status-choice-check.mjs";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -142,12 +143,14 @@ try {
   const unfinished = mine.locator('article[data-check-key="unit1:new"]');
   await unfinished.getByRole("button", { name: "Fyll ut sjekkliste", exact: true }).click();
   let priorityDialog = dialog("UE – sjekkliste");
-  await priorityDialog.getByLabel("Resultat: Servant kontrollert", { exact: true }).selectOption("OK");
+  await exerciseBoligStatusChoices(page, priorityDialog.getByRole("group", {name:"Resultat: Servant kontrollert",exact:true}), eq, {name:"bolig-partner-quality"});
   eq(await unfinished.getAttribute("data-check-status"), "next", "unsent draft never claims server progress");
+  eq(await page.evaluate(()=>window.__calls.filter(c=>c.p_action==='check_save').length),0,"Result clicks never save or complete UE controls");
   await priorityDialog.getByRole("checkbox", { name: "Fullfør sjekklisten ved lagring", exact: true }).check();
   await page.evaluate(() => (window.__hold = true));
   await button("Lagre sjekkliste").click();
   eq(await unfinished.getAttribute("data-check-status"), "next", "completion waits for server receipt");
+  eq(await priorityDialog.getByRole("group",{name:"Resultat: Servant kontrollert",exact:true}).getByRole("button").evaluateAll(ns=>ns.every(n=>n.matches(":disabled"))),true,"Every UE result action disabled while awaiting receipt");
   await page.evaluate(() => window.__release());
   await priorityDialog.waitFor({ state: "hidden" });
   await mine.getByRole("button", { name: "Fullførte (2)", exact: true }).waitFor();
@@ -182,8 +185,7 @@ try {
   let d = dialog("UE – sjekkliste");
   await d.waitFor();
   await d
-    .getByLabel("Resultat: Servant kontrollert", { exact: true })
-    .selectOption("OK");
+    .getByRole("group", {name:"Resultat: Servant kontrollert",exact:true}).getByRole("button", {name:"OK",exact:true}).click();
   await d
     .getByLabel("Kommentar: Servant kontrollert", { exact: true })
     .fill("QA arbeid kontrollert");
@@ -201,6 +203,7 @@ try {
     "QA arbeid kontrollert",
     "focus keeps draft and open editor",
   );
+  eq(await d.getByRole("group",{name:"Resultat: Servant kontrollert",exact:true}).getByRole("button",{name:"OK",exact:true}).getAttribute("aria-pressed"),"true","Foreground recovery keeps selected result");
   await page.evaluate(() => (window.__fail = true));
   await button("Lagre sjekkliste").click();
   await button("Prøv samme lagring igjen").waitFor();
@@ -343,14 +346,12 @@ try {
   );
   await button("Opprett egen sjekkliste").click();
   d = dialog("UE – sjekkliste");
-  await d.getByLabel("Resultat: Trykk kontrollert", { exact: true }).waitFor();
-  eq(await d.getByRole("combobox").count(), 2, "own checklist points created");
+  await d.getByRole("group", {name:"Resultat: Trykk kontrollert",exact:true}).waitFor();
+  eq(await d.getByRole("group", {name:/^Resultat:/}).count(), 2, "own checklist points created");
   await d
-    .getByLabel("Resultat: Trykk kontrollert", { exact: true })
-    .selectOption("OK");
+    .getByRole("group", {name:"Resultat: Trykk kontrollert",exact:true}).getByRole("button", {name:"OK",exact:true}).click();
   await d
-    .getByLabel("Resultat: Merking kontrollert", { exact: true })
-    .selectOption("OK");
+    .getByRole("group", {name:"Resultat: Merking kontrollert",exact:true}).getByRole("button", {name:"OK",exact:true}).click();
   await page.evaluate(() => (window.__hold = true));
   await button("Lagre sjekkliste").click();
   await page.evaluate(() => window.dispatchEvent(new Event("blur")));
