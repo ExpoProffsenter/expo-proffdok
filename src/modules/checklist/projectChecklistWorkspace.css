@@ -13,3 +13,16 @@
 .deviation-dialog .checklistGroupBody { max-height: none; }
 
 .project-checklist-resume{display:grid;gap:8px;padding:12px;border:1px solid #b5dce1;background:#f0fafb;border-radius:14px;margin:12px 0}.project-checklist-resume>strong{font-size:14px;color:#174b55}.project-checklist-resume>button{display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;min-height:48px;padding:10px 12px;box-shadow:none}.project-checklist-resume>button>span{overflow-wrap:anywhere}.project-checklist-resume>button>b{font-size:12px;flex-shrink:0}@media(max-width:500px){.project-checklist-resume>button{align-items:flex-start;flex-direction:column;gap:5px}}
+
+.project-checklist-heading h3{flex:1;min-width:140px;margin:0;font-size:18px;line-height:1.35;color:#183e50;overflow-wrap:anywhere}
+.project-checklist-heading span{font-size:14px!important;color:#4a6271}
+.project-checklist-card{padding:16px!important;margin:12px 0!important;border:1px solid #d6e2e8;border-radius:14px;background:#fff}
+.project-checklist-card-actions{display:flex;gap:8px;flex-wrap:wrap}
+.project-checklist-card-actions>button{min-height:44px;white-space:normal;margin:0!important}
+.project-checklist-panel .ux-toolbar{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.project-checklist-panel .ux-inline-note{display:none}
+.project-checklist-panel .project-checklist-workspace>.note{padding:12px;background:#eef5f8;border-radius:10px;font-size:14px;color:#294959}
+.project-checklist-panel .project-checklist-workspace .project-checklist-heading{background:transparent;padding:0}
+@media(max-width:500px){.project-checklist-card-actions{flex-direction:column}.project-checklist-card-actions>button{width:100%}}
+
+.project-checklist-resume>.note{margin:0;font-size:14px;color:#365c69}.project-checklist-resume>button>b{font-size:16px}

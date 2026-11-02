@@ -1,3 +1,4 @@
+import '../salesEntryWorkspace.css';
 // Expo ProffDok - FASE 23J / FASE 29C1
 // Presentasjonskomponent for planlegging og oppdatering av befaring.
 // I Systemadmin-supportmodus beholdes eksisterende saks-/befaringsansvarlig og
@@ -34,7 +35,7 @@ export default function SalesSurveyPlan({
 
   if (supportMode) {
     return (
-      <div className="sales-app">
+      <div className="sales-app sales-editor-app sales-survey-plan-app">
         <div className="sales-shell">
           <header className="sales-header">
             <button
@@ -102,7 +103,7 @@ export default function SalesSurveyPlan({
   }
 
   return (
-    <div className="sales-app">
+    <div className="sales-app sales-editor-app sales-survey-plan-app">
       <div className="sales-shell">
         <header className="sales-header">
           <button

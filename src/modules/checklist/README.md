@@ -18,6 +18,10 @@ Nye UI-kommandoer er `project_checklist_signed_command` og `standalone_checklist
 
 `ChecklistFirmTemplate` kopierer bare `checklistContent(definition)` gjennom eksisterende mal-RPC/egne readback og rettigheter. Utkast og publisering er separate valg. Klientens frosne maljobb har egen nøkkel per bruker/firma/kontroll; uavklart maljobb endrer aldri kontrollsvar eller signaturer. Ingen personlig malsentral eller automatisk firmapublisering.
 
+### Kompakte svarvalg i design-Preview
+
+ChecklistStatusChoices er en ren kontrollert visning. Den bruker eksisterende Ok/Ikke aktuelt/Avvik-verdier og onChange; lagring, signaturinvalidasjon og avvikslenker blir hos opprinnelig editor. Native knapper har aria-pressed,20px visuell boks og minst44px trykkflate. Avvik er oransje, øvrige valgte svar grønne. Foreldres disabled/fieldset og definisjonens allow_na beholdes. Prosjektets felles editor (inkludert prosjektering/fag/garanti) og eksterne sjekklister bruker samme visning. Bolig/UE har egen komponent og er fortsatt en separat, åpen del av oppgave302; ingen Bolig-kjerne endres i design-PR295.
+
 ## Egne punkter og malforslag
 
 Alle godkjente ansatte i aktivt arbeidsfirma kan starte Egen sjekkliste og bygge punkter/underfelt uten personlig KS/HMS-tilgang. En eksisterende kladd blokkerer ikke Start sjekkliste. `standaloneDraftsKey` avgrenser flere lokale kladder per bruker/firma. Ny og gammel kladd arkiveres atomisk før aktiv legacy-nøkkel flyttes; feil eller korrupt innhold sperrer byttet. Kun den bekreftede/forkastede kladdens ID fjernes. Eksakt ventende request/payload bevares. Lokal sikring er ikke serverlagring; enhetsbytte krever Lagre sjekkliste.
@@ -25,3 +29,11 @@ Alle godkjente ansatte i aktivt arbeidsfirma kan starte Egen sjekkliste og bygge
 `ChecklistTemplateProposal` sender bare kanonisk definisjon via `checklist_template_proposal_submit`. Ingen ordre, kunde, besvarelse eller signatur kopieres. Forslaget er privat til forslagsstiller og firmaets behandlere. `ChecklistProposalInbox` viser Mine malforslag for ansatte og Forslag til firmamaler for firmaadmin/utpekt KS/HMS-ansvarlig. Eksakt detalj leses før behandling. Punkter/underfelt vises uendret. Godkjenning krever bevisst gjennomgang; avslag krever begrunnelse. Frosne forespørsler og separat readback håndterer forbindelsesbrudd uten doble maler. Usendt behandlingsmerknad sikres lokalt. Eksisterende direkte malutkast/publisering beholder sine tidligere rettigheter.
 
 Migrering `20261031012504_checklist_template_proposals.sql` er additiv. Kjør først i Sandbox, deretter Production først etter ny TEST OK. Nye DB- og kladdbiblioteksprøver importeres fra den eksisterende standalone-nettleserprøven slik at samme CI-pakke dekker dem. Ingen e-post sendes for malforslag; køen er selve leveringen til firmaadmin.
+
+Rapportmappingen merker bare signaturbildets presentasjon med `kind: signature`, slik at boxed PDF-rendereren kan begrense bildet proporsjonalt til80×24mm. Signaturinput, bruker-/revisjons-/grunnlagsbinding, krav, readback og historiske verdier er uendret.
+
+## Prosjektets sjekklisteoversikt
+
+Prosjektets Sjekklister åpnes i felles native WorkspacePanel til høyre, likt på PC og mobil. Oversikten velger ingen vilkårlig kontroll ved innsteg (`autoOpenOnEntry=false`); eksakte hopp fra avvik/punkt beholdes. Påbegynte lister står først med Fortsett utfylling. Snarveiene øverst prioriterer lister som fortsatt har uvurderte punkter. Alle vurderte lister beholdes nedenfor med Klar til sluttkontroll; dette er ingen fullføring. Kortene viser fremdrift og eventuell sist lagret-identitet. Lagrede kontroller bruker eksisterende editor/RPC og lokal sikring. Navn utvider ikke punkter; Vis punkter og historikk er et eget valg. Escape lukker innerste editor før oversikt. Avbrutt navigasjon beholder oversikten.
+
+Låst/support tilbyr Vis dokumentasjon. Historiske svar uten fullført run merkes Registrert dokumentasjon, aldri som fullført kontroll. Ingen historikk eller status opprettes for å endre etikettene. Tillegg og egne punkter ligger etter kontrollene. Prosjektering beholder automatisk innsteg og samme lagringskontrakt.

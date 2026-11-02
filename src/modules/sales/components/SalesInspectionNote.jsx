@@ -629,6 +629,7 @@ export default function SalesInspectionNote({
                   </div>
                 ) : null}
                 <SalesBathroomSketch
+                  storedImageAvailable={!editableSketchAvailable && hasSavedSketchImage}
                   value={bathroomSketch}
                   onChange={handleBathroomSketchChange}
                   disabled={busy}

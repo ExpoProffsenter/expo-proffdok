@@ -1,3 +1,4 @@
+import SalesEntryPanel from './components/SalesEntryPanel.jsx';
 import SalesMobileTools from "./components/SalesMobileTools.jsx";
 // Expo ProffDok – FASE 45B / FASE 44C / FASE 42I / FASE 42F / FASE 42A / FASE 39B.2C / FASE 38A1
 // FASE 45B lar lokal Sales-cache/recovery følge aktivt Representerer uten å endre database/RLS.
@@ -171,41 +172,12 @@ function setSalesOverviewIntro(type = "all") {
 
 function OfferTypePicker({ canUseStoreOffers, onWetroom, onStore, onClose }) {
   return (
-    <div
-      role="presentation"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) onClose();
-      }}
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 10020,
-        background: "rgba(5, 18, 25, 0.42)",
-        display: "grid",
-        placeItems: "center",
-        padding: 18,
-      }}
-    >
-      <section
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="sales-offer-type-title"
-        style={{
-          width: "min(560px, 100%)",
-          borderRadius: 20,
-          background: "#fff",
-          padding: 22,
-          boxShadow: "0 24px 70px rgba(5,18,25,.28)",
-        }}
-      >
-        <h2 id="sales-offer-type-title" style={{ margin: "0 0 7px" }}>
-          Nytt tilbud
-        </h2>
+    <SalesEntryPanel title="Nytt tilbud" onBack={onClose} footer={<button type="button" className="secondary" onClick={onClose}>Avbryt</button>}>
         <p className="note" style={{ marginTop: 0 }}>
           Velg tilbudstype. Dette oppretter et tilbud direkte og endrer ikke Ny forespørsel eller befaringsflyten.
         </p>
 
-        <div style={{ display: "grid", gap: 10, marginTop: 16 }}>
+        <div className="sales-entry-choices">
           <button
             type="button"
             onClick={onWetroom}
@@ -232,16 +204,7 @@ function OfferTypePicker({ canUseStoreOffers, onWetroom, onStore, onClose }) {
           ) : null}
         </div>
 
-        <button
-          type="button"
-          className="secondary"
-          onClick={onClose}
-          style={{ marginTop: 14 }}
-        >
-          Avbryt
-        </button>
-      </section>
-    </div>
+    </SalesEntryPanel>
   );
 }
 

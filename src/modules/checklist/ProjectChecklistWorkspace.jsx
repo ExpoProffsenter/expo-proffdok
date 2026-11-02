@@ -3,7 +3,7 @@ import {emptySignatures,isExecutionChecklist,signatureProblem,signaturesForEdito
 import {projectChecklistReadRpc} from './projectChecklistRead.mjs';
 import {invalidateFieldConfirmations} from './checklistFields.mjs';
 import {checklistResumeEntries,firstUnfinishedChecklist} from './checklistResume.mjs';
-import {checklistDisplayState} from './checklistDisplay.mjs';
+import {projectChecklistDisplayState as checklistDisplayState,matchesChecklistFilter} from './checklistDisplay.mjs';
 import {useEffect,useRef,useState} from 'react';
 import DeviationDialog from '../deviations/DeviationDialog.jsx';
 import {kshmsRpc} from '../kshms/kshmsAccess.js';
@@ -12,14 +12,16 @@ import {MANAGED_ACCESS_EVENT,MODULE_ACCESS_EVENT} from '../access/moduleAccessCl
 import {WORK_PROFILE_EVENT} from '../access/workProfileClient.js';
 import {answersForDefinition,checklistRunDraftKey,commitChecklistRun,completionProblem,currentRunAnswers,readRunDraft,runDefinition,sameRunValue} from './checklistRuns.mjs';
 import './projectChecklistWorkspace.css';
+import './projectChecklistGuidance.css';
 import KshmsDocumentPdfButton from '../kshms/KshmsDocumentPdfButton.jsx';
 
-export default function ProjectChecklistWorkspace({Editor,companyId,userId,projectId,checklist,activeChecklistTemplate,instances=[],readOnly=false,supportReadOnly=false,showTools=true,showPrevious=true,customChecklistAllowed=false,isWarrantyPoint=()=>false,onSaved,uploadImages,resolveFileUrl,entryRequest=null,onEntryHandled,...editorProps}) {
+export default function ProjectChecklistWorkspace({Editor,companyId,userId,projectId,checklist,activeChecklistTemplate,instances=[],readOnly=false,supportReadOnly=false,showTools=true,showPrevious=true,customChecklistAllowed=false,isWarrantyPoint=()=>false,onSaved,uploadImages,resolveFileUrl,entryRequest=null,autoOpenOnEntry=true,onEntryHandled,...editorProps}) {
  readOnly=readOnly||supportReadOnly;
  const readRpc=projectChecklistReadRpc(kshmsRpc,{supportReadOnly,companyId,projectId});
  const [displayFilter,setDisplayFilter]=useState('all');
+ useEffect(()=>setDisplayFilter('all'),[companyId,userId,projectId,readOnly]);
  const [data,setData]=useState(null),[selected,setSelected]=useState(null),[expanded,setExpanded]=useState({}),[error,setError]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false),[uploads,setUploads]=useState(0);
- const owner=useRef(null),locked=useRef(false),selection=useRef(null),cached=useRef(new Map());
+ const owner=useRef(null),locked=useRef(false),selection=useRef(null),cached=useRef(new Map()),dialogReturnFocus=useRef(null);
  selection.current=selected;
  const current=scope=>scope?.active&&owner.current===scope;
  const key=category=>checklistRunDraftKey(userId,companyId,projectId,category);
@@ -36,18 +38,25 @@ export default function ProjectChecklistWorkspace({Editor,companyId,userId,proje
   setData(state);return state;
  };
  useEffect(()=>{
-  const scope={active:true};owner.current=scope;cached.current=new Map();setData(null);setSelected(null);setExpanded({});setError('');setNotice('');setBusy(false);
+  const scope={active:true};owner.current=scope;dialogReturnFocus.current=null;cached.current=new Map();setData(null);setSelected(null);setExpanded({});setError('');setNotice('');setBusy(false);
   const refresh=event=>{
-   if(event?.type===WORK_PROFILE_EVENT&&event.detail?.active_company_id!==companyId){scope.active=false;owner.current=null;setSelected(null);setData(null);return;}
+   if(event?.type===WORK_PROFILE_EVENT&&event.detail?.active_company_id!==companyId){scope.active=false;owner.current=null;dialogReturnFocus.current=null;setSelected(null);setData(null);return;}
    load(scope).catch(cause=>{if(current(scope))setError(cause.message);});
   };
   refresh();const events=['focus',MANAGED_ACCESS_EVENT,MODULE_ACCESS_EVENT,WORK_PROFILE_EVENT];events.forEach(event=>window.addEventListener(event,refresh));
-  return()=>{scope.active=false;events.forEach(event=>window.removeEventListener(event,refresh));};
+  return()=>{scope.active=false;dialogReturnFocus.current=null;events.forEach(event=>window.removeEventListener(event,refresh));};
  },[companyId,userId,projectId,supportReadOnly]);
- const select=value=>{selection.current=value;setSelected(value);setError('');setNotice('');};
+ const captureDialogFocus=()=>{
+  if(!selection.current)dialogReturnFocus.current={element:document.activeElement,scope:owner.current};
+ };
+ const returnDialogFocus=()=>{
+  const target=dialogReturnFocus.current;
+  return target&&current(target.scope)&&target.element?.isConnected&&!target.element.matches(':disabled')&&!target.element.closest('[hidden],[inert]')?target.element:null;
+ };
+ const select=value=>{if(!locked.current)captureDialogFocus();selection.current=value;setSelected(value);setError('');setNotice('');};
  const begin=async(group,{fresh=false,run=null,viewSaved=false,followPoint=null,nextUnfinished=false,isIntentCurrent=()=>true}={})=>{
   if(locked.current)return;
-  const scope=owner.current;locked.current=true;setBusy(true);setError('');
+  const scope=owner.current;captureDialogFocus();locked.current=true;setBusy(true);setError('');
   try {
    const state=await load(scope);if(!state||!current(scope)||!isIntentCurrent())return;
    if(nextUnfinished){
@@ -101,13 +110,13 @@ export default function ProjectChecklistWorkspace({Editor,companyId,userId,proje
   const finish=()=>entryContext.current.onEntryHandled?.(entryRequest.id);
   const matches=entryRequest.projectId===projectId&&entryRequest.companyId===companyId&&entryRequest.userId===userId;
   // Existing exact checkpoint links take the same begin lock before this effect.
-  if(!matches||readOnly||!projectId||!companyId||!userId||selection.current||locked.current){finish();return;}
+  if(!autoOpenOnEntry||!matches||readOnly||!projectId||!companyId||!userId||selection.current||locked.current){finish();return;}
   const cancel=()=>{active=false;finish();};
   const events=['pointerdown','keydown','blur'];
   events.forEach(event=>window.addEventListener(event,cancel,true));
   beginRef.current(null,{nextUnfinished:true,isIntentCurrent:()=>active}).finally(()=>{if(active)finish();});
   return()=>{active=false;events.forEach(event=>window.removeEventListener(event,cancel,true));};
- },[entryRequest,companyId,userId,projectId,readOnly]);
+ },[entryRequest,companyId,userId,projectId,readOnly,autoOpenOnEntry]);
  const change=(category,item,patch,options={})=>{
   const value=selection.current;if(!value||value.readOnly||readOnly||locked.current||value.pendingAction)return;
   const answers={...value.answers,[item]:{...value.answers[item],...patch}};
@@ -167,43 +176,60 @@ export default function ProjectChecklistWorkspace({Editor,companyId,userId,proje
  };
  const groups=activeChecklistTemplate;
  const displayGroups=checklistResumeEntries(groups,data?.runs||[],data?.checklist||checklist,category=>readRunDraft(window.localStorage,key(category)),readOnly);
- const resumable=displayGroups.filter(entry=>entry.resumable);
+ const progressGroups=displayGroups.map(entry=>{
+   const {group,resumable}=entry;
+   const latest=data?.runs?.find(run=>run.category===group.category);
+   const local=readOnly?null:readRunDraft(window.localStorage,key(group.category));
+   const localWork=local&&(local.pendingAction||Object.values(local.answers||{}).some(answer=>answer?.status||answer?.comment||answer?.photos?.length||Object.keys(answer?.values||{}).length));
+   const localUnsaved=localWork&&(!latest||local.id!==latest.id||local.revision!==latest.revision||!sameRunValue(local.answers,latest.answers)||!sameRunValue(signatureInput(local.signatures),signatureInput(latest.signatures)));
+   const answers=localWork?local.answers:latest?.answers||data?.checklist?.[group.category]||checklist?.[group.category]||{},done=group.items.filter(item=>answers[item]?.status).length;
+   const display=checklistDisplayState(latest?.definition||runDefinition(group,instances,isWarrantyPoint(group.category)),answers,latest?.status==='completed'&&!resumable);
+   return {...entry,latest,localUnsaved,done,display};
+ });
+ const resumable=progressGroups.filter(entry=>entry.resumable&&entry.group.items.length>0&&!entry.display.complete&&!entry.display.ready);
+ const counts=progressGroups.reduce((total,{display})=>({...total,[display.stage]:total[display.stage]+1}),{work:0,ready:0,completed:0});
  const historical=(data?.runs||[]).filter(value=>value.status==='completed');
  const previousGroups=Object.entries(data?.checklist||checklist||{}).filter(([category,answers])=>!groups.some(group=>group.category===category)&&Object.values(answers||{}).some(answer=>answer?.status||answer?.comment||answer?.photos?.length||Object.keys(answer?.values||{}).length));
  const savedSelection=selected&&data?.runs?.find(row=>row.id===selected.id);
  const pdfReady=Boolean(savedSelection&&!selected.earlierDraft&&!selected.pendingAction&&savedSelection.revision===selected.revision&&sameRunValue(savedSelection.definition,selected.definition)&&sameRunValue(signatureInput(savedSelection.signatures),signatureInput(selected.signatures))&&sameRunValue(answersForDefinition(savedSelection.definition,savedSelection.answers),answersForDefinition(selected.definition,selected.answers)));
  const title=definition=>definition.category.replace(/^KS\/HMS sjekkliste – /,'');
  return <div className="project-checklist-workspace">
-  <p className="note">Åpne en sjekkliste for å fylle den ut. «Lagre» lar deg eller en kollega fortsette senere. «Sjekkliste fullført» lagrer en ferdig kontroll.</p>
+  <p className="note">{readOnly?'Dette prosjektet er skrivebeskyttet. Velg «Vis dokumentasjon» for å lese sjekkpunktene. Registrerte svar uten fullført kontrollhistorikk vises som dokumentasjon.':'Fortsett en påbegynt sjekkliste, eller velg en ny nedenfor. «Lagre» lar deg eller en kollega fortsette senere. «Sjekkliste fullført» lagrer en ferdig kontroll.'}</p>
   {!selected&&error&&<p role="alert" className="ks-error">{error}</p>}
   {!selected&&notice&&<p role="status" className="ks-notice">{notice}</p>}
-  {showTools&&<details className="item"><summary>Egne sjekkpunkter og vedlegg</summary><fieldset disabled={readOnly}><Editor {...editorProps} checklist={checklist} activeChecklistTemplate={[]} customChecklistEnabled={customChecklistAllowed} toolsOnly consumeChecklistJump={false}/></fieldset></details>}
   {!groups.length&&<p>Ingen sjekklister er lagt til. Legg til egne sjekkpunkter, eller hent en publisert liste fra KS/HMS når firmaet har tilgang.</p>}
-  <div className="ux-toolbar"><label>Vis sjekklister<select value={displayFilter} onChange={e=>setDisplayFilter(e.target.value)}><option value="all">Alle</option><option value="unfinished">Uferdige</option><option value="deviations">Med åpne avvik</option><option value="images">Mangler påkrevd bilde eller dokumentasjon</option></select></label><span className="ux-inline-note">Filtrering endrer ingen svar. Lagring og rapport bruker fortsatt hele kontrollen.</span></div>
-  {!selected&&!!resumable.length&&['all','unfinished'].includes(displayFilter)&&<div className="project-checklist-resume" role="region" aria-label="Påbegynte sjekklister"><strong>Fortsett der du slapp</strong>{resumable.map(({group})=><button key={group.category} type="button" disabled={busy} aria-label={`Fortsett utfylling: ${title(group)}`} onClick={()=>begin(group)}><span>{title(group)}</span><b>Fortsett utfylling →</b></button>)}</div>}
-  {displayGroups.map(({group})=>{
-   const latest=data?.runs?.find(run=>run.category===group.category),answers=latest?.answers||checklist?.[group.category]||{},done=group.items.filter(item=>answers[item]?.status).length;
-   const display=checklistDisplayState(latest?.definition||runDefinition(group,instances,isWarrantyPoint(group.category)),answers,latest?.status==='completed');
-   const visible=displayFilter==='all'||(displayFilter==='unfinished'&&!display.complete)||(displayFilter==='deviations'&&display.deviations>0)||(displayFilter==='images'&&display.missingImages>0);
+  {!readOnly&&!!groups.length&&<div className="project-checklist-stages" role="group" aria-label="Hva gjenstår i sjekklistene?">
+   {[["work","Arbeid gjenstår"],["ready","Til sluttkontroll"],["completed","Fullført"]].map(([value,label])=><button key={value} type="button" className="secondary" aria-pressed={displayFilter===value} aria-label={`${label}: ${counts[value]}`} onClick={()=>setDisplayFilter(value)}><strong>{counts[value]}</strong><span>{label}</span></button>)}
+  </div>}
+  <div className="ux-toolbar"><label>Vis sjekklister<select value={displayFilter} onChange={e=>setDisplayFilter(e.target.value)}><option value="all">Alle</option><option value="unfinished">Uferdige</option>{!readOnly&&<><option value="work">Arbeid gjenstår</option><option value="ready">Klar til sluttkontroll</option></>}<option value="completed">Fullført</option><option value="deviations">Med åpne avvik</option><option value="images">Mangler påkrevd bilde eller dokumentasjon</option></select></label><span className="ux-inline-note">Filtrering endrer ingen svar. Lagring og rapport bruker fortsatt hele kontrollen.</span></div>
+  {!!groups.length&&!progressGroups.some(({display})=>matchesChecklistFilter(display,displayFilter))&&<div className="project-checklist-filter-empty" role="status"><p>Ingen sjekklister passer dette filteret.</p><button type="button" className="secondary" onClick={()=>setDisplayFilter('all')}>Vis alle sjekklister</button></div>}
+  {!selected&&!!resumable.length&&['all','unfinished','work'].includes(displayFilter)&&<div className="project-checklist-resume" role="region" aria-label="Påbegynte sjekklister"><strong>Fortsett der du slapp</strong><p className="note">Her gjenstår svar eller påkrevd dokumentasjon. Velg Til sluttkontroll for lister som er klare til gjennomgang og signering.</p>{resumable.map(({group})=><button key={group.category} type="button" disabled={busy} aria-label={`Fortsett utfylling: ${title(group)}`} onClick={()=>begin(group)}><span>{title(group)}</span><b>Fortsett utfylling →</b></button>)}</div>}
+  {progressGroups.map(({group,resumable,latest,localUnsaved,done,display})=>{
+   const visible=matchesChecklistFilter(display,displayFilter);
    return <article className="item project-checklist-card" key={group.category} hidden={!visible}>
-    <button type="button" className="secondary project-checklist-heading" aria-expanded={!!expanded[group.category]} onClick={()=>setExpanded(value=>({...value,[group.category]:!value[group.category]}))}>
-     <span aria-hidden="true">{expanded[group.category]?'▾':'▸'}</span><b>{title(group)}</b><span>{done}/{group.items.length} vurdert · {latest?.status==='completed'?'Fullført':display.ready?'Alle punkter vurdert – kontroller og fullfør':done?'Pågår':'Ikke påbegynt'}</span>
-    </button>
-    <div className="project-checklist-card-actions"><button type="button" disabled={busy} onClick={()=>begin(group)}>{latest?.status==='completed'?'Åpne fullført sjekkliste':'Åpne sjekkliste'}</button></div>
+    <div className="project-checklist-heading"><h3>{title(group)}</h3><span>{done}/{group.items.length} vurdert · {localUnsaved?'Lokal kladd':latest?.status==='completed'&&!resumable?'Fullført':readOnly?(done?'Registrert dokumentasjon':'Ingen vurderte punkter'):display.ready?'Klar til sluttkontroll':done&&display.missingDocumentation?'Mangler dokumentasjon':done?'Under arbeid':'Ikke påbegynt'}</span></div>
+    {localUnsaved&&<p className="note">Kladden finnes på denne enheten. Lagre kontrollen for at en kollega skal kunne fortsette.</p>}
+    {!readOnly&&!display.complete&&done>0&&display.problem&&<p className="project-checklist-next-issue"><strong>Gjenstår:</strong> {display.problem}</p>}
+    {!readOnly&&display.ready&&<p className="note">{isExecutionChecklist(latest?.definition||group)?'Svar og påkrevd dokumentasjon er fylt ut. Gå gjennom kontrollen og signer før du fullfører.':'Svar og påkrevd dokumentasjon er fylt ut. Gå gjennom kontrollen før du fullfører.'}</p>}
+
+    {latest?.updated_identity&&<p className="note">Sist lagret av {identityText(latest.updated_identity)} · {new Date(latest.updated_at).toLocaleString('nb-NO')}</p>}
+    <div className="project-checklist-card-actions"><button type="button" disabled={busy} aria-label={resumable?`Fortsett sjekkliste: ${title(group)}`:undefined} onClick={()=>begin(group)}>{readOnly?'Vis dokumentasjon':display.ready?'Åpne for sluttkontroll':resumable?'Fortsett utfylling →':latest?.status==='completed'?'Åpne fullført sjekkliste':'Åpne sjekkliste'}</button>
+     <button type="button" className="secondary" aria-label={`Vis punkter og historikk: ${title(group)}`} aria-expanded={!!expanded[group.category]} onClick={()=>setExpanded(value=>({...value,[group.category]:!value[group.category]}))}>{expanded[group.category]?'Skjul punkter og historikk':'Vis punkter og historikk'}</button></div>
     {expanded[group.category]&&<div><p>{group.instructions||'Kontroller punktene og legg til dokumentasjon der det trengs.'}</p><ul>{group.items.map(item=><li key={item}>{item}</li>)}</ul>
      {latest?.updated_identity&&<p className="note">Sist lagret av {identityText(latest.updated_identity)} · {new Date(latest.updated_at).toLocaleString('nb-NO')}</p>}
      {historical.filter(run=>run.category===group.category).map(run=><button type="button" className="secondary" key={run.id} disabled={busy} onClick={()=>begin(group,{run})}>Fullført {new Date(run.completed_at).toLocaleString('nb-NO')} · {identityText(run.completed_identity)}</button>)}
     </div>}
    </article>;
   })}
+  {showTools&&<details className="item"><summary>Egne sjekkpunkter og vedlegg</summary><fieldset disabled={readOnly}><Editor {...editorProps} checklist={checklist} activeChecklistTemplate={[]} customChecklistEnabled={customChecklistAllowed} toolsOnly consumeChecklistJump={false}/></fieldset></details>}
   {showPrevious&&!!previousGroups.length&&<details className="item"><summary>Tidligere dokumentasjon</summary><p>Lagrede svar fra lister som ikke brukes her nå, er beholdt.</p>{previousGroups.map(([category,answers])=><button type="button" className="secondary" key={category} onClick={()=>select({id:`legacy:${category}`,definition:{category,items:Object.keys(answers)},answers,readOnly:true})}>{category}</button>)}</details>}
-  {selected&&<DeviationDialog title={title(selected.definition)} context={selected.readOnly?'Lagret kontroll':`Kontroll under arbeid${selected.revision?' · lagret versjon '+selected.revision:''}`} onClose={dismiss} busy={busy||uploads>0} closeLabel="Lukk sjekklistedialog">
+  {selected&&<DeviationDialog title={title(selected.definition)} context={selected.readOnly?(selected.status==='completed'?'Fullført kontroll':'Registrert dokumentasjon'):`Kontroll under arbeid${selected.revision?' · lagret versjon '+selected.revision:''}`} onClose={dismiss} busy={busy||uploads>0} closeLabel="Lukk sjekklistedialog" returnFocusTarget={returnDialogFocus}>
    {error&&<p role="alert" className="ks-error">{error}</p>}{notice&&<p role="status" className="ks-notice">{notice}</p>}
    {selected.completed_identity&&<p>Fullført av {identityText(selected.completed_identity)} · {new Date(selected.completed_at).toLocaleString('nb-NO')}</p>}
-   <fieldset disabled={readOnly||selected.readOnly||busy||uploads>0||!!selected.pendingAction}><Editor {...editorProps} key={selected.id} userId={userId} readOnlyFields={readOnly||selected.readOnly} embedded initiallyExpanded consumeChecklistJump={false} customChecklistEnabled={false} showOpenDeviationsOnly={false} setShowOpenDeviationsOnly={null} activeChecklistTemplate={[selected.definition]} checklist={{[selected.definition.category]:selected.answers}} setChecklistValue={change} addChecklistPhoto={addPhoto} onOpenKshmsDeviation={editorProps.onOpenKshmsDeviation?id=>{if(remember(selection.current)){setSelected(null);selection.current=null;editorProps.onOpenKshmsDeviation(id);}}:null}/></fieldset>
+   <fieldset disabled={readOnly||selected.readOnly||busy||uploads>0||!!selected.pendingAction}><Editor {...editorProps} key={selected.id} userId={userId} readOnlyFields={readOnly||selected.readOnly} completionStatus={selected.status||'legacy'} embedded initiallyExpanded consumeChecklistJump={false} customChecklistEnabled={false} showOpenDeviationsOnly={false} setShowOpenDeviationsOnly={null} activeChecklistTemplate={[selected.definition]} checklist={{[selected.definition.category]:selected.answers}} setChecklistValue={change} addChecklistPhoto={addPhoto} onOpenKshmsDeviation={editorProps.onOpenKshmsDeviation?id=>{if(remember(selection.current)){setSelected(null);selection.current=null;editorProps.onOpenKshmsDeviation(id);}}:null}/></fieldset>
    {isExecutionChecklist(selected.definition)&&<ChecklistSignatures value={selected.signatures} onChange={changeSignatures} readOnly={selected.readOnly||readOnly} disabled={busy||uploads>0||!!selected.pendingAction} status={selected.status}/>}
    {savedSelection&&!selected.earlierDraft&&<KshmsDocumentPdfButton rpc={readRpc} kind="run" row={selected} companyId={companyId} userId={userId} projectId={projectId} resolveFileUrl={resolveFileUrl} disabled={!pdfReady||busy||uploads>0}/> }
-   {!savedSelection&&<p className="note">Lagre kontrollen først for å laste ned egen PDF. Tidligere dokumentasjon uten kontrollhistorikk finnes i prosjektets ordinære rapport.</p>}
+   {!savedSelection&&<p className="note">{readOnly||selected.readOnly?'Denne dokumentasjonen har ingen lagret kontrollhistorikk. Den finnes i prosjektets ordinære rapport.':'Lagre kontrollen først for å laste ned egen PDF. Tidligere dokumentasjon uten kontrollhistorikk finnes i prosjektets ordinære rapport.'}</p>}
    <div className="project-checklist-footer">
     {!selected.readOnly&&!readOnly&&<><button type="button" disabled={busy||uploads>0} onClick={()=>save('save')}>{selected.pendingAction?'Prøv lagring igjen':'Lagre'}</button><button type="button" disabled={busy||uploads>0||!!selected.pendingAction} onClick={()=>save('complete')}>Sjekkliste fullført</button></>}
     {selected.readOnly&&selected.status==='completed'&&!readOnly&&groups.some(group=>group.category===selected.definition.category)&&<button type="button" disabled={busy} onClick={()=>begin(groups.find(group=>group.category===selected.definition.category),{fresh:true})}>Start ny kontroll</button>}

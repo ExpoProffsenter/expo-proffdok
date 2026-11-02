@@ -1158,7 +1158,7 @@ export function bathroomSketchDataUrl(value) {
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
 
-export default function SalesBathroomSketch({ value, onChange, disabled = false }) {
+export default function SalesBathroomSketch({ value, onChange, disabled = false, storedImageAvailable = false }) {
   const svgRef = useRef(null);
   const sketch = useMemo(() => normalizeBathroomSketch(value), [value]);
   const sketchRef = useRef(sketch);
@@ -2063,7 +2063,7 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
       </div>
 
       <div style={{ marginTop: 10, width: "100%", maxWidth: "100%", border: "1px solid #d7e4ea", borderRadius: 12, overflow: "hidden", background: "#fff", minHeight: 130, display: "grid", placeItems: "center" }}>
-        {previewUrl ? <img src={previewUrl} alt="Forhåndsvisning av badskisse" style={{ display: "block", width: "100%", maxWidth: "100%", height: "auto" }} /> : <span style={{ padding: 24, color: "#5d6a70", textAlign: "center" }}>Ingen badskisse registrert ennå.</span>}
+        {previewUrl ? <img src={previewUrl} alt="Forhåndsvisning av badskisse" style={{ display: "block", width: "100%", maxWidth: "100%", height: "auto" }} /> : <span style={{ padding: 24, color: "#5d6a70", textAlign: "center" }}>{storedImageAvailable ? "Den lagrede badskissen vises ovenfor." : "Ingen badskisse registrert ennå."}</span>}
       </div>
 
       {isOpen && typeof document !== "undefined" ? createPortal(renderEditor(), document.body) : null}

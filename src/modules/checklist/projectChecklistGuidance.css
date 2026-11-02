@@ -1,0 +1,11 @@
+/* Scoped to the existing checklist overview. No shared dialog or app shell rules. */
+.project-checklist-workspace .project-checklist-stages{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}
+.project-checklist-workspace .project-checklist-stages>button{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:4px;min-width:0;min-height:76px;padding:10px 12px;text-align:left;font-size:16px;line-height:1.3;white-space:normal;overflow-wrap:anywhere;border:1px solid #c9dce2;border-radius:12px;background:#f5fafb;color:#174653;box-shadow:none}
+.project-checklist-workspace .project-checklist-stages strong{font-size:24px;line-height:1.1}
+.project-checklist-workspace .project-checklist-stages>button[aria-pressed=true]{border-color:#0b6977;background:#0b6977;color:#fff}
+.project-checklist-workspace .project-checklist-stages>button:focus-visible{outline:3px solid #0b6977;outline-offset:2px}
+.project-checklist-workspace .project-checklist-next-issue{padding:10px 12px;border-left:3px solid #a75d15;background:#fff8ec;color:#70400e;border-radius:6px;font-size:16px;line-height:1.45;overflow-wrap:anywhere}
+.project-checklist-workspace .project-checklist-filter-empty{padding:12px;border:1px solid #c9dce2;border-radius:12px;margin:12px 0}
+.project-checklist-workspace .project-checklist-filter-empty p{margin:0 0 8px}
+.project-checklist-workspace .project-checklist-filter-empty button{min-height:44px}
+@media(max-width:400px){.project-checklist-workspace .project-checklist-stages{gap:6px}.project-checklist-workspace .project-checklist-stages>button{padding:10px 7px}}

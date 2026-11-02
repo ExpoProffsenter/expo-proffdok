@@ -173,6 +173,8 @@ import SalesRequestForm from "./components/SalesRequestForm.jsx";
 import SalesSurveyPlan from "./components/SalesSurveyPlan.jsx";
 import SalesInspectionNote from "./components/SalesInspectionNote.jsx";
 import SalesDetailView from "./components/SalesDetailView.jsx";
+import SalesCaseWorkspace from "./components/SalesCaseWorkspace.jsx";
+import WorkspaceTools from "../ui/WorkspaceTools.jsx";
 import SalesOfferBuilder from "./components/SalesOfferBuilder.jsx";
 import SalesProjectActivation from "./components/SalesProjectActivation.jsx";
 import SalesCustomerView from "./components/SalesCustomerView.jsx";
@@ -3407,10 +3409,25 @@ export default function SalesModule({
     setMode("detail");
   }
 
+  function caseWorkspaceTools(workspaceMode) {
+    const editable = ["Forespørsel", "Befaring", "Tilbud"].includes(selectedRequest?.status);
+    const actions = workspaceMode === "detail" ? [
+      { label: "Tilbake til oversikten", onClick: goToList },
+      ...(editable ? [{ label: "Rediger kunde", onClick: openEditRequest }] : []),
+      ...(["Forespørsel", "Befaring"].includes(selectedRequest?.status) ? [{ label: "Planlegg befaring", onClick: openSurveyPlanning }] : []),
+      ...(["Befaring", "Tilbud"].includes(selectedRequest?.status) ? [{ label: "Befaringsnotat", onClick: openInspectionNote }, { label: "Arbeid med tilbudet", onClick: openOfferBuilder }] : []),
+      ...(selectedRequest?.status === "Akseptert" ? [{ label: "Opprett ny tilbudsversjon", onClick: handleCreateOfferRevisionAfterAcceptance }] : []),
+    ] : [{ label: "Tilbake til saken", onClick: workspaceMode === "offer-builder" ? handleOfferBuilderBack : workspaceMode === "edit-request" ? () => { resetForm(); setMode("detail"); } : () => setMode("detail") }];
+    if (onCreateOffer) actions.push({ label: "Nytt tilbud", onClick: onCreateOffer });
+    return <WorkspaceTools tab="sales" scopeKey={salesStorageKey} contextKey={`${selectedRequest?.id || ""}:${workspaceMode}`} contextTitle={selectedRequest?.title || "Befaring og tilbud"}
+      rowLabel={`Sak ${selectedRequest?.id || ""}`} rowClassName="sales-case-tools"
+      actionGroups={[{ id: "case", title: "Arbeid med saken", description: "Samme kunde og tilbudsgrunnlag følger arbeidet videre.", actions }]} />;
+  }
+
   if (mode === "new" || mode === "new-offer" || mode === "edit-request") {
     const isEditingRequest = mode === "edit-request";
     const isDirectOffer = mode === "new-offer";
-    return (
+    const requestForm = (
       <SalesRequestForm
         form={form}
         isEditingRequest={isEditingRequest}
@@ -3434,10 +3451,14 @@ export default function SalesModule({
         onChooseCaseHandler={handler => setForm(current => ({ ...current, responsibleUserId: handler.userId, responsibleName: handler.displayName }))}
       />
     );
+    return isEditingRequest && selectedRequest
+      ? <SalesCaseWorkspace request={selectedRequest} companyProfile={companyProfile} tools={caseWorkspaceTools("edit-request")}>{requestForm}</SalesCaseWorkspace>
+      : requestForm;
   }
 
   if (mode === "project-activation" && selectedRequest) {
     return (
+      <SalesCaseWorkspace request={selectedRequest} companyProfile={companyProfile} tools={caseWorkspaceTools("project-activation")}>
       <SalesProjectActivation
         selectedRequest={selectedRequest}
         projectForm={projectForm}
@@ -3446,6 +3467,7 @@ export default function SalesModule({
         onSubmit={handleActivateProject}
         onUpdateProjectForm={updateProjectForm}
       />
+      </SalesCaseWorkspace>
     );
   }
 
@@ -3473,6 +3495,7 @@ export default function SalesModule({
 
   if (mode === "offer-builder" && selectedRequest) {
     return (
+      <SalesCaseWorkspace request={selectedRequest} companyProfile={companyProfile} tools={caseWorkspaceTools("offer-builder")}>
       <SalesOfferBuilder
         selectedRequest={selectedRequest}
         offerForm={offerForm}
@@ -3509,6 +3532,7 @@ export default function SalesModule({
         offerValidationJump={offerValidationJump}
         onOfferValidationJumpHandled={() => setOfferValidationJump(null)}
       />
+      </SalesCaseWorkspace>
     );
   }
 
@@ -3518,6 +3542,7 @@ export default function SalesModule({
       return <div className="sales-app" role="status">Henter befaringsnotatet fra saken …</div>;
     }
     return (
+      <SalesCaseWorkspace request={selectedRequest} companyProfile={companyProfile} tools={caseWorkspaceTools("inspection-note")}>
       <SalesInspectionNote
         selectedRequest={selectedRequest}
         inspectionForm={inspectionForm}
@@ -3528,11 +3553,13 @@ export default function SalesModule({
         onInspectionPhotos={handleInspectionPhotos}
         onRemoveInspectionPhoto={removeInspectionPhoto}
       />
+      </SalesCaseWorkspace>
     );
   }
 
 if (mode === "survey-plan" && selectedRequest) {
   return (
+    <SalesCaseWorkspace request={selectedRequest} companyProfile={companyProfile} tools={caseWorkspaceTools("survey-plan")}>
     <SalesSurveyPlan
       selectedRequest={selectedRequest}
       surveyForm={surveyForm}
@@ -3542,6 +3569,7 @@ if (mode === "survey-plan" && selectedRequest) {
       onSubmit={handleSaveSurveyPlan}
       onUpdateSurveyForm={updateSurveyForm}
     />
+    </SalesCaseWorkspace>
   );
 }
 
@@ -3565,6 +3593,8 @@ if (mode === "survey-plan" && selectedRequest) {
           customerEmailBusy,
           customerEmailFeedback,
           customerLinkCopied,
+          companyProfile,
+          workspaceTools: caseWorkspaceTools("detail"),
           goToList,
           handleContractUpload,
           handleCreateAcceptanceProof,

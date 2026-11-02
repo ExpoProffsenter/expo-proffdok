@@ -1,15 +1,20 @@
-# Pågående godkjent Design 036-release – 2. november 2026
+# Gjeldende release – samlet TEST OK 2. november 2026
 
-Kenneth ga TEST OK 2. november kl.16:02 CET for PR294, PR295, PR298 og sjekklistefunksjonen fra PR305, med nødvendige backendkontroller, produksjonssetting og main → demo. Ingen PR217/277, nye funksjoner eller branchopprydding inngår.
+Kenneth har godkjent PR294, PR295, PR298 og sjekklistefunksjonen PR305 med nødvendige backendkontroller, produksjonssetting og main → demo. Ingen ny bekreftelse kreves for uendret avtalt omfang når kontrollene består. PR217/277, nye funksjoner, Solgløtt, videre videoer og branchopprydding er utenfor dette løpet.
 
-## Fersk base for boligpakken
+## Faktisk gjennomførte etapper
 
-PR305 er merget til main 2e5a56912a93f79dddf20889f894a7297157b1a9, etter CI883 SUCCESS10/10. Production er READY på dpl_inoWqc5W4gmByAxMgYzQ5FonHZ9k. Malforslagsmigreringen er installert som remote20261102151721 fra canonical20261031012504; historikk, signaturkrav og tilgangsvern er kontrollert og bevart. Releasen er ikke ferdig før de øvrige godkjente pakkene og demosynken er verifisert.
+- Production-migrering for malforslag er installert og verifisert som remote20261102151721, canonical kilde20261031012504. Ikke kjør den på nytt. Eksisterende data/historikk, signaturkrav og tilganger er bevart.
+- PR305 og PR298 er merget og publisert, med grønn CI og korrekt Production-binding. PR294 er deretter merget som main70a99b3ece0ab562c5ee140f23c8b18da1b7b4a1 etter CI886 SUCCESS.
+- PR295 er siste designetappe. Faktisk main integreres med begge pakkers innhold og tester bevart. De69 opprinnelige boligveiledningstekstene er byteidentiske; fire godkjente boligtemaer legges til via samme modul-API. Ingen ny designvariant.
+- Den siste kandidatens fullCI, Production-SHA/READY og main → demo-kvittering føres i PR295. Ikke utled ferdig publisering fra denne filen alene.
 
-Denne PR294-oppdateringen integrerer bare fersk main. Boligproduktfilene er identiske med det godkjente c3594f108d605aeae0d895b9d8e71b1824d1f854. Eneste konflikt var denne statusfilen. Original bolig-/produksjonshistorikk er bevart i Git på c3594f10 og main2e5a; ingen funksjonsbevis eller tester slettes. Den allerede godkjente datouavhengige HR-fixturen følger med main og erstatter ingen produktkode.
+[Godkjent produksjonsløp, migreringskvittering, datahash, CI-årsaker og tilbakeføring](docs/qa/DESIGN036_PRODUCTION_RELEASE_20261102.md).
 
-Fersk kombinasjonsprøve av PR295 d9ca45e0 + PR294 c3594f10 + PR298 338094b1 består native bolig/builder/veiledning/oppgaver/kontroller/UE/uttrekk, malforslag44SQL og170browser samt begge miljøbuilds. Seks PDF-er og tre ZIP-er er faktisk generert fra syntetisk transport med original innholds-/tilgangs-/CRC-kontroll. Dette er ikke full ny innlogget rolle-/Safari-attest. Sluttstatus for denne nye kandidaten må leses i CI/PR-historikken.
+Permanent demo er ved denne committen fortsatt fd04ac9a. Den skal synkroniseres fra faktisk godkjent main, med særtilpasninger, bilder og Sandbox-binding bevart. Demoens ferske SQL-preflight19/19 og kurs5/5 består, uten datareset eller utsending.
 
-Permanent demo er fortsatt fd04ac9a og skal få faktisk main først etter godkjent produksjonskontroll. Demoens SQL-preflight19/19 og kurs5/5 består uten reset, sending eller dataendring. Rutine-e-post forblir deaktivert.
+Den gamle innloggede skynettøkten er fortsatt ikke gjenopprettet. Ingen full ny innlogget rolle-/Safari-attest gis. Dette hindrer ikke den eksplisitt godkjente utviklertestbaserte releaseplanen, men testgrensene må være synlige i sluttkvitteringen. Etter verifisert publisering innføres stabilitetsstopp før visningen3.november.
 
-Historikk: docs/changes/bolig-checklist-status-choices-20261031.json og øvrige boliggrunnlag, samt CURRENT_RELEASE_STATUS.md på de nevnte uendrede Git-committene. Samlet sluttkvittering føres i PR295 og varig releaselogg.
+## Historikk
+
+Tidligere detaljstatus, godkjente hoder og delbevis er bevart i Git på d9ca45e0 og i PR294/295/298/305. Bruk den nyeste daterte releasekvitteringen, ikke gamle «mangler migrering» eller «ikke TEST OK»-avsnitt. Ingen originalbevis eller demodata er slettet.

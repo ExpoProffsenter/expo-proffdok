@@ -1,0 +1,467 @@
+/* Shared 03.6 measurements. Module layouts may reflect their task, but their
+   headings, controls, borders and contextual panels use this one baseline. */
+body:has([data-expo-app-shell="true"]){--pd-ink:#10212b;--pd-muted:#4e6876;--pd-line:#d5e3e9;--pd-accent:#007681;--pd-radius:8px;--pd-gap:20px;--pd-control:44px;--pd-copy:16px;--pd-title:32px}
+body:has([data-expo-app-shell="true"]) [data-expo-app-shell="true"]>main{max-width:1744px}
+@media screen{
+ body:has([data-expo-app-shell="true"]) :is(.company-admin-panel,.pd-admin-workspace,.company-profile-workspace,.pd-support,[data-company-admin-modal-open="1"]) :is(button,select,textarea,input:not([type="checkbox"]):not([type="radio"])){border-radius:6px!important}
+}
+/* Admin controls must retain the shared measurements after late mobile styles. */
+@media screen{
+ body:has([data-expo-app-shell="true"]) :is(.company-admin-panel,.pd-admin-workspace) :is(button,input,select,textarea){font-size:16px!important}
+ body:has([data-expo-app-shell="true"]) :is(.company-admin-panel,.pd-admin-workspace) button{min-height:44px!important}
+}
+/* Modules with their own contextual tools must expose one tools entry. */
+[data-expo-app-shell="true"]>main:has(.hr-workspace-036,.ks-workspace-036,.sales-case-workspace)>.pd-workspace-tool-row{display:none}
+body:has([data-expo-app-shell="true"]) :is(.hr-workspace-036-actions,.ks-workspace-navigation,.personal-tabs){max-width:none}
+body:has([data-expo-app-shell="true"]) :is(.hr-workspace-036,.ks-workspace-036,.personal-workspace036,.company-admin-panel,.pd-admin-workspace) :is(button,input,select,textarea){font-size:var(--pd-copy);line-height:1.4}
+body:has([data-expo-app-shell="true"]) :is(.hr-workspace-036,.ks-workspace-036,.personal-workspace036,.company-admin-panel,.pd-admin-workspace) button{min-height:var(--pd-control);border-radius:7px;box-shadow:none;transform:none}
+body:has([data-expo-app-shell="true"]) :is(.hr-workspace-036>header.hr-heading,.ks-workspace-036>header.module-heading,.personal-workspace036>header.personal-heading) h2{font-size:var(--pd-title);font-weight:600;line-height:1.2;letter-spacing:-.7px}
+body:has([data-expo-app-shell="true"]) :is(.pd-admin-heading h2,.company-admin-heading>h3){font-size:var(--pd-title)!important;font-weight:600;line-height:1.2;letter-spacing:-.7px}
+body:has([data-expo-app-shell="true"]) :is(.hr-workspace-036>header.hr-heading,.ks-workspace-036>header.module-heading,.personal-workspace036>header.personal-heading){padding-bottom:16px;margin-bottom:0}
+body:has([data-expo-app-shell="true"]) :is(.ks-workspace-navigation,.personal-workspace036 .personal-tabs){margin-top:0;margin-bottom:20px}
+body:has([data-expo-app-shell="true"]) :is(.hr-register-controls,.company-admin-directory,.ks-workspace-navigation) button.secondary{background:#fff;color:var(--pd-accent);border:1px solid var(--pd-line)}
+body:has([data-expo-app-shell="true"]) .pd-workspace-drawer{--pd-copy:16px;border-radius:0;color:var(--pd-ink)}
+body:has([data-expo-app-shell="true"]) .pd-workspace-drawer-header{position:static;min-height:0;border-radius:0;box-shadow:none;padding:20px 24px}
+body:has([data-expo-app-shell="true"]) .pd-workspace-drawer-header h2{font-size:28px;line-height:1.2}
+body:has([data-expo-app-shell="true"]) .pd-workspace-drawer-body{padding:20px 24px}
+body:has([data-expo-app-shell="true"]) .pd-workspace-drawer :is(button,input,select,textarea){font-size:16px;line-height:1.4}
+body:has([data-expo-app-shell="true"]) .pd-workspace-drawer button{min-height:44px;box-shadow:none;transform:none}
+body:has([data-expo-app-shell="true"]) .pd-workspace-drawer [hidden]{display:none!important}
+/* The same frame on native employee, SJA and checklist panels. Their existing
+   scroll, focus, close and nested-dialog owners remain unchanged. */
+body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.hr-employee-dialog-036,.sja-editor,.ks-executions,.time-editor,.time-workspace)>.deviation-dialog-header{padding:20px 24px;background:var(--pd-ink);color:#fff;border-radius:0;box-shadow:none;flex:none}
+body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.hr-employee-dialog-036,.sja-editor,.ks-executions,.time-editor,.time-workspace)>.deviation-dialog-header :is(h2,p){color:#fff}
+body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.hr-employee-dialog-036,.sja-editor,.ks-executions,.time-editor,.time-workspace)>.deviation-dialog-header h2{font-size:28px;font-weight:600;line-height:1.2}
+body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.hr-employee-dialog-036,.sja-editor,.ks-executions,.time-editor,.time-workspace)>.deviation-dialog-header p{color:#bdd7e2;font-size:14px}
+body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.hr-employee-dialog-036,.sja-editor,.ks-executions,.time-editor,.time-workspace) .deviation-dialog-close{min-width:44px;min-height:44px;color:#bdd7e2;background:transparent;border:1px solid #ffffff30;border-radius:6px;box-shadow:none}
+@media(max-width:620px){
+ body:has([data-expo-app-shell="true"]){--pd-title:29px}
+ body:has([data-expo-app-shell="true"]) .pd-workspace-drawer-header,
+ body:has([data-expo-app-shell="true"]) .pd-workspace-drawer-body,
+ body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.hr-employee-dialog-036,.sja-editor,.ks-executions,.time-editor,.time-workspace)>.deviation-dialog-header{padding:16px}
+ body:has([data-expo-app-shell="true"]) .pd-workspace-drawer-header h2,
+ body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.hr-employee-dialog-036,.sja-editor,.ks-executions,.time-editor,.time-workspace)>.deviation-dialog-header h2{font-size:25px}
+}
+
+/* Catalog work uses the same open heading and controls, including the legacy
+   price-search mount. No search, draft, permission or sending owner changes. */
+body:has([data-expo-app-shell="true"]) :is(.priceSearchInlineView,.pro-catalog-orders){max-width:none;min-width:0;margin:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;color:var(--pd-ink)}
+body:has([data-expo-app-shell="true"]) :is(.priceSearchInlineView,.pro-catalog-orders) :is(button,input,select,textarea){font-size:16px;line-height:1.4;box-sizing:border-box;max-width:100%}
+body:has([data-expo-app-shell="true"]) :is(.priceSearchInlineView,.pro-catalog-orders) button{min-width:44px;min-height:44px;border-radius:7px;box-shadow:none;transform:none;white-space:normal}
+body:has([data-expo-app-shell="true"]) :is(.priceSearchIntro,.pro-catalog-orders>header){position:static;min-height:0;margin:0 0 20px;padding:0 0 16px;border:0;border-radius:0;background:transparent;box-shadow:none}
+body:has([data-expo-app-shell="true"]) :is(.priceSearchIntro,.pro-catalog-orders>header) h2{font-size:var(--pd-title);font-weight:600;line-height:1.2;letter-spacing:-.7px;margin:6px 0 8px}
+body:has([data-expo-app-shell="true"]) :is(.priceSearchIntro,.pro-catalog-orders>header) :is(p,small){color:var(--pd-muted);line-height:1.5}
+body:has([data-expo-app-shell="true"]) :is(.priceSearchIntro,.pro-catalog-orders>header) small{font-size:14px;font-weight:600}
+body:has([data-expo-app-shell="true"]) :is(.priceSearchIntro,.pro-catalog-orders>header) p{font-size:16px;max-width:none;margin:0}
+body:has([data-expo-app-shell="true"]) .priceSearchSurfaces{gap:8px 24px;padding:0 0 10px;margin:0 0 18px;border-bottom:1px solid var(--pd-line);align-items:center}
+body:has([data-expo-app-shell="true"]) .priceSearchSurfaces button[aria-pressed]{position:relative;background:transparent;border:0;border-radius:0;padding:10px 0;color:var(--pd-muted);font-weight:600}
+body:has([data-expo-app-shell="true"]) .priceSearchSurfaces button[aria-pressed="true"]{color:var(--pd-accent);border-bottom:3px solid #10c7cf}
+body:has([data-expo-app-shell="true"]) .priceSearchInlineView :is(.priceSearchCard,.priceSearchSelected,.priceSearchSavedLists,.priceSearchSelectedProduct,.priceSearchResult,.priceSearchSavedRow){padding:16px;border:1px solid var(--pd-line);border-radius:var(--pd-radius);background:#fff;box-shadow:none}
+body:has([data-expo-app-shell="true"]) .priceSearchInputWrap input{border-radius:7px;min-height:48px}
+body:has([data-expo-app-shell="true"]) .priceSearchInlineView :is(p,.priceSearchMeta,.priceSearchMeta small,.priceSearchSmartOptions){font-size:16px;line-height:1.5}
+body:has([data-expo-app-shell="true"]) .pro-catalog-orders :is(.pro-order-cart,.pro-order-preview,.pro-order-receipt,form){padding:18px;margin:0 0 18px;border:1px solid var(--pd-line);border-radius:var(--pd-radius);box-shadow:none;min-width:0}
+body:has([data-expo-app-shell="true"]) .pro-catalog-orders h3{font-size:20px;font-weight:600;line-height:1.35;margin:0 0 12px}
+body:has([data-expo-app-shell="true"]) .pro-catalog-orders :is(p,small,.pro-order-entry-help){font-size:16px;line-height:1.5;color:var(--pd-muted)}
+body:has([data-expo-app-shell="true"]) .pro-catalog-orders .pro-store-catalog-lookup{border-radius:7px;box-shadow:none}
+@media(min-width:1100px){
+ body:has([data-expo-app-shell="true"]) .pro-catalog-orders:has(>form,>.pro-order-preview,>.pro-order-receipt){display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:0 20px;align-items:start}
+ body:has([data-expo-app-shell="true"]) .pro-catalog-orders>*{grid-column:1/-1}
+ body:has([data-expo-app-shell="true"]) .pro-catalog-orders:has(>form,>.pro-order-preview,>.pro-order-receipt)>.pro-order-cart{grid-column:1}
+ body:has([data-expo-app-shell="true"]) .pro-catalog-orders>:is(form,.pro-order-preview,.pro-order-receipt){grid-column:2}
+}
+
+/* Housing's ordinary page follows the same frame; facade, unit placement and
+   the separate builder keep their existing layout and interaction owners. */
+body:has([data-expo-app-shell="true"]) .bolig-dialog.bolig-page{padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;color:var(--pd-ink)}
+body:has([data-expo-app-shell="true"]) .bolig-page>header{position:static;margin:0;padding:0 0 16px;border:0;border-radius:0;background:transparent;box-shadow:none}
+body:has([data-expo-app-shell="true"]) .bolig-page>header h2{font-size:var(--pd-title)!important;line-height:1.2;font-weight:600;letter-spacing:-.7px;margin:6px 0 8px}
+body:has([data-expo-app-shell="true"]) .bolig-page>header :is(p,small){font-size:16px;line-height:1.5;color:var(--pd-muted)}
+body:has([data-expo-app-shell="true"]) :is(.bolig-page>header,.bolig-page>.bolig-toolbar,.bolig-page .bolig-home) button{font-size:16px;min-height:44px;border-radius:7px;box-shadow:none;transform:none}
+body:has([data-expo-app-shell="true"]) .bolig-page>.bolig-home{padding:0;margin-top:16px;border:0;border-radius:0;background:transparent;box-shadow:none}
+body:has([data-expo-app-shell="true"]) .bolig-home-welcome{grid-template-columns:minmax(0,1fr) 220px;gap:20px;padding:18px;border-radius:8px;background:#edf4f7;box-shadow:none}
+body:has([data-expo-app-shell="true"]) .bolig-home-welcome h3{font-size:28px;line-height:1.25;margin:8px 0}
+body:has([data-expo-app-shell="true"]) .bolig-home-welcome p{font-size:16px;line-height:1.5;margin:8px 0 14px;max-width:none}
+body:has([data-expo-app-shell="true"]) .bolig-home-welcome small{font-size:14px;line-height:1.5}
+body:has([data-expo-app-shell="true"]) .bolig-home-welcome .bolig-building-art{width:220px;height:140px;min-height:0;border-radius:7px}
+body:has([data-expo-app-shell="true"]) .bolig-home :is(.bolig-home-list-head p,.bolig-home-project small,.bolig-home-filters){font-size:16px;line-height:1.5}
+body:has([data-expo-app-shell="true"]) .bolig-home-projects>.bolig-home-project{border-radius:8px;box-shadow:none}
+/* Use spare desktop width for the existing photo. The copy owns row height,
+   so the image cannot push the actions or project list farther down. */
+@media(min-width:1280px){
+ body:has([data-expo-app-shell="true"]) .bolig-home-welcome{position:relative;min-height:178px;grid-template-columns:minmax(0,1fr) minmax(220px,36%)}
+ body:has([data-expo-app-shell="true"]) .bolig-home-welcome>.bolig-building-art{position:absolute;inset:18px 18px 18px auto;width:calc(36% - 18px);height:calc(100% - 36px);object-fit:cover;object-position:center}
+}
+@media(max-width:800px){
+ body:has([data-expo-app-shell="true"]) .bolig-home-welcome{grid-template-columns:minmax(0,1fr);padding:16px}
+ body:has([data-expo-app-shell="true"]) .bolig-home-welcome>.bolig-building-art{display:none}
+}
+
+/* Time entry and plan reading share the same contextual drawer frame. */
+body:has([data-expo-app-shell="true"]) .ks-plan-drawer[open]{width:min(680px,100%);max-width:100%;display:flex;flex-direction:column;margin:0 0 0 auto;padding:0;border:0;border-radius:0;background:#fff;overflow:hidden}
+body:has([data-expo-app-shell="true"]) .ks-plan-drawer-body{min-height:0;flex:1;overflow:auto;overscroll-behavior:contain;padding:20px 24px;color:var(--pd-ink)}
+body:has([data-expo-app-shell="true"]) .ks-plan-drawer-body :is(p,label,input,select,button,summary){font-size:16px;line-height:1.45}
+body:has([data-expo-app-shell="true"]) .ks-plan-drawer .ks-plan-drawer-body .ks-plan-hint{color:var(--pd-muted)!important}
+body:has([data-expo-app-shell="true"]) .ks-plan-drawer-body small{font-size:14px;color:var(--pd-muted)}
+body:has([data-expo-app-shell="true"]) .deviation-dialog-backdrop:has(.time-editor,.time-workspace){display:flex;justify-content:flex-end;align-items:stretch;padding:0}
+body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.time-editor,.time-workspace){width:min(900px,100vw);max-width:100vw;height:100dvh;max-height:100dvh;margin:0!important;padding:0!important;border:0!important;background:#fff!important;border-radius:0;display:flex;flex-direction:column;overflow:hidden}
+body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.time-editor,.time-workspace)>.deviation-dialog-body{min-height:0;flex:1;overflow:auto;overscroll-behavior:contain;padding:20px 24px}
+body:has([data-expo-app-shell="true"]) .ks-plan-drawer>.ks-plan-dialog-head{background:var(--pd-ink);color:#fff;border-radius:0;padding:20px 24px;margin:0;flex:none}
+body:has([data-expo-app-shell="true"]) .ks-plan-drawer>.ks-plan-dialog-head h3{font-size:28px!important;min-width:0;overflow-wrap:anywhere;line-height:1.2;font-weight:600;color:#fff}
+body:has([data-expo-app-shell="true"]) .ks-plan-drawer>.ks-plan-dialog-head button{min-width:44px;min-height:44px;background:transparent;color:#fff;border:1px solid #ffffff30;border-radius:6px;box-shadow:none}
+@media(max-width:620px){body:has([data-expo-app-shell="true"]) .ks-plan-drawer>.ks-plan-dialog-head,body:has([data-expo-app-shell="true"]) .ks-plan-drawer-body,body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.time-editor,.time-workspace)>.deviation-dialog-body{padding:16px}body:has([data-expo-app-shell="true"]) .ks-plan-drawer>.ks-plan-dialog-head h3{font-size:25px!important}}
+
+/* The operation picker uses the same native PlanDialog drawer as its editor.
+   Code choices keep their original handlers and remain inside its scroll body. */
+@media screen{
+ body:has([data-expo-app-shell="true"]) .ks-plan-dialog.ks-plan-drawer:has(.ks-plan-picker-filters){width:min(680px,100vw)}
+ body:has([data-expo-app-shell="true"]) .ks-plan-dialog.ks-plan-drawer:has(.ks-plan-picker-filters)>.ks-plan-dialog-head h3{font-size:28px!important;min-width:0;overflow-wrap:anywhere}
+ body:has([data-expo-app-shell="true"]) .ks-plan-dialog.ks-plan-drawer:has(.ks-plan-picker-filters)>.ks-plan-dialog-head button{font-size:16px!important;min-width:44px!important;min-height:44px!important;flex:none;border-radius:6px}
+ body:has([data-expo-app-shell="true"]) .ks-plan-drawer-body:has(.ks-plan-picker-filters) :is(input,select,button,summary,label,p,a){font-size:16px!important;line-height:1.45}
+ body:has([data-expo-app-shell="true"]) .ks-plan-drawer-body:has(.ks-plan-picker-filters) :is(input,select,button,summary){min-height:44px!important;box-sizing:border-box}
+ body:has([data-expo-app-shell="true"]) .ks-plan-drawer-body:has(.ks-plan-picker-filters) .ks-code-tree{max-height:none;overflow:visible;padding:0}
+ body:has([data-expo-app-shell="true"]) .ks-plan-drawer-body:has(.ks-plan-picker-filters) :is(.ks-code-tree details,.ks-plan-standard-choices>details){border-radius:8px;box-shadow:none}
+ body:has([data-expo-app-shell="true"]) .ks-plan-drawer-body:has(.ks-plan-picker-filters) :is(.ks-code-choice b,.ks-code-choice span,.ks-code-choice small,.ks-code-tree summary small){font-size:16px;line-height:1.45;overflow-wrap:anywhere}
+ body:has([data-expo-app-shell="true"]) .ks-plan-drawer-body:has(.ks-plan-picker-filters) .ks-code-choice{align-items:flex-start;min-width:0;min-height:44px;border-radius:8px}
+ body:has([data-expo-app-shell="true"]) .ks-plan-drawer-body:has(.ks-plan-picker-filters) summary{min-height:44px;box-sizing:border-box;white-space:normal;overflow-wrap:anywhere}
+}
+@media screen and (max-width:620px){body:has([data-expo-app-shell="true"]) .ks-plan-dialog.ks-plan-drawer:has(.ks-plan-picker-filters)>.ks-plan-dialog-head h3{font-size:25px!important}}
+
+/* The legacy company editor retains its native DOM, saves and close guard.
+   Only its outer frame follows the same contextual workspace measurements. */
+body:has([data-expo-app-shell="true"]) [data-company-admin-modal-open="1"]{inset:0 0 0 auto!important;top:0!important;left:auto!important;transform:none!important;width:min(1120px,100vw)!important;max-width:100vw!important;height:100dvh!important;max-height:100dvh!important;padding:0 24px 24px!important;border:0!important;border-radius:0!important}
+body:has([data-expo-app-shell="true"]) #expo-systemadmin-company-modal-header{margin:0 -24px 20px;padding:20px 24px;background:var(--pd-ink);color:#fff;border-radius:0;box-shadow:none;backdrop-filter:none}
+body:has([data-expo-app-shell="true"]) #expo-systemadmin-company-modal-header h2{font-size:28px!important;line-height:1.2;font-weight:600;color:#fff}
+body:has([data-expo-app-shell="true"]) #expo-systemadmin-company-modal-header p{font-size:14px;color:#bdd7e2}
+body:has([data-expo-app-shell="true"]) #expo-systemadmin-company-modal-header .company-modal-close{width:44px!important;height:44px!important;min-height:44px!important;background:transparent!important;color:#bdd7e2!important;border:1px solid #ffffff30!important;border-radius:6px!important}
+body:has([data-expo-app-shell="true"]) [data-company-admin-modal-open="1"] :is(button,input,select,textarea,label,p,summary){font-size:16px!important;line-height:1.45}
+body:has([data-expo-app-shell="true"]) [data-company-admin-modal-open="1"] button{min-height:44px!important;box-shadow:none;transform:none}
+body:has([data-expo-app-shell="true"]) [data-company-admin-modal-open="1"] small{font-size:14px;line-height:1.45}
+body:has([data-expo-app-shell="true"]) #expo-systemadmin-company-modal-footer{bottom:-24px;margin:18px -24px -24px;padding:16px 24px;background:#fff;backdrop-filter:none}
+body:has([data-expo-app-shell="true"]) #expo-systemadmin-company-modal-footer small{font-size:14px;line-height:1.45;color:var(--pd-muted)}
+@media(max-width:620px){
+ body:has([data-expo-app-shell="true"]) [data-company-admin-modal-open="1"]{padding:0 16px 16px!important}
+ body:has([data-expo-app-shell="true"]) #expo-systemadmin-company-modal-header{margin:0 -16px 16px;padding:16px}
+ body:has([data-expo-app-shell="true"]) #expo-systemadmin-company-modal-header h2{font-size:25px!important}
+ body:has([data-expo-app-shell="true"]) #expo-systemadmin-company-modal-footer{bottom:-16px;margin:16px -16px -16px;padding:16px}
+}
+/* Remaining profile, support and register surfaces share the same presentation.
+   Keep native details/forms mounted; no navigation, access or write owner here. */
+body:has([data-expo-app-shell="true"]) :is(.company-profile-workspace,.pd-support:has(>.pd-support-page-heading)){
+ margin:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;color:var(--pd-ink);min-width:0
+}
+body:has([data-expo-app-shell="true"]) :is(.company-profile-workspace,.pd-support,.pd-admin-panel[aria-label="Produktmaster"],.pd-admin-panel[aria-label="Internt vareregister"]) :is(button,input,select,textarea){font-size:16px!important;line-height:1.4;max-width:100%;box-sizing:border-box}
+body:has([data-expo-app-shell="true"]) :is(.company-profile-workspace,.pd-support,.pd-admin-panel[aria-label="Produktmaster"],.pd-admin-panel[aria-label="Internt vareregister"]) button{min-height:44px!important;border-radius:7px;box-shadow:none;transform:none;white-space:normal}
+body:has([data-expo-app-shell="true"]) :is(.company-profile-workspace,.pd-support,.pd-admin-panel[aria-label="Produktmaster"]) button:not(.secondary):not(.pd-support-ticket):not(.pd-support-launch){background:var(--pd-accent);color:#fff}
+body:has([data-expo-app-shell="true"]) :is(.company-profile-workspace,.pd-support,.pd-admin-panel[aria-label="Produktmaster"]) button.secondary{background:#fff;color:var(--pd-accent);border:1px solid var(--pd-line)}
+body:has([data-expo-app-shell="true"]) :is(.company-profile-workspace>h2,.pd-support-page-heading h2,.pd-admin-panel[aria-label="Produktmaster"]>.pd-admin-panel-heading h3,#expo-systemadmin-store-catalog>div>h3){font-size:var(--pd-title)!important;font-weight:600;line-height:1.2;letter-spacing:-.7px;margin:6px 0 16px}
+body:has([data-expo-app-shell="true"]) .company-profile-workspace>h2>svg{display:none}
+body:has([data-expo-app-shell="true"]) :is(.company-profile-workspace,.pd-support,.pd-admin-panel[aria-label="Produktmaster"],.pd-admin-panel[aria-label="Internt vareregister"]) :is(p,label,.note){font-size:16px;line-height:1.5;overflow-wrap:anywhere}
+body:has([data-expo-app-shell="true"]) :is(.company-profile-workspace,.pd-support,.pd-admin-panel[aria-label="Produktmaster"],.pd-admin-panel[aria-label="Internt vareregister"]) :is(small,.pd-support-message-meta,.pd-support-delivery,.pd-support-badge){font-size:14px;line-height:1.5;overflow-wrap:anywhere}
+body:has([data-expo-app-shell="true"]) :is(.company-profile-workspace>.note,.pd-support .note,.pd-support-page-heading p){color:var(--pd-muted)}
+body:has([data-expo-app-shell="true"]) .company-profile-workspace :is(.ux-preview,.collapsibleBlock,.item){margin:16px 0;padding:16px;border:1px solid var(--pd-line);border-radius:var(--pd-radius);background:#fff;box-shadow:none;min-width:0}
+body:has([data-expo-app-shell="true"]) .company-profile-workspace :is(.ux-preview,.collapsibleBlock){padding:0 16px}
+body:has([data-expo-app-shell="true"]) .company-profile-workspace summary{min-height:48px;padding:12px 0;font-size:16px;line-height:1.5;font-weight:600;cursor:pointer;overflow-wrap:anywhere}
+body:has([data-expo-app-shell="true"]) .company-profile-workspace .collapsibleBlockBody{padding:0 0 16px}
+body:has([data-expo-app-shell="true"]) .company-profile-workspace .two{grid-template-columns:minmax(180px,240px) minmax(0,1fr);gap:20px}
+body:has([data-expo-app-shell="true"]) .company-profile-workspace :is(.two>*,.grid>*){min-width:0}
+body:has([data-expo-app-shell="true"]) .company-profile-workspace .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+body:has([data-expo-app-shell="true"]) .company-profile-workspace .logoBox{display:flex;flex-direction:column;align-items:stretch;gap:16px;padding:16px;background:#f3f7f9;border:0;border-radius:8px;box-shadow:none;overflow-wrap:anywhere}
+body:has([data-expo-app-shell="true"]) .company-profile-workspace :is(input:not([type="file"]),select){min-height:44px;border-radius:7px}
+body:has([data-expo-app-shell="true"]) .company-profile-workspace .upload{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:16px;min-height:44px;max-width:100%;white-space:normal;padding:12px;background:#fff;color:var(--pd-accent);border:1px solid var(--pd-line);border-radius:7px;box-shadow:none;transform:none}
+body:has([data-expo-app-shell="true"]) .company-profile-workspace .upload input{flex-basis:100%;min-width:0;padding:8px 0;border:0;border-radius:0}
+body:has([data-expo-app-shell="true"]) .company-profile-workspace .ux-grid article{min-width:0;padding:16px;border-radius:8px;background:#f3f7f9;box-shadow:none}
+body:has([data-expo-app-shell="true"]) .company-profile-workspace .ux-grid h3{font-size:20px;font-weight:600}
+body:has([data-expo-app-shell="true"]) .pd-support .pd-support-page-heading{padding:0 0 16px;margin:0;border:0;border-radius:0;background:transparent;box-shadow:none}
+body:has([data-expo-app-shell="true"]) .pd-support-page-heading p{max-width:none;margin:0;font-size:16px}
+body:has([data-expo-app-shell="true"]) .pd-support-eyebrow{font-size:14px;font-weight:600;letter-spacing:.05em}
+body:has([data-expo-app-shell="true"]) .pd-support:has(>.pd-support-page-heading)>.pd-support-content{padding:0}
+body:has([data-expo-app-shell="true"]) .pd-support :is(.pd-support-ticket,.pd-support-message,.pd-support-empty,.pd-support-form){border:1px solid var(--pd-line);border-radius:8px;box-shadow:none}
+body:has([data-expo-app-shell="true"]) .pd-support .pd-support-form{padding:18px;background:#fff;min-width:0}
+body:has([data-expo-app-shell="true"]) .pd-support .pd-support-message-support{border-left:4px solid var(--pd-accent)}
+body:has([data-expo-app-shell="true"]) .pd-support .pd-support-message-internal{border:1px dashed #9f7627}
+body:has([data-expo-app-shell="true"]) .pd-support .pd-support-message-body{font-size:16px;line-height:1.6}
+body:has([data-expo-app-shell="true"]) .pd-support :is(input:not([type="checkbox"]),select,textarea){border-radius:7px}
+body:has([data-expo-app-shell="true"]) .pd-support .pd-support-title h4{font-size:24px;font-weight:600}
+body:has([data-expo-app-shell="true"]) :is(.pd-admin-panel[aria-label="Produktmaster"],.pd-admin-panel[aria-label="Internt vareregister"]) :is(.item,.catalog-panel){padding:16px;border:1px solid var(--pd-line);border-radius:8px;background:#fff;box-shadow:none;min-width:0;max-width:none}
+body:has([data-expo-app-shell="true"]) :is(.pd-admin-panel[aria-label="Produktmaster"]>.adminAccordionItem,.pd-admin-panel[aria-label="Produktmaster"]>.adminAccordionItem>.item,#expo-systemadmin-store-catalog>div,#expo-systemadmin-store-catalog .catalog-panel){margin:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none}
+body:has([data-expo-app-shell="true"]) .pd-admin-panel[aria-label="Produktmaster"] .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+body:has([data-expo-app-shell="true"]) .pd-admin-panel[aria-label="Produktmaster"] .grid>*{min-width:0}
+body:has([data-expo-app-shell="true"]) .pd-admin-panel[aria-label="Produktmaster"] label.check{min-height:44px;border:0;border-radius:0;background:transparent;box-shadow:none}
+body:has([data-expo-app-shell="true"]) .pd-admin-panel[aria-label="Produktmaster"] label.check input{width:20px!important;min-width:20px!important;height:20px!important;min-height:20px!important;flex:0 0 20px;padding:0;margin:0}
+body:has([data-expo-app-shell="true"]) .pd-admin-panel[aria-label="Produktmaster"] label.check span{font-size:16px;line-height:1.5;margin:0;min-width:0}
+body:has([data-expo-app-shell="true"]) .pd-admin-panel[aria-label="Produktmaster"]>.adminAccordionItem>.item>h3{display:none}
+body:has([data-expo-app-shell="true"]) .pd-admin-panel[aria-label="Produktmaster"] .projectListHeaderCards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:12px;margin:16px 0}
+body:has([data-expo-app-shell="true"]) .pd-admin-panel[aria-label="Produktmaster"] .tile{min-height:0;padding:12px 16px;border:1px solid var(--pd-line);border-radius:8px;background:#fff;box-shadow:none}
+body:has([data-expo-app-shell="true"]) .pd-admin-panel[aria-label="Produktmaster"] .tile b{font-size:24px!important;font-weight:600}
+body:has([data-expo-app-shell="true"]) .pd-admin-panel[aria-label="Produktmaster"] .tile span{font-size:14px!important;line-height:1.5}
+body:has([data-expo-app-shell="true"]) #expo-systemadmin-store-catalog{margin-top:0!important}
+body:has([data-expo-app-shell="true"]) #expo-systemadmin-store-catalog .catalog-title{margin:20px 0 12px}
+body:has([data-expo-app-shell="true"]) #expo-systemadmin-store-catalog .catalog-title strong{font-size:20px;font-weight:600}
+body:has([data-expo-app-shell="true"]) #expo-systemadmin-store-catalog .catalog-import{margin-top:20px;padding:0 16px;border:1px solid var(--pd-line);border-radius:8px;background:#fff}
+body:has([data-expo-app-shell="true"]) #expo-systemadmin-store-catalog .catalog-import>summary{min-height:48px;font-size:16px;padding:12px 0;line-height:1.5}
+body:has([data-expo-app-shell="true"]) #expo-systemadmin-store-catalog .catalog-import-body{padding:4px 0 16px}
+body:has([data-expo-app-shell="true"]) #expo-systemadmin-store-catalog :is(.catalog-result,.catalog-summary span,.catalog-search input){border-radius:8px}
+@media(max-width:760px){
+ body:has([data-expo-app-shell="true"]) .company-profile-workspace :is(.two,.grid),
+ body:has([data-expo-app-shell="true"]) .pd-admin-panel[aria-label="Produktmaster"] .grid{grid-template-columns:minmax(0,1fr)}
+ body:has([data-expo-app-shell="true"]) .pd-admin-panel[aria-label="Produktmaster"] .projectListHeaderCards{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ body:has([data-expo-app-shell="true"]) .pd-support .pd-support-form{padding:16px}
+}
+
+/* Company administration and Help use the same index + contextual panel.
+   The real module forms/readers remain their only state and command owners. */
+body:has([data-expo-app-shell="true"]) .company-admin-heading>h3{overflow-wrap:anywhere}
+body:has([data-expo-app-shell="true"]) :is(.help-workspace-036,.help-reference-workspace){margin:0 0 24px;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;min-width:0}
+body:has([data-expo-app-shell="true"]) :is(.help-workspace-036,.help-reference-workspace)>h2{font-size:var(--pd-title)!important;font-weight:600;line-height:1.2;letter-spacing:-.7px;margin:6px 0 16px}
+body:has([data-expo-app-shell="true"]) .help-reference-workspace>h2{font-size:20px!important;letter-spacing:0}
+body:has([data-expo-app-shell="true"]) .help-workspace-036>h2>svg{display:none}
+body:has([data-expo-app-shell="true"]) .help-workspace-036 .helpQuickStart{padding:0;margin:0 0 20px;border:0;border-radius:0;background:transparent!important;box-shadow:none;color:var(--pd-ink)!important}
+body:has([data-expo-app-shell="true"]) .helpQuickStart :is(h3,p){color:var(--pd-muted)!important;font-size:16px;line-height:1.5;margin:8px 0;font-weight:400}
+body:has([data-expo-app-shell="true"]) .helpQuickStart :is(span,time){padding:0!important;border-radius:0!important;background:transparent!important;color:var(--pd-muted);font-size:14px;font-weight:500!important}
+body:has([data-expo-app-shell="true"]) .help-workspace-036>.ux-toolbar{display:grid;gap:8px;margin:0 0 20px;font-size:16px;line-height:1.5}
+body:has([data-expo-app-shell="true"]) :is(.help-workspace-036,.help-reference-workspace) :is(input,button,summary){font-size:16px;line-height:1.5;min-height:44px}
+body:has([data-expo-app-shell="true"]) .help-workspace-036 input{border-radius:7px}
+body:has([data-expo-app-shell="true"]) .help-topic-index{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 24px;border-top:1px solid var(--pd-line);margin-bottom:24px}
+body:has([data-expo-app-shell="true"]) .help-topic-index>.help-topic-row{margin:0;padding:0;border:0;border-bottom:1px solid var(--pd-line);border-radius:0;background:transparent;box-shadow:none;min-width:0}
+body:has([data-expo-app-shell="true"]) .pd-workspace-disclosure-trigger{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:52px;padding:14px 16px;border:0;border-radius:0;background:transparent;color:var(--pd-ink);font-size:16px;line-height:1.5;font-weight:500;box-shadow:none;text-align:left;white-space:normal}
+body:has([data-expo-app-shell="true"]) .pd-workspace-disclosure-trigger>svg{flex:none;color:var(--pd-accent)}
+body:has([data-expo-app-shell="true"]) .pd-workspace-disclosure-trigger>span{min-width:0;overflow-wrap:anywhere}
+body:has([data-expo-app-shell="true"]) .pd-workspace-disclosure-trigger:hover{background:#edf5f6;transform:none;box-shadow:none}
+body:has([data-expo-app-shell="true"]) .pd-workspace-disclosure-trigger:focus-visible{outline:3px solid #089aa3;outline-offset:-3px}
+body:has([data-expo-app-shell="true"]) .help-topic-label{display:flex;align-items:center;gap:12px;min-width:0;overflow-wrap:anywhere}
+body:has([data-expo-app-shell="true"]) .help-topic-label svg{flex:none;color:var(--pd-accent)}
+body:has([data-expo-app-shell="true"]) .help-topic-label b{font-weight:600}
+body:has([data-expo-app-shell="true"]) .pd-workspace-disclosure-content{padding:0;margin:0;border:0;min-width:0}
+body:has([data-expo-app-shell="true"]) :is(.help-panel-content,.help-reference-workspace,.help-workspace-036) :is(p,li){font-size:16px;line-height:1.6;overflow-wrap:anywhere}
+body:has([data-expo-app-shell="true"]) .help-panel-content :is(h3,h4){font-size:20px;font-weight:600;line-height:1.4;margin:20px 0 8px}
+body:has([data-expo-app-shell="true"]) :is(.help-panel-content,.help-workspace-036,.help-reference-workspace) :is(.item,.help-topic-chapter,.ux-reference){border-radius:8px!important;box-shadow:none}
+body:has([data-expo-app-shell="true"]) .company-admin-actions>.company-admin-housing{display:block}
+body:has([data-expo-app-shell="true"]):not(:has(.company-housing-panel .bolig-admin-access)) .company-admin-housing{display:none}
+body:has([data-expo-app-shell="true"]) .company-admin-panel-content :is(.item,.company-invite-access,.company-invite-modules .company-admin-check){margin:0 0 16px;padding:16px;border:1px solid var(--pd-line);border-radius:8px;background:#fff;box-shadow:none;min-width:0}
+body:has([data-expo-app-shell="true"]) .company-admin-panel-content form.item{padding:0;border:0}
+body:has([data-expo-app-shell="true"]) .company-admin-panel-content .company-admin-invite-form>h3{display:none}
+body:has([data-expo-app-shell="true"]) .company-admin-panel-content :is(p,label){font-size:16px;line-height:1.5}
+body:has([data-expo-app-shell="true"]) .company-admin-panel-content small{font-size:14px;line-height:1.5;color:var(--pd-muted)}
+body:has([data-expo-app-shell="true"]) .company-admin-panel-content .company-admin-check{align-items:flex-start}
+body:has([data-expo-app-shell="true"]) .company-admin-panel-content .company-admin-check>span{min-width:0;font-size:16px;line-height:1.5;margin:0}
+body:has([data-expo-app-shell="true"]) .company-admin-panel-content label b{font-size:16px!important;line-height:1.5}
+body:has([data-expo-app-shell="true"]) .company-admin-panel-content article{padding:16px!important;border-radius:8px!important;box-shadow:none}
+body:has([data-expo-app-shell="true"]) .company-admin-panel-content label:has(>input[type="checkbox"]){border-radius:8px!important}
+body:has([data-expo-app-shell="true"]) .company-admin-panel-content :is(input,select){border-radius:7px;min-width:0}
+body:has([data-expo-app-shell="true"]) .company-admin-panel-content button:not(.secondary){background:var(--pd-accent);color:#fff}
+body:has([data-expo-app-shell="true"]) .company-admin-panel-content button.secondary{background:#fff;color:var(--pd-accent);border:1px solid var(--pd-line)}
+@media(max-width:800px){body:has([data-expo-app-shell="true"]) .help-topic-index{grid-template-columns:minmax(0,1fr)}}
+
+/* Native report selection and project controls share the workspace frame.
+   Keep the existing dialog owners, fields, focus and export commands. */
+@media screen{
+ body:has([data-expo-app-shell="true"]) .ks-report-backdrop{padding:0;align-items:stretch;justify-content:flex-end}
+ body:has([data-expo-app-shell="true"]) .ks-report-dialog{display:flex;flex-direction:column;width:min(900px,100vw);max-width:100vw;height:100dvh;max-height:100dvh;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:#fff!important;color:var(--pd-ink);overflow:hidden;box-shadow:-12px 0 40px #10212b24}
+ body:has([data-expo-app-shell="true"]) .ks-report-dialog>.ks-report-dialog-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;position:static;flex:none;margin:0;padding:20px 24px;background:var(--pd-ink);color:#fff;border:0;border-radius:0;box-shadow:none}
+ body:has([data-expo-app-shell="true"]) .ks-report-dialog-head h2{margin:0;font-size:28px!important;line-height:1.2;font-weight:600;color:#fff;overflow-wrap:anywhere}
+ body:has([data-expo-app-shell="true"]) .ks-report-dialog-head button{flex:none;width:44px;min-height:44px!important;margin:0;padding:0;border:1px solid #ffffff30;border-radius:6px;background:transparent;color:#fff;font-size:24px;box-shadow:none}
+ body:has([data-expo-app-shell="true"]) .ks-report-dialog-body{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding:20px 24px}
+ body:has([data-expo-app-shell="true"]) .ks-report-dialog :is(p,label,legend,button){font-size:16px!important;line-height:1.45}
+ body:has([data-expo-app-shell="true"]) .ks-report-dialog fieldset{margin:16px 0;padding:12px;border:1px solid var(--pd-line);border-radius:8px;min-width:0}
+ body:has([data-expo-app-shell="true"]) .ks-report-dialog .ks-report-option :is(span,strong){font-size:16px!important;line-height:1.45}
+ body:has([data-expo-app-shell="true"]) .ks-report-dialog .ks-report-option{min-height:44px!important;overflow-wrap:anywhere}
+ body:has([data-expo-app-shell="true"]) .ks-report-dialog .ks-report-option input{width:20px;height:20px;min-height:20px;flex:0 0 20px}
+ body:has([data-expo-app-shell="true"]) .ks-report-dialog>.ks-report-dialog-footer{flex:none;display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:16px 24px;background:#fff;border-top:1px solid var(--pd-line)}
+ body:has([data-expo-app-shell="true"]) .ks-report-dialog-footer button{min-height:44px!important;margin:0;max-width:100%;white-space:normal;border-radius:7px;box-shadow:none;transform:none}
+ body:has([data-expo-project-shell="1"]) .project-checklist-footer{top:0}
+ body:has([data-expo-project-shell="1"]) .deviation-dialog-backdrop:has(.project-checklist-footer){padding:0;align-items:stretch;justify-content:flex-end}
+ body:has([data-expo-project-shell="1"]) .deviation-dialog:has(.project-checklist-footer){width:min(980px,100vw);max-width:100vw;height:100dvh;max-height:100dvh;border:0;border-radius:0!important;background:#fff!important}
+ body:has([data-expo-project-shell="1"]) .deviation-dialog:has(.project-checklist-footer)>.deviation-dialog-header{padding:20px 24px;background:var(--pd-ink);color:#fff}
+ body:has([data-expo-project-shell="1"]) .deviation-dialog:has(.project-checklist-footer)>.deviation-dialog-header h2{font-size:28px!important;line-height:1.2;font-weight:600;color:#fff}
+ body:has([data-expo-project-shell="1"]) .deviation-dialog:has(.project-checklist-footer)>.deviation-dialog-header p{color:#bdd7e2}
+ body:has([data-expo-project-shell="1"]) .deviation-dialog:has(.project-checklist-footer) .deviation-dialog-close{width:44px;min-height:44px!important;color:#fff;border:1px solid #ffffff30;background:transparent}
+ @media(max-width:620px){
+  body:has([data-expo-app-shell="true"]) .ks-report-dialog>:is(.ks-report-dialog-head,.ks-report-dialog-body,.ks-report-dialog-footer),
+  body:has([data-expo-project-shell="1"]) .deviation-dialog:has(.project-checklist-footer)>.deviation-dialog-header{padding:16px}
+  body:has([data-expo-app-shell="true"]) .ks-report-dialog-head h2,
+  body:has([data-expo-project-shell="1"]) .deviation-dialog:has(.project-checklist-footer)>.deviation-dialog-header h2{font-size:25px!important}
+  body:has([data-expo-app-shell="true"]) .ks-report-dialog-footer button{flex:1 1 auto;padding:8px 10px}
+ }
+}
+
+/* Stocktake uses the same open page and readable controls as the catalog. */
+body:has([data-expo-app-shell="true"]) .stocktake{margin:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;color:var(--pd-ink)}
+body:has([data-expo-app-shell="true"]) .stocktakeHeader{position:static;margin:0 0 20px;padding:0 0 16px;background:transparent;border:0;border-radius:0;box-shadow:none}
+body:has([data-expo-app-shell="true"]) .stocktakeHeader h2{font-size:var(--pd-title)!important;font-weight:600;line-height:1.2;letter-spacing:-.7px;margin:6px 0 8px}
+body:has([data-expo-app-shell="true"]) .stocktake :is(p,label,legend,input,select,button){font-size:16px!important;line-height:1.45}
+body:has([data-expo-app-shell="true"]) .stocktake small{font-size:14px;line-height:1.45}
+body:has([data-expo-app-shell="true"]) .stocktake button{min-height:44px!important;border-radius:7px;box-shadow:none;transform:none;font-weight:600}
+body:has([data-expo-app-shell="true"]) .stocktakeWorkspace>section,
+body:has([data-expo-app-shell="true"]) .stocktakeCreate{margin:0;padding:18px;border:1px solid var(--pd-line);border-radius:8px;background:#fff;box-shadow:none;min-width:0}
+body:has([data-expo-app-shell="true"]) .stocktake :is(.stocktakeHeader,.stocktakeSession)>div{min-width:0;overflow-wrap:anywhere}
+body:has([data-expo-app-shell="true"]) .stocktake .stocktakeSmart{display:flex;align-items:center;gap:10px;margin-top:12px}
+body:has([data-expo-app-shell="true"]) .stocktake input[type="checkbox"]{flex:0 0 20px;width:20px;height:20px;min-height:20px;padding:0}
+@media(min-width:1100px){
+ body:has([data-expo-app-shell="true"]) .stocktakeWorkspace:has(.stocktakeCount){grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);align-items:start}
+ body:has([data-expo-app-shell="true"]) .stocktakeWorkspace>*{grid-column:1/-1}
+ body:has([data-expo-app-shell="true"]) .stocktakeWorkspace>.stocktakeCount{grid-column:1}
+ body:has([data-expo-app-shell="true"]) .stocktakeWorkspace>.stocktakeCount+section{grid-column:2}
+}
+
+/* Firmaadmin's page index uses the same compact action row and readable list
+   as the other 03.6 workspaces. Native disclosures still own all forms. */
+body:has([data-expo-app-shell="true"]) .company-admin-heading>h3{font-size:var(--pd-title)!important;line-height:1.2}
+body:has([data-expo-app-shell="true"]) .company-admin-heading>button{min-height:44px!important;font-size:16px!important}
+body:has([data-expo-app-shell="true"]) .company-admin-panel .company-admin-body{gap:20px}
+body:has([data-expo-app-shell="true"]) .company-admin-actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px 12px;margin:0;padding:0 0 20px;border-bottom:1px solid var(--pd-line)}
+body:has([data-expo-app-shell="true"]) .company-admin-actions>:is(.company-invite-disclosure,.company-admin-housing){flex:0 1 auto;width:auto;max-width:100%;min-width:0;margin:0;padding:0;border:0;border-radius:7px;background:transparent}
+body:has([data-expo-app-shell="true"]) .company-admin-actions .pd-workspace-disclosure-trigger{width:auto;max-width:100%;min-height:44px!important;padding:10px 16px;border:1px solid var(--pd-line);border-radius:7px;background:#fff;color:var(--pd-accent);font-size:16px!important;font-weight:600;line-height:1.4}
+body:has([data-expo-app-shell="true"]) .company-admin-actions .company-invite-disclosure>.pd-workspace-disclosure-trigger{background:var(--pd-accent);border-color:var(--pd-accent);color:#fff}
+body:has([data-expo-app-shell="true"]) .company-admin-actions .company-invite-disclosure>.pd-workspace-disclosure-trigger>svg{color:#fff}
+body:has([data-expo-app-shell="true"]) .company-admin-directory-toolbar{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin:0 0 16px;min-width:0}
+body:has([data-expo-app-shell="true"]) .company-admin-directory-toolbar>div{min-width:0}
+body:has([data-expo-app-shell="true"]) .company-admin-directory-toolbar h3{margin:0 0 6px;font-size:20px!important;font-weight:600;line-height:1.35}
+body:has([data-expo-app-shell="true"]) .company-admin-directory-toolbar p{margin:0;font-size:16px;line-height:1.5}
+body:has([data-expo-app-shell="true"]) .company-admin-directory-toolbar>label{display:grid;gap:6px;flex:0 1 340px;min-width:220px;font-size:16px;line-height:1.4}
+body:has([data-expo-app-shell="true"]) .company-admin-directory-toolbar input{width:100%;min-height:44px;font-size:16px;border-radius:7px}
+body:has([data-expo-app-shell="true"]) .company-admin-list-head{display:grid;grid-template-columns:minmax(0,1fr) 125px 200px 18px;gap:12px;padding:10px 16px;font-size:14px;line-height:1.4;color:var(--pd-muted)}
+body:has([data-expo-app-shell="true"]) .company-admin-panel .company-admin-users{margin:0;border-radius:8px}
+body:has([data-expo-app-shell="true"]) .company-user-disclosure>.pd-workspace-disclosure-trigger{display:grid;grid-template-columns:minmax(0,1fr) 18px;gap:12px;min-height:64px!important;padding:12px 16px}
+body:has([data-expo-app-shell="true"]) .company-user-summary{display:grid;grid-template-columns:minmax(0,1fr) 125px 200px;gap:12px;align-items:center;width:100%;min-width:0}
+body:has([data-expo-app-shell="true"]) .company-user-identity{display:grid;gap:3px;min-width:0}
+body:has([data-expo-app-shell="true"]) .company-user-identity strong{font-size:16px!important;font-weight:600;line-height:1.4;overflow-wrap:anywhere;color:var(--pd-ink)}
+body:has([data-expo-app-shell="true"]) .company-user-identity small{font-size:14px;line-height:1.4;font-weight:400;color:var(--pd-muted);overflow-wrap:anywhere}
+body:has([data-expo-app-shell="true"]) .company-user-role{font-size:16px!important;line-height:1.4;font-weight:400;color:var(--pd-muted)}
+body:has([data-expo-app-shell="true"]) .company-user-status{justify-self:start;padding:4px 9px;border-radius:5px;background:#f1f5f6;color:#4e6876;font-size:14px!important;line-height:1.4;font-weight:600;overflow-wrap:anywhere}
+body:has([data-expo-app-shell="true"]) .company-user-status[data-status="active"]{background:#e6f5ee;color:#246046}
+body:has([data-expo-app-shell="true"]) .company-user-status[data-status="pending"]{background:#fff4df;color:#79551a}
+@media(max-width:900px){
+ body:has([data-expo-app-shell="true"]) .company-admin-directory-toolbar{flex-wrap:wrap;align-items:stretch}
+ body:has([data-expo-app-shell="true"]) .company-admin-directory-toolbar>label{flex:1 1 100%;min-width:0}
+ body:has([data-expo-app-shell="true"]) .company-admin-list-head{display:none}
+ body:has([data-expo-app-shell="true"]) .company-user-summary{grid-template-columns:minmax(0,1fr) auto;gap:8px 12px}
+ body:has([data-expo-app-shell="true"]) .company-user-identity{grid-column:1/-1}
+ body:has([data-expo-app-shell="true"]) .company-user-status{justify-self:end;max-width:180px}
+}
+@media(max-width:620px){
+ body:has([data-expo-app-shell="true"]) .company-admin-actions{gap:8px;padding-bottom:16px}
+ body:has([data-expo-app-shell="true"]) .company-admin-actions>:is(.company-invite-disclosure,.company-admin-housing),
+ body:has([data-expo-app-shell="true"]) .company-admin-actions .pd-workspace-disclosure-trigger{width:100%}
+ body:has([data-expo-app-shell="true"]) .company-user-disclosure>.pd-workspace-disclosure-trigger{padding:12px}
+}
+
+/* Open housing project: use the first screen for the existing facade and
+   notifications, including native search/list results. CSS only; native controls, selected units and drafts stay put.
+   Seven narrow columns form a capped photo column, five fill the reading side. */
+@media(min-width:1280px){
+ [data-expo-app-shell="true"] .bolig-page:has(>.bolig-projects-layout:not([hidden])){display:grid;grid-template-columns:minmax(560px,1fr) minmax(0,1.25fr);gap:12px 20px}
+ [data-expo-app-shell="true"] .bolig-page:has(>.bolig-projects-layout:not([hidden]))>*{grid-column:1/-1;min-width:0}
+ [data-expo-app-shell="true"] .bolig-page:has(>.bolig-projects-layout:not([hidden]))>header{grid-column:1;padding:0;gap:12px}
+ [data-expo-app-shell="true"] .bolig-page:has(>.bolig-projects-layout:not([hidden]))>header h2{margin:2px 0}
+ [data-expo-app-shell="true"] .bolig-page:has(>.bolig-projects-layout:not([hidden]))>.bolig-utilities{grid-column:2;display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,1fr);margin:0;gap:8px;align-content:center}
+ [data-expo-app-shell="true"] .bolig-page:has(>.bolig-projects-layout:not([hidden]))>.bolig-utilities>.bolig-toolbar{flex:0 0 auto}
+ [data-expo-app-shell="true"] .bolig-page:has(>.bolig-projects-layout:not([hidden]))>.bolig-utilities>:is(button,.bolig-help){min-width:0;max-width:100%;white-space:normal}
+ [data-expo-app-shell="true"] .bolig-page:has(>.bolig-projects-layout:not([hidden]))>.bolig-utilities>.bolig-help[open]{grid-column:1/-1}
+ [data-expo-app-shell="true"] .bolig-project-header{display:block;margin:0 0 12px}
+ [data-expo-app-shell="true"] .bolig-project-header>div:first-child{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 16px}
+ [data-expo-app-shell="true"] .bolig-project-header>div:first-child>small{display:none}
+ [data-expo-app-shell="true"] .bolig-project-header :is(h3,p){margin:0}
+ [data-expo-app-shell="true"] .bolig-project-actions{margin-top:8px;min-width:0}
+ [data-expo-app-shell="true"] .bolig-project-actions>nav{overflow:auto;flex-wrap:nowrap}
+ [data-expo-app-shell="true"] .bolig-project-actions>nav>button{flex:none;min-height:44px}
+ [data-expo-app-shell="true"] .bolig-main-grid:has(>.bolig-select-unit):has(>.bolig-building-panel>:is(.bolig-visual-facade,.bolig-search-results)){display:block}
+ [data-expo-app-shell="true"] .bolig-main-grid:has(>.bolig-select-unit)>.bolig-building-panel:has(>:is(.bolig-visual-facade,.bolig-search-results)){--housing-image-width:min(56vw,780px);display:grid;grid-template-columns:repeat(7,minmax(0,calc((var(--housing-image-width) - 96px)/7))) repeat(5,minmax(0,1fr));gap:12px 16px;align-items:start;padding:12px}
+ [data-expo-app-shell="true"] .bolig-main-grid:has(>.bolig-select-unit)>.bolig-building-panel:has(>:is(.bolig-visual-facade,.bolig-search-results))>*{grid-column:1/-1;min-width:0;margin:0}
+ [data-expo-app-shell="true"] .bolig-main-grid:has(>.bolig-select-unit)>.bolig-building-panel:has(>:is(.bolig-visual-facade,.bolig-search-results))>.bolig-building-breadcrumb{grid-column:1/3;grid-row:1}
+ [data-expo-app-shell="true"] .bolig-main-grid:has(>.bolig-select-unit)>.bolig-building-panel:has(>:is(.bolig-visual-facade,.bolig-search-results))>.bolig-building-breadcrumb>:is(span,b){display:none}
+ [data-expo-app-shell="true"] .bolig-main-grid:has(>.bolig-select-unit)>.bolig-building-panel:has(>:is(.bolig-visual-facade,.bolig-search-results))>.bolig-building-toolbar{display:contents}
+ [data-expo-app-shell="true"] .bolig-main-grid:has(>.bolig-select-unit)>.bolig-building-panel:has(>:is(.bolig-visual-facade,.bolig-search-results))>.bolig-building-toolbar>h3{grid-column:3/5;grid-row:1;align-self:center;margin:0}
+ [data-expo-app-shell="true"] .bolig-main-grid:has(>.bolig-select-unit)>.bolig-building-panel:has(>:is(.bolig-visual-facade,.bolig-search-results))>.bolig-building-toolbar>.bolig-overview-search{grid-column:5/8;grid-row:1;width:100%;margin:0;align-self:center}
+ [data-expo-app-shell="true"] .bolig-main-grid:has(>.bolig-select-unit)>.bolig-building-panel:has(>:is(.bolig-visual-facade,.bolig-search-results))>.bolig-overview-tools{grid-column:8/-1;grid-row:1;flex-wrap:wrap;gap:8px}
+ [data-expo-app-shell="true"] .bolig-main-grid:has(>.bolig-select-unit)>.bolig-building-panel:has(>:is(.bolig-visual-facade,.bolig-search-results))>.bolig-switch-building{grid-column:8/-1;grid-row:2;min-height:44px;justify-self:start}
+ [data-expo-app-shell="true"] .bolig-main-grid:has(>.bolig-select-unit)>.bolig-building-panel:has(>:is(.bolig-visual-facade,.bolig-search-results))>:is(.bolig-visual-facade,.bolig-search-results){grid-column:1/8;grid-row:2/8;width:100%;max-width:none}
+ [data-expo-app-shell="true"] .bolig-main-grid:has(>.bolig-select-unit)>.bolig-building-panel:has(>:is(.bolig-visual-facade,.bolig-search-results))>.bolig-completion-overview{grid-column:8/-1;grid-row:3;grid-template-columns:minmax(0,1fr);padding:12px;gap:10px}
+ [data-expo-app-shell="true"] .bolig-main-grid:has(>.bolig-select-unit)>.bolig-building-panel:has(>:is(.bolig-visual-facade,.bolig-search-results))>.bolig-completion-overview>.bolig-completion-actions{display:flex;flex-wrap:wrap;gap:8px}
+ [data-expo-app-shell="true"] .bolig-main-grid:has(>.bolig-select-unit)>.bolig-building-panel:has(>:is(.bolig-visual-facade,.bolig-search-results))>.bolig-completion-overview>.bolig-completion-actions>button{flex:1;min-width:0;width:auto;min-height:44px;margin:0}
+ [data-expo-app-shell="true"] .bolig-main-grid:has(>.bolig-select-unit)>.bolig-building-panel:has(>:is(.bolig-visual-facade,.bolig-search-results))>.bolig-dialogue-inbox{grid-column:8/-1;grid-row:4;padding:12px;gap:8px}
+ [data-expo-app-shell="true"] .bolig-main-grid:has(>.bolig-select-unit)>.bolig-building-panel:has(>:is(.bolig-visual-facade,.bolig-search-results)) .bolig-dialogue-inbox-heading p{margin:6px 0;line-height:1.4}
+ [data-expo-app-shell="true"] .bolig-main-grid:has(>.bolig-select-unit)>.bolig-building-panel:has(>:is(.bolig-visual-facade,.bolig-search-results))>.bolig-dialogue-inbox>label{margin:8px 0}
+ [data-expo-app-shell="true"] .bolig-main-grid:has(>.bolig-select-unit)>.bolig-building-panel:has(>:is(.bolig-visual-facade,.bolig-search-results))>.bolig-layer-tabs{grid-column:8/-1;grid-row:5;flex-wrap:wrap}
+ [data-expo-app-shell="true"] .bolig-main-grid:has(>.bolig-select-unit)>.bolig-building-panel:has(>:is(.bolig-visual-facade,.bolig-search-results))>.bolig-group-toolbar{grid-column:8/-1;grid-row:6;padding:0;border:0;background:transparent}
+ [data-expo-app-shell="true"] .bolig-main-grid:has(>.bolig-select-unit)>.bolig-building-panel:has(>:is(.bolig-visual-facade,.bolig-search-results))>.bolig-overview-delivery-actions{grid-column:8/-1;grid-row:7;justify-content:flex-start;flex-wrap:wrap}
+ [data-expo-app-shell="true"] .bolig-main-grid:has(>.bolig-select-unit):has(>.bolig-building-panel>:is(.bolig-visual-facade,.bolig-search-results))>.bolig-select-unit{margin-top:12px;padding:12px}
+}
+
+/* Search/list details keep the shared readable sizes, including narrow screens. */
+[data-expo-app-shell="true"] .bolig-page .bolig-search-results .bolig-overview-row{min-height:76px!important;font-size:16px!important}
+[data-expo-app-shell="true"] .bolig-page .bolig-search-results .bolig-overview-row small,
+[data-expo-app-shell="true"] .bolig-page .bolig-search-results .bolig-status-badge{font-size:14px!important;line-height:1.4}
+
+/* Runtime mobile headings/buttons must not shrink this page below 03.6. */
+[data-expo-app-shell="true"] .bolig-page :is(.bolig-project-actions nav,.bolig-building-breadcrumb,.bolig-building-toolbar,.bolig-overview-tools,.bolig-layer-tabs,.bolig-group-toolbar,.bolig-completion-actions) :is(button,input,select),
+[data-expo-app-shell="true"] .bolig-page button.bolig-switch-building{font-size:16px!important;min-height:44px}
+[data-expo-app-shell="true"] .bolig-project-actions>nav{display:flex;flex-direction:row;flex-wrap:nowrap;overflow-x:auto;max-width:100%;min-width:0}
+[data-expo-app-shell="true"] .bolig-project-actions>nav>button{flex:none;width:auto;white-space:nowrap}
+[data-expo-app-shell="true"] .bolig-project-actions{width:100%;max-width:100%;min-width:0}
+
+/* Native checklist builder and main-plan fields, same 03.6 frame. */
+@media screen {
+ body:has([data-expo-app-shell="true"]) .deviation-dialog:has(form.ks-checklists){width:min(680px,100vw)!important;height:100dvh!important;max-height:100dvh!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;position:fixed!important;top:0!important;right:0!important;left:auto!important;display:flex;flex-direction:column}
+ body:has([data-expo-app-shell="true"]) .deviation-dialog:has(form.ks-checklists)>.deviation-dialog-header{background:#10212b!important;color:#fff;padding:24px 28px!important;flex:none;align-items:flex-start}
+ body:has([data-expo-app-shell="true"]) .deviation-dialog:has(form.ks-checklists)>.deviation-dialog-header h2{font-size:28px!important;color:#fff;line-height:1.18;overflow-wrap:anywhere}
+ body:has([data-expo-app-shell="true"]) .deviation-dialog:has(form.ks-checklists)>.deviation-dialog-header p{color:#bdd7e2}
+ body:has([data-expo-app-shell="true"]) .deviation-dialog:has(form.ks-checklists)>.deviation-dialog-body{flex:1;min-height:0;overflow:auto;padding:24px 28px}
+ body:has([data-expo-app-shell="true"]) .deviation-dialog:has(form.ks-checklists) :is(button,input:not([type=checkbox]),select,textarea){font-size:16px!important;min-height:44px!important;box-sizing:border-box}
+ body:has([data-expo-app-shell="true"]) .deviation-dialog:has(form.ks-checklists) .ks-checklist-point{border-radius:8px;border:1px solid #cbd5e1;padding:12px!important;margin:14px 0!important}
+ body:has([data-expo-app-shell="true"]) .ks-plan-filters :is(input,select){font-size:16px!important;min-height:44px!important;box-sizing:border-box}
+}
+@media screen and (max-width:620px){
+ body:has([data-expo-app-shell="true"]) .deviation-dialog:has(form.ks-checklists)>.deviation-dialog-header{padding:18px 16px!important}
+ body:has([data-expo-app-shell="true"]) .deviation-dialog:has(form.ks-checklists)>.deviation-dialog-header h2{font-size:25px!important}
+ body:has([data-expo-app-shell="true"]) .deviation-dialog:has(form.ks-checklists)>.deviation-dialog-body{padding:16px}
+}
+
+@media screen {
+ body:has([data-expo-app-shell="true"]) .deviation-dialog:has(form.ks-checklists) label:has(>input[type=checkbox]){display:flex;align-items:center;gap:8px;min-height:44px;line-height:1.4}
+ body:has([data-expo-app-shell="true"]) .deviation-dialog:has(form.ks-checklists) label>input[type=checkbox]{width:20px!important;height:20px!important;min-height:20px!important;padding:0!important;margin:0!important;flex:none;accent-color:#21834c}
+}
+
+/* Native package and option editors retain their form owners in the 03.6 panel.
+   Only these two forms match; other Bolig dialogs and private views are untouched. */
+@media screen {
+ body:has([data-expo-app-shell="true"]) dialog.bolig-catalog-dialog:has(>form:is(.bolig-package-editor,.bolig-option-editor)){position:fixed;inset:0 0 0 auto;width:min(680px,100vw);max-width:100vw;height:100dvh;max-height:100dvh;margin:0;padding:0;border:0;border-radius:0;box-sizing:border-box;background:#fff;overflow:hidden}
+ body:has([data-expo-app-shell="true"]) dialog.bolig-catalog-dialog[open]:has(>form:is(.bolig-package-editor,.bolig-option-editor)){display:flex;flex-direction:column}
+ body:has([data-expo-app-shell="true"]) .bolig-catalog-dialog:has(>form:is(.bolig-package-editor,.bolig-option-editor))>header{flex:none;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin:0;padding:24px 28px;background:#10212b;color:#fff;border:0;border-radius:0}
+ body:has([data-expo-app-shell="true"]) .bolig-catalog-dialog:has(>form:is(.bolig-package-editor,.bolig-option-editor))>header h2{margin:0;color:#fff;font-size:28px!important;line-height:1.18;overflow-wrap:anywhere}
+ body:has([data-expo-app-shell="true"]) .bolig-catalog-dialog:has(>form:is(.bolig-package-editor,.bolig-option-editor))>header button{flex:none;width:44px!important;height:44px!important;min-height:44px!important;margin:0;padding:0!important;border:1px solid #8aabb8;border-radius:6px!important;background:transparent;color:#fff;font-size:16px!important}
+ body:has([data-expo-app-shell="true"]) .bolig-catalog-dialog>form:is(.bolig-package-editor,.bolig-option-editor){flex:1;min-height:0;min-width:0;margin:0;padding:20px 28px;overflow:auto;background:#fff;border:0;border-radius:0;box-shadow:none;font-size:16px;line-height:1.45;scroll-padding-block:12px 70px}
+ body:has([data-expo-app-shell="true"]) .bolig-catalog-dialog>form:is(.bolig-package-editor,.bolig-option-editor)>fieldset{min-width:0;margin:0;padding:0;border:0;border-radius:0;background:transparent}
+ body:has([data-expo-app-shell="true"]) .bolig-catalog-dialog>form:is(.bolig-package-editor,.bolig-option-editor) :is(label,p,summary){font-size:16px!important;line-height:1.45}
+ body:has([data-expo-app-shell="true"]) .bolig-catalog-dialog>form:is(.bolig-package-editor,.bolig-option-editor) :is(button,select,textarea,input:not([type="checkbox"]):not([type="radio"])){font-size:16px!important;min-height:44px!important;border-radius:6px!important;box-sizing:border-box;max-width:100%}
+ body:has([data-expo-app-shell="true"]) .bolig-catalog-dialog>form:is(.bolig-package-editor,.bolig-option-editor) small{font-size:14px!important;line-height:1.4}
+ body:has([data-expo-app-shell="true"]) .bolig-catalog-dialog>form:is(.bolig-package-editor,.bolig-option-editor) :is(.bolig-content-editor,.bolig-content-section,.bolig-edit-line){min-width:0;padding:12px;border:1px solid #d4e2e6;border-radius:8px;box-shadow:none}
+ body:has([data-expo-app-shell="true"]) .bolig-catalog-dialog>form:is(.bolig-package-editor,.bolig-option-editor) .bolig-edit-line>summary{display:flex;align-items:center;min-height:44px;margin:0;overflow-wrap:anywhere}
+ body:has([data-expo-app-shell="true"]) .bolig-catalog-dialog>form:is(.bolig-package-editor,.bolig-option-editor) .bolig-section-line-fields{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+ body:has([data-expo-app-shell="true"]) .bolig-catalog-dialog>form:is(.bolig-package-editor,.bolig-option-editor)>fieldset>button[type="submit"]{position:sticky;bottom:0;z-index:2;width:100%;margin-bottom:0;box-shadow:0 -8px 0 #fff}
+}
+@media screen and (max-width:620px){
+ body:has([data-expo-app-shell="true"]) .bolig-catalog-dialog:has(>form:is(.bolig-package-editor,.bolig-option-editor))>header{padding:18px 16px}
+ body:has([data-expo-app-shell="true"]) .bolig-catalog-dialog:has(>form:is(.bolig-package-editor,.bolig-option-editor))>header h2{font-size:25px!important}
+ body:has([data-expo-app-shell="true"]) .bolig-catalog-dialog>form:is(.bolig-package-editor,.bolig-option-editor){padding:16px}
+ body:has([data-expo-app-shell="true"]) .bolig-catalog-dialog>form:is(.bolig-package-editor,.bolig-option-editor) .bolig-section-line-fields{grid-template-columns:minmax(0,1fr)}
+}
+
+/* The package library shares the same readable controls as its native editors.
+   Unit choices do not contain this library and retain their existing layout. */
+@media screen {
+ [data-expo-app-shell="true"] .bolig-catalog:has(>.bolig-catalog-library){padding:0;border:0;border-radius:0;box-shadow:none;background:transparent;font-size:16px;line-height:1.45}
+ [data-expo-app-shell="true"] .bolig-catalog:has(>.bolig-catalog-library) :is(button,summary){font-size:16px!important;min-height:45px!important;border-radius:6px!important;white-space:normal}
+ [data-expo-app-shell="true"] .bolig-catalog:has(>.bolig-catalog-library) summary{display:flex;align-items:center;overflow-wrap:anywhere}
+ [data-expo-app-shell="true"] .bolig-catalog:has(>.bolig-catalog-library) p{font-size:16px!important;line-height:1.45}
+ [data-expo-app-shell="true"] .bolig-catalog:has(>.bolig-catalog-library) small{font-size:14px!important;line-height:1.4}
+ [data-expo-app-shell="true"] .bolig-catalog:has(>.bolig-catalog-library) h4{font-size:18px!important;line-height:1.3}
+ [data-expo-app-shell="true"] .bolig-catalog:has(>.bolig-catalog-library) .bolig-catalog-library{padding:0;border:0;background:transparent}
+ [data-expo-app-shell="true"] .bolig-catalog:has(>.bolig-catalog-library) .bolig-catalog-cards>article{min-width:0;padding:16px;border:1px solid #d4e2e6;border-radius:8px;box-shadow:none;background:#fff}
+ [data-expo-app-shell="true"] .bolig-catalog:has(>.bolig-catalog-library) .bolig-catalog-cards .bolig-toolbar{gap:8px;flex-wrap:wrap}
+}
+
+/* Native time dialogs retain the shared title after late mobile runtime styles. */
+@media screen{body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.time-editor,.time-workspace)>.deviation-dialog-header h2{font-size:28px!important}}
+@media screen and (max-width:620px){body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.time-editor,.time-workspace)>.deviation-dialog-header h2{font-size:25px!important}}
+
+@media screen{body:has([data-expo-app-shell="true"]) .ks-plan-drawer>.ks-plan-dialog-head button{border-radius:6px!important;font-size:16px!important;min-height:45px!important;flex:none}body:has([data-expo-app-shell="true"]) .ks-plan-drawer-body :is(button,select,textarea,input:not([type="checkbox"]):not([type="radio"])){font-size:16px!important;min-height:45px!important;border-radius:6px!important}body:has([data-expo-app-shell="true"]) .ks-plan-drawer-body :is(label,p,summary){font-size:16px!important}}

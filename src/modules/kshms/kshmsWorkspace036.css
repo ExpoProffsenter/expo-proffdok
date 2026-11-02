@@ -1,0 +1,64 @@
+/* Sketch 03.6 structure: daily work first, native workspaces behind the same
+   destinations. No task, person, deadline or progress figure is invented. */
+[data-expo-app-shell="true"]>main:has(.ks-workspace-036)>.pd-workspace-tool-row{display:none}
+.ks-workspace-036 .ks-workspace-navigation{display:flex;align-items:center;flex-wrap:wrap;gap:12px 24px;margin:18px 0 24px;border-bottom:1px solid #d5e3e5}
+.ks-workspace-036 .ks-workspace-phases{display:flex;align-items:stretch;flex-wrap:wrap;gap:8px 24px;min-width:0;flex:1}
+.ks-workspace-036 .ks-workspace-phases button{position:relative;border:0;border-radius:0;background:transparent;color:#4e6876;padding:12px 0;font-size:16px;font-weight:600;min-height:44px;box-shadow:none}
+.ks-workspace-036 .ks-workspace-phases button.active{color:#075961;background:transparent}
+.ks-workspace-036 .ks-workspace-phases button.active::after{content:"";position:absolute;inset:auto 0 0;height:3px;background:#10c7cf}
+.ks-workspace-036 .ks-workspace-tools{margin:0 0 8px;min-width:0}
+.ks-workspace-036 .ks-workspace-tools>span{display:none}
+.ks-workspace-036 .ks-workspace-tools>button{min-height:44px;padding:10px 14px;border:1px solid #d5e3e5;border-radius:7px;background:#fff;font-size:16px}
+.ks-workspace-036 .ks-daily-workspace{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:20px;align-items:start;margin-bottom:24px}
+.ks-workspace-036 .ks-daily-workspace[hidden],.ks-workspace-036 .ks-native-workspace[hidden]{display:none}
+.ks-workspace-036 :is(.ks-daily-controls,.ks-daily-followups){min-width:0;padding:0;margin:0;border:1px solid #d5e3e5;border-radius:8px;background:#fff;overflow:hidden}
+.ks-workspace-036 .ks-workspace-section-heading{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;padding:18px 20px;border-bottom:1px solid #d5e3e5}
+.ks-workspace-036 .ks-workspace-section-heading h3{font-size:20px;font-weight:600;line-height:1.3;margin:0}
+.ks-workspace-036 .ks-workspace-link{border:0;background:none;color:#087484;font-size:16px;min-height:44px;flex-shrink:0;white-space:nowrap;overflow-wrap:normal;word-break:normal;padding:6px 0}
+.ks-workspace-036 .ks-daily-controls>p{margin:0;padding:16px 20px;font-size:16px;line-height:1.5;color:#4e6876}
+.ks-workspace-036 .ks-daily-entries{display:grid}
+.ks-workspace-036 :is(.ks-daily-entries>button,.ks-routine-task){display:flex;width:100%;justify-content:space-between;align-items:center;gap:16px;min-height:74px;padding:16px 20px;border:0;border-top:1px solid #e0e9eb;border-radius:0;background:#fff;text-align:left;color:#172f35;font-size:16px}
+.ks-workspace-036 :is(.ks-daily-entries>button,.ks-routine-task)>span:first-child{display:grid;gap:5px;min-width:0}
+.ks-workspace-036 :is(.ks-daily-entries>button,.ks-routine-task) strong{font-size:16px;font-weight:600;line-height:1.4}
+.ks-workspace-036 :is(.ks-daily-entries>button,.ks-routine-task) small{font-size:16px;font-weight:400;line-height:1.4;color:#4e6876}
+.ks-workspace-036 .ks-daily-shortcuts{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.ks-workspace-036 .ks-daily-shortcuts button{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:54px;padding:14px 16px;border:1px solid #d5e3e5;border-radius:7px;background:#fff;font-size:16px;text-align:left}
+.ks-workspace-036 .ks-workspace-start{padding:16px 20px;border-top:1px solid #e0e9eb;background:#f6fafb}
+.ks-workspace-036 .ks-workspace-start h4{margin:0 0 8px;font-size:18px;font-weight:600}
+.ks-workspace-036 .ks-workspace-start p{margin:0 0 12px;font-size:16px;line-height:1.5}
+.ks-module.ks-workspace-036 .ks-daily-followups>.ks-card{margin:0;padding:16px 20px;border:0;border-top:1px solid #e0e9eb;border-radius:0;box-shadow:none}
+.ks-workspace-036 .ks-daily-followups>.ks-card h3{margin:0 0 8px;font-size:18px;font-weight:600}
+.ks-workspace-036 .ks-daily-followups>.ks-card p{font-size:16px;line-height:1.5}
+.ks-workspace-036 .ks-daily-controls .ks-task-banner{display:block;margin:0;padding:16px 20px;border:0;border-bottom:1px solid #e0e9eb;border-radius:0;background:#f6fafb;box-shadow:none}
+.ks-workspace-036 .ks-daily-controls .ks-task-banner summary{min-height:44px;font-size:16px;align-content:center}
+.ks-workspace-036 .ks-daily-controls .ks-task-content{max-height:none;overflow:visible}
+.ks-workspace-036 .ks-daily-controls .ks-task-content button{font-size:16px;white-space:normal;text-align:left;max-width:100%}
+.ks-workspace-036 .ks-daily-controls .ks-task-open{min-height:44px;font-size:16px;margin-top:10px;background:#087484;color:#fff;border-color:#087484}
+.ks-workspace-036 .ks-native-workspace{min-width:0}
+.ks-module .ks-handbook-explanation{margin:12px 0}
+.ks-module .ks-handbook-explanation>summary{min-height:44px;align-content:center;font-size:16px;font-weight:600}
+body:has([data-expo-app-shell="true"]) .ks-workspace-navigation.is-personal .ks-workspace-phases{display:flex;flex-wrap:wrap;gap:8px 24px;border-bottom:1px solid #d5e3e5;margin:14px 0 20px}
+body:has([data-expo-app-shell="true"]) .ks-workspace-navigation.is-personal .ks-workspace-phases button{padding:12px 0;border:0;border-radius:0;background:transparent;color:#4e6876;font-size:16px;min-height:44px;white-space:normal;overflow-wrap:normal;word-break:normal}
+body:has([data-expo-app-shell="true"]) .ks-workspace-navigation.is-personal .ks-workspace-phases button.active{color:#075961;border-bottom:3px solid #10c7cf}
+body:has([data-expo-app-shell="true"] .ks-workspace-036) .deviation-dialog-backdrop:has(.sja-editor,.ks-executions){padding:0;align-items:stretch;justify-content:flex-end}
+body:has([data-expo-app-shell="true"] .ks-workspace-036) .deviation-dialog:has(.sja-editor,.ks-executions){width:min(680px,100vw);max-width:100vw;max-height:100dvh;height:100dvh;border-radius:0;display:flex;flex-direction:column}
+body:has([data-expo-app-shell="true"] .ks-workspace-036) .deviation-dialog:has(.sja-editor,.ks-executions)>.deviation-dialog-header{flex:none;border-radius:0;background:#f8fbfc}
+body:has([data-expo-app-shell="true"] .ks-workspace-036) .deviation-dialog:has(.sja-editor,.ks-executions)>.deviation-dialog-body{min-height:0;flex:1;overflow:auto;overscroll-behavior:contain}
+body:has([data-expo-app-shell="true"] .ks-workspace-036) .deviation-dialog:has(.sja-editor,.ks-executions) button{min-height:44px;font-size:16px!important;box-shadow:none;max-width:100%;white-space:normal}
+body:has([data-expo-app-shell="true"] .ks-workspace-036) .deviation-dialog:has(.sja-editor,.ks-executions) .deviation-dialog-close{min-width:44px;min-height:44px}
+@media(max-width:1000px){
+ body:has([data-expo-app-shell="true"]) .ks-workspace-navigation.is-personal .ks-workspace-phases{display:none}
+ .ks-workspace-036 .ks-workspace-navigation{align-items:end;gap:10px 16px;margin:14px 0 18px}
+ .ks-workspace-036 .ks-view-select{display:grid;gap:6px;min-width:0;flex:1;font-size:16px;font-weight:600;margin:0 0 8px}
+ .ks-workspace-036 .ks-view-select select{width:100%;min-height:44px;padding:10px 12px;border:1px solid #d5e3e5;border-radius:7px;background:#fff;font-size:16px;color:#172f35}
+ .ks-workspace-036 .ks-workspace-phases{display:none}
+ .ks-workspace-036 .ks-daily-workspace{grid-template-columns:minmax(0,1fr);gap:16px}
+ .ks-workspace-036 .ks-daily-shortcuts{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:600px){
+ .ks-workspace-036 .ks-workspace-navigation{display:grid;grid-template-columns:minmax(0,1fr)}
+ .ks-workspace-036 .ks-workspace-tools>button{width:100%;justify-content:center}
+ .ks-workspace-036 .ks-daily-shortcuts{grid-template-columns:minmax(0,1fr)}
+ .ks-workspace-036 .ks-workspace-section-heading,.ks-workspace-036 .ks-daily-controls>p,.ks-workspace-036 .ks-daily-entries>button,.ks-workspace-036 .ks-routine-task,.ks-workspace-036 .ks-workspace-start,.ks-workspace-036 .ks-daily-followups>.ks-card,.ks-workspace-036 .ks-daily-controls .ks-task-banner{padding:14px}
+ .ks-workspace-036 .ks-workspace-section-heading{align-items:flex-start}
+}

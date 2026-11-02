@@ -16,6 +16,7 @@ const navLine = main.split('\n').find(line=>line.includes('("nav", { children: t
 assert(navLine,'Missing actual production source-nav renderer');
 const navExpression = navLine.slice(navLine.indexOf('(0, import_jsx_runtime.jsx)')).replace(/,$/,'');
 fs.writeFileSync(entry, `
+import {ProjectListLayout,ProjectListCardDisclosure,ProjectListViewControls} from '${dir}/src/modules/project/ProjectListDisclosure.jsx';
 import React,{act} from '${dir}/node_modules/react/index.js';
 import * as jsxRuntime from '${dir}/node_modules/react/jsx-runtime.js';
 import {createRoot} from '${dir}/node_modules/react-dom/client.js';
@@ -31,6 +32,8 @@ function App({kind,active='prosjekt',withKshms=true}){
  const tabs=global?createGlobalAppTabs({isCompanyAdminUser:true,canUseAdminProjectSync:true,canUseKshms:withKshms}):createProjectWorkspaceTabs({hasSalesOrigin:kind!=='new',isNewProject:kind==='new'});
  return <><header><div className='head'><h1>Expo ProffDok</h1>{!global&&<button onClick={()=>globalThis.__open('global')}>← Til startside</button>}</div>{sourceNav(jsxRuntime,tabs,active,id=>globalThis.__select(id))}<div className='mobileNavSelectWrap'><select value={active} onChange={event=>globalThis.__select(event.target.value)}>{tabs.map(([id,label])=><option key={id} value={id} data-expo-nav-label={label}>{label}</option>)}</select></div></header><main>{global?<h2>Hva vil du jobbe med?</h2>:<section><h2>{kind==='order'?'Ordreoversikt':'Prosjektoversikt'}</h2>{kind==='order'&&<span data-expo-workflow-type='simple_order'/>}{kind!=='new'&&<span data-expo-sales-origin-ref='synthetic-order'/>}</section>}</main></>;
 }
+globalThis.__disclosure=()=>root.render(<ProjectListLayout><ProjectListViewControls visible={1} total={1}/><ProjectListCardDisclosure className="projectListCard" heading={<h3>QA prosjekt ÆØÅ</h3>} attention="2 åpne avvik" onOpen={()=>globalThis.__select('p0:prosjekt')}><button onClick={()=>globalThis.__select('p0:rapport')}>Rapport</button><textarea defaultValue="Usendt kladd"/></ProjectListCardDisclosure></ProjectListLayout>);
+globalThis.__unmount=()=>root.unmount();
 globalThis.__act=act;
 globalThis.__render=props=>root.render(<App {...props}/>);
 globalThis.__install=()=>{installDesktopSideMenu();installProjectWorkspaceHeaderGuide();installProjectWorkflowUx();installSimpleOrderWorkspaceUx();};
@@ -119,6 +122,32 @@ assert(labels().includes('Befaring/Tilbud'));
 const mobileLabels=[...window.document.querySelectorAll('.mobileNavSelectWrap option')].map(option=>option.textContent);
 assert(mobileLabels.includes('Startside'));
 assert(mobileLabels.includes('Befaring/Tilbud'));
+
+// The real disclosure must not treat project information as an expand action.
+const selections=[];window.__select=id=>selections.push(id);
+await act(async()=>window.__disclosure());
+const heading=window.document.querySelector('h3'),details=window.document.querySelector('details'),summary=details.querySelector('summary');
+assert(!heading.closest('summary'),'Project name must not be a disclosure trigger');
+const tick=()=>new Promise(resolve=>setTimeout(resolve,0));
+await act(async()=>{heading.click();await tick();});
+assert.equal(details.open,false);assert.deepEqual(selections,['p0:prosjekt']);
+await act(async()=>[...window.document.querySelectorAll('button')].find(e=>e.textContent==='Åpne').click());
+assert.deepEqual(selections,['p0:prosjekt','p0:prosjekt']);assert.equal(details.open,false);
+await act(async()=>{summary.click();await tick();});
+assert.equal(details.open,true);assert.match(summary.textContent,/Skjul detaljer/);
+const draft=window.document.querySelector('textarea');draft.value='Bevart usendt kladd';
+await act(async()=>{summary.click();await tick();});assert.equal(details.open,false);
+await act(async()=>{summary.click();await tick();});assert.equal(details.open,true);
+assert.equal(window.document.querySelector('textarea'),draft);assert.equal(draft.value,'Bevart usendt kladd');
+await act(async()=>details.querySelector('button').click());assert.deepEqual(selections,['p0:prosjekt','p0:prosjekt','p0:rapport']);
+for(const label of ['Vis alle detaljer','Kollaps alle detaljer']){
+ await act(async()=>{[...window.document.querySelectorAll('button')].find(e=>e.textContent===label).click();await tick();});
+ assert.equal(details.open,label==='Vis alle detaljer');
+}
+assert.equal(window.document.querySelector('textarea'),draft);assert.equal(draft.value,'Bevart usendt kladd');
+await act(async()=>{await tick();await tick();});
+await act(async()=>window.__unmount());
+console.log('Native disclosure: PASS — clickable project heading, independent details/global toggle, original callbacks, same mounted draft');
 dom.window.close();
 fs.rmSync(temporary,{recursive:true,force:true});
 console.log('Project menu real React flow: PASS — order → Startside, order → wetroom, native KS/HMS navigation, without KS/HMS and mobile labels');

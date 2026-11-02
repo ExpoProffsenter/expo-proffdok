@@ -3,8 +3,10 @@ import {DialogPortalTarget} from '../ui/DialogPortalTarget.js';
 import { createPortal } from 'react-dom';
 import './deviationDialog.css';
 
+const openDialogs = [];
+
 // React owns the complete dialog. Legacy DOM adapters must not move its fields.
-export default function DeviationDialog({ title, context, children, onClose, busy = false, closeLabel = 'Lukk avviksdialog' }) {
+export default function DeviationDialog({ title, context, children, onClose, busy = false, closeLabel = 'Lukk avviksdialog', returnFocusTarget }) {
   const portalTarget = useContext(DialogPortalTarget);
   const titleId = useId();
   const panel = useRef(null);
@@ -15,6 +17,7 @@ export default function DeviationDialog({ title, context, children, onClose, bus
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     const dialog = panel.current;
+    openDialogs.push(dialog);
     const focusable = () => [...dialog.querySelectorAll('input,select,textarea,button,a[href],summary,[tabindex="0"]')]
       .filter(node => !node.matches(':disabled') && node.getClientRects().length);
     const firstField = focusable().find(node => node.matches('input:not([type="checkbox"]),textarea,select'));
@@ -25,17 +28,36 @@ export default function DeviationDialog({ title, context, children, onClose, bus
       const fields = focusable();
       const first = fields[0], last = fields.at(-1);
       if (!first) { event.preventDefault(); dialog.focus(); return; }
-      if (event.shiftKey && (document.activeElement === first || document.activeElement === dialog)) {
+      if (!dialog.contains(document.activeElement)) {
+        event.preventDefault(); (event.shiftKey ? last : first).focus();
+      } else if (event.shiftKey && (document.activeElement === first || document.activeElement === dialog)) {
         event.preventDefault(); last.focus();
       } else if (!event.shiftKey && document.activeElement === last) {
         event.preventDefault(); first.focus();
       }
     };
+    // Disabling the focused save button can move browser focus to BODY. Keep
+    // modal keyboard handling available without closing a parent or native modal.
+    const keydownOutside = event => {
+      if (event.defaultPrevented || openDialogs.at(-1) !== dialog ||
+          (event.target !== document.body && event.target !== document.documentElement)) return;
+      let nativeModal;
+      try { nativeModal = document.querySelector('dialog:modal'); } catch { /* Older DOM test runtimes. */ }
+      if (nativeModal && !nativeModal.contains(dialog)) return;
+      keydown(event);
+    };
     dialog.addEventListener('keydown', keydown);
+    document.addEventListener('keydown', keydownOutside);
     return () => {
       dialog.removeEventListener('keydown', keydown);
+      document.removeEventListener('keydown', keydownOutside);
+      const index = openDialogs.indexOf(dialog);
+      if (index !== -1) openDialogs.splice(index, 1);
       document.body.style.overflow = previousOverflow;
-      if (previousFocus?.isConnected) previousFocus.focus({ preventScroll: true });
+      // Async openers may lose focus while loading. An explicit resolver can
+      // retain the original trigger and reject it after a workspace change.
+      const target = typeof returnFocusTarget === 'function' ? returnFocusTarget() : returnFocusTarget || previousFocus;
+      if (target?.isConnected) target.focus({ preventScroll: true });
     };
   }, []);
   return createPortal(<div className="deviation-dialog-backdrop">

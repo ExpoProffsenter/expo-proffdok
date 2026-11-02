@@ -1,3 +1,4 @@
+import './portalWorkspace.css';
 // FASE 29A2: Portaltilgang verifiseres server-side før prosjektdata returneres.
 import { BadgeCheck } from 'lucide-react';
 import { jsx, jsxs } from 'react/jsx-runtime';
@@ -157,7 +158,7 @@ export function createPortalAccessTools(ctx = {}) {
 
   const renderPortalAccessGate = (roleParam = "kunde") => {
     const roleLabel = portalAccessLabelForRole(roleParam);
-    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "pd-customer-portal pd-portal-gate", children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("header", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "head", children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Brand, { logo: "", name: "Expo ProffDok" }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [

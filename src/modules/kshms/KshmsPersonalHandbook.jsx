@@ -9,9 +9,12 @@ export default function KshmsPersonalHandbook({data,userId,query,onQueryChange,o
  const {all,visible}=personalHandbook(data,userId,query);
  return <div className="ks-card" role="region" aria-label="Min personalhåndbok">
   <h3>Min personalhåndbok</h3>
-  <KshmsHandbookPdfButton companyId={data.context.company_id} userId={userId} disabled={busy||!all.length}/>
-  <p>Her finner du firmaets rutiner som er tildelt deg. Søk når du lurer på hvordan noe skal gjøres. Åpne en rutine for å lese teksten og se hvem som godkjente den, og om du selv har bekreftet denne utgaven. Dette gjelder også firmaadmin.</p>
-  <p>Du skal lese og bekrefte rutinene før du begynner å arbeide i firmaet. Bekreft alle tildelte utgaver samlet i feltet over etter at du har lest og forstått dem, eller bruk «Les og bekreft» for én om gangen. Dette gjelder også firmaadmin og KS/HMS-ansvarlig. Bekreftede rutiner ligger fortsatt her med dato og klokkeslett, så du kan slå dem opp senere.</p>
+  <p>Søk i dine tildelte rutiner, eller åpne en utgave for å lese og bekrefte.</p>
+  <details className="ks-handbook-explanation"><summary>Om personalhåndboka og PDF</summary>
+   <KshmsHandbookPdfButton companyId={data.context.company_id} userId={userId} disabled={busy||!all.length}/>
+   <p>Her finner du firmaets rutiner som er tildelt deg. Søk når du lurer på hvordan noe skal gjøres. Åpne en rutine for å lese teksten og se hvem som godkjente den, og om du selv har bekreftet denne utgaven. Dette gjelder også firmaadmin.</p>
+   <p>Du skal lese og bekrefte rutinene før du begynner å arbeide i firmaet. Bekreft alle tildelte utgaver samlet i feltet over etter at du har lest og forstått dem, eller bruk «Les og bekreft» for én om gangen. Dette gjelder også firmaadmin og KS/HMS-ansvarlig. Bekreftede rutiner ligger fortsatt her med dato og klokkeslett, så du kan slå dem opp senere.</p>
+  </details>
   <KshmsRoutineSearch label="Søk i min personalhåndbok" query={query} onChange={onQueryChange} count={visible.length} total={all.length}/>
   {!all.length&&<p>Du har ikke fått noen rutiner ennå. Be firmaadmin eller KS/HMS-ansvarlig kontrollere tilgangen og tildelingene dine.</p>}
   {all.length>0&&!visible.length&&<p>Ingen rutiner passer søket. Prøv et annet ord eller tøm søket.</p>}

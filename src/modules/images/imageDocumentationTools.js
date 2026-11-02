@@ -1,4 +1,6 @@
 import PhotoOverview from './PhotoOverview.jsx';
+import ProjectPhotoPreview from './ProjectPhotoPreview.jsx';
+import ProjectPhotoUpload from './ProjectPhotoUpload.jsx';
 // FASE 24G BILDEDOKUMENTASJON: Flytter kun Bilder-fanens presentasjonskomponenter og PhotoGrid ut av main.jsx.
 // Ingen endring i bildeopplasting, autolagring, Storage, prosjektdata, rapport, garanti eller tilgangslogikk.
 import { Camera, Plus, Trash2 } from 'lucide-react';
@@ -35,7 +37,7 @@ export function createImageDocumentationTools({
       const canUseAsHero = isFinishedResultPhoto(p) && hasValue(p?.url);
       const isHeroPhoto = canUseAsHero && selectedHeroPhotoId === photoIdentity;
       return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "photo", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: p.url, draggable: false }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProjectPhotoPreview, { photo: p }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: p.cat }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: p.created }),
         canUseAsHero && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "item", style: { display: "flex", alignItems: "flex-start", gap: "10px", margin: "8px 0", cursor: isProjectLocked ? "not-allowed" : "pointer" }, onClick: (e) => e.stopPropagation(), children: [
@@ -86,6 +88,7 @@ export function createImageDocumentationTools({
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { className: "note", children: "Bruk denne når bildene hovedsakelig er dokumentert direkte på kontrollpunktene, slik at Bilder-fanen ikke må duplisere alt." })
         ] })
       ] }),
+      (0, import_jsx_runtime.jsxs)(ProjectPhotoUpload, { disabled: isProjectLocked, children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "cards imageUploadTiles", children: imageCats.map((c) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "tile", onDragOver: stopFileDragNavigation, onDragEnter: stopFileDragNavigation, onDrop: (e) => handlePhotoTileDrop(c, e), children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("b", { children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Plus, { size: 16 }),
@@ -96,6 +99,7 @@ export function createImageDocumentationTools({
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", accept: "image/*", multiple: true, disabled: isProjectLocked, onClick: (e) => e.stopPropagation(), onChange: (e) => addPhoto(c, e.target.files) })
       ] }, c)) }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: photoSaveStatus || "Bilder autolagres ved opplasting når prosjektet er lagret i skyen." }),
+      ] }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PhotoGrid, { photos, setPhotos, project, setProject, canEditProject, isProjectLocked })
     ] });
   }
@@ -125,6 +129,7 @@ export function createImageDocumentationTools({
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { className: "note", children: "Bruk denne når bildene hovedsakelig er dokumentert direkte på kontrollpunktene." })
         ] })
       ] }),
+      (0, import_jsx_runtime.jsxs)(ProjectPhotoUpload, { disabled: isProjectLocked, children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "cards imageUploadTiles", children: imageCats.map((c) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "tile", onDragOver: stopFileDragNavigation, onDragEnter: stopFileDragNavigation, onDrop: (e) => handlePhotoTileDrop(c, e), children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("b", { children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Plus, { size: 16 }),
@@ -134,6 +139,8 @@ export function createImageDocumentationTools({
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: photos.filter((p) => p.cat === c).length > 0 ? `\u{1F4F7} ${photos.filter((p) => p.cat === c).length} bilder lagt til` : "Ta bilde, velg fra galleri eller dra bilde hit" }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", accept: "image/*", capture: "environment", multiple: true, disabled: isProjectLocked, onClick: (e) => e.stopPropagation(), onChange: (e) => addPhoto(c, e.target.files) })
       ] }, c)) }),
+      (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Bilder autolagres ved opplasting når prosjektet er lagret i skyen." }),
+      ] }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PhotoGrid, { photos, setPhotos, project, setProject, canEditProject, isProjectLocked })
     ] });
   }

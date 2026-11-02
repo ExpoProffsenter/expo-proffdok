@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Enkel teksttegning på rapportforsiden og avklart demobildegrense",
+  "change": "Miljømål BEGGE; utførelse kun PR295/Preview/Sandbox. Forsidetittel og adresse tegnes én gang mot eksisterende kontrastfelt. Fjernet forskjøvet sort tekstkopi som gav overlapp. Ingen endring av kildefelt, garanti, tidsrom, arkiv, signatur eller tilgang. Kun reportTools.js og eksisterende report-warranty-pdf-check.mjs, denne endringsbeskrivelsen og CURRENT_RELEASE_STATUS.md.",
+  "verification": "Ny native jsPDF-regresjon feilet først: adresse ble tegnet 2 ganger i stedet for 1. Etter rettelse 198 krav PASS over begge Sopro-systemer og kort/lang/låst/ulåst. Alle seks syntetiske PDF-er/88 A4-sider rendret og visuelt gjennomgått; låst data uendret og ulåst kvitteringsstempling beholdt. Eksplisitt Sandbox og Production critical/build PASS. KS/HMS-rapportkritisk sjekk PASS. Endelig React/CI/deploy føres i PR295. Ingen bildeinnbyggingsrettelse hevdes: levende DOM viste alle syv bilder naturalWidth0. Relativ /demo-images/befaring-for.svg svarer404 i Preview og finnes bare i demo-overlayet; /demo-images/elektro-varmekabel.svg er også relativ og fraværende i branchens public. Fem JPG-er peker absolutt til permanent demo. Eksempel membran-tetteband.jpg svarer200/image/jpeg med CORS* ved separat HTTP-henting, men er ulastet i levende DOM. Årsaken til disse fem er fortsatt åpen. Ikke flytt demo-overlay til main eller endre lagrede kundelenker.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Samme knapper og arbeidsflyt; bare PDF-typografi."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Ingen ny dataflyt eller lagringseier."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen installasjon eller miljøendring."
+    },
+    "module": {
+      "required": false,
+      "reason": "Eksisterende rapportkontrakt, gater og renderer beholdes; bare fjernet dobbel teksttegning."
+    }
+  }
+}

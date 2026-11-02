@@ -40,7 +40,9 @@ w.eval((Array.isArray(bundled)?bundled[0]:bundled).output.find(o=>o.type==='chun
 const act=w.__act,render=async p=>act(async()=>{w.__render(p);await new Promise(r=>setTimeout(r,30));});
 const button=text=>{const b=[...d.querySelectorAll('button')].find(n=>n.textContent.trim()===text);assert(b,'Missing '+text);return b;};
 const click=async text=>act(async()=>{button(text).click();await new Promise(r=>setTimeout(r,10));});
-const selected=()=>[...d.querySelectorAll('.ks-module nav button')].find(b=>b.getAttribute('aria-pressed')==='true')?.textContent.trim();
+// Native screen IDs remain selected in the controlled view chooser; the new
+// top-level phase can contain several native destinations in its tools panel.
+const selected=()=>d.querySelector('.ks-module select[aria-label="Velg KS/HMS-visning"]')?.selectedOptions[0]?.textContent.trim();
 const evidence=[];
 try{
  await render({kind:'hr'});assert(d.querySelector('.hr-employee'),d.body.textContent);
@@ -56,7 +58,7 @@ try{
  await render({kind:'personal'});await click('Mine oppfølginger');await act(async()=>d.querySelector('.hr-employee').click());assert(d.querySelector('.hr-detail'));
  deferredHr={};await act(async()=>w.dispatchEvent(new w.Event('focus')));assert(!d.querySelector('.hr-detail'));await act(async()=>deferredHr.resolve());deferredHr=null;assert(d.querySelector('.hr-detail'));
  evidence.push('Min side/HR: selected employee survives delayed authorization through parent ID callback.');
- await act(async()=>d.querySelector('[aria-label="Lukk medarbeidervindu"]').click());assert(!d.querySelector('[role=dialog]'));await click('Personalhåndbok');await click('Les og bekreft (0)');assert.equal(selected(),'Les og bekreft (0)');await click('Oversikt');await click('Personalhåndbok');assert.equal(selected(),'Les og bekreft (0)');
+ await act(async()=>d.querySelector('[aria-label="Lukk medarbeidervindu"]').click());assert(!d.querySelector('[role=dialog]'));await click('Personalhåndbok');await click('Les og bekreft (0)');assert.equal(selected(),'Les og bekreft (0)');await click('I dag');await click('Personalhåndbok');assert.equal(selected(),'Les og bekreft (0)');
  evidence.push('Min side/handbook: leave for Overview and return retains Reading.');
  await render({kind:'ks'});await click('SJA');assert.equal(selected(),'SJA');deferredKs={};await act(async()=>w.dispatchEvent(new w.Event('focus')));assert.equal(selected(),'SJA');await act(async()=>deferredKs.resolve());deferredKs=null;assert.equal(selected(),'SJA');
  evidence.push('KS/HMS: ordinary delayed focus authorization preserves SJA tab.');

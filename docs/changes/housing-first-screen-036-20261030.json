@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Boligprosjekt: fasade og varsler i første PC-skjermbilde",
+  "change": "Miljømål BEGGE, bare PR295/Preview. Original03.6 og godkjent Startside beholdes. Brukerens pilotbilde er gjenskapt innlogget, med fasadestart rundt1016px på1363x936. Kun workspaceSurface.css er endret i Bolig: åpent prosjekt får kompakt modul-/hjelpetopp og én prosjektfanerad. Når ingen bolig er valgt, bruker eksisterende fasade venstre kolonne og ferdigstilling/meldinger høyre. Byggnavn, byggvelger, søk og visning/filter ligger på samme topprad. Stamme-/leveringshandlinger beholdes, tom boligveiledning ligger etter oversikten. Valgt bolig, bildeditor og øvrige funksjoner beholder native eiere og arbeidsflater. Ingen Bolig-Entry-/Overview-/fasadegeometri-/data-/dvale-/SQL-/tilgangsendring. Ingen reduksjon av skrift eller bildekvalitet; runtime mobiloverskrift beskyttes fra19px-arv og styrende knapper fra små skriftregler. Prosjektfanene ruller vannrett på smal skjerm.",
+  "verification": "Ny48-assertions Chromium-prøve kjører faktisk BoligEntry, ProjectHome, BuildingOverview, Completion, Dialogue og VisualWorkspace med app/runtime-CSS og syntetiske lesekall.1920x1080,1363x936,1280x800,768/390/320. Negativ prøve med uendret HEAD-CSS feiler på fasadens start. Ny start rundt481px på alle tre PC-bredder; samme store bilde, seks faktiske boligmål synlige uten scroll ved936/1080høyde og ulest-merke synlig også ved1280x800. Høyre kontroll-/meldingsregion vises i første skjermbilde; hele fotoets nederste kant og hele meldingslisten kan fortsatt kreve scroll. Ingen tilsvarende over-folden-påstand for telefon/høye bygg/alle16hus. Native byggebytte A→B→A, stammevalg i selve fasaden, samme DOM og utvalg ved focus/samme arbeidsprofil, reelt kontaktfilter/søk/tilbake til fasade, seks bredder uten sideoverflow og syv faner i én rad. Bare kjente lesekall, ingen lagring. Eksisterende Bolig-builder762PASS;16-hus faktisk Preview-gjennomgang står i separat PR294. Full eksplisitt Sandbox critical/buildPASS før siste avgrensede PDF-sidebytte i salgsdelen; siste full CI og innlogget sluttgeometri føres i PR295.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Samme knapper, leseflyt og hjelpeinnganger; bare plassering/typografi er endret."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Samme eiere, datamodell, lagring, tilgang og backend; presentasjonsendring."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen ny avhengighet, miljøvariabel eller konfigurasjon."
+    },
+    "module": {
+      "required": true,
+      "reason": "Felles UI-kontrakt beskriver betinget førsteskjerm-layout, native tilstander og telefonens menyrad."
+    }
+  }
+}

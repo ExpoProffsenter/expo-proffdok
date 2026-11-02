@@ -1,0 +1,9 @@
+/* Internal native sales children. Forms, commands, drafts and pricing retain their owners. */
+@media screen {
+ body:has([data-expo-app-shell="true"]) :is(.sales-editor-app,.store-grouped-builder,.sales-case-app) :is(button,summary,select,textarea,input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"])){font-size:16px!important;min-height:45px!important;max-width:100%;box-sizing:border-box;border-radius:6px!important;transform:none!important}
+ body:has([data-expo-app-shell="true"]) :is(.sales-editor-app,.store-grouped-builder) :is(.sales-field>span,.sales-note-field>span,label){font-size:16px!important;line-height:1.45}
+ body:has([data-expo-app-shell="true"]) :is(.sales-editor-app,.store-grouped-builder) :is(.sales-form-panel,.sales-form-preview,.sales-offer-template-panel,.store-complete-template-inline){border-radius:8px!important;box-shadow:none}
+ body:has([data-expo-app-shell="true"]) :is(.sales-editor-app,.store-grouped-builder) .sales-primary-button{background:#007681!important;color:#fff;border-color:#007681}
+ body:has([data-expo-app-shell="true"]) :is(.sales-editor-app,.store-grouped-builder,.sales-case-app) label:has(>input:is([type="checkbox"],[type="radio"])){min-height:45px}
+ body:has([data-expo-app-shell="true"]) :is(.sales-editor-app,.store-grouped-builder,.sales-case-app) input:is([type="checkbox"],[type="radio"]){width:20px!important;height:20px!important;min-height:20px!important;min-width:20px!important;flex:none;accent-color:#007681}
+}

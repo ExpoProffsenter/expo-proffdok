@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "KS/HMS underdialoger i original03.6",
+  "change": "Miljømål BEGGE, bare PR295/Preview. Ny innlogget baseline0f58 viste RUH som sentrert980px/18px-dialog mens SJA og gjennomføringer brukte høyrepanel. Ett avgrenset stilsett samler de faktiske RUH-, SJA-, vernerunde- og risikodialogene i680px høyrepanel med mørk original03.6-topp, nøytrale8px underseksjoner og16px/44px kontroller. Forslag, sjekkpunkter, historikk, gjenåpning og skrivebeskyttet dokumentasjon omfattes. Den sene runtime-kaskaden gjorde også KS-hovedflaten og personlig håndbok15px/39px på telefon; samme kontrollmål brukes der. Native felter, DOM, callbacks, local drafts, scope, signering og lukkeregler beholdes. Ingen funksjons-/backend-/tilgangs-/sending-/Startsideendring.",
+  "verification": "Negativ gammelCSS-prøve feiler på faktisk RUH-geometri/radius/topp. Ny reell Chromium-prøve:979 assertions/221 navngitte tilstand/bredde-kombinasjoner, ikke221 funksjoner. Fem bredder320/390/768/1363/1920 og korte skjermer. Alle native komponenter er ekte; bare transport/klientregister isoleres. Underpunkter åpnes og lukkes, samme textarea-node/tekst og fokusretur kontrolleres; requiredRUH stopper før transport; lagret/lukketRUH, historikk/gjenåpning, signertSJA og fullførtkontroll/risiko er lest. Ingen kommandoer eller utgående trafikk. Begge appens statiske stilsett og sen APP_RUNTIME_STYLES lastes. Eksisterende KS-workspace197 består uendret med nå full kaskade og3rolletyper. Relevante criticalRUH/SJA/gjennomføring og faktiskeReactSJA/parent/gjennomføring/prosjektgjennomføringPASS. Eksplisitt Sandbox critical/buildPASS. PC/mobil-sluttbilder er visuelt inspisert. Samlet app-UX og eksakt CI/deploy/innlogget etterkontroll føres i PR295. Ingen ekte lukking/signering/vedlegg/mail/tilgangsendring. Rutineforvaltning, kilderevisjon, dokumentuttrekk, resterende prosjektskjemaer, fysiske enheter ogSafari står fortsatt åpne. Ingen full appattest.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Samme knapper, felt, vilkår og handlingseiere. Ingen ny brukerflyt. Brukerens konkrete HR-inngang og e-postgrense står i handoff."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Kun avgrenset CSS/import og QA; ingen ny eier eller dataflyt."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen avhengighets-, miljø-, installasjons- eller databaseendring."
+    },
+    "module": {
+      "required": true,
+      "reason": "UI README dokumenterer native KS-dialogscope og full runtime-kaskade i underflateprøver."
+    }
+  }
+}

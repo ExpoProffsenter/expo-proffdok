@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';import fs from 'node:fs';import os from 'node:os';import path from 'node:path';import http from 'node:http';import {build} from 'vite';import react from '@vitejs/plugin-react';
 const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright');const root=process.cwd(),tmp=fs.mkdtempSync(path.join(os.tmpdir(),'stocktake-')),entry=path.join(tmp,'entry.jsx');
-fs.writeFileSync(entry,`import React from '${root}/node_modules/react/index.js';import {createRoot} from '${root}/node_modules/react-dom/client.js';import Entry from '${root}/src/modules/stocktake/StocktakeEntry.jsx';import Admin from '${root}/src/modules/stocktake/StocktakeCompanyAccess.jsx';const root=createRoot(document.getElementById('app'));globalThis.render=()=>root.render(React.createElement(React.Fragment,null,React.createElement(Admin,{companyId:'company'}),React.createElement(Entry)));globalThis.render();`);
+fs.writeFileSync(entry,`import React from '${root}/node_modules/react/index.js';import {createRoot} from '${root}/node_modules/react-dom/client.js';import '${root}/src/style.css';import '${root}/src/modules/ui/proffdokWorkspace.css';import {APP_RUNTIME_STYLES} from '${root}/src/modules/app/appRuntimeStyles.js';const style=document.createElement('style');style.textContent=APP_RUNTIME_STYLES;document.head.appendChild(style);import Entry from '${root}/src/modules/stocktake/StocktakeEntry.jsx';import Admin from '${root}/src/modules/stocktake/StocktakeCompanyAccess.jsx';const root=createRoot(document.getElementById('app'));globalThis.render=()=>root.render(React.createElement(React.Fragment,null,React.createElement(Admin,{companyId:'company'}),React.createElement(Entry)));globalThis.render();`);
 const bundled=await build({root,configFile:false,logLevel:'silent',plugins:[react(),{name:'api-boundary',enforce:'pre',resolveId(id){if(id.endsWith('/moduleAccessClient.js'))return '\0access';if(id.endsWith('/workProfileClient.js'))return '\0profile';if(id.endsWith('/PriceSearchBarcodeScanner.jsx'))return '\0scan';},load(id){
  if(id==='\0access')return `export const MANAGED_ACCESS_EVENT='managed',MODULE_ACCESS_EVENT='module';export const rpcWithStoredSession=(n,a)=>window.api(n,a);export const publishManagedAccessChange=()=>window.dispatchEvent(new Event('managed'));`;
  if(id==='\0profile')return `export const WORK_PROFILE_EVENT='profile';`;
  if(id==='\0scan')return `import React from '${root}/node_modules/react/index.js';export default function Scanner(p){return React.createElement('button',{onClick:()=>p.onScan('07000000000001')},'QA camera scan');}`;
 }}],build:{write:false,cssCodeSplit:false,minify:false,rollupOptions:{input:entry,output:{inlineDynamicImports:true}}}});
 const js=bundled.output.find(f=>f.type==='chunk').code,css=bundled.output.filter(f=>f.fileName.endsWith('.css')).map(f=>f.source).join('\n');
-const server=http.createServer((req,res)=>{res.setHeader('Content-Type','text/html; charset=utf-8');res.end(`<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font:15px Arial;margin:8px} ${css}</style><div id="app"></div><script type="module">${js.replaceAll('</script','<\\/script')}</script>`);});await new Promise(r=>server.listen(0,'127.0.0.1',r));
+const server=http.createServer((req,res)=>{res.setHeader('Content-Type','text/html; charset=utf-8');res.end(`<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font:15px Arial;margin:8px} ${css}</style><div data-expo-app-shell="true"><main><div id="app"></div></main></div><script type="module">${js.replaceAll('</script','<\\/script')}</script>`);});await new Promise(r=>server.listen(0,'127.0.0.1',r));
 let browser,checks=0;const eq=(a,b,n)=>{assert.deepEqual(a,b,n);checks++;};
 try{
  browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH,headless:true,args:['--no-sandbox']});const page=await browser.newPage({viewport:{width:1200,height:1000}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
@@ -51,6 +51,23 @@ try{
  await page.locator('.stocktakeResult').nth(1).click();eq(await page.getByLabel('Leverandør',{exact:true}).inputValue(),'Leverandør B');await page.getByLabel('Antall du har telt',{exact:true}).fill('0');await button('Registrer antall').click();await page.getByText('Antallet er lagret i firmaet.',{exact:true}).waitFor();eq((await page.evaluate(()=>window.rows))[0].quantity,0);
  await button('Legg inn vare manuelt').click();await page.getByLabel('Leverandør',{exact:true}).fill('Manuell grossist');await page.getByLabel('Varenummer i Cordel',{exact:true}).fill('00045');await page.getByLabel('Beskrivelse',{exact:true}).fill('Uten strekkode');await page.getByLabel('Område / hylle (valgfritt)',{exact:true}).fill('Reol B');await page.getByLabel('Antall du har telt',{exact:true}).fill('2,5');
  eq(await button('Ny telling').isDisabled(),true,'unsaved line cannot be silently replaced by another count');
+ const quantityNode=await page.getByLabel('Antall du har telt',{exact:true}).elementHandle();
+ for(const width of [320,390,768,1363,1920]){
+  await page.setViewportSize({width,height:936});
+  eq(await page.locator('.stocktake').evaluate(e=>getComputedStyle(e).backgroundColor),'rgba(0, 0, 0, 0)','open stocktake frame '+width);
+  eq(await page.locator('.stocktakeHeader h2').evaluate(e=>parseFloat(getComputedStyle(e).fontSize)),width<=620?29:32,'same page heading '+width);
+  eq(await page.getByLabel('Smartere søk',{exact:false}).evaluate(e=>e.getBoundingClientRect().width),20,'native checkbox width '+width);
+  eq(await page.locator('.stocktake').evaluate(e=>[...e.querySelectorAll('button')].filter(n=>n.getBoundingClientRect().width&&n.getBoundingClientRect().height<43.99).length),0,'44px stocktake controls '+width);
+  eq(await page.locator('.stocktake').evaluate(e=>[...e.querySelectorAll('label,input,select,button')].filter(n=>n.getBoundingClientRect().width&&parseFloat(getComputedStyle(n).fontSize)<16).length),0,'16px stocktake fields '+width);
+  eq(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'stocktake no page overflow '+width);
+  eq(await page.getByLabel('Antall du har telt',{exact:true}).inputValue(),'2,5','same unsent quantity '+width);
+  eq(await page.getByLabel('Varenummer i Cordel',{exact:true}).inputValue(),'00045','same manual item '+width);
+  const count=await page.locator('.stocktakeCount').boundingBox(),lines=await page.getByRole('region',{name:'Telte varer',exact:true}).boundingBox();
+  eq(width>=1100?Math.abs(count.y-lines.y)<1:lines.y>=count.y+count.height,true,'responsive work and counted items '+width);
+ }
+ eq(await quantityNode.evaluate(e=>e.isConnected),true,'resizing preserves the actual stocktake field');
+ await page.setViewportSize({width:1200,height:1000});
+
  await page.evaluate(()=>sessionStorage.setItem('__qaBackend',JSON.stringify({enabled:window.enabled,scope:window.scope,rows:window.rows,sessions:window.sessions,commands:window.commands})));
  await page.reload();await page.getByLabel('Varenummer i Cordel',{exact:true}).waitFor();eq(await page.getByLabel('Varenummer i Cordel',{exact:true}).inputValue(),'00045','manual draft survives reload');eq(await page.getByLabel('Antall du har telt',{exact:true}).inputValue(),'2,5');
 

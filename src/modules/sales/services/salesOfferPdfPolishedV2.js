@@ -99,7 +99,7 @@ export async function createPublishedOfferPdfPolishedV2({ selectedRequest }) {
   const ensure=(h=10)=>{ if(y+h<=P.bottom) return false; newPage(); return true; };
 
   const sectionTitle=(label,note="")=>{
-    const h=note?19:15; ensure(h+22); const no=String(++section).padStart(2,"0");
+    const h=note?19:15; ensure(h+4+30); const no=String(++section).padStart(2,"0");
     pdf.setFillColor(...C.soft); pdf.setDrawColor(...C.line); pdf.roundedRect(P.l,y,W,h,2.5,2.5,"FD");
     pdf.setFillColor(...C.teal); pdf.circle(P.l+8,y+7.5,4.6,"F"); font(7.7,"bold",C.white); pdf.text(no,P.l+8,y+8.3,{align:"center"});
     font(12.5,"bold",C.ink); pdf.text(clean(label),P.l+16,y+8.6);

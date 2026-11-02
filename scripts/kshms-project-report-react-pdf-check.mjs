@@ -2,14 +2,16 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import {execFileSync} from 'node:child_process';
 import { build } from 'vite';
 import react from '@vitejs/plugin-react';
 import {round as roundFixture,risk as riskFixture} from './critical-kshms-execution-pdf-check.mjs';
+import {signatureA,signatureB} from './fixtures/checklist-signatures.mjs';
 
 // Real hook, dialog, Report/CustomerReport, print handlers and complete PDF
 // generator. Only transport and browser download are replaced. jsPDF is real.
 const { JSDOM } = await import(process.env.KSHMS_JSDOM_PATH || 'jsdom');
-const { getDocument } = await import(process.env.KSHMS_PDFJS_PATH || 'pdfjs-dist/legacy/build/pdf.mjs');
+const getDocument=process.env.KSHMS_PDFJS_PATH?(await import(process.env.KSHMS_PDFJS_PATH)).getDocument:null;
 const jspdf = process.env.KSHMS_JSPDF_PATH;
 assert(jspdf, 'Set KSHMS_JSPDF_PATH to jsPDF 2.5.1 dist/jspdf.es.min.js');
 const root = process.cwd(), temp = fs.mkdtempSync(path.join(os.tmpdir(), 'ks-project-report-'));
@@ -30,8 +32,8 @@ const { window } = dom, doc = window.document; window.IS_REACT_ACT_ENVIRONMENT =
 window.HTMLCanvasElement.prototype.getContext = () => null;
 window.fetch = async () => { throw Error('Fixture must not fetch external assets'); };
 window.confirm = () => true; const alerts = []; window.alert = value => alerts.push(value);
-const exports = [], printed = [], calls = []; window.__save = (name, bytes) => exports.push({ name, bytes: new Uint8Array(bytes) });
-window.open = () => ({ closed: false, close() { this.closed = true; }, document: { open() {}, write(value) { printed.push(value); }, close() {} } });
+const exports = [], printed = [], calls = [],printWindows=[]; window.__save = (name, bytes) => exports.push({ name, bytes: new Uint8Array(bytes) });
+window.open = () => {const w={closed:false,close(){this.closed=true;},document:{open(){},write(value){printed.push(value);},close(){}}};printWindows.push(w);return w;};
 const company = '11111111-1111-4111-8111-111111111111', userId = '22222222-2222-4222-8222-222222222222', projectId = '33333333-3333-4333-8333-333333333333', otherProject = '44444444-4444-4444-8444-444444444444';
 const context = { enabled: true, company_id: company, user_id: userId, manage: false }, props = { context, userId, projectId };
 const signed = { id: '55555555-5555-4555-8555-555555555555', company_id: company, project_id: projectId, revision: 2, status: 'signed', leader_identity: { name: 'QA historisk leder' }, signed_identity: { name: 'QA historisk signatur' }, signed_at: '2026-10-07T22:00:00Z', statement: 'QA lagret signert bekreftelse', content: { title: 'QA SIGNERT FLISKAPPING – Øyvind Åse '.repeat(4).slice(0, 160), workplace: 'QA arbeidssted', task: 'QA arbeidsoppgave', planned_on: '2026-10-08', reviewed_on: '2026-10-08', project_reference: 'QA egen referanse', routines: 'R-012 – Støv ved mur og flis (versjon 3)', equipment: 'QA verktøy kontrollert', ppe: 'QA verneutstyr vurdert', emergency: 'QA førstehjelp og varsling', stop_conditions: 'QA stans ved nye farer', communication: 'QA gjennomgang med arbeidslaget', steps: [{ activity: 'QA kapping', hazard: 'QA kvartsstøv', consequence: 'QA lungeskade', measures: 'QA våtkapping og avsug', owner: 'QA ansvar for tiltak', check: 'QA kontroll før arbeid' }], participants: [{ name: 'QA deltaker Ærlig', role: 'Flislegger', company: 'QA eksternt firma', involvement: 'QA medvirkning om støv' }] } };
@@ -47,8 +49,22 @@ const roundRow={...structuredClone(roundFixture),company_id:company,project_id:p
 const riskRow={...structuredClone(riskFixture),company_id:company,project_id:projectId,content:{...structuredClone(riskFixture.content),title:'QA SAVED RISK'}};
 const realPhoto=process.env.KSHMS_QA_PHOTO; if(realPhoto){const data='data:image/png;base64,'+fs.readFileSync(realPhoto).toString('base64');roundRow.content.answers[roundRow.content.points[0].id].photos[0].data=data;riskRow.content.risks[0].photos[0].data=data;}
 rows.rounds=[roundRow,{...structuredClone(roundRow),id:'66666666-6666-4666-8666-666666666660',status:'draft',content:{...roundRow.content,title:'QA DRAFT ROUND'}}];rows.risks=[riskRow];
+const controlId='99999999-9999-4999-8999-999999999999',signerId='99999999-9999-4999-8999-999999999990';
+const control={id:controlId,company_id:company,project_id:projectId,revision:3,sequence:14,status:'completed',definition:{category:'QA FULLFØRT RØRKONTROLL – ÆØÅ',source_version_id:'QA-fast-malutgave',items:['Trykkprøve','Merking'],requirements:{Trykkprøve:{guidance:'QA lagret veiledning',comment_required:true}}},answers:{Trykkprøve:{status:'OK',comment:'QA lagret trykkprøve – Ærlig Øyvind Åse. '.repeat(180)+'QA KONTROLLKOMMENTAR SLUTT',photos:[{path:'private/control.png',name:'QA kontrollbilde.png',type:'image/png'},{url:'https://qa.invalid/protokoll.pdf?token=QA_PRIVATE_CONTROL',name:'QA protokoll.pdf',type:'application/pdf'}]},Merking:{status:'Ikke aktuelt',comment:'QA merking kontrollert'}},updated_identity:{name:'QA historisk montør'},updated_at:'2026-10-30T11:59:00Z',completed_by:signerId,completed_identity:{name:'QA historisk montør'},completed_at:'2026-10-30T12:00:00Z',signatures:{record_id:controlId,revision:3,basis_hash:'QA-frosset-signaturgrunnlag',own:{image:signatureA,user_id:signerId,identity:{name:'QA historisk montør'},signed_at:'2026-10-30T11:59:00Z'},external:{image:signatureB,name:'QA ekstern byggeleder Ærlig',role:'QA byggherreombud',signed_at:'2026-10-30T11:59:30Z',witness:{identity:{name:'QA historisk vitne'}}}}};
+rows.runs=[control,{...structuredClone(control),id:'99999999-9999-4999-8999-999999999998',sequence:13,definition:{category:'QA HISTORISK KONTROLL UTEN TEGNING',items:['Eldre punkt']},answers:{'Eldre punkt':{status:'OK',comment:'QA bevart historikk'}},signatures:{}},{...structuredClone(control),id:'99999999-9999-4999-8999-999999999997',status:'draft',completed_at:null,signatures:{}}];
+window.__allDocuments.runs=structuredClone(rows.runs);
+const controlBefore=JSON.stringify(rows.runs),controlPhoto=realPhoto?'data:image/png;base64,'+fs.readFileSync(realPhoto).toString('base64'):signatureB;
+let imageAction=null,controlReads=0,denyControlAt=Infinity,changeControlAt=Infinity,controlChange='answer';
+props.resolveFileUrl=file=>file.path?'https://qa.invalid/control-image?token=QA_PRIVATE_CONTROL':file.url;
+props.loadControlImage=async url=>{assert(url.includes('control-image'));imageAction?.();return controlPhoto;};
 let failExport = false, wrongScope = false, deferList = null;
 window.__rpc = async (name, args) => {
+  if(name==='project_checklist_state'){
+    controlReads++;if(controlReads===denyControlAt)throw Error('QA prosjektkontrolltilgang tilbakekalt');
+    const result={context:{user_id:userId,company_id:args.p_company_id,project_id:args.p_project_id},runs:structuredClone(rows.runs.filter(row=>row.project_id===args.p_project_id))};
+    if(controlReads===changeControlAt){if(controlChange==='signature')result.runs[0].signatures.own.image=signatureB;else if(controlChange==='removed')result.runs=[];else if(controlChange==='foreign')result.context.company_id='foreign';else result.runs[0].answers.Trykkprøve.comment='QA nyere svar uten revisjonsbytte';}
+    return result;
+  }
   if(name==='kshms_project_execution_report')return {context:{...context,project_id:args.p_project_id},...(args.p_round_ids===null?{choices:Object.fromEntries(['rounds','risks'].map(key=>[key,rows[key].filter(row=>row.project_id===args.p_project_id).map(row=>({id:row.id,title:row.content.title,status:row.status,completed_at:row.completed_at}))]))}:{rounds:structuredClone(rows.rounds.filter(row=>args.p_round_ids.includes(row.id))),risks:structuredClone(rows.risks.filter(row=>args.p_risk_ids.includes(row.id)))})};
   assert.equal(name, 'kshms_project_report'); calls.push(structuredClone(args));
   if (args.p_sja_ids === null && deferList) await deferList.promise;
@@ -64,16 +80,25 @@ const button = title => [...doc.querySelectorAll('button')].find(node => node.te
 const click = async node => { assert(node, 'Missing actual button'); await act(async () => { node.dispatchEvent(new window.MouseEvent('click', { bubbles: true })); await pause(25); }); };
 const choose = async index => click([...doc.querySelectorAll('[role="dialog"] input')][index]);
 const settle = () => act(async () => { await pause(200); });
-const textOf = async item => { const pdf = await getDocument({ data: new Uint8Array(item.bytes), useSystemFonts: true }).promise; const pages = []; for (let i = 1; i <= pdf.numPages; i++) pages.push((await (await pdf.getPage(i)).getTextContent()).items.map(item => item.str).join(' ')); await pdf.destroy(); return { pages, text: pages.join(' ') }; };
+const textOf = async item => {
+ if(getDocument){const pdf=await getDocument({data:new Uint8Array(item.bytes),useSystemFonts:true}).promise,pages=[];for(let i=1;i<=pdf.numPages;i++)pages.push((await(await pdf.getPage(i)).getTextContent()).items.map(item=>item.str).join(' '));await pdf.destroy();return {pages,text:pages.join(' ')};}
+ // The existing CI PDF setup supplies Poppler. Read the same real jsPDF bytes
+ // without adding a second PDF dependency; retain interior blank pages.
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'ks-report-read-'));
+ try{const file=path.join(dir,'report.pdf');fs.writeFileSync(file,item.bytes);const pages=execFileSync('pdftotext',['-layout','-enc','UTF-8',file,'-'],{encoding:'utf8'}).split('\f');if(!pages.at(-1).trim())pages.pop();return {pages,text:pages.join(' ')};}finally{fs.rmSync(dir,{recursive:true,force:true});}
+};
 
 await render({ ...props, context: { ...context, enabled: false } }); assert(!button('Velg KS/HMS til rapport'));
-await click(button('Lag test-PDF')); await settle(); assert.equal(calls.length, 0); assert.equal(exports.length, 1, alerts.join('\n'));
+assert(button('Velg prosjektkontroller til rapport'));
+await click(button('Lag test-PDF'));assert.equal(doc.querySelectorAll('[role="dialog"] fieldset').length,1);await click(button('Fortsett uten prosjektkontroller'));await settle(); assert.equal(calls.length, 0); assert.equal(exports.length, 1, alerts.join('\n'));
 let pdf = await textOf(exports.at(-1)); assert(pdf.text.replace(/\s+/g,'').includes('QALEGACYAVVIKBEVART')); assert(!pdf.text.includes('QA SIGNERT FLISKAPPING'));
 await render(props); await click(button('Lag test-PDF')); assert(doc.querySelector('[role="dialog"]')); assert([...doc.querySelectorAll('[role="dialog"] input')].every(input => !input.checked));
 await choose(0); await choose(2); await click(button('Lag PDF med valget')); await settle();
 assert.equal(exports.length, 2, alerts.join('\n')); pdf = await textOf(exports.at(-1));
 for (const required of ['QA SIGNERT FLISKAPPING', 'R-012', 'versjon 3', 'QA historisk signatur', 'QA deltaker Ærlig', 'QA medvirkning om støv', 'QA kontroll før arbeid', '08.10.2026 kl. 00:00:00', 'QA LUKKET RUH', 'QA HENDELSE SLUTT', 'QA historisk lukker', 'QA egen kontroll dokumentert', '10.10.2026', 'QA LEGACY AVVIK BEVART']) assert(pdf.text.replace(/\s+/g,'').includes(required.replace(/\s+/g,'')), `Actual PDF missing ${required}`);
 assert(!pdf.text.includes('QA UTKAST TØMRERJOBB')); assert(!pdf.text.includes('QA ÅPEN RUH')); assert(!pdf.text.includes('QA LEGACY RUH SPEIL'), 'Selected RUH duplicated its project mirror'); assert(pdf.pages.length > 6);
+const unselectedContents=pdf.pages.slice(0,2).join(' ').replace(/\s+/g,'');
+for(const title of ['Vernerunder / kontroller','Risikovurderinger 5x5'])assert(!unselectedContents.includes(title.replace(/\s+/g,'')),`Unselected execution appeared in actual PDF contents: ${title}`);
 const output = process.env.KSHMS_REPORT_PDF_OUTPUT || path.join(temp, 'kshms-selected-report.pdf'); fs.writeFileSync(output, exports.at(-1).bytes);
 assert(doc.querySelector('.report').textContent.includes('QA historisk signatur')); assert(!doc.querySelector('.report').textContent.includes('QA ÅPEN RUH'));
 assert.equal(JSON.stringify({ rows:{sjas:rows.sjas,ruhs:rows.ruhs}, project }), before, 'Report/PDF mutated source or project JSON');
@@ -101,8 +126,31 @@ await render({ ...props, portal: true, disabled: true }); assert(!doc.querySelec
 await click(button('Skriv ut test')); await settle(); assert.equal(printed.length, 3, 'Ordinary portal print was blocked');
 await render(props);await click(button('Lag test-PDF'));await choose(4);await choose(6);await click(button('Lag PDF med valget'));await settle();pdf=await textOf(exports.at(-1));
 for(const required of ['QA SAVED ROUND','QA SAVED RISK','Lagret fullfører','Lagret egen bekreftelse','R-001 utgave 2','forventet effekt - ikke kontrollert','Videre tiltak kreves','5x5: sannsynlighet x konsekvens'])assert(pdf.text.replace(/\s+/g,'').includes(required.replace(/\s+/g,'')),`Actual combined PDF missing ${required}`);
-assert(!pdf.text.includes('QA DRAFT ROUND'));assert.equal(doc.querySelectorAll('.ks-project-report-documents img').length,2);assert(doc.querySelector('.ks-project-report-documents table'));fs.writeFileSync(path.join(path.dirname(output),'combined-control-risk.pdf'),exports.at(-1).bytes);
+assert(!pdf.text.includes('QA DRAFT ROUND'));assert.equal(doc.querySelectorAll('.ks-project-report-documents img').length,2);assert(doc.querySelector('.ks-project-report-documents table'));
+const selectedContents=pdf.pages.slice(0,2).join(' ').replace(/\s+/g,'');
+for(const title of ['Vernerunder / kontroller','Risikovurderinger 5x5'])assert(selectedContents.includes(title.replace(/\s+/g,'')),`Selected execution missing from actual PDF contents: ${title}`);
+fs.writeFileSync(path.join(path.dirname(output),'combined-control-risk.pdf'),exports.at(-1).bytes);
 await click(button('Skriv ut test'));await click(button('Skriv ut med valget'));await settle();assert(printed.at(-1).includes('data:image/png;base64,'));assert(printed.at(-1).includes('sannsynlighet'));
 await click(button('Lag test-PDF'));await choose(4);await choose(6);await choose(5);await click(button('Lag PDF med valget'));await settle();pdf=await textOf(exports.at(-1));assert(pdf.text.includes('QA DRAFT ROUND'));assert(pdf.text.includes('IKKE FULLFØRT'));assert(!pdf.text.includes('QA SAVED RISK'));assert(!pdf.text.includes('QA SAVED ROUND'));
+const draftContents=pdf.pages.slice(0,2).join(' ').replace(/\s+/g,'');assert(draftContents.includes('Vernerunder/kontroller'));assert(!draftContents.includes('Risikovurderinger5x5'));
+const onlyControls=async()=>{for(let i=0;i<doc.querySelectorAll('[role="dialog"] input').length;i++)if(doc.querySelectorAll('[role="dialog"] input')[i].checked)await choose(i);await choose(7);};
+await click(button('Lag test-PDF'));await onlyControls();await choose(8);await click(button('Lag PDF med valget'));await settle();pdf=await textOf(exports.at(-1));
+for(const required of ['Fullførte prosjektkontroller','QA FULLFØRT RØRKONTROLL','QA historisk montør','QA ekstern byggeleder Ærlig','QA byggherreombud','QA historisk vitne','QA-frosset-signaturgrunnlag','QA KONTROLLKOMMENTAR SLUTT','QA protokoll.pdf','Historisk fullført kontroll','QA HISTORISK KONTROLL UTEN TEGNING'])assert(pdf.text.replace(/\s+/g,'').includes(required.replace(/\s+/g,'')),`Actual control report missing ${required}`);
+assert(!pdf.text.includes('QA_PRIVATE_CONTROL'));assert(!pdf.text.includes('QA SAVED ROUND'));assert(!pdf.text.includes('QA SIGNERT FLISKAPPING'));assert.equal(doc.querySelectorAll('.ks-project-report-documents img').length,3);assert.equal(exports.length,8,alerts.join('\n'));
+fs.writeFileSync(path.join(path.dirname(output),'combined-signed-project-controls.pdf'),exports.at(-1).bytes);
+await click(button('Skriv ut test'));await click(button('Skriv ut med valget'));await settle();assert(printed.at(-1).includes('QA historisk montør'));assert(printed.at(-1).includes(signatureA));assert(printed.at(-1).includes(signatureB));assert(!printed.at(-1).includes('QA_PRIVATE_CONTROL'));
+await render({...props,context:{...context,enabled:false}});const ksReadsBefore=calls.length;await click(button('Lag test-PDF'));assert.equal(doc.querySelectorAll('[role="dialog"] fieldset').length,1);assert.equal(doc.querySelectorAll('[role="dialog"] input').length,2,'Unfinished project control entered chooser');await choose(0);await click(button('Lag PDF med valget'));await settle();pdf=await textOf(exports.at(-1));assert(pdf.text.replace(/\s+/g,'').includes('QAhistoriskmontør'));assert(!pdf.text.includes('QA SIGNERT FLISKAPPING'));assert.equal(calls.length,ksReadsBefore,'Project-only user queried KS/HMS documents');assert.equal(exports.length,9,alerts.join('\n'));
+fs.writeFileSync(path.join(path.dirname(output),'project-controls-without-kshms.pdf'),exports.at(-1).bytes);
+await render(props);
+for(const failure of ['revoked','answer','signature','removed','foreign']){
+ await click(button('Lag test-PDF'));await onlyControls();const oldExports=exports.length;
+ if(failure==='revoked')denyControlAt=controlReads+3;else{controlChange=failure;changeControlAt=controlReads+3;}
+ await click(button('Lag PDF med valget'));await settle();assert.equal(exports.length,oldExports,`Final ${failure} emitted a stale/partial report`);assert(alerts.at(-1).includes(failure==='revoked'?'tilbakekalt':'endret'),alerts.at(-1));denyControlAt=changeControlAt=Infinity;
+}
+for(const label of ['Skriv ut test','Åpne rapport og skriv ut test']){
+ await click(button(label));const oldPrints=printed.length;await click(button('Skriv ut med valget'));denyControlAt=controlReads+1;await act(async()=>{await pause(800);});assert.equal(printed.length,oldPrints,'Revoked control entered print window');assert.equal(printWindows.at(-1).closed,true,'Rejected print left a window open');denyControlAt=Infinity;
+}
+await click(button('Lag test-PDF'));await onlyControls();imageAction=()=>{denyControlAt=controlReads+1;};const exportsBeforeImage=exports.length;await click(button('Lag PDF med valget'));assert(doc.querySelector('[role="alert"]').textContent.includes('tilbakekalt'));assert.equal(exports.length,exportsBeforeImage,'Revocation during image load escaped');imageAction=null;denyControlAt=Infinity;await click(button('Avbryt'));
+assert.equal(JSON.stringify(rows.runs),controlBefore,'Reporting modified completed snapshots or signatures');
 await act(async () => window.__unmount()); dom.window.close(); fs.rmSync(temp, { recursive: true, force: true });
-console.log(JSON.stringify({ result: 'PASS', actualPdfs: exports.length, actualPrints: printed.length, selectedPdfPages: (await textOf(exports[1])).pages.length, pdf: output, scenarios: 'module-only chooser; initially empty selection; exact signature/routines/participants; closure and dates; unselected and mirrored exclusion; draft/open markers; both print paths; cancel; revoked/malformed-scope export; explicit skip during stalled fetch; late response/project switch and return; role downgrade clears choice; support/portal gates; no source mutation' }));
+console.log(JSON.stringify({ result: 'PASS', actualPdfs: exports.length, actualPrints: printed.length, selectedPdfPages: (await textOf(exports[1])).pages.length, pdf: output, scenarios: 'all prior module/selection/signature/date/print/cancel/late/scope/portal gates; completed project controls and legacy ink status; project-only without KS; both signature images, ordinary image and separate attachment; exact post-image and final PDF/print reread; revoked/changed answer/signature/removed/foreign rejection; no token, source mutation or new signing' }));

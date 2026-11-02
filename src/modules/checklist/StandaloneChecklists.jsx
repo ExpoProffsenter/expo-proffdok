@@ -1,3 +1,5 @@
+import ChecklistStatusChoices from './ChecklistStatusChoices.jsx';
+
 import {ChecklistTemplateProposal,ChecklistProposalInbox} from './ChecklistTemplateProposals.jsx';
 import ChecklistSignatures from './ChecklistSignatures.jsx';
 import ChecklistFirmTemplate from './ChecklistFirmTemplate.jsx';
@@ -148,7 +150,7 @@ export default function StandaloneChecklists({companyId,userId,onClose}){
      {selected.definition.points.map((p,i)=>{const a=selected.answers[p.id]||{};const pointChange=patch=>change({definition:{...selected.definition,points:selected.definition.points.map(point=>point.id===p.id?{...point,...patch}:point)}});return <fieldset className="standalone-point" key={p.id}><legend>Sjekkpunkt {i+1}</legend>
       {editableDefinition?<><label>Tekst for sjekkpunkt {i+1}<input maxLength={600} value={p.title} onChange={e=>pointChange({title:e.target.value})}/></label><ChecklistFieldBuilder fields={p.fields||[]} onChange={fields=>pointChange({fields})}/>{selected.definition.points.length>1&&<button type="button" onClick={()=>change({definition:{...selected.definition,points:selected.definition.points.filter(point=>point.id!==p.id)}})}>Fjern sjekkpunkt {i+1}</button>}</>:<h4>{p.title}</h4>}
       {p.guidance&&<p>{p.guidance}</p>}
-      <label>Svar på sjekkpunkt {i+1}<select aria-label={`Svar på sjekkpunkt ${i+1}`} value={a.status||''} onChange={e=>answer(p.id,{status:e.target.value})}><option value="">Velg svar</option><option>Ok</option><option>Avvik</option>{p.allow_na!==false&&<option>Ikke aktuelt</option>}</select></label>
+      <ChecklistStatusChoices label={`Svar på sjekkpunkt ${i+1}`} value={a.status} allowNa={p.allow_na!==false} disabled={readonly} onChange={status=>answer(p.id,{status})}/>
       {a.status!=='Ikke aktuelt'&&<ChecklistFields fields={p.fields||[]} values={a.values||{}} userId={userId} readOnly={readonly} onChange={(values,confirmationId)=>answer(p.id,{values},confirmationId)}/>}
       <label>Kommentar til sjekkpunkt {i+1}{p.comment_required||a.status==='Avvik'?' (påkrevd)':''}<textarea aria-label={`Kommentar til sjekkpunkt ${i+1}${p.comment_required||a.status==='Avvik'?' (påkrevd)':''}`} rows={2} maxLength={20000} value={a.comment||''} onChange={e=>answer(p.id,{comment:e.target.value})}/></label>
       <p>{p.image_required?'Bilde er påkrevd når punktet er aktuelt.':'Bilder er valgfritt.'}</p><label>Bilder til sjekkpunkt {i+1}<input type="file" accept="image/jpeg,image/png,image/webp" multiple disabled={readonly||busy} onChange={e=>{photo(p.id,[...e.target.files]);e.target.value='';}}/></label>

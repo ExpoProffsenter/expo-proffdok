@@ -9,8 +9,9 @@ const TimeSheet=React.lazy(()=>import('./TimeSheet.jsx'));
 export function HrTimeEntry({context}){
  const [open,setOpen]=useState(false);return <article className="hr-workspace-card time-entry-card"><span className="hr-workspace-icon"><Clock aria-hidden="true"/></span><h3>Timer og utlegg</h3><p>Kontroller innleverte uker. Firmaets timeansvarlige tilpasser kategorier, ansattnumre og lønnseksport.</p><button type="button" className="secondary" onClick={()=>setOpen(true)}>Åpne timer og utlegg <ArrowRight size={17}/></button>{open&&<DeviationDialog title="Timer og utlegg" context={'HR · '+(context.company_name||'Aktivt firma')} closeLabel="Lukk timeadministrasjon" onClose={()=>setOpen(false)}><Suspense fallback={<p>Henter timeadministrasjon …</p>}><TimeManagement key={context.company_id+':'+context.user_id} context={context}/></Suspense></DeviationDialog>}</article>;
 }
-export function PersonalTimeCard({context,onOpen}){
- const [loaded,setTasks]=useState(null);const tasks=loaded?.context?.company_id===context.company_id&&loaded?.context?.user_id===context.user_id?loaded:null;useEffect(()=>{let alive=true;setTasks(null);const s=createTimeSession(context);s.call('time_tasks_get').then(r=>{if(alive)setTasks(r);}).catch(()=>{});return()=>{alive=false;s.dispose();};},[context.company_id,context.user_id]);
+export function PersonalTimeCard({context,access,onOpen}){
+ const tasks=access?.allowed&&access.tasks?.context?.company_id===context.company_id&&access.tasks.context.user_id===context.user_id?access.tasks:null;
+ if(!tasks)return null;
  return <article className="personal-card time-personal-card"><div className="personal-card-icon"><Clock aria-hidden="true"/></div><span className="personal-card-eyebrow">MIN ARBEIDSHVERDAG</span><h3>Mine timer og utlegg</h3><p>Før arbeidstid, fravær, reise og utlegg. Send uken til godkjenning når du er ferdig.</p>{tasks?.missing_week&&<p className="time-task" role="status">Oppgave: Lever uken fra {dateLabel(tasks.missing_week)}.</p>}{tasks?.returned_count>0&&<p className="time-task">{tasks.returned_count} uker trenger retting.</p>}<button type="button" className="secondary" onClick={onOpen}>Før timer og utlegg <ArrowRight size={17}/></button></article>;
 }
 export default function PersonalTimeWorkspace({context}){

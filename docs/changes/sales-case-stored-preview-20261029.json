@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Vis eldre publisert kundeversjon i høyre lesefelt",
+  "change": "Miljømål BEGGE; bare eksisterende design-Preview. Faktisk skynettprøve fant DEMO-03-TILBUD med publisert v1 uten innebygd snapshot i saks-payloaden. Ny isolert hook/leseservice henter eksakt eksisterende kundeversjon etter firmascopet RLS-sakslesing før og etter transport og session/scopekontroll. Resultatet lever bare i lesefeltet. Ingen endring i editor, autosave, kjerne-hydrering, requests-persistens, backend, RLS, aksept, mottakere eller e-post. Egen retry ved hentefeil; samme-firma-bevaring, firma/logout/sene-svar-sperrer.",
+  "verification": "Ny Chromium-test feiler med uendret original SalesCaseCustomerPreview fra1eda9f21 (produktkode identisk med e99a1fa), timeout fordi publisert snapshot ikke lastes. Etter fiks35 service/session- og26 faktiske Chromium-assertions PASS, samt alle875 eksisterende salgspreviewassertions. Samlet integrasjon875+35+26PASS. Nyprøven dekker eksakt publisert versjon, låst firma, avvisning av nyere kladd/feilversjon/feilfirma/feilsak/feiltoken, RLS før/etter, revoked/late/profile/logout/retry og fem bredder, uten outbound transport eller writes. Full eksplisitt Sandbox critical/buildPASS. Fersk CI, kandidat og faktisk publisert skynettprøve logges i PR295.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "Ny retry-knapp og tilbakevei ved endret kundeversjon forklares med faktiske navn."
+    },
+    "architecture": {
+      "required": true,
+      "reason": "Separat lest versjonsmodell med RLS/session/scope-før/etter krever dokumentert dataflyt."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen ny avhengighet, miljøbinding, installasjon eller konfigurasjon."
+    },
+    "module": {
+      "required": true,
+      "reason": "Sales README presiserer separat lesemodell og grensen mot requests/editor/autosave."
+    }
+  }
+}

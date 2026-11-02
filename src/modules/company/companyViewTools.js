@@ -62,6 +62,7 @@ export function createCompanyViewTools({
 
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, {
       title: "Firmaprofil",
+      className: "company-profile-workspace",
       icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Building2, {}),
       children: [
         (0, import_jsx_runtime.jsx)(CompanyBrandPreview,{company}),

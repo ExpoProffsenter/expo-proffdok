@@ -1,3 +1,15 @@
+## Saksarbeidsflate etter skisse 03.6 – design-Preview 29.10.2026
+
+Miljømål **BEGGE**, foreløpig bare den eksisterende design-Previewen. Saksoversikt, kundeopplysninger, befaring og tilbud bruker samme sak videre. På brede skjermer står arbeidet til venstre og «Kundens tilbud» til høyre. På skjermer opptil 1000 px åpnes lesefeltet med **Kundevisning**. **Utvid kundevisning** åpner et større panel fra høyre på PC. **Tilbake til arbeidet** og Escape lukker den utvidede visningen og tar fokus tilbake uten å montere editoren på nytt.
+
+`SalesCaseWorkspace` beholder den opprinnelige editoren som barn. `SalesCaseCustomerPreview` viser en passiv kopi av saksgrunnlaget gjennom den eksisterende kunderendereren. Felter under redigering blir med i dette grunnlaget når de er lagret på saken. Etiketten skiller **Lagret tilbudsgrunnlag · kladd**, **Publisert kundetilbud** og **Akseptert kundetilbud · låst**. Versjonsnummer vises når det finnes. Mapperen prioriterer låst akseptgrunnlag og publisert versjon fremfor en nyere redigerbar kladd. Aksepterte og aktiverte saker krever tilgjengelig låst akseptgrunnlag; mangler det, vises en egen beskjed også når en annen publisert versjon finnes. Ingen lagret versjon opprettes av lesefeltet. For eldre saker uten innebygd publisert/akseptert snapshot henter lesefeltet en separat, skrivebeskyttet kopi fra eksisterende kundeversjonsleser. Saken kontrolleres via firmascopet RLS-lesing før og etter; sak, token og eksakt versjons-ID må stemme. Ingen snapshot føres tilbake til editor, autosave, requests eller server. Feil gir Prøv kundevisningen igjen. Firma-/brukerbytte og sene svar sperrer gammelt innhold. Se docs/architecture/SALES_CASE_STORED_PREVIEW.md.
+
+Lesefeltet har skrivebeskyttede opsjoner og ingen aksept-, avvisnings-, publiserings- eller sendehandling. Det oppretter ingen Supabase-klient og gjør ingen serverhenting, lagring eller nye kundevalg. Der **Forhåndsvis som kunde** vises, brukes fortsatt den eksisterende innloggede forhåndsvisningen av lagret kladd med sin egen tilgangskontroll.
+
+**Verktøy og maler** er knyttet til saken og aktuell arbeidsflate. Panelet bruker eksplisitte grupper med eksisterende callbacks: eksempelvis tilbake til oversikt/sak, kunde, befaring og tilbud. Handlingene følger saksstatus og tilgjengelige funksjoner. Å velge en handling bruker også dagens eventuell lagre-/forlat-kontroll. Firma-, saks- eller arbeidsflatebytte lukker verktøypanelet. Uten eksplisitte grupper beholder `WorkspaceTools` dagens kontekstverktøy og tilbudsmalsnarveier.
+
+Varig scope og testnivå: `docs/changes/sales-case-workspace-036-20261029.json` og `docs/qa/UX_UI_REVIEW_CHECKLIST.md`. Lokale mapper-/komponentprøver med syntetisk transport skilles fra CI, faktisk innlogget app og fysisk mobil/Safari. Denne dokumentasjonen attesterer ikke en full innlogget brukerreise eller e-postleveranse. Saksbehandler-/e-postrettelsen er publisert separat gjennom PR296. Design-Preview bygger videre på gjeldende main og viser den samme saksbehandlerkontrollen i venstre arbeidsflate. Production-releasen har eget bevis i docs/qa/SALES_CASE_HANDLER_RELEASE_20261029.md; designet har fortsatt ikke Production-godkjenning.
+
 ## Kundepreview med appens innlogging – Preview 26.10.2026
 
 Miljømål **BEGGE**. Baseline er publisert main `3ba4d228` (PR287, fullført i
@@ -73,11 +85,11 @@ Scope: SalesListView, SalesDetailViewCore, lokal CSS, én klasse på direkte til
 
 Sales håndterer både ordinær Befaring/Tilbud-flyt og Generelt tilbud for varer, arbeid, underentreprenører og andre leveranser. Den tekniske legacy-identiteten `Butikktilbud`/`store offer` beholdes der det trengs for kompatibilitet.
 
-## Saksbehandler og intern akseptkvittering – review 29.10.2026
+## Saksbehandler og intern akseptkvittering – publisert 29.10.2026
 
 Nye saker krever et eksplisitt valg av saksbehandler fra godkjente brukere med riktig firmatilgang. UUID og visningsnavn velges sammen. Eksisterende saker, også Akseptert/Aktivert, har feltet Saksbehandler og Lagre saksbehandler for sikker nybinding. Gamle fritekstnavn og publiserings-/signaturhistorikk gir aldri automatisk brukerbinding.
 
-Kanonisk binding og revisjon ligger privat på server; stale bulk-autosave kan ikke bytte ansvarlig, og et foreldet eksplisitt valg avvises med HTTP409. Intern akseptmail bruker dagens bekreftede Auth-identitet med fersk tilgang, uten fallback til publisist. Kundekvitteringen og historisk deduplisering beholdes. Ingen retroaktive utsendinger eller tilbakefylling inngår. Arkitektur, testgrunnlag og begrensninger: [SALES_CASE_HANDLER_IDENTITY.md](../../../docs/architecture/SALES_CASE_HANDLER_IDENTITY.md). Sandbox har migrering `20261029191431` og acceptance-notify v6, med 0 bindinger og ingen utsendinger. Production er uendret. Publisert app-Preview, innlogget Sandbox-integrasjon og TEST OK gjenstår.
+Kanonisk binding og revisjon ligger privat på server; stale bulk-autosave kan ikke bytte ansvarlig, og et foreldet eksplisitt valg avvises med HTTP409. Intern akseptmail bruker dagens bekreftede Auth-identitet med fersk tilgang, uten fallback til publisist. Kundekvitteringen og historisk deduplisering beholdes. Ingen retroaktive utsendinger eller tilbakefylling inngår. Arkitektur, testgrunnlag og begrensninger: [SALES_CASE_HANDLER_IDENTITY.md](../../../docs/architecture/SALES_CASE_HANDLER_IDENTITY.md). Sandbox har migrering `20261029191431` og acceptance-notify v6; Production har registrert samme migrering som `20261029193247` og acceptance-notify v8. Ingen binding/backfill eller prøve-e-post er utført. Releasebevis, faktiske testnivåer og begrensninger: [SALES_CASE_HANDLER_RELEASE_20261029.md](../../../docs/qa/SALES_CASE_HANDLER_RELEASE_20261029.md).
 
 Ordinære tilbud kan etter aksept gå videre til Expo-kontrakt, egen opplastet kontrakt eller direkte prosjekt. Et nytt Generelt tilbud kan etter aksept aktiveres som Enkel ordre eller ordinært prosjekt. Eksisterende historiske Butikktilbud beholder sin opprinnelige avslutning og skal ikke konverteres automatisk.
 
@@ -388,3 +400,17 @@ Versjonskonflikt og CPU (22.10.2026): Forventet avvisning fra accept_sales_offer
 ### Befaringsbilder i stor visning – 23.10.2026
 
 SalesInspectionNote knytter både vanlige befaringsbilder og lagret Badskisse til eksisterende bootstrap-bildeviser med samme `Åpne større bilde`-lenkekontrakt som kundetilbudets bilder. Viewer bruker gjeldende visnings-URL i samme fane; ingen nye bildedata eller lagring opprettes. Last opp/Fjern/Lagre, IndexedDB-kladd, server-first hydrering og tilbakeknapp er bevart. Sales editor Chromium-suiten kontrollerer nå faktisk bildeåpning, full originalkilde, lukking med knapp/Escape/bakgrunn, tastatur, bevart ulagret tekst og ingen utilsiktet submit ved fire skjermbredder.
+
+### Opprettelse i 03.6-arbeidsflaten (30.10.2026)
+
+Ny forespørsel, tilbudstypevalg og begge direkte tilbudsskjemaene bruker samme native SalesEntryPanel/WorkspacePanel. Originale felt, obligatorisk saksbehandler, handler-UUID, validering, kunderegister og Core-kommandoer beholdes. Submit-knappen i fast footer er knyttet til det samme skjemaet med useId/form. Kundesøk, oppsummering og valgfri kundelagring er montert i native details; redigering av eksisterende kunde beholder sine åpne felter. Escape/lukk bruker onBack; Avbryt bruker onCancel. Opprydding etter vellykket opprettelse må ikke utløse onBack fra en sen dialog-close. Ingen ny recovery-/hydrering-/lagringseier. Befaringsplan bruker eksisterende editor-ramme og samme bekreftelsesvalg.
+
+Testgrunnlag og faktiske begrensninger: docs/changes/sales-entry-workspace-036-20261030.json. Bare Preview, ingen redesign-TEST OK.
+
+### Logovalg, videreføring og PDF-seksjoner (30.10.2026)
+
+Dagens avsenderpolicy beholdes gjennom hele routeren: Ringside/Bademiljø velger tilgjengelig intern merkevare; øvrige firmaer bruker arbeidsfirmaets profil. Komplett firmamal beholder gjeldende metadata. Publisering låser avsender og logo; en senere kladdendring skal ikke omskrive gammel kunde-/PDF-versjon. Akseptert enkel ordre viser de eksisterende videreføringsvalgene som en vanlig saksseksjon. Ingen viewport-avhengig plassering eller ekstra aktiveringskommando. Aktiveringsskjemaet og General-byggeren bruker samme editor-ramme som de andre salgsstegene. PDF-seksjonsstart reserverer også første tekstkortets minimumshøyde. Grunnlag: docs/changes/sales-continued-flow-036-20261030.json.
+
+### Native underflater og lagret skissestatus (31.10.2026)
+
+Editor-/General-kontrollene laster både felles CSS og appens sene mobilregler. `salesSubflows036.css` avgrenser16px felt og minst45px handlinger til interne native Sales-arbeidsflater; eksterne kundevisninger har fortsatt egne regler. `SalesBathroomSketch.storedImageAvailable` er en valgfri presentasjonsprop. Befaringsnotatet setter den bare når et lagret skissebilde vises og lokal redigerbar skisse mangler. Det endrer bare tomstatusen; tegneverktøy, skissedata, serverbilde og kladd/recovery følger dagens eiere. Varig avgrensning og tester: `docs/changes/sales-subflows-runtime-036-20261031.json`.

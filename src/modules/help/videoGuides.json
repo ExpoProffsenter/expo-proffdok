@@ -1,0 +1,377 @@
+[
+  {
+    "id": "finn-bolig",
+    "title": "Finn bolig og bruk veiledningen",
+    "module": "Boligprosjekter",
+    "access": "bolig",
+    "topics": [
+      "bolig"
+    ],
+    "description": "Søk etter bolig og bruk veiledningen. Filmen viser et eksempelprosjekt.",
+    "src": "/help-videos/finn-bolig-v1.mp4",
+    "track": "/help-videos/finn-bolig-v1.vtt",
+    "duration": 75,
+    "sha256": "3e9f95a06c9ddcf1fb77cfaa5cba111d18f573d412eae32e840c397cae55f03b",
+    "bytes": 4808252,
+    "sourceCommit": "a2f67ce21314dab505d927112df91b51b4b3f3a0",
+    "chapters": [
+      {
+        "start": 0,
+        "title": "Finn riktig bolig",
+        "text": "Start i et åpent boligprosjekt. Klikk i søkefeltet og skriv bolignummeret."
+      },
+      {
+        "start": 8,
+        "title": "Skriv bolignummeret",
+        "text": "Her søker vi etter H0301. Rull ned for å se alle treffene."
+      },
+      {
+        "start": 14,
+        "title": "Sjekk bygg og adresse",
+        "text": "Samme bolignummer kan finnes i flere bygg. Les byggnavn og adresse før du velger."
+      },
+      {
+        "start": 21,
+        "title": "Åpne veiledningen",
+        "text": "Rull opp og klikk «Slik styrer du prosjektet»."
+      },
+      {
+        "start": 27,
+        "title": "Finn hjelpen du trenger",
+        "text": "Velg blant åtte temaer, eller klikk i søkefeltet."
+      },
+      {
+        "start": 35,
+        "title": "Søk etter en oppgave",
+        "text": "Skriv «varemottak». Klikk deretter på «Registrer bestilling og varemottak»."
+      },
+      {
+        "start": 41,
+        "title": "Les hele forklaringen",
+        "text": "Én forklaring åpnes om gangen. Når du er ferdig, klikk «Tilbake til prosjektet»."
+      },
+      {
+        "start": 63,
+        "title": "Tilbake på samme sted",
+        "text": "Pilotbygg B er fortsatt valgt, og H0301 står igjen i søkefeltet."
+      },
+      {
+        "start": 69,
+        "title": "Fortsett arbeidet",
+        "text": "Rull ned: de samme to boligene er fortsatt i resultatlisten."
+      }
+    ]
+  },
+  {
+    "id": "mine-planer",
+    "title": "Finn egne planer, les oppgaven og gå tilbake",
+    "module": "Min side",
+    "access": "plans",
+    "topics": [
+      "project-progress"
+    ],
+    "description": "Åpne og les egne planer. Redigering, bemanning og eksport er egne oppgaver.",
+    "src": "/help-videos/mine-planer-v1.mp4",
+    "track": "/help-videos/mine-planer-v1.vtt",
+    "duration": 95,
+    "sha256": "70e5ec178f9d34cd7f222b88537532cf085256a04c1388f9a2129469dd29f37a",
+    "bytes": 5315243,
+    "sourceCommit": "430b1f66557b1518895c8084f27d8a0c3a4f762d",
+    "chapters": [
+      {
+        "start": 0,
+        "title": "Mine planer på Min side",
+        "text": "Start på Min side. Velg Mine planer for å se planene du er satt opp på."
+      },
+      {
+        "start": 8,
+        "title": "To steder å hente planer",
+        "text": "Prosjektplaner og selvstendige KS/HMS-planer vises hver for seg. Åpne planen du vil lese."
+      },
+      {
+        "start": 18,
+        "title": "Åpne din oppgave",
+        "text": "Denne visningen viser bare dine oppgaver. Les statusen, og klikk på arbeidsoperasjonen for å se detaljene."
+      },
+      {
+        "start": 26,
+        "title": "Se registrerte opplysninger",
+        "text": "Her ser du arbeidsoperasjon, fag, person eller firma og status. Åpne Deltakere fra appen."
+      },
+      {
+        "start": 33,
+        "title": "Deltakere og antall",
+        "text": "Avkryssingen viser hvem som er registrert på oppgaven. Antall personer kan også inkludere arbeidere som ikke er registrert som brukere."
+      },
+      {
+        "start": 45,
+        "title": "Datoer og hele merknaden",
+        "text": "Rull ned. Les start- og sluttdato, klokkeslett og merknad. I eksemplet er arbeidsøkten 07–15. Velg Tilbake til oversikten."
+      },
+      {
+        "start": 67,
+        "title": "Lukk planen",
+        "text": "Du er tilbake i samme plan. Lukk planbyggeren for å komme tilbake til planlistene."
+      },
+      {
+        "start": 73,
+        "title": "Åpne andre planer",
+        "text": "Selvstendige planer fra KS/HMS åpnes fra den andre listen. Her velger vi en lagret eksempelplan."
+      },
+      {
+        "start": 81,
+        "title": "Samme lesemodus",
+        "text": "Også her vises bare dine oppgaver. Redigering gjøres i KS/HMS. Lukk planen når du er ferdig."
+      },
+      {
+        "start": 89,
+        "title": "Tilbake til Mine planer",
+        "text": "Du er tilbake i samme oversikt. Du kan åpne en annen plan eller velge en annen fane på Min side."
+      }
+    ]
+  },
+  {
+    "id": "kundens-tilbud",
+    "title": "Les Kundens tilbud og gå tilbake",
+    "module": "Befaring/Tilbud",
+    "access": "sales",
+    "topics": [
+      "sales"
+    ],
+    "description": "Les et lagret generelt tilbud. Filmen viser et demoutkast, uten publisering eller sending.",
+    "src": "/help-videos/kundens-tilbud-v1.mp4",
+    "track": "/help-videos/kundens-tilbud-v1.vtt",
+    "duration": 75,
+    "sha256": "db2d8d78a3964d13fb9d76585835d7031b41f2c95aedb38b88f8afa9a004d142",
+    "bytes": 5717042,
+    "sourceCommit": "8003e7c7cf6a77d0891406547ef3381014c3df96",
+    "chapters": [
+      {
+        "start": 0,
+        "title": "Finn lagrede tilbud",
+        "text": "Åpne Befaring/Tilbud. Velg Alle hvis saken ikke vises under valgt arbeidsstatus."
+      },
+      {
+        "start": 8,
+        "title": "Åpne riktig sak",
+        "text": "Finn tilbudet i listen. Kontroller kunden og tilbudsnummeret, og velg selve raden."
+      },
+      {
+        "start": 17,
+        "title": "Utvid Kundens tilbud",
+        "text": "Saksarbeidet står til venstre. Kundens tilbud vises til høyre. Trykk på utvid-knappen for bedre plass."
+      },
+      {
+        "start": 26,
+        "title": "Kontroller versjonen",
+        "text": "Les merket øverst: Lagret tilbudsgrunnlag · kladd. Kontroller kunde, adresse, tilbudsnummer og gyldighet."
+      },
+      {
+        "start": 38,
+        "title": "Les leveransen og prisen",
+        "text": "Rull ned. Kontroller postene, antall, enhetspriser og totalsum. Les også forbehold og betalingsbetingelser."
+      },
+      {
+        "start": 52,
+        "title": "Tilbake til arbeidet",
+        "text": "Velg Tilbake til arbeidet øverst eller nederst. Du kommer tilbake til samme sak."
+      },
+      {
+        "start": 59,
+        "title": "Samme sak står åpen",
+        "text": "Kundevisningen er lukket. Tilbudet og saksarbeidet er fortsatt tilgjengelig. Velg Tilbake for å gå til oversikten."
+      },
+      {
+        "start": 68,
+        "title": "Tilbake i oversikten",
+        "text": "Du er tilbake blant sakene. Åpne et nytt tilbud når du vil kontrollere neste leveranse."
+      }
+    ]
+  },
+  {
+    "id": "hr-provesamtale",
+    "title": "Opprett og fullfør en prøvesamtale",
+    "module": "HR",
+    "access": "hr",
+    "topics": [
+      "hr"
+    ],
+    "description": "Prøv en lokal samtale med eksempelpersoner. Dette er ikke en ekte medarbeidersamtale. Filmen viser appens PDF-beskjed, ikke en verifisert nedlasting.",
+    "src": "/help-videos/hr-provesamtale-v1.mp4",
+    "track": "/help-videos/hr-provesamtale-v1.vtt",
+    "duration": 171,
+    "sha256": "51b4fc95b28369c9576156b54bf44887295e89990d59127a6d1c13752900bc3d",
+    "bytes": 8641183,
+    "sourceCommit": "a722cc4f773b2e48a8b3e0ec97e2f5078532b8b6",
+    "chapters": [
+      {
+        "start": 0,
+        "title": "Åpne prøvesamtalen",
+        "text": "Gå til HR og Alle HR-funksjoner. Velg Åpne prøvesamtale."
+      },
+      {
+        "start": 7,
+        "title": "Prøv begge sider",
+        "text": "Prøveinnholdet lagres i denne nettleseren for din konto og ditt firma. Velg Prøv medarbeidersamtale."
+      },
+      {
+        "start": 16,
+        "title": "Gi prøven et navn",
+        "text": "Kontroller navn, dato og testpersoner. Bruk Legg eksempeltekster i tomme felt for å fylle et eksempel."
+      },
+      {
+        "start": 25,
+        "title": "Forberedelsen – del 1",
+        "text": "Les svarene om trivsel, samarbeid, oppgaver og ansvar. Dette er medarbeiderens side av prøvesamtalen."
+      },
+      {
+        "start": 38,
+        "title": "Forberedelsen – del 2",
+        "text": "Les forbedring og kompetanse. Velg Lagre forberedelse og gå til samtalen når svarene er klare."
+      },
+      {
+        "start": 51,
+        "title": "Prøv lederens side",
+        "text": "Se medarbeiderens svar og de felles notatene. Arbeid videre med det dere ønsker å avklare sammen."
+      },
+      {
+        "start": 63,
+        "title": "Gå gjennom temaene",
+        "text": "Fortsett med oppgaver, ansvar og forbedringer. Noter det medarbeider og leder blir enige om."
+      },
+      {
+        "start": 77,
+        "title": "Lagre samtalen",
+        "text": "Se over kompetanse og utvikling. Velg Lagre samtalen og gå til tiltak."
+      },
+      {
+        "start": 89,
+        "title": "Avtal tiltak og ansvar",
+        "text": "Se over oppgavene, ansvarlig og frist. Tiltak er valgfrie. Eksempelet inneholder to oppgaver."
+      },
+      {
+        "start": 100,
+        "title": "Ta med oppfølgingen",
+        "text": "Kontroller også det siste tiltaket. Du kan legge til eller fjerne prøveoppgaver. Velg Lagre tiltak og gå til referat."
+      },
+      {
+        "start": 111,
+        "title": "Se over referatet",
+        "text": "Les oppsummeringen og neste oppfølging. Gå tilbake til tidligere steg hvis noe må endres. Kryss av når du har gjennomgått prøvereferatet."
+      },
+      {
+        "start": 121,
+        "title": "Lagre ferdig prøve",
+        "text": "Velg Lagre ferdig prøvereferat. Den lagrede utgaven åpnes som lesing."
+      },
+      {
+        "start": 127,
+        "title": "Last ned prøvereferatet",
+        "text": "Velg Last ned referat (PDF). PDF bruker den lagrede utgaven; ulagrede endringer må lagres først."
+      },
+      {
+        "start": 135,
+        "title": "Kontroller beskjeden",
+        "text": "Appen bekrefter at PDF-eksporten er startet. Se etter prøvereferatet blant nettleserens nedlastinger."
+      },
+      {
+        "start": 142,
+        "title": "Finn tidligere utgaver",
+        "text": "Åpne Tidligere utgaver. Hvert lagringssteg beholdes. Velg utgave 4 for å åpne den ferdige prøven igjen."
+      },
+      {
+        "start": 151,
+        "title": "Den lagrede prøven",
+        "text": "Utgave 4 er åpnet. Du kan lese den eller velge Rediger som ny utgave. Velg Lukk prøvesamtalen for å avslutte."
+      },
+      {
+        "start": 159,
+        "title": "Tilbake til HR",
+        "text": "Du har lukket prøveskjemaet. Velg Tilbake til medarbeidere for å gå til registeret."
+      },
+      {
+        "start": 165,
+        "title": "Fortsett fra registeret",
+        "text": "Du er tilbake i HR-registeret. Ekte medarbeidersamtaler opprettes fra riktig medarbeider og følger egne tilganger."
+      }
+    ]
+  },
+  {
+    "id": "finn-hjelp",
+    "title": "Finn hjelp, åpne tema og gå tilbake",
+    "module": "Hjelp",
+    "access": "help",
+    "topics": [
+      "hjelp"
+    ],
+    "description": "Søk, åpne et tema og finn tilbake til arbeidet med søket bevart.",
+    "src": "/help-videos/finn-hjelp-v1.mp4",
+    "track": "/help-videos/finn-hjelp-v1.vtt",
+    "duration": 95,
+    "sha256": "186446c9151fcf03a0dda9c3cffab9f43cf85ca8fe81484521686f395604ae8d",
+    "bytes": 7161764,
+    "sourceCommit": "2163443908f4fad227c303fac6a381718c942910",
+    "chapters": [
+      {
+        "start": 0,
+        "title": "Åpne Hjelp",
+        "text": "Åpne Alle områder og velg Hjelp. Her finner du veiledningene du har tilgang til."
+      },
+      {
+        "start": 7,
+        "title": "Søk etter oppgaven",
+        "text": "Skriv et kort ord i Søk i hjelpen. Her bruker vi prissøk som eksempel."
+      },
+      {
+        "start": 15,
+        "title": "Åpne et treff",
+        "text": "Listen viser temaet som passer søket. Velg Prissøk og internt vareregister."
+      },
+      {
+        "start": 23,
+        "title": "Les arbeidsflyten",
+        "text": "Temaet åpnes i høyrepanelet. Les trinnene og rull ned for resten av veiledningen."
+      },
+      {
+        "start": 32,
+        "title": "Les viktige merknader",
+        "text": "Nederst finner du Viktig og Anbefalt bruk. Velg Tilbake til arbeidet for å lukke temaet."
+      },
+      {
+        "start": 41,
+        "title": "Søket er bevart",
+        "text": "Du kommer tilbake til samme treffliste. Bytt søkeord når du vil finne et annet tema."
+      },
+      {
+        "start": 48,
+        "title": "Velg et nytt tema",
+        "text": "Søket medarbeider gir flere relevante treff. Åpne HR for å se et tema med kapitler."
+      },
+      {
+        "start": 56,
+        "title": "Åpne et kapittel",
+        "text": "Velg kapitlet du trenger. Her åpner vi Medarbeidere og tilgang."
+      },
+      {
+        "start": 64,
+        "title": "Les og lukk kapitlet",
+        "text": "Arbeidsflyten vises under kapitteltittelen. Trykk på samme tittel for å lukke kapitlet igjen."
+      },
+      {
+        "start": 73,
+        "title": "Lukk høyrepanelet",
+        "text": "Krysset øverst lukker temaet. Tilbake til arbeidet nederst gir samme retur til trefflisten."
+      },
+      {
+        "start": 80,
+        "title": "Ingen treff?",
+        "text": "Prøv et kortere søkeord når listen er tom. Tøm søket for å vise alle tilgjengelige temaer."
+      },
+      {
+        "start": 88,
+        "title": "Finn neste veiledning",
+        "text": "Når søket er tomt, er temaoversikten tilbake. Velg et nytt tema eller fortsett arbeidet fra menyen."
+      }
+    ]
+  }
+]

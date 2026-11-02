@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Prosjekt følger appens felles ramme og radåpning",
+  "change": "Miljømål BEGGE, bare PR295/Preview nå. Kenneths skjermbilder og KJØR autoriserer felles hovedmeny, tilbakevei og radklikk. Scope: main.jsx kun global kilde-nav og kontrollert prosjektavslutning; desktopSideMenu.js kun kildevalg; storePriceSearchUx.jsx kun kontrollert overgang fra prosjekt; ProjectWorkspaceChrome.jsx, ProjectListDisclosure.jsx og avgrenset CSS; relevante tester og Hjelp. Ingen lagring, SQL, roller, firmaaktivering, PDF, garanti, overtagelse, e-post, demodata eller Sales-hydrering. Ny kontrakt før testendring: hovedområder og prosjektfaner er separate; samme hovedmeny vises også inne i prosjekt. Navn/ledig rad åpner samme prosjekt, aldri detaljfold. Bare Vis detaljer folder. Tilbake går til listen via eksisterende ulagret-kontroll. Support beholder egen retur. Gamle tester for passivt navneklikk endres til én åpning og ingen detaljfold; alle andre krav beholdes.",
+  "verification": "Isolert Vercel Sandbox, faktisk React/CSS/Chromium156: felles prosjekt/app-ramme 99 krav PASS over 1920x1080,1363x936,1181x800,768x900,390x844,320x480. Native prosjekt196, panel53, veiledning288+84, mobilheader91, prosjektliste280, menyretur/kladd, arbeidsprofil/tilgang, prissøk70+94 og full critical/Vite build PASS. Ny prøve importeres fra eksisterende prosjekt-CI, uten workflowendring i appkandidaten. To nye testfixturefeil (manglende URL og JSX-runtime-alias) ble rettet; ingen krav fjernet. Visuell kontroll av syntetisk skjermbilde fant legacy-CSS som skjulte Alle områder; dette er rettet og to synlighets-/åpnekrav per desktopstørrelse lagt til. Faktisk fast Preview svarte HTTP200 og viste Innlogging i ny ekstern Chromiumøkt; ingen innlogget HOVED/RESERVE-test, rollebevis eller fysisk Safari-attest. Lokal administrativ nettleserpolicy er ikke endret. Repoets låste avhengigheter er uendret; separat Playwright1.64 brukes bare i midlertidig Ubuntu26.04-skymiljø. CI bruker fortsatt låst Playwright og sitt eget miljø. Eksakt CI/READY føres i PR295 etter kontrollert commit.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "Felles hovedmeny, radklikk og Tilbake endrer brukerflyten."
+    },
+    "architecture": {
+      "required": true,
+      "reason": "Skillet mellom global navigasjonskilde og prosjektfaner, med kontrollert avslutning, dokumenteres."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen appavhengighet eller miljøoppsett endres."
+    },
+    "module": {
+      "required": false,
+      "reason": "Endring er presentasjon og delegert navigasjon, dokumentert i Hjelp."
+    }
+  }
+}

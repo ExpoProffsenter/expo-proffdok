@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "title": "Fullførte prosjektkontroller i samlet rapport, også uten KS/HMS",
+  "change": "Miljømål BEGGE; utførelse på samme PR295/faste Preview. Rapportvalget får Fullførte prosjektkontroller fra eksisterende project_checklist_state. Kun fullførte lagrede snapshots kan velges; utkast utelates. Prosjektbrukere uten kjøpt KS/HMS får bare denne gruppen og ingen private KS/HMS-lesekall. Eksisterende native kontrollmapper beholder svar, historisk signatar, tidspunkt, grunnlag, ordinære bilder og begge eventuelle tegninger. Historiske fullføringer uten tegnet signatur merkes; ingen backfill eller signering. Vanlige vedlegg listes og originalene deles separat. Bilder klargjøres med eksisterende filresolver og bildelaster; kilde-URL-er kopieres ikke til rapporten. main.jsx har én ekstra hook-prop til eksisterende publicProjectFileUrl. Ingen SQL/RLS/backend, signatursetter, tilgangstildeling, autosave, hydration, recovery eller navigasjon endres. Samme valgte råsett leses på nytt etter bilder og rett før PDF-save/begge utskriftsveier. Sammenligning omfatter hele snapshot, ikke bare revisjonsnummer. Scope- og eksportsekvens kontrolleres rundt async-operasjonene. Endret eller bortfalt dokument/tilgang avbryter hele eksporten.",
+  "verification": "Baseline 2df7d7e1/fullCI854 SUCCESS10/10 beholdes for uendrede flater. Ny prosjektkontrollhelper 58 krav PASS; native rapportdialog med sen runtimeCSS, fem bredder, kort skjerm, fokus/avbryt/kladd/feil/retry/scope og prosjektbruker uten KS/HMS 88 krav PASS (alle tidligere 78 beholdt). Faktisk React/hook/Report/CustomerReport/createReportTools/jsPDF: 9 PDF-forløp og 5 vellykkede utskriftsforløp PASS, samt forventet blokkerte eksportforsøk ved revoke, endret svar/tegning med samme revisjon, manglende/fremmed rad og feil etter bildehenting. Signataren er bevisst ulik leseren. Begge tegninger, ordinært bilde, lange felt/siste markør, vedleggsoversikt og innholdsliste er kontrollert; ingen kildemutasjon eller signering. Samme prøve PASS med CI-identisk Poppler uten PDF.js og egne QA-bilder/logo. Fire bevarte faktiske PDF-er/39 sider er rendret med Poppler og alle sider visuelt kontrollert. Lesekontrakten er dessuten prøvd mot eksisterende Sandbox-aktør/prosjekt i read-only transaksjon med rollback: riktig bruker/firma/prosjekt, runs-array og 0 fullførte rader. Dette er ikke live signerings- eller nedlastingsattest. React-gjennomgang: uavhengige lesekall parallelt, primitive scope-avhengigheter, funksjonelt valgsett, kontroll etter await, eksisterende native fokus/etiketter, ingen nye pakker eller global request-state. Eksakt sluttkandidat/fullCI/READY og innlogget etterkontroll føres i PR295 etter publisering. Full lokal EXPO_BACKEND_TARGET=sandbox npm run build PASS inkludert critical-kjeden. Scoped dokumentasjonsvakt, videoregister og PR Core Safety PASS. Fersk eksisterende garanti/sluttpakke-PDF-prøve PASS 186 krav på tvers av begge membransystemer/korte-lange/låste-åpne rapporter, med forventet uendret kilde og garantistatus. Prøven ble kjørt til eksplisitt PASS med aktiv Node-hendelsesløkke; første enkeltkjøring sluttet før hele matrisen og er ikke brukt som bevis.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "Rapport og KS/HMS-hjelpen forklarer nytt eksplisitt kontrollvalg, prosjektbruker uten KS, historisk signatur og stopp ved endring."
+    },
+    "architecture": {
+      "required": true,
+      "reason": "Rapportens eierskap til klargjøring, snapshot og fersk verifikasjon før PDF/print er endret."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen ny avhengighet, miljøvariabel, migrering eller installasjonsinstruksjon."
+    },
+    "module": {
+      "required": true,
+      "reason": "Rapportmodulens kontrakt beskriver fullførte kontroller, bilder, historikk og siste lesegate."
+    }
+  },
+  "pdf_evidence": [
+    {
+      "file": "selected-report.pdf",
+      "pages": 11,
+      "bytes": 29427,
+      "sha256": "c5f3dcdbb2561a6a6c931ae9b0c9ba6fcd90fdb4e2e72fa56fbd30608eb8e7d7"
+    },
+    {
+      "file": "combined-control-risk.pdf",
+      "pages": 9,
+      "bytes": 30676,
+      "sha256": "0ad4c740c16463a13e31f250605910b9c6df23aac7bb9f9242f2b60e6f288925"
+    },
+    {
+      "file": "combined-signed-project-controls.pdf",
+      "pages": 10,
+      "bytes": 33269,
+      "sha256": "4fd28266e5de7ccca09a7d4baf881dcf49468dd511637b25a36f01614313506b"
+    },
+    {
+      "file": "project-controls-without-kshms.pdf",
+      "pages": 9,
+      "bytes": 31511,
+      "sha256": "df56c6d5cbd20cd4c21117154188b17c35ab33ba7f96f1c7c0f3716e575dd82a"
+    }
+  ],
+  "remaining": [
+    "Reelle separate roller/innlogginger, fysisk mobil/Safari og levende filbro er fortsatt ikke sluttattestert. Nettleserstyringen er gjenopprettet i ny fane med samme eksisterende økt; tidligere native nedlastingsbekreftelse er ikke attest på levert fil.",
+    "Videodekning gjelder fortsatt fem avgrensede filmer. Øvrige funksjoner/undermapper og kontekstspiller gjenstår; ingen helreise totalattesteres.",
+    "Ingen global redesign TEST OK, merge, Production-endring eller main→demo-synk. Solgløtt opprettes etter avtalt rekkefølge."
+  ]
+}
