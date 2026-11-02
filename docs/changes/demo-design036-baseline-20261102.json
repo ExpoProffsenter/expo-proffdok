@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "title": "Permanent demo følger faktisk publisert Design 036-baseline",
+  "change": "Miljømål SANDBOX/DEMO. Kun produksjonsreferansen i src/demoSandboxControl.jsx oppdateres fra b389c707 til faktisk innsynkronisert main34daef4c. Nødvendig metadataoppdatering som del av Kenneths godkjente main → demo, ingen nye kontroller eller funksjoner. Ingen data-, reset-, tilgangs-, auth-, e-post-, golden- eller ressursendring.",
+  "verification": "Etterkontroll av første demosynk33aef121 fant at kontrollsiden fortsatt sammenlignet mot gammel main. Den ene konstanten er oppdatert; den samme kontrollsidetesten består med både godkjent baseline og avslag ved feil baseline, nettfeil, lokal skisse, backend, kontrakt og mail. Full critical/Sandbox-build PASS. Eksakt testet blob589fa390c9435f4c3fa9897a7dc4afabf20e5349 verifiseres før publisering; faktisk public kontrolldel skal inneholde main34daef4c. Produksjonskode er urørt. Publisering/etter-preflight og endelig demo-SHA føres i PR295.",
+  "documentation": {
+    "help": {"required": false,"reason": "Ingen endring i brukerflyt eller eksisterende meldinger."},
+    "architecture": {"required": false,"reason": "Samme kontrollmekanisme og oppsett."},
+    "setup": {"required": false,"reason": "Ingen nye avhengigheter eller installasjon."},
+    "module": {"required": false,"reason": "Versjonsreferansen følger allerede dokumentert demosynk-kontrakt."}
+  }
+}
