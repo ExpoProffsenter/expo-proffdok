@@ -31,3 +31,13 @@ Sandbox brukes av både feature-Preview og permanent demo. Derfor opprettes priv
 Ved tilbakeføring: sett privat rollout=false før eldre UI tas i bruk igjen; behold lagrede signaturer, tabeller, historikk og kvitteringer. Ingen destruktiv nedmigrering.
 
 Firmamalvalg bruker eksisterende KS/HMS-kontekst, mal-/publiseringskommando og versjonsvern. Bare definisjonens tillatte nøkler kopieres. Utkast lagres med management-tilgang; publisering krever faktisk utpekt ansvarlig. Ingen ny grant, rolle eller utsending. Ukjent malutfall beholder samme request-ID, definisjon og handling til egen readback bekrefter resultatet.
+
+## Ansattes egne punkter og firmagodkjenning (oppgave304)
+
+En v2-samling beholder flere enhetsspesifikke lokale kladder ved siden av den eksisterende aktive nøkkelen. Begge er bruker-/firmascopet. Ved bytte skrives hele den bevarte samlingen først, deretter aktiv nøkkel. Kvotefeil/korrupsjon skal aldri føre til stille overskriving. Åpne/slette/bekrefte én kladd endrer ingen andre kladder. Eksakt ventende transport beholdes uten normalisering.
+
+Privat `checklist_private.template_proposals` har RLS uten klientpolicy/ACL. Tre smale authenticated SECURITY DEFINER-RPC-er med tom search_path kontrollerer godkjent konto, deaktivering, aktivt firma og medlemskap på nytt. Submitter trenger ingen personlig KS/HMS-grant og ser bare egne forslag. Firmaadmin/admin og, ved aktiv KS/HMS-modul, utpekt ansvarlig kan lese/behandle firmaets kø. Listen er begrenset til 50 metadata med entydig tids-/ID-cursor; definisjonen hentes separat med samme scope.
+
+Definisjonen valideres og renses med eksisterende checklist_content. Lenker til underskjema avvises; egne underfelt er støttet. SHA256 og request-ID fryser forslaget. Behandling låser raden, kontrollerer revisjon og fersk rolle, og fryser beslutning/begrunnelse/request-ID. Godkjenning krever aktiv firmamodul og oppretter atomisk én ny firmamal med én uforanderlig versjon, faktisk godkjenner/identitet og audit. Avslag publiserer ingenting. Eksakt retry gjenbruker resultatet; endret eller konkurrerende forsøk avvises med PT409. De eksisterende direkte mal-RPC-ene, personlige grants og ansvarligkrav endres ikke.
+
+Klienten fryser maljobb og behandlingsjobb lokalt før transport, med separate nøkler og separat eksakt detalj-readback. Den hevder ikke at en mottaker har lest forslaget. Ingen varslingsmotor, e-post, signaturrollout eller historisk kontroll endres. Core-PR fra main eier migrering og tillatelser; designPR295 kan vise samme funksjon i Preview med uttrykkelig avhengighet, men gir ingen Production-godkjenning.
