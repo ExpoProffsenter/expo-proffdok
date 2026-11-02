@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "title": "Samlet designrelease: Min side-test følger godkjent boligflyt",
+  "change": "Miljømål BEGGE. Kun personal-workspace-036-browser-check.mjs og release-/testdokumentasjon. Ingen app-, CSS-, SQL-, auth-, e-post-, workflow- eller konfigurasjonsendring. TEST OK for PR294/295/298/305 er gitt 2. november. CI887 stopper fordi den eldre designprøven lukker boligoppgavene som den godkjente PR294 nå viser direkte. Testinngangen og den godkjente tilstedeværelsesetiketten samordnes; alle funksjons- og sikkerhetskrav beholdes.",
+  "verification": "Førkilden d3489a69 gjenskaper eksakt CI887-feil ved Åpne oppgave i faktisk Chromium. Kontrakten ble dokumentert før testendring: oppgaver er direkte synlige, foldvalg virker begge veier, samme oppgave åpnes og registrering inn/ut viser Registrert på prosjektet. Etterprøve: Min side1141, time-opt-in63, boligoppgaver53 og tilstedeværelse21 krav PASS med faktiske komponenter og syntetisk transport. Fem nye fold-/synlighetskrav, ingen fjernet. Kilde-/dokumentasjonsvakter består mot faktisk main70a99b3e. Hele CI kjører på ny kandidat; ikke omkjøring av uendret feil. Ingen app- eller databaseendring. Innloggede rolle-/Safari-prøver er fortsatt ikke nyattestert.",
+  "documentation": {
+    "help": {"required": false, "reason": "Godkjent apptekst og brukerflyt er uendret."},
+    "architecture": {"required": false, "reason": "Kun testinngang, ingen produktarkitektur."},
+    "setup": {"required": false, "reason": "Ingen nye avhengigheter eller oppsett."},
+    "module": {"required": false, "reason": "Eksisterende boligkontrakt er allerede dokumentert i PR294; samlet releasegrunnlag suppleres."}
+  }
+}

@@ -81,11 +81,20 @@ try{
  await page.waitForFunction(()=>!document.querySelector('dialog.ks-plan-expanded[open]'));
  eq(await page.getByRole('button',{name:'Mine planer',exact:true}).getAttribute('aria-pressed'),'true','explicit plan close preserves chosen tab');
  await page.getByRole('button',{name:'I dag',exact:true}).click();
- await page.getByRole('button',{name:/Mine oppgaver i boligprosjekter/}).click();
+ // PR294 intentionally exposes the first housing tasks. Preserve explicit folding
+ // coverage without closing the list immediately before testing task opening.
+ const housingTasks=page.getByRole('button',{name:/Mine oppgaver i boligprosjekter/});
+ eq(await housingTasks.getAttribute('aria-expanded'),'true','approved housing tasks start expanded');
+ eq(await page.getByRole('button',{name:'Åpne oppgave',exact:true}).isVisible(),true,'first native housing task is directly visible');
+ await housingTasks.click();
+ eq(await housingTasks.getAttribute('aria-expanded'),'false','explicit housing collapse is respected');
+ eq(await page.getByRole('button',{name:'Åpne oppgave',exact:true}).isVisible(),false,'collapsed task stays hidden');
+ await housingTasks.click();
+ eq(await housingTasks.getAttribute('aria-expanded'),'true','explicit housing reopen restores the task list');
  await page.getByRole('button',{name:'Åpne oppgave',exact:true}).click();await page.getByRole('dialog').getByText(/QA Kontroll av leveranse/).waitFor();
  await page.getByRole('dialog').getByRole('button',{name:/Lukk/}).first().click();
  await page.getByRole('button',{name:'Registrer inn',exact:true}).click();await page.getByRole('button',{name:'Registrer ut',exact:true}).waitFor();
- eq(await page.getByText('Innlogget',{exact:true}).isVisible(),true,'native presence confirms in-state');
+ eq(await page.getByText('Registrert på prosjektet',{exact:true}).isVisible(),true,'native presence confirms in-state');
  await page.getByRole('button',{name:'Registrer ut',exact:true}).click();await page.getByRole('button',{name:'Registrer inn',exact:true}).waitFor();checks++;
  await page.getByRole('button',{name:'Åpne nyeste svar',exact:true}).click();eq(await page.evaluate(()=>window.qa.opened.at(-1)),{support:'qa-support'},'same support case callback');
  await page.getByRole('button',{name:'Se mine oppfølginger',exact:true}).click();await page.locator('.hr-employee').waitFor();checks++;
