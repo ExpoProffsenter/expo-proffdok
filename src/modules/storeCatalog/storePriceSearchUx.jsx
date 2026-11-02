@@ -84,6 +84,8 @@ function uiAllowed() {
 }
 
 function findInternalNav() {
+  const globalSource = document.querySelector('header nav[data-expo-global-nav-source="1"]');
+  if (globalSource) return globalSource;
   return Array.from(document.querySelectorAll("nav")).find((nav) => {
     const labels = Array.from(nav.querySelectorAll(":scope > button")).map((button) =>
       compactText(button.textContent)
@@ -226,8 +228,13 @@ function syncNavButton() {
   button.id = NAV_BUTTON_ID;
   button.type = "button";
   button.textContent = "Prissøk";
-  button.addEventListener("click", (event) => {
+  button.addEventListener("click", async (event) => {
     event.preventDefault();
+    if (typeof nav.expoLeaveProjectWorkspace === "function") {
+      if (await nav.expoLeaveProjectWorkspace("prosjekt") !== true) return;
+      await new Promise(resolve => window.requestAnimationFrame(resolve));
+      if (document.querySelector('[data-expo-project-shell="1"]') || activeNativeLabel() !== "Startside") return;
+    }
     openPriceSearch();
   });
   salesButton.insertAdjacentElement("afterend", button);

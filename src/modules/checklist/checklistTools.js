@@ -1,3 +1,4 @@
+import ChecklistStatusChoices from './ChecklistStatusChoices.jsx';
 import ChecklistFields from './ChecklistFields.jsx';
 import {fieldProblem} from './checklistFields.mjs';
 // FASE 24E SJEKKLISTEMODUL: Mekanisk uttrekk av eksisterende ChecklistEditor fra main.jsx. Ingen funksjons-, garanti-, rapport-, database-, RLS-, Storage-, Edge Function- eller e-postendring.
@@ -31,7 +32,7 @@ export function createChecklistEditor({
   checklistAttachmentDocumentTypeOptions,
   publicProjectFileUrl
 }) {
-  return function ChecklistEditor({ checklist, setChecklistValue, addChecklistPhoto, addFiles, files, setFiles, closedByName = "Utførende", showOpenDeviationsOnly = false, setShowOpenDeviationsOnly = null, warranty = {}, activeChecklistTemplate: providedActiveChecklistTemplate = null, customChecklistGroups = [], onAddCustomChecklistPoint = null, onRemoveCustomChecklistPoint = null, onSaveChecklistNow = null, checklistSaveStatus = "", onOpenKshmsDeviation = null, customChecklistEnabled, embedded = false, toolsOnly = false, initiallyExpanded = false, consumeChecklistJump = true, userId, readOnlyFields=false }) {
+  return function ChecklistEditor({ checklist, setChecklistValue, addChecklistPhoto, addFiles, files, setFiles, closedByName = "Utførende", showOpenDeviationsOnly = false, setShowOpenDeviationsOnly = null, warranty = {}, activeChecklistTemplate: providedActiveChecklistTemplate = null, customChecklistGroups = [], onAddCustomChecklistPoint = null, onRemoveCustomChecklistPoint = null, onSaveChecklistNow = null, checklistSaveStatus = "", onOpenKshmsDeviation = null, customChecklistEnabled, embedded = false, toolsOnly = false, initiallyExpanded = false, consumeChecklistJump = true, userId, readOnlyFields=false, completionStatus=null }) {
     const activeChecklistTemplate = providedActiveChecklistTemplate || getActiveChecklistTemplate(warranty);
     const customChecklistAllowed = !embedded && (customChecklistEnabled ?? canUseCustomChecklistForWarranty(warranty));
     const [newCustomChecklistTrade, setNewCustomChecklistTrade] = import_react.default.useState(customChecklistTradeOptions[0] || "Rørlegger");
@@ -325,7 +326,7 @@ export function createChecklistEditor({
                 stats.photos ? ` · ${stats.photos} bilder` : ""
               ] })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: `checklistGroupBadge checklistGroupBadge-${groupTone}`, children: stats.deviations > 0 ? "⚠️ Avvik" : stats.missing === 0 ? "✅ Ferdig" : stats.done > 0 ? "🟡 Pågår" : "⚪ Mangler" })
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: `checklistGroupBadge checklistGroupBadge-${groupTone}`, children: stats.deviations > 0 ? "⚠️ Avvik" : stats.missing === 0 ? (completionStatus ? (completionStatus === "completed" ? "✅ Fullført kontroll" : "Alle punkter vurdert") : "✅ Ferdig") : stats.done > 0 ? "🟡 Pågår" : "⚪ Mangler" })
           ] }),
           isOpen && group.instructions && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "ks-checklist-instructions", children: group.instructions }),
           isOpen && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "checklistGroupBody", children: group.items.filter((item) => !showOpenDeviationsOnly || checklist?.[group.category]?.[item]?.status === "Avvik").map((item) => {
@@ -349,17 +350,7 @@ export function createChecklistEditor({
                     (value.photos || []).length > 0 ? ` · 📷 ${(value.photos || []).length} bilder` : ""
                   ] })
                 ] }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "checklistStatusButtons", children: ["Ok", ...(pointRequirement.allow_na===false?[]:["Ikke aktuelt"]), "Avvik"].map((status) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-                  "button",
-                  {
-                    type: "button",
-                    className: value.status === status ? "" : "secondary",
-                    disabled: Boolean(value.ks_deviation_id),
-                    onClick: () => handleStatusClick(group.category, item, status),
-                    children: status
-                  },
-                  status
-                )) })
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChecklistStatusChoices, { value: value.status, allowNa: pointRequirement.allow_na !== false, disabled: Boolean(value.ks_deviation_id), onChange: status => handleStatusClick(group.category, item, status), label: `Svar på ${item}` })
               ] }),
               pointRequirement.fields?.length > 0 && (0, import_jsx_runtime.jsx)(ChecklistFields, {fields:pointRequirement.fields,values:value.values||{},readOnly:readOnlyFields,userId,onChange:(values,confirmationId)=>setChecklistValue(group.category,item,{values},{confirmationId})}),
               (String(group.category || "").startsWith(customChecklistCategoryPrefix) || value.status || value.comment || (value.photos || []).length > 0) && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(

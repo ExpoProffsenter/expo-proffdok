@@ -1,0 +1,41 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import http from 'node:http';
+import {build} from 'vite';
+import react from '@vitejs/plugin-react';
+const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
+import os from 'node:os';
+import {fixtureRpc,context,sources} from './critical-kshms-inspection-extract-check.mjs';
+import {company,project} from './critical-kshms-ruh-pdf-check.mjs';
+const root=process.cwd(),out=process.env.EXTRACT_SCREENSHOTS,tmp=fs.mkdtempSync(path.join(os.tmpdir(),'extract-ui-'));
+const fixture=path.join(tmp,'entry.jsx');
+fs.writeFileSync(fixture,`import React from '${root}/node_modules/react/index.js';import {createRoot} from '${root}/node_modules/react-dom/client.js';import Extract from '${root}/src/modules/kshms/KshmsInspectionExtract.jsx';import '${root}/src/style.css';import '${root}/src/modules/ui/proffdokWorkspace.css';import {APP_RUNTIME_STYLES} from '${root}/src/modules/app/appRuntimeStyles.js';document.head.insertAdjacentHTML('beforeend','<style>'+APP_RUNTIME_STYLES+'</style>');
+const context=${JSON.stringify(context)},sources=${JSON.stringify(sources)},company=${JSON.stringify(company)},project=${JSON.stringify(project)};const fixtureRpc=${fixtureRpc.toString()};window.rpc=fixtureRpc();const app=createRoot(document.getElementById('app'));window.renderExtract=(active=true,manage=true)=>app.render(<div data-expo-app-shell="true"><main><div className="ks-module"><p>Isolert native komponenttest · syntetisk backend · ${process.env.EXTRACT_BASELINE?'91ce919b før':'etter'}</p><Extract context={{...context,manage}} active={active}/></div></main></div>);window.renderExtract();`);
+if(out)fs.mkdirSync(out,{recursive:true});
+let checks=0,browser;const seen=[];const eq=(a,b,message)=>{assert.deepEqual(a,b,message);checks++;};
+const built=await build({root,configFile:false,logLevel:'silent',plugins:[react(),{name:'governance-transport-only',enforce:'pre',resolveId(id){if(id.endsWith('/kshmsAccess.js'))return '\0ks-rpc';if(id.endsWith('/appSupabaseClientRegistry.js'))return '\0ks-client';},load(id){if(id==='\0ks-rpc')return 'export const kshmsRpc=(...args)=>window.rpc(...args);';if(id==='\0ks-client')return 'export const getAppSupabaseClient=()=>null;';if(process.env.EXTRACT_SOURCE&&id.endsWith('/KshmsInspectionExtract.jsx'))return fs.readFileSync(process.env.EXTRACT_SOURCE,'utf8');if(process.env.EXTRACT_BASELINE&&id.endsWith('/kshmsInspectionExtract036.css'))return '';}}],resolve:{alias:{react:path.join(root,'node_modules/react'),'react-dom':path.join(root,'node_modules/react-dom')}},define:{'process.env.NODE_ENV':'"production"','import.meta.env.VITE_EXPO_BACKEND_TARGET':'"sandbox"'},build:{write:false,minify:false,target:'esnext',lib:{entry:fixture,formats:['es'],name:'KsGovernance036',cssFileName:'ks-governance036'}}});
+const items=(Array.isArray(built)?built[0]:built).output,entry=items.find(x=>x.type==='chunk'&&x.isEntry).fileName,chunks=new Map(items.filter(x=>x.type==='chunk').map(x=>[x.fileName,x.code])),css=items.filter(x=>x.fileName.endsWith('.css')).map(x=>x.source).join('\n');
+const server=http.createServer((req,res)=>{const name=new URL(req.url,'http://127.0.0.1').pathname.slice(1);if(chunks.has(name)){res.setHeader('Content-Type','text/javascript');res.end(chunks.get(name));return;}res.setHeader('Content-Type','text/html; charset=utf-8');res.end('<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>'+css+'</style><div id="app"></div><script type="module" src="/'+entry+'"></script>');});
+await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+try{
+ browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_PATH,args:['--no-sandbox']});const page=await browser.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));page.setDefaultTimeout(10000);await page.route('**/*',r=>new URL(r.request().url()).hostname==='127.0.0.1'?r.continue():r.abort());await page.goto('http://127.0.0.1:'+server.address().port);
+ const inspect=async label=>{eq(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,label+' no horizontal overflow');eq(await page.locator('section button,section summary,section textarea,section select,section input:not([type=checkbox])').evaluateAll(es=>es.filter(e=>e.checkVisibility()).every(e=>parseFloat(getComputedStyle(e).fontSize)>=16&&e.getBoundingClientRect().height>=44)),true,label+'16/44');if(!process.env.EXTRACT_BASELINE)eq(await page.locator('.ks-report-option input').evaluateAll(es=>es.filter(e=>e.checkVisibility()).every(e=>e.getBoundingClientRect().width===20&&e.getBoundingClientRect().height===20)),true,label+'compact20px');};
+ await page.getByLabel('Omfang / hva skal dokumenteres?',{exact:true}).fill('Syntetisk dokumentuttrekk – behold dette omfanget etter fanebytte ÆØÅ');await page.getByRole('button',{name:'Hent dokumentlisten',exact:true}).click();await page.getByRole('heading',{name:/Dette blir med/}).waitFor();
+ const help=page.locator('.ks-extract-help');
+ if(!process.env.EXTRACT_BASELINE){
+  eq(await help.getAttribute('open'),null,'detailed export guidance starts compact');
+  await help.locator('summary').click();
+  eq(await help.getByText(/HR, fortrolige varslinger/).isVisible(),true,'complete original scope and privacy guidance remains available');
+  await help.locator('summary').press('Space');
+  eq(await help.getAttribute('open'),null,'guidance can be closed with keyboard');
+ }
+ for(const summary of await page.locator('.ks-extract-groups details>summary').all())await summary.click();
+ const first=page.locator('fieldset input[type=checkbox]').first();await first.check();eq(await page.getByRole('button',{name:'Last ned samlet PDF',exact:true}).isDisabled(),true,'confirmation still required');
+ for(const width of [320,390,768,1363,1920]){await page.setViewportSize({width,height:600});await inspect('selected-'+width);if(!process.env.EXTRACT_BASELINE){const fields=await page.locator('.ks-extract-filters>.ks-field').evaluateAll(es=>es.map(e=>{const r=e.getBoundingClientRect();return {top:r.top,left:r.left,bottom:r.bottom};}));eq(width>760?Math.abs(fields[0].top-fields[1].top)<1:fields[1].top>=fields[0].bottom,true,width+': scope and search share PC row and stack on mobile');eq(await help.getAttribute('open'),null,width+': resizing preserves compact guidance');}if(out&&[390,1363].includes(width))await page.screenshot({path:path.join(out,'extract-'+width+'.png'),fullPage:true});}
+ await page.getByRole('checkbox',{name:'Jeg har kontrollert omfanget og dokumentvalget. Jeg vurderer innhold og mottaker før jeg deler filen.',exact:true}).check();eq(await page.getByRole('button',{name:'Last ned samlet PDF',exact:true}).isEnabled(),true,'original confirmation gate opens');
+ await page.evaluate(()=>{window.dispatchEvent(new Event('blur'));window.dispatchEvent(new Event('focus'));window.renderExtract(false);});await page.evaluate(()=>window.renderExtract(true));eq(await first.isChecked(),true,'native cart retained while hidden');eq(await page.locator('textarea').inputValue(),'Syntetisk dokumentuttrekk – behold dette omfanget etter fanebytte ÆØÅ','scope retained');
+ await page.locator('.ks-extract-groups details>summary').first().press('Space');await page.locator('.ks-extract-groups details>summary').first().press('Space');eq(await first.isChecked(),true,'keyboard disclosure retains selection');
+ await page.getByRole('button',{name:/^Fjern .* fra uttrekket$/}).click();eq(await page.getByRole('button',{name:'Last ned samlet PDF',exact:true}).isDisabled(),true,'removing document clears confirmation');
+ await page.evaluate(()=>window.renderExtract(true,false));await page.locator('section[aria-label="Dokumentuttrekk"]').waitFor({state:'detached'});eq(await page.locator('section[aria-label="Dokumentuttrekk"]').count(),0,'revoked manager has no extract surface');eq(errors,[],'no React errors');console.log('Native extract presentation PASS: '+checks+' assertions; five widths, actual component, native read transport, selection/confirmation/hide/keyboard/role gate; no export/write.');
+}finally{await browser?.close();await new Promise(r=>server.close(r));fs.rmSync(tmp,{recursive:true,force:true});}

@@ -50,6 +50,7 @@ try{
    }
    if(name==='hr_followup_tasks'||name==='hr_conversation_feedback_notices')return {data:{context:window.ctx(),tasks:[],next:null}};
    if(name==='time_tasks_get')return {data:{context:window.ctx(),enabled:false,missing_week:null,returned_count:0,review_count:0,can_manage:false}};
+   if(['bolig_my_attendance','project_progress_mine','bolig_my_project_tasks'].includes(name))return {error:{code:'42501',message:'Fixture has no housing or project assignment'}};
    throw Error('Unexpected RPC '+name);
   }};
  });
@@ -110,7 +111,7 @@ try{
  await page.evaluate(()=>{Object.defineProperty(document,'visibilityState',{value:'hidden',configurable:true});document.dispatchEvent(new Event('visibilitychange'));});await banner.waitFor({state:'detached'});checks++;
  await page.evaluate(()=>{Object.defineProperty(document,'visibilityState',{value:'visible',configurable:true});document.dispatchEvent(new Event('visibilitychange'));});await banner.waitFor();checks++;
  eq(await page.evaluate(()=>window.localStorage.length+window.sessionStorage.length),0,'no contact browser storage');
- eq(await page.evaluate(()=>window.calls.every(c=>['hr_contact_get','hr_contact_save','hr_followup_tasks','hr_conversation_feedback_notices','time_tasks_get'].includes(c.name))),true,'no mail, tasks or membership writes');
+ eq(await page.evaluate(()=>[...new Set(window.calls.filter(c=>!['hr_contact_get','hr_contact_save','hr_followup_tasks','hr_conversation_feedback_notices','time_tasks_get','bolig_my_attendance','project_progress_mine','bolig_my_project_tasks'].includes(c.name)).map(c=>c.name))]),[],'no mail, tasks or membership writes');
  eq(errors,[]);
  console.log('Contact reminder: '+checks+' assertions PASS: real Chromium notice/Min side/modal/save, 320/390/1280 widths, field completion, optional fields, readback, drafts, revocation, closed storage, late/actor/company/hidden state and no mail. Synthetic transport.');
 }finally{await browser?.close();await new Promise(resolve=>server.close(resolve));fs.rmSync(temp,{recursive:true,force:true});}

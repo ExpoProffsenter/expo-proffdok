@@ -38,7 +38,7 @@ try {
               : null,
         load: (id) =>
           id.startsWith("\0leaf:")
-            ? `import React from 'react';import Dialog from '${process.cwd()}/src/modules/deviations/DeviationDialog.jsx';export default function Leaf(p){const [draft,setDraft]=React.useState(''),[show,setShow]=React.useState(true);const name=${JSON.stringify(id)},field=React.createElement('textarea',{'aria-label':'Ulagret kontrolltekst',value:draft,onChange:e=>setDraft(e.target.value)});window.leaves.push({name,projectId:p.projectId,taskId:p.taskId,request:p.request});return React.createElement('section',{'aria-label':'Existing leaf'},React.createElement('p',null,'Existing leaf '+name+' '+(p.projectId||p.taskId||p.context.user_id)),name.endsWith('KshmsSja.jsx')?(show?React.createElement(Dialog,{title:'Test-SJA',closeLabel:'Lukk test-SJA',onClose:()=>setShow(false)},field):null):field,p.onTaskClose?React.createElement('button',{onClick:p.onTaskClose},'Lukk testaktivitet'):null);}`
+            ? `import React from 'react';import Dialog from '${process.cwd()}/src/modules/deviations/DeviationDialog.jsx';export default function Leaf(p){const [draft,setDraft]=React.useState(''),[show,setShow]=React.useState(true);const name=${JSON.stringify(id)},field=React.createElement('textarea',{'aria-label':'Ulagret kontrolltekst',value:draft,onChange:e=>setDraft(e.target.value)});window.leaves.push({name,projectId:p.projectId,taskId:p.taskId,request:p.request||p.openRequest});return React.createElement('section',{'aria-label':'Existing leaf'},React.createElement('p',null,'Existing leaf '+name+' '+(p.projectId||p.taskId||p.context.user_id)),name.endsWith('KshmsSja.jsx')?(show?React.createElement(Dialog,{title:'Test-SJA',closeLabel:'Lukk test-SJA',onClose:()=>setShow(false)},field):null):field,p.onTaskClose?React.createElement('button',{onClick:p.onTaskClose},'Lukk testaktivitet'):p.onClose?React.createElement('button',{onClick:p.onClose},'Lukk testkontroll'):null);}`
             : id === "\0client"
               ? "export const getAppSupabaseClient=()=>window.__client;"
               : null,
@@ -183,9 +183,7 @@ try {
   );
   await btn("Lukk test-SJA").click();
   await btn("Lukk prosjektets ks/hms").click();
-  await page
-    .getByRole("button", { name: /Mine oppgaver i boligprosjekter/ })
-    .click();
+  eq(await page.getByRole("button", {name:/Mine oppgaver i boligprosjekter/}).getAttribute('aria-expanded'),'true','first tasks are visible without an extra click');
   await page
     .locator(".bolig-my-tasks-content article")
     .filter({ hasText: "Monter bad" })
@@ -271,7 +269,7 @@ try {
   eq(await page.locator('.bolig-my-tasks article').count(),0,'initial read failure exposes no task data');
   await page.evaluate(()=>{window.taskReadFailure=false;});
   await btn('Prøv å hente oppgavene igjen').click();
-  await page.getByRole('button',{name:/Mine oppgaver i boligprosjekter/}).click();
+  eq(await page.getByRole('button',{name:/Mine oppgaver i boligprosjekter/}).getAttribute('aria-expanded'),'true','successful retry reveals first tasks');
   await page.getByText('Monter bad',{exact:true}).waitFor();
   eq(await page.getByText('Kunne ikke hente oppgavene.',{exact:true}).count(),0,'successful retry clears read failure');
   await page.evaluate(()=>{window.taskReadFailure=true;window.dispatchEvent(new Event('focus'));});
@@ -285,6 +283,30 @@ try {
   await page.waitForFunction(()=>window.taskReads>0);
   await page.waitForTimeout(100);
   eq(await page.locator('.bolig-my-tasks').count(),0,'confirmed empty list remains hidden');
+  await page.goto(`http://127.0.0.1:${server.address().port}?tasks-many=1`);
+  const taskToggle=()=>page.getByRole('button',{name:/Mine oppgaver i boligprosjekter/});
+  await page.getByText('Boligoppgave 1',{exact:true}).waitFor();
+  eq(await page.locator('.bolig-my-tasks-content article:visible').count(),4,'24 tasks start with four visible rows');
+  for(const width of [320,390,768,1366,1920]){
+    await page.setViewportSize({width,height:1000});
+    eq(await page.locator('.bolig-my-tasks-content article:visible').count(),4,'compact first list at '+width);
+    eq(await page.locator('.bolig-my-tasks').evaluate(n=>n.scrollWidth<=n.clientWidth),true,'task card fits '+width);
+  }
+  await taskToggle().click();await page.evaluate(()=>window.dispatchEvent(new Event('focus')));
+  await taskToggle().waitFor();eq(await taskToggle().getAttribute('aria-expanded'),'false','explicit collapse survives foreground refresh');
+  eq(await page.locator('.bolig-my-tasks-content article:visible').count(),0,'collapsed rows stay hidden');
+  await taskToggle().click();await btn('Vis flere boligoppgaver').click();
+  eq(await page.locator('.bolig-my-tasks-content article:visible').count(),8,'show more uses all already loaded rows');
+  await btn('Hent flere boligoppgaver').click();await page.getByText('Boligoppgave 16',{exact:true}).waitFor();
+  eq(await page.locator('.bolig-my-tasks-content article:visible').count(),16,'next server page is appended without duplicates');
+  for(const [index,leaf] of [[0,'BoligProgress'],[1,'KshmsDeviations'],[2,'KshmsExecutions'],[3,'KshmsExecutions']]){
+    await page.locator('.bolig-my-tasks-content article').nth(index).getByRole('button',{name:'Åpne oppgave',exact:true}).click();
+    await page.getByText(new RegExp('Existing leaf.*'+leaf)).waitFor();
+    const opened=(await page.evaluate(()=>window.leaves)).at(-1);
+    eq(index===0?opened.taskId:opened.request.id,'many-'+index,'native source receives exact selected task '+index);
+    if(index===0)await btn('Lukk testaktivitet').click();else if(index===1)await btn('Lukk min ruh / avviksoppgave').click();else await btn('Lukk testkontroll').click();
+  }
+  eq(await page.evaluate(()=>window.writes),0,'personal task reading and pagination never write');
   eq(errors, []);
   console.log(
     "Bolig integration browser: " +

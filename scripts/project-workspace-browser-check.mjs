@@ -31,6 +31,8 @@ import {installDesktopSideMenu} from '${cwd}/src/modules/app/desktopSideMenu.js'
 import {installProjectWorkspaceHeaderGuide} from '${cwd}/src/modules/app/projectWorkspaceHeaderGuide.js';
 import {installProjectWorkflowUx} from '${cwd}/src/modules/project/projectWorkflowUx.js';
 import '${cwd}/src/style.css';
+
+import '${cwd}/src/modules/ui/proffdokWorkspace.css';
 import {APP_RUNTIME_STYLES} from '${cwd}/src/modules/app/appRuntimeStyles.js';
 document.head.insertAdjacentHTML('beforeend','<style>'+APP_RUNTIME_STYLES+'</style>');
 const sourceNav=new Function('import_jsx_runtime','tabs','tab','goToTab',${JSON.stringify('return '+navExpression)});
@@ -41,6 +43,7 @@ const Select=({label,value,onChange,options,disabled})=><label>{label}<select ar
 const tools=createProjectOverviewTools({Section,Grid:({children})=><div>{children}</div>,InfoCard:()=>null,CollapsibleBlock:({children})=><div>{children}</div>,Textarea:()=>null,hasValue:Boolean});
 function App(){
  const [kind,setKind]=useState('wetroom'),[tab,setTab]=useState('prosjekt'),[draft,setDraft]=useState(''),[statusOpen,setStatusOpen]=useState(false),[continuing,setContinuing]=useState(false),[continueNotice,setContinueNotice]=useState(''),[project,setProject]=useState({projectName:'Prosjekt ved Elveparken',customer:'QA Kunde',address:'Testveien 1',postnr:'0001',city:'Oslo',customerEmail:'qa@example.invalid',customerPhone:'90000000',responsible:'QA Leder',salesOrigin:{acceptedTotal:10000},workflowStatus:'Pågår'});
+ window.setProjectName=projectName=>setProject(current=>({...current,projectName}));
  window.changeKind=kind=>{setKind(kind);setTab('prosjekt');setStatusOpen(false);};
  const order=kind==='order',readOnly=kind==='support',saved=kind!=='new';
  const [mobile,setMobile]=useState(window.innerWidth<=700);React.useEffect(()=>{const resize=()=>setMobile(window.innerWidth<=700);window.addEventListener('resize',resize);return()=>window.removeEventListener('resize',resize);},[]);
@@ -49,7 +52,7 @@ function App(){
  const goToTab=async id=>{window.navCalls.push(id);if(window.cancelNavigation)return false;setTab(id);setStatusOpen(false);scrollToTarget(id);return true;};
  const continueNext=async id=>{setContinuing(true);setContinueNotice('');try{return await continueAfterProjectSave({save:async()=>{if(window.holdSave)await new Promise(resolve=>window.finishSave=resolve);return window.saveWorks?{ok:true,projectId:'qa'}:undefined;},navigate:()=>goToTab(id),isCurrent:()=>true,events:window,onFailure:()=>setContinueNotice('Lagringen er ikke bekreftet.')});}finally{setContinuing(false);}};
  const scope={projectId:saved?'qa':null,ProjectStatusDialog,import_jsx_runtime:jsxRuntime,Section,Select,import_lucide_react:{BadgeCheck:()=>null,ClipboardCheck:()=>null},mobileStatusOpen:statusOpen,setMobileStatusOpen:setStatusOpen,project,setProject,tab,currentStatus:{icon:'🟡',label:'Pågår',tone:'progress'},projectGuideStats:{openDeviationCount:2,completionPercent:88,productCount:2,photoCount:3,checklistDone:1,checklistMissing:3,hasOvertagelse:false},unreadForAdmin:3,statusStyle:()=>({}),openActiveDeviations:()=>goToTab('avvik'),isProjectLocked:false,isProjectSupportReadOnly:readOnly,workflowStatusOptions:['Pågår','Avventer'],suggestedWorkflowStatus:'Avventer',persistedProjectHasOvertagelse:false,overtagelse:{},overtagelseHasDraftContent:()=>true,overtagelseIsSignedByBoth:()=>false,projectHasOvertagelse:()=>false,totalChatCount:5,customerChatCount:2,latestChatMessage:null,projectGuideItems:[{id:'photo',label:'Kontroller bilder',tone:'missing'}],openProjectGuideItem:()=>goToTab('bilder')};
- return <div data-expo-project-shell="1"><header><div className="head"><div style={{width:260,height:80}}>Expo Proffsenter</div><div><h1>Expo ProffDok</h1></div><button onClick={()=>window.exits++}>← Til startside</button><ProjectHeaderActions dirty={!!draft} saved={saved} readOnly={readOnly} simpleOrder={order} locked={kind==='locked'} onNew={()=>window.newProjects++} onSave={()=>window.saves++} onCopy={()=>window.copies++} onPdf={()=>window.pdfs++} onLock={value=>window.locks.push(value)}/>{!mobile&&profileControl}</div>{mobile&&profileControl}{sourceNav(jsxRuntime,tabs,tab,goToTab)}</header>
+ return <div data-expo-app-shell="true" data-expo-project-shell="1"><header><div className="head"><div style={{width:260,height:80}}>Expo Proffsenter</div><div><h1>Expo ProffDok</h1></div><button onClick={()=>window.exits++}>← Til startside</button><ProjectHeaderActions dirty={!!draft} saved={saved} readOnly={readOnly} simpleOrder={order} locked={kind==='locked'} onNew={()=>window.newProjects++} onSave={()=>window.saves++} onCopy={()=>window.copies++} onPdf={()=>window.pdfs++} onLock={value=>window.locks.push(value)}/>{!mobile&&profileControl}</div>{mobile&&profileControl}{sourceNav(jsxRuntime,tabs,tab,goToTab)}</header>
  <Chrome tabs={tabs} activeTab={tab} project={project} saved={saved} simpleOrder={order} status={scope.currentStatus} deviations={2} unread={3} onContinue={continueNext} continuing={continuing} continueNotice={continueNotice} readOnly={readOnly||kind==='locked'} onNavigate={goToTab} onStatus={()=>setStatusOpen(true)} onExit={()=>window.exits++}/>
  <main>{actualStatus(scope)}{tab==='prosjekt'&&tools.renderProjectOverviewPanel({project:{...project,workflowType:order?'simple_order':'wetroom'},goToTab,leaveProjectWorkspace:()=>window.exits++})}<h2>Arbeidsinnhold: {tab}</h2><label>Kladd<textarea aria-label="Kladd" value={draft} onChange={e=>setDraft(e.target.value)}/></label></main><ProjectWorkspaceFooter tabs={tabs} activeTab={tab} simpleOrder={order} onNavigate={goToTab} onContinue={continueNext} continuing={continuing} readOnly={readOnly||kind==='locked'}/><div className="bottomPrevNext"><button>Old previous</button><button>Old next</button></div></div>;
 }
@@ -64,6 +67,7 @@ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 try{
  browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_PATH||undefined,args:['--no-sandbox']});
  const page=await browser.newPage({viewport:{width:1363,height:1000}}),errors=[];page.setDefaultTimeout(4000);page.on('pageerror',e=>{errors.push(e.message);console.error('PAGE ERROR',e.message);});
+ await page.route('**/*',route=>new URL(route.request().url()).hostname==='127.0.0.1'?route.continue():route.abort());
  await page.goto('http://127.0.0.1:'+server.address().port+'/?progressTest=safe');
  const button=name=>page.getByRole('button',{name,exact:true});
  // Wait for the fixture's responsive React commit, not a fixed sleep. Otherwise
@@ -71,18 +75,29 @@ try{
  const resize=async width=>{
   await page.setViewportSize({width,height:1000});
   await page.waitForFunction(()=>{const host=document.getElementById('expo-work-profile-switcher');return Boolean(host)&&(innerWidth<=700)===(host.parentElement.tagName==='HEADER');});
+  if(width>1180)await page.waitForFunction(()=>{const e=document.querySelector('.expoDesktopMenuDrawer');return !e||(e.getAttribute('aria-hidden')==='true'&&e.getBoundingClientRect().right<=0);});
  };
  await page.locator('.project-workspace').waitFor();
+ // The legacy drawer closes with a180ms transition; wait for its actual final geometry.
+ await page.waitForFunction(()=>{const e=document.querySelector('.expoDesktopMenuDrawer');return e?.getAttribute('aria-hidden')==='true'&&e.getBoundingClientRect().right<=0;});
+ if(process.env.PROJECT_UX_SCREENSHOTS)fs.mkdirSync(process.env.PROJECT_UX_SCREENSHOTS,{recursive:true});
  const nav=page.locator('.project-workspace-navigation');
+ const dismissDialog=async dialog=>{const node=await dialog.elementHandle();await dialog.press('Escape');await page.waitForFunction(element=>!element.isConnected,node);};
+ const openMenu=async()=>{await button(/Prosjektmeny/).click();await page.getByRole('dialog',{name:'Prosjektmeny',exact:true}).waitFor();};
+ const selectTab=async name=>{await openMenu();await nav.getByRole('button',{name,exact:true}).click();await page.locator('.project-navigation-panel').waitFor({state:'detached'});};
  eq(await page.locator('#expo-project-workspace-guide').count(),0,'legacy duplicate guide removed');
  eq(await page.locator('.expoDesktopMenuToggle').isVisible(),false,'project drawer not duplicated');
+ await openMenu();
  eq(await nav.getByRole('button',{name:'Oversikt',exact:true}).count(),1,'overview exists once');
  eq(await nav.getByRole('button',{name:'Bilder',exact:true}).count(),1,'all phases visible');
  eq(await page.locator('.bottomPrevNext').isVisible(),false,'legacy flow is not a second user route');
- const cards=await nav.locator('.project-phase-card').evaluateAll(els=>els.map(e=>{const r=e.getBoundingClientRect();return {top:r.top,width:r.width,height:r.height};}));
- eq(cards.length,3,'three aligned phase cards');eq(Math.max(...cards.map(c=>c.top))-Math.min(...cards.map(c=>c.top))<1,true,'phase cards share top edge');eq(Math.max(...cards.map(c=>c.width))-Math.min(...cards.map(c=>c.width))<1,true,'phase cards have equal widths');eq(Math.max(...cards.map(c=>c.height))-Math.min(...cards.map(c=>c.height))<1,true,'phase cards share bottom edge');
+ const cards=await nav.locator('.project-phase-card').evaluateAll(els=>els.map(e=>{const r=e.getBoundingClientRect();return {top:r.top,bottom:r.bottom,width:r.width};}));
+ eq(cards.length,3,'three phases retained in right menu');eq(cards[1].top>=cards[0].bottom,true,'phases follow reading order');eq(Math.max(...cards.map(c=>c.width))-Math.min(...cards.map(c=>c.width))<1,true,'phases use shared panel width');
+ const menuFrame=await page.getByRole('dialog',{name:'Prosjektmeny',exact:true}).boundingBox();eq(menuFrame.x+menuFrame.width,1363,'project menu shares right edge with app tools');
+ await dismissDialog(page.getByRole('dialog',{name:'Prosjektmeny',exact:true}));
  eq((await page.locator('.head').boundingBox()).height<=80,true,'desktop app header stays in one compact row');
- eq((await page.locator('.project-workspace').boundingBox()).height<560,true,'project context and requested step guide stay compact');
+
+ eq((await page.locator('.project-workspace').boundingBox()).height<400,true,'project context and requested step guide stay compact');
  eq(await page.getByText('Prosjekt ved Elveparken',{exact:true}).count(),1,'project name shown once');
  eq(await page.getByText('QA Kunde · Testveien 1 0001 Oslo',{exact:true}).count(),1,'full customer address stays in heading');
  eq(await page.locator('.project-contact-overview .guideCard').count(),4,'overview prioritizes four contact/financial fields');
@@ -93,56 +108,61 @@ try{
   eq(await page.locator('.project-contact-overview').getByText('qa@example.invalid',{exact:true}).isVisible(),true,'contact email retained '+width);
  }
  await resize(1363);
+ await openMenu();
  eq(await nav.getByRole('group',{name:'Oppstart',exact:true}).locator('button').allTextContents().then(labels=>labels.map(text=>text.replace(/^[1-5]/,'').replace('Ved behov','').replace('Historikk','').trim())),['Oversikt','Deltakere og tilganger','Prosjektbeskrivelse','Avtalegrunnlag','Prosjektering','Fremdrift','Salgsgrunnlag'],'contacts and portal access precede work description; history is separate');
+ await dismissDialog(page.getByRole('dialog',{name:'Prosjektmeny',exact:true}));
+ await button('Vis veiledning').click();
  eq(await page.getByRole('region',{name:'Anbefalt neste steg'}).getByText('Du er her: Oversikt',{exact:true}).isVisible(),true,'current setup position explicit');
  await page.getByRole('region',{name:'Anbefalt neste steg'}).getByRole('button',{name:'Lagre og fortsett →',exact:true}).click();
  await page.getByText('Du er her: Deltakere og tilganger',{exact:true}).waitFor();
  eq(await page.evaluate(()=>window.navCalls.at(-1)),'tilgang','visible continue button uses next setup step');
- await nav.getByRole('button',{name:'Prosjektbeskrivelse',exact:true}).click();
+ await selectTab('Prosjektbeskrivelse');
  await page.evaluate(()=>window.saveWorks=false);await page.getByRole('region',{name:'Anbefalt neste steg'}).getByRole('button',{name:'Lagre og fortsett →',exact:true}).click();
  await page.getByRole('region',{name:'Anbefalt neste steg'}).getByText('Lagringen er ikke bekreftet.',{exact:true}).waitFor();
  eq(await page.evaluate(()=>window.navCalls.at(-1)),'prosjektinfo','failed save stays at same step');
  await page.evaluate(()=>{window.saveWorks=true;window.holdSave=true;});await page.getByRole('region',{name:'Anbefalt neste steg'}).getByRole('button',{name:'Lagre og fortsett →',exact:true}).click();
  eq(await page.getByRole('region',{name:'Anbefalt neste steg'}).getByRole('button',{name:'Lagrer …',exact:true}).isEnabled(),false,'saving button blocks duplicate clicks');
- await nav.getByRole('button',{name:'Oversikt',exact:true}).click();
+ await selectTab('Oversikt');
  await page.evaluate(()=>{window.holdSave=false;window.finishSave();});
+ await button('Vis veiledning').click();
  await page.getByRole('region',{name:'Anbefalt neste steg'}).getByRole('button',{name:'Lagre og fortsett →',exact:true}).waitFor();
  eq(await page.evaluate(()=>window.navCalls.at(-1)),'prosjekt','delayed save never overrides explicit tab choice');
 
- await nav.getByRole('button',{name:'Garanti',exact:true}).click();
+ await selectTab('Garanti');
  eq(await page.evaluate(()=>window.navCalls.at(-1)),'garanti','warranty remains reachable through explicit phase');
- await nav.getByRole('button',{name:'Oversikt',exact:true}).click();
+ await selectTab('Oversikt');
 
  for(const label of ['Fremdrift','Deltakere og tilganger','Sjekklister','Bilder','Garanti']){
-  await nav.getByRole('button',{name:label,exact:true}).click();
+  await selectTab(label);
   const top=page.getByRole('region',{name:'Anbefalt neste steg'}),bottom=page.getByRole('navigation',{name:'Neste og forrige prosjektsteg'});
   eq(await top.locator('.project-step-next').innerText(),await bottom.locator('.project-step-next').innerText(),'top/footer share target and save semantics for '+label);
  }
- await nav.getByRole('button',{name:'Fremdrift',exact:true}).click();
+ await selectTab('Fremdrift');
  eq(await page.getByRole('region',{name:'Anbefalt neste steg'}).getByRole('button',{name:'Gå til Sjekklister →',exact:true}).count(),1,'planner never claims a generic save');
  await page.getByRole('navigation',{name:'Neste og forrige prosjektsteg'}).getByRole('button',{name:'Gå til Sjekklister →',exact:true}).click();
  eq(await page.evaluate(()=>window.navCalls.at(-1)),'sjekklister','reported footer mismatch fixed');
- await nav.getByRole('button',{name:'Deltakere og tilganger',exact:true}).click();
+ await selectTab('Deltakere og tilganger');
  eq(await page.getByRole('region',{name:'Anbefalt neste steg'}).getByText(/En kontakt får ikke tilgang automatisk/).isVisible(),true,'contact list does not imply portal access');
- await nav.getByRole('button',{name:'Oversikt',exact:true}).click();
+ await selectTab('Oversikt');
  await page.getByLabel('Kladd',{exact:true}).fill('Arbeidet mitt');
  await page.evaluate(()=>window.scrollTo(0,300));
 
- await nav.getByRole('button',{name:'Bilder',exact:true}).click();
+ await selectTab('Bilder');
  eq(await page.getByLabel('Kladd',{exact:true}).inputValue(),'Arbeidet mitt','draft preserved during native navigation');
  eq(await page.evaluate(()=>window.navCalls.at(-1)),'bilder','real tab ID');
  await page.waitForFunction(()=>scrollY===0);eq(await page.evaluate(()=>scrollY),0,'project context remains visible after navigation');
  for(const width of [1363,768,390,320]){
   await resize(width);
   eq(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'fits '+width);
+  if(process.env.PROJECT_UX_SCREENSHOTS)await page.screenshot({path:path.join(process.env.PROJECT_UX_SCREENSHOTS,'project-'+width+'.png'),fullPage:true,animations:'disabled'});
   eq((await page.locator('main>h2').boundingBox()).y<800,true,'content reachable '+width);
-  if(width<1181){
+  {
    await button(/Prosjektmeny/).click();
    const dialog=page.getByRole('dialog',{name:'Prosjektmeny',exact:true});await dialog.waitFor();
    eq(await dialog.getByRole('button',{name:'Avvik/SJA/RUH (2)',exact:true}).count(),1,'dynamic deviation count '+width);
    eq(await dialog.getByRole('button',{name:'Chat (3 ulest)',exact:true}).count(),1,'unread label '+width);
    if(width<=700)eq(Math.round((await dialog.boundingBox()).height),1000,'full screen mobile '+width);
-   await dialog.press('Escape');
+   await dismissDialog(dialog);
    eq(await page.getByLabel('Kladd',{exact:true}).inputValue(),'Arbeidet mitt','close preserves draft '+width);
   }
   await button('Status og mangler').click();
@@ -162,7 +182,7 @@ try{
  eq(await page.evaluate(()=>window.navCalls.at(-1)),'sjekklister','field user opens checklists in one click');
  await fieldBar.getByRole('button',{name:'Bilder',exact:true}).click();
  await fieldBar.getByRole('button',{name:'Meny',exact:true}).click();
- await page.getByRole('dialog').press('Escape');
+ await dismissDialog(page.getByRole('dialog'));
  await button(/Prosjektmeny/).click();
  await page.evaluate(()=>window.cancelNavigation=true);
  await page.getByRole('dialog').getByRole('button',{name:'Prosjektbeskrivelse',exact:true}).click();
@@ -216,14 +236,52 @@ try{
    for(const label of ['Prosjektering','Overflater og innredning','Chat (3 ulest)','Overtagelse','Garanti'])eq(await dialog.getByRole('button',{name:label,exact:true}).count(),0,'order hides '+label);
   }
   if(kind==='direct'||kind==='new')eq(await dialog.getByRole('button',{name:'Salgsgrunnlag',exact:true}).count(),0,'no invented sales source '+kind);
-  await dialog.press('Escape');
+  await dismissDialog(dialog);
   if(kind==='support'){
    eq(await button('● Lagre endringer').count(),0,'support cannot save');
-   await button('Status og mangler').click();eq(await page.getByRole('dialog').getByLabel('Arbeidsstatus',{exact:true}).isEnabled(),false,'support status remains read only');await page.getByRole('dialog').press('Escape');
+   await button('Status og mangler').click();eq(await page.getByRole('dialog').getByLabel('Arbeidsstatus',{exact:true}).isEnabled(),false,'support status remains read only');await dismissDialog(page.getByRole('dialog'));
    await button('Flere handlinger').click();eq(await page.getByRole('menu',{name:'Flere handlinger',exact:true}).getByRole('menuitem',{name:'Lagre som kopi',exact:true}).count(),0,'support cannot copy');eq(await page.getByRole('menu',{name:'Flere handlinger',exact:true}).getByRole('menuitem',{name:'🔒 Avslutt prosjekt',exact:true}).count(),0,'support cannot lock');await page.getByRole('menu',{name:'Flere handlinger',exact:true}).press('Escape');
   }
   if(kind==='locked'){await button('Flere handlinger').click();await page.getByRole('menu',{name:'Flere handlinger',exact:true}).getByRole('menuitem',{name:'🔓 Lås opp prosjekt',exact:true}).click();eq(await page.evaluate(()=>window.locks),[true,false],'unlock callback retained');}
  }
+
+ // Actual design wrapper/CSS: small controls must fail even when old flow checks pass.
+ await page.evaluate(()=>window.changeKind('wetroom'));
+ const geometry=async()=>page.locator('[data-expo-project-shell]').evaluate(root=>{
+  const visible=e=>{const r=e.getBoundingClientRect();return r.width&&r.height&&getComputedStyle(e).visibility!=='hidden'};
+  return [...root.querySelectorAll('header button,.project-workspace button,.project-flow-footer button')].filter(visible).map(e=>{const r=e.getBoundingClientRect();return {label:e.textContent.trim(),h:r.height,w:r.width,font:parseFloat(getComputedStyle(e).fontSize),field:!!e.closest('.project-field-bar')};});
+ });
+ for(const width of [1920,1363,1280,1181,768,390,320]){
+  await resize(width);await page.evaluate(()=>scrollTo(0,0));
+  eq(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'design shell fits '+width);
+  const buttons=await geometry();eq(buttons.filter(b=>b.h+.001<44||b.w+.001<44),[],'all project targets44 '+width);
+  eq(buttons.filter(b=>b.font<(b.field?14:16)),[],'readable project action text '+width);
+  eq(await page.locator('.project-workspace-heading').evaluate(e=>getComputedStyle(e).backgroundImage),'none','open project heading '+width);
+  eq(await page.locator('.project-workspace-navigation,.project-workspace-mobile,.project-workspace-heading,.project-flow-footer').evaluateAll(els=>els.filter(e=>e.clientWidth&&e.scrollWidth>e.clientWidth+1).map(e=>e.className)),[],'project internal layout fits '+width);
+  if(width<=700){
+   eq(await page.locator('.project-field-bar button span').evaluateAll(els=>els.every(e=>e.scrollWidth<=e.clientWidth+1)),true,'mobile shortcut labels fit whole words '+width);
+   await button(/Prosjektmeny/).click();const menu=page.getByRole('dialog',{name:'Prosjektmeny',exact:true});
+   for(const label of ['Hjelp','Support']){await menu.getByRole('button',{name:label,exact:true}).click();eq(await page.evaluate(()=>window.navCalls.at(-1)),label==='Hjelp'?'hjelp':'support','same help/support callback '+label+' '+width);await button(/Prosjektmeny/).click();}
+   await dismissDialog(menu);
+  }
+  if(process.env.PROJECT_UX_SCREENSHOTS)await page.screenshot({path:path.join(process.env.PROJECT_UX_SCREENSHOTS,'project-final-'+width+'.png'),fullPage:true,animations:'disabled'});
+ }
+ await page.evaluate(()=>window.setProjectName('Prosjekt med en lang tittel for flere bygg og arbeidsområder '+ 'Elveparken'.repeat(12)));
+ for(const width of [1920,1181,390,320]){await resize(width);eq(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'long project title fits '+width);eq(await page.locator('.project-workspace-heading').evaluate(e=>e.scrollWidth<=e.clientWidth+1),true,'long project title is not clipped '+width);}
+ for(const height of [480,320]){
+  await page.setViewportSize({width:320,height});await page.getByLabel('Kladd',{exact:true}).evaluate(e=>e.scrollIntoView({block:'center'}));await page.getByLabel('Kladd',{exact:true}).focus();
+  const field=await page.getByLabel('Kladd',{exact:true}).boundingBox(),bar=await page.locator('.project-field-bar').boundingBox();
+  eq(field.y+field.height<=bar.y+1,true,'focused work remains above mobile tools '+height);
+  eq(bar.y>=0&&bar.y+bar.height<=height,true,'mobile tools fit short screen '+height);
+  eq(await page.getByLabel('Kladd',{exact:true}).inputValue(),'Arbeidet mitt','short screen preserves draft '+height);
+ }
  eq(errors,[],'no React or DOM exceptions');
  console.log('Project workspace browser QA: PASS ('+checks+' assertions) — full-screen dialogs, drafts, native callbacks, cancellation, responsive sizes, simple/direct/new projects and read-only support');
 }finally{await browser?.close();await new Promise(resolve=>server.close(resolve));fs.rmSync(temp,{recursive:true,force:true});}
+
+// Native project checklist panel is part of this same project-navigation package.
+await import('./project-checklist-panel-browser-check.mjs');
+
+await import('./project-common-frame-browser-check.mjs');
+
+await import('./project-compact-header-browser-check.mjs');

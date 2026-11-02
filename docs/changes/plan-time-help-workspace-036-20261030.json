@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Samlet planlesing, frivillig timeføring og søkbar konteksthjelp etter 03.6",
+  "change": "Miljømål BEGGE, bare eksisterende design-Preview. Lesere kan velge alle lagrede planperioder uten redigerings- eller lagringshandlinger. Min side viser Mine timer og timekort først etter ferskt time_tasks_get med enabled=true. Eksisterende firmaadminoppsett og separat mobilsnarvei beholdes. Samme scopes navigasjon og native timekladd beholdes under kontroll; både innhold og portaler skjules til ferskt svar. Avslått funksjon/42501 fjerner inngangen; andre lesefeil tilbyr kontroll igjen. Felles 03.6-panelramme omfatter native time- og planpaneler. Eksisterende søkbare hjelpetemaer får de faktiske knappene/flytene før gruppering og tilgangsfilter; én felles oppdateringsdato. Ingen database, authpolicy, timerkommandoer, lagringsmotor, global meny eller sending endres. Bolig-kjernearbeid følger isolert PR294.",
+  "verification": "Lokalt: planleser159 Chromium assertions PASS; timeopt-in63 PASS med fem bredder320/390/768/1363/1920, off/on/off, lesefeil/retry, native editor/DOM/usendt RAM-kladd, tilbakekalt tilgang og sent firmabytte, null skriveroperasjoner. Time-editorens faktiske mobil/PC-skjermbilder visuelt inspisert. Ny geometritest fant arvet mobil section-margin som skjøv panelet under skjermen; avgrenset panelregel korrigert før grønn kontroll. Full app-UX1706=122+89+51+1031+63+153+197PASS, prosjekt/Personal253, timeReact91, PersonalReact og HR/register/hjelpesøkPASS. Hjelp søker den nye kundevisningsteksten og avviser utilgjengelig Sales-tema. Eksisterende på-fixturer endres fra enabled=false til true fordi de tester en aktiv timeinngang; nye av-tester dekker motsatt kontrakt. Full critical/build, eksakt CI/deploy og innlogget kontroll føres i PR295; ikke en attest på alle helappreiser. En kildeassertion i critical-hr-purge følger nå den faktiske appendWorkspaceHelp→groupHelpTopics-innpakningen; alle opprinnelige13 KS-/4 HR-kapitler, innhold og gruppesjekker beholdes. Første nettfeil på I dag har eksplisitt retry, i tillegg til feil i åpent timearbeid. CI783 stopper i gammel kontaktpåminnelsesfixtures eksakte RPC-liste, ikke i app-UX. Gjenskapt på ny kandidat; diagnostikken viser bolig_my_attendance, project_progress_mine og bolig_my_project_tasks som ukjente lesekall. Fixturen svarer nå eksplisitt42501 for de tre leserne og avviser fortsatt alle andre uventede kall; alle57 opprinnelige assertions PASS. Førre7ea-kilde er kontrollert separat og besto kontaktprøven lokalt. Ingen produktrettelse eller workflowendring for denne testårsaken. Innlogget planpanel viste inntrukket topp og nesten hvit hinttekst: bred mørk-kort-p-regel traff native underdialogen. Kortregelen er nå avgrenset til faktisk korttekst; sidepanelet får egen scrollbody under den felles rammen. Nye21 planassertions verifiserer fire bredder, kant/scroll, lesbar tekst og lesende periodeetikett; samlet159PASS. Nye mobil/PC-bilder visuelt inspisert. Personal1031+time63 og full critical/buildPASS på sluttkilden. Fersk full CI kreves etter endringen. Siste innloggede planprøve viste at senere lastet Personal-kortstil fortsatt vant fargen på hintet. Den felles hintregelen har nå eksplisitt prioritet innen native planbody, så mørk lesetekst ikke avhenger av CSS-lastingsrekkefølge. Plan159 og full critical/build er kjørt på denne sluttregelen; eksakt livefarge bekreftes etter deploy.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "Faktiske plan-, time-, verktøy- og kundevisningsinnganger må være søkbare med bevart rollefilter."
+    },
+    "architecture": {
+      "required": true,
+      "reason": "Ny personlig lesegate eier kun inngangsfaktum, mens native timearbeidsflate fortsatt eier kladd og kommandoer."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen ny avhengighet, installasjon, miljøbinding eller ny administratorinnstilling."
+    },
+    "module": {
+      "required": true,
+      "reason": "Time-modulkontrakten beskriver scoped gate, portalplassering, frisk lesing og reell av/revokering."
+    }
+  }
+}

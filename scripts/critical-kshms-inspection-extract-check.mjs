@@ -64,7 +64,7 @@ const source=fs.readFileSync('src/modules/kshms/KshmsInspectionExtract.jsx','utf
 const module=fs.readFileSync('src/modules/kshms/KshmsModule.jsx','utf8');
 // Authorized extraction now remains mounted while hidden to retain the cart.
 assert(module.includes("canManage&&(screen==='extract'||extractOpened)"));
-assert(module.includes("hidden={screen!=='extract'}")&&module.includes("active={screen==='extract'}"));
+assert(module.includes("hidden={screen!=='extract'}")&&module.includes("active={!workspaceOverview&&screen==='extract'}"));
 assert(source.includes('!active||!context.enabled||!context.manage')&&source.includes('sequence.current++'));
 assert.equal(new Set(selection.map(extractKey)).size,8);
 console.log('critical-kshms-inspection-extract-check: PASS - explicit eight-type selection/manifest, exhaustive RUH history/private images, exact final snapshots and role/access, no mutation or staff/draft/token leak');

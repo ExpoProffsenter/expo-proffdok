@@ -9,7 +9,7 @@ const {JSDOM}=await import(process.env.KSHMS_JSDOM_PATH||'jsdom');
 const dir=process.cwd(),temporary=fs.mkdtempSync(path.join(os.tmpdir(),'kshms-sources-')),entry=path.join(temporary,'entry.jsx');
 try {
  fs.writeFileSync(entry,`import React,{act} from '${dir}/node_modules/react/index.js';import {createRoot} from '${dir}/node_modules/react-dom/client.js';import Module from '${dir}/src/modules/kshms/KshmsModule.jsx';import Overview from '${dir}/src/modules/kshms/KshmsAssignmentReminders.jsx';const root=createRoot(document.getElementById('app'));globalThis.__act=act;globalThis.__render=(kind,p)=>root.render(React.createElement(kind==='overview'?Overview:Module,p));globalThis.__unmount=()=>root.render(null);`);
- const unrelated=/\/(KshmsDeviations|KshmsChecklistCentral|KshmsExecutions|KshmsSja|KshmsInspectionExtract|KshmsRoutineLibrary|KshmsRoutineSearch|KshmsAcknowledgments|KshmsPersonalHandbook|KshmsDocumentPdfButton)\.jsx$/;
+ const unrelated=/\/(OrganizationChart|KshmsProgressPlans|KshmsDeviations|KshmsChecklistCentral|KshmsExecutions|KshmsSja|KshmsInspectionExtract|KshmsRoutineLibrary|KshmsRoutineSearch|KshmsAcknowledgments|KshmsPersonalHandbook|KshmsDocumentPdfButton)\.jsx$/;
  const bundled=await build({root:dir,configFile:false,logLevel:'silent',define:{'process.env.NODE_ENV':'"development"'},build:{write:false,minify:false,lib:{entry,formats:['iife'],name:'SourceProof',cssFileName:'source-proof'}},plugins:[react(),{name:'transport-and-unrelated-surfaces',enforce:'pre',resolveId(id){if(/kshmsAccess\.js$/.test(id))return '\0rpc';if(/moduleAccessClient\.js$/.test(id))return '\0access';if(unrelated.test(id))return '\0surface';},load(id){if(id==='\0rpc')return 'export const kshmsRpc=(...a)=>globalThis.__rpc(...a);';if(id==='\0access')return 'export const publishManagedAccessChange=()=>{};';if(id==='\0surface')return 'export default function(){return null;}';}}]});
  const dom=new JSDOM('<div id="app"></div>',{url:'https://example.invalid',runScripts:'outside-only',pretendToBeVisual:true});
  try {
@@ -22,6 +22,7 @@ try {
   window.__rpc=async(name,args)=>{
    assert.equal(args.p_company_id,company);
    if(name==='kshms_get_state')return {context,settings:{revision:1,trades:['vvs'],responsible_user_id:user,next_review_on:'2027-09-01'},routines:[],versions:[],assignments:[],acknowledgments:[],reviews:[],members:[]};
+   if(name==='kshms_execution_tasks')return {company_id:company,user_id:user,count:0,overdue:0,items:[]};
    if(name==='kshms_review_task')return {company_id:company,user_id:user,as_of:'2026-10-09',task:null};
    if(name==='kshms_assignment_reminder_tasks'){if(pending)return new Promise(resolve=>pending.push(resolve));if(readError)throw readError;return {company_id:company,user_id:user,as_of:'2026-10-09',groups:offered};}
    writes.push(name);throw Error('No write allowed from reminder');
@@ -41,7 +42,7 @@ try {
   await act(async()=>window.__render('overview',{...props,context:{...context,company_id:'foreign'}}));await act(async()=>pending[0]({company_id:company,user_id:user,as_of:'2026-10-09',groups}));assert(!window.document.body.textContent.includes('Åpne SJA (1)'));
   await act(async()=>window.__unmount());pending=null;await act(async()=>window.__render('overview',{...props,context:{...context,enabled:false}}));assert.equal(window.document.querySelector('[aria-label="Dine oppgaver til oppfølging"]'),null);await act(async()=>window.__unmount());
   // Verify the actual parent integration, not only callback mappings.
-  await act(async()=>window.__render('module',{context}));await click('Åpne SJA (1)');assert.equal(button('SJA').getAttribute('aria-pressed'),'true');await click('Åpne Les og bekreft (3)');assert.equal(button('Les og bekreft (0)').getAttribute('aria-pressed'),'true');assert.equal(writes.length,0);
+  await act(async()=>window.__render('module',{context}));await click('Åpne SJA (1)');assert.equal(window.document.querySelector('[aria-label="Velg KS/HMS-visning"]').value,'sja');await click('Åpne Les og bekreft (3)');assert.equal(window.document.querySelector('[aria-label="Velg KS/HMS-visning"]').value,'reading');assert.equal(writes.length,0);
   await act(async()=>window.__unmount());
  } finally {dom.window.close();}
 } finally {fs.rmSync(temporary,{recursive:true,force:true});}

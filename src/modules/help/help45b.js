@@ -1,6 +1,7 @@
 import React from "react";
+import {HELP_UPDATED_LABEL} from './workspaceHelp.mjs';
 
-const UPDATED = "Sist oppdatert: 27.10.2026";
+const UPDATED = HELP_UPDATED_LABEL;
 
 function List({ items = [] }) {
   return React.createElement(
@@ -13,6 +14,14 @@ function List({ items = [] }) {
 export function createHelp45BSection({ Section }) {
   return function Help45BSection({ isSystemAdmin = false, isCompanyAdmin = false }) {
     const workflow = [
+      "Startsiden samler Forespørsel og befaring, Tilbud, Varesøk og bestilling, Prosjekter, HR og HMS/KS og Sjekklister. Du ser bare snarveier til funksjoner du har tilgang til. Min side viser din egen arbeidsdag. Varsler og prosjektoppfølging beholdes under snarveiene.",
+      "Verktøy og maler åpner et panel fra høyre med handlinger for arbeidsflaten. Lukk med krysset, Escape eller Tilbake til arbeidet. Utvid arbeidsflaten gir et bredere panel. Å åpne og lukke panelet lagrer eller endrer ikke arbeidet.",
+      "I en salgssak ligger arbeidet til venstre og Kundens tilbud til høyre på PC. På mindre skjermer trykker du Kundevisning for å åpne lesefeltet. På PC kan du velge Utvid kundevisning. Tilbake til arbeidet eller Escape lukker det store panelet. Det du arbeider med blir stående.",
+      "Kundens tilbud viser grunnlaget som er lagret på saken. Lagre endringer før du kontrollerer dem her. Etiketten forteller om du ser lagret kladd, publisert kundetilbud eller låst akseptert tilbud. Lesefeltet er skrivebeskyttet. Å åpne det publiserer eller sender ikke tilbudet og registrerer ingen nye kundevalg. For eldre publiserte tilbud hentes den lagrede kundeversjonen separat. Får du en hentefeil, trykk Prøv kundevisningen igjen. Hvis versjonen eller tilgangen er endret, gå tilbake til sakslisten og åpne saken på nytt.",
+      "Verktøy og maler inne i saken samler handlinger for samme kunde og tilbud, som Rediger kunde, Planlegg befaring og Arbeid med tilbudet. Handlingene følger hvor langt saken har kommet. Velg Tilbake til saken fra en editor eller Tilbake til oversikten fra saksvisningen når disse handlingene vises.",
+      "I tilbudsbyggeren kan Verktøy og maler ta deg til Tilbudsmaler eller Lagre tilbudet som mal. Bruk en mal i kladden, gjør endringene og velg Lagre som mal med ønsket navn. Kunde og adresse beholdes. Dette sender ikke tilbudet. Sletting av mal krever den eksisterende bekreftelsen.",
+      "Sjekklistemaler på startsiden åpner firmaets sjekklistesentral for dem som kan vedlikeholde maler. Velg Rediger sjekkliste, lagre utkast og publiser når den er klar. Prosjektsjekklister åpner prosjektlisten: velg prosjektet og deretter Sjekklister. En publisert mal endrer ikke kopier som allerede brukes i prosjekter.",
+      "I Generelt tilbud er varenavn, antall, enhet og pris lett tilgjengelig. Åpne Varenummer, NOBB og produktlenke eller Bilde og vedlegg ved behov. Lagrede bilder og vedlegg vises fortsatt. Montering og opsjoner bruker de samme handlingene som før.",
       "Alle med proffkatalogtilgang kan bruke Varesøk og Varebestilling i hovedmenyen. Interne Ringside/Expo-brukere med Prissøk finner Varebestilling rett under Prissøk, før Firmaprofil, og som Åpne varebestilling inne i Prissøk. Finn en vare og velg den for å legge den i bestillingen. Antallsfeltet får fokus. Bruk +/−, piltastene eller skriv antallet. Trykk Enter i antallsfeltet for å åpne et nytt varesøk under varelinjene. Enter i søket velger første treff.",
       "Velg eller skriv inn mottakeradresse. Lagre mottaker gjør adressen tilgjengelig for senere bestillinger i firmaet. Fyll ut leveringsadresse og velg om tidspunktet skal avtales eller om du ønsker dato og klokkeslett (norsk tid).",
       "Trykk Se over bestillingen og kontroller varene og mottakeren før Send bestilling. Bestillingsmailen har Cordel ASCII og Excel med samme varer og antall, og ber mottakeren sende ordrebekreftelse med leveringstidspunkt til bestillerens registrerte e-postadresse.",
@@ -37,11 +46,11 @@ export function createHelp45BSection({ Section }) {
       "Kun Systemadministrator kan aktivere Generelle tilbud / Proff-vareregister for et firma. Tilgangen gjelder automatisk alle nåværende og nye brukere i firmaet. Enkel ordre velges først etter kundeaksept.",
       "Tilgang til Expo ProffDok forutsetter at virksomheten oppfyller gjeldende brukervilkår, inkludert SoPro-forutsetningen."
     ];
-    const companyAdminGuide = "Firmaadmin viser firmaet du har valgt øverst. Velg e-post, rolle og moduler i Legg til ansatt før du trykker Inviter ansatt. Valgene vises under Inviterte brukere og settes for en ny bruker ved bekreftet registrering. Eksisterende kontoer beholder hovedmodulene sine; KS/HMS og HR følger de nye firmavalgene. Med HR valgt legges brukeren automatisk til i firmaets HR-register når kontoen er aktiv og registeret er satt opp. Eksisterende medarbeider og leder beholdes. Velg ellers nærmeste leder i HR etterpå. Tilgangene kan senere endres på samme brukerkort. En vanlig proffkunde administrerer bare sitt eget firma. Trykk Lagre tilgang for hovedmoduler og Lagre KS/HMS- og HR-tilgang for firmatilgang. Hovedmoduler gjelder kontoen; KS/HMS og HR gjelder firmaet på siden. Systemadmin kan legge til et ekstra internt arbeidsfirma uten å flytte primærfirma eller historikk. Kontostatus gjelder alle firmaer og styres av systemadministrator.";
+    const companyAdminGuide = "Firmaadmin viser firmaet du har valgt øverst. Når du åpner invitasjonsskjemaet på PC, ligger det ved siden av Brukere og tilganger. På mobil kommer de under hverandre. Åpne Inviter en ansatt · velg rolle og tilganger. Velg e-post, rolle og moduler i Legg til ansatt før du trykker Inviter ansatt. Boligprosjekter – brukertilgang kan foldes ut over oversikten. Boligtilganger lagres med en gang når du endrer dem. Valgene vises under Inviterte brukere og settes for en ny bruker ved bekreftet registrering. Eksisterende kontoer beholder hovedmodulene sine; KS/HMS og HR følger de nye firmavalgene. Med HR valgt legges brukeren automatisk til i firmaets HR-register når kontoen er aktiv og registeret er satt opp. Eksisterende medarbeider og leder beholdes. Velg ellers nærmeste leder i HR etterpå. Tilgangene kan senere endres på samme brukerkort. En vanlig proffkunde administrerer bare sitt eget firma. Trykk Lagre tilgang for hovedmoduler og Lagre KS/HMS- og HR-tilgang for firmatilgang. Hovedmoduler gjelder kontoen; KS/HMS og HR gjelder firmaet på siden. Systemadmin kan legge til et ekstra internt arbeidsfirma uten å flytte primærfirma eller historikk. Kontostatus gjelder alle firmaer og styres av systemadministrator.";
     const admin = isSystemAdmin
       ? [
           companyAdminGuide,
-          "Systemadmin administrerer firma, brukere, roller, modultilganger, prisinnsyn og proffleverandører fra Systemadmin → Firmaer, brukere og tilganger.",
+          "Systemadmin har ni arbeidsområder i tre grupper: Oppfølging, Forvaltning og Informasjon og drift. Velg et område for å åpne dagens funksjoner. Når et område er åpent, kan du bytte med områdeknappene eller gå tilbake til Oversikt. Velg Firmaer og prosjekter for firmatilgang og prosjektstøtte. Velg Brukere og roller for godkjenning, roller, moduler, prisinnsyn og proffleverandører. På PC ligger hovedområdene i toppmenyen. Alle områder åpner hele den tilgjengelige menyen, inkludert Firmaadmin og Systemadmin når du har tilgang. På mindre skjermer bruker du den vanlige menyen. Fullskjermvisning skjuler toppfeltet og hovedmenyen; Vanlig visning tar dem tilbake.",
           "Firma på brukerkortet viser brukerens lagrede firma også når navnet har ekstra mellomrom eller ulik bruk av store og små bokstaver. Velg et annet registrert firma og bekreft for å flytte brukeren. Å velge samme firma på nytt endrer ingenting.",
           "«Generelle tilbud / Proff vareregister» aktiveres én gang på firmaet og gjelder alle firmaets brukere. Enkel ordre er ikke en egen modultilgang, men et valg etter kundeaksept.",
           "Brukervilkårstatus vises separat fra firmaets leverandørtilgang og brukerens modultilgang. Brukeren må fortsatt godkjenne gjeldende vilkår i den ordinære innloggingsflyten.",
@@ -56,7 +65,7 @@ export function createHelp45BSection({ Section }) {
 
     return React.createElement(
       Section,
-      { title: "🛒 Proff vareregister, Generelt tilbud og Enkel ordre" },
+      { title: "Proff vareregister, Generelt tilbud og Enkel ordre", className:"help-reference-workspace" },
       React.createElement(
         "details",
         { className: "module-guide ux-reference helpCommerceReference", style: { borderColor: "#b9dde2", background: "#f8feff" } },
@@ -72,3 +81,4 @@ export function createHelp45BSection({ Section }) {
     );
   };
 }
+

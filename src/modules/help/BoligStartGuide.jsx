@@ -1,5 +1,6 @@
 import React, { useState, useRef } from "react";
 import Dialog from "../bolig/BoligEditorDialog.jsx";
+import BoligGuidePanel from "./BoligGuidePanel.jsx";
 const steps = [
   {
     "title": "Bygg prosjektet",
@@ -171,7 +172,7 @@ export default function BoligStartGuide() {
     <>
       <button
         type="button"
-        className="bolig-start-guide-button"
+        className="bolig-start-guide-button bolig-guidance-trigger"
         onClick={() => {
           setStep(0);
           setImage(false);
@@ -181,7 +182,7 @@ export default function BoligStartGuide() {
         A–Å-veiledning for Boligprosjekter
       </button>
       {open && (
-        <Dialog
+        <BoligGuidePanel open={open}
           title="A–Å-veiledning for Boligprosjekter"
           onClose={() => {
             setOpen(false);
@@ -283,7 +284,7 @@ export default function BoligStartGuide() {
               />
             </Dialog>
           )}
-        </Dialog>
+        </BoligGuidePanel>
       )}
     </>
   );

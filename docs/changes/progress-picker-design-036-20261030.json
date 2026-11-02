@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Native arbeidsoperasjonsvelger i felles03.6-høyrepanel",
+  "change": "Miljømål BEGGE, bare PR295/Preview. OperationPicker bruker eksisterende PlanDialog side-prop og native ks-plan-drawer-body. Scoped screen-CSS gir denne navngitte velgeren680px/fullhøyde/navy header28/25px og16px/44px søk, fag, kodevalg og undergrupper. Native kladd, søk/filter, add/save-kommandoer, modalitet, fokusretur og bodylocks beholdes. Ingen endring i hovedplanens tidslinje eller lagrings-/tilgangs-/rolle-/PDF-/epostmotor.",
+  "verification": "Innlogget92afd1e7 avdekket midtstilt720px velger med14px felt. Førrettelsesprøven med faktisk Board,13 native standardoperasjoner, fulle app-/mobil-/workspace-stiler og sent APP_RUNTIME_STYLES feiler på320px top37!=0. Ny utvidet native layoutprøve212 assertions over tidligere sju planvisninger og seks velgervinduer320/390/768/1363/1920 samt320x320; alle tidligere krav beholdt. Rettelsen bevarer eksakt felt-DOM/søk gjennom disclosure, Escape/fokusretur/ren plan og faktisk valg av både NS332 og standard Tildekking til usendt native kladd. Mellomprøvene avdekket mobile17px/40px felt og39px closeknapp; samme16/44krav er beholdt og CSS er rettet. Eksisterende prosjektplanReact39 og KS-planReact159PASS; full eksplisitt Sandbox critical/buildPASS, final CSS-build/CI/live føres i PR295. Tidligere appkandidatf678d343 har fullCI808SUCCESS10/10. Før ny publisering er eksisterende VVS-plan faktisk eksportert fra appen:6 planPDF-sider/8 bemanningsPDF-sider visuelt inspisert,21 oppgaver/79dager/282 kalenderperioder. Uavhengig ekspansjon av PDFens perioder/personantall uten søndager stemmer mot alle CSV-/bemanningsPDF-/ICS-dager: topp23personer/6408persontimer, unikeUID-er/Oslo-tid og alle14sideføtter. Dette er avgrenset faktisk eksportbevis for denne syntetiske lagrede planen, ingen attest på alle roller/enheter eller virkelig kalenderimport. Eksakt slutt-SHA/fullCI og innlogget nyvelger føres i PR295.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Samme knapp, søk og valg til samme editor; bare native panelpresentasjon endres. Eksisterende konkrete planhjelp beholdes."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Eksisterende PlanDialog/draft/save/authorization/transport eiere beholdes; bare eksisterende side-prop og scoped CSS."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen installasjon, avhengighet, miljø eller workflow endres."
+    },
+    "module": {
+      "required": true,
+      "reason": "UI README beskriver operasjonsvelgerens native ramme og testkaskade."
+    }
+  }
+}

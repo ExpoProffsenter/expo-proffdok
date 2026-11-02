@@ -1,0 +1,21 @@
+/* Internal supplier-order presentation. Native form, snapshot and retry owners stay intact. */
+@media screen {
+ body:has([data-expo-app-shell="true"]) .supplierOrderPanel{margin:16px 0;padding:20px;border:1px solid #d5e3e9;border-radius:8px!important;background:#fff!important;color:#10212b;box-shadow:none;min-width:0;overflow-wrap:anywhere}
+ body:has([data-expo-app-shell="true"]) .supplierOrderPanel h3{margin:0 0 12px;font-size:24px!important;line-height:1.25;font-weight:600}
+ body:has([data-expo-app-shell="true"]) .supplierOrderPanel :is(label,p,legend,th,td){font-size:16px!important;line-height:1.45}
+ body:has([data-expo-app-shell="true"]) .supplierOrderPanel small{font-size:14px!important;line-height:1.45}
+ body:has([data-expo-app-shell="true"]) .supplierOrderPanel :is(button,select,textarea,input:not([type="checkbox"])){min-height:45px!important;max-width:100%;box-sizing:border-box;font-size:16px!important;border-radius:6px!important;transform:none!important;box-shadow:none}
+ body:has([data-expo-app-shell="true"]) .supplierOrderPanel button:not(.secondary){background:#007681;color:#fff;border-color:#007681}
+ body:has([data-expo-app-shell="true"]) .supplierOrderPanel button.secondary{background:#fff;color:#205260;border:1px solid #a9c1cd}
+ body:has([data-expo-app-shell="true"]) .supplierOrderFields{gap:12px;grid-template-columns:repeat(2,minmax(0,1fr))}
+ body:has([data-expo-app-shell="true"]) .supplierOrderFields>label{min-width:0}
+ body:has([data-expo-app-shell="true"]) .supplierOrderPanel .supplierOrderCheck{min-height:45px;align-items:center}
+ body:has([data-expo-app-shell="true"]) .supplierOrderPanel input[type="checkbox"]{width:20px!important;height:20px!important;min-width:20px!important;min-height:20px!important;flex:none;accent-color:#007681}
+ body:has([data-expo-app-shell="true"]) .supplierOrderItems{padding:12px;border:1px solid #d5e3e9;border-radius:8px;background:#f7fbfc}
+ body:has([data-expo-app-shell="true"]) .supplierOrderTable{max-width:100%;overscroll-behavior-inline:contain}
+}
+@media screen and (max-width:700px){
+ body:has([data-expo-app-shell="true"]) .supplierOrderPanel{padding:16px}
+ body:has([data-expo-app-shell="true"]) .supplierOrderPanel h3{font-size:22px!important}
+ body:has([data-expo-app-shell="true"]) .supplierOrderFields{grid-template-columns:minmax(0,1fr)}
+}

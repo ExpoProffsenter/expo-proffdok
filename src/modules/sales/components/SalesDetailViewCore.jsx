@@ -130,6 +130,8 @@ export default function SalesDetailView({
   sendOfferEmail,
   setSelectedInspectionPhoto,
   summary,
+  customerPreview,
+  workspaceTools,
 }) {
     const workflowSteps = getWorkflowSteps(selectedRequest);
     const customerAddress = [
@@ -336,6 +338,7 @@ export default function SalesDetailView({
               </div>
 
               <div className="sales-hero-actions">
+                {workspaceTools}
                 {["Forespørsel", "Befaring", "Tilbud"].includes(selectedRequest.status) ? (
                   <button
                     className="sales-secondary-button"
@@ -430,6 +433,8 @@ export default function SalesDetailView({
               </div>
             </section>
 
+            <div className={customerPreview ? "sales-case-workspace" : undefined}>
+            <div className={customerPreview ? "sales-case-work-content" : undefined}>
             <section className="sales-workflow" aria-label="Arbeidsflyt">
               {workflowSteps.map((step) => (
                 <div className={`sales-workflow-step sales-workflow-${step.state}`} key={step.label}>
@@ -1470,6 +1475,9 @@ export default function SalesDetailView({
                 </article>
               ) : null}
             </section>
+            </div>
+            {customerPreview}
+            </div>
           </main>
         </div>
         {selectedInspectionPhoto?.dataUrl ? (

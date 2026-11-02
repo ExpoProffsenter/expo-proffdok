@@ -1531,14 +1531,11 @@ Pilkontrollene har egen enkolonnet meny-layout og ruller dokumentet via window.s
 
 Mobil 13. oktober: topp/bunn-kontrollen er flyttet til felles MobileScrollShortcuts i den autentiserte appskallet; én kontroll uansett valgt modul, mens isolert kundevisning har sin egen. SalesMobileTools beholder bare kundevisningsdialogen. Mobil startboks er avgrenset til tab=prosjekt uten valgt/nytt prosjekt, slik at HR/KS/HMS/profil/øvrige moduler åpner uten startboksen. Kun presentasjon, ingen endring i navigasjonshandlere, recovery, lagring, tilgang eller e-post. Permanent sjekk bruker faktisk rendererbetingelse; touch-QA på modulbytte/HR/KS/HMS/profil/Startsiden og eksisterende tilbudskontroller.
 
-
-13.10.2026 – Godkjent TEST OK: main f0e74ce4 / PR #242 synkronisert kontrollert main→demo. Sjekklistesentralen viser én samlet våtromsliste (33 punkter), separate faglister og prosjekteringsmal (13 punkter). Vanlige kilder kan redigeres som firmaversjoner; garantikilder er låst uten redigering/sletting/kopiering. Prosjekteringssjekklisten fylles ut nederst i Prosjektering. Alle prosjekttyper har + Legg til sjekkliste under Sjekklister. Eksisterende svar/historikk og demo-overlay beholdes; ingen DB-/e-postendring. Full critical/build, React kladd/retry/konflikt/historikk og faktisk render-rekkefølge grønne.
-
-
-Kontrollørtilgang godkjent TEST OK 13. oktober 2026 kl. 16:39 norsk tid, PR #243 main 308e5813a3074e86f5947dd314a28501890a7539. Separat leselenke med valgt utløp, tilbakekalling, alle tekniske sjekklister/prosjektering og manuell e-post med samme tilbudslayout/firmalogo. Ingen automatisk sending ved opprettelse/endring. controller-access-email krever JWT og gyldig intern prosjekt-/firmatilgang samt aktiv kode. Produktionsmigrasjon og mailer aktivert; Core Safety 38414228613 SUCCESS og critical/React/mail QA grønne uten ekte e-postutsending. Kontrollert main→demo-delta med demo-overlay bevart; sandbox-mailer og controller-RPC-er allerede deployet. Rutine-e-post forblir deaktivert.
+Sjekklistesentral 13. oktober: eksisterende prosjektmaler/fagpunkter/Sopro-garantipunkter, produktmasterens kontrollpunkter og egne lister fra firmaets tilgjengelige prosjekter vises i et felles bibliotek. Kun definisjoner hentes, ingen prosjektbesvarelser/kundedata. Firmatilgang kontrolleres før/etter lesing, RLS/firmascope beholdes, paginering og sene svar beskyttes. Vanlige kilder åpnes som en separat firmaversjon via eksisterende bygger/publisering. Garantikilder har ingen redigering, sletting eller kopiering, og garantimalene deles med Prosjekt som samme frosne kildedata. Eksisterende prosjektsvar og garantilogikk er uendret. «+ Legg til sjekkliste» ligger under Sjekklister for både små og våtromsprosjekter; våtrom beholder også inngang fra Fag/utstyr. Full QA og Preview før ny TEST OK; BEGGE.
 
 
-Scrollrettelse godkjent TEST OK 13.10.2026 kl. 17:02 norsk tid, PR #244 main d95f14c80e2a87bd4fed4e31cf47f712c3c2ca48. Vanlig fokus/Windows-utklipp gjenoppretter ikke stale scroll; faktisk skjult side kan gjenopprette posisjonen, og tastatur/mus/touch/hjul/blur/unmount avbryter gjentakelser. Full critical/build og Core Safety 38418142446 SUCCESS; seks runtime-scenariofaner grønne. Kun scroll-effekt, ny helper og test/docs; autosave, Sales recovery, backend og e-post urørt. main→demo, overlay bevart og kontrollsidens baseline oppdatert.
+13.10.2026 – Preview-korrigering: Våtrom har én samlet redigerbar firmaversjon med alle sju arbeidsområder; øvrige fag har hver sin liste. Arbeidsområdet følger punktets hjelpetekst i byggeren. Ingen punkter fjernes. Garantipunkter er fortsatt uforanderlige og kan ikke kopieres til redigerbare firmaversjoner. Redigeringsinngangen heter «Rediger som firmaversjon». Eksisterende prosjektutfyllinger beholdes. Avventer ny TEST OK.
+
 
 13.10.2026 – Prosjektering Preview: egen samlet kontroll med 13 prosjekteringspunkter nederst i Prosjektering. Gjenbruker ProjectChecklistWorkspace og eksisterende bekreftet serverlagring, lokal kladd, historikk, Ok/Avvik/Ikke aktuelt og egen PDF. Stabil egen kategori skiller svar fra utførelses-/garantikontroller. Låste/lesetilgang/support får samme sperrer. Eksisterende prosjekteringsfelt, egne punkter og tegninger beholdes. Ingen database-/e-postendring. Avventer TEST OK.
 
@@ -1884,3 +1881,17 @@ retry. Kumulative a konto-perioder trekker bare fra tidligere hovedstol; periode
 indeks bruker eksakt numeric på ny hovedstol. Se
 `docs/qa/BOLIG_FAKTURERT_OG_AKONTO_20261024.md`. Ingen eksisterende fakturakjerne,
 produksjonsdatabase eller e-postmotor endres.
+
+
+### Samlet rapport: fullførte prosjektkontroller (31.10.2026)
+
+Rapporthooken eier eksplisitt valg og frosset råsett fra eksisterende `project_checklist_state`, uavhengig av kjøpt KS/HMS for denne prosjektgruppen. KS/HMS-lesningene beholder sine egne tilgangsgater. `projectControlReport.mjs` validerer fullførte rader, gjenbruker den native kontrollmapperen og klargjør bilder med eksisterende filresolver. Backend/signering og historikkens eierskap endres ikke. Hooken leser hele valgt sett på nytt etter klargjøringen; `createReportTools` kaller samme verifikasjon rett før PDF-save og før begge utskriftsveiers HTML-skriving. Hele snapshot samt scope/eksportsekvens må fortsatt stemme. Feil avviser eksporten uten ny signering eller rapportrelatert tilgangstildeling.
+
+
+### Hjelpens videoer (31.10.2026)
+
+`HelpVideos.jsx` eier kun galleri-/avspillingsvindu og native HTML-video, uten ny navigasjon eller backend. Katalogen har versjonerte statiske eksempelressurser, kildehash og kapitler fra filmens redigerbare tidslinje. Eksisterende Hjelp-/Bolig-kontekst styrer presentasjonen; Sandbox-prøvefilm følger samme miljøavgrensning som funksjonen. Bruker-/firma-/rettighetsendring monterer ned avspilleren. Native dialoger beholder teksthjelp og arbeid under, mens film avsluttes ved lukking. Filmene er offentlige syntetiske opplæringsressurser, ikke private vedlegg eller et nytt tilgangssystem.
+
+### Felles appmeny i prosjektarbeidsflaten (Design 036, Preview)
+
+Prosjektfaner (`projectTabs`) og globale funksjoner (`globalTabs`) er fortsatt separate. I ordinær prosjektvisning rendrer React en egen skjult, tilgangsfiltrert hovedmenykilde. Desktopadapteren viser samme hovedområder/Alle områder som i salg; den kopierer ikke gamle tilgangsvalg fra annen kontekst. Globalt valg delegeres til `leaveProjectWorkspace`, som beholder ulagret-kontrollen, opprinnelig opprydding og en ekstra kontroll av bruker/firma/prosjekt/fane etter venting. Systemadmin-support får ikke denne hovedmenykilden og beholder avgrenset supportretur. Prissøk bruker samme kontrollerte avslutning før sitt eksisterende tilgangskontrollerte arbeidsområde åpnes. På mobil ligger globale områder som egen gruppe i prosjektmenyen. Ingen ny lagrings- eller tilgangsmotor.

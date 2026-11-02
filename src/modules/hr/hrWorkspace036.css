@@ -1,0 +1,132 @@
+/* HR workspace 03.6: scoped presentation; native access and command flows own
+   every action. Personal audience intentionally retains its existing surface. */
+body:has([data-expo-app-shell="true"]) .hr-workspace-036.hr-module{max-width:none;padding:0;color:#172f35}
+body:has([data-expo-app-shell="true"]) .hr-workspace-036.hr-module>header.hr-heading{position:static;min-height:0;padding:0 0 16px;margin:0;border:0;border-radius:0;background:none;box-shadow:none}
+body:has([data-expo-app-shell="true"]) .hr-workspace-036.hr-module>header.hr-heading h2{font-size:var(--pd-title,32px);font-weight:600;line-height:1.2;letter-spacing:-.7px;color:#10212b;margin:6px 0}
+.hr-workspace-036.hr-module .hr-workspace-036-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 22px;padding:0 0 14px;border-bottom:1px solid #d7e4ea}
+.hr-workspace-036.hr-module .hr-workspace-036-actions>button:last-child{margin-left:auto}
+.hr-workspace-036.hr-module .hr-workspace-036-main{display:grid;grid-template-columns:minmax(260px,.72fr) minmax(0,2.05fr);gap:24px;align-items:start}
+.hr-workspace-036.hr-module :is(.hr-register-036,.hr-followup-036){min-width:0}
+.hr-workspace-036.hr-module .hr-register-036{grid-column:2;grid-row:1}
+.hr-workspace-036.hr-module .hr-followup-036{grid-column:1;grid-row:1;border:1px solid #d1e3ea;border-radius:10px;background:#e9f2f5;padding:20px;scroll-margin-top:170px}
+.hr-workspace-036.hr-module .hr-followup-036-intro{padding:0 0 14px}
+.hr-workspace-036.hr-module .hr-followup-036-intro h3{font-size:23px;font-weight:600;line-height:1.3;margin:8px 0}
+.hr-workspace-036.hr-module .hr-followup-036-intro p{font-size:16px;line-height:1.5;color:#4e6876;margin:8px 0 14px}
+.hr-workspace-036.hr-module .hr-workspace-eyebrow{font-size:14px;font-weight:600;color:#4e6876}
+body:has([data-expo-app-shell="true"]) .hr-workspace-036.hr-module .hr-list{display:grid;gap:0;margin:0 0 14px;border:1px solid #d7e4ea;border-top:0;border-radius:0 0 8px 8px;overflow:hidden;background:#fff}
+.hr-workspace-036.hr-module .hr-register-columns{display:grid;grid-template-columns:38px minmax(0,1.6fr) minmax(110px,.8fr) minmax(105px,.55fr);gap:12px;padding:12px;border:1px solid #d7e4ea;border-radius:8px 8px 0 0;background:#edf4f7;color:#4e6876;font-size:14px;font-weight:600}
+.hr-workspace-036.hr-module .hr-register-columns>span:first-child{grid-column:1/3}
+body:has([data-expo-app-shell="true"]) .hr-workspace-036.hr-module .hr-list>.hr-employee{display:grid;grid-template-columns:38px minmax(0,1.6fr) minmax(110px,.8fr) minmax(105px,.55fr);align-items:center;gap:12px;min-width:0;padding:14px 12px;margin:0;border:0;border-bottom:1px solid #d7e4ea;border-radius:0;background:none;box-shadow:none;text-align:left}
+body:has([data-expo-app-shell="true"]) .hr-workspace-036.hr-module .hr-list>.hr-employee:last-child{border-bottom:0}
+body:has([data-expo-app-shell="true"]) .hr-workspace-036.hr-module .hr-employee .hr-personal-avatar{width:36px;height:36px;background:#e9f4f4;border-radius:50%;color:#075961}
+body:has([data-expo-app-shell="true"]) .hr-workspace-036.hr-module .hr-employee .hr-employee-label strong{font-size:17px;font-weight:600;line-height:1.4}
+body:has([data-expo-app-shell="true"]) .hr-workspace-036.hr-module .hr-employee :is(small,.hr-employee-state){font-size:14px;line-height:1.45;color:#4e6876}
+body:has([data-expo-app-shell="true"]) .hr-workspace-036.hr-module .hr-employee-state{max-width:160px;white-space:normal;overflow-wrap:anywhere}
+.hr-workspace-036.hr-module .hr-employee-relation{font-size:14px;line-height:1.45;color:#4e6876;font-weight:400}
+.hr-workspace-036.hr-module .hr-036-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+.hr-workspace-036.hr-module .hr-toolbar{margin:0 0 12px}
+.hr-workspace-036.hr-module .hr-toolbar h3{font-size:20px;font-weight:600}
+.hr-workspace-036.hr-module .hr-register-036>.hr-hint{font-size:14px;line-height:1.5;color:#4e6876}
+body:has([data-expo-app-shell="true"]) .hr-workspace-036.hr-module .hr-followup-036>.hr-followup-tasks{margin:0;padding:0;border:0;border-top:1px solid #d7e4ea;border-radius:0;background:none;box-shadow:none}
+.hr-workspace-036.hr-module .hr-followup-tasks>summary{font-size:17px;line-height:1.4;padding:10px 0;min-height:44px}
+.hr-workspace-036.hr-module .hr-followup-tasks>ul{padding:0;list-style:none;margin:12px 0}
+.hr-workspace-036.hr-module .hr-followup-tasks[open]{display:flex;flex-direction:column}
+.hr-workspace-036.hr-module .hr-followup-tasks>summary{order:0}
+.hr-workspace-036.hr-module .hr-followup-tasks>ul{order:1}
+.hr-workspace-036.hr-module .hr-followup-tasks>p{order:2}
+.hr-workspace-036.hr-module .hr-followup-tasks li{padding:12px 0;border-top:1px solid #e0e8eb}
+.hr-workspace-036.hr-module :is(.module-guide,.hr-step-guide,.hr-tools-disclosure){margin:18px 0;padding:0 14px;border:1px solid #d7e4ea;border-radius:7px;background:#fff}
+.hr-workspace-036.hr-module :is(.module-guide,.hr-step-guide,.hr-tools-disclosure)>summary{font-size:16px;min-height:44px;align-content:center;cursor:pointer}
+.hr-workspace-036.hr-module>.hr-coming{margin:20px 0 8px}
+body:has([data-expo-app-shell="true"]) .hr-workspace-036.hr-module .hr-workspace-cards{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:12px 0 18px}
+body:has([data-expo-app-shell="true"]) .hr-workspace-036.hr-module .hr-workspace-card{padding:12px 0;border:0;border-radius:0;background:none;box-shadow:none;min-width:0}
+.hr-workspace-036.hr-module>.hrp{margin:20px 0;padding-top:18px;border:0;border-top:1px solid #d7e4ea;background:none;box-shadow:none}
+.hr-workspace-036.hr-module>.hrp .hrp-banner{display:block;margin:0;padding:0;border:0;border-radius:0;background:none;box-shadow:none}
+.hr-workspace-036.hr-module>.hrp .hrp-banner h3{font-size:20px;font-weight:600;line-height:1.35;margin:6px 0}
+.hr-workspace-036.hr-module>.hrp .hrp-banner p{max-width:720px;margin:8px 0 14px;font-size:16px;color:#4e6876;line-height:1.5}
+.hr-workspace-036.hr-module>.hrp .hrp-badge{font-size:13px;background:#e9f4f4;color:#075961;border-radius:4px}
+body:has([data-expo-app-shell="true"]) :is(.hr-workspace-036.hr-module,.hr-employee-dialog-036.hr-module) :is(button,input,select,textarea){font-size:16px;line-height:1.4;box-sizing:border-box;max-width:100%}
+body:has([data-expo-app-shell="true"]) :is(.hr-workspace-036.hr-module,.hr-employee-dialog-036.hr-module) button{min-width:44px;min-height:44px;border-radius:7px;box-shadow:none;background-image:none;white-space:normal;overflow-wrap:anywhere}
+body:has([data-expo-app-shell="true"]) .hr-workspace-036.hr-module .hr-workspace-036-actions>button{overflow-wrap:normal;word-break:normal}
+body:has([data-expo-app-shell="true"]) :is(.hr-workspace-036.hr-module,.hr-employee-dialog-036.hr-module) :is(input:not([type=checkbox]):not([type=radio]),select){min-height:44px}
+.hr-employee-dialog-036 .hr-access-036{margin-top:20px;border-top:1px solid #d7e4ea;padding-top:8px}
+.hr-employee-dialog-036 .hr-access-036>summary{font-size:18px;font-weight:600;min-height:44px;align-content:center;cursor:pointer}
+body:has([data-expo-app-shell="true"]) .deviation-dialog-backdrop:has(.hr-employee-dialog-036){display:flex;justify-content:flex-end;align-items:stretch;padding:0}
+body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.hr-employee-dialog-036.hr-module){position:relative;margin:0;padding:0;width:min(900px,100%);max-width:100%;height:100dvh;max-height:100dvh;border:0;border-radius:0;box-sizing:border-box;display:flex;flex-direction:column;overflow:hidden}
+body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.hr-employee-dialog-036)>.deviation-dialog-header{position:static;flex:none;min-height:0;padding:18px 22px;background:#10212b;color:#fff;box-shadow:none;gap:14px}
+.deviation-dialog:has(.hr-employee-dialog-036)>.deviation-dialog-header h2{font-size:24px;font-weight:600;line-height:1.3;color:#fff}
+.deviation-dialog:has(.hr-employee-dialog-036)>.deviation-dialog-header p{color:#d1e0e7;font-size:14px}
+.deviation-dialog:has(.hr-employee-dialog-036)>.deviation-dialog-body{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding:20px 22px}
+.hr-employee-dialog-036.hr-module :is(.hr-fields,.hrp-meta,.hrp-question,.hrp-actions){min-width:0;max-width:100%}
+.hr-employee-dialog-036.hr-module .hrp-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.hr-employee-dialog-036.hr-module .hrp-steps button{padding:10px 8px;gap:6px;overflow-wrap:normal;word-break:normal}
+.hr-employee-dialog-036.hr-module .hrp-steps button span{flex:none}
+@media(max-width:1000px){
+ .hr-workspace-036.hr-module .hr-workspace-036-main{grid-template-columns:minmax(0,1fr);gap:20px}
+ .hr-workspace-036.hr-module :is(.hr-register-036,.hr-followup-036){grid-column:auto;grid-row:auto}
+ .hr-workspace-036.hr-module .hr-followup-036{padding:18px}
+ body:has([data-expo-app-shell="true"]) .hr-workspace-036.hr-module .hr-workspace-cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:620px){
+ body:has([data-expo-app-shell="true"]) .hr-workspace-036.hr-module>header.hr-heading h2{font-size:29px}
+ .hr-workspace-036.hr-module .hr-workspace-036-actions>button{flex:1 1 220px}
+ .hr-workspace-036.hr-module .hr-workspace-036-actions>button:last-child{margin-left:0}
+ body:has([data-expo-app-shell="true"]) .hr-workspace-036.hr-module .hr-list>.hr-employee{grid-template-columns:36px minmax(0,1fr);padding:12px 0}
+ .hr-workspace-036.hr-module .hr-register-columns{display:none}
+ body:has([data-expo-app-shell="true"]) .hr-workspace-036.hr-module .hr-list{border-top:1px solid #d7e4ea;border-radius:8px;padding:0 12px}
+ .hr-workspace-036.hr-module .hr-employee-relation{grid-column:2}
+ body:has([data-expo-app-shell="true"]) .hr-workspace-036.hr-module .hr-employee-state{grid-column:2;margin:0;max-width:none}
+ body:has([data-expo-app-shell="true"]) .hr-workspace-036.hr-module .hr-workspace-cards{grid-template-columns:minmax(0,1fr)}
+ body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.hr-employee-dialog-036)>.deviation-dialog-header{padding:14px 16px}
+ .deviation-dialog:has(.hr-employee-dialog-036)>.deviation-dialog-body{padding:16px}
+ .hr-employee-dialog-036 .hr-fields{grid-template-columns:minmax(0,1fr)}
+ .hr-employee-dialog-036.hr-module .hrp-steps{grid-template-columns:minmax(0,1fr)}
+}
+
+/* Compact landing workspace; long tools and tasks use the shared right panel. */
+body:has([data-expo-app-shell="true"]) .hr-workspace-036.hr-module .hr-workspace-036-actions{margin:0 0 20px;padding:0 0 14px;gap:10px}
+.hr-workspace-036 .hr-workspace-036-actions>span{flex:1;min-width:200px;color:#4e6876;font-size:16px;line-height:1.5}
+body:has([data-expo-app-shell="true"]) .hr-workspace-036.hr-module .hr-workspace-036-actions>button{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:auto;margin:0;padding:10px 14px;font-weight:600}
+body:has([data-expo-app-shell="true"]) .hr-workspace-036.hr-module .hr-workspace-036-main{grid-template-columns:310px minmax(0,1fr);gap:24px}
+body:has([data-expo-app-shell="true"]) .hr-workspace-036.hr-module .hr-followup-036{padding:20px;max-width:none}
+.hr-workspace-036 .hr-followup-036>h3{font-size:23px;font-weight:600;line-height:1.3;margin:10px 0}
+.hr-workspace-036 .hr-followup-036 p{color:#4e6876;font-size:16px;line-height:1.5;margin:8px 0 14px}
+.hr-workspace-036 .hr-followup-summary{border-top:1px solid #cbdfe6;margin-top:18px;padding-top:18px}
+.hr-workspace-036 .hr-followup-summary>strong{font-size:18px;line-height:1.4;font-weight:600}
+.hr-workspace-036 .hr-followup-summary>button{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#fff}
+.hr-workspace-036 .hr-guide-link{display:inline-flex;align-items:center;gap:8px;background:none;border:0;color:#007681;padding:8px 0;margin-top:12px;text-align:left}
+.hr-workspace-036 .hr-register-count{display:inline-flex;align-items:center;justify-content:center;min-width:28px;height:28px;padding:0 6px;border-radius:5px;background:#e9f2f5;color:#4e6876;font-size:16px;font-weight:500;margin-left:10px;vertical-align:middle}
+body:has([data-expo-app-shell="true"]) .hr-workspace-036 .hr-register-controls{display:flex;align-items:end;gap:12px;margin:0 0 14px}
+.hr-workspace-036 .hr-register-controls>.hr-field{flex:1;min-width:0;margin:0}
+body:has([data-expo-app-shell="true"]) .hr-workspace-036 .hr-register-controls>button{display:flex;align-items:center;gap:8px;margin:0;padding:10px 12px;flex:none;width:auto}
+body:has([data-expo-app-shell="true"]) .hr-workspace-036 .hr-toolbar{margin:0 0 12px}
+body:has([data-expo-app-shell="true"]) .hr-workspace-036 .hr-toolbar h3{margin:0;font-size:20px}
+body:has([data-expo-app-shell="true"]) .hr-workspace-036 .hr-list>.hr-employee{padding:12px;min-height:76px}
+body:has([data-expo-app-shell="true"]) .hr-workspace-036 .hr-employee :is(small,.hr-employee-state),.hr-workspace-036 .hr-employee-relation{font-size:16px}
+.hr-support-dialog-036 .hr-module.hr-support-036{padding:0;max-width:none;margin:0}
+.hr-support-dialog-036 .hr-support-036 .hr-panel-back{margin:0 0 16px;padding:8px 0;border:0;background:none;color:#007681}
+body:has([data-expo-app-shell="true"]) .hr-support-036 :is(.hr-tools-disclosure,.module-guide,.hr-step-guide,.hr-card,.hrp){margin:0 0 16px;max-width:100%;min-width:0}
+body:has([data-expo-app-shell="true"]) .hr-support-036 .hr-tools-disclosure{border:0;padding:0;background:none}
+.hr-support-036 .hr-tools-disclosure>summary{display:none}
+body:has([data-expo-app-shell="true"]) .hr-support-036 .hr-workspace-cards{display:grid;grid-template-columns:minmax(0,1fr);gap:0;margin:0}
+body:has([data-expo-app-shell="true"]) .hr-support-036 .hr-workspace-card{padding:14px 0;margin:0;border:0;border-bottom:1px solid #d5e3e9;border-radius:0;background:none;box-shadow:none;grid-template-columns:28px minmax(0,1fr)}
+.hr-support-036 .hr-workspace-card p{margin:4px 0 10px}
+.hr-support-036 .hr-workspace-card button{justify-self:start;padding:8px 12px}
+.hr-support-036 .hr-followup-tasks{border:0;padding:0}
+.hr-support-036 .hr-followup-tasks>summary{font-size:18px}
+.hr-support-036 .hr-followup-tasks>ul{padding:0;list-style:none}
+.hr-support-036 .hr-followup-tasks li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;padding:14px 0;border:0;border-top:1px solid #d5e3e9;border-radius:0;background:none;margin:0}
+.hr-support-036 .hr-followup-tasks li>strong{font-size:17px;line-height:1.4;grid-column:1}
+.hr-support-036 .hr-followup-tasks li>p{font-size:16px;margin:0;grid-column:1}
+.hr-support-036 .hr-followup-tasks li>button{grid-column:2;grid-row:1/3;align-self:center;padding:10px 12px}
+@media(max-width:1000px){
+ body:has([data-expo-app-shell="true"]) .hr-workspace-036.hr-module .hr-workspace-036-main{grid-template-columns:minmax(0,1fr)}
+ .hr-workspace-036 .hr-workspace-036-actions>span{flex-basis:100%}
+}
+@media(max-width:620px){
+ body:has([data-expo-app-shell="true"]) .hr-workspace-036 .hr-register-controls{flex-wrap:wrap}
+ .hr-workspace-036 .hr-register-controls>.hr-field{flex-basis:100%}
+ body:has([data-expo-app-shell="true"]) .hr-workspace-036.hr-module .hr-workspace-036-actions>button{flex:1 1 220px}
+ .hr-support-036 .hr-followup-tasks li{grid-template-columns:minmax(0,1fr)}
+ .hr-support-036 .hr-followup-tasks li>button{grid-column:1;grid-row:auto;justify-self:start}
+}

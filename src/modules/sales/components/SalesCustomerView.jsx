@@ -10,7 +10,7 @@ import { offerVatPresentation } from "../utils/salesOfferVatPresentation.js";
 // FASE 39B.2 viser avvist tilbud som låst historikk med hele publiserte
 // tilbudet synlig, men uten nye aksept-, avvisnings- eller opsjonsvalg.
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import SalesCustomerViewCore from "./SalesCustomerViewCore.jsx";
 import SalesCustomerAcceptedView from "./SalesCustomerAcceptedView.jsx";
 import "./salesCustomerOptionality.css";
@@ -139,9 +139,9 @@ function classifySection(element) {
   return "";
 }
 
-function applyCustomerSectionOrder(signatureName = "") {
+function applyCustomerSectionOrder(signatureName = "", scope = document) {
   if (typeof document === "undefined") return;
-  const stack = document.querySelector(".sales-customer-offer-stack");
+  const stack = scope.querySelector(".sales-customer-offer-stack");
   if (!stack) return;
   stack.classList.add("sales-customer-ordered-stack");
   if (signatureName) stack.dataset.storeSignature = signatureName;
@@ -171,27 +171,27 @@ function absoluteAssetUrl(value = "") {
   try { return new URL(clean, window.location.origin).href; } catch { return clean; }
 }
 
-function applyStoreOfferCopy({ vat, isStoreOffer, signatureName = "", brandLabel = "", brandLogoUrl = "", legalCompanyName = "", readOnlyDeclined = false, hideDecisionControls = false } = {}) {
+function applyStoreOfferCopy({ vat, isStoreOffer, signatureName = "", brandLabel = "", brandLogoUrl = "", legalCompanyName = "", readOnlyDeclined = false, hideDecisionControls = false, readOnlyPreview = false } = {}, scope = document) {
   if (!isStoreOffer || typeof document === "undefined") return;
-  const eyebrow = document.querySelector(".sales-customer-hero .sales-eyebrow");
-  const lead = document.querySelector(".sales-customer-lead");
+  const eyebrow = scope.querySelector(".sales-customer-hero .sales-eyebrow");
+  const lead = scope.querySelector(".sales-customer-lead");
   if (hideDecisionControls) {
     if (eyebrow) eyebrow.textContent = "Forhåndsvisning av tilbud";
-    if (lead) lead.textContent = "Dette er kundens visning av tilbudet. Valg du prøver her er kun lokal forhåndsvisning og lagres ikke.";
+    if (lead) lead.textContent = readOnlyPreview ? "Varer, priser og vilkår fra tilbudsgrunnlaget. Kundens valg kan ikke endres her." : "Dette er kundens visning av tilbudet. Valg du prøver her er kun lokal forhåndsvisning og lagres ikke.";
   } else if (readOnlyDeclined) {
     if (eyebrow) eyebrow.textContent = "Generelt tilbud avvist · historisk visning";
     if (lead) lead.textContent = "Dette er den publiserte tilbudsversjonen som ble avvist. Innhold, priser og vilkår beholdes som låst historikk og kan ikke endres eller aksepteres her.";
   } else if (lead) {
     lead.textContent = "Her finner du varene, prisene, eventuell montering og vilkårene samlet. Du kan velge eventuelle alternativer eller tillegg før du aksepterer eller avviser tilbudet nederst på siden.";
   }
-  const headerBrand = document.querySelector(".sales-customer-header .sales-brand-copy strong");
+  const headerBrand = scope.querySelector(".sales-customer-header .sales-brand-copy strong");
   if (headerBrand && brandLabel) headerBrand.textContent = brandLabel;
-  const pricesSection = Array.from(document.querySelectorAll(".sales-customer-offer-stack > *")).find((section) => classifySection(section) === "prices");
+  const pricesSection = Array.from(scope.querySelectorAll(".sales-customer-offer-stack > *")).find((section) => classifySection(section) === "prices");
   const heading = pricesSection?.querySelector(".sales-customer-section-heading h2");
   if (heading) heading.textContent = "Varer og priser";
   const sectionNote = pricesSection?.querySelector(".sales-customer-section-note");
   if (sectionNote) {
-    sectionNote.textContent = readOnlyDeclined
+    sectionNote.textContent = readOnlyPreview ? `Priser er oppgitt ${vat.label} Registrerte kundevalg vises låst.` : readOnlyDeclined
       ? `Alle priser er oppgitt ${vat.label} Opsjoner og alternativer vises som del av tilbudsversjonen, men kan ikke velges i historisk visning.`
       : `Alle priser er oppgitt ${vat.label} Alternativer erstatter valgt vare og eventuell tilhørende montering. Valgene oppdaterer totalsummen automatisk.`;
   }
@@ -206,12 +206,12 @@ function applyStoreOfferCopy({ vat, isStoreOffer, signatureName = "", brandLabel
     const optionsHelp = optionsHeading?.querySelector("span");
     if (optionsTitle) optionsTitle.textContent = "Alternativer og tillegg";
     if (optionsHelp) {
-      optionsHelp.textContent = readOnlyDeclined
+      optionsHelp.textContent = readOnlyPreview ? "Lagrede alternativer og tillegg. Kundens valg kan ikke endres her." : readOnlyDeclined
         ? `Alternativer og tillegg som inngikk i tilbudsversjonen for ${String(section.querySelector(".sales-customer-main-post-heading h3")?.textContent || "leveransen").trim()}.`
         : `Velg eventuelle alternativer eller tillegg til ${String(section.querySelector(".sales-customer-main-post-heading h3")?.textContent || "leveransen").trim()}.`;
     }
   });
-  const companyCard = document.querySelector(".sales-customer-company-card");
+  const companyCard = scope.querySelector(".sales-customer-company-card");
   const logo = companyCard?.querySelector(".sales-customer-company-logo");
   if (logo && brandLogoUrl) { logo.src = absoluteAssetUrl(brandLogoUrl); logo.alt = brandLabel || "Tilbudslogo"; }
   const companyLabel = companyCard?.querySelector(".sales-customer-company-label");
@@ -243,13 +243,13 @@ function getOfferParts(request = {}) {
   };
 }
 
-function applyStoreAlternativePresentation(request, selectedOptionIds = []) {
+function applyStoreAlternativePresentation(request, selectedOptionIds = [], scope = document) {
   const vat = offerVatPresentation(request);
   if (typeof document === "undefined") return;
   const { options } = getOfferParts(request || {});
   const alternatives = options.filter((option) => option?.optionType === "alternative" && Number(option?.storeAlternativePricingVersion || 0) >= 2);
   if (!alternatives.length) return;
-  const cards = Array.from(document.querySelectorAll(".sales-customer-option-card"));
+  const cards = Array.from(scope.querySelectorAll(".sales-customer-option-card"));
   const usedCards = new Set();
   alternatives.forEach((option) => {
     const title = String(option?.title || "").trim();
@@ -280,7 +280,7 @@ function applyStoreAlternativePresentation(request, selectedOptionIds = []) {
   const selectedIds = new Set((Array.isArray(selectedOptionIds) ? selectedOptionIds : []).map(String));
   const hasSelectedAlternative = alternatives.some((option) => selectedIds.has(String(option?.id || "")));
   if (hasSelectedAlternative) {
-    const pricesSection = Array.from(document.querySelectorAll(".sales-customer-offer-stack > *")).find((section) => classifySection(section) === "prices");
+    const pricesSection = Array.from(scope.querySelectorAll(".sales-customer-offer-stack > *")).find((section) => classifySection(section) === "prices");
     const adjustmentLabel = pricesSection?.querySelector(".sales-customer-total-row.sales-customer-total-muted > span");
     if (adjustmentLabel) adjustmentLabel.textContent = "Valgt alternativ – justering av totalsum";
   }
@@ -301,9 +301,9 @@ function getOptionsOnlyGroups(request = {}) {
   return Array.from(groups.values());
 }
 
-function applyCustomerOptionsOnlyPresentation(request, selectedOptionIds = []) {
+function applyCustomerOptionsOnlyPresentation(request, selectedOptionIds = [], scope = document) {
   if (typeof document === "undefined") return;
-  const sections = Array.from(document.querySelectorAll(".sales-customer-main-post"));
+  const sections = Array.from(scope.querySelectorAll(".sales-customer-main-post"));
   sections.forEach((section) => section.classList.remove("sales-customer-options-only-mainpost", "sales-customer-options-only-no-selection"));
   const selectedIds = new Set((Array.isArray(selectedOptionIds) ? selectedOptionIds : []).map(String));
   const usedSections = new Set();
@@ -331,6 +331,7 @@ function offerIsExpired(request, activeVersion) {
 }
 
 export default function SalesCustomerView(props) {
+  const presentationRoot = useRef(null);
   const quantityRequest = decorateRequestForQuantityPresentation(requestWithCustomerOptionQuantities(props.selectedRequest, props.acceptanceForm?.selectedOptionQuantities));
   const presentationRequest = decorateRequestForOptionalityPresentation(quantityRequest);
   const activeVersion = getActiveOfferVersion(presentationRequest || {});
@@ -352,6 +353,7 @@ export default function SalesCustomerView(props) {
   const [declineError, setDeclineError] = useState("");
   const [localDecline, setLocalDecline] = useState(null);
   const hideDecisionControls = Boolean(props.hideDecisionControls);
+  const readOnlyPreview = Boolean(props.embedded && hideDecisionControls && props.readOnlyOptions);
   const salesClient = useMemo(
     () => hideDecisionControls ? null : createDefaultSalesSupabaseClient(),
     [hideDecisionControls]
@@ -364,17 +366,19 @@ export default function SalesCustomerView(props) {
 
   useEffect(() => {
     const applyPresentation = () => {
-      applyCustomerSectionOrder(signatureName);
-      applyCustomerOptionsOnlyPresentation(brandedRequest, selectedOptionIds);
-      applyStoreOfferCopy({ vat: offerVatPresentation(brandedRequest), isStoreOffer, signatureName, brandLabel, brandLogoUrl, legalCompanyName, readOnlyDeclined, hideDecisionControls });
-      if (isStoreOffer) applyStoreAlternativePresentation(brandedRequest, selectedOptionIds);
-      const root = document.querySelector(".sales-customer-offer-app");
+      const scope = presentationRoot.current;
+      if (!scope) return;
+      applyCustomerSectionOrder(signatureName, scope);
+      applyCustomerOptionsOnlyPresentation(brandedRequest, selectedOptionIds, scope);
+      applyStoreOfferCopy({ vat: offerVatPresentation(brandedRequest), isStoreOffer, signatureName, brandLabel, brandLogoUrl, legalCompanyName, readOnlyDeclined, hideDecisionControls, readOnlyPreview }, scope);
+      if (isStoreOffer) applyStoreAlternativePresentation(brandedRequest, selectedOptionIds, scope);
+      const root = scope.querySelector(".sales-customer-offer-app");
       if (root) root.classList.toggle("store-customer-history-readonly", readOnlyDeclined);
     };
     const frame = window.requestAnimationFrame(applyPresentation);
     const timer = window.setTimeout(applyPresentation, 120);
     return () => { window.cancelAnimationFrame(frame); window.clearTimeout(timer); };
-  }, [props.mode, props.selectedRequest?.id, props.selectedRequest?.sentOfferVersionId, props.selectedRequest?.offerLines, props.selectedRequest?.offerOptions, props.selectedRequest?.storeOfferMeta, signatureName, brandLabel, brandLogoUrl, legalCompanyName, isStoreOffer, readOnlyDeclined, hideDecisionControls, selectedOptionIds.join("|"), JSON.stringify(props.acceptanceForm?.selectedOptionQuantities || {})]);
+  }, [props.mode, props.selectedRequest?.id, props.selectedRequest?.sentOfferVersionId, props.selectedRequest?.offerLines, props.selectedRequest?.offerOptions, props.selectedRequest?.storeOfferMeta, signatureName, brandLabel, brandLogoUrl, legalCompanyName, isStoreOffer, readOnlyDeclined, hideDecisionControls, readOnlyPreview, selectedOptionIds.join("|"), JSON.stringify(props.acceptanceForm?.selectedOptionQuantities || {})]);
 
   async function handleDecline(event) {
     event.preventDefault();
@@ -414,18 +418,19 @@ export default function SalesCustomerView(props) {
       : props.handleAcceptOffer;
 
   return (
-    <>
+    <div ref={presentationRoot} style={{ display: "contents" }}>
       <style>
         {ORDER_STYLES}
         {isStoreOffer && (storeExpired || readOnlyDeclined) ? ".sales-customer-accept-form{display:none!important}" : ""}
         {!isStoreOffer && readOnlyDeclined ? ".sales-customer-accept-form{display:none!important}" : ""}
       </style>
-      {props.mode === "customer-offer" ? <SalesScrollShortcuts/> : null}
+      {props.mode === "customer-offer" && !props.embedded ? <SalesScrollShortcuts/> : null}
       <SalesCustomerViewCore
         {...props}
         selectedRequest={brandedRequest}
         hideDecisionControls={hideDecisionControls}
-        optionQuantitiesReadOnly={readOnlyDeclined || genericExpired}
+        readOnlyPreview={readOnlyPreview}
+        optionQuantitiesReadOnly={Boolean(props.readOnlyOptions) || readOnlyDeclined || genericExpired}
         handleAcceptOffer={acceptHandler}
         toggleAcceptedOption={readOnlyDeclined ? () => {} : props.toggleAcceptedOption}
       />
@@ -478,6 +483,6 @@ export default function SalesCustomerView(props) {
           )}
         </div>
       ) : null}
-    </>
+    </div>
   );
 }

@@ -228,15 +228,17 @@ const mainSource = requireNeedles("src/main.jsx", [
   "inert: isProjectSupportReadOnly ? true : void 0",
   "Skrivebeskyttet – lesing og dokumentvisning er tillatt",
 ]);
-const leaveWorkspaceStart = mainSource.indexOf("const leaveProjectWorkspace = async () => {");
+const leaveWorkspaceStart = mainSource.indexOf('const leaveProjectWorkspace = async (destination = "prosjekt") => {');
 const leaveWorkspaceEnd = mainSource.indexOf("const cancelNewProject = () => {", leaveWorkspaceStart);
 const leaveWorkspaceSource = mainSource.slice(leaveWorkspaceStart, leaveWorkspaceEnd);
 if (
   leaveWorkspaceStart < 0 ||
   leaveWorkspaceEnd < 0 ||
+  !leaveWorkspaceSource.includes('const target = typeof destination === "string" && globalTabs.some(([id]) => id === destination) ? destination : "prosjekt";') ||
+  leaveWorkspaceSource.lastIndexOf('setTab(target)') < 0 ||
   leaveWorkspaceSource.indexOf("if (returnToSupportOverview) {") < 0 ||
   leaveWorkspaceSource.indexOf("if (profile) applyProfile(profile);") < 0 ||
-  leaveWorkspaceSource.indexOf('setTab("admin")') > leaveWorkspaceSource.lastIndexOf('setTab("prosjekt")')
+  leaveWorkspaceSource.indexOf('setTab("admin")') > leaveWorkspaceSource.lastIndexOf('setTab(target)')
 ) {
   throw new Error("Startside fra et supportprosjekt går ikke kontrollert til samme firmas Supportoversikt før ordinær Startside.");
 }

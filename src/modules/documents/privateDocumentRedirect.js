@@ -1,3 +1,4 @@
+import documentPageStyles from '../portal/portalWorkspace.css?inline';
 // FASE 44E / 29B1/29B2/29B3/29B5: Sikker dokumentrute for private prosjekt-/salgsdokumenter.
 // FASE 44E venter på Supabase-auth i ny dokumentfane og prøver kontrollert refresh
 // før en innlogget intern bruker eventuelt avvises. Intern bruker faller aldri feilaktig
@@ -33,28 +34,34 @@ const safeText = (value = '') => String(value || '').replace(/[<>]/g, '');
 
 const setBody = (html) => {
   document.body.innerHTML = html;
+  document.getElementById('private-doc-back')?.addEventListener('click', () => {
+    if (window.history.length > 1) window.history.back();
+    else window.close();
+  });
 };
 
 const pageShell = (content = '') => `
-  <main style="min-height:100vh;background:#f4f7fb;padding:24px;font-family:Arial,Helvetica,sans-serif;color:#0f172a;box-sizing:border-box;display:flex;align-items:center;justify-content:center;">
-    <section style="width:min(520px,100%);background:#fff;border:1px solid #dbe7ec;border-radius:18px;box-shadow:0 18px 50px rgba(15,23,42,.12);padding:24px;box-sizing:border-box;">
-      <div style="font-weight:900;color:#0c2a52;font-size:13px;letter-spacing:.04em;text-transform:uppercase;margin-bottom:8px;">Expo ProffDok</div>
+  <style>${documentPageStyles}</style>
+  <div class="pd-document-access">
+    <header>EXPO PROFFDOK / PRIVAT DOKUMENT</header>
+    <main>
       ${content}
-    </section>
-  </main>`;
+      <button id="private-doc-back" class="pd-document-back" type="button">Tilbake</button>
+    </main>
+  </div>`;
 
 const showLoading = () => {
   setBody(pageShell(`
-    <h1 style="font-size:22px;margin:0 0 10px;">Åpner sikkert dokument …</h1>
-    <p style="margin:0;color:#475569;line-height:1.5;">Tilgangen kontrolleres før dokumentet åpnes.</p>
+    <h1>Åpner sikkert dokument …</h1>
+    <p>Tilgangen kontrolleres før dokumentet åpnes.</p>
   `));
 };
 
 const showError = (message = 'Dokumentet kunne ikke åpnes.') => {
   setBody(pageShell(`
-    <h1 style="font-size:22px;margin:0 0 10px;">Dokumentet kunne ikke åpnes</h1>
-    <p style="margin:0 0 16px;color:#475569;line-height:1.5;">${safeText(message)}</p>
-    <button id="private-doc-close" type="button" style="border:0;border-radius:10px;padding:11px 16px;background:#0c2a52;color:#fff;font-weight:800;cursor:pointer;">Lukk</button>
+    <h1>Dokumentet kunne ikke åpnes</h1>
+    <p>${safeText(message)}</p>
+    <button id="private-doc-close" type="button">Lukk</button>
   `));
   document.getElementById('private-doc-close')?.addEventListener('click', () => window.close());
 };
@@ -125,12 +132,12 @@ const storedPortalCandidates = (role = 'kunde') => {
 const showPortalCodeForm = ({ client, projectId, role, path, download }) => {
   const roleLabel = normalizeRole(role) === 'underleverandor' ? 'underentreprenør' : 'kunde';
   setBody(pageShell(`
-    <h1 style="font-size:22px;margin:0 0 10px;">Skriv inn tilgangskode</h1>
-    <p style="margin:0 0 16px;color:#475569;line-height:1.5;">Dette er et privat dokument. Bruk samme tilgangskode som til ${roleLabel}portalen.</p>
-    <label style="display:block;font-weight:800;margin-bottom:6px;" for="private-doc-code">Tilgangskode</label>
-    <input id="private-doc-code" inputmode="text" autocomplete="one-time-code" style="width:100%;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:10px;padding:12px;font-size:18px;text-transform:uppercase;margin-bottom:10px;" />
-    <div id="private-doc-error" style="display:none;color:#991b1b;font-weight:700;margin-bottom:10px;"></div>
-    <button id="private-doc-open" type="button" style="width:100%;border:0;border-radius:10px;padding:12px 16px;background:#0c2a52;color:#fff;font-weight:800;cursor:pointer;">Åpne dokument</button>
+    <h1>Skriv inn tilgangskode</h1>
+    <p>Dette er et privat dokument. Bruk samme tilgangskode som til ${roleLabel}portalen.</p>
+    <label for="private-doc-code">Tilgangskode</label>
+    <input id="private-doc-code" inputmode="text" autocomplete="one-time-code" />
+    <div id="private-doc-error" role="alert" style="display:none;"></div>
+    <button id="private-doc-open" type="button">Åpne dokument</button>
   `));
 
   const input = document.getElementById('private-doc-code');

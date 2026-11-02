@@ -1,8 +1,20 @@
 import assert from 'node:assert/strict';import fs from 'node:fs';import os from 'node:os';import path from 'node:path';import http from 'node:http';import {build} from 'vite';import react from '@vitejs/plugin-react';
 const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright');const root=process.cwd(),tmp=fs.mkdtempSync(path.join(os.tmpdir(),'price-mobile-')),entry=path.join(tmp,'entry.jsx');
-fs.writeFileSync(entry,`import React from '${root}/node_modules/react/index.js';import {createRoot} from '${root}/node_modules/react-dom/client.js';import View from '${root}/src/modules/storeCatalog/StorePriceSearchView.jsx';import '${root}/src/style.css';import '${root}/src/modules/app/mobileResponsive41A.css';createRoot(document.getElementById('app')).render(React.createElement(View));`);
+fs.writeFileSync(entry,`import React from '${root}/node_modules/react/index.js';import {createRoot} from '${root}/node_modules/react-dom/client.js';import View from '${root}/src/modules/storeCatalog/StorePriceSearchView.jsx';import '${root}/src/style.css';import '${root}/src/modules/app/mobileResponsive41A.css';import '${root}/src/modules/ui/proffdokWorkspace.css';createRoot(document.getElementById('app')).render(React.createElement(View));`);
 const result=await build({root,configFile:false,logLevel:'silent',define:{'process.env.NODE_ENV':'"development"'},plugins:[react(),{name:'mobile-api',enforce:'pre',resolveId(id){if(id.endsWith('moduleAccessClient.js'))return '\0access';if(id.endsWith('workProfileClient.js'))return '\0profile';if(id.endsWith('PriceSearchBarcodeScanner.jsx'))return '\0scan';},load(id){if(id==='\0access')return `export const MANAGED_ACCESS_EVENT='managed',MODULE_ACCESS_EVENT='module';export const getStoredSupabaseSession=()=>({userId:'user',accessToken:'qa'});export const rpcWithStoredSession=(...a)=>window.api(...a);`;if(id==='\0profile')return `export const WORK_PROFILE_EVENT='profile';export const readCachedWorkProfileState=()=>({active_company_id:'company'});export const getMyWorkProfileState=async()=>({active_company_id:'company'});`;if(id==='\0scan')return `import React from '${root}/node_modules/react/index.js';export default function Scanner(p){return React.createElement('button',{onClick:()=>p.onScan('07000000000001')},'QA skann vare');}`;}}],build:{write:false,minify:false,lib:{entry,formats:['iife'],name:'MobileQa',cssFileName:'mobile-qa'}}});
-const output=(Array.isArray(result)?result[0]:result).output,js=output.find(x=>x.type==='chunk').code,css=output.filter(x=>x.fileName.endsWith('.css')).map(x=>x.source).join('\n');const server=http.createServer((req,res)=>{res.setHeader('Content-Type','text/html; charset=utf-8');res.end(`<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font:16px Arial;margin:12px}${css}</style><div id="app"></div><script>${js.replaceAll('</script','<\\/script')}</script>`);});await new Promise(r=>server.listen(0,'127.0.0.1',r));let browser,checks=0;const eq=(a,b,n)=>{assert.deepEqual(a,b,n);checks++;};
+const output=(Array.isArray(result)?result[0]:result).output,js=output.find(x=>x.type==='chunk').code,css=output.filter(x=>x.fileName.endsWith('.css')).map(x=>x.source).join('\n');const server=http.createServer((req,res)=>{res.setHeader('Content-Type','text/html; charset=utf-8');res.end(`<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font:16px Arial;margin:12px}${css}</style><div id="app" data-expo-app-shell="true"></div><script>${js.replaceAll('</script','<\\/script')}</script>`);});await new Promise(r=>server.listen(0,'127.0.0.1',r));let browser,checks=0;const eq=(a,b,n)=>{assert.deepEqual(a,b,n);checks++;};
+
+// Measure the actual design cascade, including the app wrapper. The RPC/scanner
+// fixtures remain synthetic; no network transport or camera access is enabled.
+// Normalize only Chromium numerical noise (e.g.43.99997px for computed44px).
+// The44px target remains; actual40/42px controls still fail.
+async function assertDesignLayout(page,label){
+ const layout=await page.locator('.priceSearchInlineView').evaluate(el=>({count:[...el.querySelectorAll('button')].filter(b=>b.getClientRects().length).length,small:[...el.querySelectorAll('button')].filter(b=>b.getClientRects().length).map(b=>({name:b.getAttribute('aria-label')||b.textContent.trim(),width:b.getBoundingClientRect().width,height:b.getBoundingClientRect().height})).filter(b=>b.width+0.001<44||b.height+0.001<44),overflow:[el,...el.querySelectorAll('.priceSearchCard,.priceSearchResults,.priceSearchSelected,.priceSearchSavedLists')].filter(b=>b.getClientRects().length&&b.scrollWidth>b.clientWidth+1).map(b=>b.className)}));
+ eq(layout.count>0,true,'visible native buttons measured '+label);
+ eq(layout.small,[],'central actions are at least 44px '+label);
+ eq(layout.overflow,[],'no internal horizontal overflow '+label);
+}
+
 try{
 browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_PATH,args:['--no-sandbox']});
 for(const width of [1363,768,390,320]){
@@ -37,6 +49,7 @@ for(const width of [1363,768,390,320]){
  eq(await page.getByText('Intern netto eks. mva.',{exact:true}).count(),0,'masked net not displayed '+width);
  eq(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,'no overflow '+width);
  eq((await page.locator('.priceSearchSmartOptions label').boundingBox()).height>=44,true,'toggle touch target '+width);
+ await assertDesignLayout(page,'results '+width);
  if(process.env.SMART_SEARCH_QA_OUTPUT){fs.mkdirSync(process.env.SMART_SEARCH_QA_OUTPUT,{recursive:true});await page.screenshot({path:path.join(process.env.SMART_SEARCH_QA_OUTPUT,'search-'+width+'.png')});}
  // A late page must not be appended after mode changes, even if the query text is identical.
  await page.getByRole('button',{name:/Vis \d+ flere/}).click();await page.waitForFunction(()=>Boolean(window.more));await toggle.uncheck();await page.getByRole('button',{name:'Legg til: Vanlig treff',exact:true}).waitFor();
@@ -48,6 +61,7 @@ for(const width of [1363,768,390,320]){
  await input.fill('07000000000001');await page.waitForFunction(()=>document.querySelectorAll('.priceSearchResult').length===1);
  eq((await page.evaluate(()=>window.calls.filter(c=>c.name==='search_internal_store_catalog_prices_smart').at(-1))).args.p_query,'07000000000001','barcode passed unchanged '+width);
  await page.getByRole('button',{name:'Legg til: MEDIPRO SERVANTKRAN 0',exact:true}).click();await page.getByRole('heading',{name:'Plukkliste (1)',exact:true}).waitFor();eq(await input.inputValue(),'','selection keeps existing clear-search flow '+width);
+ await assertDesignLayout(page,'selected worklist '+width);
  const refs=await page.evaluate(()=>Object.entries(sessionStorage).filter(([key])=>key.includes('price-search:worklist')).map(([,value])=>value).join(''));
  eq(refs.includes('purchase_net')||refs.includes('customer_price')||refs.includes('match_kind'),false,'no prices or search metadata persisted '+width);
  await input.fill('blocked');await page.getByText('Du har ikke tilgang til Prissøk.',{exact:true}).waitFor();eq(await page.locator('.priceSearchResult').count(),0,'error clears previous results '+width);

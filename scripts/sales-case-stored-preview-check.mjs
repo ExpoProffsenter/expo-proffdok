@@ -1,0 +1,28 @@
+import assert from 'node:assert/strict';
+import {loadSalesCaseStoredPreview,observeSalesCaseStoredPreview} from '../src/modules/sales/services/salesCaseStoredPreview.mjs';
+let checks=0;
+const eq=(a,b,label)=>{assert.deepEqual(a,b,label);checks++;};
+const request={id:'case-a',publicToken:'synthetic-token',status:'Tilbud',sentOfferVersionId:'version-a',sentOfferVersionNumber:1,offerLines:[{id:'draft',description:'Nyere usendt kladd',amount:99000}]};
+const row={company_id:'firm-a',request_ref:'case-a',payload:request};
+const data={offer:{id:'offer-a',request_ref:'case-a',company_id:'firm-a',status:'sent'},version:{id:'version-a',offer_id:'offer-a',version_number:1,title:'Publisert original',total_ex_vat:200,lines:[{__companyMeta:true,companyName:'Historisk firma'},{id:'base',description:'Låst leveranse',amount:200}],options:[{id:'option',description:'Tillegg',amount:30}]}};
+let offers=0,rows=0;
+const opts={request,companyId:'firm-a',readRequest:async()=>{rows++;return {data:structuredClone(row)};},readOffer:async()=>{offers++;return {data:structuredClone(data)};}};
+const before=JSON.stringify({request,row,data});
+let preview=await loadSalesCaseStoredPreview(opts);eq(preview.kind,'published','legacy published snapshot is read from the existing public reader');eq(preview.versionNumber,1);eq(preview.request.companyName,'Historisk firma');eq(preview.request.offerLines.some(x=>x.id==='draft'),false,'draft cannot masquerade as published');eq(preview.request.publicToken,'','presentation never exposes a new decision link');eq(rows,2,'RLS row read before and after public transport');eq(offers,1);eq(JSON.stringify({request,row,data}),before,'reading never mutates case, row or snapshot');
+for(const bad of [{...row,company_id:'firm-b'},{...row,request_ref:'other'},{...row,payload:{...request,publicToken:'different'}},{...row,payload:{...request,sentOfferVersionId:'new-version'}},null]){
+ let publicReads=0;await assert.rejects(()=>loadSalesCaseStoredPreview({...opts,readRequest:async()=>({data:bad}),readOffer:async()=>{publicReads++;return {data};}}));checks++;eq(publicReads,0,'row mismatch prevents public token read');
+}
+for(const patch of [{offer:{...data.offer,company_id:'firm-b'}},{offer:{...data.offer,request_ref:'other'}},{version:{...data.version,id:'new-version'}},{version:{...data.version,offer_id:'other-offer'}}]){await assert.rejects(()=>loadSalesCaseStoredPreview({...opts,readOffer:async()=>({data:{...data,...patch}})}));checks++;}
+let n=0;await assert.rejects(()=>loadSalesCaseStoredPreview({...opts,readRequest:async()=>++n===1?{data:row}:{error:new Error('revoked')}}));checks++;
+await assert.rejects(()=>loadSalesCaseStoredPreview({...opts,readOffer:async()=>({error:new Error('transport')})}),/Kunne ikke hente/);checks++;
+const accepted={...request,status:'Akseptert',acceptedOfferVersionId:'version-a'};
+const acceptedData={...data,offer:{...data.offer,status:'accepted',accepted_by:'Demo kunde',accepted_payload:{selected_options:[{id:'option',description:'Tillegg',amount:60}],accepted_total:260}}};
+preview=await loadSalesCaseStoredPreview({...opts,request:accepted,readRequest:async()=>({data:{...row,payload:accepted}}),readOffer:async()=>({data:acceptedData})});eq(preview.kind,'accepted');eq(preview.acceptedTotal,260);eq(preview.request.offerOptions[0].amount,60,'accepted quantity/amount remains locked');
+await assert.rejects(()=>loadSalesCaseStoredPreview({...opts,request:accepted,readRequest:async()=>({data:{...row,payload:accepted}})}));checks++;
+const wait=async(predicate)=>{const until=Date.now()+1500;while(!predicate()){if(Date.now()>until)throw Error('Observer did not settle');await new Promise(r=>setTimeout(r,5));}};
+const foreground=new EventTarget(),visibility=new EventTarget();visibility.visibilityState='visible';let callback,company='firm-a',user='self',hold=null,states=[],errors=[],resets=0;
+const client={auth:{onAuthStateChange:fn=>{callback=fn;return {data:{subscription:{unsubscribe:()=>{callback=null;}}}};}}};
+const observer=observeSalesCaseStoredPreview({request,client,foreground,visibility,getSession:async()=>({data:{session:{user:{id:user},access_token:'synthetic-only'}}}),resolveScope:async()=>({data:company}),readRequest:async scope=>scope==='firm-a'?{data:row}:{error:new Error('scope denied')},readOffer:()=>new Promise(resolve=>{hold=()=>resolve({data});}),onReset:()=>{resets++;states=[];},onLoading:()=>{},onReady:value=>states.push(value),onError:value=>errors.push(value)});
+await wait(()=>hold);const late=hold;company='firm-b';const event=new Event('expo-proffdok-work-profile');event.detail={active_company_id:'firm-b'};foreground.dispatchEvent(event);eq(states.length,0,'profile event resets synchronously');await wait(()=>errors.length);late();await new Promise(r=>setTimeout(r,10));eq(states.length,0,'late old-company public reply cannot restore content');
+company='firm-a';observer.retry();await wait(()=>hold!==late);hold();await wait(()=>states.length===1);eq(states[0].kind,'published','explicit retry can recover after access returns');const readyResets=resets;const same=new Event('expo-proffdok-work-profile');same.detail={active_company_id:'firm-a'};foreground.dispatchEvent(same);eq(resets,readyResets,'same-firm profile refresh preserves the reading view');callback('SIGNED_OUT',null);eq(states.length,0,'logout clears immediately');eq(errors.at(-1).includes('innlogget'),true);observer.dispose();eq(callback,null,'cleanup unsubscribes authentication');
+console.log(`Sales stored-case preview: ${checks} assertions PASS; exact immutable version, RLS before/after, no draft substitution, locked options, late/profile/logout/retry isolation; synthetic reads only.`);

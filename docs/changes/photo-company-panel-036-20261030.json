@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Boligfoto i ledig bredde og felles firma-panel i Systemadmin",
+  "change": "Miljømål BEGGE, bare eksisterende design-Preview/PR295. Eksisterende boligfeltfoto får36 prosent av den ledige bredden fra1280px, avgrenset til velkomstfeltets eksisterende høyde. Teksten eier høyden; bildet gir ingen ekstra intrinsisk bildehøyde. Minimum178px bevarer også leserrollens tidligere140px bilde. Ingen nytt bilde, mindre tekst eller endring i bygg/fasade/veiviser. Systemadmins eksisterende imperative firma-/brukermodal får felles navy header, høyrekant, full høyde,16px innhold og44px lukkekontroll. Native DOM, lagringskommandoer, dirty/error/retry og lukking eies fortsatt av uendret adapter. Ingen tilgangskjerne, backend, global meny eller database endres.",
+  "verification": "Bolig-builder762 Chromium assertions PASS: alle tidligere scenarioer beholdt, åtte bredder320/390/768/1024/1280/1366/1536/1920. Frossen førregel220×140 sammenlignes med ny layout: samme høyde, knappetopprader, prosjektlistetopp og dokumenthøyde; samme bildekilde, større dekodet bilde uten overlapping. Begge roller har egne prøver. Ny bildetest feiler på original layout ved1280 som forventet. Ny Systemadmin-native-adapter63PASS: fem bredder, lang tittel, riktig kant/farge/størrelse/scroll/footer, samme DOM/felt og kladd, close/reopen, dirty-close sperre, eksakt native save, feil holdes åpen, retry og Escape/bodyoverflow. Samme test feiler på original ramme20px versus25px ved320. Kun native felt- og lagringscallbacks er syntetiske, ingen ekstern transport. Samlet lokal app-UX1769=1706+63PASS; eksisterende firmaadminReact52PASS; full Sandbox critical/buildPASS. Skjermbilder1366/1920 bolig og390/1363 firma-panel visuelt inspisert. Innlogget baseline bdcbd6b3: faktiske nyhets- og produktutkast beholdt ved områdeskifte og deretter ryddet uten publisering/opprettelse; support, firmafilter, dokumentsynk, e-postinngang og invitasjon åpnet uten kommandoer. Separat faktisk Sandbox-tilgangshenting feiler på list_managed_work_profiles(); dette står åpent, ingen rettelse eller funksjonsattest for tilgangsendring. Eksakt ny kandidat/CI/deploy og innlogget før/etter-måling føres i PR295.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Samme bilde, knapper, arbeidsflyt og lagrings-/lukkeregler. Dette endrer bare presentasjonen."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Ingen ny dataflyt, tilstandseier, portal, transport eller autorisasjon."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen installasjon, avhengighet eller miljøkonfigurasjon endret."
+    },
+    "module": {
+      "required": true,
+      "reason": "UI-kontrakten beskriver høydeuavhengig dekorbilde og tema over uendret native firma-adapter."
+    }
+  }
+}

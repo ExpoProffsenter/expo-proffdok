@@ -7,7 +7,7 @@
 .deviation-dialog:has(.project-dialog-content){width:min(1180px,100%)}
 [data-expo-project-status-content] .projectStatusSection,[data-expo-project-status-content] .projectGuideSection{display:block!important;margin:0 0 16px!important;padding:16px!important}
 [data-expo-project-status-content] .mobileStatusClose,[data-expo-project-status-content] .project-status-details>summary{display:none!important}
-[data-expo-project-shell="1"] .mobileNav,[data-expo-project-shell="1"] .mobileCurrentProjectBar,[data-expo-project-shell="1"] .expoDesktopMenuToggle,[data-expo-project-shell="1"] .expoDesktopMenuCurrent{display:none!important}
+[data-expo-project-shell="1"] .mobileNav,[data-expo-project-shell="1"] .mobileCurrentProjectBar,[data-expo-project-shell="1"]:not([data-expo-project-global-shell="1"]) .expoDesktopMenuToggle,[data-expo-project-shell="1"] .expoDesktopMenuCurrent{display:none!important}
 [data-expo-project-shell="1"]>header>.head{flex-wrap:wrap;gap:10px;padding-top:12px;padding-bottom:12px}
 [data-expo-project-shell="1"]>header>.head h1{font-size:21px}
 [data-expo-project-shell="1"] #expo-simple-order-workspace-badge{display:none!important}
@@ -26,7 +26,7 @@ section.deviation-dialog:has(.project-dialog-content){padding:0!important;margin
 [data-expo-project-shell="1"]>header>.head>div:nth-child(2)>p{display:none}
 
 /* Compact project shell only; global Startside/KS/HMS/HR headers stay unchanged. */
-[data-expo-project-shell="1"] #expo-desktop-menu-bar{min-height:44px;padding:2px max(16px,calc((100% - 1180px)/2 + 16px));gap:8px}
+[data-expo-project-shell="1"]:not([data-expo-project-global-shell="1"]) #expo-desktop-menu-bar{min-height:44px;padding:2px max(16px,calc((100% - 1180px)/2 + 16px));gap:8px}
 [data-expo-project-shell="1"]>header>.note{font-size:11px;padding-bottom:4px!important}
 .project-workspace-heading{padding:13px 20px;gap:12px}.project-workspace-heading h2{font-size:24px;margin:4px 0}.project-workspace-heading p{font-size:13px}.project-workspace-eyebrow{font-size:10px}
 .project-workspace-status{padding:5px 18px;gap:8px 14px}.project-workspace-status button{min-height:36px;padding:6px 12px;font-size:12px}
@@ -115,3 +115,16 @@ section.deviation-dialog:has(.project-dialog-content){padding:0!important;margin
  [data-expo-project-shell="1"]>header>.head>.project-header-actions>.project-actions-dropdown:only-child{grid-column:1/-1}
  [data-expo-project-shell="1"]>header>.head>.project-header-actions button>svg{flex-shrink:0}
 }
+
+/* A single compact project menu uses the same right panel on every screen. */
+.project-workspace .project-workspace-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;flex-direction:row;flex-wrap:wrap}
+.project-workspace-toolbar>button{display:flex;align-items:center;gap:8px;min-height:44px}
+.project-workspace-shortcuts{display:flex;gap:8px;flex-wrap:wrap}
+.project-navigation-panel .project-workspace-navigation{display:block;padding:0}
+.project-navigation-panel .project-phase-card{margin:0 0 18px;padding:16px;border:1px solid #d5e1e7;border-radius:14px;background:#f7fafc;min-width:0}
+.project-navigation-panel .project-phase-card h3{display:flex;align-items:center;gap:10px;margin:0;font-size:18px}
+.project-navigation-panel .project-phase-card h3>span{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#e1eef2;color:#254b5b}
+.project-navigation-panel .project-menu-purpose{flex-basis:100%;margin:4px 0 0;font-size:14px;color:#516575}
+.project-navigation-panel .project-workspace-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;gap:8px}
+.project-navigation-panel .project-workspace-tabs>button{min-width:0;min-height:44px;text-align:left;justify-content:flex-start;white-space:normal}
+@media(max-width:500px){.project-navigation-panel .project-workspace-tabs{grid-template-columns:1fr}.project-workspace-toolbar .project-workspace-shortcuts{display:none}.project-workspace .project-workspace-toolbar{padding:10px 0}}

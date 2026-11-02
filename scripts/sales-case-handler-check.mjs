@@ -33,7 +33,10 @@ const form = { title: "QA Tilbud", customer: "QA Kunde", phone: "123", email: "c
 for (const direct of [false, true]) {
   const name = direct ? "handleCreateDirectOffer" : "handleCreateRequest";
   const start = core.indexOf(`  async function ${name}(event) {`);
-  const end = direct ? core.indexOf("\n  async function handleCreateRequest(", start) : core.indexOf('\n  if (mode === "new"', start);
+  // End at the handler's own function-level closing brace. A later JSX
+  // workspace helper must not become part of this executable handler slice.
+  const closingBrace = core.indexOf("\n  }", start);
+  const end = closingBrace < 0 ? -1 : closingBrace + "\n  }".length;
   assert(start >= 0 && end > start);
   let persisted, mode, nextRequests, alerts = [];
   const context = {

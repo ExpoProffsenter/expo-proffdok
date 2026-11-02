@@ -98,7 +98,8 @@ try {
     0,
     "exact retry after reload does not write",
   );
-  eq(await page.getByText("Innlogget", { exact: true }).count(), 1);
+  eq(await page.getByText("Registrert på prosjektet", { exact: true }).count(), 1);
+  eq(await page.getByText("Innlogget", { exact: true }).count(), 0, "project attendance is distinct from app login");
   await page.evaluate(() => {
     Object.defineProperty(document, "hidden", {
       configurable: true,
@@ -117,7 +118,8 @@ try {
   await btn("Registrer ut").waitFor();
   await btn("Registrer ut").click();
   await btn("Registrer inn").waitFor();
-  eq(await page.getByText("Utlogget", { exact: true }).count(), 1);
+  eq(await page.getByText("Ikke registrert på prosjektet", { exact: true }).count(), 1);
+  eq(await page.getByText("Utlogget", { exact: true }).count(), 0, "departure does not suggest app logout");
   await page.getByText("Legg til prosjektdeltaker", { exact: true }).click();
   await page
     .getByLabel("Ansatt eller personlig UE-lenke")

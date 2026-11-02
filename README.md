@@ -317,17 +317,6 @@ Avgrenset scope: ny time-modul, to innganger i HR/Min side, additiv privat datab
 QA: 98 lokale PostgreSQL-assertions og 37 faktiske React-assertions PASS. 19 faktiske Sandbox-assertions PASS, alle random syntetiske fixtures rullet tilbake. Min side, eksisterende HR-register/Hjelp og modulnavigasjon PASS. Full critical/Sandbox-build PASS. Hjelpetester er utvidet fra tre til fire HR-kapitler; alle tidligere kapitler/innholdskontroller beholdes. Representative 10-linjers uke med hver lagring/godkjenning/eksport målte ~52 kB lagrede radbytes; 40 ansatte × 9 uker ~19 MB før indekser/ledig plass. Vedlegg kommer i tillegg. Praktisk anslag 30–60 MB for dette mønsteret, ikke en øvre kvote.
 
 Sandbox `ppvircenkjizeiqdxphj`: migrasjon installert, egne workers ACTIVE, cleanup-endepunkt konfigurert; ny time-mail fortsatt AV. Standard migreringsverktøy feilet to ganger med `Invalid or expired requestState`; samme autoriserte migrasjon ble installert via én eksplisitt SQL-transaksjon og registrert med versjon `20261014144538`. Ingen Production-migrering/merge er gjort. Preview, CI og innlogget brukerprøve føres nedenfor. TEST OK gjelder denne nye funksjonen separat.
-## Rutiner sender ikke e-post – 12. oktober 2026
-
-Etter Kenneths eksplisitte akuttinstruks er rutinetildelinger og lesepåminnelser bare i appen. Ny køtrigger blokkerer reading ved insert/retry; 670 ventende rutine-e-poster stanset i produksjon, ingen gjeldende rutinepost sendbar. 200 allerede sendte beholdes i loggen. Rutiner, tildelinger og egne bekreftelser beholdes. Andre oppgaver og frister beholder e-post. Produksjon og Sandbox installert, faktisk insert/retry-test rullet tilbake. Se docs/kshms/ROUTINE_EMAIL_STOP_20261012.md.
-
-## Hele personalhåndboka som PDF – 12. oktober 2026
-
-Miljømål **BEGGE**, fra verifisert main `55d43947b0bd991d282959ace41fdefc489984b2` (#237). Kenneth ba om at ansatte kan laste ned hele personalhåndboka med firmalogo. Ny knapp øverst i Min personalhåndbok bruker eksisterende lesende KS/HMS-state og firmaprofil. Alle egne tildelte rutiner med full tekst, kilder, godkjenning og egne bekreftelser med sekunder/norsk tid; søk begrenser ikke PDF. Gjeldende tildelte utgaver først, tidligere/utgåtte tildelte utgaver i merket historikkdel. Innholdsfortegnelse med faktiske sider og felles kompakt ramme-layout. Ingen bekreftelse registreres ved nedlasting.
-
-Scope: PersonalHandbook integrasjon, ny egen PDF-knapp/renderer, permanent critical og React/jsPDF-QA, Hjelp og release-dokumentasjon. Eksisterende enkelt-PDF/samlet lesebekreftelse/firmapublisering beholdes. Ingen SQL/RLS/tilgang/worker/mail/meny/salg/HR-endring. Egen tildeling brukes også for admin og KS/HMS-ansvarlig. Fersk aktør-/firma-/tilgangskontroll før/etter PDF-motor og logo; endrede tildelinger/tekst/kvitteringer stopper nedlasting. Sent svar etter unmount eller scopeswitch forkastes. Manglende registrert logo stopper eksport; profil uten logo gir firmanavn og ærlig beskjed.
-
-QA/status og Preview føres i `docs/kshms/HANDBOOK_PDF_20261012.md`. Ingen tidligere TEST OK påstås å dekke denne nye PDF-funksjonen. Ingen produksjonspublisering før relevant godkjenning.
 
 ## Samlet firmagodkjenning – 12. oktober 2026
 
@@ -541,9 +530,6 @@ Separat core-retting fra ren main: HR husker valgt medarbeider gjennom fersk til
 
 Lagrede prøvesamtaler vises nå som en tydelig blå boks med ramme, større klikkflate og synlig tastaturfokus. Åpning og historikk er uendret.
 
-
-
-**Release 10. oktober 2026:** PR #216 er merged og Production READY på main `c3d873e0`. Denne demo-branchen synkroniserer godkjent main og legger til [fiktive HR-/KS/HMS-kurseksempler](docs/DEMO_KSHMS_HR_COURSE_20261010.md) med egen veiledning og reset. Personlige HR-svar/sykefraværssaker forblir sperret. Tidligere «ingen main/demo/Production»-notater nedenfor er historiske fasebevis.
 HR-menyen har nå egne snarveier til Samtalemaler og Sykefravær. Generell sykefraværsmal bruker eksisterende private malregister/RPC, versjoner, CAS og firmaadmin-gater. Additiv validator-migration tillater `sickleave`; ingen personlig innholdsport eller privilegier åpnes. Kildebasert veiledning og et datoregneksempel uten lagring/påminnelser. BEGGE, foreløpig bare feature/Preview/Sandbox. [Scope og bevis](docs/kshms/HR_SICK_LEAVE_SETUP_20261010.md).
 
 ## HR: tydelig hjelp der du arbeider – 10. oktober 2026
@@ -936,6 +922,19 @@ Firmaprofil → Endre firmanavn bruker egen authenticated-RPC med fersk aktiv pr
 
 Organisasjonskart forklarer at Nytt felles kart krever minst to kvalifiserte registrerte firmaer. Ett firma kan ha Styret og valgfri underavdelingsstruktur. Leader/middle placements show names and free job titles even when staff details are collapsed. No new organization or HR rights. Hjelp now has separate A–Å chapters for conversations and sick-leave, and distinguishes explicit employee sharing, meeting readiness, own confirmation, deadlines and actual external sharing.
 
+
+## Hele personalhåndboka som PDF – 12. oktober 2026
+
+Miljømål **BEGGE**, fra verifisert main `55d43947b0bd991d282959ace41fdefc489984b2` (#237). Kenneth ba om at ansatte kan laste ned hele personalhåndboka med firmalogo. Ny knapp øverst i Min personalhåndbok bruker eksisterende lesende KS/HMS-state og firmaprofil. Alle egne tildelte rutiner med full tekst, kilder, godkjenning og egne bekreftelser med sekunder/norsk tid; søk begrenser ikke PDF. Gjeldende tildelte utgaver først, tidligere/utgåtte tildelte utgaver i merket historikkdel. Innholdsfortegnelse med faktiske sider og felles kompakt ramme-layout. Ingen bekreftelse registreres ved nedlasting.
+
+Scope: PersonalHandbook integrasjon, ny egen PDF-knapp/renderer, permanent critical og React/jsPDF-QA, Hjelp og release-dokumentasjon. Eksisterende enkelt-PDF/samlet lesebekreftelse/firmapublisering beholdes. Ingen SQL/RLS/tilgang/worker/mail/meny/salg/HR-endring. Egen tildeling brukes også for admin og KS/HMS-ansvarlig. Fersk aktør-/firma-/tilgangskontroll før/etter PDF-motor og logo; endrede tildelinger/tekst/kvitteringer stopper nedlasting. Sent svar etter unmount eller scopeswitch forkastes. Manglende registrert logo stopper eksport; profil uten logo gir firmanavn og ærlig beskjed.
+
+QA/status og Preview føres i `docs/kshms/HANDBOOK_PDF_20261012.md`. Ingen tidligere TEST OK påstås å dekke denne nye PDF-funksjonen. Ingen produksjonspublisering før relevant godkjenning.
+
+## Rutiner sender ikke e-post – 12. oktober 2026
+
+Etter Kenneths eksplisitte akuttinstruks er rutinetildelinger og lesepåminnelser bare i appen. Ny køtrigger blokkerer reading ved insert/retry; 670 ventende rutine-e-poster stanset i produksjon, ingen gjeldende rutinepost sendbar. 200 allerede sendte beholdes i loggen. Rutiner, tildelinger og egne bekreftelser beholdes. Andre oppgaver og frister beholder e-post. Produksjon og Sandbox installert, faktisk insert/retry-test rullet tilbake. Se docs/kshms/ROUTINE_EMAIL_STOP_20261012.md.
+
 ## Mobil tilbudslesing – 13. oktober 2026
 
 Miljømål BEGGE, fra main 59682a0902615437677c129fb18fe154350b127e. Intern tilbudsvisning og kundevisning får hovedposter med Åpne hovedpost/Lukk hovedpost, lukket som utgangspunkt på mobil og åpent på desktop. Nummer/tekst/pris i grupperte rader får avgrenset mobil-layout; priser ligger under teksten. Små Til toppen/Til bunnen-knapper på lange tilbudssider skjules under tekstinntasting og ligger over eksisterende mobil Lagre-knapp. Se kundens tilbud/Forhåndsvis som kunde åpner mobil kundepreview i en native modal med fast Tilbake til tilbudet; samme interne saks-/editorinstans beholdes. Desktop og visninger uten modal-lytter beholder egen fane. Modaladresse må være same-origin og en kunde-/kladdvisning; ingen return-token eller ny offentlig tilganger.
@@ -950,14 +949,11 @@ Pilkontrollene har egen enkolonnet meny-layout og ruller dokumentet via window.s
 
 Mobil 13. oktober: topp/bunn-kontrollen er flyttet til felles MobileScrollShortcuts i den autentiserte appskallet; én kontroll uansett valgt modul, mens isolert kundevisning har sin egen. SalesMobileTools beholder bare kundevisningsdialogen. Mobil startboks er avgrenset til tab=prosjekt uten valgt/nytt prosjekt, slik at HR/KS/HMS/profil/øvrige moduler åpner uten startboksen. Kun presentasjon, ingen endring i navigasjonshandlere, recovery, lagring, tilgang eller e-post. Permanent sjekk bruker faktisk rendererbetingelse; touch-QA på modulbytte/HR/KS/HMS/profil/Startsiden og eksisterende tilbudskontroller.
 
-
-13.10.2026 – Godkjent TEST OK: main f0e74ce4 / PR #242 synkronisert kontrollert main→demo. Sjekklistesentralen viser én samlet våtromsliste (33 punkter), separate faglister og prosjekteringsmal (13 punkter). Vanlige kilder kan redigeres som firmaversjoner; garantikilder er låst uten redigering/sletting/kopiering. Prosjekteringssjekklisten fylles ut nederst i Prosjektering. Alle prosjekttyper har + Legg til sjekkliste under Sjekklister. Eksisterende svar/historikk og demo-overlay beholdes; ingen DB-/e-postendring. Full critical/build, React kladd/retry/konflikt/historikk og faktisk render-rekkefølge grønne.
-
-
-Kontrollørtilgang godkjent TEST OK 13. oktober 2026 kl. 16:39 norsk tid, PR #243 main 308e5813a3074e86f5947dd314a28501890a7539. Separat leselenke med valgt utløp, tilbakekalling, alle tekniske sjekklister/prosjektering og manuell e-post med samme tilbudslayout/firmalogo. Ingen automatisk sending ved opprettelse/endring. controller-access-email krever JWT og gyldig intern prosjekt-/firmatilgang samt aktiv kode. Produktionsmigrasjon og mailer aktivert; Core Safety 38414228613 SUCCESS og critical/React/mail QA grønne uten ekte e-postutsending. Kontrollert main→demo-delta med demo-overlay bevart; sandbox-mailer og controller-RPC-er allerede deployet. Rutine-e-post forblir deaktivert.
+Sjekklistesentral 13. oktober: eksisterende prosjektmaler/fagpunkter/Sopro-garantipunkter, produktmasterens kontrollpunkter og egne lister fra firmaets tilgjengelige prosjekter vises i et felles bibliotek. Kun definisjoner hentes, ingen prosjektbesvarelser/kundedata. Firmatilgang kontrolleres før/etter lesing, RLS/firmascope beholdes, paginering og sene svar beskyttes. Vanlige kilder åpnes som en separat firmaversjon via eksisterende bygger/publisering. Garantikilder har ingen redigering, sletting eller kopiering, og garantimalene deles med Prosjekt som samme frosne kildedata. Eksisterende prosjektsvar og garantilogikk er uendret. «+ Legg til sjekkliste» ligger under Sjekklister for både små og våtromsprosjekter; våtrom beholder også inngang fra Fag/utstyr. Full QA og Preview før ny TEST OK; BEGGE.
 
 
-Scrollrettelse godkjent TEST OK 13.10.2026 kl. 17:02 norsk tid, PR #244 main d95f14c80e2a87bd4fed4e31cf47f712c3c2ca48. Vanlig fokus/Windows-utklipp gjenoppretter ikke stale scroll; faktisk skjult side kan gjenopprette posisjonen, og tastatur/mus/touch/hjul/blur/unmount avbryter gjentakelser. Full critical/build og Core Safety 38418142446 SUCCESS; seks runtime-scenariofaner grønne. Kun scroll-effekt, ny helper og test/docs; autosave, Sales recovery, backend og e-post urørt. main→demo, overlay bevart og kontrollsidens baseline oppdatert.
+13.10.2026 – Preview-korrigering: Våtrom har én samlet redigerbar firmaversjon med alle sju arbeidsområder; øvrige fag har hver sin liste. Arbeidsområdet følger punktets hjelpetekst i byggeren. Ingen punkter fjernes. Garantipunkter er fortsatt uforanderlige og kan ikke kopieres til redigerbare firmaversjoner. Redigeringsinngangen heter «Rediger som firmaversjon». Eksisterende prosjektutfyllinger beholdes. Avventer ny TEST OK.
+
 
 13.10.2026 – Prosjektering Preview: egen samlet kontroll med 13 prosjekteringspunkter nederst i Prosjektering. Gjenbruker ProjectChecklistWorkspace og eksisterende bekreftet serverlagring, lokal kladd, historikk, Ok/Avvik/Ikke aktuelt og egen PDF. Stabil egen kategori skiller svar fra utførelses-/garantikontroller. Låste/lesetilgang/support får samme sperrer. Eksisterende prosjekteringsfelt, egne punkter og tegninger beholdes. Ingen database-/e-postendring. Avventer TEST OK.
 
@@ -1242,3 +1238,7 @@ beløp/forskudd. Indeks beregnes bare på ny hovedstol for valgte leveransedeler
 Avtaler og fakturaposter beholder uforanderlige øyeblikksbilder. Ingen utsending,
 bokføring, betalingsstatus eller produksjonsmerge. Presis kontrakt, grenser og
 brukertest: `docs/qa/BOLIG_FAKTURERT_OG_AKONTO_20261024.md`.
+
+### Egne sjekklister og forslag til firmamal
+
+Meny → Sjekklister → Egen sjekkliste → Start sjekkliste lar alle godkjente ansatte i aktivt firma bygge egne sjekkpunkter. Nye lister kan startes mens eldre lokale kladder beholdes. Foreslå som firmamal sender bare oppsettet til firmaets godkjenningskø; firmaadmin vurderer Forslag til firmamaler i samme oversikt. Godkjenning gir en publisert firmamal, avslag krever en begrunnelse. Ingen e-postvarsel sendes. Ordre/adresse/signering og eksport følger den vanlige kontrollen. Se [modulkontrakten](src/modules/checklist/README.md) og [dataflyten](docs/architecture/STANDALONE_CHECKLISTS.md). Ny funksjon prøves først i Sandbox/Preview; den krever egen TEST OK.

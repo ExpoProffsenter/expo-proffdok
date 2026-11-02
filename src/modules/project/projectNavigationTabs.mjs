@@ -33,6 +33,7 @@ export function createGlobalAppTabs({
     ...(canUseAdminProjectSync ? [["admin", "Systemadmin"]] : []),
   ];
 }
+
 export function createProjectWorkspaceTabs({
   isNewProject = false,
   hasSalesOrigin = false,
