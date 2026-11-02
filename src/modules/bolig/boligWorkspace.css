@@ -1,0 +1,65 @@
+/* Same controls and state; groups adapt to the room actually available. */
+.bolig-building-panel{container-type:inline-size}
+.bolig-dialog .bolig-workspace-toolbar button{min-height:44px!important}
+.bolig-workspace-toolbar{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"building stats" "tools tools";align-items:center;gap:14px 20px;margin:12px 0 18px}
+.bolig-building-panel .bolig-workspace-building{grid-area:building;display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0;margin:0}
+.bolig-workspace-building h3{display:flex;align-items:center;gap:8px;margin:0;font-size:20px;overflow-wrap:anywhere}
+.bolig-workspace-building-tabs{display:flex;gap:6px;flex-wrap:wrap;min-width:0;max-width:100%}
+.bolig-workspace-building-tabs button{overflow-wrap:anywhere;min-width:0;max-width:100%}
+.bolig-dialog .bolig-workspace-building button{font-size:16px;min-height:44px;padding:9px 11px;margin:0}
+.bolig-dialog .bolig-workspace-building-tabs button[aria-pressed="true"]{background:#083f49;color:#fff;border-color:#083f49}
+.bolig-workspace-tools{grid-area:tools;display:flex;align-items:end;flex-wrap:wrap;gap:12px;min-width:0}
+.bolig-workspace-tools .bolig-overview-tools{display:contents}
+.bolig-dialog .bolig-workspace-tools .bolig-overview-search{order:1;flex:1 1 220px;max-width:none;min-width:180px;margin:0}
+.bolig-dialog .bolig-workspace-tools .bolig-overview-search input{font-size:16px;min-height:44px;padding:10px 12px 10px 36px;margin:0}
+.bolig-workspace-tools .bolig-overview-tools>label{order:2;width:310px;max-width:100%;margin:0;font-size:15px;line-height:1.4}
+.bolig-dialog .bolig-workspace-tools select{font-size:16px;min-height:44px;max-width:100%;margin:4px 0 0}
+.bolig-workspace-tools .bolig-overview-view{order:3;align-self:end;flex:none}
+.bolig-dialog .bolig-workspace-tools .bolig-overview-view button{font-size:16px;min-height:44px;padding:9px 11px}
+.bolig-workspace-stats{grid-area:stats;display:flex;justify-content:flex-end;align-items:center;gap:18px;max-width:250px;color:#496372;font-size:14px;line-height:1.35}
+.bolig-workspace-stats>span{display:grid;gap:3px}
+.bolig-workspace-stats strong{font-size:22px;color:#10212b;line-height:1.1}
+.bolig-workspace-stats small{font-size:14px}
+.bolig-workspace-building .bolig-switch-building{flex:none}
+.bolig-workspace-building:has(.bolig-workspace-building-tabs) .bolig-switch-building>span{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+.bolig-workspace-building .bolig-switch-building svg{flex:none}
+@container(min-width:1280px){
+ .bolig-workspace-toolbar{grid-template-columns:minmax(200px,300px) minmax(0,1fr) minmax(150px,210px);grid-template-areas:"building tools stats";gap:18px}
+ .bolig-workspace-tools{flex-wrap:nowrap}
+ .bolig-workspace-tools .bolig-overview-tools>label{flex:0 0 310px}
+ .bolig-workspace-stats{max-width:210px}
+}
+@container(max-width:650px){
+ .bolig-workspace-toolbar{gap:12px;grid-template-columns:minmax(0,1fr);grid-template-areas:"building" "tools" "stats"}
+ .bolig-workspace-tools{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+ .bolig-dialog .bolig-workspace-tools .bolig-overview-search{min-width:0;width:100%}
+ .bolig-workspace-tools .bolig-overview-tools>label{width:100%}
+ .bolig-workspace-tools .bolig-overview-view{display:flex;width:100%}
+ .bolig-workspace-tools .bolig-overview-view button{flex:1;justify-content:center}
+ .bolig-workspace-stats{justify-content:flex-start;max-width:none;gap:24px}
+}
+
+/* The overview uses the available width until a unit is selected. */
+[data-expo-app-shell="true"]:has(.bolig-page)>main{max-width:1800px}
+.bolig-main-grid:not(.has-selected){grid-template-columns:minmax(0,1fr)}
+.bolig-main-grid:not(.has-selected)>.bolig-select-unit{padding:0 16px;box-shadow:none;background:transparent}
+.bolig-start-help>summary{min-height:44px;cursor:pointer;font-size:16px;color:#496372;display:flex;align-items:center;list-style:none;gap:10px}
+.bolig-start-help>summary::after{content:'+';margin-left:auto;font-size:22px}
+.bolig-start-help[open]>summary::after{content:'−'}
+.bolig-start-help>div{padding:12px 0;font-size:16px}
+.bolig-start-help>summary:focus-visible{outline:3px solid #10c7cf;outline-offset:3px}
+
+@media(min-width:1001px){
+ .bolig-building-panel>.bolig-group-toolbar:not(:has([aria-pressed="true"])){float:right;width:auto;padding:0;border:0;background:none;margin:0 0 8px 12px}
+ .bolig-building-panel>.bolig-group-toolbar:not(:has([aria-pressed="true"]))>button{min-height:44px;font-size:14px}
+ .bolig-building-panel>.bolig-building-breadcrumb{min-height:44px;align-items:center}
+ .bolig-building-panel>.bolig-workspace-toolbar{clear:both}
+}
+
+/* Keep address and real unit targets in view instead of stretching a decorative photo. */
+.bolig-selected-address{display:flex;gap:8px 20px;flex-wrap:wrap;align-items:center;margin:12px 0;scroll-margin-top:150px;font-size:16px}
+.bolig-selected-address>span{display:flex;align-items:center;gap:7px;overflow-wrap:anywhere;min-width:0}
+.bolig-selected-address:focus-visible{outline:3px solid #087b85;outline-offset:4px}
+.bolig-building-panel .bolig-connected-scene .bolig-photo-building{aspect-ratio:auto;min-height:240px;padding-bottom:24px}
+.bolig-building-panel .bolig-connected-scene .bolig-photo-building .bolig-building-floors{margin-top:12px}
+.bolig-building-panel .bolig-connected-scene .bolig-photo-building>.bolig-facade-photo{object-fit:cover}

@@ -160,8 +160,8 @@ export default function BoligPresenceCard({ context, token }) {
                 {!data
                   ? "Kontrollerer …"
                   : person?.visit
-                    ? "Innlogget"
-                    : "Utlogget"}
+                    ? "Registrert på prosjektet"
+                    : "Ikke registrert på prosjektet"}
               </strong>
               {data && person?.visit && (
                 <span className="bolig-presence-since">
@@ -181,7 +181,7 @@ export default function BoligPresenceCard({ context, token }) {
                   {entries.map((x) => (
                     <option key={x.id} value={x.id}>
                       {x.project}
-                      {x.visit ? " · Innlogget" : ""}
+                      {x.visit ? " · Registrert på prosjektet" : ""}
                     </option>
                   ))}
                 </select>

@@ -1,0 +1,91 @@
+{
+  "testedCommit": "05ddd775a113994ee51b70cfeb5241b67c0d46b8",
+  "coreCssCommit": "84dbc745e96d62be163a4c7c627a726c92dbf76c",
+  "note": "768px title wraps below logo; 2D rectangle overlap separately confirmed false.",
+  "widths": [
+    {
+      "areas": "\"building tools stats\"",
+      "client": 1905,
+      "headerOverlap": false,
+      "inputFont": "16px",
+      "minButton": 44,
+      "scroll": 1905,
+      "selectFont": "16px",
+      "toolbar": 1684,
+      "toolsOverflow": false,
+      "width": 1920
+    },
+    {
+      "areas": "\"building tools stats\"",
+      "client": 1425,
+      "headerOverlap": false,
+      "inputFont": "16px",
+      "minButton": 44,
+      "scroll": 1425,
+      "selectFont": "16px",
+      "toolbar": 1309,
+      "toolsOverflow": false,
+      "width": 1440
+    },
+    {
+      "areas": "\"building stats\" \"tools tools\"",
+      "client": 1345,
+      "headerOverlap": false,
+      "inputFont": "16px",
+      "minButton": 44,
+      "scroll": 1345,
+      "selectFont": "16px",
+      "toolbar": 1229,
+      "toolsOverflow": false,
+      "width": 1360
+    },
+    {
+      "areas": "\"building stats\" \"tools tools\"",
+      "client": 1009,
+      "headerOverlap": false,
+      "inputFont": "16px",
+      "minButton": 44,
+      "scroll": 1009,
+      "selectFont": "16px",
+      "toolbar": 893,
+      "toolsOverflow": false,
+      "width": 1024
+    },
+    {
+      "areas": "\"building\" \"tools\" \"stats\"",
+      "client": 753,
+      "headerOverlap": false,
+      "inputFont": "16px",
+      "minButton": 44,
+      "scroll": 753,
+      "selectFont": "16px",
+      "toolbar": 637,
+      "toolsOverflow": false,
+      "width": 768
+    },
+    {
+      "areas": "\"building\" \"tools\" \"stats\"",
+      "client": 375,
+      "headerOverlap": false,
+      "inputFont": "17px",
+      "minButton": 44,
+      "scroll": 375,
+      "selectFont": "17px",
+      "toolbar": 331,
+      "toolsOverflow": false,
+      "width": 390
+    },
+    {
+      "areas": "\"building\" \"tools\" \"stats\"",
+      "client": 305,
+      "headerOverlap": false,
+      "inputFont": "17px",
+      "minButton": 44,
+      "scroll": 305,
+      "selectFont": "17px",
+      "toolbar": 261,
+      "toolsOverflow": false,
+      "width": 320
+    }
+  ]
+}
