@@ -441,5 +441,58 @@
         "text": "Masseplanen er lagret. Bruk samlet tidslinje eller åpne én aktivitet for et unntak. Beboervarsler lages og gjennomgås separat. Dette er masseplan-kapitlet. Resten av Bolig A–Å kommer i egne kapitler."
       }
     ]
+  },
+  {
+    "id": "prosjekt-statusrapport",
+    "title": "Last ned statusrapport fra prosjekt",
+    "module": "Prosjekt",
+    "access": "report",
+    "topics": [
+      "rapport"
+    ],
+    "description": "Last ned statusrapport uten ekstra KS/HMS og gå tilbake til samme prosjekt. Filmen dekker ikke garantiutstedelse eller alle dokumentvalg.",
+    "src": "/help-videos/prosjekt-statusrapport-v1.mp4",
+    "track": "/help-videos/prosjekt-statusrapport-v1.vtt",
+    "duration": 99,
+    "sha256": "283eeba2eb364240fc9d6caad55b972660b6592db23e56ad1f0cf832118b3d78",
+    "bytes": 4309626,
+    "sourceCommit": "81204ff94c6fd3ec933fb114bedb720ac0d5e848",
+    "chapters": [
+      {
+        "start": 0,
+        "title": "Start i riktig prosjekt",
+        "text": "Åpne prosjektet fra Prosjektliste. Kontroller navn og adresse før du henter rapporten. Velg Prosjektmeny. Her brukes et fiktivt demoprosjekt."
+      },
+      {
+        "start": 12,
+        "title": "Velg Rapport",
+        "text": "Rull ned i prosjektmenyen til Overlevering og garanti. Velg Rapport for å åpne forhåndsvisningen."
+      },
+      {
+        "start": 24,
+        "title": "Se gjennom innholdet",
+        "text": "Rapporten åpnes i høyre panel. Kontroller prosjektopplysninger og dokumentasjon. Velg Last ned PDF når du er klar. Rapporten kan deles med kunde. Vurder innholdet først."
+      },
+      {
+        "start": 39,
+        "title": "Velg ekstra KS/HMS",
+        "text": "Bare avkryssede dokumenter tas med. Kontroller status og innhold. I dette eksemplet velger vi Fortsett uten KS/HMS. Utvalg av KS/HMS vises her. Ingen dokumenter er valgt."
+      },
+      {
+        "start": 57,
+        "title": "Generer PDF",
+        "text": "Les påminnelsen om lokal arkivering. Velg Generer PDF. Nettleseren starter nedlastingen når rapporten er ferdig. Oppbevar ferdig dokumentasjon i firmaets arkiv."
+      },
+      {
+        "start": 71,
+        "title": "Les statusmeldingen",
+        "text": "Rapporten er sendt til nettleserens nedlasting. Finn filen i Nedlastinger. Dette prosjektet gir en statusrapport: garantien er ikke utstedt. Kontroller at filen er lastet ned og kan åpnes."
+      },
+      {
+        "start": 89,
+        "title": "Tilbake i prosjektet",
+        "text": "Tilbake til prosjektet lukker rapportpanelet. Du er tilbake i samme prosjekt og kan fortsette arbeidet. PDF-eksporten fullfører ikke prosjektet."
+      }
+    ]
   }
 ]
