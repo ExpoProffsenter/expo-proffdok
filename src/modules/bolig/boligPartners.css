@@ -588,3 +588,4 @@
 .bolig-partner-item-browser label{display:grid;gap:5px;min-width:0;flex:1 1 220px;font-size:16px}
 .bolig-partner-item-browser input,.bolig-partner-item-browser select{box-sizing:border-box;width:100%;min-width:0;min-height:44px;font:inherit;padding:10px 12px;border:1px solid #b7ccd6;border-radius:7px;background:#fff;color:#18352c}
 .bolig-partner-item-browser p{flex-basis:100%;margin:0;font-size:16px}
+body:has([data-expo-app-shell="true"]) .bolig-partner-item-browser label :is(input,select){font-size:16px!important;min-height:44px!important;transition:none}
