@@ -1,4 +1,16 @@
-# Gjeldende release – samlet TEST OK 2. november 2026
+# Gjeldende status – 4. november 2026
+
+Production/main er kontrollert som **34daef4c0526b93ddbd84c3bfd97fb0833d97caf**, Vercel dpl_3D5fzV9TVkidd7x7Eowg3V6hWjQ2 READY på expo-proffdok.app. Novembers godkjente produksjonsløp er gjennomført; gamle planpunkter nedenfor skal ikke kjøres på nytt.
+
+Ny designgjennomgang etter kundemøtet: **PR308**, branch **fase45b-ux-live-review-20261104**. Kodekandidat **a39f110c8b5a9dc555ad506c5675a195e3e3dcc0** har grønn full CI897 (run41833840681) og bekreftet Sandbox Preview READY. Hjelp i toppfeltet, filmknapper under temaer og korrigert Bolig-verktøylinje er klare til avgrenset brukertest. Ingen ny TEST OK eller produksjonsmerge er gitt.
+
+Innlogget skynettøkt fungerer igjen. Production er undersøkt uten kundedatalagring. Sandbox er undersøkt med eksisterende fiktiv40-boligpilot og et nytt avgrenset QA-prosjekt. Dette er fortsatt ingen full A–Å-attest for alle roller/underfunksjoner. Komplett Bolig-film, videre flytrettelser og fysisk Safari/mobil gjenstår.
+
+[Datert QA, testgrenser, funn og neste steg](docs/qa/LIVE_DESIGN_REVIEW_20261104.md). [PR308](https://github.com/ExpoProffsenter/expo-proffdok/pull/308). Demo er ikke synkronisert med denne nye, ikke-godkjente pakken.
+
+---
+
+# Historisk releasegrunnlag – samlet TEST OK 2. november 2026
 
 Kenneth har godkjent PR294, PR295, PR298 og sjekklistefunksjonen PR305 med nødvendige backendkontroller, produksjonssetting og main → demo. Ingen ny bekreftelse kreves for uendret avtalt omfang når kontrollene består. PR217/277, nye funksjoner, Solgløtt, videre videoer og branchopprydding er utenfor dette løpet.
 
