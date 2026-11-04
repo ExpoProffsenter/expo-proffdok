@@ -543,7 +543,7 @@ export default function BoligPreparation({ context, root, onChanged }) {
                     </button>
                   </p>
                 )}
-                {pending && (
+                {pending && !busy && (
                   <p role="status" className="bolig-preparation-notice">
                     Lagringsforsøket må kontrolleres før du gjør flere
                     endringer.{" "}

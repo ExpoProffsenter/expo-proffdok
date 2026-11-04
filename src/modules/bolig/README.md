@@ -23,3 +23,5 @@ Arbeidssted for KS/HMS og timer viser bolignummer med tilhørende bygg/adresse; 
 BoligEditorDialog gjenoppretter fokus til den faktiske, fortsatt synlige åpningsknappen når panelet fjernes. Bevisst navigasjon, nytt panel eller utilgjengelig gammel åpner overstyrer retur. Tilgangsrevalidering beholder samme monterte kladd og native suspensjon; den mekanismen endres ikke.
 
 Felles klargjøring (bygg, nummerering, rom/pakker) åpner til høyre. Det lange innholdet rulles separat fra handlingsfeltet nederst. Forhåndsvisning, Bekreft og lagre, lukk, sperrer og kvittering bruker samme native kode som før. På svært korte skjermer kan handlingsfeltet også rulles; ikonlukking beholdes i toppfeltet. Ingen rom eller pakke fordeles før den eksisterende eksplisitte bekreftelsen.
+
+Under pågående lagring viser klargjøring, masseplan, datoflytting og enkeltaktivitet en ventebeskjed. Instruksjonen om usikkert resultat og eksakt retry gjelder etter at den eksisterende kommandoen har forlatt opptatt tilstand. UI-teksten endrer ingen request-ID, sperre, kvittering eller gjenoppretting.

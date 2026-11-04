@@ -33,6 +33,21 @@ CI899 på39b8fcd1: build/scope/Bolig-db/HR/firma består. Bolig-nettleser går g
 
 Avgrenset scopeutvidelse etter ny faktisk romfordeling: klargjøringsdialogen hadde bekreftelsesknappen nedenfor hele rom-/boliglisten. Eksisterende footer flyttes ut av den rullbare bodyen, med samme betingelse(data), knapper, disabled-uttrykk og handlers. CSS gjør panelet høyrestilt og holder header/footer på skjermen; innhold rulles separat. Eksisterende preparation-nettleserprøve får konkrete geometri-/scrollkrav i firebredder og kortskjerm uten å fjerne funksjonsassertions. Ingen lagringsflyt eller preview-/kvitteringsmekanisme endres.
 
-Videre faktisk Sandbox på PR308/515e03b9: ny QA-rommal med én Bad1/QA-Standardbad,2demovarer, lagret serverbekreftet. Én bolig(H0101) valgt og forhåndsvist:1nyttrom/1pakke/2varer. Bekreft og lagre utført kun i det nye fiktive QA-prosjektet; endelig serverreadback avventes før resultat føres som bestått. Eksisterende pilot/kundedata og Production er urørt.
+Videre faktisk Sandbox på PR308/515e03b9: ny QA-rommal med én Bad1/QA-Standardbad,2demovarer, lagret serverbekreftet. Én bolig(H0101) valgt og forhåndsvist:1nyttrom/1pakke/2varer. Bekreft og lagre utført kun i det nye fiktive QA-prosjektet; serverbekreftet lagret med 1 bolig oppdatert. Eksisterende pilot/kundedata og Production er urørt.
 
 CI900 påa259b6fa: den nye native prøven bygger og passerer utsatt/avvist/feilet/fremmed/tilbakekalt katalog, feltoverføring og oppgavefiltrering/paging. Den stanser på ny320px-kontroll for44px/16px. Nye filterfelt får en presis, portalvennlig presentasjonsregel som overstyrer appens sene mobilstiler, uten tekststørrelsesanimasjon. Kravet beholdes og feilmeldingen utvides med faktiske mål. Ingen assertion fjernes eller terskel senkes.
+
+
+## Bekreftet helreise og siste ventetekster
+
+CI901 (41839378076) på2126ac0e bestod samtlige ni pakker og sluttkontrollen, inkludert nye native Bolig-scenarier, opprinnelige Bolig-scenarier, appnettleser, databasegrenser, HR, firma, prosjekter/support og full build. CI899/900-feilene ovenfor er rettet med opprinnelige krav beholdt.
+
+I innlogget Sandbox på hjelpepreview PR308 ble den egne QA-rommalen deretter forhåndsvist for alle seks boliger. Resultatet viste fem klare og én bolig bevart fordi den allerede hadde egne rom/valg. Med overstyring avslått ble fem boliger serverbekreftet oppdatert. Ingen pilot- eller kundedata endret.
+
+Samme fiktive QA-prosjekt fikk18aktiviteter: seks boliger ganger tre arbeidstrinn, én dag per trinn, etter foregående aktivitet, to arbeidsdager mellom boligstarter, mandag–fredag og eksisterende demobruker som ansvarlig. Første start16.11.2026; siste arbeid02.12.2026. Forhåndsvisningen hopper over helgen. Serverreadback viste18aktiviteter/0utført/én historikkregistrering og «Endringen er lagret». «Vis første arbeid» flyttet Gantt til16.–22.11. og viste korrekt første dato. Ingen varsler ble publisert eller e-post sendt.
+
+Under ordinær venting viste native klargjøring og masseplanlegging instruksjoner om usikker lagring og å lukke/åpne, samtidig som lukking var sperret. Avgrenset rettelse: venteteksten beskriver pågående lagring. Opprinnelig usikker-svar-veiledning og retry vises først når kommandoen ikke lenger er opptatt. Samme presentasjonsregel brukes i enkeltaktivitet og samlet datoflytting. Ingen pending/request-ID, disabled-vilkår, handlers, kvittering, retry eller lagringskommando endres.
+
+Preparation- og planleggingsprøvene holder nå det opprinnelige tapte-svar-scenariet bevisst i venting, kontrollerer sann ventetekst og sperret lukking, slipper deretter svaret og fortsetter de eksisterende usikkert-svar-/eksakt-retry-assertionene. Lokal full Sandbox-build og syntakskontroll består; endelig CI må også bestå denne siste tekstendringen.
+
+Den separate Bolig-previewen har bekreftet Sandbox-binding, men krever ny innlogging på det nye vertsnavnet. Innlogget helreise ovenfor er derfor bevis for den eksisterende PR308-grunnflyten; den erstatter ikke innlogget kontroll av alle PR309-rettelsene. Ingen produksjonssetting eller TEST OK foreligger.
