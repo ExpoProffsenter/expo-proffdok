@@ -75,3 +75,9 @@ Regresjonsprøven rendrer faktisk Catalog→Grouped. Bare persistStoreOfferDraft
 6. Fortsett gjenstående Bolig-helreise og kapittelfilm etter at øvrige områder har fått fremdrift. Full Bolig A–Å gjenstår.
 
 Det brukes én varig oppfølgingslogg per avgrenset pakke. Ikke lag nye designretninger eller ombygg uberørte moduler som sideeffekt.
+
+## CI912 – testvertens avhengighetstre
+
+CI912/run41888655245 på63e864f4: app-browser stoppet ved fixture-oppstart før første geometrisjekk (window.qa.show manglet). Lokal Vite-reproduksjon av den faktiske Catalog-importen gir tre chunks: entry importerer jsx-runtime-chunk og har lazy BarcodeScanner. Testverten leverte bare entry som innebygd modul og HTML for øvrige forespørsler. Dette er en bevist feil i testverten, ikke et bestått eller feilet produktmål. Testbygget samles nå til én selvstendig bundle, med eksplisitt krav om én chunk og bedre oppstartsfeil. Alle opprinnelige assertions og den nye faktiske Catalog-wrapperen beholdes. Ingen appendring for denne testvertsrettelsen.
+
+PR308 er siden oppdatert til0525da71 med dokumentasjon; appkode er fortsatt b2c3a422 og fullCI910 grønn. Den nye PR311-adressen åpner ordinær innlogging. Den gamle PR308-økten er bevart; ingen autentisering kopieres til en annen host. Innlogget PR311-etterprøve er derfor foreløpig åpen.

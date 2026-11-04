@@ -18,8 +18,9 @@ const built = await build({ root, configFile: false, logLevel: "silent", plugins
   load(id) { if (id === "\0autosave") return "export const persistStoreOfferDraft=async()=>{window.qa.calls.push('synthetic-autosave');};"; if (id === "\0templates") return "export const loadStoreTextTemplates=async()=>[];export const saveStoreTextTemplate=async()=>{throw Error('No template writes');};export const removeStoreTextTemplate=async()=>{throw Error('No template deletion');};"; if (id === "\0empty") return "export default function(){return null;}"; },
 }], resolve: { alias: { react: path.join(root, "node_modules/react"), "react-dom": path.join(root, "node_modules/react-dom") } },
 define: { "process.env.NODE_ENV": '"production"', "import.meta.env.VITE_SUPABASE_URL": '""', "import.meta.env.VITE_SUPABASE_ANON_KEY": '""' },
-build: { write: false, minify: false, target: "esnext", lib: { entry: path.join(root, "scripts/fixtures/sales-case-customer-preview-harness.jsx"), formats: ["es"], name: "CasePreviewQA", cssFileName: "case-preview" } } });
+build: { write: false, minify: false, target: "esnext", rollupOptions: { output: { inlineDynamicImports: true } }, lib: { entry: path.join(root, "scripts/fixtures/sales-case-customer-preview-harness.jsx"), formats: ["es"], name: "CasePreviewQA", cssFileName: "case-preview" } } });
 const output = (Array.isArray(built) ? built[0] : built).output;
+eq(output.filter(item => item.type === "chunk").length, 1, "isolated test page contains the actual catalog editor including its lazy scanner dependencies");
 const js = output.find((item) => item.type === "chunk" && item.isEntry).code;
 const css = output.filter((item) => item.type === "asset" && item.fileName.endsWith(".css")).map((item) => item.source).join("\n");
 const server = http.createServer((req, res) => {
@@ -45,7 +46,8 @@ try {
     outbound.push(route.request().url()); return route.abort("blockedbyclient");
   });
   await page.goto(`http://127.0.0.1:${server.address().port}`);
-  await page.waitForFunction(() => Boolean(window.qa?.show));
+  try { await page.waitForFunction(() => Boolean(window.qa?.show)); }
+  catch (error) { throw new Error(`Native case fixture failed to start: ${JSON.stringify(errors)}`, { cause: error }); }
   const waitForWorkspace = (mode, index = 2) => page.waitForFunction(({ mode, index }) => {
     const committed = window.qa.committed;
     const input = document.querySelector('.sales-case-work-content textarea');
