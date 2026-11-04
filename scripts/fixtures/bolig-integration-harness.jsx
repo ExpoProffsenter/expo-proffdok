@@ -120,7 +120,9 @@ window.__client = {
 };
 const record = {
   root: { id: "root", title: "QA Boligprosjekt", reference: "QA-1" },
-  units: [{ id: "unit", number: "H0101", project_id: "apartment" }],
+  blocks: [{id:"block-a",name:"QA-bygg A"},{id:"block-b",name:"QA-bygg B"}],
+  entrances: [{id:"entrance-a",block_id:"block-a",address:"QA-veien 101"},{id:"entrance-b",block_id:"block-b",address:"QA-veien 103"}],
+  units: [{ id: "unit", number: "H0101", entrance_id:"entrance-a", project_id: "apartment" },{id:"unit-b",number:"H0101",entrance_id:"entrance-b"}],
 };
 createRoot(document.getElementById("app")).render(
   <main>

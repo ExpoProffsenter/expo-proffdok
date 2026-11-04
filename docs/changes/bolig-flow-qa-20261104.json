@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "title": "Tydeligere Bolig-flyt etter innlogget QA",
+  "change": "Miljømål BEGGE. Egen kjernebranch fra main34daef4c, adskilt fra PR308. Retter katalogens misvisende ventetilstand og sene svar etter tilbakekalt tilgang, inkluderer bygg/adresse i HMS-arbeidssted, avgrenser store interne UE-lister med lokale søk/status/Vis flere, viser statusriktig veiledning for endringsordre og returnerer fokus fra native underpaneler. Ingen ny RPC, databasemigrering, rolle, e-post eller lagringskommando. Eksisterende salgsvarefelt, backendtilgang, dokumentstatus og originaldata beholdes.",
+  "verification": "Rotårsakene er registrert ved innlogget Sandbox-gjennomgang i PR308. Uendret main-basis, separat Bolig-core-boundary PASS. Native scenariovern legges til eksisterende CI-innganger: utsatt/avvist/feilet/foreldet katalogtilgang, bruker/firma,161oppgaver med status/søk/paging/historikk, fem bredder, faktisk nestet dialog/fokus/Escape/suspend/kladd, like bolignumre i ulike bygg og statusriktig endringsordretekst. Faktiske sluttresultater føres i docs/qa/BOLIG_FLOW_QA_20261104.md.",
+  "documentation": {
+    "help": {"required": true, "reason": "Slik styrer du prosjektet forklarer nye oppgavefiltre og Vis flere; eksisterende fagtemaer beholdes."},
+    "architecture": {"required": false, "reason": "Ingen ny dataflyt, backend eller arkitektur; eksisterende komponenter og RPC-kontrakter beholdes."},
+    "setup": {"required": false, "reason": "Ingen avhengigheter, konfigurasjon eller installasjon endres."},
+    "module": {"required": true, "reason": "Bolig README beskriver ventetilstander, interne filtre og fokusretur med deres avgrensninger."}
+  }
+}

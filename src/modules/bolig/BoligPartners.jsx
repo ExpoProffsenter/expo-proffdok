@@ -666,6 +666,8 @@ export default function BoligPartners({ context, root }) {
             registreres under boligens bestilling.
           </p>
           <Items
+            key={partner.id}
+            browse
             items={[...partner.orders, ...partner.tasks]}
             events={partner.events}
           />

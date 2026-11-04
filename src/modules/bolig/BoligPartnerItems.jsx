@@ -1,5 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import { partnerDate, partnerLabels } from "./boligPartnerClient.js";
+const statusNames = { ordered: "Bestilt", partial: "Delvis mottatt", delivered: "Mottatt", planned: "Planlagt", working: "Pågår", blocked: "Stanset", done: "Utført" };
+const searchText = value => String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("nb").trim();
 export function PartnerEvent({ event }) {
   return (
     <div
@@ -20,10 +22,22 @@ export function PartnerEvent({ event }) {
     </div>
   );
 }
-export default function PartnerItems({ items, events = [], onRespond }) {
+export default function PartnerItems({ items, events = [], onRespond, browse = false }) {
+  const [query, setQuery] = useState("");
+  const [status, setStatus] = useState("");
+  const [limit, setLimit] = useState(20);
+  const matching = browse ? items.filter(item => (!status || item.status === status) && searchText([item.title, item.number, item.address, item.reference, item.room_name, statusNames[item.status]].join(" ")).includes(searchText(query))) : items;
+  const visible = browse ? matching.slice(0, limit) : matching;
+  const statuses = [...new Set(items.map(item => item.status))].filter(value => statusNames[value]);
   return (
     <div className="bolig-partner-items">
-      {items.map((item) => {
+      {browse && items.length > 12 && <div className="bolig-partner-item-browser">
+        <label>Søk i oppgaver<input type="search" value={query} placeholder="Bolig, adresse, arbeid eller ordrenummer" onChange={e => { setQuery(e.target.value); setLimit(20); }}/></label>
+        <label>Status for oppgaver<select value={status} onChange={e => { setStatus(e.target.value); setLimit(20); }}><option value="">Alle statuser</option>{statuses.map(value => <option key={value} value={value}>{statusNames[value]}</option>)}</select></label>
+        <p role="status">Viser {visible.length} av {matching.length} oppgaver{matching.length !== items.length ? ` · ${items.length} totalt` : ""}.</p>
+      </div>}
+      {browse && !matching.length && <p>Ingen oppgaver passer søket og statusen. Endre søket eller velg Alle statuser.</p>}
+      {visible.map((item) => {
         const history = events.filter(
           (e) => e.target_id === item.id && e.kind === item.kind,
         );
@@ -38,18 +52,7 @@ export default function PartnerItems({ items, events = [], onRespond }) {
                 <h3>{item.title}</h3>
               </div>
               <span className="bolig-partner-tag">
-                {item.kind === "order"
-                  ? {
-                      ordered: "Bestilt",
-                      partial: "Delvis mottatt",
-                      delivered: "Mottatt",
-                    }[item.status]
-                  : {
-                      planned: "Planlagt",
-                      working: "Pågår",
-                      blocked: "Stanset",
-                      done: "Utført",
-                    }[item.status]}
+                {statusNames[item.status]}
               </span>
             </div>
             {item.kind === "order" ? (
@@ -107,6 +110,7 @@ export default function PartnerItems({ items, events = [], onRespond }) {
           </article>
         );
       })}
+      {browse && matching.length > limit && <button type="button" onClick={() => setLimit(value => value + 20)}>Vis flere oppgaver ({matching.length - visible.length} gjenstår)</button>}
     </div>
   );
 }

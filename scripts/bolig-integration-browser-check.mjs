@@ -95,6 +95,9 @@ try {
   if (process.env.BOLIG_TASKS_ONLY_QA) page.setDefaultTimeout(6000);
   if (!process.env.BOLIG_TASKS_ONLY_QA) {
   await btn("Opprett prosjektkobling").waitFor();
+  const scopeSelect=page.getByLabel("Arbeidssted for KS/HMS og timer");
+  eq(await scopeSelect.locator('option[value="unit"]').innerText(),"H0101 · QA-bygg A · QA-veien 101 · Koblet prosjekt","same unit number includes its own building/address without changing id");
+  eq(await scopeSelect.locator('option[value="unit-b"]').innerText(),"H0101 · QA-bygg B · QA-veien 103","unlinked home is distinguishable in another building");
   eq(await page.evaluate(() => window.writes), 0, "no mount write");
   await page
     .getByLabel("Prosjektkobling", { exact: true })

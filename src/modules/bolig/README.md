@@ -11,3 +11,13 @@ Fremdrift, RUH/avvik, vernerunde og risikovurdering åpner sine eksisterende arb
 BoligQuality og BoligPartnerQuality bruker BoligChecklistStatusChoices. Valgene viser 20px statusbokser i minst 44px trykkflater med 16px tekst. OK og Ikke aktuelt er grønne; Avvik er oransje. Trykk på valgt resultat igjen for å tømme det. Lukket avvik vises bare der det opprinnelige serverlagrede svaret tillot lukking, og Ikke aktuelt skjules når punktet forbyr det.
 
 Komponenten sender bare den opprinnelige statusverdien til editorens eksisterende patch. Native fieldset eier sperring ved lesetilgang, fullføring og pågående kommando. Kladd, etterfølgende feltbekreftelser, avvikskrav, lagring, kvittering og eksakt retry har samme eier. Ingen signaturkrav fra ordinære utførelsessjekklister innføres i Bolig/UE av denne presentasjonsendringen.
+
+## Katalog, oppgaver og retur
+
+Katalogsøk viser «Kontrollerer katalogtilgangen» mens eksisterende lesekontroller venter. Bekreftet avslag, kontrollfeil og endret firma/tilgang har egne tekster. Ingen katalog eller søkeresultat vises før riktig bruker/firma er bekreftet; et gammelt svar kan ikke gjenåpne oppslaget etter tilbakekalling. Manuelle varelinjer er tilgjengelige som før. Ingen nye katalogrettigheter eller RPC-er innføres.
+
+I prosjektlederens UE-/leverandørdetalj har store lister **Søk i oppgaver**, **Status for oppgaver** og **Vis flere oppgaver**. Første side viser20oppgaver. Søk går gjennom hele den allerede autoriserte listen, inkludert skjulte sider. Det endrer ingen datoer, svar, bestillinger eller status. Oppgavens historikk beholdes. Partnerportalens eksisterende tidslinje, filtre og paging beholdes uendret.
+
+Arbeidssted for KS/HMS og timer viser bolignummer med tilhørende bygg/adresse; verdien er fortsatt samme bolig-ID. Endringsordretekst følger eksisterende status: klargjør og del før svar, vent ved publisert grunnlag, og leverandøroppfølging/nedlasting etter aksept.
+
+BoligEditorDialog gjenoppretter fokus til den faktiske, fortsatt synlige åpningsknappen når panelet fjernes. Bevisst navigasjon, nytt panel eller utilgjengelig gammel åpner overstyrer retur. Tilgangsrevalidering beholder samme monterte kladd og native suspensjon; den mekanismen endres ikke.
