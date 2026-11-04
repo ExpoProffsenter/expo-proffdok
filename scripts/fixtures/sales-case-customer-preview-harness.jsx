@@ -8,7 +8,7 @@ import Inspection from "../../src/modules/sales/components/SalesInspectionNote.j
 import Plan from "../../src/modules/sales/components/SalesSurveyPlan.jsx";
 import RequestForm from "../../src/modules/sales/components/SalesRequestForm.jsx";
 import Activation from "../../src/modules/sales/components/SalesProjectActivation.jsx";
-import GeneralOffer from "../../src/modules/sales/components/SalesStoreOfferBuilderGrouped.jsx";
+import GeneralOffer from "../../src/modules/sales/components/SalesStoreOfferBuilderCatalog.jsx";
 import "../../src/style.css";
 import "../../src/modules/app/mobileResponsive41A.css";
 import "../../src/modules/sales/sales.css";

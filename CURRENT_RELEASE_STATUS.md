@@ -18,3 +18,7 @@ Den gamle innloggede skynettøkten er fortsatt ikke gjenopprettet. Ingen full ny
 ## Historikk
 
 Tidligere detaljstatus, godkjente hoder og delbevis er bevart i Git på d9ca45e0 og i PR294/295/298/305. Bruk den nyeste daterte releasekvitteringen, ikke gamle «mangler migrering» eller «ikke TEST OK»-avsnitt. Ingen originalbevis eller demodata er slettet.
+
+## Videre helappkontroll 4. november
+
+Ny QA/riktig kandidatstatus, hele 145-reisers inventaret og avgrenset rettelse av klipping i Generelt tilbud: [WHOLE_APP_REVIEW_20261104](docs/qa/WHOLE_APP_REVIEW_20261104.md). Arbeid fra main34daef4c i fase45b-whole-app-qa-20261104. Ingen ny TEST OK eller produksjonssetting. PR308/309/310 er fortsatt separate og umerget.

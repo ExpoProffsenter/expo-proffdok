@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Generelt tilbud: behold hele editoren i arbeidskolonnen",
+  "change": "Miljømål BEGGE. Faktisk Sandbox-gjennomgang viste avklipte felt og tekster i Generelt tilbud. SalesStoreOfferBuilderCatalog har en ekstra div rundt grouped-editoren. De delte interne layoutreglene traff bare direkte sales-app-barn. Wrapperen får en navngitt presentasjonsklasse, og de samme bredde-/paddingreglene gjelder også denne eksisterende strukturen. Ingen endring i lagring, hydrering, beregning, tilgang, kundeaksept, transport eller demo-overlay.",
+  "verification": "Førtilstand lest i innlogget PR308-Sandbox på b2c3a422, DEMO-BUTIKK-01-UTKAST. Kildekobling bevist mellom faktisk Catalog-wrapper og tre direct-child-CSS-regler. Eksisterende native kundevisningstest bruker nå Catalog rundt samme Grouped-editor; autosavegrensen er syntetisk og transport er fortsatt sperret. Alle opprinnelige assertions beholdes; tillegg krever at wrapper, skall og synlige felt holder seg innenfor arbeidskolonnen. Full lokal Sandbox npm build/critical-kjede og git diff --check PASS. Lokal Chromium kan ikke starte pga socket()/ProcessSingleton; CI og publisert etterkontroll gjenstår ved første commit. Se docs/qa/WHOLE_APP_REVIEW_20261104.md.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Ingen knapp, begrep eller arbeidsrekkefølge endres. Eksisterende felter blir fullt synlige."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Kun avgrenset presentasjonsklasse og CSS. Dataflyt og modulgrenser er uendret."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen endring i oppsett, installasjon eller brukskontrakt."
+    },
+    "module": {
+      "required": false,
+      "reason": "Samme Catalog/Grouped-kontrakt, callback og lagringsmekanisme. Wrapperens formål beskrives i QA-grunnlaget."
+    }
+  }
+}
