@@ -26,4 +26,10 @@ Innlogget PR311 Preview på f07bbb57: HOVED → Bilder → Samlet bildeoversikt 
 Kun hvis eksakte etter-hasher fortsatt matcher: gjenopprett HOVEDs checklist og HOVEDs photos/checklist i golden fra den avgrensede backupen i én kontrollert transaksjon. Sammenlign alle ikke-mediefelt og radkolonner. Ved endret hash må ny aktivitet vurderes først. Ikke gjenopprett hele golden-payloaden, ikke reset og ikke overskriv senere svar.
 
 ## PDF-etterkontroll fra apprettelsen
-Den separate PR311-kandidaten f07bbb57 erstatter blokkerende suksess-alert med status i rapportpanelet. Faktisk RESERVE-eksport fullført i nettleseren uten JS-dialog. Nedlastet fil:8717777byte,21A4-sider, jsPDF2.5.1, SHA25650b0666fa9b4267f99b1086573d23bb5c0bd43a4c87c4cfbdc95b3ab72e9c292. Alle21sider rendret og visuelt gjennomgått som oversikt; galleriet og sjekkpunktbildene vises. Filen er testbevis, ikke ny kundeleveranse. Ingen ny selvstendig PDF-eksport fra HOVED i denne runden. Apprettelsen er fortsatt Preview, ikke main/Production.
+Den separate PR311-kandidaten f07bbb57 erstatter blokkerende suksess-alert med status i rapportpanelet. Faktisk RESERVE-eksport fullført i nettleseren uten JS-dialog. Nedlastet fil:8717777byte,21A4-sider, jsPDF2.5.1, SHA25650b0666fa9b4267f99b1086573d23bb5c0bd43a4c87c4cfbdc95b3ab72e9c292. Alle21sider rendret og visuelt gjennomgått som oversikt; galleriet og sjekkpunktbildene vises. Filen er testbevis, ikke ny kundeleveranse. HOVED-eksport ble kontrollert i neste avsnitt. Apprettelsen er fortsatt Preview, ikke main/Production.
+
+
+## Etterkontroll: HOVED-statusrapport og full CI
+Etter URL-rettingen ble også HOVED eksportert fra faktisk PR311 Preview f07bbb57:16A4-sider,6829466byte,SHA25698e5e9071b226f8cf339a0ad8172c13f79ddb0c527efeecf2b38a75ff83fad63. Alle16sider rendret og visuelt gjennomgått som oversikt. Seks galleri- og fire sjekkpunktreferanser viser eksempelbildene. PDF sier at garantien ikke er utstedt, og inkluderer ikke garantibevis. Vedvarende statusmelding ble vist, ingen JS-dialog. Etter begge eksportene er HOVED- og RESERVE-datahashene uendret.
+
+Full CI925/run41919475874 for appkandidat f07bbb57 er ferdig SUCCESS: ni pakker pluss sluttkontroll. Fast Preview er READY på eksakt kandidat. Produksjon READY på uendret34daef4c. Dette er fortsatt ikke TEST OK eller produksjonssetting. PR311 beskriver helapprestene og faktisk testomfang.
