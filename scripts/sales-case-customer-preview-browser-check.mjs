@@ -171,7 +171,7 @@ try {
       eq(await save.evaluate((node) => { const rect=node.getBoundingClientRect();return node.getClientRects().length>0&&rect.top>=0&&rect.bottom<=innerHeight; }), true, "native form save action remains visible after scrolling to the footer");
     }
     if (mode === "general") {
-      eq(await page.locator(".sales-case-work-content>.sales-store-catalog-editor>.store-grouped-builder").count(), 1, "general offer uses actual catalog wrapper and grouped editor");
+      eq(await page.locator(".sales-case-work-content>div>.sales-store-catalog-editor>.store-grouped-builder").count(), 1, "general offer uses observed neutral live host, actual catalog wrapper and grouped editor");
       const bounds = await page.locator(".sales-case-work-content").evaluate(node => {
         const edge = node.getBoundingClientRect();
         return [...node.querySelectorAll('.sales-shell,.sales-main,.sales-form-panel,.store-builder-section,input:not([type=checkbox]),textarea,select')]
