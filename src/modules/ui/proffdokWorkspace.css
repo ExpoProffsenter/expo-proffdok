@@ -409,6 +409,7 @@ body:has([data-expo-app-shell="true"]){min-width:0;background:#f4f7f8}
 [data-expo-app-shell="true"] .sales-case-work-content :is(.sales-secondary-button,.sales-back-button){background-color:#fff}
 [data-expo-app-shell="true"] .sales-case-work-content .store-follow-up-toggle input[type="checkbox"]{width:20px;min-width:20px;max-width:20px;flex:0 0 20px}
 [data-expo-app-shell="true"] .sales-case-work-content .sales-store-catalog-editor{min-width:0;max-width:100%}
+[data-expo-app-shell="true"] .sales-case-work-content .sales-store-catalog-editor .sales-form-panel{grid-template-columns:minmax(0,1fr)}
 .sales-case-customer-preview{min-width:0;position:static}
 .sales-case-preview-trigger{display:none!important}
 .sales-case-preview-drawer:not([open]){display:none}
