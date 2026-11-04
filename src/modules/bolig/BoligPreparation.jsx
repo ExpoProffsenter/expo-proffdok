@@ -1259,6 +1259,11 @@ export default function BoligPreparation({ context, root, onChanged }) {
                     lagre i prosjektet.
                   </p>
                 )}
+
+              </>
+            )}
+          </div>
+          {data && (
                 <footer className="bolig-preparation-footer">
                   <button type="button" disabled={busy} onClick={close}>
                     Lukk og behold kladd
@@ -1313,9 +1318,7 @@ export default function BoligPreparation({ context, root, onChanged }) {
                     </button>
                   )}
                 </footer>
-              </>
-            )}
-          </div>
+          )}
         </dialog>,
         document.body,
       )}

@@ -306,8 +306,11 @@ try {
       true,
       "Dialog no horizontal overflow " + width,
     );
+    const layout=await dialog().evaluate(node=>{const r=node.getBoundingClientRect(),body=node.querySelector('.bolig-preparation-body'),footer=node.querySelector(':scope>.bolig-preparation-footer'),f=footer.getBoundingClientRect();return {top:r.top,right:r.right,footerBottom:f.bottom,footerTop:f.top,bodyBottom:body.getBoundingClientRect().bottom,bodyOverflow:getComputedStyle(body).overflowY};});
+    eq(layout.top,0,'preparation starts at screen top '+width);eq(Math.abs(layout.right-width)<1,true,'preparation opens at the right '+width);eq(layout.footerBottom<=900,true,'native action footer stays on screen '+width);eq(layout.bodyBottom<=layout.footerTop+1,true,'scrollable form never covers actions '+width);eq(layout.bodyOverflow,'auto','form owns scrolling '+width);
     await page.screenshot({ path: "/tmp/bolig-preparation-" + width + ".png" });
   }
+  await page.setViewportSize({width:390,height:520});eq(await dialog().locator(':scope>.bolig-preparation-footer').evaluate(n=>n.getBoundingClientRect().bottom<=520),true,'short-screen footer remains reachable');eq(await dialog().getByRole('button',{name:'Lukk klargjøring',exact:true}).evaluate(n=>{const r=n.getBoundingClientRect();return r.top>=0&&r.bottom<=520;}),true,'short-screen native close is always visible');await page.setViewportSize({width:1366,height:900});
   await dialog()
     .getByRole("checkbox", {
       name: "Legg også til manglende rom og pakker i boliger med innhold",

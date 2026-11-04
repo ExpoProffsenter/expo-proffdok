@@ -28,3 +28,9 @@ Kenneth har bedt om videre selvstendig full kvalitetssikring og fintuning etter 
 ## Neste kontroll
 
 Grønn full CI og faktisk innlogget Sandbox-preview for denne separate branchen. Kontroller riktig backend før innlogging. Eksisterende testdata og katalogrettigheter beholdes; ingen testutsending eller reell aksept/signering. Deretter fullføres videre helreiser og grunnlaget for full A–Å-film. Grønn bygning og disse avgrensede testene er ingen full appattest.
+
+CI899 på39b8fcd1: build/scope/Bolig-db/HR/firma består. Bolig-nettleser går grønt gjennom builder790,oversikt59,rom51,rominnhold35,pakker36ogkatalognavigasjon24assertions, men ny prøvevert feiler før nettleserscenariene fordi JSX-runtime ikke var eksplisitt resolvert fra midlertidig katalog. Samme eksisterende React-runtimealias legges til prøveverten. Lokal build av selve prøveverten kontrolleres separat; appkode og assertions endres ikke for denne testoppsettfeilen.
+
+Avgrenset scopeutvidelse etter ny faktisk romfordeling: klargjøringsdialogen hadde bekreftelsesknappen nedenfor hele rom-/boliglisten. Eksisterende footer flyttes ut av den rullbare bodyen, med samme betingelse(data), knapper, disabled-uttrykk og handlers. CSS gjør panelet høyrestilt og holder header/footer på skjermen; innhold rulles separat. Eksisterende preparation-nettleserprøve får konkrete geometri-/scrollkrav i firebredder og kortskjerm uten å fjerne funksjonsassertions. Ingen lagringsflyt eller preview-/kvitteringsmekanisme endres.
+
+Videre faktisk Sandbox på PR308/515e03b9: ny QA-rommal med én Bad1/QA-Standardbad,2demovarer, lagret serverbekreftet. Én bolig(H0101) valgt og forhåndsvist:1nyttrom/1pakke/2varer. Bekreft og lagre utført kun i det nye fiktive QA-prosjektet; endelig serverreadback avventes før resultat føres som bestått. Eksisterende pilot/kundedata og Production er urørt.
