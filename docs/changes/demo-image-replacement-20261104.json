@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Erstatt gamle eksempelbilder i permanent demo",
+  "change": "SANDBOX/DEMO: kun 12 eksisterende bildefiler erstattes med godkjente AI-eksempler. Uendrede prosjektdata og kjerne.",
+  "verification": "12/12 bildefiler dekodet 1200x800. Se docs/qa/DEMO_IMAGE_REPLACEMENT_20261104.md for miljø, publisering og begrensninger.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Kun eksempelbildenes filinnhold endres; bruk, oppsett, dataflyt og modulkontrakter beholdes."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Kun eksempelbildenes filinnhold endres; bruk, oppsett, dataflyt og modulkontrakter beholdes."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Kun eksempelbildenes filinnhold endres; bruk, oppsett, dataflyt og modulkontrakter beholdes."
+    },
+    "module": {
+      "required": false,
+      "reason": "Kun eksempelbildenes filinnhold endres; bruk, oppsett, dataflyt og modulkontrakter beholdes."
+    }
+  }
+}
