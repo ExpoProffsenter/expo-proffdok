@@ -1,6 +1,6 @@
 # Innlogget designgjennomgang 4. november 2026
 
-Miljømål BEGGE. Baseline main/Production 34daef4c0526b93ddbd84c3bfd97fb0833d97caf, Vercel dpl_3D5fzV9TVkidd7x7Eowg3V6hWjQ2 READY. PR295 er merget 2. november; PR294/298/305 inngår. Demo fd5aafa1 ifølge siste releasekvittering, ikke nyverifisert i denne runden. Ny arbeidsbranch ux-live-review-20261104. Ingen ny TEST OK eller produksjonsendring.
+Miljømål BEGGE. Baseline main/Production 34daef4c0526b93ddbd84c3bfd97fb0833d97caf, Vercel dpl_3D5fzV9TVkidd7x7Eowg3V6hWjQ2 READY. PR295 er merget 2. november; PR294/298/305 inngår. Demo fd5aafa1 ifølge siste releasekvittering, ikke nyverifisert i denne runden. Ny arbeidsbranch fase45b-ux-live-review-20261104 / PR308. Ingen ny TEST OK eller produksjonsendring.
 
 ## Oppdrag og avgrensning
 
@@ -53,3 +53,11 @@ En automatisk browserkontroll avviste et leseklikk med feilaktig domenetolkning.
 2. Fullføre fylt Boligprosjekt fra oppsett til overtakelse, roller/portaler og sluttpakke i isolert miljø. Bruke den verifiserte rekkefølgen som manus for kapitteldelt A–Å-film uten lyd, med den godkjente videomalen og redigerbare kilder.
 3. Fortsette alle 145 registrerte reiser og senere sjekklistefunksjoner med faktiske underfunksjoner. Registrere felt/retur/kladd/feil og eksport, uten å kalle hovedsidebesøk en fullført helreise.
 4. Samle naturlig sammenhengende UX-rettelser og dokumentere eksakt QA/Preview/produksjonsstatus her og i PR.
+
+## Kandidat og første CI
+
+9cb46a16 publisert som Sandbox Preview dpl_3HsGvN34uQbk1VEitoaNhBGy6qNu READY, eksakt commit og fast alias expo-proffdok-git-fase45b-ux-live-review-20261104-ringside.vercel.app. Anonym loaderkontroll: Sandbox-ref til stede, Production-ref fraværende. Vellykket sikker innlogging som eksisterende demokonto. Hjelp-knapp, høyrepanel og direkte filmknapper faktisk sett; nytt Bolig-tema finnes. Avspilling/retur og øvrige tester er under arbeid.
+
+Første branch ux-live-review-20261104 traff repoets historiske Production-standard for ordinære Preview. Oppdaget ved anonym assetkontroll før innlogging/testing; ingen datahandling. PR307 er lukket til fordel for identisk kandidat i PR308 med eksisterende fase45b-Sandbox-regel. Ingen bindingskode eller Vercel-konfigurasjon endret.
+
+CI890: scope/build/company-db/bolig-browser/hr-react/app-browser/hr-db/bolig-db består. projects-support stopper fordi en kildeuttrekkende headertest manglet de nye hjelpereferansene (isReadOnly først). Testvertens import/scope kompletteres; alle opprinnelige header-/handlings-/kladdkrav beholdes. Selve HelpCenter testes med native komponent i den dedikerte hjelpeprøven, ikke gjennom headervertens tomme hjelpeinnhold. Ingen appendring for denne fixturfeilen.
