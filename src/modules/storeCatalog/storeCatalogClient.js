@@ -185,18 +185,24 @@ export async function getStoreCatalogAlternatives(supabase, itemId) {
   return unwrap(data || [], error, "Kunne ikke hente leverandøralternativer.");
 }
 
-export async function canAccessInternalStoreCatalog(supabase) {
+export async function canAccessInternalStoreCatalog(supabase, { throwOnError = false } = {}) {
   const { data, error } = await ensureClient(supabase).rpc(
     "current_user_has_internal_store_catalog_access"
   );
-  if (error) return false;
+  if (error) {
+    if (throwOnError) throw new Error("Kunne ikke kontrollere tilgang til varesøk.");
+    return false;
+  }
   return data === true;
 }
 
-export async function canManageInternalStoreCatalog(supabase) {
+export async function canManageInternalStoreCatalog(supabase, { throwOnError = false } = {}) {
   const { data, error } = await ensureClient(supabase).rpc(
     "current_user_can_manage_internal_store_catalog"
   );
-  if (error) return false;
+  if (error) {
+    if (throwOnError) throw new Error("Kunne ikke kontrollere tilgang til administrasjon av vareregisteret.");
+    return false;
+  }
   return data === true;
 }

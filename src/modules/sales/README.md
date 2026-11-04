@@ -228,6 +228,8 @@ Komplette firmamaler beholder varige app-/Storage-bilder på poster og opsjoner.
 
 ## 7. Internt og eksternt proff-vareregister
 
+Systemadmins interne vareregister viser egen status under tilgangskontroll, ved manglende rettighet og ved kontrollfeil. «Prøv tilgangskontrollen igjen» gjør kun nye lesekall og starter ingen import. Både admin-innpakningen og katalogpanelet beholder sine eksisterende tilgangskrav. Klientens valgfrie `throwOnError` brukes her for å skille RPC-feil fra et faktisk avslag; øvrige kall beholder standarden `false` ved RPC-feil.
+
 Selvstendig Prissøk i `src/modules/storeCatalog/` bruker eksisterende read-only katalog-RPC og er ikke del av Sales-editoren. Plukklister med antall og valgfritt manuelt Cordel-ordrenummer kan opprettes/redigeres på både PC og mobil via eksisterende brukerbundne plukkliste-RPC-er. Plukklisteutskrift viser antall/ordrenummer uten priser, mens PC også har separat prisutskrift med serverstyrt intern nto-tilgang og eksplisitt avkryssing. På mobil avslutter `← Startside` Prissøk via eksisterende close-flyt og rydder resume-markøren. Skanneren finnes bare på mobil og fyller GTIN/EAN i samme søkefelt; kamera og bilde lagres eller lastes ikke opp. Ved avvist kameratilgang fungerer manuell inntasting. Se [plukklistemodellen](../../../docs/architecture/MOBILE_PICKLIST_AND_GENERAL_OFFER_SCAN.md).
 
 Generelt tilbud kan bruke vareregister fra `src/modules/storeCatalog/`.

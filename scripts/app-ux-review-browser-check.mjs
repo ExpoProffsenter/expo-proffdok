@@ -115,6 +115,7 @@ await import("./kshms-governance-036-browser-check.mjs");
 await import("./systemadmin-company-panel-browser-check.mjs");
 await import("./admin-access-036-browser-check.mjs");
 await import("./profile-support-register-browser-check.mjs");
+await import("./store-catalog-access-react-check.mjs");
 
 await import("./report-choice-workspace-browser-check.mjs");
 
