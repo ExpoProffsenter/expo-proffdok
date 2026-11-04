@@ -1,12 +1,24 @@
 {
   "version": 1,
   "title": "Hjelp øverst og filmer under relevante temaer",
-  "change": "Miljømål BEGGE. Fra publisert main34daef4c. Ny native Hjelp i internt toppfelt åpner eksisterende HelpCenter uten navigasjon eller lagring. Filmknapper står direkte under tilhørende tema, med tekst- og kapittelsøk. Bolig-tema kobler eksisterende 18-stegs A–Å, detaljhjelp og kort Finn bolig-film. Ingen ny komplett boligfilm hevdes. Kortere introduksjon. Ingen auth-, tilgangs-, recovery-, data-, e-post- eller backendendring.",
-  "verification": "Full lokal npm build/critical PASS. Git diff --check PASS. Faktisk innlogget Production-gjennomgang og presise grenser i docs/qa/LIVE_DESIGN_REVIEW_20261104.md. Lokal Chromium nektet oppstart ved socket()/ProcessSingleton; nettleserkrav kjøres i ordinær CI. Ny toppknapp prøves med montert usendt arbeid, fem bredder/kort skjerm, dialog/fokus/Escape, nested video/tema og firmabytte. Alle fem originalfilmers hashes, varighet/kapitler/avspilling/feil/retry/tilgangskrav beholdes. Endelig CI og Preview føres i PR.",
+  "change": "Miljømål BEGGE. Fra publisert main34daef4c. Ny native Hjelp i internt toppfelt åpner eksisterende HelpCenter uten navigasjon eller lagring. Filmknapper står direkte under tilhørende tema, med tekst- og kapittelsøk. Bolig-tema kobler eksisterende 18-stegs A–Å, detaljhjelp og kort Finn bolig-film. Ingen ny komplett boligfilm hevdes. Kortere introduksjon. Ingen auth-, tilgangs-, recovery-, data-, e-post- eller backendendring. Innlogget QA bekreftet at Bolig-oversiktens nye toolbarwrapper auto-plasseres under fasaden av eldre layout-CSS. Avgrenset layoutrettelse plasserer den øverst og gir prosjektets fokusoverskrift scrollmargin; funksjons-/datakode er uendret.",
+  "verification": "Full lokal npm build/critical PASS. Git diff --check PASS. Faktisk innlogget Production-gjennomgang og presise grenser i docs/qa/LIVE_DESIGN_REVIEW_20261104.md. Lokal Chromium nektet oppstart ved socket()/ProcessSingleton; nettleserkrav kjøres i ordinær CI. Ny toppknapp prøves med montert usendt arbeid, fem bredder/kort skjerm, dialog/fokus/Escape, nested video/tema og firmabytte. Alle fem originalfilmers hashes, varighet/kapitler/avspilling/feil/retry/tilgangskrav beholdes. Endelig CI og Preview føres i PR. Målt førtilstand i Sandbox: toolbar topp1331.77px etter fasade topp500.39px. Eksisterende housing-first-screen beholder alle krav og utvides med toolbar før fasaden og synlige kontroller.",
   "documentation": {
-    "help": {"required": true, "reason": "Synlig hjelpeinngang, direkte videoplassering og Bolig-tema endrer brukerflyten; moduldokumentasjon og selve hjelpen oppdatert."},
-    "architecture": {"required": false, "reason": "Eksisterende HelpCenter/WorkspacePanel og rettighetskontekster gjenbrukes; ingen ny data- eller backendarkitektur."},
-    "setup": {"required": false, "reason": "Ingen nye avhengigheter eller oppsett."},
-    "module": {"required": true, "reason": "Hjelpens README beskriver ny toppinngang og videoplassering."}
+    "help": {
+      "required": true,
+      "reason": "Synlig hjelpeinngang, direkte videoplassering og Bolig-tema endrer brukerflyten; moduldokumentasjon og selve hjelpen oppdatert."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Eksisterende HelpCenter/WorkspacePanel og rettighetskontekster gjenbrukes; ingen ny data- eller backendarkitektur."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen nye avhengigheter eller oppsett."
+    },
+    "module": {
+      "required": true,
+      "reason": "Hjelpens README beskriver ny toppinngang og videoplassering."
+    }
   }
 }
