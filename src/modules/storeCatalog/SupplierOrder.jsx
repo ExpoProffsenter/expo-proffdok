@@ -1,9 +1,19 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Mail } from 'lucide-react';
+import WorkspacePanel from '../ui/WorkspacePanel.jsx';
 import { supplierOrderContext, deleteSupplierOrderContact, prepareSupplierOrder, sendSupplierOrder } from './supplierOrderClient.js';
 import './supplierOrder.css';
 
 const money=value=>new Intl.NumberFormat('nb-NO',{style:'currency',currency:'NOK',minimumFractionDigits:2,maximumFractionDigits:2}).format(Number(value));
+
+function SupplierOrderWorkspace({busy,sent,onClose,children}) {
+ const dialog=useRef(null);
+ useEffect(()=>{const node=dialog.current;node.showModal();return()=>{if(node.open)node.close();};},[]);
+ return <WorkspacePanel dialogRef={dialog} title="Bestilling til leverandør" subtitle="PRISSØK / PLUKKLISTE" className="supplier-order-workspace" closeLabel="Lukk bestilling" closeDisabled={busy} onClose={onClose}
+  footer={<button type="button" className="secondary supplierOrderClose" disabled={busy} onClick={onClose}>{sent?'Lukk':'Avbryt'}</button>}>
+  {children}
+ </WorkspacePanel>;
+}
 
 export default function SupplierOrder({items,companyId,orderNumber='',disabled=false,renderActions=null}) {
  const [open,setOpen]=useState(false),[context,setContext]=useState(null),[loadError,setLoadError]=useState('');
@@ -57,7 +67,7 @@ export default function SupplierOrder({items,companyId,orderNumber='',disabled=f
  const orderButton=<button type="button" className="supplierOrderTrigger" disabled={!allowed||!items.length||busy} aria-expanded={open} onClick={()=>{if(!open&&!referenceTouched.current&&!preview)setReference(orderNumber);setOpen(v=>!v);}}><Mail size={16}/> Send bestilling til leverandør</button>;
  return <div className="supplierOrder">
   {renderActions?renderActions(orderButton):orderButton}
-  {open?<section className="supplierOrderPanel" ref={panel} tabIndex={-1} aria-label="Bestilling til leverandør">
+  {open?<SupplierOrderWorkspace busy={busy} sent={sent} onClose={()=>setOpen(false)}><section className="supplierOrderPanel" ref={panel} tabIndex={-1} aria-label="Bestilling til leverandør">
    <h3>{sent?'Bestillingen er sendt':preview?'Se over bestillingen':'Send plukkliste som bestilling'}</h3>
    {sent?<>
     <p role="status">Bestillingen til {preview.supplierName} er sendt til <strong>{preview.to}</strong>. E-posttjenesten har bekreftet sendingen. Be leverandøren bekrefte bestillingen.</p>
@@ -96,7 +106,6 @@ export default function SupplierOrder({items,companyId,orderNumber='',disabled=f
     </fieldset>
    </form>}
    {error?<p role="alert">{error}</p>:null}
-   <button type="button" className="secondary supplierOrderClose" disabled={busy} onClick={()=>setOpen(false)}>{sent?'Lukk':'Avbryt'}</button>
-  </section>:null}
+  </section></SupplierOrderWorkspace>:null}
  </div>;
 }

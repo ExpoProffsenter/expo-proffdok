@@ -416,3 +416,6 @@ Dagens avsenderpolicy beholdes gjennom hele routeren: Ringside/Bademiljø velger
 ### Native underflater og lagret skissestatus (31.10.2026)
 
 Editor-/General-kontrollene laster både felles CSS og appens sene mobilregler. `salesSubflows036.css` avgrenser16px felt og minst45px handlinger til interne native Sales-arbeidsflater; eksterne kundevisninger har fortsatt egne regler. `SalesBathroomSketch.storedImageAvailable` er en valgfri presentasjonsprop. Befaringsnotatet setter den bare når et lagret skissebilde vises og lokal redigerbar skisse mangler. Det endrer bare tomstatusen; tegneverktøy, skissedata, serverbilde og kladd/recovery følger dagens eiere. Varig avgrensning og tester: `docs/changes/sales-subflows-runtime-036-20261031.json`.
+
+
+Leverandørbestilling fra Prissøk åpner eksisterende skjema i et WorkspacePanel til høyre (full bredde på mobil), med fast Avbryt/Lukk. Skjema, kanonisk forhåndsvisning, kvittering og usikkert sendeforsøk beholder samme tilstand og request-ID hos SupplierOrder. Header, Escape og footer bevarer kladden ved lukking; alle lukkemetoder sperres mens eksisterende busy-forsøk pågår. Ingen transport- eller bestillingskontrakt er endret.
