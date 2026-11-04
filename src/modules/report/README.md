@@ -45,4 +45,6 @@ Sluttoversikten holder alle fem statusrader over QR-kortet. Banneret vises forts
 
 ## Ikke-blokkerende nedlastingsstatus
 
+KS/HMS-velgerens backdrop beholder modulens lag 10000 også inne i rapportdialogen. Den skal dekke rapportens topp- og bunnfelt; appens globale headerregel kan ellers gi den underliggende overskriften et høyere lag enn velgeren. Native topplag, dokumentvalg, Escape/fokus og eksportkontrakt er uendret. Browserprøven inkluderer sen APP_RUNTIME_STYLES og faktisk hit-testing av hele velgerens overskrift og footer ved fem bredder.
+
 Etter doc.save sender rapportmotoren valgfri onPdfStatus til rapportarbeidsflaten. Meldingen står med role=status i panelets footer og sier at PDF er generert og sendt til nettleserens nedlasting; ferdig lagring på enheten attesteres ikke. Låst prosjekt, utstedt garanti og statusrapport beholder sine respektive opplysninger, inkludert eventuell oppfordring til å lagre/oppdatere garantikvitteringen. Bruker-/firma-/prosjekt-/tab-scope hindrer at meldingen vises i en annen arbeidsflate. Ny eksport tømmer gammel melding. Ingen suksess-alert krever OK. Eksisterende arkivvalg, skrivevern, garantioppdatering, revalidering og feilvarsler er uendret.

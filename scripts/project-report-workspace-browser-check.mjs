@@ -20,6 +20,8 @@ import ReportArchiveConfirmation,{useReportArchiveConfirmation} from '${root}/sr
 import {useKshmsProjectReport,KshmsProjectReportChoice,KshmsProjectReportDialog} from '${root}/src/modules/kshms/KshmsProjectReport.jsx';
 import {createReportViewTools} from '${root}/src/modules/report/reportViewTools.js';import {createReportTools} from '${root}/src/modules/report/reportTools.js';
 import '${root}/src/modules/ui/proffdokWorkspace.css';
+import {APP_RUNTIME_STYLES} from '${root}/src/modules/app/appRuntimeStyles.js';
+document.head.insertAdjacentHTML('beforeend','<style>'+APP_RUNTIME_STYLES+'</style>');
 const Box=({children,label,value,name})=><div>{label}{value}{name}{children}</div>;const Link=({href,children})=><a href={href}>{children}</a>;
 const {Report}=createReportViewTools({Brand:Box,Grid:Box,PdfSafeLink:Link,hasValue:v=>v!=null&&String(v).trim()!=='',projectHasOvertagelse:()=>false,InfoCard:Box,SignatureCard:Box,normalizeExternalUrl:v=>v||'',publicProjectFileUrl:()=>'',buildBathroomEquipmentReportGroups:()=>[]});
 function App(){const [tab,setTab]=useState('bilder'),[projectId,setProjectId]=useState('project-a'),[available,setAvailable]=useState(true),[company,setCompany]=useState('company-a');
@@ -60,6 +62,15 @@ try{
  }
  console.log('Geometry passed');await page.setViewportSize({width:1363,height:936});
  await panel.getByRole('button',{name:'Velg KS/HMS til rapport',exact:true}).click();const chooser=page.locator('.ks-report-dialog');await chooser.waitFor();
+ for(const width of [1920,1363,768,390,320]){
+  await page.setViewportSize({width,height:700});
+  for(const part of ['.ks-report-dialog-head','.ks-report-dialog-footer']){
+   eq(await chooser.locator(part).evaluate(el=>{const r=el.getBoundingClientRect();return [.1,.5,.9].every(p=>el.contains(document.elementFromPoint(r.x+r.width*p,r.y+r.height/2)));}),true,'chooser is painted above report header/footer '+part+' '+width);
+  }
+  eq(await chooser.getByRole('heading',{name:'Velg KS/HMS til rapport',exact:true}).evaluate(el=>{const r=el.getBoundingClientRect();return [.1,.5,.9].every(p=>el.contains(document.elementFromPoint(r.x+r.width*p,r.y+r.height/2)));}),true,'complete chooser heading is uncovered '+width);
+  eq(await chooser.evaluate(el=>el.scrollWidth<=el.clientWidth+1),true,'chooser fits '+width);
+ }
+ await page.setViewportSize({width:1363,height:936});
  await chooser.press('Escape');await chooser.waitFor({state:'hidden'});eq(await panel.isVisible(),true,'Escape cancels selection and keeps report open');
  eq(await panel.getByRole('button',{name:'Velg KS/HMS til rapport',exact:true}).evaluate(e=>document.activeElement===e),true,'chooser returns focus inside report');
  await panel.getByRole('button',{name:'Last ned PDF',exact:true}).click();await chooser.waitFor();

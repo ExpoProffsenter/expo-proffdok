@@ -1,5 +1,15 @@
 # Helappkontroll – fortsettelse 4. november 2026
 
+Siste avsluttede appgrunnlag er dc097ccb/tree8e14b46b med full CI930/run41927231765 SUCCESS (ni pakker og sluttkontroll) og eksakt Preview READY. PR311 fører de konkrete etterkontrollene. Main/produksjon er fortsatt34daef4c. Ved videre videoopptak ble en ny lagfeil funnet i KS/HMS-velgeren; dc-grønn er ikke bevis for den følgende rettelsen.
+
+## Rapportvelgerens lag under faktisk videoopptak
+
+Miljømål BEGGE. Faktisk innlogget HOVED på dc097ccb: KS/HMS-dialogens header x448…1348/y0…84 ble delvis dekket av rapportpanelets header. Lesbar DOM beviste ks-report-backdrop z-index2, mens den underliggende rapportheaderen var flex-item med z-index10 fra appens runtime-stil. elementFromPoint i velgerens header traff teksten Rapport og PDF fra forelderen. Ingen data eller tilgang ble endret. Faktisk eksport uten ekstra KS/HMS ga16sider/6829467byte, SHA256b3a01e9de693619f5b3bd6e715924b092f09b20547c6962954b55e0153c8d56b, korrekt ikke-utstedt-garanti-status og ingen JS-dialog. Retur gikk til samme HOVED uten ulagrede endringer.
+
+Scope: kun rapportens eksisterende backdrop-overstyring tilbake til modulens opprinnelige10000, eksisterende rapportbrowserprøve, modul-README, denne QA-loggen og endringsgrunnlag. Ingen modalombygging, global headerregel, valg/RPC, PDF-motor, lagring eller rettighetsendring. Native dialogens topplag beholdes. Browserprøven laster nå ekte sen APP_RUNTIME_STYLES og krever elementFromPoint-dekning av velgerheader/footer og hele tittelen i1920/1363/768/390/320, i tillegg til alle gamle kladd-/fokus-/rolle-/eksportkrav. Ny CI/Preview må bekrefte kandidaten. Lokal Chromium er fortsatt ikke attestert.
+
+Et99sekunders rapportfilm-utkast med sju scener og uendret PROFFDOK-VIDEO-1.0-renderer er laget. Scenen med lagfeilen skal erstattes og hele filmen verifiseres før levering. Filmen dekker statusrapport uten ekstra KS/HMS, ikke garantiutstedelse, alle dokumentvalg eller hele prosjektmodulen.
+
 ## Gjeldende grunnlag
 
 Miljømål **BEGGE**. Arbeid og innlogget QA begrenses til Preview/Sandbox. Ingen ny TEST OK, produksjonssetting, migrering eller demo-synk.
