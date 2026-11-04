@@ -18,4 +18,5 @@ Gjenopprett kun de tolv filene fra fd5aafa1 i en ny demo-commit. Ikke reset pros
 ## Avgrensning
 Main-baserte previewer uten demo-overlay har fortsatt ikke relative /demo-images-filer. Denne rettingen gjelder permanent demo. Full PDF-kontroll er ikke attestert av fildekoding alene.
 
-Sandbox-build: EXPO_BACKEND_TARGET=sandbox npm run build PASS (kritiske byggkontroller og Vite). Alle sju statiske SVG-er har samme validerte JPEG-kilde som tilsvarende eksempel. Ingen appkodeendring.
+## Publisert og kontrollert
+Bildefil-commit 3c3f804fd12aa7e64db87ed779c6ad53994ad753 er publisert READY på fast demovert (Vercel dpl_B9HbDDjbMvJcSZXqhHaa3QGaMnbV). Nettleseren viste slukmansjett.jpg som faktisk dekodet 1200×800, og befaring-for.svg viste nytt AI-merket bilde ved gammel adresse. Hele HOVED-data fortsatt md5 a32354ec299402ce6e4d70b1844742a0, RESERVE fortsatt 448e9f47a70c493781cbcb69b98f41b4. Main bekreftet uendret 34daef4c0526b93ddbd84c3bfd97fb0833d97caf. Ingen Actions-kjøring returnert for demo-commit ved kontroll; lokal Sandbox-build er grønn. Ingen ny innlogget prosjekt- eller PDF-attest i denne avgrensede bildefilrunden.
