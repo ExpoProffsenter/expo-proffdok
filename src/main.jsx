@@ -1,3 +1,4 @@
+import HeaderHelp from './modules/help/HeaderHelp.jsx';
 import ReportArchiveConfirmation, {useReportArchiveConfirmation} from './modules/report/ReportArchiveConfirmation.jsx';
 import ProjectReportWorkspace, {useProjectReportWorkspace} from './modules/report/ProjectReportWorkspace.jsx';
 import { continueAfterProjectSave, projectStepDataConfirmed } from './modules/project/projectStepContinue.mjs';
@@ -6254,7 +6255,8 @@ ${appLink}`;
           !projectId && mobileCreatingProject && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: cancelNewProject, children: "← Avbryt nytt prosjekt" }),
           projectId && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: leaveProjectWorkspace, children: isProjectSupportReadOnly ? "← Supportoversikt" : "← Til startside" }),
           hasActiveProjectWorkspace && (0, import_jsx_runtime.jsx)(ProjectHeaderActions, { dirty: projectDirty, saved: Boolean(projectId), readOnly: isProjectSupportReadOnly, locked: isProjectLocked, simpleOrder: isSimpleOrderProject(project), onSave: saveProject, onCopy: projectId && !isProjectSupportReadOnly ? saveAsNewProject : void 0, onPdf: downloadClickablePdfReport, onLock: setProjectLockedState, onNew: createNewProject }, projectId || "new"),
-          (0, import_jsx_runtime.jsx)(WorkspaceViewMode, {}, authUser?.id)
+          (0, import_jsx_runtime.jsx)(WorkspaceViewMode, {}, authUser?.id),
+          !isReadOnly && authUser && (0, import_jsx_runtime.jsx)(HeaderHelp, { scopeKey: `${authUser.id}:${kshmsContext?.company_id}:${hrContext?.company_id}:${boligContext?.company_id}`, children: (0, import_jsx_runtime.jsx)(HelpCenter, { isAdmin: isAdminUser, isCompanyAdmin: isCompanyAdminUser, isSystemAdmin: isSystemAdminUser, termsAccepted, termsAcceptanceRecord, authUser, formatTermsAcceptedAt, kshmsContext, hrContext, boligContext }) })
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("nav", { children: tabs.map(([id, l]) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { "data-expo-nav-label": l, className: tab === id ? "on" : "", onClick: () => goToTab(id), children: l }, id)) }),
         hasActiveProjectWorkspace && !isProjectSupportReadOnly && (0, import_jsx_runtime.jsx)("nav", { "data-expo-global-nav-source": "1", hidden: true, ref: node => { if (node) node.expoLeaveProjectWorkspace = leaveProjectWorkspace; }, children: globalTabs.map(([id, label]) => (0, import_jsx_runtime.jsx)("button", { type: "button", "data-expo-nav-label": label, className: id === "prosjektliste" ? "on" : "", onClick: () => leaveProjectWorkspace(id), children: label }, id)) }),
