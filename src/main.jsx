@@ -1,3 +1,4 @@
+import {usePortalAccessStatus} from './modules/portal/usePortalAccessStatus.js';
 import ReportArchiveConfirmation, {useReportArchiveConfirmation} from './modules/report/ReportArchiveConfirmation.jsx';
 import ProjectReportWorkspace, {useProjectReportWorkspace} from './modules/report/ProjectReportWorkspace.jsx';
 import { continueAfterProjectSave, projectStepDataConfirmed } from './modules/project/projectStepContinue.mjs';
@@ -36,7 +37,7 @@ import { createReportViewTools } from './modules/report/reportViewTools.js';
 import { renderCustomerPortal } from './modules/portal/portalTools.js';
 import { createPortalAccessTools } from './modules/portal/portalSecurityTools.js';
 import {
-  appendCustomerProjectMessage, clearStoredPortalAccessCode, getProjectPortalAccessStatus,
+  appendCustomerProjectMessage, clearStoredPortalAccessCode,
   markCustomerProjectChatRead, readStoredPortalAccessCode, saveUnderleverandorProjectContribution,
   verifyProjectPortalAccess
 } from './modules/portal/portalSupabase.js';
@@ -4356,31 +4357,12 @@ Kunde, adresse, bilder, chat, signaturer, avvik og utfylte sjekklistestatuser bl
       };
     }, [projectId, portalAccessRoleParam, isAdminProjectLink]);
 
-    (0, import_react.useEffect)(() => {
-      if (!authUser?.id || !projectId || portalAccessRoleParam || tab !== "tilgang") return;
-      let cancelled = false;
-      getProjectPortalAccessStatus(supabase, { projectId }).then((status) => {
-        if (cancelled || !status?.ok) return;
-        const toRecord = (role, value = {}) => ({
-          role,
-          active: !!value?.active,
-          code: value?.active ? "stored" : "",
-          createdAt: value?.created_at || "",
-          validUntil: value?.valid_until || status?.valid_until || "",
-          accessPolicy: status?.access_policy || "active_project_plus_locked_30_days",
-          lockedGraceDays: Number(status?.locked_grace_days || 30)
-        });
-        setPortalAccessRecords({
-          kunde: toRecord("kunde", status?.kunde || {}),
-          underleverandor: toRecord("underleverandor", status?.underleverandor || {})
-        });
-      }).catch((error) => {
-        if (!cancelled) console.warn("Kunne ikke hente portalstatus:", error?.message || error);
-      });
-      return () => {
-        cancelled = true;
-      };
-    }, [authUser?.id, projectId, portalAccessRoleParam, tab]);
+    const portalStatus = usePortalAccessStatus({
+      client: supabase, userId: authUser?.id, projectId,
+      scopeKey: company.companyName,
+      enabled: !!authUser?.id && !!projectId && !portalAccessRoleParam && tab === "tilgang",
+      onRecords: setPortalAccessRecords
+    });
 
     const makeProjectLink = (id, role = "kunde", targetTab = "") => {
       const tabSuffix = hasValue(targetTab) ? `&tab=${encodeURIComponent(String(targetTab || ""))}` : "";
@@ -6830,6 +6812,8 @@ ${appLink}`;
           access,
           setAccess,
           roles,
+          portalStatusState: portalStatus.status,
+          onRetryPortalStatus: portalStatus.retry,
           portalAccessRecordIsValid,
           getPortalAccessRecord,
           portalAccessPolicyText,
