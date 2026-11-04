@@ -16,6 +16,7 @@ const labels = {
 export default function BoligMyTasks({ context }) {
   const scope = `${context.user_id}:${context.company_id}`;
   const selectedRef = useRef(null);
+  const returnFocus = useRef(null), taskButtons = useRef(new Map()), taskToggle = useRef(null);
   const readFailure = useRef(null);
   const readSequence = useRef(0);
   const { data, error, busy, load } = useLivePartner(scope, async () => {
@@ -100,6 +101,19 @@ export default function BoligMyTasks({ context }) {
       ? data.selected
       : null) ||
       rows.find((x) => x.id === opened.id && x.kind === opened.kind));
+  const closeTask = () => {
+    returnFocus.current = { scope, key: `${opened.kind}:${opened.id}` };
+    setOpened(null);
+    load();
+  };
+  useEffect(() => {
+    const pending = returnFocus.current;
+    if (!pending || opened || busy) return;
+    returnFocus.current = null;
+    if (pending.scope !== scope || !data || document.activeElement !== document.body) return;
+    const target = taskButtons.current.get(pending.key) || taskToggle.current;
+    if (target?.isConnected && !target.disabled) target.focus({ preventScroll: true });
+  }, [scope, data, opened, busy]);
   const loadFailed = error && readFailure.current?.scope === scope && readFailure.current.code !== "42501";
   if (!data && loadFailed) return (
     <section className="bolig-my-tasks" aria-label="Mine oppgaver i boligprosjekter">
@@ -118,6 +132,7 @@ export default function BoligMyTasks({ context }) {
     >
       <button
         type="button"
+        ref={taskToggle}
         className="bolig-my-tasks-toggle"
         aria-expanded={expanded}
         onClick={() => setExpanded((x) => !x)}
@@ -158,7 +173,7 @@ export default function BoligMyTasks({ context }) {
                   : "Ingen dato registrert"}
               </span>
             </div>
-            <button type="button" disabled={busy} onClick={() => open(row)}>
+            <button type="button" ref={node => {const key=`${row.kind}:${row.id}`;if(node)taskButtons.current.set(key,node);else taskButtons.current.delete(key);}} disabled={busy} onClick={() => open(row)}>
               Åpne oppgave
             </button>
           </article>
@@ -182,10 +197,7 @@ export default function BoligMyTasks({ context }) {
                 root={{ id: selected.root_id, title: selected.project_title }}
                 unit={{ id: selected.unit_id }}
                 taskId={selected.id}
-                onTaskClose={() => {
-                  setOpened(null);
-                  load();
-                }}
+                onTaskClose={closeTask}
               />
             ) : (
               <Dialog
@@ -209,10 +221,7 @@ export default function BoligMyTasks({ context }) {
             selected.kind === "deviation" ? (
               <Dialog
                 title="Min RUH / avviksoppgave"
-                onClose={() => {
-                  setOpened(null);
-                  load();
-                }}
+                onClose={closeTask}
               >
                 <Deviations
                   context={ks}
@@ -227,10 +236,7 @@ export default function BoligMyTasks({ context }) {
                 projectId={selected.project_id}
                 openRequest={opened}
                 dialogOnly
-                onClose={() => {
-                  setOpened(null);
-                  load();
-                }}
+                onClose={closeTask}
               />
             )
           ) : null}

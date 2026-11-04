@@ -1,12 +1,24 @@
 {
   "version": 1,
   "title": "Skille egne boligoppgaver med samme bolignummer",
-  "change": "Miljømål BEGGE, Preview/Sandbox først i eksisterende PR309. Egne boligoppgaver viser bygg og oppgangsadresse, med byggadresse som reserve. Eksisterende autoriserte RPC-rader og selected-uttrekk får to additive felt. Ingen nye oppgaver, roller, tilgangskontroller, tabeller, utsendinger eller skrivehandlinger; sortering, cursor, task-ID og ACL beholdes. Migreringen stopper ved ukjent funksjonsbaseline.",
-  "verification": "Påvist innlogget på PR311: like bolignumre i flere bygg kunne ikke skilles i oppgavelisten. Gjeldende funksjonskilde/ACL er lest i Sandbox og produksjon og har identisk baseline. Eksisterende databaseprøve utvides med sammenligning før/etter, uendret ACL/count/cursor/selected, to like bolignumre i ulike bygg, adresseprioritet, alle sider og sperring av uvedkommende. Native prøve utvides med fem bredder og eksakt task-ID ved åpning. Faktiske resultater føres i QA-logg og PR309.",
+  "change": "Miljømål BEGGE, Preview/Sandbox først i eksisterende PR309. Egne boligoppgaver viser bygg og oppgangsadresse, med byggadresse som reserve. Eksisterende autoriserte RPC-rader og selected-uttrekk får to additive felt. Ingen nye oppgaver, roller, tilgangskontroller, tabeller, utsendinger eller skrivehandlinger; sortering, cursor, task-ID og ACL beholdes. Migreringen stopper ved ukjent funksjonsbaseline. Fokus returneres til samme oppgaveknapp etter ferskt resultat ved lukking. Fjernet oppgave bruker listeoverskriften; firmascope og bevisst annet fokus respekteres.",
+  "verification": "Påvist innlogget på PR311: like bolignumre i flere bygg kunne ikke skilles i oppgavelisten. Gjeldende funksjonskilde/ACL er lest i Sandbox og produksjon og har identisk baseline. Eksisterende databaseprøve utvides med sammenligning før/etter, uendret ACL/count/cursor/selected, to like bolignumre i ulike bygg, adresseprioritet, alle sider og sperring av uvedkommende. Native prøve utvides med fem bredder og eksakt task-ID ved åpning. Faktiske resultater føres i QA-logg og PR309. Faktisk Preview åpnet begge H0301 på riktig adresse, men viste fokus på BODY etter ny lesing. Eksisterende fire oppgavetyper får native krav om fokusretur etter oppfrisking.",
   "documentation": {
-    "help": {"required": false, "reason": "Ingen ny handling eller ny navigasjon; kort forklaring står direkte over listen i BoligMyTasks. Eksisterende fire-raders- og åpneveiledning beholdes. Delt hjelpetekst er utenfor den eksisterende Bolig-kjernegrensen og endres ikke."},
-    "architecture": {"required": true, "reason": "Den eksisterende oppgavereaderens additive felter, baselinevakt og produksjonsrekkefølge dokumenteres."},
-    "setup": {"required": false, "reason": "Ingen ny appavhengighet eller endret oppsett; separat kontrollert migreringssteg står i arkitektur og QA."},
-    "module": {"required": true, "reason": "Bolig README forklarer identitet, adresseprioritet og samme autoriserte datakilde."}
+    "help": {
+      "required": false,
+      "reason": "Ingen ny handling eller ny navigasjon; kort forklaring står direkte over listen i BoligMyTasks. Eksisterende fire-raders- og åpneveiledning beholdes. Delt hjelpetekst er utenfor den eksisterende Bolig-kjernegrensen og endres ikke."
+    },
+    "architecture": {
+      "required": true,
+      "reason": "Den eksisterende oppgavereaderens additive felter, baselinevakt og produksjonsrekkefølge dokumenteres."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen ny appavhengighet eller endret oppsett; separat kontrollert migreringssteg står i arkitektur og QA."
+    },
+    "module": {
+      "required": true,
+      "reason": "Bolig README forklarer identitet, adresseprioritet og samme autoriserte datakilde."
+    }
   }
 }

@@ -309,6 +309,7 @@ try {
     const opened=(await page.evaluate(()=>window.leaves)).at(-1);
     eq(index===0?opened.taskId:opened.request.id,'many-'+index,'native source receives exact selected task '+index);
     if(index===0)await btn('Lukk testaktivitet').click();else if(index===1)await btn('Lukk min ruh / avviksoppgave').click();else await btn('Lukk testkontroll').click();
+    await page.waitForFunction(key=>{const rows=[...document.querySelectorAll('.bolig-my-tasks-content article')];return rows.some(row=>row.querySelector('strong')?.textContent==='Boligoppgave '+(key+1)&&row.querySelector('button')===document.activeElement);},index);checks++;
   }
   eq(await page.evaluate(()=>window.writes),0,'personal task reading and pagination never write');
   eq(errors, []);
@@ -326,6 +327,7 @@ try {
   await page.getByText(/Existing leaf.*BoligProgress/).waitFor();
   eq((await page.evaluate(()=>window.leaves)).at(-1).taskId,'progress-b','distinct location opens exact original task ID');
   await btn('Lukk testaktivitet').click();
+  await page.waitForFunction(()=>{const rows=[...document.querySelectorAll('.bolig-my-tasks-content article')];return rows.find(row=>row.textContent.includes('QA-veien 103'))?.querySelector('button')===document.activeElement;});checks++;
   eq(await page.evaluate(()=>window.writes),0,'location navigation does not write tasks');
   eq(errors,[],'location rows and exact task opening have no browser errors');
   console.log(
