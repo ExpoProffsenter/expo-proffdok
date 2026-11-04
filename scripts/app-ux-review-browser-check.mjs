@@ -132,6 +132,7 @@ await import("./housing-unit-workspace-browser-check.mjs");
 await import("./sales-flow-036-browser-check.mjs");
 
 await import("./project-subflows-036-browser-check.mjs");
+await import("./product-categories-react-check.mjs");
 
 await import("./warranty-terms-pdf-check.mjs");
 

@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Kompakt og tydelig produktoversikt i prosjekt",
+  "change": "Miljømål BEGGE, Preview først. Produktkategorier samles i to kolonner på bred skjerm og én på smal skjerm. Hver kategori har én overskrift, valgt antall og navngitt Åpne/Lukk med aria-expanded/controls. Ett redigeringsområde åpnes om gangen; førstevisning er kompakt. Låste prosjekter beholder full visning av bare brukte produkter. Alle produkt-/FDV-/rapportfelter, handlers og skrivevern er uendret.",
+  "verification": "22 faktiske React-kontroller PASS: kategorier, manglende-FDV-snarvei, bevarte standard/manuelle produkter, FDV/kommentarer, ingen produktwrites ved navigasjon og låst visning. Eksisterende native Chromium-reise utvidet ved320/390/768/1363/1920 uten å senke felt-/knappe-/overflowkrav. Ny full CI og faktisk Previewkontroll rapporteres separat.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Samme kategorier og produktfelter; direkte Åpne/Lukk og valgt antall forklarer navigasjonen på siden."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Ingen endret dataflyt, lagring eller tilgang. UI-tilstanden eies fortsatt av hovedappen."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen nye avhengigheter eller oppsett."
+    },
+    "module": {
+      "required": true,
+      "reason": "Produktmodulens navigasjon, tilstand og skrivevern dokumenteres i README."
+    }
+  }
+}

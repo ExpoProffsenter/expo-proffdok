@@ -1,4 +1,5 @@
 import ProductDocumentationSummary from './ProductDocumentationSummary.jsx';
+import ProductCategory from './ProductCategory.jsx';
 import { Plus } from 'lucide-react';
 import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
 
@@ -49,7 +50,8 @@ export function createProductViewTools({
     removeManualProduct,
     showReportSelectorWhenLocked = false
   }) {
-    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [(0, import_jsx_runtime.jsx)(ProductDocumentationSummary,{sections:effectiveProductSections,checked,docs:productDocs,getManual:getManualProductsForSection,onOpen:title=>setOpenProductSections(prev=>({...prev,[title]:true}))}), ...effectiveProductSections.map((s) => {
+    const setCategoryOpen = (title, value) => setOpenProductSections(prev => ({...prev, ...Object.fromEntries(effectiveProductSections.map(section => [section.title, section.title === title && value]))}));
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "project-products-workspace", children: [(0, import_jsx_runtime.jsx)(ProductDocumentationSummary,{sections:effectiveProductSections,checked,docs:productDocs,getManual:getManualProductsForSection,onOpen:title=>setCategoryOpen(title,true)}, "documentation-summary"), ...effectiveProductSections.map((s) => {
       const manualForSection = getManualProductsForSection(s.title);
       const visibleStandardItems = isProjectLocked ? (s.items || []).filter((i) => !!checked[i]) : s.items || [];
       const visibleManualItems = isProjectLocked ? manualForSection.filter((p) => hasValue(p?.name) || hasValue(p?.fdvUrl) || hasValue(p?.comment)) : manualForSection;
@@ -57,17 +59,9 @@ export function createProductViewTools({
       const manualInSection = manualForSection.filter((p) => hasValue(p?.name) || hasValue(p?.fdvUrl) || hasValue(p?.comment)).length;
       const hasUsedProducts = selectedInSection > 0 || manualInSection > 0;
       if (isProjectLocked && !hasUsedProducts) return null;
-      const sectionOpen = isProjectLocked ? true : openProductSections?.[s.title] ?? hasUsedProducts;
+      const sectionOpen = isProjectLocked ? true : openProductSections?.[s.title] ?? false;
       const totalVisible = visibleStandardItems.length + visibleManualItems.length;
-      return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: s.title, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", className: "secondary", onClick: () => setOpenProductSections((prev) => ({ ...prev || {}, [s.title]: !sectionOpen })), style: { width: "100%", justifyContent: "space-between", marginBottom: "12px" }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [
-            sectionOpen ? "▼ " : "▶ ",
-            s.title
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: isProjectLocked ? `${selectedInSection + manualInSection} brukt` : selectedInSection + manualInSection > 0 ? `${selectedInSection + manualInSection} valgt` : "Åpne" })
-        ] }),
-        !sectionOpen && !isProjectLocked && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: selectedInSection + manualInSection > 0 ? `${selectedInSection + manualInSection} produkt${selectedInSection + manualInSection === 1 ? "" : "er"} er valgt i denne kategorien.` : "Trykk for å åpne og velge produkter i denne kategorien." }),
+      return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(ProductCategory, { title: s.title, count: selectedInSection + manualInSection, open: sectionOpen, locked: isProjectLocked, onToggle: () => setCategoryOpen(s.title,!sectionOpen), children: [
         sectionOpen && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: isProjectLocked ? "Prosjektet er arkivert/låst. Kun produkter som er brukt vises her." : "Kryss av produkter som er brukt. Når et produkt er valgt, kan du legge inn FDV-/databladlink og hvor produktet er brukt direkte på produktet." }),
           isProjectLocked && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { color: "#991b1b", fontWeight: 700 }, children: "🔒 Produkter kan ikke legges til, fjernes eller endres før prosjektet låses opp." }),
@@ -121,7 +115,7 @@ export function createProductViewTools({
               "Andre produkter i ",
               s.title
             ] }),
-            visibleManualItems.map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "item", children: [
+            visibleManualItems.map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: p.name || "Annet produkt" }),
               hasValue(p.fdvUrl) && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: p.fdvUrl }),
               hasValue(p.comment) && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: p.comment })

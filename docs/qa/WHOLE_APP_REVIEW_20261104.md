@@ -236,3 +236,12 @@ F07bbb57 var fullt testet før denne utvidelsen: CI925 SUCCESS9+gate, READY, fak
 
 
 Leverandørpanelets viktige handlinger er også flyttet til fast footer: Forhåndsvis bestilling, Send/Prøv sending igjen, Rediger og Avbryt/Lukk. Formknappen er fortsatt knyttet til det samme native skjemaet via form-ID, med uendrede required-felt og review-guard. Eksisterende integrasjonsprøve bruker den synlige nye arbeidsflyten ved antallsendring: lukk panelet, endre i plukklisten, åpne igjen og krev samme leverandørkladd. Ingen tvunget redigering av en inaktiv bakgrunnsfane. 17 lokale faktiske React-kontroller PASS for formtilknytning, mottaker/firma/normalisert antall, faste handlinger, sperret header/Escape/backdrop under forsinket leseforsøk og bevart kladd etter lukking. Sendertransport er eksplisitt forbudt i denne prøven. De seks Chromium-størrelsene krever nå at både primærhandling og Avbryt faktisk er synlige uten å scrolle skjemaet.
+
+
+## Produktkategorier – kompakt oversikt, tydelig åpning og skrivevern
+
+Gjenopptatt på remote9f4b4ea9/treee692c741, fullCI927 SUCCESS og fast Preview READY. Miljømål BEGGE. Ingen TEST OK eller produksjonssetting. Samme PR311 og arbeidsbranch beholdes.
+
+Det innloggede funnet med doble kategorititler, gjentatt åpnetekst og lang side er avgrenset til produktkategorienes presentasjon. Ny stabil ProductCategory-ramme gir ett navngitt h2/kategorivalg med valgt antall, presis Åpne/Lukk og aria-expanded/controls. Kortene ligger i to kolonner over760px og én ellers; utvidet område bruker bredden. Første redigerbare visning begynner lukket. Eksisterende openProductSections er fortsatt UI-eier; eksplisitt åpning lukker de andre kategoriene, mens produktverdier og handlers beholdes. Manglende-FDV-snarveien åpner riktig kategori. Ved låst prosjekt beholder motoren sin gamle filtrering til bare brukte produkter og viser dem åpne med statiske overskrifter; den tidligere knappen kunne uansett ikke lukke et låst område. Alle produkt-/dokumentfelter og skrivevern er bevart. Ingen database, priser, rapportmotor eller e-post endret.
+
+22 faktiske React-kontroller PASS. De krever bevarte standard/manuelle produkter, FDV og kommentarer, ingen skriver-callbacks ved kategorinavigasjon, riktig manglende-lenke-snarvei, korrekt låst visning og ingen React/keyvarsler. Den eksisterende native browserprøven har tre kategorier og utvidede fem-breddekrav; alle opprinnelige16px/44px-/overflow-/write-/regresjonskrav beholdes. Ny full CI og faktisk Preview må bekrefte siste kandidat.
