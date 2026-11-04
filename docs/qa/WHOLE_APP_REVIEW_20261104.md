@@ -154,3 +154,16 @@ Lokal full EXPO_BACKEND_TARGET=sandbox npm run build/critical PASS. Prosjektmeny
 Visuell prøve ble forsøkt via syntetisk faktisk headerfixture, men Skynett viste svart flate/ingen vinduer, også etter ordinær nettleseråpning. Ingen policy endret og ingen innlogget/visuell etterkontroll hevdes. Innlogget PR311, fysisk mobil/Safari, HOVEDs bildekilde, kompakt produktvalg, internt vareregister, bestillingspanel og full Bolig A–Å er fortsatt åpne.
 
 Oppfriskingsknappen beholder også teksten Oppdater felles under lasting, med disabled og aria-busy. Dette holder knappens bredde og dermed nabotittelens linjebryting stabil på mobil. Selve statusraden forklarer at prosjektene hentes. Ingen ekstra oppslag eller automatisk retry.
+
+
+## CI918 og separat Sandbox-bildereparasjon
+
+CI918/run41900225928 på878bde66: scope og åtte øvrige pakker PASS. App-browser bestod ny forsinket tomsvarprøve og hele fem-bredde-geometrien, men stoppet på én oversett gammel lokator ⚠️ Avvik (3). Den er oppdatert til faktisk ⚠️ Sjekklisteavvik (3); samme eksakte prosjekt-ID, sjekklistefane og showOpenDeviationsOnly=true kreves fortsatt. Ingen appendring eller terskelsenkning i dette steget. Senere tester i pakken må fortsatt kjøre.
+
+HOVED-bildene er undersøkt separat, kun i SANDBOX/DEMO. Fersk Supabase-branchoversikt bekrefter demo-sandbox=ppvircenkjizeiqdxphj under expo-proffdok. HOVED hadde seks relative /demo-images-lenker. Arbeidsbranchene fra main har ikke demo-overlayets filer: faktisk HOVED Før arbeid-URL svarte404 i PR311, mens samme fil svarte200/image/svg+xml i permanent demo. Alle seks kildefilene svarte200 og riktig image/svg+xml eller image/jpeg på permanent demo.
+
+Bare HOVED-prosjekt a0000000-0000-4000-8000-000000000001 fikk sine seks photo.url prefikset med permanent demos faste HTTPS-origin. Ingen bildefil er generert, kopiert, reinstallert eller slettet. Opprinnelige filnavn: befaring-for.svg, underlag-primer.jpg, membran-tetteband.jpg, slukmansjett.jpg, ror-mansjett.jpg og elektro-varmekabel.svg. Navn, ID, kategori, rekkefølge og createdAt er bevart. Reparasjonen var atomisk med forhåndshash, eksakt prosjekt-/seksfilskontroll og post-trigger-sammenligning av alle andre JSON-felt og radkolonner. Enhver uventet forskjell ville gitt rollback. Ingen grant, auth, migrering, utsending eller Production-dataendring.
+
+Fersk uavhengig READ ONLY-lesing etter commit: HOVED6bilder, alle seks med forventet fast demo-origin. HOVED data-md5 eff8bdb631f1efb6f161236d5c66526a → e72e1d7e10693f9817f03118a068ba44; other-data-md5 b0b8c7d3a3efa8a0e385f5f1d9128a11 uendret. RESERVE a0000000-0000-4000-8000-000000000002 er urørt:7innebygde bilder, data-md5 fortsatt448e9f47a70c493781cbcb69b98f41b4. Ingen sju-bilders reparasjon er kjørt på nytt.
+
+Tilbakeføring av akkurat URL-reparasjonen kan gjøres med forhåndskontroll av HOVEDs nye datahash og fjerning av bare det innførte faste demo-origin-prefikset fra de seks URL-feltene. Krev opprinnelig eff8bdb631f1efb6f161236d5c66526a før commit; ikke erstatt hele prosjektet eller kjør seed/reset. Skynett er fortsatt utilgjengelig, så HTTP-/databevis er ikke attest av innlogget galleri eller ny PDF. HOVEDs6kilder er nå teknisk rettet, mens visuell etterkontroll står åpen.

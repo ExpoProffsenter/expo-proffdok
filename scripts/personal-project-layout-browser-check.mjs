@@ -228,7 +228,7 @@ try{
   if(process.env.UX_LAYOUT_SCREENSHOTS)await page.screenshot({path:path.join(process.env.UX_LAYOUT_SCREENSHOTS,'projects-'+width+'.png'),fullPage:true,animations:'disabled'});
  }
  const card=page.locator('.projectListCard').first();
- for(const [label,args] of [['Åpne',['p0','prosjekt']],['📦 Produkter',['p0','produkter']],['📷 Bilder',['p0','bilder']],['✅ Sjekklister',['p0','sjekklister']],['📄 Rapport',['p0','rapport']],['💬 Chat (2)',['p0','chat']],['⚠️ Avvik (3)',['p0','sjekklister',{showOpenDeviationsOnly:true}]]]){
+ for(const [label,args] of [['Åpne',['p0','prosjekt']],['📦 Produkter',['p0','produkter']],['📷 Bilder',['p0','bilder']],['✅ Sjekklister',['p0','sjekklister']],['📄 Rapport',['p0','rapport']],['💬 Chat (2)',['p0','chat']],['⚠️ Sjekklisteavvik (3)',['p0','sjekklister',{showOpenDeviationsOnly:true}]]]){
   await card.getByRole('button',{name:label,exact:true}).click();eq(await page.evaluate(()=>window.opened.at(-1)),args,'same shortcut '+label);
  }
  for(const [label,args] of [['📦 Produkter: 4',['p0','produkter']],['📷 Bilder: 5',['p0','bilder']],['💬 Ulest chat: 2',['p0','chat']]]){await card.getByRole('button',{name:label,exact:true}).click();eq(await page.evaluate(()=>window.opened.at(-1)),args,'same original count callback '+label);}
