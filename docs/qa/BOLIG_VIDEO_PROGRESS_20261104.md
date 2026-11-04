@@ -24,3 +24,10 @@ Kildepakken inneholder timeline.json, originale demobilder, fonter, godkjent mal
 ## Fortsettelse
 
 Full A–Å må fortsatt dekke oppsett/roller, kontrakt/økonomi, pakker/tilvalg, kontroller, bemanning, UE/beboer, kundeaksept/endringer, bestilling/mottak, avvik/varsler, overtakelse og sluttpakke. Eksisterende18-stegstekstguide og de33Bolig-funksjonene er styrende inventar. Den gamle75sekunders Finn bolig-filmen og dette masseplankapitlet skal ikke kalles hele A–Å. Ingen ny film er produksjonspublisert.
+
+
+## Masseplan direkte i hjelpen – 04.11.2026
+
+Det ferdige masseplankapitlet (204 sekunder) legges direkte under Bolig-temaet, sammen med eksisterende Finn bolig-film. Ti kapitler, tekstalternativ og VTT følger filmen. Originalfilens SHA-256 er `075c87197d61c95340c6a6ac005bb0a5c1cd2f06439ef3cb895049a31f3785bd` (7 123 671 byte). De fem eksisterende filmene og metadataene beholdes uendret. Eksisterende Bolig-tilgang gjelder også denne filmen. Full Bolig A–Å er fortsatt ikke attestert.
+
+Nettleserprøven utvides fra fem til seks faktiske filmer og skiller nå mellom flere filmer under samme tema. Alle opprinnelige avspillings-, tilgangs-, retur- og mobilkontroller beholdes. Endringen gjelder kun arbeidsbranch/preview; produksjon og demo krever TEST OK.

@@ -34,3 +34,8 @@ Den gamle innloggede skynettøkten er fortsatt ikke gjenopprettet. Ingen full ny
 ## Historikk
 
 Tidligere detaljstatus, godkjente hoder og delbevis er bevart i Git på d9ca45e0 og i PR294/295/298/305. Bruk den nyeste daterte releasekvitteringen, ikke gamle «mangler migrering» eller «ikke TEST OK»-avsnitt. Ingen originalbevis eller demodata er slettet.
+
+
+### Videre QA 04.11 – avgrensede kandidater
+
+Produksjon `main34daef4c` og demo `fd5aafa1` er urørt. PR309 (`73c97450`, CI903 grønn) er kontrollert innlogget i Sandbox: masseoppsett med 6 bevarte boliger uten overskriving, intern katalog uten lagring, HMS-byggskille, UE-filter/20–40-visning, endringsordre og fokusretur. Ingen dataendring eller utsending i denne kontrollen. PR310 (`1a3f615e`, CI909/run41884890173 alle ni pakker og sluttkontroll grønne) retter misvisende redigering/lagrevalg i låste prosjekter, i egen branch med separat kjerneprøve. PR308 får masseplanfilmen direkte under Bolig; full Bolig A–Å gjenstår. Kandidatene er separate preview-endringer og krever TEST OK før avtalt produksjonssetting. PR310s native kontroll og begrensninger finnes i egen QA-logg og PR.

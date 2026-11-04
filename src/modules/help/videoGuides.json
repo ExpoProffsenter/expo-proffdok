@@ -373,5 +373,73 @@
         "text": "Når søket er tomt, er temaoversikten tilbake. Velg et nytt tema eller fortsett arbeidet fra menyen."
       }
     ]
+  },
+  {
+    "id": "bolig-masseplan",
+    "title": "Planlegg flere boliger",
+    "module": "Boligprosjekter",
+    "access": "bolig",
+    "topics": [
+      "bolig"
+    ],
+    "description": "Masseplan fra utvalg og datoer til lagret resultat og retur. Dette er ett kapittel i Bolig A–Å.",
+    "src": "/help-videos/bolig-masseplan-v1.mp4",
+    "track": "/help-videos/bolig-masseplan-v1.vtt",
+    "duration": 204,
+    "sha256": "075c87197d61c95340c6a6ac005bb0a5c1cd2f06439ef3cb895049a31f3785bd",
+    "bytes": 7123671,
+    "sourceCommit": "515e03b91e5ac59966c8e0b8088e364e09f537d5",
+    "chapters": [
+      {
+        "start": 0,
+        "title": "Planlegg flere boliger",
+        "text": "Åpne Fremdrift og varsler. Velg Planlegg flere boliger. Har du en kladd, heter knappen Fortsett masseoppsett. Masseplan · del av Bolig A–Å"
+      },
+      {
+        "start": 18,
+        "title": "Velg riktig utvalg",
+        "text": "Filtrer på bygg, oppgang, etasje eller bolig. Velg treffene som skal få planen. Her er seks boliger valgt. Kontroller antall og bygg før du fortsetter."
+      },
+      {
+        "start": 38,
+        "title": "Sett oppstart og takt",
+        "text": "Første oppstart er 16. november. To dager mellom boligstarter gir forskjøvet arbeid. Null starter alle boligene samtidig. Datoen kan vises som måned/dag i nettleseren."
+      },
+      {
+        "start": 60,
+        "title": "Fordel ansvaret",
+        "text": "Velg ansvarlig. Tell bare mandag–fredag hopper over helger. Helligdager må dere justere selv. Rekkefølgen er bygg, oppgang, etasje og bolig."
+      },
+      {
+        "start": 78,
+        "title": "Bygg arbeidsrekkefølgen",
+        "text": "Velg standardarbeid eller legg til eget. Gi hvert trinn navn, varighet og startregel. Her følger tre trinn etter hverandre. Påkrevd brukes ved ferdigstilling."
+      },
+      {
+        "start": 102,
+        "title": "Forhåndsvis planen",
+        "text": "Seks boliger med tre trinn gir 18 nye aktiviteter. Kontroller antallet og velg Forhåndsvis planen. Eksisterende aktiviteter beholdes."
+      },
+      {
+        "start": 120,
+        "title": "Kontroller datoene",
+        "text": "Se over bolig, arbeid og start/slutt. Første bolig går 16.–18. november. Neste bolig starter to arbeidsdager senere. Tilbake til oppsett lar deg rette før lagring."
+      },
+      {
+        "start": 142,
+        "title": "Se også siste bolig",
+        "text": "Rull gjennom hele listen. Her slutter siste arbeid 2. desember. Kontroller helgehopp og velg Lagre 18 aktiviteter samlet. Denne handlingen publiserer ingen beboervarsler."
+      },
+      {
+        "start": 164,
+        "title": "Bekreft lagret resultat",
+        "text": "Vent på Endringen er lagret. Vis første arbeid flytter Gantt til starten. Her viser planen 18 aktiviteter fra 16. november. Åpne en stolpe for boligspesifikke detaljer."
+      },
+      {
+        "start": 186,
+        "title": "Tilbake i arbeidsflyten",
+        "text": "Masseplanen er lagret. Bruk samlet tidslinje eller åpne én aktivitet for et unntak. Beboervarsler lages og gjennomgås separat. Dette er masseplan-kapitlet. Resten av Bolig A–Å kommer i egne kapitler."
+      }
+    ]
   }
 ]
