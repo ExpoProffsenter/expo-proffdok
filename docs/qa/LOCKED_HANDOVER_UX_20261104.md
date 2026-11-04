@@ -8,9 +8,9 @@ Ved forrige faktiske Sandbox-gjennomgang viste DEMO–RESERVE låst prosjekt og 
 
 ## Avgrensning
 
-Kun src/modules/overtagelse/overtagelseTools.js sin visningsfunksjon får funksjonell endring. Eksisterende isProjectLocked styrer disabled på feltene og Lagre. Et låst signaturfelt viser lagret originalbilde med beskrivende alternativtekst, eller «Ingen tegnet signatur er lagret.». Det finnes ingen tegneflate/tømmeknapp i låst visning. Opprinnelig SignaturePad og callbacks brukes helt uendret når prosjektet er ulåst. Garantivilkår/PDF og tilsiktet dokumentasjonsutsending beholdes; ingen testutsending utføres.
+src/modules/overtagelse/overtagelseTools.js sin visningsfunksjon og én tilhørende presentasjonsbetingelse i main.jsx sin statusoversikt får funksjonell endring. Eksisterende isProjectLocked styrer disabled på feltene og Lagre. Et låst signaturfelt viser lagret originalbilde med beskrivende alternativtekst, eller «Ingen tegnet signatur er lagret.». Det finnes ingen tegneflate/tømmeknapp i låst visning. Opprinnelig SignaturePad og callbacks brukes helt uendret når prosjektet er ulåst. Garantivilkår/PDF og tilsiktet dokumentasjonsutsending beholdes; ingen testutsending utføres.
 
-createOvertagelseCompletionTools, main.jsx, lagring, fersk serverlås, garanti-/signaturkrav, dato-/bekreftelsessemantikk, PDF, priser, SQL, RLS, kundeaksept, roller og e-post er urørt. Ingen firma- eller brukertilgang utvides.
+createOvertagelseCompletionTools, main sin øvrige funksjonalitet, lagring, fersk serverlås, garanti-/signaturkrav, dato-/bekreftelsessemantikk, PDF, priser, SQL, RLS, kundeaksept, roller og e-post er urørt. Ingen firma- eller brukertilgang utvides.
 
 ## Kontroller
 
@@ -36,3 +36,12 @@ Vercel dpl_2k7JhZZW3Lp7fnCnfUHBuUDR2ZrL READY påf4fc2804. Offentlig loader main
 Denne historiske posten har navn, men ingen signaturbilder. Tom-bilde-teksten presiseres derfor til «Ingen tegnet signatur er lagret.» slik at den ikke avviser eksisterende navnebasert historikk. Innledningen beskriver lesing i låst tilstand; ulåst instruksjon beholdes ordrett. To native tilleggskrav kontrollerer dette. Ingen dato, signatur, navn, lås eller serverpost er endret.
 
 CI905 påf4fc2804: build, scope og øvrige ferdige pakker består. App-browser passerer de opprinnelige modulprøvene og nye låst/empty/imagebytes-assertions, men stanser på den nye prøvens eksakte getByLabel etter at syntetisk notat settes. Lokal React/JSDOM med faktisk Textarea fra main gjenskaper årsaken: label.textContent inkluderer tekstområdets React-oppdaterte defaulttekst. Native AX-navn er fortsatt korrekt. Prøven bruker derfor eksakt textbox-rolle og tilgjengelig navn for dette feltet; verdi-/disabled-/kladdkrav beholdes. Ingen appendring for denne velgerfeilen.
+
+
+## Bekreftet statusfunn etter reload
+
+Påd2e2e5c2 er innlogging/prosjekt bevart ved vanlig reload. Arkivdata og disabled-felter er riktige, men visningen ber fortsatt om å lagre registreringen når dirtyBaseline-kvitteringen mangler. Kilde viser at persistedProjectHasOvertagelse leser en RAM-baseline; den er ikke et nytt serverbevis etter reload. Ingen tilstand, baseline eller registreringskrav endres. Scope utvides bare med den tilhørende main-statuslinjen: i låst tilstand undertrykkes utkastets skriveinstruksjon begge steder; confirmed/persisted og alle ulåste instruksjoner beholdes. Låst lagreknapp får stabil disabled «Lagre overtagelse». Native test henter det faktiske main-uttrykket/hjelperne og kontrollerer låst absent-baseline og uendret ulåst registreringsveiledning.
+
+Den utvidede faktiske native prøveverten bygger lokalt med PROJECT_036_BUILD_ONLY (ingen nettleser startet); ordinær CI setter ikke dette og kjører alle eksisterende og nye scenarier. Full Sandbox-build etter statuslinjen PASS.
+
+I native preview ble registrert-status riktig igjen etter at Status og mangler ble åpnet og visningen rendret på nytt. Det støtter avgrensningen til midlertidig baseline-/visningsstatus; ingen manglende lagring eller tapt historikk er påvist. Native prøven dekker både fraværende og bekreftet baseline, og kontrollerer at faktisk registrert-status fortsatt vises mens lagring forblir sperret.
