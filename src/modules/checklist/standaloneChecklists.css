@@ -41,7 +41,7 @@
 
 /* Keep independent checklist actions in the same internal workspace style.
    Status choices retain their own green/orange answer presentation. */
-.standalone-checklists :is(.standalone-actions>button,article>button,.checklist-proposals>button),
-.checklist-proposal-review>button{border:1px solid #007f8e;border-radius:7px;background:#007f8e;background-image:none;color:#fff;box-shadow:none;transform:none;font-weight:600;white-space:normal}
-.standalone-checklists :is(.standalone-actions>button,article>button,.checklist-proposals>button).secondary,
-.checklist-proposal-review>button.secondary{background:#fff;color:#007f8e;border-color:#cbdde2}
+.standalone-checklists button:not(.checklist-status-choice),
+.checklist-proposal-review button{border:1px solid #007f8e;border-radius:7px;background:#007f8e;background-image:none;color:#fff;box-shadow:none;transform:none;font-weight:600;white-space:normal}
+.standalone-checklists button.secondary:not(.checklist-status-choice),
+.checklist-proposal-review button.secondary{background:#fff;color:#007f8e;border-color:#cbdde2}
