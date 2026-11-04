@@ -16,6 +16,8 @@ const primitives=native('Section','  const { renderProductSections }')+native('I
 const statusStart=main.indexOf('          persistedProjectHasOvertagelse ?'),statusEnd=main.indexOf('          totalChatCount > 0 &&',statusStart);
 assert(statusStart>0&&statusEnd>statusStart,'actual project status extraction');
 const statusExpression=main.slice(statusStart,statusEnd).trim().replace(/,$/,'');
+const informationExpression=main.match(/\(0, import_jsx_runtime\.jsx\)\(ProjectInformationFields, \{[^\n]+\}\)/)?.[0];
+assert(informationExpression?.includes('readOnly:'),'actual information-field adapter extraction');
 const statusHelpers=main.slice(main.indexOf('    const hasOvertagelseSignature ='),main.indexOf('    const persistedProjectHasOvertagelse ='));
 const designStart=main.indexOf('tab === "prosjektering" &&')+('tab === "prosjektering" &&').length,designEnd=main.lastIndexOf('/* @__PURE__ */',main.indexOf('children: "Sjekkliste for prosjektering"'));
 assert(designStart>30&&designEnd>designStart);
@@ -29,7 +31,7 @@ import {createRoot} from '${root}/node_modules/react-dom/client.js';
 import * as import_jsx_runtime from '${root}/node_modules/react/jsx-runtime.js';
 import * as import_lucide_react from '${root}/node_modules/lucide-react/dist/esm/lucide-react.mjs';
 import {createProjectOverviewTools} from '${root}/src/modules/project/projectOverviewTools.js';
-import Fields from '${root}/src/modules/project/ProjectInformationFields.jsx';
+import ProjectInformationFields from '${root}/src/modules/project/ProjectInformationFields.jsx';
 import {createProductViewTools} from '${root}/src/modules/product/productViewTools.js';
 import {createSurfaceViewTools,emptyBathroomEquipment} from '${root}/src/modules/surfaces/surfaceViewTools.js';
 import {createInstallationViewTools} from '${root}/src/modules/installations/installationViewTools.js';
@@ -68,13 +70,14 @@ function App(){
  window.setWarranty036=setWarranty;window.setHandover036=setOvertagelse;window.handover036=overtagelse;window.setPersistedHandover036=setPersistedHandover;
  React.useEffect(()=>{window.committed=mode+':'+locked;},[mode,locked]);
  const call=(name)=>(...args)=>window.calls.push({name,args});
+ const isProjectLocked=locked,isProjectSupportReadOnly=false;
  const common={Section,Grid,Input,Textarea,SignaturePad,project,setProject,projectId:'qa-project',isProjectLocked:locked};
  ${statusHelpers}
  const persistedProjectHasOvertagelse=persistedHandover;
  ${designHandlers}
  const addPhoto=call('upload-design');
  const body=mode==='design'?(${designExpression}):mode==='deviations'?<Section title="Avvik/SJA/RUH"><DeviationCenter project={project} setProject={setProject} projectId="qa-project" userId="qa-user" checklist={{Kontroll:{'QA punkt':{status:'Avvik',comment:'Mangler kontroll'}}}} activeChecklistTemplate={[{category:'Kontroll',items:['QA punkt']}]} readOnly={locked} onSaveProjectDeviation={call('save-deviation')} onPrepareChatDraft={call('prepare-chat')}/></Section>:mode==='description'?overview.renderProjectDescriptionPanel({project,setProject,projectDescriptionTemplates:[{label:'QA standardtekst',text:'Ny standardtekst'}],appendProjectDescriptionTemplate:text=>setProject(p=>({...p,projectDescription:p.projectDescription+'\\n'+text}))}):
- mode==='information'?<div><section className="project-info-editor"><h2>Rediger kunde- og prosjektinfo</h2><CollapsibleBlock title="Kunde- og prosjektdata"><div className="grid"><Fields project={project} setProject={setProject} Input={Input} Textarea={Textarea} readOnly={locked}/></div><warrantyTools.ProjectWarrantySetup warranty={warranty} setWarranty={setWarranty} systems={[system]} project={project} onCreateStandardWetroomTemplate={call('create-template')}/></CollapsibleBlock></section></div>:
+ mode==='information'?<div><section className="project-info-editor"><h2>Rediger kunde- og prosjektinfo</h2><CollapsibleBlock title="Kunde- og prosjektdata"><div className="grid">{${informationExpression}}</div><warrantyTools.ProjectWarrantySetup warranty={warranty} setWarranty={setWarranty} systems={[system]} project={project} onCreateStandardWetroomTemplate={call('create-template')}/></CollapsibleBlock></section></div>:
  mode==='products'?products.renderProductSections({effectiveProductSections:[{title:'Primer',items:['QA primer','QA alternativ']}],getManualProductsForSection:()=>manual,isProjectLocked:locked,checked,openProductSections:open,setOpenProductSections:setOpen,productDocs:docs,toggleProductChecked:(k,v)=>setChecked(p=>({...p,[k]:v})),updateProductDoc:(k,v)=>setDocs(p=>({...p,[k]:{...p[k],...v}})),getProductColorOptions:()=>['Hvit','Grå'],addManualProduct:()=>setManual(p=>[...p,{id:uid(),name:'',fdvUrl:'',comment:''}]),updateManualProduct:(s,id,v)=>setManual(p=>p.map(x=>x.id===id?{...x,...v}:x)),removeManualProduct:(s,id)=>setManual(p=>p.filter(x=>x.id!==id))}):
  mode==='surfaces'?surfaces.renderOverflaterOgInnredning({surf,setSurf,bathroomEquipment:equipment,setBathroomEquipment:setEquipment}):
  mode==='installation'?installation.renderInstallationPanel({inst,setInst,uploadImages:async()=>[],authorName:'QA'}):
@@ -125,6 +128,7 @@ try{
  const pad=page.locator('main canvas').first();await pad.scrollIntoViewIfNeeded();const box=await pad.boundingBox();await page.mouse.move(box.x+20,box.y+35);await page.mouse.down();await page.mouse.move(box.x+80,box.y+55,{steps:5});await page.mouse.up();eq(await page.evaluate(()=>window.handover036.signUtførendeImage.startsWith('data:image/png;base64,')),true,'actual native drawing still records synthetic ink');eq(await page.evaluate(()=>window.handover036.signKundeImage),sample,'drawing keeps other stored signature');
  await show('handover',true);eq(await page.getByRole('button',{name:'Lagre overtagelse',exact:true}).isDisabled(),true,'signed locked state still cannot save');eq(await page.evaluate(()=>window.calls.filter(c=>['save-handover','complete-handover','send-docs'].includes(c.name))),[],'locked/unlocked presentation and drawing never save, finalize or send');await page.evaluate(()=>window.setPersistedHandover036(true));await page.getByRole('region',{name:'Prosjektets overtagelsesstatus',exact:true}).getByText(/Overtagelse er registrert/).waitFor();eq(await page.getByText(/Overtagelse registrert/).count(),1,'confirmed baseline still shows registered handover in actual panel');eq(await page.getByRole('button',{name:'Lagre overtagelse',exact:true}).isDisabled(),true,'confirmed locked baseline never unlocks save');
 
+ await show('information',true);for(const label of ['Navn på prosjekt','Prosjektansvarlig','Dato','Adresse','Postnr.','Poststed / by','Kunde','Kunde e-post','Kunde telefon'])eq(await page.getByLabel(label,{exact:true}).isDisabled(),true,'actual main adapter locks project/customer field '+label);eq(await page.getByRole('textbox',{name:'Notater',exact:true}).isDisabled(),true,'locked project notes remain readable');eq(await page.locator('.project-customer-register').count(),0,'locked actual adapter removes customer-register writes');await show('information');eq(await page.getByLabel('Kunde',{exact:true}).isEnabled(),true,'actual main adapter retains unlocked customer editing');eq(await page.getByLabel('Adresse',{exact:true}).inputValue(),'Testveien1','lock presentation preserves existing project address');eq(await page.locator('.project-customer-register').count(),1,'unlocked customer-register workflow retained');
  await show('warranty');eq(await page.getByRole('button',{name:'Utsted 10 års tetthetsgaranti',exact:true}).isDisabled(),true,'native missing documentation blocks issue');
  eq(await page.evaluate(()=>window.calls.filter(c=>['access-create','access-copy','access-send','send-chat','issue-warranty','complete-handover','send-docs','save-project'].includes(c.name))),[],'presentation sweep invokes no consequential command');
  for(const [mode,openName,title] of [['deviations','+ Nytt HMS/prosjektavvik','Nytt HMS/prosjektavvik'],['access','Administrer kontrollørtilgang','Uavhengig kontrollør']]){

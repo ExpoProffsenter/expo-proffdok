@@ -8,7 +8,7 @@ Ved forrige faktiske Sandbox-gjennomgang viste DEMO–RESERVE låst prosjekt og 
 
 ## Avgrensning
 
-src/modules/overtagelse/overtagelseTools.js sin visningsfunksjon og én tilhørende presentasjonsbetingelse i main.jsx sin statusoversikt får funksjonell endring. Eksisterende isProjectLocked styrer disabled på feltene og Lagre. Et låst signaturfelt viser lagret originalbilde med beskrivende alternativtekst, eller «Ingen tegnet signatur er lagret.». Det finnes ingen tegneflate/tømmeknapp i låst visning. Opprinnelig SignaturePad og callbacks brukes helt uendret når prosjektet er ulåst. Garantivilkår/PDF og tilsiktet dokumentasjonsutsending beholdes; ingen testutsending utføres.
+src/modules/overtagelse/overtagelseTools.js sin visningsfunksjon og to tilhørende presentasjonskoblinger i main.jsx (statusoversikt og eksisterende readOnly-prop på kunde-/prosjektfeltene) får funksjonell endring. Eksisterende isProjectLocked styrer disabled på feltene og Lagre. Et låst signaturfelt viser lagret originalbilde med beskrivende alternativtekst, eller «Ingen tegnet signatur er lagret.». Det finnes ingen tegneflate/tømmeknapp i låst visning. Opprinnelig SignaturePad og callbacks brukes helt uendret når prosjektet er ulåst. Garantivilkår/PDF og tilsiktet dokumentasjonsutsending beholdes; ingen testutsending utføres.
 
 createOvertagelseCompletionTools, main sin øvrige funksjonalitet, lagring, fersk serverlås, garanti-/signaturkrav, dato-/bekreftelsessemantikk, PDF, priser, SQL, RLS, kundeaksept, roller og e-post er urørt. Ingen firma- eller brukertilgang utvides.
 
@@ -45,3 +45,12 @@ Påd2e2e5c2 er innlogging/prosjekt bevart ved vanlig reload. Arkivdata og disabl
 Den utvidede faktiske native prøveverten bygger lokalt med PROJECT_036_BUILD_ONLY (ingen nettleser startet); ordinær CI setter ikke dette og kjører alle eksisterende og nye scenarier. Full Sandbox-build etter statuslinjen PASS.
 
 I native preview ble registrert-status riktig igjen etter at Status og mangler ble åpnet og visningen rendret på nytt. Det støtter avgrensningen til midlertidig baseline-/visningsstatus; ingen manglende lagring eller tapt historikk er påvist. Native prøven dekker både fraværende og bekreftet baseline, og kontrollerer at faktisk registrert-status fortsatt vises mens lagring forblir sperret.
+
+
+## Tilsvarende feltkobling på prosjektoversikten
+
+Lesing av faktisk arkivprosjekt og main viser at ProjectInformationFields får bare isProjectSupportReadOnly, mens komponentens eksisterende readOnly allerede sperrer navn, adresse, kontakt, notat og kunderegisterhandlinger. Main kobler nå inn isProjectLocked i samme prop. Dette er én ekstra presentasjonslinje; feltkomponenten, CRM og lagringslogikk endres ikke. Den native prøven rendrer nå den faktiske main-invokasjonen, ikke en manuelt riktig readOnly-prop. Den kontrollerer alle låste felt, skjult kunderegister, og uendret ulåst adresse/redigering/register. IsProjectLocked og support-flagg bindes eksplisitt i prøveverten for de faktiske uttrykkene. Øvrige arkivfaner er ikke automatisk attestert av denne avgrensningen.
+
+Seneste lokale Sandbox-build og faktisk prøvevert-build består også etter at kunde-/prosjektfeltenes main-kobling tas med. Native endelig CI og oppdatert preview må fortsatt bekreftes.
+
+CI906 (41881670963) påd2e2e5c2: alle ni pakker og sluttkontroll PASS. Den tidligere tekstområdevelgerfeilen er dermed rettet med alle opprinnelige og nye signatur-/kladdkrav beholdt. Dette er grunnbevis for overtagelsesdelen; senere main-status-/feltkobling krever sin nye CI.
