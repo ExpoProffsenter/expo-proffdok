@@ -2,7 +2,7 @@
   "version": 1,
   "title": "Leverandørbestilling i høyrepanel med fast lukkeknapp",
   "change": "Miljømål BEGGE, Preview først. Samme eksisterende leverandørskjema, forhåndsvisning, usikker kvittering og kladd vises i etablert WorkspacePanel. Fast footer og native dialoglukking; valgfri closeDisabled bevarer sperren under eksisterende busy-forsøk. Ingen ordre-/pris-/mottaker-/RPC-/e-postendring.",
-  "verification": "Full lokal Sandbox-build og 47 mock-provider e-postkontroller PASS. Eksisterende Chromium-prøve utvidet ved seks skjermstørrelser med dialog, fast Avbryt, tastatur/header/fokus, kladd og sperret lukking ved forsinket forhåndsvisning. Full ny CI og live Preview kreves, ingen ekte sending utført.",
+  "verification": "Full lokal Sandbox-build og 47 mock-provider e-postkontroller PASS. Eksisterende Chromium-prøve utvidet ved seks skjermstørrelser med dialog, fast Avbryt, tastatur/header/fokus, kladd og sperret lukking ved forsinket forhåndsvisning. Full ny CI og live Preview kreves, ingen ekte sending utført. 17 lokale faktiske React-kontroller PASS for native form-ID, firma/mottaker/antall, busy-lukking og bevart kladd. Primærhandlinger er også i fast footer.",
   "documentation": {
     "help": {
       "required": false,

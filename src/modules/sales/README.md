@@ -419,3 +419,5 @@ Editor-/General-kontrollene laster både felles CSS og appens sene mobilregler. 
 
 
 Leverandørbestilling fra Prissøk åpner eksisterende skjema i et WorkspacePanel til høyre (full bredde på mobil), med fast Avbryt/Lukk. Skjema, kanonisk forhåndsvisning, kvittering og usikkert sendeforsøk beholder samme tilstand og request-ID hos SupplierOrder. Header, Escape og footer bevarer kladden ved lukking; alle lukkemetoder sperres mens eksisterende busy-forsøk pågår. Ingen transport- eller bestillingskontrakt er endret.
+
+Forhåndsvis/Send/Rediger og Avbryt ligger fast i panelets footer. Forhåndsvis er knyttet til samme native form-ID; eksisterende required-felt og review-guard gjelder. For å endre antall i plukklisten kan panelet lukkes og åpnes igjen med bevart leverandørkladd.

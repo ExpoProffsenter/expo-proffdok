@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import { Mail } from 'lucide-react';
 import WorkspacePanel from '../ui/WorkspacePanel.jsx';
 import { supplierOrderContext, deleteSupplierOrderContact, prepareSupplierOrder, sendSupplierOrder } from './supplierOrderClient.js';
@@ -6,16 +6,17 @@ import './supplierOrder.css';
 
 const money=value=>new Intl.NumberFormat('nb-NO',{style:'currency',currency:'NOK',minimumFractionDigits:2,maximumFractionDigits:2}).format(Number(value));
 
-function SupplierOrderWorkspace({busy,sent,onClose,children}) {
+function SupplierOrderWorkspace({busy,sent,onClose,actions,children}) {
  const dialog=useRef(null);
  useEffect(()=>{const node=dialog.current;node.showModal();return()=>{if(node.open)node.close();};},[]);
  return <WorkspacePanel dialogRef={dialog} title="Bestilling til leverandør" subtitle="PRISSØK / PLUKKLISTE" className="supplier-order-workspace" closeLabel="Lukk bestilling" closeDisabled={busy} onClose={onClose}
-  footer={<button type="button" className="secondary supplierOrderClose" disabled={busy} onClick={onClose}>{sent?'Lukk':'Avbryt'}</button>}>
+  footer={<>{actions}<button type="button" className="secondary supplierOrderClose" disabled={busy} onClick={onClose}>{sent?'Lukk':'Avbryt'}</button></>}>
   {children}
  </WorkspacePanel>;
 }
 
 export default function SupplierOrder({items,companyId,orderNumber='',disabled=false,renderActions=null}) {
+ const formId=useId();
  const [open,setOpen]=useState(false),[context,setContext]=useState(null),[loadError,setLoadError]=useState('');
  const [contact,setContact]=useState(''),[name,setName]=useState(''),[email,setEmail]=useState('');
  const [reference,setReference]=useState(orderNumber),[address,setAddress]=useState(''),[message,setMessage]=useState('');
@@ -64,15 +65,19 @@ export default function SupplierOrder({items,companyId,orderNumber='',disabled=f
   finally{busyRef.current=false;setBusy(false);}
  };
  const newOrder=()=>{setPreview(null);setSent(false);setError('');setRemember(false);attempt.current=null;setExcluded([]);};
+ const workspaceActions=sent?<button type="button" onClick={newOrder}>Ny bestilling</button>:preview?<>
+  <button type="button" onClick={()=>void send()} disabled={busy||!allowed}>{busy?'Sender …':uncertain?'Prøv sending igjen':'Send bestilling'}</button>
+  {!uncertain?<button type="button" className="secondary" disabled={busy} onClick={()=>{setPreview(null);setError('');}}>Rediger bestilling</button>:null}
+ </>:context?<button type="submit" form={formId} disabled={busy||!allowed||!selected.length}>{busy?'Henter forhåndsvisning …':'Forhåndsvis bestilling'}</button>:null;
  const orderButton=<button type="button" className="supplierOrderTrigger" disabled={!allowed||!items.length||busy} aria-expanded={open} onClick={()=>{if(!open&&!referenceTouched.current&&!preview)setReference(orderNumber);setOpen(v=>!v);}}><Mail size={16}/> Send bestilling til leverandør</button>;
  return <div className="supplierOrder">
   {renderActions?renderActions(orderButton):orderButton}
-  {open?<SupplierOrderWorkspace busy={busy} sent={sent} onClose={()=>setOpen(false)}><section className="supplierOrderPanel" ref={panel} tabIndex={-1} aria-label="Bestilling til leverandør">
+  {open?<SupplierOrderWorkspace busy={busy} sent={sent} actions={workspaceActions} onClose={()=>setOpen(false)}><section className="supplierOrderPanel" ref={panel} tabIndex={-1} aria-label="Bestilling til leverandør">
    <h3>{sent?'Bestillingen er sendt':preview?'Se over bestillingen':'Send plukkliste som bestilling'}</h3>
    {sent?<>
     <p role="status">Bestillingen til {preview.supplierName} er sendt til <strong>{preview.to}</strong>. E-posttjenesten har bekreftet sendingen. Be leverandøren bekrefte bestillingen.</p>
     {preview.remember?<p>Leverandør og e-postadresse er lagret for firmaet.</p>:null}
-    <p>Varene er fortsatt i plukklisten.</p><button type="button" className="secondary" onClick={newOrder}>Ny bestilling</button>
+    <p>Varene er fortsatt i plukklisten.</p>
    </>:preview?<>
     <p><strong>Til:</strong> {preview.supplierName} · {preview.to}</p>
     <p><strong>Fra:</strong> {preview.company.companyName} · {preview.replyTo}</p><p>{[preview.company.orgNumber&&`Org.nr. ${preview.company.orgNumber}`,preview.company.address,preview.company.phone,preview.company.email,preview.company.website].filter(Boolean).join(" · ")}</p>
@@ -82,9 +87,8 @@ export default function SupplierOrder({items,companyId,orderNumber='',disabled=f
     <div className="supplierOrderTable"><table><thead><tr>{['Vare','Vareleverandør','Varenummer','GTIN/EAN','Antall','Netto eks. mva.','Linjesum eks. mva.'].map(t=><th key={t}>{t}</th>)}</tr></thead><tbody>{preview.items.map(i=><tr key={i.id}><td>{i.description}</td><td>{i.supplier}</td><td>{i.number||'–'}</td><td>{i.gtin||'–'}</td><td>{i.quantity}</td><td>{money(i.unitNet)}</td><td>{money(i.lineNet)}</td></tr>)}</tbody></table></div>
     <p><strong>Sum varer eks. mva.: {money(preview.totalNet)}</strong></p><p>Ved utkjøring tilkommer leveringsomkostninger.</p><p>Ordrebekreftelse sendes til: <strong>{preview.replyTo}</strong>.</p>
     {preview.remember?<p>Leverandør og e-post lagres for firmaet når sendingen er bekreftet.</p>:null}
-    <div className="supplierOrderActions"><button type="button" onClick={()=>void send()} disabled={busy||!allowed}>{busy?'Sender …':uncertain?'Prøv sending igjen':'Send bestilling'}</button>
-    {!uncertain?<button type="button" className="secondary" disabled={busy} onClick={()=>{setPreview(null);setError('');}}>Rediger bestilling</button>:<p>Prøv samme sending igjen for å unngå dobbeltbestilling.</p>}</div>
-   </>:!context?<div>{loadError?<><p role="alert">{loadError}</p><button type="button" className="secondary" onClick={()=>{setLoadError('');setOpen(false);}}>Lukk og prøv igjen</button></>:<p role="status">Henter leverandører og avsender …</p>}</div>:<form onSubmit={review}>
+    {uncertain?<p>Prøv samme sending igjen for å unngå dobbeltbestilling.</p>:null}
+   </>:!context?<div>{loadError?<><p role="alert">{loadError}</p><button type="button" className="secondary" onClick={()=>{setLoadError('');setOpen(false);}}>Lukk og prøv igjen</button></>:<p role="status">Henter leverandører og avsender …</p>}</div>:<form id={formId} onSubmit={review}>
     <p>Velg varene som skal sendes til denne leverandøren. Varenummer og netto-pris eks. mva. følger bestillingen. Ved utkjøring tilkommer leveringsomkostninger.</p>
     <fieldset disabled={busy||!allowed}>
      <div className="supplierOrderFields">
@@ -102,7 +106,6 @@ export default function SupplierOrder({items,companyId,orderNumber='',disabled=f
       {items.map(i=><label className="supplierOrderCheck" key={i.id}><input type="checkbox" checked={selected.includes(i.id)} onChange={e=>setExcluded(ids=>e.target.checked?ids.filter(id=>id!==i.id):[...ids,i.id])}/><span>{i.pickQuantity||i.quantity||1} × {i.description} <small>{i.supplier_name} · Varenr. {i.supplier_product_number||'–'}</small></span></label>)}
      </div>
      <p>Avsender: {context.company?.companyName}. Ordrebekreftelse sendes til {context.replyTo}.</p>
-     <button type="submit" disabled={!selected.length}>{busy?'Henter forhåndsvisning …':'Forhåndsvis bestilling'}</button>
     </fieldset>
    </form>}
    {error?<p role="alert">{error}</p>:null}
