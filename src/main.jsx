@@ -6531,7 +6531,7 @@ ${appLink}`;
             "✅ Overtagelse er registrert",
             overtagelse.dato ? ` ${new Date(overtagelse.dato).toLocaleDateString("no-NO")}` : "",
             "."
-          ] }) : overtagelseHasDraftContent() && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: overtagelseIsSignedByBoth() ? (projectHasOvertagelse() ? 'Overtagelsen er signert av begge parter og bekreftet som gjennomført, men er ikke lagret som registrert ennå. Gå til Overtagelse og velg "Lagre og registrer overtagelse".' : 'Overtagelsen er signert av begge parter, men ikke registrert. Gå til Overtagelse, bekreft at overtagelsen er gjennomført og lagre.') : 'Overtagelse er påbegynt, men ikke registrert. Den regnes først som registrert når begge har signert, overtagelsen er bekreftet som gjennomført og lagringen er bekreftet.'  }),
+          ] }) : !isProjectLocked && overtagelseHasDraftContent() && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: overtagelseIsSignedByBoth() ? (projectHasOvertagelse() ? 'Overtagelsen er signert av begge parter og bekreftet som gjennomført, men er ikke lagret som registrert ennå. Gå til Overtagelse og velg "Lagre og registrer overtagelse".' : 'Overtagelsen er signert av begge parter, men ikke registrert. Gå til Overtagelse, bekreft at overtagelsen er gjennomført og lagre.') : 'Overtagelse er påbegynt, men ikke registrert. Den regnes først som registrert når begge har signert, overtagelsen er bekreftet som gjennomført og lagringen er bekreftet.'  }),
           totalChatCount > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [
             "\u{1F4AC} Chat: ",
             totalChatCount,
@@ -6630,7 +6630,7 @@ ${appLink}`;
             onOpenRequest: openSalesRequestFromHome
           })
         ] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: !projectId && !mobileCreatingProject ? "desktopOnlyWhenNoProject" : "", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Section, { className: "project-info-editor", title: projectId ? "Rediger kunde- og prosjektinfo" : "Prosjektinformasjon", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CollapsibleBlock, { title: "Kunde- og prosjektdata", defaultOpen: true, children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProjectInformationFields, { project, setProject, Input, Textarea, readOnly: isProjectSupportReadOnly }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProjectInformationFields, { project, setProject, Input, Textarea, readOnly: isProjectSupportReadOnly || isProjectLocked }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProjectWarrantySetup, { warranty, setWarranty, systems: soproWarrantySystems, project, onCreateStandardWetroomTemplate: createStandardWetroomTemplate }),
           false && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", gap: "10px", alignItems: "flex-start", marginTop: "4px" }, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", checked: !!project.isTemplate && !!warranty?.enabled && !!warranty?.system, onChange: (e) => {

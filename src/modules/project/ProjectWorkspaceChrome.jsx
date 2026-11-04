@@ -34,7 +34,7 @@ export function ProjectHeaderActions({ dirty, saved, readOnly, locked, simpleOrd
     items[next]?.focus();
   };
   return <div className="project-header-actions">
-    {!readOnly && <button type="button" onClick={onSave}>{dirty ? '● Lagre endringer' : saved ? `Oppdater ${noun}` : `Lagre ${noun}`}</button>}
+    {!readOnly && <button type="button" disabled={locked} onClick={onSave}>{dirty ? '● Lagre endringer' : saved ? `Oppdater ${noun}` : `Lagre ${noun}`}</button>}
     <div className="project-actions-dropdown" ref={root}>
       <button ref={trigger} type="button" className="secondary" aria-haspopup="menu" aria-expanded={open} aria-controls={open ? menuId : undefined} onClick={() => { openLast.current = false; setOpen(value => !value); }} onKeyDown={event => { if (['ArrowDown', 'ArrowUp'].includes(event.key)) { event.preventDefault(); openLast.current = event.key === 'ArrowUp'; setOpen(true); } }}><MoreHorizontal size={18}/>Flere handlinger</button>
       {open && <div id={menuId} className="project-actions-menu" role="menu" aria-label="Flere handlinger" ref={panel} onKeyDown={keys}>
