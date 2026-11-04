@@ -28,10 +28,10 @@ export default function PartnerItems({ items, events = [], onRespond, browse = f
   const [limit, setLimit] = useState(20);
   const matching = browse ? items.filter(item => (!status || item.status === status) && searchText([item.title, item.number, item.address, item.reference, item.room_name, statusNames[item.status]].join(" ")).includes(searchText(query))) : items;
   const visible = browse ? matching.slice(0, limit) : matching;
-  const statuses = [...new Set(items.map(item => item.status))].filter(value => statusNames[value]);
+  const statuses = [...new Set([...items.map(item => item.status), ...(status ? [status] : [])])].filter(value => statusNames[value]);
   return (
     <div className="bolig-partner-items">
-      {browse && items.length > 12 && <div className="bolig-partner-item-browser">
+      {browse && (items.length > 12 || query || status) && <div className="bolig-partner-item-browser">
         <label>Søk i oppgaver<input type="search" value={query} placeholder="Bolig, adresse, arbeid eller ordrenummer" onChange={e => { setQuery(e.target.value); setLimit(20); }}/></label>
         <label>Status for oppgaver<select value={status} onChange={e => { setStatus(e.target.value); setLimit(20); }}><option value="">Alle statuser</option>{statuses.map(value => <option key={value} value={value}>{statusNames[value]}</option>)}</select></label>
         <p role="status">Viser {visible.length} av {matching.length} oppgaver{matching.length !== items.length ? ` · ${items.length} totalt` : ""}.</p>

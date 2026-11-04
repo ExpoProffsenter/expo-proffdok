@@ -278,13 +278,15 @@ export default function BoligProgressTaskEditor({
             {draft.pending && (
               <div role="status">
                 <p>{busy ? "Lagrer aktiviteten … Vent på bekreftelse." : "Lagringen er ikke bekreftet. Utkastet er beholdt."}</p>
-{!busy && (                <button
-                  type="button"
-                  disabled={busy}
-                  onClick={() => run(null, {}, true)}
-                >
-                  Prøv samme lagring igjen
-                </button>)}
+                {!busy && (
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => run(null, {}, true)}
+                  >
+                    Prøv samme lagring igjen
+                  </button>
+                )}
               </div>
             )}
             <footer>

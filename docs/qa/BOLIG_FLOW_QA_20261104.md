@@ -51,3 +51,8 @@ Under ordinær venting viste native klargjøring og masseplanlegging instruksjon
 Preparation- og planleggingsprøvene holder nå det opprinnelige tapte-svar-scenariet bevisst i venting, kontrollerer sann ventetekst og sperret lukking, slipper deretter svaret og fortsetter de eksisterende usikkert-svar-/eksakt-retry-assertionene. Lokal full Sandbox-build og syntakskontroll består; endelig CI må også bestå denne siste tekstendringen.
 
 Den separate Bolig-previewen har bekreftet Sandbox-binding, men krever ny innlogging på det nye vertsnavnet. Innlogget helreise ovenfor er derfor bevis for den eksisterende PR308-grunnflyten; den erstatter ikke innlogget kontroll av alle PR309-rettelsene. Ingen produksjonssetting eller TEST OK foreligger.
+
+
+Reakt-/tilgjengelighetsgjennomgang av kandidat: effekter bruker stabile bruker-/firmagrenser og avmelder lyttere, uavhengige eksisterende lesinger kjøres parallelt, rendret oppgavemengde begrenses, feltene har native etiketter, tastatur/Escape/fokus kontrolleres, og ingen nye avhengigheter eller lagringssideeffekter innføres. Ved oppfrisking kan listen krympe under12 mens et filter fortsatt er aktivt. Filterfeltene må da forbli synlige til søk/status er tømt; en valgt status som forsvinner fra resultatene beholdes i velgeren slik at den fortsatt viser ærlig aktivt filter. Seks nye native oppfriskingsassertions dekker dette.
+
+CI902 (41841083914) påa111690c: samtlige ni pakker og sluttkontroll PASS, også holdt-svar-prøvene for sann ventetekst og eksisterende usikker-svar-/eksakt-retry-forløp. Vercel dpl_D2Qe4RK4VCtBFELNvWs5bKkN2i7i READY med samme SHA. Offentlig loader ble kontrollert: Sandbox-identitet til stede, Production-identitet fraværende.
