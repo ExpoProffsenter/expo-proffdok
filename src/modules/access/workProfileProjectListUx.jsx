@@ -211,8 +211,8 @@ function SharedProjectList({ panel, workProfileState }) {
           <h3>Felles prosjekter i {payload.companyName || workProfileState?.active_company_profile?.companyName || "aktiv arbeidsprofil"}</h3>
           <p>Viser kollegaenes prosjekter. Dine egne prosjektkort vises fortsatt i den ordinære listen under.</p>
         </div>
-        <button type="button" className="secondary" onClick={refresh} disabled={loading}>
-          <RefreshCw size={16} /> {loading ? "Henter..." : "Oppdater felles"}
+        <button type="button" className="secondary" onClick={refresh} disabled={loading} aria-busy={loading}>
+          <RefreshCw size={16} /> Oppdater felles
         </button>
       </div>
 
