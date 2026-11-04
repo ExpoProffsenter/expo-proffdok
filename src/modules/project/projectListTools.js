@@ -143,7 +143,7 @@ export function createProjectListTools({
                 ] }),
                 (0, import_jsx_runtime.jsxs)("div", {className:"projectListResponsible",children:[(0, import_jsx_runtime.jsx)("small",{children:"Ansvarlig"}),(0, import_jsx_runtime.jsx)("span",{children:listProject.responsible || "Ikke fylt ut"})]})
               ] });
-            return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(ProjectListCardDisclosure, { heading,onOpen:()=>openProjectById(p.id,"prosjekt"),attention:[openDeviationCount>0?`${openDeviationCount} åpne avvik`:"",unreadForAdminInList>0?`${unreadForAdminInList} uleste meldinger`:""].filter(Boolean).join(" · "),className: "item projectListCard", style: unreadForAdminInList > 0 ? { borderColor: "#fecaca", background: "#fff7f7" } : void 0, children: [
+            return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(ProjectListCardDisclosure, { heading,onOpen:()=>openProjectById(p.id,"prosjekt"),attention:[openDeviationCount>0?`${openDeviationCount} åpne sjekklisteavvik`:"",unreadForAdminInList>0?`${unreadForAdminInList} uleste meldinger`:""].filter(Boolean).join(" · "),className: "item projectListCard", style: unreadForAdminInList > 0 ? { borderColor: "#fecaca", background: "#fff7f7" } : void 0, children: [
               (0, import_jsx_runtime.jsxs)("div",{className:"projectListContactDetails",children:[
                   projectCompanyName && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: ["🏢 ", projectCompanyName] }),
                   listProject.customerEmail && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: ["✉ ", listProject.customerEmail] }),
@@ -153,7 +153,7 @@ export function createProjectListTools({
               ]}),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "projectImageCounts", style: { marginTop: "12px" }, children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", className: "projectMiniBadge", onClick: () => openProjectById(p.id, "produkter"), style: { cursor: "pointer", minHeight: "auto", boxShadow: "none" }, children: ["📦 Produkter: ", productSummary.total] }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", className: "projectMiniBadge", onClick: () => openProjectById(p.id, "sjekklister", { showOpenDeviationsOnly: openDeviationCount > 0 }), style: { cursor: "pointer", minHeight: "auto", boxShadow: "none", ...(openDeviationCount > 0 ? { borderColor: "#fecaca", background: "#fef2f2", color: "#991b1b" } : {}) }, children: ["⚠️ Åpne avvik: ", openDeviationCount] }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", className: "projectMiniBadge", onClick: () => openProjectById(p.id, "sjekklister", { showOpenDeviationsOnly: openDeviationCount > 0 }), style: { cursor: "pointer", minHeight: "auto", boxShadow: "none", ...(openDeviationCount > 0 ? { borderColor: "#fecaca", background: "#fef2f2", color: "#991b1b" } : {}) }, children: ["⚠️ Åpne sjekklisteavvik: ", openDeviationCount] }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", className: "projectMiniBadge", onClick: () => openProjectById(p.id, "bilder"), style: { cursor: "pointer", minHeight: "auto", boxShadow: "none" }, children: ["📷 Bilder: ", imageSummary.total] }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", className: "projectMiniBadge", onClick: () => openProjectById(p.id, "chat"), style: { cursor: "pointer", minHeight: "auto", boxShadow: "none", ...(unreadForAdminInList > 0 ? { borderColor: "#fecaca", background: "#fef2f2", color: "#991b1b" } : {}) }, children: ["💬 Ulest chat: ", unreadForAdminInList] })
               ] }),
@@ -190,7 +190,7 @@ export function createProjectListTools({
                 ] })
               ] }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "projectListActions projectListActionsV2", children: [
-                openDeviationCount > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { onClick: () => openProjectById(p.id, "sjekklister", { showOpenDeviationsOnly: true }), children: ["⚠️ Avvik (", openDeviationCount, ")"] }),
+                openDeviationCount > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { onClick: () => openProjectById(p.id, "sjekklister", { showOpenDeviationsOnly: true }), children: ["⚠️ Sjekklisteavvik (", openDeviationCount, ")"] }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => openProjectById(p.id, "produkter"), children: "📦 Produkter" }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => openProjectById(p.id, "bilder"), children: "📷 Bilder" }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => openProjectById(p.id, "sjekklister"), children: "✅ Sjekklister" }),
@@ -318,7 +318,7 @@ export function createProjectListTools({
                           children: [
                             "⚠️ ",
                             item.deviationCount,
-                            item.deviationCount === 1 ? " åpent avvik" : " åpne avvik"
+                            item.deviationCount === 1 ? " åpent sjekklisteavvik" : " åpne sjekklisteavvik"
                           ]
                         })
                       : null,
