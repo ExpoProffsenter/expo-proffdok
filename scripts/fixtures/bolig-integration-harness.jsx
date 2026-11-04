@@ -35,6 +35,8 @@ window.tasks = () => [
     unit_id: "unit",
     project_title: "QA Boligprosjekt",
     unit_number: "H0101",
+    block_name: "QA-bygg A",
+    address: "QA-veien 101",
     title: "Monter bad",
     due_on: "2026-01-15",
     date_label: "Planlagt ferdig",
@@ -66,7 +68,7 @@ window.__client = {
     if (name === "bolig_my_project_tasks") {
       window.taskReads++;
       if (window.taskReadFailure) return {error:{message:'Midlertidig nettverksfeil'}};
-      const all = window.tasksEmpty ? [] : new URLSearchParams(location.search).has('tasks-many') ? Array.from({length:24},(_,i)=>({...window.tasks()[i%2],id:'many-'+i,kind:['progress','deviation','round','risk'][i%4],title:'Boligoppgave '+(i+1)})) : window.tasks();
+      const all = new URLSearchParams(location.search).has('tasks-location') ? [window.tasks()[0],{...window.tasks()[0],id:"progress-b",unit_id:"unit-b",block_name:"QA-bygg B",address:"QA-veien 103"}] : window.tasksEmpty ? [] : new URLSearchParams(location.search).has('tasks-many') ? Array.from({length:24},(_,i)=>({...window.tasks()[i%2],id:'many-'+i,kind:['progress','deviation','round','risk'][i%4],title:'Boligoppgave '+(i+1)})) : window.tasks();
       const start=Number(a.p_payload?.after||0),items=all.slice(start,start+8);
       return {
         data: {

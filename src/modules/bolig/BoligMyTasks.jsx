@@ -6,6 +6,7 @@ import "./boligIntegration.css";
 const Progress = React.lazy(() => import("./BoligProgress.jsx"));
 const Deviations = React.lazy(() => import("../kshms/KshmsDeviations.jsx"));
 const Executions = React.lazy(() => import("../kshms/KshmsExecutions.jsx"));
+const taskLocation = row => [row.block_name, row.address, row.unit_number, row.room_name].filter(Boolean).join(" · ");
 const labels = {
   progress: "Fremdrift",
   deviation: "RUH / avvik",
@@ -130,7 +131,8 @@ export default function BoligMyTasks({ context }) {
       <div hidden={!expanded} className="bolig-my-tasks-content">
         <p>
           Oppgaver der du er registrert som ansvarlig. Åpne oppgaven og følg den
-          opp i den vanlige arbeidsflaten. Listen oppdateres fra lagret status.
+          opp i den vanlige arbeidsflaten. Kontroller bygg, adresse og bolignummer;
+          samme bolignummer kan finnes i flere bygg. Listen oppdateres fra lagret status.
         </p>
         {(error || localError) && <p role="alert">{localError || error}</p>}
         <button
@@ -147,8 +149,7 @@ export default function BoligMyTasks({ context }) {
               <strong>{row.title}</strong>
               <span>
                 {row.project_title}
-                {row.unit_number ? ` · ${row.unit_number}` : ""}
-                {row.room_name ? ` · ${row.room_name}` : ""}
+                {taskLocation(row) ? ` · ${taskLocation(row)}` : ""}
               </span>
               <span>
                 {labels[row.kind]} ·{" "}
@@ -193,7 +194,7 @@ export default function BoligMyTasks({ context }) {
               >
                 <p>
                   {selected.title} · {selected.project_title} ·{" "}
-                  {selected.unit_number}
+                  {taskLocation(selected)}
                 </p>
                 <p>
                   {selected.date_label}: {selected.due_on}

@@ -1,3 +1,13 @@
+# Gjeldende QA – 5. november 2026
+
+Produksjon/main34daef4c er uendret. PR308516c6ad2 har sju filmer med full CI932SUCCESS og innlogget avspilling/retur. PR31181204ff9 har full CI931SUCCESS. Ingen ny TEST OK er gitt.
+
+PR309 utvides med bygg/adresse på egne boligoppgaver, etter videre kontroll av Min side, personalhåndbok, HR-maler, timeadministrasjon, Firmaadmin og Support. Lokal DB1753/build/grense55PASS. Additiv lesermigrering er installert **bare i Sandbox** som remote20261104233908/canonical20261104233315; produksjon har fortsatt gammel kildehash. Ikke kjør gamle installasjonsløp igjen. Eksakt ny kandidat/CI/Preview-resultat vedlikeholdes i PR309. [Nytt QA-grunnlag](docs/qa/WHOLE_APP_CHECKPOINT_20261105.md). Full Bolig A–Å, øvrige helreiser/videoer og fysisk mobil/Safari gjenstår.
+
+---
+
+## Historisk godkjent releasegrunnlag
+
 # Gjeldende release – samlet TEST OK 2. november 2026
 
 Kenneth har godkjent PR294, PR295, PR298 og sjekklistefunksjonen PR305 med nødvendige backendkontroller, produksjonssetting og main → demo. Ingen ny bekreftelse kreves for uendret avtalt omfang når kontrollene består. PR217/277, nye funksjoner, Solgløtt, videre videoer og branchopprydding er utenfor dette løpet.
