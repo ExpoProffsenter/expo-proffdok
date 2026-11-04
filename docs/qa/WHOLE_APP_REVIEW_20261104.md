@@ -128,3 +128,11 @@ Eksakt841ffd1c6a651df9610f585c6a0f6009ede7425f: fullCI913/run41890967987 COMPLET
 - Mobilkontroll i den innloggede nettleseren: browserpolicy avviste DevTools med «Your organization has blocked the use of DevTools on this page». Ingen policy endret. Vanlig vindusendring ga ingen endret bredde på den administrerte flaten. Ingen innlogget mobil-/Safari-attest gis. Native Chromium-prøver i CI dekker de dokumenterte320/390/768/1363/1920-breddene; fysisk enhet er et separat bevisnivå.
 
 Sluttresultat for endelig appkandidat, CI/READY, testlenke og rester føres i PR311. De uendrede grønne delbevisene gjenbrukes; dokumentasjonsoppdateringer skal ikke fremstilles som ny utført helappreise.
+
+## Gjenopptatt etter tilkoblingsbrudd – CI915
+
+Fersk kontroll av ef4ac842: CI915/run41894108641 er ferdig med FAILURE. Scope og åtte testpakker er grønne; app-browser stoppet i home-followup-036-browser-check.mjs på umiddelbar knappemåling ved 390px. Senere tester i denne pakken ble ikke kjørt og gis ingen PASS. Vercel-statusen er grønn, men erstatter ikke denne kontrollen.
+
+Den samme eksisterende målefeilen er dokumentert i PR308s LIVE_DESIGN_REVIEW_20261104.md (CI894), med rettelse 8d4089d9 og senere grønne CI895/896/910. PR311 hadde fortsatt den gamle målingen. Scope utvides bare med identisk testvertsrettelse: vent på at responsiv knappgeometri oppfyller de uendrede 44px/16px-kravene, og ta med faktisk geometri i feilmeldingen. Alle fem bredder, overflow-, høyde-, callback- og transportkrav beholdes. Ingen appendring eller svekket terskel i dette steget. En vedvarende feil skal fortsatt gi timeout/FAIL.
+
+Lokal node --check og git diff --check PASS. Nytt lokalt Chromium-forsøk er stoppet før scenario av socket()/ProcessSingleton (Operation not permitted); ingen lokal runtime-PASS hevdes. Hele CI-kjeden må bekrefte ny kandidat. Innlogget PR311-etterkontroll, de tre åpne UX-funnene og resterende helapp-/videoreiser er fortsatt åpne. Produksjon/main og permanent demo er ikke oppdatert.
