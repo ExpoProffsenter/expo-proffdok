@@ -41,3 +41,8 @@ Prosjekt- og sjekkpunktavvik beholder eksisterende utvalg, status, ansvarlig, fr
 ## Sluttsidens QR-kort
 
 Sluttoversikten holder alle fem statusrader over QR-kortet. Banneret vises fortsatt proporsjonalt, med lavere høyde på denne siden; forsiden og bildekildene er uendret. QR-kortet bruker vanlig plasskontroll og må aldri flyttes bakover over innhold. `report-warranty-pdf-check.mjs` har egne digitale AEB/FDF-scenarioer som avviser overlapp, manglende rader, unødig separat QR-side og kollisjon med bunntekst. Samme låste/åpne skrivevern og opprinnelige garantikrav beholdes.
+
+
+## Ikke-blokkerende nedlastingsstatus
+
+Etter doc.save sender rapportmotoren valgfri onPdfStatus til rapportarbeidsflaten. Meldingen står med role=status i panelets footer og sier at PDF er generert og sendt til nettleserens nedlasting; ferdig lagring på enheten attesteres ikke. Låst prosjekt, utstedt garanti og statusrapport beholder sine respektive opplysninger, inkludert eventuell oppfordring til å lagre/oppdatere garantikvitteringen. Bruker-/firma-/prosjekt-/tab-scope hindrer at meldingen vises i en annen arbeidsflate. Ny eksport tømmer gammel melding. Ingen suksess-alert krever OK. Eksisterende arkivvalg, skrivevern, garantioppdatering, revalidering og feilvarsler er uendret.

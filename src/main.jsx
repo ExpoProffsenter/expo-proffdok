@@ -5532,6 +5532,7 @@ ${appLink}`;
     // FASE 24A: Rapport/PDF ligger nå i egen modul.
     const { printVisibleReport, printReport, downloadClickablePdfReport } = createReportTools({
       confirmArchiveReport: !isReadOnly && !isUnderleverandorView ? reportArchive.confirm : undefined,
+      onPdfStatus: reportWorkspace.setPdfStatus,
       prepareKshmsReport: kshmsProjectReport.prepareExport,
       isKshmsReportCurrent: kshmsProjectReport.isCurrent,
       DEFAULT_REPORT_HERO_IMAGE_URL,
@@ -7012,7 +7013,7 @@ ${appLink}`;
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ReportArchiveConfirmation, { confirmation: reportArchive.confirmation }),
                 !reportWorkspace.isOpen && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(KshmsProjectReportDialog, { chooser: kshmsProjectReport.chooser }),
                 tab === "rapport" && !reportWorkspace.isOpen && (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: reportWorkspace.open, children: "Åpne rapport" }),
-                reportWorkspace.isOpen && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(ProjectReportWorkspace, { projectName: project.projectName || project.address, onClose: () => { kshmsProjectReport.chooser?.cancel(); reportWorkspace.close(); }, onPdf: downloadClickablePdfReport, chooserOpen: !!kshmsProjectReport.chooser, children: [
+                reportWorkspace.isOpen && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(ProjectReportWorkspace, { projectName: project.projectName || project.address, onClose: () => { kshmsProjectReport.chooser?.cancel(); reportWorkspace.close(); }, onPdf: downloadClickablePdfReport, statusMessage: reportWorkspace.pdfStatus, chooserOpen: !!kshmsProjectReport.chooser, children: [
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)(KshmsProjectReportDialog, { chooser: kshmsProjectReport.chooser }),
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)(KshmsProjectReportChoice, { report: kshmsProjectReport }),
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Report, { company, name, project, selected, manualProducts: manualSelected, other, surf, bathroomEquipment, photos, access, inst, files, checklist, tilbud: projectScopedTilbud, overtagelse, projectLog, kshmsReport: kshmsProjectReport.reportData })
