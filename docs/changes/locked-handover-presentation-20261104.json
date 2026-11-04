@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Låst overtagelse viser lagrede opplysninger uten redigeringshandlinger",
+  "change": "Miljømål BEGGE. Kun renderOvertagelsePanel: dato, bekreftelse, kommentar og navn er disabled når eksisterende isProjectLocked er sann. Lagrede signaturbilder vises med original kilde i stedet for interaktive tegne-/tømmefelt; manglende bilde vises ærlig. Lagre sperres i den låste visningen. Ulåst SignaturePad, tilstand, serverlås, lagring, signaturkrav, ferdigstilling, rapport og utsending beholdes. Egen arbeidsbranch fra ren main34daef4c.",
+  "verification": "Funn bevist i innlogget Sandbox DEMO–RESERVE og kildeguard: lagring avvises allerede ved fersk låst serverrad, men felter/tømming ser aktive ut. Eksisterende project-subflows-036-browser-check utvides med faktiske native Input/Textarea/SignaturePad fra main, låst tom/lagret signatur, originale bildebytes, fem bredder, låst/ulåst kladd, opprinnelig tømming/tegning og ingen save/finalize/send. Opprinnelige tester beholdes. Faktiske sluttresultater føres i docs/qa/LOCKED_HANDOVER_UX_20261104.md.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Ingen ny brukerflyt eller knapp. Visningen oppfyller eksisterende beskjed om at låst prosjekt ikke kan endres."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Ingen ny arkitektur, datamodell, backend eller lagringsregel."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen nytt oppsett, avhengighet eller konfigurasjon."
+    },
+    "module": {
+      "required": false,
+      "reason": "Modulen har ingen egen README. Rettelsens kontrakt og bevaring dokumenteres samlet i QA-grunnlaget."
+    }
+  }
+}
