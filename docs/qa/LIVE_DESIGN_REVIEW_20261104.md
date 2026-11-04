@@ -1,6 +1,6 @@
 # Innlogget designgjennomgang 4. november 2026
 
-Miljømål BEGGE. Baseline main/Production 34daef4c0526b93ddbd84c3bfd97fb0833d97caf, Vercel dpl_3D5fzV9TVkidd7x7Eowg3V6hWjQ2 READY. PR295 er merget 2. november; PR294/298/305 inngår. Demo fd5aafa1 ifølge siste releasekvittering, ikke nyverifisert i denne runden. Ny arbeidsbranch fase45b-ux-live-review-20261104 / PR308. Ingen ny TEST OK eller produksjonsendring.
+Miljømål BEGGE. Baseline main/Production 34daef4c0526b93ddbd84c3bfd97fb0833d97caf, Vercel dpl_3D5fzV9TVkidd7x7Eowg3V6hWjQ2 READY. PR295 er merget 2. november; PR294/298/305 inngår. Demo fd5aafa17d0a6412bebc60b586e328d682393d8e er nå oppfrisket mot remote. Ny arbeidsbranch fase45b-ux-live-review-20261104 / PR308. Ingen ny TEST OK eller produksjonsendring.
 
 ## Oppdrag og avgrensning
 
@@ -119,3 +119,30 @@ Vercel Sandbox Preview dpl_DsAnFMW3cTCwMZPskrheuVhctGUH READY for eksakt a39f110
 Test i fast Sandbox-preview: åpne Hjelp øverst, søk bolig, start filmen direkte under temaet, lukk/åpne Bolig-tema/A–Å og returner. Åpne40-boligpiloten, kontroller byggvalg/søk/filter før fasaden, og åpne/lukk en boligoppgave. Ingen sending/signering kreves. Dette er en avgrenset rettelsespakke til TEST OK, ikke en totalgodkjenning av appen.
 
 Ny QA-grunnpakke «QA – Standard bad» ble opprettet kun i det nye Sandbox-prosjektet med DEMO-DAN-001 og DEMO-HG-001 fra eksisterende internt vareregister. Lagret i prosjektet, versjon1,2varelinjer faktisk bekreftet. Ingen eksisterende grunnpakke eller boligvalg endret. Ingen bestilling sendt. Dette er underlag for videre kontroller og film, ikke en ferdig full A–Å-leveranse.
+
+
+## Videre selvstendig gjennomgang og separat Bolig-pakke
+
+CI898 (41835541883) på515e03b91e5ac59966c8e0b8088e364e09f537d5: alle ni pakker og sluttkontroll PASS. Kode er identisk grønn a39f110c; bare dokumentasjon ble supplert. Ingen godkjenning/merge er gitt.
+
+Påvist Bolig-kjerne-UX er rettet i separat PR309, branch fase45b-bolig-flow-qa-20261104 fra faktisk main34daef4c, slik at permanent kjernegrense bevares: katalogens ventetekst/sene tilbakekalte svar, bygg/adresse i HMS-velger, søk/status/paging for store interne UE-lister, statusriktig endringsordretekst, native fokusretur, tilgjengelig klargjøringsfooter og sann melding under pågående lagring. Ingen nye rettigheter, RPC-er, migreringer, utsendinger eller lagringskommandoer. QA-logg i den branchen: docs/qa/BOLIG_FLOW_QA_20261104.md.
+
+CI901 på2126ac0e og CI902 påa111690c bestod alle ni pakker og sluttkontroll, inkludert full build, native app/Bolig, HR/firma/prosjekt og databasegrensene. Kandidat73c97450 presiserer at aktive UE-filtre kan tømmes selv om oppfrisket liste blir kortere, og at en valgt status som forsvinner fortsatt vises ærlig. Seks nye native scenariosjekker beholder alle tidligere krav. CI903 (41842300062) kontrollerer siste kandidat. Separate vertsspesifikke innloggingsøkter må beholdes; ingen auth-state kopieres mellom previewer.
+
+### Faktisk lagring bare i eget fiktivt Sandbox-prosjekt
+
+QA-DESIGN-20261104 har seks boliger, QA-bygg A/Fiktiv testadresse101. En egen rommal (Bad1/QA–Standardbad, to eksisterende DEMO-varer) ble lagret. Første bolig ble forhåndsvist og lagret. Neste massefordeling viste fem klare og én bevart; med overstyring av egne rom avslått ble kun fem serverbekreftet oppdatert. Ny åpning etter modulgjeninntreden viste seks av seks «Boligvalg lagret».
+
+Planleggingsflyten ble gjennomført med seks boliger×tre trinn=18aktiviteter, varighet1, etter foregående arbeid, to arbeidsdager mellom boligstarter, eksisterende demobruker ansvarlig og mandag–fredag. Forhåndsvisning16.11.–02.12.2026 med helgehopp. Etter bekreftelse viste serverreadback18aktiviteter/0utført/én historikklinje og «Endringen er lagret». «Vis første arbeid» flyttet Gantt til16.–22.11. og viste riktige første stolper. Deretter ble et boligspesifikt arbeidsnotat beholdt ved lukk/gjenåpne og lagret kun i H0101; samme aktivitet i H0102 hadde fortsatt tomt notat og opprinnelige18.11.-datoer. Ingen beboervarsel ble publisert, ingen e-post sendt, og eksisterende pilot/kundedata er urørt.
+
+### Ny kontroll av ordinær prosjektretur
+
+Sandbox DEMO–RESERVE (ferdig våtrom med garanti) ble lest uten redigering: prosjektoversikt → Sjekklister → Vis dokumentasjon → Lukk → Lukk sjekklister. Dokumentasjonsfeltene var faktisk disabled. Innerlukking returnerte fokus til «Vis dokumentasjon»; ytterlukking returnerte til full Prosjektoversikt, riktig prosjekt og fokus på «Sjekklister». Skjermbildet viste normal full layout. Tidligere observasjon av tynt returinnhold er dermed ikke reprodusert på denne kandidaten; ingen grunn til en prosjektreturendring på dette beviset.
+
+Overtagelse på samme arkivprosjekt viser korrekt låsebeskjed, registrert dato/garanti og disabled Fullfør. Flere redigerbare felt, signaturtømming og Lagre overtagelse ser likevel tilgjengelige ut selv om prosjektet er låst. Kildekontroll bekrefter at saveProject leser faktisk serverstatus og avviser lagring ved låst prosjekt. Dette er et åpent presentasjonsfunn, ikke dokumentert omgåelse av lås. Ingen signatur, dato, navn, lås eller sending er forsøkt endret. En avgrenset visningsrettelse med egne låst/åpen-signaturprøver bør tas før denne delen kalles fullt finjustert.
+
+### Video og avgrensning
+
+Nytt faktisk videokapittel: «Boligprosjekter – masseplan for flere boliger»,204sekunder,1920×1080/H.264/24fps, uten lyd. Godkjent mal PROFFDOK-VIDEO-1.0 og uendret renderer. Ti native Sandbox-bilder/steg, kalenderkontroll, lagret resultat og retur, redigerbare kilder. [Videoens kvittering og gjenstående dekning](BOLIG_VIDEO_PROGRESS_20261104.md). Dette er et delkapittel og endrer ingen fullførtstatus for BOLIG-019 eller hele A–Å. Filmen er ikke lagt inn som erstatning for en full guide i appen.
+
+Produksjon/main34daef4c og demo fd5aafa1 er uendret. Ingen gammel produksjonsplan, migrering, invitasjon, e-post eller opprydding er kjørt. Neste nødvendige kontroll er innlogging i PR309s Sandbox-preview, kontroll av de konkrete rettelsene og videre utfylling av helreiser/full video. TEST OK må komme før produksjonssetting.

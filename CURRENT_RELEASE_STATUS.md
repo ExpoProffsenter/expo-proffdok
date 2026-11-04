@@ -1,12 +1,16 @@
 # Gjeldende status – 4. november 2026
 
-Production/main er kontrollert som **34daef4c0526b93ddbd84c3bfd97fb0833d97caf**, Vercel dpl_3D5fzV9TVkidd7x7Eowg3V6hWjQ2 READY på expo-proffdok.app. Novembers godkjente produksjonsløp er gjennomført; gamle planpunkter nedenfor skal ikke kjøres på nytt.
+Production/main er kontrollert som **34daef4c0526b93ddbd84c3bfd97fb0833d97caf**, Vercel dpl_3D5fzV9TVkidd7x7Eowg3V6hWjQ2 READY på expo-proffdok.app. Demo er oppfrisket som **fd5aafa17d0a6412bebc60b586e328d682393d8e**. Gamle gjennomførte produksjonsplaner nedenfor skal ikke kjøres på nytt.
 
-Ny designgjennomgang etter kundemøtet: **PR308**, branch **fase45b-ux-live-review-20261104**. Kodekandidat **a39f110c8b5a9dc555ad506c5675a195e3e3dcc0** har grønn full CI897 (run41833840681) og bekreftet Sandbox Preview READY. Hjelp i toppfeltet, filmknapper under temaer og korrigert Bolig-verktøylinje er klare til avgrenset brukertest. Ingen ny TEST OK eller produksjonsmerge er gitt.
+**PR308**, fase45b-ux-live-review-20261104: Hjelp øverst, filmer under temaer, Bolig-hjelp og toolbar/fasade-rettelse. Kode a39f110c og dokumentasjonskandidat515e03b9 har grønn full CI897/898. Innlogget Sandbox-kontroll av Hjelp, faktisk filmavspilling/kapitler, nested retur og fylt Bolig-layout er utført. Denne dokumentasjonsoppdateringen endrer ingen kode.
 
-Innlogget skynettøkt fungerer igjen. Production er undersøkt uten kundedatalagring. Sandbox er undersøkt med eksisterende fiktiv40-boligpilot og et nytt avgrenset QA-prosjekt. Dette er fortsatt ingen full A–Å-attest for alle roller/underfunksjoner. Komplett Bolig-film, videre flytrettelser og fysisk Safari/mobil gjenstår.
+**PR309**, fase45b-bolig-flow-qa-20261104: separat Bolig-kjernepakke med katalogventing, store UE-lister, bygg/adresse, endringsordretekst, fokusretur, klargjøringsfooter og sann lagringsstatus. CI901/902 er grønne. Siste avgrensning73c97450 (filtre etter krympet oppfrisking) kontrolleres av CI903. Preview er Sandbox; ny vert krever separat innlogging. Kjernegrense55assertions er bevart, ingen backend-/tilgangs-/utsendingsendring.
 
-[Datert QA, testgrenser, funn og neste steg](docs/qa/LIVE_DESIGN_REVIEW_20261104.md). [PR308](https://github.com/ExpoProffsenter/expo-proffdok/pull/308). Demo er ikke synkronisert med denne nye, ikke-godkjente pakken.
+Eget fiktivt Sandbox-prosjekt er gjennomført til seks lagrede boligvalg/rom/varer og18lagrede fremdriftsaktiviteter, med bevaring av eksisterende rom, kalender/helgehopp, Gantt og boligspesifikt notat. Arkivprosjektets sjekklister returnerte nå korrekt; tidligere tynt returinnhold er ikke reprodusert. Låste overtagelsesfelt ser fortsatt redigerbare ut selv om lagringsvakten avviser endring; dette står som eget åpent presentasjonsfunn.
+
+Nytt masseplan-videokapittel er204sekunder i godkjent mal, med redigerbare kilder. **Full Bolig A–Å, alle rolle-/underfunksjonsreiser og fysisk Safari/mobil er fortsatt ikke ferdigattestert.** Ingen ny TEST OK, produksjonsmerge eller demo-synk er utført.
+
+[Datert QA og testgrenser](docs/qa/LIVE_DESIGN_REVIEW_20261104.md). [Video og kilder](docs/qa/BOLIG_VIDEO_PROGRESS_20261104.md). [PR308](https://github.com/ExpoProffsenter/expo-proffdok/pull/308). [PR309](https://github.com/ExpoProffsenter/expo-proffdok/pull/309).
 
 ---
 
