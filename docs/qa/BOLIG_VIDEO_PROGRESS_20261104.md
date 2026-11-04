@@ -31,3 +31,5 @@ Full A–Å må fortsatt dekke oppsett/roller, kontrakt/økonomi, pakker/tilvalg
 Det ferdige masseplankapitlet (204 sekunder) legges direkte under Bolig-temaet, sammen med eksisterende Finn bolig-film. Ti kapitler, tekstalternativ og VTT følger filmen. Originalfilens SHA-256 er `075c87197d61c95340c6a6ac005bb0a5c1cd2f06439ef3cb895049a31f3785bd` (7 123 671 byte). De fem eksisterende filmene og metadataene beholdes uendret. Eksisterende Bolig-tilgang gjelder også denne filmen. Full Bolig A–Å er fortsatt ikke attestert.
 
 Nettleserprøven utvides fra fem til seks faktiske filmer og skiller nå mellom flere filmer under samme tema. Alle opprinnelige avspillings-, tilgangs-, retur- og mobilkontroller beholdes. Endringen gjelder kun arbeidsbranch/preview; produksjon og demo krever TEST OK.
+
+CI910/run41886555578 på b2c3a422: alle ni pakker og samlet sluttkontroll PASS. Native innlogget kontroll bekrefter 204s/1920×1080, kapittel164s, ordinær avspilling/pause, ti tekststeg, kapittelsøk, riktig fokusretur og stopp/fjerning av video. Dette er fortsatt kun masseplankapitlet.
