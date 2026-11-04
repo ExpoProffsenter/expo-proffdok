@@ -175,7 +175,7 @@ function StoredHandoverSignature({ label, value }) {
     jsx("b", { children: label }),
     value
       ? jsx("img", { src: value, alt: `Lagret ${label.toLocaleLowerCase("nb")}`, style: { display: "block", width: "100%", height: "180px", objectFit: "contain", background: "#fff", border: "1px solid #c7d6dd", borderRadius: "14px", marginTop: "10px" } })
-      : jsx("p", { className: "note", children: "Ingen lagret signatur." })
+      : jsx("p", { className: "note", children: "Ingen tegnet signatur er lagret." })
   ] });
 }
 
@@ -187,7 +187,7 @@ export function renderOvertagelsePanel({
   completeOvertagelseAndLock, sendProjectCompletionEmailToCustomer
 }) {
   return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Overtagelse og signering", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Bruk denne ved sluttbefaring og overlevering. Velg ønsket overtagelsesdato i kalenderfeltet. Datoen alene registrerer ikke overtagelsen. Overtagelsen regnes først som registrert når begge parter har signert, du har bekreftet at overtagelsen er gjennomført og lagringen er bekreftet." }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: isProjectLocked ? "Her ser du registrert overtagelse, merknader og lagrede signaturer." : "Bruk denne ved sluttbefaring og overlevering. Velg ønsket overtagelsesdato i kalenderfeltet. Datoen alene registrerer ikke overtagelsen. Overtagelsen regnes først som registrert når begge parter har signert, du har bekreftet at overtagelsen er gjennomført og lagringen er bekreftet." }),
           isProjectLocked && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "\u{1F512} Prosjektet er l\xE5st. Overtagelsen kan vises i rapporten, men endringer krever at prosjektet l\xE5ses opp." }),
           persistedProjectHasOvertagelse ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [
             "\u2705 Overtagelse registrert",

@@ -8,7 +8,7 @@ Ved forrige faktiske Sandbox-gjennomgang viste DEMO–RESERVE låst prosjekt og 
 
 ## Avgrensning
 
-Kun src/modules/overtagelse/overtagelseTools.js sin visningsfunksjon får funksjonell endring. Eksisterende isProjectLocked styrer disabled på feltene og Lagre. Et låst signaturfelt viser lagret originalbilde med beskrivende alternativtekst, eller «Ingen lagret signatur.». Det finnes ingen tegneflate/tømmeknapp i låst visning. Opprinnelig SignaturePad og callbacks brukes helt uendret når prosjektet er ulåst. Garantivilkår/PDF og tilsiktet dokumentasjonsutsending beholdes; ingen testutsending utføres.
+Kun src/modules/overtagelse/overtagelseTools.js sin visningsfunksjon får funksjonell endring. Eksisterende isProjectLocked styrer disabled på feltene og Lagre. Et låst signaturfelt viser lagret originalbilde med beskrivende alternativtekst, eller «Ingen tegnet signatur er lagret.». Det finnes ingen tegneflate/tømmeknapp i låst visning. Opprinnelig SignaturePad og callbacks brukes helt uendret når prosjektet er ulåst. Garantivilkår/PDF og tilsiktet dokumentasjonsutsending beholdes; ingen testutsending utføres.
 
 createOvertagelseCompletionTools, main.jsx, lagring, fersk serverlås, garanti-/signaturkrav, dato-/bekreftelsessemantikk, PDF, priser, SQL, RLS, kundeaksept, roller og e-post er urørt. Ingen firma- eller brukertilgang utvides.
 
@@ -27,3 +27,12 @@ Kontroller først at branch-preview bruker Sandbox. I ferdigstilt demoprosjekt: 
 Produksjon/main og demo er uendret. Separate øvrige pakker PR308/309 har grønne fulle kontrollkjøringer; deres innhold er ikke tatt inn i denne isolerte endringen. Samlet app/full Bolig A–Å er fortsatt ikke ferdigattestert.
 
 Lokal full Sandbox npm build/critical-kjede PASS. Ingen native nettleser- eller innlogget sluttstatus utledes fra build.
+
+
+## Første faktiske preview-kontroll
+
+Vercel dpl_2k7JhZZW3Lp7fnCnfUHBuUDR2ZrL READY påf4fc2804. Offentlig loader main-CNuxT3fT.js: Sandbox-identitet til stede, Production-identitet fraværende. Sikker ny innlogging bekreftet som eksisterende demokonto/Expo Proffsenter. DEMO–RESERVE → Prosjektmeny → Overtagelse viste dato15.09.2026, merknad og registrerte navn bevart, alle redigeringsfelter/lagring/fullføring disabled og ingen Tøm signatur/tegneflate. Garantivilkårslenke og tilsiktet Send dokumentasjon-knapp finnes fortsatt; ingen sending utført.
+
+Denne historiske posten har navn, men ingen signaturbilder. Tom-bilde-teksten presiseres derfor til «Ingen tegnet signatur er lagret.» slik at den ikke avviser eksisterende navnebasert historikk. Innledningen beskriver lesing i låst tilstand; ulåst instruksjon beholdes ordrett. To native tilleggskrav kontrollerer dette. Ingen dato, signatur, navn, lås eller serverpost er endret.
+
+CI905 påf4fc2804: build, scope og øvrige ferdige pakker består. App-browser passerer de opprinnelige modulprøvene og nye låst/empty/imagebytes-assertions, men stanser på den nye prøvens eksakte getByLabel etter at syntetisk notat settes. Lokal React/JSDOM med faktisk Textarea fra main gjenskaper årsaken: label.textContent inkluderer tekstområdets React-oppdaterte defaulttekst. Native AX-navn er fortsatt korrekt. Prøven bruker derfor eksakt textbox-rolle og tilgjengelig navn for dette feltet; verdi-/disabled-/kladdkrav beholdes. Ingen appendring for denne velgerfeilen.
