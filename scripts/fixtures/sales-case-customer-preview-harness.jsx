@@ -78,8 +78,9 @@ function App() {
     onUpdateForm={update("customer", setCustomer)} />;
   if (mode === "activation") editor = <Activation selectedRequest={request} projectForm={project} onBack={callback("back")} onSubmit={callback("save")}
     onUpdateProjectForm={update("activation", setProject)} />;
-  if (mode === "general") editor = <GeneralOffer selectedRequest={request} offerForm={general} offerDraftSaveStatus="saved" onBack={callback("back")} handleSaveOffer={callback("save")}
-    updateOfferForm={update("general", setGeneral)} />;
+  // The live Sales route adds a neutral host around the Catalog editor.
+  if (mode === "general") editor = <div><GeneralOffer selectedRequest={request} offerForm={general} offerDraftSaveStatus="saved" onBack={callback("back")} handleSaveOffer={callback("save")}
+    updateOfferForm={update("general", setGeneral)} /></div>;
   return <div data-expo-app-shell="true"><main>{mode === "detail" ? detail : <Workspace request={request} companyProfile={profile} tools={tools}>{editor}</Workspace>}</main></div>;
 }
 createRoot(document.getElementById("app")).render(<App />);
