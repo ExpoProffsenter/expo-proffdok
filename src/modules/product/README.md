@@ -9,3 +9,5 @@ Et låst prosjekt åpner fortsatt automatisk bare kategorier med brukte standard
 Valg, FDV, datablad, DOP, EPD, sikkerhetsdatablad, farge, brukssted, manuelle produkter og rapportvalg bruker opprinnelige handlers. Ingen database, priser, PDF, firmatilgang eller e-post er endret.
 
 Regresjon: `product-categories-react-check.mjs` bruker faktisk renderer/ramme med syntetisk vertsstate for standard/manuelt/skrivevern/metadata. `project-subflows-036-browser-check.mjs` bruker appens faktiske feltprimitiver, kontrollert kategorinavigasjon og320/390/768/1363/1920-bredder. Layoutattest og live rolle-/portalattest skal rapporteres særskilt.
+
+Produktwrapperen er eksplisitt del av eksisterende projectSubflows036-rotscope, slik at de samme16px/44px-feltene,8px/1px-kortene og gridreglene gjelder også under den kompakte kategorirammen.
