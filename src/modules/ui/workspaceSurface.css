@@ -353,11 +353,13 @@ body:has([data-expo-app-shell="true"]) .company-user-status[data-status="pending
  [data-expo-app-shell="true"] .bolig-page:has(>.bolig-projects-layout:not([hidden]))>*{grid-column:1/-1;min-width:0}
  [data-expo-app-shell="true"] .bolig-page:has(>.bolig-projects-layout:not([hidden]))>header{grid-column:1;padding:0;gap:12px}
  [data-expo-app-shell="true"] .bolig-page:has(>.bolig-projects-layout:not([hidden]))>header h2{margin:2px 0}
+ /* The active company and task are already named in the app masthead. */
+ [data-expo-app-shell="true"] .bolig-page:has(>.bolig-projects-layout:not([hidden]))>header>div>:is(small,p){display:none}
  [data-expo-app-shell="true"] .bolig-page:has(>.bolig-projects-layout:not([hidden]))>.bolig-utilities{grid-column:2;display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,1fr);margin:0;gap:8px;align-content:center}
  [data-expo-app-shell="true"] .bolig-page:has(>.bolig-projects-layout:not([hidden]))>.bolig-utilities>.bolig-toolbar{flex:0 0 auto}
  [data-expo-app-shell="true"] .bolig-page:has(>.bolig-projects-layout:not([hidden]))>.bolig-utilities>:is(button,.bolig-help){min-width:0;max-width:100%;white-space:normal}
  [data-expo-app-shell="true"] .bolig-page:has(>.bolig-projects-layout:not([hidden]))>.bolig-utilities>.bolig-help[open]{grid-column:1/-1}
- [data-expo-app-shell="true"] .bolig-project-header{display:block;margin:0 0 12px}
+ [data-expo-app-shell="true"] .bolig-project-header{display:block;margin:0 0 4px}
  [data-expo-app-shell="true"] .bolig-project-header>div:first-child{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 16px}
  [data-expo-app-shell="true"] .bolig-project-header>div:first-child>small{display:none}
  [data-expo-app-shell="true"] .bolig-project-header :is(h3,p){margin:0}
