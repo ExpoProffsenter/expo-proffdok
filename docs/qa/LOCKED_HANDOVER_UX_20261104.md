@@ -54,3 +54,8 @@ Lesing av faktisk arkivprosjekt og main viser at ProjectInformationFields får b
 Seneste lokale Sandbox-build og faktisk prøvevert-build består også etter at kunde-/prosjektfeltenes main-kobling tas med. Native endelig CI og oppdatert preview må fortsatt bekreftes.
 
 CI906 (41881670963) påd2e2e5c2: alle ni pakker og sluttkontroll PASS. Den tidligere tekstområdevelgerfeilen er dermed rettet med alle opprinnelige og nye signatur-/kladdkrav beholdt. Dette er grunnbevis for overtagelsesdelen; senere main-status-/feltkobling krever sin nye CI.
+
+
+Toppknappen Oppdater/Lagre i ProjectHeaderActions mottar allerede locked, men brukte den ikke på lagringsknappen. Samme avgrensede pakke kobler denne eksisterende propen til disabled, med native låst/ulåst kontroll. Kopi, PDF, menyfokus, bevisst opplåsing og lagringscallback er uendret. Dette er siste avstemte scope: overtagelsesvisning, tilhørende status, kunde-/prosjektfeltenes main-kobling og toppknappens låsevisning. Ingen generell ombygging eller endring av øvrige arkivfaner.
+
+CI908 påd00db772 passerer låst/ulåst signatur, baseline/status og de første faktiske main-feltkoblingene, men ny Kunde-velger matcher både aria-label på Kunde-gruppen og Kunde-inputen. Native apptest brukte allerede entydig textbox-rolle. Testen bruker nå samme eksakte rolle/navn for tekstfeltene, og date-feltets opprinnelige label. Alle verdier og disabled-/ulåst-/registerkrav beholdes. Ingen appendring som følge av denne velgerfeilen.
