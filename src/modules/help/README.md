@@ -30,3 +30,5 @@ Før publisering: kontroller at hver fil/hash og kapittel er riktig, spill filme
 
 
 HR-filmen har revisjon2 med ni nye faktiske Sandbox-bilder fra ddffddae, etter grensene10000/2000. Samme ni kapitler/106sekunder og godkjente renderer; v1-asset beholdes historisk, mens eksisterende guide-ID peker på v2. Tilgang/avspiller/VTT/tekst/retur er uendret. Ved senere autorisert release må PR311s trestegsflyt og tekstkontrakt følge filmen. Hele HR A–Å er fortsatt ikke dekket.
+
+«Samlet PDF fra KS/HMS» er en komplett, avgrenset PDF-oppgave på 2:02 med ti kapitler, VTT og tekstalternativ. To eksisterende syntetiske DEMO-dokumenter blir en seks siders PDF med tydelig utkaststatus og manifest. Scene 09 gjengir manifestet fra faktisk eksport. ZIP og hele KS/HMS er ikke attestert. Filmen vises direkte under KS/HMS bare når eksisterende kontekst tilhører innlogget bruker, har firma-ID og enabled/manage begge er eksplisitt true. Endret eller tilbakekalt forvalterrettighet fjerner filmen og lukker åpen avspilling; den øvrige KS/HMS-hjelpen følger fortsatt vanlig modulrett. Ingen ny tilgang eller backendlesning. Ni filmer betyr ikke full appdekning.

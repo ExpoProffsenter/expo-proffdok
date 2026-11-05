@@ -4907,6 +4907,37 @@
       "checked_on": "2026-11-05",
       "remaining": "Opprettelse, serverlagring, utsending, partenes faktiske bekreftelser, PDF og full HR A–Å er ikke attestert av filmen.",
       "verification": "Revisjon2: alle9faktiske Sandbox-bilder oppdatert etter10000/2000grenser. Full decode2544frames og visuell scene-/klikkontroll; gammelv1 beholdt. Ny eksakt CI/live-avspilling kreves i PR308; dette er ikke full HR A–Å."
+    },
+    {
+      "function_id": "KSHMS-012-SAMLET-PDF",
+      "video_id": "VID-KSHMS-EXTRACT-PDF",
+      "title": "Samlet PDF fra KS/HMS",
+      "module": "KS/HMS",
+      "template_id": "PROFFDOK-VIDEO-1.0",
+      "status": "produsert-og-kontrollert",
+      "coverage_level": "avgrenset-oppgave",
+      "full_journey_attested": false,
+      "scope_steps": [
+        "Åpne dokumentuttrekk",
+        "Beskriv omfanget",
+        "Les hva som følger med",
+        "Åpne dokumentgruppen",
+        "Velg relevante dokumenter",
+        "Kontroller det som blir med",
+        "Bekreft og last ned",
+        "Vent på ferdig PDF",
+        "Kontroller den faktiske filen",
+        "Tilbake til arbeidet"
+      ],
+      "file": "public/help-videos/kshms-samlet-pdf-v1.mp4",
+      "source_commit": "ddffddae396f7075d6cbc8f95cb7f0441e1aad4e",
+      "chapter": "122 sekunder / 10 kapitler",
+      "checked_on": "2026-11-05",
+      "video_sha256": "ba459cf90aaa4b4b72966e5d69139f7c36bf3aff75b7fc7be13b69df4e7336e9",
+      "remaining": "Vedleggs-ZIP, alle roller og hele KS/HMS er ikke attestert. Forelder KSHMS-012 beholder sin uferdige status.",
+      "verification": "Faktisk syntetisk Sandbox-reise og seks PDF-sider visuelt kontrollert. 2928 frames / H264 / ingen lyd, full decode PASS. Eksakt kandidat-CI, READY, Sandbox-binding og live avspilling avstemmes i PR308.",
+      "library_file_id": "libfile_8539e39c88fc819181bf68610f378de3",
+      "editable_sources_library_file_id": "libfile_441600da58b48191a018871f02dfff37"
     }
   ]
 }

@@ -557,5 +557,73 @@
         "text": "Lukk medarbeidervinduet for å gå tilbake til registeret. Lagre eget arbeid før du avslutter. Eksempelkladden er her fjernet uten serverlagring."
       }
     ]
+  },
+  {
+    "id": "kshms-samlet-pdf",
+    "title": "Samlet PDF fra KS/HMS",
+    "module": "KS/HMS",
+    "access": "kshms-manage",
+    "topics": [
+      "kshms"
+    ],
+    "description": "Hele oppgaven samlet PDF: omfang, dokumentvalg, utkaststatus, bekreftelse, nedlasting, manifest og retur. To eksisterende syntetiske DEMO-dokumenter; seks sider. Vedleggs-ZIP og hele KS/HMS er ikke dekket.",
+    "src": "/help-videos/kshms-samlet-pdf-v1.mp4",
+    "track": "/help-videos/kshms-samlet-pdf-v1.vtt",
+    "duration": 122,
+    "sha256": "ba459cf90aaa4b4b72966e5d69139f7c36bf3aff75b7fc7be13b69df4e7336e9",
+    "bytes": 7167722,
+    "sourceCommit": "ddffddae396f7075d6cbc8f95cb7f0441e1aad4e",
+    "chapters": [
+      {
+        "start": 0,
+        "title": "Åpne dokumentuttrekk",
+        "text": "Åpne KS/HMS. I Daglig arbeid velger du Dokumentuttrekk. Verktøyet krever rett til å forvalte firmaets KS/HMS. Her brukes bare oppdiktede DEMO-dokumenter."
+      },
+      {
+        "start": 10,
+        "title": "Beskriv omfanget",
+        "text": "Skriv hva du vil dokumentere. Bruk søk for å finne riktig SJA, avvik, kontroll eller risikovurdering. Søket velger ingen dokumenter automatisk."
+      },
+      {
+        "start": 22,
+        "title": "Les hva som følger med",
+        "text": "Uttrekket bruker lagret dokumentasjon. HR, fortrolige varsler og ansattes lesebekreftelser tas ikke med. Originalvedlegg hentes separat som ZIP. Uttrekket er ingen tilsynsgodkjenning."
+      },
+      {
+        "start": 36,
+        "title": "Åpne dokumentgruppen",
+        "text": "Hent dokumentlisten og åpne riktig gruppe. Listen kan også vise historiske utgaver. Kontroller dokument og status før valg. Oppdatering av listen tømmer dokumentvalget."
+      },
+      {
+        "start": 48,
+        "title": "Velg relevante dokumenter",
+        "text": "Huk av dokumentene som gjelder oppgaven. Her velges én DEMO-SJA og én DEMO-risikovurdering. Begge er fortsatt utkast. Utkast blir tydelig merket i PDF-en."
+      },
+      {
+        "start": 60,
+        "title": "Kontroller det som blir med",
+        "text": "Se over listen Dette blir med i PDF-en. Kontroller navn og status. Bruk Fjern hvis et dokument ikke skal følge uttrekket. Bare de to valgte dokumentene følger denne PDF-en."
+      },
+      {
+        "start": 72,
+        "title": "Bekreft og last ned",
+        "text": "Bekreft at omfang og dokumentvalg er kontrollert. Trykk Last ned samlet PDF. Bekreftelsen signerer ikke de valgte dokumentene. Endrer du valget, må du kontrollere og bekrefte på nytt."
+      },
+      {
+        "start": 84,
+        "title": "Vent på ferdig PDF",
+        "text": "Appen henter og kontrollerer lagret dokumentasjon. Meldingen bekrefter to valgte dokumenter og manifest på seks sider. Ingen e-post eller ekstern deling utføres."
+      },
+      {
+        "start": 98,
+        "title": "Kontroller den faktiske filen",
+        "text": "PDF-en viser logo, omfang og utkaststatus. Her ser du manifestet med dokumenter, revisjoner og sider. Kontroller hele filen på seks sider."
+      },
+      {
+        "start": 112,
+        "title": "Tilbake til arbeidet",
+        "text": "Velg Daglig arbeid når du er ferdig. Dokumentene i appen er uendret. Denne filmen dekker samlet PDF; vedleggs-ZIP er en egen oppgave. Ingen dokumenter er signert, endret eller sendt."
+      }
+    ]
   }
 ]
