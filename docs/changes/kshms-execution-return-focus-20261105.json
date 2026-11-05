@@ -2,7 +2,7 @@
   "version": 1,
   "title": "KS/HMS: retur til opprinnelig knapp etter asynkron åpning",
   "change": "Miljømål BEGGE; bare Preview/Sandbox. Risikovurdering/vernerunde husker eksplisitt den manuelle åpneknappen før busy deaktiverer den. Eksisterende dialogresolver returnerer fokus kun i samme aktive firmascope. Ny/lokal kladd bruker samme retur. Programmatisk prosjektåpning beholder sin eksisterende focus-eier. Ingen lagrings-, PDF-, fullførings-, rolle- eller backendendring.",
-  "verification": "Innlogget syntetisk risikovurdering gjenskapte BODY-fokus etter Escape; SJA returnerte korrekt. Eksisterende faktiske React-prøve og full lokal build/critical PASS. Native prøve beholder alle opprinnelige geometri- og dataregler og legger til forsinket åpning/disabled trigger/eksakt fokusretur for risk og round ved fem bredder. Ny eksakt CI/READY/live etterkontroll kreves.",
+  "verification": "Apphead28fa5a77 full CI956/run41966745456 SUCCESS9+gate, eksakt Vercel READY/Sandbox og innlogget syntetisk risiko-retur PASS. Native KS underflows1028krav/221tilstander/bredder inkluderer forsinket detail/disabled trigger/eksakt retur, gjentakelse til lokal kladd og inaktiv→aktiv uten skjult fokus. Eksisterende faktiske React execution-prøve og full lokal Sandbox-build/critical PASS. Opprinnelige data-/geometri-/tilgangsregler beholdes. Siste dokumentkandidats eksakte CI/READY føres i PR311.",
   "documentation": {
     "help": {
       "required": false,

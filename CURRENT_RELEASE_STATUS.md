@@ -41,3 +41,6 @@ Samlet HR-appkandidatfaa23f30/tree6272f61e: full CI950 SUCCESS, eksakt READY/San
 
 
 HR-siste dokumentkandidat96e3b6cf: CI952 SUCCESS9+gate og eksakt READY/Sandbox. Lang live paste4007tegn ble bevart og avvist lokalt før lagring, original tekst gjenopprettet. HR-film PR308/a8907219: CI953 SUCCESS9+gate, READY/Sandbox og faktisk avspilling/kapittel/tekst/retur kontrollert. Ny avgrenset KS/HMS-fokusrettelse og faktisk syntetisk SJA-/risiko-PDF-kontroll videreføres i [helappgrunnlaget](docs/qa/WHOLE_APP_REVIEW_20261104.md); kandidat-CI/READY/live etterkontroll må bekreftes før den attesteres. Main/Production uendret.
+
+
+KS/HMS apphead28fa5a77/treea775ae9b: full CI956 SUCCESS9+gate. Native KS/HMS1028krav/221tilstander/bredder PASS, eksakt READY/Sandbox og faktisk syntetisk risiko-retur PASS. SJA-/risiko-PDF er faktisk lastet ned, rendret og kontrollert uten signering/lagring. [Samlet QA og ærlige restpunkter](docs/qa/WHOLE_APP_REVIEW_20261104.md). Dette dokumenttillegget endrer ingen app-/testfil; siste dokumentkandidats CI/READY føres i PR311. Ingen TEST OK/main/demo/Production-endring.
