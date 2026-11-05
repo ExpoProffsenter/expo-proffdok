@@ -1,5 +1,7 @@
 # Siste Hjelp-kandidat: KS/HMS samlet PDF, 5. november
 
+Nyeste tillegg fra69181c70:102sekunders «Egne timer – felt og avbrutt utkast», ni kapitler/VTT/tekst, under eksisterende HR-tema. Ni tidligere filmer bevart. Faktisk demokonto/kildeapp284f04aa, kun lokal kladd og Avbryt/ny tom åpning; ingen lagring/filopplasting/tidtaking/innlevering/eksport. Full decode2448frames og visuell kontroll PASS, film og redigerbare kilder lagret. Ny eksakt CI/READY/native avspillingsattest føres i PR308. Scope/rollback: docs/qa/TIME_FIELDS_VIDEO_20261105.md. Ingen TEST OK eller Production-endring.
+
 Miljømål BEGGE; bare PR308 Preview/Sandbox. Ny avgrenset film på 2:02/10 kapitler under eksisterende KS/HMS-forvaltertilgang. Alle åtte tidligere filmer beholdes. Eksakt kandidat-CI/READY/live og rollback dokumenteres i PR308 og [QA-grunnlaget](docs/qa/KSHMS_PDF_VIDEO_20261105.md). Ingen TEST OK eller produksjonssetting. HR-film v2 krever PR311s trestegsflyt og tekstkontrakt ved senere autorisert release. Hele appens dekning er fortsatt ufullstendig.
 
 ---

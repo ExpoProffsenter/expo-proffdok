@@ -4938,6 +4938,42 @@
       "verification": "Faktisk syntetisk Sandbox-reise og seks PDF-sider visuelt kontrollert. 2928 frames / H264 / ingen lyd, full decode PASS. Eksakt kandidat-CI, READY, Sandbox-binding og live avspilling avstemmes i PR308.",
       "library_file_id": "libfile_8539e39c88fc819181bf68610f378de3",
       "editable_sources_library_file_id": "libfile_441600da58b48191a018871f02dfff37"
+    },
+    {
+      "function_id": "TIME-001-FIELDS-CANCEL",
+      "module": "TIME",
+      "title": "Egne timer – felt og avbrutt utkast",
+      "entry": "Min side → Mine timer → Ny registrering",
+      "video_id": "VID-TIME-FIELDS-CANCEL",
+      "status": "produsert-og-kontrollert",
+      "template_id": "PROFFDOK-VIDEO-1.0",
+      "scope_steps": [
+        "Åpne egne timer",
+        "Se uke og kategori/prosjekt",
+        "Skriv antall og manuell referanse lokalt",
+        "Vis fra–til og pause",
+        "Vis utleggsfelt uten opplasting",
+        "Avbryt, åpne tomt skjema og gå tilbake"
+      ],
+      "expected": "Forkastet eksempelutkast lagres ikke og kommer ikke tilbake. Ingen innlevering eller eksport utføres.",
+      "file": "public/help-videos/egne-timer-felt-avbrudd-v1.mp4",
+      "chapter": "9 kapitler / 102 sekunder / VTT og tekstalternativ",
+      "source_commit": "284f04aa2c4e3b53c748f01b335468029b1fbb7f",
+      "checked_on": "2026-11-05",
+      "notes": "Faktisk demokonto i Sandbox. Full decode2448frames og visuell scene-/målgeometri PASS. Hele TIME-001/HR er ikke attestert. Filmintegrasjon krever egen kandidat-CI/READY; eksisterende HR-tema/avspiller beholdes.",
+      "coverage_level": "avgrenset-oppgave",
+      "full_journey_attested": false,
+      "subfunction_audit": "avgrenset",
+      "roles": [
+        "registrert medarbeider med HR/time-tilgang"
+      ],
+      "qa_sources": [
+        "scripts/time-registration-react-check.mjs",
+        "scripts/time-subflows-036-browser-check.mjs",
+        "docs/qa/TIME_FIELDS_VIDEO_20261105.md"
+      ],
+      "library_file_id": "libfile_418a411a10388191a3fe3710262438d4",
+      "sources_library_file_id": "libfile_76f8dd314064819183a9c210da8d3da1"
     }
   ]
 }

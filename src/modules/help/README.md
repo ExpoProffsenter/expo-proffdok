@@ -10,6 +10,8 @@ Krysset øverst, Escape og den faste «Tilbake til prosjektet»-knappen lukker p
 
 ## Videoveiledninger
 
+«Egne timer – felt og avbrutt utkast» ligger under det eksisterende grupperte HR-temaet sammen med tidsregistreringens teksthjelp.102sekunder, ni kapitler, VTT og tekst viser dato/kategori/prosjekt, antall/fra–til/pause, utleggsfelt og avbrudd/ny tom åpning fra faktisk demokonto. Ingen lagring, opplasting, tidtaking, innlevering eller eksport utføres. Samme ferske HR-tematilgang og avspiller gjelder. De ni tidligere filmene bevares; dette er film nummer ti, uten påstand om full TIME-001 eller HR A–Å. Kilder/avgrensning: docs/qa/TIME_FIELDS_VIDEO_20261105.md.
+
 PROFFDOK-VIDEO-1.0 er brukergodkjent: faktiske eksempelskjermer, tekst uten lyd og animert peker/klikkmarkering. Sju avgrensede filmer finnes med separate redigerbare kilder. Godkjenningen av uttrykket er særskilt fra appens redesign-TEST OK.
 
 Hjelp i toppfeltet åpner veiledningen over arbeidet uten navigasjon eller lagring. Kryss, Escape eller Tilbake til arbeidet returnerer til samme monterte arbeidsflate. Firma-/brukerbytte lukker panelet. Boligprosjekter vises som eget tema med eksisterende A–Å og detaljhjelp ved fersk Bolig-tilgang.
