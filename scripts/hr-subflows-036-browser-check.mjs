@@ -71,6 +71,7 @@ try{
     await block.getByRole('navigation',{name:navigation,exact:true}).getByRole('button').nth(index).click();
     await block.locator('.hrp-step-body>h4').filter({hasText:steps[index]}).waitFor();
     await fits(block,prefix+' '+steps[index]+' '+width);
+    if(prefix==='conversation'&&index===1){eq(await block.getByRole('region',{name:'Avtalte tiltak og oppfølging',exact:true}).isVisible(),true,'actions remain inspected in combined meeting '+width);eq(await block.getByLabel('Neste oppfølging',{exact:true}).count(),1,'same followup field remains in combined meeting '+width);}
     eq(await block.getByRole('navigation',{name:navigation,exact:true}).getByRole('button').nth(index).getAttribute('aria-current'),'step','actual selected '+prefix+' step '+index);
     await capture(prefix+'-'+index+'-'+width);
    }
@@ -132,7 +133,7 @@ try{
  eq(await page.evaluate(()=>window.qa.commands.length),0,'entire reading/design sweep has no HR business writes');
  eq(await page.evaluate(()=>window.qa.unexpected),[],'every native request is explicitly handled');eq(outbound,[],'no live transport');eq(errors,[],'no runtime error');
  eq([...seen].filter(x=>/^sick-\d-/.test(x)).length,30,'all six sick-leave steps inspected at five viewports');
- eq([...seen].filter(x=>/^conversation-\d-/.test(x)).length,20,'all four conversation steps inspected at five viewports');
+ eq([...seen].filter(x=>/^conversation-\d-/.test(x)).length,15,'all three conversation steps inspected at five viewports');
  if(process.env.HR_SURFACE_036_EVIDENCE)fs.writeFileSync(process.env.HR_SURFACE_036_EVIDENCE,JSON.stringify({checks,view_count:seen.size,visited:[...seen].sort(),transport:'synthetic reads only',runtime_css:true},null,2)+'\n');
  console.log(`PASS HR subflows 03.6: ${checks} assertions, ${seen.size} explicitly visited views; actual contact/access/conversation/sick-leave/template/history/setup/practice/personal, full runtime CSS, synthetic reads only.`);
 }finally{await browser?.close();await new Promise(r=>server.close(r));}
