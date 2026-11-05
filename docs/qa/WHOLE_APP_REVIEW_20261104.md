@@ -1,3 +1,9 @@
+# Ny kveldskontroll – planoppsett, områdetelling og to filmer
+
+Ny innlogget kontroll på uendret PR311/4c5c0632: positiv planoppretting/redigering/lagring, bevart kladd ved lukking og fersk serverlesing; egen områdetelling med automatisk hylle, pause/videreføring, 3+2=5 og 0, historikk, faktiske eksportbytes og avslutning/skrivevern. To filmer på 124/150 sekunder og redigerbare kilder er produsert, fullt dekodet, visuelt kontrollert og lagret separat. Ingen ny Hjelp-integrasjon, appkode, migrering eller produksjon. [Samlet bevis, filidentitet, presise grenser og neste steg](PLAN_SETUP_AND_AREA_VIDEO_20261105.md). Full KSHMS-006, fysisk mobil/Safari, flere aktører i nytt opptak og øvrige helappreiser er fortsatt åpne. Nytt UX-punkt: lang periodemerknad i énlinjefelt; full lagring er bekreftet, flerlinjevisning er ikke implementert.
+
+---
+
 # KSHMS-006 – planbyggerens retur, 5. november
 
 Miljømål BEGGE, bare PR311 Preview/Sandbox fra fullgrønn61eb31e8/CI975. Innlogget syntetisk VVS-EKSEMPEL-3M ble lukket fra bemanningsvisningen uten input/lagring, men ga BODY-fokus. Egen faktisk React-prøve på isolert originalkode gjenskaper samme feil. Hovedvinduet bruker nå eksisterende launcher for valgt visning som standard mål; eksplisitt ekstern eier/null har forrang. Skjult dokument/eier og endret stateKey sperrer retur.11faktiske lokale React-krav og full lokal Sandbox-build/critical PASS. Eksisterende native prøve utvides med21krav på fem bredder og uendret lagret plan. Ingen ny lokal Chromium-start etter kjent ProcessSingleton-begrensning. Ny eksakt CI/READY/live føres i PR311.

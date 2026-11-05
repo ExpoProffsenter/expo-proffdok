@@ -1,3 +1,15 @@
+# Kontrollert checkpoint – 5. november kveld
+
+Miljømål BEGGE, bare Preview/Sandbox. PR311 appkode `4c5c0632` er uendret. Ny innlogget positiv prøve har bekreftet oppretting/redigering/lagring/kladd og fersk serverlesing av egen eksempelplan. Egen områdetelling har automatisk hylle, 3+2=5 og 0, pause/videreføring, historikk, faktisk Cordel/CSV og avslutning med skrivevern etter ny serverhenting. Ingen produksjon, migrering, import eller utsending. Full QA, filhash, film-/kildelenker og avgrensninger: [planoppsett og områdekontroll](docs/qa/PLAN_SETUP_AND_AREA_VIDEO_20261105.md).
+
+To nye lydløse filmer er levert separat med redigerbare kilder: planoppsett 2:04 og områdetelling 2:30. Begge er fullt dekodet og alle 21 scener kontrollert. Neste konkrete steg er integrasjon i PR308s eksisterende Hjelp, med bevart ellevefilmsgrunnlag og egen eksakt kandidatkontroll. Lang planmerknad i énlinjefelt er et nytt dokumentert UX-punkt. Hele appens restliste står videre åpen.
+
+PR308s eksisterende planvisningsfilm er kontrollert innlogget; dokumentasjonshead `6c23091f`, full CI978 SUCCESS og Vercel SUCCESS. Main/Production er ferskt kontrollert `34daef4c` READY; demo `abc38f7e` urørt. Denne PR311-oppdateringen endrer bare QA-/statusprosa; app-/test-/database-/mediekode er identisk før dokumentasjonen. Siste dokumentasjonshead og automatisk kontroll føres i PR311 uten å late som ny appkode er testet.
+
+---
+
+## Tidligere grunnlag og historikk
+
 # Nyeste PR311-kandidat – planbyggerens fokusretur, 5. november
 
 Etter fullgrønn61eb31e8/CI975 får planbyggerens hovedvindu riktig standard fokusmål ved lukking: schedule-/staffing-launcher etter valgt visning. Eksplisitt Min side-retur/null, skjult eier og stateKey-sperre beholdes.11nye faktiske React-krav og full lokal Sandbox-build/critical PASS; negativ prøve på gammel kode feiler på faktisk retur. Native prøve utvidet med21krav, uten svekket originaldekning. Siste eksakte CI/READY/innlogget etterkontroll føres i PR311. Ingen TEST OK/produksjon. Grunnlag: docs/changes/kshms-plan-launcher-focus-20261105.json.
