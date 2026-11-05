@@ -1,6 +1,6 @@
 # Ny planfilm i Hjelp – kandidat 5. november
 
-PR308 utvides fra ti til elleve filmer: Fremdriftsplan – visning, bemanning og PDF,120s/11kapitler. Eksisterende KS/HMS-forvaltertilgang og avspiller. Ti gamle filmer/metadata beholdes. Scope/QA: docs/qa/PLAN_VIEW_HELP_VIDEO_20261105.md. Egen eksakt CI/READY kreves; ingen TEST OK/produksjon. Planoppretting/redigering og områdefilm er fortsatt neste åpne arbeid.
+PR308/63a9bc8d har elleve filmer: ny Fremdriftsplan – visning, bemanning og PDF,120s/11kapitler, med de ti tidligere bevart. Eksakt CI977/run42063219007 SUCCESS (ni pakker + gate),565 native filmkrav og READY dpl_7PfhUMmqJRCdc4ukhiMsLp7CowvM på fast Preview/Sandbox. Ny innlogget avspilling, kapittel90s, VTT/elleve tekststeg og direkte/nestet retur/fokus er bekreftet. Scope/bevis/rollback: docs/qa/PLAN_VIEW_HELP_VIDEO_20261105.md. Ingen TEST OK/produksjon. Planoppretting/redigering og områdefilm er fortsatt neste åpne arbeid.
 
 # Siste Hjelp-kandidat: KS/HMS samlet PDF, 5. november
 
