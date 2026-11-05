@@ -83,7 +83,9 @@ try{
  for(const event of ['focus','expo-proffdok-work-profile','expo-proffdok-managed-access-changed','expo-proffdok-module-access']){
   await exportCheck.check();eq(await exportButton.isEnabled(),true,'explicit export check available before '+event);
   await page.evaluate(event=>window.dispatchEvent(new Event(event)),event);
-  await page.waitForFunction(()=>[...document.querySelectorAll('.time-workspace')].filter(n=>n.checkVisibility()).some(n=>n.getAttribute('aria-busy')==='false'&&n.querySelector('.time-export-help')));
+  // Management hides and restores its export controls during refresh; unlike
+  // TimeSheet it does not expose aria-busy on the workspace section.
+  await exportCheck.waitFor({state:'visible'});
   eq(await exportCheck.evaluate(e=>e.checked),false,'export confirmation resets with refreshed basis '+event);
   eq(await exportButton.isEnabled(),false,'refreshed payroll basis requires review '+event);
  }

@@ -2,11 +2,23 @@
   "version": 1,
   "title": "Eksportbekreftelse følger kontrollgrunnlaget i timeadministrasjon",
   "change": "Miljømål BEGGE, bare Preview/Sandbox. Scope: TimeManagement sin eksisterende refresh, eksisterende time-React-/browserprøver og dette grunnlaget/modul-README/QA/release-status. Den eksisterende eksportavkrysningen nullstilles samtidig med kontrollisten ved ny tilgangslesing. Samme eksportfane og periode beholdes. Ingen ny bekreftelse, eksportalgoritme, lønnsformat, transport, backend, tilgang eller databaseendring.",
-  "verification": "Faktisk React gjenskaper feilen i gammel TimeManagement: etter focus tømmes listen mens avkrysningen fortsatt er sann og Opprett og last ned lønnsfil er aktiv. Ny app består122kontroller, inkludert alle119fra fokuspakken og tre nye: beholdt eksportfane/periode, nullstilt avkrysning/sperret eksport og null eksportkall ved refresh. Eksisterende positive syntetiske eksport/nedlasting/arkivprøver beholdes.128lokale PostgreSQL-kontroller PASS på ordinær migrasjonsfixture; første lokale kommando brukte feilaktig PT409-forventningsflagg uten policy-preload og feilet på forventet40001. Korrekt ordinær kommando bestod uten testendring. Native prøve utvidet additivt for focus/arbeidsprofil/managed-access/module-access og fortsatt null skrivetransport. Lokal Chromium er sperret av socket()/ProcessSingleton; faktisk ny native CI/READY føres i PR311. Ingen faktisk lønnsfil eller eksport opprettet i Sandbox/Production av testen.",
+  "verification": "Faktisk React gjenskaper feilen i gammel TimeManagement: etter focus tømmes listen mens avkrysningen fortsatt er sann og Opprett og last ned lønnsfil er aktiv. Ny app består122kontroller, inkludert alle119fra fokuspakken og tre nye: beholdt eksportfane/periode, nullstilt avkrysning/sperret eksport og null eksportkall ved refresh. Eksisterende positive syntetiske eksport/nedlasting/arkivprøver beholdes.128lokale PostgreSQL-kontroller PASS på ordinær migrasjonsfixture; første lokale kommando brukte feilaktig PT409-forventningsflagg uten policy-preload og feilet på forventet40001. Korrekt ordinær kommando bestod uten testendring. Native prøve utvidet additivt for focus/arbeidsprofil/managed-access/module-access og fortsatt null skrivetransport. Lokal Chromium er sperret av socket()/ProcessSingleton; faktisk ny native CI/READY føres i PR311. Ingen faktisk lønnsfil eller eksport opprettet i Sandbox/Production av testen. CI970/run42034966862: åtte andre delpakker PASS; app-browser stoppet på ny venting før eksportkravene. Årsak: prøven ventet på aria-busy=false på TimeManagement, som ikke har dette attributtet (bare TimeSheet har det). Ventingen følger nå tilbakekomsten av det eksisterende synlige eksportfeltet etter refresh. Alle12faktiske checkbox/button-krav beholdes. Appkode er uendret fra284f04aa; ny full kandidat-CI kreves.",
   "documentation": {
-    "help": {"required": false,"reason": "Samme eksisterende avkrysning og arbeidsrekkefølge; en foreldet bekreftelse retter seg etter eksisterende grunnlag."},
-    "architecture": {"required": false,"reason": "Samme refresh-eier, serverkommando og dataflyt; bare lokal avkrysning nullstilles sammen med listen."},
-    "setup": {"required": false,"reason": "Ingen oppsett-, avhengighets- eller miljøendring."},
-    "module": {"required": true,"reason": "Eksportbekreftelsens levetid og bevaring av fane/periode forklares i Time-README."}
+    "help": {
+      "required": false,
+      "reason": "Samme eksisterende avkrysning og arbeidsrekkefølge; en foreldet bekreftelse retter seg etter eksisterende grunnlag."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Samme refresh-eier, serverkommando og dataflyt; bare lokal avkrysning nullstilles sammen med listen."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen oppsett-, avhengighets- eller miljøendring."
+    },
+    "module": {
+      "required": true,
+      "reason": "Eksportbekreftelsens levetid og bevaring av fane/periode forklares i Time-README."
+    }
   }
 }
