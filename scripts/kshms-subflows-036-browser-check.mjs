@@ -76,7 +76,14 @@ try{
    await panel().waitFor();await inspect(kind+'-read-only-'+width);
    eq(await panel().locator('fieldset:disabled').count()>0,true,kind+' completed documentation keeps disabled native fields');
    await page.keyboard.press('Escape');await panel().waitFor({state:'hidden'});
-   if(executionTrigger)eq(await executionTrigger.evaluate(node=>node===document.activeElement),true,'async '+kind+' close returns original trigger '+width);
+   if(executionTrigger){
+    eq(await executionTrigger.evaluate(node=>node===document.activeElement),true,'async '+kind+' close returns original trigger '+width);
+    await page.getByRole('button',{name:'Åpne dokumentasjon',exact:true}).click();await panel().waitFor();
+    await panel().getByRole('button',{name:kind==='round'?'Start ny gjennomføring fra listen':'Ny vurdering med samme farer',exact:true}).click();
+    eq(await panel().getByRole('button',{name:'Lagre utkast',exact:true}).count(),1,'repeat creates editable local draft '+kind+' '+width);
+    await page.keyboard.press('Escape');await panel().waitFor({state:'hidden'});
+    eq(await executionTrigger.evaluate(node=>node===document.activeElement),true,'repeat retains original list opener '+kind+' '+width);
+   }
   }
   for(const closed of [false,true]){
    await render('ruh',closed);if(closed)await page.getByRole('button',{name:'Lukkede (1)',exact:true}).click();await page.locator('.ks-case-row').click();await panel().waitFor();await inspect('ruh-'+(closed?'closed':'saved')+'-'+width);

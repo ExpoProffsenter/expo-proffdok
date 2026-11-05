@@ -9,3 +9,5 @@ Planens lesemodus viser hele den lagrede periodemerknaden som tekst med bevarte 
 
 
 Risikovurdering og vernerunde/kontroll bevarer den manuelle åpneknappen før asynkron henting deaktiverer den. Dialogens eksisterende returnFocusTarget-resolver returnerer til samme tilkoblede knapp når bruker/firma/kind/prosjekt/tilgangsscope fortsatt er aktivt. Programmatisk prosjektåpning overlater retur til eksisterende eier. Lagring, revisjoner, lokal kladd, PDF og fullføring har uendrede kontrakter.
+
+Ny gjennomføring fra et historisk dokument beholder samme opprinnelige listeknapp gjennom overgangen til lokal kladd; intern gjentakelse nullstiller ikke fokusmålet.
