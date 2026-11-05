@@ -56,13 +56,14 @@ try{
   await capture('access-'+width);await access.locator('.hr-ending>summary').click();
   eq(await access.getByRole('button',{name:'Avslutt og slett HR-registeroppføring',exact:true}).isDisabled(),true,'destructive native confirmation remains required '+width);await fits(access,'ending '+width);await capture('ending-'+width);await access.locator('.hr-ending>summary').click();await access.locator(':scope>summary').click();
   for(const [selector,navigation,prefix,steps]of[
-   ['.hr-real-conversation:not(.hr-sick-case)','Steg i medarbeidersamtalen','conversation',['Forberedelse','Felles møte','Tiltak','Referat']],
+   ['.hr-real-conversation:not(.hr-sick-case)','Steg i medarbeidersamtalen','conversation',['Forberedelse','Samtale og tiltak','Referat']],
    ['.hr-sick-case','Steg i sykefraværsoppfølgingen','sick',['Forberedelse','Felles plan','Tiltak','Gjennomgang','Frister','Deling og avslutning']]
   ]){
    const block=panel.locator(selector);await block.locator('.hrp-saved>button').first().click();await block.getByRole('navigation',{name:navigation,exact:true}).waitFor();
    const start=block.locator('.hrp-saved').filter({has:page.locator('form')}).first();
    await start.locator('summary').click();await fits(start,prefix+' new '+width);await capture(prefix+'-new-'+width);await start.locator('summary').click();
    if(prefix==='conversation'){
+    eq(await block.getByRole('navigation',{name:navigation,exact:true}).getByRole('button').count(),3,'combined conversation has three navigation steps '+width);
     const schedule=block.locator('.hrp-saved').filter({hasText:'Endre tidspunkt og sted'});await schedule.locator('summary').click();await fits(schedule,'schedule '+width);await capture('schedule-'+width);await schedule.locator('summary').click();
     const calendar=block.locator('.hrp-calendar');await calendar.locator('summary').click();await fits(calendar,'calendar help '+width);await capture('calendar-'+width);await calendar.locator('summary').click();
    }
@@ -74,7 +75,7 @@ try{
     await capture(prefix+'-'+index+'-'+width);
    }
    if(width===1363){
-    await block.getByRole('navigation',{name:navigation,exact:true}).getByRole('button').nth(3).click();
+    await block.getByRole('navigation',{name:navigation,exact:true}).getByRole('button').nth(prefix==='conversation'?2:3).click();
     await block.getByLabel('Åpne historisk utgave',{exact:true}).fill('1');await block.getByRole('button',{name:'Åpne utgave',exact:true}).click();await block.getByText('Historisk utgave. Denne kan bare leses.',{exact:false}).waitFor();await fits(block,prefix+' historical');await capture(prefix+'-historical');
     await block.getByRole('button',{name:'Åpne gjeldende utgave',exact:true}).click();await block.locator('.hrp-readonly').filter({hasText:'Historisk utgave'}).waitFor({state:'hidden'});
    }

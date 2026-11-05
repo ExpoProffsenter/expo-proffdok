@@ -26,3 +26,8 @@
 .hr-real-conversation .hrp-step-body{scroll-margin-top:160px}
 
 .hr-real-conversation .hrp-text-limit{display:block;font-size:1rem;overflow-wrap:anywhere}
+
+.hr-real-conversation.hrp:not(.hr-sick-case) .hrp-steps{grid-template-columns:repeat(3,minmax(0,1fr))}
+.hr-real-conversation .hrp-shared-preparation>div{padding:12px}
+.hr-real-conversation .hrp-agreed-actions{margin-top:24px;padding-top:18px;border-top:1px solid #ccd8e4;min-width:0}
+@media(max-width:600px){.hr-real-conversation.hrp:not(.hr-sick-case) .hrp-steps{grid-template-columns:1fr}}

@@ -42,13 +42,13 @@ try{
   eq(await dialog.evaluate(node=>{const rect=node.getBoundingClientRect();return rect.right<=innerWidth+1&&Math.abs(rect.right-innerWidth)<2&&rect.height<=innerHeight+1;}),true,`${width}: employee details use the native right panel`);
   await dialog.getByRole('button',{name:/Årlig medarbeidersamtale ·/}).click();
   await dialog.getByRole('navigation',{name:'Steg i medarbeidersamtalen'}).waitFor();
-  await dialog.getByRole('navigation',{name:'Steg i medarbeidersamtalen'}).getByRole('button',{name:/Felles møte/}).click();
+  await dialog.getByRole('navigation',{name:'Steg i medarbeidersamtalen'}).getByRole('button',{name:/Samtale og tiltak/}).click();
   const note=dialog.getByRole('textbox',{name:/^Hva er avtalt\?/});
   if(!await note.count())console.error(await dialog.locator('.hr-real-conversation').innerText());
   if(output)await dialog.screenshot({path:path.join(output,'hr-employee-'+width+'x'+height+'.png')});
   await note.fill(`Behold HR-kladd ${width}`);
   await dialog.getByRole('button',{name:'Neste',exact:true}).click();
-  await page.waitForFunction(()=>{const body=document.querySelector('.hr-real-conversation .hrp-step-body'),header=document.querySelector('.deviation-dialog-header');return body?.querySelector('h4')?.textContent==='Tiltak'&&document.activeElement===body&&body.getBoundingClientRect().top>=header.getBoundingClientRect().bottom-1&&body.getBoundingClientRect().top<innerHeight-80;});
+  await page.waitForFunction(()=>{const body=document.querySelector('.hr-real-conversation .hrp-step-body'),header=document.querySelector('.deviation-dialog-header');return body?.querySelector('h4')?.textContent==='Referat'&&document.activeElement===body&&body.getBoundingClientRect().top>=header.getBoundingClientRect().bottom-1&&body.getBoundingClientRect().top<innerHeight-80;});
   eq(await dialog.locator('.hr-real-conversation .hrp-step-body').evaluate(node=>node===document.activeElement),true,`${width}: next native conversation step is focused below the panel header`);
   await dialog.getByRole('button',{name:'Forrige',exact:true}).click();
   eq(await note.inputValue(),`Behold HR-kladd ${width}`,`${width}: actual conversation draft survives native step return`);
@@ -83,7 +83,7 @@ try{
  await page.evaluate(()=>window.qa.show('personal'));await ready('personal');eq(await page.locator('.hr-workspace-036').count(),0,'personal audience keeps its own existing surface');eq(await page.locator('.hr-employee').count(),1,'personal list stays audience-scoped');
  await page.evaluate(()=>window.qa.show('admin'));await ready();await page.locator('.hr-employee').first().click();
  let employeePanel=page.getByRole('dialog',{name:'Emma Berg',exact:true});await employeePanel.getByRole('button',{name:/Årlig medarbeidersamtale ·/}).click();
- await employeePanel.getByRole('navigation',{name:'Steg i medarbeidersamtalen'}).getByRole('button',{name:/Felles møte/}).click();
+ await employeePanel.getByRole('navigation',{name:'Steg i medarbeidersamtalen'}).getByRole('button',{name:/Samtale og tiltak/}).click();
  let savedNote=employeePanel.getByRole('textbox',{name:/^Hva er avtalt\?/});await savedNote.fill('Avtale lagret med syntetisk transport');
  // A controlled transport gate forces the real disabled render. An immediately
  // resolved mock can batch busy away and hide focus loss after the save button
@@ -97,7 +97,7 @@ try{
  eq(await employeePanel.getAttribute('aria-busy'),'false','outer employee transaction is idle before post-save Escape');
  eq(await page.evaluate(()=>window.qa.commands.at(-1).args.p_action),'meeting','actual native conversation save uses its existing command');
  await page.keyboard.press('Escape');await employeePanel.waitFor({state:'hidden'});eq(await page.locator('.hr-employee').first().evaluate(node=>node===document.activeElement),true,'post-save Escape closes without injected focus and restores the employee trigger');await page.locator('.hr-employee').first().click();employeePanel=page.getByRole('dialog',{name:'Emma Berg',exact:true});await employeePanel.getByRole('button',{name:/Årlig medarbeidersamtale ·/}).click();
- await employeePanel.getByRole('navigation',{name:'Steg i medarbeidersamtalen'}).getByRole('button',{name:/Felles møte/}).click();eq(await employeePanel.getByRole('textbox',{name:/^Hva er avtalt\?/}).inputValue(),'Avtale lagret med syntetisk transport','native saved conversation reopens from the synthetic server snapshot');
+ await employeePanel.getByRole('navigation',{name:'Steg i medarbeidersamtalen'}).getByRole('button',{name:/Samtale og tiltak/}).click();eq(await employeePanel.getByRole('textbox',{name:/^Hva er avtalt\?/}).inputValue(),'Avtale lagret med syntetisk transport','native saved conversation reopens from the synthetic server snapshot');
  await employeePanel.locator('.hr-access-036>summary').click();await employeePanel.getByLabel('Nærmeste leder',{exact:true}).selectOption('leader');await employeePanel.getByRole('button',{name:'Lagre nærmeste leder',exact:true}).click();await employeePanel.getByText('Nærmeste leder er oppdatert.',{exact:true}).waitFor();
  eq(await page.evaluate(()=>window.qa.rows[0].leader_id),'leader','native leader command remains available after layout changes');
  const reopenAccess=async()=>{await page.keyboard.press('Escape');await employeePanel.waitFor({state:'hidden'});await page.locator('.hr-employee').first().click();employeePanel=page.getByRole('dialog',{name:'Emma Berg',exact:true});await employeePanel.waitFor();await employeePanel.locator('.hr-access-036>summary').click();};

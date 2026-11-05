@@ -3,6 +3,7 @@ import React,{useEffect,useRef,useState,useId} from 'react';
 import {hrRpc} from './hrAccess.js';
 import {createConversationSession,CONVERSATION_STAGES,conversationOpeningStep} from './hrConversationSession.mjs';
 import {conversationTextError,conversationTextLength} from './hrConversationText.mjs';
+import {conversationWorkspaceStep,CONVERSATION_WORKSPACE_STEPS} from './hrConversationWorkspace.mjs';
 import {sameHrTemplate} from './hrConversationTemplates.mjs';
 import {osloToday} from './hrPracticeConversation.mjs';
 import {MANAGED_ACCESS_EVENT,MODULE_ACCESS_EVENT} from '../access/moduleAccessClient.js';
@@ -32,7 +33,8 @@ export default function HrConversations({context,employee,initialCaseId=null,ini
  const [createOpen,setCreateOpen]=useState(()=>Boolean(workspaces.get(scope)?.startAttempt)),[startPending,setStartPending]=useState(()=>Boolean(workspaces.get(scope)?.startAttempt)),[delivery,setDelivery]=useState(null);
  const startAttempt=useRef(workspaces.get(scope)?.startAttempt||null),creationFocus=useRef(false),receipt=useRef(null);
  const [busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState(''),[conflict,setConflict]=useState(false);
- const [step,setStep]=useState(()=>workspaces.get(scope)?.step||0),[historyVersion,setHistoryVersion]=useState('');
+ const [step,setWorkspaceStep]=useState(()=>conversationWorkspaceStep(workspaces.get(scope)?.step)),[historyVersion,setHistoryVersion]=useState('');
+ const setStep=next=>setWorkspaceStep(conversationWorkspaceStep(next));
  const session=useRef(null),epoch=useRef(0),busyRef=useRef(false),body=useRef(null),latest=useRef(null),alive=useRef(false);
  const entryHandled=useRef(false);
  const dirty=Boolean(value&&draft&&!sameHrTemplate(editable(value.conversation),draft));
@@ -153,7 +155,7 @@ export default function HrConversations({context,employee,initialCaseId=null,ini
  };
  const c=value?.conversation,permitted=value&&!value.historical&&!conflict,prep=permitted&&value.permissions.prepare,meeting=permitted&&value.permissions.meeting;
  const schedule=permitted&&value.employee.leader_id===userId&&['preparation','meeting'].includes(c.stage);
- const stages=['Forberedelse','Felles møte','Tiltak','Referat'];
+ const stages={0:'Forberedelse',1:'Samtale og tiltak',3:'Referat'};
  const ownSide=value?.employee.user_id===userId?'employee':'leader';
  return <section className="hrp hr-real-conversation" aria-label="Medarbeidersamtaler">
   <h3>Medarbeidersamtaler</h3>
@@ -190,7 +192,7 @@ export default function HrConversations({context,employee,initialCaseId=null,ini
    <button type="button" className="secondary" disabled={busy} onClick={()=>run(async(s,current)=>{const r=await s.get(c.id);if(current()){install(r,true);setNotice('Lagret utgave er hentet.');}})}>Hent lagret utgave</button>
    {conflict&&<button type="button" disabled={busy} onClick={()=>{if(window.confirm('Vil du forkaste kladden og bruke den lagrede utgaven?')){workspaces.delete(scope);install(value);}}}>Bruk lagret utgave</button>}
   </div>
-  <p className="hrp-stage-guide" role="status">{c.stage==='preparation'?'Medarbeideren forbereder seg. Lagre egne svar, og trykk «Klar til samtale» for å dele dem med lederen.':c.stage==='meeting'?'Forberedelsen er delt. Gå gjennom svarene i Felles møte, skriv møtereferatet og avtal eventuelle tiltak. Se over Referat før det sendes til begge for gjennomgang.':c.stage==='awaiting'?'Referatet er sendt til gjennomgang. Begge må lese og trykke «Jeg har lest referatet» fra sin egen konto.':'Begge har lest referatet. Samtalen er ferdig. Avtalte tiltak må fortsatt følges opp.'}</p>
+  <p className="hrp-stage-guide" role="status">{c.stage==='preparation'?'Medarbeideren forbereder seg. Lagre egne svar, og trykk «Klar til samtale» for å dele dem med lederen.':c.stage==='meeting'?'Forberedelsen er delt. Gå gjennom svarene i Samtale og tiltak, skriv møtereferatet og avtal eventuelle tiltak. Se over Referat før det sendes til begge for gjennomgang.':c.stage==='awaiting'?'Referatet er sendt til gjennomgang. Begge må lese og trykke «Jeg har lest referatet» fra sin egen konto.':'Begge har lest referatet. Samtalen er ferdig. Avtalte tiltak må fortsatt følges opp.'}</p>
   <p><strong>Sted:</strong> {c.meeting_location||'Ikke avtalt'}</p>
   <p><strong>Avtalt tidspunkt:</strong> {c.on?.split('-').reverse().join('.')} · {c.meeting_time?'kl. '+c.meeting_time+' (norsk tid)':'Klokkeslett ikke avtalt'}</p>
   {!value.historical&&[value.employee.user_id,value.employee.leader_id].includes(userId)&&c.meeting_time&&<div className="hrp-calendar">
@@ -208,20 +210,19 @@ export default function HrConversations({context,employee,initialCaseId=null,ini
    <Field label="Nytt sted"><input required maxLength={200} value={draft.meeting_location} placeholder="Møterom eller adresse" onChange={e=>change({meeting_location:e.target.value})}/></Field><p>Trykk «Lagre samtale» for å lagre tidspunkt og sted. Endret sted eller tidspunkt krever ny invitasjon og oppdatering av kalenderavtalen.</p></fieldset></details>}
   {value.historical&&<p className="hrp-readonly">Historisk utgave. Denne kan bare leses. <button className="secondary" disabled={busy} onClick={()=>open(c.id)}>Åpne gjeldende utgave</button></p>}
   <HrConversationFeedback value={value} context={context} feedback={feedbackNotice} blocked={busy||dirty||conflict} onHandled={onFeedbackHandled}/>
-  <nav className="hrp-steps" aria-label="Steg i medarbeidersamtalen">{stages.map((title,i)=><button key={title} disabled={busy} aria-current={step===i?'step':undefined} onClick={()=>setStep(i)}><span>{i+1}</span>{title}</button>)}</nav>
+  <nav className="hrp-steps" aria-label="Steg i medarbeidersamtalen">{CONVERSATION_WORKSPACE_STEPS.map(({id,title},index)=><button key={id} disabled={busy} aria-current={step===id?'step':undefined} onClick={()=>setStep(id)}><span>{index+1}</span>{title}</button>)}</nav>
   <div ref={body} tabIndex={-1} className="hrp-step-body">
   <h4>{stages[step]}</h4>
-  {step===0&&<><p>{c.shared?'Medarbeiderens forberedelse er delt med lederen. De opprinnelige svarene beholdes. Fortsett i Felles møte.':'Medarbeideren skriver egne svar. De er private til medarbeideren trykker «Klar til samtale».'}</p>
+  {step===0&&<><p>{c.shared?'Medarbeiderens forberedelse er delt med lederen. De opprinnelige svarene beholdes. Fortsett i Samtale og tiltak.':'Medarbeideren skriver egne svar. De er private til medarbeideren trykker «Klar til samtale».'}</p>
    {!c.shared&&!prep&&<p>Forberedelsen er ikke delt ennå.</p>}
    {c.template.questions.filter(q=>q.phase==='preparation').map(q=><article className="hrp-question" key={q.id}><h5>{q.topic}</h5><Field label={q.prompt+(q.required?' *':'')}><ConversationText rows={4} limit={4000} disabled={busy||!prep} value={draft.preparation[q.id]||''} onChange={e=>change({preparation:{...draft.preparation,[q.id]:e.target.value}})}/></Field></article>)}
    {prep&&<><p>Lagre svarene med «Lagre samtale». Trykk deretter «Klar til samtale» når du vil dele dem med lederen.</p><button disabled={busy||dirty} onClick={()=>cleanAction('share')}>Klar til samtale</button></>}
   </>}
   {step===1&&<><p>Gå gjennom medarbeiderens innspill sammen. Nærmeste leder skriver møtereferatet. Medarbeiderens opprinnelige svar beholdes.</p>
-   {c.template.questions.filter(q=>q.phase==='preparation').map(q=><article className="hrp-question" key={q.id}><h5>{q.topic}</h5><blockquote>{c.preparation[q.id]||'Ikke delt eller ikke utfylt'}</blockquote></article>)}
+   <details className="hrp-saved hrp-shared-preparation"><summary>Les medarbeiderens delte forberedelse ({c.template.questions.filter(q=>q.phase==='preparation').length})</summary><div>{c.template.questions.filter(q=>q.phase==='preparation').map(q=><article className="hrp-question" key={q.id}><h5>{q.topic}</h5><blockquote>{c.preparation[q.id]||'Ikke delt eller ikke utfylt'}</blockquote></article>)}</div></details>
    {c.shared&&c.comments.employee&&<article className="hrp-question"><h5>Medarbeiderens delte kommentar</h5><blockquote>{c.comments.employee}</blockquote><p>Begge egne kommentarer kan leses og redigeres under Referat.</p></article>}
    {c.template.questions.filter(q=>q.phase==='meeting').map(q=><article className="hrp-question" key={q.id}><h5>{q.topic}</h5><Field label={q.prompt+(q.required?' *':'')}><ConversationText rows={4} limit={4000} disabled={busy||!meeting} value={draft.meeting[q.id]||''} onChange={e=>change({meeting:{...draft.meeting,[q.id]:e.target.value}})}/></Field></article>)}
-  </>}
-  {step===2&&<><p>Tiltak er valgfrie når ingen oppfølging trengs. Hvert avtalt tiltak trenger ansvarlig og frist.</p>
+  <section className="hrp-agreed-actions" aria-label="Avtalte tiltak og oppfølging"><h5>Avtalte tiltak og oppfølging</h5><p>Registrer hvert tiltak med ansvarlig og frist her. Du trenger ikke gjenta opplysningene i møtenotatet. Tiltak er valgfrie når ingen oppfølging trengs.</p>
    {draft.actions.map((a,i)=><article className="hrp-action" key={a.id}><h5>Tiltak {i+1}</h5><fieldset disabled={busy||!meeting}>
     <Field label="Hva skal gjøres?"><ConversationText value={a.task} limit={600} onChange={e=>change({actions:draft.actions.map(x=>x.id===a.id?{...x,task:e.target.value}:x)})}/></Field>
     <Field label="Ansvarlig"><select value={a.owner_id} onChange={e=>change({actions:draft.actions.map(x=>x.id===a.id?{...x,owner_id:e.target.value}:x)})}><option value={value.employee.user_id}>{value.employee.email||'Medarbeider'}</option>{value.employee.leader_id&&<option value={value.employee.leader_id}>{value.leader_email||'Leder'}</option>}</select></Field>
@@ -229,9 +230,10 @@ export default function HrConversations({context,employee,initialCaseId=null,ini
     <label className="hrp-check"><input type="checkbox" checked={a.done} onChange={e=>change({actions:draft.actions.map(x=>x.id===a.id?{...x,done:e.target.checked}:x)})}/>Utført</label>
     <button type="button" className="secondary" onClick={()=>change({actions:draft.actions.filter(x=>x.id!==a.id)})}>Fjern tiltak</button></fieldset></article>)}
    {meeting&&<button disabled={busy||draft.actions.length>=12} onClick={()=>change({actions:[...draft.actions,{id:crypto.randomUUID(),task:'',owner_id:value.employee.user_id,due_on:'',done:false}]})}>Legg til tiltak</button>}
-   <Field label="Neste oppfølging"><input type="date" disabled={busy||!meeting} value={draft.next_on} onChange={e=>change({next_on:e.target.value})}/></Field>
+   <Field label="Neste oppfølging"><input type="date" disabled={busy||!meeting} value={draft.next_on} onChange={e=>change({next_on:e.target.value})}/></Field><p>Neste oppfølging er datoen dere skal gå gjennom tiltakene sammen. Velg dato når dere har avtalt tiltak. Fristen på hvert tiltak gjelder selve oppgaven.</p></section>
   </>}
   {step===3&&<><p>Se over medarbeiderens delte forberedelse, møtereferatet og tiltakene nedenfor. Begge bekrefter selv når referatet er lest. Bekreftelse betyr gjennomlest; uenighet kan stå i egen kommentar.</p>
+   {meeting&&<button type="button" className="secondary" disabled={busy} onClick={()=>setStep(1)}>Tilbake til samtale og tiltak</button>}
    <HrConversationReview conversation={c} employee={value.employee} leaderEmail={value.leader_email} draft={draft} dirty={dirty}/>
    {['employee','leader'].map(side=><Field key={side} label={side==='employee'?'Medarbeiderens kommentar':'Lederens kommentar'}><ConversationText rows={3} limit={4000} disabled={busy||!permitted||!value.permissions.comment||side!==ownSide} value={draft.comments[side]} onChange={e=>change({comments:{...draft.comments,[side]:e.target.value}})}/></Field>)}
    <p>Medarbeider: {c.confirmations.employee?'Bekreftet':'Venter på bekreftelse'} · Leder: {c.confirmations.leader?'Bekreftet':'Venter på bekreftelse'}</p>
@@ -246,7 +248,7 @@ export default function HrConversations({context,employee,initialCaseId=null,ini
   {dirty&&<p className="hrp-notice">Du har ulagrede endringer. Trykk «Lagre samtale» før du deler forberedelsen, sender referatet til gjennomgang eller bekrefter at du har lest det.</p>}
   <p>Forrige og Neste bytter steg. De lagrer ikke endringer.</p>
   <div className="hrp-toolbar">{permitted&&(prep||meeting||schedule||value.permissions.comment)&&<button disabled={busy||!dirty} onClick={save}>Lagre samtale</button>}
-   {step>0&&<button className="secondary" disabled={busy} onClick={()=>setStep(step-1)}>Forrige</button>}{step<3&&<button className="secondary" disabled={busy} onClick={()=>setStep(step+1)}>Neste</button>}
+   {step>0&&<button className="secondary" disabled={busy} onClick={()=>setStep(step===3?1:0)}>Forrige</button>}{step<3&&<button className="secondary" disabled={busy} onClick={()=>setStep(step===0?1:3)}>Neste</button>}
   </div></div></>}
  </section>;
 }

@@ -32,3 +32,7 @@ Pågående Preview/Sandbox-arbeid i PR311: velg hylla én gang, pause/overtakels
 PR311 beholder hele innlimte samtaletekster, viser tegnantall og sperrer for lang tekst før første lagringsmutasjon. Eksisterende servergrenser er fortsatt4000/600; større lengder og samlet oppfølgingsflyt gjenstår.121 syntetiske React-/modellassertions og lokal Sandbox-build PASS; kandidat-CI/livekontroll føres i PR311. [Nattgrunnlag](docs/qa/NIGHT_QA_HR_START_20261105.md). Ingen TEST OK/Production.
 
 HR-appkandidat6fd2efdc/treec0a47ad8: CI947/run41955806115 SUCCESS, alle ni pakker og gate. Vercel dpl_HsL4nGbfDiPk2vz4KZP5MKmSPbEg READY på eksaktSHA og fast Preview; publisert JS bekrefter Sandbox. Innlogget syntetisk samtale viste112/4000tegntellere og korrekt retur; live lang innliming ble ikke attestert pga innmatingsfeil i testverktøyet. Full kvittering og neste arbeid er i nattgrunnlaget. Produksjon/main34daef4c uendret.
+
+## Samlet HR-samtale og tiltak – Preview
+
+PR311 samler møtereferat/tiltak/ansvar/frister/neste oppfølging i ett steg, med tre synlige steg og direkte retur fra Referat. Lagrede maler/tekster, serverstadier, roller og bekreftelser beholdes.133 lokale React-/modellkrav PASS; kandidat-CI/READY og livekontroll føres i PR. Tekstgrensene er fortsatt4000/600; ingen backend- eller utsendingsendring. Samme nattgrunnlag videreføres.
