@@ -688,5 +688,78 @@
         "text": "Velg I dag for å gå tilbake. Ved vanlig føring bruker du Lagre registrering. Send uken til godkjenning er et eget steg etterpå."
       }
     ]
+  },
+  {
+    "id": "plan-visning-bemanning-pdf",
+    "title": "Fremdriftsplan – visning, bemanning og PDF",
+    "module": "KS/HMS",
+    "access": "kshms-manage",
+    "topics": [
+      "kshms"
+    ],
+    "description": "Åpne en lagret plan, velg tidsvisning, les bemanningsbehovet og last ned fremdriftsplan som PDF. Oppretting og redigering er egne oppgaver.",
+    "src": "/help-videos/plan-visning-bemanning-pdf-v1.mp4",
+    "track": "/help-videos/plan-visning-bemanning-pdf-v1.vtt",
+    "duration": 120,
+    "sha256": "e8be7c1b6384c96c329ccdbe7bd027991e52f25ab04c9b0fe54cfd839b69ebb2",
+    "bytes": 6854659,
+    "sourceCommit": "4c5c06329c9c96fc1479c98e9da8b76a7be22753",
+    "chapters": [
+      {
+        "start": 0,
+        "title": "Finn fremdriftsplanene",
+        "text": "Velg KS/HMS i menyen. Åpne Verktøy og maler. Du må ha tilgang til firmaets KS/HMS."
+      },
+      {
+        "start": 10,
+        "title": "Åpne Fremdriftsplaner",
+        "text": "Velg Fremdriftsplaner under Daglig arbeid. Her finner du firmaets frittstående planer."
+      },
+      {
+        "start": 20,
+        "title": "Velg riktig plan",
+        "text": "Bruk Søk etter plan ved behov. Åpne planen du vil lese. Her velges VVS – eksempelplan 3 måneder, uten faktisk byggeplass."
+      },
+      {
+        "start": 32,
+        "title": "Velg tidsvisning",
+        "text": "Dag, Uke og Måned gir ulike utsnitt av samme plan. Velg Måned for en større oversikt. Bytte av visning endrer ikke oppgavene."
+      },
+      {
+        "start": 44,
+        "title": "Fra fremdrift til bemanning",
+        "text": "Månedsvisningen viser oppgaver og perioder på tidslinjen. Trykk Bemanningsplan for å se behovet for personer."
+      },
+      {
+        "start": 54,
+        "title": "Les bemanningsbehovet",
+        "text": "Samtidige oppgaver summeres. Persontimer er antall personer ganger planlagte timer. Tallene gjelder valgt periode. Tilbake lukker hovedvinduet."
+      },
+      {
+        "start": 68,
+        "title": "Fortsett fra samme plan",
+        "text": "Planen er fortsatt valgt. Trykk Åpne fremdriftsplan for å gå inn igjen. Du kan også åpne bemanningsplanen direkte."
+      },
+      {
+        "start": 78,
+        "title": "Last ned lagret plan",
+        "text": "Åpne Eksport og velg Last ned fremdriftsplan (PDF). Lagre eventuelle planendringer før eksport. Her brukes den allerede lagrede planen."
+      },
+      {
+        "start": 90,
+        "title": "Kontroller den faktiske PDF-en",
+        "text": "Kontroller logo, plannavn, perioder og arbeidsoperasjoner. Eksemplet gir seks sider med Gantt og detaljer. Se gjennom hele filen før deling."
+      },
+      {
+        "start": 104,
+        "title": "Tilbake til appen",
+        "text": "Gå tilbake til appen og bruk Tilbake øverst til høyre. Hovedvinduet lukkes, mens den samme planen blir stående valgt."
+      },
+      {
+        "start": 112,
+        "title": "Klar til å fortsette",
+        "text": "Åpne fremdriftsplan eller Åpne bemanningsplan når du vil fortsette. Denne filmen dekker visning og PDF. Oppretting og redigering er egne oppgaver."
+      }
+    ]
   }
 ]

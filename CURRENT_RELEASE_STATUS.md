@@ -1,3 +1,7 @@
+# Ny planfilm i Hjelp – kandidat 5. november
+
+PR308 utvides fra ti til elleve filmer: Fremdriftsplan – visning, bemanning og PDF,120s/11kapitler. Eksisterende KS/HMS-forvaltertilgang og avspiller. Ti gamle filmer/metadata beholdes. Scope/QA: docs/qa/PLAN_VIEW_HELP_VIDEO_20261105.md. Egen eksakt CI/READY kreves; ingen TEST OK/produksjon. Planoppretting/redigering og områdefilm er fortsatt neste åpne arbeid.
+
 # Siste Hjelp-kandidat: KS/HMS samlet PDF, 5. november
 
 Nyeste tillegg fra69181c70:102sekunders «Egne timer – felt og avbrutt utkast», ni kapitler/VTT/tekst, under eksisterende HR-tema. Ni tidligere filmer bevart. Faktisk demokonto/kildeapp284f04aa, kun lokal kladd og Avbryt/ny tom åpning; ingen lagring/filopplasting/tidtaking/innlevering/eksport. Full decode2448frames og visuell kontroll PASS, film og redigerbare kilder lagret. Ny eksakt CI/READY/native avspillingsattest føres i PR308. Scope/rollback: docs/qa/TIME_FIELDS_VIDEO_20261105.md. Ingen TEST OK eller Production-endring.

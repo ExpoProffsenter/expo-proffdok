@@ -4974,6 +4974,41 @@
       ],
       "library_file_id": "libfile_418a411a10388191a3fe3710262438d4",
       "sources_library_file_id": "libfile_76f8dd314064819183a9c210da8d3da1"
+    },
+    {
+      "function_id": "KSHMS-006-VIEW-PDF",
+      "module": "KS/HMS",
+      "title": "Fremdriftsplan – visning, bemanning og PDF",
+      "entry": "KS/HMS → Verktøy og maler → Fremdriftsplaner",
+      "video_id": "VID-KSHMS-PLAN-VIEW-PDF",
+      "status": "produsert-og-kontrollert",
+      "template_id": "PROFFDOK-VIDEO-1.0",
+      "scope_steps": [
+        "Åpne lagret eksempelplan",
+        "Velg uke/måned",
+        "Les bemanning",
+        "Lukk og gjenåpne samme plan",
+        "Last ned fremdrifts-PDF",
+        "Kontroller PDF og gå tilbake"
+      ],
+      "expected": "Samme plan forblir valgt. Ingen planendringer eller lagring.",
+      "file": "public/help-videos/plan-visning-bemanning-pdf-v1.mp4",
+      "chapter": "11 kapitler / 120 sekunder / VTT og tekst",
+      "source_commit": "4c5c06329c9c96fc1479c98e9da8b76a7be22753",
+      "checked_on": "2026-11-05",
+      "notes": "Opprinnelig film fullstendig dekodet og visuelt kontrollert. Integrasjon krever egen CI. Oppretting/redigering og full KSHMS-006 ikke attestert.",
+      "coverage_level": "avgrenset-oppgave",
+      "full_journey_attested": false,
+      "subfunction_audit": "avgrenset",
+      "roles": [
+        "KS/HMS-forvalter"
+      ],
+      "qa_sources": [
+        "docs/qa/PLAN_VIEW_HELP_VIDEO_20261105.md",
+        "scripts/help-video-browser-check.mjs"
+      ],
+      "library_file_id": "libfile_9f220ccc022c8191a7d769850baeaf3f",
+      "sources_library_file_id": "libfile_452b935c00e88191a9291c29eedf98a7"
     }
   ]
 }
