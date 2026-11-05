@@ -20,7 +20,25 @@ try{
   eq(styles.filter(n=>n.height<43.99||n.font<16),[],label+' native controls remain readable '+width);
   eq(await page.locator('.time-config-section,.time-category,.time-day,.time-summary article,.time-history,.time-project-search,.time-upload,.time-archive-row,.time-review-row').evaluateAll(nodes=>nodes.filter(n=>n.checkVisibility()).every(n=>getComputedStyle(n).borderRadius==='8px')),true,label+' native card frames '+width);
  }};
- await measure('own week');await page.getByRole('button',{name:'Ny registrering',exact:true}).click();await page.getByLabel('Merknad',{exact:true}).fill('Bevart usendt time- og utleggstekst');
+ await measure('own week');
+ // Opening also loads project choices and disables the original trigger.
+ for(const width of [320,390,768,1363,1920]){
+  await page.setViewportSize({width,height:936});
+  for(const close of ['Avbryt','Lukk registrering','Escape']){
+   const opener=page.getByRole('button',{name:'Ny registrering',exact:true}),node=await opener.elementHandle();
+   await page.evaluate(()=>{window.qa.holdProjects=true;});await opener.click();await page.waitForFunction(()=>window.qa.projectWaiters.length>0);
+   eq(await opener.isEnabled(),false,'time entry trigger disabled during real project read '+width+' '+close);
+   await page.evaluate(()=>{window.qa.holdProjects=false;window.qa.projectWaiters.splice(0).forEach(resolve=>resolve());});await page.waitForFunction(()=>document.querySelector('.time-editor fieldset')?.disabled===false);
+   if(close==='Escape')await page.keyboard.press('Escape');else await page.getByRole('dialog',{name:'Registrer timer eller utlegg',exact:true}).getByRole('button',{name:close,exact:true}).click();
+   await page.waitForFunction(()=>!document.querySelector('.time-editor'));await page.waitForFunction(node=>document.activeElement===node,node);
+   eq(await opener.evaluate((e,n)=>e===n&&e===document.activeElement,node),true,'time dialog returns exact source node '+width+' '+close);
+  }
+ }
+ await page.setViewportSize({width:1363,height:936});
+ for(const label of ['Før timer i dag','Start tidtaking',/^Legg til /]){
+  const opener=page.getByRole('button',{name:label}).filter({visible:true}).first(),node=await opener.elementHandle();await opener.click();await page.waitForFunction(()=>document.querySelector('.time-editor fieldset')?.disabled===false);await page.getByRole('button',{name:'Avbryt',exact:true}).click();await page.waitForFunction(()=>!document.querySelector('.time-editor'));await page.waitForFunction(node=>document.activeElement===node,node);eq(await opener.evaluate(e=>e===document.activeElement),true,'daily/timer/day entry has original focus '+String(label));
+ }
+ await page.getByRole('button',{name:'Ny registrering',exact:true}).click();await page.getByLabel('Merknad',{exact:true}).fill('Bevart usendt time- og utleggstekst');
  const note=await page.getByLabel('Merknad',{exact:true}).elementHandle();await measure('work entry');
  await page.getByLabel('Registreringsmåte',{exact:true}).selectOption('clock');await page.getByLabel('Fra klokken',{exact:true}).fill('22:00');await page.getByLabel('Til klokken',{exact:true}).fill('06:00');await measure('clock and overnight fields');
  const expense=await page.getByLabel('Kategori',{exact:true}).getByRole('option').evaluateAll(nodes=>nodes.find(n=>n.textContent.startsWith('Utlegg ·'))?.value);assert(expense,'native expense category');await page.getByLabel('Kategori',{exact:true}).selectOption(expense);await measure('expense and receipt fields');
