@@ -1,5 +1,15 @@
 # Helappkontroll – fortsettelse 4. november 2026
 
+## Ny fortsettelse 5. november ettermiddag – tidlig Escape i timeeditor
+
+Miljømål BEGGE, bare arbeidsbranch/Preview/Sandbox. Fersk PR311-baseline215a2d15 har CI968/run41982718992 SUCCESS og Vercel SUCCESS. Main er fortsatt34daef4c. PR30869181c70 og tidligere filmbevis beholdes isolert. Scope før implementering: TimeSheet-fokus, eksisterende time-React-/browserprøver, Time-README og samme personlige endringsgrunnlag. Ingen database, tilgang, e-post, timekommando, retry/ticket, beregning eller annen modul endres.
+
+Den åpne avgrensningen fra morgenen er reprodusert med faktisk React og holdt time_projects-svar: tidlig Escape fjerner editoren mens åpneknappen fortsatt er disabled; gammel app feiler kravet om fokus etter ferdig lesing. Ny app venter bare med den ene fokusreturen. Ny tastatur-/pekerhandling, skjult side, ny editor eller avmontering avbryter. Ved ferdig lesing kreves uendret scope/eier, redigerbar uke, synlig tilgjengelig node og BODY-fokus. Prosjektlesingen fortsetter etter samme kontrakt; sen respons kan ikke gjenåpne editor eller lagre forkastet kladd.
+
+Lokal faktisk React119PASS (91opprinnelige+28nye): retur, tastatur, peker, skjult side, avmontering, medarbeiderscope og42501. Full lokal EXPO_BACKEND_TARGET=sandbox build/critical PASS, scope/release-docs og whitespace PASS. Native prøve er additivt utvidet med tidlig Escape ved320/390/768/1363/1920, tom kladd ved ny åpning og ingen fokusstjeling etter videre input/skjult arbeidsflate/side. Lokal Chromium stopper før første assertion på socket()/ProcessSingleton Operation not permitted; native CI må bekrefte ny kandidat. Ingen terskel/test svekket.
+
+Fersk skybrowser på fast PR311-host viste ordinær appinnlogging; nattens innloggede økt var ikke tilgjengelig der. Ingen ny innlogget etterkontroll, lagring, utsending eller filmopptak påstås. Ny eksakt CI/READY føres i PR311. Full manuell helappmatrise, timeadministrasjon/innlevering/eksport, ny områdefilm, full HR/Bolig A–Å, positive portaler og fysisk Safari står fortsatt åpne. Rollback: revert kun denne utsatte fokusreturen og additive prøver; ingen databasesteg. Neste: kandidat-CI, fast Preview-binding og innlogget etterkontroll når testøkt er tilgjengelig, videre eksisterende helappregister. Ingen TEST OK, main/demo-merge eller Production-endring.
+
 Siste avsluttede appgrunnlag er dc097ccb/tree8e14b46b med full CI930/run41927231765 SUCCESS (ni pakker og sluttkontroll) og eksakt Preview READY. PR311 fører de konkrete etterkontrollene. Main/produksjon er fortsatt34daef4c. Ved videre videoopptak ble en ny lagfeil funnet i KS/HMS-velgeren; dc-grønn er ikke bevis for den følgende rettelsen.
 
 ## Rapportvelgerens lag under faktisk videoopptak

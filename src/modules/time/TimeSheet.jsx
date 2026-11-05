@@ -26,8 +26,21 @@ export default function TimeSheet({context,employeeId=null,initialWeek=null,onBa
  const [error,setError]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false),[conflict,setConflict]=useState(false),[history,setHistory]=useState(null),[reviewNote,setReviewNote]=useState(''),[copyOn,setCopyOn]=useState(moveDate(osloToday(),-1)),[timer,setTimer]=useState(null),[timerPause,setTimerPause]=useState(0),[showAllDays,setShowAllDays]=useState(false),[entryIntent,setEntryIntent]=useState('manual');
  const sessionRef=useRef(null),ticket=useRef(0),busyRef=useRef(false),valueRef=useRef(null),editorRef=useRef(null);
  const key=[context.company_id,context.user_id,employeeId||'self',week].join(':');
- const openerRef=useRef(null),focusScope=useRef(key),focusOwner=useRef(false);focusScope.current=key;
- const restoreOpener=()=>{const opener=openerRef.current,node=opener?.node;return focusOwner.current&&opener?.scope===focusScope.current&&document.visibilityState!=='hidden'&&node?.isConnected&&!node.disabled&&!node.closest('[hidden]')&&node.getClientRects().length?node:null;};
+ const openerRef=useRef(null),pendingFocus=useRef(null),focusScope=useRef(key),focusOwner=useRef(false);focusScope.current=key;
+ const restoreOpener=()=>{
+  const opener=openerRef.current,node=opener?.node;
+  if(!focusOwner.current||opener?.scope!==focusScope.current||document.visibilityState==='hidden'||!node?.isConnected||node.closest('[hidden]')||!node.getClientRects().length)return null;
+  // Escape may close the editor before its project read enables the trigger.
+  // Keep only this focus request; the read and command lifecycle stay unchanged.
+  if(node.disabled){if(busyRef.current)pendingFocus.current=opener;return null;}
+  return node;
+ };
+ useEffect(()=>{
+  const cancel=()=>{pendingFocus.current=null;};
+  const visibility=()=>{if(document.visibilityState==='hidden')cancel();};
+  document.addEventListener('pointerdown',cancel,true);document.addEventListener('keydown',cancel,true);document.addEventListener('visibilitychange',visibility);
+  return()=>{cancel();document.removeEventListener('pointerdown',cancel,true);document.removeEventListener('keydown',cancel,true);document.removeEventListener('visibilitychange',visibility);};
+ },[key]);
  const value=loaded?._scope===key&&loaded?.context?.user_id===context.user_id&&loaded?.context?.company_id===context.company_id?loaded:null;
  const install=result=>{
   valueRef.current=result;setValue({...result,_scope:key});const saved=readTimeDraft(key);
@@ -56,12 +69,17 @@ export default function TimeSheet({context,employeeId=null,initialWeek=null,onBa
   const current=valueRef.current;return session.call('time_sheet_command',{p_week:week,p_employee_id:current.employee.id,p_revision:current.sheet?.revision||0,p_operation_id:crypto.randomUUID(),p_action:action,p_entries:writable(rows),p_empty_week:empty,p_note:note});
  };
  const loadProjects=(query='',after=null)=>run(async(session,current)=>{const r=await session.call('time_projects',{p_query:query,p_after:after});if(current()){setProjects(previous=>after?[...previous,...r.projects.filter(p=>!previous.some(a=>a.id===p.id))]:r.projects);setProjectNext(r.next);}});
- const openEditor=(row,trigger)=>{openerRef.current=trigger?{scope:key,node:trigger}:null;setEntryIntent('manual');changeEditor(row);setProjects([]);setProjectNext(null);setProjectQuery('');loadProjects();};
+ const openEditor=(row,trigger)=>{pendingFocus.current=null;openerRef.current=trigger?{scope:key,node:trigger}:null;setEntryIntent('manual');changeEditor(row);setProjects([]);setProjectNext(null);setProjectQuery('');loadProjects();};
  const sheet=value?.sheet,rows=sheet?.entries||[],categories=value?.settings?.categories||[];
  const newRow=on=>{const previous=[...rows].reverse().find(r=>r.category?.kind==='work'&&categories.some(c=>c.id===r.category_id&&c.active));const categoryId=previous?.category_id||categories.find(c=>c.active&&c.kind==='work')?.id||categories.find(c=>c.active)?.id||'';return {...emptyRow(on,categoryId),project_id:previous?.project_id||null,external_project:previous?.external_project||null,...(previous?.mode==='clock'?{mode:'clock',start:previous.start,end:previous.end,pause:previous.pause,next_day:previous.next_day}:{} )};};
  const timerAction=(action,params={})=>run(async(session,current)=>{const r=await session.call('time_timer_command_v2',{p_action:action,p_id:timer?.id||crypto.randomUUID(),...params});if(!current())return;setTimer(r.timer);changeEditor(null);if(action==='stop'){const startWeek=weekStart(osloToday(new Date(timer.started_at)));if(startWeek!==week){setWeek(startWeek);return;}const saved=await session.call('time_sheet_get',{p_week:week,p_employee_id:employeeId});if(current()){install(saved);setNotice('Tidtakingen er stoppet og registreringen er lagret.');}}else setNotice(action==='start'?'Tidtakingen er startet og lagret. Du kan lukke appen.':'Tidtakingen er avbrutt. Ingen timer ble registrert.');});
  const own=value?.employee?.user_id===context.user_id,enabled=value?.settings?.enabled===true;
  const editable=own&&enabled&&(!sheet||['draft','returned'].includes(sheet.state))&&!sheet?.export_locked&&!conflict;
+ useEffect(()=>{
+  if(busy||editor)return;
+  const pending=pendingFocus.current;pendingFocus.current=null;
+  if(pending&&pending===openerRef.current&&pending.scope===key&&editable&&document.activeElement===document.body)restoreOpener()?.focus({preventScroll:true});
+ },[busy,editor,editable,key]);
  const category=categories.find(c=>c.id===editor?.category_id),sum=totals(rows,categories);
  const changeWeek=next=>{if(editorRef.current&&!window.confirm('Registreringen er ikke lagret. Vil du bytte uke?'))return;changeEditor(null);setWeek(next);};
  const closeEditor=()=>changeEditor(null);

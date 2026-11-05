@@ -35,6 +35,37 @@ try{
   }
  }
  await page.setViewportSize({width:1363,height:936});
+ // Escape remains available while the real project request is pending.
+ for(const width of [320,390,768,1363,1920]){
+  await page.setViewportSize({width,height:936});
+  const opener=page.getByRole('button',{name:'Ny registrering',exact:true}),node=await opener.elementHandle();
+  await page.evaluate(()=>{window.qa.holdProjects=true;});await opener.click();await page.waitForFunction(()=>window.qa.projectWaiters.length>0);
+  await page.keyboard.press('Escape');await page.waitForFunction(()=>!document.querySelector('.time-editor'));
+  eq(await opener.isEnabled(),false,'early Escape does not cancel pending project transport '+width);
+  eq(await page.evaluate(()=>document.activeElement===document.body),true,'disabled trigger is not focused early '+width);
+  await page.evaluate(()=>{window.qa.holdProjects=false;window.qa.projectWaiters.splice(0).forEach(resolve=>resolve());});
+  await page.waitForFunction(node=>document.activeElement===node,node);
+  eq(await opener.evaluate(e=>e===document.activeElement),true,'early Escape restores exact trigger after read '+width);
+  await opener.click();await page.waitForFunction(()=>document.querySelector('.time-editor fieldset')?.disabled===false);
+  eq(await page.getByLabel('Merknad',{exact:true}).inputValue(),'','early closed draft stays discarded '+width);await page.keyboard.press('Escape');
+ }
+ for(const action of ['keyboard','pointer','hidden workspace','hidden page']){
+  const opener=page.getByRole('button',{name:'Ny registrering',exact:true});
+  await page.evaluate(()=>{window.qa.holdProjects=true;});await opener.click();await page.waitForFunction(()=>window.qa.projectWaiters.length>0);await page.keyboard.press('Escape');await page.waitForFunction(()=>!document.querySelector('.time-editor'));
+  if(action==='keyboard')await page.keyboard.press('Tab');
+  if(action==='pointer')await page.getByRole('button',{name:'Vis hele uken',exact:true}).click();
+  if(action==='hidden workspace')await page.getByRole('button',{name:'QA administrasjon',exact:true}).click();
+  if(action==='hidden page')await page.evaluate(()=>{Object.defineProperty(document,'visibilityState',{configurable:true,value:'hidden'});document.dispatchEvent(new Event('visibilitychange'));});
+  const focused=await page.evaluateHandle(()=>document.activeElement);
+  await page.evaluate(()=>{window.qa.holdProjects=false;window.qa.projectWaiters.splice(0).forEach(resolve=>resolve());});
+  await page.waitForFunction(()=>document.querySelector('.time-workspace')?.getAttribute('aria-busy')==='false');
+  eq(await page.evaluate(node=>document.activeElement===node,focused),true,'late project read does not steal focus after '+action);
+  eq(await page.locator('.time-editor').count(),0,'late project read does not reopen editor after '+action);
+  if(action==='hidden workspace')await page.getByRole('button',{name:'QA egne timer',exact:true}).click();
+  if(action==='hidden page'){await page.evaluate(()=>{delete document.visibilityState;document.dispatchEvent(new Event('visibilitychange'));});await page.waitForFunction(()=>document.querySelector('.time-workspace')?.getAttribute('aria-busy')==='false');}
+  await focused.dispose();
+ }
+ await page.setViewportSize({width:1363,height:936});
  for(const label of ['Før timer i dag','Start tidtaking',/^Legg til /]){
   const opener=page.getByRole('button',{name:label}).filter({visible:true}).first(),node=await opener.elementHandle();await opener.click();await page.waitForFunction(()=>document.querySelector('.time-editor fieldset')?.disabled===false);await page.getByRole('button',{name:'Avbryt',exact:true}).click();await page.waitForFunction(()=>!document.querySelector('.time-editor'));await page.waitForFunction(node=>document.activeElement===node,node);eq(await opener.evaluate(e=>e===document.activeElement),true,'daily/timer/day entry has original focus '+String(label));
  }

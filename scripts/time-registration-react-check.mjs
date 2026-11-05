@@ -9,7 +9,7 @@ const bundle=await build({root:dir,configFile:false,logLevel:'silent',define:{'p
 const dom=new JSDOM('<div id="app"></div>',{url:'https://example.invalid',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window;w.IS_REACT_ACT_ENVIRONMENT=true;w.HTMLElement.prototype.scrollIntoView=function(){};w.ResizeObserver=class{observe(){}disconnect(){}};w.matchMedia=()=>({matches:false,addEventListener(){},removeEventListener(){}});w.MessageChannel=class{constructor(){this.port1={onmessage:null};this.port2={postMessage:()=>setImmediate(()=>this.port1.onmessage?.())};}};w.confirm=()=>true;Object.defineProperty(w,'crypto',{value:webcrypto});w.setInterval=()=>1;w.clearInterval=()=>{};
 const c='81000000-0000-4000-8000-000000000001',self='81000000-0000-4000-8000-000000000004',leader='81000000-0000-4000-8000-000000000005',employee='81000000-0000-4000-8000-000000000010',cat='81000000-0000-4000-8000-000000000011',expense='81000000-0000-4000-8000-000000000012',project='81000000-0000-4000-8000-000000000013';
 let actor=self,deny=false,late=null,sheet=null,calls=[],configuration={enabled:true,mobile_shortcut:false,categories:[{id:cat,name:'Arbeid',kind:'work',unit:'hours',payroll_code:'001',active:true,project_required:false,receipt_required:false},{id:expense,name:'Utlegg',kind:'expense',unit:'nok',payroll_code:'020',active:true,project_required:false,receipt_required:true}],employee_numbers:{[self]:'004'},project_numbers:{},managers:[],deadline_day:0,deadline_time:'12:00',export:{separator:';',decimal:',',date_format:'yyyy-mm-dd',columns:[{key:'employee_number',label:'Ansattnummer'},{key:'on',label:'Dato'},{key:'payroll_code',label:'Lønnsart'},{key:'quantity',label:'Antall'}]}};
-let timer=null,downloadCount=0;w.URL.createObjectURL=()=>{downloadCount++;return 'blob:qa';};w.URL.revokeObjectURL=()=>{};w.HTMLAnchorElement.prototype.click=function(){};
+let projectLate=null,timer=null,downloadCount=0;w.URL.createObjectURL=()=>{downloadCount++;return 'blob:qa';};w.URL.revokeObjectURL=()=>{};w.HTMLAnchorElement.prototype.click=function(){};
 let setupRev=1,files=[],storageFiles=new Map(),versions=[],batch=null;
 const context=()=>({company_id:c,user_id:actor,available:true,enabled:true,administer:actor===leader,time_admin:actor===leader,company_name:'QA Firma'});
 const data=week=>({context:context(),employee:{id:employee,user_id:self,label:'QA Medarbeider',leader_id:leader},settings:structuredClone(configuration),settings_revision:setupRev,sheet:sheet?{...structuredClone(sheet),files:structuredClone(files),can_review:actor===leader}:null});
@@ -19,7 +19,7 @@ w.__client={rpc:async(name,args)=>{calls.push({name,args:structuredClone(args)})
  if(name==='time_sheet_get'){if(late)return new Promise(resolve=>late.resolve=resolve);return {data:data(args.p_week)};}
  if(name==='time_timer_get')return {data:{context:context(),timer:structuredClone(timer)}};
  if(name==='time_timer_command_v2'){timer=args.p_action==='start'?{id:args.p_id,started_at:new Date().toISOString(),category_id:args.p_category_id}:null;return {data:{context:context(),timer:structuredClone(timer)}};}
- if(name==='time_projects')return {data:{context:context(),projects:[{id:project,label:'QA prosjekt',number:'P001'}],next:null}};
+ if(name==='time_projects'){if(projectLate)return new Promise(resolve=>projectLate.resolve=resolve);return {data:{context:context(),projects:[{id:project,label:'QA prosjekt',number:'P001'}],next:null}};}
  if(name==='time_tasks_get')return {data:{context:context(),missing_week:null,review_count:sheet?.state==='submitted'?1:0,can_manage:actor===leader,enabled:configuration.enabled,registered:true,mobile_shortcut:configuration.mobile_shortcut===true}};
  if(name==='time_setup_get')return {data:{context:context(),revision:setupRev,content:structuredClone(configuration),members:[{user_id:self,employee_id:employee,label:'QA Medarbeider',active:true}]}};
  if(name==='time_setup_save'){if(args.p_revision!==setupRev)return error('Konflikt','PT409');configuration=structuredClone(args.p_content);setupRev++;return {data:{context:context(),revision:setupRev,content:structuredClone(configuration),members:[{user_id:self,label:'QA Medarbeider',active:true}]}};}
@@ -72,6 +72,26 @@ try{
  check(doc.querySelectorAll('.time-day:not([hidden])').length===1,'today-first hides other own days only');await click('Vis hele uken');check(doc.querySelectorAll('.time-day:not([hidden])').length===7,'whole week remains available');await click('Vis dagens registreringer');
  await click('Før timer i dag');check(control('Registreringsmåte').value==='quantity','today shortcut uses manual editor');await click('Avbryt');const beforeTimer=calls.filter(c=>c.name==='time_timer_command_v2').length;await click('Start tidtaking');check(!timer&&calls.filter(c=>c.name==='time_timer_command_v2').length===beforeTimer,'timer shortcut opens editor without sending command');await click('Avbryt');
  let closePrompts=0;w.confirm=()=>{closePrompts++;return false;};
+ // Real React/effects with held transport. Geometry is synthetic in JSDOM;
+ // native viewport/visibility and keyboard behavior are tested separately.
+ for(const action of ['return','keyboard','pointer','hidden','unmount','scope','revoked']){
+  await act(async()=>w.__unmount());await act(async()=>w.__render('sheet',{context:context(),initialWeek:currentWeek}));
+  const trigger=button('Ny registrering');trigger.getClientRects=()=>[{}];trigger.focus();projectLate={};const beforeWrites=calls.filter(c=>c.name==='time_sheet_command').length;
+  await click('Ny registrering');check(trigger.disabled&&typeof projectLate.resolve==='function','held project read disables opener '+action);
+  await act(async()=>doc.querySelector('[role=dialog]').dispatchEvent(new w.KeyboardEvent('keydown',{key:'Escape',bubbles:true,cancelable:true})));
+  check(!doc.querySelector('.time-editor')&&doc.activeElement===doc.body,'early Escape closes without focusing disabled trigger '+action);
+  if(action==='keyboard')doc.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Tab',bubbles:true}));
+  if(action==='pointer')doc.dispatchEvent(new w.Event('pointerdown',{bubbles:true}));
+  if(action==='hidden')await act(async()=>{Object.defineProperty(doc,'visibilityState',{configurable:true,value:'hidden'});doc.dispatchEvent(new w.Event('visibilitychange'));});
+  if(action==='unmount')await act(async()=>w.__unmount());
+  if(action==='scope')await act(async()=>w.__render('sheet',{context:context(),employeeId:'other-employee',initialWeek:currentWeek}));
+  const response=action==='revoked'?error('Tilgang trukket tilbake','42501'):{data:{context:context(),projects:[],next:null}};
+  await act(async()=>projectLate.resolve(response));projectLate=null;
+  check(action==='return'?doc.activeElement===trigger:doc.activeElement!==trigger,'deferred focus respects later intent/visibility/owner/access '+action);
+  check(!doc.querySelector('.time-editor')&&calls.filter(c=>c.name==='time_sheet_command').length===beforeWrites,'late read cannot reopen or write cancelled entry '+action);
+  if(action==='hidden')delete doc.visibilityState;
+ }
+ await act(async()=>w.__unmount());await act(async()=>w.__render('sheet',{context:context(),initialWeek:currentWeek}));
  await click('Ny registrering');await write('Merknad','Skal forkastes');await click('Avbryt');check(!doc.querySelector('.time-editor')&&closePrompts===0,'cancel closes unsaved entry without confirmation');check(!sheet&&!calls.some(c=>c.name==='time_sheet_command'),'cancel does not save or mutate existing week');
  await act(async()=>w.__unmount());await act(async()=>w.__render('sheet',{context:context(),initialWeek:currentWeek}));check(!doc.querySelector('.time-editor'),'cancelled draft does not return after remount');
  await click('Ny registrering');check(control('Merknad').value==='','new entry does not reuse discarded text');await write('Merknad','Lukk med kryss');await act(async()=>doc.querySelector('button[aria-label="Lukk registrering"]').click());check(!doc.querySelector('.time-editor')&&closePrompts===0,'close icon dismisses without confirmation');
