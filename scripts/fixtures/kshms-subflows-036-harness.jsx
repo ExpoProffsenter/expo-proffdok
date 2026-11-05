@@ -29,7 +29,7 @@ window.rpc=async(name,args)=>{
  if(name==='kshms_sja_detail'){if(window.qa.holdSja)await new Promise(resolve=>{window.qa.releaseSja=resolve;});return {context,sja:window.qa.saved?savedSja():null};}
  if(name==='kshms_sja_state')return {context,items:window.qa.saved?[savedSja()]:[],total:window.qa.saved?1:0,next:null,members};
  if(name==='kshms_execution_state')return {context,records:window.qa.saved?[savedExecution()]:[],templates:[],members,next:null};
- if(name==='kshms_execution_detail')return {context,record:savedExecution(),links:[]};
+ if(name==='kshms_execution_detail'){if(window.qa.holdExecution)await new Promise(resolve=>{window.qa.releaseExecution=()=>{window.qa.holdExecution=false;resolve();};});return {context,record:savedExecution(),links:[]};}
  window.qa.unexpected.push(name);throw Error('Unexpected transport: '+name);
 };
 function App(){const [view,setView]=useState({kind:'ruh',serial:0});window.qa.render=(kind,closed=false,saved=false)=>{window.qa.closed=closed;window.qa.kind=kind;window.qa.saved=saved;const serial=++window.qa.serial;setView({kind,serial});return serial;};window.qa.setActive=active=>setView(previous=>({...previous,active}));useLayoutEffect(()=>{window.qa.committed=view.serial;},[view]);return <div data-expo-app-shell="true"><main><div className="ks-workspace-036 ks-module" key={view.serial} hidden={view.active===false}>{view.kind==='ruh'?<Deviations context={context}/>:view.kind==='sja'?<Sja context={context} active={view.active!==false}/>:<Executions context={context} kind={view.kind}/>}</div></main></div>;}

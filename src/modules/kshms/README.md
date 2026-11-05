@@ -6,3 +6,6 @@ Native grupper bruker to PC-kolonner og én mobilkolonne. Scoped kshmsInspection
 
 
 Planens lesemodus viser hele den lagrede periodemerknaden som tekst med bevarte linjeskift og bryting av lange ord. Redigeringsmodus beholder samme input,5000-tegnsgrense, periodeseleksjon og applyPeriod/lagringskommando. Lesing av en annen periode bytter bare vist merknad og utfører ingen lagring.
+
+
+Risikovurdering og vernerunde/kontroll bevarer den manuelle åpneknappen før asynkron henting deaktiverer den. Dialogens eksisterende returnFocusTarget-resolver returnerer til samme tilkoblede knapp når bruker/firma/kind/prosjekt/tilgangsscope fortsatt er aktivt. Programmatisk prosjektåpning overlater retur til eksisterende eier. Lagring, revisjoner, lokal kladd, PDF og fullføring har uendrede kontrakter.

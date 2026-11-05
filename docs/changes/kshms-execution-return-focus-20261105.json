@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "KS/HMS: retur til opprinnelig knapp etter asynkron åpning",
+  "change": "Miljømål BEGGE; bare Preview/Sandbox. Risikovurdering/vernerunde husker eksplisitt den manuelle åpneknappen før busy deaktiverer den. Eksisterende dialogresolver returnerer fokus kun i samme aktive firmascope. Ny/lokal kladd bruker samme retur. Programmatisk prosjektåpning beholder sin eksisterende focus-eier. Ingen lagrings-, PDF-, fullførings-, rolle- eller backendendring.",
+  "verification": "Innlogget syntetisk risikovurdering gjenskapte BODY-fokus etter Escape; SJA returnerte korrekt. Eksisterende faktiske React-prøve og full lokal build/critical PASS. Native prøve beholder alle opprinnelige geometri- og dataregler og legger til forsinket åpning/disabled trigger/eksakt fokusretur for risk og round ved fem bredder. Ny eksakt CI/READY/live etterkontroll kreves.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Ingen endrede knappenavn, steg eller brukeroppgave; bare korrekt tastaturretur."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Ingen endret ansvar, dataflyt eller delt dialogimplementasjon."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen nye avhengigheter, miljøvariabler eller installasjon."
+    },
+    "module": {
+      "required": true,
+      "reason": "Dokumenterer eksplisitt opener og firmascope som fokuskontrakt."
+    }
+  }
+}
