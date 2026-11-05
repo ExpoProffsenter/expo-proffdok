@@ -1,5 +1,13 @@
 # Helappkontroll – fortsettelse 4. november 2026
 
+## TIME-002/003 – foreldet eksportbekreftelse ved refresh
+
+Miljømål BEGGE, bare Preview/Sandbox. Kilde7fa18b69 har separat fokuspakke/CI969; dette er et nytt avgrenset funn i TimeManagement. Før kodeendring er scope avgrenset til eksisterende refresh, eksisterende time-React-/browserprøver, Time-README og eget endringsmanifest. Ingen ny eksport, backend eller tilgang. Faktisk React feiler på gammel kode: etter uttrykkelig avkrysning og window focus tømmes kontrollisten, men avkrysningen og eksportknappen er fortsatt aktive. Rettelsen nullstiller bekreftelsen i samme refresh som tømmer grunnlaget, mens eksportfane og periode beholdes.
+
+Ny faktisk React122PASS, alle119tidligere+tre nye kontrollkrav. Positiv syntetisk eksport/arkiv/gjenlast og alle godkjennings-/kladd-/vedleggs-/fokusprøver beholdes.128ordinære lokale PostgreSQL-kontroller PASS. Første lokale DB-kall satte PT409-forventning uten den påkrevde policy-preloaden og feilet på fixtureens40001; korrekt ordinær kommando bestod uten testendring. Dette var feil testkommando, ingen DB-/produktrettelse eller produksjonskjøring. Native prøve får12additive krav rundt focus/arbeidsprofil/managed-access/module-access, med fortsatt null skrivetransport. Full lokal Sandbox build/critical og eksakt kandidat-CI/READY avstemmes i PR311.
+
+Dette er faktisk komponent-/databaseprøve med syntetiske lokale adaptere, ikke innlogget positiv lønnseksport eller filimport. Ingen lønnsfil, timer, innlevering, firmaoppsett eller e-post er endret i Sandbox/Production. Skybrowserens testøkt krever innlogging; ingen nye filmer produsert. Rollback er den ene reset-linjen og additive prøver, uten databasesteg. Main/demo urørt, ingen TEST OK eller release. Hele appens gjenstående manuelle reiser og filmregister beholdes åpne.
+
 ## Ny fortsettelse 5. november ettermiddag – tidlig Escape i timeeditor
 
 Miljømål BEGGE, bare arbeidsbranch/Preview/Sandbox. Fersk PR311-baseline215a2d15 har CI968/run41982718992 SUCCESS og Vercel SUCCESS. Main er fortsatt34daef4c. PR30869181c70 og tidligere filmbevis beholdes isolert. Scope før implementering: TimeSheet-fokus, eksisterende time-React-/browserprøver, Time-README og samme personlige endringsgrunnlag. Ingen database, tilgang, e-post, timekommando, retry/ticket, beregning eller annen modul endres.

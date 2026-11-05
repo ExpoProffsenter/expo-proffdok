@@ -79,6 +79,14 @@ try{
  await page.getByRole('button',{name:'QA administrasjon',exact:true}).click();await page.getByRole('button',{name:'Hent uker i perioden',exact:true}).waitFor();await measure('review period');
  await page.getByRole('button',{name:'Timeoppsett',exact:true}).click();await page.getByRole('button',{name:'Lagre timeoppsett',exact:true}).waitFor();await measure('settings categories and payroll fields');
  await page.getByRole('button',{name:'Lønnseksport',exact:true}).click();await page.getByRole('button',{name:'Opprett og last ned lønnsfil',exact:true}).waitFor();await measure('export and archive');
+ const exportButton=page.getByRole('button',{name:'Opprett og last ned lønnsfil',exact:true}),exportCheck=page.getByRole('checkbox',{name:'Jeg har kontrollert periode, godkjenninger, ansattnumre og lønnskoder.',exact:true});
+ for(const event of ['focus','expo-proffdok-work-profile','expo-proffdok-managed-access-changed','expo-proffdok-module-access']){
+  await exportCheck.check();eq(await exportButton.isEnabled(),true,'explicit export check available before '+event);
+  await page.evaluate(event=>window.dispatchEvent(new Event(event)),event);
+  await page.waitForFunction(()=>[...document.querySelectorAll('.time-workspace')].filter(n=>n.checkVisibility()).some(n=>n.getAttribute('aria-busy')==='false'&&n.querySelector('.time-export-help')));
+  eq(await exportCheck.evaluate(e=>e.checked),false,'export confirmation resets with refreshed basis '+event);
+  eq(await exportButton.isEnabled(),false,'refreshed payroll basis requires review '+event);
+ }
  eq(await page.evaluate(()=>window.qa.writes),[],'layout/navigation never submit/save/upload/export');eq(outbound,[],'no external traffic');eq(errors,[],'no browser errors');
  console.log(`Time subflows 03.6: ${checks} Chromium assertions PASS, ${views} native views; work/clock/expense/receipt fields/history/review/setup/export, late CSS and short screens; synthetic reads only, existing command/Storage tests remain separate.`);
 }finally{await browser?.close();await new Promise(resolve=>server.close(resolve));}

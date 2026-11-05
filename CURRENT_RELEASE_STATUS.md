@@ -1,5 +1,7 @@
 # Gjeldende Preview-kandidater – 5. november 2026
 
+Ettermiddagens andre avgrensede funn: TimeManagement beholdt eksportavkrysningen etter refresh som tømte kontrollgrunnlaget. Reprodusert i faktisk React og rettet med samme eksisterende avkrysning; fane/periode beholdes.122lokale React-kontroller og128ordinære lokale PostgreSQL-kontroller PASS. Native12kravsutvidelse har egen ny kandidat-CI/READY i PR311. Ingen faktisk eksport/innlevering eller produksjon berørt. Se docs/changes/time-export-confirmation-refresh-20261105.json.
+
 Miljømål BEGGE; arbeid bare arbeidsbranch/Preview/Sandbox. Ingen ny TEST OK, main/demo-merge eller Production-installasjon. Main/Production er kontrollert til34daef4c0526b93ddbd84c3bfd97fb0833d97caf.
 
 Ny ettermiddagspakke fra PR311/215a2d15: tidlig Escape under prosjektlesing får utsatt fokusretur uten transportendring. Ny input/skjult side/scopebytte/avmontering/avslag stopper sen fokus.119faktiske lokale React-kontroller og full lokal Sandbox build/critical PASS; gammel app feiler den nye fokusprøven. Native browserprøve er utvidet additivt; lokal Chromium er blokkert av socket()/ProcessSingleton, ikke attestert. Eksakt ny CI/READY føres i PR311. Skybrowser viser innlogging; ingen ny innlogget etterkontroll eller film. Dette erstatter den tidligere åpne tidlig-Escape-avgrensningen først når ny kandidat-CI er bekreftet.
