@@ -86,6 +86,7 @@ try{
   // Management hides and restores its export controls during refresh; unlike
   // TimeSheet it does not expose aria-busy on the workspace section.
   await exportCheck.waitFor({state:'visible'});
+  await page.waitForFunction(()=>[...document.querySelectorAll('.time-workspace')].some(n=>n.checkVisibility()&&n.querySelector('.time-export-help')&&n.querySelector('.time-check input')?.checked===false));
   eq(await exportCheck.evaluate(e=>e.checked),false,'export confirmation resets with refreshed basis '+event);
   eq(await exportButton.isEnabled(),false,'refreshed payroll basis requires review '+event);
  }
