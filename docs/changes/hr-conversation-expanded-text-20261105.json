@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Medarbeidersamtaler: plass til lengre svar, referat og tiltak",
+  "change": "Miljømål BEGGE; bare Preview/Sandbox. Svar/kommentar10000 Unicode-kodepunkter og tiltak2000 erstatter4000/600. Hele paste bevares, med lokal preflight. Ny privat invoker-validator lar sykefraværets gamle validator være byteidentisk. Eksisterende RPC, roller, CAS/PT409, historikk, bekreftelser, ansvar/frister og utsendingsregler beholdes. Forventet funksjonskropp kontrolleres før DDL. Ingen Production-installasjon.",
+  "verification": "289 faktiske PostgreSQL-krav PASS:10000/10001,2000/2001,24spørsmål med firebyte-tegn, readback, avvist mutasjon, samme ACL/search_path og uendret delt validator, samt alle tidligere roller/CAS/historikk/varsler/purge. React138 og runtime/PDF134 PASS, inkludert faktisk UI-lagring forbi tidligere grenser; faktisk14siders jsPDF har alle tre sluttmarkører. Endelig lokal build, Sandbox DDL/rollbackprøve, siste UI-prøve og eksakt CI/READY kreves fortsatt.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "Samtalens tillatte tekstlengder og trygg avvisning er synlig brukerflyt."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Samme RPC og dataeiere; privat validator avgrenser kontrakten innen eksisterende HR-modul."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen ny klientavhengighet, miljøvariabel, serverkonfigurasjon eller transport."
+    },
+    "module": {
+      "required": true,
+      "reason": "Dokumenterer nye grenser, bytekapasitet, isolert validator og trygg tilbakeføring."
+    }
+  }
+}

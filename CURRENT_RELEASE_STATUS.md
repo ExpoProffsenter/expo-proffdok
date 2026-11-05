@@ -44,3 +44,6 @@ HR-siste dokumentkandidat96e3b6cf: CI952 SUCCESS9+gate og eksakt READY/Sandbox. 
 
 
 KS/HMS apphead28fa5a77/treea775ae9b: full CI956 SUCCESS9+gate. Native KS/HMS1028krav/221tilstander/bredder PASS, eksakt READY/Sandbox og faktisk syntetisk risiko-retur PASS. SJA-/risiko-PDF er faktisk lastet ned, rendret og kontrollert uten signering/lagring. [Samlet QA og ærlige restpunkter](docs/qa/WHOLE_APP_REVIEW_20261104.md). Dette dokumenttillegget endrer ingen app-/testfil; siste dokumentkandidats CI/READY føres i PR311. Ingen TEST OK/main/demo/Production-endring.
+
+
+Neste avgrensede HR-pakke på PR311 utvider svar/kommentar til10000tegn og tiltak til2000, med hele teksten beholdt ved avvisning. Isolert validator lar sykefravær og roller være uendret. Lokal PostgreSQL289/React138/runtime-PDF134 PASS; faktisk14siders PDF har alle sluttmarkører. Backendinstallasjon og siste kandidatkontroll føres i [nattgrunnlaget](docs/qa/NIGHT_QA_HR_START_20261105.md) og PR311. Ingen Production-installasjon/TEST OK.
