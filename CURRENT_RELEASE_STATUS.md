@@ -1,6 +1,6 @@
 # Nyeste PR311-kandidat – rutineeditor 5. november
 
-Ny avgrenset rettelse etter fullgrønn55e084ab/CI973: synlig rutineoverskrift under faktisk toppfelt og fokus tilbake til samme åpneknapp ved Lukk redigering. Lokalt sikret kladd bevares; ingen lagrings-/godkjennings-/backendendring. Lokal Sandbox-build/critical og source-update-React PASS; lokal native Chromium sperret før test. Ny eksakt CI/READY/innlogget etterkontroll føres i PR311. Ingen TEST OK eller produksjonsendring. Grunnlag: docs/changes/kshms-routine-editor-return-20261105.json.
+Ny avgrenset rettelse etter fullgrønn55e084ab/CI973: synlig rutineoverskrift under faktisk toppfelt og fokus tilbake til samme åpneknapp ved Lukk redigering. Kildesammenligning får samme sikre retur til editorens sammenligningsknapp; delvis lokalt valgte felt beholdes ved gjenåpning. Lokalt sikret kladd bevares; ingen lagrings-/godkjennings-/backendendring. Lokal Sandbox-build/critical og source-update-React PASS; lokal native Chromium sperret før test. Ny eksakt CI/READY/innlogget etterkontroll føres i PR311. Ingen TEST OK eller produksjonsendring. Grunnlag: docs/changes/kshms-routine-editor-return-20261105.json.
 
 # Gjeldende Preview-kandidater – 5. november 2026
 

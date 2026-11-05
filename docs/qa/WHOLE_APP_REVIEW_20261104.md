@@ -1,6 +1,8 @@
-# Nytt avgrenset funn – rutineeditor, 5. november
+# Nytt avgrenset funn – rutineeditor og kildesammenligning, 5. november
 
 Miljømål BEGGE, bare PR311 Preview/Sandbox fra fullgrønn55e084ab/CI973. R-030 åpnet uten input; overskrift ble skjult bak toppfeltet. Lukk redigering ga AXWebArea/BODY i stedet for åpneknappen. Rettelsen måler eksisterende toppfelt ved åpning og returnerer fokus etter lukking bare til samme aktive synlige bruker-/firmascope. Lokalt sikret kladd, kildevurdering og lagringens videre godkjenning beholdes. Ingen server-/tilgangs-/publiseringsendring. Full lokal Sandbox-build/critical og source-update-React PASS. Lokal native prøve er blokkert før første assertion av socket()/ProcessSingleton; ny eksakt CI og innlogget etterkontroll skal føres i PR311. Native prøve beholder alle gamle krav og legger til overskrift/fokus på fem bredder med appens faktiske header-stiler.
+
+Etterkontroll185758bc/READY: editorTop148.796875/headerBottom133/margin149px og eksakt retur til R-030. Samme søk Varme arbeider/1av73 beholdt. Kildesammenligning viste åtte felt/to ulike uten feltvalg/lagring, men Lukk sammenligning ga BODY. Samme fokuspakke utvides derfor til editorens konkrete sammenligningsknapp; lokal delvis feltadopsjon og gjenåpning verifiseres i React/native fixture uten serverkommando. CI974 gjelder forløperen, ikke dette tillegget.
 
 Varig scope/test/rollback: docs/changes/kshms-routine-editor-return-20261105.json. Tilbakeføring: revert denne avgrensede UI-/testpakken, ingen DB-steg. Ingen TEST OK/main/demo/Production. Resten av helapp-/filmregisteret er åpent.
 
