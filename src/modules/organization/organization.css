@@ -38,3 +38,26 @@
 .org-unit-card .org-person-leader,.org-unit-card .org-person-middle{margin-left:0;width:100%;box-sizing:border-box;flex-direction:column;text-align:center;gap:5px}
 .org-unit-card .org-person-leader>span:nth-child(2),.org-unit-card .org-person-middle>span:nth-child(2){width:100%}
 @media(max-width:760px){.org-map{--org-branch-gap:16px}}
+
+/* Keep the chart close to its controls; detail text expands only on request. */
+.org-group-switch{padding:12px;border-radius:8px;margin-bottom:10px;gap:10px}
+.org-group-switch .org-group-guidance{flex:0 1 270px;min-width:0;margin:0;color:#334155}
+.org-group-guidance summary,.org-chart-guidance summary{cursor:pointer;min-height:44px;display:flex;align-items:center;gap:8px;font-size:16px;font-weight:650;list-style:revert}
+.org-group-guidance summary:before,.org-chart-guidance summary:before{content:'+';font-size:20px;flex:none}
+.org-group-guidance[open] summary:before,.org-chart-guidance[open] summary:before{content:'−'}
+.org-group-switch .org-group-guidance[open]{flex-basis:100%}
+.org-group-switch .org-group-guidance p{margin:8px 0 0;font-size:16px;line-height:1.5}
+.org-overview{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;margin:0 0 4px}
+.org-overview .org-intro{flex:1 1 330px;margin:0}
+.org-overview .org-intro p{font-size:16px;line-height:1.4}
+.org-overview .org-stats{display:flex;flex-wrap:wrap;gap:6px;margin:0}
+.org-overview .org-stats>div{display:flex;align-items:center;gap:6px;padding:7px 9px;border:1px solid #dbe7ec;border-radius:8px;background:#f8fafc;min-height:44px}
+.org-overview .org-stats svg{width:18px;height:18px;grid-area:auto}
+.org-overview .org-stats strong{font-size:20px;line-height:1.2;grid-area:auto}
+.org-overview .org-stats span{font-size:16px;grid-area:auto}
+.org-chart-guidance{margin:0 0 8px;padding:0;border:0;color:#334155}
+.org-chart-guidance p{font-size:16px;line-height:1.5}
+.org-workspace .org-viewbar{margin-bottom:10px;padding:8px;border-radius:8px}
+.org-workspace .org-toolbar{margin-bottom:10px}
+@media(min-width:1100px){.org-group-switch{flex-wrap:wrap}.org-group-switch>div{min-width:190px}.org-group-switch>select{width:280px;flex:0 1 280px}}
+@media(max-width:760px){.org-overview .org-stats{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.org-overview .org-stats>div{min-width:0}.org-group-switch .org-group-guidance{flex-basis:100%}.org-overview .org-intro{flex-basis:100%}}

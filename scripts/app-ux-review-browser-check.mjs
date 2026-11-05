@@ -157,3 +157,5 @@ await import("./kshms-project-report-react-pdf-check.mjs");
 await import("./project-control-report-check.mjs");
 
 await import("./help-video-browser-check.mjs");
+
+await import('./stocktake-react-check.mjs');
