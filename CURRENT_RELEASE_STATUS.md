@@ -47,3 +47,5 @@ KS/HMS apphead28fa5a77/treea775ae9b: full CI956 SUCCESS9+gate. Native KS/HMS1028
 
 
 Neste avgrensede HR-pakke på PR311 utvider svar/kommentar til10000tegn og tiltak til2000, med hele teksten beholdt ved avvisning. Isolert validator lar sykefravær og roller være uendret. Lokal PostgreSQL289/React138/runtime-PDF134 PASS; faktisk14siders PDF har alle sluttmarkører. Backendinstallasjon og siste kandidatkontroll føres i [nattgrunnlaget](docs/qa/NIGHT_QA_HR_START_20261105.md) og PR311. Ingen Production-installasjon/TEST OK.
+
+HR-serverutvidelsen er installert bare i Sandbox som canonical20261105044245. Faktisk lagring/readback/avvisning/PT409 med full rollback PASS; original DEMO-utgave4/hash beholdt og e-post fortsattfalse. Ny klient med10000/2000grenser skal nå kandidatkontrolleres i PR311. Ingen gammel migrasjon er kjørt igjen og ingen Production-endring.

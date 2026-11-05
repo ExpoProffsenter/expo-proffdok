@@ -28,7 +28,7 @@ try{
  for(const f of migrations)await db.exec(await fs.readFile('supabase/migrations/'+f,'utf8'));
  const commandSecurity=await sql("select prosecdef,proacl::text acl,proconfig from pg_proc where oid='public.hr_conversation_command(uuid,uuid,integer,uuid,integer,text,jsonb)'::regprocedure");
  const oldValidator=await sql("select md5(prosrc) hash,proacl::text acl,prosecdef from pg_proc where oid='hr_private.validate_conversation_answers(jsonb,jsonb,text,boolean)'::regprocedure");
- await db.exec(await fs.readFile('supabase/migrations/20261105043549_hr_conversation_extended_text.sql','utf8'));
+ await db.exec(await fs.readFile('supabase/migrations/20261105044245_hr_conversation_extended_text.sql','utf8'));
  eq(await sql("select prosecdef,proacl::text acl,proconfig from pg_proc where oid='public.hr_conversation_command(uuid,uuid,integer,uuid,integer,text,jsonb)'::regprocedure"),commandSecurity,'text migration preserves endpoint owner-mode/ACL/search path');
  eq(await sql("select md5(prosrc) hash,proacl::text acl,prosecdef from pg_proc where oid='hr_private.validate_conversation_answers(jsonb,jsonb,text,boolean)'::regprocedure"),oldValidator,'sick-leave/shared validator remains byte-identical');
  for(const role of ['anon','authenticated','service_role'])eq((await sql(`select has_function_privilege('${role}','hr_private.validate_extended_conversation_answers(jsonb,jsonb,text,boolean)','execute') v`))[0].v,false,'new validator has no direct client grant');
