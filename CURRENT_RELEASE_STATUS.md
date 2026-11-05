@@ -36,3 +36,5 @@ HR-appkandidat6fd2efdc/treec0a47ad8: CI947/run41955806115 SUCCESS, alle ni pakke
 ## Samlet HR-samtale og tiltak – Preview
 
 PR311 samler møtereferat/tiltak/ansvar/frister/neste oppfølging i ett steg, med tre synlige steg og direkte retur fra Referat. Lagrede maler/tekster, serverstadier, roller og bekreftelser beholdes.133 lokale React-/modellkrav PASS; kandidat-CI/READY og livekontroll føres i PR. Tekstgrensene er fortsatt4000/600; ingen backend- eller utsendingsendring. Samme nattgrunnlag videreføres.
+
+Samlet HR-appkandidatfaa23f30/tree6272f61e: full CI950 SUCCESS, eksakt READY/Sandbox bekreftet, og faktisk syntetisk lokal tiltak→Referat→retur kontrollert uten serverlagring. Ny106s/9kapitlers HR-film er produsert og kildelevert; isolert Hjelp-integrasjon i PR308/42dcb985 har egen kandidatkontroll. Tekstgrensene er fortsatt4000/600; main34daef4c/Production urørt.
