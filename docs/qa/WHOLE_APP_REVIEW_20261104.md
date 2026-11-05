@@ -1,3 +1,9 @@
+# KSHMS-006 – planbyggerens retur, 5. november
+
+Miljømål BEGGE, bare PR311 Preview/Sandbox fra fullgrønn61eb31e8/CI975. Innlogget syntetisk VVS-EKSEMPEL-3M ble lukket fra bemanningsvisningen uten input/lagring, men ga BODY-fokus. Egen faktisk React-prøve på isolert originalkode gjenskaper samme feil. Hovedvinduet bruker nå eksisterende launcher for valgt visning som standard mål; eksplisitt ekstern eier/null har forrang. Skjult dokument/eier og endret stateKey sperrer retur.11faktiske lokale React-krav og full lokal Sandbox-build/critical PASS. Eksisterende native prøve utvides med21krav på fem bredder og uendret lagret plan. Ingen ny lokal Chromium-start etter kjent ProcessSingleton-begrensning. Ny eksakt CI/READY/live føres i PR311.
+
+Scope/bevis/rollback: docs/changes/kshms-plan-launcher-focus-20261105.json. Revert kun denne fokus-/testpakken; ingen DB-steg. Eksisterende plan-/kladd-/eksport-/Min side-/Escape-kontrakter beholdes. Ingen TEST OK, main/demo/Production. Full helappmatrise og flere videoer er fortsatt åpne.
+
 # Nytt avgrenset funn – rutineeditor og kildesammenligning, 5. november
 
 Miljømål BEGGE, bare PR311 Preview/Sandbox fra fullgrønn55e084ab/CI973. R-030 åpnet uten input; overskrift ble skjult bak toppfeltet. Lukk redigering ga AXWebArea/BODY i stedet for åpneknappen. Rettelsen måler eksisterende toppfelt ved åpning og returnerer fokus etter lukking bare til samme aktive synlige bruker-/firmascope. Lokalt sikret kladd, kildevurdering og lagringens videre godkjenning beholdes. Ingen server-/tilgangs-/publiseringsendring. Full lokal Sandbox-build/critical og source-update-React PASS. Lokal native prøve er blokkert før første assertion av socket()/ProcessSingleton; ny eksakt CI og innlogget etterkontroll skal føres i PR311. Native prøve beholder alle gamle krav og legger til overskrift/fokus på fem bredder med appens faktiske header-stiler.

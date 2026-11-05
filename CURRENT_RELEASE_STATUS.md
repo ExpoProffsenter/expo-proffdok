@@ -1,3 +1,7 @@
+# Nyeste PR311-kandidat – planbyggerens fokusretur, 5. november
+
+Etter fullgrønn61eb31e8/CI975 får planbyggerens hovedvindu riktig standard fokusmål ved lukking: schedule-/staffing-launcher etter valgt visning. Eksplisitt Min side-retur/null, skjult eier og stateKey-sperre beholdes.11nye faktiske React-krav og full lokal Sandbox-build/critical PASS; negativ prøve på gammel kode feiler på faktisk retur. Native prøve utvidet med21krav, uten svekket originaldekning. Siste eksakte CI/READY/innlogget etterkontroll føres i PR311. Ingen TEST OK/produksjon. Grunnlag: docs/changes/kshms-plan-launcher-focus-20261105.json.
+
 # Nyeste PR311-kandidat – rutineeditor 5. november
 
 Ny avgrenset rettelse etter fullgrønn55e084ab/CI973: synlig rutineoverskrift under faktisk toppfelt og fokus tilbake til samme åpneknapp ved Lukk redigering. Kildesammenligning får samme sikre retur til editorens sammenligningsknapp; delvis lokalt valgte felt beholdes ved gjenåpning. Lokalt sikret kladd bevares; ingen lagrings-/godkjennings-/backendendring. Lokal Sandbox-build/critical og source-update-React PASS; lokal native Chromium sperret før test. Ny eksakt CI/READY/innlogget etterkontroll føres i PR311. Ingen TEST OK eller produksjonsendring. Grunnlag: docs/changes/kshms-routine-editor-return-20261105.json.
