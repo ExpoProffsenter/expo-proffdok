@@ -494,5 +494,68 @@
         "text": "Tilbake til prosjektet lukker rapportpanelet. Du er tilbake i samme prosjekt og kan fortsette arbeidet. PDF-eksporten fullfører ikke prosjektet."
       }
     ]
+  },
+  {
+    "id": "hr-samtale-tiltak-referat",
+    "title": "Medarbeidersamtale – samtale, tiltak og referat",
+    "module": "HR",
+    "access": "hr-workflow",
+    "topics": [
+      "hr"
+    ],
+    "description": "Finn en eksisterende samtale, samle møtenotat og tiltak og se referatet. Filmen viser en ulagret fiktiv eksempelkladd uten serverlagring, sending, bekreftelse eller PDF-nedlasting. Ikke full HR A–Å.",
+    "src": "/help-videos/hr-samtale-tiltak-referat-v1.mp4",
+    "track": "/help-videos/hr-samtale-tiltak-referat-v1.vtt",
+    "duration": 106,
+    "sha256": "9f065bb94c0266f617c0cab562de0385254b6d924e62ce8b441f252f5558125a",
+    "bytes": 5738527,
+    "sourceCommit": "e3ced699d1026b6f6106cb17de1ad05ba857674c",
+    "chapters": [
+      {
+        "start": 0,
+        "title": "Finn riktig medarbeider",
+        "text": "Åpne HR og velg medarbeideren samtalen gjelder. Her bruker vi bare en oppdiktet demoansatt. Rollen din bestemmer hvilke samtaler du kan åpne."
+      },
+      {
+        "start": 10,
+        "title": "Fortsett lagret samtale",
+        "text": "Velg riktig samtale under Lagrede samtaler og historikk. Du trenger ikke opprette en ny samtale for å fortsette."
+      },
+      {
+        "start": 21,
+        "title": "Ett samlet arbeidssteg",
+        "text": "Samtale og tiltak samler møtenotat, oppgaver og oppfølging. Forberedelse og Referat er egne steg. Stegbytte lagrer ikke arbeidet."
+      },
+      {
+        "start": 33,
+        "title": "Les medarbeiderens innspill",
+        "text": "Åpne den delte forberedelsen når dere vil lese svarene sammen. De opprinnelige svarene beholdes."
+      },
+      {
+        "start": 44,
+        "title": "Avtal ansvar og frist",
+        "text": "Skriv ett tiltak og kontroller Ansvarlig og Frist. Opplysningene trenger ikke gjentas i møtenotatet. Filmen viser en ulagret eksempelkladd."
+      },
+      {
+        "start": 58,
+        "title": "Skill frist fra oppfølging",
+        "text": "Fristen gjelder oppgaven. Neste oppfølging er datoen dere går gjennom tiltakene sammen. Velg Neste for samlet referat. Velg oppfølgingsdato når tiltak er avtalt."
+      },
+      {
+        "start": 70,
+        "title": "Se hele referatet",
+        "text": "Referat samler delt forberedelse, møtenotater og avtalte tiltak. Teksten viser tydelig når dette er en ulagret forhåndsvisning. Tilbake til samtale og tiltak bevarer kladden."
+      },
+      {
+        "start": 82,
+        "title": "Kontroller før gjennomgang",
+        "text": "Se over ansvar og datoer. Lagre samtalen før lederen sender til gjennomgang. Begge bekrefter selv fra egen konto. Ingen lagring, sending eller bekreftelse utføres i filmen."
+      },
+      {
+        "start": 97,
+        "title": "Tilbake til medarbeiderne",
+        "text": "Lukk medarbeidervinduet for å gå tilbake til registeret. Lagre eget arbeid før du avslutter. Eksempelkladden er her fjernet uten serverlagring."
+      }
+    ]
   }
 ]

@@ -43,3 +43,7 @@ Produksjon `main34daef4c` og demo `fd5aafa1` er urørt. PR309 (`73c97450`, CI903
 ## Rapportfilm – Preview-oppdatering 5. november
 
 Samme PR308 får «Last ned statusrapport fra prosjekt» direkte under Rapport. Sju kapitler, tekstalternativ og originalfil fra kontrollert PR311-visning. Seks tidligere filmer og metadata beholdes. Full CI/READY/innlogget avspilling føres i PR308; ingen produksjon eller ny TEST OK. Rapportrettelsene i PR311 er en nødvendig releaseavhengighet. Full prosjektvideo og Bolig A–Å er fortsatt åpne.
+
+## HR-film – Preview
+
+PR308 får et avgrenset106s/9kapitlers kapittel om eksisterende samtale, samlet møte/tiltak og referat/retur. Film og redigerbare kilder er levert; metadata/avspiller/tilgang testes i samme Hjelp. Sju tidligere filmer beholdes. PR311s trestegsflyt er releaseavhengighet. Ingen TEST OK eller produksjonssetting. Se docs/qa/HR_CONVERSATION_HELP_VIDEO_20261105.md og fersk PR308-status.

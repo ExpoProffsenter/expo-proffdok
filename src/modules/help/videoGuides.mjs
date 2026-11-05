@@ -7,7 +7,7 @@ export const videoTime=seconds=>`${Math.floor(seconds/60)}:${String(Math.floor(s
 export function availableVideoGuides({authenticated=false,topics=[],canUseBolig=false,backendTarget}={}){
  if(!authenticated)return [];
  const keys=new Set(topics);
- return guides.filter(video=>({help:keys.has('hjelp'),hr:keys.has('hr')&&backendTarget==='sandbox',sales:keys.has('sales'),report:keys.has('rapport'),plans:keys.has('project-progress')||keys.has('kshms'),bolig:canUseBolig})[video.access]);
+ return guides.filter(video=>({help:keys.has('hjelp'),hr:keys.has('hr')&&backendTarget==='sandbox','hr-workflow':keys.has('hr'),sales:keys.has('sales'),report:keys.has('rapport'),plans:keys.has('project-progress')||keys.has('kshms'),bolig:canUseBolig})[video.access]);
 }
 export function searchVideoGuides(videos,query=''){
  const words=searchable(query).trim().split(/\s+/).filter(Boolean);

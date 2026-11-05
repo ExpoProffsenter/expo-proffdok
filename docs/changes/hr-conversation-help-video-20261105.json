@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "HR-film under eksisterende medarbeidersamtalehjelp",
+  "change": "Miljømål BEGGE, Preview først. Ny106sekunders film med ni kapitler fra syntetisk PR311-Sandbox kobles under eksisterende HR-tema. Samme native avspiller og eksisterende ferske tema-/rollefiltrering brukes. Den gamle Sandbox-prøvefilmen og sju tidligere metadata/filmer beholdes. Trestegsflyten i PR311 er releaseavhengighet; ingen HR-kjerne blandes inn.",
+  "verification": "H264/1920x1080/24fps/106s/uten lyd,2544frames dekodet uten feil; ni statiske scenebilder visuelt kontrollert. Lokal kladd ble tilbakestilt til uendret serverversjon uten lagring/sending. Full avspillertest utvides til åtte faktiske filmer og HR-tema/søk/retur/fokus/revokasjon samt fem bredder. Ny CI/livekontroll kreves.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "Ny film og kapitteltekst under eksisterende HR-tema."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Samme statiske mediefiler og avspiller, ingen ny dataflyt."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen ny avhengighet eller nytt oppsett."
+    },
+    "module": {
+      "required": true,
+      "reason": "Avgrenset omfang, tilgang og releaseavhengighet beskrives."
+    }
+  }
+}
