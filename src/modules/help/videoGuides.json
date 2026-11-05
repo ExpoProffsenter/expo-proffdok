@@ -761,5 +761,146 @@
         "text": "Åpne fremdriftsplan eller Åpne bemanningsplan når du vil fortsette. Denne filmen dekker visning og PDF. Oppretting og redigering er egne oppgaver."
       }
     ]
+  },
+  {
+    "id": "plan-opprett-rediger",
+    "title": "Fremdriftsplan – opprett og rediger",
+    "module": "KS/HMS",
+    "access": "kshms-manage",
+    "topics": [
+      "kshms"
+    ],
+    "description": "Opprett en plan, legg inn arbeid og bemanning, rediger status og merknad og kontroller lagret serverutgave. Kladd og bekreftet lagring er egne steg.",
+    "src": "/help-videos/plan-opprett-rediger-v1.mp4",
+    "track": "/help-videos/plan-opprett-rediger-v1.vtt",
+    "duration": 124,
+    "sha256": "c9f70307ca3de45c050fa25de43839a7db8eced667f51f70376028ce7a0c418c",
+    "bytes": 4796548,
+    "sourceCommit": "4c5c06329c9c96fc1479c98e9da8b76a7be22753",
+    "chapters": [
+      {
+        "start": 0,
+        "title": "Opprett en egen plan",
+        "text": "Åpne KS/HMS → Verktøy og maler → Fremdriftsplaner. Velg Ny fremdriftsplan og fyll inn navn, adresse og referanse."
+      },
+      {
+        "start": 14,
+        "title": "Begynn med oppgavene",
+        "text": "Opprett plan åpner planbyggeren. Velg + Arbeidsoperasjoner for å legge inn det som skal utføres."
+      },
+      {
+        "start": 24,
+        "title": "Finn kode eller arbeidsoperasjon",
+        "text": "Søk etter kode eller navn. Her velges 312 Rørnett sanitær. Du kan også velge en egen arbeidsoperasjon."
+      },
+      {
+        "start": 36,
+        "title": "Fyll inn arbeid og periode",
+        "text": "Angi navn, fag, person eller firma, antall personer og datoer. Her er to personer satt opp 5.–6. november. Lagre fremdriftsplan lagrer hele planen."
+      },
+      {
+        "start": 52,
+        "title": "Åpne en lagret oppgave",
+        "text": "Lagret og bekreftelsen viser at planen er lagret. Trykk på oppgavens navn for å redigere den."
+      },
+      {
+        "start": 62,
+        "title": "Oppdater status og merknad",
+        "text": "Velg riktig status og oppdater merknaden. Tilbake til oversikten beholder endringene som kladd. Det lagrer dem ikke på serveren."
+      },
+      {
+        "start": 76,
+        "title": "Skill kladd fra lagret plan",
+        "text": "Lagre fremdriftsplan er aktiv når endringer venter. Tilbake øverst lukker planbyggeren og beholder kladden."
+      },
+      {
+        "start": 88,
+        "title": "Fortsett i samme kladd",
+        "text": "Varslet forteller at endringene ikke er lagret. Åpne fremdriftsplan henter frem den samme kladden. Velg deretter Lagre fremdriftsplan."
+      },
+      {
+        "start": 100,
+        "title": "Kontroller lagringsbekreftelsen",
+        "text": "Etter lagring vises Lagret. Den oppdaterte statusen Pågår vises på oppgaven. Planen har fortsatt samme periode og bemanning."
+      },
+      {
+        "start": 110,
+        "title": "Kontroller det lagrede innholdet",
+        "text": "Hent lagret plan under Planvalg og eksport leser serverutgaven på nytt. Her er status, merknad, datoer og bemanning kontrollert igjen."
+      }
+    ]
+  },
+  {
+    "id": "varetelling-omrade-pause-kontroll",
+    "title": "Varetelling – område, pause og kontroll",
+    "module": "Prissøk",
+    "access": "stocktake",
+    "topics": [
+      "prissok"
+    ],
+    "description": "Velg hylla én gang, registrer delantall, sett området på pause og fortsett. Kontroller historikk og eksport før tellingen avsluttes. Eksemplet bruker samme demoteller.",
+    "src": "/help-videos/varetelling-omrade-pause-kontroll-v1.mp4",
+    "track": "/help-videos/varetelling-omrade-pause-kontroll-v1.vtt",
+    "duration": 150,
+    "sha256": "4967be56f080cfa9cb8475dd6028fbce6a87768e06c313c195e9554a0bd018ef",
+    "bytes": 7337752,
+    "sourceCommit": "4c5c06329c9c96fc1479c98e9da8b76a7be22753",
+    "chapters": [
+      {
+        "start": 0,
+        "title": "Start en varetelling",
+        "text": "Velg Prissøk → Varetelling. Gi tellingen et navn, velg riktig lager og kontroller telledatoen. Opprett én telling per lager."
+      },
+      {
+        "start": 12,
+        "title": "Opprett hylla én gang",
+        "text": "Åpne Opprett en hylle eller et område. Skriv navnet og velg Opprett og start område. Her brukes Reol B – hylle 2."
+      },
+      {
+        "start": 24,
+        "title": "Registrer det du har telt",
+        "text": "Finn varen i søket, eller legg den inn manuelt. Kontroller leverandør og varenummer. Her registreres tre eksemplarenheter."
+      },
+      {
+        "start": 38,
+        "title": "Skriv hvor du stoppet",
+        "text": "To varelinjer er lagret, også en med antall 0. Skriv en tydelig stoppmerknad og velg Sett område på pause."
+      },
+      {
+        "start": 52,
+        "title": "Fortsett på en halvferdig hylle",
+        "text": "Pauset område beholder varelisten og stoppmerknaden. Les begge før du velger Fortsett telling her. Her fortsetter samme demoteller."
+      },
+      {
+        "start": 68,
+        "title": "Legg til neste delantall",
+        "text": "På samme vare og område legges nye registreringer til. Her registreres to nye enheter etter de tre som allerede var telt."
+      },
+      {
+        "start": 80,
+        "title": "Kontroller hva som skjedde",
+        "text": "Historikk og kontroll viser hvem, tidspunkt og før/etter. Her vises 3 → 5, videreføring og den tidligere pausen med merknad."
+      },
+      {
+        "start": 96,
+        "title": "Marker området ferdig",
+        "text": "Når hele hylla er kontrollert, oppdater merknaden og velg Området er ferdig telt. Alle områder må være ferdige før hele tellingen avsluttes."
+      },
+      {
+        "start": 110,
+        "title": "Last ned riktig kontrollgrunnlag",
+        "text": "Cordel-tekstfilen summerer per leverandør og varenummer, uten område. Kontrollfilen beholder områdene. Kontroller filene før en eventuell import."
+      },
+      {
+        "start": 126,
+        "title": "Bekreft avslutningen",
+        "text": "Avslutt telling viser en egen bekreftelse. Når du bekrefter, låses registreringene. Eksportfilene er fortsatt tilgjengelige."
+      },
+      {
+        "start": 138,
+        "title": "Kontroller avsluttet telling",
+        "text": "Avsluttet og 1 av 1 områder ferdig telt vises etter ny serverhenting. Antall og historikk er bevart, og skriveknappene er fjernet."
+      }
+    ]
   }
 ]

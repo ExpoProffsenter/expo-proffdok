@@ -5009,6 +5009,85 @@
       ],
       "library_file_id": "libfile_9f220ccc022c8191a7d769850baeaf3f",
       "sources_library_file_id": "libfile_452b935c00e88191a9291c29eedf98a7"
+    },
+    {
+      "function_id": "KSHMS-006-CREATE-EDIT",
+      "module": "KS/HMS",
+      "title": "Fremdriftsplan – opprett og rediger",
+      "entry": "Hjelp → KS/HMS",
+      "video_id": "VID-KSHMS-PLAN-CREATE-EDIT",
+      "status": "produsert-og-kontrollert",
+      "template_id": "PROFFDOK-VIDEO-1.0",
+      "scope_steps": [
+        "Opprett en egen plan",
+        "Begynn med oppgavene",
+        "Finn kode eller arbeidsoperasjon",
+        "Fyll inn arbeid og periode",
+        "Åpne en lagret oppgave",
+        "Oppdater status og merknad",
+        "Skill kladd fra lagret plan",
+        "Fortsett i samme kladd",
+        "Kontroller lagringsbekreftelsen",
+        "Kontroller det lagrede innholdet"
+      ],
+      "expected": "Opprett en plan, legg inn arbeid og bemanning, rediger status og merknad og kontroller lagret serverutgave. Kladd og bekreftet lagring er egne steg.",
+      "file": "public/help-videos/plan-opprett-rediger-v1.mp4",
+      "chapter": "10 kapitler / 124 sekunder / VTT og tekst",
+      "source_commit": "4c5c06329c9c96fc1479c98e9da8b76a7be22753",
+      "checked_on": "2026-11-05",
+      "notes": "Kildeprøve/full dekoding/21 scener kontrollert i PR311. Ny Hjelp-integrasjon krever egen kandidatkontroll. Ikke full modulreise eller fysisk ti-personersprøve.",
+      "coverage_level": "avgrenset-oppgave",
+      "full_journey_attested": false,
+      "subfunction_audit": "avgrenset",
+      "roles": [
+        "KS/HMS-forvalter"
+      ],
+      "qa_sources": [
+        "docs/qa/PLAN_AREA_HELP_INTEGRATION_20261105.md",
+        "scripts/help-video-browser-check.mjs"
+      ],
+      "library_file_id": "libfile_d9bcc873dbcc81918673a4cdecb9fc36",
+      "sources_library_file_id": "libfile_caddf5e698e0819184afa7f71a3f4b1c"
+    },
+    {
+      "function_id": "STOCKTAKE-AREA-PAUSE-CONTROL",
+      "module": "Prissøk",
+      "title": "Varetelling – område, pause og kontroll",
+      "entry": "Hjelp → Prissøk",
+      "video_id": "VID-STOCKTAKE-AREA-PAUSE-CONTROL",
+      "status": "produsert-og-kontrollert",
+      "template_id": "PROFFDOK-VIDEO-1.0",
+      "scope_steps": [
+        "Start en varetelling",
+        "Opprett hylla én gang",
+        "Registrer det du har telt",
+        "Skriv hvor du stoppet",
+        "Fortsett på en halvferdig hylle",
+        "Legg til neste delantall",
+        "Kontroller hva som skjedde",
+        "Marker området ferdig",
+        "Last ned riktig kontrollgrunnlag",
+        "Bekreft avslutningen",
+        "Kontroller avsluttet telling"
+      ],
+      "expected": "Velg hylla én gang, registrer delantall, sett området på pause og fortsett. Kontroller historikk og eksport før tellingen avsluttes. Eksemplet bruker samme demoteller.",
+      "file": "public/help-videos/varetelling-omrade-pause-kontroll-v1.mp4",
+      "chapter": "11 kapitler / 150 sekunder / VTT og tekst",
+      "source_commit": "4c5c06329c9c96fc1479c98e9da8b76a7be22753",
+      "checked_on": "2026-11-05",
+      "notes": "Kildeprøve/full dekoding/21 scener kontrollert i PR311. Ny Hjelp-integrasjon krever egen kandidatkontroll. Ikke full modulreise eller fysisk ti-personersprøve.",
+      "coverage_level": "avgrenset-oppgave",
+      "full_journey_attested": false,
+      "subfunction_audit": "avgrenset",
+      "roles": [
+        "autorisert teller i firma med aktivert varetelling"
+      ],
+      "qa_sources": [
+        "docs/qa/PLAN_AREA_HELP_INTEGRATION_20261105.md",
+        "scripts/help-video-browser-check.mjs"
+      ],
+      "library_file_id": "libfile_36409e3571fc81918ddd774dee2df387",
+      "sources_library_file_id": "libfile_8eba65db850c8191a1a431c5caab54bf"
     }
   ]
 }

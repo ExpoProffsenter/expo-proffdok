@@ -1,3 +1,7 @@
+# To nye Hjelp-filmer – kandidat 5. november kveld
+
+PR308 bygger videre fra6c23091f med planoppretting/redigering2:04 og områdetelling/pause/kontroll2:30, kapitler/VTT/tekst under KS/HMS og Prissøk. Elleve tidligere guideposter/filmer bevares. Varetellingsknappen krever eksisterende positiv stocktake_context, ikke bare Prissøk-tilgang. Kildeprøver/videoer/kilder er ferdig levert i PR311/6c223547. Ny eksakt CI/READY/native og Preview-kontroll føres i PR308 og docs/qa/PLAN_AREA_HELP_INTEGRATION_20261105.md; ingen gammel kandidatattest gjenbrukes for ny kode. Ingen TEST OK/produksjon. Senere release må omfatte PR311s relevante plan-/områdeflyt. Full helapp-/videodekning gjenstår.
+
 # Ny planfilm i Hjelp – kandidat 5. november
 
 PR308/63a9bc8d har elleve filmer: ny Fremdriftsplan – visning, bemanning og PDF,120s/11kapitler, med de ti tidligere bevart. Eksakt CI977/run42063219007 SUCCESS (ni pakker + gate),565 native filmkrav og READY dpl_7PfhUMmqJRCdc4ukhiMsLp7CowvM på fast Preview/Sandbox. Ny innlogget avspilling, kapittel90s, VTT/elleve tekststeg og direkte/nestet retur/fokus er bekreftet. Scope/bevis/rollback: docs/qa/PLAN_VIEW_HELP_VIDEO_20261105.md. Ingen TEST OK/produksjon. Planoppretting/redigering og områdefilm er fortsatt neste åpne arbeid.

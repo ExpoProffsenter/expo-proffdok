@@ -38,3 +38,11 @@ HR-filmen har revisjon2 med ni nye faktiske Sandbox-bilder fra ddffddae, etter g
 ## Fremdriftsplan – visning, bemanning og PDF
 
 Under KS/HMS ligger en120s-film med11kapitler og full tekst/VTT. Den viser en lagret syntetisk plan, tidsvisning, bemanning, lukking/gjenåpning og fremdrifts-PDF. Tilgang krever samme ferske KS/HMS-forvalterrettighet som dokumentuttrekkets film; vanlig modulmedlemskap gir ikke denne filmen. Alle ti tidligere filmer beholdes. Oppretting/redigering, bemannings-PDF/CSV/ICS og full KSHMS-006 dekkes ikke. Ved senere release må PR311s fokusrettelse vurderes sammen med filmen. Ingen automatisk avspilling eller utsending.
+
+## Opprett/rediger plan og tell et område
+
+To nye avgrensede filmer gir totalt tretten guideposter; de elleve tidligere metadataene og filene beholdes. «Fremdriftsplan – opprett og rediger» (2:04, ti kapitler) ligger under KS/HMS med samme ferske forvaltertilgang som planvisningsfilmen. Den viser én oppgave, periode/bemanning, status/merknad, bevart kladd, eksplisitt lagring og ny serverlesing. Flere perioder, arkivering og full KSHMS-006 dekkes ikke.
+
+«Varetelling – område, pause og kontroll» (2:30, elleve kapitler) ligger under Prissøk og viser område én gang, delantall 3 + 2 = 5, nullinje, pause/egen videreføring, historikk, eksport og avslutning. Filmknappen krever både synlig Prissøk-tema og positiv eksisterende `stocktake_context` for samme bruker/aktivert firma. `useStocktakeHelpAccess` leser bare denne eksisterende konteksten. Venting, feil, fremmed bruker, manglende firma eller `enabled` uten eksplisitt true gir ingen film. Arbeidsprofil-/tilgangshendelser, fokus og synlighet nullstiller og henter på nytt; sene svar forkastes. Tilbakekalt tilgang fjerner åpen film uten å endre foreldrekladden. Ingen ny rettighet eller skriving.
+
+Begge bruker eksisterende avspiller, søk, kapitler, VTT og tekstalternativ. Filmene viser PR311s UI; den pakkens planrettelser og områdemigrasjon må kontrolleres sammen ved senere godkjent release. Ingen migrering installeres av denne Hjelp-pakken. Opptaket viser samme teller, ikke faktisk overtakelse mellom to personer. Scope/bevis/rollback: docs/qa/PLAN_AREA_HELP_INTEGRATION_20261105.md.
