@@ -26,3 +26,7 @@ Ny QA/riktig kandidatstatus, hele 145-reisers inventaret og avgrenset rettelse a
 ## Varetelling: områder og overtakelse – 5. november
 
 Pågående Preview/Sandbox-arbeid i PR311: velg hylla én gang, pause/overtakelse, eierskapsrevisjon og historikk. Ingen ny TEST OK eller Production-endring. Faktisk QA, installasjonsstatus og videre prøve: [STOCKTAKE_AREAS_20261105](docs/qa/STOCKTAKE_AREAS_20261105.md).
+
+## HR-tekstkontroll – Preview 5. november
+
+PR311 beholder hele innlimte samtaletekster, viser tegnantall og sperrer for lang tekst før første lagringsmutasjon. Eksisterende servergrenser er fortsatt4000/600; større lengder og samlet oppfølgingsflyt gjenstår.121 syntetiske React-/modellassertions og lokal Sandbox-build PASS; kandidat-CI/livekontroll føres i PR311. [Nattgrunnlag](docs/qa/NIGHT_QA_HR_START_20261105.md). Ingen TEST OK/Production.

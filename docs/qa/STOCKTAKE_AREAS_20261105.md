@@ -53,3 +53,11 @@ CI943/run41952614765: åtte pakker grønne. App-browser bestod alle81 opprinneli
 UI lastet ned Cordel-filen:45 byte, SHA256 `9dbe20dd3922cb8cc2f2ddf41ad8a171f3dc0222192ed239a6be108302e46c2c`. Eksakt innhold er000123;15;QA grossist og000124;0;QA grossist, med CRLF. Ingen hylle/status/historikk/pris i filen. Ingen import eller sending. UI markerte hylla ferdig telt og bekreftet ordinær avslutning. Etterkontroll viser closed=true,15 og0 på de to egne QA-linjene, aktiv eksport og ingen registrerings-/redigeringsknapper. Opprinnelig linjehash er fortsatt uendret.
 
 Innlogget lesbarhetsfunn: en generell ventetekst viste «Fortsett telling her» også på et ferdig område. Teksten avledes nå av faktisk paused/done/annen teller/ukjent område. Egen Bruk oppdatert område lar en eier eksplisitt godta nytt arbeidsgrunnlag når det ikke finnes usendt tellekladd; den oppdaterer aldri revisjonen under en kladd. Avsluttet telling tilbyr bare lesing av valgt område. Ingen backendendring eller ny migrasjon for denne teksten. Native områdescenario krever korrekt neste handling på ferdig område.
+
+## Lukket native checkpoint – CI946
+
+Eksakt18f28f9df788d31c8776cd1a21baaf71d13e05e7/tree7538f941df9167126e59476cbbdbab3e9e8f1cd4: CI946/run41954513587 fullført SUCCESS, alle ni pakker og samlet gate. App-browser127006407195 bekrefter opprinnelige81stocktake-kontroller PASS og nye34områdekontroller PASS: faktisk React+PostgreSQL-migrasjon, to brukere, halvferdig hylle/overtakelse, fencing, kladd, historikk, fem bredder, eksport og avslutning. Dette er sluttbevis for den nyere status-/Bruk oppdatert område-kandidaten, ikke bare8f7802f1.
+
+Vercel dpl_A7uHpbDLTZc6k1SZfc9Tig655hYs READY på eksakt18f28f9d, fastalias/targetnull. Innlogget vanlig reload beholdt demo-innlogging. Avsluttet QA–hyller og overtakelse viste1av1område Ferdig telt, stoppmerknad og2linjer15/0; ingen skriveknapper. Ingen ny migrering, fixtureopprettelse eller dataendring. Tidligere faktisk Sandbox-binding/SQL-samtidighetsbevis beholdes; denne read-only UI-runden er ikke ny10-personersbelastning eller full portal/Safari-attest.
+
+Checkpoint for områdeflyten er dermed testmessig lukket på18f28f9d. Ny etterfølgende HR-appkode krever egen kandidat-CI/READY. Ingen TEST OK eller produksjonssetting.

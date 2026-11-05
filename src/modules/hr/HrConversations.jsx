@@ -1,7 +1,8 @@
 import {isRpcConflict} from '../app/rpcErrors.mjs';
-import React,{useEffect,useRef,useState} from 'react';
+import React,{useEffect,useRef,useState,useId} from 'react';
 import {hrRpc} from './hrAccess.js';
 import {createConversationSession,CONVERSATION_STAGES,conversationOpeningStep} from './hrConversationSession.mjs';
+import {conversationTextError,conversationTextLength} from './hrConversationText.mjs';
 import {sameHrTemplate} from './hrConversationTemplates.mjs';
 import {osloToday} from './hrPracticeConversation.mjs';
 import {MANAGED_ACCESS_EVENT,MODULE_ACCESS_EVENT} from '../access/moduleAccessClient.js';
@@ -17,7 +18,11 @@ const remember=(scope,v)=>{const entryKey=v.entryKey??workspaces.get(scope)?.ent
 const editable=c=>({preparation:c.preparation,meeting:c.meeting,actions:c.actions,next_on:c.next_on,comments:c.comments,on:c.on,meeting_time:c.meeting_time||'',meeting_location:c.meeting_location||''});
 const copy=v=>JSON.parse(JSON.stringify(v));
 const emailText={disabled:'E-postutsending er avslått i dette miljøet.',not_queued:'E-postinvitasjonen er ikke sendt.',pending:'E-post er lagt i kø for utsending.',sending:'E-post sendes …',sent:'E-post er sendt. Utsendingen er bekreftet av e-posttjenesten.',failed:'E-post kunne ikke sendes. Kontakt firmaadmin.',suppressed:'E-postutsendingen er stoppet fordi tidspunkt eller tilgang er endret.'};
-function Field({label,children}){return <label className="hrp-field"><span>{label}</span>{children}</label>;}
+function Field({label,children}){const id=useId();return <label className="hrp-field"><span id={id}>{label}</span>{children?.type===ConversationText?React.cloneElement(children,{'aria-labelledby':id}):children}</label>;}
+function ConversationText({limit,value='',...props}){
+ const hint=useId(),length=conversationTextLength(value),over=length>limit;
+ return <><textarea {...props} value={value} aria-describedby={hint} aria-invalid={over||undefined}/><small id={hint} className={over?'hrp-text-limit hrp-error':'hrp-text-limit'}>{length} / {limit} tegn{over?' · Forkort teksten før lagring. Hele teksten er beholdt i kladden.':''}</small></>;
+}
 export default function HrConversations({context,employee,initialCaseId=null,initialEntryKey=null,initialStep=0,feedbackNotice=null,onFeedbackHandled=null}){
  const companyId=context.company_id,userId=context.user_id,employeeId=employee.id,scope=companyId+':'+userId+':'+employeeId;
  const [listing,setListing]=useState(null),[value,setValue]=useState(null),[draft,setDraft]=useState(null);
@@ -96,7 +101,7 @@ export default function HrConversations({context,employee,initialCaseId=null,ini
   const result=await s.command(value,action,data);if(current()){install(result);setNotice('Lagret på serveren · utgave '+result.current_revision+'.');if(action==='share')setStep(1);if(action==='ready'||action==='confirm')setStep(3);}
  });
  const save=()=>run(async(s,current)=>{
-  if(conflict||value?.historical)return;const wanted=copy(draft);let result=value;
+  if(conflict||value?.historical)return;const textError=conversationTextError(draft,value.permissions,value.employee.user_id===userId?'employee':'leader');if(textError)throw Error(textError);const wanted=copy(draft);let result=value;
   if(value.employee.leader_id===userId&&['preparation','meeting'].includes(value.conversation.stage)
    &&!sameHrTemplate([wanted.on,wanted.meeting_time,wanted.meeting_location],[value.conversation.on,value.conversation.meeting_time||'',value.conversation.meeting_location||'']))
    result=await s.schedule(result,{on:wanted.on,time:wanted.meeting_time,location:wanted.meeting_location});
@@ -208,17 +213,17 @@ export default function HrConversations({context,employee,initialCaseId=null,ini
   <h4>{stages[step]}</h4>
   {step===0&&<><p>{c.shared?'Medarbeiderens forberedelse er delt med lederen. De opprinnelige svarene beholdes. Fortsett i Felles møte.':'Medarbeideren skriver egne svar. De er private til medarbeideren trykker «Klar til samtale».'}</p>
    {!c.shared&&!prep&&<p>Forberedelsen er ikke delt ennå.</p>}
-   {c.template.questions.filter(q=>q.phase==='preparation').map(q=><article className="hrp-question" key={q.id}><h5>{q.topic}</h5><Field label={q.prompt+(q.required?' *':'')}><textarea rows={4} maxLength={4000} disabled={busy||!prep} value={draft.preparation[q.id]||''} onChange={e=>change({preparation:{...draft.preparation,[q.id]:e.target.value}})}/></Field></article>)}
+   {c.template.questions.filter(q=>q.phase==='preparation').map(q=><article className="hrp-question" key={q.id}><h5>{q.topic}</h5><Field label={q.prompt+(q.required?' *':'')}><ConversationText rows={4} limit={4000} disabled={busy||!prep} value={draft.preparation[q.id]||''} onChange={e=>change({preparation:{...draft.preparation,[q.id]:e.target.value}})}/></Field></article>)}
    {prep&&<><p>Lagre svarene med «Lagre samtale». Trykk deretter «Klar til samtale» når du vil dele dem med lederen.</p><button disabled={busy||dirty} onClick={()=>cleanAction('share')}>Klar til samtale</button></>}
   </>}
   {step===1&&<><p>Gå gjennom medarbeiderens innspill sammen. Nærmeste leder skriver møtereferatet. Medarbeiderens opprinnelige svar beholdes.</p>
    {c.template.questions.filter(q=>q.phase==='preparation').map(q=><article className="hrp-question" key={q.id}><h5>{q.topic}</h5><blockquote>{c.preparation[q.id]||'Ikke delt eller ikke utfylt'}</blockquote></article>)}
    {c.shared&&c.comments.employee&&<article className="hrp-question"><h5>Medarbeiderens delte kommentar</h5><blockquote>{c.comments.employee}</blockquote><p>Begge egne kommentarer kan leses og redigeres under Referat.</p></article>}
-   {c.template.questions.filter(q=>q.phase==='meeting').map(q=><article className="hrp-question" key={q.id}><h5>{q.topic}</h5><Field label={q.prompt+(q.required?' *':'')}><textarea rows={4} maxLength={4000} disabled={busy||!meeting} value={draft.meeting[q.id]||''} onChange={e=>change({meeting:{...draft.meeting,[q.id]:e.target.value}})}/></Field></article>)}
+   {c.template.questions.filter(q=>q.phase==='meeting').map(q=><article className="hrp-question" key={q.id}><h5>{q.topic}</h5><Field label={q.prompt+(q.required?' *':'')}><ConversationText rows={4} limit={4000} disabled={busy||!meeting} value={draft.meeting[q.id]||''} onChange={e=>change({meeting:{...draft.meeting,[q.id]:e.target.value}})}/></Field></article>)}
   </>}
   {step===2&&<><p>Tiltak er valgfrie når ingen oppfølging trengs. Hvert avtalt tiltak trenger ansvarlig og frist.</p>
    {draft.actions.map((a,i)=><article className="hrp-action" key={a.id}><h5>Tiltak {i+1}</h5><fieldset disabled={busy||!meeting}>
-    <Field label="Hva skal gjøres?"><textarea value={a.task} maxLength={600} onChange={e=>change({actions:draft.actions.map(x=>x.id===a.id?{...x,task:e.target.value}:x)})}/></Field>
+    <Field label="Hva skal gjøres?"><ConversationText value={a.task} limit={600} onChange={e=>change({actions:draft.actions.map(x=>x.id===a.id?{...x,task:e.target.value}:x)})}/></Field>
     <Field label="Ansvarlig"><select value={a.owner_id} onChange={e=>change({actions:draft.actions.map(x=>x.id===a.id?{...x,owner_id:e.target.value}:x)})}><option value={value.employee.user_id}>{value.employee.email||'Medarbeider'}</option>{value.employee.leader_id&&<option value={value.employee.leader_id}>{value.leader_email||'Leder'}</option>}</select></Field>
     <Field label="Frist"><input type="date" value={a.due_on} onChange={e=>change({actions:draft.actions.map(x=>x.id===a.id?{...x,due_on:e.target.value}:x)})}/></Field>
     <label className="hrp-check"><input type="checkbox" checked={a.done} onChange={e=>change({actions:draft.actions.map(x=>x.id===a.id?{...x,done:e.target.checked}:x)})}/>Utført</label>
@@ -228,7 +233,7 @@ export default function HrConversations({context,employee,initialCaseId=null,ini
   </>}
   {step===3&&<><p>Se over medarbeiderens delte forberedelse, møtereferatet og tiltakene nedenfor. Begge bekrefter selv når referatet er lest. Bekreftelse betyr gjennomlest; uenighet kan stå i egen kommentar.</p>
    <HrConversationReview conversation={c} employee={value.employee} leaderEmail={value.leader_email} draft={draft} dirty={dirty}/>
-   {['employee','leader'].map(side=><Field key={side} label={side==='employee'?'Medarbeiderens kommentar':'Lederens kommentar'}><textarea rows={3} maxLength={4000} disabled={busy||!permitted||!value.permissions.comment||side!==ownSide} value={draft.comments[side]} onChange={e=>change({comments:{...draft.comments,[side]:e.target.value}})}/></Field>)}
+   {['employee','leader'].map(side=><Field key={side} label={side==='employee'?'Medarbeiderens kommentar':'Lederens kommentar'}><ConversationText rows={3} limit={4000} disabled={busy||!permitted||!value.permissions.comment||side!==ownSide} value={draft.comments[side]} onChange={e=>change({comments:{...draft.comments,[side]:e.target.value}})}/></Field>)}
    <p>Medarbeider: {c.confirmations.employee?'Bekreftet':'Venter på bekreftelse'} · Leder: {c.confirmations.leader?'Bekreftet':'Venter på bekreftelse'}</p>
    {meeting&&c.stage==='meeting'&&<><p>«Lagre samtale» lagrer arbeidet. Når referatet er klart, trykker lederen «Send til begge for gjennomgang». Samtalen blir ferdig først når begge har lest og bekreftet.</p><button disabled={busy||dirty} onClick={()=>cleanAction('ready')}>Send til begge for gjennomgang</button></>}
    {c.stage==='awaiting'&&<p>Referatet venter på bekreftelsene som mangler. Det skal ikke sendes på nytt. Endrer dere referatet eller en delt kommentar, må begge bekrefte den nye utgaven.</p>}

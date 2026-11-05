@@ -39,3 +39,25 @@ Dette er kildefunn, ikke innlogget gjenskaping av Kenneths konkrete samtale elle
 6. Hver leveranse får relevant QA, faktisk kilde/CI/READY/miljø, oppdatert PR og konkret neste steg. Bruk godkjent PROFFDOK-VIDEO-1.0 uten lyd, faktiske syntetiske skjermbilder, kapitler/tekstalternativ og redigerbare kilder. En plan er ikke en ferdig film.
 
 Ingen main/demo-merge, produksjonsmigrasjon, ekte utsending, reell HR-dataendring eller branchopprydding er autorisert av nattoppdraget. Produksjonssetting venter på uttrykkelig TEST OK for nye endringer.
+
+## Første avgrensede HR-rettelse
+
+Scope: HrConversations.jsx, hrConversations.css, ny hrConversationText.mjs, eksisterende hr-conversations-react-check, HR-README/Hjelp og dette endringsgrunnlaget. Miljømål BEGGE; kun PR311 Preview/Sandbox. Base18f28f9d. Remote head var stabil og tidligere checkout ren ved overtakelsen. Ingen konkurrerende skriver observert.
+
+HTML maxLength kuttet innlimt tekst før appens state mottok den. Private forberedelses-/møte-/tiltaks-/kommentarfelt beholder nå hele teksten og viser tegnantall/feltfeil. Eksisterende4000/600-servergrenser er fortsatt gjeldende; dette er ingen ferdig lengdeutvidelse. Lagre validerer samtlige skrivbare tekstfelt før første mutasjon, så for lang egen kommentar ikke gir et delvis lagret møte eller tidspunkt. Andre partens tekst og utilgjengelige felt gir ikke utilsiktet sperre. In-memory-kladd, fersk tilgang, revisjonskonflikter og historiske utgaver beholdes. Ingen ny lagring i nettleseren, backend, tilgang eller sending.
+
+121 faktiske React-/modellassertions PASS, inkludert full lang innliming, null mutasjoner ved overskridelse av forberedelse/tiltak/kommentar, komplett kladd etter focus/remount,4000Unicode-kodepunkter ved grensen og opprinnelige rolle-/firma-/historikk-/bekreftelses-/PDF-scenarioer. Full EXPO_BACKEND_TARGET=sandbox npm run build/critical PASS. Dette er syntetiske data; Espens reelle samtale er ikke åpnet. Ny kandidat-CI og innlogget etterkontroll må føres i PR311. Rollback: revert denne avgrensede apppakken; ingen databaseendring.
+
+Neste HR-pakke er fortsatt større tekstgrenser gjennom hele SQL-wrapperkjeden og mindre dobbeltregistrering av tiltak/ansvar/frister. Ikke regn disse som levert av tellerrettelsen.
+
+## Varetellingsfilm: faktisk fil funnet og innhold avstemt
+
+Lokal faktisk fil /workspace/scratch/62bf25dcaa5c/ProffDok_Varetelling_20261105.mp4: ffprobe bekrefter H264/1920x1080/198sekunder, ingen lydstrøm. Redigerbar kilde finnes i samme mappe/stocktake_video_20261105 med timeline.json, render.py, assets, fonts og captions.vtt. Dette er eldre kilde86b56c99 og17kapitler. Kapittel5/7 viser område per registrering, og pause/overtakelse/historikk finnes ikke. Filmen passer derfor ikke hele den nye områdeflyten og publiseres ikke som oppdatert veiledning. Registrering i PR308 og varig lagring må avstemmes før ny versjon; ingen ny film er produsert i denne pakken.
+
+Eksisterende hr-conversations-runtime-check:131PASS med syntetisk transport/provider og faktisk jsPDF. Ingen utsending. Tellerens tilgjengelige navn og beskrivelse er kontrollert separat, så tegnantallet ikke endrer feltets navn.
+
+Innlogget read-only etterkontroll på18f28f9d/dpl_A7uHpbDLTZc6k1SZfc9Tig655hYs READY: vanlig oppdatering beholdt demo-innlogging og plukkliste. Varetelling åpnet direkte, avsluttet egen QA-telling ble gjenfunnet. Reol A–kontroll viser Ferdig telt,2varelinjer,1av1område ferdig telt, bevart stoppmerknad og antall15og0 uten registrering/redigering. Ingen serverdata skrevet. HR-tekstpakken er ennå ikke live-attestert av denne kontrollen.
+
+Video og redigerbare kilder er samlet som tydelig merket eldre arkiv i ProffDok_Varetelling_arkiv_for_omradeflyt_20261105.zip, varig fil libfile_9625bb339a04819184a0133fcbe5d03c. Filen inneholder originalfil, timeline, renderer, fonter, faktiske syntetiske assets, kapitler og VTT; den er ikke registrert som oppdatert film i appen.
+
+HR-appkandidat8685868d40a0729efa622e4807e126b21336e8b6/treed2c0d5b666a9304e53e272caf31308034eb89ff2 har lokale121React-/modellkontroller,131runtime/PDF og full build PASS. Etterfølgende dokumentasjonscommit lukker stocktake-checkpointet og blir ny full CI-kandidat. Fersk PR-status skal brukes.
