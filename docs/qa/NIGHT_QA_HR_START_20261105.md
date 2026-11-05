@@ -60,4 +60,14 @@ Innlogget read-only etterkontroll på18f28f9d/dpl_A7uHpbDLTZc6k1SZfc9Tig655hYs R
 
 Video og redigerbare kilder er samlet som tydelig merket eldre arkiv i ProffDok_Varetelling_arkiv_for_omradeflyt_20261105.zip, varig fil libfile_9625bb339a04819184a0133fcbe5d03c. Filen inneholder originalfil, timeline, renderer, fonter, faktiske syntetiske assets, kapitler og VTT; den er ikke registrert som oppdatert film i appen.
 
-HR-appkandidat8685868d40a0729efa622e4807e126b21336e8b6/treed2c0d5b666a9304e53e272caf31308034eb89ff2 har lokale121React-/modellkontroller,131runtime/PDF og full build PASS. Etterfølgende dokumentasjonscommit lukker stocktake-checkpointet og blir ny full CI-kandidat. Fersk PR-status skal brukes.
+Lokal HR-appkandidat8685868d40a0729efa622e4807e126b21336e8b6/treed2c0d5b666a9304e53e272caf31308034eb89ff2 har lokale121React-/modellkontroller,131runtime/PDF og full build PASS. Etterfølgende dokumentasjonscommit lukker stocktake-checkpointet og blir ny full CI-kandidat. Fersk PR-status skal brukes.
+
+## Publisert HR-kandidat og sluttkvittering
+
+GitHub-appkandidat6fd2efdc3ffcb4f5478492d7857802c046d6364b/treec0a47ad8bfdcb69e77ace5d6d67e1c5574a92517 er byteidentisk med det lokalt testede slutt-treet (git diff lokal HEAD→remote tom). Native git-push manglet innlogging; pakken ble i stedet skrevet med GitHub-tre/commit og expected-head18f28f9d, force=false. Ingen nyere arbeid overskrevet. De lokale8685868d/fcfc8181-committene er derfor lokale kontrollreferanser, ikke publiserte branchhoder.
+
+**CI947/run41955806115 fullført SUCCESS på eksakt6fd2efdc**, alle ni pakker og samlet gate. HR-React121og runtime/PDF131 var også grønne lokalt; ny full kandidat-CI er fasit for hele pakken. Vercel **dpl_HsL4nGbfDiPk2vz4KZP5MKmSPbEg READY** på eksaktSHA/fastalias/targetnull. Faktisk anonymt hentet /assets/main-CPI8PmcT.js inneholder Sandbox-refppvircenkjizeiqdxphj og ingen Production-refdqffxflaoyarbxyiyhop. Main er fortsatt34daef4c. Ingen TEST OK/merge/produksjon/demo-synk.
+
+Innlogget ordinær reload beholdt demo-konto/firma/plukkliste. HR→Demo medarbeider2→eksisterende DEMO-årssamtale åpnet i samme høyrepanel. De tre møtereferatfeltene viste bevart syntetisk tekst og112/4000tegn. Lagre samtale var disabled uten endringer. Tekstinnmating med skjermstyring feilet fordi AT-SPI-provider var utilgjengelig; etterkontrollen viste uendret tekst/teller, ingen vellykket lang innliming og ingen lagring. Escape returnerte til samme medarbeiderrad med fokus. Dette er lesings-/teller-/returbevis, ikke live-attest av lang paste, mobil eller Safari. Lang paste/ingen delvis mutasjon/focus/remount er bare attestert i de faktiske automatiske React-testene. Ingen reell samtale, serverfelt, e-post, bekreftelse eller rolle endret.
+
+Neste kjøring: les denne kvitteringen og fersk remote først. HR-lengdeutvidelse/SQL-wrapperkjede og forenklet tiltak-/fristflyt er fremdeles neste funksjonspakke. Fortsett deretter helappmatrisens åpne reiser og stabile filmopptak. Eldre varetellingsfilm er sikret, men ingen ny oppdatert film er produsert i denne pakken.
