@@ -1,3 +1,4 @@
+import {useSupportUsers} from './modules/support/useSupportUsers.js';
 import {usePortalAccessStatus} from './modules/portal/usePortalAccessStatus.js';
 import ReportArchiveConfirmation, {useReportArchiveConfirmation} from './modules/report/ReportArchiveConfirmation.jsx';
 import ProjectReportWorkspace, {useProjectReportWorkspace} from './modules/report/ProjectReportWorkspace.jsx';
@@ -1339,6 +1340,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
     };
     const isAdminUser = isSystemAdminUser;
     const canUseAdminProjectSync = !!authUser && !!profile?.approved && isSystemAdminUser && !isReadOnly && !isProjectSupportReadOnly;
+    const supportUsers = useSupportUsers({client: supabase, userId: authUser?.id, enabled: canUseAdminProjectSync && tab === "admin" && adminArea === "projects"});
     const projectIsLocked = (p = project) => p?.locked === true || p?.locked === "true" || p?.status === "locked" || p?.status === "Avsluttet";
     const applyLockState = (baseProject, sourceProject = {}) => ({
       ...baseProject,
@@ -1878,7 +1880,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
         if (!map.has(key)) map.set(key, { name: clean, users: 0, projects: 0, activeProjects: 0, unread: 0, latestUpdated: "" });
         return map.get(key);
       };
-      (adminUsers || []).forEach((u) => {
+      (supportUsers.users || []).forEach((u) => {
         const entry = ensure(u?.company_name);
         if (entry) entry.users += 1;
       });
@@ -1896,7 +1898,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       return Array.from(map.values())
         .filter((entry) => !term || entry.name.toLowerCase().includes(term))
         .sort((a, b) => (b.latestUpdated || "").localeCompare(a.latestUpdated || "") || a.name.localeCompare(b.name, "no"));
-    }, [adminUsers, projectListRows, supportCompanySearch]);
+    }, [supportUsers.users, projectListRows, supportCompanySearch]);
     const supportProjects = (0, import_react.useMemo)(() => {
       const selectedCompany = normalizeSearchText(supportSelectedCompany).trim();
       return (projectListRows || []).filter((item) => {
@@ -7028,7 +7030,7 @@ ${appLink}`;
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Supportmodus" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Brukes av systemadministrator for å finne firmaer og åpne prosjekter ved support. Firmaadmin hos kunde får ikke tilgang til dette området." }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", flexWrap: "wrap", margin: "12px 0" }, children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => { loadAdminUsers(); loadProjects(authUser, true, null, { supportMode: true }); }, children: "Oppdater supportdata" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => { void supportUsers.refresh(); loadProjects(authUser, true, null, { supportMode: true }); }, children: "Oppdater supportdata" }),
               supportSelectedCompany && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => { setSupportSelectedCompany(""); setOpenSupportCompany(""); }, children: "Vis alle firma" })
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
@@ -7037,7 +7039,7 @@ ${appLink}`;
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "cards projectListHeaderCards", style: { marginTop: "12px" }, children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "tile", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: supportCompanies.length }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: supportUsers.status === "ready" ? supportCompanies.length : "–" }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Firma" })
               ] }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "tile", children: [
@@ -7049,12 +7051,15 @@ ${appLink}`;
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Ulest chat" })
               ] })
             ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Brukere og firmaadmin vises etter registrert primærfirma. Arbeidsprofiler administreres under Brukere og roller." }),
+            supportUsers.status === "loading" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { role: "status", children: "Henter brukeroversikten …" }),
+            supportUsers.status === "error" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { role: "alert", children: supportUsers.error }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", { style: { marginTop: "18px" }, children: "Firmaoversikt" }),
-            supportCompanies.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Ingen firma funnet ennå. Trykk Oppdater supportdata." }),
+            supportUsers.status === "ready" && supportCompanies.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Ingen firma funnet ennå. Trykk Oppdater supportdata." }),
             supportCompanies.slice(0, 20).map((entry) => {
               const entryIsOpen = openSupportCompany === entry.name;
               const entryProjects = supportProjects.filter((item) => normalizeSearchText(item?.projectCompanyName || "").trim() === normalizeSearchText(entry.name || "").trim()).slice(0, 30);
-              const entryUsers = (adminUsers || []).filter((userRow) => String(userRow?.company_name || "").trim().toLowerCase() === String(entry.name || "").trim().toLowerCase());
+              const entryUsers = (supportUsers.users || []).filter((userRow) => String(userRow?.company_name || "").trim().toLowerCase() === String(entry.name || "").trim().toLowerCase());
               const entryAdmins = entryUsers.filter((userRow) => userRow?.company_role === "firmaadmin");
               const entryProfile = entryUsers.find((userRow) => userRow?.org_number || userRow?.phone || userRow?.address || userRow?.website || userRow?.logo_url) || entryUsers[0] || {};
               return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { background: entryIsOpen ? "#ecfeff" : "#fff" }, children: [
@@ -7067,13 +7072,13 @@ ${appLink}`;
                   }, children: entryIsOpen ? "Skjul prosjekter" : "Vis prosjekter" })
                 ] }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
-                  "Brukere: ", entry.users,
+                  "Brukere: ", supportUsers.status === "ready" ? entry.users : "–",
                   " · Prosjekter: ", entry.projects,
                   " · Aktive: ", entry.activeProjects,
                   " · Ulest chat: ", entry.unread
                 ] }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { style: { display: "block", marginTop: "4px", color: "#475569" }, children: [
-                  "Firmaadmin: ", entryAdmins.map((userRow) => userRow.email).filter(Boolean).join(", ") || "Ikke satt",
+                  "Firmaadmin: ", supportUsers.status === "ready" ? entryAdmins.map((userRow) => userRow.email).filter(Boolean).join(", ") || "Ikke satt" : "Ikke hentet",
                   entryProfile?.org_number ? ` · Org.nr: ${entryProfile.org_number}` : "",
                   entryProfile?.phone ? ` · Tlf: ${entryProfile.phone}` : "",
                   entryProfile?.address ? ` · Adresse: ${entryProfile.address}` : "",
@@ -7104,7 +7109,7 @@ ${appLink}`;
                       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
                         "Status: ", item.listStatus.label,
                         " · Ansvarlig: ", item.listProject.responsible || "Ikke satt",
-                        " · Prosjekteier: ", (adminUsers || []).find((userRow) => userRow?.id === item.row.user_id)?.email || item.row.user_id || "ukjent",
+                        " · Prosjekteier: ", (supportUsers.users || []).find((userRow) => userRow?.id === item.row.user_id)?.email || item.row.user_id || "ukjent",
                         " · Oppdatert: ", item.row.updated_at ? new Date(item.row.updated_at).toLocaleString("no-NO") : "ukjent",
                         " · Ulest chat: ", item.unreadForAdminInList
                       ] })
