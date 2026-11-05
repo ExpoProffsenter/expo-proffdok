@@ -4891,7 +4891,7 @@
       "title": "Medarbeidersamtale – samtale, tiltak og referat",
       "module": "HR",
       "template_id": "PROFFDOK-VIDEO-1.0",
-      "status": "produsert-avventer-preview-kontroll",
+      "status": "produsert-og-kontrollert",
       "coverage_level": "avgrenset-oppgave",
       "full_journey_attested": false,
       "scope_steps": [
@@ -4905,7 +4905,8 @@
       "source_commit": "e3ced699d1026b6f6106cb17de1ad05ba857674c",
       "chapter": "106 sekunder / 9 kapitler",
       "checked_on": "2026-11-05",
-      "remaining": "Opprettelse, serverlagring, utsending, partenes faktiske bekreftelser, PDF og full HR A–Å er ikke attestert av filmen."
+      "remaining": "Opprettelse, serverlagring, utsending, partenes faktiske bekreftelser, PDF og full HR A–Å er ikke attestert av filmen.",
+      "verification": "Full decode2544frames, faktisk live106s/kapittel44/avspilling94.8998/VTT/tekst/nestet retur/fokus PASS; hele appkandidat-CI avstemmes i PR308."
     }
   ]
 }
