@@ -4901,12 +4901,12 @@
         "Ansvar, frist og neste oppfølging",
         "Referat og retur uten lagring/sending"
       ],
-      "file": "public/help-videos/hr-samtale-tiltak-referat-v1.mp4",
-      "source_commit": "e3ced699d1026b6f6106cb17de1ad05ba857674c",
+      "file": "public/help-videos/hr-samtale-tiltak-referat-v2.mp4",
+      "source_commit": "ddffddae396f7075d6cbc8f95cb7f0441e1aad4e",
       "chapter": "106 sekunder / 9 kapitler",
       "checked_on": "2026-11-05",
       "remaining": "Opprettelse, serverlagring, utsending, partenes faktiske bekreftelser, PDF og full HR A–Å er ikke attestert av filmen.",
-      "verification": "Full decode2544frames, faktisk live106s/kapittel44/avspilling94.8998/VTT/tekst/nestet retur/fokus PASS; hele appkandidat-CI avstemmes i PR308."
+      "verification": "Revisjon2: alle9faktiske Sandbox-bilder oppdatert etter10000/2000grenser. Full decode2544frames og visuell scene-/klikkontroll; gammelv1 beholdt. Ny eksakt CI/live-avspilling kreves i PR308; dette er ikke full HR A–Å."
     }
   ]
 }

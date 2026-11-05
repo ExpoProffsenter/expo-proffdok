@@ -504,12 +504,12 @@
       "hr"
     ],
     "description": "Finn en eksisterende samtale, samle møtenotat og tiltak og se referatet. Filmen viser en ulagret fiktiv eksempelkladd uten serverlagring, sending, bekreftelse eller PDF-nedlasting. Ikke full HR A–Å.",
-    "src": "/help-videos/hr-samtale-tiltak-referat-v1.mp4",
-    "track": "/help-videos/hr-samtale-tiltak-referat-v1.vtt",
+    "src": "/help-videos/hr-samtale-tiltak-referat-v2.mp4",
+    "track": "/help-videos/hr-samtale-tiltak-referat-v2.vtt",
     "duration": 106,
-    "sha256": "9f065bb94c0266f617c0cab562de0385254b6d924e62ce8b441f252f5558125a",
-    "bytes": 5738527,
-    "sourceCommit": "e3ced699d1026b6f6106cb17de1ad05ba857674c",
+    "sha256": "cdfd8f3d415b60e65d482480c993adec078785d81dad5f2d7f17180e40854470",
+    "bytes": 5743761,
+    "sourceCommit": "ddffddae396f7075d6cbc8f95cb7f0441e1aad4e",
     "chapters": [
       {
         "start": 0,

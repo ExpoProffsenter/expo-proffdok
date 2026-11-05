@@ -47,3 +47,6 @@ Samme PR308 får «Last ned statusrapport fra prosjekt» direkte under Rapport. 
 ## HR-film – Preview
 
 PR308 får et avgrenset106s/9kapitlers kapittel om eksisterende samtale, samlet møte/tiltak og referat/retur. Film og redigerbare kilder er levert; metadata/avspiller/tilgang testes i samme Hjelp. Sju tidligere filmer beholdes. PR311s trestegsflyt er releaseavhengighet. Ingen TEST OK eller produksjonssetting. Se docs/qa/HR_CONVERSATION_HELP_VIDEO_20261105.md og fersk PR308-status.
+
+
+HR-film revisjon2: ni nye faktiske Sandbox-bilder fra ddffddae etter10000/2000tekstgrenser, samme106s/9kapitler/PROFFDOK-VIDEO-1.0 og uten lyd. V1 og alle sju tidligere filmer beholdes. Full decode/visuell kontroll PASS; siste eksakte Hjelp-CI/READY/live-avspilling føres i PR308. [Filmgrunnlag](docs/qa/HR_CONVERSATION_HELP_VIDEO_20261105.md). Ingen TEST OK/Production.
