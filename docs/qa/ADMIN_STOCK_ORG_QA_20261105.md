@@ -25,3 +25,7 @@ Tilbakeføring: revert av avgrenset appcommit; ingen migrering eller datareset.
 Vercel dpl_8k8TExzVq1TBTKhXDKz4Pr6PxtXf READY på eksakt commit. På 1363×936: introdelen med statistikker er 79px høy. Begge veiledningssummeringer er 44px/16px og starter lukket, åpning viser opprinnelig innhold. Ingen horisontal side-overflow. Kartflaten begynner ved y874 i den komplette KS/HMS-verten; hovednoden ligger fremdeles nær skjermkanten. Ikke attestert som full kartoversikt uten scrolling. Avdelingsfilter viste Expo Proffsenter og retur Hele firmaet beholdt kartet.
 
 Varetelling åpnet direkte etter ett trykk. Et lokalt, ulagret navnefelt beholdt eksakt tekst etter Søk varer → Varetelling, uten ekstra åpneknapp; feltet ble satt tilbake uten opprettelse. Eksisterende avsluttet QA-telling ble lest: 000123=0 og DEMO-DAN-001=2,5, ingen registreringsknapp, eksport aktiv. Ingen serverdata skrevet i etterkontrollen. Mobilgeometri gjenstår for kartet.
+
+## CI936
+
+Native varetelling: 81 kontroller PASS, fem bredder, tregt svar, bevart felt, reload, samme recovery-ID, konflikt, 122 linjer, eksport, avslutning og scope. Samlet app-browser stoppet senere i price-search-mobile-check fordi den gamle prøven krevde Åpne varetelling. Prøven er tilpasset den nye direkte inngangen: originalt lagerfelt og opprettelsesskjema må bli synlig etter ett trykk; manglende ekstra knapp og opprinnelige 44px-/overflowkrav kontrolleres. Syntetisk stocktake_list returnerer tom liste, ingen skriving. Ny full CI kreves; CI936 er ikke full grønn.
