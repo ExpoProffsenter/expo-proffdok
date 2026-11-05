@@ -105,6 +105,7 @@ export default function KshmsModule({context,deviationRequest,personalOnly=false
  const publicationRef=useRef(null),overviewRef=useRef(null),[publicationFocus,setPublicationFocus]=useState(0),[overviewFocus,setOverviewFocus]=useState(0),[publicationFeedback,setPublicationFeedback]=useState('');
  const publicationHeadingId=useId();
  const routineEditorFormId=useId();
+ const editorOpenerRef=useRef(null),editorReturnRef=useRef(null);
  const [reading,setReading]=useState(null),[checked,setChecked]=useState(false);
  const readingRef=useRef(null),readingDoneRef=useRef(null),completionRef=useRef(null),[readingFocus,setReadingFocus]=useState(0),[completionFocus,setCompletionFocus]=useState(0),[readingFeedback,setReadingFeedback]=useState('');
  const [routineStatus,setRoutineStatus]=useState('all');
@@ -129,7 +130,19 @@ export default function KshmsModule({context,deviationRequest,personalOnly=false
   return()=>{active=false;scope.active=false};
  },[companyId,userId,context.manage,context.publish,context.administer,personalOnly]);
  useEffect(()=>{const warn=e=>{if(dirty){e.preventDefault();e.returnValue='';}};window.addEventListener('beforeunload',warn);return()=>window.removeEventListener('beforeunload',warn);},[dirty]);
- useEffect(()=>{if(editorFocus&&editorRef.current){editorRef.current.focus();editorRef.current.scrollIntoView({block:'start'});}},[editorFocus]);
+ useEffect(()=>{if(editorFocus&&editorRef.current){
+  const node=editorRef.current,header=node.closest('[data-expo-app-shell="true"]')?.querySelector(':scope > header');
+  const fixedHeader=header&&['sticky','fixed'].includes(getComputedStyle(header).position);
+  node.style.scrollMarginTop=(fixedHeader?header.getBoundingClientRect().height+16:12)+'px';
+  node.focus({preventScroll:true});node.scrollIntoView({block:'start'});
+ }},[editorFocus]);
+ useEffect(()=>{
+  if(editor||!editorReturnRef.current)return;
+  const {node,scope}=editorReturnRef.current;editorReturnRef.current=null;
+  if(scope!==requestScope.current||!scope?.active||document.visibilityState==='hidden'||!node?.isConnected||node.disabled||node.closest('[hidden],[inert]')||!node.getClientRects().length)return;
+  node.focus({preventScroll:true});node.scrollIntoView({block:'nearest'});
+ },[editor]);
+ const closeRoutineEditor=()=>{if(busy)return;editorReturnRef.current=editorOpenerRef.current;setEditor(null);setDirty(false);};
  useEffect(()=>{if(libraryPreview&&libraryPreviewRef.current){libraryPreviewRef.current.focus();libraryPreviewRef.current.scrollIntoView({block:'start'});}},[libraryPreview]);
  useEffect(()=>{if(publicationFocus&&publicationRef.current){publicationRef.current.focus();publicationRef.current.scrollIntoView({block:'start'});}},[publicationFocus]);
  useEffect(()=>{if(readingFocus){const target=reading?readingRef.current:readingDoneRef.current;target?.focus();target?.scrollIntoView({block:'start'});}},[readingFocus]);
@@ -147,6 +160,7 @@ export default function KshmsModule({context,deviationRequest,personalOnly=false
  };
  const chooseEditor=(draft,routine=null,compareSource=false)=>{
   if(dirty && !window.confirm('Åpne en annen rutine? Teksten du jobber med, er lagret på denne enheten. Du kan hente den inn igjen.'))return;
+  editorOpenerRef.current={node:document.activeElement,scope:requestScope.current};editorReturnRef.current=null;
   setEditor({id:routine?.id||null,revision:routine?.revision||0,draft:structuredClone(draft)});setSources(structuredClone(draft.references||[]));setDirty(false);setProposal(compareSource?ROUTINE_CATALOG.find(r=>r.key===draft.source_key)||null:null);setScreen('handbook');setEditorFocus(previous=>previous+1);
  };
  const choosePublication=routine=>{
@@ -326,7 +340,7 @@ export default function KshmsModule({context,deviationRequest,personalOnly=false
     {Object.keys(ROUTINE_TEXT_SUGGESTIONS).some(field=>!editor.draft[field]?.trim())&&<button type="button" className="secondary" disabled={busy} onClick={()=>cacheEditor({...editor,draft:fillEmptyRoutine(editor.draft)})}>Fyll tomme rutinefelt med tekstforslag</button>}
     <form className="ks-routine-form-036" id={routineEditorFormId} onSubmit={save}>{[['Tittel','title','Gi rutinen et kort navn som sier hva den handler om.'],['Kapittel','chapter','Skriv hvor rutinen skal ligge, for eksempel HMSK eller Personal og arbeidsforhold.'],['Mål','goal','Hva skal rutinen hjelpe dere å få til eller unngå?'],['Ansvar – hvem gjør hva?','responsibility','Skriv hvem som gjør arbeidet, og hvem som følger det opp.'],['I vår bedrift har vi følgende rutine','procedure','Beskriv oppgaven steg for steg. Ta med når rutinen skal brukes og hva en ansatt trenger å vite.'],['Dokumentasjon – hva skal lagres?','documentation','Skriv hva som skal dokumenteres, for eksempel bilder, en sjekkliste eller en kontroll.'],['Gjennomgang – hva skal den ansatte avklare?','confirmation','Skriv hva den ansatte skal lese og spørre om før arbeidet starter.']].map(([label,key,hint])=><Field key={key} label={label} hint={hint} value={editor.draft[key]} required multiline={!['title','chapter'].includes(key)} onChange={v=>cacheEditor({...editor,draft:{...editor.draft,[key]:v}})}/>)}
      <References value={sources} onChange={v=>{setSources(v);cacheEditor(editor,v)}}/>
-     <div className="ks-actions"><button disabled={busy}>Lagre utkast</button><button type="button" className="secondary" onClick={()=>{setEditor(null);setDirty(false)}}>Lukk redigering</button>{editor.draft.source_key&&<button type="button" className="secondary" onClick={()=>setProposal(ROUTINE_CATALOG.find(r=>r.key===editor.draft.source_key)||null)}>Vurder ProffDoks tekstforslag</button>}</div>
+     <div className="ks-actions"><button disabled={busy}>Lagre utkast</button><button type="button" className="secondary" disabled={busy} onClick={closeRoutineEditor}>Lukk redigering</button>{editor.draft.source_key&&<button type="button" className="secondary" onClick={()=>setProposal(ROUTINE_CATALOG.find(r=>r.key===editor.draft.source_key)||null)}>Vurder ProffDoks tekstforslag</button>}</div>
     </form>
     {data.routines.some(r=>r.id===editor.id&&r.revision!==editor.revision)&&<aside className="ks-proposal"><h4>En annen person har endret rutinen</h4><p>Teksten under er lagret av en annen person. Sammenlign den med teksten du jobber med. Velg å beholde din tekst først når du har sjekket forskjellene.</p><Content content={data.routines.find(r=>r.id===editor.id).draft} draft/><button type="button" className="secondary" onClick={()=>{cacheEditor({...editor,revision:data.routines.find(r=>r.id===editor.id).revision});setError('')}}>Jeg har sammenlignet – behold min tekst</button></aside>}
     {proposal&&data.context.company_id===companyId&&data.context.user_id===userId&&data.context.enabled===true&&<KshmsSourceProposal draft={{...editor.draft,references:sources}} proposal={proposal} busy={busy} onApply={changeSourceDraft} onReviewed={()=>changeSourceDraft(null)} onClose={()=>setProposal(null)}/>}

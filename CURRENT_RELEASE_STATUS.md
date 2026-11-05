@@ -1,3 +1,7 @@
+# Nyeste PR311-kandidat – rutineeditor 5. november
+
+Ny avgrenset rettelse etter fullgrønn55e084ab/CI973: synlig rutineoverskrift under faktisk toppfelt og fokus tilbake til samme åpneknapp ved Lukk redigering. Lokalt sikret kladd bevares; ingen lagrings-/godkjennings-/backendendring. Lokal Sandbox-build/critical og source-update-React PASS; lokal native Chromium sperret før test. Ny eksakt CI/READY/innlogget etterkontroll føres i PR311. Ingen TEST OK eller produksjonsendring. Grunnlag: docs/changes/kshms-routine-editor-return-20261105.json.
+
 # Gjeldende Preview-kandidater – 5. november 2026
 
 Ettermiddagens andre avgrensede funn: TimeManagement beholdt eksportavkrysningen etter refresh som tømte kontrollgrunnlaget. Reprodusert i faktisk React og rettet med samme eksisterende avkrysning; fane/periode beholdes.122lokale React-kontroller og128ordinære lokale PostgreSQL-kontroller PASS. Native12kravsutvidelse har egen ny kandidat-CI/READY i PR311. Ingen faktisk eksport/innlevering eller produksjon berørt. Se docs/changes/time-export-confirmation-refresh-20261105.json.

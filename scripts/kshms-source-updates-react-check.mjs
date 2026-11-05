@@ -56,6 +56,17 @@ try {
   await click('Håndbok');await write('Hva er vurdert eller endret?','Sammenlignet nytt forslag; egne tilpasninger beholdt.');await click('Godkjenn og publiser');
   assert.equal(versions.length,2);assert.equal(versions[0].content.source_revision,proposal.source_revision);assert.equal(versions[0].content.procedure,draft.procedure);assert.equal(JSON.stringify(first),historyBefore);assert.equal(acknowledgments.length,1,'Publishing forged employee acknowledgment');assert.equal(assignments.filter(row=>row.version_id===versions[0].id).length,2);
   await click('Oppfølging og revisjon');assert(window.document.querySelector('[aria-label="Kildeoppdateringer"]').textContent.includes('Ingen nyere sentrale tekstforslag'));
+  await click('Håndbok');
+  const editorOpener=button('Ny rutine fra blank mal');
+  // JSDOM has no layout; only this synthetic opener has a visible rect.
+  editorOpener.getClientRects=()=>[{width:100,height:44}];
+  editorOpener.focus();await click('Ny rutine fra blank mal');
+  await write('Tittel','QA lokal fokuskladd');const commandCount=commands.length;
+  await click('Lukk redigering');assert.equal(window.document.activeElement,editorOpener,'Routine close lost exact opener');
+  assert.equal(cache().draft.title,'QA lokal fokuskladd','Closing discarded the secured local draft');
+  editorOpener.focus();await click('Ny rutine fra blank mal');editorOpener.hidden=true;
+  await click('Lukk redigering');assert.notEqual(window.document.activeElement,editorOpener,'Hidden routine opener received focus');editorOpener.hidden=false;
+  assert.equal(commands.length,commandCount,'Routine close sent a business command');
   const confirmed=structuredClone(state());await act(async()=>window.__unmount());
   for(const patch of [{manage:false},{enabled:false},{company_id:'foreign'},{user_id:'other'}]){await act(async()=>window.__render('overview',{data:{...confirmed,context:{...confirmed.context,...patch}},companyId:company,userId:user,onReview:()=>{throw Error('Wrong scope opened editor');}}));assert.equal(window.document.querySelector('[aria-label="Kildeoppdateringer"]'),null);}
   await act(async()=>window.__unmount());

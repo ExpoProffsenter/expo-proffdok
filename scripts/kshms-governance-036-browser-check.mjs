@@ -47,9 +47,11 @@ try{
    await library.getByRole('button',{name:/^Anbefalte /}).click();await inspect('library-filters-'+width);
    await page.getByText('Legg til flere rutiner',{exact:true}).click();
   }
-  await page.getByRole('button',{name:'Ny rutine fra blank mal',exact:true}).click();
+  const editorTrigger=page.getByRole('button',{name:'Ny rutine fra blank mal',exact:true}),editorTriggerNode=await editorTrigger.elementHandle();
+  await editorTrigger.click();
   const form=native().locator('.ks-routine-form-036'),title=form.getByLabel('Tittel',{exact:true}),chapter=form.getByLabel('Kapittel',{exact:true});
   await form.waitFor();
+  eq(await page.locator('.ks-editor').evaluate(node=>node.getBoundingClientRect().top>=document.querySelector('[data-expo-app-shell] > header').getBoundingClientRect().bottom+8),true,'editor '+width+' heading below actual sticky header');
   const boxes=await Promise.all([title.boundingBox(),chapter.boundingBox()]);eq(width>760?Math.abs(boxes[0].y-boxes[1].y)<2:boxes[1].y>boxes[0].y,true,'editor '+width+' uses PC columns and mobile sequence');
   await inspect('blank-editor-'+width);
   await title.fill('QA lokal egen rutine');const handle=await title.elementHandle();
@@ -62,6 +64,7 @@ try{
   await form.getByRole('button',{name:'Fjern kilde 1',exact:true}).click();eq(await form.locator('.ks-reference').count(),0,'remove only local source');eq(await title.evaluate((n,original)=>n===original,handle),true,'same title DOM through source add/remove');
   await page.evaluate(()=>{window.dispatchEvent(new Event('blur'));document.dispatchEvent(new Event('visibilitychange'));window.dispatchEvent(new Event('focus'));});eq(await title.inputValue(),'QA lokal egen rutine','own draft after focus/visibility');
   await form.getByRole('button',{name:'Lukk redigering',exact:true}).click();
+  eq(await editorTriggerNode.evaluate(node=>document.activeElement===node),true,'editor '+width+' close returns exact opener after local draft');
   // A fresh actor keeps the following read-only scenarios independent of that
   // intentionally retained device-local draft. No storage reset or app stub.
   await render();await navigate('Håndbok','handbook');
