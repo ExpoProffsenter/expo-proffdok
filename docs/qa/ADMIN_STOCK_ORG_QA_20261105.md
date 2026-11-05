@@ -29,3 +29,7 @@ Varetelling åpnet direkte etter ett trykk. Et lokalt, ulagret navnefelt beholdt
 ## CI936
 
 Native varetelling: 81 kontroller PASS, fem bredder, tregt svar, bevart felt, reload, samme recovery-ID, konflikt, 122 linjer, eksport, avslutning og scope. Samlet app-browser stoppet senere i price-search-mobile-check fordi den gamle prøven krevde Åpne varetelling. Prøven er tilpasset den nye direkte inngangen: originalt lagerfelt og opprettelsesskjema må bli synlig etter ett trykk; manglende ekstra knapp og opprinnelige 44px-/overflowkrav kontrolleres. Syntetisk stocktake_list returnerer tom liste, ingen skriving. Ny full CI kreves; CI936 er ikke full grønn.
+
+## Mobilkart: ny kontrollpakke
+
+organization-workspace-browser-check.mjs bruker de faktiske komponentene, design-CSS og sen APP_RUNTIME_STYLES med sperret ekstern transport. Fem bredder 320/390/768/1363/1920 kontrollerer side-overflow, 44px/16px-kontroller, internt kart, statistikker, veiledning, filter/søk, beholdt lokalt kartnavn og dialogutkast, avbryt/forkast og sperret opprettelse av felles kart. Bare syntetiske read-RPC; ethvert skrivekall registreres og avvises. Dette er ikke fysisk mobil/Safari eller innlogget helappgeometri. Testen kjøres først i eksisterende app-browser-pakke. Lokal syntaks og fixture-bundling PASS; Chromium startes ikke lokalt på grunn av tidligere bekreftet socket-begrensning. Faktisk native CI-resultat må bekreftes før attest.

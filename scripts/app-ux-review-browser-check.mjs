@@ -5,6 +5,7 @@ import path from 'node:path';
 import http from 'node:http';
 import {build} from 'vite';
 import react from '@vitejs/plugin-react';
+await import('./organization-workspace-browser-check.mjs');
 import {matchesProjectStatus} from '../src/modules/project/projectListStatus.mjs';
 import {checklistDisplayState} from '../src/modules/checklist/checklistDisplay.mjs';
 import {filterHelpSections} from '../src/modules/help/helpSearch.mjs';
