@@ -102,6 +102,23 @@ try{
  }
  await page.setViewportSize({width:1363,height:936});
  await page.getByRole('button',{name:'Mine planer',exact:true}).click();
+ // A real async open disables the trigger before the native modal mounts.
+ // Both own-plan sources must return to the exact original node, at every width.
+ for(const width of [320,390,768,1363,1920]){
+  await page.setViewportSize({width,height:936});
+  for(const label of ['Fra ProffDok-prosjekter','Andre fremdriftsplaner']){
+   const opener=page.getByRole('region',{name:label,exact:true}).locator('.ks-progress-list button'),node=await opener.elementHandle();
+   await page.evaluate(()=>{window.holdPlans=true;});await opener.click();await page.waitForFunction(()=>window.planWaiters.length>0);
+   eq(await opener.isEnabled(),false,'actual pending detail disables own-plan opener '+label+' '+width);
+   await page.evaluate(()=>{window.holdPlans=false;window.planWaiters.splice(0).forEach(resolve=>resolve());});
+   await page.locator('dialog.ks-plan-expanded[open]').waitFor();await page.waitForFunction(()=>[...document.querySelectorAll('.personal-plan-source')].every(e=>e.getAttribute('aria-busy')==='false'));
+   eq(await page.getByText('Kun visning',{exact:true}).isVisible(),true,'own plan remains readonly '+label+' '+width);
+   await page.getByRole('button',{name:'Lukk planbygger',exact:true}).click();await page.waitForFunction(()=>!document.querySelector('dialog.ks-plan-expanded[open]'));
+   await page.waitForFunction(node=>document.activeElement===node,node);
+   eq(await opener.evaluate((e,n)=>e===n&&e===document.activeElement,node),true,'exact opener focus after async own-plan close '+label+' '+width);
+  }
+ }
+ await page.setViewportSize({width:1363,height:936});
  for(const label of ['Fra ProffDok-prosjekter','Andre fremdriftsplaner']){
   await page.getByRole('region',{name:label,exact:true}).locator('.ks-progress-list button').click();await page.locator('dialog.ks-plan-expanded[open]').waitFor();
   await page.getByRole('button',{name:'Måned',exact:true}).click();
@@ -119,11 +136,13 @@ try{
   await page.waitForFunction(()=>[...document.querySelectorAll('.personal-plan-source')].every(e=>e.getAttribute('aria-busy')==='false'));
   eq(await page.locator('dialog.ks-plan-expanded[open]').count(),0,'close wins over delayed checks '+label);
  }
+ const hiddenPlanOpener=await page.getByRole('region',{name:'Fra ProffDok-prosjekter',exact:true}).locator('.ks-progress-list button').elementHandle();
  await page.getByRole('region',{name:'Fra ProffDok-prosjekter',exact:true}).locator('.ks-progress-list button').click();await page.locator('dialog.ks-plan-expanded[open]').waitFor();
  await page.evaluate(()=>{Object.defineProperty(document,'visibilityState',{value:'hidden',configurable:true});document.dispatchEvent(new Event('visibilitychange'));});
  // React commits the visibility handler asynchronously; await that render, not the event dispatch.
  await page.waitForFunction(()=>!document.querySelector('dialog.ks-plan-expanded[open]'),{},{timeout:2000});
  eq(await page.locator('dialog.ks-plan-expanded[open]').count(),0,'real hidden page clears own payload');
+ eq(await hiddenPlanOpener.evaluate(e=>e!==document.activeElement),true,'hidden page never restores focus to an inactive plan opener');
  await page.evaluate(()=>{window.denied=true;Object.defineProperty(document,'visibilityState',{value:'visible',configurable:true});document.dispatchEvent(new Event('visibilitychange'));});
  eq(await page.locator('dialog.ks-plan-expanded[open]').count(),0,'denied return never restores own payload');
  await page.evaluate(()=>{window.denied=false;window.dispatchEvent(new Event('focus'));});

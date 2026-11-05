@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "title": "Fokus tilbake til riktig plan i Min side",
+  "change": "Miljømål BEGGE, Preview/Sandbox. Begge personlige plankilder tar vare på faktisk åpneknapp før asynkron detail-lesing deaktiverer den. Den eksisterende plandialogen får et valgfritt resolver-basert fokusmål. Scope, aktiv eier, synlighet og tilgjengelig åpneknapp kreves før retur. Standard for andre plan-/underdialoger beholdes.",
+  "verification": "Faktisk førbevis: både eksisterende DEMO-prosjektplan og selvstendig eksempelplan lukket til BODY. Dato I dag og FDV-søk fungerte i skrivebeskyttet plan. Native eksisterende personal/project-prøve utvides med reelt forsinket åpning, disabled trigger og eksakt nodetur for begge kilder ved fem bredder samt ingen fokusretur ved skjult side. Eksakt kandidat-CI/READY og faktisk etterkontroll føres i PR311.",
+  "documentation": {
+    "help": {"required": false, "reason": "Samme inngang og Tilbake-handling, en tastaturfeil rettes uten ny arbeidsflyt."},
+    "architecture": {"required": false, "reason": "Valgfritt fokusmål til eksisterende native dialog, samme scoped lesing og planarkitektur."},
+    "setup": {"required": false, "reason": "Ingen ny avhengighet eller miljøendring."},
+    "module": {"required": true, "reason": "Fokuskontrakt og regresjon beskrives i modul-README og eksisterende helapp-QA."}
+  }
+}
