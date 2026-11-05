@@ -61,3 +61,7 @@
 .org-workspace .org-toolbar{margin-bottom:10px}
 @media(min-width:1100px){.org-group-switch{flex-wrap:wrap}.org-group-switch>div{min-width:190px}.org-group-switch>select{width:280px;flex:0 1 280px}}
 @media(max-width:760px){.org-overview .org-stats{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.org-overview .org-stats>div{min-width:0}.org-group-switch .org-group-guidance{flex-basis:100%}.org-overview .org-intro{flex-basis:100%}}
+
+/* Keep all department colors reachable in narrow editing dialogs. */
+.org-dialog .org-color-picker{flex-wrap:wrap}
+.org-dialog .org-color-picker>button{flex:0 0 44px;min-width:44px}

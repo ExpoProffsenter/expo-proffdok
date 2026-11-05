@@ -37,3 +37,7 @@ organization-workspace-browser-check.mjs bruker de faktiske komponentene, design
 CI938 stoppet i den nye testharnessens Vite-resultathåndtering før nettleseren startet. Resultatet normaliseres nå for både enkelt-/array-output før lokal bundlekontroll. Fixturen inkluderer også faktiske KS/HMS-hostklasser og modul-CSS som brukes i appens designkaskade. Dette er en harnessrettelse, ikke appfeil eller mobilattest.
 
 CI939 kom videre til nettleseren, men kartet startet ikke: lokal jsdom-evaluering av nøyaktig fixturebundle gjenskapte ReferenceError: process is not defined i Reacts lib-bundle. Fixturen definerer nå NODE_ENV som de øvrige lib-baserte React-prøvene. Lokal kjøring bekrefter faktisk montert .org-company-node i jsdom, uten geometriattest. Diagnostikk ved oppstartsfeil er beholdt. Ingen appkode endret.
+
+## CI940: faktisk mobilfunn og rettelse
+
+Kart, veiledning, statistikker, filter/søk og byggevisning kom gjennom de fem breddene. Native prøven stoppet i avdelingsdialogen på320px: horisontal overflow. Fargevelgeren hadde én ubrutt flexrad; avgrenset CSS lar den bryte og binder hver farge til44px bredde. Dialogens opprinnelige lagre-/avbryt-/dataflyt beholdes. Kravet om ingen overflow er beholdt og utvidet med konkrete utstikkende elementer ved feil og44px-måling av hver farge ved alle fem bredder. Ny native CI kreves. Miljømål BEGGE, foreløpig kun Preview/Sandbox.
