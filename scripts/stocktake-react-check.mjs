@@ -87,3 +87,5 @@ try{
  console.log(`stocktake-react-check: ${checks} assertions OK (Chromium PC/mobile, shared barcode, manual zero/count, draft reload, lost response retry, conflicts, 122 rows, all-page export, closure and scope revocation)`);
 
 }finally{await browser?.close();await new Promise(r=>server.close(r));fs.rmSync(tmp,{recursive:true,force:true});}
+// Area workflow uses the actual migrations behind an isolated local RPC bridge.
+await import('./stocktake-areas-react-check.mjs');

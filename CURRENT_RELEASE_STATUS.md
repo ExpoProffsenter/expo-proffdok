@@ -22,3 +22,7 @@ Tidligere detaljstatus, godkjente hoder og delbevis er bevart i Git på d9ca45e0
 ## Videre helappkontroll 4. november
 
 Ny QA/riktig kandidatstatus, hele 145-reisers inventaret og avgrenset rettelse av klipping i Generelt tilbud: [WHOLE_APP_REVIEW_20261104](docs/qa/WHOLE_APP_REVIEW_20261104.md). Arbeid fra main34daef4c i fase45b-whole-app-qa-20261104. Ingen ny TEST OK eller produksjonssetting. PR308/309/310 er fortsatt separate og umerget.
+
+## Varetelling: områder og overtakelse – 5. november
+
+Pågående Preview/Sandbox-arbeid i PR311: velg hylla én gang, pause/overtakelse, eierskapsrevisjon og historikk. Ingen ny TEST OK eller Production-endring. Faktisk QA, installasjonsstatus og videre prøve: [STOCKTAKE_AREAS_20261105](docs/qa/STOCKTAKE_AREAS_20261105.md).
