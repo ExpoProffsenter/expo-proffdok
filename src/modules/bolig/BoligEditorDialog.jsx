@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useLayoutEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 
@@ -11,6 +11,18 @@ export default function BoligEditorDialog({
   suspended = false,
 }) {
   const dialog = useRef(null);
+  // A removed native dialog cannot reliably restore focus itself. Capture the
+  // actual opener before showModal, and restore only after React removes it.
+  useLayoutEffect(() => {
+    const opener = document.activeElement;
+    return () => queueMicrotask(() => {
+      if (!opener?.isConnected || opener.disabled || !opener.getClientRects().length) return;
+      // A deliberate navigation or a newly opened dialog wins over this return.
+      if (document.activeElement !== document.body && document.activeElement !== opener) return;
+      if ([...document.querySelectorAll('dialog[open]')].some(node => !node.contains(opener))) return;
+      opener.focus({ preventScroll: true });
+    });
+  }, []);
   useEffect(() => {
     const node = dialog.current;
     if (suspended) node.close?.();

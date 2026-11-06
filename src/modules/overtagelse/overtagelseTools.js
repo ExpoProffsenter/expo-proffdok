@@ -168,6 +168,17 @@ export function createOvertagelseCompletionTools({
   return { completeOvertagelseAndLock };
 }
 
+// Locked projects show the original stored image without a drawing surface or
+// clear action. The editable SignaturePad and its handlers remain unchanged.
+function StoredHandoverSignature({ label, value }) {
+  return jsxs("div", { className: "item", children: [
+    jsx("b", { children: label }),
+    value
+      ? jsx("img", { src: value, alt: `Lagret ${label.toLocaleLowerCase("nb")}`, style: { display: "block", width: "100%", height: "180px", objectFit: "contain", background: "#fff", border: "1px solid #c7d6dd", borderRadius: "14px", marginTop: "10px" } })
+      : jsx("p", { className: "note", children: "Ingen tegnet signatur er lagret." })
+  ] });
+}
+
 export function renderOvertagelsePanel({
   Section, Grid, Input, Textarea, SignaturePad,
   project, setProject, projectId, overtagelse, setOvertagelse, warranty, isProjectLocked, projectDirty, persistedProjectHasOvertagelse,
@@ -176,21 +187,22 @@ export function renderOvertagelsePanel({
   completeOvertagelseAndLock, sendProjectCompletionEmailToCustomer
 }) {
   return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Overtagelse og signering", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Bruk denne ved sluttbefaring og overlevering. Velg ønsket overtagelsesdato i kalenderfeltet. Datoen alene registrerer ikke overtagelsen. Overtagelsen regnes først som registrert når begge parter har signert, du har bekreftet at overtagelsen er gjennomført og lagringen er bekreftet." }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: isProjectLocked ? "Her ser du overtagelsen, merknadene og lagrede signaturer." : "Bruk denne ved sluttbefaring og overlevering. Velg ønsket overtagelsesdato i kalenderfeltet. Datoen alene registrerer ikke overtagelsen. Overtagelsen regnes først som registrert når begge parter har signert, du har bekreftet at overtagelsen er gjennomført og lagringen er bekreftet." }),
           isProjectLocked && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "\u{1F512} Prosjektet er l\xE5st. Overtagelsen kan vises i rapporten, men endringer krever at prosjektet l\xE5ses opp." }),
           persistedProjectHasOvertagelse ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [
             "\u2705 Overtagelse registrert",
             overtagelse.dato ? ` ${new Date(overtagelse.dato).toLocaleDateString("no-NO")}` : "",
             "."
-          ] }) : overtagelseHasDraftContent() && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: overtagelseIsSignedByBoth() ? (projectHasOvertagelse() ? "Begge signaturer er fylt ut og overtagelsen er bekreftet som gjennomført. Lagre for å registrere den." : 'Begge signaturer er fylt ut. Kryss av "Bekreft at overtagelsen er gjennomført" når overleveringen faktisk er gjennomført, og lagre deretter overtagelsen.') : 'Overtagelse er ikke registrert. Fyll inn signatur fra både utførende/entreprenør og kunde før den kan registreres.' }),
+          ] }) : !isProjectLocked && overtagelseHasDraftContent() && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: overtagelseIsSignedByBoth() ? (projectHasOvertagelse() ? "Begge signaturer er fylt ut og overtagelsen er bekreftet som gjennomført. Lagre for å registrere den." : 'Begge signaturer er fylt ut. Kryss av "Bekreft at overtagelsen er gjennomført" når overleveringen faktisk er gjennomført, og lagre deretter overtagelsen.') : 'Overtagelse er ikke registrert. Fyll inn signatur fra både utførende/entreprenør og kunde før den kan registreres.' }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Velg dato for overtagelse", type: "date", value: overtagelse.dato || "", onChange: (v) => setOvertagelse({ ...emptyOvertagelse(), ...overtagelse, dato: v }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Velg dato for overtagelse", type: "date", disabled: isProjectLocked, value: overtagelse.dato || "", onChange: (v) => setOvertagelse({ ...emptyOvertagelse(), ...overtagelse, dato: v }) }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", alignItems: "center", gap: "8px" }, children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
                 "input",
                 {
                   type: "checkbox",
                   style: { width: "auto", minHeight: "auto", padding: 0, margin: 0, flex: "0 0 auto" },
+                  disabled: isProjectLocked,
                   checked: projectHasOvertagelse(overtagelse),
                   onChange: (e) => {
                     if (e.target.checked && !overtagelseIsSignedByBoth()) {
@@ -203,7 +215,7 @@ export function renderOvertagelsePanel({
               ),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { margin: 0 }, children: "Bekreft at overtagelsen er gjennomført (krever signatur fra utførende og kunde)" })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Kommentar / merknader fra sluttbefaring", value: overtagelse.kommentar || "", onChange: (v) => setOvertagelse({ ...emptyOvertagelse(), ...overtagelse, kommentar: v }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Kommentar / merknader fra sluttbefaring", disabled: isProjectLocked, value: overtagelse.kommentar || "", onChange: (v) => setOvertagelse({ ...emptyOvertagelse(), ...overtagelse, kommentar: v }) }),
             warranty?.enabled && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: warranty?.termsAccepted ? { borderColor: "#bbf7d0", background: "#ecfdf5" } : { borderColor: "#fde68a", background: "#fffbeb" }, children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: `📑 Garantivilkår ${getWarrantyYears(warranty)} år` }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Garantivilkår aksepteres automatisk når kunden signerer overtagelsen og prosjektet fullføres. Kunden trenger derfor ikke signere eller krysse av et eget sted." }),
@@ -218,14 +230,14 @@ export function renderOvertagelsePanel({
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Signaturer" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Signer direkte p\xE5 skjermen med finger p\xE5 telefon eller mus p\xE5 PC. Navn kan fylles ut i tillegg for tydelig dokumentasjon." }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: isProjectLocked ? "Lagrede signaturer vises nedenfor." : "Signer direkte p\xE5 skjermen med finger p\xE5 telefon eller mus p\xE5 PC. Navn kan fylles ut i tillegg for tydelig dokumentasjon." }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Navn utf\xF8rende", value: overtagelse.signUtf\u00F8rende || "", onChange: (v) => setOvertagelse({ ...emptyOvertagelse(), ...overtagelse, signUtf\u00F8rende: v }) }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Navn kunde", value: overtagelse.signKunde || "", onChange: (v) => setOvertagelse({ ...emptyOvertagelse(), ...overtagelse, signKunde: v }) })
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Navn utf\xF8rende", disabled: isProjectLocked, value: overtagelse.signUtf\u00F8rende || "", onChange: (v) => setOvertagelse({ ...emptyOvertagelse(), ...overtagelse, signUtf\u00F8rende: v }) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Navn kunde", disabled: isProjectLocked, value: overtagelse.signKunde || "", onChange: (v) => setOvertagelse({ ...emptyOvertagelse(), ...overtagelse, signKunde: v }) })
               ] }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "grid", style: { marginTop: "14px" }, children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-                  SignaturePad,
+                  isProjectLocked ? StoredHandoverSignature : SignaturePad,
                   {
                     label: "Signatur utf\xF8rende",
                     value: overtagelse.signUtf\u00F8rendeImage || "",
@@ -233,7 +245,7 @@ export function renderOvertagelsePanel({
                   }
                 ),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-                  SignaturePad,
+                  isProjectLocked ? StoredHandoverSignature : SignaturePad,
                   {
                     label: "Signatur kunde",
                     value: overtagelse.signKundeImage || "",
@@ -258,7 +270,7 @@ export function renderOvertagelsePanel({
             project?.checklistScopeMode === "limited" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", style: { marginTop: "8px", fontWeight: 700 }, children: ["Begrenset omfang aktivt: ", projectGuideStats.checklistDone, " vurdert kontrollpunkt", projectGuideStats.checklistDone === 1 ? "" : "er", "."] })
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", marginTop: "16px", flexWrap: "wrap" }, children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: saveProject, children: persistedProjectHasOvertagelse ? (projectDirty ? "Lagre endringer" : "Lagre overtagelse") : projectHasOvertagelse() ? "Lagre og registrer overtagelse" : "Lagre utkast" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: saveProject, disabled: isProjectLocked, children: isProjectLocked ? "Lagre overtagelse" : persistedProjectHasOvertagelse ? (projectDirty ? "Lagre endringer" : "Lagre overtagelse") : projectHasOvertagelse() ? "Lagre og registrer overtagelse" : "Lagre utkast" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: completeOvertagelseAndLock, disabled: isProjectLocked, children: "Fullf\xF8r overtagelse og l\xE5s prosjekt" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => sendProjectCompletionEmailToCustomer({ askFirst: true, silent: false }), disabled: !projectId || !project.customerEmail, children: "Send dokumentasjon til kunde" })
           ] })

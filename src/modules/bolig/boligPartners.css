@@ -582,3 +582,10 @@
 .bolig-partner-invitation iframe { display: block; width: 100%; height: 600px; border: 1px solid #c5d5cf; border-radius: 10px; background: #51585a; margin: 12px 0; }
 .bolig-partner-mail-paused { color: #64531e; background: #fff8e1; padding: 12px; border-radius: 9px; }
 .bolig-partner-mail-sent { font-size: 13px; color: #36644e; }
+
+/* The manager's large contact list uses the same loaded rows and events. */
+.bolig-partner-item-browser{display:flex;flex-wrap:wrap;align-items:end;gap:12px}
+.bolig-partner-item-browser label{display:grid;gap:5px;min-width:0;flex:1 1 220px;font-size:16px}
+.bolig-partner-item-browser input,.bolig-partner-item-browser select{box-sizing:border-box;width:100%;min-width:0;min-height:44px;font:inherit;padding:10px 12px;border:1px solid #b7ccd6;border-radius:7px;background:#fff;color:#18352c}
+.bolig-partner-item-browser p{flex-basis:100%;margin:0;font-size:16px}
+body:has([data-expo-app-shell="true"]) .bolig-partner-item-browser label :is(input,select){font-size:16px!important;min-height:44px!important;transition:none}

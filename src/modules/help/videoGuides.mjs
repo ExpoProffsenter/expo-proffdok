@@ -4,10 +4,10 @@ import {helpSearchText} from './helpSearch.mjs';
 const searchable=value=>helpSearchText(value).replaceAll('ø','o').replaceAll('æ','ae');
 export const VIDEO_GUIDES=guides;
 export const videoTime=seconds=>`${Math.floor(seconds/60)}:${String(Math.floor(seconds%60)).padStart(2,'0')}`;
-export function availableVideoGuides({authenticated=false,topics=[],canUseBolig=false,backendTarget}={}){
+export function availableVideoGuides({authenticated=false,topics=[],canUseBolig=false,canManageKshms=false,canUseStocktake=false,backendTarget}={}){
  if(!authenticated)return [];
  const keys=new Set(topics);
- return guides.filter(video=>({help:keys.has('hjelp'),hr:keys.has('hr')&&backendTarget==='sandbox',sales:keys.has('sales'),plans:keys.has('project-progress')||keys.has('kshms'),bolig:canUseBolig})[video.access]);
+ return guides.filter(video=>({help:keys.has('hjelp'),hr:keys.has('hr')&&backendTarget==='sandbox','hr-workflow':keys.has('hr'),'kshms-manage':keys.has('kshms')&&canManageKshms===true,stocktake:keys.has('prissok')&&canUseStocktake===true,sales:keys.has('sales'),report:keys.has('rapport'),plans:keys.has('project-progress')||keys.has('kshms'),bolig:canUseBolig})[video.access]);
 }
 export function searchVideoGuides(videos,query=''){
  const words=searchable(query).trim().split(/\s+/).filter(Boolean);

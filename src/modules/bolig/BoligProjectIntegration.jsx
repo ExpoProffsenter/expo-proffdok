@@ -167,6 +167,11 @@ export default function BoligProjectIntegration({
                 .map((u) => (
                   <option key={u.id} value={u.id}>
                     {u.number}
+                    {(() => {
+                      const entrance = record.entrances?.find(e => e.id === u.entrance_id);
+                      const block = record.blocks?.find(b => b.id === entrance?.block_id);
+                      return [block?.name, entrance?.address].filter(Boolean).map(label => ` · ${label}`).join("");
+                    })()}
                     {u.project_id ? " · Koblet prosjekt" : ""}
                   </option>
                 ))}

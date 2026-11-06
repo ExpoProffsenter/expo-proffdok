@@ -4914,3 +4914,9 @@
   margin-top: 12px;
   z-index: 1;
 }
+
+/* Keep native preparation actions reachable while the long form scrolls. */
+.bolig-preparation-dialog[open]{display:flex;flex-direction:column;position:fixed;inset:0 0 0 auto;margin:0 0 0 auto;height:100dvh;max-height:100dvh;border-radius:0;overflow:hidden;box-sizing:border-box}
+.bolig-preparation-dialog>header{position:static;flex:none;background:#10212b}
+.bolig-preparation-dialog>.bolig-preparation-body{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain}
+.bolig-preparation-dialog>.bolig-preparation-footer{flex:none;margin:0;padding:12px 16px;border-top:1px solid #d5e1e4;max-height:60dvh;overflow:auto;box-sizing:border-box}
