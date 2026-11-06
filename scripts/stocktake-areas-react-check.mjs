@@ -8,6 +8,7 @@ const bundled=await build({root,configFile:false,logLevel:'silent',plugins:[reac
 }}],build:{write:false,cssCodeSplit:false,minify:false,rollupOptions:{input:entry,output:{inlineDynamicImports:true}}}});
 const js=bundled.output.find(f=>f.type==='chunk').code,css=bundled.output.filter(f=>f.fileName.endsWith('.css')).map(f=>f.source).join('\n');
 
+if(process.env.STOCKTAKE_AREAS_BUILD_ONLY==='1'){console.log('Stocktake areas native fixture build PASS (browser not started)');fs.rmSync(tmp,{recursive:true,force:true});} else {
 const {PGlite}=await import(process.env.HR_PGLITE_PATH||'@electric-sql/pglite');const db=new PGlite();
 const id=n=>`96000000-0000-4000-8000-${String(n).padStart(12,'0')}`,u=id(1),peer=id(2),foreign=id(3),company=id(4),other=id(5),product=id(6),product2=id(7),imp=id(8);
 const q=v=>v==null?'null':"'"+String(typeof v==='object'?JSON.stringify(v):v).replaceAll("'","''")+"'";
@@ -51,7 +52,7 @@ try{
  browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH,headless:true,args:['--no-sandbox']});const errors=[];
  const newPage=async(user)=>{const page=await browser.newPage({viewport:{width:1363,height:1000}});page.on('pageerror',e=>errors.push(e.message));
   await page.route('**/*',route=>route.request().url().startsWith(`http://127.0.0.1:${server.address().port}`)?route.continue():route.abort());
-  await page.addInitScript(user=>{window.calls=[];window.api=async(n,a)=>{window.calls.push({n,a:structuredClone(a)});const response=await fetch('/rpc',{method:'POST',body:JSON.stringify({user,n,a})});const data=await response.json();if(data.error)throw Error(data.error);if(n==='stocktake_record'&&window.loseNext){window.loseNext=false;throw Error('Svaret ble borte');}return data.result;};},user);
+  await page.addInitScript(user=>{window.calls=[];window.api=async(n,a)=>{window.calls.push({n,a:structuredClone(a)});const response=await fetch('/rpc',{method:'POST',body:JSON.stringify({user,n,a})});const data=await response.json();if(data.error)throw Error(data.error);if(n==='stocktake_record'&&data.result?.error&&window.holdAfterStaleCommand){window.holdAfterStaleCommand=false;window.holdNextRefresh=true;}if(n==='stocktake_get'&&window.holdNextRefresh){window.holdNextRefresh=false;await new Promise(resolve=>window.releaseHeldRefresh=resolve);}if(n==='stocktake_record'&&window.loseNext){window.loseNext=false;throw Error('Svaret ble borte');}return data.result;};},user);
   await page.goto(`http://127.0.0.1:${server.address().port}`);return page;};
  const a=await newPage(u),button=(page,name)=>page.getByRole('button',{name,exact:true});
  await a.getByLabel('Lager i Cordel',{exact:true}).fill('QA-IKKE-IMPORTER');await button(a,'Opprett telling').click();await a.getByRole('heading',{name:'Hyller og områder'}).waitFor();eq(await button(a,'Legg inn vare manuelt').isDisabled(),true,'counting needs an area first');
@@ -66,7 +67,17 @@ try{
  await manual(b,'000125','8');const draftNode=await b.getByLabel('Antall du har telt',{exact:true}).elementHandle();await b.evaluate(()=>window.render(false));await b.evaluate(()=>window.render(true));eq(await draftNode.evaluate(e=>e.isConnected),true);eq(await b.getByLabel('Antall du har telt',{exact:true}).inputValue(),'8');await b.reload();await b.getByLabel('Antall du har telt',{exact:true}).waitFor();eq(await b.getByLabel('Antall du har telt',{exact:true}).inputValue(),'8','area and unsent quantity survive reload');
  // A takes the active shelf from B while B holds an unsent draft.
  await button(a,'Hent telling på nytt').click();await a.getByText('Teller: teller-b@example.invalid',{exact:false}).waitFor();await button(a,'Overta område').click();eq(await button(a,'Bekreft overtakelse').count(),1,'takeover is explicit');await button(a,'Bekreft overtakelse').click();await a.getByText('Teller: Du',{exact:false}).waitFor();
- await button(b,'Registrer antall').click();await b.getByRole('alert').filter({hasText:'Området kan ha blitt overtatt'}).waitFor();eq(await b.getByLabel('Antall du har telt',{exact:true}).inputValue(),'8','rejected stale write preserves draft');eq(await button(b,'Avbryt innlegging').isEnabled(),true,'stale draft can be consciously cancelled');await button(b,'Avbryt innlegging').click();eq(await button(b,'Legg inn vare manuelt').isDisabled(),true);
+ // The stale-write error is shown before the required fresh-area read ends.
+ // Hold that read explicitly: cancel stays protected during it, then becomes
+ // available. The original cancellation/draft/ownership requirements remain.
+ await b.evaluate(()=>window.holdAfterStaleCommand=true);
+ await button(b,'Registrer antall').click();await b.getByRole('alert').filter({hasText:'Området kan ha blitt overtatt'}).waitFor();eq(await b.getByLabel('Antall du har telt',{exact:true}).inputValue(),'8','rejected stale write preserves draft');
+ await b.waitForFunction(()=>typeof window.releaseHeldRefresh==='function');
+ eq(await button(b,'Avbryt innlegging').isDisabled(),true,'pending fresh-area read still fences all draft actions');
+ eq(await b.getByLabel('Antall du har telt',{exact:true}).inputValue(),'8','pending fresh-area read retains stale draft');
+ await b.evaluate(()=>window.releaseHeldRefresh());
+ await b.waitForFunction(()=>{const node=[...document.querySelectorAll('button')].find(n=>n.textContent.trim()==='Avbryt innlegging');return node&&!node.matches(':disabled');});
+ eq(await button(b,'Avbryt innlegging').isEnabled(),true,'stale draft can be consciously cancelled');await button(b,'Avbryt innlegging').click();eq(await button(b,'Legg inn vare manuelt').isDisabled(),true);
  await a.getByText('Historikk og kontroll',{exact:true}).click();await a.getByText('Overtok telling',{exact:true}).first().waitFor();eq(await a.getByText('teller-a@example.invalid',{exact:false}).count()>0,true);eq(await a.getByText('teller-b@example.invalid',{exact:false}).count()>0,true);eq(await a.getByText('2,5 → 4',{exact:false}).count()>0,true,'audit shows amount before and after handover count');
  for(const width of [320,390,768,1363,1920]){await a.setViewportSize({width,height:936});eq(await a.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'no page overflow '+width);eq(await a.locator('.stocktakeAreas input,.stocktakeAreas select,.stocktakeAreas textarea').evaluateAll(nodes=>nodes.filter(e=>e.getBoundingClientRect().height&&parseFloat(getComputedStyle(e).fontSize)<16).length),0,'readable controls '+width);}
  const shots=process.env.STOCKTAKE_QA_DIR||tmp;fs.mkdirSync(shots,{recursive:true});await a.setViewportSize({width:1363,height:1000});await a.screenshot({path:path.join(shots,'stocktake-areas-desktop.png'),fullPage:true});await a.setViewportSize({width:390,height:844});await a.screenshot({path:path.join(shots,'stocktake-areas-mobile.png'),fullPage:true});
@@ -75,3 +86,5 @@ try{
  await button(a,'Avslutt telling').click();await button(a,'Bekreft avslutning').click();await a.getByText('Tellingen er avsluttet og kan eksporteres.',{exact:true}).waitFor();eq(await button(a,'Registrer antall').count(),0);eq(await button(a,'Last ned Cordel-tekstfil').isEnabled(),true);eq(errors,[],'no component errors');
  console.log(`stocktake-areas-react-check: ${checks} assertions OK – real React + PostgreSQL migration, two users, partial shelf handover, fencing, draft, history, five widths, export and close`);
 }finally{await browser?.close();await new Promise(r=>server.close(r));await db.close();fs.rmSync(tmp,{recursive:true,force:true});}
+
+}
