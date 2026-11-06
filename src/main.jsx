@@ -1,3 +1,6 @@
+import {useSupportUsers} from './modules/support/useSupportUsers.js';
+import {usePortalAccessStatus} from './modules/portal/usePortalAccessStatus.js';
+import HeaderHelp from './modules/help/HeaderHelp.jsx';
 import ReportArchiveConfirmation, {useReportArchiveConfirmation} from './modules/report/ReportArchiveConfirmation.jsx';
 import ProjectReportWorkspace, {useProjectReportWorkspace} from './modules/report/ProjectReportWorkspace.jsx';
 import { continueAfterProjectSave, projectStepDataConfirmed } from './modules/project/projectStepContinue.mjs';
@@ -36,7 +39,7 @@ import { createReportViewTools } from './modules/report/reportViewTools.js';
 import { renderCustomerPortal } from './modules/portal/portalTools.js';
 import { createPortalAccessTools } from './modules/portal/portalSecurityTools.js';
 import {
-  appendCustomerProjectMessage, clearStoredPortalAccessCode, getProjectPortalAccessStatus,
+  appendCustomerProjectMessage, clearStoredPortalAccessCode,
   markCustomerProjectChatRead, readStoredPortalAccessCode, saveUnderleverandorProjectContribution,
   verifyProjectPortalAccess
 } from './modules/portal/portalSupabase.js';
@@ -1338,6 +1341,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
     };
     const isAdminUser = isSystemAdminUser;
     const canUseAdminProjectSync = !!authUser && !!profile?.approved && isSystemAdminUser && !isReadOnly && !isProjectSupportReadOnly;
+    const supportUsers = useSupportUsers({client: supabase, userId: authUser?.id, enabled: canUseAdminProjectSync && tab === "admin" && adminArea === "projects"});
     const projectIsLocked = (p = project) => p?.locked === true || p?.locked === "true" || p?.status === "locked" || p?.status === "Avsluttet";
     const applyLockState = (baseProject, sourceProject = {}) => ({
       ...baseProject,
@@ -1877,7 +1881,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
         if (!map.has(key)) map.set(key, { name: clean, users: 0, projects: 0, activeProjects: 0, unread: 0, latestUpdated: "" });
         return map.get(key);
       };
-      (adminUsers || []).forEach((u) => {
+      (supportUsers.users || []).forEach((u) => {
         const entry = ensure(u?.company_name);
         if (entry) entry.users += 1;
       });
@@ -1895,7 +1899,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       return Array.from(map.values())
         .filter((entry) => !term || entry.name.toLowerCase().includes(term))
         .sort((a, b) => (b.latestUpdated || "").localeCompare(a.latestUpdated || "") || a.name.localeCompare(b.name, "no"));
-    }, [adminUsers, projectListRows, supportCompanySearch]);
+    }, [supportUsers.users, projectListRows, supportCompanySearch]);
     const supportProjects = (0, import_react.useMemo)(() => {
       const selectedCompany = normalizeSearchText(supportSelectedCompany).trim();
       return (projectListRows || []).filter((item) => {
@@ -4356,31 +4360,12 @@ Kunde, adresse, bilder, chat, signaturer, avvik og utfylte sjekklistestatuser bl
       };
     }, [projectId, portalAccessRoleParam, isAdminProjectLink]);
 
-    (0, import_react.useEffect)(() => {
-      if (!authUser?.id || !projectId || portalAccessRoleParam || tab !== "tilgang") return;
-      let cancelled = false;
-      getProjectPortalAccessStatus(supabase, { projectId }).then((status) => {
-        if (cancelled || !status?.ok) return;
-        const toRecord = (role, value = {}) => ({
-          role,
-          active: !!value?.active,
-          code: value?.active ? "stored" : "",
-          createdAt: value?.created_at || "",
-          validUntil: value?.valid_until || status?.valid_until || "",
-          accessPolicy: status?.access_policy || "active_project_plus_locked_30_days",
-          lockedGraceDays: Number(status?.locked_grace_days || 30)
-        });
-        setPortalAccessRecords({
-          kunde: toRecord("kunde", status?.kunde || {}),
-          underleverandor: toRecord("underleverandor", status?.underleverandor || {})
-        });
-      }).catch((error) => {
-        if (!cancelled) console.warn("Kunne ikke hente portalstatus:", error?.message || error);
-      });
-      return () => {
-        cancelled = true;
-      };
-    }, [authUser?.id, projectId, portalAccessRoleParam, tab]);
+    const portalStatus = usePortalAccessStatus({
+      client: supabase, userId: authUser?.id, projectId,
+      scopeKey: company.companyName,
+      enabled: !!authUser?.id && !!projectId && !portalAccessRoleParam && tab === "tilgang",
+      onRecords: setPortalAccessRecords
+    });
 
     const makeProjectLink = (id, role = "kunde", targetTab = "") => {
       const tabSuffix = hasValue(targetTab) ? `&tab=${encodeURIComponent(String(targetTab || ""))}` : "";
@@ -5532,6 +5517,7 @@ ${appLink}`;
     // FASE 24A: Rapport/PDF ligger nå i egen modul.
     const { printVisibleReport, printReport, downloadClickablePdfReport } = createReportTools({
       confirmArchiveReport: !isReadOnly && !isUnderleverandorView ? reportArchive.confirm : undefined,
+      onPdfStatus: reportWorkspace.setPdfStatus,
       prepareKshmsReport: kshmsProjectReport.prepareExport,
       isKshmsReportCurrent: kshmsProjectReport.isCurrent,
       DEFAULT_REPORT_HERO_IMAGE_URL,
@@ -6230,7 +6216,7 @@ ${appLink}`;
         bathroomEquipment
       });
     }
-    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { "data-expo-app-shell": "true", "data-expo-project-shell": hasActiveProjectWorkspace ? "1" : void 0, "data-expo-project-global-shell": hasActiveProjectWorkspace && !isProjectSupportReadOnly ? "1" : void 0, onClick: openImageLightboxFromClick, children: [
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { "data-expo-app-shell": "true", "data-expo-project-shell": hasActiveProjectWorkspace ? "1" : void 0, "data-project-participants-id": hasActiveProjectWorkspace ? projectId : void 0, "data-project-participants-readonly": String(isProjectSupportReadOnly || isProjectLocked || isReadOnly), "data-expo-project-global-shell": hasActiveProjectWorkspace && !isProjectSupportReadOnly ? "1" : void 0, onClick: openImageLightboxFromClick, children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(MobileScrollShortcuts, {}),
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("style", { children: APP_RUNTIME_STYLES }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AppNewsNotice, { supabaseClient: supabase, authUser }),
@@ -6254,7 +6240,8 @@ ${appLink}`;
           !projectId && mobileCreatingProject && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: cancelNewProject, children: "← Avbryt nytt prosjekt" }),
           projectId && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: leaveProjectWorkspace, children: isProjectSupportReadOnly ? "← Supportoversikt" : "← Til startside" }),
           hasActiveProjectWorkspace && (0, import_jsx_runtime.jsx)(ProjectHeaderActions, { dirty: projectDirty, saved: Boolean(projectId), readOnly: isProjectSupportReadOnly, locked: isProjectLocked, simpleOrder: isSimpleOrderProject(project), onSave: saveProject, onCopy: projectId && !isProjectSupportReadOnly ? saveAsNewProject : void 0, onPdf: downloadClickablePdfReport, onLock: setProjectLockedState, onNew: createNewProject }, projectId || "new"),
-          (0, import_jsx_runtime.jsx)(WorkspaceViewMode, {}, authUser?.id)
+          (0, import_jsx_runtime.jsx)(WorkspaceViewMode, {}, authUser?.id),
+          !isReadOnly && authUser && (0, import_jsx_runtime.jsx)(HeaderHelp, { scopeKey: `${authUser.id}:${kshmsContext?.company_id}:${hrContext?.company_id}:${boligContext?.company_id}`, children: (0, import_jsx_runtime.jsx)(HelpCenter, { isAdmin: isAdminUser, isCompanyAdmin: isCompanyAdminUser, isSystemAdmin: isSystemAdminUser, termsAccepted, termsAcceptanceRecord, authUser, formatTermsAcceptedAt, kshmsContext, hrContext, boligContext }) })
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("nav", { children: tabs.map(([id, l]) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { "data-expo-nav-label": l, className: tab === id ? "on" : "", onClick: () => goToTab(id), children: l }, id)) }),
         hasActiveProjectWorkspace && !isProjectSupportReadOnly && (0, import_jsx_runtime.jsx)("nav", { "data-expo-global-nav-source": "1", hidden: true, ref: node => { if (node) node.expoLeaveProjectWorkspace = leaveProjectWorkspace; }, children: globalTabs.map(([id, label]) => (0, import_jsx_runtime.jsx)("button", { type: "button", "data-expo-nav-label": label, className: id === "prosjektliste" ? "on" : "", onClick: () => leaveProjectWorkspace(id), children: label }, id)) }),
@@ -6311,7 +6298,7 @@ ${appLink}`;
           ] })
         ] }) })
       ] }),
-      hasActiveProjectWorkspace && (0, import_jsx_runtime.jsx)(ProjectWorkspaceChrome, { appTabs: isProjectSupportReadOnly ? [] : globalTabs, onAppNavigate: leaveProjectWorkspace, tabs: projectTabs, activeTab: tab, project, saved: Boolean(projectId), simpleOrder: isSimpleOrderProject(project), status: currentStatus, deviations: projectGuideStats.openDeviationCount, unread: unreadForAdmin, onNavigate: goToTab, onStatus: openMobileStatus, onExit: projectId ? () => leaveProjectWorkspace("prosjektliste") : cancelNewProject, onContinue: continueProjectStep, continuing: projectStepBusy, continueNotice: projectStepNotice, readOnly: isProjectSupportReadOnly || isProjectLocked, contractRequired: Boolean(warranty?.enabled || warranty?.issued) }, projectId || "new"),
+      hasActiveProjectWorkspace && (0, import_jsx_runtime.jsx)(ProjectWorkspaceChrome, { appTabs: isProjectSupportReadOnly ? [] : globalTabs, onAppNavigate: leaveProjectWorkspace, tabs: projectTabs, activeTab: tab, project, saved: Boolean(projectId), simpleOrder: isSimpleOrderProject(project), status: currentStatus, deviations: projectGuideStats.openDeviationCount, checklistDeviations: projectGuideStats.checklistAvvik, projectDeviations: openProjectDeviationCount, unread: unreadForAdmin, onNavigate: goToTab, onStatus: openMobileStatus, onExit: projectId ? () => leaveProjectWorkspace("prosjektliste") : cancelNewProject, onContinue: continueProjectStep, continuing: projectStepBusy, continueNotice: projectStepNotice, readOnly: isProjectSupportReadOnly || isProjectLocked, contractRequired: Boolean(warranty?.enabled || warranty?.issued) }, projectId || "new"),
       !hasActiveProjectWorkspace && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "mobileFieldBar", "aria-label": "Mobil arbeidsmeny", children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileFieldBarInner", children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", className: "mobileFieldBarToggle", "aria-expanded": mobileMenuOpen, onClick: () => setMobileMenuOpen((open) => !open), children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: ["☰ ", tabs.find(([id]) => id === tab)?.[1] || "Velg side"] }),
@@ -6477,7 +6464,7 @@ ${appLink}`;
                   openDeviationCount > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "mobileProjectPickAlert", children: [
                     "⚠️ ",
                     openDeviationCount,
-                    " avvik"
+                    " sjekklisteavvik"
                   ] })
                 ] }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileProjectPickActions", children: [
@@ -6531,7 +6518,7 @@ ${appLink}`;
             "✅ Overtagelse er registrert",
             overtagelse.dato ? ` ${new Date(overtagelse.dato).toLocaleDateString("no-NO")}` : "",
             "."
-          ] }) : overtagelseHasDraftContent() && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: overtagelseIsSignedByBoth() ? (projectHasOvertagelse() ? 'Overtagelsen er signert av begge parter og bekreftet som gjennomført, men er ikke lagret som registrert ennå. Gå til Overtagelse og velg "Lagre og registrer overtagelse".' : 'Overtagelsen er signert av begge parter, men ikke registrert. Gå til Overtagelse, bekreft at overtagelsen er gjennomført og lagre.') : 'Overtagelse er påbegynt, men ikke registrert. Den regnes først som registrert når begge har signert, overtagelsen er bekreftet som gjennomført og lagringen er bekreftet.'  }),
+          ] }) : !isProjectLocked && overtagelseHasDraftContent() && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: overtagelseIsSignedByBoth() ? (projectHasOvertagelse() ? 'Overtagelsen er signert av begge parter og bekreftet som gjennomført, men er ikke lagret som registrert ennå. Gå til Overtagelse og velg "Lagre og registrer overtagelse".' : 'Overtagelsen er signert av begge parter, men ikke registrert. Gå til Overtagelse, bekreft at overtagelsen er gjennomført og lagre.') : 'Overtagelse er påbegynt, men ikke registrert. Den regnes først som registrert når begge har signert, overtagelsen er bekreftet som gjennomført og lagringen er bekreftet.'  }),
           totalChatCount > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [
             "\u{1F4AC} Chat: ",
             totalChatCount,
@@ -6630,8 +6617,8 @@ ${appLink}`;
             onOpenRequest: openSalesRequestFromHome
           })
         ] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: !projectId && !mobileCreatingProject ? "desktopOnlyWhenNoProject" : "", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Section, { className: "project-info-editor", title: projectId ? "Rediger kunde- og prosjektinfo" : "Prosjektinformasjon", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CollapsibleBlock, { title: "Kunde- og prosjektdata", defaultOpen: true, children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProjectInformationFields, { project, setProject, Input, Textarea, readOnly: isProjectSupportReadOnly }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProjectWarrantySetup, { warranty, setWarranty, systems: soproWarrantySystems, project, onCreateStandardWetroomTemplate: createStandardWetroomTemplate }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProjectInformationFields, { project, setProject, Input, Textarea, readOnly: isProjectSupportReadOnly || isProjectLocked }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProjectWarrantySetup, { warranty, setWarranty, systems: soproWarrantySystems, project, onCreateStandardWetroomTemplate: createStandardWetroomTemplate, readOnly: isProjectSupportReadOnly || isProjectLocked || isReadOnly }),
           false && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", gap: "10px", alignItems: "flex-start", marginTop: "4px" }, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", checked: !!project.isTemplate && !!warranty?.enabled && !!warranty?.system, onChange: (e) => {
               if (e.target.checked && (!warranty?.enabled || !warranty?.system)) {
@@ -6829,6 +6816,8 @@ ${appLink}`;
           access,
           setAccess,
           roles,
+          portalStatusState: portalStatus.status,
+          onRetryPortalStatus: portalStatus.retry,
           portalAccessRecordIsValid,
           getPortalAccessRecord,
           portalAccessPolicyText,
@@ -7012,7 +7001,7 @@ ${appLink}`;
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ReportArchiveConfirmation, { confirmation: reportArchive.confirmation }),
                 !reportWorkspace.isOpen && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(KshmsProjectReportDialog, { chooser: kshmsProjectReport.chooser }),
                 tab === "rapport" && !reportWorkspace.isOpen && (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: reportWorkspace.open, children: "Åpne rapport" }),
-                reportWorkspace.isOpen && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(ProjectReportWorkspace, { projectName: project.projectName || project.address, onClose: () => { kshmsProjectReport.chooser?.cancel(); reportWorkspace.close(); }, onPdf: downloadClickablePdfReport, chooserOpen: !!kshmsProjectReport.chooser, children: [
+                reportWorkspace.isOpen && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(ProjectReportWorkspace, { projectName: project.projectName || project.address, onClose: () => { kshmsProjectReport.chooser?.cancel(); reportWorkspace.close(); }, onPdf: downloadClickablePdfReport, statusMessage: reportWorkspace.pdfStatus, chooserOpen: !!kshmsProjectReport.chooser, children: [
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)(KshmsProjectReportDialog, { chooser: kshmsProjectReport.chooser }),
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)(KshmsProjectReportChoice, { report: kshmsProjectReport }),
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Report, { company, name, project, selected, manualProducts: manualSelected, other, surf, bathroomEquipment, photos, access, inst, files, checklist, tilbud: projectScopedTilbud, overtagelse, projectLog, kshmsReport: kshmsProjectReport.reportData })
@@ -7043,7 +7032,7 @@ ${appLink}`;
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Supportmodus" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Brukes av systemadministrator for å finne firmaer og åpne prosjekter ved support. Firmaadmin hos kunde får ikke tilgang til dette området." }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", flexWrap: "wrap", margin: "12px 0" }, children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => { loadAdminUsers(); loadProjects(authUser, true, null, { supportMode: true }); }, children: "Oppdater supportdata" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => { void supportUsers.refresh(); loadProjects(authUser, true, null, { supportMode: true }); }, children: "Oppdater supportdata" }),
               supportSelectedCompany && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => { setSupportSelectedCompany(""); setOpenSupportCompany(""); }, children: "Vis alle firma" })
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
@@ -7052,7 +7041,7 @@ ${appLink}`;
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "cards projectListHeaderCards", style: { marginTop: "12px" }, children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "tile", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: supportCompanies.length }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: supportUsers.status === "ready" ? supportCompanies.length : "–" }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Firma" })
               ] }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "tile", children: [
@@ -7064,12 +7053,15 @@ ${appLink}`;
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Ulest chat" })
               ] })
             ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Brukere og firmaadmin vises etter registrert primærfirma. Arbeidsprofiler administreres under Brukere og roller." }),
+            supportUsers.status === "loading" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { role: "status", children: "Henter brukeroversikten …" }),
+            supportUsers.status === "error" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { role: "alert", children: supportUsers.error }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", { style: { marginTop: "18px" }, children: "Firmaoversikt" }),
-            supportCompanies.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Ingen firma funnet ennå. Trykk Oppdater supportdata." }),
+            supportUsers.status === "ready" && supportCompanies.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Ingen firma funnet ennå. Trykk Oppdater supportdata." }),
             supportCompanies.slice(0, 20).map((entry) => {
               const entryIsOpen = openSupportCompany === entry.name;
               const entryProjects = supportProjects.filter((item) => normalizeSearchText(item?.projectCompanyName || "").trim() === normalizeSearchText(entry.name || "").trim()).slice(0, 30);
-              const entryUsers = (adminUsers || []).filter((userRow) => String(userRow?.company_name || "").trim().toLowerCase() === String(entry.name || "").trim().toLowerCase());
+              const entryUsers = (supportUsers.users || []).filter((userRow) => String(userRow?.company_name || "").trim().toLowerCase() === String(entry.name || "").trim().toLowerCase());
               const entryAdmins = entryUsers.filter((userRow) => userRow?.company_role === "firmaadmin");
               const entryProfile = entryUsers.find((userRow) => userRow?.org_number || userRow?.phone || userRow?.address || userRow?.website || userRow?.logo_url) || entryUsers[0] || {};
               return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { background: entryIsOpen ? "#ecfeff" : "#fff" }, children: [
@@ -7082,13 +7074,13 @@ ${appLink}`;
                   }, children: entryIsOpen ? "Skjul prosjekter" : "Vis prosjekter" })
                 ] }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
-                  "Brukere: ", entry.users,
+                  "Brukere: ", supportUsers.status === "ready" ? entry.users : "–",
                   " · Prosjekter: ", entry.projects,
                   " · Aktive: ", entry.activeProjects,
                   " · Ulest chat: ", entry.unread
                 ] }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { style: { display: "block", marginTop: "4px", color: "#475569" }, children: [
-                  "Firmaadmin: ", entryAdmins.map((userRow) => userRow.email).filter(Boolean).join(", ") || "Ikke satt",
+                  "Firmaadmin: ", supportUsers.status === "ready" ? entryAdmins.map((userRow) => userRow.email).filter(Boolean).join(", ") || "Ikke satt" : "Ikke hentet",
                   entryProfile?.org_number ? ` · Org.nr: ${entryProfile.org_number}` : "",
                   entryProfile?.phone ? ` · Tlf: ${entryProfile.phone}` : "",
                   entryProfile?.address ? ` · Adresse: ${entryProfile.address}` : "",
@@ -7119,7 +7111,7 @@ ${appLink}`;
                       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
                         "Status: ", item.listStatus.label,
                         " · Ansvarlig: ", item.listProject.responsible || "Ikke satt",
-                        " · Prosjekteier: ", (adminUsers || []).find((userRow) => userRow?.id === item.row.user_id)?.email || item.row.user_id || "ukjent",
+                        " · Prosjekteier: ", (supportUsers.users || []).find((userRow) => userRow?.id === item.row.user_id)?.email || item.row.user_id || "ukjent",
                         " · Oppdatert: ", item.row.updated_at ? new Date(item.row.updated_at).toLocaleString("no-NO") : "ukjent",
                         " · Ulest chat: ", item.unreadForAdminInList
                       ] })

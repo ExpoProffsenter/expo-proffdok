@@ -1,20 +1,11 @@
-# Gjeldende release – samlet TEST OK 2. november 2026
+# Samlet testkandidat – 6. november 2026
 
-Kenneth har godkjent PR294, PR295, PR298 og sjekklistefunksjonen PR305 med nødvendige backendkontroller, produksjonssetting og main → demo. Ingen ny bekreftelse kreves for uendret avtalt omfang når kontrollene består. PR217/277, nye funksjoner, Solgløtt, videre videoer og branchopprydding er utenfor dette løpet.
+Miljømål BEGGE. Bare arbeidsbranch/Preview/Sandbox. Produksjon og demo er uendret; ingen ny TEST OK er gitt.
 
-## Faktisk gjennomførte etapper
+PR309 er én samlet testkandidat med Bolig og PR311-kjernen. Sist bekreftede samlede kandidat e994a857 har full CI996 SUCCESS på første forsøk, READY/Sandbox og innlogget kontroll av profilmeny, timeføring og skrivebeskyttet kundetilbud. Core567a63e3 har full CI995 SUCCESS etter dokumentert omkjøring av en jobb med treg systemnedlasting. Ingen produksjonssetting.
 
-- Production-migrering for malforslag er installert og verifisert som remote20261102151721, canonical kilde20261031012504. Ikke kjør den på nytt. Eksisterende data/historikk, signaturkrav og tilganger er bevart.
-- PR305 og PR298 er merget og publisert, med grønn CI og korrekt Production-binding. PR294 er deretter merget som main70a99b3ece0ab562c5ee140f23c8b18da1b7b4a1 etter CI886 SUCCESS.
-- PR295 er siste designetappe. Faktisk main integreres med begge pakkers innhold og tester bevart. De69 opprinnelige boligveiledningstekstene er byteidentiske; fire godkjente boligtemaer legges til via samme modul-API. Ingen ny designvariant.
-- Den siste kandidatens fullCI, Production-SHA/READY og main → demo-kvittering føres i PR295. Ikke utled ferdig publisering fra denne filen alene.
+Neste avgrensede retting: tilbudsoversikten får Core-eid status og venter på faktisk ferdig liste før null, tomtekst og0treff vises. Se [årsak og testgrunnlag](docs/qa/SALES_LIST_READINESS_20261106.md). Ny faktisk Core/transport/List-test har39kravPASS; native fixture-build og relevante criticalPASS. Innlogget3e5ac3cb viste riktig venting/ukjente tellere uten falsk tomtekst, deretter19saker,1treff, bevart søk/status ved retur og legitim0treff etter ferdiglasting. CI997 stoppet på et eksisterende tidspunktproblem i varetellingstesten; [årsak og additiv QA-retting](docs/qa/STOCKTAKE_REFRESH_PHASE_QA_20261106.md). Eksakt ny full CI kreves. Søk, filtre, retur, editor, kladd, priser og aksept beholdes.
 
-[Godkjent produksjonsløp, migreringskvittering, datahash, CI-årsaker og tilbakeføring](docs/qa/DESIGN036_PRODUCTION_RELEASE_20261102.md).
+Full appgjennomgang, eksterne roller og fysisk mobil/Safari står fortsatt åpne. Ingen utsending, migrering, seed eller nullstilling er utført. Eksakte kandidat-/CI-/Preview-bevis ligger i PR309/311.
 
-Permanent demo er ved denne committen fortsatt fd04ac9a. Den skal synkroniseres fra faktisk godkjent main, med særtilpasninger, bilder og Sandbox-binding bevart. Demoens ferske SQL-preflight19/19 og kurs5/5 består, uten datareset eller utsending.
-
-Den gamle innloggede skynettøkten er fortsatt ikke gjenopprettet. Ingen full ny innlogget rolle-/Safari-attest gis. Dette hindrer ikke den eksplisitt godkjente utviklertestbaserte releaseplanen, men testgrensene må være synlige i sluttkvitteringen. Etter verifisert publisering innføres stabilitetsstopp før visningen3.november.
-
-## Historikk
-
-Tidligere detaljstatus, godkjente hoder og delbevis er bevart i Git på d9ca45e0 og i PR294/295/298/305. Bruk den nyeste daterte releasekvitteringen, ikke gamle «mangler migrering» eller «ikke TEST OK»-avsnitt. Ingen originalbevis eller demodata er slettet.
+Ved senere uttrykkelig TEST OK for samlet leveranse: kontroller faktisk main/base, avtal migrasjonssteg, fullfør core og Bolig i riktig rekkefølge, verifiser publisert commit og synkroniser demo med særtilpasningene bevart. Eksakte CI-/Preview-bevis og videre status dokumenteres i PR309/311.

@@ -56,13 +56,14 @@ try{
   await capture('access-'+width);await access.locator('.hr-ending>summary').click();
   eq(await access.getByRole('button',{name:'Avslutt og slett HR-registeroppføring',exact:true}).isDisabled(),true,'destructive native confirmation remains required '+width);await fits(access,'ending '+width);await capture('ending-'+width);await access.locator('.hr-ending>summary').click();await access.locator(':scope>summary').click();
   for(const [selector,navigation,prefix,steps]of[
-   ['.hr-real-conversation:not(.hr-sick-case)','Steg i medarbeidersamtalen','conversation',['Forberedelse','Felles møte','Tiltak','Referat']],
+   ['.hr-real-conversation:not(.hr-sick-case)','Steg i medarbeidersamtalen','conversation',['Forberedelse','Samtale og tiltak','Referat']],
    ['.hr-sick-case','Steg i sykefraværsoppfølgingen','sick',['Forberedelse','Felles plan','Tiltak','Gjennomgang','Frister','Deling og avslutning']]
   ]){
    const block=panel.locator(selector);await block.locator('.hrp-saved>button').first().click();await block.getByRole('navigation',{name:navigation,exact:true}).waitFor();
    const start=block.locator('.hrp-saved').filter({has:page.locator('form')}).first();
    await start.locator('summary').click();await fits(start,prefix+' new '+width);await capture(prefix+'-new-'+width);await start.locator('summary').click();
    if(prefix==='conversation'){
+    eq(await block.getByRole('navigation',{name:navigation,exact:true}).getByRole('button').count(),3,'combined conversation has three navigation steps '+width);
     const schedule=block.locator('.hrp-saved').filter({hasText:'Endre tidspunkt og sted'});await schedule.locator('summary').click();await fits(schedule,'schedule '+width);await capture('schedule-'+width);await schedule.locator('summary').click();
     const calendar=block.locator('.hrp-calendar');await calendar.locator('summary').click();await fits(calendar,'calendar help '+width);await capture('calendar-'+width);await calendar.locator('summary').click();
    }
@@ -70,11 +71,12 @@ try{
     await block.getByRole('navigation',{name:navigation,exact:true}).getByRole('button').nth(index).click();
     await block.locator('.hrp-step-body>h4').filter({hasText:steps[index]}).waitFor();
     await fits(block,prefix+' '+steps[index]+' '+width);
+    if(prefix==='conversation'&&index===1){eq(await block.getByRole('region',{name:'Avtalte tiltak og oppfølging',exact:true}).isVisible(),true,'actions remain inspected in combined meeting '+width);eq(await block.getByLabel('Neste oppfølging',{exact:true}).count(),1,'same followup field remains in combined meeting '+width);}
     eq(await block.getByRole('navigation',{name:navigation,exact:true}).getByRole('button').nth(index).getAttribute('aria-current'),'step','actual selected '+prefix+' step '+index);
     await capture(prefix+'-'+index+'-'+width);
    }
    if(width===1363){
-    await block.getByRole('navigation',{name:navigation,exact:true}).getByRole('button').nth(3).click();
+    await block.getByRole('navigation',{name:navigation,exact:true}).getByRole('button').nth(prefix==='conversation'?2:3).click();
     await block.getByLabel('Åpne historisk utgave',{exact:true}).fill('1');await block.getByRole('button',{name:'Åpne utgave',exact:true}).click();await block.getByText('Historisk utgave. Denne kan bare leses.',{exact:false}).waitFor();await fits(block,prefix+' historical');await capture(prefix+'-historical');
     await block.getByRole('button',{name:'Åpne gjeldende utgave',exact:true}).click();await block.locator('.hrp-readonly').filter({hasText:'Historisk utgave'}).waitFor({state:'hidden'});
    }
@@ -131,7 +133,7 @@ try{
  eq(await page.evaluate(()=>window.qa.commands.length),0,'entire reading/design sweep has no HR business writes');
  eq(await page.evaluate(()=>window.qa.unexpected),[],'every native request is explicitly handled');eq(outbound,[],'no live transport');eq(errors,[],'no runtime error');
  eq([...seen].filter(x=>/^sick-\d-/.test(x)).length,30,'all six sick-leave steps inspected at five viewports');
- eq([...seen].filter(x=>/^conversation-\d-/.test(x)).length,20,'all four conversation steps inspected at five viewports');
+ eq([...seen].filter(x=>/^conversation-\d-/.test(x)).length,15,'all three conversation steps inspected at five viewports');
  if(process.env.HR_SURFACE_036_EVIDENCE)fs.writeFileSync(process.env.HR_SURFACE_036_EVIDENCE,JSON.stringify({checks,view_count:seen.size,visited:[...seen].sort(),transport:'synthetic reads only',runtime_css:true},null,2)+'\n');
  console.log(`PASS HR subflows 03.6: ${checks} assertions, ${seen.size} explicitly visited views; actual contact/access/conversation/sick-leave/template/history/setup/practice/personal, full runtime CSS, synthetic reads only.`);
 }finally{await browser?.close();await new Promise(r=>server.close(r));}

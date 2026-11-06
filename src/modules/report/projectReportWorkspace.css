@@ -4,7 +4,10 @@
  .project-report-workspace .report{min-width:0;overflow-wrap:anywhere}
  .project-report-workspace .report img{max-width:100%;height:auto}
  .project-report-workspace .report .grid{grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr))}
- .project-report-workspace .ks-report-backdrop{z-index:2}
+ /* Native dialog keeps this inside its top layer; the chooser must also cover
+    the report header/footer, which inherit the app header stacking level. */
+ .project-report-workspace .ks-report-backdrop{z-index:10000}
+ .project-report-download-status{flex-basis:100%;margin:0;color:#173b3e;font-size:16px;line-height:1.5;overflow-wrap:anywhere}
 }
 @media print {
  .project-report-workspace{position:static!important;width:100%!important;max-width:none!important;height:auto!important;max-height:none!important;overflow:visible!important;box-shadow:none!important}

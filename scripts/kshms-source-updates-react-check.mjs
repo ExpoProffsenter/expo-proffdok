@@ -47,6 +47,10 @@ try {
   await act(async()=>[...window.document.querySelectorAll('.ks-source-proposal summary')].find(x=>x.textContent.startsWith('Mål')).click());
   await click('Bruk forslagets mål');assert.equal(input('Mål').value,proposal.goal);assert.equal(input('Tittel').value,draft.title);assert.equal(input('Kapittel').value,draft.chapter);assert.equal(input('I vår bedrift har vi følgende rutine').value,draft.procedure);
   assert.equal(cache().draft.source_revision,1,'Partial adoption advanced whole review');assert.equal(input('Kontrollert dato 1').value,'2026-10-07');assert.equal(cache().draft.references[0].checked_on,'2026-10-07');assert.equal(commands.length,0,'Field choice issued a server command');
+  const compareTrigger=button('Vurder ProffDoks tekstforslag');compareTrigger.getClientRects=()=>[{width:180,height:44}];
+  await click('Lukk sammenligning');assert.equal(window.document.activeElement,compareTrigger,'Source comparison lost its editor trigger');
+  assert.equal(input('Mål').value,proposal.goal,'Closing comparison changed the local adopted field');
+  await click('Vurder ProffDoks tekstforslag');
   await click('Jeg har vurdert hele tekstforslaget');assert.equal(cache().draft.source_revision,proposal.source_revision);assert.equal(input('Kontrollert dato 1').value,'2026-10-07');assert.equal(commands.length,0,'Review auto-saved/published');
   const saves=[...window.document.querySelectorAll('button')].filter(x=>x.textContent.trim()==='Lagre utkast');assert.equal(saves.length,2);const bottomSave=saves.at(-1);assert.equal(bottomSave.form,saves[0].form);assert(window.document.querySelector('[aria-label="Sammenlign ProffDoks tekstforslag"]').compareDocumentPosition(bottomSave)&window.Node.DOCUMENT_POSITION_FOLLOWING);
   await write('Tittel','');await act(async()=>bottomSave.click());assert.equal(commands.length,0,'Bottom save bypassed required fields');await write('Tittel',draft.title);
@@ -56,6 +60,17 @@ try {
   await click('Håndbok');await write('Hva er vurdert eller endret?','Sammenlignet nytt forslag; egne tilpasninger beholdt.');await click('Godkjenn og publiser');
   assert.equal(versions.length,2);assert.equal(versions[0].content.source_revision,proposal.source_revision);assert.equal(versions[0].content.procedure,draft.procedure);assert.equal(JSON.stringify(first),historyBefore);assert.equal(acknowledgments.length,1,'Publishing forged employee acknowledgment');assert.equal(assignments.filter(row=>row.version_id===versions[0].id).length,2);
   await click('Oppfølging og revisjon');assert(window.document.querySelector('[aria-label="Kildeoppdateringer"]').textContent.includes('Ingen nyere sentrale tekstforslag'));
+  await click('Håndbok');
+  const editorOpener=button('Ny rutine fra blank mal');
+  // JSDOM has no layout; only this synthetic opener has a visible rect.
+  editorOpener.getClientRects=()=>[{width:100,height:44}];
+  editorOpener.focus();await click('Ny rutine fra blank mal');
+  await write('Tittel','QA lokal fokuskladd');const commandCount=commands.length;
+  await click('Lukk redigering');assert.equal(window.document.activeElement,editorOpener,'Routine close lost exact opener');
+  assert.equal(cache().draft.title,'QA lokal fokuskladd','Closing discarded the secured local draft');
+  editorOpener.focus();await click('Ny rutine fra blank mal');editorOpener.hidden=true;
+  await click('Lukk redigering');assert.notEqual(window.document.activeElement,editorOpener,'Hidden routine opener received focus');editorOpener.hidden=false;
+  assert.equal(commands.length,commandCount,'Routine close sent a business command');
   const confirmed=structuredClone(state());await act(async()=>window.__unmount());
   for(const patch of [{manage:false},{enabled:false},{company_id:'foreign'},{user_id:'other'}]){await act(async()=>window.__render('overview',{data:{...confirmed,context:{...confirmed.context,...patch}},companyId:company,userId:user,onReview:()=>{throw Error('Wrong scope opened editor');}}));assert.equal(window.document.querySelector('[aria-label="Kildeoppdateringer"]'),null);}
   await act(async()=>window.__unmount());

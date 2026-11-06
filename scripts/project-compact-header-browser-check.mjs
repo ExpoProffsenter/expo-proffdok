@@ -22,7 +22,7 @@ function App(){
  const project={projectName:readOnly?'DEMO – RESERVE – Ferdig våtrom med garanti':'DEMO – HOVED – Badrenovering i arbeid',customer:'Demo Kunde',address:'Demoveien 42',postnr:'0001',city:'Oslo'};
  const navigate=id=>{window.calls.push(['navigate',id]);setTab(id);return true;};
  return <div data-fixture-kind={kind} data-expo-app-shell="true" data-expo-project-shell="1" data-expo-project-global-shell="1">
- <Chrome tabs={tabs} project={project} activeTab={tab} saved={saved} readOnly={readOnly} status={{icon:readOnly?'✅':'🟡',label:readOnly?'Ferdigstilt':'Pågår'}} deviations={readOnly?0:4} unread={2} onNavigate={navigate} onExit={()=>window.calls.push(['back'])} onStatus={()=>window.calls.push(['status'])} onContinue={id=>window.calls.push(['continue',id])}/>
+ <Chrome tabs={tabs} project={project} activeTab={tab} saved={saved} readOnly={readOnly} status={{icon:readOnly?'✅':'🟡',label:readOnly?'Ferdigstilt':'Pågår'}} deviations={readOnly?0:4} checklistDeviations={readOnly?0:2} projectDeviations={readOnly?0:2} unread={2} onNavigate={navigate} onExit={()=>window.calls.push(['back'])} onStatus={()=>window.calls.push(['status'])} onContinue={id=>window.calls.push(['continue',id])}/>
  <main><WorkspaceTools projectWorkspace projectTabs={tabs} tab={tab} onNavigate={navigate}/><h2>Prosjektoversikt</h2><p>Syntetiske data. Faktiske appkomponenter, ikke en innlogget kundesak.</p><label>Arbeidsmerknad<textarea value={note} onChange={e=>setNote(e.target.value)}/></label></main>
  <ProjectWorkspaceFooter tabs={tabs} activeTab={tab} onNavigate={navigate} onContinue={id=>window.calls.push(['continue',id])} readOnly={readOnly}/>
  </div>;
@@ -46,6 +46,7 @@ for(const [width,height] of [[1920,1080],[1363,600],[1181,800],[768,600],[390,84
   if(process.env.COMPACT_HEADER_EVIDENCE&&width===1363){fs.mkdirSync(process.env.COMPACT_HEADER_EVIDENCE,{recursive:true});await page.screenshot({path:path.join(process.env.COMPACT_HEADER_EVIDENCE,kind+'.png')});}
   eq(measurement.pageWidth<=width+1,true,'no horizontal overflow '+kind+' '+width);
   const locked=['locked','support'].includes(kind);
+  if(kind!=='new')eq(await page.locator('.project-workspace-status').innerText().then(text=>text.includes(locked?'0 sjekklisteavvik · 0 prosjektavvik':'2 sjekklisteavvik · 2 prosjektavvik')),true,'header distinguishes existing deviation sources '+kind+' '+width);
   if(locked){
    eq(await page.getByRole('region',{name:'Anbefalt neste steg'}).count(),0,'read-only has no misleading next step '+kind+' '+width);
    eq(await page.getByRole('navigation',{name:'Neste og forrige prosjektsteg'}).count(),0,'read-only footer has no setup journey '+kind+' '+width);

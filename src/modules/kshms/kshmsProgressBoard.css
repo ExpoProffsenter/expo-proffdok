@@ -100,3 +100,7 @@
 @media(max-width:700px){.ks-plan-project-identity{gap:4px}.ks-plan-project-tools-content{gap:6px}.ks-plan-project-buttons>button{flex:1;min-width:130px;white-space:normal}}
 
 .ks-plan-readonly-note{min-width:0}.ks-plan-readonly-note p{white-space:pre-wrap;overflow-wrap:anywhere;padding:10px;border:1px solid #d5e3e9;border-radius:8px;background:#fff;color:#10212b;line-height:1.5}
+
+/* Period notes keep the existing 5000-character draft/save contract. */
+.ks-plan-period-editor textarea{font:inherit;font-weight:400;font-size:16px;line-height:1.5;color:#173b45;background:#fff;border:1px solid #c6d8e0;border-radius:8px;min-height:120px;padding:9px;width:100%;min-width:0;max-width:100%;box-sizing:border-box;resize:vertical;overflow-wrap:anywhere}
+.ks-plan-period-editor textarea:focus{outline:2px solid #18a8b2;outline-offset:1px}

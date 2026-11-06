@@ -211,8 +211,8 @@ function SharedProjectList({ panel, workProfileState }) {
           <h3>Felles prosjekter i {payload.companyName || workProfileState?.active_company_profile?.companyName || "aktiv arbeidsprofil"}</h3>
           <p>Viser kollegaenes prosjekter. Dine egne prosjektkort vises fortsatt i den ordinære listen under.</p>
         </div>
-        <button type="button" className="secondary" onClick={refresh} disabled={loading}>
-          <RefreshCw size={16} /> {loading ? "Henter..." : "Oppdater felles"}
+        <button type="button" className="secondary" onClick={refresh} disabled={loading} aria-busy={loading}>
+          <RefreshCw size={16} /> Oppdater felles
         </button>
       </div>
 
@@ -221,8 +221,8 @@ function SharedProjectList({ panel, workProfileState }) {
         <p className="note">Viser {visible.length} av {colleagues.length} felles prosjekt{colleagues.length === 1 ? "" : "er"} med gjeldende søk/filter.</p>
       ) : null}
 
-      {!error && !loading && colleagues.length === 0 ? (
-        <div className="workProfileSharedEmpty">Ingen andre prosjekter ligger i denne arbeidsprofilen ennå.</div>
+      {!error && colleagues.length === 0 ? (
+        <div className="workProfileSharedEmpty" role="status">{loading ? "Henter felles prosjekter …" : "Ingen andre prosjekter ligger i denne arbeidsprofilen ennå."}</div>
       ) : null}
       {!error && !loading && colleagues.length > 0 && visible.length === 0 ? (
         <div className="workProfileSharedEmpty">Ingen felles prosjekter matcher søket eller filteret.</div>

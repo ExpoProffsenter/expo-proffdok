@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Bevar arbeidsprofilvelgerens tilstand ved responsiv flytting",
+  "change": "BEGGE, Preview/Sandbox først. Flytt eksisterende host uten å destruere React-root; behold påkrevd valg, ventende lagring, feil og tilgjengelig fokus. Ingen auth-, backend- eller firmavalgsregler endres.",
+  "verification": "Deterministisk negativ prøve feiler på gammel kode ved første mobilflytting. Ny faktisk React39PASS og native fixture-build uten browser. Alle62native krav beholdes med additive identitets-/feilbevaringskrav; full CI og Preview-bevis registreres i PR309/311.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Knappnavn, brukerflyt, bekreftelse og påkrevd firmavalg beholdes; kun bevaring under layoutflytting rettes."
+    },
+    "module": {
+      "required": true,
+      "reason": "Modulens ansvar og bevaringskrav ved responsiv flytting beskrives i access-README."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Ingen ny dataflyt eller ansvarsdeling; eksisterende root flyttes til samme tidligere målposisjon."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen ny appavhengighet, konfigurasjon eller installasjonssteg."
+    }
+  }
+}

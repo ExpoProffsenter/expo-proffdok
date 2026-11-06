@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "PDF-bekreftelse uten blokkerende OK-varsel",
+  "change": "Miljømål BEGGE. Erstatt tre suksess-alert etter PDF-generering med vedvarende prosjekt-/firmascopet status i rapportpanelet. Bevar garantioppdatering, arkivvalg, revalidering og feilhåndtering.",
+  "verification": "Bruker bekreftet faktisk nedlasting og OK-varsel; samme browserfane ble tilgjengelig etterpå. Faktisk jsPDF: 512 kontroller PASS, inklusive null suksess-alert og bevart veiledning. Eksisterende Chromium-prøve utvidet; ny CI/livekontroll kreves.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Eksisterende nedlastingshandling er uendret; status og nødvendig lagringsveiledning står direkte ved knappen."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Ingen ny dataflyt, lagring, tilgang eller motor; kun valgfri statuscallback."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen nye avhengigheter eller oppsett."
+    },
+    "module": {
+      "required": true,
+      "reason": "Rapportmodulens statuscallback og omfang dokumenteres i README."
+    }
+  }
+}

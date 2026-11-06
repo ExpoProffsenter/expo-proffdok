@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Lesbar merknad i planlagt periode",
+  "change": "BEGGE; PR311 Preview/Sandbox. Bytt kun redigerbar periodemerknad fra input til textarea med fire rader og vertikal resizing. Samme verdi, onChange/applyPeriod,5000-grense, kladd og eksplisitt lagring. Ingen backend, tilgang, beregning, PDF eller e-post endres.",
+  "verification": "Førtilstand innlogget PR308/04392220, syntetisk QA-PLAN-0511:72tegn i input, clientWidth553/scrollWidth579. Ingen felt endret. Eksisterende faktiske planprøve utvidet med flerlinje/fulle sessionnotater/lagring/gjenåpning og fem bredder. Kandidat-CI kreves; lokal Chromium er blokkert av socket policy. CI983 fant at eksakt Merknad-navn forsvant etter innskriving. Eksplisitt aria-label og additiv navnekontroll er lagt til; full lokal Sandbox build/critical, timeline102, launcher11 PASS. Lokal native sperret før test av socketbegrensning. Ny CI/Preview gjenstår.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Samme merknadsfelt og arbeidsflyt; ingen ny handling eller endret lagring."
+    },
+    "module": {
+      "required": true,
+      "reason": "Beskriv flerlinjefelt og bevart kontrakt i KS/HMS README."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Ingen dataflyt eller arkitektur endres."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen avhengighet eller konfigurasjon endres."
+    }
+  }
+}

@@ -38,3 +38,10 @@
 .standalone-checklists .checklist-proposal{border:1px solid #cfdbdf;border-radius:8px;padding:12px 16px;margin:16px 0}
 .standalone-checklists .checklist-proposal summary{display:list-item;align-content:center;cursor:pointer;font-weight:700}
 @media(max-width:620px){.deviation-dialog:has(.checklist-proposal-review)>.deviation-dialog-header,.deviation-dialog:has(.checklist-proposal-review)>.deviation-dialog-body{padding:16px}.deviation-dialog:has(.checklist-proposal-review)>.deviation-dialog-header h2{font-size:25px!important}}
+
+/* Keep independent checklist actions in the same internal workspace style.
+   Status choices retain their own green/orange answer presentation. */
+.standalone-checklists button:not(.checklist-status-choice),
+.checklist-proposal-review button{border:1px solid #007f8e;border-radius:7px;background:#007f8e;background-image:none;color:#fff;box-shadow:none;transform:none;font-weight:600;white-space:normal}
+.standalone-checklists button.secondary:not(.checklist-status-choice),
+.checklist-proposal-review button.secondary{background:#fff;color:#007f8e;border-color:#cbdde2}

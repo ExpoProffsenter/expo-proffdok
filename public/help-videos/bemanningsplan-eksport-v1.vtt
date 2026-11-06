@@ -1,0 +1,25 @@
+WEBVTT
+
+00:00:00.000 --> 00:00:14.000
+Åpne bemanningsplanen: Åpne en lagret plan under KS/HMS → Verktøy og maler → Fremdriftsplaner. Velg Åpne bemanningsplan.
+
+00:00:14.000 --> 00:00:30.000
+Les behov og persontimer: To personer arbeider åtte timer på hver av to dager. Behovet er to personer, og planen gir 32 persontimer.
+
+00:00:30.000 --> 00:00:40.000
+Finn eksportene: Åpne Eksport øverst. PDF, kalender og bemanning har egne nedlastingsknapper.
+
+00:00:40.000 --> 00:00:52.000
+Last ned bemanningsplan: Velg Last ned bemanningsplan (PDF). Filen viser bemanning per uke, forklaring av tallene og bemanning per dag.
+
+00:00:52.000 --> 00:01:06.000
+Kontroller den faktiske PDF-en: Her vises en hel side fra den nedlastede filen. Begge dager har to personer og 16 persontimer per dag.
+
+00:01:06.000 --> 00:01:18.000
+Last ned tallene som CSV: Last ned bemanning (.csv) gir dato, uke, samtidig behov, persontimer og om grunnlaget er komplett.
+
+00:01:18.000 --> 00:01:30.000
+Last ned kalenderfilen: Last ned kalender (.ics) gir arbeidsøktene med datoer, klokkeslett, status og merknad. Kontroller filen før kalenderimport.
+
+00:01:30.000 --> 00:01:42.000
+Fortsett uten å endre planen: Tilbake lukker planbyggeren. Nedlasting endrer ikke planen. Åpne bemanningsplan igjen når du vil se tallene.

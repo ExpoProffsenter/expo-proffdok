@@ -35,19 +35,26 @@ export function createAccessViewTools({
     supabaseClient,
     controllerReadOnly,
     controllerEmailBrand,
-    controllerFromName
+    controllerFromName,
+    portalStatusState = "ready",
+    onRetryPortalStatus
   }) {
+    const portalStatusReady = portalStatusState === "ready";
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Deltakere og tilganger", children: [
       /* Existing participant root is mounted here by its own adapter, not duplicated. */
       projectId && !controllerReadOnly && (0, import_jsx_runtime.jsx)("div", { "data-project-participants-slot": "true" }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Velg kunde-, UE- eller kontrollørtilgang. Hver portal har separat kode. Kunde og UE har tilgang mens prosjektet er aktivt og i 30 dager etter låsing. For kontrollør velger du utløpsdato og klokkeslett." }),
+      !portalStatusReady && (0, import_jsx_runtime.jsxs)("div", { role: portalStatusState === "error" ? "alert" : "status", children: [
+        (0, import_jsx_runtime.jsx)("p", { className: "note", children: portalStatusState === "error" ? "Kunne ikke hente portalstatus. Prøv igjen før du endrer tilgangskoder." : portalStatusState === "idle" ? "Lagre prosjektet for å kontrollere portalstatus." : "Henter portalstatus …" }),
+        portalStatusState === "error" && onRetryPortalStatus && (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: onRetryPortalStatus, children: "Prøv portalstatus igjen" })
+      ] }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "cards ux-access-portals", style: { marginTop: "12px" }, children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "tile", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Kundeportal" }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: portalAccessRecordIsValid(getPortalAccessRecord(project, "kunde"), project) ? "🟢 Aktiv kode" : "⚪ Ingen aktiv kode" }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: getPortalAccessRecord(project, "kunde")?.code ? "Tilgangskode: ••••••" : "Tilgangskode: Ikke sendt/generert ennå" }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: portalAccessPolicyText(project, getPortalAccessRecord(project, "kunde")) }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", type: "button", onClick: async () => {
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: !portalStatusReady ? "Status ikke kontrollert" : portalAccessRecordIsValid(getPortalAccessRecord(project, "kunde"), project) ? "🟢 Aktiv kode" : "⚪ Ingen aktiv kode" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: !portalStatusReady ? "Tilgangskode: Status kontrolleres" : getPortalAccessRecord(project, "kunde")?.code ? "Tilgangskode: ••••••" : "Tilgangskode: Ikke sendt/generert ennå" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: portalAccessPolicyText(project, portalStatusReady ? getPortalAccessRecord(project, "kunde") : {}) }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", type: "button", disabled: !portalStatusReady, onClick: async () => {
             if (!projectId) {
               alert("Lagre prosjektet før du genererer tilgangskode.");
               return;
@@ -58,10 +65,10 @@ export function createAccessViewTools({
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "tile", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Underentreprenørportal" }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: portalAccessRecordIsValid(getPortalAccessRecord(project, "underleverandor"), project) ? "🟢 Aktiv kode" : "⚪ Ingen aktiv kode" }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: getPortalAccessRecord(project, "underleverandor")?.code ? "Tilgangskode: ••••••" : "Tilgangskode: Ikke sendt/generert ennå" }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: portalAccessPolicyText(project, getPortalAccessRecord(project, "underleverandor")) }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", type: "button", onClick: async () => {
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: !portalStatusReady ? "Status ikke kontrollert" : portalAccessRecordIsValid(getPortalAccessRecord(project, "underleverandor"), project) ? "🟢 Aktiv kode" : "⚪ Ingen aktiv kode" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: !portalStatusReady ? "Tilgangskode: Status kontrolleres" : getPortalAccessRecord(project, "underleverandor")?.code ? "Tilgangskode: ••••••" : "Tilgangskode: Ikke sendt/generert ennå" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: portalAccessPolicyText(project, portalStatusReady ? getPortalAccessRecord(project, "underleverandor") : {}) }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", type: "button", disabled: !portalStatusReady, onClick: async () => {
             if (!projectId) {
               alert("Lagre prosjektet før du genererer tilgangskode.");
               return;

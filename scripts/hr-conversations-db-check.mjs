@@ -26,6 +26,14 @@ try{
  '20261010004928_hr_conversation_templates.sql','20261010105649_hr_sick_leave_template_kind.sql',
  '20261009211209_hr_restore_reconcile_orphans.sql','20261011134804_hr_personal_conversations.sql','20261011140130_hr_deletion_admin_alerts.sql','20261011155003_hr_sick_leave_cases.sql','20261011155506_hr_followup_reminders.sql','20261011162527_hr_followup_worker_scope.sql','20261011192456_hr_conversation_meeting_time.sql','20261011195555_hr_conversation_creation_notice.sql','20261011203859_hr_conversation_reminder_feedback.sql','20261011205907_hr_targeted_transport_test.sql','20261011220405_hr_conversation_meeting_location.sql','20261012050658_hr_conversation_feedback_notice.sql','20261012061931_hr_employee_display_name.sql','20261012080426_hr_conversation_review_retry.sql'];
  for(const f of migrations)await db.exec(await fs.readFile('supabase/migrations/'+f,'utf8'));
+ const commandSecurity=await sql("select prosecdef,proacl::text acl,proconfig from pg_proc where oid='public.hr_conversation_command(uuid,uuid,integer,uuid,integer,text,jsonb)'::regprocedure");
+ const oldValidator=await sql("select md5(prosrc) hash,proacl::text acl,prosecdef from pg_proc where oid='hr_private.validate_conversation_answers(jsonb,jsonb,text,boolean)'::regprocedure");
+ await db.exec(await fs.readFile('supabase/migrations/20261105044245_hr_conversation_extended_text.sql','utf8'));
+ eq(await sql("select prosecdef,proacl::text acl,proconfig from pg_proc where oid='public.hr_conversation_command(uuid,uuid,integer,uuid,integer,text,jsonb)'::regprocedure"),commandSecurity,'text migration preserves endpoint owner-mode/ACL/search path');
+ eq(await sql("select md5(prosrc) hash,proacl::text acl,prosecdef from pg_proc where oid='hr_private.validate_conversation_answers(jsonb,jsonb,text,boolean)'::regprocedure"),oldValidator,'sick-leave/shared validator remains byte-identical');
+ for(const role of ['anon','authenticated','service_role'])eq((await sql(`select has_function_privilege('${role}','hr_private.validate_extended_conversation_answers(jsonb,jsonb,text,boolean)','execute') v`))[0].v,false,'new validator has no direct client grant');
+ eq((await sql("select prosecdef from pg_proc where oid='hr_private.validate_extended_conversation_answers(jsonb,jsonb,text,boolean)'::regprocedure"))[0].prosecdef,false,'new pure validator is invoker');
+
  for(const role of ['anon','service_role'])for(const signature of ['public.hr_conversation_feedback_notices(uuid,uuid)','public.hr_conversation_feedback_handle(uuid,uuid,integer,uuid,integer)'])eq((await sql(`select has_function_privilege('${role}','${signature}','execute') v`))[0].v,false,'feedback RPCs are authenticated-only');
  eq((await sql("select has_table_privilege('authenticated','hr_private.conversation_feedback_receipts','select,insert,update,delete') v"))[0].v,false,'receipt table is private');
  eq((await sql("select has_function_privilege('authenticated','public.hr_followup_test_reserve(uuid)','execute') as v"))[0].v,false,'test reserve is server-only');
@@ -153,6 +161,15 @@ try{
  const get=(version=null)=>rpc('hr_conversation_get',[company,employee.id,conversation,version]);
  await reject(()=>command('preparation',{answers:{[question]:'Cannot impersonate'}}),'42501');
  await actor(self);await reject(()=>command('share'),'22023');
+ await actor(self);
+ const longAnswer='😀'.repeat(10000),longTask='æ'.repeat(2000);
+ await command('preparation',{answers:{[question]:longAnswer}});eq(state.conversation.preparation[question],longAnswer,'10000 Unicode code points round-trip in private preparation');
+ let beforeInvalid=structuredClone(state);
+ await reject(()=>command('preparation',{answers:{[question]:longAnswer+'x'}}),'22023');eq(await get(),beforeInvalid,'10001 preparation rejected without revision/history mutation');
+ await db.exec('reset role;');
+ const maxQuestions=Array.from({length:24},(_,i)=>({id:id(1000+i),phase:'meeting',required:true})),maxAnswers=Object.fromEntries(maxQuestions.map(q=>[q.id,longAnswer]));
+ await sql(`select hr_private.validate_extended_conversation_answers(${q(JSON.stringify(maxAnswers))}::jsonb,${q(JSON.stringify({questions:maxQuestions}))}::jsonb,'meeting',true)`);checks++;
+ await reject(()=>sql(`select hr_private.validate_conversation_answers(${q(JSON.stringify({[question]:'x'.repeat(4001)}))}::jsonb,${q(JSON.stringify(tpl))}::jsonb,'preparation',false)`),'22023');
  await db.exec("reset role;update hr_private.followup_settings set enabled=true,endpoint='';");await actor(self);await command('preparation',{answers:{[question]:'Private preparation'}});await db.exec('reset role;');eq((await sql("select count(*)::int n from hr_private.followup_deliveries where task_key='employee-feedback'"))[0].n,0,'private preparation never mails leader');await actor(self);
  await actor(leader);eq((await rpc('hr_conversation_feedback_notices',[company])).tasks,[],'private preparation is never announced');await actor(self);
  eq(state.conversation.preparation[question],'Private preparation');
@@ -193,10 +210,14 @@ try{
  await db.exec(`reset role;update hr_private.module_access set enabled=true where company_id=${q(company)} and user_id=${q(self)};`);
  await db.exec(`reset role;update hr_private.module_access set enabled=true where company_id=${q(company)} and user_id=${q(leader)};update hr_private.followup_settings set enabled=false;`);
  await actor(leader);eq((await get()).conversation.preparation[question],'Private preparation','shared preparation retained');
+ const longAction={id:id(40),task:longTask,owner_id:self,due_on:meetingDay(20),done:false};
+ await command('meeting',{answers:{[meeting]:longAnswer},actions:[longAction],next_on:meetingDay(21)});
+ eq(state.conversation.meeting[meeting],longAnswer,'10000 meeting code points survive server readback');eq(state.conversation.actions[0].task,longTask,'2000 action characters survive server readback');beforeInvalid=structuredClone(state);
+ for(const data of [{answers:{[meeting]:longAnswer+'x'},actions:[longAction],next_on:meetingDay(21)},{answers:{[meeting]:longAnswer},actions:[{...longAction,task:longTask+'x'}],next_on:meetingDay(21)},{answers:{[meeting]:'x'.repeat(1800001)},actions:[],next_on:''}]){await reject(()=>command('meeting',data),'22023');eq(await get(),beforeInvalid,'over-limit meeting/action/envelope does not save partially');}
  await command('meeting',{answers:{[meeting]:'Shared summary'},actions:[],next_on:''});
  eq(state.conversation.preparation[question],'Private preparation','manager cannot erase original answers');
  const saved=revision;
- await reject(()=>rpc('hr_conversation_command',[company,employee.id,employeeRevision,conversation,saved-1,'meeting',{answers:{[meeting]:'stale'},actions:[],next_on:''}]),CONFLICT_CODE);
+ await reject(()=>rpc('hr_conversation_command',[company,employee.id,employeeRevision,conversation,saved-1,'meeting',{answers:{[meeting]:'stale'},actions:[],next_on:''}]),'PT409');
  eq((await get()).conversation.meeting[meeting],'Shared summary');
  await reject(()=>command('meeting',{answers:{[meeting]:'summary'},actions:[{id:id(40),task:'Do it',owner_id:outsider,due_on:meetingDay(20),done:false}],next_on:meetingDay(21)}),'22023');
  await command('meeting',{answers:{[meeting]:'Shared summary'},actions:[{id:id(40),task:'Follow up',owner_id:self,due_on:meetingDay(20),done:false}],next_on:meetingDay(21)});
@@ -205,8 +226,10 @@ try{
  await command('ready');eq(state,reviewSnapshot,'same awaiting review keeps revision/content/confirmation/feedback/saved fields byte-for-byte');
  await db.exec('reset role;');eq((await sql('select (select count(*) from hr_private.artifacts)::int history,(select count(*) from hr_private.followup_deliveries)::int mail,(select count(*) from hr_private.conversation_feedback_receipts)::int receipts'))[0],reviewCounts,'repeated review makes no history, email or receipt');await actor(leader);
  await actor(self);await reject(()=>command('ready'),'42501');await actor(admin);await reject(()=>command('ready'),'42501');await actor(leader);
- await reject(()=>rpc('hr_conversation_command',[company,employee.id,employeeRevision,conversation,revision-1,'ready',{}]),CONFLICT_CODE);
+ await reject(()=>rpc('hr_conversation_command',[company,employee.id,employeeRevision,conversation,revision-1,'ready',{}]),'PT409');
 
+ await actor(self);await command('comment',{text:longAnswer});eq(state.conversation.comments.employee,longAnswer,'10000 comment code points round-trip');beforeInvalid=structuredClone(state);
+ await reject(()=>command('comment',{text:longAnswer+'x'}),'22023');eq(await get(),beforeInvalid,'10001 comment cannot alter saved review');
  await actor(self);await command('comment',{text:'My disagreement remains part of the record'});
  eq(state.conversation.confirmations.leader,null,'comment changes require renewed confirmation');
  await command('confirm');eq(state.conversation.stage,'awaiting');
