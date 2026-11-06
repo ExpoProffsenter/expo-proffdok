@@ -1,3 +1,11 @@
+# Gjenopptatt kontroll – 6. november
+
+PR311: CI983 på e650ff74 feilet etter innskriving i periodemerknaden: samme eksakte feltnavn ble ikke funnet ved breddekontroll. Feltet får nå fast tilgjengelig navn; alle tidligere tester beholdes. Full lokal Sandbox-build/critical, timeline102 og launcher11 PASS. Lokal native Chromium stopper før test med socketbegrensning; ny CI/Preview-attest gjenstår. Se [konkret feil og kontroll](docs/qa/PLAN_PERIOD_NOTE_20261106.md). Ingen TEST OK, produksjonsendring, migrasjon eller utsending.
+
+PR308 har13filmer og nyere dokumentasjonshode d3759ce5; CI984 pågår ved avlesning. Main34daef4c/demoabc38f7e er bevart. Full helapp-/videoarbeid er fortsatt ikke ferdig.
+
+---
+
 # Kontrollert checkpoint – 5. november kveld
 
 Miljømål BEGGE, bare Preview/Sandbox. PR311 appkode `4c5c0632` er uendret. Ny innlogget positiv prøve har bekreftet oppretting/redigering/lagring/kladd og fersk serverlesing av egen eksempelplan. Egen områdetelling har automatisk hylle, 3+2=5 og 0, pause/videreføring, historikk, faktisk Cordel/CSV og avslutning med skrivevern etter ny serverhenting. Ingen produksjon, migrering, import eller utsending. Full QA, filhash, film-/kildelenker og avgrensninger: [planoppsett og områdekontroll](docs/qa/PLAN_SETUP_AND_AREA_VIDEO_20261105.md).

@@ -58,6 +58,7 @@ try{
  eq(await note.evaluate(e=>e.tagName),'TEXTAREA','period note accepts multiple lines');
  eq(await note.getAttribute('maxlength'),'5000','existing note limit retained');
  await note.fill(periodNote);
+ eq(await note.getAttribute('aria-label'),'Merknad','period note keeps its accessible name after typing');
  for(const width of [320,390,768,1363,1920]){
   await page.setViewportSize({width,height:950});
   const m=await note.evaluate(e=>({wrap:e.scrollWidth<=e.clientWidth,height:e.clientHeight,resize:getComputedStyle(e).resize,contained:e.getBoundingClientRect().right<=innerWidth}));
