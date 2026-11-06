@@ -29,3 +29,15 @@ Ved autorisert release: kontroller faktiskProduction-DB og utførte steg; merge 
 Allerede utførte Sandbox-migreringer skal ikke kjøres på nytt. Ingen produksjonsDDL,seed/reset,utsending eller kalenderimport er utført. Routine-e-post er fortsatt deaktivert. Full HR/Bolig-A–Å,positive portaler,fysisk mobil/Safari og øvrige videoer er fortsatt åpne.
 
 Rollback før release:opprinneligPR309/1b59d937 og kjernePR311/0e44d83a er bevart i historikken. Ingen DB-steg er nødvendige for å avvikle denne Preview-integrasjonen. Den additivCIbasegrenen kan fjernes når den avhengigePR-en ikke lenger trengs,men ikke slik at aktivQA forsvinner.
+
+
+## CI989: faktisk testantakelse om boligrekkefølge
+
+CI989/run42255486657 på49eb23b5 startet alle ni pakker på den avhengige basen. Scope/build/HR/firma og de ferdige nettleser-/prosjektpakkene kontrolleres separat; Bolig-db128021537043 stoppet i bolig-integration-db-scenarios:324 med forventetBuildingA/faktiskBuildingB. Ingen ny server-/produktfeil er påvist av denne assertionen.
+
+Rotårsak: testfixtureen brukte locationPlan.units[0] somBuildingA. Gjeldende snapshot sorterer units etter generert entrance_id,floor,position,ikke byggenes innsendingsrekkefølge (se20261020230426_boligprosjekter_unit_contact.sql:119). Den faktiske lokasjonsfunksjonen kobler unit.id→entrance.id→block.id. Alle selected.unit_id-krav bestod før den feilaktige antakelsen om navnet.
+
+Kun syntetisk fixturevalg rettes: finnBuildingA/B fra egne blokk-ID-er,deretter nøyaktig én tilhørende oppgang og bolig. Eksisterende krav om to boliger,samme bolignummer,eksakt selected.unit_id,byggnavn,adresseprioritet,begge paginerte bygg,reader-/firmasikt beholdes. Fem additive krav bekrefter entydige oppganger/boliger og ulike bolig-ID-er. Ingen SQL,migrering,RPC,grense/paritet eller produktkode endres. Lokal fullfoundation-DB og ny eksaktCI kjøres; resultater føres iPR309. Ingen blind omkjøring av den tilfeldige testen.
+
+
+Lokal etterkontroll: full bolig-foundation-db-check på ordinær lokalPGlite-fixture PASS1758krav/500boliger,inkludert de fem nye entydighetskravene. Syntaks,whitespace og uendret Bolig-core-boundary55PASS. App/SQL/CI/media er uendret fra49eb23b5; bare denne fixtureen og QA er endret. Ny eksaktCI må bekrefte kandidaten.

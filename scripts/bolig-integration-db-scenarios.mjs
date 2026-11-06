@@ -311,8 +311,17 @@ export default async function ({
       {name:'Building B',building_type:'house',address:'Block B 103',house_floors:1,entrances:[{address:'',counts:[1]}]},
     ],
   });
-  const locationUnits=locationPlan.units;
-  eq(locationUnits.length,2,'location fixture creates two homes');
+  eq(locationPlan.units.length,2,'location fixture creates two homes');
+  // Snapshot order follows generated entrance IDs, not the building input order.
+  const locationUnits=['Building A','Building B'].map(name=>{
+    const block=locationPlan.blocks.find(row=>row.name===name);
+    const entrances=locationPlan.entrances.filter(row=>row.block_id===block?.id);
+    eq(entrances.length,1,'location fixture has one entrance for '+name);
+    const units=locationPlan.units.filter(row=>entrances.some(entrance=>entrance.id===row.entrance_id));
+    eq(units.length,1,'location fixture has one exact home for '+name);
+    return units[0];
+  });
+  eq(locationUnits[0].id!==locationUnits[1].id,true,'same-number location homes have distinct identities');
   eq(locationUnits[0].number,locationUnits[1].number,'same home number in separate buildings');
   for(let n=0;n<2;n++){
     const progressBasis=(await db.query("select public.bolig_progress($1,$2,$3,'get','{}'::jsonb) v",[firm,locationPlan.root.id,locationUnits[n].id])).rows[0].v;
