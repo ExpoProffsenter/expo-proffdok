@@ -6216,7 +6216,7 @@ ${appLink}`;
         bathroomEquipment
       });
     }
-    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { "data-expo-app-shell": "true", "data-expo-project-shell": hasActiveProjectWorkspace ? "1" : void 0, "data-expo-project-global-shell": hasActiveProjectWorkspace && !isProjectSupportReadOnly ? "1" : void 0, onClick: openImageLightboxFromClick, children: [
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { "data-expo-app-shell": "true", "data-expo-project-shell": hasActiveProjectWorkspace ? "1" : void 0, "data-project-participants-id": hasActiveProjectWorkspace ? projectId : void 0, "data-project-participants-readonly": String(isProjectSupportReadOnly || isProjectLocked || isReadOnly), "data-expo-project-global-shell": hasActiveProjectWorkspace && !isProjectSupportReadOnly ? "1" : void 0, onClick: openImageLightboxFromClick, children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(MobileScrollShortcuts, {}),
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("style", { children: APP_RUNTIME_STYLES }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AppNewsNotice, { supabaseClient: supabase, authUser }),
