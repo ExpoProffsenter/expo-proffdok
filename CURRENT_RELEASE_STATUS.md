@@ -1,8 +1,10 @@
-# Gjenopptatt kontroll – 6. november
+# Kontrollert fremdrift –6.november
 
-PR311: CI983 på e650ff74 feilet etter innskriving i periodemerknaden: samme eksakte feltnavn ble ikke funnet ved breddekontroll. Feltet får nå fast tilgjengelig navn; alle tidligere tester beholdes. Full lokal Sandbox-build/critical, timeline102 og launcher11 PASS. Lokal native Chromium stopper før test med socketbegrensning; ny CI/Preview-attest gjenstår. Se [konkret feil og kontroll](docs/qa/PLAN_PERIOD_NOTE_20261106.md). Ingen TEST OK, produksjonsendring, migrasjon eller utsending.
+PR311/46b66835: full CI985/run42247360494 SUCCESS, alle ni pakker og sluttgate. READY dpl_FQ8FqQHyUUu6TwkJ5rttfn3Swui4 på fastalias; faktisk main-D9AploPk.js er Sandbox uten Production-ref. Innlogget QA-PLAN-0511:758tegn/trelinjer eksplisitt lagret og hentet tilbake eksakt; opprinnelige72tegn tilbakeført/lagret, fokusretur PASS. [Bevis](docs/qa/PLAN_PERIOD_NOTE_20261106.md).
 
-PR308 har13filmer og nyere dokumentasjonshode d3759ce5; CI984 pågår ved avlesning. Main34daef4c/demoabc38f7e er bevart. Full helapp-/videoarbeid er fortsatt ikke ferdig.
+Ny avgrenset HR-kandidat: lokal lengdefeil blir oppdatert når teksten rettes; transport-/konfliktfeil beholdes. Faktisk førfeil i innlogget syntetisk samtale og negativ React-prøve på gammel kode.145lokale React-krav, full lokal Sandbox-build/critical, video-register/syntax/whitespace PASS. Ny eksakt CI/READY/innlogget etterkontroll kreves for HR-tillegget. [Scope/test/rollback](docs/qa/HR_TEXT_WARNING_20261106.md). Ingen HR-serverutgave eller utsending ble endret i førprøven.
+
+PR308/d3759ce5 med13filmer har full CI984SUCCESS. Main34daef4c/demoabc38f7e urørt. Ingen TEST OK, migrasjon eller produksjonssetting. Hele appen og alle filmer er fortsatt ikke ferdig kontrollert.
 
 ---
 

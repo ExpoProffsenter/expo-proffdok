@@ -36,6 +36,7 @@ globalThis.__rpc=async(name,args={})=>{
  if(name==='hr_conversation_reminder'){if(s.actor!=='leader')throw Object.assign(Error('Ingen tilgang'),{code:'42501'});if(args.p_revision!==c.revision)throw Object.assign(Error('Konflikt'),{code:'PT409'});c.leader_email_reminder=args.p_enabled;c.leader_reminder_user_id=s.actor;c.revision++;s.history[c.id][c.revision]=clone(c);return project(c);}
  if(name==='hr_conversation_schedule_at_place'){if(s.actor!=='leader')throw Object.assign(Error('Ingen tilgang'),{code:'42501'});if(args.p_revision!==c.revision)throw Object.assign(Error('Konflikt'),{code:'PT409'});c.on=args.p_on;c.meeting_time=args.p_time;c.meeting_location=args.p_location;c.revision++;s.history[c.id][c.revision]=clone(c);return project(c);}
  if(name==='hr_conversation_command'){
+  if(s.commandError)throw Error(s.commandError);
   if(args.p_revision!==c.revision)throw Object.assign(Error('Konflikt'),{code:'PT409'});const data=args.p_data;
   if(args.p_action==='preparation')c.preparation=data.answers;
   else if(args.p_action==='share'){c.shared=true;c.stage='meeting';}
@@ -91,6 +92,17 @@ try{
   const writesBefore=w.__state.calls.filter(c=>c.name==='hr_conversation_command').length;
   await click('Lagre samtale');eq(w.__state.calls.filter(c=>c.name==='hr_conversation_command').length,writesBefore,'over-limit draft sends no mutation');
   eq(field('Hvordan fungerer arbeidet? *').value,longPreparation,'failed save retains complete paste');
+  await write('Hvordan fungerer arbeidet? *','x'.repeat(10002));
+  eq(w.document.querySelector('.hrp-error[role=alert]')?.textContent.includes('Forberedelsen har mer enn 10000'),true,'text warning stays while preparation remains invalid');
+  await write('Hvordan fungerer arbeidet? *','Korrigert forberedelse');
+  eq(Boolean(w.document.querySelector('.hrp-error[role=alert]')),false,'corrected text removes stale length error without saving');
+  eq(w.__state.calls.filter(c=>c.name==='hr_conversation_command').length,writesBefore,'correcting text never writes');
+  w.__state.commandError='Syntetisk lagringsfeil';await click('Lagre samtale');
+  eq(w.document.querySelector('.hrp-error[role=alert]')?.textContent,'Syntetisk lagringsfeil','transport error remains visible');
+  await write('Hvordan fungerer arbeidet? *','Ny korrigert forberedelse');
+  eq(w.document.querySelector('.hrp-error[role=alert]')?.textContent,'Syntetisk lagringsfeil','editing never clears transport errors');
+  w.__state.commandError='';
+  await write('Hvordan fungerer arbeidet? *',longPreparation);await click('Lagre samtale');
   await act(async()=>w.dispatchEvent(new w.Event('focus')));eq(field('Hvordan fungerer arbeidet? *').value,longPreparation,'over-limit draft survives fresh access hydration');
   await act(async()=>w.__unmount());await render('self');eq(field('Hvordan fungerer arbeidet? *').value,longPreparation,'over-limit draft survives remount in scoped memory');
   await write('Hvordan fungerer arbeidet? *','Privat forberedelse før fanebytte');
@@ -104,13 +116,13 @@ try{
   const actionsBefore=w.__state.calls.filter(c=>c.name==='hr_conversation_command').length;
   await click('Lagre samtale');eq(w.__state.calls.filter(c=>c.name==='hr_conversation_command').length,actionsBefore,'over-limit action blocks all meeting writes');
   eq(field('Hva skal gjøres?').value.length,2001,'complete action draft retained');
-  await write('Hva skal gjøres?','Følg opp opplæring');await write('Frist','2026-11-20');await write('Neste oppfølging','2026-11-21');await click('Neste');eq(scrolled.at(-1),'Referat');
+  await write('Hva skal gjøres?','Følg opp opplæring');eq(Boolean(w.document.querySelector('.hrp-error[role=alert]')),false,'corrected action clears its local length warning');await write('Frist','2026-11-20');await write('Neste oppfølging','2026-11-21');await click('Neste');eq(scrolled.at(-1),'Referat');
   const mutationCount=w.__state.calls.filter(c=>c.name==='hr_conversation_command').length;await click('Tilbake til samtale og tiltak');eq(field('Hva skal gjøres?').value,'Følg opp opplæring');eq(field('Frist').value,'2026-11-20');await act(async()=>w.dispatchEvent(new w.Event('focus')));eq(field('Hva er avtalt? *').value,'Felles referat');eq(field('Hva skal gjøres?').value,'Følg opp opplæring');await click('Neste');eq(w.__state.calls.filter(c=>c.name==='hr_conversation_command').length,mutationCount,'combined navigation and refresh never write or lose draft');
   eq(w.document.querySelector('.hrp-review').textContent.includes('Privat forberedelse før fanebytte'),true,'review includes shared original answer');eq(w.document.querySelector('.hrp-review').textContent.includes('Felles referat'),true,'review includes unsaved meeting notes');eq(w.document.querySelector('.hrp-review').textContent.includes('Følg opp opplæring'),true);eq(w.document.querySelector('.hrp-review').textContent.includes('20.11.2026'),true);eq(w.document.querySelector('.hrp-review').textContent.includes('Forhåndsvisning med ulagrede'),true);eq(button('Send til begge for gjennomgang').disabled,true,'dirty preview cannot be submitted');await write('Lederens kommentar','x'.repeat(10001));
   const commentsBefore=w.__state.calls.filter(c=>c.name==='hr_conversation_command').length;
   await click('Lagre samtale');eq(w.__state.calls.filter(c=>c.name==='hr_conversation_command').length,commentsBefore,'over-limit comment prevents partial meeting save');
   eq(field('Lederens kommentar').value.length,10001);
-  await write('Lederens kommentar','Lederens egen kommentar');await click('Lagre samtale');eq(w.document.querySelector('.hrp-review').textContent.includes('Dette er den lagrede utgaven'),true);eq(w.__state.cases[cid].meeting.meeting,'Felles referat','save on last tab saves earlier-tab edits too');eq(w.__state.cases[cid].actions.length,1);eq(w.__state.cases[cid].comments.leader,'Lederens egen kommentar');
+  await write('Lederens kommentar','Lederens egen kommentar');eq(Boolean(w.document.querySelector('.hrp-error[role=alert]')),false,'corrected comment clears its local length warning');await click('Lagre samtale');eq(w.document.querySelector('.hrp-review').textContent.includes('Dette er den lagrede utgaven'),true);eq(w.__state.cases[cid].meeting.meeting,'Felles referat','save on last tab saves earlier-tab edits too');eq(w.__state.cases[cid].actions.length,1);eq(w.__state.cases[cid].comments.leader,'Lederens egen kommentar');
   await click('Send til begge for gjennomgang');eq(buttons().some(b=>b.textContent==='Send til begge for gjennomgang'),false,'already submitted review has no resend button');await click('Jeg har lest referatet');eq(w.__state.cases[cid].stage,'awaiting');eq(w.document.querySelector('.hrp-stage-guide').textContent.includes('Referatet er sendt til gjennomgang'),true);
   await render('self');await open();eq(w.document.querySelector('[aria-current=step]').textContent,'3Referat','awaiting case opens full review directly');await click('3Referat');await click('Jeg har lest referatet');eq(w.__state.cases[cid].stage,'completed');eq(w.document.querySelector('.hrp-stage-guide').textContent.includes('Samtalen er ferdig'),true);await open();eq(w.document.querySelector('[aria-current=step]').textContent,'3Referat','completed history opens review, not editing');
   const before=w.location.href;await click('Last ned referat som PDF');eq(w.__state.pdf,1);eq(w.location.href,before);eq(w.document.querySelector('[aria-current=step]').textContent,'3Referat','PDF retains same case/tab');

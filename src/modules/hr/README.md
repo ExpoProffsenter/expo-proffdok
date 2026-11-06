@@ -4,9 +4,9 @@ HrConversations bruker eksisterende rolle- og revisjonskontroller gjennom hrConv
 
 ## Tekst uten skjult avkorting
 
-Forberedelse, møtereferat og egne kommentarer har eksisterende servergrense på 4000 tegn per felt; tiltak har 600. ConversationText beholder hele innlimingen og viser teller samt en tilgjengelig feil ved overskridelse. hrConversationText teller Unicode-kodepunkter som PostgreSQL. Hele lagringsforsøket valideres før første mutasjon, også når endret tid/sted og kommentarer lagres sammen med møtereferat. Bare felter brukeren har skriverett til valideres. Historiske utgaver og den andre partens tekst endres ikke.
+Denne kandidaten bruker 10000 tegn per felt i forberedelse, møtereferat og egne kommentarer; tiltak har 2000. Utvidelsen er installert i Sandbox, mens Production krever separat autorisert migrering før klienten tas i bruk. ConversationText beholder hele innlimingen og viser teller samt en tilgjengelig feil ved overskridelse. hrConversationText teller Unicode-kodepunkter som PostgreSQL. Hele lagringsforsøket valideres før første mutasjon, også når endret tid/sted og kommentarer lagres sammen med møtereferat. Bare felter brukeren har skriverett til valideres. Historiske utgaver og den andre partens tekst endres ikke.
 
-Dette øker ikke servergrensene. Høyere grenser og samlet tiltak-/oppfølgingsflyt krever egen kontrakt og regresjonstester. Bekreftelse, deling, historikk, PDF, varsler og e-postpolicy beholdes.
+Når brukeren retter en avvist tekstlengde, følger den lokale lengdefeilen gjeldende kladd og forsvinner når teksten er innenfor grensen. Lagringsfeil og revisjonskonflikter beholdes. Redigering lagrer ikke automatisk. Bekreftelse, deling, historikk, PDF, varsler og e-postpolicy beholdes.
 
 ## Samlet samtale og tiltak
 

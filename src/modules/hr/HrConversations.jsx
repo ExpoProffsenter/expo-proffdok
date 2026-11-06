@@ -98,7 +98,15 @@ export default function HrConversations({context,employee,initialCaseId=null,ini
  };
  const leave=()=>!dirty||window.confirm('Du har ulagrede endringer. Vil du åpne en annen samtale og legge kladden til side?');
  const open=(id,version=null)=>run(async(s,current)=>{if(!leave())return;const result=await s.get(id,version);if(current()){install(result);setStep(conversationOpeningStep(result.conversation));setHistoryVersion('');body.current?.focus();body.current?.scrollIntoView({block:'start'});}});
- const change=patch=>keep({...draft,...patch});
+ const change=patch=>{
+  const next={...draft,...patch},side=value.employee.user_id===userId?'employee':'leader';
+  // Only the local length warning follows edits; transport/conflict errors remain.
+  if(error){
+   const previousTextError=conversationTextError(draft,value.permissions,side);
+   if(previousTextError&&error===previousTextError)setError(conversationTextError(next,value.permissions,side));
+  }
+  keep(next);
+ };
  const act=(action,data={})=>run(async(s,current)=>{
   const result=await s.command(value,action,data);if(current()){install(result);setNotice('Lagret på serveren · utgave '+result.current_revision+'.');if(action==='share')setStep(1);if(action==='ready'||action==='confirm')setStep(3);}
  });

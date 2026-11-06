@@ -17,3 +17,9 @@ Textarea får eksplisitt aria-label=Merknad, slik at navnet er uavhengig av teks
 Lokalt: full Sandbox npm build med critical-kjede PASS; timeline102 og launcher11 faktiske React-krav PASS; release-docs selvtest og whitespace PASS. Native Chromium stopper før første browserassertion med ProcessSingleton socket Operation not permitted. Nettlesernedlasting ga avkortet ZIP og ble avbrutt; eksisterende system-Chromium bekreftet begrensningen. Ingen lokal native eller innlogget attest. Ny kandidat må gjennom CI og Preview før TEST OK.
 
 Main34daef4c og demoabc38f7e er uendret ved fersk git-kontroll. PR308 har samtidig nyere dokumentasjonshode d3759ce5 og CI984; ikke overskriv eller bruk gammel PR308-status som sluttattest.
+
+## Faktisk innlogget etterkontroll på46b66835
+
+Fast PR311-host er READY/dpl_FQ8FqQHyUUu6TwkJ5rttfn3Swui4 på eksakt46b66835/targetnull. Faktisk main-D9AploPk.js:278291tegn, Sandbox-ref til stede og Production-ref fraværende. CI985/run42247360494: app-browser127993084522 SUCCESS med196plankrav og11launcherkrav. Øvrige pakker/sluttgate avstemmes i PR311.
+
+Demokonto/QA-PLAN-0511: lagret72tegn åpnet i TEXTAREA,16px,108px høyde,clientWidth=scrollWidth=553,vertikal resize. Syntetisk758tegn/trelinjer/SLUTT-QA-0611 skrevet og eksplisitt lagret. Lukk planbygger → Hent lagret plan → faktisk ny serverhenting åpnet planbygger igjen. Gjenåpnet arbeidsoperasjon viste eksakt alle758tegn og linjeskift, fortsatt riktig navn og bryting. Deretter opprinnelige72tegn tilbakeført og lagret; ny åpning bekreftet eksakt original. Samme datoer/status/to personer beholdt. Lukk planbygger returnerte fokus til eksakt Åpne fremdriftsplan. Ingen eksport, migrering eller utsending. Dette er desktop Chrome; fem bredder er CI-bevis, ingen fysisk mobil/Safari-attest.
