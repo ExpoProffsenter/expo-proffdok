@@ -1,6 +1,14 @@
-# To nye Hjelp-filmer – kandidat 5. november kveld
+# Gjeldende Hjelp-kandidat – 6. november 2026
 
-PR308 bygger videre fra6c23091f med planoppretting/redigering2:04 og områdetelling/pause/kontroll2:30, kapitler/VTT/tekst under KS/HMS og Prissøk. Elleve tidligere guideposter/filmer bevares. Varetellingsknappen krever eksisterende positiv stocktake_context, ikke bare Prissøk-tilgang. Kildeprøver/videoer/kilder er ferdig levert i PR311/6c223547. Ny eksakt CI/READY/native og Preview-kontroll føres i PR308 og docs/qa/PLAN_AREA_HELP_INTEGRATION_20261105.md; ingen gammel kandidatattest gjenbrukes for ny kode. Ingen TEST OK/produksjon. Senere release må omfatte PR311s relevante plan-/områdeflyt. Full helapp-/videodekning gjenstår.
+PR308 / `fase45b-ux-live-review-20261104`, kandidat `759adb29493968cfcdbf8538303a551271f6938e`. To nye filmer om planoppretting/redigering (2:04) og områdetelling/pause/kontroll (2:30) er koblet til eksisterende temaer og relevante tilganger. Alle elleve tidligere filmer er bevart. Vercel `dpl_kfewdwXUU5EhqxnG6NSAGgiivuKn` er READY på fast Preview, target null. Begge publiserte MP4-filer og VTT-spor er byteidentiske med originalene; publisert app er Sandbox uten Production-ref.
+
+CI980 stoppet på feil antakelse om antall monterte hjelpevisninger i den nye tilgangstesten. Kandidaten retter bare denne testventingen og dokumenterer årsaken; app/media/backend er uendret. Eksakt kandidat-CI981/run42224836882 SUCCESS: alle ni delpakker og samlet Core safety + critical build127918754664 PASS. Filmprøven127915665986 bestod 712 faktiske Chromium-kontroller på alle13filmer, inklusive begge nye filmer, fem bredder, tekstspor, kapitler, avspilling, tilgang og nested retur/fokus. Nettleseren viser ordinær innlogging i ny økt; ingen ny innlogget manuell prøve eller fysisk Safari-test er attestert. Bevis, scope og rollback: [QA-grunnlaget](docs/qa/PLAN_AREA_HELP_INTEGRATION_20261105.md).
+
+Production er kontrollert uendret `34daef4c`/READY. Ingen TEST OK, merge, produksjons-/demopublisering, migrering eller utsending. Senere release må omfatte PR311s relevante plan-/områdeflyt; ingen tidligere Sandbox-migrering skal kjøres på nytt. Full HR/Bolig A–Å og resten av helapp-/filmregisteret gjenstår.
+
+---
+
+# Historiske checkpoint
 
 # Ny planfilm i Hjelp – kandidat 5. november
 
