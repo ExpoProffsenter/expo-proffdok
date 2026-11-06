@@ -47,9 +47,11 @@ try{
    await library.getByRole('button',{name:/^Anbefalte /}).click();await inspect('library-filters-'+width);
    await page.getByText('Legg til flere rutiner',{exact:true}).click();
   }
-  await page.getByRole('button',{name:'Ny rutine fra blank mal',exact:true}).click();
+  const editorTrigger=page.getByRole('button',{name:'Ny rutine fra blank mal',exact:true}),editorTriggerNode=await editorTrigger.elementHandle();
+  await editorTrigger.click();
   const form=native().locator('.ks-routine-form-036'),title=form.getByLabel('Tittel',{exact:true}),chapter=form.getByLabel('Kapittel',{exact:true});
   await form.waitFor();
+  eq(await page.locator('.ks-editor').evaluate(node=>node.getBoundingClientRect().top>=document.querySelector('[data-expo-app-shell] > header').getBoundingClientRect().bottom+8),true,'editor '+width+' heading below actual sticky header');
   const boxes=await Promise.all([title.boundingBox(),chapter.boundingBox()]);eq(width>760?Math.abs(boxes[0].y-boxes[1].y)<2:boxes[1].y>boxes[0].y,true,'editor '+width+' uses PC columns and mobile sequence');
   await inspect('blank-editor-'+width);
   await title.fill('QA lokal egen rutine');const handle=await title.elementHandle();
@@ -62,6 +64,7 @@ try{
   await form.getByRole('button',{name:'Fjern kilde 1',exact:true}).click();eq(await form.locator('.ks-reference').count(),0,'remove only local source');eq(await title.evaluate((n,original)=>n===original,handle),true,'same title DOM through source add/remove');
   await page.evaluate(()=>{window.dispatchEvent(new Event('blur'));document.dispatchEvent(new Event('visibilitychange'));window.dispatchEvent(new Event('focus'));});eq(await title.inputValue(),'QA lokal egen rutine','own draft after focus/visibility');
   await form.getByRole('button',{name:'Lukk redigering',exact:true}).click();
+  eq(await editorTriggerNode.evaluate(node=>document.activeElement===node),true,'editor '+width+' close returns exact opener after local draft');
   // A fresh actor keeps the following read-only scenarios independent of that
   // intentionally retained device-local draft. No storage reset or app stub.
   await render();await navigate('Håndbok','handbook');
@@ -85,6 +88,11 @@ try{
   const summaries=compare.locator('details>summary');eq(await summaries.count(),8,'all eight source fields');
   for(let i=0;i<await summaries.count();i++){await summaries.nth(i).click();await inspect('source-compare-'+i+'-'+width);await summaries.nth(i).click();}
   const own=page.getByLabel('I vår bedrift har vi følgende rutine',{exact:true});const oldOwn=await own.inputValue();await compare.getByText(/Fremgangsmåte ·/).click();await compare.getByRole('button',{name:'Bruk forslagets fremgangsmåte',exact:true}).click();eq(await own.inputValue()!==oldOwn,true,'partial source adoption changes only native draft');
+  const comparisonTrigger=page.getByRole('button',{name:'Vurder ProffDoks tekstforslag',exact:true}),comparisonNode=await comparisonTrigger.elementHandle(),adopted=await own.inputValue();
+  await compare.getByRole('button',{name:'Lukk sammenligning',exact:true}).click();
+  eq(await comparisonNode.evaluate(node=>document.activeElement===node),true,'comparison '+width+' close returns exact editor trigger');
+  eq(await own.inputValue(),adopted,'comparison close keeps adopted local field '+width);
+  await comparisonTrigger.click();await compare.waitFor();eq(await own.inputValue(),adopted,'comparison reopen preserves local draft '+width);
   eq(await page.getByRole('searchbox',{name:'Søk i firmaets rutiner',exact:true}).isVisible(),true,'source adoption keeps handbook destination');await page.getByRole('button',{name:'Lukk redigering',exact:true}).click();
   await render();await navigate('Oppfølging og revisjon','followup');await page.getByText('Gjennomfør revisjon',{exact:true}).click();await page.getByText('Revisjonshistorikk (1)',{exact:true}).click();await page.locator('.ks-ack-person>summary').click();await page.getByText('Gi godkjente rutiner til nye medarbeidere',{exact:true}).click();await inspect('revision-history-followup-'+width);
   eq(await page.getByRole('button',{name:'Signer revisjon',exact:true}).isDisabled(),true,'revision stays unsigned');await page.getByLabel('Hva har du kontrollert?',{exact:true}).fill('QA lokal revisjonskladd');await page.getByText('Gjennomfør revisjon',{exact:true}).click();await page.getByText('Gjennomfør revisjon',{exact:true}).click();eq(await page.getByLabel('Hva har du kontrollert?',{exact:true}).inputValue(),'QA lokal revisjonskladd','revision disclosure preserves actual field');

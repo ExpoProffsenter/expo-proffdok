@@ -2,6 +2,10 @@
 .help-video-library>div>span{display:grid;gap:4px;flex:1;min-width:0}.help-video-library small{font-size:14px;line-height:1.4;color:#4e6876}
 button.help-video-open,.help-video-actions>button{display:flex;align-items:center;gap:10px;min-height:44px!important;padding:10px 14px!important;background:#fff!important;color:#007681!important;border:1px solid #b7ccd6!important;border-radius:8px!important;font-size:16px!important;font-weight:650;text-align:left;white-space:normal;line-height:1.4;box-shadow:none;max-width:100%}
 .help-video-open>svg,.help-video-actions svg{flex:none}.help-video-open>span{flex:1;min-width:0;overflow-wrap:anywhere}.help-video-open>small{font-size:14px;white-space:nowrap;color:#4e6876}.help-video-open.is-compact{margin:12px 0;width:100%}
+.help-topic-entry{min-width:0;border-bottom:1px solid #d5e4eb}
+.help-topic-entry>.help-topic-row{padding:0!important;margin:0!important;border:0!important;background:transparent!important;box-shadow:none!important}
+.help-topic-entry>.help-video-open.is-compact{width:calc(100% - 32px);margin:0 16px 12px}
+.help-bolig-guides{display:flex;flex-wrap:wrap;gap:8px}
 dialog.help-video-index :is(button,input,select),dialog.help-video-player :is(button,input,select){min-height:44px!important;font-size:16px!important}
 dialog.help-video-index .pd-workspace-drawer-header button,dialog.help-video-player .pd-workspace-drawer-header button{height:44px;min-width:44px!important;flex:none;transform:none}
 dialog.help-video-player.is-wide{width:min(1280px,100vw)}

@@ -243,16 +243,20 @@ export function StoreCatalogInlineLookup({ onUse, placeholder = "Søk vareregist
 
 export function StoreCatalogAdminOnlyPanel({ onSelectItem }) {
   const [client] = useState(() => createDefaultSalesSupabaseClient());
-  const [manage, setManage] = useState(false);
+  const [status, setStatus] = useState("loading");
+  const [accessRevision, setAccessRevision] = useState(0);
 
   useEffect(() => {
     let active = true;
-    canManageInternalStoreCatalog(client)
-      .then((allowed) => active && setManage(Boolean(allowed)))
-      .catch(() => active && setManage(false));
+    setStatus("loading");
+    canManageInternalStoreCatalog(client, { throwOnError: true })
+      .then((allowed) => active && setStatus(allowed ? "allowed" : "denied"))
+      .catch(() => active && setStatus("error"));
     return () => { active = false; };
-  }, [client]);
+  }, [client, accessRevision]);
 
-  if (!manage) return null;
+  if (status === "loading") return <p role="status">Kontrollerer tilgang til vareregisteret …</p>;
+  if (status === "error") return <div><p role="alert">Kunne ikke kontrollere tilgangen til vareregisteret.</p><button type="button" className="secondary" onClick={() => setAccessRevision(value => value + 1)}>Prøv tilgangskontrollen igjen</button></div>;
+  if (status === "denied") return <p role="status">Brukeren din har ikke tilgang til å administrere det interne vareregisteret. Kontakt systemansvarlig hvis du trenger denne tilgangen.</p>;
   return <StoreCatalogPanel onSelectItem={onSelectItem} />;
 }

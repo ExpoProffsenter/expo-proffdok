@@ -5,6 +5,8 @@ import path from 'node:path';
 import http from 'node:http';
 import {build} from 'vite';
 import react from '@vitejs/plugin-react';
+await import('./organization-workspace-browser-check.mjs');
+await import('./support-users-react-check.mjs');
 import {matchesProjectStatus} from '../src/modules/project/projectListStatus.mjs';
 import {checklistDisplayState} from '../src/modules/checklist/checklistDisplay.mjs';
 import {filterHelpSections} from '../src/modules/help/helpSearch.mjs';
@@ -115,12 +117,14 @@ await import("./kshms-governance-036-browser-check.mjs");
 await import("./systemadmin-company-panel-browser-check.mjs");
 await import("./admin-access-036-browser-check.mjs");
 await import("./profile-support-register-browser-check.mjs");
+await import("./store-catalog-access-react-check.mjs");
 
 await import("./report-choice-workspace-browser-check.mjs");
 
 await import("./project-report-workspace-browser-check.mjs");
 
 await import("./project-media-portal-browser-check.mjs");
+await import("./portal-access-status-react-check.mjs");
 
 await import("./sales-entry-workspace-browser-check.mjs");
 
@@ -131,6 +135,7 @@ await import("./housing-unit-workspace-browser-check.mjs");
 await import("./sales-flow-036-browser-check.mjs");
 
 await import("./project-subflows-036-browser-check.mjs");
+await import("./product-categories-react-check.mjs");
 
 await import("./warranty-terms-pdf-check.mjs");
 
@@ -145,6 +150,7 @@ await import("./kshms-extract-workspace-browser-check.mjs");
 await import("./bolig-guidance-workspace-browser-check.mjs");
 
 await import('./supplier-order-workspace-browser-check.mjs');
+await import('./supplier-order-drawer-react-check.mjs');
 await import('./proffdok-video-coverage-check.mjs');
 
 await import("./shell-workprofile-036-browser-check.mjs");
@@ -153,3 +159,5 @@ await import("./kshms-project-report-react-pdf-check.mjs");
 await import("./project-control-report-check.mjs");
 
 await import("./help-video-browser-check.mjs");
+
+await import('./stocktake-react-check.mjs');

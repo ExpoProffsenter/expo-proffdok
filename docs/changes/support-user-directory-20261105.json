@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Supportoversikt: automatisk brukerlesing og ærlig ukjent tilstand",
+  "change": "Miljømål BEGGE. Systemadmin Firmaer og prosjekter henter profiles automatisk i avgrenset leseflyt. Null og manglende firmaadmin vises bare etter bekreftet svar. Aktør/område/tilgang og sene svar kontrolleres. Primærfirmagruppering og eksisterende brukeradministrasjon beholdes.",
+  "verification": "Read-only Sandbox-aggregat og faktisk UI før rettelse bekreftet4brukere/1admin etter manuell oppdatering. Lokal faktisk React/main-prøve39PASS med syntetisk lesetransport; ny CI og innlogget etterkontroll kreves.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "Brukerhjelpen beskriver automatisk lesing, ukjente tall og Oppdater supportdata."
+    },
+    "architecture": {
+      "required": true,
+      "reason": "Separat aktørbundet leseflyt og forholdet til adminUsers dokumenteres."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen nye avhengigheter, miljøvariabler eller installasjon."
+    },
+    "module": {
+      "required": true,
+      "reason": "Tilstand, opprinnelig primærfirmagruppering og aktualisering dokumenteres i support-README."
+    }
+  }
+}

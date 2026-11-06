@@ -13,15 +13,15 @@ const bandLabel=band=>`${shortDate(band.from)}${band.to!==band.from?'–'+shortD
 const views=new Map();
 let bodyLocks=0,originalOverflow='';
 
-function PlanDialog({title,onClose,onOpen,children,side=false,expanded=false}){
- const ref=useRef(null),id=useId(),opened=useRef(onOpen);opened.current=onOpen;
+function PlanDialog({title,onClose,onOpen,children,side=false,expanded=false,returnFocusTarget}){
+ const ref=useRef(null),id=useId(),opened=useRef(onOpen),focusReturn=useRef(returnFocusTarget);opened.current=onOpen;focusReturn.current=returnFocusTarget;
  useEffect(()=>{
   const previous=document.activeElement;
   let frame,locked=false;
   const open=()=>{ref.current.showModal();locked=true;if(bodyLocks++===0)originalOverflow=document.body.style.overflow;document.body.style.overflow='hidden';opened.current?.(ref.current);};
   const parent=ref.current.parentElement.closest('dialog');
   if(parent&&!parent.open)frame=requestAnimationFrame(open);else open();
-  return()=>{cancelAnimationFrame(frame);if(locked&&--bodyLocks===0)document.body.style.overflow=originalOverflow;if(previous?.isConnected)previous.focus({preventScroll:true});};
+  return()=>{cancelAnimationFrame(frame);if(locked&&--bodyLocks===0)document.body.style.overflow=originalOverflow;const target=typeof focusReturn.current==='function'?focusReturn.current():focusReturn.current||previous;if(target?.isConnected)target.focus({preventScroll:true});};
  },[]);
  // The main workspace closes only via Tilbake; OS capture cancel must not dismiss it.
  return <dialog ref={ref} className={'ks-plan-dialog'+(side?' ks-plan-drawer':'')+(expanded?' ks-plan-expanded':'')} aria-labelledby={id} onCancel={e=>{e.preventDefault();e.stopPropagation();if(!expanded)onClose();}} onClick={e=>{if(!expanded&&e.target===e.currentTarget){const r=e.currentTarget.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)onClose();}}}>
@@ -85,7 +85,7 @@ function ActivityDrawer({participantHint,people=[],excludeSundays,activity,readO
    {band&&<section className="ks-plan-period-editor" aria-label={readOnly?'Planlagt periode':'Rediger periode'}>
     <div className="ks-plan-editor-pair"><label>Startdato<input type="date" value={band.from} onChange={e=>e.target.value&&applyPeriod({from:e.target.value})}/></label><label>Sluttdato<input type="date" value={band.to} onChange={e=>e.target.value&&applyPeriod({to:e.target.value})}/></label></div>
     <div className="ks-plan-editor-pair"><label>Fra kl.<input type="time" value={band.startTime} onChange={e=>e.target.value&&applyPeriod({startTime:e.target.value})}/></label><label>Til kl.<input type="time" value={band.endTime} onChange={e=>e.target.value&&applyPeriod({endTime:e.target.value})}/></label></div>
-    {readOnly?<div className="ks-plan-readonly-note"><strong>Merknad</strong><p>{band.note||'Ingen merknad registrert.'}</p></div>:<label>Merknad<input maxLength={5000} value={band.note} onChange={e=>applyPeriod({note:e.target.value})}/></label>}
+    {readOnly?<div className="ks-plan-readonly-note"><strong>Merknad</strong><p>{band.note||'Ingen merknad registrert.'}</p></div>:<label>Merknad<textarea aria-label="Merknad" rows={4} maxLength={5000} value={band.note} onChange={e=>applyPeriod({note:e.target.value})}/></label>}
     <small>{excludeSundays?'Søndager er utelatt. Lørdager er med.':'Perioden omfatter alle datoene, også helg.'}{!readOnly&&' Del opp perioder for andre fridager.'}</small>
     {!readOnly&&<button type="button" className="secondary" onClick={()=>onChange(replaceBand(activity,band,[]))}>Fjern valgt periode</button>}
    </section>}
@@ -95,13 +95,19 @@ function ActivityDrawer({participantHint,people=[],excludeSundays,activity,readO
  </PlanDialog>;
 }
 
-export default function KshmsProgressBoard({plan,meta,readOnly,dirty,saving,loading,error,notice,onPlanChange,onSave,operations,stateKey,launchToken,onExport,people=[],onDismiss,tools=null,standardOperations=[],participantHint=null,dateOnly=false,onOpenActivity=null}){
+export default function KshmsProgressBoard({plan,meta,readOnly,dirty,saving,loading,error,notice,onPlanChange,onSave,operations,stateKey,launchToken,onExport,people=[],onDismiss,tools=null,standardOperations=[],participantHint=null,dateOnly=false,onOpenActivity=null,returnFocusTarget}){
  const openActivity=id=>onOpenActivity?onOpenActivity(id):setEditing(id);
  const firstDate=()=>plan.activities.flatMap(a=>a.sessions).map(s=>s.date).sort()[0]||todayOslo();
  const initial=views.get(stateKey)||{},excludeSundays=plan.excludeSundays===true;
  const [view,setView]=useState(dateOnly&&initial.view==='day'?'week':initial.view||'week'),[anchor,setAnchor]=useState(initial.anchor||firstDate),[query,setQuery]=useState(initial.query||''),[trade,setTrade]=useState(initial.trade||''),[compact,setCompact]=useState(initial.compact||false),[picker,setPicker]=useState(false),[editing,setEditing]=useState(initial.editing||''),[drag,setDrag]=useState(null),[localError,setLocalError]=useState(''),[undoCount,setUndoCount]=useState(0),[expanded,setExpanded]=useState(initial.launchToken===launchToken?(initial.expanded??true):true),[surface,setSurface]=useState(dateOnly?'schedule':initial.surface||'schedule'),[exporting,setExporting]=useState(false);
  useEffect(()=>{if(stateKey)views.set(stateKey,{...views.get(stateKey),view,anchor,query,trade,compact,editing,expanded,surface,launchToken});},[stateKey,view,anchor,query,trade,compact,editing,expanded,surface,launchToken]);
  const history=useRef([]),dragRef=useRef(null),scroll=useRef(null),board=useRef(null);
+ const scheduleLauncher=useRef(null),staffingLauncher=useRef(null),focusScope=useRef(stateKey);
+ const returnToLauncher=()=>{
+  const node=surface==='staffing'?staffingLauncher.current:scheduleLauncher.current;
+  if(focusScope.current!==stateKey||document.visibilityState==='hidden'||!node?.isConnected||node.disabled||node.closest('[hidden],[inert]')||!node.getClientRects().length)return null;
+  return node;
+ };
  // Geometry only; owners still discard payload and reauthorize on every focus.
  const viewport=useRef(initial.launchToken===launchToken?initial.viewport:null),restoration=useRef(viewport.current?{value:viewport.current,canceled:false}:null);
  const [toolsOpen,setToolsOpen]=useState(Boolean(viewport.current?.toolsOpen)),[exportOpen,setExportOpen]=useState(Boolean(viewport.current?.exportOpen));
@@ -242,5 +248,5 @@ export default function KshmsProgressBoard({plan,meta,readOnly,dirty,saving,load
   {picker&&editable&&<OperationPicker standardOperations={standardOperations} operations={operations} onAdd={add} onClose={()=>setPicker(false)}/>}
   {activity&&<ActivityDrawer participantHint={participantHint} key={activity.id} activity={activity} excludeSundays={excludeSundays} people={people} readOnly={readOnly} saving={saving} error={error} notice={notice} onChange={changeActivity} onClose={()=>setEditing('')} onSave={onSave} onRemove={()=>{changed({...plan,activities:plan.activities.filter(a=>a.id!==activity.id)});setEditing('');}} onMove={direction=>{const rows=[...plan.activities],index=rows.findIndex(a=>a.id===activity.id),to=index+direction;if(to>=0&&to<rows.length){[rows[index],rows[to]]=[rows[to],rows[index]];changed({...plan,activities:rows});}}}/>}
  </section>;
- return expanded?<PlanDialog title={meta.title||'Fremdriftsplan'} onOpen={restoreViewport} expanded onClose={()=>{setExpanded(false);onDismiss?.();}}>{content}</PlanDialog>:<div className="ks-plan-launcher"><p>Åpne fremdriftsplanen eller bemanningsplanen.</p><button type="button" onClick={()=>{setSurface('schedule');setExpanded(true);}}>Åpne fremdriftsplan</button> {!dateOnly&&<button type="button" className="secondary" onClick={()=>{setSurface('staffing');setExpanded(true);}}>Åpne bemanningsplan</button>}{dirty&&<p>Du har ulagrede endringer i kladden.</p>}</div>;
+ return expanded?<PlanDialog title={meta.title||'Fremdriftsplan'} onOpen={restoreViewport} expanded returnFocusTarget={returnFocusTarget||returnToLauncher} onClose={()=>{setExpanded(false);onDismiss?.();}}>{content}</PlanDialog>:<div className="ks-plan-launcher"><p>Åpne fremdriftsplanen eller bemanningsplanen.</p><button type="button" ref={scheduleLauncher} onClick={()=>{setSurface('schedule');setExpanded(true);}}>Åpne fremdriftsplan</button> {!dateOnly&&<button type="button" className="secondary" ref={staffingLauncher} onClick={()=>{setSurface('staffing');setExpanded(true);}}>Åpne bemanningsplan</button>}{dirty&&<p>Du har ulagrede endringer i kladden.</p>}</div>;
 }

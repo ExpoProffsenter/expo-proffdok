@@ -228,6 +228,8 @@ Komplette firmamaler beholder varige app-/Storage-bilder på poster og opsjoner.
 
 ## 7. Internt og eksternt proff-vareregister
 
+Systemadmins interne vareregister viser egen status under tilgangskontroll, ved manglende rettighet og ved kontrollfeil. «Prøv tilgangskontrollen igjen» gjør kun nye lesekall og starter ingen import. Både admin-innpakningen og katalogpanelet beholder sine eksisterende tilgangskrav. Klientens valgfrie `throwOnError` brukes her for å skille RPC-feil fra et faktisk avslag; øvrige kall beholder standarden `false` ved RPC-feil.
+
 Selvstendig Prissøk i `src/modules/storeCatalog/` bruker eksisterende read-only katalog-RPC og er ikke del av Sales-editoren. Plukklister med antall og valgfritt manuelt Cordel-ordrenummer kan opprettes/redigeres på både PC og mobil via eksisterende brukerbundne plukkliste-RPC-er. Plukklisteutskrift viser antall/ordrenummer uten priser, mens PC også har separat prisutskrift med serverstyrt intern nto-tilgang og eksplisitt avkryssing. På mobil avslutter `← Startside` Prissøk via eksisterende close-flyt og rydder resume-markøren. Skanneren finnes bare på mobil og fyller GTIN/EAN i samme søkefelt; kamera og bilde lagres eller lastes ikke opp. Ved avvist kameratilgang fungerer manuell inntasting. Se [plukklistemodellen](../../../docs/architecture/MOBILE_PICKLIST_AND_GENERAL_OFFER_SCAN.md).
 
 Generelt tilbud kan bruke vareregister fra `src/modules/storeCatalog/`.
@@ -414,3 +416,8 @@ Dagens avsenderpolicy beholdes gjennom hele routeren: Ringside/Bademiljø velger
 ### Native underflater og lagret skissestatus (31.10.2026)
 
 Editor-/General-kontrollene laster både felles CSS og appens sene mobilregler. `salesSubflows036.css` avgrenser16px felt og minst45px handlinger til interne native Sales-arbeidsflater; eksterne kundevisninger har fortsatt egne regler. `SalesBathroomSketch.storedImageAvailable` er en valgfri presentasjonsprop. Befaringsnotatet setter den bare når et lagret skissebilde vises og lokal redigerbar skisse mangler. Det endrer bare tomstatusen; tegneverktøy, skissedata, serverbilde og kladd/recovery følger dagens eiere. Varig avgrensning og tester: `docs/changes/sales-subflows-runtime-036-20261031.json`.
+
+
+Leverandørbestilling fra Prissøk åpner eksisterende skjema i et WorkspacePanel til høyre (full bredde på mobil), med fast Avbryt/Lukk. Skjema, kanonisk forhåndsvisning, kvittering og usikkert sendeforsøk beholder samme tilstand og request-ID hos SupplierOrder. Header, Escape og footer bevarer kladden ved lukking; alle lukkemetoder sperres mens eksisterende busy-forsøk pågår. Ingen transport- eller bestillingskontrakt er endret.
+
+Forhåndsvis/Send/Rediger og Avbryt ligger fast i panelets footer. Forhåndsvis er knyttet til samme native form-ID; eksisterende required-felt og review-guard gjelder. For å endre antall i plukklisten kan panelet lukkes og åpnes igjen med bevart leverandørkladd.

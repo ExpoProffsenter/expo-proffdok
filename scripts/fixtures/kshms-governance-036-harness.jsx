@@ -51,6 +51,6 @@ function App(){
  window.qa.remount=()=>setConfig(previous=>({...previous,mount:(previous.mount||0)+1}));
  window.qa.release=()=>{window.qa.holdCompany=null;window.qa.pending.splice(0).forEach(resolve=>resolve());};
  useLayoutEffect(()=>{window.qa.committed=config;},[config]);
- return <div data-expo-app-shell="true"><main><Module key={config.serial+':'+(config.mount||0)} context={context} personalOnly={config.role==='personal'}/></main></div>;
+ return <div data-expo-app-shell="true"><header><div className="head"><div>Expo ProffDok</div></div><nav className="expoDesktopPrimaryNav" aria-label="QA hovedmeny"><button type="button">KS/HMS</button></nav></header><main><Module key={config.serial+':'+(config.mount||0)} context={context} personalOnly={config.role==='personal'}/></main></div>;
 }
 createRoot(document.getElementById('app')).render(<App/>);

@@ -14,12 +14,13 @@ const measurements = [];
 if (outputDir) fs.mkdirSync(outputDir, { recursive: true });
 const built = await build({ root, configFile: false, logLevel: "silent", plugins: [react(), {
   name: "preview-isolation", enforce: "pre",
-  resolveId(id) { if (id.endsWith("/salesStoreOfferTemplates.js")) return "\0templates"; if (/\/(SalesContractActions|SalesContractWizard|SalesWetroomFollowUpActions|CordelOfferExport)\.jsx$/.test(id)) return "\0empty"; },
-  load(id) { if (id === "\0templates") return "export const loadStoreTextTemplates=async()=>[];export const saveStoreTextTemplate=async()=>{throw Error('No template writes');};export const removeStoreTextTemplate=async()=>{throw Error('No template deletion');};"; if (id === "\0empty") return "export default function(){return null;}"; },
+  resolveId(id) { if (id.endsWith("/salesStoreOfferAutosave.js")) return "\0autosave"; if (id.endsWith("/salesStoreOfferTemplates.js")) return "\0templates"; if (/\/(SalesContractActions|SalesContractWizard|SalesWetroomFollowUpActions|CordelOfferExport)\.jsx$/.test(id)) return "\0empty"; },
+  load(id) { if (id === "\0autosave") return "export const persistStoreOfferDraft=async()=>{window.qa.calls.push('synthetic-autosave');};"; if (id === "\0templates") return "export const loadStoreTextTemplates=async()=>[];export const saveStoreTextTemplate=async()=>{throw Error('No template writes');};export const removeStoreTextTemplate=async()=>{throw Error('No template deletion');};"; if (id === "\0empty") return "export default function(){return null;}"; },
 }], resolve: { alias: { react: path.join(root, "node_modules/react"), "react-dom": path.join(root, "node_modules/react-dom") } },
 define: { "process.env.NODE_ENV": '"production"', "import.meta.env.VITE_SUPABASE_URL": '""', "import.meta.env.VITE_SUPABASE_ANON_KEY": '""' },
-build: { write: false, minify: false, target: "esnext", lib: { entry: path.join(root, "scripts/fixtures/sales-case-customer-preview-harness.jsx"), formats: ["es"], name: "CasePreviewQA", cssFileName: "case-preview" } } });
+build: { write: false, minify: false, target: "esnext", rollupOptions: { output: { inlineDynamicImports: true } }, lib: { entry: path.join(root, "scripts/fixtures/sales-case-customer-preview-harness.jsx"), formats: ["es"], name: "CasePreviewQA", cssFileName: "case-preview" } } });
 const output = (Array.isArray(built) ? built[0] : built).output;
+eq(output.filter(item => item.type === "chunk").length, 1, "isolated test page contains the actual catalog editor including its lazy scanner dependencies");
 const js = output.find((item) => item.type === "chunk" && item.isEntry).code;
 const css = output.filter((item) => item.type === "asset" && item.fileName.endsWith(".css")).map((item) => item.source).join("\n");
 const server = http.createServer((req, res) => {
@@ -45,7 +46,8 @@ try {
     outbound.push(route.request().url()); return route.abort("blockedbyclient");
   });
   await page.goto(`http://127.0.0.1:${server.address().port}`);
-  await page.waitForFunction(() => Boolean(window.qa?.show));
+  try { await page.waitForFunction(() => Boolean(window.qa?.show)); }
+  catch (error) { throw new Error(`Native case fixture failed to start: ${JSON.stringify(errors)}`, { cause: error }); }
   const waitForWorkspace = (mode, index = 2) => page.waitForFunction(({ mode, index }) => {
     const committed = window.qa.committed;
     const input = document.querySelector('.sales-case-work-content textarea');
@@ -167,6 +169,16 @@ try {
       const save = page.locator('form [data-sales-save-offer-button="true"]');
       await save.scrollIntoViewIfNeeded();
       eq(await save.evaluate((node) => { const rect=node.getBoundingClientRect();return node.getClientRects().length>0&&rect.top>=0&&rect.bottom<=innerHeight; }), true, "native form save action remains visible after scrolling to the footer");
+    }
+    if (mode === "general") {
+      eq(await page.locator(".sales-case-work-content>div>.sales-store-catalog-editor>.store-grouped-builder").count(), 1, "general offer uses observed neutral live host, actual catalog wrapper and grouped editor");
+      const bounds = await page.locator(".sales-case-work-content").evaluate(node => {
+        const edge = node.getBoundingClientRect();
+        return [...node.querySelectorAll('.sales-shell,.sales-main,.sales-form-panel,.store-builder-section,input:not([type=checkbox]),textarea,select')]
+          .filter(item => item.getClientRects().length)
+          .map(item => { const rect = item.getBoundingClientRect(); return { cls:item.className, left:rect.left, right:rect.right, outerLeft:edge.left, outerRight:edge.right }; });
+      });
+      eq(bounds.every(rect => rect.left >= rect.outerLeft - 1 && rect.right <= rect.outerRight + 1), true, `${mode}/${width}: actual catalog editor and every visible form control stay inside work column ${JSON.stringify(bounds.filter(rect=>rect.left<rect.outerLeft-1||rect.right>rect.outerRight+1))}`);
     }
     if (outputDir) await page.screenshot({ path: path.join(outputDir, `${mode}-${width}-initial.png`), fullPage: true });
     eq(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), true, `${mode}/${width}: actual form page has no width overflow`);

@@ -13,6 +13,7 @@ export function createReportTools(deps = {}) {
   const {
     prepareKshmsReport,
     confirmArchiveReport,
+    onPdfStatus,
     isKshmsReportCurrent,
     DEFAULT_REPORT_HERO_IMAGE_URL,
     access,
@@ -259,6 +260,7 @@ export function createReportTools(deps = {}) {
 
     const downloadClickablePdfReport = async () => {
       try {
+        onPdfStatus?.("");
         const kshmsReport = prepareKshmsReport ? await prepareKshmsReport('pdf') : emptyKshmsReport();
         if (!kshmsReport) return;
         const archiveConfirmed = await (confirmArchiveReport || window.confirm)("Viktig før nedlasting:\n\nNår prosjektet er ferdig skal komplett PDF-rapport lagres lokalt hos utførende firma, og gjerne også oversendes kunde. Expo ProffDok benytter skylagring, men kan ikke garantere ubegrenset lagringstid eller tilgjengelighet av prosjektdata i hele garanti- eller byggets levetid.\n\nVil du fortsette og generere komplett PDF-rapport nå?");
@@ -2502,11 +2504,10 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         await verifyPreparedReport(kshmsReport);
         if (isKshmsReportCurrent && !isKshmsReportCurrent(kshmsReport)) throw new Error('Prosjekt eller tilgang er endret. PDF-en ble ikke lastet ned. Åpne rapporten på nytt.');
         doc.save(generatedFileName);
-        setPdfProgress("✅ Rapport klar", "PDF-en er generert og lastes ned.");
-        clearPdfProgress(1400);
+        let completionMessage = "PDF-en er generert og sendt til nettleserens nedlasting.";
         if (warranty?.enabled) {
           if (isProjectLocked) {
-            alert("PDF er generert fra låst/arkivert prosjekt. Prosjektets lagrede dokumentasjon og garantistatus er ikke endret.");
+            completionMessage += " Rapporten er fra et låst/arkivert prosjekt. Lagret dokumentasjon og garantistatus er ikke endret.";
           } else if (warrantyIssuedForReport() && hasValue(warranty?.guaranteeNumber) && isFinalReport(reportDocumentationStatus())) {
             const reportGeneratedAt = reportGeneration.iso;
             setWarranty((prev) => ({
@@ -2517,11 +2518,14 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
               guaranteeNumber: prev?.guaranteeNumber || "",
               status: "issued"
             }));
-            alert("Komplett PDF med utstedt garantibevis er generert. Husk å lagre/oppdatere prosjektet slik at tidspunktet for komplett garantirapport registreres.");
+            completionMessage += " Komplett rapport med utstedt garantibevis er generert. Husk å lagre/oppdatere prosjektet slik at tidspunktet for komplett garantirapport registreres.";
           } else {
-            alert("Statusrapport er generert. Garantien er ikke utstedt, derfor er garantimodulen ikke markert med komplett PDF-rapport.");
+            completionMessage += " Dette er en statusrapport. Garantien er ikke utstedt, og garantimodulen er ikke markert med komplett PDF-rapport.";
           }
         }
+        onPdfStatus?.(completionMessage);
+        setPdfProgress("✅ Rapport klar", completionMessage);
+        clearPdfProgress(1400);
       } catch (error) {
         clearPdfProgress(0);
         console.error("Kunne ikke lage PDF med klikkbare lenker:", error);

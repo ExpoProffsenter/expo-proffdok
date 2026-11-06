@@ -41,12 +41,18 @@ try {
     eq(await page.locator('.pd-followup-row').count(), 3, `all project priorities remain at ${width}`);
     eq(await page.locator('.pd-sales-followup-row').count(), 6, `native desktop item limit retained at ${width}`);
     eq(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), true, `home document fits at ${width}`);
+    // Responsive styles may still be transitioning immediately after a resize.
+    // Keep the same requirements, but measure the settled interactive layout.
+    await page.waitForFunction(() => [...document.querySelectorAll('.pd-sales-followup-row button')].every(button => {
+      const rect = button.getBoundingClientRect();
+      return rect.width >= 44 && rect.height >= 44 && parseFloat(getComputedStyle(button).fontSize) >= 16;
+    }));
     const geometry = await page.locator('.pd-sales-followup-row').evaluateAll(nodes => nodes.map(node => {
       const rect = node.getBoundingClientRect(), button = node.querySelector('button').getBoundingClientRect();
       return { height: rect.height, overflow: node.scrollWidth > node.clientWidth + 1, buttonWidth: button.width, buttonHeight: button.height, font: parseFloat(getComputedStyle(node.querySelector('button')).fontSize), shadow: getComputedStyle(node).boxShadow };
     }));
     eq(geometry.every(row => !row.overflow), true, `actual offer rows fit internally at ${width}`);
-    eq(geometry.every(row => row.buttonWidth >= 44 && row.buttonHeight >= 44 && row.font >= 16), true, `native offer actions remain readable and usable at ${width}`);
+    eq(geometry.every(row => row.buttonWidth >= 44 && row.buttonHeight >= 44 && row.font >= 16), true, `native offer actions remain readable and usable at ${width}: ${JSON.stringify(geometry)}`);
     eq(geometry.every(row => row.shadow === 'none'), true, `offer followups use restrained rows at ${width}`);
     if (width >= 1363) eq(geometry.every(row => row.height <= 94), true, `offer followups use desktop width at ${width}`);
     await page.locator('.pd-sales-followup-row').first().getByRole('button', { name: 'Åpne tilbud', exact: true }).click();

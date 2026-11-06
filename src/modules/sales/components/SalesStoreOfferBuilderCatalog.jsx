@@ -378,7 +378,7 @@ export default function SalesStoreOfferBuilderCatalog(props) {
       : storeDraftSaveStatus;
 
   return (
-    <div ref={editorRootRef}>
+    <div ref={editorRootRef} className="sales-store-catalog-editor">
       <SalesStoreOfferBuilderGrouped
         {...props}
         offerForm={repairedOfferForm}
