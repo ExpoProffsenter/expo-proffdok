@@ -2,9 +2,9 @@
 
 Miljømål BEGGE. Bare arbeidsbranch/Preview/Sandbox. Produksjon og demo er uendret; ingen ny TEST OK er gitt.
 
-PR309 er én samlet testkandidat med Bolig og PR311-kjernen. Sist bekreftede samlede kandidat f6fa6b08 har full CI994 SUCCESS etter dokumentert omkjøring, READY/Sandbox og innlogget skrivevernskontroll av kontakter og garanti. Core8fa313c4 har full CI993 SUCCESS. Ingen produksjonssetting.
+PR309 er én samlet testkandidat med Bolig og PR311-kjernen. Sist bekreftede samlede kandidat e994a857 har full CI996 SUCCESS på første forsøk, READY/Sandbox og innlogget kontroll av profilmeny, timeføring og skrivebeskyttet kundetilbud. Core567a63e3 har full CI995 SUCCESS etter dokumentert omkjøring av en jobb med treg systemnedlasting. Ingen produksjonssetting.
 
-Neste avgrensede retting: behold arbeidsprofilvelgerens React-root ved responsiv flytting. Gammel kode feiler ny deterministisk prøve; rettet kode har39ReactkravPASS og native fixture-build. Se [testgrunnlag og kildeavstemming](docs/qa/WORK_PROFILE_RESPONSIVE_STATE_20261106.md). Ny full CI og eksakt Preview-kontroll kreves. Et gammelt timeføringspunkt om tidlig Escape er allerede dekket i dagens kode og regresjonstester og endres ikke her.
+Neste avgrensede retting: tilbudsoversikten får Core-eid status og venter på faktisk ferdig liste før null, tomtekst og0treff vises. Se [årsak og testgrunnlag](docs/qa/SALES_LIST_READINESS_20261106.md). Ny faktisk Core/transport/List-test har39kravPASS; native fixture-build og relevante criticalPASS. Eksakt ny full CI og innlogget Preview kreves. Søk, filtre, retur, editor, kladd, priser og aksept beholdes.
 
 Full appgjennomgang, eksterne roller og fysisk mobil/Safari står fortsatt åpne. Ingen utsending, migrering, seed eller nullstilling er utført. Eksakte kandidat-/CI-/Preview-bevis ligger i PR309/311.
 
