@@ -1,17 +1,11 @@
-# Samlet kjernekandidat –6.november2026
+# Samlet testkandidat – 6. november 2026
 
-Miljømål BEGGE. Bare arbeidsbranch/Preview/Sandbox, ingen TEST OK eller produksjonssetting.
+Miljømål BEGGE. Bare arbeidsbranch/Preview/Sandbox. Produksjon og demo er uendret; ingen ny TEST OK er gitt.
 
-PR311 samler PR308/d3759ce5 (Hjelp/14filmer), PR310/1a3f615e (låst prosjekt/overtagelse) og PR311/8f446820 (helapp/HR/plan/område). Samme faste PR311-Preview beholdes. PR309/1b59d937 (Bolig) skal fortsatt leveres separat.
+PR309 er den samlede testkandidaten med Boligprosjekter og kjernekandidaten fra PR311. Den interne PR-rekkefølgen er en teknisk avgrensning, ikke et brukerkrav om separat Bolig-leveranse. PR309 på 984f9a88 har full CI990 SUCCESS og innlogget kontroll av Bolig, grunnpakker/tilvalg, A–Å-guide og Hjelp/video. Core 0e44d83a har full CI988 SUCCESS og innlogget HR-/prosjektkontroll.
 
-Forsøket med alle fire pakker påff1f047b ble stoppet av uendret bolig-core-boundary-check og bolig-shared-board-parity. Det er bevart på qa-history-combined-bolig-20261106. Ingen guard eller test ble svekket. Ny kandidat er bygget fra8f446820 med308/310;309 er verken forelder eller kilde til Bolig-modulendringer i denne kandidaten. [Fullt scope,kilder,feilårsak,test og rollback](docs/qa/COMBINED_PREVIEW_20261106.md).
+Neste avgrensede retting: garantioppsettet følger eksisterende prosjektlås og skrivebeskyttet tilgang. Se [testgrunnlag](docs/qa/PROJECT_WARRANTY_READONLY_20261106.md). Lokal React-test og Sandbox-bygg er bestått; ny full CI og faktisk Preview-kontroll kreves før rettingen kan godkjennes.
 
-## Bevis og avgrensninger
+Prosjektinvolverte bruker en egen lagringsflyt og er ikke rettet av denne endringen. Full appgjennomgang, eksterne roller og fysisk mobil/Safari står fortsatt åpne. Ingen utsending, migrering, seed eller nullstilling er utført.
 
-Kilde311/8f446820 har full CI986SUCCESS og innlogget plan-/HR-prøve. Kilde308/d3759ce5 har CI984SUCCESS og14filmer; tidligere13-opptelling var utdatert. Alle14medier/metadata og filmprøven er bevart uendret.
-
-Ny lokal kjernekandidat: full Sandbox-build/critical, faktisk prosjektfixture-build uten browser, scope/release-docs,147workflowkommandoer og145-reisers videoregister kontrolleres før publisering. HR-komponent/test er byteidentisk den allerede lokalt145PASS-prøvde firepakkskandidaten. Begge uendrede Bolig-avgrensningsprøver rapporterer ingen Bolig-featureendring. Eksakt ny CI/READY og innlogget etterkontroll kreves; kildebevis er ikke samlet attest.
-
-Productionmain34daef4c og demoabc38f7e er urørt. Ingen migrering, seed/reset, kalenderimport eller utsending. Allerede utførte Sandbox-migreringer skal ikke kjøres på nytt. Production krever separat migrasjonskontroll ved senere autorisert release.
-
-Neste: fullfør denne kjernekandidatens QA/Preview → uttrykkelig TEST OK → kontrollert Production/main→demo. Deretter avstemmes PR309 mot den nye publiserte main-baselinen med uendrede Bolig-grenser og egen full QA. Full HR/Bolig A–Å, eksterne portalroller,fysisk mobil/Safari og flere filmer står fortsatt åpne.
+Ved senere uttrykkelig TEST OK for samlet leveranse: kontroller faktisk main/base, avtal migrasjonssteg, fullfør core og Bolig i riktig rekkefølge, verifiser publisert commit og synkroniser demo med særtilpasningene bevart. Eksakte CI-/Preview-bevis og videre status dokumenteres i PR309/311.

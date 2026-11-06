@@ -253,6 +253,7 @@ jobs:
         node scripts/project-checklist-resume-react-check.mjs
         node scripts/project-checklist-workspace-react-check.mjs
         node scripts/project-menu-return-react-check.mjs
+        node scripts/project-warranty-setup-react-check.mjs
     - name: Verify private support cases and two-way mail boundaries
       run: |-
         node scripts/support-db-check.mjs
