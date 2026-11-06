@@ -1,5 +1,6 @@
 import {useSupportUsers} from './modules/support/useSupportUsers.js';
 import {usePortalAccessStatus} from './modules/portal/usePortalAccessStatus.js';
+import HeaderHelp from './modules/help/HeaderHelp.jsx';
 import ReportArchiveConfirmation, {useReportArchiveConfirmation} from './modules/report/ReportArchiveConfirmation.jsx';
 import ProjectReportWorkspace, {useProjectReportWorkspace} from './modules/report/ProjectReportWorkspace.jsx';
 import { continueAfterProjectSave, projectStepDataConfirmed } from './modules/project/projectStepContinue.mjs';
@@ -6239,7 +6240,8 @@ ${appLink}`;
           !projectId && mobileCreatingProject && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: cancelNewProject, children: "← Avbryt nytt prosjekt" }),
           projectId && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: leaveProjectWorkspace, children: isProjectSupportReadOnly ? "← Supportoversikt" : "← Til startside" }),
           hasActiveProjectWorkspace && (0, import_jsx_runtime.jsx)(ProjectHeaderActions, { dirty: projectDirty, saved: Boolean(projectId), readOnly: isProjectSupportReadOnly, locked: isProjectLocked, simpleOrder: isSimpleOrderProject(project), onSave: saveProject, onCopy: projectId && !isProjectSupportReadOnly ? saveAsNewProject : void 0, onPdf: downloadClickablePdfReport, onLock: setProjectLockedState, onNew: createNewProject }, projectId || "new"),
-          (0, import_jsx_runtime.jsx)(WorkspaceViewMode, {}, authUser?.id)
+          (0, import_jsx_runtime.jsx)(WorkspaceViewMode, {}, authUser?.id),
+          !isReadOnly && authUser && (0, import_jsx_runtime.jsx)(HeaderHelp, { scopeKey: `${authUser.id}:${kshmsContext?.company_id}:${hrContext?.company_id}:${boligContext?.company_id}`, children: (0, import_jsx_runtime.jsx)(HelpCenter, { isAdmin: isAdminUser, isCompanyAdmin: isCompanyAdminUser, isSystemAdmin: isSystemAdminUser, termsAccepted, termsAcceptanceRecord, authUser, formatTermsAcceptedAt, kshmsContext, hrContext, boligContext }) })
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("nav", { children: tabs.map(([id, l]) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { "data-expo-nav-label": l, className: tab === id ? "on" : "", onClick: () => goToTab(id), children: l }, id)) }),
         hasActiveProjectWorkspace && !isProjectSupportReadOnly && (0, import_jsx_runtime.jsx)("nav", { "data-expo-global-nav-source": "1", hidden: true, ref: node => { if (node) node.expoLeaveProjectWorkspace = leaveProjectWorkspace; }, children: globalTabs.map(([id, label]) => (0, import_jsx_runtime.jsx)("button", { type: "button", "data-expo-nav-label": label, className: id === "prosjektliste" ? "on" : "", onClick: () => leaveProjectWorkspace(id), children: label }, id)) }),
@@ -6516,7 +6518,7 @@ ${appLink}`;
             "✅ Overtagelse er registrert",
             overtagelse.dato ? ` ${new Date(overtagelse.dato).toLocaleDateString("no-NO")}` : "",
             "."
-          ] }) : overtagelseHasDraftContent() && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: overtagelseIsSignedByBoth() ? (projectHasOvertagelse() ? 'Overtagelsen er signert av begge parter og bekreftet som gjennomført, men er ikke lagret som registrert ennå. Gå til Overtagelse og velg "Lagre og registrer overtagelse".' : 'Overtagelsen er signert av begge parter, men ikke registrert. Gå til Overtagelse, bekreft at overtagelsen er gjennomført og lagre.') : 'Overtagelse er påbegynt, men ikke registrert. Den regnes først som registrert når begge har signert, overtagelsen er bekreftet som gjennomført og lagringen er bekreftet.'  }),
+          ] }) : !isProjectLocked && overtagelseHasDraftContent() && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: overtagelseIsSignedByBoth() ? (projectHasOvertagelse() ? 'Overtagelsen er signert av begge parter og bekreftet som gjennomført, men er ikke lagret som registrert ennå. Gå til Overtagelse og velg "Lagre og registrer overtagelse".' : 'Overtagelsen er signert av begge parter, men ikke registrert. Gå til Overtagelse, bekreft at overtagelsen er gjennomført og lagre.') : 'Overtagelse er påbegynt, men ikke registrert. Den regnes først som registrert når begge har signert, overtagelsen er bekreftet som gjennomført og lagringen er bekreftet.'  }),
           totalChatCount > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [
             "\u{1F4AC} Chat: ",
             totalChatCount,
@@ -6615,7 +6617,7 @@ ${appLink}`;
             onOpenRequest: openSalesRequestFromHome
           })
         ] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: !projectId && !mobileCreatingProject ? "desktopOnlyWhenNoProject" : "", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Section, { className: "project-info-editor", title: projectId ? "Rediger kunde- og prosjektinfo" : "Prosjektinformasjon", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CollapsibleBlock, { title: "Kunde- og prosjektdata", defaultOpen: true, children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProjectInformationFields, { project, setProject, Input, Textarea, readOnly: isProjectSupportReadOnly }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProjectInformationFields, { project, setProject, Input, Textarea, readOnly: isProjectSupportReadOnly || isProjectLocked }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProjectWarrantySetup, { warranty, setWarranty, systems: soproWarrantySystems, project, onCreateStandardWetroomTemplate: createStandardWetroomTemplate }),
           false && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", gap: "10px", alignItems: "flex-start", marginTop: "4px" }, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", checked: !!project.isTemplate && !!warranty?.enabled && !!warranty?.system, onChange: (e) => {
