@@ -421,3 +421,10 @@ Editor-/General-kontrollene laster både felles CSS og appens sene mobilregler. 
 Leverandørbestilling fra Prissøk åpner eksisterende skjema i et WorkspacePanel til høyre (full bredde på mobil), med fast Avbryt/Lukk. Skjema, kanonisk forhåndsvisning, kvittering og usikkert sendeforsøk beholder samme tilstand og request-ID hos SupplierOrder. Header, Escape og footer bevarer kladden ved lukking; alle lukkemetoder sperres mens eksisterende busy-forsøk pågår. Ingen transport- eller bestillingskontrakt er endret.
 
 Forhåndsvis/Send/Rediger og Avbryt ligger fast i panelets footer. Forhåndsvis er knyttet til samme native form-ID; eksisterende required-felt og review-guard gjelder. For å endre antall i plukklisten kan panelet lukkes og åpnes igjen med bevart leverandørkladd.
+
+
+## Lastetilstand i saksoversikten
+
+Appens Core bekrefter at listen er klar først etter eksisterende kontroll av prosjekter/tilbudsstatus og installert liste. Summary-transportens ready alene er ikke tilstrekkelig. Tellere vises som ukjente under venting; tomtekst og0treff vises først etter bekreftet ferdiglasting. Feil er ikke en tom liste.
+
+Visningsstatus følger eksisterende bruker-/firmascopet salesStorageKey, med samme kansellering og remount som resten av Sales. Søk, valgt filter og retur beholdes. Frittstående listebruk beholder transportfallback. Ingen endring av editor/server-first, lokal kladd, priser, aksept eller backend.

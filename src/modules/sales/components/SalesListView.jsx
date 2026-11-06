@@ -263,12 +263,14 @@ export default function SalesListView({
   activatedRequests = [],
   viewStateRef,
   viewScope = "",
+  requestListLoadState = null,
   onCreateRequest,
   onCreateOffer,
   onOpenRequest,
 }) {
   const supportMode = Boolean(getSalesSupportCompanyId());
-  const [loadState, setLoadState] = useState(() => getSalesRequestsLoadState());
+  const [transportLoadState, setLoadState] = useState(() => getSalesRequestsLoadState());
+  const loadState = requestListLoadState || transportLoadState;
   const [longWait, setLongWait] = useState(false);
   const previousView = viewStateRef?.current?.scope === viewScope ? viewStateRef.current : null;
   const [searchQuery, setSearchQuery] = useState(() => previousView?.searchQuery || "");
@@ -633,7 +635,7 @@ export default function SalesListView({
                           fontSize: 12,
                         }}
                       >
-                        {offerTypeCounts[tab.id] || 0}
+                        {requestsLoading ? "…" : requestsLoadFailed ? "–" : offerTypeCounts[tab.id] || 0}
                       </span>
                     </button>
                   );
@@ -699,7 +701,7 @@ export default function SalesListView({
               <div>
                 <h2 className="sales-panel-title">
                   {activeTypeLabel} · {WORK_TABS.find((tab) => tab.id === activeTab)?.label || "Salgssaker"}
-                  {searchQuery.trim() ? ` · ${filteredRequests.length} treff` : ""}
+                  {searchQuery.trim() && !requestsLoading && !requestsLoadFailed ? ` · ${filteredRequests.length} treff` : ""}
                 </h2>
               </div>
             </div>
