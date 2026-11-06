@@ -89,8 +89,14 @@ try{
  await openFilm(stockGuide);await page.locator('dialog.help-video-player[open]').waitFor();
  await page.evaluate(()=>{window.deferStocktake=true;window.pendingStocktake=[];window.dispatchEvent(new Event('focus'));});
  await waitCount(VIDEO_GUIDES.length-1);eq(await page.locator('video').count(),0,'pending stocktake refresh removes open media');eq(await draft.evaluate(e=>e.value==='Usendt prosjekttekst'),true,'pending stocktake preserves work');
- await page.evaluate(()=>window.dispatchEvent(new Event('focus')));await page.waitForFunction(()=>window.pendingStocktake.length>=4);
- await page.evaluate(()=>{const pending=window.pendingStocktake.splice(0);pending.slice(-2).forEach(resolve=>resolve({user_id:'reader',company_id:'company-a',enabled:false}));pending.slice(0,-2).forEach(resolve=>resolve({user_id:'reader',company_id:'company-a',enabled:true}));window.deferStocktake=false;});
+ // Only mounted Help instances issue reads; the header's Help child is lazy.
+ // Capture request generations explicitly instead of assuming two mounted instances.
+ await page.waitForFunction(()=>window.pendingStocktake.length>0);
+ await page.evaluate(()=>{window.staleStocktake=window.pendingStocktake.splice(0);window.dispatchEvent(new Event('focus'));});
+ await page.waitForFunction(()=>window.pendingStocktake.length>0);
+ await page.evaluate(async()=>{window.pendingStocktake.splice(0).forEach(resolve=>resolve({user_id:'reader',company_id:'company-a',enabled:false}));await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));});
+ await waitCount(VIDEO_GUIDES.length-1);eq(await page.locator('video').count(),0,'newer disabled context keeps media removed');
+ await page.evaluate(async()=>{window.staleStocktake.splice(0).forEach(resolve=>resolve({user_id:'reader',company_id:'company-a',enabled:true}));window.deferStocktake=false;await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));});
  await waitCount(VIDEO_GUIDES.length-1);eq(await buttons().filter({hasText:stockGuide.title}).count(),0,'stale enabled stocktake reply cannot override newer disabled context');
  for(const context of [null,{user_id:'other',company_id:'company-a',enabled:true},{user_id:'reader',enabled:true},{user_id:'reader',company_id:'company-a',enabled:'true'}]){
   await page.evaluate(c=>{window.stocktakeContext=c;window.dispatchEvent(new Event('focus'));},context);await waitCount(VIDEO_GUIDES.length-1);eq(await buttons().filter({hasText:stockGuide.title}).count(),0,'missing or foreign stocktake context grants no film');
