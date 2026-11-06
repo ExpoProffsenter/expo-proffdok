@@ -26,16 +26,18 @@ export function createWarrantyViewTools({
   standardWetroomTemplateDefaultTrades,
   customChecklistTradeIconUrl
 }) {
-  function ProjectWarrantySetup({ warranty, setWarranty, systems, project = {}, onCreateStandardWetroomTemplate = null }) {
+  function ProjectWarrantySetup({ warranty, setWarranty, systems, project = {}, onCreateStandardWetroomTemplate = null, readOnly = false }) {
     const enabled = !!warranty?.enabled;
     const selectedSystem = systems.find((item) => item.id === warranty?.system);
     const standardWetroomAllowed = enabled && !!selectedSystem;
     const [standardWetroomTrades, setStandardWetroomTrades] = import_react.default.useState(standardWetroomTemplateDefaultTrades);
     const existingCustomChecklistCount = Array.isArray(project?.customChecklistGroups) ? project.customChecklistGroups.length : 0;
     const toggleStandardWetroomTrade = (trade) => {
+      if (readOnly) return;
       setStandardWetroomTrades((prev) => prev.includes(trade) ? prev.filter((item) => item !== trade) : [...prev, trade]);
     };
     const setEnabled = (value) => {
+      if (readOnly) return;
       setWarranty({
         ...emptyWarranty(),
         ...warranty,
@@ -49,6 +51,7 @@ export function createWarrantyViewTools({
       });
     };
     const updateSystem = (systemId) => {
+      if (readOnly) return;
       const system = systems.find((item) => item.id === systemId);
       setWarranty({
         ...emptyWarranty(),
@@ -62,20 +65,20 @@ export function createWarrantyViewTools({
     };
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item warrantyProjectSetup", style: { gridColumn: "1 / -1" }, children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Dokumentert tetthetsgaranti" }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Velg tidlig om prosjektet skal omfattes av dokumentert tetthetsgaranti. Hvis Ja velges aktiveres garantikravene og riktig Sopro-sjekkliste automatisk." }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: readOnly ? "Her ser du prosjektets lagrede garantioppsett. Oppsettet kan ikke endres i skrivebeskyttet visning." : "Velg tidlig om prosjektet skal omfattes av dokumentert tetthetsgaranti. Hvis Ja velges aktiveres garantikravene og riktig Sopro-sjekkliste automatisk." }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", flexWrap: "wrap", marginTop: "10px" }, children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", alignItems: "center", gap: "8px" }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "radio", name: "projectWarrantyChoice", checked: enabled, onChange: () => setEnabled(true), style: { width: "auto", minHeight: "auto", padding: 0, margin: 0 } }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "radio", name: "projectWarrantyChoice", disabled: readOnly, checked: enabled, onChange: () => setEnabled(true), style: { width: "auto", minHeight: "auto", padding: 0, margin: 0 } }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Ja" })
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", alignItems: "center", gap: "8px" }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "radio", name: "projectWarrantyChoice", checked: !enabled, onChange: () => setEnabled(false), style: { width: "auto", minHeight: "auto", padding: 0, margin: 0 } }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "radio", name: "projectWarrantyChoice", disabled: readOnly, checked: !enabled, onChange: () => setEnabled(false), style: { width: "auto", minHeight: "auto", padding: 0, margin: 0 } }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Nei" })
         ] })
       ] }),
       enabled && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { marginTop: "12px" }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Garantiperiode", value: String(getWarrantyYears(warranty)), options: WARRANTY_YEAR_OPTIONS.map(String), optionLabels: Object.fromEntries(WARRANTY_YEAR_OPTIONS.map((year) => [String(year), `${year} år`])), onChange: (value) => setWarranty({ ...emptyWarranty(), ...warranty, enabled: true, durationYears: Number(value) }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Velg membransystem", value: warranty?.system || "", options: ["", ...systems.map((item) => item.id)], optionLabels: { "": "Velg Sopro-system", ...Object.fromEntries(systems.map((item) => [item.id, item.label])) }, onChange: updateSystem }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Garantiperiode", value: String(getWarrantyYears(warranty)), disabled: readOnly, options: WARRANTY_YEAR_OPTIONS.map(String), optionLabels: Object.fromEntries(WARRANTY_YEAR_OPTIONS.map((year) => [String(year), `${year} år`])), onChange: (value) => !readOnly && setWarranty({ ...emptyWarranty(), ...warranty, enabled: true, durationYears: Number(value) }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Velg membransystem", value: warranty?.system || "", disabled: readOnly, options: ["", ...systems.map((item) => item.id)], optionLabels: { "": "Velg Sopro-system", ...Object.fromEntries(systems.map((item) => [item.id, item.label])) }, onChange: updateSystem }),
         selectedSystem && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", style: { marginTop: "8px" }, children: [
           "Valgt system: ",
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: selectedSystem.product }),
@@ -89,14 +92,14 @@ export function createWarrantyViewTools({
           existingCustomChecklistCount > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { color: "#92400e" }, children: `Prosjektet har allerede ${existingCustomChecklistCount} egne sjekkpunkter. Nye standardpunkter legges kun til hvis de mangler fra før. Ingenting slettes eller overskrives.` }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: "10px", marginTop: "10px" }, children: standardWetroomTemplateTradeOptions.map((trade) => {
             const checked = standardWetroomTrades.includes(trade);
-            return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", onClick: () => toggleStandardWetroomTrade(trade), className: checked ? "" : "secondary", style: { minHeight: "58px", display: "flex", alignItems: "center", gap: "10px", justifyContent: "flex-start", textAlign: "left", padding: "12px", borderRadius: "14px", border: checked ? "1px solid #0f766e" : "1px solid #cbd5e1", background: checked ? "#ecfdf5" : "#ffffff", color: "#0f172a", width: "100%", minWidth: 0, whiteSpace: "normal" }, children: [
+            return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", onClick: () => toggleStandardWetroomTrade(trade), disabled: readOnly, className: checked ? "" : "secondary", style: { minHeight: "58px", display: "flex", alignItems: "center", gap: "10px", justifyContent: "flex-start", textAlign: "left", padding: "12px", borderRadius: "14px", border: checked ? "1px solid #0f766e" : "1px solid #cbd5e1", background: checked ? "#ecfdf5" : "#ffffff", color: "#0f172a", width: "100%", minWidth: 0, whiteSpace: "normal" }, children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { fontSize: "22px", lineHeight: 1 }, children: checked ? "☑" : "☐" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: customChecklistTradeIconUrl(trade), alt: "", "aria-hidden": "true", style: { width: "34px", height: "34px", objectFit: "contain", flex: "0 0 auto" } }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { fontWeight: 800, minWidth: 0, whiteSpace: "normal", overflowWrap: "anywhere" }, children: trade })
             ] }, trade);
           }) }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "12px", alignItems: "center" }, children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => onCreateStandardWetroomTemplate && onCreateStandardWetroomTemplate(standardWetroomTrades), disabled: !standardWetroomTrades.length, children: "Legg til sjekkpunkter for andre fag" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => !readOnly && onCreateStandardWetroomTemplate && onCreateStandardWetroomTemplate(standardWetroomTrades), disabled: readOnly || !standardWetroomTrades.length, children: "Legg til sjekkpunkter for andre fag" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { className: "note", style: { alignSelf: "center", flex: "1 1 260px", minWidth: 0, overflowWrap: "anywhere" }, children: "Punktene blir vanlige egne sjekkpunkter og kan redigeres, slettes og suppleres i Sjekklister." })
           ] })
         ] })
