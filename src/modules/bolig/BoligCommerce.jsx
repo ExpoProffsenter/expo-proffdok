@@ -193,7 +193,9 @@ export default function BoligCommerce({ context, root, unit }) {
         <Summary document={doc}/>
         {doc.expires_at && <p><strong>Svarfrist: {acceptanceDeadline(doc.expires_at)} (norsk tid).</strong> Etter fristen må beboeren kontakte prosjektleder.</p>}
         {doc.accepted_at && <p className="bolig-notice"><CheckCircle2 size={18}/> {doc.status === "declined" ? "Avslått" : "Akseptert"} av {doc.accepted_name} · {stamp(doc.accepted_at)}</p>}
-        {doc.kind === "change" && <p className="bolig-notice">Last ned endringsgrunnlaget og avklar tilleggsbestilling eller kreditering med leverandøren. Bekreft deretter for å oppdatere mottak og FDV. Originalbestillingen beholdes i historikken.</p>}
+        {doc.kind === "change" && ["accepted", "handled"].includes(doc.status) && <p className="bolig-notice">Last ned endringsgrunnlaget og avklar tilleggsbestilling eller kreditering med leverandøren. Bekreft deretter for å oppdatere mottak og FDV. Originalbestillingen beholdes i historikken.</p>}
+        {doc.kind === "change" && ["draft", "approved"].includes(doc.status) && <p className="bolig-notice">Se over varer og pris. Opprett beboerlenken når grunnlaget er klart. Endringsbestillingen kan lastes ned etter at beboeren har akseptert.</p>}
+        {doc.kind === "change" && doc.status === "published" && <p className="bolig-notice">Venter på beboerens svar. Endringsbestillingen kan lastes ned etter aksept. Originalbestillingen er uendret.</p>}
         {doc.fulfillment_applied_at && <p className="bolig-notice"><strong>Leveranse, mottak og FDV er oppdatert</strong><br/>{doc.fulfillment_reference} · {stamp(doc.fulfillment_applied_at)}</p>}
         {doc.handling_note && <p><strong>Leverandør og bestilling er fulgt opp</strong><br/>{doc.handling_note}</p>}
         {local.links[doc.id] && doc.status === "published" && <div className="bolig-commerce-link">

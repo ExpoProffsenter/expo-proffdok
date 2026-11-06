@@ -28,6 +28,7 @@ export function BoligHelp({returnLabel}={}) {
     <BoligGuidePanel open={open} title="Slik styrer du prosjektet" onClose={close} returnLabel={returnLabel}>
       <div ref={content} className="bolig-help-workspace">
         <p>Velg et tema eller søk etter det du vil gjøre. Åpne bare forklaringen du trenger.</p>
+        <p>I store UE-lister kan du bruke «Søk i oppgaver» og «Status for oppgaver». «Vis flere oppgaver» viser resten. Filtrering endrer ingen oppgaver.</p>
         <label className="bolig-help-search"><span><Search size={17} aria-hidden="true"/>Søk i boligveiledningen</span>
           <input ref={search} type="search" value={query} placeholder="For eksempel bestilling, beboer eller overtakelse"
             onChange={event=>{setQuery(event.target.value);setExpanded('');}}/></label>

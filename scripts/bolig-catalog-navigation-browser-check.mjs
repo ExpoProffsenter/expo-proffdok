@@ -239,3 +239,5 @@ try {
   await browser?.close();
   await new Promise((r) => (server ? server.close(r) : r()));
 }
+
+await import('./bolig-flow-ux-browser-check.mjs');
