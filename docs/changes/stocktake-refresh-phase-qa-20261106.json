@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Varetellingstest skiller stale-feil fra fullført oppdatering",
+  "change": "BEGGE, QA-only i arbeidsbranch. Hold faktisk etterfølgende stocktake_get i syntetisk transport, kontroller sperret Avbryt og bevart kladd under venting, slipp svaret og behold opprinnelig enabled/avbrudd/tilgangsgjerde. Ingen app-/backend-/CI-regelendring.",
+  "verification": "CI997 feilet på umiddelbar isEnabled etter tidlig feilmelding. Kilde viser await refresh før busy slippes. Lokal native fixture-build uten browserPASS; to additive krav og alle tidligere krav beholdes. Full ny CI og eksakt bevis i PR309/311.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Ingen brukerflyt, knapp eller produktkode endres; QA-forløpet dokumenteres separat."
+    },
+    "module": {
+      "required": false,
+      "reason": "Eksisterende varetellingskontrakt beholdes og testes mer presist uten modulendring."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Ingen dataflyt eller arkitektur endres; kun eksplisitt kontroll av eksisterende testtransportfase."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen avhengigheter eller oppsett endres; lokal build-only er testspesifikk og CI kjører fortsatt native."
+    }
+  }
+}
