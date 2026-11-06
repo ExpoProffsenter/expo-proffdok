@@ -1,3 +1,11 @@
+# Bemanningsfilm – gjenopptatt 6. november
+
+Miljømål BEGGE, kun PR308 Preview/Sandbox fra04392220. Den allerede lagrede102s-bemanningsfilmen er gjenfunnet og integrert direkte under KS/HMS med eksisterende forvaltertilgang, kapitler/VTT/full tekst og retur. Tretten tidligere filmer/metadata og filer beholdes; totalt fjorten. Alle kildehash og åtte kodede scener er kontrollert. Lokal Sandbox-build/critical, scope/release-docs, videoregister/syntaks/whitespace PASS. Lokal native Chromium ble stoppet før første assertion av miljøets socket/ptrace-begrensning; ingen lokal native attest. Eksakt ny kandidat-CI/READY føres i PR308.
+
+[Bevis, film-/kildelenker, testliste, begrensninger og rollback](docs/qa/STAFFING_EXPORT_HELP_VIDEO_20261106.md). PR311/e650ff74 har READY, men CI983s app-browser ble avbrutt ved15-minuttersgrensen etter over10minutters setup; åtte pakker bestod. Én isolert omkjøring av ufullførte/feilede jobber er startet etter loggkontroll. Ingen test er svekket. Ny skybrowser viser innlogging; ingen ny innlogget test påstås. Main34daef4c/demo er urørt. Ingen TEST OK, produksjonssetting, migrering eller utsending. Resten av helapp-/filmregisteret fortsetter åpent.
+
+---
+
 # Gjeldende Hjelp-kandidat – 6. november 2026
 
 PR308 / `fase45b-ux-live-review-20261104`, kandidat `759adb29493968cfcdbf8538303a551271f6938e`. To nye filmer om planoppretting/redigering (2:04) og områdetelling/pause/kontroll (2:30) er koblet til eksisterende temaer og relevante tilganger. Alle elleve tidligere filmer er bevart. Vercel `dpl_kfewdwXUU5EhqxnG6NSAGgiivuKn` er READY på fast Preview, target null. Begge publiserte MP4-filer og VTT-spor er byteidentiske med originalene; publisert app er Sandbox uten Production-ref.

@@ -902,5 +902,63 @@
         "text": "Avsluttet og 1 av 1 områder ferdig telt vises etter ny serverhenting. Antall og historikk er bevart, og skriveknappene er fjernet."
       }
     ]
+  },
+  {
+    "id": "bemanningsplan-eksport",
+    "title": "Bemanningsplan – les tall og eksporter",
+    "module": "KS/HMS",
+    "access": "kshms-manage",
+    "topics": [
+      "kshms"
+    ],
+    "description": "Les samtidig bemanningsbehov og persontimer. Last ned og kontroller bemannings-PDF, CSV og kalenderfil fra en lagret eksempelplan.",
+    "src": "/help-videos/bemanningsplan-eksport-v1.mp4",
+    "track": "/help-videos/bemanningsplan-eksport-v1.vtt",
+    "duration": 102,
+    "sha256": "240f3d8945c215f3c49c19c58175148b109180bb00e4f24ddd28c581def293db",
+    "bytes": 3927488,
+    "sourceCommit": "043922206e4cf3fc0aa54a1c9cfb9937e2b9a295",
+    "chapters": [
+      {
+        "start": 0,
+        "title": "Åpne bemanningsplanen",
+        "text": "Åpne en lagret plan under KS/HMS → Verktøy og maler → Fremdriftsplaner. Velg Åpne bemanningsplan."
+      },
+      {
+        "start": 14,
+        "title": "Les behov og persontimer",
+        "text": "To personer arbeider åtte timer på hver av to dager. Behovet er to personer, og planen gir 32 persontimer."
+      },
+      {
+        "start": 30,
+        "title": "Finn eksportene",
+        "text": "Åpne Eksport øverst. PDF, kalender og bemanning har egne nedlastingsknapper."
+      },
+      {
+        "start": 40,
+        "title": "Last ned bemanningsplan",
+        "text": "Velg Last ned bemanningsplan (PDF). Filen viser bemanning per uke, forklaring av tallene og bemanning per dag."
+      },
+      {
+        "start": 52,
+        "title": "Kontroller den faktiske PDF-en",
+        "text": "Her vises en hel side fra den nedlastede filen. Begge dager har to personer og 16 persontimer per dag."
+      },
+      {
+        "start": 66,
+        "title": "Last ned tallene som CSV",
+        "text": "Last ned bemanning (.csv) gir dato, uke, samtidig behov, persontimer og om grunnlaget er komplett."
+      },
+      {
+        "start": 78,
+        "title": "Last ned kalenderfilen",
+        "text": "Last ned kalender (.ics) gir arbeidsøktene med datoer, klokkeslett, status og merknad. Kontroller filen før kalenderimport."
+      },
+      {
+        "start": 90,
+        "title": "Fortsett uten å endre planen",
+        "text": "Tilbake lukker planbyggeren. Nedlasting endrer ikke planen. Åpne bemanningsplan igjen når du vil se tallene."
+      }
+    ]
   }
 ]

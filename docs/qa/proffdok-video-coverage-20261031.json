@@ -5088,6 +5088,43 @@
       ],
       "library_file_id": "libfile_36409e3571fc81918ddd774dee2df387",
       "sources_library_file_id": "libfile_8eba65db850c8191a1a431c5caab54bf"
+    },
+    {
+      "function_id": "KSHMS-006-STAFFING-EXPORT",
+      "module": "KS/HMS",
+      "title": "Bemanningsplan – les tall og eksporter",
+      "entry": "Hjelp → KS/HMS",
+      "video_id": "VID-KSHMS-STAFFING-EXPORT",
+      "status": "produsert-og-kontrollert",
+      "template_id": "PROFFDOK-VIDEO-1.0",
+      "scope_steps": [
+        "Åpne bemanningsplanen",
+        "Les behov og persontimer",
+        "Finn eksportene",
+        "Last ned bemanningsplan",
+        "Kontroller den faktiske PDF-en",
+        "Last ned tallene som CSV",
+        "Last ned kalenderfilen",
+        "Fortsett uten å endre planen"
+      ],
+      "expected": "Les bemanning og last ned PDF, CSV og kalender fra en lagret eksempelplan uten ny lagring.",
+      "file": "public/help-videos/bemanningsplan-eksport-v1.mp4",
+      "chapter": "8 kapitler / 102 sekunder / VTT og tekst",
+      "source_commit": "043922206e4cf3fc0aa54a1c9cfb9937e2b9a295",
+      "checked_on": "2026-11-06",
+      "notes": "Eksisterende kildefilm og eksportfiler kontrollert. Hjelp-integrasjon krever egen kandidat-CI. Ingen kalenderimport, full KSHMS-006 eller fysisk Safari-attest.",
+      "coverage_level": "avgrenset-oppgave",
+      "full_journey_attested": false,
+      "subfunction_audit": "avgrenset",
+      "roles": [
+        "KS/HMS-forvalter"
+      ],
+      "qa_sources": [
+        "docs/qa/STAFFING_EXPORT_HELP_VIDEO_20261106.md",
+        "scripts/help-video-browser-check.mjs"
+      ],
+      "library_file_id": "libfile_3f6f5aa287348191b5640c2b0e8ae46d",
+      "sources_library_file_id": "libfile_ab23bc5c39e48191acd318bde443a90e"
     }
   ]
 }
