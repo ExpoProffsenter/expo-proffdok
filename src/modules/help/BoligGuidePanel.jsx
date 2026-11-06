@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import WorkspacePanel from '../ui/WorkspacePanel.jsx';
 import './boligGuidance036.css';
 
-export default function BoligGuidePanel({open,title,onClose,children}) {
+export default function BoligGuidePanel({open,title,onClose,children,returnLabel='Tilbake til prosjektet'}) {
   const dialog=useRef(null);
   useEffect(()=>{
     const node=dialog.current;
@@ -17,8 +17,9 @@ export default function BoligGuidePanel({open,title,onClose,children}) {
   useEffect(()=>{const node=dialog.current;return()=>{if(node?.open)node.close?.();};},[]);
   return <WorkspacePanel dialogRef={dialog} title={title} subtitle="HJELP / BOLIGPROSJEKTER"
     className="bolig-guidance-panel" closeLabel={`Lukk ${title.toLocaleLowerCase('nb')}`}
-    onClose={event=>{if(event.target===event.currentTarget)onClose();}}
-    footer={<button type="button" onClick={()=>{dialog.current?.close();onClose();}}>Tilbake til prosjektet</button>}>
+    onCancel={event=>event.stopPropagation()}
+    onClose={event=>{event.stopPropagation();if(event.target===event.currentTarget)onClose();}}
+    footer={<button type="button" onClick={()=>{dialog.current?.close();onClose();}}>{returnLabel}</button>}>
     {open?children:null}
   </WorkspacePanel>;
 }
