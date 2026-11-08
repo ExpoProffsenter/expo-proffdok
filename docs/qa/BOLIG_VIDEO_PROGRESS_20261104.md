@@ -259,3 +259,10 @@ På den fiktive UE-tilgangen i pilotprosjektet valgte jeg et syntetisk PNG-vedle
 Edge-funksjonen bolig-partner-files v3 manglet den faste PR 309-verten i den eksplisitte origin-listen. Dette ble gjenskapt som «Failed to fetch». Sandbox-funksjon v4 tillater kun den eksakte faste Preview-verten i tillegg til eksisterende verter når funksjonen kjører i Sandbox. Tilgangskontroll og privat filhåndtering beholdt. Kildeendring på Bolig-branchen: `07202817301dec40c9e1a4a960ffd4158b6b3a95`. Tilbakeføring ved behov: redeployer forrige v3-kilde fra foregående branch-tilstand til samme Sandbox-prosjekt.
 
 Samme lokale PNG-kladd ble lagret. Portalen viste «Filen er lagret hos prosjektet». Etter omlasting var filen fortsatt synlig og kunne lastes ned. Nedlastet fil er byte-identisk med originalen (SHA-256 ff3a8d4d25288e2639ba249d0e9e0024510539769d7a0c73093797a4fed84b37). Skjermbilde 86 tatt for filmen. Ingen produksjonsdeploy. Full PR CI for ny commit er ikke verifisert.
+
+
+### Arbeidsklipp v11
+
+[MP4](https://chatgpt.com/library?file_id=libfile_6857b466c8408191b658d38729537b18&account_id=personal) · [Redigerbare kilder](https://chatgpt.com/library?file_id=libfile_265173f573cc8191952724d609d20750&account_id=personal)
+
+To nye scener i kapittel 9 viser filvalg og lagret vedlegg etter omlasting. Den andre bruker utsnitt av fullsideskjermbildet. MP4 har 57 scener på 9:40, 6 960 videobilder og undertekstspor. Kapittelmarkør og kildearkiv er kontrollert. Gjenbrukte scener kan vise eldre sceneteller. PR 309 head er `07202817`; PR Core Safety 1031 hadde status `in_progress` ved oppslag. Ingen produksjonssetting.
