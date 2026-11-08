@@ -16,6 +16,7 @@ let panelRoot = null;
 let panelHost = null;
 let panelProjectId = '';
 let panelDirty = false;
+let panelReadOnly = true;
 let noticeRoot = null;
 
 const clean = (value = '') => String(value ?? '').replace(/\s+/g, ' ').trim();
@@ -29,6 +30,15 @@ function projectIdFromUrl() {
 function isPortalView() {
   const role = clean(new URLSearchParams(window.location.search).get('role') || '').toLowerCase();
   return role && role !== 'admin';
+}
+
+// The main project owner supplies explicit identity and read-only state. Missing or
+// stale context is never permission to edit. This is UI protection, not database authority.
+function participantViewIsReadOnly(projectId) {
+  const shell = document.querySelector('[data-expo-project-shell="1"]');
+  return !shell || clean(shell.getAttribute('data-project-participants-id')) !== projectId ||
+    projectIdFromUrl() !== projectId || isPortalView() ||
+    shell.getAttribute('data-project-participants-readonly') !== 'false';
 }
 
 function normalizeParticipant(row = {}) {
@@ -166,7 +176,7 @@ function focusParticipant(id, field = 'name') {
   }, 30);
 }
 
-function ParticipantRow({ row, onChange, onRemove, onEnter, onFocus }) {
+function ParticipantRow({ row, readOnly, onChange, onRemove, onEnter, onFocus }) {
   const set = (key, value) => onChange({ ...row, [key]: value });
   const enter = (event) => {
     if (event.key !== 'Enter') return;
@@ -177,17 +187,17 @@ function ParticipantRow({ row, onChange, onRemove, onEnter, onFocus }) {
 
   return (
     <div className="project-participant-row" data-participant-id={row.id}>
-      <label>Navn<input data-participant-field="name" type="text" value={row.name} onFocus={focus('name')} onChange={(e) => set('name', e.target.value)} onKeyDown={enter} /></label>
-      <label>Firma<input data-participant-field="company" type="text" value={row.company} onFocus={focus('company')} onChange={(e) => set('company', e.target.value)} onKeyDown={enter} /></label>
-      <label>Rolle<input data-participant-field="role" type="text" value={row.role} onFocus={focus('role')} onChange={(e) => set('role', e.target.value)} onKeyDown={enter} placeholder="F.eks. prosjektleder" /></label>
-      <label>E-post<input data-participant-field="email" type="email" value={row.email} onFocus={focus('email')} onChange={(e) => set('email', e.target.value)} onKeyDown={enter} /></label>
-      <label>Telefon<input data-participant-field="phone" type="tel" value={row.phone} onFocus={focus('phone')} onChange={(e) => set('phone', e.target.value)} onKeyDown={enter} /></label>
+      <label>Navn<input disabled={readOnly} data-participant-field="name" type="text" value={row.name} onFocus={focus('name')} onChange={(e) => set('name', e.target.value)} onKeyDown={enter} /></label>
+      <label>Firma<input disabled={readOnly} data-participant-field="company" type="text" value={row.company} onFocus={focus('company')} onChange={(e) => set('company', e.target.value)} onKeyDown={enter} /></label>
+      <label>Rolle<input disabled={readOnly} data-participant-field="role" type="text" value={row.role} onFocus={focus('role')} onChange={(e) => set('role', e.target.value)} onKeyDown={enter} placeholder="F.eks. prosjektleder" /></label>
+      <label>E-post<input disabled={readOnly} data-participant-field="email" type="email" value={row.email} onFocus={focus('email')} onChange={(e) => set('email', e.target.value)} onKeyDown={enter} /></label>
+      <label>Telefon<input disabled={readOnly} data-participant-field="phone" type="tel" value={row.phone} onFocus={focus('phone')} onChange={(e) => set('phone', e.target.value)} onKeyDown={enter} /></label>
       <div>
         <label className="project-participant-mail-toggle">
-          <input type="checkbox" checked={!!row.receive_email} onChange={(e) => set('receive_email', e.target.checked)} />
+          <input type="checkbox" disabled={readOnly} checked={!!row.receive_email} onChange={(e) => set('receive_email', e.target.checked)} />
           Prosjektmail
         </label>
-        <button type="button" className="project-participant-remove" onClick={onRemove}>Fjern</button>
+        <button type="button" className="project-participant-remove" disabled={readOnly} onClick={onRemove}>Fjern</button>
       </div>
     </div>
   );
@@ -208,7 +218,8 @@ function isNavigationTarget(element) {
   return NAV_LABELS.some((label) => text === label || text.startsWith(`${label} (`));
 }
 
-function ProjectParticipantsPanel({ projectId }) {
+function ProjectParticipantsPanel({ projectId, readOnly }) {
+  const editsBlocked = () => readOnly || participantViewIsReadOnly(projectId);
   const client = useMemo(() => createDefaultSalesSupabaseClient(), []);
   const safePreview = isProgressSafePreviewMode();
   const [rows, setRows] = useState([]);
@@ -295,12 +306,14 @@ function ProjectParticipantsPanel({ projectId }) {
   }, [dirty, projectId]);
 
   const changeRow = (index, next) => {
+    if (editsBlocked()) return;
     setRows((current) => current.map((row, i) => i === index ? next : row));
     setStatus('');
     setError('');
   };
 
   const addRow = () => {
+    if (editsBlocked()) return;
     const next = emptyParticipant();
     setRows((current) => [...current, next]);
     setStatus('');
@@ -308,6 +321,7 @@ function ProjectParticipantsPanel({ projectId }) {
   };
 
   const advanceRow = (index) => {
+    if (editsBlocked()) return;
     if (index < rows.length - 1) {
       focusParticipant(rows[index + 1].id);
       return;
@@ -317,6 +331,7 @@ function ProjectParticipantsPanel({ projectId }) {
   };
 
   const removeRow = (index) => {
+    if (editsBlocked()) return;
     setRows((current) => {
       const row = current[index];
       if (row && !row.local) setRemovedIds((ids) => Array.from(new Set([...ids, row.id])));
@@ -326,7 +341,7 @@ function ProjectParticipantsPanel({ projectId }) {
   };
 
   const save = async () => {
-    if (saving) return;
+    if (editsBlocked() || saving) return;
     const toSave = meaningfulParticipants(rows);
     const emails = toSave.map((row) => clean(row.email).toLowerCase()).filter(Boolean);
     if (new Set(emails).size !== emails.length) {
@@ -351,6 +366,7 @@ function ProjectParticipantsPanel({ projectId }) {
   };
 
   const sendMail = async () => {
+    if (editsBlocked()) return;
     if (safePreview) {
       setError('Trygg Preview sender ikke ekte e-post. Test utsending gjøres separat før produksjon.');
       return;
@@ -405,12 +421,12 @@ function ProjectParticipantsPanel({ projectId }) {
       <div className="project-participants-head">
         <div>
           <h3>Prosjektinvolverte</h3>
-          <p>Felles kontakt- og distribusjonsliste for prosjektet. Trykk Enter for neste person.</p>
+          <p>{readOnly ? "Prosjektet er skrivebeskyttet. Du kan lese kontaktlisten, men ikke endre den eller sende e-post her." : "Felles kontakt- og distribusjonsliste for prosjektet. Trykk Enter for neste person."}</p>
         </div>
         <div className="project-participants-actions">
-          <button type="button" className="project-participants-secondary" onClick={addRow}>+ Legg til</button>
-          <button type="button" className="project-participants-secondary" onClick={() => setComposerOpen((value) => !value)}>Send en e-post</button>
-          <button type="button" className="project-participants-primary" onClick={save} disabled={!dirty || saving}>{saving ? 'Lagrer…' : 'Lagre prosjektinvolverte'}</button>
+          <button type="button" className="project-participants-secondary" onClick={addRow} disabled={readOnly}>+ Legg til</button>
+          <button type="button" className="project-participants-secondary" disabled={readOnly} onClick={() => { if (!editsBlocked()) setComposerOpen((value) => !value); }}>Send en e-post</button>
+          <button type="button" className="project-participants-primary" onClick={save} disabled={readOnly || !dirty || saving}>{saving ? 'Lagrer…' : 'Lagre prosjektinvolverte'}</button>
         </div>
       </div>
 
@@ -421,6 +437,7 @@ function ProjectParticipantsPanel({ projectId }) {
           <ParticipantRow
             key={row.id}
             row={row}
+            readOnly={readOnly}
             onChange={(next) => changeRow(index, next)}
             onRemove={() => removeRow(index)}
             onEnter={() => advanceRow(index)}
@@ -431,7 +448,7 @@ function ProjectParticipantsPanel({ projectId }) {
 
       {dirty ? (
         <div className="project-participants-sticky-save">
-          <button type="button" className="project-participants-primary" onClick={save} disabled={saving}>
+          <button type="button" className="project-participants-primary" onClick={save} disabled={readOnly || saving}>
             {saving ? 'Lagrer…' : 'Lagre prosjektinvolverte'}
           </button>
         </div>
@@ -441,9 +458,9 @@ function ProjectParticipantsPanel({ projectId }) {
         <div className="project-mail-composer">
           <strong>Send en e-post til prosjektinvolverte</strong>
           <div className="project-mail-recipients">Mottakere: {recipients.length ? recipients.map((row) => row.name || row.email).join(', ') : 'ingen valgt'}</div>
-          <label>Emne<input value={subject} onChange={(e) => setSubject(e.target.value)} /></label>
-          <label>Melding<textarea value={message} onChange={(e) => setMessage(e.target.value)} /></label>
-          <button type="button" className="project-participants-primary" onClick={sendMail} disabled={sending}>{sending ? 'Sender…' : 'Send e-post'}</button>
+          <label>Emne<input disabled={readOnly} value={subject} onChange={(e) => { if (!editsBlocked()) setSubject(e.target.value); }} /></label>
+          <label>Melding<textarea disabled={readOnly} value={message} onChange={(e) => { if (!editsBlocked()) setMessage(e.target.value); }} /></label>
+          <button type="button" className="project-participants-primary" onClick={sendMail} disabled={readOnly || sending}>{sending ? 'Sender…' : 'Send e-post'}</button>
           {safePreview ? <small>Trygg Preview: ekte e-post er deaktivert.</small> : null}
         </div>
       ) : null}
@@ -474,6 +491,7 @@ function unmountParticipantsPanel() {
   panelHost = null;
   panelProjectId = '';
   panelDirty = false;
+  panelReadOnly = true;
   document.getElementById(PANEL_ID)?.remove();
 }
 
@@ -493,6 +511,20 @@ function ensureParticipantsPanel() {
     return;
   }
 
+  const shell = section.closest('[data-expo-project-shell="1"]');
+  if (clean(shell?.getAttribute('data-project-participants-id')) !== projectId) {
+    // Same-project hydration can briefly have an unresolved owner context.
+    // Hide and freeze the existing root instead of destroying its unsaved draft.
+    if (panelRoot && panelProjectId === projectId) {
+      panelHost?.remove();
+      if (!panelReadOnly) {
+        panelReadOnly = true;
+        panelRoot.render(<ProjectParticipantsPanel projectId={projectId} readOnly={true} />);
+      }
+    } else if (panelRoot) unmountParticipantsPanel();
+    return;
+  }
+  const readOnly = participantViewIsReadOnly(projectId);
   if (panelRoot && panelProjectId !== projectId) unmountParticipantsPanel();
 
   if (!panelRoot) {
@@ -501,8 +533,15 @@ function ensureParticipantsPanel() {
     section.append(panelHost);
     panelRoot = createRoot(panelHost);
     panelProjectId = projectId;
-    panelRoot.render(<ProjectParticipantsPanel projectId={projectId} />);
+    panelReadOnly = readOnly;
+    panelRoot.render(<ProjectParticipantsPanel projectId={projectId} readOnly={readOnly} />);
     return;
+  }
+
+  if (panelReadOnly !== readOnly) {
+    panelReadOnly = readOnly;
+    // Rerender the same root: rows, unsent mail and input identity stay intact.
+    panelRoot.render(<ProjectParticipantsPanel projectId={projectId} readOnly={readOnly} />);
   }
 
   if (panelHost && panelHost.parentElement !== section) {
@@ -583,7 +622,7 @@ export function installProjectParticipantsUx() {
 
   schedulePanel();
   const observer = new MutationObserver(schedulePanel);
-  observer.observe(document.documentElement, { childList: true, subtree: true });
+  observer.observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ["data-expo-project-shell", "data-project-participants-id", "data-project-participants-readonly"] });
 
   // progressPlanUx lastes av bootstrap før main.jsx har opprettet appklienten.
   // Vent derfor på den registrerte klienten før auth leses eller abonnement startes;

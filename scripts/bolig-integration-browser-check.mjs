@@ -95,6 +95,9 @@ try {
   if (process.env.BOLIG_TASKS_ONLY_QA) page.setDefaultTimeout(6000);
   if (!process.env.BOLIG_TASKS_ONLY_QA) {
   await btn("Opprett prosjektkobling").waitFor();
+  const scopeSelect=page.getByLabel("Arbeidssted for KS/HMS og timer");
+  eq(await scopeSelect.locator('option[value="unit"]').innerText(),"H0101 · QA-bygg A · QA-veien 101 · Koblet prosjekt","same unit number includes its own building/address without changing id");
+  eq(await scopeSelect.locator('option[value="unit-b"]').innerText(),"H0101 · QA-bygg B · QA-veien 103","unlinked home is distinguishable in another building");
   eq(await page.evaluate(() => window.writes), 0, "no mount write");
   await page
     .getByLabel("Prosjektkobling", { exact: true })
@@ -184,6 +187,7 @@ try {
   await btn("Lukk test-SJA").click();
   await btn("Lukk prosjektets ks/hms").click();
   eq(await page.getByRole("button", {name:/Mine oppgaver i boligprosjekter/}).getAttribute('aria-expanded'),'true','first tasks are visible without an extra click');
+  eq(await page.locator(".bolig-my-tasks-content article").filter({hasText:"Monter bad"}).innerText(),"Monter bad\nQA Boligprosjekt · QA-bygg A · QA-veien 101 · H0101\nFremdrift · Planlagt ferdig 15.01.2026\nÅpne oppgave","task list shows building, address and home before opening");
   await page
     .locator(".bolig-my-tasks-content article")
     .filter({ hasText: "Monter bad" })
@@ -305,9 +309,27 @@ try {
     const opened=(await page.evaluate(()=>window.leaves)).at(-1);
     eq(index===0?opened.taskId:opened.request.id,'many-'+index,'native source receives exact selected task '+index);
     if(index===0)await btn('Lukk testaktivitet').click();else if(index===1)await btn('Lukk min ruh / avviksoppgave').click();else await btn('Lukk testkontroll').click();
+    await page.waitForFunction(key=>{const rows=[...document.querySelectorAll('.bolig-my-tasks-content article')];return rows.some(row=>row.querySelector('strong')?.textContent==='Boligoppgave '+(key+1)&&row.querySelector('button')===document.activeElement);},index);checks++;
   }
   eq(await page.evaluate(()=>window.writes),0,'personal task reading and pagination never write');
   eq(errors, []);
+  await page.goto(`http://127.0.0.1:${server.address().port}?tasks-location=1`);
+  await page.getByText('QA Boligprosjekt · QA-bygg B · QA-veien 103 · H0101',{exact:true}).waitFor();
+  const locations=page.locator('.bolig-my-tasks-content article');
+  eq(await locations.count(),2,'same home number in two buildings stays two tasks');
+  for(const width of [320,390,768,1363,1920]){
+    await page.setViewportSize({width,height:720});
+    eq(await locations.nth(0).innerText(), 'Monter bad\nQA Boligprosjekt · QA-bygg A · QA-veien 101 · H0101\nFremdrift · Planlagt ferdig 15.01.2026\nÅpne oppgave','building A identity '+width);
+    eq(await locations.nth(1).innerText(), 'Monter bad\nQA Boligprosjekt · QA-bygg B · QA-veien 103 · H0101\nFremdrift · Planlagt ferdig 15.01.2026\nÅpne oppgave','building B identity '+width);
+    eq(await page.locator('.bolig-my-tasks').evaluate(n=>n.scrollWidth<=n.clientWidth),true,'full task locations wrap within '+width);
+  }
+  await locations.nth(1).getByRole('button',{name:'Åpne oppgave',exact:true}).click();
+  await page.getByText(/Existing leaf.*BoligProgress/).waitFor();
+  eq((await page.evaluate(()=>window.leaves)).at(-1).taskId,'progress-b','distinct location opens exact original task ID');
+  await btn('Lukk testaktivitet').click();
+  await page.waitForFunction(()=>{const rows=[...document.querySelectorAll('.bolig-my-tasks-content article')];return rows.find(row=>row.textContent.includes('QA-veien 103'))?.querySelector('button')===document.activeElement;});checks++;
+  eq(await page.evaluate(()=>window.writes),0,'location navigation does not write tasks');
+  eq(errors,[],'location rows and exact task opening have no browser errors');
   console.log(
     "Bolig integration browser: " +
       checks +

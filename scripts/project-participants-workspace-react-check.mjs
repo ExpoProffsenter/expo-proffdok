@@ -6,6 +6,11 @@ import {build} from 'vite';
 import react from '@vitejs/plugin-react';
 const {JSDOM}=await import(process.env.KSHMS_JSDOM_PATH||'jsdom');
 const dir=process.cwd(),temp=fs.mkdtempSync(path.join(os.tmpdir(),'participants-workspace-'));
+
+const participantContext=fs.readFileSync('src/main.jsx','utf8').match(/"data-project-participants-id": ([^,]+), "data-project-participants-readonly": ([^,]+),/);
+assert(participantContext,'actual main shell supplies scoped participant read-only context');
+const participantProps='{"data-project-participants-id": '+participantContext[1]+', "data-project-participants-readonly": '+participantContext[2]+'}';
+
 let checks=0;const eq=(a,b,label)=>{assert.deepEqual(a,b,label);checks++;};
 fs.writeFileSync(path.join(temp,'entry.jsx'),`
 import React,{act,useState} from '${dir}/node_modules/react/index.js';
@@ -16,15 +21,17 @@ import {createProjectWorkspaceTabs} from '${dir}/src/modules/project/projectNavi
 import {createAccessViewTools} from '${dir}/src/modules/portal/accessViewTools.js';
 const root=createRoot(document.getElementById('app'));
 const tools=createAccessViewTools({Section:({title,children})=><section><h2>{title}</h2>{children}</section>,Textarea:()=>null,Grid:({children})=><div>{children}</div>,Input:()=>null,Select:()=>null,uid:()=> 'qa'});
-function App({version=0,readOnly=false}){
+function App({version=0,readOnly=false,locked=false,viewOnly=false}){
+ const hasActiveProjectWorkspace=true,projectId=new URLSearchParams(window.location.search).get("project"),isProjectSupportReadOnly=readOnly,isProjectLocked=locked,isReadOnly=viewOnly;
  const [tab,setTab]=useState('prosjekt');window.tab=tab;const tabs=createProjectWorkspaceTabs();
  const props={tabs,activeTab:tab,project:{projectName:'QA'},saved:true,readOnly,status:{label:'Pågår'},onNavigate:id=>{setTab(id);return true;},onContinue:()=>{window.genericSaves++;},onExit:()=>setTab('away')};
- return <div data-expo-project-shell="1"><Chrome {...props}/><main>{tab==='prosjekt'?<section key={version}><h2>Rediger kunde- og prosjektinfo</h2></section>:tab==='tilgang'?tools.renderAccessPanel({project:{},projectId:'qa',controllerReadOnly:readOnly,access:[],accessRoleInfo:[],roles:[],portalAccessRecordIsValid:()=>false,getPortalAccessRecord:()=>null,portalAccessPolicyText:()=> 'QA',setAccess(){},copyAccessLink:()=>window.portalCalls++,sendAccessEmail:()=>window.portalCalls++}):<p>Other content</p>}</main><ProjectWorkspaceFooter {...props}/></div>;
+ return <div data-expo-project-shell="1" {...${participantProps}}><Chrome {...props}/><main>{tab==='prosjekt'?<section key={version}><h2>Rediger kunde- og prosjektinfo</h2></section>:tab==='tilgang'?tools.renderAccessPanel({project:{},projectId:'qa',controllerReadOnly:readOnly,access:[],accessRoleInfo:[],roles:[],portalAccessRecordIsValid:()=>false,getPortalAccessRecord:()=>null,portalAccessPolicyText:()=> 'QA',setAccess(){},copyAccessLink:()=>window.portalCalls++,sendAccessEmail:()=>window.portalCalls++}):<p>Other content</p>}</main><ProjectWorkspaceFooter {...props}/></div>;
 }
 window.qaAct=act;window.qaRender=props=>root.render(<App {...props}/>);window.genericSaves=0;window.portalCalls=0;window.qaUnmount=()=>root.render(null);installProjectParticipantsUx();
 `);
 const bundle=await build({root:dir,configFile:false,logLevel:'silent',resolve:{alias:{'react/jsx-runtime':path.join(dir,'node_modules/react/jsx-runtime.js')}},define:{'process.env.NODE_ENV':'"development"'},plugins:[react(),{name:'participant-transport',enforce:'pre',resolveId(id){if(id.endsWith('/salesSupabase.js'))return '\0client';if(id.endsWith('/appSupabaseClientRegistry.js'))return '\0registry';if(id.endsWith('/progressPlanSupabase.js'))return '\0safe';},load(id){if(id==='\0client')return 'export const createDefaultSalesSupabaseClient=()=>({});';if(id==='\0registry')return 'export const whenAppSupabaseClientRegistered=()=>{};';if(id==='\0safe')return 'export const isProgressSafePreviewMode=()=>true;';}}],build:{write:false,minify:false,lib:{entry:path.join(temp,'entry.jsx'),formats:['iife'],name:'ParticipantsProof',fileName:'proof'}}});
 const dom=new JSDOM('<div id="app"></div>',{url:'https://qa.vercel.app/?project=qa&role=admin&progressTest=safe',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window;
+const runtimeErrors=[];w.addEventListener('error',e=>runtimeErrors.push(e.message));
 w.IS_REACT_ACT_ENVIRONMENT=true;w.scrollTo=()=>{};w.HTMLElement.prototype.scrollIntoView=function(){};w.matchMedia=()=>({matches:false,addEventListener(){},removeEventListener(){}});w.MessageChannel=class{constructor(){this.port1={onmessage:null};this.port2={postMessage:()=>setImmediate(()=>this.port1.onmessage?.())};}};
 w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
 w.HTMLDialogElement.prototype.close=function(){if(!this.open)return;this.open=false;this.dispatchEvent(new w.Event('close'));};
@@ -41,6 +48,49 @@ try{
  let confirms=0;w.confirm=()=>{confirms++;return false;};
  await menuSelect('Deltakere og tilganger');eq(w.tab,'prosjekt','cancelled participant leave stays on overview');eq(confirms,1,'new labelled map button uses existing dirty guard');eq(panel().querySelector('[data-participant-field=name]').value,'QA retained name','cancel keeps name');eq(w.document.querySelector('dialog').open,true,'cancelled participant navigation retains project menu');await click('Lukk prosjektmeny');eq(w.document.querySelector('dialog'),null,'menu can close before saving contact');
  await act(async()=>w.qaRender({version:1}));await settle();eq(panel().querySelector('[data-participant-field=name]'),input,'actual root reattaches without replacing edited input');
+ // A lock can arrive before the observer's next frame. Action handlers must
+ // consult the owner's current DOM context, not only an earlier React prop.
+ const shell=w.document.querySelector('[data-expo-project-shell]');
+ await act(async()=>{
+   shell.setAttribute('data-project-participants-readonly','true');
+   const count=panel().querySelectorAll('[data-participant-id]').length;
+   button('+ Legg til',panel()).click();
+   button('Lagre prosjektinvolverte',panel()).click();
+   eq(panel().querySelectorAll('[data-participant-id]').length,count,'pending observer lock rejects add immediately');
+ });await settle();
+ eq(w.localStorage.getItem('expoProffDokProjectParticipantsSafePreview:qa'),null,'pending observer lock rejects save without local or remote write');
+ await act(async()=>shell.setAttribute('data-project-participants-readonly','false'));await settle();
+ const originalPanel=panel(),originalDraft=panel().querySelector('[data-participant-field=name]');
+ await act(async()=>shell.setAttribute('data-project-participants-id','unresolved-owner'));await settle();
+ eq(panel(),null,'mismatched owner identity hides editor immediately after observer');
+ await act(async()=>shell.setAttribute('data-project-participants-id','qa'));await settle();
+ eq(panel(),originalPanel,'same-project owner recovery reattaches exact root');
+ eq(panel().querySelector('[data-participant-field=name]'),originalDraft,'temporary owner mismatch preserves unsaved input');
+ eq(originalDraft.value,'QA retained name','temporary owner mismatch never silently discards draft');
+ await act(async()=>shell.removeAttribute('data-project-participants-readonly'));await settle();
+ eq([...panel().querySelectorAll('input,textarea,button')].every(e=>e.disabled),true,'missing owner permission freezes controls');
+ await act(async()=>shell.setAttribute('data-project-participants-readonly','false'));await settle();
+ await click('Send en e-post',panel());
+ const subject=panel().querySelector('.project-mail-composer input');
+ await act(async()=>{Object.getOwnPropertyDescriptor(w.HTMLInputElement.prototype,'value').set.call(subject,'QA unsent subject');subject.dispatchEvent(new w.Event('input',{bubbles:true}));});
+ const unsavedInput=panel().querySelector('[data-participant-field=name]');
+ await act(async()=>w.qaRender({version:1,locked:true}));await settle();
+ eq([...panel().querySelectorAll('input,textarea,button')].every(e=>e.disabled),true,'locked overview disables rows, add/remove/save and unsent mail composer');
+ eq(panel().querySelector('[data-participant-field=name]'),unsavedInput,'locking preserves exact contact input and draft');
+ eq(panel().querySelector('[data-participant-field=name]').value,'QA retained name','locking does not replace unsaved contact with server/default');
+ eq(panel().querySelector('.project-mail-composer input').value,'QA unsent subject','locking preserves unsent composer subject');
+ eq(w.localStorage.getItem('expoProffDokProjectParticipantsSafePreview:qa'),null,'locking never silently saves participant draft');
+ for(const mode of [{readOnly:true},{viewOnly:true}]){
+   await act(async()=>w.qaRender({version:1,...mode}));await settle();
+   eq([...panel().querySelectorAll('input,textarea,button')].every(e=>e.disabled),true,'support and generic read-only use actual main context '+JSON.stringify(mode));
+   eq(panel().querySelector('[data-participant-field=name]'),unsavedInput,'each read-only source preserves contact identity');
+ }
+
+ await act(async()=>w.qaRender({version:1}));await settle();
+ eq(panel().querySelector('[data-participant-field=name]'),unsavedInput,'unlocking preserves input identity');
+ eq([...panel().querySelectorAll('input,textarea')].every(e=>!e.disabled),true,'unlocking restores original fields');
+ eq(panel().querySelector('.project-mail-composer input').value,'QA unsent subject','unlocking restores same unsent composer');
+ await click('Send en e-post',panel());
  await click('Lagre prosjektinvolverte',panel());eq(panel().textContent.includes('Prosjektinvolverte er lagret lokalt'),true,'own participant save retains its confirmation');
  await menuSelect('Deltakere og tilganger');eq(w.tab,'tilgang','new map opens existing access tab');eq(panel().parentElement.hasAttribute('data-project-participants-slot'),true,'same participant list is visible before portals');eq(w.document.querySelectorAll('#expo-project-participants-root').length,1,'no duplicate participant editor');eq(panel().querySelector('[data-participant-field=email]').value,'qa@example.invalid','saved contact retained in combined area');
  eq(w.portalCalls,0,'contact registration never sends or creates portal access');eq(w.genericSaves,0,'contact registration never uses generic project saving');
@@ -54,6 +104,7 @@ try{
  await act(async()=>w.qaRender({version:3,readOnly:true}));await settle();eq(panel(),null,'read-only access does not gain a participant editor');
  await act(async()=>w.qaRender({version:4}));await settle();
  await act(async()=>w.history.replaceState({},'', '/?project=other&role=kunde'));await act(async()=>w.qaRender({version:3}));await settle();eq(panel(),null,'participant editor is never injected into customer portal');
+ eq(runtimeErrors,[],'no asynchronous DOM/focus errors');
  console.log('Participants workspace React: '+checks+' assertions PASS — shared placement, retained input, existing save, dirty guards, mobile, focus and project/portal isolation');
 }finally{await act(async()=>w.qaUnmount());dom.window.close();fs.rmSync(temp,{recursive:true,force:true});}
 

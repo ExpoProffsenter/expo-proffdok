@@ -8,7 +8,7 @@ import Inspection from "../../src/modules/sales/components/SalesInspectionNote.j
 import Plan from "../../src/modules/sales/components/SalesSurveyPlan.jsx";
 import RequestForm from "../../src/modules/sales/components/SalesRequestForm.jsx";
 import Activation from "../../src/modules/sales/components/SalesProjectActivation.jsx";
-import GeneralOffer from "../../src/modules/sales/components/SalesStoreOfferBuilderGrouped.jsx";
+import GeneralOffer from "../../src/modules/sales/components/SalesStoreOfferBuilderCatalog.jsx";
 import "../../src/style.css";
 import "../../src/modules/app/mobileResponsive41A.css";
 import "../../src/modules/sales/sales.css";
@@ -78,8 +78,9 @@ function App() {
     onUpdateForm={update("customer", setCustomer)} />;
   if (mode === "activation") editor = <Activation selectedRequest={request} projectForm={project} onBack={callback("back")} onSubmit={callback("save")}
     onUpdateProjectForm={update("activation", setProject)} />;
-  if (mode === "general") editor = <GeneralOffer selectedRequest={request} offerForm={general} offerDraftSaveStatus="saved" onBack={callback("back")} handleSaveOffer={callback("save")}
-    updateOfferForm={update("general", setGeneral)} />;
+  // The live Sales route adds a neutral host around the Catalog editor.
+  if (mode === "general") editor = <div><GeneralOffer selectedRequest={request} offerForm={general} offerDraftSaveStatus="saved" onBack={callback("back")} handleSaveOffer={callback("save")}
+    updateOfferForm={update("general", setGeneral)} /></div>;
   return <div data-expo-app-shell="true"><main>{mode === "detail" ? detail : <Workspace request={request} companyProfile={profile} tools={tools}>{editor}</Workspace>}</main></div>;
 }
 createRoot(document.getElementById("app")).render(<App />);

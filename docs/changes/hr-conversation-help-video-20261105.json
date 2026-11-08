@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "HR-film under eksisterende medarbeidersamtalehjelp",
+  "change": "Miljømål BEGGE, Preview først. Ny106sekunders film med ni kapitler fra syntetisk PR311-Sandbox kobles under eksisterende HR-tema. Samme native avspiller og eksisterende ferske tema-/rollefiltrering brukes. Den gamle Sandbox-prøvefilmen og sju tidligere metadata/filmer beholdes. Trestegsflyten i PR311 er releaseavhengighet; ingen HR-kjerne blandes inn. Revisjon2 beholder godkjent mal og samme guide-ID, men erstatter alle9bildene med faktisk ddffddae/Sandbox etter10000/2000grenser. V1-asset og alle sju tidligere filmer er bevart.",
+  "verification": "V2: faktisk106s/H264/1920×1080/24fps/2544frames/ingen lyd; full dekoding og visuell scene-/klikkontroll PASS. Faktiske lokale eksempelverdier/Referat og full opprydding uten serverlagring kontrollert. Appkilden ddffddae har full CI959/READY/Sandbox. De sju tidligere metadataene skal fortsatt være byteidentiske. Siste Hjelp-kandidat-CI/READY/live-avspilling/seek/tekst/retur avstemmes i PR308 før sluttattest.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "Ny film og kapitteltekst under eksisterende HR-tema."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Samme statiske mediefiler og avspiller, ingen ny dataflyt."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen ny avhengighet eller nytt oppsett."
+    },
+    "module": {
+      "required": true,
+      "reason": "Avgrenset omfang, tilgang og releaseavhengighet beskrives."
+    }
+  }
+}

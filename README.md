@@ -1242,3 +1242,7 @@ brukertest: `docs/qa/BOLIG_FAKTURERT_OG_AKONTO_20261024.md`.
 ### Egne sjekklister og forslag til firmamal
 
 Meny → Sjekklister → Egen sjekkliste → Start sjekkliste lar alle godkjente ansatte i aktivt firma bygge egne sjekkpunkter. Nye lister kan startes mens eldre lokale kladder beholdes. Foreslå som firmamal sender bare oppsettet til firmaets godkjenningskø; firmaadmin vurderer Forslag til firmamaler i samme oversikt. Godkjenning gir en publisert firmamal, avslag krever en begrunnelse. Ingen e-postvarsel sendes. Ordre/adresse/signering og eksport følger den vanlige kontrollen. Se [modulkontrakten](src/modules/checklist/README.md) og [dataflyten](docs/architecture/STANDALONE_CHECKLISTS.md). Ny funksjon prøves først i Sandbox/Preview; den krever egen TEST OK.
+
+### Varetelling: hyller og overtakelse
+
+Velg eller opprett en hylle én gang, og registrer varene der fortløpende. Flere tellere deler samme telling med én ansvarlig per område. Pause med stoppmerknad, eksplisitt overtakelse og historikk gjør det mulig å fortsette en halvferdig hylle. Cordel-filen summerer områdene; kontrollfilen beholder dem. Oppsett krever den additive områdemigrasjonen etter eksisterende stocktake-installasjon. Klient-/databasekontrakt og produksjonsforutsetninger: [områdemodell](docs/architecture/STOCKTAKE_AREAS.md), [QA og installasjonsstatus](docs/qa/STOCKTAKE_AREAS_20261105.md). Miljømål BEGGE; først Preview/Sandbox og egen TEST OK.

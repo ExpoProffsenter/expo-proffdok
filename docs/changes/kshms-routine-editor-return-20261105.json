@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Rutineeditor: synlig overskrift og retur til åpneknappen",
+  "change": "Miljømål BEGGE, bare PR311 Preview/Sandbox. Avgrenset scope: KshmsModule sin eksisterende editoråpning/lukkeknapp/fokuseffekt, additive eksisterende source-React/governance-browser-prøver og governance-fixture, modul-README og dette QA-grunnlaget. Ved åpning måles faktisk sticky/fixed header og lokal scrollmargin settes til høyde+16px (12px uten toppfelt). Bare Lukk redigering returnerer etter React-commit til samme synlige tilkoblede knapp i samme aktive requestScope; skjult side/hidden/inert/disabled/utdatert scope avvises. Lukking er sperret mens eksisterende lagring pågår. Samme lokale cache, felt, kildevurdering, lagring og godkjenningsflyt beholdes. Ingen main/bootstrap, delt modal, navigasjon, backend, database, tilgang, PDF eller e-postendring. Samme avgrensede fokusretur dekker også Lukk sammenligning til editorens faktiske Vurder ProffDoks tekstforslag-knapp. Delvis valgte kildefelt og lokal cache beholdes ved lukking/gjenåpning.",
+  "verification": "Faktisk førbevis på PR311/55e084ab, innlogget demokonto: åpnet R-030 Varme arbeider og brannberedskap uten input. Rulling til editor ga scrollY942 og overskrift skjult bak132px toppfelt; skjermbilde observert. Lukk redigering fjernet editor og ga fokus AXWebArea/BODY. Ingen rutine lagret/godkjent/publisert. Full lokal Sandbox build/critical og faktisk source-update-React (egne felt, referansedato, kildevurdering, feilet lagring, videre godkjenning, historikk og egne bekreftelser) PASS. Additiv React-prøve krever eksakt opener, bevart sikret lokal kladd, intet fokus til skjult opener og null ekstra kommandoer. Native eksisterende governance-test får faktisk app-header/CSS og krever synlig editoroverskrift under header samt eksakt fokusretur ved alle fem bredder. Alle tidligere krav bevares. Lokal Chromium kunne ikke starte pga socket()/ProcessSingleton Operation not permitted, ingen lokal native attest. Ny eksakt CI/READY og innlogget etterkontroll kreves og føres i PR311. Innlogget185758bc/READY: rutineeditor top148.796875, appheader bottom133, lokal scrollmargin149px; Lukk redigering returnerte eksakt R-030-knapp, søket Varme arbeider og1av73 beholdt. Kildesammenligning viste åtte felt,2ulike og firmaets tekst separat. Ingen felt valgt/lagret. Lukk sammenligning ga BODY, mens Lukk redigering fortsatt returnerte korrekt. Ny utvidelse retter også denne returen, med faktiske React-/native krav om samme trigger og bevart delvis lokalt kildefelt før/etter gjenåpning. Ny eksakt kandidat-CI kreves; CI974 er første editorpakke, ikke sluttattest for utvidelsen.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Uendrede knappenavn og arbeidssteg; synlighet og tastaturretur rettes."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Ingen dataflyt eller lagrings-/tilgangskontrakt endret."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen oppsett eller avhengighetsendring."
+    },
+    "module": {
+      "required": true,
+      "reason": "Fokus-/rullekontrakten dokumenteres i KS/HMS-README."
+    }
+  }
+}

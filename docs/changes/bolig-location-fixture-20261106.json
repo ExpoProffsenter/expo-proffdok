@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Deterministisk byggvalg i syntetisk Bolig-lokasjonstest",
+  "change": "Kun scripts/bolig-integration-db-scenarios sin syntetiske fixture og QA. Velg BuildingA/B via faktiske blokk-/oppgangs-/bolig-ID-er; ikke plass i UUID-sortert svardata. Ingen app,RPC,SQL,migrering,tilgang,CI eller produksjonsendring.",
+  "verification": "CI989 feilet på gammel fixture med BuildingB for indeksen som testen antok varA. SnapshotSQL sorterer etter entrance_id. Alle tidligere ID/navn/adresse/paginering/tilgangskrav beholdes og fem entydighetskrav legges til. Full lokal foundation-DB og ny eksaktCI kreves; se docs/qa/COMBINED_BOLIG_PREVIEW_20261106.md. Full lokal foundation-DB PASS1758krav/500boliger;scope55/syntaks/whitespace PASS. App/SQL/CI er uendret;ny eksaktCI gjenstår.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Ingen brukerflyt endres; kun syntetisk testutvalg."
+    },
+    "module": {
+      "required": false,
+      "reason": "Ingen produkt- eller modulkontrakt endres."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Ingen database-/dataflytendring; eksisterende sortering brukes korrekt i fixture."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen konfigurasjon eller avhengighet endres."
+    }
+  }
+}

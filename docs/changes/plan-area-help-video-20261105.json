@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Planoppretting og områdetelling i eksisterende Hjelp-temaer",
+  "change": "Miljømål BEGGE; bare PR308 Preview/Sandbox. To nye statiske MP4/VTT/guideposter, read-only hjelpekontekst for eksisterende stocktake_context, additiv native filmregresjon, dekningsrader, modul-README og QA/status. Elleve tidligere filmer/metadata bevares. Ingen hovedapp/stocktake-kjerne/backend/migrering/utsending/demo-overlay.",
+  "verification": "Faktiske kildeprøver og full decode/21 scener i PR311/6c223547. Filmhash/metadata kontrolleres av eksisterende native prøve. Egen eksakt CI/READY påkrevd; lokal Chromium stoppet før første native assertion av socket()/ProcessSingleton Operation not permitted. Ingen lokal native attest. Fysisk mobil/Safari/full modulreise gjenstår.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "To nye filmknapper, kapitler/VTT/full tekst og korrekt tilgang."
+    },
+    "module": {
+      "required": true,
+      "reason": "Omfang, eksisterende kontekstlesing og releaseavhengighet i Hjelp-README."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Samme statiske ressurs-/avspillingsarkitektur; kun eksisterende read-only stocktake_context gjenbrukes, ingen backendkontrakt endres."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen avhengigheter eller miljøoppsett endret."
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+ "version":1,
+ "title":"Varetelling med hyller, pause, overtakelse og historikk",
+ "change":"Miljømål BEGGE. Området velges én gang. Privat additiv lagring gir områdestatus/eier/stoppmerknad og før/etter-historikk. Eierskapsrevisjon sperrer gamle skjermer etter overtakelse. Eksisterende klienter bevares til området tas eksplisitt i bruk. Cordel-format, priser og firmatilgang beholdes.",
+ "verification":"Opprinnelige 51 DB-kontroller og 89 additive områdekontroller i PGlite PASS, med ti separate identiteter. Eksakt Cordel-modellkontroll, JSX-bundling, critical RPC-vakt og lokal Sandbox-build PASS. Faktisk tobruker-React/DB-bro er koblet til native CI; lokal Chromium stoppes før start av socket-begrensning. Endelig CI/READY/Sandbox-installasjon bekreftes i QA-loggen.",
+ "documentation":{
+  "help":{"required":true,"reason":"Nye knapper og full flyt for pause, overtakelse, historikk og ferdigstilling."},
+  "architecture":{"required":true,"reason":"Privat områdemodell, append-only-historikk og eierskapsrevisjon med bakoverkompatibel aktivering per telling."},
+  "setup":{"required":true,"reason":"Ny additiv migrasjon og klient-/databasekontrakt beskrives i modulens README og QA-logg."},
+  "module":{"required":true,"reason":"Ny kontrakt for valgt hylle, samarbeid, kladd, historikk og uendret eksport."}
+ }
+}

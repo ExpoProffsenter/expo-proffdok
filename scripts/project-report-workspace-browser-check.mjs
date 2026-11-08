@@ -20,6 +20,8 @@ import ReportArchiveConfirmation,{useReportArchiveConfirmation} from '${root}/sr
 import {useKshmsProjectReport,KshmsProjectReportChoice,KshmsProjectReportDialog} from '${root}/src/modules/kshms/KshmsProjectReport.jsx';
 import {createReportViewTools} from '${root}/src/modules/report/reportViewTools.js';import {createReportTools} from '${root}/src/modules/report/reportTools.js';
 import '${root}/src/modules/ui/proffdokWorkspace.css';
+import {APP_RUNTIME_STYLES} from '${root}/src/modules/app/appRuntimeStyles.js';
+document.head.insertAdjacentHTML('beforeend','<style>'+APP_RUNTIME_STYLES+'</style>');
 const Box=({children,label,value,name})=><div>{label}{value}{name}{children}</div>;const Link=({href,children})=><a href={href}>{children}</a>;
 const {Report}=createReportViewTools({Brand:Box,Grid:Box,PdfSafeLink:Link,hasValue:v=>v!=null&&String(v).trim()!=='',projectHasOvertagelse:()=>false,InfoCard:Box,SignatureCard:Box,normalizeExternalUrl:v=>v||'',publicProjectFileUrl:()=>'',buildBathroomEquipmentReportGroups:()=>[]});
 function App(){const [tab,setTab]=useState('bilder'),[projectId,setProjectId]=useState('project-a'),[available,setAvailable]=useState(true),[company,setCompany]=useState('company-a');
@@ -30,10 +32,10 @@ function App(){const [tab,setTab]=useState('bilder'),[projectId,setProjectId]=us
  ${main.slice(start,end)}
  window.control={setTab,setProjectId,setAvailable,setCompany};window.currentTab=tab;
  const props={company:{companyName:'QA firma'},name:'QA firma',project:{projectName:'QA rapport i høyrepanel – ÆØÅ',customer:'QA kunde',address:'Testveien 42'},selected:[],manualProducts:[],other:{},surf:{},bathroomEquipment:{},photos:[],access:[],inst:[],files:[],checklist:{},tilbud:{enabled:false},overtagelse:{},projectLog:{}};
- const tools=createReportTools({...props,user:{name:'QA bruker'},authUser:{id:'user'},projectId,manualSelected:[],DEFAULT_REPORT_HERO_IMAGE_URL:'',activeChecklistTemplate:[],warranty:{enabled:false},warrantyReadiness:{},emptyWarranty:()=>({enabled:false}),getOpenDeviationCount:()=>0,getPhotoIdentity:p=>p.id,getWarrantyYears:()=>10,hasValue:v=>v!=null&&String(v).trim()!=='',isProjectLocked:true,makeProjectLink:()=>'',normalizeExternalUrl:v=>v||'',projectHasOvertagelse:()=>false,publicProjectFileUrl:()=>'',buildBathroomEquipmentReportGroups:()=>[],shouldIncludeProductReportDoc:()=>false,productReportDocumentOptions:[],setTab,setWarranty:()=>{throw Error('Locked export must not write');},confirmArchiveReport:reportArchive.confirm,prepareKshmsReport:kshmsProjectReport.prepareExport,isKshmsReportCurrent:kshmsProjectReport.isCurrent});
+ const tools=createReportTools({onPdfStatus:reportWorkspace.setPdfStatus,...props,user:{name:'QA bruker'},authUser:{id:'user'},projectId,manualSelected:[],DEFAULT_REPORT_HERO_IMAGE_URL:'',activeChecklistTemplate:[],warranty:{enabled:false},warrantyReadiness:{},emptyWarranty:()=>({enabled:false}),getOpenDeviationCount:()=>0,getPhotoIdentity:p=>p.id,getWarrantyYears:()=>10,hasValue:v=>v!=null&&String(v).trim()!=='',isProjectLocked:true,makeProjectLink:()=>'',normalizeExternalUrl:v=>v||'',projectHasOvertagelse:()=>false,publicProjectFileUrl:()=>'',buildBathroomEquipmentReportGroups:()=>[],shouldIncludeProductReportDoc:()=>false,productReportDocumentOptions:[],setTab,setWarranty:()=>{throw Error('Locked export must not write');},confirmArchiveReport:reportArchive.confirm,prepareKshmsReport:kshmsProjectReport.prepareExport,isKshmsReportCurrent:kshmsProjectReport.isCurrent});
  return <div data-expo-app-shell="true"><main><h1>Prosjekt – {projectId}</h1><label>Usendt kladd<input defaultValue="Bevar dette arbeidet"/></label><button onClick={()=>goToTab('rapport')}>Rapport</button><button onClick={()=>goToTab('prosjekt')}>Prosjekt</button>
  <ReportArchiveConfirmation confirmation={reportArchive.confirmation}/>{!reportWorkspace.isOpen&&<KshmsProjectReportDialog chooser={kshmsProjectReport.chooser}/>}
- {reportWorkspace.isOpen&&<ProjectReportWorkspace projectName={props.project.projectName} onClose={()=>{kshmsProjectReport.chooser?.cancel();reportWorkspace.close();}} chooserOpen={!!kshmsProjectReport.chooser} onPdf={tools.downloadClickablePdfReport}><KshmsProjectReportDialog chooser={kshmsProjectReport.chooser}/><KshmsProjectReportChoice report={kshmsProjectReport}/><Report {...props} kshmsReport={kshmsProjectReport.reportData}/></ProjectReportWorkspace>}
+ {reportWorkspace.isOpen&&<ProjectReportWorkspace projectName={props.project.projectName} onClose={()=>{kshmsProjectReport.chooser?.cancel();reportWorkspace.close();}} chooserOpen={!!kshmsProjectReport.chooser} onPdf={tools.downloadClickablePdfReport} statusMessage={reportWorkspace.pdfStatus}><KshmsProjectReportDialog chooser={kshmsProjectReport.chooser}/><KshmsProjectReportChoice report={kshmsProjectReport}/><Report {...props} kshmsReport={kshmsProjectReport.reportData}/></ProjectReportWorkspace>}
  </main></div>;
 }
 window.leaveChecks=0;window.urlWrites=0;window.rpc=async(name,args)=>name==='project_checklist_state'?{runs:[]}:{context:{enabled:true,company_id:args.p_company_id,user_id:'user',project_id:args.p_project_id},choices:name==='kshms_project_report'?{sjas:[],ruhs:[]}:{rounds:[],risks:[]}};
@@ -60,6 +62,15 @@ try{
  }
  console.log('Geometry passed');await page.setViewportSize({width:1363,height:936});
  await panel.getByRole('button',{name:'Velg KS/HMS til rapport',exact:true}).click();const chooser=page.locator('.ks-report-dialog');await chooser.waitFor();
+ for(const width of [1920,1363,768,390,320]){
+  await page.setViewportSize({width,height:700});
+  for(const part of ['.ks-report-dialog-head','.ks-report-dialog-footer']){
+   eq(await chooser.locator(part).evaluate(el=>{const r=el.getBoundingClientRect();return [.1,.5,.9].every(p=>el.contains(document.elementFromPoint(r.x+r.width*p,r.y+r.height/2)));}),true,'chooser is painted above report header/footer '+part+' '+width);
+  }
+  eq(await chooser.getByRole('heading',{name:'Velg KS/HMS til rapport',exact:true}).evaluate(el=>{const r=el.getBoundingClientRect();return [.1,.5,.9].every(p=>el.contains(document.elementFromPoint(r.x+r.width*p,r.y+r.height/2)));}),true,'complete chooser heading is uncovered '+width);
+  eq(await chooser.evaluate(el=>el.scrollWidth<=el.clientWidth+1),true,'chooser fits '+width);
+ }
+ await page.setViewportSize({width:1363,height:936});
  await chooser.press('Escape');await chooser.waitFor({state:'hidden'});eq(await panel.isVisible(),true,'Escape cancels selection and keeps report open');
  eq(await panel.getByRole('button',{name:'Velg KS/HMS til rapport',exact:true}).evaluate(e=>document.activeElement===e),true,'chooser returns focus inside report');
  await panel.getByRole('button',{name:'Last ned PDF',exact:true}).click();await chooser.waitFor();
@@ -67,6 +78,10 @@ try{
  eq(fs.readFileSync(pdf).subarray(0,5).toString(),'%PDF-','real browser downloaded a PDF');
  const pdfText=execFileSync('pdftotext',[pdf,'-'],{encoding:'utf8'});eq(pdfText.includes('QA kunde'),true,'download contains native project data');eq(dialogs.some(t=>t.includes('Viktig før nedlasting')),false,'app confirmation avoids browser-native JS prompt');
  eq(await panel.locator('#expo-pdf-progress-overlay').count(),await page.locator('#expo-pdf-progress-overlay').count(),'progress uses active top-layer panel when present');
+ await panel.locator('.project-report-download-status').waitFor();
+ eq(await panel.locator('.project-report-download-status').innerText(),'PDF-en er generert og sendt til nettleserens nedlasting.','nonblocking success remains visible in the footer');
+ eq(dialogs,[],'successful PDF requires no native OK dialog');
+ for(const width of [320,390,768,1363,1920]){await page.setViewportSize({width,height:936});eq(await panel.locator('.pd-workspace-drawer-footer').evaluate(e=>e.scrollWidth<=e.clientWidth+1),true,'completion text and actions fit '+width);}
  await page.waitForFunction(()=>!document.querySelector('#expo-pdf-progress-overlay'));
  await page.screenshot({path:path.join(artifactDir,'project-report-workspace.png')});
  await panel.getByRole('button',{name:'Tilbake til prosjektet',exact:true}).click();await panel.waitFor({state:'hidden'});

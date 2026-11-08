@@ -44,7 +44,7 @@ function Followup(){return <div>{tools.renderProjectFollowUpPanel({projectRows:[
 window.render=(kind='personal')=>root.render(kind==='followup'?<Followup/>:kind==='projects'?<Projects/>:<PersonalHarness/>);
 window.render(${JSON.stringify(process.env.UX_LAYOUT_PROJECT_ONLY?'projects':'personal')});installWorkProfileProjectListUx();
 `);
-const result=await build({root:cwd,configFile:false,logLevel:'silent',resolve:{alias:{'react/jsx-runtime':cwd+'/node_modules/react/jsx-runtime.js'}},plugins:[react(),{name:'synthetic-transport',enforce:'pre',resolveId(id,importer){if(importer?.endsWith('/workProfileProjectListUx.jsx')&&id.endsWith('/moduleAccessClient.js'))return '\0shared-client';if(importer?.endsWith('/workProfileProjectListUx.jsx')&&id.endsWith('/workProfileClient.js'))return '\0shared-profile';if(id.endsWith('/appSupabaseClientRegistry.js'))return '\0client';},load(id){if(id==='\0shared-client')return 'export const getStoredSupabaseSession=()=>({userId:"self"});export const rpcWithStoredSession=()=>{window.sharedReads++;return Promise.resolve({company_id:"a",company_name:"QA Firma",projects:window.sharedFixtures||[]});};';if(id==='\0shared-profile')return 'export const WORK_PROFILE_EVENT="qa-work-profile";export const readCachedWorkProfileState=()=>({can_switch:true,active_company_id:"a"});export const getMyWorkProfileState=async()=>readCachedWorkProfileState();';if(id==='\0client')return 'export const getAppSupabaseClient=()=>window.client;';}}],build:{write:false,minify:false,cssCodeSplit:false,rollupOptions:{input:path.join(temp,'entry.jsx'),output:{inlineDynamicImports:true}}}});
+const result=await build({root:cwd,configFile:false,logLevel:'silent',resolve:{alias:{'react/jsx-runtime':cwd+'/node_modules/react/jsx-runtime.js'}},plugins:[react(),{name:'synthetic-transport',enforce:'pre',resolveId(id,importer){if(importer?.endsWith('/workProfileProjectListUx.jsx')&&id.endsWith('/moduleAccessClient.js'))return '\0shared-client';if(importer?.endsWith('/workProfileProjectListUx.jsx')&&id.endsWith('/workProfileClient.js'))return '\0shared-profile';if(id.endsWith('/appSupabaseClientRegistry.js'))return '\0client';},load(id){if(id==='\0shared-client')return 'export const getStoredSupabaseSession=()=>({userId:"self"});export const rpcWithStoredSession=async()=>{window.sharedReads++;if(window.holdShared)await new Promise(resolve=>window.sharedWaiters.push(resolve));return {company_id:"a",company_name:"QA Firma",projects:window.sharedFixtures||[]};};';if(id==='\0shared-profile')return 'export const WORK_PROFILE_EVENT="qa-work-profile";export const readCachedWorkProfileState=()=>({can_switch:true,active_company_id:"a"});export const getMyWorkProfileState=async()=>readCachedWorkProfileState();';if(id==='\0client')return 'export const getAppSupabaseClient=()=>window.client;';}}],build:{write:false,minify:false,cssCodeSplit:false,rollupOptions:{input:path.join(temp,'entry.jsx'),output:{inlineDynamicImports:true}}}});
 const js=result.output.find(x=>x.type==='chunk').code,css=result.output.filter(x=>x.fileName.endsWith('.css')).map(x=>x.source).join('\n');
 const server=http.createServer((req,res)=>{res.setHeader('Content-Type','text/html; charset=utf-8');res.end(`<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>${css}</style><div data-expo-app-shell="true"><header style="height:156px;display:block">Expo ProffDok</header><main><div id="app"></div></main></div><script type="module">${js.replaceAll('</script','<\\/script')}</script>`);});
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
@@ -56,7 +56,7 @@ try{
  // Fix Date only; browser timers and asynchronous recovery continue normally.
  await page.clock.setFixedTime(new Date('2026-10-16T12:00:00Z'));
  await page.addInitScript(()=>{
-  window.holdMetadata=false;window.metadataWaiters=[];window.holdPlans=false;window.planWaiters=[];window.sharedReads=0;window.company='a';window.denied=false;window.calls=[];window.opened=[];window.deleted=[];window.refreshes=0;window.setup=0;
+  window.holdMetadata=false;window.metadataWaiters=[];window.holdPlans=false;window.planWaiters=[];window.sharedReads=0;window.holdShared=false;window.sharedWaiters=[];window.company='a';window.denied=false;window.calls=[];window.opened=[];window.deleted=[];window.refreshes=0;window.setup=0;
   window.ctx=()=>({company_id:window.company,user_id:'self',available:true,enabled:true,company_name:'QA Firma',administer:false});
   window.client={auth:{getUser:async()=>({data:{user:{id:'self'}}})},rpc:async(name,args)=>{
    window.calls.push({name,args});const context=window.ctx();if(['get_my_personal_context','get_hr_context','get_kshms_context'].includes(name)){if(window.holdMetadata)await new Promise(resolve=>window.metadataWaiters.push(resolve));return window.denied?{error:{code:'42501',message:'Tilgang borte'}}:{data:{...context,personal_page:true,company_hr:true,company_kshms:true}};}if(window.denied)return {error:{code:'42501',message:'Tilgang borte'}};
@@ -102,6 +102,23 @@ try{
  }
  await page.setViewportSize({width:1363,height:936});
  await page.getByRole('button',{name:'Mine planer',exact:true}).click();
+ // A real async open disables the trigger before the native modal mounts.
+ // Both own-plan sources must return to the exact original node, at every width.
+ for(const width of [320,390,768,1363,1920]){
+  await page.setViewportSize({width,height:936});
+  for(const label of ['Fra ProffDok-prosjekter','Andre fremdriftsplaner']){
+   const opener=page.getByRole('region',{name:label,exact:true}).locator('.ks-progress-list button'),node=await opener.elementHandle();
+   await page.evaluate(()=>{window.holdPlans=true;});await opener.click();await page.waitForFunction(()=>window.planWaiters.length>0);
+   eq(await opener.isEnabled(),false,'actual pending detail disables own-plan opener '+label+' '+width);
+   await page.evaluate(()=>{window.holdPlans=false;window.planWaiters.splice(0).forEach(resolve=>resolve());});
+   await page.locator('dialog.ks-plan-expanded[open]').waitFor();await page.waitForFunction(()=>[...document.querySelectorAll('.personal-plan-source')].every(e=>e.getAttribute('aria-busy')==='false'));
+   eq(await page.getByText('Kun visning',{exact:true}).isVisible(),true,'own plan remains readonly '+label+' '+width);
+   await page.getByRole('button',{name:'Lukk planbygger',exact:true}).click();await page.waitForFunction(()=>!document.querySelector('dialog.ks-plan-expanded[open]'));
+   await page.waitForFunction(node=>document.activeElement===node,node);
+   eq(await opener.evaluate((e,n)=>e===n&&e===document.activeElement,node),true,'exact opener focus after async own-plan close '+label+' '+width);
+  }
+ }
+ await page.setViewportSize({width:1363,height:936});
  for(const label of ['Fra ProffDok-prosjekter','Andre fremdriftsplaner']){
   await page.getByRole('region',{name:label,exact:true}).locator('.ks-progress-list button').click();await page.locator('dialog.ks-plan-expanded[open]').waitFor();
   await page.getByRole('button',{name:'Måned',exact:true}).click();
@@ -119,11 +136,13 @@ try{
   await page.waitForFunction(()=>[...document.querySelectorAll('.personal-plan-source')].every(e=>e.getAttribute('aria-busy')==='false'));
   eq(await page.locator('dialog.ks-plan-expanded[open]').count(),0,'close wins over delayed checks '+label);
  }
+ const hiddenPlanOpener=await page.getByRole('region',{name:'Fra ProffDok-prosjekter',exact:true}).locator('.ks-progress-list button').elementHandle();
  await page.getByRole('region',{name:'Fra ProffDok-prosjekter',exact:true}).locator('.ks-progress-list button').click();await page.locator('dialog.ks-plan-expanded[open]').waitFor();
  await page.evaluate(()=>{Object.defineProperty(document,'visibilityState',{value:'hidden',configurable:true});document.dispatchEvent(new Event('visibilitychange'));});
  // React commits the visibility handler asynchronously; await that render, not the event dispatch.
  await page.waitForFunction(()=>!document.querySelector('dialog.ks-plan-expanded[open]'),{},{timeout:2000});
  eq(await page.locator('dialog.ks-plan-expanded[open]').count(),0,'real hidden page clears own payload');
+ eq(await hiddenPlanOpener.evaluate(e=>e!==document.activeElement),true,'hidden page never restores focus to an inactive plan opener');
  await page.evaluate(()=>{window.denied=true;Object.defineProperty(document,'visibilityState',{value:'visible',configurable:true});document.dispatchEvent(new Event('visibilitychange'));});
  eq(await page.locator('dialog.ks-plan-expanded[open]').count(),0,'denied return never restores own payload');
  await page.evaluate(()=>{window.denied=false;window.dispatchEvent(new Event('focus'));});
@@ -156,6 +175,24 @@ try{
  eq(await page.locator('.workProfileSharedProjects').isVisible(),true,'actual shared project adapter remains visible');
  await page.evaluate(()=>new Promise(resolve=>{let frames=0;const next=()=>++frames===15?resolve():requestAnimationFrame(next);requestAnimationFrame(next);}));
  eq(await page.evaluate(()=>window.sharedReads),1,'adapter is stable without repeated remount/reads');
+ // A delayed empty reply must not move the native row or replace its open button.
+ for(const width of [1363,390,320,768,1920]){
+  await page.setViewportSize({width,height:936});
+  await page.evaluate(()=>{scrollTo(0,0);window.holdShared=true;});
+  await page.getByRole('button',{name:'Oppdater felles',exact:true}).click();
+  await page.waitForFunction(()=>window.sharedWaiters.length===1);
+  await page.getByText('Henter felles prosjekter …',{exact:true}).waitFor();
+  const open=page.locator('.projectListCard').first().getByRole('button',{name:'Åpne',exact:true});
+  const buttonNode=await open.elementHandle(),before=await open.boundingBox();
+  await page.evaluate(()=>{window.holdShared=false;window.sharedWaiters.splice(0).forEach(resolve=>resolve());});
+  await page.getByRole('button',{name:'Oppdater felles',exact:true}).waitFor();
+  await page.getByText('Ingen andre prosjekter ligger i denne arbeidsprofilen ennå.',{exact:true}).waitFor();
+  const after=await open.boundingBox();
+  eq(Math.abs(after.y-before.y)<=1,true,'delayed empty shared reply keeps native project action at same position '+width+': '+JSON.stringify({before,after}));
+  eq(await open.evaluate((node,previous)=>node===previous,buttonNode),true,'same native project open button after empty reply '+width);
+ }
+ const expectedSharedReads=await page.evaluate(()=>window.sharedReads);
+
  eq(await page.locator('.projectListDisclosureCard>details[open]').count(),0,'project cards start compact');eq(await page.getByLabel('Søk i prosjektlisten',{exact:true}).isVisible(),true,'search and status always visible together');
  eq(await page.getByRole('combobox',{name:/^Statusfilter/}).isVisible(),true,'all native statuses directly available');
  eq(await page.locator('.projectListCard').first().getByRole('button',{name:'Åpne',exact:true}).isVisible(),true,'primary open stays visible');
@@ -210,11 +247,11 @@ try{
   if(process.env.UX_LAYOUT_SCREENSHOTS)await page.screenshot({path:path.join(process.env.UX_LAYOUT_SCREENSHOTS,'projects-'+width+'.png'),fullPage:true,animations:'disabled'});
  }
  const card=page.locator('.projectListCard').first();
- for(const [label,args] of [['Åpne',['p0','prosjekt']],['📦 Produkter',['p0','produkter']],['📷 Bilder',['p0','bilder']],['✅ Sjekklister',['p0','sjekklister']],['📄 Rapport',['p0','rapport']],['💬 Chat (2)',['p0','chat']],['⚠️ Avvik (3)',['p0','sjekklister',{showOpenDeviationsOnly:true}]]]){
+ for(const [label,args] of [['Åpne',['p0','prosjekt']],['📦 Produkter',['p0','produkter']],['📷 Bilder',['p0','bilder']],['✅ Sjekklister',['p0','sjekklister']],['📄 Rapport',['p0','rapport']],['💬 Chat (2)',['p0','chat']],['⚠️ Sjekklisteavvik (3)',['p0','sjekklister',{showOpenDeviationsOnly:true}]]]){
   await card.getByRole('button',{name:label,exact:true}).click();eq(await page.evaluate(()=>window.opened.at(-1)),args,'same shortcut '+label);
  }
  for(const [label,args] of [['📦 Produkter: 4',['p0','produkter']],['📷 Bilder: 5',['p0','bilder']],['💬 Ulest chat: 2',['p0','chat']]]){await card.getByRole('button',{name:label,exact:true}).click();eq(await page.evaluate(()=>window.opened.at(-1)),args,'same original count callback '+label);}
- await card.getByRole('button',{name:'⚠️ Åpne avvik: 3',exact:true}).click();eq(await page.evaluate(()=>window.opened.at(-1)),['p0','sjekklister',{showOpenDeviationsOnly:true}],'count opens existing filtered deviations');
+ await card.getByRole('button',{name:'⚠️ Åpne sjekklisteavvik: 3',exact:true}).click();eq(await page.evaluate(()=>window.opened.at(-1)),['p0','sjekklister',{showOpenDeviationsOnly:true}],'count opens existing filtered deviations');
  await listChoice('Kollaps alle detaljer');eq(await page.locator('.projectListDisclosureCard>details[open]').count(),0,'all cards collapse without losing content');
  await listChoice('Arkiv');eq(await page.locator('.projectListCard').count(),1,'archive filter');
  await listChoice('Nullstill');eq(await page.locator('.projectListCard').count(),2,'reset');
@@ -236,7 +273,7 @@ try{
   if(width<=390)eq(geometry[0].top===geometry[1].top&&geometry[2].top===geometry[3].top&&geometry[2].top>geometry[0].top,true,'shared actions form two compact rows '+width+': '+JSON.stringify(geometry));
   if(process.env.UX_LAYOUT_SCREENSHOTS)await page.screenshot({path:path.join(process.env.UX_LAYOUT_SCREENSHOTS,'projects-shared-filled-'+width+'.png'),fullPage:true,animations:'disabled'});
  }
- eq(await page.evaluate(()=>window.sharedReads),2,'presentation and filter changes never reload shared projects');
+ eq(await page.evaluate(()=>window.sharedReads),expectedSharedReads+1,'presentation and filter changes never reload shared projects');
  const select=page.getByRole('combobox',{name:/^Statusfilter/});
  eq(await select.locator('option').evaluateAll(options=>options.map(o=>o.value)),['alle','active','archive','draft','progress','waiting','customer_ready','deviation','done','locked'],'all ten existing status choices retained');
  for(const [value,count] of [['progress',1],['done',1],['active',1],['archive',1],['draft',0],['waiting',0],['customer_ready',0],['deviation',0],['locked',0],['alle',2]]){await select.selectOption(value);eq(await page.locator('.projectListCard').count(),count,'existing status choice '+value);}

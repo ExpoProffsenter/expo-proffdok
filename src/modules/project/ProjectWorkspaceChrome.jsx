@@ -34,7 +34,7 @@ export function ProjectHeaderActions({ dirty, saved, readOnly, locked, simpleOrd
     items[next]?.focus();
   };
   return <div className="project-header-actions">
-    {!readOnly && <button type="button" onClick={onSave}>{dirty ? '● Lagre endringer' : saved ? `Oppdater ${noun}` : `Lagre ${noun}`}</button>}
+    {!readOnly && <button type="button" disabled={locked} onClick={onSave}>{dirty ? '● Lagre endringer' : saved ? `Oppdater ${noun}` : `Lagre ${noun}`}</button>}
     <div className="project-actions-dropdown" ref={root}>
       <button ref={trigger} type="button" className="secondary" aria-haspopup="menu" aria-expanded={open} aria-controls={open ? menuId : undefined} onClick={() => { openLast.current = false; setOpen(value => !value); }} onKeyDown={event => { if (['ArrowDown', 'ArrowUp'].includes(event.key)) { event.preventDefault(); openLast.current = event.key === 'ArrowUp'; setOpen(true); } }}><MoreHorizontal size={18}/>Flere handlinger</button>
       {open && <div id={menuId} className="project-actions-menu" role="menu" aria-label="Flere handlinger" ref={panel} onKeyDown={keys}>
@@ -47,7 +47,10 @@ export function ProjectHeaderActions({ dirty, saved, readOnly, locked, simpleOrd
   </div>;
 }
 
-export default function ProjectWorkspaceChrome({ tabs, activeTab, project, saved, simpleOrder, status, deviations, unread, onNavigate, onStatus, onExit, onContinue, continuing = false, continueNotice = '', readOnly = false, contractRequired = false, appTabs = [], onAppNavigate }) {
+export default function ProjectWorkspaceChrome({ tabs, activeTab, project, saved, simpleOrder, status, deviations, checklistDeviations, projectDeviations, unread, onNavigate, onStatus, onExit, onContinue, continuing = false, continueNotice = '', readOnly = false, contractRequired = false, appTabs = [], onAppNavigate }) {
+  const deviationSummary = Number.isFinite(checklistDeviations) && Number.isFinite(projectDeviations)
+    ? `${checklistDeviations} sjekklisteavvik · ${projectDeviations} prosjektavvik`
+    : `${deviations} åpne avvik`;
   const workStatus = status.label === 'Avvik åpent'
     ? { label: project.workflowStatus || 'Pågår', icon: { Utkast: '📝', Pågår: '🟡', Avventer: '⏸️', 'Klar for kunde': '🟢', Ferdigstilt: '✅' }[project.workflowStatus || 'Pågår'] || '🟡' }
     : status;
@@ -74,7 +77,7 @@ export default function ProjectWorkspaceChrome({ tabs, activeTab, project, saved
     });
   };
   return <section className="project-workspace project-compact-header" data-expo-project-workspace="1" aria-label={simpleOrder ? 'Ordrearbeidsflate' : 'Prosjektarbeidsflate'}>
-    <div className="project-workspace-back"><button type="button" className="secondary project-workspace-exit" data-project-navigation="true" onClick={onExit}><ArrowLeft size={18} aria-hidden="true"/>{saved ? "Tilbake" : "Avbryt nytt prosjekt"}</button>{appTabs.length > 0 && <button type="button" className="secondary project-workspace-app-menu" onClick={()=>setMenuOpen(true)}><Menu size={18}/>Alle områder</button>}<div className="project-workspace-status"><span>{workStatus.icon} {workStatus.label}</span>{saved && <span>{deviations} åpne avvik · {unread} uleste meldinger</span>}{readOnly && <span className="project-readonly-label" title="Prosjektet er skrivebeskyttet. Bruk prosjektmenyen for å lese dokumentasjonen.">Skrivebeskyttet</span>}</div></div>
+    <div className="project-workspace-back"><button type="button" className="secondary project-workspace-exit" data-project-navigation="true" onClick={onExit}><ArrowLeft size={18} aria-hidden="true"/>{saved ? "Tilbake" : "Avbryt nytt prosjekt"}</button>{appTabs.length > 0 && <button type="button" className="secondary project-workspace-app-menu" onClick={()=>setMenuOpen(true)}><Menu size={18}/>Alle områder</button>}<div className="project-workspace-status"><span>{workStatus.icon} {workStatus.label}</span>{saved && <span>{deviationSummary} · {unread} uleste meldinger</span>}{readOnly && <span className="project-readonly-label" title="Prosjektet er skrivebeskyttet. Bruk prosjektmenyen for å lese dokumentasjonen.">Skrivebeskyttet</span>}</div></div>
     <div className="project-workspace-heading"><div><span className="project-workspace-eyebrow"><FolderOpen size={16}/>{simpleOrder ? 'Enkel ordre' : saved ? 'Prosjekt' : 'Nytt prosjekt'}</span>
       <h2>{project.projectName || project.address || (saved ? 'Uten navn' : 'Gi prosjektet et navn')}</h2>
       <p>{[project.customer, [project.address, project.postnr, project.city].filter(Boolean).join(' ')].filter(Boolean).join(' · ') || 'Fyll inn prosjektopplysningene nedenfor.'}</p>

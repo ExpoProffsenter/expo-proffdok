@@ -2,7 +2,7 @@ name: PR Core Safety
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, fase45b-whole-app-qa-20261104]
     types: [opened, synchronize, reopened, ready_for_review]
 
 permissions:
@@ -253,6 +253,7 @@ jobs:
         node scripts/project-checklist-resume-react-check.mjs
         node scripts/project-checklist-workspace-react-check.mjs
         node scripts/project-menu-return-react-check.mjs
+        node scripts/project-warranty-setup-react-check.mjs
     - name: Verify private support cases and two-way mail boundaries
       run: |-
         node scripts/support-db-check.mjs
@@ -271,6 +272,7 @@ jobs:
     timeout-minutes: 15
     env:
       QA_BASE_REF: origin/${{ github.base_ref }}
+      QA_HEAD_REF: ${{ github.head_ref }}
     steps:
     - name: Checkout full history
       uses: actions/checkout@v4
@@ -282,6 +284,15 @@ jobs:
         pdf: 'true'
     - name: Verify shared Boligprosjekter structure and access boundaries (database/React)
       run: |-
+        # PR 311 combines two independently reviewed layers. Keep the Bolig
+        # comparison against the reviewed core while full PR QA targets main.
+        if [ "$QA_BASE_REF" = origin/main ] && [ "$QA_HEAD_REF" = fase45b-whole-app-qa-20261104 ]; then
+          test "$(git rev-parse "$QA_BASE_REF")" = 34daef4c0526b93ddbd84c3bfd97fb0833d97caf
+          bolig_base=208dc21a7956466bfeb154b91b05f00a8f35ed23
+          git merge-base --is-ancestor "$QA_BASE_REF" "$bolig_base"
+          git merge-base --is-ancestor "$bolig_base" HEAD
+          QA_BASE_REF="$bolig_base"
+        fi
         node scripts/bolig-core-boundary-check.mjs "$QA_BASE_REF"
         node scripts/bolig-release-origins-check.mjs
         node scripts/bolig-order-email-check.mjs
@@ -324,6 +335,7 @@ jobs:
     timeout-minutes: 15
     env:
       QA_BASE_REF: origin/${{ github.base_ref }}
+      QA_HEAD_REF: ${{ github.head_ref }}
     steps:
     - name: Checkout full history
       uses: actions/checkout@v4
@@ -334,6 +346,15 @@ jobs:
         browser: 'true'
     - name: Verify shared Boligprosjekter structure and access boundaries (browser)
       run: |-
+        # PR 311 combines two independently reviewed layers. Keep the Bolig
+        # comparison against the reviewed core while full PR QA targets main.
+        if [ "$QA_BASE_REF" = origin/main ] && [ "$QA_HEAD_REF" = fase45b-whole-app-qa-20261104 ]; then
+          test "$(git rev-parse "$QA_BASE_REF")" = 34daef4c0526b93ddbd84c3bfd97fb0833d97caf
+          bolig_base=208dc21a7956466bfeb154b91b05f00a8f35ed23
+          git merge-base --is-ancestor "$QA_BASE_REF" "$bolig_base"
+          git merge-base --is-ancestor "$bolig_base" HEAD
+          QA_BASE_REF="$bolig_base"
+        fi
         node scripts/bolig-shared-board-browser-check.mjs "$QA_BASE_REF"
         node scripts/bolig-builder-browser-check.mjs
         node scripts/bolig-overview-browser-check.mjs

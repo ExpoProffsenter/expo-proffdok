@@ -242,9 +242,14 @@ function mountSwitcher(state = readCachedWorkProfileState()) {
 
   let host = document.getElementById(HOST_ID);
   if (host && host.parentElement !== targetParent) {
-    if (rootHost === host) destroyRoot();
-    host.remove();
-    host = null;
+    // Responsive placement must not restart required selection, pending choice
+    // or an open menu. Move the same host and keep its existing React root.
+    const focused = host.contains(document.activeElement) ? document.activeElement : null;
+    if (mobile) head.insertAdjacentElement("afterend", host);
+    else head.appendChild(host);
+    if (focused instanceof HTMLElement && focused.isConnected && !focused.matches(":disabled")) {
+      focused.focus({ preventScroll: true });
+    }
   }
   if (!host) {
     host = document.createElement("div");
