@@ -204,3 +204,8 @@ Eksisterende ordre DEMO-PILOT-ORDER på H0101, Pilotveien 101, viste «Delvis le
 [Arbeidsklipp v7](https://chatgpt.com/library?file_id=libfile_565dbabdce388191981d782feb58cf9b&account_id=personal) · [Redigerbare kilder v7](https://chatgpt.com/library?file_id=libfile_ee6aa5cb14a8819196772849c3ddadbf&account_id=personal)
 
 Tre nye mottaksscener. Arbeidsklippet har 47 scener på 8:20. Varighet, kapitler, undertekstspor, 6 000 videobilder og kildearkiv er kontrollert. Gjenbrukte scener kan vise eldre sceneteller. Portalvisning og øvrig utestående dekning gjenstår.
+
+
+### Beboerportal – invitasjonsforhåndsvisning
+
+På H0101 i Pilotveien 101 åpnet «Klargjør invitasjon» en forhåndsvisning av invitasjonsteksten. Teksten skiller innsending av boligvalg til gjennomgang fra senere aksept av avtale. Skjermbilde 72 er tatt. Både pilotboligen og H0101 i DEMO – Samlet gjennomgang viste «Portalen er ikke delt». Ingen portaltilgang ble opprettet eller sendt. Beboerens faktiske portal og akseptflyt er fortsatt uverifisert. Neste opptak krever en eksisterende fiktiv portaltilgang, eventuelt en egen avgrenset testtilgang for kun fiktive data.
