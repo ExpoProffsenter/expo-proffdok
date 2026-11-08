@@ -181,3 +181,10 @@ Fra Registrer overtakelse åpnet H0101 vurderingen med ett hinder og åtte uvurd
 ### H0101 – begrunnet vurdering
 
 Lagt inn fiktiv begrunnelse for demontering og riving og lagret med «Bare vurderingen». Ved gjenåpning viste appen ett vurdert hinder og åtte uvurderte forhold. Forsøk på å registrere overtakelsen med fiktiv protokollreferanse ble ikke fullført. Ingen entydig sperremelding ble observert, og testen isolerer fortsatt ikke hinderet fra de åtte uvurderte forholdene. Boligen sto fortsatt som «Ikke startet». Ingen kodeendring eller signering.
+
+
+### Overtakelse – verifisert piloteksempel
+
+H0101 i QA-prosjektet forble uovertatt med ett hinder og åtte uvurderte forhold. Nytt forsøk ga ingen entydig sperremelding, og årsaken ble ikke isolert. Ingen kodeendring.
+
+I eksisterende «PILOT – Løpende overtakelse · 12 leiligheter» viste byggoversikten 2 av 6 boliger overtatt. På Pilotveien 101 viste H0101 «Overtatt med restpunkter», referanse til fiktiv pilotprotokoll og ett mindre restpunkt. H0102 var «Overtatt» med dokumentert kontrollgrunnlag. H0202 viste kritisk avvik og «Ikke startet». Dette er kontroll av lagrede pilotdata. Skjermbilder 65–67 er tatt for videre redigering. Ny protokoll eller signering ble ikke utført. Varemottak gjenstår.
