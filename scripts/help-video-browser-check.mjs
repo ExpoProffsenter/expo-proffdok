@@ -7,7 +7,9 @@ const root=process.cwd(),tmp=fs.mkdtempSync(path.join(os.tmpdir(),'help-video-')
 let checks=0,browser;const eq=(a,b,label)=>{assert.deepEqual(a,b,label);checks++;};
 const addedIds=['plan-opprett-rediger','varetelling-omrade-pause-kontroll'];
 const staffingId='bemanningsplan-eksport';
-const thirteenGuides=VIDEO_GUIDES.filter(x=>x.id!==staffingId);
+const boligFullId='bolig-a-til-aa';
+const fourteenGuides=VIDEO_GUIDES.filter(x=>x.id!==boligFullId);
+const thirteenGuides=fourteenGuides.filter(x=>x.id!==staffingId);
 eq(crypto.createHash('sha256').update(JSON.stringify(thirteenGuides)).digest('hex'),'0fee5b378bc83a1f08d6726750acb7669fd45a1e54bbe65485c89b1636c159f3','all thirteen earlier guide records preserved');
 const priorGuides=thirteenGuides.filter(x=>!addedIds.includes(x.id));
 eq(crypto.createHash('sha256').update(JSON.stringify(priorGuides)).digest('hex'),'03d5018213e110bbbe88c016f06266bf49e4bcf99c6f5eb8e8a88603529888c8','all eleven earlier guide records preserved');
@@ -17,9 +19,11 @@ eq(crypto.createHash('sha256').update(JSON.stringify(priorGuides.filter(x=>x.id!
 eq(availableVideoGuides({authenticated:true,topics:['rapport']}).map(x=>x.id),['prosjekt-statusrapport'],'report movie follows existing report topic');
 eq(availableVideoGuides({authenticated:true,topics:['sales','produkter']}).some(x=>x.id==='prosjekt-statusrapport'),false,'other topics cannot grant report movie');
 eq(searchVideoGuides(availableVideoGuides({authenticated:true,topics:['hjelp']}),'statusrapport').length,0,'search cannot reveal unavailable report movie');
+eq(VIDEO_GUIDES.filter(x=>x.id===boligFullId).map(x=>x.chapters.length),[57],'A–Å guide contains all recorded chapter markers');
+eq(availableVideoGuides({authenticated:true,topics:['bolig'],canUseBolig:false}).some(x=>x.id===boligFullId),false,'A–Å guide requires Bolig access');
 eq(VIDEO_GUIDES.filter(x=>x.id==='bolig-masseplan').length,1,'one focused mass-planning chapter');
 eq(availableVideoGuides({authenticated:true,topics:['hjelp'],canUseBolig:false}).some(x=>x.id==='bolig-masseplan'),false,'mass-planning film requires Bolig access');
-eq(availableVideoGuides({authenticated:true,topics:['bolig'],canUseBolig:true}).filter(x=>x.topics.includes('bolig')).length,2,'both Bolig films use existing module access');
+eq(availableVideoGuides({authenticated:true,topics:['bolig'],canUseBolig:true}).filter(x=>x.topics.includes('bolig')).length,3,'all Bolig films use existing module access');
 eq(crypto.createHash('sha256').update(JSON.stringify(priorGuides.filter(x=>x.id!=='plan-visning-bemanning-pdf').filter(x=>!['hr-samtale-tiltak-referat','kshms-samlet-pdf','egne-timer-felt-avbrudd'].includes(x.id)))).digest('hex'),'b7f3bd3449dcb9d6a22b55548108dec21d399e14fbe7cc56b5c0cc867f35a7cf','all seven previous metadata records preserved');
 eq(crypto.createHash('sha256').update(JSON.stringify(priorGuides.filter(x=>x.id!=='plan-visning-bemanning-pdf').filter(x=>!['kshms-samlet-pdf','egne-timer-felt-avbrudd'].includes(x.id)))).digest('hex'),'f1404c4efaef29ddbd60a7213b1106f65faf7b39970446b9a3f2465f611ae9d6','all eight earlier movie metadata records preserved');
 eq(crypto.createHash('sha256').update(JSON.stringify(priorGuides.filter(x=>x.id!=='plan-visning-bemanning-pdf').filter(x=>x.id!=='egne-timer-felt-avbrudd'))).digest('hex'),'fc6ccdcdeedcbd76bd884a307cf40c1a4f4070dd97d252b2e9713f8710a609ac','all nine previous movie records preserved');

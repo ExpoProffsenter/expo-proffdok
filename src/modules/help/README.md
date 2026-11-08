@@ -52,3 +52,5 @@ Begge bruker eksisterende avspiller, søk, kapitler, VTT og tekstalternativ. Fil
 Et avgrenset kapittel på 1:42 med åtte kapitler viser samtidig behov, persontimer, bemannings-PDF, CSV og kalenderfil fra samme lagrede eksempelplan. Det ligger direkte under KS/HMS og i åpnet hjelpetema med samme ferske forvaltertilgang som de andre planfilmene. Kapitler, VTT, full tekst, søk, avspiller og retur gjenbrukes. Alle tretten tidligere guideposter og deres filer beholdes; samlet finnes fjorten filmer. Ingen ny tilgangslesning eller lagring innføres.
 
 Eksemplet viser to personer i åtte timer på to dager: to personer samtidig, 16 persontimer per dag og 32 totalt. Kalenderimport og full KS/HMS-reise dekkes ikke. Filmen bruker eksisterende Sandbox-opptak fra PR308/04392220; PR311s planrettelser skal vurderes samlet før autorisert release. Scope, kildefiler og kontrollstatus: docs/qa/STAFFING_EXPORT_HELP_VIDEO_20261106.md.
+
+Boligprosjekter A–Å ligger under Boligprosjekter med 57 kapittelmarkører, undertekster og eksisterende Bolig-tilgang.
