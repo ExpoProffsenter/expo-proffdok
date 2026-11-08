@@ -240,3 +240,10 @@ Ny scene under kapittel 9 viser den fiktive leverandørens mottakervisning med k
 ### UE – faktisk utfylling verifisert
 
 Opprettet fiktiv UE-testkontakt i pilotprosjektet med bare Sjekklister og rett til egen utfylling. Mottakersiden viste bare fanen Sjekklister. Opprettet én egen fiktiv sjekkliste, besvarte punktet med OK og kommentar og lagret med fullføring. Portalen bekreftet «Sjekklisten er fullført og lagret hos prosjektet», og Mine utfyllinger viste Fullførte (1). Vedleggsopplasting ble ikke prøvd. Ingen e-post sendt. Tilgangen gjelder til 08.12.2026. Skjermbilder 80–83 er tatt og gjenstår å klippe inn. Ingen personlig lenke lagret i QA.
+
+
+### Arbeidsklipp v10
+
+[MP4](https://chatgpt.com/library?file_id=libfile_a0cde909f8b4819189188cc0023e572c&account_id=personal) · [Redigerbare kilder](https://chatgpt.com/library?file_id=libfile_9b42e09979c481918635a030e3c26ef3&account_id=personal)
+
+Fire nye scener under kapittel 9 viser UE-tilgang, mottakervisning, utfylling og bekreftet fullføring. 55 scener, 9:24, 6 768 videobilder, kapittelmarkører, undertekstspor og ZIP-integritet er kontrollert. Gjenbrukte scener kan vise eldre sceneteller. Vedleggsopplasting og ny beboeraksept gjenstår.
