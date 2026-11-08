@@ -284,3 +284,12 @@ PR309 sin CI1031 feilet på «Handler receives shared allowlist». Oppfølgingsc
 - Fast testadresse: https://expo-proffdok-git-fase45b-bolig-flow-qa-20261104-ringside.vercel.app/?progressTest=safe. Bekreft publisert SHA og Sandbox-binding på nytt. UE-filer er verifisert med Sandbox Edge v4 og byte-identisk nedlasting. Commit `6050fa05` har tilsvarende origin-betingelse og lokal filtest 55 PASS. Deploy av eksakt oppfølgingskilde er ikke attestert.
 - Bruk arbeidsklipp v12 og kildepakken lenket ovenfor. De 57 scenenumrene er kontrollert. Filmen er ikke integrert i Hjelp. Ny fiktiv beboeraksept og bekreftelse uten ekstra e-post gjenstår som test eller separat endring. Ingen ny TEST OK.
 - Neste steg: les resultatet av CI1034. Ved feil, les første feilede kontroll og rett årsaken. Ved grønn CI, verifiser samlet preview og avklar eksakt releaseomfang og eventuelle backendsteg før TEST OK. Hvis produksjonssetting autoriseres, håndter PR 309 inn i PR 311 sin branch, verifiser det resulterende hodet og fullfør deretter mot main. Kontroller produksjonsdeploy og main → demo etter avtalt omfang.
+
+
+## Sandbox QA – 8. november 2026
+
+PR 309 head `6050fa05` mot PR 311 head `208dc21a`: CI1034 full success. PR 311 mot main `34daef4c`: CI1001 success. Fast Bolig-preview er READY på `6050fa05`.
+
+Sandbox `bolig-partner-files` v5 er aktiv. Inngangsfil og begge delte avhengigheter ble hentet tilbake og sammenlignet byte for byte med `6050fa05`. Ny syntetisk PNG ble lagret med eksisterende fiktiv UE-tilgang i pilotprosjektet. Etter omlasting var den synlig og kunne lastes ned. Original og nedlasting var identiske (SHA-256 `ff3a8d4d25288e2639ba249d0e9e0024510539769d7a0c73093797a4fed84b37`). Tilbakeføring ved behov: republiser v4-kilden i samme Sandbox.
+
+I DEMO – Samlet gjennomgang, H0101, ble en fiktiv endringsavtale til bestilling B-2 publisert som utgave 2 med syntetisk pristillegg på 1 kr. Null endring ble først korrekt avvist. Eksisterende fiktiv beboer åpnet avtalen i portalen, kontrollerte og registrerte aksept. Portalen viste utgave 2 som Akseptert og kvitteringen «Aksepten er registrert», med riktig beløp og utskriftsvalg. Ingen lenke ble sendt på e-post. E-post er pauset i Sandbox. Produksjonsoppførsel for eventuell automatisk bekreftelsesmail er fortsatt ikke attestert. Ingen produksjonsmerge eller TEST OK.
