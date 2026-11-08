@@ -176,3 +176,8 @@ Den tidligere tomme tilsynslisten er erstattet med skjermbildet av den lagrede t
 Bestillingsflyten viste lagret bestillingsutkast versjon 1, ikke sendt. Varemottak ble ikke registrert. Videre test bør bruke en eksisterende, fiktiv ordre i sendt tilstand.
 
 Fra Registrer overtakelse åpnet H0101 vurderingen med ett hinder og åtte uvurderte forhold. En fiktiv protokollreferanse ble lagt inn og registreringsknappen prøvd. Dialogen ble stående, og etter lukking viste H0101 fortsatt ni åpne forhold og «Ikke startet». Det ble ikke observert en entydig feilmelding. Testen isolerer derfor ikke sperren for hinder fra andre uoppfylte krav. Protokoll ble ikke opprettet eller signert. Skjermbilder fra dialogen er tatt for videre redigering.
+
+
+### H0101 – begrunnet vurdering
+
+Lagt inn fiktiv begrunnelse for demontering og riving og lagret med «Bare vurderingen». Ved gjenåpning viste appen ett vurdert hinder og åtte uvurderte forhold. Forsøk på å registrere overtakelsen med fiktiv protokollreferanse ble ikke fullført. Ingen entydig sperremelding ble observert, og testen isolerer fortsatt ikke hinderet fra de åtte uvurderte forholdene. Boligen sto fortsatt som «Ikke startet». Ingen kodeendring eller signering.
