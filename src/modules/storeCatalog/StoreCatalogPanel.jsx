@@ -284,6 +284,8 @@ export default function StoreCatalogPanel({ onSelectItem }) {
   const [access, setAccess] = useState(false);
   const [manage, setManage] = useState(false);
   const [loadingAccess, setLoadingAccess] = useState(true);
+  const [accessError, setAccessError] = useState(false);
+  const [accessRevision, setAccessRevision] = useState(0);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [searching, setSearching] = useState(false);
@@ -295,9 +297,11 @@ export default function StoreCatalogPanel({ onSelectItem }) {
 
   useEffect(() => {
     let active = true;
+    setLoadingAccess(true);
+    setAccessError(false);
     Promise.all([
-      canAccessInternalStoreCatalog(client),
-      canManageInternalStoreCatalog(client),
+      canAccessInternalStoreCatalog(client, { throwOnError: true }),
+      canManageInternalStoreCatalog(client, { throwOnError: true }),
     ])
       .then(([canAccess, canManage]) => {
         if (!active) return;
@@ -305,11 +309,11 @@ export default function StoreCatalogPanel({ onSelectItem }) {
         setManage(Boolean(canManage));
       })
       .catch(() => {
-        if (active) { setAccess(false); setManage(false); }
+        if (active) { setAccess(false); setManage(false); setAccessError(true); }
       })
       .finally(() => active && setLoadingAccess(false));
     return () => { active = false; };
-  }, [client]);
+  }, [client, accessRevision]);
 
   useEffect(() => {
     if (!access) return undefined;
@@ -363,7 +367,9 @@ export default function StoreCatalogPanel({ onSelectItem }) {
     setAlternatives([]);
   }
 
-  if (loadingAccess || !access || !client) return null;
+  if (loadingAccess) return <p role="status">Kontrollerer tilgang til varesøk og import …</p>;
+  if (accessError || !client) return <div><p role="alert">Kunne ikke kontrollere tilgangen til varesøk og import.</p><button type="button" className="secondary" onClick={() => setAccessRevision(value => value + 1)}>Prøv tilgangskontrollen igjen</button></div>;
+  if (!access) return <p role="status">Brukeren din har ikke tilgang til det interne varesøket. Kontakt systemansvarlig hvis du trenger denne tilgangen.</p>;
 
   return (
     <section className="catalog-panel">

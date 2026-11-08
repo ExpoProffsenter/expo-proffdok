@@ -8,7 +8,7 @@ const actor=async(user=u)=>db.exec(`reset role;select set_config('request.jwt.cl
 const rejects=async(fn,code='42501')=>{await assert.rejects(fn,e=>e.code===code);checks++;};
 let serial=100;const record=(input,command=id(serial++))=>rpc('stocktake_record',[company,session,command,input]);
 try{
- await db.exec(`create role anon;create role authenticated;create schema auth;
+ await db.exec(`create role anon;create role authenticated;create role service_role;create schema auth;
  create function auth.uid() returns uuid language sql as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
  create table public.profiles(id uuid primary key,approved boolean default true,deactivated boolean default false,system_role text);
  create table public.sales_company_scopes(id uuid primary key,display_name text);
@@ -27,6 +27,8 @@ try{
  insert into public.internal_store_catalog_imports values(${q(imp)},'active');
  insert into public.internal_store_catalog_items values(${q(product)},'Leverandør A','00123','Rørdel','07000000000001',${q(imp)},true),(${q(product2)},'Leverandør B','00123','Samme strekkode','07000000000001',${q(imp)},true);`);
  await db.exec(await fs.readFile('supabase/migrations/20261015105313_stocktake_company_counts.sql','utf8'));
+ await db.exec(await fs.readFile('supabase/migrations/20261105014939_stocktake_areas_handover_history.sql','utf8'));
+ // Every original legacy-client assertion also runs with the new schema installed.
  await actor();eq((await rpc('stocktake_context')).enabled,false,'off by default');await rejects(()=>rpc('stocktake_list',[company]));
  eq((await rpc('stocktake_admin_get',[company])).revision,0);eq((await rpc('stocktake_admin_set',[company,true,0])).enabled,true);await rejects(()=>rpc('stocktake_admin_set',[company,false,0]),CONFLICT_CODE);
  eq((await rpc('stocktake_context')).company_id,company);await actor(peer);await rejects(()=>rpc('stocktake_admin_set',[company,false,1]));await actor();
@@ -50,3 +52,5 @@ try{
  await db.exec('reset role;set role anon;');await rejects(()=>rpc('stocktake_context'));await rejects(()=>rpc('stocktake_admin_get',[company]));
  console.log(`stocktake-db-check: ${checks} assertions OK (real migration, shared counting, replay, zero, >100 rows, permissions, conflicts and closure)`);
 }finally{await db.close();}
+// Additive area/handover contract runs after every original stocktake assertion.
+await import('./stocktake-areas-db-check.mjs');

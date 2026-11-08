@@ -926,8 +926,7 @@ export default function BoligProgressPlanning({
             )}
             {draft.pending && (
               <p role="status">
-                Lagringen er ikke bekreftet. Lukk vinduet og bruk «Prøv samme
-                lagring igjen». Utkastet beholdes.
+                {saving ? "Lagrer planen … Vent på bekreftelse." : "Lagringen er ikke bekreftet. Lukk vinduet og bruk «Prøv samme lagring igjen». Utkastet beholdes."}
               </p>
             )}
           </div>
@@ -1075,7 +1074,7 @@ export default function BoligProgressPlanning({
               </button>
             </div>
             {draft.pending && (
-              <p>Lukk tidslinjen og prøv samme lagring igjen fra oversikten.</p>
+              <p role="status">{saving ? "Lagrer datoendringene … Vent på bekreftelse." : "Lukk tidslinjen og prøv samme lagring igjen fra oversikten."}</p>
             )}
           </div>
         </Dialog>

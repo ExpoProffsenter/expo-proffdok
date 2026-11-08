@@ -14,7 +14,7 @@ export default function TimeManagement({context}){
  const load=async(session,after=null)=>session.call('time_review_list',{p_from:from,p_to:to,p_after:after});
  useEffect(()=>{
   let alive=true;const session=createTimeSession(context);ref.current=session;
-  const refresh=async()=>{const id=++revision.current;session.invalidate();setState(null);setList([]);setArchive([]);setBusy(true);busyRef.current=true;setError('');
+  const refresh=async()=>{const id=++revision.current;session.invalidate();setState(null);setList([]);setArchive([]);setConfirmExport(false);setBusy(true);busyRef.current=true;setError('');
    try{if(document.visibilityState!=='hidden'){const r=await session.call('time_tasks_get');if(alive&&id===revision.current)setState(r);}}
    catch(e){if(alive&&id===revision.current)setError(e.message);}finally{if(alive&&id===revision.current){setBusy(false);busyRef.current=false;}}};
   refresh();const events=['focus',WORK_PROFILE_EVENT,MANAGED_ACCESS_EVENT,MODULE_ACCESS_EVENT];events.forEach(e=>window.addEventListener(e,refresh));document.addEventListener('visibilitychange',refresh);return()=>{alive=false;revision.current++;session.dispose();ref.current=null;events.forEach(e=>window.removeEventListener(e,refresh));document.removeEventListener('visibilitychange',refresh);};

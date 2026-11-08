@@ -5,6 +5,7 @@ import path from 'node:path';
 import http from 'node:http';
 import {build} from 'vite';
 import react from '@vitejs/plugin-react';
+await import('./work-profile-placement-react-check.mjs');
 
 // Actual profile/menu adapters and late production CSS. The authenticated host,
 // profile transport and native navigation callbacks are synthetic and isolated.
@@ -24,6 +25,7 @@ const bundled=await build({root,configFile:false,logLevel:'silent',plugins:[reac
  name:'isolated-profile-transport',enforce:'pre',resolveId(id){if(id.endsWith('/workProfileClient.js'))return '\0profile-qa';},
  load(id){if(id==='\0profile-qa')return `export const WORK_PROFILE_EVENT='qa-profile';export const readCachedWorkProfileState=()=>window.qa.state;export const getMyWorkProfileState=async()=>window.qa.state;export const setActiveWorkProfile=async id=>{window.qa.writes.push(id);throw Error('QA byttefeil – ingen lagring');};`;},
 }],build:{write:false,minify:false,cssCodeSplit:false,rollupOptions:{input:entry,output:{inlineDynamicImports:true}}}});
+if(process.env.SHELL_PROFILE_BUILD_ONLY==='1'){console.log('Shell/work profile fixture build PASS (browser not started)');fs.rmSync(tmp,{recursive:true,force:true});} else {
 const js=bundled.output.find(x=>x.type==='chunk').code,css=bundled.output.filter(x=>x.fileName.endsWith('.css')).map(x=>x.source).join('\n');
 const server=http.createServer((req,res)=>{
  if(req.url==='/qa-logo.svg'){res.setHeader('content-type','image/svg+xml');res.end('<svg xmlns="http://www.w3.org/2000/svg" width="180" height="40"><text x="0" y="28">QA Firma A</text></svg>');return;}
@@ -58,6 +60,7 @@ try{
  await page.getByRole('button',{name:'Alle områder',exact:true}).click();const drawer=page.locator('#expo-desktop-menu-drawer');await drawer.waitFor();await page.keyboard.press('Escape');await drawer.waitFor({state:'hidden'});eq(await draft.inputValue(),'Bevart usendt kontrolltekst','native menu Escape preserves draft');
  await page.getByRole('button',{name:'Alle områder',exact:true}).click();await drawer.getByRole('button',{name:'Hjelp',exact:true}).click();eq(await page.evaluate(()=>window.qa.navigation.at(-1)),'Hjelp','real desktop menu delegates native destination once');eq(await draft.inputValue(),'Bevart usendt kontrolltekst','native destination fixture preserves draft');
  await page.evaluate(()=>window.publishProfile({is_systemadmin:false,selection_required:true}));const required=page.getByRole('dialog',{name:'Velg arbeidsprofil',exact:true});await required.waitFor();
+ const requiredNode=await required.elementHandle();
  for(const width of [320,390,768,1363,1920]){
   await page.setViewportSize({width,height:360});
   eq(await required.locator('.workProfileRequiredCard').evaluate(n=>{const r=n.getBoundingClientRect();return r.top>=0&&r.left>=0&&r.right<=innerWidth&&r.bottom<=innerHeight&&n.scrollHeight>=n.clientHeight;}),true,'required selection fits short screen '+width);
@@ -71,11 +74,21 @@ try{
   });
   const options=await optionHandle.jsonValue();await optionHandle.dispose();
   eq(options.length,3,'all required choices remain mounted '+width);
+  eq(await required.evaluate((el,node)=>el===node,requiredNode),true,'same required picker across responsive placement '+width);
   eq(options.every(n=>n.height>=44&&Number.parseFloat(n.minHeight)>=44&&n.font==='16px'),true,'required options remain readable '+width);
  }
  await page.keyboard.press('Escape');eq(await required.isVisible(),true,'required initial selection cannot be bypassed by Escape');
  await required.getByRole('button',{name:'QA Firma C',exact:true}).click();await page.getByText('QA byttefeil – ingen lagring',{exact:true}).waitFor();eq(await required.isVisible(),true,'existing failed-selection state remains open');eq(await page.evaluate(()=>window.qa.writes),['c'],'only deliberate fixture choice invokes existing setter');
+ for(const width of [390,1363]){
+  await page.setViewportSize({width,height:520});
+  eq(await required.evaluate((el,node)=>el===node,requiredNode),true,'failed required selection is not recreated '+width);
+  eq(await required.getByText('QA byttefeil – ingen lagring',{exact:true}).isVisible(),true,'failed-selection explanation survives resize '+width);
+  eq(await page.evaluate(()=>window.qa.writes),['c'],'resize cannot restart company selection '+width);
+ }
+
  await page.evaluate(()=>window.publishProfile({can_switch:false}));await page.locator('#expo-work-profile-switcher').waitFor({state:'detached'});eq(await draft.inputValue(),'Bevart usendt kontrolltekst','revoked selector leaves unrelated draft intact');
  eq(outbound,[],'no external traffic');eq(errors,[],'no browser errors');
  console.log(`Shell/work profile 03.6: ${checks} Chromium assertions PASS; actual adapters, native Escape/outside/focus, cancelled firm choice, required/error/revocation, five widths and short screens; synthetic host/transport only.`);
 }finally{await browser?.close();await new Promise(resolve=>server.close(resolve));fs.rmSync(tmp,{recursive:true,force:true});}
+
+}

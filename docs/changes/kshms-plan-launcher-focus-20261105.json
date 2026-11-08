@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Planbygger: fokus tilbake til riktig åpneknapp",
+  "change": "Miljømål BEGGE, bare PR311 Preview/Sandbox. Scope: KshmsProgressBoard sine to eksisterende launcher-knapper og standard fokusresolver for hoveddialogen, ny faktisk React-prøve importert av eksisterende kshms-progress-react-check og additive native krav i samme prøve, KS/HMS-README og dette QA-grunnlaget. Automatisk åpnet plan har ingen manuell trigger ved mount. Ved eksplisitt Tilbake går standard fokus derfor til den nymonterte Åpne fremdriftsplan eller Åpne bemanningsplan etter sist brukte visning. Samme stateKey som eieren ved mount, synlig dokument og tilkoblet synlig tilgjengelig node kreves. Eksisterende eksplisitte returnFocusTarget-resolvere har fortsatt forrang; null fra dem gir ikke launcher-fallback. Underdialoger, Escape/cancel, view-minne, plan, kladd, lagring, transport, tilgang og eksport er uendret. Ingen endring i main/bootstrap, ProgressPlanWorkspace, database eller PDF.",
+  "verification": "Førbevis: på fullgrønn61eb31e8/CI975 åpnet innlogget demokonto eksisterende syntetisk VVS-EKSEMPEL-3M, leste21arbeidsoperasjoner, eksporterte6sidersPDF og valgte Bemanningsplan uten input/lagring. Lukk planbygger returnerte valgt plan men fokus AXWebArea/BODY. Ny faktisk Board/PlanDialog-React-prøve på isolert original61eb31e8 feiler eksplisitt: auto-opened plan close must focus its newly mounted schedule launcher. Rettelsen består11krav: schedule/staffing/gjenåpning, uendret dirty plan/null skrivekall, eksplisitt ekstern eier/null, skjult dokument/eier og endret stateKey. JSDOM har syntetisk showModal/geometri; React-komponent/ref/livsløp er faktisk. Første testhost-build manglet påkrevd lib.cssFileName og stoppet før prøve; rettet testoppsett uten endret assertion. Full lokal Sandbox build/critical og scope/release-docs/diff PASS. Ordinær native prøve beholder alle tidligere kalender/drag/resize/undo/draft/scope/eksport/Safari-avgrensninger og får21krav for10schedule/staffing-lukkesykluser over320/390/768/1363/1920 og uendret lagret plan. Lokal Chromium er kjent sperret ved socket/ProcessSingleton og gjentas ikke. Ny eksakt CI/READY og innlogget etterkontroll føres i PR311.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Samme knapper og oppgave; tastaturreturen rettes uten nye steg."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Kun standard fokusmål innen eksisterende hoveddialog; eksplisitte eiere og datakontrakt bevares."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen nye pakker, miljøvalg eller installasjon."
+    },
+    "module": {
+      "required": true,
+      "reason": "Dokumenterer fallback, ekstern eier/null og scopesperre."
+    }
+  }
+}

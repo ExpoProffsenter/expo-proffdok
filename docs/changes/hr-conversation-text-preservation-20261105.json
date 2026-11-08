@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "HR-samtaler: behold hele innlimte teksten og vis faktisk grense",
+  "change": "Miljømål BEGGE, bare Preview/Sandbox. Fjern stille native avkorting i private samtaletekster; vis Unicode-tegnantall og feil. Valider alle skrivbare tekstfelt før første mutasjon slik at for lang kommentar heller ikke gir delvis lagret møtereferat. Eksisterende servergrenser, roller, sideminne, historikk og PDF er uendret.",
+  "verification": "121 faktiske React-/modellassertions PASS med syntetisk RPC, inkludert lang forberedelse/tiltak/kommentar, ingen mutasjon ved overskridelse, komplett kladd etter focus/remount, Unicode/grense, berørte opprinnelige roller/bekreftelse/PDF/konflikt. Full lokal Sandbox build/critical PASS. Native CI og live kandidatkontroll gjenstår.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "Forklarer teller, faktisk grense og at ulagret tekst krever åpen side."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Ingen ny dataflyt eller lagring; kun førvalidering av eksisterende lagringsforsøk."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen nye pakker, oppsett, miljøvariabler eller installasjon."
+    },
+    "module": {
+      "required": true,
+      "reason": "Lokal tekstvalidering og forholdet til uendrede databasegrenser dokumenteres."
+    }
+  }
+}

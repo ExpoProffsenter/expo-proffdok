@@ -155,7 +155,7 @@ const steps = [
     "next": "Bruk aktivitetenes frister og varsler for videre oppfølging. Nedlasting av dokumentasjon endrer ingen status."
   }
 ];
-export default function BoligStartGuide() {
+export default function BoligStartGuide({returnLabel}={}) {
   const [open, setOpen] = useState(false),
     [step, setStep] = useState(0),
     [image, setImage] = useState(false);
@@ -182,7 +182,7 @@ export default function BoligStartGuide() {
         A–Å-veiledning for Boligprosjekter
       </button>
       {open && (
-        <BoligGuidePanel open={open}
+        <BoligGuidePanel open={open} returnLabel={returnLabel}
           title="A–Å-veiledning for Boligprosjekter"
           onClose={() => {
             setOpen(false);

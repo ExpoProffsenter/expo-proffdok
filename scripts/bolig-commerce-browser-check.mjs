@@ -120,7 +120,11 @@ try {
   eq(await page.getByRole("region",{name:"Avtalegrunnlag"}).getByText("3 stk",{exact:false}).count()>0,true,"preview reflects the editable quantity");
   await page.getByRole("button",{name:"Opprett beboerlenke",exact:true}).click();
   await page.getByLabel("Beboerlenke",{exact:true}).waitFor();
+  eq(await page.getByText("Venter på beboerens svar. Endringsbestillingen kan lastes ned etter aksept. Originalbestillingen er uendret.",{exact:true}).count(),1,"published change waits for resident instead of instructing unavailable download");
+  eq(await page.getByText(/Last ned endringsgrunnlaget og avklar/).count(),0,"unaccepted change has no premature fulfillment instructions");
   await page.evaluate(()=>window.__asAccepted());
+  await page.getByRole("button",{name:"Last ned endringsbestilling / kreditering",exact:true}).waitFor();
+  eq(await page.getByText(/Last ned endringsgrunnlaget og avklar/).count(),1,"accepted change pairs fulfillment instructions with actual download action");
   await page.getByRole("button",{name:"Registrer leverandøroppfølging",exact:true}).click();
   await page.getByLabel("Leverandørbekreftelse og bestillingsreferanse").fill("QA Leverandør har bekreftet. Tillegget er bestilt på QA-2.");
   await page.getByLabel("Bestillings- eller krediteringsreferanse",{exact:true}).fill("QA-2");
@@ -291,6 +295,7 @@ try {
   const invalid=await browser.newPage();await invalid.goto(url+"/?public#invalid");await invalid.getByRole("heading",{name:"Avtalen kan ikke åpnes"}).waitFor();checks++;
   eq(await invalid.evaluate(()=>window.__publicCalls.length),0,"incomplete token never reaches server");
   eq(errors,[],"no browser runtime errors");
+  const draftCheck=await browser.newPage();await draftCheck.goto(url);await draftCheck.getByRole('button',{name:'Endringer og beboeraksept',exact:true}).click();await draftCheck.getByRole('button',{name:'Ny endringsordre',exact:true}).click();await draftCheck.getByLabel('Bestillingen som endres').selectOption('order');await draftCheck.getByLabel('Pristillegg / fratrekk inkl. mva.').fill('0');await draftCheck.getByLabel('Beskrivelse til beboeren').fill('QA fiktiv statuskontroll uten sending');await draftCheck.getByRole('button',{name:'Lagre utkast',exact:true}).click();await draftCheck.getByText('Se over varer og pris. Opprett beboerlenken når grunnlaget er klart. Endringsbestillingen kan lastes ned etter at beboeren har akseptert.',{exact:true}).waitFor();eq(await draftCheck.getByText(/Last ned endringsgrunnlaget og avklar/).count(),0,'draft never suggests unavailable fulfillment action');eq(await draftCheck.getByRole('button',{name:'Last ned endringsbestilling / kreditering',exact:true}).count(),0,'draft retains original no-download contract');await draftCheck.close();
   console.log(`PASS Bolig commerce browser: ${checks} assertions; real handlers/adapters, preserved drafts, firm/role denials, one-action creation/publication, exact recovery of all three server steps, before/after, followup, mobile and lost-response acceptance. Visuals: ${tmp}`);
 } catch(e) { console.error('Browser QA state:',await debugPage?.locator('body').innerText());throw e;
 } finally { await browser?.close();if(server)await new Promise(r=>server.close(r));fs.rmSync(entry,{force:true});fs.rmSync(publicEntry,{force:true}); }

@@ -55,11 +55,13 @@ assert.throws(()=>conversationOutlookUrl({...outlookValue,historical:true}),/gje
 assert.throws(()=>conversationOutlookUrl({...outlookValue,conversation:{...outlookValue.conversation,on:'2026-03-29',meeting_time:'02:30'}}),/sommertid/);checks++;
 let sends=0;
 eq(await downloadConversationPdf({value,loadPdf:()=>{throw Error('should not load');},isCurrent:()=>false}),null);
-const sample=clone(value);sample.conversation.meeting_time='14:45';sample.conversation.meeting_location='Sted A';sample.conversation.shared=true;sample.conversation.stage='completed';sample.conversation.preparation[id(6)]='Opprinnelig medarbeidersvar. '.repeat(150);
-sample.conversation.meeting[id(7)]='Avtalt møtereferat med æøå. '.repeat(150);sample.conversation.comments.employee='Egen uenighet beholdes.';
-sample.conversation.actions=[{id:id(8),task:'Avtalt oppfølging',owner_id:id(2),due_on:'2026-11-20',done:false}];
+const longPdf=(seed,limit,end)=>seed.repeat(Math.ceil(limit/seed.length)).slice(0,limit-end.length)+end;
+const sample=clone(value);sample.conversation.meeting_time='14:45';sample.conversation.meeting_location='Sted A';sample.conversation.shared=true;sample.conversation.stage='completed';sample.conversation.preparation[id(6)]=longPdf('Tekst med æøå og linjeskift.\n',10000,' SLUTT-FORBEREDELSE');
+sample.conversation.meeting[id(7)]=longPdf('Avtalt møtereferat med æøå.\n',10000,' SLUTT-MØTE');sample.conversation.comments.employee='Egen uenighet beholdes.';
+sample.conversation.actions=[{id:id(8),task:longPdf('Oppfølging med ansvar. ',2000,' SLUTT-TILTAK'),owner_id:id(2),due_on:'2026-11-20',done:false}];
 sample.conversation.confirmations.employee={at:'2026-10-11T12:00:00Z'};
 eq(conversationPdfDocument(sample).fields.find(f=>f[0]==='Medarbeider')[1],'Syntetisk medarbeider');
+const completePdfText=JSON.stringify(conversationPdfDocument(sample));for(const text of [sample.conversation.preparation[id(6)],sample.conversation.meeting[id(7)],sample.conversation.actions[0].task])eq(completePdfText.includes(JSON.stringify(text).slice(1,-1)),true,'complete long text remains in PDF model');
 eq(conversationPdfDocument(sample).fields.find(f=>f[0]==='Klokkeslett')[1],'14:45 (norsk tid)');eq(conversationPdfDocument(value).fields.find(f=>f[0]==='Klokkeslett')[1],'Ikke avtalt','old records never get an invented meeting time');
 eq(conversationPdfDocument(sample).fields.find(f=>f[0]==='Sted')[1],'Sted A');eq(conversationPdfDocument(value).fields.find(f=>f[0]==='Sted')[1],'Ikke avtalt');
 const jspdf=await import(process.env.HR_PRACTICE_JSPDF_PATH||'/tmp/hr-practice-qa/node_modules/jspdf/dist/jspdf.node.min.js');

@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Samlet PDF-film under KS/HMS-hjelp",
+  "change": "Miljømål BEGGE. Ny 122s/10 kapitlers film fra eksisterende syntetisk Sandbox. Samme native avspiller, strict eksisterende actor/company/enabled/manage-kontekst. Ingen nye rettigheter, appkjerne, RPC, migrasjon, serverlagring eller utsending. Alle åtte tidligere metadata/filmer beholdt.",
+  "verification": "Full decode og visuell scenekontrol PASS; full lokal Sandbox critical build PASS. Native regresjon utvidet med manager-revokasjon, fremmed actor, nested retur/fokus og eksakt åttefilms metadatahash. Eksakt kandidat-CI/READY/live dokumenteres i PR308.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "Ny film direkte under eksisterende KS/HMS-tema."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Samme statiske media/avspiller og allerede lastet tilgang."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen ny avhengighet eller konfigurasjon."
+    },
+    "module": {
+      "required": true,
+      "reason": "Avgrenset PDF-oppgave, tilgang og restpunkter."
+    }
+  }
+}

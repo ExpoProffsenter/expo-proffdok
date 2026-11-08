@@ -40,3 +40,10 @@ Apprelease er først ferdig etter følgende faste kontroll. Prosedyren gjelder e
 5. Bekreft READY på eksakt commit og fast demo-host, faktisk Sandbox-binding og ny grønn Sandbox-preflight. Registrer avvik/begrensninger; ikke seed, reset eller send e-post som sideeffekt.
 
 Automatisk konfliktløsning og modulbasert testutelating er egne mulige neste endringer, ikke en del av denne forenklingen. Dette hindrer at hastighetsarbeidet utilsiktet endrer demofunksjon eller testdekning.
+
+
+## Samlet Preview med avhengige PR-er
+
+En samlet testversjon kan bestå av en fullgrønn kjerne-PR mot main og en avhengig modul-PR mot den dokumenterte kjernebranchen. Den samlede kandidatens SHA, kjernebase-SHA og begge diffgrunnlag skal fremgå i QA. Samme fulle runtimepakke og sluttgate kjøres på det samlede treet; modulens scope-/byteparitetskrav gjelder dens reelle endring mot den kontrollerte basen. Dette er ingen adgang til å hoppe over tester eller bruke en vilkårlig baseline.
+
+PR Core Safety starter additivt også for PR-er mot fase45b-whole-app-qa-20261104 mens denne avhengigheten finnes. Main-trigger og alle147opprinnelige testkommandoer beholdes. Før publisering avstemmes modul-PR-en mot faktisk main etter kjernemerge. Brukerens TEST OK kan dekke den samlede løsningen og én uttrykkelig avtalt produksjonsplan; intern PR-rekkefølge krever ikke automatisk to produktgodkjenninger. Production- og demoendringer krever fortsatt avtalt autorisasjon og full verifisering.

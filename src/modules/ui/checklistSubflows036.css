@@ -1,6 +1,16 @@
 /* Native checklist disclosures and fields; persistence and signing stay owned
    by the existing builders/workspaces. Screen-only, inside the app shell. */
 @media screen {
+ /* Project actions share the internal workspace style. Answer/status choices
+    and the three progress filters retain their own meaning and colors. */
+ body:has([data-expo-app-shell="true"]) .project-checklist-workspace :is(.project-checklist-resume>button,.project-checklist-card-actions>button,.project-checklist-filter-empty button),
+ body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.project-checklist-footer) :is(button:not(.checklist-status-choice):not(.deviation-dialog-close):not(.checklistGroupHeader),.checklistUpload) {
+  border:1px solid #007f8e!important;border-radius:7px!important;background:#007f8e!important;background-image:none!important;color:#fff!important;box-shadow:none!important;transform:none!important;white-space:normal;font-weight:600;
+ }
+ body:has([data-expo-app-shell="true"]) .project-checklist-workspace :is(.project-checklist-card-actions>button,.project-checklist-filter-empty button).secondary,
+ body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.project-checklist-footer) button.secondary:not(.checklist-status-choice):not(.deviation-dialog-close) {
+  background:#fff!important;color:#007f8e!important;border-color:#cbdde2!important;
+ }
  body:has([data-expo-app-shell="true"]) .ks-checklists .ks-card {
   border-radius:8px!important;box-shadow:none;
  }

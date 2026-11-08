@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Samlet kjernekandidat med bevart separat Bolig-scope",
+  "change": "BEGGE, bare PR311 Preview/Sandbox. Integrer308/d3759ce5 og310/1a3f615e med311/8f446820. Bevar alle imports og begge prosjektfixtureutvidelser.309/1b59d937 holdes separat etter uendret Bolig-grense/paritet avviste firepakksforsøket. Ingen guard, CI, backendkontrakt eller migrasjonskjøring endres.",
+  "verification": "Full lokal Sandbox-build/critical og prosjektfixture-build på ny kjerne; identisk HR-React/test med tidligere145PASS og alle14filmbytes/metadata/test. Begge uendrede Bolig-checkere rapporterer ingen Bolig-featureendring.147workflowkommandoer/video-register/scope/release-docs/whitespace kontrolleres. Eksakt ny kandidat-CI/READY/innlogget prøve kreves. Full feilårsak og bevart forsøk:docs/qa/COMBINED_PREVIEW_20261106.md.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "Kilde308/311s eksisterende Hjelp og14filmer integreres uendret."
+    },
+    "module": {
+      "required": true,
+      "reason": "Eksisterende modulREADME fra kildepakkene følger integrasjonen; ingen ny modulkontrakt."
+    },
+    "architecture": {
+      "required": true,
+      "reason": "Kilde311s område-/supportarkitektur følger med uendret."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen ny oppsett-, dependency- eller miljøendring."
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Planfilm under eksisterende KS/HMS-tema",
+  "change": "Miljømål BEGGE; bare PR308 Preview/Sandbox. Ny statisk120s-film,11kapitler/VTT/tekst. Scope: mediefiler, videoGuides.json, additiv browserprøve, dekningsrad, modul-README og QA/releasegrunnlag. Ti tidligere filmer, hovedapp/backend/tilgangsmotor og demo-overlay bevares.",
+  "verification": "Kilde PR311/4c5c0632, full CI976 og faktisk syntetisk plan/PDF-før/etter. Opprinnelig film full decode2880frames/visuell kontroll PASS; identisk hash e8be7c1b6384c96c329ccdbe7bd027991e52f25ab04c9b0fe54cfd839b69ebb2. Ny integrasjon krever egen eksakt CI/READY/avspillingsprøve. Oppretting/redigering, full KSHMS-006 og fysisk Safari er ikke attestert.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "Ny film med komplette kapitler og tekst i eksisterende Hjelp-tema."
+    },
+    "module": {
+      "required": true,
+      "reason": "Nytt filmkapittel og konkret avgrensning dokumenteres i Hjelp-README."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Eksisterende statiske filmfiler, tilgangsfilter og avspiller beholdes."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen nye avhengigheter eller miljø-/oppsettsendringer."
+    }
+  }
+}

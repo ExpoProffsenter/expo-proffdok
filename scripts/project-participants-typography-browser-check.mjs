@@ -10,6 +10,10 @@ const cwd=process.cwd(),temp=fs.mkdtempSync(path.join(os.tmpdir(),'participants-
 let browser,server,checks=0;
 const eq=(actual,expected,label)=>{assert.deepEqual(actual,expected,label);checks++;};
 const main=fs.readFileSync('src/main.jsx','utf8');
+const participantContext=fs.readFileSync('src/main.jsx','utf8').match(/"data-project-participants-id": ([^,]+), "data-project-participants-readonly": ([^,]+),/);
+assert(participantContext,'actual main shell supplies scoped participant read-only context');
+const participantProps='{"data-project-participants-id": '+participantContext[1]+', "data-project-participants-readonly": '+participantContext[2]+'}';
+
 const source=(from,to)=>main.slice(main.indexOf('  function '+from+'('),main.indexOf('  function '+to+'('));
 try{
  fs.writeFileSync(path.join(temp,'entry.jsx'),`
@@ -30,9 +34,11 @@ window.writes=0;window.mails=0;window.allowLeave=false;
 window.confirm=()=>window.allowLeave;
 window.rpc=async()=>({company_id:'synthetic-company',customers:[]});
 function App(){
+ const [locked,setLocked]=useState(false);window.setParticipantLock=setLocked;
+ const hasActiveProjectWorkspace=true,projectId="qa",isProjectSupportReadOnly=false,isProjectLocked=locked,isReadOnly=false;
  const [project,setProject]=useState({projectName:'Syntetisk prosjekt',responsible:'QA ansvarlig',date:'2026-11-02',address:'Testveien',postnr:'0001',city:'Oslo',customer:'QA kunde',customerEmail:'customer@example.invalid',customerPhone:'90000000',notes:''});
  const [slot,setSlot]=useState(false);window.moveParticipants=()=>setSlot(true);
- return <div data-expo-app-shell="true" data-expo-project-shell="1"><main>
+ return <div data-expo-app-shell="true" data-expo-project-shell="1" {...${participantProps}}><main>
   <section className="project-info-editor"><h2>Rediger kunde- og prosjektinfo</h2><Fields project={project} setProject={setProject} Input={Input} Textarea={Textarea}/></section>
   {slot&&<section><h2>Deltakere og tilganger</h2><div data-project-participants-slot="1"/></section>}
   <button data-project-navigation="true" onClick={()=>window.left=true}>Tilbake</button>
@@ -44,6 +50,7 @@ createRoot(document.getElementById('app')).render(<App/>);installProjectParticip
  const js=result.output.find(x=>x.type==='chunk').code,css=result.output.filter(x=>x.fileName.endsWith('.css')).map(x=>x.source).join('\n');
  server=http.createServer((req,res)=>{res.setHeader('Content-Type','text/html;charset=utf-8');res.end('<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>'+css+'</style><div id="app"></div><script type="module">'+js.replaceAll('</script','<\\/script')+'</script>');});
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+ if(process.env.PROJECT_PARTICIPANTS_BUILD_ONLY==='1'){console.log('Participant native fixture build PASS (browser not started)');} else {
  browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_PATH||undefined,args:['--no-sandbox']});
  for(const width of [1363,768,390,320]){
   const page=await browser.newPage({viewport:{width,height:900}}),errors=[];page.setDefaultTimeout(5000);page.on('pageerror',e=>errors.push(e.message));
@@ -81,8 +88,20 @@ createRoot(document.getElementById('app')).render(<App/>);installProjectParticip
   for(const tag of ['input','textarea'])eq((await style(composer.locator(tag))).weight,reference.weight,'composer value uses normal weight '+tag+' '+width);
   await panel.getByRole('button',{name:'Send en e-post',exact:true}).click();await panel.getByRole('button',{name:'Send en e-post',exact:true}).click();
   eq(await composer.locator('textarea').inputValue(),'Usendt testmelding','composer draft survives closing '+width);
+  await page.evaluate(()=>window.setParticipantLock(true));
+  await panel.getByRole('button',{name:'+ Legg til',exact:true}).waitFor();
+  await page.waitForFunction(()=>[...document.querySelectorAll('#expo-project-participants-root input,#expo-project-participants-root textarea,#expo-project-participants-root button')].every(e=>e.disabled));
+  eq(await panel.locator('input,textarea,button').evaluateAll(es=>es.length>10&&es.every(e=>e.disabled)),true,'lock disables rows and unsent composer '+width);
+  eq(await panel.locator('[data-participant-field=name]').inputValue(),'Bevart usendt deltaker','lock retains stored contact '+width);
+  eq(await composer.locator('textarea').inputValue(),'Usendt testmelding','lock retains unsent mail '+width);
+  eq(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'locked explanation has no horizontal overflow '+width);
+  await page.evaluate(()=>window.setParticipantLock(false));
+  await page.waitForFunction(()=>!document.querySelector('#expo-project-participants-root [data-participant-field=name]').disabled);
+  eq(await composer.locator('textarea').inputValue(),'Usendt testmelding','unlock retains original composer '+width);
+
   eq(await page.evaluate(()=>({writes:window.writes,mails:window.mails})),{writes:0,mails:0},'no server writes or email '+width);
   eq(errors,[],'no page errors '+width);await page.close();
  }
  console.log('Participant typography browser: '+checks+' assertions PASS — adjacent real fields, four widths, draft/slot/local-save and unsent composer.');
+}
 }finally{await browser?.close();if(server)await new Promise(resolve=>server.close(resolve));fs.rmSync(temp,{recursive:true,force:true});}

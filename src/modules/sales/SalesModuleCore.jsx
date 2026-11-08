@@ -272,6 +272,14 @@ export default function SalesModule({
     [salesStorageKey]
   );
   const [requests, setRequests] = useState(() => loadRequests(salesStorageKey));
+  // Transport readiness precedes project/status hydration. Only this owner can
+  // confirm that the scoped list has actually been installed in React.
+  const [requestListLoad, setRequestListLoad] = useState(null);
+  const requestListLoadState = integrationMode === "app"
+    ? requestListLoad?.scope === salesStorageKey
+      ? requestListLoad
+      : { status: "loading", error: "" }
+    : null;
   const [mode, setMode] = useState(initialNavigation.mode);
   // UI only; scoped to this mounted company/user workspace, never persisted with case data.
   const listViewStateRef = useRef(null);
@@ -625,9 +633,14 @@ export default function SalesModule({
     async function loadPersistentRequests() {
       if (!activeSupabase || integrationMode !== "app") return;
 
+      setRequestListLoad({ scope: salesStorageKey, status: "loading", error: "" });
+
       const { data: sessionData } = await getSalesSession(activeSupabase);
       const user = sessionData?.session?.user;
-      if (!user?.id || cancelled) return;
+      if (!user?.id || cancelled) {
+        if (!cancelled) setRequestListLoad({ scope: salesStorageKey, status: "error", error: "Innloggingen kunne ikke bekreftes." });
+        return;
+      }
 
       const { data: resolvedCompanyId, error: companyError } = await resolveSalesCompanyScope(activeSupabase);
 
@@ -638,6 +651,7 @@ export default function SalesModule({
             companyError?.message ||
               "Firmatilknytningen kunne ikke bekreftes. Kontakt firmaadministrator."
           );
+          setRequestListLoad({ scope: salesStorageKey, status: "error", error: companyError?.message || "Firmatilknytningen kunne ikke bekreftes." });
         }
         return;
       }
@@ -649,6 +663,7 @@ export default function SalesModule({
 
       if (error) {
         console.error("Kunne ikke hente salgssaker", error);
+        if (!cancelled) setRequestListLoad({ scope: salesStorageKey, status: "error", error: error.message || "Kunne ikke hente salgssaker." });
         return;
       }
 
@@ -799,6 +814,7 @@ export default function SalesModule({
       if (cancelled) return;
       setRequests(hydrated);
       saveRequests(hydrated, salesStorageKey);
+      setRequestListLoad({ scope: salesStorageKey, status: "ready", error: "" });
       if (repairedActivatedRequestRefs.size > 0) {
         const repairedRows = hydrated
           .filter((request) => repairedActivatedRequestRefs.has(request.id))
@@ -820,7 +836,9 @@ export default function SalesModule({
       }
     }
 
-    loadPersistentRequests();
+    loadPersistentRequests().catch((error) => {
+      if (!cancelled) setRequestListLoad({ scope: salesStorageKey, status: "error", error: error?.message || "Saksoversikten kunne ikke klargjøres." });
+    });
     return () => {
       cancelled = true;
     };
@@ -3627,6 +3645,7 @@ if (mode === "survey-plan" && selectedRequest) {
       onCreateOffer={onCreateOffer}
       viewStateRef={listViewStateRef}
       viewScope={salesStorageKey}
+      requestListLoadState={requestListLoadState}
       activeRequests={activeRequests}
       activatedRequests={activatedRequests}
       summary={summary}

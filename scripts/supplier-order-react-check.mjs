@@ -55,7 +55,7 @@ try{
  eq(await page.locator('.priceSearchPricePrint').getByLabel('Inkluder interne priser i prisutskrift').count(),1,'sensitive print option belongs to price printing');
  await button('Skjul valgte varer').click();eq(await page.locator('.priceSearchSelected .priceSearchSelectedProduct').isVisible(),false);eq(await actions.isVisible(),true);await button('Vis valgte varer').click();
  await button('Send bestilling til leverandør').click();await page.getByLabel('Leverandørnavn',{exact:true}).fill('Behold denne kladden');
- await page.locator('.priceSearchSelected .priceSearchPickQuantity input').fill('3');await button('Lagre endringer').waitFor();eq(await page.getByLabel('Leverandørnavn',{exact:true}).inputValue(),'Behold denne kladden','quantity edits retain the open supplier form');
+ await button('Avbryt').click();await page.locator('.priceSearchSelected .priceSearchPickQuantity input').fill('3');await button('Lagre endringer').waitFor();await button('Send bestilling til leverandør').click();eq(await page.getByLabel('Leverandørnavn',{exact:true}).inputValue(),'Behold denne kladden','close, edit quantity and reopen retain the supplier draft');
  await button('Avbryt').click();
  if(process.env.SUPPLIER_ORDER_QA_DIR)await page.screenshot({path:path.join(process.env.SUPPLIER_ORDER_QA_DIR,'picklist-desktop.png'),fullPage:true});
  await page.setViewportSize({width:390,height:844});await button('Skriv ut priser').waitFor({state:'hidden'});
