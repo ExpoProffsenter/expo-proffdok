@@ -223,3 +223,8 @@ Under Avtaler viste den eksisterende demoavtalen status «Akseptert». «Åpne k
 [MP4](https://chatgpt.com/library?file_id=libfile_f81f4e3cdba08191ad0724491db6a07d&account_id=personal) · [Redigerbare kilder](https://chatgpt.com/library?file_id=libfile_e45873d2a5848191aa3982f8b3ee86c7&account_id=personal)
 
 Tre nye scener viser portalens startside, akseptert avtale og kvitteringen. Siste scene bruker et utsnitt av fullsideskjermbildet for å vise bekreftelsen under varelinjene. 50 scener, 8:44, 6 288 videobilder, kapitler, undertekstspor og ZIP-integritet kontrollert. Gjenbrukte scener kan vise eldre sceneteller. En ny aksept, faktisk ekstern UE-portal og eventuell e-postoppførsel utenfor Sandbox er fortsatt uverifisert.
+
+
+### Ekstern mottakerside – avgrenset fremdrift
+
+DEMO – Samlet gjennomgang og PILOT – Løpende overtakelse hadde ingen aktive tilganger før prøven. Opprettet én fiktiv kontakt i pilotprosjektet med type Leverandør (dialogens standardvalg) og kun Fremdrift aktivert. Ingen e-post ble sendt. Mottakersiden på fast Sandbox-vert viste pilotens 12 boliger og én fane, Fremdrift, med 49 aktiviteter. Sjekklister og bestillinger var ikke synlige i navigasjonen. Dette verifiserer ekstern fremdriftsvisning for leverandørtypen, ikke UE-spesifikk utfylling eller backend-nekt ved direkte kall. Testtilgangen er aktiv til 08.12.2026. Ingen tilgangslenke eller token lagres i QA. Skjermbilde 79 er tatt for videre redigering.
