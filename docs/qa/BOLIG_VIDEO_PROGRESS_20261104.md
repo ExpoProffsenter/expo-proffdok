@@ -235,3 +235,8 @@ DEMO – Samlet gjennomgang og PILOT – Løpende overtakelse hadde ingen aktive
 [MP4](https://chatgpt.com/library?file_id=libfile_d2029ab1f9588191a85a8011de71ceba&account_id=personal) · [Redigerbare kilder](https://chatgpt.com/library?file_id=libfile_e42fc69495d88191bd8b83a709759726&account_id=personal)
 
 Ny scene under kapittel 9 viser den fiktive leverandørens mottakervisning med kun fremdrift. 51 scener, 8:52, 6 384 videobilder, kapitler, undertekstspor og ZIP-integritet kontrollert. Gjenbrukte scener kan vise eldre sceneteller. UE-utfylling, ny beboeraksept og øvrige utestående tester gjenstår.
+
+
+### UE – faktisk utfylling verifisert
+
+Opprettet fiktiv UE-testkontakt i pilotprosjektet med bare Sjekklister og rett til egen utfylling. Mottakersiden viste bare fanen Sjekklister. Opprettet én egen fiktiv sjekkliste, besvarte punktet med OK og kommentar og lagret med fullføring. Portalen bekreftet «Sjekklisten er fullført og lagret hos prosjektet», og Mine utfyllinger viste Fullførte (1). Vedleggsopplasting ble ikke prøvd. Ingen e-post sendt. Tilgangen gjelder til 08.12.2026. Skjermbilder 80–83 er tatt og gjenstår å klippe inn. Ingen personlig lenke lagret i QA.
