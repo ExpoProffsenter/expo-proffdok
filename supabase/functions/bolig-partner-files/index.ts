@@ -61,6 +61,8 @@ Deno.serve(
         { method: "GET" },
         service,
       ),
-    origins: boligAllowedOrigins,
+    origins: url === "https://ppvircenkjizeiqdxphj.supabase.co"
+      ? [...boligAllowedOrigins, "https://expo-proffdok-git-fase45b-bolig-flow-qa-20261104-ringside.vercel.app"]
+      : boligAllowedOrigins,
   }),
 );
