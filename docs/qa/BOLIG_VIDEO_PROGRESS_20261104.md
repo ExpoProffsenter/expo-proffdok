@@ -143,3 +143,8 @@ Kapittel 9: UE og leverandører samt dialogen med funksjonsvalg og omfang for al
 [MP4](https://chatgpt.com/library?file_id=libfile_d2c06a31de448191a5202cbba65b2efb&account_id=personal) · [Redigerbare kilder](https://chatgpt.com/library?file_id=libfile_330e3cd5ea208191a7ec3dd452e8944b&account_id=personal)
 
 Fem scener fra Sandbox viser faktisk bemanning, tilsynslisten, funksjonsvalg for UE/leverandør, indeksvilkår og fakturaoversikt. Arbeidsklippet har 40 scener på 7:24. Visuell kontroll av nye scener og teknisk kontroll av kapittelgrenser, undertekstspor og 5 328 videobilder er utført. Gjenbrukte sekvenser kan vise eldre scenenummer. SHA-256: `bccb6344a715fb618095be22773829535238795fea48ee64938309ec107a95fb`. Utestående funksjonstester er fortsatt angitt ovenfor.
+
+
+### Bemanning – faktisk registrering
+
+Bemanning ble aktivert i QA-DESIGN-20261104. Manuell innregistrering av Fiktiv QA-montør / QA Testfirma ble bekreftet med «1 registrert inne» og inn kl. 20:45. «Registrer ut / rett tidspunkt» åpnet skjemaet. Etter lagringsforsøk, også med en senere uttid, ble skjemaet stående og listen viste fortsatt «Ikke registrert ut». Årsak ikke verifisert. Tilsynslisten åpnet med PDF- og CSV-knapper. Montøren ble ikke bekreftet i tilsynslisten, og ingen eksport ble kontrollert. Opptakene er foreløpig ikke klippet inn i v3.
