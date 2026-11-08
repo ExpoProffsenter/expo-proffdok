@@ -125,3 +125,14 @@ Kapittel 14 og 17: H0101 viste ni åpne forhold. Opptaket viser listen, prosjekt
 Arbeidsklippet varer 6:44 og har 35 scener. Nye scener viser fiktiv kontakt, sjekklistefordeling med lagringskvittering, fullført kontroll, lagret bestillingsgrunnlag, åpne forhold, valg av sperre i kladd og sluttpakken. Filkontroll bekreftet 4 848 videobilder ved 12 bilder per sekund, 35 sammenhengende kapittelmarkører, norsk undertekstspor og ingen lydstrøm. Visuell kontroll av de nye scenene er utført med renderforhåndsvisning. Gjenbrukte videosekvenser kan vise opprinnelig sceneteller. Tidslinjen og undertekstene følger v2. MP4 SHA-256: `1a24b5276b3c91a7c8fa052b412549376f600f28a1feed8383b8c950cdf89e79`.
 
 V2 er fortsatt et arbeidsklipp. Portalroller, varemottak, kontraktsøkonomi, registrert avvik og restpunkt, verifisert overtakelsessperre og protokoll er blant opptakene som fortsatt gjenstår.
+
+
+### Supplerende opptak – økonomi, bemanning og UE
+
+Kapittel 16: Kontraktssum og vilkår med indeksvalg, Fakturert og a konto og Fakturaoversikt er tatt opp. QA-prosjektet viste ingen lagrede fakturaer eller godkjente indeksberegninger. Beløp, indeksberegning og fakturalinjer er ikke verifisert.
+
+Kapittel 8: Faktisk bemanning og Oversiktsliste ved tilsyn er tatt opp. Bemanning var av. Aktivering, inn-/utregistrering og CSV-innhold gjenstår.
+
+Kapittel 9: UE og leverandører samt dialogen med funksjonsvalg og omfang for alle aktive leiligheter er tatt opp. Ingen tilgangslenke ble opprettet. Ekstern rolle og portalvisning gjenstår.
+
+[Sju skjermbilder til videre redigering](https://chatgpt.com/library?file_id=libfile_5f4d232124148191a7e60572f307c4b5&account_id=personal). Disse scenene er foreløpig utenfor MP4 v2.
