@@ -315,3 +315,9 @@ Sandbox-preview `6050fa05`: ny PDF fra fiktivt reserveprosjekt ga 17 A4-sider me
 Faktisk tobruker-overtakelse er dekket av CI 42523680555 med 36 kontroller i React/PostgreSQL, inkludert delvis telt hylle, sperre for gammel teller, kladd, historikk og eksport. Ikke gjentatt manuelt med to Sandbox-økter. Boligportalen hadde 51 Chromium-kontroller, partner 86 og partnerkvalitet 121. Tidligere manuell Sandbox-verifisering dekker fiktiv beboeraksept, leverandørens fremdriftsvisning og UE-sjekkliste/vedlegg. Ordinær prosjektportal hadde 149 Chromium-kontroller i syntetisk miljø. Ingen produksjonsdata ble endret i disse prøvene.
 
 Permanent demo er fortsatt READY på `abc38f7e`, med felles base `34daef4c` og 166 demo-spesifikke / 120 main-spesifikke commits. Kontrollert synk og ny preflight gjenstår.
+
+## Sluttkontroll – Hjelp og varetelling
+
+PR 313 publiserte Boligprosjekter A–Å under Hjelp på main `58965d93`. Produksjon serverte eksakt godkjent MP4 og VTT. Alle 15 filmer besto Chromium-kontrollen i CI. Permanent Demo `211dd299` viste grønn forhåndskontroll og faktisk avspilling av A–Å-filmen.
+
+Tobrukerprøve i faktisk Sandbox med to eksisterende fiktive identiteter i samme demofirma gjennom appens autentiserte databasefunksjoner: første teller registrerte 3, andre overtok og registrerte 2, total 5 og bevart historikk. Gammelt grunnlag fra første teller ble avvist med PT409. Transaksjonen ble rullet tilbake og null testtellingenheter gjensto. Ingen produksjonsdata ble berørt. Separat manuell tobrukerprøve i to innloggede nettleserøkter er ikke utført. Samme flyt har grønn automatisert React/PostgreSQL-dekning.
