@@ -284,7 +284,6 @@ jobs:
         pdf: 'true'
     - name: Verify shared Boligprosjekter structure and access boundaries (database/React)
       run: |-
-        bolig_base="$QA_BASE_REF"
         # PR 311 combines two independently reviewed layers. Keep the Bolig
         # comparison against the reviewed core while full PR QA targets main.
         if [ "$QA_BASE_REF" = origin/main ] && [ "$QA_HEAD_REF" = fase45b-whole-app-qa-20261104 ]; then
@@ -292,8 +291,9 @@ jobs:
           bolig_base=208dc21a7956466bfeb154b91b05f00a8f35ed23
           git merge-base --is-ancestor "$QA_BASE_REF" "$bolig_base"
           git merge-base --is-ancestor "$bolig_base" HEAD
+          QA_BASE_REF="$bolig_base"
         fi
-        node scripts/bolig-core-boundary-check.mjs "$bolig_base"
+        node scripts/bolig-core-boundary-check.mjs "$QA_BASE_REF"
         node scripts/bolig-release-origins-check.mjs
         node scripts/bolig-order-email-check.mjs
         node scripts/bolig-protocol-email-check.mjs
@@ -346,7 +346,6 @@ jobs:
         browser: 'true'
     - name: Verify shared Boligprosjekter structure and access boundaries (browser)
       run: |-
-        bolig_base="$QA_BASE_REF"
         # PR 311 combines two independently reviewed layers. Keep the Bolig
         # comparison against the reviewed core while full PR QA targets main.
         if [ "$QA_BASE_REF" = origin/main ] && [ "$QA_HEAD_REF" = fase45b-whole-app-qa-20261104 ]; then
@@ -354,8 +353,9 @@ jobs:
           bolig_base=208dc21a7956466bfeb154b91b05f00a8f35ed23
           git merge-base --is-ancestor "$QA_BASE_REF" "$bolig_base"
           git merge-base --is-ancestor "$bolig_base" HEAD
+          QA_BASE_REF="$bolig_base"
         fi
-        node scripts/bolig-shared-board-browser-check.mjs "$bolig_base"
+        node scripts/bolig-shared-board-browser-check.mjs "$QA_BASE_REF"
         node scripts/bolig-builder-browser-check.mjs
         node scripts/bolig-overview-browser-check.mjs
         node scripts/bolig-rooms-browser-check.mjs
