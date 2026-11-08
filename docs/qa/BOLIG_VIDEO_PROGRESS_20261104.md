@@ -115,3 +115,13 @@ Kapittel 12: Lagret to av to varelinjer, egen fiktiv leveringsadresse og fiktiv 
 Kapittel 14 og 17: H0101 viste ni åpne forhold. Opptaket viser listen, prosjektlederens vurderingsvalg og «Hindrer overtakelse» valgt i kladd for demontering og riving. Vurderingen ble lukket uten lagring. Registrert avvik, restpunkt, faktisk sperre ved forsøk på overtakelse og protokoll gjenstår.
 
 [Supplerende skjermbilder](https://chatgpt.com/library?file_id=libfile_7bbbc3cd2eb481919d2bc37de04ac0d1&account_id=personal). Scenene er ennå ikke klippet inn i MP4.
+
+
+### Arbeidsklipp v2
+
+- [Oppdatert MP4](https://chatgpt.com/library?file_id=libfile_2db48d33c310819180c2162d8932dcac&account_id=personal)
+- [Oppdatert redigerbar kildepakke](https://chatgpt.com/library?file_id=libfile_db347078174c8191bc577966978bc604&account_id=personal)
+
+Arbeidsklippet varer 6:44 og har 35 scener. Nye scener viser fiktiv kontakt, sjekklistefordeling med lagringskvittering, fullført kontroll, lagret bestillingsgrunnlag, åpne forhold, valg av sperre i kladd og sluttpakken. Filkontroll bekreftet 4 848 videobilder ved 12 bilder per sekund, 35 sammenhengende kapittelmarkører, norsk undertekstspor og ingen lydstrøm. Visuell kontroll av de nye scenene er utført med renderforhåndsvisning. Gjenbrukte videosekvenser kan vise opprinnelig sceneteller. Tidslinjen og undertekstene følger v2. MP4 SHA-256: `1a24b5276b3c91a7c8fa052b412549376f600f28a1feed8383b8c950cdf89e79`.
+
+V2 er fortsatt et arbeidsklipp. Portalroller, varemottak, kontraktsøkonomi, registrert avvik og restpunkt, verifisert overtakelsessperre og protokoll er blant opptakene som fortsatt gjenstår.
