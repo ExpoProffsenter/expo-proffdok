@@ -61,3 +61,30 @@ Følg samme fiktive bolig gjennom kapitlene. Bruk PROFFDOK-VIDEO-1.0 med hele ap
 | 18. Lever dokumentasjon og følg opp | Sjekklister og dokumentasjon → Samlet PDF og ZIP | Ta ut dokumentasjonen per bolig, bygg eller prosjekt. PDF-en viser status og prosjektleders vurderinger. ZIP-en inneholder også de lagrede originalfilene og historikken. Ekstern FDV følger som lenker. | Samlet PDF, ZIP og FDV-lenker |
 
 Gjenbruk godkjent masseplanmateriale der skjermflyten fortsatt stemmer. Første nye opptaksblokk er prosjektbygger, roller og kontrakt, deretter pakker og boligvalg. Full film og redigerbar kildepakke gjenstår til opptakene er gjennomført og kontrollert.
+
+
+## Opptak i fast Bolig-preview – 8. november 2026
+
+PR 309 og Vercel-aliaset viste samme head, `d0ebe96ccd0717412a9c81d587fa52a0dbd93d25`. Preview var READY på `dpl_7diuGDWEwPdYQnzfDFRbRhPtUQFc`. Publisert HTML lastet `/assets/main-BZl3EqXI.js`, samme bundle som PR 309 dokumenterer med Sandbox-ref og uten Production-ref. Innlogging med eksisterende demokonto lyktes og appen viste QA-DESIGN-20261104. Første del bruker lokal Sølgløtt-kladd. De videre boligbildene bruker QA-bygg A, Fiktiv testadresse 101, H0101.
+
+| Manuskapittel | Faktisk opptak og kontroll |
+| --- | --- |
+| 1. Bygg prosjektet | Alle fire trinn og boligfordeling vist. Sølgløtt ble beholdt som lokal kladd. Opprettelse på server gjenstår. |
+| 2. Interne roller | Firmaadmin viste aktiv Bolig-modul og valgene Lesetilgang og Prosjektledertilgang. Systemadmin-aktivering og separat innlogging med hver rolle gjenstår. |
+| 3. Kontrakter og innsyn | Kontraktsoversikt, privat tilgang og prosjektoppretter vist. Opplasting og versjonsliste gjenstår. |
+| 4. Grunnpakke | Eksisterende QA – Standard bad, varelinjer og editor vist. Ny lagring gjenstår. |
+| 5. Tilvalg og boligvalg | Tilvalgseditor og H0101s individuelle valg vist. Lagring av tilvalg og massefordeling gjenstår. |
+| 6. Fordel sjekklister | Fordelingsdialog med maler vist. Forhåndsvisning og lagret kontroll gjenstår. |
+| 7. Masseplan | Nytt skjermbilde av fremdriftsinngangen og godkjent arkivmateriale fra 4. november. Arkivmaterialet er merket. Ny gjennomkjøring av masseplan og stammegruppe gjenstår. |
+| 8–9. Bemanning og ekstern tilgang | Opptak gjenstår. |
+| 10. Kontakt og beboerdialog | H0101s beboerportal vist. Kontakt manglet og invitasjonsknappen var deaktivert. Kontaktregistrering gjenstår. |
+| 11. Avtaler og aksept | Opptak med testbeboer gjenstår. |
+| 12. Bestilling og levering | Vareutvalget i H0101 vist. Klargjort ordre, Cordel/Excel og mottak gjenstår. |
+| 13. Utfør sjekklisten | H0101 viste 0 sjekklister. Utfylling, vedlegg og fullføring gjenstår. |
+| 14. Avvik, meldinger og frister | Ferdigstillingsoversikten viste åpne forhold. Separat avvik, restpunkt og melding gjenstår. |
+| 15. Varsle beboerne | Utfylt varselforhåndsvisning for én bolig vist. Ingen publisering eller e-post. |
+| 16. Kontraktsøkonomi | Opptak gjenstår. |
+| 17. Overtakelse | H0101 viste ni åpne forhold og inngang til vurdering. Sperre, restpunkt og protokoll gjenstår. |
+| 18. Sluttdokumentasjon | Dialog for samlet PDF, ZIP og ekstern FDV vist. PDF- og ZIP-innholdet ble ikke kontrollert. |
+
+Kun Sandbox-opptak og lokal prosjektkladd. Ingen rettighetstildeling, bestilling, aksept, signering, utsending eller produksjonssetting. For videre opptak brukes samme testbolig med fiktiv kontakt og kontrollgrunnlag. Ekstern portal trenger en eksisterende testbeboer og test-UE.
