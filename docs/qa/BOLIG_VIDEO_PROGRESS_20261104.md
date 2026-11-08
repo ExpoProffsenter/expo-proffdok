@@ -188,3 +188,10 @@ Lagt inn fiktiv begrunnelse for demontering og riving og lagret med «Bare vurde
 H0101 i QA-prosjektet forble uovertatt med ett hinder og åtte uvurderte forhold. Nytt forsøk ga ingen entydig sperremelding, og årsaken ble ikke isolert. Ingen kodeendring.
 
 I eksisterende «PILOT – Løpende overtakelse · 12 leiligheter» viste byggoversikten 2 av 6 boliger overtatt. På Pilotveien 101 viste H0101 «Overtatt med restpunkter», referanse til fiktiv pilotprotokoll og ett mindre restpunkt. H0102 var «Overtatt» med dokumentert kontrollgrunnlag. H0202 viste kritisk avvik og «Ikke startet». Dette er kontroll av lagrede pilotdata. Skjermbilder 65–67 er tatt for videre redigering. Ny protokoll eller signering ble ikke utført. Varemottak gjenstår.
+
+
+### Arbeidsklipp v6
+
+[MP4](https://chatgpt.com/library?file_id=libfile_c696481d83108191849448a65f25d746&account_id=personal) · [Redigerbare kilder](https://chatgpt.com/library?file_id=libfile_3c773163ab688191baedae722a014432&account_id=personal)
+
+To nye scener fra det fiktive pilotbygget viser overtakelse og oppfølging av restpunkt. Fortellerteksten omtaler den lagrede protokollreferansen. Arbeidsklippet har 44 scener på 7:56. De nye scenene er visuelt kontrollert i renderforhåndsvisningen. Varighet, kapitler, undertekstspor og kildearkiv er kontrollert. Gjenbrukte scener kan vise eldre sceneteller. Varemottak og øvrige utestående opptak gjenstår.
