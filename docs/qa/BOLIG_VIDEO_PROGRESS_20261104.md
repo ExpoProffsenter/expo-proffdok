@@ -148,3 +148,12 @@ Fem scener fra Sandbox viser faktisk bemanning, tilsynslisten, funksjonsvalg for
 ### Bemanning – faktisk registrering
 
 Bemanning ble aktivert i QA-DESIGN-20261104. Manuell innregistrering av Fiktiv QA-montør / QA Testfirma ble bekreftet med «1 registrert inne» og inn kl. 20:45. «Registrer ut / rett tidspunkt» åpnet skjemaet. Etter lagringsforsøk, også med en senere uttid, ble skjemaet stående og listen viste fortsatt «Ikke registrert ut». Årsak ikke verifisert. Tilsynslisten åpnet med PDF- og CSV-knapper. Montøren ble ikke bekreftet i tilsynslisten, og ingen eksport ble kontrollert. Opptakene er foreløpig ikke klippet inn i v3.
+
+
+### Bemanning – årsak og ny verifisering
+
+Nettleserens skjemavalidering identifiserte «Begrunn rettingen» som eneste ugyldige felt i skjemaet. Tidspunktene var gyldige. Etter utfylt begrunnelse lagret Sandbox samme registrering med inn 20:45, ut 20:48 og 0 registrert inne. Eksisterende valideringskrav ble beholdt. Appkoden ble ikke endret. Tilsynslisten og eksportinnholdet er fortsatt ikke verifisert for montøren.
+
+[Arbeidsklipp v4](https://chatgpt.com/library?file_id=libfile_90c3d4e44e608191ab4b97d75a0fbd69&account_id=personal) · [Redigerbare kilder v4](https://chatgpt.com/library?file_id=libfile_92c70838e10881919a147322e98f6243&account_id=personal)
+
+V4 viser registrert inn og registrert ut og forklarer begrunnelseskravet. 42 scener, 7:40, 5 520 videobilder, sammenhengende kapittelgrenser og undertekster kontrollert. Gjenbrukte scener kan vise eldre sceneteller. SHA-256: `a1a3801443f24853c4b5de933783e8b87b96d1a6d294e4bacf03f286f9681a8a`.
