@@ -960,5 +960,114 @@
         "text": "Tilbake lukker planbyggeren. Nedlasting endrer ikke planen. Åpne bemanningsplan igjen når du vil se tallene."
       }
     ]
+  },
+  {
+    "id": "prissok-plukkliste",
+    "title": "Prissøk – fra vareoppslag til plukkliste",
+    "module": "Prissøk",
+    "access": "price-search",
+    "topics": [
+      "prissok"
+    ],
+    "description": "Finn varen, legg den i arbeidslisten og kontroller bestillingsgrunnlaget.",
+    "src": "/help-videos/prissok-plukkliste-v1.mp4",
+    "track": "/help-videos/prissok-plukkliste-v1.vtt",
+    "duration": 84,
+    "sha256": "05f783ea8b14877760debb709c609af04ab5d1a6ee3d572eb44b49c12e6aa677",
+    "bytes": 4313150,
+    "chapters": [
+      {
+        "start": 0,
+        "title": "Finn riktig vare",
+        "text": "Åpne Prissøk. Søk på varenavn, leverandør eller varenummer. Kontroller navn og nummer før du velger."
+      },
+      {
+        "start": 12,
+        "title": "Legg varen i listen",
+        "text": "Velg Legg til på varen du trenger. Den flyttes til den midlertidige arbeidslisten."
+      },
+      {
+        "start": 24,
+        "title": "Skriv antall",
+        "text": "Kontroller varenummeret og skriv ønsket antall. Her er tre servantbatterier valgt."
+      },
+      {
+        "start": 36,
+        "title": "Velg hva du vil gjøre",
+        "text": "Listen kan brukes til utskrift, Cordel eller bestilling til leverandør. Filmen går videre til forhåndsvisning."
+      },
+      {
+        "start": 48,
+        "title": "Fyll mottaker og adresse",
+        "text": "Velg leverandør, e-post og leveringsadresse. Kontroller hvilke varer som er huket av. Velg Forhåndsvis bestilling."
+      },
+      {
+        "start": 60,
+        "title": "Kontroller før sending",
+        "text": "Se over mottaker, varer, antall og linjesum. Rediger bestilling går tilbake til feltene. Avbryt lukker uten sending."
+      },
+      {
+        "start": 72,
+        "title": "Fortsett med samme liste",
+        "text": "Etter Avbryt er varen fortsatt i listen med antall tre. Filmen viser også retur via Startsiden."
+      }
+    ]
+  },
+  {
+    "id": "varebestilling-kontroll",
+    "title": "Varebestilling – kladd og kontroll",
+    "module": "Prissøk",
+    "access": "price-search",
+    "topics": [
+      "prissok"
+    ],
+    "description": "Legg til varer, fyll inn ønsket levering og kontroller bestillingen før du fortsetter med kladden.",
+    "src": "/help-videos/varebestilling-kontroll-v1.mp4",
+    "track": "/help-videos/varebestilling-kontroll-v1.vtt",
+    "duration": 96,
+    "sha256": "75ae6a2c00adfa17570c18b7ada8f64d842f85901ec97d47a166df80e8443358",
+    "bytes": 4874372,
+    "chapters": [
+      {
+        "start": 0,
+        "title": "Finn første vare",
+        "text": "Åpne Varebestilling fra menyen eller Prissøk. Søk etter varen og velg et treff. Enter velger første treff."
+      },
+      {
+        "start": 12,
+        "title": "Juster antallet",
+        "text": "Bruk pluss og minus, eller skriv antallet. Her bestilles to dusjbatterier."
+      },
+      {
+        "start": 24,
+        "title": "Enter gir neste søk",
+        "text": "Trykk Enter i antallsfeltet. Feltet for neste vare åpnes og søket får fokus."
+      },
+      {
+        "start": 36,
+        "title": "Fyll mottaker og levering",
+        "text": "Skriv mottaker, e-post, referanse og leveringsadresse. Bruk Lagre mottaker hvis opplysningene skal gjenbrukes."
+      },
+      {
+        "start": 48,
+        "title": "Velg ønsket tidspunkt",
+        "text": "Velg Jeg ønsker et bestemt tidspunkt. Fyll inn dato og eventuelt klokkeslett i norsk tid."
+      },
+      {
+        "start": 60,
+        "title": "Hent kontrollgrunnlaget",
+        "text": "Les påminnelsen om ordrebekreftelse. Velg Se over bestillingen for å kontrollere varer og leveringsopplysninger."
+      },
+      {
+        "start": 72,
+        "title": "Se over og gå tilbake",
+        "text": "Kontroller mottaker, antall og ønsket levering. Velg Rediger bestilling for å fortsette med kladden."
+      },
+      {
+        "start": 84,
+        "title": "Kladden er beholdt",
+        "text": "Etter Rediger bestilling kan du fortsette med samme mottaker, dato og klokkeslett. Navigasjon bort og tilbake beholdt også antallet."
+      }
+    ]
   }
 ]

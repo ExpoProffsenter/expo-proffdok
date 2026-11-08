@@ -9,7 +9,8 @@ import {appendWorkspaceHelp,HELP_UPDATED_ON,HELP_UPDATED_LABEL} from './workspac
 import React, * as ReactNS from "react";
 import { FileText, Home, Smartphone, ClipboardList, BriefcaseBusiness, Building2, Mail, Users, FolderOpen, ShieldCheck, UserRound, CircleHelp, Settings, Camera, MessageSquare, KeyRound, Package, Ruler, TriangleAlert } from "lucide-react";
 import { jsx, jsxs, Fragment } from "react/jsx-runtime";
-import { rpcWithStoredSession } from "../access/moduleAccessClient.js";
+import { MANAGED_ACCESS_EVENT, MODULE_ACCESS_EVENT, rpcWithStoredSession } from "../access/moduleAccessClient.js";
+import { WORK_PROFILE_EVENT } from "../access/workProfileClient.js";
 import { useCordelAccess } from "../cordel/cordelAccess.js";
 import CordelGuide from "../cordel/CordelGuide.jsx";
 import HelpTopicGroup from "./HelpTopicGroup.jsx";
@@ -452,19 +453,31 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
     const canUseStocktake = useStocktakeHelpAccess(authUser?.id);
     const [helpQuery,setHelpQuery] = (0, import_react.useState)("");
     const [openGuideKey, setOpenGuideKey] = (0, import_react.useState)("");
-    const [canUseInternalCommerce, setCanUseInternalCommerce] = (0, import_react.useState)(Boolean(effectiveSystemAdmin));
+    const userId = authUser?.id;
+    const [commerceUserId, setCommerceUserId] = React.useState(null);
+    const canUseInternalCommerce = Boolean(userId && (effectiveSystemAdmin || commerceUserId === userId));
 
-    (0, import_react.useEffect)(() => {
-      let active = true;
-      if (effectiveSystemAdmin) {
-        setCanUseInternalCommerce(true);
-        return () => { active = false; };
-      }
-      rpcWithStoredSession("current_user_has_internal_store_price_search_access")
-        .then((allowed) => { if (active) setCanUseInternalCommerce(Boolean(allowed)); })
-        .catch(() => { if (active) setCanUseInternalCommerce(false); });
-      return () => { active = false; };
-    }, [effectiveSystemAdmin,authUser?.id]);
+    React.useEffect(() => {
+      if (!userId || effectiveSystemAdmin) return;
+      let revision = 0;
+      const refresh = async () => {
+        const ticket = ++revision;
+        setCommerceUserId(null);
+        try {
+          const allowed = await rpcWithStoredSession("current_user_has_internal_store_price_search_access");
+          if (ticket === revision && allowed === true) setCommerceUserId(userId);
+        } catch {
+          // Keep the topic hidden when access cannot be confirmed.
+        }
+      };
+      const events = [WORK_PROFILE_EVENT, MANAGED_ACCESS_EVENT, MODULE_ACCESS_EVENT];
+      refresh();
+      events.forEach(event => window.addEventListener(event, refresh));
+      return () => {
+        revision++;
+        events.forEach(event => window.removeEventListener(event, refresh));
+      };
+    }, [effectiveSystemAdmin, userId]);
 
     const canUseBolig=Boolean(authUser?.id&&boligContext?.user_id===authUser.id&&boligContext?.enabled===true);
     const orderedBase = BASE_SECTIONS.filter(item => item.key !== "cordel" || canExportCordel).sort((a, b) => BASE_ORDER.indexOf(a.key) - BASE_ORDER.indexOf(b.key));
