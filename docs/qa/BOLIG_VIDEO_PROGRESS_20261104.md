@@ -97,3 +97,12 @@ Kun Sandbox-opptak og lokal prosjektkladd. Ingen rettighetstildeling, bestilling
 Arbeidsklippet varer 5:48. Det har 28 scener, 1920 × 1080 H.264 ved 12 bilder per sekund, innbakte kapittelmarkører, valgbare norske undertekster og ingen lydstrøm. Alle scenene ble visuelt sjekket i renderforhåndsvisning og filens spor, kapitler og varighet ble kontrollert med FFprobe. Nye opptak bruker fokusrammer. Masseplan bruker godkjente markeringer og animert peker fra originalt tidslinjemateriale. Dette er et redigerbart arbeidsklipp. Full A–Å krever opptakene som gjenstår i tabellen.
 
 MP4 SHA-256: `374a7148d516be73dfa50c5628b0c6dd7115c0eca25c67701eff834a6e1650a6`.
+
+
+### H0101 – oppfølging samme kveld
+
+Fiktiv kontakt ble lagt inn med en adresse på example.invalid. Ingen invitasjon ble sendt. For kapittel 6 ble én påkrevd demokontroll forhåndsvist og fordelt kun til H0101. Appen bekreftet én ny kontroll. For kapittel 13 ble alle tre punktene besvart med OK og fiktive kommentarer. Appen bekreftet «Kontroll lagret», 3 av 3 besvart og «Fullført». Vedlegg gjenstår.
+
+For kapittel 18 ble faktisk PDF og ZIP lastet ned. PDF-en har seks sider og viser H0101, den fullførte kontrollen og to varelinjer som mangler FDV-lenke. ZIP-integriteten ble kontrollert. Arkivet inneholder samlet PDF, lagret dokumentasjon og historikk i JSON, filmanifest og lesemeg. Dette uttrekket hadde ingen originale vedlegg å verifisere.
+
+[Sju nye skjermbilder til redigering](https://chatgpt.com/library?file_id=libfile_6751cc46c9148191a4c521a0e008ffc3&account_id=personal). Arbeidsklippet er ennå ikke rendret med disse scenene.
