@@ -209,3 +209,10 @@ Tre nye mottaksscener. Arbeidsklippet har 47 scener på 8:20. Varighet, kapitler
 ### Beboerportal – invitasjonsforhåndsvisning
 
 På H0101 i Pilotveien 101 åpnet «Klargjør invitasjon» en forhåndsvisning av invitasjonsteksten. Teksten skiller innsending av boligvalg til gjennomgang fra senere aksept av avtale. Skjermbilde 72 er tatt. Både pilotboligen og H0101 i DEMO – Samlet gjennomgang viste «Portalen er ikke delt». Ingen portaltilgang ble opprettet eller sendt. Beboerens faktiske portal og akseptflyt er fortsatt uverifisert. Neste opptak krever en eksisterende fiktiv portaltilgang, eventuelt en egen avgrenset testtilgang for kun fiktive data.
+
+
+### Beboerportal – faktisk portal og akseptkvittering
+
+Opprettet avgrenset tilgang for fiktiv H0101 i DEMO – Samlet gjennomgang i Sandbox. E-postutsending var pauset og ingen e-post ble sendt. Invitasjonsforhåndsvisningen genererte lenke med en annen Preview-vert. Beboervisningen ble derfor verifisert på den bekreftede Sandbox-verten med samme portalsti. Personlig lenke er utelatt fra dokumentasjon og opptak.
+
+Under Avtaler viste den eksisterende demoavtalen status «Akseptert». «Åpne kvitteringen» viste «Aksepten er registrert», tidspunkt, avtaleutgave, pris, varelinjer og utskriftsvalg. Opptak 74–76 er tatt. Det ble ikke utført ny aksept. Innsending av boligvalg til gjennomgang er fortsatt et eget steg. Brukerens ønske er at registrert bestilling/aksept med kvittering i portalen skal være bekreftelsen, uten separat bekreftelsesmail. Faktisk e-postoppførsel utenfor Sandbox er ikke verifisert. Ingen appkode ble endret.
