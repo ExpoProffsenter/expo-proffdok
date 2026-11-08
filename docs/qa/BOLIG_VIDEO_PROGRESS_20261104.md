@@ -169,3 +169,10 @@ På dato 08.11.2026 viste oversikten først Personer (0) og én registrering med
 [MP4](https://chatgpt.com/library?file_id=libfile_0271d6d61bd48191a88a90922ae41aec&account_id=personal) · [Redigerbare kilder](https://chatgpt.com/library?file_id=libfile_5cee3c50eb488191a20c06879f23b714&account_id=personal)
 
 Den tidligere tomme tilsynslisten er erstattet med skjermbildet av den lagrede testpersonen og veiledning om å hente fra bemanningen og kontrollere PDF/CSV. MP4 har 42 scener på 7:40, 5 520 videobilder og undertekstspor. Den oppdaterte kapittelmarkøren og kildearkivets integritet er kontrollert. Gjenbrukte scener kan vise eldre sceneteller. Film v5 viser tilsynslisten i appen. De eksporterte dokumentene vises ikke som egne scener.
+
+
+### H0101 – varemottak og forsøk på overtakelse
+
+Bestillingsflyten viste lagret bestillingsutkast versjon 1, ikke sendt. Varemottak ble ikke registrert. Videre test bør bruke en eksisterende, fiktiv ordre i sendt tilstand.
+
+Fra Registrer overtakelse åpnet H0101 vurderingen med ett hinder og åtte uvurderte forhold. En fiktiv protokollreferanse ble lagt inn og registreringsknappen prøvd. Dialogen ble stående, og etter lukking viste H0101 fortsatt ni åpne forhold og «Ikke startet». Det ble ikke observert en entydig feilmelding. Testen isolerer derfor ikke sperren for hinder fra andre uoppfylte krav. Protokoll ble ikke opprettet eller signert. Skjermbilder fra dialogen er tatt for videre redigering.
