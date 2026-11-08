@@ -195,3 +195,12 @@ I eksisterende «PILOT – Løpende overtakelse · 12 leiligheter» viste byggov
 [MP4](https://chatgpt.com/library?file_id=libfile_c696481d83108191849448a65f25d746&account_id=personal) · [Redigerbare kilder](https://chatgpt.com/library?file_id=libfile_3c773163ab688191baedae722a014432&account_id=personal)
 
 To nye scener fra det fiktive pilotbygget viser overtakelse og oppfølging av restpunkt. Fortellerteksten omtaler den lagrede protokollreferansen. Arbeidsklippet har 44 scener på 7:56. De nye scenene er visuelt kontrollert i renderforhåndsvisningen. Varighet, kapitler, undertekstspor og kildearkiv er kontrollert. Gjenbrukte scener kan vise eldre sceneteller. Varemottak og øvrige utestående opptak gjenstår.
+
+
+### Varemottak – verifisert i Sandbox
+
+Eksisterende ordre DEMO-PILOT-ORDER på H0101, Pilotveien 101, viste «Delvis levert». Servanten var mottatt 1/1 og servantbatteriet 0/1. Registrerte én enhet på den utestående linjen. Appen bekreftet lagring og viste «Levert» med 1/1 på begge linjer. Ingen bestilling ble sendt. Dette er samme fiktive pilotbolig som brukes i overtakelseseksemplet, separat fra QA-boligen med samme nummer.
+
+[Arbeidsklipp v7](https://chatgpt.com/library?file_id=libfile_565dbabdce388191981d782feb58cf9b&account_id=personal) · [Redigerbare kilder v7](https://chatgpt.com/library?file_id=libfile_ee6aa5cb14a8819196772849c3ddadbf&account_id=personal)
+
+Tre nye mottaksscener. Arbeidsklippet har 47 scener på 8:20. Varighet, kapitler, undertekstspor, 6 000 videobilder og kildearkiv er kontrollert. Gjenbrukte scener kan vise eldre sceneteller. Portalvisning og øvrig utestående dekning gjenstår.
