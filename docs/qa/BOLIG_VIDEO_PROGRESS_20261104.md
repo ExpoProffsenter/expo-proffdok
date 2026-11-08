@@ -106,3 +106,12 @@ Fiktiv kontakt ble lagt inn med en adresse på example.invalid. Ingen invitasjon
 For kapittel 18 ble faktisk PDF og ZIP lastet ned. PDF-en har seks sider og viser H0101, den fullførte kontrollen og to varelinjer som mangler FDV-lenke. ZIP-integriteten ble kontrollert. Arkivet inneholder samlet PDF, lagret dokumentasjon og historikk i JSON, filmanifest og lesemeg. Dette uttrekket hadde ingen originale vedlegg å verifisere.
 
 [Sju nye skjermbilder til redigering](https://chatgpt.com/library?file_id=libfile_6751cc46c9148191a4c521a0e008ffc3&account_id=personal). Arbeidsklippet er ennå ikke rendret med disse scenene.
+
+
+### H0101 – bestilling og overtakelse
+
+Kapittel 12: Lagret to av to varelinjer, egen fiktiv leveringsadresse og fiktiv leverandør. Sendingsdialogen bekreftet lagret bestillingsgrunnlag og oppga Cordel ASCII og Excel som vedlegg. Forhåndsvisningen åpnet ikke ved forsøket med fiktiv e-post. Ingen utsending. Eksportinnhold og varemottak er ikke verifisert.
+
+Kapittel 14 og 17: H0101 viste ni åpne forhold. Opptaket viser listen, prosjektlederens vurderingsvalg og «Hindrer overtakelse» valgt i kladd for demontering og riving. Vurderingen ble lukket uten lagring. Registrert avvik, restpunkt, faktisk sperre ved forsøk på overtakelse og protokoll gjenstår.
+
+[Supplerende skjermbilder](https://chatgpt.com/library?file_id=libfile_7bbbc3cd2eb481919d2bc37de04ac0d1&account_id=personal). Scenene er ennå ikke klippet inn i MP4.
