@@ -1,0 +1,173 @@
+WEBVTT
+
+00:00:00.000 --> 00:00:08.000
+Gi prosjektet et navn. Velg boligtypen som passer bygget.
+
+00:00:08.000 --> 00:00:16.000
+Gi hvert bygg et navn. Adressen kan legges til senere.
+
+00:00:16.000 --> 00:00:24.000
+Kontroller oppganger, etasjer og antall boliger på hver etasje.
+
+00:00:24.000 --> 00:00:32.000
+Åpne boligfordelingen. Kontroller summen før du oppretter prosjektforsiden.
+
+00:00:32.000 --> 00:00:40.000
+I Firmaadmin ser du hvem som har lesetilgang og hvem som har prosjektledertilgang.
+
+00:00:40.000 --> 00:00:48.000
+Samle kontraktsoriginaler og vedlegg. Bruk ny versjon når et dokument endres.
+
+00:00:48.000 --> 00:00:56.000
+Under Tilgang ser du hvem som kan lese, laste opp eller administrere kontraktene.
+
+00:00:56.000 --> 00:01:04.000
+Åpne innholdet i grunnpakken og se hvilke varer standardbadet får.
+
+00:01:04.000 --> 00:01:12.000
+Del varene inn i avsnitt, for eksempel fliser, innredning og dusj.
+
+00:01:12.000 --> 00:01:20.000
+Velg om tilvalget kommer i tillegg eller erstatter en standardvare.
+
+00:01:20.000 --> 00:01:28.000
+Kontroller fellespakken for boligen. Velg et rom hvis du vil legge til en rompakke.
+
+00:01:28.000 --> 00:01:36.000
+Velg en mal og hvilke boliger eller rom som skal få den. Se over fordelingen før lagring.
+
+00:01:36.000 --> 00:01:44.000
+Kontroller at én sjekkliste er valgt, og at den bare fordeles til H0101.
+
+00:01:44.000 --> 00:01:52.000
+Appen bekrefter at én ny påkrevd kontroll er opprettet.
+
+00:01:52.000 --> 00:02:10.000
+Åpne Fremdrift og varsler. Velg Planlegg flere boliger. Har du en kladd, heter knappen Fortsett masseoppsett.
+
+00:02:10.000 --> 00:02:30.000
+Filtrer på bygg, oppgang, etasje eller bolig. Velg treffene som skal få planen. Her er seks boliger valgt.
+
+00:02:30.000 --> 00:02:52.000
+Første oppstart er 16. november. To dager mellom boligstarter gir forskjøvet arbeid. Null starter alle boligene samtidig.
+
+00:02:52.000 --> 00:03:10.000
+Velg ansvarlig. Tell bare mandag–fredag hopper over helger. Helligdager må dere justere selv.
+
+00:03:10.000 --> 00:03:34.000
+Velg standardarbeid eller legg til eget. Gi hvert trinn navn, varighet og startregel. Her følger tre trinn etter hverandre.
+
+00:03:34.000 --> 00:03:52.000
+Seks boliger med tre trinn gir 18 nye aktiviteter. Kontroller antallet og velg Forhåndsvis planen.
+
+00:03:52.000 --> 00:04:14.000
+Se over bolig, arbeid og start/slutt. Første bolig går 16.–18. november. Neste bolig starter to arbeidsdager senere.
+
+00:04:14.000 --> 00:04:36.000
+Rull gjennom hele listen. Her slutter siste arbeid 2. desember. Kontroller helgehopp og velg Lagre 18 aktiviteter samlet.
+
+00:04:36.000 --> 00:04:58.000
+Vent på Endringen er lagret. Vis første arbeid flytter Gantt til starten. Her viser planen 18 aktiviteter fra 16. november.
+
+00:04:58.000 --> 00:05:16.000
+Masseplanen er lagret. Bruk samlet tidslinje eller åpne én aktivitet for et unntak. Beboervarsler lages og gjennomgås separat.
+
+00:05:16.000 --> 00:05:24.000
+Åpne Faktisk bemanning under Oppsett. Her registreres tilstedeværelse på prosjektet.
+
+00:05:24.000 --> 00:05:32.000
+Lagre registreringen og se at montøren står som registrert inne.
+
+00:05:32.000 --> 00:05:40.000
+Velg Registrer ut / rett tidspunkt. Fyll inn Begrunn rettingen før du lagrer. Sjekk at uttiden vises i listen.
+
+00:05:40.000 --> 00:05:48.000
+Hent personen fra bemanningen og lagre. Kontroller at personen kommer med i PDF og CSV.
+
+00:05:48.000 --> 00:05:56.000
+Velg hvilke funksjoner UE eller leverandøren skal få tilgang til.
+
+00:05:56.000 --> 00:06:04.000
+Den fiktive leverandøren ser fremdrift for prosjektets 12 boliger. Bare fremdrift er delt.
+
+00:06:04.000 --> 00:06:12.000
+Velg rollen UE og gi tilgang til egne sjekklister.
+
+00:06:12.000 --> 00:06:20.000
+I mottakersiden vises bare fanen Sjekklister. Åpne Mine sjekklister og vedlegg.
+
+00:06:20.000 --> 00:06:28.000
+Velg resultat, legg inn kommentar og huk av for fullføring før du lagrer.
+
+00:06:28.000 --> 00:06:36.000
+Portalen bekrefter at sjekklisten er fullført og lagret hos prosjektet.
+
+00:06:36.000 --> 00:06:44.000
+Velg plassering og fil under Mine sjekklister og vedlegg. Gi vedlegget en tittel og lagre.
+
+00:06:44.000 --> 00:06:52.000
+Etter ny innlasting kan UE finne igjen og laste ned vedlegget.
+
+00:06:52.000 --> 00:07:00.000
+Lagre beboerens kontaktopplysninger i leilighetsinformasjonen. Her brukes en fiktiv kontakt.
+
+00:07:00.000 --> 00:07:08.000
+Beboeren åpner sin portal og finner valg, avtaler, dokumenter og meldinger.
+
+00:07:08.000 --> 00:07:16.000
+Åpne Avtaler. Den fiktive avtalen er allerede akseptert.
+
+00:07:16.000 --> 00:07:24.000
+Kvitteringen viser registrert aksept, avtaleutgave, pris, varer og tidspunkt.
+
+00:07:24.000 --> 00:07:32.000
+Kontroller varelinjene i H0101. Lagre vareutvalget før bestillingen klargjøres.
+
+00:07:32.000 --> 00:07:40.000
+Kontroller vareutvalget, leverandøren og leveringsadressen før du går videre.
+
+00:07:40.000 --> 00:07:48.000
+Bestillingsgrunnlaget er lagret. Appen oppgir Cordel ASCII og Excel som vedlegg.
+
+00:07:48.000 --> 00:07:56.000
+Åpne den eksisterende pilotordren. Servanten er mottatt. Ett servantbatteri gjenstår.
+
+00:07:56.000 --> 00:08:04.000
+Velg Registrer varemottak. Før én enhet på servantbatteriet og lagre.
+
+00:08:04.000 --> 00:08:12.000
+Begge varelinjene viser én av én mottatt. Pilotordren har fått status Levert.
+
+00:08:12.000 --> 00:08:20.000
+Svar på kontrollpunktene og legg inn påkrevde kommentarer.
+
+00:08:20.000 --> 00:08:28.000
+Appen viser at kontrollen er lagret og at tre av tre punkter er besvart.
+
+00:08:28.000 --> 00:08:36.000
+Kontroller bolig, overskrift og melding i forhåndsvisningen før varselet er klart.
+
+00:08:36.000 --> 00:08:44.000
+Kontroller kontraktssum, indeksserie og hvilke leveranser som skal reguleres.
+
+00:08:44.000 --> 00:08:52.000
+Se lagrede fakturaer og godkjente indeksberegninger. Testprosjektet har ingen registreringer.
+
+00:08:52.000 --> 00:09:00.000
+Åpne listen for å se hva prosjektleder må vurdere før overtakelse.
+
+00:09:00.000 --> 00:09:08.000
+Velg om forholdet hindrer overtakelse eller skal følges opp etterpå.
+
+00:09:08.000 --> 00:09:16.000
+Demontering og riving er valgt som sperrende i vurderingskladden.
+
+00:09:16.000 --> 00:09:24.000
+I det fiktive pilotbygget er to av seks boliger overtatt.
+
+00:09:24.000 --> 00:09:32.000
+Pilotveien 101 viser fiktiv protokollreferanse og ett restpunkt til oppfølging.
+
+00:09:32.000 --> 00:09:40.000
+Last ned PDF og ZIP. I denne testen viser PDF-en kontrollen og to manglende FDV-lenker.
+
