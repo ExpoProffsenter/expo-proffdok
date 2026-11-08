@@ -147,6 +147,16 @@ export default async function ({
       predecessor_id: "",
     }),
   ]);
+  const beforeLocation = await mine({selected_id:task,selected_kind:'progress'});
+  await db.exec('reset role');
+  const oldPrivileges=(await db.query("select proacl::text acl from pg_proc where oid='bolig_private.my_project_tasks(uuid,jsonb)'::regprocedure")).rows[0].acl;
+  await db.exec(await fs.readFile('supabase/migrations/20261104233315_bolig_my_task_location.sql','utf8'));
+  eq((await db.query("select proacl::text acl from pg_proc where oid='bolig_private.my_project_tasks(uuid,jsonb)'::regprocedure")).rows[0].acl,oldPrivileges,'location projection preserves function privileges');
+  await actor(manager);
+  const withLocation = await mine({selected_id:task,selected_kind:'progress'});
+  const stripLocation=row=>{if(!row)return row;const {block_name,address,...old}=row;return old;};
+  eq({...withLocation,items:withLocation.items.map(stripLocation),selected:stripLocation(withLocation.selected)},beforeLocation,'only optional location fields change; selected row, scope, count and cursor preserved');
+  eq(withLocation.selected.block_name,'QA','selected task beyond first page receives its own building');
   s = await mine();
   eq(s.count, priorTaskCount + 3);
   eq(
@@ -294,5 +304,41 @@ export default async function ({
   await rejects(() => rpc(), "42501");
   await rejects(() => mine(), "42501");
   await actor(manager);
+  const locationPlan=await call('create_plan',null,null,{
+    request_id:id(993030),title:'QA Same home numbers',reference:'QA-LOCATION',
+    buildings:[
+      {name:'Building A',building_type:'house',address:'Block A fallback',house_floors:1,entrances:[{address:'Entrance A 101',counts:[1]}]},
+      {name:'Building B',building_type:'house',address:'Block B 103',house_floors:1,entrances:[{address:'',counts:[1]}]},
+    ],
+  });
+  eq(locationPlan.units.length,2,'location fixture creates two homes');
+  // Snapshot order follows generated entrance IDs, not the building input order.
+  const locationUnits=['Building A','Building B'].map(name=>{
+    const block=locationPlan.blocks.find(row=>row.name===name);
+    const entrances=locationPlan.entrances.filter(row=>row.block_id===block?.id);
+    eq(entrances.length,1,'location fixture has one entrance for '+name);
+    const units=locationPlan.units.filter(row=>entrances.some(entrance=>entrance.id===row.entrance_id));
+    eq(units.length,1,'location fixture has one exact home for '+name);
+    return units[0];
+  });
+  eq(locationUnits[0].id!==locationUnits[1].id,true,'same-number location homes have distinct identities');
+  eq(locationUnits[0].number,locationUnits[1].number,'same home number in separate buildings');
+  for(let n=0;n<2;n++){
+    const progressBasis=(await db.query("select public.bolig_progress($1,$2,$3,'get','{}'::jsonb) v",[firm,locationPlan.root.id,locationUnits[n].id])).rows[0].v;
+    await db.query("select public.bolig_progress($1,$2,$3,'save',$4)",[firm,locationPlan.root.id,locationUnits[n].id,req({revision:progressBasis.revision,id:id(993031+n),unit_id:locationUnits[n].id,title:'Same named task',owner_id:manager,planned_start:'2026-01-15',planned_end:'2026-01-16',status:'planned',required:true,note:'',room_id:'',predecessor_id:''})]);
+  }
+  for(let n=0;n<2;n++){
+    const selected=(await mine({selected_id:id(993031+n),selected_kind:'progress'})).selected;
+    eq(selected.unit_id,locationUnits[n].id,'selected location preserves exact unit');
+    eq(selected.block_name,n?'Building B':'Building A','same-number task has its own building');
+    eq(selected.address,n?'Block B 103':'Entrance A 101','entrance address wins; block address is fallback');
+  }
+  let locationPage=await mine(),locationRows=[];
+  do{locationRows.push(...locationPage.items);locationPage=locationPage.next?await mine({after:locationPage.next}):null;}while(locationPage);
+  eq(locationRows.filter(x=>x.root_id===locationPlan.root.id).map(x=>x.block_name).sort(),['Building A','Building B'],'all pages retain both same-number task locations');
+  await actor(reader);
+  eq((await mine({selected_id:id(993031),selected_kind:'progress'})).selected,null,'unassigned reader receives no selected location');
+  await actor(outsider,other);
+  await rejects(()=>mine({},firm),'42501');
+  await actor(manager);
 }
-

@@ -41,6 +41,8 @@ export function catalogProduct(item) {
   };
 }
 export default function BoligCatalogLookup({ context, onUse }) {
+  const scope = `${context.user_id}:${context.company_id}`;
+  const [access, setAccess] = useState({ scope, status: "checking" });
   const [sources, setSources] = useState([]),
     [source, setSource] = useState(""),
     [query, setQuery] = useState(""),
@@ -48,14 +50,22 @@ export default function BoligCatalogLookup({ context, onUse }) {
     [message, setMessage] = useState(""),
     [loading, setLoading] = useState(false);
   const epoch = useRef(0);
+  const available = access.scope === scope && access.status === "ready";
   useEffect(() => {
     let active = true;
-    const revoke = () => {
+    let invalidated = false;
+    setAccess({ scope, status: "checking" });
+    setSources([]);
+    setSource("");
+    const revoke = event => {
+      if (event.type === WORK_PROFILE_EVENT && event.detail?.active_company_id === context.company_id) return;
+      invalidated = true;
       ++epoch.current;
       setSources([]);
       setSource("");
       setResults([]);
       setQuery("");
+      setAccess({ scope, status: "changed" });
     };
     const client = getAppSupabaseClient();
     Promise.all([
@@ -64,21 +74,24 @@ export default function BoligCatalogLookup({ context, onUse }) {
       boligRpc(),
     ])
       .then(([internal, pro, current]) => {
+        if (!active || invalidated) return;
         if (
-          !active ||
           current.company_id !== context.company_id ||
           current.user_id !== context.user_id ||
           !current.enabled
-        )
+        ) {
+          setAccess({ scope, status: "changed" });
           return;
+        }
         const allowed = [
           ...(internal ? ["internal"] : []),
           ...(pro ? ["pro"] : []),
         ];
         setSources(allowed);
         setSource(allowed[0] || "");
+        setAccess({ scope, status: allowed.length ? "ready" : "denied" });
       })
-      .catch(() => {});
+      .catch(() => { if (active && !invalidated) setAccess({ scope, status: "error" }); });
     const events = [
       WORK_PROFILE_EVENT,
       MANAGED_ACCESS_EVENT,
@@ -96,7 +109,7 @@ export default function BoligCatalogLookup({ context, onUse }) {
     setResults([]);
     setMessage("");
     setLoading(false);
-    if (!source || query.trim().length < 2) return;
+    if (!available || !source || query.trim().length < 2) return;
     const timer = setTimeout(async () => {
       setLoading(true);
       try {
@@ -126,8 +139,14 @@ export default function BoligCatalogLookup({ context, onUse }) {
       clearTimeout(timer);
       ++epoch.current;
     };
-  }, [query, source, context.company_id, context.user_id]);
-  if (!sources.length)
+  }, [query, source, available, context.company_id, context.user_id]);
+  if (access.scope !== scope || access.status === "checking")
+    return <p className="bolig-catalog-access-note" role="status">Kontrollerer katalogtilgangen … Du kan legge inn varelinjer manuelt mens du venter.</p>;
+  if (access.status === "changed")
+    return <p className="bolig-catalog-access-note" role="status">Firma eller katalogtilgang er endret. Lukk og åpne vinduet for å kontrollere tilgangen på nytt. Manuelle varelinjer er fortsatt tilgjengelige.</p>;
+  if (access.status === "error")
+    return <p className="bolig-catalog-access-note" role="status">Kunne ikke kontrollere katalogtilgangen. Lukk og åpne vinduet for å prøve igjen. Du kan legge inn varelinjer manuelt.</p>;
+  if (!available || !sources.length)
     return (
       <p className="bolig-catalog-access-note">
         Vareoppslag krever katalogtilgang for firmaet og brukeren. Du kan også
