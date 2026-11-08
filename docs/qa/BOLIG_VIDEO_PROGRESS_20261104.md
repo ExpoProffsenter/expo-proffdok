@@ -216,3 +216,10 @@ På H0101 i Pilotveien 101 åpnet «Klargjør invitasjon» en forhåndsvisning a
 Opprettet avgrenset tilgang for fiktiv H0101 i DEMO – Samlet gjennomgang i Sandbox. E-postutsending var pauset og ingen e-post ble sendt. Invitasjonsforhåndsvisningen genererte lenke med en annen Preview-vert. Beboervisningen ble derfor verifisert på den bekreftede Sandbox-verten med samme portalsti. Personlig lenke er utelatt fra dokumentasjon og opptak.
 
 Under Avtaler viste den eksisterende demoavtalen status «Akseptert». «Åpne kvitteringen» viste «Aksepten er registrert», tidspunkt, avtaleutgave, pris, varelinjer og utskriftsvalg. Opptak 74–76 er tatt. Det ble ikke utført ny aksept. Innsending av boligvalg til gjennomgang er fortsatt et eget steg. Brukerens ønske er at registrert bestilling/aksept med kvittering i portalen skal være bekreftelsen, uten separat bekreftelsesmail. Faktisk e-postoppførsel utenfor Sandbox er ikke verifisert. Ingen appkode ble endret.
+
+
+### Arbeidsklipp v8
+
+[MP4](https://chatgpt.com/library?file_id=libfile_f81f4e3cdba08191ad0724491db6a07d&account_id=personal) · [Redigerbare kilder](https://chatgpt.com/library?file_id=libfile_e45873d2a5848191aa3982f8b3ee86c7&account_id=personal)
+
+Tre nye scener viser portalens startside, akseptert avtale og kvitteringen. Siste scene bruker et utsnitt av fullsideskjermbildet for å vise bekreftelsen under varelinjene. 50 scener, 8:44, 6 288 videobilder, kapitler, undertekstspor og ZIP-integritet kontrollert. Gjenbrukte scener kan vise eldre sceneteller. En ny aksept, faktisk ekstern UE-portal og eventuell e-postoppførsel utenfor Sandbox er fortsatt uverifisert.
