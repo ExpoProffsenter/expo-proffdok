@@ -247,3 +247,8 @@ Opprettet fiktiv UE-testkontakt i pilotprosjektet med bare Sjekklister og rett t
 [MP4](https://chatgpt.com/library?file_id=libfile_a0cde909f8b4819189188cc0023e572c&account_id=personal) · [Redigerbare kilder](https://chatgpt.com/library?file_id=libfile_9b42e09979c481918635a030e3c26ef3&account_id=personal)
 
 Fire nye scener under kapittel 9 viser UE-tilgang, mottakervisning, utfylling og bekreftet fullføring. 55 scener, 9:24, 6 768 videobilder, kapittelmarkører, undertekstspor og ZIP-integritet er kontrollert. Gjenbrukte scener kan vise eldre sceneteller. Vedleggsopplasting og ny beboeraksept gjenstår.
+
+
+### UE-vedlegg – lagring feiler i Sandbox
+
+På den fiktive UE-tilgangen i pilotprosjektet valgte jeg et syntetisk PNG-vedlegg og forsøkte å lagre på prosjektnivå. Portalen bekreftet lokal filkladd. Etter ny innlasting var vedlegget ikke synlig som lagret og samme filkladd kunne gjenopptas. Ved nytt forsøk viste portalen «Failed to fetch». Årsak ikke verifisert. Ingen bekreftet lagring, ingen produksjonsprøve og ingen kodeendring. Skjermbilder 84–85 dokumenterer teststeg og feil.
