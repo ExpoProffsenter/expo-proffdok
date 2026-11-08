@@ -88,3 +88,12 @@ PR 309 og Vercel-aliaset viste samme head, `d0ebe96ccd0717412a9c81d587fa52a0dbd9
 | 18. Sluttdokumentasjon | Dialog for samlet PDF, ZIP og ekstern FDV vist. PDF- og ZIP-innholdet ble ikke kontrollert. |
 
 Kun Sandbox-opptak og lokal prosjektkladd. Ingen rettighetstildeling, bestilling, aksept, signering, utsending eller produksjonssetting. For videre opptak brukes samme testbolig med fiktiv kontakt og kontrollgrunnlag. Ekstern portal trenger en eksisterende testbeboer og test-UE.
+
+### Arbeidsklipp og redigerbare kilder
+
+- [ProffDok_Bolig_A_til_Aa_arbeidsklipp.mp4](https://chatgpt.com/library?file_id=libfile_6a8362f493308191bd7cd9ce80f81e69&account_id=personal)
+- [ProffDok_Bolig_A_til_Aa_redigerbare_kilder.zip](https://chatgpt.com/library?file_id=libfile_5afd315589b48191ad7ff7d1dcc4bd89&account_id=personal)
+
+Arbeidsklippet varer 5:48. Det har 28 scener, 1920 × 1080 H.264 ved 12 bilder per sekund, innbakte kapittelmarkører, valgbare norske undertekster og ingen lydstrøm. Alle scenene ble visuelt sjekket i renderforhåndsvisning og filens spor, kapitler og varighet ble kontrollert med FFprobe. Nye opptak bruker fokusrammer. Masseplan bruker godkjente markeringer og animert peker fra originalt tidslinjemateriale. Dette er et redigerbart arbeidsklipp. Full A–Å krever opptakene som gjenstår i tabellen.
+
+MP4 SHA-256: `374a7148d516be73dfa50c5628b0c6dd7115c0eca25c67701eff834a6e1650a6`.
