@@ -266,3 +266,12 @@ Samme lokale PNG-kladd ble lagret. Portalen viste «Filen er lagret hos prosjekt
 [MP4](https://chatgpt.com/library?file_id=libfile_6857b466c8408191b658d38729537b18&account_id=personal) · [Redigerbare kilder](https://chatgpt.com/library?file_id=libfile_265173f573cc8191952724d609d20750&account_id=personal)
 
 To nye scener i kapittel 9 viser filvalg og lagret vedlegg etter omlasting. Den andre bruker utsnitt av fullsideskjermbildet. MP4 har 57 scener på 9:40, 6 960 videobilder og undertekstspor. Kapittelmarkør og kildearkiv er kontrollert. Gjenbrukte scener kan vise eldre sceneteller. PR 309 head er `07202817`; PR Core Safety 1031 hadde status `in_progress` ved oppslag. Ingen produksjonssetting.
+
+
+### Arbeidsklipp v12 og merge-status
+
+[MP4](https://chatgpt.com/library?file_id=libfile_56ac30c7591c8191b8f816d7b128266d&account_id=personal) · [Redigerbare kilder](https://chatgpt.com/library?file_id=libfile_72b1ad172ba48191a70c78165931dd23&account_id=personal)
+
+Scenetelleren er gjengitt fra samlet tidslinje over eksisterende videobilder. Midtbildet i alle 57 scener i eksportert MP4 er sammenlignet mot forventet nummerfelt. Kapitler og undertekster er bevart. Varighet 9:40. Dette er fortsatt et arbeidsklipp.
+
+PR309 sin CI1031 feilet på «Handler receives shared allowlist». Oppfølgingscommit `6050fa05` beholder den delte listen som grunnlag og legger bare til fast Preview i Sandbox. Uendret lokal release-origins-sjekk passerte 55 kontroller. I CI1034 var bolig-db grønn, med nettleserpakkene fortsatt under kjøring ved oppslag. Faktisk opplasting/nedlasting ble verifisert med den funksjonelt tilsvarende Sandbox v4. PR309 går mot arbeidsbranchen i PR311, og PR311 går mot main. Begge står som utkast. Full grønn CI og uttrykkelig TEST OK kreves før produksjonsmerge. Ingen produksjonssetting.
