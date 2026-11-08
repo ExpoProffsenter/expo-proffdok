@@ -252,3 +252,10 @@ Fire nye scener under kapittel 9 viser UE-tilgang, mottakervisning, utfylling og
 ### UE-vedlegg – lagring feiler i Sandbox
 
 På den fiktive UE-tilgangen i pilotprosjektet valgte jeg et syntetisk PNG-vedlegg og forsøkte å lagre på prosjektnivå. Portalen bekreftet lokal filkladd. Etter ny innlasting var vedlegget ikke synlig som lagret og samme filkladd kunne gjenopptas. Ved nytt forsøk viste portalen «Failed to fetch». Årsak ikke verifisert. Ingen bekreftet lagring, ingen produksjonsprøve og ingen kodeendring. Skjermbilder 84–85 dokumenterer teststeg og feil.
+
+
+### UE-vedlegg – rettet og verifisert
+
+Edge-funksjonen bolig-partner-files v3 manglet den faste PR 309-verten i den eksplisitte origin-listen. Dette ble gjenskapt som «Failed to fetch». Sandbox-funksjon v4 tillater kun den eksakte faste Preview-verten i tillegg til eksisterende verter når funksjonen kjører i Sandbox. Tilgangskontroll og privat filhåndtering beholdt. Kildeendring på Bolig-branchen: `07202817301dec40c9e1a4a960ffd4158b6b3a95`. Tilbakeføring ved behov: redeployer forrige v3-kilde fra foregående branch-tilstand til samme Sandbox-prosjekt.
+
+Samme lokale PNG-kladd ble lagret. Portalen viste «Filen er lagret hos prosjektet». Etter omlasting var filen fortsatt synlig og kunne lastes ned. Nedlastet fil er byte-identisk med originalen (SHA-256 ff3a8d4d25288e2639ba249d0e9e0024510539769d7a0c73093797a4fed84b37). Skjermbilde 86 tatt for filmen. Ingen produksjonsdeploy. Full PR CI for ny commit er ikke verifisert.
