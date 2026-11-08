@@ -157,3 +157,8 @@ Nettleserens skjemavalidering identifiserte «Begrunn rettingen» som eneste ugy
 [Arbeidsklipp v4](https://chatgpt.com/library?file_id=libfile_90c3d4e44e608191ab4b97d75a0fbd69&account_id=personal) · [Redigerbare kilder v4](https://chatgpt.com/library?file_id=libfile_92c70838e10881919a147322e98f6243&account_id=personal)
 
 V4 viser registrert inn og registrert ut og forklarer begrunnelseskravet. 42 scener, 7:40, 5 520 videobilder, sammenhengende kapittelgrenser og undertekster kontrollert. Gjenbrukte scener kan vise eldre sceneteller. SHA-256: `a1a3801443f24853c4b5de933783e8b87b96d1a6d294e4bacf03f286f9681a8a`.
+
+
+### Tilsynsliste – person og eksport verifisert
+
+På dato 08.11.2026 viste oversikten først Personer (0) og én registrering med manglende opplysninger. Under Personer → Hent fra deltakere og dagens manuelle registreringer → Hent person ble Fiktiv QA-montør hentet fra bemanningen og lagret. Listen viste Personer (1). Faktisk nedlastet PDF (én side) og CSV inneholdt begge testpersonen. PDF viste manglende byggherre, fødselsdato, arbeidsgiver og HMS-kortnummer. CSV viste arbeidsstart 08.11.2026. Inn- og uttidene sto ikke i disse to tilsynseksportene. Daglig kontroll ble ikke bekreftet. Skjermbilde fra personlisten ble tatt, men er ikke klippet inn i v4.
