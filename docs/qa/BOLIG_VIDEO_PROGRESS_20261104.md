@@ -228,3 +228,10 @@ Tre nye scener viser portalens startside, akseptert avtale og kvitteringen. Sist
 ### Ekstern mottakerside – avgrenset fremdrift
 
 DEMO – Samlet gjennomgang og PILOT – Løpende overtakelse hadde ingen aktive tilganger før prøven. Opprettet én fiktiv kontakt i pilotprosjektet med type Leverandør (dialogens standardvalg) og kun Fremdrift aktivert. Ingen e-post ble sendt. Mottakersiden på fast Sandbox-vert viste pilotens 12 boliger og én fane, Fremdrift, med 49 aktiviteter. Sjekklister og bestillinger var ikke synlige i navigasjonen. Dette verifiserer ekstern fremdriftsvisning for leverandørtypen, ikke UE-spesifikk utfylling eller backend-nekt ved direkte kall. Testtilgangen er aktiv til 08.12.2026. Ingen tilgangslenke eller token lagres i QA. Skjermbilde 79 er tatt for videre redigering.
+
+
+### Arbeidsklipp v9
+
+[MP4](https://chatgpt.com/library?file_id=libfile_d2029ab1f9588191a85a8011de71ceba&account_id=personal) · [Redigerbare kilder](https://chatgpt.com/library?file_id=libfile_e42fc69495d88191bd8b83a709759726&account_id=personal)
+
+Ny scene under kapittel 9 viser den fiktive leverandørens mottakervisning med kun fremdrift. 51 scener, 8:52, 6 384 videobilder, kapitler, undertekstspor og ZIP-integritet kontrollert. Gjenbrukte scener kan vise eldre sceneteller. UE-utfylling, ny beboeraksept og øvrige utestående tester gjenstår.
