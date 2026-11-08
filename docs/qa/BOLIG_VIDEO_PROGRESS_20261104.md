@@ -136,3 +136,10 @@ Kapittel 8: Faktisk bemanning og Oversiktsliste ved tilsyn er tatt opp. Bemannin
 Kapittel 9: UE og leverandører samt dialogen med funksjonsvalg og omfang for alle aktive leiligheter er tatt opp. Ingen tilgangslenke ble opprettet. Ekstern rolle og portalvisning gjenstår.
 
 [Sju skjermbilder til videre redigering](https://chatgpt.com/library?file_id=libfile_5f4d232124148191a7e60572f307c4b5&account_id=personal). Disse scenene er foreløpig utenfor MP4 v2.
+
+
+### Arbeidsklipp v3
+
+[MP4](https://chatgpt.com/library?file_id=libfile_d2c06a31de448191a5202cbba65b2efb&account_id=personal) · [Redigerbare kilder](https://chatgpt.com/library?file_id=libfile_330e3cd5ea208191a7ec3dd452e8944b&account_id=personal)
+
+Fem scener fra Sandbox viser faktisk bemanning, tilsynslisten, funksjonsvalg for UE/leverandør, indeksvilkår og fakturaoversikt. Arbeidsklippet har 40 scener på 7:24. Visuell kontroll av nye scener og teknisk kontroll av kapittelgrenser, undertekstspor og 5 328 videobilder er utført. Gjenbrukte sekvenser kan vise eldre scenenummer. SHA-256: `bccb6344a715fb618095be22773829535238795fea48ee64938309ec107a95fb`. Utestående funksjonstester er fortsatt angitt ovenfor.
