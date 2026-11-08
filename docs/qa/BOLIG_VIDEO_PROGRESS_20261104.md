@@ -305,3 +305,13 @@ Ved uttrykkelig TEST OK: PR 309 inn i PR 311-branchen, verifiser resulterende ka
 Kenneth ga uttrykkelig TEST OK. PR 309 ble merget inn i PR 311 som `98c00d56`, med identisk tre som `6050fa05`. Ny CI avdekket feil sammenligningsbase i to Bolig-jobber. Rettelsen på `2d88e89d` endrer bare CI-workflowen og beholder eksisterende testkommandoer. Full CI `42523680555` og ny kjøring ved ready `42524479574` besto inklusive sluttgate.
 
 Produksjon fikk SQL-innholdet fra `20261104233315_bolig_my_task_location.sql` via Supabase, registrert som `20261108211752`. Aktiv definisjon verifisert med hash `4938e4fcbd6fb8c27528f1f429c53ecd`. Ikke kjør SQL-filen på nytt ut fra versjonsnummer alene. PR 311 ble merget til main som `7fc9d231`. Produksjonsaliaset er READY på dette hodet, deploy `dpl_HbgGCLeDrLByKTZi1yfeXGwp8FS3`. Forrige deploy `dpl_3D5fzV9TVkidd7x7Eowg3V6hWjQ2` på `34daef4c` er referanse for app-tilbakeføring. Offentlig innloggingsside er åpnet. Full innlogget produksjons-QA og demo-synk gjenstår.
+
+## Oppfølging etter publisering – 8. november 2026
+
+Produksjon `7fc9d231`, skrivebeskyttet: innlogget tilbudsoversikt gikk fra lastestatus til 45 saker, prosjekt og sjekklisteinngang åpnet, rapportforhåndsvisning viste prosjektinnhold, Hjelp-film lastet metadata og hoppet til 0:35. Bolig, HR, KS/HMS, Min side, Prissøk og Varebestilling åpnet. Mine planer hadde ingen aktive planer for innlogget bruker.
+
+Sandbox-preview `6050fa05`: ny PDF fra fiktivt reserveprosjekt ga 17 A4-sider med innebygde bilder og garanti. Aktiv VVS-eksempelplan viste fire oppgaver; egne boligoppgaver viste bygg, adresse og bolignummer. Avsluttet demotelling ga Cordel- og kontrollfil med 0 og 5 enheter, hylle i kontrollfilen. Ny fiktiv QA-telling: område opprettet, 3 enheter lagret, pause og gjenopptak med samme bruker, antall beholdt, område ferdigstilt og telling avsluttet/låst. Ingen Cordel-import.
+
+Faktisk tobruker-overtakelse er dekket av CI 42523680555 med 36 kontroller i React/PostgreSQL, inkludert delvis telt hylle, sperre for gammel teller, kladd, historikk og eksport. Ikke gjentatt manuelt med to Sandbox-økter. Boligportalen hadde 51 Chromium-kontroller, partner 86 og partnerkvalitet 121. Tidligere manuell Sandbox-verifisering dekker fiktiv beboeraksept, leverandørens fremdriftsvisning og UE-sjekkliste/vedlegg. Ordinær prosjektportal hadde 149 Chromium-kontroller i syntetisk miljø. Ingen produksjonsdata ble endret i disse prøvene.
+
+Permanent demo er fortsatt READY på `abc38f7e`, med felles base `34daef4c` og 166 demo-spesifikke / 120 main-spesifikke commits. Kontrollert synk og ny preflight gjenstår.
