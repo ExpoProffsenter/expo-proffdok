@@ -162,3 +162,10 @@ V4 viser registrert inn og registrert ut og forklarer begrunnelseskravet. 42 sce
 ### Tilsynsliste – person og eksport verifisert
 
 På dato 08.11.2026 viste oversikten først Personer (0) og én registrering med manglende opplysninger. Under Personer → Hent fra deltakere og dagens manuelle registreringer → Hent person ble Fiktiv QA-montør hentet fra bemanningen og lagret. Listen viste Personer (1). Faktisk nedlastet PDF (én side) og CSV inneholdt begge testpersonen. PDF viste manglende byggherre, fødselsdato, arbeidsgiver og HMS-kortnummer. CSV viste arbeidsstart 08.11.2026. Inn- og uttidene sto ikke i disse to tilsynseksportene. Daglig kontroll ble ikke bekreftet. Skjermbilde fra personlisten ble tatt, men er ikke klippet inn i v4.
+
+
+### Arbeidsklipp v5
+
+[MP4](https://chatgpt.com/library?file_id=libfile_0271d6d61bd48191a88a90922ae41aec&account_id=personal) · [Redigerbare kilder](https://chatgpt.com/library?file_id=libfile_5cee3c50eb488191a20c06879f23b714&account_id=personal)
+
+Den tidligere tomme tilsynslisten er erstattet med skjermbildet av den lagrede testpersonen og veiledning om å hente fra bemanningen og kontrollere PDF/CSV. MP4 har 42 scener på 7:40, 5 520 videobilder og undertekstspor. Den oppdaterte kapittelmarkøren og kildearkivets integritet er kontrollert. Gjenbrukte scener kan vise eldre sceneteller. Film v5 viser tilsynslisten i appen. De eksporterte dokumentene vises ikke som egne scener.
