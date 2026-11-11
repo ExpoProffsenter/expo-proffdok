@@ -48,3 +48,11 @@ To lokale migrasjoner er laget via Supabase CLI 3.1.0: `20261111182756_app_suppo
 Full `npm run build` med eksisterende critical checks bestod etter grunnlagsendringene. Kandidaten er ikke testet som samlet kundemodus i nettleser; UI-integrasjon, IndexedDB/recovery, Storage/Edge-adaptere og modulvis backendgjennomgang gjenstår. Generisk JSON-kontroll må ikke omtales som full slettegaranti for alle modeller. Se [arkitektur og aktiveringskrav](../architecture/APP_SUPPORT_SESSION.md).
 
 Fersk remote-kontroll: main `d68cf2e530d5ab6afcfe2f97d75150c977bcd64f`, demo `8f7307bc909f19203ff2cfbf76de142936978748`. Disse er ikke endret av supportarbeidet. PR319 forblir draft og skal ikke merges eller aktiveres som fullført supportmodus.
+
+## Innlogget Preview og korrigering etter nettleserprøve
+
+Fast Preview er `https://expo-proffdok-git-fix-support-project-sales-20261111-ringside.vercel.app`. Denne ordinære arbeidsbranchen bruker produksjonsinnlogging, ikke sandbox-brukeren. Dette ble ikke presisert tydelig nok før første innloggingsforsøk. Ny sikker innlogging med vanlig konto lyktes; ingen passord-/konto-/miljøendring var nødvendig. Preview er ikke et miljø for skrivetester mot kundedata.
+
+På kandidat `2f2ee38b` reagerer Åpne salgsgrunnlag, men innholdet er fortsatt usynlig: eksisterende `:has()`-regel har høyere CSS-spesifisitet enn den nye prosjektregelen. Korrigert prosjektregelen og lagt til faktisk CSS-kaskadetest i eksisterende nettleserpakke, med ordinær Sales fortsatt skjult og prosjektets dokumentinngang synlig for overview/case/editor.
+
+CI43080943501 feilet i `project-workspace-browser-check.mjs` før nettlesertesten startet: kildeuttrekkets sluttmarkør forventet den gamle eksakte overview-betingelsen. Den nye read-only-betingelsen flyttet ikke StatusDialog, men gjorde markøren ugyldig. Uttrekket bruker nå neste panels stabile startgrense; eksisterende assertions er beholdt. Ny CI/nettleserkontroll gjenstår etter korrigeringen. Øvrige åtte pakker i kjøringen bestod. Full lokal build bestod også med CSS-rettelsen.
