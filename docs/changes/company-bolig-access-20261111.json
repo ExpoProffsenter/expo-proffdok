@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Boligaktivering på valgt firmakort",
+  "change": "Miljømål BEGGE. Gjenbruker eksisterende firmatilgangspanel med valgfri låst companyId i Systemadmin sitt firmakort. Ingen endring i autorisasjon eller database.",
+  "verification": "Eksisterende boligtester, full CI og avgrenset integrasjonskontroll. All annen kode på firmakortet skal være identisk med main.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Samme aktiveringskontroll med eksisterende hjelpetekst vises også på valgt firmakort."
+    },
+    "module": {
+      "required": true,
+      "reason": "Bolig-README beskriver ny plassering og fortsatt separate brukerroller."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Eksisterende autoriserte RPC og tilgangskontroll gjenbrukes."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen migrasjon eller ny konfigurasjon."
+    }
+  }
+}
