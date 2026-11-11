@@ -1,3 +1,7 @@
+## Teksthjelp i felles Hjelp – 11.11.2026
+
+Boligprosjekter – les tekstveiledningen åpner tekst direkte i høyrepanelet, før filmene. 18 steg og alle 73 detaljtemaer kan leses uten video. Søk i hovedhjelpen inkluderer hele boligteksten; et eget tekstsøk avgrenser innholdet i panelet. Tilgang følger fortsatt den eksisterende Bolig-konteksten. `boligWorkflow.mjs` er felles kilde for prosjektets A–Å-panel og tekstoversikten. Roller kommer før opprettelse, kontraktsøkonomi følger kontrakter. Filmlisten viser A–Å først, deretter Finn bolig og Planlegg flere boliger. Selve filmfilene er foreløpig uendret; ny produksjon med gjennomgående animert musepeker gjenstår.
+
 # Hjelp i Boligprosjekter
 
 «Slik styrer du prosjektet» åpner en søkbar veiledning i appens felles høyrepanel. Velg ett av de åtte temaområdene eller søk etter ord fra forklaringen. Én forklaring vises om gangen. «Alle temaer» går tilbake til temaoversikten.
