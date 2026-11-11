@@ -41,6 +41,7 @@ const integrations = new Set([
   "src/modules/project/projectNavigationTabs.mjs",
   "src/modules/personal/PersonalPage.jsx",
   "src/modules/access/PeopleModuleAccess.jsx",
+  "src/modules/access/systemAdminCompanyAccessUx.jsx",
   "src/modules/deviations/DeviationDialog.jsx",
   "src/modules/ui/DialogPortalTarget.js",
   "src/modules/sales/README.md",
@@ -225,3 +226,15 @@ for (const companyName of [
 console.log(
   `Bolig core boundary: PASS (${checks} assertions; ${files.length} reviewed paths vs ${git("rev-parse", "--short", base)})`,
 );
+
+// Company modal integration is only the existing licensed Bolig access panel.
+const companyAccessPath = "src/modules/access/systemAdminCompanyAccessUx.jsx";
+if (files.includes(companyAccessPath)) {
+  const current = fs.readFileSync(companyAccessPath, "utf8");
+  const baseline = git("show", `${base}:${companyAccessPath}`);
+  const strip = source => source
+    .replace("  getStoredSupabaseSession,\n", "")
+    .replace("import BoligFirmAccessPanel from '../bolig/BoligFirmAccessPanel.jsx';\n", "")
+    .replace('                  {row.companyId ? <BoligFirmAccessPanel key={row.companyId} companyId={row.companyId} userId={getStoredSupabaseSession().userId} /> : null}\n', "").trim();
+  assert.equal(strip(current), strip(baseline), "Company modal may only mount the existing scoped Bolig access panel");
+}

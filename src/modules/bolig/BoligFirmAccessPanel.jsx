@@ -7,7 +7,7 @@ import {
   publishManagedAccessChange,
 } from "../access/moduleAccessClient.js";
 import "./bolig.css";
-export default function BoligFirmAccessPanel({ userId }) {
+export default function BoligFirmAccessPanel({ userId, companyId = null }) {
   const [snapshot, setSnapshot] = useState(null),
     [selected, setSelected] = useState(""),
     [error, setError] = useState(""),
@@ -51,7 +51,7 @@ export default function BoligFirmAccessPanel({ userId }) {
     };
   }, [userId]);
   const current = snapshot?.user_id === userId ? snapshot : null;
-  const firm = current?.companies.find((c) => c.company_id === selected);
+  const firm = current?.companies.find((c) => c.company_id === (companyId || selected));
   const save = async (enabled) => {
     if (!firm || operation.current) return;
     operation.current = true;
@@ -93,14 +93,13 @@ export default function BoligFirmAccessPanel({ userId }) {
     >
       <h3>Boligprosjekter · firmatilgang</h3>
       <p>
-        Velg firma og aktiver Boligprosjekter. Firmaadmin gir deretter ansatte
-        lesetilgang eller prosjektledertilgang i Firmaadmin.
+        {companyId?'Aktiver Boligprosjekter for dette firmaet.':'Velg firma og aktiver Boligprosjekter.'} Firmaadmin gir deretter ansatte lesetilgang eller prosjektledertilgang i Firmaadmin.
       </p>
       {error && <p role="alert">{error}</p>}
       {notice && <p role="status">{notice}</p>}
       {current ? (
         <>
-          <label>
+          {!companyId && <label>
             Firma for Boligprosjekter
             <select
               aria-label="Firma for Boligprosjekter"
@@ -117,7 +116,7 @@ export default function BoligFirmAccessPanel({ userId }) {
                 </option>
               ))}
             </select>
-          </label>
+          </label>}
           {firm && (
             <label className="bolig-license-toggle">
               <input
