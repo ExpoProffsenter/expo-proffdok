@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Synlig teksthjelp for hele Boligprosjektet",
+  "change": "Miljømål BEGGE. Samler 18 prosjektsteg og 73 detaljtemaer direkte i Hjelp, med søk og tydelig tekstinngang. Sorterer eksisterende filmknapper. Endrer ingen boligdata eller tilganger. Ny filmproduksjon gjenstår.",
+  "verification": "Full lokal build og React/DOM-test bestått. Lokal Chromium-test stoppet av miljøets socket-begrensning. Native avspillings-/mobiltest og CI kreves fortsatt. Video-kildepakken v12 kunne ikke hentes (intern tjenestefeil); filmene er ikke laget på nytt.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "Selve teksthjelpen og inngangen endres."
+    },
+    "module": {
+      "required": true,
+      "reason": "README beskriver felles innhold og utestående filmarbeid."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Eksisterende hjelpepanel og tilgang beholdes."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen ny avhengighet eller miljøendring."
+    }
+  }
+}

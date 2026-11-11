@@ -1,0 +1,33 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import {build} from 'vite';
+import React,{act} from 'react';
+import {BOLIG_WORKFLOW} from '../src/modules/help/boligWorkflow.mjs';
+import {availableVideoGuides} from '../src/modules/help/videoGuides.mjs';
+const {JSDOM}=await import(process.env.KSHMS_JSDOM_PATH||'jsdom');
+const dom=new JSDOM('<div id="root"></div>',{url:'https://qa.invalid'});
+globalThis.window=dom.window;globalThis.document=dom.window.document;globalThis.IS_REACT_ACT_ENVIRONMENT=true;
+const {createRoot}=await import('react-dom/client');
+const file='.bolig-text-help-qa.mjs';
+const result=await build({configFile:false,logLevel:'silent',build:{ssr:'src/modules/help/BoligTextHelp.jsx',write:false,minify:false,rollupOptions:{output:{inlineDynamicImports:true}}}});
+await fs.writeFile(file,result.output.find(x=>x.type==='chunk').code);
+let root;
+try {
+ const {default:Help,boligHelpSearchContent}=await import('../'+file);
+ root=createRoot(document.getElementById('root'));await act(async()=>root.render(React.createElement(Help)));
+ assert.equal(document.querySelectorAll('details').length,91);
+ assert.equal(BOLIG_WORKFLOW.length,18);assert.equal(BOLIG_WORKFLOW[0].title,'Avklar interne roller');
+ assert.equal(BOLIG_WORKFLOW[1].title,'Bygg prosjektet');assert.equal(BOLIG_WORKFLOW[3].title,'Følg kontraktsøkonomien');
+ assert.equal(new Set(BOLIG_WORKFLOW.map(x=>x.title)).size,18);
+ for(const term of ['FDV','beboer','indeks','tilvalg','sjekkliste','overtakelse','kontrakt','levering'])assert.ok(boligHelpSearchContent.toLowerCase().includes(term.toLowerCase()),term);
+ const input=document.querySelector('input');
+ const change=async value=>{await act(async()=>{Object.getOwnPropertyDescriptor(dom.window.HTMLInputElement.prototype,'value').set.call(input,value);input.dispatchEvent(new dom.window.Event('input',{bubbles:true}));});};
+ await change('indeks');assert.ok(document.querySelectorAll('details').length>0);assert.ok(document.querySelectorAll('details').length<91);
+ await change('zzzz-ingen-treff');assert.equal(document.querySelectorAll('details').length,0);assert.ok(document.querySelector('[role=status]').textContent.includes('Ingen treff'));
+ await change('');assert.equal(document.querySelectorAll('details').length,91);
+ assert.equal(document.querySelectorAll('video').length,0,'text never depends on video');
+ const visible=availableVideoGuides({authenticated:true,topics:['bolig'],canUseBolig:true});
+ assert.deepEqual(visible.map(x=>x.id),['bolig-a-til-aa','finn-bolig','bolig-masseplan']);
+ assert.equal(availableVideoGuides({authenticated:true,topics:['bolig'],canUseBolig:false}).length,0);
+ console.log('Bolig text help PASS: full 18-step workflow, 73 detailed topics, searchable content, no video dependency, ordered films and unchanged access gate');
+} finally {if(root)await act(async()=>root.unmount());await fs.unlink(file);dom.window.close();}

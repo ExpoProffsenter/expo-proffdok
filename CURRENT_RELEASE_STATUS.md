@@ -1,3 +1,7 @@
+## 11.11.2026 – Bolig teksthjelp, separat arbeidskandidat
+
+`fix/bolig-help-flow-20261111` fra main d68cf2e5. 18 steg og 73 detaljtemaer blir synlige direkte i Hjelp. Lokal build og React/DOM-kontroll bestått; nettleser-QA og nye filmer gjenstår. Ikke produksjonssatt og ikke omfattet av TEST OK for support. Full plan/resultat i docs/qa/BOLIG_HELP_FLOW_20261111.md.
+
 # Produksjonsrettelser – 11. november 2026
 
 Miljømål BEGGE. Arbeidet gjelder kundens varesøk, firmatilgang og opsjoner i generelle tilbud. Dette er ikke en erklæring om fullført QA av hele appen.
