@@ -19,7 +19,11 @@ export function effectiveSupportUserId(actorId) {
 }
 export function supportClient(client) {
   if (!runtime || runtime.getState().phase === 'idle') return client;
-  if (!wrapped.has(client)) wrapped.set(client, wrapSupportClient(client, runtime));
+  if (!wrapped.has(client)) {
+    const view = wrapSupportClient(client, runtime);
+    wrapped.set(client, view);
+    wrapped.set(view, view);
+  }
   return wrapped.get(client);
 }
 export function activeSupportSessionId() {

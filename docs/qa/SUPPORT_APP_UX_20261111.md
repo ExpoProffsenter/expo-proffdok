@@ -70,3 +70,11 @@ CI43083060216: prosjektets workspace/CSS-test bestod (202 krav), men checklist-p
 Sandbox ppvircenkjizeiqdxphj: migrasjoner installert via API. Lokale 20261111182756 / 20261111183233 / 20261111190543 tilsvarer remote 20261111191918 / 20261111191930 / 20261111192002. Den første Storage-installasjonen ble rullet tilbake ved kollisjon i API-ens sekundbaserte migrasjons-ID; fravær av snapshot-tabell ble bekreftet før ny installering. Verifisert: 220 write guards, 16 snapshots av sandboxens egne Storage-policyer, enabled=false og transport_ready=false. PostgREST-hook er ikke satt. Production er urørt. Ikke kjør samme migrasjoner igjen basert bare på lokale filversjoner.
 
 Neste: full CI, egen Sandbox-Preview og kontrollert testaktivering med syntetisk bruker; faktisk HTTP/Storage/CORS, tilbud/bolig-lagring og full nettleserflyt. Ingen TEST OK eller fullført leveranse er registrert.
+
+### CI og avgrenset kontrakt-PR
+
+CI43086675561 bestod workspace, checklist-panel og checklist guidance, men common-frame-fixturen manglet samme nye oppryddingsavhengighet. Den har nå en assertion for hver navigasjonsvariant. Bolig core boundary avviste kontraktfiltilpasningen sammen med fullapp-endringene. Kontrollene er ikke endret: de tre Bolig-filene og egen regresjonstest er flyttet til separat PR320 fra ren main. Kontraktfiltesten har 28 krav; scopekontrollen har 55.
+
+Innlogget standard-Preview beholdt Kenneths produksjonsøkt ved reload. Ny isolert QA-Preview: https://expo-proffdok-git-qa-support-full-app-20261111-ringside.vercel.app, branch qa/support-full-app-20261111 med branch-spesifikk EXPO_BACKEND_TARGET=sandbox. Første innloggingsforsøk brukte feil konto; brukeren bekreftet dette. Andre sikre innlogging lyktes som demo@expo-proffdok.no. Ingen passord eller Auth-konto er endret.
+
+Transaksjonstest mot faktisk Sandbox med ROLLBACK: support for qa-firmaadmin@example.invalid returnerte riktig målidentitet, sales/store_offers og is_systemadmin=false samt arbeidsfirma Proffkunde Demo AS. Ingen varige data eller økter ble opprettet av testen. Neste kontrollerte steg er hook-registrering og testaktivering i Sandbox alene.

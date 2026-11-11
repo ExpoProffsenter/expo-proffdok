@@ -1,7 +1,11 @@
 // Present the server-verified customer identity to existing modules without
 // replacing the real administrator's persisted Auth session or refresh token.
+const views = new WeakMap();
 export function wrapSupportClient(client, runtime) {
   if (!client || !runtime) return client;
+  if (!views.has(runtime)) views.set(runtime, new WeakMap());
+  const clients = views.get(runtime);
+  if (clients.has(client)) return clients.get(client);
   const sessionView = session => {
     if (!session) { runtime.projectUser(null); return null; }
     return { ...session, user: runtime.projectUser(session.user) };
@@ -24,7 +28,7 @@ export function wrapSupportClient(client, runtime) {
       return typeof value === 'function' ? value.bind(target) : value;
     },
   });
-  return new Proxy(client, {
+  const view = new Proxy(client, {
     get(target, key) {
       if (key === 'auth') return auth;
       // Realtime cannot apply the request-local support context. Existing
@@ -38,4 +42,7 @@ export function wrapSupportClient(client, runtime) {
       return typeof value === 'function' ? value.bind(target) : value;
     },
   });
+  clients.set(client, view);
+  clients.set(view, view);
+  return view;
 }

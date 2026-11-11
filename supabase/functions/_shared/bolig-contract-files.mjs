@@ -10,7 +10,7 @@ export async function contractDigest(bytes){return Array.from(new Uint8Array(awa
 export function createContractFiles({authenticate,origins}){
  return async req=>{
   const origin=req.headers.get('origin');
-  const headers={'access-control-allow-origin':origin&&origins.includes(origin)?origin:origins[0],'vary':'Origin','access-control-allow-headers':'authorization,apikey,content-type,x-expo-support-session','access-control-allow-methods':'POST,OPTIONS','cache-control':'private, no-store, max-age=0','pragma':'no-cache','x-content-type-options':'nosniff'};
+  const headers={'access-control-allow-origin':origin&&origins.includes(origin)?origin:origins[0],'vary':'Origin','access-control-allow-headers':'authorization,apikey,content-type','access-control-allow-methods':'POST,OPTIONS','cache-control':'private, no-store, max-age=0','pragma':'no-cache','x-content-type-options':'nosniff'};
   const json=(status,value)=>new Response(JSON.stringify(value),{status,headers:{...headers,'content-type':'application/json'}});
   if(origin&&!origins.includes(origin))return json(403,{message:'Ukjent arbeidsflate.',code:'42501'});
   if(req.method==='OPTIONS')return new Response(null,{status:204,headers});
@@ -19,7 +19,7 @@ export function createContractFiles({authenticate,origins}){
    const authorization=req.headers.get('authorization')||'';
    if(!/^Bearer\s+\S+$/i.test(authorization))return json(401,{message:'Logg inn for å åpne kontrakter.',code:'42501'});
    // Auth.getUser must succeed before body parsing, RPC or privileged Storage.
-   const session=await authenticate(authorization,req.headers.get('x-expo-support-session')||'');
+   const session=await authenticate(authorization);
    if(!session?.user_id)return json(401,{message:'Innloggingen må bekreftes.',code:'42501'});
    const rawType=req.headers.get('content-type')||'';
    const isJson=rawType.startsWith('application/json');

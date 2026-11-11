@@ -11,7 +11,8 @@ const client={auth:{getSession:async()=>({data:{session:persisted},error:null}),
 const view=wrapSupportClient(client,runtime);
 assert.equal((await view.auth.getSession()).data.session.user.id,actor.id);
 await runtime.start({},id(3),id(4));
-const got=(await view.auth.getSession()).data.session;
+assert.equal(wrapSupportClient(view,runtime),view,'registry and bootstrap must not wrap the projected identity twice');
+const got=(await wrapSupportClient(view,runtime).auth.getSession()).data.session;
 assert.equal(got.user.id,id(3));assert.equal(got.access_token,'actor-token');assert.equal(got.refresh_token,'actor-refresh');
 assert.equal(persisted.user.id,actor.id);assert.equal((await view.auth.getUser()).data.user.id,id(3));
 let event;view.auth.onAuthStateChange((name,session)=>{event={name,session};});callback('TOKEN_REFRESHED',persisted);
