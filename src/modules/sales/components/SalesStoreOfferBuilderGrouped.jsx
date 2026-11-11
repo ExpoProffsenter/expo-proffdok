@@ -1236,9 +1236,9 @@ export default function SalesStoreOfferBuilderGrouped(props) {
   );
   const standaloneOptions = options.filter(
     (option) =>
-      !option.storeParentProductId &&
       !productLines.some(
         (product) =>
+          String(product.id) === String(option.storeParentProductId || "") ||
           String(product.id) === String(option.replacementLineId || "")
       )
   );
@@ -1312,7 +1312,8 @@ export default function SalesStoreOfferBuilderGrouped(props) {
   function applyGroups(
     nextProducts = productLines,
     nextInstallations = installationLines,
-    nextSections = sections
+    nextSections = sections,
+    nextOptions = options
   ) {
     const nextLines = composeLines({
       products: nextProducts,
@@ -1322,7 +1323,7 @@ export default function SalesStoreOfferBuilderGrouped(props) {
       otherLines,
     });
     updateOfferForm("lines", nextLines);
-    updateOfferForm("options", recalculateStoreOptions(options, nextLines));
+    updateOfferForm("options", recalculateStoreOptions(nextOptions, nextLines));
   }
 
   useEffect(() => {
@@ -1499,10 +1500,11 @@ export default function SalesStoreOfferBuilderGrouped(props) {
         String(option.storeParentProductId || "") !== String(id) &&
         String(option.replacementLineId || "") !== String(id)
     );
-    updateOfferForm("options", nextOptions);
     applyGroups(
       productLines.filter((line) => line.id !== id),
-      nextInstallations
+      nextInstallations,
+      sections,
+      nextOptions
     );
     if (openProductId === id) setOpenProductId("");
   }
@@ -1536,10 +1538,11 @@ export default function SalesStoreOfferBuilderGrouped(props) {
           )
         : option
     );
-    updateOfferForm("options", nextOptions);
     applyGroups(
       productLines,
-      installationLines.filter((line) => line.id !== id)
+      installationLines.filter((line) => line.id !== id),
+      sections,
+      nextOptions
     );
   }
 

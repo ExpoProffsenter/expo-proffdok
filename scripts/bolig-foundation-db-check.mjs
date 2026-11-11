@@ -697,6 +697,28 @@ try {
     id: packageId,
     archived: false,
   });
+  // Regression: hidden/recreated options cannot leak into a new housing choice.
+  const replacementRoot = (await call("create", null, null, { title: "Option replacement regression" })).root.id;
+  const replacementStructure = await call("block", replacementRoot, 1, { name: "Test block" });
+  const replacementUnits = await call("entrance", replacementRoot, replacementStructure.root.revision, { block_id: replacementStructure.blocks[0].id, address: "Test address", counts: [1] });
+  const replacementUnit = replacementUnits.units[0];
+  const replacementCatalog = (action, revision, payload) => catalog(action, revision, payload, replacementRoot);
+  let replacementState = await replacementCatalog("package", 0, { name: "Base", lines: [baseLine] });
+  const replacementPackageId = replacementState.packages[0].id;
+  replacementState = await replacementCatalog("option", 1, extra);
+  const hiddenOptionId = replacementState.options[0].id;
+  replacementState = await replacementCatalog("archive", 2, { kind: "option", id: hiddenOptionId, archived: true });
+  replacementState = await replacementCatalog("option", 3, { ...extra, name: "New option" });
+  const newOptionId = replacementState.options.find(o => !o.archived).id;
+  eq(replacementState.options.filter(o => !o.archived).length, 1, "Only recreated option is active");
+  eq(replacementState.options.find(o => o.id === hiddenOptionId).archived, true, "Old option remains explicitly archived");
+  // Use a unit from this isolated root, with no previous customer choices.
+  const replacementUnitId = replacementUnit?.id;
+  if (!replacementUnitId) throw new Error("Regression fixture needs a unit");
+  await rejects(() => replacementCatalog("choose", 4, { unit_id: replacementUnitId, package_id: replacementPackageId, option_ids: [hiddenOptionId], choice_revision: 0 }), "22023");
+  const replacementChoice = await replacementCatalog("choose", 4, { unit_id: replacementUnitId, package_id: replacementPackageId, option_ids: [newOptionId], choice_revision: 0 });
+  eq(replacementChoice.selection.snapshot.options.length, 1, "Saved housing choice includes only the new option");
+  eq(replacementChoice.selection.snapshot.options[0].id, newOptionId, "Customer snapshot excludes hidden option");
   const archivedRoot = await call(
     "archive",
     root,

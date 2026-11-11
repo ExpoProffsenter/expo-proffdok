@@ -202,3 +202,5 @@ assert(salesModule.includes('import "./storeOfferTextBlocks.css"'), "avsnitt-pre
 assert(router.includes("SalesStoreOfferBuilderCatalog"), "Butikktilbud skal bruke katalog-wrapperen.");
 
 console.log("✅ Expo ProffDok internt vareregister check OK");
+
+import "./sales-store-option-removal-check.mjs";
