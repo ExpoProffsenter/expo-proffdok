@@ -57,9 +57,10 @@ function paint(state) {
   button.onclick = async () => {
     button.disabled = true;
     try {
+      if (!runtime) { window.location.replace('/'); return; }
       await runtime.end(await credentials(), state.session?.id || rawSessionStorage.getItem(SESSION_KEY));
       rawSessionStorage.removeItem(SESSION_KEY);
-      window.location.replace('/?tab=systemadmin');
+      window.location.replace('/?tab=systemadmin&supportExit=1');
     } catch (error) { text.textContent = error.message; button.disabled = false; }
   };
   banner.append(text, button);
@@ -77,8 +78,18 @@ export async function startCustomerSupport(userId, companyId) {
 
 async function initialize() {
   if (typeof window === 'undefined' || !config().url || !config().key) return;
-  rawLocalStorage = window.localStorage;
-  rawSessionStorage = window.sessionStorage;
+  try {
+    rawLocalStorage = window.localStorage;
+    rawSessionStorage = window.sessionStorage;
+  } catch {
+    // Ordinary embedded/private-storage-denied views must still mount.
+    // A linked support document cannot restore its context without storage.
+    if (new URLSearchParams(window.location.hash.slice(1)).has('expoSupport')) {
+      paint({phase:'blocked',session:null,error:'Support krever tilgjengelig øktlagring. Åpne dokumentet fra appen på nytt.'});
+      return new Promise(() => {});
+    }
+    return;
+  }
   const nativeFetch = window.fetch.bind(window);
   runtime = createAppSupportRuntime({ backendUrl: config().url, nativeFetch, onChange: paint });
   // A document opened with noopener cannot inherit sessionStorage. This

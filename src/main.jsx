@@ -3230,6 +3230,14 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       };
     }, [authUser?.id, profile?.id, profile?.approved, profile?.deactivated, authLoading, profileLoading]);
     (0, import_react.useEffect)(() => {
+      if (authLoading || profileLoading || !isSystemAdminUser || !profile?.approved || profile?.deactivated) return;
+      const url = new URL(window.location.href);
+      if (url.searchParams.get('supportExit') !== '1') return;
+      setTab('systemadmin');
+      url.searchParams.delete('supportExit');
+      window.history.replaceState(null, '', url.pathname + url.search + url.hash);
+    }, [authLoading, profileLoading, isSystemAdminUser, profile?.approved, profile?.deactivated]);
+    (0, import_react.useEffect)(() => {
       setPortalAccessInput("");
       setPortalAccessGranted(false);
       setPortalAccessError("");

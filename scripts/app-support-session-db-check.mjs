@@ -23,6 +23,8 @@ insert into public.profiles values('${actor}','actor@example.invalid',true,false
 insert into public.sales_company_scopes values('${firm}','Firma A'),('${foreign}','Firma B');
 insert into public.sales_company_memberships values('${target}','${firm}'),('${other}','${foreign}');`);
 await db.exec(await fs.readFile('supabase/migrations/20261111182756_app_support_sessions.sql','utf8'));
+await db.exec(await fs.readFile('supabase/migrations/20261111200037_app_support_resume_same_target.sql','utf8'));
+await db.exec(await fs.readFile('supabase/migrations/20261111200339_app_support_empty_archive_fields.sql','utf8'));
 await claim(actor);await db.exec('set role authenticated');
 await denied(()=>cmd('start',target,firm),'disabled by default');
 await db.exec('reset role;update app_support_private.settings set enabled=true;set role authenticated');
@@ -34,6 +36,7 @@ await claim(actor);const session=await cmd('start',target,firm);
 eq(session.target_user_id,target,'actual selected user');eq(session.actor_id,actor,'actor retained');eq(session.company_id,firm,'company retained');eq(session.capabilities,{read:true,create:true,update:true,delete:false},'editing without deletion');
 eq(session.target_user.email,'target@example.invalid','safe identity for existing UI');
 eq((await cmd('get',null,null,session.id)).id,session.id,'refresh keeps session');
+const resumed=await cmd('start',target,firm);eq(resumed.id,session.id,'closed tab resumes original same-target session');eq(resumed.expires_at,session.expires_at,'resume cannot extend session expiry');
 await denied(()=>cmd('start',other,foreign),'concurrent tab cannot silently replace target');
 await claim(actor,otherLogin);await denied(()=>cmd('get',null,null,session.id),'session belongs to original actor login');
 await claim(actor);await db.exec(`reset role;update public.profiles set deactivated=true where id='${target}';set role authenticated`);
@@ -48,7 +51,7 @@ await cmd('end',null,null,next.id);
 await assert.rejects(()=>db.query('select * from app_support_private.audit'));checks++;
 await assert.rejects(()=>db.query("update app_support_private.settings set enabled=true"));checks++;
 await db.exec('reset role');
-eq(Number((await db.query('select count(*) n from app_support_private.audit')).rows[0].n),4,'start/end audit committed');
+eq(Number((await db.query('select count(*) n from app_support_private.audit')).rows[0].n),5,'start/resume/end audit committed');
 const removes=async(a,b)=>(await db.query('select app_support_private.removes_content($1,$2) x',[JSON.stringify(a),JSON.stringify(b)])).rows[0].x;
 for(const [before,after,expected,label] of [
  [{lines:[{id:'a',price:10}]},{lines:[{id:'a',price:20}]},false,'edit retained line'],
@@ -59,6 +62,8 @@ for(const [before,after,expected,label] of [
  [{files:[{path:'a.pdf'}]},{files:[{path:'b.pdf'}]},true,'replace file'],
  [{nested:{lines:[{id:'a'}]}},{nested:{lines:[]}},true,'nested delete'],
  [{archived_at:null},{archived_at:'2026-11-11'},true,'soft deletion'],
+ [{}, {archivedAt:''},false,'empty hydrated archive timestamp is not deletion'],
+ [{archivedAt:''}, {archivedAt:'2026-11-11'},true,'populated hydrated archive timestamp is deletion'],
  [{deleted:false},{deleted:true},true,'soft delete flag'],
  [{name:'old'},{name:'new'},false,'ordinary field edit'],
  [{name:'old'}, {},true,'field removal'],
