@@ -8,6 +8,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
   getCompanyStoreOffersAccess,
+  getStoredSupabaseSession,
   MANAGED_ACCESS_EVENT,
   listManagedModuleAccess,
   setCompanyStoreOffersAccess,
@@ -37,6 +38,7 @@ const STATUS_FILTERS = [
 import ProCatalogSearch from '../storeCatalog/ProCatalogSearch.jsx';
 import {orderRpc} from '../storeCatalog/proCatalogOrderClient.js';
 import PeopleModuleAccess from './PeopleModuleAccess.jsx';
+import BoligFirmAccessPanel from '../bolig/BoligFirmAccessPanel.jsx';
 import HrDeletionAlerts from '../hr/HrDeletionAlerts.jsx';
 import StocktakeCompanyAccess from '../stocktake/StocktakeCompanyAccess.jsx';
 import { findSystemAdminElements } from './systemAdminSurface.js';
@@ -418,6 +420,7 @@ function CompanyNavigator({
               {open ? (
                 <div className="company-access-body">
                   <PeopleModuleAccess companyId={row.companyId} />
+                  {row.companyId ? <BoligFirmAccessPanel key={row.companyId} companyId={row.companyId} userId={getStoredSupabaseSession().userId} /> : null}
                   {row.companyId ? <StocktakeCompanyAccess key={row.companyId} companyId={row.companyId} /> : null}
                   {row.companyId && !row.internalCompany ? (
                     <>
