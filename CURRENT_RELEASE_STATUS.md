@@ -1,11 +1,21 @@
-# Samlet testkandidat – 6. november 2026
+# Produksjonsrettelser – 11. november 2026
 
-Miljømål BEGGE. Bare arbeidsbranch/Preview/Sandbox. Produksjon og demo er uendret; ingen ny TEST OK er gitt.
+Miljømål BEGGE. Arbeidet gjelder kundens varesøk, firmatilgang og opsjoner i generelle tilbud. Dette er ikke en erklæring om fullført QA av hele appen.
 
-PR309 er én samlet testkandidat med Bolig og PR311-kjernen. Sist bekreftede samlede kandidat e994a857 har full CI996 SUCCESS på første forsøk, READY/Sandbox og innlogget kontroll av profilmeny, timeføring og skrivebeskyttet kundetilbud. Core567a63e3 har full CI995 SUCCESS etter dokumentert omkjøring av en jobb med treg systemnedlasting. Ingen produksjonssetting.
+## Publisert og verifisert
+- [PR314](https://github.com/ExpoProffsenter/expo-proffdok/pull/314): sletting av hovedpost bruker oppdatert opsjonsliste. Eldre frakoblede opsjoner vises under Andre opsjoner. Main6e60c1cb og demo3df9634b ble bekreftet READY. Full CI43062829574 bestod.
+- [PR315](https://github.com/ExpoProffsenter/expo-proffdok/pull/315): kundens varekort, egne priser eks./inkl. mva., smartsøk og resultatlinjer uten overlapp. Valg/Enter åpner varekort; bestilling krever egen knapp. Skrivebeskyttet supportvisning finnes på kundens firmakort. Main4cbf31e1 ble bekreftet READY på https://expo-proffdok.app. Full CI43068293489 bestod.
+- [PR316](https://github.com/ExpoProffsenter/expo-proffdok/pull/316): boligaktivering samlet på valgt firmakort. Full CI43070168307 bestod. Main573c1a6b er merged; publisert commit, fast domene og endelig demosynk/preflight dokumenteres med faktiske kontrollresultater i PR316.
 
-Neste avgrensede retting: tilbudsoversikten får Core-eid status og venter på faktisk ferdig liste før null, tomtekst og0treff vises. Se [årsak og testgrunnlag](docs/qa/SALES_LIST_READINESS_20261106.md). Ny faktisk Core/transport/List-test har39kravPASS; native fixture-build og relevante criticalPASS. Innlogget3e5ac3cb viste riktig venting/ukjente tellere uten falsk tomtekst, deretter19saker,1treff, bevart søk/status ved retur og legitim0treff etter ferdiglasting. CI997 stoppet på et eksisterende tidspunktproblem i varetellingstesten; [årsak og additiv QA-retting](docs/qa/STOCKTAKE_REFRESH_PHASE_QA_20261106.md). Eksakt ny full CI kreves. Søk, filtre, retur, editor, kladd, priser og aksept beholdes.
+## Testgrunnlag og avgrensninger
+1763 boligdatabasekrav, boligkatalogens React-kontroll og full bolig-nettleserpakke består. Arkivert tilvalg kan ikke velges; nytt tilvalg lagres uten den gamle opsjonen. Bolig bruker en separat modell og deler ikke den feilaktige tilbudshandleren.
 
-Full appgjennomgang, eksterne roller og fysisk mobil/Safari står fortsatt åpne. Ingen utsending, migrering, seed eller nullstilling er utført. Eksakte kandidat-/CI-/Preview-bevis ligger i PR309/311.
+Kundesøkets14SQL-krav og nettleserregresjon på320/390/768/1366px består. Faktisk produksjonskontroll med Tore Orvei AS viser korrekt kundepris7 560eks./9 450inkl. mva. på02606, uten interne kalkylefelt, og Enter uten sidebytte. Andre firma kan ikke velges av kundebruker. Ingen prøveordre, invitasjon eller e-post er sendt.
 
-Ved senere uttrykkelig TEST OK for samlet leveranse: kontroller faktisk main/base, avtal migrasjonssteg, fullfør core og Bolig i riktig rekkefølge, verifiser publisert commit og synkroniser demo med særtilpasningene bevart. Eksakte CI-/Preview-bevis og videre status dokumenteres i PR309/311.
+Den additive lesefunksjonen search_pro_store_catalog_smart er installert og kontrollert i Production og permanent Sandbox. Ingen kundepriser, roller eller leverandøravtaler er endret. Supportvisningen gjelder varesøk; generell innlogging som kunden er ikke innført. Fysisk mobil/Safari er ikke kontrollert i denne leveransen.
+
+## Saksbehandlerens gjenstående handling
+I Bademiljø Expo F-2026-0044 er de to tidligere skjulte opsjonene nå synlige. Steffan må vurdere og fjerne uønskede oppføringer og følge vanlig publiseringsflyt. Ingen historiske opsjoner er automatisk slettet. Åpning av editoren under QA utløste normal autolagring; dette er uttrykkelig dokumentert.
+
+## Dokumentasjon og tilbakeføring
+Se [opsjonslogg](docs/qa/OFFER_OPTION_REMOVAL_20261111.md), [kundesøklogg](docs/qa/PROFF_CUSTOMER_SEARCH_20261111.md) og PR314–316 for eksakte publiseringsbevis. Tilbakefør en berørt klientendring med revert av aktuell PR; den additive søkefunksjonen kan stå ubrukt. Ingen datarollback er nødvendig. Demo synkroniseres fra publisert main med særtilpasningene bevart.
