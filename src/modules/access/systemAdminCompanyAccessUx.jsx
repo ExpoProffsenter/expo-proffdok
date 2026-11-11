@@ -34,6 +34,8 @@ const STATUS_FILTERS = [
   { key: "all", label: "Alle" },
 ];
 
+import ProCatalogSearch from '../storeCatalog/ProCatalogSearch.jsx';
+import {orderRpc} from '../storeCatalog/proCatalogOrderClient.js';
 import PeopleModuleAccess from './PeopleModuleAccess.jsx';
 import HrDeletionAlerts from '../hr/HrDeletionAlerts.jsx';
 import StocktakeCompanyAccess from '../stocktake/StocktakeCompanyAccess.jsx';
@@ -261,6 +263,36 @@ function CompanyStoreOffersAccess({ row }) {
   );
 }
 
+function CompanyCatalogPreview({companyId}) {
+  const [state,setState]=useState({pending:true,users:[],prices:[],error:''});
+  const [userId,setUserId]=useState('');
+  useEffect(()=>{
+    let active=true, generation=0;
+    const refresh=async()=>{
+      const ticket=++generation;
+      setState(s=>({...s,pending:true,error:''}));
+      try {
+        const [managed,prices]=await Promise.all([listManagedModuleAccess(),orderRpc('list_store_catalog_user_net_price_access',{})]);
+        if(active&&ticket===generation)setState({pending:false,users:managed?.users||[],prices:prices||[],error:''});
+      } catch(error){if(active&&ticket===generation)setState({pending:false,users:[],prices:[],error:error.message});}
+    };
+    refresh();
+    window.addEventListener(MANAGED_ACCESS_EVENT,refresh);
+    window.addEventListener('focus',refresh);
+    return()=>{active=false;++generation;window.removeEventListener(MANAGED_ACCESS_EVENT,refresh);window.removeEventListener('focus',refresh);};
+  },[companyId]);
+  const users=state.prices.filter(p=>p.company_id===companyId);
+  const priceAccess=users.find(p=>p.user_id===userId);
+  const target=state.users.find(p=>p.user_id===userId);
+  const allowed=Boolean(priceAccess&&target?.approved&&!target?.deactivated&&target?.module_keys?.includes('sales')&&target?.company_has_pro_catalog);
+  const context=useMemo(()=>({company_id:companyId,user_id:userId,showOwnPrices:priceAccess?.can_view_net_price===true}),[companyId,userId,priceAccess?.can_view_net_price]);
+  return <details><summary>Supportvisning av kundens varesøk</summary>
+    <p>Velg brukeren du hjelper. Varekort og priser vises med brukerens prisinnsyn. Bestilling er sperret i supportvisningen.</p>
+    <label>Vis som bruker<select value={userId} onChange={e=>setUserId(e.target.value)}><option value="">Velg bruker</option>{users.map(u=><option key={u.user_id} value={u.user_id}>{u.email}</option>)}</select></label>
+    {state.pending?<p>Kontrollerer brukerens tilgang …</p>:state.error?<p role="alert">{state.error}</p>:userId&&!allowed?<p>Brukeren har ikke aktiv tilgang til firmaets varesøk.</p>:allowed?<ProCatalogSearch key={companyId+':'+userId} context={context} supportCompanyId={companyId} disabled />:null}
+  </details>;
+}
+
 function CompanyNavigator({
   snapshot,
   activeKey,
@@ -391,6 +423,7 @@ function CompanyNavigator({
                     <>
                       <CompanyStoreOffersAccess row={row} />
                       <ProStoreCatalogAdminPanel companyId={row.companyId} />
+                      <CompanyCatalogPreview companyId={row.companyId} />
                     </>
                   ) : row.internalCompany ? (
                     <>
