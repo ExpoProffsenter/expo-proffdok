@@ -60,3 +60,6 @@ await db.exec("reset role;update public.internal_store_catalog_imports set statu
 await db.exec('reset role');eq((await db.query('select count(*)::int as n from public.internal_store_catalog_items')).rows[0].n,9,'searches never mutate catalog');
 console.log('smart-price-search-db-check: '+checks+' PostgreSQL checks PASS (real migration, aliases/order, IDs, pagination, masking, denied access, import and no catalog writes).');
 }finally{await db.close();}
+
+// Customer search shares aliases but must retain its own access/pricing boundary.
+await import("./pro-catalog-smart-db-check.mjs");
