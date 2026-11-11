@@ -1246,3 +1246,6 @@ Meny → Sjekklister → Egen sjekkliste → Start sjekkliste lar alle godkjente
 ### Varetelling: hyller og overtakelse
 
 Velg eller opprett en hylle én gang, og registrer varene der fortløpende. Flere tellere deler samme telling med én ansvarlig per område. Pause med stoppmerknad, eksplisitt overtakelse og historikk gjør det mulig å fortsette en halvferdig hylle. Cordel-filen summerer områdene; kontrollfilen beholder dem. Oppsett krever den additive områdemigrasjonen etter eksisterende stocktake-installasjon. Klient-/databasekontrakt og produksjonsforutsetninger: [områdemodell](docs/architecture/STOCKTAKE_AREAS.md), [QA og installasjonsstatus](docs/qa/STOCKTAKE_AREAS_20261105.md). Miljømål BEGGE; først Preview/Sandbox og egen TEST OK.
+
+### Proffkundens varesøk (11.11.2026)
+Varesøk åpner et varekort med kundens priser før eksplisitt tillegg i bestillingen. Smartere søk krever den additive migrasjonen `20261111164011_pro_catalog_smart_search.sql` i riktig miljø før klientpublisering. Utrulling og kontroll: [QA-notat](docs/qa/PROFF_CUSTOMER_SEARCH_20261111.md).
