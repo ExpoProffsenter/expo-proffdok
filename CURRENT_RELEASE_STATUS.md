@@ -1,3 +1,6 @@
+## Supportkandidat 11.11 – ikke produksjonssatt
+PR319 + PR320. Sandbox-only testaktivering. Faktisk Sales-lagring/redigering/reload og PDF Storage-opplasting/lesing bekreftet. Bolig create/update/archive-fence kontrollert gjennom native RPC i rollback-transaksjon. 78 lokale SQL-krav består. Se docs/qa/SUPPORT_APP_UX_20261111.md for kandidat, begrensninger og nyeste CI; docs/architecture/APP_SUPPORT_SESSION.md for produksjons-/rollback-plan. TEST OK er ikke gitt.
+
 # Produksjonsrettelser – 11. november 2026
 
 ## Pågående, ikke publisert: samlet supportmodus

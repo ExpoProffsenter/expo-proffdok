@@ -25,6 +25,7 @@ insert into public.sales_company_memberships values('${target}','${firm}'),('${o
 await db.exec(await fs.readFile('supabase/migrations/20261111182756_app_support_sessions.sql','utf8'));
 await db.exec(await fs.readFile('supabase/migrations/20261111200037_app_support_resume_same_target.sql','utf8'));
 await db.exec(await fs.readFile('supabase/migrations/20261111200339_app_support_empty_archive_fields.sql','utf8'));
+await db.exec((await fs.readFile('supabase/migrations/20261111201506_app_support_file_and_consent_fences.sql','utf8')).split('create or replace function app_support_private.guard_and_audit()')[0]);
 await claim(actor);await db.exec('set role authenticated');
 await denied(()=>cmd('start',target,firm),'disabled by default');
 await db.exec('reset role;update app_support_private.settings set enabled=true;set role authenticated');
@@ -66,6 +67,8 @@ for(const [before,after,expected,label] of [
  [{archivedAt:''}, {archivedAt:'2026-11-11'},true,'populated hydrated archive timestamp is deletion'],
  [{deleted:false},{deleted:true},true,'soft delete flag'],
  [{name:'old'},{name:'new'},false,'ordinary field edit'],
+ [{imageDataUrl:'data:image/png;old'}, {imageDataUrl:''},true,'embedded image cannot be cleared'],
+ [{imageDataUrl:''}, {imageDataUrl:'data:image/png;new'},false,'new image can be added'],
  [{name:'old'}, {},true,'field removal'],
  [{name:'old'},{name:'old',deleted:true},true,'new soft-delete flag'],
  [{name:'old'},{name:'old',deleted_at:'2026-11-11'},true,'new deletion timestamp'],
@@ -79,6 +82,8 @@ for(const [before,after,expected,label] of [
 await db.exec(`insert into public.sales_company_memberships values('${target}','${firm}');
 create function public.current_active_company_scope_id() returns uuid language sql stable security definer as $$select company_id from public.sales_company_memberships where user_id=auth.uid() limit 1$$;
 create table public.support_qa_records(id uuid primary key,user_id uuid,company_id uuid,payload jsonb);
+create table public.user_terms_acceptance(user_id uuid,version text);
+grant insert on public.user_terms_acceptance to authenticated;
 alter table public.support_qa_records enable row level security;
 create policy mine on public.support_qa_records to authenticated using(user_id=auth.uid()) with check(user_id=auth.uid());
 grant select,insert,update,delete on public.support_qa_records to authenticated;
@@ -87,6 +92,7 @@ create function public.support_qa_remove() returns void language sql security de
 `);
 await db.exec(await fs.readFile('supabase/migrations/20261111183233_app_support_write_gateway.sql','utf8'));
 await db.exec(await fs.readFile('supabase/migrations/20261111194441_app_support_canonical_write_validation.sql','utf8'));
+await db.exec(await fs.readFile('supabase/migrations/20261111201506_app_support_file_and_consent_fences.sql','utf8'));
 await claim(actor);await db.exec('set role authenticated');
 const writeSession=await cmd('start',target,firm);await db.exec('reset role');
 const scoped=async(sql,{prepare=true,session=writeSession.id}={})=>{
@@ -100,6 +106,7 @@ const scoped=async(sql,{prepare=true,session=writeSession.id}={})=>{
 await denied(()=>scoped('select 1'),'transport disabled even when session feature enabled');
 await db.exec('update app_support_private.settings set transport_ready=true');
 eq((await scoped('select auth.uid() id')).rows[0].id,target,'native request uses target rights, not admin rights');
+await denied(()=>scoped(`insert into public.user_terms_acceptance values(auth.uid(),'qa')`),'support cannot accept personal terms on behalf of customer');
 eq((await scoped('select public.app_support_context() context')).rows[0].context.target_user_id,target,'bootstrap confirms target via server hook');
 await denied(()=>scoped('select public.app_support_context()', {prepare:false}),'bootstrap cannot confirm context without installed hook');
 eq((await scoped('select id from public.support_qa_records')).rows.map(x=>x.id),[id(20)],'native RLS excludes foreign user');

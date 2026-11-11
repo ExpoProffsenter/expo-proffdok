@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
 import { wrapSupportClient } from '../src/modules/access/appSupportAuth.mjs';
 import { createAppSupportRuntime } from '../src/modules/access/appSupportRuntime.mjs';
 const id=n=>`81000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
@@ -20,3 +21,16 @@ assert.equal(event.session.user.id,id(3));assert.equal(event.name,'TOKEN_REFRESH
 const channel=view.channel('chat').on('postgres_changes',{},()=>{throw Error('actor realtime must not deliver');}).subscribe();assert.equal(await view.removeChannel(channel),'ok');
 await runtime.end({});assert.equal((await view.auth.getSession()).data.session.user,null);
 console.log('app-support-auth: PASS – customer identity, unchanged stored actor/refresh token, auth events, bound methods, no fallback after exit');
+const main=await fs.readFile('src/main.jsx','utf8');
+const marker=main.indexOf("if (authLoading || profileLoading || !isSystemAdminUser");
+assert.ok(marker>0);
+const body=main.slice(marker,main.indexOf('}, [authLoading, profileLoading, isSystemAdminUser',marker));
+const runReturn=new Function('authLoading','profileLoading','isSystemAdminUser','profile','window','setTab','setAdminArea',body);
+for(const [loading,admin,approved,expected] of [[true,true,true,false],[false,false,true,false],[false,true,false,false],[false,true,true,true]]) {
+ let tab=null,area=null,replaced=null;
+ const win={location:{href:'https://qa.invalid/?tab=systemadmin&supportExit=1'},history:{replaceState:(_a,_b,url)=>replaced=url}};
+ runReturn(loading,false,admin,{approved},win,x=>tab=x,x=>area=x);
+ assert.equal(tab,expected?'admin':null);assert.equal(area,expected?'users':null);
+ assert.equal(replaced,expected?'/?tab=systemadmin':null);
+}
+console.log('app-support-return: PASS – native admin route only after approved administrator hydration');

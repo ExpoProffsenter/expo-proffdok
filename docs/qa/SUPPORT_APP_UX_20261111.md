@@ -100,3 +100,11 @@ Skynettleseren er tilgjengelig igjen. Sandbox-only oppfølging: 20261111200037 a
 F-2026-0042 ble nå lagret fra nettleseren, endret fra 1 til 2 ×125 inkl.mva., og server viser quantity=2, total=200 eks.mva. Reload gjenopprettet samme kundekontekst og tilbud med 250 inkl.mva. PNG testbilde og PDF testvedlegg er lagret; PDF ble lastet opp via faktisk Storage HTTP/CORS til company-path, åpnet fra support i ny fane og innholdet visuelt bekreftet. Ingen publisering, ordre eller e-post. Fjern bilde/vedlegg og Arkiver/Slett er deaktivert i UI.
 
 CI43091764726 kom videre forbi admin-access, men avdekket at importert support-bootstrap leste localStorage uten feilfangst i en isolert opaque-origin-visning. Oppstart behandler nå nektet lagring uten å bryte ordinær app; linked support failer lukket. Full lokal build bestod etter rettelsen. Retur fra Avslutt fikk korrekt egen identitet/logo, men tab=systemadmin ble ignorert av appens eksisterende innlasting; egen supportExit-markør venter nå på godkjent systemadmin-profil før tab velges. Ny CI og live-test på neste kandidat gjenstår.
+
+### Avsluttende kontrollrunde
+
+Nye remote-versjoner: resume_same_target 20261111200111; empty_archive_fields 20261111200404; file_and_consent_fences 20261111201546. Åtte migrasjoner totalt, bare sandbox. Native Bolig-RPC med aktiv supportøkt for demo.ansatt1 returnerte manager, system_admin=false. create_plan opprettet syntetisk enebolig; unit endret nummer til QA-02; archive ble avvist av supporttrigger. Alt i samme transaksjon, ROLLBACK utført. Nettleseren viste brukerens faktiske ikke-godkjente vilkår; ingen aksept utført.
+
+Privat test-PDF ble faktisk lastet opp i project-documents-private under korrekt company/sales-path og visuelt åpnet. Storage-objektet har faktisk aktør som Storage owner_id (tjenestens uendrede Auth-token); original kundepolicy bruker firmapath. Både kundeidentitet, claims og SQL-audit er mål-/aktørseparert. Dette endrer ikke policysemantikken for andre bøtter.
+
+Siste avgrensning: innebygde imageDataUrl/imageUrl kan ikke tømmes/erstattes i support; user_terms_acceptance skriving sperres. SQL-suite har 78 PASS. Native admin-route er admin, ikke systemadmin; returmarkøren bruker nå riktig route og users-område med profilgate, kontrollert i ekstraktert faktisk main-effekt. Ny kandidat må verifiseres i nettleser før TEST OK etterspørres.

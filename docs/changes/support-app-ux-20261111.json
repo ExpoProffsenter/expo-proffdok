@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "title": "Support-UX og deaktivert grunnlag for samlet supportøkt",
-  "change": "Miljømål BEGGE. Prosjekt-/salgsgrunnlag-/logo-rettelser og servervalidert fullapp-oppstart, kundeidentitet, isolerte kladder, Storage-policyadapter og kontraktfiler. Funksjonen er fortsatt deaktivert; full integrasjonstest gjenstår.",
-  "verification": "Full lokal build for Production og Sandbox består. PGlite 67 krav; runtime 45 krav; Auth- og cache/scenario-tester samt 25 kontraktfilkrav består. Tre deaktivert migrasjoner installert i Sandbox. Ingen Production-migrasjon, aktivering eller TEST OK.",
+  "title": "Samlet supportmodus med kundens rettigheter og slettesperrer",
+  "change": "Miljømål BEGGE. Full kundeapp, tilbud og dokumenter, identitet/priser, isolerte kladder, gjenåpning, retur til administrator og serverstyrte slettesperrer. Testaktivert bare i sandbox; separat PR320 for Bolig-kontraktfiler.",
+  "verification": "78 SQL-kontroller, runtime/Auth/cache, full lokal build og innlogget Sales/Storage/reload/navigasjon. Bolig-RPC opprettelse/redigering og avvist arkivering verifisert med rollback. Nyeste CI og sluttkontroll dokumenteres i QA-logg. Production og demo-branch uendret; TEST OK gjenstår.",
   "documentation": {
     "help": {
       "required": true,
@@ -17,8 +17,8 @@
       "reason": "APP_SUPPORT_SESSION beskriver aktør/mål-identitet, Data API-grensen, slettesperrer og manglende integrasjoner."
     },
     "setup": {
-      "required": false,
-      "reason": "Ingen aktivt oppsett eller publiseringskommando leveres; transportgrunnlaget er deaktivert og ikke installert remote."
+      "required": true,
+      "reason": "Arkitekturdokumentet beskriver miljøkontroll, åtte migrasjoner, Edge-adapter, aktivering og tilbakeføring uten datasletting."
     }
   }
 }
