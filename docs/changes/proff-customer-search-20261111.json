@@ -8,13 +8,15 @@
       "required": true,
       "paths": [
         "src/modules/help/help45b.js"
-      ]
+      ],
+      "reason": "Hjelp forklarer varekort, eksplisitt bestilling og Smartere søk."
     },
     "module": {
       "required": true,
       "paths": [
         "src/modules/storeCatalog/README.md"
-      ]
+      ],
+      "reason": "Modul-README dokumenterer kundepris, minnelagring og serveravgrensning."
     },
     "architecture": {
       "required": false,
@@ -24,7 +26,8 @@
       "required": true,
       "paths": [
         "docs/qa/PROFF_CUSTOMER_SEARCH_20261111.md"
-      ]
+      ],
+      "reason": "QA-notat beskriver additiv migrasjon, miljøkontroll og utrulling."
     }
   }
 }

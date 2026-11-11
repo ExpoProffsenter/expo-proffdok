@@ -14,3 +14,5 @@ Full critical/build bestått lokalt før siste supportjustering. SQL-test 14 kra
 Installer 20261111164011_pro_catalog_smart_search.sql i permanent Sandbox etter kontroll av prosjekt og eksisterende funksjon. Kjør faktisk UI-test i korrekt Preview. Kontroller komplett CI og migrasjonens eksisterende status i Production før eventuell installasjon der. Ingen utsending til reelle mottakere i test. Publiser klienten først etter at RPC finnes. Synk main til demo med overlay bevart.
 
 Tilbakeføring: revert klientcommit. Ny lesefunksjon kan bli stående uten klient; den erstatter ingen gammel funksjon. Ingen datamigrering eller prisendring.
+
+Sandbox ppvircenkjizeiqdxphj: additiv search_pro_store_catalog_smart installert 11.11 etter skjema- og rådgiverkontroll. Fast tom search_path, authenticated execute og ingen anon execute bekreftet. Produksjonsmigrasjon ikke utført. Siste lokal build/critical bestått også etter supportjusteringen.
