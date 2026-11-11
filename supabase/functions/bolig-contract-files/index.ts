@@ -5,13 +5,19 @@ const url=Deno.env.get('SUPABASE_URL')||'',anon=Deno.env.get('SUPABASE_ANON_KEY'
 const path=(value:string)=>value.split('/').map(encodeURIComponent).join('/');
 Deno.serve(createContractFiles({
  origins:boligAllowedOrigins,
- authenticate:async(authorization:string)=>{
-  const user=createClient(url,anon,{global:{headers:{Authorization:authorization}},auth:{persistSession:false,autoRefreshToken:false}});
+ authenticate:async(authorization:string,supportSession:string)=>{
+  const user=createClient(url,anon,{global:{headers:{Authorization:authorization,...(supportSession?{'x-expo-support-session':supportSession}:{})}},auth:{persistSession:false,autoRefreshToken:false}});
   const {data,error}=await user.auth.getUser();if(error||!data.user)return null;
+  let effectiveUser=data.user.id;
+  if(supportSession){
+   const result=await user.rpc('app_support_context');
+   if(result.error||result.data?.id!==supportSession||result.data?.actor_id!==data.user.id||!result.data?.target_user_id)return null;
+   effectiveUser=result.data.target_user_id;
+  }
   // The service key only touches fixed-bucket bytes after a fresh user RPC gate.
   const storage=(objectPath:string,options:RequestInit)=>fetch(url+'/storage/v1/object/'+objectPath,{...options,headers:{apikey:service,authorization:'Bearer '+service,...options.headers},signal:AbortSignal.timeout(30000)});
   return {
-   user_id:data.user.id,
+   user_id:effectiveUser,
    rpc:async(c:string,root:string,action:string,payload:unknown)=>{
     const {data,error}=await user.rpc('bolig_contracts',{p_company_id:c,p_root_id:root,p_action:action,p_payload:payload});
     if(error)throw Object.assign(Error(error.message),{code:error.code});return data;

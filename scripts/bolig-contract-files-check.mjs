@@ -7,8 +7,9 @@ const sample=process.env.BOLIG_CONTRACT_SAMPLE_FILE;
 const bytes=sample?new Uint8Array(await fs.readFile(sample)):new TextEncoder().encode('%PDF-1.4\nQA original\n%%EOF');
 const hash=await contractDigest(bytes);
 const payload={id:'file',document_id:'doc',revision:0,title:'QA original',kind:'contract',name:'original.pdf',mime:'application/pdf',size:bytes.length,sha256:hash,comment:''};
-let auth=true,allowed=true,deniedAfter=false,writes=0,reads=0,finished=false,stored=null,duplicate=false,conflict=false,sequence=[];
-const handler=createContractFiles({origins:[origin],authenticate:async()=>{
+let auth=true,allowed=true,deniedAfter=false,writes=0,reads=0,finished=false,stored=null,duplicate=false,conflict=false,sequence=[];let seenSupport;
+const handler=createContractFiles({origins:[origin],authenticate:async(authorization,supportSession)=>{
+ seenSupport=supportSession;
  sequence.push('auth');if(!auth)return null;
  return {user_id:'self',rpc:async(c,r,action,p)=>{
   sequence.push(action);if(!allowed||(deniedAfter&&['file','finish'].includes(action)&&reads+writes>0))throw Object.assign(Error('Tilgang avslått'),{code:'42501'});
@@ -39,4 +40,6 @@ eq((await handler(upload('valid',{...payload,sha256:'b'.repeat(64)}))).status,40
 eq((await handler(new Request(origin,{method:'GET'}))).status,405);
 eq((await handler(new Request(origin,{method:'POST',headers:{origin:'https://untrusted.invalid'}}))).status,403);
 eq((await handler(new Request(origin,{method:'OPTIONS',headers:{origin}}))).headers.get('access-control-allow-headers').includes('authorization'),true);
+const supported=download();supported.headers.set('x-expo-support-session','qa-session');eq((await handler(supported)).status,200);eq(seenSupport,'qa-session','support session reaches authentication before privileged bytes');
+eq((await handler(new Request(origin,{method:'OPTIONS',headers:{origin}}))).headers.get('access-control-allow-headers').includes('x-expo-support-session'),true,'support header accepted by CORS');
 console.log(`Contract file gateway: ${checks} assertions PASS; Auth first, private ACL, immutable retry, hash/readback, revoke-before-bytes and no-store. ${sample?'User-provided PDF used locally; bytes and metadata not persisted.':'Synthetic file/transport.'}`);
