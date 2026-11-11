@@ -31,6 +31,12 @@ declare sid text; path text; claims jsonb; s app_support_private.sessions;
 begin
  sid:=coalesce(nullif(current_setting('request.headers',true),'')::jsonb,'{}')->>'x-expo-support-session';
  if nullif(sid,'') is null then return; end if;
+ -- Storage can invoke the same setup through several policies in one statement.
+ if nullif(current_setting('app.support.session_id',true),'') is not null then
+  s:=app_support_private.request_session();
+  if s.id<>sid::uuid then raise exception 'Supportkontekst samsvarer ikke.' using errcode='42501'; end if;
+  return;
+ end if;
  path:=coalesce(current_setting('request.path',true),'');
  -- Session commands always retain the authenticated administrator identity.
  if path in ('/rpc/app_support_session','rpc/app_support_session') then return; end if;
@@ -83,7 +89,7 @@ begin
  if sid::uuid is distinct from s.id then raise exception 'Supportøkten samsvarer ikke med forespørselen.' using errcode='42501'; end if;
  if tg_op in ('DELETE','TRUNCATE') then raise exception 'Sletting er sperret i supportmodus.' using errcode='42501'; end if;
  -- Membership, account/permission changes and external delivery are separate admin actions.
- if tg_table_name ~* '(membership|module_access|supplier_access|user_access|profiles|active_company_scope|outbox|email|mail_settings|api_key|secret)' then
+ if tg_table_schema='net' or tg_table_name ~* '(membership|module_access|supplier_access|user_access|profiles|active_company_scope|outbox|email|mail_settings|api_key|secret)' then
   raise exception 'Tilgangsendring eller utsending er ikke tillatt fra supportvisningen.' using errcode='42501';
  end if;
  after_row:=to_jsonb(new);
@@ -106,7 +112,7 @@ end $$;
 -- New tables must be added to coverage before support transport can be enabled.
 do $$ declare t record; begin
  for t in select n.nspname,c.relname from pg_class c join pg_namespace n on n.oid=c.relnamespace
-  where c.relkind='r' and n.nspname=any(array['public','bolig_private','checklist_private','company_admin_private','controller_private','hr_private','kshms_private','org_private','pro_catalog_order_private','progress_private','sales_handler_private','stocktake_private','supplier_order_private','support_private','time_private'])
+  where c.relkind='r' and n.nspname=any(array['net','public','bolig_private','checklist_private','company_admin_private','controller_private','hr_private','kshms_private','org_private','pro_catalog_order_private','progress_private','sales_handler_private','stocktake_private','supplier_order_private','support_private','time_private'])
  loop
   execute format('create trigger app_support_write_guard before insert or update or delete on %I.%I for each row execute function app_support_private.guard_and_audit()',t.nspname,t.relname);
   execute format('create trigger app_support_truncate_guard before truncate on %I.%I for each statement execute function app_support_private.guard_and_audit()',t.nspname,t.relname);
@@ -128,3 +134,13 @@ create function public.app_support_context() returns jsonb
 language sql security invoker set search_path=pg_catalog,public,pg_temp as $$select app_support_private.current_context()$$;
 revoke all on function public.app_support_context() from public,anon;
 grant execute on function public.app_support_context() to authenticated;
+
+-- The launcher stays hidden until the complete transport has been enabled.
+create function public.app_support_available() returns boolean
+language plpgsql stable security definer set search_path=pg_catalog,public,pg_temp as $$
+begin
+ if not exists(select 1 from public.profiles where id=auth.uid() and approved and not coalesce(deactivated,false) and system_role='systemadmin') then return false; end if;
+ return exists(select 1 from app_support_private.settings where singleton and enabled and transport_ready);
+end $$;
+revoke all on function public.app_support_available() from public,anon;
+grant execute on function public.app_support_available() to authenticated;

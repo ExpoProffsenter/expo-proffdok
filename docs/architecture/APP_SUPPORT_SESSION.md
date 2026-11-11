@@ -18,11 +18,11 @@ Generisk JSON-kontroll er **ikke tilstrekkelig som full modellgaranti**: navnlø
 
 Runtime krever først servervalidert økt og deretter et eget kontekstsvar gjennom Data API-hooken. Manglende hook, feil firma, utløp og byttet aktør stopper kundemodus. Sene svar etter avslutning kastes. Den faller aldri automatisk tilbake til administratorens data.
 
-Lagringsadapteren skiller supportkladder og navigasjon med økt-ID. Administratorens Auth-lagring deles; egne kladder og andre supportøkter bevares. Adapteren er ikke montert globalt. IndexedDB, storage-events, eksisterende recovery og bootstrap-rekkefølge er fortsatt integrasjonsarbeid.
+Lagringsadapteren skiller supportkladder og navigasjon med økt-ID. Administratorens Auth-lagring deles; egne kladder og andre supportøkter bevares. Ved en lagret supportøkt venter alle app-installatører på serverbekreftelse. Local/sessionStorage, IndexedDB og storage-events er navneromsisolert; Auth-lagringen beholdes. Auth-fasaden viser målbrukeren uten å endre administratorens lagrede bruker/token. Utløp blokkerer flaten. Ny innlogget prøve av recovery/dvale gjenstår.
 
 ## Transportgrenser og aktiveringskrav
 
-Supabases `db_pre_request` gjelder bare Data API. Storage, Realtime og Edge Functions omfattes ikke. Runtime avviser foreløpig disse transportene i support; det er en utviklingssperre, ikke ferdig fullappstøtte. Å sende administratorens token direkte ville brukt feil rettigheter.
+Supabases `db_pre_request` gjelder bare Data API. Storage, Realtime og Edge Functions omfattes ikke. Storage-policyene pakkes rundt sine opprinnelige uttrykk, som evalueres etter validert kontekst. UPDATE/DELETE er i tillegg sperret med restriktive policyer. Kontraktfil-Edge validerer konteksten og sender den videre til eksisterende RPC-er før privilegert fillesing/opprettelse. Øvrige Edge-endepunkter er fortsatt sperret. Realtime kobles ikke til med administratorens identitet; prosjektchat beholder sin eksisterende 5-sekunders REST-oppdatering. Faktisk HTTP/CORS og moduldekning må verifiseres før aktivering.
 
 Før aktivering må følgende være ferdig:
 
@@ -32,4 +32,4 @@ Før aktivering må følgende være ferdig:
 - Felles bruker-/firmavelger, Auth-visning, banner, cache/IndexedDB-isolasjon og navigasjon gjennom hele appen.
 - Innlogget sandbox/Preview-test med syntetiske data: opprette/redigere, slettingsforsøk, dvale/refresh, tilbakekalling, sent svar, tilbudsrecovery og avslutning.
 
-Begge innstillinger starter `false`. Migrasjonene konfigurerer **ikke** `pgrst.db_pre_request`. Ikke slå på innstillinger eller hook manuelt for å prøve UI før transportene er klare. Ingen remote migrasjon er kjørt i denne leveransen. Full produksjonsplan, tilbakeføring og TEST OK må foreligge før aktivering.
+Begge innstillinger starter `false`. Migrasjonene konfigurerer **ikke** `pgrst.db_pre_request`. Ikke slå på innstillinger eller hook manuelt for å prøve UI før transportene er klare. Tre migrasjoner er installert deaktivert i Sandbox, ikke Production. Se QA-loggens versjonsmapping; ikke kjør lokale migrasjonsversjoner ukritisk på nytt. Full produksjonsplan, tilbakeføring og TEST OK må foreligge før aktivering.

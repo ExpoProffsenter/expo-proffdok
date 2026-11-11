@@ -1,12 +1,12 @@
 {
   "version": 1,
   "title": "Support-UX og deaktivert grunnlag for samlet supportøkt",
-  "change": "Miljømål BEGGE. Retter inert snarvei, skjult salgsgrunnlag og avslutningsrace. Legger til deaktivert session-/audit-/slettesperregrunnlag og umontert klienttransport. Full kundemodus er fortsatt ikke implementert.",
-  "verification": "Full build og eksisterende critical checks består. Lokale PGlite-tester: 60 krav. Klientruntime: 40 krav. Ingen remote migrasjon, ingen fullapp-Preview og ingen TEST OK.",
+  "change": "Miljømål BEGGE. Prosjekt-/salgsgrunnlag-/logo-rettelser og servervalidert fullapp-oppstart, kundeidentitet, isolerte kladder, Storage-policyadapter og kontraktfiler. Funksjonen er fortsatt deaktivert; full integrasjonstest gjenstår.",
+  "verification": "Full lokal build for Production og Sandbox består. PGlite 67 krav; runtime 45 krav; Auth- og cache/scenario-tester samt 25 kontraktfilkrav består. Tre deaktivert migrasjoner installert i Sandbox. Ingen Production-migrasjon, aktivering eller TEST OK.",
   "documentation": {
     "help": {
-      "required": false,
-      "reason": "Avgrenset feilretting; samlet ny supportflyt er ennå ikke implementert og beskrives som gjenstående i QA."
+      "required": true,
+      "reason": "Ny supportinngang på brukerkortet og eksplisitt avslutning beskrives sammen med forskjellen fra eldre skrivebeskyttet prosjektstøtte."
     },
     "module": {
       "required": true,

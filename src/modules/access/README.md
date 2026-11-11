@@ -8,6 +8,6 @@ Bortfalt bytterett, færre enn to firmaer, portal og eksplisitt supportmodus ska
 
 ## Samlet supportøkt – deaktivert utviklingsgrunnlag
 
-PR319 bygger en separat økt med faktisk systemadminaktør, valgt kundebruker og firma. `appSupportRuntime.mjs` er ennå **ikke installert i bootstrap**. Vanlig innlogging, arbeidsprofil og lokal lagring bruker eksisterende kode. Ikke aktiver migrasjonenes innstillinger eller PostgREST-hook før gjenstående transport-/UI-arbeid og QA er ferdig.
+PR319 bygger en separat økt med faktisk systemadminaktør, valgt kundebruker og firma. `appSupportBrowser.mjs` lar bootstrap vente på servervalidert supportkontekst. Uten supportøkt endres verken fetch eller lagringsadaptere. Ny inngang er **Åpne kundens app i supportmodus** på Systemadmin-brukerkortet; knappen skjules til servertransporten er klar. Banneret viser valgt kunde/firma og **Avslutt supportmodus**. Tilbake følger kundens vanlige app, mens avslutning gjenoppretter egen arbeidsflate med full reload. Ikke aktiver migrasjonenes innstillinger eller PostgREST-hook før gjenstående transport-/UI-arbeid og QA er ferdig.
 
 Se [supportarkitektur](../../../docs/architecture/APP_SUPPORT_SESSION.md) for kontrakt, avgrensninger og aktiveringskrav. [QA-loggen](../../../docs/qa/SUPPORT_APP_UX_20261111.md) skiller testet lokalt grunnlag fra publisert funksjon.

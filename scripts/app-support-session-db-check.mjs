@@ -110,6 +110,31 @@ await denied(()=>scoped(`update public.support_qa_records set payload='{"lines":
 await denied(()=>scoped(`update public.support_qa_records set company_id='${foreign}' where id='${id(20)}'`),'company reassignment blocked');
 await denied(()=>scoped(`insert into public.support_qa_records values('${id(23)}','${actor}','${firm}','{}')`,{prepare:false}),'missing request setup cannot write with support header');
 eq((await db.query(`select payload->'lines' lines from public.support_qa_records where id='${id(20)}'`)).rows[0].lines,[{id:'line-a',price:20}],'blocked deletion preserved record');
+// Storage requests do not execute PostgREST's pre-request hook.
+await db.exec(`create schema storage;
+create table storage.objects(id uuid primary key,bucket_id text,name text,owner_id uuid);
+alter table storage.objects enable row level security;
+grant usage on schema storage to authenticated,anon;
+grant select,insert,update,delete on storage.objects to authenticated;
+grant select on storage.objects to anon;
+create policy private_files on storage.objects to authenticated
+ using(owner_id=(select auth.uid())) with check(owner_id=(select auth.uid()));
+create policy public_files on storage.objects for select to anon using(bucket_id='public');
+insert into storage.objects values('${id(30)}','private','target.pdf','${target}'),('${id(31)}','private','foreign.pdf','${other}'),('${id(32)}','private','actor.pdf','${actor}');`);
+await db.exec(await fs.readFile('supabase/migrations/20261111190543_app_support_storage_context.sql','utf8'));
+eq((await scoped('select name from storage.objects order by name',{prepare:false})).rows.map(x=>x.name),['target.pdf'],'Storage original policy evaluates target identity without Data API hook');
+await scoped(`insert into storage.objects values('${id(33)}','private','new.pdf','${target}')`,{prepare:false});
+eq((await scoped('select name from storage.objects order by name',{prepare:false})).rows.map(x=>x.name),['new.pdf','target.pdf'],'new file uses customer permissions');
+await denied(()=>scoped(`insert into storage.objects values('${id(34)}','private','wrong.pdf','${other}')`,{prepare:false}),'cannot upload file for other user');
+await scoped(`update storage.objects set name='replacement.pdf' where id='${id(30)}'`,{prepare:false});
+await scoped(`delete from storage.objects where id='${id(30)}'`,{prepare:false});
+eq((await db.query(`select name from storage.objects where id='${id(30)}'`)).rows[0].name,'target.pdf','Storage replacement/deletion fenced even with original ALL policy');
+eq((await scoped('select public.app_support_prepare_request(),public.app_support_prepare_request(),auth.uid() id')).rows[0].id,target,'repeated setup is idempotent');
+await claim(target);await db.exec('set role authenticated');
+eq((await db.query('select name from storage.objects order by name')).rows.map(x=>x.name),['new.pdf','target.pdf'],'ordinary customer file access unchanged');
+await db.query(`update storage.objects set name='normal.pdf' where id='${id(33)}'`);
+await db.query(`delete from storage.objects where id='${id(33)}'`);await db.exec('reset role');
+eq((await db.query(`select count(*) n from storage.objects where id='${id(33)}'`)).rows[0].n,0,'ordinary file update/delete unchanged');
 await db.exec(`update app_support_private.sessions set expires_at=clock_timestamp()-interval '1 second' where id='${writeSession.id}'`);
 await denied(()=>scoped('select 1'),'expired session rejected');
 await claim(target);await db.exec('set role authenticated');await db.query(`update public.support_qa_records set payload='{"normal":true}' where id='${id(22)}'`);await db.query(`delete from public.support_qa_records where id='${id(22)}'`);await db.exec('reset role');

@@ -5,14 +5,15 @@ const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
 let checks=0;const eq=(a,b,label)=>{assert.deepEqual(a,b,label);checks++;};
 const source=fs.readFileSync('src/main.jsx','utf8');
 const start=source.indexOf('    const leaveProjectWorkspace = '),end=source.indexOf('    const cancelNewProject',start),leaveSource=source.slice(start,end).trim();
-const events=[];let allow=true;
-const scope={globalTabs:[['prosjekt','Startside'],['prosjektliste','Prosjektliste']],projectStepContextRef:{current:{projectId:'qa',tab:'prosjekt',userId:'user',companyName:'QA',readOnly:false,globalTabIds:['prosjekt','prosjektliste']}},projectId:'qa',mobileCreatingProject:false,isProjectSupportReadOnly:false,supportProjectCompanyName:'QA',supportSelectedCompany:'',profile:null,user:{name:'QA'},authUser:{email:'qa@example.invalid'},confirmLeaveWithUnsavedChanges:async()=>allow,pauseDirtyTrackingBriefly(){},resetProjectDirty(){},scrollToMobileTabTarget(){},setTimeout(){},document:{title:'QA'},window:{location:{href:'https://example.invalid/?project=qa',pathname:'/'},history:{replaceState(){}}},URL};
+const events=[];let allow=true;let supportEnds=0;
+const scope={endProjectSupportProjection:async()=>{supportEnds++;},globalTabs:[['prosjekt','Startside'],['prosjektliste','Prosjektliste']],projectStepContextRef:{current:{projectId:'qa',tab:'prosjekt',userId:'user',companyName:'QA',readOnly:false,globalTabIds:['prosjekt','prosjektliste']}},projectId:'qa',mobileCreatingProject:false,isProjectSupportReadOnly:false,supportProjectCompanyName:'QA',supportSelectedCompany:'',profile:null,user:{name:'QA'},authUser:{email:'qa@example.invalid'},confirmLeaveWithUnsavedChanges:async()=>allow,pauseDirtyTrackingBriefly(){},resetProjectDirty(){},scrollToMobileTabTarget(){},setTimeout(){},document:{title:'QA'},window:{location:{href:'https://example.invalid/?project=qa',pathname:'/'},history:{replaceState(){}}},URL};
 for(const name of new Set(leaveSource.match(/\bset[A-Z]\w+/g)))scope[name]=value=>events.push([name,value]);
 for(const name of new Set(leaveSource.match(/\bempty\w+(?=\()/g)))scope[name]=()=>({});
 const leave=new Function('scope',`with(scope){${leaveSource};return leaveProjectWorkspace;}`)(scope);
 allow=false;await leave('prosjektliste');eq(events.length,0,'cancel exit preserves all project state');allow=true;await leave('prosjektliste');eq(events.findLast(([name])=>name==='setTab')[1],'prosjektliste','Bytt prosjekt reaches list');
 events.length=0;await leave({type:'click'});eq(events.findLast(([name])=>name==='setTab')[1],'prosjekt','existing Startside button event keeps destination');
-scope.isProjectSupportReadOnly=true;events.length=0;await leave('prosjektliste');eq(events.findLast(([name])=>name==='setTab')[1],'admin','support returns to authorized support overview');
+eq(supportEnds,0,'ordinary navigation does not end a support projection');
+scope.isProjectSupportReadOnly=true;events.length=0;await leave('prosjektliste');eq(events.findLast(([name])=>name==='setTab')[1],'admin','support returns to authorized support overview');eq(supportEnds,1,'legacy support exit clears projected company and branding');
 eq(source.includes('onExit: projectId ? () => leaveProjectWorkspace("prosjektliste") : cancelNewProject'),true,'actual project exit wiring');eq(source.includes('autoOpenOnEntry: false'),true,'project overview does not choose arbitrary checklist');
 const cwd=process.cwd(),temp=fs.mkdtempSync(path.join(os.tmpdir(),'checklist-panel-'));let browser;
 fs.writeFileSync(path.join(temp,'entry.jsx'),`

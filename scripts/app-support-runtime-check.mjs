@@ -36,8 +36,12 @@ eq(calls.at(-1).headers.get('x-expo-support-session'), id(1), 'session accompani
 eq(calls.at(-1).headers.get('Authorization'), credentials.Authorization, 'real actor token retained');
 eq(calls.at(-1).redirect, 'error', 'support request cannot redirect credentials');
 eq(await calls.at(-1).text(), '{"name":"QA"}', 'request body preserved');
+await runtime.fetch(`${origin}/storage/v1/object/private/new.pdf`, { method: 'POST', headers: { ...credentials, 'x-upsert': 'true' }, body: 'new bytes' });
+eq(calls.at(-1).headers.get('x-expo-support-session'), id(1), 'Storage policies receive verified session');
+eq(calls.at(-1).headers.get('x-upsert'), 'false', 'uploads cannot replace existing files');
+eq(await calls.at(-1).text(), 'new bytes', 'upload bytes preserved');
 const beforeBlocked = calls.length;
-for (const [path, method] of [['/rest/v1/projects', 'DELETE'], ['/storage/v1/object/x', 'POST'],
+for (const [path, method] of [['/rest/v1/projects', 'DELETE'], ['/storage/v1/object/x', 'PUT'], ['/storage/v1/object/move', 'POST'], ['/storage/v1/object/upload/sign/x', 'POST'],
   ['/functions/v1/send-mail', 'POST'], ['/auth/v1/user', 'PUT'], ['/rest/v1/rpc/app_support_session', 'POST']]) {
   eq((await runtime.fetch(origin + path, { method })).status, 403, `${method} ${path} fails closed`);
 }

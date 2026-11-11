@@ -258,6 +258,8 @@ jobs:
       run: |-
         node scripts/app-support-session-db-check.mjs
         node scripts/app-support-runtime-check.mjs
+        node scripts/app-support-auth-check.mjs
+        node scripts/app-support-cache-check.mjs
         node scripts/support-db-check.mjs
         node scripts/support-mail-check.mjs
         node scripts/support-browser-check.mjs

@@ -1,3 +1,4 @@
+import { effectiveSupportUserId } from '../../access/appSupportBrowser.mjs';
 // Expo ProffDok – FASE 30C2 / FASE 23C / FASE 29B3 / FASE 29B4
 // Lokal nettleserlagring for Befaring / Tilbud / Aksept.
 // FASE 30C2: robust tilbudsrecovery med rullerende sikkerhetskopier som ikke
@@ -58,7 +59,7 @@ function getCurrentAuthUserId(storage) {
           ""
       ).trim();
 
-      if (userId) return userId;
+      if (userId) return effectiveSupportUserId(userId);
     }
   } catch {
     return "";

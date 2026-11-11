@@ -121,13 +121,20 @@ export function createAppSupportRuntime({ backendUrl, nativeFetch, now = Date.no
         block('Supportøkten er utløpt.');
         return failure(state.error);
       }
-      if (!url.pathname.startsWith('/rest/v1/') || url.pathname === SESSION_RPC) {
+      const storage = url.pathname.startsWith('/storage/v1/object/');
+      const supportEdge = url.pathname === '/functions/v1/bolig-contract-files' && request.method === 'POST';
+      if (storage && (!['GET', 'HEAD', 'POST'].includes(request.method) ||
+          /^\/storage\/v1\/object\/(move|copy|upload)(?:\/|$)/.test(url.pathname))) {
+        return failure('Filer kan legges til, men ikke flyttes, erstattes eller slettes i supportmodus.');
+      }
+      if ((!url.pathname.startsWith('/rest/v1/') && !storage && !supportEdge) || url.pathname === SESSION_RPC) {
         return failure('Denne tjenesten mangler kontrollert supporttilgang.');
       }
       if (request.method === 'DELETE') return failure('Sletting er sperret i supportmodus.');
       const attempt = generation;
       const headers = new Headers(request.headers);
       headers.set('x-expo-support-session', session.id);
+      if (storage && request.method === 'POST') headers.set('x-upsert', 'false');
       const response = await nativeFetch(new Request(request, { headers, redirect: 'error' }));
       if (attempt !== generation || state.phase !== 'active' || Date.parse(session.expires_at) <= now()) {
         return failure('Supportøkten er endret. Svaret er forkastet.');

@@ -56,3 +56,17 @@ Fast Preview er `https://expo-proffdok-git-fix-support-project-sales-20261111-ri
 På kandidat `2f2ee38b` reagerer Åpne salgsgrunnlag, men innholdet er fortsatt usynlig: eksisterende `:has()`-regel har høyere CSS-spesifisitet enn den nye prosjektregelen. Korrigert prosjektregelen og lagt til faktisk CSS-kaskadetest i eksisterende nettleserpakke, med ordinær Sales fortsatt skjult og prosjektets dokumentinngang synlig for overview/case/editor.
 
 CI43080943501 feilet i `project-workspace-browser-check.mjs` før nettlesertesten startet: kildeuttrekkets sluttmarkør forventet den gamle eksakte overview-betingelsen. Den nye read-only-betingelsen flyttet ikke StatusDialog, men gjorde markøren ugyldig. Uttrekket bruker nå neste panels stabile startgrense; eksisterende assertions er beholdt. Ny CI/nettleserkontroll gjenstår etter korrigeringen. Øvrige åtte pakker i kjøringen bestod. Full lokal build bestod også med CSS-rettelsen.
+
+## Fullapp-integrasjon og sandbox-installering (erstatter WIP-statusen over)
+
+Fullapp-oppstart er nå koblet til alle index-installatører. Kundens identitet vises via Auth-fasade; aktørens token er uendret. Supportkladder/IndexedDB/storage-events er isolert, også Sales lokale bruker-ID-er. Ny inngang på Systemadmin-brukerkortet er serverstyrt og skjult frem til aktivering. Banner/utløp og eksplisitt avslutning er implementert. Dokumentfaner kan arve innloggingsbundet supportøkt via et kortvarig fragment; det skrives ikke i lagrede dokumentlenker.
+
+Storage bruker originale policyuttrykk etter request-lokal oppsett; nye filer tillates, endring/sletting sperres. Bolig-kontraktfiler sender verifisert supportkontekst til eksisterende RPC-er. Andre Edge-endepunkter er sperret. Realtime i prosjektchat bruker ikke aktørens rettigheter i support; eksisterende REST-polling beholdes. Net-køskriving er sperret i support, uten å endre ordinær levering.
+
+Lokalt: SQL 67 PASS, runtime 45 PASS, Auth-fasade og cache/IndexedDB/storage-events PASS, kontraktfiler 25 PASS. Full build med critical checks bestod både standard og EXPO_BACKEND_TARGET=sandbox. Dette er ennå ikke en innlogget fullapp-prøve.
+
+CI43083060216: prosjektets workspace/CSS-test bestod (202 krav), men checklist-panel-fixturen manglet den nye endProjectSupportProjection-avhengigheten. Den er lagt til med egne assertions for null opprydding ved vanlig navigasjon og én ved legacy-supportavslutning; eksisterende assertions beholdes. Ny CI kreves.
+
+Sandbox ppvircenkjizeiqdxphj: migrasjoner installert via API. Lokale 20261111182756 / 20261111183233 / 20261111190543 tilsvarer remote 20261111191918 / 20261111191930 / 20261111192002. Den første Storage-installasjonen ble rullet tilbake ved kollisjon i API-ens sekundbaserte migrasjons-ID; fravær av snapshot-tabell ble bekreftet før ny installering. Verifisert: 220 write guards, 16 snapshots av sandboxens egne Storage-policyer, enabled=false og transport_ready=false. PostgREST-hook er ikke satt. Production er urørt. Ikke kjør samme migrasjoner igjen basert bare på lokale filversjoner.
+
+Neste: full CI, egen Sandbox-Preview og kontrollert testaktivering med syntetisk bruker; faktisk HTTP/Storage/CORS, tilbud/bolig-lagring og full nettleserflyt. Ingen TEST OK eller fullført leveranse er registrert.

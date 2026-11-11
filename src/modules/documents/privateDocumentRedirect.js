@@ -1,3 +1,4 @@
+import { supportClient } from '../access/appSupportBrowser.mjs';
 import documentPageStyles from '../portal/portalWorkspace.css?inline';
 // FASE 44E / 29B1/29B2/29B3/29B5: Sikker dokumentrute for private prosjekt-/salgsdokumenter.
 // FASE 44E venter på Supabase-auth i ny dokumentfane og prøver kontrollert refresh
@@ -307,7 +308,7 @@ export async function runPrivateDocumentRedirect() {
     return;
   }
 
-  const client = createClient(supabaseUrl, anonKey);
+  const client = supportClient(createClient(supabaseUrl, anonKey));
   const authenticatedSession = await waitForAuthenticatedSession(client);
 
   if (authenticatedSession?.user) {

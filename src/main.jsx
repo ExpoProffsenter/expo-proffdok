@@ -119,7 +119,7 @@ const BoligEntry = React.lazy(() => import('./modules/bolig/BoligEntry.jsx'));
     "https://dqffxflaoyarbxyiyhop.supabase.co",
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxZmZ4Zmxhb3lhcmJ4eWl5aG9wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NzcxNTEsImV4cCI6MjA5MzA1MzE1MX0.5fkVNPooHGlayw4NgYM3fUVrAiv0XbUyTixkfeToMSE"
   );
-  registerAppSupabaseClient(supabase);
+  supabase = registerAppSupabaseClient(supabase);
   var uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
   var WARRANTY_YEAR_OPTIONS = [10, 12, 15];
   var WARRANTY_YEARS = 15;
