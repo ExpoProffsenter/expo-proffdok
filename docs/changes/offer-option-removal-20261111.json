@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Bevar sletting av opsjoner og vis frakoblede opsjoner",
+  "change": "Miljømål BEGGE. Produkt-/monteringssletting sender det nye opsjonsutvalget gjennom samme rekalkulering. Eldre opsjoner uten eksisterende hovedpost vises under Andre opsjoner, uten automatisk sletting.",
+  "verification": "Fem regresjonskrav kjører faktiske editorhandlere og utvalg. Full critical/build og Preview kontrolleres før publisering. Skrivebeskyttet kontroll av Expo F-2026-0044 bekrefter to opsjoner uten hovedpost og én med eksisterende hovedpost. Ingen kundedata endret.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Eksisterende Andre opsjoner blir igjen fullstendig; samme knapper og brukerflyt."
+    },
+    "module": {
+      "required": false,
+      "reason": "Avgrenset feilretting av sletting, ingen ny modulkontrakt."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Ingen endring i lagring, hydrering, autosave eller API."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen ny avhengighet eller konfigurasjon."
+    }
+  }
+}
