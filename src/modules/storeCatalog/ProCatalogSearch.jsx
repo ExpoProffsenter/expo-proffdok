@@ -9,9 +9,10 @@ export function customerPrice(item) {
  const value=own?net:item?.suggested_sale_price_ex_vat;
  return {own, value:value===null||value===undefined||value===''?null:Number(value)};
 }
-export function CustomerPrices({item}) {
+export function CustomerPrices({item,compact=false}) {
  const {own,value}=customerPrice(item);
  if(value===null||!Number.isFinite(value))return <p>Pris ikke tilgjengelig.</p>;
+ if(compact)return <span className="pro-customer-result-price"><small>{own?'Din pris':'Veiledende pris'} eks. mva.</small><strong>{money.format(value)}</strong></span>;
  const incl=own?Math.round(value*125)/100:Number(item.suggested_sale_price_incl_vat??value*1.25);
  return <div className="pro-customer-prices"><div><small>{own?'Din pris':'Veiledende pris'} eks. mva.</small><strong>{money.format(value)}</strong></div><div><small>{own?'Din pris':'Veiledende pris'} inkl. mva.</small><strong>{money.format(incl)}</strong></div></div>;
 }
@@ -45,8 +46,8 @@ export default function ProCatalogSearch({context,pending,onAdd,disabled,initial
   <p>{smart?'Skriv flere ord i valgfri rekkefølge. Vanlige fagord og forkortelser tas med.':'Vanlig søk: ordene må stå i samme rekkefølge som i varenavnet.'}</p>
   {busy&&<p role="status">Søker …</p>}{error&&<p role="alert">{error}</p>}
   {!busy&&!error&&query.trim().length>=2&&<p role="status">{rows.length?`${total} treff${total>rows.length?` · viser de første ${rows.length}. Avgrens søket for flere varer.`:''}`:'Ingen treff.'}</p>}
-  <div className="pro-customer-columns"><div className="pro-customer-results" aria-label="Søkeresultater">{rows.map(item=><button type="button" key={item.id} className="pro-customer-result" aria-pressed={selected?.id===item.id} onClick={()=>choose(item)}><span><strong>{item.description}</strong><small>{item.supplier_name} · varenr. {item.supplier_product_number}</small>{item.match_kind==='related'&&<small>Treff på beslektet fagord</small>}</span><CustomerPrices item={item}/></button>)}</div>
-  {selected&&<section className="pro-customer-detail" tabIndex={-1} ref={detail} aria-label="Valgt vare"><h3>{selected.description}</h3><p>{selected.supplier_name}</p><dl>{[['Varenummer',selected.supplier_product_number],['GTIN/EAN',selected.gtin],['NOBB',selected.nobb_number],['Varegruppe',selected.product_group],['Prisdatert',selected.price_date]].map(([label,value])=><div key={label}><dt>{label}</dt><dd>{value||'–'}</dd></div>)}</dl><CustomerPrices item={selected}/>{!supportCompanyId&&<><label>Antall<input inputMode="decimal" value={quantity} onChange={e=>setQuantity(e.target.value)}/></label><button type="button" disabled={disabled||pending} onClick={()=>onAdd(selected,quantity)}>Legg i varebestilling</button><p>Varen legges bare til når du velger knappen. Du blir i varesøket.</p></>} {supportCompanyId&&<p>Skrivebeskyttet supportvisning av valgt brukers varekort og prisinnsyn. Dette sender ingen bestilling.</p>}</section>}
+  <div className="pro-customer-columns"><div className="pro-customer-results" aria-label="Søkeresultater">{rows.map(item=><button type="button" key={item.id} className="pro-customer-result" aria-pressed={selected?.id===item.id} onClick={()=>choose(item)}><span><strong>{item.description}</strong><small>{item.supplier_name} · varenr. {item.supplier_product_number}</small>{item.match_kind==='related'&&<small>Treff på beslektet fagord</small>}</span><CustomerPrices item={item} compact/></button>)}</div>
+  {selected&&<section className="pro-customer-detail" tabIndex={-1} ref={detail} aria-label="Valgt vare"><h3>{selected.description}</h3><p>{selected.supplier_name}</p><dl>{[['Varenummer',selected.supplier_product_number],['GTIN/EAN',selected.gtin],['NOBB',selected.nobb_number],['Varegruppe',selected.product_group],['Prisdatert',selected.price_date?selected.price_date.slice(0,10).split('-').reverse().join('.'):null]].map(([label,value])=><div key={label}><dt>{label}</dt><dd>{value||'–'}</dd></div>)}</dl><CustomerPrices item={selected}/>{!supportCompanyId&&<><label>Antall<input inputMode="decimal" value={quantity} onChange={e=>setQuantity(e.target.value)}/></label><button type="button" disabled={disabled||pending} onClick={()=>onAdd(selected,quantity)}>Legg i varebestilling</button><p>Varen legges bare til når du velger knappen. Du blir i varesøket.</p></>} {supportCompanyId&&<p>Skrivebeskyttet supportvisning av valgt brukers varekort og prisinnsyn. Dette sender ingen bestilling.</p>}</section>}
   </div>
  </div>;
 }

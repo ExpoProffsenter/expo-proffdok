@@ -23,6 +23,12 @@ try{
   await page.goto('https://orders-qa.example.invalid/');await page.getByRole('heading',{name:'Varesøk',exact:true}).waitFor();
   eq(await page.locator('.pro-catalog-orders>header').evaluate(el=>getComputedStyle(el).position),'static','header never overlaps fields');
   eq(await page.locator('nav button').allTextContents(),['Varesøk','Varebestilling'],'adjacent authorized menus');
+  await page.getByPlaceholder('Søk varenavn, varenummer eller GTIN/EAN').fill('overlap');
+  await page.getByRole('button',{name:/WASHBASIN 2/}).waitFor();
+  const resultLayout=await page.locator('.pro-customer-result').evaluateAll(es=>es.map(e=>({top:e.getBoundingClientRect().top,bottom:e.getBoundingClientRect().bottom,overflow:e.scrollHeight>e.clientHeight+1||e.scrollWidth>e.clientWidth+1})));
+  eq(resultLayout.length,2,'long search results are both present');
+  eq(resultLayout[1].top>=resultLayout[0].bottom,true,'long search rows never overlap');
+  eq(resultLayout.some(r=>r.overflow),false,'description and prices fit each result');
   await page.getByPlaceholder('Søk varenavn, varenummer eller GTIN/EAN').fill('vare');await page.getByRole('button',{name:/QA Ø-vare.*eks/}).click();
   eq(await page.getByRole('button',{name:'Se varebestilling (0)'}).count(),1,'opening a product never adds it or navigates');
   eq(await page.getByRole('heading',{name:'Varesøk',exact:true}).count(),1,'search remains active');
