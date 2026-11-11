@@ -14,3 +14,8 @@ applyGroups tar eksplisitt nytt opsjonsutvalg ved sletting. Alle eksisterende op
 Fem regresjonskrav bruker de faktiske handlerfunksjonene og utvalgskoden. De beskytter sletting av hovedpost/tilhørende montering/opsjoner, avkobling av montering, direkte opsjonssletting og synlighet for eldre frakoblede opsjoner. Critical build og Preview/CI-status suppleres i PR.
 
 Tilbakeføring: revert denne avgrensede frontend-committen. Ingen migrasjon eller datarollback.
+
+## Boligprosjekter og testmiljø
+Bolig bruker en separat katalog/valgmodell, uten tilbudsbyggerens applyGroups. Lokal boligdatabasekontroll bestod 1758 krav; boligkatalogens React-kontroll bestod (tilvalg, erstatning, prisfradrag, lagret varegrunnlag, konflikt- og firmaskille). En ekstra regresjon tester eksplisitt arkivering og nyoppretting av tilvalg og at lagret kundevalg bare inneholder det nye tilvalget.
+
+Første CI-kjøring 43061797488 stoppet nettleserjobbene i installasjon: ubuntu-latest ble Ubuntu 26.04, som låst Playwright 1.58.2 ikke støtter. PR Core Safety låses til Ubuntu 24.04; alle 147 opprinnelige testinvokasjoner beholdes. Ingen appavhengighet endres. Ny CI må bestå før merge.

@@ -18,7 +18,7 @@
     },
     "setup": {
       "required": false,
-      "reason": "Ingen ny avhengighet eller konfigurasjon."
+      "reason": "CI runner låses til støttet Ubuntu 24.04 etter konkret installasjonsfeil på ubuntu-latest. Ingen lokal oppsettendring eller ny avhengighet."
     }
   }
 }
