@@ -81,6 +81,7 @@ insert into public.support_qa_records values('${id(20)}','${target}','${firm}','
 create function public.support_qa_remove() returns void language sql security definer as $$delete from public.support_qa_records where id='${id(20)}'$$;
 `);
 await db.exec(await fs.readFile('supabase/migrations/20261111183233_app_support_write_gateway.sql','utf8'));
+await db.exec(await fs.readFile('supabase/migrations/20261111194441_app_support_canonical_write_validation.sql','utf8'));
 await claim(actor);await db.exec('set role authenticated');
 const writeSession=await cmd('start',target,firm);await db.exec('reset role');
 const scoped=async(sql,{prepare=true,session=writeSession.id}={})=>{
@@ -110,6 +111,19 @@ await denied(()=>scoped(`update public.support_qa_records set payload='{"lines":
 await denied(()=>scoped(`update public.support_qa_records set company_id='${foreign}' where id='${id(20)}'`),'company reassignment blocked');
 await denied(()=>scoped(`insert into public.support_qa_records values('${id(23)}','${actor}','${firm}','{}')`,{prepare:false}),'missing request setup cannot write with support header');
 eq((await db.query(`select payload->'lines' lines from public.support_qa_records where id='${id(20)}'`)).rows[0].lines,[{id:'line-a',price:20}],'blocked deletion preserved record');
+// Reproduce native Sales upsert: INSERT normalization strips a binding field,
+// then UPDATE restores its canonical value before persistence.
+await db.exec(`create function public.support_qa_mirror() returns trigger language plpgsql as $$begin
+ if tg_op='INSERT' then new.payload:=new.payload-'handler';
+ elsif old.payload ? 'handler' then new.payload:=new.payload||jsonb_build_object('handler',old.payload->'handler'); end if;
+ return new; end$$;
+create trigger support_qa_mirror before insert or update on public.support_qa_records for each row execute function public.support_qa_mirror();
+update public.support_qa_records set payload=payload||'{"handler":"canonical"}' where id='${id(20)}';`);
+await scoped(`insert into public.support_qa_records values('${id(20)}',auth.uid(),'${firm}','{"handler":"canonical","lines":[{"id":"line-a","price":25}],"publicToken":"private-link"}') on conflict(id) do update set payload=excluded.payload`);
+eq((await db.query(`select payload->>'handler' handler,payload->'lines' lines from public.support_qa_records where id='${id(20)}'`)).rows[0],{handler:'canonical',lines:[{id:'line-a',price:25}]},'canonical upsert edits persist after binding normalization');
+eq((await db.query("select action,after_value->'payload'->>'handler' handler from app_support_private.audit where resource='public.support_qa_records' order by id desc limit 1")).rows[0],{action:'update',handler:'canonical'},'audit describes committed update and canonical binding');
+await denied(()=>scoped(`insert into public.support_qa_records values('${id(20)}',auth.uid(),'${firm}','{"handler":"canonical","lines":[],"publicToken":"private-link"}') on conflict(id) do update set payload=excluded.payload`),'upsert still cannot delete nested lines');
+eq((await db.query(`select payload->'lines' lines from public.support_qa_records where id='${id(20)}'`)).rows[0].lines,[{id:'line-a',price:25}],'AFTER rejection rolls back destructive upsert');
 // Storage requests do not execute PostgREST's pre-request hook.
 await db.exec(`create schema storage;
 create table storage.objects(id uuid primary key,bucket_id text,name text,owner_id uuid);

@@ -78,3 +78,17 @@ CI43086675561 bestod workspace, checklist-panel og checklist guidance, men commo
 Innlogget standard-Preview beholdt Kenneths produksjonsøkt ved reload. Ny isolert QA-Preview: https://expo-proffdok-git-qa-support-full-app-20261111-ringside.vercel.app, branch qa/support-full-app-20261111 med branch-spesifikk EXPO_BACKEND_TARGET=sandbox. Første innloggingsforsøk brukte feil konto; brukeren bekreftet dette. Andre sikre innlogging lyktes som demo@expo-proffdok.no. Ingen passord eller Auth-konto er endret.
 
 Transaksjonstest mot faktisk Sandbox med ROLLBACK: support for qa-firmaadmin@example.invalid returnerte riktig målidentitet, sales/store_offers og is_systemadmin=false samt arbeidsfirma Proffkunde Demo AS. Ingen varige data eller økter ble opprettet av testen. Neste kontrollerte steg er hook-registrering og testaktivering i Sandbox alene.
+
+### Kontrollpunkt etter innlogget QA og lagringsrettelse
+
+Denne statusen erstatter tidligere «hook ikke satt / disabled» for Sandbox alene. Produksjon og demo-branch er uendret. Sandbox-hook er installert (lokal 20261111193321 → remote 20261111193343), enabled=true og transport_ready=true. PR320 kontraktfil-adapter er deployet til Sandbox som Edge version 4. QA-Preview kjører 20aa0ded; vanlig Preview bruker fortsatt produksjonsbackend.
+
+Innlogget nettleser: kundeidentitet qa-firmaadmin@example.invalid i Proffkunde Demo AS, Smartere søk, prisvisning etter kundens egne tillatelser (veiledende pris for denne testbrukeren), valg av vare uten sideskifte og lokal bestillingskladd. Ingen bestilling eller e-post sendt. Syntetisk tilbud F-2026-0042 / QA Supporttest 11.11 / QA Supportmodus – ikke send ble opprettet; audit har korrekt virkelig aktør og målbruker.
+
+Tilbudsredigering ble AVVIST ved lagring: BEFORE-supportkontrollen så mellomtilstanden fra upsert før eksisterende saksbehandler-trigger gjenopprettet bindingen. Ny migrasjon 20261111194441 flytter INSERT/UPDATE-validering til AFTER, fortsatt atomisk rollback; DELETE/TRUNCATE beholder BEFORE-sperrer. Net-køens opprinnelige BEFORE-sperre beholdes, fordi køen eies av utvidelsen og alle supportskrivinger dit uansett er forbudt. Første installering rullet tilbake ved eierfeil på net-tabellen; avgrenset migrasjon er installert i Sandbox som remote 20261111195312.
+
+SQL-regresjon: 71 PASS, inkludert canonical upsert, korrekt update-audit og rollback ved linjesletting. UI-slettesperre har lokale jsdom-kontroller for slett/arkiver, tillatt lagring/filter og React-rerender. Full CI for 20aa: øvrige pakker bestod, app-browser stoppet fordi admin-access-fixturen ikke kjente den nye app_support_available-lesingen; fixture håndterer nå false og krever at launcher er skjult. PR320 har grønn full CI43087870355. Ny CI kreves for dette kontrollpunktet.
+
+Live-verifikasjon etter lagringsrettelsen er BLOKKERT: CUA får Emulation.setFocusEmulationEnabled timeout på eksisterende QA-fane 7, også etter dokumentert gjenoppretting. Fanene er fortsatt listet; dette er ikke påvist innloggingsfeil eller appfeil. Ingen UPDATE finnes ennå i serveraudit; redigering er derfor ikke bekreftet end-to-end.
+
+Neste: gjenoppta fane 7 uten å miste tilbudskladden, lagre og endre syntetisk tilbud, bekreft server og reload, test Tilbake/Startside/Avslutt, Storage opplasting/lesing uten erstatning, Bolig med relevant testbruker og pris-/tilgangsgrenser. Publiser ny kandidat til QA-branch før UI-slettesperren kontrolleres. Ikke oppgi TEST OK/produksjonsklart før dette er bekreftet. Ingen hemmeligheter eller supportøkt-ID lagret her.

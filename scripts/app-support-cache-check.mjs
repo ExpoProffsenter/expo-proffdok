@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { isolateSupportCaches } from '../src/modules/access/appSupportBrowserStorage.mjs';
+import { installSupportDeleteUx } from '../src/modules/access/appSupportDeleteUx.mjs';
 const {JSDOM}=await import(process.env.KSHMS_JSDOM_PATH||'jsdom');
 const dom=new JSDOM('',{url:'https://qa.invalid'}),w=dom.window;
 const original=w.localStorage,session=w.sessionStorage,id='81000000-0000-4000-8000-000000000001';
@@ -19,4 +20,15 @@ w.dispatchEvent(new w.StorageEvent('storage',{key:'offer',newValue:'other tab ow
 w.dispatchEvent(new w.StorageEvent('storage',{key:`expo-support:${id}:offer`,newValue:'same support draft',storageArea:original}));assert.deepEqual(seen,[['offer','same support draft']]);
 w.dispatchEvent(new w.StorageEvent('storage',{key:'sb-qa-auth-token',newValue:'refreshed',storageArea:original}));assert.equal(seen[1][0],'sb-qa-auth-token');
 w.localStorage.clear();assert.equal(original.getItem('offer'),'own draft');assert.equal(original.getItem('sb-qa-auth-token'),'actor auth');
-dom.window.close();console.log('app-support-cache: PASS – own drafts retained, customer namespace, IndexedDB, cross-tab events and shared actor authentication');
+w.document.body.innerHTML='<button id="delete">Slett Vare 1</button><button id="edit">Lagre tilbud</button><button id="filter">Fjern filter</button><button id="archive">Arkiver saken</button>';
+const stop=installSupportDeleteUx(w);
+const button=id=>w.document.getElementById(id);
+assert.equal(button('delete').disabled,true);assert.equal(button('archive').disabled,true);
+assert.equal(button('edit').disabled,false);assert.equal(button('filter').disabled,false);
+let deleted=false;button('delete').addEventListener('click',()=>{deleted=true;});
+button('delete').disabled=false;
+button('delete').dispatchEvent(new w.MouseEvent('click',{bubbles:true,cancelable:true}));
+assert.equal(deleted,false,'capture blocks deletion even before observer reapplies disabled');
+await new Promise(resolve=>w.setTimeout(resolve,0));
+assert.equal(button('delete').disabled,true,'React rerender cannot reenable a marked delete button');
+stop();dom.window.close();console.log('app-support-cache: PASS – isolated drafts/events/auth and deletion UX with rerender protection');

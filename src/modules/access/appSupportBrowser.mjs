@@ -1,3 +1,4 @@
+import { installSupportDeleteUx } from './appSupportDeleteUx.mjs';
 import { createClient } from '@supabase/supabase-js';
 import { createAppSupportRuntime } from './appSupportRuntime.mjs';
 import { wrapSupportClient } from './appSupportAuth.mjs';
@@ -99,6 +100,7 @@ async function initialize() {
   actorClient = createClient(config().url, config().key);
   try {
     const session = await runtime.restore(await credentials(), sid);
+    installSupportDeleteUx(window);
     window.setTimeout(() => runtime.projectUser({ id: session.actor_id }), Math.max(1, Date.parse(session.expires_at) - Date.now() + 1));
   }
   catch {
