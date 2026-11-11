@@ -3235,6 +3235,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       if (url.searchParams.get('supportExit') !== '1') return;
       setTab('admin');
       setAdminArea('users');
+      setOpenAdminSections(prev => ({...prev, brukere: true}));
       url.searchParams.delete('supportExit');
       window.history.replaceState(null, '', url.pathname + url.search + url.hash);
     }, [authLoading, profileLoading, isSystemAdminUser, profile?.approved, profile?.deactivated]);

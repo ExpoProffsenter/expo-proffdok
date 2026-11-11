@@ -25,12 +25,13 @@ const main=await fs.readFile('src/main.jsx','utf8');
 const marker=main.indexOf("if (authLoading || profileLoading || !isSystemAdminUser");
 assert.ok(marker>0);
 const body=main.slice(marker,main.indexOf('}, [authLoading, profileLoading, isSystemAdminUser',marker));
-const runReturn=new Function('authLoading','profileLoading','isSystemAdminUser','profile','window','setTab','setAdminArea',body);
+const runReturn=new Function('authLoading','profileLoading','isSystemAdminUser','profile','window','setTab','setAdminArea','setOpenAdminSections',body);
 for(const [loading,admin,approved,expected] of [[true,true,true,false],[false,false,true,false],[false,true,false,false],[false,true,true,true]]) {
- let tab=null,area=null,replaced=null;
+ let tab=null,area=null,replaced=null,sections={support:true};
  const win={location:{href:'https://qa.invalid/?tab=systemadmin&supportExit=1'},history:{replaceState:(_a,_b,url)=>replaced=url}};
- runReturn(loading,false,admin,{approved},win,x=>tab=x,x=>area=x);
+ runReturn(loading,false,admin,{approved},win,x=>tab=x,x=>area=x,fn=>sections=fn(sections));
  assert.equal(tab,expected?'admin':null);assert.equal(area,expected?'users':null);
  assert.equal(replaced,expected?'/?tab=systemadmin':null);
+ assert.deepEqual(sections,expected?{support:true,brukere:true}:{support:true});
 }
 console.log('app-support-return: PASS – native admin route only after approved administrator hydration');
