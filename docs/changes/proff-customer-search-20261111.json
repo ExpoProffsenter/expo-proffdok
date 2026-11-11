@@ -1,7 +1,7 @@
 {
   "version": 1,
   "title": "Kundens varesøk, egne priser og samlet tilgangsflate",
-  "change": "Miljømål BEGGE. Proffkunder åpner varekort med egne priser uten automatisk bestilling. Smartere søk er leverandør- og firmaavgrenset. Boligaktivering og skrivebeskyttet brukerbasert varesøkpreview samles på firmakortet.",
+  "change": "Miljømål BEGGE. Proffkunder åpner varekort med egne priser uten automatisk bestilling. Smartere søk er leverandør- og firmaavgrenset. Skrivebeskyttet brukerbasert varesøkpreview samles på firmakortet.",
   "verification": "Lokal full critical/build og 14 isolerte SQL-krav bestått. Nettleserregresjon utvidet med varekort, priser og navigasjon; lokal Chromium kunne ikke startes i kjørecontaineren. CI/Preview og migrasjon gjenstår. Ingen produksjonsendring utført.",
   "documentation": {
     "help": {

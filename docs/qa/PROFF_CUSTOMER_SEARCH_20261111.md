@@ -5,7 +5,7 @@ Arbeidsbranch fase45b-proff-search-company-ux-20261111. Miljømål BEGGE. Baseli
 ## Omfang
 Varesøk viser treff og et eget varekort med metadata og kundens pris. Varevalg og Enter åpner informasjon; eksplisitt Legg i varebestilling legger til uten navigasjon. Antall og pris er tilgjengelig også i bestillingen. Treffrader får innholdsstyrt høyde. Smartere søk gjenbruker fagord, men ikke det interne prisendepunktet.
 
-Firmakortet inkluderer boligaktivering, slik at administrator slipper separat side for dette. Supportvisning av varesøk lar administrator velge bruker og brukerens prisinnsyn på firmaets katalog, med samme varekort. Den er skrivebeskyttet og er ikke generell innlogging som kunden. Eksisterende prosjekt-supportmodus endres ikke i denne avgrensningen.
+Boligaktivering på firmakortet er skilt ut til fix/company-bolig-access-20261111 for å bevare boligmodulens scope-kontroll. Supportvisning av varesøk lar administrator velge bruker og brukerens prisinnsyn på firmaets katalog, med samme varekort. Den er skrivebeskyttet og er ikke generell innlogging som kunden. Eksisterende prosjekt-supportmodus endres ikke i denne avgrensningen.
 
 ## Tester og grenser
 Full critical/build bestått lokalt før siste supportjustering. SQL-test 14 krav bestått: fagord, eksakt varenummer, leverandøravgrensning, egne priser, tilbakekalt prisinnsyn, systemadmin-scope og anonym avvisning. Ingen innkjøpspris/margin returneres av nytt RPC. Nettleserregresjonen tester detaljkort, eksplisitt bestilling og uendret søkeside ved fire skjermbredder; må kjøres i CI fordi Chromium lokalt stoppet ved socket() Operation not permitted.
