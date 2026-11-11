@@ -50,7 +50,7 @@ export function createProjectOverviewTools({
     ] });
   }
 
-  function renderProjectOverviewPanel({ project, goToTab, leaveProjectWorkspace }) {
+  function renderProjectOverviewPanel({ project, goToTab, leaveProjectWorkspace, readOnly = false }) {
     const simpleOrder = isSimpleOrderProject(project);
     const salesOriginRef = String(project?.salesOrigin?.requestRef || "").trim();
     const salesPublicToken = String(project?.salesOrigin?.publicToken || "").trim();
@@ -60,7 +60,7 @@ export function createProjectOverviewTools({
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { className: "project-contact-overview", title: simpleOrder ? "Ordreoversikt" : "Prosjektoversikt", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: [
       simpleOrder ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { "data-expo-workflow-type": "simple_order", style: { display: "none" }, "aria-hidden": "true" }) : null,
       salesOriginRef ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { "data-expo-sales-origin-ref": salesOriginRef, "data-expo-sales-public-token": salesPublicToken, style: { display: "none" }, "aria-hidden": "true" }) : null,
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: simpleOrder ? "Enkel ordre bruker samme dokumentasjonsmotor som ProffDok, men uten kundelenke. Bruk bare de verktøyene som er relevante for oppdraget." : "Kontaktinformasjon, prosjektansvarlig og tilbudssum. Opplysninger kan redigeres nedenfor." }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: readOnly ? "Kontaktinformasjon, prosjektansvarlig og tilbudssum. Opplysningene er skrivebeskyttet i supportmodus." : simpleOrder ? "Enkel ordre bruker samme dokumentasjonsmotor som ProffDok, men uten kundelenke. Bruk bare de verktøyene som er relevante for oppdraget." : "Kontaktinformasjon, prosjektansvarlig og tilbudssum. Opplysninger kan redigeres nedenfor." }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "guideGrid", children: [
         acceptedTotal ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "guideCard", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: acceptedTotal }),

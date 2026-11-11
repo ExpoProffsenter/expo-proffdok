@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Supportnavigasjon og full-app krav",
+  "change": "Avgrenset klientrettelse for inert snarvei, skjult salgsgrunnlag og avslutningsrace. Full supportøkt med redigering uten sletting er dokumentert som fortsatt arbeid.",
+  "verification": "Build og critical checks består. Ny runtimekontroll av faktiske navigasjonshandlere og projeksjonsrace består. Preview og samlet brukerreise gjenstår.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Avgrenset feilretting; samlet ny supportflyt er ennå ikke implementert og beskrives som gjenstående i QA."
+    },
+    "module": {
+      "required": false,
+      "reason": "Avgrenset feilretting; samlet ny supportflyt er ennå ikke implementert og beskrives som gjenstående i QA."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Avgrenset feilretting; samlet ny supportflyt er ennå ikke implementert og beskrives som gjenstående i QA."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Avgrenset feilretting; samlet ny supportflyt er ennå ikke implementert og beskrives som gjenstående i QA."
+    }
+  }
+}

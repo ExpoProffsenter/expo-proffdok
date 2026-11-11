@@ -534,3 +534,7 @@ footer { color: var(--expo-muted); margin-top: 18px; border-top: 1px solid #dbe7
     display: none !important;
   }
 }
+
+/* Read-only overview navigation lives outside the inert project editor. */
+.support-project-overview { max-width: 1180px; margin: auto; padding: 26px 16px 0; }
+@media (max-width: 768px) { .support-project-overview { padding: 14px 10px 0; } }
