@@ -36,3 +36,15 @@ Denne delrettelsen implementerer **ikke** det utvidede produktkravet om full app
 5. Sandbox: legg til/rediger syntetisk tilbud/prosjekt og øvrige berørte moduler, verifiser korrekt firma, ingen sletting/utsending og audit. Publiser samlet Preview for TEST OK før kontrollert Production og main → demo.
 
 Ingen tilbud, prosjekter, brukere, bestillinger eller meldinger ble opprettet, endret eller slettet under produksjonskontrollen. Ingen utsending.
+
+## Videreført grunnlag – fortsatt WIP
+
+To lokale migrasjoner er laget via Supabase CLI 3.1.0: `20261111182756_app_support_sessions.sql` og `20261111183233_app_support_write_gateway.sql`. De oppretter privat økt-/auditgrunnlag, deaktivert transport, request-lokal målidentitet og slettesperrer for eksisterende virksomhetstabeller. Ingen PostgREST-hook aktiveres. **Ingen migrasjoner er kjørt i Production eller Sandbox.**
+
+`scripts/app-support-session-db-check.mjs`: **60 PASS** i PGlite 0.5.8. Faktisk SQL kjøres med syntetiske aktør-/kunde-/firmadata og RLS. Dekker tilbakekalling, utløp, annen aktørøkt, firma, privat audit, direkte DELETE, slettende SECURITY DEFINER-RPC, TRUNCATE, JSON-linjer/filer, soft-delete og uendret ordinær oppdatering/sletting. Dette er ikke test av alle appens eksisterende RPC-er eller Supabases faktiske Storage/API-tjenester.
+
+`scripts/app-support-runtime-check.mjs`: **40 PASS**. Serverkontekst må bekreftes før aktiv tilstand. Dekker målidentitet uten mutasjon av aktørens Auth-objekt, opprinnelig token, blokkerte transporter, credential-grenser, utløp, byttet aktør, sent svar etter avslutning og separate kladder. `appSupportRuntime.mjs` er ennå **ikke koblet til bootstrap eller UI**. Begge tester er lagt til eksisterende CI-jobb for support.
+
+Full `npm run build` med eksisterende critical checks bestod etter grunnlagsendringene. Kandidaten er ikke testet som samlet kundemodus i nettleser; UI-integrasjon, IndexedDB/recovery, Storage/Edge-adaptere og modulvis backendgjennomgang gjenstår. Generisk JSON-kontroll må ikke omtales som full slettegaranti for alle modeller. Se [arkitektur og aktiveringskrav](../architecture/APP_SUPPORT_SESSION.md).
+
+Fersk remote-kontroll: main `d68cf2e530d5ab6afcfe2f97d75150c977bcd64f`, demo `8f7307bc909f19203ff2cfbf76de142936978748`. Disse er ikke endret av supportarbeidet. PR319 forblir draft og skal ikke merges eller aktiveres som fullført supportmodus.

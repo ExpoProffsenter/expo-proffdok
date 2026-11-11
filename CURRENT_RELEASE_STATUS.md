@@ -1,5 +1,9 @@
 # Produksjonsrettelser – 11. november 2026
 
+## Pågående, ikke publisert: samlet supportmodus
+
+[PR319](https://github.com/ExpoProffsenter/expo-proffdok/pull/319) er draft. Inneholder avgrensede prosjekt-/salgsgrunnlag-/logo-rettelser samt deaktivert grunnlag for supportøkter, revisjonslogg og slettesperre. 60 lokale SQL-krav, 40 klientruntimekrav og full build består. Ingen remote migrasjoner, fullapp-Preview eller TEST OK. Kundens komplette app med redigering er fortsatt ikke levert; Storage/Edge, UI og cache/recovery må integreres og testes først. Se [gjeldende QA](docs/qa/SUPPORT_APP_UX_20261111.md). Main og demo er uendret av dette arbeidet.
+
 Miljømål BEGGE. Arbeidet gjelder kundens varesøk, firmatilgang og opsjoner i generelle tilbud. Dette er ikke en erklæring om fullført QA av hele appen.
 
 ## Publisert og verifisert

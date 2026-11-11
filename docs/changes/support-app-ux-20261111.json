@@ -1,24 +1,24 @@
 {
   "version": 1,
-  "title": "Supportnavigasjon og full-app krav",
-  "change": "Avgrenset klientrettelse for inert snarvei, skjult salgsgrunnlag og avslutningsrace. Full supportøkt med redigering uten sletting er dokumentert som fortsatt arbeid.",
-  "verification": "Build og critical checks består. Ny runtimekontroll av faktiske navigasjonshandlere og projeksjonsrace består. Preview og samlet brukerreise gjenstår.",
+  "title": "Support-UX og deaktivert grunnlag for samlet supportøkt",
+  "change": "Miljømål BEGGE. Retter inert snarvei, skjult salgsgrunnlag og avslutningsrace. Legger til deaktivert session-/audit-/slettesperregrunnlag og umontert klienttransport. Full kundemodus er fortsatt ikke implementert.",
+  "verification": "Full build og eksisterende critical checks består. Lokale PGlite-tester: 60 krav. Klientruntime: 40 krav. Ingen remote migrasjon, ingen fullapp-Preview og ingen TEST OK.",
   "documentation": {
     "help": {
       "required": false,
       "reason": "Avgrenset feilretting; samlet ny supportflyt er ennå ikke implementert og beskrives som gjenstående i QA."
     },
     "module": {
-      "required": false,
-      "reason": "Avgrenset feilretting; samlet ny supportflyt er ennå ikke implementert og beskrives som gjenstående i QA."
+      "required": true,
+      "reason": "Access-README skiller deaktivert supportgrunnlag fra dagens arbeidsprofil og innlogging."
     },
     "architecture": {
-      "required": false,
-      "reason": "Avgrenset feilretting; samlet ny supportflyt er ennå ikke implementert og beskrives som gjenstående i QA."
+      "required": true,
+      "reason": "APP_SUPPORT_SESSION beskriver aktør/mål-identitet, Data API-grensen, slettesperrer og manglende integrasjoner."
     },
     "setup": {
       "required": false,
-      "reason": "Avgrenset feilretting; samlet ny supportflyt er ennå ikke implementert og beskrives som gjenstående i QA."
+      "reason": "Ingen aktivt oppsett eller publiseringskommando leveres; transportgrunnlaget er deaktivert og ikke installert remote."
     }
   }
 }
