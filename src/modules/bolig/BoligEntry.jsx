@@ -30,6 +30,7 @@ import BoligUnitTasks from "./BoligUnitTasks.jsx";
 import BoligRooms from "./BoligRooms.jsx";
 import { BoligVisualSetup } from "./BoligVisualWorkspace.jsx";
 import BoligBuildingOverview from "./BoligBuildingOverview.jsx";
+import BoligResidentBatch from "./BoligResidentBatch.jsx";
 import BoligPreparation from "./BoligPreparation.jsx";
 import BoligAdditionalContacts from "./BoligAdditionalContacts.jsx";
 import BoligResidentImport from "./BoligResidentImport.jsx";
@@ -695,6 +696,7 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
                     </div>
                     <div hidden={setupArea !== "structure"}>
                       <BoligResidentImport context={ctx} record={record} onChanged={() => fetchRecord(record.root.id, true)} />
+                      <BoligResidentBatch context={ctx} record={record} onChanged={() => fetchRecord(record.root.id, true)} />
                       <BoligPreparation
                         key={
                           ctx.user_id +

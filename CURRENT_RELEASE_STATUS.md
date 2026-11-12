@@ -1,6 +1,8 @@
-# Samlet status – 12. november 2026
+# Samlet status – 13. november 2026
 
-Se [samlet leveranseoversikt](docs/qa/RELEASE_OVERVIEW_20261112.md) for bekreftet produksjonsversjon, ventende supportleveranse, nye Orvei-endringer og urettet sandbox-blokkering. Dette dokumentet ligger på arbeidsbranchen og innebærer ingen produksjonspublisering.
+Se [samlet leveranseoversikt](docs/qa/RELEASE_OVERVIEW_20261112.md) for bekreftet produksjonsversjon, ventende supportleveranse, nye Orvei-endringer og rettet sandbox-blokkering. Dette dokumentet ligger på arbeidsbranchen og innebærer ingen produksjonspublisering.
+
+PR322 f64efcc8 har bestått full GitHub-kontroll43326959905. PR320 siste kontroll er fortsatt queued. Orvei-arbeidet har nå samlet portal-/fristbehandling i sandbox, ikke produksjon. Se [QA](docs/qa/BOLIG_ORVEI_20261112.md) og [branchregister](docs/qa/BRANCH_REGISTER_20261112.md).
 
 # Produksjonsrettelser – 11. november 2026
 

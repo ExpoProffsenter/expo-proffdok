@@ -199,6 +199,7 @@ export default function BoligPortalPage() {
       (e) => e.kind === "request" && e.status === "pending",
     );
   const disabled = busy || !!pending;
+  const choicesClosed = data?.choices_closed || !!(data?.choice_deadline && new Intl.DateTimeFormat("sv-SE", {timeZone:"Europe/Oslo",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date()) > data.choice_deadline);
   const overview = agreementOverview(data?.agreements);
   const unanswered = [overview.choice, ...overview.changes].filter(d => d?.status === "published").length;
   const nextStep = unanswered ? {
@@ -341,6 +342,7 @@ export default function BoligPortalPage() {
             <>
               <section className="bolig-resident-card">
                 <h2>Velg det som passer deg</h2>
+                {data.choice_deadline && <p role="status"><strong>Bestillingsfrist: {data.choice_deadline} (til slutten av dagen, norsk tid).</strong> {choicesClosed ? "Fristen er utløpt. Kontakt prosjektleder for ny frist. Avtaler og dokumenter er fortsatt tilgjengelige." : "Send nye tilvalg før fristen."}</p>}
                 <p>
                   Prosjektleder har klargjort disse valgmulighetene for boligen
                   din. Send ønsket til gjennomgang. Du får en egen avtale å
@@ -371,7 +373,7 @@ export default function BoligPortalPage() {
                           name="offer"
                           value={o.id}
                           checked={draft.offer_id === o.id}
-                          disabled={disabled || waiting}
+                          disabled={disabled || waiting || choicesClosed}
                           onChange={() =>
                             update({
                               offer_id: o.id,
@@ -403,7 +405,7 @@ export default function BoligPortalPage() {
                     </article>
                   ))}
                 </div>
-                {selected && !waiting && (
+                {selected && !waiting && !choicesClosed && (
                   <form
                     onSubmit={(e) => {
                       e.preventDefault();
@@ -424,7 +426,7 @@ export default function BoligPortalPage() {
                     </button>
                   </form>
                 )}
-                {review === "request" && selected && (
+                {review === "request" && selected && !choicesClosed && (
                   <section className="bolig-portal-info">
                     <h3>Kontroller før du sender</h3>
                     <p>
@@ -697,8 +699,7 @@ export default function BoligPortalPage() {
             </section>
           )}
           <footer>
-            Lenken er personlig og gjelder bare denne boligen. Ikke videresend
-            den.
+            {data.shared_household ? "De registrerte eierne deler denne boligportalen. Ikke del lenken med andre." : "Lenken er personlig og gjelder bare denne boligen. Ikke videresend den."}
           </footer>
         </>
       )}

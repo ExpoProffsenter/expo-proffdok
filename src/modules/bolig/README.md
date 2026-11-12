@@ -36,3 +36,8 @@ Boliger kan ha vanlige nummer som 24 og 38. `additional_contacts` lagrer inntil 
 Importer beboere fra Excel åpnes i samme høyrepanel som felles klargjøring, med separat rulling og fast handlingsfelt. XLSX/CSV leses lokalt. Brukeren kontrollerer kolonner, boligkobling, hovedkontakt og eventuell overskriving før én atomisk lagring. Importen oppretter ingen boliger eller utsendinger. Samme bolignummer på ulike adresser skilles. Uklare koblinger må velges manuelt. Usikkert svar beholder nøyaktig samme forespørsel for retry.
 
 Se `docs/architecture/BOLIG_HOUSEHOLD_CONTACTS.md` og `docs/qa/BOLIG_ORVEI_20261112.md` før installasjon.
+
+### Beboerlenker og bestillingsfrister samlet
+Oppsett → Bygg og boliger → Beboerlenker og frister samlet åpner etablert høyrepanel. Filtrer bygg/blokk eller eksisterende stammegruppe; velg boliger eksplisitt og kontroller hele listen. Klargjør lenker før separat bekreftet utsending til alle registrerte eiere med e-post. Aktive lenker erstattes bare etter egen bekreftelse. Uavklarte handlinger beholdes for eksakt retry. E-post kan fortsatt være pauset.
+
+Sett bestillingsfrist viser gammel/ny dato per valgt bolig. Nye tilvalg stoppes utløpsdagen ved midnatt norsk tid; prosjektleder kan sette ny dato for valgte boliger. Dette er ikke svarfrist på en utsendt avtale. Oppsett krever household_contacts og deretter resident_batch_deadlines-migrasjonen, samt oppdatert resident-link-email Edge-template. Se [arkitektur](../../../docs/architecture/BOLIG_HOUSEHOLD_CONTACTS.md) og [QA](../../../docs/qa/BOLIG_ORVEI_20261112.md).

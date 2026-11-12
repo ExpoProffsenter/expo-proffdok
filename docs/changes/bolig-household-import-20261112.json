@@ -1,16 +1,16 @@
 {
   "version": 1,
-  "title": "Beboerimport, felles eierportal og flere bygg",
-  "change": "Importerer beboere til eksisterende boliger, lagrer flere eiere på samme delte portal og lar prosjektleder velge flere bygg i et varsel. Import bruker etablert høyrepanel.",
-  "verification": "Lokalt: 1782 databaseassertions og React foundation med 21 importkontroller bestått. Chromium stoppet før appstart. Skynett, endelig kandidatbygg og sandbox-databasetest gjenstår; ikke produksjonssatt.",
+  "title": "Beboerimport, delt portal, samlet utsending og bestillingsfrister",
+  "change": "Miljømål BEGGE. Import til eksisterende boliger, flere eiere på én portal, flere bygg i varsel, samlet portalutsending til registrerte eiere og serverhåndhevet bestillingsfrist per valgt bolig/bygg/stamme. Etablert høyrepanel, eksisterende utsendingssperrer beholdt.",
+  "verification": "1813 SQL-assertions PASS, React foundation/import21, batchutvalg11, nye panellivsløp13, e-post62 og full build PASS. Skynett/sandbox og endelig kandidat føres i QA-logg. Ingen produksjonssetting eller reell e-post.",
   "documentation": {
     "help": {
       "required": true,
-      "reason": "Ny importknapp, delt portal og byggvalg forklares i boligveiledningen."
+      "reason": "Import, felleseiere, valgt bygg/stamme, mottakerbekreftelse, retry og bestillingsfrist forklares i Hjelp."
     },
     "architecture": {
       "required": true,
-      "reason": "Nytt kontaktfelt, tilbakekalling og atomisk import dokumenteres."
+      "reason": "Kontaktmodell, atomiske batchkvitteringer, fristserverkontroll, separate mottakere og tilbakeføring beskrives."
     },
     "setup": {
       "required": false,

@@ -1,0 +1,9 @@
+.bolig-resident-batch .bolig-preparation-body{padding:16px;overflow-wrap:anywhere}
+.bolig-resident-batch fieldset{min-width:0;border:0;padding:0}
+.bolig-resident-batch label{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:12px 0;min-height:44px}
+.bolig-resident-batch select,.bolig-resident-batch input[type=date]{max-width:100%;min-height:44px;font-size:16px}
+.bolig-resident-batch input[type=checkbox]{flex:0 0 22px;width:22px;height:22px}
+.bolig-resident-batch li{margin:8px 0}
+.bolig-resident-batch .bolig-preparation-footer{display:flex;flex-wrap:wrap;gap:8px;background:#fff}
+.bolig-resident-batch button{min-height:44px;white-space:normal}
+@media(max-width:640px){.bolig-resident-batch .bolig-preparation-filters{grid-template-columns:1fr}.bolig-resident-batch .bolig-preparation-footer button{flex:1 1 100%}}

@@ -1006,6 +1006,8 @@ try {
   await deadlineScenarios({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider});
   const {default:householdScenarios}=await import("./bolig-household-contacts-db-scenarios.mjs");
   await householdScenarios({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider});
+  const {default:batchScenarios}=await import("./bolig-resident-batch-db-scenarios.mjs");
+  await batchScenarios({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider});
   await db.exec(
     `reset role;update public.profiles set deactivated=true where id=${q(reader)}`,
   );

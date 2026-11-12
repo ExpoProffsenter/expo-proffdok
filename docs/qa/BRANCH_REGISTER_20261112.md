@@ -23,4 +23,4 @@ PR322 + PR320 har separat supportomfang. Portalfiksen skal installeres før glob
 
 ## Automatiske kontroller ved dette kontrollpunktet
 
-Ny PR322-kjøring 43326959905 på f64efcc8 er startet (in_progress). Dette er ikke grønn QA. Gamle PR322-kjøring 43097898264 var fortsatt queued ved siste oppslag. PR320 siste 43097043078 var queued; eldre 43087870355 success er ikke siste kontroll. Ingen ekstra manuell omkjøring, køendring eller erstatnings-PR er startet.
+PR322-kjøring 43326959905 på f64efcc8 er completed/success. Hele denne kontrollen er bestått. Gamle PR322-kjøring 43097898264 var fortsatt queued ved siste oppslag. PR320 siste 43097043078 var queued; eldre 43087870355 success er ikke siste kontroll. Ingen ekstra manuell omkjøring, køendring eller erstatnings-PR er startet.

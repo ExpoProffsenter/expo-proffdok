@@ -61,3 +61,21 @@ Komprimert XLSX generert med openpyxl og lest med faktisk parser: tre ekstra kon
 - A–Å/video/peker og norsk lyd gjenstår som beskrevet over.
 
 Se [branchregister](BRANCH_REGISTER_20261112.md) og [samlet oversikt](RELEASE_OVERVIEW_20261112.md). Testbilder ligger i evidence/.
+
+## Utvidelse avtalt 13.11.2026 (norsk tid)
+
+Kenneth valgte: alle registrerte eiere får samme boligportal i separate e-poster; bestillingsfrist stopper nye tilvalg, men prosjektleder kan gi ny frist. Bygg/blokk/stamme/enkeltboliger velges samlet. Bekreftelsesliste viser navn, e-post, mangler, eksisterende lenke og valgmuligheter. Ingen automatisk utsending eller endring av avtalesvarfrister.
+
+Implementert på samme featurebranch: bolig_resident_batch-gateway, atomisk portal-/fristbehandling, per-mottaker e-postvalidering, delte portaltekster, høyrepanel med bevart kladd/eksakt retry, hjelp. 1813 SQL-assertions (31 nye batchkontroller), 11 utvalgs-/mottaker-/maltester, 13 faktiske React-panelscenarier, 62 eksisterende e-posttester med mock transport og full build PASS. Første React-testoppsett manglet Vite cssFileName/array-håndtering og jsdom MessageChannel; rettet testmiljø, ingen appkontroll svekket. Første database-scenario prøvde melding i prosjekt med meldinger AV; test-fixturen aktiverer nå meldinger eksplisitt, appens standard forblir AV.
+
+Ny SQL-test dekker hele utvalgets rollback, leser/fremmed firma, duplikatboliger, stale basis, samme retry, erstatningsbekreftelse, medeiere (og store bokstaver i e-post), avvist uvedkommende, pauset sending, friststopp, replay over frist, fortsatt aktivert dialog og gjenåpning av én bolig. React-test dekker fokus/dvale, endret servergrunnlag, kladd etter lukking, usikkert svar og samme token/referanse, pauset utsending, mottakerskjuling ved tilgangstap og sent svar etter bevisst lukking.
+
+Ingen faktisk e-post er sendt. Live sandbox-/publiseringsstatus for denne utvidelsen må verifiseres før TEST OK. Endelig video er ikke oppdatert; nytt opptaksmanus ligger i BOLIG_BATCH_VIDEO_20261113.md.
+
+### Installasjonskontroll for batchfunksjonen
+
+Kun sandbox ppvircenkjizeiqdxphj: lokal 20261112232829 → remote 20261112234121. Verifisert anon EXECUTE=false, authenticated=true og mail_enabled=false. Sikkerhetsrådgiver: ingen nye WARN; én forventet INFO for privat kvitteringstabell med RLS uten direkte klientpolicy (197→198). Ingen direkte tabellrettigheter er gitt.
+
+bolig-resident-link-email v4→v5 deployet kun i sandbox. verify_jwt=false beholdt; handlerens Auth.getUser og kanoniske SQL-autorisasjon består. Ny klient sender forventet bruker-ID; mismatch mellom supportvisning og faktisk innlogget JWT avvises før transport. 62 eksisterende +2 nye e-postkontroller bestått, også med nøyaktige sandbox-avhengigheter. Ved deploy ble eldre remote logo-/avsenderhjelpere oppdaget: disse ble bevart byte-for-byte, bare resident-link-email.mjs ble oppdatert. Ikke overskriv andre deployede hjelpere ukritisk ved produksjonssetting.
+
+Sandbox site_origin i e-postinnstilling er fortsatt den eldre fase45b-previewadressen. Sending er AV. Før aktivering/ekte utsending må riktig mottakeradresse til appen kontrolleres per miljø (produksjon expo-proffdok.app); ingen konfigurasjon er endret for å sende nå.
