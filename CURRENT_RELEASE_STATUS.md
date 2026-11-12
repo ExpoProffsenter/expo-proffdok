@@ -1,5 +1,6 @@
-## Supportkandidat 11.11 – ikke produksjonssatt
-PR319 + PR320. Sandbox-only testaktivering. Faktisk Sales-lagring/redigering/reload og PDF Storage-opplasting/lesing bekreftet. Bolig create/update/archive-fence kontrollert gjennom native RPC i rollback-transaksjon. 78 lokale SQL-krav består. Se docs/qa/SUPPORT_APP_UX_20261111.md for kandidat, begrensninger og nyeste CI; docs/architecture/APP_SUPPORT_SESSION.md for produksjons-/rollback-plan. TEST OK er ikke gitt.
+## Gjeldende supportstatus 12.11.2026 – ikke produksjonssatt
+
+Aktiv leveranse er PR322 + PR320. Tidligere TEST OK gjelder be48b797 +007364a4. En ny avgrenset rettelse av offentlige forespørsler er testet og installert kun i sandbox; 91 SQL-kontroller består og faktisk beboerportal åpner igjen. Ny kandidat krever grønne kontroller og vurdering før produksjon. Se [QA-logg](docs/qa/SUPPORT_APP_UX_20261111.md). Historiske avsnitt under beskriver tidligere kontrollpunkter, ikke dagens godkjenningsstatus.
 
 # Produksjonsrettelser – 11. november 2026
 

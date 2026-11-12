@@ -2,7 +2,7 @@
   "version": 1,
   "title": "Samlet supportmodus med kundens rettigheter og slettesperrer",
   "change": "Miljømål BEGGE. Full kundeapp, tilbud og dokumenter, identitet/priser, isolerte kladder, gjenåpning, retur til administrator og serverstyrte slettesperrer. Testaktivert bare i sandbox; separat PR320 for Bolig-kontraktfiler.",
-  "verification": "78 SQL-kontroller, runtime/Auth/cache, full lokal build og innlogget Sales/Storage/reload/navigasjon. Bolig-RPC opprettelse/redigering og avvist arkivering verifisert med rollback. Nyeste CI og sluttkontroll dokumenteres i QA-logg. Production og demo-branch uendret; TEST OK gjenstår.",
+  "verification": "91 SQL-kontroller, runtime 45, Auth/cache og critical-support/mail PASS. Offentlig beboerportal reprodusert avvist og bekreftet åpnet i sandbox etter invoker-rettelse. Tidligere TEST OK gjelder be48b797 + PR320; ny kandidat krever ny vurdering og grønne GitHub-kontroller. Produksjon uendret.",
   "documentation": {
     "help": {
       "required": true,
@@ -18,7 +18,7 @@
     },
     "setup": {
       "required": true,
-      "reason": "Arkitekturdokumentet beskriver miljøkontroll, åtte migrasjoner, Edge-adapter, aktivering og tilbakeføring uten datasletting."
+      "reason": "Arkitekturdokumentet beskriver miljøkontroll, ni migrasjoner (offentlig hook-rettelse før registrering), Edge-adapter, aktivering og tilbakeføring uten datasletting."
     }
   }
 }

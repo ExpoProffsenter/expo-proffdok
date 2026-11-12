@@ -108,3 +108,15 @@ Nye remote-versjoner: resume_same_target 20261111200111; empty_archive_fields 20
 Privat test-PDF ble faktisk lastet opp i project-documents-private under korrekt company/sales-path og visuelt åpnet. Storage-objektet har faktisk aktør som Storage owner_id (tjenestens uendrede Auth-token); original kundepolicy bruker firmapath. Både kundeidentitet, claims og SQL-audit er mål-/aktørseparert. Dette endrer ikke policysemantikken for andre bøtter.
 
 Siste avgrensning: innebygde imageDataUrl/imageUrl kan ikke tømmes/erstattes i support; user_terms_acceptance skriving sperres. SQL-suite har 78 PASS. Native admin-route er admin, ikke systemadmin; returmarkøren bruker nå riktig route og users-område med profilgate, kontrollert i ekstraktert faktisk main-effekt. Ny kandidat må verifiseres i nettleser før TEST OK etterspørres.
+
+## Kontrollpunkt 12.11.2026 – offentlig portal og branchkontroll
+
+PR322 på release/support-verified-20261111 er aktiv leveranse. PR319 og qa/support-full-app-20261111 beholdes som eldre be48b797-grunnlag; de skal ikke merges i tillegg. Kenneth har gitt TEST OK for be48b797 sammen med companion PR320 007364a4. Dette erstatter eldre formuleringer om manglende TEST OK for den kandidaten.
+
+Reprodusert i faktisk sandbox: beboerlenke til syntetisk bolig 24 viste «permission denied for function app_support_prepare_request». Samme feil var observert før innlogging ved FDV-register. Offentlig inngang manglet EXECUTE for anon, selv om hook er global.
+
+Avgrenset rettelse: ny invoker-wrapper returnerer uten supportheader; med header kreves authenticated og eksisterende privat kontroll. Local migration 20261112230911 installert kun i sandbox ppvircenkjizeiqdxphj som remote 20261112230959. Ingen endring av innstillinger, mottakere eller produksjon.
+
+Verifisert: 91 reelle SQL-assertions (78 eksisterende +13 nye), runtime 45, Auth/retur, cache/UX og critical-support/mail 55 PASS. Cachetesten krevde eksplisitt lokalt jsdom-bibliotek etter første manglende-pakke-feil; den bestod etter riktig testmiljø. Faktisk tidligere avvist beboerlenke ble lastet på nytt i skynett og åpnet korrekt bolig 24 med Mine valg, Avtaler, Dokumenter og Meldinger. Ingen avtale akseptert, ingen melding sendt. Sikkerhetsrådgiveren viser samme seks kategorier/nivåer som før; dette er ikke en attest på at eldre advarsler er løst.
+
+Gjenstår: ny GitHub-kontroll for rettet supportcommit, samlet support/PR320-prøve og vurdering av endret kandidat før produksjonssetting. Historisk grønn kjøring for PR320 erstatter ikke siste ventende kjøring. Feilrettelsen er et tillegg til tidligere TEST OK-grunnlag; ingen automatisk produksjonsmerge. Eksisterende produksjonsplan skal bruke denne niende migrasjonen før hook-registrering.

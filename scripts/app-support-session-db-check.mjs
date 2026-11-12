@@ -93,6 +93,27 @@ create function public.support_qa_remove() returns void language sql security de
 await db.exec(await fs.readFile('supabase/migrations/20261111183233_app_support_write_gateway.sql','utf8'));
 await db.exec(await fs.readFile('supabase/migrations/20261111194441_app_support_canonical_write_validation.sql','utf8'));
 await db.exec(await fs.readFile('supabase/migrations/20261111201506_app_support_file_and_consent_fences.sql','utf8'));
+await db.exec(await fs.readFile('supabase/migrations/20261112230911_app_support_public_request_passthrough.sql','utf8'));
+// The global hook must not block normal public portals or service requests.
+const ordinaryRequest=async(role,headers)=>{
+ await db.exec(`begin;set local role ${role}`);
+ try{
+  await db.query("select set_config('request.headers',$1,true)",[headers]);
+  await db.query('select public.app_support_prepare_request()');
+  const result=await db.query('select current_user role');
+  await db.exec('commit');return result.rows[0].role;
+ }catch(e){await db.exec('rollback');throw e;}
+};
+for(const role of ['anon','authenticated','service_role']){
+ for(const headers of ['', '{}', '{"x-expo-support-session":""}']){
+  eq(await ordinaryRequest(role,headers),role,`${role}: ordinary request retains its role`);
+ }
+}
+for(const role of ['anon','service_role']){
+ await denied(()=>ordinaryRequest(role,JSON.stringify({'x-expo-support-session':session.id})),`${role}: forged support header rejected`);
+}
+eq((await db.query("select prosecdef from pg_proc where oid='public.app_support_prepare_request()'::regprocedure")).rows[0].prosecdef,false,'public hook remains SECURITY INVOKER');
+eq((await db.query("select has_schema_privilege('anon','app_support_private','USAGE') allowed")).rows[0].allowed,false,'anonymous private schema access remains forbidden');
 await claim(actor);await db.exec('set role authenticated');
 const writeSession=await cmd('start',target,firm);await db.exec('reset role');
 const scoped=async(sql,{prepare=true,session=writeSession.id}={})=>{

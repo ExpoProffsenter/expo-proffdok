@@ -1,6 +1,6 @@
 # Samlet supportøkt – testkandidat i sandbox
 
-PR319. Kravet er kundens faktiske app og egne priser, med opprettelse/redigering, uten sletting. Tilbake skal forbli i kundens app; eksplisitt avslutning skal gjenopprette administratorens arbeidsflate. Dette dokumentet beskriver grunnlaget og åpne integrasjonspunkter, ikke en ferdig brukerreise.
+PR322 erstatter PR319 ved vellykket QA. Kravet er kundens faktiske app og egne priser, med opprettelse/redigering, uten sletting. Tilbake skal forbli i kundens app; eksplisitt avslutning skal gjenopprette administratorens arbeidsflate. Dette dokumentet beskriver grunnlaget og åpne integrasjonspunkter, ikke en ferdig brukerreise.
 
 ## Identitet og levetid
 
@@ -45,3 +45,9 @@ INSERT/UPDATE-kontrollen kjører etter opprinnelige normaliseringstriggere, og v
 Etter TEST OK: kontroller main/demo og nyeste migrasjonshistorikk på nytt; installer bare manglende migrasjoner i rekkefølge og la Production-innstillinger være false under oppsett. Original Storage-policylista og eventuell eksisterende db_pre_request må kontrolleres før installering. Deploy PR320 Edge-adapter med eksisterende verify_jwt-kontrakt. Merge/release begge avgrensede PR-er med grønne kontroller. Aktiver først etter at publisert frontend-commit, funksjonsversjon og hook er bekreftet. Verifiser produksjon med lesing og navigasjon, ikke syntetiske kundeskrivinger. Synkroniser demo separat og bevar miljøoverlegg.
 
 Tilbakeføring: sett app_support_private.settings enabled=false,transport_ready=false. Dette skjuler ny inngang og stopper pågående supportkall lukket; normale kall uten supportheader beholder gammel behandling. Reverter eventuelt frontend/Edge til forrige bekreftede release. Behold audit og kundens faktisk lagrede data; ikke fjern tabeller, migrasjonshistorikk eller Storage-snapshots ved normal rollback.
+
+## Offentlige forespørsler – rettelse 12.11.2026
+
+Global hook kjøres også for anon og service_role. Ny migrasjon `20261112230911_app_support_public_request_passthrough.sql` lar disse rollene kalle den offentlige SECURITY INVOKER-inngangen. Uten supportheader returnerer den før privat skjema berøres. Med supportheader kreves authenticated før eksisterende private økt-, aktør-, mål- og firmakontroll. Ingen nye private rettigheter, ingen bytting av rolle, ingen endring av RLS eller utsending.
+
+Installer denne rettelsen før global hook registreres i et nytt miljø. Åtte tidligere supportmigrasjoner pluss denne rettelsen må avstemmes mot faktisk migrasjonshistorikk; ikke gjeninstaller sandbox-migrasjonene. Sandbox lokal 20261112230911 → remote 20261112230959. Produksjon ikke endret. Ved rollback må rettelsen beholdes så lenge den globale hooken finnes; å deaktivere support alene reparerer ikke den gamle manglende anon-kallrettigheten.
