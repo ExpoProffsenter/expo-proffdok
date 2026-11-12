@@ -11,7 +11,7 @@ Kontrollert mot GitHub med git ls-remote/fetch. Åtte brancher. Ingen slettet, i
 | fix/support-project-sales-20261111 | be48b7978a1d3bb4cd9d43e8938f67a25e9f661e | Eldre PR319, godkjenningshistorikk. Ancestor til PR322 | Etter PR322 er levert: lukk PR319 som erstattet, bekreft ingen nye commits, deretter slett ved autorisert opprydding. Ikke merge begge |
 | qa/support-full-app-20261111 | be48b7978a1d3bb4cd9d43e8938f67a25e9f661e | Gammel sandbox-frontend. Ny hook-rettelse er SQL-only og installert i sandbox | Etter supportleveranse og bekreftet at QA-preview ikke trengs. Ikke merge QA-branch |
 | fix/bolig-help-flow-20261111 | c09809a146d72797953140b932387b9007af479b | Draft PR321, egen teksthjelp. Ikke ny ferdig video | Behold unikt arbeid til vurdert og levert eller uttrykkelig erstattet |
-| feature/bolig-residents-buildings-20261112 | Appkandidat 59337a1a2e08af8957c70763763980b5ba947ca0; dette dokumentets commit legger bare til QA/oversikt | Orvei-import, felleseiere, flere bygg. Egen sandbox-preview; ingen PR ennå | Etter egen QA, TEST OK, merge og produksjon/demo-kontroll. Ikke slett eller bland inn i supportmergen |
+| feature/bolig-residents-buildings-20261112 | Sandbox-testet eb7efbb5a02dc37b2e1c1d5b7b42482839e9e2f1; etterfølgende commit retter panelstil og utvider hjelpetest | Draft PR323: Orvei-import, felleseiere, flere bygg, samlet beboerlenke og frister. Egen sandbox-preview | Etter egen QA, TEST OK, merge og produksjon/demo-kontroll. Ikke slett eller bland inn i supportmergen |
 
 ## Kontroll før senere opprydding
 

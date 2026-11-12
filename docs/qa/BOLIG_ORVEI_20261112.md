@@ -79,3 +79,12 @@ Kun sandbox ppvircenkjizeiqdxphj: lokal 20261112232829 → remote 20261112234121
 bolig-resident-link-email v4→v5 deployet kun i sandbox. verify_jwt=false beholdt; handlerens Auth.getUser og kanoniske SQL-autorisasjon består. Ny klient sender forventet bruker-ID; mismatch mellom supportvisning og faktisk innlogget JWT avvises før transport. 62 eksisterende +2 nye e-postkontroller bestått, også med nøyaktige sandbox-avhengigheter. Ved deploy ble eldre remote logo-/avsenderhjelpere oppdaget: disse ble bevart byte-for-byte, bare resident-link-email.mjs ble oppdatert. Ikke overskriv andre deployede hjelpere ukritisk ved produksjonssetting.
 
 Sandbox site_origin i e-postinnstilling er fortsatt den eldre fase45b-previewadressen. Sending er AV. Før aktivering/ekte utsending må riktig mottakeradresse til appen kontrolleres per miljø (produksjon expo-proffdok.app); ingen konfigurasjon er endret for å sende nå.
+
+
+## Live batchkontroll 13.11 norsk tid / PR323
+
+Kandidat eb7efbb5a02dc37b2e1c1d5b7b42482839e9e2f1, READY dpl_8yekaeuMzWCVUB7QoUXeP9nR97PK, samme faste preview. I syntetisk QA–Orvei-prosjekt ble frist 2026-11-21 lagret samtidig for alle fire boliger i QA Bygg A og bekreftet i fersk UI. Native datofelt krevde tastaturhendelse i cloud-driver; vanlig fill alene oppdaterte ikke React. Ingen bekreftet appfeil i datofeltet.
+
+Deretter valgt bolig24+25, eksplisitt erstattet gammel syntetisk lenke24, klargjort to portaler. Listen viser tre eiere:24 har to identiske portaladresser,25 egen. Pauset e-post vises, utsendingsknapp er deaktivert. Ingen e-post forsøkt eller sendt. Bilde: evidence/orvei-batch-recipients-20261113.jpg. Selve e-postleveransen, ny fristvisning på offentlig portal og mobilvisning av nytt panel er ikke live-verifisert i denne runden; server-/komponenttester dekker frist og mottakergrenser. Video er manus, ikke ferdig opptak.
+
+PR323-kjøring43331389746: bolig-db, bolig-browser, build, HR og øvrige datatester bestått. app-browser feilet i bolig-guidance-workspace-browser-check fordi testens katalog bare inneholdt de gamle temaene (forventet8 i struktur, fikk12). Ny kontrakt: behold alle opprinnelige teksthash-kontroller, inkluder fem nye household-temaer, åpne og kontroller hvert av dem og tell faktisk hele gruppen. Ingen terskel senkes eller kontroll utelates. Etterfølgende commit retter dette og begrenser label-layout til det nye panelet for avkryssing ved siden av tekst. Ny GitHub-kontroll kreves. PR320 siste43097043078 fortsatt queued. Produksjon/main/demo uendret.
