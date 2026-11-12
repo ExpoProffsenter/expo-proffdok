@@ -1,3 +1,7 @@
+# Samlet status – 12. november 2026
+
+Se [samlet leveranseoversikt](docs/qa/RELEASE_OVERVIEW_20261112.md) for bekreftet produksjonsversjon, ventende supportleveranse, nye Orvei-endringer og urettet sandbox-blokkering. Dette dokumentet ligger på arbeidsbranchen og innebærer ingen produksjonspublisering.
+
 # Produksjonsrettelser – 11. november 2026
 
 Miljømål BEGGE. Arbeidet gjelder kundens varesøk, firmatilgang og opsjoner i generelle tilbud. Dette er ikke en erklæring om fullført QA av hele appen.

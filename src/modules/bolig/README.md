@@ -27,3 +27,12 @@ Felles klargjøring (bygg, nummerering, rom/pakker) åpner til høyre. Det lange
 Under pågående lagring viser klargjøring, masseplan, datoflytting og enkeltaktivitet en ventebeskjed. Instruksjonen om usikkert resultat og eksakt retry gjelder etter at den eksisterende kommandoen har forlatt opptatt tilstand. UI-teksten endrer ingen request-ID, sperre, kvittering eller gjenoppretting.
 
 Systemadmin kan også aktivere Boligprosjekter på det valgte firmakortet under Brukere og roller. Panelet låses da til valgt firma. Eksisterende separat firmatilgangsflate beholder firmavelgeren. Firmaadmin tildeler fortsatt brukerroller; ingen rolle gis automatisk.
+
+
+## Beboerimport og felles eierportal
+
+Boliger kan ha vanlige nummer som 24 og 38. `additional_contacts` lagrer inntil ni ekstra eiere ved siden av hovedkontakten. Alle bruker samme eksisterende beboerportal og kommersielle tilstand; bare hovedkontakten brukes i eksisterende e-postfunksjoner. Endret eierliste tilbakekaller den delte portallenken og åpne dokumentlenker.
+
+Importer beboere fra Excel åpnes i samme høyrepanel som felles klargjøring, med separat rulling og fast handlingsfelt. XLSX/CSV leses lokalt. Brukeren kontrollerer kolonner, boligkobling, hovedkontakt og eventuell overskriving før én atomisk lagring. Importen oppretter ingen boliger eller utsendinger. Samme bolignummer på ulike adresser skilles. Uklare koblinger må velges manuelt. Usikkert svar beholder nøyaktig samme forespørsel for retry.
+
+Se `docs/architecture/BOLIG_HOUSEHOLD_CONTACTS.md` og `docs/qa/BOLIG_ORVEI_20261112.md` før installasjon.
