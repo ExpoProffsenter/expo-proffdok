@@ -16,8 +16,8 @@ Arbeidsbranch: feature/bolig-residents-buildings-20261112. Base main d68cf2e530d
 
 ## Gjenstår før godkjenning
 - Full faktisk importdialog-test, inkl. beholdt utkast, usikkert svar og tilgangstap.
-- Installere kun ny migrasjon i sandbox etter kontroll av support-gateway og migrasjonsstatus; ikke produksjon.
-- Bekrefte publisert commit og sandbox-binding. Visuell skynett-test på bred og smal skjerm.
+- Sandbox-migrasjonen er installert og prøvd, se kontrollpunkt under. Produksjonsinstallasjon gjenstår.
+- Publisert commit og sandbox-binding er bekreftet. Skynett på bred skjerm er prøvd; smal skjerm gjenstår.
 - Grønn GitHub-kontroll og Kenneths TEST OK før egen produksjonsplan/main→demo. Support-TEST OK omfatter ikke dette nye funksjonsomfanget.
 - Orveis faktiske Excel og fremdriftsplan er ikke mottatt. Importoppsett må avstemmes mot dem.
 
@@ -31,9 +31,33 @@ Arbeidsbranch: feature/bolig-residents-buildings-20261112. Base main d68cf2e530d
 ## Video
 V12-redigerbare kilder er hentet fra Library. Kun 3 av 57 scener har cursor-target i opprinnelig tidslinje. Ny videorekkefølge, gjennomgående peker og nye opptak er ikke levert. PR321 er separat teksthjelp og skal ikke beskrives som ferdig revidert video.
 
-## Skynett og samlet mergekontroll
+## Historisk blokkering før rettelse
 Skynett åpnet permanent demo 12.11. Før innlogging viste appen «Kunne ikke hente FDV-register ... permission denied for function app_support_prepare_request». Read-only SQL bekrefter offentlig pre-request-funksjon har EXECUTE kun for authenticated, mens hook er global. Ny boligmigrasjon er ikke installert. Dette må isoleres og rettes i supportleveransen før samlet test.
 
 Boligarbeidsbranch er opprettet fra eksakt main-baseline. Branch-spesifikk Preview-variabel EXPO_BACKEND_TARGET=sandbox er registrert i Vercel; ingen produksjonsvariabler endret.
 
 Før produksjon: avstem mot faktisk main og support PR322 + companion PR320. Test samlet kandidat, særlig offentlig/innlogget portal, flere eiere, supportskriving/slettesperrer, firmaskille og ordinær tilbudslagring. Grønn status for separate eldre commits er ikke tilstrekkelig. Ny vesentlig supportrettelse krever fornyet vurdering av tidligere TEST OK. Ingen endring av køinnstillinger, ekstra feilsøkingskjøringer eller erstatnings-PR-er.
+
+## Verifisert sandbox-kontroll 12.11 kl. 23 UTC
+
+Frontend 59337a1a2e08af8957c70763763980b5ba947ca0, READY deployment dpl_BoHDts56CykQXCBLYyjxpz84ma52. Fast testadresse: https://expo-proffdok-git-feature-bolig-residents-build-739874-ringside.vercel.app/?progressTest=safe . Utsendt klientkode er kontrollert bundet til sandbox ppvircenkjizeiqdxphj, ikke produksjon.
+
+Local 20261112222106_bolig_household_contacts installert kun i sandbox som remote 20261112225500 etter kontroll av at den manglet. Sikkerhetsrådgiver før/etter viste samme funn. Eksisterende advarsler er ikke rettet av denne leveransen.
+
+Skynett opprettet syntetisk prosjekt QA – Orvei import og felleseiere 12.11, referanse QA-ORVEI-20261112, root 6dd4a9b9-be93-4428-b060-5cdb74157607. QA Bygg A har fire boliger, QA Bygg B seks. Eksisterende nummereringsdialog lagret 24,25,38. Import via innlimt tabell koblet fire eiere til tre eksisterende boliger. Æ/Ø/Å og ledende nuller i mobil ble bevart. Lagring uten valgt hovedkontakt ble korrekt stoppet. Etter valg av hovedkontakt ble utkast og valg bevart ved lukking/gjenåpning. Lagring viste tre boliger oppdatert. Databaseavlesing bekreftet ti boliger totalt, ingen dublett, begge eiere på 24 og én importkvittering.
+
+Leilighetsinformasjon viser hovedkontakt og tilleggseier i høyrepanelet. Varsel → Flere bygg: A+B viste ti mottakere, bare A fire, tilbake til begge ti. Lagret kun utkast. Database bekreftet ti mottakerrader, én gruppe, null publiserte meldinger og null leveranser. Ingen reell mottaker brukt.
+
+Klargjør invitasjon → Lag portaltilgang opprettet testlenke uten sending. Den ble først avvist av support-hooken. Separat rettelse er lagret i PR322 f64efcc8d1b957d829e9ea96bd39ce539dde48ea, ikke i boligbranchen. Lokal supportmigrasjon 20261112230911 → sandbox remote 20261112230959. Etter installasjon åpnet samme lenke bolig 24 med Mine valg, Avtaler, Dokumenter og Meldinger. Ingen avtale/vilkår akseptert. Felles data og tilbakekalling ved endret eierliste dekkes også av lokal SQL-test; full to-enhetsprøve er ikke utført.
+
+Komprimert XLSX generert med openpyxl og lest med faktisk parser: tre ekstra kontroller bestått (nummer 24, ledende nuller, norske tegn). Filvelgeropplasting i skynett er ikke prøvd; innlimingsløpet er prøvd ende til ende.
+
+## Konkret restliste
+
+- Eksisterende portal/invitasjon sier fortsatt «personlig / ikke videresend». Tilpass dette presist for flere registrerte eiere, behold sikker tekst for én eier. Ikke del med uvedkommende.
+- Full React-dialogtest for usikkert svar/tilgangstap og visuell mobilkontroll. Faktisk XLSX-opplasting med Orveis fil når mottatt.
+- Felles portal på to enheter og tilbakekalt gammel lenke i nettleseren (SQL-grunnlaget bestått).
+- PR, grønne kontroller, egen TEST OK og kontrollert produksjonsplan. Produksjon uendret. Ingen utsending.
+- A–Å/video/peker og norsk lyd gjenstår som beskrevet over.
+
+Se [branchregister](BRANCH_REGISTER_20261112.md) og [samlet oversikt](RELEASE_OVERVIEW_20261112.md). Testbilder ligger i evidence/.
