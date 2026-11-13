@@ -451,7 +451,7 @@ export default function BoligGantt({
                             tabIndex={0}
                             className={`bolig-gantt-bar ${t.status}`}
                             style={{ left: `${g.left}%`, width: `${g.width}%`, minWidth: view === "all" ? 4 : undefined, maxWidth: `${100-g.left}%` }}
-                            aria-label={`${t.unit_number} · ${t.title} · ${displayDate(t.planned_start)} til ${displayDate(t.planned_end)}`}
+                            aria-label={`${t.unit_number} · ${t.address || ""} · ${t.title} · ${displayDate(t.planned_start)} til ${displayDate(t.planned_end)}`}
                             aria-describedby={tip?.task.id === t.id ? `bolig-gantt-tip-${t.id}` : undefined}
                             onMouseEnter={event => showTip(event, t)}
                             onMouseLeave={deferHideTip}
