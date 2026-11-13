@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Flytt bolig med bevart identitet og historikk",
+  "change": "Miljømål BEGGE. Legger til forhåndsvist plassbytte mellom to aktive boliger i samme oppgang via eksisterende klargjøring, med uendrede ID-er og avhengige data.",
+  "verification": "Lokal critical/build PASS. Bolig PostgreSQL PASS: 1837 assertions inkludert plassbytte, avhengige tabeller, retry, firmaskille og resize. Ny placement React og full bolig-foundation-react PASS. CI og innlogget sandboxprøve gjenstår; ikke produksjonssatt.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "Ny Flytt bolig-handling med tydelig forklaring av plassbytte og historiske dokumenter."
+    },
+    "module": {
+      "required": true,
+      "reason": "Ny klargjøringshandling og migrasjonsavhengighet."
+    },
+    "architecture": {
+      "required": true,
+      "reason": "Dokumenterer stabil boligidentitet, atomisk plassbytte og kvitteringsretry."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen endret generell oppstart; avgrenset migrasjonsplan i arkitektur og PR."
+    }
+  }
+}
