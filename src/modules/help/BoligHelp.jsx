@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import {ArrowLeft,ArrowRight,ChevronDown,Search} from 'lucide-react';
 import {BOLIG_HOUSEHOLD_HELP} from './BoligHouseholdHelp.jsx';
+import {BOLIG_PLACEMENT_HELP} from './BoligPlacementHelp.jsx';
 import BoligGuidePanel from './BoligGuidePanel.jsx';
 import {BOLIG_HELP_GROUPS,BOLIG_HELP_TOPICS} from './boligHelpContent.jsx';
 
@@ -11,7 +12,7 @@ export function boligHelpText(node) {
   return boligHelpText(node.props?.children);
 }
 const normalize=value=>value.toLocaleLowerCase('nb').normalize('NFKC');
-const topics=[...BOLIG_HELP_TOPICS,...BOLIG_HOUSEHOLD_HELP].map(topic=>({...topic,search:normalize(topic.title+' '+boligHelpText(topic.body))}));
+const topics=[...BOLIG_HELP_TOPICS,...BOLIG_HOUSEHOLD_HELP,...BOLIG_PLACEMENT_HELP].map(topic=>({...topic,search:normalize(topic.title+' '+boligHelpText(topic.body))}));
 
 export function BoligHelp({returnLabel}={}) {
   const [open,setOpen]=useState(false),[group,setGroup]=useState(''),[query,setQuery]=useState(''),[expanded,setExpanded]=useState('');

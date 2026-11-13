@@ -11,7 +11,8 @@ let browser,checks=0;const eq=(a,b,label)=>{assert.deepEqual(a,b,label);checks++
 const built=await build({root,configFile:false,logLevel:'silent',plugins:[react(),{name:'guidance-transport-only',enforce:'pre',resolveId(id){if(id.endsWith('/appSupabaseClientRegistry.js'))return '\0qa';},load(id){if(id==='\0qa')return 'export const getAppSupabaseClient=()=>window.qa.client;';if(process.env.BOLIG_HELP_SOURCE&&id.endsWith('/help/BoligHelp.jsx'))return fs.readFileSync(process.env.BOLIG_HELP_SOURCE,'utf8');if(id.endsWith('/fixtures/housing-first-screen-036.jsx'))return fs.readFileSync(id,'utf8')+`
 import {BOLIG_HELP_TOPICS,BOLIG_HELP_GROUPS} from '${root}/src/modules/help/boligHelpContent.jsx';
 import {BOLIG_HOUSEHOLD_HELP} from '${root}/src/modules/help/BoligHouseholdHelp.jsx';
-window.qa.helpTopics=[...BOLIG_HELP_TOPICS,...BOLIG_HOUSEHOLD_HELP].map(({id,title,group})=>({id,title,group}));window.qa.helpGroups=BOLIG_HELP_GROUPS;
+import {BOLIG_PLACEMENT_HELP} from '${root}/src/modules/help/BoligPlacementHelp.jsx';
+window.qa.helpTopics=[...BOLIG_HELP_TOPICS,...BOLIG_HOUSEHOLD_HELP,...BOLIG_PLACEMENT_HELP].map(({id,title,group})=>({id,title,group}));window.qa.helpGroups=BOLIG_HELP_GROUPS;
 const originalRpc=window.qa.client.rpc;window.qa.client.rpc=async(...args)=>{const r=await originalRpc(...args);if(window.qa.denied&&r.data){if(r.data.context)r.data.context={...r.data.context,enabled:false};else if(args[1]?.p_action==='context')r.data={...r.data,enabled:false};}return r;};
 `;}}],define:{'process.env.NODE_ENV':'"production"','import.meta.env.VITE_SUPABASE_URL':'""','import.meta.env.VITE_SUPABASE_ANON_KEY':'""'},build:{write:false,minify:false,target:'esnext',lib:{entry:path.join(root,'scripts/fixtures/housing-first-screen-036.jsx'),formats:['es'],cssFileName:'guidance-qa',name:'GuidanceQA'}}});
 const output=(Array.isArray(built)?built[0]:built).output,css=output.filter(i=>i.type==='asset'&&i.fileName.endsWith('.css')).map(i=>i.source).join('\n');
