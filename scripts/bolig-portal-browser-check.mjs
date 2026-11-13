@@ -47,7 +47,7 @@ if(p.p_action==='offer')managerPortal.offers_draft.push({...state.offers[0],id:'
 if(p.p_action==='publish'){managerPortal.revoked=false;managerPortal.offers=[...managerPortal.offers_draft];}
 if(p.p_action==='revoke')managerPortal.revoked=true;
 if(p.p_action==='reply')managerPortal.events.push({id:'reply',kind:'reply',sender:'manager',body:p.p_payload.body,created_at:'2026-10-22T12:00:00Z'});}
-return {data:{context:{...context,role:window.__role||'manager'},root_id:'root',unit_id:'unit',revision,choice_revision:1,catalog_revision:1,rooms_revision:0,contact:{name:'QA Beboer',email:'qa@example.invalid'},components:[],options:[],packages:[],portal:managerPortal}};});}};
+return {data:{context:{...context,role:window.__role||'manager'},root_id:'root',unit_id:'unit',revision,choice_revision:1,catalog_revision:1,rooms_revision:0,contact:{name:'QA Beboer',email:'qa@example.invalid'},components:window.__components||[],options:[],packages:[],portal:managerPortal}};});}};
 const app=createRoot(document.getElementById('app'));window.__mode=location.search.includes('manager')?'manager':'public';
 window.__show=(mode=window.__mode,role='manager')=>{window.__mode=mode;window.__role=role;app.render(mode==='public'?<Portal key={role}/>:<div className="bolig-dialog" style={{position:'static',display:'block',width:'100%',maxWidth:1000,margin:'auto'}}><Manager key={role} context={{...context,role}} root={{id:'root'}} unit={{id:'unit',number:'H0101'}}/></div>);};window.__show();
 `,
@@ -283,6 +283,21 @@ try {
   eq(await page.locator('.bolig-portal-home-card,.bolig-portal-next').count(),0,'revocation removes the complete personal welcome');
   eq(await page.locator('.bolig-resident-brand strong').innerText(),'Beboerportal','revocation removes company identity from header');
   await page.goto(url + "?manager");
+  // A room-only package must not look selected while the draft still says common.
+  await page.evaluate(() => { window.__components = [{scope_id:'room-1',room_name:'Bad 1',package:{id:'p1',name:'Standardbad',lines:[]}}]; });
+  await page.getByRole('button',{name:'Oppdater portalstatus'}).click();
+  await page.getByLabel('Bruk boligens lagrede valg').uncheck();
+  eq(await page.getByLabel('Pakke som endres').inputValue(), '', 'missing saved scope shows explicit placeholder, not first room');
+  eq(await page.getByRole('button',{name:'Legg til valgmulighet'}).isDisabled(), true, 'missing scope cannot submit');
+  await page.getByLabel('Pakke som endres').selectOption('room-1');
+  eq(await page.getByRole('button',{name:'Legg til valgmulighet'}).isEnabled(), true, 'explicit room enables offer');
+  await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+  eq(await page.getByLabel('Pakke som endres').inputValue(), 'room-1', 'refresh retains explicit room');
+  await page.evaluate(() => { window.__components = []; });
+  await page.getByRole('button',{name:'Oppdater portalstatus'}).click();
+  eq(await page.getByLabel('Pakke som endres').inputValue(), '', 'removed room cannot appear selected');
+  eq(await page.getByRole('button',{name:'Legg til valgmulighet'}).isDisabled(), true, 'removed room blocks offer');
+  await page.getByLabel('Bruk boligens lagrede valg').check();
   await page
     .getByLabel("Navn på valgmuligheten")
     .fill("Grunnpakke til beboeren");
