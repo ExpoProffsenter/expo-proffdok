@@ -397,7 +397,7 @@ export default function BoligGantt({
                   </button>
                 ) : (
                   <button type="button" onClick={() => onEdit(r.task)}>
-                    {r.label}
+                    {r.label}{" "}
                     <small>{r.task.planned_start} – {r.task.planned_end}</small>
                     <small>{r.task.owner_name}</small>
                   </button>
