@@ -24,6 +24,13 @@ export default function StandaloneChecklists({companyId,userId,onClose}){
  const [data,setData]=useState(null),[selected,setSelected]=useState(null),[dirty,setDirty]=useState(false),[cached,setCached]=useState(null);
  const [version,setVersion]=useState(''),[error,setError]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false),[denied,setDenied]=useState(false);
  const [localDrafts,setLocalDrafts]=useState([]);
+ const validationMessage=useRef(null),[validationAttempt,setValidationAttempt]=useState(0);
+ const showSaveProblem=message=>{setError(message);setValidationAttempt(attempt=>attempt+1);};
+ useEffect(()=>{
+  if(!validationAttempt)return;
+  validationMessage.current?.focus({preventScroll:true});
+  validationMessage.current?.scrollIntoView({block:'nearest'});
+ },[validationAttempt]);
  const [recipient,setRecipient]=useState(''),[confirmed,setConfirmed]=useState(false),[pending,setPending]=useState(null),[history,setHistory]=useState([]);
  const scope=useRef(null),selection=useRef(null),lock=useRef(false),loadSequence=useRef(0);selection.current=selected;
  const current=token=>token?.active&&scope.current===token;
@@ -86,14 +93,14 @@ export default function StandaloneChecklists({companyId,userId,onClose}){
  const save=async action=>{
   if(lock.current||pending||denied||!selection.current)return;const token=scope.current;
   let row={...selection.current,signatureContract:selection.current.pendingAction?selection.current.signatureContract:'execution-v1',pendingAction:selection.current.pendingAction||action};
-  const detailsProblem=standaloneDetailsProblem(row);if(detailsProblem){setError(detailsProblem);return;}
-  try{if(!row.version_id)row={...row,definition:checklistContent(row.definition)};}catch(e){setError(e.message);return;}
-  if(action==='complete'){const problem=standaloneProblem(row);if(problem){setError(problem);return;}}
+  const detailsProblem=standaloneDetailsProblem(row);if(detailsProblem){showSaveProblem(detailsProblem);return;}
+  try{if(!row.version_id)row={...row,definition:checklistContent(row.definition)};}catch(e){showSaveProblem(e.message);return;}
+  if(action==='complete'){const problem=standaloneProblem(row);if(problem){showSaveProblem(problem);return;}}
   if(!remember(row,true))return;lock.current=true;setBusy(true);setError('');
   try{const state=await saveStandaloneChecklist({rpc:kshmsRpc,companyId,userId,draft:row,action:row.pendingAction,isCurrent:()=>current(token)});if(!state||!current(token))return;
    const saved={...state.record,requestId:crypto.randomUUID()};selection.current=saved;setSelected(saved);setDirty(false);setCached(null);setHistory(state.mail_history||[]);
    setLocalDrafts(removeStandaloneDraft(window.localStorage,userId,companyId,row.id));setNotice(action==='complete'?'Sjekklisten er fullført og lagret.':'Sjekklisten er lagret. Du kan fortsette senere.');try{await load(token);}catch{if(current(token))setError('Sjekklisten er lagret. Oversikten kunne ikke oppdateres. Lukk og åpne vinduet på nytt.');}
-  }catch(e){if(current(token)){if(['22023','P0001'].includes(e.code)){const recover={...selection.current,pendingAction:null};selection.current=recover;setSelected(recover);window.localStorage.setItem(standaloneDraftKey(userId,companyId),JSON.stringify(recover));setCached(recover);}setError(e.message+' Kladden er beholdt.');}}finally{lock.current=false;if(current(token))setBusy(false);}
+  }catch(e){if(current(token)){if(['22023','P0001'].includes(e.code)){const recover={...selection.current,pendingAction:null};selection.current=recover;setSelected(recover);window.localStorage.setItem(standaloneDraftKey(userId,companyId),JSON.stringify(recover));setCached(recover);}showSaveProblem(e.message+' Kladden er beholdt.');}}finally{lock.current=false;if(current(token))setBusy(false);}
  };
  const pdf=async()=>{
   if(lock.current||dirty||denied||!selected?.revision)return;const token=scope.current,row=selection.current;lock.current=true;setBusy(true);setError('');
@@ -126,7 +133,7 @@ export default function StandaloneChecklists({companyId,userId,onClose}){
  return <DeviationDialog title="Sjekklister" context="Eksterne prosjekter · Fyll ut, lagre og send PDF" onClose={()=>{if(!lock.current)onClose();}} busy={busy} closeLabel="Lukk sjekklister">
   <div className="standalone-checklists">
    <p>Fyll ut en sjekkliste for et eksternt prosjekt, uten å opprette et ProffDok-prosjekt. Ordrenummer og arbeidssted/adresse er påkrevd. Opplysningene følger PDF-en. Lagre før du laster ned eller sender.</p>
-   {error&&<p role="alert">{error}</p>}{notice&&<p role="status">{notice}</p>}
+   {error&&<p role="alert" ref={validationMessage} tabIndex={-1}>{error}</p>}{notice&&<p role="status">{notice}</p>}
    {denied?<p>Firmatilgangen må kontrolleres før du fortsetter. Din lokale kladd er beholdt.</p>:!data?<p role="status">Henter sjekklister …</p>:!selected?<>
     <label>Velg sjekkliste<select aria-label="Velg sjekkliste" value={version} onChange={e=>setVersion(e.target.value)}><option value="">Egen sjekkliste</option>{data.versions.map(v=><option key={v.id} value={v.id}>{v.content.title} · v{v.number}</option>)}</select></label>
     <div className="standalone-actions"><button type="button" disabled={busy} onClick={start}>Start sjekkliste</button>{cached&&<><button type="button" disabled={busy} onClick={()=>choose(cached,true)}>Fortsett lokal kladd</button><button type="button" disabled={busy||Boolean(cached.pendingAction)} onClick={discard}>Forkast lokal kladd</button></>}</div>
