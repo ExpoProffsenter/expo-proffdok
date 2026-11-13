@@ -393,7 +393,7 @@ export default function BoligPortalManager({
                         <label>
                           Pakke som endres
                           <select
-                            value={draft.scope_id}
+                            value={part ? draft.scope_id : ""}
                             onChange={(e) =>
                               update({
                                 scope_id: e.target.value,
@@ -401,6 +401,7 @@ export default function BoligPortalManager({
                               })
                             }
                           >
+                            <option value="" disabled>Velg rom eller pakke</option>
                             {data.components.map((p) => (
                               <option key={p.scope_id} value={p.scope_id}>
                                 {p.room_name} · {p.package.name}

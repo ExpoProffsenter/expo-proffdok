@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Tydelig romvalg i beboerportalens valgmuligheter",
+  "change": "Miljømål BEGGE. Hvis lagret scope ikke finnes i ferske komponenter, viser Pakke som endres en eksplisitt velg-tekst. Eksisterende innsendingssperre og eksplisitt romvalg beholdes. Ingen RPC-, pris-, tilgangs-, kladd- eller backendendring.",
+  "verification": "Feilen gjenskapt i innlogget sandbox bolig38 og i faktisk komponent med jsdom før rettelse. Fem komponentkontroller PASS etter rettelse: manglende scope, eksplisitt valg, fokusoppdatering, fjernet rom og sperret innsending. npm run build med critical-kjede PASS. Seks permanente assertions lagt til eksisterende bolig-portal-browser-check (CI). Lokal Chromium blokkert av socket Operation not permitted; nettleserpakken er ikke lokalt bestått. Preview/CI og ny TEST OK gjenstår.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Eksisterende Pakke som endres-valg og arbeidsflyt beholdes; bare feilaktig visning av første rom korrigeres med tydelig inline velg-tekst."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Ingen endring av dataflyt, backend, lagring eller tilgang."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen nye installasjoner eller miljøvariabler."
+    },
+    "module": {
+      "required": false,
+      "reason": "Eksisterende eksplisitte romvalg og innsendingssperre beholdes."
+    }
+  }
+}
