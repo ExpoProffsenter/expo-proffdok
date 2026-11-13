@@ -154,5 +154,39 @@ Preview READY: `dpl_2ED6QcBov3MC758fSgRFeAZ5hkSx`, eksakt kandidat. [Fast Previe
 
 Eierskap ved avslutning: denne avgrensede UI-runden og PR327-kodearbeidet er ferdig dokumentert; ingen aktiv lokal redigering overlates. Fullapp-oppdraget fortsetter fra dette kontrollpunktet. Ingen ny automasjon opprettet, ingen produksjonssetting utført.
 
-## Kontrollpunkt 4 – pågår 13.11.2026 kl.06:22
+## Kontrollpunkt 4 – avgrenset KS/HMS-QA 13.11.2026
 Eier Codex. Reservert scope: uavhengig KS/HMS SJA/risikovurdering/vernerunde i innlogget sandbox og oppdatert CI-status. PR327 full CI43366094210 SUCCESS; PR326 head8ac90ade full CI43366516247 SUCCESS. Ingen omkjøring. Ingen overlapp med PR321/325/327 og ingen produksjonsendringer.
+
+### Resultat – SJA, risiko og vernerunde
+Faktisk innlogget desktopkontroll i permanent demo/sandbox, demo-konto og Firmaadmin, 1363×936. UI-handlinger ca.06:22–06:31 UTC. Fersk main63773814/demo3d65c0e0 og PR320/322/323/324 avstemt; alle fire PR-er merget. PR322s produksjonslogg lest. Produksjon READY dpl_5XnCpe1fmkFxcKScWvUPaJFEdD5A, demo READY dpl_Dz7jRmLnNDgD4zcokmvBPucbR1oF på de samme SHA-ene. Ingen deploy, rerun eller produksjonsendring.
+
+| Område | Faktisk prøve | Resultat / grense |
+|---|---|---|
+| SJA | Nytt skjema; legg til/fjern arbeidstrinn2 og deltaker2; lukk/gjenåpne navngitt lokal kladd | Innhold beholdt. Ny SJA mens lokal kladd finnes blir avvist med konkret beskjed. Eneste trinn/deltaker kan ikke fjernes. Signering sperret uten ansvarlig. Ingen serverlagring/signatur, eksisterende2analyser urørt |
+| Risikovurdering | Nytt skjema; tom Vurdering fullført | «Skriv et navn før du lagrer. Kladden er beholdt.» Ingen gyldig fullføring forsøkt |
+| Risikoscore | Før5×5, etter2×2 i første lokale fare | Før25/Høy, etter4/Lav (forventet), riktig oppsummering. Teksten skiller planlagt effekt fra kontrollert effekt. Ikke en faglig risikovurdering av en faktisk jobb |
+| Risiko/prosjekt | Prosjektvelger lastet5aktive tilgjengelige prosjekter; standard eksternt oppdrag | Kun liste/UI; ingen valgt kobling lagret, tilgangsgrense ikke testet |
+| Vernerunde | Nytt skjema; tom Kontroll fullført | Samme konkrete navnevalidering. PDF deaktivert før serverlagring |
+| Publisert kontrollmal | DEMO – Kontroll før innbygging, versjon1 | 3punkter hentes; fast malutgave synlig. Ingen publisert mal endret |
+| Avvik i kontroll | Første punkt satt Avvik, øvrige Ubesvart | Ansvarlig/frist for retting vises; tydelig beskjed om at fullføring vil opprette RUH og ikke lukke saken. Fullføring ikke sendt, ingen RUH opprettet |
+| Reload og gjenoppretting | Lokal kontrollkladd navngitt, lukk, full reload, naviger tilbake, Fortsett lokal kladd | Navn, malversjon1, første Avvik og øvrige Ubesvart beholdt. Full reload går til Startside; arbeidsflaten åpnes igjen via meny. Dette beviser lokal hydrering, ikke serverlagring eller dvale |
+| Layout og tilbake | Sidepaneler, scrolling, lukk og verktøynavigasjon | Ingen klipping observert i de viste desktoputsnittene. Ingen målt kontrast- eller mobilattest |
+
+Tre faktiske skjermbilder og SHA256/filstørrelser i `evidence/night-kshms-controls-20261113.json`. Ingen nye bekreftede feil i denne avgrensede runden; det betyr ikke at hele funksjonene er ferdig testet.
+
+### Lokale kladder ved overlevering
+Kun nettleserlokale syntetiske kladder ble opprettet; ingen ny serverpost. SJA: «QA 13.11 – lokal SJA-kladd, ikke utført arbeid», kun navn og opprinnelig ett trinn/en deltaker. Risiko: navnløs lokal kladd, første fare før25/etter4. Vernerunde: «QA 13.11 – lokal kontrollkladd, ikke utført kontroll», DEMO-malv1, første punkt Avvik. Ikke opprett nye duplikater. Eksisterende serverlister var2SJA,1risikovurdering og3kontroller. Kladdene er ikke signert/fullført og må aldri omtales som utført arbeid.
+
+### CI og produksjonsbetydning
+PR327 kandidat75255692802064007f2e55328fd2d5703b742e26 har nå **hele CI43366094210 SUCCESS**. Den separate hr-practice-browser-filen er fortsatt ikke kjørt som egen kommando; grønn samlet CI endrer ikke denne avgrensningen. PR326 forrige dokumentasjonshead8ac90ade har **CI43366516247 SUCCESS**. Denne runden kjører ingen ny testomkjøring og endrer ingen app-/backendkode. Ny dokumentasjonshead har egen automatisk CI og må ikke tilskrives forrige heads resultat.
+
+PR325/327 er fortsatt reviewbare kandidater med Preview, men mangler innlogget Preview-prøve og ny eksplisitt TEST OK. Ingen av dem er produksjonsgodkjent av denne rapporten. Produksjonen er uendret.
+
+### Gjenstående og neste kontrollpunkt
+1. Fortsett fra de tre lokale KS/HMS-kladdene hvis disse reisene utvides. Serverlagring, prosjektbinding, PDF/vedlegg, fullføring, signatur, avviksoverføring og rollegrenser står åpne. Ikke gjenta bare tomnavn-/scorings-/reload-prøvene.
+2. Prioriter uavhengige hull i matrisen: sjekklister, salg/prosjekt og resterende beboergrenser/ordreeksport/PDF. PR321/325/327 eier sine respektive rettelser; ikke overlapp.
+3. N-UX-004 fra kontrollpunkt3 krever fortsatt selvstendig reproduksjon. Ingen kodeendring eller ny PR er laget i kontrollpunkt4.
+4. Ingen film endret denne runden.15avspillinger og36sekunders delproduksjon fra tidligere kontrollpunkt gjelder; full A–Å-revisjon og øvrig sceneinnhold gjenstår. V12-materialisering401 er uavklart.
+5. Mobil/touch/dvale, rollebytte og innloggede Preview-domener er fortsatt uverifisert/blokkert som tidligere beskrevet. Ikke konverter kilde/CI-bevis til faktisk innlogget UI-attest.
+
+Eier ved avslutning: Codex, kontrollpunkt4 dokumentert; ingen aktiv koderedigering. Fullapp-QA er **ikke ferdig**. Neste kjøring fortsetter fra dette punktet. Ingen ny automasjon opprettet.

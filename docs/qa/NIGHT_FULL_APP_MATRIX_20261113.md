@@ -113,9 +113,9 @@ For hver rad kontrolleres desktop/mobil, navigasjon/retur, skjema/feil/tom/lasti
 | HR-011 | Slettekvitteringer og varsel · HR → sletting / kvitteringer | `src/modules/hr/HrDeletionAlerts.jsx` | UI desktop: forståelig tom slettekvitteringsliste. Ingen sletting eller backend-kvittering testet. |
 | KSHMS-001 | Daglig arbeid og rollefiltrert navigasjon · KS/HMS → Daglig arbeid | `src/modules/kshms/KshmsModule.jsx`, `src/modules/kshms/KshmsNavigation.jsx` | UI desktop: Firmaadmin/Daglig arbeid laster, 2 kontroller og 10 rutiner til oppfølging. Andre roller ikke testet. |
 | KSHMS-002 | Avvik og RUH med tiltak · KS/HMS → Avvik/RUH | `src/modules/kshms/KshmsDeviations.jsx` | UI desktop: avviksliste 1 åpen/7 lukkede; ny tom RUH avvist med 4 mangler; feillenke fokuserer Kort tittel; lukk returnerer fokus. Ingen sak lagret. |
-| KSHMS-003 | Sikker jobb-analyse og prosjektkobling · KS/HMS → SJA / prosjekt → Avvik/SJA/RUH | `src/modules/kshms/KshmsSja.jsx`, `src/modules/kshms/ProjectSjaEntry.jsx` | Ikke nyverifisert; se historisk register for avgrensede bevis. |
-| KSHMS-004 | Vernerunde og kontrollutføring · KS/HMS → Vernerunder/kontroller | `src/modules/kshms/KshmsExecutions.jsx`, `src/modules/kshms/KshmsExecutionTasks.jsx` | Ikke nyverifisert; se historisk register for avgrensede bevis. |
-| KSHMS-005 | Risikovurdering · KS/HMS → Risikovurdering | `src/modules/kshms/KshmsExecutions.jsx` | Ikke nyverifisert; se historisk register for avgrensede bevis. |
+| KSHMS-003 | Sikker jobb-analyse og prosjektkobling · KS/HMS → SJA / prosjekt → Avvik/SJA/RUH | `src/modules/kshms/KshmsSja.jsx`, `src/modules/kshms/ProjectSjaEntry.jsx` | UI desktop kontrollpunkt4: lokale trinn/deltakere legg til/fjern; SJA-kladd bevart ved lukk/gjenåpning; ny kladd sperret når en finnes. Ingen serverlagring/signatur/rollegrense. |
+| KSHMS-004 | Vernerunde og kontrollutføring · KS/HMS → Vernerunder/kontroller | `src/modules/kshms/KshmsExecutions.jsx`, `src/modules/kshms/KshmsExecutionTasks.jsx` | UI desktop kontrollpunkt4: tom fullføring avvist, publisert DEMO-malv1 med3punkter, Avvik viser ansvarlig/frist. Lokal kladd beholdt etter full reload. Ingen serverlagring/RUH-overføring/PDF/fullføring. |
+| KSHMS-005 | Risikovurdering · KS/HMS → Risikovurdering | `src/modules/kshms/KshmsExecutions.jsx` | UI desktop kontrollpunkt4: tom fullføring avvist; før5×5=25/Høy, etter2×2=4/Lav(forventet);5prosjekter lastet. Ingen serverlagring/beslutning/PDF/rollegrense. |
 | KSHMS-006 | Fremdriftsplan, tidslinje og bemanning · KS/HMS → Fremdriftsplaner | `src/modules/kshms/KshmsProgressPlans.jsx`, `src/modules/kshms/KshmsProgressBoard.jsx`, `src/modules/kshms/KshmsProgressStaffing.jsx` | Ikke nyverifisert; se historisk register for avgrensede bevis. |
 | KSHMS-007 | Rutinebibliotek og egne utkast · KS/HMS → Håndbok / Rutinebibliotek | `src/modules/kshms/KshmsRoutineLibrary.jsx`, `src/modules/kshms/KshmsRoutineSearch.jsx` | UI desktop: 73 rutiner/10 godkjent; ingen-treff-søk og Tøm søk PASS. Rutineeditor/publisering ikke testet. |
 | KSHMS-008 | Samlet firmapublisering · KS/HMS → Håndbok → publisering | `src/modules/kshms/KshmsBulkPublication.jsx` | Ikke nyverifisert; se historisk register for avgrensede bevis. |
@@ -160,7 +160,7 @@ For hver rad kontrolleres desktop/mobil, navigasjon/retur, skjema/feil/tom/lasti
 | N-002 | Felleseiere, import og tilbakekalling | docs/architecture/BOLIG_HOUSEHOLD_CONTACTS.md | Historisk PR323; ny bolig38-prøve gjenstår. |
 | N-003 | Batchfrister og separate mottakere | src/modules/bolig/BoligResidentBatch.jsx | Historisk PR323; ingen antatt frist på bolig38. |
 | N-004 | Invitasjonstilbaketrekking og mottakerstatus | PR324 | Publisert; ny full UI-reise ikke gjentatt. |
-| N-005 | Alle 15 videoinnganger og avspilling | src/modules/help/videoGuides.json, HelpVideos.jsx, HeaderHelp.jsx | Filer dekodet; faktisk spiller, mobil, relevans og peker gjenstår. |
+| N-005 | Alle 15 videoinnganger og avspilling | src/modules/help/videoGuides.json, HelpVideos.jsx, HeaderHelp.jsx | Alle15filer dekodet og faktisk avspilt via Hjelp på desktop i kontrollpunkt2. Full sceneinnhold-/pekerrevisjon og mobil gjenstår. |
 | N-006 | Egne sjekklister, forslag, firmagodkjenning | src/modules/checklist | Med i video-dekningsvakt; innlogget prøve gjenstår. |
 
 Fysisk mobil og dvale er ikke verifisert. Ingen grønn totalstatus.
