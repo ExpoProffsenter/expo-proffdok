@@ -9,10 +9,14 @@ Navngitte brukere hos Bademiljø Expo, Expo Proffsenter og Ringside kan få eksp
 Konto-/prosjektbundet privat tabell og kontrollert RPC. Tilgang kontrollerer registrert e-post, profil, internt medlemskap, aktiv partneradgang, firmaaktivering og prosjekt. Partnerlenke alene gir ikke kommersiell tilgang. Publisert/akseptert avtale og klargjort ordre stopper samarbeidsskriving. Eksisterende revisjon/audit og boligvalg brukes. Min side har kun to nye integrasjonslinjer; grensekontrollen fjerner akkurat disse og krever byteparitet for resten. Ingen generell tilgangskjerne endres.
 
 ## Kontroller
-- Første databasepakke bestod 1864 assertions. Utvidet variant bekreftet nye vare-/arbeidslinjer, sum og uendret nabobolig, men traff en forventningsfeil: allerede tilpasset pakke gir PT409 før skriverettskontroll. Testen kontrollerer nå begge sperrene separat; ny full pakke pågår.
-- React: forsinket tilgangsoppfrisking beholder editor og usendt tekst; samme tilgang beholder mount; tilbakekalling fjerner editor. PASS. Dialogutvidelsen kontrolleres videre.
+- Full lokal databasepakke PASS: 1877 assertions, inkludert vare-/arbeidslinjer, total, nabobolig isolert, separate rettigheter, endret e-post, utløp, deaktivert konto, tilbakekalling og publisert/akseptert avtale.
+- React PASS: forsinket tilgangsoppfrisking beholder editor/utkast; samme tilgang beholder mount; tilbakekalling og ufullstendig svar fjerner editor. Faktisk dialog og CSS inngår; selve vareeditoren er stubbet i denne testen.
+- KS/HMS/HR/Min side navigasjon PASS lokalt etter at transportfixture fikk den nye lesende RPC-en. Kontaktpåminnelsens nettleserfixture oppdatert med samme lesekall; ingen skrivekall lagt til tillatelseslisten.
 - Full lokal build og critical checks PASS. Grensekontroll PASS (55 assertions), workflow-vernet PASS (147 opprinnelige kommandoer bevart).
 - Hjelp, modulbeskrivelse og arkitektur oppdatert.
 
 ## Gjenstår før TEST OK
 Full CI og faktisk Preview-kontroll av tildeling, varer/arbeid, utløp og tilbakekalling; kontrollert sandboxinstallasjon. Migrasjonen 20261113194437 er foreløpig ikke installert i hosted miljøer. Ingen produksjonsimport av Aamodthagen eller testpakker.
+
+## Sandboxbinding 13.11 kl. 20:40 UTC
+Før åpning ble manglende branchbinding oppdaget. Vercel EXPO_BACKEND_TARGET=sandbox er satt kun for Preview og feat/bolig-partner-commerce-20261113. Eksakt d0179dec ble redeployet som dpl_ACxgF1EbySrrek9B7KSHqhhSCSDd. Tidligere preview fra denne branchen skal ikke brukes. Ingen test ble utført mot denne gamle previewen. Nyeste commit må fortsatt få kontrollert buildbinding og visuell QA.
