@@ -217,3 +217,9 @@ await fs.writeFile("/tmp/bolig-resident-invitation.html", mail.body.html);
 console.log(
   `PASS resident invitation mail: ${checks} assertions; established style, canonical recipient/link, paused transport, fresh permission check, private errors and exact retry (mock provider; no email sent).`,
 );
+
+const sendsBeforeIdentity = sends.length;
+const identityMismatch = await handleResidentLinkEmail(request({expectedUserId:'another-user'}), deps);
+eq(identityMismatch.status,403,'effective support/customer identity cannot send using administrator JWT');
+eq(sends.length,sendsBeforeIdentity,'identity mismatch never reaches provider');
+console.log('resident-mail identity: 2 extra assertions PASS');

@@ -1,3 +1,11 @@
+# Gjeldende leveransestatus – 13.11.2026
+
+Miljømål BEGGE. Produksjon main f7298e118f672e0b261b8a0f3f95e6e2d4e5e657 og demo0984fe1c8a6284ae13909db6dc391a172689f2f9 er publisert READY etter PR324. Invitasjonsrettelsen er levert og demosynket; se [PR324](https://github.com/ExpoProffsenter/expo-proffdok/pull/324) for faktisk produksjonslogg. Ingen reell e-post sendt.
+
+PR323 Orvei/logo4783fe64 bestod full QA43335383199. Denne arbeidsbranchen avstemmes nå mot publisert main, med ny samlet kontroll. Ingen Orvei-TEST OK eller produksjonsinstallasjon. PR322 support f64efcc8 bestod43326959905; companion PR320 siste43097043078 er fortsatt queued. Ingen ny køfeilsøking eller omgåelse. PR321 er separat teksthjelp, ikke ferdig film.
+
+Se [Orvei QA](docs/qa/BOLIG_ORVEI_20261112.md), [branchregister](docs/qa/BRANCH_REGISTER_20261112.md) og [videoopptaksmanus](docs/qa/BOLIG_BATCH_VIDEO_20261113.md). Historikk nedenfor er ikke aktuell restliste.
+
 # Produksjonsrettelser – 11. november 2026
 
 Miljømål BEGGE. Arbeidet gjelder kundens varesøk, firmatilgang og opsjoner i generelle tilbud. Dette er ikke en erklæring om fullført QA av hele appen.
