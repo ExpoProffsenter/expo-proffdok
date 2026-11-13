@@ -29,6 +29,17 @@ try {
  await act(()=>w.document.querySelector('.bolig-gantt-bar').dispatchEvent(new w.KeyboardEvent('keydown',{key:'ArrowRight',altKey:true,bubbles:true})));assert.equal(writes,1,'Week keeps existing date editing');
  await act(()=>button('Vis hele planen').click());assert.equal(w.document.querySelectorAll('.bolig-gantt-bar').length,2);
  await act(()=>w.__render({...props,tasks:[tasks[1]]}));assert(w.document.body.textContent.includes('04.10.2027 – 05.11.2027'));assert.equal(w.document.querySelectorAll('.bolig-gantt-bar').length,1);
+ // Reverse address order and input order: dates must win for groups and activities.
+ const early={...tasks[0],id:'early',unit_id:'early-unit',address:'Åsvegen 9',planned_start:'2026-12-01',planned_end:'2026-12-04'};
+ const later={...early,id:'later',title:'Senere arbeid',planned_start:'2026-12-10',planned_end:'2026-12-11'};
+ await act(()=>w.__render({...props,tasks:[{...tasks[1],address:'A-vegen 1'},later,early]}));
+ assert.deepEqual([...w.document.querySelectorAll('.bolig-gantt-bar')].map(e=>e.getAttribute('aria-label').split(' · ')[2]),['Førbefaring','Senere arbeid','Arbeidsperiode'],'chronology precedes address and input ordering');
+ await select('Visning','month');
+ assert.equal(w.document.querySelectorAll('.bolig-gantt-bar').length,2,'month includes overlapping activities only');
+ assert(!w.document.body.textContent.includes('A-vegen 1'),'out-of-period building does not leave empty rows');
+ await act(()=>w.document.querySelector('button[aria-label="Neste periode"]').click());
+ assert.equal(w.document.querySelectorAll('.bolig-gantt-bar').length,0,'next empty month has no unrelated activities');
+ await act(()=>button('Vis hele planen').click());assert.equal(w.document.querySelectorAll('.bolig-gantt-bar').length,3,'whole plan restores all activities');
  await act(()=>button('I dag').click());assert.equal(w.document.querySelector('select').value,'week');
  console.log('PASS Gantt React: fit default, legacy preference migration, all future bars, click details, safe overview, week editing, scope fit and today');
 }finally{await act(()=>w.__dispose());dom.window.close();fs.rmSync(temp,{recursive:true,force:true});}

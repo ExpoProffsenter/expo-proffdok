@@ -49,7 +49,7 @@ export default function BoligGantt({
     [anchor, setAnchor] = useBoligUiState(
       context,
       `${key}:date`,
-      tasks[0]?.planned_start || todayOslo(),
+      tasks.map(t=>t.planned_start).filter(Boolean).sort()[0] || todayOslo(),
     ),
     [groupBy, setGroupBy] = useBoligUiState(context, `${key}:group`, "unit"),
     [closed, setClosed] = useBoligUiState(
@@ -83,8 +83,9 @@ export default function BoligGantt({
         .includes(query.toLocaleLowerCase("nb")),
   );
   const range = boligGanttRange(matching, anchor, view), days = range.to - range.from + 1;
+  const visibleTasks = matching.filter(t => view === "all" || (dayNumber(t.planned_start) <= range.to && dayNumber(t.planned_end) >= range.from));
   const buckets = new Map();
-  for (const t of matching) {
+  for (const t of visibleTasks) {
     const group = unitGroups.get(t.unit_id);
     const id =
       groupBy === "group"
@@ -114,12 +115,14 @@ export default function BoligGantt({
       numeric: true,
       sensitivity: "base",
     });
+  const byDate = (a, b) => compare(a.planned_start, b.planned_start) || compare(a.planned_end, b.planned_end) || compare(a.title, b.title) || compare(a.id, b.id);
+  for (const bucket of buckets.values()) bucket.tasks.sort(byDate);
   const orderedBuckets = [...buckets.values()].sort((a, b) =>
-    groupBy === "unit"
+    compare(a.tasks[0].planned_start, b.tasks[0].planned_start) || (groupBy === "unit"
       ? compare(a.address, b.address) ||
         compare(a.unit_number, b.unit_number) ||
         compare(a.id, b.id)
-      : compare(a.label, b.label) || compare(a.id, b.id),
+      : compare(a.label, b.label) || compare(a.id, b.id)),
   );
   for (const b of orderedBuckets) {
     rows.push({ ...b, summary: true });
@@ -138,7 +141,7 @@ export default function BoligGantt({
   }
   useEffect(() => {
     setLimit(120);
-  }, [query, onlyGroup, groupBy]);
+  }, [query, onlyGroup, groupBy, view, anchor]);
   useEffect(() => {
     const cancel = () => {
       dragRef.current = null;
@@ -354,7 +357,7 @@ export default function BoligGantt({
         )}
       </div>
       <p>
-        {displayDate(range.dates[0])} – {displayDate(range.dates.at(-1))} · {matching.length} aktiviteter. Trykk en stolpe
+        {displayDate(range.dates[0])} – {displayDate(range.dates.at(-1))} · {visibleTasks.length} aktiviteter. Sortert fra første til siste dato. {view !== "all" && "Bare aktiviteter som berører valgt periode vises. "}Trykk en stolpe
         for detaljer.{view === "all" ? " Hele perioden til aktivitetene i utvalget vises. Velg dag, uke eller måned for å flytte datoer." : !readOnly && " Dra for å flytte; endene endrer varighet."}
       </p>
       {error && <p role="alert">{error}</p>}
