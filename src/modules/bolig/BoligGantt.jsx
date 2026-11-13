@@ -82,7 +82,7 @@ export default function BoligGantt({
       (!onlyGroup || unitGroups.get(t.unit_id)?.id === onlyGroup) &&
       `${t.title} ${t.unit_number} ${t.owner_name || ""} ${t.address || ""}`
         .toLocaleLowerCase("nb")
-        .includes(query.toLocaleLowerCase("nb")),
+        .includes(query.trim().toLocaleLowerCase("nb")),
   );
   const range = boligGanttRange(matching, anchor, view), days = range.to - range.from + 1;
   const selectedDate = view === "all" ? range.dates[0] : anchor;
@@ -538,12 +538,14 @@ export default function BoligGantt({
               </div>
             </div>
           ))}
-          {!matching.length && (
-            <p>
-              Ingen aktiviteter i utvalget.
-              {!readOnly &&
-                " Velg «Planlegg flere boliger» for å lage en plan."}
-            </p>
+          {!visibleTasks.length && (
+            <div role="status" className="bolig-gantt-empty">
+              {!tasks.some(t => t.active && !t.archived) ? <p>Ingen aktiviteter er planlagt ennå.{!readOnly && " Velg «Planlegg flere boliger» for å lage en plan."}</p> : <>
+                <p>{!matching.length ? "Ingen aktiviteter passer med søket eller gruppefilteret." : "Ingen aktiviteter i denne perioden."}</p>
+                {(query || onlyGroup) && <button type="button" onClick={() => { setQuery(""); setOnlyGroup(""); }}>Tøm søk og gruppefilter</button>}
+                {view !== "all" && <button type="button" onClick={() => setView("all")}>Vis alle perioder</button>}
+              </>}
+            </div>
           )}
         </div>
       </div>

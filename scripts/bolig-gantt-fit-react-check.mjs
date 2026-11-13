@@ -45,6 +45,15 @@ try {
  await typeDate('15.12.2026');assert.equal(w.document.querySelector('select').value,'month','Date edit preserves selected month view');assert.equal(w.document.querySelector('[role="alert"]'),null);
  await act(()=>w.document.querySelector('button[aria-label="Neste periode"]').click());
  assert.equal(w.document.querySelectorAll('.bolig-gantt-bar').length,0,'next empty month has no unrelated activities');
+ assert(w.document.body.textContent.includes('Ingen aktiviteter i denne perioden.'));
+ assert(!w.document.body.textContent.includes('for å lage en plan.'),'Empty period must not suggest creating duplicate activities');
+ await act(()=>button('Vis alle perioder').click());assert.equal(w.document.querySelectorAll('.bolig-gantt-bar').length,3);
+ const search=w.document.querySelector('input[type="search"]');
+ const typeSearch=async(value)=>act(()=>{Object.getOwnPropertyDescriptor(w.HTMLInputElement.prototype,'value').set.call(search,value);search.dispatchEvent(new w.Event('input',{bubbles:true}));});
+ await typeSearch('  Førbefaring  ');assert.equal(w.document.querySelectorAll('.bolig-gantt-bar').length,1,'Pasted whitespace does not hide matching activities');
+ await typeSearch('ingen treff');assert(w.document.body.textContent.includes('Ingen aktiviteter passer med søket'));
+ await act(()=>button('Tøm søk og gruppefilter').click());assert.equal(w.document.querySelectorAll('.bolig-gantt-bar').length,3,'Clear filters restores existing plan');
+
  await act(()=>button('Vis hele planen').click());assert.equal(w.document.querySelectorAll('.bolig-gantt-bar').length,3,'whole plan restores all activities');
  await act(()=>button('I dag').click());assert.equal(w.document.querySelector('select').value,'week');
  console.log('PASS Gantt React: fit default, legacy preference migration, all future bars, click details, safe overview, week editing, scope fit and today');
