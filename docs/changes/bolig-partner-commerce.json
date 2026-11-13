@@ -1,7 +1,7 @@
 {
   "version": 1,
   "title": "Navngitt samarbeid om grunnpakker og tilvalg",
-  "change": "Miljømål BEGGE. Eksplisitt lesing, individuell vare/arbeidstilpasning og separat felles katalogrett. Min side med bevart hovedfirma. Boligsøk beholder synlig valgt bolig og arbeidsutkast, med treffantall og Tøm søk. Egen ugjennomsiktig samarbeidsdialog med fast topp og rullende innhold; fjerner kollisjon med sidestiler.",
+  "change": "Miljømål BEGGE. Eksplisitt lesing, individuell vare/arbeidstilpasning og separat felles katalogrett. Min side med bevart hovedfirma. Boligsøk beholder synlig valgt bolig og arbeidsutkast, med treffantall og Tøm søk. Egen ugjennomsiktig samarbeidsdialog med fast topp og rullende innhold; fjerner kollisjon med sidestiler. Trippelsjekk: veiledning i samarbeid viser til tilgjengelige knapper og ikke en manglende romvelger. Egen sticky topp og kladd-lukking i boligtilpasning for smal skjerm.",
   "verification": "Full CI43521455049 grønn på forrige kandidat. Ny søkeregresjon gjenskapt rød før fix: tom boligvelger samtidig som gammel editor fortsatt var åpen. Etter fix actual React PASS, også kladd/fokus/tilbakekalling og enkelt tilgangspanel. Ny CI og hosted etterkontroll må bekreftes.",
   "documentation": {
     "help": {

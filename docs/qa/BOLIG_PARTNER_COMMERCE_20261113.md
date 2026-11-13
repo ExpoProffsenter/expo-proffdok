@@ -55,3 +55,8 @@ Hosted pakkeoversikt, redigeringsskuff, uendret lukking og responsiv bredde454 k
 
 Hosted smal kontroll av Mine samarbeid avdekket faktisk transparent dialog: klassen bolig-page utløste sidens transparente bakgrunn, statisk header og feil dialogplassering. Rettet til bolig-collaboration-dialog med egen hvit arbeidsflate, fast topp/lukkeknapp og separat rullende innhold. Delte sidestiler og andre moduler er urørt. Actual React/CSS-regresjon verifiserer fast, ugjennomsiktig dialog uten sideklassen.
 Tilgangskontroll og feilmelding ligger inne i åpen dialog, slik at brukeren også får forklaringen ved lasting eller tilbakekalling. Tilbakekallingstesten krever nå at meldingen finnes i dialogen.
+
+## Trippelsjekk 14.11.2026 – veiledning i samarbeid
+Hosted kontroll fant at pakkevalgets standardveiledning viste til romvelger og prosjektfane som ikke finnes i Mine samarbeid-dialogen. Teksten er nå betinget av eksisterende collaboration_root: se boligens pakker, bruk Vis felles pakker, og endre bare med redigeringstilgang. Ordinær prosjekt-/romflyt er uendret. Ingen backend-, tilgangs- eller datakontraktendring. Bolig38s usendte begrunnelse beholdt ved faktisk fanebytte; lukking returnerte til valgt bolig og samme tilpasningsknapp. Se PR-beskrivelse for endelig publisert kontroll/CI og opprydding.
+
+Smalskjerm 454px avdekket at tilpasningsskjemaets overskrift/lukkeknapp forsvant ved rulling. Egen klasse på BoligUnitCustomization og avgrensede CSS-regler gjør header og kladd-lukking sticky, med 44px-knapper. Delt Dialog-komponent og øvrige modaler er ikke endret. Ugyldig pristillegg ga tydelig feil og beholdt kladd i hosted preview. Kladd gjenåpnet med usendt begrunnelse intakt, deretter testtekst/pris tilbakeført uten serverlagring.

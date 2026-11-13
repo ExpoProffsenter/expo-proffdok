@@ -179,6 +179,7 @@ export default function BoligUnitCustomization({
   return (
     <Dialog
       title="Tilpass denne leiligheten"
+      className="bolig-customization-dialog"
       busy={busy}
       onClose={() => onClose(false)}
     >
