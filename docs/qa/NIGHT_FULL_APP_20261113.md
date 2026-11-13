@@ -225,3 +225,37 @@ PR326 head868f45eb fra forrige kontrollpunkt har grønn CI43372855302. Den nye d
 5. Fysisk mobil/touch/dvale og egne ansatt-/leder-/portalroller krever faktisk prøving. Desktop og kildekode er ikke erstatning. Matrisen skal fortsatt vise hull.
 
 Denne rapporten avslutter den dokumenterte nattbatchen, ikke hele QA-oppdraget. Ingen påstand om full appdekning, ingen produksjonsendringer, ingen nye reelle meldinger eller automasjoner. Arbeidsbranch er PR326; ingen aktiv appkoderedigering overlates.
+
+
+## Kontrollpunkt 6 – oppfølging etter nattkjøringen 13.11.2026
+
+Nattbatchen var utført, men rapporten lå i en annen samtale. Brukeren fikk direkte lenke til rapport/PR326 og avgrensningene. Eksisterende automasjon er avsluttet/deaktivert; ingen duplikat er opprettet. Dette kontrollpunktet er interaktiv videreføring, ikke en ny nattkjøring.
+
+### Kandidater og innlogget Preview
+
+- PR325, f9875bd742ba40319fd08396b1f5628b5f3e37ae: innlogget med sandboxkonto i fast branch-Preview. Bolig38 → Beboerportal → Valgmuligheter → slå av Bruk boligens lagrede valg viste Velg rom eller pakke og deaktivert Legg til. Velg Bad1 aktiverte knappen. Av/på/av av lagrede valg bevarte eksplisitt valgt rom. Eksisterende standardalternativ0kr/2linjer og speilalternativ2500kr/3linjer var bevart. Ingen nytt alternativ lagret, ingen portalfornyelse eller utsending. Mobil og bytte mellom arbeidsområder ikke attestert i denne prøven. Skjermbevis: evidence/pr325-room-selection.jpg. Ny TEST OK før merge gjenstår.
+- PR327, 75255692802064007f2e55328fd2d5703b742e26: innlogget sandbox-Preview. Fire lokale øvingstrinn med eksempeltekst, fullført utgave4. Full reload og Min side → Mine oppfølginger åpnet lagret fullført utgave med avkrysset/låst gjennomgang. Rediger som ny utgave nullstilte gjennomgang og sperret fullføring/PDF før lagring. Ufullført utgave5 lagret; historisk utgave4 fortsatt avkrysset, ufullført utgave3 tom/låst. PDF utgave4 lastet ned og begge sider visuelt kontrollert: riktig fullførtstatus, eksempelmerking og innhold, ingen klipping; side2 har mye ledig plass. Kun lokalt prøveinnhold, ingen server-HR eller mottakere. Skjermbevis: evidence/pr327-completed-reopened.jpg. Ny TEST OK før merge gjenstår.
+
+### Sjekklister – faktisk UI og PDF
+
+På PR325-Preview med sandboxdata åpnet eksisterende TEST – signert utførelsessjekkliste, ordre TEST-SIGN-20261031-01. Fullført kontroll var skrivebeskyttet; lagret egen og ekstern prøvesignatur ble vist. Ny PDF lastet ned, begge sider rendret/kontrollert: firma/logo, ordre/adresse, svar, kontroll-ID/revisjon og begge signaturbilder til stede. Ingen utsending, ingen endring av historisk kontroll.
+
+Startet lokal kladd fra DEMO – Kontroll før innbygging. Tom Fullfør ble korrekt avvist før transport, men feilen Fyll inn ordrenummer lå over skjermens synlige område; fokus ble på knappen. **N-UX-005 (middels): avvist lagring/fullføring ser ut som ingen respons.** Skjermbevis: evidence/checklist-hidden-validation-before.jpg.
+
+Syntetisk lokal kladd QA-UX-20261113, QA – Fiktiv testadresse13, ingen reell kontroll og én kommentar ble bevart ved lukking/gjenåpning. Ingen serverlagring eller fullføring av den nye kontrollen, ingen signering på vegne av en reell person. Ny signaturtegning/touch og komplett ny serverlagring/readback gjenstår.
+
+### Prosjekt – avgrenset kontroll
+
+Åpnet eksisterende DEMO – RESERVE – Ferdig våtrom med garanti. Riktig skrivebeskyttet prosjekt og oversikt, Sjekklister åpnet høyre sidepanel. Ti grupper med registrert dokumentasjon vises, egne kontroller omtales uten å påstå fullført kontrollhistorikk. Skjermbevis: evidence/project-checklist-panel.jpg. Åpning av underdokumentasjon ga gjentatte Input.dispatchMouseEvent-tidsavbrudd og ingen observert overgang; ikke attestert. Ingen prosjektdata endret. Dette beviser ikke komplett prosjektflyt.
+
+### Avgrenset rettelse av N-UX-005
+
+PR328, fix/checklist-validation-focus-20261113, kandidat acaf74692bc5211303f9adec93fc1172f71b1d0d, tre7416b271643ff90353c73d37ed4b1ef97c21e176. Miljømål BEGGE, ren main63773814 som base. Bare StandaloneChecklists, tilhørende React-/browserprøver og endringsgrunnlag. Feilmeldingen får fokus og rulles inn etter avvist lagringsforsøk, inkludert gjentatt samme feil og signaturfeil. Ingen endring av krav, RPC, tilgang, signaturgrunnlag, data, PDF eller e-post.
+
+Faktisk komponentprøve feiler på gammel kode (validation must receive focus), består på kandidat: ordre/arbeidssted/definisjon/svar/signatur, gjentakelse, ingen ugyldig RPC-skriving, bakgrunnsoppdatering uten fokusstjeling og lokal kladd. Prøven kjøres permanent fra eksisterende browserpakke. Browserkrav er lagt til for fokus og synlighet ved390/1363px. Full npm build/critical, scope-/dokumentasjonsvakt og diffkontroll PASS. Lokal Chromium manglet; nedlasting returnerte ugyldig ZIP. Ingen lokal browser-layoutattest, ingen svekket sjekk eller CI-rerun.
+
+Ny branchspesifikk EXPO_BACKEND_TARGET=sandbox ble satt før appcommit. Preview dpl_8BCnLJYKXapv1ysVHie11RCNyXnM er READY på eksakt kandidat; CI43455685924 var i arbeid ved kontrollpunktet. Innlogget Preview-prøve og TEST OK gjenstår. PR-beskrivelsen er varig fasit for etterfølgende CI-status.
+
+### Åpent videre
+
+Ingen ny produksjonsmerge, migrasjon, Edge-installering, utsending, demoreset eller branchsletting. Supportrettelsene er fortsatt del av main63773814. PR321 holdes separat. PR325/327 er nå innlogget testet; PR328 krever full CI/Preview. Matrisens øvrige hull står ved lag: felleseiergrenser/utløpte frister/ordreeksport, komplette rolle- og serverløp, fysisk mobil/dvale og full57sceners videorevisjon. Ingen ny film produsert/publisert i dette kontrollpunktet.

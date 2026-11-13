@@ -109,7 +109,7 @@ For hver rad kontrolleres desktop/mobil, navigasjon/retur, skjema/feil/tom/lasti
 | HR-007 | Avtalte tiltak og frister · HR / Min side → Mine oppfølginger | `src/modules/hr/HrFollowupTasks.jsx`, `src/modules/hr/HrFollowupNotice.jsx` | UI desktop: 7 åpne frister/tiltak, passert/framtidig skilt; mailpausen forklart. Ingen tiltak endret. |
 | HR-008 | Sykefravær og særskilt privat tilgang · Medarbeider → Sykefraværsoppfølging | `src/modules/hr/HrSickLeaveCases.jsx`, `src/modules/hr/HrSickLeaveSetup.jsx` | UI desktop: generelt sykefraværsoppsett og gradert regneeksempel prøvd. Personlig sak/rollegrenser/lovinnhold ikke nyverifisert. |
 | HR-009 | Kontaktvarsel og innstillinger · HR → kontaktoppfølging | `src/modules/hr/HrContactReminder.jsx` | Ikke nyverifisert; se historisk register for avgrensede bevis. |
-| HR-010 | Prøvesamtale og reset · HR → Prøv medarbeidersamtale | `src/modules/hr/HrPracticeConversation.jsx` | UI desktop: 4 steg med eksempeltekst, fullført lokal utgave4, PDF/reload. N-UX-003 funnet; avgrenset rettelse PR327. Reset ikke utført. |
+| HR-010 | Prøvesamtale og reset · HR → Prøv medarbeidersamtale | `src/modules/hr/HrPracticeConversation.jsx` | UI desktop: 4 steg, PDF/reload. Kontrollpunkt6: PR327 innlogget Preview PASS, fullført utgave4 avkrysset/låst etter reload; ny utgave krever ny gjennomgang, eldre ufullført utgave3 tom/låst. TEST OK gjenstår. Reset ikke utført. |
 | HR-011 | Slettekvitteringer og varsel · HR → sletting / kvitteringer | `src/modules/hr/HrDeletionAlerts.jsx` | UI desktop: forståelig tom slettekvitteringsliste. Ingen sletting eller backend-kvittering testet. |
 | KSHMS-001 | Daglig arbeid og rollefiltrert navigasjon · KS/HMS → Daglig arbeid | `src/modules/kshms/KshmsModule.jsx`, `src/modules/kshms/KshmsNavigation.jsx` | UI desktop: Firmaadmin/Daglig arbeid laster, 2 kontroller og 10 rutiner til oppfølging. Andre roller ikke testet. |
 | KSHMS-002 | Avvik og RUH med tiltak · KS/HMS → Avvik/RUH | `src/modules/kshms/KshmsDeviations.jsx` | UI desktop: avviksliste 1 åpen/7 lukkede; ny tom RUH avvist med 4 mangler; feillenke fokuserer Kort tittel; lukk returnerer fokus. Ingen sak lagret. |
@@ -161,7 +161,7 @@ For hver rad kontrolleres desktop/mobil, navigasjon/retur, skjema/feil/tom/lasti
 | N-003 | Batchfrister og separate mottakere | src/modules/bolig/BoligResidentBatch.jsx | Historisk PR323; ingen antatt frist på bolig38. |
 | N-004 | Invitasjonstilbaketrekking og mottakerstatus | PR324 | Publisert; ny full UI-reise ikke gjentatt. |
 | N-005 | Alle 15 videoinnganger og avspilling | src/modules/help/videoGuides.json, HelpVideos.jsx, HeaderHelp.jsx | Alle15filer dekodet og faktisk avspilt via Hjelp på desktop i kontrollpunkt2. Full sceneinnhold-/pekerrevisjon og mobil gjenstår. |
-| N-006 | Egne sjekklister, forslag, firmagodkjenning | src/modules/checklist | Med i video-dekningsvakt; innlogget prøve gjenstår. |
+| N-006 | Egne sjekklister, forslag, firmagodkjenning | src/modules/checklist | Kontrollpunkt6: eksisterende fullført testsjekkliste og ny PDF med begge signaturer kontrollert; lokal kladd gjenåpnet. N-UX-005 skjult validering rettet i PR328, CI/Preview gjenstår. Ny serverlagring/touch, malforslag/godkjenning ikke testet. |
 
 Fysisk mobil og dvale er ikke verifisert. Ingen grønn totalstatus.
 
@@ -171,3 +171,7 @@ Bestillingsfrist per bolig: Orvei38 fra Ikke satt til22.11.2026, lagring bekreft
 
 ## Tilleggsbevis – kontrollpunkt5 (kun kilde)
 Sjekklister: standaloneChecklists.mjs og checklistSignatures.mjs lest på main63773814. Påkrevd ordrenummer/arbeidssted, egen signatur ved fullføring, valgfri ekstern signatur med navn/rolle og command+readback er identifisert. Ingen ny UI-, mobil-, database- eller PDF-attest. Se hovedrapportens konkrete neste prøve.
+
+
+## Oppfølging kontrollpunkt6 (etter nattbatchen)
+PR325 og PR327 er nå innlogget Preview-testet, se hovedrapport/PR-er for eksakt kandidat og avgrensning. Ekstern sjekkliste-PDF med begge historiske prøvesignaturer er visuelt kontrollert; lokal kladd beholdt. Prosjektets sjekklistesidepanel kontrollert i skrivebeskyttet demoprosjekt, underdokumentasjon ikke attestert etter nettlesertidsavbrudd. N-UX-005 har isolert rettelse PR328. Dette overstyrer bare de konkrete eldre «gjenstår»-punktene; øvrige reiser er ikke automatisk godkjent.
