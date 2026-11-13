@@ -1,3 +1,7 @@
+## Oppdatert kontrollpunkt 13.11.2026
+
+Kandidat4783fe64 har bestått full GitHub-kontroll43335383199. PR324 er siden publisert: main f7298e118f672e0b261b8a0f3f95e6e2d4e5e657, demo0984fe1c8a6284ae13909db6dc391a172689f2f9. Publisert main flettes nå i eksisterende Orvei-branch, ikke ny erstatnings-PR. Bare CURRENT_RELEASE_STATUS hadde tekstkonflikt; Firmaadmin/hjelp flettes med begge funksjonssettene beholdt. Ny samlet QA kreves. Orvei-funksjonene er ikke produksjonsgodkjent. Support-companion320 står fortsatt queued; ingen ekstra køforsøk.
+
 # Orvei – beboere, bygg og delt portal
 
 Arbeidsbranch: feature/bolig-residents-buildings-20261112. Base main d68cf2e530d5ab6afcfe2f97d75150c977bcd64f. Miljømål BEGGE. Ikke produksjonssatt. Ingen ny TEST OK er gitt. Ingen reelle mottakere eller produksjonsdata er brukt.
