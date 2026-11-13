@@ -25,6 +25,7 @@ export default function BoligPortalPage() {
     epoch = useRef(0),
     operating = useRef(false),
     current = useRef(null);
+  const [failedLogo, setFailedLogo] = useState(null);
   const [data, setData] = useState(null),
     [error, setError] = useState(""),
     [loading, setLoading] = useState(true),
@@ -246,7 +247,9 @@ export default function BoligPortalPage() {
   return (
     <main className="bolig-resident-page bolig-portal-page">
       <header className="bolig-resident-brand">
-        <span aria-hidden="true"><Building2 size={24}/></span>
+        {data?.identity.logo_url && failedLogo !== data.identity.logo_url
+          ? <img className="bolig-portal-company-logo" src={data.identity.logo_url} alt={`${data.identity.company} logo`} onError={()=>setFailedLogo(data.identity.logo_url)}/>
+          : <span aria-hidden="true"><Building2 size={24}/></span>}
         <div>
           <strong>{data?.identity.company || "Beboerportal"}</strong>
           <small>Din beboerportal · Expo ProffDok</small>

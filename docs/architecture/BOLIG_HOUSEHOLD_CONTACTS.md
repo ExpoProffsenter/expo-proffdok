@@ -31,3 +31,5 @@ For publisering kreves database + frontend + oppdatert bolig-resident-link-email
 Rollback: tidligere frontend kan brukes med beholdte nye felt/tabeller. Serverfrister fortsetter å gjelde til de uttrykkelig endres av prosjektleder. Ikke dropp data eller opphev frister som skjult rollback. Kontroller gammel frontend mot serverfrister før tilbakerulling. Pending sendinger må avstemmes mot kvitteringer før nye forsøksreferanser brukes.
 
 Nye sendekall inkluderer forventet aktiv bruker-ID. Edge sammenligner denne med Auth.getUser og avviser supportens effektive kundeidentitet når JWT tilhører administratoren. Eldre klienter uten felt beholder sin eksisterende kontrakt. SQL bekrefter fortsatt firma, rolle, registrert mottaker, aktiv token og revisjon før både prepare og begin.
+
+Portalens identity.logo_url hentes fra prosjektets eget company_id og eksisterende firmaprofil, aldri fra besøkendes aktive firma. Bare logofeltet eksponeres; øvrig firmaprofil følger ikke med. Bilde vises proporsjonalt, med firmanavn/ikon ved manglende eller feilet bilde.

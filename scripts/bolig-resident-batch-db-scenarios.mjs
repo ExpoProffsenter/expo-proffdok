@@ -2,6 +2,7 @@ import fs from 'node:fs/promises';
 export default async function batchScenarios({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider}){
  await db.exec('reset role');
  await db.exec(await fs.readFile('supabase/migrations/20261112232829_bolig_resident_batch_deadlines.sql','utf8'));
+ await db.exec(await fs.readFile('supabase/migrations/20261112235913_bolig_portal_company_brand.sql','utf8'));
  await actor(manager);
  let state=await call('create_plan',null,null,{request_id:id(97000),title:'QA samlede beboerhandlinger',reference:'QA',buildings:[{name:'Blokk A',building_type:'multi',address:'QA',house_floors:1,entrances:[{address:'QA',counts:[2]}]}]});
  const root=state.root.id, units=state.units.map(u=>u.id);
@@ -38,7 +39,7 @@ export default async function batchScenarios({db,call,actor,eq,rejects,id,firm,o
  await db.query("update bolig_private.resident_portals set published_offers=$1 where unit_id=$2",[JSON.stringify([{id:id(97040),title:'QA valg',snapshot:{total_cents:100,goods:[]}}]),units[0]]);
  await db.exec("select set_config('qa.user','',false);set role anon");
  const portal=async(action='get',payload={})=>(await db.query('select public.bolig_portal($1,$2,$3) v',[publish.units[0].token,action,payload])).rows[0].v;
- let p=await portal();eq(p.choice_deadline,date);eq(p.choices_closed,false);eq(p.shared_household,true);
+ let p=await portal();eq(Object.hasOwn(p.identity,'logo_url'),true,'Public portal includes public company logo field');eq(Object.hasOwn(p.identity,'company_profile'),false,'No full company profile exposed');eq(p.choice_deadline,date);eq(p.choices_closed,false);eq(p.shared_household,true);
  const request={request_id:id(97041),menu_version:p.menu_version,offer_id:id(97040),body:''};
  p=await portal('request',request);eq(p.events.filter(e=>e.kind==='request').length,1);
  await db.exec('reset role');await db.query("update bolig_private.units set choice_deadline=(clock_timestamp() at time zone 'Europe/Oslo')::date-1 where id=$1",[units[0]]);

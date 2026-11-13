@@ -88,3 +88,8 @@ Kandidat eb7efbb5a02dc37b2e1c1d5b7b42482839e9e2f1, READY dpl_8yekaeuMzWCVUB7QoUX
 Deretter valgt bolig24+25, eksplisitt erstattet gammel syntetisk lenke24, klargjort to portaler. Listen viser tre eiere:24 har to identiske portaladresser,25 egen. Pauset e-post vises, utsendingsknapp er deaktivert. Ingen e-post forsøkt eller sendt. Bilde: evidence/orvei-batch-recipients-20261113.jpg. Selve e-postleveransen, ny fristvisning på offentlig portal og mobilvisning av nytt panel er ikke live-verifisert i denne runden; server-/komponenttester dekker frist og mottakergrenser. Video er manus, ikke ferdig opptak.
 
 PR323-kjøring43331389746: bolig-db, bolig-browser, build, HR og øvrige datatester bestått. app-browser feilet i bolig-guidance-workspace-browser-check fordi testens katalog bare inneholdt de gamle temaene (forventet8 i struktur, fikk12). Ny kontrakt: behold alle opprinnelige teksthash-kontroller, inkluder fem nye household-temaer, åpne og kontroller hvert av dem og tell faktisk hele gruppen. Ingen terskel senkes eller kontroll utelates. Etterfølgende commit retter dette og begrenser label-layout til det nye panelet for avkryssing ved siden av tekst. Ny GitHub-kontroll kreves. PR320 siste43097043078 fortsatt queued. Produksjon/main/demo uendret.
+
+## Firmalogo i portal
+Additiv migrasjon20261112235913 legger bare logo_url i portalidentiteten fra prosjektets firma. Klient bruker proporsjonal logo opptil260×88px (mobil220×76), firmanavn beholdes og ikon vises ved bildefeil. Krever sandbox-installasjon og visuell kontroll. Ingen produksjonsendring.
+
+Logo: lokal database1815 og build PASS. Installert kun sandbox etter kontroll av eksisterende portal_state. Ingen realutsending.
