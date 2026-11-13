@@ -40,6 +40,7 @@ const roomRow = (name = "Bad 1", type = "bathroom") => ({
 });
 const labels = {
   numbering: "Nummerer boliger",
+  placement: "Flytt bolig",
   building: "Rediger bygg",
   template: "Rom og pakker til flere boliger",
 };
@@ -481,6 +482,7 @@ export default function BoligPreparation({ context, root, onChanged }) {
         {[
           ["building", Building2, "Navn, adresser og boligfordeling"],
           ["numbering", Hash, "Nummerforslag og samlet redigering"],
+          ["placement", Building2, "Bytt etasje eller plass i samme oppgang"],
           ["template", Layers3, "Gjenbruk rommaler og grunnpakker"],
         ].map(([id, Icon, hint]) => (
           <button key={id} type="button" onClick={(e) => launch(id, e)}>
@@ -739,6 +741,39 @@ export default function BoligPreparation({ context, root, onChanged }) {
                         })}
                       </div>
                       {pager}
+                    </>
+                  )}
+                  {kind === "placement" && (
+                    <>
+                      <p>Velg boligen og plassen den skal ha i samme oppgang.
+                        De to boligene bytter plass. Bolignummer, beboere, valg
+                        og fremdrift følger hver bolig.</p>
+                      {controls}
+                      <label>
+                        Bolig som skal flyttes
+                        <select aria-label="Bolig som skal flyttes" value={draft?.unit_id || ""}
+                          onChange={(e) => edit({ unit_id: e.target.value, target_unit_id: "", _basis: data.basis })}>
+                          <option value="">Velg bolig</option>
+                          {filtered.map((u) => <option key={u.id} value={u.id}>
+                            {u.block.name} · {u.entrance.address} · Bolig {u.number} · {u.floor}. etasje, plass {u.position}
+                          </option>)}
+                        </select>
+                      </label>
+                      {draft?.unit_id && <label>
+                        Ny plass
+                        <select aria-label="Ny plass" value={draft.target_unit_id || ""}
+                          onChange={(e) => edit({ ...draft, target_unit_id: e.target.value })}>
+                          <option value="">Velg plass å bytte med</option>
+                          {units.filter((u) => u.id !== draft.unit_id && u.entrance_id === units.find((v) => v.id === draft.unit_id)?.entrance_id)
+                            .map((u) => <option key={u.id} value={u.id}>
+                              {u.floor}. etasje, plass {u.position} · Bolig {u.number}
+                            </option>)}
+                        </select>
+                      </label>}
+                      <p>Kontroller begge boligene i forhåndsvisningen.
+                        Offisielt bolignummer endres ikke automatisk.
+                        Egne fasadebilder må justeres under Bilder og plantegninger.
+                        Tidligere bestillinger og dokumenter beholder opplysningene fra da de ble laget.</p>
                     </>
                   )}
                   {kind === "building" && (
@@ -1238,6 +1273,8 @@ export default function BoligPreparation({ context, root, onChanged }) {
                           <small>
                             {kind === "numbering"
                               ? `${p.before} → ${p.number}${p.official_number ? ` · Offisielt: ${p.official_number}` : ""}`
+                              : kind === "placement"
+                                ? `${p.before_floor}. etasje, plass ${p.before_position} → ${p.floor}. etasje, plass ${p.position}`
                               : kind === "building"
                                 ? `${p.added} nye · ${p.hidden} skjules · ${p.restored} gjenopprettes`
                                 : p.reason ||
