@@ -100,3 +100,6 @@ Produsert **36-sekunders videoutkast,3scener**, med ferske sandboxbilder: «Best
 
 ## Kontrollpunkt 3 – pågår
 Eier Codex nattarbeid13.11 kl05:19. Reservert scope: uavhengig desktopkontroll av HR/KS-HMS/Min side og dokumentasjon. Ingen overlapp med PR321/325, ingen produksjonsendringer. Ferdig beboeraksept og15filmers avspilling gjentas ikke.
+
+### Kontrollpunkt 3 – reservert rettelse N-UX-003
+Faktisk sandbox-repro: lokal HR-prøvesamtale fullført utgave4, PDF viser fullført; etter reload viser låst gjennomgått-checkbox tom. Eier Codex. Isolert branch `fix/hr-practice-completed-state-20261113` fra main. Miljømål SANDBOX/DEMO (eksisterende produksjonsgate beholdes). Scope: HrPracticeConversation.jsx, eksisterende HR-prøvetester og ett endringsgrunnlag. Ingen ordinære HR-samtaler, backend, tilgang, e-post eller navigasjonskjerne endres.
