@@ -1,0 +1,45 @@
+{
+  "date": "2026-11-13",
+  "environment": "permanent demo / sandbox ppvircenkjizeiqdxphj",
+  "commit": "3d65c0e022ed11ec73aa569f79bfe6f362d30fae",
+  "role": "demo account / Firmaadmin; personal handbook rendered Ansatt",
+  "viewport": "1363x936 desktop",
+  "files": [
+    {
+      "path": "hr-followup-20261113.jpg",
+      "bytes": 103800,
+      "sha256": "58cb47b3a60e617c6534d6013ac724ed77293333c8b7c01ec474103edffdca44"
+    },
+    {
+      "path": "ruh-validation-20261113.jpg",
+      "bytes": 94112,
+      "sha256": "20114e17c062fa842944fd8dd203810595793b8273a71facd69c7f816abb582f"
+    },
+    {
+      "path": "personal-plan-20261113.jpg",
+      "bytes": 82940,
+      "sha256": "b1e732b5e1a083ad57307c08b1da0c7836217467c3430151eebbaa0c0b4e6885"
+    },
+    {
+      "path": "hr-practice-complete-20261113.jpg",
+      "bytes": 92581,
+      "sha256": "e5b5215d19377b628c84cc2be750dedd39728c44130a3c14b058b5ccee2581ca"
+    },
+    {
+      "path": "hr-practice-reload-20261113.jpg",
+      "bytes": 93097,
+      "sha256": "6a53f6a8cec22d0bd759c2fb4d220f28c8d2547ccb802237a02f39b9c133642a"
+    },
+    {
+      "path": "hr-practice-20261113.pdf",
+      "bytes": 6055,
+      "sha256": "38c06a52381f904d3dd754c4aa9c31c96c1ab8f938b608324ea6eee75379c5d3"
+    }
+  ],
+  "notes": [
+    "Actual logged-in UI screenshots; only synthetic data.",
+    "PDF downloaded from local practice UI, completed version4, two A4 pages. Both rendered and inspected.",
+    "No mobile/device emulation, employee role switching, production writes or email.",
+    "Before-fix evidence: unchecked disabled review box after reload, despite completed saved status and PDF."
+  ]
+}
