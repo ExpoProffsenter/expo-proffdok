@@ -51,3 +51,6 @@ A–Å-revisjonsplan og batchmanus lest. Ny A–Å-film er ikke produsert;57scen
 
 ### Ikke utført / fortsatt åpent
 Full beboeraksept og bestillingsutkast; ny felleseier-/fristtest; mobil og fysisk dvale; øvrige HR/KS/HMS/salg/prosjekt/ordre/FDV-reiser; all visuell videorevisjon og ny film. Ingen generell tilgangsblokkering: sandbox-økten virker. Arbeidet er påbegynt, ikke fullført.
+
+## Kontrollpunkt 2 – pågår
+Eier Codex nattarbeid, andre kjøring. Main/demo uendret. PR325 full CI43353049742 success. Ingen rerun. Reservert: videre bolig38 UI og videokilder/produksjon, ingen overlappende kodeendring. Første kontrollpunkts ferdige filkontroller gjentas ikke.
