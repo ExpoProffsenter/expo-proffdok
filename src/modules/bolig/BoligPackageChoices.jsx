@@ -131,6 +131,7 @@ export default function BoligPackageChoices({
   root,
   unit,
   activeRoom = null,
+  collaborationView = false,
   roomsRevision,
   onOpenCatalog = null,
 }) {
@@ -394,7 +395,7 @@ export default function BoligPackageChoices({
           <p className="bolig-editor-hint">
             {activeRoom
               ? "Velg grunnpakke og tilvalgspakker for dette rommet. Fellespakken for boligen beholdes."
-              : context.collaboration_root
+              : collaborationView
                 ? "Her ser du pakkene som er valgt for boligen. Bruk «Vis felles pakker» for å se prosjektets pakker. Med redigeringstilgang kan du endre fellespakken eller tilpasse innholdet bare for denne boligen."
                 : "Fellespakken gjelder boligen. Velg et rom ovenfor for å legge til rompakke. Lag gjenbrukbare pakker under Grunnpakker og tilvalgspakker øverst."}
           </p>

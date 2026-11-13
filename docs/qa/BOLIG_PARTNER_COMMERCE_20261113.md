@@ -57,6 +57,10 @@ Hosted smal kontroll av Mine samarbeid avdekket faktisk transparent dialog: klas
 Tilgangskontroll og feilmelding ligger inne i åpen dialog, slik at brukeren også får forklaringen ved lasting eller tilbakekalling. Tilbakekallingstesten krever nå at meldingen finnes i dialogen.
 
 ## Trippelsjekk 14.11.2026 – veiledning i samarbeid
-Hosted kontroll fant at pakkevalgets standardveiledning viste til romvelger og prosjektfane som ikke finnes i Mine samarbeid-dialogen. Teksten er nå betinget av eksisterende collaboration_root: se boligens pakker, bruk Vis felles pakker, og endre bare med redigeringstilgang. Ordinær prosjekt-/romflyt er uendret. Ingen backend-, tilgangs- eller datakontraktendring. Bolig38s usendte begrunnelse beholdt ved faktisk fanebytte; lukking returnerte til valgt bolig og samme tilpasningsknapp. Se PR-beskrivelse for endelig publisert kontroll/CI og opprydding.
+Hosted kontroll fant at pakkevalgets standardveiledning viste til romvelger og prosjektfane som ikke finnes i Mine samarbeid-dialogen. Teksten er nå betinget av arbeidsflaten (collaborationView): se boligens pakker, bruk Vis felles pakker, og endre bare med redigeringstilgang. Ordinær prosjekt-/romflyt er uendret. Ingen backend-, tilgangs- eller datakontraktendring. Bolig38s usendte begrunnelse beholdt ved faktisk fanebytte; lukking returnerte til valgt bolig og samme tilpasningsknapp. Se PR-beskrivelse for endelig publisert kontroll/CI og opprydding.
 
 Smalskjerm 454px avdekket at tilpasningsskjemaets overskrift/lukkeknapp forsvant ved rulling. Egen klasse på BoligUnitCustomization og avgrensede CSS-regler gjør header og kladd-lukking sticky, med 44px-knapper. Delt Dialog-komponent og øvrige modaler er ikke endret. Ugyldig pristillegg ga tydelig feil og beholdt kladd i hosted preview. Kladd gjenåpnet med usendt begrunnelse intakt, deretter testtekst/pris tilbakeført uten serverlagring.
+
+Publisert re-test avdekket at manager-context ikke alltid har collaboration_root. Veiledning velges derfor eksplisitt av Mine samarbeid-komponenten, ikke brukerens tilgangsrolle. React-regresjon dekker prop-overføringen.
+
+Re-test ved 454px fant at appRuntimeStyles sin generelle mobilregel header {position:static!important} overstyrte sticky. Kun tilpasningsdialogens egne position/top/z-index overstyres lokalt; global appregel forblir urørt.

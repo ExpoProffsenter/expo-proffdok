@@ -30,7 +30,7 @@ export default function BoligMyCollaborations({userId}){
  <label>Finn bolig<input type="search" value={query} onChange={e=>setQuery(e.target.value)}/></label>
  {query&&<p role="status">{matches.length} treff.{chosen?' Valgt bolig beholdes til du velger en annen.':!matches.length?' Prøv et annet bolignummer eller en adresse.':''} <button type="button" onClick={()=>setQuery('')}>Tøm søk</button></p>}
  <label>Bolig<select value={chosen?.id||''} onChange={e=>setUnit(e.target.value)}><option value="">Velg bolig</option>{options.map(u=><option key={u.id} value={u.id}>{u.address} · {u.number} · {u.contact_name}</option>)}</select></label>
- {chosen&&<BoligPackageChoices key={chosen.id} context={data.context} root={data.root} unit={chosen}/>}
+ {chosen&&<BoligPackageChoices collaborationView key={chosen.id} context={data.context} root={data.root} unit={chosen}/>}
  </>}
  </div>
  </Dialog>}

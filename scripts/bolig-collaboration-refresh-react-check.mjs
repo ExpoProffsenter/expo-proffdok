@@ -3,7 +3,7 @@ const {JSDOM}=await import(process.env.KSHMS_JSDOM_PATH||'jsdom');
 const cwd=process.cwd(),temp=fs.mkdtempSync(path.join(os.tmpdir(),'bolig-collab-'));
 const rpc=path.join(temp,'rpc.js'),stub=path.join(temp,'stub.jsx'),entry=path.join(temp,'entry.jsx');
 fs.writeFileSync(rpc,`export async function collaborationRpc(name,args,user){return window.__rpc(name,args,user);}`);
-fs.writeFileSync(stub,`import React,{useEffect,useState} from '${cwd}/node_modules/react/index.js';export default function Editor(){const [note,setNote]=useState('');useEffect(()=>{window.__mounts++;return()=>window.__unmounts++;},[]);return <label>Arbeidsutkast<input value={note} onChange={e=>setNote(e.target.value)}/></label>;}`);
+fs.writeFileSync(stub,`import React,{useEffect,useState} from '${cwd}/node_modules/react/index.js';export default function Editor({collaborationView}){const [note,setNote]=useState('');useEffect(()=>{window.__mounts++;return()=>window.__unmounts++;},[]);return <label data-collaboration-view={String(collaborationView)}>Arbeidsutkast<input value={note} onChange={e=>setNote(e.target.value)}/></label>;}`);
 fs.writeFileSync(entry,`import React,{act} from '${cwd}/node_modules/react/index.js';import {createRoot} from '${cwd}/node_modules/react-dom/client.js';import Page from '${cwd}/src/modules/bolig/BoligMyCollaborations.jsx';const root=createRoot(document.getElementById('app'));window.__act=act;window.__render=()=>root.render(<Page userId="user"/>);window.__dispose=()=>root.unmount();`);
 const built=await build({root:cwd,configFile:false,logLevel:'silent',define:{'process.env.NODE_ENV':'"development"'},plugins:[react({jsxRuntime:"classic"})],resolve:{alias:[{find:'./boligCollaborationClient.js',replacement:rpc},{find:'./BoligCatalog.jsx',replacement:stub},{find:'./BoligPackageChoices.jsx',replacement:stub}]},build:{write:false,minify:false,lib:{entry,formats:['iife'],name:'CollabProof',cssFileName:'collab-proof'}}});
 const dom=new JSDOM('<div id="app"></div>',{url:'https://qa.invalid',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window;
@@ -16,7 +16,7 @@ try{
  await act(()=>w.__render());await act(()=>[...w.document.querySelectorAll('button')].find(b=>b.textContent==='QA · QA').click());
  const modal=w.document.querySelector('dialog');assert.equal(w.getComputedStyle(modal).backgroundColor,'rgb(255, 255, 255)');assert.equal(w.getComputedStyle(modal).position,'fixed');assert(!modal.classList.contains('bolig-page'),'Modal must not inherit transparent page-shell rules');
  await act(()=>{const select=w.document.querySelector('select');select.value='u';select.dispatchEvent(new w.Event('change',{bubbles:true}));});
- assert.equal(w.__mounts,1);const input=w.document.querySelector('input:not([type="search"])');
+ assert.equal(w.__mounts,1);assert(w.document.querySelector('[data-collaboration-view="true"]'),'Collaboration guidance is selected by workspace, including existing managers');const input=w.document.querySelector('input:not([type="search"])');
  await act(()=>{Object.getOwnPropertyDescriptor(w.HTMLInputElement.prototype,'value').set.call(input,'Uferdig vare og arbeid');input.dispatchEvent(new w.Event('input',{bubbles:true}));});
  const search=w.document.querySelector('input[type="search"]');
  await act(()=>{Object.getOwnPropertyDescriptor(w.HTMLInputElement.prototype,'value').set.call(search,'ingen treff');search.dispatchEvent(new w.Event('input',{bubbles:true}));});
