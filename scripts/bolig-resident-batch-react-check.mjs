@@ -1,0 +1,32 @@
+import assert from 'node:assert/strict';import fs from 'node:fs';import os from 'node:os';import path from 'node:path';import {build} from 'vite';import react from '@vitejs/plugin-react';
+const {JSDOM}=await import(process.env.KSHMS_JSDOM_PATH||'jsdom');
+const cwd=process.cwd(),temp=fs.mkdtempSync(path.join(os.tmpdir(),'bolig-batch-')),entry=path.join(temp,'entry.jsx');
+fs.writeFileSync(entry,`import React,{act} from '${cwd}/node_modules/react/index.js';import{createRoot}from '${cwd}/node_modules/react-dom/client.js';import Batch from '${cwd}/src/modules/bolig/BoligResidentBatch.jsx';const root=createRoot(document.getElementById('app'));globalThis.__act=act;globalThis.__render=props=>root.render(React.createElement(Batch,props));globalThis.__dispose=()=>root.unmount();`);
+const built=await build({root:cwd,configFile:false,logLevel:'silent',define:{'process.env.NODE_ENV':'"development"'},plugins:[react(),{name:'mock',enforce:'pre',resolveId(id){if(id.endsWith('appSupabaseClientRegistry.js'))return '\0client';},load(id){if(id==='\0client')return 'export const getAppSupabaseClient=()=>globalThis.__client;';}}],build:{write:false,minify:false,lib:{entry,cssFileName:'batch-proof',formats:['iife'],name:'BatchProof'}}});
+const dom=new JSDOM('<div id="app"></div>',{url:'https://qa.invalid',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window;
+w.MessageChannel=class{constructor(){this.port1={onmessage:null};this.port2={postMessage:()=>setImmediate(()=>this.port1.onmessage?.())};}};
+w.IS_REACT_ACT_ENVIRONMENT=true;w.HTMLDialogElement.prototype.showModal=function(){this.setAttribute('open','');};w.HTMLDialogElement.prototype.close=function(){this.removeAttribute('open');};
+const context={user_id:'actor',company_id:'firm',role:'manager',enabled:true},root={id:'root',archived:false};
+let data={context,root_id:'root',mail_enabled:false,units:[{id:'u1',number:'24',block_id:'a',block_name:'Blokk A',group_id:'g',group_name:'Stamme 1',deadline:null,basis:'v1',portal_revision:0,offer_count:0,contacts:[{name:'QA Eier',email:'qa@example.invalid'},{name:'QA Medeier',email:'extra@example.invalid'}]}]},calls=[],deny=false,failPublish=true,held=null;
+w.__client={rpc:async(name,args)=>{calls.push({name,args:structuredClone(args)});if(held)return new Promise(resolve=>held.push(resolve));if(deny)return{error:{code:'42501',message:'Tilgang fjernet'}};if(args.p_action==='publish'){if(failPublish){failPublish=false;return{error:{message:'Usikkert svar'}};}return{data:{...data,portals:[{unit_id:'u1',target_id:'p1',revision:1}]}};}return{data:structuredClone(data)};}};
+w.eval((Array.isArray(built)?built[0]:built).output.find(x=>x.type==='chunk').code);
+const act=w.__act,button=text=>[...w.document.querySelectorAll('button')].find(b=>b.textContent.trim()===text),click=async text=>{assert(button(text),text);await act(()=>button(text).click());};
+const props={context,record:{root,units:[{choice_deadline:null}]}},checks=[];const check=(v,message)=>{assert(v,message);checks.push(message);};
+try{
+ await act(()=>w.__render(props));await click('Beboerlenker og frister samlet');await click('Velg alle viste boliger');
+ const confirm=()=>[...w.document.querySelectorAll('input[type=checkbox]')].at(-1);
+ await act(()=>confirm().click());check(confirm().checked,'explicit confirmation');
+ await act(()=>w.dispatchEvent(new w.Event('focus')));check(confirm().checked,'same-snapshot refresh preserves confirmation and selection');
+ data.units[0].basis='v2';await act(()=>w.dispatchEvent(new w.Event('focus')));check(!confirm().checked,'changed server basis resets confirmation');
+ check(w.document.querySelector('input[type=checkbox]').checked,'focus retains selected unit');
+ await click('Lukk og behold utkast');await click('Beboerlenker og frister samlet');check(w.document.querySelector('input[type=checkbox]').checked,'close/reopen retains selected unit');
+ await act(()=>confirm().click());await click('Klargjør valgte beboerlenker');check(!!button('Kontroller samme handling igjen'),'uncertain reply retains exact pending request');
+ const first=calls.find(c=>c.args.p_action==='publish').args.p_payload;
+ await click('Kontroller samme handling igjen');const publishes=calls.filter(c=>c.args.p_action==='publish');assert.deepEqual(publishes[1].args.p_payload,first);checks.push('retry preserves request IDs, token and frozen unit snapshot');
+ check(button('Bekreft utsending til 2 eiere').disabled,'paused mail disables sending');check(w.document.body.textContent.includes('extra@example.invalid'),'co-owner in confirmation list');
+ await click('Lukk og behold utkast');await click('Beboerlenker og frister samlet');check(w.document.body.textContent.includes('Mottakere og sendestatus'),'prepared list survives reopening');
+ deny=true;await act(()=>w.dispatchEvent(new w.Event('focus')));check(!w.document.body.textContent.includes('extra@example.invalid'),'revoked access hides recipient data');
+ deny=false;await click('Hent siste oversikt');held=[];await act(()=>w.dispatchEvent(new w.Event('focus')));await click('Lukk og behold utkast');await act(()=>{held[0]({data});});check(!w.document.querySelector('dialog'),'late response cannot reopen deliberately closed panel');
+ await act(()=>w.__render({...props,context:{...context,role:'reader'}}));check(!button('Beboerlenker og frister samlet'),'reader has no batch action');
+ console.log(`bolig-resident-batch-react: ${checks.length} lifecycle and confirmation scenarios PASS`);
+}finally{await act(()=>w.__dispose());dom.window.close();fs.rmSync(temp,{recursive:true,force:true});}

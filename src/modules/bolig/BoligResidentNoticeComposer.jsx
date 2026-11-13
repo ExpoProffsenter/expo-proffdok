@@ -16,6 +16,7 @@ import {
   downloadResidentNotice,
 } from "./boligResidentNoticePdf.mjs";
 import "./boligNotice.css";
+import { selectNoticeBuildings, noticeBuildingsLabel } from "./boligNoticeAudience.mjs";
 export default function BoligResidentNoticeComposer({
   context,
   root,
@@ -176,6 +177,8 @@ export default function BoligResidentNoticeComposer({
       : draft.audience === "block"
         ? blocks.find((u) => u.block_id === draft.group)?.block_name ||
           "Velg bygg"
+        : draft.audience === "blocks"
+          ? noticeBuildingsLabel(state.units, draft.block_ids || [])
         : draft.audience === "entrance"
           ? entrances.find((u) => u.entrance_id === draft.group)?.address ||
             "Velg oppgang"
@@ -186,6 +189,7 @@ export default function BoligResidentNoticeComposer({
     patch({
       audience,
       group,
+      block_ids: [],
       unit_ids:
         audience === "project"
           ? state.units.map((u) => u.id)
@@ -380,6 +384,7 @@ export default function BoligResidentNoticeComposer({
               >
                 <option value="project">Hele prosjektet</option>
                 <option value="block">Et helt bygg</option>
+                <option value="blocks">Flere bygg</option>
                 <option value="entrance">En hel oppgang</option>
                 <option value="units">Velg boliger</option>
               </select>
@@ -419,6 +424,24 @@ export default function BoligResidentNoticeComposer({
                   ))}
                 </select>
               </label>
+            )}
+            {draft.audience === "blocks" && (
+              <fieldset className="bolig-notice-recipients">
+                <legend>Velg bygg som skal få samme melding</legend>
+                {blocks.map(b => (
+                  <label key={b.block_id}>
+                    <input type="checkbox" checked={(draft.block_ids || []).includes(b.block_id)}
+                      onChange={e => {
+                        const ids = e.target.checked
+                          ? [...(draft.block_ids || []), b.block_id]
+                          : (draft.block_ids || []).filter(id => id !== b.block_id);
+                        patch({ block_ids: ids, unit_ids: selectNoticeBuildings(state.units, ids) });
+                      }} />
+                    <span>{b.block_name} · {state.units.filter(u => u.block_id === b.block_id).length} boliger</span>
+                  </label>
+                ))}
+                <small>Kontroller boligene nedenfor. Nye boliger legges ikke automatisk til i et lagret utkast.</small>
+              </fieldset>
             )}
             <details
               className="bolig-notice-recipients"
