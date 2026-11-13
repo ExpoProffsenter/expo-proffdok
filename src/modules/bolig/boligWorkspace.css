@@ -69,3 +69,5 @@
 .bolig-workspace-building h3 { min-width: 0; max-width: 100%; overflow-wrap: normal; }
 .bolig-workspace-building h3 > svg { flex-shrink: 0; }
 .bolig-building-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+[data-expo-app-shell="true"] .bolig-main-grid:has(>.bolig-select-unit)>.bolig-building-panel:has(>:is(.bolig-visual-facade,.bolig-search-results))>.bolig-workspace-toolbar .bolig-workspace-building{flex-wrap:wrap!important}
