@@ -1,3 +1,4 @@
+import { effectiveSupportUserId } from './appSupportBrowser.mjs';
 // Expo ProffDok – FASE 38A1
 // Én klientkontrakt for brukerens modultilganger. Server/RLS er autoritativ;
 // denne filen brukes bare til å projisere samme tilgang i meny, Admin og Hjelp.
@@ -126,7 +127,7 @@ export function getStoredSupabaseSession() {
 
   for (const key of keys) {
     const session = parseStoredSession(window.localStorage.getItem(key) || "");
-    if (session.accessToken) return session;
+    if (session.accessToken) return { ...session, userId: effectiveSupportUserId(session.userId) };
   }
   return { accessToken: "", userId: "" };
 }

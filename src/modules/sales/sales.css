@@ -2543,3 +2543,6 @@ section.sales-workspace-intro:has(+ [data-sales-resume-workspace] .sales-editor-
 /* Inspection photos reuse the app's existing larger-image viewer. */
 .sales-inspection-photo-open { display:block; cursor:zoom-in; }
 .sales-inspection-photo-open:focus-visible { outline:3px solid #008c9c; outline-offset:3px; border-radius:10px; }
+
+/* Project history deliberately hides SalesCore; its document links must remain visible. */
+[data-expo-project-shell="1"] section.sales-workspace-intro:has(+ [data-sales-resume-workspace]) { display: block; }

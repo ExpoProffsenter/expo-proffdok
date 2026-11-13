@@ -1,3 +1,4 @@
+import { effectiveSupportUserId } from '../../access/appSupportBrowser.mjs';
 // Expo ProffDok – FASE 42J / FASE 42I / FASE 30C2
 // FASE 42J bevarer også ulagret Ny forespørsel / Nytt tilbud / Rediger forespørsel
 // ved PC-fanebytte og mobil appbytte (f.eks. SMS) uten å opprette en Sales-sak
@@ -50,7 +51,7 @@ function currentUserId(store) {
           parsed?.session?.user?.id ||
           ""
       ).trim();
-      if (id) return id;
+      if (id) return effectiveSupportUserId(id);
     }
   } catch {
     return "";
