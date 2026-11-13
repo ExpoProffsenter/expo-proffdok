@@ -1,3 +1,4 @@
+import {canEditCollaboration} from "./boligCollaborationAccess.js";
 import { Package, Plus, Pencil, EyeOff } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -520,8 +521,7 @@ export default function BoligCatalog({
   const canWrite =
     !!valid &&
     context.enabled &&
-    context.role === "manager" &&
-    valid.context.role === "manager" &&
+    canEditCollaboration(context, valid.context, root.id, "edit_catalog") &&
     !root.archived;
   const save = async (action, payload, expected = valid.revision) => {
     if (!canWrite || loading || operation.current) return false;

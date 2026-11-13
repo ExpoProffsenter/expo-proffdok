@@ -10,6 +10,7 @@ import SupportSummary from '../support/SupportSummary.jsx';
 import {PersonalTimeCard} from '../time/TimeEntryPoint.jsx';
 import usePersonalTimeAccess from '../time/usePersonalTimeAccess.js';
 import {DialogPortalTarget} from '../ui/DialogPortalTarget.js';
+const BoligMyCollaborations=React.lazy(()=>import('../bolig/BoligMyCollaborations.jsx'));
 const BoligMyTasks=React.lazy(()=>import('../bolig/BoligMyTasks.jsx'));
 const BoligPresenceCard=React.lazy(()=>import('../bolig/BoligPresenceCard.jsx'));
 const KshmsMyProgressPlans=React.lazy(()=>import('../kshms/KshmsMyProgressPlans.jsx'));
@@ -50,6 +51,7 @@ export default function PersonalPage({context,kshmsContext,hrContext,userId,auth
   <div className="personal-workday" data-personal-view={screen} hidden={!['overview','plans'].includes(screen)||pending}>
    <div className="personal-cards personal-day-grid">
     <div className="personal-day-main">
+     {screen==='overview'&&!pending&&rights.enabled&&authUser?.id===userId&&<Suspense fallback={null}><BoligMyCollaborations key={'collaboration:'+scope} userId={userId}/></Suspense>}
      {['overview','plans'].includes(screen)&&!pending&&rights.enabled&&<details className="personal-card personal-plans-card" aria-label="Mine aktive planer" open={plansOpen} onToggle={event=>setPlanDisclosure({scope,screen,open:event.currentTarget.open})}>
       <summary className="personal-plans-heading"><div className="personal-card-icon"><CalendarDays aria-hidden="true"/></div><div><span className="personal-card-eyebrow">DITT PLANLAGTE ARBEID</span><h3>Mine aktive planer</h3><span className="personal-plans-disclosure">{plansOpen?'Skjul planlistene':'Vis planlistene'}</span></div></summary>
       <p>Åpne en plan for å se dine uferdige oppgaver og datoene som er registrert. Datoene følger norsk tid.</p>

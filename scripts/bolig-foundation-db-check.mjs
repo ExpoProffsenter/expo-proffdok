@@ -1010,6 +1010,8 @@ try {
   await batchScenarios({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider});
   const {default:placementScenarios}=await import("./bolig-placement-db-scenarios.mjs");
   await placementScenarios({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider});
+  const {default:commerceCollaboration}=await import("./bolig-partner-commerce-db-scenarios.mjs");
+  await commerceCollaboration({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider});
   await db.exec(
     `reset role;update public.profiles set deactivated=true where id=${q(reader)}`,
   );

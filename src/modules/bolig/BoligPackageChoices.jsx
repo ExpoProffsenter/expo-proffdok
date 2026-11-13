@@ -1,3 +1,4 @@
+import {canEditCollaboration} from "./boligCollaborationAccess.js";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Package, Plus, X } from "lucide-react";
@@ -177,8 +178,7 @@ export default function BoligPackageChoices({
   const canWrite =
     !!data &&
     context.enabled &&
-    context.role === "manager" &&
-    data.context.role === "manager" &&
+    canEditCollaboration(context, data.context, root.id, "edit_choices") &&
     !root.archived &&
     !data.root_archived;
   const keyFor = (sid) =>

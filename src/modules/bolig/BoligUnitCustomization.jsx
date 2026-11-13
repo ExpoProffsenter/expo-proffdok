@@ -1,3 +1,4 @@
+import {canEditCollaboration} from "./boligCollaborationAccess.js";
 import React, { useEffect, useRef, useState } from "react";
 import Dialog from "./BoligEditorDialog.jsx";
 import ContentEditor from "./BoligPackageContentEditor.jsx";
@@ -109,8 +110,7 @@ export default function BoligUnitCustomization({
       setError("Kladden kunne ikke sikres lokalt. Behold siden åpen.");
   };
   const canWrite =
-    data?.context.role === "manager" &&
-    context.role === "manager" &&
+    canEditCollaboration(context, data?.context, root.id, "edit_choices") &&
     context.enabled &&
     !root.archived &&
     !data.root_archived;
