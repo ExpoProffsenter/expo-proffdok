@@ -7,7 +7,7 @@ Miljømål: SANDBOX/DEMO. Ingen appkode, migreringer, produksjonsdata eller e-po
 - Prosjekt: **QA – Aamodthagen – Orvei komplett**, root `df971415-1232-4199-8bd8-ce1e2246deaa`.
 - 29 boligbygg, 126 leiligheter (seksjon 1–126), 151 eiere.
 - Første eier i original Excel er hovedkontakt; 25 ekstra eiere beholdt som medeiere.
-- 1 256 planlagte aktiviteter: 8 milepæler og én arbeidsperiode per bolig, pluss 122 grunnpakkemøter.
+- 1 260 planlagte aktiviteter: 8 milepæler og én arbeidsperiode per bolig, pluss 126 grunnpakkemøter.
 - Offisielle H-numre er tomme. Etasje/plass er foreløpig, fordelt på to etasjer, og må kontrolleres. Bygg/adresse og seksjon er kryssjekket mellom Excel og datoplanene.
 - Eksisterende 22-boligers Aamodthagen-utkast og tidligere QA-prosjekter bevart.
 - Ingen beboerportaler opprettet; ingen utsending. Begge sandboxtransportene (progress/resident_links) kontrollert deaktivert.
@@ -34,11 +34,11 @@ Kontor/styrerom, overordnet rigg og fellesarbeid er ikke opprettet som fiktive b
 - UI: prosjektet åpnet i innlogget PR329 sandbox-preview, 126 boliger og 29 bygg bekreftet. Samlet Gantt viser 1 256 aktiviteter; søk på Granåsvegen 14 viser 40. Uke/måned og samlet tidslinje er kontrollert. Boligfilter 17 viser alle 10 aktiviteter og desemberdatoene 2., 8. og 18.12 korrekt. Skjermbilde tatt. Mobil, drag/lagring og beboerportal er ikke testet i denne importkontrollen.
 
 ## Avklaringer før produksjon
-1. R02 side 2: seksjon 113–116, Hans Rustads veg 2, har «Tirsdag 7/6-27». 7. juni 2027 er mandag. Fire grunnpakkemøter er **ikke importert**; ikke gjett 7. eller 8. juni.
+1. **Avklart av Kenneth 13.11:** Behold datoen i kilden og bruk korrekt ukedag. De fire møtene for seksjon 113–116 er lagt inn **mandag 7. juni 2027**, kl. 08.30–09.30, 10.00–11.00, 12.00–13.00 og 13.30–14.30. Lesing tilbake bekrefter alle fire datoer og klokkeslett, ISO-ukedag 1 (mandag). Fremdriftsrevisjon 5, totalt 1 260 aktiviteter. Original-PDF-en er uendret; dette er en dokumentert rettelse av ukedagen.
 2. Kontor/styrerom Aamodtterrassen 8 har avvik mellom oktoberoversikt og novemberark og feil oppstartsnummer i R02. Ikke tatt inn som bolig.
 3. Bestillingsfrister er kl. 12.00 i kilden. Dette står i fremdriften, men er **ikke** satt som automatisk portalstenging. Gjeldende boligfristmodell må avklares/tilpasses før produksjon.
 4. Faktiske etasjer/plasser og arbeidsansvarlige må bekreftes.
-5. Grunnpakke, tilvalg, monteringsposter, portalaksept og ordreflyt må ferdigtestes før produksjonsimport. Dette er ikke en bekreftelse på gjennomført full beboertest.
+5. Grunnpakke, tilvalg, monteringsposter, portalaksept og ordreflyt skal testes med tydelig fiktive sandboxpakker før produksjonsimport. Kenneth lager de faktiske pakkene sammen med Orvei direkte i produksjon neste uke. Disse pakkene er derfor ikke en forutsetning for å overføre godkjent prosjektgrunnlag. Testpakker, testvalg og testbestillinger skal ikke overføres. Full beboertest gjenstår.
 6. Kenneth skal gi TEST OK for prosjektgrunnlaget før produksjon. Kontroller målbedrift og eventuelt eksisterende produksjonsprosjekt før innlasting.
 
 ## Byggkart
