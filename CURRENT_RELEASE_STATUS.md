@@ -1,9 +1,9 @@
-# Permanent Demo – 11. november 2026
+# Permanent Demo – invitasjonsrettelse 13.11.2026
 
-Synkronisert produktkode fra main `d68cf2e530d5ab6afcfe2f97d75150c977bcd64f` (PR314–317). Opsjonsrettelse, kundens varekort/egne priser/smartsøk og boligaktivering på firmakortet er inkludert.
+Synkronisert fra publisert main `f7298e118f672e0b261b8a0f3f95e6e2d4e5e657` ([PR324](https://github.com/ExpoProffsenter/expo-proffdok/pull/324)). Tilbaketrekking av feil invitasjon, varig sendestatus per mottaker og bekreftelse før ny sending. Kenneth TEST OK; full QA43335089748 og43336522490 bestått.
 
-Demo-overlay, syntetiske ressurser, kontrollside og permanent Sandbox-binding `ppvircenkjizeiqdxphj` er bevart. Kontrollsidens produksjonsbaseline er oppdatert til samme main. Ingen seed, reset, reelle utsendinger eller tilgangsendringer inngår i synken.
+Produksjon READY på expo-proffdok.app, Vercel dpl_AkfEDbFLZeS4k8XpJdx2tA5tnrbL. Produksjonsmigrasjon remote20261113002214 installert én gang; ingen reelle invitasjoner endret eller e-post sendt. Sandbox-migrasjon var allerede installert.
 
-Full critical/build og kontrollsideregresjon kjøres før publisering. Eksakt demo-SHA, READY på fast demo-host og etterfølgende Sandbox-preflight dokumenteres i [PR316](https://github.com/ExpoProffsenter/expo-proffdok/pull/316). Produktets testgrunnlag ligger i [opsjonsloggen](docs/qa/OFFER_OPTION_REMOVAL_20261111.md) og [kundesøkloggen](docs/qa/PROFF_CUSTOMER_SEARCH_20261111.md).
+Demo-overlay, syntetiske ressurser og permanent Sandbox-binding ppvircenkjizeiqdxphj er bevart. Ingen seed/reset. Forrige demo var8f7307bc909f19203ff2cfbf76de142936978748. Kontrollsidens baseline er oppdatert til publisert main. Eksakt demo-SHA, READY og etterfølgende preflight føres i PR324.
 
-Forrige bekreftede demo var `3df9634b4ac9dd2fa07cda67af0e214461898aa4`. Tilbakeføring må bevare demo-overlay og oppdatere baseline til den faktisk publiserte produktversjonen.
+Se [QA og tilbakeføring](docs/qa/COMPANY_INVITATION_MANAGEMENT_20261113.md). Orvei/logo PR323 og support PR320/322 inngår ikke i denne leveransen. Hjelp er oppdatert; ny film gjenstår. GitHub-varslet om utfaset Node20 for actions/cache,checkout,setup-node@v4 er en separat vedlikeholdsoppgave; kontrollene bestod med GitHubs Node24-overstyring. Ingen workflowendring i denne releasen.

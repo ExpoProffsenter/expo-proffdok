@@ -54,17 +54,17 @@ export default function CompanyAdminPanel({authUser}) {
   const [snapshot,setSnapshot]=useState(null),[loading,setLoading]=useState(true),[error,setError]=useState(''),[message,setMessage]=useState('');
   const [email,setEmail]=useState(''),[role,setRole]=useState('ansatt'),[busy,setBusy]=useState(false),[search,setSearch]=useState('');
   const [accessDraft,setAccessDraft]=useState(null);
-  const [resendFeedback,setResendFeedback]=useState(null);
+  const [resendFeedback,setResendFeedback]=useState({});
   const [panel,setPanel]=useState(null);
   const generation=useRef(0),scope=useRef(null),alive=useRef(true),operation=useRef(false);
   const load=async(clear=false)=>{
     const ticket=++generation.current;setLoading(true);setError('');
-    if(clear){scope.current=null;setSnapshot(null);setEmail('');setRole('ansatt');setAccessDraft(null);setMessage('');setResendFeedback(null);}
+    if(clear){scope.current=null;setSnapshot(null);setEmail('');setRole('ansatt');setAccessDraft(null);setMessage('');setResendFeedback({});}
     try{
       const result=await companyAdminRpc('snapshot');
       if(!alive.current||ticket!==generation.current)return;
       if(result?.caller_id!==authUser?.id||!result.company_id)throw Error('Innlogging eller firma er endret. Hent på nytt.');
-      if(scope.current&&scope.current!==result.company_id){setEmail('');setRole('ansatt');setAccessDraft(null);setMessage('');setResendFeedback(null);}
+      if(scope.current&&scope.current!==result.company_id){setEmail('');setRole('ansatt');setAccessDraft(null);setMessage('');setResendFeedback({});}
       scope.current=result.company_id;setSnapshot(result);
     }catch(err){if(alive.current&&ticket===generation.current){scope.current=null;setSnapshot(null);setError(err.message);}}
     finally{if(alive.current&&ticket===generation.current)setLoading(false);}
@@ -123,13 +123,14 @@ export default function CompanyAdminPanel({authUser}) {
       <div className="company-admin-actions" aria-label="Firmahandlinger">
       <WorkspaceDisclosure className="company-invite-disclosure" label="Inviter en ansatt" title={`Legg til ansatt i ${current.company_name}`} subtitle="FIRMAADMIN / INVITASJON" open={panelOpen('invite')} onOpenChange={open=>showPanel('invite',open)} disabled={loading||busy} contentClassName="company-admin-panel company-admin-panel-content">{panelOpen('invite')&&panelFeedback}<form className="item company-admin-invite-form" onSubmit={e=>{
         e.preventDefault();const wanted=email.trim();
+        if(current.invites.some(i=>i.email.toLowerCase()===wanted.toLowerCase())&&!window.confirm(`Det finnes allerede en invitasjon til ${wanted}. Registrere valgene og sende på nytt?`))return;
         run(async (c,stillCurrent)=>{
           const chosen={...inviteAccess,...(role==='firmaadmin'?{kshms:!!current.invite_options?.kshms,hr:!!current.invite_options?.hr}:{})};
           const invitation=await companyAdminRpc('invite_with_access',{p_company_id:c,p_email:wanted,p_role:role,p_access:chosen});
           if(invitation.company_id!==c)throw Error('Firmaet er endret. Hent på nytt.');
           if(!invitation.accepted){
             try{await sendCompanyInvitation(invitation,current.caller_id,stillCurrent);return 'Invitasjonen er registrert og sendt.';}
-            catch(err){return `Invitasjonen er registrert, men e-posten ble ikke sendt: ${err.message} Be den ansatte registrere seg med samme e-postadresse.`;}
+            catch(err){return `Invitasjonen er registrert. ${err.message}`;}
           }
           return 'Brukeren er lagt til med valgte firmatilganger. Eksisterende hovedmoduler, primærfirma og historikk er beholdt.';
         },result=>{setEmail('');setRole('ansatt');setAccessDraft(null);return result;});
@@ -157,16 +158,20 @@ export default function CompanyAdminPanel({authUser}) {
           </WorkspaceDisclosure>;
         })}{!users.length&&<p>Ingen brukere funnet i dette firmaet.</p>}</div>
       </div>
-      {!!current.invites?.length&&<div className="item company-admin-invitations"><h3>Inviterte brukere</h3><p>Disse venter på registrering. Send invitasjonen på nytt hvis den ansatte ikke har kommet i gang. Rolle og tilganger beholdes.</p>{current.invites.map(i=><div key={i.id}><p><b>{i.email}</b> · {i.company_role==='firmaadmin'?'Firmaadmin':'Ansatt'} · Venter på registrering</p><p className="note">{invitationSummary(i.access)}{i.company_role==='firmaadmin'?' · Firmaadmin arver firmaets aktiverte KS/HMS og HR.':''}</p>
+      {!!current.invites?.length&&<div className="item company-admin-invitations"><h3>Inviterte brukere</h3><p>Disse venter på registrering. Kontroller sendestatus per person før du sender på nytt. Feil e-post: trekk tilbake invitasjonen og inviter riktig adresse. Rolle og tilganger beholdes ved ny sending.</p>{current.invites.map(i=><div key={i.id}><p><b>{i.email}</b> · {i.company_role==='firmaadmin'?'Firmaadmin':'Ansatt'} · Venter på registrering</p><p className="note">{invitationSummary(i.access)}{i.company_role==='firmaadmin'?' · Firmaadmin arver firmaets aktiverte KS/HMS og HR.':''}</p>
         <button type="button" className="secondary" disabled={busy||loading} aria-label={`Send invitasjon på nytt til ${i.email}`} onClick={()=>{
-          setResendFeedback(null);
+          if(!window.confirm(`Sende invitasjonen på nytt til ${i.email}? ${i.last_sent_at?'Sist bekreftet sendt '+new Date(i.last_sent_at).toLocaleString('nb-NO')+'.':'Tidligere utsending er ikke bekreftet i loggen.'}`))return;
           run(async(c,stillCurrent)=>{
             const invitation=await companyAdminRpc('resend_invite',{p_company_id:c,p_invite_id:i.id});
             if(invitation.company_id!==c||invitation.invitation_id!==i.id)throw Error('Firmaet eller invitasjonen er endret. Oppdater firmaoversikten.');
             await sendCompanyInvitation(invitation,current.caller_id,stillCurrent);
-          },()=>{const text=`Invitasjonen til ${i.email} er sendt på nytt. Utsendingen er bekreftet av e-posttjenesten.`;setResendFeedback({id:i.id,text});return text;},err=>setResendFeedback({id:i.id,text:`E-posten ble ikke sendt: ${err.message} Du kan prøve igjen.`}));
+          },()=>{const text=`Invitasjonen til ${i.email} er sendt på nytt. Utsendingen er bekreftet av e-posttjenesten.`;setResendFeedback(old=>({...old,[i.id]:text}));return text;},err=>setResendFeedback(old=>({...old,[i.id]:err.message})));
         }}>Send invitasjon på nytt</button>
-        {resendFeedback?.id===i.id&&<p className="note" aria-live="polite">{resendFeedback.text}</p>}
+        {resendFeedback?.[i.id]&&<p className="note" aria-live="polite">{resendFeedback[i.id]}</p>}
+        <p className="note">{i.last_sent_at?`Sist bekreftet sendt: ${new Date(i.last_sent_at).toLocaleString('nb-NO')} · ${i.send_count} bekreftede sendinger`:'Ingen bekreftet utsending i loggen. Eldre sendinger kan ha skjedd.'}{i.last_send_status==='sending'?' · Utsending pågår eller venter på svar.':i.last_send_status==='uncertain'?' · Siste forsøk er uavklart. Kontroller før ny sending.':''}</p>
+        {current.invitation_management&&<button type="button" className="secondary" disabled={busy||loading} aria-label={`Trekk tilbake invitasjon til ${i.email}`} onClick={()=>{
+          if(window.confirm(`Trekk tilbake invitasjonen til ${i.email}? Personen får ikke registrert seg i firmaet med denne invitasjonen. En e-post som allerede er sendt kan ikke trekkes tilbake. Historikk beholdes.`))run(c=>companyAdminRpc('manage_invitation',{p_company_id:c,p_invite_id:i.id,p_action:'withdraw',p_payload:{fingerprint:i.fingerprint}}),'Invitasjonen er trukket tilbake. Du kan nå invitere riktig e-postadresse.');
+        }}>Trekk tilbake invitasjon</button>}
       </div>)}</div>}
     </fieldset>}
   </div>;
