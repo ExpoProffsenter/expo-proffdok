@@ -1,0 +1,39 @@
+{
+  "status": "review draft; not published in app",
+  "duration": 36,
+  "fps": 24,
+  "pointer": "same white outlined arrow; no click rings",
+  "candidate": "demo3d65c0e022ed11ec73aa569f79bfe6f362d30fae",
+  "scenes": [
+    {
+      "image": "sja-local-recovery-20261113.jpg",
+      "title": "Planlegg jobben",
+      "text": "SJA er sikker jobbanalyse. Beskriv oppgaven og arbeidsstedet. Gå gjennom farer og tiltak med dem som skal utføre jobben.",
+      "note": "Her ser du en lokal prøvekladd. Ingen jobb er signert.",
+      "pointer": [
+        232,
+        461
+      ]
+    },
+    {
+      "image": "risk-score-20261113.jpg",
+      "title": "Vurder før og etter",
+      "text": "I prøven gir 5 × 5 en score på 25. Etter planlagte tiltak er scoren 4. En lav forventet score beviser ikke at tiltakene er utført.",
+      "note": "Dette er et regneeksempel, ikke en vurdering av en virkelig jobb.",
+      "pointer": [
+        1008,
+        508
+      ]
+    },
+    {
+      "image": "control-local-recovery-20261113.jpg",
+      "title": "Fortsett kladden",
+      "text": "Kontrollkladden ble åpnet igjen etter reload. Navnet, malversjonen og svarene var beholdt. En lokal kladd er ikke en fullført kontroll.",
+      "note": "Lagre utkastet på server før PDF. Fullfør bare etter egen gjennomgang.",
+      "pointer": [
+        361,
+        461
+      ]
+    }
+  ]
+}

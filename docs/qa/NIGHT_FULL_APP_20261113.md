@@ -191,5 +191,37 @@ PR325/327 er fortsatt reviewbare kandidater med Preview, men mangler innlogget P
 
 Eier ved avslutning: Codex, kontrollpunkt4 dokumentert; ingen aktiv koderedigering. Fullapp-QA er **ikke ferdig**. Neste kjøring fortsetter fra dette punktet. Ingen ny automasjon opprettet.
 
-## Kontrollpunkt 5 – pågår 13.11.2026 kl.07:16 norsk tid
+## Kontrollpunkt 5 – video og samlet overlevering 13.11.2026
 Eier Codex. Scope: videre dokumentasjon/video av faktisk kontrollert KS/HMS-kladdflyt, uavhengig sjekkliste-UI hvis innlogget økt er tilgjengelig, samlet sluttrapport med åpne hull. Miljømål SANDBOX/DEMO. Ingen appkode, ingen overlapp med PR321/325/327. Fersk CI for PR326 head868f45eb er SUCCESS43372855302; PR325/327 fortsatt grønne. Main/demo og READY-deployments er uendret. Ingen rerun eller produksjonsendring.
+
+### Konkret ny leveranse
+Produsert `video-drafts/kshms-kladd-20261113/kshms-kladd-og-gjennomgang-utkast.mp4`:36sekunder,3scener,1920×1080,24fps,H.264,604301byte,uten lyd. Faktiske, uretusjerte sandboxbilder fra kontrollpunkt4; ikke fremstilt som nye opptak. Samme hvite pekerform i alle scener, statisk over opptakets opprinnelige peker, ingen simulerte klikk. Løpenummer1–3 fra renderer, norsk tekst, VTT, renderer, kilder og SHA256-manifest følger.
+
+Full ffmpeg-dekoding PASS og alle3renderte scenebilder visuelt kontrollert: tekst innenfor rammer, ingen påstand om utført HMS-arbeid. Filmen forklarer SJA-kladd, risikoscore før/etter og gjenåpnet kontrollkladd. Den er et reviewutkast, ikke komplett HMS-veiledning eller publisert film i Hjelp. Nye rene opptak/fullflyt, mobil-lesbarhet og avstemming mot original PROFFDOK-VIDEO-1.0-mal gjenstår. Ingen kjøpt stemmetjeneste.
+
+### Sjekklister – ny kildeinspeksjon, ikke UI-attest
+Lest modulens README og de faktiske `standaloneChecklists.mjs`, `checklistSignatures.mjs`, relevante felt i `StandaloneChecklists.jsx` og `ChecklistSignatures.jsx` på main63773814. Ordrenummer/arbeidssted valideres før RPC; ny fullføring krever egen signatur. Valgfri ekstern signatur krever tegning/navn/rolle når den brukes. Endrede svar/sporingsdata nullstiller tegning. Lagring følges av egen readback med firma, bruker, ID, revisjon, svar og signaturgrunnlag; ukjent resultat skal beholde kladd/request. Malforslag kopierer definisjon, ikke kontrollsvar/signatur.
+
+Dette er lest kode, ikke bevis på installert serverpolicy, faktisk touch-signering, PDF eller vellykket serverlagring. Ingen ny innlogget sjekklisteprøve gjennomført denne runden. Kjente browser-/mobilbegrensninger er ikke omgått. Ingen nye automatiske app-tester kjørt siden appkode er uendret og tidligere grønne kontroller gjenbrukes. N-UX-004 er fortsatt uavklart; ingen konkurrerende rettelse opprettet.
+
+### Samlet status etter fem kontrollpunkter
+| Leveranse | Faktisk oppnådd | Fortsatt åpent |
+|---|---|---|
+| Inventar |145registrerte reiser +6nyere tillegg, med kildehenvisninger og avgrenset UI-status | Store deler ikke fullstendig prøvd; ingen totalattest |
+| Beboer38 | Syntetisk avtalev1 akseptert,2500inkl, kvittering etter reload, bestillingsutkastv1 og frist22.11 | Utløpt frist, felleseiergrenser, ordreeksport, kvitterings-PDF/FDV |
+| Romvelger | PR325 f9875bd7, grønn CI43353049742, Preview READY | Innlogget Preview og ny TEST OK; ikke produksjonsmerget |
+| HR-prøvesamtale | PR32775255692, red/green React-test, grønn CI43366094210, Preview READY | Innlogget Preview/TEST OK; separat browser-reload-test ikke kjørt |
+| Desktop-QA | Avgrenset HR/KS-HMS/Min side og lokale SJA/risiko/kontrollkladder dokumentert med skjermbilder/PDF | Rollegrenser, komplette serverløp og øvrige moduler |
+| Video |15aktive filer teknisk kontrollert og avspilt gjennom Hjelp; nå2reviewutkast à36sekunder med kilder | Full57sceners A–Å-revisjon og alt sceneinnhold; ingen ny film apppublisert |
+| Miljø | Main63773814/demo3d65c0e0, begge eksakte deployments fortsatt READY; PR320/322/323/324 merget | Produksjon holdes uendret; nye rettelser trenger ny godkjenning |
+
+PR326 head868f45eb fra forrige kontrollpunkt har grønn CI43372855302. Den nye dokumentasjons-/videokandidaten må vurderes på egen automatiske CI; ingen rerun eller manuell ny testkjøring startet. Lokale scope-/dokumentasjonsvakter og diffkontroll kjøres før publisering av dette kontrollpunktet.
+
+### Prioritert videre arbeid og eierskap
+1. Codex neste avgrensede arbeid: innlogget sjekklisteflyt med syntetisk ordrenummer, serverlagring/readback, signatur og PDF; deretter salg/prosjekt. Gjenbruk eksisterende data og dokumenter handlingene før nye skriverunder.
+2. Preview325/327: sikker innlogging og relevant prøve, deretter Kenneths nye TEST OK. Ingen merge basert bare på grønn CI. PR321tekst er separat.
+3. Beboer38: fortsett bare åpne grenser/eksporter. Ikke opprett ny avtale eller nytt bestillingsutkast av allerede fullførte prøver. Ingen ordre/e-post sendes.
+4. Video:36sekunders fristutkast og36sekunders KS/HMS-utkast kan vurderes som delmateriale. Full A–Å må fortsatt produseres fra revisjonsplanen; V12-kildenedlasting ga401. Denne tilgangen stopper ikke andre moduler.
+5. Fysisk mobil/touch/dvale og egne ansatt-/leder-/portalroller krever faktisk prøving. Desktop og kildekode er ikke erstatning. Matrisen skal fortsatt vise hull.
+
+Denne rapporten avslutter den dokumenterte nattbatchen, ikke hele QA-oppdraget. Ingen påstand om full appdekning, ingen produksjonsendringer, ingen nye reelle meldinger eller automasjoner. Arbeidsbranch er PR326; ingen aktiv appkoderedigering overlates.

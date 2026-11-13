@@ -168,3 +168,6 @@ Fysisk mobil og dvale er ikke verifisert. Ingen grønn totalstatus.
 ## Tilleggsbevis – kontrollpunkt 2
 
 Bestillingsfrist per bolig: Orvei38 fra Ikke satt til22.11.2026, lagring bekreftet ved gjenåpning. ByggA21.11 og øvrige ByggB uten frist er uendret. Akseptert avtale beholdt svarfrist13.12. Mobil og utløpsgrense ikke verifisert. Se NIGHT_FULL_APP_20261113.md for presise begrensninger og miljø.
+
+## Tilleggsbevis – kontrollpunkt5 (kun kilde)
+Sjekklister: standaloneChecklists.mjs og checklistSignatures.mjs lest på main63773814. Påkrevd ordrenummer/arbeidssted, egen signatur ved fullføring, valgfri ekstern signatur med navn/rolle og command+readback er identifisert. Ingen ny UI-, mobil-, database- eller PDF-attest. Se hovedrapportens konkrete neste prøve.

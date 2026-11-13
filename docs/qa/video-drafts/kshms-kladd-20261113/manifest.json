@@ -1,0 +1,68 @@
+{
+  "status": "review-only; not published in app",
+  "source_checkpoint": 4,
+  "duration_seconds": 36,
+  "format": "H.264 1920x1080 24fps no audio",
+  "validation": [
+    "full ffmpeg decode PASS",
+    "three rendered scenes visually reviewed",
+    "scene numbering 1-3; VTT 0-12-24-36 seconds"
+  ],
+  "files": [
+    {
+      "file": "README.md",
+      "bytes": 1180,
+      "sha256": "37af360783283c39804406c58c11a92173bf4937f75fabc0c46bdb5e03435dd2"
+    },
+    {
+      "file": "assets/control-local-recovery-20261113.jpg",
+      "bytes": 82762,
+      "sha256": "1f3aee98dd4dd46c3483ad516112678aee2355644641b80e126a07a53e3fcdd1"
+    },
+    {
+      "file": "assets/risk-score-20261113.jpg",
+      "bytes": 70384,
+      "sha256": "02925f234595a88384b928160c57ea684642c781d08095ffcee74b224be6735d"
+    },
+    {
+      "file": "assets/sja-local-recovery-20261113.jpg",
+      "bytes": 106451,
+      "sha256": "a1aec8433ab889af6d12d49f686a15084aef1652f4b3f1939b30ce91d907dea4"
+    },
+    {
+      "file": "chapters.vtt",
+      "bytes": 136,
+      "sha256": "7469b9f3c97b93f342c622e35045e81ef12d36f1cf69041f14d0fe6700c56fd4"
+    },
+    {
+      "file": "kshms-kladd-og-gjennomgang-utkast.mp4",
+      "bytes": 604301,
+      "sha256": "64fe94f5e66302174a1ed6d2d6b231e35d931403bb4222441fc9e7c96bb09fef"
+    },
+    {
+      "file": "render.py",
+      "bytes": 5118,
+      "sha256": "9f3f8379cdc3b93c33c8b28c9c53f24c63a38f20c3fe481a9750bb68e92176cc"
+    },
+    {
+      "file": "scene-01.jpg",
+      "bytes": 260473,
+      "sha256": "d7be9ca765efb143003e07496d248519b1d433ea7736b5c94fed2c43449f2b0a"
+    },
+    {
+      "file": "scene-02.jpg",
+      "bytes": 216807,
+      "sha256": "608408a4e75b161d3642ac1931d9ee1d23bc31883784bbe7d7ec5180a4b7a37f"
+    },
+    {
+      "file": "scene-03.jpg",
+      "bytes": 235912,
+      "sha256": "c5cd3ed5d09b11ab14e9d63de1cf0b0f0d948fb75614f8553db3de7e32aa8943"
+    },
+    {
+      "file": "scenes.json",
+      "bytes": 1367,
+      "sha256": "06354ff84da47f9597aa6e2c75d28c4320f4f2f7cdb3176f318498bfe69a5c29"
+    }
+  ]
+}
