@@ -42,3 +42,10 @@ Fast Preview åpnet i native Chromium og viste innloggingssiden. Eksisterende ø
 6. Før produksjon: TEST OK, fersk main/migrasjonshistorikk, kontrollert installasjon/publisering, deretter main → demo med overlay bevart.
 
 Tilbakeføring: deaktiver aktuelle prosjektbundne personrettigheter og rull frontend tilbake ved behov. Bevar audit, boligvalg og additive tabeller; ingen blind sletting/down-migrasjon. Ved eventuell produksjonsutrulling skal konkret forrige deploy registreres først.
+
+
+## Oppfølging – unik persontilgangseditor 13.11.2026
+
+Innlogget hosted test opprettet én avtalt syntetisk partnerkontakt i QA – PR329 plassbytte for demo@expo-proffdok.no, 7 dager, kun Fremdrift. Ingen invitasjon sendt. Før persontildeling ble dupliserte tilgangspaneler gjenskapt ved foreldreoppdatering. Årsak: BoligPartnerCommerceAccess og Items hadde samme sibling-key partner.id. Rettes med commerce-prefiks på den isolerte editoren.
+
+Ny faktisk BoligPartners/CommerceAccess React-test gjenskapte fem paneler etter fire refresh før rettelsen. Etter rettelsen PASS: ett panel, identisk DOM-node, bevart usendt rettighetsvalg, ingen key-advarsel, ren lukking. Eksisterende collaboration refresh/revocation-test PASS. Full lokal critical/Vite build PASS, diff-check ren. Eksisterende tester er ikke svekket. Ny CI og publisert positiv tilgangstest må bekreftes på ny commit. Avtalt testtilgang skal tilbakekalles etter kontroll; ingen produksjonssetting.
