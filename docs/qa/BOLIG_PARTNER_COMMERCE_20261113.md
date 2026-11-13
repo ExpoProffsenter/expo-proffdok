@@ -52,3 +52,5 @@ Ny faktisk BoligPartners/CommerceAccess React-test gjenskapte fem paneler etter 
 
 ## UX-kontroll 14.11.2026
 Hosted pakkeoversikt, redigeringsskuff, uendret lukking og responsiv bredde454 kontrollert. Lukking og lagring tilgjengelige, ingen horisontal sideoverflyt. Søk i Mine samarbeid hadde en reprodusert actual-React-feil: valgt bolig kunne forsvinne fra select mens editor/kladd fortsatt gjaldt den. Valgt option beholdes nå, sammen med treffantall og Tøm søk. Test var rød før fix og grønn etter; eksisterende kladd/tilbakekallingsscenarier bestod. Ingen tildeling, e-post eller databasemigrasjon i UX-rettelsen. Ny CI/publisert etterkontroll dokumenteres i PR.
+
+Hosted smal kontroll av Mine samarbeid avdekket faktisk transparent dialog: klassen bolig-page utløste sidens transparente bakgrunn, statisk header og feil dialogplassering. Rettet til bolig-collaboration-dialog med egen hvit arbeidsflate, fast topp/lukkeknapp og separat rullende innhold. Delte sidestiler og andre moduler er urørt. Actual React/CSS-regresjon verifiserer fast, ugjennomsiktig dialog uten sideklassen.

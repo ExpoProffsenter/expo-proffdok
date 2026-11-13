@@ -10,9 +10,11 @@ const dom=new JSDOM('<div id="app"></div>',{url:'https://qa.invalid',runScripts:
 w.MessageChannel=class{constructor(){this.port1={onmessage:null};this.port2={postMessage:()=>setImmediate(()=>this.port1.onmessage?.())};}};
 w.IS_REACT_ACT_ENVIRONMENT=true;w.__mounts=0;w.__unmounts=0;let rejectAccess=false,resolveRefresh=null,hold=false,malformed=false;
 w.__rpc=async(name,args)=>{if(hold)await new Promise(resolve=>resolveRefresh=resolve);if(malformed)return {};if(rejectAccess)throw Object.assign(Error('Tilgang tilbakekalt'),{code:'42501'});return args.p_root_id?{root:{id:'r',title:'QA'},context:{user_id:'user',company_id:'c',company_name:'QA'},units:[{id:'u',number:'38',address:'QA',contact_name:'QA'}]}:{projects:[{id:'r',title:'QA',company:'QA'}]};};
+const style=w.document.createElement('style');style.textContent=fs.readFileSync('src/modules/bolig/boligCollaboration.css','utf8');w.document.head.append(style);
 w.eval((Array.isArray(built)?built[0]:built).output.find(x=>x.type==='chunk').code);const act=w.__act;
 try{
  await act(()=>w.__render());await act(()=>[...w.document.querySelectorAll('button')].find(b=>b.textContent==='QA · QA').click());
+ const modal=w.document.querySelector('dialog');assert.equal(w.getComputedStyle(modal).backgroundColor,'rgb(255, 255, 255)');assert.equal(w.getComputedStyle(modal).position,'fixed');assert(!modal.classList.contains('bolig-page'),'Modal must not inherit transparent page-shell rules');
  await act(()=>{const select=w.document.querySelector('select');select.value='u';select.dispatchEvent(new w.Event('change',{bubbles:true}));});
  assert.equal(w.__mounts,1);const input=w.document.querySelector('input:not([type="search"])');
  await act(()=>{Object.getOwnPropertyDescriptor(w.HTMLInputElement.prototype,'value').set.call(input,'Uferdig vare og arbeid');input.dispatchEvent(new w.Event('input',{bubbles:true}));});

@@ -3,6 +3,7 @@ import {collaborationRpc} from './boligCollaborationClient.js';
 import Dialog from './BoligEditorDialog.jsx';
 import './bolig.css';
 import './boligWorkspace.css';
+import './boligCollaboration.css';
 import BoligCatalog from './BoligCatalog.jsx';
 import BoligPackageChoices from './BoligPackageChoices.jsx';
 export default function BoligMyCollaborations({userId}){
@@ -18,7 +19,8 @@ export default function BoligMyCollaborations({userId}){
  if(!selected&&!list.length&&!error)return null;
  return <section className="personal-card" aria-label="Mine samarbeid"><h3>Mine samarbeid</h3><p>Prosjekter du personlig har fått tilgang til. Ditt vanlige arbeidsfirma beholdes.</p>{error&&<p role="alert">{error}</p>}
  {loading&&<p role="status">Kontrollerer prosjekttilgang …</p>}
- {!selected?list.map(p=><button key={p.id} onClick={()=>{setSelected(p.id);setUnit('');setData(null);setCatalog(false);setQuery('');}}>{p.title} · {p.company}</button>):<Dialog title={data?.root.title||'Mine samarbeid'} className="bolig-page" onClose={()=>{setSelected('');setData(null);setUnit('');}}>
+ {!selected?list.map(p=><button key={p.id} onClick={()=>{setSelected(p.id);setUnit('');setData(null);setCatalog(false);setQuery('');}}>{p.title} · {p.company}</button>):<Dialog title={data?.root.title||'Mine samarbeid'} className="bolig-collaboration-dialog" onClose={()=>{setSelected('');setData(null);setUnit('');}}>
+ <div className="bolig-collaboration-body">
  <button onClick={()=>{setSelected('');setData(null);setUnit('');}}>Tilbake til mine samarbeid</button>
  {data&&<><h4>{data.root.title} · {data.context.company_name}</h4><p>Endringer lagres som boligvalg. Dette er ikke en bestilling eller beboeraksept. Prosjektleder deler det ferdige forslaget i beboerportalen.</p>
  <button onClick={()=>setCatalog(!catalog)}>{catalog?'Skjul felles pakker':'Vis felles pakker'}</button>
@@ -28,6 +30,7 @@ export default function BoligMyCollaborations({userId}){
  <label>Bolig<select value={chosen?.id||''} onChange={e=>setUnit(e.target.value)}><option value="">Velg bolig</option>{options.map(u=><option key={u.id} value={u.id}>{u.address} · {u.number} · {u.contact_name}</option>)}</select></label>
  {chosen&&<BoligPackageChoices key={chosen.id} context={data.context} root={data.root} unit={chosen}/>}
  </>}
+ </div>
  </Dialog>}
  </section>;
 }
