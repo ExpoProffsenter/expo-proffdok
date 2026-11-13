@@ -20,6 +20,7 @@ export async function residentMailRpc(
   targetId,
   kind,
   token,
+  to,
 ) {
   const client = getAppSupabaseClient();
   if (!client) throw Error("Innloggingen er ikke klar.");
@@ -30,7 +31,7 @@ export async function residentMailRpc(
     p_target_id: targetId,
     p_kind: kind,
     p_action: "get",
-    p_payload: { token },
+    p_payload: { token, ...(to ? {to} : {}) },
   });
   const { data, error } = await (typeof request.retry === "function"
     ? request.retry(false)
@@ -76,6 +77,7 @@ export async function sendResidentInvitation(
       },
       body: JSON.stringify({
         companyId: context.company_id,
+        expectedUserId: context.user_id,
         rootId,
         unitId,
         targetId,
