@@ -158,7 +158,7 @@ Eierskap ved avslutning: denne avgrensede UI-runden og PR327-kodearbeidet er fer
 Eier Codex. Reservert scope: uavhengig KS/HMS SJA/risikovurdering/vernerunde i innlogget sandbox og oppdatert CI-status. PR327 full CI43366094210 SUCCESS; PR326 head8ac90ade full CI43366516247 SUCCESS. Ingen omkjøring. Ingen overlapp med PR321/325/327 og ingen produksjonsendringer.
 
 ### Resultat – SJA, risiko og vernerunde
-Faktisk innlogget desktopkontroll i permanent demo/sandbox, demo-konto og Firmaadmin, 1363×936. UI-handlinger ca.06:22–06:31 UTC. Fersk main63773814/demo3d65c0e0 og PR320/322/323/324 avstemt; alle fire PR-er merget. PR322s produksjonslogg lest. Produksjon READY dpl_5XnCpe1fmkFxcKScWvUPaJFEdD5A, demo READY dpl_Dz7jRmLnNDgD4zcokmvBPucbR1oF på de samme SHA-ene. Ingen deploy, rerun eller produksjonsendring.
+Faktisk innlogget desktopkontroll i permanent demo/sandbox, demo-konto og Firmaadmin, 1363×936. UI-handlinger ca.06:22–06:31 norsk tid (05:22–05:31 UTC). Fersk main63773814/demo3d65c0e0 og PR320/322/323/324 avstemt; alle fire PR-er merget. PR322s produksjonslogg lest. Produksjon READY dpl_5XnCpe1fmkFxcKScWvUPaJFEdD5A, demo READY dpl_Dz7jRmLnNDgD4zcokmvBPucbR1oF på de samme SHA-ene. Ingen deploy, rerun eller produksjonsendring.
 
 | Område | Faktisk prøve | Resultat / grense |
 |---|---|---|
