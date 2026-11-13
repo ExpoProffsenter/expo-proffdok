@@ -133,7 +133,7 @@ export default function StandaloneChecklists({companyId,userId,onClose}){
  return <DeviationDialog title="Sjekklister" context="Eksterne prosjekter · Fyll ut, lagre og send PDF" onClose={()=>{if(!lock.current)onClose();}} busy={busy} closeLabel="Lukk sjekklister">
   <div className="standalone-checklists">
    <p>Fyll ut en sjekkliste for et eksternt prosjekt, uten å opprette et ProffDok-prosjekt. Ordrenummer og arbeidssted/adresse er påkrevd. Opplysningene følger PDF-en. Lagre før du laster ned eller sender.</p>
-   {error&&<p role="alert" ref={validationMessage} tabIndex={-1}>{error}</p>}{notice&&<p role="status">{notice}</p>}
+   {error&&<p role="alert" ref={validationMessage} tabIndex={-1} style={{scrollMarginBlock:8}}>{error}</p>}{notice&&<p role="status">{notice}</p>}
    {denied?<p>Firmatilgangen må kontrolleres før du fortsetter. Din lokale kladd er beholdt.</p>:!data?<p role="status">Henter sjekklister …</p>:!selected?<>
     <label>Velg sjekkliste<select aria-label="Velg sjekkliste" value={version} onChange={e=>setVersion(e.target.value)}><option value="">Egen sjekkliste</option>{data.versions.map(v=><option key={v.id} value={v.id}>{v.content.title} · v{v.number}</option>)}</select></label>
     <div className="standalone-actions"><button type="button" disabled={busy} onClick={start}>Start sjekkliste</button>{cached&&<><button type="button" disabled={busy} onClick={()=>choose(cached,true)}>Fortsett lokal kladd</button><button type="button" disabled={busy||Boolean(cached.pendingAction)} onClick={discard}>Forkast lokal kladd</button></>}</div>
