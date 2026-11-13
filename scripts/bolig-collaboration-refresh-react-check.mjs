@@ -25,7 +25,7 @@ try{
  hold=true;await act(()=>w.dispatchEvent(new w.Event('focus')));
  assert.equal(w.__unmounts,0,'Pending authorization refresh must retain editor');assert.equal(input.value,'Uferdig vare og arbeid');
  hold=false;await act(async()=>{resolveRefresh();await Promise.resolve();});assert.equal(w.__mounts,1,'Same access keeps same editor');assert.equal(input.value,'Uferdig vare og arbeid');
- rejectAccess=true;await act(()=>w.dispatchEvent(new w.Event('focus')));assert.equal(w.__unmounts,1,'Revoked access removes editor');assert(w.document.body.textContent.includes('Tilgang tilbakekalt'));
+ rejectAccess=true;await act(()=>w.dispatchEvent(new w.Event('focus')));assert.equal(w.__unmounts,1,'Revoked access removes editor');assert(w.document.querySelector('dialog [role="alert"]').textContent.includes('Tilgang tilbakekalt'),'Revocation explanation is inside the visible modal');
  rejectAccess=false;malformed=true;await act(()=>w.dispatchEvent(new w.Event('focus')));assert(w.document.body.textContent.includes('Prosjektgrunnlaget kunne ikke leses'));assert.equal(w.__mounts,1,'Malformed response cannot remount editor');
  console.log('PASS collaboration React: delayed refresh retains editor and draft; same access preserves mount; revocation removes access');
 }finally{await act(()=>w.__dispose());dom.window.close();fs.rmSync(temp,{recursive:true,force:true});}
