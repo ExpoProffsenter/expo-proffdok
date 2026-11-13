@@ -1,0 +1,5 @@
+import React from "react";
+export const BOLIG_COLLABORATION_HELP = [{id:"people-commerce-collaboration",group:"people",title:"Gi en kollega tilgang til grunnpakker og tilvalg",body:<>
+        <p><strong>Gi en kollega tilgang til grunnpakker og tilvalg:</strong> Åpne UE og leverandører og opprett en navngitt prosjekttilgang med personens registrerte e-post. Åpne kontakten og velg Grunnpakke og tilvalg. Gi lesetilgang, rett til å endre boligtilvalg og legge til varer/arbeid, eller separat rett til å redigere felles pakker. Kontroller valgene og lagre personrettighetene. Det sendes ingen e-post automatisk.</p>
+        <p>Personen finner prosjektet under Min side → Mine samarbeid med sin vanlige innlogging. Velg bolig, gjør tilpasningene og lagre. Prosjektleder deler forslaget i beboerportalen; beboeren godkjenner selv. En publisert eller akseptert avtale og en klargjort ordre kan ikke overskrives av samarbeidspartneren. Be prosjektleder håndtere videre endringer som tillegg. Tilgangen stopper ved utløp eller tilbakekalling. Hovedfirma og andre firmatilganger beholdes.</p>
+</>}];

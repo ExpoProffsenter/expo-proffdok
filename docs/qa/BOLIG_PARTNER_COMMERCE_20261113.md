@@ -18,7 +18,8 @@ Min side har to isolerte integrasjonslinjer; grensekontrollen krever byteparitet
 - React PASS: dialog og faktisk CSS; forsinket tilgangsoppfrisking bevarer mount/utkast; tilbakekalling og feilformet svar fjerner editor. Selve vareeditoren er stubbet i denne isolerte refresh-testen.
 - KS/HMS/HR/Min side navigasjon PASS lokalt og i CI etter oppdatert lesefixtures. Opprinnelige felt-, utkast-, navigasjons- og frakoblingskrav beholdt.
 - Full lokal build/critical PASS; boundary PASS (55 assertions, eksakt endringskontroll), workflowvern PASS (147 opprinnelige kommandoer).
-- Full CI for b375f63e pågår; forrige kjøring stoppet kun fordi de to gjennomgåtte testfilene manglet i den avgrensede scope-kontrollen. Ikke kall PR-en grønn før siste kjøring er ferdig.
+- Full CI for 050a676b: alle pakker bestod bortsett fra app-browser. Den siste feilen var hjelpetekstens for lange førsteside. Samarbeidsveiledningen er flyttet til et søkbart, sammenleggbart tema; opprinnelig grense på 1400 tegn og alle gamle hjelpeblokker beholdes. Ny full CI må bekreftes.
+- 050a676b publisert READY som dpl_H8RDyX64ncuDBmsbbn3PojCx4urt; buildlogg bekreftet Sandbox Supabase only.
 
 ## Hosted sandbox
 Prosjekt `ppvircenkjizeiqdxphj`. Repo-migrasjon `20261113194437_bolig_partner_commerce.sql` installert som `20261113204410_bolig_partner_commerce`. Før installasjon: tabell/RPC/historikk fraværende og funksjonsankre bekreftet. Ikke kjør SQL på nytt under repo-tidsstempelet.

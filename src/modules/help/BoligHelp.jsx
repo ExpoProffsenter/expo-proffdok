@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import {ArrowLeft,ArrowRight,ChevronDown,Search} from 'lucide-react';
 import {BOLIG_HOUSEHOLD_HELP} from './BoligHouseholdHelp.jsx';
 import {BOLIG_PLACEMENT_HELP} from './BoligPlacementHelp.jsx';
+import {BOLIG_COLLABORATION_HELP} from './BoligCollaborationHelp.jsx';
 import BoligGuidePanel from './BoligGuidePanel.jsx';
 import {BOLIG_HELP_GROUPS,BOLIG_HELP_TOPICS} from './boligHelpContent.jsx';
 
@@ -12,7 +13,7 @@ export function boligHelpText(node) {
   return boligHelpText(node.props?.children);
 }
 const normalize=value=>value.toLocaleLowerCase('nb').normalize('NFKC');
-const topics=[...BOLIG_HELP_TOPICS,...BOLIG_HOUSEHOLD_HELP,...BOLIG_PLACEMENT_HELP].map(topic=>({...topic,search:normalize(topic.title+' '+boligHelpText(topic.body))}));
+const topics=[...BOLIG_HELP_TOPICS,...BOLIG_HOUSEHOLD_HELP,...BOLIG_PLACEMENT_HELP,...BOLIG_COLLABORATION_HELP].map(topic=>({...topic,search:normalize(topic.title+' '+boligHelpText(topic.body))}));
 
 export function BoligHelp({returnLabel}={}) {
   const [open,setOpen]=useState(false),[group,setGroup]=useState(''),[query,setQuery]=useState(''),[expanded,setExpanded]=useState('');
@@ -30,8 +31,6 @@ export function BoligHelp({returnLabel}={}) {
     <BoligGuidePanel open={open} title="Slik styrer du prosjektet" onClose={close} returnLabel={returnLabel}>
       <div ref={content} className="bolig-help-workspace">
         <p>Velg et tema eller søk etter det du vil gjøre. Åpne bare forklaringen du trenger.</p>
-        <p><strong>Gi en kollega tilgang til grunnpakker og tilvalg:</strong> Åpne UE og leverandører og opprett en navngitt prosjekttilgang med personens registrerte e-post. Åpne kontakten og velg Grunnpakke og tilvalg. Gi lesetilgang, rett til å endre boligtilvalg og legge til varer/arbeid, eller separat rett til å redigere felles pakker. Kontroller valgene og lagre personrettighetene. Det sendes ingen e-post automatisk.</p>
-        <p>Personen finner prosjektet under Min side → Mine samarbeid med sin vanlige innlogging. Velg bolig, gjør tilpasningene og lagre. Prosjektleder deler forslaget i beboerportalen; beboeren godkjenner selv. En publisert eller akseptert avtale og en klargjort ordre kan ikke overskrives av samarbeidspartneren. Be prosjektleder håndtere videre endringer som tillegg. Tilgangen stopper ved utløp eller tilbakekalling. Hovedfirma og andre firmatilganger beholdes.</p>
         <p>I store UE-lister kan du bruke «Søk i oppgaver» og «Status for oppgaver». «Vis flere oppgaver» viser resten. Filtrering endrer ingen oppgaver.</p>
         <label className="bolig-help-search"><span><Search size={17} aria-hidden="true"/>Søk i boligveiledningen</span>
           <input ref={search} type="search" value={query} placeholder="For eksempel bestilling, beboer eller overtakelse"
