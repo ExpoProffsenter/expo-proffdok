@@ -190,3 +190,6 @@ PR325/327 er fortsatt reviewbare kandidater med Preview, men mangler innlogget P
 5. Mobil/touch/dvale, rollebytte og innloggede Preview-domener er fortsatt uverifisert/blokkert som tidligere beskrevet. Ikke konverter kilde/CI-bevis til faktisk innlogget UI-attest.
 
 Eier ved avslutning: Codex, kontrollpunkt4 dokumentert; ingen aktiv koderedigering. Fullapp-QA er **ikke ferdig**. Neste kjøring fortsetter fra dette punktet. Ingen ny automasjon opprettet.
+
+## Kontrollpunkt 5 – pågår 13.11.2026 kl.07:16 norsk tid
+Eier Codex. Scope: videre dokumentasjon/video av faktisk kontrollert KS/HMS-kladdflyt, uavhengig sjekkliste-UI hvis innlogget økt er tilgjengelig, samlet sluttrapport med åpne hull. Miljømål SANDBOX/DEMO. Ingen appkode, ingen overlapp med PR321/325/327. Fersk CI for PR326 head868f45eb er SUCCESS43372855302; PR325/327 fortsatt grønne. Main/demo og READY-deployments er uendret. Ingen rerun eller produksjonsendring.
