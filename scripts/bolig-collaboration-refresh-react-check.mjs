@@ -16,6 +16,10 @@ try{
  await act(()=>{const select=w.document.querySelector('select');select.value='u';select.dispatchEvent(new w.Event('change',{bubbles:true}));});
  assert.equal(w.__mounts,1);const input=w.document.querySelector('input:not([type="search"])');
  await act(()=>{Object.getOwnPropertyDescriptor(w.HTMLInputElement.prototype,'value').set.call(input,'Uferdig vare og arbeid');input.dispatchEvent(new w.Event('input',{bubbles:true}));});
+ const search=w.document.querySelector('input[type="search"]');
+ await act(()=>{Object.getOwnPropertyDescriptor(w.HTMLInputElement.prototype,'value').set.call(search,'ingen treff');search.dispatchEvent(new w.Event('input',{bubbles:true}));});
+ assert.equal(w.document.querySelector('select').value,'u','Search must not show an empty selector while editing a different selected apartment');
+ assert.equal(w.__mounts,1,'Filtering must preserve the selected apartment draft');
  hold=true;await act(()=>w.dispatchEvent(new w.Event('focus')));
  assert.equal(w.__unmounts,0,'Pending authorization refresh must retain editor');assert.equal(input.value,'Uferdig vare og arbeid');
  hold=false;await act(async()=>{resolveRefresh();await Promise.resolve();});assert.equal(w.__mounts,1,'Same access keeps same editor');assert.equal(input.value,'Uferdig vare og arbeid');

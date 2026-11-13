@@ -1,8 +1,8 @@
 {
   "version": 1,
   "title": "Navngitt samarbeid om grunnpakker og tilvalg",
-  "change": "Miljømål BEGGE. Eksplisitt lesing, individuell vare/arbeidstilpasning og separat felles katalogrett. Min side med bevart hovedfirma.",
-  "verification": "Arbeid pågår. Database og React-scenarioer kjøres; se QA-logg for fersk status. Ikke produksjonssatt.",
+  "change": "Miljømål BEGGE. Eksplisitt lesing, individuell vare/arbeidstilpasning og separat felles katalogrett. Min side med bevart hovedfirma. Boligsøk beholder synlig valgt bolig og arbeidsutkast, med treffantall og Tøm søk.",
+  "verification": "Full CI43521455049 grønn på forrige kandidat. Ny søkeregresjon gjenskapt rød før fix: tom boligvelger samtidig som gammel editor fortsatt var åpen. Etter fix actual React PASS, også kladd/fokus/tilbakekalling og enkelt tilgangspanel. Ny CI og hosted etterkontroll må bekreftes.",
   "documentation": {
     "help": {
       "required": true,
