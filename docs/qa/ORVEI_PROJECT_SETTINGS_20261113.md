@@ -1,40 +1,37 @@
-# Aamodthagen: navn, klokkeslett, byggnavn og samarbeid
+# Aamodthagen: frister og fremdriftsvisning
 
-Arbeidsbranch `fix/orvei-deadline-layout-20261113` fra main `6eb54148b3d61e318c5447810cdf89deab6afffa`. Miljømål BEGGE. Ingen produksjonsendring eller utsending i denne runden.
+## Gjeldende status 13.11.2026
+PR332, arbeidsbranch `fix/orvei-deadline-layout-20261113`, fra main `6eb54148b3d61e318c5447810cdf89deab6afffa`. Miljømål BEGGE. Appkandidat `a3d853564df478429d3e1831ba0479e34bcecba5`: PR Core Safety [43502942740](https://github.com/ExpoProffsenter/expo-proffdok/actions/runs/43502942740) SUCCESS. Ingen produksjonssetting, produksjonsimport eller utsending. Permanent demo er ikke synkronisert med disse kodeendringene.
 
-## Sandboxdata
+Fast Preview: https://expo-proffdok-git-fix-orvei-deadline-layout-20261113-ringside.vercel.app/?progressTest=safe
+Backend er sandbox `ppvircenkjizeiqdxphj`.
 
-Det komplette Orvei-prosjektet `df971415-1232-4199-8bd8-ce1e2246deaa` heter nå **Aamodthagen boligsameie**. Referansen `ORVEI-SANDBOX · Etasjer foreløpige` beholdes. Endringen er auditført og readback kontrollert, revisjon 129. Dette oppretter ikke prosjektet i produksjon. Import, plan og fiktive pakker er beskrevet i PR331. Bekreftet befaring for seksjon 113–116 er tirsdag 8. juni 2027.
+## Levert
+- Hele planen er standard i Gantt. Alle daterte aktiviteter vises, også utenfor tidligere ukevalg. Manuelt valgt dag/uke/måned støttes; flytting krever en slik detaljvisning.
+- Full aktivitetstekst, bolig, adresse, dato og ansvarlig ved hover/tastaturfokus. Escape lukker forklaringen, klikk åpner detaljer.
+- Åpning og lukking uten endring gir ikke falskt utkastvarsel. Endrede/ukjente/offline-utkast beholdes.
+- Byggnavn brytes ikke midt i gateadressen. Aktivitetsdialogen viser bolig/adresse og dato.
+- Felles prosjektklokkeslett i «Beboerlenker og frister samlet». Standard 12:00 for nye/udaterte prosjekter. Eksisterende daterte prosjekter bevarer dagsslutt til uttrykkelig endring.
+- Hjelp oppdatert. Videoopptak er ikke regenerert.
 
-## Funksjonsendringer
+## Sandboxdata og migrasjon
+Komplett prosjekt `df971415-1232-4199-8bd8-ce1e2246deaa` heter Aamodthagen boligsameie. Referansen ORVEI-SANDBOX · Etasjer foreløpige beholdes. 29 bygg, 126 boliger og 1260 daterte aktiviteter. Planperiode 2.12.2026–5.11.2027. Bekreftet befaring seksjon 113–116: tirsdag 8. juni 2027. Opprinnelig import og fiktive pakker er beskrevet i PR331.
 
-Byggnavn brytes ikke midt i gateadressen. Bytt bygg kan gå under overskriften når plassen er knapp; svært lange navn forkortes visuelt med fulltekst i title. Felles prosjektklokkeslett administreres i Beboerlenker og frister samlet. 12:00 er standard for nye/udaterte prosjekter, eldre daterte prosjekter beholder dagsslutt frem til uttrykkelig endring. Se arkitekturdokumentet.
+Repo-migrasjon `20261113191737_bolig_project_deadline_time.sql` er installert bare i sandbox, registrert som `20261113203013_bolig_project_deadline_time`. Ikke kjør samme SQL på nytt under repo-tidsstempelet. Før installasjon ble kolonne, historikk og funksjonsankere kontrollert.
 
-## Firmatilgang – bekreftet produksjonsstatus
+Alle 126 boliger manglet tidligere choice_deadline selv om planen hadde aktiviteten «Bestillingsfrist kl. 12.00». Den 13.11 ble de 29 datogruppene overført via eksisterende bolig_resident_batch/deadlines, med ferskt grunnlag per gruppe og atomisk kontroll. Alle 126 er lest tilbake mot plan: 29 datoer fra 18.12.2026 til 17.9.2027, prosjektklokke 12:00. Ingen aktivitetsdatoer, portallenker eller mottakere er endret. Ingen e-post sendt.
 
-Read-only kontroll av `company_admin_invite`, `accept_company_user_invite` og `is_internal_work_profile_company`: Ringside, Bademiljø Expo og Expo Proffsenter er interne arbeidsfirmaer. Tore Orvei AS er eksternt. Ordinær invitasjon flytter ikke en godkjent eksisterende bruker fra et annet firma: den avvises. Flere arbeidsfirmaer støttes i denne invitasjonsflyten bare mellom interne firmaer, og systemadministrator kan ikke inviteres som vanlig bruker gjennom dette løpet.
+## Verifisering
+- Full GitHub PR Core Safety SUCCESS for a3d853: build, bolig-db, bolig-browser, app-browser, HR, firma og prosjektkontroller.
+- Lokal PostgreSQL: 1857 assertions PASS; React batch 18 scenarioer PASS; Gantt, tooltip og dirty-draft-regresjoner PASS.
+- Faktisk innlogget native Chromium-preview: Aamodthagen åpnet med hele perioden og 1260 aktiviteter; stolper synlige. Tooltip for bolig 67 / Granåsvegen 2 viste full tekst/dato/ansvarlig. Aktivitetsdetaljer åpnet/lukket og neste aktivitet åpnet uten falsk utkastadvarsel. Ingen aktivitet lagret under kontrollen.
+- Hosted sandbox: prosjektklokke lagret/testet via RPC i transaksjon som ble rullet tilbake. Norsk vintertid gir 11:00 UTC og sommertid 10:00 UTC ved frist 12:00.
+- Sikkerhetsadvisors etter klokkemigrasjon: 475 eksisterende funn, ingen nye eller fjernede (sammenlignet navn/nivå/metadata).
+- Lokal Chromium-oppstart er blokkert av kjøremiljøets socket-begrensning; CI og native nettleser ga nettleserbevis.
 
-Ingen medlemskap er endret. Eksisterende UE-/leverandørportal gir avgrenset fremdrifts-/leveranse-/sjekklisteinnsyn, men ikke den interne behandlingen av beboernes grunnpakke og tilvalg. Anbefalt neste funksjon er eksplisitt prosjektavgrenset samarbeid for Expo med bevart hovedfirma. Dette er et eget tilgangsscope, ikke implementert som sideeffekt av fristrettingen. Det må dekke backend, prosjektvalg, riktig avsender/firmalogo og avgrensning mot HR og andre prosjekter.
+## Avgrensning og neste steg
+Navngitt samarbeid er separat PR333, se `docs/qa/BOLIG_PARTNER_COMMERCE_20261113.md` på den branchen. Ingen firmamedlemskap eller personrettigheter ble endret av PR332. Produksjon viser fortsatt tidligere kode.
 
-## Teststatus
+Før produksjon: Kenneth TEST OK for PR332. Kontroller fersk main, migrasjonshistorikk og kandidat; installer kun manglende produksjonsmigrasjon, merge/publiser riktig commit, verifiser frister og eksisterende portal. Deretter kontrollert main → demo med overlay bevart. Aamodthagen-produksjonsimport og fiktive pakker er ikke automatisk del av denne publiseringen.
 
-Se PR for siste kontroller. Lokal critical QA og Vite build bestått. React batch: 18 scenarioer bestått, inkludert prosjektklokkeslett uten boligvalg, samtidighetsgrunnlag, retry og tilbakekalt tilgang. PostgreSQL: 1857 assertions PASS, inkludert eksisterende 1837 og 20 nye kontroller av prosjektklokke, sommer/vinter, autorisasjon, dagssluttbevaring, retry og serverfrist. Chromium kunne ikke startes lokalt: bundled browser mangler, og systemnettleserens socket-kall avvises av kjøremiljøet. Innlogget Preview-test gjenstår. Ingen påstand om innlogget Preview-test, installert migrasjon eller produksjonssetting før disse er bekreftet.
-
-## Oppfølging: hele planen og personstyrt samarbeid
-
-Kenneth viste at ukevisning 30.11.–6.12.2026 gir tomme felt for aktiviteter senere i prosjektet. Databasekontroll: alle 1260 aktiviteter har datoer, 2.12.2026–5.11.2027. Innlogget kontroll på eksisterende PR329-preview bekreftet synlige desemberstolper ved søk Granåsvegen 14. Dette var et visningsproblem, ikke manglende import.
-
-Arbeidsversjonen har nå Hele planen som standard, også for brukere med gammel ukeinnstilling. Filterutvalgets første/siste dato styrer perioden. Manuelt valgt uke/måned og dato bevares innen den nye visningskontrakten. Oversikten tillater detaljåpning, men krever dag/uke/måned for flytting. Rene kalender- og faktiske React-scenarioer bestått; Vite build bestått. Eksisterende flyttetest velger nå eksplisitt uke før datoflytting. Nye tester lagt til CI. Ingen lagrede aktivitetsdatoer endres. Hjelp og videotitteltekst oppdatert; selve videoopptaket er ikke regenerert.
-
-Autorisert videre scope for egen tilgangsleveranse: Navngitte brukere hos Bademiljø Expo, Expo Proffsenter og Ringside skal kunne få prosjektavgrenset samarbeid via UE-/leverandøradgangen. Ingen automatisk firmatilgang. Min side → Mine samarbeid skal vise bare tildelte prosjekter. Rettigheter: lese pakker, tilpasse enkeltboliger og separat redigere felles katalog. Beboer godkjenner i portalen. Personbinding, tilbakekalling, utløp, endringer etter aksept, avsenderfirma og serverkontroll må testes; ingen medlemskap er endret. Dette er ikke implementert i PR332.
-
-### Aktivitetsutkast og CI-oppfølging
-Brukerens skjermbilde viste samme aktivitetsnavn for to boliger. Rotårsak: åpning persisterte editor uten å skille visning fra endring. Åpningsgrunnlag lagres nå lokalt; bare endrede redigerbare felt krever utkastvalg. Eldre utkast sammenlignes konservativt med server; ukjent eller endret arbeid beholdes. Dialog viser bolig, adresse og dato og får kompakt størrelse. Ingen serverlagring endres.
-Regresjonstest `bolig-progress-draft-check.mjs` dekker visning, notat/datoendring, metadata, serveroppdatering og eldre/offline/ny kladd. PASS lokalt. Nettleserscenario og Preview gjenstår.
-CI oppdaget tre følger av tilsiktet UX: global CSS er flyttet til Bolig-stilarket, hjelpeintegrasjoner begrenses til eksakte Gantt-tekster i boundary-testen, aktivitetslabel inkluderer nå dato og fristveiledning bruker prosjektklokkeslett. Browserassertions oppdateres til disse kontraktene; øvrig innhold, antall boliger og fristkrav beholdes.
-Personadgang skal eksplisitt tillate endring av boligtilvalg, nye varer og arbeid. Felles katalogrett er separat. Tilgangsbranchen er fortsatt uferdig; første databasetest feilet på synlighet av tildelt prosjekt og ingen hosted migrasjon er kjørt.
-
-### Musepeker og avklaring av scope-kontroll
-Full aktivitetstekst, bolig/adresse, datoer og ansvarlig vises nå ved musepeker eller tastaturfokus. Escape lukker forklaringen, klikk åpner aktivitetsdetaljene, og rulling fjerner gammel posisjon. Forklaringen kan holdes åpen ved å flytte pekeren inn på den. React-scenario med hover/fokus/Escape/klikk PASS, Gantt-regresjoner PASS og Vite build PASS.
-CI bruker main-versjonen av boundary-kontrollen. Derfor er forsøket på en avgrenset testutvidelse reversert helt. Både originalt hjelpeinnhold og videotekster er også tilbakeført; den nye veiledningen ligger i den allerede tillatte `BoligHelp.jsx`. Original boundary-kontroll PASS lokalt (55 assertions). Videoene er ikke spilt inn på nytt.
-Ny fast Preview krever egen innlogging i cloud-nettleseren. Ingen innlogget Preview-prøve er bekreftet ennå. Produksjon og demo er uendret.
+Tilbakeføring: behold forrige Vercel-produksjonsdeploy og commit. Klokkekolonnen er additiv; ikke slett tabeller/data eller kjør blind down-migrasjon. Sandboxfristene kan bare reverseres etter ny kontroll mot logg og eventuelle senere endringer.
