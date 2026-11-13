@@ -1249,3 +1249,7 @@ Velg eller opprett en hylle én gang, og registrer varene der fortløpende. Fler
 
 ### Proffkundens varesøk (11.11.2026)
 Varesøk åpner et varekort med kundens priser før eksplisitt tillegg i bestillingen. Smartere søk krever den additive migrasjonen `20261111164011_pro_catalog_smart_search.sql` i riktig miljø før klientpublisering. Utrulling og kontroll: [QA-notat](docs/qa/PROFF_CUSTOMER_SEARCH_20261111.md).
+
+### Samlet supportmodus – installasjonsrekkefølge
+
+PR322 + companion PR320 er en separat, ikke produksjonssatt leveranse. Før global Data API-hook registreres må også `20261112230911_app_support_public_request_passthrough.sql` være installert, slik at vanlige offentlige portaler beholder tilgang. Avstem faktiske remote-migrasjonsversjoner og aktiveringsstatus mot [QA-loggen](docs/qa/SUPPORT_APP_UX_20261111.md); ikke kjør gamle installasjoner på nytt. [Arkitektur og tilbakeføring](docs/architecture/APP_SUPPORT_SESSION.md) beskriver grenser og produksjonsrekkefølge.

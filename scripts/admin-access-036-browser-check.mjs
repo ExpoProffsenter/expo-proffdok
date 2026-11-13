@@ -25,6 +25,7 @@ try{
   if(name==='list_managed_work_profiles')return {is_systemadmin:true,users,companies};
   if(name==='list_managed_module_access')return {is_systemadmin:true,users,caller_module_keys:['projects','sales']};
   if(name==='get_cordel_export_access')return false;
+  if(name==='app_support_available')return false;
   if(name==='people_modules_user_get')return {company_id:args.p_company_id,user_id:args.p_user_id,company:{kshms:true,hr:true},kshms:true,hr:false,kshms_role:'reader',firmaadmin:false};
   if(name==='set_managed_work_profiles'){if(window.qa.fail)throw Error('QA lagringsfeil');user.workspace_company_ids=args.requested_company_ids;return {};}
   if(name==='set_managed_module_access'){user.module_keys=args.requested_module_keys;return {module_keys:user.module_keys};}
@@ -48,6 +49,7 @@ try{
  await profile().getByRole('checkbox',{name:'Expo Proffsenter Primærfirma',exact:true}).waitFor().catch(async error=>{console.error(JSON.stringify({errors,qa:await page.evaluate(()=>window.qa),body:await page.locator('body').innerText()}));throw error;});await access().getByRole('checkbox',{name:'KS/HMS Individuelt tildelt modultilgang.',exact:true}).waitFor();
  await page.getByLabel('Ulagret kontrollfelt').fill('Ulagret tekst og samme native felt');await page.locator('#draft').evaluate(n=>window.qa.draftNode=n);
  eq(await profile().getByRole('checkbox').count(),3,'three real workspace choices');eq(await access().getByRole('checkbox').count(),7,'people, modules, Cordel and net price');
+ eq(await page.getByRole('button',{name:'Åpne kundens app i supportmodus'}).count(),0,'disabled server feature hides support launcher');
  eq(await page.locator('#pending-card [data-systemadmin-work-profiles] input').count(),0,'pending user has no workspace controls');eq(await page.locator('#admin-card [data-systemadmin-work-profiles] input').count(),0,'systemadmin has no extra workspace controls');
  for(const width of [320,390,768,1363,1920]){
   await page.setViewportSize({width,height:936});

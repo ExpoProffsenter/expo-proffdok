@@ -497,6 +497,15 @@ function installSupportDisplayObserver() {
     subtree: true,
   });
 
+  window.addEventListener("expo-project-support-ended", () => {
+    // Invalidate pending reads before restoring our own header. Do not wait for
+    // the mutation-observer debounce: continuous UI changes can postpone it.
+    loadSequence += 1;
+    context = { companyId: "", scopeId: "", companyName: "", companyLogoUrl: "", supportUserName: "Systemadministrator", requestRef: "", responsible: "" };
+    removeGlobalBanner();
+    restoreHiddenResponsibleFields();
+    restoreMainHeaderBranding();
+  });
   window.addEventListener("popstate", scheduleSupportRefresh);
   scheduleSupportRefresh();
 }

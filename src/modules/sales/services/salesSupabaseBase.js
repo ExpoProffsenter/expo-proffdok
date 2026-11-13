@@ -1,3 +1,4 @@
+import { supportClient } from '../../access/appSupportBrowser.mjs';
 // Expo ProffDok – FASE 30C2 / FASE 23D / FASE 28A1 / FASE 29B2 / FASE 29B3 / FASE 29B4 / FASE 29B5
 // Samler Supabase-kall for Befaring / Tilbud / Aksept.
 // FASE 30C2 husker sist hentede/lagrede salgssak og sender bare rader som faktisk
@@ -183,7 +184,7 @@ export function createDefaultSalesSupabaseClient() {
   const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
   return supabaseUrl && supabaseAnonKey
-    ? createClient(supabaseUrl, supabaseAnonKey)
+    ? supportClient(createClient(supabaseUrl, supabaseAnonKey))
     : null;
 }
 

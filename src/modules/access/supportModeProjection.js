@@ -27,6 +27,7 @@ const STORE_ALLOWED_COMPANIES = new Set([
 ]);
 
 let activeProjection = null;
+let projectionGeneration = 0;
 let syncPromise = null;
 let republishTimer = null;
 let publishingProjection = false;
@@ -203,12 +204,14 @@ function publishProjectedAccess() {
 }
 
 async function clearProjection() {
+  projectionGeneration += 1;
   const hadProjection = Boolean(activeProjection);
   const hadManagedSalesScope = Boolean(
     typeof window !== "undefined" &&
       window.sessionStorage?.getItem(MANAGED_SALES_SUPPORT_KEY)
   );
   activeProjection = null;
+  restoreOwnHeaderBranding();
   restoreSupportSpecificVisibility();
   if (hadManagedSalesScope) setManagedSalesSupportCompany("");
   if (hadProjection || hadManagedSalesScope) await refreshMyModuleAccess();
@@ -273,8 +276,10 @@ export async function syncVisibleSupportProjection({ force = false } = {}) {
   }
   if (syncPromise) return syncPromise;
 
+  const generation = projectionGeneration;
   syncPromise = buildProjection(context)
     .then((projection) => {
+      if (generation !== projectionGeneration || visibleProjectSupportContext()?.key !== context.key) return null;
       activeProjection = projection;
       if (projection.salesCompanyId) setManagedSalesSupportCompany(projection.salesCompanyId);
       else setManagedSalesSupportCompany("");
@@ -286,6 +291,12 @@ export async function syncVisibleSupportProjection({ force = false } = {}) {
     });
 
   return syncPromise;
+}
+
+export function endProjectSupportProjection() {
+  const cleanup = clearProjection();
+  window.dispatchEvent(new Event("expo-project-support-ended"));
+  return cleanup;
 }
 
 function scheduleSync(delays = [0, 120, 400]) {

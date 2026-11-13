@@ -1,3 +1,4 @@
+import { endProjectSupportProjection } from './modules/access/supportModeProjection.js';
 import {useSupportUsers} from './modules/support/useSupportUsers.js';
 import {usePortalAccessStatus} from './modules/portal/usePortalAccessStatus.js';
 import HeaderHelp from './modules/help/HeaderHelp.jsx';
@@ -118,7 +119,7 @@ const BoligEntry = React.lazy(() => import('./modules/bolig/BoligEntry.jsx'));
     "https://dqffxflaoyarbxyiyhop.supabase.co",
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxZmZ4Zmxhb3lhcmJ4eWl5aG9wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NzcxNTEsImV4cCI6MjA5MzA1MzE1MX0.5fkVNPooHGlayw4NgYM3fUVrAiv0XbUyTixkfeToMSE"
   );
-  registerAppSupabaseClient(supabase);
+  supabase = registerAppSupabaseClient(supabase);
   var uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
   var WARRANTY_YEAR_OPTIONS = [10, 12, 15];
   var WARRANTY_YEARS = 15;
@@ -1923,6 +1924,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
     const supportProjectOwner = (adminUsers || []).find((entry) => entry?.id === currentProjectOwnerId);
     const exitSupportMode = () => {
       if (!isProjectSupportReadOnly) return;
+      void endProjectSupportProjection();
       setProject({ ...emptyProject(), responsible: user?.name || authUser?.email || "" });
       setChecked({});
       setProductDocs({});
@@ -2114,6 +2116,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       setProjectAutoSaveStatus("");
       resetProjectDirty();
       if (returnToSupportOverview) {
+        void endProjectSupportProjection();
         if (profile) applyProfile(profile);
         setSupportSelectedCompany(supportCompanyForOverview);
         setOpenSupportCompany(supportCompanyForOverview);
@@ -3226,6 +3229,16 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
         cancelled = true;
       };
     }, [authUser?.id, profile?.id, profile?.approved, profile?.deactivated, authLoading, profileLoading]);
+    (0, import_react.useEffect)(() => {
+      if (authLoading || profileLoading || !isSystemAdminUser || !profile?.approved || profile?.deactivated) return;
+      const url = new URL(window.location.href);
+      if (url.searchParams.get('supportExit') !== '1') return;
+      setTab('admin');
+      setAdminArea('users');
+      setOpenAdminSections(prev => ({...prev, brukere: true}));
+      url.searchParams.delete('supportExit');
+      window.history.replaceState(null, '', url.pathname + url.search + url.hash);
+    }, [authLoading, profileLoading, isSystemAdminUser, profile?.approved, profile?.deactivated]);
     (0, import_react.useEffect)(() => {
       setPortalAccessInput("");
       setPortalAccessGranted(false);
@@ -6352,6 +6365,7 @@ ${appLink}`;
           ] })
         ] })
       ] }) }),
+      tab === "prosjekt" && projectId && isProjectSupportReadOnly && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "support-project-overview", children: renderProjectOverviewPanel({ project, goToTab, leaveProjectWorkspace, readOnly: true }) }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("main", {
         inert: isProjectSupportReadOnly && !supportReadOnlyMainIsInteractive ? true : void 0,
         "aria-readonly": isProjectSupportReadOnly ? "true" : void 0,
@@ -6571,7 +6585,7 @@ ${appLink}`;
           projectGuideStats.openDeviationCount > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: openActiveDeviations, children: "Se aktive avvik" })
         ] }),
         ] }),
-        tab === "prosjekt" && projectId && renderProjectOverviewPanel({ project, goToTab, leaveProjectWorkspace }),
+        tab === "prosjekt" && projectId && !isProjectSupportReadOnly && renderProjectOverviewPanel({ project, goToTab, leaveProjectWorkspace }),
         (tab === "prosjekt" || tab === "avvik") && projectId && authUser?.id === kshmsContext?.user_id && kshmsContext?.enabled && !isProjectSupportReadOnly && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProjectSjaEntry, { context: kshmsContext, projectId, readOnly: isProjectLocked || isReadOnly }, `${kshmsScopeKey}:${projectId}`),
         tab === "prosjekt" && (!hasActiveProjectWorkspace ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { className: "desktopOnlyWhenNoProject desktopNoProjectWelcome", children: [
           warrantyTemplateProjectRows.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { marginTop: "18px", background: "#f8fbff" }, children: [

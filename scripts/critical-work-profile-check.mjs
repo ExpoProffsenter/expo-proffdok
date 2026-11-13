@@ -279,3 +279,6 @@ if (indexHtml.indexOf("installSystemAdminProjectScopeGuard") > indexHtml.indexOf
 }
 
 console.log("✅ Expo ProffDok arbeidsprofiler / flerfirma / systemadmin representasjon / firmabranding / 42G prosjektscope check OK");
+
+// Support regressions reported 11 November: real navigation callbacks and stale-response lifecycle.
+await import("./support-navigation-lifecycle-check.mjs");
