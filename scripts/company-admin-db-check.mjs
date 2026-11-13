@@ -1,6 +1,7 @@
 const CONFLICT_CODE=process.env.QA_RPC_CONFLICT_POLICY==='1'?'PT409':'40001';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
+import {checkInvitationManagement} from './company-invitation-management-db-check.mjs';
 import {checkInvitationAccess} from './company-invitation-db-check.mjs';
 import {checkInvitationResend} from './company-invitation-resend-db-check.mjs';
 import {checkInvitationAutoHr} from './company-invitation-auto-hr-db-check.mjs';
@@ -78,5 +79,6 @@ try{
  await checkInvitationResend({db,id,a,b,sys,admin,worker,other,secondary,q,rpc,actor,eq,rejects});
  await checkInvitationAutoHr({db,id,a,b,sys,admin,worker,secondary,q,rpc,actor,eq,rejects});
  await checkInvitationHandbook({db,id,a,b,admin,worker,q,rpc,actor,eq,rejects});
+ await checkInvitationManagement({db,id,a,b,sys,admin,worker,other,q,rpc,actor,eq,rejects});
  console.log(`company-admin-db-check: ${checks} PostgreSQL assertions PASS; real migration, existing profile guard and module-manager authorization; synthetic fixtures.`);
 }catch(e){console.error('Company admin DB QA:',e.code,e.message,e.where||'');process.exitCode=1;}finally{await db.close();}
