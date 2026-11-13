@@ -51,3 +51,11 @@ Tilbakeføring: sett app_support_private.settings enabled=false,transport_ready=
 Global hook kjøres også for anon og service_role. Ny migrasjon `20261112230911_app_support_public_request_passthrough.sql` lar disse rollene kalle den offentlige SECURITY INVOKER-inngangen. Uten supportheader returnerer den før privat skjema berøres. Med supportheader kreves authenticated før eksisterende private økt-, aktør-, mål- og firmakontroll. Ingen nye private rettigheter, ingen bytting av rolle, ingen endring av RLS eller utsending.
 
 Installer denne rettelsen før global hook registreres i et nytt miljø. Åtte tidligere supportmigrasjoner pluss denne rettelsen må avstemmes mot faktisk migrasjonshistorikk; ikke gjeninstaller sandbox-migrasjonene. Sandbox lokal 20261112230911 → remote 20261112230959. Produksjon ikke endret. Ved rollback må rettelsen beholdes så lenge den globale hooken finnes; å deaktivere support alene reparerer ikke den gamle manglende anon-kallrettigheten.
+
+## Invitasjoner og nylig publisert Firmaadmin – 13.11.2026
+
+PR324 er publisert i main f7298e11. Supportbranchen er samordnet med denne. Ny migrasjon20261113005500_app_support_invitation_fences krever company_invitation_management installert først. Support kunne tidligere sette company_user_invites.status til revoked fordi invitasjonstabellen ikke var navngitt som tilgangsendring; lokal negativ test beviste dette.
+
+Invitasjoner og alle private sendeloggskrivinger er nå sperret i support. Dette dekker opprettelse, tilbaketrekking, reservering og bekreftelse/usikkert svar. Offentlig invitasjonstabell og ny privat deliveries-tabell får eksplisitte write/delete/truncate-triggere, uansett om support eller invitasjonsmodulen kom først. Eksisterende guard erstattes bare ved eksakt forventet definisjon, ellers stoppes migrasjonen. Vanlig autorisert firmaadministrasjon uten supportheader følger samme oppførsel som før. UI sperrer Trekk tilbake invitasjon i support; serveren er fasit. Ingen e-posttransport eller roller endres.
+
+Denne additive sperren skal med før produksjonsaktivering. Ikke fjern den ved rollback så lenge support kan brukes. Kontroller gjeldende migrasjonshistorikk før installasjon; ikke kjør installasjonen på nytt. Eksakte miljøresultater føres i PR322.

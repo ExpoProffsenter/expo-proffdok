@@ -341,7 +341,7 @@ const COMPANY_ADMIN_SECTIONS = [
     "firma",
     "👥 Firma",
     "Firma-fanen brukes av firmaadministratorer til å administrere ansatte og firmatilknytning.",
-    ["Åpne Firmaadmin. Øverst finner du Inviter en ansatt og, med riktig tilgang, Boligprosjekter – brukertilgang. Søk etter navn eller e-post i brukerlisten. Åpne en ansatt for å endre rolle og tilganger i høyrepanelet.", "Rolle lagres når du bekrefter. Modulvalg lagres med knappen under valgene. Lukk panelet for å gå tilbake til samme søk og liste. Ventende invitasjoner vises under brukerne."],
+    ["Åpne Firmaadmin. Øverst finner du Inviter en ansatt og, med riktig tilgang, Boligprosjekter – brukertilgang. Søk etter navn eller e-post i brukerlisten. Åpne en ansatt for å endre rolle og tilganger i høyrepanelet.", "Rolle lagres når du bekrefter. Modulvalg lagres med knappen under valgene. Lukk panelet for å gå tilbake til samme søk og liste. Ventende invitasjoner vises under brukerne. Ved feil e-post: velg Trekk tilbake invitasjon og bekreft adressen, og inviter deretter riktig adresse. Registrerte brukere og historikk slettes ikke. Se Sist bekreftet sendt per person før du velger Send invitasjon på nytt. En ny bekreftelse viser mottaker og forrige sending. Uavklart betyr at vi ikke vet om e-posten kom frem til e-posttjenesten; ikke send gjentatte ganger. Eldre sendinger mangler logg og merkes som ukjent, ikke som usendt."],
     ["Gi bare tilganger brukeren faktisk trenger."],
     ["Rydd i brukere jevnlig og bruk personlige e-postadresser."]
   )
@@ -420,7 +420,7 @@ const SYSTEM_ADMIN_SECTIONS = [
       "Systemadmin-funksjoner kan påvirke flere firmaer og må brukes varsomt.",
       "Expo Proffsenter-logo kan brukes som standardlogo når firmaet ikke har egen logo, men logoen bestemmer aldri brukerens firmatilhørighet eller datascope.",
       "Avslutt Supportmodus før du oppretter eller endrer prosjektdata i egen arbeidsprofil.",
-      "Samlet kundesupport, når aktivert: Åpne kundens app i supportmodus på brukerkortet under Systemadmin. Du ser valgt brukers app og egne priser. Endringer lagres; sletting er sperret. Tilbake blir i kundens app. Avslutt supportmodus i banneret når du er ferdig. Eldre prosjektstøtte er fortsatt skrivebeskyttet.",
+      "Samlet kundesupport, når aktivert: Åpne kundens app i supportmodus på brukerkortet under Systemadmin. Du ser valgt brukers app og egne priser. Endringer lagres; sletting er sperret. Brukerinvitasjoner og tilganger kan ikke endres i supportmodus. Avslutt support og bruk egen firmaadministrasjon for slike handlinger. Tilbake blir i kundens app. Avslutt supportmodus i banneret når du er ferdig. Eldre prosjektstøtte er fortsatt skrivebeskyttet.",
       "Prisfilen inneholder intern informasjon og skal ikke deles med kunder eller legges i GitHub."
     ],
     ["Hold appnyheter og e-poster korte og konkrete, og kontroller testutsendingen før mottakergruppen får meldingen."]

@@ -14,3 +14,5 @@ Se [supportarkitektur](../../../docs/architecture/APP_SUPPORT_SESSION.md) for ko
 
 ### Fullapp-support, testkandidat 11.11
 Servervalidert målbruker, firma og originale tilganger; opprette/redigere, uten sletting/arkivering/filutskifting eller personlig vilkårsaksept. Ny inngang på Systemadmin-brukerkort. Startside/Tilbake forblir hos kunden; Avslutt venter på egen administratorprofil og åpner Brukere og roller. Samme innlogging/mål kan gjenåpne en mistet fane med opprinnelig utløp. Aktiv bare i isolert QA-sandbox; se docs/qa/SUPPORT_APP_UX_20261111.md og arkitekturens driftsplan.
+
+Firma-invitasjoner kan ikke opprettes, trekkes tilbake eller sendelogges i supportmodus. Avslutt support og bruk egen ordinær firmaadministrasjon for slike tilgangshandlinger. Både servertriggere og tilbaketrekkingsknappen sperrer dette; vanlig prosjektredigering beholdes.

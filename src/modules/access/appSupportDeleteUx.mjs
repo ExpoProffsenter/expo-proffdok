@@ -4,6 +4,7 @@ export function isSupportDeleteAction(button) {
   if (button.getAttribute('data-support-delete-blocked') === 'true') return true;
   const label = String(button.getAttribute('aria-label') || button.textContent?.trim() || button.getAttribute('title') || '').replace(/\s+/g, ' ').trim();
   if (/^(fjern|nullstill) (alle )?(søk|søkefilter|filter|filtre)$/i.test(label)) return false;
+  if (/^trekk tilbake invitasjon(?:\s|$)/i.test(label)) return true;
   return /^(slett|fjern|arkiver|nullstill)(?:\s|$)/i.test(label);
 }
 export function installSupportDeleteUx(window) {

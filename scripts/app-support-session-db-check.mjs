@@ -82,6 +82,9 @@ for(const [before,after,expected,label] of [
 await db.exec(`insert into public.sales_company_memberships values('${target}','${firm}');
 create function public.current_active_company_scope_id() returns uuid language sql stable security definer as $$select company_id from public.sales_company_memberships where user_id=auth.uid() limit 1$$;
 create table public.support_qa_records(id uuid primary key,user_id uuid,company_id uuid,payload jsonb);
+create table public.company_user_invites(id uuid primary key,status text);
+insert into public.company_user_invites values('${id(40)}','pending');
+grant select,insert,update on public.company_user_invites to authenticated;
 create table public.user_terms_acceptance(user_id uuid,version text);
 grant insert on public.user_terms_acceptance to authenticated;
 alter table public.support_qa_records enable row level security;
@@ -94,6 +97,17 @@ await db.exec(await fs.readFile('supabase/migrations/20261111183233_app_support_
 await db.exec(await fs.readFile('supabase/migrations/20261111194441_app_support_canonical_write_validation.sql','utf8'));
 await db.exec(await fs.readFile('supabase/migrations/20261111201506_app_support_file_and_consent_fences.sql','utf8'));
 await db.exec(await fs.readFile('supabase/migrations/20261112230911_app_support_public_request_passthrough.sql','utf8'));
+// This private table was introduced after support in Sandbox and before support in Production.
+await db.exec(`create schema company_invitation_private;
+create table company_invitation_private.deliveries(id uuid primary key,status text);
+insert into company_invitation_private.deliveries values('${id(41)}','sending');
+create function public.support_qa_invitation_delivery(action text) returns void language plpgsql security definer set search_path='' as $$
+begin
+ if action='begin' then insert into company_invitation_private.deliveries values('${id(42)}','sending');
+ else update company_invitation_private.deliveries set status=action where id='${id(41)}';end if;
+end $$;`);
+await db.exec(await fs.readFile('supabase/migrations/20261113005500_app_support_invitation_fences.sql','utf8'));
+
 // The global hook must not block normal public portals or service requests.
 const ordinaryRequest=async(role,headers)=>{
  await db.exec(`begin;set local role ${role}`);
@@ -127,6 +141,17 @@ const scoped=async(sql,{prepare=true,session=writeSession.id}={})=>{
 await denied(()=>scoped('select 1'),'transport disabled even when session feature enabled');
 await db.exec('update app_support_private.settings set transport_ready=true');
 eq((await scoped('select auth.uid() id')).rows[0].id,target,'native request uses target rights, not admin rights');
+await denied(()=>scoped(`update public.company_user_invites set status='revoked' where id='${id(40)}'`),'support cannot withdraw an invitation');
+await denied(()=>scoped(`insert into public.company_user_invites values('${id(43)}','pending')`),'support cannot create an invitation');
+for(const action of ['begin','confirmed','uncertain'])await denied(()=>scoped(`select public.support_qa_invitation_delivery('${action}')`),`support cannot ${action} an invitation delivery through definer RPC`);
+eq((await db.query(`select status from public.company_user_invites where id='${id(40)}'`)).rows[0].status,'pending','blocked withdrawal leaves invitation intact');
+eq((await db.query('select status from company_invitation_private.deliveries')).rows,[{status:'sending'}],'blocked sends leave delivery log intact');
+await claim(target);await db.exec('set role authenticated');
+await db.query(`update public.company_user_invites set status='revoked' where id='${id(40)}'`);
+await db.query("select public.support_qa_invitation_delivery('confirmed')");await db.exec('reset role');
+eq((await db.query(`select status from public.company_user_invites where id='${id(40)}'`)).rows[0].status,'revoked','ordinary authorized invitation withdrawal still works');
+eq((await db.query(`select status from company_invitation_private.deliveries where id='${id(41)}'`)).rows[0].status,'confirmed','ordinary delivery confirmation still works');
+
 await denied(()=>scoped(`insert into public.user_terms_acceptance values(auth.uid(),'qa')`),'support cannot accept personal terms on behalf of customer');
 eq((await scoped('select public.app_support_context() context')).rows[0].context.target_user_id,target,'bootstrap confirms target via server hook');
 await denied(()=>scoped('select public.app_support_context()', {prepare:false}),'bootstrap cannot confirm context without installed hook');

@@ -120,3 +120,15 @@ Avgrenset rettelse: ny invoker-wrapper returnerer uten supportheader; med header
 Verifisert: 91 reelle SQL-assertions (78 eksisterende +13 nye), runtime 45, Auth/retur, cache/UX og critical-support/mail 55 PASS. Cachetesten krevde eksplisitt lokalt jsdom-bibliotek etter første manglende-pakke-feil; den bestod etter riktig testmiljø. Faktisk tidligere avvist beboerlenke ble lastet på nytt i skynett og åpnet korrekt bolig 24 med Mine valg, Avtaler, Dokumenter og Meldinger. Ingen avtale akseptert, ingen melding sendt. Sikkerhetsrådgiveren viser samme seks kategorier/nivåer som før; dette er ikke en attest på at eldre advarsler er løst.
 
 Gjenstår: ny GitHub-kontroll for rettet supportcommit, samlet support/PR320-prøve og vurdering av endret kandidat før produksjonssetting. Historisk grønn kjøring for PR320 erstatter ikke siste ventende kjøring. Feilrettelsen er et tillegg til tidligere TEST OK-grunnlag; ingen automatisk produksjonsmerge. Eksisterende produksjonsplan skal bruke denne niende migrasjonen før hook-registrering.
+
+## Integrasjon med publisert Firmaadmin 13.11.2026
+
+Main f7298e11 (PR324) flettet i eksisterende release/support-verified-20261111; kun CURRENT_RELEASE_STATUS tekstkonflikt. Orvei323 holdes separat. Lokalt reprodusert: forventet avvisning av support UPDATE company_user_invites.status=revoked manglet. Ingen live invitasjon endret.
+
+Rettet med additiv20261113005500_app_support_invitation_fences: invitasjonstabell og privat sendelogg sperres ved aktiv supportkontekst, inkludert security-definer-skrivinger. UI gjenkjenner Trekk tilbake invitasjon. SQL100krav PASS (tidligere91 +9nye), cache/UX PASS. Testene kontrollerer opprettelse/tilbaketrekking/begin/confirmed/uncertain, uendrede rader etter avvisning, vanlig tilbaketrekking/sendebekreftelse og eksisterende prosjektredigering. Full build og aktuell GitHub-kontroll føres i PR322.
+
+Ingen produksjonsinstallasjon/aktivering. Companion320 siste43097043078 fortsatt queued; ingen ekstra køforsøk. Tidligere TEST OK gjelder ønsket supportomfang uten tilgangsendring; dette er en rettelse til samme avtalte sperre, ikke utvidet supportrettighet. Produksjonsklarhet krever samlet vurdering og grønne kontroller.
+
+Sandbox-installasjonsforsøk13.11: apply_migration-bekreftelsen utløp. Etterkontroll viste ingen migrasjonsversjon, gammel guard og bare tre eksisterende invitasjonstriggere; ingen installasjon utført. Migrasjonen er deretter gjort additiv: eksisterende triggere beholdes og verifiseres for riktig funksjon/hendelser, bare manglende triggere opprettes.100SQL-krav bestod igjen. Ikke tolk forsøket som installert.
+
+Full lokal produksjonsbuild PASS på integrert main + supportrettelse. Runtime/Auth-kontroller kjøres i samme runde; eksakte resultater og CI i PR322.

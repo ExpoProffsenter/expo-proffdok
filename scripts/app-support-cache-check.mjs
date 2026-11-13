@@ -20,10 +20,10 @@ w.dispatchEvent(new w.StorageEvent('storage',{key:'offer',newValue:'other tab ow
 w.dispatchEvent(new w.StorageEvent('storage',{key:`expo-support:${id}:offer`,newValue:'same support draft',storageArea:original}));assert.deepEqual(seen,[['offer','same support draft']]);
 w.dispatchEvent(new w.StorageEvent('storage',{key:'sb-qa-auth-token',newValue:'refreshed',storageArea:original}));assert.equal(seen[1][0],'sb-qa-auth-token');
 w.localStorage.clear();assert.equal(original.getItem('offer'),'own draft');assert.equal(original.getItem('sb-qa-auth-token'),'actor auth');
-w.document.body.innerHTML='<button id="delete">Slett Vare 1</button><button id="edit">Lagre tilbud</button><button id="filter">Fjern filter</button><button id="archive">Arkiver saken</button>';
+w.document.body.innerHTML='<button id="delete">Slett Vare 1</button><button id="edit">Lagre tilbud</button><button id="filter">Fjern filter</button><button id="archive">Arkiver saken</button><button id="withdraw">Trekk tilbake invitasjon</button>';
 const stop=installSupportDeleteUx(w);
 const button=id=>w.document.getElementById(id);
-assert.equal(button('delete').disabled,true);assert.equal(button('archive').disabled,true);
+assert.equal(button('delete').disabled,true);assert.equal(button('archive').disabled,true);assert.equal(button('withdraw').disabled,true,'invitation withdrawal blocked in support UI');
 assert.equal(button('edit').disabled,false);assert.equal(button('filter').disabled,false);
 let deleted=false;button('delete').addEventListener('click',()=>{deleted=true;});
 button('delete').disabled=false;
