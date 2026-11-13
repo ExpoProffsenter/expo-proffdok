@@ -1,3 +1,4 @@
+import { activeSupportSessionId } from './modules/access/appSupportBrowser.mjs';
 // FASE 29A5.2 / 29B1: Minimal bootstrap som aktiverer bildeoptimalisering
 // og håndterer sikre private dokumentlenker før hovedappen lastes.
 // FASE 29B3 UI: Kundetilbud åpner tilbudsbilder i innebygd lightbox i stedet for ny fane.
@@ -262,6 +263,8 @@ function rewritePrivateDocumentAnchorForCurrentOrigin(anchor) {
     url.searchParams.set('download', '1');
   }
 
+  const supportSessionId = activeSupportSessionId();
+  if (supportSessionId) url.hash = new URLSearchParams({ expoSupport: supportSessionId }).toString();
   anchor.href = url.toString();
   return url;
 }

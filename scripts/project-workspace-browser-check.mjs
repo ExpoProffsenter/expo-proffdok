@@ -13,7 +13,9 @@ const main=fs.readFileSync('src/main.jsx','utf8');
 const navLine=main.split('\n').find(line=>line.includes('("nav", { children: tabs.map'));
 const navExpression=navLine.slice(navLine.indexOf('(0, import_jsx_runtime.jsx)')).replace(/,$/,'');
 const statusStart=main.indexOf('        projectId && (0, import_jsx_runtime.jsxs)(ProjectStatusDialog,');
-const statusEnd=main.indexOf('        tab === "prosjekt" && projectId && renderProjectOverviewPanel',statusStart);
+// The overview now has a read-only support guard; this boundary must not
+// depend on the following panel's full conditional expression.
+const statusEnd=main.indexOf('\n        tab === "prosjekt" && projectId &&',statusStart);
 assert(statusStart>=0&&statusEnd>statusStart);
 const statusExpression=main.slice(statusStart,statusEnd).trim().replace(/,$/,'');
 const scrollStart=main.indexOf('    const scrollToMobileTabTarget = (id) => {');
@@ -275,6 +277,15 @@ try{
   eq(bar.y>=0&&bar.y+bar.height<=height,true,'mobile tools fit short screen '+height);
   eq(await page.getByLabel('Kladd',{exact:true}).inputValue(),'Arbeidet mitt','short screen preserves draft '+height);
  }
+ const basisPage=await browser.newPage();
+ for(const workspace of ['sales-overview-app','sales-case-app','sales-editor-app']){
+  await basisPage.setContent(`<div><main><section class="sales-workspace-intro">Dokumentinngang</section><div data-sales-resume-workspace><div class="${workspace}"></div></div></main></div>`);
+  await basisPage.addStyleTag({content:fs.readFileSync('src/modules/sales/sales.css','utf8')});
+  eq(await basisPage.locator('.sales-workspace-intro').isVisible(),false,'ordinary Sales intro stays hidden '+workspace);
+  await basisPage.locator('body > div').evaluate(el=>el.setAttribute('data-expo-project-shell','1'));
+  eq(await basisPage.locator('.sales-workspace-intro').isVisible(),true,'project sales basis survives CSS cascade '+workspace);
+ }
+ await basisPage.close();
  eq(errors,[],'no React or DOM exceptions');
  console.log('Project workspace browser QA: PASS ('+checks+' assertions) — full-screen dialogs, drafts, native callbacks, cancellation, responsive sizes, simple/direct/new projects and read-only support');
 }finally{await browser?.close();await new Promise(resolve=>server.close(resolve));fs.rmSync(temp,{recursive:true,force:true});}

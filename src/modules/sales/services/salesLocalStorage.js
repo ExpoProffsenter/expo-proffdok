@@ -1,3 +1,4 @@
+import { effectiveSupportUserId } from '../../access/appSupportBrowser.mjs';
 // Expo ProffDok – FASE 39B.2C / FASE 30C3 / FASE 30C2
 // Firmascopet Sales-cache kan vises umiddelbart mens Supabase hydreres. Serveren
 // er fortsatt fasit og erstatter cachen så snart den normale serverlastingen er ferdig.
@@ -94,7 +95,7 @@ function currentUserId(store) {
           parsed?.session?.user?.id ||
           ""
       ).trim();
-      if (id) return id;
+      if (id) return effectiveSupportUserId(id);
     }
   } catch {
     return "";

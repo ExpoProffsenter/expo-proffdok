@@ -1,3 +1,4 @@
+import { effectiveSupportUserId } from '../../access/appSupportBrowser.mjs';
 // Expo ProffDok – FASE 30D1
 // Lokal-first sikkerhetslagring for befaringsbilder.
 // Binære bildefiler lagres i IndexedDB før de tas inn i React-skjemaet.
@@ -35,7 +36,7 @@ function currentAuthUserId() {
           parsed?.session?.user?.id ||
           ""
       ).trim();
-      if (userId) return userId;
+      if (userId) return effectiveSupportUserId(userId);
     }
   } catch {
     return "";

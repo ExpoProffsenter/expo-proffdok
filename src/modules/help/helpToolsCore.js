@@ -420,6 +420,7 @@ const SYSTEM_ADMIN_SECTIONS = [
       "Systemadmin-funksjoner kan påvirke flere firmaer og må brukes varsomt.",
       "Expo Proffsenter-logo kan brukes som standardlogo når firmaet ikke har egen logo, men logoen bestemmer aldri brukerens firmatilhørighet eller datascope.",
       "Avslutt Supportmodus før du oppretter eller endrer prosjektdata i egen arbeidsprofil.",
+      "Samlet kundesupport, når aktivert: Åpne kundens app i supportmodus på brukerkortet under Systemadmin. Du ser valgt brukers app og egne priser. Endringer lagres; sletting er sperret. Brukerinvitasjoner og tilganger kan ikke endres i supportmodus. Avslutt support og bruk egen firmaadministrasjon for slike handlinger. Tilbake blir i kundens app. Avslutt supportmodus i banneret når du er ferdig. Eldre prosjektstøtte er fortsatt skrivebeskyttet.",
       "Prisfilen inneholder intern informasjon og skal ikke deles med kunder eller legges i GitHub."
     ],
     ["Hold appnyheter og e-poster korte og konkrete, og kontroller testutsendingen før mottakergruppen får meldingen."]

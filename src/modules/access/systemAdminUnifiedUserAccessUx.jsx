@@ -1,3 +1,4 @@
+import AppSupportLauncher from './AppSupportLauncher.jsx';
 // Expo ProffDok – FASE 41B.2A / 45B
 // Systemadmin behandler bruker, rolle/firma og ALLE brukertilganger på samme eksisterende brukerkort.
 // Etablerte Godkjenn/Deaktiver/Firma/Rolle-handlinger eies fortsatt av legacy-panelet og røres ikke her.
@@ -190,6 +191,7 @@ function UnifiedAccessControls({ user, onReload }) {
         ) : null}
       </div>
 
+      {!targetIsSystemAdmin && <AppSupportLauncher userId={user.user_id} companyId={user.company_scope_id} />}
       <PeopleWorkspaceModuleAccess companyId={user.company_scope_id} userId={user.user_id} />
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(190px,1fr))", gap: 8, marginTop: 10 }}>
