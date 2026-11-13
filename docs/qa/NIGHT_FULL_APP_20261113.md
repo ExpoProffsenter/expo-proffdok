@@ -153,3 +153,6 @@ Preview READY: `dpl_2ED6QcBov3MC758fSgRFeAZ5hkSx`, eksakt kandidat. [Fast Previe
 5. Beboer38 er allerede akseptert/bestillingsutkast/frister lagret fra kontrollpunkt2. Fortsett bare gjenstående utløpt-frist/felleseiergrense/ordreeksport/PDF når mulig. Filmrevisjon fortsetter fra eksisterende A–Å-plan og36sekunders utkast.
 
 Eierskap ved avslutning: denne avgrensede UI-runden og PR327-kodearbeidet er ferdig dokumentert; ingen aktiv lokal redigering overlates. Fullapp-oppdraget fortsetter fra dette kontrollpunktet. Ingen ny automasjon opprettet, ingen produksjonssetting utført.
+
+## Kontrollpunkt 4 – pågår 13.11.2026 kl.06:22
+Eier Codex. Reservert scope: uavhengig KS/HMS SJA/risikovurdering/vernerunde i innlogget sandbox og oppdatert CI-status. PR327 full CI43366094210 SUCCESS; PR326 head8ac90ade full CI43366516247 SUCCESS. Ingen omkjøring. Ingen overlapp med PR321/325/327 og ingen produksjonsendringer.
