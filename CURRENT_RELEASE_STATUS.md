@@ -1,3 +1,7 @@
+# Invitasjonsrettelse under QA – 13.11.2026
+
+Separat branch `fix/company-invitation-management-20261113` fra main d68cf2e5. Miljømål BEGGE. Kun sandbox-migrasjon og branch-preview, produksjon uendret. Se [QA og tilbakeføring](docs/qa/COMPANY_INVITATION_MANAGEMENT_20261113.md). Orvei/logo ligger separat i PR323; support PR322 har bestått, PR320 siste kontroll var fortsatt queued. Ingen nye køforsøk.
+
 # Produksjonsrettelser – 11. november 2026
 
 Miljømål BEGGE. Arbeidet gjelder kundens varesøk, firmatilgang og opsjoner i generelle tilbud. Dette er ikke en erklæring om fullført QA av hele appen.

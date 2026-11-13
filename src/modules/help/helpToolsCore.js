@@ -341,7 +341,7 @@ const COMPANY_ADMIN_SECTIONS = [
     "firma",
     "👥 Firma",
     "Firma-fanen brukes av firmaadministratorer til å administrere ansatte og firmatilknytning.",
-    ["Åpne Firmaadmin. Øverst finner du Inviter en ansatt og, med riktig tilgang, Boligprosjekter – brukertilgang. Søk etter navn eller e-post i brukerlisten. Åpne en ansatt for å endre rolle og tilganger i høyrepanelet.", "Rolle lagres når du bekrefter. Modulvalg lagres med knappen under valgene. Lukk panelet for å gå tilbake til samme søk og liste. Ventende invitasjoner vises under brukerne."],
+    ["Åpne Firmaadmin. Øverst finner du Inviter en ansatt og, med riktig tilgang, Boligprosjekter – brukertilgang. Søk etter navn eller e-post i brukerlisten. Åpne en ansatt for å endre rolle og tilganger i høyrepanelet.", "Rolle lagres når du bekrefter. Modulvalg lagres med knappen under valgene. Lukk panelet for å gå tilbake til samme søk og liste. Ventende invitasjoner vises under brukerne. Ved feil e-post: velg Trekk tilbake invitasjon og bekreft adressen, og inviter deretter riktig adresse. Registrerte brukere og historikk slettes ikke. Se Sist bekreftet sendt per person før du velger Send invitasjon på nytt. En ny bekreftelse viser mottaker og forrige sending. Uavklart betyr at vi ikke vet om e-posten kom frem til e-posttjenesten; ikke send gjentatte ganger. Eldre sendinger mangler logg og merkes som ukjent, ikke som usendt."],
     ["Gi bare tilganger brukeren faktisk trenger."],
     ["Rydd i brukere jevnlig og bruk personlige e-postadresser."]
   )

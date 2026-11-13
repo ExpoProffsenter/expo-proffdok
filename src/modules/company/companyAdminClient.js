@@ -9,12 +9,19 @@ export async function sendCompanyInvitation(invitation, callerId, stillCurrent =
       !fresh.invites.some(i => i.email === invitation.email && (!invitation.invitation_id || i.id === invitation.invitation_id))) {
     throw Error('Firma, innlogging eller invitasjon er endret. Hent oversikten på nytt.');
   }
+  const row=fresh.invites.find(i=>i.email===invitation.email&&(!invitation.invitation_id||i.id===invitation.invitation_id));
+  if(!fresh.invitation_management||!row?.fingerprint)throw Error('Sendestatus er ikke installert i dette miljøet ennå.');
+  const attempt={fingerprint:row.fingerprint,request_id:crypto.randomUUID()};
+  const record=action=>companyAdminRpc('manage_invitation',{p_company_id:fresh.company_id,p_invite_id:row.id,p_action:action,p_payload:attempt});
   const client = getAppSupabaseClient();
   if (!client?.functions?.invoke) throw Error('E-posttjenesten er ikke klar.');
   const company = fresh.company_profile || {};
   const companyName = fresh.company_name;
   const origin = window.location.origin + window.location.pathname;
   const link = `${origin}?signup=1&invited=1&email=${encodeURIComponent(invitation.email)}&company=${encodeURIComponent(invitation.invite_company_name)}`;
+  await record('begin');
+  try {
+  if(!stillCurrent())throw Error('Firma eller innlogging er endret.');
   const {data, error} = await client.functions.invoke('smart-worker', {body: {
     toEmail: invitation.email, direction: 'company_user_invite', companyName, brandName: companyName,
     companyLogoUrl: company.logoUrl || '', logoUrl: company.logoUrl || '', emailLogoUrl: company.logoUrl || '',
@@ -25,4 +32,9 @@ export async function sendCompanyInvitation(invitation, callerId, stillCurrent =
     projectLink: link,
   }});
   if (error || data?.ok === false || data?.error) throw Error(error?.message || data?.error || 'E-posten kunne ikke sendes.');
+  await record('confirmed');
+  } catch(error) {
+    try { await record('uncertain'); } catch { /* Keep reserved attempt visible if the session/network is lost. */ }
+    throw Error(`Uavklart utsending: ${error.message} Kontroller før du sender på nytt.`);
+  }
 }
