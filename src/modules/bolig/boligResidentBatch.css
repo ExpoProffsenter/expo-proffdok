@@ -28,3 +28,7 @@
 .bolig-dialog.bolig-resident-batch label:has(input[type=time]){display:block}
 .bolig-resident-batch input[type=time]{min-height:44px;font-size:16px;width:100%}
 @media(max-width:640px){.bolig-page .bolig-setup-resident-tools{grid-template-columns:1fr}.bolig-resident-batch .bolig-batch-actions button{flex:1 1 100%}}
+
+.bolig-dialog.bolig-resident-batch .bolig-batch-deadline-fields label{display:block}
+.bolig-resident-batch .bolig-batch-deadline-fields input{display:block;width:100%;min-height:44px;font-size:16px;margin-top:6px}
+.bolig-resident-batch .bolig-batch-deadline-fields small{display:block;margin-top:6px;font-weight:400}
