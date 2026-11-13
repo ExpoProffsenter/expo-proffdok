@@ -19,3 +19,11 @@ Ingen medlemskap er endret. Eksisterende UE-/leverandørportal gir avgrenset fre
 ## Teststatus
 
 Se PR for siste kontroller. Lokal critical QA og Vite build bestått. React batch: 18 scenarioer bestått, inkludert prosjektklokkeslett uten boligvalg, samtidighetsgrunnlag, retry og tilbakekalt tilgang. PostgreSQL: 1857 assertions PASS, inkludert eksisterende 1837 og 20 nye kontroller av prosjektklokke, sommer/vinter, autorisasjon, dagssluttbevaring, retry og serverfrist. Chromium kunne ikke startes lokalt: bundled browser mangler, og systemnettleserens socket-kall avvises av kjøremiljøet. Innlogget Preview-test gjenstår. Ingen påstand om innlogget Preview-test, installert migrasjon eller produksjonssetting før disse er bekreftet.
+
+## Oppfølging: hele planen og personstyrt samarbeid
+
+Kenneth viste at ukevisning 30.11.–6.12.2026 gir tomme felt for aktiviteter senere i prosjektet. Databasekontroll: alle 1260 aktiviteter har datoer, 2.12.2026–5.11.2027. Innlogget kontroll på eksisterende PR329-preview bekreftet synlige desemberstolper ved søk Granåsvegen 14. Dette var et visningsproblem, ikke manglende import.
+
+Arbeidsversjonen har nå Hele planen som standard, også for brukere med gammel ukeinnstilling. Filterutvalgets første/siste dato styrer perioden. Manuelt valgt uke/måned og dato bevares innen den nye visningskontrakten. Oversikten tillater detaljåpning, men krever dag/uke/måned for flytting. Rene kalender- og faktiske React-scenarioer bestått; Vite build bestått. Eksisterende flyttetest velger nå eksplisitt uke før datoflytting. Nye tester lagt til CI. Ingen lagrede aktivitetsdatoer endres. Hjelp og videotitteltekst oppdatert; selve videoopptaket er ikke regenerert.
+
+Autorisert videre scope for egen tilgangsleveranse: Navngitte brukere hos Bademiljø Expo, Expo Proffsenter og Ringside skal kunne få prosjektavgrenset samarbeid via UE-/leverandøradgangen. Ingen automatisk firmatilgang. Min side → Mine samarbeid skal vise bare tildelte prosjekter. Rettigheter: lese pakker, tilpasse enkeltboliger og separat redigere felles katalog. Beboer godkjenner i portalen. Personbinding, tilbakekalling, utløp, endringer etter aksept, avsenderfirma og serverkontroll må testes; ingen medlemskap er endret. Dette er ikke implementert i PR332.

@@ -151,6 +151,8 @@ try {
     await page
       .getByLabel("Grupper etter", { exact: true })
       .selectOption("unit");
+    // Whole-plan overview is read-only for dragging; editing explicitly uses a week.
+    await page.getByLabel("Visning", {exact:true}).selectOption("week");
     await a.focus();
     await page.keyboard.press("Alt+ArrowRight");
     eq(

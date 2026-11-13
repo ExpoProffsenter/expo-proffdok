@@ -1,12 +1,12 @@
 import React, { useMemo, useState, useRef, useEffect } from "react";
 import {
-  calendarWindow,
   dayNumber,
   shiftDay,
   shortDate,
   todayOslo,
   nextAnchor,
 } from "../kshms/kshmsProgressTimeline.mjs";
+import { boligGanttRange } from "./boligGanttRange.mjs";
 import { useBoligUiState } from "./boligUiState.js";
 export default function BoligGantt({
   tasks,
@@ -23,7 +23,7 @@ export default function BoligGantt({
   initiallyCollapsed = false,
 }) {
   const key = `${root.id}:${unit?.id || "all"}:gantt`;
-  const [view, setView] = useBoligUiState(context, `${key}:view`, "week"),
+  const [view, setView] = useBoligUiState(context, `${key}:view-fit-v2`, "all"),
     [anchor, setAnchor] = useBoligUiState(
       context,
       `${key}:date`,
@@ -47,8 +47,6 @@ export default function BoligGantt({
     [drag, setDrag] = useState(null),
     [error, setError] = useState("");
   const dragRef = useRef(null);
-  const range = calendarWindow(anchor, view),
-    days = range.dates.length;
   const unitGroups = useMemo(
     () => new Map(groups.flatMap((g) => g.unit_ids.map((id) => [id, g]))),
     [groups],
@@ -62,6 +60,7 @@ export default function BoligGantt({
         .toLocaleLowerCase("nb")
         .includes(query.toLocaleLowerCase("nb")),
   );
+  const range = boligGanttRange(matching, anchor, view), days = range.to - range.from + 1;
   const buckets = new Map();
   for (const t of matching) {
     const group = unitGroups.get(t.unit_id);
@@ -149,7 +148,7 @@ export default function BoligGantt({
     };
   };
   const move = (t, delta, mode = "move") => {
-    if (readOnly || disabled) return;
+    if (readOnly || disabled || view === "all") return;
     try {
       const next = {
         ...t,
@@ -169,6 +168,7 @@ export default function BoligGantt({
   const begin = (e, t, mode) => {
     if (
       disabled ||
+      view === "all" ||
       readOnly ||
       e.button !== 0 ||
       t.actual_start ||
@@ -219,16 +219,18 @@ export default function BoligGantt({
         <div className="bolig-plan-launchers">
           <button
             type="button"
+            disabled={view === "all"}
             onClick={() => setAnchor(nextAnchor(anchor, view, -1))}
             aria-label="Forrige periode"
           >
             ←
           </button>
-          <button type="button" onClick={() => setAnchor(todayOslo())}>
+          <button type="button" onClick={() => {setView("week");setAnchor(todayOslo());}}>
             I dag
           </button>
           <button
             type="button"
+            disabled={view === "all"}
             onClick={() => setAnchor(nextAnchor(anchor, view, 1))}
             aria-label="Neste periode"
           >
@@ -236,15 +238,9 @@ export default function BoligGantt({
           </button>
           <button
             type="button"
-            onClick={() =>
-              setAnchor(
-                [...tasks].sort((a, b) =>
-                  a.planned_start.localeCompare(b.planned_start),
-                )[0]?.planned_start || todayOslo(),
-              )
-            }
+            onClick={() => setView("all")}
           >
-            Vis første arbeid
+            Vis hele planen
           </button>
         </div>
       </div>
@@ -254,8 +250,9 @@ export default function BoligGantt({
           <select
             aria-label="Visning"
             value={view}
-            onChange={(e) => setView(e.target.value)}
+            onChange={(e) => {if(view === "all")setAnchor(range.dates[0]);setView(e.target.value);}}
           >
+            <option value="all">Hele planen</option>
             <option value="day">Dag</option>
             <option value="week">Uke</option>
             <option value="month">Måned</option>
@@ -307,8 +304,8 @@ export default function BoligGantt({
           Dato
           <input
             type="date"
-            value={anchor}
-            onChange={(e) => e.target.value && setAnchor(e.target.value)}
+            value={view === "all" ? range.dates[0] : anchor}
+            onChange={(e) => {if(e.target.value){setView("week");setAnchor(e.target.value);}}}
           />
         </label>
       </div>
@@ -335,9 +332,8 @@ export default function BoligGantt({
         )}
       </div>
       <p>
-        {shortDate(range.dates[0])}–{shortDate(range.dates.at(-1))}{" "}
-        {anchor.slice(0, 4)} · {matching.length} aktiviteter. Trykk en stolpe
-        for detaljer.{!readOnly && " Dra for å flytte; endene endrer varighet."}
+        {range.dates[0]} – {range.dates.at(-1)} · {matching.length} aktiviteter. Trykk en stolpe
+        for detaljer.{view === "all" ? " Hele perioden til aktivitetene i utvalget vises. Velg dag, uke eller måned for å flytte datoer." : !readOnly && " Dra for å flytte; endene endrer varighet."}
       </p>
       {error && <p role="alert">{error}</p>}
       <div className="bolig-gantt-scroll">
@@ -349,11 +345,11 @@ export default function BoligGantt({
             <strong>Bolig / arbeid</strong>
             <div
               className="bolig-gantt-days"
-              style={{ gridTemplateColumns: `repeat(${days},1fr)` }}
+              style={{ gridTemplateColumns: range.columns.map(c=>`${c.days}fr`).join(" ") }}
             >
-              {range.dates.map((d) => (
-                <span key={d} className={d === todayOslo() ? "today" : ""}>
-                  {shortDate(d)}
+              {range.columns.map((c) => (
+                <span key={c.date} className={c.date === todayOslo() ? "today" : ""}>
+                  {c.label || shortDate(c.date)}
                 </span>
               ))}
             </div>
@@ -381,13 +377,14 @@ export default function BoligGantt({
                 ) : (
                   <button type="button" onClick={() => onEdit(r.task)}>
                     {r.label}
+                    <small>{r.task.planned_start} – {r.task.planned_end}</small>
                     <small>{r.task.owner_name}</small>
                   </button>
                 )}
               </div>
               <div
                 className="bolig-gantt-track"
-                style={{ backgroundSize: `${100 / days}% 100%` }}
+                style={{ backgroundSize: `${100 / days}% 100%`, backgroundImage: view === "all" && days > 32 ? "none" : undefined }}
               >
                 {r.summary
                   ? r.tasks.map((t, i) => {
@@ -431,12 +428,12 @@ export default function BoligGantt({
                             role="button"
                             tabIndex={0}
                             className={`bolig-gantt-bar ${t.status}`}
-                            style={{ left: `${g.left}%`, width: `${g.width}%` }}
+                            style={{ left: `${g.left}%`, width: `${g.width}%`, minWidth: view === "all" ? 4 : undefined, maxWidth: `${100-g.left}%` }}
                             aria-label={`${t.unit_number} · ${t.title} · ${t.planned_start} til ${t.planned_end}`}
                             onClick={(e) => {
                               if (
                                 !disabled &&
-                                (readOnly ||
+                                (readOnly || view === "all" ||
                                   r.task.actual_start ||
                                   r.task.actual_end ||
                                   !["planned", "blocked"].includes(
@@ -476,12 +473,14 @@ export default function BoligGantt({
                           >
                             <span
                               className="bolig-gantt-handle"
+                              hidden={view === "all"}
                               aria-hidden="true"
                               onPointerDown={(e) => begin(e, r.task, "start")}
                             />
                             <span>{t.title}</span>
                             <span
                               className="bolig-gantt-handle"
+                              hidden={view === "all"}
                               aria-hidden="true"
                               onPointerDown={(e) => begin(e, r.task, "end")}
                             />
