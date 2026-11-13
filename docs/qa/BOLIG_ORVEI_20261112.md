@@ -1,3 +1,19 @@
+## Samlet kandidat og live kontroll 13.11.2026
+
+Publisert sandbox-kandidat d0ff0d2de559688de9c0ca39782c18457781939c, Vercel dpl_3BKZwoSUM17gQ69yjEpMDjQzcpd5 READY på fast PR323-adresse. Faktisk main f7298e11 er andre forelder; invitasjonsrettelsen og Orvei-hjelpen er begge beholdt. Lokal full build,1815SQL,13batchlivsløp,11utvalgs-/mottakerkrav og faktisk invitasjonsklient PASS. Ny full GitHub-kjøring43338701347 pågår; tidligere Orvei4783fe64 var fullgrønn43335383199.
+
+Innlogget skynett etter oppdatering: beholdt innlogging; full appoppdatering åpnet Startsiden, prosjektet ble åpnet på nytt. Lagret batchkladd gjenåpnet med tre eiere/to boliger; de to eierne på24 hadde identisk portal. Sending pauset og knapp disabled. Bekreftelsesfeltet følger nå samme linje som teksten. Avsluttet kun den lokale listen uten sending, valgte byggA/fire boliger og deretter byggB/seks; kontrollisten viste10 og beholdt tidligere utvalg. Manglende kontaktinformasjon ble tydelig varslet og lenkeklargjøring blokkert. Byttet til bestillingsfrist, lukket/gjenåpnet:10boliger,handling og datoutkast21.11 beholdt, bekreftelse nullstilt. Ingen ny serverlagring, fristendring, portalopprettelse eller e-post under denne kontrollen. Bilder:evidence/orvei-integrated-recipients-20261113.jpg og orvei-integrated-deadlines-20261113.jpg.
+
+### Konkret produksjonsforberedelse (ikke utført)
+
+Read-only produksjon dqffxflaoyarbxyiyhop: ingen av de fire Orvei-migrasjonene installert; beboerlenke-e-post enabled=false,site_origin=https://expo-proffdok.app. Resident-link-email remotev1,verify_jwt=false. Før installasjon må historikk/definisjoner hentes på nytt. Rekkefølge:20261112222106_household_contacts →20261112232829_resident_batch_deadlines →20261112235913_portal_company_brand →20261113000853_portal_public_brand. Ingen gamle installasjonsskript.
+
+Edge-pakken er prøvd lokalt med nøyaktige nåværende produksjonshjelpere og kun ny resident-link-email.mjs:62+2mocktransportkrav PASS. Bevar index.ts SHA2562abf9fff1d8f31c8ef5c80cb00bca281a391062962605d66ef204597b4cbad45, partner-helper1c9a9fcfc4e20b0467c6ed8e947e32c59733a352f9fc11708777b5fb2b9f9947 og supplier-helper e8d59e3e990f3fcffa7ffb1815033791b18155232109399eea4cf70a88831417. Ny resident-helper42ce5810d86c55d64454c2d11ace186ce3434fb14d51ebc5a57f400fcbdca981. Hent ferske funksjonsfiler før faktisk deploy; behold verify_jwt=false og handlerens Auth/SQL-validering. Dette er ikke utført Edge-deploy.
+
+Krever egen Orvei-TEST OK før migrasjon/merge/produksjon. E-postpause bevares; konkret aktivering av beboerlenkeutsending må avtales, rutine-e-post skal ikke åpnes. Etter release: korrekt publisert SHA, backendbinding og read-only etterkontroll, deretter main→demo med bevart overlay og preflight. Rollback bevarer eierdata, frister og logger; se arkitektur. Mobilvisning, faktisk Excel-opplasting i nettleser, to separate enheter og reell e-postleveranse er ikke live-attestert. Orveis faktiske filer er ikke mottatt. Ingen ny video er publisert; revidert fullfilmplan ligger i BOLIG_AA_REVISION_20261113.json.
+
+## Tidligere kontrollpunkter
+
 ## Oppdatert kontrollpunkt 13.11.2026
 
 Kandidat4783fe64 har bestått full GitHub-kontroll43335383199. PR324 er siden publisert: main f7298e118f672e0b261b8a0f3f95e6e2d4e5e657, demo0984fe1c8a6284ae13909db6dc391a172689f2f9. Publisert main flettes nå i eksisterende Orvei-branch, ikke ny erstatnings-PR. Bare CURRENT_RELEASE_STATUS hadde tekstkonflikt; Firmaadmin/hjelp flettes med begge funksjonssettene beholdt. Ny samlet QA kreves. Orvei-funksjonene er ikke produksjonsgodkjent. Support-companion320 står fortsatt queued; ingen ekstra køforsøk.

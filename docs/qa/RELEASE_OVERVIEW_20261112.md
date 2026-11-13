@@ -1,3 +1,13 @@
+# Aktuell status 13.11.2026
+
+Dette dokumentets eldre oversikt nedenfor er historikk. Produksjon main f7298e118f672e0b261b8a0f3f95e6e2d4e5e657 og demo0984fe1c8a6284ae13909db6dc391a172689f2f9 er READY etter PR324. Invitasjonsrettelsen er levert. Ingen brancher slettet.
+
+Orvei PR323 er samordnet med denne main og publisert som d0ff0d2d i sandbox. Tidligere4783fe64 bestod full QA; ny samlet kontroll43338701347 pågår. Egen Orvei-TEST OK og produksjonsplan gjenstår. Se BOLIG_ORVEI_20261112.md for konkret forberedelse, pauset beboer-e-post og faktisk livekontroll. PR322 support er grønn; companion320 siste43097043078 fortsatt queued. Ingen omkjøring/køendring eller omgåelse.
+
+PR321 er fortsatt separat teksthjelp. Fullfilm er ikke revidert eller publisert; ny opptaksrekkefølge og manglende pekerdekning er kartlagt i BOLIG_AA_REVISION_20261113.json. Ingen stemmetjeneste er kjøpt eller reelle testmeldinger sendt.
+
+## Historisk oversikt 12.11
+
 # Samlet leveranseoversikt – 12. november 2026
 
 Dette er kontrollpunktet for videre arbeid. Avgrenset Orvei-arbeid og sandbox-test fortsetter separat fra den ventende supportleveransen. Ingenting skal merges bare fordi GitHub-køen løsner.
