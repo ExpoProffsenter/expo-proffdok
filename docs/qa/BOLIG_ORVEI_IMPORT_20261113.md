@@ -78,3 +78,16 @@ Kontor/styrerom, overordnet rigg og fellesarbeid er ikke opprettet som fiktive b
 Dette er et nytt, separat sandboxprosjekt. Ved feil: stans videre bruk/import og behold prosjektet for kontroll; ikke slett eller nullstill eldre prosjekter. En korrigering skal bruke gjeldende revisjoner og eksisterende RPC-er.
 Produksjon og demo-kode er uendret: main `6eb54148b3d61e318c5447810cdf89deab6afffa`, demo `d4fb727ad718776a70cf9c243e7d1d9915ef503e`.
 Ingen beboernavn, e-postadresser, telefonnumre eller hemmelige lenker inngår i denne rapporten.
+
+## Fiktive pakker og butikktilpasning – 13.11.2026
+Kun sandboxdata; ingen appkode eller produksjonsendring.
+- Eksisterende QA-pakker undersøkt. Ny prosjektfelles **TEST – Orvei grunnpakke (fiktiv)**, ID `7a55a150-b054-4d8c-a52e-37f35beb7204`, med remontering, standard veggskål og fliseksempel. Innhold og priser er syntetiske, ikke avtalt Orvei-leveranse.
+- Tre felles tilvalg opprettet: oppgradert veggskål, speil med lys, ekstra montering.
+- Rommal med Bad – TEST og grunnpakken forhåndsvist: 126 ready. Lagret gjennom bolig_prepare: 126 berørte boliger. Felles katalogrevisjon 4.
+- Bolig 38 i dette prosjektet (ikke det tidligere QA-prosjektets bolig 38) fikk alle tre tilvalg. Veggskål 3 500 minus standardfratrekk 2 000 + speil 2 500 + montering 1 500 = 5 500 kr.
+- Individuell butikktilpasning: knagg 300 kr lagt til med bolig_unit_customization. Total 5 800 kr, valgversjon 3.
+- Readback: 125 andre boliger har fortsatt valgversjon 1 og tillegg 0; kun bolig 38 har versjon 3 og tillegg 580000 øre. Felles grunnpakke er fortsatt én katalogpakke; boligene har egne lagrede versjoner.
+- Bestillingsutkast på bolig 38 lagret med veggskål, speil og knagg. Remontering, ekstra montering og flis fra ekstern leverandør ble valgt bort fra denne varebestillingen. Ingen bestilling sendt.
+- Viktig brukerflyt: foreslåtte bestillingslinjer omfatter alle seks linjer, også arbeid. Saksbehandler må derfor kontrollere hva som faktisk skal bestilles fra leverandør.
+- Dette er server-/lagringstester gjennom appens eksisterende autoriserte RPC-er. Innlogget UI-kontroll av det nye pakkeoppsettet, beboerens portalaksept, deling mellom eiere og friststenging gjenstår; produksjonsgrunnlaget er ikke ferdig godkjent.
+- Testpakker, rommalen Bad – TEST, testvalg og testbestillinger skal ikke kopieres til produksjon. Kenneth oppretter faktiske pakker med Orvei der neste uke.
