@@ -63,3 +63,9 @@
 .bolig-building-panel .bolig-connected-scene .bolig-photo-building{aspect-ratio:auto;min-height:240px;padding-bottom:24px}
 .bolig-building-panel .bolig-connected-scene .bolig-photo-building .bolig-building-floors{margin-top:12px}
 .bolig-building-panel .bolig-connected-scene .bolig-photo-building>.bolig-facade-photo{object-fit:cover}
+
+/* Keep street names intact; allow the building switch below on narrow toolbars. */
+[data-expo-app-shell="true"] .bolig-building-panel .bolig-workspace-toolbar .bolig-workspace-building { flex-wrap: wrap; }
+.bolig-workspace-building h3 { min-width: 0; max-width: 100%; overflow-wrap: normal; }
+.bolig-workspace-building h3 > svg { flex-shrink: 0; }
+.bolig-building-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

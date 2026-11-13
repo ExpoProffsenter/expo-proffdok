@@ -200,7 +200,7 @@ export default function BoligPortalPage() {
       (e) => e.kind === "request" && e.status === "pending",
     );
   const disabled = busy || !!pending;
-  const choicesClosed = data?.choices_closed || !!(data?.choice_deadline && new Intl.DateTimeFormat("sv-SE", {timeZone:"Europe/Oslo",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date()) > data.choice_deadline);
+  const choicesClosed = data?.choices_closed || !!(data?.choice_deadline_at ? Date.now() >= Date.parse(data.choice_deadline_at) : data?.choice_deadline && new Intl.DateTimeFormat("sv-SE", {timeZone:"Europe/Oslo",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date()) > data.choice_deadline);
   const overview = agreementOverview(data?.agreements);
   const unanswered = [overview.choice, ...overview.changes].filter(d => d?.status === "published").length;
   const nextStep = unanswered ? {
@@ -345,7 +345,7 @@ export default function BoligPortalPage() {
             <>
               <section className="bolig-resident-card">
                 <h2>Velg det som passer deg</h2>
-                {data.choice_deadline && <p role="status"><strong>Bestillingsfrist: {data.choice_deadline} (til slutten av dagen, norsk tid).</strong> {choicesClosed ? "Fristen er utløpt. Kontakt prosjektleder for ny frist. Avtaler og dokumenter er fortsatt tilgjengelige." : "Send nye tilvalg før fristen."}</p>}
+                {data.choice_deadline && <p role="status"><strong>Bestillingsfrist: {data.choice_deadline} ({data.choice_deadline_time?`kl. ${data.choice_deadline_time}`:'til slutten av dagen'}, norsk tid).</strong> {choicesClosed ? "Fristen er utløpt. Kontakt prosjektleder for ny frist. Avtaler og dokumenter er fortsatt tilgjengelige." : "Send nye tilvalg før fristen."}</p>}
                 <p>
                   Prosjektleder har klargjort disse valgmulighetene for boligen
                   din. Send ønsket til gjennomgang. Du får en egen avtale å
