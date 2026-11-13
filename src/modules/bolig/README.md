@@ -41,3 +41,9 @@ Se `docs/architecture/BOLIG_HOUSEHOLD_CONTACTS.md` og `docs/qa/BOLIG_ORVEI_20261
 Oppsett → Bygg og boliger → Beboerlenker og frister samlet åpner etablert høyrepanel. Filtrer bygg/blokk eller eksisterende stammegruppe; velg boliger eksplisitt og kontroller hele listen. Klargjør lenker før separat bekreftet utsending til alle registrerte eiere med e-post. Aktive lenker erstattes bare etter egen bekreftelse. Uavklarte handlinger beholdes for eksakt retry. E-post kan fortsatt være pauset.
 
 Sett bestillingsfrist viser gammel/ny dato per valgt bolig. Nye tilvalg stoppes utløpsdagen ved midnatt norsk tid; prosjektleder kan sette ny dato for valgte boliger. Dette er ikke svarfrist på en utsendt avtale. Oppsett krever household_contacts og deretter resident_batch_deadlines-migrasjonen, samt oppdatert resident-link-email Edge-template. Se [arkitektur](../../../docs/architecture/BOLIG_HOUSEHOLD_CONTACTS.md) og [QA](../../../docs/qa/BOLIG_ORVEI_20261112.md).
+
+## Flytt bolig
+
+Oppsett → Bygg og boliger → Flytt bolig bruker eksisterende `bolig_prepare` med `kind: placement`. Første versjon bytter etasje/plass mellom to aktive boliger i samme oppgang. Forhåndsvisningen viser begge før/etter; eksisterende kladd, scopekontroll, basis/revisjon og eksakt kvitteringsretry beholdes. Ingen nye boliger opprettes. ID, nummer, kontaktfelt, rom, valg, frister, portaler og fremdrift beholdes. Egne fasadebildefelt og historiske dokument-/bestillingssnapshots endres ikke. Offisielt bolignummer må kontrolleres separat.
+
+Krever den nye migrasjonen `20261113175328_bolig_unit_placement.sql` før UI tas i bruk. Ingen eldre installasjoner skal kjøres om igjen. Se [plassbytte](../../../docs/architecture/BOLIG_UNIT_PLACEMENT.md) for avgrensning og kontroll.

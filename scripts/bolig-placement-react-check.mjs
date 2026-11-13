@@ -1,0 +1,31 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';import os from 'node:os';import path from 'node:path';
+import {build} from 'vite';import react from '@vitejs/plugin-react';
+const {JSDOM}=await import(process.env.KSHMS_JSDOM_PATH||'jsdom');
+const cwd=process.cwd(),temp=fs.mkdtempSync(path.join(os.tmpdir(),'bolig-placement-')),entry=path.join(temp,'entry.jsx');
+fs.writeFileSync(entry,`import React,{act} from '${cwd}/node_modules/react/index.js';import{createRoot}from '${cwd}/node_modules/react-dom/client.js';import Preparation from '${cwd}/src/modules/bolig/BoligPreparation.jsx';const root=createRoot(document.getElementById('app'));globalThis.__act=act;globalThis.__render=p=>root.render(React.createElement(Preparation,p));globalThis.__dispose=()=>root.unmount();`);
+const built=await build({root:cwd,configFile:false,logLevel:'silent',define:{'process.env.NODE_ENV':'"development"'},plugins:[react(),{name:'mock',enforce:'pre',resolveId(id){if(id.endsWith('appSupabaseClientRegistry.js'))return '\0client';},load(id){if(id==='\0client')return 'export const getAppSupabaseClient=()=>globalThis.__client;';}}],build:{write:false,minify:false,lib:{entry,formats:['iife'],name:'PlacementProof'}}});
+const dom=new JSDOM('<div id="app"></div>',{url:'https://qa.invalid',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window;
+w.MessageChannel=class{constructor(){this.port1={onmessage:null};this.port2={postMessage:()=>setImmediate(()=>this.port1.onmessage?.())};}};
+w.IS_REACT_ACT_ENVIRONMENT=true;w.HTMLDialogElement.prototype.showModal=function(){this.setAttribute('open','');};w.HTMLDialogElement.prototype.close=function(){this.removeAttribute('open');};
+const context={user_id:'actor',company_id:'firm',role:'manager',enabled:true},root={id:'root',archived:false};
+const data={context,root,root_id:'root',basis:{structure_revision:1},blocks:[{id:'b',name:'Bygg A'}],entrances:[{id:'e',block_id:'b',address:'Testgata 1'},{id:'other',block_id:'b',address:'Testgata 2'}],units:[{id:'a',entrance_id:'e',number:'38',floor:1,position:1},{id:'b',entrance_id:'e',number:'39',floor:2,position:1},{id:'c',entrance_id:'other',number:'40',floor:1,position:1}],packages:[],templates:[]};
+const calls=[];let lost=true,deny=false,receipt=null;
+w.__client={rpc:async(name,args)=>{calls.push(structuredClone(args));if(deny)return {error:{code:'42501',message:'Tilgang fjernet'}};if(args.p_action==='get')return {data:structuredClone(data)};const p=args.p_payload;if(args.p_action==='preview')return {data:{context,root_id:'root',proposal:[{id:'a',number:'38',before_floor:1,before_position:1,floor:2,position:1,status:'ready'},{id:'b',number:'39',before_floor:2,before_position:1,floor:1,position:1,status:'ready'}]}};receipt??={context,root_id:'root',receipt:{request_id:p.request_id,affected:2}};if(lost){lost=false;throw Error('Usikkert svar');}return {data:receipt};}};
+w.eval((Array.isArray(built)?built[0]:built).output.find(o=>o.type==='chunk').code);
+const act=async f=>w.__act(async()=>{await f();await new Promise(r=>setTimeout(r,10));});
+const buttons=()=>[...w.document.querySelectorAll('button')];const click=async text=>{const b=buttons().find(b=>b.textContent.trim().startsWith(text));assert(b&&!b.disabled,text);await act(()=>b.click());};
+const select=async(label,value)=>act(()=>{const n=w.document.querySelector(`select[aria-label="${label}"]`);assert(n,label);n.value=value;n.dispatchEvent(new w.Event('change',{bubbles:true}));});
+try{
+ await act(()=>w.__render({context,root}));await click('Flytt bolig');
+ await select('Bolig som skal flyttes','a');
+ const targets=[...w.document.querySelector('select[aria-label="Ny plass"]').options].map(o=>o.value);assert.deepEqual(targets,['','b']);
+ await select('Ny plass','b');await act(()=>w.dispatchEvent(new w.Event('focus')));
+ assert.equal(w.document.querySelector('select[aria-label="Ny plass"]').value,'b','Focus preserves selection');
+ await click('Forhåndsvis endringer');assert.match(w.document.body.textContent,/1\. etasje, plass 1 → 2\. etasje, plass 1/);
+ assert.equal(calls.filter(c=>c.p_action==='save').length,0,'Preview is read-only');
+ await click('Bekreft og lagre');assert.match(w.document.body.textContent,/Usikkert svar/);await click('Kontroller lagringen');
+ const saves=calls.filter(c=>c.p_action==='save');assert.deepEqual(saves[0],saves[1],'Exact request retry');assert.match(w.document.body.textContent,/Lagret\. 2 boliger/);
+ deny=true;await act(()=>w.dispatchEvent(new w.Event('focus')));assert(!w.document.querySelector('dialog[open]'),'Revoked access closes dialog');
+ console.log('Placement React PASS: same-entrance targets, preview, focus, exact retry and access revocation');
+}finally{await act(()=>w.__dispose());dom.window.close();fs.rmSync(temp,{recursive:true,force:true});}
