@@ -77,12 +77,12 @@ For hver rad kontrolleres desktop/mobil, navigasjon/retur, skjema/feil/tom/lasti
 | BOLIG-008 | Vare-/avsnittsinnhold og produktbilder · Grunnpakke → avsnitt → vare | `src/modules/bolig/BoligPackageContents.jsx` | Ikke nyverifisert; se historisk register for avgrensede bevis. |
 | BOLIG-009 | Boligens grunnpakke og tilvalg · Åpen bolig → Boligvalg | `src/modules/bolig/BoligPackageChoices.jsx` | Ikke nyverifisert; se historisk register for avgrensede bevis. |
 | BOLIG-010 | Unntak og individuelle leveransevalg · Åpen bolig → individuell tilpasning | `src/modules/bolig/BoligUnitCustomization.jsx` | Ikke nyverifisert; se historisk register for avgrensede bevis. |
-| BOLIG-011 | Kontaktperson og beboerinvitasjon · Åpen bolig → Boligkontakt / portal | `src/modules/bolig/BoligResidentInvitation.jsx` | Ikke nyverifisert; se historisk register for avgrensede bevis. |
-| BOLIG-012 | Kundeportal og låst avtaleaksept · Beboerlenke → Boligvalg / aksept | `src/modules/bolig/BoligResidentPage.jsx` | Innlogget desktop: 2 portalvalg (0/2500), romvalgfeil gjenskapt. PR325; full aksept gjenstår. |
-| BOLIG-013 | Endringsordre og avtalehistorikk · Åpen bolig → endring etter aksept | `src/modules/bolig/BoligAgreementSummary.jsx` | Innlogget desktop: syntetisk avtaleutgave1 lagret, 2500 inkl., 3 varer. Ikke publisert/akseptert. |
+| BOLIG-011 | Kontaktperson og beboerinvitasjon · Åpen bolig → Boligkontakt / portal | `src/modules/bolig/BoligResidentInvitation.jsx` | Desktop UI: bolig24 har to syntetiske eiere; bolig38 én hovedkontakt. Pauset e-post/sperret sendeknapp kontrollert. Ingen utsending/tilgangsendring. |
+| BOLIG-012 | Kundeportal og låst avtaleaksept · Beboerlenke → Boligvalg / aksept | `src/modules/bolig/BoligResidentPage.jsx` | Desktop beboerflate: utgave1,2500inkl./3varer, påkrevd navn, kontrollside, syntetisk aksept og kvittering etter reload PASS. Mobil/utløpt frist gjenstår. |
+| BOLIG-013 | Endringsordre og avtalehistorikk · Åpen bolig → endring etter aksept | `src/modules/bolig/BoligAgreementSummary.jsx` | Desktop UI: samme avtaleutgave1 publisert og syntetisk akseptert; status hentes ved gjenåpning. Endringsordre etter aksept ikke testet. |
 | BOLIG-014 | UE-/leverandørtilgang og funksjonsvalg · Hovedprosjekt → UE og leverandører | `src/modules/bolig/BoligPartners.jsx` | Ikke nyverifisert; se historisk register for avgrensede bevis. |
 | BOLIG-015 | Partnerens vare- og kvalitetsflate · Partnerlenke → leveranse / kontroll | `src/modules/bolig/BoligPartnerPage.jsx` | Ikke nyverifisert; se historisk register for avgrensede bevis. |
-| BOLIG-016 | Bestillingsutkast per bolig · Åpen bolig → bestillingsgrunnlag | `src/modules/bolig/BoligOrderDraft.jsx` | Ikke nyverifisert; se historisk register for avgrensede bevis. |
+| BOLIG-016 | Bestillingsutkast per bolig · Åpen bolig → bestillingsgrunnlag | `src/modules/bolig/BoligOrderDraft.jsx` | Desktop UI: bestillingsutkastv1 med3/3varer lagret; egen fiktiv adresse for38. Klargjøringsdialog åpnet/lukket. Ingen ordre sendt. |
 | BOLIG-017 | Bestilling til leverandør med ASCII/Excel · Bestillingsutkast → send | `src/modules/bolig/BoligOrderMail.jsx` | Ikke nyverifisert; se historisk register for avgrensede bevis. |
 | BOLIG-018 | Levering, mottak og avvik · Hovedprosjekt / bolig → Leveringer | `src/modules/bolig/BoligDeliveries.jsx` | Ikke nyverifisert; se historisk register for avgrensede bevis. |
 | BOLIG-019 | Fremdrift, aktiviteter og unntak · Hovedprosjekt → Fremdrift og varsler | `src/modules/bolig/BoligProgress.jsx` | Ikke nyverifisert; se historisk register for avgrensede bevis. |
@@ -147,7 +147,7 @@ For hver rad kontrolleres desktop/mobil, navigasjon/retur, skjema/feil/tom/lasti
 | TIME-003 | Fristvarsler og oppryddingsgrenser · Timeføring → fristmotor | `src/modules/time/timeTransport.js` | Ikke nyverifisert; se historisk register for avgrensede bevis. |
 | SUPPORT-001 | Ny supportsak, vedlegg og samtale · Support → Ny sak / åpen sak | `src/modules/support/SupportWorkspace.jsx` | Ikke nyverifisert; se historisk register for avgrensede bevis. |
 | SUPPORT-002 | Toveis e-post og retry · Support → send / innkommende svar | `src/modules/support/SupportWorkspace.jsx` | Ikke nyverifisert; se historisk register for avgrensede bevis. |
-| HELP-001 | Kontekstuell hjelp og A–Å · Hjelp / Verktøy og maler → hjelp | `src/modules/help/helpToolsCore.js`, `src/modules/help/HelpTopicGroup.jsx` | Ikke nyverifisert; se historisk register for avgrensede bevis. |
+| HELP-001 | Kontekstuell hjelp og A–Å · Hjelp / Verktøy og maler → hjelp | `src/modules/help/helpToolsCore.js`, `src/modules/help/HelpTopicGroup.jsx` | Desktop UI:15videoinnganger som Systemadministrator, avspilling/kapittelhopp/lukking PASS. Fulltekstsøk/andre roller/mobil ikke nyverifisert. |
 | HELP-002 | Boligveiledning gjennom alle faser · Boligprosjekter → Slik bruker du / A–Å | `src/modules/help/BoligHelp.jsx`, `src/modules/help/BoligStartGuide.jsx` | Ikke nyverifisert; se historisk register for avgrensede bevis. |
 | SHELL-001 | Hovedmeny, Alle områder og native mål · Toppfelt → hovedmeny / Alle områder | `src/modules/app/desktopSideMenu.js`, `src/modules/project/projectNavigationTabs.mjs` | Ikke nyverifisert; se historisk register for avgrensede bevis. |
 | SHELL-002 | Høyrepanel, fullskjerm og fokusretur · Verktøy og maler / Fullskjermvisning | `src/modules/ui/WorkspaceTools.jsx`, `src/modules/app/WorkspaceViewMode.jsx` | Ikke nyverifisert; se historisk register for avgrensede bevis. |
@@ -164,3 +164,7 @@ For hver rad kontrolleres desktop/mobil, navigasjon/retur, skjema/feil/tom/lasti
 | N-006 | Egne sjekklister, forslag, firmagodkjenning | src/modules/checklist | Med i video-dekningsvakt; innlogget prøve gjenstår. |
 
 Fysisk mobil og dvale er ikke verifisert. Ingen grønn totalstatus.
+
+## Tilleggsbevis – kontrollpunkt 2
+
+Bestillingsfrist per bolig: Orvei38 fra Ikke satt til22.11.2026, lagring bekreftet ved gjenåpning. ByggA21.11 og øvrige ByggB uten frist er uendret. Akseptert avtale beholdt svarfrist13.12. Mobil og utløpsgrense ikke verifisert. Se NIGHT_FULL_APP_20261113.md for presise begrensninger og miljø.

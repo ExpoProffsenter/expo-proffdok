@@ -1,7 +1,7 @@
 # Natt-QA 13.11.2026
 
 ## Eierskap og kontrollpunkt
-Aktiv eier: Codex nattarbeid, første kjøring 13.11.2026. Arbeidsbranch `qa/night-review-20261113`. Ingen andre åpne natt-QA-PR-er funnet; PR321 teksthjelp holdes separat. Oppdater dette dokumentet før neste kjøring fortsetter. Ikke gjenta allerede dokumenterte tester uten endret grunnlag.
+Eier: Codex nattarbeid, kontrollpunkt2 fullført 13.11.2026. Arbeidsbranch `qa/night-review-20261113`. Ingen andre åpne natt-QA-PR-er funnet; PR321 teksthjelp holdes separat. Oppdater dette dokumentet før neste kjøring fortsetter. Ikke gjenta allerede dokumenterte tester uten endret grunnlag.
 
 Baseline main `6377381476ad3ee8d6d6364dc5872a0b019da029`, demo `3d65c0e022ed11ec73aa569f79bfe6f362d30fae`. PR322/320/323/324 lest; alle merget. PR322s produksjonslogg er gjeldende, eldre CURRENT_RELEASE_STATUS/README er historikk. Ingen migrasjoner, Edge eller gammel kø skal kjøres på nytt.
 
@@ -14,7 +14,7 @@ Miljømål BEGGE for apprettelser; syntetisk data kun sandbox. Ingen produksjons
 4. Videoscene-/ressursinventar. Ingen påstand om ferdig revidert film uten avspilling og visuell QA.
 
 ## Status
-Pågår. Ingen nye feilrettelser eller tester attestert ennå. Neste oppdatering skal skille innlogget UI, automatisk test, kildeinspeksjon og ikke verifisert.
+Kontrollpunkt 2 fullført 13.11.2026 kl. 04:38 norsk tid. Hele appen er fortsatt ikke ferdig kvalitetssikret. Nyeste kontrollpunkt nedenfor erstatter eldre «gjenstår»-status for de samme testene. PR325 er eneste apprettelse; PR326 inneholder kontrollgrunnlag og videoutkast.
 
 ## Kontrollpunkt 1 – utført 13.11.2026
 Eierskap: første kjøring ferdig; neste kjøring fortsetter her. Ingen overlappende appendringer: PR325 eier bare portalens romvelger.
@@ -52,5 +52,48 @@ A–Å-revisjonsplan og batchmanus lest. Ny A–Å-film er ikke produsert;57scen
 ### Ikke utført / fortsatt åpent
 Full beboeraksept og bestillingsutkast; ny felleseier-/fristtest; mobil og fysisk dvale; øvrige HR/KS/HMS/salg/prosjekt/ordre/FDV-reiser; all visuell videorevisjon og ny film. Ingen generell tilgangsblokkering: sandbox-økten virker. Arbeidet er påbegynt, ikke fullført.
 
-## Kontrollpunkt 2 – pågår
-Eier Codex nattarbeid, andre kjøring. Main/demo uendret. PR325 full CI43353049742 success. Ingen rerun. Reservert: videre bolig38 UI og videokilder/produksjon, ingen overlappende kodeendring. Første kontrollpunkts ferdige filkontroller gjentas ikke.
+## Kontrollpunkt 2 – utført 13.11.2026
+Eier: Codex nattarbeid. Arbeidsbranch `qa/night-review-20261113`, PR326. Main/demo uendret. Åpne PR321/325/326 kontrollert; ingen overlappende appendring. Første kontrollpunkts ferdige filtester ble ikke kjørt om igjen.
+
+### Faktisk innlogget sandbox og beboerflate
+Eksisterende demoøkt, Expo Proffsenter, samme Orvei-root og bolig38. Desktop viewport 1348 × 926. Dette er UI-bevis, ikke kildebasert antakelse:
+
+| Kontroll | Resultat / lagret tilstand |
+|---|---|
+| Eksisterende avtaleutgave1 | Gjenbrukt; ingen duplikat. Opprett beboerlenke → Venter på beboer. Pauset e-posttransport synlig; Send beboerlenke deaktivert. Ingen sending. |
+| Beboerens pris og varer | Riktig prosjekt/ByggB/38, 2500 inkl. mva., grunnpakke inkludert og 3 syntetiske varelinjer i Bad1. |
+| Tomt svar | Navn er påkrevd. Kontroller svaret uten navn blir stoppet av nettleservalidering. Nettleseren viste engelsk standardtekst; ikke klassifisert som norsk apptekstfeil. |
+| Syntetisk aksept | «QA Beboer 38 – syntetisk sandbox» → kontrollside → Registrer aksept. Kvittering 13.11 kl.04:21, utgave1. Tydelig testbeskrivelse; ingen reell avtale. |
+| Reload / retur | Beboerkvitteringen består reload. Prosjektleder viste først gammel status i allerede åpent panel; ved lukking og gjenåpning ble Akseptert hentet. Ingen automatisk umiddelbar kryssfaneoppdatering attestert. |
+| Bestillingsutkast | Versjon1 lagret, 3 av 3 linjer, 0 utelatt. «Ingen bestilling er sendt». Egen fiktiv leveringsadresse kun for bolig38 lagret. Leverandør-/sendeskjerm åpnet og lukket uten ordre-/sendebekreftelse. |
+| Felleseiere | Bolig24 lest: Test Eier Æ + Test Eier Ø. Ingen kontakt-/tilgangsendring. Bolig38 har bare eksisterende hovedkontakt. Felleslenke-/tilbakekallingsgrenser er ikke end-to-end-testet. |
+| Faktiske bestillingsfrister | Før: ByggA 21.11, bolig38 «Ikke satt». Bare bolig38 fikk testfrist 22.11.2026. Gjenåpnet oversikt bekrefter lagring; øvrige ByggB fortsatt uten frist, ByggA fortsatt21.11. |
+| Skille mellom frister | Avtaleutgave1 fortsatt Akseptert med svarfrist13.12.2026 kl.23:59 norsk tid etter fristendringen. Ingen avtalesvarfrist endret. Portalens tilgangsutløp er en tredje, separat verdi. |
+
+Bevis: `evidence/night-bolig38-accepted-20261113.jpg`, `evidence/night-bolig38-order-draft-20261113.jpg`, `evidence/night-bolig38-deadline-20261113.jpg` og videokildene. Ingen token i repo. Datofeltet fungerte med vanlig tastatur; verktøyets direkte fill oppdaterte først DOM uten React-state, og ble derfor ikke brukt til lagring. Dette er ikke attestert som appfeil.
+
+### PR325: grønn CI og avgrenset Preview
+- Full CI [43353049742](https://github.com/ExpoProffsenter/expo-proffdok/actions/runs/43353049742) **success** for uendret commit `f9875bd742ba40319fd08396b1f5628b5f3e37ae`. Ingen Actions-rerun.
+- Opprinnelig Preview manglet branchspesifikk sandboxbinding. Vercel-metadata og `environmentBindingCore.mjs` viste produksjon som standard. Ingen skrivetest ble gjort der.
+- Bare `fix/bolig-portal-scope-selection-20261113` fikk `EXPO_BACKEND_TARGET=sandbox`, target preview. Samme commit redeployet én gang. Production/default-variabler og demo er uendret.
+- Ny Preview **READY**, `dpl_4xfdrXA4X9xAoa5fwLPeU5QAW89S`, samme faste adresse: https://expo-proffdok-git-fix-bolig-portal-scope-select-8ccd40-ringside.vercel.app . Vite-bindingen velger sandbox `ppvircenkjizeiqdxphj` og blokkerer feil bundlebinding. READY er build-/konfigurasjonsbevis; nettverksbinding etter innlogging er ikke observert.
+- Faktisk Preview åpner innloggingsskjermen; demoøkten deles ikke automatisk med dette domenet. Ingen legitimasjon lest/kopiert og ingen innlogging omgått. **Innlogget Preview-prøve gjenstår.** Ny TEST OK mangler; ingen merge.
+
+### Hjelp og faktisk filmproduksjon
+Alle15filmer åpnet fra innlogget Hjelp som Systemadministrator. Native Spill av via tastatur og hopp til siste kapittel gjennomført; alle viste currentTime >0, paused=false, readyState=4 og ingen mediafeil. Retur til Hjelp virket. Dette er avspillings-/kapittelbevis, ikke gjennomgang av hver scene eller alle roller. Se `evidence/night-help-playback-20261113.json` og kontaktarket.
+
+Produsert **36-sekunders videoutkast,3scener**, med ferske sandboxbilder: «Bestillingsfrist og avtalesvar». MP4,H.264,1920×1080,24fps,ingen lyd,636137byte. Samme tegnede peker i alle scener, løpenumre fra renderer, ingen simulerte klikkringer. Full ffmpeg-dekoding og visuell kontroll av tre frames fra ferdig film PASS. Kilder, renderer, VTT, manifest og MP4 i `video-drafts/frist-20261113/`. Dette er en konkret delproduksjon; ikke ferdig A–Å eller publisert i appens Hjelp. Godkjent originalrenderer/mal må fortsatt sammenlignes før publisering.
+
+### Begrensninger og åpne funn
+- **V12-kilder:** korrekt redigerbar ZIP funnet, men autorisert materialisering feilet med HTTP401. Ingen kildepakke lastet ned og ingen eldre bilder framstilt som nye. Ny delproduksjon bruker bare egne ferske sandboxbilder.
+- **Mobil:** nettleseradministrasjonen blokkerer DevTools/device-emulering. Ingen omgåelse. Innlogget mobil/touch/dvale er ikke testet; CI-browserbredder er ikke det samme.
+- **N-UX-002, lav / undersøk:** prosjektlederens åpne avtalepanel viste Venter på beboer etter ekstern aksept til panelet ble gjenåpnet. Datagrunnlaget er korrekt ved ny henting. Avklar forventet fokus-refresh før eventuell avgrenset rettelse; ingen kjernerefresh endret her.
+- **N-VIDEO-001, middels:** A–Å har fortsatt57scener og innebygde gamle kapittelnumre (siste kapittel «18 · Hent sluttpakken»). Eksisterende revisjonsplan gjelder. Avspilling er god, men innhold/rekkefølge/pekere er ikke ferdig revidert.
+- Øvrig fullapp-matrise, fysisk mobil, rollebytte/tilbaketrekking, offline/dvale, PDF-utskrift av kvittering, utløpt frist, fellesportalgrenser, ordreeksporter og FDV er fortsatt åpne. Ingen nye backend-/appfiler endret i denne kjøringen.
+
+### Neste kjøring – fortsett her
+1. Les dette kontrollpunktet og fersk main/demo/PR-status. PR325 eier romvelgeren; PR321 eier teksthjelp. Ikke dupliser rettelser.
+2. PR325 har grønn CI og sandbox-Preview. Gjør innlogget prøve når sikker innlogging er tilgjengelig: bolig38 → Beboerportal → Valgmuligheter → slå av Bruk boligens lagrede valg. Forvent «Velg rom eller pakke» og sperret Legg til; velg Bad1 eksplisitt og kontroller at knappen aktiveres. Ingen nytt alternativ må lagres for denne testen. Deretter ny eksplisitt TEST OK før produksjonsmerge.
+3. Bolig38: avtaleutgave1 er allerede akseptert, bestillingsutkastv1 lagret, egen syntetisk adresse og bestillingsfrist22.11. Ikke opprett duplikater eller send. Fortsett utløpt-frist/felleseiergrense/ordreeksport og kvitterings-PDF når teknisk tilgjengelig.
+4. Gjenbruk ferdig avspillingsaudit av15filmer. Fortsett innholdsrevisjon og øvrige57A–Å-scener; integrer/tilpass36sekunders utkastet først etter mal-/innholdsvurdering. V12-materialisering har401-blokkering.
+5. Gå videre til uavhengige matrisedomener (salg/prosjekt/HR/KS/HMS) i eksisterende sandbox. Ikke la Preview-innlogging eller V12 stoppe annet arbeid. Ingen fullapp-attest før bevis foreligger.

@@ -1,23 +1,29 @@
 # Videokontroll 13.11.2026
 
-Automatisk kontroll av alle 15 aktive katalogposter: full ffmpeg-dekoding, ffprobe-varighet, SHA256, byteantall, VTT-eksistens og stigende kapitler. Alle består. Ingen påstand om full visuell innholdsrevisjon eller innlogget avspilling.
+Automatisk kontroll av alle 15 aktive katalogposter: full ffmpeg-dekoding, ffprobe-varighet, SHA256, byteantall, VTT-eksistens og stigende kapitler. Alle består. Kontrollpunkt2: alle15filmer også åpnet fra innlogget Hjelp, spilt av og hoppet til siste kapittel. Ingen påstand om full visuell innholdsrevisjon.
 
 | Film | Sekunder | Kapitler | Filkontroll | UI/visuell revisjon |
 |---|---:|---:|---|---|
-| Finn bolig og bruk veiledningen | 75 | 9 | PASS | Gjenstår |
-| Finn egne planer, les oppgaven og gå tilbake | 95 | 10 | PASS | Gjenstår |
-| Les Kundens tilbud og gå tilbake | 75 | 8 | PASS | Gjenstår |
-| Opprett og fullfør en prøvesamtale | 171 | 18 | PASS | Gjenstår |
-| Finn hjelp, åpne tema og gå tilbake | 95 | 12 | PASS | Gjenstår |
-| Planlegg flere boliger | 204 | 10 | PASS | Gjenstår |
-| Last ned statusrapport fra prosjekt | 99 | 7 | PASS | Gjenstår |
-| Medarbeidersamtale – samtale, tiltak og referat | 106 | 9 | PASS | Gjenstår |
-| Samlet PDF fra KS/HMS | 122 | 10 | PASS | Gjenstår |
-| Egne timer – felt og avbrutt utkast | 102 | 9 | PASS | Gjenstår |
-| Fremdriftsplan – visning, bemanning og PDF | 120 | 11 | PASS | Gjenstår |
-| Fremdriftsplan – opprett og rediger | 124 | 10 | PASS | Gjenstår |
-| Varetelling – område, pause og kontroll | 150 | 11 | PASS | Gjenstår |
-| Bemanningsplan – les tall og eksporter | 102 | 8 | PASS | Gjenstår |
-| Boligprosjekter A–Å | 580 | 57 | PASS | Gjenstår |
+| Finn bolig og bruk veiledningen | 75 | 9 | PASS | Avspilling/kapittelhopp PASS; full innholdsrevisjon gjenstår |
+| Finn egne planer, les oppgaven og gå tilbake | 95 | 10 | PASS | Avspilling/kapittelhopp PASS; full innholdsrevisjon gjenstår |
+| Les Kundens tilbud og gå tilbake | 75 | 8 | PASS | Avspilling/kapittelhopp PASS; full innholdsrevisjon gjenstår |
+| Opprett og fullfør en prøvesamtale | 171 | 18 | PASS | Avspilling/kapittelhopp PASS; full innholdsrevisjon gjenstår |
+| Finn hjelp, åpne tema og gå tilbake | 95 | 12 | PASS | Avspilling/kapittelhopp PASS; full innholdsrevisjon gjenstår |
+| Planlegg flere boliger | 204 | 10 | PASS | Avspilling/kapittelhopp PASS; full innholdsrevisjon gjenstår |
+| Last ned statusrapport fra prosjekt | 99 | 7 | PASS | Avspilling/kapittelhopp PASS; full innholdsrevisjon gjenstår |
+| Medarbeidersamtale – samtale, tiltak og referat | 106 | 9 | PASS | Avspilling/kapittelhopp PASS; full innholdsrevisjon gjenstår |
+| Samlet PDF fra KS/HMS | 122 | 10 | PASS | Avspilling/kapittelhopp PASS; full innholdsrevisjon gjenstår |
+| Egne timer – felt og avbrutt utkast | 102 | 9 | PASS | Avspilling/kapittelhopp PASS; full innholdsrevisjon gjenstår |
+| Fremdriftsplan – visning, bemanning og PDF | 120 | 11 | PASS | Avspilling/kapittelhopp PASS; full innholdsrevisjon gjenstår |
+| Fremdriftsplan – opprett og rediger | 124 | 10 | PASS | Avspilling/kapittelhopp PASS; full innholdsrevisjon gjenstår |
+| Varetelling – område, pause og kontroll | 150 | 11 | PASS | Avspilling/kapittelhopp PASS; full innholdsrevisjon gjenstår |
+| Bemanningsplan – les tall og eksporter | 102 | 8 | PASS | Avspilling/kapittelhopp PASS; full innholdsrevisjon gjenstår |
+| Boligprosjekter A–Å | 580 | 57 | PASS | Avspilling/kapittelhopp PASS; full innholdsrevisjon gjenstår |
 
-A–Å v12 er580sekunder/57kapitler. Ny revisjonsplan lest: bare3av57scener hadde eksplisitt pekermål i opprinnelig kildeaudit. Ingen ny film er produsert i denne kjøringen. Nytt faktisk skjermbilde av bolig38-avtaleutkast finnes som QA-bevis; skal ikke alene presenteres som ferdig film. Neste kjøring henter redigerbare kilder, gjennomfører ferske opptak av det syntetiske beboerløpet og lager sammenhengende revidert film med lik peker. Gamle kapitler/gjennomføring må ikke fremstilles som nytt opptak.
+Historisk kontrollpunkt1: A–Å v12 er580sekunder/57kapitler. Ny revisjonsplan lest: bare3av57scener hadde eksplisitt pekermål i opprinnelig kildeaudit. Ingen ny film er produsert i denne kjøringen. Nytt faktisk skjermbilde av bolig38-avtaleutkast finnes som QA-bevis; skal ikke alene presenteres som ferdig film. Neste kjøring henter redigerbare kilder, gjennomfører ferske opptak av det syntetiske beboerløpet og lager sammenhengende revidert film med lik peker. Gamle kapitler/gjennomføring må ikke fremstilles som nytt opptak.
+
+## Kontrollpunkt 2 – ferdig delproduksjon
+
+[Bestillingsfrist og avtalesvar – videoutkast](video-drafts/frist-20261113/bestillingsfrist-og-avtalesvar-utkast.mp4),36sekunder/3scener. Ferske sandboxbilder13.11, norsk tekst, samme peker,1920×1080,24fps,H.264,ingen lyd. Full dekoding og tre ferdigkodede sceneprøver visuelt kontrollert. Ingen apppublisering eller påstand om ferdig A–Å. Original V12-kildepakken kunne ikke materialiseres (HTTP401); originalmalens renderer er ikke brukt/attestert identisk. Kildene og renderer følger utkastet.
+
+Alle15aktive Hjelp-innganger ble kontrollert med Systemadministrator. Native avspilling, sistekapittel, readyState4, paused=false og ingen mediafeil: `evidence/night-help-playback-20261113.json`. Avspilling var kort, ikke hele filmen sett. Kontaktark viser spiller-/kapitteltilstand; A–Ås57kapitler krever scrolling og siste scene var utenfor utsnittet i UI-kontaktarket. Ingen påstand om at alle frames er visuelt kontrollert.
