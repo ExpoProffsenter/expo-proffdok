@@ -14,7 +14,16 @@ const select=async(label,value)=>act(()=>{const e=w.document.querySelector(`sele
 try {
  await act(()=>w.__render(props));assert.equal(w.document.querySelector('select').value,'all');assert.equal(w.document.querySelectorAll('.bolig-gantt-bar').length,2);
  assert(w.document.body.textContent.includes('2026-12-02 – 2027-11-05'));
+ await act(()=>w.document.querySelector('.bolig-gantt-bar').dispatchEvent(new w.MouseEvent('mouseover',{bubbles:true})));
+ assert(w.document.querySelector('[role="tooltip"]').textContent.includes('Førbefaring'));
+ assert(w.document.querySelector('[role="tooltip"]').textContent.includes('Bygg A'));
+ assert(w.document.querySelector('[role="tooltip"]').textContent.includes('2026-12-02'));
+ await act(()=>w.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Escape'})));
+ assert.equal(w.document.querySelector('[role="tooltip"]'),null);
+ await act(()=>w.document.querySelector('.bolig-gantt-bar').focus());
+ assert(w.document.querySelector('[role="tooltip"]'),'Keyboard focus shows full activity');
  await act(()=>w.document.querySelector('.bolig-gantt-bar').click());assert.equal(edits,1);
+ assert.equal(w.document.querySelector('[role="tooltip"]'),null,'Click dismisses tip and opens details');
  await act(()=>w.document.querySelector('.bolig-gantt-bar').dispatchEvent(new w.KeyboardEvent('keydown',{key:'ArrowRight',altKey:true,bubbles:true})));assert.equal(writes,0,'Overview does not accidentally shift dates');
  await select('Visning','week');assert.equal(w.document.querySelectorAll('.bolig-gantt-bar').length,1);
  await act(()=>w.document.querySelector('.bolig-gantt-bar').dispatchEvent(new w.KeyboardEvent('keydown',{key:'ArrowRight',altKey:true,bubbles:true})));assert.equal(writes,1,'Week keeps existing date editing');

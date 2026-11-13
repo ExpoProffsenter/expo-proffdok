@@ -581,3 +581,7 @@
 /* A draft decision is a compact prompt, not the full activity editor. */
 dialog.bolig-dialog.bolig-catalog-dialog.bolig-progress-draft-choice { width:min(640px,calc(100vw - 32px))!important; height:auto!important; min-height:0!important; max-height:90dvh!important; }
 .bolig-progress-draft-choice p { line-height:1.6; }
+
+.bolig-gantt-tooltip {position:fixed;z-index:10000;width:320px;max-width:calc(100vw - 16px);box-sizing:border-box;padding:12px 14px;border:1px solid #8eacb1;border-radius:9px;background:#fff;color:#183e46;box-shadow:0 5px 20px #143b4430;font-size:14px;line-height:1.5;overflow-wrap:anywhere;}
+.bolig-gantt-tooltip strong {display:block;margin-bottom:4px;}
+.bolig-gantt-tooltip small {display:block;margin-top:6px;}

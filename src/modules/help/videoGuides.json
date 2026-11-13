@@ -433,7 +433,7 @@
       {
         "start": 164,
         "title": "Bekreft lagret resultat",
-        "text": "Vent på Endringen er lagret. Vis hele planen tilpasser Gantt til hele aktivitetsperioden. Her viser planen 18 aktiviteter fra 16. november. Åpne en stolpe for boligspesifikke detaljer."
+        "text": "Vent på Endringen er lagret. Vis første arbeid flytter Gantt til starten. Her viser planen 18 aktiviteter fra 16. november. Åpne en stolpe for boligspesifikke detaljer."
       },
       {
         "start": 186,
@@ -1090,7 +1090,7 @@
       {
         "start": 276.0,
         "title": "Bekreft lagret resultat",
-        "text": "Vent på Endringen er lagret. Vis hele planen tilpasser Gantt til hele aktivitetsperioden. Her viser planen 18 aktiviteter fra 16. november."
+        "text": "Vent på Endringen er lagret. Vis første arbeid flytter Gantt til starten. Her viser planen 18 aktiviteter fra 16. november."
       },
       {
         "start": 298.0,

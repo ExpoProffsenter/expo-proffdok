@@ -6,6 +6,7 @@ import {
   todayOslo,
   nextAnchor,
 } from "../kshms/kshmsProgressTimeline.mjs";
+import { createPortal } from "react-dom";
 import { boligGanttRange } from "./boligGanttRange.mjs";
 import { useBoligUiState } from "./boligUiState.js";
 export default function BoligGantt({
@@ -22,6 +23,26 @@ export default function BoligGantt({
   dirty,
   initiallyCollapsed = false,
 }) {
+  const [tip, setTip] = useState(null);
+  const hideTipTimer = useRef(null);
+  const hideTip = () => { clearTimeout(hideTipTimer.current); setTip(null); };
+  const deferHideTip = () => { hideTipTimer.current = setTimeout(() => setTip(null), 120); };
+  const showTip = (event, task) => {
+    clearTimeout(hideTipTimer.current);
+    const node = event.currentTarget, rect = node.getBoundingClientRect();
+    setTip({ task, target: node.closest('dialog') || document.body,
+      left: Math.max(8, Math.min(rect.left, window.innerWidth - 328)),
+      top: rect.top > 160 ? rect.top - 8 : rect.bottom + 8,
+      above: rect.top > 160 });
+  };
+  useEffect(() => {
+    const escape = event => { if (event.key === 'Escape') setTip(null); };
+    const clear = () => setTip(null);
+    window.addEventListener('scroll', clear, true);
+    window.addEventListener('resize', clear);
+    window.addEventListener('keydown', escape);
+    return () => { clearTimeout(hideTipTimer.current); window.removeEventListener('scroll', clear, true); window.removeEventListener('resize', clear); window.removeEventListener('keydown', escape); };
+  }, []);
   const key = `${root.id}:${unit?.id || "all"}:gantt`;
   const [view, setView] = useBoligUiState(context, `${key}:view-fit-v2`, "all"),
     [anchor, setAnchor] = useBoligUiState(
@@ -429,8 +450,14 @@ export default function BoligGantt({
                             tabIndex={0}
                             className={`bolig-gantt-bar ${t.status}`}
                             style={{ left: `${g.left}%`, width: `${g.width}%`, minWidth: view === "all" ? 4 : undefined, maxWidth: `${100-g.left}%` }}
-                            aria-label={`${t.unit_number} · ${t.title} · ${t.planned_start} til ${t.planned_end}`}
+                            aria-label={`${t.unit_number} · ${t.address || ""} · ${t.title} · ${t.planned_start} til ${t.planned_end}`}
+                            aria-describedby={tip?.task.id === t.id ? `bolig-gantt-tip-${t.id}` : undefined}
+                            onMouseEnter={event => showTip(event, t)}
+                            onMouseLeave={deferHideTip}
+                            onFocus={event => showTip(event, t)}
+                            onBlur={hideTip}
                             onClick={(e) => {
+                              hideTip();
                               if (
                                 !disabled &&
                                 (readOnly || view === "all" ||
@@ -463,7 +490,7 @@ export default function BoligGantt({
                                 );
                               }
                             }}
-                            onPointerDown={(e) => begin(e, r.task, "move")}
+                            onPointerDown={(e) => { hideTip(); begin(e, r.task, "move"); }}
                             onPointerMove={pointerMove}
                             onPointerUp={finish}
                             onPointerCancel={() => {
@@ -505,6 +532,15 @@ export default function BoligGantt({
           Vis flere rader ({rows.length - limit} gjenstår)
         </button>
       )}
+      {tip && createPortal(<div role="tooltip" id={`bolig-gantt-tip-${tip.task.id}`}
+        className="bolig-gantt-tooltip" style={{left:tip.left,top:tip.top,transform:tip.above?'translateY(-100%)':undefined}}
+        onMouseEnter={() => clearTimeout(hideTipTimer.current)} onMouseLeave={deferHideTip}>
+        <strong>{tip.task.title}</strong>
+        <div>Bolig {tip.task.unit_number} · {tip.task.address || 'Adresse ikke oppgitt'}</div>
+        <div>{tip.task.planned_start} – {tip.task.planned_end}</div>
+        {tip.task.owner_name && <div>Ansvarlig: {tip.task.owner_name}</div>}
+        <small>Trykk for å åpne aktiviteten.</small>
+      </div>, tip.target)}
     </section>
   );
 }

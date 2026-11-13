@@ -200,7 +200,7 @@ export const BOLIG_HELP_TOPICS = [
   )},
   {id:"progress-bruk-samlet-fremdriftsplan",group:"progress",title:"Bruk samlet fremdriftsplan",body:(
     <p>
-          Samlet fremdriftsplan åpner med «Hele planen». Hele perioden fra første til siste aktivitet vises, også når arbeidet ligger langt frem i tid. Søk og stammefilter tilpasser perioden til utvalget. Velg dag, uke eller måned for å redigere datoer, og «Vis hele planen» for å gå tilbake til oversikten. «I dag» åpner inneværende uke. Grupper etter leilighet,
+          Samlet fremdriftsplan er hovedbildet. Grupper etter leilighet,
           stammegruppe eller arbeid/fag. Flere aktiviteter kan ligge på samme
           dag. Leilighetene står i rekkefølge etter adresse og bolignummer. Fold
           sammen grupper for oversikt. Trykk en stolpe for detaljer, dra for å
