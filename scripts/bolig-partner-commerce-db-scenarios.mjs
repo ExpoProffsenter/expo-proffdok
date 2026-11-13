@@ -37,13 +37,38 @@ export default async function({db,call,actor,eq,rejects,id,firm,other,manager,re
  await actor(outsider,other);selection=await choice();eq(selection.context.edit_choices,true);
  selection=await choice('save',selection.selection.revision,{...payload,catalog_revision:selection.revision,rooms_revision:selection.rooms_revision});eq(selection.selection.revision,2,'Explicit choice writer saves own reviewed draft');
  await rejects(()=>catalog('package',cat.revision,{name:'Forbidden',lines:cat.packages[0].lines}),'42501');
+
+ const custom=async(action='get',revision=null,payload={})=>(await db.query('select public.bolig_unit_customization($1,$2,$3,$4,$5,$6) v',[firm,root,unit,action,revision,payload])).rows[0].v;
+ let cs=await custom();const cp={scope_id:'common',catalog_revision:cs.revision,rooms_revision:cs.rooms_revision,sections:[],lines:[{key:'base',name:'QA Produkt',sku:'QA',quantity:1,unit:'stk'},{key:'extra',name:'QA ekstra vare',sku:'001',quantity:2,unit:'stk'},{key:'labor',name:'QA ekstra arbeid',sku:'ARBEID',quantity:3,unit:'timer'}],adjustment_cents:580000,reason:'Syntetisk butikktilpasning'};
+ const untouched=JSON.stringify((await db.query("select public.bolig_package_choices($1,$2,$3,'get',null,'{}') v",[firm,root,state.units[1].id])).rows[0].v.selection);
+ const proposal=await custom('preview',cs.selection.revision,cp);eq(proposal.proposal.goods.length,3,'Writer previews product and labor lines');
+ cs=await custom('save',cs.selection.revision,cp);eq(cs.selection.snapshot.total_cents,580000,'Writer saves individual goods and labor price');eq(cs.selection.snapshot.goods.map(g=>g.sku),['QA','001','ARBEID']);
+ eq(JSON.stringify((await db.query("select public.bolig_package_choices($1,$2,$3,'get',null,'{}') v",[firm,root,state.units[1].id])).rows[0].v.selection),untouched,'Other apartment remains unchanged');
+ eq((await catalog()).packages.length,1,'Individual changes do not modify common packages');
+ // Missing/expired identity and access disable both reads and writes immediately.
+ await db.exec('reset role');await db.query("update bolig_private.partner_access set email='someoneelse@example.invalid' where id=$1",[access]);await actor(outsider,other);await rejects(()=>list(root),'42501');
+ await db.exec('reset role');await db.query("update bolig_private.partner_access set email='collaborator@example.invalid',expires_at=now()-interval '1 minute' where id=$1",[access]);await actor(outsider,other);await rejects(()=>custom(),'42501');
+ await db.exec('reset role');await db.query("update bolig_private.partner_access set expires_at=now()+interval '30 days' where id=$1",[access]);await db.query('update public.profiles set deactivated=true where id=$1',[outsider]);await actor(outsider,other);await rejects(()=>catalog(),'42501');
+ await db.exec('reset role');await db.query('update public.profiles set deactivated=false where id=$1',[outsider]);await actor(outsider,other);
  await actor(manager);g=await manage('save',g.revision,{...grant,request_id:id(98005),edit_catalog:true});
  await actor(outsider,other);cat=await catalog('package',cat.revision,{name:'QA Extra',lines:cat.packages[0].lines});eq(cat.packages.length,2,'Catalog edit separately granted');
- await rejects(()=>choice('save',2,payload),'42501');
+ await rejects(()=>custom('preview',cs.selection.revision,cp),'42501');
+ await rejects(()=>choice('save',2,payload),'PT409');
  await db.exec('reset role');eq((await db.query('select count(*)::int n from public.sales_company_memberships where user_id=$1 and company_id=$2',[outsider,firm])).rows[0].n,0,'Main firm memberships unchanged');
  await actor(manager);g=await manage('save',g.revision,{...grant,request_id:id(98006),enabled:false});
  await actor(outsider,other);eq((await list()).projects.length,0,'Disabled grant disappears');await rejects(()=>catalog(),'42501');
  await actor(manager);g=await manage('save',g.revision,{...grant,request_id:id(98007),edit_choices:true});
+
+ const commerce=async(action,payload)=>(await db.query('select public.bolig_commerce($1,$2,$3,$4,$5) v',[firm,root,unit,action,payload])).rows[0].v;
+ let docs=await commerce('create',{request_id:id(98100),kind:'choice',choice_revision:cs.selection.revision,reason:'QA butikkvalg til beboer'});let doc=docs.documents[0];
+ docs=await commerce('approve',{request_id:id(98101),document_id:doc.id,revision:doc.revision});doc=docs.documents.find(d=>d.id===doc.id);
+ docs=await commerce('publish',{request_id:id(98102),document_id:doc.id,revision:doc.revision,token:'e'.repeat(64)});doc=docs.documents.find(d=>d.id===doc.id);
+ await actor(outsider,other);await rejects(()=>custom('preview',cs.selection.revision,{...cp,catalog_revision:cat.revision}),'PT409');
+ await db.exec("reset role;select set_config('qa.user','',false);set role anon");
+ const accepted=(await db.query("select public.bolig_resident_decision($1,'accept',$2,$3) v",['e'.repeat(64),doc.id,{name:'QA Beboer',confirmed:true,request_id:id(98103)}])).rows[0].v;eq(accepted.status,'accepted','Resident still approves own exact proposal');
+ await actor(outsider,other);await rejects(()=>custom('save',cs.selection.revision,{...cp,catalog_revision:cat.revision}),'PT409');
+ eq((await custom()).selection.revision,cs.selection.revision,'Accepted agreement leaves original choice revision unchanged');
+ await actor(manager);
  await partners('revoke',{id:access,request_id:id(98008)});
  await actor(outsider,other);await rejects(()=>list(root),'42501');await rejects(()=>choice(),'42501');
  await db.exec("reset role;select set_config('qa.user','',false);set role anon");await rejects(()=>list(root),'42501');

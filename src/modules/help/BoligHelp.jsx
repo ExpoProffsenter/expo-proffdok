@@ -30,6 +30,8 @@ export function BoligHelp({returnLabel}={}) {
     <BoligGuidePanel open={open} title="Slik styrer du prosjektet" onClose={close} returnLabel={returnLabel}>
       <div ref={content} className="bolig-help-workspace">
         <p>Velg et tema eller søk etter det du vil gjøre. Åpne bare forklaringen du trenger.</p>
+        <p><strong>Gi en kollega tilgang til grunnpakker og tilvalg:</strong> Åpne UE og leverandører og opprett en navngitt prosjekttilgang med personens registrerte e-post. Åpne kontakten og velg Grunnpakke og tilvalg. Gi lesetilgang, rett til å endre boligtilvalg og legge til varer/arbeid, eller separat rett til å redigere felles pakker. Kontroller valgene og lagre personrettighetene. Det sendes ingen e-post automatisk.</p>
+        <p>Personen finner prosjektet under Min side → Mine samarbeid med sin vanlige innlogging. Velg bolig, gjør tilpasningene og lagre. Prosjektleder deler forslaget i beboerportalen; beboeren godkjenner selv. En publisert eller akseptert avtale og en klargjort ordre kan ikke overskrives av samarbeidspartneren. Be prosjektleder håndtere videre endringer som tillegg. Tilgangen stopper ved utløp eller tilbakekalling. Hovedfirma og andre firmatilganger beholdes.</p>
         <p>I store UE-lister kan du bruke «Søk i oppgaver» og «Status for oppgaver». «Vis flere oppgaver» viser resten. Filtrering endrer ingen oppgaver.</p>
         <label className="bolig-help-search"><span><Search size={17} aria-hidden="true"/>Søk i boligveiledningen</span>
           <input ref={search} type="search" value={query} placeholder="For eksempel bestilling, beboer eller overtakelse"

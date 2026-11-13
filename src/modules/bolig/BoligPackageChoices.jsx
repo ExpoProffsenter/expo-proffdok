@@ -759,7 +759,7 @@ export default function BoligPackageChoices({
               </details>
             </>
           )}
-          {!canWrite && <p>Pakkevalg krever prosjektledertilgang.</p>}
+          {!canWrite && <p>{context.collaboration_root?'Du har lesetilgang. Prosjektleder må gi rett til å endre boligtilvalg.':'Pakkevalg krever prosjektledertilgang.'}</p>}
           <button type="button" disabled={busy || loading} onClick={load}>
             Hent siste pakkevalg
           </button>

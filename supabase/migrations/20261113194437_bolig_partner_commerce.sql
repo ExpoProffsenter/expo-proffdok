@@ -18,8 +18,9 @@ language sql stable set search_path='' as $$
  select auth.uid() is not null and exists(
  select 1 from bolig_private.partner_commerce_access g join bolig_private.partner_access p on p.id=g.access_id
  join bolig_private.roots r on r.id=p.root_id join public.profiles u on u.id=g.user_id
+ join auth.users account on account.id=g.user_id
  where g.root_id=p.root_id and g.user_id=auth.uid() and g.enabled and r.id=root and r.company_id=c and p.access_mode='project'
- and bolig_private.partner_active(p) and u.approved and not coalesce(u.deactivated,false)
+ and lower(account.email)=lower(p.email) and bolig_private.partner_active(p) and u.approved and not coalesce(u.deactivated,false)
  and exists(select 1 from public.sales_company_memberships m where m.user_id=g.user_id and m.workspace_role in ('ansatt','firmaadmin') and public.is_internal_work_profile_company(m.company_id))
  and (permission='read' or permission='edit_choices' and g.edit_choices or permission='edit_catalog' and g.edit_catalog))
 $$;

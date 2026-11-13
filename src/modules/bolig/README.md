@@ -47,3 +47,7 @@ Sett bestillingsfrist viser gammel/ny dato per valgt bolig. Nye tilvalg stoppes 
 Oppsett → Bygg og boliger → Flytt bolig bruker eksisterende `bolig_prepare` med `kind: placement`. Første versjon bytter etasje/plass mellom to aktive boliger i samme oppgang. Forhåndsvisningen viser begge før/etter; eksisterende kladd, scopekontroll, basis/revisjon og eksakt kvitteringsretry beholdes. Ingen nye boliger opprettes. ID, nummer, kontaktfelt, rom, valg, frister, portaler og fremdrift beholdes. Egne fasadebildefelt og historiske dokument-/bestillingssnapshots endres ikke. Offisielt bolignummer må kontrolleres separat.
 
 Krever den nye migrasjonen `20261113175328_bolig_unit_placement.sql` før UI tas i bruk. Ingen eldre installasjoner skal kjøres om igjen. Se [plassbytte](../../../docs/architecture/BOLIG_UNIT_PLACEMENT.md) for avgrensning og kontroll.
+
+
+### Navngitt pakke- og tilvalgssamarbeid
+Prosjektleder tildeler eksplisitte personrettigheter på en aktiv UE-/leverandøradgang til hele prosjektet. Registrert e-post må samsvare med en godkjent intern brukerkonto hos Ringside/Bademiljø Expo/Expo Proffsenter. `bolig_partner_commerce` må være installert før rettigheter kan tildeles. Min side viser bare tildelte prosjekter. Vanlig partnerlenke gir ikke kommersiell tilgang. Lesing, individuell tilpasning og felles katalog er separate rettigheter; ingen medlemskap flyttes. Prosjektleder deler lagrede boligvalg i portalen, og beboer godkjenner. Ingen e-post aktiveres. Se `docs/architecture/BOLIG_PARTNER_COMMERCE.md`.

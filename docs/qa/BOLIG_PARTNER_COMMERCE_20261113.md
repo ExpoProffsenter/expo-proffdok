@@ -1,11 +1,18 @@
-# Personstyrt grunnpakke og tilvalg – arbeid pågår
+# Personstyrt grunnpakke og tilvalg
 
-Miljømål BEGGE. Arbeidsbranch feat/bolig-partner-commerce-20261113 fra main 6eb54148b3d61e318c5447810cdf89deab6afffa. Ikke klar for TEST OK eller installasjon.
+Miljømål BEGGE. Arbeidsbranch `feat/bolig-partner-commerce-20261113` fra main `6eb54148b3d61e318c5447810cdf89deab6afffa`. Ikke produksjonssatt, ingen reelle rettigheter tildelt eller e-post sendt.
 
-Avtalt: Navngitte, godkjente brukere ved Bademiljø Expo, Expo Proffsenter og Ringside skal få prosjekttilgang via Min side / Mine samarbeid. Lesing, endring av boligtilvalg (inkludert varer og arbeid) og endring av felles katalog er separate rettigheter. Ingen automatisk firmatilgang eller medlemskapsendring. Beboer godkjenner i portalen. Ingen e-post er autorisert av dette arbeidet.
+## Omfang
+Navngitte brukere hos Bademiljø Expo, Expo Proffsenter og Ringside kan få eksplisitt prosjektadgang via eksisterende partnerkontakt. Lesing, individuell vare/arbeidstilpasning og felles katalog er separate rettigheter. Brukeren åpner Min side → Mine samarbeid. Arbeidsfirma og medlemskap beholdes. Prosjektleder deler ferdige forslag, beboer godkjenner selv.
 
-Implementert utkast: private prosjekt-/brukerbundne rettigheter knyttet til eksisterende partneradgang; egen administrasjons-RPC og samarbeidsliste; avgrenset lesekontekst uten manager-rolle; eksplisitte skriverettigheter for pakkevalg og individuell tilpasning. Frontend integrert som egen komponent i Min side og eksisterende partnerdialog.
+## Implementert
+Konto-/prosjektbundet privat tabell og kontrollert RPC. Tilgang kontrollerer registrert e-post, profil, internt medlemskap, aktiv partneradgang, firmaaktivering og prosjekt. Partnerlenke alene gir ikke kommersiell tilgang. Publisert/akseptert avtale og klargjort ordre stopper samarbeidsskriving. Eksisterende revisjon/audit og boligvalg brukes. Min side har kun to nye integrasjonslinjer; grensekontrollen fjerner akkurat disse og krever byteparitet for resten. Ingen generell tilgangskjerne endres.
 
-Status: Lokal Vite build bestod første versjon. Første PostgreSQL-scenario feilet på prosjektlisten. SQL-variabel med samme navn som tabellalias er rettet; ny kjøring PASS med 1864 PostgreSQL-assertions. Dette inkluderer separate lese-/valg-/katalogrettigheter, nektet øvrig prosjekttilgang, uendrede medlemskap og tilbakekalling. Ny migrasjon 20261113194437 er IKKE installert i sandbox eller produksjon. Ingen rettigheter er tildelt reelle brukere.
+## Kontroller
+- Første databasepakke bestod 1864 assertions. Utvidet variant bekreftet nye vare-/arbeidslinjer, sum og uendret nabobolig, men traff en forventningsfeil: allerede tilpasset pakke gir PT409 før skriverettskontroll. Testen kontrollerer nå begge sperrene separat; ny full pakke pågår.
+- React: forsinket tilgangsoppfrisking beholder editor og usendt tekst; samme tilgang beholder mount; tilbakekalling fjerner editor. PASS. Dialogutvidelsen kontrolleres videre.
+- Full lokal build og critical checks PASS. Grensekontroll PASS (55 assertions), workflow-vernet PASS (147 opprinnelige kommandoer bevart).
+- Hjelp, modulbeskrivelse og arkitektur oppdatert.
 
-Må fullføres før Preview: full DB-pakke og negative tilgangstester, individuell vare/arbeidslinje og avtalelås, tilbakekalling/utløp/feil firma, lokal sikring av tilgangsredigering og usikkert lagringssvar, PT409-oppfrisking, stabil editor ved fokus/dvale (nå kan periodisk oppfrisking avmontere editor), dokumentert arbeidsflyt for deling av forslag til beboeren, hjelp og boundary-test av kun den avtalte Min side-integrasjonen. Ingen grønn eller ferdig-påstand før dette er gjort.
+## Gjenstår før TEST OK
+Full CI og faktisk Preview-kontroll av tildeling, varer/arbeid, utløp og tilbakekalling; kontrollert sandboxinstallasjon. Migrasjonen 20261113194437 er foreløpig ikke installert i hosted miljøer. Ingen produksjonsimport av Aamodthagen eller testpakker.
