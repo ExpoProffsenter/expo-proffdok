@@ -1,8 +1,8 @@
 {
   "version": 1,
   "title": "Felles prosjektklokkeslett og lesbar byggadresse",
-  "change": "Miljømål BEGGE. Kl. 12 standard for nye bestillingsfrister, endres samlet per prosjekt; bevarer tidligere daterte prosjekters dagsslutt. Byggadresse brytes ikke midt i ord. Hele planen blir standard i bolig-Gantt, med automatisk periode for filtrerte aktiviteter. Norsk dd.mm.åååå i frist/fremdrift, tydelige oppsettinnganger, fristdato før boligliste og direkte prosjektklokkehandling. Fremdriftsgrupper og aktiviteter sorteres kronologisk; periodevisning skjuler rader uten overlapp med valgt dato/uke/måned.",
-  "verification": "28 målrettede batchtester og utvidet Gantt React-test PASS. Gantt-test dekker datorekkefølge mot motsatt adressering, periodeskjuling, overlapp og gjenoppretting av hele planen. Ny CI og publisert kontroll må bekreftes; se handoff og PR332. Ingen produksjonssetting.",
+  "change": "Miljømål BEGGE. Kl. 12 standard for nye bestillingsfrister, endres samlet per prosjekt; bevarer tidligere daterte prosjekters dagsslutt. Byggadresse brytes ikke midt i ord. Hele planen blir standard i bolig-Gantt, med automatisk periode for filtrerte aktiviteter. Norsk dd.mm.åååå i frist/fremdrift, tydelige oppsettinnganger, fristdato før boligliste og direkte prosjektklokkehandling. Fremdriftsgrupper og aktiviteter sorteres kronologisk; periodevisning skjuler rader uten overlapp med valgt dato/uke/måned. UX-kontroll: norsk datofilter, beholdt dag/uke/måned ved datobytte og korte dagstall i tett kalender.",
+  "verification": "28 målrettede batchtester og utvidet Gantt React-test PASS. Gantt-test dekker datorekkefølge mot motsatt adressering, periodeskjuling, overlapp og gjenoppretting av hele planen. Ny CI og publisert kontroll må bekreftes; se handoff og PR332. Ingen produksjonssetting. Actual React: norsk dato, ugyldig 31.02 avvist uten periodebytte, måned beholdt og korte kalenderoverskrifter PASS.",
   "documentation": {
     "help": {
       "required": true,

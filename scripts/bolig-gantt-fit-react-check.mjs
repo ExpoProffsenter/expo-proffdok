@@ -37,6 +37,12 @@ try {
  await select('Visning','month');
  assert.equal(w.document.querySelectorAll('.bolig-gantt-bar').length,2,'month includes overlapping activities only');
  assert(!w.document.body.textContent.includes('A-vegen 1'),'out-of-period building does not leave empty rows');
+ const dateInput=()=>w.document.querySelector('input[placeholder="dd.mm.åååå"]');
+ assert.equal(dateInput().value,'01.12.2026','Norwegian date independent of browser language');
+ assert.equal(w.document.querySelector('.bolig-gantt-days span').textContent,'1','Month headings fit their day cells');
+ const typeDate=async(value)=>act(()=>{Object.getOwnPropertyDescriptor(w.HTMLInputElement.prototype,'value').set.call(dateInput(),value);dateInput().dispatchEvent(new w.Event('input',{bubbles:true}));});
+ await typeDate('31.02.2027');assert(w.document.querySelector('[role="alert"]'),'Invalid calendar date is explained');assert.equal(w.document.querySelectorAll('.bolig-gantt-bar').length,2,'Invalid date never moves the plan');
+ await typeDate('15.12.2026');assert.equal(w.document.querySelector('select').value,'month','Date edit preserves selected month view');assert.equal(w.document.querySelector('[role="alert"]'),null);
  await act(()=>w.document.querySelector('button[aria-label="Neste periode"]').click());
  assert.equal(w.document.querySelectorAll('.bolig-gantt-bar').length,0,'next empty month has no unrelated activities');
  await act(()=>button('Vis hele planen').click());assert.equal(w.document.querySelectorAll('.bolig-gantt-bar').length,3,'whole plan restores all activities');

@@ -8,7 +8,7 @@ import {
   nextAnchor,
 } from "../kshms/kshmsProgressTimeline.mjs";
 import { createPortal } from "react-dom";
-import { boligGanttRange } from "./boligGanttRange.mjs";
+import { boligGanttRange, parseGanttDate } from "./boligGanttRange.mjs";
 import { useBoligUiState } from "./boligUiState.js";
 export default function BoligGantt({
   tasks,
@@ -65,6 +65,8 @@ export default function BoligGantt({
       `${key}:only-group`,
       "",
     );
+  const [dateText, setDateText] = useState("");
+  const [dateError, setDateError] = useState("");
   const [limit, setLimit] = useState(120),
     [drag, setDrag] = useState(null),
     [error, setError] = useState("");
@@ -83,6 +85,8 @@ export default function BoligGantt({
         .includes(query.toLocaleLowerCase("nb")),
   );
   const range = boligGanttRange(matching, anchor, view), days = range.to - range.from + 1;
+  const selectedDate = view === "all" ? range.dates[0] : anchor;
+  useEffect(() => { setDateText(displayDate(selectedDate)); setDateError(""); }, [selectedDate, view]);
   const visibleTasks = matching.filter(t => view === "all" || (dayNumber(t.planned_start) <= range.to && dayNumber(t.planned_end) >= range.from));
   const buckets = new Map();
   for (const t of visibleTasks) {
@@ -328,9 +332,20 @@ export default function BoligGantt({
         <label>
           Dato
           <input
-            type="date"
-            value={view === "all" ? range.dates[0] : anchor}
-            onChange={(e) => {if(e.target.value){setView("week");setAnchor(e.target.value);}}}
+            type="text"
+            lang="nb-NO"
+            inputMode="decimal"
+            placeholder="dd.mm.åååå"
+            maxLength={10}
+            aria-invalid={!!dateError}
+            value={dateText}
+            onChange={(e) => {
+              const text = e.target.value, iso = parseGanttDate(text);
+              setDateText(text);
+              setDateError(text.length === 10 && !iso ? "Skriv en gyldig dato som dd.mm.åååå." : "");
+              if (iso) { if (view === "all") setView("week"); setAnchor(iso); }
+            }}
+            onBlur={() => { if (!parseGanttDate(dateText)) setDateError("Skriv en gyldig dato som dd.mm.åååå."); }}
           />
         </label>
       </div>
@@ -360,6 +375,7 @@ export default function BoligGantt({
         {displayDate(range.dates[0])} – {displayDate(range.dates.at(-1))} · {visibleTasks.length} aktiviteter. Sortert fra første til siste dato. {view !== "all" && "Bare aktiviteter som berører valgt periode vises. "}Trykk en stolpe
         for detaljer.{view === "all" ? " Hele perioden til aktivitetene i utvalget vises. Velg dag, uke eller måned for å flytte datoer." : !readOnly && " Dra for å flytte; endene endrer varighet."}
       </p>
+      {dateError && <p role="alert">{dateError}</p>}
       {error && <p role="alert">{error}</p>}
       <div className="bolig-gantt-scroll">
         <div
@@ -373,8 +389,8 @@ export default function BoligGantt({
               style={{ gridTemplateColumns: range.columns.map(c=>`${c.days}fr`).join(" ") }}
             >
               {range.columns.map((c) => (
-                <span key={c.date} className={c.date === todayOslo() ? "today" : ""}>
-                  {c.label || shortDate(c.date)}
+                <span key={c.date} title={displayDate(c.date)} className={c.date === todayOslo() ? "today" : ""}>
+                  {c.label || (range.columns.length > 14 ? String(Number(c.date.slice(-2))) : shortDate(c.date))}
                 </span>
               ))}
             </div>

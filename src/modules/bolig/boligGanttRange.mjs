@@ -22,3 +22,12 @@ export function boligGanttRange(tasks, anchor, view) {
  }
  return {from,to,dates:[dayString(from),dayString(to)],columns};
 }
+
+// Input is always Norwegian, irrespective of the browser language. Storage stays ISO.
+export function parseGanttDate(value) {
+ const match = /^(\d{2})\.(\d{2})\.(\d{4})$/.exec(value);
+ if (!match) return '';
+ const iso = `${match[3]}-${match[2]}-${match[1]}`;
+ const date = new Date(`${iso}T12:00:00Z`);
+ return Number.isFinite(date.getTime()) && date.toISOString().slice(0,10) === iso ? iso : '';
+}
