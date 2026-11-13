@@ -85,5 +85,5 @@ export const portalStatus = {
   reviewed: "Gjennomgått",
 };
 export function invitationText(contact, unit, url, reminder = false) {
-  return `${reminder ? "Påminnelse: " : "Velkommen til "}beboerportalen\n\nHei ${contact?.name || ""}!\n\n${reminder ? "Du kan se status og svare i" : "Her finner du"} beboerportalen for ${unit.number}. Se boligvalg, avtaler, dokumentlenker og meldinger fra prosjektleder.\n\n${url}\n\nLenken er personlig. Ikke videresend den. Valg sendes først til gjennomgang. En avtale aksepteres separat etter at du har sett varer og pris.`;
+  return `${reminder ? "Påminnelse: " : "Velkommen til "}beboerportalen\n\nHei ${contact?.name || ""}!\n\n${reminder ? "Du kan se status og svare i" : "Her finner du"} beboerportalen for ${unit.number}. Se boligvalg, avtaler, dokumentlenker og meldinger fra prosjektleder.\n\n${url}\n\n${unit.additional_contacts?.length ? "Eierne som er registrert på boligen deler denne portalen. Ikke del lenken med andre." : "Lenken er personlig. Ikke videresend den."} Valg sendes først til gjennomgang. En avtale aksepteres separat etter at du har sett varer og pris.`;
 }

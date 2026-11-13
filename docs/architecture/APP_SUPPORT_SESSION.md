@@ -59,3 +59,7 @@ PR324 er publisert i main f7298e11. Supportbranchen er samordnet med denne. Ny m
 Invitasjoner og alle private sendeloggskrivinger er nå sperret i support. Dette dekker opprettelse, tilbaketrekking, reservering og bekreftelse/usikkert svar. Offentlig invitasjonstabell og ny privat deliveries-tabell får eksplisitte write/delete/truncate-triggere, uansett om support eller invitasjonsmodulen kom først. Eksisterende guard erstattes bare ved eksakt forventet definisjon, ellers stoppes migrasjonen. Vanlig autorisert firmaadministrasjon uten supportheader følger samme oppførsel som før. UI sperrer Trekk tilbake invitasjon i support; serveren er fasit. Ingen e-posttransport eller roller endres.
 
 Denne additive sperren skal med før produksjonsaktivering. Ikke fjern den ved rollback så lenge support kan brukes. Kontroller gjeldende migrasjonshistorikk før installasjon; ikke kjør installasjonen på nytt. Eksakte miljøresultater føres i PR322.
+
+## Installasjonsrekkefølge med PR323
+
+Den private resident_batch_receipts-tabellen kom etter opprinnelig support i sandbox. Migrasjon20261113013443_app_support_resident_batch_guards avstemmer tre eksisterende supporttriggere på akkurat denne tabellen. Manglende triggere opprettes; eksisterende må ha forventet funksjon og hendelsestype. Når support installeres etter Orvei i produksjon, bevares triggerne opprettet av grunninstallasjonen. Tilgang, RLS, batchfunksjon og fristlogikk endres ikke. Kontroller installasjonshistorikk per miljø.

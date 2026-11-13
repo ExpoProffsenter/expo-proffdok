@@ -132,3 +132,11 @@ Ingen produksjonsinstallasjon/aktivering. Companion320 siste43097043078 fortsatt
 Sandbox-installasjonsforsøk13.11: apply_migration-bekreftelsen utløp. Etterkontroll viste ingen migrasjonsversjon, gammel guard og bare tre eksisterende invitasjonstriggere; ingen installasjon utført. Migrasjonen er deretter gjort additiv: eksisterende triggere beholdes og verifiseres for riktig funksjon/hendelser, bare manglende triggere opprettes.100SQL-krav bestod igjen. Ikke tolk forsøket som installert.
 
 Full lokal produksjonsbuild PASS på integrert main + supportrettelse. Runtime/Auth-kontroller kjøres i samme runde; eksakte resultater og CI i PR322.
+
+## Samordning med publisert PR323 – 13.11.2026
+
+Kenneth ba eksplisitt om videre arbeid etter køvurdering, med krav om å bevare nyere rettelser. Eksakt main c51f6dc65d1fa06f136747436fc36e5c0a131bfc er flettet i eksisterende PR322. Kun CURRENT_RELEASE_STATUS hadde tekstkonflikt; Bolig-koden og de fire PR323-migrasjonene er identiske med main. PR320 oppdateres separat med samme main, uten konflikt. Dette er ny integrasjonskandidat, ikke gjentatt kjøring av gammel kode. Ingen køinnstillinger eller testkrav endres.
+
+Read-only sandboxmetadata viste én ny Bolig-tabell uten supporttriggere: resident_batch_receipts. Lokal negativ test gjenskapte sletting gjennom SECURITY DEFINER uten supportfence. Additiv migration20261113013443_app_support_resident_batch_guards oppretter kun manglende write/delete/truncate-kontroller på denne tabellen og verifiserer eksisterende triggere uten å erstatte dem. Ingen data, rettigheter, øvrige funksjoner eller innstillinger endres. Dette dekker både support-først (sandbox) og Orvei-først (produksjon).
+
+109 SQL-krav PASS: tidligere100 pluss reprodusert hull, tre triggere, bevart triggeridentitet ved ny avstemming, tillatt kvitteringsinnsetting med korrekt aktør/mål-audit, avvist DELETE/TRUNCATE via definer, bevart kvittering, ingen direkte klienttilgang og uendret ordinær funksjon. Runtime45, Auth/retur, cache/UX og full lokal build PASS. Companion kontraktfiler28 og scope PASS. Ny full CI og samlet Preview gjenstår. Ny migrasjon er ennå ikke installert i sandbox eller produksjon. Ingen supportproduksjonsaktivering.

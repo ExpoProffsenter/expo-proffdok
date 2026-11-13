@@ -402,6 +402,17 @@ try {
     1,
     "Building selects both entrances",
   );
+  await dialog.getByLabel("Hvem gjelder varslet?").selectOption("blocks");
+  await dialog.getByRole("checkbox", {name: "Bygg A · 2 boliger", exact: true}).check();
+  await dialog.getByRole("checkbox", {name: "Bygg B · 1 boliger", exact: true}).check();
+  eq(await dialog.getByText("3 boliger valgt · se utvalget", {exact: true}).count(), 1, "Multiple buildings include all selected dwellings once");
+  await dialog.getByRole("checkbox", {name: "Bygg B · 1 boliger", exact: true}).uncheck();
+  eq(await dialog.getByText("2 boliger valgt · se utvalget", {exact: true}).count(), 1, "Removing a building preserves the other building");
+  await dialog.getByRole("button", {name: "Lukk og behold utkast", exact: true}).click();
+  await page.getByRole("button", {name: "Nytt beboervarsel", exact: true}).first().click();
+  dialog = page.getByRole("dialog", {name: "Nytt beboervarsel", exact: true});
+  eq(await dialog.getByRole("checkbox", {name: "Bygg A · 2 boliger", exact: true}).isChecked(), true, "Building multiselection survives reopening");
+  eq(await dialog.getByRole("checkbox", {name: "Bygg B · 1 boliger", exact: true}).isChecked(), false, "Unselected building stays excluded");
   await dialog.getByLabel("Hvem gjelder varslet?").selectOption("entrance");
   await dialog.getByLabel("Oppgang", { exact: true }).selectOption("e2");
   eq(

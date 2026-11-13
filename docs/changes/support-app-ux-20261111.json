@@ -2,7 +2,7 @@
   "version": 1,
   "title": "Samlet supportmodus med kundens rettigheter og slettesperrer",
   "change": "Miljømål BEGGE. Full kundeapp, tilbud og dokumenter, identitet/priser, isolerte kladder, gjenåpning, retur til administrator og serverstyrte slettesperrer. Testaktivert bare i sandbox; separat PR320 for Bolig-kontraktfiler.",
-  "verification": "100 SQL-kontroller PASS inkludert reprodusert og rettet invitasjonstilbaketrekking i support, cache/UX PASS. Vanlig Firmaadmin og prosjektredigering bevart. Eksakt CI, sandbox-installasjon og produksjonsstatus føres i PR322. Ingen produksjonsaktivering.",
+  "verification": "Integrert med main c51f6dc6 (PR323/324). 109 SQL-krav, runtime45, Auth/retur, cache/UX og full lokal build PASS. Reprodusert og rettet manglende supporttriggere på sen Orvei-kvitteringstabell. Ny full CI og samlet Preview gjenstår. Ingen produksjonsaktivering.",
   "documentation": {
     "help": {
       "required": true,

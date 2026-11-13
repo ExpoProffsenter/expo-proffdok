@@ -30,7 +30,10 @@ import BoligUnitTasks from "./BoligUnitTasks.jsx";
 import BoligRooms from "./BoligRooms.jsx";
 import { BoligVisualSetup } from "./BoligVisualWorkspace.jsx";
 import BoligBuildingOverview from "./BoligBuildingOverview.jsx";
+import BoligResidentBatch from "./BoligResidentBatch.jsx";
 import BoligPreparation from "./BoligPreparation.jsx";
+import BoligAdditionalContacts from "./BoligAdditionalContacts.jsx";
+import BoligResidentImport from "./BoligResidentImport.jsx";
 import {
   Building2,
   Home,
@@ -692,6 +695,8 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
                       />
                     </div>
                     <div hidden={setupArea !== "structure"}>
+                      <BoligResidentImport context={ctx} record={record} onChanged={() => fetchRecord(record.root.id, true)} />
+                      <BoligResidentBatch context={ctx} record={record} onChanged={() => fetchRecord(record.root.id, true)} />
                       <BoligPreparation
                         key={
                           ctx.user_id +
@@ -986,6 +991,7 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
                                 contact_name: unit.contact_name,
                                 contact_email: unit.contact_email || "",
                                 contact_phone: unit.contact_phone || "",
+                                ...(Array.isArray(unit.additional_contacts) ? {additional_contacts: unit.additional_contacts} : {}),
                                 project_id: unit.project_id || "",
                               }}
                               onSubmit={(v) =>
@@ -1054,6 +1060,7 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
                                       }
                                     />
                                   </label>
+                                  {Array.isArray(unit.additional_contacts) && <BoligAdditionalContacts contacts={v.additional_contacts || unit.additional_contacts} onChange={list => c("additional_contacts", list)} />}
                                   <details>
                                     <summary>
                                       {v.project_id

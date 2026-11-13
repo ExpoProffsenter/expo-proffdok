@@ -152,6 +152,35 @@ await db.query("select public.support_qa_invitation_delivery('confirmed')");awai
 eq((await db.query(`select status from public.company_user_invites where id='${id(40)}'`)).rows[0].status,'revoked','ordinary authorized invitation withdrawal still works');
 eq((await db.query(`select status from company_invitation_private.deliveries where id='${id(41)}'`)).rows[0].status,'confirmed','ordinary delivery confirmation still works');
 
+// Orvei added a private receipt table after the initial sandbox support installation.
+await db.exec(`create schema bolig_private;
+create table bolig_private.resident_batch_receipts(root_id uuid not null,actor_id uuid not null,request_id uuid not null,payload_hash bytea not null,result jsonb not null,created_at timestamptz not null default clock_timestamp(),primary key(root_id,actor_id,request_id));
+alter table bolig_private.resident_batch_receipts enable row level security;
+revoke all on bolig_private.resident_batch_receipts from public,anon,authenticated,service_role;
+create function public.support_qa_batch(action text) returns void language plpgsql security definer set search_path='' as $$begin
+ if action='insert' then insert into bolig_private.resident_batch_receipts values('${firm}',auth.uid(),'${id(50)}','\\x01','{"status":"prepared"}',clock_timestamp());
+ elsif action='delete' then delete from bolig_private.resident_batch_receipts;
+ elsif action='truncate' then truncate bolig_private.resident_batch_receipts;
+ end if;end $$;`);
+await scoped("select public.support_qa_batch('insert')");
+await scoped("select public.support_qa_batch('delete')");
+eq((await db.query('select count(*) n from bolig_private.resident_batch_receipts')).rows[0].n,0,'reproduced missing guard: definer deletion bypasses support fence before repair');
+const batchMigration=await fs.readFile('supabase/migrations/20261113013443_app_support_resident_batch_guards.sql','utf8');
+await db.exec(batchMigration);
+const guards=(await db.query("select oid,tgname,tgtype from pg_trigger where tgrelid='bolig_private.resident_batch_receipts'::regclass and not tgisinternal order by tgname")).rows;
+eq(guards.length,3,'late receipt table has write/delete/truncate coverage');
+await db.exec(batchMigration);
+eq((await db.query("select oid,tgname,tgtype from pg_trigger where tgrelid='bolig_private.resident_batch_receipts'::regclass and not tgisinternal order by tgname")).rows,guards,'support-first and existing-guard install preserve the same triggers');
+await scoped("select public.support_qa_batch('insert')");
+eq((await db.query("select actor_id,target_user_id,company_id from app_support_private.audit where resource='bolig_private.resident_batch_receipts' order by id desc limit 1")).rows[0],{actor_id:actor,target_user_id:target,company_id:firm},'receipt audit binds actual actor and customer');
+await denied(()=>scoped("select public.support_qa_batch('delete')"),'receipt deletion through definer RPC blocked');
+await denied(()=>scoped("select public.support_qa_batch('truncate')"),'receipt truncate through definer RPC blocked');
+eq((await db.query('select count(*) n from bolig_private.resident_batch_receipts')).rows[0].n,1,'denied deletion preserves saved receipt');
+eq((await db.query("select has_table_privilege('authenticated','bolig_private.resident_batch_receipts','SELECT') allowed")).rows[0].allowed,false,'no direct client access introduced');
+await claim(target);await db.exec('set role authenticated');
+await db.query("select public.support_qa_batch('delete')");await db.exec('reset role');
+eq((await db.query('select count(*) n from bolig_private.resident_batch_receipts')).rows[0].n,0,'ordinary authorized function behavior retained');
+
 await denied(()=>scoped(`insert into public.user_terms_acceptance values(auth.uid(),'qa')`),'support cannot accept personal terms on behalf of customer');
 eq((await scoped('select public.app_support_context() context')).rows[0].context.target_user_id,target,'bootstrap confirms target via server hook');
 await denied(()=>scoped('select public.app_support_context()', {prepare:false}),'bootstrap cannot confirm context without installed hook');
