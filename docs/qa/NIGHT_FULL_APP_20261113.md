@@ -97,3 +97,6 @@ Produsert **36-sekunders videoutkast,3scener**, med ferske sandboxbilder: «Best
 3. Bolig38: avtaleutgave1 er allerede akseptert, bestillingsutkastv1 lagret, egen syntetisk adresse og bestillingsfrist22.11. Ikke opprett duplikater eller send. Fortsett utløpt-frist/felleseiergrense/ordreeksport og kvitterings-PDF når teknisk tilgjengelig.
 4. Gjenbruk ferdig avspillingsaudit av15filmer. Fortsett innholdsrevisjon og øvrige57A–Å-scener; integrer/tilpass36sekunders utkastet først etter mal-/innholdsvurdering. V12-materialisering har401-blokkering.
 5. Gå videre til uavhengige matrisedomener (salg/prosjekt/HR/KS/HMS) i eksisterende sandbox. Ikke la Preview-innlogging eller V12 stoppe annet arbeid. Ingen fullapp-attest før bevis foreligger.
+
+## Kontrollpunkt 3 – pågår
+Eier Codex nattarbeid13.11 kl05:19. Reservert scope: uavhengig desktopkontroll av HR/KS-HMS/Min side og dokumentasjon. Ingen overlapp med PR321/325, ingen produksjonsendringer. Ferdig beboeraksept og15filmers avspilling gjentas ikke.
