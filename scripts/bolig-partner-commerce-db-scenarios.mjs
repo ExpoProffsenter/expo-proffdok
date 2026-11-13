@@ -62,10 +62,10 @@ export default async function({db,call,actor,eq,rejects,id,firm,other,manager,re
  const commerce=async(action,payload)=>(await db.query('select public.bolig_commerce($1,$2,$3,$4,$5) v',[firm,root,unit,action,payload])).rows[0].v;
  let docs=await commerce('create',{request_id:id(98100),kind:'choice',choice_revision:cs.selection.revision,reason:'QA butikkvalg til beboer'});let doc=docs.documents[0];
  docs=await commerce('approve',{request_id:id(98101),document_id:doc.id,revision:doc.revision});doc=docs.documents.find(d=>d.id===doc.id);
- docs=await commerce('publish',{request_id:id(98102),document_id:doc.id,revision:doc.revision,token:'e'.repeat(64)});doc=docs.documents.find(d=>d.id===doc.id);
+ docs=await commerce('publish',{request_id:id(98102),document_id:doc.id,revision:doc.revision,token:'98103'.padEnd(64,'f')});doc=docs.documents.find(d=>d.id===doc.id);
  await actor(outsider,other);await rejects(()=>custom('preview',cs.selection.revision,{...cp,catalog_revision:cat.revision}),'PT409');
  await db.exec("reset role;select set_config('qa.user','',false);set role anon");
- const accepted=(await db.query("select public.bolig_resident_decision($1,'accept',$2,$3) v",['e'.repeat(64),doc.id,{name:'QA Beboer',confirmed:true,request_id:id(98103)}])).rows[0].v;eq(accepted.status,'accepted','Resident still approves own exact proposal');
+ const accepted=(await db.query("select public.bolig_resident_decision($1,'accept',$2,$3) v",['98103'.padEnd(64,'f'),doc.id,{name:'QA Beboer',confirmed:true,request_id:id(98103)}])).rows[0].v;eq(accepted.status,'accepted','Resident still approves own exact proposal');
  await actor(outsider,other);await rejects(()=>custom('save',cs.selection.revision,{...cp,catalog_revision:cat.revision}),'PT409');
  eq((await custom()).selection.revision,cs.selection.revision,'Accepted agreement leaves original choice revision unchanged');
  await actor(manager);
