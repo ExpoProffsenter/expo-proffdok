@@ -13,3 +13,5 @@ Video: legg inn sekvens i eksisterende firmaadministrasjonsfilm: finn ventende i
 Lokalt:164 databasekrav PASS, ny faktisk klienttest for bekreftet/usikker utsending, samtidig forsøk, tilbakekalt invitasjon og firmabytte PASS. Full npm build, scope og dokumentasjonskontroll PASS. Eksisterende Chromium-pakke er utvidet med vedvarende antall og tilbaketrekking; kjøres i GitHub siden lokal Chromium er blokkert i agentterminalen. Ingen live utsending testet.
 
 Migrasjon installert kun i sandbox ppvircenkjizeiqdxphj etter fraværskontroll. Branch-spesifikk EXPO_BACKEND_TARGET=sandbox er satt før appkandidat publiseres. Main og demo endres ikke. Behold denne branchen til egen TEST OK, grønn QA, kontrollert produksjon og main→demo; ikke merge den bare for opprydding.
+
+GitHub43334751892: database og klienttest PASS; komponenttesten fant to identiske feilmeldinger (globalt varsel og mottakerrad) der testen skulle telle én i mottakerlisten. Retter lokatoren til listen og beholder kravet om akkurat én melding der. Ingen produktkontroll fjernes.
