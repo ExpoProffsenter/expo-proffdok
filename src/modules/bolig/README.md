@@ -51,3 +51,5 @@ Krever den nye migrasjonen `20261113175328_bolig_unit_placement.sql` før UI tas
 ### Felles bestillingsklokkeslett
 
 Migrasjonen `20261113191737_bolig_project_deadline_time.sql` gir ett klokkeslett for hele prosjektet under «Beboerlenker og frister samlet». Nye/udaterte prosjekter bruker 12:00; tidligere daterte prosjekter bevarer dagsslutt frem til manager endrer tiden. Fristdatoen er fortsatt per bolig. Se `docs/architecture/BOLIG_PROJECT_DEADLINE_TIME.md`.
+
+Fristdialogen viser dato og direkte klokkehandling før boliglisten. Valglisten ruller separat, og detaljert kontrolliste åpnes ved behov. Visning i frister, Gantt og beboerportal bruker dd.mm.åååå; lagring og native datofelt bruker fortsatt ISO-dato. Oppsettets import- og fristinnganger er samlet som tydelige handlingskort.

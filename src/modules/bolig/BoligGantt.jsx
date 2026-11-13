@@ -1,3 +1,4 @@
+import {progressDate as displayDate} from "./boligProgressClient.js";
 import React, { useMemo, useState, useRef, useEffect } from "react";
 import {
   dayNumber,
@@ -353,7 +354,7 @@ export default function BoligGantt({
         )}
       </div>
       <p>
-        {range.dates[0]} – {range.dates.at(-1)} · {matching.length} aktiviteter. Trykk en stolpe
+        {displayDate(range.dates[0])} – {displayDate(range.dates.at(-1))} · {matching.length} aktiviteter. Trykk en stolpe
         for detaljer.{view === "all" ? " Hele perioden til aktivitetene i utvalget vises. Velg dag, uke eller måned for å flytte datoer." : !readOnly && " Dra for å flytte; endene endrer varighet."}
       </p>
       {error && <p role="alert">{error}</p>}
@@ -398,7 +399,7 @@ export default function BoligGantt({
                 ) : (
                   <button type="button" onClick={() => onEdit(r.task)}>
                     {r.label}{" "}
-                    <small>{r.task.planned_start} – {r.task.planned_end}</small>
+                    <small>{displayDate(r.task.planned_start)} – {displayDate(r.task.planned_end)}</small>
                     <small>{r.task.owner_name}</small>
                   </button>
                 )}
@@ -450,7 +451,7 @@ export default function BoligGantt({
                             tabIndex={0}
                             className={`bolig-gantt-bar ${t.status}`}
                             style={{ left: `${g.left}%`, width: `${g.width}%`, minWidth: view === "all" ? 4 : undefined, maxWidth: `${100-g.left}%` }}
-                            aria-label={`${t.unit_number} · ${t.address || ""} · ${t.title} · ${t.planned_start} til ${t.planned_end}`}
+                            aria-label={`${t.unit_number} · ${t.title} · ${displayDate(t.planned_start)} til ${displayDate(t.planned_end)}`}
                             aria-describedby={tip?.task.id === t.id ? `bolig-gantt-tip-${t.id}` : undefined}
                             onMouseEnter={event => showTip(event, t)}
                             onMouseLeave={deferHideTip}
@@ -537,7 +538,7 @@ export default function BoligGantt({
         onMouseEnter={() => clearTimeout(hideTipTimer.current)} onMouseLeave={deferHideTip}>
         <strong>{tip.task.title}</strong>
         <div>Bolig {tip.task.unit_number} · {tip.task.address || 'Adresse ikke oppgitt'}</div>
-        <div>{tip.task.planned_start} – {tip.task.planned_end}</div>
+        <div>{displayDate(tip.task.planned_start)} – {displayDate(tip.task.planned_end)}</div>
         {tip.task.owner_name && <div>Ansvarlig: {tip.task.owner_name}</div>}
         <small>Trykk for å åpne aktiviteten.</small>
       </div>, tip.target)}

@@ -13,11 +13,11 @@ const act=w.__act,button=t=>[...w.document.querySelectorAll('button')].find(b=>b
 const select=async(label,value)=>act(()=>{const e=w.document.querySelector(`select[aria-label="${label}"]`);e.value=value;e.dispatchEvent(new w.Event('change',{bubbles:true}));});
 try {
  await act(()=>w.__render(props));assert.equal(w.document.querySelector('select').value,'all');assert.equal(w.document.querySelectorAll('.bolig-gantt-bar').length,2);
- assert(w.document.body.textContent.includes('2026-12-02 – 2027-11-05'));
+ assert(w.document.body.textContent.includes('02.12.2026 – 05.11.2027'));
  await act(()=>w.document.querySelector('.bolig-gantt-bar').dispatchEvent(new w.MouseEvent('mouseover',{bubbles:true})));
  assert(w.document.querySelector('[role="tooltip"]').textContent.includes('Førbefaring'));
  assert(w.document.querySelector('[role="tooltip"]').textContent.includes('Bygg A'));
- assert(w.document.querySelector('[role="tooltip"]').textContent.includes('2026-12-02'));
+ assert(w.document.querySelector('[role="tooltip"]').textContent.includes('02.12.2026'));
  await act(()=>w.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Escape'})));
  assert.equal(w.document.querySelector('[role="tooltip"]'),null);
  await act(()=>w.document.querySelector('.bolig-gantt-bar').focus());
@@ -28,7 +28,7 @@ try {
  await select('Visning','week');assert.equal(w.document.querySelectorAll('.bolig-gantt-bar').length,1);
  await act(()=>w.document.querySelector('.bolig-gantt-bar').dispatchEvent(new w.KeyboardEvent('keydown',{key:'ArrowRight',altKey:true,bubbles:true})));assert.equal(writes,1,'Week keeps existing date editing');
  await act(()=>button('Vis hele planen').click());assert.equal(w.document.querySelectorAll('.bolig-gantt-bar').length,2);
- await act(()=>w.__render({...props,tasks:[tasks[1]]}));assert(w.document.body.textContent.includes('2027-10-04 – 2027-11-05'));assert.equal(w.document.querySelectorAll('.bolig-gantt-bar').length,1);
+ await act(()=>w.__render({...props,tasks:[tasks[1]]}));assert(w.document.body.textContent.includes('04.10.2027 – 05.11.2027'));assert.equal(w.document.querySelectorAll('.bolig-gantt-bar').length,1);
  await act(()=>button('I dag').click());assert.equal(w.document.querySelector('select').value,'week');
  console.log('PASS Gantt React: fit default, legacy preference migration, all future bars, click details, safe overview, week editing, scope fit and today');
 }finally{await act(()=>w.__dispose());dom.window.close();fs.rmSync(temp,{recursive:true,force:true});}

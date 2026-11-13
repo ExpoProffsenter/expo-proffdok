@@ -40,6 +40,20 @@ try{
  await act(()=>confirm().click());data.project_revision=6;
  await act(()=>w.dispatchEvent(new w.Event('focus')));
  check(!confirm().checked,'concurrent project clock change resets confirmation');
+ // Large projects keep date entry before the independently scrollable unit list.
+ data.units=Array.from({length:126},(_,i)=>({...data.units[0],id:'large-'+i,number:String(i+1),deadline:'2027-04-02',basis:'large-'+i}));
+ await act(()=>w.dispatchEvent(new w.Event('focus')));await click('Sett bestillingsfrist');await click('Velg alle viste boliger');
+ const dateInput=w.document.querySelector('input[type=date]'),unitList=w.document.querySelector('.bolig-batch-unit-list');
+ check(Boolean(dateInput.compareDocumentPosition(unitList)&w.Node.DOCUMENT_POSITION_FOLLOWING),'date input precedes the 126-unit list');
+ check(unitList.textContent.includes('02.04.2027')&&!unitList.textContent.includes('2027-04-02'),'unit deadlines use Norwegian day.month.year');
+ check(unitList.querySelectorAll('input[type=checkbox]').length===126,'all units remain selectable');
+ check(!w.document.querySelector('.bolig-batch-review').open,'duplicate detailed review is initially collapsed');
+ check(!!button('Endre felles klokkeslett · 12:00'),'project clock is discoverable directly from deadline view');
+ await act(()=>{Object.getOwnPropertyDescriptor(w.HTMLInputElement.prototype,'value').set.call(dateInput,'2027-05-03');dateInput.dispatchEvent(new w.Event('input',{bubbles:true}));dateInput.dispatchEvent(new w.Event('change',{bubbles:true}));});
+ check(w.document.querySelector('.bolig-batch-review').textContent.includes('02.04.2027 → 03.05.2027'),'review formats both old and new dates');
+ await act(()=>confirm().click());await click('Bekreft bestillingsfrist');
+ const dateCall=calls.find(c=>c.args.p_action==='deadlines');
+ check(dateCall.args.p_payload.deadline==='2027-05-03'&&dateCall.args.p_payload.units.length===126,'server payload retains ISO date and explicit 126-unit scope');
  deny=true;await act(()=>w.dispatchEvent(new w.Event('focus')));check(!w.document.body.textContent.includes('extra@example.invalid'),'revoked access hides recipient data');
  deny=false;await click('Hent siste oversikt');held=[];await act(()=>w.dispatchEvent(new w.Event('focus')));await click('Lukk og behold utkast');await act(()=>{held[0]({data});});check(!w.document.querySelector('dialog'),'late response cannot reopen deliberately closed panel');
  await act(()=>w.__render({...props,context:{...context,role:'reader'}}));check(!button('Beboerlenker og frister samlet'),'reader has no batch action');

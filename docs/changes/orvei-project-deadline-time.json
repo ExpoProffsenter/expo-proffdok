@@ -1,8 +1,8 @@
 {
   "version": 1,
   "title": "Felles prosjektklokkeslett og lesbar byggadresse",
-  "change": "Miljømål BEGGE. Kl. 12 standard for nye bestillingsfrister, endres samlet per prosjekt; bevarer tidligere daterte prosjekters dagsslutt. Byggadresse brytes ikke midt i ord. Hele planen blir standard i bolig-Gantt, med automatisk periode for filtrerte aktiviteter.",
-  "verification": "Lokal critical QA og Vite build PASS; 1857 PostgreSQL-assertions PASS; 18 React batch-scenarioer og batch helper PASS. Chromium-kjøring blokkert av manglende bundled browser og lokale socket-rettigheter; innlogget Preview, CI og migrasjon i sandbox gjenstår. Ingen produksjonssetting. Gantt kalender/React-scenarioer og ny Vite build PASS; ny nettleserprøve gjenstår.",
+  "change": "Miljømål BEGGE. Kl. 12 standard for nye bestillingsfrister, endres samlet per prosjekt; bevarer tidligere daterte prosjekters dagsslutt. Byggadresse brytes ikke midt i ord. Hele planen blir standard i bolig-Gantt, med automatisk periode for filtrerte aktiviteter. Norsk dd.mm.åååå i frist/fremdrift, tydelige oppsettinnganger, fristdato før boligliste og direkte prosjektklokkehandling.",
+  "verification": "Tidligere kandidat hadde full grønn CI og innlogget sandboxkontroll. Brukertest ba om UX-retting før TEST OK. Nye 126-boligers React- og datovisningstester kjøres; se siste PR-status. Ingen produksjonssetting.",
   "documentation": {
     "help": {
       "required": true,

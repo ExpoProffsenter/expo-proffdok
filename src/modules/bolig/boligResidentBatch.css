@@ -9,3 +9,22 @@
 @media(max-width:640px){.bolig-resident-batch .bolig-preparation-filters{grid-template-columns:1fr}.bolig-resident-batch .bolig-preparation-footer button{flex:1 1 100%}}
 
 .bolig-dialog.bolig-resident-batch label:has(select),.bolig-dialog.bolig-resident-batch label:has(input[type=date]){display:block}
+
+.bolig-page .bolig-setup-resident-tools{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:16px 0}
+.bolig-page .bolig-setup-resident-tools>.bolig-resident-import-entry{display:flex;align-content:start;align-items:stretch;flex-direction:column;margin:0;padding:16px;background:#edf6f7;border:1px solid #b7d2d7;border-radius:12px;gap:8px}
+.bolig-page .bolig-setup-resident-tools button{width:100%;min-height:48px;background:#006f7d;color:#fff;border:1px solid #006f7d;font-size:16px;font-weight:700;text-align:left;padding:12px 16px;white-space:normal}
+.bolig-page .bolig-setup-resident-tools p{margin:0;color:#344f5b;font-size:15px}
+.bolig-resident-batch .bolig-batch-actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.bolig-resident-batch .bolig-batch-actions button{padding:10px 14px;border:1px solid #006f7d;color:#005865;background:#fff;font-weight:700}
+.bolig-resident-batch .bolig-batch-actions button[aria-pressed=true]{background:#006f7d;color:#fff}
+.bolig-resident-batch .bolig-batch-deadline-fields{padding:12px 16px;background:#edf6f7;border-radius:8px;margin-bottom:16px}
+.bolig-resident-batch .bolig-batch-deadline-fields p{margin:8px 0}
+.bolig-resident-batch .bolig-batch-unit-list{max-height:288px;overflow:auto;border:1px solid #c7d9df;border-radius:8px;padding:0 12px;overscroll-behavior:contain}
+.bolig-resident-batch .bolig-batch-unit-list label{border-bottom:1px solid #e1e9ed;padding:8px 0;margin:0}
+.bolig-resident-batch .bolig-batch-selection-count{font-weight:700;margin:12px 0 8px}
+.bolig-resident-batch .bolig-batch-review{margin:8px 0}
+.bolig-resident-batch .bolig-batch-review summary{cursor:pointer;min-height:44px;display:flex;align-items:center;color:#005865;text-decoration:underline}
+.bolig-resident-batch .bolig-batch-review ul{max-height:240px;overflow:auto;padding-left:24px}
+.bolig-dialog.bolig-resident-batch label:has(input[type=time]){display:block}
+.bolig-resident-batch input[type=time]{min-height:44px;font-size:16px;width:100%}
+@media(max-width:640px){.bolig-page .bolig-setup-resident-tools{grid-template-columns:1fr}.bolig-resident-batch .bolig-batch-actions button{flex:1 1 100%}}

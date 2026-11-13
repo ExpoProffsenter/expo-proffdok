@@ -117,11 +117,11 @@ try {
       "all tasks on same Gantt",
     );
     const a = page.getByRole("button", {
-        name: "H0101 · Plangata 1 · Rørlegger · 2026-10-26 til 2026-10-26",
+        name: "H0101 · Plangata 1 · Rørlegger · 26.10.2026 til 26.10.2026",
         exact: true,
       }),
       b = page.getByRole("button", {
-        name: "H0101 · Plangata 1 · Elektro · 2026-10-26 til 2026-10-26",
+        name: "H0101 · Plangata 1 · Elektro · 26.10.2026 til 26.10.2026",
         exact: true,
       });
     eq(

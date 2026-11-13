@@ -1,3 +1,4 @@
+import {progressDate as displayDate} from "./boligProgressClient.js";
 import React, { useEffect, useRef, useState } from "react";
 import { ArrowRight, Building2, Check, ClipboardCheck, FileText, Home, MessageSquare, RefreshCw, ShieldCheck, SlidersHorizontal } from "lucide-react";
 import "./boligPortalPresentation.css";
@@ -345,7 +346,7 @@ export default function BoligPortalPage() {
             <>
               <section className="bolig-resident-card">
                 <h2>Velg det som passer deg</h2>
-                {data.choice_deadline && <p role="status"><strong>Bestillingsfrist: {data.choice_deadline} ({data.choice_deadline_time?`kl. ${data.choice_deadline_time}`:'til slutten av dagen'}, norsk tid).</strong> {choicesClosed ? "Fristen er utløpt. Kontakt prosjektleder for ny frist. Avtaler og dokumenter er fortsatt tilgjengelige." : "Send nye tilvalg før fristen."}</p>}
+                {data.choice_deadline && <p role="status"><strong>Bestillingsfrist: {displayDate(data.choice_deadline)} ({data.choice_deadline_time?`kl. ${data.choice_deadline_time}`:'til slutten av dagen'}, norsk tid).</strong> {choicesClosed ? "Fristen er utløpt. Kontakt prosjektleder for ny frist. Avtaler og dokumenter er fortsatt tilgjengelige." : "Send nye tilvalg før fristen."}</p>}
                 <p>
                   Prosjektleder har klargjort disse valgmulighetene for boligen
                   din. Send ønsket til gjennomgang. Du får en egen avtale å

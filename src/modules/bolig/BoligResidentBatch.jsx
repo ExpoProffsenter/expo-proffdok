@@ -1,4 +1,5 @@
 import React,{useEffect,useRef,useState} from 'react';
+import {progressDate} from './boligProgressClient.js';
 import Dialog from './BoligEditorDialog.jsx';
 import './boligResidentBatch.css';
 import {boligDraftKey,readBoligDraft,writeBoligDraft} from './boligClient.js';
@@ -7,12 +8,14 @@ import {batchRecipients,batchVisible,selectionRows,validResidentEmail} from './b
 import {newResidentToken} from './boligCommerceClient.js';
 import {portalUrl} from './boligPortalClient.js';
 import {residentMailRpc,sendResidentInvitation} from './boligResidentMailClient.js';
+const displayDate=value=>value?progressDate(value):'Ikke satt';
 const initial={selected:[],mode:'links',deadline:'',deadline_time:'',pending:null,prepared:null,attempts:[]};
 export default function BoligResidentBatch({context,record,onChanged}){
  const [open,setOpen]=useState(false);
  if(context.role!=='manager'||!context.enabled||record.root.archived)return null;
  const installed=record.units.every(u=>Object.hasOwn(u,'choice_deadline'));
  return <section className="bolig-resident-import-entry"><button type="button" disabled={!installed} onClick={()=>setOpen(true)}>Beboerlenker og frister samlet</button>
+ <p>Velg boliger, sett bestillingsdato og juster prosjektets felles klokkeslett.</p>
  {!installed&&<small>Samlet behandling må klargjøres i dette miljøet før bruk.</small>}
  {open&&<BatchDialog key={`${context.user_id}/${context.company_id}/${record.root.id}/${context.role}/${context.enabled}`} context={context} root={record.root} onClose={()=>setOpen(false)} onChanged={onChanged}/>}</section>;
 }
@@ -77,15 +80,19 @@ function BatchDialog({context,root,onClose,onChanged}){
  {error&&<p role="alert">{error}</p>}{notice&&<p role="status">{notice}</p>}
  {!data?<><p>Oversikten må hentes med gyldig prosjektledertilgang.</p><button disabled={busy} onClick={load}>Hent siste oversikt</button></>:<>
  {!draft.prepared&&<fieldset disabled={locked}><label>Handling<select value={draft.mode} onChange={e=>change({mode:e.target.value})}><option value="links">Klargjør og send beboerlenker</option><option value="deadline">Sett bestillingsfrist</option>{Object.hasOwn(data,'deadline_time')&&<option value="time">Klokkeslett for hele prosjektet</option>}</select></label>
+
+ <div className="bolig-batch-actions"><button type="button" aria-pressed={draft.mode==='deadline'} onClick={()=>change({mode:'deadline'})}>Sett bestillingsfrist</button>{Object.hasOwn(data,'deadline_time')&&<button type="button" aria-pressed={projectClock} onClick={()=>change({mode:'time'})}>Endre felles klokkeslett · {data.deadline_time||'Dagsslutt'}</button>}</div>
+ {draft.mode==='deadline'&&<div className="bolig-batch-deadline-fields"><label>Bestillingsdato ({data.deadline_time?`kl. ${data.deadline_time}`:'til slutten av dagen'}, norsk tid)<input lang="nb-NO" type="date" value={draft.deadline} onChange={e=>change({deadline:e.target.value})}/></label><p>Ny dato gjelder bare boligene du velger nedenfor. Dagens klokkeslett: <strong>{data.deadline_time||'Slutten av dagen'}</strong>.</p></div>}
+ {projectClock&&<><label>Felles klokkeslett (norsk tid)<input lang="nb-NO" type="time" value={clock} onChange={e=>change({deadline_time:e.target.value})}/></label><p>Gjelder alle {units.length} boliger, uansett bygg, filter eller utvalg. Datoene beholdes. Nå: {data.deadline_time||'slutten av dagen'} → {clock}. En tidligere tid kan stenge valg som er åpne nå.</p></>}
  {!projectClock&&<><div className="bolig-preparation-filters"><label>Bygg eller blokk<select value={block} onChange={e=>{setBlock(e.target.value);setConfirmed(false);}}><option value="">Alle bygg</option>{unique('block_id','block_name').map(([id,name])=><option key={id} value={id}>{name}</option>)}</select></label>
  <label>Stammegruppe<select value={group} onChange={e=>{setGroup(e.target.value);setConfirmed(false);}}><option value="">Alle stammer</option>{unique('group_id','group_name').map(([id,name])=><option key={id} value={id}>{name}</option>)}</select></label></div>
  <button type="button" onClick={()=>change({selected:[...new Set([...draft.selected,...shown.map(u=>u.id)])]})}>Velg alle viste boliger</button> <button type="button" onClick={()=>change({selected:[]})}>Tøm utvalget</button>
- {shown.map(u=><label key={u.id}><input type="checkbox" checked={draft.selected.includes(u.id)} onChange={e=>change({selected:e.target.checked?[...draft.selected,u.id]:draft.selected.filter(id=>id!==u.id)})}/>{u.block_name} · Bolig {u.number} · {u.group_name||'Uten stamme'} · Frist: {u.deadline||'Ikke satt'}{u.portal_active?' · Har aktiv lenke':''}</label>)}</>}
- {draft.mode==='deadline'&&<label>Bestillingsdato ({data.deadline_time?`kl. ${data.deadline_time}`:'til slutten av dagen'}, norsk tid)<input type="date" value={draft.deadline} onChange={e=>change({deadline:e.target.value})}/></label>}
- {projectClock&&<><label>Felles klokkeslett (norsk tid)<input type="time" value={clock} onChange={e=>change({deadline_time:e.target.value})}/></label><p>Gjelder alle {units.length} boliger, uansett bygg, filter eller utvalg. Datoene beholdes. Nå: {data.deadline_time||'slutten av dagen'} → {clock}. En tidligere tid kan stenge valg som er åpne nå.</p></>}
+ <p className="bolig-batch-selection-count" role="status">{selected.length} av {units.length} boliger valgt · {shown.length} vises</p><div className="bolig-batch-unit-list" role="group" aria-label="Velg boliger">{shown.map(u=><label key={u.id}><input type="checkbox" checked={draft.selected.includes(u.id)} onChange={e=>change({selected:e.target.checked?[...draft.selected,u.id]:draft.selected.filter(id=>id!==u.id)})}/>{u.block_name} · Bolig {u.number} · {u.group_name||'Uten stamme'} · Frist: {displayDate(u.deadline)}{u.portal_active?' · Har aktiv lenke':''}</label>)}</div></>}
+
  </fieldset>}
  {!draft.prepared&&!projectClock&&<section><h3>Kontroller {selected.length} valgte boliger</h3>
- <ul>{selected.map(u=><li key={u.id}>{u.block_name} · {u.number}{draft.mode==='deadline'?` · ${u.deadline||'Ingen frist'} → ${draft.deadline||'Velg dato'}`:` · ${u.offer_count} valgmuligheter`}</li>)}</ul>
+ {draft.mode==='deadline'&&<p>Ny bestillingsfrist: <strong>{draft.deadline?displayDate(draft.deadline):'Velg dato ovenfor'}</strong> · {data.deadline_time?`kl. ${data.deadline_time}`:'til slutten av dagen'} (norsk tid).</p>}
+ <details className="bolig-batch-review"><summary>Vis alle {selected.length} valgte boliger og endringene</summary><ul>{selected.map(u=><li key={u.id}>{u.block_name} · {u.number}{draft.mode==='deadline'?` · ${displayDate(u.deadline)} → ${draft.deadline?displayDate(draft.deadline):'Velg dato'}`:` · ${u.offer_count} valgmuligheter`}</li>)}</ul></details>
  {draft.mode==='links'?<><p>{audience.recipients.length} separate e-poster. Eierne på samme bolig får samme portal. {audience.missing.length} kontakter uten gyldig e-post får ingen melding.</p>
  <ul>{audience.recipients.map(r=><li key={`${r.unit_id}/${r.email}`}>Bolig {r.number}: {r.name} · {r.email}</li>)}{audience.missing.map((r,i)=><li key={`missing-${i}`}>Bolig {r.number}: {r.name||'Mangler navn'} – mangler gyldig e-post</li>)}</ul>
  {!canPublish&&<p role="alert">Alle valgte boliger må ha navn og gyldig e-post på hovedkontakten før lenker kan klargjøres.</p>}
