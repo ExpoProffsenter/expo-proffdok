@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "HR-prøvesamtale: vis fullført gjennomgang etter gjenåpning",
+  "change": "Miljømål SANDBOX/DEMO. Kun eksisterende lokale prøvesamtalevisning i HrPracticeConversation.jsx: låst lagret utgave viser gjennomgått ut fra sin lagrede completed-status. Ny redigerbar utgave bruker fortsatt separat, nullstilt bekreftelse. Produksjonsgate, ordinære HR-samtaler, lagringsformat, historikk, tilgang, PDF, backend og e-post er uendret.",
+  "verification": "N-UX-003 gjenskapt i innlogget demo13.11: fullført lokal utgave4/PDF, reload ga tom låst gjennomgått-checkbox. Faktisk HR React-test feilet på gammel kode: Completed saved version must show its review after reopening. Etter rettelsen består HR React sandbox/production og modelltester. Nye assertions dekker fullført gjenåpning og krav om fersk bekreftelse ved ny utgave. Chromium-regresjon utvidet for full reload, men ikke kjørt lokalt (kjent socket-begrensning). Preview/CI-status og testliste føres i PR; ingen TEST OK eller merge.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Ingen ny brukerflyt eller knapp; korrekt visning av allerede fullført prøvereferat."
+    },
+    "module": {
+      "required": false,
+      "reason": "Eksisterende lokal historikk og ny-utgave-kontrakt beholdes; kun visningen korrigeres."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Ingen dataflyt, lagringsformat, tilgang eller backend endres."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen kodeavhengigheter eller installasjonskrav endres."
+    }
+  }
+}
