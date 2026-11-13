@@ -3,6 +3,9 @@ export default async function batchScenarios({db,call,actor,eq,rejects,id,firm,o
  await db.exec('reset role');
  await db.exec(await fs.readFile('supabase/migrations/20261112232829_bolig_resident_batch_deadlines.sql','utf8'));
  await db.exec(await fs.readFile('supabase/migrations/20261112235913_bolig_portal_company_brand.sql','utf8'));
+ await db.exec(`create or replace function public.sales_normalize_company_name(text) returns text language sql immutable as $$select lower(trim($1))$$;alter table public.sales_company_scopes add column if not exists normalized_name text;update public.sales_company_scopes set normalized_name=lower(trim(display_name));alter table public.profiles add column if not exists company_name text;alter table public.profiles add column if not exists company_role text;create table if not exists public.companies(id uuid primary key,company_name text,logo_url text,created_at timestamptz default now());alter table public.profiles add column if not exists logo_url text;alter table public.profiles add column if not exists created_at timestamptz default now();`);
+ await db.exec(await fs.readFile('supabase/migrations/20261113000853_bolig_portal_public_brand.sql','utf8'));
+ await db.query("insert into public.companies(id,company_name,logo_url) select $1,display_name,'https://qa.invalid/owner-logo.png' from public.sales_company_scopes where id=$2",[id(97999),firm]);
  await actor(manager);
  let state=await call('create_plan',null,null,{request_id:id(97000),title:'QA samlede beboerhandlinger',reference:'QA',buildings:[{name:'Blokk A',building_type:'multi',address:'QA',house_floors:1,entrances:[{address:'QA',counts:[2]}]}]});
  const root=state.root.id, units=state.units.map(u=>u.id);
@@ -39,7 +42,7 @@ export default async function batchScenarios({db,call,actor,eq,rejects,id,firm,o
  await db.query("update bolig_private.resident_portals set published_offers=$1 where unit_id=$2",[JSON.stringify([{id:id(97040),title:'QA valg',snapshot:{total_cents:100,goods:[]}}]),units[0]]);
  await db.exec("select set_config('qa.user','',false);set role anon");
  const portal=async(action='get',payload={})=>(await db.query('select public.bolig_portal($1,$2,$3) v',[publish.units[0].token,action,payload])).rows[0].v;
- let p=await portal();eq(Object.hasOwn(p.identity,'logo_url'),true,'Public portal includes public company logo field');eq(Object.hasOwn(p.identity,'company_profile'),false,'No full company profile exposed');eq(p.choice_deadline,date);eq(p.choices_closed,false);eq(p.shared_household,true);
+ let p=await portal();eq(p.identity.logo_url,'https://qa.invalid/owner-logo.png','Anonymous portal uses project-owning company logo without signed-in profile API');eq(Object.hasOwn(p.identity,'company_profile'),false,'No full company profile exposed');eq(p.choice_deadline,date);eq(p.choices_closed,false);eq(p.shared_household,true);
  const request={request_id:id(97041),menu_version:p.menu_version,offer_id:id(97040),body:''};
  p=await portal('request',request);eq(p.events.filter(e=>e.kind==='request').length,1);
  await db.exec('reset role');await db.query("update bolig_private.units set choice_deadline=(clock_timestamp() at time zone 'Europe/Oslo')::date-1 where id=$1",[units[0]]);

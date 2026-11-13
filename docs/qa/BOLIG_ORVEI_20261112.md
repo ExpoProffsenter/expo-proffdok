@@ -93,3 +93,7 @@ PR323-kjøring43331389746: bolig-db, bolig-browser, build, HR og øvrige datates
 Additiv migrasjon20261112235913 legger bare logo_url i portalidentiteten fra prosjektets firma. Klient bruker proporsjonal logo opptil260×88px (mobil220×76), firmanavn beholdes og ikon vises ved bildefeil. Krever sandbox-installasjon og visuell kontroll. Ingen produksjonsendring.
 
 Logo: lokal database1815 og build PASS. Installert kun sandbox etter kontroll av eksisterende portal_state. Ingen realutsending.
+
+Live logooppfølging: work_profile_company_profile krever auth.uid og returnerte null for anonym beboer. Additiv rettelse20261113000853 erstatter kun private portalprojeksjonen med prosjektfirmaets logo fra samme firmakilder. Ingen full firmaprofil eksponeres, og direkte funksjonskall forblir sperret. Ny SQL-test krever konkret firma-logo ved anonym portalåpning.
+
+Endelig anonym logotest:1815SQL PASS med konkret prosjekteierlogo. Rettelsen installert sandbox; faktisk anonym portal viser lesbar Expo Proffsenter-logo proporsjonalt, frist21.11 og delt eierportal. Bilde evidence/orvei-portal-logo-20261113.jpg. Logoen i eksemplet følger QA-prosjektets firma; Orvei vil få sin lagrede firmalogo. Mobil er ikke visuelt prøvd i denne runden. Før logoens anonyme rettelse bestod GitHub43333662948 på b0e817c2; ny additiv migrasjon krever ny kontroll.

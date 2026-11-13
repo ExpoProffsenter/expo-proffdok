@@ -32,4 +32,4 @@ Rollback: tidligere frontend kan brukes med beholdte nye felt/tabeller. Serverfr
 
 Nye sendekall inkluderer forventet aktiv bruker-ID. Edge sammenligner denne med Auth.getUser og avviser supportens effektive kundeidentitet når JWT tilhører administratoren. Eldre klienter uten felt beholder sin eksisterende kontrakt. SQL bekrefter fortsatt firma, rolle, registrert mottaker, aktiv token og revisjon før både prepare og begin.
 
-Portalens identity.logo_url hentes fra prosjektets eget company_id og eksisterende firmaprofil, aldri fra besøkendes aktive firma. Bare logofeltet eksponeres; øvrig firmaprofil følger ikke med. Bilde vises proporsjonalt, med firmanavn/ikon ved manglende eller feilet bilde.
+Portalens identity.logo_url hentes fra prosjektets eget company_id og eksisterende logo i companies/profiles, aldri fra besøkendes aktive firma. Bare logofeltet eksponeres; øvrig firmaprofil følger ikke med. Bilde vises proporsjonalt, med firmanavn/ikon ved manglende eller feilet bilde.

@@ -1,9 +1,10 @@
 # Branchregister – 12.11.2026
 
-Kontrollert mot GitHub med git ls-remote/fetch. Åtte brancher. Ingen slettet, ingen merge eller produksjonsendring. main er felles ancestor for samtlige; demo har 171 egne commits og skal aldri merges tilbake i main.
+Kontrollert mot GitHub med git ls-remote/fetch. Ni brancher etter egen invitasjonsrettelse PR324. Ingen slettet, ingen merge eller produksjonsendring. main er felles ancestor for samtlige; demo har 171 egne commits og skal aldri merges tilbake i main.
 
 | Branch | Kontrollert commit | Formål og PR | Når kan den slettes? |
 | --- | --- | --- | --- |
+| fix/company-invitation-management-20261113 | e94a469311a9821ab142e9da8087b5f4c102dd81 | Draft PR324: tilbaketrekking og varig sendestatus. Separat fra Orvei/support | Etter egen TEST OK, grønn QA, publisering og main→demo. Behold unikt arbeid |
 | main | d68cf2e530d5ab6afcfe2f97d75150c977bcd64f | Publisert produksjon | Permanent – behold |
 | demo | 8f7307bc909f19203ff2cfbf76de142936978748 | Permanent demo med eget overlegg | Permanent – behold |
 | release/support-verified-20261111 | f64efcc8d1b957d829e9ea96bd39ce539dde48ea | Aktiv PR322. Inkluderer ny rettelse for offentlige portaler | Etter autorisert merge, bekreftet produksjon og kontrollert main→demo; behold rollbackreferanse |
