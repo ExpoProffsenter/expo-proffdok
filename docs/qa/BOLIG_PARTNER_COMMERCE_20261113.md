@@ -1,22 +1,43 @@
 # Personstyrt grunnpakke og tilvalg
 
-Miljømål BEGGE. Arbeidsbranch `feat/bolig-partner-commerce-20261113` fra main `6eb54148b3d61e318c5447810cdf89deab6afffa`. Ikke produksjonssatt, ingen reelle rettigheter tildelt eller e-post sendt.
+## Status 13.11.2026
+PR333: `feat/bolig-partner-commerce-20261113`, fra main `6eb54148b3d61e318c5447810cdf89deab6afffa`. Miljømål BEGGE. Appkandidat `19419f136cbb8d0410097fa033ef2e0f21dc8514`; testgrense presisert i `b375f63e7fb977b0c4fa299e9f1651dad8548e06`. Ikke produksjonssatt. Ingen reelle personrettigheter, medlemskap eller e-post endret.
 
-## Omfang
-Navngitte brukere hos Bademiljø Expo, Expo Proffsenter og Ringside kan få eksplisitt prosjektadgang via eksisterende partnerkontakt. Lesing, individuell vare/arbeidstilpasning og felles katalog er separate rettigheter. Brukeren åpner Min side → Mine samarbeid. Arbeidsfirma og medlemskap beholdes. Prosjektleder deler ferdige forslag, beboer godkjenner selv.
+Fast Preview: https://expo-proffdok-git-feat-bolig-partner-commerce-20261113-ringside.vercel.app/?progressTest=safe
 
 ## Implementert
-Konto-/prosjektbundet privat tabell og kontrollert RPC. Tilgang kontrollerer registrert e-post, profil, internt medlemskap, aktiv partneradgang, firmaaktivering og prosjekt. Partnerlenke alene gir ikke kommersiell tilgang. Publisert/akseptert avtale og klargjort ordre stopper samarbeidsskriving. Eksisterende revisjon/audit og boligvalg brukes. Min side har kun to nye integrasjonslinjer; grensekontrollen fjerner akkurat disse og krever byteparitet for resten. Ingen generell tilgangskjerne endres.
+Navngitte brukere hos Bademiljø Expo, Expo Proffsenter og Ringside kan få eksplisitt prosjektadgang via eksisterende partnerkontakt. Lesing, individuell vare-/arbeidstilpasning og felles katalog er separate rettigheter. Min side → Mine samarbeid viser bare tildelte prosjekter; arbeidsfirma og medlemskap beholdes. Prosjektleder deler ferdige forslag, beboer godkjenner selv.
 
-## Kontroller
-- Full lokal databasepakke PASS: 1877 assertions, inkludert vare-/arbeidslinjer, total, nabobolig isolert, separate rettigheter, endret e-post, utløp, deaktivert konto, tilbakekalling og publisert/akseptert avtale.
-- React PASS: forsinket tilgangsoppfrisking beholder editor/utkast; samme tilgang beholder mount; tilbakekalling og ufullstendig svar fjerner editor. Faktisk dialog og CSS inngår; selve vareeditoren er stubbet i denne testen.
-- KS/HMS/HR/Min side navigasjon PASS lokalt etter at transportfixture fikk den nye lesende RPC-en. Kontaktpåminnelsens nettleserfixture oppdatert med samme lesekall; ingen skrivekall lagt til tillatelseslisten.
-- Full lokal build og critical checks PASS. Grensekontroll PASS (55 assertions), workflow-vernet PASS (147 opprinnelige kommandoer bevart).
-- Hjelp, modulbeskrivelse og arkitektur oppdatert.
+Privat konto-/prosjektbundet RLS-tabell og kontrollerte RPC-er. Hvert kall kontrollerer kontoens e-post, profil, internt medlemskap, aktiv partneradgang, firmaaktivering og prosjekt. Partnerlenke alene gir ikke priser/valg. Publisert/akseptert avtale og klargjort ordre stopper samarbeidsskriving. Eksisterende revisjon/audit og boligvalg brukes.
 
-## Gjenstår før TEST OK
-Full CI og faktisk Preview-kontroll av tildeling, varer/arbeid, utløp og tilbakekalling; kontrollert sandboxinstallasjon. Migrasjonen 20261113194437 er foreløpig ikke installert i hosted miljøer. Ingen produksjonsimport av Aamodthagen eller testpakker.
+Min side har to isolerte integrasjonslinjer; grensekontrollen krever byteparitet for alt annet. To eksisterende regresjonsfixtures har fått akkurat ett nytt lesekall; grensekontrollen normaliserer kun disse eksakte tilleggene og bevarer øvrige assertions. Ingen generell tilgangskjerne endres. Oppfrisking beholder editor/utkast; tilbakekalling eller ufullstendig svar lukker innholdet. Varetilpasning bruker egen arbeidsdialog.
 
-## Sandboxbinding 13.11 kl. 20:40 UTC
-Før åpning ble manglende branchbinding oppdaget. Vercel EXPO_BACKEND_TARGET=sandbox er satt kun for Preview og feat/bolig-partner-commerce-20261113. Eksakt d0179dec ble redeployet som dpl_ACxgF1EbySrrek9B7KSHqhhSCSDd. Tidligere preview fra denne branchen skal ikke brukes. Ingen test ble utført mot denne gamle previewen. Nyeste commit må fortsatt få kontrollert buildbinding og visuell QA.
+## Testbevis
+- Full lokal PostgreSQL-pakke PASS: 1877 assertions. Tillegg dekker tre vare-/arbeidslinjer, sum 580000 øre, uendret nabobolig/katalog, uavhengige rettigheter, e-postbytte, utløp, deaktivert profil og tilbakekalling.
+- Faktisk kommersiell databaseflyt: manager oppretter/godkjenner/publiserer forslag, beboer aksepterer, samarbeidspartner nektes endring av publisert/akseptert avtale.
+- React PASS: dialog og faktisk CSS; forsinket tilgangsoppfrisking bevarer mount/utkast; tilbakekalling og feilformet svar fjerner editor. Selve vareeditoren er stubbet i denne isolerte refresh-testen.
+- KS/HMS/HR/Min side navigasjon PASS lokalt og i CI etter oppdatert lesefixtures. Opprinnelige felt-, utkast-, navigasjons- og frakoblingskrav beholdt.
+- Full lokal build/critical PASS; boundary PASS (55 assertions, eksakt endringskontroll), workflowvern PASS (147 opprinnelige kommandoer).
+- Full CI for b375f63e pågår; forrige kjøring stoppet kun fordi de to gjennomgåtte testfilene manglet i den avgrensede scope-kontrollen. Ikke kall PR-en grønn før siste kjøring er ferdig.
+
+## Hosted sandbox
+Prosjekt `ppvircenkjizeiqdxphj`. Repo-migrasjon `20261113194437_bolig_partner_commerce.sql` installert som `20261113204410_bolig_partner_commerce`. Før installasjon: tabell/RPC/historikk fraværende og funksjonsankre bekreftet. Ikke kjør SQL på nytt under repo-tidsstempelet.
+
+Etter installasjon: RLS aktiv og null tildelinger. Faktisk authenticated demo-bruker får tom liste uten tildeling. Spesifikt prosjekt uten tildeling, direkte tabelltilgang og anonymous RPC ble avvist med 42501 i tilbakerullet transaksjon. Ingen positiv cross-firma-test med innlogget hosted bruker er gjennomført.
+
+Advisors: 475 → 476 funn, kun nytt INFO for RLS uten policy på privat partner_commerce_access. Dette er tilsiktet: alle klientroller er fratatt direkte tabelltilgang, og funksjoner kontrollerer all adgang. Ingen nye WARN/ERROR-funn. [Supabase forklaring](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy).
+
+## Previewbinding og visuell blokkering
+Før første åpning ble manglende branchbinding oppdaget. EXPO_BACKEND_TARGET=sandbox ble satt kun for Preview og denne featurebranchen. d0179dec ble redeployet som dpl_ACxgF1EbySrrek9B7KSHqhhSCSDd, READY; buildloggen bekreftet «Explicit backend target: Sandbox Supabase only». Nye bygg arver samme branchbinding; siste deploy/commit skal bekreftes før test. Eldre preview uten denne bindingen skal ikke brukes; ingen test ble utført der.
+
+Fast Preview åpnet i native Chromium og viste innloggingssiden. Eksisterende økt til PR332 følger ikke med til PR333s nye origin. Ingen passord/økt ble hentet eller flyttet. Innlogget visuell test av tildeling og vare-/arbeidseditor gjenstår. Produksjon og permanent demo er uendret.
+
+## Neste steg og konkret test
+1. Bekreft grønn siste CI og Vercel-commit/binding.
+2. Logg inn på fast Preview. Bruk isolert sandboxprosjekt og avklart testperson, ikke reell kundetilgang.
+3. UE-/leverandøradgang: åpne en aktiv prosjektkontakt med godkjent intern konto. «Grunnpakke og tilvalg»: slå på lesing, bekreft personen, lagre. Testpersonen skal se kun dette prosjektet under Min side → Mine samarbeid, med uendret arbeidsfirma.
+4. Gi «Endre boligtilvalg, legge til varer og arbeid» separat. Velg bolig; tilpass vare-/arbeidslinjer; les tilbake og kontroller sum/nabobolig. Felles pakker skal fortsatt være skrivebeskyttet uten egen katalogrett.
+5. Test utløp/tilbakekalling og at publisert/akseptert forslag ikke kan overskrives. Ingen e-post eller reell beboeraksept i testen.
+6. Før produksjon: TEST OK, fersk main/migrasjonshistorikk, kontrollert installasjon/publisering, deretter main → demo med overlay bevart.
+
+Tilbakeføring: deaktiver aktuelle prosjektbundne personrettigheter og rull frontend tilbake ved behov. Bevar audit, boligvalg og additive tabeller; ingen blind sletting/down-migrasjon. Ved eventuell produksjonsutrulling skal konkret forrige deploy registreres først.
