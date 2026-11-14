@@ -8,7 +8,20 @@ let checks=0,browser;const eq=(a,b,label)=>{assert.deepEqual(a,b,label);checks++
 const addedIds=['plan-opprett-rediger','varetelling-omrade-pause-kontroll'];
 const staffingId='bemanningsplan-eksport';
 const boligFullId='bolig-a-til-aa';
-const fourteenGuides=VIDEO_GUIDES.filter(x=>x.id!==boligFullId);
+// Only the two explicitly refreshed media records may differ from V1.
+// Reconstruct them for all historical preservation hashes below; all live
+// records still undergo actual hash/bytes/native playback/role tests.
+const priorShorts=JSON.parse(fs.readFileSync('scripts/fixtures/bolig-short-video-v1-metadata.json','utf8'));
+const shortMediaKeys=new Set(['src','track','duration','sha256','bytes','sourceCommit','chapters']);
+const stableGuide=g=>Object.fromEntries(Object.entries(g).filter(([key])=>!shortMediaKeys.has(key)));
+const preservationGuides=VIDEO_GUIDES.map(g=>{
+ const prior=priorShorts.find(p=>p.id===g.id);if(!prior)return g;
+ eq(stableGuide(g),stableGuide(prior),'refreshed short retains identity, access and topic '+g.id);
+ const expected=g.id==='finn-bolig'?['/help-videos/finn-bolig-v2.mp4',112,8,'68e01deb5fb6b9ac72b6c3bb462de1ad51f71f2a63928088aaf129689164bfea']:['/help-videos/bolig-masseplan-v2.mp4',90,5,'6e4fcb18fb8ab1b67c1c301e98ff52ef1537d40fc46eae9722dda486bb855037'];
+ eq([g.src,g.duration,g.chapters.length,g.sha256],expected,'exact reviewed V2 short '+g.id);
+ return prior;
+});
+const fourteenGuides=preservationGuides.filter(x=>x.id!==boligFullId);
 const thirteenGuides=fourteenGuides.filter(x=>x.id!==staffingId);
 eq(crypto.createHash('sha256').update(JSON.stringify(thirteenGuides)).digest('hex'),'0fee5b378bc83a1f08d6726750acb7669fd45a1e54bbe65485c89b1636c159f3','all thirteen earlier guide records preserved');
 const priorGuides=thirteenGuides.filter(x=>!addedIds.includes(x.id));
