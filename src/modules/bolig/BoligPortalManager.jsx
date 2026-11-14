@@ -217,6 +217,7 @@ export default function BoligPortalManager({
     setInvite({
       token: reminder ? null : newResidentToken(),
       reminder,
+      combine_base_id: data.portal?.combine_base_id || null,
       revision: data.revision,
     });
   };
@@ -744,6 +745,13 @@ export default function BoligPortalManager({
             ))}
           {!invite.published && (
             <>
+              {!invite.reminder && <label>Hvordan skal beboeren velge?
+                <select value={invite.combine_base_id || ''} onChange={e=>{setReviewed(false);setInvite({...invite,combine_base_id:e.target.value});}}>
+                  <option value="">Ett ferdig pakkealternativ</option>
+                  {(data.portal?.offers_draft||[]).filter(o=>Number(o.total_cents)===0).map(o=><option key={o.id} value={o.id}>Kombiner tilvalg – grunnpakke: {o.title}</option>)}
+                </select>
+                <small>Ved kombinering beholdes grunnpakken. Beboeren kan kombinere de delte tilvalgspakkene. Legg nødvendig montering i samme tilvalgspakke. Uforenlige erstatninger sperres automatisk.</small>
+              </label>}
               <label>
                 Forhåndsvisning
                 <textarea
@@ -796,6 +804,7 @@ export default function BoligPortalManager({
                   onClick={() =>
                     run("publish", {
                       token: invite.token,
+                      combine_base_id: invite.combine_base_id || null,
                       reviewed: true,
                       revision: invite.revision,
                     })

@@ -41,3 +41,7 @@ verify_jwt = true
 [functions.pro-catalog-order-email]
 # Auth.getUser plus fresh company/catalog authorization on prepare and begin.
 verify_jwt = false
+
+[functions.bolig-portal-images]
+# Valid resident capability and project-bound published image allowlist, checked twice.
+verify_jwt = false

@@ -1,3 +1,4 @@
+import BoligPartnerCommerceAccess from "./BoligPartnerCommerceAccess.jsx";
 import React, { useState } from "react";
 import {
   Truck,
@@ -665,6 +666,7 @@ export default function BoligPartners({ context, root }) {
             Datoendringer følges opp i «Fremdrift og varsler». Mottak
             registreres under boligens bestilling.
           </p>
+          {manager && partner.active && partner.access_mode === "project" && <BoligPartnerCommerceAccess key={`commerce:${partner.id}`} context={context} root={root} partner={partner}/>}
           <Items
             key={partner.id}
             browse

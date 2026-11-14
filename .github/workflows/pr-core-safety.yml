@@ -329,6 +329,11 @@ jobs:
         node scripts/bolig-contract-index-check.mjs
         node scripts/bolig-contract-finance-check.mjs
         node scripts/bolig-foundation-react-check.mjs
+        node scripts/bolig-collaboration-refresh-react-check.mjs
+        node scripts/bolig-shop-react-check.mjs
+        node scripts/bolig-shop-staff-react-check.mjs
+        node scripts/bolig-portal-combinations-react-check.mjs
+        node scripts/bolig-portal-images-check.mjs
         node scripts/bolig-catalog-react-check.mjs
         node scripts/bolig-overview-react-check.mjs
   bolig-browser:
@@ -381,6 +386,9 @@ jobs:
         node scripts/bolig-portal-browser-check.mjs
         node scripts/bolig-progress-browser-check.mjs
         node scripts/bolig-progress-planning-browser-check.mjs
+        node scripts/bolig-gantt-range-check.mjs
+          node scripts/bolig-progress-draft-check.mjs
+        node scripts/bolig-gantt-fit-react-check.mjs
         node scripts/bolig-coordination-browser-check.mjs
         node scripts/bolig-amendment-export-check.mjs
         node scripts/bolig-quality-browser-check.mjs

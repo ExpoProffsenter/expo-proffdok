@@ -206,7 +206,7 @@ export default function BoligCommerce({ context, root, unit }) {
           <small>Del lenken bare med riktig beboer. Svaret må registreres innen svarfristen.</small>
         </div>}
         {writable && doc.status === "published" && local.links[doc.id] && <ResidentInvitation key={`${key}:${doc.id}`} context={context} root={root} unit={unit} targetId={doc.id} kind="agreement" basis={doc.revision} link={local.links[doc.id]} disabled={busy || loading || !!local.pending} onBusy={setMailBusy} onSent={() => setNotice("E-posttjenesten har bekreftet sendingen.")}/>}
-        {doc.status === "published" && !local.links[doc.id] && <p>Lenken er laget i en annen nettleser. Hvis den er mistet, tilbakekall denne utgaven og klargjør en ny.</p>}
+        {doc.status === "published" && doc.snapshot.source!=="shop" && !local.links[doc.id] && <p>Lenken er laget i en annen nettleser. Hvis den er mistet, tilbakekall denne utgaven og klargjør en ny.</p>}
         {writable && <div className="bolig-commerce-actions">
           {["draft", "approved"].includes(doc.status) && <form onSubmit={e => { e.preventDefault(); run("publish_ready", { document_id: doc.id, revision: doc.revision, document_status: doc.status, acceptance_deadline: local.deadlines?.[doc.id] ?? acceptanceDate(doc.expires_at) }); }}>
             <label>Svarfrist for beboeren<input type="date" required min={osloDate()} disabled={disabled} value={local.deadlines?.[doc.id] ?? acceptanceDate(doc.expires_at)} onChange={e => { try { persist({ ...latest.current, deadlines: { ...latest.current.deadlines, [doc.id]: e.target.value } }); } catch (err) { setError(err.message); } }}/></label>
@@ -214,7 +214,7 @@ export default function BoligCommerce({ context, root, unit }) {
             <button type="submit" disabled={disabled}>Opprett beboerlenke</button>
           </form>}
           {["draft", "approved", "published", "expired"].includes(doc.status) && <button type="button" disabled={disabled} onClick={() => run("revoke", { document_id: doc.id, revision: doc.revision })}>Tilbakekall utgaven</button>}
-          {["draft", "approved", "published", "expired", "declined", "revoked"].includes(doc.status) && <button type="button" disabled={disabled || !!form} onClick={() => start(doc.kind, doc)}>Lag ny utgave</button>}
+          {doc.snapshot.source!=="shop" && ["draft", "approved", "published", "expired", "declined", "revoked"].includes(doc.status) && <button type="button" disabled={disabled || !!form} onClick={() => start(doc.kind, doc)}>Lag ny utgave</button>}
           {doc.kind === "change" && ["accepted","handled"].includes(doc.status) && <button type="button" disabled={disabled} onClick={() => { try { downloadAmendment(doc,context); } catch (e) { setError(e.message); } }}>Last ned endringsbestilling / kreditering</button>}
           {doc.kind === "change" && ["accepted","handled"].includes(doc.status) && !doc.fulfillment_applied_at && <button type="button" disabled={disabled} onClick={() => setHandling(local.followups?.[doc.id] || {note:doc.handling_note || "",reference:"",reviewed:false})}>Registrer leverandøroppfølging</button>}
         </div>}

@@ -16,6 +16,7 @@ const context={company_id:'11111111-1111-4111-8111-111111111111',user_id:'222222
 const employee={id:'33333333-3333-4333-8333-333333333333',user_id:context.user_id,email:'synthetic@example.invalid',leader_id:null,revision:1,readers:[]};
 let deferredHr=null,deferredKs=null,deferredExport=null,failKs=false,employeeVisible=true,employeeGets=0;
 w.__client={rpc:async(name,args={})=>{
+ if(name==='bolig_my_collaborations')return {data:{user_id:context.user_id,projects:[]}};
  if(name==='get_my_personal_context')return {data:{...context,personal_page:true,company_kshms:true,company_hr:true}};
  if(name==='get_hr_context'){if(deferredHr)return new Promise(resolve=>{deferredHr.resolve=()=>resolve({data:{...context}});});return {data:{...context}};}
  if(name==='get_kshms_context'){if(deferredExport)return new Promise(resolve=>{deferredExport.resolve=()=>resolve({data:{...context}});});if(deferredKs)return new Promise(resolve=>{deferredKs.resolve=()=>resolve({data:{...context}});});if(failKs)return {error:{message:'Synthetic unavailable'}};return {data:{...context}};}

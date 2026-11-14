@@ -39,6 +39,7 @@ try{
   window.profile=()=>({context:window.ctx(),registered:window.registered,available:window.available,editable:window.editable,employee:{id:'employee',revision:1},revision:window.revision,data:structuredClone(window.fields)});
   window.client={auth:{getUser:async()=>({data:{user:{id:window.actor,user_metadata:{full_name:'Syntetisk'}}}})},rpc:async(name,args)=>{
    window.calls.push({name,args:structuredClone(args)});
+   if(name==='bolig_my_collaborations')return {data:{user_id:window.actor,projects:[]}};
    if(name==='hr_contact_get'){
     if(window.denied)return {error:{code:'42501',message:'Tilgangen er endret'}};
     const data=window.profile();if(window.hold)return new Promise(resolve=>window.waiters.push(()=>resolve({data})));return {data};
@@ -111,7 +112,7 @@ try{
  await page.evaluate(()=>{Object.defineProperty(document,'visibilityState',{value:'hidden',configurable:true});document.dispatchEvent(new Event('visibilitychange'));});await banner.waitFor({state:'detached'});checks++;
  await page.evaluate(()=>{Object.defineProperty(document,'visibilityState',{value:'visible',configurable:true});document.dispatchEvent(new Event('visibilitychange'));});await banner.waitFor();checks++;
  eq(await page.evaluate(()=>window.localStorage.length+window.sessionStorage.length),0,'no contact browser storage');
- eq(await page.evaluate(()=>[...new Set(window.calls.filter(c=>!['hr_contact_get','hr_contact_save','hr_followup_tasks','hr_conversation_feedback_notices','time_tasks_get','bolig_my_attendance','project_progress_mine','bolig_my_project_tasks'].includes(c.name)).map(c=>c.name))]),[],'no mail, tasks or membership writes');
+ eq(await page.evaluate(()=>[...new Set(window.calls.filter(c=>!['hr_contact_get','hr_contact_save','hr_followup_tasks','hr_conversation_feedback_notices','time_tasks_get','bolig_my_attendance','project_progress_mine','bolig_my_project_tasks','bolig_my_collaborations'].includes(c.name)).map(c=>c.name))]),[],'no mail, tasks or membership writes');
  eq(errors,[]);
  console.log('Contact reminder: '+checks+' assertions PASS: real Chromium notice/Min side/modal/save, 320/390/1280 widths, field completion, optional fields, readback, drafts, revocation, closed storage, late/actor/company/hidden state and no mail. Synthetic transport.');
 }finally{await browser?.close();await new Promise(resolve=>server.close(resolve));fs.rmSync(temp,{recursive:true,force:true});}
