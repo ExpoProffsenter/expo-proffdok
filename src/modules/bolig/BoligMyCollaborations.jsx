@@ -5,6 +5,7 @@ import './bolig.css';
 import './boligWorkspace.css';
 import './boligCollaboration.css';
 import BoligCatalog from './BoligCatalog.jsx';
+import ShopProposal from './BoligShopProposal.jsx';
 import BoligPackageChoices from './BoligPackageChoices.jsx';
 export default function BoligMyCollaborations({userId}){
  const [list,setList]=useState([]),[selected,setSelected]=useState(''),[data,setData]=useState(null),[unit,setUnit]=useState(''),[query,setQuery]=useState(''),[catalog,setCatalog]=useState(false),[error,setError]=useState(''),[loading,setLoading]=useState(true);
@@ -24,12 +25,13 @@ export default function BoligMyCollaborations({userId}){
  {loading&&!data&&<p role="status">Kontrollerer prosjekttilgang …</p>}
  {error&&<p role="alert">{error}</p>}
  <button onClick={()=>{setSelected('');setData(null);setUnit('');}}>Tilbake til mine samarbeid</button>
- {data&&<><h4>{data.root.title} · {data.context.company_name}</h4><p>Endringer lagres som boligvalg. Dette er ikke en bestilling eller beboeraksept. Prosjektleder deler det ferdige forslaget i beboerportalen.</p>
+ {data&&<><h4>{data.root.title} · {data.context.company_name}</h4><p>Grunnpakke og boligvalg vises nedenfor. Butikktillegg kan publiseres direkte til beboerportalen med egen prosjektrettighet. Beboeren godkjenner selv.</p>
  <button onClick={()=>setCatalog(!catalog)}>{catalog?'Skjul felles pakker':'Vis felles pakker'}</button>
  {catalog&&<BoligCatalog context={data.context} root={data.root}/>}
  <label>Finn bolig<input type="search" value={query} onChange={e=>setQuery(e.target.value)}/></label>
  {query&&<p role="status">{matches.length} treff.{chosen?' Valgt bolig beholdes til du velger en annen.':!matches.length?' Prøv et annet bolignummer eller en adresse.':''} <button type="button" onClick={()=>setQuery('')}>Tøm søk</button></p>}
  <label>Bolig<select value={chosen?.id||''} onChange={e=>setUnit(e.target.value)}><option value="">Velg bolig</option>{options.map(u=><option key={u.id} value={u.id}>{u.address} · {u.number} · {u.contact_name}</option>)}</select></label>
+ {chosen&&<ShopProposal key={`shop-${chosen.id}`} context={data.context} root={data.root} unit={chosen}/>}
  {chosen&&<BoligPackageChoices collaborationView key={chosen.id} context={data.context} root={data.root} unit={chosen}/>}
  </>}
  </div>

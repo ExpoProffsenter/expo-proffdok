@@ -330,6 +330,7 @@ jobs:
         node scripts/bolig-contract-finance-check.mjs
         node scripts/bolig-foundation-react-check.mjs
         node scripts/bolig-collaboration-refresh-react-check.mjs
+        node scripts/bolig-shop-react-check.mjs
         node scripts/bolig-catalog-react-check.mjs
         node scripts/bolig-overview-react-check.mjs
   bolig-browser:

@@ -1,3 +1,4 @@
+import {collaborationRpc} from './boligCollaborationClient.js';
 import React, { useEffect, useRef, useState } from "react";
 import { Search } from "lucide-react";
 import { getAppSupabaseClient } from "../access/appSupabaseClientRegistry.js";
@@ -41,6 +42,7 @@ export function catalogProduct(item) {
   };
 }
 export default function BoligCatalogLookup({ context, onUse }) {
+  const readContext = () => context.collaboration_root ? collaborationRpc('bolig_my_collaborations',{p_root_id:context.collaboration_root},context.user_id).then(r=>r.context) : boligRpc();
   const scope = `${context.user_id}:${context.company_id}`;
   const [access, setAccess] = useState({ scope, status: "checking" });
   const [sources, setSources] = useState([]),
@@ -71,7 +73,7 @@ export default function BoligCatalogLookup({ context, onUse }) {
     Promise.all([
       canAccessInternalStoreCatalog(client),
       canAccessProStoreCatalog(client),
-      boligRpc(),
+      readContext(),
     ])
       .then(([internal, pro, current]) => {
         if (!active || invalidated) return;
@@ -117,7 +119,7 @@ export default function BoligCatalogLookup({ context, onUse }) {
         const found = await (source === "internal"
           ? searchStoreCatalog(client, query.trim(), 12)
           : searchProStoreCatalog(client, query.trim(), 12));
-        const current = await boligRpc();
+        const current = await readContext();
         if (ticket !== epoch.current) return;
         if (
           current.company_id !== context.company_id ||

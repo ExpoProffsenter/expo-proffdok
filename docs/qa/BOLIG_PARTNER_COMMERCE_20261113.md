@@ -64,3 +64,15 @@ Smalskjerm 454px avdekket at tilpasningsskjemaets overskrift/lukkeknapp forsvant
 Publisert re-test avdekket at manager-context ikke alltid har collaboration_root. Veiledning velges derfor eksplisitt av Mine samarbeid-komponenten, ikke brukerens tilgangsrolle. React-regresjon dekker prop-overføringen.
 
 Re-test ved 454px fant at appRuntimeStyles sin generelle mobilregel header {position:static!important} overstyrte sticky. Kun tilpasningsdialogens egne position/top/z-index overstyres lokalt; global appregel forblir urørt.
+
+## Butikktillegg 14.11.2026 – implementert kandidat
+
+Miljømål BEGGE, kun sandbox installert foreløpig. Ny migrasjon `20261113235139_bolig_shop_proposals.sql` installert i `ppvircenkjizeiqdxphj`; tidligere migrasjoner ikke gjentatt. Produksjon/main er urørt.
+
+- Egen publish_shop-rettighet. Ingen medlemskap eller aktivt arbeidsfirma endres.
+- Manuelle varer uten prosjektfirmaets katalogrettighet: varenavn, valgfritt varenummer, antall, enhetspris inkl. mva., bilde fra enheten/URL og monteringspris for hele linjen. Privat rasterbilde i avtalesnapshot, ingen offentlig bøtte.
+- Ett publiseringssteg etter kontroll, eksisterende portal oppdateres med polling. Samtidighetsbasis, eksakt retry og immutable aksept. Nye varer etter aksept er nytt tillegg.
+- Ordreoppfølging: prosjektleder bekrefter faktisk leverandørbestilling; separat ordre for mottak og FDV. Ingen automatisk utsending eller ordre til ekstern leverandør.
+- Omfatter tillegg av varer/montering. Erstatning og kreditering bruker ordinær endringsavtale.
+
+Lokal validering: full npm build PASS; PostgreSQL/PGlite 1903 assertions PASS inkludert nye shop-scenarier; actual React butikkflyt PASS (manual input, norsk desimalpris, kontrollsum, publisering, akseptert vare ikke duplisert, tilbakekalt publiseringsrett); eksisterende samarbeid/partnerdialog actual React PASS. Hosted kontroll og CI følger etter kandidatpublisering. Ingen reelle mottakere er kontaktet.

@@ -43,6 +43,8 @@ export default function BoligPortalPage() {
     [review, setReview] = useState(null),
     [agreement, setAgreement] = useState(null),
     [notice, setNotice] = useState("");
+  const selectedAgreement=useRef(null);
+  selectedAgreement.current=agreement;
   const key = useRef(null);
   current.current = data;
   const save = (next, attempt = pending) => {
@@ -93,6 +95,11 @@ export default function BoligPortalPage() {
         } catch {}
         if (saved?.draft) setDraft(saved.draft);
         if (saved?.pending) setPending(saved.pending);
+      }
+      const selected=selectedAgreement.current;
+      if(selected && current.current?.agreements.find(d=>d.id===selected)?.revision!==next.agreements.find(d=>d.id===selected)?.revision){
+        setAgreement(null);setReview(null);setDraft(previous=>({...previous,confirmed:false}));
+        setNotice('Avtalen er oppdatert. Åpne den nye utgaven og kontroller den før du svarer.');
       }
       setData(next);
       setError("");
@@ -223,7 +230,7 @@ export default function BoligPortalPage() {
   const agreementRow = (d) => (
     <article className="bolig-portal-event" key={d.id}>
       <strong>
-        {d.kind === "choice" ? "Boligavtale" : "Endringsavtale"} · utgave{" "}
+        {d.snapshot?.source === "shop" ? "Butikktillegg" : d.kind === "choice" ? "Boligavtale" : "Endringsavtale"} · utgave{" "}
         {d.version}
       </strong>
       <small>
