@@ -152,7 +152,8 @@ export const BOLIG_HELP_TOPICS = [
           «Bekreftet av e-posttjenesten» betyr at tjenesten har tatt imot
           meldingen, ikke at mottakeren har åpnet den. Ved nettbrudd velger du
           «Prøv samme sending igjen». Lenken finnes bare i nettleseren der den
-          ble opprettet; bruk denne nettleseren for utsending. Utsendingsstatusen viser om e-post er tilgjengelig. Forhåndsvisning sender ingenting.
+          ble opprettet; bruk denne nettleseren for utsending. I testmiljøet er
+          e-post pauset, men forhåndsvisning og manuell deling fungerer.
           Tilgangen gjelder i
           valgt antall dager og kan stoppes med «Trekk tilbake tilgang». Ved
           endrede funksjoner: åpne kontakten og velg «Endre funksjoner». Samme
@@ -249,7 +250,7 @@ export const BOLIG_HELP_TOPICS = [
           Fra «Se åpne forhold» velger du «Oppfølging i fremdriftsplanen». Når
           saken har en aktivitet, åpner «Åpne aktivitet» det samme
           aktivitetsvinduet. Endre ansvarlig og frist, og lagre for å komme
-          tilbake til saken. Aktivitetens ansvarlige får fristvarsler når prosjektleder har slått på automatiske fristpåminnelser for prosjektet. Saken og
+          tilbake til saken. Aktivitetens ansvarlige får fristvarslene. Saken og
           vurderingsansvarlig endres ikke automatisk. Påkrevde aktiviteter må
           være utført før intern sluttkontroll kan godkjennes. Faktisk
           overtakelse vurderes separat av prosjektleder.
@@ -273,10 +274,12 @@ export const BOLIG_HELP_TOPICS = [
   )},
   {id:"progress-frister-og-e-postvarsler",group:"progress",title:"Frister og e-postvarsler",body:(
     <p>
-          Åpne aktiviteter vises i planen. Under «Fremdrift og varsler» åpner prosjektleder «Automatiske fristpåminnelser» og velger «Slå på automatiske fristpåminnelser». Nye og eksisterende prosjekter starter med dette av. Når prosjektvalget og e-posttransporten er aktive, får aktivitetsansvarlig oppfølging ved tildeling, to dager før planlagt slutt, på
+          Åpne aktiviteter vises i planen. Når e-post er aktivert, får ansvarlig
+          også oppfølging ved tildeling, to dager før planlagt slutt, på
           sluttdatoen og ukentlig etterpå. Ny mottaker, endret grunnlag,
           avsluttet arbeid eller bortfalt tilgang stopper gamle ventende
-          varsler. «Slå av automatiske fristpåminnelser» stopper nye og ventende fristpåminnelser for prosjektet. Allerede sendte e-poster kan ikke trekkes tilbake. Beboerlenker og brukerbestilte beboervarsler påvirkes ikke av dette valget. Status «akseptert av e-posttjenesten» betyr ikke at e-posten er
+          varsler. I testfasen er automatisk publisering og e-post satt på
+          pause. Status «akseptert av e-posttjenesten» betyr ikke at e-posten er
           mottatt eller lest.
         </p>
   )},
@@ -309,7 +312,7 @@ export const BOLIG_HELP_TOPICS = [
           meldingsteksten. Beboerens nye varslingslenke er personlig og varer
           høyst sju dager, aldri lenger enn portaltilgangen. Avslått dialog,
           endret kontakt, avklart melding eller bortfalt tilgang stopper
-          ventende utsending. Demo/sandbox kan ha egen utsendingssperre; kontroller statusen som vises.
+          ventende utsending. E-post er fortsatt av i Sandbox.
         </p>
   )},
   {id:"packages-finn-fasadebilder-og-plantegninger",group:"packages",title:"Finn fasadebilder og plantegninger",body:(
