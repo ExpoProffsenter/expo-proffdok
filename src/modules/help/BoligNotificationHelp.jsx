@@ -1,6 +1,9 @@
 import React from "react";
+import {BOLIG_HELP_TOPICS} from "./boligHelpContent.jsx";
+const toolbar=BOLIG_HELP_TOPICS.find(topic=>topic.id==="structure-release-toolbar");
 // Current notification guidance replaces the corresponding frozen baseline topics.
 export const BOLIG_NOTIFICATION_HELP = [
+ {...toolbar,body:<>{toolbar.body}<p><strong>Rediger prosjektinfo:</strong> Åpne Oppsett → Bygg og boliger → Rediger prosjektinfo. Endre prosjektnavn eller prosjektnummer og velg Lagre prosjektinfo. Boliger, beboere og plan beholdes.</p></>},
   {id:"people-del-og-trekk-tilbake-tilgangslenker",group:"people",title:"Del og trekk tilbake tilgangslenker",body:(
     <p>
           Lenken gir tilgang til den som har den. Del den bare med kontakten du

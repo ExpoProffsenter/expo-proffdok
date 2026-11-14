@@ -453,6 +453,7 @@ export default function BoligProgress({
           <summary>Automatiske fristpåminnelser: {data.reminders_enabled ? "På" : "Av"}</summary>
           <p>Gjelder aktivitetsansvarlige i dette prosjektet, ikke beboerne. Når du slår på, følges åpne aktiviteter opp ved tildeling, to dager før planlagt slutt, på sluttdatoen og ukentlig etterpå. Åpne aktiviteter som allerede finnes, omfattes også.</p>
           <p>Beboervarsler sendes når du velger «Publiser til beboerne», straks eller på datoen du velger. Ny melding eller svar i aktiv beboerdialog kan utløse et e-postvarsel etter to minutter.</p>
+          {!data.reminders_enabled && <p><strong>Første utsending kan gi én e-post per åpen aktivitet. Prosjektet har {data.tasks.filter(task=>task.active && !task.archived && task.status!=="done" && task.owner_active).length} slike aktiviteter med aktiv ansvarlig.</strong></p>}
           {writable && <button type="button" disabled={busy || !!draft.pending} onClick={() => run("reminders", {enabled: !data.reminders_enabled})}>
             {data.reminders_enabled ? "Slå av automatiske fristpåminnelser" : "Slå på automatiske fristpåminnelser"}
           </button>}

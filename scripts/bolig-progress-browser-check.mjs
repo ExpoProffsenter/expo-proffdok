@@ -102,16 +102,6 @@ try {
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto("http://127.0.0.1:" + server.address().port);
   await page.getByRole("heading", { name: "Fremdrift og varsler" }).waitFor();
-  await page.getByText("Automatiske fristpåminnelser: Av", {exact:true}).click();
-  eq(await page.evaluate(() => window.__calls.filter(p=>p.p_action==='reminders').length),0,"Opening settings never enables reminders");
-  await page.getByRole("button",{name:"Slå på automatiske fristpåminnelser",exact:true}).click();
-  await page.getByText("Automatiske fristpåminnelser: På", {exact:true}).waitFor();
-  await page.evaluate(() => window.dispatchEvent(new Event("focus")));
-  eq(await page.getByText("Automatiske fristpåminnelser: På", {exact:true}).isVisible(),true,"Refresh preserves server setting");
-  await page.getByRole("button",{name:"Slå av automatiske fristpåminnelser",exact:true}).click();
-  await page.getByText("Automatiske fristpåminnelser: Av", {exact:true}).waitFor();
-  await page.getByText("Automatiske fristpåminnelser: Av", {exact:true}).click();
-
   await page
     .getByText("Aktivitetsliste og enkeltaktiviteter", { exact: true })
     .click();
@@ -466,6 +456,16 @@ try {
   await dialog
     .getByRole("button", { name: "Lukk og behold utkast", exact: true })
     .click();
+  await page.getByText("Automatiske fristpåminnelser: Av", {exact:true}).click();
+  eq(await page.evaluate(() => window.__calls.filter(p=>p.p_action==='reminders').length),0,"Opening settings never enables reminders");
+  await page.getByRole("button",{name:"Slå på automatiske fristpåminnelser",exact:true}).click();
+  await page.getByText("Automatiske fristpåminnelser: På", {exact:true}).waitFor();
+  await page.evaluate(() => window.dispatchEvent(new Event("focus")));
+  eq(await page.getByText("Automatiske fristpåminnelser: På", {exact:true}).isVisible(),true,"Refresh preserves server setting");
+  await page.getByRole("button",{name:"Slå av automatiske fristpåminnelser",exact:true}).click();
+  await page.getByText("Automatiske fristpåminnelser: Av", {exact:true}).waitFor();
+  await page.getByText("Automatiske fristpåminnelser: Av", {exact:true}).click();
+
   await page.evaluate(() => window.__show("reader"));
   await page
     .getByText("Aktivitetsliste og enkeltaktiviteter", { exact: true })
