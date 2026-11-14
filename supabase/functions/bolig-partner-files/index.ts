@@ -62,7 +62,7 @@ Deno.serve(
         service,
       ),
     origins: boligAllowedOrigins.concat(
-      url === "https://ppvircenkjizeiqdxphj.supabase.co" ? ["https://expo-proffdok-git-fase45b-bolig-flow-qa-20261104-ringside.vercel.app"] : [],
+      url === "https://ppvircenkjizeiqdxphj.supabase.co" ? ["https://expo-proffdok-git-fase45b-bolig-flow-qa-20261104-ringside.vercel.app", "https://expo-proffdok-git-fase45b-shop-unit-overview-20261114-ringside.vercel.app"] : [],
     ),
   }),
 );
