@@ -38,3 +38,17 @@ A–Å V13 arbeidskopi: 85 scener / 960 s. Opptak spenner fra PR341-kandidat via
 4. Bevar sandbox-only image-origin-gren sandbox/video-image-origin-20261114 separat fra main. Edge v2 ble installert bare i sandbox og beboerfoto faktisk vist. Synk til demo-overlay gjenstår.
 
 Rollback: PR341 egen revert med kontroll av kompatibel additiv DB-funksjon; PR342 ikke utgitt. Videorollback er tidligere manifestposter til V1 (filer beholdt). Opptak/kilder lagres i samme redigerbare arbeidsarkiv; ingen passord eller tokenlenker skal lagres.
+
+
+## Oppfølging etter gjenopptakelse
+Den nyeste kildeversjonen ble hentet ved versjonskonflikt og beholdt, inkludert begge ferdige kortfilmer og den tidligere V13-MP4-en. Tidslinjen har nå 87 scener; den medfølgende V13-MP4-en er eldre (85 scener) og må rendres på nytt.
+
+CI43647405661: alle ti jobber PASS etter rerun av Chromium-startfeil, uten kodeendring. Ny visuell skynettkontroll av bemanning, masseplanfelt og valgt bolig bestod.
+
+Syntetisk UE Robin Eksempel / Eksempel UE – DEMO med syv dagers fremdrift- og sjekklistetilgang ble opprettet i Lindeparken, uten e-post. Egen kontroll ble fullført med tre tydelig merkede DEMO/ikke-aktuelt-svar og gjenfunnet internt på H0101. Original kontroll er bevart. Tidligere godkjenningsavvisning i den historiske loggen ble først oppdaget ved innhenting av denne nyere arkivversjonen; ikke utvid tilgangen eller opprett flere lenker uten konkret avklaring.
+
+UE-vedlegg fra aktuell Preview feiler: OPTIONS mot sandbox bolig-partner-files gir HTTP403, kode42501, Ukjent arbeidsflate. Eksakt preview-origin mangler i tillatt liste. Filkladd bevart. Ingen Edge-konfigurasjon endret og ingen vellykket opplasting påstått. Portalopptak80–84 viste feil nettleserfane og er utelatt helt. Nye portalbilder må tas med visuelt verifisert aktiv fane.
+
+Lindeparken PDF (7 sider) og ZIP ble lastet ned gjennom skynett. PDF-tekst og ZIP-manifest kontrollert: to kontroller, tre varelinjer uten FDV, null originalfiler, uendret Ikke startet. Tidligere PILOT-eksport med originalfiler er fortsatt separat gyldig bevis. Ny kilde retter prisbeskrivelse og tydeliggjør retur til H0101 i butikksekvensen.
+
+Kandidat e1346b45: CI43648967422 alle ti jobber PASS. Oppfølgingen er kun dokumentasjon; appkode uendret fra f7a2b1ae.
