@@ -22,6 +22,9 @@ export default async function reminderPolicy({db,call,actor,eq,rejects,id,firm,o
  eq((await db.query("select count(*)::int n from bolig_private.progress_deliveries where task_id=$1 and kind='owner'",[task.id])).rows[0].n,1,'Opt-in creates one reminder even after repeated ticks');
  eq((await db.query("select bolig_private.progress_delivery_valid(d) v from bolig_private.progress_deliveries d where task_id=$1 and kind='owner'",[task.id])).rows[0].v,true);
  eq((await db.query("select count(*)::int n from bolig_private.progress_deliveries d where kind='owner' and status='pending' and root_id<>$1 and not exists(select 1 from bolig_private.progress_reminder_settings rs where rs.root_id=d.root_id and rs.enabled)",[root])).rows[0].n,0,'No new owner mail in other projects');
+ const {default:timing}=await import('./bolig-mail-timing-db-scenarios.mjs');
+ await timing({db,actor,eq,manager,root,unit,task,rpc});
+ await actor(manager);state=await rpc();
  await actor(manager);state=await rpc('reminders',{enabled:false,revision:state.revision,request_id:id(91005)});eq(state.reminders_enabled,false);
  await db.exec('reset role');
  eq((await db.query("select status,bolig_private.progress_delivery_valid(d) valid from bolig_private.progress_deliveries d where task_id=$1 and kind='owner'",[task.id])).rows[0],{status:'suppressed',valid:false},'Disable also blocks worker validation of reserved/pending mail');
