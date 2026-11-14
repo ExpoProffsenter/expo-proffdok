@@ -8,11 +8,11 @@
       "bolig"
     ],
     "description": "Søk etter bolig og bruk veiledningen. Filmen viser et eksempelprosjekt.",
-    "src": "/help-videos/finn-bolig-v2.mp4",
-    "track": "/help-videos/finn-bolig-v2.vtt",
+    "src": "/help-videos/finn-bolig-v3.mp4",
+    "track": "/help-videos/finn-bolig-v3.vtt",
     "duration": 112,
-    "sha256": "68e01deb5fb6b9ac72b6c3bb462de1ad51f71f2a63928088aaf129689164bfea",
-    "bytes": 6379371,
+    "sha256": "cc307472835dbcb594a861d0e0f79db641e8dd7409aa57b693c0f62bca5aa645",
+    "bytes": 3596296,
     "sourceCommit": "f7a2b1ae440629bb7163dcaa938697c85b4863dd",
     "chapters": [
       {
@@ -378,11 +378,11 @@
       "bolig"
     ],
     "description": "Masseplan fra utvalg og datoer til lagret resultat og retur. Dette er ett kapittel i Bolig A–Å.",
-    "src": "/help-videos/bolig-masseplan-v2.mp4",
-    "track": "/help-videos/bolig-masseplan-v2.vtt",
+    "src": "/help-videos/bolig-masseplan-v3.mp4",
+    "track": "/help-videos/bolig-masseplan-v3.vtt",
     "duration": 90,
-    "sha256": "6e4fcb18fb8ab1b67c1c301e98ff52ef1537d40fc46eae9722dda486bb855037",
-    "bytes": 3792635,
+    "sha256": "84067dcc29558bb55df7f507bd66f2c670bdf976b6f6731b2b1c9e44bdcc8dc1",
+    "bytes": 2074002,
     "sourceCommit": "f7a2b1ae440629bb7163dcaa938697c85b4863dd",
     "chapters": [
       {
@@ -940,297 +940,467 @@
       "bolig"
     ],
     "description": "Gjennomgang av boligprosjekter med fiktive eksempler fra Sandbox, fra oppsett til ferdigstilling.",
-    "src": "/help-videos/bolig-a-til-aa-v12.mp4",
-    "track": "/help-videos/bolig-a-til-aa-v12.vtt",
-    "duration": 580,
-    "sha256": "5f3b269e992ab4b45723366ffc2b2ecbb55c1dffb554cc4bdbc2f2cb5c44e183",
-    "bytes": 11820772,
-    "sourceCommit": "d0ebe96ccd0717412a9c81d587fa52a0dbd93d25",
+    "src": "/help-videos/bolig-a-til-aa-v13.mp4",
+    "track": "/help-videos/bolig-a-til-aa-v13.vtt",
+    "duration": 1036,
+    "sha256": "3e456bfce02bda0197ce4450b97d03d090c878acf59513a435d8621d661548c1",
+    "bytes": 36720681,
+    "sourceCommit": "dc72313434fb1340a21788398300185868ffcbe4",
     "chapters": [
       {
-        "start": 0.0,
-        "title": "1 · Navn og boligtype",
-        "text": "Gi prosjektet et navn. Velg boligtypen som passer bygget."
+        "start": 0,
+        "title": "Åpne Boligprosjekter",
+        "text": "Start i Boligprosjekter. Her samler du bygg, boliger, beboervalg og fremdrift."
       },
       {
-        "start": 8.0,
-        "title": "1 · Bygg og adresse",
-        "text": "Gi hvert bygg et navn. Adressen kan legges til senere."
+        "start": 11,
+        "title": "Start et nytt prosjekt",
+        "text": "Veiviseren bygger boligstrukturen. Du kan lukke underveis og fortsette med kladden."
       },
       {
-        "start": 16.0,
-        "title": "1 · Oppganger og etasjer",
-        "text": "Kontroller oppganger, etasjer og antall boliger på hver etasje."
+        "start": 22,
+        "title": "Navn og boligtype",
+        "text": "Gi prosjektet navn og eventuelt prosjektnummer. Velg boligtypen som passer."
       },
       {
-        "start": 24.0,
-        "title": "1 · Se over oppsettet",
-        "text": "Åpne boligfordelingen. Kontroller summen før du oppretter prosjektforsiden."
+        "start": 33,
+        "title": "Bygg og adresse",
+        "text": "Gi bygget et tydelig navn og registrer adressen. Flere bygg kan ha ulike boligtyper."
       },
       {
-        "start": 32.0,
-        "title": "2 · Interne roller",
-        "text": "I Firmaadmin ser du hvem som har lesetilgang og hvem som har prosjektledertilgang."
+        "start": 44,
+        "title": "Etasjer og boliger",
+        "text": "Tilpass antall oppganger, etasjer og boliger. Her får Lindehuset fire boliger fordelt på to etasjer."
       },
       {
-        "start": 40.0,
-        "title": "3 · Kontrakter",
-        "text": "Samle kontraktsoriginaler og vedlegg. Bruk ny versjon når et dokument endres."
+        "start": 55,
+        "title": "Kontroller før opprettelse",
+        "text": "Se over navn, adresse og boligantall. Opprett prosjektforsiden når strukturen stemmer."
       },
       {
-        "start": 48.0,
-        "title": "3 · Privat innsyn",
-        "text": "Under Tilgang ser du hvem som kan lese, laste opp eller administrere kontraktene."
+        "start": 66,
+        "title": "Prosjektet er klart",
+        "text": "Fasaden følger den registrerte boligstrukturen. Navn og prosjektnummer kan endres med Rediger prosjektinfo."
       },
       {
-        "start": 56.0,
-        "title": "4 · Standardbadet",
-        "text": "Åpne innholdet i grunnpakken og se hvilke varer standardbadet får."
+        "start": 77,
+        "title": "Rett prosjektinfo",
+        "text": "Endre navn eller prosjektnummer her. Boliger, beboere og fremdriftsplan beholdes. Lagre når du har gjort en endring."
       },
       {
-        "start": 64.0,
-        "title": "4 · Rediger grunnpakken",
-        "text": "Del varene inn i avsnitt, for eksempel fliser, innredning og dusj."
+        "start": 88,
+        "title": "Kontroller plasseringen",
+        "text": "Velg bolig og plassen den skal bytte med. Bolignummer, beboere og avtaler følger boligen. Forhåndsvis før lagring."
       },
       {
-        "start": 72.0,
-        "title": "5 · Tillegg eller alternativ",
-        "text": "Velg om tilvalget kommer i tillegg eller erstatter en standardvare."
+        "start": 99,
+        "title": "Se begge boligene",
+        "text": "Kontroller gammel og ny plass for begge boliger. Lagre bare hvis flyttingen er riktig. Her avslutter vi uten å bytte plass."
       },
       {
-        "start": 80.0,
-        "title": "5 · Boligvalg i H0101",
-        "text": "Kontroller fellespakken for boligen. Velg et rom hvis du vil legge til en rompakke."
+        "start": 111,
+        "title": "Importer beboerlisten",
+        "text": "Last opp XLSX eller CSV med adresse, bolignummer og kontaktopplysninger. Flere eiere kan knyttes til samme bolig."
       },
       {
-        "start": 88.0,
-        "title": "6 · Fordel sjekklister",
-        "text": "Velg en mal og hvilke boliger eller rom som skal få den. Se over fordelingen før lagring."
+        "start": 122,
+        "title": "Kontroller kolonnene",
+        "text": "Se at adresse, bolignummer, navn, e-post og mobil peker til riktig Excel-kolonne. Eksempelverdiene hjelper deg."
       },
       {
-        "start": 96.0,
-        "title": "6 · Kontroller fordelingen",
-        "text": "Kontroller at én sjekkliste er valgt, og at den bare fordeles til H0101."
+        "start": 133,
+        "title": "To eiere, én bolig",
+        "text": "Alex og Sam kobles til samme bolig. Velg én hovedkontakt. Kontroller adresse og bolignummer før importen lagres."
       },
       {
-        "start": 104.0,
-        "title": "6 · Bekreft resultatet",
-        "text": "Appen bekrefter at én ny påkrevd kontroll er opprettet."
+        "start": 144,
+        "title": "Lagre kontrollert import",
+        "text": "Importen lagrer kontaktopplysningene. Den sender ingen invitasjoner. Portal og frister klargjøres etterpå."
       },
       {
-        "start": 112.0,
+        "start": 155,
+        "title": "Importen er lagret",
+        "text": "Kvitteringen bekrefter lagrede kontakter. Ingen invitasjoner eller varsler er sendt."
+      },
+      {
+        "start": 166,
+        "title": "Samle kontrakten",
+        "text": "Legg inn hovedkontrakt, vedlegg og senere versjoner. Originalene ligger privat og følger ikke beboer-, UE- eller sluttpakken."
+      },
+      {
+        "start": 177,
+        "title": "Gi bare nødvendig innsyn",
+        "text": "Utpekte interne brukere kan få lesetilgang eller administrasjon. Vanlig prosjekt- eller butikktilgang gir ikke automatisk innsyn i kontraktene."
+      },
+      {
+        "start": 188,
+        "title": "Registrer avtalte vilkår",
+        "text": "Kontraktssum og opsjoner føres ekskl. mva. Ved avtalt indeksregulering kontrollerer du serie, basismåned, basisindeks og reduksjonsfaktor."
+      },
+      {
+        "start": 199,
+        "title": "Lag grunnleveransen",
+        "text": "Grunnpakken beskriver det som følger med. Tilvalgspakker kan legges til eller erstatte bestemte varer."
+      },
+      {
+        "start": 210,
+        "title": "Beskriv leveransen",
+        "text": "Legg inn beskrivelse, varenummer, antall og enhet. Bilder og FDV-lenker gjør grunnlaget tydeligere."
+      },
+      {
+        "start": 221,
+        "title": "Legg til et bilde",
+        "text": "Velg et tydelig bilde som forklarer varen. Her bruker vi et merket illustrasjonsfoto i demopakken."
+      },
+      {
+        "start": 232,
+        "title": "Lagre grunnpakken",
+        "text": "Bildet er lagt til varelinjen. Lagre pakken før du fordeler den til boligene."
+      },
+      {
+        "start": 243,
+        "title": "Tillegg eller alternativ",
+        "text": "Et alternativ erstatter en bestemt standardvare. Her byttes 60 cm innredning til 80 cm. Kontroller varekoblingen."
+      },
+      {
+        "start": 254,
+        "title": "Prisen for hele pakken",
+        "text": "Eksempelet koster 4 500 kroner inkl. mva. Prisen gjelder hele tilvalgspakken. Lagre når varer og pris stemmer."
+      },
+      {
+        "start": 265,
+        "title": "Rom i boligen",
+        "text": "Legg til rom før du fordeler pakkene. Rompakker samler varer og dokumentasjon for hvert rom."
+      },
+      {
+        "start": 276,
+        "title": "Velg rompakke",
+        "text": "Bad 1 er lagret. Velg rompakke for å knytte grunnleveransen til badet."
+      },
+      {
+        "start": 287,
+        "title": "Grunnleveranse først",
+        "text": "Velg grunnpakken og forhåndsvis innholdet. Tilvalget lar vi stå åpent til beboeren skal velge."
+      },
+      {
+        "start": 298,
+        "title": "Kontroller og lagre",
+        "text": "Forhåndsvisningen viser tre varelinjer og ingen tilvalg. Lagringen gjelder denne boligen og sender ingen bestilling."
+      },
+      {
+        "start": 309,
         "title": "Planlegg flere boliger",
-        "text": "Åpne Fremdrift og varsler. Velg Planlegg flere boliger. Har du en kladd, heter knappen Fortsett masseoppsett."
+        "text": "Lag en felles arbeidsrekkefølge og forskyv oppstarten mellom boligene. Planen følger faktiske datoer."
       },
       {
-        "start": 130.0,
-        "title": "Velg riktig utvalg",
-        "text": "Filtrer på bygg, oppgang, etasje eller bolig. Velg treffene som skal få planen. Her er seks boliger valgt."
+        "start": 320,
+        "title": "Velg boligene",
+        "text": "Filtrer på bygg, oppgang eller etasje. Her bruker vi samme plan for alle fire boligene. Utvalget beholdes når filteret endres."
       },
       {
-        "start": 150.0,
-        "title": "Sett oppstart og takt",
-        "text": "Første oppstart er 16. november. To dager mellom boligstarter gir forskjøvet arbeid. Null starter alle boligene samtidig."
+        "start": 331,
+        "title": "Arbeid, varighet og startregel",
+        "text": "Førbefaring kommer først. Montering starter ti arbeidsdager senere. Ansvarlig, varighet og ukeregel inngår i planen."
       },
       {
-        "start": 172.0,
-        "title": "Fordel ansvaret",
-        "text": "Velg ansvarlig. Tell bare mandag–fredag hopper over helger. Helligdager må dere justere selv."
+        "start": 342,
+        "title": "Se over datoene samlet",
+        "text": "Kontroller alle boligene før lagring. Her opprettes åtte aktiviteter. Ingen beboervarsler publiseres av denne handlingen."
       },
       {
-        "start": 190.0,
-        "title": "Bygg arbeidsrekkefølgen",
-        "text": "Velg standardarbeid eller legg til eget. Gi hvert trinn navn, varighet og startregel. Her følger tre trinn etter hverandre."
+        "start": 353,
+        "title": "Planen fra først til sist",
+        "text": "Hele planen viser perioden til aktivitetene. Bytt mellom dag, uke og måned. Boligene sorteres etter første aktivitet."
       },
       {
-        "start": 214.0,
-        "title": "Forhåndsvis planen",
-        "text": "Seks boliger med tre trinn gir 18 nye aktiviteter. Kontroller antallet og velg Forhåndsvis planen."
+        "start": 364,
+        "title": "Frist med norsk klokkeslett",
+        "text": "Sett dato for valgte boliger. Prosjektets felles klokkeslett vises tydelig. Etter fristen stoppes nye tilvalg; eksisterende avtaler beholdes."
       },
       {
-        "start": 232.0,
-        "title": "Kontroller datoene",
-        "text": "Se over bolig, arbeid og start/slutt. Første bolig går 16.–18. november. Neste bolig starter to arbeidsdager senere."
+        "start": 375,
+        "title": "Del konkrete valgmuligheter",
+        "text": "En portaltilgang alene viser ikke pakkene. Legg til boligens lagrede grunnleveranse som en navngitt valgmulighet."
       },
       {
-        "start": 254.0,
-        "title": "Se også siste bolig",
-        "text": "Rull gjennom hele listen. Her slutter siste arbeid 2. desember. Kontroller helgehopp og velg Lagre 18 aktiviteter samlet."
+        "start": 386,
+        "title": "Et komplett alternativ",
+        "text": "Velg riktig rom og tilvalg. Resten av boligen beholdes. Beboeren får et komplett alternativ å sammenligne med grunnleveransen."
       },
       {
-        "start": 276.0,
-        "title": "Bekreft lagret resultat",
-        "text": "Vent på Endringen er lagret. Vis første arbeid flytter Gantt til starten. Her viser planen 18 aktiviteter fra 16. november."
+        "start": 397,
+        "title": "Kontroller begge eierne",
+        "text": "Alex og Sam får samme boligportal. Kontroller mottakerlisten før klargjøring. I denne sandboxen er virkelig e-postutsending sperret."
       },
       {
-        "start": 298.0,
-        "title": "Tilbake i arbeidsflyten",
-        "text": "Masseplanen er lagret. Bruk samlet tidslinje eller åpne én aktivitet for et unntak. Beboervarsler lages og gjennomgås separat."
+        "start": 408,
+        "title": "Lenke klar – utsending sperret",
+        "text": "Portalen er klargjort, men ingen e-post er sendt. Sandboxen sperrer utsending. Vi åpner demoportalen direkte for å kontrollere innholdet."
       },
       {
-        "start": 316.0,
-        "title": "8 · Faktisk bemanning",
-        "text": "Åpne Faktisk bemanning under Oppsett. Her registreres tilstedeværelse på prosjektet."
+        "start": 420,
+        "title": "Beboerens egen oversikt",
+        "text": "Mine valg, avtaler, dokumenter og meldinger er samlet i portalen. Kontroller bolig og bestillingsfrist før du velger."
       },
       {
-        "start": 324.0,
-        "title": "8 · Bekreft innregistrering",
-        "text": "Lagre registreringen og se at montøren står som registrert inne."
+        "start": 431,
+        "title": "Sammenlign grunnpakke og tillegg",
+        "text": "Grunnpakken er inkludert. Oppgraderingen koster 4 500 kroner. Velg ønsket alternativ og kontroller summen før innsending."
       },
       {
-        "start": 332.0,
-        "title": "8 · Registrer ut",
-        "text": "Velg Registrer ut / rett tidspunkt. Fyll inn Begrunn rettingen før du lagrer. Sjekk at uttiden vises i listen."
+        "start": 441,
+        "title": "Kontroller hele innholdet",
+        "text": "80 cm innredning erstatter standardvaren. De andre varelinjene beholdes. Innsendingen er et ønske til gjennomgang; avtalen aksepteres separat."
       },
       {
-        "start": 340.0,
-        "title": "8 · Kontroller tilsynslisten",
-        "text": "Hent personen fra bemanningen og lagre. Kontroller at personen kommer med i PDF og CSV."
+        "start": 452,
+        "title": "Prosjektleder gjennomgår valget",
+        "text": "Kontroller innsendte varer og skriv en kort tilbakemelding. Bruk valget i avtalegrunnlaget før avtale eller bestilling er delt."
       },
       {
-        "start": 348.0,
-        "title": "9 · Velg ekstern tilgang",
-        "text": "Velg hvilke funksjoner UE eller leverandøren skal få tilgang til."
+        "start": 463,
+        "title": "Varer og pris i samme avtale",
+        "text": "Kontroller bolig, varelinjer, pris og svarfrist. Svarfristen er egen frist for avtalen. Opprett lenken når innholdet er klart."
       },
       {
-        "start": 356.0,
-        "title": "9 · Leverandørens fremdrift",
-        "text": "Den fiktive leverandøren ser fremdrift for prosjektets 12 boliger. Bare fremdrift er delt."
+        "start": 475,
+        "title": "Avtalen ligger i portalen",
+        "text": "Beboeren åpner avtalen under Avtaler. Bare den aktuelle utgaven kan besvares. Aksepterte avtaler blir liggende som kvitteringer."
       },
       {
-        "start": 364.0,
-        "title": "9 · Gi UE utfyllingsrett",
-        "text": "Velg rollen UE og gi tilgang til egne sjekklister."
+        "start": 486,
+        "title": "Beboeren gir sitt eget svar",
+        "text": "Les avtalen og bekreft at varer og pris er gjennomgått. Navnet og svaret knyttes til akkurat denne utgaven."
       },
       {
-        "start": 372.0,
-        "title": "9 · Åpne UE-sjekklistene",
-        "text": "I mottakersiden vises bare fanen Sjekklister. Åpne Mine sjekklister og vedlegg."
+        "start": 498,
+        "title": "Personlig butikktilgang",
+        "text": "Systemadmin eller godkjent support tildeler tilgang til den ansatte. Personen bruker sin vanlige innlogging og finner prosjektet under Min side."
       },
       {
-        "start": 380.0,
-        "title": "9 · Fyll ut kontrollen",
-        "text": "Velg resultat, legg inn kommentar og huk av for fullføring før du lagrer."
+        "start": 509,
+        "title": "Butikken starter på Min side",
+        "text": "Butikkeksempelet bruker et eget testprosjekt med eksisterende tilgang. Mine boligprosjekter viser bare personlig tildelte prosjekter."
       },
       {
-        "start": 388.0,
-        "title": "9 · Bekreft fullføring",
-        "text": "Portalen bekrefter at sjekklisten er fullført og lagret hos prosjektet."
+        "start": 520,
+        "title": "Bytt bolig uten å gå ut",
+        "text": "Søket velger ikke bolig automatisk. Her er H0101 fortsatt valgt. Trykk riktig søkeresultat for å bytte til H0102."
       },
       {
-        "start": 396.0,
-        "title": "9 · Velg UE-vedlegg",
-        "text": "Velg plassering og fil under Mine sjekklister og vedlegg. Gi vedlegget en tittel og lagre."
+        "start": 532,
+        "title": "Kontakt, frist og neste aktivitet",
+        "text": "Her vises H0101 igjen i butikkens eksempelprosjekt. Se adresse, telefon, e-post og frist. Første åpne aktivitet er Førbefaring."
       },
       {
-        "start": 404.0,
-        "title": "9 · Kontroller lagret vedlegg",
-        "text": "Etter ny innlasting kan UE finne igjen og laste ned vedlegget."
+        "start": 542,
+        "title": "Vare, beboerpris og montering",
+        "text": "Registrer varenummer, antall og beboerpris inkl. mva. Montering legges på egen linje i prisen. Her brukes et tydelig merket illustrasjonsbilde."
       },
       {
-        "start": 412.0,
-        "title": "10 · Legg inn kontakt",
-        "text": "Lagre beboerens kontaktopplysninger i leilighetsinformasjonen. Her brukes en fiktiv kontakt."
+        "start": 554,
+        "title": "Kontroller målboligen før publisering",
+        "text": "Mottaker, varer, bilde og pris vises samlet. Dette tillegget er 1 240 kroner inkl. mva. Grunnpakken og tidligere aksepterte avtaler beholdes."
       },
       {
-        "start": 420.0,
-        "title": "10 · Beboerens oversikt",
-        "text": "Beboeren åpner sin portal og finner valg, avtaler, dokumenter og meldinger."
+        "start": 566,
+        "title": "Samme forslag hos beboeren",
+        "text": "Beboeren ser samme vare, bilde, monteringspris og totalsum. Tidligere akseptert tillegg ligger fortsatt som egen kvittering."
       },
       {
-        "start": 428.0,
-        "title": "11 · Se avtalestatus",
-        "text": "Åpne Avtaler. Den fiktive avtalen er allerede akseptert."
+        "start": 577,
+        "title": "Aksepten er dokumentert",
+        "text": "Etter aksept vises kvitteringen under Avtaler. Et nytt tillegg erstatter ikke kvitteringen for et tidligere akseptert tillegg."
       },
       {
-        "start": 436.0,
-        "title": "11 · Åpne kvitteringen",
-        "text": "Kvitteringen viser registrert aksept, avtaleutgave, pris, varer og tidspunkt."
+        "start": 588,
+        "title": "Finn boligen i hele prosjektet",
+        "text": "Søk på navn, bolignummer eller adresse. Trefflisten viser bygg og etasje, slik at du kan velge riktig bolig."
       },
       {
-        "start": 444.0,
-        "title": "12 · Bestillingsutkast",
-        "text": "Kontroller varelinjene i H0101. Lagre vareutvalget før bestillingen klargjøres."
+        "start": 600,
+        "title": "Bestill det som skal leveres",
+        "text": "Kontroller vareutvalget fra de lagrede boligvalgene. Fjern varer som kjøpes et annet sted. Valgene i boligen beholdes."
       },
       {
-        "start": 452.0,
-        "title": "12 · Klargjør bestillingen",
-        "text": "Kontroller vareutvalget, leverandøren og leveringsadressen før du går videre."
+        "start": 611,
+        "title": "Avklar leveringen",
+        "text": "Legg inn felles leveringsadresse. Du kan velge egen adresse, delt bestilling og dellevering for den enkelte boligen."
       },
       {
-        "start": 460.0,
-        "title": "12 · Kontroller sendekladden",
-        "text": "Bestillingsgrunnlaget er lagret. Appen oppgir Cordel ASCII og Excel som vedlegg."
+        "start": 622,
+        "title": "Kontroller leverandør og varer",
+        "text": "Ordrenummer, leverandør, vareutvalg og leveringsadresse skal stemme før bestillingen lagres og sendekladden åpnes."
       },
       {
-        "start": 468.0,
-        "title": "12 · Delvis levert pilotordre",
-        "text": "Åpne den eksisterende pilotordren. Servanten er mottatt. Ett servantbatteri gjenstår."
+        "start": 633,
+        "title": "Forhåndsvis før sending",
+        "text": "Kontroller mottaker, bolig, adresse og begge vedleggene: Cordel ASCII og Excel. I denne demonstrasjonen sender vi ingen bestilling."
       },
       {
-        "start": 476.0,
-        "title": "12 · Før restmottaket",
-        "text": "Velg Registrer varemottak. Før én enhet på servantbatteriet og lagre."
+        "start": 644,
+        "title": "Samle HMS og timer",
+        "text": "KS/HMS og timer kan kobles til et vanlig ProffDok-prosjekt. Velg riktig eksisterende prosjekt, eller opprett en ny kobling én gang."
       },
       {
-        "start": 484.0,
-        "title": "12 · Kontroller leveringen",
-        "text": "Begge varelinjene viser én av én mottatt. Pilotordren har fått status Levert."
+        "start": 656,
+        "title": "Faktisk bemanning",
+        "text": "Aktiver bemanning under Oppsett. Prosjektleder kan registrere deltakere manuelt. Ansatte og UE trenger personlig tilgang for egen registrering."
       },
       {
-        "start": 492.0,
-        "title": "13 · Åpne sjekklisten",
-        "text": "Svar på kontrollpunktene og legg inn påkrevde kommentarer."
+        "start": 667,
+        "title": "Registrer ut og begrunn rettinger",
+        "text": "Kontroller inn- og ut-tid. Endringer av en lagret registrering skal begrunnes. Her ser vi den avsluttede demoregistreringen."
       },
       {
-        "start": 500.0,
-        "title": "13 · Bekreft fullføring",
-        "text": "Appen viser at kontrollen er lagret og at tre av tre punkter er besvart."
+        "start": 678,
+        "title": "Historikken beholdes",
+        "text": "Listen viser at montøren er registrert ut. Historikken viser hvem som registrerte og rettet tidspunktet, med begrunnelse og tidligere verdier."
       },
       {
-        "start": 508.0,
-        "title": "15 · Forhåndsvis varselet",
-        "text": "Kontroller bolig, overskrift og melding i forhåndsvisningen før varselet er klart."
+        "start": 689,
+        "title": "Tilsynslisten har egen kontroll",
+        "text": "Oversiktslisten krever byggeplass, virksomheter og personer. Kontroller mangler og bekreft dagens liste før den brukes ved tilsyn."
       },
       {
-        "start": 516.0,
-        "title": "16 · Kontrakt og indeks",
-        "text": "Kontroller kontraktssum, indeksserie og hvilke leveranser som skal reguleres."
+        "start": 700,
+        "title": "Fordel én kontroll til flere boliger",
+        "text": "Velg firmamal og boliger. Hver bolig får en egen kontroll med tomme svar. Eksisterende kontroller hoppes over."
       },
       {
-        "start": 524.0,
-        "title": "16 · Fakturaoversikt",
-        "text": "Se lagrede fakturaer og godkjente indeksberegninger. Testprosjektet har ingen registreringer."
+        "start": 712,
+        "title": "Kontroller omfanget",
+        "text": "Forhåndsvisningen viser fire nye kontroller og ingen duplikater. Påkrevde kontroller må være fullført før sluttgodkjenning."
       },
       {
-        "start": 532.0,
-        "title": "17 · Se åpne forhold",
-        "text": "Åpne listen for å se hva prosjektleder må vurdere før overtakelse."
+        "start": 723,
+        "title": "Fordelingen er lagret",
+        "text": "Fire separate kontroller er opprettet. Åpne den aktuelle boligen og fyll ut kontrollen der arbeidet utføres."
       },
       {
-        "start": 540.0,
-        "title": "17 · Velg oppfølging",
-        "text": "Velg om forholdet hindrer overtakelse eller skal følges opp etterpå."
+        "start": 734,
+        "title": "Dokumenter det du har kontrollert",
+        "text": "Velg OK, Ikke aktuelt eller Avvik. Skriv påkrevd kommentar og legg til bilder ved behov. Eksempeltekst erstatter ikke en virkelig kontroll."
       },
       {
-        "start": 548.0,
-        "title": "17 · Eksempel på sperre",
-        "text": "Demontering og riving er valgt som sperrende i vurderingskladden."
+        "start": 747,
+        "title": "Lagre og fullfør kontrollen",
+        "text": "Når alle påkrevde svar er lagt inn, kan kontrollen fullføres ved lagring. Uferdige kontroller lagres som arbeid underveis."
       },
       {
-        "start": 556.0,
-        "title": "17 · Overtakelser i pilotbygget",
-        "text": "I det fiktive pilotbygget er to av seks boliger overtatt."
+        "start": 758,
+        "title": "Kontroller lagret status",
+        "text": "Sjekklisten viser tre av tre besvart og Fullført. Dokumentasjonshistorikken viser endringene. De andre boligene har fortsatt egne kontroller."
       },
       {
-        "start": 564.0,
-        "title": "17 · Overtatt med restpunkter",
-        "text": "Pilotveien 101 viser fiktiv protokollreferanse og ett restpunkt til oppfølging."
+        "start": 769,
+        "title": "Kontroller FDV før overlevering",
+        "text": "FDV følger boligens lagrede varevalg. Manglende lenker vises tydelig. Legg inn riktige produktdokumenter eller last opp FDV-filer."
       },
       {
-        "start": 572.0,
-        "title": "18 · Hent sluttpakken",
-        "text": "Last ned PDF og ZIP. I denne testen viser PDF-en kontrollen og to manglende FDV-lenker."
+        "start": 780,
+        "title": "Se hva som gjenstår",
+        "text": "Åpne forhold samler mangler fra plan og dokumentasjon. Følg opp årsaken før overtakelse. Fullført sjekkliste alene gjør ikke boligen klar."
+      },
+      {
+        "start": 792,
+        "title": "Skill hinder fra restpunkter",
+        "text": "Prosjektleder begrunner om et forhold hindrer overtakelse eller skal følges opp etterpå. Restpunkter trenger navngitt ansvarlig."
+      },
+      {
+        "start": 803,
+        "title": "UE-kontrollen er samlet på boligen",
+        "text": "Prosjektet viser både den opprinnelige kontrollen og UEs egen fullførte utfylling. Åpne sluttpakken for en samlet oversikt."
+      },
+      {
+        "start": 815,
+        "title": "Se over endret kontrollgrunnlag",
+        "text": "Nye opplysninger kan gjøre en tidligere vurdering utdatert. Se over siste grunnlag før overtakelsen registreres."
+      },
+      {
+        "start": 827,
+        "title": "Før én periode om gangen",
+        "text": "Registrer denne periodens a konto og eventuell indeks. Fakturanummer kan legges inn senere. Eksemplet utsteder eller sender ingen faktura."
+      },
+      {
+        "start": 839,
+        "title": "Følg opp lagrede fakturaer",
+        "text": "Fakturaoversikten viser registrert a konto og indeks hver for seg. En lagret indeksberegning teller ikke som fakturert, og fakturert betyr ikke betalt."
+      },
+      {
+        "start": 852,
+        "title": "Avgrens UE-tilgangen",
+        "text": "Velg navngitt kontakt, varighet og funksjoner. Sjekklister kan være lesbare eller åpne for egen utfylling og vedlegg. Her vises oppsettet uten ny tilgang."
+      },
+      {
+        "start": 864,
+        "title": "UE ser det prosjektet har delt",
+        "text": "Den personlige portalen viser bare delte funksjoner. Her får UE fremdrift og sjekklister for fire demoboliger."
+      },
+      {
+        "start": 878,
+        "title": "Bekreft dato eller meld avvik",
+        "text": "Her er en demodato bekreftet. Svaret vises hos prosjektleder. Det flytter ikke planen og registrerer ikke arbeidet som utført."
+      },
+      {
+        "start": 892,
+        "title": "Se den fullførte UE-kontrollen",
+        "text": "Dokumenter hvert punkt når du fyller ut. Her åpner vi en allerede fullført demokontroll; svarene er låst."
+      },
+      {
+        "start": 906,
+        "title": "Vedlegget følger riktig bolig",
+        "text": "Velg plassering og tittel før du lagrer en fil. Her ligger demovedlegget på H0101 og kan lastes ned igjen."
+      },
+      {
+        "start": 920,
+        "title": "Videre i en ferdig demopilot",
+        "text": "For å vise historikk, leveranser og overtakelser åpner vi en eksisterende demopilot. Dette er et annet prosjekt enn Lindeparken."
+      },
+      {
+        "start": 932,
+        "title": "Følg opp ekstern tilgang",
+        "text": "Her ser prosjektleder kontakt, utløp og funksjoner for en eksisterende testtilgang. Tilgangslenken deles bare med den navngitte mottakeren."
+      },
+      {
+        "start": 943,
+        "title": "Se leveranser samlet",
+        "text": "Oversikten skiller klargjort, bestilt, delvis levert og levert. Tallene gjelder ordre. Varemottak er ikke ferdigstilling av arbeidet."
+      },
+      {
+        "start": 954,
+        "title": "Kontroller mottatte varer",
+        "text": "Hver vare viser mottatt antall mot bestilt antall. Delleveranser kan følges opp. Denne demoordren er allerede fullt levert."
+      },
+      {
+        "start": 965,
+        "title": "Se tidligere mottak",
+        "text": "Historikken viser første delleveranse og senere restmottak. Korrigeringer skal kunne spores. Levert varestatus erstatter ikke kontroll av utført arbeid."
+      },
+      {
+        "start": 976,
+        "title": "Overtatt med restpunkter",
+        "text": "En bolig kan være overtatt mens resten av prosjektet pågår. Åpne forhold skal fortsatt følges opp. Endringer etter vurderingen varsles tydelig."
+      },
+      {
+        "start": 988,
+        "title": "Samle boligens dokumentasjon",
+        "text": "Sjekklister, filer, FDV og ekstern protokoll hører til riktig bolig. Samlet PDF og ZIP gir en sluttpakke med dokumentert status."
+      },
+      {
+        "start": 1000,
+        "title": "Last ned med riktig status",
+        "text": "PDF viser kontroller, dokumentoversikt, FDV og restpunkter. Manglende FDV-lenker er synlige. Nedlasting godkjenner ikke arbeidet og endrer ingen statuser."
+      },
+      {
+        "start": 1012,
+        "title": "Bevar originalene",
+        "text": "ZIP er lastet ned med samlet PDF og to originalfiler. Kontrollhistorikk og filmanifest følger med. Ekstern FDV må fortsatt kontrolleres via lenkene."
+      },
+      {
+        "start": 1024,
+        "title": "Husk bygg og fellesarbeider",
+        "text": "Boligens overtakelse og prosjektets interne sluttkontroll er ulike steg. Fellesarbeider og dokumentasjon må vurderes særskilt før hele prosjektet ferdigstilles."
       }
     ]
   }

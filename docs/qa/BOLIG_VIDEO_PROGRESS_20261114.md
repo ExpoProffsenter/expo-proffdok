@@ -39,11 +39,11 @@ PR342 er nå bare UI/relevante tester/dokumentasjon: e1346b45652f06450420bfdb48e
 
 Faktisk skynett på integrasjonscommit35954d9: begge kortfilmer lastet, riktige varigheter, native avspilling, kapittelhopp, slutt, tekstalternativ og retur. Separat PR343-origin viser innlogging for appen; offentlig masseplanfil ble avspilt der i skynett. Ny innlogget appprøve på separat origin er ikke attestert. A–Å V12 forblir produksjonsutgaven til godkjent publisering.
 
-## Endelig A–Å-filkontroll
+## Tidligere V13-render med 92 scener
 
 Leveransefil: 41820939 byte, SHA256 e1d52d0fc2a2561a53b62ad41e4a2fe6eb32a38610d2e828bec8ff357d27ab0d. H.264 1920×1080, 24 fps, 1037 sekunder, ingen lyd og 92 innebygde kapitler + VTT. Hele masterfilen dekodet og 519 bilder (hvert andre sekund) gjennomgått i 33 kontaktark; alle scenenumre 1–92 og overganger kontrollert. Leveransefilen er komprimert fra samme master, full dekoding bestått og tekstkvalitet kontrollert i 1080p. Alle 92 scener har eksplisitte pekerkoordinater. Ikke kontinuerlig 17-minutters sanntidsvisning i nettleser.
 
-## Gjenstår / publiseringsport
+## Publiseringsstatus før pekerrettelsen
 - V13 skynettavspilling og manifest/CI må kontrolleres på endelig videokandidat; lokal filkontroll er bestått.
 - TEST OK for nye UI-rettelser og videoer før main → Production → demo. PR341s tidligere TEST OK gjelder ikke disse nye endringene.
 - Sandbox-only origin-kilder holdes utenfor main og synkes bevisst til demo-overlay. Ingen ny e-posttest er nødvendig for filmene.
@@ -53,10 +53,23 @@ Rollback: PR341 egen revert med kontroll av kompatibel additiv DB-funksjon. PR34
 
 Redigerbar kildepakke: libfile_fde3_f-669751fc82788191ac917cff3cf24374_8c23f6c69fcc81918d7107a6c6360e14, versjon1 inneholder tidligere85-scene arbeidsrender og kortfilmene. Endelig92-scene kildepakke erstatter samme identitet etter ferdig filkontroll.
 
-## Opplastingsblokkering 15.11.2026 UTC
+## Opplastingsblokkering for tidligere render
 
 GitHub MCP create_blob avviser 42 MB-filen: HTTP400, «MCP request body is invalid or exceeds the 16 MiB limit». Første59MB-forsøk oversteg også gRPC64MiB. Dette er transportgrenser, ikke avslag fra automatisk godkjenning. Ingen feil fil eller ufullstendig blob ble installert. Lokal gh har ingen innlogging. Den ferdige leveransefilen krever autentisert Git-push; ingen produksjonsendring eller CI-svekkelse er gjort for å omgå transportgrensen.
 
 Neste konkrete steg: autentiser GitHub CLI, opprett isolert checkout på PR343 HEAD9ffc9345db0a35d1af865fe61a321bb3e679ee2d, installer ferdig MP4/VTT og manifest-entry samt lokal oppdatert hjelpetest/README/dekning. Kjør CI, sjekk publisert commit, test native Hjelp og full film i skynett. Ikke merge før nytt TEST OK. PR342e134 og PR3439ffc har begge10grønne kontroller; nye A–Å-filer er foreløpig utenfor aktiv manifestpost.
 
 Ferdig MP4 lagret separat: Library libfile_fde3_f-d715210c99a08191aeb3caa6264588a5_8c23f6c69fcc81918d7107a6c6360e14. Kildepakken ble versjonsavstemt: gjeldende versjon2 inneholdt87 scener; denne bevares som historikk og sluttpakken legger til92-scene kandidaten. Aktiv Hjelp-manifestpost er fortsatt V12.
+
+## Gjenopptatt 15.11 – peker og riktig filmkobling
+
+PR343 utvides til de tre eksisterende boligfilmene. PR342 er fortsatt separat UI-rettelse. Main er kontrollert uendret 66caacf2. V12/Solgløtt var fortsatt koblet i Hjelp; den nye V13-filen var ferdig rendret lokalt etter chatavbruddet, men ikke installert.
+
+Kandidat: Finn bolig V3 112s/8 kapitler, Masseplan V3 90s/5 kapitler og A–Å V13 1036s/91 kapitler. Stor hvit peker med mørk kant, rolig bevegelse og ett sekund klikkpuls; flytende turkise markeringsrammer fjernet. Full HD, 24fps, uten lyd. Hele V13 dekodet feilfritt; faktiske sluttbilder fra alle91scener visuelt gjennomgått. Nye UE-bilder finnes i scene78–81, med synlig demovedlegg. Dette erstatter ikke en ny funksjonstest av opplastingen.
+
+V13 SHA256: 3e456bfce02bda0197ce4450b97d03d090c878acf59513a435d8621d661548c1. Klippene har VTT og kapitteltekst fra samme tidslinje. Historiske filmer beholdes. Ingen ny backend-/databasesetting eller utsending.
+
+Lokal standardnettleser manglet; Playwright-nedlasting gav ugyldig ZIP. Eksisterende støttet CHROMIUM_PATH brukes med installert /usr/bin/chromium; testassertioner svekkes ikke. Kandidatens native browserkontroll, CI og publisert preview dokumenteres nedenfor når resultat foreligger. Ingen TEST OK eller produksjonssetting for disse endringene.
+Lokal native nettleserkjøring ble også stoppet før teststart: Chromium får ikke opprette sin socket (Operation not permitted). Mediehash, bytes og statiske guidekontroller passerte før nettleserstart. CI må kjøre browserdelen; ingen lokal browser-PASS påstås.
+
+Kandidaten er gjenopprettet fra 6ab83da8 på toppen av PR343s b270ce15. GitHub kan leses, mens Git-push krever autentisering i den gjeldende økten. Se [overleveringen](HANDOFF_20261115_VIDEO_POINTER.md).

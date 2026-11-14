@@ -17,10 +17,14 @@ const stableGuide=g=>Object.fromEntries(Object.entries(g).filter(([key])=>!short
 const preservationGuides=VIDEO_GUIDES.map(g=>{
  const prior=priorShorts.find(p=>p.id===g.id);if(!prior)return g;
  eq(stableGuide(g),stableGuide(prior),'refreshed short retains identity, access and topic '+g.id);
- const expected=g.id==='finn-bolig'?['/help-videos/finn-bolig-v2.mp4',112,8,'68e01deb5fb6b9ac72b6c3bb462de1ad51f71f2a63928088aaf129689164bfea']:['/help-videos/bolig-masseplan-v2.mp4',90,5,'6e4fcb18fb8ab1b67c1c301e98ff52ef1537d40fc46eae9722dda486bb855037'];
- eq([g.src,g.duration,g.chapters.length,g.sha256],expected,'exact reviewed V2 short '+g.id);
+ const expected=g.id==='finn-bolig'?['/help-videos/finn-bolig-v3.mp4',112,8,'cc307472835dbcb594a861d0e0f79db641e8dd7409aa57b693c0f62bca5aa645']:['/help-videos/bolig-masseplan-v3.mp4',90,5,'84067dcc29558bb55df7f507bd66f2c670bdf976b6f6731b2b1c9e44bdcc8dc1'];
+ eq([g.src,g.duration,g.chapters.length,g.sha256],expected,'exact reviewed V3 short '+g.id);
  return prior;
 });
+const previousFull=JSON.parse(fs.readFileSync('scripts/fixtures/bolig-aa-v12-metadata.json','utf8'));
+const currentFull=VIDEO_GUIDES.find(g=>g.id===boligFullId);
+eq(stableGuide(currentFull),stableGuide(previousFull),'A–Å retains identity, topic and access');
+eq([currentFull.src,currentFull.duration,currentFull.chapters.length,currentFull.sha256],["/help-videos/bolig-a-til-aa-v13.mp4", 1036, 91, "3e456bfce02bda0197ce4450b97d03d090c878acf59513a435d8621d661548c1"],'exact reviewed A–Å V13');
 const fourteenGuides=preservationGuides.filter(x=>x.id!==boligFullId);
 const thirteenGuides=fourteenGuides.filter(x=>x.id!==staffingId);
 eq(crypto.createHash('sha256').update(JSON.stringify(thirteenGuides)).digest('hex'),'0fee5b378bc83a1f08d6726750acb7669fd45a1e54bbe65485c89b1636c159f3','all thirteen earlier guide records preserved');
@@ -32,7 +36,7 @@ eq(crypto.createHash('sha256').update(JSON.stringify(priorGuides.filter(x=>x.id!
 eq(availableVideoGuides({authenticated:true,topics:['rapport']}).map(x=>x.id),['prosjekt-statusrapport'],'report movie follows existing report topic');
 eq(availableVideoGuides({authenticated:true,topics:['sales','produkter']}).some(x=>x.id==='prosjekt-statusrapport'),false,'other topics cannot grant report movie');
 eq(searchVideoGuides(availableVideoGuides({authenticated:true,topics:['hjelp']}),'statusrapport').length,0,'search cannot reveal unavailable report movie');
-eq(VIDEO_GUIDES.filter(x=>x.id===boligFullId).map(x=>x.chapters.length),[57],'A–Å guide contains all recorded chapter markers');
+eq(VIDEO_GUIDES.filter(x=>x.id===boligFullId).map(x=>x.chapters.length),[91],'A–Å guide contains all recorded chapter markers');
 eq(availableVideoGuides({authenticated:true,topics:['bolig'],canUseBolig:false}).some(x=>x.id===boligFullId),false,'A–Å guide requires Bolig access');
 eq(VIDEO_GUIDES.filter(x=>x.id==='bolig-masseplan').length,1,'one focused mass-planning chapter');
 eq(availableVideoGuides({authenticated:true,topics:['hjelp'],canUseBolig:false}).some(x=>x.id==='bolig-masseplan'),false,'mass-planning film requires Bolig access');

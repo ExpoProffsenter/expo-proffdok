@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "title": "Oppdaterte kortfilmer for boligsøk og masseplan",
-  "change": "BEGGE. Kun versjonerte MP4/VTT, eksisterende guideposter, Hjelp-README og QA/dekningsgrunnlag. Ingen endring av avspiller, tilgang, backend eller andre filmer. Preview først; egen TEST OK før produksjon.",
-  "verification": "Faktiske skynettopptak i Sandbox, visuell MP4-kontroll hvert andre sekund over hele begge filmer. 1920x1080/24fps uten lyd. Integrasjon/CI og native avspiller kontrolleres etter publisering av kandidat.",
+  "title": "Boligfilmer med stor peker og A–Å V13",
+  "change": "BEGGE. Versjonerte MP4/VTT, tre eksisterende boligguideposter, Hjelp-README og QA. Stor peker, klikkpuls, ingen flytende markeringsrammer. Eksisterende avspiller og tilganger beholdes. Preview først; TEST OK før produksjon.",
+  "verification": "V13 fullstendig dekodet uten feil; faktisk sluttbilde fra alle 91 scener visuelt kontrollert. Native nettleser-/kapittelkontroll kjøres på kandidat. Ingen ny full funksjonstest av appen påstås.",
   "documentation": {
     "help": {
       "required": true,

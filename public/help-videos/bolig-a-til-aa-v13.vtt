@@ -1,0 +1,274 @@
+WEBVTT
+
+00:00:00.000 --> 00:00:11.000
+Start i Boligprosjekter. Her samler du bygg, boliger, beboervalg og fremdrift.
+
+00:00:11.000 --> 00:00:22.000
+Veiviseren bygger boligstrukturen. Du kan lukke underveis og fortsette med kladden.
+
+00:00:22.000 --> 00:00:33.000
+Gi prosjektet navn og eventuelt prosjektnummer. Velg boligtypen som passer.
+
+00:00:33.000 --> 00:00:44.000
+Gi bygget et tydelig navn og registrer adressen. Flere bygg kan ha ulike boligtyper.
+
+00:00:44.000 --> 00:00:55.000
+Tilpass antall oppganger, etasjer og boliger. Her får Lindehuset fire boliger fordelt på to etasjer.
+
+00:00:55.000 --> 00:01:06.000
+Se over navn, adresse og boligantall. Opprett prosjektforsiden når strukturen stemmer.
+
+00:01:06.000 --> 00:01:17.000
+Fasaden følger den registrerte boligstrukturen. Navn og prosjektnummer kan endres med Rediger prosjektinfo.
+
+00:01:17.000 --> 00:01:28.000
+Endre navn eller prosjektnummer her. Boliger, beboere og fremdriftsplan beholdes. Lagre når du har gjort en endring.
+
+00:01:28.000 --> 00:01:39.000
+Velg bolig og plassen den skal bytte med. Bolignummer, beboere og avtaler følger boligen. Forhåndsvis før lagring.
+
+00:01:39.000 --> 00:01:51.000
+Kontroller gammel og ny plass for begge boliger. Lagre bare hvis flyttingen er riktig. Her avslutter vi uten å bytte plass.
+
+00:01:51.000 --> 00:02:02.000
+Last opp XLSX eller CSV med adresse, bolignummer og kontaktopplysninger. Flere eiere kan knyttes til samme bolig.
+
+00:02:02.000 --> 00:02:13.000
+Se at adresse, bolignummer, navn, e-post og mobil peker til riktig Excel-kolonne. Eksempelverdiene hjelper deg.
+
+00:02:13.000 --> 00:02:24.000
+Alex og Sam kobles til samme bolig. Velg én hovedkontakt. Kontroller adresse og bolignummer før importen lagres.
+
+00:02:24.000 --> 00:02:35.000
+Importen lagrer kontaktopplysningene. Den sender ingen invitasjoner. Portal og frister klargjøres etterpå.
+
+00:02:35.000 --> 00:02:46.000
+Kvitteringen bekrefter lagrede kontakter. Ingen invitasjoner eller varsler er sendt.
+
+00:02:46.000 --> 00:02:57.000
+Legg inn hovedkontrakt, vedlegg og senere versjoner. Originalene ligger privat og følger ikke beboer-, UE- eller sluttpakken.
+
+00:02:57.000 --> 00:03:08.000
+Utpekte interne brukere kan få lesetilgang eller administrasjon. Vanlig prosjekt- eller butikktilgang gir ikke automatisk innsyn i kontraktene.
+
+00:03:08.000 --> 00:03:19.000
+Kontraktssum og opsjoner føres ekskl. mva. Ved avtalt indeksregulering kontrollerer du serie, basismåned, basisindeks og reduksjonsfaktor.
+
+00:03:19.000 --> 00:03:30.000
+Grunnpakken beskriver det som følger med. Tilvalgspakker kan legges til eller erstatte bestemte varer.
+
+00:03:30.000 --> 00:03:41.000
+Legg inn beskrivelse, varenummer, antall og enhet. Bilder og FDV-lenker gjør grunnlaget tydeligere.
+
+00:03:41.000 --> 00:03:52.000
+Velg et tydelig bilde som forklarer varen. Her bruker vi et merket illustrasjonsfoto i demopakken.
+
+00:03:52.000 --> 00:04:03.000
+Bildet er lagt til varelinjen. Lagre pakken før du fordeler den til boligene.
+
+00:04:03.000 --> 00:04:14.000
+Et alternativ erstatter en bestemt standardvare. Her byttes 60 cm innredning til 80 cm. Kontroller varekoblingen.
+
+00:04:14.000 --> 00:04:25.000
+Eksempelet koster 4 500 kroner inkl. mva. Prisen gjelder hele tilvalgspakken. Lagre når varer og pris stemmer.
+
+00:04:25.000 --> 00:04:36.000
+Legg til rom før du fordeler pakkene. Rompakker samler varer og dokumentasjon for hvert rom.
+
+00:04:36.000 --> 00:04:47.000
+Bad 1 er lagret. Velg rompakke for å knytte grunnleveransen til badet.
+
+00:04:47.000 --> 00:04:58.000
+Velg grunnpakken og forhåndsvis innholdet. Tilvalget lar vi stå åpent til beboeren skal velge.
+
+00:04:58.000 --> 00:05:09.000
+Forhåndsvisningen viser tre varelinjer og ingen tilvalg. Lagringen gjelder denne boligen og sender ingen bestilling.
+
+00:05:09.000 --> 00:05:20.000
+Lag en felles arbeidsrekkefølge og forskyv oppstarten mellom boligene. Planen følger faktiske datoer.
+
+00:05:20.000 --> 00:05:31.000
+Filtrer på bygg, oppgang eller etasje. Her bruker vi samme plan for alle fire boligene. Utvalget beholdes når filteret endres.
+
+00:05:31.000 --> 00:05:42.000
+Førbefaring kommer først. Montering starter ti arbeidsdager senere. Ansvarlig, varighet og ukeregel inngår i planen.
+
+00:05:42.000 --> 00:05:53.000
+Kontroller alle boligene før lagring. Her opprettes åtte aktiviteter. Ingen beboervarsler publiseres av denne handlingen.
+
+00:05:53.000 --> 00:06:04.000
+Hele planen viser perioden til aktivitetene. Bytt mellom dag, uke og måned. Boligene sorteres etter første aktivitet.
+
+00:06:04.000 --> 00:06:15.000
+Sett dato for valgte boliger. Prosjektets felles klokkeslett vises tydelig. Etter fristen stoppes nye tilvalg; eksisterende avtaler beholdes.
+
+00:06:15.000 --> 00:06:26.000
+En portaltilgang alene viser ikke pakkene. Legg til boligens lagrede grunnleveranse som en navngitt valgmulighet.
+
+00:06:26.000 --> 00:06:37.000
+Velg riktig rom og tilvalg. Resten av boligen beholdes. Beboeren får et komplett alternativ å sammenligne med grunnleveransen.
+
+00:06:37.000 --> 00:06:48.000
+Alex og Sam får samme boligportal. Kontroller mottakerlisten før klargjøring. I denne sandboxen er virkelig e-postutsending sperret.
+
+00:06:48.000 --> 00:07:00.000
+Portalen er klargjort, men ingen e-post er sendt. Sandboxen sperrer utsending. Vi åpner demoportalen direkte for å kontrollere innholdet.
+
+00:07:00.000 --> 00:07:11.000
+Mine valg, avtaler, dokumenter og meldinger er samlet i portalen. Kontroller bolig og bestillingsfrist før du velger.
+
+00:07:11.000 --> 00:07:21.000
+Grunnpakken er inkludert. Oppgraderingen koster 4 500 kroner. Velg ønsket alternativ og kontroller summen før innsending.
+
+00:07:21.000 --> 00:07:32.000
+80 cm innredning erstatter standardvaren. De andre varelinjene beholdes. Innsendingen er et ønske til gjennomgang; avtalen aksepteres separat.
+
+00:07:32.000 --> 00:07:43.000
+Kontroller innsendte varer og skriv en kort tilbakemelding. Bruk valget i avtalegrunnlaget før avtale eller bestilling er delt.
+
+00:07:43.000 --> 00:07:55.000
+Kontroller bolig, varelinjer, pris og svarfrist. Svarfristen er egen frist for avtalen. Opprett lenken når innholdet er klart.
+
+00:07:55.000 --> 00:08:06.000
+Beboeren åpner avtalen under Avtaler. Bare den aktuelle utgaven kan besvares. Aksepterte avtaler blir liggende som kvitteringer.
+
+00:08:06.000 --> 00:08:18.000
+Les avtalen og bekreft at varer og pris er gjennomgått. Navnet og svaret knyttes til akkurat denne utgaven.
+
+00:08:18.000 --> 00:08:29.000
+Systemadmin eller godkjent support tildeler tilgang til den ansatte. Personen bruker sin vanlige innlogging og finner prosjektet under Min side.
+
+00:08:29.000 --> 00:08:40.000
+Butikkeksempelet bruker et eget testprosjekt med eksisterende tilgang. Mine boligprosjekter viser bare personlig tildelte prosjekter.
+
+00:08:40.000 --> 00:08:52.000
+Søket velger ikke bolig automatisk. Her er H0101 fortsatt valgt. Trykk riktig søkeresultat for å bytte til H0102.
+
+00:08:52.000 --> 00:09:02.000
+Her vises H0101 igjen i butikkens eksempelprosjekt. Se adresse, telefon, e-post og frist. Første åpne aktivitet er Førbefaring.
+
+00:09:02.000 --> 00:09:14.000
+Registrer varenummer, antall og beboerpris inkl. mva. Montering legges på egen linje i prisen. Her brukes et tydelig merket illustrasjonsbilde.
+
+00:09:14.000 --> 00:09:26.000
+Mottaker, varer, bilde og pris vises samlet. Dette tillegget er 1 240 kroner inkl. mva. Grunnpakken og tidligere aksepterte avtaler beholdes.
+
+00:09:26.000 --> 00:09:37.000
+Beboeren ser samme vare, bilde, monteringspris og totalsum. Tidligere akseptert tillegg ligger fortsatt som egen kvittering.
+
+00:09:37.000 --> 00:09:48.000
+Etter aksept vises kvitteringen under Avtaler. Et nytt tillegg erstatter ikke kvitteringen for et tidligere akseptert tillegg.
+
+00:09:48.000 --> 00:10:00.000
+Søk på navn, bolignummer eller adresse. Trefflisten viser bygg og etasje, slik at du kan velge riktig bolig.
+
+00:10:00.000 --> 00:10:11.000
+Kontroller vareutvalget fra de lagrede boligvalgene. Fjern varer som kjøpes et annet sted. Valgene i boligen beholdes.
+
+00:10:11.000 --> 00:10:22.000
+Legg inn felles leveringsadresse. Du kan velge egen adresse, delt bestilling og dellevering for den enkelte boligen.
+
+00:10:22.000 --> 00:10:33.000
+Ordrenummer, leverandør, vareutvalg og leveringsadresse skal stemme før bestillingen lagres og sendekladden åpnes.
+
+00:10:33.000 --> 00:10:44.000
+Kontroller mottaker, bolig, adresse og begge vedleggene: Cordel ASCII og Excel. I denne demonstrasjonen sender vi ingen bestilling.
+
+00:10:44.000 --> 00:10:56.000
+KS/HMS og timer kan kobles til et vanlig ProffDok-prosjekt. Velg riktig eksisterende prosjekt, eller opprett en ny kobling én gang.
+
+00:10:56.000 --> 00:11:07.000
+Aktiver bemanning under Oppsett. Prosjektleder kan registrere deltakere manuelt. Ansatte og UE trenger personlig tilgang for egen registrering.
+
+00:11:07.000 --> 00:11:18.000
+Kontroller inn- og ut-tid. Endringer av en lagret registrering skal begrunnes. Her ser vi den avsluttede demoregistreringen.
+
+00:11:18.000 --> 00:11:29.000
+Listen viser at montøren er registrert ut. Historikken viser hvem som registrerte og rettet tidspunktet, med begrunnelse og tidligere verdier.
+
+00:11:29.000 --> 00:11:40.000
+Oversiktslisten krever byggeplass, virksomheter og personer. Kontroller mangler og bekreft dagens liste før den brukes ved tilsyn.
+
+00:11:40.000 --> 00:11:52.000
+Velg firmamal og boliger. Hver bolig får en egen kontroll med tomme svar. Eksisterende kontroller hoppes over.
+
+00:11:52.000 --> 00:12:03.000
+Forhåndsvisningen viser fire nye kontroller og ingen duplikater. Påkrevde kontroller må være fullført før sluttgodkjenning.
+
+00:12:03.000 --> 00:12:14.000
+Fire separate kontroller er opprettet. Åpne den aktuelle boligen og fyll ut kontrollen der arbeidet utføres.
+
+00:12:14.000 --> 00:12:27.000
+Velg OK, Ikke aktuelt eller Avvik. Skriv påkrevd kommentar og legg til bilder ved behov. Eksempeltekst erstatter ikke en virkelig kontroll.
+
+00:12:27.000 --> 00:12:38.000
+Når alle påkrevde svar er lagt inn, kan kontrollen fullføres ved lagring. Uferdige kontroller lagres som arbeid underveis.
+
+00:12:38.000 --> 00:12:49.000
+Sjekklisten viser tre av tre besvart og Fullført. Dokumentasjonshistorikken viser endringene. De andre boligene har fortsatt egne kontroller.
+
+00:12:49.000 --> 00:13:00.000
+FDV følger boligens lagrede varevalg. Manglende lenker vises tydelig. Legg inn riktige produktdokumenter eller last opp FDV-filer.
+
+00:13:00.000 --> 00:13:12.000
+Åpne forhold samler mangler fra plan og dokumentasjon. Følg opp årsaken før overtakelse. Fullført sjekkliste alene gjør ikke boligen klar.
+
+00:13:12.000 --> 00:13:23.000
+Prosjektleder begrunner om et forhold hindrer overtakelse eller skal følges opp etterpå. Restpunkter trenger navngitt ansvarlig.
+
+00:13:23.000 --> 00:13:35.000
+Prosjektet viser både den opprinnelige kontrollen og UEs egen fullførte utfylling. Åpne sluttpakken for en samlet oversikt.
+
+00:13:35.000 --> 00:13:47.000
+Nye opplysninger kan gjøre en tidligere vurdering utdatert. Se over siste grunnlag før overtakelsen registreres.
+
+00:13:47.000 --> 00:13:59.000
+Registrer denne periodens a konto og eventuell indeks. Fakturanummer kan legges inn senere. Eksemplet utsteder eller sender ingen faktura.
+
+00:13:59.000 --> 00:14:12.000
+Fakturaoversikten viser registrert a konto og indeks hver for seg. En lagret indeksberegning teller ikke som fakturert, og fakturert betyr ikke betalt.
+
+00:14:12.000 --> 00:14:24.000
+Velg navngitt kontakt, varighet og funksjoner. Sjekklister kan være lesbare eller åpne for egen utfylling og vedlegg. Her vises oppsettet uten ny tilgang.
+
+00:14:24.000 --> 00:14:38.000
+Den personlige portalen viser bare delte funksjoner. Her får UE fremdrift og sjekklister for fire demoboliger.
+
+00:14:38.000 --> 00:14:52.000
+Her er en demodato bekreftet. Svaret vises hos prosjektleder. Det flytter ikke planen og registrerer ikke arbeidet som utført.
+
+00:14:52.000 --> 00:15:06.000
+Dokumenter hvert punkt når du fyller ut. Her åpner vi en allerede fullført demokontroll; svarene er låst.
+
+00:15:06.000 --> 00:15:20.000
+Velg plassering og tittel før du lagrer en fil. Her ligger demovedlegget på H0101 og kan lastes ned igjen.
+
+00:15:20.000 --> 00:15:32.000
+For å vise historikk, leveranser og overtakelser åpner vi en eksisterende demopilot. Dette er et annet prosjekt enn Lindeparken.
+
+00:15:32.000 --> 00:15:43.000
+Her ser prosjektleder kontakt, utløp og funksjoner for en eksisterende testtilgang. Tilgangslenken deles bare med den navngitte mottakeren.
+
+00:15:43.000 --> 00:15:54.000
+Oversikten skiller klargjort, bestilt, delvis levert og levert. Tallene gjelder ordre. Varemottak er ikke ferdigstilling av arbeidet.
+
+00:15:54.000 --> 00:16:05.000
+Hver vare viser mottatt antall mot bestilt antall. Delleveranser kan følges opp. Denne demoordren er allerede fullt levert.
+
+00:16:05.000 --> 00:16:16.000
+Historikken viser første delleveranse og senere restmottak. Korrigeringer skal kunne spores. Levert varestatus erstatter ikke kontroll av utført arbeid.
+
+00:16:16.000 --> 00:16:28.000
+En bolig kan være overtatt mens resten av prosjektet pågår. Åpne forhold skal fortsatt følges opp. Endringer etter vurderingen varsles tydelig.
+
+00:16:28.000 --> 00:16:40.000
+Sjekklister, filer, FDV og ekstern protokoll hører til riktig bolig. Samlet PDF og ZIP gir en sluttpakke med dokumentert status.
+
+00:16:40.000 --> 00:16:52.000
+PDF viser kontroller, dokumentoversikt, FDV og restpunkter. Manglende FDV-lenker er synlige. Nedlasting godkjenner ikke arbeidet og endrer ingen statuser.
+
+00:16:52.000 --> 00:17:04.000
+ZIP er lastet ned med samlet PDF og to originalfiler. Kontrollhistorikk og filmanifest følger med. Ekstern FDV må fortsatt kontrolleres via lenkene.
+
+00:17:04.000 --> 00:17:16.000
+Boligens overtakelse og prosjektets interne sluttkontroll er ulike steg. Fellesarbeider og dokumentasjon må vurderes særskilt før hele prosjektet ferdigstilles.
