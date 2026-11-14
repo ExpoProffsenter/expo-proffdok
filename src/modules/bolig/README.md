@@ -50,11 +50,11 @@ Krever den nye migrasjonen `20261113175328_bolig_unit_placement.sql` før UI tas
 
 
 ### Navngitt pakke- og tilvalgssamarbeid
-Prosjektleder tildeler eksplisitte personrettigheter på en aktiv UE-/leverandøradgang til hele prosjektet. Registrert e-post må samsvare med en godkjent intern brukerkonto hos Ringside/Bademiljø Expo/Expo Proffsenter. `bolig_partner_commerce` må være installert før rettigheter kan tildeles. Min side viser bare tildelte prosjekter. Vanlig partnerlenke gir ikke kommersiell tilgang. Lesing, individuell tilpasning og felles katalog er separate rettigheter; ingen medlemskap flyttes. Prosjektleder deler lagrede boligvalg i portalen, og beboer godkjenner. Ingen e-post aktiveres. Se `docs/architecture/BOLIG_PARTNER_COMMERCE.md`.
+Systemadmin åpner prosjekt → Butikktilgang og finner en godkjent ansatt med eksakt e-post. Prosjektleder kan se og tilbakekalle. Ukjent konto må først opprettes/godkjennes i et av de tre interne firmaene. Min side → Mine boligprosjekter viser alle tildelte prosjekter. Ingen medlemskap eller arbeidsfirma flyttes. Krever migrasjon `20261114003459_bolig_shop_staff_admin.sql` etter butikkmigrasjonene. Se `docs/architecture/BOLIG_PARTNER_COMMERCE.md`. Eldre personrettigheter under UE og leverandører kan fortsatt tilbakekalles, men nye tildelinger gjøres under Butikktilgang.
 
 
 ### Butikktillegg til eksisterende beboerportal
-Migrasjon `20261113235139_bolig_shop_proposals.sql` følger partner_commerce. Ny `publish_shop`-rettighet er avslått som standard og tildeles separat på eksisterende prosjektadgang. RPC `bolig_shop_proposal` kontrollerer person, firma, prosjekt, bolig og rettighet før hver handling og før kvitteringsretry. Ingen medlemskap, arbeidsfirma eller generelle roller endres.
+Migrasjon `20261113235139_bolig_shop_proposals.sql` følger partner_commerce. `publish_shop` inngår i den nye systemadminstyrte Butikktilgang. Eldre partnerrettigheter bevares. RPC `bolig_shop_proposal` kontrollerer person, firma, prosjekt, bolig og rettighet før hver handling og før kvitteringsretry. Ingen medlemskap, arbeidsfirma eller generelle roller endres.
 
 Den ansatte kan legge til manuelle varer uten katalogtilgang hos prosjektfirmaet, med varenummer, antall, enhetspris inkl. mva., valgfritt bilde og monteringspris for hele linjen. Katalogsøk bruker den ansattes eksisterende katalogrettigheter, mens prosjektadgangen kontrolleres separat. Server beregner beløpet og lagrer bare felter beregnet på beboeren. Lastede bilder komprimeres til JPEG (maks600px/120KB) og lagres i den private avtaleversjonen. Ingen offentlig bildebeholder eller ny lagringstilgang på tvers av firmaer. Hele forslag begrenses til1,5MB.
 

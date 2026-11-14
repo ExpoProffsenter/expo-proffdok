@@ -1,6 +1,6 @@
 # Prosjektbundet kommersiell samarbeidstilgang
 
-Miljømål BEGGE. Ny privat RLS-tabell binder eksisterende navngitt partneradgang til auth-bruker, prosjekt og tre rettigheter. Kun prosjektleder administrerer gjennom offentlig security-invoker-wrapper og privat kontrollert funksjon. Ingen direkte tabelltilgang for klientroller. Ingen nye firmamedlemskap eller endring av aktivt firma.
+Miljømål BEGGE. Gjeldende tildeling bruker `shop_staff_access`: systemadmin tildeler godkjent intern ansatt direkte til prosjektet under Butikktilgang. Prosjektleder leser og tilbakekaller. Eldre partnerbundne personrettigheter beholdes, men gammel RPC tillater bare lesing og tilbakekalling. Ingen direkte tabelltilgang, nye firmamedlemskap eller endring av aktivt firma.
 
 Hver lesing/skriving kontrollerer navngitt e-post, godkjent aktiv profil, internt firmamedlemskap, modulaktivering, aktivt prosjekt, partnerutløp/tilbakekalling og uttrykkelig rettighet. Kun katalog/romprojeksjonene får prosjektbundet lesekontekst. Boligvalg og individuelle vare-/arbeidslinjer bruker eksisterende revisjon, validering og historikk. Avtaler og ordre sperrer samarbeidsskriving. Beboeraksept, utsending, ordrefunksjoner og HR åpnes ikke.
 
@@ -23,3 +23,12 @@ Tilbakeføring: slå av publish_shop og tilbakefør frontend. Bevar migrasjonen,
 Installer også `20261114001335_bolig_shop_order_identity.sql` etter butikkmigrasjonen; den bevarer bolignummer og bolig-ID i nye tilleggsordrer/eksport.
 
 Fristintegrasjon: `20261114001703_bolig_shop_project_deadline.sql` følger portal_state.choices_closed, slik at PR332s prosjektklokkeslett gjelder også butikktillegg. Kladdbasis inkluderer prosjektrevisjon. Anbefalt produksjonsrekkefølge: PR332s klokkemigrasjon, partner_commerce, shop_proposals, shop_order_identity, shop_project_deadline. Ingen gammel migrasjon kjøres på nytt. Grunninstallasjonen bruker datofrist før prosjektklokken finnes.
+
+### Systemadmin-tildeling 14.11.2026
+Migrasjon `20261114003459_bolig_shop_staff_admin.sql` følger de tre butikkmigrasjonene. `bolig_shop_staff` er security-invoker med privat validert implementasjon. Kontrollerer aktivt prosjekt/firma, prosjektlederkontekst og eksplisitt aktiv systemadmin ved oppslag/tildeling. Kun eksakt e-postoppslag, ingen brukerdatabase eksponert for prosjektfirmaet. Ansatt må være godkjent, aktiv og ha ansatt/firmaadmin-medlemskap i is_internal_work_profile_company. Rettigheten følger bruker-ID og kontrolleres ved hver bruk. Gir read/edit_choices/publish_shop, aldri edit_catalog eller generell firmatilgang. Gyldighet velges 30/90/365 dager; utløp, tilbakekalling, arkivering, deaktivert modul eller tap av ansattstatus stenger tilgang.
+
+I supportmodus brukes eksisterende request_session-validering, med nøyaktig firma, gyldig innlogging, aktiv systemadmin og supportbruker. Tildeling auditeres med ekte actor_id i både bolig- og supportaudit. Ingen generell supportregel eller transport er utvidet. Den effektive brukeren i RPC-resultatet forblir supportbrukeren; UI-identitetskontrollen beholdes. Klientroller har ingen direkte tabelltilgang. Ingen e-post, invitasjon eller pending-rettighet opprettes for ukjent konto; skjermen forklarer godkjenning i riktig firmas brukeradministrasjon, og beholder e-postkladden.
+
+Frontend: prosjekt → Butikktilgang. Min side → Mine boligprosjekter viser alle personens tildelte prosjekter uavhengig av arbeidsfirma. Lagringsforsøk sikres lokalt før nettverkskall; samme request-id brukes ved mistet svar og etter reload. Optimistisk revisjon og serverkvittering hindrer dobbel tildeling og overskriving. Eksisterende UE-/leverandørfunksjoner beholdes.
+
+Tilbakeføring: tilbakekall nye shop_staff_access-tildelinger og eldre partnerrettigheter. Bevar historikk og migrasjon. En frontend-rollback skal ikke gjenåpne gammel tildelingsrett: backend sperrer gammel save med enabled=true.

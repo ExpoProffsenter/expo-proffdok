@@ -18,13 +18,13 @@ export default function BoligMyCollaborations({userId}){
  // Unmounting its editor here would interrupt an unfinished draft.
  const options=chosen&&!matches.some(u=>u.id===chosen.id)?[chosen,...matches]:matches;
  if(!selected&&!list.length&&!error)return null;
- return <section className="personal-card" aria-label="Mine samarbeid"><h3>Mine samarbeid</h3><p>Prosjekter du personlig har fått tilgang til. Ditt vanlige arbeidsfirma beholdes.</p>{!selected&&error&&<p role="alert">{error}</p>}
+ return <section className="personal-card" aria-label="Mine boligprosjekter"><h3>Mine boligprosjekter</h3><p>Prosjekter du personlig har fått tilgang til. Ditt vanlige arbeidsfirma beholdes.</p>{!selected&&error&&<p role="alert">{error}</p>}
  {!selected&&loading&&<p role="status">Kontrollerer prosjekttilgang …</p>}
- {!selected?list.map(p=><button key={p.id} onClick={()=>{setSelected(p.id);setUnit('');setData(null);setCatalog(false);setQuery('');}}>{p.title} · {p.company}</button>):<Dialog title={data?.root.title||'Mine samarbeid'} className="bolig-collaboration-dialog" onClose={()=>{setSelected('');setData(null);setUnit('');}}>
+ {!selected?list.map(p=><button key={p.id} onClick={()=>{setSelected(p.id);setUnit('');setData(null);setCatalog(false);setQuery('');}}>{p.title} · {p.company}</button>):<Dialog title={data?.root.title||'Mine boligprosjekter'} className="bolig-collaboration-dialog" onClose={()=>{setSelected('');setData(null);setUnit('');}}>
  <div className="bolig-collaboration-body">
  {loading&&!data&&<p role="status">Kontrollerer prosjekttilgang …</p>}
  {error&&<p role="alert">{error}</p>}
- <button onClick={()=>{setSelected('');setData(null);setUnit('');}}>Tilbake til mine samarbeid</button>
+ <button onClick={()=>{setSelected('');setData(null);setUnit('');}}>Tilbake til mine boligprosjekter</button>
  {data&&<><h4>{data.root.title} · {data.context.company_name}</h4><p>Grunnpakke og boligvalg vises nedenfor. Butikktillegg kan publiseres direkte til beboerportalen med egen prosjektrettighet. Beboeren godkjenner selv.</p>
  <button onClick={()=>setCatalog(!catalog)}>{catalog?'Skjul felles pakker':'Vis felles pakker'}</button>
  {catalog&&<BoligCatalog context={data.context} root={data.root}/>}

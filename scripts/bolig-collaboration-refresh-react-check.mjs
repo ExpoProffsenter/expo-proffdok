@@ -50,9 +50,9 @@ try {
  await pw.__act(()=>[...pw.document.querySelectorAll('button')].find(b=>b.textContent.includes('QA partner')).click());
  const panel=()=>pw.document.querySelectorAll('[aria-label="Grunnpakke og tilvalg – persontilgang"]');
  assert.equal(panel().length,1);const original=panel()[0];
- const checkbox=original.querySelector('input');await pw.__act(()=>checkbox.click());assert.equal(checkbox.checked,true);
+ assert.equal(original.querySelector('input'),null,'Legacy editor cannot grant new rights');
  for(let i=0;i<4;i++)await pw.__act(()=>pw.__render());
- assert.equal(panel().length,1,'Parent refresh must not duplicate the access panel');assert.equal(panel()[0],original,'Parent refresh retains the same editor');assert.equal(checkbox.checked,true,'Unsaved permission choice survives refresh');
+ assert.equal(panel().length,1,'Parent refresh must not duplicate the access panel');assert.equal(panel()[0],original,'Parent refresh retains the same editor');assert(original.textContent.includes('Butikktilgang'),'Legacy panel points to scoped admin entry');
  assert(!errors.some(s=>/same key|unique.*key/i.test(s)),'Partner dialog children must have distinct React keys');
  await pw.__act(()=>pw.document.querySelector('dialog header button').click());assert.equal(panel().length,0,'Closing removes every access panel');
  console.log('PASS actual partner dialog: unique access editor, stable draft through four parent refreshes, clean close');

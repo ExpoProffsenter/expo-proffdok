@@ -1014,6 +1014,8 @@ try {
   await commerceCollaboration({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider});
   const {default:shopScenarios}=await import("./bolig-shop-db-scenarios.mjs");
   await shopScenarios({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider});
+  const {default:staffScenarios}=await import("./bolig-shop-staff-db-scenarios.mjs");
+  await staffScenarios({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider,system});
   await db.exec(
     `reset role;update public.profiles set deactivated=true where id=${q(reader)}`,
   );
