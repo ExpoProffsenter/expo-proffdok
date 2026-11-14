@@ -1,13 +1,13 @@
 import React, {useState} from 'react';
 import {boligDraftKey,readBoligDraft,writeBoligDraft,clearBoligDraft} from './boligClient.js';
 
-export default function BoligProjectInfo({context,root,busy,onSave}) {
+export default function BoligProjectInfo({context,root,busy,onSave,expanded=false}) {
  const key=boligDraftKey(context,root.id,'project-info');
  const [draft,setDraft]=useState(()=>readBoligDraft(key,{title:root.title,reference:root.reference,revision:root.revision}));
  const [message,setMessage]=useState('');
  const conflict=draft.revision!==root.revision;
  const change=(patch)=>{const next={...draft,...patch};setDraft(next);setMessage(writeBoligDraft(key,next)?'':'Kladden kunne ikke sikres lokalt. Behold siden åpen.');};
- return <details className="bolig-project-info"><summary>Rediger prosjektinfo</summary>
+ return <details className="bolig-project-info" open={expanded || undefined}><summary hidden={expanded}>Rediger prosjektinfo</summary>
  <p>Navn og prosjektnummer vises i prosjektoversikten. Boliger, beboere og fremdriftsplan beholdes.</p>
  <form onSubmit={async e=>{e.preventDefault();if(conflict||busy)return;const saved=await onSave({title:draft.title,reference:draft.reference},draft.revision);if(saved){clearBoligDraft(key);setDraft({...draft,revision:draft.revision+1});setMessage('Prosjektinfo er lagret.');}}}>
  <fieldset disabled={busy}>

@@ -15,14 +15,15 @@ fs.writeFileSync(
   `
 import React,{useState} from '${cwd}/node_modules/react/index.js';
 import {createRoot} from '${cwd}/node_modules/react-dom/client.js';
-import Overview from '${cwd}/src/modules/bolig/BoligBuildingOverview.jsx';
+import Overview,{unitStatus} from '${cwd}/src/modules/bolig/BoligBuildingOverview.jsx';
+window.__unitStatus=unitStatus;
 import '${cwd}/src/style.css';
 import '${cwd}/src/modules/ui/appUxReview.css';
 import '${cwd}/src/modules/bolig/bolig.css';
 const context={user_id:'qa',company_id:'firm',role:'manager',enabled:true};
 const record={root:{id:'overview',revision:1},blocks:[{id:'a',name:'Blokk A',building_type:'apartment'},{id:'b',name:'Blokk B',building_type:'apartment'}],entrances:[{id:'ea',block_id:'a',address:'Eksempelgata 1',counts:[4,4,4]},{id:'eb',block_id:'b',address:'Eksempelgata 2',counts:[32,32,28]}],units:[]};
 for(let i=0;i<104;i++)record.units.push({id:'u'+i,entrance_id:i<12?'ea':'eb',floor:1+Math.floor(i%12/4),number:(i<12?'A-':'B-')+(101+i),official_number:i===103?'H9999':'',has_project:i%2===0,contact_name:i===0?'Komplett Eksempel':'',contact_email:i===0?'eksempel@example.invalid':'',contact_phone:i===0?'00000000':''});
-window.__handoverFixture=false;window.__completionMissing=false;window.__completionRestricted=false;window.__fail=false;window.__calls=[];window.__client={rpc:async(name,args)=>{window.__calls.push({name,args});if(name==='bolig_visuals')return {data:{context,root_id:record.root.id,scope_id:args.p_scope_id,kind:'facade',basis:'qa',targets:[],sheets:[]}};if(!window.__fail && name==='bolig_completion')return {data:{context,root_id:record.root.id,scope_id:args.p_scope_id,members:[],history:[],rows:[...record.units.filter(u=>!window.__completionMissing||u.id!=='u0').map((u)=>({scope_id:u.id,parent_id:u.entrance_id==='ea'?'a':'b',title:u.number,kind:'unit',source:{restricted:window.__completionRestricted&&u.id==='u0'},items:[],issues:[],done:0,total:0,status:window.__handoverFixture&&u.id==='u0'?'handed_over_with_rest':window.__handoverFixture&&u.id==='u2'?'ready':'not_started',manager_handover:window.__handoverFixture&&u.id==='u1',control_status:'not_started'})),...record.blocks.map(b=>({scope_id:b.id,parent_id:record.root.id,title:b.name,kind:'block',status:'not_started',source:{},items:[],issues:[],done:0,total:0})),{scope_id:record.root.id,title:'QA Prosjekt',kind:'project',status:'not_started',source:{},items:[],issues:[],done:0,total:0}]}};return window.__fail?{error:{message:'Denied'}}:{data:{context,root_id:record.root.id,units:record.units.map((u,i)=>({unit_id:u.id,choice_revision:i%3===0?1:0,catalog_changed:i%6===0,order_revision:i%4===0?1:0,order_outdated:i%8===0}))}};}};
+window.__catalogEmpty=false;window.__handoverFixture=false;window.__completionMissing=false;window.__completionRestricted=false;window.__fail=false;window.__calls=[];window.__client={rpc:async(name,args)=>{window.__calls.push({name,args});if(name==='bolig_visuals')return {data:{context,root_id:record.root.id,scope_id:args.p_scope_id,kind:'facade',basis:'qa',targets:[],sheets:[]}};if(!window.__fail && name==='bolig_completion')return {data:{context,root_id:record.root.id,scope_id:args.p_scope_id,members:[],history:[],rows:[...record.units.filter(u=>!window.__completionMissing||u.id!=='u0').map((u)=>({scope_id:u.id,parent_id:u.entrance_id==='ea'?'a':'b',title:u.number,kind:'unit',source:{restricted:window.__completionRestricted&&u.id==='u0'},items:[],issues:[],done:0,total:0,status:window.__handoverFixture&&u.id==='u0'?'handed_over_with_rest':window.__handoverFixture&&u.id==='u2'?'ready':'not_started',manager_handover:window.__handoverFixture&&u.id==='u1',control_status:'not_started'})),...record.blocks.map(b=>({scope_id:b.id,parent_id:record.root.id,title:b.name,kind:'block',status:'not_started',source:{},items:[],issues:[],done:0,total:0})),{scope_id:record.root.id,title:'QA Prosjekt',kind:'project',status:'not_started',source:{},items:[],issues:[],done:0,total:0}]}};return window.__fail?{error:{message:'Denied'}}:{data:{context,root_id:record.root.id,catalog_empty:window.__catalogEmpty,units:record.units.map((u,i)=>({unit_id:u.id,choice_revision:i%3===0?1:0,catalog_changed:i%6===0,order_revision:i%4===0?1:0,order_outdated:i%8===0}))}};}};
 function App(){const [q,sq]=useState(''),[unit,su]=useState('');return <section className="bolig-dialog bolig-page"><Overview context={context} record={record} query={q} onQuery={sq} unitId={unit} onSelect={su}/><output aria-label="Valgt ID">{unit}</output></section>}
 createRoot(document.getElementById('app')).render(<App/>);`,
 );
@@ -104,6 +105,15 @@ try {
   const btn = (name) => page.getByRole("button", { name, exact: true }),
     filter = page.getByLabel("Filtrer boliger", { exact: true });
   await page.locator(".bolig-window.review").first().waitFor();
+  eq(await page.evaluate(()=>window.__unitStatus({}, {choice_revision:0,catalog_empty:true}, 'choice').label),'Grunnpakke og tilvalg er ikke klargjort','Unprepared project is not a resident omission');
+  eq(await page.evaluate(()=>window.__unitStatus({}, {choice_revision:0,catalog_empty:false}, 'choice').label),'Boligvalg ikke startet','Prepared project without selection has neutral status');
+  eq(await page.evaluate(()=>window.__unitStatus({}, {choice_revision:1,catalog_empty:true}, 'choice').label),'Boligvalg lagret','Saved selection wins over empty current catalog');
+  eq(await page.evaluate(()=>window.__unitStatus({}, null, 'choice').tone),'unknown','Failed fetch never implies empty setup');
+  await page.evaluate(()=>{window.__catalogEmpty=true;window.dispatchEvent(new Event('focus'));});
+  await page.locator('.bolig-window[title*="Grunnpakke og tilvalg er ikke klargjort"]').first().waitFor();
+  await page.evaluate(()=>{window.__catalogEmpty=false;window.dispatchEvent(new Event('focus'));});
+  await page.locator('.bolig-window[title*="Boligvalg ikke startet"]').first().waitFor();
+
   eq(
     await btn("Oppsett").count(),
     0,
