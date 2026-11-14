@@ -368,7 +368,7 @@ try {
   await invitation.getByText("Forhåndsvis e-post",{exact:true}).click();
   eq((await invitation.locator("iframe").getAttribute("srcdoc")).includes("Påminnelse om beboerportalen"),true,"reminder uses same branded template and existing link");
   await page.evaluate(()=>{window.__linkMailEnabled=false;window.dispatchEvent(new Event("focus"));});
-  await invitation.getByText("E-postutsending er pauset i dette testmiljøet.",{exact:false}).waitFor();
+  await invitation.getByText("E-postutsending er ikke aktivert for denne funksjonen.",{exact:false}).waitFor();
   eq(await invitation.getByRole("button",{name:"Send lenken på nytt",exact:true}).isDisabled(),true,"paused transport blocks reminder");
   await dialog.getByRole("button",{name:"Lukk påminnelse til beboeren",exact:true}).click();
   await page.getByText("Meldinger · 0", { exact: true }).click();

@@ -1254,6 +1254,19 @@ try {
     () => db.query("select * from bolig_private.creation_receipts"),
     "42501",
   );
+  await db.exec("reset role");
+  await db.exec(await fs.readFile("supabase/migrations/20261114180324_bolig_project_info.sql","utf8"));
+  await actor(manager);
+  const infoBefore=await call("get",mixed.root.id);
+  const infoAfter=await call("project_info",mixed.root.id,infoBefore.root.revision,{title:"Endret prosjektnavn",reference:"PROSJEKT-123"});
+  eq(infoAfter.root.title,"Endret prosjektnavn");eq(infoAfter.root.reference,"PROSJEKT-123");
+  eq(infoAfter.units,infoBefore.units,"Project info preserves unit identities and contacts");
+  await rejects(()=>call("project_info",mixed.root.id,infoBefore.root.revision,{title:"Stale",reference:""}),"PT409");
+  await rejects(()=>call("project_info",mixed.root.id,infoAfter.root.revision,{title:" ",reference:""}),"22023");
+  await actor(reader);await rejects(()=>call("project_info",mixed.root.id,infoAfter.root.revision,{title:"Denied",reference:""}),"42501");
+  await actor(outsider,other);await rejects(()=>call("project_info",mixed.root.id,infoAfter.root.revision,{title:"Denied",reference:""},other),"42501");
+  await actor(manager);
+  const infoBlank=await call("project_info",mixed.root.id,infoAfter.root.revision,{title:infoAfter.root.title,reference:""});eq(infoBlank.root.reference,"");
   await db.exec("rollback");
   console.log(
     "PASS bolig PostgreSQL: " +

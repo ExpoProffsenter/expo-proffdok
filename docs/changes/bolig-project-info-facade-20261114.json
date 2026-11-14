@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Redigerbar prosjektinfo og tydeligere fasade",
+  "change": "Miljømål BEGGE. Prosjektleder kan redigere navn og prosjektnummer med firmaskille, revisjonskontroll og bevart lokal kladd. Lyse fasadebokser med 82 prosent dekning, større bolignummer, markert valg og fokus. Fjerner misvisende testmiljø/testfase-tekst fra boligvarsling uten å endre utsending.",
+  "verification": "Lokal build og critical PASS. Bolig PostgreSQL 1997 assertions PASS, inkludert ny prosjektinfo, uendrede boliger, stale revision, reader/foreign denial og tom valgfri referanse. Foundation React PASS og egen prosjektinfo-test PASS: lokal kladd, focus/visibility, konflikt/rebase og gjenåpning. Lokal Chromium er blokkert av socket-restriksjon; nettleserregresjoner kjøres i CI før publisering. Bruker har uttrykkelig godkjent produksjonssetting 14.11.2026.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "Ny Rediger prosjektinfo-inngang under Oppsett."
+    },
+    "module": {
+      "required": true,
+      "reason": "Ny workspace-handling og migrasjonsavhengighet."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Gjenbruker eksisterende workspace/RLS-kontekst, audit og root-revisjon; ingen ny tabell eller transport."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen endret generell oppstart eller miljøkonfigurasjon."
+    }
+  }
+}

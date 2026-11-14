@@ -167,7 +167,7 @@ export default function PartnerInvitation({
           )}
           {!data.enabled && (
             <p className="bolig-partner-mail-paused">
-              E-postutsending er pauset i dette testmiljøet. Du kan se
+              E-postutsending er ikke aktivert for denne funksjonen. Du kan se
               forhåndsvisningen og dele lenken manuelt.
             </p>
           )}

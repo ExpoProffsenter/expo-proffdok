@@ -71,3 +71,15 @@
 .bolig-building-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 [data-expo-app-shell="true"] .bolig-main-grid:has(>.bolig-select-unit)>.bolig-building-panel:has(>:is(.bolig-visual-facade,.bolig-search-results))>.bolig-workspace-toolbar .bolig-workspace-building{flex-wrap:wrap!important}
+
+/* Light facade controls: keep the photograph visible without fading text. */
+.bolig-building-panel .bolig-photo-building .bolig-window{background:rgba(255,255,255,.82);color:#143244;border:1px solid rgba(255,255,255,.95);border-radius:12px;box-shadow:0 3px 10px #122c3933;backdrop-filter:blur(3px);min-height:72px;height:auto;justify-content:center;gap:7px;padding:9px 5px}
+.bolig-building-panel .bolig-photo-building .bolig-window b{font-size:clamp(16px,1.6vw,24px);line-height:1.15;text-shadow:none;font-weight:800;overflow-wrap:anywhere}
+.bolig-building-panel .bolig-photo-building .bolig-window.selected{background:rgba(214,246,245,.88);outline:3px solid #087b85;outline-offset:1px;box-shadow:0 3px 12px #173f4540}
+.bolig-building-panel .bolig-photo-building .bolig-window:focus-visible{outline:3px solid #087b85;outline-offset:3px}
+.bolig-building-panel .bolig-photo-building .bolig-window:hover{background:rgba(255,255,255,.94);filter:none}
+.bolig-building-panel .bolig-photo-building .bolig-facade-floor>small{background:rgba(255,255,255,.9);border-radius:7px;padding:5px;font-size:11px;color:#143244}
+.bolig-project-info{padding:14px 16px;margin:0 0 14px;border:1px solid #c7dce0;border-radius:12px;background:#fff}
+.bolig-project-info summary{font-weight:750;cursor:pointer;min-height:32px;display:list-item}
+.bolig-project-info fieldset{display:grid;gap:12px;min-width:0;border:0;padding:0}
+.bolig-project-info input{font-size:16px;width:100%;box-sizing:border-box}

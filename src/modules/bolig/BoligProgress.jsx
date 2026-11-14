@@ -451,9 +451,8 @@ export default function BoligProgress({
       {!data.mail_enabled && (
         <p className="bolig-progress-paused">
           <TriangleAlert size={18} />
-          E-post er satt på pause i testmiljøet. Du kan lage PDF/oppslag og
-          publisere varsler i beboerportalen. Ingen e-post sendes i denne
-          testfasen.
+          E-postutsending av fremdriftsvarsler er ikke aktivert. Du kan lage PDF/oppslag og
+          publisere varsler i beboerportalen. Ingen e-post sendes fra denne funksjonen.
         </p>
       )}
       {error && (
