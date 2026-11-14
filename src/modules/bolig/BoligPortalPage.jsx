@@ -380,7 +380,7 @@ export default function BoligPortalPage() {
                 <ChoiceCards data={data} draft={draft} disabled={disabled || waiting || choicesClosed} onChange={update}/>
                 {data.combine_base_id && !selected && <p role="alert">Et tidligere valgt tilvalg er ikke lenger tilgjengelig. <button disabled={disabled || waiting || choicesClosed} onClick={()=>update({offer_ids:[],menu_version:data.menu_version})}>Velg tilvalg på nytt</button></p>}
                 {selected?.conflict && <p role="alert">{selected.conflict}</p>}
-                {data.combine_base_id && selected && !selected.conflict && <div className="bolig-choice-total">Samlet pristillegg inkl. mva.: {money(selected.total_cents)}</div>}
+                {data.combine_base_id && !waiting && selected && !selected.conflict && <div className="bolig-choice-total">Samlet pristillegg inkl. mva.: {money(selected.total_cents)}</div>}
                 {selected && !selected.conflict && !waiting && !choicesClosed && (
                   <form
                     onSubmit={(e) => {

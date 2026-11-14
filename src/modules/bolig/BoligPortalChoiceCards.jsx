@@ -1,12 +1,17 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {agreementMoney as money} from './boligCommerceCore.js';
 import './boligPortalChoices.css';
 
+function ProductImage({good,caption=false}) {
+ const [failed,setFailed]=useState(false);
+ if(failed)return <span className="bolig-choice-image-missing">{caption?good.name+' · ':''}Bilde utilgjengelig</span>;
+ return <a href={good.image_url} target="_blank" rel="noreferrer" aria-label={`Se større bilde av ${good.name}`}><img src={good.image_url} alt={good.name} loading="lazy" onError={()=>setFailed(true)}/>{caption&&<span>{good.name}</span>}</a>;
+}
 export function PortalGoods({goods=[]}) {
   const groups = new Map();
   goods.forEach(g => {const key=[g.room_name,g.section_name].filter(Boolean).join(' · ') || 'Varer og arbeid';if(!groups.has(key))groups.set(key,[]);groups.get(key).push(g);});
   return <div className="bolig-choice-goods">{[...groups].map(([name,rows])=><section key={name}><h4>{name}</h4>{rows.map(g=><article key={g.key}>
-    {g.image_url?.startsWith('https://')&&<a href={g.image_url} target="_blank" rel="noreferrer" aria-label={`Se større bilde av ${g.name}`}><img src={g.image_url} alt={g.name} loading="lazy" onError={e=>{e.currentTarget.hidden=true;}}/></a>}
+    {g.image_url?.startsWith('https://')&&<ProductImage key={g.image_url} good={g}/>}
     <div><strong>{g.name}</strong><small>{g.quantity} {g.unit}{g.sku?` · Varenr. ${g.sku}`:''}</small></div>
   </article>)}</section>)}</div>;
 }
@@ -20,7 +25,7 @@ export default function BoligPortalChoiceCards({data,draft,disabled,onChange}) {
  const baseImages=(base?.goods||[]).filter(g=>g.image_url?.startsWith('https://')).slice(0,4);
  return <>
  {base&&<section className="bolig-choice-base"><h3>Dette er inkludert</h3><p>{base.title} · Ingen ekstra kostnad</p>
-  {baseImages.length>0&&<div className="bolig-choice-base-images" aria-label="Bilder fra grunnpakken">{baseImages.map(g=><a key={g.key} href={g.image_url} target="_blank" rel="noreferrer" aria-label={`Se større bilde av ${g.name}`}><img src={g.image_url} alt={g.name} loading="lazy" onError={e=>{e.currentTarget.hidden=true;}}/><span>{g.name}</span></a>)}</div>}
+  {baseImages.length>0&&<div className="bolig-choice-base-images" aria-label="Bilder fra grunnpakken">{baseImages.map(g=><ProductImage key={g.key+g.image_url} good={g} caption/>)}</div>}
   <details><summary>Se grunnpakken · {base.goods.length} varer og arbeidsposter</summary><PortalGoods goods={base.goods}/></details></section>}
  <div className="bolig-portal-offers">{data.offers.filter(o=>o.id!==base?.id).map(o=>{
   const selected=base?(draft.offer_ids||[]).includes(o.id):draft.offer_id===o.id;
