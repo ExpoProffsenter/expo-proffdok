@@ -21,3 +21,5 @@ Første leveranse er additive varer og montering. Erstatning/kreditering av eksi
 Tilbakeføring: slå av publish_shop og tilbakefør frontend. Bevar migrasjonen, avtalehistorikk, kvitteringer og allerede registrerte ordre. Produksjon krever separat kontroll og TEST OK.
 
 Installer også `20261114001335_bolig_shop_order_identity.sql` etter butikkmigrasjonen; den bevarer bolignummer og bolig-ID i nye tilleggsordrer/eksport.
+
+Fristintegrasjon: `20261114001703_bolig_shop_project_deadline.sql` følger portal_state.choices_closed, slik at PR332s prosjektklokkeslett gjelder også butikktillegg. Kladdbasis inkluderer prosjektrevisjon. Anbefalt produksjonsrekkefølge: PR332s klokkemigrasjon, partner_commerce, shop_proposals, shop_order_identity, shop_project_deadline. Ingen gammel migrasjon kjøres på nytt. Grunninstallasjonen bruker datofrist før prosjektklokken finnes.

@@ -65,3 +65,4 @@ Første leveranse er additive varer og montering. Erstatning/kreditering av eksi
 Tilbakeføring: slå av publish_shop og tilbakefør frontend. Bevar migrasjonen, avtalehistorikk, kvitteringer og allerede registrerte ordre. Produksjon krever separat kontroll og TEST OK.
 
 Installer også `20261114001335_bolig_shop_order_identity.sql` etter butikkmigrasjonen; den bevarer bolignummer og bolig-ID i nye tilleggsordrer/eksport.
+Fristkontrollen fullføres av `20261114001703_bolig_shop_project_deadline.sql`, som gjenbruker beboerportalens dato/klokkeslettregel fra PR332.
