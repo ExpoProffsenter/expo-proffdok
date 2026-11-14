@@ -545,13 +545,13 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
                   <div className="bolig-project-header">
                     <div>
                       <small>HOVEDPROSJEKT</small>
-                      {canWrite && <button type="button" className="bolig-project-edit" onClick={() => setProjectInfoOpen(true)}>Rediger prosjektinfo</button>}
                       {canWrite && projectInfoOpen && screen === "workspace" && <BoligEditorDialog title="Rediger prosjektinfo" busy={busy} onClose={() => setProjectInfoOpen(false)}>
                         <BoligProjectInfo key={ctx.user_id+":"+ctx.company_id+":"+record.root.id} expanded context={ctx} root={record.root} busy={busy} onSave={(payload,revision)=>perform("project_info",{rootId:record.root.id,revision,payload})}/>
                       </BoligEditorDialog>}
                       <h3 ref={workspaceHeading} tabIndex={-1}>
                         {record.root.title}
                       </h3>
+                      {canWrite && <button type="button" className="bolig-project-edit" onClick={() => setProjectInfoOpen(true)}>Rediger prosjektinfo</button>}
                       <p>
                         {record.root.reference} · {visibleUnits.length}{" "}
                         {visibleUnits.length === 1 ? "bolig" : "boliger"} ·{" "}

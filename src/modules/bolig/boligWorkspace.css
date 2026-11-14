@@ -88,3 +88,6 @@
 .bolig-project-edit:focus-visible{outline:3px solid #087f8c;outline-offset:2px}
 .bolig-catalog-dialog .bolig-project-info{margin:0;border:0}
 .bolig-project-info summary[hidden]{display:none}
+
+.bolig-page .bolig-workspace .bolig-project-header>div:first-child{align-items:center}
+.bolig-project-header .bolig-project-edit{margin:0;flex:none}
