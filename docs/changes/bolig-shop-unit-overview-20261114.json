@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Tydelig boligbytte og butikkens kontakt- og fristoversikt",
+  "change": "BEGGE. Eksplisitte søkeresultater, valgt bolig utenfor søket, kontaktkort og serverens frist/åpne aktiviteter. Personlig butikktilgang avgrenser nye felt. Byttesperre under bilde/publisering og mottaker i forhåndsvisning.",
+  "verification": "Lokale React-regresjoner PASS. PostgreSQL 2039 kontroller PASS. Full CI og publisert sandbox-kandidat avventes; ingen produksjonsendring eller utsending.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "Endret boligvalg og ny oversikt."
+    },
+    "module": {
+      "required": true,
+      "reason": "Additiv lesekontrakt og migrasjon."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Eksisterende RPC og autorisasjon beholdes."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen generelle miljøendringer."
+    }
+  }
+}
