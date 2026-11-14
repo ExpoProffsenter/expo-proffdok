@@ -68,3 +68,23 @@ Appkandidat: `66c932367f05a21bfe12fe04b92d42135f1e96ca`, PR333. Fast preview bek
 CI43613148438: bolig-db, bolig-browser, scope, build, company-db, HR og projects-support grønne ved dokumentering; app-browser/sluttkontroll feilet fordi ny veiledning ikke var registrert i testens liste over tilføyde temaer (70 mot69 originaltemaer). Testlisten er nå utvidet med det konkrete nye temaet og en kontroll av teksten; alle69 opprinnelige teksthashene og øvrige innholdskontroller beholdes. Ny CI må bekreftes. Ikke merge før samlet CI er grønn og TEST OK er gitt. PR332 er fortsatt separat; ny kombinert332+333-kontroll gjenstår før samlet produksjonssetting.
 
 Neste steg: kontroller endelig CI, innlogget publiseringsvelger og et faktisk opplastet produktfoto. Deretter TEST OK. Ved rollback: slå av kombinasjonsmodus via ny publisering og tilbakefør frontend; bevar migrasjon og innsendt historikk. Ingen hemmelige portallenker er lagret i GitHub.
+
+
+## Sluttkontroll: opplastede private bilder (14.11)
+
+Denne statusen erstatter de åpne punktene i forrige oppfølging. Appkandidat `4c037f66e0df99b8ea290a923aa624dfaf798cba`, eksakt fast PR333-preview bekreftet READY. Produksjon/main og demo-branch er urørt.
+
+- Innlogget manager: publiseringsvelger klikket gjennom. Endring av modus nullstiller gjennomlesingsbekreftelsen og sperrer publisering inntil ny bekreftelse. Republisering bevarer kombinasjonsmodus. Ingen e-post ble sendt.
+- Faktisk UI-opplasting gjennom Bytt bilde, lagring av grunnpakkeversjon2 og gjenåpning PASS. Brukt eksisterende fasadeillustrasjon som syntetisk testbilde, ikke et produktfoto.
+- Opplastinger lagres privat. Ny Edge `bolig-portal-images` gir bare kortvarige signerte adresser til bilder fra den aktive portalens egne publiserte tilbud og samme firma/prosjekt. Ingen offentlig bucket eller firmatilgang utvidet. Filtrering gjentas etter signering for å fange tilbakekalling/endring. Utstedte bildeadresser kan leve i maksimalt120sekunder etter tilbakekalling; frontendcache60sekunder.
+- Sandbox-migrasjon `bolig_portal_image_access` installert som `20261114162258` (lokal fil `20261114161925`). Edge versjon1 ACTIVE. Kombinasjonsmigrasjonen er allerede installert som `20261114155625`. Ikke installer på nytt.
+- Faktisk HTTP: gyldig portal gir200 og ett tillatt bilde, signert bildeadresse gir200 og JPEG. Ugyldig token403, klientstyrt bildepath400.
+- Faktisk beboerportal: opplastet bilde vises både i grunnpakkens miniatyr og utvidet vareliste, naturalWidth1536. Ny full omlasting etter cachelevetiden viser fortsatt bildet. Ingen innlogging kreves for beboerens gyldige lenke.
+- Smal CSS-visning340px, dokument337px: ingen horisontal scrolling. Desktop1363px kontrollert. Dette er nettleserzoom, ikke fysisk telefon/Safari.
+- PostgreSQL1969 assertions, Edge/client-bilderegresjon, kombinasjons-React og build PASS lokalt. Full CI43615445115 grønn på appkandidat4c037f66, inkludert app-browser, bolig-browser, databasepakker, bygg og sluttkontroll
+- Post-DDL security advisor: ingen funn navngir de nye image_paths/portal_image-funksjonene; eksisterende generelle databasevarsler gjenstår. Privat bucket bekreftet public=false, residentmail fortsatt enabled=false.
+- Isolert sammenslåing av PR333 `4c037f66` og PR332 `f25118e6`: bygg og PostgreSQL1989 assertions PASS. Tre tekstkonflikter løst lokalt med begge funksjoner bevart: fokus/scroll + dato/klokkeslett i portal, begge README-tillegg og alle12 nye hjelpetemaer med ny fristtekst. Ingen branches merget eksternt. `PR332_PR333_RESOLUTION_20261114.patch` dokumenterer de tre løste filene relativt til PR333-kandidaten; brukes kun etter ny kontroll av gjeldende heads. Kombinert browser-QA er ikke kjørt på en egen publisert integrasjonsversjon.
+
+![Grunnpakke med faktisk opplastet testillustrasjon](screenshots/bolig-grunnpakke-bilde-qa.jpg)
+
+Neste steg: systemeiers TEST OK før egen kontrollert produksjonsplan. Sandbox er eneste database endret i denne leveransen. Produksjonsplanen må inkludere de nye migrasjonene og Edge-funksjonen i riktig rekkefølge, kontrollert mot hva som allerede er installert. Ved tilbakeføring: deaktiver kombinasjonsmodus via publisering, tilbakefør frontend og ny Edge ved behov, men behold migrasjoner, private bilder og innsendt historikk. Ingen hemmelige portallenker eller token lagret.
