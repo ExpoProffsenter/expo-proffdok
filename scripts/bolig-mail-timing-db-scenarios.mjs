@@ -48,11 +48,14 @@ export default async function timing({db,actor,eq,manager,root,unit,task,rpc}) {
  eq((await db.query("select attempts from bolig_private.progress_deliveries where task_id=$1 and kind='owner'",[task.id])).rows[0].attempts,2,'Only real reservation consumes attempt');
  eq((await db.query('select published_at is not null v from bolig_private.progress_notices where group_id=$1',[payload.id])).rows[0].v,true,'Scheduled notice publishes in daytime');
  // Fresh automatic reminders are not enqueued at night either.
- await db.query("update bolig_private.progress_deliveries set status='accepted',accepted_at=null where task_id=$1 and kind='owner';update bolig_private.progress_tasks set revision=revision+1 where id=$1",[task.id]);
+ await db.query("update bolig_private.progress_deliveries set status='accepted',accepted_at=null where task_id=$1 and kind='owner'",[task.id]);
+ await db.query('update bolig_private.progress_tasks set revision=revision+1 where id=$1',[task.id]);
  await daytime(false);await db.exec('select bolig_private.progress_tick()');
  eq((await db.query("select count(*)::int n from bolig_private.progress_deliveries where task_id=$1 and kind='owner'",[task.id])).rows[0].n,1,'No new owner queue overnight');
  await daytime(true);await db.exec('select bolig_private.progress_tick()');
  eq((await db.query("select count(*)::int n from bolig_private.progress_deliveries where task_id=$1 and kind='owner'",[task.id])).rows[0].n,2,'Morning queues current reminder');
  // Restore initial owner generation for the opt-out regression assertion.
- await db.query("delete from bolig_private.progress_deliveries where task_id=$1 and kind='owner' and generation<>'1';update bolig_private.progress_deliveries set status='pending' where task_id=$1 and kind='owner';update bolig_private.progress_tasks set revision=1 where id=$1",[task.id]);
+ await db.query("delete from bolig_private.progress_deliveries where task_id=$1 and kind='owner' and generation<>'1'",[task.id]);
+ await db.query("update bolig_private.progress_deliveries set status='pending' where task_id=$1 and kind='owner'",[task.id]);
+ await db.query('update bolig_private.progress_tasks set revision=1 where id=$1',[task.id]);
 }
