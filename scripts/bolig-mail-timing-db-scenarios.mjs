@@ -17,7 +17,7 @@ export default async function timing({db,actor,eq,manager,root,unit,task,rpc}) {
  eq((await db.query('select count(*)::int n from public.qa_timing_posts')).rows[0].n,1,'Disabled transport still cannot invoke worker');
  await db.exec('update bolig_private.progress_mail_settings set enabled=true');
  await db.query("update bolig_private.units set contact_name='QA Resident',contact_email='resident@example.invalid',messaging_override=true where id=$1",[unit]);
- await db.exec("update bolig_private.progress_deliveries set status='accepted' where kind='resident';update bolig_private.dialogue_deliveries set status='accepted'");
+ await db.exec("update bolig_private.progress_deliveries set status='accepted' where kind='resident';update bolig_private.dialogue_deliveries set status='accepted';update bolig_private.resident_portals set revoked=true");
  await actor(manager);let state=await rpc();
  const today=(await db.query("select (now() at time zone 'Europe/Oslo')::date::text d")).rows[0].d;
  const payload={id:crypto.randomUUID(),request_id:crypto.randomUUID(),revision:state.revision,mode:'publish',unit_ids:[unit],title:'Kveldsvarsel',body:'Brukerbestilt varsel om kvelden.',start:today,end:today,publish_on:today,audience_label:'Boligen',contact:{name:'QA Manager',phone:'12345678',email:'qa@example.invalid'},recipient_basis:Object.fromEntries(state.units.map(u=>[u.id,u.notice_basis]))};
@@ -42,7 +42,7 @@ export default async function timing({db,actor,eq,manager,root,unit,task,rpc}) {
  await db.query("update bolig_private.dialogue_deliveries set status='accepted' where id=$1",[job.id]);
  // Expired reservations must also wait, preserving the existing attempt budget.
  await db.query("update bolig_private.progress_deliveries set status='sending',reserved_at=now()-interval '6 minutes',attempts=1,first_attempt_at=now() where task_id=$1 and kind='owner'",[task.id]);
- eq(await reserve(),null,'Stale owner reservation deferred at night');
+ eq((await db.query('select bolig_private.reserve_before_dialogue() v')).rows[0].v,null,'Stale owner reservation deferred at night; dialogue queue remains independent');
  await daytime(true);
  job=await reserve();eq(job?.kind,'owner','Deferred owner resumes in daytime');
  eq((await db.query("select attempts from bolig_private.progress_deliveries where task_id=$1 and kind='owner'",[task.id])).rows[0].attempts,2,'Only real reservation consumes attempt');
