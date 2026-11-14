@@ -89,6 +89,14 @@ try {
 
  const btn=n=>page.getByRole('button',{name:n,exact:true});
  await btn('Aktiver bemanning').waitFor();eq(await page.evaluate(()=>window.writes),0,'no mount write');
+ const contrast = await page.locator('.bolig-attendance').evaluate(el => {
+   const rgb = value => value.match(/[\d.]+/g).slice(0,3).map(Number).map(v => {v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4;});
+   const lum = value => rgb(value).reduce((sum,v,i)=>sum+v*[.2126,.7152,.0722][i],0);
+   const ratio = (a,b)=>(Math.max(a,b)+.05)/(Math.min(a,b)+.05);
+   const parent=getComputedStyle(el), heading=getComputedStyle(el.querySelector('h3'));
+   return [ratio(lum(parent.color),lum(parent.backgroundColor)),ratio(lum(heading.color),lum(parent.backgroundColor)),ratio(lum(parent.color),1)];
+ });
+ eq(contrast.every(value=>value>=4.5),true,'attendance text, heading and inherited roster text remain readable on both cards');
  await btn('Aktiver bemanning').click();await btn('Deaktiver bemanning').waitFor();await btn('Registrer deltaker inn').click();
  await page.getByLabel('Navn',{exact:true}).fill('QA Person');await page.getByLabel('Firma',{exact:true}).fill('QA Firma');
  await page.evaluate(()=>window.dispatchEvent(new Event('focus')));eq(await page.getByLabel('Navn',{exact:true}).inputValue(),'QA Person','focus preserves draft');

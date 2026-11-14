@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "title": "Hindre overlapp i masseplanens felter",
-  "change": "BEGGE. Skynettopptak viste at min-width 130px presset felter utenfor 100px/85px gridkolonner. Fjern minimumsbredden lokalt i bolig-plan-step. Ingen endring av planberegning eller lagring.",
-  "verification": "Skynett: gjenskapt i masseplan med og uten forskjøvet start. Ny geometrisk regresjon for alle kontroller ved desktop og mobil, med og uten offset. Lokal Chromium blokkert av socket-begrensning; CI og ny skynettprøve må verifisere kandidaten.",
+  "title": "Lesbare planfelter og bemanningskort",
+  "change": "BEGGE. Skynettopptak viste at min-width 130px presset felter utenfor 100px/85px gridkolonner. Fjern minimumsbredden lokalt i bolig-plan-step. Ingen endring av planberegning eller lagring. Skynett avdekket også hvit arvet tekst på hvitt deltakerkort og mørk overskrift på mørk bemanning. Bruk etablert lys flate med mørk tekst, og mørkere statusfarger. Kun lokal CSS.",
+  "verification": "Masseplan: CI43643471949 grønn og skynett etterkontroll på bff80c0. Bemanning: skynett gjenskapt, ny kontrastregresjon lagt til; ny CI og skynettprøve gjenstår.",
   "documentation": {
     "help": {
       "required": false,
