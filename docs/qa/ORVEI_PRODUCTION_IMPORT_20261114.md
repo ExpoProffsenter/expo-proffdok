@@ -52,3 +52,8 @@ Dette er autorisert forretningsdata, ikke engangs testdata. Ikke slett prosjekte
 Eventuelle feil rettes i de berørte boligene/aktivitetene med appens revisjonskontroll.
 Butikktilgang kan tilbakekalles under Butikktilgang; etasjer kan korrigeres med Flytt bolig etter avklaring.
 Neste steg: Kenneth prøver personlig butikktilgang, avklar styrerommets plass i planen og gjennomfør separat fasadelayoutforbedring.
+
+## Etterkontroll 14.11 – aktivitetsnavn og prosjektreferanse
+Systemeier ba om å fjerne «(Orvei-plan)». Alle 126 aktive arbeidsperioder i produksjon er omdøpt til «Arbeidsperiode i leiligheten». Totalt fortsatt 1260 aktiviteter, null gjenværende Orvei-tekst i aktivitetstitler. Kun title, teknisk revision/changed_at og planrevisjon ble endret. Før/etter er logget i progress_history som rename_titles på Kenneth. Historiske snapshots beholdes uendret.
+
+Teksten ORVEI · Etasjer foreløpige er root.reference / feltet Prosjektnummer. UI har feltet ved opprettelse, men ingen redigering etter opprettelse ble funnet. Referansen er ikke endret ved denne oppgaven; egen redigeringsmulighet og separat merknad om foreløpig plassering anbefales. Designforslag er kun illustrasjon, ikke implementert kode. Grunnpakker/tilvalg i produksjon skal fortsatt være tomme.
