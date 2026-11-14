@@ -92,3 +92,28 @@ Neste steg: systemeiers TEST OK før egen kontrollert produksjonsplan. Sandbox e
 
 ## Samlet trippelrunde startet 14.11
 PR332 f25118e6 er integrert i PR333 preview som01c50994; bare arbeidsbranch, main/demo urørt. Sandbox har allerede klokkemigrasjonen, ingen migrasjoner gjentatt. Hele CI kjøres på kombinert kandidat. Faktisk tildeling til syntetisk demobruker på QA-FULL-PORTAL-20261114, Min side, boligvalg, manuell vare,2499kr inkl500kr montering og publisering kontrollert. Endret antall nullstiller review som forventet. Mobil340px fant at neste kontrollsteg ble opprettet under skjermen uten fokus/scroll. Avgrenset rettelse i BoligShopProposal og BoligPortalPage; ingen pris-, aksept- eller tilgangsendring. React-fokusassertions og build PASS. Hosted etterkontroll og opprydding av testtildeling følger.
+
+
+## Fullført trippel UX/UI-kontroll – samlet PR332/333, 14.11
+
+Denne sluttstatusen erstatter åpne kontrollpunkter og omtalen av bare lokal integrasjon ovenfor. PR332 `f25118e6` er integrert i PR333s arbeidsbranch gjennom `01c50994`. Endelig appkandidat `f4a604157bf7c5bda2ae96c4344d851c1dfef662` er bekreftet READY i preview; full GitHub CI **43618138072 SUCCESS**. Main `6eb54148b3d61e318c5447810cdf89deab6afffa` og demo-branch er urørt. Ingen nye migrasjoner eller Edge-endringer i denne trippelrunden.
+
+Preview: https://expo-proffdok-git-feat-bolig-partner-commerce-20261113-ringside.vercel.app/?progressTest=safe
+
+| Runde | Faktisk hosted kontroll | Resultat |
+| --- | --- | --- |
+| 1: Hele butikkflyten | Eksakt e-postoppslag, ukjent bruker, tildeling, Min side, bolig, manuell vare med SKU og montering, kontroll og publisering, beboerens gjennomlesing | PASS. 2 × 999,50 + 500 = 2499 kr. Endret antall krever ny kontroll. Ny versjon med 1099,50 gir 2699 kr og ugyldiggjør åpen eldre akseptvisning. Ingen aksept sendt. |
+| 2: Smal visning og fokus | 340 CSS-piksler, dokument337, portal og butikkdialog, kontrollsteg og tastatur | Fant at kontrollsteget havnet under synlig område. Rettet fokus og målrettet scrolling. Retest: portaloverskrift top90 og butikkoverskrift top149 innen234px visningshøyde; ingen horisontal overflow. |
+| 3: Grenser og gjenoppretting | Kladd etter lukking/gjenåpning, ugyldig dato, gyldig frist, faktisk supporttildeling på annet firma, to firmaprosjekter under Min side, tilbakekalling | PASS. 31.02 sperres. 01.12.2026 kl.12 vises som norsk tid. Prosjekter fra to firmaer vises uten bytte av hovedfirma. Tilbakekalte tilganger fjernes. |
+
+Supportinngang kontrollert: **Systemadmin → Brukere og roller → firma → Åpne kundens app i supportmodus → Boligprosjekter → prosjekt → Butikktilgang**. Funksjonen viste at handlingen utføres/loggføres som systemadmin. Databaseaudit bekreftet både reell systemadmin og effektiv supportbruker. Ukjent e-post ga onboardingveiledning uten opprettelse, invitasjon eller tildeling. Eksisterende testbruker med uaksepterte vilkår ble ikke brukt videre; ingen vilkår ble akseptert på andres vegne.
+
+PR332-regresjon på samme publiserte kandidat: Aamodthagen viste1260 aktiviteter kronologisk, 02.12.2026–05.11.2027. Ingen søketreff ga korrekt tømmeknapp. Januar2028 viste tom periode med Vis alle perioder; denne gjenopprettet hele planen. Ingen aktiviteter/datoer lagret i dette prosjektet.
+
+Avgrenset rettelse: fokus/scroll på kontrolloverskrifter i BoligPortalPage og BoligShopProposal; ingen endret prisberegning, tilgang eller akseptlogikk. React-regresjoner kontrollerer fokus. Samlet PostgreSQL1989 assertions,28 batch-React-scenarier, scope55, relevante kombinasjons-/bilderegresjoner, bygg og full CI grønne.
+
+Opprydding kontrollert: begge midlertidige butikktilganger tilbakekalt, testfirmaets boligaktivering og testbrukerens prosjektaktivering gjenopprettet. Sluttkontroll: active_test_grants=0, test_firm_enabled=false, test_user_projects=0, mail_enabled=false. Ingen medlemskap eller innloggingsopplysninger endret. Syntetisk prosjekt QA-TRIPPEL-SUPPORT-20261114 og historikk beholdt, uten beboerkontakt. Eksisterende QA-FULL-PORTAL-20261114 beholdt med syntetisk avtaleversjon2 og ny testfrist.
+
+Begrensninger: dette er tre runder av boligflyten, ikke hele appen. Smal visning er nettleserzoom, ikke fysisk telefon/Safari/touch. Ingen ny bindende aksept ble sendt i denne runden; kontroll gikk frem til Registrer aksept. Bildeopplasting og portalvisning er verifisert i forrige dokumenterte runde med testillustrasjon, ikke ekte produktfoto. Ingen e-post, bestilling eller produksjonsendring utført.
+
+Neste steg er Kenneths TEST OK på samlet kandidat og deretter egen kontrollert produksjonsplan. Kontroller allerede installerte migrasjoner/Edge før eventuell produksjonssetting; ikke gjenta sandboxinstallasjoner. Tilbakeføring skal bevare innsendte valg, private bilder og historikk. Hemmelige portallenker/token er ikke dokumentert.
