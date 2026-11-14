@@ -4,6 +4,7 @@ import {boligDraftKey,readBoligDraft,writeBoligDraft} from './boligClient.js';
 import {agreementMoney as money} from './boligCommerceCore.js';
 import {newShopLine,shopDraftFrom,shopPayload,shopPhoto,shopTotal} from './boligShopCore.js';
 import Summary from './BoligAgreementSummary.jsx';
+import './boligCommerce.css';
 import Lookup from './BoligCatalogLookup.jsx';
 export default function BoligShopProposal({context,root,unit,onSwitchBlocked}){
  const key=boligDraftKey(context,root.id,`shop-${unit.id}`),epoch=useRef(0),operating=useRef(false),latest=useRef(null),reviewHeading=useRef(null);
