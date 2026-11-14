@@ -1,0 +1,32 @@
+{
+  "checkpoint": 4,
+  "date": "2026-11-13",
+  "environment": "permanent demo / sandbox",
+  "demo_commit": "3d65c0e022ed11ec73aa569f79bfe6f362d30fae",
+  "viewport": "1363x936",
+  "role_observed": "Firmaadmin",
+  "method": "actual signed-in desktop UI",
+  "server_records_created": false,
+  "limitations": [
+    "No completed/signature workflow",
+    "No mobile/touch/sleep",
+    "No server persistence or PDF/export verification in this round"
+  ],
+  "files": [
+    {
+      "path": "docs/qa/evidence/sja-local-recovery-20261113.jpg",
+      "bytes": 106451,
+      "sha256": "a1aec8433ab889af6d12d49f686a15084aef1652f4b3f1939b30ce91d907dea4"
+    },
+    {
+      "path": "docs/qa/evidence/risk-score-20261113.jpg",
+      "bytes": 70384,
+      "sha256": "02925f234595a88384b928160c57ea684642c781d08095ffcee74b224be6735d"
+    },
+    {
+      "path": "docs/qa/evidence/control-local-recovery-20261113.jpg",
+      "bytes": 82762,
+      "sha256": "1f3aee98dd4dd46c3483ad516112678aee2355644641b80e126a07a53e3fcdd1"
+    }
+  ]
+}

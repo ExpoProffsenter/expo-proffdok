@@ -1,0 +1,55 @@
+{
+  "status": "review-only; not app-published",
+  "files": [
+    {
+      "path": "assets/01-alle-bygg.jpg",
+      "bytes": 110613,
+      "sha256": "afba9427f094f26c6db4a0234986b003433fbc8535c287524619a7e18e1a7312"
+    },
+    {
+      "path": "assets/02-bolig38.jpg",
+      "bytes": 109767,
+      "sha256": "1b92ce1cad2c4d3a6819135484af1bdc2efac50e820d8fac2073fe578b4cfc79"
+    },
+    {
+      "path": "assets/03-avtalesvar.jpg",
+      "bytes": 89957,
+      "sha256": "0f8dbd58d714b00db23cfeb23a0784c4ca5accd7a44951381eb50b97d5a842e1"
+    },
+    {
+      "path": "bestillingsfrist-og-avtalesvar-utkast.mp4",
+      "bytes": 636137,
+      "sha256": "3f73b8c128c9397a043014af98ba368df0e09342f7fca1bf50abafb6728124ed"
+    },
+    {
+      "path": "chapters.vtt",
+      "bytes": 146,
+      "sha256": "f575f002a21aa60b029427a427e09897bd72a3815246901ecacdd4b06dcef854"
+    },
+    {
+      "path": "render.py",
+      "bytes": 4941,
+      "sha256": "524d3f8acc8c1f825217578cdc94d52df433aa5276e4395a5240b67c7543687b"
+    },
+    {
+      "path": "scene-01.jpg",
+      "bytes": 253612,
+      "sha256": "51150806920d85ad148e4f21a559e43c341647459b343cea74592f6f6c427894"
+    },
+    {
+      "path": "scene-02.jpg",
+      "bytes": 253486,
+      "sha256": "5ab32a704bdad49f1946b24f918fb04bb8e256112a28b81973002250da9be765"
+    },
+    {
+      "path": "scene-03.jpg",
+      "bytes": 234407,
+      "sha256": "32a823750413f9469efa6b90c81bd0f6baf811ef11bedadf17c06dd9db978abe"
+    },
+    {
+      "path": "scenes.json",
+      "bytes": 1158,
+      "sha256": "9ee18d044324c79b9527a257c732716988506f37389022581d880fdc296d1f89"
+    }
+  ]
+}

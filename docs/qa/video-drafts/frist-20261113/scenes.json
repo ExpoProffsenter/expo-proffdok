@@ -1,0 +1,39 @@
+{
+  "status": "review draft; not published in app",
+  "duration": 36,
+  "fps": 24,
+  "pointer": "same white outlined arrow; no click rings",
+  "candidate": "demo3d65c0e022ed11ec73aa569f79bfe6f362d30fae",
+  "scenes": [
+    {
+      "image": "01-alle-bygg.jpg",
+      "title": "Kontroller hver bolig",
+      "text": "Åpne Oppsett → Bygg og boliger → Beboerlenker og frister samlet. Les fristen på hver bolig.",
+      "note": "Et byggfilter endrer ikke fristene.",
+      "pointer": [
+        710,
+        596
+      ]
+    },
+    {
+      "image": "02-bolig38.jpg",
+      "title": "Ett individuelt unntak",
+      "text": "Bolig 38 har fått 22. november. De andre boligene i bygg B har fortsatt ingen frist.",
+      "note": "Bare den valgte boligen ble endret.",
+      "pointer": [
+        710,
+        427
+      ]
+    },
+    {
+      "image": "03-avtalesvar.jpg",
+      "title": "En annen svarfrist",
+      "text": "Avtalen har sin egen svarfrist: 13. desember. Den endres ikke når du setter bestillingsfristen.",
+      "note": "Syntetisk avtale i sandbox. Ingen ordre eller e-post er sendt.",
+      "pointer": [
+        510,
+        670
+      ]
+    }
+  ]
+}
