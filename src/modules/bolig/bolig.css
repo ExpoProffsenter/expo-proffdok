@@ -3965,6 +3965,9 @@
   font-size: 11px;
   color: #4a6271;
 }
+.bolig-overview-row[aria-pressed="true"] small {
+  color: inherit;
+}
 .bolig-status-badge {
   display: inline-flex;
   align-items: center;

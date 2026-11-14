@@ -268,6 +268,18 @@ try {
     "Eksempelgata 2",
     "Selection returns to correct building",
   );
+  // Selected search rows must keep address/contact readable on the dark selection.
+  await page.getByRole("searchbox", { name: "Søk i hele hovedprosjektet" }).fill("H9999");
+  const selectedContrast = await page.locator('.bolig-overview-row[aria-pressed="true"]').evaluate(row => {
+    const luminance = color => {
+      const values = color.match(/[\d.]+/g).slice(0,3).map(Number).map(v => { v /= 255; return v <= .04045 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4; });
+      return .2126 * values[0] + .7152 * values[1] + .0722 * values[2];
+    };
+    const bg = luminance(getComputedStyle(row).backgroundColor);
+    return [...row.querySelectorAll('small')].map(n => { const fg = luminance(getComputedStyle(n).color); return (Math.max(bg,fg)+.05)/(Math.min(bg,fg)+.05); });
+  });
+  eq(selectedContrast.length > 0 && selectedContrast.every(ratio => ratio >= 4.5), true, "Selected unit address and contact meet 4.5:1 contrast");
+  await page.getByRole("searchbox", { name: "Søk i hele hovedprosjektet" }).fill("");
   for (const width of [320, 1366]) {
     await page.setViewportSize({ width, height: 1000 });
     eq(

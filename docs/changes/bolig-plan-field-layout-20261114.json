@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "title": "Lesbare planfelter og bemanningskort",
-  "change": "BEGGE. Skynettopptak viste at min-width 130px presset felter utenfor 100px/85px gridkolonner. Fjern minimumsbredden lokalt i bolig-plan-step. Ingen endring av planberegning eller lagring. Skynett avdekket også hvit arvet tekst på hvitt deltakerkort og mørk overskrift på mørk bemanning. Bruk etablert lys flate med mørk tekst, og mørkere statusfarger. Kun lokal CSS.",
-  "verification": "Masseplan: CI43643471949 grønn og skynett etterkontroll på bff80c0. Bemanning: skynett gjenskapt, ny kontrastregresjon lagt til; ny CI og skynettprøve gjenstår.",
+  "title": "Lesbare planfelter, bemanning og boligsøk",
+  "change": "BEGGE. Skynettopptak viste at min-width 130px presset felter utenfor 100px/85px gridkolonner. Fjern minimumsbredden lokalt i bolig-plan-step. Ingen endring av planberegning eller lagring. Skynett avdekket også hvit arvet tekst på hvitt deltakerkort og mørk overskrift på mørk bemanning. Bruk etablert lys flate med mørk tekst, og mørkere statusfarger. Kun lokal CSS. Valgt søkeresultat lot small beholde mørk tekst på mørk markering. La bare valgt rad arve hvit forgrunn; statusmerker er uendret.",
+  "verification": "Plan og bemanning: CI43645692692 alle ti jobber grønne, skynett verifisert på a40c3f6. Boligsøk: kontrastfeil gjenskapt i skynett, målrettet regresjon lagt til; ny CI og skynettkontroll gjenstår.",
   "documentation": {
     "help": {
       "required": false,
