@@ -1029,6 +1029,9 @@ try {
     (await db.query("select public.bolig_overview($1,$2) v", [company, rootId]))
       .rows[0].v;
   await actor(admin);
+  await db.exec('reset role');
+  await db.exec(await fs.readFile('supabase/migrations/20261114191448_bolig_catalog_setup_status.sql','utf8'));
+  await actor(admin);
   const statusOverview = await overview();
   eq(
     statusOverview.root_id,
@@ -1048,6 +1051,19 @@ try {
     true,
     "Overview exposes no financial snapshots",
   );
+  await db.exec('reset role;savepoint catalog_setup_status');
+  await db.query('update bolig_private.packages set archived=true where root_id=$1',[root]);
+  await db.query('update bolig_private.options set archived=true where root_id=$1',[root]);
+  await actor(admin);eq((await overview()).catalog_empty,true,'Archived catalog is not configured');
+  await db.exec('reset role');
+  await db.query('update bolig_private.packages set archived=false where id=(select id from bolig_private.packages where root_id=$1 limit 1)',[root]);
+  await actor(admin);eq((await overview()).catalog_empty,false,'Active package makes project configured');
+  await db.exec('reset role');
+  await db.query('update bolig_private.packages set archived=true where root_id=$1',[root]);
+  await db.query('update bolig_private.options set archived=false where id=(select id from bolig_private.options where root_id=$1 limit 1)',[root]);
+  await actor(admin);eq((await overview()).catalog_empty,false,'Active option alone is not an empty project');
+  await db.exec('reset role;rollback to savepoint catalog_setup_status;release savepoint catalog_setup_status');
+  await actor(admin);
   await rejects(() => overview(other, root), "42501");
   await rejects(() => overview(firm, id(999)), "42501");
   await db.exec("reset role;set role anon");

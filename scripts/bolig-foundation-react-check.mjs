@@ -471,6 +471,22 @@ try {
     1,
     "One distinct project overview entry",
   );
+  const editProject = q('.bolig-project-header .bolig-project-edit');
+  assert(editProject, 'Manager can find project info beside project name');
+  await act(() => editProject.click());
+  const projectDialog = q('dialog[aria-label="Rediger prosjektinfo"]');
+  assert(projectDialog && projectDialog.querySelector('details').open, 'Project info opens directly in a dialog');
+  const infoInput = projectDialog.querySelector('input');
+  await act(() => {
+    Object.getOwnPropertyDescriptor(w.HTMLInputElement.prototype,'value').set.call(infoInput,'Prosjektkladd');
+    infoInput.dispatchEvent(new w.Event('input',{bubbles:true}));
+    w.dispatchEvent(new w.Event('focus'));
+  });
+  await act(() => projectDialog.querySelector('button[aria-label="Lukk rediger prosjektinfo"]').click());
+  assert(!q('dialog[aria-label="Rediger prosjektinfo"]'), 'Close returns to unchanged workspace');
+  await act(() => editProject.click());
+  assert.equal(q('dialog[aria-label="Rediger prosjektinfo"] input').value,'Prosjektkladd','Reopening preserves unsaved project info');
+  await act(() => q('button[aria-label="Lukk rediger prosjektinfo"]').click());
   assert(q(".bolig-grid"));
   await act(() => q(".bolig-grid button").click());
   const input = [...w.document.querySelectorAll("label")]
@@ -857,6 +873,7 @@ try {
     null,
     "Role downgrade removes edit controls",
   );
+  assert.equal(q(".bolig-project-header .bolig-project-edit"),null,"Reader cannot edit project info");
   role = "manager";
   await act(() => w.dispatchEvent(new w.Event("focus")));
   record.units[0].has_project = true;

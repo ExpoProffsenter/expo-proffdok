@@ -100,7 +100,7 @@ export function unitStatus(unit, status, layer) {
     return { tone: "review", label: "Pakkeoppsett endret", icon: "review" };
   return status.choice_revision
     ? { tone: "ready", label: "Boligvalg lagret", icon: "check" }
-    : { tone: "empty", label: "Boligvalg mangler", icon: "empty" };
+    : { tone: "empty", label: status.catalog_empty === true ? "Grunnpakke og tilvalg er ikke klargjort" : "Boligvalg ikke startet", icon: "empty" };
 }
 const icons = {
   check: CheckCircle2,
@@ -179,7 +179,7 @@ export default function BoligBuildingOverview({
           throw Error("Firma eller prosjekt er endret.");
         if (active && ticket === generation.current) {
           setStatuses(
-            Object.fromEntries(data.units.map((s) => [s.unit_id, s])),
+            Object.fromEntries(data.units.map((s) => [s.unit_id, {...s, catalog_empty: data.catalog_empty}])),
           );
           setError("");
         }
@@ -372,7 +372,7 @@ export default function BoligBuildingOverview({
         ? "Ikke startet"
         : layer === "project"
           ? "Prosjekt mangler"
-          : "Boligvalg mangler",
+          : Object.values(statuses || {}).some(s => s.catalog_empty === true) ? "Grunnpakke og tilvalg er ikke klargjort" : "Boligvalg ikke startet",
     pending:
       layer === "completion"
         ? "Under arbeid / kontroll"
