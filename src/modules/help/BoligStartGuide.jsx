@@ -124,7 +124,7 @@ const steps = [
     "title": "Varsle beboerne",
     "where": "Fremdrift og varsler → Nytt beboervarsel",
     "text": "Velg hele prosjektet, et bygg, en oppgang eller bestemte boliger. Skriv innhold, tidspunkt og kontaktperson. Kontroller forhåndsvisningen. Lagre utkast sender ingenting; Last ned PDF / oppslag gir et papirvarsel.",
-    "recommend": "Kontroller mottakerutvalget før Publiser til beboerne. Endret kontakt eller fremdrift kan kreve en oppdatert utgave. Når e-post er aktivert, skilles publisering, aksept hos e-posttjenesten og faktisk mottak. I Preview er utsending pauset.",
+    "recommend": "Kontroller mottakerutvalget før Publiser til beboerne. Endret kontakt eller fremdrift kan kreve en oppdatert utgave. Når e-post er aktivert, skilles publisering, aksept hos e-posttjenesten og faktisk mottak. Kontroller utsendingsstatusen i miljøet du bruker.",
     "later": "Bruk PDF til oppslag der e-post ikke passer. Ikke send en prøve til ekte beboere uten avtalt mottaker og innhold.",
     "next": "Hold økonomi og dokumentasjon oppdatert mens boligene utføres."
   },

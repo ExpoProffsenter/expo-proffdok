@@ -399,7 +399,7 @@ try {
     window.dispatchEvent(new Event("focus"));
   });
   await invitation
-    .getByText("E-postutsending er pauset i dette testmiljøet.", {
+    .getByText("E-postutsending er ikke aktivert for denne funksjonen.", {
       exact: false,
     })
     .waitFor();

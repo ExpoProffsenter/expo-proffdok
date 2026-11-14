@@ -624,7 +624,7 @@ export default function BoligResidentNoticeComposer({
           )}
           {!state.mail_enabled && (
             <p>
-              E-post og automatisk publisering er satt på pause i testmiljøet.
+              E-post og automatisk publisering er ikke aktivert.
               Du kan publisere med dagens dato i beboerportalen.
             </p>
           )}

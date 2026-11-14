@@ -1,0 +1,30 @@
+import fs from 'node:fs/promises';
+export default async function reminderPolicy({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider}) {
+ await actor(manager);
+ const rec=await call('create_plan',null,null,{request_id:id(91000),title:'QA reminder project',reference:'QA-REMINDER',buildings:[{name:'A',building_type:'apartment',address:'Reminder street 1',house_floors:1,entrances:[{address:'Reminder street 1',counts:[1]}]}]});
+ const root=rec.root.id,unit=rec.units[0].id;
+ await db.exec('reset role');
+ await db.exec(await fs.readFile('supabase/migrations/20261114181325_bolig_project_reminders.sql','utf8'));
+ await db.exec("update bolig_private.progress_deliveries set status='accepted' where kind='owner'");
+ const rpc=async(action='get',payload={},company=firm,r=root)=> (await db.query('select public.bolig_progress($1,$2,null,$3,$4) v',[company,r,action,payload])).rows[0].v;
+ await actor(manager);let state=await rpc();eq(state.reminders_enabled,false,'Existing projects start opted out');
+ const task={id:id(91001),unit_id:unit,title:'Reminder policy QA',owner_id:manager,planned_start:'2026-11-14',planned_end:'2027-11-14',status:'planned',required:false,note:'',revision:state.revision,request_id:id(91002)};
+ state=await rpc('save',task);
+ await db.exec("reset role;update bolig_private.progress_mail_settings set enabled=true,enabled_since=now();select bolig_private.progress_tick()");
+ eq((await db.query("select count(*)::int n from bolig_private.progress_deliveries where task_id=$1 and kind='owner'",[task.id])).rows[0].n,0,'Transport alone cannot send owner reminders');
+ await actor(reader);await rejects(()=>rpc('reminders',{enabled:true,revision:state.revision,request_id:id(91003)}),'42501');
+ await actor(outsider,other);await rejects(()=>rpc('reminders',{enabled:true,revision:state.revision,request_id:id(91003)},other),'42501');
+ await actor(manager);await rejects(()=>rpc('reminders',{enabled:true,revision:state.revision-1,request_id:id(91003)}),'PT409');
+ await rejects(()=>rpc('reminders',{enabled:'yes',revision:state.revision,request_id:id(91003)}),'22023');
+ const enable={enabled:true,revision:state.revision,request_id:id(91004)};state=await rpc('reminders',enable);eq(state.reminders_enabled,true);
+ eq(await rpc('reminders',enable),state,'Exact retry does not toggle or increment again');
+ await db.exec('reset role;select bolig_private.progress_tick();select bolig_private.progress_tick()');
+ eq((await db.query("select count(*)::int n from bolig_private.progress_deliveries where task_id=$1 and kind='owner'",[task.id])).rows[0].n,1,'Opt-in creates one reminder even after repeated ticks');
+ eq((await db.query("select bolig_private.progress_delivery_valid(d) v from bolig_private.progress_deliveries d where task_id=$1 and kind='owner'",[task.id])).rows[0].v,true);
+ eq((await db.query("select count(*)::int n from bolig_private.progress_deliveries d where kind='owner' and status='pending' and root_id<>$1 and not exists(select 1 from bolig_private.progress_reminder_settings rs where rs.root_id=d.root_id and rs.enabled)",[root])).rows[0].n,0,'No new owner mail in other projects');
+ await actor(manager);state=await rpc('reminders',{enabled:false,revision:state.revision,request_id:id(91005)});eq(state.reminders_enabled,false);
+ await db.exec('reset role');
+ eq((await db.query("select status,bolig_private.progress_delivery_valid(d) valid from bolig_private.progress_deliveries d where task_id=$1 and kind='owner'",[task.id])).rows[0],{status:'suppressed',valid:false},'Disable also blocks worker validation of reserved/pending mail');
+ await actor(manager);await rejects(()=>db.query('select * from bolig_private.progress_reminder_settings'),'42501');
+ await db.exec('reset role;update bolig_private.progress_mail_settings set enabled=false');
+}

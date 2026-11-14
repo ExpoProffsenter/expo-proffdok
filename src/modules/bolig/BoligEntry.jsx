@@ -1,3 +1,4 @@
+import BoligProjectInfo from "./BoligProjectInfo.jsx";
 import BoligProjectIntegration from "./BoligProjectIntegration.jsx";
 import BoligContracts from "./BoligContracts.jsx";
 import BoligAttendance from "./BoligAttendance.jsx";
@@ -285,7 +286,7 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
         setNotice("Endringene er lagret.");
         if (
           ctx.enabled &&
-          ["create", "archive", "block", "entrance", "resize"].includes(action)
+          ["create", "archive", "block", "entrance", "resize", "project_info"].includes(action)
         )
           await request("list");
       }
@@ -697,6 +698,7 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
                       />
                     </div>
                     <div hidden={setupArea !== "structure"}>
+                      {canWrite && <BoligProjectInfo key={ctx.user_id+":"+ctx.company_id+":"+record.root.id} context={ctx} root={record.root} busy={busy} onSave={(payload,revision)=>perform("project_info",{rootId:record.root.id,revision,payload})}/>}
                       <div className="bolig-setup-resident-tools" aria-label="Beboere og bestillingsfrister">
                       <BoligResidentImport context={ctx} record={record} onChanged={() => fetchRecord(record.root.id, true)} />
                       <BoligResidentBatch context={ctx} record={record} onChanged={() => fetchRecord(record.root.id, true)} />

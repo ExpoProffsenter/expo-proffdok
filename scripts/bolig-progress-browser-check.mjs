@@ -20,8 +20,9 @@ fs.writeFileSync(
   entry,
   `
 import React from '${root}/node_modules/react/index.js';import {createRoot} from '${root}/node_modules/react-dom/client.js';import Progress from '${root}/src/modules/bolig/BoligProgress.jsx';import '${root}/src/style.css';import '${root}/src/modules/bolig/bolig.css';
-const ctx={user_id:'qa',company_id:'firm',enabled:true,role:'manager'};let state={context:ctx,root_id:'root',unit_id:null,revision:0,tasks:[],units:[{id:'unit',number:'H0101',address:'Plangata 1',block_id:'block',block_name:'Bygg A',entrance_id:'entrance',contact_name:'QA Resident',contact_email:'qa@example.invalid',notice_basis:'b1'}],rooms:[{id:'room',unit_id:'unit',name:'Bad'}],members:[{id:'qa',name:'QA Prosjektleder'}],notices:[],history:[],deliveries:[],mail_enabled:false};const receipts=new Map();window.__calls=[];window.__lost=false;window.__deny=false;window.__conflict=false;
+const ctx={user_id:'qa',company_id:'firm',enabled:true,role:'manager'};let state={context:ctx,root_id:'root',unit_id:null,revision:0,tasks:[],units:[{id:'unit',number:'H0101',address:'Plangata 1',block_id:'block',block_name:'Bygg A',entrance_id:'entrance',contact_name:'QA Resident',contact_email:'qa@example.invalid',notice_basis:'b1'}],rooms:[{id:'room',unit_id:'unit',name:'Bad'}],members:[{id:'qa',name:'QA Prosjektleder'}],notices:[],history:[],deliveries:[],mail_enabled:false,reminders_enabled:false};const receipts=new Map();window.__calls=[];window.__lost=false;window.__deny=false;window.__conflict=false;
 window.__client={rpc(name,p){window.__calls.push(p);if(name==='work_profile_company_profile')return Promise.resolve({data:{companyId:'firm',companyName:'QA Bedrift',phone:'12345678',email:'project@example.invalid'}});return Promise.resolve().then(()=>{if(window.__deny)return {error:{code:'42501',message:'Tilgangen er tilbakekalt.'}};if(p.p_action==='get')return {data:structuredClone({...state,context:{...ctx,role:window.__role||'manager'}})};const v=p.p_payload;if(window.__conflict)return {error:{code:'PT409',message:'Planen er endret. Utkastet er beholdt.'}};if(receipts.has(v.request_id))return {data:structuredClone(receipts.get(v.request_id))};if(p.p_action==='save'&&v.revision!==state.revision)return {error:{code:'PT409',message:'Planrevisjon må brukes, ikke aktivitetens revisjon.'}};state.revision++;
+if(p.p_action==='reminders')state.reminders_enabled=v.enabled;
 if(p.p_action==='save'){const i=state.tasks.findIndex(t=>t.id===v.id);const t={...v,revision:(state.tasks[i]?.revision||0)+1,active:true,owner_active:true,owner_name:'QA Prosjektleder',room_name:v.room_id?'Bad':null,unit_number:'H0101'};if(i<0)state.tasks.push(t);else state.tasks[i]=t;}
 if(p.p_action==='notice')state.notices.unshift({...v,basis:'review-'+state.revision,current:true,valid:false,recipient:'qa@example.invalid',title:state.tasks[0].title,unit_number:'H0101',planned_start:state.tasks[0].planned_start,planned_end:state.tasks[0].planned_end});
 if(p.p_action==='resident_notice'){state.notices.forEach(n=>{if(n.group_id===v.replaces)n.withdrawn=true;});v.unit_ids.forEach(u=>state.notices.unshift({...v,id:v.id+'-'+u,group_id:v.id,unit_id:u,basis:'notice-'+state.revision,current:true,valid:v.mode==='publish',digital:v.mode==='publish',paper_ready:v.mode!=='draft',project_contact:v.contact,recipient:'qa@example.invalid',unit_number:'H0101',planned_start:v.start,planned_end:v.end,published_at:v.mode==='publish'?new Date().toISOString():null}));}
@@ -455,6 +456,16 @@ try {
   await dialog
     .getByRole("button", { name: "Lukk og behold utkast", exact: true })
     .click();
+  await page.getByText("Automatiske fristpåminnelser: Av", {exact:true}).click();
+  eq(await page.evaluate(() => window.__calls.filter(p=>p.p_action==='reminders').length),0,"Opening settings never enables reminders");
+  await page.getByRole("button",{name:"Slå på automatiske fristpåminnelser",exact:true}).click();
+  await page.getByText("Automatiske fristpåminnelser: På", {exact:true}).waitFor();
+  await page.evaluate(() => window.dispatchEvent(new Event("focus")));
+  eq(await page.getByText("Automatiske fristpåminnelser: På", {exact:true}).isVisible(),true,"Refresh preserves server setting");
+  await page.getByRole("button",{name:"Slå av automatiske fristpåminnelser",exact:true}).click();
+  await page.getByText("Automatiske fristpåminnelser: Av", {exact:true}).waitFor();
+  await page.getByText("Automatiske fristpåminnelser: Av", {exact:true}).click();
+
   await page.evaluate(() => window.__show("reader"));
   await page
     .getByText("Aktivitetsliste og enkeltaktiviteter", { exact: true })
@@ -470,6 +481,7 @@ try {
     0,
     "Reader has no write UI",
   );
+  eq(await page.getByRole("button",{name:"Slå på automatiske fristpåminnelser",exact:true}).count(),0,"Reader cannot enable reminders");
   await page.evaluate(() => {
     window.__deny = true;
     window.dispatchEvent(new Event("focus"));
