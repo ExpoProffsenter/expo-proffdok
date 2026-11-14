@@ -19,3 +19,6 @@ dialog.bolig-collaboration-dialog[open]{display:flex;flex-direction:column}
 .bolig-unit-overview dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr));gap:10px;margin:0 0 14px}
 .bolig-unit-overview dt{font-size:14px;font-weight:650}.bolig-unit-overview dd{margin:0}.bolig-unit-overview a{color:#075677}
 .bolig-unit-overview summary{min-height:44px;cursor:pointer}.bolig-unit-overview li{margin-bottom:10px}
+/* The workspace scrolls as one column. Do not shrink search results or cards
+   into overlapping hit areas when an apartment has a long goods editor. */
+.bolig-collaboration-body>*{flex-shrink:0}

@@ -15,3 +15,5 @@ Sandbox: my_collaborations før endring sammenlignet med produksjon; migrasjonen
 Før release: full CI og Preview-verifisering, eksplisitt TEST OK, produksjonsmigrasjon etter ny sjekk av installert tilstand, merge og verifisert commit, main→demo med bevart overlay/preflight. Tilbakeføring: revert UI og gjenopprett tidligere my_collaborations-definisjon hvis nye lesefelt skal trekkes tilbake; ingen lagrede data er endret.
 
 Videoene er fortsatt V12. Ny film skal tas på ferdig godkjent butikkflyt, etter denne leveransen. Handoff PR340 og BOLIG_AA_REVISION_20261113.json er fortsatt opptaksgrunnlaget. Ingen ny film er påstått ferdig.
+
+CI43635085056 fant en reell layoutfeil: søkeresultatlisten krympet i flex-kolonnen når vareeditoren var lang, og kontaktkortet fanget klikk på søkeresultatet. Rettet ved å la direkte barn beholde høyden og arbeidsflaten rulle samlet. Ingen force-click eller svekket test. Ny kandidat må gjennom samme kontroll. Skynett er nå innlogget med demokonto; bruker krever reell visuell gjennomgang før TEST OK. Et nytt syntetisk prosjekt opprettes i sandbox for denne reisen.
