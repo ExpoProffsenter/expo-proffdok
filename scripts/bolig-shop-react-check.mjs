@@ -1,4 +1,8 @@
 import assert from 'node:assert/strict';import fs from 'node:fs';import os from 'node:os';import path from 'node:path';import {build} from 'vite';import react from '@vitejs/plugin-react';
+const {shopTotal,shopPayload}=await import('../src/modules/bolig/boligShopCore.js');
+assert.equal(shopTotal({lines:[{quantity:1.005,price_cents:100,installation_cents:0}]}),101,'Half-cent review matches Postgres numeric');
+assert.equal(shopTotal({lines:[{quantity:0.145,price_cents:100,installation_cents:10}]}),25);
+assert.throws(()=>shopPayload({title:'QA',lines:[{name:'QA vare',quantity:'1.0001',price:'1'}]}),/tre desimaler/);
 const {JSDOM}=await import(process.env.KSHMS_JSDOM_PATH||'jsdom');
 const cwd=process.cwd(),tmp=fs.mkdtempSync(path.join(os.tmpdir(),'shop-ui-'));
 fs.writeFileSync(path.join(tmp,'rpc.js'),`export async function collaborationRpc(n,a,u){return window.__rpc(n,a,u);}`);

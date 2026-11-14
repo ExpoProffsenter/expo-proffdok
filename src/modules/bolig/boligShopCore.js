@@ -8,13 +8,17 @@ export function shopCents(value) {
 export function shopPayload(draft){
   if(!draft.title.trim()||!draft.lines.length)throw Error('Legg inn en tittel og minst én vare.');
   return {title:draft.title.trim(),lines:draft.lines.map(line=>{
-    const quantity=Number(String(line.quantity).replace(',','.'));
+    const quantityText=String(line.quantity).trim().replace(',','.');
+    if(!/^\d+(\.\d{1,3})?$/.test(quantityText))throw Error('Skriv antall med inntil tre desimaler.');
+    const quantity=Number(quantityText);
     if(!line.name.trim()||!Number.isFinite(quantity)||quantity<=0||quantity>10000)throw Error('Fyll inn varenavn og gyldig antall.');
     return {name:line.name.trim(),sku:line.sku,room_name:line.room_name,unit:line.unit,quantity,
       price_cents:shopCents(line.price),installation_cents:shopCents(line.installation||'0'),image_url:line.image_url||''};
   })};
 }
-export const shopTotal=payload=>payload.lines.reduce((sum,line)=>sum+Math.round(line.quantity*line.price_cents)+line.installation_cents,0);
+// Integer thousandths avoid floating-point half-cent disagreements with Postgres numeric.
+export const shopGoodsTotal=line=>Math.floor((Math.round(line.quantity*1000)*line.price_cents+500)/1000);
+export const shopTotal=payload=>payload.lines.reduce((sum,line)=>sum+shopGoodsTotal(line)+line.installation_cents,0);
 export const newShopLine=(item={})=>({key:crypto.randomUUID(),name:item.name||'',sku:item.sku||'',quantity:'1',unit:'stk',room_name:'',price:item.price??'',installation:'0',image_url:item.image_url||''});
 export function shopDraftFrom(document){return {title:document?.snapshot.reason||'Tillegg fra butikk',lines:(document?.snapshot.shop_lines||[]).map(g=>({...g,key:crypto.randomUUID(),quantity:String(g.quantity),price:String(g.price_cents/100),installation:String(g.installation_cents/100)}))};}
 // Small raster thumbnails travel with the private agreement snapshot. No public

@@ -1,4 +1,5 @@
 import React from "react";
+import {shopGoodsTotal} from "./boligShopCore.js";
 import { agreementMoney as money, goodsDiff } from "./boligCommerceCore.js";
 
 const amount = g => g ? `${g.quantity} ${g.unit} · ${g.name}${g.sku ? ` · varenr. ${g.sku}` : ""}` : "Utgår";
@@ -8,7 +9,7 @@ export default function BoligAgreementSummary({ document }) {
     <ul className="bolig-agreement-goods">{s.shop_lines.map((g,i)=><li key={g.key||i}>
       {g.image_url&&<img className="bolig-shop-thumb" src={g.image_url} alt={g.name} loading="lazy" referrerPolicy="no-referrer"/>}
       <div><strong>{g.name}</strong><small>{g.quantity} {g.unit}{g.sku?` · varenr. ${g.sku}`:''}{g.room_name?` · ${g.room_name}`:''}</small>
-      <p>Vare: {money(g.price_cents)} per {g.unit} · {money(Math.round(g.quantity*g.price_cents))}<br/>Montering: {money(g.installation_cents)} for varelinjen</p></div>
+      <p>Vare: {money(g.price_cents)} per {g.unit} · {money(shopGoodsTotal(g))}<br/>Montering: {money(g.installation_cents)} for varelinjen</p></div>
     </li>)}</ul><div className="bolig-commerce-price"><span>Dette tillegget inkl. mva.</span><strong>{money(s.delta_cents)}</strong></div>
     <details><summary>Grunnlag som beholdes · {(s.base_goods||[]).length} varelinjer</summary><Goods goods={s.base_goods||[]}/></details>
     </section>;

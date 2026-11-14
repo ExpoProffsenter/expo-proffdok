@@ -84,3 +84,9 @@ Hosted fant og rettet stor bildebredde og manglende fokus/scroll ved åpning. P�
 CI43531429341 full grønn på52a76e1. Ny kontrollkjøring for siste kandidat nødvendig. Separat migrasjon20261114001335_bolig_shop_order_identity er installert kun i sandbox: nye tilleggsordrer får ordinært bolignummer/unit_id også for eksport. Ingen eksisterende ordre omskrevet.
 
 Samspill med PR332: ny migrasjon `20261114001703_bolig_shop_project_deadline.sql` bruker portalens gjeldende choices_closed-regel og inkluderer prosjektrevisjonen i kladdgrunnlaget. Faktisk sandbox-transaksjon satte dagens frist til00:00 norsk tid; butikkpublisering ble avvist med riktig fristfeil, deretter full rollback. Dermed følger også klokkeslettet fra PR332, uten å kreve en kopi av fristlogikken. Bare sandbox er migrert.
+
+Sluttkontroll: PR333 lokalt1906 databaseassertions PASS. Isolert kombinasjon med PR332: build PASS og1926 databaseassertions PASS. Ingen publisert merge eller produksjonsendring. PortalPage-endringene kunne kombineres uten konflikt; integrasjonstestkopiens doble innsettingshunk i CSS/testregistrering ble bevart samlet. Faktisk sandbox-leverandøroppfølging opprettet én separat ordre med bolig38, vare og montering, og eksakt retry ga samme resultat; hele transaksjonen ble rullet tilbake.
+
+Siste priskontroll gjenskapte et review-avvik:1,005×1,00kr viste1,00kr i JavaScript mens Postgres beregner1,01kr. Forhåndsvisning og varelinjesum bruker nå heltall i tusendeler før øreavrunding. Regresjon for1,005 og0,145 samt avvisning av mer enn tre desimaler PASS. Full build og actual React PASS etter rettelsen.
+
+Opprydding: midlertidig QA-partner og QA-beboerportal er tilbakekalt; ny butikklesing avvist med42501. Ingen testprosjekter, avtaler eller historikk slettet. Ingen medlemskap endret. Ingen reelle e-poster, varsler eller bestillinger sendt. Produksjon krever TEST OK og egen migrasjons-/releasekontroll. Endelig kandidat/CI/status føres i PR333-beskrivelsen.
