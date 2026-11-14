@@ -22,7 +22,7 @@ try{
  await act(()=>w.__render());await act(()=>button('Legg til vare manuelt').click());
  await set('Varenavn','Manuell vare');await set('Varenummer (valgfritt)','MAN-123');await set('Antall','2');await set('Beboerpris per enhet (kr inkl. mva.)','1250,50');await set('Montering for denne varelinjen (kr inkl. mva.)','750');
  assert.equal(calls.filter(c=>c.p_action==='publish').length,0,'Editing remains private');
- await act(()=>button('Kontroller beboerens forslag').click());assert(w.document.body.textContent.includes('3 251,00'),'Customer sees exact total');
+ await act(()=>button('Kontroller beboerens forslag').click());assert(w.document.body.textContent.includes('3 251,00'),'Customer sees exact total');assert.equal(w.document.activeElement.textContent,'Kontroller før publisering','Review receives keyboard focus');
  await act(()=>button('Oppdater beboerportalen').click());assert.equal(calls.filter(c=>c.p_action==='publish').length,1);assert(w.document.body.textContent.includes('innen 20 sekunder'));
  state.documents[0].status='accepted';state.basis='three';await act(()=>button('Hent siste status').click());assert.equal(w.document.querySelectorAll('.bolig-shop-line').length,0,'Accepted goods are not prefilled as a new sale');assert(!w.document.body.textContent.includes('Venter på beboerens aksept.'),'Stale pending notice cleared after acceptance');
  state.context.publish_shop=false;await act(()=>button('Hent siste status').click());assert(!button('Legg til vare manuelt'),'Revoked publishing capability removes editor');

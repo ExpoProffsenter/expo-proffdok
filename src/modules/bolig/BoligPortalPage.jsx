@@ -47,7 +47,8 @@ export default function BoligPortalPage() {
     [review, setReview] = useState(null),
     [agreement, setAgreement] = useState(null),
     [notice, setNotice] = useState("");
-  const choicesHeading=useRef(null), requestsHeading=useRef(null);
+  const choicesHeading=useRef(null), requestsHeading=useRef(null), reviewHeading=useRef(null);
+  useEffect(()=>{if(review){reviewHeading.current?.focus({preventScroll:true});reviewHeading.current?.scrollIntoView?.({block:"start",behavior:"auto"});}},[review]);
   const selectedAgreement=useRef(null);
   selectedAgreement.current=agreement;
   const agreementHeading=useRef(null);
@@ -406,7 +407,7 @@ export default function BoligPortalPage() {
                 )}
                 {review === "request" && selected && !selected.conflict && !choicesClosed && (
                   <section className="bolig-portal-info">
-                    <h3>Kontroller før du sender</h3>
+                    <h3 ref={reviewHeading} tabIndex={-1} style={{scrollMarginTop:90}}>Kontroller før du sender</h3>
                     <PortalGoods goods={selected.goods}/>
                     <PortalPrices items={selected.price_details}/>
                     <p>
@@ -544,7 +545,7 @@ export default function BoligPortalPage() {
                   </fieldset>
                   {["accept", "decline"].includes(review) && (
                     <section className="bolig-portal-info">
-                      <h3>
+                      <h3 ref={reviewHeading} tabIndex={-1} style={{scrollMarginTop:90}}>
                         {review === "accept"
                           ? "Bekreft aksept"
                           : "Bekreft avslag"}

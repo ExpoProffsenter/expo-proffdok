@@ -88,3 +88,7 @@ Denne statusen erstatter de åpne punktene i forrige oppfølging. Appkandidat `4
 ![Grunnpakke med faktisk opplastet testillustrasjon](screenshots/bolig-grunnpakke-bilde-qa.jpg)
 
 Neste steg: systemeiers TEST OK før egen kontrollert produksjonsplan. Sandbox er eneste database endret i denne leveransen. Produksjonsplanen må inkludere de nye migrasjonene og Edge-funksjonen i riktig rekkefølge, kontrollert mot hva som allerede er installert. Ved tilbakeføring: deaktiver kombinasjonsmodus via publisering, tilbakefør frontend og ny Edge ved behov, men behold migrasjoner, private bilder og innsendt historikk. Ingen hemmelige portallenker eller token lagret.
+
+
+## Samlet trippelrunde startet 14.11
+PR332 f25118e6 er integrert i PR333 preview som01c50994; bare arbeidsbranch, main/demo urørt. Sandbox har allerede klokkemigrasjonen, ingen migrasjoner gjentatt. Hele CI kjøres på kombinert kandidat. Faktisk tildeling til syntetisk demobruker på QA-FULL-PORTAL-20261114, Min side, boligvalg, manuell vare,2499kr inkl500kr montering og publisering kontrollert. Endret antall nullstiller review som forventet. Mobil340px fant at neste kontrollsteg ble opprettet under skjermen uten fokus/scroll. Avgrenset rettelse i BoligShopProposal og BoligPortalPage; ingen pris-, aksept- eller tilgangsendring. React-fokusassertions og build PASS. Hosted etterkontroll og opprydding av testtildeling følger.
