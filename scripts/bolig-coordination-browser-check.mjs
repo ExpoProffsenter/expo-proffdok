@@ -117,11 +117,11 @@ try {
       "all tasks on same Gantt",
     );
     const a = page.getByRole("button", {
-        name: "H0101 · Rørlegger · 2026-10-26 til 2026-10-26",
+        name: "H0101 · Plangata 1 · Rørlegger · 26.10.2026 til 26.10.2026",
         exact: true,
       }),
       b = page.getByRole("button", {
-        name: "H0101 · Elektro · 2026-10-26 til 2026-10-26",
+        name: "H0101 · Plangata 1 · Elektro · 26.10.2026 til 26.10.2026",
         exact: true,
       });
     eq(
@@ -151,6 +151,8 @@ try {
     await page
       .getByLabel("Grupper etter", { exact: true })
       .selectOption("unit");
+    // Whole-plan overview is read-only for dragging; editing explicitly uses a week.
+    await page.getByLabel("Visning", {exact:true}).selectOption("week");
     await a.focus();
     await page.keyboard.press("Alt+ArrowRight");
     eq(

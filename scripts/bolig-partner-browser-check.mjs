@@ -833,7 +833,7 @@ try {
   eq(
     await page
       .locator(".bolig-gantt-label")
-      .getByText("Ny leilighet", { exact: true })
+      .getByText(/^Ny leilighet(?:\s|$)/)
       .count(),
     1,
     "new apartment included without selections",

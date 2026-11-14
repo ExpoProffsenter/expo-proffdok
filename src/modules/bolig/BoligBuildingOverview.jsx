@@ -587,7 +587,7 @@ export default function BoligBuildingOverview({
         <div className="bolig-workspace-building bolig-building-toolbar">
           <h3 ref={titleRef} tabIndex={-1} className={quickBuildings ? "bolig-sr-only" : ""}>
             <Building2 size={20} />
-            {allBuildings ? "Alle bygg" : selectedBlock?.name || "Byggoversikt"}
+            <span className="bolig-building-title" title={allBuildings ? "Alle bygg" : selectedBlock?.name || "Byggoversikt"}>{allBuildings ? "Alle bygg" : selectedBlock?.name || "Byggoversikt"}</span>
           </h3>
           {quickBuildings && (
             <div className="bolig-workspace-building-tabs" role="group" aria-label="Velg bygg">

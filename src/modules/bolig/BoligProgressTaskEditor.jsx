@@ -1,4 +1,5 @@
 import React from "react";
+import { progressTaskLocation } from "./boligProgressDraft.mjs";
 import Dialog from "./BoligEditorDialog.jsx";
 import {
   progressDate as date,
@@ -379,11 +380,14 @@ export default function BoligProgressTaskEditor({
         </Dialog>
       )}
       {writable && review?.kind === "draft-choice" && (
-        <Dialog title="Du har et aktivitetsutkast" onClose={closeTask}>
+        <Dialog title="Du har et aktivitetsutkast" onClose={closeTask} className="bolig-progress-draft-choice">
           <p>
-            Utkastet «{draft.editor?.title || "Ny aktivitet"}» gjelder en annen
-            aktivitet. Velg hva du vil gjøre før du åpner «{review.task.title}».
+            Du har ulagrede endringer i en annen aktivitet. Velg om du vil fortsette med dem eller forkaste dem før du åpner den valgte aktiviteten.
           </p>
+          <p><strong>Ulagrede endringer:</strong> {progressTaskLocation(draft.editor, data.units)}<br />
+            {draft.editor?.title || "Ny aktivitet"} · {date(draft.editor?.planned_start)} – {date(draft.editor?.planned_end)}</p>
+          <p><strong>Du vil åpne:</strong> {progressTaskLocation(review.task, data.units)}<br />
+            {review.task.title} · {date(review.task.planned_start)} – {date(review.task.planned_end)}</p>
           <button
             type="button"
             disabled={disabled}

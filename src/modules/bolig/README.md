@@ -72,3 +72,10 @@ Ved klargjøring av invitasjonen kan prosjektleder velge «Kombiner tilvalg» og
 Migrasjon `20261114153617_bolig_portal_combined_choices.sql` følger butikk-/portal-migrasjonene. E-post og firmatilgang er uendret. Butikkansatte finner prosjektene på Min side uten invitasjonsmail.
 
 Opplastede grunnpakkebilder i beboerportalen trenger `20261114161925_bolig_portal_image_access.sql` og Edge `bolig-portal-images`. Den gyldige portallenken gir bare kortvarig tilgang til publiserte bilder fra samme firma/prosjekt. Katalogendringer endrer ikke allerede publiserte/frosne pakker; klargjør og publiser riktig utgave før beboeren skal se endringen.
+### Felles bestillingsklokkeslett
+
+Migrasjonen `20261113191737_bolig_project_deadline_time.sql` gir ett klokkeslett for hele prosjektet under «Beboerlenker og frister samlet». Nye/udaterte prosjekter bruker 12:00; tidligere daterte prosjekter bevarer dagsslutt frem til manager endrer tiden. Fristdatoen er fortsatt per bolig. Se `docs/architecture/BOLIG_PROJECT_DEADLINE_TIME.md`.
+
+Fristdialogen viser dato og direkte klokkehandling før boliglisten. Valglisten ruller separat, og detaljert kontrolliste åpnes ved behov. Visning i frister, Gantt og beboerportal bruker dd.mm.åååå; fristinntasting bruker dd.mm.åååå uavhengig av nettleserspråk, mens lagring bruker ISO-dato. Oppsettets import- og fristinnganger er samlet som tydelige handlingskort.
+
+Fremdriftsplanen sorterer grupper etter første aktivitetsdato og aktivitetene i hver gruppe fra første til siste dato. Dag/uke/måned viser bare aktiviteter som overlapper valgt periode, inkludert arbeid som startet tidligere og fortsatt pågår. Hele planen viser alle aktiviteter i utvalget.

@@ -10,6 +10,7 @@ export default function BoligResidentImport({context, record, onChanged}) {
   const installed = record.units.every(u => Array.isArray(u.additional_contacts));
   return <section className="bolig-resident-import-entry">
     <button type="button" disabled={!installed} onClick={() => setOpen(true)}>Importer beboere fra Excel</button>
+    <p>Hent eiere og kontaktopplysninger fra Excel. Se over boligkoblingene før lagring.</p>
     {!installed && <small>Beboerimport må klargjøres i dette miljøet før bruk.</small>}
     {open && <ResidentImportDialog key={`${context.user_id}/${context.company_id}/${record.root.id}`} context={context} record={record} onChanged={onChanged} onClose={() => setOpen(false)} />}
   </section>;

@@ -697,8 +697,10 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
                       />
                     </div>
                     <div hidden={setupArea !== "structure"}>
+                      <div className="bolig-setup-resident-tools" aria-label="Beboere og bestillingsfrister">
                       <BoligResidentImport context={ctx} record={record} onChanged={() => fetchRecord(record.root.id, true)} />
                       <BoligResidentBatch context={ctx} record={record} onChanged={() => fetchRecord(record.root.id, true)} />
+                      </div>
                       <BoligPreparation
                         key={
                           ctx.user_id +

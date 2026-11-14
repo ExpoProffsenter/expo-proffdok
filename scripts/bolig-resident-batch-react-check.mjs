@@ -25,6 +25,36 @@ try{
  await click('Kontroller samme handling igjen');const publishes=calls.filter(c=>c.args.p_action==='publish');assert.deepEqual(publishes[1].args.p_payload,first);checks.push('retry preserves request IDs, token and frozen unit snapshot');
  check(button('Bekreft utsending til 2 eiere').disabled,'paused mail disables sending');check(w.document.body.textContent.includes('extra@example.invalid'),'co-owner in confirmation list');
  await click('Lukk og behold utkast');await click('Beboerlenker og frister samlet');check(w.document.body.textContent.includes('Mottakere og sendestatus'),'prepared list survives reopening');
+ await click('Avslutt listen uten flere sendinger');
+ data.deadline_time='12:00';data.project_revision=5;
+ await act(()=>w.dispatchEvent(new w.Event('focus')));
+ const mode=w.document.querySelector('select');
+ await act(()=>{mode.value='time';mode.dispatchEvent(new w.Event('change',{bubbles:true}));});
+ check(w.document.querySelector('input[type=time]').value==='12:00','project clock uses server noon default');
+ check(!button('Velg alle viste boliger'),'clock change cannot be mistaken for filtered unit action');
+ await act(()=>confirm().click());
+ check(!button('Bekreft klokkeslett for hele prosjektet').disabled,'project clock saves without selecting any unit');
+ await click('Bekreft klokkeslett for hele prosjektet');
+ const timeCall=calls.find(c=>c.args.p_action==='deadline_time');
+ check(timeCall.args.p_payload.deadline_time==='12:00'&&timeCall.args.p_payload.revision===5,'project clock sends explicit time and concurrency basis');
+ await act(()=>confirm().click());data.project_revision=6;
+ await act(()=>w.dispatchEvent(new w.Event('focus')));
+ check(!confirm().checked,'concurrent project clock change resets confirmation');
+ // Large projects keep date entry before the independently scrollable unit list.
+ data.units=Array.from({length:126},(_,i)=>({...data.units[0],id:'large-'+i,number:String(i+1),deadline:'2027-04-02',basis:'large-'+i}));
+ await act(()=>w.dispatchEvent(new w.Event('focus')));await click('Sett bestillingsfrist');await click('Velg alle viste boliger');
+ const dateInput=w.document.querySelector('input[placeholder="dd.mm.åååå"]'),unitList=w.document.querySelector('.bolig-batch-unit-list');
+ check(Boolean(dateInput.compareDocumentPosition(unitList)&w.Node.DOCUMENT_POSITION_FOLLOWING),'date input precedes the 126-unit list');
+ check(unitList.textContent.includes('02.04.2027')&&!unitList.textContent.includes('2027-04-02'),'unit deadlines use Norwegian day.month.year');
+ check(unitList.querySelectorAll('input[type=checkbox]').length===126,'all units remain selectable');
+ check(!w.document.querySelector('.bolig-batch-review').open,'duplicate detailed review is initially collapsed');
+ check(!!button('Endre felles klokkeslett · 12:00'),'project clock is discoverable directly from deadline view');
+ for(const invalid of ['31.02.2027','04/02/2027','2027-04-02']){await act(()=>{Object.getOwnPropertyDescriptor(w.HTMLInputElement.prototype,'value').set.call(dateInput,invalid);dateInput.dispatchEvent(new w.Event('input',{bubbles:true}));});if(!confirm().checked)await act(()=>confirm().click());check(button('Bekreft bestillingsfrist').disabled,'invalid/non-Norwegian date cannot be submitted: '+invalid);}
+ await act(()=>{Object.getOwnPropertyDescriptor(w.HTMLInputElement.prototype,'value').set.call(dateInput,'03.05.2027');dateInput.dispatchEvent(new w.Event('input',{bubbles:true}));dateInput.dispatchEvent(new w.Event('change',{bubbles:true}));});
+ check(w.document.querySelector('.bolig-batch-review').textContent.includes('02.04.2027 → 03.05.2027'),'review formats both old and new dates');
+ await act(()=>confirm().click());await click('Bekreft bestillingsfrist');
+ const dateCall=calls.find(c=>c.args.p_action==='deadlines');
+ check(dateCall.args.p_payload.deadline==='2027-05-03'&&dateCall.args.p_payload.units.length===126,'server payload retains ISO date and explicit 126-unit scope');
  deny=true;await act(()=>w.dispatchEvent(new w.Event('focus')));check(!w.document.body.textContent.includes('extra@example.invalid'),'revoked access hides recipient data');
  deny=false;await click('Hent siste oversikt');held=[];await act(()=>w.dispatchEvent(new w.Event('focus')));await click('Lukk og behold utkast');await act(()=>{held[0]({data});});check(!w.document.querySelector('dialog'),'late response cannot reopen deliberately closed panel');
  await act(()=>w.__render({...props,context:{...context,role:'reader'}}));check(!button('Beboerlenker og frister samlet'),'reader has no batch action');
