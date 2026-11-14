@@ -79,3 +79,9 @@ Migrasjonen `20261113191737_bolig_project_deadline_time.sql` gir ett klokkeslett
 Fristdialogen viser dato og direkte klokkehandling før boliglisten. Valglisten ruller separat, og detaljert kontrolliste åpnes ved behov. Visning i frister, Gantt og beboerportal bruker dd.mm.åååå; fristinntasting bruker dd.mm.åååå uavhengig av nettleserspråk, mens lagring bruker ISO-dato. Oppsettets import- og fristinnganger er samlet som tydelige handlingskort.
 
 Fremdriftsplanen sorterer grupper etter første aktivitetsdato og aktivitetene i hver gruppe fra første til siste dato. Dag/uke/måned viser bare aktiviteter som overlapper valgt periode, inkludert arbeid som startet tidligere og fortsatt pågår. Hele planen viser alle aktiviteter i utvalget.
+
+## Prosjektinfo og fasade
+Prosjektleder kan redigere navn og referanse via Oppsett → Bygg og boliger → Rediger prosjektinfo. `project_info` i eksisterende bolig_workspace følger firma, rolle og root-revisjon. Migrasjon 20261114180324 kreves. Kladd bevares ved konflikt. Fasadebokser er lyse og delvis transparente, med uendret bolig-ID, status og klikkhandling. E-posttekster beskriver faktisk aktivering uten å kalle produksjon et testmiljø. Transportinnstillinger endres ikke.
+
+### Brukerbestilt e-post og prosjektvise påminnelser
+Migrasjon `20261114181325_bolig_project_reminders.sql` skiller transport fra prosjektets frivillige fristpåminnelser. Prosjektleder bruker Fremdrift og varsler → Automatiske fristpåminnelser. Standard er av, også for eksisterende prosjekter. `reminders` bruker eksisterende firma-/rollekontroll, planrevisjon og forsøkskvittering; av stopper ventende owner-leveranser og ny worker-validering. Beboervarsler, lenkeutsending og meldingsvarsler er uavhengige av prosjektvalget. Ingen transport aktiveres av migrasjonen.
