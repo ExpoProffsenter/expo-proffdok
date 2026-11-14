@@ -4,11 +4,13 @@ import {boligDraftKey,readBoligDraft,writeBoligDraft} from './boligClient.js';
 import {agreementMoney as money} from './boligCommerceCore.js';
 import {newShopLine,shopDraftFrom,shopPayload,shopPhoto,shopTotal} from './boligShopCore.js';
 import Summary from './BoligAgreementSummary.jsx';
+import './boligCommerce.css';
 import Lookup from './BoligCatalogLookup.jsx';
-export default function BoligShopProposal({context,root,unit}){
+export default function BoligShopProposal({context,root,unit,onSwitchBlocked}){
  const key=boligDraftKey(context,root.id,`shop-${unit.id}`),epoch=useRef(0),operating=useRef(false),latest=useRef(null),reviewHeading=useRef(null);
  const [data,setData]=useState(null),[draft,setDraft]=useState(null),[pending,setPending]=useState(null),[error,setError]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false),[review,setReview]=useState(null),[lookup,setLookup]=useState(false),[uploading,setUploading]=useState(false);
  useEffect(()=>{if(review){reviewHeading.current?.focus({preventScroll:true});reviewHeading.current?.scrollIntoView?.({block:"start",behavior:"auto"});}},[review]);
+ useEffect(()=>{onSwitchBlocked?.(busy||uploading);return()=>onSwitchBlocked?.(false);},[busy,uploading,onSwitchBlocked]);
  const rpc=(action='get',payload={})=>collaborationRpc('bolig_shop_proposal',{p_company_id:context.company_id,p_root_id:root.id,p_unit_id:unit.id,p_action:action,p_payload:payload},context.user_id).then(next=>{if(next.root_id!==root.id||next.unit_id!==unit.id||next.context.company_id!==context.company_id)throw Error('Boligen er endret. Åpne den på nytt.');return next;});
  const persist=value=>{if(!writeBoligDraft(key,value))throw Error('Kladden kunne ikke sikres lokalt. Behold siden åpen.');latest.current=value;};
  const load=async(n=epoch.current)=>{const next=await rpc();if(n!==epoch.current)return;setData(next);if(!latest.current){const doc=next.documents.find(d=>d.status==='published');setDraft(shopDraftFrom(doc));}else {setDraft(latest.current.draft);setPending(latest.current.pending||null);}};
@@ -40,7 +42,7 @@ export default function BoligShopProposal({context,root,unit}){
  <button type="button" disabled={draft.lines.length>=50} onClick={()=>change({...draft,lines:[...draft.lines,newShopLine()]})}>Legg til vare manuelt</button>
  </fieldset><small>{uploading?'Klargjør bilde …':'Kladden sikres i denne nettleseren. Beboeren ser først forslaget når du publiserer.'}</small>
  {!review&&!pending&&<button type="button" disabled={busy||uploading||!draft.lines.length} onClick={()=>{try{const payload=shopPayload(draft);setReview({...payload,basis:latest.current?.basis||data.basis});setError('');}catch(e){setError(e.message);}}}>Kontroller beboerens forslag</button>}
- {review&&<><h4 ref={reviewHeading} tabIndex={-1} style={{scrollMarginTop:16}}>Kontroller før publisering</h4><Summary document={{kind:'change',snapshot:{source:'shop',reason:review.title,shop_lines:review.lines,goods:review.lines,before_goods:[],delta_cents:shopTotal(review),base_goods:data.base_goods}}}/><p>Dette publiserer forslaget i den eksisterende beboerportalen. En tidligere ubesvart utgave av butikktillegget erstattes.</p></>}
+ {review&&<><h4 ref={reviewHeading} tabIndex={-1} style={{scrollMarginTop:16}}>Kontroller før publisering</h4><p><strong>Mottaker: bolig {unit.number} · {unit.address} · {unit.contact_name||'Kontakt ikke registrert'}</strong></p><Summary document={{kind:'change',snapshot:{source:'shop',reason:review.title,shop_lines:review.lines,goods:review.lines,before_goods:[],delta_cents:shopTotal(review),base_goods:data.base_goods}}}/><p>Dette publiserer forslaget i den eksisterende beboerportalen. En tidligere ubesvart utgave av butikktillegget erstattes.</p></>}
  {(review||pending)&&<button type="button" disabled={busy||uploading} onClick={publish}>{busy?'Oppdaterer …':pending?'Kontroller samme publisering igjen':'Oppdater beboerportalen'}</button>}
  </>}
  </>}

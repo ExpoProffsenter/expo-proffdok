@@ -11,3 +11,14 @@ dialog.bolig-collaboration-dialog[open]{display:flex;flex-direction:column}
 .bolig-collaboration-body>p{margin:0}
 .bolig-collaboration-body button{min-height:44px}
 @media(max-width:620px){.bolig-collaboration-dialog>header{padding:16px}.bolig-collaboration-body{padding:16px}}
+.bolig-unit-results{display:grid;gap:8px;max-height:240px;overflow:auto}
+.bolig-unit-results button{text-align:left;white-space:normal;overflow-wrap:anywhere;padding:10px;background:#f1f6f8;color:#132c3a;border:1px solid #88aab8;border-radius:6px}
+.bolig-collaboration-dialog .bolig-unit-results button[aria-pressed=true]{border:2px solid #17634a;background:#e7f3ec;color:#132c3a}
+.bolig-unit-overview{border:1px solid #88aab8;border-radius:8px;padding:14px;background:#f1f6f8;overflow-wrap:anywhere}
+.bolig-unit-overview h3,.bolig-unit-overview h4{margin:0 0 8px}
+.bolig-unit-overview dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr));gap:10px;margin:0 0 14px}
+.bolig-unit-overview dt{font-size:14px;font-weight:650}.bolig-unit-overview dd{margin:0}.bolig-unit-overview a{color:#075677}
+.bolig-unit-overview summary{min-height:44px;cursor:pointer}.bolig-unit-overview li{margin-bottom:10px}
+/* The workspace scrolls as one column. Do not shrink search results or cards
+   into overlapping hit areas when an apartment has a long goods editor. */
+.bolig-collaboration-body>*{flex-shrink:0}
