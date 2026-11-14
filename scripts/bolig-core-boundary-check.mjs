@@ -25,6 +25,28 @@ if (
   console.log("Bolig core boundary: not applicable (no Bolig feature change)");
   process.exit(0);
 }
+// These existing Min side regression fixtures only learn the new read-only RPC.
+// Strip the exact additive fixture changes; every existing assertion is preserved.
+const collaborationFixtureEdits = [
+ ["scripts/hr-contact-reminder-react-check.mjs", [
+  ["   if(name==='bolig_my_collaborations')return {data:{user_id:window.actor,projects:[]}};\n", ""],
+  ["'bolig_my_project_tasks','bolig_my_collaborations'].includes(c.name)", "'bolig_my_project_tasks'].includes(c.name)"],
+ ]],
+ ["scripts/module-navigation-resume-react-check.mjs", [
+  [" if(name==='bolig_my_collaborations')return {data:{user_id:context.user_id,projects:[]}};\n", ""],
+ ]],
+];
+const fixturePaths = new Set(collaborationFixtureEdits.map(([path]) => path));
+for (const [path, edits] of collaborationFixtureEdits) {
+ const normalize = source => {
+  for (const [anchor, replacement] of edits) {
+   assert(source.split(anchor).length <= 2, `One exact collaboration fixture anchor: ${path}`);
+   source = source.replace(anchor, replacement);
+  }
+  return source.trim();
+ };
+ assert.equal(normalize(fs.readFileSync(path, "utf8")), normalize(git("show", `${base}:${path}`)), `Existing regression assertions must stay unchanged: ${path}`);
+}
 const integrations = new Set([
   ".github/workflows/pr-core-safety.yml",
   "PROJECT_GUARDRAILS.md",
@@ -58,6 +80,7 @@ const integrations = new Set([
 ]);
 const inScope = (p) =>
   integrations.has(p) ||
+  fixturePaths.has(p) ||
   p.startsWith("docs/") ||
   p.startsWith("src/modules/bolig/") ||
   p.startsWith("src/modules/help/Bolig") ||
@@ -126,7 +149,20 @@ const personalCurrent = fs.readFileSync(personalPath,"utf8").trim()
  .replace("const BoligPresenceCard=React.lazy(()=>import('../bolig/BoligPresenceCard.jsx'));\n","")
  .replace("  {userId&&authUser?.id===userId&&context?.user_id===userId&&context?.company_id&&<Suspense fallback={null}><BoligPresenceCard key={'presence:'+scope} context={context}/></Suspense>}\n","")
  .replace("   {rights.enabled&&<Suspense fallback={null}><BoligMyTasks key={'tasks:'+scope} context={context}/></Suspense>}\n","");
-assert.equal(releasedBaseline ? fs.readFileSync(personalPath,"utf8").trim() : personalCurrent,personalBase,"Min side may only mount the isolated Bolig presence and task cards");
+// Explicitly authorized collaboration entry: normalize only these exact two
+// integration lines, then preserve every other byte of the shared Min side.
+const collaborationAnchors = [
+ "const BoligMyCollaborations=React.lazy(()=>import('../bolig/BoligMyCollaborations.jsx'));\n",
+ "     {screen==='overview'&&nav?.enabled&&authUser?.id===userId&&<Suspense fallback={null}><BoligMyCollaborations key={'collaboration:'+nav.scope} userId={userId}/></Suspense>}\n",
+];
+const stripCollaboration = source => {
+ for (const anchor of collaborationAnchors) {
+  assert(source.split(anchor).length <= 2, 'Collaboration must have one exact mount');
+  source = source.replace(anchor, '');
+ }
+ return source.trim();
+};
+assert.equal(stripCollaboration(releasedBaseline ? fs.readFileSync(personalPath,"utf8") : personalCurrent),stripCollaboration(personalBase),"Min side may only mount the isolated, account-bound collaboration card; all prior behavior stays identical");
 
 // Kenneth explicitly included HR for Bolig users. This shared card may only
 // display the server-confirmed bundle source; all existing grant controls stay.

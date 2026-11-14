@@ -1,3 +1,4 @@
+import {canEditCollaboration} from "./boligCollaborationAccess.js";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Package, Plus, X } from "lucide-react";
@@ -130,6 +131,7 @@ export default function BoligPackageChoices({
   root,
   unit,
   activeRoom = null,
+  collaborationView = false,
   roomsRevision,
   onOpenCatalog = null,
 }) {
@@ -177,8 +179,7 @@ export default function BoligPackageChoices({
   const canWrite =
     !!data &&
     context.enabled &&
-    context.role === "manager" &&
-    data.context.role === "manager" &&
+    canEditCollaboration(context, data.context, root.id, "edit_choices") &&
     !root.archived &&
     !data.root_archived;
   const keyFor = (sid) =>
@@ -394,7 +395,9 @@ export default function BoligPackageChoices({
           <p className="bolig-editor-hint">
             {activeRoom
               ? "Velg grunnpakke og tilvalgspakker for dette rommet. Fellespakken for boligen beholdes."
-              : "Fellespakken gjelder boligen. Velg et rom ovenfor for å legge til rompakke. Lag gjenbrukbare pakker under Grunnpakker og tilvalgspakker øverst."}
+              : collaborationView
+                ? "Her ser du pakkene som er valgt for boligen. Bruk «Vis felles pakker» for å se prosjektets pakker. Med redigeringstilgang kan du endre fellespakken eller tilpasse innholdet bare for denne boligen."
+                : "Fellespakken gjelder boligen. Velg et rom ovenfor for å legge til rompakke. Lag gjenbrukbare pakker under Grunnpakker og tilvalgspakker øverst."}
           </p>
           <PackageChoiceSummary
             components={components}
@@ -759,7 +762,7 @@ export default function BoligPackageChoices({
               </details>
             </>
           )}
-          {!canWrite && <p>Pakkevalg krever prosjektledertilgang.</p>}
+          {!canWrite && <p>{context.collaboration_root?'Du har lesetilgang. Prosjektleder må gi rett til å endre boligtilvalg.':'Pakkevalg krever prosjektledertilgang.'}</p>}
           <button type="button" disabled={busy || loading} onClick={load}>
             Hent siste pakkevalg
           </button>

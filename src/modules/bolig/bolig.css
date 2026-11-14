@@ -4920,3 +4920,20 @@
 .bolig-preparation-dialog>header{position:static;flex:none;background:#10212b}
 .bolig-preparation-dialog>.bolig-preparation-body{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain}
 .bolig-preparation-dialog>.bolig-preparation-footer{flex:none;margin:0;padding:12px 16px;border-top:1px solid #d5e1e4;max-height:60dvh;overflow:auto;box-sizing:border-box}
+
+/* Keep the apartment identity and exit reachable in long customization forms. */
+.bolig-customization-dialog > header{position:sticky!important;top:-16px!important;z-index:5!important;background:#eef6f9;padding:12px 0;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.bolig-customization-dialog > header h2{font-size:20px;min-width:0;overflow-wrap:anywhere}
+.bolig-customization-dialog > header button{flex:none;width:44px;min-width:44px;height:44px}
+.bolig-customization-dialog > footer{position:sticky;bottom:-16px;z-index:4;background:#eef6f9;padding:10px 0;border-top:1px solid #c5dce5}
+.bolig-customization-dialog > footer button{min-height:44px}
+
+.bolig-shop {margin-block:1rem;padding:1rem;border:1px solid #cbd5e1;border-radius:12px;background:#fff;color:#172e40;}
+.bolig-shop fieldset {min-width:0;margin-block:1rem;}
+.bolig-shop-line {padding:1rem;margin-block:1rem;border:1px solid #cbd5e1;border-radius:8px;}
+.bolig-shop-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px;}
+.bolig-shop label {display:grid;gap:4px;margin-block:8px;}
+.bolig-shop input {min-width:0;width:100%;box-sizing:border-box;}
+.bolig-shop-image img,.bolig-shop-thumb {width:100px;height:100px;object-fit:contain;flex-shrink:0;}
+.bolig-shop details {margin-block:12px;}
+.bolig-shop button {min-height:44px;margin:4px;white-space:normal;}

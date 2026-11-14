@@ -47,3 +47,35 @@ Sett bestillingsfrist viser gammel/ny dato per valgt bolig. Nye tilvalg stoppes 
 Oppsett → Bygg og boliger → Flytt bolig bruker eksisterende `bolig_prepare` med `kind: placement`. Første versjon bytter etasje/plass mellom to aktive boliger i samme oppgang. Forhåndsvisningen viser begge før/etter; eksisterende kladd, scopekontroll, basis/revisjon og eksakt kvitteringsretry beholdes. Ingen nye boliger opprettes. ID, nummer, kontaktfelt, rom, valg, frister, portaler og fremdrift beholdes. Egne fasadebildefelt og historiske dokument-/bestillingssnapshots endres ikke. Offisielt bolignummer må kontrolleres separat.
 
 Krever den nye migrasjonen `20261113175328_bolig_unit_placement.sql` før UI tas i bruk. Ingen eldre installasjoner skal kjøres om igjen. Se [plassbytte](../../../docs/architecture/BOLIG_UNIT_PLACEMENT.md) for avgrensning og kontroll.
+
+
+### Navngitt pakke- og tilvalgssamarbeid
+Systemadmin åpner prosjekt → Butikktilgang og finner en godkjent ansatt med eksakt e-post. Prosjektleder kan se og tilbakekalle. Ukjent konto må først opprettes/godkjennes i et av de tre interne firmaene. Min side → Mine boligprosjekter viser alle tildelte prosjekter. Ingen medlemskap eller arbeidsfirma flyttes. Krever migrasjon `20261114003459_bolig_shop_staff_admin.sql` etter butikkmigrasjonene. Se `docs/architecture/BOLIG_PARTNER_COMMERCE.md`. Eldre personrettigheter under UE og leverandører kan fortsatt tilbakekalles, men nye tildelinger gjøres under Butikktilgang.
+
+
+### Butikktillegg til eksisterende beboerportal
+Migrasjon `20261113235139_bolig_shop_proposals.sql` følger partner_commerce. `publish_shop` inngår i den nye systemadminstyrte Butikktilgang. Eldre partnerrettigheter bevares. RPC `bolig_shop_proposal` kontrollerer person, firma, prosjekt, bolig og rettighet før hver handling og før kvitteringsretry. Ingen medlemskap, arbeidsfirma eller generelle roller endres.
+
+Den ansatte kan legge til manuelle varer uten katalogtilgang hos prosjektfirmaet, med varenummer, antall, enhetspris inkl. mva., valgfritt bilde og monteringspris for hele linjen. Katalogsøk bruker den ansattes eksisterende katalogrettigheter, mens prosjektadgangen kontrolleres separat. Server beregner beløpet og lagrer bare felter beregnet på beboeren. Lastede bilder komprimeres til JPEG (maks600px/120KB) og lagres i den private avtaleversjonen. Ingen offentlig bildebeholder eller ny lagringstilgang på tvers av firmaer. Hele forslag begrenses til1,5MB.
+
+Et publisert forslag er et selvstendig butikktillegg (`commercial_documents`, source=shop, kind=change). Det endrer ikke boligvalg eller eksisterende ordre. En felles basis hindrer overskriving mellom ansatte; en tidligere ubesvart butikkversjon supersedes atomisk. Aksepterte versjoner beholdes, og videre tillegg får ny avtalegruppe. Den eksisterende portalens polling viser oppdateringen innen20sekunder. Kontaktbytte/tilbakekalling og ordinære akseptkontroller beholdes. Bestillingsfrist gjelder publisering; svarfrist er begrenset av aktiv portal og30dager.
+
+Første leveranse er additive varer og montering. Erstatning/kreditering av eksisterende vare bruker fortsatt ordinær endringsavtale. Prosjektleder bekrefter faktisk leverandøroppfølging av akseptert tillegg i eksisterende apply-flyt; server oppretter da én separat ordered-bestilling med egne vare-/arbeidslinjer, mottak og FDV. Kvitteringsretry gir ikke dobbeltbestilling. Ingen automatisk utsending.
+
+Tilbakeføring: slå av publish_shop og tilbakefør frontend. Bevar migrasjonen, avtalehistorikk, kvitteringer og allerede registrerte ordre. Produksjon krever separat kontroll og TEST OK.
+
+Installer også `20261114001335_bolig_shop_order_identity.sql` etter butikkmigrasjonen; den bevarer bolignummer og bolig-ID i nye tilleggsordrer/eksport.
+Fristkontrollen fullføres av `20261114001703_bolig_shop_project_deadline.sql`, som gjenbruker beboerportalens dato/klokkeslettregel fra PR332.
+
+### Kombinerbare beboertilvalg
+Ved klargjøring av invitasjonen kan prosjektleder velge «Kombiner tilvalg» og angi den inkluderte grunnpakken. Beboeren ser grunnpakken én gang og kan kombinere de delte tilvalgspakkene. Legg nødvendig arbeid/montering i samme tilvalgspakke. Samme underliggende vare/arbeid telles én gang; to erstatninger av samme grunnvare avvises. Grunnpakker/rom må være samme fryste utgave og uten manuell romfordeling/overstyrte varelinjer. Slike spesialoppsett bruker fortsatt ferdige pakkealternativer eller butikktillegg. Eksisterende portaler endres ikke før prosjektleder uttrykkelig deler ny kombinering.
+Migrasjon `20261114153617_bolig_portal_combined_choices.sql` følger butikk-/portal-migrasjonene. E-post og firmatilgang er uendret. Butikkansatte finner prosjektene på Min side uten invitasjonsmail.
+
+Opplastede grunnpakkebilder i beboerportalen trenger `20261114161925_bolig_portal_image_access.sql` og Edge `bolig-portal-images`. Den gyldige portallenken gir bare kortvarig tilgang til publiserte bilder fra samme firma/prosjekt. Katalogendringer endrer ikke allerede publiserte/frosne pakker; klargjør og publiser riktig utgave før beboeren skal se endringen.
+### Felles bestillingsklokkeslett
+
+Migrasjonen `20261113191737_bolig_project_deadline_time.sql` gir ett klokkeslett for hele prosjektet under «Beboerlenker og frister samlet». Nye/udaterte prosjekter bruker 12:00; tidligere daterte prosjekter bevarer dagsslutt frem til manager endrer tiden. Fristdatoen er fortsatt per bolig. Se `docs/architecture/BOLIG_PROJECT_DEADLINE_TIME.md`.
+
+Fristdialogen viser dato og direkte klokkehandling før boliglisten. Valglisten ruller separat, og detaljert kontrolliste åpnes ved behov. Visning i frister, Gantt og beboerportal bruker dd.mm.åååå; fristinntasting bruker dd.mm.åååå uavhengig av nettleserspråk, mens lagring bruker ISO-dato. Oppsettets import- og fristinnganger er samlet som tydelige handlingskort.
+
+Fremdriftsplanen sorterer grupper etter første aktivitetsdato og aktivitetene i hver gruppe fra første til siste dato. Dag/uke/måned viser bare aktiviteter som overlapper valgt periode, inkludert arbeid som startet tidligere og fortsatt pågår. Hele planen viser alle aktiviteter i utvalget.

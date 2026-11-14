@@ -25,6 +25,7 @@ import {
 } from "./boligProgressClient.js";
 import Planning from "./BoligProgressPlanning.jsx";
 import NoticeComposer from "./BoligResidentNoticeComposer.jsx";
+import { hasProgressEdits, progressDraftSnapshot } from "./boligProgressDraft.mjs";
 const COMPLETION_EVENT = "expo-proffdok-bolig-completion";
 const empty = { editor: null, notice: null, pending: null };
 const formTask = (unit, owner) => ({
@@ -151,7 +152,7 @@ export default function BoligProgress({
     }
     if (!task || task.archived || !writable) return;
     const saved = latest.current.editor;
-    if (saved && saved.id !== task.id && !replace) {
+    if (saved && saved.id !== task.id && !replace && hasProgressEdits(saved, data.tasks)) {
       setReview({ kind: "draft-choice", task });
       return;
     }
@@ -161,7 +162,7 @@ export default function BoligProgress({
         editor:
           !replace && saved?.id === task.id
             ? saved
-            : taskForm(task, data.revision),
+            : { ...taskForm(task, data.revision), _openedSnapshot: progressDraftSnapshot(task) },
       });
       setReview({ kind: "editor" });
     } catch (e) {
@@ -180,6 +181,7 @@ export default function BoligProgress({
     openTask(data.tasks.find((t) => t.id === taskId));
   }, [scope, taskId, data, writable]);
   const closeTask = () => {
+    if (data && !latest.current.pending && latest.current.editor && !hasProgressEdits(latest.current.editor, data.tasks)) update({ editor: null });
     setReview(null);
     if (taskId) onTaskClose?.();
   };

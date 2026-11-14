@@ -56,3 +56,8 @@
 .bolig-portal-manager a {color:#155c51;overflow-wrap:anywhere;}
 .bolig-portal-manager .bolig-commerce-actions {align-items:center;}
 @media(max-width:550px){.bolig-portal-manager-offer{flex-direction:column}}
+
+.bolig-agreement-goods .bolig-shop-thumb {width:100px;height:100px;max-width:30%;object-fit:contain;flex-shrink:0;border:1px solid #dbe5e4;border-radius:8px;background:white;}
+.bolig-agreement-goods:has(.bolig-shop-thumb) li {justify-content:flex-start;}
+.bolig-agreement-heading {scroll-margin-top:100px;}
+@media(max-width:520px){.bolig-agreement-goods .bolig-shop-thumb{width:72px;height:72px;}.bolig-agreement-goods:has(.bolig-shop-thumb) li{gap:10px;}}

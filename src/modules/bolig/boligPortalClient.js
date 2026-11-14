@@ -1,3 +1,4 @@
+import {hydratePortalImages} from './boligPortalImages.js';
 import { getAppSupabaseClient } from "../access/appSupabaseClientRegistry.js";
 export const PORTAL_EVENT = "expo-bolig-portal-changed";
 export async function portalManagerRpc(
@@ -66,7 +67,7 @@ export async function portalResidentRpc(token, action = "get", payload = {}) {
       ),
       { code: result?.code },
     );
-  return result;
+  return hydratePortalImages(result,token,import.meta.env.VITE_SUPABASE_URL,import.meta.env.VITE_SUPABASE_ANON_KEY);
 }
 export function portalUrl(token) {
   const url = new URL("bolig-kunde.html", window.location.origin);

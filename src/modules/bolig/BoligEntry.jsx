@@ -25,6 +25,7 @@ import {UnitDialogueSettings, UnitDialogueIndicator} from "./BoligDialogue.jsx";
 import BoligPortalManager from "./BoligPortalManager.jsx";
 import BoligCommerce from "./BoligCommerce.jsx";
 import BoligProgress from "./BoligProgress.jsx";
+import BoligShopStaff from "./BoligShopStaff.jsx";
 import BoligPartners from "./BoligPartners.jsx";
 import BoligUnitTasks from "./BoligUnitTasks.jsx";
 import BoligRooms from "./BoligRooms.jsx";
@@ -571,6 +572,7 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
                         </button>
                         <button type="button" aria-pressed={view === "progress"} onClick={() => setView("progress")}><CalendarDays size={17}/>Fremdrift og varsler</button>
                         <button type="button" aria-pressed={view === "integration"} onClick={()=>setView("integration")}>KS/HMS og timer</button>
+                        {ctx.role === "manager" && <button type="button" aria-pressed={view === "shop-staff"} onClick={() => setView("shop-staff")}>Butikktilgang</button>}
                         <button type="button" aria-pressed={view === "partners"} onClick={() => setView("partners")}>UE og leverandører</button>
                         <button type="button" aria-pressed={view === "contracts"} onClick={()=>setView("contracts")}>Kontrakter</button>
                         <button
@@ -695,8 +697,10 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
                       />
                     </div>
                     <div hidden={setupArea !== "structure"}>
+                      <div className="bolig-setup-resident-tools" aria-label="Beboere og bestillingsfrister">
                       <BoligResidentImport context={ctx} record={record} onChanged={() => fetchRecord(record.root.id, true)} />
                       <BoligResidentBatch context={ctx} record={record} onChanged={() => fetchRecord(record.root.id, true)} />
+                      </div>
                       <BoligPreparation
                         key={
                           ctx.user_id +
@@ -891,6 +895,7 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
                   </div>
                   {view === "integration" && <BoligProjectIntegration key={`${ctx.user_id}/${ctx.company_id}/${record.root.id}`} context={ctx} record={record} onOpenProject={(id,tab)=>{onClose();onOpenProject?.(id,tab);}}/>}
                   {view === "progress" && <BoligProgress key={`${ctx.user_id}/${ctx.company_id}/${record.root.id}`} context={ctx} root={record.root}/>}
+                  {view === "shop-staff" && <BoligShopStaff key={`${ctx.user_id}/${ctx.company_id}/${record.root.id}`} context={ctx} root={record.root}/>}
                   {view === "partners" && <BoligPartners key={`${ctx.user_id}/${ctx.company_id}/${record.root.id}`} context={ctx} root={record.root}/>}
                   {view === "contracts" && <BoligContracts key={`${ctx.user_id}/${ctx.company_id}/${record.root.id}/${ctx.role}`} context={ctx} root={record.root}/>}
                   <div
