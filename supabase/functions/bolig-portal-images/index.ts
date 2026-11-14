@@ -11,5 +11,5 @@ Deno.serve(createPortalImages({
   const rows=await request('/storage/v1/object/sign/bolig-catalog-images',{expiresIn:120,paths},service);
   return rows.filter((r:{signedURL?:string})=>r.signedURL).map((r:{path:string,signedURL:string})=>({path:r.path,url:url+'/storage/v1'+r.signedURL}));
  },
- origins:[...boligAllowedOrigins,...(url==='https://ppvircenkjizeiqdxphj.supabase.co'?['https://expo-proffdok-git-feat-bolig-partner-commerce-20261113-ringside.vercel.app']:[])],
+ origins:[...boligAllowedOrigins,...(url==='https://ppvircenkjizeiqdxphj.supabase.co'?['https://expo-proffdok-git-feat-bolig-partner-commerce-20261113-ringside.vercel.app','https://expo-proffdok-git-fase45b-shop-unit-overview-20261114-ringside.vercel.app']:[])],
 }));
