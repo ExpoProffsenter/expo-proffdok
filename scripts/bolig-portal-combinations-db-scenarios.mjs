@@ -30,9 +30,20 @@ export default async function({db,call,actor,eq,rejects,id,firm,manager,outsider
  await rejects(()=>pub({...payload,request_id:id(seq++),menu_version:0}),'PT409');
  v=await pub({...payload,request_id:id(seq++),offer_ids:[offers[1].id,offers[3].id]});ev=v.events.filter(x=>x.kind==='request').at(-1);eq(ev.offer.total_cents,920000,'overlapping complete pack deduplicated');
  await actor(manager);await managerRpc();await managerRpc('apply',{event_id:ev.id,note:'QA applied'});cs=await choice();eq(cs.selection.snapshot.total_cents,920000);eq(cs.selection.snapshot.goods.length,4);eq(cs.selection.snapshot.options.length,3);
+ await db.exec('reset role');await db.exec(await fs.readFile('supabase/migrations/20261114161925_bolig_portal_image_access.sql','utf8'));
+ const imagePath=firm+'/'+root+'/'+id(seq++)+'.jpg';
+ await db.query("update bolig_private.resident_portals set published_offers=jsonb_set(published_offers,'{0,snapshot,goods,0,image_url}',to_jsonb($1::text)) where root_id=$2",['https://qa.invalid/storage/v1/object/public/bolig-catalog-images/'+imagePath,root]);
+ await db.exec("set role anon");
+ eq((await db.query("select public.bolig_portal_image_paths($1) v",['197abc'.repeat(10)+'197a'])).rows[0].v,[imagePath],'published own-project image allowed');
+ await rejects(()=>db.query("select public.bolig_portal_image_paths($1)",['invalid']),'42501');
+ await db.exec('reset role');await db.query("update bolig_private.resident_portals set published_offers=jsonb_set(published_offers,'{0,snapshot,goods,0,image_url}',to_jsonb($1::text)) where root_id=$2",['https://qa.invalid/storage/v1/object/public/bolig-catalog-images/'+firm+'/'+id(seq++)+'/'+id(seq++)+'.jpg',root]);
+ await db.exec('set role anon');eq((await db.query("select public.bolig_portal_image_paths($1) v",['197abc'.repeat(10)+'197a'])).rows[0].v,[],'foreign project never signed');
+ await actor(manager);
+
  await managerRpc('revoke');await db.exec("reset role;select set_config('qa.user','',false);set role anon");await rejects(()=>pub({...payload,request_id:id(seq++)}),'42501');
  await rejects(()=>db.query("select bolig_private.portal_combine('[]',null,'[]')"),'42501');
  await actor(outsider);await rejects(()=>managerRpc('publish',{token:'d'.repeat(64),reviewed:true,combine_base_id:base}),'42501');
  await actor(manager);
+
 }
 

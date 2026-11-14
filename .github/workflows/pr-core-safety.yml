@@ -333,6 +333,7 @@ jobs:
         node scripts/bolig-shop-react-check.mjs
         node scripts/bolig-shop-staff-react-check.mjs
         node scripts/bolig-portal-combinations-react-check.mjs
+        node scripts/bolig-portal-images-check.mjs
         node scripts/bolig-catalog-react-check.mjs
         node scripts/bolig-overview-react-check.mjs
   bolig-browser:

@@ -1,5 +1,5 @@
 .bolig-choice-base{border:1px solid #b7cec4;border-radius:14px;padding:16px;margin-bottom:18px;background:#f2f8f4}
-.bolig-choice-base-images{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:12px;margin:12px 0 16px}
+.bolig-choice-base-images{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,160px));gap:12px;margin:12px 0 16px}
 .bolig-choice-base-images a{min-width:0;color:#214d48;font-size:.85rem;overflow-wrap:anywhere}
 .bolig-choice-base-images img{display:block;width:100%;height:110px;object-fit:contain;background:white;border-radius:8px;margin-bottom:6px}
 .bolig-choice-base-images img[hidden]{display:none}
