@@ -90,7 +90,7 @@ export default function BoligPortalPage() {
           code: "42501",
         });
       if (!key.current) {
-        if(!next.offers.length&&next.agreements.some(d=>d.status==='published'))setTab('agreements');
+        if(!next.offers.length&&next.agreements.length>0)setTab('agreements');
         key.current = `expo-bolig-portal:${next.id}:${token.current.slice(0, 12)}`;
         let saved;
         try {

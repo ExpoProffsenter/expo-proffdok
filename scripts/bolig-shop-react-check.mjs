@@ -20,7 +20,7 @@ try{
  assert.equal(calls.filter(c=>c.p_action==='publish').length,0,'Editing remains private');
  await act(()=>button('Kontroller beboerens forslag').click());assert(w.document.body.textContent.includes('3 251,00'),'Customer sees exact total');
  await act(()=>button('Oppdater beboerportalen').click());assert.equal(calls.filter(c=>c.p_action==='publish').length,1);assert(w.document.body.textContent.includes('innen 20 sekunder'));
- state.documents[0].status='accepted';state.basis='three';await act(()=>button('Hent siste status').click());assert.equal(w.document.querySelectorAll('.bolig-shop-line').length,0,'Accepted goods are not prefilled as a new sale');
+ state.documents[0].status='accepted';state.basis='three';await act(()=>button('Hent siste status').click());assert.equal(w.document.querySelectorAll('.bolig-shop-line').length,0,'Accepted goods are not prefilled as a new sale');assert(!w.document.body.textContent.includes('Venter på beboerens aksept.'),'Stale pending notice cleared after acceptance');
  state.context.publish_shop=false;await act(()=>button('Hent siste status').click());assert(!button('Legg til vare manuelt'),'Revoked publishing capability removes editor');
  console.log('PASS shop React: manual item without catalog, decimal prices, private draft, review total, publish, accepted sale not duplicated, revoked rights');
 }finally{await act(()=>w.__dispose());dom.window.close();fs.rmSync(tmp,{recursive:true,force:true});}

@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 export default async function({db,call,actor,eq,rejects,id,firm,other,manager,outsider}){
  await db.exec('reset role');await db.exec(await fs.readFile('supabase/migrations/20261113235139_bolig_shop_proposals.sql','utf8'));
+ await db.exec(await fs.readFile('supabase/migrations/20261114001335_bolig_shop_order_identity.sql','utf8'));
  await actor(manager);const state=await call('create_plan',null,null,{request_id:id(99000),title:'QA butikktillegg',reference:'QA',buildings:[{name:'A',building_type:'multi',address:'QA',house_floors:1,entrances:[{address:'QA',counts:[2]}]}]});
  const root=state.root.id,unit=state.units[0].id,access=id(99001),token='99009'.padEnd(64,'a');
  const rpc=async(name,args)=>(await db.query(`select public.${name}(${args.map((_,i)=>'$'+(i+1)).join(',')}) v`,args)).rows[0].v;
@@ -36,6 +37,7 @@ export default async function({db,call,actor,eq,rejects,id,firm,other,manager,ou
  await actor(manager);
  const applied=await rpc('bolig_commerce',[firm,root,unit,'apply',{request_id:id(99016),document_id:accepted.id,revision:accepted.revision,reviewed:true,note:'QA leverandør har bekreftet separat tilleggsbestilling.',reference:'QA-EXPO-1'}]);
  eq(applied.documents.find(x=>x.id===accepted.id).status,'handled','Manager confirms separate supplier order');eq(applied.orders.length,1,'Supplement has own receipt order');eq(applied.orders[0].goods[0].sku,'MAN-123');
+ await db.exec('reset role');const orderIdentity=(await db.query("select snapshot->'identity' identity from bolig_private.purchase_orders where root_id=$1 and unit_id=$2",[root,unit])).rows[0].identity;eq(orderIdentity.number,state.units[0].number,'Shop order export retains apartment number');eq(orderIdentity.unit_id,unit);await actor(manager);
  const again=await rpc('bolig_commerce',[firm,root,unit,'apply',{request_id:id(99016),document_id:accepted.id,revision:accepted.revision,reviewed:true,note:'QA leverandør har bekreftet separat tilleggsbestilling.',reference:'QA-EXPO-1'}]);eq(again.orders.length,1,'No duplicate supplier order on retry');
  await partners('revoke',{id:access,request_id:id(99017)});await actor(outsider,other);await rejects(()=>shop(),'42501');await rejects(()=>shop('publish',payload),'42501');
  await actor(manager);

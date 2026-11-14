@@ -76,3 +76,9 @@ Miljømål BEGGE, kun sandbox installert foreløpig. Ny migrasjon `2026111323513
 - Omfatter tillegg av varer/montering. Erstatning og kreditering bruker ordinær endringsavtale.
 
 Lokal validering: full npm build PASS; PostgreSQL/PGlite 1903 assertions PASS inkludert nye shop-scenarier; actual React butikkflyt PASS (manual input, norsk desimalpris, kontrollsum, publisering, akseptert vare ikke duplisert, tilbakekalt publiseringsrett); eksisterende samarbeid/partnerdialog actual React PASS. Hosted kontroll og CI følger etter kandidatpublisering. Ingen reelle mottakere er kontaktet.
+
+Hosted på52a76e1: manuell vare med bilde lastet opp via filvelger, varenummer QA-MAN-333, antall2, pris1250,50 og montering750 ga3251,00. Endret antall3 ga4501,50. Portalen oppdaterte selv fra utgave1 til2 mens kontroll av aksept var åpen; gammel kontroll ble fjernet. Syntetisk beboer aksepterte utgave2, kvittering bekreftet. Ingen reell mottaker eller leverandør kontaktet.
+
+Hosted fant og rettet stor bildebredde og manglende fokus/scroll ved åpning. På8c3945d viser kvitteringen kompakt bilde, riktig pris og automatisk fokus på avtalen. Smal454px CSS-visning (nettleserzoom, ikke fysisk mobil) uten horisontal scrolling, bilde72px og riktig tekstflyt. Butikkens oppfrisking viser akseptert avtale og tom ny kladd. Sistnevnte viste også gammel «venter på aksept»-melding; denne nullstilles nå. Portal uten valgalternativer åpner avtaler direkte, også etter aksept.
+
+CI43531429341 full grønn på52a76e1. Ny kontrollkjøring for siste kandidat nødvendig. Separat migrasjon20261114001335_bolig_shop_order_identity er installert kun i sandbox: nye tilleggsordrer får ordinært bolignummer/unit_id også for eksport. Ingen eksisterende ordre omskrevet.

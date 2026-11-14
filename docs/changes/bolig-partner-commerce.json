@@ -2,7 +2,7 @@
   "version": 1,
   "title": "Navngitt samarbeid om grunnpakker og tilvalg",
   "change": "Miljømål BEGGE. Eksplisitt lesing, individuell vare/arbeidstilpasning og separat felles katalogrett. Min side med bevart hovedfirma. Boligsøk beholder synlig valgt bolig og arbeidsutkast, med treffantall og Tøm søk. Egen ugjennomsiktig samarbeidsdialog med fast topp og rullende innhold; fjerner kollisjon med sidestiler. Trippelsjekk: veiledning i samarbeid viser til tilgjengelige knapper og ikke en manglende romvelger. Egen sticky topp og kladd-lukking i boligtilpasning for smal skjerm. Butikktillegg: separat publish_shop-rettighet, manuelle varer/bilde/montering, serverberegnet pris, eksisterende portal og versjonsbundet aksept. Ingen firmabytte eller medlemskap. Migrasjon20261113235139.",
-  "verification": "Full npm build PASS. PostgreSQL 1903 assertions PASS. Actual React butikkflyt og eksisterende samarbeidsrefresh/partnerdialog PASS. Migrasjon installert kun i sandbox. Hosted og CI gjenstår.",
+  "verification": "Full lokal build PASS. PostgreSQL1905 assertions PASS. Actual React butikkflyt og eksisterende samarbeid/partnerdialog PASS. Hosted manuell vare+bilde, publisering, automatisk utgavebytte og syntetisk aksept PASS; smal454px uten overflow. Full CI43531429341 grønn på første butikkandidat. Siste kandidats CI må bekreftes. Kun sandbox-migrasjoner; produksjon urørt.",
   "documentation": {
     "help": {
       "required": true,
