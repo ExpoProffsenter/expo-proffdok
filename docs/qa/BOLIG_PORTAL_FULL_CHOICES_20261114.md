@@ -50,3 +50,21 @@ Dette kan ikke løses trygt bare ved å bytte radio til checkbox: dagens server 
 
 Gjenbruk dette testprosjektet i neste retest. Kontroller utstyr+lys uten fliser, fliser alene, alle, tilbake til standard, alternativbytte med fradrag, avhengig montering, endret pris under åpen side, frist, tilbakekalt lenke og akseptert historikk. Sammenlign også mobilhandlinger og fokus.
 Ingen produksjonssetting før UX-rettelsen er vurdert/testet og systemeier har gitt TEST OK. Historikken og den syntetiske testen beholdes; ingen hemmelige portallenker/token lagres i GitHub.
+
+## Oppfølging: kombinerbare valg og grunnpakkebilder
+
+Appkandidat: `66c932367f05a21bfe12fe04b92d42135f1e96ca`, PR333. Fast preview bekreftet READY på denne SHA-en. Main/produksjon og demo-branch er ikke endret. Sandbox `ppvircenkjizeiqdxphj` har fått bare den nye migrasjonen `bolig_portal_combined_choices`, remote-versjon `20261114155625` (lokal fil `20261114153617`). Ikke installer på nytt.
+
+- Lokal PostgreSQL: 1966 assertions PASS. Kombinasjons-React, eksisterende butikk/staff-React, scope55 og build PASS. Ny regresjon hindrer en villedende 0-kroners kladdsum mens et valg venter på gjennomgang.
+- Hosted: grunnpakke én gang, synlig bilde og samme bilde i full vareliste (naturalWidth1536), uavhengige utstyr/elektrovalg, sum9200kr, overlappende samlepakke11600kr uten dobbelttelling, fratrekk8500−5000=3500 og montering1500 separat. Valg bevart ved full reload. Ny kandidat testet etter eksakt READY-verifisering.
+- Faktisk innsending fra nettleser lagret én ny pending request med to valgte tilbud og920000øre. Ingen avtale akseptert, ordre eller e-post sendt. Eldre syntetisk request markert reviewed gjennom vanlig manager-RPC før testen; historikken beholdt.
+- Mobil kontroll: nettleserzoom400%, viewport340 CSS-piksler, dokumentbredde337. Ingen horisontal overflow, grunnpakke og innsendte valg lesbare. Dette er ikke en fysisk mobiltest.
+- Den gamle QA-bildelenken `/auth-bathroom.jpg` dekodes ikke av nettleseren. En eldre kataloglenke svarte Bucket not found. Kun QA-portalens upubliserte snapshots fikk fungerende eksisterende fasadeillustrasjon før ny publisering; dette er en teknisk testillustrasjon, ikke et korrekt produktfoto. Frontend viser nå «Bilde utilgjengelig» ved bildefeil fremfor en tom bildelenke. Produktbilder må være tilgjengelige på registrerte adresser. Opplasting av et nytt produktfoto er ikke verifisert i denne runden.
+- Faktisk database: combine-helper kan ikke kjøres av anon. Mail enabled=false. Advisor har eksisterende generelle advarsler, ingen funn som navngir de nye private helperne; dette er ikke en erklæring om at hele databasen er uten advarsler.
+- Den interne nettleserøkten var utlogget. Managerens nye publiseringsvelger er derfor lokalt kontrollert, men ikke klikket gjennom som innlogget bruker denne runden. Publisering/republisering er verifisert gjennom autentisert manager-RPC i sandbox. Prosjektbundet butikktilgang er uendret fra tidligere hosted QA.
+
+![Syntetisk beboervalg lagret med9200kr](screenshots/bolig-kombinasjon-qa.jpg)
+
+CI43613148438: bolig-db, bolig-browser, scope, build, company-db, HR og projects-support grønne ved dokumentering; app-browser/sluttkontroll feilet fordi ny veiledning ikke var registrert i testens liste over tilføyde temaer (70 mot69 originaltemaer). Testlisten er nå utvidet med det konkrete nye temaet og en kontroll av teksten; alle69 opprinnelige teksthashene og øvrige innholdskontroller beholdes. Ny CI må bekreftes. Ikke merge før samlet CI er grønn og TEST OK er gitt. PR332 er fortsatt separat; ny kombinert332+333-kontroll gjenstår før samlet produksjonssetting.
+
+Neste steg: kontroller endelig CI, innlogget publiseringsvelger og et faktisk opplastet produktfoto. Deretter TEST OK. Ved rollback: slå av kombinasjonsmodus via ny publisering og tilbakefør frontend; bevar migrasjon og innsendt historikk. Ingen hemmelige portallenker er lagret i GitHub.
