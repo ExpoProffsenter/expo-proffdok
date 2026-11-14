@@ -82,3 +82,6 @@ Fremdriftsplanen sorterer grupper etter første aktivitetsdato og aktivitetene i
 
 ## Prosjektinfo og fasade
 Prosjektleder kan redigere navn og referanse via Oppsett → Bygg og boliger → Rediger prosjektinfo. `project_info` i eksisterende bolig_workspace følger firma, rolle og root-revisjon. Migrasjon 20261114180324 kreves. Kladd bevares ved konflikt. Fasadebokser er lyse og delvis transparente, med uendret bolig-ID, status og klikkhandling. E-posttekster beskriver faktisk aktivering uten å kalle produksjon et testmiljø. Transportinnstillinger endres ikke.
+
+### Brukerbestilt e-post og prosjektvise påminnelser
+Migrasjon `20261114181325_bolig_project_reminders.sql` skiller transport fra prosjektets frivillige fristpåminnelser. Prosjektleder bruker Fremdrift og varsler → Automatiske fristpåminnelser. Standard er av, også for eksisterende prosjekter. `reminders` bruker eksisterende firma-/rollekontroll, planrevisjon og forsøkskvittering; av stopper ventende owner-leveranser og ny worker-validering. Beboervarsler, lenkeutsending og meldingsvarsler er uavhengige av prosjektvalget. Ingen transport aktiveres av migrasjonen.

@@ -1,3 +1,4 @@
+import reminderPolicy from './bolig-reminder-policy-db-scenarios.mjs';
 import fs from "node:fs/promises";
 import assert from "node:assert/strict";
 import streamlined from "./bolig-streamlined-db-scenarios.mjs";
@@ -990,6 +991,9 @@ try {
   await residentMail({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider});
   const {default:noticeComposer}=await import("./bolig-notice-composer-db-scenarios.mjs");
   await noticeComposer({db,call,actor,eq,rejects,firm,other,manager,reader,outsider});
+  await db.exec("savepoint reminder_policy");
+  await reminderPolicy({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider});
+  await db.exec("rollback to savepoint reminder_policy;release savepoint reminder_policy");
   const {default:visualScenarios}=await import("./bolig-visuals-db-scenarios.mjs");
   await visualScenarios({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider});
   const {default:attendanceScenarios}=await import("./bolig-attendance-db-scenarios.mjs");

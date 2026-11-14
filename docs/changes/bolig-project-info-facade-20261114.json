@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "title": "Redigerbar prosjektinfo og tydeligere fasade",
-  "change": "Miljømål BEGGE. Prosjektleder kan redigere navn og prosjektnummer med firmaskille, revisjonskontroll og bevart lokal kladd. Lyse fasadebokser med 82 prosent dekning, større bolignummer, markert valg og fokus. Fjerner misvisende testmiljø/testfase-tekst fra boligvarsling uten å endre utsending.",
-  "verification": "Lokal build og critical PASS. Bolig PostgreSQL 1997 assertions PASS, inkludert ny prosjektinfo, uendrede boliger, stale revision, reader/foreign denial og tom valgfri referanse. Foundation React PASS og egen prosjektinfo-test PASS: lokal kladd, focus/visibility, konflikt/rebase og gjenåpning. Lokal Chromium er blokkert av socket-restriksjon; nettleserregresjoner kjøres i CI før publisering. Bruker har uttrykkelig godkjent produksjonssetting 14.11.2026.",
+  "title": "Prosjektinfo, fasade og tydelig styring av boligvarsling",
+  "change": "Miljømål BEGGE. Prosjektleder kan redigere navn og prosjektnummer med firmaskille, revisjonskontroll og bevart lokal kladd. Lyse fasadebokser med 82 prosent dekning, større bolignummer, markert valg og fokus. Fjerner misvisende testmiljø/testfase-tekst fra boligvarsling uten å endre utsending. Utvidet etter brukerens avklaring: automatiske fristpåminnelser krever prosjektvis opt-in; brukerbestilte sendinger og dialogvarsler holdes adskilt. Hjelpens utdaterte testfase-tekst rettes.",
+  "verification": "Lokal build og critical PASS. Bolig PostgreSQL 1997 assertions PASS, inkludert ny prosjektinfo, uendrede boliger, stale revision, reader/foreign denial og tom valgfri referanse. Foundation React PASS og egen prosjektinfo-test PASS: lokal kladd, focus/visibility, konflikt/rebase og gjenåpning. Lokal Chromium er blokkert av socket-restriksjon; nettleserregresjoner kjøres i CI før publisering. Bruker har uttrykkelig godkjent produksjonssetting 14.11.2026. Påminnelsespolicy har nye DB- og nettleserscenarioer; endelig resultat og produksjonsaktivering er foreløpig utestående. E-posttransportens 140 simulerte kontroller PASS uten reell sending. Første CI avdekket fasadens manglende gradient; rettet i CSS med samme 82 % dekning, uten svekket test.",
   "documentation": {
     "help": {
       "required": true,
@@ -13,8 +13,8 @@
       "reason": "Ny workspace-handling og migrasjonsavhengighet."
     },
     "architecture": {
-      "required": false,
-      "reason": "Gjenbruker eksisterende workspace/RLS-kontekst, audit og root-revisjon; ingen ny tabell eller transport."
+      "required": true,
+      "reason": "Prosjektvis opt-in skiller automatiske fristpåminnelser fra transport og brukerbestilte varsler."
     },
     "setup": {
       "required": false,
