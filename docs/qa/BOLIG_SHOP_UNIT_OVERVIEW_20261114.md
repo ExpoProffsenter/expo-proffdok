@@ -33,3 +33,13 @@ Visuell kontroll fant hvit tekst på lyst valgt søkeresultat (arvet generell di
 Fristens negative UI-test avdekket eksisterende låsing i BoligResidentBatch: serverens sikre avvisning 22023 (dato tilbake i tid) ble behandlet som uavklart lagring og låste alle datofelt til samme ugyldige forsøk. Scope utvidet avgrenset til denne feilgrenen i fristskjemaet og eksisterende React-regresjon. 22023 frigir nå forsøket, bevarer dato/boligutvalg og krever ny bekreftelse; ukjente feil beholder identisk retry. Ingen serverregel, e-post eller publiseringsregel endres. React-test 32 scenarier PASS, inkludert tidligere usikkert svar/eksakte token og nye avvisning→korrigering→ny request ID. Utløpt bestillingsfrist kan ikke opprettes via normal UI og er fortsatt dekket av database-/komponenttest, ikke en reell skynett-utløpstest.
 
 CI43638853334 stoppet i butikkens React-bundling etter den nye direkte CSS-importen: Vite-testbygget manglet cssFileName. Testoppsettet får eksplisitt CSS-filnavn; ingen assertions fjernet eller endret. Lokal butikk-React PASS igjen. Full CI må kjøres på korrigert kandidat.
+
+## Avsluttende skynettkontroll
+Appkandidat bd7fc363536f8f16d7cfb7f4f6972719411d38d5, READY dpl_F7gKbPYoj4jkqU6ox55rNfEzRVw3 på fast branch-Preview. Lagret uavklart ugyldig fristutkast ble gjenåpnet etter reload; samme forsøk fikk sikker avvisning og frigjorde feltene. Datoen ble korrigert til 30.11.2026 og kvitteringen «Bestillingsfristen er lagret for 1 boliger. Ingen avtalesvarfrister er endret.» er observert. Direkte Min side viser mørk lesbar tekst på valgt søkeresultat, riktig H0101-kontaktsett, frist kl.12 norsk tid og førbefaring 20.11. Innlogging, valgt bolig og lokal varekladd er kontrollert gjennom de beskrevne reisene.
+
+Visuelle bevis fra faktisk skynett, kun syntetiske boliger:
+- [Boligvalg, kontakt og frist](evidence/shop-overview-20261114/overview.jpg)
+- [Mottaker, vare og pris](evidence/shop-overview-20261114/preview.jpg)
+- [Korrigert frist etter avvisning](evidence/shop-overview-20261114/deadline-recovery.jpg)
+
+Fersk full CI på sluttkandidaten følges i PR341 før TEST OK. Dokumentasjonssiste endring inneholder kun denne loggen og skjermbilder; appkoden er som bd7fc363. Produksjon, permanent demo-branch og V12-filmer er ikke endret. Videre: uttrykkelig TEST OK → produksjon og main→demo → avtalte nye videoopptak/render/avspillingskontroll. Ingen nye filmer er ferdigstilt i denne butikkrettelsen.
