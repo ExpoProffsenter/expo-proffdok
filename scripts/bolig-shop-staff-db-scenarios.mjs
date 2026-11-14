@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 export default async function({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider,system}){
  await db.exec('reset role');await db.exec(await fs.readFile('supabase/migrations/20261114003459_bolig_shop_staff_admin.sql','utf8'));
+ await db.exec(await fs.readFile('supabase/migrations/20261114195127_bolig_shop_unit_overview.sql','utf8'));
  await actor(manager);const state=await call('create_plan',null,null,{request_id:id(99500),title:'QA Butikktilgang',reference:'QA',buildings:[{name:'A',building_type:'multi',address:'QA',house_floors:1,entrances:[{address:'QA',counts:[1]}]}]});
  const root=state.root.id;
  const rpc=(action='list',payload={},c=firm,r=root)=>db.query('select public.bolig_shop_staff($1,$2,$3,$4) v',[c,r,action,payload]).then(x=>x.rows[0].v);
@@ -14,7 +15,11 @@ export default async function({db,call,actor,eq,rejects,id,firm,other,manager,re
  let v=await rpc('assign',payload);eq(v.staff.length,1);eq(v.staff[0].active,true);eq(v.actor_id,system);eq((await rpc('assign',payload)).replayed,true);
  await rejects(()=>rpc('assign',{...payload,days:30}),'PT409');await rejects(()=>rpc('assign',{...payload,request_id:id(99502)}),'PT409');await rejects(()=>rpc('list',{},other),'42501');
  await actor(outsider,other);eq((await list()).projects.some(p=>p.id===root),true,'Employee own firm sees assigned foreign project');
- const mine=(await db.query('select public.bolig_my_collaborations($1) v',[root])).rows[0].v;eq(mine.context.publish_shop,true);eq(mine.context.edit_choices,true);eq(mine.context.edit_catalog,false);
+ await db.exec('reset role');
+ const unit=(await db.query('select id from bolig_private.units where root_id=$1',[root])).rows[0].id;
+ await db.query("update bolig_private.units set contact_phone='12345678',contact_email='qa@example.invalid',choice_deadline='2026-12-01' where id=$1",[unit]);
+ await actor(outsider,other);
+ const mine=(await db.query('select public.bolig_my_collaborations($1) v',[root])).rows[0].v;eq(mine.units[0].contact_phone,'12345678');eq(mine.units[0].contact_email,'qa@example.invalid');eq(mine.units[0].activities,[]);eq(mine.units[0].choice_deadline_at,'2026-12-01T11:00:00+00:00');eq(mine.context.publish_shop,true);eq(mine.context.edit_choices,true);eq(mine.context.edit_catalog,false);
  await rejects(()=>call('get',root),'42501');await rejects(()=>rpc(),'42501');
  await db.exec('reset role');eq((await db.query('select count(*)::int n from public.sales_company_memberships where user_id=$1 and company_id=$2',[outsider,firm])).rows[0].n,0,'No project-firm membership');
  for(const change of ['approved=false','deactivated=true']){

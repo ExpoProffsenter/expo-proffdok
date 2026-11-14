@@ -7,8 +7,8 @@ const dom=new JSDOM('<div id="app"></div>',{url:'https://qa.invalid',runScripts:
 w.MessageChannel=class{constructor(){this.port1={onmessage:null};this.port2={postMessage:()=>setImmediate(()=>this.port1.onmessage?.())};}};
 w.IS_REACT_ACT_ENVIRONMENT=true;w.HTMLDialogElement.prototype.showModal=function(){this.setAttribute('open','');};w.HTMLDialogElement.prototype.close=function(){this.removeAttribute('open');};
 const context={user_id:'actor',company_id:'firm',role:'manager',enabled:true},root={id:'root',archived:false};
-let data={context,root_id:'root',mail_enabled:false,units:[{id:'u1',number:'24',block_id:'a',block_name:'Blokk A',group_id:'g',group_name:'Stamme 1',deadline:null,basis:'v1',portal_revision:0,offer_count:0,contacts:[{name:'QA Eier',email:'qa@example.invalid'},{name:'QA Medeier',email:'extra@example.invalid'}]}]},calls=[],deny=false,failPublish=true,held=null;
-w.__client={rpc:async(name,args)=>{calls.push({name,args:structuredClone(args)});if(held)return new Promise(resolve=>held.push(resolve));if(deny)return{error:{code:'42501',message:'Tilgang fjernet'}};if(args.p_action==='publish'){if(failPublish){failPublish=false;return{error:{message:'Usikkert svar'}};}return{data:{...data,portals:[{unit_id:'u1',target_id:'p1',revision:1}]}};}return{data:structuredClone(data)};}};
+let data={context,root_id:'root',mail_enabled:false,units:[{id:'u1',number:'24',block_id:'a',block_name:'Blokk A',group_id:'g',group_name:'Stamme 1',deadline:null,basis:'v1',portal_revision:0,offer_count:0,contacts:[{name:'QA Eier',email:'qa@example.invalid'},{name:'QA Medeier',email:'extra@example.invalid'}]}]},calls=[],deny=false,failPublish=true,validationError=false,held=null;
+w.__client={rpc:async(name,args)=>{calls.push({name,args:structuredClone(args)});if(held)return new Promise(resolve=>held.push(resolve));if(deny)return{error:{code:'42501',message:'Tilgang fjernet'}};if(validationError&&args.p_action==='deadlines')return{error:{code:'22023',message:'Fristen kan ikke settes tilbake i tid.'}};if(args.p_action==='publish'){if(failPublish){failPublish=false;return{error:{message:'Usikkert svar'}};}return{data:{...data,portals:[{unit_id:'u1',target_id:'p1',revision:1}]}};}return{data:structuredClone(data)};}};
 w.eval((Array.isArray(built)?built[0]:built).output.find(x=>x.type==='chunk').code);
 const act=w.__act,button=text=>[...w.document.querySelectorAll('button')].find(b=>b.textContent.trim()===text),click=async text=>{assert(button(text),text);await act(()=>button(text).click());};
 const props={context,record:{root,units:[{choice_deadline:null}]}},checks=[];const check=(v,message)=>{assert(v,message);checks.push(message);};
@@ -55,6 +55,13 @@ try{
  await act(()=>confirm().click());await click('Bekreft bestillingsfrist');
  const dateCall=calls.find(c=>c.args.p_action==='deadlines');
  check(dateCall.args.p_payload.deadline==='2027-05-03'&&dateCall.args.p_payload.units.length===126,'server payload retains ISO date and explicit 126-unit scope');
+ validationError=true;await act(()=>confirm().click());await click('Bekreft bestillingsfrist');
+ check(w.document.body.textContent.includes('Fristen kan ikke settes tilbake i tid.'),'definitive validation error is explained');
+ check(!button('Kontroller samme handling igjen')&&!dateInput.disabled&&!confirm().checked,'rejected transaction unlocks correction and resets confirmation');
+ check(dateInput.value==='03.05.2027'&&unitList.querySelectorAll('input:checked').length===126,'validation rejection preserves date and selected units');
+ const rejected=calls.filter(c=>c.args.p_action==='deadlines').at(-1).args.p_payload.request_id;
+ validationError=false;await act(()=>{Object.getOwnPropertyDescriptor(w.HTMLInputElement.prototype,'value').set.call(dateInput,'04.05.2027');dateInput.dispatchEvent(new w.Event('input',{bubbles:true}));});await act(()=>confirm().click());await click('Bekreft bestillingsfrist');
+ const corrected=calls.filter(c=>c.args.p_action==='deadlines').at(-1).args.p_payload;check(corrected.deadline==='2027-05-04'&&corrected.request_id!==rejected,'corrected command uses a fresh request after known rollback');
  deny=true;await act(()=>w.dispatchEvent(new w.Event('focus')));check(!w.document.body.textContent.includes('extra@example.invalid'),'revoked access hides recipient data');
  deny=false;await click('Hent siste oversikt');held=[];await act(()=>w.dispatchEvent(new w.Event('focus')));await click('Lukk og behold utkast');await act(()=>{held[0]({data});});check(!w.document.querySelector('dialog'),'late response cannot reopen deliberately closed panel');
  await act(()=>w.__render({...props,context:{...context,role:'reader'}}));check(!button('Beboerlenker og frister samlet'),'reader has no batch action');

@@ -1,0 +1,49 @@
+# Butikkens boligvalg, kontakt og plan
+
+Miljømål BEGGE. Base main 93e948775ff327534d297e24df8f15e181c57ca6, demo 804419397b52e5ae166c0cc38ec1a403496fd5f1. Begge faktisk READY og alias kontrollert. Handoff PR340 lest; dokumentasjonsbranchen er uendret. Arbeidsbranch fase45b-shop-unit-overview-20261114.
+
+Scope: BoligMyCollaborations, ShopProposal, eget kontakt-/plankort, avgrenset CSS, additiv my_collaborations-projeksjon, hjelp og tilhørende regresjoner. Ingen andre moduler, e-post, dataimport eller endret tilgangsregel. Den nye projeksjonen gis kun ved aktiv personlig butikktilgang og godkjent ansattstatus, i tillegg til eksisterende overordnet kontroll.
+
+Levert i kandidaten: eksplisitt Bytt bolig og klikkbare treff, melding om valgt bolig utenfor søket, registrert adresse/hovedkontakt/tel/mailto, bestillingsfrist fra eksisterende choice_deadline_at i Europe/Oslo, åpne aktiviteter i datorekkefølge. Første åpne aktivitet navngis og kalles ikke arbeidsoppstart. Bytte sperres under bilde/publisering. Forhåndsvisning identifiserer mottakerbolig. Kladd og usikkert publiseringssvar beholdes per bolig med eksakt retry.
+
+Lokalt PASS: samarbeidets React-test (søk, eksplisitt bytte/retur, samme navn, frist/tel, focus og tilbakekalling); butikkens faktiske React-editor (manuell vare, pris, kladd A–B–A, usikkert svar A–B–A med identisk retry, mottaker, aksept og tilbakekalling); PostgreSQL2039 assertions; sandbox-build med critical-kjede; diff-check. Første nye returtest forsøkte å velge en bolig utenfor det aktive filteret; rettet til reell brukerflyt Tøm søk → Bytt bolig, uten å endre produktkravet.
+
+Lokal Chromium kan ikke starte fordi arbeidsmiljøet avviser socket() med Operation not permitted. Nettlesertesten er lagt til eksisterende veiledningskontroll i CI, med faktisk editor, syntetiske transportdata, kladd/boligbytte og 320/390/1363px. Ingen påstand om innlogget end-to-end-test eller faktisk e-postlevering.
+
+Sandbox: my_collaborations før endring sammenlignet med produksjon; migrasjonen bolig_shop_unit_overview installert én gang. Etterkontroll bekrefter ny projeksjon og fortsatt ingen anon execute. Produksjonsdatabasen er uendret. Ingen seed/reset, persondataendring eller utsending.
+
+Før release: full CI og Preview-verifisering, eksplisitt TEST OK, produksjonsmigrasjon etter ny sjekk av installert tilstand, merge og verifisert commit, main→demo med bevart overlay/preflight. Tilbakeføring: revert UI og gjenopprett tidligere my_collaborations-definisjon hvis nye lesefelt skal trekkes tilbake; ingen lagrede data er endret.
+
+Videoene er fortsatt V12. Ny film skal tas på ferdig godkjent butikkflyt, etter denne leveransen. Handoff PR340 og BOLIG_AA_REVISION_20261113.json er fortsatt opptaksgrunnlaget. Ingen ny film er påstått ferdig.
+
+CI43635085056 fant en reell layoutfeil: søkeresultatlisten krympet i flex-kolonnen når vareeditoren var lang, og kontaktkortet fanget klikk på søkeresultatet. Rettet ved å la direkte barn beholde høyden og arbeidsflaten rulle samlet. Ingen force-click eller svekket test. Ny kandidat må gjennom samme kontroll. Skynett er nå innlogget med demokonto; bruker krever reell visuell gjennomgang før TEST OK. Et nytt syntetisk prosjekt opprettes i sandbox for denne reisen.
+
+CI43635999727 er fullstendig grønn på 9206175e. Preview dpl_FxoJi68hpU22QTszwKRnvBNPgjCP er READY på samme commit.
+
+Reell skynettprøve med demo@expo-proffdok.no: nytt isolert prosjekt «QA – Butikkflyt og video 14.11», Eksempelhuset med H0101/H0102. Egen personlig butikktilgang tildelt via UI. Kontakt Alex Eksempel, ugyldig eksempeladresse for e-post, testtelefon, førbefaring 20.11.2026 og frist 30.11.2026 kl.12:00 registrert gjennom appen. H0102 beholder tomme felt for tomtilstandstesten. Portal opprettet uten utsending; sperren for e-post vises. Syntetisk grunnpakke opprettet og lagret til H0101. Butikkens kontaktkort, norsk frist og aktivitet matcher lagrede data. Søk beholder valgt bolig; klikket treff bytter uten innlogging. Usendt speil med varenummer, pris 2500 og montering 750 ble bevart ved H0101→H0102→H0101, og forhåndsvisningen viser riktig mottaker og 3250 inkl. mva. Ingen produksjonsdata er berørt.
+
+Skynett fant at autofokus på forhåndsvisningsoverskriften rullet mottakerlinjen ut av syne fordi den sto før overskriften. Flyttet mottaker under overskriften og lagt til synlighetskontroll ved tre skjermbredder. Lokal butikk-React fortsatt PASS. Denne siste endringen krever ny CI/Preview-kontroll. Vanlig tastaturinntasting i native datofelt lagret korrekt; browserverktøyets fill() viste endret DOM-verdi uten å oppdatere React i dette feltet, derfor ble faktisk tastatur brukt og lagret dato kontrollert etterpå.
+
+6528ac34: full CI43637284678 PASS, READY dpl_Gkg2tCnff5EBZVTzYQ7zVC1SqQaT. Skynett bekreftet synlig mottaker etter review-fokus, publisering til bare H0101, sperret boligbytte under publisering og riktig 3250 i separat beboerportal. Ugyldig bildefil ble avvist med bevart kladd; kontrollert WebP ble lest og bildekladd bevart A→B→A. Verktøyets filoverføring tok flere minutter. Reload beholdt innlogging. Direkte Min side etter reload viste manglende pris-/vareformatering: boligCommerce.css var bare lastet via manager- eller resident-modulen. Butikkeditoren importerer nå stilarket direkte, med egen regresjonskontroll. Ny CI og visuell kontroll kreves etter denne rettelsen.
+
+a709e5c6 READY dpl_GdTsqWkDMxjgu7oj9MUtrbUA9p8s: direkte Min side etter reload viser korrekt prisboks og varelayout. Mottakerlinjen er synlig. Syntetisk beboeraksept registrert i separat portal og lest tilbake som Akseptert i butikk. Egen butikktilgang trukket tilbake i separat adminfane: åpen butikkdialog skjulte alt boliginnhold ved retur og viste tilbakekalt tilgang. Tilgangen ble fornyet etter testen. H0102 har nå samme syntetiske navn som H0101, men separat testtelefon/e-post; søk viser begge bolignumrene og valgt bolig viser riktig kontaktsett.
+
+Visuell kontroll fant hvit tekst på lyst valgt søkeresultat (arvet generell dialogstil). Valgt treff får eksplisitt mørk tekst med avgrenset selektor, og runtime-testen krever minst 4,5:1 kontrast. Dette er siste rettelse før ny kontroll. Mobilbredder kontrolleres i CI; skynett tilbyr ikke støttet viewport-bytte i denne sesjonen, og vanlig nettlesersnarvei åpnet ikke mobilmodus. Ikke påstå en fysisk mobiltest eller skynett-mobiltest.
+
+Fristens negative UI-test avdekket eksisterende låsing i BoligResidentBatch: serverens sikre avvisning 22023 (dato tilbake i tid) ble behandlet som uavklart lagring og låste alle datofelt til samme ugyldige forsøk. Scope utvidet avgrenset til denne feilgrenen i fristskjemaet og eksisterende React-regresjon. 22023 frigir nå forsøket, bevarer dato/boligutvalg og krever ny bekreftelse; ukjente feil beholder identisk retry. Ingen serverregel, e-post eller publiseringsregel endres. React-test 32 scenarier PASS, inkludert tidligere usikkert svar/eksakte token og nye avvisning→korrigering→ny request ID. Utløpt bestillingsfrist kan ikke opprettes via normal UI og er fortsatt dekket av database-/komponenttest, ikke en reell skynett-utløpstest.
+
+CI43638853334 stoppet i butikkens React-bundling etter den nye direkte CSS-importen: Vite-testbygget manglet cssFileName. Testoppsettet får eksplisitt CSS-filnavn; ingen assertions fjernet eller endret. Lokal butikk-React PASS igjen. Full CI må kjøres på korrigert kandidat.
+
+## Avsluttende skynettkontroll
+Appkandidat bd7fc363536f8f16d7cfb7f4f6972719411d38d5, READY dpl_F7gKbPYoj4jkqU6ox55rNfEzRVw3 på fast branch-Preview. Lagret uavklart ugyldig fristutkast ble gjenåpnet etter reload; samme forsøk fikk sikker avvisning og frigjorde feltene. Datoen ble korrigert til 30.11.2026 og kvitteringen «Bestillingsfristen er lagret for 1 boliger. Ingen avtalesvarfrister er endret.» er observert. Direkte Min side viser mørk lesbar tekst på valgt søkeresultat, riktig H0101-kontaktsett, frist kl.12 norsk tid og førbefaring 20.11. Innlogging, valgt bolig og lokal varekladd er kontrollert gjennom de beskrevne reisene.
+
+Visuelle bevis fra faktisk skynett, kun syntetiske boliger:
+- [Boligvalg, kontakt og frist](evidence/shop-overview-20261114/overview.jpg)
+- [Mottaker, vare og pris](evidence/shop-overview-20261114/preview.jpg)
+- [Korrigert frist etter avvisning](evidence/shop-overview-20261114/deadline-recovery.jpg)
+
+Fersk full CI på sluttkandidaten følges i PR341 før TEST OK. Dokumentasjonssiste endring inneholder kun denne loggen og skjermbilder; appkoden er som bd7fc363. Produksjon, permanent demo-branch og V12-filmer er ikke endret. Videre: uttrykkelig TEST OK → produksjon og main→demo → avtalte nye videoopptak/render/avspillingskontroll. Ingen nye filmer er ferdigstilt i denne butikkrettelsen.
+
+### Final CI locator correction
+
+Run 43639622019 passed all jobs except app-browser: the new goods-style check used a single-element locator for two legitimate lists (proposal and retained basis). Changed the assertion to check every matching list and require at least one list. No application change or assertion relaxation. Final run/result is recorded in PR341 to avoid restarting CI for a status-only commit.

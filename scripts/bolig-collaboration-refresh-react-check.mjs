@@ -5,29 +5,39 @@ const rpc=path.join(temp,'rpc.js'),stub=path.join(temp,'stub.jsx'),entry=path.jo
 fs.writeFileSync(rpc,`export async function collaborationRpc(name,args,user){return window.__rpc(name,args,user);}`);
 fs.writeFileSync(stub,`import React,{useEffect,useState} from '${cwd}/node_modules/react/index.js';export default function Editor({collaborationView}){const [note,setNote]=useState('');useEffect(()=>{window.__mounts++;return()=>window.__unmounts++;},[]);return <label data-collaboration-view={String(collaborationView)}>Arbeidsutkast<input value={note} onChange={e=>setNote(e.target.value)}/></label>;}`);
 fs.writeFileSync(path.join(temp,'shop-stub.jsx'),`export default function Shop(){return null;}`);
-fs.writeFileSync(entry,`import React,{act} from '${cwd}/node_modules/react/index.js';import {createRoot} from '${cwd}/node_modules/react-dom/client.js';import Page from '${cwd}/src/modules/bolig/BoligMyCollaborations.jsx';const root=createRoot(document.getElementById('app'));window.__act=act;window.__render=()=>root.render(<Page userId="user"/>);window.__dispose=()=>root.unmount();`);
+fs.writeFileSync(entry,`import React,{act} from '${cwd}/node_modules/react/index.js';import {createRoot} from '${cwd}/node_modules/react-dom/client.js';import Page from '${cwd}/src/modules/bolig/BoligMyCollaborations.jsx';const root=createRoot(document.getElementById('app'));window.__act=act;window.__render=()=>root.render(<Page userId={window.__user||"user"}/>);window.__dispose=()=>root.unmount();`);
 const built=await build({root:cwd,configFile:false,logLevel:'silent',define:{'process.env.NODE_ENV':'"development"'},plugins:[react({jsxRuntime:"classic"})],resolve:{alias:[{find:'./boligCollaborationClient.js',replacement:rpc},{find:'./BoligCatalog.jsx',replacement:stub},{find:'./BoligShopProposal.jsx',replacement:path.join(temp,'shop-stub.jsx')},{find:'./BoligPackageChoices.jsx',replacement:stub}]},build:{write:false,minify:false,lib:{entry,formats:['iife'],name:'CollabProof',cssFileName:'collab-proof'}}});
 const dom=new JSDOM('<div id="app"></div>',{url:'https://qa.invalid',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window;
 w.MessageChannel=class{constructor(){this.port1={onmessage:null};this.port2={postMessage:()=>setImmediate(()=>this.port1.onmessage?.())};}};
 w.IS_REACT_ACT_ENVIRONMENT=true;w.__mounts=0;w.__unmounts=0;let rejectAccess=false,resolveRefresh=null,hold=false,malformed=false;
-w.__rpc=async(name,args)=>{if(hold)await new Promise(resolve=>resolveRefresh=resolve);if(malformed)return {};if(rejectAccess)throw Object.assign(Error('Tilgang tilbakekalt'),{code:'42501'});return args.p_root_id?{root:{id:'r',title:'QA'},context:{user_id:'user',company_id:'c',company_name:'QA'},units:[{id:'u',number:'38',address:'QA',contact_name:'QA'}]}:{projects:[{id:'r',title:'QA',company:'QA'}]};};
+w.__rpc=async(name,args)=>{if(hold)await new Promise(resolve=>resolveRefresh=resolve);if(malformed)return {};if(rejectAccess)throw Object.assign(Error('Tilgang tilbakekalt'),{code:'42501'});return args.p_root_id?{root:{id:'r',title:'QA'},context:{user_id:'user',company_id:'c',company_name:'QA'},units:[{id:'u',number:'38',address:'QA',contact_name:'QA',contact_phone:'12345678',contact_email:'qa@example.invalid',choice_deadline_at:'2026-12-01T11:00:00Z',activities:[]},{id:'v',number:'39',address:'Annen adresse',contact_name:'QA',activities:[]}]}:{projects:[{id:'r',title:'QA',company:'QA'}]};};
 const style=w.document.createElement('style');style.textContent=fs.readFileSync('src/modules/bolig/boligCollaboration.css','utf8');w.document.head.append(style);
 w.eval((Array.isArray(built)?built[0]:built).output.find(x=>x.type==='chunk').code);const act=w.__act;
 try{
  await act(()=>w.__render());await act(()=>[...w.document.querySelectorAll('button')].find(b=>b.textContent==='QA · QA').click());
  const modal=w.document.querySelector('dialog');assert.equal(w.getComputedStyle(modal).backgroundColor,'rgb(255, 255, 255)');assert.equal(w.getComputedStyle(modal).position,'fixed');assert(!modal.classList.contains('bolig-page'),'Modal must not inherit transparent page-shell rules');
+ await act(()=>{Object.getOwnPropertyDescriptor(w.HTMLInputElement.prototype,'value').set.call(w.document.querySelector('input[type=search]'),'');w.document.querySelector('input[type=search]').dispatchEvent(new w.Event('input',{bubbles:true}));});
  await act(()=>{const select=w.document.querySelector('select');select.value='u';select.dispatchEvent(new w.Event('change',{bubbles:true}));});
+ assert(w.document.body.textContent.includes('12:00'),'Deadline uses Oslo time');assert.equal(w.document.querySelector('a[href="tel:12345678"]').textContent,'12345678');
  assert.equal(w.__mounts,1);assert(w.document.querySelector('[data-collaboration-view="true"]'),'Collaboration guidance is selected by workspace, including existing managers');const input=w.document.querySelector('input:not([type="search"])');
  await act(()=>{Object.getOwnPropertyDescriptor(w.HTMLInputElement.prototype,'value').set.call(input,'Uferdig vare og arbeid');input.dispatchEvent(new w.Event('input',{bubbles:true}));});
  const search=w.document.querySelector('input[type="search"]');
  await act(()=>{Object.getOwnPropertyDescriptor(w.HTMLInputElement.prototype,'value').set.call(search,'ingen treff');search.dispatchEvent(new w.Event('input',{bubbles:true}));});
  assert.equal(w.document.querySelector('select').value,'u','Search must not show an empty selector while editing a different selected apartment');
  assert.equal(w.__mounts,1,'Filtering must preserve the selected apartment draft');
+ assert(w.document.body.textContent.includes('er utenfor søket'),'Nonmatching current apartment is explicit');
  hold=true;await act(()=>w.dispatchEvent(new w.Event('focus')));
  assert.equal(w.__unmounts,0,'Pending authorization refresh must retain editor');assert.equal(input.value,'Uferdig vare og arbeid');
  hold=false;await act(async()=>{resolveRefresh();await Promise.resolve();});assert.equal(w.__mounts,1,'Same access keeps same editor');assert.equal(input.value,'Uferdig vare og arbeid');
- rejectAccess=true;await act(()=>w.dispatchEvent(new w.Event('focus')));assert.equal(w.__unmounts,1,'Revoked access removes editor');assert(w.document.querySelector('dialog [role="alert"]').textContent.includes('Tilgang tilbakekalt'),'Revocation explanation is inside the visible modal');
- rejectAccess=false;malformed=true;await act(()=>w.dispatchEvent(new w.Event('focus')));assert(w.document.body.textContent.includes('Prosjektgrunnlaget kunne ikke leses'));assert.equal(w.__mounts,1,'Malformed response cannot remount editor');
+ await act(()=>{Object.getOwnPropertyDescriptor(w.HTMLInputElement.prototype,'value').set.call(search,'Annen adresse');search.dispatchEvent(new w.Event('input',{bubbles:true}));});
+ assert.equal(w.document.querySelector('select').value,'u','Search never changes target');
+ await act(()=>w.document.querySelector('.bolig-unit-results button').click());assert.equal(w.document.querySelector('select').value,'v','Explicit search hit changes target');
+ await act(()=>{Object.getOwnPropertyDescriptor(w.HTMLInputElement.prototype,'value').set.call(w.document.querySelector('input[type=search]'),'');w.document.querySelector('input[type=search]').dispatchEvent(new w.Event('input',{bubbles:true}));});
+ await act(()=>{const select=w.document.querySelector('select');select.value='u';select.dispatchEvent(new w.Event('change',{bubbles:true}));});
+ assert.equal(w.document.querySelector('select').value,'u','Can return without leaving project');
+ rejectAccess=true;await act(()=>w.dispatchEvent(new w.Event('focus')));assert.equal(w.__unmounts,3,'Revoked access removes editor');assert(w.document.querySelector('dialog [role="alert"]').textContent.includes('Tilgang tilbakekalt'),'Revocation explanation is inside the visible modal');
+ rejectAccess=false;malformed=true;await act(()=>w.dispatchEvent(new w.Event('focus')));assert(w.document.body.textContent.includes('Prosjektgrunnlaget kunne ikke leses'));assert.equal(w.__mounts,3,'Malformed response cannot remount editor');
+ w.__user='other';hold=true;await act(()=>w.__render());assert(!w.document.querySelector('dialog'),'User change immediately removes previous private apartment');hold=false;
  console.log('PASS collaboration React: delayed refresh retains editor and draft; same access preserves mount; revocation removes access');
 }finally{await act(()=>w.__dispose());dom.window.close();fs.rmSync(temp,{recursive:true,force:true});}
 

@@ -64,3 +64,6 @@ try{
  await page.setViewportSize({width:1363,height:936});await open();if(process.env.BOLIG_GUIDANCE_SCREENSHOTS)await page.screenshot({path:path.join(process.env.BOLIG_GUIDANCE_SCREENSHOTS,'help-overview-1363.png')});await page.evaluate(()=>{window.qa.denied=true;window.qa.sameProfile();});await panel().waitFor({state:'detached'});eq(await trigger().count(),0,'revoked housing access removes trigger and mounted guide');eq(await projectEdit.count(),0,'Revoked access removes project edit button');
  eq(await page.evaluate(()=>window.qa.calls.filter(c=>c.args.p_action&&!['context','get','list'].includes(c.args.p_action)&&!(c.name==='bolig_catalog'&&c.args.p_action==='state'))),[],'all interactions perform reads only');eq(errors,[],'no browser errors');eq(outbound,[],'no external transport');console.log('Housing guidance: '+checks+' assertions PASS; all69 original blocks plus4 integrated topics, search/eight areas, one topic, shared frames, fixed returns, focus/work preservation, revalidation/revoke; synthetic reads only.');
 }finally{await browser?.close();await new Promise(r=>server.close(r));}
+
+// Shop workflow is part of the guidance contract; run its actual responsive UI too.
+await import('./bolig-shop-overview-browser-check.mjs');
