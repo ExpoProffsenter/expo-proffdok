@@ -8,7 +8,7 @@ const DEMO_EMAIL = "demo@expo-proffdok.no";
 const PRODUCTION_REPO = "ExpoProffsenter/expo-proffdok";
 // Oppdateres til main-committen som faktisk er merget inn i demo ved hver synk.
 // Golden reset påvirker data, ikke denne kodebaselinen.
-const SANDBOX_PRODUCTION_BASELINE = "fcfb88583d03e9ff450c8b2b80d0714b015d47c5";
+const SANDBOX_PRODUCTION_BASELINE = "cbb7c7dabc122d3c29f4d17dbe3b69883cd5bd90";
 const DEMO_SKETCH_REQUEST_IDS = ["DEMO-01-FORESPORSEL", "DEMO-02-BEFARING"];
 const DEMO_BATHROOM_SKETCH = {
   version: 15,
