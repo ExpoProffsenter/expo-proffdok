@@ -43,3 +43,7 @@ Visuelle bevis fra faktisk skynett, kun syntetiske boliger:
 - [Korrigert frist etter avvisning](evidence/shop-overview-20261114/deadline-recovery.jpg)
 
 Fersk full CI på sluttkandidaten følges i PR341 før TEST OK. Dokumentasjonssiste endring inneholder kun denne loggen og skjermbilder; appkoden er som bd7fc363. Produksjon, permanent demo-branch og V12-filmer er ikke endret. Videre: uttrykkelig TEST OK → produksjon og main→demo → avtalte nye videoopptak/render/avspillingskontroll. Ingen nye filmer er ferdigstilt i denne butikkrettelsen.
+
+### Final CI locator correction
+
+Run 43639622019 passed all jobs except app-browser: the new goods-style check used a single-element locator for two legitimate lists (proposal and retained basis). Changed the assertion to check every matching list and require at least one list. No application change or assertion relaxation. Final run/result is recorded in PR341 to avoid restarting CI for a status-only commit.
