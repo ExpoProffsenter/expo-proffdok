@@ -1,3 +1,4 @@
+import BoligEditorDialog from "./BoligEditorDialog.jsx";
 import BoligProjectInfo from "./BoligProjectInfo.jsx";
 import BoligProjectIntegration from "./BoligProjectIntegration.jsx";
 import BoligContracts from "./BoligContracts.jsx";
@@ -219,6 +220,8 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
     "setup-area",
     "structure",
   );
+  const [projectInfoOpen, setProjectInfoOpen] = useState(false);
+  useEffect(() => setProjectInfoOpen(false), [context.company_id, context.user_id, record?.root.id]);
   const catalogHeading = useRef(null),
     catalogIntent = useRef(false);
   const focusCatalog = () => {
@@ -542,6 +545,10 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
                   <div className="bolig-project-header">
                     <div>
                       <small>HOVEDPROSJEKT</small>
+                      {canWrite && <button type="button" className="bolig-project-edit" onClick={() => setProjectInfoOpen(true)}>Rediger prosjektinfo</button>}
+                      {canWrite && projectInfoOpen && screen === "workspace" && <BoligEditorDialog title="Rediger prosjektinfo" busy={busy} onClose={() => setProjectInfoOpen(false)}>
+                        <BoligProjectInfo key={ctx.user_id+":"+ctx.company_id+":"+record.root.id} expanded context={ctx} root={record.root} busy={busy} onSave={(payload,revision)=>perform("project_info",{rootId:record.root.id,revision,payload})}/>
+                      </BoligEditorDialog>}
                       <h3 ref={workspaceHeading} tabIndex={-1}>
                         {record.root.title}
                       </h3>
@@ -698,7 +705,7 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
                       />
                     </div>
                     <div hidden={setupArea !== "structure"}>
-                      {canWrite && <BoligProjectInfo key={ctx.user_id+":"+ctx.company_id+":"+record.root.id} context={ctx} root={record.root} busy={busy} onSave={(payload,revision)=>perform("project_info",{rootId:record.root.id,revision,payload})}/>}
+                      {canWrite && <button type="button" className="bolig-project-edit" onClick={() => setProjectInfoOpen(true)}>Rediger prosjektinfo</button>}
                       <div className="bolig-setup-resident-tools" aria-label="Beboere og bestillingsfrister">
                       <BoligResidentImport context={ctx} record={record} onChanged={() => fetchRecord(record.root.id, true)} />
                       <BoligResidentBatch context={ctx} record={record} onChanged={() => fetchRecord(record.root.id, true)} />

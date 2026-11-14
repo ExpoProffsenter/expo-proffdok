@@ -1,5 +1,7 @@
 # Gjeldende leveransestatus – 14.11.2026
 
+Neste avgrensede UX-rettelse: Rediger prosjektinfo flyttes frem ved prosjektnavnet og åpnes i dialog. Tomt pakkeoppsett får forklarende boligstatus. Branch `fix/bolig-project-entry-status-20261114`; PostgreSQL2035 og React PASS, full CI/Preview før publisering. Ingen pakker opprettes eller e-post sendes.
+
 PR337 følger opp varslingstidspunkt: brukerbestilt «Publiser nå» og dialog behandles hele døgnet. Automatiske fristpåminnelser og datoplanlagt publisering beholder 08–18 Europe/Oslo. Ventende automatiske leveranser blokkerer ikke øvrige varsler og bruker ikke forsøk om natten. Migrasjon: `20261114185035_bolig_mail_timing.sql`. Sluttresultat, CI, produksjonsmigrering og main → demo dokumenteres i https://github.com/ExpoProffsenter/expo-proffdok/pull/337. Ingen endring av mottakere, opt-in, transportflagg eller enabled_since.
 
 PR336 er publisert på https://expo-proffdok.app: appcommit `4e10dee4d5562b8b7bf56653f6f99d1717d1ecd2`, Vercel `dpl_2YMVmWCm4WgqjFBr1A1GG665whzB` READY med produksjonsalias. Hele CI43626743759, inkludert sluttgate, er grønn på kandidat `18f22b644c99921e787f1921e1d4a51bdb0b0a3c`. Kenneth har uttrykkelig bedt om produksjonssetting og valgt automatiske fristpåminnelser som eget opt-in per prosjekt.
