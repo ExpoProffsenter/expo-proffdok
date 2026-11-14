@@ -45,6 +45,8 @@ export default function BoligPortalPage() {
     [notice, setNotice] = useState("");
   const selectedAgreement=useRef(null);
   selectedAgreement.current=agreement;
+  const agreementHeading=useRef(null);
+  useEffect(()=>{if(agreement&&tab==='agreements'){agreementHeading.current?.focus({preventScroll:true});agreementHeading.current?.scrollIntoView?.({block:'start',behavior:'auto'});}},[agreement,tab]);
   const key = useRef(null);
   current.current = data;
   const save = (next, attempt = pending) => {
@@ -88,6 +90,7 @@ export default function BoligPortalPage() {
           code: "42501",
         });
       if (!key.current) {
+        if(!next.offers.length&&next.agreements.some(d=>d.status==='published'))setTab('agreements');
         key.current = `expo-bolig-portal:${next.id}:${token.current.slice(0, 12)}`;
         let saved;
         try {
@@ -507,8 +510,8 @@ export default function BoligPortalPage() {
           )}
           {tab === "agreements" && doc && (
             <section className="bolig-resident-card">
-              <h2>
-                {doc.kind === "choice" ? "Boligavtale" : "Endringsavtale"} ·
+              <h2 ref={agreementHeading} tabIndex={-1} className="bolig-agreement-heading">
+                {doc.snapshot?.source === "shop" ? "Butikktillegg" : doc.kind === "choice" ? "Boligavtale" : "Endringsavtale"} ·
                 utgave {doc.version}
               </h2>
               <Summary document={doc} />
