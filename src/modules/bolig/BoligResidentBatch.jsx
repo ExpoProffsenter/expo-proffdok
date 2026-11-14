@@ -54,7 +54,7 @@ function BatchDialog({context,root,onClose,onChanged}){
     save({pending:null,prepared:attempt.payload,attempts});setNotice('Lenkene er klargjort. Ingen e-post er sendt. Se over mottakerne før du bekrefter sending.');
    }else{save({pending:null});setNotice(attempt.action==='deadline_time'?`Klokkeslett ${attempt.payload.deadline_time} gjelder nå for hele prosjektet. Datoene er uendret.`:`Bestillingsfristen er lagret for ${attempt.payload.units.length} boliger. Ingen avtalesvarfrister er endret.`);}
    setData(next);setConfirmed(false);onChanged?.();
-  }catch(e){if(alive.current){setError(e.message);if(e.code==='PT409'){save({pending:null});setConfirmed(false);}if(e.code==='42501')setData(null);}}
+  }catch(e){if(alive.current){setError(e.message);if(e.code==='PT409'||e.code==='22023'){save({pending:null});setConfirmed(false);}if(e.code==='42501')setData(null);}}
   finally{operating.current=false;if(alive.current)setBusy(false);}
  };
  const send=async()=>{
