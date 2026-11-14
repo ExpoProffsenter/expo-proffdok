@@ -117,3 +117,31 @@ Opprydding kontrollert: begge midlertidige butikktilganger tilbakekalt, testfirm
 Begrensninger: dette er tre runder av boligflyten, ikke hele appen. Smal visning er nettleserzoom, ikke fysisk telefon/Safari/touch. Ingen ny bindende aksept ble sendt i denne runden; kontroll gikk frem til Registrer aksept. Bildeopplasting og portalvisning er verifisert i forrige dokumenterte runde med testillustrasjon, ikke ekte produktfoto. Ingen e-post, bestilling eller produksjonsendring utført.
 
 Neste steg er Kenneths TEST OK på samlet kandidat og deretter egen kontrollert produksjonsplan. Kontroller allerede installerte migrasjoner/Edge før eventuell produksjonssetting; ikke gjenta sandboxinstallasjoner. Tilbakeføring skal bevare innsendte valg, private bilder og historikk. Hemmelige portallenker/token er ikke dokumentert.
+
+
+## Produksjonssetting etter TEST OK – 14.11.2026
+
+Kenneth ga TEST OK på samlet kandidat. Full CI43619537928 SUCCESS på75f849d1. PR333 merget som ef0b9343348da60f6905563e92d19f10badbaaa3, inkluderer PR332 (også registrert merget). Vercel dpl_FEKYR88mHuZyAuCTtzTvZewpUnkX READY, produksjonsalias expo-proffdok.app bekreftet på denne SHA.
+
+Produksjon dqffxflaoyarbxyiyhop: bare følgende manglende migrasjoner installert, i rekkefølge:
+
+| Migrasjon | Faktisk produksjonsversjon |
+| --- | --- |
+| bolig_project_deadline_time | 20261114171532 |
+| bolig_partner_commerce | 20261114171540 |
+| bolig_shop_proposals | 20261114171541 |
+| bolig_shop_order_identity | 20261114171543 |
+| bolig_shop_project_deadline | 20261114171544 |
+| bolig_shop_staff_admin | 20261114171545 |
+| bolig_portal_combined_choices | 20261114172110 |
+| bolig_portal_image_access | 20261114172119 |
+
+Bekreftelse utløp før combined_choices; fravær kontrollert før nytt forsøk. Ingen dobbeltinstallasjon. bolig-portal-images v1 ACTIVE, egen tokenvalidering og verify_jwt=false som i testet kode. Ingen andre Edge Functions endret.
+
+Kontroller: bilde-bucket fortsatt privat; authenticated har ingen direkte SELECT/INSERT/UPDATE/DELETE på tilgangstabellene; anon kan ikke kalle staff/combine; bilde-RPC kun validert portaltoken. Ugyldig64-tegnstoken girHTTP403 fra ny Edge. Begge tilgangstabeller har0rader. Produksjon hadde0boligprosjekter og0prosjekter med bestillingsfrist ved kontrollen. Beboerlenke-mail enabled=true før/etter (tidligere uttrykkelig aktivering bevart), ingen utsending utført. Generelle security-advisorvarsler består; nye RLS-no-policy INFO er tilsiktet privat RPC-design.
+
+Produksjonsnettleser åpnet innloggingssiden; ingen innlogget økt tilgjengelig. Konsoll hadde en innloggingsberedskapsmelding ved oppstart, ikke et bevis på innlogget funksjonsfeil. Ingen innlogget produksjonsreise eller reell beboeraksept utført. Den fulle brukerflyten er testet i sandbox. Ingen produksjonsfixture opprettet.
+
+Demo: ren merge fra tidligere demo d4fb727ad718776a70cf9c243e7d1d9915ef503e uten konflikt, overlay bevart, bare baseline i kontrollsiden oppdateres. Lokal kritisk build og critical-demo-course-preflight-check PASS. Faktisk demo_sandbox_preflight19/19 og kurs5/5 PASS via autentisert syntetisk demokontekst. Endelig publisert demo-SHA/READY og binding føres i PR333 etter dokumentasjonssynk. Ingen seed/reset.
+
+Rollback: forrige produksjonsdeploy dpl_CiELfbVXXKtdoxujeEU9xiBVZqbk/main6eb54148. Bevar nye migrasjoner, private bilder og historikk. Etter faktisk bruk må frist-/kombinasjonsvisning og utestående aksepter vurderes før frontendtilbakeføring. Ikke kjør migrasjonene på nytt.
