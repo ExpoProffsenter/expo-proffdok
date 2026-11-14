@@ -1,5 +1,16 @@
 # Gjeldende leveransestatus – 14.11.2026
 
+## Siste godkjente release: PR341
+
+Butikkens boligbytte, kontaktkort og frist-/aktivitetsoversikt er publisert etter brukerens TEST OK. Main: `66caacf23f4cbd39eaba10f9524404e4e418e39d`; produksjon READY `dpl_GhEHMHTeV5YUp8bcogQXGi8edutv`, https://expo-proffdok.app. Demo: `0280d29449cea52491d3ede1fcb79ad6091fd2b1`, READY `dpl_AmrS9rxTytdZ494xUVWjSR6572K9`, https://expo-proffdok-git-demo-ringside.vercel.app. Demo-overlay er bevart.
+
+Kandidat af64ea4cf0479ae7d3f38bbb43c69facd62ede09: full CI43640088135 PASS. Migrasjon `20261114195127_bolig_shop_unit_overview.sql` er installert én gang i begge miljøer; grants/tilgang kontrollert. Sandbox-preflight 19/19 og kurs 5/5 PASS. Publiserte ressurser er kontrollert mot riktig miljø. Faktisk skynettprøve ble utført i Preview/sandbox, ikke innlogget produksjon. Ingen reell prøveutsending. Tilbakeføring: revert PR341 sin appendring; nye lesefelt er bakoverkompatible og krever ikke datasletting.
+
+PR342 har nye lokale UI-rettelser funnet under opptak; egen TEST OK gjenstår. Video A–Å V12 er fortsatt publisert. Nye opptak og to kortfilmkandidater er under arbeid, se `docs/qa/BOLIG_VIDEO_PROGRESS_20261114.md`.
+
+## Tidligere grunnlag som fortsatt gjelder
+
+
 [PR338](https://github.com/ExpoProffsenter/expo-proffdok/pull/338) er merget som `2385a144d6628ea2f8db791f295b99766e1e9c5a`. «Rediger prosjektinfo» ligger ved prosjektnavnet og under Oppsett → Bygg og boliger. Skjemaet åpnes i dialog med bevart kladd. Kun prosjektleder på aktivt prosjekt kan redigere. Bolig uten valg viser «Grunnpakke og tilvalg er ikke klargjort» ved tomt pakkeoppsett, ellers «Boligvalg ikke startet». Lagrede valg, endret grunnlag og øvrige statuslag beholdes.
 
 Verifisert: PostgreSQL2035, React, build/critical og hele CI43631861468 PASS på kandidat26996f7a46b06ccae1f24a8f214048d5162b971c. Førstesidens100 kontroller og boligveiledningens276 kontroller inkluderer den nye dialogen ved320/390/1363px, kladd, focus, Escape og tilgang. Første CI fant økt topphøyde; rettet uten svekket test. Migrasjon bolig_catalog_setup_status er installert én gang i begge miljøer. Faktisk produksjons-RPC som Orveis prosjektleder returnerer catalog_empty=true. Ingen pakker, beboerdata eller e-postinnstillinger er endret. Ingen reell test-e-post sendt. Innlogget produksjons-UI er ikke prøvd på nytt; UI er kontrollert med faktiske komponenter i Chromium og publiserte ressurser etterkontrolleres.
