@@ -66,3 +66,7 @@ Tilbakeføring: slå av publish_shop og tilbakefør frontend. Bevar migrasjonen,
 
 Installer også `20261114001335_bolig_shop_order_identity.sql` etter butikkmigrasjonen; den bevarer bolignummer og bolig-ID i nye tilleggsordrer/eksport.
 Fristkontrollen fullføres av `20261114001703_bolig_shop_project_deadline.sql`, som gjenbruker beboerportalens dato/klokkeslettregel fra PR332.
+
+### Kombinerbare beboertilvalg
+Ved klargjøring av invitasjonen kan prosjektleder velge «Kombiner tilvalg» og angi den inkluderte grunnpakken. Beboeren ser grunnpakken én gang og kan kombinere de delte tilvalgspakkene. Legg nødvendig arbeid/montering i samme tilvalgspakke. Samme underliggende vare/arbeid telles én gang; to erstatninger av samme grunnvare avvises. Grunnpakker/rom må være samme fryste utgave og uten manuell romfordeling/overstyrte varelinjer. Slike spesialoppsett bruker fortsatt ferdige pakkealternativer eller butikktillegg. Eksisterende portaler endres ikke før prosjektleder uttrykkelig deler ny kombinering.
+Migrasjon `20261114153617_bolig_portal_combined_choices.sql` følger butikk-/portal-migrasjonene. E-post og firmatilgang er uendret. Butikkansatte finner prosjektene på Min side uten invitasjonsmail.

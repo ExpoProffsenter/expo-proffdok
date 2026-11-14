@@ -1016,6 +1016,8 @@ try {
   await shopScenarios({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider});
   const {default:staffScenarios}=await import("./bolig-shop-staff-db-scenarios.mjs");
   await staffScenarios({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider,system});
+  const {default:combinedChoices}=await import("./bolig-portal-combinations-db-scenarios.mjs");
+  await combinedChoices({db,call,actor,eq,rejects,id,firm,manager,outsider});
   await db.exec(
     `reset role;update public.profiles set deactivated=true where id=${q(reader)}`,
   );

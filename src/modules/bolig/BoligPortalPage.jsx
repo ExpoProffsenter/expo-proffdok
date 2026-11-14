@@ -7,6 +7,8 @@ import {
   portalStatus,
 } from "./boligPortalClient.js";
 import Summary from "./BoligAgreementSummary.jsx";
+import ChoiceCards, {PortalGoods, PortalPrices} from "./BoligPortalChoiceCards.jsx";
+import {combinedPortalChoice} from "./boligPortalChoices.js";
 import {
   agreementMoney as money,
   agreementOverview,
@@ -34,6 +36,7 @@ export default function BoligPortalPage() {
     [tab, setTab] = useState("choices");
   const [draft, setDraft] = useState({
       offer_id: "",
+      offer_ids: [],
       body: "",
       message: "",
       name: "",
@@ -43,6 +46,7 @@ export default function BoligPortalPage() {
     [review, setReview] = useState(null),
     [agreement, setAgreement] = useState(null),
     [notice, setNotice] = useState("");
+  const choicesHeading=useRef(null), requestsHeading=useRef(null);
   const selectedAgreement=useRef(null);
   selectedAgreement.current=agreement;
   const agreementHeading=useRef(null);
@@ -104,6 +108,7 @@ export default function BoligPortalPage() {
         setAgreement(null);setReview(null);setDraft(previous=>({...previous,confirmed:false}));
         setNotice('Avtalen er oppdatert. Åpne den nye utgaven og kontroller den før du svarer.');
       }
+      if(current.current && current.current.menu_version !== next.menu_version){setReview(null);setNotice("Valgmulighetene er oppdatert. Kontroller valgene på nytt.");}
       setData(next);
       setError("");
     } catch (e) {
@@ -205,7 +210,7 @@ export default function BoligPortalPage() {
     }
   };
   const doc = data?.agreements.find((d) => d.id === agreement),
-    selected = data?.offers.find((o) => o.id === draft.offer_id),
+    selected = data?.combine_base_id ? combinedPortalChoice(data,draft.offer_ids || []) : data?.offers.find((o) => o.id === draft.offer_id),
     waiting = data?.events.some(
       (e) => e.kind === "request" && e.status === "pending",
     );
@@ -323,7 +328,7 @@ export default function BoligPortalPage() {
           <aside className="bolig-portal-next" aria-label="Neste steg">
             <span className="bolig-portal-next-icon" aria-hidden="true"><ClipboardCheck size={24}/></span>
             <div><small>NESTE STEG</small><h2>{nextStep.title}</h2><p>{nextStep.text}</p></div>
-            <button type="button" onClick={() => setTab(nextStep.tab)}>{nextStep.button}<ArrowRight size={18} aria-hidden="true"/></button>
+            <button type="button" onClick={() => {setTab(nextStep.tab); requestAnimationFrame(()=>{const target=waiting?requestsHeading.current:choicesHeading.current; if(nextStep.tab==="choices"){target?.focus({preventScroll:true});target?.scrollIntoView({block:"start"});}});}}>{nextStep.button}<ArrowRight size={18} aria-hidden="true"/></button>
           </aside>
           <nav className="bolig-portal-tabs" aria-label="Beboerportal">
             {sections.map(([id, label]) => {
@@ -354,7 +359,7 @@ export default function BoligPortalPage() {
           {tab === "choices" && (
             <>
               <section className="bolig-resident-card">
-                <h2>Velg det som passer deg</h2>
+                <h2 tabIndex={-1} ref={choicesHeading} style={{scrollMarginTop:90}}>Velg det som passer deg</h2>
                 {data.choice_deadline && <p role="status"><strong>Bestillingsfrist: {data.choice_deadline} (til slutten av dagen, norsk tid).</strong> {choicesClosed ? "Fristen er utløpt. Kontakt prosjektleder for ny frist. Avtaler og dokumenter er fortsatt tilgjengelige." : "Send nye tilvalg før fristen."}</p>}
                 <p>
                   Prosjektleder har klargjort disse valgmulighetene for boligen
@@ -369,59 +374,18 @@ export default function BoligPortalPage() {
                 )}
                 {waiting && (
                   <p className="bolig-portal-info">
-                    Et valg venter på gjennomgang. Send en melding hvis du
-                    ønsker å endre det.
+                    Et valg venter på gjennomgang. {data.messaging_enabled === false ? "Kontakt prosjektleder hvis du ønsker å endre det. Kontaktinformasjon finner du under Meldinger." : "Send en melding hvis du ønsker å endre det."}
                   </p>
                 )}
-                <div className="bolig-portal-offers">
-                  {data.offers.map((o) => (
-                    <article
-                      key={o.id}
-                      className={draft.offer_id === o.id ? "selected" : ""}
-                    >
-                      {draft.offer_id === o.id && <span className="bolig-portal-selected"><Check size={14} aria-hidden="true"/>Valgt til gjennomgang</span>}
-                      <label className="bolig-portal-choice">
-                        <input
-                          type="radio"
-                          name="offer"
-                          value={o.id}
-                          checked={draft.offer_id === o.id}
-                          disabled={disabled || waiting || choicesClosed}
-                          onChange={() =>
-                            update({
-                              offer_id: o.id,
-                              menu_version: data.menu_version,
-                            })
-                          }
-                        />
-                        <span>
-                          <strong>{o.title}</strong>
-                          <small>
-                            Tilvalg: {money(o.total_cents)} inkl. mva.
-                          </small>
-                        </span>
-                      </label>
-                      <details>
-                        <summary>Se varer · {o.goods.length}</summary>
-                        <ul>
-                          {o.goods.map((g) => (
-                            <li key={g.key}>
-                              <strong>{g.name}</strong>
-                              <small>
-                                {g.room_name} · {g.quantity} {g.unit}
-                                {g.sku ? ` · ${g.sku}` : ""}
-                              </small>
-                            </li>
-                          ))}
-                        </ul>
-                      </details>
-                    </article>
-                  ))}
-                </div>
-                {selected && !waiting && !choicesClosed && (
+                <ChoiceCards data={data} draft={draft} disabled={disabled || waiting || choicesClosed} onChange={update}/>
+                {data.combine_base_id && !selected && <p role="alert">Et tidligere valgt tilvalg er ikke lenger tilgjengelig. <button disabled={disabled || waiting || choicesClosed} onClick={()=>update({offer_ids:[],menu_version:data.menu_version})}>Velg tilvalg på nytt</button></p>}
+                {selected?.conflict && <p role="alert">{selected.conflict}</p>}
+                {data.combine_base_id && selected && !selected.conflict && <div className="bolig-choice-total">Samlet pristillegg inkl. mva.: {money(selected.total_cents)}</div>}
+                {selected && !selected.conflict && !waiting && !choicesClosed && (
                   <form
                     onSubmit={(e) => {
                       e.preventDefault();
+                      update({menu_version:data.menu_version});
                       setReview("request");
                     }}
                   >
@@ -439,9 +403,11 @@ export default function BoligPortalPage() {
                     </button>
                   </form>
                 )}
-                {review === "request" && selected && !choicesClosed && (
+                {review === "request" && selected && !selected.conflict && !choicesClosed && (
                   <section className="bolig-portal-info">
                     <h3>Kontroller før du sender</h3>
+                    <PortalGoods goods={selected.goods}/>
+                    <PortalPrices items={selected.price_details}/>
                     <p>
                       {selected.title} · {money(selected.total_cents)} inkl.
                       mva. {draft.body}
@@ -454,7 +420,7 @@ export default function BoligPortalPage() {
                       disabled={disabled}
                       onClick={() =>
                         run("request", {
-                          offer_id: selected.id,
+                          ...(data.combine_base_id ? {offer_ids:draft.offer_ids || []} : {offer_id: selected.id}),
                           menu_version: draft.menu_version ?? data.menu_version,
                           body: draft.body,
                         })
@@ -466,7 +432,7 @@ export default function BoligPortalPage() {
                 )}
               </section>
               <section className="bolig-resident-card">
-                <h2>Dine innsendte valg</h2>
+                <h2 tabIndex={-1} ref={requestsHeading} style={{scrollMarginTop:90}}>Dine innsendte valg</h2>
                 {data.events.filter((e) => e.kind === "request").length ===
                 0 ? (
                   <p>Du har ikke sendt inn valg ennå.</p>
