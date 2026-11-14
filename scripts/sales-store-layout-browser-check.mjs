@@ -174,8 +174,6 @@ try {
     const nextPrice = active.getByLabel(/^Pris pr\. enhet inkl\. mva\./);
     await nextPrice.fill("250");
     await nextPrice.press("Enter");
-    // React may commit after the key event; count() itself does not wait.
-    await page.locator(".store-product-container").nth(2).waitFor();
     eq(await page.locator(".store-product-container").count(), 3, `Enter in price adds the next item at ${width}`);
     active = page.locator(".store-product-container.is-open");
     await active.getByLabel("Varenavn *", { exact: true }).fill("Tastaturvare");

@@ -2,6 +2,7 @@ import React, {useEffect,useRef,useState} from 'react';
 import {collaborationRpc} from './boligCollaborationClient.js';
 import {boligDraftKey,readBoligDraft,writeBoligDraft} from './boligClient.js';
 import './boligPartners.css';
+import './boligShopStaff.css';
 export default function BoligShopStaff({context,root}) {
  const key=boligDraftKey(context,root.id,'shop-staff');
  const [email,setEmail]=useState(()=>readBoligDraft(key,{})?.email||''),[days,setDays]=useState(90),[data,setData]=useState(null),[candidate,setCandidate]=useState(null),[checked,setChecked]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState(''),[pending,setPending]=useState(()=>readBoligDraft(key,{})?.pending||null);
@@ -22,7 +23,7 @@ export default function BoligShopStaff({context,root}) {
    if(alive.current){setError(e.message);if(['42501','22023','PT409'].includes(e.code)){persist(email,null);setPending(null);setCandidate(null);setChecked(false);if(e.code==='42501')setData(null);}}
   } finally {operation.current=false;if(alive.current)setBusy(false);}
  }
- return <section className="bolig-partners" aria-label="Butikktilgang">
+ return <section className="bolig-partners bolig-shop-staff" aria-label="Butikktilgang">
   <header className="bolig-partner-hero"><div><h2>Butikktilgang</h2><p>Butikkansatte kan hjelpe beboerne med tilvalg og publisere varer og montering i beboerportalen. Beboeren godkjenner selv.</p></div></header>
   {error&&<p role="alert">{error}</p>}{notice&&<p role="status">{notice}</p>}
   {!data?<button disabled={busy} onClick={()=>run('list')}>Hent tilgangene</button>:<>
