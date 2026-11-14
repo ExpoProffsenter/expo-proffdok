@@ -9,6 +9,9 @@ import UnitOverview from './BoligShopUnitOverview.jsx';
 import ShopProposal from './BoligShopProposal.jsx';
 import BoligPackageChoices from './BoligPackageChoices.jsx';
 export default function BoligMyCollaborations({userId}){
+ return <CollaborationWorkspace key={userId} userId={userId}/>;
+}
+function CollaborationWorkspace({userId}){
  const [list,setList]=useState([]),[selected,setSelected]=useState(''),[data,setData]=useState(null),[unit,setUnit]=useState(''),[query,setQuery]=useState(''),[catalog,setCatalog]=useState(false),[error,setError]=useState(''),[loading,setLoading]=useState(true),[switchBlocked,setSwitchBlocked]=useState(false);
  const seq=useRef(0);
  useEffect(()=>{let alive=true;const load=async()=>{const n=++seq.current;setLoading(true);try{const next=await collaborationRpc('bolig_my_collaborations',{p_root_id:selected||null},userId);if(!alive||n!==seq.current)return;if(selected){if(next?.root?.id!==selected||!Array.isArray(next?.units))throw Error('Prosjektgrunnlaget kunne ikke leses. Prøv igjen.');setData(next);}else{if(!Array.isArray(next?.projects))throw Error('Prosjektoversikten kunne ikke leses. Prøv igjen.');setList(next.projects);setData(null);}setError('');}catch(e){if(alive&&n===seq.current){setData(null);setList([]);setError(e.code==='PGRST202'?'':e.message);}}finally{if(alive&&n===seq.current)setLoading(false);}};

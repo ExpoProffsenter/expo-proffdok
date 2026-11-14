@@ -5,7 +5,7 @@ const rpc=path.join(temp,'rpc.js'),stub=path.join(temp,'stub.jsx'),entry=path.jo
 fs.writeFileSync(rpc,`export async function collaborationRpc(name,args,user){return window.__rpc(name,args,user);}`);
 fs.writeFileSync(stub,`import React,{useEffect,useState} from '${cwd}/node_modules/react/index.js';export default function Editor({collaborationView}){const [note,setNote]=useState('');useEffect(()=>{window.__mounts++;return()=>window.__unmounts++;},[]);return <label data-collaboration-view={String(collaborationView)}>Arbeidsutkast<input value={note} onChange={e=>setNote(e.target.value)}/></label>;}`);
 fs.writeFileSync(path.join(temp,'shop-stub.jsx'),`export default function Shop(){return null;}`);
-fs.writeFileSync(entry,`import React,{act} from '${cwd}/node_modules/react/index.js';import {createRoot} from '${cwd}/node_modules/react-dom/client.js';import Page from '${cwd}/src/modules/bolig/BoligMyCollaborations.jsx';const root=createRoot(document.getElementById('app'));window.__act=act;window.__render=()=>root.render(<Page userId="user"/>);window.__dispose=()=>root.unmount();`);
+fs.writeFileSync(entry,`import React,{act} from '${cwd}/node_modules/react/index.js';import {createRoot} from '${cwd}/node_modules/react-dom/client.js';import Page from '${cwd}/src/modules/bolig/BoligMyCollaborations.jsx';const root=createRoot(document.getElementById('app'));window.__act=act;window.__render=()=>root.render(<Page userId={window.__user||"user"}/>);window.__dispose=()=>root.unmount();`);
 const built=await build({root:cwd,configFile:false,logLevel:'silent',define:{'process.env.NODE_ENV':'"development"'},plugins:[react({jsxRuntime:"classic"})],resolve:{alias:[{find:'./boligCollaborationClient.js',replacement:rpc},{find:'./BoligCatalog.jsx',replacement:stub},{find:'./BoligShopProposal.jsx',replacement:path.join(temp,'shop-stub.jsx')},{find:'./BoligPackageChoices.jsx',replacement:stub}]},build:{write:false,minify:false,lib:{entry,formats:['iife'],name:'CollabProof',cssFileName:'collab-proof'}}});
 const dom=new JSDOM('<div id="app"></div>',{url:'https://qa.invalid',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window;
 w.MessageChannel=class{constructor(){this.port1={onmessage:null};this.port2={postMessage:()=>setImmediate(()=>this.port1.onmessage?.())};}};
@@ -37,6 +37,7 @@ try{
  assert.equal(w.document.querySelector('select').value,'u','Can return without leaving project');
  rejectAccess=true;await act(()=>w.dispatchEvent(new w.Event('focus')));assert.equal(w.__unmounts,3,'Revoked access removes editor');assert(w.document.querySelector('dialog [role="alert"]').textContent.includes('Tilgang tilbakekalt'),'Revocation explanation is inside the visible modal');
  rejectAccess=false;malformed=true;await act(()=>w.dispatchEvent(new w.Event('focus')));assert(w.document.body.textContent.includes('Prosjektgrunnlaget kunne ikke leses'));assert.equal(w.__mounts,3,'Malformed response cannot remount editor');
+ w.__user='other';hold=true;await act(()=>w.__render());assert(!w.document.querySelector('dialog'),'User change immediately removes previous private apartment');hold=false;
  console.log('PASS collaboration React: delayed refresh retains editor and draft; same access preserves mount; revocation removes access');
 }finally{await act(()=>w.__dispose());dom.window.close();fs.rmSync(temp,{recursive:true,force:true});}
 
