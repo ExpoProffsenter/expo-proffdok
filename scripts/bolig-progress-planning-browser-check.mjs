@@ -123,6 +123,20 @@ try {
     "row",
     "Checkbox and apartment label share one row",
   );
+  const checkStepLayout = async (width) => {
+    const overlaps = await d.locator('.bolig-plan-step').evaluateAll(rows => rows.flatMap(row => {
+      const controls = [...row.querySelectorAll('input,select,button')];
+      return controls.flatMap((a,i) => controls.slice(i+1).filter(b => {
+        const x=a.getBoundingClientRect(),y=b.getBoundingClientRect();
+        return Math.min(x.right,y.right)-Math.max(x.left,y.left)>1 && Math.min(x.bottom,y.bottom)-Math.max(x.top,y.top)>1;
+      }).map(b => a.outerHTML+' overlaps '+b.outerHTML));
+    }));
+    eq(overlaps, [], 'Planning controls do not overlap at '+width);
+  };
+  await checkStepLayout(1366);
+  await d.getByLabel('Startregel 1',{exact:true}).selectOption('offset');
+  await checkStepLayout(1366);
+  await d.getByLabel('Startregel 1',{exact:true}).selectOption('after');
   await d.getByLabel("Bygg", { exact: true }).selectOption("b");
   await d
     .getByRole("button", { name: "Velg alle treff (2)", exact: true })
@@ -313,6 +327,10 @@ try {
       true,
       "Mobile dialog width " + width,
     );
+    await checkStepLayout(width);
+    await d.getByLabel('Startregel 1',{exact:true}).selectOption('offset');
+    await checkStepLayout(width);
+    await d.getByLabel('Startregel 1',{exact:true}).selectOption('after');
     if (process.env.BOLIG_PLANNING_QA)
       await page.screenshot({
         path: process.env.BOLIG_PLANNING_QA + "/mass-setup-" + width + ".png",

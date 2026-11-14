@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Hindre overlapp i masseplanens felter",
+  "change": "BEGGE. Skynettopptak viste at min-width 130px presset felter utenfor 100px/85px gridkolonner. Fjern minimumsbredden lokalt i bolig-plan-step. Ingen endring av planberegning eller lagring.",
+  "verification": "Skynett: gjenskapt i masseplan med og uten forskjøvet start. Ny geometrisk regresjon for alle kontroller ved desktop og mobil, med og uten offset. Lokal Chromium blokkert av socket-begrensning; CI og ny skynettprøve må verifisere kandidaten.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Avgrenset bredderettelse; ingen endret brukerflyt, dataflyt, oppsett eller modulkontrakt."
+    },
+    "module": {
+      "required": false,
+      "reason": "Avgrenset bredderettelse; ingen endret brukerflyt, dataflyt, oppsett eller modulkontrakt."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Avgrenset bredderettelse; ingen endret brukerflyt, dataflyt, oppsett eller modulkontrakt."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Avgrenset bredderettelse; ingen endret brukerflyt, dataflyt, oppsett eller modulkontrakt."
+    }
+  }
+}
