@@ -7,6 +7,7 @@ import react from "@vitejs/plugin-react";
 const { JSDOM } = await import(process.env.KSHMS_JSDOM_PATH || "jsdom");
 await import("./bolig-resident-import-check.mjs");
 await import("./bolig-placement-react-check.mjs");
+await import("./bolig-project-info-react-check.mjs");
 await import("./bolig-resident-batch-check.mjs");
 await import("./bolig-resident-batch-react-check.mjs");
 const cwd = process.cwd(),

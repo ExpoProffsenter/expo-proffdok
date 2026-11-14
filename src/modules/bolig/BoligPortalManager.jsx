@@ -611,7 +611,7 @@ export default function BoligPortalManager({
               vises i prosjektoversikten.{" "}
               {data.portal?.message_mail_enabled
                 ? "E-post varsler om nye meldinger, uten meldingsteksten."
-                : "E-postvarsling er satt på pause i testfasen."}
+                : "E-postvarsling er ikke aktivert."}
             </p>
             {(() => {
               const pending = (data.portal?.events || []).filter(
