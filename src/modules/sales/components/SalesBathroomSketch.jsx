@@ -52,6 +52,8 @@ const FIXTURE_PRESETS = {
   sink: { label: "Servant", widthMm: "600", depthMm: "450", fixedSize: false },
   shower: { label: "Dusj", widthMm: "900", depthMm: "900", fixedSize: false },
   bath: { label: "Badekar", widthMm: "1700", depthMm: "750", fixedSize: false },
+  washer: { label: "Vaskemaskin", widthMm: "600", depthMm: "600", fixedSize: false },
+  tallCabinet: { label: "Høyskap", widthMm: "400", depthMm: "350", fixedSize: false },
 };
 
 const FIXTURE_LABELS = new Set(Object.values(FIXTURE_PRESETS).map((item) => item.label));
@@ -67,6 +69,8 @@ const TOOL_BUTTONS = [
   ["sink", "Servant"],
   ["shower", "Dusj"],
   ["bath", "Badekar"],
+  ["washer", "Vaskemaskin"],
+  ["tallCabinet", "Høyskap"],
   ["drain", "Sluk"],
   ["waste", "Avløp"],
   ["cold", "Kaldt vann"],
@@ -583,7 +587,7 @@ function placeWallAttachedFixtureAtSideDistance(box, walls, distanceMm, anchor) 
 }
 
 function isFreePlacementFixture(box) {
-  return box?.label === "Dusj" || box?.label === "Badekar";
+  return ["Dusj", "Badekar", "Vaskemaskin", "Høyskap"].includes(box?.label);
 }
 
 function fixturePlacementGapData(box, walls = []) {
@@ -814,6 +818,20 @@ function svgTextBadgeMarkup(x, y, text, fontSize = 7, fontWeight = 800, color = 
   return `<g${transform}><rect x="${x - width / 2}" y="${y - height / 2}" width="${width}" height="${height}" rx="3" fill="#fff" fill-opacity="0.94"/><text x="${x}" y="${y + fontSize * 0.34}" text-anchor="middle" font-size="${fontSize}" font-weight="${fontWeight}" fill="${color}">${escapeXml(value)}</text></g>`;
 }
 
+function applianceOutline(label, size) {
+  const { width, depth } = size;
+  if (label === "Vaskemaskin") {
+    return {
+      drum: Math.min(width, depth) * 0.28,
+      panel: `M ${-width / 2} ${-depth * 0.3} H ${width / 2}`,
+    };
+  }
+  if (label === "Høyskap") {
+    return { panel: `M ${-width * 0.3} ${-depth * 0.35} V ${depth * 0.35} M ${width * 0.17} ${-depth * 0.15} V ${depth * 0.15}` };
+  }
+  return null;
+}
+
 function FixtureShape({ box, size, active = false }) {
   const stroke = active ? "#087f88" : "#4b5b62";
   const sw = active ? 4 : 2.5;
@@ -845,6 +863,14 @@ function FixtureShape({ box, size, active = false }) {
     return <>
       <rect x={-size.width / 2} y={-size.depth / 2} width={size.width} height={size.depth} rx="10" fill="#fff" stroke={stroke} strokeWidth={sw} />
       <rect x={-size.width / 2 + 8} y={-size.depth / 2 + 7} width={Math.max(10, size.width - 16)} height={Math.max(10, size.depth - 14)} rx="8" fill="none" stroke="#087f88" strokeWidth="1.7" />
+    </>;
+  }
+  const appliance = applianceOutline(box.label, size);
+  if (appliance) {
+    return <>
+      <rect x={-size.width / 2} y={-size.depth / 2} width={size.width} height={size.depth} rx="3" fill="#fff" stroke={stroke} strokeWidth={sw} />
+      <path d={appliance.panel} fill="none" stroke="#087f88" strokeWidth="1.7" />
+      {appliance.drum && <circle cx="0" cy={size.depth * 0.08} r={appliance.drum} fill="none" stroke="#087f88" strokeWidth="1.7" />}
     </>;
   }
   return <rect x={-size.width / 2} y={-size.depth / 2} width={size.width} height={size.depth} rx="4" fill="#f5fbfc" fillOpacity="0.92" stroke={stroke} strokeWidth={sw} />;
@@ -1020,6 +1046,11 @@ function fixtureMarkup(box, walls) {
   if (box.label === "Badekar") {
     return `<rect x="-${size.width / 2}" y="-${size.depth / 2}" width="${size.width}" height="${size.depth}" rx="10" fill="#fff" stroke="#087f88" stroke-width="2"/><rect x="${-size.width / 2 + 8}" y="${-size.depth / 2 + 7}" width="${Math.max(10, size.width - 16)}" height="${Math.max(10, size.depth - 14)}" rx="8" fill="none" stroke="#087f88" stroke-width="1.5"/>`;
   }
+  const appliance = applianceOutline(box.label, size);
+  if (appliance) {
+    const drum = appliance.drum ? `<circle cx="0" cy="${size.depth * 0.08}" r="${appliance.drum}" fill="none" stroke="#087f88" stroke-width="1.7"/>` : "";
+    return `<rect x="${-size.width / 2}" y="${-size.depth / 2}" width="${size.width}" height="${size.depth}" rx="3" fill="#fff" stroke="#087f88" stroke-width="2"/><path d="${appliance.panel}" fill="none" stroke="#087f88" stroke-width="1.7"/>${drum}`;
+  }
   return `<rect x="-${size.width / 2}" y="-${size.depth / 2}" width="${size.width}" height="${size.depth}" rx="4" fill="#f5fbfc" stroke="#087f88" stroke-width="2"/>`;
 }
 
@@ -1158,7 +1189,7 @@ export function bathroomSketchDataUrl(value) {
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
 
-export default function SalesBathroomSketch({ value, onChange, disabled = false, storedImageAvailable = false }) {
+export default function SalesBathroomSketch({ value, onChange, disabled = false, storedImageAvailable = false, portalTarget = null }) {
   const svgRef = useRef(null);
   const sketch = useMemo(() => normalizeBathroomSketch(value), [value]);
   const sketchRef = useRef(sketch);
@@ -2066,7 +2097,7 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false,
         {previewUrl ? <img src={previewUrl} alt="Forhåndsvisning av badskisse" style={{ display: "block", width: "100%", maxWidth: "100%", height: "auto" }} /> : <span style={{ padding: 24, color: "#5d6a70", textAlign: "center" }}>{storedImageAvailable ? "Den lagrede badskissen vises ovenfor." : "Ingen badskisse registrert ennå."}</span>}
       </div>
 
-      {isOpen && typeof document !== "undefined" ? createPortal(renderEditor(), document.body) : null}
+      {isOpen && typeof document !== "undefined" ? createPortal(renderEditor(), portalTarget || document.body) : null}
     </section>
   );
 }
