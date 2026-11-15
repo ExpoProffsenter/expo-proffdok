@@ -8,7 +8,24 @@ let checks=0,browser;const eq=(a,b,label)=>{assert.deepEqual(a,b,label);checks++
 const addedIds=['plan-opprett-rediger','varetelling-omrade-pause-kontroll'];
 const staffingId='bemanningsplan-eksport';
 const boligFullId='bolig-a-til-aa';
-const fourteenGuides=VIDEO_GUIDES.filter(x=>x.id!==boligFullId);
+// Only the two explicitly refreshed media records may differ from V1.
+// Reconstruct them for all historical preservation hashes below; all live
+// records still undergo actual hash/bytes/native playback/role tests.
+const priorShorts=JSON.parse(fs.readFileSync('scripts/fixtures/bolig-short-video-v1-metadata.json','utf8'));
+const shortMediaKeys=new Set(['src','track','duration','sha256','bytes','sourceCommit','chapters']);
+const stableGuide=g=>Object.fromEntries(Object.entries(g).filter(([key])=>!shortMediaKeys.has(key)));
+const preservationGuides=VIDEO_GUIDES.map(g=>{
+ const prior=priorShorts.find(p=>p.id===g.id);if(!prior)return g;
+ eq(stableGuide(g),stableGuide(prior),'refreshed short retains identity, access and topic '+g.id);
+ const expected=g.id==='finn-bolig'?['/help-videos/finn-bolig-v3.mp4',112,8,'cc307472835dbcb594a861d0e0f79db641e8dd7409aa57b693c0f62bca5aa645']:['/help-videos/bolig-masseplan-v3.mp4',90,5,'84067dcc29558bb55df7f507bd66f2c670bdf976b6f6731b2b1c9e44bdcc8dc1'];
+ eq([g.src,g.duration,g.chapters.length,g.sha256],expected,'exact reviewed V3 short '+g.id);
+ return prior;
+});
+const previousFull=JSON.parse(fs.readFileSync('scripts/fixtures/bolig-aa-v12-metadata.json','utf8'));
+const currentFull=VIDEO_GUIDES.find(g=>g.id===boligFullId);
+eq(stableGuide(currentFull),stableGuide(previousFull),'A–Å retains identity, topic and access');
+eq([currentFull.src,currentFull.duration,currentFull.chapters.length,currentFull.sha256],["/help-videos/bolig-a-til-aa-v13.mp4", 1036, 91, "3e456bfce02bda0197ce4450b97d03d090c878acf59513a435d8621d661548c1"],'exact reviewed A–Å V13');
+const fourteenGuides=preservationGuides.filter(x=>x.id!==boligFullId);
 const thirteenGuides=fourteenGuides.filter(x=>x.id!==staffingId);
 eq(crypto.createHash('sha256').update(JSON.stringify(thirteenGuides)).digest('hex'),'0fee5b378bc83a1f08d6726750acb7669fd45a1e54bbe65485c89b1636c159f3','all thirteen earlier guide records preserved');
 const priorGuides=thirteenGuides.filter(x=>!addedIds.includes(x.id));
@@ -19,7 +36,7 @@ eq(crypto.createHash('sha256').update(JSON.stringify(priorGuides.filter(x=>x.id!
 eq(availableVideoGuides({authenticated:true,topics:['rapport']}).map(x=>x.id),['prosjekt-statusrapport'],'report movie follows existing report topic');
 eq(availableVideoGuides({authenticated:true,topics:['sales','produkter']}).some(x=>x.id==='prosjekt-statusrapport'),false,'other topics cannot grant report movie');
 eq(searchVideoGuides(availableVideoGuides({authenticated:true,topics:['hjelp']}),'statusrapport').length,0,'search cannot reveal unavailable report movie');
-eq(VIDEO_GUIDES.filter(x=>x.id===boligFullId).map(x=>x.chapters.length),[57],'A–Å guide contains all recorded chapter markers');
+eq(VIDEO_GUIDES.filter(x=>x.id===boligFullId).map(x=>x.chapters.length),[91],'A–Å guide contains all recorded chapter markers');
 eq(availableVideoGuides({authenticated:true,topics:['bolig'],canUseBolig:false}).some(x=>x.id===boligFullId),false,'A–Å guide requires Bolig access');
 eq(VIDEO_GUIDES.filter(x=>x.id==='bolig-masseplan').length,1,'one focused mass-planning chapter');
 eq(availableVideoGuides({authenticated:true,topics:['hjelp'],canUseBolig:false}).some(x=>x.id==='bolig-masseplan'),false,'mass-planning film requires Bolig access');
@@ -142,7 +159,7 @@ try{
  await helpSearch.fill('seks sider');await index.locator('.help-video-open').filter({hasText:extractGuide.title}).waitFor();eq(await index.locator('[data-help-topic="kshms"]').count(),1,'new chapter search keeps owning KS/HMS topic');
  await index.locator('[data-help-topic="kshms"]>button').click();const extractTopic=page.locator('dialog[open]').filter({has:page.getByRole('heading',{name:'KS/HMS',exact:true})});await extractTopic.getByRole('button',{name:'Se video: '+extractGuide.title+' 2:02',exact:true}).click();await page.locator('dialog.help-video-player[open]').press('Escape');await page.waitForFunction(()=>!document.querySelector('dialog.help-video-player'));eq(await extractTopic.isVisible(),true,'PDF guide returns to same KS/HMS topic');eq(await extractTopic.getByRole('button',{name:'Se video: '+extractGuide.title+' 2:02',exact:true}).evaluate(e=>e===document.activeElement),true,'PDF guide returns focus to its original button');await extractTopic.getByRole('button',{name:'Lukk panelet',exact:true}).click();await extractTopic.waitFor({state:'detached'});
  const hrGuide=VIDEO_GUIDES.find(g=>g.id==='hr-samtale-tiltak-referat');
- await helpSearch.fill('Skill frist');await waitCount(3);eq(await index.locator('[data-help-topic="hr"]').count(),1,'new HR chapter search uses the existing HR topic');eq(await buttons().filter({hasText:hrGuide.title}).count(),1,'matching HR movie remains present exactly once');eq(await buttons().filter({hasText:'Opprett og fullfør en prøvesamtale'}).count(),1,'owning HR topic retains its original practice film');
+ await helpSearch.fill('Skill frist fra oppfølging');await waitCount(3);eq(await index.locator('[data-help-topic="hr"]').count(),1,'new HR chapter search uses the existing HR topic');eq(await buttons().filter({hasText:hrGuide.title}).count(),1,'matching HR movie remains present exactly once');eq(await buttons().filter({hasText:'Opprett og fullfør en prøvesamtale'}).count(),1,'owning HR topic retains its original practice film');
  await index.locator('[data-help-topic="hr"]>button').click();const hrTopic=page.locator('dialog[open]').filter({has:page.getByRole('heading',{name:'HR',exact:true})});
  await hrTopic.getByRole('button',{name:'Se video: '+hrGuide.title+' 1:46',exact:true}).click();await page.locator('dialog.help-video-player[open]').press('Escape');await page.waitForFunction(()=>!document.querySelector('dialog.help-video-player'));eq(await hrTopic.isVisible(),true,'new HR film returns to same topic');eq(await hrTopic.getByRole('button',{name:'Se video: '+hrGuide.title+' 1:46',exact:true}).evaluate(el=>el===document.activeElement),true,'new HR topic film returns focus');await hrTopic.getByRole('button',{name:'Lukk panelet',exact:true}).click();await hrTopic.waitFor({state:'detached'});
  await helpSearch.fill('');await openFilm(hrGuide);await page.evaluate(()=>window.renderHelp({hrContext:null}));await page.waitForFunction(()=>!document.querySelector('dialog.help-video-player'));eq(await page.locator('video').count(),0,'HR revocation removes actual new film');await page.evaluate(p=>window.renderHelp(p),full);eq(await page.locator('dialog.help-video-player').count(),0,'restored HR never revives new film');await waitCount(VIDEO_GUIDES.length);
