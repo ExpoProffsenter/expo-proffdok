@@ -4937,3 +4937,15 @@
 .bolig-shop-image img,.bolig-shop-thumb {width:100px;height:100px;object-fit:contain;flex-shrink:0;}
 .bolig-shop details {margin-block:12px;}
 .bolig-shop button {min-height:44px;margin:4px;white-space:normal;}
+
+.bolig-inspection-form fieldset {
+  min-width: 0;
+}
+
+.bolig-inspection-form textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 5rem;
+  resize: vertical;
+  font: inherit;
+}

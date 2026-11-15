@@ -150,7 +150,7 @@ export default function BoligInspection({ context, root, unit, editable = false 
   const conflict = draft.revision !== record.revision;
   const setNote = (id, value) => update({ ...draft, note: { ...draft.note, [id]: value } });
   return (
-    <form ref={mountForm} className="bolig-draft-form" onSubmit={save}>
+    <form ref={mountForm} className="bolig-catalog-form bolig-inspection-form" onSubmit={save}>
       <p>Lagret befaring kan leses av butikkansatte med personlig tilgang til prosjektet.</p>
       {error && <p role="alert">{error}</p>}
       {draftWarning && <p role="alert">Nettleseren kunne ikke sikre kladden lokalt. Lagre befaringen før du lukker.</p>}
