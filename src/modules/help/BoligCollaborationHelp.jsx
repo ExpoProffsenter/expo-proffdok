@@ -12,4 +12,9 @@ export const BOLIG_COLLABORATION_HELP = [{id:"people-commerce-collaboration",gro
     <><p>Lag grunnpakken og tilvalgene før du deler beboerportalen. Registrerte produktbilder vises også for grunnpakken. Beboeren kan åpne bildene i større størrelse og bruke «Se grunnpakken» for hele innholdet.</p>
     <p>Ved publisering velger du «Hvordan skal beboeren velge?». Velg én fast pakke, eller «Kombiner tilvalg» med en grunnpakke uten pristillegg. Kombinerbare alternativer må bygge på samme grunnpakke og rom. Legg nødvendig montering i samme alternativ som varen.</p>
     <p>Beboeren kan krysse av flere tilvalg. Samme vare og arbeid telles én gang. To tilvalg som erstatter samme grunnvare kan ikke velges samtidig. Beboeren ser pristillegg og eventuelt fratrekk før «Se over valget». Valget sendes til gjennomgang; dette er ikke en aksept av en ny avtale. Manuelt tilpassede pakker brukes som faste alternativer eller separate butikktillegg.</p></>
-  )}];
+  )},
+  {id:"people-unit-inspection",group:"people",title:"Befaring, Badskisse og butikkinnsyn",body:(<>
+    <p>Åpne boligen og velg «Befaring» for å lagre notat, bilder og Badskisse.</p>
+    <p>Under «Badskisse-maler i prosjektet» kan du lagre en skisse som mal og bruke en redigerbar kopi på andre boliger.</p>
+    <p>Butikkansatte med personlig tilgang åpner samme bolig fra «Min side → Mine boligprosjekter» eller via «Min profil / e-postvalg» for å lese den lagrede befaringen.</p>
+  </>)}];
