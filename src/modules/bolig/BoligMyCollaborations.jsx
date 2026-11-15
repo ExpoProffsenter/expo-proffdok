@@ -5,6 +5,7 @@ import './bolig.css';
 import './boligWorkspace.css';
 import './boligCollaboration.css';
 import BoligCatalog from './BoligCatalog.jsx';
+import BoligInspection from './BoligInspection.jsx';
 import UnitOverview from './BoligShopUnitOverview.jsx';
 import ShopProposal from './BoligShopProposal.jsx';
 import BoligPackageChoices from './BoligPackageChoices.jsx';
@@ -39,6 +40,7 @@ function CollaborationWorkspace({userId}){
  {query&&matches.length>0&&<div className="bolig-unit-results" aria-label="Søkeresultater">{matches.map(u=><button type="button" key={u.id} disabled={switchBlocked} aria-pressed={chosen?.id===u.id} onClick={()=>setUnit(u.id)}>{chosen?.id===u.id?'Valgt: ':'Velg: '}Bolig {u.number} · {u.address} · {u.contact_name||'Kontakt ikke registrert'}</button>)}</div>}
  {switchBlocked&&<p role="status">Vent til bildet eller publiseringen er ferdig før du bytter bolig.</p>}
  {chosen&&Object.hasOwn(chosen,'activities')&&<UnitOverview unit={chosen}/>}
+ {chosen&&Object.hasOwn(chosen,'activities')&&<details key={`inspection-${chosen.id}`}><summary>Befaring</summary><BoligInspection context={data.context} root={data.root} unit={chosen}/></details>}
  {chosen&&<ShopProposal onSwitchBlocked={setSwitchBlocked} key={`shop-${chosen.id}`} context={data.context} root={data.root} unit={chosen}/>}
  {chosen&&<BoligPackageChoices collaborationView key={chosen.id} context={data.context} root={data.root} unit={chosen}/>}
  </>}

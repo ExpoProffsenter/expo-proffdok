@@ -93,3 +93,8 @@ Boligoversiktens `catalog_empty` er en prisfri prosjektstatus fra `bolig_overvie
 Min side → Mine boligprosjekter bruker eksplisitt Bytt bolig og klikkbare søkeresultater. Søket endrer aldri målboligen. En valgt bolig utenfor søket markeres. Varer og publiseringskvittering beholder eksisterende bruker/firma/prosjekt/bolig-avgrensning. Boligbytte sperres mens bildet klargjøres eller forespørselen pågår; etter usikkert svar beholdes eksakt retry på opprinnelig bolig. Forhåndsvisningen viser mottakerbolig, adresse og hovedkontakt.
 
 Migrasjonen `20261114195127_bolig_shop_unit_overview.sql` utvider eksisterende `my_collaborations` med telefon, e-post, serverberegnet `choice_deadline_at` og åpne aktiviteter sortert etter start/slutt/ID. Bare kvalifiserte ansatte med aktiv personlig `shop_staff_access` får disse tilleggsfeltene. Eksisterende overordnet autorisasjon, firmaskille og partnerrettigheter beholdes. Ingen endring av kontaktdata, plan, fristregler, medlemskap eller e-post. Visningen bruker oppgangens registrerte adresse og hovedkontakt; den konstruerer ikke poststed eller en ny oppstartsregel. Ferdige og arkiverte aktiviteter utelates. Tomme felt beskrives som ikke registrert.
+
+
+## Befaring per bolig
+
+Fra boligens arbeidsområde åpner du **Befaring**. Fyll ut dato, klokkeslett, ansvarlig og befaringsfelter. Tegn i **Badskisse**, legg til bilder og velg **Lagre befaring**. Lagret skisse kan redigeres fra en annen enhet. Prosjektleder lagrer. Butikkansatte med personlig tilgang bruker **Min side → Mine boligprosjekter**, velger prosjekt og bolig og åpner **Befaring** for å lese lagret notat, bilder og skisse.
