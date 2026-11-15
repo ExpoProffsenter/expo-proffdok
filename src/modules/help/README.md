@@ -24,7 +24,7 @@ Filmene i `public/help-videos` er de fem kontrollerte originalfilene samt massep
 
 Før publisering: kontroller at hver fil/hash og kapittel er riktig, spill filmen gjennom samme native React-avspiller, test søk/område/fokus/retur/kladd, feilet fil og retry, bruker-/firmabytte og tilbakekalt tilgang. Native prøve: `scripts/help-video-browser-check.mjs`. Uferdige filmer får ingen knapp. Sju filmer er ikke full appdekning; flere arbeidsflater trenger egne kontekstinnganger og filmer. Fysisk mobil/Safari er et eget kontrollpunkt.
 
-«Planlegg flere boliger» ligger under Bolig-temaet ved siden av «Finn bolig». Filmen varer 3:24 og dekker utvalg, datoer, takt, ansvar, arbeidstrinn, forhåndsvisning, lagret resultat og retur. Ti kapitler og tekstalternativ følger samme tilgang og avspiller. Dette er et avgrenset masseplankapittel, ikke hele Bolig A–Å.
+«Planlegg flere boliger» ligger under Bolig-temaet ved siden av «Finn bolig». V2 varer 1:30 og dekker utvalg, datoer, takt, ansvar, arbeidstrinn, forhåndsvisning og lagret tidslinje. Fem kapitler og tekstalternativ følger samme tilgang og avspiller. Dette er et avgrenset masseplankapittel, ikke hele Bolig A–Å.
 
 «Last ned statusrapport fra prosjekt» ligger direkte under Rapport og i samme hjelpetema, med sju kapitler, VTT og full tekst. Tilgang følger det eksisterende synlige Rapport-temaet; ingen ny tilgangslesning eller rettighet. Filmen viser eksport uten ekstra KS/HMS fra aktivt prosjekt med ikke utstedt garanti. Den dekker ikke garantiutstedelse, alle dokumentvalg eller full prosjektmodul. Rapportvisningen fra PR311 må følge med ved publisering av denne filmen.
 
@@ -53,4 +53,10 @@ Et avgrenset kapittel på 1:42 med åtte kapitler viser samtidig behov, personti
 
 Eksemplet viser to personer i åtte timer på to dager: to personer samtidig, 16 persontimer per dag og 32 totalt. Kalenderimport og full KS/HMS-reise dekkes ikke. Filmen bruker eksisterende Sandbox-opptak fra PR308/04392220; PR311s planrettelser skal vurderes samlet før autorisert release. Scope, kildefiler og kontrollstatus: docs/qa/STAFFING_EXPORT_HELP_VIDEO_20261106.md.
 
-Boligprosjekter A–Å ligger under Boligprosjekter med 57 kapittelmarkører, undertekster og eksisterende Bolig-tilgang.
+Boligprosjekter A–Å ligger under Boligprosjekter med 91 kapittelmarkører, undertekster og eksisterende Bolig-tilgang.
+
+## Oppdaterte boligfilmer 15.11.2026 (PR343, ikke produksjon)
+
+Finn bolig V3 (1:52, åtte kapitler), Masseplan V3 (1:30, fem kapitler) og A–Å V13 (17:16, 91 kapitler) bruker stor peker og tydelig klikkpuls, uten flytende markeringsrammer. Alle viser faktiske Sandbox-skjermer, med tekst uten lyd. Tidligere filer beholdes for tilbakeføring. Tilgang, avspiller og retur er uendret.
+
+A–Å følger Lindeparken fra oppsett via beboervalg, butikk, fremdrift, ordre, kontroller og UE. En tydelig overgang til eksisterende PILOT viser leveransehistorikk, overtakelse med restpunkter og sluttpakke. Filmen er en veiledning; den attesterer ikke alle negative sperrer eller alle firmaroller. Opptakene er fra flere dokumenterte kandidater; sourceCommit er integrasjonsgrunnlag. UI-rettelsene i PR342 må følge før produksjonssetting. Se `docs/qa/BOLIG_VIDEO_PROGRESS_20261114.md`.

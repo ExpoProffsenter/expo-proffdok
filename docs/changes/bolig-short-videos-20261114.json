@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Boligfilmer med stor peker og A–Å V13",
+  "change": "BEGGE. Versjonerte MP4/VTT, tre eksisterende boligguideposter, Hjelp-README og QA. Stor peker, klikkpuls, ingen flytende markeringsrammer. Eksisterende avspiller og tilganger beholdes. Preview først; TEST OK før produksjon.",
+  "verification": "V13 fullstendig dekodet uten feil; faktisk sluttbilde fra alle 91 scener visuelt kontrollert. Native nettleser-/kapittelkontroll kjøres på kandidat. Ingen ny full funksjonstest av appen påstås.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "Ny film med komplette kapitler og tekst i eksisterende Hjelp-tema."
+    },
+    "module": {
+      "required": true,
+      "reason": "Nytt filmkapittel og konkret avgrensning dokumenteres i Hjelp-README."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Eksisterende statiske filmfiler, tilgangsfilter og avspiller beholdes."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen nye avhengigheter eller miljø-/oppsettsendringer."
+    }
+  }
+}
