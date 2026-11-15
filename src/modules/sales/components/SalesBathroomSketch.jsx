@@ -1158,7 +1158,7 @@ export function bathroomSketchDataUrl(value) {
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
 
-export default function SalesBathroomSketch({ value, onChange, disabled = false, storedImageAvailable = false }) {
+export default function SalesBathroomSketch({ value, onChange, disabled = false, storedImageAvailable = false, portalTarget = null }) {
   const svgRef = useRef(null);
   const sketch = useMemo(() => normalizeBathroomSketch(value), [value]);
   const sketchRef = useRef(sketch);
@@ -2066,7 +2066,7 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false,
         {previewUrl ? <img src={previewUrl} alt="Forhåndsvisning av badskisse" style={{ display: "block", width: "100%", maxWidth: "100%", height: "auto" }} /> : <span style={{ padding: 24, color: "#5d6a70", textAlign: "center" }}>{storedImageAvailable ? "Den lagrede badskissen vises ovenfor." : "Ingen badskisse registrert ennå."}</span>}
       </div>
 
-      {isOpen && typeof document !== "undefined" ? createPortal(renderEditor(), document.body) : null}
+      {isOpen && typeof document !== "undefined" ? createPortal(renderEditor(), portalTarget || document.body) : null}
     </section>
   );
 }

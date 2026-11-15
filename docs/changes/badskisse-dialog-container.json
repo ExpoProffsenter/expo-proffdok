@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "title": "Badskisse i en eksisterende dialog",
+  "change": "Badskisse kan monteres i det øverste dialoglaget når funksjonen gjenbrukes fra Boligprosjekter. Standard for eksisterende Tilbud beholdes.",
+  "verification": "Den eksisterende rutinen for Badskisse kjøres. Tilbudets nettleserregresjoner skal være grønne. Boligflyten testes i egen Sandbox-preview.",
+  "documentation": {
+    "help": {"required": false, "reason": "Ingen nye steg i eksisterende Badskisse."},
+    "module": {"required": false, "reason": "Valgfri intern målcontainer, uendret standard."},
+    "architecture": {"required": false, "reason": "Ingen dataflyt- eller lagringsendring."},
+    "setup": {"required": false, "reason": "Ingen avhengigheter eller oppsettsendringer."}
+  }
+}
