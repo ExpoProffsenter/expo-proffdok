@@ -149,9 +149,10 @@ const personalCurrent = fs.readFileSync(personalPath,"utf8").trim()
  .replace("const BoligPresenceCard=React.lazy(()=>import('../bolig/BoligPresenceCard.jsx'));\n","")
  .replace("  {userId&&authUser?.id===userId&&context?.user_id===userId&&context?.company_id&&<Suspense fallback={null}><BoligPresenceCard key={'presence:'+scope} context={context}/></Suspense>}\n","")
  .replace("   {rights.enabled&&<Suspense fallback={null}><BoligMyTasks key={'tasks:'+scope} context={context}/></Suspense>}\n","");
-// Explicitly authorized collaboration entry: normalize only these exact two
-// integration lines, then preserve every other byte of the shared Min side.
+// The account-bound collaboration card has an entry in Min side and a fallback
+// in profile-only firms. Preserve every other byte of the shared Min side.
 const collaborationAnchors = [
+ "   {!nav?.enabled&&userId&&authUser?.id===userId&&<Suspense fallback={null}><BoligMyCollaborations key={'profile-collaboration:'+userId+':'+(scope||'')} userId={userId}/></Suspense>}\n",
  "const BoligMyCollaborations=React.lazy(()=>import('../bolig/BoligMyCollaborations.jsx'));\n",
  "     {screen==='overview'&&nav?.enabled&&authUser?.id===userId&&<Suspense fallback={null}><BoligMyCollaborations key={'collaboration:'+nav.scope} userId={userId}/></Suspense>}\n",
 ];

@@ -2,6 +2,8 @@ import fs from 'node:fs/promises';
 export default async function({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider,system}){
  await db.exec('reset role');await db.exec(await fs.readFile('supabase/migrations/20261114003459_bolig_shop_staff_admin.sql','utf8'));
  await db.exec(await fs.readFile('supabase/migrations/20261114195127_bolig_shop_unit_overview.sql','utf8'));
+ await db.exec(await fs.readFile('supabase/migrations/20261115003000_bolig_inspection.sql','utf8'));
+ await db.exec(await fs.readFile('supabase/migrations/20261115012500_bolig_inspection_sketch_templates.sql','utf8'));
  await actor(manager);const state=await call('create_plan',null,null,{request_id:id(99500),title:'QA Butikktilgang',reference:'QA',buildings:[{name:'A',building_type:'multi',address:'QA',house_floors:1,entrances:[{address:'QA',counts:[1]}]}]});
  const root=state.root.id;
  const rpc=(action='list',payload={},c=firm,r=root)=>db.query('select public.bolig_shop_staff($1,$2,$3,$4) v',[c,r,action,payload]).then(x=>x.rows[0].v);
@@ -20,14 +22,42 @@ export default async function({db,call,actor,eq,rejects,id,firm,other,manager,re
  await db.query("update bolig_private.units set contact_phone='12345678',contact_email='qa@example.invalid',choice_deadline='2026-12-01' where id=$1",[unit]);
  await actor(outsider,other);
  const mine=(await db.query('select public.bolig_my_collaborations($1) v',[root])).rows[0].v;eq(mine.units[0].contact_phone,'12345678');eq(mine.units[0].contact_email,'qa@example.invalid');eq(mine.units[0].activities,[]);eq(mine.units[0].choice_deadline_at,'2026-12-01T11:00:00+00:00');eq(mine.context.publish_shop,true);eq(mine.context.edit_choices,true);eq(mine.context.edit_catalog,false);
+ const inspection=(revision=null,note=null,photos=null,r=root,u=unit)=>db.query(
+   'select public.bolig_unit_inspection($1,$2,$3,$4,$5) v',[r,u,revision,note,photos]).then(x=>x.rows[0].v);
+ const photo=root+'/'+unit+'/'+id(99506);
+ const media=()=>db.query("select count(*)::int n from storage.objects where bucket_id='bolig-inspection-photos' and name=$1",[photo]).then(x=>x.rows[0].n);
+ eq((await inspection()).revision,0,'Shop view starts with no saved inspection');
+ const templates=(name=null,sketch=null,template=null,r=root,u=unit)=>db.query(
+   'select public.bolig_inspection_sketch_templates($1,$2,$3,$4,$5) v',[r,u,name,sketch,template]).then(x=>x.rows[0].v);
+ await rejects(()=>templates(),'42501');
+ await rejects(()=>inspection(0,{measurements:'Wrong actor'},[]),'42501');
+ await rejects(()=>inspection(null,null,null,id(99507)), '42501');
+ await actor(manager);
+ await db.query("insert into storage.objects(bucket_id,name) values('bolig-inspection-photos',$1)",[photo]);
+ eq(await media(),0,'Draft photo cannot be read before it is saved to an inspection');
+ const note={measurements:'2,2 m',sketch:{walls:[]}};
+ const geometry={walls:[{x1:0,y1:0,x2:200,y2:0,lengthMm:'2200'}]};
+ const template=(await templates(' Bad type A ',geometry)).templates[0];
+ await rejects(()=>templates('bad TYPE a',geometry),'PT409');
+ await rejects(()=>templates('Tom mal',{walls:[]}),'22023');
+ eq(template.name,'Bad type A');
+ eq((await templates(null,null,template.id)).sketch,geometry);
+ await rejects(()=>templates(null,null,template.id,id(99507)),'42501');
+ eq((await inspection()).revision,0,'Template creation leaves the unit inspection untouched');
+ eq((await inspection(0,note,[photo])).revision,1,'Manager can save note, geometry and private photo');
+ await rejects(()=>inspection(0,note,[photo]),'PT409');
+ await actor(outsider,other);
+ eq((await inspection()).note,note,'Assigned employee reads saved notes and geometry from own company workspace');
+ eq(await media(),1,'Assigned employee reads committed photo');
+ await rejects(()=>db.query("insert into storage.objects(bucket_id,name) values('bolig-inspection-photos',$1)",[root+'/'+unit+'/'+id(99508)]),'42501');
  await rejects(()=>call('get',root),'42501');await rejects(()=>rpc(),'42501');
  await db.exec('reset role');eq((await db.query('select count(*)::int n from public.sales_company_memberships where user_id=$1 and company_id=$2',[outsider,firm])).rows[0].n,0,'No project-firm membership');
  for(const change of ['approved=false','deactivated=true']){
  await db.query('update public.profiles set '+change+' where id=$1',[outsider]);await actor(outsider,other);eq((await list()).projects.some(p=>p.id===root),false,'Inactive employee removed immediately');await db.exec('reset role');await db.query('update public.profiles set approved=true,deactivated=false where id=$1',[outsider]);}
  await db.query("update public.sales_company_memberships set workspace_role='kunde' where user_id=$1",[outsider]);await actor(outsider,other);eq((await list()).projects.some(p=>p.id===root),false,'Lost employee membership removes project');await db.exec('reset role');await db.query("update public.sales_company_memberships set workspace_role='ansatt' where user_id=$1",[outsider]);
- await db.query("update bolig_private.shop_staff_access set expires_at=now()-interval '1 second' where root_id=$1",[root]);await actor(outsider,other);eq((await list()).projects.some(p=>p.id===root),false,'Expiry closes access');
+ await db.query("update bolig_private.shop_staff_access set expires_at=now()-interval '1 second' where root_id=$1",[root]);await actor(outsider,other);eq((await list()).projects.some(p=>p.id===root),false,'Expiry closes access');await rejects(()=>inspection(),'42501');eq(await media(),0,'Expired employee loses photo access');
  await actor(system);v=await rpc('assign',{...payload,revision:1,request_id:id(99503)});await actor(manager);await rejects(()=>rpc('assign',{...payload,revision:2,request_id:id(99504)}),'42501');
- v=await rpc('revoke',{id:v.staff[0].id,revision:2,request_id:id(99505)});eq(v.staff[0].enabled,false,'Project owner revokes');await actor(outsider,other);eq((await list()).projects.some(p=>p.id===root),false,'Revocation closes employee view');
+ v=await rpc('revoke',{id:v.staff[0].id,revision:2,request_id:id(99505)});eq(v.staff[0].enabled,false,'Project owner revokes');await actor(outsider,other);eq((await list()).projects.some(p=>p.id===root),false,'Revocation closes employee view');await rejects(()=>inspection(),'42501');eq(await media(),0,'Revoked employee loses photo access');
  // Use the actual support validator with its session/actor/target checks. The
  // foundation harness has synthetic auth.uid; transport is tested separately.
  await db.exec('reset role');

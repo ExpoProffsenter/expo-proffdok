@@ -29,6 +29,7 @@ import BoligCommerce from "./BoligCommerce.jsx";
 import BoligProgress from "./BoligProgress.jsx";
 import BoligShopStaff from "./BoligShopStaff.jsx";
 import BoligPartners from "./BoligPartners.jsx";
+import BoligInspection from "./BoligInspection.jsx";
 import BoligUnitTasks from "./BoligUnitTasks.jsx";
 import BoligRooms from "./BoligRooms.jsx";
 import { BoligVisualSetup } from "./BoligVisualWorkspace.jsx";
@@ -1138,6 +1139,7 @@ function BoligWorkspace({ context, visit, onClose, onOpenProject }) {
                           key={unit.id + ":tasks:" + ctx.role}
                           unit={unit}
                           active={view === "overview"}
+                          inspection={<BoligInspection context={ctx} root={record.root} unit={unit} editable={ctx.role === "manager"} />}
                           progress={<BoligProgress key={`${ctx.user_id}/${ctx.company_id}/${record.root.id}/${unit.id}`} context={ctx} root={record.root} unit={unit}/>}
                           portalIndicator={<UnitDialogueIndicator context={ctx} root={record.root} unit={unit}/>}
                           portal={<BoligPortalManager key={`${ctx.user_id}/${ctx.company_id}/${record.root.id}/${unit.id}`} context={ctx} root={record.root} unit={unit} settings={<UnitDialogueSettings context={ctx} root={record.root} unit={unit}/>}/>}
