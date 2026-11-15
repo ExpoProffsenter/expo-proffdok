@@ -89,6 +89,7 @@ export default function PersonalPage({context,kshmsContext,hrContext,userId,auth
   {screen==='handbook'&&rights.kshms&&<Suspense fallback={<p role="status">Henter personalhåndboka …</p>}><KshmsModule context={kshmsContext} personalOnly/></Suspense>}
   {screen==='hr'&&rights.hr&&<Suspense fallback={<p role="status">Kontrollerer dine oppfølginger …</p>}><HrModule key={scope} context={hrContext} audience="personal" initialEmployeeId={selection.scope===scope?selection.employeeId:null} onEmployeeSelect={id=>setSelection(previous=>previous.scope===scope?{...previous,employeeId:id}:previous)}/></Suspense>}
   <div hidden={screen!=='profile'}>
+   {!nav?.enabled&&userId&&authUser?.id===userId&&<Suspense fallback={null}><BoligMyCollaborations key={'profile-collaboration:'+userId+':'+(scope||'')} userId={userId}/></Suspense>}
    <div hidden={!nav?.enabled}>{authUser&&<AccountContact authUser={authUser} supabaseClient={supabaseClient}/>}</div>
    {screen==='profile'&&rights.hr&&hrContext.enabled&&<PrivateContact context={hrContext}/>}
    <details className="personal-settings" open={!nav?.enabled}><summary>Rapportopplysninger og e-postvalg</summary>{children}</details>

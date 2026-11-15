@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
   CalendarDays,
+  ClipboardList,
   Package,
   Truck,
   ClipboardCheck,
@@ -22,6 +23,7 @@ export default function BoligUnitTasks({
   portal,
   portalIndicator,
   progress,
+  inspection,
 }) {
   const [panel, setPanel] = useState(null),
     dialog = useRef(null),
@@ -38,6 +40,7 @@ export default function BoligUnitTasks({
     }
   }, [panel]);
   const titles = {
+    inspection: "Befaring",
     rooms: "Rom, grunnpakke og tilvalgspakker",
     order: "Bestilling og levering",
     quality: "Sjekklister og dokumentasjon",
@@ -72,6 +75,7 @@ export default function BoligUnitTasks({
   );
   return (
     <div className="bolig-unit-task-grid">
+      {inspection && tile("inspection", ClipboardList, "Befaring", "Notat, bilder og Badskisse")}
       {tile(
         "rooms",
         Package,
@@ -142,6 +146,7 @@ export default function BoligUnitTasks({
         </header>
         <div hidden={panel !== "rooms"}>{rooms}</div>
         <div hidden={panel !== "order"}>{order}</div>
+        {panel === "inspection" && inspection}
         {panel === "quality" && quality}
         {panel === "commerce" && commerce}
         {panel === "portal" && portal}
