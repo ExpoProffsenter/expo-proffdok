@@ -98,3 +98,7 @@ Migrasjonen `20261114195127_bolig_shop_unit_overview.sql` utvider eksisterende `
 ## Befaring per bolig
 
 Fra boligens arbeidsområde åpner du **Befaring**. Fyll ut dato, klokkeslett, ansvarlig og befaringsfelter. Tegn i **Badskisse**, legg til bilder og velg **Lagre befaring**. Lagret skisse kan redigeres fra en annen enhet. Prosjektleder lagrer. Butikkansatte med personlig tilgang bruker **Min side → Mine boligprosjekter**, velger prosjekt og bolig og åpner **Befaring** for å lese lagret notat, bilder og skisse.
+
+### Badskisse-maler i prosjektet
+
+Åpne **Badskisse-maler i prosjektet** i befaringen. Gi den tegnede skissen et navn, for eksempel Bad type A, og velg **Lagre Badskisse som mal**. På en annen bolig i samme prosjekt velger du malen og **Bruk mal på boligen**. Dette kopierer bare skissegeometrien. Lagre befaringen på den nye boligen etter eventuelle justeringer. Hvis boligen allerede har en skisse, får du spørsmål før skissen i kladden erstattes.

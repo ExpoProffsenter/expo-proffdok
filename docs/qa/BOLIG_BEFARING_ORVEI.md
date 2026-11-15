@@ -30,3 +30,7 @@ Fjernede og uferdige medier er ikke tilgjengelige via appen. De blir liggende pr
 Kandidat `7ebb1334` ble publisert på fast branch-preview. Migreringen `bolig_inspection` ble installert kun i Sandbox. I Skynett lagret prosjektleder notat, mål, en redigerbar skisse med sluk og et syntetisk PNG-bilde på H0102 i «QA – Butikkflyt og video 14.11». Etter gjenåpning kom notat, målinger og redigerbar skisse tilbake. PNG ble hentet fra Storage og dekodet til 640 px bredde. PGlite bestod 2052 kontroller, inkludert butikkskriving avvist og både notat- og fototilgang avvist ved utløp/tilbakekalling. Innlogget butikkprøve i Skynett og ny nettleser står igjen.
 
 Delt Badskisse-tilpasning er i PR344. Denne boligendringen vurderes mot den grenen frem til gjenbrukstilpasningen ligger i main.
+
+## Prosjektmaler for Badskisse
+
+Prosjektleder kan lagre en navngitt Badskisse og hente en redigerbar kopi på andre boliger innen samme prosjekt. Lagres bare geometri, uten befaringsnotat, bilder og beboeropplysninger. Samme navn kan brukes i andre prosjekter. I ett prosjekt avvises duplikatnavn uavhengig av store/små bokstaver. Butikkrollen beholder lesing av den lagrede boligbefaringen. Test: lagre mal fra H0102, bruk den på H0101, rediger kopien, og kontroller at malen og originalboligen er uendret.

@@ -3,6 +3,7 @@ export default async function({db,call,actor,eq,rejects,id,firm,other,manager,re
  await db.exec('reset role');await db.exec(await fs.readFile('supabase/migrations/20261114003459_bolig_shop_staff_admin.sql','utf8'));
  await db.exec(await fs.readFile('supabase/migrations/20261114195127_bolig_shop_unit_overview.sql','utf8'));
  await db.exec(await fs.readFile('supabase/migrations/20261115003000_bolig_inspection.sql','utf8'));
+ await db.exec(await fs.readFile('supabase/migrations/20261115012500_bolig_inspection_sketch_templates.sql','utf8'));
  await actor(manager);const state=await call('create_plan',null,null,{request_id:id(99500),title:'QA Butikktilgang',reference:'QA',buildings:[{name:'A',building_type:'multi',address:'QA',house_floors:1,entrances:[{address:'QA',counts:[1]}]}]});
  const root=state.root.id;
  const rpc=(action='list',payload={},c=firm,r=root)=>db.query('select public.bolig_shop_staff($1,$2,$3,$4) v',[c,r,action,payload]).then(x=>x.rows[0].v);
@@ -26,12 +27,23 @@ export default async function({db,call,actor,eq,rejects,id,firm,other,manager,re
  const photo=root+'/'+unit+'/'+id(99506);
  const media=()=>db.query("select count(*)::int n from storage.objects where bucket_id='bolig-inspection-photos' and name=$1",[photo]).then(x=>x.rows[0].n);
  eq((await inspection()).revision,0,'Shop view starts with no saved inspection');
+ const templates=(name=null,sketch=null,template=null,r=root,u=unit)=>db.query(
+   'select public.bolig_inspection_sketch_templates($1,$2,$3,$4,$5) v',[r,u,name,sketch,template]).then(x=>x.rows[0].v);
+ await rejects(()=>templates(),'42501');
  await rejects(()=>inspection(0,{measurements:'Wrong actor'},[]),'42501');
  await rejects(()=>inspection(null,null,null,id(99507)), '42501');
  await actor(manager);
  await db.query("insert into storage.objects(bucket_id,name) values('bolig-inspection-photos',$1)",[photo]);
  eq(await media(),0,'Draft photo cannot be read before it is saved to an inspection');
  const note={measurements:'2,2 m',sketch:{walls:[]}};
+ const geometry={walls:[{x1:0,y1:0,x2:200,y2:0,lengthMm:'2200'}]};
+ const template=(await templates(' Bad type A ',geometry)).templates[0];
+ await rejects(()=>templates('bad TYPE a',geometry),'PT409');
+ await rejects(()=>templates('Tom mal',{walls:[]}),'22023');
+ eq(template.name,'Bad type A');
+ eq((await templates(null,null,template.id)).sketch,geometry);
+ await rejects(()=>templates(null,null,template.id,id(99507)),'42501');
+ eq((await inspection()).revision,0,'Template creation leaves the unit inspection untouched');
  eq((await inspection(0,note,[photo])).revision,1,'Manager can save note, geometry and private photo');
  await rejects(()=>inspection(0,note,[photo]),'PT409');
  await actor(outsider,other);

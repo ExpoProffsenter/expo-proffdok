@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import SalesBathroomSketch, { bathroomSketchDataUrl } from "../sales/components/SalesBathroomSketch.jsx";
 import { getAppSupabaseClient } from "../access/appSupabaseClientRegistry.js";
+import BoligSketchTemplates from "./BoligSketchTemplates.jsx";
 import { collaborationRpc } from "./boligCollaborationClient.js";
 import { boligDraftKey, clearBoligDraft, readBoligDraft, writeBoligDraft } from "./boligClient.js";
 
@@ -170,6 +171,8 @@ export default function BoligInspection({ context, root, unit, editable = false 
           {type ? <input type={type} value={draft.note[id] || ""} maxLength={120} onChange={(event) => setNote(id, event.target.value)} />
             : <textarea value={draft.note[id] || ""} maxLength={12000} onChange={(event) => setNote(id, event.target.value)} />}
         </label>)}
+        <BoligSketchTemplates context={context} root={root} unit={unit} sketch={draft.note.sketch}
+          disabled={busy} onBusy={setBusy} onUse={(value) => setNote("sketch", value)} />
         <SalesBathroomSketch portalTarget={portalTarget} value={draft.note.sketch} disabled={busy} onChange={(value) => setNote("sketch", value)} />
         <label>Legg til befaringsbilder
           <input type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={addPhotos} />
