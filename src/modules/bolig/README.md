@@ -102,3 +102,5 @@ Fra boligens arbeidsområde åpner du **Befaring**. Fyll ut dato, klokkeslett, a
 ### Badskisse-maler i prosjektet
 
 Åpne **Badskisse-maler i prosjektet** i befaringen. Gi den tegnede skissen et navn, for eksempel Bad type A, og velg **Lagre Badskisse som mal**. På en annen bolig i samme prosjekt velger du malen og **Bruk mal på boligen**. Dette kopierer bare skissegeometrien. Lagre befaringen på den nye boligen etter eventuelle justeringer. Hvis boligen allerede har en skisse, får du spørsmål før skissen i kladden erstattes.
+
+Når arbeidsfirmaet viser **Min profil / e-postvalg** i stedet for full Min side, ligger **Mine boligprosjekter** også der. Personlige prosjekttilganger kontrolleres av samme serverfunksjon.

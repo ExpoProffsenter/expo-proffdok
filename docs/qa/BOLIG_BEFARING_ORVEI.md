@@ -34,3 +34,5 @@ Delt Badskisse-tilpasning er i PR344. Denne boligendringen vurderes mot den gren
 ## Prosjektmaler for Badskisse
 
 Prosjektleder kan lagre en navngitt Badskisse og hente en redigerbar kopi på andre boliger innen samme prosjekt. Lagres bare geometri, uten befaringsnotat, bilder og beboeropplysninger. Samme navn kan brukes i andre prosjekter. I ett prosjekt avvises duplikatnavn uavhengig av store/små bokstaver. Butikkrollen beholder lesing av den lagrede boligbefaringen. Test: lagre mal fra H0102, bruk den på H0101, rediger kopien, og kontroller at malen og originalboligen er uendret.
+
+Butikkprøven viste at Bademiljø Expo i Sandbox har profilvisning uten den utvidede Min side. Den personlige prosjektlisten vises derfor også i profilvisningen. Samme serverkontroll og avgrensning brukes.
