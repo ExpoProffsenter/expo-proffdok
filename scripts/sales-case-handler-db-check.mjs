@@ -165,3 +165,5 @@ try{
  eq(await val("select bool_or(has_function_privilege('authenticated',oid,'EXECUTE')) from pg_proc where pronamespace='sales_handler_private'::regnamespace"),false,'all private helper execute grants closed');
  console.log(`PASS Sales case-handler SQL: ${checks} assertions; actual migration, canonical UUID selection, stale upsert and revision protection, access revocation, service-only recipient; disposable PGlite only.`);
 }finally{await db.close();}
+
+await import("./offer-summary-date-db-check.mjs");

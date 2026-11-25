@@ -1,0 +1,5 @@
+# Prisnøytral tekst i tilbud
+
+Sales bruker eksisterende `store_text`-linjer, merket `freeTextBlock: true`. `storeTextTitle` og `storeTextBody` er kundetekst, uten HTML. `freeTextAfterId` peker på en stabil tilbudslinje; tom verdi betyr før første post. `arrangeFreeText` gjenoppretter plassering og hovedpost når generelle tilbud grupperer varene på nytt. Fjernet målpost beholder teksten sist i sin hovedpost. Kladd, mal, signatur/fingeravtrykk, publisert tilbud, låst aksept og kontrakt beholder den eksisterende linjetransporten. Beløp og antall på tekst er null. Kundekomponenten viser tekst uten pris/nummer/lenker. Tilbud, akseptbevis og signert kontrakts PDF bruker paginerte tekstkort.
+
+Datovisningen: `list_sales_request_summaries` utvides kun med `offerPublishedAt` fra den aktive versjonens `created_at` gjennom `sales_offers.active_version_id` og kontroll av samme offer-ID. Opprinnelig firma-/supportoppløsning, status, søk, påminnelser, sortering og returtype beholdes. Ingen fulle payloads lastes til listen, og ingen eksisterende saksrader oppdateres. Kladd uten publisert versjon viser dette og sakens opprettelsesdato. Datoer følger Europe/Oslo.

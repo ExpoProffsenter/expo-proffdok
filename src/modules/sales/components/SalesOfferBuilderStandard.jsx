@@ -17,6 +17,7 @@
 // FASE 30C2 UX: Nettstatus og serverstatus vises eksplisitt. Brukeren får aldri
 // beskjed om bekreftet serverlagring når enheten er offline eller serverkallet feiler.
 
+import { isFreeText } from "../utils/offerFreeText.js";
 import { useEffect, useState } from "react";
 import SalesOfferBuilderCore from "./SalesOfferBuilderCore.jsx";
 import SalesOfferOptionsOnlyEnhancer from "./SalesOfferOptionsOnlyEnhancer.jsx";
@@ -265,7 +266,7 @@ function findInvalidOfferField(offerForm = {}) {
 
   const invalidLineQuantity = lines.find(
     (line) =>
-      String(line?.quantity ?? "").trim() &&
+      !isFreeText(line) && String(line?.quantity ?? "").trim() &&
       !isValidOfferQuantity(line.quantity)
   );
   if (invalidLineQuantity) {
