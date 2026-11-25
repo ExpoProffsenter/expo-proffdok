@@ -96,10 +96,13 @@ export function unitStatus(unit, status, layer) {
       ? { tone: "pending", label: "Klargjør bestilling", icon: "order" }
       : { tone: "empty", label: "Velg grunnpakke først", icon: "empty" };
   }
+  if (status.resident_confirmed) return status.resident_choice_locked
+    ? {tone:status.resident_requires_supplier_followup ? "review" : "ready",label:status.resident_requires_supplier_followup ? "Bekreftet – følg opp vareordre" : "Bekreftet og låst",icon:status.resident_requires_supplier_followup ? "review" : "check"}
+    : {tone:"pending",label:"Åpent for nye beboervalg",icon:"order"};
   if (status.catalog_changed)
     return { tone: "review", label: "Pakkeoppsett endret", icon: "review" };
   return status.choice_revision
-    ? { tone: "ready", label: "Boligvalg lagret", icon: "check" }
+    ? { tone: "ready", label: "Lagrede / bekreftede boligvalg", icon: "check" }
     : { tone: "empty", label: status.catalog_empty === true ? "Grunnpakke og tilvalg er ikke klargjort" : "Boligvalg ikke startet", icon: "empty" };
 }
 const icons = {
@@ -198,6 +201,8 @@ export default function BoligBuildingOverview({
       "focus",
       "expo-proffdok-bolig-catalog",
       "expo-proffdok-bolig-order",
+      "expo-bolig-portal-changed",
+      "expo-bolig-commerce-changed",
     ];
     events.forEach((e) => window.addEventListener(e, load));
     return () => {

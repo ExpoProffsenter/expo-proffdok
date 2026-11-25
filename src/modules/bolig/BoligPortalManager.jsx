@@ -1,3 +1,4 @@
+import "./boligDirectConfirmation.css";
 import Preview from "./BoligPortalPreview.jsx";
 import {PortalGoods,PortalPrices} from "./BoligPortalChoiceCards.jsx";
 import React, { useEffect, useRef, useState } from "react";
@@ -19,6 +20,7 @@ import { agreementMoney as money } from "./boligCommerceCore.js";
 import Dialog from "./BoligEditorDialog.jsx";
 import ResidentInvitation from "./BoligResidentInvitation.jsx";
 import { PACKAGE_CHOICES_EVENT } from "./boligPackageChoicesClient.js";
+const parseDeadline=value=>{const m=/^(\d{2})\.(\d{2})\.(\d{4})$/.exec(value);if(!m)return "";const iso=`${m[3]}-${m[2]}-${m[1]}`,date=new Date(iso+"T12:00:00Z");return Number.isFinite(date.getTime())&&date.toISOString().slice(0,10)===iso?iso:"";};
 const initial = {
   title: "",
   current: true,
@@ -29,6 +31,7 @@ const initial = {
   doc_url: "",
   notes: {},
   reopen_deadline: "",
+  reopen_deadline_text: "",
   url: "",
   pending: null,
 };
@@ -243,8 +246,7 @@ export default function BoligPortalManager({
         </button>
       </div>
       <p>
-        Del valgmuligheter, avtaler og dokumentlenker med boligens kontakt.
-        Innsendte valg går til gjennomgang før de brukes i avtalegrunnlaget.
+        {data?.portal?.direct_confirmation ? "Beboeren velger grunnpakke og tilvalg, kontrollerer prisen og bekrefter bestillingen selv. Den bekreftede utgaven er låst uten en ekstra prosjektledergodkjenning." : "Del valgmuligheter, avtaler og dokumentlenker med boligens kontakt. Innsendte valg går til gjennomgang før de brukes i avtalegrunnlaget."}
       </p>
       {error && <p role="alert">{error}</p>}
       {notice && <p role="status">{notice}</p>}
@@ -260,13 +262,13 @@ export default function BoligPortalManager({
           {settings}
           {preview && data.portal && <Preview state={data.portal} onClose={()=>setPreview(false)}/>}
           <div hidden={messagesOnly}>
-            {data.portal?.direct_confirmation && <section className="bolig-portal-manager-offer">
+            {data.portal?.direct_confirmation && <section className="bolig-direct-confirmation-panel">
               <h3>Beboerens bestilling</h3>
               {writable && <button type="button" disabled={disabled} onClick={()=>setPreview(true)}>Se som beboer</button>}
               {data.portal.confirmation ? <><p><strong>Bekreftet og {data.portal.choice_locked?'låst':'åpent for endringer'} · utgave {data.portal.confirmation.version}</strong></p><p>{data.portal.confirmation.accepted_name} · {portalStamp(data.portal.confirmation.accepted_at)} · {money(data.portal.confirmation.snapshot.total_cents)} inkl. mva.</p><details><summary>Se bekreftede varer og priser</summary><PortalGoods goods={data.portal.confirmation.snapshot.goods}/><PortalPrices items={data.portal.confirmation.snapshot.price_details}/></details>{data.portal.confirmation.snapshot.requires_supplier_followup&&<p role="alert">Beboeren har endret en bestilling med tidligere vareordre. Følg opp endringene hos leverandøren; opprinnelige ordre er beholdt.</p>}</> : <p>Beboeren velger og bekrefter selv. Ingen ekstra prosjektledergodkjenning er nødvendig.</p>}
               {data.portal.confirmation_mail?.length>0 && <p>E-postkvitteringer: {data.portal.confirmation_mail.map(m=>(m.kind==='resident'?'Beboer':'Prosjektleder')+': '+({sent:'sending bekreftet',pending:'venter på sending',paused:'pauset i dette miljøet',suppressed:'ikke sendt – kontroller kontakt og tilgang'}[m.status]||'ukjent')).join(' · ')}</p>}
               {data.portal.changes_until && <p>Endringsfrist: {portalStamp(data.portal.changes_until)}</p>}
-              {writable && <form onSubmit={e=>{e.preventDefault();run('reopen',{deadline:draft.reopen_deadline});}}><label>Ny frist for denne boligen<input type="date" required value={draft.reopen_deadline} disabled={disabled} onChange={e=>update({reopen_deadline:e.target.value})}/></label><p>Felles fristklokkeslett i prosjektet brukes. Tidligere bekreftelse gjelder til beboeren bekrefter på nytt. Andre boliger beholder sine frister.</p><button type="submit" disabled={disabled||!draft.reopen_deadline}>Åpne for endringer</button>{data.portal.changes_until && <button type="button" disabled={disabled} onClick={()=>run('close_changes')}>Steng for endringer</button>}</form>}
+              {writable && <form onSubmit={e=>{e.preventDefault();run('reopen',{deadline:draft.reopen_deadline});}}><label>Ny frist for denne boligen<input type="text" lang="nb-NO" inputMode="decimal" placeholder="dd.mm.åååå" maxLength={10} required value={draft.reopen_deadline_text||""} disabled={disabled} onChange={e=>update({reopen_deadline_text:e.target.value,reopen_deadline:parseDeadline(e.target.value)})}/><small>Skriv dag.måned.år, for eksempel 03.12.2026.</small></label><p>Felles fristklokkeslett i prosjektet brukes. Tidligere bekreftelse gjelder til beboeren bekrefter på nytt. Andre boliger beholder sine frister.</p><button type="submit" disabled={disabled||!draft.reopen_deadline}>Åpne for endringer</button>{data.portal.changes_until && <button type="button" disabled={disabled} onClick={()=>run('close_changes')}>Steng for endringer</button>}</form>}
             </section>}
             <div className="bolig-portal-manager-status">
               <strong>{data.contact.name || "Kontakt mangler"}</strong>

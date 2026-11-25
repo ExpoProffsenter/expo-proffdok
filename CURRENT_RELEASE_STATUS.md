@@ -1,6 +1,6 @@
 # Pågående – direkte beboerbekreftelse 25.11.2026
 
-Miljømål BEGGE, branch fase45b-resident-direct-confirm-20261125 fra main d57645ca. Beboer bekrefter grunnpakke/tilvalg én gang, med låst avtale, separate kvitteringer, gjenåpning per bolig og skrivebeskyttet kundevisning. Skal omfatte eksisterende Aamodthagen ved release. Sandbox-migrasjon og særskilt kvitteringsworker er installert med alle brytere AV. Preview/QA pågår; Production og demoens arbeidsflyt er ikke endret. Ny TEST OK og full Preview/QA kreves.
+Miljømål BEGGE, branch fase45b-resident-direct-confirm-20261125 fra main d57645ca. Beboer bekrefter grunnpakke/tilvalg én gang, med låst avtale, separate kvitteringer, gjenåpning per bolig og skrivebeskyttet kundevisning. Skal omfatte eksisterende Aamodthagen ved release. Sandbox-migrasjoner og særskilt kvitteringsworker er installert. Syntetisk beboerbekreftelse med to private bilder er testet i faktisk Preview; begge godkjente testmailer er providerkvittert, og utsending er slått AV igjen. Lokal PostgreSQL2156 og direkte Chromium37 PASS. Endelig CI/Preview-kontroll pågår. Production og andre demoportaler er ikke endret. Ny TEST OK og full Preview/QA kreves.
 
 Gjeldende test- og utrullingsstatus: [QA](docs/qa/BOLIG_DIRECT_CONFIRMATION_20261125.md).
 

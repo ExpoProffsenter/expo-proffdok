@@ -47,3 +47,16 @@ Faktisk beboerportal: valgte tilvalg, kontrollerte begge opplastede bilder og 12
 ## CI-funn og retting
 
 Første CI45668679827: seks fagpakker og build grønne, bolig-db og app-browser stoppet på endring av frosset opprinnelig hjelpetekst. Opprinnelig hjelpefil er gjenopprettet byteidentisk. De to avtalte tekstendringene ligger som eksplisitte overstyringer i den nye Bolig-help-filen, med før/etter-hash og samme innholdsvern som de tidligere godkjente varslingsinstruksjonene. Nytt tema er lagt til det eksisterende faktiske guide-scenariet; ingen eksisterende avsnitt eller testkrav er fjernet. Lokal guide286 assertions og core-boundary55 assertions PASS. Endelig CI på korrigert kandidat gjenstår.
+
+
+## Sluttkontroller etter faktisk UI-gjennomgang
+
+Faktisk Sandbox-bekreftelse er utført gjennom kundeportalen. Begge e-postkopier er akseptert av Resend og ferdigkvittert i separate leveringsrader kl.18:02:02/18:02:03 UTC. Etter kontroll er confirmation_mail_settings.enabled satt AV igjen. Nøyaktig to sendinger, ingen leverandørordre, ingen utsending til andre adresser. Mottak i innboks bekreftes av Kenneth; provideraksept er ikke lest-/innboksbevis.
+
+Faktisk «Se som beboer» viser samme låste utgave og begge private opplastede bilder (complete/naturalWidth>0). Utskrift/andre mutasjoner er deaktivert. Kunde- og prosjektlederportalen viser begge sendinger bekreftet.
+
+Innlogget UI avdekket et ekte layoutavvik: den nye bekreftelsesdelen hadde arvet flex-rad fra eksisterende alternativkort. Rettet med egen avgrenset grid-klasse. Fristfelt bruker eksplisitt dd.mm.åååå, samme datoavgrensning som eksisterende massefrist. Nettlesertesten bruker nå faktisk intern app-/Bolig-/Commerce-CSS for prosjektleder og separat kundestil, og verifiserer overflow og ugyldig dato.
+
+Tilleggsmigrasjon bolig_confirmed_choice_overview gir prisfri bekreftet/låst status i fasade og boligliste og sperrer interne valgversjoner mot å overstyre beboerens aksepterte valg. Eksakt ny beboerbekreftelse kan fortsatt opprette neste utgave atomisk. Lokal full PostgreSQL-suite: 2156 assertions PASS. Avgrensede direkte scenarier:72 PASS. Faktisk Chromium:37 assertions PASS, inkludert reell kundekvitterings-PDF med pris, bolig/adresse og bildeobjekter, full intern CSS, gjenåpning, bevarte gamle valg og tilbakekalling. Full critical/build PASS.
+
+Security-advisor etter installasjon: rls_enabled_no_policy206 (kun +2 nye helt private tabeller uten klientgrants), øvrige kategorier/tellinger uendret fra baseline. Direkte anon/auth-tabelltilgang og worker-kall avvises; service_role kan kun bruke de avgrensede workerfunksjonene. Rutine-, partner- og beboerlenketransport fortsatt AV; global ny flyt AV, bare QA-prosjektet aktivt. Nyeste CI/Preview og avsluttende innlogget gjenåpning dokumenteres i PR350 før TEST OK.

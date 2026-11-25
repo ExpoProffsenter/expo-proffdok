@@ -19,7 +19,7 @@ export default async function({db,call,actor,eq,rejects,id,firm,other,manager,re
  const pub=async(action='get',payload={})=>(await db.query('select public.bolig_portal($1,$2,$3) v',[token,action,payload])).rows[0].v;
  // Prepare an old pending request BEFORE upgrade, as happens in already begun projects.
  await anon();await pub('request',{request_id:id(seq++),menu_version:1,offer_ids:[oak],body:'Old request'});
- await db.exec('reset role');await db.exec(await fs.readFile('supabase/migrations/20261125172116_bolig_resident_direct_confirmation.sql','utf8'));
+ await db.exec('reset role');await db.exec(await fs.readFile('supabase/migrations/20261125172116_bolig_resident_direct_confirmation.sql','utf8'));await db.exec(await fs.readFile('supabase/migrations/20261125180724_bolig_confirmed_choice_overview.sql','utf8'));
  await anon();eq((await pub()).direct_confirmation,false,'Installation preserves unrelated old UI until rollout');await db.exec('reset role');await db.query('update bolig_private.roots set resident_confirmation_enabled=true where id=$1',[root]);
  await anon();let v=await pub();eq(v.direct_confirmation,true,'Existing capability gains new flow');eq(v.offers,beforeOffers,'Existing published alternatives unchanged');eq(v.confirmation,null,'No old request auto-accepted');eq(v.events[0].status,'pending');
  await rejects(()=>pub('request',{request_id:id(seq++)}),'PT409');
@@ -39,7 +39,7 @@ export default async function({db,call,actor,eq,rejects,id,firm,other,manager,re
  const first=v.confirmation,firstId=first.id;
  v=await pub('confirm',{...request,changes_revision:changes});eq(v.confirmation.id,firstId,'Lost-response retry has same accepted document');
  await rejects(()=>pub('confirm',{...request,changes_revision:changes,body:'changed'}),'PT409');await rejects(()=>pub('confirm',{...request,request_id:id(seq++),changes_revision:v.changes_revision}),'PT409');
- await actor(manager);eq((await choices()).selection.revision,2);eq((await choices()).selection.snapshot.total_cents,25000);
+ await actor(manager);const overview=(await db.query('select public.bolig_overview($1,$2) v',[firm,root])).rows[0].v;const row=overview.units.find(x=>x.unit_id===unit);eq(row.resident_confirmed,true);eq(row.resident_choice_locked,true);eq(row.resident_version,1);eq(JSON.stringify(row).includes('total_cents'),false,'Overview has no prices');await rejects(()=>choices('save',2,{scope_id:'common',package_id:pkg,option_ids:[],catalog_revision:c.revision,rooms_revision:cs.rooms_revision}),'PT409');eq((await choices()).selection.revision,2);eq((await choices()).selection.snapshot.total_cents,25000);
  const sheet=(await db.query('select public.bolig_work_order($1,$2,$3) v',[firm,root,unit])).rows[0].v;eq(sheet.confirmed,true);eq(sheet.goods[0].name,'Oak and installation');eq(JSON.stringify(sheet).includes('total_cents'),false,'Craft sheet remains price-free');
  await db.exec('reset role');eq((await db.query('select count(*)::int n from bolig_private.confirmation_deliveries where document_id=$1',[firstId])).rows[0].n,2,'Exactly two independently tracked receipts');
  await actor(manager);await mr();await rejects(()=>mr('reopen',{request_id:id(seq++),revision:oldRevision,deadline:tomorrow}),'PT409');
