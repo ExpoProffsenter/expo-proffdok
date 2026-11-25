@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Organisasjonskart: fargevalg får plass i smal redigeringsdialog",
+  "change": "Miljømål BEGGE. Avdelingsdialogens fargevelger bryter til flere rader ved behov, med44px trykkflate for hver farge. Bare avgrenset presentasjon endres; kartdata, HR, firma, tilgang, lagring og PDF beholdes.",
+  "verification": "Native CI940 gjenskapte horisontal overflow i faktisk avdelingsdialog ved320px. Samme uendrede overflowkrav og nye44px-fargekrav må bestå ved320/390/768/1363/1920. Lokal fixture monterer faktisk React-kart i jsdom; dette er ikke geometriattest.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Samme fargevalg og knapper; ingen endret arbeidsflyt eller brukerhandling."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Ingen endring i modell, transport, ansvar eller backend."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen nye avhengigheter, konfigurasjon eller installasjonssteg."
+    },
+    "module": {
+      "required": false,
+      "reason": "Eksisterende moduldokumentasjon beskriver samme redigering og lagring."
+    }
+  }
+}

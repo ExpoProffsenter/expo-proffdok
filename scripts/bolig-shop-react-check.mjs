@@ -1,0 +1,52 @@
+import assert from 'node:assert/strict';import fs from 'node:fs';import os from 'node:os';import path from 'node:path';import {build} from 'vite';import react from '@vitejs/plugin-react';
+const {shopTotal,shopPayload}=await import('../src/modules/bolig/boligShopCore.js');
+assert.equal(shopTotal({lines:[{quantity:1.005,price_cents:100,installation_cents:0}]}),101,'Half-cent review matches Postgres numeric');
+assert.equal(shopTotal({lines:[{quantity:0.145,price_cents:100,installation_cents:10}]}),25);
+assert.throws(()=>shopPayload({title:'QA',lines:[{name:'QA vare',quantity:'1.0001',price:'1'}]}),/tre desimaler/);
+const {JSDOM}=await import(process.env.KSHMS_JSDOM_PATH||'jsdom');
+const cwd=process.cwd(),tmp=fs.mkdtempSync(path.join(os.tmpdir(),'shop-ui-'));
+fs.writeFileSync(path.join(tmp,'rpc.js'),`export async function collaborationRpc(n,a,u){return window.__rpc(n,a,u);}`);
+fs.writeFileSync(path.join(tmp,'draft.js'),`export const boligDraftKey=(c,r,u)=>c.user_id+':'+c.company_id+':'+r+':'+u;export const readBoligDraft=k=>JSON.parse(localStorage.getItem(k));export const writeBoligDraft=(k,v)=>{localStorage.setItem(k,JSON.stringify(v));return true;};`);
+fs.writeFileSync(path.join(tmp,'lookup.jsx'),`export default function Lookup(){return null;}`);
+fs.writeFileSync(path.join(tmp,'entry.jsx'),`import React,{act} from '${cwd}/node_modules/react/index.js';import {createRoot} from '${cwd}/node_modules/react-dom/client.js';import Shop from '${cwd}/src/modules/bolig/BoligShopProposal.jsx';const root=createRoot(document.getElementById('app'));window.__act=act;window.__render=()=>root.render(<Shop key={window.__unit||'unit'} onSwitchBlocked={v=>window.__blocked=v} context={{user_id:'user',company_id:'orvei'}} root={{id:'root'}} unit={{id:window.__unit||'unit',number:window.__unit==='second'?'39':'38',address:'QA adresse',contact_name:'QA Kontakt'}}/>);window.__dispose=()=>root.unmount();`);
+const result=await build({configFile:false,root:cwd,logLevel:'silent',plugins:[react({jsxRuntime:'classic'})],define:{'process.env.NODE_ENV':'"development"'},resolve:{alias:[{find:'./boligCollaborationClient.js',replacement:path.join(tmp,'rpc.js')},{find:'./boligClient.js',replacement:path.join(tmp,'draft.js')},{find:'./BoligCatalogLookup.jsx',replacement:path.join(tmp,'lookup.jsx')}]},build:{write:false,minify:false,lib:{entry:path.join(tmp,'entry.jsx'),formats:['iife'],name:'ShopCheck',cssFileName:'shop-check'}}});
+const dom=new JSDOM('<div id="app"></div>',{url:'https://qa.invalid',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window;w.IS_REACT_ACT_ENVIRONMENT=true;
+w.MessageChannel=class{constructor(){this.port1={onmessage:null};this.port2={postMessage:()=>setImmediate(()=>this.port1.onmessage?.())};}};
+let state={context:{company_id:'orvei',user_id:'user',publish_shop:true},root_id:'root',unit_id:'unit',basis:'one',has_base:true,portal_ready:true,base_goods:[],documents:[]},calls=[],loseReply=false;
+w.__rpc=async(n,a,u)=>{assert.equal(u,'user');assert.equal(a.p_company_id,'orvei');calls.push(a);if(a.p_action==='publish'){assert.equal(a.p_payload.lines[0].sku,'MAN-123');assert.equal(a.p_payload.lines[0].price_cents,125050);assert.equal(a.p_payload.lines[0].installation_cents,75000);state={...state,basis:'two',documents:[{id:'doc',status:'published',kind:'change',snapshot:{source:'shop',reason:a.p_payload.title,delta_cents:325100,shop_lines:a.p_payload.lines,base_goods:[]}}]};}if(loseReply&&a.p_action==='publish'){loseReply=false;throw Error('Svar mangler');}return structuredClone({...state,unit_id:a.p_unit_id});};
+w.eval((Array.isArray(result)?result[0]:result).output.find(x=>x.type==='chunk').code);const act=w.__act;
+const button=text=>[...w.document.querySelectorAll('button')].find(b=>b.textContent===text);
+const input=label=>[...w.document.querySelectorAll('label')].find(l=>l.textContent===label)?.querySelector('input');
+const set=async(label,value)=>{const el=input(label);assert(el,label);await act(()=>{Object.getOwnPropertyDescriptor(w.HTMLInputElement.prototype,'value').set.call(el,value);el.dispatchEvent(new w.Event('input',{bubbles:true}));});};
+try{
+ await act(()=>w.__render());await act(()=>button('Legg til vare manuelt').click());
+ await set('Varenavn','Manuell vare');await set('Varenummer (valgfritt)','MAN-123');await set('Antall','2');await set('Beboerpris per enhet (kr inkl. mva.)','1250,50');await set('Montering for denne varelinjen (kr inkl. mva.)','750');
+ w.__unit='second';await act(()=>w.__render());assert.equal(w.document.querySelectorAll('.bolig-shop-line').length,0,'Other apartment has no leaked draft');
+ w.__unit='unit';await act(()=>w.__render());assert.equal(input('Varenavn').value,'Manuell vare','Returning restores exact apartment draft');
+ assert.equal(calls.filter(c=>c.p_action==='publish').length,0,'Editing remains private');
+ await act(()=>button('Kontroller beboerens forslag').click());assert(w.document.body.textContent.includes('3 251,00'),'Customer sees exact total');assert.equal(w.document.activeElement.textContent,'Kontroller før publisering','Review receives keyboard focus');
+ assert(w.document.body.textContent.includes('Mottaker: bolig 38 · QA adresse · QA Kontakt'));
+ loseReply=true;await act(()=>button('Oppdater beboerportalen').click());assert(button('Kontroller samme publisering igjen'));
+ w.__unit='second';await act(()=>w.__render());w.__unit='unit';await act(()=>w.__render());assert(button('Kontroller samme publisering igjen'),'Uncertain result survives unit round trip');
+ await act(()=>button('Kontroller samme publisering igjen').click());const sent=calls.filter(c=>c.p_action==='publish');assert.equal(sent.length,2);assert.deepEqual(sent[0],sent[1],'Retry uses same unit and request');assert(w.document.body.textContent.includes('innen 20 sekunder'));
+ state.documents[0].status='accepted';state.basis='three';await act(()=>button('Hent siste status').click());assert.equal(w.document.querySelectorAll('.bolig-shop-line').length,0,'Accepted goods are not prefilled as a new sale');assert(!w.document.body.textContent.includes('Venter på beboerens aksept.'),'Stale pending notice cleared after acceptance');
+ // Critical text anchoring through the real shop form, local draft and review.
+ for(const name of ['A','B','C']){await act(()=>button('Legg til vare manuelt').click());const inputs=[...w.document.querySelectorAll('.bolig-shop-line')].at(-1).querySelectorAll('input');await act(()=>{Object.getOwnPropertyDescriptor(w.HTMLInputElement.prototype,'value').set.call(inputs[0],name);inputs[0].dispatchEvent(new w.Event('input',{bubbles:true}));});await act(()=>{Object.getOwnPropertyDescriptor(w.HTMLInputElement.prototype,'value').set.call(inputs[5],'100');inputs[5].dispatchEvent(new w.Event('input',{bubbles:true}));});}
+ await act(()=>button('+ Ny fri tekst').click());
+ const text=w.document.querySelector('.sales-free-text-block textarea'),placement=w.document.querySelector('.sales-free-text-block select');
+ await act(()=>{Object.getOwnPropertyDescriptor(w.HTMLTextAreaElement.prototype,'value').set.call(text,'Gjelder B');text.dispatchEvent(new w.Event('input',{bubbles:true}));});
+ await act(()=>{placement.value='2';placement.dispatchEvent(new w.Event('change',{bubbles:true}));});
+ await act(()=>button('Fjern vare 1').click());
+ assert.equal(w.document.querySelector('.sales-free-text-block select').value,'1','Deleting A keeps text after B in actual form');
+ w.__unit='second';await act(()=>w.__render());w.__unit='unit';await act(()=>w.__render());
+ assert.equal(w.document.querySelector('.sales-free-text-block select').value,'1','Rebased position survives apartment round trip');
+ await act(()=>button('Kontroller beboerens forslag').click());
+ const reviewText=[...w.document.querySelectorAll('.bolig-agreement-summary')].at(-1).textContent;
+ assert(reviewText.indexOf('Gjelder B')>reviewText.indexOf('B')&&reviewText.indexOf('Gjelder B')<reviewText.lastIndexOf('C'),'Review places text between B and C');
+ await act(()=>button('Fjern vare 1').click());
+ assert.equal(w.document.querySelector('.sales-free-text-block select').value,'','Deleted B leaves text before C, without silently attaching to C');
+ state.context.publish_shop=false;await act(()=>button('Hent siste status').click());assert(!button('Legg til vare manuelt'),'Revoked publishing capability removes editor');
+ console.log('PASS shop React: manual item without catalog, decimal prices, private draft, review total, publish, accepted sale not duplicated, revoked rights');
+}finally{await act(()=>w.__dispose());dom.window.close();fs.rmSync(tmp,{recursive:true,force:true});}
+
+await import("./bolig-offer-free-text-react-check.mjs");

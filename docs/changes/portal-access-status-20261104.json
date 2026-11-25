@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Vis korrekt ventestatus før eksisterende portaltilgang kan roteres",
+  "change": "Miljømål BEGGE, Preview først. Eksisterende read-only portalstatusflyt får bruker-/prosjekt-/firmascopet loading/ready/error og manuelt leseforsøk. Status ukjent fremstilles ikke som ingen aktiv kode. Bare de to eksisterende Generer ny tilgangskode-knappene sperres til status er bekreftet. Eksisterende generering, kopiering, sending, verifisering, lagring og backendroller beholdes.",
+  "verification": "Gjenskapt faktisk i Sandbox: første rendering sa ingen aktiv kode, senere status viste to eksisterende aktive koder. Kunde- og UE-portalen krevde egen kode uten å vise prosjektinnhold. 31 faktiske React-/status-RPC-kontroller PASS for venting, feil, retry, maskering, rotasjonsknapp og sene svar ved scopeendring. Ingen reell kodegenerering eller e-post.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Ventestatus og retry forklares direkte i den eksisterende visningen. Deling og kodearbeidsflyt er ellers uendret."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Samme status-RPC og opprinnelig data-/tilgangseierskap. Ingen backend, RLS, kodeoppretting eller ny authflyt."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen endret konfigurasjon eller avhengighet."
+    },
+    "module": {
+      "required": true,
+      "reason": "Portalmodulens read-only metadataflyt, maskering og scope dokumenteres i README."
+    }
+  }
+}

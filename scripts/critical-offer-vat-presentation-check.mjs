@@ -1,0 +1,28 @@
+import assert from 'node:assert/strict';
+import { offerVatPresentation } from '../src/modules/sales/utils/salesOfferVatPresentation.js';
+import { createOfferTermsSnapshot } from '../src/modules/sales/utils/salesUtils.js';
+import { buildOfferSnapshot, buildOfferFormFromRequest, mapPublicOfferToRequest } from '../src/modules/sales/utils/salesOfferLogicCore.js';
+import { decorateRequestForQuantityPresentation } from '../src/modules/sales/utils/salesOfferQuantityPresentation.js';
+const request = { id:'QA-vat', offerShowPricesExVat:true, offerLines:[{id:'a',description:'Valve',quantity:2,amount:100}],offerOptions:[],offerTotal:200 };
+assert.equal(offerVatPresentation({}).multiplier,1.25);
+assert.equal(buildOfferFormFromRequest({}).showPricesExVat,false);
+assert.equal(offerVatPresentation(request).multiplier,1);
+assert.equal(offerVatPresentation(request).fromIncl(125),100);
+const snapshot = buildOfferSnapshot(request,{},'2026-10-05','v1');
+assert.equal(snapshot.lines.find(x=>x.__offerTermsMeta).showPricesExVat,true);
+const frozen = { ...request,offerShowPricesExVat:false,sentOfferVersionId:'v1',offerVersions:[snapshot] };
+assert.equal(offerVatPresentation(frozen).multiplier,1,'Draft changed published flag');
+const legacy = {...request,sentOfferVersionId:'old',offerVersions:[{id:'old',lines:[]} ]};
+assert.equal(offerVatPresentation(legacy).multiplier,1.25,'Draft changed legacy published version');
+const accepted = {...legacy,acceptedPayload:{version_snapshot:{lines:[createOfferTermsSnapshot(request)]}}};
+assert.equal(offerVatPresentation(accepted).multiplier,1,'Accepted flag lost');
+const original=JSON.stringify(request);
+const decorated = decorateRequestForQuantityPresentation(frozen);
+assert(decorated.offerVersions[0].lines.find(x=>x.id==='a').description.includes('100'),'Unit price did not use ex VAT');
+assert.equal(JSON.stringify(request),original);
+assert.equal(snapshot.total,200,'Display changed accepted arithmetic');
+console.log('critical-offer-vat-presentation-check: OK – defaults, draft, immutable published/accepted mode and unit prices');
+
+const publicRequest=mapPublicOfferToRequest({offer:{id:'offer',status:'sent'},version:{id:'v1',lines:snapshot.lines,total_ex_vat:200}});
+assert.equal(offerVatPresentation(publicRequest).multiplier,1,'Public mapper stripped VAT mode');
+assert.equal(offerVatPresentation({...publicRequest,isPublicOffer:false,acceptedOfferVersionId:'v1',acceptedShowPricesExVat:true}).multiplier,1,'Reloaded accepted version lost VAT mode');

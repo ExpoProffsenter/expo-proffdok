@@ -1,0 +1,74 @@
+-- Append to the synthetic transaction prelude in kshms-bulk-sandbox-check.sql.
+-- The local runner composes this exact same script for the cloud rollback test.
+set local role authenticated;
+do $$declare c uuid:=current_setting('bulk.qa.company')::uuid;admin_id uuid:=current_setting('bulk.qa.admin')::uuid;responsible_id uuid:=current_setting('bulk.qa.responsible')::uuid;reader_id uuid:=current_setting('bulk.qa.reader')::uuid;
+ draft jsonb:='{"title":"Synthetic warehouse publication","chapter":"QA","goal":"Goal","responsibility":"Owner","procedure":"Safe saved steps","documentation":"Checks","confirmation":"Own reading","references":[]}';
+ firm_statement text:='Jeg har gjennomgått alle de oppførte rutineutkastene og vurdert at innholdet er tilpasset firmaets arbeid, risikoer og ansvarsfordeling. Jeg godkjenner at disse utkastene publiseres som firmaets rutiner.';
+ single_statement text:='Jeg har gjennomgått denne rutineversjonen, forstår mitt ansvar og vil følge rutinen. Jeg ber om forklaring eller nødvendig opplæring dersom noe er uklart, og melder fra om farlige forhold og avvik. Bekreftelsen dokumenterer gjennomgang; den erstatter ikke opplæring eller faktisk utførelse.';
+ items jsonb:='[]';r jsonb;result jsonb;prior jsonb;state jsonb;first_version jsonb;remaining jsonb;changed jsonb;mutated jsonb;n int;
+begin
+ perform set_config('request.jwt.claim.sub',admin_id::text,true);
+ perform public.kshms_command(c,'access',jsonb_build_object('user_id',responsible_id,'role','responsible','enabled',true));
+ perform public.kshms_command(c,'access',jsonb_build_object('user_id',reader_id,'role','reader','enabled',true));
+ perform public.kshms_command(c,'settings',jsonb_build_object('revision',0,'trades',jsonb_build_array('vvs'),'responsible_user_id',responsible_id));
+ for n in 1..87 loop
+  r:=public.kshms_command(c,'save',jsonb_build_object('draft',jsonb_set(draft,'{title}',to_jsonb('Synthetic publication '||n))));
+  items:=items||jsonb_build_array(jsonb_build_object('id',r->'id','revision',r->'revision','draft',r->'draft','next_number',1,'previous_version_id',null));
+ end loop;
+ perform set_config('request.jwt.claim.sub',reader_id::text,true);
+ perform pg_temp.bulk_reject(format('select public.kshms_publish_batch(%L,%L,%L,%L,%L,true,false,null)',c,reader_id,items,'Checked working methods',firm_statement),'42501');
+ perform set_config('request.jwt.claim.sub',responsible_id::text,true);
+ perform pg_temp.bulk_reject(format('select public.kshms_publish_batch(%L,%L,%L,%L,%L,true,false,null)',c,admin_id,items,'Checked working methods',firm_statement),'42501');
+ perform pg_temp.bulk_reject(format('select public.kshms_publish_batch(%L,%L,%L,%L,%L,true,false,null)',current_setting('bulk.qa.other'),responsible_id,items,'Checked working methods',firm_statement),'42501');
+ perform pg_temp.bulk_reject(format('select public.kshms_publish_batch(%L,%L,%L,%L,%L,true,false,null)',c,responsible_id,items,'No','wrong consent'),'22023');
+ perform pg_temp.bulk_reject(format('select public.kshms_publish_batch(%L,%L,%L,%L,%L,true,false,null)',c,responsible_id,'[]','Checked working methods',firm_statement),'22023');
+ perform pg_temp.bulk_reject(format('select public.kshms_publish_batch(%L,%L,%L,%L,%L,true,false,null)',c,responsible_id,jsonb_build_array(items->0,items->0),'Checked working methods',firm_statement),'22023');
+ perform pg_temp.bulk_reject(format('select public.kshms_publish_batch(%L,%L,%L,%L,%L,true,true,null)',c,responsible_id,items,'Checked working methods',firm_statement),'22023');
+ mutated:=jsonb_set(items,'{86,draft,procedure}',to_jsonb('Unseen different text'::text));
+ perform pg_temp.bulk_reject(format('select public.kshms_publish_batch(%L,%L,%L,%L,%L,true,false,null)',c,responsible_id,mutated,'Checked working methods',firm_statement),'40001');
+ perform pg_temp.bulk_assert(jsonb_array_length(public.kshms_get_state(c)->'versions')=0,'invalid last draft publishes no earlier selected draft');
+ result:=public.kshms_publish_batch(c,responsible_id,jsonb_build_array(items->0,items->1),'Checked local working methods and responsibility',firm_statement,true,false,null);
+ state:=public.kshms_get_state(c);
+ perform pg_temp.bulk_assert(result->>'published_count'='2' and jsonb_array_length(state->'versions')=2,'responsible publishes only two selected drafts');
+ perform pg_temp.bulk_assert(jsonb_array_length(state->'acknowledgments')=0,'company approval does not fabricate own reading');
+ perform pg_temp.bulk_assert((select bool_and(v->>'published_by'=responsible_id::text and v->'publisher_identity'->>'name'='Synthetic responsible' and v->>'change_summary'='Checked local working methods and responsibility'||E'\n\n'||firm_statement) from jsonb_array_elements(state->'versions') v),'each edition has saved actual approver and full assessment/statement');
+ first_version:=state->'versions'->0;perform set_config('bulk.pub.first_version',first_version->>'id',true);
+ perform set_config('request.jwt.claim.sub',reader_id::text,true);perform public.kshms_command(c,'ack',jsonb_build_object('version_id',first_version->'id','statement',single_statement));prior:=public.kshms_get_state(c)->'acknowledgments';
+ perform set_config('bulk.pub.old_receipt',prior::text,true);perform set_config('request.jwt.claim.sub',responsible_id::text,true);
+ remaining:=(select jsonb_agg(value order by ordinality) from jsonb_array_elements(items) with ordinality where ordinality>2);
+ r:=public.kshms_command(c,'save',jsonb_build_object('id',remaining->84->'id','revision',1,'draft',jsonb_set(remaining->84->'draft','{procedure}',to_jsonb('Changed while reviewing'::text))));
+ perform pg_temp.bulk_reject(format('select public.kshms_publish_batch(%L,%L,%L,%L,%L,true,false,null)',c,responsible_id,remaining,'Checked working methods',firm_statement),'40001');
+ perform pg_temp.bulk_assert(jsonb_array_length(public.kshms_get_state(c)->'versions')=2,'stale last draft does not partially publish 85 drafts');
+ remaining:=jsonb_set(jsonb_set(remaining,'{84,revision}',r->'revision'),'{84,draft}',r->'draft');
+ result:=public.kshms_publish_batch(c,responsible_id,remaining,'Checked all saved local warehouse instructions',firm_statement,false,true,single_statement);
+ state:=public.kshms_get_state(c);perform set_config('bulk.pub.items',remaining::text,true);
+ perform pg_temp.bulk_assert(result->>'published_count'='85' and jsonb_array_length(state->'versions')=87,'85 more published, all 87 present');
+ perform pg_temp.bulk_assert(jsonb_array_length(state->'acknowledgments')=86,'85 explicit own receipts plus retained reader receipt');
+ perform pg_temp.bulk_assert((select count(distinct value->>'published_at')=1 from jsonb_array_elements(result->'versions')),'one transaction clock across 85 editions');
+ perform pg_temp.bulk_assert((select bool_and((v->>'requires_ack')::boolean) from jsonb_array_elements(state->'versions') v),'first edition requires reading even when change checkbox is off');
+ perform pg_temp.bulk_assert(exists(select 1 from jsonb_array_elements(state->'acknowledgments') v where v=current_setting('bulk.pub.old_receipt')::jsonb->0),'old exact receipt retained');
+ perform pg_temp.bulk_reject(format('select public.kshms_publish_batch(%L,%L,%L,%L,%L,false,true,%L)',c,responsible_id,remaining,'Checked all saved local warehouse instructions',firm_statement,single_statement),'40001');
+ perform pg_temp.bulk_assert(jsonb_array_length(public.kshms_get_state(c)->'versions')=87,'retry creates no duplicate editions');
+ -- Admin may publish a genuinely changed v2; the previous edition is immutable.
+ perform set_config('request.jwt.claim.sub',admin_id::text,true);
+ r:=public.kshms_command(c,'save',jsonb_build_object('id',first_version->'routine_id','revision',2,'draft',jsonb_set(first_version->'content','{procedure}',to_jsonb('Genuinely changed approved routine'::text))));
+ changed:=jsonb_build_array(jsonb_build_object('id',r->'id','revision',r->'revision','draft',r->'draft','next_number',2,'previous_version_id',first_version->'id'));
+ result:=public.kshms_publish_batch(c,admin_id,changed,'Checked minor informational change',firm_statement,false,false,null);
+ state:=public.kshms_get_state(c);perform pg_temp.bulk_assert(jsonb_array_length(state->'versions')=88,'admin publishes one changed edition');
+ perform pg_temp.bulk_assert(exists(select 1 from jsonb_array_elements(state->'versions') v where v->>'id'=first_version->>'id' and v=first_version),'old published content/hash/identity/time remains immutable');
+ perform pg_temp.bulk_assert(exists(select 1 from jsonb_array_elements(state->'versions') v where v->>'id'=result->'versions'->0->>'id' and not(v->>'requires_ack')::boolean),'informational v2 keeps existing reading option');
+end$$;
+reset role;
+do $$declare c uuid:=current_setting('bulk.qa.company')::uuid;begin
+ perform pg_temp.bulk_assert((select count(*)=88 from public.kshms_audit where company_id=c and action='publish'),'one ordinary publish audit per new edition');
+ perform pg_temp.bulk_assert((select count(*)=264 from public.kshms_assignments where company_id=c),'all 88 editions assigned to the same three eligible readers');
+ update public.kshms_member_access set enabled=false where company_id=c and user_id=current_setting('bulk.qa.responsible')::uuid;
+ perform set_config('request.jwt.claim.sub',current_setting('bulk.qa.responsible'),true);
+ perform pg_temp.bulk_reject(format('select public.kshms_publish_batch(%L,%L,%L,%L,%L,true,false,null)',c,current_setting('bulk.qa.responsible'),current_setting('bulk.pub.items'),'Checked working methods','consent'),'42501');
+ update public.company_module_access set enabled=false where company_id=c and module_key='kshms';perform set_config('request.jwt.claim.sub',current_setting('bulk.qa.admin'),true);
+ perform pg_temp.bulk_reject(format('select public.kshms_publish_batch(%L,%L,%L,%L,%L,true,false,null)',c,current_setting('bulk.qa.admin'),current_setting('bulk.pub.items'),'Checked working methods','consent'),'42501');
+ perform pg_temp.bulk_assert(not has_function_privilege('anon','public.kshms_publish_batch(uuid,uuid,jsonb,text,text,boolean,boolean,text)','execute'),'anonymous denied');
+ perform pg_temp.bulk_assert(not has_function_privilege('service_role','public.kshms_publish_batch(uuid,uuid,jsonb,text,text,boolean,boolean,text)','execute'),'worker has no publication RPC');
+end$$;
+select jsonb_build_object('result','PASS','selected_drafts',87,'new_editions',88,'explicit_own_receipts',85,'preserved_old_receipt',true,'real_company_publications',0,'transaction','ROLLBACK') as publication_qa;
+rollback;

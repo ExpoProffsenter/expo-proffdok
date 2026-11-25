@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Samlet 03.6-pakke for prosjektbilder, kundeportal og privat dokumentinngang",
+  "change": "Miljømål BEGGE, bare PR295/Preview. Fersk innlogget baseline viste ingen større-bildehandling i samlet oversikt. Prosjektgalleriets eldre IMG-klikk hadde ingen tilsvarende tastaturinngang. ProjectPhotoPreview gjenbruker samme native WorkspacePanel fra galleri, samlet oversikt og kundeportal, med uendret bilde-URL, kildetekst/sjekkpunkt, utvidelse og fokusretur. ProjectPhotoUpload flytter bare de eksisterende kategorifeltene til samme ramme og beholder feltene montert ved lukking. Kundeportalens åpne side og kompakte statistikk bruker samme lesbare mål; alle ni faner beholdes, med én vannrett rullbar rad på mobil. Gjentatt oversiktsstatistikk skjules visuelt på underfanene, mens prosjekt/status består. Privat dokumentrute får samme typografi, tydelig vente-/kode-/feilside og nettleserens Tilbake. Den eksisterende Auth/portal-/salgsreferanse-/signeringskontrollen er urørt. Ingen main.jsx/bootstrap/Startside/Bolig-kjerne/backend/SQL/workflow-/avhengighetsendring.",
+  "verification": "Ny permanent Chromium-suite149PASS med faktisk Section, bildekomponenter, kundeportalrender/kodeport og hele privateDocumentRedirect. Ekte app/runtime-CSS ved320/390/768/1363/1920 og kort skjerm. Native modal,44px/16px, ikke beskåret bilde, åpne/utvide/lukke/Escape/fokus, prosjektkladd/DOM, deduplisering/kilder, opplastingscallback, samme filfelt/filvalg etter reopen, låsing og eiers remount/revoke, ni portalsteg og usendt chatkladd. Testen avslørte og beholdt vern for mobile arvregler som krympet knapper, stablet ni menyrader og klippet header selv uten sideoverflow. Syntetisk Auth/Storage/Functions kontrollerer feil kode/retry, riktig signert URL, eksakt prosjekt, fremmed salgssak uten signering og intern avvisning uten portal-fallback,600sekunder og faktisk nettleserhistorikk. Samlet app-UX2074PASS før siste avgrensede portal-CSS-retting; siste149PASS på ti faktiske kategorier etter rettingen. Den opprinnelige bilde-fixturen leverte tomme PNG-svar; ny ekte feilhåndtering gjenskapte at begge thumbnails korrekt forsvant. Fixturen leverer nå et gyldig isolert SVG-bilde på de samme URL-ene. Alle eksisterende kilde-/dedupliseringsassertions er uendret; feil/retry har fem egne scenarier. Kontrollørens eksisterende faktiske React-prøvePASS. Full eksplisitt Sandbox critical/buildPASS; endelig Vite, ny full CI, deploy og innlogget sluttkontroll vedlikeholdes i PR295. Ingen ekte opplasting, invitasjon, sending eller tilgangsendring. Kundeportalens rapport-/informasjonsadaptere er stubber i denne prøven; dette er ikke ny rapport-PDF-/RLS-/server- eller fysiskmobilattest. Innlogget kundeportal med kode er fortsatt separat: appens kopieringsinngang lagrer prosjektet før den henter lenken og ble ikke brukt som en ren lesetest. Innlogget på første kandidatc96e5ff5 avdekket at Sandbox-demodata peker på relative /demo-images-filer som ikke finnes i designbranchens public-tre. naturalWidth0 er observert; ingen vellykket live bildeattest. Siste komponent får en tydelig feilmelding og eksplisitt nytt forsøk på uendret URL. Fem nye assertions gjenskaper404, viser feil/retry, henter samme URL etter gjenoppretting og bevarer kladd. Demo-overlay kopieres ikke inn i PR295. Privat kontrakt ble faktisk åpnet fra Avtalegrunnlag via Preview-origin og samme innloggede økt til Sandbox sin private Storage. Nettleseren viste PDF med9sider; side1 ble visuelt kontrollert. Dokumentfanen ble lukket, samme prosjekt/fane beholdt. Ingen signert URL/token publiseres i dokumentasjonen. Innlogget siste15389e2c avslørte at opplastings-CSS var avgrenset via triggerforelderen, mens filfeltene ligger i body-portalen. Negativ prøve med alle ti faktiske imageCats feiler på2kolonner ved320px. Bare selektoren er flyttet til selve native dialogen: én mobilkolonne/to PC-kolonner,16px på faktiske kategori-/filfelt; ti additive assertions. Nye PC/mobilbilder visuelt kontrollert. Siste Vite-buildPASS. Ingen opplastingscallback eller filfelt erstattes.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "Bilder beskriver nye faktiske innganger, native panel/lagringsstatus og portal/dokumentets tilbakevei."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Ingen dataflyt, lagringseier, tilgangsmodell, RPC, RLS eller signeringsmotor endres."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen ny avhengighet, miljøkonfigurasjon eller brukeroppsett."
+    },
+    "module": {
+      "required": true,
+      "reason": "UI-kontrakten beskriver lesende bildepanel, monterte filfelt og avgrensede portal/dokumentflater."
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "title": "Forenkle arbeidsregler og parallellisere full CI-dekning",
+  "change": "Uavhengige QA-pakker, låst delt QA-oppsett, fail-closed sluttkontroll, kortløp for kjente dokumenter og ett endringsgrunnlag med relevante dokumentasjonsvalg. Presiserer TEST OK og eksisterende e-postrestriksjoner. Arkiverer historisk status uten å slette bevis.",
+  "verification": "Selvtester for dokumentasjonskrav, konservativt testomfang og sluttkontroll. Maskinell sammenligning av alle opprinnelige direkte QA-kommandoer/varianter samt uendret npm build. Faktisk GitHub CI-resultat registreres i PR før merge. Ingen appkode, database eller utsending endres.",
+  "documentation": {
+    "help": {"required": false, "reason": "Ingen knapp eller arbeidsflyt i produktet endres."},
+    "architecture": {"required": false, "reason": "Appens arkitektur og dataflyt endres ikke; utviklerprosessen beskrives i DEVELOPMENT_WORKFLOW.md."},
+    "setup": {"required": false, "reason": "Produktets oppsett og bruk er uendret; isolert CI-oppsett dokumenteres i arbeidsflyten."},
+    "module": {"required": false, "reason": "Ingen funksjonsmodul eller modulkontrakt endres."}
+  }
+}

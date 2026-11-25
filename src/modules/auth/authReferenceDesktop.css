@@ -1,0 +1,106 @@
+/* FASE 36A – desktop låses til originalens 1536×1024-proporsjoner.
+   Referansebildet er nå et rent asset uten logo-/maskeringspatcher.
+   Øvrig firma-/brukerbranding i appen røres ikke. */
+@media (min-width: 1181px) {
+  html body.authLandingActive {
+    --auth-reference-frame-width: min(100vw, 150vh);
+    --auth-reference-frame-height: min(100vh, 66.6666667vw);
+    --auth-reference-frame-left: calc((100vw - var(--auth-reference-frame-width)) / 2);
+    --auth-reference-frame-top: calc((100vh - var(--auth-reference-frame-height)) / 2);
+    --auth-reference-left-width: min(64.7786458vw, 97.1679688vh);
+    background: #061923 !important;
+  }
+
+  html body.authLandingActive .authLandingShowcase.authReferenceStatic {
+    position: fixed !important;
+    left: var(--auth-reference-frame-left) !important;
+    top: var(--auth-reference-frame-top) !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: var(--auth-reference-left-width) !important;
+    height: var(--auth-reference-frame-height) !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+
+  html body.authLandingActive .authLandingShowcase.authReferenceStatic .authShowcaseShade,
+  html body.authLandingActive .authLandingShowcase.authReferenceStatic .authShowcaseContent {
+    display: none !important;
+  }
+
+  html body.authLandingActive .authLandingShowcase.authReferenceStatic::before,
+  html body.authLandingActive .authLandingShowcase.authReferenceStatic::after {
+    display: none !important;
+    content: none !important;
+  }
+
+  /* Auth-kortet viser produktnavnet, ikke standard- eller firmalogo.
+     Dette er strengt scoped til authLandingActive og påvirker derfor ikke
+     opplastede firmalogoer eller branding inne i selve appen. */
+  html body.authLandingActive header .head > div:first-child {
+    width: auto !important;
+    height: auto !important;
+    min-height: 54px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    overflow: visible !important;
+  }
+
+  html body.authLandingActive header .head > div:first-child img {
+    display: none !important;
+  }
+
+  html body.authLandingActive header .head > div:first-child::after {
+    content: 'Expo ProffDok' !important;
+    display: block !important;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+    font-size: clamp(25px, 1.75vw, 31px) !important;
+    line-height: 1 !important;
+    font-weight: 900 !important;
+    letter-spacing: -0.045em !important;
+    background: linear-gradient(90deg, #071a24 0 38%, #10bcc7 38% 100%) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    color: transparent !important;
+    white-space: nowrap !important;
+  }
+
+  /* Høyre, ekte login-kort plasseres etter samme geometri som valgt 1536×1024-mockup. */
+  html body.authLandingActive.authLandingLogin #root,
+  html body.authLandingActive.authLandingSignup #root {
+    position: fixed !important;
+    left: calc(
+      var(--auth-reference-frame-left) +
+      var(--auth-reference-left-width)
+    ) !important;
+    right: auto !important;
+    top: calc(
+      var(--auth-reference-frame-top) +
+      min(1.2369792vw, 1.8554688vh)
+    ) !important;
+    bottom: auto !important;
+    width: min(34.1145833vw, 51.171875vh) !important;
+    height: min(64.3229167vw, 96.484375vh) !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    margin: 0 !important;
+    overflow: auto !important;
+    border: 0 !important;
+    border-radius: min(1.953125vw, 2.9296875vh) !important;
+    background: #ffffff !important;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.30) !important;
+  }
+
+  html body.authLandingActive.authLandingLogin #root > div:not([role='status']),
+  html body.authLandingActive.authLandingSignup #root > div:not([role='status']) {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 100% !important;
+    max-height: none !important;
+    margin: 0 !important;
+    border-radius: inherit !important;
+  }
+}

@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {boligGanttRange} from '../src/modules/bolig/boligGanttRange.mjs';
+const task=(start,end,extra={})=>({active:true,archived:false,planned_start:start,planned_end:end,...extra});
+const tasks=[task('2027-11-05','2027-11-05'),task('2026-12-02','2027-01-12'),task('2020-01-01','2040-01-01',{archived:true})];
+let r=boligGanttRange(tasks,'2026-11-13','all');
+assert.deepEqual(r.dates,['2026-12-02','2027-11-05']);
+assert.equal(r.columns.reduce((n,c)=>n+c.days,0),r.to-r.from+1);
+assert.equal(r.columns.length,12);
+r=boligGanttRange([tasks[0]],'2026-11-13','all');assert.deepEqual(r.dates,['2027-11-05','2027-11-05']);assert.equal(r.columns[0].days,1);
+r=boligGanttRange([task('2028-02-01','2028-03-02')],'2026-11-13','all');assert.equal(r.to-r.from+1,31);
+r=boligGanttRange(tasks,'2027-06-08','week');assert.equal(r.dates.length,7);assert.equal(r.dates[0],'2027-06-07');
+r=boligGanttRange([],'2026-11-13','all');assert.equal(r.dates.length,7);
+console.log('PASS Gantt fit: unsorted future plan, full range, filtered scope, leap year, week navigation and empty plan');

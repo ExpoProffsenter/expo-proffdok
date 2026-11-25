@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "title": "Film om egne timefelt og avbrutt utkast",
+  "change": "Miljømål BEGGE. PR308 får én statisk102s-film med ni kapitler, VTT/tekst og eksisterende HR-tema/avspiller/tilgang. Alle ni tidligere guideposter/filmer beholdes. Ingen time-/HR-kjerne, meny, ny tilgang, backend, konfigurasjon eller utsending endres. Scope: ny MP4/VTT, videoGuides.json, additiv native prøve, avgrenset dekningsrad, Hjelp-README og QA/releasegrunnlag.",
+  "verification": "Faktiske Sandbox-bilder fra app284f04aa/demokonto. Bare lokal referanse/timetall/klokke/pause/utleggsbeløp/merknad; forkastet med Avbryt, ny åpning tom og uken0timer/0kr/0km. Ingen lagring, vedleggsopplasting, tidtaking, innlevering eller eksport. H264/1080p/24fps/102s/2448frames/ingen lyd, full FFmpeg-dekoding og ni representative scener/målgeometri PASS. Statisk SHA2568d8995f6ba68e07a7c3d3f49bf418eaed852987f9273286e450ac2b8f98cbb63,5066959bytes. Native prøve bevarer alle gamle krav/hashes og utvides til ti faktiske filmer, ny film fem bredder/fullskjerm/HR-revokasjon/nestet retur. HR-søk viser nå tre filmer under samme eiertema; gamle to beholdes eksplisitt. Eksakt kandidat-CI/READY og avspillingsresultat føres i PR308; ingen lokal native PASS påstås.",
+  "documentation": {
+    "help": {"required": true,"reason": "Ny film med full tekst/kapitler under eksisterende HR-tema."},
+    "architecture": {"required": false,"reason": "Eksisterende statisk fil, metadata, HR-filter og native avspiller er uendret."},
+    "setup": {"required": false,"reason": "Ingen ny avhengighet eller oppsett/miljøendring."},
+    "module": {"required": true,"reason": "Nytt kapittel, konkret avgrensning og gamle filmers bevaring forklares i Hjelp-README."}
+  }
+}

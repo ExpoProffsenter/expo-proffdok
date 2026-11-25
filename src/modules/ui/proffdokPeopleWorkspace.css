@@ -1,0 +1,65 @@
+/* Design 03.6: presentation only. Existing HR/KS access, state and commands own
+   every action. The body scope also reaches existing React dialog portals. */
+body:has([data-expo-app-shell="true"]) :is(.hr-module,.ks-module){max-width:none;min-width:0;padding:0;color:#172f35;background:transparent;border:0;border-radius:0;box-shadow:none}
+body:has([data-expo-app-shell="true"]) :is(.hr-module,.ks-module)>header.module-heading{padding:0 0 18px;margin:0 0 18px;border:0;border-bottom:1px solid #d7e4ea;border-radius:0;background:transparent;box-shadow:none;gap:18px;overflow:visible}
+body:has([data-expo-app-shell="true"]) :is(.hr-module,.ks-module) .module-heading h2{color:#10212b;font-size:32px;font-weight:600;letter-spacing:-1px;margin:8px 0;line-height:1.2}
+body:has([data-expo-app-shell="true"]) .module-heading :is(p,.module-eyebrow){color:#4e6876;font-size:16px;line-height:1.5}
+body:has([data-expo-app-shell="true"]) .module-heading .module-eyebrow{font-size:14px;letter-spacing:.05em;font-weight:600}
+body:has([data-expo-app-shell="true"]) .module-heading .module-heading-icon{display:none}
+body:has([data-expo-app-shell="true"]) .module-heading .module-role{color:#214b5d;background:#e9f4f4;border:1px solid #c5dfe1;border-radius:6px;font-size:14px;padding:7px 10px}
+body:has([data-expo-app-shell="true"]) :is(.hr-module,.ks-module) button{font-size:16px;min-height:44px;box-shadow:none;border-radius:7px;line-height:1.4;white-space:normal;max-width:100%;overflow-wrap:anywhere;transform:none}
+body:has([data-expo-app-shell="true"]) :is(.hr-module,.ks-module) :is(input,select,textarea){font-size:16px;max-width:100%;box-sizing:border-box}
+body:has([data-expo-app-shell="true"]) :is(.hr-module,.ks-module) :is(input:not([type=checkbox]):not([type=radio]),select){min-height:44px}
+body:has([data-expo-app-shell="true"]) :is(.hr-module,.ks-module) :is(p,li,.hr-hint,.ks-field-hint,.hr-employee-state,.hr-employee small,.hr-coming){font-size:16px;line-height:1.5;overflow-wrap:anywhere}
+body:has([data-expo-app-shell="true"]) :is(.hr-module,.ks-module) :is(.hr-fields,.ks-fields,.hr-field,.ks-field){min-width:0}
+body:has([data-expo-app-shell="true"]) :is(.hr-module,.ks-module) :is(.hr-card,.ks-card){padding:18px;margin:16px 0;border:1px solid #d5e4eb;border-radius:9px;background:#fff;box-shadow:none;min-width:0}
+body:has([data-expo-app-shell="true"]) :is(.hr-module,.ks-module) :is(.hr-card,.ks-card) :is(h3,h4){color:#10212b;line-height:1.35;overflow-wrap:anywhere}
+body:has([data-expo-app-shell="true"]) .hr-module .hr-workspace-cards{gap:14px;margin:16px 0 20px}
+body:has([data-expo-app-shell="true"]) .hr-module .hr-workspace-card{padding:16px;border:1px solid #d5e4eb;border-radius:9px;background:#fff;box-shadow:none;gap:10px}
+body:has([data-expo-app-shell="true"]) .hr-module .hr-workspace-card p{font-size:16px;line-height:1.5}
+body:has([data-expo-app-shell="true"]) .hr-module .hr-workspace-icon{border-radius:7px;background:#e9f4f4;color:#075461}
+body:has([data-expo-app-shell="true"]) .hr-module .hr-employee{border-radius:8px;box-shadow:none;padding:14px 16px}
+body:has([data-expo-app-shell="true"]) .hr-module .hr-employee small{font-size:16px}
+body:has([data-expo-app-shell="true"]) .hr-module :is(.hr-step-guide,.hr-personal-intro,.hr-personal-roadmap){border-radius:8px;background:#f5fafb;box-shadow:none}
+body:has([data-expo-app-shell="true"]) .hr-module :is(.hr-step-guide,.hr-personal-roadmap)>summary{font-size:16px;min-height:44px;cursor:pointer}
+body:has([data-expo-app-shell="true"]) .ks-module>.ks-navigation{grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;margin:16px 0 20px}
+body:has([data-expo-app-shell="true"]) .ks-navigation .ks-navigation-group{padding:0 0 14px;gap:10px;border:0;border-bottom:1px solid #d7e4ea;border-radius:0;background:transparent;box-shadow:none}
+body:has([data-expo-app-shell="true"]) .ks-navigation .ks-navigation-label{font-size:16px;font-weight:600;color:#3a5158}
+body:has([data-expo-app-shell="true"]) .ks-navigation .ks-navigation-icon{width:28px;height:28px;border-radius:6px;background:#e9f4f4;color:#075461}
+body:has([data-expo-app-shell="true"]) .ks-navigation .ks-tabs{gap:8px}
+body:has([data-expo-app-shell="true"]) .ks-navigation .ks-tabs button{padding:10px;gap:8px;font-size:16px;border-radius:6px;box-shadow:none}
+body:has([data-expo-app-shell="true"]) .ks-navigation .ks-tabs button.active{background:#075961;color:#fff;border-color:#075961}
+body:has([data-expo-app-shell="true"]) .ks-navigation .ks-tabs button.active svg{color:#fff}
+body:has([data-expo-app-shell="true"]) .ks-module>.ks-navigation-personal{grid-template-columns:minmax(0,1fr)}
+body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.hr-employee-dialog){border-radius:10px}
+body:has([data-expo-app-shell="true"]) .deviation-dialog:has(.hr-employee-dialog) .deviation-dialog-header p{font-size:16px;color:#4e6876}
+/* The customer form uses the same flat paper within the native sales editor. */
+[data-expo-app-shell="true"] .sales-case-work-content :is(.sales-form-hero,.sales-form-panel,.company-customer-picker,.company-customer-save){box-shadow:none;background:#fff;border-radius:8px}
+@media(max-width:1000px){
+ body:has([data-expo-app-shell="true"]) .ks-module>.ks-navigation{grid-template-columns:minmax(0,1fr);gap:12px}
+ body:has([data-expo-app-shell="true"]) .ks-navigation .ks-navigation-group{gap:8px;padding-bottom:12px}
+ body:has([data-expo-app-shell="true"]) .ks-navigation .ks-tabs{display:flex;flex-wrap:wrap}
+ body:has([data-expo-app-shell="true"]) .ks-navigation .ks-tabs button{flex:1 1 160px}
+}
+@media(max-width:600px){
+ body:has([data-expo-app-shell="true"]) :is(.hr-module,.ks-module)>header.module-heading{align-items:flex-start;flex-wrap:wrap;gap:8px;padding:0 0 14px}
+ body:has([data-expo-app-shell="true"]) :is(.hr-module,.ks-module) .module-heading h2{font-size:29px}
+ body:has([data-expo-app-shell="true"]) :is(.hr-module,.ks-module) :is(.hr-card,.ks-card){padding:14px}
+ body:has([data-expo-app-shell="true"]) .ks-navigation .ks-tabs button{flex-basis:120px}
+}
+
+body:has([data-expo-app-shell="true"]) .hr-tools-disclosure{padding:0 14px;margin:12px 0 18px;border:1px solid #d5e4eb;border-radius:8px;background:#fff}
+body:has([data-expo-app-shell="true"]) .hr-tools-disclosure>summary{min-height:44px;align-content:center;font-size:16px;font-weight:600;cursor:pointer}
+body:has([data-expo-app-shell="true"]) .hr-module .hr-workspace-card{grid-template-columns:28px minmax(0,1fr)}
+body:has([data-expo-app-shell="true"]) .hr-module .hr-workspace-card h3{font-size:18px;overflow-wrap:normal;word-break:normal}
+body:has([data-expo-app-shell="true"]) .hr-module .hr-workspace-icon{width:28px;height:28px}
+
+body:has([data-expo-app-shell="true"]) .module-heading .module-heading-side{max-width:none;flex-direction:row;flex-shrink:0}
+body:has([data-expo-app-shell="true"]) .module-heading .module-role{max-width:none;white-space:nowrap}
+body:has([data-expo-app-shell="true"]) .ks-navigation .ks-tabs{grid-template-columns:minmax(0,1fr)}
+body:has([data-expo-app-shell="true"]) .ks-navigation .ks-tabs button span{overflow-wrap:normal;word-break:normal}
+@media(max-width:1000px){
+ body:has([data-expo-app-shell="true"]) .ks-view-select{display:grid;gap:7px;margin:14px 0 18px;font-weight:600}
+ body:has([data-expo-app-shell="true"]) .ks-view-select select{width:100%;min-height:44px;padding:10px 12px;border:1px solid #cbd5e1;border-radius:7px;background:#fff;color:#172f35;font:inherit;font-size:16px}
+ body:has([data-expo-app-shell="true"]) .ks-module>.ks-navigation{display:none}
+}

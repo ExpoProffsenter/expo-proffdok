@@ -1,0 +1,111 @@
+{
+  "version": 1,
+  "title": "Søkbare videoveiledninger med kapitler og native retur i Hjelp",
+  "change": "Miljømål BEGGE, utførelse kun samme PR295/faste Preview. Hjelp får kompakt videooversikt med samme søk, områdefilter, tema-knapper og stor native avspiller med kapitler/fullskjerm/tekstalternativ/retry. De fem eksisterende kontrollerte originalfilmene og tidslinjene gjenbrukes uendret; ingen nye filmer eller endring i godkjent videomal. Versjonerte statiske MP4-filer og VTT-kapitler ligger utenfor JS-bundlen. Ingen videoelementer eller filmforespørsler før brukeren åpner en film; ingen autoplay. Eksisterende Hjelp-tilgang filtrerer katalogen; allerede lastet Bolig-kontekst sendes via én main-prop uten ny tilgangslesning. HR-prøvefilmen følger eksisterende Sandbox-avgrensning. Bruker-/firma-/rettighetsendring monterer ned åpne videoer og hindrer gjenoppliving. Hjelpesøk, foreldrepanel og usendt kladd bevares. Filmens native close/cancel-hendelse stoppes lokalt, slik at lukking ikke også lukker hjelpetemaet gjennom React-portalen. Ingen recovery, autosave, hydration, navigasjon, SQL/RLS/Storage, e-post, signing eller tilgangssetter endres. Filmene er offentlige opplæringsressurser med syntetisk eksempelinnhold, ingen private kunde-/HR-opptak. Grunnleggende Hjelp-film krever samme innlogging som åpen Hjelp og venter ikke på et separat moduloppslag. Øvrige filmer følger fortsatt uendrede eksisterende temagater/bruker-/Bolig-kontekst; gamle moduldata for en annen aktør gir ingen modulfiler. Dette endrer ingen tilgangsleser, grant eller private data. Relevante filmknapper ligger rett etter temaets korte innledning før Arbeidsflyt, så brukeren finner filmen før den lange tekstforklaringen. Treffteksten bøyes korrekt ved én video.",
+  "verification": "Ny faktisk React/Help/WorkspacePanel/HTML-video-prøve kontrollerer alle fem originalfiler med eksakt SHA256/byteantall og kapitler fra tidslinjene, reell avspilling/kapittel/spoling/slutt, fem bredder320/390/768/1363/1920 og kort320px skjerm, fullskjerm, native dialoger, fokus, retur og bevart usendt kladd. Scopeprøver omfatter HR-revoke/restore, firmabytte, brukerbytte, feilende fil og ekte retry med tekstalternativ. Før rettelsen feilet context movie returns to native Help topic: child close boblet til parent gjennom React-portalen; lokal stopPropagation retter årsaken uten å endre felles WorkspacePanel. Uendrede gamle Firmaadmin/Hjelp248-krav PASS etter integrasjon; ingen gamle assertions er fjernet. Sluttresultat og eksakt kandidat/fullCI/READY/live føres i PR295. React-gjennomgang: ingen nye backend-kall eller pakker, billig rollefilter før montering, ingen nedlasting av medier ved listevisning, lokal dialog-/media-state, native fokus og tilgjengelige kontrollnavn, funksjonelle retry-/åpnevalg, isolert CSS og eksplisitt opprydding av videonode. Fersk native sluttprøve PASS145krav, inklusive alle VTT-kapitler lest i native textTracks og faktisk dekodede videoframes. Full eksplisitt EXPO_BACKEND_TARGET=sandbox npm run build PASS, scoped dokumentasjonsvakt/videoregister/PR Core Safety PASS. Originalfilmene er byteidentiske med tidligere kontrollerte filer; ingen omkoding eller ny fullfilm hevdes. Live ec6786b1: skynettfanen er hidden, så eksisterende useHelpModuleAccess avventer fersk lesning og Hjelp viser grunnleggende tekst. For streng ekstra gate skjulte også den grunnleggende filmen. Ny native prøve med helpAccess:null gjenskapte manglende Vis videoer(1) før rettelsen. Etter rettelsen kontrolleres grunnleggende film under pending, alle fem ved gyldig kontekst, og bare grunnleggende Hjelp etter aktørbytte med gamle moduldata. Sluttprøven utvider de145tidligere kravene uten å fjerne dem; oppdatert antall/resultat og slutt-CI i PR295. Oppdatert native prøve PASS147krav og ny full lokal Sandbox critical/build PASS etter pending-rettelsen. Grunnleggende film er åpen for innlogget bruker mens alle modulfilm- og historiske aktørgater er bevart.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "Hjelp selv beskriver Vis videoer, relevante tema-knapper, kapitler/fullskjerm og tekstalternativ."
+    },
+    "architecture": {
+      "required": true,
+      "reason": "Ny statisk opplæringskatalog og native medieavspiller har egne eiere og eksisterende tilgang som presentasjonsgrunnlag."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen ny avhengighet, miljøvariabel, installasjon eller backend-konfigurasjon."
+    },
+    "module": {
+      "required": true,
+      "reason": "Help README beskriver oppdatering av versjonerte filmer, kapitler, offentlige eksempelressurser, rollefilter og verifikasjon."
+    }
+  },
+  "media": [
+    {
+      "id": "finn-bolig",
+      "title": "Finn bolig og bruk veiledningen",
+      "module": "Boligprosjekter",
+      "access": "bolig",
+      "topics": [
+        "bolig"
+      ],
+      "description": "Søk etter bolig og bruk veiledningen. Filmen viser et eksempelprosjekt.",
+      "src": "/help-videos/finn-bolig-v1.mp4",
+      "track": "/help-videos/finn-bolig-v1.vtt",
+      "duration": 75,
+      "sha256": "3e9f95a06c9ddcf1fb77cfaa5cba111d18f573d412eae32e840c397cae55f03b",
+      "bytes": 4808252,
+      "sourceCommit": "a2f67ce21314dab505d927112df91b51b4b3f3a0"
+    },
+    {
+      "id": "mine-planer",
+      "title": "Finn egne planer, les oppgaven og gå tilbake",
+      "module": "Min side",
+      "access": "plans",
+      "topics": [
+        "project-progress"
+      ],
+      "description": "Åpne og les egne planer. Redigering, bemanning og eksport er egne oppgaver.",
+      "src": "/help-videos/mine-planer-v1.mp4",
+      "track": "/help-videos/mine-planer-v1.vtt",
+      "duration": 95,
+      "sha256": "70e5ec178f9d34cd7f222b88537532cf085256a04c1388f9a2129469dd29f37a",
+      "bytes": 5315243,
+      "sourceCommit": "430b1f66557b1518895c8084f27d8a0c3a4f762d"
+    },
+    {
+      "id": "kundens-tilbud",
+      "title": "Les Kundens tilbud og gå tilbake",
+      "module": "Befaring/Tilbud",
+      "access": "sales",
+      "topics": [
+        "sales"
+      ],
+      "description": "Les et lagret generelt tilbud. Filmen viser et demoutkast, uten publisering eller sending.",
+      "src": "/help-videos/kundens-tilbud-v1.mp4",
+      "track": "/help-videos/kundens-tilbud-v1.vtt",
+      "duration": 75,
+      "sha256": "db2d8d78a3964d13fb9d76585835d7031b41f2c95aedb38b88f8afa9a004d142",
+      "bytes": 5717042,
+      "sourceCommit": "8003e7c7cf6a77d0891406547ef3381014c3df96"
+    },
+    {
+      "id": "hr-provesamtale",
+      "title": "Opprett og fullfør en prøvesamtale",
+      "module": "HR",
+      "access": "hr",
+      "topics": [
+        "hr"
+      ],
+      "description": "Prøv en lokal samtale med eksempelpersoner. Dette er ikke en ekte medarbeidersamtale. Filmen viser appens PDF-beskjed, ikke en verifisert nedlasting.",
+      "src": "/help-videos/hr-provesamtale-v1.mp4",
+      "track": "/help-videos/hr-provesamtale-v1.vtt",
+      "duration": 171,
+      "sha256": "51b4fc95b28369c9576156b54bf44887295e89990d59127a6d1c13752900bc3d",
+      "bytes": 8641183,
+      "sourceCommit": "a722cc4f773b2e48a8b3e0ec97e2f5078532b8b6"
+    },
+    {
+      "id": "finn-hjelp",
+      "title": "Finn hjelp, åpne tema og gå tilbake",
+      "module": "Hjelp",
+      "access": "help",
+      "topics": [
+        "hjelp"
+      ],
+      "description": "Søk, åpne et tema og finn tilbake til arbeidet med søket bevart.",
+      "src": "/help-videos/finn-hjelp-v1.mp4",
+      "track": "/help-videos/finn-hjelp-v1.vtt",
+      "duration": 95,
+      "sha256": "186446c9151fcf03a0dda9c3cffab9f43cf85ca8fe81484521686f395604ae8d",
+      "bytes": 7161764,
+      "sourceCommit": "2163443908f4fad227c303fac6a381718c942910"
+    }
+  ],
+  "remaining": [
+    "Fem avgrensede filmer er ikke komplett videodekning av145reiser og tre nyere sjekklistefunksjoner. Andre funksjoner/undermapper trenger egne filmer og kontekstinnganger direkte fra arbeidsflatene.",
+    "Fysisk mobil/Safari, reelle separate roller og nedlastings-/sending-/signeringsforløp er ikke totalattestert av native Chromium med syntetisk autorisasjon.",
+    "Ingen global redesign TEST OK/merge/Production/demo-synk. Solgløtt står fortsatt utsatt som avtalt."
+  ]
+}

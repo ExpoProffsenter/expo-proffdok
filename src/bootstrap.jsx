@@ -1,0 +1,364 @@
+import { activeSupportSessionId } from './modules/access/appSupportBrowser.mjs';
+// FASE 29A5.2 / 29B1: Minimal bootstrap som aktiverer bildeoptimalisering
+// og håndterer sikre private dokumentlenker før hovedappen lastes.
+// FASE 29B3 UI: Kundetilbud åpner tilbudsbilder i innebygd lightbox i stedet for ny fane.
+// FASE 29B5: Permanente private dokumentlenker beholdes canonical i data/PDF, men klikk i
+// aktiv app åpnes på samme origin slik at Preview-/produksjonssesjonen følger med.
+// Kunde-/UE-portal åpner private dokumenter i samme fane slik at verifisert portalkode
+// forblir tilgjengelig i sessionStorage uten å legges i URL-en.
+// FASE 29E1: Aktivert prosjekt bruker gjennomføringsflyt; tidligere salgsflyt beholdes som Salgsgrunnlag.
+// FASE 30D1: Full reload fra intern Befaring/Tilbud bruker en engangsmarkør og åpner
+// salgfanen igjen etter at hovedappen er rendret. main.jsx endres ikke.
+// FASE 42F: Bootstrap leser også en fersk bakgrunnsmarkør i localStorage, slik at
+// nettleserforkasting/dvale kan returnere til Sales selv når sessionStorage ikke rekker å overleve.
+// FASE 35A: Fremdriftsplan ligger i eget prosjektlag. Den ene navigasjonsadapteren startes
+// først når faktisk intern prosjektmeny eller verifisert kunde-/UE-meny er rendret.
+// FASE 36A1: Auth-presentasjonen ligger i eget isolert UX-lag. Supabase-auth og callbacks i
+// main.jsx endres ikke; bootstrap aktiverer kun designet når ordinær login/signup faktisk er rendret.
+// FASE 39B.2C: Vareregisteradministrasjon monteres i eksisterende Systemadmin-flate,
+// og Butikktilbud bruker generisk kundetekst for varer, service og fagarbeid.
+import { installGlobalStorageImageOptimizer } from './modules/images/imageUploadOptimizer.js';
+import { installProjectWorkflowUx } from './modules/project/projectWorkflowUx.js';
+import { isProjectDeviationNavLabel } from './modules/project/projectNavigationTabs.mjs';
+import { installSalesInspectionHistoryUx } from './modules/project/salesInspectionHistoryUx.js';
+import { installProgressPlanUx } from './modules/progress/progressPlanUx.jsx';
+import { installProgressPlanHelpUx } from './modules/progress/progressPlanHelpUx.js';
+import { installAuthLandingUx } from './modules/auth/authLandingUx.js';
+import { installSystemAdminStoreCatalogUx } from './modules/storeCatalog/systemAdminStoreCatalogUx.jsx';
+import { installStoreOfferCustomerTerminologyUx } from './modules/sales/storeOfferCustomerTerminologyUx.js';
+import {
+  SALES_RELOAD_TAB_KEY,
+  shouldBootstrapRestoreSales,
+} from './modules/sales/services/salesResumeRecovery.mjs';
+
+installGlobalStorageImageOptimizer({
+  maxDimension: 2560,
+  quality: 0.85
+});
+installProjectWorkflowUx();
+installSalesInspectionHistoryUx();
+installProgressPlanHelpUx();
+installAuthLandingUx();
+installSystemAdminStoreCatalogUx();
+installStoreOfferCustomerTerminologyUx();
+
+function installProgressPlanAtSecureUiBoundary() {
+  const params = new URLSearchParams(window.location.search);
+  const hasProjectLink = params.has('project');
+  const role = String(params.get('role') || params.get('access') || '').trim().toLowerCase();
+  const isPortalRole =
+    hasProjectLink &&
+    role !== 'admin' &&
+    (role === '' || role === 'kunde' || role === 'underleverandor' || role === 'underleverandør' || role === 'underentreprenør');
+  if (!isPortalRole) return;
+
+  const isUnderleverandor =
+    role === 'underleverandor' || role === 'underleverandør' || role === 'underentreprenør';
+
+  let observer = null;
+
+  const navLabels = (nav) =>
+    Array.from(nav.querySelectorAll('button')).map((button) =>
+      String(button.textContent || '').replace(/\s+/g, ' ').trim()
+    );
+
+  const internalProjectNavIsReady = () =>
+    Array.from(document.querySelectorAll('nav')).some((nav) => {
+      const labels = navLabels(nav);
+      return labels.includes('Prosjektoversikt') && labels.includes('Prosjektering') && labels.includes('Sjekklister');
+    });
+
+  const portalNavIsReady = () =>
+    Array.from(document.querySelectorAll('nav')).some((nav) => {
+      const labels = navLabels(nav);
+      return isUnderleverandor
+        ? labels.includes('Prosjektinformasjon') && labels.includes('Sjekklister')
+        : labels.includes('Oversikt') && labels.includes('Rapport') && labels.includes('Dokumentasjon');
+    });
+
+  const uiBoundaryIsReady = () =>
+    isPortalRole ? portalNavIsReady() : internalProjectNavIsReady();
+
+  const tryInstall = () => {
+    if (!uiBoundaryIsReady()) return false;
+    observer?.disconnect();
+    installProgressPlanUx();
+    return true;
+  };
+
+  if (tryInstall()) return;
+  observer = new MutationObserver(tryInstall);
+  observer.observe(document.documentElement, { childList: true, subtree: true });
+}
+
+installProgressPlanAtSecureUiBoundary();
+
+function installProjectDeviationShortcutRouting() {
+  document.addEventListener(
+    'click',
+    (event) => {
+      const clicked = event.target instanceof Element ? event.target.closest('button') : null;
+      if (!(clicked instanceof HTMLButtonElement)) return;
+      const text = String(clicked.textContent || '').replace(/\s+/g, ' ').trim();
+      if (text !== 'Åpne Avvik') return;
+
+      const nav = Array.from(document.querySelectorAll('nav')).find((candidate) =>
+        Array.from(candidate.querySelectorAll('button')).some((button) => {
+          const label = String(button.textContent || '').replace(/\s+/g, ' ').trim();
+          return label === 'Prosjektoversikt' || label === 'Ordreoversikt';
+        })
+      );
+      if (!nav) return;
+
+      const destination = Array.from(nav.querySelectorAll('button')).find((button) => {
+        const label = String(button.textContent || '').replace(/\s+/g, ' ').trim();
+        return isProjectDeviationNavLabel(label);
+      });
+      if (!(destination instanceof HTMLButtonElement)) return;
+
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      destination.click();
+    },
+    true
+  );
+}
+
+installProjectDeviationShortcutRouting();
+
+const SALES_IMAGE_LIGHTBOX_ID = 'sales-customer-image-lightbox';
+
+function openSalesImageLightbox(src, alt = 'Tilbudsbilde') {
+  if (!src) return;
+
+  document.getElementById(SALES_IMAGE_LIGHTBOX_ID)?.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = SALES_IMAGE_LIGHTBOX_ID;
+  overlay.setAttribute('role', 'dialog');
+  overlay.setAttribute('aria-modal', 'true');
+  overlay.setAttribute('aria-label', alt || 'Større bilde');
+  Object.assign(overlay.style, {
+    position: 'fixed',
+    inset: '0',
+    zIndex: '100000',
+    display: 'grid',
+    placeItems: 'center',
+    padding: '20px',
+    background: 'rgba(5, 18, 25, 0.88)',
+    cursor: 'zoom-out'
+  });
+
+  const panel = document.createElement('div');
+  Object.assign(panel.style, {
+    position: 'relative',
+    display: 'grid',
+    placeItems: 'center',
+    maxWidth: '96vw',
+    maxHeight: '94vh',
+    cursor: 'default'
+  });
+
+  const image = document.createElement('img');
+  image.src = src;
+  image.alt = alt || 'Tilbudsbilde';
+  Object.assign(image.style, {
+    display: 'block',
+    maxWidth: '94vw',
+    maxHeight: '88vh',
+    width: 'auto',
+    height: 'auto',
+    objectFit: 'contain',
+    borderRadius: '12px',
+    background: '#fff',
+    boxShadow: '0 24px 70px rgba(0,0,0,0.45)'
+  });
+
+  const closeButton = document.createElement('button');
+  closeButton.type = 'button';
+  closeButton.textContent = '×';
+  closeButton.setAttribute('aria-label', 'Lukk bilde');
+  Object.assign(closeButton.style, {
+    position: 'absolute',
+    top: '-14px',
+    right: '-14px',
+    width: '42px',
+    height: '42px',
+    border: '0',
+    borderRadius: '999px',
+    background: '#fff',
+    color: '#10212b',
+    fontSize: '30px',
+    lineHeight: '1',
+    fontWeight: '700',
+    cursor: 'pointer',
+    boxShadow: '0 8px 24px rgba(0,0,0,0.28)'
+  });
+
+  const close = () => {
+    document.removeEventListener('keydown', handleKeyDown);
+    overlay.remove();
+  };
+  const handleKeyDown = (event) => {
+    if (event.key === 'Escape') close();
+  };
+
+  overlay.addEventListener('click', (event) => {
+    if (event.target === overlay) close();
+  });
+  panel.addEventListener('click', (event) => event.stopPropagation());
+  closeButton.addEventListener('click', close);
+  document.addEventListener('keydown', handleKeyDown);
+
+  panel.append(image, closeButton);
+  overlay.append(panel);
+  document.body.append(overlay);
+  closeButton.focus();
+}
+
+document.addEventListener(
+  'click',
+  (event) => {
+    const target = event.target instanceof Element ? event.target : null;
+    const anchor = target?.closest('a[title="Åpne større bilde"]');
+    if (!anchor) return;
+
+    const image = anchor.querySelector('img');
+    const src = image?.src || anchor.href || '';
+    if (!src) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    openSalesImageLightbox(
+      src,
+      image?.alt || anchor.getAttribute('aria-label') || 'Tilbudsbilde'
+    );
+  },
+  true
+);
+
+function rewritePrivateDocumentAnchorForCurrentOrigin(anchor) {
+  if (!(anchor instanceof HTMLAnchorElement)) return null;
+
+  let url;
+  try {
+    url = new URL(anchor.href, window.location.href);
+  } catch {
+    return null;
+  }
+
+  if (url.searchParams.get('privateDocument') !== '1') return null;
+
+  const isKnownAppHost =
+    url.hostname === 'expo-proffdok.app' ||
+    url.hostname === window.location.hostname;
+  if (!isKnownAppHost) return null;
+
+  if (url.origin !== window.location.origin) {
+    url.protocol = window.location.protocol;
+    url.host = window.location.host;
+  }
+
+  if (anchor.hasAttribute('download')) {
+    url.searchParams.set('download', '1');
+  }
+
+  const supportSessionId = activeSupportSessionId();
+  if (supportSessionId) url.hash = new URLSearchParams({ expoSupport: supportSessionId }).toString();
+  anchor.href = url.toString();
+  return url;
+}
+
+const normalizePortalRole = (value = '') => {
+  const clean = String(value || '').trim().toLowerCase();
+  return clean === 'underleverandor' ||
+    clean === 'underleverandør' ||
+    clean === 'underentreprenør'
+    ? 'underleverandor'
+    : clean === 'kunde'
+      ? 'kunde'
+      : '';
+};
+
+document.addEventListener(
+  'click',
+  (event) => {
+    const target = event.target instanceof Element ? event.target : null;
+    const anchor = target?.closest('a[href]');
+    if (!anchor) return;
+
+    const privateDocumentUrl = rewritePrivateDocumentAnchorForCurrentOrigin(anchor);
+    if (!privateDocumentUrl) return;
+
+    const currentParams = new URLSearchParams(window.location.search);
+    const currentProjectId = String(currentParams.get('project') || '').trim();
+    const currentPortalRole = normalizePortalRole(currentParams.get('role') || '');
+    const documentProjectId = String(
+      privateDocumentUrl.searchParams.get('project') || ''
+    ).trim();
+
+    if (
+      currentProjectId &&
+      currentPortalRole &&
+      documentProjectId === currentProjectId
+    ) {
+      event.preventDefault();
+      event.stopPropagation();
+      window.location.assign(privateDocumentUrl.toString());
+    }
+  },
+  true
+);
+
+function restoreSalesTabAfterReload() {
+  const shouldRestore = shouldBootstrapRestoreSales();
+  if (!shouldRestore) return;
+
+  let observer = null;
+  let timeoutId = null;
+
+  const tryOpenSalesTab = () => {
+    const salesButton = Array.from(document.querySelectorAll('button')).find(
+      (button) =>
+        String(button.textContent || '')
+          .replace(/\s+/g, ' ')
+          .trim() === 'Befaring/Tilbud'
+    );
+    if (!salesButton) return false;
+
+    try {
+      window.sessionStorage?.removeItem(SALES_RELOAD_TAB_KEY);
+    } catch {
+      // Engangsmarkøren påvirker kun navigasjon.
+    }
+
+    observer?.disconnect();
+    if (timeoutId) window.clearTimeout(timeoutId);
+    salesButton.click();
+    return true;
+  };
+
+  if (tryOpenSalesTab()) return;
+
+  observer = new MutationObserver(() => {
+    tryOpenSalesTab();
+  });
+  observer.observe(document.documentElement, { childList: true, subtree: true });
+  timeoutId = window.setTimeout(() => observer?.disconnect(), 20000);
+}
+
+const params = new URLSearchParams(window.location.search);
+if (params.get('privateDocument') === '1') {
+  import('./modules/documents/privateDocumentRedirect.js')
+    .then(({ runPrivateDocumentRedirect }) => runPrivateDocumentRedirect())
+    .catch((error) => {
+      console.error('Kunne ikke starte privat dokumentrute:', error);
+      document.body.innerHTML = '<main style="font-family:Arial,sans-serif;padding:24px"><h1>Dokumentet kunne ikke åpnes</h1><p>Prøv igjen fra Expo ProffDok.</p></main>';
+    });
+} else {
+  import('./main.jsx')
+    .then(() => restoreSalesTabAfterReload())
+    .catch((error) => {
+      console.error('Kunne ikke starte Expo ProffDok:', error);
+    });
+}

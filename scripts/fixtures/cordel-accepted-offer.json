@@ -1,0 +1,328 @@
+{
+  "id": "TEST-CORDEL-001",
+  "status": "Akseptert",
+  "customer": "Testkunde",
+  "acceptedOfferVersionNumber": 3,
+  "acceptedOfferVersionId": "test-version",
+  "acceptedTotal": "402164.10",
+  "acceptedPayload": {
+    "version_snapshot": {
+      "lines": [
+        {
+          "id": "fixture-1",
+          "mainPostId": "tildekking",
+          "mainPostTitle": "Tildekking",
+          "title": "",
+          "description": "Tildekking og beskyttelse av gulv, vegger og øvrige overflater i arbeidsområdet og transportveien.",
+          "amount": "2000",
+          "quantity": "1",
+          "unit": ""
+        },
+        {
+          "id": "fixture-2",
+          "mainPostId": "tildekking",
+          "mainPostTitle": "Tildekking",
+          "title": "",
+          "description": "Tildekkingsmaterialer, inkludert papp, plast, tape og beskyttelsesfolie.",
+          "amount": "3244",
+          "quantity": "1",
+          "unit": ""
+        },
+        {
+          "id": "fixture-3",
+          "mainPostId": "demontering-riving",
+          "mainPostTitle": "Demontering og riving",
+          "title": "",
+          "description": "Demontering og riving",
+          "amount": "31000",
+          "quantity": "1",
+          "unit": ""
+        },
+        {
+          "id": "fixture-4",
+          "mainPostId": "stop",
+          "mainPostTitle": "Støp",
+          "title": "",
+          "description": "Støping av baderomsgulv, inkludert oppbæring og etablering av forskriftsmessig fall mot sluk.",
+          "amount": "11280",
+          "quantity": "1",
+          "unit": ""
+        },
+        {
+          "id": "fixture-5",
+          "mainPostId": "stop",
+          "mainPostTitle": "Støp",
+          "title": "",
+          "description": "Materialer til støping av gulv, inkluderer, armering og støpemasse og tilbehør.",
+          "amount": "5500",
+          "quantity": "1",
+          "unit": ""
+        },
+        {
+          "id": "fixture-6",
+          "mainPostId": "membran",
+          "mainPostTitle": "Membran",
+          "title": "",
+          "description": "Membran arbeider",
+          "amount": "20000",
+          "quantity": "1",
+          "unit": ""
+        },
+        {
+          "id": "fixture-7",
+          "mainPostId": "membran",
+          "mainPostTitle": "Membran",
+          "title": "",
+          "description": "Materialer til membranarbeid, inkludert primer, membran, mansjetter og tettebånd.",
+          "amount": "5800",
+          "quantity": "1",
+          "unit": ""
+        },
+        {
+          "id": "fixture-11",
+          "mainPostId": "tomrer",
+          "mainPostTitle": "Tømrer",
+          "title": "",
+          "description": "Tømrer arbeid",
+          "amount": "51500",
+          "quantity": "1",
+          "unit": ""
+        },
+        {
+          "id": "fixture-12",
+          "mainPostId": "tomrer",
+          "mainPostTitle": "Tømrer",
+          "title": "",
+          "description": "Snekkermaterialer, inkludert , kryssfiner, våtromsplater, gips, festemateriell, utforinger, terskel og lister.",
+          "amount": "15000",
+          "quantity": "1",
+          "unit": ""
+        },
+        {
+          "id": "fixture-14",
+          "mainPostId": "rorlegger",
+          "mainPostTitle": "Rørlegger",
+          "title": "",
+          "description": "Rørleggerarbeid – grunninstallasjon og bytting av sluk",
+          "amount": "33840",
+          "quantity": "1",
+          "unit": ""
+        },
+        {
+          "id": "fixture-15",
+          "mainPostId": "rorlegger",
+          "mainPostTitle": "Rørlegger",
+          "title": "",
+          "description": "Rørleggerarbeid – henting, innbæring, montering og tilkobling av sanitærutstyr.",
+          "amount": "15510",
+          "quantity": "1",
+          "unit": ""
+        },
+        {
+          "id": "fixture-16",
+          "mainPostId": "rorlegger",
+          "mainPostTitle": "Rørlegger",
+          "title": "",
+          "description": "Materialer til komplett oppbygging av baderom",
+          "amount": "26000",
+          "quantity": "1",
+          "unit": ""
+        },
+        {
+          "id": "fixture-20",
+          "mainPostId": "elektriker",
+          "mainPostTitle": "Elektriker",
+          "title": "",
+          "description": "Spotter i tak",
+          "amount": "2400",
+          "quantity": "2",
+          "unit": "Stk"
+        },
+        {
+          "id": "fixture-21",
+          "mainPostId": "elektriker",
+          "mainPostTitle": "Elektriker",
+          "title": "",
+          "description": "Dimmer komplett for led-belysning",
+          "amount": "1660",
+          "quantity": "1",
+          "unit": "Stk"
+        },
+        {
+          "id": "fixture-22",
+          "mainPostId": "elektriker",
+          "mainPostTitle": "Elektriker",
+          "title": "",
+          "description": "Stikk komplett for i/ved vask og vaskemaskin",
+          "amount": "1830",
+          "quantity": "2",
+          "unit": "Stk"
+        },
+        {
+          "id": "fixture-23",
+          "mainPostId": "elektriker",
+          "mainPostTitle": "Elektriker",
+          "title": "",
+          "description": "Tilkobling strøm speil/speilskap",
+          "amount": "1900",
+          "quantity": "1",
+          "unit": ""
+        },
+        {
+          "id": "fixture-24",
+          "mainPostId": "elektriker",
+          "mainPostTitle": "Elektriker",
+          "title": "",
+          "description": "Demontering/utkobling/ee-avfallshåndtering",
+          "amount": "3300",
+          "quantity": "1",
+          "unit": ""
+        },
+        {
+          "id": "fixture-27",
+          "mainPostId": "maler",
+          "mainPostTitle": "Maler",
+          "title": "",
+          "description": "Sparkling og maling av tak",
+          "amount": "12500",
+          "quantity": "1",
+          "unit": ""
+        },
+        {
+          "id": "fixture-28",
+          "mainPostId": "rigg-drift",
+          "mainPostTitle": "Rigg og drift",
+          "title": "",
+          "description": "Prosjektering dokumentasjon rigg og drift",
+          "amount": "16000",
+          "quantity": "1",
+          "unit": ""
+        },
+        {
+          "id": "fixture-29",
+          "mainPostId": "avfall",
+          "mainPostTitle": "Avfallshåndtering",
+          "title": "",
+          "description": "Avfallshåndtering er ikke inkludert i tilbudet og faktureres etter reelt medgåtte kostnader med 10 % påslag.",
+          "amount": "0.1",
+          "quantity": "1",
+          "unit": ""
+        }
+      ]
+    },
+    "selected_options": [
+      {
+        "id": "fixture-8",
+        "mainPostId": "flislegging",
+        "mainPostTitle": "Flislegging",
+        "title": "Flisarbeid av alle vegger og gulv inkludert flislim, fugemasse, silikon og nødvendig tilbehør.",
+        "description": "Hele badet flislegges",
+        "amount": "52000",
+        "quantity": "1",
+        "unit": ""
+      },
+      {
+        "id": "fixture-9",
+        "mainPostId": "flislegging",
+        "mainPostTitle": "Flislegging",
+        "title": "Tileinsert slukrenne",
+        "description": "Slukrenne med flisinnlegg, inkludert tilpasning av flis i slukrennen.",
+        "amount": "9000",
+        "quantity": "1",
+        "unit": "Stk"
+      },
+      {
+        "id": "fixture-10",
+        "mainPostId": "flislegging",
+        "mainPostTitle": "Flislegging",
+        "title": "Flislagge toalettsisterne",
+        "description": "Bygge toalett sisterne inn for fliser med lister på ytterhjørner inkl",
+        "amount": "10000",
+        "quantity": "1",
+        "unit": ""
+      },
+      {
+        "id": "fixture-13",
+        "mainPostId": "tomrer",
+        "mainPostTitle": "Tømrer",
+        "title": "Komplett ny dør, inkludert dørblad, karm, terskel, utforinger, lister og håndtak.",
+        "description": "Ny dør komplett, inkludert montering.",
+        "amount": "10000",
+        "quantity": "1",
+        "unit": "Stk"
+      },
+      {
+        "id": "fixture-17",
+        "mainPostId": "rorlegger",
+        "mainPostTitle": "Rørlegger",
+        "title": "Toalettsisterne",
+        "description": "Innbyggingssisterne inkludert materiell og montering.",
+        "amount": "8500",
+        "quantity": "1",
+        "unit": ""
+      },
+      {
+        "id": "fixture-18",
+        "mainPostId": "rorlegger",
+        "mainPostTitle": "Rørlegger",
+        "title": "Opplegg vaskemaskin",
+        "description": "vann og avløp",
+        "amount": "6000",
+        "quantity": "1",
+        "unit": ""
+      },
+      {
+        "id": "fixture-19",
+        "mainPostId": "rorlegger",
+        "mainPostTitle": "Rørlegger",
+        "title": "Kjøkkenoplegg ved røropplegg med bad",
+        "description": "",
+        "amount": "8750",
+        "quantity": "1",
+        "unit": ""
+      },
+      {
+        "id": "fixture-25",
+        "mainPostId": "elektriker",
+        "mainPostTitle": "Elektriker",
+        "title": "Stikkontakt og strømopplegg",
+        "description": "Ekstra Stikkontakt og strømopplegg, inkludert materiell og montering.",
+        "amount": "1920",
+        "quantity": "1",
+        "unit": ""
+      },
+      {
+        "id": "fixture-26",
+        "mainPostId": "elektriker",
+        "mainPostTitle": "Elektriker",
+        "title": "Varmekabel 1-3m2/120 - 150wm2",
+        "description": "Inkludert termostat.",
+        "amount": "9500",
+        "quantity": "1",
+        "unit": ""
+      },
+      {
+        "id": "fixture-30",
+        "mainPostId": "avfall",
+        "mainPostTitle": "Avfallshåndtering",
+        "title": "Avfallshåndtering er inkludert i tilbudet",
+        "description": "Alt avfall er ink i pris",
+        "amount": "22000",
+        "quantity": "1",
+        "unit": ""
+      }
+    ]
+  },
+  "offerLines": [
+    {
+      "amount": "999999",
+      "description": "Mutable draft must not be exported"
+    }
+  ],
+  "offerOptions": [
+    {
+      "amount": "999999",
+      "description": "Unselected must not be exported"
+    }
+  ]
+}

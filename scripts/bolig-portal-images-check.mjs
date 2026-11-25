@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import {createPortalImages} from '../supabase/functions/_shared/bolig-portal-images.mjs';
+import {hydratePortalImages} from '../src/modules/bolig/boligPortalImages.js';
+const origin='https://qa.invalid',base='https://db.invalid',path='e0000000-0000-4000-8000-000000000001/a2052283-0ee1-4d52-97b8-fe7c2f2382ff/43bfa092-146e-4221-929a-cc140f2c8428.jpg',token='a'.repeat(64);let allowed=true,calls=0,signs=0;
+const h=createPortalImages({origins:[origin],authorize:async()=>{calls++;if(!allowed)throw Error('revoked');return [path];},sign:async paths=>{signs++;assert.deepEqual(paths,[path]);return [{path,url:base+'/storage/v1/object/sign/bolig-catalog-images/'+path+'?token=qa'}];}});
+const req=(body={token},o=origin)=>new Request(origin,{method:'POST',headers:{origin:o},body:JSON.stringify(body)});
+assert.equal((await h(req())).status,200);assert.equal(calls,2);assert.equal(signs,1);
+assert.equal((await h(req({token,path:'foreign'}))).status,400);assert.equal((await h(req({token},'https://foreign.invalid'))).status,403);assert.equal(signs,1);
+allowed=false;assert.equal((await h(req())).status,403);assert.equal(signs,1);allowed=true;
+const revokeDuring=createPortalImages({origins:[origin],authorize:async()=>{if(!allowed)throw Error('revoked');return [path];},sign:async()=>{allowed=false;return [{path,url:'secret'}];}});assert.equal((await revokeDuring(req())).status,403);allowed=true;
+assert.equal((await h(req({token,oversize:'x'.repeat(1000)}))).status,413);
+const raw={offers:[{goods:[{key:'x',image_url:base+'/storage/v1/object/public/bolig-catalog-images/'+path},{key:'y',image_url:'https://external.invalid/p.jpg'}]}]};let fetched=0;
+const transport=async()=>{fetched++;return h(req());};const a=await hydratePortalImages(raw,token,base,'anon',transport);assert(a.offers[0].goods[0].image_url.includes('/sign/'));assert.equal(a.offers[0].goods[1].image_url,'https://external.invalid/p.jpg');assert(raw.offers[0].goods[0].image_url.includes('/public/'),'immutable source');
+await hydratePortalImages(raw,token,base,'anon',transport);assert.equal(fetched,1,'poll cache');await hydratePortalImages(raw,'b'.repeat(64),base,'anon',transport);assert.equal(fetched,2,'cache bound to portal token');
+console.log('PASS portal images: validated token, published allowlist, fresh revocation, foreign origin/path, bounded input, short signed links, immutable client projection and token-bound cache');

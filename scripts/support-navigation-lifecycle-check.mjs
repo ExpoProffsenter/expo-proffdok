@@ -1,0 +1,55 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import * as jsxRuntime from 'react/jsx-runtime';
+const bridge = fs.readFileSync('src/modules/access/supportModeProjection.js','utf8');
+const between=(text,start,end)=>text.slice(text.indexOf(start),text.indexOf(end)).replaceAll('export ','');
+const source = between(bridge,'async function clearProjection()','async function buildProjection(')
+  + between(bridge,'export async function syncVisibleSupportProjection','function scheduleSync(');
+let context={key:'company-a|owner-a'},resolveBuild;
+const events=[],published=[],scopes=[];
+const win={sessionStorage:{getItem:()=> 'company-a'},dispatchEvent:e=>events.push(e.type)};
+const api=new Function('window','visibleProjectSupportContext','buildProjection','restoreOwnHeaderBranding','restoreSupportSpecificVisibility','setManagedSalesSupportCompany','refreshMyModuleAccess','applySupportSpecificVisibility','publish',`
+let activeProjection=null,projectionGeneration=0,syncPromise=null;
+const MANAGED_SALES_SUPPORT_KEY='managed';
+function publishProjectedAccess(){publish(activeProjection);}
+${source}
+return {syncVisibleSupportProjection,endProjectSupportProjection};
+`)(win,()=>context,()=>new Promise(r=>{resolveBuild=r;}),()=>events.push('restore-logo'),()=>{},id=>scopes.push(id),async()=>{},()=>{},p=>published.push(p));
+const pending=api.syncVisibleSupportProjection();
+await api.endProjectSupportProjection();
+context=null;
+resolveBuild({key:'company-a|owner-a',salesCompanyId:'company-a'});
+await pending;
+assert.equal(published.length,0,'late company response cannot reinstate support after exit');
+assert.deepEqual(scopes,[''],'scope cleared before delayed response');
+assert(events.includes('expo-project-support-ended'),'presentation cleanup dispatched');
+assert(events.includes('restore-logo'),'own logo restored');
+context={key:'company-a|owner-a'};
+const switched=api.syncVisibleSupportProjection();
+context={key:'company-b|owner-b'};
+resolveBuild({key:'company-a|owner-a',salesCompanyId:'company-a'});
+await switched;
+assert.equal(published.length,0,'late result cannot replace another company');
+const current=api.syncVisibleSupportProjection();
+resolveBuild({key:'company-b|owner-b',salesCompanyId:'company-b'});
+await current;
+assert.equal(published[0].key,context.key,'current target still publishes normally');
+await api.endProjectSupportProjection();
+assert.equal(scopes.at(-1),'','successful support session also clears on exit');
+const main=fs.readFileSync('src/main.jsx','utf8');
+const overviewOutside=main.indexOf('className: "support-project-overview"');
+const inertMain=main.indexOf('inert: isProjectSupportReadOnly && !supportReadOnlyMainIsInteractive');
+assert(overviewOutside>0&&overviewOutside<inertMain,'read-only navigation must be outside inert editor');
+assert(main.includes('tab === "prosjekt" && projectId && !isProjectSupportReadOnly && renderProjectOverviewPanel'),'no duplicate support overview');
+assert(main.includes('inert: isProjectSupportReadOnly ? true : void 0'),'Sales editor remains protected');
+const overview=fs.readFileSync('src/modules/project/projectOverviewTools.js','utf8');
+const panelSource=between(overview,'  function renderProjectOverviewPanel(','  function renderProjectDescriptionPanel(');
+const render=new Function('import_jsx_runtime','import_lucide_react','Section','isSimpleOrderProject','formatAcceptedTotal','acceptedOfferTotalInclVat',`${panelSource};return renderProjectOverviewPanel;`)(jsxRuntime,{ClipboardCheck:()=>null},'section',()=>false,String,v=>v);
+const actions=[];
+const panel=render({project:{salesOrigin:{requestRef:'case-a'}},readOnly:true,goToTab:t=>actions.push(t),leaveProjectWorkspace:()=>actions.push('home')});
+const nodes=[];function walk(n){if(Array.isArray(n))return n.forEach(walk);if(n&&typeof n==='object'){nodes.push(n);walk(n.props?.children);}}walk(panel);
+for(const label of ['Åpne salgsgrunnlag','Åpne chat','← Til startside']) nodes.find(n=>n.type==='button'&&n.props.children===label).props.onClick();
+assert.deepEqual(actions,['sales','chat','home'],'overview uses existing navigation handlers');
+assert(!nodes.some(n=>['input','textarea','select'].includes(n.type)),'overview contains no editable fields');
+assert(nodes.some(n=>String(n.props?.children).includes('skrivebeskyttet i supportmodus')),'honest read-only help');
+console.log('support-navigation-lifecycle: PASS – inert boundary, actual navigation callbacks, exit and stale target races');

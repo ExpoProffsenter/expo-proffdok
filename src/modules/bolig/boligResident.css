@@ -1,0 +1,75 @@
+@import "./boligCommerce.css";
+:root { font-family:Inter,Arial,sans-serif; color:#183b40; background:#f2f5f2; font-synthesis:none; -webkit-font-smoothing:antialiased; }
+* { box-sizing:border-box; }
+body { margin:0; }
+button,input,textarea,select { font:inherit; }
+button { border:1px solid #155c51; border-radius:10px; background:#155c51; color:white; padding:13px 20px; min-height:48px; font-weight:650; cursor:pointer; }
+button:hover { background:#10483e; }
+button:disabled { opacity:.55; cursor:wait; }
+button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible { outline:3px solid #c18d2a; outline-offset:3px; }
+.bolig-resident-page { max-width:820px; padding:35px 24px 55px; margin:0 auto; }
+.bolig-resident-brand { display:flex; align-items:center; gap:12px; padding-bottom:30px; border-bottom:1px solid #d3dfd7; }
+.bolig-resident-brand > span { width:43px; height:43px; display:grid; place-items:center; background:#155c51; color:white; border-radius:12px; font-weight:800; }
+.bolig-resident-brand > div { display:grid; gap:5px; }
+.bolig-resident-brand small { color:#5b7575; font-size:12px; }
+.bolig-resident-intro { padding:33px 0 24px; position:relative; }
+.bolig-resident-intro > small { color:#52736c; font-size:13px; }
+.bolig-resident-intro h1 { font-size:clamp(27px,5vw,39px); letter-spacing:-1px; margin:13px 0; line-height:1.15; }
+.bolig-resident-intro p { color:#54716e; line-height:1.6; margin:0 0 15px; }
+.bolig-resident-version { display:inline-block; background:#e0eae2; font-size:12px; font-weight:700; padding:6px 10px; border-radius:99px; }
+.bolig-resident-card { background:#fff; border:1px solid #d7e1da; box-shadow:0 7px 30px #254e3510; border-radius:20px; padding:29px; margin-bottom:22px; }
+.bolig-resident-card h1,.bolig-resident-card h2 { margin:0 0 19px; letter-spacing:-.4px; font-size:23px; }
+.bolig-resident-card p { line-height:1.65; }
+.bolig-resident-card details { border:1px solid #d8e4dc; border-radius:13px; padding:0 17px; }
+.bolig-resident-card summary { min-height:54px; padding:16px 0; font-weight:700; cursor:pointer; line-height:1.4; }
+.bolig-resident-card fieldset { border:0; padding:0; margin:0; display:grid; gap:21px; }
+.bolig-resident-card label { display:grid; gap:8px; font-weight:650; font-size:15px; }
+.bolig-resident-card input:not([type="checkbox"]):not([type="radio"]),.bolig-resident-card select { width:100%; min-height:49px; border:1px solid #a9bdb4; border-radius:9px; background:#fff; color:#173c36; padding:12px; font-size:16px; }
+.bolig-resident-card .bolig-resident-confirm { display:flex; align-items:flex-start; gap:12px; font-weight:400; line-height:1.6; padding:15px; background:#f2f7f3; border-radius:11px; }
+.bolig-resident-confirm input { flex:none; margin:2px 0 0; width:22px; height:22px; accent-color:#155c51; }
+.bolig-resident-actions { display:flex; flex-wrap:wrap; gap:10px; }
+.bolig-resident-actions button+button { background:white; color:#155c51; }
+.bolig-resident-card .bolig-resident-deadline { color:#234c40; background:#edf5ee; border:1px solid #9ebfb0; border-radius:10px; font-size:14px; line-height:1.6; padding:13px 15px; margin:18px 0; }
+.bolig-resident-deadline strong { display:block; margin-bottom:4px; }
+.bolig-resident-receipt { border:1px solid #9fceba; background:#e3f4e9; padding:25px; border-radius:17px; margin-bottom:22px; }
+.bolig-resident-receipt h2 { margin:0 0 12px; font-size:25px; }
+.bolig-resident-receipt p { line-height:1.6; }
+.bolig-resident-error { border:1px solid #d8a29e; color:#7f2f29; background:#fff1ef; padding:17px; border-radius:12px; line-height:1.6; }
+.bolig-resident-page > footer { font-size:12px; line-height:1.8; text-align:center; color:#658074; padding:10px; }
+@media(max-width:500px) { .bolig-resident-page { padding:22px 15px 35px; } .bolig-resident-card { padding:21px 17px; border-radius:16px; } .bolig-resident-card button { width:100%; } .bolig-resident-brand { padding-bottom:20px; } }
+@media print { :root { background:white; } .bolig-resident-page { max-width:none; padding:0; } button,.bolig-resident-deadline { display:none!important; } .bolig-resident-card,.bolig-resident-receipt { box-shadow:none; break-inside:avoid; } }
+.bolig-portal-page {max-width:980px;}
+.bolig-portal-tabs {display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:6px;background:#e3eae3;border-radius:15px;margin-bottom:26px;position:sticky;top:8px;z-index:2;box-shadow:0 4px 16px #173b3020;}
+.bolig-portal-tabs button {border:0;background:transparent;color:#3c6058;font-size:14px;padding:13px 7px;min-height:48px;display:flex;gap:6px;justify-content:center;align-items:center;}
+.bolig-portal-tabs button[aria-current] {background:#fff;color:#154f43;box-shadow:0 2px 8px #23493916;}
+.bolig-portal-tabs button span {background:#e7bb55;color:#3c3926;border-radius:99px;padding:2px 6px;font-size:11px;}
+.bolig-portal-refresh {display:block;margin-left:auto;min-height:38px;padding:8px 12px;font-size:12px;background:white;color:#155c51;margin-top:10px;}
+.bolig-portal-offers {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:24px 0;}
+.bolig-portal-offers article {border:1px solid #d7e2d9;background:#fafcf9;border-radius:15px;min-width:0;overflow:hidden;}
+.bolig-portal-offers article.selected {border:2px solid #21765e;background:#f2f9f2;}
+.bolig-resident-card .bolig-portal-choice {display:flex;gap:12px;padding:22px 17px;align-items:flex-start;line-height:1.5;}
+.bolig-portal-choice input {width:21px;height:21px;margin:3px 0;accent-color:#155c51;flex:none;}
+.bolig-portal-choice span,.bolig-portal-choice small {display:block;}
+.bolig-portal-choice strong {font-size:18px;}
+.bolig-portal-choice small {margin-top:6px;font-weight:500;color:#527566;}
+.bolig-portal-offers details {border:0;border-top:1px solid #d7e2d9;border-radius:0;}
+.bolig-portal-offers ul {list-style:none;padding:0;margin:0 0 16px;}
+.bolig-portal-offers li {padding:10px 0;border-top:1px solid #e1e9e2;overflow-wrap:anywhere;}
+.bolig-portal-offers li strong,.bolig-portal-offers li small {display:block;font-size:14px;line-height:1.6;}
+.bolig-resident-card textarea {width:100%;min-height:100px;border:1px solid #a9bdb4;border-radius:9px;background:white;color:#173c36;padding:13px;font-size:16px;resize:vertical;line-height:1.6;}
+.bolig-resident-card form {display:grid;gap:18px;margin-top:22px;}
+.bolig-resident-card form>button {justify-self:start;}
+.bolig-portal-info {padding:20px;background:#f1f6eb;border:1px solid #d2debd;border-radius:14px;margin-top:18px;}
+.bolig-portal-info h3 {margin-top:0;}
+.bolig-portal-event {border-top:1px solid #dce6de;padding:20px 0;}
+.bolig-portal-event>strong,.bolig-portal-event>small {display:block;line-height:1.6;}
+.bolig-portal-event>small {color:#607c6e;font-size:12px;margin:5px 0 12px;}
+.bolig-portal-document {display:flex;gap:15px;justify-content:space-between;align-items:center;padding:20px 0;border-top:1px solid #dce6de;color:#155c51;text-decoration:none;font-weight:700;overflow-wrap:anywhere;}
+.bolig-portal-document span {font-size:12px;font-weight:500;flex-shrink:0;}
+.bolig-portal-messages {display:grid;gap:12px;margin-top:25px;}
+.bolig-portal-message {max-width:90%;border:1px solid #dbe7de;padding:18px 20px;border-radius:16px;background:#f1f5ef;overflow-wrap:anywhere;}
+.bolig-portal-message.resident {margin-left:auto;background:#e4f1e9;}
+.bolig-portal-message p {margin:8px 0;white-space:pre-wrap;}
+.bolig-portal-message small {color:#647d70;font-size:11px;}
+@media(max-width:600px){.bolig-portal-offers{grid-template-columns:1fr}.bolig-portal-tabs{gap:2px;padding:4px;top:4px}.bolig-portal-tabs button{font-size:12px;padding:12px 4px;gap:3px}.bolig-portal-document{align-items:flex-start;flex-direction:column;gap:6px}.bolig-portal-refresh{float:none}.bolig-portal-message{max-width:95%}}
+@media print{.bolig-portal-tabs,.bolig-portal-refresh,form{display:none!important}}

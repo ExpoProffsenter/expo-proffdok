@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Samlet supportmodus med kundens rettigheter og slettesperrer",
+  "change": "Miljømål BEGGE. Full kundeapp, tilbud og dokumenter, identitet/priser, isolerte kladder, gjenåpning, retur til administrator og serverstyrte slettesperrer. Testaktivert bare i sandbox; separat PR320 for Bolig-kontraktfiler.",
+  "verification": "Integrert med main c51f6dc6 (PR323/324). 109 SQL-krav, runtime45, Auth/retur, cache/UX og full lokal build PASS. Reprodusert og rettet manglende supporttriggere på sen Orvei-kvitteringstabell. Ny full CI og samlet Preview gjenstår. Ingen produksjonsaktivering.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "Ny supportinngang på brukerkortet og eksplisitt avslutning beskrives sammen med forskjellen fra eldre skrivebeskyttet prosjektstøtte."
+    },
+    "module": {
+      "required": true,
+      "reason": "Access-README skiller deaktivert supportgrunnlag fra dagens arbeidsprofil og innlogging."
+    },
+    "architecture": {
+      "required": true,
+      "reason": "APP_SUPPORT_SESSION beskriver aktør/mål-identitet, Data API-grensen, slettesperrer og manglende integrasjoner."
+    },
+    "setup": {
+      "required": true,
+      "reason": "Miljøkontroll, supportmigrasjoner inkludert offentlig hook og invitasjonssperre etter PR324, Edge-adapter, aktivering og tilbakeføring uten datasletting."
+    }
+  }
+}

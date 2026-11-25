@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Sjekklister for eksterne prosjekter med påkrevd ordre og sporbar PDF",
+  "change": "Miljømål BEGGE. PR299 isolert fra main71d157f7. Presisert av Kenneth: sjekklister for eksterne prosjekter uten ProffDok-prosjekt, påkrevd ordrenummer. Arbeidssted/adresse kreves før lagring; eksternt prosjektnavn og kunde/oppdragsgiver er valgfrie. Ny egen global menyinngang Sjekklister og Startside-knapp Fyll ut sjekkliste bruker native navigasjon. Eksisterende prosjektinngang beholdes. Privat bruker-/firmascopet kontroll, kanoniske felt/bilder/bekreftelser, CAS/readback/lokal kladd og frosne server-PDF-vedlegg videreføres. Oppfølgingsmigrering tilfører bare nye detaljer og oppdaterer nye standalone-RPC-er. Sporingsopplysningene inngår i bekreftelseshasher. Historiske fullførte tester beholdes. Ingen ProffDok-prosjektrad, rollemutasjon, rutineutsending eller endring av eksisterende prosjektkommandoer.",
+  "verification": "Oppdatert PostgreSQL92, faktisk SQL/jsPDF/Edge43 og native React→HTTP→PostgreSQL→PDF/Edge111PASS lokalt. Ordre/arbeidssted påkrevd før transport; faktisk native Startside-callback og global navigasjonskontrakt, fem bredder320–1920, alle åtte felttyper, metadata i PDF/mail/snapshot/readback, endret arbeidssted opphever bekreftelse også server-side, historisk fullført rad uendret gjennom migrering, egen liste med obligatorisk ordre, kladd/fokus/firma, CAS/readback/retry, fullføring og tapt sendingskvittering. Provider er syntetisk. PDF-er (1 og2sider) og PC/mobil visuelt kontrollert. Full eksplisitt Sandbox critical/buildPASS. Ny Sandbox-migrering/Edge, eksakt kandidat/CI/deploy og innlogget ny test føres i PR299. Tidligere ca0a7f62/CI812SUCCESS har faktisk korrigert Sandbox-binding. Tidligere blank-ordre-liveQA831e0013 er historikk og ikke bevis på de nye kravene. Ingen Production-endring eller faktisk e-post. Innlogget12e77434 viste riktig menyinngang, men separat PC-Startside manglet snarveien. Negativ prøve feiler1!=2 på begge native Startside-varianter. PC-knappen er lagt til uten andre flytendringer; samme permanente prøve kjører nå begge faktiske wrappers og111krav over fem bredder. FullCI813SUCCESS på12e77434 er ikke sluttattest på denne PC-oppfølgingen; ny kandidat/CI føres i PR299. Etter TEST OK på uendret app/backend c791a7c1 traff CI816 en eksisterende Bolig-QA-feil 31.10 Oslo: JS setUTCMonth ga 01.05, mens seks kalendermåneder korrekt er 30.04. Kun QA-forventningen er korrigert med uavhengig månedssluttberegning og seks faste datoer (inkludert skuddår), hver kontrollert mot eksplisitt forventet verdi og PostgreSQL. Ingen Bolig-produktkode, migrering, oppbevaringsregel eller assertion er fjernet. Ny full CI kreves før merge.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "Ny meny-/Startside-inngang og påkrevde sporingsopplysninger beskrives med faktiske knapper."
+    },
+    "architecture": {
+      "required": true,
+      "reason": "Nye sporingskolonner/RPC-kontrakt, metadata i bekreftelser/PDF/e-postsnapshot og bevaring av historikk."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen nye npm-avhengigheter eller installasjonssteg. Eksisterende e-postmiljøverdier brukes; ny migrations-/Edge-release beskrives i arkitekturen."
+    },
+    "module": {
+      "required": true,
+      "reason": "Ny frittstående komponent, tilgang, kladd/readback/PDF-/retry-kontrakt dokumenteres i sjekklistemodulens README."
+    }
+  }
+}

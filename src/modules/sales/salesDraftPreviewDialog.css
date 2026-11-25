@@ -1,0 +1,7 @@
+.sales-draft-preview-dialog{box-sizing:border-box;width:min(1280px,calc(100vw - 24px));height:calc(100dvh - 24px);max-width:none;max-height:none;padding:0;border:1px solid #bad9de;border-radius:18px;background:#eef6f7;color:#10212b;overflow:hidden;box-shadow:0 24px 80px #10212b45}
+.sales-draft-preview-dialog[open]{display:flex;flex-direction:column}
+.sales-draft-preview-dialog::backdrop{background:#10212b99}
+.sales-draft-preview-dialog-header{display:flex;flex-shrink:0;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;background:#fff;border-bottom:1px solid #d4e5e8}
+.sales-draft-preview-dialog-header span{font-size:13px;font-weight:650;color:#52616b}
+.sales-draft-preview-dialog-content{min-height:0;overflow:auto;overscroll-behavior:contain}
+@media(max-width:760px){.sales-draft-preview-dialog{inset:0;margin:0;width:100vw;height:100dvh;border:0;border-radius:0}.sales-draft-preview-dialog-header{padding:10px}.sales-draft-preview-dialog-header span{display:none}}

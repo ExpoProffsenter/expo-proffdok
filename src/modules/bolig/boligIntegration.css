@@ -1,0 +1,166 @@
+.bolig-integration {
+  min-width: 0;
+  padding: 18px;
+  background: #f8fbfa;
+  border: 1px solid #d5e2dd;
+  border-radius: 16px;
+  color: #203d33;
+}
+.bolig-integration header h3 {
+  margin: 0 0 8px;
+}
+.bolig-integration p {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #50675d;
+}
+.bolig-integration label {
+  display: grid;
+  gap: 6px;
+  max-width: 640px;
+  margin: 14px 0;
+  font-weight: 650;
+}
+.bolig-integration input,
+.bolig-integration select {
+  box-sizing: border-box;
+  min-width: 0;
+  width: 100%;
+  min-height: 44px;
+  padding: 9px 10px;
+  border: 1px solid #bfcec7;
+  border-radius: 9px;
+  background: #fff;
+  font: inherit;
+}
+.bolig-integration button {
+  min-height: 44px;
+}
+.bolig-integration-linked {
+  display: grid;
+  gap: 5px;
+  margin: 18px 0;
+  overflow-wrap: anywhere;
+}
+.bolig-integration-linked span {
+  font-size: 13px;
+  color: #547363;
+}
+.bolig-integration-tools {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.bolig-integration .bolig-integration-tools > button {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  text-align: left;
+  min-height: 94px;
+  padding: 15px;
+  border: 1px solid #c5d8ce;
+  border-radius: 12px;
+  background: #fff;
+  color: #224938;
+}
+.bolig-integration-tools span {
+  font-size: 13px;
+  font-weight: 400;
+}
+.bolig-integration-setup {
+  margin-top: 18px;
+  padding: 16px;
+  border: 1px dashed #b7d0c2;
+  border-radius: 12px;
+  background: #fff;
+}
+.bolig-my-tasks {
+  grid-column: 1/-1;
+  min-width: 0;
+  align-self: start;
+  border: 1px solid #cadcd2;
+  border-radius: 14px;
+  background: #f4faf6;
+  overflow: hidden;
+}
+.bolig-my-tasks .bolig-my-tasks-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  min-height: 56px;
+  padding: 12px 16px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #244b38;
+  text-align: left;
+  font: inherit;
+}
+.bolig-my-tasks-toggle > span {
+  white-space: nowrap;
+  font-size: 13px;
+}
+.bolig-my-tasks-content {
+  padding: 0 16px 16px;
+}
+.bolig-my-tasks-content[hidden] {
+  display: none;
+}
+.bolig-my-tasks-content p {
+  font-size: 13px;
+  color: #526c5c;
+}
+.bolig-my-tasks-content article {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid #d7e5dc;
+}
+.bolig-my-tasks-content article > div {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.bolig-my-tasks-content article span {
+  font-size: 12px;
+  color: #536d5c;
+}
+.bolig-my-tasks-content button {
+  min-height: 44px;
+}
+.bolig-my-tasks-content article button {
+  flex-shrink: 0;
+}
+@media (max-width: 600px) {
+  .bolig-integration {
+    padding: 12px;
+  }
+  .bolig-integration-tools {
+    grid-template-columns: 1fr;
+  }
+  .bolig-integration .bolig-integration-tools > button {
+    min-height: 70px;
+  }
+  .bolig-integration-setup {
+    padding: 12px;
+  }
+  .bolig-my-tasks .bolig-my-tasks-toggle {
+    flex-wrap: wrap;
+    padding: 12px;
+  }
+  .bolig-my-tasks-content {
+    padding: 0 12px 12px;
+  }
+  .bolig-my-tasks-content article {
+    align-items: start;
+    flex-direction: column;
+  }
+  .bolig-my-tasks-content article > button {
+    width: 100%;
+  }
+}

@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {scopedReviewTask,reviewDeadlineLabel} from '../src/modules/kshms/kshmsReviewReminders.mjs';
+const own={company_id:'a',user_id:'u',as_of:'2026-10-09',task:{due_on:'2026-10-08',deadline_status:'overdue'}};
+assert.equal(scopedReviewTask(own,'a','u'),own.task);
+for(const patch of [{company_id:'b'},{user_id:'other'},{as_of:null},{task:null},{task:{due_on:'bad',deadline_status:'overdue'}},{task:{due_on:'2026-10-10',deadline_status:'overdue'}}])assert.equal(scopedReviewTask({...own,...patch},'a','u'),null);
+for(const [due,status] of [['2026-10-09','today'],['2026-10-16','soon']])assert(scopedReviewTask({...own,task:{due_on:due,deadline_status:status}},'a','u'));
+assert.equal(reviewDeadlineLabel('overdue'),'Datoen for revisjon er passert');assert.equal(reviewDeadlineLabel('today'),'Håndboken skal revideres i dag');assert.equal(reviewDeadlineLabel('bad'),'');
+const migration=fs.readFileSync('supabase/migrations/20261009164036_kshms_review_reminders.sql','utf8');
+assert(migration.includes("notification_kind<>'deviation' and notification_phase='assignment'"));
+assert(migration.includes('kshms_private.deviation_notification_active(o)'));
+assert(migration.includes("q.sent_at>now()-interval '7 days'"));
+assert(migration.includes("o.reminder_on=kshms_private.reminder_slot(due,today)"));
+assert(migration.includes("if not cfg.enabled then return;end if;"));
+assert(!/update\s+public\.kshms_(reviews|versions|acknowledgments)\b/i.test(migration));
+console.log('critical-kshms-review-reminders-check: OK — scoped server dates, unchanged history, current weekly slot and delivery quiet period');

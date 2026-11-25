@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Garantioppsett respekterer prosjektets eksisterende skrivevern",
+  "change": "BEGGE, bare Preview/Sandbox. Koble faktisk garantiadapter og alle oppsettkontroller til prosjektlås/support/lesetilgang. Ingen backend- eller datamigrering.",
+  "verification": "Negativ prøve feiler på gammel adapter; rettet faktisk React20PASS. Sandbox-appbuild og native fixture-build PASS. Additive CI-regresjoner; eksakt full CI/Preview gjenstår. Se docs/qa/PROJECT_WARRANTY_READONLY_20261106.md.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Eksisterende garantiarbeidsflyt beholdes; tydelig skriveverntekst vises direkte ved feltene."
+    },
+    "module": {
+      "required": false,
+      "reason": "Ingen ny modulkontrakt eller garantiutstedelsesflyt; avgrenset feilretting dokumentert i QA."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Ingen ny lagringsflyt eller ansvarsdeling; eksisterende skrivevern videreføres til felt."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen nye avhengigheter, konfigurasjon eller installasjonssteg."
+    }
+  }
+}

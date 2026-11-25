@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Samlet 03.6-opprettelse: forespørsel, tilbudstype og begge direkte tilbud",
+  "change": "Miljømål BEGGE, bare PR295/Preview. Ny forespørsel, Nytt tilbud og begge direkte opprettelsesskjema bruker eksisterende native WorkspacePanel med navy topp, høyrekant, egen scroll og fast footer. De samme feltene, saksbehandler-UUID, kunderegister, validering, back/cancel og Core-lagringskommandoer beholdes. Kundesøk, oppsummering og valgfri kundelagring er foldbare uten avmontering; redigering av eksisterende kunde beholder åpne felt. Submit i footer knyttes til samme form med useId. Befaringsplan får eksisterende editor-ramme. Ingen endring i Startside, originalreferansen, main/bootstrap, recovery, autosave, hydrering, tilgang, backend, SQL, avhengigheter eller workflows.",
+  "verification": "Ny Chromium-suite110PASS med ekte chooser hentet fra SalesModule, faktiske validerings-/opprettelsesfunksjoner fra Core og reelle request-/standard-/grouped-/detail-/survey-komponenter samt app/runtime-CSS. Fem bredder320/390/768/1363/1920 og kort320x320. Native ramme og fast footer,16px/44px, utvidelse med samme DOM-node, obligatoriske felt, ekte kunderegisterkomponent med syntetisk transport, avslått kundelagring, fokus-/visibility-/samme-profilhendelse, virkelig entry-recovery-remount med Generelt-tilbudstittel og UUID, begge tilbudsbyggere etter opprettelse, canonical navn/revisjon, ingen Back ved vellykket avmontering, bortfalt kandidat, sen firmavalidering, lagringsfeil, Avbryt/lukk/Escape og support-sperre. Lagring og befaringens submit er syntetiske her; kalender/mail/Safari/fysiskmobil bevises ikke av denne prøven. Eksisterende handler-browser23 og handler-contract31PASS; alle assertions beholdes. Den gamle browser-fixturen skifter nå til created etter submit, som den ekte eieren alltid gjør, slik at den etterfølgende urelaterte Sak QA-knappen ikke forsøkes klikket bak en korrekt modal. Ingen produksjonskode endres for fixturen. Eksisterende editor277/general229 og kundepreview875+35+26PASS. Full eksplisitt Sandbox critical/buildPASS. Samlet app-UX, ny full CI, eksakt deployment og innlogget sluttresultat vedlikeholdes i PR295. PC/mobilbilder inspiseres. Ingen totalattest eller redesign-TEST OK. Visuell mobilkontroll fant at gammel Sales100vw/negative-margin-regel fjernet innvendig panelavstand uten sideoverflow. Ny negativ prøve feiler på320px. Lokal panelregel nuller denne arven; fem nye avstandsassertions beskytter16px-minimum.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "Nye panelinnganger, foldbare felt og konkrete opprett-/tilbakehandlinger forklares."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Samme dataflyt, tilgang, lagringseier og Core-handlere; bare presentasjonsramme."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen ny konfigurasjon, avhengighet eller oppsett."
+    },
+    "module": {
+      "required": true,
+      "reason": "Sales README beskriver dialoglevetid, form-assosiasjon og uendret recovery-kontrakt."
+    }
+  }
+}

@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {addCalendarWeeks,sickLeaveMilestones,formatSickLeaveDate,HR_SICK_LEAVE_SOURCES} from '../src/modules/hr/hrSickLeave.mjs';
+assert.deepEqual(sickLeaveMilestones('2026-10-10').map(r=>r.date),['2026-11-07','2026-11-28','2026-12-05','2027-04-10']);
+for(const [start,weeks,end] of [['2024-02-01',4,'2024-02-29'],['2026-03-08',4,'2026-04-05'],['2026-10-04',4,'2026-11-01'],['2026-12-20',7,'2027-02-07']])assert.equal(addCalendarWeeks(start,weeks),end);
+for(const invalid of ['2026-02-29','2026-04-31','2026-13-01','2026-01-00','26-01-01','2026-01-01T00:00Z','',null,'0999-01-01'])assert.throws(()=>sickLeaveMilestones(invalid),/gyldig/);
+for(const weeks of [-1,1.5,53,Infinity])assert.throws(()=>addCalendarWeeks('2026-01-01',weeks));
+assert.throws(()=>addCalendarWeeks('9999-12-31',1),/datoområde/);assert.throws(()=>sickLeaveMilestones('2026-01-01','unknown'));
+const full=sickLeaveMilestones('2026-10-10'),partial=sickLeaveMilestones('2026-10-10','partial');
+assert.deepEqual(full.map(r=>r.date),partial.map(r=>r.date));assert(full[1].instruction.includes('unødvendig'));assert(partial[1].instruction.includes('hensiktsmessig'));assert.equal(full[2].owner,'NAV');assert.equal(full[3].owner,'NAV');assert.equal(full[0].owner,'Arbeidsgiver og medarbeider');
+assert(!full.some(r=>r.weeks===52),'No fabricated sickness-benefit maximum date');
+assert.equal(formatSickLeaveDate('2026-11-07'),'7. november 2026');assert.equal(HR_SICK_LEAVE_SOURCES.length,3);assert(HR_SICK_LEAVE_SOURCES.every(s=>s.url.startsWith('https://')));
+console.log('✅ HR sick leave: calendar weeks/DST/leap/year boundaries, invalid dates, full/partial exception guidance, NAV ownership and no assumed benefit maximum PASS');

@@ -1,0 +1,284 @@
+import fs from "node:fs";
+
+function read(path) {
+  return fs.readFileSync(path, "utf8");
+}
+
+function requireNeedles(path, needles) {
+  const text = read(path);
+  for (const needle of needles) {
+    if (!text.includes(needle)) throw new Error(`${path}: mangler 41B.3-guard: ${needle}`);
+  }
+  return text;
+}
+
+const foundation = requireNeedles("supabase/migrations/20260910142000_fase41b3a_work_profile_foundation.sql", [
+  "user_active_company_scope",
+  "current_active_company_scope_id",
+  "get_my_work_profile_state",
+  "set_active_work_profile",
+  "set_managed_work_profiles",
+  "Ringside Rørleggerbedrift AS",
+  "Bademiljø Expo",
+  "Expo Proffsenter",
+  "v_id=v_primary_id",
+  "Kun systemadministrator kan endre arbeidsprofiler",
+]);
+if (foundation.includes("delete from public.projects") || foundation.includes("delete from public.sales_requests")) {
+  throw new Error("Arbeidsprofil-foundation skal aldri flytte/slette historiske prosjekter eller tilbud.");
+}
+
+requireNeedles("supabase/migrations/20260910142500_fase41b3b_active_work_profile_scope.sql", [
+  "current_sales_company_scope_id",
+  "current_active_company_scope_id",
+  "project_row_access_allowed",
+  "project_row_delete_allowed",
+  "p_user_id=auth.uid()",
+  "current_user_has_multiple_work_profiles",
+]);
+
+const projectScopeTrigger = requireNeedles(
+  "supabase/migrations/20260928103600_restore_project_company_scope_trigger.sql",
+  [
+    "create or replace function public.sync_project_company_scope_id()",
+    "new.company_scope_id:=v_scope_id",
+    "new.user_id:=old.user_id",
+    "public.current_active_company_scope_id()",
+    "public.work_profile_company_profile(v_scope_id)",
+    "drop trigger if exists projects_sync_company_scope_id on public.projects",
+    "before insert or update of data, company_scope_id on public.projects",
+    "execute function public.sync_project_company_scope_id()",
+    "revoke all on function public.sync_project_company_scope_id() from public",
+    "grant execute on function public.sync_project_company_scope_id() to service_role",
+  ]
+);
+if (/\b(delete|truncate)\s+from\s+public\.projects\b/i.test(projectScopeTrigger)) {
+  throw new Error("Prosjektscope-reparasjonen skal aldri endre eller slette eksisterende prosjekter.");
+}
+
+const projectLockRpc = requireNeedles(
+  "supabase/migrations/20260928114200_restore_set_project_lock_rpc.sql",
+  [
+    "create or replace function public.set_project_lock(",
+    "security definer",
+    "public.project_row_access_allowed(v_row.company_scope_id,v_row.user_id)",
+    "v_data := jsonb_set(v_data,'{project,locked}',to_jsonb(p_locked),true)",
+    "locked_at=case when p_locked then now() else null end",
+    "grant execute on function public.set_project_lock(uuid, boolean, text) to authenticated, service_role",
+  ]
+);
+if (/\b(delete|truncate)\s+from\s+public\.projects\b/i.test(projectLockRpc)) {
+  throw new Error("Prosjektlås-RPC skal aldri slette eksisterende prosjekter.");
+}
+
+const sharedProjects = requireNeedles("supabase/migrations/20260910151200_fase41b3_shared_project_list.sql", [
+  "list_active_work_profile_projects",
+  "current_user_has_module_access('projects')",
+  "current_user_has_multiple_work_profiles",
+  "project_row_access_allowed",
+]);
+if (/\b(insert|update|delete|truncate)\b/i.test(sharedProjects.replace(/--.*$/gm, ""))) {
+  throw new Error("Felles prosjektliste skal være read-only.");
+}
+
+requireNeedles("supabase/migrations/20260910151800_fase41b3_managed_work_profile_metadata.sql", [
+  "list_managed_work_profiles",
+  "system_role",
+  "approved",
+  "deactivated",
+  "workspace_company_ids",
+]);
+
+requireNeedles("supabase/migrations/20260910152200_fase41b3_work_profile_target_guard.sql", [
+  "Systemadministrator bruker ikke ekstra arbeidsprofiler",
+  "Arbeidsprofiler kan bare gis til godkjente, aktive brukere",
+  "coalesce(v_profile.approved,false)",
+  "coalesce(v_profile.deactivated,false)",
+  "Kun systemadministrator kan endre arbeidsprofiler",
+]);
+
+const adminRepresentation = requireNeedles("supabase/migrations/20260910161200_fase41b3d_systemadmin_representation.sql", [
+  "current_profile_is_systemadmin()",
+  "is_internal_work_profile_company(a.company_id)",
+  "'is_systemadmin', state.is_systemadmin",
+  "not state.is_systemadmin",
+  "not public.current_profile_is_systemadmin() and not exists",
+  "Dette er ikke supportmodus",
+]);
+if (/insert\s+into\s+public\.sales_company_memberships/i.test(adminRepresentation)) {
+  throw new Error("Systemadmins representasjonsvalg skal ikke opprette ekstra firmamedlemskap.");
+}
+
+const companyProfileGuard = requireNeedles("supabase/migrations/20260910162600_fase41b3e_company_profile_source_guard.sql", [
+  "work_profile_company_profile",
+  "sales_normalize_company_name(p.company_name) = s.normalized_name",
+  "/brands/ringside-rorleggerbedrift.png",
+  "/brands/bademiljo-expo-ringside.png",
+  "Expo Proffsenter",
+  "'/expo-logo.png'",
+]);
+if (!companyProfileGuard.includes("Ekstra arbeidsprofil") || !companyProfileGuard.includes("aldri kunne låne logo/kontaktdata")) {
+  throw new Error("Firmabranding må være eksplisitt beskyttet mot data fra ekstra arbeidsprofiler.");
+}
+
+requireNeedles("src/modules/access/workProfileClient.js", [
+  "get_my_work_profile_state",
+  "set_active_work_profile",
+  "list_managed_work_profiles",
+  "set_managed_work_profiles",
+  "WORK_PROFILE_EVENT",
+  "is_systemadmin: Boolean(payload?.is_systemadmin)",
+]);
+
+const switcher = requireNeedles("src/modules/access/workProfileUx.jsx", [
+  "Velg arbeidsprofil",
+  "Arbeidsprofil",
+  "Representerer",
+  "Nye tilbud og prosjekter opprettes på valgt firma",
+  "setActiveWorkProfile",
+  "window.location.assign(window.location.pathname)",
+  "active_company_profile",
+  "SYSTEMADMIN SUPPORTMODUS",
+  "id === activeId && !state?.selection_required",
+  "let rootHost = null",
+  "rootHost !== host",
+  "host.parentElement !== targetParent",
+  'head.insertAdjacentElement("afterend", host)',
+  "!state?.selection_required ? (",
+]);
+if (/localStorage\s*\.\s*setItem/.test(switcher)) {
+  throw new Error("Aktiv arbeidsprofil skal lagres server-side, ikke i localStorage.");
+}
+
+requireNeedles("src/modules/access/systemAdminWorkProfileUx.jsx", [
+  "Arbeidsprofiler",
+  "Ekstra arbeidsprofil",
+  "Primærfirma",
+  "setManagedWorkProfiles",
+  "disabled={isPrimary || saving}",
+  "!user.approved || user.deactivated || user.system_role === \"systemadmin\"",
+  "addEventListener(MANAGED_ACCESS_EVENT",
+  "reloadAfterManagedAccessChange",
+]);
+
+requireNeedles("src/modules/company/companyViewTools.js", [
+  "getSystemAdminRepresentationContext",
+  "Du representerer nå ${representation.activeCompanyName} for nye tilbud og prosjekter",
+  "Her redigerer du fortsatt din primære firmaprofil",
+]);
+
+requireNeedles("src/modules/sales/services/salesCommunication.js", [
+  "get_my_work_profile_state",
+  "active_company_profile",
+  "fetchActiveWorkProfile",
+]);
+
+requireNeedles("src/modules/access/workProfileProjectListUx.jsx", [
+  "Felles prosjekter i",
+  "list_active_work_profile_projects",
+  "Dine egne prosjektkort vises fortsatt",
+  "openProject(item",
+]);
+
+const projectScopeGuard = requireNeedles("src/modules/access/systemAdminProjectScopeGuard.js", [
+  "PROJECTS_REST_PATH",
+  'new Set(["GET", "HEAD", "PATCH", "DELETE"])',
+  "getMyWorkProfileState",
+  "readCachedWorkProfileState",
+  "state?.is_systemadmin",
+  "active_company_id",
+  "NO_COMPANY_SCOPE",
+  'next.searchParams.set("company_scope_id"',
+  "SYSTEMADMIN_PROJECT_SUPPORT_PARAM",
+  "markSystemAdminProjectSupportQuery",
+  "stripSystemAdminProjectSupportMarker",
+  "SUPPORT_READ_METHODS.has(method)",
+  "window.fetch = async",
+]);
+if (/GUARDED_METHODS[^\n]*POST/.test(projectScopeGuard)) {
+  throw new Error("42G-scopeguard skal ikke omskrive prosjekt-INSERT; firmascopet settes server-side.");
+}
+if (/SUPPORT_READ_METHODS[^\n]*(PATCH|DELETE|POST)/.test(projectScopeGuard)) {
+  throw new Error("Systemadmin Supportmodus skal aldri gi skrive-bypass.");
+}
+
+const mainSource = requireNeedles("src/main.jsx", [
+  "markSystemAdminProjectSupportQuery",
+  "options.supportMode",
+  'params.set("support", "1")',
+  'params.get("support") === "1"',
+  "loadProjects(authUser, true, null, { supportMode: true })",
+  "const isProjectSupportReadOnly = supportModeExplicit && isSystemAdminUser && !!projectId;",
+  'isProjectSupportReadOnly && ["sales", "tilbud"].includes(tab);',
+  "if (isProjectSupportReadOnly) return notifySupportProjectReadOnly();",
+  "inert: isProjectSupportReadOnly && !supportReadOnlyMainIsInteractive ? true : void 0",
+  '"data-support-read-only": isProjectSupportReadOnly ? "true" : void 0',
+  'label: "Arbeidsstatus", value: project.workflowStatus || "Pågår", options: workflowStatusOptions, disabled: isProjectSupportReadOnly',
+  '!isProjectSupportReadOnly && suggestedWorkflowStatus !== (project.workflowStatus || "Pågår")',
+  'Prosjektet er skrivebeskyttet i supportmodus. Arbeidsstatus vises kun for kontroll.',
+  "hasActiveProjectWorkspace && !isProjectSupportReadOnly",
+  "projectId && !isProjectSupportReadOnly",
+  'children: isProjectSupportReadOnly ? "← Supportoversikt" : "← Til startside"',
+  "const returnToSupportOverview = isProjectSupportReadOnly;",
+  "setSupportSelectedCompany(supportCompanyForOverview);",
+  "setOpenSupportCompany(supportCompanyForOverview);",
+  'setOpenAdminSections((prev) => ({ ...prev || {}, support: true }));',
+  'supportUrl.searchParams.set("tab", "systemadmin");',
+  '"data-sales-resume-workspace": "true"',
+  "inert: isProjectSupportReadOnly ? true : void 0",
+  "Skrivebeskyttet – lesing og dokumentvisning er tillatt",
+]);
+const leaveWorkspaceStart = mainSource.indexOf('const leaveProjectWorkspace = async (destination = "prosjekt") => {');
+const leaveWorkspaceEnd = mainSource.indexOf("const cancelNewProject = () => {", leaveWorkspaceStart);
+const leaveWorkspaceSource = mainSource.slice(leaveWorkspaceStart, leaveWorkspaceEnd);
+if (
+  leaveWorkspaceStart < 0 ||
+  leaveWorkspaceEnd < 0 ||
+  !leaveWorkspaceSource.includes('const target = typeof destination === "string" && globalTabs.some(([id]) => id === destination) ? destination : "prosjekt";') ||
+  leaveWorkspaceSource.lastIndexOf('setTab(target)') < 0 ||
+  leaveWorkspaceSource.indexOf("if (returnToSupportOverview) {") < 0 ||
+  leaveWorkspaceSource.indexOf("if (profile) applyProfile(profile);") < 0 ||
+  leaveWorkspaceSource.indexOf('setTab("admin")') > leaveWorkspaceSource.lastIndexOf('setTab(target)')
+) {
+  throw new Error("Startside fra et supportprosjekt går ikke kontrollert til samme firmas Supportoversikt før ordinær Startside.");
+}
+const supportMutationGuardCount = (
+  mainSource.match(/if \(isProjectSupportReadOnly\) return notifySupportProjectReadOnly\(\);/g) || []
+).length;
+if (supportMutationGuardCount < 5) {
+  throw new Error("Prosjekt-supportmodus mangler defense-in-depth på kritiske skrivehandlinger.");
+}
+for (const guard of [
+  "isReadOnly || isProjectSupportReadOnly || isProjectLocked",
+  "isReadOnly || isProjectSupportReadOnly) return;",
+]) {
+  if (!mainSource.includes(guard)) {
+    throw new Error(`Prosjekt-supportmodus mangler autolagringsvern: ${guard}`);
+  }
+}
+
+requireNeedles("README.md", [
+  "Prosjekter åpnet på tvers av firma i eksplisitt Systemadmin-supportmodus er skrivebeskyttet",
+]);
+requireNeedles("docs/architecture/EXPO_PROFFDOK_ARCHITECTURE.md", [
+  "Et prosjekt som åpnes via eksplisitt tverrfirma-support er skrivebeskyttet i hele prosjektflaten",
+]);
+requireNeedles("src/modules/help/helpToolsCore.js", [
+  "Prosjekter som åpnes på tvers av firma i Supportmodus er skrivebeskyttet",
+]);
+
+const indexHtml = requireNeedles("index.html", [
+  "installSystemAdminProjectScopeGuard",
+  "await import('/src/bootstrap.jsx')",
+  "installSystemAdminWorkProfileUx",
+  "installWorkProfileUx",
+  "installWorkProfileProjectListUx",
+]);
+if (indexHtml.indexOf("installSystemAdminProjectScopeGuard") > indexHtml.indexOf("await import('/src/bootstrap.jsx')")) {
+  throw new Error("42G-scopeguard må installeres før hovedappen bootstrapper.");
+}
+
+console.log("✅ Expo ProffDok arbeidsprofiler / flerfirma / systemadmin representasjon / firmabranding / 42G prosjektscope check OK");
+
+// Support regressions reported 11 November: real navigation callbacks and stale-response lifecycle.
+await import("./support-navigation-lifecycle-check.mjs");

@@ -1,0 +1,140 @@
+import {signatureA,mockChecklistSignatures} from './fixtures/checklist-signatures.mjs';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {checklistRunDraftKey,runDefinition,answersForDefinition,commitChecklistRun,completionProblem,currentRunAnswers,readRunDraft,sameRunValue} from '../src/modules/checklist/checklistRuns.mjs';
+const main=fs.readFileSync('src/main.jsx','utf8');
+const start=main.indexOf('    const customChecklistAllowed ='),end=main.indexOf('    const dynamicSoproWarrantyRequirementStatus =',start);
+assert(start>=0&&end>start);
+const select=new Function('project','simple','canCustom',`const isSimpleOrderProject=()=>simple,canUseCustomChecklistForWarranty=()=>canCustom,warranty={},selectedSoproProductChecklistTemplate=[],import_react={useMemo:fn=>fn()},normalizeCustomChecklistGroups=value=>value,projectChecklistTemplate=value=>value||[],getActiveChecklistTemplate=()=>[{category:'Wetroom default',items:['Standard']}],dedupeChecklistTemplate=value=>value;${main.slice(start,end)}return {allowed:customChecklistAllowed,groups:activeChecklistTemplate};`);
+assert.deepEqual(select({},true,false),{allowed:true,groups:[]},'General order inherited wetroom checklist or disallowed own points');
+assert.equal(select({},false,false).groups[0].category,'Wetroom default','Wetroom lost existing standard');
+const custom={category:'Own',items:['Own point']},published={category:'Published',items:['Fixed point']};
+assert.deepEqual(select({customChecklistGroups:[custom],kshmsChecklistInstances:[published]},true,false),{allowed:true,groups:[custom,published]});
+const definition={category:'Control',items:['Point'],requirements:{Point:{image_required:true,comment_required:true}}};
+assert.match(completionProblem(definition,{}),/Vurder/);
+assert.match(completionProblem(definition,{Point:{status:'Ok',comment:'Evidence'}}),/bilde/);
+assert.equal(completionProblem(definition,{Point:{status:'Avvik',comment:'Evidence',photos:[{url:'https://example.invalid/proof'}]}}),'');
+assert.equal(completionProblem({...definition,requirements:{Point:{documentation_either:true}}},{Point:{status:'Ok',comment:'Warranty evidence'}}),'');
+assert.equal(answersForDefinition(definition,{Point:{status:'Ok',comment:'Previous'}},true).Point.comment,undefined);
+assert.equal(answersForDefinition(definition,{Point:{status:'Avvik',comment:'Unresolved'}},true).Point.comment,'Unresolved');
+assert.equal(currentRunAnswers({category:'Control',status:'draft',definition,answers:{Point:{status:'Avvik',comment:'Local'}}},{Control:{Point:{ks_deviation_id:'case',status:'Lukket avvik'}}}).Point.status,'Lukket avvik');
+assert.equal(readRunDraft({getItem:()=>'{broken'},'key'),null);assert(sameRunValue({b:1,a:2},{a:2,b:1}));
+const draft={signatures:{own:{image:signatureA}},id:'run',revision:0,requestId:'request',definition,answers:{Point:{status:'Ok'}}};
+for(const failure of ['write','read','foreign','changed','late','']){
+ let calls=0;
+ const result=commitChecklistRun({companyId:'company',projectId:'project',userId:'user',draft,action:'save',isCurrent:()=>failure!=='late',rpc:async name=>{
+  calls++;const run={...draft,company_id:'company',project_id:'project',revision:1,status:'draft'},context={company_id:'company',project_id:'project',user_id:'user'};
+  run.signatures=mockChecklistSignatures(draft.signatures,draft.id,run.revision,'user');
+  if(['project_checklist_command','project_checklist_signed_command'].includes(name)){if(failure==='write')throw Error('Failed write');return {context,run,answers:draft.answers};}
+  if(failure==='read')throw Error('Failed read');
+  return {context:{...context,company_id:failure==='foreign'?'other':'company'},runs:[{...run,answers:failure==='changed'?{Point:{status:'Avvik'}}:run.answers}]};
+ }});
+ if(['write','read','foreign','changed'].includes(failure))await assert.rejects(result);else assert.equal(Boolean(await result),failure!=='late');
+ assert.equal(calls,['write','late'].includes(failure)?1:2);
+}
+assert(main.includes('ProjectChecklistWorkspace')&&main.includes('onSaved: applySavedChecklistControl'));
+const sql=fs.readFileSync('supabase/migrations/20261007180955_project_checklist_runs.sql','utf8');
+assert(sql.includes('public.project_row_access_allowed')&&sql.includes('public.current_active_company_scope_id()'));
+assert(sql.includes('kshms_private.project_checklist_receipts')&&sql.includes('project_checklist_completed_immutable'));
+assert(sql.includes('create trigger kshms_checklist_answers'),'Delayed project autosave can replace popup data');
+console.log('critical-project-checklist-runs-check: OK — actual order template selection, own points without warranty, preserved wetroom lists, completion evidence, source status and verified-save failures');
+
+{
+const definition={category:'Egne sjekkpunkter – Rørlegger',items:['Rør','Merking'],requirements:{Rør:{comment_required:true}}};
+const draft={signatures:{own:{image:signatureA}},id:'run',revision:0,requestId:'request',definition,answers:{Rør:{status:'Ok',comment:'Kontrollert'},Merking:{status:'Ikke aktuelt'}}};
+assert.equal(completionProblem(definition,draft.answers),'');
+assert.match(completionProblem(definition,{...draft.answers,Rør:{status:'Ok'}}),/kommentar/);
+assert.match(completionProblem(definition,{...draft.answers,Merking:{}}),/Vurder/);
+assert.equal(answersForDefinition(definition,{Rør:{status:'Ok',comment:'old'},Merking:{status:'Avvik',photos:[{url:'photo'}]}},true).Rør.status,undefined);
+assert.equal(answersForDefinition(definition,{Merking:{status:'Avvik'}},true).Merking.status,'Avvik');
+assert.equal(runDefinition(definition,[],true).requirements.Rør.documentation_either,true);
+assert(sameRunValue({b:1,a:{b:2,a:3}},{a:{a:3,b:2},b:1}));
+const key=checklistRunDraftKey('user','company','project',definition.category);
+assert.notEqual(key,checklistRunDraftKey('other','company','project',definition.category));
+assert.equal(readRunDraft({getItem:()=>JSON.stringify(draft)},key).requestId,'request');
+assert.equal(readRunDraft({getItem:()=>'{broken'},key),null);
+assert.equal(currentRunAnswers({...draft,category:definition.category,status:'draft'},{[definition.category]:{Rør:{ks_deviation_id:'deviation',status:'Lukket avvik'}}}).Rør.status,'Lukket avvik');
+assert.equal(currentRunAnswers({...draft,category:definition.category,status:'completed'},{[definition.category]:{Rør:{status:'Avvik'}}}).Rør.status,'Ok');
+
+for(const failure of ['', 'command','read','foreign','changed','late']){
+ let calls=0;
+ const row={...draft,company_id:'company',project_id:'project',revision:1,status:'completed'};
+ row.signatures=mockChecklistSignatures(draft.signatures,draft.id,row.revision,'user');
+ const context={company_id:'company',project_id:'project',user_id:'user'};
+ const result=commitChecklistRun({companyId:'company',projectId:'project',userId:'user',draft,action:'complete',isCurrent:()=>failure!=='late',rpc:async(name,args)=>{
+  calls++;
+  if(['project_checklist_command','project_checklist_signed_command'].includes(name)){
+   assert.equal(args.p_request_id,'request');assert.equal(args.p_payload.revision,0);
+   if(failure==='command')throw Error('lost response');
+   return {context,run:row,answers:row.answers};
+  }
+  if(failure==='read')throw Error('readback failed');
+  return {context:failure==='foreign'?{...context,company_id:'other'}:context,runs:[failure==='changed'?{...row,answers:{}}:row]};
+ }});
+ if(failure&&failure!=='late')await assert.rejects(result);
+ else assert.equal(Boolean(await result),failure!=='late');
+ assert.equal(calls,['command','late'].includes(failure)?1:2);
+}
+const main=fs.readFileSync('src/main.jsx','utf8');
+assert(main.includes('isSimpleOrderProject(project) ? [] : getActiveChecklistTemplate'),'Orders inherited wetroom defaults');
+assert(main.includes('isSimpleOrderProject(project) || canUseCustomChecklistForWarranty'),'Own points require KS/HMS or wetroom warranty');
+const workspace=fs.readFileSync('src/modules/checklist/ProjectChecklistWorkspace.jsx','utf8');
+assert(workspace.includes('followPoint:value.item'),'Point navigation lost the deviation target');
+assert(workspace.includes('Fortsett med lagret kontroll')&&workspace.includes('Vis tidligere kladd'),'Concurrent edits cannot be resolved without losing the original draft');
+const editor=fs.readFileSync('src/modules/checklist/checklistTools.js','utf8');
+assert(editor.includes('openCategories[group.category] === true'),'Lists should begin collapsed');
+const migration=fs.readFileSync('supabase/migrations/20261007180955_project_checklist_runs.sql','utf8');
+assert(migration.includes('project_checklist_completed_immutable')&&migration.includes('project_checklist_one_draft'));
+assert(migration.includes("r.status<>'draft'")&&migration.includes('r.revision<>'));
+console.log('critical-project-checklist-runs-check: OK — local safety, confirmed readback, fresh controls, retained deviations, project isolation and order defaults');
+
+}
+
+// Design uses the existing persistence contract, with its own stable category.
+const {PROJECT_DESIGN_CHECKLIST:design}=await import('../src/modules/config/projectDesignChecklist.mjs');
+assert.equal(design.items.length,13);assert.equal(new Set(design.items).size,13);assert(Object.isFrozen(design.items));
+assert(!/Sopro|garantipunkt/i.test(design.items.join(' ')));assert.match(completionProblem(design,{}),/Vurder/);
+const designAnswers=Object.fromEntries(design.items.map(item=>[item,{status:'Ikke aktuelt'}]));assert.equal(completionProblem(design,designAnswers),'');
+assert.notEqual(checklistRunDraftKey('user','company','project',design.category),checklistRunDraftKey('user','company','project','Membran / tetting'));
+const designPanel=main.slice(main.indexOf('tab === "prosjektering" &&'),main.indexOf('tab === "fremdrift" &&'));
+assert(designPanel.includes('activeChecklistTemplate: PROJECT_DESIGN_CHECKLIST_TEMPLATE'));assert(designPanel.includes('onSaved: applySavedChecklistControl'));assert(designPanel.includes('readOnly: isProjectLocked || isReadOnly || isProjectSupportReadOnly'));
+assert(designPanel.includes('showTools: false')&&designPanel.includes('showPrevious: false'));
+assert(fs.readFileSync('src/modules/checklist/ProjectChecklistWorkspace.jsx','utf8').includes('showTools=true,showPrevious=true'));assert(designPanel.includes('Tegninger og prosjekteringsgrunnlag'));
+console.log('Project design checklist PASS: isolated definition, all 13 answers required, non-applicable allowed, shared verified persistence, read-only gates and original design fields preserved.');
+
+assert(designPanel.indexOf('Sjekkliste for prosjektering')>designPanel.indexOf('Tegninger og prosjekteringsgrunnlag'),'Design checklist must appear last in Prosjektering');
+
+const renderElement=(type,props)=>({type,props});
+const designEnvironment=new Proxy({Array,project:{},user:{},authUser:{},kshmsContext:{},import_jsx_runtime:{jsx:renderElement,jsxs:renderElement},import_lucide_react:{Plus:'Plus'},Section:'section',ProjectChecklistWorkspace:'workspace',PROJECT_DESIGN_CHECKLIST_TEMPLATE:[design]}, {has:()=>true,get:(target,key)=>key===Symbol.unscopables?undefined:key in target?target[key]:()=>{}});
+const designExpression=designPanel.slice(designPanel.indexOf('&&')+2).trim().replace(/,$/,'');
+const renderedDesign=new Function('env',`with(env){return ${designExpression};}`)(designEnvironment);
+assert.equal(renderedDesign.props.children.at(-1).type,'workspace');assert.equal(renderedDesign.props.children.at(-2).props.className,'note');
+assert.equal(renderedDesign.props.children.at(-3).props.children,'Sjekkliste for prosjektering');
+console.log('Actual design panel render PASS: all original fields and drawings precede final checklist.');
+
+// Support changes only the explicit read route; ordinary commands pass through.
+const {projectChecklistReadRpc}=await import('../src/modules/checklist/projectChecklistRead.mjs');
+const supportCalls=[];const rawRpc=(name,args)=>{supportCalls.push({name,args});return {ok:true};};
+assert.equal(projectChecklistReadRpc(rawRpc,{supportReadOnly:false}),rawRpc);
+const supportRpc=projectChecklistReadRpc(rawRpc,{supportReadOnly:true,companyId:'target',projectId:'project'});
+supportRpc('project_checklist_state',{p_company_id:'target',p_project_id:'project'});
+assert.deepEqual(supportCalls[0],{name:'project_checklist_support_state',args:{p_project_id:'project'}});
+supportRpc('work_profile_company_profile',{p_company_id:'target'});
+for(const [name,args] of [['project_checklist_command',{}],['project_checklist_state',{p_company_id:'wrong',p_project_id:'project'}],['work_profile_company_profile',{p_company_id:'wrong'}]])assert.throws(()=>supportRpc(name,args));
+console.log('Support read adapter PASS: exact project/firm only, verified PDF read route and no command forwarding.');
+
+// An upgrade must not change the fingerprint of a pre-upgrade, unacknowledged
+// completion. Only that existing pending attempt uses the legacy transport.
+{
+ const legacy={id:'legacy-run',revision:0,requestId:'legacy-request',pendingAction:'complete',definition:{category:'Utførelse',items:['Point']},answers:{Point:{status:'Ok'}}};
+ let writes=0;
+ const context={company_id:'company',project_id:'project',user_id:'user'};
+ const row={...legacy,company_id:'company',project_id:'project',revision:1,status:'completed'};
+ const result=await commitChecklistRun({companyId:'company',projectId:'project',userId:'user',draft:legacy,action:'complete',rpc:async(name,args)=>{
+  if(name==='project_checklist_state')return {context,runs:[row]};
+  assert.equal(name,'project_checklist_command');assert.equal(args.p_request_id,'legacy-request');assert(!Object.hasOwn(args.p_payload,'signatures'));writes++;return {context,run:row,answers:row.answers};
+ }});
+ assert.equal(result.run.status,'completed');assert.equal(writes,1);
+ await assert.rejects(commitChecklistRun({companyId:'company',projectId:'project',userId:'user',draft:{...legacy,pendingAction:null},action:'complete',rpc:async()=>{throw Error('Unsigned new completion must not reach transport');}}),/Tegn din signatur/);
+ console.log('Execution signature contract PASS: legacy unknown completion keeps exact endpoint/request/payload; new completion cannot omit own ink.');
+}

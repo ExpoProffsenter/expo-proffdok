@@ -1,0 +1,17 @@
+.project-products-workspace{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;min-width:0}
+.project-products-workspace>.ux-preview{grid-column:1/-1;margin:0}
+.project-products-workspace>.product-category{margin:0;padding:0;border:1px solid #cbdde3;border-radius:8px;background:#fff;box-shadow:none;min-width:0}
+.project-products-workspace>.product-category.is-open{grid-column:1/-1}
+.project-products-workspace>.product-category>h2{margin:0!important;font-size:20px!important;line-height:1.35}
+.project-products-workspace>.product-category>h2>button{display:flex;align-items:center;gap:10px;width:100%;min-height:64px;margin:0;padding:14px 16px;border:0;border-radius:8px;background:#fff!important;color:#173b3e!important;text-align:left;font-size:16px!important;line-height:1.35;box-shadow:none;transform:none;white-space:normal}
+.project-products-workspace>.product-category>h2>button:hover{background:#f1f8f9!important}
+.project-products-workspace>.product-category>h2>button:focus-visible{outline:3px solid #0796a0;outline-offset:2px}
+.project-products-workspace>.product-category>h2>button>svg{flex:none}
+.product-category-title{flex:1;min-width:0;overflow-wrap:anywhere;font-size:18px;font-weight:650}
+.product-category-count,.product-category-action{flex:none;font-size:14px;font-weight:600}
+.product-category-count{padding:4px 7px;border-radius:5px;background:#eef5f7;color:#355764}
+.product-category-action{color:#006f79}
+.product-category-content{padding:0 16px 16px;min-width:0}
+.product-category-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px}
+.product-category-heading>small{display:flex;align-items:center;gap:6px;white-space:nowrap;font-size:14px;color:#47616a}
+@media(max-width:760px){.project-products-workspace{grid-template-columns:minmax(0,1fr)}.project-products-workspace>.product-category>h2>button{flex-wrap:wrap;padding:12px;gap:8px}.product-category-title{flex-basis:calc(100% - 30px)}.product-category-count{margin-left:27px}.product-category-action{margin-left:auto}.product-category-content{padding:0 12px 12px}}

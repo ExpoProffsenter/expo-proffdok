@@ -1,0 +1,227 @@
+{
+  "baseline": "dc4601a6d51961fa7ddfded767e1b2ef7cec030e",
+  "before": [
+    {
+      "width": 1920,
+      "height": 313.765625,
+      "kind": "locked",
+      "contentY": 413.765625,
+      "pageWidth": 1920
+    }
+  ],
+  "after": [
+    {
+      "width": 1920,
+      "viewportHeight": 1080,
+      "kind": "locked",
+      "height": 181.375,
+      "contentY": 201.375,
+      "pageWidth": 1920
+    },
+    {
+      "width": 1920,
+      "viewportHeight": 1080,
+      "kind": "support",
+      "height": 181.375,
+      "contentY": 201.375,
+      "pageWidth": 1920
+    },
+    {
+      "width": 1920,
+      "viewportHeight": 1080,
+      "kind": "active",
+      "height": 181.375,
+      "contentY": 201.375,
+      "pageWidth": 1920
+    },
+    {
+      "width": 1920,
+      "viewportHeight": 1080,
+      "kind": "new",
+      "height": 250.765625,
+      "contentY": 270.765625,
+      "pageWidth": 1920
+    },
+    {
+      "width": 1363,
+      "viewportHeight": 600,
+      "kind": "locked",
+      "height": 181.375,
+      "contentY": 201.375,
+      "pageWidth": 1363
+    },
+    {
+      "width": 1363,
+      "viewportHeight": 600,
+      "kind": "support",
+      "height": 181.375,
+      "contentY": 201.375,
+      "pageWidth": 1363
+    },
+    {
+      "width": 1363,
+      "viewportHeight": 600,
+      "kind": "active",
+      "height": 181.375,
+      "contentY": 201.375,
+      "pageWidth": 1363
+    },
+    {
+      "width": 1363,
+      "viewportHeight": 600,
+      "kind": "new",
+      "height": 250.765625,
+      "contentY": 270.765625,
+      "pageWidth": 1363
+    },
+    {
+      "width": 1181,
+      "viewportHeight": 800,
+      "kind": "locked",
+      "height": 181.375,
+      "contentY": 201.375,
+      "pageWidth": 1181
+    },
+    {
+      "width": 1181,
+      "viewportHeight": 800,
+      "kind": "support",
+      "height": 181.375,
+      "contentY": 201.375,
+      "pageWidth": 1181
+    },
+    {
+      "width": 1181,
+      "viewportHeight": 800,
+      "kind": "active",
+      "height": 181.375,
+      "contentY": 201.375,
+      "pageWidth": 1181
+    },
+    {
+      "width": 1181,
+      "viewportHeight": 800,
+      "kind": "new",
+      "height": 250.765625,
+      "contentY": 270.765625,
+      "pageWidth": 1181
+    },
+    {
+      "width": 768,
+      "viewportHeight": 600,
+      "kind": "locked",
+      "height": 238.171875,
+      "contentY": 258.171875,
+      "pageWidth": 768
+    },
+    {
+      "width": 768,
+      "viewportHeight": 600,
+      "kind": "support",
+      "height": 238.171875,
+      "contentY": 258.171875,
+      "pageWidth": 768
+    },
+    {
+      "width": 768,
+      "viewportHeight": 600,
+      "kind": "active",
+      "height": 238.171875,
+      "contentY": 258.171875,
+      "pageWidth": 768
+    },
+    {
+      "width": 768,
+      "viewportHeight": 600,
+      "kind": "new",
+      "height": 277.953125,
+      "contentY": 297.953125,
+      "pageWidth": 768
+    },
+    {
+      "width": 390,
+      "viewportHeight": 844,
+      "kind": "locked",
+      "height": 328.78125,
+      "contentY": 396.78125,
+      "pageWidth": 390
+    },
+    {
+      "width": 390,
+      "viewportHeight": 844,
+      "kind": "support",
+      "height": 328.78125,
+      "contentY": 396.78125,
+      "pageWidth": 390
+    },
+    {
+      "width": 390,
+      "viewportHeight": 844,
+      "kind": "active",
+      "height": 304.78125,
+      "contentY": 372.78125,
+      "pageWidth": 390
+    },
+    {
+      "width": 390,
+      "viewportHeight": 844,
+      "kind": "new",
+      "height": 400.953125,
+      "contentY": 468.953125,
+      "pageWidth": 390
+    },
+    {
+      "width": 320,
+      "viewportHeight": 480,
+      "kind": "locked",
+      "height": 328.78125,
+      "contentY": 396.78125,
+      "pageWidth": 320
+    },
+    {
+      "width": 320,
+      "viewportHeight": 480,
+      "kind": "support",
+      "height": 328.78125,
+      "contentY": 265.78125,
+      "pageWidth": 320
+    },
+    {
+      "width": 320,
+      "viewportHeight": 480,
+      "kind": "active",
+      "height": 356.78125,
+      "contentY": 317.78125,
+      "pageWidth": 320
+    },
+    {
+      "width": 320,
+      "viewportHeight": 480,
+      "kind": "new",
+      "height": 400.953125,
+      "contentY": 333.953125,
+      "pageWidth": 320
+    }
+  ],
+  "test": "scripts/project-compact-header-browser-check.mjs",
+  "assertions": 246,
+  "data": "synthetic; actual React components/CSS; not authenticated Preview",
+  "production_readonly_preflight": {
+    "project": "dqffxflaoyarbxyiyhop",
+    "transaction": "read only; rollback",
+    "migration_version": "20261031012504",
+    "installed": false,
+    "proposal_table": false,
+    "proposal_rpcs": []
+  },
+  "sandbox_preflight": {
+    "project": "ppvircenkjizeiqdxphj",
+    "result": "Project not found via this connector; not an assertion that the project is deleted"
+  },
+  "integration_patch_sha256": "09736927b104843ea529f38243b3c0c30ea7729a7b15e0b1cd5b21a8a2f192f8",
+  "unchanged_dependencies": {
+    "PR294": "c3594f108d605aeae0d895b9d8e71b1824d1f854",
+    "PR298": "338094b1d77bade1fef897c410c22d9e5d8750e4",
+    "PR305": "09b1ece3839a367c2e61faeea3f184999f6a88d1"
+  }
+}

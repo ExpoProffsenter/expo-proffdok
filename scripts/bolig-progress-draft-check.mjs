@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import {hasProgressEdits,progressDraftSnapshot,progressTaskLocation} from '../src/modules/bolig/boligProgressDraft.mjs';
+const a={id:'a',unit_id:'75',title:'Førbefaring kl. 8-11',planned_start:'2026-12-10',planned_end:'2026-12-10',required:true,note:''};
+const opened={...a,_openedSnapshot:progressDraftSnapshot(a)};
+assert.equal(hasProgressEdits(opened,[a]),false,'Viewing a saved task is not an edit');
+assert.equal(hasProgressEdits({...opened,note:'Behold dette'},[a]),true,'Real notes survive navigation');
+assert.equal(hasProgressEdits({...opened,planned_start:'2026-12-11'},[a]),true,'Date changes are protected');
+assert.equal(hasProgressEdits({...opened,revision:99,owner_name:'Updated'},[a]),false,'Metadata is not an edit');
+assert.equal(hasProgressEdits(opened,[{...a,note:'Someone else updated'}]),false,'A server refresh cannot turn viewing into local edits');
+assert.equal(hasProgressEdits(a,[a]),false,'Legacy unchanged draft can be dismissed');
+assert.equal(hasProgressEdits({...a,note:'Offline'},[a]),true,'Legacy offline work is retained');
+assert.equal(hasProgressEdits(a,[]),true,'Unknown legacy draft is never discarded');
+assert.equal(hasProgressEdits({...a,id:'new'},[a]),true,'New work is retained');
+assert.equal(progressTaskLocation(a,[{id:'75',number:'75',address:'Granåsvegen 6'}]),'Bolig 75 · Granåsvegen 6');
+assert.equal(progressTaskLocation({...a,unit_id:'79'},[{id:'79',number:'79',address:'Granåsvegen 8'}]),'Bolig 79 · Granåsvegen 8');
+console.log('PASS progress drafts: viewing, edits, date edits, metadata, server refresh, legacy and new work, distinct dwelling labels');

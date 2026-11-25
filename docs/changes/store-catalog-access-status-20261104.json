@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Forklar tomt internt vareregister og skill feil fra avslag",
+  "change": "Miljømål BEGGE, Preview/Sandbox først. Admin-innpakning og katalogpanel viser lasting, avslag og kontrollfeil. Manuelt nytt forsøk gjør kun eksisterende lesekall. Klientens valgfrie throwOnError beholder standarden for andre kall. Ingen backend-, rettighets-, import-, pris- eller e-postendring.",
+  "verification": "Gjenskapt i innlogget PR311 før endring. 33 faktiske React-/klientkontroller PASS med syntetisk RPC. Full Sandbox-build PASS. CI og innlogget etterkontroll rapporteres separat.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Veiledning vises direkte ved tilgangskontrollen; autorisert arbeidsflyt beholdes."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Samme klient, RPC-er og tilgangskrav; ingen endret lagring eller dataflyt."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen endret installasjon eller konfigurasjon."
+    },
+    "module": {
+      "required": true,
+      "reason": "Valgfri feilhåndtering på tilgangslesere dokumenteres i Sales README."
+    }
+  }
+}

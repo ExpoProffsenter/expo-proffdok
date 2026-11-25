@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "HR: fjern utdatert lengdefeil etter retting",
+  "change": "BEGGE, kun PR311 Preview/Sandbox. Scope: HrConversations change-handler, eksisterende faktisk React-prøve, HR README og QA. Bare tidligere lokal lengdefeil oppdateres ved redigering; øvrige feil bevares. Ingen lagring, tekstgrense, roller, backend, migrering eller e-post endres.",
+  "verification": "Innlogget syntetisk Demo medarbeider 2 på46b66835:10001tegn beholdt, Lagre avvist, opprinnelige112tegn tilbakeført. Feilmeldingen ble likevel stående på Referat med Lagret på serveren. Ny faktisk React-prøve feiler på gammel kode med corrected text removes stale length error. Nye krav: fortsatt ugyldig tekst beholder feil, rettet tekst fjerner feil uten skriving, transportfeil bevares ved redigering. Lokal/CI/sluttkontroll føres i docs/qa/HR_TEXT_WARNING_20261106.md.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Samme felt og lagringshandling; korrigerer bare en utdatert lokal feilmelding."
+    },
+    "module": {
+      "required": true,
+      "reason": "Forklar feilmeldingens levetid og bevarte server-/konfliktfeil; avstem mot kandidatens gjeldende tekstgrenser."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Ingen dataflyt eller serverkontrakt endres."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen oppsett eller avhengigheter endres."
+    }
+  }
+}

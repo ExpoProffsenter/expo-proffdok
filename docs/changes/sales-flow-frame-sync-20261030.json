@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Synkroniser tilbudsprøven med native aktiveringsvisning",
+  "change": "Miljømål BEGGE. QA-only på samme PR295/Preview. Testen avventer fersk React-commit og den eksisterende requestAnimationFrame-effekten i SalesDetailView før klikk etter hver remount. Samme globale unike knappkrav beholdes, fire eksplisitte remount-countkrav legges til. Valgfri QA-only forsinkelse av rAF gjenskaper CI-timingen. Ingen produktkode, native effekt, transport, workflow, avhengigheter eller critical-krav endres.",
+  "verification": "CI807/41121061233 på92afd1e7 feilet i eksisterende sales-flow-036-browser-check:14 fordi tre native knapper med samme navn var synlige før rAF-effekten skjulte legacykontroller. Samme negative tilstand er gjenskapt deterministisk med120ms QA-schedulerforsinkelse: uendret assertion feiler3!=1. Med kun synkroniseringsrettelsen består59 assertions inklusive alle55 opprinnelige og fire nye, samme faktiske komponenter, RPC-mode, malmotor, logovalg og fire ekte lokalt genererte PDF-er. Både normal scheduler og forsinket scheduler PASS59; eksakte logg-/CI-resultater vedlikeholdes i PR295. Tidligere grønne app/build/prosjektprøver gjenbrukes siden ingen produktkode er endret.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Ingen brukerflyt, knapper eller veiledning endres."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Ingen produkt-, data- eller transportkontrakt endres."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen avhengighet eller miljøkonfigurasjon endres; schedulerknappen er intern QA."
+    },
+    "module": {
+      "required": false,
+      "reason": "Ingen modulkontrakt endres; kun testen avventer eksisterende native observerbar tilstand."
+    }
+  }
+}

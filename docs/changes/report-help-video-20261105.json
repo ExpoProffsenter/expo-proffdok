@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Statusrapportfilm under eksisterende Rapport-hjelp",
+  "change": "Miljømål BEGGE, Preview først. Én ny avgrenset film med sju kapitler, VTT og full tekst knyttes direkte til eksisterende Rapport-tema. Tilgang følger samme synlige hjelpetema. Seks tidligere filmer og metadata bevares uendret. Ingen ny plattform, ekstern transport, lagring eller tilgangslesning. Produksjonssetting krever at PR311s viste rapportrettelser følger med.",
+  "verification": "99s/1920x1080/H264/24fps/ingen lyd, alle2376frames dekodet og sju scener visuelt kontrollert før integrasjon. Eksisterende native avspillertest utvides til sju faktiske filmer, rapporttema/søk/kapitler/start/spoling/slutt/retur/kladd/fokus og tilbakekalt prosjekttilgang. Ny full CI og innlogget Preview-prøve kreves.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "Video med kapitler og tekstalternativ legges under det eksisterende hjelpetemaet."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Samme statiske mediefiler, metadataregister og native avspiller; ingen endret arkitektur."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen nye avhengigheter eller nytt oppsett."
+    },
+    "module": {
+      "required": true,
+      "reason": "Hjelp-modulens omfang og rapportens releaseavhengighet dokumenteres."
+    }
+  }
+}

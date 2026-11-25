@@ -1,0 +1,79 @@
+{
+  "date": "2026-11-01",
+  "status": "local-integration-revalidation-not-published",
+  "baseline": "25739417cde35fae8a17e31f77d16f1a24ad256d",
+  "app_source_blob": "7eda4af5a848269ef876cc255927f03a12bdb90f",
+  "pdf_test_blob": "905113e1004058bb17b970aac866fe3ffa6a187f",
+  "pr294": "c3594f108d605aeae0d895b9d8e71b1824d1f854",
+  "pr298": "338094b1d77bade1fef897c410c22d9e5d8750e4",
+  "pr305_ancestor": "09b1ece3839a367c2e61faeea3f184999f6a88d1",
+  "patch_sha256": "09736927b104843ea529f38243b3c0c30ea7729a7b15e0b1cd5b21a8a2f192f8",
+  "patch_apply_check": "PASS against 25739417 in new detached project-ux-integration worktree; same historical patch bytes, applied only there",
+  "new_runtime_paths": [
+    "src/main.jsx",
+    "src/modules/help/helpToolsCore.js",
+    "src/modules/kshms/KshmsProjectReport.jsx",
+    "src/modules/project/ProjectListDisclosure.jsx",
+    "src/modules/report/ProjectReportWorkspace.jsx",
+    "src/modules/report/README.md",
+    "src/modules/report/ReportArchiveConfirmation.jsx",
+    "src/modules/report/projectReportWorkspace.css",
+    "src/modules/report/reportTools.js",
+    "src/modules/ui/proffdokProjectListWorkspace.css",
+    "src/modules/report/reportTools.js"
+  ],
+  "overlap_with_integration_paths": [],
+  "builds": {
+    "sandbox": {
+      "critical_build": "PASS",
+      "binding": "Sandbox Supabase only",
+      "tail": [
+        "[plugin builtin:vite-reporter] ",
+        "(!) Some chunks are larger than 500 kB after minification. Consider:",
+        "- Using dynamic import() to code-split the application",
+        "- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting",
+        "- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit."
+      ]
+    },
+    "production": {
+      "critical_build": "PASS",
+      "binding": "Production Supabase only",
+      "tail": [
+        "(!) Some chunks are larger than 500 kB after minification. Consider:",
+        "- Using dynamic import() to code-split the application",
+        "- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting",
+        "- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.",
+        "✓ built in 3.27s"
+      ]
+    }
+  },
+  "native_pdf_assertions": 476,
+  "native_pdf_scenarios": 12,
+  "native_pdf_pages": 190,
+  "browser_1372_reused": "Unchanged PR294/298 integration paths and dependencies, same patch bytes. No repeated browser suite. Historical evidence is not new live/CI attest.",
+  "limits": [
+    "Two inherited PR294 EOF blank lines preserved",
+    "No combined Preview, migration, Production or demo sync",
+    "Live final-layout download and final CI recorded separately after publishing PR295",
+    "Project UX native regression uses local Chromium153 as supplement; current CI and live source are recorded in PR295. Historical1372 tests were not repeated because the integration patch paths and dependencies are unchanged."
+  ],
+  "project_ux_recheck": {
+    "baseline": "25739417cde35fae8a17e31f77d16f1a24ad256d",
+    "app_paths": [
+      "src/main.jsx",
+      "src/modules/checklist/ChecklistSignatures.jsx",
+      "src/modules/checklist/ProjectChecklistPanel.jsx",
+      "src/modules/checklist/ProjectChecklistWorkspace.jsx",
+      "src/modules/checklist/README.md",
+      "src/modules/checklist/checklistTools.js",
+      "src/modules/checklist/projectChecklistWorkspace.css",
+      "src/modules/help/helpToolsCore.js",
+      "src/modules/project/ProjectWorkspaceChrome.jsx",
+      "src/modules/project/projectWorkspace.css"
+    ],
+    "overlap_with_patch": [],
+    "sandbox_build": "PASS, explicit Sandbox Supabase only",
+    "production_build": "PASS, explicit Production Supabase only",
+    "scope": "Local compatibility only; no combined Preview, new merge, migration or demo sync. New checklist props default to legacy behavior outside project controls. Bolig uses its own status component."
+  }
+}

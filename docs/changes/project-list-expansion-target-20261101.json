@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Prosjektoverskrift og Vis detaljer er separate treffområder",
+  "change": "Miljømål BEGGE, bare PR295/fast Preview/Sandbox. Prosjektnavn/kunde/status/ansvarlig flyttes ut av native summary. Bare Vis detaljer utvider raden; Åpne og alle snarveier beholder original callback/prosjekt-ID. Varselsignaler er alltid synlige. Desktop beholder separate44px kontroller til høyre og kompakt oversikt. Hjelp presiserer skillet. Ingen main/navigasjons-/hydration-/autosave-/data-/tilgangs-/PDF-endring.",
+  "verification": "Ny faktisk React-regresjon feiler på tidligere5e-kilde: Project name must not be a disclosure trigger. Rettet komponent består informativ overskrift, separat Åpne, native toggle/globaltoggle og samme monterte usendte kladd, med gamle menyreturkrav beholdt. Tre nye virkelige browserassertions er lagt til i eksisterende277-prøve, uten svekking. Lokal Chromium var tidligere ugyldig/trunkertZIP; alternativ pakkeinstallasjon stoppet på setgroups/prosessrettighet, ingen omgåelse. Lokal browsergeometri er derfor ikke attestert. Begge eksplisitte critical/build-miljøer og kandidatens fulle browser-CI/READY/innlogget etterkontroll føres i PR295 etter faktisk resultat. Dette avklarer én konkret årsak til utvidelse under raden, ikke hele Kenneths observerte overgang. Native åpning har180/420ms scrolltimere; de er ikke endret uten full årsaksprøve.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "Hjelp forklarer at prosjektoverskrift er informasjon og bare Vis detaljer utvider raden."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Ingen dataflyt, navigasjon eller eierskap endres."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen appavhengighet eller miljøbinding endres."
+    },
+    "module": {
+      "required": false,
+      "reason": "Eksisterende callbacks og statekontrakt beholdes. Bare native detaljkontrollens treffområde endres."
+    }
+  }
+}

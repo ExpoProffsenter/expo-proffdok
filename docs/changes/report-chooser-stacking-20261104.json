@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "KS/HMS-rapportvelger foran rapportens toppfelt",
+  "change": "Miljømål BEGGE. Faktisk videoopptak beviste at rapportens header med z-index10 dekket KS/HMS-velgerens backdrop på2. Den ene avgrensede overstyringen bruker igjen modulens opprinnelige10000 inne i native dialogens topplag. Ingen endring i valgt innhold, fokuslogikk, rapportmotor, backend eller lagring.",
+  "verification": "Innlogget DOM og hit-test gjenskapte feil på dc097ccb. Eksisterende faktiske rapportbrowserprøve utvides med sen APP_RUNTIME_STYLES, hit-testing av header/footer og full tittel ved fem bredder. Alle tidligere eksport/kladd/scope/fokuskrav beholdes. Ny full CI og Previewetterkontroll kreves.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Ingen endret kommando eller arbeidsflyt; eksisterende dialogoverskrift blir synlig."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Kun ett CSS-lag, ingen endring i topplag, dataflyt eller ansvar."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen avhengigheter eller oppsett er endret."
+    },
+    "module": {
+      "required": true,
+      "reason": "Modulens lagkrav og faktiske nettleserregresjonsvern dokumenteres."
+    }
+  }
+}

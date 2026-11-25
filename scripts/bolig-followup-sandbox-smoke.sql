@@ -1,0 +1,44 @@
+-- SANDBOX ONLY. Real authenticated/anonymous gateways, synthetic writes rollback.
+begin;
+select set_config('request.jwt.claim.sub','d0000000-0000-4000-8000-000000000001',true);
+set local role authenticated;
+do $smoke$
+declare c uuid:='e0000000-0000-4000-8000-000000000001';actor uuid:=auth.uid();rec jsonb;s jsonb;v jsonb;r jsonb;p jsonb;d jsonb;original jsonb;root uuid;unit uuid;pkg uuid;doc uuid;task uuid:=gen_random_uuid();source jsonb;attempt jsonb;tok text:=replace(gen_random_uuid()::text,'-','')||replace(gen_random_uuid()::text,'-','');ptok text:=replace(gen_random_uuid()::text,'-','')||replace(gen_random_uuid()::text,'-','');newtok text:=replace(gen_random_uuid()::text,'-','')||replace(gen_random_uuid()::text,'-','');
+begin
+ rec:=public.bolig_workspace(c,'create_plan',null,null,jsonb_build_object('request_id',gen_random_uuid(),'title','QA – Restpunkt og kontaktbytte ROLLBACK','reference','QA-FOLLOWUP-ROLLBACK','buildings',jsonb_build_array(jsonb_build_object('name','QA Bygg','building_type','apartment','address','','house_floors',1,'entrances',jsonb_build_array(jsonb_build_object('address','','counts','[2]'::jsonb))))));root:=(rec#>>'{root,id}')::uuid;unit:=(rec#>>'{units,0,id}')::uuid;
+ v:=public.bolig_handover_review(c,root,unit);source:=v#>'{cases,0}';
+ attempt:=jsonb_build_object('request_id',gen_random_uuid(),'basis',v->'basis','case_id',source->>'id','task_id',task,'unit_id',unit,'title','QA – Følg opp åpent forhold','owner_id',actor,'planned_start','2026-10-29','planned_end','2026-10-30');
+ s:=public.bolig_handover_followup(c,root,unit,'create',attempt);
+ if public.bolig_handover_followup(c,root,unit,'create',attempt) is distinct from s or jsonb_array_length(s->'tasks')<>1 or s#>>'{tasks,0,required}'<>'false' then raise exception 'Unsafe replay/new mandatory blocker';end if;
+ v:=public.bolig_handover_review(c,root,unit);if not exists(select 1 from jsonb_array_elements(v->'cases') x where x->>'id'=source->>'id') then raise exception 'Source closed by follow-up';end if;
+ s:=public.bolig_catalog(c,root,'package',0,jsonb_build_object('name','QA – Fiktiv grunnpakke','lines',jsonb_build_array(jsonb_build_object('key','tap','name','QA Batteri','sku','QA-ORIGINAL','quantity',1,'unit','stk'))));pkg:=(s#>>'{packages,0,id}')::uuid;
+ p:=public.bolig_package_choices(c,root,unit);p:=public.bolig_package_choices(c,root,unit,'save',0,jsonb_build_object('scope_id','common','package_id',pkg,'option_ids','[]'::jsonb,'catalog_revision',p->'revision','rooms_revision',p->'rooms_revision'));
+ rec:=public.bolig_workspace(c,'get',root);rec:=public.bolig_workspace(c,'unit',root,(rec#>>'{root,revision}')::bigint,jsonb_build_object('id',unit,'number','H0101','contact_name','QA Første kontakt','contact_email','old@example.invalid'));
+ s:=public.bolig_commerce(c,root,unit,'create',jsonb_build_object('request_id',gen_random_uuid(),'kind','choice','choice_revision',1,'reason','Kun fiktiv QA'));doc:=(s->>'document_id')::uuid;select x into d from jsonb_array_elements(s->'documents') x where x->>'id'=doc::text;original:=d->'snapshot';
+ s:=public.bolig_commerce(c,root,unit,'approve',jsonb_build_object('request_id',gen_random_uuid(),'document_id',doc,'revision',d->'revision'));select x into d from jsonb_array_elements(s->'documents') x where x->>'id'=doc::text;
+ s:=public.bolig_commerce(c,root,unit,'publish',jsonb_build_object('request_id',gen_random_uuid(),'document_id',doc,'revision',d->'revision','token',tok));
+ p:=public.bolig_resident_portal(c,root,unit);p:=public.bolig_resident_portal(c,root,unit,'publish',jsonb_build_object('request_id',gen_random_uuid(),'revision',p->'revision','token',ptok,'reviewed',true));
+ perform set_config('request.jwt.claim.sub','',true);execute 'set local role anon';
+ r:=public.bolig_resident_decision(tok,'accept',doc,jsonb_build_object('name','QA Første kontakt','confirmed',true,'request_id',gen_random_uuid()));if r->>'status'<>'accepted' then raise exception 'Original link did not work';end if;
+ execute 'set local role authenticated';perform set_config('request.jwt.claim.sub',actor::text,true);
+ rec:=public.bolig_workspace(c,'get',root);rec:=public.bolig_workspace(c,'unit',root,(rec#>>'{root,revision}')::bigint,jsonb_build_object('id',unit,'number','H0101','contact_name','QA Neste kontakt','contact_email','new@example.invalid'));
+ perform set_config('request.jwt.claim.sub','',true);execute 'set local role anon';
+ begin perform public.bolig_resident_decision(tok);raise exception 'Old agreement link survived contact change';exception when insufficient_privilege then null;end;
+ begin perform public.bolig_portal(ptok);raise exception 'Old portal link survived contact change';exception when insufficient_privilege then null;end;
+ execute 'set local role authenticated';perform set_config('request.jwt.claim.sub',actor::text,true);
+ p:=public.bolig_resident_portal(c,root,unit);p:=public.bolig_resident_portal(c,root,unit,'publish',jsonb_build_object('request_id',gen_random_uuid(),'revision',p->'revision','token',newtok,'reviewed',true));
+ perform set_config('request.jwt.claim.sub','',true);execute 'set local role anon';
+ r:=public.bolig_portal(newtok);if r->'agreements'<>'[]'::jsonb then raise exception 'New resident inherited historical agreement';end if;
+ execute 'set local role authenticated';perform set_config('request.jwt.claim.sub',actor::text,true);
+ rec:=public.bolig_workspace(c,'get',root);rec:=public.bolig_workspace(c,'unit',root,(rec#>>'{root,revision}')::bigint,jsonb_build_object('id',unit,'number','H0101','contact_name','QA Første kontakt','contact_email','old@example.invalid'));
+ perform set_config('request.jwt.claim.sub','',true);execute 'set local role anon';
+ begin perform public.bolig_resident_decision(tok);raise exception 'A-B-A revived agreement link';exception when insufficient_privilege then null;end;
+ begin perform public.bolig_portal(ptok);raise exception 'A-B-A revived portal link';exception when insufficient_privilege then null;end;
+ execute 'set local role authenticated';perform set_config('request.jwt.claim.sub',actor::text,true);
+ s:=public.bolig_commerce(c,root,unit);select x into d from jsonb_array_elements(s->'documents') x where x->>'id'=doc::text;
+ if d->>'status'<>'accepted' or d->'snapshot' is distinct from original then raise exception 'Contact change altered historical acceptance or goods';end if;
+end$smoke$;
+reset role;
+select jsonb_build_object('smoke','PASS','mail_enabled',(select enabled from bolig_private.progress_mail_settings where singleton),'pending_jobs',(select count(*) from bolig_private.progress_deliveries where status in ('pending','sending'))) result;
+rollback;
+select count(*) as rollback_roots from bolig_private.roots where reference='QA-FOLLOWUP-ROLLBACK';

@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Brukerbestilte boligvarsler uten kveldssperre",
+  "change": "BEGGE. Fjerner global klokkesperre fra boligtransporten. Automatiske eierpåminnelser og datoplanlagt publisering beholder 08–18 Europe/Oslo. Ventende owner-leveranser hoppes over uten å forbrukes. Ingen mottakere, opt-in eller transportflagg endres.",
+  "verification": "Build/critical og mock e-posttester PASS. PostgreSQL timing- og regresjonsscenarioer kjører; full CI og sandboxkontroll må bestå før produksjonsmigrering. Ingen reelle prøveutsendinger.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "Forklarer ulike klokkeslett for brukerbestilt og automatisk varsling."
+    },
+    "architecture": {
+      "required": true,
+      "reason": "Tidsvindu flyttes fra transport til kø/publisering."
+    },
+    "module": {
+      "required": false,
+      "reason": "Ingen ny klientkontrakt eller RPC."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen oppsettsendring."
+    }
+  }
+}

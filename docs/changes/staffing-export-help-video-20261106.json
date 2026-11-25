@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Bemanningsplanens eksportfilm i eksisterende KS/HMS-hjelp",
+  "change": "Miljømål BEGGE, kun PR308 Preview/Sandbox. Én eksisterende kontrollert MP4 og VTT, én guidepost, additiv filmregresjon, dekningsregister og dokumentasjon. Tretten tidligere filmer og metadata beholdes. Ingen avspiller-, tilgangs-, backend-, plan- eller e-postendring.",
+  "verification": "Originalfilm 102s/2448 frames/H264/1080p/24fps uten lyd, kildehash og alle åtte kodede scener kontrollert. Metadata/hash/syntaks og lokal Sandbox-build kontrolleres. Ny eksakt kandidat-CI/READY og eventuell innlogget kontroll føres i QA-grunnlaget.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "Ny filmknapp med kapitler, VTT og full tekst under KS/HMS."
+    },
+    "module": {
+      "required": true,
+      "reason": "Hjelp-README beskriver omfang og eksisterende tilgang."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Samme statiske filarkitektur og avspiller, ingen ny dataflyt."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen avhengighets- eller miljøendring."
+    }
+  }
+}

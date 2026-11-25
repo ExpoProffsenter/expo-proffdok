@@ -1,0 +1,513 @@
+{
+  "status": "opptaksplan – ikke ferdig eller publisert film",
+  "source": "V12 redigerbare kilder,57scener",
+  "candidate": "d0ff0d2de559688de9c0ca39782c18457781939c",
+  "source_audit": {
+    "scenes": 57,
+    "explicit_pointer_targets": 3
+  },
+  "rules": [
+    "Samme PROFFDOK-VIDEO-1.0 utsnitt, font, musepeker og klikkring i alle scener.",
+    "Nye skjermbilder fra samme kandidat og naturlig prosjektløp. Ikke presenter arkivbildene som gjeldende funksjon.",
+    "Ingen innebygde gamle kapittelnummer i scenetitler; løpenummer lages av rendereren.",
+    "Alle pekerposisjoner må knyttes til faktisk synlig kontroll; klikkring bare for reelt utført klikk.",
+    "Vis separate e-poster til registrerte eiere og én felles portal per bolig.",
+    "Ingen reell utsending, aksept av andres vilkår eller synlige portalhemmeligheter.",
+    "Norsk tekst først. Lyd/stemme er ikke valgt eller kjøpt."
+  ],
+  "chapters": [
+    {
+      "chapter": 1,
+      "title": "Opprett prosjekt og bygg",
+      "source_scenes": [
+        {
+          "old_index": 1,
+          "source_image": "assets/02-boligtype.jpg",
+          "title": "Navn og boligtype",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        },
+        {
+          "old_index": 2,
+          "source_image": "assets/03-bygg.jpg",
+          "title": "Bygg og adresse",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        },
+        {
+          "old_index": 3,
+          "source_image": "assets/04-etasjer.jpg",
+          "title": "Oppganger og etasjer",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        },
+        {
+          "old_index": 4,
+          "source_image": "assets/06-boligfordeling.jpg",
+          "title": "Se over oppsettet",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        },
+        {
+          "old_index": 5,
+          "source_image": "assets/26-firmaadmin-roller.jpg",
+          "title": "Interne roller",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        }
+      ]
+    },
+    {
+      "chapter": 2,
+      "title": "Avklar kontrakt, tilgang og økonomi",
+      "source_scenes": [
+        {
+          "old_index": 6,
+          "source_image": "assets/07-kontrakter.jpg",
+          "title": "Kontrakter",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        },
+        {
+          "old_index": 7,
+          "source_image": "assets/13-kontraktstilgang.jpg",
+          "title": "Privat innsyn",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        },
+        {
+          "old_index": 50,
+          "source_image": "assets/46-kontraktsvilkar.jpg",
+          "title": "Kontrakt og indeks",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        }
+      ]
+    },
+    {
+      "chapter": 3,
+      "title": "Sett grunnpakke og tilvalg",
+      "source_scenes": [
+        {
+          "old_index": 8,
+          "source_image": "assets/11-standardvarer.jpg",
+          "title": "Standardbadet",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        },
+        {
+          "old_index": 9,
+          "source_image": "assets/12-grunnpakkeeditor.jpg",
+          "title": "Rediger grunnpakken",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        },
+        {
+          "old_index": 10,
+          "source_image": "assets/10-tilvalgseditor.jpg",
+          "title": "Tillegg eller alternativ",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        }
+      ]
+    },
+    {
+      "chapter": 4,
+      "title": "Importer og kontroller eiere",
+      "source_scenes": [
+        {
+          "old_index": 37,
+          "source_image": "assets/27-testkontakt.jpg",
+          "title": "Legg inn kontakt",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        }
+      ]
+    },
+    {
+      "chapter": 5,
+      "title": "Planlegg fremdrift og ansvar",
+      "source_scenes": [
+        {
+          "old_index": 15,
+          "source_image": "assets/15-plan-entry.png",
+          "title": "Planlegg flere boliger",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        },
+        {
+          "old_index": 16,
+          "source_image": "assets/10-plan-units-and-date.png",
+          "title": "Velg riktig utvalg",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        },
+        {
+          "old_index": 17,
+          "source_image": "assets/10-plan-units-and-date.png",
+          "title": "Sett oppstart og takt",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        },
+        {
+          "old_index": 18,
+          "source_image": "assets/10-plan-units-and-date.png",
+          "title": "Fordel ansvaret",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        },
+        {
+          "old_index": 19,
+          "source_image": "assets/11-plan-activities.png",
+          "title": "Bygg arbeidsrekkefølgen",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        },
+        {
+          "old_index": 20,
+          "source_image": "assets/11-plan-activities.png",
+          "title": "Forhåndsvis planen",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        },
+        {
+          "old_index": 21,
+          "source_image": "assets/12-plan-preview-first.png",
+          "title": "Kontroller datoene",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        },
+        {
+          "old_index": 22,
+          "source_image": "assets/13-plan-preview-last.png",
+          "title": "Se også siste bolig",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        },
+        {
+          "old_index": 23,
+          "source_image": "assets/14-plan-saved.png",
+          "title": "Bekreft lagret resultat",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        },
+        {
+          "old_index": 24,
+          "source_image": "assets/15-plan-entry.png",
+          "title": "Tilbake i arbeidsflyten",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        }
+      ]
+    },
+    {
+      "chapter": 6,
+      "title": "Fordel sjekklister",
+      "source_scenes": [
+        {
+          "old_index": 12,
+          "source_image": "assets/25-fordel-sjekklister.jpg",
+          "title": "Fordel sjekklister",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        },
+        {
+          "old_index": 13,
+          "source_image": "assets/29-fordeling-forhandsvisning.jpg",
+          "title": "Kontroller fordelingen",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        },
+        {
+          "old_index": 14,
+          "source_image": "assets/30-fordeling-lagret.jpg",
+          "title": "Bekreft resultatet",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        }
+      ]
+    },
+    {
+      "chapter": 7,
+      "title": "Varsle og inviter beboere",
+      "source_scenes": [
+        {
+          "old_index": 49,
+          "source_image": "assets/23-varsel-forhandsvisning.jpg",
+          "title": "Forhåndsvis varselet",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        }
+      ]
+    },
+    {
+      "chapter": 8,
+      "title": "Beboerportal og boligvalg",
+      "source_scenes": [
+        {
+          "old_index": 38,
+          "source_image": "assets/74-beboervisning.jpg",
+          "title": "Beboerens oversikt",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        },
+        {
+          "old_index": 39,
+          "source_image": "assets/75-beboer-avtaler.jpg",
+          "title": "Se avtalestatus",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        },
+        {
+          "old_index": 40,
+          "source_image": "assets/76-beboer-kvittering.jpg",
+          "title": "Åpne kvitteringen",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        },
+        {
+          "old_index": 11,
+          "source_image": "assets/16-boligvalg-h0101.jpg",
+          "title": "Boligvalg i H0101",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        }
+      ]
+    },
+    {
+      "chapter": 9,
+      "title": "Bestill varer og registrer mottak",
+      "source_scenes": [
+        {
+          "old_index": 41,
+          "source_image": "assets/17-bestilling-h0101.jpg",
+          "title": "Bestillingsutkast",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        },
+        {
+          "old_index": 42,
+          "source_image": "assets/38-ordre-forhandsvisning.jpg",
+          "title": "Klargjør bestillingen",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        },
+        {
+          "old_index": 43,
+          "source_image": "assets/39-sending-forhandsvisning.jpg",
+          "title": "Kontroller sendekladden",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        },
+        {
+          "old_index": 44,
+          "source_image": "assets/68-pilot-varemottak.jpg",
+          "title": "Delvis levert pilotordre",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        },
+        {
+          "old_index": 45,
+          "source_image": "assets/69-mottak-dialog.jpg",
+          "title": "Før restmottaket",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        },
+        {
+          "old_index": 46,
+          "source_image": "assets/70-mottak-lagret.jpg",
+          "title": "Kontroller leveringen",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        }
+      ]
+    },
+    {
+      "chapter": 10,
+      "title": "Gi UE og leverandør tilgang",
+      "source_scenes": [
+        {
+          "old_index": 29,
+          "source_image": "assets/52-ue-tilgangsvalg.jpg",
+          "title": "Velg ekstern tilgang",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        },
+        {
+          "old_index": 30,
+          "source_image": "assets/79-ekstern-fremdrift.jpg",
+          "title": "Leverandørens fremdrift",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        },
+        {
+          "old_index": 31,
+          "source_image": "assets/80-ue-sjekklistetilgang.jpg",
+          "title": "Gi UE utfyllingsrett",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        },
+        {
+          "old_index": 32,
+          "source_image": "assets/81-ue-sjekklister.jpg",
+          "title": "Åpne UE-sjekklistene",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        },
+        {
+          "old_index": 33,
+          "source_image": "assets/82-ue-utfylling.jpg",
+          "title": "Fyll ut kontrollen",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        },
+        {
+          "old_index": 34,
+          "source_image": "assets/83-ue-fullfort.jpg",
+          "title": "Bekreft fullføring",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        },
+        {
+          "old_index": 35,
+          "source_image": "assets/84-ue-vedlegg.jpg",
+          "title": "Velg UE-vedlegg",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        },
+        {
+          "old_index": 36,
+          "source_image": "assets/87-ue-vedlegg-utsnitt.jpg",
+          "title": "Kontroller lagret vedlegg",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        }
+      ]
+    },
+    {
+      "chapter": 11,
+      "title": "Bemanning og utførelse",
+      "source_scenes": [
+        {
+          "old_index": 25,
+          "source_image": "assets/49-bemanning.jpg",
+          "title": "Faktisk bemanning",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        },
+        {
+          "old_index": 26,
+          "source_image": "assets/54-bemanning-inne.jpg",
+          "title": "Bekreft innregistrering",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        },
+        {
+          "old_index": 27,
+          "source_image": "assets/55-bemanning-ute.jpg",
+          "title": "Registrer ut",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        },
+        {
+          "old_index": 28,
+          "source_image": "assets/58-tilsyn-person.jpg",
+          "title": "Kontroller tilsynslisten",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        },
+        {
+          "old_index": 47,
+          "source_image": "assets/31-kontroll.jpg",
+          "title": "Åpne sjekklisten",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        },
+        {
+          "old_index": 48,
+          "source_image": "assets/33-kontroll-resultat.jpg",
+          "title": "Bekreft fullføring",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        }
+      ]
+    },
+    {
+      "chapter": 12,
+      "title": "Følg opp fakturering",
+      "source_scenes": [
+        {
+          "old_index": 51,
+          "source_image": "assets/48-fakturaoversikt.jpg",
+          "title": "Fakturaoversikt",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        }
+      ]
+    },
+    {
+      "chapter": 13,
+      "title": "Restpunkter og overtakelse",
+      "source_scenes": [
+        {
+          "old_index": 52,
+          "source_image": "assets/42-apne-forhold.jpg",
+          "title": "Se åpne forhold",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        },
+        {
+          "old_index": 53,
+          "source_image": "assets/44-vurderingsvalg.jpg",
+          "title": "Velg oppfølging",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        },
+        {
+          "old_index": 54,
+          "source_image": "assets/45-sperre.jpg",
+          "title": "Eksempel på sperre",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        },
+        {
+          "old_index": 55,
+          "source_image": "assets/65-pilot-overtatt.jpg",
+          "title": "Overtakelser i pilotbygget",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        },
+        {
+          "old_index": 56,
+          "source_image": "assets/67-pilot-protokoll-restpunkt.jpg",
+          "title": "Overtatt med restpunkter",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        }
+      ]
+    },
+    {
+      "chapter": 14,
+      "title": "Overlever sluttpakken",
+      "source_scenes": [
+        {
+          "old_index": 57,
+          "source_image": "assets/34-sluttpakke-med-kontroll.jpg",
+          "title": "Hent sluttpakken",
+          "recapture_required": true,
+          "pointer_target_verified": false
+        }
+      ]
+    }
+  ],
+  "new_required_scenes": [
+    "Excel-opplasting og kolonnevalg",
+    "Bolig24/25/38 og kontroll mot eksisterende boliger",
+    "To eiere og én hovedkontakt, samme portal",
+    "ByggA+B og stammeutvalg",
+    "Samlet frist og individuelt unntak",
+    "Kontrolliste før klargjøring og utsending",
+    "Pauset transport vises ærlig",
+    "Lesbar firmalogo, felles valggrunnlag og frist i portalen"
+  ]
+}

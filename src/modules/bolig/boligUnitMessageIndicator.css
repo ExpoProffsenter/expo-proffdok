@@ -1,0 +1,21 @@
+.bolig-unit-task-card .bolig-unit-message-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  gap: 6px;
+  max-width: 100%;
+  padding: 6px 10px;
+  border: 1px solid #c57b34;
+  border-radius: 999px;
+  background: #fff1dc;
+  color: #78400f;
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.4;
+}
+.bolig-unit-task-card .bolig-unit-message-indicator.is-pending {
+  border-color: #a1c3cf;
+  background: #e8f4f8;
+  color: #24556a;
+}
+.bolig-unit-task-card .bolig-unit-message-indicator svg { flex: 0 0 auto; }

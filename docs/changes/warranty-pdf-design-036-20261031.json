@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Garanti: lesbar status og robust garantivilkår-PDF",
+  "change": "Miljømål BEGGE; kun samme PR295/Preview. Garantikrav får lesbare 16px statusfelt og responsiv oppstilling, arkiv beholdes og allerede utstedt garanti får korrekt overskrift. Den eksisterende garantivilkår-knappen bruker en uttrekt ren renderer med identisk vilkårstekst og kvitteringsdata. Større brødtekst, linjevis sideskift, samlet seksjonsoverskrift og første tekstlinjer, gjentatt topptekst og sidetall. Ingen utstedelse, signering, lagring, juridisk innhold, backend eller datakontrakt endres.",
+  "verification": "Native prosjektbrowser572 assertions/90 tilstand×bredde PASS, alle tidligere531 beholdt: 320/390/768/1363/1920 og600px høyde, inactive/missing/issued/legacy-number/locked, samme readonly-gater, native manglende punkt og mottakerdisclosure. Ny actual-jsPDF48 checks for10/12/15år, kort/lang norsk tekst, alle linjer innenfor marginer, siste sentinel, topptekst/sidetall på hver side. Seks faktiske PDF-filer/15sider rendret og visuelt inspisert i kontaktark og representative fullsider. Gammel renderer kjørt fra eksakt1dd2d2ad: lang prosjekttekst klippes på side2 og legger tekst over footer; samme datasett etter fiks består. Ingen garantibevis/komplett prosjektrapport eller øvrige eksporttyper er attestert av denne seks-PDF-prøven. Eksakt endelig build/CI/deploy og faktisk innlogget etterkontroll føres i PR295. Ny prøve fant gammel labeltekst med option-tekst; lokator ble presisert til faktisk label/select uten svakere assertion. Mobilens sene12.5px important-stil ble fanget visuelt og rettet bare innenfor garantiflaten;16px kreves nå eksplisitt.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Ingen knappnavn, oppgaverekkefølge eller brukerkommando endres; bare eksisterende presentasjon."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Ingen nye data-/tilgangs-/lagrings-/rute-/dialogeiere; bare screen-scopet CSS."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen avhengigheter, miljøverdier eller installasjonssteg endres."
+    },
+    "module": {
+      "required": true,
+      "reason": "Ny ren garantivilkår-renderer dokumenteres i warranty/README.md."
+    }
+  }
+}

@@ -1,0 +1,45 @@
+WEBVTT
+
+00:00:00.000 --> 00:00:12.000
+Start en varetelling
+Velg Prissøk → Varetelling. Gi tellingen et navn, velg riktig lager og kontroller telledatoen. Opprett én telling per lager.
+
+00:00:12.000 --> 00:00:24.000
+Opprett hylla én gang
+Åpne Opprett en hylle eller et område. Skriv navnet og velg Opprett og start område. Her brukes Reol B – hylle 2.
+
+00:00:24.000 --> 00:00:38.000
+Registrer det du har telt
+Finn varen i søket, eller legg den inn manuelt. Kontroller leverandør og varenummer. Her registreres tre eksemplarenheter.
+
+00:00:38.000 --> 00:00:52.000
+Skriv hvor du stoppet
+To varelinjer er lagret, også en med antall 0. Skriv en tydelig stoppmerknad og velg Sett område på pause.
+
+00:00:52.000 --> 00:01:08.000
+Fortsett på en halvferdig hylle
+Pauset område beholder varelisten og stoppmerknaden. Les begge før du velger Fortsett telling her. Her fortsetter samme demoteller.
+
+00:01:08.000 --> 00:01:20.000
+Legg til neste delantall
+På samme vare og område legges nye registreringer til. Her registreres to nye enheter etter de tre som allerede var telt.
+
+00:01:20.000 --> 00:01:36.000
+Kontroller hva som skjedde
+Historikk og kontroll viser hvem, tidspunkt og før/etter. Her vises 3 → 5, videreføring og den tidligere pausen med merknad.
+
+00:01:36.000 --> 00:01:50.000
+Marker området ferdig
+Når hele hylla er kontrollert, oppdater merknaden og velg Området er ferdig telt. Alle områder må være ferdige før hele tellingen avsluttes.
+
+00:01:50.000 --> 00:02:06.000
+Last ned riktig kontrollgrunnlag
+Cordel-tekstfilen summerer per leverandør og varenummer, uten område. Kontrollfilen beholder områdene. Kontroller filene før en eventuell import.
+
+00:02:06.000 --> 00:02:18.000
+Bekreft avslutningen
+Avslutt telling viser en egen bekreftelse. Når du bekrefter, låses registreringene. Eksportfilene er fortsatt tilgjengelige.
+
+00:02:18.000 --> 00:02:30.000
+Kontroller avsluttet telling
+Avsluttet og 1 av 1 områder ferdig telt vises etter ny serverhenting. Antall og historikk er bevart, og skriveknappene er fjernet.

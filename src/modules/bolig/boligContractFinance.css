@@ -1,0 +1,35 @@
+.bolig-contract-finance{display:grid;gap:14px;min-width:0;color:inherit}
+.bolig-contract-finance[hidden]{display:none}
+.bolig-contract-finance fieldset{display:grid;gap:12px;border:0;padding:0;min-width:0}
+.bolig-contract-finance label{display:grid;gap:6px;font-weight:600;min-width:0}
+.bolig-contract-finance input:not([type=checkbox]),.bolig-contract-finance select,.bolig-contract-finance textarea{box-sizing:border-box;max-width:100%;width:100%;min-width:0}
+.bolig-contract-finance button,.bolig-contract-finance p,.bolig-contract-finance strong{overflow-wrap:anywhere}
+.bolig-contract-finance .bolig-finance-check{display:flex;gap:10px;align-items:center}
+.bolig-finance-check input{width:20px;height:20px;flex:0 0 auto;accent-color:#54d7bf}
+.bolig-finance-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.bolig-finance-summary,.bolig-finance-result,.bolig-finance-setup,.bolig-finance-line{border:1px solid #405064;background:#14202c;color:#e8eef7;border-radius:10px;padding:14px;min-width:0}
+.bolig-finance-line{display:grid;gap:10px;background:#1b2a39}
+.bolig-contract-finance summary{cursor:pointer;font-weight:700;padding:4px 0 12px}
+.bolig-contract-finance dl{display:grid;gap:8px;margin:10px 0}
+.bolig-contract-finance dl>div{display:flex;gap:12px;justify-content:space-between;flex-wrap:wrap}
+.bolig-contract-finance dd{font-weight:700;margin:0}
+.bolig-finance-result article{border-bottom:1px solid #405064;padding:10px 0}
+.bolig-finance-tabs{display:flex;gap:8px;flex-wrap:wrap}
+.bolig-finance-history>button{display:block;margin-top:8px;text-align:left;white-space:normal}
+@media(max-width:480px){.bolig-finance-grid{grid-template-columns:1fr}.bolig-finance-summary,.bolig-finance-result,.bolig-finance-setup,.bolig-finance-line{padding:11px}.bolig-contract-finance dl>div{display:block}.bolig-contract-finance dd{margin-top:3px}}
+
+.bolig-contract-finance>p{margin:0;line-height:1.4}
+.bolig-finance-setup>p{margin:10px 0}
+.bolig-finance-setup small{color:#d3deeb;font-size:.9rem;font-weight:400;line-height:1.4}
+.bolig-finance-setup textarea{min-height:64px}
+.bolig-finance-setup h3,.bolig-finance-setup h4,.bolig-finance-result h4{color:#e8eef7}
+.bolig-contract-finance section[hidden]{display:none}
+.bolig-finance-tabs button[aria-pressed=true]{font-weight:700}
+.bolig-index-history>button{display:block;margin-top:8px;white-space:normal;text-align:left}
+.bolig-contract-finance h3{margin:8px 0}
+.bolig-finance-summary article{border-top:1px solid #405064;padding:8px 0}
+.bolig-finance-history{display:grid;gap:10px;margin-top:16px}
+.bolig-finance-save{position:sticky;bottom:0;z-index:2;display:flex;align-items:center;gap:16px;justify-content:space-between;background:#edf7fa;color:#173340;border:1px solid #a7c4cf;border-radius:10px;padding:12px;margin-top:12px}
+.bolig-finance-save span{font-size:.9rem;line-height:1.4}
+.bolig-finance-save button{min-width:120px}
+@media(max-width:480px){.bolig-finance-save{flex-wrap:wrap;gap:8px}.bolig-finance-save button{width:100%}}

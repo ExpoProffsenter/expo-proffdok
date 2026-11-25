@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {createTimeCleanup} from '../supabase/functions/_shared/time-cleanup.mjs';
+let authorized=true,deleted=true,acks=0,removed=0;const path='81000000-0000-4000-8000-000000000001/81000000-0000-4000-8000-000000000002/81000000-0000-4000-8000-000000000003';
+const worker=createTimeCleanup({rpc:async(name,args)=>{if(name==='time_cleanup_authorize')return authorized;if(name==='time_cleanup_files')return [path];if(name==='time_cleanup_finish'){assert.deepEqual(args.p_paths,[path]);acks++;return 1;}throw Error(name);},remove:async paths=>{assert.deepEqual(paths,[path]);removed++;return deleted;}});
+const request=(headers={},body='{}')=>new Request('https://example.invalid',{method:'POST',headers:{'x-time-token':'a'.repeat(64),...headers},body});
+assert.equal((await worker(new Request('https://example.invalid'))).status,405);
+for(const h of [{origin:'https://example.invalid'},{authorization:'Bearer bad'},{'x-time-token':'bad'}])assert.equal((await worker(request(h))).status,403);
+authorized=false;assert.equal((await worker(request())).status,403);assert.equal(removed,0);authorized=true;
+assert.equal((await worker(request({},'{"paths":["other"]}'))).status,400);assert.equal(removed,0);
+deleted=false;assert.equal((await worker(request())).status,503);assert.equal(acks,0);
+deleted=true;assert.deepEqual(await(await worker(request())).json(),{removed:1});assert.equal(acks,1);
+console.log('Time cleanup PASS: dedicated auth, no browser access, fixed queued paths, unconfirmed deletion retries without acknowledgment. No live deletion.');

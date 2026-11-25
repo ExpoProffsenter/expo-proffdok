@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Expo ProffDok</title>
+  <link rel="stylesheet" href="/src/modules/app/mobileResponsive41A.css" />
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module">
+    import { supportReady } from '/src/modules/access/appSupportBrowser.mjs';
+    await supportReady;
+    const { installCompanySignupOnboarding } = await import('/src/modules/auth/companySignupOnboarding.js');
+    const { installAuthReferenceDesktop } = await import('/src/modules/auth/authReferenceDesktop.js');
+    installCompanySignupOnboarding();
+    installAuthReferenceDesktop();
+  </script>
+  <script type="module">
+    import { supportReady } from '/src/modules/access/appSupportBrowser.mjs';
+    await supportReady;
+    const { installCompanyAdminNavigationLabel } = await import('/src/modules/company/companyAdminNavigationLabel.js');
+    const { installDesktopSideMenu } = await import('/src/modules/app/desktopSideMenu.js');
+    installCompanyAdminNavigationLabel();
+    installDesktopSideMenu();
+  </script>
+  <script type="module">
+    import { supportReady } from '/src/modules/access/appSupportBrowser.mjs';
+    await supportReady;
+    const { installProjectWorkspaceHeaderGuide } = await import('/src/modules/app/projectWorkspaceHeaderGuide.js');
+    installProjectWorkspaceHeaderGuide();
+  </script>
+  <script type="module">
+    import { supportReady } from '/src/modules/access/appSupportBrowser.mjs';
+    await supportReady;
+    const { installSystemAdminProjectScopeGuard } = await import('/src/modules/access/systemAdminProjectScopeGuard.js');
+    installSystemAdminProjectScopeGuard();
+    await import('/src/bootstrap.jsx');
+  </script>
+  <script type="module">
+    import { supportReady } from '/src/modules/access/appSupportBrowser.mjs';
+    await supportReady;
+    const { installStableModuleAccessUx } = await import('/src/modules/access/moduleAccessUxStable.jsx');
+    installStableModuleAccessUx();
+  </script>
+  <script type="module">
+    import { supportReady } from '/src/modules/access/appSupportBrowser.mjs';
+    await supportReady;
+    const { installFirmaAdminProNetPriceUx } = await import('/src/modules/access/firmaAdminProNetPriceUx.js');
+    installFirmaAdminProNetPriceUx();
+  </script>
+  <script type="module">
+    import { supportReady } from '/src/modules/access/appSupportBrowser.mjs';
+    await supportReady;
+    const { installSupportModeProjection } = await import('/src/modules/access/supportModeProjection.js');
+    installSupportModeProjection();
+  </script>
+  <script type="module">
+    import { supportReady } from '/src/modules/access/appSupportBrowser.mjs';
+    await supportReady;
+    const { installSystemAdminUnifiedUserAccessUx } = await import('/src/modules/access/systemAdminUnifiedUserAccessUx.jsx');
+    installSystemAdminUnifiedUserAccessUx();
+  </script>
+  <script type="module">
+    import { supportReady } from '/src/modules/access/appSupportBrowser.mjs';
+    await supportReady;
+    const { installSystemAdminCompanyAccessUx } = await import('/src/modules/access/systemAdminCompanyAccessUx.jsx');
+    installSystemAdminCompanyAccessUx();
+  </script>
+  <script type="module">
+    import { supportReady } from '/src/modules/access/appSupportBrowser.mjs';
+    await supportReady;
+    const { installSystemAdminCompanyModalUx } = await import('/src/modules/access/systemAdminCompanyModalUx.js');
+    installSystemAdminCompanyModalUx();
+  </script>
+  <script type="module">
+    import { supportReady } from '/src/modules/access/appSupportBrowser.mjs';
+    await supportReady;
+    const { installSystemAdminUserPolicyGuard } = await import('/src/modules/access/systemAdminUserPolicyGuard.js');
+    installSystemAdminUserPolicyGuard();
+  </script>
+  <script type="module">
+    import { supportReady } from '/src/modules/access/appSupportBrowser.mjs';
+    await supportReady;
+    const { installSystemAdminWorkProfileUx } = await import('/src/modules/access/systemAdminWorkProfileUx.jsx');
+    installSystemAdminWorkProfileUx();
+  </script>
+  <script type="module">
+    import { supportReady } from '/src/modules/access/appSupportBrowser.mjs';
+    await supportReady;
+    const { installWorkProfileUx } = await import('/src/modules/access/workProfileUx.jsx');
+    installWorkProfileUx();
+  </script>
+  <script type="module">
+    import { supportReady } from '/src/modules/access/appSupportBrowser.mjs';
+    await supportReady;
+    const { installWorkProfileProjectListUx } = await import('/src/modules/access/workProfileProjectListUx.jsx');
+    installWorkProfileProjectListUx();
+  </script>
+  <script type="module">
+    import { supportReady } from '/src/modules/access/appSupportBrowser.mjs';
+    await supportReady;
+    const { installStorePriceSearchUx } = await import('/src/modules/storeCatalog/storePriceSearchUx.jsx');
+    installStorePriceSearchUx();
+  </script>
+  <script type="module">
+    import { supportReady } from '/src/modules/access/appSupportBrowser.mjs';
+    await supportReady;
+    const { installPriceSearchHelpUx } = await import('/src/modules/help/priceSearchHelpUx.js');
+    installPriceSearchHelpUx();
+  </script>
+  <script type="module">
+    import { supportReady } from '/src/modules/access/appSupportBrowser.mjs';
+    await supportReady;
+    const { installStoreDeclinedRevisionUx } = await import('/src/modules/sales/storeDeclinedRevisionUx.js');
+    installStoreDeclinedRevisionUx();
+  </script>
+  <script type="module">
+    import { supportReady } from '/src/modules/access/appSupportBrowser.mjs';
+    await supportReady;
+    const { installStoreOrderBasisUx } = await import('/src/modules/sales/storeOrderBasisUx.jsx');
+    installStoreOrderBasisUx();
+  </script>
+  <script type="module">
+    import { supportReady } from '/src/modules/access/appSupportBrowser.mjs';
+    await supportReady;
+    const { installStoreOfferFromSurveyUx } = await import('/src/modules/sales/storeOfferFromSurveyUx.jsx');
+    installStoreOfferFromSurveyUx();
+  </script>
+  <script type="module">
+    import { supportReady } from '/src/modules/access/appSupportBrowser.mjs';
+    await supportReady;
+    const { installSalesSurveyFilterUx } = await import('/src/modules/sales/salesSurveyFilterUx.js');
+    installSalesSurveyFilterUx();
+  </script>
+  <script type="module">
+    import { supportReady } from '/src/modules/access/appSupportBrowser.mjs';
+    await supportReady;
+    const { installGeneralOfferTerminologyUx } = await import('/src/modules/sales/generalOfferTerminologyUx.js');
+    installGeneralOfferTerminologyUx();
+  </script>
+</body>
+</html>

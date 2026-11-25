@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Tilbaketrekking og sendestatus for brukerinvitasjoner",
+  "change": "Miljømål BEGGE. Feil invitasjon kan trekkes tilbake med bekreftelse; registrerte brukere beholdes. Sendeforsøk og bekreftet sending lagres per invitasjon. Bekreft mottaker ved ny sending. Ingen rutineutsending aktiveres.",
+  "verification": "Database- og komponenttester, full build og GitHub QA dokumenteres i docs/qa/COMPANY_INVITATION_MANAGEMENT_20261113.md. Ingen reelle invitasjoner eller e-post sendt.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "Ny tilbaketrekking og sendestatus forklares i Firmaadministrasjon."
+    },
+    "architecture": {
+      "required": true,
+      "reason": "Privat sendelogg og tilgangskontroll dokumenteres."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen generelt oppsett endret; migrasjon dokumenteres i QA."
+    },
+    "module": {
+      "required": false,
+      "reason": "Eksisterende firmaadministrasjon utvides; kontrakten dokumenteres samlet i arkitekturen."
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Synlig prosjektredigering og korrekt tom boligstatus",
+  "change": "BEGGE. Rediger prosjektinfo ved prosjektnavnet åpner eksisterende kladdsikrede skjema i felles dialog. Oppsett beholder snarvei. Prisfri catalog_empty-projeksjon skiller tomt oppsett fra boligvalg som ikke er startet. Tilgang, lagrede valg og øvrige statuslag beholdes.",
+  "verification": "React-, PostgreSQL- og nettleserregresjoner utvidet. Ingen e-posttest eller endring av produksjonspakker. Endelig verifisering og release føres i PR.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "Ny tydelig inngang og dialog."
+    },
+    "module": {
+      "required": true,
+      "reason": "Ny prisfri catalog_empty-projeksjon og migrasjon."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Eksisterende RPC, firmaskille og skjema; ingen ny arkitektur."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen generelle miljøendringer."
+    }
+  }
+}

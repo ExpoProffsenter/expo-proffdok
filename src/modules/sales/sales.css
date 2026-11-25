@@ -1,0 +1,2548 @@
+/* Expo ProffDok – FASE 26B.3
+   Kundetilbud grupperer hovedposter, underposter, koblede opsjoner og vedlegg.
+   Valgte opsjoner oppdaterer hovedpostsummen visuelt. Ingen beregnings- eller akseptlogikk i CSS.
+*/
+
+/* Expo ProffDok – FASE 26B.5\n   Tydelig visning av opsjonstype og erstattede grunnposter i kundetilbud.\n*/\n\n/* Expo ProffDok – FASE 26A
+   Tydelig prismerking i intern tilbudsbygger og trygg layout for lange kundeseksjonsmerker.
+   Ingen endring i tilbudsdata, beregning eller akseptlogikk.
+*/
+
+/* Expo ProffDok – FASE 19.1
+   Premium digitalt kundetilbud for Befaring / Tilbud / Aksept.
+   Isolert CSS for sales-modulen. Ingen produksjons-main-endring.
+*/
+
+:root {
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #10212b;
+  background: #f4f8fa;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top right, rgba(28, 199, 207, 0.13), transparent 34rem),
+    linear-gradient(180deg, #f8fbfc 0%, #edf4f6 100%);
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+a {
+  color: #0b8790;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.sales-app {
+  min-height: 100vh;
+  color: #10212b;
+}
+
+.sales-shell {
+  width: min(100%, 1180px);
+  margin: 0 auto;
+  padding: 20px 20px 56px;
+}
+
+.sales-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  min-height: 52px;
+  margin-bottom: 34px;
+}
+
+.sales-brand,
+.sales-brand-compact {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.sales-brand-compact {
+  margin-left: auto;
+}
+
+.sales-brand-mark {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  border-radius: 15px;
+  background: linear-gradient(135deg, #1cc7cf, #0e9aa3);
+  color: #fff;
+  box-shadow: 0 14px 32px rgba(14, 154, 163, 0.24);
+}
+
+.sales-brand-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sales-brand-copy strong {
+  color: #10212b;
+  font-size: 16px;
+  line-height: 1.2;
+}
+
+.sales-brand-copy span {
+  color: #667985;
+  font-size: 13px;
+}
+
+.sales-main {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.sales-hero,
+.sales-detail-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 28px;
+}
+
+.sales-hero-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.sales-form-hero {
+  max-width: none;
+}
+
+.sales-eyebrow {
+  margin: 0 0 8px;
+  color: #0e9aa3;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.sales-title {
+  margin: 0;
+  color: #10212b;
+  font-size: clamp(34px, 5vw, 56px);
+  line-height: 1.02;
+  letter-spacing: -0.045em;
+}
+
+.sales-detail-hero .sales-title {
+  margin-top: 10px;
+}
+
+.sales-subtitle {
+  max-width: 720px;
+  margin: 14px 0 0;
+  color: #58707d;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.sales-primary-button,
+.sales-secondary-button,
+.sales-back-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 48px;
+  padding: 0 18px;
+  border-radius: 15px;
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    background 160ms ease,
+    border-color 160ms ease;
+}
+
+.sales-primary-button {
+  border: 0;
+  background: linear-gradient(135deg, #1cc7cf, #0e9aa3);
+  color: #fff;
+  box-shadow: 0 14px 30px rgba(14, 154, 163, 0.22);
+}
+
+.sales-secondary-button,
+.sales-back-button {
+  border: 1px solid #cfdee4;
+  background: rgba(255, 255, 255, 0.92);
+  color: #10212b;
+}
+
+.sales-primary-button:hover,
+.sales-secondary-button:hover,
+.sales-back-button:hover {
+  transform: translateY(-1px);
+}
+
+.sales-primary-button:hover {
+  box-shadow: 0 18px 38px rgba(14, 154, 163, 0.26);
+}
+
+.sales-secondary-button:hover,
+.sales-back-button:hover {
+  border-color: #bfd4dc;
+  background: #fff;
+  box-shadow: 0 10px 24px rgba(16, 33, 43, 0.07);
+}
+
+.sales-primary-button:active,
+.sales-secondary-button:active,
+.sales-back-button:active {
+  transform: translateY(0);
+}
+
+.sales-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.sales-summary-card,
+.sales-panel,
+.sales-form-panel,
+.sales-detail-card,
+.sales-next-card {
+  border: 1px solid #d7e4ea;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 16px 42px rgba(16, 33, 43, 0.07);
+}
+
+.sales-summary-card {
+  padding: 18px;
+  border-radius: 20px;
+}
+
+.sales-summary-label {
+  display: block;
+  margin-bottom: 10px;
+  color: #667985;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.sales-summary-value {
+  color: #10212b;
+  font-size: 30px;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.sales-panel,
+.sales-form-panel {
+  overflow: hidden;
+  border-radius: 24px;
+}
+
+.sales-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 20px 22px;
+  border-bottom: 1px solid #e6eef2;
+}
+
+.sales-panel-title {
+  margin: 0;
+  font-size: 19px;
+  letter-spacing: -0.02em;
+}
+
+.sales-panel-meta {
+  color: #667985;
+  font-size: 13px;
+}
+
+.sales-request-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.sales-request-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 22px;
+  width: 100%;
+  padding: 20px 22px;
+  border: 0;
+  border-bottom: 1px solid #e6eef2;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  transition: background 160ms ease;
+}
+
+.sales-request-card:last-child {
+  border-bottom: 0;
+}
+
+.sales-request-card:hover {
+  background: #f7fbfc;
+}
+
+.sales-request-main,
+.sales-request-next {
+  min-width: 0;
+}
+
+.sales-request-title {
+  margin: 0 0 7px;
+  overflow: hidden;
+  font-size: 17px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sales-request-customer {
+  margin: 0;
+  color: #667985;
+  font-size: 14px;
+}
+
+.sales-next-label {
+  display: block;
+  margin-bottom: 6px;
+  color: #8a9aa3;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.sales-next-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #10212b;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.sales-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  padding: 0 11px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.sales-status-new {
+  background: #e6f9fa;
+  color: #087b82;
+}
+
+.sales-status-survey {
+  background: #eef2ff;
+  color: #4959a8;
+}
+
+.sales-status-quote {
+  background: #fff5dd;
+  color: #956100;
+}
+
+.sales-status-accepted {
+  background: #e9f8ef;
+  color: #257243;
+}
+
+/* Arbeidsflyt */
+.sales-workflow {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0;
+  padding: 18px 20px;
+  border: 1px solid #d7e4ea;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 10px 28px rgba(16, 33, 43, 0.05);
+}
+
+.sales-workflow-step {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  color: #8a9aa3;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.sales-workflow-step:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 32px;
+  right: 10px;
+  height: 2px;
+  background: #dce7eb;
+  transform: translateY(-50%);
+  z-index: 0;
+}
+
+.sales-workflow-dot {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 25px;
+  height: 25px;
+  flex: 0 0 25px;
+  border: 2px solid #cbd9df;
+  border-radius: 999px;
+  background: #fff;
+}
+
+.sales-workflow-step > span:last-child {
+  position: relative;
+  z-index: 1;
+  padding-right: 8px;
+  background: #fff;
+}
+
+.sales-workflow-done {
+  color: #257243;
+}
+
+.sales-workflow-done .sales-workflow-dot {
+  border-color: #48a96a;
+  background: #e9f8ef;
+  color: #257243;
+}
+
+.sales-workflow-done:not(:last-child)::after {
+  background: #8bcda2;
+}
+
+.sales-workflow-active {
+  color: #087b82;
+}
+
+.sales-workflow-active .sales-workflow-dot {
+  border-color: #0e9aa3;
+  background: #0e9aa3;
+  box-shadow: inset 0 0 0 5px #e6f9fa;
+}
+
+/* Skjema */
+.sales-form-panel {
+  padding: 22px;
+}
+
+.sales-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px 16px;
+}
+
+.sales-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sales-field > span {
+  color: #344c59;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.sales-field-full {
+  grid-column: 1 / -1;
+}
+
+.sales-field input,
+.sales-field textarea,
+.sales-field select {
+  width: 100%;
+  border: 1px solid #cfdee4;
+  border-radius: 15px;
+  background: #fff;
+  color: #10212b;
+  outline: none;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.sales-field input,
+.sales-field select {
+  min-height: 49px;
+  padding: 0 14px;
+}
+
+.sales-field textarea {
+  min-height: 116px;
+  padding: 14px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.sales-field input:focus,
+.sales-field textarea:focus,
+.sales-field select:focus {
+  border-color: #1bb7c0;
+  box-shadow: 0 0 0 4px rgba(28, 199, 207, 0.13);
+}
+
+.sales-form-preview {
+  margin-top: 22px;
+  padding: 18px;
+  border: 1px dashed #bfd8e0;
+  border-radius: 18px;
+  background: #f8fbfc;
+}
+
+.sales-form-preview h2,
+.sales-detail-card h2,
+.sales-next-card h2 {
+  margin: 0 0 14px;
+  font-size: 18px;
+  letter-spacing: -0.02em;
+}
+
+.sales-preview-lines {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 18px;
+}
+
+.sales-preview-lines span,
+.sales-detail-lines span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  color: #344c59;
+  font-size: 14px;
+}
+
+.sales-preview-lines svg,
+.sales-detail-lines svg {
+  flex: 0 0 auto;
+  color: #0e9aa3;
+}
+
+.sales-form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+/* Detaljer */
+.sales-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.sales-detail-card,
+.sales-next-card {
+  padding: 22px;
+  border-radius: 20px;
+}
+
+.sales-detail-card-wide {
+  grid-column: 1 / -1;
+}
+
+.sales-detail-lines {
+  display: grid;
+  gap: 12px;
+}
+
+.sales-detail-card p,
+.sales-next-card p {
+  margin: 0;
+  color: #526975;
+  line-height: 1.65;
+}
+
+.sales-next-card {
+  border-color: rgba(28, 199, 207, 0.35);
+  background: linear-gradient(135deg, rgba(230, 249, 250, 0.96), rgba(255, 255, 255, 0.96));
+}
+
+.sales-next-card .sales-next-label {
+  color: #0e9aa3;
+}
+
+/* Tilbud */
+.sales-offer-lines {
+  display: grid;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.sales-offer-line {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) minmax(150px, 0.32fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid #e1edf1;
+  border-radius: 17px;
+  background: #f8fbfc;
+}
+
+.sales-offer-price-guidance {
+  margin: 0 0 4px;
+  color: #526975;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.sales-offer-amount-field {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.sales-offer-amount-field > span {
+  color: #344c59;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.sales-offer-amount-field > input {
+  width: 100%;
+  min-height: 49px;
+  padding: 0 14px;
+  border: 1px solid #cfdee4;
+  border-radius: 15px;
+  background: #fff;
+  color: #10212b;
+  outline: none;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.sales-offer-amount-field > input:focus {
+  border-color: #1bb7c0;
+  box-shadow: 0 0 0 4px rgba(28, 199, 207, 0.13);
+}
+
+.sales-offer-line-number {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  background: #e6f9fa;
+  color: #087b82;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.sales-offer-total {
+  display: grid;
+  grid-template-columns: 1fr minmax(130px, auto);
+  align-items: center;
+  gap: 18px;
+  margin-top: 8px;
+  color: #344c59;
+}
+
+.sales-offer-total strong {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.sales-offer-total-muted {
+  color: #526975;
+}
+
+.sales-offer-total-grand {
+  color: #10212b;
+}
+
+.sales-option-image-preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.sales-option-image-preview img {
+  width: 92px;
+  height: 92px;
+  object-fit: cover;
+  border: 1px solid #d7e4ea;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.sales-customer-price-line {
+  padding: 7px 0;
+  border-bottom: 1px solid #edf4f6;
+}
+
+.sales-customer-price-line:last-child {
+  border-bottom: 0;
+}
+
+.sales-customer-line-media {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.sales-customer-line-media img {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border: 1px solid #d7e4ea;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.sales-option-grid {
+  display: grid;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.sales-option-card {
+  overflow: hidden;
+}
+
+.sales-option-card img {
+  max-width: 96px;
+  max-height: 96px;
+  object-fit: cover;
+}
+
+.sales-option-card h3 {
+  color: #10212b;
+  font-size: 16px;
+  line-height: 1.3;
+}
+
+.sales-option-card p {
+  margin: 4px 0 0;
+}
+
+.sales-acceptance-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 4px;
+  color: #344c59;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.sales-acceptance-check input {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  margin-top: 1px;
+}
+
+.sales-photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.sales-photo-card {
+  overflow: hidden;
+  border: 1px solid #d7e4ea;
+  border-radius: 16px;
+  background: #fff;
+}
+
+.sales-photo-card img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+
+.sales-photo-card button {
+  width: calc(100% - 16px);
+  margin: 8px;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .sales-detail-hero,
+  .sales-hero {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .sales-hero-actions {
+    justify-content: stretch;
+  }
+
+  .sales-hero-actions .sales-primary-button,
+  .sales-hero-actions .sales-secondary-button {
+    flex: 1 1 220px;
+  }
+
+  .sales-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sales-request-card {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 16px;
+  }
+
+  .sales-request-next {
+    grid-column: 1 / -1;
+    padding-top: 14px;
+    border-top: 1px solid #edf2f4;
+  }
+
+  .sales-offer-line {
+    grid-template-columns: 42px minmax(0, 1fr);
+  }
+
+  .sales-offer-line > .sales-offer-amount-field,
+  .sales-offer-line > button {
+    grid-column: 2;
+  }
+}
+
+@media (max-width: 760px) {
+  .sales-shell {
+    padding: 16px 14px 42px;
+  }
+
+  .sales-header {
+    margin-bottom: 28px;
+  }
+
+  .sales-brand-compact .sales-brand-copy {
+    display: none;
+  }
+
+  .sales-title {
+    font-size: clamp(34px, 10vw, 44px);
+  }
+
+  .sales-primary-button,
+  .sales-secondary-button,
+  .sales-back-button {
+    width: 100%;
+  }
+
+  .sales-summary-grid,
+  .sales-form-grid,
+  .sales-detail-grid,
+  .sales-preview-lines {
+    grid-template-columns: 1fr;
+  }
+
+  .sales-field-full,
+  .sales-detail-card-wide {
+    grid-column: auto;
+  }
+
+  .sales-form-actions {
+    align-items: stretch;
+    flex-direction: column-reverse;
+  }
+
+  .sales-workflow {
+    grid-template-columns: 1fr;
+    gap: 0;
+    padding: 14px 18px;
+  }
+
+  .sales-workflow-step {
+    min-height: 42px;
+  }
+
+  .sales-workflow-step:not(:last-child)::after {
+    top: 31px;
+    bottom: -11px;
+    left: 11px;
+    right: auto;
+    width: 2px;
+    height: auto;
+    transform: none;
+  }
+
+  .sales-workflow-step > span:last-child {
+    padding: 4px 8px 4px 0;
+  }
+
+  .sales-offer-total {
+    grid-template-columns: 1fr auto;
+  }
+}
+
+@media (max-width: 520px) {
+  .sales-shell {
+    padding: 14px 10px 34px;
+  }
+
+  .sales-brand-mark {
+    width: 40px;
+    height: 40px;
+    flex-basis: 40px;
+    border-radius: 13px;
+  }
+
+  .sales-summary-card,
+  .sales-detail-card,
+  .sales-next-card,
+  .sales-form-panel {
+    border-radius: 18px;
+    padding: 16px;
+  }
+
+  .sales-panel {
+    border-radius: 18px;
+  }
+
+  .sales-panel-header,
+  .sales-request-card {
+    padding: 16px;
+  }
+
+  .sales-request-title {
+    white-space: normal;
+  }
+
+  .sales-customer-price-line,
+  .sales-detail-lines > div {
+    grid-template-columns: 24px 1fr !important;
+  }
+
+  .sales-customer-price-line strong,
+  .sales-detail-lines > div strong {
+    grid-column: 2;
+    text-align: left !important;
+  }
+
+  .sales-option-card {
+    grid-template-columns: 74px 1fr !important;
+  }
+
+  .sales-option-card img {
+    width: 74px !important;
+    height: 74px !important;
+  }
+}
+
+/* FASE 18.19C – firmaprofil i digitalt tilbud */
+.sales-company-meta {
+  display: block;
+  margin-top: 5px;
+  color: #607985;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.sales-company-link {
+  display: inline-block;
+  margin-top: 7px;
+  color: #0799a8;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.sales-company-link:hover {
+  text-decoration: underline;
+}
+
+/* FASE 19.1 – premium digitalt kundetilbud */
+.sales-customer-offer-app {
+  background:
+    radial-gradient(circle at 15% 0%, rgba(28, 199, 207, 0.18), transparent 32rem),
+    radial-gradient(circle at 85% 12%, rgba(14, 154, 163, 0.12), transparent 28rem),
+    linear-gradient(180deg, #f8fbfc 0%, #edf4f6 100%);
+}
+
+.sales-customer-shell {
+  width: min(100%, 1120px);
+}
+
+.sales-customer-header {
+  margin-bottom: 22px;
+}
+
+.sales-customer-main {
+  gap: 18px;
+}
+
+.sales-customer-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 330px);
+  gap: 20px;
+  align-items: stretch;
+  padding: 32px;
+  border: 1px solid #d7e4ea;
+  border-radius: 28px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(247, 252, 253, 0.96));
+  box-shadow: 0 22px 58px rgba(16, 42, 55, 0.09);
+}
+
+.sales-customer-hero-content {
+  min-width: 0;
+}
+
+.sales-customer-title {
+  max-width: 800px;
+  overflow-wrap: anywhere;
+  font-size: clamp(34px, 5.6vw, 62px);
+}
+
+.sales-customer-lead {
+  max-width: 760px;
+}
+
+.sales-customer-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 26px;
+}
+
+.sales-customer-meta-grid div {
+  min-width: 0;
+  padding: 13px 14px;
+  border: 1px solid #deeaef;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.sales-customer-meta-grid span,
+.sales-customer-company-label {
+  display: block;
+  margin-bottom: 6px;
+  color: #7a8f9a;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.sales-customer-meta-grid strong {
+  display: block;
+  color: #10212b;
+  font-size: 13px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.sales-customer-company-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  min-width: 0;
+  padding: 22px;
+  border: 1px solid #d2e2e8;
+  border-radius: 22px;
+  background: #ffffff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.sales-customer-company-logo {
+  display: block;
+  max-width: 210px;
+  max-height: 72px;
+  object-fit: contain;
+  object-position: left center;
+  margin-bottom: 18px;
+}
+
+.sales-customer-company-name {
+  display: block;
+  color: #10212b;
+  font-size: 18px;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.sales-customer-company-label {
+  margin-top: 4px;
+}
+
+.sales-customer-company-details {
+  display: grid;
+  gap: 6px;
+  margin-top: 14px;
+  color: #607985;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.sales-customer-company-details a {
+  width: fit-content;
+  font-size: 13px;
+}
+
+.sales-customer-offer-stack {
+  display: grid;
+  gap: 16px;
+}
+
+.sales-customer-section,
+.sales-customer-accept-card {
+  border: 1px solid #d7e4ea;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 16px 42px rgba(16, 42, 55, 0.07);
+}
+
+.sales-customer-section {
+  padding: 24px;
+}
+
+.sales-customer-intro-card {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.sales-customer-text-section {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.sales-section-kicker {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 14px;
+  background: #e6f9fa;
+  color: #087b82;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.sales-customer-text-section > .sales-section-kicker {
+  width: auto;
+  min-width: 38px;
+  padding: 0 10px;
+  white-space: nowrap;
+}
+
+.sales-customer-section h2,
+.sales-customer-accept-card h2 {
+  margin: 0 0 12px;
+  color: #10212b;
+  font-size: 22px;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+}
+
+.sales-customer-section p,
+.sales-customer-accept-card p {
+  margin: 0;
+  color: #526975;
+  line-height: 1.65;
+}
+
+.sales-customer-section-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.sales-customer-section-heading > div {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.sales-customer-section-heading h2 {
+  margin: 0;
+}
+
+.sales-customer-section-note {
+  max-width: 290px;
+  color: #7a8f9a;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.45;
+  text-align: right;
+}
+
+.sales-customer-lines {
+  display: grid;
+  gap: 12px;
+}
+
+.sales-customer-line-card {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) minmax(150px, auto);
+  gap: 14px;
+  align-items: start;
+  padding: 16px;
+  border: 1px solid #e1edf1;
+  border-radius: 18px;
+  background: #f8fbfc;
+}
+
+.sales-customer-line-number {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #0e9aa3;
+  font-size: 12px;
+  font-weight: 900;
+  box-shadow: inset 0 0 0 1px #d7e4ea;
+}
+
+.sales-customer-line-body {
+  min-width: 0;
+}
+
+.sales-customer-line-body h3 {
+  margin: 0;
+  color: #10212b;
+  font-size: 16px;
+  line-height: 1.45;
+  letter-spacing: -0.01em;
+}
+
+.sales-customer-line-media {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.sales-customer-line-media img {
+  width: 84px;
+  height: 84px;
+  object-fit: cover;
+  border: 1px solid #d7e4ea;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.sales-customer-line-price {
+  display: grid;
+  gap: 2px;
+  justify-items: end;
+  color: #10212b;
+  font-size: 16px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.sales-customer-line-price span {
+  color: #7a8f9a;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.sales-customer-total-card {
+  display: grid;
+  gap: 8px;
+  width: min(100%, 460px);
+  margin: 22px 0 0 auto;
+  padding-top: 16px;
+  border-top: 1px solid #d7e4ea;
+}
+
+.sales-customer-total-row {
+  display: grid;
+  grid-template-columns: 1fr minmax(130px, auto);
+  gap: 20px;
+  align-items: center;
+  color: #344c59;
+}
+
+.sales-customer-total-row strong {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.sales-customer-total-muted {
+  color: #667985;
+}
+
+.sales-customer-total-grand {
+  margin-top: 4px;
+  padding: 17px 18px;
+  border: 1px solid #8be4e8;
+  border-radius: 17px;
+  background: linear-gradient(135deg, #e9fafb, #f6ffff);
+  color: #10212b;
+}
+
+.sales-customer-total-grand strong {
+  font-size: 24px;
+  letter-spacing: -0.03em;
+}
+
+.sales-customer-option-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.sales-customer-option-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid #d7e4ea;
+  border-radius: 20px;
+  background: #ffffff;
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background 160ms ease;
+}
+
+.sales-customer-option-card-with-image {
+  grid-template-columns: 108px minmax(0, 1fr);
+}
+
+.sales-customer-option-card:hover {
+  transform: translateY(-1px);
+  border-color: #b9d5de;
+  box-shadow: 0 14px 30px rgba(16, 42, 55, 0.08);
+}
+
+.sales-customer-option-card-selected {
+  border-color: #0e9aa3;
+  background: linear-gradient(135deg, #e9fafb, #ffffff);
+  box-shadow: 0 16px 34px rgba(14, 154, 163, 0.13);
+}
+
+.sales-customer-option-image {
+  width: 108px;
+  height: 108px;
+  object-fit: cover;
+  border: 1px solid #d7e4ea;
+  border-radius: 16px;
+  background: #fff;
+}
+
+.sales-customer-option-content {
+  min-width: 0;
+}
+
+.sales-customer-option-topline {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 10px;
+}
+
+.sales-customer-option-topline input {
+  width: 19px;
+  height: 19px;
+  flex: 0 0 auto;
+  accent-color: #0e9aa3;
+}
+
+.sales-customer-option-state {
+  display: inline-flex;
+  align-items: center;
+  min-height: 25px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: #edf4f6;
+  color: #607985;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.sales-customer-option-card-selected .sales-customer-option-state {
+  background: #0e9aa3;
+  color: #ffffff;
+}
+
+.sales-customer-option-card h3 {
+  margin: 0 0 6px;
+  color: #10212b;
+  font-size: 17px;
+  line-height: 1.3;
+}
+
+.sales-customer-option-card p {
+  margin: 0 0 10px;
+  color: #526975;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.sales-customer-option-price {
+  display: block;
+  margin-top: 12px;
+  color: #10212b;
+  font-size: 15px;
+}
+
+.sales-customer-accept-form {
+  margin: 0;
+}
+
+.sales-customer-accept-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 360px);
+  gap: 18px 24px;
+  padding: 26px;
+  border-color: rgba(28, 199, 207, 0.42);
+  background:
+    linear-gradient(135deg, rgba(230, 249, 250, 0.96), rgba(255, 255, 255, 0.98));
+}
+
+.sales-customer-accept-copy {
+  min-width: 0;
+}
+
+.sales-customer-accept-summary {
+  padding: 18px;
+  border: 1px solid #8be4e8;
+  border-radius: 18px;
+  background: #ffffff;
+}
+
+.sales-customer-accept-summary div {
+  display: grid;
+  gap: 4px;
+}
+
+.sales-customer-accept-summary span {
+  color: #607985;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.sales-customer-accept-summary strong {
+  color: #10212b;
+  font-size: 30px;
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+}
+
+.sales-customer-accept-summary p {
+  margin-top: 10px;
+  color: #607985;
+  font-size: 13px;
+}
+
+.sales-customer-selected-options {
+  grid-column: 1 / -1;
+  padding: 16px;
+  border: 1px dashed #9ddce1;
+  border-radius: 17px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.sales-customer-selected-options h3 {
+  margin: 0 0 10px;
+  font-size: 15px;
+}
+
+.sales-customer-selected-options > div {
+  display: grid;
+  gap: 8px;
+}
+
+.sales-customer-selected-options span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #344c59;
+  font-size: 14px;
+}
+
+.sales-customer-selected-options svg {
+  color: #0e9aa3;
+}
+
+.sales-customer-accept-fields {
+  grid-column: 1 / -1;
+  margin-top: 0;
+}
+
+.sales-customer-accept-button {
+  grid-column: 1 / -1;
+  width: fit-content;
+  min-width: 230px;
+}
+
+@media (max-width: 1100px) {
+  .sales-customer-hero,
+  .sales-customer-accept-card {
+    grid-template-columns: 1fr;
+  }
+
+  .sales-customer-meta-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .sales-customer-company-card {
+    max-width: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .sales-customer-hero,
+  .sales-customer-section,
+  .sales-customer-accept-card {
+    border-radius: 22px;
+    padding: 18px;
+  }
+
+  .sales-customer-meta-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sales-customer-option-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sales-customer-intro-card,
+  .sales-customer-text-section {
+    grid-template-columns: 1fr;
+  }
+
+  .sales-section-kicker {
+    width: fit-content;
+    min-width: 38px;
+  }
+
+  .sales-customer-section-heading {
+    display: grid;
+    gap: 8px;
+  }
+
+  .sales-customer-section-note {
+    max-width: none;
+    text-align: left;
+  }
+
+  .sales-customer-line-card {
+    grid-template-columns: 38px minmax(0, 1fr);
+  }
+
+  .sales-customer-line-price {
+    grid-column: 2;
+    justify-items: start;
+  }
+
+  .sales-customer-option-card-with-image {
+    grid-template-columns: 86px minmax(0, 1fr);
+  }
+
+  .sales-customer-option-image {
+    width: 86px;
+    height: 86px;
+    border-radius: 14px;
+  }
+
+  .sales-customer-total-card {
+    width: 100%;
+  }
+
+  .sales-customer-total-row {
+    grid-template-columns: 1fr auto;
+  }
+
+  .sales-customer-accept-button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 520px) {
+  .sales-customer-shell {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .sales-customer-title {
+    font-size: clamp(32px, 10vw, 42px);
+  }
+
+  .sales-customer-meta-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sales-customer-meta-grid div {
+    padding: 12px;
+  }
+
+  .sales-customer-line-card {
+    padding: 13px;
+  }
+
+  .sales-customer-line-media img {
+    width: 72px;
+    height: 72px;
+  }
+
+  .sales-customer-option-card,
+  .sales-customer-option-card-with-image {
+    grid-template-columns: 1fr !important;
+  }
+
+  .sales-customer-option-image {
+    width: 100% !important;
+    height: auto !important;
+    max-height: 180px;
+    object-fit: cover;
+  }
+
+  .sales-customer-accept-summary strong {
+    font-size: 26px;
+  }
+}
+
+/* FASE 22C – responsiv saksoversikt
+   Skiller saksinformasjon og handlinger i detaljhodet.
+   Bevarer eksisterende kundevisning og øvrige modulstiler.
+*/
+.sales-detail-hero {
+  grid-template-columns: minmax(0, 1fr);
+  align-items: stretch;
+  gap: 22px;
+}
+
+.sales-detail-hero > div:first-child {
+  min-width: 0;
+  width: 100%;
+}
+
+.sales-detail-hero .sales-title {
+  max-width: 920px;
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: auto;
+}
+
+.sales-detail-hero .sales-subtitle {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+.sales-detail-hero .sales-hero-actions {
+  width: 100%;
+  justify-content: flex-start;
+  padding-top: 18px;
+  border-top: 1px solid #e6eef2;
+}
+
+.sales-detail-hero .sales-hero-actions .sales-primary-button {
+  margin-left: auto;
+}
+
+@media (max-width: 900px) {
+  .sales-detail-hero {
+    gap: 18px;
+  }
+
+  .sales-detail-hero .sales-hero-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+  }
+
+  .sales-detail-hero .sales-hero-actions .sales-primary-button,
+  .sales-detail-hero .sales-hero-actions .sales-secondary-button {
+    width: 100%;
+    min-width: 0;
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 620px) {
+  .sales-detail-hero .sales-title {
+    font-size: clamp(32px, 11vw, 44px);
+    line-height: 1.04;
+  }
+
+  .sales-detail-hero .sales-subtitle {
+    margin-top: 12px;
+    font-size: 15px;
+    line-height: 1.55;
+  }
+
+  .sales-detail-hero .sales-hero-actions {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding-top: 16px;
+  }
+}
+
+
+/* FASE 26B.3 – hovedposter og vedlegg i kundetilbud */
+.sales-customer-main-posts {
+  display: grid;
+  gap: 16px;
+}
+
+.sales-customer-main-post {
+  overflow: hidden;
+  border: 1px solid #d7e4ea;
+  border-radius: 21px;
+  background: #fbfdfe;
+}
+
+.sales-customer-main-post-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 17px 18px;
+  border-bottom: 1px solid #e1edf1;
+  background: linear-gradient(135deg, #f2fbfc, #ffffff);
+}
+
+.sales-customer-main-post-heading > div:first-child {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.sales-customer-main-post-heading h3 {
+  margin: 0;
+  color: #10212b;
+  font-size: 20px;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+}
+
+.sales-customer-main-post-number {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  border-radius: 13px;
+  background: #0e9aa3;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.sales-customer-main-post-sum {
+  display: grid;
+  justify-items: end;
+  gap: 2px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.sales-customer-main-post-sum span,
+.sales-customer-main-post-sum small {
+  color: #71858f;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.sales-customer-main-post-sum strong {
+  color: #10212b;
+  font-size: 18px;
+}
+
+.sales-customer-main-post > .sales-customer-lines {
+  gap: 0;
+}
+
+.sales-customer-main-post .sales-customer-line-card {
+  border: 0;
+  border-bottom: 1px solid #e7eff2;
+  border-radius: 0;
+  background: #ffffff;
+}
+
+.sales-customer-main-post .sales-customer-line-card:last-child {
+  border-bottom: 0;
+}
+
+.sales-customer-main-post-options {
+  padding: 16px 18px 18px;
+  border-top: 1px solid #dbe8ed;
+  background: #f8fbfc;
+}
+
+.sales-customer-main-post-options-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.sales-customer-main-post-options-heading strong {
+  color: #10212b;
+  font-size: 14px;
+}
+
+.sales-customer-main-post-options-heading span {
+  color: #71858f;
+  font-size: 12px;
+  text-align: right;
+}
+
+.sales-customer-media-links {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+
+.sales-customer-media-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  width: fit-content;
+  max-width: 100%;
+  font-size: 13px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.sales-customer-option-content .sales-customer-media-links {
+  margin-top: 8px;
+}
+
+@media (max-width: 760px) {
+  .sales-customer-main-post-heading {
+    align-items: flex-start;
+  }
+
+  .sales-customer-main-post-sum {
+    white-space: normal;
+  }
+
+  .sales-customer-main-post-options-heading {
+    display: grid;
+    gap: 4px;
+  }
+
+  .sales-customer-main-post-options-heading span {
+    text-align: left;
+  }
+}
+
+@media (max-width: 520px) {
+  .sales-customer-main-post-heading {
+    display: grid;
+    gap: 12px;
+  }
+
+  .sales-customer-main-post-sum {
+    justify-items: start;
+    text-align: left;
+  }
+
+  .sales-customer-main-post-heading h3 {
+    font-size: 18px;
+  }
+}
+
+/* FASE 26B.5 – opsjonstype og alternativ vare */
+.sales-offer-amount-field small,
+.sales-field small {
+  color: #71858f;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.sales-customer-line-card-replaced {
+  background: #f6fafb !important;
+}
+
+.sales-customer-line-card-replaced .sales-customer-line-body h3 {
+  color: #526975;
+}
+
+.sales-customer-line-replaced-note {
+  margin-top: 7px !important;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: #eef6f8;
+  color: #526975 !important;
+  font-size: 12px;
+  line-height: 1.45 !important;
+}
+
+.sales-customer-line-price-replaced {
+  color: #607985;
+  font-size: 14px;
+}
+
+.sales-customer-option-type {
+  display: inline-flex;
+  width: fit-content;
+  margin-bottom: 8px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: #eef6f8;
+  color: #0b8790;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.sales-customer-option-replacement {
+  margin-bottom: 8px !important;
+  color: #607985 !important;
+  font-size: 12px !important;
+  line-height: 1.5 !important;
+}
+/* FASE 26B.5.5 – mobil tilbudsbygger
+   - Hindrer iOS Safari auto-zoom ved fokus i input/select/textarea.
+   - Hindrer horisontal forskyvning i sales-visninger på smale skjermer.
+   - Fast Lagre tilbud-knapp i tilbudsbyggeren på mobil.
+*/
+.sales-offer-mobile-save {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 9000;
+  display: block;
+  width: min(280px, calc(100vw - 48px));
+  padding: 10px;
+  border: 1px solid rgba(207, 222, 228, 0.95);
+  border-radius: 18px;
+  background: rgba(248, 251, 252, 0.96);
+  box-shadow: 0 14px 34px rgba(16, 33, 43, 0.16);
+  backdrop-filter: blur(10px);
+}
+
+.sales-offer-mobile-save .sales-primary-button {
+  width: 100%;
+  min-height: 50px;
+}
+
+.sales-offer-builder-app .sales-shell {
+  padding-bottom: 96px;
+}
+
+@media (max-width: 760px) {
+  html,
+  body,
+  #root,
+  .sales-app {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .sales-shell,
+  .sales-main,
+  .sales-form-panel,
+  .sales-panel,
+  .sales-detail-hero,
+  .sales-detail-card,
+  .sales-next-card,
+  .sales-request-card,
+  .sales-offer-line {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .sales-app input,
+  .sales-app select,
+  .sales-app textarea {
+    font-size: 16px;
+  }
+
+  .sales-primary-button,
+  .sales-secondary-button,
+  .sales-back-button {
+    max-width: 100%;
+    white-space: normal;
+  }
+
+  .sales-offer-builder-app .sales-shell {
+    padding-bottom: calc(112px + env(safe-area-inset-bottom));
+  }
+
+  .sales-offer-mobile-save {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9000;
+    display: block;
+    padding:
+      10px
+      max(12px, env(safe-area-inset-right))
+      calc(10px + env(safe-area-inset-bottom))
+      max(12px, env(safe-area-inset-left));
+    border-top: 1px solid rgba(207, 222, 228, 0.95);
+    background: rgba(248, 251, 252, 0.96);
+    box-shadow: 0 -12px 30px rgba(16, 33, 43, 0.10);
+    backdrop-filter: blur(10px);
+  }
+
+  .sales-offer-mobile-save .sales-primary-button {
+    width: 100%;
+    min-height: 52px;
+  }
+}
+/* FASE 26B.5.6 – siste mobilpolering av tilbudsbygger
+   Gjør underposter/opsjoner enkolonnet på mobil slik at alle felter får full bredde.
+   Gjelder kun tilbudsbyggeren; kundevisning og desktop påvirkes ikke.
+*/
+@media (max-width: 760px) {
+  .sales-offer-builder-app .sales-offer-line {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+    padding: 14px;
+  }
+
+  .sales-offer-builder-app .sales-offer-line > * {
+    grid-column: 1 !important;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .sales-offer-builder-app .sales-offer-line-number {
+    justify-self: start;
+    width: 38px;
+    height: 38px;
+    margin-bottom: 2px;
+  }
+
+  .sales-offer-builder-app .sales-offer-line input,
+  .sales-offer-builder-app .sales-offer-line select,
+  .sales-offer-builder-app .sales-offer-line textarea,
+  .sales-offer-builder-app .sales-offer-line button,
+  .sales-offer-builder-app .sales-offer-line .sales-offer-amount-field {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .sales-offer-builder-app .sales-offer-line button {
+    justify-content: center;
+  }
+
+  .sales-offer-builder-app .sales-offer-line select {
+    text-overflow: ellipsis;
+  }
+
+  .sales-offer-builder-app .sales-option-image-preview {
+    align-items: stretch;
+  }
+}
+
+@media (max-width: 520px) {
+  .sales-offer-builder-app .sales-form-panel {
+    padding: 14px;
+  }
+
+  .sales-offer-builder-app .sales-offer-line {
+    border-radius: 16px;
+    padding: 12px;
+  }
+
+  .sales-offer-builder-app .sales-offer-line-number {
+    width: 36px;
+    height: 36px;
+  }
+}
+/* FASE 26C.1 – fullbredde og mer kompakt mobilvisning
+   Kun mobil. Bryter sales-modulen kontrollert ut av eventuell bredde/padding
+   i hovedappens parent-container, slik at skjermen utnyttes bedre.
+*/
+@media (max-width: 760px) {
+  .sales-app {
+    width: 100vw;
+    max-width: 100vw;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+  }
+
+  .sales-shell {
+    width: 100%;
+    max-width: none;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .sales-main {
+    gap: 16px;
+  }
+
+  .sales-form-panel,
+  .sales-detail-card,
+  .sales-next-card,
+  .sales-summary-card {
+    width: 100%;
+    max-width: none;
+  }
+
+  .sales-offer-builder-app .sales-form-panel {
+    padding: 10px;
+  }
+
+  .sales-offer-builder-app .sales-offer-line {
+    padding: 10px;
+    gap: 8px;
+  }
+
+  .sales-offer-builder-app .sales-offer-lines {
+    gap: 10px;
+  }
+
+  .sales-offer-builder-app .sales-offer-line-number {
+    width: 34px;
+    height: 34px;
+    margin-bottom: 0;
+  }
+
+  .sales-offer-mobile-save {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+}
+
+@media (max-width: 430px) {
+  .sales-shell {
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+
+  .sales-offer-builder-app .sales-form-panel {
+    padding: 8px;
+  }
+
+  .sales-offer-builder-app .sales-offer-line {
+    padding: 8px;
+  }
+
+  .sales-offer-mobile-save {
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+}
+/* FASE 26C.2 – behold mobilbredden gjennom nestede tilbudsnivåer
+   Kun mobil. Reduserer akkumulert sidepadding fra skjema -> hovedpost ->
+   underpost/opsjon uten å endre desktop eller kundevisning.
+*/
+@media (max-width: 760px) {
+  .sales-offer-builder-app .sales-field-full {
+    width: 100%;
+    min-width: 0;
+  }
+
+  /* Hovedpostene er section-elementene som ligger direkte i gridet
+     under "Arbeider og priser". */
+  .sales-offer-builder-app
+    .sales-field-full
+    > div
+    > section.sales-form-preview {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    padding: 8px;
+    border-radius: 14px;
+  }
+
+  /* Gjenvinn litt av bredden som ellers forsvinner for hvert nestede nivå. */
+  .sales-offer-builder-app
+    .sales-field-full
+    > div
+    > section.sales-form-preview
+    .sales-offer-lines {
+    width: calc(100% + 8px);
+    max-width: none;
+    margin-left: -4px;
+    margin-right: -4px;
+  }
+
+  .sales-offer-builder-app
+    .sales-field-full
+    > div
+    > section.sales-form-preview
+    .sales-offer-line {
+    width: 100%;
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  /* Vedlegg/administrasjon kan selv bruke sales-form-preview.
+     Hold disse kompakte slik at de ikke snevrer inn mobilen videre. */
+  .sales-offer-builder-app
+    .sales-field-full
+    > div
+    > section.sales-form-preview
+    .sales-form-preview {
+    padding: 8px;
+    border-radius: 12px;
+  }
+
+  .sales-offer-builder-app
+    .sales-field-full
+    > div
+    > section.sales-form-preview
+    input,
+  .sales-offer-builder-app
+    .sales-field-full
+    > div
+    > section.sales-form-preview
+    select,
+  .sales-offer-builder-app
+    .sales-field-full
+    > div
+    > section.sales-form-preview
+    textarea {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 430px) {
+  .sales-offer-builder-app
+    .sales-field-full
+    > div
+    > section.sales-form-preview {
+    padding: 6px;
+  }
+
+  .sales-offer-builder-app
+    .sales-field-full
+    > div
+    > section.sales-form-preview
+    .sales-offer-lines {
+    width: calc(100% + 8px);
+    margin-left: -4px;
+    margin-right: -4px;
+  }
+}
+/* FASE 26C.2.1 – rett mobil tilbudsoversikt etter lagring
+   Den eldre generelle regelen .sales-detail-lines > div treffer også
+   containeren som holder alle tilbudslinjene. Disse klassene isolerer
+   tilbudsoversikten og hindrer at radene legges oppå hverandre på mobil.
+*/
+@media (max-width: 760px) {
+  .sales-detail-lines > .sales-offer-detail-lines-list {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    width: 100%;
+    max-width: 100% !important;
+    gap: 10px !important;
+  }
+
+  .sales-detail-lines > .sales-offer-detail-lines-list > div {
+    display: grid !important;
+    grid-template-columns: 24px minmax(0, 1fr) !important;
+    gap: 4px 10px !important;
+    align-items: start !important;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .sales-offer-detail-lines-list > div > svg {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    margin-top: 2px;
+  }
+
+  .sales-offer-detail-lines-list > div > span {
+    grid-column: 2 !important;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .sales-detail-lines
+    > .sales-offer-detail-lines-list
+    > div
+    > strong {
+    grid-column: 2 !important;
+    text-align: left !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+  }
+
+  .sales-detail-lines > .sales-offer-detail-total {
+    display: block !important;
+    width: 100%;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+  }
+
+  .sales-offer-detail-total > div {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    gap: 12px !important;
+    width: 100%;
+  }
+
+  .sales-detail-lines > .sales-offer-detail-total strong {
+    grid-column: auto !important;
+    text-align: right !important;
+    white-space: nowrap !important;
+  }
+}
+
+/* Grouped internal offer rows need their own mobile layout; the old flat-row
+   rules must not place both number and price in the same implicit grid column. */
+@media(max-width:760px){
+ .sales-internal-offer-group{min-width:0;max-width:100%}
+ .sales-internal-offer-group > div:first-child{flex-wrap:wrap}
+ .sales-internal-offer-group > div:first-child > div{max-width:100%;min-width:0;white-space:normal!important}
+ .sales-internal-offer-row{grid-template-columns:46px minmax(0,1fr)!important;gap:4px 8px!important}
+ .sales-detail-lines .sales-internal-offer-row > strong:first-child{grid-column:1;grid-row:1;text-align:left!important;white-space:normal!important}
+ .sales-internal-offer-row > span{grid-column:2;grid-row:1;display:block;overflow-wrap:anywhere;line-height:1.5}
+ .sales-detail-lines .sales-internal-offer-row > strong:last-child{grid-column:2;grid-row:2;text-align:left!important;white-space:normal!important;overflow-wrap:anywhere}
+ .sales-internal-offer-option{grid-template-columns:minmax(0,1fr)!important}
+ .sales-detail-lines .sales-internal-offer-option > strong{grid-column:1!important;white-space:normal!important;overflow-wrap:anywhere;text-align:left!important}
+ .sales-internal-offer-option > div{grid-column:1!important;overflow-wrap:anywhere}
+ .sales-customer-line-body,.sales-customer-option-content{overflow-wrap:anywhere}
+ .sales-customer-line-price{white-space:normal;overflow-wrap:anywhere;min-width:0}
+ .sales-mobile-customer-preview{margin:0;padding:0;border:0;max-width:none;max-height:none;width:100vw;position:fixed;inset:0;z-index:31000;background:white;display:flex;flex-direction:column;height:100dvh}
+ .sales-mobile-customer-preview header{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px max(10px,env(safe-area-inset-right));padding-top:calc(8px + env(safe-area-inset-top));border-bottom:1px solid #d7e4ea;background:#f8fbfc}
+ .sales-mobile-customer-preview header button{display:flex;gap:6px;align-items:center;min-height:40px;border:1px solid #cbd5e1;border-radius:10px;background:white;color:#10212b;padding:6px 10px}
+ .sales-mobile-customer-preview header span{font-size:11px;color:#64748b}
+ .sales-mobile-customer-preview iframe{flex:1;min-height:0;width:100%;border:0}
+}
+@media print{.sales-mobile-customer-preview{display:none!important}}
+
+.sales-expandable-offer-group > summary{list-style:none;cursor:pointer}
+.sales-expandable-offer-group > summary::-webkit-details-marker{display:none}
+.sales-offer-group-toggle{display:block!important;width:fit-content;margin:8px 16px;padding:7px 12px;border:1px solid #bdd8df;border-radius:9px;background:#f2fafb;color:#0f7f87!important;font-size:13px!important;font-weight:750}
+.sales-expandable-offer-group .sales-group-close{display:none}
+.sales-expandable-offer-group[open] .sales-group-open{display:none}
+.sales-expandable-offer-group[open] .sales-group-close{display:inline}
+.sales-expandable-offer-group > summary:focus-visible{outline:2px solid #0e9aa3;outline-offset:2px}
+@media(max-width:760px){
+ .sales-internal-offer-group > summary > div:first-child{flex-wrap:wrap}
+ .sales-internal-offer-group > summary > div:first-child > div{max-width:100%;min-width:0;white-space:normal!important}
+ .sales-detail-lines .sales-internal-offer-group > summary strong{grid-column:auto;overflow-wrap:anywhere}
+}
+@media print{.sales-expandable-offer-group > :not(summary){display:block!important}.sales-offer-group-toggle{display:none!important}}
+
+@media(max-width:760px){.sales-customer-offer-app,.sales-app:has(.sales-offer-detail-lines-list){padding-bottom:calc(96px + env(safe-area-inset-bottom))}}
+
+/* Internal overview/case only. Editors and public customer/PDF layouts keep their rules. */
+section.sales-workspace-intro { padding: 12px 18px; margin-bottom: 8px; }
+.sales-workspace-intro > h2 { font-size: 19px; margin: 0 0 5px; }
+.sales-workspace-intro > .note { margin: 0; line-height: 1.4; font-size: 14px; }
+.sales-module-actions { padding-top: 0 !important; }
+.sales-overview-app .sales-shell, .sales-case-app .sales-shell { padding-top: 8px; }
+.sales-overview-app .sales-header, .sales-case-app .sales-header {
+  position: static; min-height: 44px; margin-bottom: 12px;
+  padding: 0; background: transparent; border: 0; box-shadow: none;
+}
+.sales-overview-app .sales-brand { display: none; }
+.sales-overview-app .sales-header { display: none; }
+.sales-overview-app .sales-main, .sales-case-app .sales-main { gap: 14px; }
+.sales-overview-app .sales-title, .sales-case-app .sales-title { font-size: clamp(27px, 3.2vw, 38px); letter-spacing: -.025em; }
+.sales-overview-app .sales-hero, .sales-case-app .sales-detail-hero { gap: 12px; padding: 16px 20px; border-radius: 20px; }
+.sales-overview-app .sales-subtitle { margin-top: 7px; font-size: 14px; line-height: 1.45; }
+.sales-overview-app section[aria-label="Søk og filtrering"] { padding: 16px 20px; margin-bottom: 0 !important; }
+.sales-status-overview > button { flex: 1 1 calc(25% - 8px); min-height: 48px !important; border-radius: 13px !important; justify-content: space-between; }
+.sales-status-overview > button[aria-selected="false"] { background: #eff8fc !important; color: #17313a !important; border-color: #c7e0ea !important; }
+.sales-status-overview > .sales-status-tile-follow-up[aria-selected="false"] { background: #fff5e7 !important; border-color: #f2d3a6 !important; }
+.sales-status-overview > .sales-status-tile-accepted[aria-selected="false"] { background: #eaf8ef !important; border-color: #bde0c9 !important; }
+.sales-status-overview > .sales-status-tile-declined[aria-selected="false"] { background: #fff0ee !important; border-color: #efccc6 !important; }
+.sales-status-overview > .sales-status-tile-archive[aria-selected="false"] { background: #f3f0fa !important; border-color: #d9d0eb !important; }
+.sales-status-overview > button[aria-selected="true"] { background: #0f5265 !important; color: white !important; border-color: #0f5265 !important; }
+.sales-case-app .sales-detail-hero .sales-hero-actions { padding-top: 12px; }
+.sales-case-app .sales-detail-hero .sales-subtitle { margin-top: 8px; }
+.sales-case-app .sales-detail-grid { gap: 12px; }
+.sales-case-app .sales-detail-card { padding: 14px 18px; border-radius: 18px; }
+.sales-case-app .sales-detail-card h2 { margin-top: 0; margin-bottom: 8px; }
+.sales-case-app .sales-detail-lines { gap: 6px; }
+.sales-case-app .sales-note-empty { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.sales-case-app .sales-note-empty h2, .sales-case-app .sales-note-empty p { margin: 0; }
+.sales-case-app .sales-next-card { border-radius: 20px; }
+@media (max-width: 620px) {
+  section.sales-workspace-intro { padding: 10px 12px; }
+  .sales-overview-app .sales-shell, .sales-case-app .sales-shell { padding-left: 8px; padding-right: 8px; }
+  .sales-overview-app .sales-hero, .sales-case-app .sales-detail-hero,
+  .sales-overview-app section[aria-label="Søk og filtrering"] { padding: 13px; }
+  .sales-status-overview > button { flex-basis: calc(50% - 8px); padding: 8px 10px !important; }
+  .sales-case-app .sales-detail-hero .sales-hero-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sales-case-app .sales-hero-actions > .sales-primary-button { grid-column: 1 / -1; }
+  .sales-case-app .sales-brand-copy { display: none; }
+}
+.sales-overview-app .sales-main, .sales-case-app .sales-main { padding: 0; margin: 0; max-width: none; }
+.sales-overview-app .sales-main > section, .sales-case-app .sales-main > section { margin: 0; }
+@media (max-width: 620px) {
+  .sales-overview-app .sales-title { font-size: 24px; }
+  .sales-overview-app main.sales-main > .sales-panel {
+    border: 1px solid #d7e4ea !important; border-radius: 18px !important;
+    background: rgba(255,255,255,.94) !important; padding: 12px !important;
+  }
+  .sales-overview-app .sales-panel-header { padding: 8px 0 12px; }
+}
+/* The overview/case already has its own title and instructions. Keep the intro for editors. */
+section.sales-workspace-intro:has(+ [data-sales-resume-workspace] .sales-overview-app),
+section.sales-workspace-intro:has(+ [data-sales-resume-workspace] .sales-case-app) { display: none; }
+.sales-status-overview > button { min-width: 0; }
+@media (max-width: 620px) {
+  .sales-status-overview > button { font-size: 14px !important; gap: 4px !important; padding: 8px !important; }
+  .sales-status-overview > button > span { min-width: 20px !important; padding: 0 4px !important; flex-shrink: 0; }
+  .sales-overview-app [aria-label="Tilbudstype"] > button { font-size: 14px !important; padding: 7px 10px !important; }
+}
+
+/* Same creation actions in the overview hero; other workspaces keep the existing shortcut. */
+.sales-module-actions:has(~ .sales-overview-app) { display: none !important; }
+.sales-create-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.sales-create-actions > button { min-height: 48px; }
+@media (max-width: 825px) {
+  .sales-create-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; }
+  .sales-create-actions > button { min-width: 0; width: 100%; margin: 0; padding: 10px; }
+}
+@media (max-width: 390px) {
+  .sales-create-actions > button { font-size: 14px; }
+}
+
+/* Scoped editor presentation. Keep input handlers, media and draft safety intact. */
+section.sales-workspace-intro:has(+ [data-sales-resume-workspace] .sales-editor-app) { display: none; }
+.sales-editor-app .sales-shell { padding-top: 8px; }
+.sales-editor-app .sales-header {
+  position: static; top: auto; min-height: 44px; margin-bottom: 12px;
+  padding: 0; background: transparent; border: 0; box-shadow: none;
+}
+.sales-editor-app .sales-brand { display: none; }
+.sales-editor-app .sales-main { gap: 14px; padding: 0; margin: 0; max-width: none; }
+.sales-editor-app .sales-form-hero {
+  margin: 0; padding: 16px 18px; border: 1px solid #cce3e8;
+  border-radius: 20px; background: linear-gradient(120deg, #eef9fa, #f3f7fd);
+}
+.sales-editor-app .sales-title { font-size: clamp(27px, 3.2vw, 38px); letter-spacing: -.025em; overflow-wrap: anywhere; }
+.sales-editor-app .sales-subtitle { margin-top: 6px; font-size: 14px; line-height: 1.45; }
+.sales-editor-app .sales-form-panel { margin: 0; padding: 18px; }
+.sales-editor-app .sales-form-grid { gap: 14px; }
+.sales-editor-app .sales-note-field {
+  min-width: 0; padding: 14px; border: 1px solid #d0e3e8; border-radius: 16px; background: #f0f9fb;
+}
+.sales-editor-app .sales-note-field:nth-of-type(even) { background: #f4f2fa; border-color: #ddd6eb; }
+.sales-editor-app .sales-note-field textarea { min-height: 116px; resize: vertical; }
+.sales-editor-app details.sales-offer-text-section { display:block; padding:0; overflow:hidden; }
+.sales-offer-text-section > summary {
+  display:flex; align-items:center; gap:16px; min-height:76px; padding:16px 18px;
+  list-style:none; cursor:pointer; color:#214658;
+}
+.sales-offer-text-section > summary::-webkit-details-marker { display:none; }
+.sales-offer-text-section > summary:focus-visible { outline:3px solid #008c96; outline-offset:-3px; border-radius:15px; }
+.sales-offer-text-heading { display:grid; gap:5px; min-width:0; flex:1; }
+.sales-offer-text-heading strong { font-size:16px; line-height:1.4; }
+.sales-offer-text-heading > span {
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+  overflow:hidden; overflow-wrap:anywhere; color:#526975; font-size:14px; line-height:1.5;
+}
+.sales-offer-text-action { display:flex; align-items:center; gap:8px; font-size:14px; font-weight:700; }
+.sales-offer-text-close-label { display:none; }
+.sales-offer-text-section[open] .sales-offer-text-open-label { display:none; }
+.sales-offer-text-section[open] .sales-offer-text-close-label { display:inline; }
+.sales-offer-text-section[open] .sales-offer-text-action svg { transform:rotate(180deg); }
+.sales-offer-text-section[open] > summary { border-bottom:1px solid #d0e3e8; }
+.sales-offer-text-section .sales-offer-text-body { margin:0; padding:16px; }
+.sales-offer-text-label { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
+.sales-editor-app .sales-offer-text-section textarea { min-height:320px; font-size:16px; line-height:1.65; }
+@media (max-width:760px) {
+  .sales-editor-app details.sales-offer-text-section { padding:0; }
+  .sales-offer-text-section > summary { gap:10px; padding:14px; }
+  .sales-offer-text-action > span { display:none !important; }
+  .sales-offer-text-section .sales-offer-text-body { padding:12px; }
+  .sales-editor-app .sales-offer-text-section textarea { min-height:280px; }
+}
+.sales-editor-app .sales-offer-template-panel { margin-top: 0; padding: 14px; }
+.sales-editor-app .sales-template-controls { grid-template-columns: minmax(180px, 1fr) auto; align-items: end; }
+@media (max-width: 760px) {
+  .sales-editor-app .sales-shell { padding-left: 8px; padding-right: 8px; }
+  .sales-editor-app .sales-title { font-size: 26px; }
+  .sales-editor-app .sales-form-hero { padding: 13px; }
+  .sales-editor-app form.sales-form-panel {
+    padding: 12px !important; border: 1px solid #d7e4ea !important;
+    border-radius: 18px !important; background: #fff !important;
+  }
+  .sales-editor-app .sales-form-grid { grid-template-columns: minmax(0, 1fr); }
+  .sales-editor-app .sales-note-field { padding: 12px; }
+  .sales-editor-app .sales-template-controls { grid-template-columns: minmax(0, 1fr); }
+}
+
+.sales-inspection-app .sales-inspection-text-choice { padding: 14px; margin-bottom: 16px; border: 1px solid #dfbd72; border-radius: 16px; background: #fff8e8; color: #5d461c; }
+.sales-inspection-app .sales-inspection-text-choice p { margin: 6px 0 12px; }
+.sales-inspection-app .sales-inspection-text-choice > div { display: flex; flex-wrap: wrap; gap: 10px; }
+.sales-inspection-app .sales-inspection-text-choice button { min-height: 44px; white-space: normal; }
+
+/* Inspection photos reuse the app's existing larger-image viewer. */
+.sales-inspection-photo-open { display:block; cursor:zoom-in; }
+.sales-inspection-photo-open:focus-visible { outline:3px solid #008c9c; outline-offset:3px; border-radius:10px; }
+
+/* Project history deliberately hides SalesCore; its document links must remain visible. */
+[data-expo-project-shell="1"] section.sales-workspace-intro:has(+ [data-sales-resume-workspace]) { display: block; }

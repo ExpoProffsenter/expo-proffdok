@@ -1,0 +1,11 @@
+.bolig-resident-import{width:100%;box-sizing:border-box;padding:16px;overflow-wrap:anywhere}
+.bolig-resident-import fieldset{min-width:0;border:0;padding:0}
+.bolig-resident-import label,.bolig-household-contacts label{display:flex;flex-direction:column;gap:5px;margin:10px 0}
+.bolig-resident-import input,.bolig-resident-import select,.bolig-resident-import textarea,.bolig-household-contacts input{max-width:100%;min-height:44px;font-size:16px}
+.bolig-resident-import input[type=checkbox]{min-height:24px;width:24px;align-self:flex-start}
+.bolig-import-columns{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.bolig-resident-import .bolig-import-group,.bolig-household-contacts fieldset{border:1px solid #94a3b8;border-radius:10px;padding:12px;margin:16px 0}
+.bolig-resident-import footer{display:flex;flex-wrap:wrap;gap:10px;position:sticky;bottom:0;background:#fff;padding:12px 0;border-top:1px solid #cbd5e1}
+.bolig-resident-import-entry{margin:12px 0;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+
+.bolig-resident-import-dialog>.bolig-preparation-footer{display:flex;flex-wrap:wrap;gap:10px;background:#fff}

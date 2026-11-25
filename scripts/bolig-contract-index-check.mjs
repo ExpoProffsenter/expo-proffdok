@@ -1,0 +1,57 @@
+import assert from 'node:assert/strict';
+import {randomUUID} from 'node:crypto';
+import {contractPlatform} from './fixtures/bolig-contract-platform.mjs';
+import {indexNumber,fetchIndexValues} from '../src/modules/bolig/boligContractIndex.js';
+const p=await contractPlatform();let checks=0;
+const eq=(a,b,m)=>{assert.deepEqual(a,b,m);checks++;};
+const deny=async(fn,code)=>{await assert.rejects(fn,e=>e.code===code);checks++;};
+const rpc=(a,b={},user=p.owner,root=p.root.id)=>p.index(user,p.company,root,a,b);
+const basis={reference:'QA avtale punkt 8',file_id:null,series:'block_total',base_month:'2025-01',target_month:'2026-01',base_index:100,target_index:110,factor:0.9,origin:'manual',lines:[{id:randomUUID(),kind:'base',name:'Grunnleveranse til byggherre',amount_cents:100000000,selected:true},{id:randomUUID(),kind:'option',name:'Opsjon A',amount_cents:20000000,selected:false},{id:randomUUID(),kind:'option',name:'Opsjon B',amount_cents:10000000,selected:true}]};
+try{
+ await deny(()=>rpc('get',{},p.reader),'42501');await deny(()=>rpc('get',{},p.admin),'42501');
+ await p.rpc(p.owner,p.company,p.root.id,'grant',{user_id:p.reader,role:'reader',revision:0});
+ eq((await rpc('get',{},p.reader)).data.revision,0);
+ const preview=(await rpc('preview',{basis})).data;
+ eq(preview.calculation.adjustment_cents,9900000,'only selected contract base and options; 10% × 0.9 = 9%');
+ eq(preview.calculation.lines.map(l=>l.adjustment_cents),[9000000,0,900000]);
+ eq(preview.calculation.new_cents,139900000);
+ eq((await rpc('get')).data.reports,[],'preview writes nothing');
+ await deny(()=>rpc('preview',{basis},p.reader),'42501');
+ for(const fields of [{factor:-0.1},{factor:1.01},{factor:0.99999},{base_index:0},{target_index:-1},{target_month:'2024-12'},{base_month:'2025-13'},{series:'forged'},{reference:''},{extra:1},{lines:[]},{lines:basis.lines.map(l=>({...l,selected:false}))},{lines:[...basis.lines,basis.lines[0]]},{lines:basis.lines.map(l=>({...l,amount_cents:1.5}))}])await deny(()=>rpc('preview',{basis:{...basis,...fields}}),'22023');
+ eq((await rpc('preview',{basis:{...basis,factor:0}})).data.calculation.adjustment_cents,0,'zero factor explicitly means zero change');
+ eq((await rpc('preview',{basis:{...basis,target_index:90}})).data.calculation.adjustment_cents,-9900000,'decreases use same factor and signed money');
+ const half={...basis,base_index:2,target_index:3,factor:1,lines:[{...basis.lines[0],amount_cents:1}]};
+ eq((await rpc('preview',{basis:half})).data.calculation.adjustment_cents,1,'half cent rounds up');
+ eq((await rpc('preview',{basis:{...half,target_index:1}})).data.calculation.adjustment_cents,-1,'negative half cent rounds away from zero');
+ for(const series of ['block_plumbing','commercial_plumbing'])eq((await rpc('preview',{basis:{...basis,series}})).data.calculation.ssb_table,series==='block_plumbing'?'08655':'04534');
+ const id=randomUUID(),payload={id,basis,revision:preview.revision};
+ const report=(await rpc('approve',payload)).data.report;eq(report.revision,1);eq(report.created_by,p.owner);
+ eq((await rpc('approve',payload)).data.report.id,id,'lost response replays one immutable receipt');
+ eq((await rpc('get')).data.reports.length,1);
+ await deny(()=>rpc('approve',{...payload,basis:{...basis,factor:1}}),'PT409');
+ await deny(()=>rpc('approve',{...payload,id:randomUUID(),basis:{...basis,factor:1}}),'PT409');
+ await deny(()=>rpc('approve',{...payload,id:randomUUID(),revision:1}),'PT409');
+ const second=(await rpc('approve',{id:randomUUID(),basis:{...basis,factor:1},revision:1})).data.report;
+ eq(second.revision,2);eq((await rpc('report',{id},p.reader)).data.report.calculation,report.calculation,'reader can read historical approved calculation');
+ await deny(()=>rpc('approve',{id:randomUUID(),basis,revision:2},p.reader),'42501');
+ await deny(()=>rpc('report',{id:randomUUID()}),'42501');
+ await deny(()=>rpc('preview',{basis:{...basis,file_id:randomUUID()}}),'42501');
+ await p.rpc(p.owner,p.company,p.root.id,'grant',{user_id:p.reader,role:'none',revision:1});
+ await deny(()=>rpc('report',{id},p.reader),'42501');
+ await p.system('update bolig_private.roots set archived=true where id=$1',[p.root.id]);
+ eq((await rpc('report',{id})).data.report.id,id,'archive retains private read history');
+ await deny(()=>rpc('approve',{id:randomUUID(),basis,revision:2}),'42501');
+ await p.system('set role authenticated');await deny(()=>p.db.query('select * from bolig_private.contract_index_reports'),'42501');
+ await p.system('set role anon');await deny(()=>p.db.query('select public.bolig_contract_index($1,$2)',[p.company,p.root.id]),'42501');
+ eq(indexNumber('1 234,50',2),1234.5);assert.throws(()=>indexNumber('1.234,50'));checks++;
+ const fetch=globalThis.fetch;let sent;
+ try{
+  globalThis.fetch=async(url,options)=>{sent={url,...options,body:JSON.parse(options.body)};return {ok:true,json:async()=>({id:['Arbeidstype','ContentsCode','Tid'],size:[1,1,2],dimension:{Tid:{category:{index:{'2025M01':0,'2026M01':1}}}},value:[100,110]})};};
+  eq(await fetchIndexValues('block_plumbing','2025-01','2026-01'),{base_index:'100',target_index:'110',origin:'ssb-client'});
+  eq(sent.body.query[0],{code:'Arbeidstype',selection:{filter:'item',values:['28']}});
+  eq(sent.credentials,'omit');eq(Object.keys(sent.body).sort(),['query','response'],'public SSB request contains no contract or company data');
+  globalThis.fetch=async()=>({ok:true,json:async()=>({id:['Tid'],size:[2],dimension:{Tid:{category:{index:{'2025M01':0,'2026M01':1}}}},value:[100,null]})});
+  await assert.rejects(()=>fetchIndexValues('block_total','2025-01','2026-01'));checks++;
+ }finally{globalThis.fetch=fetch;}
+ console.log(`Contract index: ${checks} assertions PASS; actual SQL, exact monetary rounding, selected contract parts, access, immutable approval/retry and public SSB transport.`);
+}finally{await p.db.close();}

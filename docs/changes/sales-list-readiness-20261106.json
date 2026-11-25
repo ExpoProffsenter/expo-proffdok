@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Tilbudsoversikten venter på faktisk ferdig liste før null og tomtekst",
+  "change": "BEGGE, Preview/Sandbox. Lokal eierstatus i SalesModuleCore følger eksisterende full listeklargjøring; SalesListView bruker eierstatus og viser ukjente tellere under venting. Ingen transport-, backend-, editor- eller lagringsendring.",
+  "verification": "Gammel kode feiler deterministisk på ekte transportready mens prosjektlesing er utsatt. Rettet faktisk Core/transport/List har39ReactPASS; native fixture-build og sales lazy/overview/auth criticalPASS. Additive native scenarier med bevart søk/filter/retur; eksakt full CI og innlogget Preview i PR309/311.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Samme knappnavn og arbeidsflyt; eksisterende vente- og feiltekst gjenbrukes med riktig tidspunkt."
+    },
+    "module": {
+      "required": true,
+      "reason": "ModulREADME beskriver eierstatus, separate tom-/feiltilstander og bevart søk/retur."
+    },
+    "architecture": {
+      "required": true,
+      "reason": "Skillet mellom global transportstatus og Core-eid ferdig liste er en varig grense som må være eksplisitt."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen nye appavhengigheter, miljøvariabler, databaser eller installasjonssteg."
+    }
+  }
+}

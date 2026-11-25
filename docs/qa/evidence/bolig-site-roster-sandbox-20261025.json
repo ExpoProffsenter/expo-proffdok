@@ -1,0 +1,137 @@
+{
+  "date": "2026-10-25",
+  "environment": "Sandbox",
+  "project": "ppvircenkjizeiqdxphj",
+  "productionChanged": false,
+  "localMigration": "supabase/migrations/20261025202418_bolig_site_roster.sql",
+  "installedMigration": {
+    "name": "bolig_site_roster",
+    "version": "20261025203932"
+  },
+  "existingAttendanceFingerprintsUnchanged": true,
+  "existingAttendanceFunctions": [
+    {
+      "hash": "587f3bc2571fbc1729acafcd68fe4502",
+      "signature": "bolig_attendance_people(uuid,uuid,text,jsonb)"
+    },
+    {
+      "hash": "087950d3c5fb424debd2e8f97dedad5d",
+      "signature": "bolig_attendance(uuid,uuid,text,jsonb)"
+    },
+    {
+      "hash": "bc1bff14efc6db3b0eddd47900263142",
+      "signature": "bolig_private.attendance_people_workspace(uuid,uuid,text,jsonb)"
+    },
+    {
+      "hash": "9d14070c2993ef0e5a85a7b06c5403f0",
+      "signature": "bolig_private.attendance_workspace(uuid,uuid,text,jsonb)"
+    }
+  ],
+  "tables": [
+    {
+      "rls": true,
+      "table": "site_roster_employers",
+      "anon_select": false,
+      "authenticated_select": false
+    },
+    {
+      "rls": true,
+      "table": "site_roster_people",
+      "anon_select": false,
+      "authenticated_select": false
+    },
+    {
+      "rls": true,
+      "table": "site_roster_state",
+      "anon_select": false,
+      "authenticated_select": false
+    },
+    {
+      "rls": true,
+      "table": "site_roster_versions",
+      "anon_select": false,
+      "authenticated_select": false
+    }
+  ],
+  "anonRpc": false,
+  "authenticatedRpc": true,
+  "securityAdvisors": [
+    {
+      "name": "rls_enabled_no_policy",
+      "level": "INFO",
+      "before": 179,
+      "after": 183,
+      "added": [
+        {
+          "detail": "Table \\`bolig_private.site_roster_employers\\` has RLS enabled, but no policies exist",
+          "metadata": {
+            "name": "site_roster_employers",
+            "type": "table",
+            "schema": "bolig_private"
+          }
+        },
+        {
+          "detail": "Table \\`bolig_private.site_roster_people\\` has RLS enabled, but no policies exist",
+          "metadata": {
+            "name": "site_roster_people",
+            "type": "table",
+            "schema": "bolig_private"
+          }
+        },
+        {
+          "detail": "Table \\`bolig_private.site_roster_state\\` has RLS enabled, but no policies exist",
+          "metadata": {
+            "name": "site_roster_state",
+            "type": "table",
+            "schema": "bolig_private"
+          }
+        },
+        {
+          "detail": "Table \\`bolig_private.site_roster_versions\\` has RLS enabled, but no policies exist",
+          "metadata": {
+            "name": "site_roster_versions",
+            "type": "table",
+            "schema": "bolig_private"
+          }
+        }
+      ]
+    },
+    {
+      "name": "function_search_path_mutable",
+      "level": "WARN",
+      "before": 1,
+      "after": 1,
+      "added": []
+    },
+    {
+      "name": "extension_in_public",
+      "level": "WARN",
+      "before": 1,
+      "after": 1,
+      "added": []
+    },
+    {
+      "name": "anon_security_definer_function_executable",
+      "level": "WARN",
+      "before": 22,
+      "after": 22,
+      "added": []
+    },
+    {
+      "name": "authenticated_security_definer_function_executable",
+      "level": "WARN",
+      "before": 238,
+      "after": 238,
+      "added": []
+    },
+    {
+      "name": "auth_leaked_password_protection",
+      "level": "WARN",
+      "before": 1,
+      "after": 1,
+      "added": []
+    }
+  ],
+  "smoke": "PASS: authenticated Sandbox create/read/settings/employer/person/review/history; synthetic rows rolled back, no email",
+  "migrationSha256": "f0bb515a0a5854a379c35a7c596eeda631e87d3935ad854cb57fd3eaad109db0"
+}

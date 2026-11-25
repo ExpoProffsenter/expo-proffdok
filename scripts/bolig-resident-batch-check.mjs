@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {batchRecipients,batchVisible,selectionRows} from '../src/modules/bolig/boligResidentBatch.mjs';
+import {residentLinkMail} from '../supabase/functions/_shared/bolig-resident-link-email.mjs';
+const units=[{id:'a',number:'24',block_id:'b',group_id:'g',contacts:[{name:'Æ',email:'a@example.invalid'},{name:'Ø',email:'A@example.invalid'},{name:'Å',email:'second@example.invalid'},{name:'Mangler',email:''}]},{id:'c',number:'38',block_id:'d',group_id:'g',contacts:[{name:'Samme eier annen bolig',email:'a@example.invalid'}]}];
+const {recipients,missing}=batchRecipients(units);
+assert.equal(recipients.length,3);assert.equal(missing.length,1);assert.equal(recipients.filter(r=>r.email==='a@example.invalid').length,2,'Same owner receives distinct unit links');
+assert.equal(batchVisible(units,'b','').length,1);assert.equal(batchVisible(units,'','g').length,2);assert.equal(batchVisible(units,'b','other').length,0);
+assert.throws(()=>selectionRows(units,['missing']));assert.throws(()=>selectionRows(units,[]));assert.equal(selectionRows(units,['a']).length,1);
+const snapshot={kind:'portal',origin:'https://qa.invalid',unit:'24',project:'QA',name:'QA',to:'a@example.invalid',company:{companyName:'QA'},expires_at:'2030-01-01',shared_household:true};
+assert(residentLinkMail(snapshot,'a'.repeat(64)).html.includes('registrerte eierne'));
+assert(!residentLinkMail({...snapshot,shared_household:false},'a'.repeat(64)).html.includes('registrerte eierne'));
+console.log('bolig-resident-batch: 11 selection, recipient and shared invitation assertions PASS');

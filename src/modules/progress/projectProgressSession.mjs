@@ -1,0 +1,10 @@
+const canonical=value=>JSON.stringify(value,(_,v)=>v&&typeof v==='object'&&!Array.isArray(v)?Object.fromEntries(Object.entries(v).sort(([a],[b])=>a.localeCompare(b))):v);
+export function projectProgressSession({rpc,projectId}){
+ let scope=null;
+ const check=v=>{if(!v?.context?.enabled||!v.context.user_id||!v.context.company_id||v.record?.id!==projectId||v.record.company_id!==v.context.company_id)throw Error('Prosjektet eller arbeidsprofilen er endret.');if(!Number.isInteger(v.record.revision)||v.record.revision<0||!Array.isArray(v.record.plan?.activities))throw Error('Planen kunne ikke bekreftes.');const next=v.context.company_id+':'+v.context.user_id;if(scope&&scope!==next)throw Error('Arbeidsprofilen er endret.');scope=next;return v;};
+ const read=async()=>check(await rpc('project_progress_editor',{p_project_id:projectId}));
+ const get=async()=>{const a=await read(),b=await read();if(a.record.revision!==b.record.revision)throw Error('Planen er endret. Hent lagret plan på nytt.');return b;};
+ return {get,save:async({plan,revision,customerVisible})=>{const saved=check(await rpc('project_progress_editor',{p_project_id:projectId,p_plan:plan,p_revision:revision,p_customer_visible:customerVisible}));if(saved.record.revision!==revision+1)throw Error('Lagringen kunne ikke bekreftes. Kladden er beholdt.');const fresh=await get();if(saved.record.revision!==fresh.record.revision||canonical(saved.record.plan)!==canonical(fresh.record.plan)||saved.record.customerVisible!==fresh.record.customerVisible)throw Error('Planen ble endret etter lagring. Kladden er beholdt.');return fresh;}};
+}
+const memory=new Map(),key=k=>'expo:project-progress-draft:v1:'+k;
+export const projectProgressDrafts={get(k){try{const v=memory.get(k)||JSON.parse(window.localStorage.getItem(key(k))||'null');return Number.isInteger(v?.revision)&&v.revision>=0&&v.plan?.version===1&&Array.isArray(v.plan.activities)&&typeof v.customerVisible==='boolean'?v:null;}catch{return memory.get(k)||null;}},set(k,v){memory.set(k,v);try{window.localStorage.setItem(key(k),JSON.stringify(v));}catch{}},delete(k){memory.delete(k);try{window.localStorage.removeItem(key(k));}catch{}}};

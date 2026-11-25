@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "title": "Rett boligveiviserens bilder også i den faste design-Previewen",
+  "change": "Miljømål BEGGE, kun PR295/Preview. Bolig-Preview PR294 og design-Preview PR295 er separate. Brukeren ble sendt fra boligrettelsen til designadressen, som fortsatt manglet rettelsen. Eksisterende felles presentasjonslag proffdokWorkspace.css begrenser nå fotoene i boligveiviserens byggeditor og oppsummering, gir tittel linjebryting og felter/byggliste krympbar bredde. Nettleserprøven laster samme design-CSS som appen. Ingen endring av bolig-JSX, state, tilgang, kladd, callbacks, server, database, priser eller sending. PR294s øvrige boligoversiktsendringer er fortsatt ikke integrert i denne branchen; dette er en avgrenset presentasjonsrettelse i den faste designversjonen.",
+  "verification": "Lokal npm run build PASS. Faktisk boligveiviser med begge appens stilark i Chromium 153: 288 assertions PASS, med alle opprinnelige tester beholdt og fire boligtyper x 16 bygg x bygg/adresse, etasjer, oppsummering x 320/390/768/1024/1366/1920 px. Dekoder bilder før måling; sjekker intern overflyt, bildemål og plassering i foreldreraden. Skjermbilder av flerfamiliehus i bygg/adresse og oppsummering visuelt inspisert. App UX review 73 checks PASS for eksisterende snarveier, høyrepanel, fokus/kladd og fire bredder. Kjørt mot faktiske komponenter med syntetiske callbacks, uten ekte opprettelse eller sending. Ny CI, eksakt deployment/Sandbox-binding og eventuell faktisk innlogget prøve dokumenteres separat i PR; ingen full manuell appgjennomgang er attestert.",
+  "documentation": {
+    "help": {"required": false, "reason": "Eksisterende veiviser og knappnavn beholdes; kun bilde- og breddefeil rettes."},
+    "architecture": {"required": false, "reason": "Ingen arkitektur eller dataflyt endres; rettelsen ligger i dagens felles presentasjonslag."},
+    "setup": {"required": false, "reason": "Ingen nye avhengigheter, miljøvalg eller installasjonssteg i appen."},
+    "module": {"required": false, "reason": "Modulkontrakt, state, kladd og autoriserte handlinger er uendret."}
+  }
+}

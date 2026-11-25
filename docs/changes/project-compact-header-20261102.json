@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Siste designavgrensning: kompakt prosjekttopp og ærlig lesemodus",
+  "change": "Miljømål BEGGE, først kun PR295/faste design-Preview. Scope: ProjectWorkspaceChrome.jsx, ny screen-only projectCompactHeader.css importert der, relevante prosjekt/nettleserprøver, workspaceHelp og ett QA/releasegrunnlag. main.jsx, lagring, navigasjonseiere, pris, PDF, roller, databaser og e-post røres ikke. Tilbake og status samles på én topplinje. Status og mangler følger prosjektverktøyene. I lagret prosjektoversikt er eksisterende oppstartsveiledning et eksplisitt Vis veiledning-valg. Nye prosjekter og redigerbare underfaner beholder samme veiledning. ReadOnly/låst/support får ingen anbefalt Neste/faseflyt øverst eller nederst; dokumentasjon nås som før i menyen. Ny testkontrakt FØR testendring: de opprinnelige save/continue-kravene på lagret oversikt åpner Vis veiledning først; deres lagrings-, konflikt- og sen-responskrav er uendret. Ingen testkrav fjernes.",
+  "verification": "Førkilden dc4601a6 feiler ny reell React/Chromium-prøve fordi låst prosjekt viser Neste-oppsett. Rettet kilde: 246 nye krav PASS over seks skjermstørrelser (1920x1080 til320x480), inkluderer faktisk Chrome, footer og Verktøy og maler. Eksisterende prosjekt196, panel53, veiledning288+84, fellesramme99 og mobilheader91 PASS; HR/Hjelp/tilgangs-React PASS. Alle opprinnelige krav beholdt. Første nye fixture hadde race mellom aktivt og nytt prosjekt med samme tittel; venter nå på faktisk kind-render uten å endre forventninger. Lagret/låst desktopkontekst reduseres313.77→181.38px og arbeidsoverskriften413.77→201.38px i syntetisk1920px-prøve uten appmasthead. Skjermbildet er visuelt vurdert, men ikke en innlogget kundesak. Full critical/build består både eksplisitt Production- og Sandbox-binding. Historisk integrasjonsdiff for uendrede PR294/298 består apply-check og begge fullbuilds i separat detached worktree med siste headerkode. Ingen integrasjonskode legges i denne branchen. Lesende Production-kontroll med rollback bekrefter manglende malforslagsmigrering/tabell/RPC-er. Reell Sandbox ppvircenkjizeiqdxphj er ikke synlig i dagens Supabase-tilkobling; full innlogget HOVED/RESERVE/rolle/Safari er ikke attestert. Ingen backendinstallasjon, merge, e-post, demodata eller demosynk. Ny eksakt CI/READY og commit føres i PR295.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "Vis veiledning og fravær av neste-steg i skrivebeskyttet prosjekt må forklares."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Ingen ny dataflyt, kun presentasjon og eksisterende callbacks."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen appavhengigheter eller konfigurasjon endres."
+    },
+    "module": {
+      "required": false,
+      "reason": "Samme modul- og lagringskontrakt; brukerflyt dokumenteres i Hjelp."
+    }
+  }
+}

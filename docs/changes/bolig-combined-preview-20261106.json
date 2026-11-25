@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Én samlet Bolig- og kjernekandidat med avhengig kontrollbase",
+  "change": "BEGGE, bare Preview/Sandbox. PR309 bevarer1b59d937 og integrerer fullgrønn kjerne0e44d83a som dokumentert base. Ingen runtime/test/media/SQL omskrives. CItrigger utvides additivt til main+den eksplisitte kjernebranchen,med samme fulle suite/sluttgate. Scope-,paritets- og tilgangstester er uendret. Ingen produksjonssetting eller migrering.",
+  "verification": "Lokal Bolig-core-boundary55PASS på faktisk samlet utsjekk mot0e44d83a; planbygger identisk basen. Workflowvakt147kommandoer og full lokal Sandbox-build/critical. App/test/media/SQL byteidentisk bevart firepakksforsøk. Ny samlet eksakt CI/READY/innlogget etterprøve kreves; kildeCI988 er ikke samlet attest. Detaljer:docs/qa/COMBINED_BOLIG_PREVIEW_20261106.md.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "Eksisterende BoligHelp-endringer fra309 følger sammensetningen."
+    },
+    "module": {
+      "required": true,
+      "reason": "Eksisterende BoligREADME fra309 følger kandidaten; ingen ny modulkontrakt."
+    },
+    "architecture": {
+      "required": true,
+      "reason": "Eksisterende BOLIG_MY_TASK_LOCATION-arkitektur fra309 følger uendret."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen appoppsett eller dependency endres; additiv CIstart og avhengig base dokumenteres i docs/DEVELOPMENT_WORKFLOW.md."
+    }
+  }
+}

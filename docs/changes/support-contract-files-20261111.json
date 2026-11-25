@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Kundebundet support for kontraktfiler",
+  "change": "Avgrenset Edge-adapter for Bolig-kontrakter. Verifiserer supportøkten og bruker kundens eksisterende RPC-autorisasjon før nye filer eller nedlasting. Ingen endring av ordinær innlogging, lagringsrutiner eller sletting. Avhengig av fullapp-support i PR319; separat etter Bolig core boundary.",
+  "verification": "28 lokale kontraktfilkrav; Auth først, immutable retry, hash/readback, tilbakekalling før bytes og videresendt supportkontekst. Full CI og faktisk sandbox HTTP gjenstår.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Intern transporttilpasning; felles supportflyt og installering dokumenteres i PR319. Ingen selvstendig brukerflyt eller oppsett."
+    },
+    "module": {
+      "required": false,
+      "reason": "Intern transporttilpasning; felles supportflyt og installering dokumenteres i PR319. Ingen selvstendig brukerflyt eller oppsett."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Intern transporttilpasning; felles supportflyt og installering dokumenteres i PR319. Ingen selvstendig brukerflyt eller oppsett."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Intern transporttilpasning; felles supportflyt og installering dokumenteres i PR319. Ingen selvstendig brukerflyt eller oppsett."
+    }
+  }
+}

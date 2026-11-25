@@ -1,0 +1,58 @@
+import fs from 'node:fs/promises';
+const {PGlite}=await import(process.env.HR_PGLITE_PATH||'@electric-sql/pglite');
+export async function contractPlatform(){
+ const db=await PGlite.create(),id=n=>'68000000-0000-4000-8000-'+String(n).padStart(12,'0');
+ const company=id(1),owner=id(2),reader=id(3),admin=id(4),other=id(5),outsider=id(6);
+ await db.exec(`create role anon;create role authenticated;create role service_role;
+ create schema auth;create table auth.users(id uuid primary key);
+ create function auth.uid() returns uuid language sql as $$select nullif(current_setting('qa.user',true),'')::uuid$$;
+ create function public.current_active_company_scope_id() returns uuid language sql as $$select nullif(current_setting('qa.company',true),'')::uuid$$;
+ create table public.sales_company_scopes(id uuid primary key,display_name text);
+ create table public.profiles(id uuid primary key,email text,full_name text,role text default 'member',approved boolean default true,deactivated boolean default false,system_role text);
+ create table public.sales_company_memberships(company_id uuid,user_id uuid,workspace_role text);
+ create table public.user_module_access(user_id uuid,module_key text);
+ create table public.projects(id uuid primary key,company_scope_id uuid,user_id uuid,title text,data jsonb default '{}',locked boolean default false);
+ create function public.current_profile_is_systemadmin() returns boolean language sql as $$select false$$;
+ create function public.current_user_has_module_access(text) returns boolean language sql security definer as $$select exists(select 1 from public.user_module_access where user_id=auth.uid() and module_key=$1)$$;
+ create function public.project_row_access_allowed(uuid,uuid) returns boolean language sql as $$select false$$;
+ create schema storage;create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);
+ create table storage.objects(bucket_id text,name text,metadata jsonb,primary key(bucket_id,name));
+ alter table storage.objects enable row level security;grant usage on schema auth,storage to authenticated,anon;grant all on storage.objects to authenticated,anon;
+ create policy qa_legacy_permissive on storage.objects for all to authenticated,anon using(true) with check(true);`);
+ await db.query('insert into public.sales_company_scopes values($1,$2),($3,$4)',[company,'QA prosjektfirma',other,'QA annet firma']);
+ for(const [u,c,role,name] of [[owner,company,'ansatt','QA Prosjektleder'],[reader,company,'ansatt','QA Leser'],[admin,company,'firmaadmin','QA Firmaadmin'],[outsider,other,'ansatt','QA Annet firma']]){
+  await db.query('insert into auth.users values($1)',[u]);await db.query('insert into public.profiles(id,email,full_name) values($1,$2,$3)',[u,'qa-'+u.slice(-1)+'@example.invalid',name]);
+  await db.query('insert into public.sales_company_memberships values($1,$2,$3)',[c,u,role]);await db.query("insert into public.user_module_access values($1,'projects')",[u]);
+ }
+ await db.exec(await fs.readFile('supabase/migrations/20261020201453_boligprosjekter_foundation.sql','utf8'));
+ await db.exec(await fs.readFile('supabase/migrations/20261022225347_bolig_progress_recipient_module_access.sql','utf8'));
+ const migration=(await fs.readdir('supabase/migrations')).find(f=>f.endsWith('_bolig_private_contracts.sql'));
+ await db.exec(await fs.readFile('supabase/migrations/'+migration,'utf8'));
+ const reviewMigration=(await fs.readdir('supabase/migrations')).find(f=>f.endsWith('_bolig_contract_reviews.sql'));
+ if(reviewMigration)await db.exec(await fs.readFile('supabase/migrations/'+reviewMigration,'utf8'));
+ const indexMigration=(await fs.readdir('supabase/migrations')).find(f=>f.endsWith('_bolig_contract_index.sql'));
+ if(indexMigration)await db.exec(await fs.readFile('supabase/migrations/'+indexMigration,'utf8'));
+ const financeMigration=(await fs.readdir('supabase/migrations')).find(f=>f.endsWith('_bolig_contract_finance.sql'));
+ if(financeMigration)await db.exec(await fs.readFile('supabase/migrations/'+financeMigration,'utf8'));
+ const monthlyMigration=(await fs.readdir('supabase/migrations')).find(f=>f.endsWith('_bolig_contract_monthly_basis.sql'));
+ if(monthlyMigration)await db.exec(await fs.readFile('supabase/migrations/'+monthlyMigration,'utf8'));
+ const separateMigration=(await fs.readdir('supabase/migrations')).find(f=>f.endsWith('_bolig_separate_index_invoice.sql'));
+ if(separateMigration)await db.exec(await fs.readFile('supabase/migrations/'+separateMigration,'utf8'));
+ const canonicalMigration=(await fs.readdir('supabase/migrations')).find(f=>f.endsWith('_bolig_index_invoice_canonical_source.sql'));
+ if(canonicalMigration)await db.exec(await fs.readFile('supabase/migrations/'+canonicalMigration,'utf8'));
+ const registerMigration=(await fs.readdir('supabase/migrations')).find(f=>f.endsWith('_bolig_editable_invoice_register.sql'));
+ if(registerMigration)await db.exec(await fs.readFile('supabase/migrations/'+registerMigration,'utf8'));
+ await db.query('insert into bolig_private.firms(company_id,enabled) values($1,true)',[company]);
+ await db.query("insert into bolig_private.member_access(company_id,user_id,access_role) values($1,$2,'manager'),($1,$3,'reader')",[company,owner,reader]);
+ let queue=Promise.resolve();
+ const serial=fn=>{const next=queue.then(fn);queue=next.catch(()=>{});return next;};
+ const actor=async user=>db.exec(`reset role;select set_config('qa.user','${user}',false);select set_config('qa.company','${user===outsider?other:company}',false);set role authenticated;`);
+ await actor(owner);
+ const root=(await db.query("select public.bolig_workspace($1,'create',null,null,'{\"title\":\"QA privat kontraktsområde\",\"reference\":\"QA\"}') v",[company])).rows[0].v.root;
+ const rpc=(user,c,r,action,payload)=>serial(async()=>{await actor(user);return (await db.query('select public.bolig_contracts($1,$2,$3,$4) v',[c,r,action,payload])).rows[0].v;});
+ const system=(query,args=[])=>serial(async()=>{await db.exec('reset role');return (await db.query(query,args)).rows;});
+ const review=(user,c,r,action,payload)=>serial(async()=>{await actor(user);return (await db.query('select public.bolig_contract_review($1,$2,$3,$4) v',[c,r,action,payload])).rows[0].v;});
+ const index=(user,c,r,action,payload)=>serial(async()=>{await actor(user);return (await db.query('select public.bolig_contract_index($1,$2,$3,$4) v',[c,r,action,payload])).rows[0].v;});
+ const finance=(user,c,r,action,payload)=>serial(async()=>{await actor(user);return (await db.query('select public.bolig_contract_finance($1,$2,$3,$4) v',[c,r,action,payload])).rows[0].v;});
+ return {db,company,owner,reader,admin,outsider,root,rpc,review,index,finance,system};
+}

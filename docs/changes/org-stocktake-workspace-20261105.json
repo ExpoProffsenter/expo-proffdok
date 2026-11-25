@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Organisasjonskart og varetelling: mindre scrolling og direkte åpning",
+  "change": "Miljømål BEGGE. Kompakt kartintroduksjon og statistikker med sammenleggbar veiledning. Varetelling åpner ved valg av fanen og beholder montert utkast under skjult vert. Ventestatus skiller pågående registrering fra usikkert resultat. Ingen backend- eller eksportendringer.",
+  "verification": "Lokal Sandbox-build, stocktake-modellkontroll og eksisterende React-organisasjonsprøve PASS. Native varetellingstest er utvidet med kontrollert tregt svar og fanebytte uten tapt DOM/utkast og koblet til CI. Ny CI og innlogget kandidatkontroll må bekreftes separat.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "Veiledningen beskriver direkte valg av Varetelling i Prissøk."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Eksisterende transport, datamodell, firmascope og backend beholdes."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen nye avhengigheter, miljøvariabler eller installasjonssteg."
+    },
+    "module": {
+      "required": true,
+      "reason": "Montert arbeidsflate, firmascope og statuskontrakt dokumenteres i modulenes README."
+    }
+  }
+}

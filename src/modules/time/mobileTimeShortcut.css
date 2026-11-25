@@ -1,0 +1,13 @@
+.mobile-time-shortcut{display:none}
+@media(max-width:700px){
+ button.mobile-time-shortcut{display:flex;align-items:center;gap:14px;width:100%;min-width:0;min-height:108px;box-sizing:border-box;margin:0 0 16px;padding:20px 18px;border:1px solid #216c73;border-radius:22px;background:radial-gradient(ellipse at 100% 0,#11616c 0,transparent 66%),linear-gradient(125deg,#112e3c,#0b3e4a);box-shadow:0 10px 25px #123a4320;color:#fff;text-align:left;white-space:normal;font:inherit;cursor:pointer}
+ .mobile-time-shortcut-icon{display:grid;place-items:center;flex:0 0 54px;width:54px;height:54px;background:#0ed1cd;color:#083e48;border-radius:18px;box-shadow:0 4px 16px #04d1ca25}
+ .mobile-time-shortcut-copy{display:grid;gap:4px;min-width:0;flex:1}
+ .mobile-time-shortcut-copy small{font-size:9px;font-weight:800;letter-spacing:1.6px;color:#91e6e3}
+ .mobile-time-shortcut-copy strong{font-size:25px;line-height:1.15;font-weight:800;color:#fff}
+ .mobile-time-shortcut-copy>span{font-size:12px;line-height:1.4;color:#d3e5e9;overflow-wrap:anywhere}
+ .mobile-time-shortcut-arrow{display:grid;place-items:center;flex:0 0 33px;width:33px;height:33px;border:1px solid #6cbfc966;border-radius:50%;color:#aaf4f0}
+ button.mobile-time-shortcut:active{transform:translateY(1px)}
+ button.mobile-time-shortcut:focus-visible{outline:3px solid #00aaa9;outline-offset:4px}
+}
+@media(max-width:360px){button.mobile-time-shortcut{padding:17px 14px;gap:11px}.mobile-time-shortcut-icon{flex-basis:46px;width:46px;height:46px;border-radius:15px}.mobile-time-shortcut-copy strong{font-size:23px}.mobile-time-shortcut-arrow{flex-basis:28px;width:28px;height:28px}}

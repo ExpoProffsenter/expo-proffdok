@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Samlet prosjektmeny og tydelig sjekklisteoversikt",
+  "change": "Miljømål BEGGE, bare PR295/Preview. Bruker observerte stort designskifte og nedoverutvidelse i RESERVE. Prosjektets store fasekort flyttes inn i felles WorkspacePanel til høyre. Sjekklister åpner en eksplisitt oversikt i samme panel, uten automatisk valg av første liste. Påbegynte kontroller prioriteres med Fortsett utfylling. Innlogget HOVED hadde ti historiske påbegynte kategorier; snarveiene øverst avgrenses derfor til lister med uvurderte punkter, mens alle vurderte lister beholdes tydelig nedenfor til sluttkontroll. Dette reduserer støy uten å erklære noen kontroll fullført. Egne verktøy/tillegg følger etter kontrollene. Navn er overskrifter, Vis punkter og historikk er et eget sekundærvalg. Låst/support viser Vis dokumentasjon og ærlig legacy-status. Bytt prosjekt fører til Prosjektliste; øvrige Startside-/supportreturer bevares. Innlogget nærkontroll fant også gamle fullførings-/signerings-/PDF-råd inne i låst editor. Avgrenset presentasjon i checklistTools og ChecklistSignatures skiller nå vurderte punkter fra fullført kontroll, og gir ingen skriveoppfordring i lesemodus. Backend, roller, lokal sikkerhet, kommandoer, kontrollhistorikk, signatur og PDF-motor endres ikke.",
+  "verification": "Lokal QA PASS: npm run build; native prosjektmeny196krav + ny sjekklistepanel53krav, fleksible sjekklistefelt158krav, resume38krav, faktisk React-save/signatur/historikk/support og menyretur. Chromium153 lokalt. Innlogget Preview/full CI bekreftes på publisert kandidat. CI871 avdekket at deltakerprøven lette etter den gamle alltid synlige menyknappen. Prøven åpner nå virkelig prosjektmeny og beholder alle lagrings-/kladd-/firmaskillekrav, med to ekstra krav om å beholde/lukke meny etter avbrutt deltakerflyt. CI872 fant en egen prøverace: native close hadde skjult dialogen, mens React ennå ikke hadde fjernet prosjektets andre navneforekomst i DOM. Role-locatorens detached skjulte også lukkede DOM-noder, så prøven venter nå på den opprinnelige nodens isConnected=false før telling og neste handling, uten søvn eller svekket navn-/callbackkrav. Siste kildegjennomgang fant at en tom lokal kladd kunne fremheve en ellers ferdig vurdert serverkontroll. Utvidet Ready-regresjon feiler før rettelsen og består etter at anbefalingen, som selve åpnefunksjonen, ignorerer en tom lokal kladd når serveren har kontrollen. Ingen omkjøring av uendret feilgrunnlag. Eksisterende React-flyter for lagring, gjenåpning, konflikter, tapt svar, signatur, historikk og support består. Native prosjektmeny består196krav på Chromium153 lokalt. Ny native panelprøve kjøres fra samme CI-pakke. Kildekravet i critical-project-navigation-check om Hjelps gamle tre bokser på linje følger også ny synlig menytekst. Geometrikrav om tre kort på linje erstattes eksplisitt av tre ordnede faser i høyrepanel, samme callbacks/lagresemantikk beholdes. critical-work-profile-checks kildesnitt må følge ny valgfri destinasjon og kontrollere at support kommer før begge ordinære mål; ny runtimeprøve verifiserer avbrutt exit, standard Startside, Prosjektliste og support. Dette endrer forventet presentasjonskontrakt, ikke tilgangskrav. Full CI bruker repoets normale nettleser; lokale153-prøver er supplement.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "Nye plasseringer og eksplisitt valg av sjekkliste beskrives."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Eksisterende native panel og editor/RPC gjenbrukes, ingen ny dataarkitektur."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen appavhengighet eller miljøendring."
+    },
+    "module": {
+      "required": true,
+      "reason": "Oversiktens valg, nested dialog og legacy-status beskrives i sjekklistemodulen."
+    }
+  }
+}

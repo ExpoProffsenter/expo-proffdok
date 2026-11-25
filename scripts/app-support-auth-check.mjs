@@ -1,0 +1,37 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import { wrapSupportClient } from '../src/modules/access/appSupportAuth.mjs';
+import { createAppSupportRuntime } from '../src/modules/access/appSupportRuntime.mjs';
+const id=n=>`81000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
+const actor={id:id(1),email:'actor@example.invalid'};
+const value={id:id(2),actor_id:actor.id,target_user_id:id(3),company_id:id(4),target_user:{id:id(3),email:'customer@example.invalid'},capabilities:{delete:false},expires_at:new Date(Date.now()+3600000).toISOString()};
+const runtime=createAppSupportRuntime({backendUrl:'https://qa.invalid',nativeFetch:async()=>Response.json(value)});
+let callback;
+const persisted={user:actor,access_token:'actor-token',refresh_token:'actor-refresh'};
+const client={auth:{getSession:async()=>({data:{session:persisted},error:null}),getUser:async()=>({data:{user:actor},error:null}),onAuthStateChange:cb=>{callback=cb;return {data:{subscription:{unsubscribe(){}}}};}},rpc(){assert.equal(this,client);return true;}};
+const view=wrapSupportClient(client,runtime);
+assert.equal((await view.auth.getSession()).data.session.user.id,actor.id);
+await runtime.start({},id(3),id(4));
+assert.equal(wrapSupportClient(view,runtime),view,'registry and bootstrap must not wrap the projected identity twice');
+const got=(await wrapSupportClient(view,runtime).auth.getSession()).data.session;
+assert.equal(got.user.id,id(3));assert.equal(got.access_token,'actor-token');assert.equal(got.refresh_token,'actor-refresh');
+assert.equal(persisted.user.id,actor.id);assert.equal((await view.auth.getUser()).data.user.id,id(3));
+let event;view.auth.onAuthStateChange((name,session)=>{event={name,session};});callback('TOKEN_REFRESHED',persisted);
+assert.equal(event.session.user.id,id(3));assert.equal(event.name,'TOKEN_REFRESHED');assert.equal(persisted.user.id,actor.id);assert.equal(view.rpc(),true);
+const channel=view.channel('chat').on('postgres_changes',{},()=>{throw Error('actor realtime must not deliver');}).subscribe();assert.equal(await view.removeChannel(channel),'ok');
+await runtime.end({});assert.equal((await view.auth.getSession()).data.session.user,null);
+console.log('app-support-auth: PASS – customer identity, unchanged stored actor/refresh token, auth events, bound methods, no fallback after exit');
+const main=await fs.readFile('src/main.jsx','utf8');
+const marker=main.indexOf("if (authLoading || profileLoading || !isSystemAdminUser");
+assert.ok(marker>0);
+const body=main.slice(marker,main.indexOf('}, [authLoading, profileLoading, isSystemAdminUser',marker));
+const runReturn=new Function('authLoading','profileLoading','isSystemAdminUser','profile','window','setTab','setAdminArea','setOpenAdminSections',body);
+for(const [loading,admin,approved,expected] of [[true,true,true,false],[false,false,true,false],[false,true,false,false],[false,true,true,true]]) {
+ let tab=null,area=null,replaced=null,sections={support:true};
+ const win={location:{href:'https://qa.invalid/?tab=systemadmin&supportExit=1'},history:{replaceState:(_a,_b,url)=>replaced=url}};
+ runReturn(loading,false,admin,{approved},win,x=>tab=x,x=>area=x,fn=>sections=fn(sections));
+ assert.equal(tab,expected?'admin':null);assert.equal(area,expected?'users':null);
+ assert.equal(replaced,expected?'/?tab=systemadmin':null);
+ assert.deepEqual(sections,expected?{support:true,brukere:true}:{support:true});
+}
+console.log('app-support-return: PASS – native admin route only after approved administrator hydration');

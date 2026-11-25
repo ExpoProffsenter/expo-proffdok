@@ -1,0 +1,393 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-01",
+  "status": "prepared-local-integration-only-not-published",
+  "baseline": "e1f93ce0d1bdf9ad67c9e7f4cdf20a94ff320f8d",
+  "pr294": "c3594f108d605aeae0d895b9d8e71b1824d1f854",
+  "pr298": "338094b1d77bade1fef897c410c22d9e5d8750e4",
+  "pr305_ancestor": "09b1ece3839a367c2e61faeea3f184999f6a88d1",
+  "source_patch_sha256": "09736927b104843ea529f38243b3c0c30ea7729a7b15e0b1cd5b21a8a2f192f8",
+  "patch_apply_check": "PASS against exact baseline",
+  "critical_build_sandbox": "PASS",
+  "critical_build_production": "PASS",
+  "browser_assertions": 1372,
+  "browser_results": [
+    {
+      "suite": "bolig-builder-browser-check",
+      "exit_code": 0,
+      "tail": [
+        "PASS builder/browser: 790 assertions; atomic-attempt recovery, house floors, saved draft, close/Escape/focus, 400/480/500 households, last-building search, scoped rendering and 320/390/1024/1366px. Internal visual evidence: /tmp/bolig-builder-cTwAIj"
+      ]
+    },
+    {
+      "suite": "bolig-guidance-workspace-browser-check",
+      "exit_code": 0,
+      "tail": [
+        "Housing guidance: 242 assertions PASS; all69 original blocks plus4 integrated topics, search/eight areas, one topic, shared frames, fixed returns, focus/work preservation, revalidation/revoke; synthetic reads only."
+      ]
+    },
+    {
+      "suite": "bolig-integration-browser-check",
+      "exit_code": 0,
+      "tail": [
+        "Bolig integration browser: 53 assertions PASS; native leaves are stubbed only at the component boundary."
+      ]
+    },
+    {
+      "suite": "bolig-self-attendance-browser-check",
+      "exit_code": 0,
+      "tail": [
+        "Self attendance browser: 21 assertions PASS"
+      ]
+    },
+    {
+      "suite": "bolig-quality-browser-check",
+      "exit_code": 0,
+      "tail": [
+        "PASS native documentation Chromium: 109 assertions; manual/import, focus/draft recovery, conflict, frozen completion, corrections, private file/protocol, reviewed mail, FDV, mobile and reader/foreign scope."
+      ]
+    },
+    {
+      "suite": "bolig-partner-quality-browser-check",
+      "exit_code": 0,
+      "tail": [
+        "PASS bolig partner quality Chromium: 121 assertions."
+      ]
+    },
+    {
+      "suite": "kshms-extract-workspace-browser-check",
+      "exit_code": 0,
+      "tail": [
+        "critical-kshms-execution-pdf-check: OK — snapshot identities, draft/expected-risk markers, photos, 25 matrix cells, pagination, changed revision and revoked/late export gates",
+        "critical-kshms-sja-pdf-check: PASS – exact saved signature/content, draft markers, company/project/user gates, final revocation/change, late cancellation, no mutation and framed pagination",
+        "critical-kshms-document-pdf-check: OK — exact stored editions/answers, no staff acknowledgment/draft/source-URL leak, saved identity, draft/archive/template markers, image failure, own assignment, final revoked access and late response gates",
+        "critical-kshms-ruh-pdf-check: OK – exhaustive history, private images, exact saved snapshots, final authorization, no writes or token links",
+        "critical-kshms-inspection-extract-check: PASS - explicit eight-type selection/manifest, exhaustive RUH history/private images, exact final snapshots and role/access, no mutation or staff/draft/token leak",
+        "Native extract presentation PASS: 36 assertions; five widths, actual component, native read transport, selection/confirmation/hide/keyboard/role gate; no export/write."
+      ]
+    }
+  ],
+  "extract_results": [
+    {
+      "suite": "kshms-inspection-extract-react-check",
+      "variant": "ordinary",
+      "exit_code": 0,
+      "tail": [
+        "critical-kshms-execution-pdf-check: OK — snapshot identities, draft/expected-risk markers, photos, 25 matrix cells, pagination, changed revision and revoked/late export gates",
+        "critical-kshms-sja-pdf-check: PASS – exact saved signature/content, draft markers, company/project/user gates, final revocation/change, late cancellation, no mutation and framed pagination",
+        "critical-kshms-document-pdf-check: OK — exact stored editions/answers, no staff acknowledgment/draft/source-URL leak, saved identity, draft/archive/template markers, image failure, own assignment, final revoked access and late response gates",
+        "critical-kshms-ruh-pdf-check: OK – exhaustive history, private images, exact saved snapshots, final authorization, no writes or token links",
+        "critical-kshms-inspection-extract-check: PASS - explicit eight-type selection/manifest, exhaustive RUH history/private images, exact final snapshots and role/access, no mutation or staff/draft/token leak",
+        "critical-kshms-attachment-archive-check: PASS - independent ZIP CRC/UTF-8/hash verification, exact selected snapshots/private and project files, bounded sizes/types/paths, role and late cancellation, no partial archive or mutation",
+        "critical-kshms-deviation-extract-check: PASS - explicit quality/HMS groups, exhaustive history/private originals/PDF/ZIP, category confusion and final changes/access/late gates, RUH-only entry points preserved",
+        "critical-kshms-legacy-extract-check: PASS - legacy project access before/after scoped read, explicit cases/content hash, PDF/ZIP originals, no duplicate linked cases or invented history/signature, changes/revocation/late/missing-file gates",
+        "{\"result\":\"PASS\",\"actualPdfs\":2,\"pages\":15,\"output\":\"LOCAL_QA/exports/ordinary\",\"scenarios\":\"actual React/Storage/jsPDF eight-type selection/confirmation/manifest, long text, image, signature, review, matrix, remove choice, no auto selection or write, final access revocation and late company/user/unmount cancellation\"}"
+      ]
+    },
+    {
+      "suite": "kshms-attachment-archive-react-check",
+      "variant": "ordinary",
+      "exit_code": 0,
+      "tail": [
+        "critical-kshms-execution-pdf-check: OK — snapshot identities, draft/expected-risk markers, photos, 25 matrix cells, pagination, changed revision and revoked/late export gates",
+        "critical-kshms-sja-pdf-check: PASS – exact saved signature/content, draft markers, company/project/user gates, final revocation/change, late cancellation, no mutation and framed pagination",
+        "critical-kshms-document-pdf-check: OK — exact stored editions/answers, no staff acknowledgment/draft/source-URL leak, saved identity, draft/archive/template markers, image failure, own assignment, final revoked access and late response gates",
+        "critical-kshms-ruh-pdf-check: OK – exhaustive history, private images, exact saved snapshots, final authorization, no writes or token links",
+        "critical-kshms-inspection-extract-check: PASS - explicit eight-type selection/manifest, exhaustive RUH history/private images, exact final snapshots and role/access, no mutation or staff/draft/token leak",
+        "critical-kshms-attachment-archive-check: PASS - independent ZIP CRC/UTF-8/hash verification, exact selected snapshots/private and project files, bounded sizes/types/paths, role and late cancellation, no partial archive or mutation",
+        "critical-kshms-deviation-extract-check: PASS - explicit quality/HMS groups, exhaustive history/private originals/PDF/ZIP, category confusion and final changes/access/late gates, RUH-only entry points preserved",
+        "critical-kshms-legacy-extract-check: PASS - legacy project access before/after scoped read, explicit cases/content hash, PDF/ZIP originals, no duplicate linked cases or invented history/signature, changes/revocation/late/missing-file gates",
+        "{\"result\":\"PASS\",\"archives\":1,\"files\":7,\"output\":\"LOCAL_QA/exports/ordinary\",\"scenarios\":\"actual React preview/ZIP bytes/manifest, private and project Storage, confirmation/empty/reset/error, role and late company/user/unmount, no writes\"}"
+      ]
+    },
+    {
+      "suite": "kshms-inspection-extract-react-check",
+      "variant": "quality-hms",
+      "exit_code": 0,
+      "tail": [
+        "critical-kshms-execution-pdf-check: OK — snapshot identities, draft/expected-risk markers, photos, 25 matrix cells, pagination, changed revision and revoked/late export gates",
+        "critical-kshms-sja-pdf-check: PASS – exact saved signature/content, draft markers, company/project/user gates, final revocation/change, late cancellation, no mutation and framed pagination",
+        "critical-kshms-document-pdf-check: OK — exact stored editions/answers, no staff acknowledgment/draft/source-URL leak, saved identity, draft/archive/template markers, image failure, own assignment, final revoked access and late response gates",
+        "critical-kshms-ruh-pdf-check: OK – exhaustive history, private images, exact saved snapshots, final authorization, no writes or token links",
+        "critical-kshms-inspection-extract-check: PASS - explicit eight-type selection/manifest, exhaustive RUH history/private images, exact final snapshots and role/access, no mutation or staff/draft/token leak",
+        "critical-kshms-attachment-archive-check: PASS - independent ZIP CRC/UTF-8/hash verification, exact selected snapshots/private and project files, bounded sizes/types/paths, role and late cancellation, no partial archive or mutation",
+        "critical-kshms-deviation-extract-check: PASS - explicit quality/HMS groups, exhaustive history/private originals/PDF/ZIP, category confusion and final changes/access/late gates, RUH-only entry points preserved",
+        "critical-kshms-legacy-extract-check: PASS - legacy project access before/after scoped read, explicit cases/content hash, PDF/ZIP originals, no duplicate linked cases or invented history/signature, changes/revocation/late/missing-file gates",
+        "{\"result\":\"PASS\",\"actualPdfs\":2,\"pages\":22,\"output\":\"LOCAL_QA/exports/quality-hms\",\"scenarios\":\"actual React/Storage/jsPDF eight-type selection/confirmation/manifest, long text, image, signature, review, matrix, remove choice, no auto selection or write, final access revocation and late company/user/unmount cancellation\"}"
+      ]
+    },
+    {
+      "suite": "kshms-attachment-archive-react-check",
+      "variant": "quality-hms",
+      "exit_code": 0,
+      "tail": [
+        "critical-kshms-execution-pdf-check: OK — snapshot identities, draft/expected-risk markers, photos, 25 matrix cells, pagination, changed revision and revoked/late export gates",
+        "critical-kshms-sja-pdf-check: PASS – exact saved signature/content, draft markers, company/project/user gates, final revocation/change, late cancellation, no mutation and framed pagination",
+        "critical-kshms-document-pdf-check: OK — exact stored editions/answers, no staff acknowledgment/draft/source-URL leak, saved identity, draft/archive/template markers, image failure, own assignment, final revoked access and late response gates",
+        "critical-kshms-ruh-pdf-check: OK – exhaustive history, private images, exact saved snapshots, final authorization, no writes or token links",
+        "critical-kshms-inspection-extract-check: PASS - explicit eight-type selection/manifest, exhaustive RUH history/private images, exact final snapshots and role/access, no mutation or staff/draft/token leak",
+        "critical-kshms-attachment-archive-check: PASS - independent ZIP CRC/UTF-8/hash verification, exact selected snapshots/private and project files, bounded sizes/types/paths, role and late cancellation, no partial archive or mutation",
+        "critical-kshms-deviation-extract-check: PASS - explicit quality/HMS groups, exhaustive history/private originals/PDF/ZIP, category confusion and final changes/access/late gates, RUH-only entry points preserved",
+        "critical-kshms-legacy-extract-check: PASS - legacy project access before/after scoped read, explicit cases/content hash, PDF/ZIP originals, no duplicate linked cases or invented history/signature, changes/revocation/late/missing-file gates",
+        "{\"result\":\"PASS\",\"archives\":1,\"files\":11,\"output\":\"LOCAL_QA/exports/quality-hms\",\"scenarios\":\"actual React preview/ZIP bytes/manifest, private and project Storage, confirmation/empty/reset/error, role and late company/user/unmount, no writes\"}"
+      ]
+    },
+    {
+      "suite": "kshms-inspection-extract-react-check",
+      "variant": "legacy",
+      "exit_code": 0,
+      "tail": [
+        "critical-kshms-execution-pdf-check: OK — snapshot identities, draft/expected-risk markers, photos, 25 matrix cells, pagination, changed revision and revoked/late export gates",
+        "critical-kshms-sja-pdf-check: PASS – exact saved signature/content, draft markers, company/project/user gates, final revocation/change, late cancellation, no mutation and framed pagination",
+        "critical-kshms-document-pdf-check: OK — exact stored editions/answers, no staff acknowledgment/draft/source-URL leak, saved identity, draft/archive/template markers, image failure, own assignment, final revoked access and late response gates",
+        "critical-kshms-ruh-pdf-check: OK – exhaustive history, private images, exact saved snapshots, final authorization, no writes or token links",
+        "critical-kshms-inspection-extract-check: PASS - explicit eight-type selection/manifest, exhaustive RUH history/private images, exact final snapshots and role/access, no mutation or staff/draft/token leak",
+        "critical-kshms-attachment-archive-check: PASS - independent ZIP CRC/UTF-8/hash verification, exact selected snapshots/private and project files, bounded sizes/types/paths, role and late cancellation, no partial archive or mutation",
+        "critical-kshms-deviation-extract-check: PASS - explicit quality/HMS groups, exhaustive history/private originals/PDF/ZIP, category confusion and final changes/access/late gates, RUH-only entry points preserved",
+        "critical-kshms-legacy-extract-check: PASS - legacy project access before/after scoped read, explicit cases/content hash, PDF/ZIP originals, no duplicate linked cases or invented history/signature, changes/revocation/late/missing-file gates",
+        "{\"result\":\"PASS\",\"actualPdfs\":2,\"pages\":19,\"output\":\"LOCAL_QA/exports/legacy\",\"scenarios\":\"actual React/Storage/jsPDF eight-type selection/confirmation/manifest, long text, image, signature, review, matrix, remove choice, no auto selection or write, final access revocation and late company/user/unmount cancellation\"}"
+      ]
+    },
+    {
+      "suite": "kshms-attachment-archive-react-check",
+      "variant": "legacy",
+      "exit_code": 0,
+      "tail": [
+        "critical-kshms-execution-pdf-check: OK — snapshot identities, draft/expected-risk markers, photos, 25 matrix cells, pagination, changed revision and revoked/late export gates",
+        "critical-kshms-sja-pdf-check: PASS – exact saved signature/content, draft markers, company/project/user gates, final revocation/change, late cancellation, no mutation and framed pagination",
+        "critical-kshms-document-pdf-check: OK — exact stored editions/answers, no staff acknowledgment/draft/source-URL leak, saved identity, draft/archive/template markers, image failure, own assignment, final revoked access and late response gates",
+        "critical-kshms-ruh-pdf-check: OK – exhaustive history, private images, exact saved snapshots, final authorization, no writes or token links",
+        "critical-kshms-inspection-extract-check: PASS - explicit eight-type selection/manifest, exhaustive RUH history/private images, exact final snapshots and role/access, no mutation or staff/draft/token leak",
+        "critical-kshms-attachment-archive-check: PASS - independent ZIP CRC/UTF-8/hash verification, exact selected snapshots/private and project files, bounded sizes/types/paths, role and late cancellation, no partial archive or mutation",
+        "critical-kshms-deviation-extract-check: PASS - explicit quality/HMS groups, exhaustive history/private originals/PDF/ZIP, category confusion and final changes/access/late gates, RUH-only entry points preserved",
+        "critical-kshms-legacy-extract-check: PASS - legacy project access before/after scoped read, explicit cases/content hash, PDF/ZIP originals, no duplicate linked cases or invented history/signature, changes/revocation/late/missing-file gates",
+        "{\"result\":\"PASS\",\"archives\":1,\"files\":9,\"output\":\"LOCAL_QA/exports/legacy\",\"scenarios\":\"actual React preview/ZIP bytes/manifest, private and project Storage, confirmation/empty/reset/error, role and late company/user/unmount, no writes\"}"
+      ]
+    }
+  ],
+  "exports": [
+    {
+      "path": "legacy/actual-react-legacy-attachments.zip",
+      "bytes": 69000,
+      "sha256": "34ed578d4fa33267f6fca2978c8b45ca7c61c6fb995d2825ebd03c7ebf14bd41",
+      "crc_ok": true,
+      "entries": 10
+    },
+    {
+      "path": "legacy/extract-with-legacy.pdf",
+      "bytes": 128269,
+      "sha256": "7db1e14faea0d8942c4e71f07cc34cda815690ac85d9d440502747fd8e55e396",
+      "pages": 20
+    },
+    {
+      "path": "legacy/extract-without-routine.pdf",
+      "bytes": 125941,
+      "sha256": "8bde6faf61e5c52ec0d8ab9067373e33e3b4b5ad19585a067c182495162f5907",
+      "pages": 19
+    },
+    {
+      "path": "ordinary/actual-react-attachments.zip",
+      "bytes": 67472,
+      "sha256": "65bde3b19aa4bce8968dac808156ea87f20e910bd9fbfd38fa3bb8abd323aee4",
+      "crc_ok": true,
+      "entries": 8
+    },
+    {
+      "path": "ordinary/extract-all-eight-types.pdf",
+      "bytes": 121939,
+      "sha256": "e5af0fe8706c12efb041540302dcecc207d6014c21a7d183e424559b68fc6d61",
+      "pages": 16
+    },
+    {
+      "path": "ordinary/extract-without-routine.pdf",
+      "bytes": 119536,
+      "sha256": "62182aecac0cc69fbed0f802c91b236ee8ae4f65f696e6f33ef815d48dd20c8d",
+      "pages": 15
+    },
+    {
+      "path": "quality-hms/actual-react-quality-hms-attachments.zip",
+      "bytes": 70190,
+      "sha256": "38baa1d7ed3518d2323b75e407ba6861c4563ecb41ac7c8b3ed28b9c29f3e9a1",
+      "crc_ok": true,
+      "entries": 12
+    },
+    {
+      "path": "quality-hms/extract-with-quality-hms.pdf",
+      "bytes": 136600,
+      "sha256": "ea4755c74a4ba6b20e562beb83240be618b71ca6b75d5b8697637d0913a0234a",
+      "pages": 23
+    },
+    {
+      "path": "quality-hms/extract-without-routine.pdf",
+      "bytes": 133941,
+      "sha256": "b59bd3646ba8fae4d9cb6ac7531046238f2239de75d03194dcd56e989f645237",
+      "pages": 22
+    }
+  ],
+  "files": [
+    {
+      "path": "docs/changes/bolig-builder-photo-overflow-20261029.json",
+      "sha256": "36841bfe483bac498c711e15fa628ebceb93ebf5079c9982c60953a0de212309",
+      "bytes": 2170
+    },
+    {
+      "path": "docs/changes/bolig-checklist-status-choices-20261031.json",
+      "sha256": "dee7c8a4ef52cee1889b3dbd1f2f0173cd644f42faa959872858bd7bed634b24",
+      "bytes": 2660
+    },
+    {
+      "path": "docs/changes/bolig-personal-followup-20261030.json",
+      "sha256": "a895c83e01935a30099735271ed36958e548c6e10eccbccc907f847c1705181f",
+      "bytes": 2073
+    },
+    {
+      "path": "docs/changes/kshms-extract-scope-lock-20261029.json",
+      "sha256": "cf0b6ea3b19171f2117a1dee65221664a0d0aa51a3d9881e99d2a89825deb105",
+      "bytes": 2261
+    },
+    {
+      "path": "docs/changes/proffdok-workspace-housing-20261028.json",
+      "sha256": "0a237a497b866d03f6ec927981c668488de82cd7d70888d59a17eef41ef7566e",
+      "bytes": 3465
+    },
+    {
+      "path": "docs/qa/proffdok-design01-widths-20261028.json",
+      "sha256": "4b98069b27865fc469494be7d3fcec57f62a53b3f0abe4f25f5ee55eb9587520",
+      "bytes": 2236
+    },
+    {
+      "path": "docs/reviews/BYGGBASE_UX_VURDERING_20261027.md",
+      "sha256": "7cd92b45c2a6aae01a92a4df6cd0a692e3af7a784bba6603ea40cd859d6d2855",
+      "bytes": 27369
+    },
+    {
+      "path": "docs/reviews/PROFFDOK_FUNKSJONSKART_OG_NYANSATTPROVE_20261028.md",
+      "sha256": "cf0e93f951aa1060ea722a7dbc358e76e1036fd763e3df04029dfc0b964f442a",
+      "bytes": 87196
+    },
+    {
+      "path": "scripts/bolig-builder-browser-check.mjs",
+      "sha256": "98fec295974aa21f95ab547c470527d765bbcd4f980f8267b93e65522b1f2d7e",
+      "bytes": 37855
+    },
+    {
+      "path": "scripts/bolig-guidance-workspace-browser-check.mjs",
+      "sha256": "0d25546bda008aac4ffd9145a298cadd6999039ba5535dc6d6219a755fee48dc",
+      "bytes": 12637
+    },
+    {
+      "path": "scripts/bolig-integration-browser-check.mjs",
+      "sha256": "c4f6567e34d1498582dc5ad6bc5b8dc7dd0a8fc668146dd6b8fc822a562dfa6f",
+      "bytes": 15368
+    },
+    {
+      "path": "scripts/bolig-partner-quality-browser-check.mjs",
+      "sha256": "d949d7199e8ce7112bd17b069d4b6ddf7a4183c388e367fecf643fe733812822",
+      "bytes": 18689
+    },
+    {
+      "path": "scripts/bolig-quality-browser-check.mjs",
+      "sha256": "35bb47a9ed2d0b0dbe4ed077a5fc4f84cc45e876e7c2ab4ca466219ea25b3aa7",
+      "bytes": 24711
+    },
+    {
+      "path": "scripts/bolig-self-attendance-browser-check.mjs",
+      "sha256": "937f782c5b0ee8b98ada52e1686098f535a58e4cd42a24b122bc6d201852f32e",
+      "bytes": 6725
+    },
+    {
+      "path": "scripts/fixtures/bolig-integration-harness.jsx",
+      "sha256": "3311c3e6cbaeb63288f9b9704628fb9a731290d04946bb6bed87972f32ea5777",
+      "bytes": 4515
+    },
+    {
+      "path": "scripts/fixtures/bolig-status-choice-check.mjs",
+      "sha256": "f09f3e84282b59a3535f9ea29aed896d2285f9fc42cc3811d53a412e45807a77",
+      "bytes": 2739
+    },
+    {
+      "path": "scripts/kshms-attachment-archive-react-check.mjs",
+      "sha256": "df875e9e51e841a0b07166886f74726dc389366dd30d422a35d3dcb825dbddbc",
+      "bytes": 12338
+    },
+    {
+      "path": "scripts/kshms-inspection-extract-react-check.mjs",
+      "sha256": "73c9d2c65cf76590390e8823c8faae4a439b6e82b98fd0ec17d0cb5d98a73dc0",
+      "bytes": 13457
+    },
+    {
+      "path": "src/modules/bolig/BoligBuildingOverview.jsx",
+      "sha256": "c706f5aa01e491d4b5409f246da2282d5b60d22c205c33ba134eab9921d489a3",
+      "bytes": 42320
+    },
+    {
+      "path": "src/modules/bolig/BoligChecklistStatusChoices.jsx",
+      "sha256": "cbd6c4cda823bc2fac693e698828d6c3c66b0f519754f502af8a2677110d21cb",
+      "bytes": 942
+    },
+    {
+      "path": "src/modules/bolig/BoligEntry.jsx",
+      "sha256": "ecbbf80e44652c153ed9333dbb2e3bc022b830ce70e450e1262c4d5f5176d4cc",
+      "bytes": 50814
+    },
+    {
+      "path": "src/modules/bolig/BoligMyTasks.jsx",
+      "sha256": "22f2437d9b99a993337873d3aea59813c064f19bfe97824c38d3b2b1de70abfb",
+      "bytes": 8494
+    },
+    {
+      "path": "src/modules/bolig/BoligPartnerQuality.jsx",
+      "sha256": "82f0356c14574ebf7534f2298fb60e050b3b8452477133ebc81878ecfd84db75",
+      "bytes": 24616
+    },
+    {
+      "path": "src/modules/bolig/BoligPresenceCard.jsx",
+      "sha256": "a272749fc4f63f0c7dd84708364202f5ecc8a0f12a622611f49ff4990b774f93",
+      "bytes": 8975
+    },
+    {
+      "path": "src/modules/bolig/BoligQuality.jsx",
+      "sha256": "8d9d7f3288d868952814c29f2512b285eddb9cd2ca39f27bc1a52db5f8111db9",
+      "bytes": 67252
+    },
+    {
+      "path": "src/modules/bolig/README.md",
+      "sha256": "ef0f90e75150d3bc8637d83303e77dddc5506900429a36598fd28661f3b7feef",
+      "bytes": 1933
+    },
+    {
+      "path": "src/modules/bolig/bolig.css",
+      "sha256": "a7bf8562c90a4697c2da69177ea3a3f7b8271b20028e1dfa9ebc1c4eb89fb751",
+      "bytes": 122187
+    },
+    {
+      "path": "src/modules/bolig/boligChecklistStatusChoices.css",
+      "sha256": "f5787c01f567bcb3bd9f618a75dad14fd82b4cba6fc6bcd56838a2d52c6b9b6d",
+      "bytes": 2145
+    },
+    {
+      "path": "src/modules/bolig/boligWorkspace.css",
+      "sha256": "27423f938ced99bf7c25165b72cfaf87be6abf88d16e9b53e384c894a28a3874",
+      "bytes": 5454
+    },
+    {
+      "path": "src/modules/help/boligHelpContent.jsx",
+      "sha256": "8ad1fa6079c34f84d107fcd40399fab8ff2bb45ab4c76c6dd3ea8b62a6af01eb",
+      "bytes": 47121
+    },
+    {
+      "path": "src/modules/kshms/KshmsInspectionExtract.jsx",
+      "sha256": "61de7c34f1efb3a370b219cc13daa26b12ea663e2140f881fbf67cb427400dca",
+      "bytes": 15520
+    }
+  ],
+  "limits": [
+    "No merged remote or live combined candidate",
+    "No Production/Sandbox writes in this rehearsal",
+    "No new visual QA claim for all115 exported PDF pages",
+    "Cloud live PDF transfer remains unverified after tool timeouts",
+    "No physical-device/Safari/real separate-role attestation",
+    "Full video coverage remains open",
+    "Two trailing blank lines preserved from PR294 source"
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "key": "store_lifting",
+  "title": "Håndtering av badekar, porselen, møbler og lange rør",
+  "chapter": "Sikker utførelse og beredskap",
+  "goal": "Redusere belastningsskader, klemskader og skade på tunge eller uhåndterlige VVS-produkter.",
+  "responsibility": "Butikk-/lagerleder planlegger hjelpemidler og bemanning. Medarbeider vurderer løftet og ber om hjelp før det blir uforsvarlig.",
+  "procedure": "1. Vurder vekt, størrelse, grep, emballasje, arbeidsstilling og transportvei før varen flyttes. Avklar trapper, terskler og plass ved kundens kjøretøy.\n\n2. Velg hjelpemidler og metode som reduserer manuelle løft. Bruk egnet tralle, løfteutstyr eller truck der det er forsvarlig og tillatt.\n\n3. Ved nødvendig løft med flere personer avtales grep, løfteretning og én tydelig leder for bevegelsen. Hold hender og føtter unna klempunkter.\n\n4. Ikke løft eller skyv ustabilt eller skadet porselen. Sikre lange rør og store flater mot sving, rulling og utilsiktet bevegelse.\n\n5. Stans ved smerte, utilstrekkelig grep eller usikker kontroll. Leder tilpasser arbeidsmåte og følger opp gjentatte belastninger.",
+  "documentation": "Vurdering av manuell håndtering, hjelpemidler, opplæring og registrerte belastnings-/klemhendelser.",
+  "references": [
+    {
+      "title": "Arbeidstilsynet – vurdering av manuelt arbeid",
+      "url": "https://www.arbeidstilsynet.no/arbeidsmiljo/ergonomi/Vurderingsverktoy-for-ergonomisk-risiko-ved-manuelt-arbeid/",
+      "kind": "professional",
+      "checked_on": "2026-10-12"
+    },
+    {
+      "title": "Internkontrollforskriften §§4–5",
+      "url": "https://www.arbeidstilsynet.no/regelverk/forskrifter/internkontrollforskriften/",
+      "kind": "law",
+      "checked_on": "2026-10-12"
+    }
+  ],
+  "coverage": [],
+  "relevance": "Ved drift av VVS-butikk, utstilling og lager",
+  "trades": [
+    "vvs"
+  ],
+  "confirmation": "Gjennomgå rutinen og avklar spørsmål med ansvarlig før du utfører oppgavene. Bekreft bare egen gjennomgang. Be om nødvendig opplæring og meld fra om mangler.",
+  "source_key": "store_lifting",
+  "source_revision": 1,
+  "recommendation": "butikk|lager|truck|utstilling|varemottak"
+}

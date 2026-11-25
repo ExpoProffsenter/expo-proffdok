@@ -1,0 +1,17 @@
+# Personlig timeinngang
+
+Firmaets eksisterende `TimeSetup` eier `enabled`. `mobile_shortcut` er et separat valg. HRs autoriserte administrasjonsinngang må finnes også når timeføring er avslått, slik at firmaadmin kan åpne oppsettet.
+
+`usePersonalTimeAccess` bruker `createTimeSession` og `time_tasks_get`. Bare et ferskt svar med riktig bruker/firma og `enabled === true` åpner Min sides personlige timeinnganger. Det innfører ingen ny rettighet eller lagring av firmaoppsett. Hooken deler det samme bekreftede svaret med `PersonalTimeCard`.
+
+Under ny kontroll i samme scope beholdes bare navigasjonsfaktumet. Data skjules. Min sides `TimeSurface` holder native arbeidsflate og `DialogPortalTarget` montert, slik at også underdialogen skjules og kladden bevares. Ferskt ja-svar viser samme editor. Bekreftet av eller 42501 fjerner inngangen og velger I dag dersom Mine timer var valgt. Andre lesefeil beholder valgt inngang og tilbyr **Kontroller timeføring igjen**. Profil og andre valgte arbeidsflater påvirkes ikke.
+
+Focus, visibility, arbeidsprofil, tilgang og lagret `TIME_SETTINGS_EVENT` kontrollerer på nytt. Epoch/dispose og eksakt resultatkontekst avviser gamle svar ved nytt scope. Eksisterende TimeSheet eier fortsatt felt, RAM-kladd, timer, kvitteringer, innlevering og serverkontroller. Ingen timekommando sendes av inngangsgaten.
+
+`TimeField` beholder barn og deres props/handlers. Native input/select/textarea kobles til stabilt etikett-ID, også etter innskriving; øvrige barn beholdes. `time-subflows-036-browser-check.mjs` verifiserer faktiske skjemaer, utlegg/vedleggsfelt, historikk, kontroll, oppsett og eksport med sen app-CSS og isolerte lesekall. Den erstatter ikke eksisterende React-/database-/Storage-/eksportprøver.
+
+Personlige registreringsinnganger fanger eksakt åpneknapp før `openEditor` henter prosjektlisten og deaktiverer den. Eksisterende `DeviationDialog.returnFocusTarget` bruker en resolver bundet til bruker/firma/medarbeider/uke og aktiv eier. Bare en tilkoblet, synlig og tilgjengelig node på synlig side kan få fokus ved Avbryt, kryss eller Escape. Skjult TimeSurface og avmontering kan ikke fokusere gammel inngang. Ny registrering, Før timer i dag, forberedelse av tidtaking, dagknapp og Rediger følger samme kontrakt. Felt, scoped RAM-kladd, kvittering, timere, lagring og innlevering beholder eksisterende eiere. `time-subflows-036-browser-check.mjs` holder den reelle prosjektlesingen tilbake og kontrollerer disabled trigger og eksakt retur på fem bredder; alle tidligere felt-, historikk-, oppsett-, eksport- og null-skrivekrav beholdes.
+
+Ved Escape før prosjektlesingen er ferdig venter fokusreturen til åpneknappen blir tilgjengelig. Bare uendret scope, aktiv eier, fortsatt redigerbar uke og BODY-fokus tillater denne ene returen. Ny tastatur-/pekerhandling, skjult side, ny editor eller avmontering avbryter ventingen. Selve prosjektlesingen fortsetter uendret; sen respons gjenåpner ikke editoren eller lagrer den forkastede kladden. React-prøven dekker også scopebytte og tilgangsavslag; native browserprøven dekker fem bredder og skjult arbeidsflate.
+
+Timeadministrasjonens eksportavkrysning gjelder bare kontrollgrunnlaget som vises. Når eksisterende focus-/visibility-/arbeidsprofil-/tilgangsrefresh tømmer listen, nullstilles også bekreftelsen. Valgt eksportfane og periode beholdes. Brukeren henter og kontrollerer grunnlaget før samme eksisterende avkrysning brukes igjen. Refresh lager ingen eksport og laster ikke ned lønnsfil; eksportarkiv og serverens godkjennings-/låse-/engangsregler er uendret.

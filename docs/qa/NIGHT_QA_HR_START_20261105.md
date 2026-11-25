@@ -1,0 +1,123 @@
+# Nattoppdrag og HR-startfunn – 5. november 2026
+
+Kenneth har bestilt selvstendig nattarbeid etter låst chat: komplett videre QA/bugfix/UX/UI i hele appen og flere faktiske videoer. Ny konkret prioritet er medarbeidersamtaler: tegnbegrensning og unødig frem/tilbake rundt ansvar, frister og varsler. Dette er ikke TEST OK eller produksjonsautorisasjon.
+
+Miljømål BEGGE. Nå utføres arbeid bare i Preview/Sandbox. PR311 / fase45b-whole-app-qa-20261104 er helappgrunnlag; PR308/309/310 bevares som separate pakker. Fast Preview:
+https://expo-proffdok-git-fase45b-whole-app-qa-20261104-ringside.vercel.app/?progressTest=safe
+
+## Kontinuitet og faktisk kontroll ved nattstart
+
+- AGENTS.md, hele PROJECT_GUARDRAILS.md og docs/DEVELOPMENT_WORKFLOW.md er lest.
+- Faktisk remote og eksisterende lokale checkout samsvarer på eea4537370405b808ed6b0361b40e8de0f26ab96. Lokal checkout: /workspace/scratch/dce73051881d/expo-proffdok; scratch er ikke varig fasit.
+- CI945/run41954050830 er fortsatt in_progress ved kontrollen ca.03.20 norsk tid. Scope, build, hr-db, hr-react, company-db og bolig-db var grønne; app-browser, projects-support og bolig-browser pågikk. Ingen full grønn attest ennå.
+- Les docs/qa/STOCKTAKE_AREAS_20261105.md før videre varetellingsarbeid. Sandbox-migrasjonen er allerede installert og canonical20261105014939; ikke installer på nytt. Ny status-/utkastrettelse ligger i eea45373. Opprinnelige tellinger skal bevares.
+- Timevise oppfølginger er opprettet for denne natten frem til07.20 Europe/Oslo. Umiddelbar start ble kjørt i denne samtalen, ikke bekreftet som separat bakgrunnsjobb. Ikke start konkurrerende skriving dersom annen kjøring er aktiv.
+
+## HR: bekreftede kildefunn, ingen apprettelse ennå
+
+Gjennomgått kilde på eea45373, uten lesing eller endring av reelle personlige samtaler:
+
+| Område | Bekreftet kildeatferd |
+| --- | --- |
+| Tiltakstekst | HrConversations.jsx bruker maxLength600. SQL-versjonene av hr_conversation_command validerer samme600-grense. En ren økning i HTML-feltet er derfor utilstrekkelig. |
+| Forberedelse og møtesvar | HTML-feltene bruker maxLength4000. Den opprinnelige private svarvalidatoren i20261011134804 validerer4000. Avstem senere funksjonsdefinisjoner før endring. |
+| Kommentarer | HTML-feltene bruker maxLength4000. Senere kommentarhåndtering i20261012080426 validerer4000. |
+| Dobbeltregistrering | Standardmalens møtespørsmål «Avtaler og tiltak» ber om hva, ansvarlig, frist og neste oppfølging. Neste separate Tiltak-steg krever de samme strukturerte opplysningene. |
+| Kommentarer | Standardmal har «Egne kommentarer» i møtefelt og egne rolleavgrensede kommentarer under Referat. Bevar meningsfullt innhold i eksisterende lagrede maler; ikke omtolk historikk. |
+| Oppfølgingsdato | SQL krever next_on når tiltak finnes, i tillegg til frist på hvert tiltak. Betydningen og varslingskoblingen må avstemmes før forenkling. |
+| Varsler/kalender | Kalender, lederpåminnelse, invitasjonsstatus og endring av tid/sted ligger på flere flater. Eksisterende reminder-kommando er sperret ved dirty kladd. Bevar denne lagrings-/revisjonskontrakten ved eventuell samling. |
+
+Dette er kildefunn, ikke innlogget gjenskaping av Kenneths konkrete samtale eller verifikasjon av produksjonens installerte SQL. Ingen persondata, appkode, migrasjon, varsling eller tilgang er endret i denne startkontrollen.
+
+## Konkret neste arbeid
+
+1. Bekreft sluttresultatet av CI945 på eksakt eea45373. Undersøk eventuell reell feil før omkjøring; ikke svekk assertioner.
+2. Gjennomgå HR-modulens README/arkitektur og eksisterende hr-conversations runtime/React/database/browser-checker, gjeldende service/validator, SQL-wrapperkjeden og hrConversationPdf.mjs. Avstem faktisk Sandbox-funksjon dersom backend skal endres.
+3. Definer separat avgrenset HR-scope før kode. Håndter lange tekster uten stille avkorting og med tydelig grense. UI, JavaScript, SQL, kladd, historikk og PDF må følge samme kontrakt. Lengdeendring må testes med eksisterende samtaler og rolleskille.
+4. Samle møtereferat/tiltak/ansvar/frister til færre naturlige handlinger, med nødvendig lagring, gjennomgang og partenes egne bekreftelser bevart. Ikke automatisk aktivér eller send e-post.
+5. Fortsett resten av helappmatrisen og videoer uten å gjenta ferdig QA. Se WHOLE_APP_REVIEW_20261104, ADMIN_STOCK_ORG_QA_20261105, SUPPORT_USERS_20261105 og eksisterende reise-/videoregister. Full Bolig A–Å og øvrige modulfilmer gjenstår.
+6. Hver leveranse får relevant QA, faktisk kilde/CI/READY/miljø, oppdatert PR og konkret neste steg. Bruk godkjent PROFFDOK-VIDEO-1.0 uten lyd, faktiske syntetiske skjermbilder, kapitler/tekstalternativ og redigerbare kilder. En plan er ikke en ferdig film.
+
+Ingen main/demo-merge, produksjonsmigrasjon, ekte utsending, reell HR-dataendring eller branchopprydding er autorisert av nattoppdraget. Produksjonssetting venter på uttrykkelig TEST OK for nye endringer.
+
+## Første avgrensede HR-rettelse
+
+Scope: HrConversations.jsx, hrConversations.css, ny hrConversationText.mjs, eksisterende hr-conversations-react-check, HR-README/Hjelp og dette endringsgrunnlaget. Miljømål BEGGE; kun PR311 Preview/Sandbox. Base18f28f9d. Remote head var stabil og tidligere checkout ren ved overtakelsen. Ingen konkurrerende skriver observert.
+
+HTML maxLength kuttet innlimt tekst før appens state mottok den. Private forberedelses-/møte-/tiltaks-/kommentarfelt beholder nå hele teksten og viser tegnantall/feltfeil. Eksisterende4000/600-servergrenser er fortsatt gjeldende; dette er ingen ferdig lengdeutvidelse. Lagre validerer samtlige skrivbare tekstfelt før første mutasjon, så for lang egen kommentar ikke gir et delvis lagret møte eller tidspunkt. Andre partens tekst og utilgjengelige felt gir ikke utilsiktet sperre. In-memory-kladd, fersk tilgang, revisjonskonflikter og historiske utgaver beholdes. Ingen ny lagring i nettleseren, backend, tilgang eller sending.
+
+121 faktiske React-/modellassertions PASS, inkludert full lang innliming, null mutasjoner ved overskridelse av forberedelse/tiltak/kommentar, komplett kladd etter focus/remount,4000Unicode-kodepunkter ved grensen og opprinnelige rolle-/firma-/historikk-/bekreftelses-/PDF-scenarioer. Full EXPO_BACKEND_TARGET=sandbox npm run build/critical PASS. Dette er syntetiske data; Espens reelle samtale er ikke åpnet. Ny kandidat-CI og innlogget etterkontroll må føres i PR311. Rollback: revert denne avgrensede apppakken; ingen databaseendring.
+
+Neste HR-pakke er fortsatt større tekstgrenser gjennom hele SQL-wrapperkjeden og mindre dobbeltregistrering av tiltak/ansvar/frister. Ikke regn disse som levert av tellerrettelsen.
+
+## Varetellingsfilm: faktisk fil funnet og innhold avstemt
+
+Lokal faktisk fil /workspace/scratch/62bf25dcaa5c/ProffDok_Varetelling_20261105.mp4: ffprobe bekrefter H264/1920x1080/198sekunder, ingen lydstrøm. Redigerbar kilde finnes i samme mappe/stocktake_video_20261105 med timeline.json, render.py, assets, fonts og captions.vtt. Dette er eldre kilde86b56c99 og17kapitler. Kapittel5/7 viser område per registrering, og pause/overtakelse/historikk finnes ikke. Filmen passer derfor ikke hele den nye områdeflyten og publiseres ikke som oppdatert veiledning. Registrering i PR308 og varig lagring må avstemmes før ny versjon; ingen ny film er produsert i denne pakken.
+
+Eksisterende hr-conversations-runtime-check:131PASS med syntetisk transport/provider og faktisk jsPDF. Ingen utsending. Tellerens tilgjengelige navn og beskrivelse er kontrollert separat, så tegnantallet ikke endrer feltets navn.
+
+Innlogget read-only etterkontroll på18f28f9d/dpl_A7uHpbDLTZc6k1SZfc9Tig655hYs READY: vanlig oppdatering beholdt demo-innlogging og plukkliste. Varetelling åpnet direkte, avsluttet egen QA-telling ble gjenfunnet. Reol A–kontroll viser Ferdig telt,2varelinjer,1av1område ferdig telt, bevart stoppmerknad og antall15og0 uten registrering/redigering. Ingen serverdata skrevet. HR-tekstpakken er ennå ikke live-attestert av denne kontrollen.
+
+Video og redigerbare kilder er samlet som tydelig merket eldre arkiv i ProffDok_Varetelling_arkiv_for_omradeflyt_20261105.zip, varig fil libfile_9625bb339a04819184a0133fcbe5d03c. Filen inneholder originalfil, timeline, renderer, fonter, faktiske syntetiske assets, kapitler og VTT; den er ikke registrert som oppdatert film i appen.
+
+Lokal HR-appkandidat8685868d40a0729efa622e4807e126b21336e8b6/treed2c0d5b666a9304e53e272caf31308034eb89ff2 har lokale121React-/modellkontroller,131runtime/PDF og full build PASS. Etterfølgende dokumentasjonscommit lukker stocktake-checkpointet og blir ny full CI-kandidat. Fersk PR-status skal brukes.
+
+## Publisert HR-kandidat og sluttkvittering
+
+GitHub-appkandidat6fd2efdc3ffcb4f5478492d7857802c046d6364b/treec0a47ad8bfdcb69e77ace5d6d67e1c5574a92517 er byteidentisk med det lokalt testede slutt-treet (git diff lokal HEAD→remote tom). Native git-push manglet innlogging; pakken ble i stedet skrevet med GitHub-tre/commit og expected-head18f28f9d, force=false. Ingen nyere arbeid overskrevet. De lokale8685868d/fcfc8181-committene er derfor lokale kontrollreferanser, ikke publiserte branchhoder.
+
+**CI947/run41955806115 fullført SUCCESS på eksakt6fd2efdc**, alle ni pakker og samlet gate. HR-React121og runtime/PDF131 var også grønne lokalt; ny full kandidat-CI er fasit for hele pakken. Vercel **dpl_HsL4nGbfDiPk2vz4KZP5MKmSPbEg READY** på eksaktSHA/fastalias/targetnull. Faktisk anonymt hentet /assets/main-CPI8PmcT.js inneholder Sandbox-refppvircenkjizeiqdxphj og ingen Production-refdqffxflaoyarbxyiyhop. Main er fortsatt34daef4c. Ingen TEST OK/merge/produksjon/demo-synk.
+
+Innlogget ordinær reload beholdt demo-konto/firma/plukkliste. HR→Demo medarbeider2→eksisterende DEMO-årssamtale åpnet i samme høyrepanel. De tre møtereferatfeltene viste bevart syntetisk tekst og112/4000tegn. Lagre samtale var disabled uten endringer. Tekstinnmating med skjermstyring feilet fordi AT-SPI-provider var utilgjengelig; etterkontrollen viste uendret tekst/teller, ingen vellykket lang innliming og ingen lagring. Escape returnerte til samme medarbeiderrad med fokus. Dette er lesings-/teller-/returbevis, ikke live-attest av lang paste, mobil eller Safari. Lang paste/ingen delvis mutasjon/focus/remount er bare attestert i de faktiske automatiske React-testene. Ingen reell samtale, serverfelt, e-post, bekreftelse eller rolle endret.
+
+Neste kjøring: les denne kvitteringen og fersk remote først. HR-lengdeutvidelse/SQL-wrapperkjede og forenklet tiltak-/fristflyt er fremdeles neste funksjonspakke. Fortsett deretter helappmatrisens åpne reiser og stabile filmopptak. Eldre varetellingsfilm er sikret, men ingen ny oppdatert film er produsert i denne pakken.
+
+## Samlet møte og tiltak – neste nattpakke
+
+Utgangspunkt d5535a6e192c0097d6e3b615e3939db6aa978f6a, CI948/run41956725824 SUCCESS og dpl_793zFasFGAXuQsbMeCfquShyrJEH READY/eksaktSHA. Main fortsatt34daef4c, PR308/309/310 uendrede separate hoder516c6ad2/1b59d937/1a3f615e. Forrige kjøring avsluttet og remote stabil; tidligere lokale filer var byteidentiske med remote før lokal branchpeker ble avstemt. Ingen konkurrerende skriver observert.
+
+Miljømål BEGGE, kun PR311 Preview/Sandbox. Scope: HrConversations.jsx, ny ren hrConversationWorkspace.mjs, hrConversations.css, eksisterende hr-conversations React/browser- og hr-workspace/subflows-browserprøver, HR-README, HR-tema i Hjelp, releasegrunnlag og denne loggen. Ingen endring i session/RPC, SQL, eksisterende maler, rettigheter, varslings-/kalendermotor, PDF, andre HR-flater eller global navigasjon.
+
+Tre synlige steg erstatter fire: Forberedelse → Samtale og tiltak → Referat. Møtereferat, avtalte tiltak, ansvar, frister, utført og neste oppfølging rendres fra samme draft i ett arbeidssteg. Referat har direkte retur. Delte forberedelser er fortsatt tilgjengelige i details, men krever ikke scrolling gjennom alle svar før møtenotatet. Eksisterende malspørsmål/lagret fritekst beholdes; veiledningen sier at ansvar/frister registreres én gang i tiltakene. Neste oppfølging er fortsatt nødvendig når tiltak finnes; forskjellen mellom oppgavefrist og felles oppfølging forklares. Dette er ikke ferdig forenkling av alle varsler eller økte tekstgrenser.
+
+Gamle UI-ID2 normaliseres til samlet møte-ID1 ved initialvalg/remount/fornyet tilgang; referatets interneID3 og alle serverstadier beholdes. Forrige/Neste bytter fortsatt bare visning. Lagring, bekreftelser og varsling skjer bare ved eksisterende eksplisitte handlinger. Ingen person-/serverdata eller e-post er endret ved implementeringen.
+
+133 lokale faktiske React-/modellassertions PASS med syntetisk transport. Nye krav: tre steg, gammel ID-normalisering, møte+tiltak til stede samtidig, rollegrenser, bevart møtetekst/oppgave/frist ved Referat→retur→focus og ingen nye skriverkall ved navigasjon. Alle tidligere langtekst-/revisjon-/bekreftelse-/historikk-/PDF-/firmaskillekrav beholdes. Native geometriprøvers stegforventninger følger ny dokumentert arbeidsflyt; opprinnelige44px/16px/bredde/fokus/kladd/roller/lagring beholdes. Separat eldre hr-conversations-browser-prøve har fått oppdatert opprettingsnavn og obligatorisk tid/sted, samt320/390/768/1280bredder; ikke attestert som lokalt kjørt.
+
+Full lokal EXPO_BACKEND_TARGET=sandbox npm run build/critical PASS før siste rent selektorspesifikke gridregel; ny siste build og CI føres i PR. Lokal Chromium er tidligere sperret av kjøremiljøet; native kjøreresultat kreves fra CI. Ingen fysisk Safari-attest. Rollback: revert denne UI-pakken; ingen migrering/datareset. Neste: kandidat-CI/READY/binding og innlogget syntetisk etterkontroll, deretter gjenstående HR-lengdekontrakt og helapp-/filmrestliste.
+
+CI949 påe3ced699: native HR-workspace153krav PASS. HR-subflows kom gjennom tre steg i alle fem bredder, men sluttregnskapet krevde fremdeles4×5=20visninger. Det endres til3×5=15, med nye eksplisitte krav om synlig tiltaksregion og nøyaktig ett Neste oppfølging-felt i det samlede steget ved hver bredde. Ingen44/16/bredde/fokus/rollekrav fjernes. HR-react stoppet i den eksisterende direkte Min side-varsler-testen som fortsatt klikket gamle Tiltak/Felles møte-navn. Den følger nå samme nye Samtale og tiltak-inngang med alle opprinnelige kladd/foreground/direkte-ID/privatdelings-/varsel-/bekreftelseskrav. Dette er to oversette testforventninger ved tilsiktet UI-kontraktendring, ikke dokumentert produktfeil eller grunnlag for blind omkjøring. Ny full kandidat-CI kreves.
+
+## Samlet HR-flyt: fullført kandidatkontroll
+
+Kandidat faa23f3050a31fa0555add9baf551a6a5dea615e/tree6272f61e006a12e3d18994b82ac46744de7a99b9: **CI950/run41962148296 SUCCESS**, alle ni pakker og gate. Det erstatter den dokumenterte CI949-testforventningsfeilen. Lokalt direkte varsel/Min side110krav PASS; tidligere133faktiske samtale-/modellkrav og full build er bevart. HR-workspace og subflows tester fem bredder, tre samtalesteg, særskilt tiltaksregion, opprinnelige44px/16px/fokus/roller/kladd-/lagringskrav. Vercel dpl_8vsJ2w6wZmG2Tna9RJ5ZQNYrB5j1 READY/eksaktSHA/fastalias/targetnull. Publisert main-CYDTkbTQ.js inneholder Sandboxppvircenkjizeiqdxphj og ingen Productiondqffxflaoyarbxyiyhop. Main fortsatt34daef4c.
+
+Innlogget faktisk PR311 på samme appkode e3ced699: Demo medarbeider2s opprinnelige DEMO-årssamtale åpnet, tre steg og foldbare delte svar bekreftet. Et syntetisk tiltak ble lagt bare i lokal kladd, med eksisterende medarbeider som eier, frist20.11.2026 og neste oppfølging21.11.2026. Referat og direkte retur beholdt samme tekst, eier og datoer. Native datoendring/readback ble brukt fordi testverktøyets første fill bare endret DOM-verdien. Ingen datoattest bygger på dette første mislykkede fill-forsøket. Til slutt Fjern tiltak og tom oppfølgingsdato; Referat viste ingen tiltak/ikke avtalt, Lagre samtale disabled, serverutgave4 beholdt, og Lukk returnerte til samme register. Ingen lagring, varsling, bekreftelse, rolle- eller persondataendring. Dette er desktopbevis, ikke fysisk mobil/Safari.
+
+Faktisk ny HR-film er rendret fra ni av disse syntetiske skjermbildene,106sekunder/24fps/uten lyd. Full dekoding2544frames og visuell scenekontroll PASS. Film libfile_4420910e3f7481919e899f0fbfd5a50e; redigerbare kilder libfile_949632f3bac881919d15ed1e088adfea. Den viser avgrenset eksisterende samtale/lokal kladd/referat/retur, ikke full HR A–Å eller faktisk lagring/sending/bekreftelse/PDF. Hjelp-integrasjonen ligger isolert i PR308, kandidat42dcb985, med egen CI/READY/avspillingskontroll og releaseavhengighet til denne trestegsflyten. Se docs/qa/HR_CONVERSATION_HELP_VIDEO_20261105.md på PR308. Ingen filmkjerne er kopiert inn i PR311.
+
+Neste etter denne pakken: økte HR-tekstgrenser må avstemmes gjennom servervalidatorer/SQL-wrapperkjede og faktisk Sandbox før de økes; de er fortsatt4000/600. Kalender/varsler har beholdt eksisterende eksplisitte handlinger. Fortsett gjenstående helappmatrise og øvrige filmer. Ingen full app-/portal-/Safari-attest, TEST OK eller Production.
+
+
+Sluttkontroll etter96e3b6cf: CI952/run41963815144 SUCCESS9+gate, READY eksakt dpl_EnWHkwwJT4KeYT98vD1kB1bXzvsK/Sandbox. Ny faktisk live paste i Demo medarbeider2: møtetekst4007tegn inkludert SLUTT beholdt, ingen maxlength, aria-invalid og teller korrekt. Eksplisitt Lagre viste lokal grensefeil/ingenting sendt og beholdt hele teksten. Original112tegn gjenopprettet; Lagre disabled, ingen serverlagring. Dette erstatter den eldre AT-SPI-begrensningen for desktop lang paste, men øker ikke4000/600-grensene eller fysisk mobil/Safari-dekning.
+
+Film-integrasjonens siste kandidat er PR308/a8907219/tree2d9dda27, full CI953/run41964243918 SUCCESS9+gate og eksakt READY dpl_AeTj54CUuyqeseskAYexvG2LKG6F/Sandbox. Faktisk Hjelp→HR-film: ready4,106s/1920×1080, ingen autoplay; kapittel44s og ordinær avspilling,9 tekststeg, Escape/nestet retur/korrekt fokus/fjernet video kontrollerte. Alle sju tidligere filmer bevart. Tre-stegs HR-koden må følge filmen ved en senere autorisert release. Ingen TEST OK/merge.
+
+
+## Utvidede samtaletekster – avgrenset neste pakke
+
+Forrige KS/HMS-/dokumentpakke er lukket på e99c4aa9/CI957 SUCCESS9+gate/READY/Sandbox. Main34daef4c og PR308/309/310 er ferskt kontrollert uendret. Ingen konkurrerende skriver. Miljømål BEGGE; gjenbruk PR311 er tillatt av uendret scopevakt (ingen Demo/Test-markører). Scope: én CLI-opprettet HR-migrasjon, HrConversations + teksthelper, eksisterende HR React/PostgreSQL/runtime-prøver, HR-tema i Hjelp, modul-README, ett endringsmanifest, release-status og dette nattgrunnlaget. Andre HR-/HMS-/salgs-/prosjektkjerner, RLS/roller, tabeller, varsling og transport er fredet.
+
+Skjema/server/PDF skal tåle10000Unicode-kodepunkter per svar/kommentar og2000per tiltak. Separat privat invoker-validator lar sykefraværets tidligere validator og ACL være byteidentiske. Ny svargrense1100000bytes rommer alle24mulige spørsmål med10000firebyte-tegn; kommandogrensen1800000bytes rommer svar og12tiltak. Ingen tekst forkortes. Felt over grensen skal stoppes lokalt før første mutasjon; serveren avviser uten delvis lagring. Rollenærmeste leder, egen forberedelse, ansvar/frister, review/bekreftelse, historikk og tilsiktede app-/transportregler beholdes.
+
+Faktisk Sandbox-funksjonsmetadata (ingen personinnhold) bekrefter hr_conversation_command-kropp c3437b63da704b68c12dbff7cd5a42a2. Canonical GitHub-kilden20261012080426 med allerede installert40001→PT409 gir eksakt samme hash. Migrasjonen forventer denne kroppen før erstatning og bevarer eksisterende EXECUTE/search_path/definerkontrakt; ny ren validator er invoker/uten klientgrants. Supabase changelog ble lest, CLI2.81.3 beholdt (ny CLIv3 har endret hosted-default); ingen oppgradering/konfigurasjonsendring. Relevante funksjons-/privilegiedokumenter og sikkerhetsråd gjennomgått.
+
+Lokalt før siste positive UI-tillegg: PostgreSQL289, React135 og runtime/PDF134 krav PASS. PostgreSQL tester10000/10001,2000/2001,24spørsmål/firbyte, readback/ingen mutasjon ved feil og alle tidligere roller/CAS/lederbytte/historikk/bekreftelse/purge. Faktisk jsPDF14sider/23028bytes, SHA2567bc6c92c9406cae62efaf7972fe6c8dd3c71ba812a6e4058036d52c63cd82b95; alle tre sluttnøkler finnes i faktisk uttrukket PDF, hele teksten finnes i PDF-modellen. Siste bygge-/Sandbox-/CI-/READY-kvittering føres i PR før sluttattest.
+
+Før merge kreves eksplisitt TEST OK, Production-plan og nye kontroller. Serverutvidelse installeres før klientbruk; etter lagring av lange tekster beholdes grenser/data ved eventuell UI-tilbakeføring, med fremoverrettelse fremfor nedkorting. Ingen gammel migrasjon/fixture skal gjentas. Neste etter denne pakken: filmens eventuelle feltgrensebilder må vurderes mot ny stabil UI, og eksisterende helapprestliste videreføres. Dette er ikke full HR-/app-/portal-/Safari-attest.
+
+Sandbox-installering fra GitHub-kilde9e98791a bestod forventet-body-guard. MCP registrerte faktisk versjon20261105044245; kildefilen avstemmes til dette som canonical (CLI-opprettet arbeidsnavn var20261105043549). Ingen historisk migrasjon er installert om igjen eller endret i remotehistorikken. Opprinnelig delt validator har fortsatt definisjonshash672eabf3b87572391e173ab2bac5aac9; publiccommand har samme ACL/search_path/definer og ny definisjonshashe09c3e1319bc8af6aa65f6d58a160f27; ny invoker-helper har kun postgresEXECUTE/hash20e897da246b826cefa4abfe8bc581be. Ingen tabell/rolle/config/data endret. Ny serverprøve og endelig klient/CI kreves fortsatt.
+
+Sandbox-rollbackprøven avgrenses i scripts/hr-conversation-extended-text-sandbox-check.sql til kjent DEMO-medarbeider2 og eksisterende DEMO-årssamtale, forventet utgave4/stage meeting. Ingen nye fixturebrukere/tilganger/invitasjoner. Begge endringer (meeting/comment) utføres som eksisterende syntetisk leder, og hele transaksjonen rulles tilbake uten COMMIT. Ny katalog-/stocktake-installasjon er ikke del av pakken.
+
+Faktisk Sandbox-transaksjonsprøve PASS på20261105044245: alle møtesvar10000tegn, tiltak2000 og egen lederkommentar10000 ble lagret og lest ferskt tilbake uten avkorting.10001/2001 ble avvist uten endret revisjon/innhold, stale revisjon gaPT409. Full rollback. Etterprøve: opprinnelig utgave4, samme artifact571eeef6-4baf-4f00-8423-f90c443f941d og payloadhash2f7442d846996c08cbf6e07bd32a2bde; rutine-e-post fortsattfalse. Ingen ny samtale/bruker/rolle/invitasjon/bekreftelse. Security-advisors har identiske før/etter-kategorier/antall, ingen nye funn fra denne pakken. Eksisterende offentlige definer/WARN- og øvrige miljøavvik er ikke løst eller skjult. Endelig React138 og vanlig PostgreSQL289 PASS; PT409-policyvarianten og siste CI/READY føres i PR. PDF er også visuelt kontrollert på første/midterste/siste side, med leselig paginering og siste tiltakstekst.

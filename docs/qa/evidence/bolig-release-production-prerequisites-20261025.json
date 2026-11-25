@@ -1,0 +1,370 @@
+{
+  "hr_anchor": true,
+  "signing_anchor": true,
+  "bolig_cron_jobs": 0,
+  "personal_anchor": true,
+  "storage_policies": [
+    {
+      "cmd": "INSERT",
+      "name": "Anon signed portal chat image uploads",
+      "qual": null,
+      "roles": [
+        "anon"
+      ],
+      "permissive": "PERMISSIVE",
+      "with_check": "((bucket_id = 'chat-images'::text) AND app_private.portal_storage_upload_allowed(bucket_id, name))"
+    },
+    {
+      "cmd": "INSERT",
+      "name": "Anon signed portal private media uploads",
+      "qual": null,
+      "roles": [
+        "anon"
+      ],
+      "permissive": "PERMISSIVE",
+      "with_check": "((bucket_id = 'project-media-private'::text) AND app_private.portal_storage_upload_allowed(bucket_id, name))"
+    },
+    {
+      "cmd": "INSERT",
+      "name": "Anon signed portal project uploads",
+      "qual": null,
+      "roles": [
+        "anon"
+      ],
+      "permissive": "PERMISSIVE",
+      "with_check": "((bucket_id = 'project-images'::text) AND app_private.portal_storage_upload_allowed(bucket_id, name))"
+    },
+    {
+      "cmd": "INSERT",
+      "name": "Authenticated upload chat images 6odaj1_0",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "permissive": "PERMISSIVE",
+      "with_check": "(bucket_id = 'chat-images'::text)"
+    },
+    {
+      "cmd": "INSERT",
+      "name": "Authenticated upload project images",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "permissive": "PERMISSIVE",
+      "with_check": "(bucket_id = 'project-images'::text)"
+    },
+    {
+      "cmd": "DELETE",
+      "name": "Private project documents delete",
+      "qual": "((bucket_id = 'project-documents-private'::text) AND app_private.private_document_storage_allowed(name))",
+      "roles": [
+        "authenticated"
+      ],
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "name": "Private project documents insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "permissive": "PERMISSIVE",
+      "with_check": "((bucket_id = 'project-documents-private'::text) AND app_private.private_document_storage_allowed(name))"
+    },
+    {
+      "cmd": "SELECT",
+      "name": "Private project documents select",
+      "qual": "((bucket_id = 'project-documents-private'::text) AND app_private.private_document_storage_allowed(name))",
+      "roles": [
+        "authenticated"
+      ],
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "cmd": "UPDATE",
+      "name": "Private project documents update",
+      "qual": "((bucket_id = 'project-documents-private'::text) AND app_private.private_document_storage_allowed(name))",
+      "roles": [
+        "authenticated"
+      ],
+      "permissive": "PERMISSIVE",
+      "with_check": "((bucket_id = 'project-documents-private'::text) AND app_private.private_document_storage_allowed(name))"
+    },
+    {
+      "cmd": "DELETE",
+      "name": "Private project media delete",
+      "qual": "((bucket_id = 'project-media-private'::text) AND app_private.private_project_media_storage_allowed(name, true))",
+      "roles": [
+        "authenticated"
+      ],
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "name": "Private project media insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "permissive": "PERMISSIVE",
+      "with_check": "((bucket_id = 'project-media-private'::text) AND app_private.private_project_media_storage_allowed(name, true))"
+    },
+    {
+      "cmd": "SELECT",
+      "name": "Private project media select",
+      "qual": "((bucket_id = 'project-media-private'::text) AND app_private.private_project_media_storage_allowed(name, false))",
+      "roles": [
+        "authenticated"
+      ],
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "cmd": "UPDATE",
+      "name": "Private project media update",
+      "qual": "((bucket_id = 'project-media-private'::text) AND app_private.private_project_media_storage_allowed(name, true))",
+      "roles": [
+        "authenticated"
+      ],
+      "permissive": "PERMISSIVE",
+      "with_check": "((bucket_id = 'project-media-private'::text) AND app_private.private_project_media_storage_allowed(name, true))"
+    },
+    {
+      "cmd": "SELECT",
+      "name": "Public read chat images 6odaj1_0",
+      "qual": "(bucket_id = 'chat-images'::text)",
+      "roles": [
+        "anon"
+      ],
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "name": "Public read project images",
+      "qual": "(bucket_id = 'project-images'::text)",
+      "roles": [
+        "public"
+      ],
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "name": "kshms_files_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "permissive": "PERMISSIVE",
+      "with_check": "((bucket_id = 'kshms-private'::text) AND kshms_deviation_file_access(name, true))"
+    },
+    {
+      "cmd": "SELECT",
+      "name": "kshms_files_read",
+      "qual": "((bucket_id = 'kshms-private'::text) AND kshms_deviation_file_access(name, false))",
+      "roles": [
+        "authenticated"
+      ],
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "name": "sales_inspection_photos_insert_company",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "permissive": "PERMISSIVE",
+      "with_check": "((bucket_id = 'sales-inspection-photos'::text) AND (((storage.foldername(name))[1] = (current_sales_company_scope_id())::text) OR current_profile_is_systemadmin()))"
+    },
+    {
+      "cmd": "SELECT",
+      "name": "sales_inspection_photos_select_company",
+      "qual": "((bucket_id = 'sales-inspection-photos'::text) AND (((storage.foldername(name))[1] = (current_sales_company_scope_id())::text) OR current_profile_is_systemadmin()))",
+      "roles": [
+        "authenticated"
+      ],
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "cmd": "UPDATE",
+      "name": "sales_inspection_photos_update_company",
+      "qual": "((bucket_id = 'sales-inspection-photos'::text) AND (((storage.foldername(name))[1] = (current_sales_company_scope_id())::text) OR current_profile_is_systemadmin()))",
+      "roles": [
+        "authenticated"
+      ],
+      "permissive": "PERMISSIVE",
+      "with_check": "((bucket_id = 'sales-inspection-photos'::text) AND (((storage.foldername(name))[1] = (current_sales_company_scope_id())::text) OR current_profile_is_systemadmin()))"
+    },
+    {
+      "cmd": "INSERT",
+      "name": "time_files_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "permissive": "PERMISSIVE",
+      "with_check": "((bucket_id = 'time-private'::text) AND time_file_access(name, true))"
+    },
+    {
+      "cmd": "SELECT",
+      "name": "time_files_read",
+      "qual": "((bucket_id = 'time-private'::text) AND time_file_access(name, false))",
+      "roles": [
+        "authenticated"
+      ],
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    }
+  ],
+  "external_functions": [
+    {
+      "args": "",
+      "name": "uid",
+      "schema": "auth"
+    },
+    {
+      "args": "job_name text, schedule text, command text",
+      "name": "schedule",
+      "schema": "cron"
+    },
+    {
+      "args": "schedule text, command text",
+      "name": "schedule",
+      "schema": "cron"
+    },
+    {
+      "args": "integer",
+      "name": "gen_random_bytes",
+      "schema": "extensions"
+    },
+    {
+      "args": "c uuid, u uuid",
+      "name": "active_member",
+      "schema": "hr_private"
+    },
+    {
+      "args": "c uuid, e hr_private.employees, u uuid",
+      "name": "can_read",
+      "schema": "hr_private"
+    },
+    {
+      "args": "c uuid, u uuid",
+      "name": "has_module_access",
+      "schema": "hr_private"
+    },
+    {
+      "args": "p_content jsonb",
+      "name": "checklist_content",
+      "schema": "kshms_private"
+    },
+    {
+      "args": "prefix jsonb, point jsonb, answer jsonb",
+      "name": "checklist_prefix_add",
+      "schema": "kshms_private"
+    },
+    {
+      "args": "fields jsonb, vals jsonb, previous jsonb, prefix jsonb",
+      "name": "checklist_sign_values",
+      "schema": "kshms_private"
+    },
+    {
+      "args": "fields jsonb, vals jsonb, finished boolean",
+      "name": "checklist_values",
+      "schema": "kshms_private"
+    },
+    {
+      "args": "d kshms_deviations, x jsonb",
+      "name": "deviation_visible",
+      "schema": "kshms_private"
+    },
+    {
+      "args": "e kshms_executions, x jsonb",
+      "name": "execution_visible",
+      "schema": "kshms_private"
+    },
+    {
+      "args": "p_user_id uuid",
+      "name": "identity_snapshot",
+      "schema": "kshms_private"
+    },
+    {
+      "args": "c uuid",
+      "name": "require_module_manager",
+      "schema": "kshms_private"
+    },
+    {
+      "args": "url text, body jsonb, params jsonb, headers jsonb, timeout_milliseconds integer",
+      "name": "http_post",
+      "schema": "net"
+    },
+    {
+      "args": "",
+      "name": "current_active_company_scope_id",
+      "schema": "public"
+    },
+    {
+      "args": "",
+      "name": "current_profile_is_systemadmin",
+      "schema": "public"
+    },
+    {
+      "args": "p_module_key text",
+      "name": "current_user_has_module_access",
+      "schema": "public"
+    },
+    {
+      "args": "p_target_user_id uuid",
+      "name": "get_cordel_export_access",
+      "schema": "public"
+    },
+    {
+      "args": "",
+      "name": "get_kshms_context",
+      "schema": "public"
+    },
+    {
+      "args": "",
+      "name": "get_my_personal_context",
+      "schema": "public"
+    },
+    {
+      "args": "p_company_id uuid",
+      "name": "people_modules_company_get",
+      "schema": "public"
+    },
+    {
+      "args": "p_company_id uuid, p_user_id uuid",
+      "name": "people_modules_user_get",
+      "schema": "public"
+    },
+    {
+      "args": "p_company_id uuid, p_project_id uuid",
+      "name": "project_checklist_state",
+      "schema": "public"
+    },
+    {
+      "args": "p_company_scope_id uuid, p_user_id uuid",
+      "name": "project_row_access_allowed",
+      "schema": "public"
+    },
+    {
+      "args": "p_company_id uuid",
+      "name": "work_profile_company_profile",
+      "schema": "public"
+    },
+    {
+      "args": "new_secret text, new_name text, new_description text, new_key_id uuid",
+      "name": "create_secret",
+      "schema": "vault"
+    }
+  ]
+}

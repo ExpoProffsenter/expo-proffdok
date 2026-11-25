@@ -1,0 +1,11 @@
+.bolig-shop-staff .bolig-partner-hero {padding:14px 18px;margin:0 0 12px;}
+.bolig-shop-staff .bolig-partner-hero h2 {font-size:1.3rem;margin:0 0 4px;}
+.bolig-shop-staff .bolig-partner-hero p {margin:0;max-width:none;}
+.bolig-shop-staff form {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start;}
+.bolig-shop-staff fieldset {min-width:0;border:1px solid #c9d8d2;border-radius:10px;padding:14px;margin:0;}
+.bolig-shop-staff legend {font-weight:700;padding:0 5px;}
+.bolig-shop-staff fieldset p {margin:8px 0;overflow-wrap:anywhere;}
+.bolig-shop-staff fieldset label {display:grid;gap:6px;margin-bottom:10px;}
+.bolig-shop-staff .bolig-partner-card {overflow-wrap:anywhere;min-width:0;}
+.bolig-shop-staff button {max-width:100%;white-space:normal;overflow-wrap:anywhere;}
+@media(max-width:700px){.bolig-shop-staff form {grid-template-columns:minmax(0,1fr);}.bolig-shop-staff .bolig-partner-cards {grid-template-columns:minmax(0,1fr);}.bolig-shop-staff .bolig-partner-hero {padding:12px;}}

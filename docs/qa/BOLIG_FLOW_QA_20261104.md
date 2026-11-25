@@ -1,0 +1,58 @@
+# Bolig-flyt etter innlogget designgjennomgang
+
+Miljømål BEGGE. Baseline main34daef4c0526b93ddbd84c3bfd97fb0833d97caf, demo fd5aafa17d0a6412bebc60b586e328d682393d8e. Egen branch fase45b-bolig-flow-qa-20261104 fra ren main; hjelpepakken PR308 holdes separat på grunn av permanent Bolig-core-isolasjon. Ingen TEST OK, merge eller produksjonsendring.
+
+## Bevis og scope
+
+Kenneth har bedt om videre selvstendig full kvalitetssikring og fintuning etter kundemøtet. Første innloggede gjennomgang og første pakke er dokumentert i PR308 og docs/qa/LIVE_DESIGN_REVIEW_20261104.md på den branchen. Denne pakken omfatter bare Bolig-komponentenes katalogventing, intern UE-oppgaveliste, arbeidsstedsetiketter, endringsordreveiledning, native dialogfokus, tilhørende brukerhjelp og scenariovern.
+
+| Faktisk førtilstand | Rettelse | Bevaring |
+| --- | --- | --- |
+| Katalogen viser manglende tilgang mens autorisering venter, deretter kommer søk frem | Egen ventebeskjed; bekreftet avslag, kontrollfeil og endret tilgang skilles | Samme eksisterende lesekontroller og salgsrettede varefelt, ingen nye RPC-er |
+| Et gammelt katalogtilgangssvar kontrollerer ikke at managed-access-hendelsen har tilbakekalt oppslaget | Invalidert forespørsel kan ikke gjenåpne søk | Bruker/firma må fortsatt samsvare; samme arbeidsfirma bevarer pågående søk |
+| H0101 opptrer to ganger uten bygg/adresse i HMS-velgeren | Nummer, bygg og adresse vises samlet | Uendret bolig-ID, kobling og native callbacks |
+| Intern UE-detalj viser161aktiviteter i én lang liste | Søk/status,20første,Vis flere | Hele autoriserte listen er søkbar; hendelser, native datoer og statuser uendret; ekstern partnerportal beholder egen navigasjon/paging |
+| Endringsordrekladd ber brukeren laste ned et grunnlag uten nedlastingsknapp | Teksten følger faktisk utkast/publisert/akseptert status | Nedlasting/leverandøroppfølging er fortsatt sperret før aksept |
+| Flere underpaneler returnerer til AXWebArea når native dialog fjernes fra DOM | Fokus tilbake til faktisk eksisterende åpner etter unmount | Bevisst navigasjon, nytt panel, suspend/revalidering, eksisterende RAM-kladd og sperrer vinner |
+
+## Utførte kontroller
+
+- Git main/demo-hoder oppfrisket før endring; ren separat worktree.
+- PROJECT_GUARDRAILS og aktuelle katalog-/integrasjons-/partner-/commerce-checker lest. Bolig-core-boundary55assertions PASS før full kandidat.
+- Eksisterende actual catalog React/JSDOM PASS: priser, fratrekk, varelinjer, lokale kladder, retry/konflikt, lesetilgang, bestillingsutvalg og sene firmasvar. Native lesekontroller erstattes bare av syntetisk transport i testen.
+- Full lokal Sandbox critical/build PASS på første implementasjon. En påfølgende presisering bevarer søk ved samme arbeidsfirma; endelig CI dekker denne kandidaten.
+- Nye native scenarier er koblet til eksisterende Bolig-katalog-nettleserprøve, uten å endre workflow eller svekke krav. Egen161oppgavefixture med historikk, fembredder/44px16px, søk på siste bolig, statuskombinasjon, paging, oppfrisking, native nested focus/Escape/suspend/kladd og bevisst nytt panel. Utsatt/avvist/feilet/fremmed/tilbakekalt katalogautorisasjon, samme arbeidsfirma og eksakte offentlige varefelt kontrolleres.
+- HMS-prøven har to H0101 med forskjellige bygg/adresser og samme opprinnelige callback-ID. Commerce-prøven kontrollerer statusriktig tekst før og etter aksept og egne utkastgrenser.
+- Lokal Chromium er tidligere blokkert før oppstart av miljøets socket()/ProcessSingleton-begrensning. Denne runden gjenbruker den kjente grensen og lar ordinær CI utføre native prøver, uten ny omgåelses-/oppstartsløkke.
+
+## Neste kontroll
+
+Grønn full CI og faktisk innlogget Sandbox-preview for denne separate branchen. Kontroller riktig backend før innlogging. Eksisterende testdata og katalogrettigheter beholdes; ingen testutsending eller reell aksept/signering. Deretter fullføres videre helreiser og grunnlaget for full A–Å-film. Grønn bygning og disse avgrensede testene er ingen full appattest.
+
+CI899 på39b8fcd1: build/scope/Bolig-db/HR/firma består. Bolig-nettleser går grønt gjennom builder790,oversikt59,rom51,rominnhold35,pakker36ogkatalognavigasjon24assertions, men ny prøvevert feiler før nettleserscenariene fordi JSX-runtime ikke var eksplisitt resolvert fra midlertidig katalog. Samme eksisterende React-runtimealias legges til prøveverten. Lokal build av selve prøveverten kontrolleres separat; appkode og assertions endres ikke for denne testoppsettfeilen.
+
+Avgrenset scopeutvidelse etter ny faktisk romfordeling: klargjøringsdialogen hadde bekreftelsesknappen nedenfor hele rom-/boliglisten. Eksisterende footer flyttes ut av den rullbare bodyen, med samme betingelse(data), knapper, disabled-uttrykk og handlers. CSS gjør panelet høyrestilt og holder header/footer på skjermen; innhold rulles separat. Eksisterende preparation-nettleserprøve får konkrete geometri-/scrollkrav i firebredder og kortskjerm uten å fjerne funksjonsassertions. Ingen lagringsflyt eller preview-/kvitteringsmekanisme endres.
+
+Videre faktisk Sandbox på PR308/515e03b9: ny QA-rommal med én Bad1/QA-Standardbad,2demovarer, lagret serverbekreftet. Én bolig(H0101) valgt og forhåndsvist:1nyttrom/1pakke/2varer. Bekreft og lagre utført kun i det nye fiktive QA-prosjektet; serverbekreftet lagret med 1 bolig oppdatert. Eksisterende pilot/kundedata og Production er urørt.
+
+CI900 påa259b6fa: den nye native prøven bygger og passerer utsatt/avvist/feilet/fremmed/tilbakekalt katalog, feltoverføring og oppgavefiltrering/paging. Den stanser på ny320px-kontroll for44px/16px. Nye filterfelt får en presis, portalvennlig presentasjonsregel som overstyrer appens sene mobilstiler, uten tekststørrelsesanimasjon. Kravet beholdes og feilmeldingen utvides med faktiske mål. Ingen assertion fjernes eller terskel senkes.
+
+
+## Bekreftet helreise og siste ventetekster
+
+CI901 (41839378076) på2126ac0e bestod samtlige ni pakker og sluttkontrollen, inkludert nye native Bolig-scenarier, opprinnelige Bolig-scenarier, appnettleser, databasegrenser, HR, firma, prosjekter/support og full build. CI899/900-feilene ovenfor er rettet med opprinnelige krav beholdt.
+
+I innlogget Sandbox på hjelpepreview PR308 ble den egne QA-rommalen deretter forhåndsvist for alle seks boliger. Resultatet viste fem klare og én bolig bevart fordi den allerede hadde egne rom/valg. Med overstyring avslått ble fem boliger serverbekreftet oppdatert. Ingen pilot- eller kundedata endret.
+
+Samme fiktive QA-prosjekt fikk18aktiviteter: seks boliger ganger tre arbeidstrinn, én dag per trinn, etter foregående aktivitet, to arbeidsdager mellom boligstarter, mandag–fredag og eksisterende demobruker som ansvarlig. Første start16.11.2026; siste arbeid02.12.2026. Forhåndsvisningen hopper over helgen. Serverreadback viste18aktiviteter/0utført/én historikkregistrering og «Endringen er lagret». «Vis første arbeid» flyttet Gantt til16.–22.11. og viste korrekt første dato. Ingen varsler ble publisert eller e-post sendt.
+
+Under ordinær venting viste native klargjøring og masseplanlegging instruksjoner om usikker lagring og å lukke/åpne, samtidig som lukking var sperret. Avgrenset rettelse: venteteksten beskriver pågående lagring. Opprinnelig usikker-svar-veiledning og retry vises først når kommandoen ikke lenger er opptatt. Samme presentasjonsregel brukes i enkeltaktivitet og samlet datoflytting. Ingen pending/request-ID, disabled-vilkår, handlers, kvittering, retry eller lagringskommando endres.
+
+Preparation- og planleggingsprøvene holder nå det opprinnelige tapte-svar-scenariet bevisst i venting, kontrollerer sann ventetekst og sperret lukking, slipper deretter svaret og fortsetter de eksisterende usikkert-svar-/eksakt-retry-assertionene. Lokal full Sandbox-build og syntakskontroll består; endelig CI må også bestå denne siste tekstendringen.
+
+Den separate Bolig-previewen har bekreftet Sandbox-binding, men krever ny innlogging på det nye vertsnavnet. Innlogget helreise ovenfor er derfor bevis for den eksisterende PR308-grunnflyten; den erstatter ikke innlogget kontroll av alle PR309-rettelsene. Ingen produksjonssetting eller TEST OK foreligger.
+
+
+Reakt-/tilgjengelighetsgjennomgang av kandidat: effekter bruker stabile bruker-/firmagrenser og avmelder lyttere, uavhengige eksisterende lesinger kjøres parallelt, rendret oppgavemengde begrenses, feltene har native etiketter, tastatur/Escape/fokus kontrolleres, og ingen nye avhengigheter eller lagringssideeffekter innføres. Ved oppfrisking kan listen krympe under12 mens et filter fortsatt er aktivt. Filterfeltene må da forbli synlige til søk/status er tømt; en valgt status som forsvinner fra resultatene beholdes i velgeren slik at den fortsatt viser ærlig aktivt filter. Seks nye native oppfriskingsassertions dekker dette.
+
+CI902 (41841083914) påa111690c: samtlige ni pakker og sluttkontroll PASS, også holdt-svar-prøvene for sann ventetekst og eksisterende usikker-svar-/eksakt-retry-forløp. Vercel dpl_D2Qe4RK4VCtBFELNvWs5bKkN2i7i READY med samme SHA. Offentlig loader ble kontrollert: Sandbox-identitet til stede, Production-identitet fraværende.

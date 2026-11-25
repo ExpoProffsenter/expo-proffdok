@@ -1,0 +1,11 @@
+.ks-project-sja .ks-project-intro{margin:6px 0 12px;color:#526576}
+.ks-project-overview-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.ks-project-tool{border:1px solid #cbd8e2;border-radius:12px;margin:8px 0;overflow:hidden;background:#fff}
+.ks-project-tool h3{margin:0}
+.ks-module .ks-project-tool-toggle{display:flex;width:100%;justify-content:space-between;align-items:center;text-align:left;background:#f5f9fc;color:#112e3d;border:0;border-radius:0;min-height:64px;padding:12px 16px;gap:16px;box-shadow:none}
+.ks-project-tool-toggle small{display:block;font-size:13px;font-weight:400;color:#526576;margin-top:4px}
+.ks-project-tool-toggle[aria-expanded=true]{background:#e5f7f8}
+.ks-project-tool-content{padding:14px 16px}
+.ks-project-tool-content[hidden]{display:none!important}
+.ks-project-tool-content>p{margin:0 0 12px}
+.ks-project-tool-content>.ks-module{margin-top:14px}

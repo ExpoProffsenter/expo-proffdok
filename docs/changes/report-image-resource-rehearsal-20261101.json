@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Isolert reviewpakke for ødelagte rapportbilder i Sandbox",
+  "change": "Miljømål SANDBOX/DEMO, kun lokal forberedelse og dokumentasjon i eksisterende PR295. Syv originale SVG-er og fem ugyldige JPEG-er er bevart. Syv validerte PNG-/JPEG-varianter og en binær femfils reparasjonsdiff er laget som separat leveranse. Ingen demoressurs, script eller binærfil legges i produksjonskilden; ingen live patch, lagret lenke, kundedata, backend, tillatelse eller miljøbinding endres.",
+  "verification": "Native createReportTools/jsPDF på uendret9d54000b prøvd med gyldige og ødelagte ressursbyte,59assertionsPASS. To14siders syntetiske rapporter/28sider rendret og visuelt gjennomgått. PyMuPDFs faktiske bildeplasseringer og ekstraherte piksler bekrefter7unike bilder/10plasseringer og3:2-proporsjoner. Ødelagt fixture:0ressursbilder/10fallback. Pillow dekoder alle14nye PNG/JPEG-er; native jsPDF JPEG-parser bekrefter7x1200x800. JSDOM-adapteren beholder validerte PNG-byte/IHDR-mål og er ikke en Chromium-dekoder; faktisk PDF-parser og separat Pillow-dekoding er brukt. Lokal Chromium-ZIP var ugyldig/trunkert, ingen app-/tilgangsrettelse eller blind omkjøring. Binærpatch reverse-checkPASS i disponibel Git-kopi. Originale kilde-/ressurshasher og reproduserbar prøve følger leveransen. Appkoden er uendret siden fullCI863SUCCESS10/10; ny dokumentasjons-CI/READY/kilde/filidentiteter føres i PR295. Levende Preview/demo-bilder og ny nedlastet demofil er fortsatt urettet/ubekreftet.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Ingen publisert brukerflyt eller knapp endres."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Ingen appkode, dataflyt eller tilgangseier endres."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen appavhengighet eller miljøbinding endres. Lokal leveranse har egen bruks-/avgrensningstekst."
+    },
+    "module": {
+      "required": false,
+      "reason": "Eksisterende rapportkontrakt og renderer er uendret; isolert prøve/patch er separat artefakt."
+    }
+  }
+}

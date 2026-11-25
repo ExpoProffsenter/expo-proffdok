@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "title": "Garanti: kategoriserte mangler, lesbar kvittering og PDF-fortsettelse",
+  "change": "Miljømål BEGGE; kun samme PR295/Preview/Sandbox. Originale manglende Sopro-punkter grupperes per kildekategori, to PC-kolonner/én mobilkolonne, samme knapper/objekter/ankerrekkefølge. Mottaker og kvitteringsstatus vises i flerlinjede, statiske lesefelt med identiske fallbackverdier. Native komplett PDF måler/wrapper kategorioverskrifter og gjentar full kategori ved sidebrudd før neste kontrollrad. Punkttekst måles med samme font som den tegnes. Ingen garanti-/produktkrav, signaturgrunnlag, status, utstedelse, historikk, tall, eksportverdier, lagring, tilgang, transport eller retry endres. Ingen SQL/RLS/Auth/Storage/Edge-/workflow-/avhengighetsendring.",
+  "verification": "Native garantiwrapper og utvidet native ChecklistEditor testes med originale AEB14/FDF19 og dynamisk syntetisk produktpunkt. Fem bredder320/390/768/1363/1920 med600px høyde, lang kvittering, inactive/partial/ready/locked/issued/legacy, kontrakt missing/error/pending/late. Ingen utstedelseskall. Native eksisterende prosjekt573/90PASS (tidligere572 beholdt, én ny read-only-assertion). Ren UI-test bytter bare gammel disabled-input assertion til identisk komplett statisk mottakerverdi og fravær av redigerbare felter. Native full jsPDF bruker nå ekte, uendrede AEB/FDF-definisjoner i tillegg til korte/lange garanti-/overtagelsesdata; ingen alternative eksempelrapporter. Originalcd4f31bb feiler konkret på manglende kategorioverskrift før kontrollrad på side7. Garantivilkår testes for begge systemer og10/12/15år. Presise sluttall, faktisk visuelt sette filer/sider, full critical Sandbox-build, CI/READY/live og bildeidentiteter kvitteres i PR295.",
+  "limitations": [
+    "Komponentnavigasjon prøves inn i allerede utvidet native editor; dette er ikke attest på all full-app picker/underliste-navigasjon.",
+    "Innlogget FDF, alle roller/fysisk Safari, reell firmarevokering og skynett-PDF-filbro står åpne. Ingen ekte garanti opprettes/signeres/utstedes for QA.",
+    "Komplett sluttrapport inkluderer fortsatt ikke automatisk signerte kontroll-run-snapshots; ingen ny historikk/RPC/dataeier legges til.",
+    "QR-providerfeil vises som eksisterende QR-ikke-lastet-fallback i syntetisk, nettverksisolert PDF-prøve. Ingen attest på vellykket ekstern QR-provider.",
+    "Separate PR294 og PR298 forblir isolert; ingen main/demo-merge eller redesign-TEST OK.",
+    "Svært store historiske avvikskort som ikke rommer både gjentatt overskrift og kort på en ny side beholder eksisterende flyt; ingen attest på vilkårlig store avviks-/bildekort. Gjentatt overskrift får ikke skyve et tidligere passende kort ut over siden."
+  ],
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Samme knappnavn/kommandoer og oppgaverekkefølge. Kategorier og flerlinjet lesefelt endrer bare presentasjon."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Ingen nye eiere, datakilder eller ruter. Gruppene avledes rent fra eksisterende readiness."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen nye avhengigheter eller miljøendring."
+    },
+    "module": {
+      "required": true,
+      "reason": "Garanti- og rapportmodulens visnings-/PDF-kontrakt beskrives i respektive README."
+    }
+  }
+}

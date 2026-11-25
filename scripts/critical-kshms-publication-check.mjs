@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {COMPANY_APPROVAL_STATEMENT,companyPublicationSummary,pendingCompanyPublications,publicationSnapshotCurrent,verifiedCompanyPublications} from '../src/modules/kshms/kshmsBulkPublication.mjs';
+const state={context:{company_id:'a',user_id:'u',enabled:true,manage:true,publish:true},routines:Array.from({length:87},(_,i)=>({id:`r${i}`,revision:1,draft:{title:`QA ${i}`,procedure:'Saved steps'}})),versions:[],acknowledgments:[]};
+const snapshot=pendingCompanyPublications(state,'a','u');assert.equal(snapshot.length,87);assert(snapshot.every(row=>row.next_number===1));
+assert.equal(pendingCompanyPublications({...state,context:{...state.context,publish:false}},'a','u').length,0);
+assert.equal(pendingCompanyPublications(state,'b','u').length,0);assert.equal(pendingCompanyPublications(state,'a','other').length,0);
+assert(publicationSnapshotCurrent(snapshot,state,'a','u'));assert(!publicationSnapshotCurrent(snapshot,{...state,routines:state.routines.map((row,i)=>i===86?{...row,revision:2}:row)},'a','u'));
+const assessment='Kontrollert arbeidsmåte og ansvar.';
+const published={...state,versions:state.routines.map((row,i)=>({id:`v${i}`,routine_id:row.id,number:1,content:structuredClone(row.draft),requires_ack:true,published_by:'u',publisher_identity:{id:'u'},published_at:'2026-10-12T11:30:00Z',change_summary:companyPublicationSummary(assessment)}))};
+assert.equal(pendingCompanyPublications(published,'a','u').length,0,'Already approved content does not create another edition');
+assert.equal(verifiedCompanyPublications({data:published,companyId:'a',userId:'u',snapshot,assessment,requiresAck:false,selfAcknowledgment:false}).length,87,'First edition must always require reading');
+assert.equal(verifiedCompanyPublications({data:published,companyId:'a',userId:'u',snapshot,assessment,requiresAck:true,selfAcknowledgment:true}),null,'Company approval never invents own reading');
+assert.equal(verifiedCompanyPublications({data:{...published,versions:published.versions.slice(1)},companyId:'a',userId:'u',snapshot,assessment,requiresAck:true}),null,'Every selected edition needs fresh verified content');
+const archived={...state,routines:[{...state.routines[0],archived:true}]};assert.equal(pendingCompanyPublications(archived,'a','u').length,0);
+const sql=fs.readFileSync('supabase/migrations/20261012110939_kshms_bulk_company_publication.sql','utf8');assert(sql.includes(COMPANY_APPROVAL_STATEMENT));assert(sql.includes("public.kshms_command(p_company_id,'publish'"));assert(!/create or replace|alter table|update public\.|delete from public\./i.test(sql),'Only one additive wrapper; canonical publication is preserved');
+console.log('Company bulk publication critical PASS: 87 drafts, manager/actor/company gates, stale drafts, immutable selected editions, mandatory first reading and separate own acknowledgment.');

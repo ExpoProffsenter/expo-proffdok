@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Startside, profil-/menyretur, Prissøk og timeunderflater følger samme 03.6-kontrakt",
+  "change": "Miljømål BEGGE, kun samme PR295/faste Preview/Sandbox. Scope: workProfileUx.jsx kun UI-lukking/fokus, desktopSideMenu.js kun avvisning av en utdatert åpningsanimasjon, TimeSheet.jsx kun stabil etikettkobling i TimeField, ny scoped screen-CSS og relevante native prøvefiler. Escape/klikk utenfor lukker valgfri arbeidsprofilmeny uten firmabytte; Escape returnerer fokus. Påkrevd førstevalg, eksisterende bekreftelse, setter og kontrollert reload beholdes. En allerede lukket hovedmeny kan ikke gjenåpnes av forsinket requestAnimationFrame. Sen APP_RUNTIME_STYLES fikk gamle mobilregler til å krympe Startside-/Prissøk-/timekontroller; scoped CSS beholder16px/minst44px, riktige titler og6/8px rammer. Påkrevd profilkort får begrenset høyde og intern scrolling på kort skjerm. TimeField kobler eksisterende DOM-kontroller til stabilt etikett-ID, bevarer øvrige barn og alle props/handlers. Innloggingsbildet beholdes. Ingen tilgangstildeling, profil-/auth-klient, recovery, autosave, hydration, backend, database, priser, sending eller eksportkommando endres. Kategorien, historikk og kopierad har44px native disclosure-rader; timekort, kvittering/vedlegg og oppsettrammer følger8px. Ingen annen TimeSheet-handler endres.",
+  "verification": "Baseline468136f8/fullCI84910/10. Faktisk sen runtimeCSS lagt til eksisterende Home-/Prissøk-prøver, uten å svekke gamle krav. Førkode feilet Home-handlinger ved320 og Prissøk-tittel ved390. Faktisk profiladapter feilet Escape; rask desktop åpne/Escape kunne la en sen animasjon gjenopplive backdrop. Rettet shell/profil57PASS inkl deterministisk samme-frame åpne/Escape, utenfor/fokus, avbrutt firmabekreftelse, påkrevd valg/feil/tilbakekalling og fem bredder/korte skjermer. Syntetisk host korrigert til appens faktiske nav-inne-i-header-struktur etter at en feilplassert fixture-nav skapte kunstig z-index-intersepsjon; ingen z-index-omgåelse i appen. Home67PASS (alle57gamle +10nye), Prissøk70PASS (alle35gamle +35nye; fake skanner/transport), ny faktisk TimeSheet/TimeManagement/TimeSetup125PASS over40visninger (39px/15px før,16px/minst44px etter), eksisterende Time React91PASS etter etikettendringen. TimeField-etiketten er fortsatt eksakt tilgjengelig etter innskriving; faktisk DOM og notat beholdes gjennom enhets-/modusbytte. Time opt-in63 av/på/av og varetelling73PASS; null/desimaler/konflikt/retry122linjer/alle-sider-eksport og tilbakekalling beholdt. Native timeprøve gjør kun isolerte lesekall og ingen save/upload/submit/export. Full lokal Sandbox critical/buildPASS. Relevante nye prøver er importert i eksisterende app-ux-CI-kjede; vakt/CI-utelating er ikke endret. Live baseline: Representerer/Escape-feil gjenskapt, faktisk Oras-søk gav2eksisterende demovarer, varetelling åpnet tom opprettingsflate og veiledning uten ny telling; Min side lest uten aktivering av timeføring. Ny innlogging/fysisk mobil/Safari/kamera/ekte lønnseksport eller realtransport attesteres ikke. Endelig kandidat/fullCI/READY/innlogget etterkontroll føres i PR295. Manglende list_managed_work_profiles i Sandbox er fortsatt separat åpent backend-/miljøpunkt. Levende c05c920b-etterkontroll avdekket35px kategorirader og10/14px rammer. Ny negativ native prøve feiler også Kopier en dag35px/14px; alle time-disclosure-rader sikres44px/16px og native kort8px. Alle85tidligere målekrav er beholdt/forsterket med summary-kontroll og40nye rammekrav; siste125PASS over40visninger og full Sandbox critical/buildPASS. Bare endelig neste kandidat/fullCI/READY er releasegrunnlag, ikke mellomkandidatc05c920b/CI850.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "Forklarer Escape/klikk utenfor i Representerer, fokusretur og at påkrevd førstevalg fortsatt gjelder."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Ingen endret dataflyt, modell, persistens- eller tilgangseier."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen ny avhengighet eller miljøkonfigurasjon."
+    },
+    "module": {
+      "required": true,
+      "reason": "UI- og timemodulen beskriver ny etikett-/lukke-/målekontrakt."
+    }
+  }
+}

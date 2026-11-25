@@ -1,0 +1,41 @@
+WEBVTT
+
+00:00:00.000 --> 00:00:14.000
+Opprett en egen plan
+Åpne KS/HMS → Verktøy og maler → Fremdriftsplaner. Velg Ny fremdriftsplan og fyll inn navn, adresse og referanse.
+
+00:00:14.000 --> 00:00:24.000
+Begynn med oppgavene
+Opprett plan åpner planbyggeren. Velg + Arbeidsoperasjoner for å legge inn det som skal utføres.
+
+00:00:24.000 --> 00:00:36.000
+Finn kode eller arbeidsoperasjon
+Søk etter kode eller navn. Her velges 312 Rørnett sanitær. Du kan også velge en egen arbeidsoperasjon.
+
+00:00:36.000 --> 00:00:52.000
+Fyll inn arbeid og periode
+Angi navn, fag, person eller firma, antall personer og datoer. Her er to personer satt opp 5.–6. november. Lagre fremdriftsplan lagrer hele planen.
+
+00:00:52.000 --> 00:01:02.000
+Åpne en lagret oppgave
+Lagret og bekreftelsen viser at planen er lagret. Trykk på oppgavens navn for å redigere den.
+
+00:01:02.000 --> 00:01:16.000
+Oppdater status og merknad
+Velg riktig status og oppdater merknaden. Tilbake til oversikten beholder endringene som kladd. Det lagrer dem ikke på serveren.
+
+00:01:16.000 --> 00:01:28.000
+Skill kladd fra lagret plan
+Lagre fremdriftsplan er aktiv når endringer venter. Tilbake øverst lukker planbyggeren og beholder kladden.
+
+00:01:28.000 --> 00:01:40.000
+Fortsett i samme kladd
+Varslet forteller at endringene ikke er lagret. Åpne fremdriftsplan henter frem den samme kladden. Velg deretter Lagre fremdriftsplan.
+
+00:01:40.000 --> 00:01:50.000
+Kontroller lagringsbekreftelsen
+Etter lagring vises Lagret. Den oppdaterte statusen Pågår vises på oppgaven. Planen har fortsatt samme periode og bemanning.
+
+00:01:50.000 --> 00:02:04.000
+Kontroller det lagrede innholdet
+Hent lagret plan under Planvalg og eksport leser serverutgaven på nytt. Her er status, merknad, datoer og bemanning kontrollert igjen.

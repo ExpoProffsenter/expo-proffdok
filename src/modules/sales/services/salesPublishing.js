@@ -1,0 +1,208 @@
+import { canChooseOptionQuantity, parseCustomerOptionQuantity } from "../utils/salesCustomerOptionQuantities.js";
+// Expo ProffDok – FASE 37D1 / FASE 32A / FASE 23P / FASE 29B4
+// Butikktilbud bruker valgt Ringside/Bademiljø-merkevare i det låste firmasnapshotet
+// og binder saksbehandlerens bruker/e-post når den kan bekreftes mot ansvarlig på saken.
+// FASE 32A beholder serverstemplet publisher og publiseringstid på saken etter
+// publisering. Opplysningene kommer fra publish_sales_offer og er ikke utledet
+// fra ansvarlig eller andre mutable felt.
+// Samler publisering av tilbud og opprettelse av kundelenker.
+// FASE 29B4 bruker firmaprofilen SalesModule allerede har lastet inn, med samme
+// logo-prinsipp som hovedappen: firmaets logo når den finnes, ellers Expo-logo.
+// Intern supportparameter fjernes alltid fra kundelenker.
+
+import { buildPublishPayload } from "../utils/salesOfferLogic.js";
+import {
+  getSalesOfferByToken,
+  getSalesSession,
+  publishSalesOffer,
+} from "./salesSupabase.js";
+
+export function buildCustomerOfferLink(currentUrl, token) {
+  const url = new URL(currentUrl);
+  // Behold eventuelle Vercel-parametere for deling av beskyttet preview,
+  // men eksponer aldri internt supportfirma i kundelenken.
+  url.searchParams.delete("salesSupportCompany");
+  url.searchParams.set("publicOffer", token);
+  return url.toString();
+}
+
+function sameName(left = "", right = "") {
+  const normalize = (value) =>
+    String(value || "")
+      .trim()
+      .toLocaleLowerCase("nb-NO")
+      .replace(/\s+/g, " ");
+  return Boolean(normalize(left) && normalize(left) === normalize(right));
+}
+
+async function enrichStoreOfferForPublish(client, request = {}) {
+  const lines = Array.isArray(request.offerLines) ? request.offerLines : [];
+  const storeMeta = lines.find((line) => line?.__storeOfferMeta);
+  if (!storeMeta) return { request, storeMeta: null };
+
+  const responsibleName = String(
+    request.responsible || request.projectResponsible || ""
+  ).trim();
+  const signatureName = String(
+    storeMeta.signatureName || responsibleName || ""
+  ).trim();
+
+  let signatureEmail = String(storeMeta.signatureEmail || "").trim();
+  let signatureUserId = String(storeMeta.signatureUserId || "").trim();
+
+  // Ikke bind den som publiserer til en annen navngitt saksbehandler. Når navnene
+  // samsvarer, låses bruker-id/e-post sammen med tilbudsversjonen slik at senere
+  // akseptvarsler går til faktisk saksbehandler og ikke bare "siste publisher".
+  if (!signatureEmail && (!signatureName || sameName(signatureName, responsibleName))) {
+    try {
+      const { data: sessionData } = await getSalesSession(client);
+      const user = sessionData?.session?.user || null;
+      if (user?.email) signatureEmail = String(user.email).trim().toLowerCase();
+      if (user?.id) signatureUserId = String(user.id).trim();
+    } catch {
+      // Publisher-fallback på server håndterer eldre tilbud dersom sesjonen ikke kan leses.
+    }
+  }
+
+  const enrichedMeta = {
+    ...storeMeta,
+    signatureName,
+    signatureEmail,
+    signatureUserId,
+  };
+  const enrichedLines = lines.map((line) =>
+    line?.__storeOfferMeta ? enrichedMeta : line
+  );
+
+  return {
+    request: { ...request, offerLines: enrichedLines },
+    storeMeta: enrichedMeta,
+  };
+}
+
+export async function publishSalesOfferAndBuildLink({
+  client,
+  request,
+  requests = [],
+  companyProfile = null,
+  loadCompanyProfile = async () => ({}),
+  currentUrl,
+  confirmOptionRemoval = () => true,
+} = {}) {
+  if (!client) {
+    throw new Error("Supabase-miljøvariabler mangler i Vercel-preview.");
+  }
+
+  if (!request || !request.offerLines?.length) {
+    throw new Error("Tilbudet mangler prislinjer.");
+  }
+
+  if ((request.offerOptions || []).some(option => option.customerCanChooseQuantity === true && (!canChooseOptionQuantity(option) || parseCustomerOptionQuantity(String(option.quantity ?? "").trim() || "1") === null))) {
+    throw new Error("Kontroller opsjonene med antallsvalg. Bruk tillegg med null eller positiv enhetspris og antall over 0 og opptil 100 000, med høyst tre desimaler.");
+  }
+
+  const currentLineCount = request.offerLines?.length || 0;
+  const currentOptionCount = request.offerOptions?.length || 0;
+
+  if (request.publicToken) {
+    const { data: publishedOfferData, error: publishedOfferError } =
+      await getSalesOfferByToken(client, request.publicToken);
+
+    if (publishedOfferError) throw publishedOfferError;
+
+    const previousOptions = Array.isArray(publishedOfferData?.version?.options)
+      ? publishedOfferData.version.options
+      : [];
+    const previousOptionCount = previousOptions.length;
+
+    if (previousOptionCount > 0 && currentOptionCount === 0) {
+      const confirmed = confirmOptionRemoval(previousOptionCount);
+
+      if (!confirmed) {
+        throw new Error(
+          "Publisering avbrutt. Kontroller opsjonene i Rediger tilbud."
+        );
+      }
+    }
+  }
+
+  const resolvedCompanyProfile =
+    companyProfile && typeof companyProfile === "object"
+      ? companyProfile
+      : await loadCompanyProfile();
+  const { request: publishRequest, storeMeta: storeOfferMeta } =
+    await enrichStoreOfferForPublish(client, request);
+  const publishCompanyProfile = {
+    ...(resolvedCompanyProfile || {}),
+    companyName:
+      storeOfferMeta?.brandLabel ||
+      resolvedCompanyProfile?.companyName ||
+      "",
+    logoUrl:
+      storeOfferMeta?.brandLogoUrl ||
+      resolvedCompanyProfile?.logoUrl ||
+      "/expo-logo.png",
+  };
+
+  const { data, error } = await publishSalesOffer(
+    client,
+    buildPublishPayload(publishRequest, publishCompanyProfile)
+  );
+
+  if (error) throw error;
+
+  const publishedByUserId = String(data?.published_by || "").trim();
+  const publishedByName = String(data?.published_by_name || "").trim();
+  const publishedAt = String(data?.published_at || "").trim();
+
+  const nextRequests = requests.map((item) =>
+    item.id === request.id
+      ? {
+          ...item,
+          offerLines: publishRequest.offerLines,
+          salesOfferId: data.offer_id,
+          sentOfferVersionId: data.version_id,
+          sentOfferVersionNumber: data.version_number,
+          publicToken: data.public_token,
+          lastPublishedByUserId: publishedByUserId,
+          lastPublishedByName: publishedByName,
+          lastPublishedAt: publishedAt,
+          companyName:
+            publishCompanyProfile.companyName || item.companyName || "",
+          companyOrgNumber:
+            publishCompanyProfile.orgNumber || item.companyOrgNumber || "",
+          companyAddress:
+            publishCompanyProfile.address || item.companyAddress || "",
+          companyPhone:
+            publishCompanyProfile.phone || item.companyPhone || "",
+          companyEmail:
+            publishCompanyProfile.email || item.companyEmail || "",
+          companyWebsite:
+            publishCompanyProfile.website || item.companyWebsite || "",
+          companyLogoUrl:
+            publishCompanyProfile.logoUrl || item.companyLogoUrl || "/expo-logo.png",
+          status: "Tilbud",
+          statusClass: "sales-status-quote",
+          nextStep: "Kundelink er oppdatert",
+          offerRevisionDraftFromVersion: null,
+          offerRevisionDraftCreatedAt: "",
+          lastPublishedLineCount: currentLineCount,
+          lastPublishedOptionCount: currentOptionCount,
+        }
+      : item
+  );
+
+  const link = buildCustomerOfferLink(currentUrl, data.public_token);
+
+  return {
+    link,
+    nextRequests,
+    publishFeedback: {
+      requestId: request.id,
+      versionNumber: data.version_number,
+      link,
+      publishedAt: publishedAt || new Date().toISOString(),
+      publishedByName,
+    },
+  };
+}

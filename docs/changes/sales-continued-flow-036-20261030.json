@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Tilbud: valgt logo gjennom mal, kundevisning og PDF, og trygg videreføring",
+  "change": "Miljømål BEGGE, bare PR295/Preview. Original03.6 og godkjent Startside beholdes. Den faktiske aksepterte Enkel ordre-/Generelt-tilbud-visningen krasjet på udefinert floatingActionBottom. Samme valg Lag enkel ordre/Aktiver som prosjekt ligger nå som en vanlig seksjon i saksflyten, uten fast overlay; samme RPC/callback/form/tilgang. Grupperte tilbud og prosjektaktivering bruker eksisterende sales-editor-app-ramme. Ingen nye logovalg: dagens Ringside/Bademiljø-merkevarevelger og andre firmaers egen firmalogo beholdes. Tilbuds-PDF reserverer overskriftens høyde/mellomrom og første tekstkortminimum før seksjonsstart, slik at Vilkår og betaling ikke står alene på forrige side. Ingen verdi-/pris-/versjons-/aksept-/e-post-/recovery-/hydrering-/autosave-/backendendring.",
+  "verification": "Ny55-assertions Chromium-suite kjører faktisk SalesOfferBuilder-router med alle tre General-wrappere, ekte komplett malmotor, avsenderpolicy, salesPublishing og offentlig mapper, kundevisning og faktiske tilbuds-/aksept-PDF-generatorer med låst jsPDF. Kun transport/work-profile-lesing er isolert; signerings-/kontrakt-/Cordel-/mailhandlinger er adaptere eller sperret. Ringside/Bademiljø-logo velges, komplett mal materialiseres med bevart logo, publiseringspayload og offentlig mapper låser logo/navn; senere kladdelogo endrer ikke låst snapshot. To syntetiske publiseringsversjoner, fire faktiske PDF-er/åtte sider med tekst/sum og bildeinnhold kontrollert. PDF-logoens nær ugjennomsiktige blekkpiksler sammenlignes med valgt originalasset (99prosent samsvar innen2RGB-trinn; håndterer PNG-alfa). PDF-tekst bekrefter1875inkl.mva. Alle åtte sider visuelt gjennomgått; siste PDF-sidebytte renderes på nytt. Negativ ekte komponent gir floatingActionBottom is not defined; rettet visning har begge knapper, fem bredder og faktisk persistSimpleOrderActivationMode→native aktiveringsskjema→Tilbake. Ingen sluttaktivering. Negativt generert PDF viser enslig Vilkår-overskrift; ny sidekontroll beskytter dette. Full app-UX første runde avslørte at data-store-sender-mode alene ikke ventet på eksisterende DOM-adapters ferdige logo-UI; ny prøve venter på faktisk firmakort/skjulte radioknapper og motsatt ved retur, samme policyassertions beholdt. Eksisterende editor277/General229, kundepreview875+35+26, faktisk aksept44, routing111 og handler31PASS. Full eksplisitt Sandbox critical/buildPASS før siste presentasjonslinje i PDF; sluttkontroll/ny CI/deploy og innlogget resultat føres i PR295. Ikke en live kundeaksept, mottatt mail, signering, komplett langtilbud-/rolle-/Safari-/fysiskmobilattest.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "Eksisterende logovalg og tilgjengelige videreføringsknapper forklares."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Samme eiere, datamodell, lagring, tilgang og backend; presentasjonsendring."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen ny avhengighet, miljøvariabel eller konfigurasjon."
+    },
+    "module": {
+      "required": true,
+      "reason": "Sales-kontrakten beskriver bevart logopolicy, inline videreføring og seksjonsstart i PDF."
+    }
+  }
+}

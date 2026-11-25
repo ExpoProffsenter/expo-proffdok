@@ -1,0 +1,404 @@
+import { supportClient } from '../access/appSupportBrowser.mjs';
+import documentPageStyles from '../portal/portalWorkspace.css?inline';
+// FASE 44E / 29B1/29B2/29B3/29B5: Sikker dokumentrute for private prosjekt-/salgsdokumenter.
+// FASE 44E venter på Supabase-auth i ny dokumentfane og prøver kontrollert refresh
+// før en innlogget intern bruker eventuelt avvises. Intern bruker faller aldri feilaktig
+// videre til kunde-/UE-kode dersom en autentisert dokumentkontroll feiler.
+// Ruten brukes som varig URL i prosjektdata og PDF. Selve Storage-lenken lages først
+// ved åpning og er kortlivet. Kundekode legges aldri i URL-en. Kundesynlige tilbudsvedlegg
+// kan åpnes med tilbudets eksisterende publicOffer-token etter server-side kontroll.
+
+import { createClient } from '@supabase/supabase-js';
+import {
+  PRIVATE_DOCUMENT_BUCKET,
+  buildPrivateSalesStoragePath,
+  isPrivateOfferAttachmentLogicalPath,
+  isPrivateSalesLogicalPath,
+  privateSalesRequestRefFromLogicalPath,
+} from './privateDocumentTools.js';
+import { markSystemAdminProjectSupportQuery } from '../access/systemAdminProjectScopeGuard.js';
+
+const normalizeRole = (value = '') => {
+  const clean = String(value || '').trim().toLowerCase();
+  return clean === 'underleverandor' || clean === 'underleverandør' || clean === 'underentreprenør'
+    ? 'underleverandor'
+    : 'kunde';
+};
+
+const normalizeCode = (value = '') =>
+  String(value || '').trim().replace(/\s+/g, '').toUpperCase();
+
+const portalStorageKey = (projectId = '', role = 'kunde') =>
+  `expoProffDokPortalAccess:${String(projectId || '').trim()}:${normalizeRole(role)}`;
+
+const safeText = (value = '') => String(value || '').replace(/[<>]/g, '');
+
+const setBody = (html) => {
+  document.body.innerHTML = html;
+  document.getElementById('private-doc-back')?.addEventListener('click', () => {
+    if (window.history.length > 1) window.history.back();
+    else window.close();
+  });
+};
+
+const pageShell = (content = '') => `
+  <style>${documentPageStyles}</style>
+  <div class="pd-document-access">
+    <header>EXPO PROFFDOK / PRIVAT DOKUMENT</header>
+    <main>
+      ${content}
+      <button id="private-doc-back" class="pd-document-back" type="button">Tilbake</button>
+    </main>
+  </div>`;
+
+const showLoading = () => {
+  setBody(pageShell(`
+    <h1>Åpner sikkert dokument …</h1>
+    <p>Tilgangen kontrolleres før dokumentet åpnes.</p>
+  `));
+};
+
+const showError = (message = 'Dokumentet kunne ikke åpnes.') => {
+  setBody(pageShell(`
+    <h1>Dokumentet kunne ikke åpnes</h1>
+    <p>${safeText(message)}</p>
+    <button id="private-doc-close" type="button">Lukk</button>
+  `));
+  document.getElementById('private-doc-close')?.addEventListener('click', () => window.close());
+};
+
+const redirectToSignedUrl = (signedUrl, download = false) => {
+  if (!signedUrl) throw new Error('Mangler sikker dokumentlenke.');
+  if (download) {
+    const anchor = document.createElement('a');
+    anchor.href = signedUrl;
+    anchor.rel = 'noopener noreferrer';
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    window.setTimeout(() => window.close(), 900);
+    return;
+  }
+  window.location.replace(signedUrl);
+};
+
+const requestPortalSignedUrl = async (client, { projectId = '', role, code, path, download }) => {
+  const { data, error } = await client.functions.invoke('private-document-access', {
+    body: {
+      projectId,
+      role: normalizeRole(role),
+      code: normalizeCode(code),
+      path,
+      download: !!download,
+    },
+  });
+  if (error) throw error;
+  if (!data?.ok || !data?.signedUrl) {
+    throw new Error(data?.error || 'Tilgangen ble ikke godkjent.');
+  }
+  return data.signedUrl;
+};
+
+const requestOfferSignedUrl = async (client, { offerToken, path, download }) => {
+  const { data, error } = await client.functions.invoke('private-document-access', {
+    body: {
+      offerToken: String(offerToken || '').trim(),
+      path,
+      download: !!download,
+    },
+  });
+  if (error) throw error;
+  if (!data?.ok || !data?.signedUrl) {
+    throw new Error(data?.error || 'Vedlegget er ikke tilgjengelig fra denne tilbudslenken.');
+  }
+  return data.signedUrl;
+};
+
+const storedPortalCandidates = (role = 'kunde') => {
+  const candidates = [];
+  const normalizedRole = normalizeRole(role);
+  try {
+    for (let index = 0; index < window.sessionStorage.length; index += 1) {
+      const key = window.sessionStorage.key(index) || '';
+      const match = key.match(/^expoProffDokPortalAccess:([^:]+):([^:]+)$/);
+      if (!match || normalizeRole(match[2]) !== normalizedRole) continue;
+      const code = normalizeCode(window.sessionStorage.getItem(key) || '');
+      if (!code) continue;
+      candidates.push({ projectId: match[1], code });
+    }
+  } catch {}
+  return candidates;
+};
+
+const showPortalCodeForm = ({ client, projectId, role, path, download }) => {
+  const roleLabel = normalizeRole(role) === 'underleverandor' ? 'underentreprenør' : 'kunde';
+  setBody(pageShell(`
+    <h1>Skriv inn tilgangskode</h1>
+    <p>Dette er et privat dokument. Bruk samme tilgangskode som til ${roleLabel}portalen.</p>
+    <label for="private-doc-code">Tilgangskode</label>
+    <input id="private-doc-code" inputmode="text" autocomplete="one-time-code" />
+    <div id="private-doc-error" role="alert" style="display:none;"></div>
+    <button id="private-doc-open" type="button">Åpne dokument</button>
+  `));
+
+  const input = document.getElementById('private-doc-code');
+  const button = document.getElementById('private-doc-open');
+  const errorBox = document.getElementById('private-doc-error');
+
+  const submit = async () => {
+    const code = normalizeCode(input?.value || '');
+    if (!code) return;
+    button.disabled = true;
+    button.textContent = 'Kontrollerer …';
+    errorBox.style.display = 'none';
+    try {
+      const signedUrl = await requestPortalSignedUrl(client, {
+        projectId,
+        role,
+        code,
+        path,
+        download,
+      });
+      if (projectId) {
+        try {
+          window.sessionStorage.setItem(portalStorageKey(projectId, role), code);
+        } catch {}
+      }
+      redirectToSignedUrl(signedUrl, download);
+    } catch (error) {
+      errorBox.textContent = error?.message || 'Feil tilgangskode eller manglende dokumenttilgang.';
+      errorBox.style.display = 'block';
+      button.disabled = false;
+      button.textContent = 'Åpne dokument';
+    }
+  };
+
+  button?.addEventListener('click', submit);
+  input?.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') submit();
+  });
+  input?.focus();
+};
+
+const resolveAuthenticatedSalesCompanyScope = async (
+  client,
+  { projectId = '', path = '', supportMode = false } = {}
+) => {
+  if (projectId) {
+    const requestRef = privateSalesRequestRefFromLogicalPath(path);
+    let projectQuery = client
+      .from('projects')
+      .select('id,company_scope_id,data')
+      .eq('id', projectId);
+    if (supportMode) {
+      projectQuery = markSystemAdminProjectSupportQuery(projectQuery);
+    }
+    const { data: projectRow, error: projectError } = await projectQuery.maybeSingle();
+
+    if (projectError || !projectRow?.company_scope_id) {
+      throw projectError || new Error('Prosjektet eller firmascope kunne ikke leses.');
+    }
+
+    const projectRequestRef = String(
+      projectRow?.data?.project?.salesOrigin?.requestRef || ''
+    ).trim();
+
+    if (!requestRef || !projectRequestRef || requestRef !== projectRequestRef) {
+      throw new Error('Dokumentet tilhører ikke prosjektets opprinnelige salgssak.');
+    }
+
+    return String(projectRow.company_scope_id).trim();
+  }
+
+  const { data: companyScopeId, error: scopeError } = await client.rpc(
+    'resolve_sales_company_scope'
+  );
+  if (scopeError || !companyScopeId) {
+    throw scopeError || new Error('Mangler firmascope.');
+  }
+  return String(companyScopeId).trim();
+};
+
+const readAuthenticatedSession = async (client) => {
+  try {
+    const { data, error } = await client.auth.getSession();
+    if (error) return null;
+    return data?.session?.user ? data.session : null;
+  } catch {
+    return null;
+  }
+};
+
+const waitForAuthenticatedSession = async (client, timeoutMs = 2500) => {
+  const immediate = await readAuthenticatedSession(client);
+  if (immediate?.user) return immediate;
+
+  return new Promise((resolve) => {
+    let settled = false;
+    let timer = null;
+    let subscription = null;
+
+    const finish = (session = null) => {
+      if (settled) return;
+      settled = true;
+      if (timer) window.clearTimeout(timer);
+      subscription?.unsubscribe?.();
+      resolve(session?.user ? session : null);
+    };
+
+    try {
+      const authState = client.auth.onAuthStateChange((_event, session) => {
+        if (session?.user) finish(session);
+      });
+      subscription = authState?.data?.subscription || null;
+    } catch {
+      subscription = null;
+    }
+
+    timer = window.setTimeout(async () => {
+      finish(await readAuthenticatedSession(client));
+    }, timeoutMs);
+  });
+};
+
+const createAuthenticatedPrivateDocumentUrl = async (
+  client,
+  { physicalPath = '', download = false } = {}
+) => {
+  const sign = () => client.storage
+    .from(PRIVATE_DOCUMENT_BUCKET)
+    .createSignedUrl(physicalPath, 10 * 60, download ? { download: true } : undefined);
+
+  let result = await sign();
+  if (!result?.error && result?.data?.signedUrl) return result.data.signedUrl;
+
+  try {
+    const { data: refreshed } = await client.auth.refreshSession();
+    if (refreshed?.session?.user) {
+      result = await sign();
+      if (!result?.error && result?.data?.signedUrl) return result.data.signedUrl;
+    }
+  } catch {
+    // Den innloggede brukerens tilgang vurderes nedenfor uten å svekke portalvernet.
+  }
+
+  throw result?.error || new Error('Dokumenttilgangen kunne ikke bekreftes.');
+};
+
+export async function runPrivateDocumentRedirect() {
+  showLoading();
+
+  const params = new URLSearchParams(window.location.search);
+  const path = String(params.get('path') || '').trim().replace(/^\/+/, '');
+  const projectId = String(params.get('project') || '').trim();
+  const role = normalizeRole(params.get('role') || 'kunde');
+  const offerToken = String(params.get('publicOffer') || '').trim();
+  const download = params.get('download') === '1';
+  const supportMode = params.get('support') === '1';
+
+  if (!path) {
+    showError('Dokumentlenken mangler Storage-path.');
+    return;
+  }
+
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  if (!supabaseUrl || !anonKey) {
+    showError('Appen mangler Supabase-konfigurasjon.');
+    return;
+  }
+
+  const client = supportClient(createClient(supabaseUrl, anonKey));
+  const authenticatedSession = await waitForAuthenticatedSession(client);
+
+  if (authenticatedSession?.user) {
+    try {
+      let physicalPath = path;
+      if (
+        isPrivateSalesLogicalPath(path) ||
+        isPrivateOfferAttachmentLogicalPath(path)
+      ) {
+        const companyScopeId = await resolveAuthenticatedSalesCompanyScope(client, {
+          projectId,
+          path,
+          supportMode,
+        });
+        physicalPath = buildPrivateSalesStoragePath({
+          companyScopeId,
+          logicalPath: path,
+        });
+      }
+
+      const signedUrl = await createAuthenticatedPrivateDocumentUrl(client, {
+        physicalPath,
+        download,
+      });
+      redirectToSignedUrl(signedUrl, download);
+      return;
+    } catch (error) {
+      console.warn('Innlogget dokumenttilgang ble avvist', error);
+      showError(
+        'Du er innlogget i Expo ProffDok, men den interne dokumenttilgangen kunne ikke bekreftes. Gå tilbake til saken og prøv igjen. Hvis feilen fortsetter, logg ut og inn på nytt.'
+      );
+      return;
+    }
+  }
+
+  if (offerToken && isPrivateOfferAttachmentLogicalPath(path)) {
+    try {
+      const signedUrl = await requestOfferSignedUrl(client, {
+        offerToken,
+        path,
+        download,
+      });
+      redirectToSignedUrl(signedUrl, download);
+      return;
+    } catch (error) {
+      showError(error?.message || 'Vedlegget kunne ikke åpnes fra denne tilbudslenken.');
+      return;
+    }
+  }
+
+  if (projectId) {
+    let storedCode = '';
+    try {
+      storedCode = normalizeCode(window.sessionStorage.getItem(portalStorageKey(projectId, role)) || '');
+    } catch {}
+
+    if (storedCode) {
+      try {
+        const signedUrl = await requestPortalSignedUrl(client, {
+          projectId,
+          role,
+          code: storedCode,
+          path,
+          download,
+        });
+        redirectToSignedUrl(signedUrl, download);
+        return;
+      } catch {
+        try {
+          window.sessionStorage.removeItem(portalStorageKey(projectId, role));
+        } catch {}
+      }
+    }
+  } else {
+    for (const candidate of storedPortalCandidates(role)) {
+      try {
+        const signedUrl = await requestPortalSignedUrl(client, {
+          projectId: candidate.projectId,
+          role,
+          code: candidate.code,
+          path,
+          download,
+        });
+        redirectToSignedUrl(signedUrl, download);
+        return;
+      } catch {
+        // Kandidaten tilhører et annet prosjekt eller er utløpt. Prøv neste.
+      }
+    }
+  }
+
+  showPortalCodeForm({ client, projectId, role, path, download });
+}

@@ -1,0 +1,200 @@
+.bolig-site-roster {
+  width: min(1100px, 96vw);
+  max-width: 96vw;
+  padding: 24px;
+  box-sizing: border-box;
+  color: #183b40;
+  background: #f7fafb;
+}
+.bolig-site-roster * {
+  box-sizing: border-box;
+  min-width: 0;
+}
+.bolig-site-roster p {
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+.bolig-site-roster button {
+  min-height: 42px;
+  white-space: normal;
+  font-size: 14px;
+}
+.bolig-site-roster label {
+  display: grid;
+  gap: 6px;
+  font-weight: 600;
+}
+.bolig-site-roster label:has(input[type="checkbox"]) {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.bolig-site-roster input[type="checkbox"] {
+  width: 19px;
+  height: 19px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.bolig-site-roster input:not([type="checkbox"]),
+.bolig-site-roster select {
+  width: 100%;
+  min-height: 42px;
+  padding: 9px;
+  border: 1px solid #9bb5bb;
+  border-radius: 8px;
+  background: white;
+  color: #16383e;
+}
+.roster-tabs,
+.roster-actions,
+.roster-date {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin: 14px 0;
+}
+.roster-tabs {
+  padding: 8px;
+  background: #e5eef0;
+  border-radius: 12px;
+}
+.roster-tabs button[aria-pressed="true"] {
+  background: #185d64;
+  color: white;
+  border-color: #185d64;
+}
+.roster-summary {
+  display: grid;
+  gap: 7px;
+  padding: 18px;
+  border-radius: 12px;
+  background: #fff1d7;
+  border: 1px solid #d2a64d;
+}
+.roster-checked {
+  background: #e1f3eb;
+  border-color: #46966d;
+}
+.bolig-site-roster article,
+.roster-editor,
+.roster-review {
+  padding: 18px;
+  background: #fff;
+  border: 1px solid #c7d8dc;
+  border-radius: 12px;
+  margin: 12px 0;
+}
+.bolig-site-roster h3 {
+  font-size: 17px;
+  margin: 0 0 8px;
+  overflow-wrap: anywhere;
+}
+.roster-warning {
+  padding: 15px;
+  background: #fff6e8;
+  border-left: 4px solid #b77b17;
+  border-radius: 8px;
+  margin: 12px 0;
+}
+.roster-warning button {
+  margin: 4px;
+}
+.roster-records,
+.roster-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.roster-records article {
+  margin: 0;
+}
+.roster-candidate {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border-bottom: 1px solid #c7d8dc;
+}
+.bolig-site-roster details {
+  margin: 20px 0;
+  padding: 15px;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #c7d8dc;
+}
+.bolig-site-roster summary {
+  font-weight: 700;
+  cursor: pointer;
+}
+.roster-export {
+  border-top: 1px solid #b8cbd0;
+  margin-top: 22px;
+  padding-top: 8px;
+}
+.bolig-site-roster button:focus-visible,
+.bolig-site-roster summary:focus-visible {
+  outline: 3px solid #bf7911;
+  outline-offset: 3px;
+}
+@media (max-width: 600px) {
+  .bolig-site-roster {
+    padding: 14px;
+    max-height: 94dvh;
+  }
+  .roster-fields,
+  .roster-records {
+    grid-template-columns: 1fr;
+  }
+  .roster-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .roster-actions > button {
+    flex: 1 1 140px;
+  }
+  .roster-actions > label {
+    width: 100%;
+  }
+  .roster-candidate {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .roster-date label {
+    width: 100%;
+  }
+}
+
+.roster-complete {
+  padding: 12px;
+  color: #216244;
+  background: #e7f4ed;
+  border: 1px solid #89b7a1;
+  border-radius: 10px;
+  margin: 12px 0;
+}
+.roster-jumps {
+  display: none;
+}
+@media (max-width: 600px) {
+  .roster-jumps {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    position: sticky;
+    bottom: 0;
+    pointer-events: none;
+  }
+  .roster-jumps button {
+    pointer-events: auto;
+    background: #155b63;
+    color: white;
+    border: 1px solid white;
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    box-shadow: 0 2px 8px #12404755;
+    font-size: 20px;
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "title": "Godkjent samlet Design036-release med bolig, dokumentuttrekk og sjekklistemalforslag",
+  "change": "Miljømål BEGGE. Kenneths TEST OK 2.november kl.16:02 CET omfatter PR294/295/298 og PR305-funksjonen. Faktisk main70a99b3e integreres i PR295 etter separate godkjente releaseetapper. Boligproduktkode bevares identisk; dokumentuttrekk beholder både design og operasjonslåsrettelse. BoligHelp beholder det søkbare høyrepanelet. De69 opprinnelige tekstblokkene flyttes byteidentisk til boligHelpOriginalContent.jsx, og samme offentlige boligHelpContent-API legger til fire allerede godkjente boligtemaer. Builder-/veiledningsprøver beholder begge pakkenes krav. Ingen nye funksjoner, auth, utsending, pris, avhengighet eller workflowendring.",
+  "verification": "Før faktisk integrasjon:1372 native kombinasjonskrav,44SQL og170 sjekklistebrowserkrav, seks PDF-er62sider/tre ZIP-er og begge full critical/build-miljøer PASS. Ny nøyaktig tekstbevarende hjelpekilde består242 native krav med69 uendrede teksthash og fire nye temaer. Sluttkandidatens build og fullCI kreves før merge. Production-migrering remote20261102151721 fra canonical20261031012504 er installert og kontrollert med identisk historikk/signaturkrav/avhengighetsfunksjoner og fire READ ONLY-rolleavslag. Demo-preflight19/19 og kurs5/5 PASS. Ingen full ny innlogget rolle-/Safari-attest; publisert SHA/binding/etterkontroll føres i PR295 og releaselogg. CI880 feilet på utløpt fast HR-testdato; identisk allerede godkjent datouavhengig QA-kilde ble ført frem uten svekkede267krav. GitHubs strenge basegate før PR294 ble fulgt med ny kandidat og grønn CI886, ikke omgått.",
+  "documentation": {
+    "help": {"required": true, "reason": "Fire godkjente boligtemaer må følge både boligpakken og designets nye veiledningspanel; alle69 tidligere tekstblokker og referanselenker er bevart."},
+    "architecture": {"required": false, "reason": "Ingen ny dataflyt eller arkitektur. Kun sammenslåing av godkjente pakker og bytebevarende oppdeling av veiledningsinnhold med samme eksport-API."},
+    "setup": {"required": false, "reason": "Ingen nye produktavhengigheter eller oppsett. Den autoriserte additive migreringen dokumenteres med canonical/remoteversjon i releaselogg, ikke som en ny blind installasjonsliste."},
+    "module": {"required": false, "reason": "Eksisterende modulkontrakter beholdes. Presis integrasjon, migreringskvittering, testgrenser og tilbakeføring samles i docs/qa/DESIGN036_PRODUCTION_RELEASE_20261102.md og siste PR295-kvittering."}
+  }
+}

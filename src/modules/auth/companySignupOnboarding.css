@@ -1,0 +1,187 @@
+/* FASE 42N – firmaopplysninger ved egenregistrering. */
+
+/* Registreringsskjemaet er vesentlig lengre enn login. Scrollansvaret ligger
+   derfor på selve hvite signup-kortet. Det omgår eldre auth-lag som bruker
+   overflow:hidden på kortet, uten å endre login-layouten. */
+body.authLandingActive.authLandingSignup #root {
+  overflow: hidden !important;
+}
+
+body.authLandingActive.authLandingSignup #root > div:not([role='status']) {
+  min-height: 0 !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+}
+
+@media (min-width: 1181px) {
+  body.authLandingActive.authLandingSignup #root > div:not([role='status']) {
+    height: calc(100% - 36px) !important;
+    max-height: calc(100% - 36px) !important;
+  }
+}
+
+.signupCompanyPanel {
+  margin-top: 16px;
+  padding: 18px;
+  border: 1px solid #b8dfe3;
+  border-radius: 18px;
+  background: #f5fcfd;
+  box-shadow: 0 10px 28px rgba(8, 73, 82, 0.06);
+}
+
+.signupCompanyHeading {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.signupCompanyHeading h3 {
+  margin: 2px 0 0;
+  font-size: 19px;
+  line-height: 1.2;
+}
+
+.signupCompanyEyebrow {
+  display: block;
+  color: #008f9c;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.signupCompanyIntro {
+  margin: 10px 0 12px;
+  color: #475569;
+  line-height: 1.45;
+}
+
+.signupCompanyInviteToggle {
+  display: flex !important;
+  align-items: center;
+  gap: 10px;
+  width: fit-content;
+  margin: 0 0 14px;
+  padding: 9px 11px;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid #d7e7e9;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.signupCompanyInviteToggle input {
+  width: 20px !important;
+  min-width: 20px !important;
+  height: 20px !important;
+  min-height: 20px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  flex: 0 0 20px;
+}
+
+.signupCompanyFields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.signupCompanyFields[hidden] {
+  display: none !important;
+}
+
+.signupCompanyField {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.signupCompanyField > span {
+  font-weight: 800;
+  color: #17232c;
+}
+
+.signupCompanyField input {
+  width: 100%;
+  min-width: 0;
+  min-height: 50px;
+  box-sizing: border-box;
+  border: 1px solid #c8dbe0;
+  border-radius: 12px;
+  background: #fff;
+  color: #17232c;
+  padding: 11px 13px;
+  font: inherit;
+}
+
+.signupCompanyField input:focus {
+  outline: 3px solid rgba(15, 190, 201, 0.18);
+  border-color: #0fbec9;
+}
+
+@media (max-width: 1180px) {
+  body.authLandingActive.authLandingSignup {
+    overflow: hidden !important;
+  }
+
+  body.authLandingActive.authLandingSignup #root {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100dvh !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 14px 0 !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+  }
+
+  body.authLandingActive.authLandingSignup #root > div:not([role='status']) {
+    height: calc(100dvh - 28px) !important;
+    min-height: 0 !important;
+    max-height: calc(100dvh - 28px) !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .signupCompanyPanel {
+    padding: 14px;
+    border-radius: 15px;
+  }
+
+  .signupCompanyFields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .signupCompanyInviteToggle {
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+@media (max-width: 600px) {
+  body.authLandingActive.authLandingSignup #root {
+    padding: 8px 0 !important;
+  }
+
+  body.authLandingActive.authLandingSignup #root > div:not([role='status']) {
+    height: calc(100dvh - 16px) !important;
+    max-height: calc(100dvh - 16px) !important;
+  }
+}
+
+@media (max-width: 380px) {
+  body.authLandingActive.authLandingSignup #root {
+    padding: 6px 0 !important;
+  }
+
+  body.authLandingActive.authLandingSignup #root > div:not([role='status']) {
+    height: calc(100dvh - 12px) !important;
+    max-height: calc(100dvh - 12px) !important;
+  }
+}

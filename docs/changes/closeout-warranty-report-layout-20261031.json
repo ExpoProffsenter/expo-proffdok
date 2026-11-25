@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Komplett sluttrapport: garanti, overtagelse og forside uten teksttap",
+  "change": "Miljømål BEGGE, kun eksisterende PR295/Preview. I den native createReportTools-rendereren får garantisertifikatets tittel/mottaker/kontakt/kvittering fulle felt, målte korthøyder og sideskift med gjentatt garantihode; membransystem og QR holdes sammen. Vilkårsavsnitt brytes linjevis. Garantibevisets bunntekst får hvit kontrast og egen linje for label. Overtagelsesmerknaden flyter i målte bokser før dato/navn/vilkår/signaturbilder. Forsidetittel måles med riktig font før linjebryting, uten slice, og manglende headingbilde får navy bakgrunn. Ingen garantitekst, status-/fullførings-/arkiv-/tilgangsregler, signaturgrunnlag, beregninger, eksportvalg, lenkegrunnlag, server- eller lagringseier endres.",
+  "verification": "Native full createReportTools/jsPDF-test24 PASS: kort/låst13sider, lang/låst15sider og kort/åpen13sider, norske navn, lange mottaker-/kontakt-/epostfelt, lange merknader, faktisk firmalogo/foto og syntetiske signaturstreker. Alle41sider rendret og visuelt sett i kontaktark og representativ fullstørrelse før levering. Bounds/late sentinels og eksakte kildedata sikres; låst skriver aldri garanti, åpen finaleksport beholder ett eksisterende genereringstidsstempel og garantinummer/status. Samme test mot forrige070497c6 feiler konkret på garantibevisets horisontale marger. Eksisterende prosjekt-KS-React/pdf7eksport-/4printforløp PASS, inklusive cancel, scope/revoke, sen respons og kildeidentitet. Full critical Sandbox-build PASS; eksakt CI/READY/innlogget lesende kontroll og bildeidentiteter føres i PR295. Native nedlastingsknapp/filbro i skynett og allefysiskeenheter er ikke attestert av isolert PDF-prøve. Signerte prosjektkontroll-snapshot-vedlegg er fortsatt et særskilt uavklart rapportpunkt, ikke lukket fra overtagelsesbilder.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Ingen knappnavn, oppgaverekkefølge eller brukerkommando endres; bare eksisterende presentasjon."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Bare intern målsetting/tegning i samme native generator; alle datakilder, tilgangs-/signatur- og lagringseiere beholdes."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen avhengigheter, miljøverdier eller installasjonssteg endres."
+    },
+    "module": {
+      "required": true,
+      "reason": "Rapportmodulens nye README avgrenser layoutkontrakt, databevaring og faktisk native PDF-test."
+    }
+  }
+}

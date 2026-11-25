@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Boligprosjekter A–Å i Hjelp",
+  "change": "Miljømål BEGGE. Legger til én Hjelp-film, tekstspor, kapitler og kontroll av eksisterende Bolig-tilgang.",
+  "verification": "Original og nettversjon har 580 sekunder og 57 kapittelmarkører. Eksakt nettfil verifiseres av Hjelp-testen sammen med øvrige filmer.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "Ny film under Boligprosjekter."
+    },
+    "module": {
+      "required": true,
+      "reason": "Hjelp-README beskriver plassering og tilgang."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Eksisterende avspiller og statiske filer."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen ny avhengighet."
+    }
+  }
+}

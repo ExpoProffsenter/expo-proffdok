@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';import fs from 'node:fs';
+import './support-mail-check.mjs';
+const read=p=>fs.readFileSync(p,'utf8');
+const files=['src/modules/support/SupportWorkspace.jsx','src/modules/support/SupportLinkEntry.jsx','supabase/functions/_shared/support-mail.mjs','supabase/functions/_shared/support-inbound.mjs',...fs.readdirSync('supabase/migrations').filter(n=>/_support_(cases|queue_worker|deletion_compatibility|scheduler|queue_eligibility|overview)\.sql$/.test(n)).map(n=>'supabase/migrations/'+n)];
+for(const file of files)assert(!/\b(?:to|reply_to)\s*:\s*(?:\[\s*)?['\"][^'\"]+@/i.test(read(file)),`${file}: recipient addresses must come from authorized server context or secrets`);
+assert(read('supabase/functions/_shared/support-mail.mjs').includes("mailbox(env('SUPPORT_INTERNAL_TO'))"),'internal recipient must be supplied only through server secrets');
+const ui=read(files[0]);assert(!/localStorage|sessionStorage/.test(ui),'support content must not be cached in browser storage');
+assert(read('src/modules/help/helpTools.js').includes('React.createElement(CoreHelpCenter, {...props,helpAccess})'),'original help stays mounted');
+assert(read('src/modules/app/AppNewsAdmin.jsx').includes('<SystemAdminSalesSupport'),'existing sales support retained');
+assert(!read('src/modules/help/helpTools.js').includes('SupportWorkspace'),'case list must live in the dedicated Support area');
+assert(read('src/modules/personal/PersonalPage.jsx').includes('onOpenSupport'),'Min side links to the same support conversation');
+assert(read('src/modules/support/SupportLinkEntry.jsx').includes("searchParams.delete('supportCase')"),'explicit close consumes only support URL');
+const sql=read(files[4]);for(const word of ['support_private.check_actor','support_private.check_ticket','enable row level security','revoke all on all functions in schema support_private'])assert(sql.includes(word),word);
+console.log('critical-support-check: recipient isolation, private storage, additive entry points PASS');

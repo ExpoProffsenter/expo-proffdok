@@ -1,0 +1,50 @@
+import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
+import fs from 'node:fs';
+import {ROUTINE_CATALOG,suggestedRoutines,ACK_STATEMENT} from '../src/modules/kshms/kshmsCatalog.mjs';
+import {BATCH_ACK_STATEMENT,batchAcknowledgmentVersions,verifiedBatchReceipts} from '../src/modules/kshms/kshmsBulkAcknowledgment.mjs';
+import {acknowledgmentTime} from '../src/modules/kshms/kshmsAcknowledgmentTime.mjs';
+const originals=ROUTINE_CATALOG.filter(row=>!row.key.startsWith('store_'));
+assert.equal(originals.length,73);
+assert.equal(createHash('sha256').update(JSON.stringify(originals.map(row=>row.key==='hot-work'?JSON.parse(fs.readFileSync('scripts/fixtures/hot-work-v1.json','utf8')):row))).digest('hex'),'a67b31f7462e53199802638fd207f3c9757b7eacdfbdcdf97f013302ad6b53b2','All 73 pre-existing routine proposals must retain their content and source identity');
+// 17.10: user explicitly requested the hot-work routine/checklist link. Keep
+// the original 73-row hash using its frozen v1; all other proposals stay exact.
+assert.equal(originals.find(row=>row.key==='hot-work').source_revision,2);
+assert(originals.find(row=>row.key==='hot-work').procedure.includes('Bruk mal: Varme arbeider'));
+const proposals=ROUTINE_CATALOG.filter(row=>row.key.startsWith('store_'));
+assert.equal(proposals.length,14);
+assert.equal(suggestedRoutines(['vvs'],'butikk med lager og truck').filter(row=>row.key.startsWith('store_')).length,14);
+assert.equal(suggestedRoutines(['vvs'],'rørarbeid i bolig').filter(row=>row.key.startsWith('store_')).length,0);
+// 20.10: only the requested store_lifting v2 has newly checked sources.
+// Preserve all thirteen other store proposals byte-for-byte in JSON order.
+assert.equal(createHash('sha256').update(JSON.stringify(proposals.filter(row=>row.key!=='store_lifting'))).digest('hex'),'795e26762819a605b8e5cee336f9caa65588b025872bd0a29aa79f524e886e4a');
+assert(proposals.every(row=>row.references.length&&row.references.every(ref=>ref.checked_on===(row.key==='store_lifting'?'2026-10-20':'2026-10-12'))));
+const lifting=proposals.find(row=>row.key==='store_lifting');
+assert.equal(lifting.source_revision,2);
+for(const text of ['25 kg','lim- og mørtelsekker','Medarbeideren forventes','praktisk opplæring','ikke en absolutt lovbestemt','6000 kg','20 meter','Ved begrensninger','annet passende arbeid','medvirke','utenfor felles håndbok'])assert(lifting.procedure.includes(text),text);
+assert(proposals.find(row=>row.key==='store_truck_training').procedure.includes('sertifisert sikkerhetsopplæring'));
+assert(proposals.find(row=>row.key==='store_truck_training').procedure.includes('ingen truckkompetanse eller kjøretillatelse'));
+const state={context:{company_id:'a',user_id:'self',enabled:true},routines:[{id:'r'},{id:'archived',archived:true}],versions:Array.from({length:87},(_,i)=>({id:`v${i}`,routine_id:'r',number:i+1,requires_ack:i%2===0,content:{title:`Rutine ${i}`}})),assignments:[],acknowledgments:[]};
+state.versions.push({id:'unassigned',routine_id:'r',content:{title:'Not mine'}},{id:'archived-version',routine_id:'archived',content:{title:'Expired'}});
+state.assignments=state.versions.filter(row=>row.id!=='unassigned').map(row=>({user_id:'self',version_id:row.id}));
+state.acknowledgments=[{user_id:'other',version_id:'v1',acknowledged_at:'2026-10-12T09:00:00Z'},{user_id:'self',version_id:'v0',statement:ACK_STATEMENT,acknowledged_at:'2026-10-11T09:00:00Z'}];
+const before=JSON.stringify(state);
+for(const role of ['reader','responsible','firmaadmin']){
+ const own={...state,context:{...state.context,role,manage:role!=='reader'}};
+ assert.equal(batchAcknowledgmentVersions(own,'a','self').length,86,'Own complete assigned set is independent of management role');
+}
+assert.equal(JSON.stringify(state),before,'Deriving a list must not mutate historical receipts or version content');
+assert.equal(batchAcknowledgmentVersions(state,'b','self').length,0);
+assert.equal(batchAcknowledgmentVersions(state,'a','other').length,0);
+assert.equal(batchAcknowledgmentVersions({...state,context:{...state.context,enabled:false}},'a','self').length,0);
+assert.equal(verifiedBatchReceipts(state,'a','self',['v1']),null,'Another employee receipt cannot satisfy own confirmation');
+assert.equal(verifiedBatchReceipts(state,'a','self',['v0']).length,1);
+assert.equal(verifiedBatchReceipts({...state,acknowledgments:[{user_id:'self',version_id:'v1',acknowledged_at:'invalid'}]},'a','self',['v1']),null);
+assert(acknowledgmentTime('2026-10-12T09:45:06Z').includes('11:45:06'));
+assert(acknowledgmentTime('2026-12-12T09:45:06Z').includes('10:45:06'));
+assert(acknowledgmentTime('2026-10-12T09:45:06Z').includes('12.10.2026'));
+const migration=fs.readFileSync('supabase/migrations/20261012094218_kshms_bulk_own_acknowledgment.sql','utf8');
+assert(migration.includes(BATCH_ACK_STATEMENT),'Frontend consent and server-required consent must agree');
+assert.equal((migration.match(/create function /g)||[]).length,1);
+assert(!/create or replace|alter table|update public\.|delete from public\./i.test(migration),'Batch migration must add one function without rewriting existing functions or data');
+console.log('KS/HMS bulk/catalog critical PASS: exact preservation of 73 originals, 14 new proposals, 87-row own scopes, informational/archived/foreign filters, own receipts and Norwegian date/time.');

@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Tydelig boligbytte og butikkens kontakt- og fristoversikt",
+  "change": "BEGGE. Eksplisitte søkeresultater, valgt bolig utenfor søket, kontaktkort og serverens frist/åpne aktiviteter. Personlig butikktilgang avgrenser nye felt. Byttesperre under bilde/publisering og mottaker i forhåndsvisning. Skynettfunn rettet: overlapp, mottakerfokus, direkte butikkstyles, valgt treff-kontrast og låst fristskjema etter sikker valideringsavvisning.",
+  "verification": "Lokale React-regresjoner og PostgreSQL 2039 kontroller PASS. Innlogget skynett: kontakt/frist/plan, samme navn, kladd og bilde A–B–A, publisering, separat beboeraksept og tilbakekalling. Full CI grønn for tidligere kandidater; siste avgrensede rettelser kontrolleres på ny. Se QA-logg for commit og begrensninger. Ingen produksjonsendring eller e-postutsending.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "Endret boligvalg og ny oversikt."
+    },
+    "module": {
+      "required": true,
+      "reason": "Additiv lesekontrakt og migrasjon."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Eksisterende RPC og autorisasjon beholdes."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen generelle miljøendringer."
+    }
+  }
+}

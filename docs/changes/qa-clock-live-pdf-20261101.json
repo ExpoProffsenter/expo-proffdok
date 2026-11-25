@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Datouavhengig HR-fixtur og stabil måling av native søkefelt",
+  "change": "Bare QA og dokumentasjon på PR295. HR-fixtur bruker testdatabasens Oslo-dato+7..27dager i stedet for faste novemberdatoer. Prissøk måler samme tilkoblede input atomisk etter breddebytte. Ingen app, Supabase-SQL, miljø, roller, sending eller demodata endres. Faktisk PDF-nedlasting dokumenteres separat.",
+  "verification": "CI868 feilet med reminder cannot send early og native lookup field768 (tom font/radius). Førkode gjenskapt lokalt for HR; rettet fixtur består267 PostgreSQLkrav med alle opprinnelige assertions og reelle migreringskilder. Første lokale rettelsesforsøk hadde en ugyldig SQL-alias uten AS; rettet til fixture_date, ingen produksjons-SQL endret. Browsermålingens input flyttes mellom mobil/desktop ved700px; kildekontroll viser frakoblet node som forklaring. Font16px/radius6px, alle bredder og44px-krav beholdes. Node-syntaks og workflowdekning PASS; Chromiumfil var trunkert lokalt, så faktisk browserresultat avventer CI. Ingen automatisk omkjøring eller testsvekkelse.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Bare QA-fixtur/observasjon endres; appens eksisterende brukerflyt, oppsett og modulkontrakt er uendret."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Bare QA-fixtur/observasjon endres; appens eksisterende brukerflyt, oppsett og modulkontrakt er uendret."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Bare QA-fixtur/observasjon endres; appens eksisterende brukerflyt, oppsett og modulkontrakt er uendret."
+    },
+    "module": {
+      "required": false,
+      "reason": "Bare QA-fixtur/observasjon endres; appens eksisterende brukerflyt, oppsett og modulkontrakt er uendret."
+    }
+  }
+}

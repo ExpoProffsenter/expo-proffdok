@@ -1,0 +1,11 @@
+# Lesefelt for eldre publiserte salgssaker
+
+`SalesCaseCustomerPreview` bruker fortsatt den rene mapperen først. Når en sak peker på en publisert/akseptert versjon, men mangler dens linjer i payloaden, laster `useSalesCaseStoredPreview` en separat lesemodell. Appens registrerte Supabase-klient brukes; det opprettes ingen ny innlogging eller klient. Ingen backfill, ny databasefunksjon, e-post eller kundebeslutning inngår.
+
+`observeSalesCaseStoredPreview` gjenbruker den eksisterende session-observeren. Fersk innlogging og Sales-firmascope kontrolleres før lasting og før visning. Hentingen leser `sales_requests(company_id,request_ref,payload)` under eksisterende RLS både før og etter `getSalesOfferByToken`. Begge rader må tilhøre riktig firma/sak og ha samme token og versjons-ID. Kundeversjonen må ha riktig request_ref, eksakt versjons-ID, samsvarende offer_id når feltet finnes, og samsvarende company_id når feltet finnes. Aksepterte/aktiverte saker krever accepted-status. Ingen nyere kladd eller annen versjon er fallback.
+
+Kunderendereren bruker samme eksisterende mapper og readOnlyOptions/hideDecisionControls. Låst firmaprofil, priser og aksepterte opsjonsmengder kommer fra kundeversjonen. Resultatet lever bare i lesefeltets lokale state og mates aldri inn i requests, editor, hydrering eller persistRequests. Lesefeltet har ingen write-/aksept-/publiseringsfunksjon.
+
+Auth-utlogging nullstiller straks. Brukerbytte, firmabytte og sen transport håndteres med observerens sekvensvakt. WORK_PROFILE_EVENT med reelt annet firma nullstiller og invaliderer pågående lasting umiddelbart; samme firmaprofilhendelse bevarer lesefeltet. Resultatstate knyttes til sak/token/versjon/status, så et renderbytte ikke kan vise en forrige saks svar. En mount-cleanup avregistrerer lyttere og avviser sene svar. Retry er eksplisitt og gjør ny autorisasjon; feil vises med forståelig tilbakevei. Den omkringliggende appens eksisterende modul-/firmagater beholdes.
+
+Regresjon: eksisterende875 komponentassertions,35 lese-/sessionkontroller og26 Chromium-kontroller. Den nye UI-prøven feiler på originalkomponenten (mangler publisert lesemodell) og består etter rettelsen. Alle transporter i disse prøvene er syntetiske; faktisk innlogget Preview skal kontrolleres før ferdigmelding. Ingen ny produksjonsmigrasjon eller installasjon kreves.

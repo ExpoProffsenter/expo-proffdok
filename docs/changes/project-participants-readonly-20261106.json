@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Prosjektinvolverte følger prosjektlås og bevarer usendt arbeid",
+  "change": "BEGGE, Preview/Sandbox først. Avgrenset main-kontekst til eget kontaktpanel; låste/lesebeskyttede kontroller og ferske UI-behandlervakter, med samme React-root og kladdbevaring. Ingen backend eller transportendring.",
+  "verification": "Gammel kode feiler ny negativ låst-prøve. Rettet faktisk React/JSDOM43PASS, native fixture-build uten browser. Native tillegg på fire bredder kjøres i full CI; eksakt Preview og QA-bevis i PR309/311. Se docs/qa/PROJECT_PARTICIPANTS_READONLY_20261106.md.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Eksisterende arbeidsflyt og knappnavn beholdes; forklaring om skrivevern vises direkte ved kontaktlisten."
+    },
+    "module": {
+      "required": true,
+      "reason": "Kontaktpanelens montering, kladdbevaring og nye skrivevernkontrakt beskrives i prosjektmodulens README."
+    },
+    "architecture": {
+      "required": true,
+      "reason": "Eksplisitt eierkontekst og begrenset observer knytter to eksisterende React-røtter uten å endre lagringsansvar."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen nye avhengigheter, miljøvariabler eller installasjonssteg i appen."
+    }
+  }
+}

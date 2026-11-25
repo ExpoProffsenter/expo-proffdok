@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Kompakte avvikskort med komplett sideskift i native PDF",
+  "change": "Miljømål BEGGE; kun eksisterende PR295/Preview/Sandbox. Avviksliste får egen sidestart, blå kortoverskrifter og målte felt med etikett og verdi ved siden av hverandre. Ordinære kort holdes samlet, lange felt videreføres med full gjentatt korttittel/feltetikett og Avviksliste–fortsettelse. Eksisterende utvalg, KS/RUH-deduplisering, åpne/lukkede tellinger, alle felt/fallbacks, frister, bilderegistreringsantall, garanti, arkiv, revalidering og signaturgater beholdes. Ingen loader-, navigasjons-, backend-, tilgangs- eller demodataendring.",
+  "verification": "Eksisterende native warranty-prøve utvidet med fire avviksscenarier på begge Sopro-systemer: åpne/lukkede prosjekt- og sjekkpunktavvik, ekskludert avvik, norske felt, lange beskrivelser/tiltak/lukkekommentarer, full etterfølgende sentinel, kortgeometri, marger og gjentatte overskrifter. Originalkilden3ec907b5 feiler på kravet om felter i native avrundede kort. Rettet390krav PASS; alle198tidligere krav bevares gjennom de opprinnelige seks scenariene. Ti faktiske native jsPDF-filer/162A4-sider rendret og visuelt gjennomgått, med forstørret side8 og lang fortsettelse side11. Syntetisk transport/data, ekte firmalogo og syntetiske signaturbyte. Eksisterende React9PDF/5print PASS med revalidering, kildeidentitet, endret svar/signatur, revoke, sen respons, scope og portal. Kritisk rapport/closeoutPASS; begge eksplisitte critical/build-miljøerPASS. Eksakt publisert kilde/fullCI/READY/Preview og varige filer i PR295. Dette er ikke en ny levende DEMO–RESERVE-rapport eller reparasjon av de to manglende SVG-/fem ugyldige JPG-ressursene.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Samme knapper og eksportforløp; bare PDF-layout."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Ingen datakilder, tilgang eller eierskap endres."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen avhengighet eller miljøbinding endres."
+    },
+    "module": {
+      "required": true,
+      "reason": "Rapportens sideskift og fullstendige avviksfelt dokumenteres i rapport-README."
+    }
+  }
+}

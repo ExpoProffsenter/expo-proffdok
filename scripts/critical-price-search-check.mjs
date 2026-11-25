@@ -1,0 +1,324 @@
+import fs from "node:fs";
+import { applyCameraZoom, clampZoom, isSearchableBarcode, usableZoomRange } from "../src/modules/storeCatalog/barcodeCameraSettings.mjs";
+
+function read(path) {
+  return fs.readFileSync(path, "utf8");
+}
+
+function requireNeedles(path, needles) {
+  const text = read(path);
+  for (const needle of needles) {
+    if (!text.includes(needle)) {
+      throw new Error(`${path}: mangler kritisk Prissøk-/tilgangs-guard: ${needle}`);
+    }
+  }
+  return text;
+}
+
+const migration = requireNeedles(
+  "supabase/migrations/20260910132000_fase41b2_internal_price_search.sql",
+  [
+    "current_user_has_internal_store_price_search_access",
+    "search_internal_store_catalog_prices",
+    "Ringside Rørleggerbedrift AS",
+    "Bademiljø Expo",
+    "Expo Proffsenter",
+    "coalesce(p.approved, false) = true",
+    "coalesce(p.deactivated, false) = false",
+    "security definer",
+    "grant execute",
+  ]
+);
+if (migration.includes("create or replace function public.current_user_has_internal_store_catalog_access")) {
+  throw new Error("41B.2 skal ikke endre eksisterende Butikktilbud-katalogtilgang.");
+}
+if (/\b(insert|update|delete|truncate)\b/i.test(migration.replace(/--.*$/gm, ""))) {
+  throw new Error("41B.2 Prissøk-migration skal være read-only og ikke skrive katalogdata.");
+}
+
+const sensitiveMigration = requireNeedles(
+  "supabase/migrations/20260910133600_fase41b2a_sensitive_net_price_access.sql",
+  [
+    "user_feature_access",
+    "view_internal_net_prices",
+    "current_user_has_feature_access",
+    "set_managed_sensitive_access",
+    "Kun systemadministrator kan endre tilgang til interne nettopriser",
+    "case when v_can_net then i.purchase_net_ex_vat else null end",
+    "case when v_can_net then i.purchase_discount_percent else null end",
+    "case when v_can_net then i.gross_margin_percent else null end",
+    "create or replace function public.search_internal_store_catalog(",
+    "create or replace function public.internal_store_catalog_alternatives(",
+    "create or replace function public.search_internal_store_catalog_prices(",
+  ]
+);
+if (sensitiveMigration.includes("create or replace function public.current_user_has_internal_store_catalog_access")) {
+  throw new Error("41B.2A skal ikke utvide eksisterende Butikktilbud-firmatilgang.");
+}
+requireNeedles("supabase/migrations/20260910134500_fase41b2a_sensitive_access_null_role_fix.sql", [
+  "v_target_is_systemadmin := coalesce(v_target.system_role,'') = 'systemadmin'",
+  "not v_target_is_systemadmin",
+]);
+
+const paginationMigration = requireNeedles(
+  "supabase/migrations/20260928144035_price_search_pagination.sql",
+  [
+    "search_internal_store_catalog_prices_page",
+    "current_user_has_internal_store_price_search_access",
+    "current_user_has_feature_access('view_internal_net_prices')",
+    "case when v_can_net then i.purchase_net_ex_vat else null end",
+    "case when v_can_net then i.purchase_discount_percent else null end",
+    "case when v_can_net then i.gross_margin_percent else null end",
+    "count(*) over()::bigint as total_count",
+    "limit v_limit",
+    "offset v_offset",
+    "security definer",
+    "from public, anon",
+    "to authenticated",
+  ]
+);
+if (/\b(insert|update|delete|truncate)\b/i.test(paginationMigration.replace(/--.*$/gm, ""))) {
+  throw new Error("Paginert Prissøk skal være read-only og ikke skrive katalogdata.");
+}
+
+const view = requireNeedles("src/modules/storeCatalog/StorePriceSearchView.jsx", [
+  "Prissøk",
+  "search_internal_store_catalog_prices",
+  "search_internal_store_catalog_prices_page",
+  "PRICE_SEARCH_PAGE_SIZE",
+  "p_offset",
+  "total_count",
+  "loadMoreResults",
+  "Viser ${results.length} av ${totalResults} treff",
+  "priceSearchLoadMore",
+  "Kundepris inkl. mva.",
+  "Kundepris eks. mva.",
+  "Intern netto eks. mva.",
+  "hasNetPrice",
+  "Intern nto-pris vises bare for brukere med egen tilgang",
+  "selectedProducts",
+  "Valgte varer",
+  "Midlertidig arbeidsliste",
+  "Tøm liste",
+  "purchase_discount_percent",
+  "gross_margin_percent",
+  "setSelectedProducts",
+  "sessionStorage.getItem",
+  "sessionStorage.setItem",
+  "sessionStorage.removeItem",
+  "toStoredReference",
+  "restoreStoredProducts",
+  "Skriv ut",
+  "Inkluder interne priser",
+  "window.print()",
+  "createPortal",
+  "priceSearchPrintPortal",
+]);
+if (/\b(?:supabase|client)\s*\.\s*from\s*\(/.test(view) || /\.insert\s*\(|\.update\s*\(|\.upsert\s*\(/.test(view)) {
+  throw new Error("StorePriceSearchView skal ikke skrive direkte til database.");
+}
+if (/(?:window\.)?localStorage\s*\.\s*(?:getItem|setItem|removeItem|clear)\s*\(|\bindexedDB\s*\./i.test(view)) {
+  throw new Error("Prissøk-arbeidslisten skal ikke bruke varig lokal lagring.");
+}
+const storedReferenceBlock = view.match(/function toStoredReference\(item\) \{[\s\S]*?\n\}/)?.[0] || "";
+if (!storedReferenceBlock || /purchase_net_ex_vat|purchase_discount_percent|gross_margin_percent|customer_price_/i.test(storedReferenceBlock)) {
+  throw new Error("sessionStorage skal bare lagre vare-ID/oppslagsnøkler, aldri pris- eller marginfelt.");
+}
+if (!view.includes("restoreStoredProducts") || !view.includes("searchPrices(lookup, 10)")) {
+  throw new Error("Mobil-sikker arbeidsliste skal rehydreres via backend etter reload.");
+}
+for (const needle of [
+  'lazy(() => import("./PriceSearchBarcodeScanner.jsx"))',
+  'window.matchMedia("(max-width: 700px)")',
+  'className="secondary priceSearchHome" onClick={onClose}',
+  "← Startside",
+  "Skann strekkode",
+  "onScan={handleScan}",
+  "onCancel={stopScanning}",
+  "onError={handleScanError}",
+  "setQuery(code)",
+  "{isMobile ? (",
+  "{scanning ? (",
+]) {
+  if (!view.includes(needle)) throw new Error(`Mobil Prissøk mangler navigasjon/skann-flyt: ${needle}`);
+}
+if (/Tilbake til Expo ProffDok|priceSearchShell|aria-modal=/.test(view)) {
+  throw new Error("Prissøk skal ligge inne i appens arbeidsflate, ikke som fullskjerm-overlay.");
+}
+
+const scanner = requireNeedles("src/modules/storeCatalog/PriceSearchBarcodeScanner.jsx", [
+  "BrowserMultiFormatReader",
+  "BarcodeFormat.EAN_13",
+  "BarcodeFormat.EAN_8",
+  "DecodeHintType.POSSIBLE_FORMATS",
+  'facingMode: { ideal: "environment" }',
+  "navigator.mediaDevices.getUserMedia(",
+  "reader.decodeFromStream(",
+  "DecodeHintType.TRY_HARDER",
+  "width: { ideal: 1920 }",
+  "height: { ideal: 1080 }",
+  "getVideoTracks()[0]",
+  "applyCameraZoom(track, initialZoom)",
+  "setSelectedDeviceId(event.target.value)",
+  "isSearchableBarcode(code)",
+  "if (finished) {",
+  "cameraStream.getTracks().forEach((track) => track.stop())",
+  "cameraStream?.getTracks?.().forEach((track) => track.stop())",
+  "onScan(code)",
+  "onError(cameraErrorMessage(error))",
+  "stopControls(callbackControls)",
+  "stopControls(scannerControls)",
+  "stream?.getTracks?.().forEach((track) => track.stop())",
+  'document.addEventListener("visibilitychange"',
+  'window.addEventListener("pagehide"',
+  "return () => {",
+  "stop();",
+  "Avbryt skanning",
+]);
+const zoomRange = usableZoomRange({ getCapabilities: () => ({ zoom: { min: 1, max: 5, step: 0.5 } }) });
+if (!zoomRange || clampZoom(2.3, zoomRange) !== 2.5 || clampZoom(99, zoomRange) !== 5 || clampZoom(0, zoomRange) !== 1) {
+  throw new Error("Små strekkoder skal kunne forstørres innenfor kameraets støttede zoom-område.");
+}
+if (usableZoomRange({ getCapabilities: () => ({}) }) !== null || usableZoomRange({ getCapabilities: () => { throw new Error("unsupported"); } }) !== null) {
+  throw new Error("Kamera uten zoom-støtte skal beholde manuell skanning uten feil.");
+}
+let zoomConstraints;
+await applyCameraZoom({
+  getConstraints: () => ({ width: { ideal: 1920 }, height: { ideal: 1080 }, deviceId: { exact: "rear" } }),
+  applyConstraints: async (constraints) => { zoomConstraints = constraints; },
+}, 2);
+if (zoomConstraints?.width?.ideal !== 1920 || zoomConstraints?.height?.ideal !== 1080 || zoomConstraints?.deviceId?.exact !== "rear" || zoomConstraints?.advanced?.[0]?.zoom !== 2) {
+  throw new Error("Kamerazoom må bevare oppløsning og valgt bakre linse.");
+}
+if (!isSearchableBarcode("7350004677047") || !isSearchableBarcode("4517552") || isSearchableBarcode("123456") || isSearchableBarcode("http://example.com")) {
+  throw new Error("EAN og numerisk sju-sifret varenummer skal kunne søkes, men vilkårlig innhold avvises.");
+}
+if (/\b(?:localStorage|sessionStorage|indexedDB|fetch|XMLHttpRequest|rpcWithStoredSession)\b|\.\s*(?:insert|update|upsert|upload)\s*\(/i.test(scanner)) {
+  throw new Error("Strekkodeskanneren skal ikke lagre, laste opp eller søke utenom eksisterende Prissøk.");
+}
+
+const storeOfferTools = requireNeedles("src/modules/storeCatalog/StoreCatalogOfferTools.jsx", [
+  "hasNetPrice",
+  "Intern nto",
+  "hasNetPrice ?",
+]);
+if (storeOfferTools.includes("Intern nto {formatMoney(item.purchase_net_ex_vat)}") && !storeOfferTools.includes("hasNetPrice ?")) {
+  throw new Error("Butikktilbud må skjule nto helt når backend maskerer feltet.");
+}
+
+const ux = requireNeedles("src/modules/storeCatalog/storePriceSearchUx.jsx", [
+  'button.textContent = "Prissøk"',
+  "current_user_has_internal_store_price_search_access",
+  "ringside rorleggerbedrift as",
+  "bademiljo expo",
+  "expo proffsenter",
+  "SYSTEMADMIN SUPPORTMODUS",
+  "expoPriceSearchActive",
+  "StorePriceSearchView",
+  'PRICE_SEARCH_RESUME_KEY = "expo-proffdok:price-search:resume:v1"',
+  "rememberPriceSearchOpen",
+  "shouldRestorePriceSearch",
+  "restorePriceSearchWorkspaceIfNeeded",
+  'document.addEventListener("visibilitychange"',
+  "closePriceSearch({ clearResume: true })",
+  "openPriceSearch({ restore: true })",
+]);
+if (/\b(?:supabase|client)\s*\.\s*from\s*\(/.test(ux) || /\.insert\s*\(|\.update\s*\(|\.upsert\s*\(/.test(ux)) {
+  throw new Error("storePriceSearchUx skal ikke skrive direkte til database.");
+}
+if (/(?:window\.)?localStorage\s*\.\s*(?:getItem|setItem|removeItem|clear)\s*\(/i.test(ux)) {
+  throw new Error("Prissøk workspace-resume skal være fanespesifikk sessionStorage, ikke varig localStorage.");
+}
+if (!ux.includes('sessionStorage.setItem(PRICE_SEARCH_RESUME_KEY, "1")') || !ux.includes("sessionStorage.removeItem(PRICE_SEARCH_RESUME_KEY)")) {
+  throw new Error("Prissøk må både kunne sette resume-markør og rydde den ved bevisst navigasjon.");
+}
+const homeFlow = ux.match(/function returnToStartside\(\) \{[\s\S]*?\n\}/)?.[0] || "";
+if (!homeFlow.includes("closePriceSearch({ clearResume: true })") || !homeFlow.includes("target?.click()") || !ux.includes("onClose={returnToStartside}")) {
+  throw new Error("Mobil Startside må lukke Prissøk, rydde resume og velge appens Startside.");
+}
+if (/location\.(?:assign|replace|reload)|history\.pushState/.test(homeFlow)) {
+  throw new Error("Prissøk → Startside skal ikke reloade eller overstyre appens navigasjon.");
+}
+
+requireNeedles("src/modules/access/sensitiveAccessClient.js", [
+  "view_internal_net_prices",
+  "set_managed_sensitive_access",
+]);
+
+const unifiedAdmin = requireNeedles("src/modules/access/systemAdminUnifiedUserAccessUx.jsx", [
+  "Brukere og tilganger",
+  "Hovedmoduler og prisinnsyn styres her på samme brukerkort",
+  "Se interne nettopriser",
+  "Ringside/Expo: gjelder Prissøk og internt vareoppslag",
+  "Generelle tilbud / Proff vareregister",
+  "Se «Din nto pris»",
+  "setManagedModuleAccess",
+  "setManagedInternalNetPriceAccess",
+  "setManagedProCatalogNetPriceAccess",
+  "expo-module-access-manager",
+  'mount.style.display = "none"',
+]);
+if (!unifiedAdmin.includes("targetIsSystemAdmin") || !unifiedAdmin.includes("disabled={targetIsSystemAdmin")) {
+  throw new Error("Systemadministrator-rader skal være låst og alltid ha alle tilganger.");
+}
+
+const portalGuard = requireNeedles("src/modules/storeCatalog/priceSearchPortalGuard.js", [
+  "priceSearchPrintPortal",
+  "expo-price-search-inline",
+  "MutationObserver",
+  'activePortal.style.display = "none"',
+]);
+if (!portalGuard.includes("portals.forEach((portal) => portal.remove())")) {
+  throw new Error("Foreldreløse Prissøk-utskriftsflater skal ryddes ved navigasjon/remount.");
+}
+
+const help = requireNeedles("src/modules/help/priceSearchHelpUx.js", [
+  "🔎 Prissøk",
+  "Prissøk oppretter eller endrer aldri tilbud, prosjekter eller vareregisteret",
+  "Se interne nettopriser",
+  "Uten rettigheten sendes de sensitive prisfeltene ikke fra serveren",
+  "Systemadmin behandler nå brukerstatus, firma, rolle, hovedmoduler og eventuell nto-pristilgang på samme brukerkort",
+  "godkjente og aktive brukere",
+  "applyStoreHelpEligibility",
+  "approvedActiveHelpHidden",
+  'hasModuleAccess(access, "store_offers")',
+  'button.setAttribute("aria-expanded", "false")',
+  'headerRow.style.justifyContent = "space-between"',
+]);
+if (help.includes("new MutationObserver")) {
+  throw new Error("Prissøk-Hjelp skal ikke innføre en ny global MutationObserver.");
+}
+
+requireNeedles("docs/architecture/FASE41B2_PRICE_SEARCH_AND_SENSITIVE_ACCESS.md", [
+  "Prissøk, sensitiv nto-tilgang og samlet brukeradministrasjon",
+  "view_internal_net_prices",
+  "server-side",
+  "FASE 41B.3",
+]);
+requireNeedles("index.html", [
+  "installStorePriceSearchUx",
+  "installSystemAdminUnifiedUserAccessUx",
+  "installPriceSearchHelpUx",
+]);
+console.log("✅ Expo ProffDok Prissøk / sensitiv tilgang / samlet brukerkort / portal-opprydding check OK");
+
+// Additive smart search must preserve the old restore lookup and selectable classic RPC.
+requireNeedles("src/modules/storeCatalog/StorePriceSearchView.jsx", [
+  "search_internal_store_catalog_prices_smart", "Smartere søk", "requestedSearch",
+  "searchGenerationRef", "smartSearch, identityScope", "Treff via tilsvarende fagord",
+]);
+const smartMigration = requireNeedles("supabase/migrations/20261016190242_smart_price_search.sql", [
+  "auth.uid() is null", "current_user_has_internal_store_price_search_access()",
+  "current_user_has_feature_access('view_internal_net_prices')",
+  "imp.status = 'active'", "i.is_active = true", "set search_path = ''",
+  "case when $3 then i.purchase_net_ex_vat else null end",
+  "case when $3 then i.purchase_discount_percent else null end",
+  "case when $3 then i.gross_margin_percent else null end",
+  "count(*) over()::bigint", "from public, anon", "to authenticated",
+]);
+if (/\b(insert|update|delete|truncate)\b/i.test(smartMigration.replace(/--.*$/gm, ""))) {
+  throw new Error("Smartere varesøk skal aldri skrive katalogdata.");
+}
+if (/create or replace function public.search_internal_store_catalog_prices(?:_page)?\(/.test(smartMigration)) {
+  throw new Error("Smartere varesøk skal ikke erstatte tidligere søke-/gjenopprettingsfunksjoner.");
+}

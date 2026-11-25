@@ -1,0 +1,1429 @@
+## Publisert salgsrunde og knappoppfølging – 16. oktober 2026
+
+Kenneth ga TEST OK kl. 20:21 norsk tid for PR #257. Godkjent head 8e54ae35ab7f3689a896a14d2d7319074e10d437 / tre dac65c83f146f9c5eb3c05d63522c2f402842c46 har Core Safety #492 SUCCESS. Merget main 1e6052f7a325f6b2d7e8213852f5c65d5604c511, Production dpl_9J14YR8AwwC94n85vGNDg4ULa4TG READY på korrekt domene/SHA; HTTP og vanlig innloggingsflate fungerer, publisert bundle har Production-binding og ingen Sandbox-binding. Innlogget funksjonsprøve er gjort i godkjent Preview, ikke på Production i denne runden. Kontrollert main → demo 7f2c5b29b76270d15d4395e54d5e62878ebd6997 / dpl_8LhnUWfc4owEJKuywYkPc32KympC READY med bevart overlay og full critical/build PASS. Ingen migrasjon, seed/reset eller e-post. Faktisk innlogget preflight er grønn, inkludert baseline mot main og bevarte kurs-/Golden-punkter. Eldre ventende TEST OK-notater nedenfor er historikk for denne releasen.
+
+Etterpå ba Kenneth om å flytte Nytt tilbud fra egen rad for å frigjøre luft. Miljømål BEGGE, Preview først: samme startDirectOffer sendes gjennom SalesCore til SalesListView og vises sammen med Ny forespørsel i overskriftens handlingsfelt. Den gamle snarveiraden skjules bare i oversikten; andre arbeidsbilder beholder den. Ingen main.jsx-, tilbudstypevalg-, editor-, tilgangs-, lagrings-, recovery-, utsendings- eller prosjektendring. Smal skjerm har to knapper med minst 48 px høyde. Ny relevant TEST OK kreves for denne lille oppfølgingen. QA: docs/qa/SALES_OVERVIEW_UX_20261016.md.
+
+## Godkjent Min side/prosjektliste og neste salgsrunde – 16. oktober 2026
+
+Kenneth ga «test ok, kjør videre» kl. 19:56 norsk tid. PR #256 er merget til main bcac550ffeb2f46c2ee946518acbe31c8b63334a. Core Safety #490 SUCCESS og testet Preview-tre fcdd62155103e05c0b380ff17c3f4d2691c08d1d er bevart. Production dpl_2WiVgGBoqxNvjHZaamSyZn4QLsmg er READY på riktig SHA/domene; publisert bundle bruker Production, ikke Sandbox. Kontrollert main → demo er publisert i a5506df94346d8df5afa5caf60c01997ea097c03; demo-overlay er bevart. Full demo-critical/build PASS, egen preflight-guard PASS og faktisk innlogget preflight er grønn (19 serverpunkter, fem kurspunkter og klientens baseline/lokale skisse). Bare manglende lokal demoskisse i testnettleseren er installert; ingen reset, ny kursseed eller utsending. Eldre ventende-godkjenningstekst nedenfor er historikk for #256.
+
+Neste leveranse: miljømål BEGGE, Preview først. Kompakt Befaring/Tilbud-oversikt og intern saksvisning, med eksisterende arbeidskøer/søk, én farget statusoversikt, færre dupliserte tilbudshandlinger og ikke-sticky tilbakefelt. Retur til liste beholder bare UI-valg/scroll i en montert firma-/brukeravgrenset ref. Ingen ny varig cache eller saksdata i refen. main.jsx får bare en lokal CSS-klasse på eksisterende Sales-intro. Ingen editor-, beregnings-, auto-save-, recovery-, publiserings-, e-post-, aksept-, prosjektaktiverings-, tilgangs- eller DB-endring. Relevant ny TEST OK kreves før denne salgsrunden merges. QA: docs/qa/SALES_OVERVIEW_UX_20261016.md.
+
+## Preview-oppfølging: én planboks og utklipp – 16. oktober 2026
+
+Miljømål BEGGE, samme umergede PR #256/faste Preview. Kenneths skjermbilde viser at Min side erstattes av «Kontrollerer tilgangen din …» ved utklipp. Synlig fokus/visibility-kontroll beholder nå verifiserte visningsmetadata mens nye serverkall pågår. Faktisk skjult side, rolle-/firmabytte, feil, avslag og feil aktør rydder fortsatt. HR beholder tidligere streng oppførsel som standard; én avgrenset main.jsx-linje aktiverer metadata-valget bare for Min side. Private HR-kontrollere og autoriserte serverhandlinger er urørt. Egne planpopup-er beholdes under synlig kontroll, eksport er sperret til fersk lesing er ferdig, og bevisst lukking vinner over sene svar.
+
+Min side har én boks «Mine aktive planer», med «Fra ProffDok-prosjekter» og «Andre fremdriftsplaner». Kilder, egne oppgaver, aktive datoer og oppdatering er fortsatt separate. Ny relevant TEST OK kreves; ingen merge/Production/demoendring. Førtest og QA: docs/qa/PERSONAL_PROJECT_UX_20261016.md.
+
+## Preview: Min side og prosjektlisten – 16. oktober 2026
+
+Miljømål BEGGE, Preview først. Avgrenset UX etter godkjent planrelease: Min side gjenbruker eksisterende sammenfoldede HR-/kontaktoversikt, med faner først og varsler bare i Oversikt. Egne prosjekt-/KS-planer bruker samme autoriserte kilder og vises ved siden av hverandre på PC. Prosjektlisten bruker lokale fargede kort, fire nøkkeltall i én PC-rad, kompakt tomt samarbeidsfelt, mindre metadatafelt og én samlet tellerrad. Alle eksisterende snarveier er beholdt. Ingen main.jsx, global CSS, lagring, tilgang, varslingsregler, e-post, database, prosjekt-/tilbudsflyt eller planbygger endres.
+
+Ny relevant TEST OK kreves; tidligere godkjenning gjelder forrige release. Production og demo er foreløpig uendret. Scope, QA og testliste: docs/qa/PERSONAL_PROJECT_UX_20261016.md.
+
+## Publisert: fremdrift, bemanning og Startside – 16. oktober 2026
+
+Kenneths TEST OK og uttrykkelige produksjonsgodkjenning er gjennomført. PR #254 er merget; funksjons-main e7363f8a37cf84caebf829a27bc8c25c71559a00, Core Safety #485 SUCCESS, Production dpl_G2NWYyXfjqDbinnzQYy9U8KN3fZV READY med korrekt databasebinding. Alle fire planmigrasjoner er installert og kontrollert i Production, med uendrede eksisterende prosjektplaner og faktisk lagring/lesing i rollback. Varseloversikten finnes bare på Startsiden; globale avvik-/gjennomføringsbannere er fjernet fra øvrige faner.
+
+Main → demo er synkronisert, demo-overlay og kurseksempler beholdt, full build/berørte nettlesertester grønne og faktisk preflight 19 + 5 PASS. Fullt releasebevis og begrensninger: docs/kshms/PROGRESS_HOME_RELEASE_20261016.md og PR #254. Avsluttende dokumentasjonscommitter endrer ikke appfunksjonene; siste main/demo-SHA og Vercel-status føres i PR. Eldre ventende TEST OK-/umerget-/Production-ikke-migrert-notater under er historikk, erstattet av denne release-statusen.
+
+## Godkjent produksjonsløp og kun Startside-varsler – 16. oktober 2026
+
+Miljømål BEGGE. Kenneth ga TEST OK for leveransen frem til 6aa06ba9 og ba om at de to KS/HMS-bannerne bare vises på Startsiden. Deretter ga han uttrykkelig «etter dette er test ok for produksjon» og autoriserte videre arbeid mens han er borte. Tidligere notater om ventende TEST OK er dermed erstattet for denne releasen; grønn QA/Preview kreves fortsatt før merge.
+
+Siste appendring fjerner bare global KshmsTasks-lazyimport og banner-montering i headeren i main.jsx. Eksisterende HomeFollowups-gate beholdes. Samlet oversikt finnes på Startsiden ved innlogging og bevisst retur; ingen engangsflagg skjuler åpne oppgaver. KS/HMS sine vanlige oppgaveinnganger, fristregler, tilgang, e-post, data, lagring og planbygger beholdes. Hjelp følger plasseringen. Førtest med faktisk app-shell-montering fant to bannere i Befaring/Tilbud; etter rettelse 128 Home-Chromium-kontroller PASS, full critical/build og faktisk modulnavigasjon PASS. Ny commit/CI/Preview, produksjonsmigrasjoner, main/deploy og kontrollert demo-synk føres i releasenotat/PR.
+
+## Tydelige åpneknapper for planer – 16. oktober 2026
+
+Miljømål BEGGE, Preview først i PR #254. Etter Kenneths presisering heter venstre knapp nå «Åpne fremdriftsplan» og høyre fortsatt «Åpne bemanningsplan». Felles inngang i Prosjekt, KS/HMS og Min side, med samsvarende kort hjelpetekst. Bare tekst i KshmsProgressBoard.jsx/Hjelp og eksakte knappselektorer i tre eksisterende QA-skript endres. Ingen callbacks, tilgang, datalagring eller andre flyter endres. Førkontroll b0c8813b / Core Safety #483 SUCCESS / dpl_DcrACJFk4EX1deicZVqtxKi4HwRQ READY. Ny head/CI/deploy føres i PR. Relevant TEST OK gjenstår; ingen merge/Production/demo-synk.
+
+## Planpopup: avbryt-hendelse og ramme – 16. oktober 2026
+
+Miljømål BEGGE, Preview først, fortsatt umerget PR #254. Førkontroll: bc9e42892cf7a22fbd1d57843e87eed270bf9bb7, main a7bd4795e78e0ba1cbdc747960384bbf01338581, Core Safety #482 SUCCESS og fast Preview READY på samme head. Kenneth melder at vanlig utklipp fortsatt går ut av popupen, mens egen hurtigtast fungerer. Fysisk Windows-forløp er ikke observert av utvikler. En separat utgang er gjenskapt: nettleserens native cancel/Escape lukker hovedplanen selv om fokus/scroll gjenopprettes riktig.
+
+Hovedplanen lukkes nå bare med Tilbake. Native cancel/Escape og klikk utenfor rammen lukker ikke arbeidsflaten. Mindre oppgave-/kodevinduer beholder Escape og sin egen lukking; cancel stoppes ved det aktuelle undervinduet. Prosjektvalg, tilbud og deling får synlig avrundet ramme, hover og tastaturfokus. Appscope er bare KshmsProgressBoard.jsx/CSS og Hjelp; ingen main, global recovery, wrapper-/tilgangslogikk, planlagring, e-post, SQL eller dataendring.
+
+Førtesten feiler med 0 åpne hovedpopup etter ekte Chromium-Escape; etter rettelse består 28 fokus-/delingskontroller (tidligere 15 beholdt), 39 Prosjekt, 128 KS/HMS og 52 layoutkontroller. Full critical/build PASS. Ramme visuelt kontrollert ved 1280/390 px. QA: docs/qa/PROGRESS_FOCUS_20261016.md. Fysisk Windows-utklipp krever ny innlogget prøve; ingen påstand om at brukerens OS-verktøy er testet. Samme faste Preview-adresse; eksakt ny SHA/tre/CI/Vercel føres i PR #254. Ingen TEST OK/merge/Production eller demo-synk.
+
+## Prosjektvalg og fokus/utklipp i planpopup – 16. oktober 2026
+
+Miljømål BEGGE, Preview først i umerget PR #254 fra a624453f. Åpne Prosjektvalg, tilbud og deling har normal avkryssing og samlet prosjektinfo/handlinger med kompakt delingskort. Generisk dialog-/mobil-CSS hadde gitt avkryssingen tekstfeltbredde og minst 40 px høyde. Lokale regler gir 18 × 18 px med stor klikkbar etikett. Tilbudsimport, Hent lagret plan, kundedelingsvalg og eksisterende prosjektmail er beholdt.
+
+Planpopupens fokusvalidering remonterte arbeidsflaten og nullstilte åpne prosjektvalg samt vertikal/horizontal scrolling. Gjenskapt i faktisk Chromium før rettelse. Den eksisterende, firma-/bruker-/planavgrensede UI-cachen beholder nå bare posisjoner og åpne/lukkede verktøy. Disse brukes etter uendret fersk tilgangs-/planlesing. Synlig fokus, skjult/tilbake, bevisst lukking, nullposisjon, kladd og tilgangstap er kontrollert. Ingen privat planpayload caches av den nye løsningen. Gammel felles pageScrollMemory-rettelse er urørt og består.
+
+Appscope er KshmsProgressBoard.jsx/CSS og bare presentasjonsmarkup for prosjektverktøy i ProjectProgressPlanner.jsx. Ingen main/Startside, global recovery, lagring, tilgang, SQL, e-postarbeider eller demodata endres. QA og konkret Windows-prøve: docs/qa/PROGRESS_FOCUS_20261016.md. Relevant TEST OK gjenstår før merge/Production og kontrollert main → demo-synk.
+
+## Mer plass til oppgavene i begge planbyggere – 16. oktober 2026
+
+Miljømål BEGGE, Preview først i umerget PR #254, fra 21210b32. Prosjekt → Fremdrift, KS/HMS → Fremdriftsplaner og egne planer på Min side bruker samme justerte planflate. Planvisning/handlinger/eksport og prosjektvalg er samlet øverst; Dag/Uke/Måned står sammen med perioden; søk/fag/visningsvalg deler filterlinje. Normal oppgaveradhøyde og farger beholdes. Ingen nye sammenfoldbare oppgaver. Popupens ekstra kortpadding fjernes lokalt, og tidslinjen fyller resten av høyden.
+
+Bare KshmsProgressBoard.jsx og tilhørende CSS endrer appkode. Ingen main/Startside, planlagring, tilbudsimport, deling, eksport, tilgang, SQL, varsling eller demodata endres. Alle eksisterende handlinger og datofelter beholdes. Mobil bryter verktøyene over flere linjer, og kort skjerm kan scrolle verktøyområdet. Drahjelpen har fortsatt fast plass og fanger ingen pekerhendelser. Scope, faktisk skjermmåling og tester: docs/qa/PROGRESS_LAYOUT_20261016.md. Relevant TEST OK for denne og tidligere plan-/Startsideleveranse gjenstår før merge/Production og kontrollert main → demo-synk.
+
+## Kompakt varseloversikt på Startsiden – 16. oktober 2026
+
+Miljømål BEGGE, Preview først i fortsatt umerget PR #254, fra head 614c2562/main a7bd4795. Startsiden samler Avvik, Kontroller, HR og Kontakt i én lukket oversikt med antall, pagineringspluss og tydelige markeringer for passerte frister, i dag, avvik innen tre dager og kontroller etter planlagt dato. Kontakt er én påminnelse med alle manglende felter i detaljene. Eksisterende oppgaver, frister, direktehandlinger, flere oppgaver, e-postlenker, kontaktlagring og egne dialoger beholdes.
+
+HomeFollowups er bare presentasjon. De eksisterende controllerne henter/validerer fortsatt selv og leverer metadata gjennom valgfrie renderere; ingen ny datakilde eller varslingsregel. main.jsx har tre avgrensede endringspunkter: lazy import, utelat global KS/HMS-banner akkurat når Startside-oversikten monteres, og erstatt Startsiden sin HR-montering med samlet oversikt. Alle andre monteringsflater beholder gammel presentasjon. Ingen endring av backend, e-post, tilgang, prosjekt/tilbud eller planbygger. Lokal CSS fjerner sticky/absolutt overlegg bare inne i oversikten. React-state for åpne/lukke beholdes ved fersk lesing; ingen ny nettleserlagring.
+
+QA og brukerprøve: docs/qa/HOME_FOLLOWUPS_20261016.md. Ingen TEST OK for denne eller siste planleveranse er gitt. Ingen merge, Production-endring, migrasjon, nye eksempler eller demo-synk i denne runden. Etter relevant godkjenning gjelder fortsatt kontrollert Production-verifisering og main → demo med preflight.
+
+## Prosjekt får felles planbygger, egne aktive prosjektplaner og firmalogo – 16. oktober 2026
+
+Miljømål BEGGE, Preview først i PR #254. Prosjekt → Fremdrift bruker samme popup/tidslinje som KS/HMS: Dag/Uke/Måned, flytt/strekk/Angre, periodepanel, søk/fagfilter/kompakte rader, standardoppgaver og NS-underkoder, valgfritt personantall og bemanning, direkte PDF, forhåndsvisning, CSV og kalender. Prosjektvalg, tilbud og deling samler tilbudsimport med bevarte opsjoner/dedup og eksisterende kunde-/prosjektmailvalg. Enkel ordre tilbyr ikke kundedeling. Ingen nye fristansvarlige, varsler eller automatiske e-poster. Milepæler/avhengigheter er ikke del av denne leveransen.
+
+Ny ProjectProgressPlanner bruker prosjektets eksisterende tilgang, låsing og separate public.project_progress_plans. Additiv revision og trigger gir CAS også ved eldre direkte skriving. project_progress_editor leser/lagrer med fersk aktiv firma-/aktørkontroll, prosjektets eksisterende access/write-helper, revisjon og bekreftet readback. Kladd er avgrenset til firma/aktør/prosjekt i lokal lagring. Fersk lesing kommer før gjenoppretting; konflikt krever et synlig valg. Fokus/dvale rydder payload og leser på nytt; eksplisitt lukking respekteres. Låst prosjekt er historikk.
+
+Deltakere er aktive interne medlemmer i prosjektets firma og lagres i progress_private.assignments med RLS og uten direkte klientrettigheter. Offentlig plan-JSON og uendret kunde-/UE-RPC inneholder ikke deltaker-ID-er. Nye authenticated project_progress_mine returnerer bare egne oppgaver i aktiv periode etter norsk dato, uten kollegaoppgaver/deltaker-ID-er eller tilbudskilde. Min side viser Mine aktive prosjektplaner når slike finnes; eksisterende KS/HMS-kort beholdes. Tildelte prosjektbrukere kan få Min side uten HR/KS-lisens, uten ekstra prosjekt-/HR-/KS-rettigheter. Eksisterende øvrige personal-context-felter og regler beholdes.
+
+Firmaprofilen leses ferskt for aktivt firma ved eksport i Prosjekt, KS/HMS og Min side. Navn/logo følger nedlastet PDF og forhåndsvisning av fremdrift/bemanning. PDF rasteriserer eksisterende logo og kontrollerer profil/tilgang igjen etter motor-/bildelast. Feil ved logo som er konfigurert stopper nedlastingen med tydelig beskjed; et firma uten logo kan fortsatt eksportere. Historisk prosjektfirma brukes ikke som eksportmerke. Eksisterende prosjektmail og serverens vedleggsrenderer beholdes i denne leveransen.
+
+Knyttet Sandbox bruker varig egen databaselagring også når eldre progressTest=safe-parameter finnes i URL-en; gammel uknyttet trygg Preview beholder lokal editor/eksport/kalender. Sandbox blokkerer ekte prosjektmail i delingsflaten. Production-binding og andre modulflyter endres ikke. Sandbox-migrasjon 20261016142124_project_progress_workspace har kilde-MD5 (ett avsluttende linjeskift) 399e53ac4ed95cfe24f7cf1022baa282, lik migrasjonsloggen. Production er ikke migrert.
+
+Kurseksempel er separat Sandbox-data i Expo Proffsenter: DEMO – VVS – fremdrift og bemanning 3 måneder, prosjekt-ID 5ea8d503-e38c-43d4-94ce-7fab7df525e9, revisjon 1, 16.10.2026–15.01.2027, 21 oppgaver/282 dagsøkter, 1–5 personer, topp 23 og 6408 persontimer, uten søndager. Kenneth Demo er deltaker på fire oppgaver. Opprettet og verifisert gjennom authenticated prosjekt-/planlagring; tidligere arbeidsprofil er gjenopprettet. Ingen kursdata/seed i produksjonsmigrasjon eller demo-overlay i core-PR. Eksemplet ligger i Sandbox klar for kurs når godkjent appkode synkroniseres main → demo. Eksakt QA/CI/deploy føres i docs/qa/PROJECT_PROGRESS_20261016.md og PR #254.
+
+## PDF lastes ned direkte, og bemanning bruker norske ukenavn – 16. oktober 2026
+
+Miljømål BEGGE, Preview først i PR #254. KS/HMS og Mine aktive fremdriftsplaner har Last ned fremdriftsplan (PDF) og Last ned bemanningsplan (PDF). De lager faktiske PDF-filer med appens eksisterende jsPDF 2.5.1-motor. Forhåndsvis fremdriftsplan / Forhåndsvis bemanningsplan beholdes med separate Last ned PDF og Skriv ut. Nedlasting åpner ikke utskriftsdialog. Den delte Prosjekt-eksportens standardvisning endres ikke.
+
+Ny paginert vektor-PDF har firma, referanse, adresse, sidetall, Gantt per uke og fulle grupperte arbeidsperioder med merknader, eller bemanning per uke/dag med summer og tydelig ufullstendig grunnlag. Fersk plan- og tilgangslesing gjentas etter PDF-motorlast, før nedlasting. Min side bruker bare egen plan via mine-RPC. Ulagret kladd og bortfalt tilgang stopper eksport. Intern ISO-ukenøkkel beholdes for beregning/sortering, mens HTML, CSV og PDF viser for eksempel Uke 42 · 2026, også korrekt ISO-ukeår rundt nyttår. Ingen database-, rutinevarsling- eller eksempeldataendring. QA/releasebevis: docs/qa/KSHMS_PROGRESS_20261016.md og PR #254.
+
+## Mine aktive fremdriftsplaner og deltakerlag – 16. oktober 2026
+
+Miljømål BEGGE, Preview først i samme PR #254. Hver KS/HMS-oppgave kan ha valgte appbrukere fra aktivt firma med gjeldende KS/HMS-tilgang. IDs lagres i planens assigneeIds. Antall personer er et separat, valgfritt bemanningstall som også kan dekke innleide. Ingen medlemskap/modultilganger opprettes. Deltakere er planlagt arbeidslag, ikke nye fristansvarlige; ingen e-post sendes.
+
+Min side → Oversikt viser Mine aktive fremdriftsplaner. Serveren bruker norsk dato og første/siste økt på brukerens egne oppgaver som ikke er Ferdig. Perioden inkluderer mellomliggende fridager. Udaterte, fremtidige, utløpte og arkiverte planer vises ikke. Planvinduet og eksporten inneholder bare brukerens egne oppgaver i planen. Datoperioden kontrolleres igjen ved åpning, eksport, fokus/dvale og datobytte. Bare UI-valg beholdes mellom visninger; payload leses på nytt. Bevisst lukking respekteres.
+
+Nye avgrensede RPC-er: kshms_progress_people og kshms_progress_mine. Privat trigger validerer unike kanoniske bruker-ID-er, høyst 50 per oppgave, aktivt firmamedlemskap og KS/HMS-tilgang ved nye valg. Eksisterende deltakere som senere mister tilgang kan beholdes som historikk eller fjernes, men kan ikke velges på nytt; bortfalt tilgang gir ingen personlig lesetilgang. Eksisterende save/CAS/readback og privat RLS-tabell beholdes. Additiv migrasjon 20261016132206_kshms_progress_participants, først Sandbox.
+
+Drahjelpen har nå en fast høyde over tidslinjen. Drag starter uten å legge inn et nytt bunnfelt eller krympe arbeidsområdet, og hjelpen fanger ingen pekerhendelser. Min side-popuper ligger utenfor oversiktskortets CSS slik at tidslinjens knapper beholder layout. 3-måneders VVS-eksempel opprettes separat som Sandbox-data, aldri som produksjonsmigrasjon. Verifikasjon og eksakt releasebevis: docs/qa/KSHMS_PROGRESS_20261016.md og PR #254.
+
+## KS/HMS-planbygger: popup, bemanning og flere underkoder – 16. oktober 2026
+
+Miljømål BEGGE, Preview først i PR #254. Åpning/opprettelse viser planbyggeren direkte i en stor popup over appen. Tilbake lukker popupen; Åpne planbygger og Åpne bemanningsplan åpner igjen. Fokus/dvale respekterer bevisst lukking og bevarer kladd og valgt visning etter fersk tilgangskontroll.
+
+Kodeutvalget er utvidet fra 57 til 256 kontrollerte valg i 25 hovedgrupper fra Bergen kommunes offentlige NS 3451:2022-grunnlag (FDVU v3.0/2025, tabell 4, s18–23). Tre-/firesifferkoder vises under hovedgruppen, systemkode merkes separat. Fagfilter bruker alle relevante fagkoblinger, slik at blant annet overflatekoder finnes for både mur/flis, maler og tømrer. Korte navn og fagkoblinger er appens egne. Utvalget er ikke den komplette standarden; oppgaver og egne kodevalg kan fortsatt tilpasses.
+
+Antall personer per oppgave er valgfritt (1–999; tomt betyr ukjent). Bemanningsplan viser høyeste samtidige personbehov og persontimer for valgt dag/uke/måned. Samtidig behov beregnes fra klokkeslett, og overlapp innen samme oppgave dobbelttelles ikke. Ukjent antall og oppgaver uten tider gjør grunnlaget ufullstendig. Eksport → Bemanning / PDF og Last ned bemanning (.csv) bruker hele den bekreftede, lagrede planen; ulagret kladd blokkerer eksport.
+
+Nye planer utelater søndager, men inkluderer lørdager. Flytting/strekk følger synlige arbeidsdager. Eksisterende planer endres først når brukeren velger Utelat søndager, bekrefter antall økter som fjernes fra kladden, og lagrer. Angre kan gjenopprette før lagring. Privat additiv migrasjon `20261016125012_kshms_progress_staffing` validerer feltene uten nye RPC-er eller rettigheter. Bare Sandbox migreres før TEST OK. Prosjektets tilbudsimport og portal følger fortsatt opprinnelig flyt. Se `docs/qa/KSHMS_PROGRESS_20261016.md` for test-/releasebevis.
+
+## KS/HMS-plan: tidslinje og underkoder – 16. oktober 2026
+
+Samme leveranse/PR #254, fortsatt Preview før ny TEST OK. Kenneth ønsket mindre scrolling og direkte planlegging. KS/HMS har nå søkbart hierarki med 57 utvalgte hoved-/under-/systemkoder, Dag/Uke/Måned, direkte flytting og strekk fra begge ender, Angre, kompakte rader, fag-/tekstsøk og Utvid-visning. Sidepanel erstatter lange skjemaer i oversikten. Planvalg og eksport og planlisten er sammenfoldet under arbeid.
+
+Datoer/klokkeslett lagres fortsatt som eksisterende separate dagsøkter. Uke/måned bruker hele kalenderdager, Dag bruker 30-minutters trinn. Sammenhengende perioder inkluderer helg; opphold blir egne perioder. Endringer krever Lagre fremdriftsplan; eksport bruker lagret serverutgave. Visning/åpent sidepanel beholdes i samme firma/bruker/plan ved fersk tilgangskontroll. Dra avbrytes ved Escape, skjult vindu eller bortfalt tilgang. Ingen ny backend eller databaseendring i denne UX-oppfølgingen. Prosjekt og portal bruker fortsatt eksisterende visning. Detaljer og QA: `docs/qa/KSHMS_PROGRESS_20261016.md`.
+
+## Egne fremdriftsplaner i KS/HMS – 16. oktober 2026
+
+Miljømål BEGGE, først fast Preview med Sandbox. Fra main `a7bd4795e78e0ba1cbdc747960384bbf01338581`. KS/HMS → Fremdriftsplaner lar firmaet opprette uavhengige planer med navn, adresse og valgfritt eksternt prosjektnummer. Samme planeditor, ukevisning, mobilkort, Gantt/PDF og kalender som Prosjekt; ingen tilbudsimport eller kundedeling i KS/HMS. Firmaadmin og KS/HMS-ansvarlig redigerer; øvrige med KS/HMS-tilgang leser. Planene kan arkiveres og gjenopprettes.
+
+Egen privat tabell og tre RPC-er bruker eksisterende aktiv firma-/KS-autorisasjon og revisjonskontroll. Bekreftet serverlesing før åpning og eksport; lagring leses tilbake før suksess. Lokal kladd er avgrenset til firma, bruker og plan og gjenbrukes bare mot samme serverrevisjon. Ingen prosjektplan, portal, tilbud, HR-opplysning eller e-post endres. Person/firma er fritekst for planlegging, ikke tildelt oppfølgingsoppgave eller fristvarsel.
+
+NS 3451:2022: 24 utvalgte faktiske kodekoblinger fra Bergen kommunes offentlige FDVU-grunnlag (2025), med egne korte visningsnavn. Skiller bygningsdel/system; manuelt kodevalg er mulig. Ikke komplett standard eller automatisk kontroll av at manuelt kodevalg passer jobben. Detaljer, tester og releasebevis: `docs/qa/KSHMS_PROGRESS_20261016.md`. Ny TEST OK kreves før main/Production og kontrollert main → demo-synk.
+
+## Kontaktopplysninger – påminnelse i appen, 15. oktober 2026
+
+Miljømål BEGGE. Fra main `6d7a6dc2899f941f23bea33e4cdf1c9458670216`, egen feature `feat-contact-reminder-20261015`. Startsiden og Min side viser påminnelse ved manglende gateadresse, postnummer, poststed eller pårørendes navn/telefon. Fyll ut kontaktopplysninger åpner eksisterende privat skjema direkte. Relasjon og pårørendes e-post er valgfrie. Fersk dobbel egenlesing kreves før visning; bare fullføringsmetadata beholdes i påminnelsen. Bekreftet kontaktlagring utløser ny lesing og fjerner fullført påminnelse. Eksisterende kladd, tilgang og lagring beholdes. Ingen SQL, migrasjon, e-post, hovedmeny, main.jsx eller annen datalagring endres. 55 Chromium-kontroller og eksisterende kontakt-/Min side- og 108 HR-varselkontroller PASS. Full critical/build, CI og fast Preview verifiseres før relevant TEST OK og publisering. Tidligere TEST OK for invitasjonsleveransen attesterer ikke manuell test av denne nye påminnelsen. Detaljer: docs/qa/HR_CONTACT_REMINDER_20261015.md.
+
+## Automatisk HR-registrering fra invitasjon – 15. oktober 2026
+
+Ved invitasjon med HR valgt opprettes medarbeideren automatisk i det inviterende firmaets HR-register når kontoen blir aktiv. Eksisterende aktiv konto behandles med én gang. Hvis HR-registeret ikke er satt opp eller er deaktivert, fullføres registreringen når firmaet lagrer et aktivt HR-oppsett. Eksisterende medarbeider, leder, lesere og historikk beholdes. En eksisterende gyldig leder i firmakartet gjenbrukes; ellers står leder tom til firmaadmin velger den i HR. Ingen medarbeidere kopieres mellom firmaer.
+
+Miljømål BEGGE fra main 657a430f. Scope: privat invitasjonsfunksjon, én privat HR-registreringshjelper/oppsett-trigger, to hjelpetekster, Hjelp og regresjonsvern. Eksplisitt lagret og akseptert HR-valg, uendret invitasjonsfingeravtrykk og fersk firma-/modultilgang kreves. Avsluttede arbeidsforhold gjenopprettes ikke. Ingen nye offentlige RPC-er, medlemskap, RLS, e-postarbeidere eller generell masseinnmelding. 121 PostgreSQL-kontroller, 52 Chromium-kontroller, eksisterende HR-register/meny/Hjelp og full critical/build PASS. Ingen ekte invitasjon eller e-post sendt under QA. Samme pågående invitasjonsleveranse; Kenneths uttrykkelige TEST OK og ønske om egen prøve i Production beholdes. Ingen ny manuell brukerprøve attesteres. Eksakt CI/Preview/Production/demo-bevis føres i release-PR. Detaljer: docs/qa/COMPANY_INVITATION_AUTO_HR_20261015.md.
+
+## Send invitasjon på nytt – 15. oktober 2026
+
+Firmaadmin får **Send invitasjon på nytt** ved hver ventende invitasjon. Den bruker opprinnelig registreringsidentitet og fersk logo/firmanavn. Ny, lesende manager-RPC kontrollerer valgt firma, invitasjons-ID, ventende status og deaktivert konto. Den omskriver aldri invitasjonen, inviter, tidspunkt, rolle, lagrede tilgangsvalg eller aksept-fingeravtrykk. Klienten kontrollerer firma/aktør/ID på nytt før eksisterende e-posttjeneste brukes. Dobbeltklikk blokkeres; brukt invitasjon, bortfalt tilgang og firmaswitch stopper sending. Feil viser prøv igjen ved invitasjonen; suksess sier at e-posttjenesten har bekreftet utsending, uten å påstå mottak.
+
+Miljømål BEGGE fra main 736d5ce7. Scope: Firmaadmin-panel/klient, én additiv read-RPC, utvidet eksisterende QA og dokumentasjon. 89 PostgreSQL- og 52 Chromium-kontroller består, inkludert alle tidligere modultilganger, firmaskille og Systemadmin-isolasjon. Ingen ekte e-post sendes under QA. Samme faste Preview og videre publiseringsløp som pågående firma-/invitasjonsleveranse. Ingen andre rettigheter, data eller e-postarbeidere endres. Detaljer: docs/qa/COMPANY_INVITATION_RESEND_20261015.md.
+
+## Firmaadmin og Systemadmin holdes i hver sin flate – 15. oktober 2026
+
+Etter publisering av PR #249 viste Kenneth at Firmaadmin i Bademiljø Expo fikk den globale firmaoversikten. Rotårsaken var eldre DOM-adaptere som søkte etter «Brukere og tilganger» i hele dokumentet og monterte systemadmins firmavelger i den nye, avgrensede React-flaten. Serverens Firmaadmin-snapshot var riktig avgrenset til 10 medlemmer i Bademiljø Expo; ordinær proffadmin ble fortsatt nektet tilgang til andre firmaer i faktisk Production-SQL-prøve med rollback.
+
+Fire systemadmin-adaptere finner nå bare elementer i den dedikerte Systemadmin-seksjonen og utelukker den avgrensede Firmaadmin-flaten. Regresjonstesten installerer de fire faktiske adapterne sammen med Firmaadmin: feilen reproduseres på publisert kode; rettelsen består 40 Chromium-kontroller, inkludert fortsatt global firmaliste og bruker-/arbeidsprofilkontroller under Systemadmin, samtidig visning og navigasjon bort. Ingen SQL, brukerrettigheter, medlemskap eller e-postendring. Miljømål BEGGE; rettelse av samme godkjente leveranse som brukeren prøver i Production. Full critical/build grønn. Releasebevis føres i oppfølgings-PR og `docs/qa/COMPANY_ADMIN_ISOLATION_20261015.md`.
+
+## Tilgangsvalg ved invitasjon – 15. oktober 2026
+
+Firmaadmin velger nå rolle, hovedmoduler, KS/HMS, HR og eventuell KS/HMS-rolle før **Inviter ansatt**. Valgene vises på ventende invitasjoner og brukes atomisk når en ny bruker bekrefter registreringen. Firmaavtale, inviterens gjeldende delegasjonsrett og rett firmamedlemskap kontrolleres på nytt. Eksisterende kontoer beholder hovedmoduler/primærfirma/historikk; valgte firmatilganger oppdateres. Vanlige proffkunder administrerer bare eget firma. Ekstra arbeidsprofiler krever systemadmin og er begrenset til den interne Ringside/Expo-gruppen.
+
+Miljømål BEGGE, samme Preview og PR #249, fortsatt ingen Production-/demo-release. 72 PostgreSQL- og 31 Chromium-kontroller, full critical/build og faktisk ny registrering/tilgangsvalg/proffkundeskille med full rollback består. En eldre Sandbox-variant av arbeidsprofilhjelperne er gjenopprettet til eksisterende main-kontrakt; Production hadde allerede riktige sperrer og er bare lest. Detaljer: `docs/qa/COMPANY_ADMIN_20261015.md`.
+
+## Firmaadministrasjon i aktivt firma – 15. oktober 2026
+
+Firmaadmin bruker serverens aktive firma til brukerlisten, invitasjoner og firmaroller, også når systemadmin representerer Bademiljø Expo. Brukerkortet samler rolle, hovedmoduler, KS/HMS og HR. Hovedmoduler gjelder kontoen; KS/HMS og HR gjelder firmaet som vises. Kontostatus gjelder alle firmaer og styres av systemadministrator. En systemadmin kan legge til et ekstra internt arbeidsfirma uten å flytte primærfirma eller historikk. Registrering bruker firmaets stabile identitet også etter navneendring.
+
+Miljømål BEGGE, feature/Preview først. Ingen Production-/demo-release før ny relevant TEST OK. Scope, tilgangsgrenser og bevis: `docs/qa/COMPANY_ADMIN_20261015.md`.
+
+## Valgfri snarvei til timeføring på mobil – 14. oktober 2026
+
+**HR → Timer og utlegg → Timeoppsett** har valget **Vis snarvei til timeføring på mobilforsiden**. Det er avslått som standard, også for eksisterende oppsett uten feltet. Trykk **Lagre timeoppsett** for å ta valget i bruk per firma. Når både timeregistrering og snarveien er slått på, vises et mørkt kort med turkis klokke og **Før timer** øverst på mobilforsiden (til og med 700 px). Ett trykk åpner den eksisterende personlige timeføringen; lukkekrysset tar deg tilbake til samme forside.
+
+Kortet krever fersk HR-tilgang i aktivt firma og egen registrert medarbeider. Det vises ikke i prosjektarbeidsflaten, support eller på desktop. Ingen privat timeuke hentes før kortet åpnes. Firma-/brukerbytte, bortfalt tilgang og lagret avslag skjuler kort og åpne data. Ved midlertidig tilgangskontroll huskes bare navigasjon; private data skjules, og samme arbeidsbilde/ulagrede kladd gjenopprettes bare etter fersk, samsvarende tilgang. Bevisst lukking vinner over kontrollen. Lagret oppsettsendring oppdaterer snarveien i samme firma uten å endre andre modulers tilgang.
+
+Mobilveiledningen ligger bare under HR-kapitlet i Hjelp, bak eksisterende tilgangsfilter. Regresjonstesten krever at hele time-/lønnskapitlet forsvinner ved manglende HR, feil bruker og tilbakekalt HR, også når systemadmin eller en generell modulliste er oppgitt. Firmaets mobilvalg skjuler bare snarveien; HR-brukere beholder Min side → Mine timer og relevant veiledning.
+
+Scope: ny mobilkomponent/CSS, to linjer i main (lazy import og eksplisitt mobilforsideplassering), Timeoppsett, to eksisterende time-RPC-er via additiv migrasjon `20261014165602_time_mobile_shortcut_setting.sql`, firmabundet innstillingshendelse, Hjelp, tester og dokumentasjon. Backendens eksisterende autorisasjon, CAS, øvrige HR-funksjoner, policies, menyer og produksjon er uendret. Sandbox-migrasjon installert; standardvalget er fortsatt av i eksisterende firmaer.
+
+QA: 123 lokale PostgreSQL-kontroller, 87 faktiske React-kontroller for mobilkort/timer/oppsett, eksisterende HR/Hjelp, Min side og KS/HMS-/HR-navigasjon består. Ekte Sandbox består 26 kontroller med full rollback. Full critical/Sandbox-build består. Fingeravtrykk av ikke-timefunksjoner/policies og lagrede demotimer/timere/mail er uendret. Security advisors viser eksisterende autentiserte og internt autoriserte time-RPC-er, ingen ny anonym tilgang eller mutable search path i endringen. Ingen innlogget skjerm-/mobilprøve attesteres; kjent nettlesersperre er ikke forsøkt omgått. Publisert head/CI/READY føres i PR #245.
+
+## Avbryt timeføring uten ekstra varsel – 14. oktober 2026
+
+Etter brukerens ønske lukker **Avbryt**, krysset og Escape timeeditoren direkte. Ulagret endring forkastes, lagrede timer beholdes og forkastet kladd gjenåpnes ikke ved remount. Endringen gjelder bare timeeditorens lukking; ingen backendendring. Faktiske React-scenarioer dekker de tre lukkemåtene, manglende lagringskall, forkastet kladd og bevaring av lagret prosjekt/timetall. 54 faktiske React-kontroller og full critical/Sandbox-build PASS. Samme Preview/PR #245; Production uendret.
+
+## Synlig manuell prosjektføring – 14. oktober 2026
+
+Brukerbildet viste at manuelt felt var skjult bak prosjektvalget. Feltet **Prosjektnummer, navn eller adresse** vises nå straks når ingen intern prosjekt-ID er valgt. Skriving velger automatisk manuell referanse. Tomt felt ved internt arbeid og eksisterende ProffDok-valg beholdes. Avgrenset UI-/hjelperettelse, ingen databaseendring. 47 faktiske React-kontroller og full critical/Sandbox-build PASS; ny dekning krever synlig felt og direkte skriving uten valg i nedtrekkslisten. Samme Preview/PR; Production uendret.
+
+## Manuelt prosjekt fra annet ERP – 14. oktober 2026
+
+Samme Preview og PR #245. I **Min side → Mine timer → Ny registrering** kan ansatte skrive direkte i **Prosjektnummer, navn eller adresse** uten å velge noe i prosjektlisten først. Feltet vises når ingen ProffDok-prosjekt er valgt. **Manuelt prosjekt / annet ERP** finnes også i prosjektlisten. Ett felt på høyst 240 tegn tar nummer, navn, adresse eller en kombinasjon. Omgivende blanktegn fjernes; ledende nuller og øvrig tekst beholdes. Referansen vises i kontroll/historikk og følger uendret i CSV-feltet `project_number` (standardoverskrift Prosjektnummer). Ved import må referansen stemme med mottakersystemets forventning. CSV-oppsett og valgt kolonnerekkefølge endres ikke.
+
+Eksisterende ProffDok-prosjekter velges som før. Manuell referanse oppretter ingen prosjekt-/tilgangsrad. Påkrevd prosjekt kan oppfylles med en manuell referanse; kombinasjon av intern prosjekt-ID og manuell tekst avvises. `time_timer_command_v2` tar samme manuelle referanse, mens gammel RPC-signatur er bevart som wrapper. Timerens lagrede manuelle referanse følger stopp og lagret ukelinje. Eksport-, godkjennings-, CAS-, rolle-, fil- og tomånedersregler beholdes.
+
+Avgrenset scope: timeeditor/oppsett/core, additiv migrasjon `20261014161822_time_external_project_reference.sql`, ny timerkolonne og v2-RPC, uendret ekstern eksportkontrakt, tester og hjelp/docs. Ingen endring i prosjekter, prosjektmeny, ERP-integrasjon, medlemskap, andre moduler eller Production. Lokal PostgreSQL 113 og faktisk React 44 assertions PASS; alle tidligere kontroller beholdes. Full critical/Sandbox-build PASS. Sandbox-migrasjon installert; eksisterende HR/KS-funksjoner, gamle policies, runtime, lagrede demotimer og mailinnstillinger er uendret. Ekte Sandbox-regresjon består 23 assertions med full rollback. Preview/CI føres i PR. Den kjente sperren i skynettleserens native credential state omgås ikke; ingen ny brukerinnlogging kreves av en deploy.
+
+## Siste status timer – avbrutt skynettleser, 14. oktober 2026
+
+PR #245, branch `fase45b-time-registration-20261014`. Fast Preview: https://expo-proffdok-git-fase45b-time-registration-20261014-ringside.vercel.app/ . Første funksjonskilde `0f424938`, CI run `38593278677` / jobb `115953424354` SUCCESS; Preview READY. Innlogget demooppsett og 7,5 timer er faktisk lagret. Serverlagret tidtaking overlever reload. Nettleseren er nå sperret av native credential state; ikke gjenta reset/innloggingsforsøk. Stopp med allerede lagrede rader avdekket en streng-input-feil; isolert migrasjon `20261014160424_time_timer_existing_rows.sql` retter gjenbruk av skrivefelt og består 99 lokale PostgreSQL-assertions. Fiksen er installert i Sandbox og faktisk demotimer stoppet med autorisert RPC: to lagrede linjer, null aktive timere. Kvitteringsprøven i nettleser rakk ikke å starte, ingen fil eller eksport er opprettet; mail AV. Siste fix-commit/CI/READY føres i PR. Produksjon/main/demo-branch er urørt. Ingen ny TEST OK mottatt. Full kontrakt/bevis: [TIME_REGISTRATION_20261014](TIME_REGISTRATION_20261014.md).
+
+## Timer og utlegg – 14. oktober 2026
+
+Miljømål **BEGGE**, fra main `d95f14c80e2a87bd4fed4e31cf47f712c3c2ca48`. Ansatte fører i **Min side → Mine timer**. **HR → Timer og utlegg** samler kontroll, firmaets timeoppsett og konfigurerbar CSV-eksport. Antall timer, fra–til med pause og serverlagret start/stopp støttes, sammen med fravær, overtid, reise/km, tillegg og utlegg med private PDF/JPG/PNG-kvitteringer. Overtid beregnes ikke automatisk. Importformat må prøves når lønnsprogram er valgt.
+
+Firmaadmin velger timeansvarlige. Egen ansatt fører; aktuell nærmeste leder eller timeansvarlig kontrollerer. Egne timer kan ikke godkjennes av samme bruker. Innsendte uker er låst til tilbaketrekking/retur. Eksport omfatter bare godkjente, ikke tidligere eksporterte linjer og krever ansattnummer/lønnskode/prosjektnummer der påkrevd. Eksportarkivet lar samme fil lastes ned igjen; nedlasting er ingen bekreftelse på import eller utbetaling.
+
+Kenneths avklaring: ferdig eksporterte uker, endringshistorikk og kvitteringer ryddes etter **to kalendermåneder fra siste eksport for uken**. Åpne/ufullstendig eksporterte uker beholdes til ferdigbehandling. Daglig databasejobb rydder innhold; egen tokenbeskyttet Edge-worker fjerner kvitteringer via Storage API og bekrefter fravær før køen kvitteres. Minimale firma-/medarbeider-/ukemarkører uten navn, timer eller beløp hindrer falske manglende-oppgaver og ny innlegging i ryddet uke. Eldre lønnsgrunnlag finnes i lønnssystemet. Utdatert idempotens og historiske, ikke eksportrefererte utgaver ryddes også etter to måneder.
+
+Avgrenset scope: ny time-modul, to innganger i HR/Min side, additiv privat database/storage/RPC/cron, egne mail-/cleanup-workers, Hjelp, dokumentasjon og permanent QA. Eksisterende HR-/KS-funksjonskilder og gamle policies er identiske i Sandbox; ny enrollment-trigger er eneste integrasjon i HR-tabell. Sales, globale menyer, profil, medlemskap og eksisterende mail-workers endres ikke. Time-e-post er implementert, men fortsatt AV i Sandbox; produksjonsaktivering inngår i senere release.
+
+QA: 98 lokale PostgreSQL-assertions og 37 faktiske React-assertions PASS. 19 faktiske Sandbox-assertions PASS, alle random syntetiske fixtures rullet tilbake. Min side, eksisterende HR-register/Hjelp og modulnavigasjon PASS. Full critical/Sandbox-build PASS. Hjelpetester er utvidet fra tre til fire HR-kapitler; alle tidligere kapitler/innholdskontroller beholdes. Representative 10-linjers uke med hver lagring/godkjenning/eksport målte ~52 kB lagrede radbytes; 40 ansatte × 9 uker ~19 MB før indekser/ledig plass. Vedlegg kommer i tillegg. Praktisk anslag 30–60 MB for dette mønsteret, ikke en øvre kvote.
+
+Sandbox `ppvircenkjizeiqdxphj`: migrasjon installert, egne workers ACTIVE, cleanup-endepunkt konfigurert; ny time-mail fortsatt AV. Standard migreringsverktøy feilet to ganger med `Invalid or expired requestState`; samme autoriserte migrasjon ble installert via én eksplisitt SQL-transaksjon og registrert med versjon `20261014144538`. Ingen Production-migrering/merge er gjort. Preview, CI og innlogget brukerprøve føres nedenfor. TEST OK gjelder denne nye funksjonen separat.
+
+## Rutiner sender ikke e-post – 12. oktober 2026
+
+Etter Kenneths eksplisitte akuttinstruks er rutinetildelinger og lesepåminnelser bare i appen. Ny køtrigger blokkerer reading ved insert/retry; 670 ventende rutine-e-poster stanset i produksjon, ingen gjeldende rutinepost sendbar. 200 allerede sendte beholdes i loggen. Rutiner, tildelinger og egne bekreftelser beholdes. Andre oppgaver og frister beholder e-post. Produksjon og Sandbox installert, faktisk insert/retry-test rullet tilbake. Se docs/kshms/ROUTINE_EMAIL_STOP_20261012.md.
+
+## Hele personalhåndboka som PDF – 12. oktober 2026
+
+Miljømål **BEGGE**, fra verifisert main `55d43947b0bd991d282959ace41fdefc489984b2` (#237). Kenneth ba om at ansatte kan laste ned hele personalhåndboka med firmalogo. Ny knapp øverst i Min personalhåndbok bruker eksisterende lesende KS/HMS-state og firmaprofil. Alle egne tildelte rutiner med full tekst, kilder, godkjenning og egne bekreftelser med sekunder/norsk tid; søk begrenser ikke PDF. Gjeldende tildelte utgaver først, tidligere/utgåtte tildelte utgaver i merket historikkdel. Innholdsfortegnelse med faktiske sider og felles kompakt ramme-layout. Ingen bekreftelse registreres ved nedlasting.
+
+Scope: PersonalHandbook integrasjon, ny egen PDF-knapp/renderer, permanent critical og React/jsPDF-QA, Hjelp og release-dokumentasjon. Eksisterende enkelt-PDF/samlet lesebekreftelse/firmapublisering beholdes. Ingen SQL/RLS/tilgang/worker/mail/meny/salg/HR-endring. Egen tildeling brukes også for admin og KS/HMS-ansvarlig. Fersk aktør-/firma-/tilgangskontroll før/etter PDF-motor og logo; endrede tildelinger/tekst/kvitteringer stopper nedlasting. Sent svar etter unmount eller scopeswitch forkastes. Manglende registrert logo stopper eksport; profil uten logo gir firmanavn og ærlig beskjed.
+
+QA/status og Preview føres i `docs/kshms/HANDBOOK_PDF_20261012.md`. Ingen tidligere TEST OK påstås å dekke denne nye PDF-funksjonen. Ingen produksjonspublisering før relevant godkjenning.
+
+## Samlet firmagodkjenning – 12. oktober 2026
+
+Miljømål **BEGGE**, fra ferdig #236/main `5c5e32792895e213280d893975d8eeea6872c3cb`. Kenneth viste enkeltgodkjenning på R-087 og ba om en raskere firmagodkjenning. **Godkjenn flere rutiner** øverst i Håndbok lar firmaadmin og KS/HMS-ansvarlig velge lagrede utkast, inkludert Velg alle som venter, lese eksakte utkast/utgavenummer og bekrefte felles vurdering. Én ny additiv transaksjons-RPC bruker uendret kshms_command(publish) for hver utgave. Gammel godkjenning, historikk, tildeling, varsling og eksplisitt valgfri egen lesebekreftelse beholdes. Ulagret tekst og stale/feil aktør/rolle/firma stopper handlingen; ingen delvis publisering. 87-utkast/88-utgaveprøve i lokal PostgreSQL og ekte Sandbox rullet helt tilbake, faktisk React for begge roller og gammel enkeltgodkjenning/auto-neste PASS. 86 eksisterende funksjoner og 102 relasjoner/RLS/ACL er identiske i Sandbox. Kenneths avgrensede produksjonsautorisasjon for isolert samlet rutinebehandling gjelder; ingen ny manuell Kenneth test påstås. Preview/CI, Production og kontrollert main → demo verifiseres før sluttmelding. [Kontrakt og bevis](BULK_PUBLICATION_20261012.md).
+
+## Butikk/lager/truck og samlet egen bekreftelse – 12. oktober 2026
+
+Miljømål **BEGGE**, etter ferdig #235/main `0ccedfe03f4e03c9ec19bde7a9f4077470141bcd`. Kenneth har autorisert produksjon hvis endringen isoleres; ny egen KS/HMS-lesebekreftelse gjelder medarbeider, KS/HMS-ansvarlig og firmaadmin, hver på egen bruker. Komplett utgaveliste, uttrykkelig lest-og-forstått-avkrysning og én atomisk RPC gir separate immutable kvitteringer med dato/klokkeslett på hver utgave. Enkeltbekreftelse og gammel historikk beholdes. 14 nye butikk-/lager-/truckforslag gir 87 forslag totalt uten automatisk publisering/tildeling. Opprinnelige 73 utkast verifiseres eksakt. Ingen øvrige funksjoner/tilganger/RPC/tabeller/arbeidere endres. Ny QA/Preview og kontrollert main → demo før endelig publiseringsmelding. [Kontrakt, forslag og bevis](BULK_ACK_STORE_20261012.md).
+
+## Tydelig gjennomføring og trygg referatgjennomgang – 12. oktober 2026
+
+Miljømål **BEGGE**, fra ferdig publisert PR #234/main `c0f3a015d8a47b81d0d2a0f0a9ed7b18aa06da12`. Kenneth ba om faktisk UX-test og retting. Innlogget Preview med eksisterende syntetisk kursmedarbeider bekrefter uklar opprettingsinngang etter deling. Faktisk React og lokal PostgreSQL reproduserte at gjentatt Send til begge for gjennomgang nullstilte gitt bekreftelse.
+
+Opprettingsinngangen heter **Opprett ny medarbeidersamtale** og forklarer at eksisterende samtaler fortsettes nedenfor. Status og neste steg forklares. Nytt lederinnspill åpner Felles møte mens møtet pågår, med delte svar og medarbeiderens delte kommentar; sendte/ferdige referater åpnes i Referat. Eksisterende RAM-kladd og valgt steg ved ny autorisasjon beholdes. Referat samler delt forberedelse, møtenotater, tiltak, ansvarlig, frist og neste oppfølging. Ulagret forhåndsvisning merkes tydelig og kan ikke sendes/bekreftes. Privat, ikke delt forberedelse tas ikke inn i oversikten.
+
+**Lagre samtale** lagrer arbeidet. **Send til begge for gjennomgang** vises bare før sending. Begge bekrefter selv med **Jeg har lest referatet**. En ferdig samtale lukker ikke åpne tiltak. Forrige/Neste bytter steg uten å lagre. Endret referat eller delt kommentar krever fortsatt nye bekreftelser.
+
+Scope: HrConversations, ny ren HrConversationReview, samtale-sessionens åpningssteg, scoped CSS, én migrasjon som bare gjør ready på samme awaiting-utgave til en lesende no-op, utvidet eksisterende React/PostgreSQL/session-QA og Hjelp/docs. Alle opprinnelige firma-/rolle-/medarbeider-/CAS-/required-field-kontroller beholdes før no-op. Ingen ny RPC/tabell, grants/RLS/tilgang, medlemskap, worker/cron/mail eller annen modul. Retry lager ingen revisjon, historikk, kvittering eller mail; faktisk innholdsendring beholder tidligere bekreftelsesregel.
+
+QA, CI, eksakt Preview-kilde og innlogget ny visning føres i release-PR. Sandbox-mail beholdes AV; ingen kurssamtale resettes, og ingen ekte medarbeider/profil/leder/tilgang endres som QA. Tidligere TEST OK beholdes; godkjenningen for #234 gjelder ikke automatisk denne nye UX-/retry-rettingen. Kenneth ga avgrenset TEST OK 12. oktober 2026 kl.10:47 Europe/Oslo: «får ikke test så TEST OK». Godkjenningen gjelder denne leveransen i PR #235, basert på agentens innloggede Preview-kontroll og grønne automatiske scenarioer/CI. Kenneth gjennomførte ingen ny manuell Preview-prøve. Production-migrasjon/merge og kontrollert main → demo er autorisert; tidligere tester/godkjenninger beholdes.
+
+Innlogget etterprøve: fast Preview beholder økten over deploy. Opprett ny medarbeidersamtale, status for delt forberedelse og samlet Referat er kontrollert i faktisk publisert kurssamtale. Midlertidig syntetisk RAM-tekst vises i ulagret forhåndsvisning og sperrer sending; original tekst er satt tilbake uten lagring. Kurssamtalen er fortsatt utgave 4, ingen mail/write/reset. Dialoghodet dekket 8 px av stegoverskriften; scrollmargin for bare den ordinære samtalens steg er økt slik at hele overskriften vises etter stegbytte. QA: 105 samtale-React, 108 varsel-React, 267 PostgreSQL og 131 runtime assertions PASS, berørte eksisterende brukerreiser og full critical/build BEGGE PASS. Endelig CI/READY/byteeksakt kilde og målt innlogget stegvisning føres i release-PR #235.
+
+## Navn i åpnet medarbeidersamtale – 12. oktober 2026
+
+Miljømål **BEGGE**, avgrenset feilretting etter ferdig publisert #233/main `a5be1c976ceb4c4ab19e326647dcf79c7b63e99e`. Kenneth viste en direkte åpnet samtale uten medarbeideridentitet. Dialogtittelen viser nå Medarbeidersamtale – navn, og selve samtalen viser Medarbeider: navn med e-post. E-post brukes som reserve hvis profilnavnet mangler. Navnet kommer fra den samme autoriserte medarbeiderens profil, aldri innlogget leder, e-postgjetting eller samtaletittel. Bare den åpne private samtalen viser navnet; generelle kort på Startsiden/Min side og e-post beholder eksisterende innhold.
+
+Scope: én ny ren hrEmployeeLabel, HrFollowupNotice-dialogtittel, HrConversations-identitetsfelt/CSS, én migrasjon som bare utvider den eksisterende private employee_json-formatteringen med valgfritt full_name, permanent React/PostgreSQL-QA og Hjelp/docs. Profilnavnet er visningstekst fra typetestet/trimmet raw_user_meta_data.full_name, maks 120 tegn; ingen autorisasjonsbeslutning bruker metadata. Ingen ny RPC/tabell, grants/RLS/tilgang, medlemskap, leder, samtaleinnhold/revisjon/historikk, e-post/worker/cron, PDF/kalender, Sales/recovery, prosjektflyt eller menyendring. Formatterens tidligere felter og interne privilegier beholdes. Fersk reautorisasjon skjuler identitet sammen med resten av dialogen ved bortfalt tilgang, firma-/brukerbytte og sene svar.
+
+QA: faktisk varselkort/direkte dialog/Min side React 101, samtale-React 89 og PostgreSQL 260 assertions PASS. Navn fra riktig medarbeider, navneløs/ugyldig metadata, e-postreserve, maksimal lengde og private helperprivilegier er dekket; tidligere tilgang/kladd/direkte sak/innspill/paginering/ingen mail-scenarier er beholdt. Eksisterende HR-foundation, Min side/kontakt og module-navigation runtime PASS. Full critical/build og kilde-/metadata-/CI/Preview-bevis føres i release-PR. Ingen faktisk medarbeider/profil/leder/tilgang endres eller e-post sendes som QA.
+
+Sandbox-migrasjon installert: formatterens funksjonskropp er lest tilbake byteeksakt. Alle øvrige HR-funksjoner, policies, triggere, runtime, e-postinnstillinger og helperprivilegier er uendret. Faktisk lesende prøve med eksisterende syntetisk kursmedarbeider er rullet tilbake; navn/bruker-ID/revisjon stemmer. Ingen advisor-tillegg. Full critical/build Production og Sandbox PASS. PR #234: godkjent funksjonskode `6151ada6172ffc49ecb2d135dee1b85f37f85255`, Core Safety `38212621017` / jobb `114689997559`, alle steg SUCCESS. Fast Preview `dpl_4aNs4pSFirbzkJqYqoQB2yEPBtcG` READY, HTTP200 og 31 berørte JS/CSS-filer byteeksakte mot vanlig Sandbox-build. Endelig Production/main → demo-bevis føres i release-PR.
+
+Dette er ny avgrenset navnevisning; tidligere TEST OK for #233 og alle andre funksjoner beholdes. Kenneth ga TEST OK for navnevisningen 12. oktober kl.08:34 Europe/Oslo. Godkjenningen gjelder denne avgrensede rettingen i PR #234. Ingen gamle tester skal gjentas. Production-migrasjon/merge og kontrollert main → demo er autorisert; tidligere godkjenninger er ikke brukt som generell fullmakt.
+
+## Lederkort for delte medarbeiderinnspill – 12. oktober 2026
+
+Miljømål **BEGGE**. Ny avgrenset leveranse etter ferdig publisert #232, fra main `ababf3f2c23f4ed9d54c36eed4000f4c397c3e53`. Ingen generell Production-godkjenning arves fra tidligere direkte bestillinger. Kenneth ga ny avgrenset TEST OK 12. oktober kl.07:27 Europe/Oslo: «noe jeg må teste? Hvis ikke er test ok». Ingen ekstra manuell prøve er nødvendig for godkjenningen; den nye funksjonen er kontrollert med faktisk React/PostgreSQL, publisert Preview/sourcekontroll og grønn CI. Ingen innlogget lederkortprøve er attestert, og tidligere godkjenninger gjenbrukes ikke som generell Production-fullmakt. Production-migrasjon/merge og kontrollert main → demo er autorisert for akkurat lederkortet.
+
+Gjeldende nærmeste leder får **Nytt innspill til medarbeidersamtalen** i Dine varsler og oppfølginger på Startsiden og Min side i aktivt firma. Eksisterende `employee_feedback_revision` fra Klar til samtale eller endret delt medarbeiderkommentar styrer kortet, også når e-post er deaktivert. Privat kladd, lederens egen kommentar og uendret medarbeiderkommentar lager ingen ny feedback-revisjon. Kortet viser generell tekst og pekere, ingen personnavn, private svar eller kommentarer. Åpne samtalen går direkte til riktig samtales Referat, der kommentaren kan leses; Forberedelse/Felles møte viser de delte forberedelsessvarene.
+
+Kortet håndteres uttrykkelig med **Marker innspillet som håndtert** i den ferskt autoriserte, gjeldende samtalen. Åpning/polling/lesing håndterer ingenting. Handlingen er sperret ved ulagret kladd, konflikt, historisk/annen sak eller endret revisjon. Privat kvittering gjelder samtale + faktisk leder + nøyaktig feedback-revisjon. Senere endret kommentar vises på nytt. Ny leder arver ikke forrige leders kvittering. Samtalen og dens revisjon/historikk/bekreftelser beholdes. E-postkø, utsending, worker, cron og mailstatus er uendret; håndtering sender ikke e-post på nytt.
+
+Scope: HrFollowupNotice/transport, én HrConversations-propintegrasjon, ny isolert HrConversationFeedback, én additiv migrasjon med privat RLS-stengt kvitteringstabell/to RPC-er, permanent eksisterende React/PostgreSQL-QA og Hjelp/docs. Ingen eksisterende SQL-funksjon, tilgangskjerne, medlemskap, Sales, main/navigation, sykefraværseditor, autosave/recovery eller prosjektflyt endres. Kvitteringer følger samtalens eksisterende FK-sletting. Ved gjenoppretting uten kvitteringer blir innspillet ulest igjen; gammel kvittering kan aldri skjule nyere innspill. Full databasebackup inkluderer tabellen; eksisterende innholdseksport gjenbrukes uten kvitteringer.
+
+QA før Production: faktisk React 92, PostgreSQL 245, eksisterende samtale-React 88 og sykefravær-React 48 PASS. Session/PDF 127 og sykefravær/mail 175 PASS. Min side/kontakt og module-navigation runtime PASS. Full critical/build Production og Sandbox PASS. Sandbox-migrasjon installert; begge funksjonskropper lest tilbake byteeksakte. Eksisterende HR-funksjoner samlet fingerprint `3496d74f97d72414dc7c318cdd223a3a`, policies `1cb764eb0dc8d86c5f051d4aa1f69915`, ikke-interne triggere `7362fa67a5dcd2a0eaa041e76710e1a6` uendret før/etter. Sandbox-mail fortsatt AV, runtime uendret. Rolletest rullet tilbake: manglende aktør og direkte tabelllesing avvist. Ny tabell har RLS, ingen direkte klient-/servicegrants, null kvitteringer etter QA. Advisor-differanse bare forventet én lukket RLS-tabell og to autentiserte, tilgangskontrollerte definer-RPC-er. Ingen virkelig medarbeiderwrite/utsending. Avgrenset TEST OK er mottatt; eldre godkjenninger beholdes.
+
+PR #233: feature-kode `9a089c241ef336919a8207d9caa6dc12b0c3664b`, Core Safety `38207713606` / jobb `114674792407`, alle steg SUCCESS. Fast Preview `dpl_7ULrKS9LLF3KFBzSGqXyhVYhsitC` READY, HTTP200 og 30 berørte JS/CSS-filer byteeksakte mot vanlig Sandbox-build. Innlogget prøve er ikke attestert; Sandbox har ingen delte aktive innspill. Ingen ekstra gammel brukerprøve kreves. Endelig Production/main → demo-bevis føres i release-PR. Ingen faktisk medarbeidermail, konto-/leder-/tilgangsendring eller sletting brukes som QA. Ingen ny manuell prøve av gamle godkjente funksjoner kreves.
+
+## HR-kontroll nær fristen og ryddige HR-e-poster – 12. oktober 2026
+
+Miljømål **BEGGE**. Kenneth oppdaget at Kontroll av HR-oppsett og tilgang med frist 11.10.2027 allerede lå som varsel 12.10.2026. Det nye varselkortet filtrerer nå denne administrative kontrollen til 30 kalenderdager før fristen, på fristen og etter fristpassering. Invitasjoner vises straks, og andre åpne arbeidsplaner/tiltak beholdes slik at arbeidet kan starte i tide. Kontrollfristen kan fortsatt leses i HR-oppsettet/registerets fullstendige fristliste. E-postregelen er uendret.
+
+Avgrenset retting av #231: visningsfilter, permanent QA, Hjelp/docs og generisk HTML-layout i eksisterende HR-mailworker. Ingen endring i SQL/RLS, firmatilgang, leder, kø/reservasjon/validering/dispatchregel eller beskyttet autentisering. Brukerens direkte Production-bestilling for varselkortet gjelder også denne feilrettingen. Ny faktisk React 65 assertions dekker den rapporterte årsfristen, 31/30-dagersgrense, fristdag, passert frist og Oslo-DST, samt tidligere invitasjon/direkte editor/kladd/paginering/tilgang. Ready CI/Preview/Production/Demo-bevis føres i release-PR.
+
+Leder-e-post er allerede aktivert i Production: medarbeiderens Klar til samtale/deling og faktisk endring i egen delt kommentar køer generisk nytt innspill til registrert nærmeste leder. Lagring av privat forberedelseskladd sender ikke varsel. Dette nye frontendkortet har fortsatt ikke et separat ledervarsel om delte svar. Kenneths skjermbilde kl.01:16 bekrefter faktisk mottak av nytt innspill i lederens innboks, med ren tekst og lang omskrevet lenke. Feedback-, lederpåminnelse- og generiske fristmailer har nå samme mørke/turkise ProffDok-profil med tekstlogo, inline tabeller, tydelig appknapp og tekstalternativ. Firmalogoen i invitasjonen er uendret. Generiske varsler får ingen firmanavn, personnavn, svar, kommentarer, diagnose eller saksidentitet. Varsel-/køregler og målrettet testmodus er uendret. Ny mail-runtime QA 175 assertions PASS; ny faktisk innboksvisning av HTML eller en ny testmail er ikke attestert/sendt av utvikleren.
+
+## Synlige HR-varsler og direkte åpning – 12. oktober 2026
+
+Miljømål **BEGGE**. Kenneth ba kl.00:54 Europe/Oslo uttrykkelig om direkte Production-leveranse. Dine varsler og oppfølginger vises øverst på Startsiden og Min side i aktivt firma. Invitasjonen viser dato, klokkeslett, sted og om forberedelsen er delt. Åpne samtalen/Åpne oppfølgingen åpner riktig privat sak i dialog, med eksisterende redigering, lagring, kalender, PDF og historikk. Lederens eksisterende åpne tiltak og sykefraværsfrister bruker samme inngang. Kontroll av HR-oppsett åpnes fra eget varsel. Ingen oppgave oppdiktes når listen er tom. «Kommer» og «ikke åpnet ennå» er rettet til aktuell funksjon.
+
+Avgrenset frontend: én Startside-render i main, Min side, nytt varselkort/minimal lesetransport og initialt saksvalg i de to HR-editorene. Dagens hr_followup_tasks og dobbel fersk medarbeider-/sakslesing gjenbrukes. Ingen SQL/RLS/grants/membership/e-post/worker/cron-endring. Ingen private svar, navn eller journalinnhold legges i varselkortet, URL eller nettleserlager. Kun de første seks invitasjonene per side får møtefelter hentet; øvrige viser oppgavefrist og kan åpnes direkte. Paginerte oppgaver kontrolleres mot samme servermarkør før åpning.
+
+Snarveien autoriserer på nytt og nekter foreldet/ferdig oppgave. Min side beholder konto- og e-postkladd. Samme saks private RAM-kladd og valgte steg beholdes ved fokus/ny autorisasjon. En annen sak bytter ikke automatisk over en ulagret kladd; eksplisitt bytte bruker eksisterende avbryt/bekreftelse. Feil firma/aktør, tilbakekalt tilgang, skjult side og sene svar kan ikke vise gammelt innhold. Eksplisitt lukking respekteres.
+
+QA: faktisk nytt varselkort/direkte editor/Min side React 56 assertions PASS, eksisterende Min side/kontakt og modulnavigasjon PASS, medarbeidersamtale React 88 og sykefravær React 48 PASS. Ny permanent test kjøres i PR Core Safety. Hjelp/README/architecture oppdatert; publisert SHA/CI/assetkontroll og main → demo-preflight føres i release-PR. Faktisk Outlook/innboks eller ny innlogget nettleserprøve attesteres ikke. Brukeren ba om direkte Production uten ny TEST OK-runde.
+
+## Sted og firmaprofil i medarbeidersamtale-invitasjon – 12. oktober 2026
+
+Miljømål BEGGE. Kenneth bestilte sted i invitasjonen kl.00:01:32 og sa uttrykkelig «gjør det rett i produksjon» kl.00:01:51 Europe/Oslo. Tillegg kl.00:05 om samme logo/profil som tilbudsmailene inngår i samme avgrensede leveranse. Direkte Production etter grønn QA/CI/sourcekontroll; ingen ny TEST OK eller faktisk medarbeidermail attesteres.
+
+Nye samtaler krever Sted (møterom eller adresse, én linje, maks 200 tegn). Nærmeste leder endrer lagret dato/klokkeslett/sted under Endre tidspunkt og sted. Eksisterende samtaler kan fortsatt åpnes; manglende sted må legges til før invitasjon. Sted følger samme lagrede utgave til e-post, Outlook, .ics LOCATION og samtalens PDF. Historikk viser faktisk tidligere sted eller Ikke avtalt. Gamle start-/tidspunkt-RPC-er beholdes og overskriver ikke eksisterende sted.
+
+Invitasjonen har firmaets lagrede logo/profil, samme mørke/turkise profil som tilbudsmail, datoboks og knapp til den generelle appadressen. Firmaprofil hentes fra samtalens firmascope på serveren. HTML bruker e-posttabeller/inline-stil, escaped tekst og HTTPS-logo eller appens standardlogo. Tekstalternativ følger med. Svar, kommentarer, personnavn og samtale-ID følger ikke e-post eller ekstern kalender-URL; møtested og firmaprofil følger uttrykkelig brukerbestilling.
+
+Invitasjoner identifiseres etter lagret dato, klokkeslett og sted i eksisterende private, cascade-slettede artefaktsnapshot/outbox. Stedendring lager ingen e-post av seg selv. Leder sender den nye avtalen uttrykkelig. Gjentatte klikk gjenbruker samme jobb/provider-idempotency; tidligere sendt samme dato/tid/sted beholdes. Foreldet sted stopper kø/reservert jobb før provider-kall. Bare allerede undertrykt, aldri sendt invitasjon kan få ny jobb ved retur til tidligere sted. Sendetilgang, fersk mottaker, lease/backoff og opprinnelige forberedelses-/rolle-/CAS-/bekreftelseskrav beholdes. Nytt bucketområde isolerer invitasjon fra frist, lederpåminnelse, innspill og målrettet test.
+
+Scope: samtale/session/kalender/PDF, eksisterende mailworker + ny formatter, én additiv funksjonsmigrasjon, HR-checks og Hjelp/docs. 7 nye funksjoner og 5 eksisterende invitasjonsfunksjoner endres. Ingen tabell, RLS, trigger, token, cron, firmatilgang eller annen modul endres. Lokal PostgreSQL 206, faktisk React 88, session/kalender/PDF 127 og sykefravær/mail 151 assertions PASS; full critical/build BEGGE PASS. Backup-test utvidet fra én til tre syntetiske saker med samme kontroll av gammel backup/purge. Eksakt Sandbox/Production-kilde/fingerprint/CI/READY og main → Demo føres i PR. Skyens store rollback-harness traff MCP «Invalid or expired requestState» to ganger; den attesteres ikke. Ikke-muterte funksjons-/privilegiekontroller og fingerprints brukes i tillegg til faktisk lokal PostgreSQL. Ingen virkelig samtale, tilgang eller mottaker er endret/sendttestet.
+
+## KS/HMS og HR i flere arbeidsfirma – 11. oktober 2026
+
+Miljømål BEGGE. Kenneth fant ikke Camilla eller HR-valget i Firmaadmin. Read-only Production-metadata bekrefter at profilen hennes ligger under Bademiljø Expo, med medlemskap i alle tre firmaer; samtalen ligger i Ringside. Kenneth er systemadmin. Den gamle Firmaadmin-listen henter profiler etter primærfirmanavn, og systemadmins tidligere KS/HMS-/HR-kort brukte bare primærfirmaets scope. Derfor kunne ikke individuell HR-tilgang i ekstra arbeidsfirma velges fra kortet. Ingen virkelig konto eller tilgang er endret.
+
+Avgrenset separat retting: ny PeopleWorkspaceModuleAccess-wrapper og systemadmins eksisterende kortintegrasjon, relevante React-checks/CI, Hjelp og release-dokumentasjon. Wrapperen bruker eksisterende list_managed_work_profiles og PeopleModuleAccess/RPC/CAS. Ingen backend, migrasjon, arbeidsprofilendring, øvrige tilgangskontroller eller kalenderendring i denne PR-en. Systemadmin velger Firma for KS/HMS og HR blant brukerens faktiske medlemskap. KS/HMS-rolle og eksisterende tilgang i valgt firma beholdes ved HR-lagring. Firmaadmins arvede tilgang vises uten individuell lagreknapp. Andre tilganger på kortet beholder primærfirmaets scope. Ulagrede modulvalg krever uttrykkelig forkasting før firmabytte; pågående lagring sperrer bytte. Fersk metadata og sent svar etter unmount/tilgangsendring håndteres uten å gjenåpne gammel UI.
+
+QA: faktisk wrapper + eksisterende PeopleModuleAccess React med syntetisk transport, eksisterende full People/Help-React og critical People-check PASS. CI inkluderer nå disse permanente kontrollene. Ingen faktisk Camilla-grant eller e-post sendes av utvikleren. Sandbox har ingen identisk Camilla/flerfirma-fixture; innlogget tilgangsvalg for det virkelige tilfellet er ikke attestert. Ny avgrenset tilgangs-UX krever TEST OK før Production; tidligere mail-/kalendergodkjenning brukes ikke som godkjenning av denne separate rettingen. Eksakt grønn CI/Preview/source føres i PR.
+
+## Outlook / Office 365 og tydelig invitasjonsstatus – 11. oktober 2026
+
+Miljømål BEGGE. Kenneth ba kl.23:18 om å oppdatere kalenderknappen i den aktive Production-leveransen. **Åpne i Outlook / Office 365** åpner en ny avtale i Outlook på nettet med fersk lagret dato, norsk klokkeslett og valgt varighet. Brukeren kontrollerer jobbkonto og kalender og lagrer i Outlook. Ingen kalenderkonto kobles til, og appen bekrefter ikke lagring i Outlook. **Last ned kalenderfil (.ics)** beholdes med konkret veiledning for Kalender → Legg til kalender → Last opp fra fil → velg kalender → Importer. Tidspunktendringer må oppdateres av brukeren. Gjentatt åpning kan lage en ny Outlook-avtale.
+
+Begge kalenderformater bruker samme validering og Oslo → UTC-konvertering. To ferske autoriserte samtalelesinger og revisjonskontroll før eksport beholdes. Gjeldende medarbeider/leder kontrolleres på nytt før begge kalenderformater. Nytt vindu åpnes synkront på brukerklikk; opener fjernes straks, og et tomt vindu lukkes ved feil eller foreldet svar. Bare generell møtetittel, dato/tid/varighet og generell applenke sendes til Outlook. Ingen medarbeider, firma, samtale-ID, svar, referat eller kommentar følger nettadressen.
+
+Camillas manglende sendeknapp skyldtes avslått individuell HR-modultilgang; aktiv brukerkonto og valgt nærmeste leder var korrekte. Det er kun lest tilgangsmetadata. Ingen virkelig tilgang, samtale eller e-post er endret/sendttestet i denne runden. UI forklarer nå riktig adminmeny og firmascope når forberedelsesoppgaven mangler, og sier ikke lenger at brukeren skal trykke på en skjult knapp. Sendebetingelser og eksisterende tilgangskontroll beholdes.
+
+Avgrenset scope: samtale-React/CSS, kalenderformatter, Hjelp og relevant runtime/React/docs. Ingen backend, migrasjon, RLS, kontoendring eller annen modul. Tidligere TEST OK og Kenneths bekreftede test-e-post kl.23:11 beholdes. Faktisk innlogget Outlook-lagring/kalendervalg må bekreftes av bruker. QA: faktisk React 83 og samtale/session/kalender/PDF/mail 113 assertions PASS, full critical/build PASS. Eksakt QA/CI/Preview/Production/main → demo-bevis føres i PR.
+
+## Lederpåminnelse, kalender og medarbeiderinnspill – 11. oktober 2026
+
+Kenneths Production-instruksjon kl.22:24 gjelder aktiv leveranse; tillegg kl.22:35–22:36 om egen lederpåminnelse, kalender for begge og e-post ved medarbeiderkommentar er innarbeidet. Invitasjonsknappen fra #226 er allerede publisert. Disse tilleggene får egen avgrenset PR, grønn critical QA/CI og Production-verifisering; ingen innlogget Preview-mailprøve eller mottatt e-post attesteres.
+
+Nærmeste leder velger **Send meg e-postpåminnelse dagen før** i den gjeldende samtalen. Valget lagres straks på serveren, krever gjeldende leder, fersk medarbeider-/samtalerevisjon og et fremtidig gyldig norsk tidspunkt. Det gjelder bare den lederen som valgte det. Utsending skjer 24 timer før, eller snarest før møtet ved senere valg. Avslått valg, leder-/tilgangsbytte, endret tid, ferdig referat eller sletting stopper ventende utsending. Samme avtale varsles én gang. Privat outbox, token og cron gjenbrukes; ingen nye tabeller/innstillinger.
+
+Begge parter har **Varighet i kalenderen** og **Legg til i kalender**. Kalenderfil (.ics) bruker dobbel fersk autorisert serverlesing, lagret tidspunkt i Europe/Oslo konvertert til UTC, stabil samtale-UID og valgt varighet (standard 60 minutter). Bruker åpner filen og bekrefter avtalen i egen kalender. Ved endret tidspunkt må kalenderavtalen oppdateres av bruker. Ingen kalenderkonto tilkobles eller automatisk kalenderbooking. Filen inneholder generell møtetittel og applenke, ingen private innspill/personnavn/firma. Sommer-/vintertid, første gjentatte høstklokkeslett, ugyldig vårklokkeslett, dato, varighet, CRLF/UTF-8-linjebryting og sen tilgangsendring er testet. RFC 5545 brukes for formatet.
+
+Når medarbeideren deler forberedelsen eller lagrer en endret egen kommentar til referatet, får gjeldende HR-leder en generell e-post når transport er aktivert. Private ikke delte forberedelser og lederens egne kommentarer varsler ikke. Nyere usendt innspill erstatter behovet for et eldre usendt varsel. Kommentar/svar leses i appen; ingen tekst/personnavn/firma/diagnose tas med i e-posten. Fersk mottaker, HR-rettighet, aktivt arbeidsforhold, lease og idempotency kontrolleres før provider-kall. Sandbox-mail forblir AV.
+
+Scope: HrConversations/session/CSS, ny kalenderformatter, avgrenset utvidelse av eksisterende HR-mailworker, én migrasjon og HR-QA/Hjelp/docs. To eksisterende funksjoner endres: samtalekommandoens etterlagringsvarsel og eksisterende cron-invoker. Åtte funksjoner legges til; møte-/kommentarinnhold, originale CAS/rolle-/delings-/bekreftelses-/slettekrav og gammel fristworker beholdes. Påminnelsesvalget endrer ingen innholdsbetinget bekreftelse. Ingen meny/Sales/konto/firmaendring.
+
+QA: PostgreSQL 161, faktisk React 63, samtale/session/kalender/PDF/mail 100 og sykefravær/session/PDF/mail 114 assertions PASS. Full critical/build PASS. Faktisk Sandbox rollback-QA 22 PASS, uten network/provider-dispatch. Production får samme kilde-/rollback-/fingerprintkontroll før merge. Eksakt CI/READY/SHA og main → demo-preflight føres i PR. Faktisk mottak i innboks og kalenderimport i brukerens kalender må bekreftes av bruker; ingen virkelig testmail sendes av utvikleren. Tidligere TEST OK beholdes.
+
+## Produksjonspublisering uttrykkelig godkjent – 11. oktober 2026 kl. 22:24 Europe/Oslo
+
+Kenneth: «får ikke testet epost på preview så send det til produksjon». Dette er eksplisitt autorisasjon til Production uten ny innlogget Preview-e-postprøve og overstyrer tidligere prøvekrav for denne invitasjonsendringen. Ingen faktisk invitasjon sendes av utvikleren: bruker klikker Send e-postinvitasjon på sin lagrede samtale når publiseringen er verifisert. Critical QA/CI, Production-migrasjon/worker, publiserte assets og kontrollert main → demo gjennomføres før oppgaven regnes som publisert. Faktisk mottak i innboks bekreftes bare av bruker.
+
+## Bekreftelse og manuell e-postinvitasjon – 11. oktober 2026
+
+Miljømål BEGGE; ny kort Preview-prøve kreves før Production og main → demo. Tidligere TEST OK for klokkeslett/HR/kart beholdes. Etter Opprett samtale lukkes og tømmes opprettingsskjemaet, og Samtalen er opprettet får fokus med lagret dato/klokkeslett og separat app-/e-poststatus. Mistet opprettingssvar gjenbruker samme samtale-ID, også ved intern remount. Samtalen slettes ikke ved feil i e-poststatus.
+
+Nærmeste leder bruker **Send e-postinvitasjon** på en lagret samtale i forberedelse, også en tidligere opprettet samtale. Opprettelse alene sender ingen invitasjon. Medarbeideren får en åpen forberedelsesoppgave på Min side. Invitasjonen har faktisk dato/klokkeslett i norsk tid og forklarer hvordan medarbeideren åpner og deler forberedelsen. Ingen svar, personnavn, firmanavn eller diagnose følger e-posten. Ingen kalenderbooking. Eldre samtale må ha klokkeslett før sending. Gjentatte klikk for samme medarbeider/samtale/dato/klokkeslett bruker samme private leveringsrad og provider-idempotency. Nytt tidspunkt får separat invitasjon; endret tidspunkt/tilgang eller delt forberedelse stopper gammel ventende utsending.
+
+Status skiller disabled/not_queued/pending/sending/sent/failed/suppressed. «Sendt» er provider-aksept lagret på serveren, ikke attestert mottak i innboksen. Sandbox-mail forblir deaktivert; der vises knappen og tydelig avslått-status. Ingen ekte samtale eller virkelig mottaker er endret/sendttestet.
+
+Scope: HrConversations, samtale-session/CSS, HR-forberedelsesoppgave, eksisterende hr-followup-reminders-transport, Hjelp, én additiv migrasjon og relevante QA/docs. Ingen nye tabeller/tokens/cron, ingen andre moduler, navigasjon, kontoer eller firmatilganger. Tre eksisterende HR-funksjoner endres og seks tilgangskontrollerte funksjoner legges til. Fristworker beholder kontortid; eksplisitt invitasjon kan sendes når leder klikker. Ingen Production-endring før relevant TEST OK.
+
+QA: 136 PostgreSQL-assertions, 55 faktiske React-assertions, 81 samtale/session/PDF/slettemail og 94 sykefravær/session/PDF/frist-/invitasjonmail PASS. Eksisterende sykefravær SQL 83 PASS. Faktisk Sandbox rollback-prøve: 31 assertions PASS, uten network/provider-dispatch. Alle ni funksjonskilder matcher migrasjonen. Øvrige funksjoner, policies, triggere, tabeller, profiler, medlemskap, modulrettigheter og beskyttede worker-innstillinger er uendret før/etter. Bare to forventede advisor-notiser for eksplisitt autoriserte authenticated-definer-RPC-er legges til; performance-notiser uendret. Register/Min side og full critical/build verifiseres før publisering. Innlogget brukerprøve, faktisk Production-utsending og mottak i innboks attesteres ikke av disse testene.
+
+Kort brukerprøve på fast Preview: Åpne lagret samtale som nærmeste leder → Send e-postinvitasjon. I Sandbox skal utsending være tydelig avslått. Ved ny samtale skal opprettingsskjemaet lukkes og Samtalen er opprettet vises med tidspunkt. Eksakt CI/READY/SHA og status føres i PR.
+
+## Klokkeslett publisert – godkjent TEST OK 11. oktober 2026
+
+Kenneth TEST OK kl. 21:39 Europe/Oslo godkjenner klokkeslett i medarbeidersamtaler. Feature `03bec590f3bd0396c63fc6b347e33c3428d13a04` er merget i #224 som `eaeb06d475d3134869505c4f12ea56f96c855f2f`. Ready-for-review Core Safety run `38168965204`, job `114557343986`: alle steg SUCCESS. Production `dpl_Aa7RUMwwmsgwuA9HitLEyeidnpWx` READY på https://expo-proffdok.app. Ingen ny innlogget Production-prøve attesteres; Kenneths Preview-prøve og live backend-/assetkontroller er separate bevis.
+
+Nye samtaler krever Klokkeslett i norsk tid; nærmeste leder kan endre dato/tid i forberedelse/felles møte. Tidspunktet vises for begge parter og i PDF. Eldre samtaler har ingen oppdiktet tid. Hjelp er oppdatert. Ingen kalender-/e-postinvitasjon innføres.
+
+Migrasjon `hr_conversation_meeting_time` er installert i Sandbox og Production. 21 faktiske rollback-assertions PASS i hvert miljø; alle tre funksjonskilder matcher eksakt. Bare listekroppen er endret og start_at/schedule lagt til. Øvrige funksjoner, profiler, medlemskap, policies, triggere, modulrettigheter og beskyttede worker-innstillinger er identiske før/etter. QA: PostgreSQL 100, React 44, session/PDF/mail 73, sykefravær 68 samt register/Min side og full critical/build PASS. Fersk PDF visuelt kontrollert. Kontrollert main → demo-synk, gjeldende main-baseline og 24 faktiske Sandbox-preflightpunkter føres i PR #224 etter ferdig publisering. Tidligere TEST OK beholdes.
+
+## Godkjent Production-release #222 – 11. oktober 2026
+
+Kenneths «flott test ok» kl. 20:49 Europe/Oslo godkjenner også logo og midtstilt, tilpasset PDF-tekst. Tidligere TEST OK for HR, firmanavn, felles kart og linjer/lederplassering beholdes. Eldre «venter», «draft» og prøvekrav nedenfor er daterte arbeidsnotater.
+
+Godkjent feature `2d0ae997797f3f737e30778c2d6d4910ff3bedf9` er merget som `e466c5603f745081d00a8964e752bb4f6f76b36b`. Production `dpl_5uuswoKpL4NYvVkMH94Hjrq2eALT` er READY på https://expo-proffdok.app. Obligatorisk Core Safety etter ready-for-review: run `38166319985`, job `114549510315`, alle steg SUCCESS. Ingen ny innlogget Production-prøve attesteres; Kenneths Preview-prøve og utviklernes backend-/assetkontroller er separate bevis.
+
+Alle seks godkjente migrasjoner er installert i Production: sykefraværssaker, fristvarsler, referanseindeks, worker-scope, firmavisningsnavn og felleskart/rekkefølge. 22 + 12 + 36 faktiske rollback-prøver PASS. Alle 23 funksjonskropper matcher godkjent SQL. Bare åtte avtalte eksisterende org-funksjoner er endret; 15 funksjoner og tre private RLS-tabeller er lagt til. Eksisterende policies, triggere, medlemskap, profiler, modulrettigheter og andre worker-innstillinger er uendret. Nye advisor-notiser gjelder tilsiktede private RLS-tabeller uten direkte klienttilgang, tilgangskontrollerte definer-RPC-er og to nye foreløpig ubrukte indekser; ingen nye manglende FK-indekser.
+
+HR-fristworker `hr-followup-reminders` v1 er ACTIVE og aktivert med egen Vault-autentisering og minutt-cron. Utsending skjer i Oslo-kontortid, tre dager før, på frist og ukentlig etterpå for aktuelle åpne oppgaver; endret ansvar/tilgang kontrolleres på nytt. Anonym GET=405/POST=403. Serverautentisert tom-kø-prøve ga 200 `{idle:true}`, uten testmail eller providerkall. Dette er ikke bevis på mottatt fristmail. Tidligere mottatt slettevarsel skal ikke gjentas.
+
+Kenneth, Tom og Kim har hver firmaadmin i de tre avtalte firmaene, med eksisterende kontoer og primærfirma beholdt. KS/HMS er aktivert i Expo Proffsenter. Ingen ny registrering eller invitasjon. Faktiske firmavisningsnavn og organisasjonskart bygges av brukeren i Production; utvikleren har ikke skrevet et virkelig personal-/kartoppsett.
+
+Miljømål BEGGE. Permanent demo synkroniseres kontrollert kun main → demo, med egen Sandbox og bevart overlegg. Kurs-/preflight- og endelig demo-publisering dokumenteres separat på demo-branch og i PR #222. Ingen demoressurs eller syntetisk identitet skal tilbake til main.
+
+## Midtstilt og tilpasset PDF-tekst – 11. oktober 2026
+
+Miljømål **BEGGE**, først samme feature/Preview. Nytt kosmetisk tillegg gjelder organisasjonskartets PDF: firma-/avdelingskort, avdelingsoverskrifter, ledertekst og alle medarbeiderkort har midtstilt tekst. Navn/avdeling bruker inntil 18–20 pt, medarbeidernavn inntil 15 pt og tilhørende tekst inntil 12 pt. Brede/korte tekster vokser til feltets maks; lange tekster reduseres til en lesbar minste størrelse og brytes deretter fullstendig. Kort-/rad-/nivåhøyde beregnes fra faktisk tekst og skriftstørrelse. Rapporteringens eksisterende innrykk beholdes, med tekst sentrert i sitt kort. Logo og ferske profil-/kart-/tilgangskontroller beholdes.
+
+Den gamle PDF-posisjonsprøven forventet tekst på kortets venstrekant +6 mm. Ny forventning er den uendrede midtkortaksen x=210 mm med align=center. Ordens-/linje-/tilgangs-/logoassertions beholdes. Nye faktiske jsPDF-prøver kontrollerer større korte navn, mindre lange navn, full tekstbryting, sentrum/bredde/høyde mot tegnede kort og bevaring av alle medarbeidere/dype grener. Ny brukerprøve er kun **Last ned PDF** og tekst/logo; tidligere godkjente HR-/kart-/tilgangsprøver skal ikke gjentas. Preview/CI-bevis og eksakt SHA føres i PR #222. Ingen ny backendendring. Production/main/demo venter på relevant TEST OK etter AGENTS.md punkt 10.
+
+Faktisk jsPDF med små/store og dype kart PASS: tekstens senter og mål er kontrollert mot faktiske tegnede kort, alle navn/grener beholdes, og flersidige dokumenter beholder logo. Nye PDF-sider med kart, medarbeiderkolonner og smale/dype grener er visuelt kontrollert. Faktisk kart-React, permanente eksisterende guards og full Sandbox critical/build PASS. Dette er utviklerprøver med syntetisk innhold; innlogget ny eksport venter på brukerens korte Preview-prøve.
+
+
+## Firmalogo i organisasjonskartets PDF – 11. oktober 2026
+
+Miljømål **BEGGE**, først samme feature/Preview. Kenneths siste **TEST OK** gjelder linjer og lederplassering og beholdes. Nytt tillegg: **Last ned PDF** bruker eksisterende `work_profile_company_profile` for aktivt firma, også ved felleskart. Logoen gjentas i et hvitt felt øverst på hver A3-side med bevarte proporsjoner. Kartets toppnavn beholdes. Ingen nytt logo-register eller backendendring.
+
+Profilens firma og logo kontrolleres på nytt, og kart-/tilgangskontrollen etter lasting beholdes. Endret logo/firma, navigasjon eller tilbakekalt karttilgang stopper levering. En utilgjengelig logo gir lesbar PDF og en tydelig melding om at logoen mangler. Hjelp beskriver samme kontrakt uten kundespesifikke navn. Ny brukerprøve gjelder bare **Last ned PDF** og logoen; tidligere HR-, kart- og tilgangsprøver skal ikke gjentas. Release av dette nye tillegget venter på relevant Preview-prøve etter AGENTS.md punkt 10.
+
+Faktisk jsPDF med eksisterende Ringside-PNG: logo på alle sider, proporsjoner og headergrenser PASS; ferske PDF-sider er visuelt kontrollert. Endret/fremmed/offline firmaprofil, navigasjon, tilbakekalt tilgang og manglende logo er prøvd. Faktisk kart-React, permanent kart-critical og full Sandbox critical/build PASS. Dette er utviklerprøver med syntetisk kart, ikke en attestasjon av innlogget nedlasting. CI/READY og eksakt publisert SHA føres i PR #222.
+
+
+## Kartets linjer og lederplassering – 11. oktober 2026
+
+Miljømål **BEGGE**, først samme feature/Preview. Kenneth ga **TEST OK** for eksisterende løsning og ba deretter om å fjerne markerte overflødige streker, gjøre forbindelsene tykkere og sentrere ledere. En enkelt gren får bare loddrett forbindelse. Felles tverrlinje stopper på midten av første/siste kort; ingen strek går utenfor grenene. Skjerm bruker 3 px og PDF 0,65 mm. Leder/mellomleder-kort har felles midtakse uten dybdeinnrykk, og navn/stilling er sentrert. Ordinære medarbeideres rapporteringsinnrykk beholdes. Kortrekkefølge, HR-leder, lagring og tilgang følger uendret kontrakt.
+
+Faktisk React med syntetisk RPC, eksisterende kart-critical og full Sandbox critical/build PASS. Faktisk jsPDF/paginering/fersk tilgang PASS; tegnede forbindelser bekrefter én tverrlinje mellom de tre ytteraksene, ingen horisontal strek for Styret alene og felles midtakse for leder/mellomleder. Fersk PDF-side er visuelt kontrollert. Skynettleseren viser innlogging; lokal syntetisk nettleserprøve kunne ikke åpnes, så ingen innlogget/visuell browser-PASS påstås. Tidligere TEST OK beholdes. Ny brukerprøve er kun å se linjene/lederkortene i **KS/HMS → Organisasjonskart**, gjerne også **Last ned PDF**; gamle HR-/tilgangsprøver skal ikke gjentas. Production/main/demo er ennå ikke oppdatert med disse kosmetiske kodeendringene.
+
+Separat, uttrykkelig autorisert Production-tilgang er utført for Kenneth, Tom og Kim: eksisterende kontoer har firmaadmin i Ringside, Bademiljø Expo og Expo Proffsenter. KS/HMS er aktivert for Expo Proffsenter. Alle ni tilganger og appens faktiske kartvalg fra Ringside er kontrollert. Primærfirma Ringside, profiler og andre brukeres medlemskap er bevart. Dette er vanlig firmaadmin, ikke en ny delegert kartrolle. Ingen ny kartadmin-migrasjon, invitasjon eller duplisert konto er laget.
+
+## TEST OK og generell veiledning – 11. oktober 2026 kl. 19:42 Europe/Oslo
+
+Miljømål **BEGGE**. Kenneth har gitt **TEST OK** også for felles lesetilgang og sentrert kart. Tidligere HR/navn/kart-prøver er godkjent og skal ikke gjentas. Spørsmålet om hvem som ser eksemplene avdekket at Ringside-navn var lagt inn i felles veiledning og organisasjonskapittelet i Hjelp uten firmabegrensning. Disse eksemplene er erstattet med generelle navn/nivåer og venstre/midt/høyre. Hjelps oppdateringsdato er satt til 11.10.2026. Ingen kartnavn, avdelingsnavn, firmadata, tilgang eller lagringsflyt endres.
+
+Rettelsen er tekst/placeholder og har ingen ny obligatorisk brukerprøve. Eksisterende faktisk React-kontroll krever nå generisk veiledning og fravær av andre firmas eksempler på et urelatert firmakart; alle eksisterende dataplasserings-/rettighetsprøver beholdes. Brukerens egne kartnavn vises fortsatt fra den autoriserte kartresponsen. Øvrige Hjelp-kapitlers omtale av leverandør/vareregister/produktmerke er utenfor denne kartrettelsen.
+
+## Felles kart og sentrerte grener – 11. oktober 2026
+
+Miljømål **BEGGE**, feature/Preview + Sandbox. Kenneths **TEST OK** på HR, firmavisningsnavn og forrige kartleveranse er registrert og beholdes. Nytt scope gjelder bare kartets felles lesetilgang og plassering.
+
+Ett kart opprettes for de tilknyttede firmaene. **Vis hele kartet for brukere i hvert tilknyttet firma** åpner hele kartet for aktive brukere med KS/HMS i ett tilknyttet firma. Dette er uttrykkelig opt-in: eksisterende kart har uendret begrenset visning. Redigering/opprettelse krever fortsatt firmaadmin og KS/HMS i alle firmaene. Én tilgjengelig delt organisasjon åpnes automatisk; et bevisst valg av firmakart huskes. Ingen HR- eller medlemskapsrettigheter endres.
+
+**Rekkefølge fra venstre** lagres på kortene: Expo Proffsenter 1, Ringside Rørleggerbedrift 2, Bademiljø Expo 3. Alle tre legges under Styret. Like brede grenfelt sentrerer det midterste kortet under Styret/Ringside AS. PDF bruker samme rekkefølge. Hjelp forklarer både oppsett og tilgang.
+
+QA: 36 nye faktiske Sandbox-rollback-assertions PASS, også med én firmatilgang i hvert av de tre firmaene. 340 eksisterende funksjoner uendret; bare de åtte godkjente org-funksjonene endret. Ingen nye security-advisor-funn. Lokal PostgreSQL: 63 + 33 + 64 eksisterende og 36 nye PASS. Faktisk React, faktisk PDF-drawing/fersk tilgang og full Sandbox critical/build PASS. Nettleserinnlogging til flerfirmaflyt er ikke attestert. Ingen aktive kart, Production-innstillinger eller ekte medarbeiderdata er endret.
+
+Fast Preview: https://expo-proffdok-git-fase45c-hr-sickleave-20261011-ringside.vercel.app/?progressTest=safe . Bare ny kartprøve: **Rediger kart → Vis hele kartet … → Lagre kart**, og rekkefølge 1/2/3 via **Rediger / flytt → Bruk endring → Lagre kart**. Kontroller samme felleskart med en konto som har bare ett tilknyttet firma. Tidligere HR/navn/mail-prøver gjentas ikke. [Kontrakt og QA](ORGANIZATION_SHARED_20261011.md).
+
+## Ny Preview: HR-oppfølging, firmavisningsnavn og organisasjonskart – 11. oktober 2026
+
+Miljømål **BEGGE**. Draft PR #222 viderefører sykefraværsoppfølging og ansvarliges HR-frister. Kenneth ba også om redigerbart firmanavn, Ringside AS øverst, Styret med daglig leder/driftssjef/andre stillinger og tre underavdelinger. Firmaprofil får **Endre firmanavn → Lagre firmanavn**. Stabil firma-ID, medlemskap, kontakter og historiske dokumenter beholdes. Prosjektlisten bruker firma-ID for å tåle navnebytte. Karttopp og avdelingsnavn lagres separat med **Rediger kart → Lagre kart**; lederplasseringer vises også på lukkede kort.
+
+**Hjelp er oppdatert i denne Preview**, med egne A–Å-kapitler for medarbeidersamtale og sykefravær. Nytt felles kart krever firmaadmin og KS/HMS i minst to registrerte firmaer. Kenneth har ett kvalifisert firma i Production; tre underavdelinger kan bygges i firmakartet. Personnavn krever aktive registrerte appbrukere; kartstillinger gir ikke HR-tilgang.
+
+Full Sandbox/Production critical/build PASS. Navn: 22 DB + 14 faktiske React + 11 prosjektidentitetsprøver PASS, berørte kart-React PASS. 12 faktiske Sandbox-rollback-kontroller inkludert prosjekt-trigger/RLS PASS; fixtures rullet tilbake. Skynettleseren viste innlogging, så ingen ny innlogget browserprøve påstås. Production-navn og kart er ikke endret. Tidligere TEST OK og mottatt slettevarsel beholdes; ingen gamle tester eller mail skal gjentas.
+
+Fast Preview: https://expo-proffdok-git-fase45c-hr-sickleave-20261011-ringside.vercel.app/?progressTest=safe . Ny, kort prøve: åpne **Firmaprofil**, prøv navneknappene i Sandbox; åpne **KS/HMS → Organisasjonskart**, les opprettelsesvilkåret og kontroller lederstillinger; åpne **Hjelp → HR** og de to nye kapitlene. Personlig sykefravær prøves bare med syntetisk innhold og riktig leder/medarbeider. Kenneths Hotmail-testkonto finnes bare i Production og skal ikke kopieres. Relevant ny **TEST OK** følger AGENTS.md før merge/Production; dette er ikke omtest av #220. Scope, arbeidsflyt, brukerprøve og bevis: [HR_SICK_LEAVE_CASES_20261011.md](HR_SICK_LEAVE_CASES_20261011.md).
+
+## Gjeldende HR-release – 11. oktober 2026
+
+Kenneth fylte ut egen post og ga **TEST OK 11. oktober kl. 17:10 Europe/Oslo** for PR #220. Godkjenningen er fullført; gamle testkrav nedenfor er historikk og skal ikke gjentas. PR #220 er merget til main **6b557c71f97cfecd7114b61883c964a3aaa88c25**. Production **dpl_99mBYYt27bMJiSZ4KSyPcGVTB9Ad READY** på expo-proffdok.app er kontrollert innlogget som Kenneth: Startside, eksisterende meny og HR laster.
+
+**HR-kontakt og individuelle medarbeidersamtaler er åpne i Production**, med versjoner, medarbeiderens private forberedelse, uttrykkelig deling, leders møtereferat, personlige bekreftelser og PDF. Systemadministrator får et minimalt varsel når arbeidsforhold avsluttes. HR-varselmail er aktiv. Ringside må selv fylle ut formål, behandlingsgrunnlag og kontrollfrist under HR → Oppsett og kontrollfrist og aktivere sitt register før virkelige medarbeidere legges til. Ingen reelle personalposter er opprettet av agenten.
+
+Den godkjente leveransen bruker eksisterende Supabase. Ingen ny betalt ressurs. Automatisk ekstern sletteloggbok i draft #217 er separat og ikke aktivert. Individuelle sykefraværsplaner og HR-filopplasting er ikke levert i #220. Restore krever manuell lukket rutine beskrevet i [HR_CONVERSATIONS_20261011.md](HR_CONVERSATIONS_20261011.md); fysisk PGlite-restore er ikke attestasjon av managed cloud-restore.
+
+Production: begge migrasjoner og hr-deletion-alerts-worker er installert og lest tilbake mot godkjent kilde/ACL/search_path. Alle 17 nye funksjoner matcher. De beskyttede eksisterende funksjonene, RLS-policyene og triggerne har identiske før/etter-fingeravtrykk. 32 nye rollback-kontroller PASS; syntetiske SQL-fixtures er borte. Core Safety **38150427087 / 114502564630 SUCCESS**. Servertransport gir HTTP 200. Én autorisert syntetisk testmail til **kenneth@ringside.no** er godkjent av Resend (sent, ett forsøk); mottak i innboks er ikke uavhengig attestert. Ingen virkelig medarbeider ble avsluttet. Den syntetiske varsel-/leveringsraden beholdes i audit og er markert lest; ingen ventende jobb.
+
+Miljømål **BEGGE**. Kontrollert main → demo følger samme godkjente funksjon. Sandbox-kurskontrakten er bevisst oppdatert fra stengt samtaleport til åpne samtaler, med separat kontroll av begge avslåtte e-posttransportene og syntetisk medarbeider/leder. 19 eksisterende demokontroller + 4 kurskontroller PASS, ny negativ rollback-QA og faktisk samtale-React (38 assertions) PASS. Demoens fiktive møtekladd har ingen forhåndsbekreftelser. Eksisterende kontaktutfylling beholdes. Endelig demo-head/deploy føres i demoens releaseavslutning og PR #220. Demo-overlay og syntetiske migrasjoner skal aldri til main.
+
+## Rettet HR-prøveflyt – 11. oktober 2026
+
+Kenneth meldte behov for scrolling ved neste steg og tap av åpen samtale etter PDF. Neste steg fokuseres og rulles til starten. Etter tilgangskontroll/PDF-retur gjenåpnes samme lagrede samtale, utgave og fane fra scoped navigasjon i denne nettleserfanen. Ny/lukk/slett respekteres. Faktisk React og Chromium-regresjon PASS; PDF-format og beskyttet kjerne uendret. Publiseres på samme PR #218 / faste Preview, uten ny godkjenningsrunde for tidligere områder. [Bevis](HR_PRACTICE_20261011.md).
+
+## HR-prøvesamtale i eksisterende Sandbox – 11. oktober 2026
+
+Ny isolert branch `fase45b-hr-conversation-practice-20261011` fra ren main. Brukeren kan prøve eksempeltekster, fire samtalesteg, lokal lagring/gjenåpning og PDF med egen konto. Ingen nye nøkler eller testmiljøer. Production viser ikke prøveflaten. Personlig HR forblir stengt. Tidligere ledger/workerarbeid står separat i draft PR #217.
+
+Ny faktisk React-/Chromium-/PDF-/samtidighetskontroll, berørte eksisterende HR-flyter og full Sandbox/Production critical/build PASS. Bare ny kort vurdering av arbeidsflyten gjenstår hos Kenneth. Ingen gammel godkjenning eller testmail skal gjentas. [Scope, bevis og grenser](HR_PRACTICE_20261011.md).
+
+Kanonisk main/Production er `c3d873e0e5bd2677f0205143de6edc1fbd95ae4c` (READY), demo `11f1b45dac4daa08efc850ba87ad5e28522dad4c`. Ingen merge eller endring av disse i denne leveransen. Eldre daterte avsnitt nedenfor er historikk, ikke nye utestående krav.
+
+## HR: samtalemaler i menyen og sykefraværsoppsett – 10. oktober 2026
+
+## Ny separat core-retting: samme visning – 11. oktober 2026
+
+Branch `fase45b-core-navigation-resume-20261011` fra main `c3d873e0`; miljømål **BEGGE**. Avdekking og gjentakbare tester viste at HR-registerets valgte ID forsvant ved fokus/remount, KS/HMS husket bare organisasjonsfanen, Min side mistet Les og bekreft, og dokumentuttrekk mistet omfang/kurv ved internt fanebytte. Rettelsen bevarer avgrenset navigasjon gjennom fersk tilgang, og bevarer uttrekksarbeidsflaten skjult med eksplisitt avbrudd. PR #218/samtaleøvelsen forblir separat. Se [scope, permanent React-test og kort prøve](NAVIGATION_RECOVERY_20261011.md). Ingen main/demo/DB/mail-endring utført; TEST OK/merge gjenstår.
+
+**Åpne samtalemaler** og **Åpne sykefravær** ligger i HR-snarveiene øverst. Firmaadmin kan klargjøre en generell sykefraværsmal med 11 spørsmål om arbeid, kontakt, tilrettelegging og oppfølging. Eksisterende admin-/firmagater, utgaver, CAS og kladdbevaring gjelder. Fristveiledning med NHO/NAV-kilder og et avgrenset regneeksempel for 4/7/8/26 uker; fullt og gradert fravær forklares ulikt. Ingen personlig sak, fraværsdata, påminnelse eller innsending opprettes.
+
+**94 faktiske Sandbox-rollback-assertions og 94 PostgreSQL/PGlite-assertions PASS**, berørte faktiske mal-/register-/Hjelp-React-prøver og full critical/build PASS. Ingen nye sikkerhetsråd ved sammenligning uten observasjonstidsstempler. Privat innhold forblir stengt med restore quarantine. Miljømål BEGGE, levering bare feature/Preview/Sandbox. Tidligere TEST OK består. [Scope, kilder, leveranse og grenser](HR_SICK_LEAVE_SETUP_20261010.md).
+
+## HR: tydelig hjelp der du arbeider – 10. oktober 2026
+
+Synlig **Start her** viser oppsett → medarbeider/leder → samtalemal for firmaadmin, og relevant lesehjelp for leder/personlig bruker. Malbyggeren forklarer velg → tilpass → forhåndsvis/lagre, navn/tema/spørsmål, forberedelse/felles møte, kladd/Forkast og utgave/arkiv. En lagret mal starter ingen samtale og sender ingenting til ansatte. Bare presentasjon/hjelp; handlinger, roller, SQL og privat innholdsport beholdes.
+
+Berørte faktiske HR-/mal-/Hjelp-React-prøver og full Sandbox critical/build PASS. Eksisterende tester beholdt uten nye speiltester. Miljømål BEGGE, bare feature/Preview; tidligere TEST OK beholdes. [Scope og bevis](HR_HELP_20261010.md). CI/innlogget visuell Preview kontrolleres etter publisering.
+
+## HR: versjonerte samtalemaler – 10. oktober 2026
+
+Firmaadmin får **HR → Samtalemaler**: årlig medarbeidersamtale, prøvetid og oppfølging, egne tema/spørsmål, medarbeiderforberedelse/felles møte, forhåndsvisning og tydelig **Lagre mal**. Immutable malutgaver, historikk, gjenbruk som ny kladd, arkivering/gjenåpning, paginering og avvisning av samtidige revisjoner. Kladd beholdes i midlertidig aktør-/firmabundet minne over fokus/remount, først etter fersk admin-tilgang. Ingen ansattes svar, personreferater, signaturer eller fraværsinnhold åpnes.
+
+**91 nye faktiske rollback Sandbox-assertions PASS**, samme 91 i fysisk PostgreSQL/PGlite med syntetisk plattformadapter. Faktisk ny mal-React og berørt HR/register/KS-meny/Hjelp-React PASS; permanent critical og full Sandbox build PASS. Fem live funksjonskropper matcher lokale MD5-er, tomt search_path og riktige ACL. Sandbox-migrasjon **20261010005833**, CLI **20261010004928**. Eksisterende 1 HR-firma/1 medarbeider beholdt; 0 aktive utviklermaler/utgaver/artifacts/filer/receipts. Privat innhold fortsatt content=false/restore quarantined. Første live prøving ble korrekt avvist av eksisterende profile-guard under endring av egen syntetisk aktør; fixtureoppsettet ble korrigert til eksisterende systemaktør, uten endret guard eller produktkode. Hele første prøve rullet tilbake.
+
+Miljømål **BEGGE**, bare feature/Preview/Sandbox, draft PR #216. Tidligere O3/B/C/PDF/ZIP og Kenneth TEST OK beholdes; ingen Production/main/demo/e-post. Uavhengig varig manifest/automatisk eksport og DB-ack/full isolert Supabase database- og Storage-restore gjenstår før privat HR-kontakt og individuelle samtaler/fravær åpnes. [Scope, kontrakt og nye bevis](HR_TEMPLATES_20261010.md).
+
+**Faktisk mal-Preview-kontroll:** kode `70f12015b616e8e9b4c6e0efc06d82ab4e6df1ef`, Core Safety **38011669656 / jobb 114092844672 SUCCESS**, `dpl_6QTL7UM5H55ek25V7mrsqkEdyPys` READY med eksakt SHA/ref/prosjekt/fast alias. Direkte branch-env `EXPO_BACKEND_TARGET=sandbox`. Innlogget desktop: HR/admin, tre forslag, generisk kladd/redigering, tom forhåndsvisning, dirty bytte/Behold kladden, Oppdater maler med bevart kladd og Forkast PASS. Ingen testmal lagret. Ingen horisontal overflow; Lagre mal 44px. Lagret historikk/arkiv/CAS har SQL og React-bevis; mobil og separate samtidige browserøkter gjenstår. [Originalbilde og presise bevis](HR_TEMPLATES_20261010.md#faktisk-innlogget-preview-og-kodepublisering).
+
+**Faktisk O3 Preview-kontroll:** kode d4b5270e916dc06a764fbd35af36a8db6f238470, Core Safety 38009716896/jobb114086648809 SUCCESS, dpl_GKkbK6sdQd5si4yqYpeEd44NomJx READY eksakt SHA/Sandbox. Innlogget Skynett: ny kartvelger/bevart enkeltfirmakart/fokusretur/PDF to sider/fire demonavn PASS. Nytt felles kart er riktig skjult for demo uten to kvalifiserte firmaer; flerfirmahandlinger har SQL/React-bevis, ikke nytt browserbevis. Ingen aktiv rettighets-/kartendring. [Originalbilde og presise bevis](ORGANIZATION_GROUPS_20261010.md#faktisk-innlogget-preview-og-kodepublisering).
+
+## Organisasjonskart O3 – felles kart for flere firmaer, 10. oktober 2026
+
+Miljømål **BEGGE**, leveres bare feature/Preview og Sandbox. Et separat felles organisasjonskart kan knytte **2–10 firmaer** sammen. Én brukerkonto kan ha forskjellig stilling og plassering i hver firmagren. Opprettelse lager Styret og sideordnede firmagrener; toppnavn og struktur kan redigeres med **Lagre kart**, og hele kartet kan slettes med uttrykkelig bekreftelse. Firmautvalget er fast i denne første versjonen. Eksisterende firmakart, brukere og HR beholdes.
+
+**Hele felleskartet krever fersk KS/HMS i alle firmaene; redigering krever firmaadmin i alle.** En kartleder gir ingen ekstra redigering eller HR-innsyn. En bruker med ett firma ser sitt vanlige firmakart. Firmamedlemskap, avsluttet arbeidsforhold, tilbakekalling, firmagrense og revisjon kontrolleres på serveren ved hver handling. Ingen automatisk konto-/medlemskapsopprettelse eller modulaktivering.
+
+**64 nye faktiske rollback Sandbox-assertions PASS**; fysisk PostgreSQL/PGlite **63 + 33 + 64 PASS**, faktiske nye/berørte React-flyter, permanent critical og full Sandbox build PASS. Felles PDF: **49 syntetiske personer / 51 firmaplasseringer / fire A3-sider**, alle tekst- og visuelt kontrollert. Samme person har tre ulike stillinger i tre firmaer. Dette er utviklerbevis, ikke nytt innlogget flerfirma-browserbevis. Sandbox-migrasjon **20261010002710** (CLI 20261010001921), ni live funksjonskropper/ACL/tomt search_path verifisert mot kilden. Ingen aktive felleskart opprettet, rettigheter utvidet eller HR-innhold åpnet.
+
+[Scope, knapper, sikkerhetsprøver og presise bevis](ORGANIZATION_GROUPS_20261010.md). Kenneths tidligere TEST OK/B/C/PDF/ZIP/SJA-bevis beholdes uten gjentatt omtest. Ingen main/demo/Production eller e-post. Privat HR-kontakt/samtale/fravær fortsatt stengt; uavhengig driftsmanifest/ack og isolert Supabase-restore gjenstår før åpning. Mobil, separate samtidige browserøkter og belastningstest på isolert database gjenstår som egne bevis.
+
+**Faktisk O2 Preview-kontroll:** kode 512860dcfd8e2753789b97790e682a8003b10de9, Core Safety 38007754728 / jobb 114080388321 SUCCESS; dpl_3Z5PxtjxnXpi9P6geUP1iJuiKUSq READY på eksakt SHA/Sandbox. Skynett: synlig Lagre kart/Rediger/flytt/Slett, lokal flytte-/slettekladd, fokusretur og Forkast PASS; ingen aktiv struktur/tilgang lagret eller slettet. Faktisk tosidig PDF med alle fire demonavn kontrollert. Desktop noe vertikal scrolling, mobil/separate økter ikke påstått. [Originalbilder, eksakt bevis og avgrensninger](ORGANIZATION_EDITOR_20261010.md#faktisk-innlogget-preview-kontroll). Felles tre-firma-kart med én konto per person gjenstår som neste avgrensede scope før Ringsides Production-kart.
+
+## Organisasjonskart O2: tydelig lagring og struktur – 10. oktober 2026
+
+**Vis kart / Rediger kart**, frie toppnavn og nivåer. Firmaadmin kladder strukturen med synlige **Rediger / flytt / Slett**, deretter **Lagre kart**. Sletting forklares og flytter personer til Ikke plassert, med bevart stilling/nærmeste leder/HR. Tre like grener vises ved siden av hverandre under felles forelder; stor innvendig boksnesting er fjernet. Medarbeidere lagres separat etter strukturen. Faktiske Sandbox **33 nye + 63 berørte assertions PASS**, React/HR-Hjelp og fire syntetiske PDF-sider kontrollert. Kladd/fokus/remount/konflikt og fersk tilgang beholdes. Bare feature/Preview/Sandbox; brukerens to eksisterende testkort og plassering er ikke flyttet/slettet.
+
+**Nytt krav før deres Production-kart:** ett Ringside-konsernkart med uttrykkelige koblinger til tre firmaer og én konto per bruker, også ved flere firmatilganger/roller. Dagens valgte-firma-RPC samler ikke firmabrukere på tvers. Flerfirma-kartet er eget neste scope; HR fortsatt separat per firma/person. Ingen Production/main/demo/e-post eller generell tilgangsutvidelse. [Avklart O2-scope, bevis og knapper](ORGANIZATION_EDITOR_20261010.md). Tidligere TEST OK og B/C-bevis beholdes.
+
+## Organisasjonskart under KS/HMS – 10. oktober 2026
+
+Kenneth plasserer byggeren under **KS/HMS**, tilgjengelig også uten HR-avtale. Avdelinger/underavdelinger, frie stillinger, ledere/mellomledere/ansatte/lærlinger, søk/filter/zoom og egen PDF. Firmaadmin bygger hele kartet; avdelingsledere sin gren; kartroller gir ingen automatisk HR-innsyn. Nærmeste leder deles kontrollert med eksisterende HR-register etter uttrykkelig firmaadminbekreftelse.
+
+**63 nye faktiske rollback Sandbox SQL assertions PASS**, berørte H1/H3 **75/61 PASS**, faktisk ny/berørt React PASS, tre syntetiske PDF-sider med 48 medarbeidere visuelt kontrollert og ferske eksportavslag PASS. H3 fant og fikk rettet en konkret trigger-scope-regresjon uten svekket prøve. 8 live funksjoner byteidentiske/ACL/tomt search_path. Privat HR fortsatt stengt; ingen mail/main/demo/Production. Full critical/build og eksakt publiseringsbevis føres i draft PR #216. Tidligere Kenneth TEST OK og B/C/PDF/ZIP-bevis beholdes. [Avklart scope, prøver, PDF og nye brukerknapper](ORGANIZATION_SCOPE_20261010.md).
+
+**Faktisk publisert og innlogget kontroll:** kode **0b638fc27d0b987cb61a54fc439727b4d03b5325**, Core Safety **38005156679 / 114072124333 SUCCESS**, **dpl_76xSBAeGxpsS2Q2W37X7BYJVVoZ7 READY** eksakt SHA/Sandbox. Skynett viser kartet under KS/HMS, fire aktive demobrukere, kompakt avdelingsdialog og bevart kart ved fokusretur. Faktisk PDF-nedlasting (én A3-side, fire navn) tekst- og visuelt kontrollert. Ingen data/rettigheter lagret; desktop har fortsatt noe vertikal scrolling. Originalbilder og presise grenser i [sluttbeviset](ORGANIZATION_SCOPE_20261010.md#faktisk-innlogget-preview-kontroll). Siste dokumentasjons-head/CI/Preview føres i draft PR #216; kode uendret.
+
+
+## HR H5a og godkjent KS/HMS-/HR-layout – 10. oktober 2026
+
+Kenneths «kjempefint, takk. kjør videre» er registrert som **TEST OK for levert KS/HMS-/HR-layout**. Varig ønske om senere vurdering av samme utforming i hele appen beholdes. Ingen ny layout-/B/C-/PDF-/ZIP-omtest kreves.
+
+Privat ekstern slettemanifest-adapter er levert som **avgrenset operatorverktøy**: uavhengig anker, HMAC-/prosjekt-/lager-/tokenbinding, fersk lesing, ETag-konfliktvern og fersk verifisert readback. **38 permanente syntetiske scenarioer**, faktisk **@vercel/blob 2.8.1 med syntetisk HTTP/nettverk deaktivert**, berørt H4 og full Sandbox critical/build PASS. **Faktisk opprettelse av privat Vercel-lager avvist med 403 forbidden; intet lager opprettet eller cloud-PASS påstått.** Automatisk eksport/DB-ack og full isolert Supabase-restore gjenstår. Lesende Sandbox: content=false/quarantined=true, 1 firma/medarbeider, 0 innhold/filer/receipts. Ingen app-/database-/gate-endring, privat HR fortsatt stengt. Bare feature/Preview/Sandbox, draft PR #216; ingen merge/Production/e-post. [Scope, operatorløp, bevis og konkret blokkering](HR_CLOUD_LEDGER_20261010.md).
+
+## KS/HMS og HR: Min side-stilen videreført – 10. oktober 2026
+
+Kenneths «waowh, kjempebra» er registrert som **TEST OK for Min sides visuelle retning**. Samme petrolfargede toppfelt, ikoner og kortstil er nå ført videre til KS/HMS/HR innen eksisterende rettigheter. KS-navigasjonens flyt beholdes; HR får relevante snarveier og registeret foran oppsett. Berørte faktiske React-prøver, permanent HR-navigation-critical og full Sandbox build PASS. **Faktisk innlogget desktopkontroll PASS** på kode **427f0d2efb18de0f4806ca2cb0a2ed819cce89a0**, Core Safety **38000225285** / jobb **114056229607 SUCCESS**, **dpl_7qqUJk9xm3ChJsV5DQzwSp9Uqxun READY** eksakt SHA/Sandbox. Kontrast, ikoner, ordbrudd og tre HR-snarveier kontrollert; originalbilder lagret. HR-høyden redusert etter konkret visuell retting, fortsatt noe vertikal scrolling. Ingen data/rettigheter lagret i browseren. Ingen backend eller privat innholdsport endret, tidligere TEST OK beholdes. [Avgrenset scope/bevis](MODULE_LAYOUT_20261010.md). [Varig designretning: vurder senere i hele appen](../architecture/UX_DIRECTION_20261010.md).
+
+### Min side: faktisk ny utforming kontrollert
+
+Kode **5e2be88b1bee67963027ddd9d578fe7de2a20d4d**, Core Safety **37997879229** / jobb **114048436996 SUCCESS**, **dpl_3cam6F9TVUS2nqHWebsRm4ZHGX6L READY** eksakt SHA/Sandbox. Innlogget Skynett: velkomst/tre kort og kompakt egen HR uten scrolling ved 1363×936, hvit overskrift, egen detalj/fokusretur, bevart profil/rapport/e-post og fortsatt lukket privat kontaktport PASS. Første kontrastfeil funnet og rettet før sluttkontroll. F6/Escape er konkret browser-fokusprøve; Windows screenshotverktøy/mobil/separate kontoer ikke påstått. Ingen data/rettigheter lagret. [To originale skjermbilder og eksakt bevis](PERSONAL_UX_20261010.md#faktisk-innlogget-sluttkontroll). Tidligere TEST OK beholdes.
+
+## Min side: mer personlig og stabil ved faneretur – 10. oktober 2026
+
+Personlig velkomst, tre tydeligere kort og kompakt egen/delt HR-visning. Valgt fane/oppførings-ID beholdes ved screenshot/fokus, mens gamle HR-data fortsatt fjernes og først kommer tilbake etter fersk listetilgang/dobbel get. Ingen privat innholdsport eller database endret. Faktiske nye og berørte React-/critical-prøver samt full Sandbox build PASS. Bare feature/Preview; tidligere Kenneth TEST OK beholdes. [Scope, rotårsak, sikkerhetskontrakt og aktuelt bevis](PERSONAL_UX_20261010.md). Publisert SHA/CI/Preview føres i draft PR #216.
+
+### Min side: faktisk Preview verifisert
+
+Rettet kode **45051f8e4713f6351633d216c6a7912bdd64246c**, Core Safety **37995676186** / jobb **114040989598 SUCCESS**, Preview **dpl_3ACVRT1SreEnRNBZDLQM9Z9kQikq READY** på eksakt SHA/Sandbox. Innlogget Skynett-desktop: tre kort uten scrolling ved 1363×936, kompakt profil/eksisterende e-postvalg, faktisk personlig håndbok (10 rutiner), egen HR uten forvaltning, og HRs to tekstkolonner/forslag/Behold min tekst/datosnarvalg PASS. Oppstartsfeil ved null auth-kontekst funnet og rettet med permanent kritisk/React-prøve. Ingen kontoprofil, HR-oppsett eller rettighet lagret; prøvedato ikke lagret, faktisk kontrollfrist fortsatt 23.10.2026. Én fane/popup lukket. Private kontaktverdier fortsatt stengt; ikke faktisk pårørendeskrive-/mobil-/flerkonto-/cloud-restore-bevis. [Eksakt kontroll, originale bilder og grenser](PERSONAL_PAGE_20261009.md#faktisk-innlogget-preview-kontroll-etter-oppstartsretting). Tidligere TEST OK beholdes.
+
+## Min side og kompakt HR-oppsett – 9. oktober 2026
+
+**Min side** når firmaet har KS/HMS **eller** HR; personlige rettigheter styrer innholdet. Tre kompakte kort, personlig håndbok, egne/uttrykkelig delte HR-registeroppføringer og profil/e-postvalg. Hovedvalget HR vises bare for firmaadmin/registrert leder og viser firma/tildelt team. Fullt navn/mobil kan lagres i egen eksisterende kontoprofil; e-post er lesbar konto-adresse. Privat adresse/pårørende er bygget bak **fortsatt lukket innholdsport**; leder/firmaadmin/uttrykkelig leser kan lese ved senere åpning, egen medarbeider redigerer. Ingen pårørende samles/lagres nå. HR-oppsett har eksplisitte tekstforslag og 3-/6-måneders kontrollfristvalg. **59 nye faktiske rollback SQL assertions**, faktisk ny og berørt React, permanent critical/full build PASS. Fem live funksjoner byteidentiske/ACL/tomt search_path, faktisk Sandbox-migrasjon **20261009214042**; 1 HR-firma/medarbeider beholdt, 0 innhold/filer/fixtures og content=false/restore quarantined. Varig ekstern driftsbinding/ack og full Supabase-cloud-restore gjenstår før private kontakt-/samtale-/fraværsdata. Bare feature/Preview/Sandbox, tidligere TEST OK beholdes. [Scope, kontaktkontrakt, bevis og prøve](PERSONAL_PAGE_20261009.md). Eksakt publisering/CI/Preview føres i draft PR #216.
+
+## HR H4 – manifestverktøy og isolert fysisk restore, 9. oktober 2026
+
+HR ser foreløpig tom ut fordi bare medarbeider-/leder-/leserregisteret er åpnet. Samtalereferater, egne forberedelser, sykefraværsoppfølging og private vedlegg er kommende innhold. H4 gir privat HMAC-/prosjektbundet operator-manifest med holdbar skriving og komplette snapshots, samt konkret retting av orphan-filer ved restore uten medarbeiderrad. **39 lokale fysiske PostgreSQL-/filrestore-kontroller PASS**, **11 nye Sandbox-assertions og berørte H3 61 PASS**, permanent critical/full build PASS. Dette er fysisk PGlite-restore og lokale faktiske bytefiler, **ikke full Supabase-cloud-restore**. Varig ekstern driftsbinding/ack og full isolert Supabase-restore gjenstår; sensitivt innhold fortsatt stengt. 1 eksisterende HR-firma/medarbeider beholdt. Ingen UI-/B/C-omtest, e-post, merge eller Production. [Scope, bevis, operatorløp og grenser](HR_RESTORE_LEDGER_20261009.md). Neste synlige produktdel er medarbeidersamtalen etter gjenstående åpningskrav. Tidligere TEST OK beholdes.
+
+## Hjelp: håndbok først og anbefalt HR-bruk – 9. oktober 2026
+
+### Endelig Preview-kontroll av Hjelp og tilgang
+
+Kode **b5d71aabf4eb461bfe8b5649e83a1db50a2d12dc**, Core Safety **37990397400 SUCCESS**, Preview **dpl_4tq9kauNxRxoQyfQhuLkSkHYduuZ READY**, eksakt SHA og Sandbox. Faktisk innlogget desktop: 34 Hjelp-punkter med ikon/riktig flyt, firmaaktivering og fire eksisterende brukerkort PASS. Lokal checkbox-layout og «Lagre og lukk»-integrasjon rettet; faktiske beregnede mål/visuell kontroll PASS. Browseren endret ingen rettigheter eller HR-personer; popup lukket. SQL/React tester tildeling og negative roller separat. [Originale bevis og detaljert scope](HELP_ACCESS_20261009.md#endelig-faktisk-desktopkontroll). Ingen ny B/C-omtest, mail eller merge.
+
+## Hjelp og moduladgang på brukerkort – 9. oktober 2026
+
+Alle hjelpepunkter har ikon, og rekkefølgen følger arbeidsflyten. KS/HMS og HR filtreres med egne ferske rettigheter; øvrig modulhjelp følger også tildeling. Systemadmin aktiverer KS/HMS/HR i firmaoversikten; firmaadmin/systemadmin gir individuelle valg på eksisterende brukerkort. HR-modultilgang gir ikke automatisk individuelt HR-innsyn. **38 nye faktiske SQL assertions PASS**, berørte H1/H2/H3 **75/16/61 PASS**, faktisk React/DOM og full Sandbox critical/build PASS. Eksisterende 1 HR-firma/1 medarbeider beholdt; innhold stengt og restore quarantined. Bare feature/Sandbox, ingen mail/merge/Production. [Scope, vei til tilgang og bevis](HELP_ACCESS_20261009.md). Publisert eksakt SHA, CI og Preview føres i draft PR #216.
+
+
+Kenneths avgrensede rettelser: **Bygg firmaets håndbok** er første KS/HMS-kapittel; **Anbefalt bruk** under HR har tre konkrete råd. Faktisk React-prøve for første kapittel, bevart kildeforslagsflyt og ikke-tom HR-anbefaling PASS; eksisterende HR/Hjelp-critical PASS. Faktisk innlogget Skynett-Hjelp PASS på kode-SHA `5b6bcfa793f5fea4e4202057aa119bdc2a768d2b`: håndbok først/åpning og tre synlige HR-råd. Core Safety 37986453053 / jobb 114009533221 SUCCESS; Vercel `dpl_EV4CySfApys2RqoFbJ7wVVPLeZG4` READY, eksakt SHA og Sandbox-binding. Originale skjermbilder lagret. Bare hjelpeinnhold/prøve/status endret. HR-portene og neste manifest/restore-scope består. Tidligere tester/TEST OK beholdes. [Scope, QA og sluttbevis](HELP_ORDER_20261009.md).
+
+## Faktisk Hjelp-Preview kontrollert – 9. oktober 2026
+
+Ett KS/HMS-punkt med 11 kapitler og ett HR-punkt, riktig åpning/bytte/innhold og oppdateringsdato **09.10.2026** sett i én eksisterende innlogget Skynett-fane. Ingen HR-data endret. Kode-SHA `dd511f7577baa145836bfdb23bdcae283f1fa866`; Core Safety 37985178018 / jobb 114005274294 SUCCESS; Vercel `dpl_Dyv4mSiaEWNEi18BbidjqhXCcerD` READY Preview på eksakt SHA og Sandbox-binding. [Originalt skjermbevis og H3-kontrakt](HR_PURGE_FILES_20261009.md#faktisk-innlogget-hjelp-kontroll-etter-publisering). Historiske tester/TEST OK beholdes. Sensitivt HR-innhold fortsatt stengt; uavhengig manifest og full isolert restore gjenstår.
+
+## H3 og samlet Hjelp – 9. oktober 2026
+
+Miljømål **BEGGE**, bare feature/Preview og Sandbox, draft PR #216. Hjelp har nå ett **KS/HMS**-punkt med 11 kapitler og ett **HR**-punkt; tidligere hjelpeinnhold beholdes. HR-slettefundamentet omfatter registrert innhold, versjoner, kladder, søkeuttrekk, eksporter og private filer. Tilgang sperres straks; **Slettekvitteringer** viser pågående filsletting og ferdig sletting korrekt.
+
+**61 nye faktiske Sandbox-assertions PASS**, faktisk privat Storage-opplasting/hashkontroll/API-sletting av én syntetisk 62-bytes fil PASS, faktisk HR/Hjelp-React og full critical build PASS. Alle 16 live SQL-funksjoner og Edge v3 er lest tilbake mot kilden. Sensitivt HR-innhold og filnedlasting er fortsatt stengt, både i databasen og i Edge-koden. Uavhengig slettemanifest og full isolert backup-restore er neste sikkerhetsbevis før åpning. Sandbox har nå én firmaoppføring og én medarbeider; eksisterende oppføring beholdes, ingen sensitive data eller testrester finnes. Ingen e-post, merge eller Production. Kenneths **TEST OK for H2-menyen** er mottatt; eldre B/C/PDF/ZIP-bevis beholdes. [Scope, kontrakt og QA](HR_PURGE_FILES_20261009.md).
+
+## HR-register og smartere KS/HMS-meny – 9. oktober 2026
+
+Miljømål **BEGGE**, levering bare feature/Preview/Sandbox, draft PR #216. H2 gir eget HR-hovedvalg med firmaadmins medarbeider-/leder-/leserregister og medarbeiderens Mine oppfølginger. HR har fortsatt ingen samtale-/fraværsinnhold, filer eller eksport; full innholdspurge/restore må leveres før sensitivt innhold åpnes. Ingen firma aktivert av leveransen. KS/HMS-menyen er gruppert i Daglig arbeid, Mine rutiner og Forvaltning; eksisterende faner, snarveier og utkastbevaring beholdes.
+
+**16 nye faktiske Sandbox-assertions PASS**, faktisk HR/meny-React og berørt håndbok/kildeforslag-React PASS, permanent hook/tilgang/revisjon/late-response-prøve og full critical build PASS. Fem HR-FK-indekser forbedrer slettestien. Skynettleseren fungerer igjen: faktisk innlogget desktopkontroll av gruppert meny, HR-oppsett og berørte skjerminnganger PASS. En konkret overlapp ved scrolling er rettet og kontrollert i begge moduler; originale skjermbilder og testet kode-SHA ligger i H2-notatet. Mobilviewport/filer/flere økter er ikke nye bevis. Eksakt publisert SHA/CI/Preview føres i PR #216. Tidligere Kenneth TEST OK og B/C/PDF/ZIP-bevis beholdes uten ny obligatorisk omtest. Ingen mail/merge/Production. Neste: privat fil-/full slettekontrakt. [Scope og QA](HR_UI_MENU_20261009.md).
+
+---
+
+## HR H1 – første sikkerhetsfundament, 9. oktober 2026
+
+Firmabundet medarbeider-/lederregister, eksplisitte ekstra lesere, fersk tilgang og fysisk sletting av register/tildelinger er levert i feature/Sandbox. **75 faktiske rollback-assertions PASS**, permanent klientprøve og full critical build PASS; alle ti live funksjoner byteidentiske. HR er deaktivert for alle firmaer, private filer stengt og tomme. Dette er backend uten ny HR-meny, referat, fravær eller eksport. Full sletting av fremtidig HR-innhold/filbytes og restore er ikke levert. Neste: HR-registerets brukerflate, deretter privat fil-/innholdspurge før sensitivt innhold. Tidligere TEST OK beholdes; ingen ny Kenneth-prøve eller browser-PASS. Miljømål **BEGGE**, bare feature/Preview; KS-e-post fortsatt disabled. [Scope, QA og grenser](HR_FOUNDATION_20261009.md). Publisert SHA/CI/Preview føres i draft PR #216.
+
+---
+
+## B/C-sluttkontroll og drift – 9. oktober 2026
+
+Samlet B/C-utviklerreview er gjennomført; alle seks påminnelsestyper er levert. Ny lesende Sandbox-kontroll bekrefter 20/20 offentlige KS-tabeller med RLS, worker disabled og en liten eksisterende kø. Avgrensede SQL-planer er dokumentert; ingen 100-firma-kapasitet eller browser-/fil-/leveringsbevis påstås. Håndbok-/malhistorikk og store eksporter er konkrete vekstpunkter før større utrulling. Bare dokumentasjon endret, ingen ny obligatorisk Kenneth-prøve; tidligere TEST OK beholdes. Neste utviklingspunkt er avklart HR-tilgang/private filer/sletting før sensitivt innhold. Releasebevis og ekte e-postaktivering/mottak følger egne konkrete punkter. [Sluttstatus, scope og målinger](BC_CLOSEOUT_20261009.md). Miljømål **BEGGE**, bare feature/Preview; ingen merge/Production. Publisert SHA og grønn CI/READY Preview føres i draft PR #216.
+
+---
+
+## Oppgavepåminnelser – 9. oktober 2026
+
+Miljømål **BEGGE**, levering bare feature/Sandbox. Påminnelser følger opp ufullførte vernerunder, risiko, SJA og egne lesebekreftelser etter minst sju dager. Framtidig planlagt dato utsetter oppfølgingen. Ingen nye arbeidsfrister eller automatiske signeringer. Egen appoversikt åpner eksisterende arbeidsflater. **41 ulike Sandbox-assertions PASS**; eksisterende seks varseltyper **36 PASS**, avvikspåminnelser **37 PASS** og revisjonspåminnelser **36 PASS**. Faktisk React-appflyt og berørte kilde-/revisjonsflyter PASS; full critical/build PASS. Migrasjon 20261009171349 og Edge v7 levert, worker **enabled=false**, 0 syntetiske firma/brukere. Tidligere TEST OK beholdes; ingen ny obligatorisk Kenneth-prøve. Testmailen er ikke sendt. Neste punkt: samlet B/C-sluttkontroll og drift/kapasitet før HR. [Scope og QA](TASK_REMINDERS_20261009.md). Publisert SHA, CI og READY Preview føres i draft PR #216.
+
+---
+
+## Håndbokrevisjonspåminnelser – 9. oktober 2026
+
+Miljømål **BEGGE**, leveranse bare feature/Sandbox. Utpekt ansvarlig får egen revisjonsoppgave og åpner eksisterende skjema uten automatisk signering. Ukentlige påminnelser bruker bare aktuell periode, med sju dagers sendepause og fersk kontroll av ansvar, dato og tilgang. **36 nye Sandbox-assertions PASS**, eksisterende varseltyper **36 PASS**, avvik/RUH-påminnelser **37 PASS** og faktisk React-flyt/kildeoppdateringsregresjon PASS. Full critical/build PASS. Migrasjon 20261009164036 og Edge v6 levert; worker fortsatt **enabled=false**, syntetiske data rullet tilbake. Tidligere TEST OK beholdes; ingen ny obligatorisk Kenneth-prøve. Testmailen er ikke sendt. Neste funksjon er øvrige C-påminnelser; faktisk innlogget fil-/mobil-/flerbrukerbevis og kontrollert release gjenstår. [Scope og QA](REVIEW_REMINDERS_20261009.md). Publisert SHA, CI og READY Preview føres i draft PR #216.
+
+---
+
+## Samlet B/C-gjennomgang – 9. oktober 2026
+
+[OVERSIKT](OVERSIKT.md) er nå en kompakt, oppdatert A–E-status; tidligere oversikt er arkivert. Underskjema, avvik/RUH-påminnelser, kildeoppdatering og ti-gruppe PDF/ZIP er registrert som levert. Gjenstående funksjonsgap skilles fra innlogget fil-/mobil-/flerbrukerbevis. Neste konkrete utviklingsscope er håndbokrevisjonspåminnelser, deretter øvrige C-påminnelser før HR. Tall/dato er dekket i faste skjemaer; generell skjemabygger legges ikke til som nytt obligatorisk krav. **45 faktiske Sandbox-RPC-assertions PASS**, kombinert React/PDF med alle ti grupper **26 / 25 sider**, ZIP **13 filer + manifest** og visuell kontroll av alle 26 sider PASS. Syntetisk transport er ikke faktisk innlogget Storage-bevis. Ingen ny obligatorisk Kenneth-prøve; tidligere TEST OK beholdes. Testmailen er autorisert, ikke sendt; transport fortsatt disabled. Miljømål BEGGE, bare feature/Sandbox. [Kravkart og bevis](BC_REVIEW_20261009.md).
+
+---
+
+## Kildeoppdateringsforslag – gjeldende fortsettelsespunkt 9. oktober 2026
+
+Miljømål **BEGGE**, levering bare feature/Sandbox. Oppfølging og revisjon har nå en samlet oversikt over nyere sentrale ProffDok-tekstforslag og vurderte utkast som fortsatt må firmagodkjennes. Sammenligningen viser firmaets tekst og forslaget felt for felt. Å bruke ett felt endrer bare dette feltet; bare **Jeg har vurdert hele tekstforslaget** flytter utkastets forslagsutgave. Egne tilpasninger beholdes. Lagre utkast og Godkjenn og publiser er separate handlinger. Gjeldende godkjente utgaver og gamle ansattbekreftelser omskrives ikke. Ingen nettkilde markeres kontrollert av denne vurderingen, og dette er ikke automatisk lovovervåking.
+
+**Utvikler-QA:** permanent critical-kjede og full lokal build PASS; faktisk React/Vite/JSDOM PASS for sammenligning, manuell kildedato, lokal kladd, feilet lagring/retry, lagret vurdering uten publisering, eksplisitt godkjenning, nye tildelinger og bevarte historiske bekreftelser. Ekte Sandbox-RPC i rollback-transaksjon: **22 assertions PASS**, inkludert firma-/rolle-/revisjonskontroll, kildegrunnlag, immutable v1/v2 og avslått modul. Direkte sluttkontroll: 0 syntetiske firma/brukere, worker `enabled=false`. Ingen ny migrasjon, RPC, RLS/Storage eller global navigasjon. Publisert SHA, Core Safety og READY Preview dokumenteres i draft PR #216 etter levering. [Scope og QA](SOURCE_UPDATES_20261009.md).
+
+Kenneths TEST OK **00:59 / 01:29 / 01:55 / 02:28 / 15:01** beholdes. Ingen ny obligatorisk Kenneth-prøve opprettes. Innlogget browserbevis er fortsatt blokkert etter reset av `native credential state cannot be safely resumed`; dette er ikke browser-PASS. Neste punkt er samlet helhetlig B/C-vurdering og målrettet dekning av faktiske filer, mobil og flerbruker før HR. Tidligere fortsettelsespunkter nedenfor er historikk.
+
+**E-postavklaring:** Kenneth autoriserte én kontrollert test til sin valgte arbeidsadresse 9. oktober kl. 17:29. Testen er ikke sendt; Production-testendpoint krever fungerende innlogget systemadminøkt. Generell køaktivering er fortsatt avslått. KS/HMS-varsler og fristpåminnelser skal aktiveres og verifiseres ved senere godkjent produksjonssetting. Ingen Production-release eller main/demo-merge er bestilt. Denne avklaringen supplerer de eldre sendingstillatelsene nedenfor.
+
+---
+
+## Fristpåminnelser for avvik/RUH – 9. oktober 2026
+
+Miljømål **BEGGE**, levering bare feature/Sandbox. Oppgavelisten viser passert frist, frist i dag og frist innen tre dager etter norsk kalenderdato. Periodiske e-postpåminnelser for åpne avvik/RUH bruker den private køen, høyst én per syv dager og tidligst syv dager etter siste tildelingslevering. Bare aktuell ukesperiode opprettes. Ansvar, frist, status, firmaaktivering, medlemskap og grant kontrolleres før levering. Deaktivering og reaktivering skal ikke spille av gamle påminnelser. E-posttransport forblir avslått.
+
+Utviklerkontroller og faktiske bruker-TEST OK holdes atskilt; ingen ny obligatorisk Kenneth-prøve opprettes. Tidligere TEST OK beholdes. Skynettleseren er fortsatt blokkert av verktøyets credential-state-grense; det er ikke påstått innlogget nettleserbevis for denne leveransen. Påminnelser for andre oppgavetyper og HR-utløp inngår ikke i denne første avgrensningen. Neste utviklingspunkt er kildeoppdatering. [Scope og QA](DEVIATION_REMINDERS_20261009.md).
+
+---
+
+## Testarbeid – avklart med Kenneth 9. oktober 2026
+
+Kenneth påpekte kl. 15:17 at gjentatte like brukerprøver skaper en testsløyfe, og ba om at agenten tester i skynettleseren. Agenten tar teknisk QA: felles PDF-/ZIP-flyter regresjonstestes samlet, med målrettede tester for hver dokumenttypes datakobling. En ny variant blir ikke automatisk en ny obligatorisk Kenneth-prøve. Brukerprøver samles til en kort helhetlig gjennomgang når det finnes en vesentlig ny arbeidsflyt eller et konkret hull som agenten ikke kan dekke. Kritiske regresjonsvern og krav til eksplisitt godkjenning før eventuell merge består. Ingen eksisterende TEST OK skal gjentas uten konkret feil/relevant regresjon.
+
+Tidligere åpne lister nedenfor er testgrunnlag for agenten og dokumenterte bevisgap; de er ikke en automatisk kø av oppgaver for Kenneth. Skill utviklerverifisering, brukerens faktiske TEST OK og udekket bevis. Ikke merk risikobilder, underskjema eller flerbruker som bruker-TEST OK uten en slik godkjenning. Neste utviklingspunkt er fortsatt påminnelser, deretter kildeoppdatering; det skal ikke blokkeres av flere like PDF-/ZIP-brukerprøver. Production-release, main/demo-merge og ekte e-post er fortsatt ikke godkjent.
+
+### Skynettleserforsøk i denne runden
+
+Fast Sandbox Preview på funksjonskode/head `b4986bcf72b19e2bdef471a907e5f5c4393b150a`. Sikker innlogging ga synlig innlogget demo@expo-proffdok.no, Expo Proffsenter og KS/HMS. Risikolisten var tom. Et nytt ulagret skjema viste bildefeltet; lokal tekst ble fylt med «TEST SKY 20261009 – risikobilde – ikke reell vurdering». Ingen Lagre/fullføring/publisering/filopplasting ble utført. Før neste handling avviste nettleserverktøyet styring: `retained_data_restricted`; forsøket på ny testfane ble avvist med `native credential state cannot be safely resumed`. Stoppet ved innloggings-/verktøygrensen. Dette er ikke bildeopplasting, readback, PDF-/ZIP- eller underskjemabevis. En lokal ulagret kladd kan stå igjen; kontroller/lukk den ved neste fungerende browserøkt. Ingen ny brukerprøve er gitt som erstatning for denne verktøyfeilen.
+
+---
+
+## TEST OK – SJA-bilder, 9. oktober 2026 kl. 15:01
+
+Kenneth svarte «test ok» etter den avgrensede SJA-bildeprøven i samme Sandbox Preview. Godkjenningen gjelder ett testbilde i SJA-utkast med lagring/gjenåpning, egen og samlet PDF, og bilde/manifest.json i vedleggs-ZIP på head `65655dea4a220352075b3c50dd0530a53aab758f`. Dette er brukerens godkjenning, ikke en ny utviklerdrevet nettleserprøve. Ingen bestemt sak, enhet eller antall filer utover prøven er dokumentert.
+
+Tidligere TEST OK **00:59 / 01:29 / 01:55 / 02:28** beholdes uten omtest. SJA-bildeprøven trenger ikke gjentas uten konkret feil eller relevant regresjon. Mobilkamera, flerbruker, faktiske private avviks-/prosjektkontroll-/legacyfiler, risikobilder, eldre prosjektavviksuttrekk og versjonerte underskjema beholder sine egne restprøver. Neste uavhengige utviklingspunkt er påminnelser, deretter kildeoppdatering. HR er ikke startet.
+
+Denne registreringen endrer bare dokumentasjon på feature-branchen; PR #216 forblir draft. Ingen Production-release eller main/demo-merge er godkjent eller utført. KS/HMS-e-postutsending skal fortsatt være deaktivert. Eldre beskrivelser av «ikke TEST OK for SJA-bilder» nedenfor er historisk status før denne godkjenningen.
+
+---
+
+## Gjeldende fortsettelsespunkt – versjonerte underskjema
+
+Start kontrollert mot remote feature `131d65ca97b7a401417e439b185ceac2afa5b6ff`, tree `806b61458891c92b25ed61a02676377101e9d1f2`; main `155f6c4ac01f126c1db0c65da385cfd9305587d5`; PR #216 draft. Leveransen gjør én eksakt publisert underskjemaversjon valgfri etter hvert sjekkpunkt. Publisering lagrer root, ferdig utflatet utføring og komplett child-ID/hash/snapshot. Fremmed, manglende, arkivert og sirkulær dependency stoppes; historiske child-versjoner kan velges i manager-sentralen. Prosjektkopier og gjennomføringer forblir uforanderlige.
+
+Sandbox `20261009040633 kshms_checklist_subforms` + `20261009041152 kshms_checklist_subform_execution_shape` anvendt; 17 rollback-assertions PASS, inkludert selvstendig kontroll med utflatet snapshot, og alle syntetiske rader rullet tilbake. Authenticated manager-RPC åpen, anon lukket og privat snapshot-hjelper lukket. Mailer direkte `enabled=false`. Faktisk React og fem faktiske PDF-uttrekk PASS; child v3-ID/hash og utflatet punkt finnes i mal-PDF. Poppler/A4 visuelt kontrollert uten klipp/overlapp.
+
+Funksjonshead **6faf58df375ce12a4779f71fac98b1c2bfc5ce5e**, tree **2e8562f56150509669bc8635acda3800f3be3f14**; alle 20 blobber og samlet tree matcher lokal testcommit, expected-head uten force. Lokal full Sandbox critical build PASS. Core Safety **37883044933**, full critical jobb **113666839672** success. Vercel **dpl_JACGxacWsYSkCxcdKZGDAk8UK14F** READY på eksakt SHA/ref/fast alias; branch-env Sandbox. Innlogget Preview etter reload: én bevart demoøkt/fane, Bunnledning v1 åpnet skrivefritt, underskjemavelger og forklaring på begge punkter. Selvvalg korrekt utelatt; ingen annen mal finnes. Dialog lukket, ingen lagring/publisering/prosjekt-/kontrollendring. [Scope/QA](CHECKLIST_SUBFORMS_20261009.md).
+
+Ingen Kenneth TEST OK for denne delen. TEST OK 00:59 / 01:29 / 01:55 / 02:28 beholdes uten omtest. Faktiske private filer, mobil/flere brukere og restprøver består. Neste uavhengige B/C er påminnelser og deretter kildeoppdatering; HR er ikke startet. Ingen ekte e-post, Production/main/demo-merge.
+
+---
+
+## Gjeldende fortsettelsespunkt – risikobilder publisert og verifisert
+
+Kontrollert fra remote feature-head `0b6c0ffab2705c06b7314f2484cb187412c9f02d`, tree `d84c3ae5742d07b3d431132be99a3f0b579a5932`; main `155f6c4ac01f126c1db0c65da385cfd9305587d5`; PR #216 draft. Lokal checkout har annen commitidentitet etter tidligere GitHub-objectpublisering, men samme verifiserte tree og ren start. Miljømål BEGGE, kun feature/Sandbox.
+
+Avgrenset implementasjon: inntil tre komprimerte bilder per fare i privat, revisjonert risikovurdering; egen PDF, valgt prosjektrapport, samlet uttrekk og ZIP/manifest. Ingen ny Storage/tabell/RLS/policy. Faktisk React-fil/canvas/readback, standalone-/prosjektrapport-/uttrekks-PDF, visuell kontroll, React/ZIP og full Sandbox critical build PASS. Privat validator `20261009031544 kshms_risk_photos` er anvendt og direkte funksjons-/ACL-prøvd i Sandbox; e-post-worker er fortsatt `enabled=false`.
+
+Funksjonshead **bcd0579cebdeaaaa4578abab14dc5522bf0abd88**, tree **03e3ecf71fcde6c43e714997f57a24f1f213f810**, publisert fra expected-head `0b6c0ffa` uten force. Alle 24 endrede blobber/tree matcher lokal testcommit. Core Safety **37878651320**, jobb **113652964404** med full critical build success. Vercel **dpl_AKRXJxtRxZuNRif9ej4d2oUJ5vk3** READY på eksakt SHA/feature-ref/fast alias; branch-env direkte lest Sandbox. Innlogget reload viste bildefelt/personverntekst i tomt ulagret skjema; ingen eksisterende risikovurdering eller dataendring, popup lukket. [Scope](RISK_ATTACHMENTS_20261009.md).
+
+Bevar TEST OK 00:59 / 01:29 / 01:55 / 02:28. Ny risikobildeprøve er ikke godkjent. Ikke opprett/fullfør reell vurdering for testdata. Åpne restpunkter etter denne leveransen: faktisk innlogget risiko-/SJA-bilde og kamera, faktiske private avviks-/prosjektkontroll-/legacyfiler, mobil/flere brukere; deretter versjonerte underskjema, påminnelser og kildeoppdatering. HR starter ikke i natt.
+
+---
+
+## Gjeldende fortsettelsespunkt – SJA-bilder publisert og verifisert
+
+Kontrollert 9. oktober 2026 fra ren `feat-kshms-foundation` på `7a68293c8ad3aae4191a1e766b1dbf278ab54eef`; main `155f6c4ac01f126c1db0c65da385cfd9305587d5`; PR #216 draft. Eksplisitt scope: `KshmsSja.jsx`/CSS, SJA-/bildevalidering, SJA PDF/samle-PDF/ZIP, én privat validator-migrering, relevante critical-/React-prøver og HJELP/README/architecture/statusdokumenter. Ingen HR, risiko-bilder, generell navigasjon, ny Storage/tabell/RLS/policy, e-post, Production/main/demo.
+
+Lokalt PASS: faktisk React-fil/canvas-preview og readback; permanent SJA/PDF/ZIP/uttrekksvern; tre faktiske SJA-PDF-er; 15-siders åtte-type samle-PDF; faktisk ZIP med seks filer/manifest/CRC32/SHA-256; full `EXPO_BACKEND_TARGET=sandbox npm run build`. SJA-PDF side 1–2 og samle-PDF SJA/manifest er rendret og visuelt kontrollert uten klipp/overlapp. Supabase CLI mangler; ingen lokal database-PASS hevdes. Migrasjon `20261009022028 kshms_sja_photos` er anvendt bare på `demo-sandbox` (`ppvircenkjizeiqdxphj`) og direkte funksjonsprøvd: ett JPEG-bilde/legacy PASS; fire bilder, PNG og duplikat-ID avvises; privat ACL består.
+
+Publisert funksjonshead **785d01389d2059026711ea1a8af12762e75fc4b9**, tree **cd5257609f1a3e2c375b9faf7d9146bc561ed429**. 25 blobber og tree er hash-/byteidentiske med lokal testet kilde; expected-head 7a68293c, ingen force. Core Safety **37874352426**, jobb/full critical build **113639379783** completed/success. Vercel **dpl_Dd3VioNsdD4idRkMGodqfpTamDqG** READY på eksakt SHA/feature-ref/faste alias; `EXPO_BACKEND_TARGET=sandbox` direkte lest. Innlogget fast Preview etter reload viser eksisterende signert «Test sja» uendret/read-only med ny bildeseksjon/personverntekst. Ingen fil valgt, PDF lastet ned, lagring, signering, database-/Storage-skriving eller popup igjen.
+
+Bevar TEST OK 00:59 / 01:29 / 01:55 / 02:28. Ny SJA-bildeprøve er ikke godkjent ennå. Ikke opprett/signér en reell SJA for data. Åpne restpunkter: faktisk innlogget SJA-bilde/kamera, risikofiltilknytning, faktiske private avviks-/prosjektkontroll-/legacyfiler, mobil/flere brukere; deretter versjonerte underskjema, påminnelser og kildeoppdatering. HR starter ikke i natt. [Detaljert scope](SJA_ATTACHMENTS_20261009.md).
+
+---
+
+## Publisert eldre prosjektavviksuttrekk – utviklerbevis 9. oktober 2026
+
+Funksjonshead **37cd906b697763c4865650d9393a33d05fb78303**, tree **bf3c2e0ee256eb2cb9dddcc052b07aaf4490c8a2**, identisk med lokal testcommit 4316675cb99a3d1a004494eac2bb376df5c878c3. Alle 18 blobber opprettet/hashkontrollert og lest tilbake byte-/tekstidentisk; faktisk publisert git-commit rekonstruert og SHA-verifisert, 668 recursive tree-oppføringer kontrollert med korrekt tree og alle endrede filer. Lokal feature-head følger eksakt publisert kode. Publisert expected-head bd506a65 uten force; main fortsatt **155f6c4ac01f126c1db0c65da385cfd9305587d5**. Vercel READY **dpl_8kaLkrvrwtiBGmksLnSRLFaUGUmi**, riktig SHA/feature-ref/prosjekt/faste alias, EXPO_BACKEND_TARGET=sandbox direkte lest. PR Core Safety **37868239123**, jobb **113620009941** med full critical build: completed/success. Final lokal full Sandbox build, scope/docs-guard og diff-check PASS.
+
+Innlogget fast Sandbox Preview, gjenbrukt demoøkten i én fane: hovedprosjektet viste **3 ukoblede eldre saker**, alle startet uten valg. Tre koblede saker ble utelatt. De tre valgte eksisterende sakene (to åpne, én lukket) ga faktisk nedlastet **5-siders PDF** med innhold/status/eldre lukking, forklaring om uversjonert lagret tilstand og manifest. Tekst-/sidekontroll PASS; alle fem sider rendret og visuelt kontrollert uten overlapp/klipp. Vedleggslisten viste 0 og sperret ZIP/bekreftelse. Fjerning av lukket sak ga 2 valg, tømte vedleggsliste og PDF-bekreftelse og sperret PDF. Deretter valg/omfang tømt; én fane, ingen popup eller sak-/database-/Storage-skriving. [Nettleserbevis](legacy-extract-proof.jpg).
+
+Dette er **utviklerbevis, ikke Kenneths TEST OK** for ny legacy-del. Ny kort prøve står i USER_TEST.md. Tidligere TEST OK **00:59 / 01:29 / 01:55 / 02:28** beholdes. Ingen gamle godkjente deler skal prøves på nytt uten konkret feil/relevant regresjon. Faktisk lagret eldre avviksfil, private avviks-/prosjektkontrollfiler og mobil/flere brukere er fortsatt separate restprøver: eksisterende gamle testsaker hadde ingen photos. Lokal React/ZIP med syntetisk transport verifiserer 7 originaler og manifest/CRC32/SHA-256; dette er ikke faktisk innlogget filbevis. Øvrig vedleggsdekning/SJA-/risikofiltilknytning består før versjonerte underskjema, påminnelser og kildeoppdatering. HR starter ikke nå. KS/HMS enabled=false er direkte lest, ingen e-post/Production/main/demo-merge. Etterfølgende beviscommit har bare docs/skjermbilde og uendret funksjon.
+
+---
+
+## Eldre ukoblede prosjektavvik – avgrenset leveranse 9. oktober 2026
+
+Miljømål **BEGGE**; bare feature/Sandbox-publisering. Verifisert start **bd506a652bd2b4d339b43946f80a121ecea294f9**, main **155f6c4ac01f126c1db0c65da385cfd9305587d5**, draft PR #216. Denne del-leveransen gjør eldre ukoblede prosjektavvik eksplisitt valgbare i Dokumentuttrekk: lagret innhold/bilder i PDF, originalfiler i separat bekreftet ZIP. Koblet KS/HMS-sak utelates. Eldre ansvar/lukking merkes som lagret tekst uten versjonert historikk eller KS/HMS-signatur; innholdets SHA-256 følger valget/manifestet.
+
+Utviklerbevis: permanent tilgangs-/innholds-/fil-/avbruddsvern PASS; faktisk React/jsPDF gir 20-siders prøve-PDF og ZIP med 7 originaler, CRC32/SHA-256 verifisert. Alle 20 sider rendret, kontaktark og åpne/lukkede avvik visuelt kontrollert. Opprinnelige åtte-gruppe-prøver og kvalitet-/HMS-modus PASS (ZIP 5/9 originaler). Full critical Sandbox build PASS. Transport i disse lokale prøvene er syntetisk. Innlogget publisert prøve og eksakt publisert head/tree/CI/deploy er ført ovenfor. Vercels branch-binding er direkte kontrollert: EXPO_BACKEND_TARGET=sandbox. KS/HMS-worker enabled=false er direkte lest; utsending forblir deaktivert.
+
+**Ny bruker-TEST OK foreligger ikke for eldre prosjektavvik.** Bevar Kenneths TEST OK 9. oktober Europe/Oslo: egen SJA-PDF 00:59, samlet PDF 01:29, ZIP med to bilder/manifest 01:55, kvalitet-/HMS-uttrekk 02:28 på f9e0f7b52a0573cf662fce07f8158c47576c8598 (funksjon 0e2de193164dad2342206cac1e2a7610f3c265d0). Ingen ny prøve av disse delene kreves uten konkret feil/relevant regresjon. Faktiske private avviks-/prosjektkontrollfiler, faktisk eldre prosjektavviksfil, mobil/flere brukere og øvrig vedleggsdekning består. Nye filtilknytninger på SJA/risiko er ikke levert. Fortsett øvrig vedleggsdekning før versjonerte underskjema, påminnelser og kildeoppdatering. HR starter ikke nå; kravene i HR_SCOPE_20261008.md beholdes.
+
+Ingen migrasjon, backend-/database-/policyendring, saks-/Storage-skriving, signering/lukking, ekte e-post, Production-release eller main/demo-merge. [Eksakt scope, prøver og neste steg](LEGACY_ATTACHMENTS_20261009.md).
+
+---
+
+## TEST OK – kvalitets-/HMS-avvik, 9. oktober kl. 02:28
+
+Kenneth ga **TEST OK 9. oktober 2026 kl. 02:28 Europe/Oslo** for den avgrensede kvalitets-/HMS-leveransen på publisert head **f9e0f7b52a0573cf662fce07f8158c47576c8598** (funksjonskode **0e2de193164dad2342206cac1e2a7610f3c265d0**). Godkjenningen gjelder den nye avviksdekningen i Dokumentuttrekk og den fremlagte korte brukerprøven. Utviklers innloggede bevis omfatter seks lagrede avvik, 23-siders PDF med begge kategorier/historikk/manifest, tom vedleggsliste med sperret ZIP og nullstilling ved fjerning. Bevishead f9e0f7b5 var READY **dpl_3DB6k8cwp3K1eBvzMcG8Ludc8JFk**, grønn Core Safety **37864641901** / full critical build **113608347101** completed/success.
+
+Tidligere TEST OK **00:59 egen SJA-PDF / 01:29 samlet PDF / 01:55 ZIP med to bilder og manifest.json** beholdes. Denne nye godkjenningen er **ikke faktisk privatfilbevis**: Sandbox-avvikene har ingen private originaler/bilder. Faktisk private avviksfiler, private prosjektkontrollfiler, mobil/flere brukere og øvrige tidligere separate restprøver består. Den godkjente avviksprøven skal ikke gjentas uten konkret feil eller relevant regresjon. Ukoblede eldre prosjektavvik og andre filtilknytninger/full tilsynsdekning er fortsatt ufullført B/C-scope. Fortsett én avgrenset del av øvrig vedleggsdekning før versjonerte underskjema, påminnelser og kildeoppdatering; HR følger senere etter avklart HR_SCOPE_20261008.md.
+
+Denne oppfølgingen endrer bare dokumentert godkjenningsstatus. Miljømål **BEGGE**, kun feature/Sandbox. Faktisk branch/main kontrollert før endring: f9e0f7b5 / **155f6c4ac01f126c1db0c65da385cfd9305587d5**, draft PR #216. Ingen app-/backend-/databaseendring, Production-release/main/demo-merge eller ekte e-post. KS/HMS-e-postutsending forblir deaktivert.
+
+---
+
+## Publisert kvalitet-/HMS-uttrekk – innlogget utviklerbevis 9. oktober 2026
+
+Funksjonshead **0e2de193164dad2342206cac1e2a7610f3c265d0**, tree **89b048c374fe88cea22251d1fdea387502c37bf4**, identisk med bevart lokal testcommit **2ec757530ca2736ed34ac56faa113250f3fb2209**. Alle 18 blobber/tree og faktisk publisert git-objekt hashkontrollert; lokal feature-branch er justert til eksakt publisert head. Baseline da2e5a79, main **155f6c4ac01f126c1db0c65da385cfd9305587d5**. Publisert med expected-head og uten force. READY **dpl_BPX5n2GejD1xCUULTz9EUG7rAPoc**, samme faste Sandbox-alias, riktig SHA/feature-ref og Sandbox-backend. Core Safety **37863966196**, jobb **113606139996**, inkludert full critical build: completed/success. Lokal full Sandbox build, scope/docs-guard, nye og opprinnelige critical/React/PDF/ZIP-prøver PASS. PDF-rendering kontrollert.
+
+Innlogget skyfane 5 gjenbrukte demoøkten etter appens «Oppdater nå». Dokumentlisten startet uten valg; ny gruppe viste seks avvik (fem HMS/én kvalitet). Alle seks eksisterende lagrede saker ble valgt uten å endre dem. «Vis vedleggslisten» viste 0 vedlegg og sperret ZIP/bekreftelse. Bekreftet dokumentvalg ga faktisk nedlastet **23-siders PDF** med begge kategorier, historikk og manifest. PDF-en ble tekst-/sidekontrollert og alle sider rendret/visuelt kontrollert. «Fjern Ulykke fra uttrekket» ga fem valg, nullstilte PDF-bekreftelsen/vedleggslisten og sperret PDF. [Nettleserbevis](deviation-extract-proof.jpg). Deretter valg og omfang tømt; én innlogget fane, ingen popup. Ingen saks-/database-/Storage-skriving, signering eller lukking.
+
+Dette er utviklerbevis, **ikke Kenneths nye TEST OK**. Ny kvalitet-/HMS-brukerprøve, private originaler/bilder fra faktisk lagret avvik, mobil/flere brukere og tidligere åpne delprøver består. Sandbox-avvikene har ingen private filer; slik faktisk transport kan derfor ikke erklæres ferdig. Lokale syntetiske transportprøver dekker begge kategorier, fire private originaler, filinnhold/CRC/SHA-256 og feil-/tilgangsvern. Bevar brukerens TEST OK **00:59 egen SJA-PDF / 01:29 samlet PDF / 01:55 ZIP med to bilder og manifest.json**, 9. oktober Europe/Oslo. Øvrig vedleggsdekning gjenstår før versjonerte underskjema, påminnelser og kildeoppdatering; HR følger senere med avklart HR_SCOPE_20261008.md. KS/HMS-e-post forblir disabled (direkte lest enabled=false). Ingen Production/main/demo-merge eller ekte e-post.
+
+Etterfølgende beviscommit inneholder bare dokumentasjon og skjermbilde; funksjonskode er uendret.
+
+---
+
+## Kvalitet-/HMS-avvik i dokument- og vedleggsuttrekk – 9. oktober 2026
+
+Miljømål **BEGGE**, kun feature/Sandbox nå. Baseline `da2e5a79824c1358948ed535768b81277a2ecb41`, faktisk main `155f6c4ac01f126c1db0c65da385cfd9305587d5`, draft PR #216. Ny avgrenset del av øvrig vedleggsdekning: egen gruppe **Kvalitets- og HMS-avvik med historikk og bilder** i Dokumentuttrekk. Valgte lagrede KS/HMS-saker får full historikk/private bilder i PDF og private originaler i ZIP, med eksisterende bekreftelse/manifest/konsistens-/tilgangsvern. [Scope og QA](DEVIATION_ATTACHMENTS_20261009.md).
+
+TEST OK for egen SJA-PDF **00:59**, samlet PDF **01:29** og ZIP med to bilder/manifest **01:55** 9. oktober beholdes som separate dokumenterte godkjenninger. De er ikke ny TEST OK for kvalitet/HMS. Innlogget Sandbox har fem HMS-saker/én kvalitetssak, ingen private avviksfiler. Ny faktisk privatfilprøve, mobil/flere brukere og tidligere separate restprøver er fortsatt åpne. Nye filtilknytninger på andre dokumenttyper og full legacy-/tilsynsdekning er ikke erklært ferdig. Øvrig vedleggsdekning følger før versjonerte underskjema, deretter påminnelser og kildeoppdatering før HR; HR_SCOPE_20261008.md beholdes. Ingen Production/main/demo-merge eller ekte e-post; Sandbox KS/HMS-enabled=false bekreftet direkte og beholdt.
+
+---
+
+## Publisert PDF-/ZIP-forklaring – innlogget kontroll
+
+Tekst-/TEST OK-oppfølging publisert på **085336ade9be3a9778a3c5d00ad7c58c7dc0a98a**, tree **ecbbd5aa8be7fd6ccdc72e6eb254da104cc724ba**, identisk med lokal testcommit 496c73e25026d070bf38e2b8f72da7acc03d30f4 (bevart). Alle 11 blobber/tree og faktisk publisert git-objekt hashkontrollert, expected-head 359dac0e og uten force. READY **dpl_8wuuYDCorLQwMaZde1QL39pihcCs**, eksakt SHA og samme faste Sandbox-alias; Core Safety **37862362107**, jobb/full critical build **113600849615** completed/success. Lokal full Sandbox build og faktisk React/ZIP PASS. PR #216 fortsatt draft/main uendret 155f6c4ac01f126c1db0c65da385cfd9305587d5. Bare to apptekstfiler og ni dokumenter i denne slice; ingen handler/format/backend-endring. Etterfølgende beviscommit er bare dokumentasjon/skjermbilde.
+
+Innlogget samme skyfane (4), bevart demoøkt etter reload: Dokumentuttrekk forklarer nå PDF og ZIP før valg. Valgt eksisterende Voldsløkka-vernerunde ga begge vedlegg (178896/200131 byte), hensiktstekst for separate filer/arkiv og forklaring av mappen vedlegg/manifest.json. ZIP-knappen er sperret før egen bekreftelse og aktiv etter. Det ble ikke lastet ned eller skrevet noen ny sak i denne tekstkontrollen. [Skjermbevis](zip-clarity-proof.jpg). Valg/omfang deretter tømt, null dialoger; én fane beholdt. Godkjent ZIP-nedlasting skal ikke gjentas bare fordi teksten er presisert. Hensikt og manifest er forklart direkte i chatten; TEST OK 9. oktober kl. 01:55 gjelder to-bilders nedlasting/innhold, øvrige åpne prøver består.
+
+---
+
+## TEST OK – ZIP med to bilder og filoversikt, 9. oktober kl. 01:55
+
+Kenneths TEST OK er presisert **9. oktober 2026 kl. 01:55 Europe/Oslo**: ZIP fra Voldsløkka-vernerunden er lastet ned og åpnet, med **to bilder i vedlegg og én JSON-fil**. Skjermbildet viser åpnet «KS-HMS vedlegg – test omfang», mappen «vedlegg» og «manifest.json». Dette bekrefter innlogget ZIP-nedlasting/innhold på publisert head **359dac0ed2df86ab43cb545ece6716161f9bdc87** (funksjon 42a38e91), etter PDF-/ZIP-avklaringen kl. 01:51–01:53. Tidligere TEST OK beholdes. Ingen ny mobil-, flerbruker-, privat RUH-original-/prosjektkontrollfil- eller Production-/merge-/e-postgodkjenning følger.
+
+Brukerens «det var ikke selvsagt» følges opp med avgrenset tekst i Dokumentuttrekk og HJELP: PDF og ZIP har hver sin nedlasting; ZIP-knappen vises etter Vis vedleggslisten; manifest.json forklares som filoversikt som beholdes med vedleggene. Brukerens oppfølgingsspørsmål kl. 01:57 presiserer hensikten: ZIP sparer enkeltvis henting og gir separate filvedlegg til arkiv eller sammen med rapporten; PDF er rapporten. Ingen handler, eksportformat, backend eller knappnavn endres. Miljømål BEGGE, først samme feature/Sandbox. Neste faglige B/C-punkt er fortsatt øvrig vedleggsdekning og versjonerte underskjema; deretter påminnelser/kildeoppdatering før HR. Gjenværende prøver videreføres uten å gjenta godkjent ZIP-nedlasting.
+
+---
+
+## Publisert vedleggspakke – READY, grønn QA og innlogget ZIP
+
+Funksjonskode **42a38e91f38594a0b8ece947157481c77af93e91**, eksakt testet/publisert tree **96ed970ef2ab78cb1a610b0f53effe32e35fd719**, identisk med lokal testcommit **dd88b7aab0d203efca653c46971c1451cbce854b**. Alle 17 publiserte blobber/tree hashkontrollert via GitHub-kobling, expected-head c5e128c6 og uten force. Faktisk publisert git-objekt er hentet/hashkontrollert lokalt; testcommit bevart på refs/codex/local-zip-tested. Samlet branch mot main: 219 filer; denne funksjonsleveransen er 17 avgrensede filer (fire nye). Ingen SQL/backend/global navigasjon/konfigurasjon. Etterfølgende dokument-/skjermbevis endrer ingen funksjonskode.
+
+READY **dpl_HY7SG3fjVEMjYJtV4JR8nkYnMvKa**, eksakt SHA og fast Sandbox-alias. **PR Core Safety 37860831491**, jobb **Core safety + critical build 113595879925**, completed/success; scope isolation og full critical build success. Lokal full Sandbox critical/build, PR-scope og release-docs-guard PASS. Permanent ZIP-check og faktisk React/ZIP-flyt PASS; eksisterende samle-PDF React/Storage/jsPDF også PASS etter felles leser. PR #216 open/draft, faktisk main kontrollert uendret **155f6c4ac01f126c1db0c65da385cfd9305587d5**. Eksisterende branchbinding EXPO_BACKEND_TARGET=sandbox beholdt. Ingen main/demo/Production eller ekte e-post; KS/HMS-utsending forblir deaktivert.
+
+### Faktisk skynettleser og bytebevis
+
+Én eksisterende fane (4), samme faste URL og bevart demo@expo-proffdok.no-økt i Expo Proffsenter etter reload; ingen ny innlogging. Dokumentuttrekk startet med null automatisk valg. **Voldsløkka vernerunde 1**, dokument **21401807-1827-425f-858f-a3431737a611**, revisjon **2**, ga en vedleggsliste med de to allerede lagrede JPEG-bildene. Før egen bekreftelse var ZIP-knappen sperret. Faktisk ZIP-nedlasting: **381240 byte**, SHA-256 **eb521184f167d1e2acbc78fd1ef4199fde7a642a63e939972fe3fe8eb9e9b6ec**, arkiv-ID **1a006222-7bee-40f4-b5df-e4a01b69b98d**, tidspunkt **09.10.2026 kl. 01:43:24 Europe/Oslo**. Uavhengig Python zipfile/Pillow bekrefter CRC, tre ZIP-filer (to JPEG + manifest), to gyldige 960×1280 JPEG-er, riktig dokument/revisjon/punkt/byte og begge SHA-256. Ingen andre dokumenter, rapport-PDF eller Storage-/tokenlenker i manifest. [Skjermbilde etter nedlasting](attachment-archive-proof.jpg).
+
+| Lagret bilde-ID | Punkt | Byte | SHA-256 |
+|---|---|---:|---|
+| 464db59a-84e4-440b-a753-0953d06c37e9 | Er underlaget sjekket og funnet tilfredstillende? | 178896 | ed23773ed5d339053cb0d9216a7e0fbc5b0a74c61e565dbd6f0294648c0d5679 |
+| 54c7f57e-deab-4355-9775-c60d6a20e023 | Fall | 200131 | 18b6859fe94d7c179c588b24c84b012914d50580326c7c372f872b07b0e9c55a |
+
+Omfangsendring tømte vedleggslisten og bekreftelsen; tomt omfang sperret ZIP selv etter ny liste/bekreftelse. **Fjern** Voldsløkka ga null valgt og sperret forhåndsvisning. Valgt eksisterende **test ruh** (e3b21d35-9acb-4a1f-b4db-842a46f44f3e) har 0 vedlegg: eksplisitt tom-liste-beskjed, deaktivert bekreftelse og ZIP. Oppdatering nullstilte dokumentvalget. Faktisk **Hjelp → KS/HMS – samlet dokumentuttrekk** viste de nye ZIP-trinnene, grenser, manifest og avgrensning.
+
+Relevant eksisterende samle-PDF-regresjon: bare **Test sja** revisjon 2 og **Voldsløkka vernerunde 1** revisjon 2 ga **5 sider / 419287 byte**, SHA-256 **44e72f6dfd3ee9d3bea9eb36b74bb7ea74193903e5d93ff1f3e2160d6670bb7f**. Rendret og visuelt kontrollert: full SJA, bevart Kenneth Demo-signatur **07.10.2026 kl. 23:47:45**, begge vernerundebilder/fullføring, rammer og riktig to-dokumenters manifest. Ikke-valgt RUH-ID er borte. Ingen eksisterende lagring, signering, lukking, fullføring eller saksendring utført. Alle popup lukket. Til slutt Dokumentuttrekk med tømt dokumentvalg/omfang; én fane beholdt for brukerprøven.
+
+### Handoff og gjenstående
+
+Kenneths **TEST OK 9. oktober kl. 01:29 på c5e128c6** gjelder forrige samle-PDF. Ny ZIP-del venter på sin avgrensede brukerprøve i USER_TEST.md. Faktisk innlogget privat RUH-original/prosjektkontrollvedlegg var ikke tilgjengelig i eksisterende testdata og er ikke gradert PASS; lokale Storage-scenariotester dekker dem. Mobil/flere ekte brukere, øvrig vedleggsdekning, versjonerte underskjema, påminnelser og kildeoppdatering består før HR. Ingen testdokumenter er opprettet for å fylle hull. HJELP, architecture og README er oppdatert også for ZIP. Tidligere TEST OK og HR_SCOPE_20261008.md beholdes.
+
+---
+
+## Vedleggspakke – neste avgrensede B/C-leveranse
+
+Kenneth ga **TEST OK 9. oktober 2026 kl. 01:29 Europe/Oslo** for samlet dokument-/tilsynsuttrekk på publisert head `c5e128c6fde2d0fb1368accb78a9414c05f0c81d`. HJELP, architecture og README var oppdatert ved godkjenningen. Tidligere TEST OK beholdes, inkludert egen SJA-PDF kl. 00:59. Dette er ingen Production-/merge-/e-postgodkjenning.
+
+Ny levering: **Dokumentuttrekk → Vis vedleggslisten → Last ned vedlegg (ZIP)**. Valgte lagrede RUH-originaler, vernerunde-bilder og prosjektkontrollvedlegg med manifest, filstørrelser og SHA-256. Egen bekreftelse; endring av omfang/valg tømmer listen. ZIP-nedlasting/innhold TEST OK 9. oktober kl. 01:55. [Scope og QA](ATTACHMENT_ARCHIVE_20261009.md). Øvrig vedleggsdekning, versjonerte underskjema, påminnelser og kildeoppdatering følger før HR. Ingen ny backend eller sending.
+
+---
+
+## Publisert samlet uttrekk – READY, grønn QA og innlogget nedlasting
+
+Funksjonskode **8d045d0cd9956d47d93e1b606b75eef7097dda32**, eksakt testet/publisert tree **ded14b7df45dc08e810ed569c2630e6e8e65a033**, identisk med lokal testcommit **a298a29b7bb784e5a60334ffb5db4c0994879e5b**. Feature ref oppdatert via GitHub-kobling med expected baseline 9ac259fa og uten force. Lokalt er faktisk publisert git-objekt/head også hentet og hashkontrollert; original testcommit bevart. Funksjonsleveranse: 16 filer, samlet branch mot main: 214 filer, fem nye scope-filer. Ingen ny SQL/backend/global navigasjon/konfigurasjon. Etterfølgende beviscommit er bare dokumentasjon og skjermbilde.
+
+READY **dpl_FpiuDdxSxd5yaauYXkSgpKfDcmC3** med eksakt funksjons-SHA på samme faste Sandbox-alias. **PR Core Safety 37858562063**, jobb **Core safety + critical build 113588549210**, completed/success; scope isolation og full critical build success. Lokal full `EXPO_BACKEND_TARGET=sandbox npm run build` PASS exit 0. Vercel branchbinding `EXPO_BACKEND_TARGET=sandbox`, target preview, gitBranch feat-kshms-foundation direkte kontrollert. PR #216 open/draft og main uendret **155f6c4ac01f126c1db0c65da385cfd9305587d5** ved sluttkontroll. KS/HMS-utsending forblir deaktivert; ingen e-post-/database-/Production-handling.
+
+### Faktisk innlogget skynettleser
+
+Eksisterende demo@expo-proffdok.no-økt i Expo Proffsenter ble bevart etter reload på samme URL. Én fane (4), ingen ny innlogging. **KS/HMS → Dokumentuttrekk** starter uten katalog/valg. Katalogen viste 10 godkjente rutineutgaver, én mal, én SJA, én RUH, to vernerunder, null signerte håndbokrevisjoner og null risiko. Prosjekt DEMO – HOVED kunne velges og **Hent prosjektkontroller** ga null lagrede strukturerte kontroller. Ingen testdokumenter ble opprettet for å fylle hullene.
+
+Faktisk valg av R-007 v1, Bunnledning v1, Test sja revisjon 2, test ruh revisjon 2, test vernerunde revisjon 1 og Voldsløkka vernerunde 1 revisjon 2 ga **12 sider / 433696 byte**, SHA-256 **843367314c3456983cd8fd214479a6f5d090576fed39f7b62f40d2263d980e36**. PDF rendret og visuelt kontrollert: omfang, firmanavn/logo, full rutinetekst/kilder, tom mal, full SJA med lagret Kenneth Demo-signatur **07.10.2026 kl. 23:47:45**, begge RUH-historikkhendelser/bevart lukking, begge vernerunder og **to faktiske lagrede bilder fra Voldsløkka**, samt manifest med riktige seks ID-er/revisjoner/hashes og sideintervaller. Ingen ikke-valgt R-008-utgave i filen. [Skjermbilde etter vellykket nedlasting](inspection-extract-proof.jpg).
+
+**Fjern** R-007 nullstilte bekreftelsen og sperret nedlasting. Ny bekreftelse ga **10 sider / 429751 byte**, SHA-256 **bfa69dd6d02e1231f01ecc6d2d7e371f6e25783871adcb183a2c56f014648dfe**; rutineutgave-ID og rutinetekst er borte, signatur/historikk/bilder/manifest beholdt. Tomt omfang sperret knappen. Søk «test» reduserte vernerunder fra to til én; **Oppdater dokumentlisten** ga null valgte dokumenter og ny bekreftelsessperre. **Tøm dokumentvalget** fungerte. Gruppevalg/filtrering/nedlasting endret ingen lagrede saker, signeringer eller fullføringer.
+
+Relevant regresjon: **Avvik/RUH → Lukkede → test ruh → Last ned RUH-PDF** ga **2 sider / 36486 byte**, SHA-256 **98628a8c5445cd088a084a97b09d0ff6409353d8943a09a5a953a6f79b001bda**, begge historikkhendelser og lukking **08.10.2026 kl. 01:28:17** bevart. Dialogen ble lukket. Ingen lagring/signering/gjenåpning utført. Til slutt én fane på **Dokumentuttrekk**, alle popup lukket, valgt liste nullstilt. Observerte konsollfeil gjelder nettleserutvidelsens metadata, ikke appkode.
+
+### Gjenstår / neste chat
+
+Ny bruker-TEST OK for samlet uttrekk gjenstår; tidligere TEST OK består, inkludert Kenneths SJA-PDF 9. oktober kl. 00:59. Privat RUH-bilde er lokalt testet med ekte Storage/Blob/PDF, men faktisk innlogget test ruh har fortsatt 0 vedlegg. Innlogget signert håndbokrevisjon, risiko og strukturert prosjektkontroll var ikke tilgjengelig; disse åtte-type-gruppene er dekket i lokal React/PDF. Mobil og flere reelle brukere er fortsatt åpne. Dette er ingen tilsynsgodkjenning.
+
+Fortsett fra første dokumenterte ufullførte B/C-punkt: **øvrig vedleggsdekning**, deretter **versjonerte underskjema**, **frist-/utløpspåminnelser** og **kildeoppdatering**, før separat HR. Ikke gjenta allerede avklarte HR-krav eller tidligere godkjente tester. Hent faktisk feature/main og CI/READY ved neste start; ikke anta at funksjons-SHA over er siste dokumenthead. Samme Sandbox Preview og eksisterende innlogging/én fane; ikke signér/fullfør reelle saker som test. Ingen Production-release, main/demo-merge eller ekte e-postsending er godkjent.
+
+---
+
+## Samlet dokument-/tilsynsuttrekk – ny avgrenset B/C-leveranse
+
+Miljømål **BEGGE**, publisering først på samme feature/Sandbox. Baseline `9ac259fa8027a3d88e57c5ab761d71fbeaef5cb7`, faktisk main `155f6c4ac01f126c1db0c65da385cfd9305587d5`; PR #216 open/draft. Tidligere TEST OK beholdes, også Kenneths SJA-PDF-prøve 9. oktober kl. 00:59.
+
+Firmaadmin/KS/HMS-ansvarlig får **KS/HMS → Dokumentuttrekk**: beskriv omfang, hent listen, velg lagrede dokumenter og bekreft valget før **Last ned samlet PDF**. Åtte dokumentgrupper, full RUH-historikk/private bilder, felles rammer og manifest med dokument-ID, utgave/revisjon og sider. Ingen dokumenter velges automatisk. [Scope, testbevis og avgrensning](INSPECTION_EXTRACT_20261009.md). Publisert head/CI/READY og faktisk skynettleserprøve føres ved sluttkontroll.
+
+Neste ufullførte B/C-punkt etter denne leveransen er øvrig vedleggsdekning/versjonerte underskjema; deretter frist-/utløpspåminnelser og kildeoppdatering. Full tilsynsdekning, andre avvik enn RUH, separate originalfiler og framtidige HR-/opplæringsbevis er ikke levert gjennom denne PDF-en. Ingen databaseendring, Production/main/demo-merge eller ekte e-postsending; KS/HMS-utsending forblir deaktivert.
+
+---
+
+## TEST OK og handoff – 9. oktober 2026 kl. 00:59 Europe/Oslo
+
+Kenneth svarte **«test ok. Lagre historikk der du pleier å gi meg en handoff prompt til ny chat»** etter leveransen av egen lagret SJA-PDF. **TEST OK gjelder denne avgrensede SJA-PDF-leveransen.** Tidligere TEST OK beholdes; ikke krev omprøving uten konkret feil/relevant regresjon. Ingen Production-release, main/demo-merge eller ekte e-postsending er godkjent.
+
+Siste verifiserte head før denne dokumentoppdateringen: **0194b2c8173410af71f89a7b2c42c5c39c0b83eb**, tree **e8742eb9ea433caf52a97bda6769c2fca78e8f40**. READY **dpl_5hhq2T6pUeXRaaumhkkW7UWiFnaM** på samme Sandbox-alias. Core Safety **37856612512** / jobb **113582206113**, completed/success med full critical build. Funksjonskode/innlogget PDF-bevis står nedenfor. Main uendret **155f6c4ac01f126c1db0c65da385cfd9305587d5**. PR #216 fortsatt open/draft på **feat-kshms-foundation**. Denne oppdateringen gjelder bare fire KS/HMS-dokumenter; ingen appkode/SQL/test/konfigurasjon endres.
+
+### Neste chat
+
+1. Hent faktisk main og feature-head, kontroller PR #216/READY/QA. Ikke anta at et historisk head i teksten er nyeste branch-head.
+2. Les AGENTS.md, hele PROJECT_GUARDRAILS.md, docs/kshms/OVERSIKT.md, CONTINUITY.md, USER_TEST.md og relevant PLAN/QA/critical-check før endring. HR-beslutninger er bevart i HR_SCOPE_20261008.md.
+3. Fortsett **gjenstående B/C før HR**, én avgrenset leveranse om gangen: samlet dokument-/tilsynsuttrekk med RUH-historikk/private bilder, øvrig vedleggsdekning og versjonerte underskjema, frist-/utløpspåminnelser og kildeoppdatering. Mobil/flere reelle brukere, ny popup-prøve og ikke allerede bekreftede delprøver består. Velg og beskriv neste scope fra gjeldende plan; SJA-PDF skal ikke bygges om eller testes på nytt som obligatorisk start.
+4. Samme Preview: https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe . Supabase Sandbox ppvircenkjizeiqdxphj; EXPO_BACKEND_TARGET=sandbox på branch-Preview. KS/HMS-e-postutsending forblir deaktivert. Ingen nye hemmeligheter eller aktivering på grunnlag av denne TEST OK.
+5. Skynettleser sist: én innlogget fane (3), KS/HMS → SJA, alle popup lukket. Gjenbruk samme fane/økt hvis tilgjengelig; kontroller faktisk økt ved gjenopptak. Ikke krev ny innlogging bare på grunn av deploy. Ikke signér eller fullfør reelle saker som test.
+6. HR er avtalt, ikke implementert: medarbeideren selv, registrert nærmeste leder og firmaadmin kan lese; firmaadmin kan gi tilbakekallbar ekstra lesetilgang per medarbeider. Leder velges fra aktive appbrukere i nedtrekksliste og starter sykefravær manuelt. Lederbytte/historikk og sletting av sensitivt innhold ved fratredelse følger byggekontrakten. NHO/NAV-kilder må verifiseres på nytt ved faktisk implementering. KS/HMS/systemadmin/prosjektrolle gir ikke automatisk HR-innsyn.
+
+Overleveringen ligger varig i Git-repoet; hele chathistorikken antas ikke automatisk overført til ny chat. Fortsett fra de gjeldende notatene og faktisk branch. TEST OK er en delprøve, ikke samlet ferdigstillelse av KS/HMS eller produksjonsgodkjenning.
+
+---
+
+## Publisert SJA-PDF – READY, grønn QA og innlogget nedlasting
+
+Funksjonskode **f7128eff77de3950bfc59f228514069c6c4e3e5c**, tree **461df19cab19286b089d18d8d11461ce899ff541**, identisk med lokal testet commit **b19d54baa8c1260560ce7536b9485a1b826f74b1**. Publisert via GitHub-koblingen med expected SHA 5f19f330, uten force. Lokal originalcommit er bevart. 11 filer i denne leveransen; samlet branch mot main er 209 filer, fire nye scope-filer. Ingen nye backend-/navigasjonsfiler i siste diff.
+
+READY **dpl_HxxWA3HJQKobyEcTXhkZmUa9v5Qy**, eksakt funksjons-SHA på samme faste Sandbox-alias. PR Core Safety **37856299814**, jobb **Core safety + critical build 113581173376**, completed/success (inkludert full critical build). Lokal full Sandbox critical/build exit 0. Branchbinding EXPO_BACKEND_TARGET=sandbox, target preview, gitBranch feat-kshms-foundation kontrollert uten dekryptering. Main uendret **155f6c4ac01f126c1db0c65da385cfd9305587d5**; PR #216 open/draft.
+
+Innlogget skynettleser på publisert funksjonskode: **Meny → KS/HMS → SJA → Test sja → Last ned PDF**. Lagret analyse **b0f0d6c2-c888-44d7-8b6e-60513aac1f48**, revisjon **2**, signert. Faktisk PDF **1 side / 33612 byte**. MuPDF-render og tekst kontrollert: rammer/tokolonner, hele analysen, arbeidstrinn, Tom/Ringside/bidrag, Kenneth Demo som lagret prosjektleder/signatur og **07.10.2026 kl. 23:47:45**, signert bekreftelse, ordre 78555 og arbeidsdato 12.10.2026. Denne eksisterende analysen har ingen valgte rutineutgaver og ingen prosjektkobling; begge er korrekt merket. Rutineutgaver og låst prosjekt er dekket av de faktiske lokale React/PDF-prøvene, ikke av denne innloggede saken.
+
+Nedlasting viste «PDF er laget fra den lagrede dokumentasjonen». Lagret signatur/status stod uendret etterpå. Ingen lagring, ny signatur eller andre dataendringer. Popup lukket; inventar bekrefter kun fane 3 på samme faste Preview, innlogging beholdt etter deploy. Innlogget utkast-/mobil-/flere-konto-prøve gjenstår; lokale negative scenarioer er dekket. Etterfølgende dokumentcommit endrer bare bevisnotater.
+
+Tidligere TEST OK beholdes. Ny kort SJA-PDF-prøve står først i USER_TEST. Øvrige B/C, samlet tilsynsuttrekk, vedlegg/underskjema og påminnelser/kilder består før HR. Ingen Production, main/demo-merge eller ekte e-postsending. [Scope og QA](SJA_PDF_20261009.md).
+
+---
+
+## Egen lagret SJA-PDF – ny C-leveranse
+
+9. oktober 2026, Europe/Oslo. Miljømål BEGGE, først feature/Sandbox. Fra head 5f19f3304d7eb481ccbebfbb2ef07a2a783eb78b, main uendret 155f6c4ac01f126c1db0c65da385cfd9305587d5. [Scope/kontrakt/bevis](SJA_PDF_20261009.md). Lagret SJA får egen PDF-knapp, felles rammer, full analyse/lagrede rutiner og historisk signatur. Utkast merkes. Dobbel serverlesing sperrer ny revisjon/endret innhold/tilgang; sent svar etter redigering/lukking/firma-/brukerbytte avbrytes. Ingen ny DDL, tilgang, lagring eller signering.
+
+Permanent check, faktisk SJA-PDF React, eksisterende SJA/parent React og fem eksisterende dokument-PDF-flyter PASS. Full Sandbox critical/build PASS exit 0. Tre faktiske QA-PDF-er / fire sider visuelt kontrollert. Eldre prosjekt-SJA-test bruker nå tilgjengelig navn og simulerte read-only antalls-RPC-er for allerede levert sammenfoldet oversikt; verneassertions beholdes. Publiserings-/innlogget bevis følger etter eksakt kontroll. Tidligere TEST OK beholdes. Ingen Production, main/demo-merge, ekte e-post eller HR-implementering. Øvrige B/C før HR består.
+
+---
+
+## Publisert felles KS/HMS-rammer – READY og faktisk nedlasting
+
+Funksjonskode **709bf7d44bb0341a166299e8eab02a79b589afca**, tree **b04bdb0458fda7d42c820bd9add397afade6d157**, identisk med lokal testet commit **8a05bf53624b9fb6479d3c724ef2f3e16809f255**. GitHub-koblingen publiserte med expected head bf5d3449 og uten force. Denne leveransen er 17 filer; samlet branch mot main er 205 filer, kun to nye scope-filer. Lokal originalcommit er bevart.
+
+Full lokal Sandbox critical/build PASS, exit 0. READY **dpl_9Y1JYgasP2332eYhrXZxGkKbFtKi** på samme faste alias, eksakt funksjons-SHA. PR Core Safety **37854417849**, Core safety + critical build **113575047296**, completed/success. Branchbinding EXPO_BACKEND_TARGET=sandbox, target preview, gitBranch feat-kshms-foundation kontrollert uten dekryptering. Main uendret **155f6c4ac01f126c1db0c65da385cfd9305587d5**. PR #216 open/draft; beskrivelsen oppdatert med endelig layoutscope.
+
+Innlogget skynettleser på publisert funksjonskode: **test ruh → Last ned RUH-PDF** gir **2 sider / 36486 byte før filens provenance-metadata**. Sak e3b21d35-9acb-4a1f-b4db-842a46f44f3e revisjon 2, begge historikkhendelser, alle tiltak/egen kontroll og lagret lukking **08.10.2026 kl. 01:28:17** kontrollert. MuPDF-render av begge sider viser lesbare rammer/tokolonner uten kutt/overlapp. Testsaken har fortsatt 0 vedlegg; faktisk innlogget privat RUH-bildeprøve gjenstår.
+
+Også **Vernerunde / kontroll → test vernerunde → Åpne dokumentasjon → Last ned PDF** lastet ned på samme nye kode: **1 side**, ny rammet layout, R-007 v1, Kenneth Demo, lagret fullføring **08.10.2026 kl. 21:03:15**, deltakere, svar og egen bekreftelse kontrollert. Ingen ny fullføring eller datalagring. Begge popupene er lukket. Faneinventaret bekrefter kun fane 3 på samme prosjektadresse; innlogging ble beholdt etter deploy.
+
+Fire berørte permanente checks og fire faktiske React/jsPDF-suiter PASS, inklusive rutine/mal/lagret kontroll, bilder/matrise, SJA/RUH i prosjekt-PDF, HTML/utskrift og negative tilgang-/revisjons-/avbryt-scenarioer. Endelig layout rendret for alle ulike dokumenttyper/sider; [scope og QA-kontrakt](BOXED_PDF_20261009.md). Dokumentcommit etter dette endrer bare bevisnotater. Tidligere TEST OK er bevart. Layout er fortsatt ny avgrenset brukerprøve; ingen Production, main/demo-merge, HR-rettigheter eller ekte e-postsending.
+
+---
+
+## Felles innrammet KS/HMS-layout – ny avgrenset leveranse
+
+9. oktober 2026, Europe/Oslo. Miljømål BEGGE, bare feature/Sandbox publiseres. Kenneth presiserte at rammer/tettere oppsett gjelder alle KS/HMS-rapporter. [Scope, QA-kontrakt og bevis](BOXED_PDF_20261009.md). Felles PDF-renderer, to kolonner for korte felt og full bredde/fortsettelsesbokser for langtekst; tilsvarende scoped HTML/print. Alle lagrede verdier, status/bekreftelse, bilder og matrise beholdes. Fire relevante critical-checker og fire faktiske React/jsPDF-flyter PASS. Tidligere TEST OK beholdes; «det fungerte» er brukerbekreftelse på forrige RUH-uttrekk. Ny layout må fortsatt vurderes av bruker. Ingen nye HR-rettigheter, Production eller ekte e-postsending.
+
+Publisering og innlogget prøve føres inn etter eksakt head/READY/Core Safety-kontroll. Øvrige B/C-punkter består før HR.
+
+---
+
+## Publisert RUH-PDF – READY og innlogget prøve
+
+Funksjonskode **7ed7eefae961aeb56e6a3fbcee3c5bc3b8a68e45**, tree **567f57ccdeb447b7dbded48a2e75305b73fe253f**, identisk med lokal testet commit 4da0b46f. GitHub-koblingen publiserte med expected-head ff2b2aae og uten force. Lokal originalcommit er bevart. Samlet branch-diff mot main er 203 filer; denne avgrensede leveransen er 11 filer.
+
+Samme faste Sandbox Preview er **READY** på **dpl_HJbefJLJnyttRvmktyQf4BMkcYS1** med eksakt funksjons-SHA og fast alias. **PR Core Safety 37851991453**, jobb **Core safety + critical build 113566887268**, completed/success. Lokal full Sandbox critical/build PASS. Branchbinding EXPO_BACKEND_TARGET=sandbox, target preview, gitBranch feat-kshms-foundation er kontrollert. Main er uendret **155f6c4ac01f126c1db0c65da385cfd9305587d5**; PR #216 er open/draft.
+
+Innlogget skynettleser på denne publiserte funksjonskoden: DEMO – HOVED → Avvik/SJA/RUH → RUH → Lukkede → **test ruh → Last ned RUH-PDF**. Faktisk fil lastet ned, 4 sider / 37231 byte. Sak **e3b21d35-9acb-4a1f-b4db-842a46f44f3e**, revisjon 2, bevart lukking Kenneth Demo **08.10.2026 kl. 01:28:17**. Tekstkontroll av sak, begge historikkhendelser (registrert/lukket), tiltak, egen kontroll og firmaprofil PASS. MuPDF-layout side 1/4 PASS. Denne saken har **0 vedlegg**; reell privat bildenedlasting er derfor ikke bevist av denne nettleserprøven. Bildeinnbygging/privat GET og feiltilfeller er prøvd med autentisert Storage-stub og ekte PDF-motor. Innlogget bilde-, mobil- og flere-konto-prøve består som eget gap.
+
+Innlogging bevart etter ny deploy i samme fane. Alle dialoger lukket etter prøve; inventar bekrefter bare fane 3 på samme prosjektadresse. Ingen saker, vedlegg, godkjenninger, bekreftelser, signeringer eller varsler endret. Skjermbilde av vellykket uttrekk gjort tilgjengelig. Denne utviklerprøven er ingen ny Kenneth TEST OK. Tidligere TEST OK beholdes. Neste B/C er øvrig vedleggs-/dokumentdekning, samlet tilsynsuttrekk, underskjema og påminnelser/kildeoppdatering; deretter HR med presisert særskilt tilgang. Ingen Production/main/demo-release, databaseendring eller ekte e-postsending/aktivering. Etterfølgende ren dokumentcommit lagrer dette beviset uten funksjonsendring.
+
+---
+
+## RUH-PDF og presisert HR-lesetilgang – 9. oktober 2026
+
+Utgangspunkt ff2b2aaee40902e74f53d4af019d51f4ff200a9a. Miljømål BEGGE; bare samme feature/Sandbox, draft PR #216. Main 155f6c4a. Avgrenset B/C: egen PDF fra lagret RUH med full paginert historikk og autentisert private bilder. Nye rapporthelper/knapp og to QA-scripts; KshmsDeviations får bare import/knapp, eksisterende critical-kjede får ny import. Ingen SQL, global navigasjon, e-post, portal- eller ordinær rapportendring. [Funksjon, sikkerhet, bevis og begrensninger](RUH_PDF_20261009.md). [Ny kort delprøve](USER_TEST.md) erstatter ikke eldre TEST OK.
+
+Permanent eksport-/tilgangsvern, faktisk React-editor/Storage-stub/ekte jsPDF og tekst-/visuell QA av 8-siders historikk/bilder PASS. Berørt tidligere React-prosjekt/SJA/RUH og uendrede critical-avviksassertions PASS. Full lokal Sandbox critical/build PASS. Publisert funksjons-SHA, Core Safety og READY føres etter publisering; ingen innlogget ny PDF-PASS hevdes før faktisk prøve.
+
+Kenneth presiserer at bare medarbeider, registrert nærmeste leder, firmaadmin og dem firmaadmin uttrykkelig gir tilgang, kan lese medarbeiderens innhold. HR_SCOPE oppdatert med egen tilbakekallbar lesetilgang per medarbeider til aktive appbrukere i samme firma. Anbefalt minste rettighet er lesing, ikke redigering/bekreftelse på andres vegne. Ingen automatisk innsyn fra KS/HMS/systemadmin. Dette er byggekontrakt; HR er ikke implementert. B/C før HR, samme Preview, tidligere TEST OK, ingen Production eller ekte e-post, består.
+
+---
+
+## Innlogget kontroll/PDF og HR-avklaringer – 8. oktober kl. 23:47
+
+Kenneth logget inn skynettleseren. Én fane. På feature-head 7113e4bf ble test vernerunde i DEMO – HOVED funnet via Avvik/SJA/RUH → Vernerunde / kontroll → Åpne dokumentasjon. Fullført Kenneth Demo 08.10.2026 kl. 21:03:15 beholdt etter lukking/gjenåpning. Faktisk PDF nedlastet og tekst-/MuPDF-layout kontrollert. Også R-008 v1 fra Min personalhåndbok og tom Bunnledning v1 fra Sjekklistesentral faktisk nedlastet og tekstkontrollert. Ingen dokumenter/bekreftelser endret. Alle dialoger lukket. [Nettleserbevis og begrensninger](UI_TEST_20261008_PDF.md).
+
+Gamle demosjekklister har svar, men mangler ny strukturert kontrollhistorikk; derfor ingen egen kontroll-PDF før en faktisk lagret kontroll. Ordinær prosjektrapport beholder tidligere dokumentasjon. Ny strukturert kontroll med bilder/ulagret sperre, risiko/PDF/prosjektvalg, mobil og flere faktiske kontoer gjenstår. Denne utviklerprøven er ikke ny Kenneth TEST OK.
+
+Ti HR-svar mottatt 23:47: eget HR-valg/Mine oppfølginger; avtalt tildelt leder/firmaadmin-tilgang, KS-rolle uten HR; medarbeider forbereder før felles møte; temaer og egne firmamaler; tiltak valgfritt uten behov, ellers ansvar/frist; begge bekrefter og kan kommentere uenighet; egen historikk under ansettelsen, ny leder overtar tilgang; ansatt mister tilgang ved fratredelse og sensitivt innhold slettes; nærmeste leder settes i nedtrekksliste blant aktive appbrukere og starter sykefravær manuelt. Anbefalt sett: årlig samtale, prøvetid og enkel oppfølgingssamtale. NHO, NAV, Arbeidstilsynet og Datatilsynet lest. [Byggekontrakt](HR_SCOPE_20261008.md) skiller beslutninger, anbefalinger og nødvendig begrenset bevaringsvurdering.
+
+Miljømål BEGGE. Denne runden bare dokumentasjon i feature. B/C før HR består; HR er ikke implementert. Main 155f6c4a og feature 7113e4bf bekreftet før dokumentendring. Ingen Production/main/demo-release, reell sletting, databaseendring eller e-postsending. Tidligere TEST OK består. Etterfølgende dokumentcommit publiserer dette beviset uten funksjonsendring.
+
+---
+
+## Publisert rutine-/sjekkliste-PDF – READY
+
+Funksjonskode **64143a3a4a982f442bbafcacaf40d535073751a8**, tree **86813dd63f72714995ea88bf71d26bd7b72cb571**. Hver publisert blob og samlet tree er identiske med lokal testet commit bb4b0053. Git-push manglet skriveinnlogging; GitHub-koblingen publiserte samme tree med expected-head aea7e766 og uten force. Ingen lokal branchhistorikk er slettet.
+
+Fast Sandbox Preview er **READY** på **dpl_83H3TYNf6vdiwWqZuRU8LTT3m5WV**, eksakt funksjons-SHA og alias expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app. **PR Core Safety 37846961060**, jobb **Core safety + critical build 113550101731**, completed/success. Endelig lokal full Sandbox critical/build PASS exit 0. Branchbinding EXPO_BACKEND_TARGET=sandbox, target preview, gitBranch feat-kshms-foundation er kontrollert. PR #216 er open/draft; main er uendret **155f6c4ac01f126c1db0c65da385cfd9305587d5**. Samlet branch-diff etter funksjonscommit: 196 filer; ny avgrenset slice: 20 filer.
+
+Neste er bare den nye korte rutine-/sjekkliste-PDF-prøven i USER_TEST.md. Fem faktiske React/jsPDF-uttrekk, tre berørte eksisterende React-flyter, permanent critical og visuell PDF-kontroll PASS. Transport/innlogging var simulert; innlogget bruker-/mobilprøve er ikke hevdet. Tidligere TEST OK og separate åpne oversikts-/kontroll-/risiko-/popup-prøver beholdes. Ingen ny database-/Production-/main-/demo-endring, e-postaktivering/sending eller HR. Øvrige B/C-punkter består. Etterfølgende ren dokumentcommit lagrer dette beviset uten funksjonsendring.
+
+---
+
+## Rutine- og sjekkliste-PDF – avgrenset B/C-del, 8. oktober 2026
+
+Utgangspunkt feature-head `aea7e76672380e8e914a234d8cc9ae9b629434c3`, main `155f6c4ac01f126c1db0c65da385cfd9305587d5`. Miljømål BEGGE, bare samme feature/Sandbox nå. Tidligere TEST OK og åpne nye delprøver beholdes. PR #216 er draft. Ingen HR, Production/main/demo-release, databaseendring eller ekte e-postsending.
+
+Egne PDF-er fra godkjente rutineutgaver, publiserte sjekklistemaler og lagrede prosjektkontroller er implementert. Rutine viser R-nummer/utgave, firmaets lagrede tekst, godkjenner/kilder og ID/hash. Egen ansattbekreftelse og andre ansattes opplysninger eksporteres ikke. Historiske kontooppslag merkes når navnesnapshot mangler. Sjekklistemal er tydelig tom mal; upublisert kladd tas ikke med. Prosjektkontroll viser eksakt lagret mal-ID, kontroll/revisjon, svar, kommentarer, bilder og eventuell lagret fullføringsidentitet/tid. Utkast merkes under arbeid; kontrollens fullføring lukker ikke avvik. Filvedlegg er navngitt med tydelig beskjed om at originalfilen ikke følger PDF-en. Ingen automatisk rapport-/portaldeling.
+
+Eksisterende lesende RPC-er og firmaprofil brukes. Tilgang og samme utgave kontrolleres både før og etter PDF-/bildeinnlasting. Prosjektkontroller beholder eksisterende prosjekttilgang uten krav om personlig KS/HMS-grant. Nye/ulagrede kontroller og redigerte svar sperres. Manglende bilde stopper eksport; manglende logo gir firmanavn og synlig beskjed. Filadresser/token kommer ikke i PDF-en. Profil-, bruker-, skjerm-/dokumentbytte stopper sene uttrekk. Ingen automatisk save/publish/sign/complete.
+
+Utviklerprøver: permanent ny document-PDF-critical PASS; fem faktiske React/jsPDF-uttrekk PASS med simulert RPC, inkludert rutine i Les og bekreft/Min personalhåndbok, mal ved endret utkast, fullført kontroll og utkast. Langtekst, logo/bilde, ikke-bekreftelse, ulagret sperre, nyere revisjon, tilgang tilbakekalt etter bildefremhenting og sent brukerbytte er prøvd. Tre eksisterende React-flyter for sjekklistesentral/prosjektpopup/workspace PASS; lagring/gjenåpning/fullføring/historikk/kladd/konflikt/legacy er bevart. Poppler-layout kontrollert på lang rutine (7 sider), mal (1 side), fullført kontroll/utkast (3 sider). Ingen kutt/overlapp; sider og originalbilder er beholdt. Endelig full Sandbox critical/build etter hjelpeoppdatering PASS, exit 0. Eksisterende bundle-size-advarsel består. Ingen ny innlogget mobil-/flere-konto-PASS hevdes.
+
+Publisering/CI/READY er bekreftet i beviset ovenfor. Neste er kun den korte nye PDF-prøven i USER_TEST.md. Øvrige B/C-punkter (full vedleggsdekning, versjonerte underskjema, RUH-bilder/historikk, tilsynsuttrekk, påminnelser/kildeoppdatering) gjenstår før HR. Samme faste Preview; ingen gamle TEST OK gjentas automatisk.
+
+---
+
+## Publisert kompakt prosjektoversikt – READY
+
+Funksjonskode **990ce731d983c8f6bbfd92b8498723d03c956868**, tree **18151a4384ba493e166801500bd5af7d09b78aee**. Lokal testet og publisert source tree er identiske. Fast Sandbox Preview er **READY** på **dpl_Gm7bVWwzsQ7N3nrcXiaL32RQbebW**, alias expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app, med eksakt SHA. PR Core Safety **37844000342**, jobb Core safety + critical build **113540184367**, completed/success på samme SHA. Branchbinding EXPO_BACKEND_TARGET=sandbox, target preview, gitBranch feat-kshms-foundation er kontrollert. PR #216 er fortsatt open/draft. Main står uendret på **155f6c4ac01f126c1db0c65da385cfd9305587d5**.
+
+Neste er den korte oversiktsprøven i USER_TEST.md. Alle 14 skjermbilder er lest. Tidligere TEST OK består; denne UX-delen og PDF-prøven har fortsatt ikke egen bruker-TEST OK. Ingen main-/Production-/demo-, database- eller e-postendring i UX-runden. En etterfølgende ren dokumentcommit registrerer dette beviset uten funksjonsendring.
+
+---
+
+## Prosjektoversikt – sammenfolding, 8. oktober 2026
+
+Kenneths 14 skjermbilder er lest. Avvik/SJA/RUH er gjort kompakt i samme feature/Sandbox: fire lukkede dokumentgrupper med antall/status, og lukkede grupper/rader for sjekkpunkt- og prosjektavvik. Åpne avvik står først; ansvarlig og frist vises på raden. Nye prosjektavvik åpnes etter lagring. Miljømål BEGGE, først Sandbox Preview; tidligere TEST OK består.
+
+Faktisk React/DOM med simulert RPC PASS: metadataantall, folding, bevart redigering, ny sak synlig etter lagring, offline/tapt tilgang/sene svar, låst prosjekt, legacy-lukking og koblet KS/HMS-sak. Eksisterende prosjekt/SJA/RUH- og gjennomføringsprøver PASS. Ingen ny innlogget mobil-/flere-konto-PASS hevdes. Full Sandbox critical/build PASS med exit code 0. Publiseringsbevis er bekreftet ovenfor. Ingen database-, e-post-, main-, Production- eller demo-endring i denne UX-runden. PR #216 beholdes draft.
+
+Neste er den korte oversiktsprøven øverst i USER_TEST.md. PDF-prøven under den er fortsatt åpen. [Omfang og kontroller](PROJECT_OVERVIEW_20261008.md).
+
+---
+
+## Publisert kontroll-/risiko-PDF – READY
+
+Funksjonskode **c6dc21d5073388eb4c57ce16eed447887ff17495**, tree **5642f9df18d308124fcf970b8f6900e702e00785**. Lokal testet og publisert source tree er identiske. Fast Sandbox Preview er **READY** på **dpl_AF8RKPJdjkFDcfSu32MPDauYy3xG**, alias expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app, eksakt funksjons-SHA. PR Core Safety **37840420573** og jobb Core safety + critical build **113528082970** er completed/success på samme SHA. Branchbinding EXPO_BACKEND_TARGET=sandbox, target preview, er kontrollert. PR #216 er open/draft. Main står uendret på **155f6c4ac01f126c1db0c65da385cfd9305587d5**.
+
+Neste er bare ny PDF-prøve øverst i USER_TEST.md. Ingen gammel TEST OK gjentas. PDF-leveransen er utviklertestet/publisert, men egen bruker-TEST OK for denne nye delen er ikke mottatt. Øvrige B/C-punkter før separat HR og pilot består. Ingen Production-migrasjon/merge/deploy eller reell e-postsending. Etterfølgende ren dokumentcommit registrerer dette beviset uten funksjonsendring.
+
+---
+
+## Gjeldende leveranse – kontroll-/risiko-PDF 8. oktober 2026
+
+Kenneths «kjør» autoriserer neste avgrensede PDF-del i samme feature/Sandbox. Avklarte valg: lagrede kontrollbilder, farget 5×5 med detaljer, lagrede utkast tydelig under arbeid, både egen PDF og valgfritt prosjektvedlegg, firmaprofilens navn/logo. Miljømål BEGGE; først Sandbox. Ingen main-/Production-/demo-endring eller reell e-postsending.
+
+Egen **Last ned PDF** og **Velg KS/HMS til rapport** er implementert. Fersk lesing kontrollerer tilgang/revisjon; ulagrede endringer stopper egen PDF. Lagrede identiteter, rutine-/malutgaver og egen fullføring beholdes. Forventet risiko er tydelig skilt fra kontrollert effekt; fullført kontroll lukker ikke avvik. Utkast kan eksporteres, men får ingen oppdiktet fullføring. Bare uttrykkelig valgte prosjektdokumenter følger rapporten, og portal får ingen KS/HMS-data.
+
+Sandbox-migrasjon **20261008202524_kshms_execution_report** er anvendt. Ny lesende RPC; gamle SJA/RUH-RPC-er og kommandoer er uendret. **79** faktiske SQL-assertioner PASS med full rollback. Faktisk React/jsPDF: tre egne PDF-er og syv prosjektrapport-PDF-er/fire utskrifter PASS med simulert transport. Lange dokumenter, bilder/logo, matrise og kombinasjon er visuelt kontrollert. Permanent critical og full Sandbox build PASS. Ingen ny innlogget mobil-/flere-konto-PASS eller brukerens TEST OK for PDF er hevdet. Signert SJA/rutineutgaver har samme fingeravtrykk; e-post-enabled=false. [Detaljer](EXECUTION_PDF_20261008.md).
+
+Publisering/CI/READY er bekreftet ovenfor. Fortsett med den korte nye PDF-prøven i USER_TEST.md; tidligere godkjente deler gjentas ikke. Fullplanen A–E og øvrige vedlegg/rapporter/påminnelser/HR består.
+---
+
+## Gjeldende avklaring – eksisterende Resend, Sandbox uten reell sending
+
+8. oktober 2026: Kenneth autoriserer videre kontroll og gjenbruk av eksisterende Resend. Sandbox/Preview holdes uten ekte KS/HMS-e-post; tidligere krav om å sette Sandbox-hemmeligheter/aktivere der er erstattet. Lesende Production-kontroll bekrefter smart-worker v18 ACTIVE med RESEND_API_KEY/CHAT_FROM_EMAIL. KS/HMS-kilde bruker allerede de samme prosjekthemmelighetene; smart-worker/payload endres ikke. Sandbox har også smart-worker v18, så eldre e-posttester kan ikke utelukkes; metoden er ikke gjenfunnet. KS/HMS enabled=false er direkte SQL-verifisert. Dagens permanent-test bruker providerstub, ikke innbokslevering. Se [gjeldende oppsett](EMAIL_SETUP.md).
+
+Miljømål BEGGE; kun dokumentasjon endres i denne runden. Ingen Production-merge/DDL/deploy, ingen hemmelighetsendring og ingen sending. Før senere uttrykkelig godkjent release: gjenbruk Production-konfigurasjon, riktig Production-origin/endepunkt, autentisert check uten sending og kontrollert mottaksprøve. Tidligere QA/popup/Preview-bevis består; ikke bygg om ferdig kobling. Denne runden: critical-kshms-notifications-check PASS og critical-kshms-deviations-check PASS på uendret kode. Første avvikscheck i ny dokument-worktree manglet React-avhengighet; prøven ble deretter kjørt i originalarbeidsmappen og besto. Ingen ny full build er nødvendig for ren dokumentendring.
+
+## Sluttkontroll – popup/ansvarse-post READY
+
+Popup og e-postflyt er bygget og tester grønne. Faktisk Sandbox-migrasjon 20261008192529, mailer v4 ACTIVE. Ny rollback-SQL 36 PASS + prosjekt 45, gjennomføring 54, avvik/worker 73, SJA/RUH 93 PASS. Faktisk React/DOM/prøvelenker og full Sandbox critical/build PASS. Fingeravtrykk signert SJA/rutineutgaver uendret. Check request 4 viser HTTP503, transport_safe=true, api_key_configured=false, sender_configured=false; enabled=false, ingen ekte e-post. Samme feature-Preview er READY, main uendret på 155f6c4a. [Bevis](NOTIFICATIONS_20261008.md). Funksjonskode `e96e20ade6605ddb0e8bc735f862ef842ea9b1b8`, tree `dc9c7397eb66bcedcee930769c1243c82f72523d`. Samme faste feature-Preview er READY på `dpl_HNUqhySypafZmk9d9CaQXSUVZcVn` med eksakt SHA/alias. PR Core Safety `37833698123`, Core safety + critical build `113505254109`, completed/success. Lokal og publisert source tree er identiske. Preview-binding EXPO_BACKEND_TARGET=sandbox er kontrollert for feat-kshms-foundation. Ingen Production-endring. Gjenstående ekstern konfigurasjon er RESEND_API_KEY/CHAT_FROM_EMAIL i Sandbox; ingen flere bruker-/Production-godkjenninger er utledet.
+
+## Aktivt arbeid – 8. oktober kl. 21:04 Europe/Oslo
+
+Kenneth: «test ok, popup burde lukke seg når godkjent. Alle varsler vi sender i appens ks/hms bør også sendes ansvarlig person på epost». TEST OK er registrert for prosjekttillegget publisert på 8bce982f: prosjektinnganger, rutinevalg og ansvarligvarsel. Dette er ikke Production-godkjenning. Nytt miljømål BEGGE, først samme Sandbox/Preview. Pågående rettelse lukker gjennomføringsdialogen først etter lagring og autoritativ readback; feil beholder kladden. E-post kobles til Avvik/RUH, vernerunder/kontroller, risiko, SJA, pliktig rutinegjennomgang og forfalt håndbokrevisjon, med deduplisering og undertrykking av inaktivt ansvar. Mailer er fortsatt avslått; helse/oppsett må verifiseres uten reell sending. Ingen Production-migrasjon, main-merge eller release er autorisert.
+
+# Gjeldende fortsettelsespunkt – prosjektinnganger og ansvarligvarsel publisert
+
+Funksjonskode `8bce982fb75bf105ee614601e604e438f89a78bc`, tree `ed17f78782d6a49944bd55be6b008d0ef29995e9`. Fast Sandbox Preview er READY på `dpl_4gwb3VsRp7Wf2GWmRrxFNre8DY87`, med samme feature-alias og eksakt SHA. PR Core Safety `37827572425` og jobb Core safety + critical build `113484256816` er completed/success på samme SHA. Lokal og publisert tree er identiske.
+
+Begge brukerbestillingene er implementert: prosjektinngang kun med modultilgang, separate prosjektoversikter og kladder, ansvarligs appvarsel til lagret egen fullføring, godkjente rutineutgaver og stor avkrysning ved begge fullføringsknapper. 44 nye rollback SQL-kontroller, faktisk React/DOM med CSS, gamle berørte brukerreiser og hele critical/build PASS. Rutinene velges med nummer og eksakt utgave; avviksvarsler beholdes når kontroll eller risiko fullføres.
+
+Neste handling er bare den nye korte innloggede brukerprøven i USER_TEST.md. Flere faktiske kontoer og mobil er ikke hevdet prøvd. Tidligere TEST OK består. Main/Production/demo er uendret; PR #216 er draft. Ved ny chat: bruk denne statusen og PROJECT_EXECUTIONS_20261008.md, og ikke behandle den historiske frakoblingen nedenfor som aktiv.
+
+---
+
+## Historikk – gjenoppretting og publisering
+
+# Gjeldende fortsettelsespunkt – forbindelsen gjenopprettet, originalarbeid intakt
+
+8. oktober 2026 etter kl. 20:34 Europe/Oslo svarte arbeidsmiljøet igjen. Originalarbeidet i `/workspace/scratch/31e71b5bfc49/expo-proffdok` er intakt, inkludert den nye faktiske React-prøven og critical-testtilleggene som ikke lå fullt i backupen. Forrige bygglogg viser ferdig Sandbox-bygg. Remote-head 8549888f er fast-forwardet inn uten tap av app-/testendringer. Backupen brukes bare som historisk gjenopprettingsbevis.
+
+Prosjektinngang, separate prosjektkladder, ansvarligvarsler, godkjente rutineutgaver og stor egen bekreftelse ved begge fullføringsknapper er ferdig målrettet prøvd. 44 nye rollback SQL-assertioner og faktisk React-prosjekt/varsel/dialog PASS; tidligere relevante scenarioer og fingeravtrykk består. Hjelp, README, arkitektur og kort testliste er oppdatert. Endelig full Sandbox critical/build etter oppdatert Hjelp er PASS med bekreftet exit code 0; diff-check og branchens Vercel Sandbox-binding er kontrollert. Publisering til samme feature/Sandbox Preview følger nå. Endelig commit/CI/READY registreres her når det er bekreftet.
+
+Miljømål BEGGE. Ingen ny DDL, main-/Production-/demo-endring eller tidligere godkjent brukerprøve gjentas. PR #216 beholdes draft. Ny vernerunde-/risiko-/ansvarligvarselprøve i USER_TEST.md gjenstår. Neste kilde for omfang og prøvebevis er PROJECT_EXECUTIONS_20261008.md. Det tidligere environment_offline nedenfor er historikk og skal ikke behandles som gjeldende hvis ny publisering er bekreftet.
+
+---
+
+## Historikk – frakoblingen før gjenoppretting
+
+# Gjeldende fortsettelsespunkt – prosjektinnganger/ansvarligvarsler testet, arbeidsmiljø frakoblet
+
+Chatten 8. oktober etter ca. 20:07 Europe/Oslo gjenfant arbeidsmappen `/workspace/scratch/31e71b5bfc49/expo-proffdok` på base `2079f5b4ec3e7eaeff0d755c37f7a31294b2182b`. Tilleggene for prosjektets vernerunde og 5×5, ansvarligs faste appvarsel, godkjente rutineutgaver og bekreftelse ved fullføringsknappen er skrevet og målrettet prøvd. Miljømål BEGGE, først samme feature/Sandbox Preview.
+
+44 faktiske nye SQL-assertioner PASS med full rollback: begge oppgavetyper, lesing beholder varsel, omfordeling, minimal varsling uten prosjekttilgang, egen fullføring, beholdt historikk, prosjektisolasjon/paginering, låst prosjekt, revokert modul, anon og ingen e-postkø. Ny faktisk React-prosjekt/varsel/dialog-prøve med simulert RPC PASS; eksisterende utførelses-, SJA-parent- og prosjekt/SJA/RUH-prøver PASS. Utvidet permanent execution-critical for prosjektkladder og faktisk varseleffekt, samt deviation-critical PASS. Samme signerte SJA (1) og rutineutgaver (10) har uendrede MD5 av sortert jsonb_agg: `9a8185f140b7483664c0d98a62b54b8e` / `474ef0379b5149c307ad43be792c18f0`.
+
+Sandbox-migrasjonene `20261008175102_kshms_project_executions_and_tasks` og `20261008180504_kshms_execution_task_access_hint` var allerede anvendt ved gjenopptakelsen. Den sistnevntes manglende lokale fil er gjenfunnet fra migrasjonshistorikken. Ikke kjør dem igjen. Nye funksjoner har eksplisitt firma-/bruker-/modul-/prosjektport, tom search_path og anon/PUBLIC-revokes; tilsiktet authenticated SECURITY DEFINER-advisor er vurdert mot negative SQL-prøver.
+
+`EXPO_BACKEND_TARGET=sandbox npm run build` ble startet. Før sluttresultatet kunne leses, sluttet verktøyet å svare. Siste konkrete feil: `failed to query exec-server capabilities ... 409 Conflict, environment_offline: Environment is not connected.` Full build kan derfor IKKE graderes PASS. Ingen nye appfiler ble pushet, og de nye tilleggene er IKKE publisert. GitHub fungerer; kun dokumentasjon og kildebackup er lagret. Main/Production og PR #216 draft er bevart. Browser-listen var tom; ingen ny fane/reset, innlogget/mobil-PASS eller credential-kall.
+
+Varig [kildebackup og prøvebevis](recovery/PROJECT_EXECUTIONS_20261008_environment_offline.json) er lagret i GitHub i commit `a79372a52a104c3be72fcb442f4e7335fbfe586d`. Backupen er et inert dokument, ikke installert appkode. Den inneholder syv app-/QA-filer og to allerede anvendte migrasjoner. Eksekveringsheader/hjelpere/CSS er rekonstruert fra hentet baseline og gjennomgåtte endringer; sammenlign med original arbeidsmappe når den svarer. Nye lokale React-/critical-testtillegg finnes i arbeidsmappen, men deres fulle kilde er ikke i backupen; ikke påstå at alt lokalt arbeid allerede er pushet.
+
+Neste: gjenkoble arbeidsmiljøet, kontroller original arbeidsmappe og anvend kun backup dersom originalen mangler. Bevar `scripts/kshms-project-executions-react-check.mjs` og utvidet `critical-kshms-executions-check.mjs`; deviation-critical skal nå hente den uendrede gamle varseleffekten fra `function DeviationTasks`. Bekreft full critical/build, oppdater kort testliste/README/arkitektur/Hjelp, og publiser appkode kun til `feat-kshms-foundation` med expected-SHA-kontroll. Verifiser samme faste Preview, CI/Core Safety og Sandbox-binding. Ingen ny Production-godkjenning. Tidligere TEST OK består; ikke gjenta godkjente deler uten ny feil. Ingen nye unødvendige avklaringer kreves.
+
+---
+
+# Gjeldende fortsettelsespunkt – gjenopptatt kontroll-/risikoleveranse
+
+Arbeidet fra avbrutt chat 8. oktober er gjenfunnet. Den opprinnelige vernerunde-/5×5-leveransen nådde Preview på 829ae353; etterfølgende bevis er på feature-head 65f62e0b. Rapportens TEST OK kl. 14:48 og tidligere godkjente delprøver består. Ingen av disse prøves på nytt uten feil.
+
+En påvist kladdfeil er rettet: etter uttrykkelig valg av kollegaens lagrede utgave ryddes den forkastede lokale kladden, så gjenåpning beholder servervalget. Nye meldinger ryddes ved ny åpning. Matrise-/malhistorikk-/Avbryt-vern fra siste publisering er bevart. Ny faktisk React-remount/servervalg-regresjon, eksisterende SJA-parent/sjekklistebygger, 54 rollback SQL-kontroller og full Sandbox critical/build PASS. Migrasjon 20261008131207 og dens eksakte SQL er uendret; ingen ny DDL.
+
+Kladdrettelsen er publisert: funksjonskode `cdac7cf1fe50b724bb87163422e5a0424b01fd58`, tree `47f6249fb6433a6181c9ac94256dd862b097f3bd`. Samme faste Preview er READY på `dpl_7ViZBuSk1G3bjNJ8vUfozN2u8Qhn`; PR Core Safety `37788569184` og jobb Core safety + critical build `113349595488` er completed/success. Branch-målet er Sandbox, main 155f6c4a og PR #216 open/draft. Publiseringsbevis står i EXECUTIONS_20261008.md; etterfølgende dokumentcommit endrer bare notater. Én eksisterende skynettleserfane er gjenbrukt, ingen nye faner/reset; faktisk visning når innloggingssiden, så ingen ny innlogget skjerm-/mobil-PASS hevdes. Ikke gjenta tidligere blokkerte credential-kall. Neste brukerhandling er bare vernerunde-/risikoprøven øverst i USER_TEST.md. Rapport-/vedleggsuttrekk, fristpåminnelser og separat HR følger fortsatt avtalt minimum før Ringside-pilot. Ingen Production-godkjenning.
+
+---
+
+## Opprinnelig publiseringsbevis fra forrige chat
+
+# Fortsettelsespunkt – vernerunder/kontroller og 5×5-risiko READY
+
+Kenneths rapport-TEST OK 8. oktober 2026 kl. 14:48 Europe/Oslo er registrert. Neste tidligere avtalte utførelsesdel er bygget: KS/HMS har Vernerunder/kontroller og Risikovurdering, med eller uten prosjekt, lokal kladd, serverlagring, egen fullføring og bevart historikk. Kontrollavvik går til eksisterende Avvik/RUH med ansvar/frister; fullføring lukker dem ikke. Risiko har blanke scorer, firmavurderte grenser, før/etter-matrise og planlagt/kontrollert effekt med uttrykkelig beslutning.
+
+54 faktiske rollback SQL-kontroller, permanent ny kritisk prøve og reell React/dialog med simulert RPC PASS. Sandbox-migrasjon 20261008131207 er anvendt. Signert SJA (1) og rutineutgaver (10) har uendrede fingeravtrykk. Omfang/testbevis i [EXECUTIONS_20261008.md](EXECUTIONS_20261008.md). Full Sandbox critical/build PASS. Funksjonskode `829ae35315d5e09d4f4e18d7f231f4a2826b8915`, tree `50421488d1498c3045f1d68f56b5efd62c2043d0`: samme faste Preview er READY på `dpl_6nK5QuRTshRSYX5ZAbd3MMPNYBAg`. Core safety + critical build `113342140090` er completed/success på samme SHA. Branch-spesifikk `EXPO_BACKEND_TARGET=sandbox` er kontrollert på nytt (target preview, branch feat-kshms-foundation). Publiseringsbevis står i leveransenotatet. Ny innlogget skjerm-/mobil-PASS er ikke hevdet; tidligere avviste nettleserkall gjentas ikke.
+
+Samme faste feature/Sandbox Preview beholdes. Main er kontrollert uendret 155f6c4ac01f126c1db0c65da385cfd9305587d5, PR #216 fortsatt draft, miljømål BEGGE. Ingen merge, Production-DDL/release eller demo-synk. Neste brukerhandling er bare den nye korte vernerunde-/risikoprøven øverst i USER_TEST.md; tidligere TEST OK gjelder fortsatt. Øvrige rapport-/vedleggsuttrekk, fristpåminnelser og separat HR/kompetanse følger minimumsplanen før Ringside-pilot. Utførelse før HR består.
+
+---
+
+## Historikk – rapport-TEST OK registrert før utførelsesarbeid
+
+# Fortsettelsespunkt – prosjektrapport TEST OK; vernerunder og risiko er neste del
+
+Kenneth svarte «test ok» 8. oktober 2026 kl. 14:48 Europe/Oslo på den korte rapportprøven gitt i chatten: velg prosjektets SJA/RUH i Rapport, PDF med valget og ordinær PDF uten SJA/RUH. Kontrollert feature-head `564778722c17d77358464de4fe465d02d336956e`, funksjonskode `f5c28dd3324a89ec0dd15b3f0c187d47e7bf1e9c`, samme faste Preview READY på `dpl_5L5KriFjsuoex1g4e3WGfAvzJNZA`. Godkjenningen gjelder rapporttillegget, ikke hele modulen eller Production. Tidligere delprøver består og gjentas ikke uten konkret feil.
+
+Neste avgrensede arbeid er vernerunder/selvstendige kontroller og 5×5-risikovurdering, fortsatt BEGGE og først samme Sandbox Preview. Egen lagring, fullføringshistorikk, valgfri prosjektkobling og kontrollerte avvik er innenfor dette. Se EXECUTIONS_20261008.md. Ingen Production-migrering/merge/release eller demo-synk er autorisert. Utførelse før separat HR og minimum før Ringside-pilot består.
+
+---
+
+# Historikk – SJA/RUH i prosjektrapporten bygget og publisert
+
+Kenneths «kjør» 8. oktober 2026 kl. 13:38 Europe/Oslo godkjente avgrenset valgfri SJA/RUH-del i prosjektets Rapport/PDF/utskrift. Miljømål BEGGE, først samme Sandbox Preview. Brukere med modulen velger konkrete prosjektdokumenter; ingen automatisk avkrysning. SJA viser oppgave/arbeidstrinn/tiltak/rutinenummer og utgave/deltakere/lagret PL-signatur, RUH viser hendelse/tiltak/ansvarlig/frist/status/egen kontroll og lukking. Utkast og åpne saker merkes tydelig. Rapportvalg lagres ikke i prosjektets JSON eller kundeportal.
+
+Implementering og 34 rollback databasekontroller PASS. Faktisk React/PDF/utskrift: 5 PDF-er og 3 utskrifter PASS; lang prøve-PDF på 12 sider kontrollert visuelt med Poppler Cairo. Eksisterende signert SJA og 10 rutineutgaver har uendrede fingeravtrykk. Endelig critical QA/build og publiseringsbevis samles i [PROJECT_REPORT_20261008.md](PROJECT_REPORT_20261008.md). Samme Preview er READY på funksjonskode f5c28dd3324a89ec0dd15b3f0c187d47e7bf1e9c; Core safety + critical build completed/success. Publiseringsbevis står i PROJECT_REPORT_20261008.md. Ingen Production- eller demo-synk.
+
+Neste brukerprøve gjelder bare rapportvalget og PDF-innholdet i USER_TEST.md. Tidligere TEST OK 8. oktober kl. 13:30 for SJA-utkast/rutine/lagring/gjenåpning og RUH-oppfølging/egen lukking bortfalt varsel/bevart sak består. Ingen nye signerings-/mobil-/flere faktiske brukerøkter-prøver er godkjent av dette. RUH-bildevedlegg/full endringshistorikk er ikke med i første rapportuttrekk. Ingen ny innlogget skjermtest hevdes; ikke gjenta tidligere avviste nettleserkall.
+
+Hovedretningen består: utførelse først, vernerunder/selvstendige kontroller og 5×5-risiko gjenstår; så separat HR (leder bare tildelte ansatte, firmaadmin alle/tildele), minimumsomfang før Ringside-pilot. Production main 155f6c4ac01f126c1db0c65da385cfd9305587d5 er uendret. Hovedretning for senere demo-synk er main → demo.
+
+---
+
+## Historikk før autorisert rapportleveranse
+
+# Gjeldende fortsettelsespunkt – SJA-utkast og RUH-oppfølging TEST OK; rapportkobling gjenstår
+
+Kenneth svarte «test ok» 8. oktober 2026 kl. 13:30 Europe/Oslo på prøven rett ovenfor i chatten: SJA-utkast med rutinenummer → Lagre utkast → lukk/gjenåpne fra samme prosjekt, og RUH → lagring med ansvarlig/frister → egne tiltak/egen kontroll/lukking → bortfalt ansvarligvarsel og bevart sak under Lukkede.
+
+Godkjenningen er registrert mot kontrollert feature-head `75f6ba1f53817a17e4efb3cac778a63d3cfcb9c5` og funksjonskode `4cebc9f8e7d115887a7ef4264c9f5390b3504265`. Samme Preview var READY på `dpl_39J3zc2PeqRSq6A8GtGs5pzNwfoA`. Den gjelder de konkrete prøvepunktene, ikke en ny signerings-/mobil-/flere faktiske brukerøkter-prøve, hele KS/HMS eller Production. De godkjente lagrings-/gjenåpnings-/RUH-lukkepunktene og tidligere meny-/dato-/sjekkliste-/håndbokprøver skal ikke gjentas uten en ny feil.
+
+Kodekontroll bekrefter at nye prosjektkoblede SJA-er og RUH-er foreløpig ikke inngår i prosjektets PDF-/rapportvisning. reportTools.js og reportViewTools.js leser eksisterende sjekkpunktavvik og project.projectDeviations valgt med includeInReport. createReportTools får ikke KS/HMS-/SJA-/RUH-data. Nye RUH-er opprettes med source_kind=company og project_id; projectAfterDeviation oppdaterer bare allerede koblede source_kind=project-saker. Dette er en bekreftet rapportmangel, ikke en feil i den godkjente lagringen.
+
+En valgfri rapportdel for prosjektets SJA/RUH, med signatur/deltakere/rutineutgaver for SJA og status/tiltak/ansvarlig/lukking for RUH, foreslås som en egen avgrenset leveranse. Omfang, inkludering og prioritering er ikke besluttet av spørsmålet alene. Avtalt videre utførelsesarbeid med vernerunder/selvstendige kontroller og 5×5-risiko, deretter separat HR og Ringside-pilot etter minimumsomfang, består.
+
+Denne registreringen endrer bare dokumentasjon. Ingen appkode, SQL, rapport, tilgang, e-post, signert analyse eller rutineutgave endres. Main uendret `155f6c4ac01f126c1db0c65da385cfd9305587d5`; PR #216 beholdes draft. Ingen Production-migrering/merge/release eller demo-synk. Ingen nye utviklerprøver er hevdet i denne dokumentregistreringen.
+
+---
+
+# Historikk – meny, RUH-inngang og norsk dato TEST OK
+
+Kenneth svarte «test ok» 8. oktober 2026 kl. 01:28 Europe/Oslo på den avgrensede prøven for prosjektets Avvik/SJA/RUH, Opprett SJA / Registrer RUH, KS/HMS → Avvik/RUH og norsk dato. Godkjenningen er registrert mot kontrollert feature-head `42204af397fc1fb6187e7e475c951ecdcd007550` og funksjonskode `4cebc9f8e7d115887a7ef4264c9f5390b3504265`. Dette er ikke godkjenning av hele SJA/RUH-lagrings-/signeringsflyten, hele modulen eller Production.
+
+Den korte meny-/RUH-/datoprøven skal ikke gjentas uten en ny konkret feil. Neste nødvendige brukerprøve er SJA-utkast med rutinenummer → lagring/gjenåpning fra samme prosjekt, samt RUH → lagring for oppfølging → ansvarligs egen dokumenterte lukking → bevart rapport. Se de faktiske knappene øverst i [USER_TEST.md](USER_TEST.md). Tidligere håndbok-, avvik-, menyretur- og sjekklistepopup-TEST OK består.
+
+Overtakelseskontrollen bekreftet samme faste Preview READY på `dpl_6LSTm6CzDM94bZEj6Wf58NwvhP27` / `42204af397fc1fb6187e7e475c951ecdcd007550`, PR Core Safety completed/success på funksjonskoden, branch-spesifikk `EXPO_BACKEND_TARGET=sandbox` og de tre SJA/prosjekt/RUH-migrasjonene i Sandbox-historikken. Denne registreringen endrer bare dokumentasjon. Ingen appkode, SQL, tilgang, e-post, signerte analyser eller rutineutgaver endres. Ingen ny innlogget utviklerprøve eller fysisk mobilprøve hevdes; eksisterende Preview-fane kunne ikke bindes og øktens tabbliste var tom.
+
+Miljømål BEGGE, fortsatt feature/Sandbox Preview. PR #216 beholdes draft. Main/Production er kontrollert READY på `155f6c4ac01f126c1db0c65da385cfd9305587d5` / `dpl_9wsjTrEVzvAF6jf7f9HgvzskYP5z`. Ingen Production-godkjenning, merge, Production-DDL eller demo-synk. Vernerunder/selvstendige kontroller og 5×5-risiko følger den korte SJA/RUH-prøven; utførelse før separat HR og bygging før Ringside-pilot er fortsatt vedtatt.
+
+CURRENT_RELEASE_STATUS.md viser nå bare dagens status. Det tidligere samlede statusinnholdet er bevart som [historisk arkiv](archive/CURRENT_RELEASE_STATUS_before_TEST_OK_20261008.md). Eldre avsnitt nedenfor er kontrollhistorikk og skal ikke starte nye godkjenningsrunder.
+
+---
+
+# Historikk før TEST OK – Avvik/SJA/RUH, RUH-meny og norsk dato READY
+
+Oppdatert 8. oktober 2026, Europe/Oslo. Kenneths tre skjermbilder viste en faktisk desktopmenyfeil: det nye navnet Avvik/SJA/RUH ble ikke gjenkjent av adapteren og manglet i toppmenyen. Dette er rettet i menyen, bootstrap-snarveien og workflowmålet. Åpne Avvik går til den faktiske prosjektfanen, også fra Ordreoversikt. KS/HMS har nå Avvik/RUH → Registrer avvik / Registrer RUH og eget SJA-valg. Kun personlig modulbruker får prosjektets SJA/RUH-verktøy.
+
+Frister vises dd.mm.åååå i liste, historikksaksbilder, fast ansvarligvarsel og koblede prosjektavvik. Hendelsestidspunkter viser norsk dato og Europe/Oslo. Date-input/payload/lagring forblir ISO. Ingen SQL-/Auth-/Storage-/e-postendringer i denne rettelsen. Forrige Sandbox-migrasjon består; syntetiske SQL-testdata ble rullet tilbake. De konkrete tekstene i Kenneths to SQL-godkjenningsdialoger er ikke kjent.
+
+Funksjonskode `4cebc9f8e7d115887a7ef4264c9f5390b3504265`, tree `c746110e2025cb11b06087bec2084abf651442b2`: READY på `dpl_7eswiB6TH89b1VcUJBxAsiX5ckDA`, Core safety + critical build `113066107707` completed/success. Fast Preview-alias og branch EXPO_BACKEND_TARGET=sandbox kontrollert. Full critical QA/Vite-bygg, faktisk desktop DOM og faktisk React parent/prosjekt/SJA/RUH med norsk listedato/historikk PASS. Ingen ny innlogget nettleserprøve er hevdet; den dokumenterte verktøyblokkeringen ble ikke gjentatt. Testbevis: [NAV_RUH_DATE_20261008.md](NAV_RUH_DATE_20261008.md).
+
+Main er kontrollert uendret `155f6c4ac01f126c1db0c65da385cfd9305587d5`. PR #216 er draft. Ingen produksjonsrelease/DDL/demo-synk. Ingen ny SJA/RUH-TEST OK. Tidligere godkjente menyretur-/sjekkliste-/avvikprøver består, men denne nye menynavnfeilen krever den korte prøven øverst i USER_TEST.md.
+
+Neste steg: Kenneth kontrollerer bare synlig Avvik/SJA/RUH, prosjektets Opprett SJA / Registrer RUH, KS/HMS → Avvik/RUH og norsk dato. Full ny SJA/RUH-godkjenning, mobil/flere faktiske brukerøkter og senere vernerunder/5×5-risiko/HR følger tidligere plan. Ikke bygg godkjente deler om eller gjenta gamle databaseprøver uten ny feil.
+
+Notatet er lagret i Git-repoet og trenger ikke kopieres manuelt. Ved ny chat: «Fortsett KS/HMS; les docs/kshms/OVERSIKT.md og CONTINUITY.md.» Hele notatet forutsettes ikke automatisk overført av ChatGPT-prosjektet.
+
+---
+
+# Gjeldende fortsettelsespunkt – prosjekt-SJA/RUH og nummererte rutiner READY
+
+Oppdatert 8. oktober 2026, Europe/Oslo. Les OVERSIKT.md først. Kenneth avklarte ca. 00:24–00:32 at ordreforslag skal være bedriftens faktiske aktiverte ProffDok-prosjekter, samtidig med manuell ekstern referanse. Han ba om nummererte bedriftens rutiner, fagforslag for mur/flis/tømrer, RUH med samme logikk og direkte Opprett SJA / Registrer RUH i prosjektets Avvik/SJA/RUH, bare ved personlig modultilgang. Dette er implementert, ikke SJA/RUH-TEST OK.
+
+Prosjektoversikt / Ordreoversikt og Avvik/SJA/RUH har Opprett SJA og Registrer RUH samt Åpne SJA / Åpne RUH. Begrepene forklares. Ny blank analyse/rapport derfra binder prosjekt-ID. SJA og RUH i KS/HMS kan også velge faktisk tilgjengelig aktivt firmaprosjekt eller manuell ekstern referanse. Godkjente, tilgjengelige rutiner kan leses og velges med fast R-nummer og versjon. Nummer er metadata uavhengig av publisert innhold. Forslag dekker mur, flis, tømrer, VVS og generelle jobber; ingen risiko-/signatursvar autofylles. RUH gjenbruker existing deviation-category/kommando, ansvarligvarsel, egne tiltak/lukking, private vedlegg og historikk. Kladd og retry/readback er vernet per bruker/firma/prosjekt. Legacy avvik/prosjekt-/sjekkpunkt-JSON beholdes.
+
+Funksjonskode `694a4a9a114044ead724532c18133c28045c5863`, tree `e25b2562a45dcde9ced79ecfb54a6b52b053416c`, er READY på `dpl_AX9QTyWPY7KQovT3bGBFPSyKxsdg` og fast alias. Core safety + critical build `113058866219` completed/success. Lokal og remote tree er eksakt like. EXPO_BACKEND_TARGET=sandbox gjelder feature-branchen/preview. Migrasjon `20261007224149_kshms_job_choices_routine_references_ruh.sql` er registrert bare i Sandbox. 93 SQL-assertioner PASS med full rollback, nye faktiske React/DOM-prosjekt-/SJA-/RUH-handlere PASS, eksisterende SJA- og parent-/fanebytteprøver og full critical/build PASS. Eksisterende signert SJA (1) og publiserte rutineutgaver (10) har identiske fingeravtrykk før/etter.
+
+Neste handling: kort SJA/RUH-prøve først i USER_TEST.md. Ingen ny innlogget nettleser-/mobilprøve hevdes; dokumentert skynettleserblokkering ble ikke gjentatt. Kenneths SJA/RUH-TEST OK gjenstår. Gamle meny/sjekklistepopup-TEST OK består, uten nye omtester. Vernerunder, 5×5 risiko, SJA-vedlegg/PDF, separat HR og øvrig minimum gjenstår. Utførelse før HR og bygging før pilot er fortsatt vedtatt. Miljømål BEGGE, main uendret `155f6c4ac01f126c1db0c65da385cfd9305587d5`; PR #216 draft; ingen merge/Production-DDL/-release/demo-synk. Ikke bygg denne delen på nytt ved chatbytte.
+
+Se [SJA_RUH_PROJECT_20261008.md](SJA_RUH_PROJECT_20261008.md) for scope/testbevis.
+
+---
+
+# Historikk – tidligere fortsettelsespunkter
+
+# Gjeldende fortsettelsespunkt – SJA-UX og prosjektinngang READY
+
+Oppdatert 8. oktober 2026, Europe/Oslo. Les OVERSIKT.md først. Kenneths nye tilbakemelding 7. oktober ca. 23:50 er håndtert: samlet mangelliste med feltnavn og fokus ved signering, aktive forslag i alle SJA-tekstfelt og inngang fra prosjekt ved KS/HMS-tilgang. Dette er tilbakemelding og ny scope, ikke ny SJA-TEST OK.
+
+Prosjektoversikt / Ordreoversikt → Åpne SJA viser bare analyser med faktisk prosjekt-ID. Nye analyser derfra følger prosjektet etter lagring/signering. Gamle selvstendige analyser og signert innhold flyttes ikke. Lokale prosjektkladder og tidligere KS/HMS-kladd er separate. Server krever KS/HMS-grant, aktivt firma og prosjektadgang; låst prosjekt avviser endringer. Egen PL-signatur og dokumentert medvirkning består.
+
+Funksjonskode `06a5abbed3ed6a921265c96468f1253d278ca5ee`, tree `ce2df79089500734b0770a0938e0f3f0d736a6c3`, er READY på `dpl_DPUuLEqTcrN2mFr3HN5nrE8D3u4r` med samme faste Preview og bekreftet branch-binding `EXPO_BACKEND_TARGET=sandbox`. Core safety + critical build check `113042525234` completed/success. Eksakt lokal/remote tree samsvarer.
+
+Full critical QA/build, faktisk React/DOM-skjema/ProjectSjaEntry, parent-/fanebyttescenario og 60 faktiske SQL-kontroller PASS. Alle syntetiske SQL-rader er rullet tilbake. Eksisterende signerte analyse (1) bevart med identisk kontrollsum. Sandbox-migrasjon `20261007220221_kshms_sja_project_link.sql` er registrert; tidligere SJA-migrasjon `20261007212858` består. Ingen Production-DDL.
+
+Neste handling er den korte brukerprøven først i USER_TEST.md. Ingen ny innlogget nettleser-/mobilprøve hevdes; tidligere verktøyblokkering må ikke gjentas i løkke. SJA-TEST OK er fortsatt ikke mottatt. Meny/sjekklistepopup er allerede TEST OK. Miljømål BEGGE, main fortsatt `155f6c4ac01f126c1db0c65da385cfd9305587d5`; ingen merge/Production-release/demo-synk. Vernerunder, 5×5 risiko, vedlegg/PDF, separat HR og resten av minimumsomfanget består.
+
+Se [SJA_UX_PROJECT_20261008.md](SJA_UX_PROJECT_20261008.md) for scope og testbevis. Ikke bygg denne delen på nytt ved chatbytte.
+
+---
+
+# Historikk – tidligere SJA-status
+
+# Gjeldende fortsettelsespunkt – SJA READY på samme Preview; kort brukerprøve gjenstår
+
+Les OVERSIKT.md først. Kenneths svar 23:02 er lagret: begge delprøver TEST OK, utførelse før HR, bygg før Ringside-pilot, ledere bare tildelte HR-medarbeidere/firmaadmin alle, og tom SJA med hjelp over feltene. Meny/sjekklistepopup skal ikke testes på nytt uten ny feil.
+
+Avgrenset SJA er bygget: blank jobb, valgbare forslag, utkast/readback, lokal kladd ved fanebytte/remount, kollegasammenligning, ansvarlig PLs egen signatur og uforanderlig analyse. 38 faktiske SQL-kontroller i Sandbox og faktisk React-scenario med simulert transport PASS. Begge faktiske React-scenarioer (den gjenfunne og parent-/fanebyttescenarioet) samt full critical/Vite-build PASS. Migrasjon 20261007212858_kshms_sja er bekreftet fra Sandbox-historikken og eksakt SQL lagret i repoet. Syntetiske rader rullet tilbake. Ingen ny nettlesertest hevdes; skynettleseren er fortsatt blokkert og ingen nye faner åpnes.
+
+Miljømål BEGGE. Neste utviklingsdel er vernerunder og 5×5 risiko. Bare den korte SJA-prøven kan registrere egen SJA-TEST OK; Ringside-pilot kommer etter bygging av avtalt minimum. Bare SJA-prøven øverst i USER_TEST.md gjenstår for denne leveransen. Main/Production/demo er uendret på gjeldende baseline. Vernerunder, 5×5 risiko, PDF, HR og øvrige B–E-deler består. Se SJA_20261007.md.
+
+
+
+Funksjonskode `8f14d58282408d872eee0505dc61646dfe4a5c20`, tree `8ad9492809bbd41f8ca37925c1f43e20bf2e53f1`, er publisert READY på `dpl_H3XMgUxRsSHW2pvUiTdxV9Spzuzs`. Fast branch-alias peker til denne deployen; `EXPO_BACKEND_TARGET=sandbox` gjelder feat-kshms-foundation/preview. PR Core Safety run `37691631432` er completed/success på koden. Lokal og publisert tree er identiske. Main er kontrollert uendret på `155f6c4ac01f126c1db0c65da385cfd9305587d5`.
+
+---
+
+# Bevart publiseringshistorikk fra tidligere kjøring
+
+# Gjeldende fortsettelsespunkt – SJA bygget og utviklertestet
+
+Påbegynt SJA fra avbrutt chat er gjenopptatt i separat recovery-arbeidsmappe. Tomme jobbspesifikke felt, veiledning over feltene, aktivt valgte forslag, delvise utkast, prosjektleders egen signering og uforanderlig signert innhold er implementert. Migrasjon `20261007212858_kshms_sja.sql` er kun anvendt i Sandbox; 37 reelle SQL-kontroller med full rollback, permanent kontroll, faktisk React-flyt og full critical QA/build PASS. Se [SJA_20261007.md](SJA_20261007.md) for scope/kilder/testgrenser og [USER_TEST.md](USER_TEST.md) for kort prøve.
+
+Funksjonskode `fcea0492531d860ea006e3650b85d3dd18b80c47`, tree `006797ae29ed0f9fb2fadb4897df25bf9c348a03`, er publisert på **samme** feature-Preview. Vercel `dpl_4LUb8LoDB3EVhkko6nwYae29Sy4G` READY og Core safety + critical build `37690659010` success på denne SHA-en. Fast alias/Sandbox-binding og eksakt lokal/remote tree er kontrollert. Eksisterende skynettleserfane 1 kunne bindes, men viste innlogging; ingen ny fane, credentialforespørsel eller innlogget SJA-skjerm-PASS. Ingen main-/Production-/demo-endring; main er kontrollert `155f6c4`.
+
+Neste handling er den **korte SJA-prøven** øverst i USER_TEST.md. Ingen SJA-TEST OK er registrert ennå. Meny og sjekklistepopup er allerede TEST OK; ikke start gamle prøver automatisk eller bygg SJA på nytt. Vernerunder og 5×5-risiko er neste avgrensede utførelsesdeler etter SJA. Prosjektkobling/vedlegg/PDF, separat HR og øvrige roadmapdeler består. Denne dokumentoppdateringen endrer ikke funksjonskoden.
+
+---
+
+# Vedtatte avklaringer – meny og sjekklistepopup TEST OK; SJA
+
+Kenneth svarte 7. oktober 2026 kl. 23:02 Europe/Oslo: TEST OK gjelder begge deler, meny og sjekklistepopup med lagring/fullføring/historikk. Utførelsesdelen prioriteres før HR; vi bygger før Ringside-piloten. Ved individuell HR får ledere bare tildelte medarbeidere; firmaadmin ser/behandler alle og tildeler ansvar. SJA starter tom for hver jobb, med forslag til rutiner/sjekkpunkter og hjelpetekst over feltene. Primærkilder undersøkes før innholdet skrives. Ansvarlig PL signerer fortsatt selv etter dokumentert medvirkning. Dette er ikke Production-godkjenning.
+
+Miljømål BEGGE, først samme Sandbox Preview. Neste avgrensede kodeleveranse er SJA i KS/HMS, med nytt avgrenset datadomene og RPC-er; ingen endring av main.jsx, global meny, prosjektdata, avviksregler, auth eller e-post. Se OVERSIKT.md og kommende SJA-leveransenotat. Vernerunder, 5×5 risiko, PDF, HR og øvrige roadmapdeler består. Ingen gamle godkjenninger skal gjentas automatisk.
+
+---
+
+# Historikk – meny TEST OK, før godkjenning av sjekklistepopup
+
+**Kort samlet status ved chatbytte:** Les [OVERSIKT.md](OVERSIKT.md) først. Den skiller implementert arbeid, Kenneths godkjente delprøver, gjenstående leveranser og spørsmål som fortsatt avventer svar. Eldre avsnitt nedenfor er testhistorikk og skal ikke utløse nye fulle omtester.
+
+Kenneth meldte **«test ok» 7. oktober 2026 kl. 22:39 Europe/Oslo** etter den korte menyprøven. Dette er godkjenning av kompakt Meny og retur fra generell ordre til Startside. Registrert mot kontrollert feature-head `2c7c2b5ee68230056e9dd385986a33756a9b2561`, funksjonskode `9a8bc9d64ec2ac18d82778eca26fbaa9fae10a9f`. Ikke gjenta den beståtte menyprøven uten ny feil. Godkjenningen omfatter ikke hele KS/HMS, popupens lagring/historikk eller Production.
+
+Neste avgrensede handling er den korte sjekklistepopup-prøven øverst i USER_TEST.md: et testpunkt → Lagre → omlasting/gjenåpning → Sjekkliste fullført → Start ny kontroll → bevart historikk med navn/tidspunkt. Utviklerens tidligere innloggede popupprøve, 35 rollback-databasekontroller og React-scenarioer består; ikke bygg funksjonen på nytt eller gjenta SQL-rundene. Miljømål BEGGE, først samme Sandbox Preview. Ingen main-merge, Production-endring eller demo-synk utføres ved registrering av meny-TEST OK. Utviklerens nye skynettleserøkt fikk ingen bekreftet innlogget flate; brukerens TEST OK er eget bevis, ikke en ny utvikler-skjermtest.
+
+Kenneth ba kl. 22:44 Europe/Oslo om nullstilling av skynettleseren. Den støttede REPL-nullstillingen fullførte (`js kernel reset`). Deretter avviste både åpning av ny Preview-fane og gjenkobling til cdp med `native credential state cannot be safely resumed. Start a new browser runtime to continue.` Dette er en verktøyblokkering, ikke påvist botblokkering eller feil i appen. Full restart av nettleserprosessen er ikke eksponert i de tilgjengelige dokumenterte API-ene. Ingen full nettlesernullstilling eller ny skjermtest hevdes som bestått. Ikke gjenta de samme avviste kallene i løkke.
+
+---
+
+# Historikk før meny-TEST OK – hovedmeny etter ordre, 7. oktober 2026
+
+Kenneth har meldt reell regresjon i den globale menyen etter bruk av generell ordre. Den er gjenskapt med hans nøyaktige Prosjektoversikt/Salgsgrunnlag-knapperekke. Årsaken er ordre-adapterens gamle etiketter som overskriver gjenbrukte React-kontroller ved retur, ikke manglende ny menykode. Rettelsen følger den gjeldende React-etiketten på source controls. Scope og før/etter-prøver står i [MENU_RETURN_20261007.md](MENU_RETURN_20261007.md). Miljømål BEGGE, først samme Sandbox Preview. Full critical/build, faktisk React-retur og eksisterende sjekklistepopupscenario PASS. Koden er publisert som 9a8bc9d64ec2ac18d82778eca26fbaa9fae10a9f, eksakt lokal/remote tree-kontroll, READY dpl_95rV35jiRQTjca3Mik9Yecp8qrYU, fast alias og Sandbox-binding kontrollert, Core Safety 37682948736 success. Sikker skynettleserinnlogging ga ingen bekreftet innlogget flate; ingen innlogget skjerm-PASS hevdes. Ikke bygg sjekklistefunksjonen på nytt eller gjenta gamle SQL-runder. Production er kontrollert uendret på 155f6c4. Neste handling er Kenneths samme Preview → generell ordre → ← Startside, og kompakt Meny skal bestå. Ingen ny TEST OK eller produksjonsgodkjenning hevdes.
+
+---
+
+# Gjeldende fortsettelsespunkt – sjekklistepopup, 7. oktober 2026
+
+Miljømål **BEGGE**, først samme Sandbox Preview. Forrige kjøring fortsatte i bakgrunnen etter forbindelsesbruddet og publiserte kodehead `dba4ee3ad8ce700e5eb64df101f95063c65a1d91` (tree `207d8051c449aee8e94d6bdda11805739cc3f015`). En separat recovery-arbeidsmappe ble derfor åpnet på den eksakt samme lokale treutgaven for å unngå samtidige overskrivinger. Ikke bygg denne funksjonen på nytt.
+
+Fast Preview: https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe. Vercel `dpl_DCieSStSwjVhZq6rQS9iDNCAiG7C` READY; branchvariabelen `EXPO_BACKEND_TARGET=sandbox` er kontrollert. PR Core Safety run `37668916442` completed/success. Main var uendret `155f6c4ac01f126c1db0c65da385cfd9305587d5`. Ingen Production-migrasjon, merge eller demo-synk.
+
+Avklart funksjon: kompakt ordremeny; ingen automatisk våtromsliste i generelle ordrer; egne punkter uten KS/HMS-/garantikrav på disse ordrene; publiserte firmamaler ved aktiv firmamodul. Listene starter kollapset. Popupen har **Lagre**, **Sjekkliste fullført**, **Start ny kontroll** og historikk. Vanlige åpne sjekkpunktavvik kan følges opp i en ny kontroll via Gå til punkt; historikken beholdes. Samtidige endringer gir konfliktvisning, og videreføring av lagret kontroll beholder tidligere lokal kladd for sammenligning.
+
+Kontroll ved overtakelsen: full critical QA/Sandbox-build PASS; de eksisterende React-prøvene for sentralen/popupen samt en ekstra konkret prøve for konflikthåndtering og avviksoppfølging PASS. Utvidet faktisk Sandbox SQL har **35 kontroller PASS med rollback**. Ingen ny databasemigrasjon ble nødvendig i denne overtakelsen. Den ekstra SQL-prøven verifiserer lukking i ny kontroll, egne nye punkter, gjenåpning, koblet KS/HMS-status og bevart fullført snapshot.
+
+Innlogget desktopprøve på samme Preview er nå PASS: demoordre `a45b0000-0000-4000-8000-000000000001`; egen kategori Annet fag med punkt **QA – sjekklistepopup, syntetisk prøve 07.10.2026**. Lagre → lukk → reload → åpne bevarer Ok og kommentaren. Første fullføring `ddee47a5-84fe-43b1-a18c-a93d0707ca4c` kl. 20:55:53 Europe/Oslo; ny kontroll starter uten tidligere svar og fullføres separat som `7832ff92-31e3-479a-bc2c-13c7a0261bdf` kl. 20:57:08 med Ikke aktuelt og en annen kommentar. Begge har Kenneth Demo som faktisk aktør. Historikken viser begge; første kontroll gjenåpnes skrivebeskyttet med sitt opprinnelige Ok og sin opprinnelige kommentar. [Skjermbevis](checklist-popup-history-proof.jpg). Bare det tydelig merkede testpunktet har fått disse syntetiske gjennomføringene; den innhentede Bunnledning-listen er bare åpnet og inspisert.
+
+Neste handling er Kenneths korte prøve øverst i USER_TEST.md. Ingen ny bruker-TEST OK eller Production-godkjenning hevdes. Ikke gjenta allerede beståtte runder uten en ny feil. To samtidige personer er kontrollert i database-/komponentprøver, ikke som to faktiske browserinnlogginger. Mobilbredde, fysisk kamera, ny PDF og UE-portal for lister med nye gjennomføringer er ikke verifisert her. De gjenværende roadmapdelene består.
+
+---
+
+## Siste overgangskontroll – åpne sjekkliste i generell ordre
+
+Den avklarte inngangen består: generelle ordrer henter under **Sjekklister**, våtrom under **Fag/utstyr**. Baseline er 4b84bab86d1172f84c189615c4f99d17401d9be4. «Åpne sjekkliste» kan nå også åpne riktig gruppe når ChecklistEditor allerede er montert på samme fane; den eksisterende hopprutinen håndterer både mount og et avgrenset åpningssignal. Svar/kladd og prosjektrettigheter endres ikke. Kort faktisk React-prøve av kollapset gruppe → åpnesignal PASS; full critical QA/Sandbox-build PASS. Ingen ny SQL, e-post, main-/demo-merge eller Production-endring. Sjekk aktuell feature-HEAD og fast Preview ved videre arbeid; ikke gjenta eldre fulltester. Den korte prøven i USER_TEST er fortsatt neste brukerhandling.
+
+# Gjeldende fortsettelsespunkt – Sjekklistesentral, 7. oktober 2026
+
+Kenneth har gitt **TEST OK for popup og direkte lukking på ca2f0cb676755338c87e3d4f2a082281d309da8b**. Ikke start denne hele flyten igjen automatisk. Ny bestilling er fagspesifikk Sjekklistesentral med innhenting under Sjekklister i generelle ordrer og Fag/utstyr i våtromsprosjekter. Tilgang avklart: **«Har firma KS/HMS modulen så ja»** – prosjektbrukere trenger ikke personlig KS/HMS-grant for å hente publiserte lister. Sentralen bygges av firmaadmin/KS/HMS-ansvarlig. Ukoblede prosjektavvik fungerer som før.
+
+Sjekklistesentral, publisering og versjonsfaste prosjektkopier er implementert. Kenneth presiserte at generelle ordrer ikke trenger Fag/utstyr. Innhenting ligger derfor direkte under Sjekklister i generell ordre, mens våtrom bruker Fag/utstyr. Ordrebegrensningene består. Nye migrasjoner er anvendt kun i Sandbox. **27 faktiske databasekontroller PASS med rollback**, permanent handler-/kopiregresjon PASS, kort faktisk React-flyt PASS. Se [CHECKLIST_CENTRAL_20261007.md](CHECKLIST_CENTRAL_20261007.md) for eksakt scope, migrasjoner og begrensninger. USER_TEST har neste korte prøve. Arbeidsbranchen er fortsatt feat-kshms-foundation/PR #216; bruk samme faste Preview. Main ved siste kontroll er 155f6c4ac01f126c1db0c65da385cfd9305587d5. Ingen merge eller Production-/demo-endring er utført.
+
+Dette er én avgrenset del av B, ikke hele roadmapen. Bevar kapitler/rutiner og gjeldende avviksrettigheter. Selvstendige gjennomføringer, vernerunder, SJA, risiko, HR, påminnelser, eksport/PDF og pilot/drift gjenstår. Bruk korte målrettede kontroller; Kenneth tester i Preview. Ikke erstatt historikk nedenfor eller spør om avklarte tilgangsvalg igjen.
+
+---
+
+# KS/HMS – gjeldende fortsettelsespunkt
+
+Oppdatert 7. oktober 2026, Europe/Oslo. Dette dokumentet samler gjeldende brukerbeslutninger og verifiserte referanser etter to avbrutte samtaler. En ny chat skal lese dette først, deretter PLAN.md, SCOPE_A2.md, QA.md og USER_TEST.md. Dette er ikke en ordrett kopi av historikken eller en attest på at hele modulen er ferdig.
+
+## Gjeldende rettelse – kontrolltekst, direkte lukking og popup
+
+Brukeren har lagt inn kontrolltekst flere ganger; «Lagre endringer» slettet den og flyttet fokus oppover. Rotårsaken er gjenskapt i en avgrenset Sandbox-transaksjon: kshms_deviation_command satte control_note til tom streng ved vanlig save. Den gamle fokus-/scroll-effekten kjørte også etter lagring. Brukeren ønsker eksisterende avvik i en popup som lukkes ved lagret lukking, og korte tekster som «OK» i lukkefeltene.
+
+Miljømål BEGGE, først samme Sandbox-Preview. Kontrollert branch-parent 342cf3cadcea3aaa1ecfdb8130ffde96bf17996f; main før endring 155f6c4ac01f126c1db0c65da385cfd9305587d5. Scope: KshmsDeviations.jsx, kshmsDeviations.mjs, DeviationDialog.jsx, deviationDialog.css, eksisterende critical-avvikscheck, én målrettet SQL-check, én ny migrasjon og disse fire test-/fortsettelsesdokumentene. Toppvarselets kompakte utforming fra forrige rettelse består.
+
+- Alle KS/HMS-saker åpner i den eksisterende React-eide popupen. «Lagre og lukk avvik» lagrer hele skjemaet og lukker popupen først etter kontrollert readback av firma/sak, egen signatur, status og innsendt tekst. Ved feil beholdes popup, tekst og lokal kladd. Lukkekrysset beholder kladden; åpning av samme sak henter den automatisk tilbake. Samtidig nyere serverversjon vises som konflikt.
+- «Lagre uten å lukke» bevarer kontrollteksten uten å signere/lukke saken, og flytter ikke fokus eller scroll oppover. Readback som ikke inneholder innsendt tekst godtas ikke som vellykket lagring.
+- Årsak, Utførte tiltak / forbedring og Egen kontroll av resultatet krever bare ikke-tom tekst; «OK» godtas både i klient og server. Tomme/blanke felter, manglende egen kontroll og lukking på andres vegne avvises fortsatt. Tittel/hendelse/ansvar/frister følger eksisterende regler.
+- Migrasjon 20261007163024_kshms_control_note_direct_close.sql er anvendt bare på Sandbox ppvircenkjizeiqdxphj. Vanlig save bevarer control_note. Firma-/tilgangs-/ansvars-/revisjonskontroller, prosjektlås, historikk og varsler er videreført. CLI var ikke installert og npm-tilgang returnerte 403; lokal fil bruker versjonen fra faktisk MCP-migrasjonslogg, ikke en oppdiktet tidsverdi.
+
+Utviklerbevis: permanent critical-kshms-deviations-check PASS med korttekst, uventet teksttap/readback-avslag, lokal gjenåpning, vanlig save, feilet close og bekreftet close som fjerner popupstate. Full EXPO_BACKEND_TARGET=sandbox npm run build PASS. En kort prøve med de faktiske React-komponentene i jsdom og avgrenset RPC-stub PASS: eksisterende sak i portal, gjenfunnet tekst, samme popup/scroll etter vanlig save, beholdt tekst ved feil og automatisk lukking etter bekreftet close. Dette er ikke en innlogget skynettleserprøve.
+
+Databasebevis: scripts/kshms-deviation-save-close-sandbox-check.sql gjenskaper først «Save erased the control note». Rettelsen passerer deretter 14 kontroller både i kandidattransaksjon og etter anvendt migrasjon. Alle syntetiske rader rulles tilbake; ingen reell sak, HTTP eller e-post berøres. EXECUTE er fortsatt sperret for anon, tillatt for authenticated; tom search_path og private tilgangskontroller består. Advisor er kontrollert; den generelle merknaden om bevisst SECURITY DEFINER-RPC vurderes sammen med require_context, firmakontroll og ansvarligsperre. E-postworker er fortsatt deaktivert.
+
+Brukerens korte Preview-prøve gjenstår. Ingen ny full skynettleserrunde; mobil, to faktiske brukerøkter og e-postmottak er fortsatt uprøvd. Ikke gjenta hele opprettelses-/omfordelingsløpet automatisk. Ingen main-/demo-merge eller Production-endring. Hele roadmapen nedenfor består. Det tidligere avsnittets 5/10/10-grenser er erstattet etter brukerens uttrykkelige ønske.
+
+## Tidligere fortsettelsespunkt etter nytt chatbrudd – 7. oktober 2026
+
+**Tillegg med de konkrete bevisene fra den opprinnelige dialogkjøringen:** AVVIK_DIALOG_20261007.md er nå ferdig med case-ID-er 68a26ff6-d9c2-4e1e-a766-e3769b2060fa og 6dc89fcd-bb48-44a0-9430-31dbeb75bcaa, SQL-bekreftet egen lukking, Lukket tilbake i prosjektet og siste faktiske reload på d73. To skjermbevis er lagret med varige referanser. Alle tre opprinnelige prosjektavvik er uendrede, worker er verifisert deaktivert og ingen sending er utført. Dette kompletterer den avbrutte kjøringens bevis; det er ikke en ny automatisk full omtest. Delavsnittet «Siste skjermstatus fra den avbrutte chatten» beskriver hva som var tilgjengelig ved den parallelle gjenopptakelsen før bevisene ble lagret. Den korte tretrinnsprøven i USER_TEST.md og hele roadmapen beholdes.
+
+Dette avsnittet er nyere enn statusene og testlistene nedenfor. Brukeren har bedt om at han tester skjermflyten i den faste Preview-adressen, mens assistenten gjør korte, målrettede utviklerkontroller. Ikke start en ny full skynettleserrunde eller gjenta beståtte prøver uten en konkret grunn. Gi én avgrenset brukerprøve om gangen, rapporter resultat og lagre neste steg før videre arbeid. Dette erstatter de eldre arbeidsmåteformuleringene om at brukerens Preview-prøve ikke kan erstatte utviklerens lange skjermrunde. Relevante permanente critical checks, sikker lagring og eksplisitt TEST OK før eventuell merge gjelder fortsatt.
+
+### Uavhengig kontrollert ved denne gjenopptakelsen
+
+- Arbeidsbranch: feat-kshms-foundation. Funksjonskode: d73cd78935ab769b36c37ae4721934f586f05d27.
+- Siste kodecommit er «fix(kshms): keep assignment identity in case and align dialog controls». Forrige kodecommit 88e1bfec7655026ecdb08c9b9796d7cb5b97938b inneholder stor avviksdialog og sikker prosjektkobling.
+- Vercel dpl_G5pZJCaMa4pQwNyu1DcakbXt4AiA er READY på d73cd789. Fast alias peker på denne deploymenten: https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe .
+- GitHub PR Core Safety 37644638589 er completed/success på d73cd789. Eksisterende CI er lest; ingen full lokal build eller database-/skynettleserprøve er gjentatt i denne gjenopptakelsen.
+- PR #216 er fortsatt åpen draft, ikke merget. Main er fortsatt 155f6c4ac01f126c1db0c65da385cfd9305587d5. Ingen Production- eller demo-endring utføres.
+- Begge håndbøkenes dekningsgrunnlag, 73 selvstendige forslag, 121 innholdstemaer og seks vedtatte hovedkapitler er bevart. Ikke spør om kapittelvalget på nytt.
+- Gjenværende B–E er fortsatt hele utførelsesdelen med firmamaler/sjekklister/vernerunder, SJA, 5×5 risiko, øvrige varsler/PDF/rapporter, separat individuell HR/kompetanse/medarbeidersamtaler, valgfritt stoffkartotek og pilot/drift.
+
+### Siste skjermstatus fra den avbrutte chatten
+
+Brukeren har limt inn den siste assistentstatusen fra forrige økt. Den rapporterer at ny dialog åpner med tittelfokus, kladd overlever omlasting, valgt annen syntetisk ansvarlig beholdes og lagring åpner riktig KS/HMS-sak direkte. Melder får ikke den andres ansvarligvarsel og kan ikke lukke på den andres vegne. Deretter er overtakelse/egen lagret lukking, forsvunnet ansvarligvarsel, Lukket i prosjektet og tildelings-/overtakelses-/lukkehistorikk rapportert. Full-app-mobil var fortsatt utestående. Chatten frøs ved «Bekrefter lukket prosjektavvik etter omlasting», med planindikator «1 av 4».
+
+Dette videreføres som rapportert resultat fra den avbrutte økten, ikke en ny skjerm- eller databaseprøve. Eksakt sak-ID, nye rå skjermbevis og en eksplisitt siste readback etter den aller siste omlastingen er ikke lagret i de gjenfunne testnotatene. Ikke konstruer disse eller grader siste omlasting som ny PASS. Eldre dokumenterte case-ID-er og UI-prøver beholdes som historikk. Koden og deploymenten over er uavhengig gjenfunnet; arbeidet skal ikke bygges på nytt fordi testnotatene var eldre.
+
+### Neste avgrensede handling
+
+Brukeren prøver først bare den nye dialogen på samme faste Preview: lagret prosjekt → Avvik → + Nytt HMS/prosjektavvik → velg ansvarlig og frist → Lagre avvik for oppfølging. Stor dialog, faktisk brukervalg og direkte åpning av riktig KS/HMS-sak skal vises. Se den korte aktuelle listen øverst i USER_TEST.md. Deretter håndteres brukerens resultat før neste avgrensede prøve eller utførelsesleveranse. To separate faktiske brukerøkter, mobil, avviksteller/ukoblet legacy og reelt e-postmottak beholdes som ufullførte kontroller; ingen lang omtest startes automatisk.
+
+E-postlevering i Preview er fortsatt dokumentert deaktivert på grunn av manglende Sandbox-avsenderoppsett. Ingen faktisk mottaksprøve er bekreftet. Den tilstanden er ikke kontrollert på nytt i databasen ved dette dokumentarbeidet.
+
+## Tidligere checkpoint: ny avviksrunde – 7. oktober, etter brukerens krasjrapport
+
+Arbeid fra kontrollert 794a9e5f, nå testet funksjonskode d73cd78935ab769b36c37ae4721934f586f05d27. Brukerens removeChild-feil er gjenskapt med faktisk React-renderer/DOM-adapter og løst i samme prøve. Stor dialog, faktisk ansvarligvalg, frist, «Lagre avvik for oppfølging», bekreftet prosjektkilde/KS-kobling og beholdt kladd er publisert på den faste Preview-adressen. Egen innlogget skynettleserprøve passerer ny separat prosjektavviksrad → valgt medarbeider → direkte åpnet sak → omfordeling til egen bruker → dokumentert egen lukking → Lukket tilbake i prosjektet → faktisk reload. Ny opprettelse/lukking på siste d73-kode passerer også; ansvarlig-ID beholdes i KS-saken, uten redundant ID i prosjektposten. Ditt eksisterende Test-prosjektavvik åpner riktig koblingsdialog med beskrivelse/frist og uten automatisk tolking av fritekstnavn; det er ikke endret eller koblet av utvikleren. Se AVVIK_DIALOG_20261007.md for case-ID-er, skjermbevis og testgrenser. Mobil og to separate innloggede brukere gjenstår. Tidligere UI-prøver beholdes som historikk.
+
+## Mål og leveranseomfang
+
+Bygge en integrert KS/HMS-modul i Expo ProffDok, med Ringside som pilot og mulighet for flere firmaer. Modulen skal omfatte selvstendige, tilpassbare rutiner, dokumentert egen gjennomgang, oppfølging/revisjon, utførelsessjekklister, SJA, risikovurdering, avvik/RUH, varsler og rapporter. Valgfrie deler omfatter individuell personal/kompetanse og stoffkartotek. Kapasitetsmålet på 100 firmaer er en plan, ikke en utført lasttest.
+
+Modulen aktiveres per firma av systemadmin. Firmaadmin gir aktive interne medarbeidere tilgang. Kunde, UE og innleid får ingen ny KS/HMS-modulrettighet. Online mobilbruk er tilstrekkelig i første leveranse. Ordre, timer, materiell, ressursplanlegging og betalingsintegrasjon bygges ikke i denne modulen. Pris/fakturering er fortsatt uavklart og blokkerer ikke gjeldende Preview-arbeid.
+
+## Kontrollert Git- og miljøpunkt
+
+| Referanse | Status ved kontroll 7. oktober |
+|---|---|
+| Repo | ExpoProffsenter/expo-proffdok |
+| Arbeidsbranch | feat-kshms-foundation |
+| Siste faktisk UI-testede funksjonskode | d73cd78935ab769b36c37ae4721934f586f05d27 |
+| Tidligere A2-funksjonskode med 73 SQL-kontroller | 6bf84204db9c7869bebafb19c034dc02f53f25ca |
+| PR | #216, åpen draft, ikke merget |
+| Eksisterende checkpoint | checkpoint-kshms-recovery-20261006, 9e88f4cc41db905898a4fbf0e013905ddee30343 |
+| Fast Preview | https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe |
+| Preview-backend | Sandbox ppvircenkjizeiqdxphj; branch-spesifikk EXPO_BACKEND_TARGET=sandbox |
+| Main ved kontroll | 155f6c4ac01f126c1db0c65da385cfd9305587d5 |
+| Production-backend | dqffxflaoyarbxyiyhop |
+| Siste faktiske skjermprøve-Preview | dpl_G5pZJCaMa4pQwNyu1DcakbXt4AiA, READY på d73cd789 |
+| Siste funksjonskode CI | PR Core Safety 37644638589, success på d73cd789 |
+| Permanent demo | demo; https://expo-proffdok-git-demo-ringside.vercel.app |
+
+Denne runden endrer avviksdialog, nødvendige prosjektkoblinger og to tekstetiketter som utløste krasjet; ingen SQL/RLS/Auth/e-post- eller demoendring. Full EXPO_BACKEND_TARGET=sandbox npm run build passerer på siste kode. READY, Core Safety og branch-spesifikk Sandbox-binding er kontrollert. Dokumentasjon av siste prøve lagres etter funksjonscommiten. Tidligere 73 SQL-kontroller gjentas ikke uten ny grunn. Historiske håndbok-/sjekkpunktprøver står i UI_TEST_20261007.md; ny dialogprøve står i AVVIK_DIALOG_20261007.md. Miljømål BEGGE; kun eksisterende Sandbox-Preview er oppdatert.
+
+Tidligere håndbok-TEST OK for 6dfb74dad244ff9bd0e416a08f0a34bc88da3c3a gjelder den prøvde håndboken. Ny A2-TEST OK og eksplisitt Production-godkjenning er ikke gitt.
+
+## Originaler og vedtatt kapittelinndeling – 7. oktober
+
+Kenneth har etter sammenligningen besluttet å beholde ProffDoks seks inndelinger **som egne hovedkapitler**: Virksomhet og kvalitetsledelse; Personal, kompetanse og arbeidsmiljø; Sikker utførelse og beredskap; Fag og kvalitet; Ytre miljø og bærekraft; Personvern og informasjonssikkerhet. Originalenes fem kapitler beholdes som sporbar kildestruktur. Rutinetekstene skal fortsatt være selvstendig skrevet. Kapittelvalget er avklart og skal ikke spørres om på nytt.
+
+Begge originalene har følgende hovedkapitler, kontrollert i tekst og visuelt på PDF-side 4–5:
+
+1. 01. Vår bedrift
+2. 02. HMSK
+3. 03. Rutiner
+4. 04. Miljø
+5. 05. Personvern
+
+| Original | Sider | Varig filreferanse | SHA-256 for kontrollert original |
+|---|---:|---|---|
+| QualityHandbookpdf.pdf | 148 | libfile_0034077571608191af2e8bfbddf996e7 | 8bf7d80348926287aa34a66282e4bade14ff0d7fcbda186fd365ba77b81f4403 |
+| PersonalHandbookpdf.pdf | 127 | libfile_3cebf82948a88191bde1b4dc7a7f8a05 | 49b0e66ebd9a24d259b0971fe3fc0934078c42eaeb71e4ccd9d4a2bb84e1b70a |
+
+Originalene kan hentes igjen med disse filreferansene. Gjeldende lokale kopier i denne samtalen ligger i /workspace/scratch/19673519cc9a/sources/. Ikke bygg videre utelukkende på en gammel lokal filsti. Ikke legg originalenes fulltekst, personlige svar, skjemaer eller illustrasjoner inn i Git-repoet.
+
+Kilder og tema brukes som dekningsgrunnlag. Skriv egne mål, ansvar, fremgangsmåte og dokumentasjonskrav fra arbeidsoppgaven og aktuelle primærkilder. Ikke omskriv originalen setning for setning. Rutineoverskrifter kan være egne, korte beskrivelser. Originalenes kapittel/tema og kildetilknytning skal være sporbar sammen med brukerflatens seks egne hovedkapitler. Gjeldende krav må kontrolleres ved faglig forfatting; historiske covid-regler skal ikke publiseres som universelle gjeldende regler.
+
+### Originalenes fem kapitler og katalogens seks grupper
+
+Katalogen på 228357af bruker fremdeles seks grupper: Virksomhet og kvalitetsledelse; Personal, kompetanse og arbeidsmiljø; Sikker utførelse og beredskap; Fag og kvalitet; Ytre miljø og bærekraft; Personvern og informasjonssikkerhet.
+
+Brukerens valg er bekreftet 7. oktober 2026 kl. 14:31 Europe/Oslo: seks egne hovedkapitler. Katalogen har allerede disse seks. Kodekontroll av KshmsModule.jsx bekrefter separate kapittelområder med egne h3-overskrifter for firmaets rutiner; KshmsRoutineLibrary.jsx har et kapittelvalg for standardforslagene. Innlogget skjermprøve 7. oktober bekrefter alle seks valg i «Vis kapittel», 73 forslag og eget filter for «Fag og kvalitet». Firmaets ti eksisterende rutiner ligger under fem befolkede kapitteloverskrifter; ingen fagrutine er valgt der ennå. Bevar stabile rutine- og kilde-ID-er, firmaets egne utkast/kapittelvalg, publiserte versjoner, signaturer og bekreftelser. Omgruppering til originalenes fem kapitler skal ikke gjennomføres. Ingen rutinetekst eller firmadata endres av denne beslutningsregistreringen.
+
+### Tekstlikhetskontroll utført i denne samtalen
+
+Alle 73 forslag på 228357af ble kontrollert mot full sidevis tekstuttrekking fra begge originalene. Felt: goal, responsibility, procedure, documentation og confirmation. Metode: ordtokenisering uten hensyn til store/små bokstaver; søk etter identiske sammenhengende sekvenser på 16 ord. Resultat: 0 treff.
+
+Denne kontrollen dokumenterer direkte lang tekstlikhet i de valgte feltene. Den avgjør ikke kortere likhet, parafrase, rettslig status eller full faglig kvalitet. Manuell redaksjonell/faglig gjennomgang og firmatilpasning er fortsatt nødvendig.
+
+## Beslutninger som ikke skal spørres om på nytt
+
+- Egen gjennomgang/signering av tildelte rutineutgaver er påkrevd før arbeid etter firmaets regel. Det gjelder også firmaadmin og KS/HMS-ansvarlig. Valget ved publisering gjelder tidspunktet for egen bekreftelse, ikke om kravet er frivillig. Ingen automatisk sperre av andre prosjektmoduler er levert.
+- Min personalhåndbok er et søkbart oppslag i egne tildelte publiserte utgaver, også etter bekreftelse. Eksakt utgave, faktisk firmagodkjenner og egen gjennomgang med identitet/tidspunkt skal være synlig.
+- Firmaadmin og intern medarbeider med aktiv KS/HMS-ansvarligrolle kan utarbeide og godkjenne rutiner. Firmaadmin styrer modultilgang, utpeking av revisjonsansvarlig og arkivering. Den eksplisitt utpekte ansvarlige signerer årlig revisjon.
+- Nye sentrale forslag skal aldri automatisk overskrive firmaets tilpassede utkast, godkjente utgaver eller signaturer.
+- Melder velger en aktiv intern bruker med KS/HMS-tilgang som ansvarlig. Eksemplet er Trond som velger Eli.
+- Eli får tildelings-e-post og et fast ansvarligvarsel i alle interne appfaner. Trond skal ikke få Elis ansvarligoppgave.
+- Eli dokumenterer årsak/tiltak/egen kontroll og lukker selv. Bare valgt ansvarlig kan lukke; firmaadmin kan ikke lukke Elis sak som en annen aktør. Tidligere forslag om separat kontrollør er erstattet.
+- Lesing, åpning og fanebytte fjerner ikke oppgaven. Varselet forsvinner først ved bekreftet lagret lukking. Feilet eller tapt lagringssvar skal ikke skape falsk lukking.
+- Prosjekt-/sjekkpunktavvik kan kobles inn med stabil kilde. Deretter bestemmer KS/HMS status; den gamle prosjektvisningen kan ikke omgå lukking. Ukoblede prosjektavvik og brukere uten modultilgang beholder eksisterende flyt.
+- Avvikssentralen har åpne/lukkede saker, ansvarlig, frist, tiltak, egen kontroll, private vedlegg og hendelseshistorikk. Gjenåpning, omfordeling og revokert tilgang kontrolleres på serveren.
+- E-post under utvikling skal ikke sendes til ekte medarbeidere. Mottaker/grant/status kontrolleres før levering; deduplisering, retry, lukking og omfordeling inngår. Ekstern rapportdeling krever konkret mottaker-/innholdsgodkjenning og sendehandling.
+- Eksisterende tilbud, autosave/hydrering, innlogging, prissøk, prosjektflyter, garantier og sjekklister skal vernes etter AGENTS.md/PROJECT_GUARDRAILS.md. Main → demo er eneste synkretning.
+
+## Roadmap og faktisk status
+
+| Trinn | Målet | Status / neste arbeid |
+|---|---|---|
+| A | Aktivering, firmatilgang, oppstart, håndbok/utkast/publisering/versjoner, Min personalhåndbok, egne bekreftelser, oppfølging og signert revisjon | Fundamentet er levert i Preview. Tidligere håndbokprøve er godkjent for sin eksakte versjon. |
+| A2 + fremskyndet avvik | Full tematisk rutinedekning fra begge håndbøkene, avvikssentral, prosjektkobling, fast ansvarligvarsel og tildelings-e-post | 73 forslag dekker 121 innholdstemaer + fire metadatarader; seks egne hovedkapitler er vedtatt. Innlogget desktopprøve passerer kapittelfilter, firmaavvik, koblet eget sjekkpunkt og separat prosjektavvik med stor dialog, kladd, faktisk ansvarligvalg, egen lukking og omlasting. To separate brukerøkter, full ukoblet legacy-lukking/gjenåpning, avviksteller for egne sjekkpunkter, full-app-mobil, reelt e-postmottak og A2-TEST OK gjenstår. |
+| B | Versjonerte firmamaler/gjennomføringer med og uten prosjekt, typede svar/bilder/filer/signaturer, mobile SJA og 5×5 risikoanalyse | Utførelsesverktøy/SJA/risiko gjenstår. Håndbokrutiner erstatter ikke gjennomføringer. SJA signeres av ansvarlig PL; deltaker-/medvirkningsbevis uten automatisk krav om alle deltakersignaturer. Betingede krav og senere underskjema skal versjoneres og bevare signerte snapshot. |
+| C | Flere varsler/påminnelser, kildeoppdateringsforslag, PDF rutine/sjekkliste/SJA/risiko/avvik, begrenset rapportutdrag og valgfritt sluttrapportvalg | Tildelingsworker er fremskyndet til A2. Fristpåminnelser, eksport/PDF/tilsynsuttrekk og øvrig C gjenstår. |
+| D | Valgfri individuell kompetanse/kurs/sertifikater/utløp, medarbeidersamtaler/oppfølging med separat HR-tilgang; valgfritt stoffkartotek | Gjenstår. KS-rolle gir ikke automatisk tilgang til andres personalmappe. Innsyn, personvern, oppbevaring og kontrollert sletting må spesifiseres før implementering. |
+| E | Ringside-pilot, komplett tematisk/funksjonell kontroll, hjelp, drift/kilderevisjon, kapasitet, godkjenning per release og senere supportmodus | Gjenstår. Support skal være firmagodkjent, tidsbegrenset og logget; ingen signering på vegne av andre. Delvis leveranse skal ikke kalles komplett. |
+
+PLAN.md inneholder detaljert minimumsdekning, offentlige kilder, roller, datamodell og akseptanse. CONTENT_STATUS.md/COVERAGE.md/coverage.json bevarer kildetemaer og sporbarhet. CAPACITY.md beskriver planlagte målinger før bred utrulling.
+
+## Tester og gjenstående blokkeringer
+
+Lagret QA på funksjonskode 6bf84204 dokumenterer 73 Sandbox-kontroller med full rollback, grønn eksisterende håndbokkontroll, faktiske React-handler-/task-/legacy-scenarioer, mailer med erstattet transport og grønn full critical build/Core Safety. Disse kontrollene skal ikke omtales som en innlogget full-app-/mobilprøve.
+
+UI_TEST_20261007.md dokumenterer de tidligere innloggede desktopprøvene: firmaavvik 683a29cb-4ccd-47db-9377-8d8504d86db2 og koblet sjekkpunkt bbaa4b37-48d3-49d1-99d8-96da49e73cbf. AVVIK_DIALOG_20261007.md dokumenterer denne rundens to separate prosjektavvik 68a26ff6-d9c2-4e1e-a766-e3769b2060fa og 6dc89fcd-bb48-44a0-9430-31dbeb75bcaa, begge lagret lukket. Første prøve velger en annen ansvarlig og omfordeler deretter til egen testbruker; det er ikke en separat medarbeiderinnlogging. Kladd hentes etter reload, riktig sak åpner direkte, egen lukking bekreftes med aktør/tid og vises tilbake i prosjektet etter reload. Alle tre eksisterende prosjektavviksrader er uendrede. Ny stor React-dialog erstatter den tidligere native prompten; den gamle getJsDialog-grensen er historikk, uten omgåelse. Dev-logs er utilgjengelig i denne browserøkten; DOM/AX/skjerm og databasekontroll virker. Mobilbredde kan ikke settes med denne øktens dokumenterte API, så ingen mobil-PASS. To brukerøkter, full legacy-lukking/gjenåpning, toppfanens teller for egne sjekkpunkter og faktisk e-postmottak gjenstår. Arbeider enabled=false og samtlige tre nye utboksrader pending/attempts=0/sent_at=null. Tidligere environment_offline er kontrollhistorikk.
+
+Sandbox-worker v3 er lagret/deployet, men RESEND_API_KEY og CHAT_FROM_EMAIL er ikke konfigurert og sending er deaktivert. EMAIL_SETUP.md beskriver sikkert oppsett, health/check-mode og avtalt mottaksprøve. Ingen hemmeligheter skal legges i chat, kildekode eller dokumentasjon. Faktisk avsenderoppsett og avtalt testmottaker må avklares ved e-postprøven; dette er ikke et åpent spørsmål om avviksfunksjonen.
+
+## Neste avgrensede oppgaver og avbruddsrutine
+
+1. Kapittelvalget er avklart og innlogget kapittelfilter er prøvd: behold seks egne hovedkapitler og eksplisitt kildedekning av alle 121 temaer. Ikke omgrupper standardbiblioteket til originalenes fem kapitler.
+2. Fortsett med to separate brukere etter Trond → Eli-eksemplet, full ukoblet legacy-lukking/gjenåpning, målrettet undersøkelse av toppfanens antall for egne sjekkpunkter og mobil på samme faste Preview. Eget sjekkpunkt og separat prosjektavvik → KS/HMS → lagret lukking/omlasting er bestått; ikke gjenta disse eller firmaets håndbokgodkjenninger uten grunn. USER_TEST.md gir faktisk brukerprøve for den nye dialogen. Brukerens Preview-prøve erstatter ikke utviklerens skjermtest. Ved sperret innloggings-/dialogverktøy: følg dokumentert sikker overlevering når tilgjengelig; ikke omgå beskyttelsen eller kjør samme avviste kall i løkke.
+3. Klargjør/avklar e-postoppsett og testmottaker sikkert, og kontroller reelt mottak før funksjonen omtales som ferdig verifisert.
+4. Fullfør resterende B–E i avgrensede leveranser etter planen. Ny relevant TEST OK og Production-godkjenning kreves før release.
+
+Ved videre arbeid: les AGENTS.md/PROJECT_GUARDRAILS.md og relevante critical checks; hent aktuell GitHub-HEAD før endring. Bruk separat arbeidsmappe på aktuell head. Ikke resett eller overskriv de gamle arbeidsmappene blindt.
+
+Arbeid i korte, avgrensede deler. Etter hver del lagres kode, migrasjoner, kontrollresultat og oppdatert neste steg i GitHub. Bruk kontroll av forventet branch-SHA ved oppdatering. Endret SHA skal utløse ny lesing/sammenligning; aldri tvangsoverskriv en annen kjøring. Ikke kjør allerede anvendte Sandbox-migrasjoner på nytt uten å kontrollere migrasjonsloggen.
+
+En ny chat kan få denne teksten: «Fortsett KS/HMS Expo ProffDok. Les docs/kshms/CONTINUITY.md på feat-kshms-foundation, deretter gjeldende PLAN/QA/USER_TEST og faktisk branch/PR. Bevar alle beslutninger og hele roadmapen. Fortsett fra første dokumenterte ufullførte oppgave.»
+
+Kapittelsammenligningen er lagt frem og Kenneth har valgt de seks som egne hovedkapitler. Nye funksjonsavklaringer er ikke nødvendige for å fortsette eksisterende Preview-test.
+
+Arbeidsmåten begrenser tap av kontekst og gjenoppbygging ved avbrudd. Den gir ingen garanti mot feil i selve chat-/verktøyplattformen.
+
+
+## 2026-10-07 — kompakt ordremeny og sjekklistepopup
+
+Miljømål BEGGE. Arbeidet bygger på remote 12183b181e4ce603394ac71b817b3eccb3fac6fa. Bare eksisterende feature/Sandbox Preview oppdateres; ikke main eller produksjonsdatabasen.
+
+Generelle ordrer bruker prosjektets kompakte desktopmeny med ordreetiketter og uten skjulte våtromsfaner. Ingen standard våtromsliste legges automatisk til. Egne sjekkpunkter kan legges til uten garanti eller personlig KS/HMS-tilgang. Firmaets aktiverte modul styrer fortsatt innhenting av publiserte malutgaver. Eksisterende svar som ikke er aktive i ordren, beholdes under «Tidligere dokumentasjon».
+
+Sjekklistene og innhentingen vises kollapset. «Åpne sjekkliste» åpner en React-eid popup. «Lagre» lagrer en kontroll under arbeid for videreføring av personer som allerede har prosjektets redigeringsrett. «Sjekkliste fullført» lagrer en uforanderlig kontroll med definisjon, svar, bilder, serverens brukeridentitet og tidspunkt. «Start ny kontroll» beholder fullførte kontroller og viderefører åpne/koblede avvik. Fullføring lukker ikke avvik. Egne punkter kan legges til en pågående kontroll; fullførte og innhentede maldefinisjoner forblir faste.
+
+Prosjektkontroller lagres i private tabeller med eksisterende prosjekt-/firma-/profilkontroll og låssjekk. Ingen personlig KS/HMS-rett kreves for egne punkter. Revisjonskontroll hindrer at to personer overskriver hverandre. Faste lagrings-ID-er gjør tapt svar trygt å prøve igjen. Readback kontrolleres før lokal kladd slettes. Triggeren beskytter popupens svar mot forsinket vanlig prosjekt-autolagring; eksisterende KS/HMS-trigger kjøres etterpå og beholder autoritativ avvikslukking. Andre prosjektdata, signaturer, vedlegg og legacyavvik beholdes.
+
+Sandbox-migrasjonsloggen er fasit for filnavn: 20261007180955 project_checklist_runs, 20261007182126 project_checklist_command_scope, 20261007182209 project_checklist_command_block, 20261007182259 project_checklist_mirror_scope og 20261007182742 project_checklist_custom_points. De små oppfølgingsmigrasjonene retter SQL-variabelscope før publisering og tillater egne punkter i en kladd. De skal følge grunnmigrasjonen i samme rekkefølge ved senere godkjent produksjonsutrulling.
+
+Verifisert: 31 reelle SQL-kontroller med syntetiske rader og rollback; faktisk React-popup med fanebytte, lagringsfeil/retry, kollegas videreføring, egne nye punkter, bilder, flere kontroller, historikk, konfliktvisning, skrivebeskyttelse og sen firmabytte-respons; kompakt ordremeny videresender til native knapper uten skjulte våtromsvalg. Eksisterende React-test for malbygging/publisering/innhenting og montert sjekklistehopp passerer. «Åpne først»-kravet endrer med vilje gammel tests forventning om automatisk utvidet liste; hoppkontrakten er bevart. Ny critical-check er lagt inn i build/QA. Innlogget Preview-prøve gjenstår før TEST OK/merge.
+
+Kort brukertest på samme faste Preview: Åpne testordren → Sjekklister. Menyen skal være kompakt og listene kollapset. Åpne «Egne sjekkpunkter og vedlegg», legg til et punkt, åpne listen og lagre. Åpne den igjen (gjerne med en annen person som har prosjektadgang), fortsett og trykk «Sjekkliste fullført». «Start ny kontroll» skal åpne neste kontroll mens den første kan leses i historikken. Prøv også en publisert KS/HMS-liste.
+
+ZIP-leveransens endelige lokale full `EXPO_BACKEND_TARGET=sandbox npm run build` PASS exit 0. PR-scope/release-docs-guard PASS mot faktisk main. Berørt eksisterende samle-PDF React/Storage/jsPDF PASS: begge faktiske PDF-er, innhold/signaturer/bilder/manifest, fjerning av valgt dokument og sent kontekstbytte. QA-foto er større enn forrige testfoto, så sideantallet endret seg; dette er ingen tap av felter. Innlogget ny ZIP/nedlasting vurderes etter publisering, ikke gradert PASS her.
+
+Tekstoppfølging: faktisk React/ZIP med fem syntetiske vedlegg, eksisterende permanent ZIP/PDF-check og full Sandbox critical/build PASS. Transport/filformat uendret; ingen ny brukernedlasting kreves for å beholde allerede godkjent ZIP-prøve. Publisert tekst/eksakt head følges opp i PR #216 og innlogget nettleser.
+
+HR-popup 11.10: medarbeiderraden åpner eksisterende appdialog, med leder/tilgang, paginerte brukervalg og resultatmeldinger inne i vinduet. Dialog, Escape/kryss, fokusretur og fersk autorisering kontrollert i React og Chromium ved 1280/360/740. Tilgang/backend/privat HR uendret. Samme core-PR #219/Preview; ingen merge.
+
+HR-prøveoppdatering 11.10: første åpning viser skjemaets topp; tom/ulagret/redigert samtale bevares gjennom ekte HR-tilgangsremount. Konto-/firmabundet sideminne, ingen ulagret browserlagring. Faktisk useHrAccess/JSDOM og Chromium 1280/360/740 grønne, inkludert konflikt og uendrede PDF-/neste-steg-løp. Samme PR #218/Preview; ingen merge.
+
+Sjekklistesentral 13. oktober: eksisterende prosjektmaler/fagpunkter/Sopro-garantipunkter, produktmasterens kontrollpunkter og egne lister fra firmaets tilgjengelige prosjekter vises i et felles bibliotek. Kun definisjoner hentes, ingen prosjektbesvarelser/kundedata. Firmatilgang kontrolleres før/etter lesing, RLS/firmascope beholdes, paginering og sene svar beskyttes. Vanlige kilder åpnes som en separat firmaversjon via eksisterende bygger/publisering. Garantikilder har ingen redigering, sletting eller kopiering, og garantimalene deles med Prosjekt som samme frosne kildedata. Eksisterende prosjektsvar og garantilogikk er uendret. «+ Legg til sjekkliste» ligger under Sjekklister for både små og våtromsprosjekter; våtrom beholder også inngang fra Fag/utstyr. Full QA og Preview før ny TEST OK; BEGGE.
+
+
+13.10.2026 – Preview-korrigering: Våtrom har én samlet redigerbar firmaversjon med alle sju arbeidsområder; øvrige fag har hver sin liste. Arbeidsområdet følger punktets hjelpetekst i byggeren. Ingen punkter fjernes. Garantipunkter er fortsatt uforanderlige og kan ikke kopieres til redigerbare firmaversjoner. Redigeringsinngangen heter «Rediger som firmaversjon». Eksisterende prosjektutfyllinger beholdes. Avventer ny TEST OK.
+
+
+13.10.2026 – Prosjektering Preview: egen samlet kontroll med 13 prosjekteringspunkter nederst i Prosjektering. Gjenbruker ProjectChecklistWorkspace og eksisterende bekreftet serverlagring, lokal kladd, historikk, Ok/Avvik/Ikke aktuelt og egen PDF. Stabil egen kategori skiller svar fra utførelses-/garantikontroller. Låste/lesetilgang/support får samme sperrer. Eksisterende prosjekteringsfelt, egne punkter og tegninger beholdes. Ingen database-/e-postendring. Avventer TEST OK.
+
+
+13.10.2026 – Kontrollørtilgang / BEGGE / Preview: isolert leselenke og separat 128-bit kode, kun SHA-256 i controller_private.links med RLS/ingen direkte API-grants. Intern prosjekt-/aktiv-firma-tilgang kreves for oppretting, endret tidsfrist, koderotasjon og tilbakekalling (revisjonsvern). Anonym lesefunksjon sjekker kode, utløp og tilbakekalling på hver forespørsel og returnerer kun prosjekteringsfelt/tegninger/bilder/vedlegg, alle registrerte prosjektlister med svar og historikk, valgte produktkontroller og prosjektbundne vernerunde-/sjekklistegjennomføringer. Interne notater, salgsgrunnlag, portal-/UE-koder, HR og chat utelates. Egen portal uten skrivehandlinger; serverklokke, utløpstimer og revalidering/fokus fjerner innhold ved bortfalt tilgang. Kunde-/UE-funksjoner og rutine-e-poststopper er uendret. Sandbox SQL QA rulles tilbake; grønn full critical/build og real React før TEST OK. Produksjonsmigrering først etter godkjent Preview. Security advisors: privat deny-all RLS og kapabilitetsstyrte SECURITY DEFINER-endepunkter er tilsiktet; ingen direkte tabelltilgang gis.
+
+
+Kontrollør-e-post (13. oktober 2026, Preview): Under Administrer kontrollørtilgang kan en nylaget/rotert kode sendes manuelt til kontrollørens e-postadresse. E-posten bruker samme HTML-layout og emailBrandPayload som tilbud, med firmalogo, lenke, kode og norsk utløpstid. Isolert controller-access-email validerer innlogget prosjekt-/firmatilgang samt gjeldende kode og utløp før Resend. Ingen automatisk utsending ved opprettelse/endring; rutine-e-postforbud og smart-worker er urørt. Mock-baserte ende-til-ende-tester sender ingen ekte e-poster. Sandbox-funksjon først, produksjonsfunksjon/migrasjon og main→demo etter nytt TEST OK.
+
+
+Scrollrettelse 13. oktober 2026 (BEGGE, Preview): Felles scrollminne flyttet til pageScrollMemory. Synlig fokusendring, inkludert Windows + Shift + S, skal ikke gjenopprette en gammel posisjon. Gjenoppretting skjer kun etter faktisk skjult side; tastatur/mus/touch/hjul, blur og unmount avbryter ventende gjentakelser. Nullposisjon er gyldig. Tester dekker seks faner, skjult/tilbake, brukerinteraksjon og rydding. Ingen endring i autosave, serverhydrering, Sales workspace-recovery, backend eller e-post. Ny TEST OK kreves før main/Production og kontrollert demo-synk.

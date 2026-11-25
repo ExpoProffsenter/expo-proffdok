@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+const main=fs.readFileSync('src/main.jsx','utf8');
+const line=main.split('\n').find(line=>line.includes('className: "mobileProjectChooser"'));
+const expression=line.trim().split(' && /* @__PURE__ */')[0];
+const showsChooser=new Function('projectId','mobileCreatingProject','tab',`return Boolean(${expression})`);
+assert(showsChooser('',false,'prosjekt'),'home keeps its project chooser');
+for(const tab of ['hr','ks-hms','kshms','sales','innlogging','prosjektliste','admin','prissok'])assert.equal(showsChooser('',false,tab),false,`${tab} must open without home chooser`);
+assert.equal(showsChooser('project',false,'prosjekt'),false);assert.equal(showsChooser('',true,'prosjekt'),false);
+assert.equal((main.match(/jsx\)\(MobileScrollShortcuts, \{\}\)/g)||[]).length,1,'one common control in actual authenticated shell');
+const tools=fs.readFileSync('src/modules/sales/components/SalesMobileTools.jsx','utf8');assert(!tools.includes('<SalesScrollShortcuts'),'internal Sales must not duplicate app controls');
+const customer=fs.readFileSync('src/modules/sales/components/SalesCustomerView.jsx','utf8');assert(customer.includes('../../app/MobileScrollShortcuts.jsx'),'standalone customer offer keeps controls');
+console.log('Mobile app shortcuts PASS: actual home condition, HR/KS/HMS/profile/other modules without home chooser, one authenticated control, standalone customer offer preserved.');

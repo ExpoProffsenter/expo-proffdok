@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Dokumentuttrekk frigir operasjonslås ved nytt bruker-/firmascope",
+  "change": "Miljømål BEGGE. Eksisterende core-PR298 er oppdatert med main b389c707 uten konflikt. Nytt autorisert scope frigir gammel operasjonslås sammen med lokal visningsreset. Sequence/owner/active/fingerprint/fersk tilgang/finally-gater beholdes. Produktdiff mot main er fortsatt én linje. Ingen backend, API, tilgang, dokumentvalg, eksportinnhold, transport eller designendring.",
+  "verification": "31.10: faktisk React/Storage/jsPDF-suite består på integrasjonen med main b389c707: seks PDF-er med totalt 115 sider i ordinær, kvalitet/HMS og eldre prosjektavvik-variant, eksplisitt utvalg/manifest, bilder, signaturtekst, tilgangsfeil og company/user/revoke med ny ventende operasjon før gammelt svar. ZIP-suiten er utvidet additivt med samme tre identitets-/tilgangsforløp: eldre svar kan verken eksportere eller låse opp ny ZIP; aktive/avbrutte operasjoner og ny liste etter retur består. Tre ZIP-er med henholdsvis sju, ni og elleve originalfiler/manifest består uavhengig CRC/hash-kontroll. Negativ ZIP-prøve med nøyaktig produktlinjen fjernet feiler etter retur fra firmabytte, deretter er produktfilen gjenopprettet byteidentisk. Full critical/build PASS med eksplisitt Sandbox- og Production-binding. Ny CI og Preview kvitteres i PR298 etter faktisk kontroll. Syntetisk backend; ingen ekte mottaker, kunde-, tilgangs- eller databaseendring. Testene er ekstra lokale bevis og skal ikke forveksles med innlogget prøve eller fysisk Safari.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Eksisterende knapper og brukerflyt beholdes; feilrettingen gjenoppretter forventet handling etter firmabytte."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Eksisterende scope-, sequence- og finallykontrakt beholdes. Ingen ny datamekanisme."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen app-/QA-avhengigheter eller konfigurasjon endres; lokal test bruker eksisterende isolerte verktøy."
+    },
+    "module": {
+      "required": false,
+      "reason": "Ingen ekstern modulkontrakt endres; én lokal lås nullstilles sammen med eksisterende scope-reset."
+    }
+  }
+}

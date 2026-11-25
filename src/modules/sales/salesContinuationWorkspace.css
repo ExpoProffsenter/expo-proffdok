@@ -1,0 +1,8 @@
+/* Existing continuation commands belong to their accepted case, with no
+   viewport coordinates or floating overlay on top of the customer paper. */
+.sales-continuation-actions{box-sizing:border-box;max-width:1600px;margin:16px auto;padding:16px;border:1px solid #d5e3e9;border-radius:8px;background:#fff;color:#10212b}
+.sales-continuation-actions>strong{font-size:20px!important;font-weight:600}
+.sales-continuation-actions p{font-size:16px;line-height:1.45}
+.sales-continuation-actions>div{display:flex;flex-wrap:wrap;gap:8px}
+.sales-continuation-actions button{min-height:44px;font-size:16px!important;border-radius:7px;box-shadow:none!important}
+@media(max-width:620px){.sales-continuation-actions>div>button{flex:1;min-width:0}}

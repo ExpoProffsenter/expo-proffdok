@@ -1,0 +1,1205 @@
+{
+  "template": "PROFFDOK-VIDEO-1.0",
+  "badge": "BOLIG",
+  "module_label": "BOLIGPROSJEKTER A–Å",
+  "status": "Kandidat: full gjennomgang og integrasjon gjenstår",
+  "scenes": [
+    {
+      "image": "assets/01-inngang.jpg",
+      "title": "Åpne Boligprosjekter",
+      "text": "Start i Boligprosjekter. Her samler du bygg, boliger, beboervalg og fremdrift.",
+      "duration": 11,
+      "target": {
+        "height": 48,
+        "width": 105.828125,
+        "x": 532.625,
+        "y": 84
+      },
+      "action": "click"
+    },
+    {
+      "image": "assets/02-nytt-prosjekt.jpg",
+      "title": "Start et nytt prosjekt",
+      "text": "Veiviseren bygger boligstrukturen. Du kan lukke underveis og fortsette med kladden.",
+      "duration": 11,
+      "target": {
+        "height": 44,
+        "width": 199.46875,
+        "x": 47,
+        "y": 537.390625
+      },
+      "action": "click"
+    },
+    {
+      "image": "assets/03-boligtype.jpg",
+      "title": "Navn og boligtype",
+      "text": "Gi prosjektet navn og eventuelt prosjektnummer. Velg boligtypen som passer.",
+      "duration": 11,
+      "target": {
+        "height": 44,
+        "width": 104,
+        "x": 1085,
+        "y": 859
+      },
+      "action": "click"
+    },
+    {
+      "image": "assets/04-bygg-adresse.jpg",
+      "title": "Bygg og adresse",
+      "text": "Gi bygget et tydelig navn og registrer adressen. Flere bygg kan ha ulike boligtyper.",
+      "duration": 11,
+      "target": {
+        "height": 44,
+        "width": 104,
+        "x": 1085,
+        "y": 859
+      },
+      "action": "click"
+    },
+    {
+      "image": "assets/05-etasjer.jpg",
+      "title": "Etasjer og boliger",
+      "text": "Tilpass antall oppganger, etasjer og boliger. Her får Lindehuset fire boliger fordelt på to etasjer.",
+      "duration": 11,
+      "target": {
+        "height": 44,
+        "width": 104,
+        "x": 1085,
+        "y": 859
+      },
+      "action": "click"
+    },
+    {
+      "image": "assets/06-opprett.jpg",
+      "title": "Kontroller før opprettelse",
+      "text": "Se over navn, adresse og boligantall. Opprett prosjektforsiden når strukturen stemmer.",
+      "duration": 11,
+      "target": {
+        "height": 44,
+        "width": 232.8125,
+        "x": 956.1875,
+        "y": 859
+      },
+      "action": "click"
+    },
+    {
+      "image": "assets/07-prosjektinfo.jpg",
+      "title": "Prosjektet er klart",
+      "text": "Fasaden følger den registrerte boligstrukturen. Navn og prosjektnummer kan endres med Rediger prosjektinfo.",
+      "duration": 11,
+      "target": {
+        "height": 36,
+        "width": 139.625,
+        "x": 274.59375,
+        "y": 156
+      },
+      "action": "click"
+    },
+    {
+      "image": "assets/08-rediger-info.jpg",
+      "title": "Rett prosjektinfo",
+      "text": "Endre navn eller prosjektnummer her. Boliger, beboere og fremdriftsplan beholdes. Lagre når du har gjort en endring.",
+      "duration": 11,
+      "target": {
+        "height": 43,
+        "width": 886,
+        "x": 231,
+        "y": 170
+      },
+      "action": "point"
+    },
+    {
+      "image": "assets/95-interne-roller.jpg",
+      "title": "Velg intern rolle bevisst",
+      "text": "Firmaadmin skiller lesetilgang fra prosjektledertilgang. Ansatte trenger også Prosjekter og dokumentasjon. Endringer lagres straks. Her viser vi eksisterende roller uten å endre dem.",
+      "duration": 11,
+      "target": {
+        "height": 45,
+        "width": 191,
+        "x": 1133,
+        "y": 395.59375
+      },
+      "action": "point"
+    },
+    {
+      "image": "assets/09-flytt-bolig.jpg",
+      "title": "Kontroller plasseringen",
+      "text": "Velg bolig og plassen den skal bytte med. Bolignummer, beboere og avtaler følger boligen. Forhåndsvis før lagring.",
+      "duration": 11,
+      "target": {
+        "height": 40,
+        "width": 185.34375,
+        "x": 655.875,
+        "y": 883
+      },
+      "action": "click"
+    },
+    {
+      "image": "assets/10-flytt-kontroll.jpg",
+      "title": "Se begge boligene",
+      "text": "Kontroller gammel og ny plass for begge boliger. Lagre bare hvis flyttingen er riktig. Her avslutter vi uten å bytte plass.",
+      "duration": 12,
+      "target": {
+        "height": 40,
+        "width": 1016,
+        "x": 315,
+        "y": 882
+      },
+      "action": "point"
+    },
+    {
+      "image": "assets/11-import-fil.jpg",
+      "title": "Importer beboerlisten",
+      "text": "Last opp XLSX eller CSV med adresse, bolignummer og kontaktopplysninger. Flere eiere kan knyttes til samme bolig.",
+      "duration": 11,
+      "target": {
+        "height": 42.1875,
+        "width": 1016,
+        "x": 315,
+        "y": 206
+      },
+      "action": "click"
+    },
+    {
+      "image": "assets/12-kolonner.jpg",
+      "title": "Kontroller kolonnene",
+      "text": "Se at adresse, bolignummer, navn, e-post og mobil peker til riktig Excel-kolonne. Eksempelverdiene hjelper deg.",
+      "duration": 11,
+      "target": {
+        "height": 40,
+        "width": 189.9375,
+        "x": 315,
+        "y": 651.75
+      },
+      "action": "click"
+    },
+    {
+      "image": "assets/13-medeiere.jpg",
+      "title": "To eiere, én bolig",
+      "text": "Alex og Sam kobles til samme bolig. Velg én hovedkontakt. Kontroller adresse og bolignummer før importen lagres.",
+      "duration": 11,
+      "target": {
+        "height": 45.1875,
+        "width": 975,
+        "x": 328,
+        "y": 332.9375
+      },
+      "action": "point"
+    },
+    {
+      "image": "assets/14-lagre-import.jpg",
+      "title": "Lagre kontrollert import",
+      "text": "Importen lagrer kontaktopplysningene. Den sender ingen invitasjoner. Portal og frister klargjøres etterpå.",
+      "duration": 11,
+      "target": {
+        "height": 40,
+        "width": 179.515625,
+        "x": 484.1875,
+        "y": 883
+      },
+      "action": "click"
+    },
+    {
+      "image": "assets/15-import-lagret.jpg",
+      "title": "Importen er lagret",
+      "text": "Kvitteringen bekrefter lagrede kontakter. Ingen invitasjoner eller varsler er sendt.",
+      "duration": 11,
+      "target": {
+        "height": 22,
+        "width": 1016,
+        "x": 315,
+        "y": 167
+      },
+      "action": "point"
+    },
+    {
+      "image": "assets/71-kontrakter.jpg",
+      "title": "Samle kontrakten",
+      "text": "Legg inn hovedkontrakt, vedlegg og senere versjoner. Originalene ligger privat og følger ikke beboer-, UE- eller sluttpakken.",
+      "duration": 11,
+      "target": {
+        "height": 44,
+        "width": 158.578125,
+        "x": 49,
+        "y": 562.140625
+      },
+      "action": "point"
+    },
+    {
+      "image": "assets/72-kontraktstilgang.jpg",
+      "title": "Gi bare nødvendig innsyn",
+      "text": "Utpekte interne brukere kan få lesetilgang eller administrasjon. Vanlig prosjekt- eller butikktilgang gir ikke automatisk innsyn i kontraktene.",
+      "duration": 11,
+      "target": {
+        "height": 44,
+        "width": 300,
+        "x": 833,
+        "y": 169
+      },
+      "action": "point"
+    },
+    {
+      "image": "assets/73-kontrakt-okonomi.jpg",
+      "title": "Registrer avtalte vilkår",
+      "text": "Kontraktssum og opsjoner føres ekskl. mva. Ved avtalt indeksregulering kontrollerer du serie, basismåned, basisindeks og reduksjonsfaktor.",
+      "duration": 11,
+      "target": {
+        "height": 43,
+        "width": 823,
+        "x": 255,
+        "y": 765.546875
+      },
+      "action": "point"
+    },
+    {
+      "image": "assets/16-grunnpakke.jpg",
+      "title": "Lag grunnleveransen",
+      "text": "Grunnpakken beskriver det som følger med. Tilvalgspakker kan legges til eller erstatte bestemte varer.",
+      "duration": 11,
+      "target": {
+        "height": 45,
+        "width": 162.59375,
+        "x": 45,
+        "y": 686
+      },
+      "action": "click"
+    },
+    {
+      "image": "assets/17-varelinje.jpg",
+      "title": "Beskriv leveransen",
+      "text": "Legg inn beskrivelse, varenummer, antall og enhet. Bilder og FDV-lenker gjør grunnlaget tydeligere.",
+      "duration": 11,
+      "target": {
+        "height": 44,
+        "width": 247.5,
+        "x": 747,
+        "y": 462.71875
+      },
+      "action": "point"
+    },
+    {
+      "image": "assets/18-bildevalg.jpg",
+      "title": "Legg til et bilde",
+      "text": "Velg et tydelig bilde som forklarer varen. Her bruker vi et merket illustrasjonsfoto i demopakken.",
+      "duration": 11,
+      "target": {
+        "height": 44,
+        "width": 156.453125,
+        "x": 760,
+        "y": 456.21875
+      },
+      "action": "click"
+    },
+    {
+      "image": "assets/19-bilde-lagret.jpg",
+      "title": "Lagre grunnpakken",
+      "text": "Bildet er lagt til varelinjen. Lagre pakken før du fordeler den til boligene.",
+      "duration": 11,
+      "target": {
+        "height": 44,
+        "width": 609,
+        "x": 696,
+        "y": 872
+      },
+      "action": "click"
+    },
+    {
+      "image": "assets/20-alternativ.jpg",
+      "title": "Tillegg eller alternativ",
+      "text": "Et alternativ erstatter en bestemt standardvare. Her byttes 60 cm innredning til 80 cm. Kontroller varekoblingen.",
+      "duration": 11,
+      "target": {
+        "height": 44,
+        "width": 299.5,
+        "x": 696,
+        "y": 222.375
+      },
+      "action": "point"
+    },
+    {
+      "image": "assets/21-tilvalgspris.jpg",
+      "title": "Prisen for hele pakken",
+      "text": "Eksempelet koster 4 500 kroner inkl. mva. Prisen gjelder hele tilvalgspakken. Lagre når varer og pris stemmer.",
+      "duration": 11,
+      "target": {
+        "height": 44,
+        "width": 609,
+        "x": 696,
+        "y": 871.90625
+      },
+      "action": "click"
+    },
+    {
+      "image": "assets/22-rom.jpg",
+      "title": "Rom i boligen",
+      "text": "Legg til rom før du fordeler pakkene. Rompakker samler varer og dokumentasjon for hvert rom.",
+      "duration": 11,
+      "target": {
+        "height": 45,
+        "width": 129.59375,
+        "x": 1158.40625,
+        "y": 159.5625
+      },
+      "action": "click"
+    },
+    {
+      "image": "assets/23-rompakke.jpg",
+      "title": "Velg rompakke",
+      "text": "Bad 1 er lagret. Velg rompakke for å knytte grunnleveransen til badet.",
+      "duration": 11,
+      "target": {
+        "height": 45,
+        "width": 158.953125,
+        "x": 1104.046875,
+        "y": 574.953125
+      },
+      "action": "click"
+    },
+    {
+      "image": "assets/24-pakkevalg.jpg",
+      "title": "Grunnleveranse først",
+      "text": "Velg grunnpakken og forhåndsvis innholdet. Tilvalget lar vi stå åpent til beboeren skal velge.",
+      "duration": 11,
+      "target": {
+        "height": 45,
+        "width": 187.640625,
+        "x": 883.671875,
+        "y": 834.46875
+      },
+      "action": "click"
+    },
+    {
+      "image": "assets/25-lagre-pakke.jpg",
+      "title": "Kontroller og lagre",
+      "text": "Forhåndsvisningen viser tre varelinjer og ingen tilvalg. Lagringen gjelder denne boligen og sender ingen bestilling.",
+      "duration": 11,
+      "target": {
+        "height": 45,
+        "width": 141.421875,
+        "x": 871.484375,
+        "y": 674.0625
+      },
+      "action": "click"
+    },
+    {
+      "image": "assets/26-masseplan.jpg",
+      "title": "Planlegg flere boliger",
+      "text": "Lag en felles arbeidsrekkefølge og forskyv oppstarten mellom boligene. Planen følger faktiske datoer.",
+      "duration": 11,
+      "target": {
+        "height": 40,
+        "width": 160.203125,
+        "x": 212.046875,
+        "y": 447.671875
+      },
+      "action": "click"
+    },
+    {
+      "image": "assets/27-utvalg-plan.jpg",
+      "title": "Velg boligene",
+      "text": "Filtrer på bygg, oppgang eller etasje. Her bruker vi samme plan for alle fire boligene. Utvalget beholdes når filteret endres.",
+      "duration": 11,
+      "target": {
+        "height": 36,
+        "width": 118.453125,
+        "x": 215,
+        "y": 373.5
+      },
+      "action": "point"
+    },
+    {
+      "image": "assets/28-arbeidsrekkefolge.jpg",
+      "title": "Arbeid, varighet og startregel",
+      "text": "Førbefaring kommer først. Montering starter ti arbeidsdager senere. Ansvarlig, varighet og ukeregel inngår i planen.",
+      "duration": 11,
+      "target": {
+        "height": 42,
+        "width": 189,
+        "x": 776.671875,
+        "y": 625.6875
+      },
+      "action": "point"
+    },
+    {
+      "image": "assets/29-forhandsvis-plan.jpg",
+      "title": "Se over datoene samlet",
+      "text": "Kontroller alle boligene før lagring. Her opprettes åtte aktiviteter. Ingen beboervarsler publiseres av denne handlingen.",
+      "duration": 11,
+      "target": {
+        "height": 36,
+        "width": 169.265625,
+        "x": 963.734375,
+        "y": 765.984375
+      },
+      "action": "click"
+    },
+    {
+      "image": "assets/30-gantt.jpg",
+      "title": "Planen fra først til sist",
+      "text": "Hele planen viser perioden til aktivitetene. Bytt mellom dag, uke og måned. Boligene sorteres etter første aktivitet.",
+      "duration": 11,
+      "target": {
+        "height": 42.5,
+        "width": 284.484375,
+        "x": 87,
+        "y": 447.171875
+      },
+      "action": "point"
+    },
+    {
+      "image": "assets/31-bestillingsfrist.jpg",
+      "title": "Frist med norsk klokkeslett",
+      "text": "Sett dato for valgte boliger. Prosjektets felles klokkeslett vises tydelig. Etter fristen stoppes nye tilvalg; eksisterende avtaler beholdes.",
+      "duration": 11,
+      "target": {
+        "height": 44,
+        "width": 157.75,
+        "x": 482.1875,
+        "y": 879
+      },
+      "action": "click"
+    },
+    {
+      "image": "assets/34-del-grunnpakke.jpg",
+      "title": "Del konkrete valgmuligheter",
+      "text": "En portaltilgang alene viser ikke pakkene. Legg til boligens lagrede grunnleveranse som en navngitt valgmulighet.",
+      "duration": 11,
+      "target": {
+        "height": 45,
+        "width": 581,
+        "x": 710,
+        "y": 623.09375
+      },
+      "action": "click"
+    },
+    {
+      "image": "assets/35-del-alternativ.jpg",
+      "title": "Et komplett alternativ",
+      "text": "Velg riktig rom og tilvalg. Resten av boligen beholdes. Beboeren får et komplett alternativ å sammenligne med grunnleveransen.",
+      "duration": 11,
+      "target": {
+        "height": 45,
+        "width": 581,
+        "x": 710,
+        "y": 580.625
+      },
+      "action": "click"
+    },
+    {
+      "image": "assets/32-beboerlenker.jpg",
+      "title": "Kontroller begge eierne",
+      "text": "Alex og Sam får samme boligportal. Kontroller mottakerlisten før klargjøring. I denne sandboxen er virkelig e-postutsending sperret.",
+      "duration": 11,
+      "target": {
+        "height": 44,
+        "width": 198.8125,
+        "x": 482.1875,
+        "y": 879
+      },
+      "action": "click"
+    },
+    {
+      "image": "assets/33-portal-klar.jpg",
+      "title": "Lenke klar – utsending sperret",
+      "text": "Portalen er klargjort, men ingen e-post er sendt. Sandboxen sperrer utsending. Vi åpner demoportalen direkte for å kontrollere innholdet.",
+      "duration": 12,
+      "target": {
+        "height": 44,
+        "width": 192.859375,
+        "x": 482.1875,
+        "y": 878
+      },
+      "action": "point"
+    },
+    {
+      "image": "assets/36-beboer-oversikt.jpg",
+      "title": "Beboerens egen oversikt",
+      "text": "Mine valg, avtaler, dokumenter og meldinger er samlet i portalen. Kontroller bolig og bestillingsfrist før du velger.",
+      "duration": 11,
+      "target": {
+        "height": 50,
+        "width": 241.25,
+        "x": 184,
+        "y": 630.28125
+      },
+      "action": "point"
+    },
+    {
+      "image": "assets/37-valgt-tillegg.jpg",
+      "title": "Se pris før innsending",
+      "text": "Grunnpakken er inkludert. Valgt oppgradering gir 4 500 kroner i pristillegg. Se over valget før det sendes til prosjektleder.",
+      "duration": 12,
+      "target": {
+        "height": 48,
+        "width": 150.5,
+        "x": 206,
+        "y": 589.015625
+      },
+      "action": "click"
+    },
+    {
+      "image": "assets/38-send-valg.jpg",
+      "title": "Kontroller hele innholdet",
+      "text": "80 cm innredning erstatter standardvaren. De andre varelinjene beholdes. Innsendingen er et ønske til gjennomgang; avtalen aksepteres separat.",
+      "duration": 11,
+      "target": {
+        "height": 48,
+        "width": 245.578125,
+        "x": 227,
+        "y": 568.515625
+      },
+      "action": "click"
+    },
+    {
+      "image": "assets/39-gjennomga-valg.jpg",
+      "title": "Prosjektleder gjennomgår valget",
+      "text": "Kontroller innsendte varer og skriv en kort tilbakemelding. Bruk valget i avtalegrunnlaget før avtale eller bestilling er delt.",
+      "duration": 11,
+      "target": {
+        "height": 45,
+        "width": 234.796875,
+        "x": 697,
+        "y": 616.625
+      },
+      "action": "click"
+    },
+    {
+      "image": "assets/40-avtalegrunnlag.jpg",
+      "title": "Varer og pris i samme avtale",
+      "text": "Kontroller bolig, varelinjer, pris og svarfrist. Svarfristen er egen frist for avtalen. Opprett lenken når innholdet er klart.",
+      "duration": 12,
+      "target": {
+        "height": 48,
+        "width": 151.140625,
+        "x": 326.3125,
+        "y": 841.375
+      },
+      "action": "click"
+    },
+    {
+      "image": "assets/41-avtalefane.jpg",
+      "title": "Avtalen ligger i portalen",
+      "text": "Beboeren åpner avtalen under Avtaler. Bare den aktuelle utgaven kan besvares. Aksepterte avtaler blir liggende som kvitteringer.",
+      "duration": 11,
+      "target": {
+        "height": 48,
+        "width": 141.59375,
+        "x": 206,
+        "y": 721.15625
+      },
+      "action": "click"
+    },
+    {
+      "image": "assets/42-kontroller-aksept.jpg",
+      "title": "Beboeren gir sitt eget svar",
+      "text": "Les avtalen og bekreft at varer og pris er gjennomgått. Navnet og svaret knyttes til akkurat denne utgaven.",
+      "duration": 12,
+      "target": {
+        "height": 48,
+        "width": 173.59375,
+        "x": 206,
+        "y": 741.03125
+      },
+      "action": "click"
+    },
+    {
+      "image": "assets/43-butikktilgang.jpg",
+      "title": "Personlig butikktilgang",
+      "text": "Systemadmin eller godkjent support tildeler tilgang til den ansatte. Personen bruker sin vanlige innlogging og finner prosjektet under Min side.",
+      "duration": 11,
+      "target": {
+        "height": 46,
+        "width": 120.53125,
+        "x": 68,
+        "y": 625.953125
+      },
+      "action": "click"
+    },
+    {
+      "image": "assets/44-min-side-butikk.jpg",
+      "title": "Butikken starter på Min side",
+      "text": "Butikkeksempelet bruker et eget testprosjekt med eksisterende tilgang. Mine boligprosjekter viser bare personlig tildelte prosjekter.",
+      "duration": 11,
+      "target": {
+        "height": 45,
+        "width": 371.390625,
+        "x": 51,
+        "y": 418.78125
+      },
+      "action": "click"
+    },
+    {
+      "image": "assets/45-bytt-bolig.jpg",
+      "title": "Bytt bolig uten å gå ut",
+      "text": "Søket velger ikke bolig automatisk. Her er H0101 fortsatt valgt. Trykk riktig søkeresultat for å bytte til H0102.",
+      "duration": 12,
+      "target": {
+        "height": 44,
+        "width": 757,
+        "x": 552,
+        "y": 661.625
+      },
+      "action": "click"
+    },
+    {
+      "image": "assets/46-kontakt-frist-plan.jpg",
+      "title": "Kontakt, frist og neste aktivitet",
+      "text": "Se registrert adresse, telefon, e-post og bestillingsfrist. Første åpne aktivitet heter Førbefaring – den er ikke nødvendigvis arbeidsoppstart.",
+      "duration": 12,
+      "target": {
+        "height": 17,
+        "width": 71.1875,
+        "x": 1058.328125,
+        "y": 501.6875
+      },
+      "action": "point"
+    },
+    {
+      "image": "assets/47-butikkvare.jpg",
+      "title": "Vare, beboerpris og montering",
+      "text": "Registrer varenummer, antall og beboerpris inkl. mva. Montering legges på egen linje i prisen. Her brukes et tydelig merket illustrasjonsbilde.",
+      "duration": 12,
+      "target": {
+        "height": 43,
+        "width": 221.65625,
+        "x": 586,
+        "y": 323.78125
+      },
+      "action": "point"
+    },
+    {
+      "image": "assets/48-butikk-forhandsvisning.jpg",
+      "title": "Kontroller målboligen før publisering",
+      "text": "Mottaker, varer, bilde og pris vises samlet. Dette tillegget er 1 240 kroner inkl. mva. Grunnpakken og tidligere aksepterte avtaler beholdes.",
+      "duration": 12,
+      "target": {
+        "height": 44,
+        "width": 169.28125,
+        "x": 573,
+        "y": 806.953125
+      },
+      "action": "click"
+    },
+    {
+      "image": "assets/49-butikk-beboer.jpg",
+      "title": "Samme forslag hos beboeren",
+      "text": "Beboeren ser samme vare, bilde, monteringspris og totalsum. Tidligere akseptert tillegg ligger fortsatt som egen kvittering.",
+      "duration": 11,
+      "target": {
+        "height": 22,
+        "width": 936,
+        "x": 206,
+        "y": 155.65625
+      },
+      "action": "point"
+    },
+    {
+      "image": "assets/50-butikk-kvitteringer.jpg",
+      "title": "Aksepten er dokumentert",
+      "text": "Etter aksept vises kvitteringen under Avtaler. Et nytt tillegg erstatter ikke kvitteringen for et tidligere akseptert tillegg.",
+      "duration": 11,
+      "target": {
+        "height": 27,
+        "width": 936,
+        "x": 206,
+        "y": 413.28125
+      },
+      "action": "point"
+    },
+    {
+      "image": "assets/51-finn-bolig.jpg",
+      "title": "Finn boligen i hele prosjektet",
+      "text": "Søk på navn, bolignummer eller adresse. Trefflisten viser bygg og etasje, slik at du kan velge riktig bolig.",
+      "duration": 12,
+      "target": {
+        "height": 44,
+        "width": 200.96875,
+        "x": 555.625,
+        "y": 421
+      },
+      "action": "point"
+    },
+    {
+      "image": "assets/52-bestilling-utvalg.jpg",
+      "title": "Bestill det som skal leveres",
+      "text": "Kontroller vareutvalget fra de lagrede boligvalgene. Fjern varer som kjøpes et annet sted. Valgene i boligen beholdes.",
+      "duration": 11,
+      "target": {
+        "height": 45,
+        "width": 232.125,
+        "x": 707,
+        "y": 311.375
+      },
+      "action": "point"
+    },
+    {
+      "image": "assets/53-leveringsadresse.jpg",
+      "title": "Avklar leveringen",
+      "text": "Legg inn felles leveringsadresse. Du kan velge egen adresse, delt bestilling og dellevering for den enkelte boligen.",
+      "duration": 11,
+      "target": {
+        "height": 70,
+        "width": 815,
+        "x": 259,
+        "y": 252.1875
+      },
+      "action": "point"
+    },
+    {
+      "image": "assets/54-kontroller-bestilling.jpg",
+      "title": "Kontroller leverandør og varer",
+      "text": "Ordrenummer, leverandør, vareutvalg og leveringsadresse skal stemme før bestillingen lagres og sendekladden åpnes.",
+      "duration": 11,
+      "target": {
+        "height": 36,
+        "width": 841,
+        "x": 246,
+        "y": 771.1875
+      },
+      "action": "click"
+    },
+    {
+      "image": "assets/55-sendekladd.jpg",
+      "title": "Forhåndsvis før sending",
+      "text": "Kontroller mottaker, bolig, adresse og begge vedleggene: Cordel ASCII og Excel. I denne demonstrasjonen sender vi ingen bestilling.",
+      "duration": 11,
+      "target": {
+        "height": 40,
+        "width": 159.15625,
+        "x": 404.671875,
+        "y": 230
+      },
+      "action": "point"
+    },
+    {
+      "image": "assets/56-prosjektkobling.jpg",
+      "title": "Samle HMS og timer",
+      "text": "KS/HMS og timer kan kobles til et vanlig ProffDok-prosjekt. Velg riktig eksisterende prosjekt, eller opprett en ny kobling én gang.",
+      "duration": 12,
+      "target": {
+        "height": 44,
+        "width": 640,
+        "x": 64,
+        "y": 689
+      },
+      "action": "point"
+    },
+    {
+      "image": "assets/57-bemanning-oppsett.jpg",
+      "title": "Faktisk bemanning",
+      "text": "Aktiver bemanning under Oppsett. Prosjektleder kan registrere deltakere manuelt. Ansatte og UE trenger personlig tilgang for egen registrering.",
+      "duration": 11,
+      "target": {
+        "height": 44,
+        "width": 147.5625,
+        "x": 217.375,
+        "y": 760.96875
+      },
+      "action": "point"
+    },
+    {
+      "image": "assets/58-bemanning-tidspunkt.jpg",
+      "title": "Registrer ut og begrunn rettinger",
+      "text": "Kontroller inn- og ut-tid. Endringer av en lagret registrering skal begrunnes. Her ser vi den avsluttede demoregistreringen.",
+      "duration": 11,
+      "target": {
+        "height": 104,
+        "width": 898,
+        "x": 76,
+        "y": 415.96875
+      },
+      "action": "point"
+    },
+    {
+      "image": "assets/59-bemanning-historikk.jpg",
+      "title": "Historikken beholdes",
+      "text": "Listen viser at montøren er registrert ut. Historikken viser hvem som registrerte og rettet tidspunktet, med begrunnelse og tidligere verdier.",
+      "duration": 11,
+      "target": {
+        "height": 49.1875,
+        "width": 900,
+        "x": 75,
+        "y": 762.96875
+      },
+      "action": "point"
+    },
+    {
+      "image": "assets/60-tilsynskontroll.jpg",
+      "title": "Tilsynslisten har egen kontroll",
+      "text": "Oversiktslisten krever byggeplass, virksomheter og personer. Kontroller mangler og bekreft dagens liste før den brukes ved tilsyn.",
+      "duration": 11,
+      "target": {
+        "height": 42,
+        "width": 147.75,
+        "x": 168,
+        "y": 655.984375
+      },
+      "action": "point"
+    },
+    {
+      "image": "assets/61-fordel-kontroller.jpg",
+      "title": "Fordel én kontroll til flere boliger",
+      "text": "Velg firmamal og boliger. Hver bolig får en egen kontroll med tomme svar. Eksisterende kontroller hoppes over.",
+      "duration": 12,
+      "target": {
+        "height": 48,
+        "width": 166.328125,
+        "x": 250,
+        "y": 442.5625
+      },
+      "action": "point"
+    },
+    {
+      "image": "assets/62-bekreft-fordeling.jpg",
+      "title": "Kontroller omfanget",
+      "text": "Forhåndsvisningen viser fire nye kontroller og ingen duplikater. Påkrevde kontroller må være fullført før sluttgodkjenning.",
+      "duration": 11,
+      "target": {
+        "height": 48,
+        "width": 844,
+        "x": 252,
+        "y": 701.96875
+      },
+      "action": "click"
+    },
+    {
+      "image": "assets/63-fordeling-lagret.jpg",
+      "title": "Fordelingen er lagret",
+      "text": "Fire separate kontroller er opprettet. Åpne den aktuelle boligen og fyll ut kontrollen der arbeidet utføres.",
+      "duration": 11,
+      "target": {
+        "height": 48,
+        "width": 221.75,
+        "x": 252,
+        "y": 508.796875
+      },
+      "action": "click"
+    },
+    {
+      "image": "assets/64-kontroll-utfylling.jpg",
+      "title": "Dokumenter det du har kontrollert",
+      "text": "Velg OK, Ikke aktuelt eller Avvik. Skriv påkrevd kommentar og legg til bilder ved behov. Eksempeltekst erstatter ikke en virkelig kontroll.",
+      "duration": 13,
+      "target": {
+        "height": 80,
+        "width": 765,
+        "x": 284,
+        "y": 428
+      },
+      "action": "point"
+    },
+    {
+      "image": "assets/65-fullfor-kontroll.jpg",
+      "title": "Lagre og fullfør kontrollen",
+      "text": "Når alle påkrevde svar er lagt inn, kan kontrollen fullføres ved lagring. Uferdige kontroller lagres som arbeid underveis.",
+      "duration": 11,
+      "target": {
+        "height": 48,
+        "width": 833,
+        "x": 250,
+        "y": 771.5625
+      },
+      "action": "click"
+    },
+    {
+      "image": "assets/66-kontroll-fullfort.jpg",
+      "title": "Kontroller lagret status",
+      "text": "Sjekklisten viser tre av tre besvart og Fullført. Dokumentasjonshistorikken viser endringene. De andre boligene har fortsatt egne kontroller.",
+      "duration": 11,
+      "target": {
+        "height": 79.828125,
+        "width": 607,
+        "x": 697,
+        "y": 729.484375
+      },
+      "action": "point"
+    },
+    {
+      "image": "assets/67-fdv.jpg",
+      "title": "Kontroller FDV før overlevering",
+      "text": "FDV følger boligens lagrede varevalg. Manglende lenker vises tydelig. Legg inn riktige produktdokumenter eller last opp FDV-filer.",
+      "duration": 11,
+      "target": {
+        "height": 85.5625,
+        "width": 116.296875,
+        "x": 1187.703125,
+        "y": 515.375
+      },
+      "action": "point"
+    },
+    {
+      "image": "assets/68-apne-forhold.jpg",
+      "title": "Se hva som gjenstår",
+      "text": "Åpne forhold samler mangler fra plan og dokumentasjon. Følg opp årsaken før overtakelse. Fullført sjekkliste alene gjør ikke boligen klar.",
+      "duration": 12,
+      "target": {
+        "height": 45.1875,
+        "width": 557,
+        "x": 722,
+        "y": 563.75
+      },
+      "action": "point"
+    },
+    {
+      "image": "assets/69-vurder-hinder.jpg",
+      "title": "Skill hinder fra restpunkter",
+      "text": "Prosjektleder begrunner om et forhold hindrer overtakelse eller skal følges opp etterpå. Restpunkter trenger navngitt ansvarlig.",
+      "duration": 11,
+      "target": {
+        "height": 38,
+        "width": 839,
+        "x": 247,
+        "y": 357.109375
+      },
+      "action": "point"
+    },
+    {
+      "image": "assets/74-a-konto.jpg",
+      "title": "Før én periode om gangen",
+      "text": "Registrer denne periodens a konto og eventuell indeks. Fakturanummer kan legges inn senere. Eksemplet utsteder eller sender ingen faktura.",
+      "duration": 12,
+      "target": {
+        "height": 36,
+        "width": 120,
+        "x": 960,
+        "y": 569.390625
+      },
+      "action": "click"
+    },
+    {
+      "image": "assets/75-fakturaoversikt.jpg",
+      "title": "Følg opp lagrede fakturaer",
+      "text": "Fakturaoversikten viser registrert a konto og indeks hver for seg. En lagret indeksberegning teller ikke som fakturert, og fakturert betyr ikke betalt.",
+      "duration": 13,
+      "target": {
+        "height": 36,
+        "width": 838,
+        "x": 255,
+        "y": 431.171875
+      },
+      "action": "point"
+    },
+    {
+      "image": "assets/76-ue-funksjoner.jpg",
+      "title": "Avgrens UE-tilgangen",
+      "text": "Velg navngitt kontakt, varighet og funksjoner. Sjekklister kan være lesbare eller åpne for egen utfylling og vedlegg. Her vises oppsettet uten ny tilgang.",
+      "duration": 12,
+      "target": {
+        "height": 43,
+        "width": 903,
+        "x": 215,
+        "y": 837
+      },
+      "action": "point"
+    },
+    {
+      "image": "assets/96-ue-portal.jpg",
+      "title": "UE følger prosjektet",
+      "text": "Mottakerlenken viser bare delte funksjoner og gjelder til avtalt dato. Her ser UE fire boliger og åtte aktiviteter. Prosjektlederen beholder ansvaret for planen.",
+      "duration": 11,
+      "target": {
+        "height": 30,
+        "width": 220.609375,
+        "x": 39,
+        "y": 616.671875
+      },
+      "action": "point"
+    },
+    {
+      "image": "assets/97-ue-bekreft-dato.jpg",
+      "title": "UE bekrefter datoen",
+      "text": "Åpne aktiviteten og velg Bekreft dato eller meld avvik. Dato og merknad følger den valgte boligen. Registrer svar sender det til prosjektets oppfølging.",
+      "duration": 11,
+      "target": {
+        "height": 36,
+        "width": 918,
+        "x": 215,
+        "y": 430
+      },
+      "action": "click"
+    },
+    {
+      "image": "assets/98-ue-sjekkliste.jpg",
+      "title": "UE fyller egen kontroll",
+      "text": "Velg resultat og skriv nødvendige kommentarer i egen utfylling. Her er den fullførte kontrollen åpnet igjen. Svarene er lagret, og tidligere kontroller er bevart.",
+      "duration": 11,
+      "target": {
+        "height": 22,
+        "width": 903,
+        "x": 215,
+        "y": 76
+      },
+      "action": "point"
+    },
+    {
+      "image": "assets/99-ue-vedlegg.jpg",
+      "title": "UE legger ved dokumentasjon",
+      "text": "Velg riktig bolig og en tydelig tittel. PDF og bilder lagres som dokumentasjon hos prosjektet. Ved avbrudd kan samme sikrede filkladd forsøkes igjen.",
+      "duration": 11,
+      "target": {
+        "height": 46,
+        "width": 136.5,
+        "x": 37,
+        "y": 841.484375
+      },
+      "action": "click"
+    },
+    {
+      "image": "assets/100-ue-lagret.jpg",
+      "title": "Kontroller lagret vedlegg",
+      "text": "Kvitteringen viser at filen er lagret hos prosjektet. Vedlegget viser bolig og tittel. Åpne eller last ned filen for å kontrollere innholdet.",
+      "duration": 11,
+      "target": {
+        "height": 46,
+        "width": 269.5625,
+        "x": 1056.4375,
+        "y": 850.484375
+      },
+      "action": "click"
+    },
+    {
+      "image": "assets/101-ue-prosjektleder.jpg",
+      "title": "Prosjektlederen følger opp",
+      "text": "UE-bekreftelsen vises på riktig bolig og aktivitet. Svaret endrer ikke prosjektplanen automatisk. Prosjektlederen vurderer avvik og eventuelle datoendringer.",
+      "duration": 11,
+      "target": {
+        "height": 23,
+        "width": 352.421875,
+        "x": 238,
+        "y": 211.1875
+      },
+      "action": "point"
+    },
+    {
+      "image": "assets/103-varslingsregler.jpg",
+      "title": "Velg varsling bevisst",
+      "text": "Publiser nå: hele døgnet. Dialog: to minutters samling. Datoplanlagte varsler: fra kl.08. Fristpåminnelser: prosjektvis opt-in, kl.08–18 norsk tid. Sandbox sender ikke e-post.",
+      "duration": 11,
+      "target": {
+        "height": 40,
+        "width": 250.53125,
+        "x": 46,
+        "y": 647.875
+      },
+      "action": "point"
+    },
+    {
+      "image": "assets/77-pilot-overgang.jpg",
+      "title": "Videre i en ferdig demopilot",
+      "text": "For å vise historikk, leveranser og overtakelser åpner vi en eksisterende demopilot. Dette er et annet prosjekt enn Lindeparken.",
+      "duration": 12,
+      "target": {
+        "height": 114,
+        "width": 422.65625,
+        "x": 28,
+        "y": 776.390625
+      },
+      "action": "click"
+    },
+    {
+      "image": "assets/79-leveranseoversikt.jpg",
+      "title": "Se leveranser samlet",
+      "text": "Oversikten skiller klargjort, bestilt, delvis levert og levert. Tallene gjelder ordre. Varemottak er ikke ferdigstilling av arbeidet.",
+      "duration": 11,
+      "target": {
+        "height": 43,
+        "width": 903,
+        "x": 215,
+        "y": 146
+      },
+      "action": "point"
+    },
+    {
+      "image": "assets/80-levert-varemottak.jpg",
+      "title": "Kontroller mottatte varer",
+      "text": "Hver vare viser mottatt antall mot bestilt antall. Delleveranser kan følges opp. Denne demoordren er allerede fullt levert.",
+      "duration": 11,
+      "target": {
+        "height": 45,
+        "width": 507,
+        "x": 747,
+        "y": 596.265625
+      },
+      "action": "point"
+    },
+    {
+      "image": "assets/81-mottakshistorikk.jpg",
+      "title": "Se tidligere mottak",
+      "text": "Historikken viser første delleveranse og senere restmottak. Korrigeringer skal kunne spores. Levert varestatus erstatter ikke kontroll av utført arbeid.",
+      "duration": 11,
+      "target": {
+        "height": 49.1875,
+        "width": 507,
+        "x": 747,
+        "y": 460.265625
+      },
+      "action": "point"
+    },
+    {
+      "image": "assets/82-overtatt-restpunkter.jpg",
+      "title": "Overtatt med restpunkter",
+      "text": "En bolig kan være overtatt mens resten av prosjektet pågår. Åpne forhold skal fortsatt følges opp. Endringer etter vurderingen varsles tydelig.",
+      "duration": 12,
+      "target": {
+        "height": 45,
+        "width": 294.53125,
+        "x": 722,
+        "y": 743.5
+      },
+      "action": "point"
+    },
+    {
+      "image": "assets/83-sluttdokumentasjon.jpg",
+      "title": "Samle boligens dokumentasjon",
+      "text": "Sjekklister, filer, FDV og ekstern protokoll hører til riktig bolig. Samlet PDF og ZIP gir en sluttpakke med dokumentert status.",
+      "duration": 12,
+      "target": {
+        "height": 48,
+        "width": 186.828125,
+        "x": 908.171875,
+        "y": 228.328125
+      },
+      "action": "click"
+    },
+    {
+      "image": "assets/84-sluttpakke-status.jpg",
+      "title": "Last ned med riktig status",
+      "text": "PDF viser kontroller, dokumentoversikt, FDV og restpunkter. Manglende FDV-lenker er synlige. Nedlasting godkjenner ikke arbeidet og endrer ingen statuser.",
+      "duration": 12,
+      "target": {
+        "height": 48,
+        "width": 173.40625,
+        "x": 233,
+        "y": 700.078125
+      },
+      "action": "click"
+    },
+    {
+      "image": "assets/85-zip-nedlastet.jpg",
+      "title": "Bevar originalene",
+      "text": "ZIP er lastet ned med samlet PDF og to originalfiler. Kontrollhistorikk og filmanifest følger med. Ekstern FDV må fortsatt kontrolleres via lenkene.",
+      "duration": 12,
+      "target": {
+        "height": 48,
+        "width": 867,
+        "x": 233,
+        "y": 738.15625
+      },
+      "action": "point"
+    },
+    {
+      "image": "assets/86-fellesarbeid.jpg",
+      "title": "Husk bygg og fellesarbeider",
+      "text": "Boligens overtakelse og prosjektets interne sluttkontroll er ulike steg. Fellesarbeider og dokumentasjon må vurderes særskilt før hele prosjektet ferdigstilles.",
+      "duration": 12,
+      "target": {
+        "height": 36,
+        "width": 329.6875,
+        "x": 263,
+        "y": 449.125
+      },
+      "action": "point"
+    }
+  ],
+  "sourceCommit": "e1346b45652f06450420bfdb48e5be7894be8b96"
+}

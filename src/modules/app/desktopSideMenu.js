@@ -1,0 +1,528 @@
+import './desktopSideMenu.css';
+
+const DESKTOP_QUERY = '(min-width: 1181px)';
+const BAR_ID = 'expo-desktop-menu-bar';
+const PRIMARY_ID = 'expo-desktop-primary-nav';
+const HOME_ID = 'expo-desktop-home-button';
+const HELP_ID = 'expo-desktop-help-button';
+const SUPPORT_ID = 'expo-desktop-support-button';
+const DRAWER_ID = 'expo-desktop-menu-drawer';
+const BACKDROP_ID = 'expo-desktop-menu-backdrop';
+const NATIVE_HOME_MARKER = 'data-expo-native-home-source';
+const SALES_NAV_PREFIX = 'expo-proffdok-sales-preview-requests-v1';
+
+const cleanLabel = (value = '') => String(value || '').replace(/\s+/g, ' ').trim();
+
+const isProjectWorkspaceLabels = (labels = []) =>
+  ((labels.includes('Prosjektoversikt') || labels.includes('Nytt prosjekt')) &&
+  labels.includes('Prosjektering') &&
+  labels.includes('Sjekklister') &&
+  (labels.includes('Avtalegrunnlag') || labels.includes('Tilbud/kontrakt'))) ||
+  (labels.includes('Ordreoversikt') && labels.includes('Ordrebeskrivelse') && labels.includes('Sjekklister'));
+
+function findInternalAppNav() {
+  if (!window.matchMedia(DESKTOP_QUERY).matches) return null;
+
+  return Array.from(document.querySelectorAll('nav')).find((nav) => {
+    if (!(nav instanceof HTMLElement)) return false;
+    if (nav.closest('[data-expo-auth-shell]') || nav.hasAttribute('data-expo-global-nav-source')) return false;
+
+    const labels = Array.from(nav.querySelectorAll(':scope > button')).map((button) =>
+      cleanLabel(button.textContent)
+    );
+
+    const globalNav =
+      labels.includes('Befaring/Tilbud') &&
+      labels.some((label) => label === 'Startside' || label === 'Prosjektoversikt');
+    const projectWorkspaceNav = isProjectWorkspaceLabels(labels);
+
+    return labels.includes('Hjelp') && (globalNav || projectWorkspaceNav);
+  }) || null;
+}
+
+function appNavigationSource(fallback) {
+  return document.querySelector('header nav[data-expo-global-nav-source="1"]') || fallback;
+}
+
+function findSourceNavButton(labels = []) {
+  const sourceNav = appNavigationSource(findInternalAppNav());
+  if (!(sourceNav instanceof HTMLElement)) return null;
+  const accepted = new Set((Array.isArray(labels) ? labels : [labels]).map((label) => cleanLabel(label)));
+  return Array.from(sourceNav.querySelectorAll(':scope > button')).find(
+    (button) => accepted.has(cleanLabel(button.textContent))
+  ) || null;
+}
+
+function findNativeHeaderButton(labels = []) {
+  const accepted = new Set(
+    (Array.isArray(labels) ? labels : [labels])
+      .map((label) => cleanLabel(label).toLowerCase())
+      .filter(Boolean)
+  );
+  return Array.from(document.querySelectorAll('button')).find((button) => {
+    if (!(button instanceof HTMLButtonElement)) return false;
+    if (button.id === HOME_ID || button.id === HELP_ID || button.id === SUPPORT_ID) return false;
+    return accepted.has(cleanLabel(button.textContent).toLowerCase());
+  }) || null;
+}
+
+const findNativeWorkspaceExitButton = () =>
+  findNativeHeaderButton(['← Supportoversikt', '← Til startside']);
+
+function restoreNativeHomeSourceButtons() {
+  document.querySelectorAll(`[${NATIVE_HOME_MARKER}="1"]`).forEach((button) => {
+    if (!(button instanceof HTMLButtonElement)) return;
+    button.style.removeProperty('display');
+    button.removeAttribute(NATIVE_HOME_MARKER);
+  });
+}
+
+function hideNativeWorkspaceHomeButton() {
+  restoreNativeHomeSourceButtons();
+  const nativeLeaveWorkspace = findNativeWorkspaceExitButton();
+  if (!(nativeLeaveWorkspace instanceof HTMLButtonElement)) return;
+
+  nativeLeaveWorkspace.setAttribute(NATIVE_HOME_MARKER, '1');
+  nativeLeaveWorkspace.style.display = 'none';
+}
+
+function cleanStartsideUrl() {
+  const current = new URL(window.location.href);
+  const next = new URL(`${current.origin}${current.pathname}`);
+  const progressTest = current.searchParams.get('progressTest');
+  if (progressTest) next.searchParams.set('progressTest', progressTest);
+  return next.toString();
+}
+
+function clearRememberedSalesNavigation() {
+  try {
+    const storage = window.localStorage;
+    const keys = [];
+    for (let index = 0; index < storage.length; index += 1) {
+      const key = storage.key(index);
+      if (key?.startsWith(SALES_NAV_PREFIX) && key.endsWith(':navigation')) keys.push(key);
+    }
+    keys.forEach((key) => storage.removeItem(key));
+  } catch {
+    // Kun intern navigasjonsstate. Tilbud, kladder og serverdata røres ikke.
+  }
+}
+
+function goToStartside() {
+  clearRememberedSalesNavigation();
+
+  // Prosjektarbeidsflate/new-project eier selv ulagret-varsel og må få førsteprioritet.
+  const nativeLeaveWorkspace = findNativeWorkspaceExitButton();
+  if (nativeLeaveWorkspace instanceof HTMLButtonElement) {
+    nativeLeaveWorkspace.click();
+    return;
+  }
+
+  const nativeCancelNewProject = findNativeHeaderButton('← Avbryt nytt prosjekt');
+  if (nativeCancelNewProject instanceof HTMLButtonElement) {
+    nativeCancelNewProject.click();
+    return;
+  }
+
+  // Uten aktiv prosjektarbeidsflate bruker vi React-appens ekte Startside-knapp.
+  // Dette er viktig i Sales: samme URL kan ellers gi en no-op og brukeren blir stående.
+  const sourceStart = findSourceNavButton(['Startside']);
+  if (sourceStart instanceof HTMLButtonElement) {
+    sourceStart.click();
+    return;
+  }
+
+  // Kun fallback dersom intern nav ennå ikke finnes.
+  window.location.assign(cleanStartsideUrl());
+}
+
+function goToHelp() {
+  const sourceHelp = findSourceNavButton(['Hjelp']);
+  if (sourceHelp instanceof HTMLButtonElement) {
+    sourceHelp.click();
+    return;
+  }
+
+  const nativeHelp = findNativeHeaderButton('Hjelp');
+  if (nativeHelp instanceof HTMLButtonElement) nativeHelp.click();
+}
+
+function goToSupport() {
+  findSourceNavButton(['Support'])?.click();
+}
+
+function styleBarSupportButton(button) {
+  styleBarHelpButton(button);
+  button.textContent = 'Support';
+  button.style.margin = '0';
+  button.hidden = !findSourceNavButton(['Support']);
+}
+
+function styleBarHomeButton(homeButton) {
+  if (!(homeButton instanceof HTMLButtonElement)) return;
+  const supportProjectOpen = Boolean(findNativeHeaderButton('← Supportoversikt'));
+  homeButton.textContent = supportProjectOpen ? '← Supportoversikt' : '← Startside';
+  homeButton.hidden = false;
+  homeButton.style.position = 'static';
+  homeButton.style.zIndex = 'auto';
+  homeButton.style.margin = '0';
+  homeButton.style.height = '40px';
+  homeButton.style.padding = '0 12px';
+  homeButton.style.fontSize = '13px';
+  homeButton.style.lineHeight = '1';
+  homeButton.style.borderRadius = '13px';
+  homeButton.style.boxShadow = 'none';
+  homeButton.style.whiteSpace = 'nowrap';
+  homeButton.style.visibility = 'visible';
+  homeButton.style.left = '';
+  homeButton.style.top = '';
+  homeButton.style.flex = '0 0 auto';
+}
+
+function styleBarHelpButton(helpButton) {
+  if (!(helpButton instanceof HTMLButtonElement)) return;
+  helpButton.textContent = '? Hjelp';
+  helpButton.hidden = false;
+  helpButton.style.position = 'static';
+  helpButton.style.zIndex = 'auto';
+  helpButton.style.margin = '0 0 0 auto';
+  helpButton.style.height = '40px';
+  helpButton.style.padding = '0 12px';
+  helpButton.style.fontSize = '13px';
+  helpButton.style.lineHeight = '1';
+  helpButton.style.borderRadius = '13px';
+  helpButton.style.boxShadow = 'none';
+  helpButton.style.whiteSpace = 'nowrap';
+  helpButton.style.visibility = 'visible';
+  helpButton.style.left = '';
+  helpButton.style.top = '';
+  helpButton.style.flex = '0 0 auto';
+}
+
+function buildMenuShell() {
+  let bar = document.getElementById(BAR_ID);
+  let homeButton = document.getElementById(HOME_ID);
+  let helpButton = document.getElementById(HELP_ID);
+  let supportButton = document.getElementById(SUPPORT_ID);
+  let drawer = document.getElementById(DRAWER_ID);
+  let backdrop = document.getElementById(BACKDROP_ID);
+
+  if (bar && homeButton && helpButton && supportButton && drawer && backdrop) {
+    const toggle = bar.querySelector('.expoDesktopMenuToggle');
+    const current = bar.querySelector('.expoDesktopMenuCurrent');
+    if (toggle && homeButton.parentElement !== bar) toggle.after(homeButton);
+    if (current && homeButton.nextElementSibling !== current) current.before(homeButton);
+    if (helpButton.parentElement !== bar) bar.append(helpButton);
+    if (supportButton.parentElement !== bar) bar.append(supportButton);
+    styleBarHomeButton(homeButton);
+    styleBarHelpButton(helpButton);
+    styleBarSupportButton(supportButton);
+    return { bar, homeButton, helpButton, supportButton, drawer, backdrop };
+  }
+
+  bar?.remove();
+  homeButton?.remove();
+  helpButton?.remove();
+  supportButton?.remove();
+  drawer?.remove();
+  backdrop?.remove();
+
+  bar = document.createElement('div');
+  bar.id = BAR_ID;
+  bar.className = 'expoDesktopMenuBar';
+
+  const toggle = document.createElement('button');
+  toggle.type = 'button';
+  toggle.className = 'expoDesktopMenuToggle';
+  toggle.setAttribute('aria-expanded', 'false');
+  toggle.setAttribute('aria-controls', DRAWER_ID);
+  toggle.innerHTML = `
+    <span class="expoDesktopMenuIcon" aria-hidden="true"><span></span><span></span><span></span></span>
+    <span>Meny</span>
+  `;
+
+  homeButton = document.createElement('button');
+  homeButton.id = HOME_ID;
+  homeButton.type = 'button';
+  homeButton.className = 'secondary expoDesktopHeaderShortcut';
+  homeButton.textContent = '← Startside';
+  homeButton.addEventListener('click', goToStartside);
+  styleBarHomeButton(homeButton);
+
+  helpButton = document.createElement('button');
+  helpButton.id = HELP_ID;
+  helpButton.type = 'button';
+  helpButton.className = 'secondary expoDesktopHeaderShortcut';
+  helpButton.textContent = '? Hjelp';
+  helpButton.addEventListener('click', goToHelp);
+  styleBarHelpButton(helpButton);
+
+  const current = document.createElement('div');
+  current.className = 'expoDesktopMenuCurrent';
+  current.setAttribute('aria-live', 'polite');
+
+  supportButton = document.createElement('button');
+  supportButton.id = SUPPORT_ID;
+  supportButton.type = 'button';
+  supportButton.className = 'secondary expoDesktopHeaderShortcut';
+  supportButton.addEventListener('click', goToSupport);
+  styleBarSupportButton(supportButton);
+  bar.append(toggle, homeButton, current, helpButton);
+  bar.append(supportButton);
+
+  backdrop = document.createElement('div');
+  backdrop.id = BACKDROP_ID;
+  backdrop.className = 'expoDesktopMenuBackdrop';
+  backdrop.hidden = true;
+
+  drawer = document.createElement('aside');
+  drawer.id = DRAWER_ID;
+  drawer.className = 'expoDesktopMenuDrawer';
+  drawer.setAttribute('aria-hidden', 'true');
+
+  const header = document.createElement('div');
+  header.className = 'expoDesktopDrawerHeader';
+
+  const title = document.createElement('div');
+  title.className = 'expoDesktopDrawerTitle';
+  title.innerHTML = '<strong>Expo ProffDok</strong><span>Navigasjon</span>';
+
+  const closeButton = document.createElement('button');
+  closeButton.type = 'button';
+  closeButton.className = 'expoDesktopDrawerClose';
+  closeButton.setAttribute('aria-label', 'Lukk meny');
+  closeButton.textContent = '×';
+
+  const navList = document.createElement('div');
+  navList.className = 'expoDesktopDrawerNav';
+  navList.setAttribute('role', 'navigation');
+  navList.setAttribute('aria-label', 'Hovedmeny');
+
+  header.append(title, closeButton);
+  drawer.append(header, navList);
+  document.body.append(backdrop, drawer);
+
+  const setOpen = (open) => {
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    drawer.setAttribute('aria-hidden', open ? 'false' : 'true');
+
+    if (open) {
+      backdrop.hidden = false;
+      requestAnimationFrame(() => {
+        if (toggle.getAttribute('aria-expanded') !== 'true') return;
+        backdrop.classList.add('isOpen');
+        drawer.classList.add('isOpen');
+        closeButton.focus();
+      });
+    } else {
+      backdrop.classList.remove('isOpen');
+      drawer.classList.remove('isOpen');
+      window.setTimeout(() => {
+        if (!backdrop.classList.contains('isOpen')) backdrop.hidden = true;
+      }, 180);
+    }
+  };
+
+  toggle.addEventListener('click', () => {
+    setOpen(toggle.getAttribute('aria-expanded') !== 'true');
+  });
+  closeButton.addEventListener('click', () => setOpen(false));
+  backdrop.addEventListener('click', () => setOpen(false));
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && toggle.getAttribute('aria-expanded') === 'true') {
+      setOpen(false);
+      toggle.focus();
+    }
+  });
+
+  drawer._expoSetOpen = setOpen;
+  return { bar, homeButton, helpButton, supportButton, drawer, backdrop };
+}
+
+// Presentation only. Every header target is taken from the currently rendered
+// native navigation, and a click resolves that native target again.
+function syncPrimaryNavigation(sourceNav, sourceButtons, shell, projectWorkspaceNav) {
+  let primary = document.getElementById(PRIMARY_ID);
+  if (projectWorkspaceNav && appNavigationSource(sourceNav) === sourceNav) {
+    primary?.remove();
+    if (shell.bar.previousElementSibling !== sourceNav && shell.bar.nextElementSibling !== sourceNav) {
+      sourceNav.parentNode?.insertBefore(shell.bar, sourceNav);
+    }
+    return;
+  }
+  if (!primary) {
+    primary = document.createElement('nav');
+    primary.id = PRIMARY_ID;
+    primary.className = 'expoDesktopPrimaryNav';
+    primary.setAttribute('aria-label', 'Hovedområder');
+  }
+  if (primary.previousElementSibling !== sourceNav) sourceNav.after(primary);
+  if (shell.bar.previousElementSibling !== primary) primary.after(shell.bar);
+  const order = ['Startside','Befaring/Tilbud','Prissøk','Varesøk','Varebestilling','Prosjektliste','Boligprosjekter','HR','KS/HMS','Min side','Min profil / e-postvalg'];
+  const targets = order.map(label => sourceButtons.find(button => cleanLabel(button.textContent) === label)).filter(Boolean);
+  const signature = targets.map(button => `${cleanLabel(button.textContent)}:${button.classList.contains('on')}:${button.disabled}`).join('|');
+  if (primary.dataset.sourceSignature === signature) return;
+  primary.dataset.sourceSignature = signature;
+  primary.replaceChildren();
+  targets.forEach(sourceButton => {
+    const label = cleanLabel(sourceButton.textContent);
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = label;
+    button.disabled = sourceButton.disabled;
+    button.className = sourceButton.classList.contains('on') ? 'on' : '';
+    button.setAttribute('data-expo-nav-label', label);
+    if (sourceButton.classList.contains('on')) button.setAttribute('aria-current', 'page');
+    button.addEventListener('click', () => {
+      const target = findSourceNavButton([label]);
+      if (target instanceof HTMLButtonElement && !target.disabled && !target.hidden && target.style.display !== 'none') target.click();
+    });
+    primary.append(button);
+  });
+}
+
+function syncDrawerWithSource(sourceNav, shell) {
+  if (!(sourceNav instanceof HTMLElement)) return;
+
+  sourceNav.classList.add('expoDesktopSourceNavHidden');
+
+  const sourceButtons = Array.from(sourceNav.querySelectorAll(':scope > button'))
+    .filter((button) => !button.hidden && button.style.display !== 'none');
+  const sourceLabels = sourceButtons.map((button) => cleanLabel(button.textContent));
+  const projectWorkspaceNav = isProjectWorkspaceLabels(sourceLabels);
+  const globalSource = appNavigationSource(sourceNav);
+  const hasGlobalSource = globalSource !== sourceNav;
+  const appButtons = hasGlobalSource ? Array.from(globalSource.querySelectorAll(":scope > button")).filter(button => !button.hidden && !button.disabled && button.style.display !== "none") : sourceButtons;
+  syncPrimaryNavigation(sourceNav, appButtons, shell, projectWorkspaceNav);
+  const caption = shell.bar.querySelector('.expoDesktopMenuToggle > span:last-child');
+  const wantedCaption = projectWorkspaceNav && !hasGlobalSource ? 'Meny' : 'Alle områder';
+  if (caption && caption.textContent !== wantedCaption) caption.textContent = wantedCaption;
+  const drawerSourceButtons = hasGlobalSource ? appButtons : projectWorkspaceNav
+    ? sourceButtons.filter((button) => !['Hjelp','Support'].includes(cleanLabel(button.textContent)))
+    : sourceButtons;
+  const drawerNav = shell.drawer.querySelector('.expoDesktopDrawerNav');
+  const current = shell.bar.querySelector('.expoDesktopMenuCurrent');
+  if (!(drawerNav instanceof HTMLElement) || !(current instanceof HTMLElement)) return;
+
+  hideNativeWorkspaceHomeButton();
+  styleBarHomeButton(shell.homeButton);
+  styleBarHelpButton(shell.helpButton);
+  styleBarSupportButton(shell.supportButton);
+
+  const activeSourceButton = sourceButtons.find((button) => button.classList.contains('on')) || null;
+  const activeLabel = cleanLabel(activeSourceButton?.textContent || '');
+  const showContext = Boolean(activeLabel && activeLabel !== 'Startside');
+  shell.homeButton.hidden = !showContext;
+  current.hidden = !showContext;
+  current.textContent = showContext ? activeLabel : '';
+
+  const signature = drawerSourceButtons
+    .map((button) => `${cleanLabel(button.textContent)}:${button.classList.contains('on') ? '1' : '0'}`)
+    .join('|');
+
+  if (drawerNav.dataset.sourceSignature === signature) return;
+  drawerNav.dataset.sourceSignature = signature;
+  drawerNav.replaceChildren();
+
+  drawerSourceButtons.forEach((sourceButton) => {
+    const label = cleanLabel(sourceButton.textContent);
+    if (!label) return;
+
+    const isActive = sourceButton.classList.contains('on');
+
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = `expoDesktopDrawerButton${isActive ? ' isActive' : ''}`;
+    button.textContent = label;
+    if (isActive) button.setAttribute('aria-current', 'page');
+
+    button.addEventListener('click', () => {
+      const liveNav = appNavigationSource(findInternalAppNav());
+      const target = liveNav instanceof HTMLElement
+        ? Array.from(liveNav.querySelectorAll(':scope > button')).find(
+            (candidate) => cleanLabel(candidate.textContent) === label
+          )
+        : null;
+      if (target instanceof HTMLButtonElement && !target.disabled && !target.hidden && target.style.display !== "none") target.click();
+      shell.drawer._expoSetOpen?.(false);
+    });
+
+    drawerNav.append(button);
+  });
+}
+
+export function installDesktopSideMenu() {
+  let sourceNav = null;
+  let sourceObserver = null;
+  let scheduled = false;
+
+  const detachSourceObserver = () => {
+    sourceObserver?.disconnect();
+    sourceObserver = null;
+  };
+
+  const disable = () => {
+    detachSourceObserver();
+    restoreNativeHomeSourceButtons();
+    sourceNav?.classList.remove('expoDesktopSourceNavHidden');
+    sourceNav = null;
+    document.getElementById(PRIMARY_ID)?.remove();
+    document.getElementById(BAR_ID)?.remove();
+    document.getElementById(HOME_ID)?.remove();
+    document.getElementById(HELP_ID)?.remove();
+    document.getElementById(SUPPORT_ID)?.remove();
+    document.getElementById(DRAWER_ID)?.remove();
+    document.getElementById(BACKDROP_ID)?.remove();
+  };
+
+  const ensure = () => {
+    scheduled = false;
+
+    if (!window.matchMedia(DESKTOP_QUERY).matches) {
+      disable();
+      return;
+    }
+
+    const nextNav = findInternalAppNav();
+    if (!nextNav) {
+      disable();
+      return;
+    }
+
+    const shell = buildMenuShell();
+
+    if (nextNav !== sourceNav) {
+      detachSourceObserver();
+      sourceNav?.classList.remove('expoDesktopSourceNavHidden');
+      sourceNav = nextNav;
+
+      sourceObserver = new MutationObserver(() => scheduleEnsure());
+      sourceObserver.observe(sourceNav, {
+        childList: true,
+        subtree: true,
+        characterData: true,
+        attributes: true,
+        attributeFilter: ['class']
+      });
+    }
+
+    syncDrawerWithSource(sourceNav, shell);
+  };
+
+  const scheduleEnsure = () => {
+    if (scheduled) return;
+    scheduled = true;
+    requestAnimationFrame(ensure);
+  };
+
+  const documentObserver = new MutationObserver(scheduleEnsure);
+  documentObserver.observe(document.documentElement, { childList: true, subtree: true });
+
+  const media = window.matchMedia(DESKTOP_QUERY);
+  media.addEventListener?.('change', scheduleEnsure);
+  window.addEventListener('resize', scheduleEnsure, { passive: true });
+  window.addEventListener('scroll', scheduleEnsure, { passive: true });
+
+  scheduleEnsure();
+}
+

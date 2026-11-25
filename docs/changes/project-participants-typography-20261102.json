@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Prosjektinvolverte følger prosjektets feltstil; avstemt miljøtilgang",
+  "change": "Miljømål BEGGE; bare design-Preview. Kun skjerm-CSS i projectParticipants.css, ny faktisk nettleserprøve koblet til eksisterende deltakerprøve, og QA-/miljøstatusdokumentasjon. Ingen komponent-, navigasjons-, lagrings-, auth-, SQL-, mailer- eller konfigurasjonsendringer. Normaliser etiketter/felt/knapper og sammenlign mot faktiske ProjectInformationFields i samme dokument. Eksisterende 23 deltakerkrav beholdes.",
+  "verification": "Førkilden 4aaac8ee gjenskaper skriftvekt900 i deltakerfeltene mot400 i nabokundefelt; etiketter16px/900/uppercase mot14px/700/normal. Rettet kilde består156 nye faktiske React/Chromiumkrav på1363/768/390/320px, inkludert nøyaktig størrelse/familie/vekt/linjehøyde/hjørner for alle fem felt, etiketter, min44px mål, ingen sideveis scrolling, lokal lagring, bevart kladd ved fokus og flytting til tilgangsfanens slot, og usendt meldingskladd. Eksisterende23 deltaker- og36 kundefeltkrav består uendret. Full critical/Sandbox-build består. Første fixture-lokator traff både Kunde-gruppen og tekstfeltet; etter typing inneholder textarea-etiketten også teksten. Lokatorene ble presisert, ingen krav fjernet. Selve CSS ble korrigert etter test for eksakt Arial-familie og eksisterende13px mobile etiketter. Alle runtime-JS-filer er uendret. Ny CI/READY føres i PR295. Ingen innlogget kundesak eller fysisk Safari-test. SQL-lesing med READ ONLY/ROLLBACK fungerer mot både Production og demo-sandbox, og motsier tidligere for bred påstand om manglende Sandbox-tilgang. Se datert QA-oversikt.",
+  "documentation": {
+    "help": {
+      "required": false,
+      "reason": "Ingen nye knapper, arbeidsflyt, lagringskrav eller tekster."
+    },
+    "architecture": {
+      "required": false,
+      "reason": "Ingen dataflyt eller arkitekturendring; feilaktig miljøtilgangsstatus rettes i releasegrunnlaget."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen avhengighet eller oppsett endres."
+    },
+    "module": {
+      "required": false,
+      "reason": "Uendret funksjonskontrakt. Avgrenset visuell rettelse og test dokumenteres i dette grunnlaget."
+    }
+  }
+}
