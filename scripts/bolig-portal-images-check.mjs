@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import {createPortalImages} from '../supabase/functions/_shared/bolig-portal-images.mjs';
+import {boligAllowedOrigins} from '../supabase/functions/_shared/bolig-origins.mjs';
 import {hydratePortalImages} from '../src/modules/bolig/boligPortalImages.js';
 const origin='https://qa.invalid',base='https://db.invalid',path='e0000000-0000-4000-8000-000000000001/a2052283-0ee1-4d52-97b8-fe7c2f2382ff/43bfa092-146e-4221-929a-cc140f2c8428.jpg',token='a'.repeat(64);let allowed=true,calls=0,signs=0;
 const h=createPortalImages({origins:[origin],authorize:async()=>{calls++;if(!allowed)throw Error('revoked');return [path];},sign:async paths=>{signs++;assert.deepEqual(paths,[path]);return [{path,url:base+'/storage/v1/object/sign/bolig-catalog-images/'+path+'?token=qa'}];}});
@@ -13,3 +14,5 @@ const raw={offers:[{goods:[{key:'x',image_url:base+'/storage/v1/object/public/bo
 const transport=async()=>{fetched++;return h(req());};const a=await hydratePortalImages(raw,token,base,'anon',transport);assert(a.offers[0].goods[0].image_url.includes('/sign/'));assert.equal(a.offers[0].goods[1].image_url,'https://external.invalid/p.jpg');assert(raw.offers[0].goods[0].image_url.includes('/public/'),'immutable source');
 await hydratePortalImages(raw,token,base,'anon',transport);assert.equal(fetched,1,'poll cache');await hydratePortalImages(raw,'b'.repeat(64),base,'anon',transport);assert.equal(fetched,2,'cache bound to portal token');
 console.log('PASS portal images: validated token, published allowlist, fresh revocation, foreign origin/path, bounded input, short signed links, immutable client projection and token-bound cache');
+
+assert(boligAllowedOrigins.includes('https://expo-proffdok-git-fase45b-offer-date-free-text-1b69c3-ringside.vercel.app'),'The fixed first-party Preview supports private published images');

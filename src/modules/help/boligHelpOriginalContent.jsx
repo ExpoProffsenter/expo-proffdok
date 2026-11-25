@@ -84,8 +84,8 @@ export const BOLIG_HELP_TOPICS = [
   )},
   {id:"people-valg-avtaler-og-siste-status",group:"people",title:"Valg, avtaler og siste status",body:(
     <p>«Mine valg», «Avtaler», «Dokumenter» og «Meldinger» fungerer som før.
-          Beboeren kontrollerer varer og pris og velger «Bekreft bestilling» innen fristen.
-          Den bekreftede utgaven låses. Prosjektleder trenger ikke godkjenne samme valg igjen. Bruk «Hent siste status» ved behov.</p>
+          Et valg sendes først til gjennomgang. En avtale aksepteres separat etter
+          gjennomgang av varer, pris og svarfrist. Bruk «Hent siste status» ved behov.</p>
   )},
   {id:"people-boligoppgaver-pa-min-side",group:"people",title:"Boligoppgaver på Min side",body:(
     <p>På Min side vises «Prøv å hente oppgavene igjen» hvis boligoppgavene
@@ -550,7 +550,6 @@ export const BOLIG_HELP_TOPICS = [
   )},
   {id:"people-klargjr-beboeraksept",group:"people",title:"Klargjør beboeraksept",body:(
     <p>
-          Vanlige pakkevalg bekreftes direkte av beboeren i portalen. Ved en særskilt, manuelt klargjort avtale:
           Åpne «Endringer og beboeraksept» i boligen. «Klargjør beboeraksept»
           bruker boligens lagrede varer og tilvalgspris. Beskriv grunnlaget, og
           kontroller varer og pris i samme vindu. Velg «Lagre utkast» for å

@@ -34,3 +34,16 @@ Tilbakeføring og produksjons-/demoplan: docs/architecture/BOLIG_DIRECT_CONFIRMA
 ## Sandbox installert
 
 Migrasjon 20261125174314_bolig_resident_direct_confirmation installert én gang. Ny Edge bolig-confirmation-email v1 ACTIVE, verify_jwt=false med privat serverautentisering. Begge nye flow-/mailbrytere AV, ingen prosjektoverstyringer aktivert av migrasjonen, øvrige tre mailtransporter fortsatt AV. Syntetisk QA-prosjekt opprettet gjennom eksisterende autoriserte create_plan: 009cd41e-4e8e-4e86-b4d1-95e6fff1041c, boliger H0101/H0102. Ingen produksjonsprosjekt er endret. Faktiske testkvitteringer er godkjent av Kenneth til egen adresse, kun via særskilt test_root/test_recipient. Sending ennå ikke gjennomført.
+
+
+## Faktisk Preview og innlogget prøve
+
+PR350, kandidat 77c143766c7783f93ac436d5c7c97c76a544c896 / tre bcec77e256bcf93f24049c9511f94f6b5e8a5ceb. READY dpl_7Pw9QYUpGt7xfZC8UMmeXgtWKBBA. Fast eksisterende review-host er bevart: https://expo-proffdok-git-fase45b-offer-date-free-text-1b69c3-ringside.vercel.app/ . Innlogging til demo@expo-proffdok.no ble bevart ved oppdatering.
+
+To reelle, private katalogbilder er lastet opp via faktisk UI, lagret i katalogen og publisert i en ny fryst menyutgave. Første lånte testfil public/auth-bathroom.jpg var en ugyldig JPEG (PIL kunne ikke åpne den); den er ikke endret som sideeffekt av denne oppgaven. QA bruker validerte 1200x800 demoeksempler. Fast review-origin er lagt til eksisterende førstepartsallowlist for beboerens signerede bilder; kapasitets-/prosjekt-/tilbakekallingskontrollene er uendret.
+
+Faktisk beboerportal: valgte tilvalg, kontrollerte begge opplastede bilder og 1200kr inklusive mva., oppga QA-navn og bekreftet én gang. Accepted-dokument e5c6a322-06e5-4538-9534-1c6a22d572c8 og choice_revision3 ble lagret. Begge private bilder er bekreftet complete/naturalWidth>0 i den låste kvitteringen. 0 leverandørordre opprettet. To uavhengige mailjobber ble opprettet. Kundekapasitet/signeringslenker lagres ikke i repo.
+
+## CI-funn og retting
+
+Første CI45668679827: seks fagpakker og build grønne, bolig-db og app-browser stoppet på endring av frosset opprinnelig hjelpetekst. Opprinnelig hjelpefil er gjenopprettet byteidentisk. De to avtalte tekstendringene ligger som eksplisitte overstyringer i den nye Bolig-help-filen, med før/etter-hash og samme innholdsvern som de tidligere godkjente varslingsinstruksjonene. Nytt tema er lagt til det eksisterende faktiske guide-scenariet; ingen eksisterende avsnitt eller testkrav er fjernet. Lokal guide286 assertions og core-boundary55 assertions PASS. Endelig CI på korrigert kandidat gjenstår.
