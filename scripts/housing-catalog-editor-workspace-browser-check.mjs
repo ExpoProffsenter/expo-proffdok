@@ -19,7 +19,7 @@ import {APP_RUNTIME_STYLES} from '${root}/src/modules/app/appRuntimeStyles.js';
 const runtime=document.createElement('style');runtime.textContent=APP_RUNTIME_STYLES;document.head.appendChild(runtime);
 const context={user_id:'qa',company_id:'firm',enabled:true,role:'manager'};
 const line={key:'sink',name:'QA servant',sku:'QA-S1',quantity:1,unit:'stk',credit_cents:10000};
-const state={context,root_id:'root',revision:1,packages:[{id:'p1',name:'QA komplett bad',lines:[line],sections:[],revision:1,archived:false}],options:[{id:'o1',name:'QA speil',sku:'QA-M1',quantity:1,unit:'stk',price_cents:10000,replace_key:'',deduct_base:false,revision:1,archived:false}],history:[],selection:null};
+const state={context,root_id:'root',revision:1,packages:[{id:'p1',name:'QA komplett bad',lines:[line],sections:[],revision:1,archived:false}],options:[{id:'o1',name:'QA speil',sku:'QA-M1',quantity:1,unit:'stk',price_cents:10000,replace_key:'',deduct_base:false,revision:1,archived:false}],history:[],selection:null,distribution:{p1:['a1']},distribution_units:[{id:'a1',number:'24',block_id:'a',block_name:'Bygg A',group_id:'g1',group_name:'Stamme 1'},{id:'a2',number:'25',block_id:'a',block_name:'Bygg A',group_id:'g2',group_name:'Stamme 2'},{id:'b1',number:'26',block_id:'b',block_name:'Bygg B',group_id:'g2',group_name:'Stamme 2'}]};
 window.qa={calls:[]};window.qa.client={rpc:async(name,args)=>{window.qa.calls.push({name,args});if(name==='bolig_catalog'&&args.p_action==='state')return {data:state};return {error:{code:'42501',message:'Katalogoppslag ikke aktivert i isolert prøve'}};}};
 createRoot(document.getElementById('app')).render(<div data-expo-app-shell="true"><section className="bolig-dialog bolig-page"><Catalog context={context} root={{id:'root',archived:false}}/></section></div>);
 `);
@@ -53,5 +53,27 @@ try{
   }
  }
  await page.setViewportSize({width:1363,height:936});await page.getByRole('button',{name:'Ny grunnpakke',exact:true}).click();let d=page.getByRole('dialog',{name:'Ny grunnpakke',exact:true});await d.getByLabel('Pakkenavn',{exact:true}).fill('QA bevart lokalt bad');await page.keyboard.press('Escape');await page.getByRole('button',{name:'Ny grunnpakke',exact:true}).click();d=page.getByRole('dialog',{name:'Ny grunnpakke',exact:true});eq(await d.getByLabel('Pakkenavn',{exact:true}).inputValue(),'QA bevart lokalt bad','close/reopen retains native unsent local draft');await d.getByRole('button',{name:'Lukk ny grunnpakke',exact:true}).click();await d.waitFor({state:'hidden'});
+ for (const [editor,initial] of [['Rediger grunnpakke: QA komplett bad','1 av 3 boliger valgt'],['Rediger tilvalgspakke: QA speil','0 av 3 boliger valgt']]) {
+  await page.getByRole('button',{name:editor.includes('tilvalgspakke')?'Tilvalgspakker':'Grunnpakker',exact:true}).click();
+  await page.getByRole('button',{name:editor,exact:true}).click();
+  const audience=page.getByRole('region',{name:'Gjelder for'});
+  eq(await audience.getByRole('status').textContent(),initial,'the editor restores its own existing selection');
+  await audience.getByLabel('Bygg eller blokk').selectOption('a');
+  await audience.getByRole('button',{name:'Velg alle viste boliger'}).click();
+  eq(await audience.getByRole('status').textContent(),'2 av 3 boliger valgt','a single action selects the entire building');
+  await audience.getByLabel('Bolig 25',{exact:false}).uncheck();
+  await audience.getByLabel('Bygg eller blokk').selectOption('');
+  await audience.getByLabel('Stamme',{exact:true}).selectOption('g2');
+  await audience.getByRole('button',{name:'Velg alle viste boliger'}).click();
+  await audience.getByLabel('Bolig 25',{exact:false}).uncheck();
+  eq(await audience.getByRole('status').textContent(),'2 av 3 boliger valgt','adding an entire riser preserves selections and allows individual exclusions');
+  await audience.getByText('Se alle valgte boliger').click();
+  eq(await audience.getByRole('listitem').allTextContents(),['Bygg A · Bolig 24 · Stamme 1','Bygg B · Bolig 26 · Stamme 2'],'the complete audience is visible independently of filters');
+  await page.keyboard.press('Escape');
+  await page.getByRole('button',{name:editor,exact:true}).click();
+  eq(await audience.getByRole('status').textContent(),'2 av 3 boliger valgt','unfinished audience survives closing and reopening the editor');
+  await page.keyboard.press('Escape');
+  await page.getByRole('dialog').waitFor({state:'hidden'});
+ }
  eq(await page.evaluate(()=>window.qa.calls.filter(c=>c.name==='bolig_catalog'&&c.args.p_action!=='state')),[],'no catalog write');eq(errors,[],'no render errors');eq(outbound,[],'no live transport');console.log('Housing catalog editors: '+checks+' assertions PASS;24 native new/edit package/option views, expanded controls, replacement fields, scrolling/close/draft; synthetic reads only.');
 }finally{await browser?.close();await new Promise(r=>server.close(r));}

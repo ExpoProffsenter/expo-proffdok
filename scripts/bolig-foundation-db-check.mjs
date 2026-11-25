@@ -1072,6 +1072,8 @@ try {
   await rejects(() => overview(), "42501");
   const {default:directConfirmation}=await import("./bolig-direct-confirm-db-scenarios.mjs");
   await directConfirmation({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider});
+  const {default:catalogDistribution}=await import("./bolig-catalog-distribution-db-scenarios.mjs");
+  await catalogDistribution({db,call,actor,eq,rejects,id,firm,other,manager,outsider});
   await actor(reader);
   await rejects(() => call("get", root), "42501");
   await actor(manager);

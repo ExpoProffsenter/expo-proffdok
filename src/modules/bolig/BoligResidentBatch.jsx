@@ -98,7 +98,7 @@ function BatchDialog({context,root,onClose,onChanged}){
  <ul>{audience.recipients.map(r=><li key={`${r.unit_id}/${r.email}`}>Bolig {r.number}: {r.name} · {r.email}</li>)}{audience.missing.map((r,i)=><li key={`missing-${i}`}>Bolig {r.number}: {r.name||'Mangler navn'} – mangler gyldig e-post</li>)}</ul>
  {!canPublish&&<p role="alert">Alle valgte boliger må ha navn og gyldig e-post på hovedkontakten før lenker kan klargjøres.</p>}
  {selected.some(u=>u.portal_active)&&<label><input disabled={locked} type="checkbox" checked={replace} onChange={e=>{setReplace(e.target.checked);setConfirmed(false);}}/>Erstatt eksisterende lenker for disse boligene. Gamle lenker slutter å virke.</label>}
- <p>Klargjøring deler boligens klargjorte valgmuligheter. Ingen avtaler aksepteres og ingen bestillinger opprettes.</p></>:<p>Etter fristen stoppes nye tilvalg. Meldinger og eksisterende avtaler beholdes. Gi en ny frist til utvalgte boliger for å åpne igjen.</p>}
+ <p>Klargjøring deler pakkene som gjelder for hver bolig, eller boligens manuelt klargjorte valgmuligheter. Ingen avtaler aksepteres og ingen bestillinger opprettes.</p></>:<p>Etter fristen stoppes nye tilvalg. Meldinger og eksisterende avtaler beholdes. Gi en ny frist til utvalgte boliger for å åpne igjen.</p>}
  </section>}
  {draft.prepared&&<section><h3>Mottakere og sendestatus</h3><p>Samme lenke deles bare med registrerte eiere på den aktuelle boligen.</p>
  <ul>{draft.attempts.map(a=><li key={a.id}>Bolig {a.number}: {a.name} · {a.email} — {a.status==='sent'?'Sending bekreftet':a.status==='pending'?'Uavklart – fortsett samme sending':'Klar'} <a href={portalUrl(a.token)} target="_blank" rel="noreferrer">Åpne boligportal</a></li>)}</ul>

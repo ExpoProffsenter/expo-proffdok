@@ -1,0 +1,54 @@
+.bolig-package-audience {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid #cbdde2;
+  border-radius: 8px;
+}
+
+.bolig-package-audience h3,
+.bolig-package-audience p {
+  margin: 0;
+}
+
+.bolig-package-audience-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+  gap: 10px;
+}
+
+.bolig-package-audience-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.bolig-package-audience-units {
+  max-height: 13rem;
+  overflow: auto;
+  border: 1px solid #cbdde2;
+  border-radius: 6px;
+}
+
+.bolig-catalog-form .bolig-package-audience-units label {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  gap: 8px;
+  padding: 4px 8px;
+}
+
+.bolig-package-audience summary {
+  box-sizing: border-box;
+  min-height: 44px;
+  padding: 10px 0;
+  cursor: pointer;
+}
+
+.bolig-catalog-form .bolig-package-audience-units input[type="checkbox"] {
+  width: 18px;
+  min-width: 18px;
+  height: 18px;
+  min-height: 18px;
+}
