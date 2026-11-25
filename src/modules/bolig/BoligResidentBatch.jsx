@@ -87,7 +87,11 @@ function BatchDialog({context,root,onClose,onChanged}){
  {projectClock&&<><label>Felles klokkeslett (norsk tid)<input lang="nb-NO" type="time" value={clock} onChange={e=>change({deadline_time:e.target.value})}/></label><p>Gjelder alle {units.length} boliger, uansett bygg, filter eller utvalg. Datoene beholdes. Nå: {data.deadline_time||'slutten av dagen'} → {clock}. En tidligere tid kan stenge valg som er åpne nå.</p></>}
  {!projectClock&&<><div className="bolig-preparation-filters"><label>Bygg eller blokk<select value={block} onChange={e=>{setBlock(e.target.value);setConfirmed(false);}}><option value="">Alle bygg</option>{unique('block_id','block_name').map(([id,name])=><option key={id} value={id}>{name}</option>)}</select></label>
  <label>Stammegruppe<select value={group} onChange={e=>{setGroup(e.target.value);setConfirmed(false);}}><option value="">Alle stammer</option>{unique('group_id','group_name').map(([id,name])=><option key={id} value={id}>{name}</option>)}</select></label></div>
- <button type="button" onClick={()=>change({selected:[...new Set([...draft.selected,...shown.map(u=>u.id)])]})}>Velg alle viste boliger</button> <button type="button" onClick={()=>change({selected:[]})}>Tøm utvalget</button>
+ <div className="bolig-batch-actions">
+  <button type="button" className="bolig-batch-select-all" disabled={!units.length || selected.length === units.length} onClick={()=>change({selected:units.map(u=>u.id)})}>Velg alle bygg</button>
+  {(block||group)&&<button type="button" disabled={!shown.length} onClick={()=>change({selected:[...new Set([...draft.selected,...shown.map(u=>u.id)])]})}>Velg alle viste boliger</button>}
+  <button type="button" disabled={!selected.length} onClick={()=>change({selected:[]})}>Tøm utvalget</button>
+ </div>
  <p className="bolig-batch-selection-count" role="status">{selected.length} av {units.length} boliger valgt · {shown.length} vises</p><div className="bolig-batch-unit-list" role="group" aria-label="Velg boliger">{shown.map(u=><label key={u.id}><input type="checkbox" checked={draft.selected.includes(u.id)} onChange={e=>change({selected:e.target.checked?[...draft.selected,u.id]:draft.selected.filter(id=>id!==u.id)})}/>{u.block_name} · Bolig {u.number} · {u.group_name||'Uten stamme'} · Frist: {displayDate(u.deadline)}{u.portal_active?' · Har aktiv lenke':''}</label>)}</div></>}
 
  </fieldset>}

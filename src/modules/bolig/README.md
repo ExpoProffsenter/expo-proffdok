@@ -126,4 +126,4 @@ Migrasjonen `20261125172116_bolig_resident_direct_confirmation.sql` er kompatibe
 
 ### Del pakker med flere boliger
 
-Åpne grunnpakken eller tilvalgspakken og velg boliger under «Gjelder for». Bygg og stamme kan velges samlet, og enkeltboliger kan tas ut før lagring. Ved klargjøring av beboerlenker får hver bolig de pakkene som er valgt for den. Se [arkitektur og utrulling](../../../docs/architecture/BOLIG_CATALOG_DISTRIBUTION.md).
+Åpne grunnpakken eller tilvalgspakken og velg boliger under «Gjelder for». Bruk «Velg alle bygg» for hele prosjektet, eller velg bygg og stamme med filtre. Enkeltboliger kan tas ut før lagring. Samme valg finnes når beboerlenker klargjøres. Ved klargjøring av beboerlenker får hver bolig de pakkene som er valgt for den. Se [arkitektur og utrulling](../../../docs/architecture/BOLIG_CATALOG_DISTRIBUTION.md).

@@ -1,15 +1,32 @@
 .bolig-package-audience {
   grid-column: 1 / -1;
   display: grid;
-  gap: 10px;
-  padding: 12px;
+  gap: 12px;
+  padding: 16px;
   border: 1px solid #cbdde2;
-  border-radius: 8px;
+  border-radius: 12px;
+  background: #f4f9fa;
 }
 
 .bolig-package-audience h3,
 .bolig-package-audience p {
   margin: 0;
+}
+
+.bolig-package-audience-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  flex-wrap: wrap;
+}
+
+.bolig-package-audience-count {
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: #e2eff1;
+  color: #183844;
+  font-weight: 700;
 }
 
 .bolig-package-audience-filters {
@@ -18,14 +35,44 @@
   gap: 10px;
 }
 
+.bolig-dialog .bolig-catalog-form .bolig-package-audience :is(label, select, button) {
+  font-size: 1rem;
+}
+
+.bolig-dialog .bolig-catalog-form .bolig-package-audience select {
+  min-height: 44px;
+}
+
 .bolig-package-audience-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
 }
 
+.bolig-package-audience button.bolig-package-audience-all {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #006f7d;
+  border-color: #006f7d;
+  color: #fff;
+  font-weight: 700;
+}
+
+.bolig-package-audience button.bolig-package-audience-all:disabled {
+  background: #e2eff1;
+  border-color: #b8d3d9;
+  color: #284852;
+}
+
+.bolig-dialog .bolig-catalog-form .bolig-package-audience-actions button {
+  min-height: 44px;
+}
+
 .bolig-package-audience-units {
-  max-height: 13rem;
+  max-height: 12rem;
+  background: #fff;
   overflow: auto;
   border: 1px solid #cbdde2;
   border-radius: 6px;
@@ -36,7 +83,8 @@
   align-items: center;
   min-height: 44px;
   gap: 8px;
-  padding: 4px 8px;
+  padding: 4px 10px;
+  margin: 0;
 }
 
 .bolig-package-audience summary {
@@ -51,4 +99,25 @@
   min-width: 18px;
   height: 18px;
   min-height: 18px;
+}
+
+
+.bolig-package-audience-units label + label {
+  border-top: 1px solid #e1ecee;
+}
+
+.bolig-package-audience button:focus-visible,
+.bolig-package-audience summary:focus-visible {
+  outline: 2px solid #006f7d;
+  outline-offset: 3px;
+}
+
+@media (max-width: 440px) {
+  .bolig-package-audience {
+    padding: 12px;
+  }
+
+  .bolig-package-audience-actions button.bolig-package-audience-all {
+    width: 100%;
+  }
 }
