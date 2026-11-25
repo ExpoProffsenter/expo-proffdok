@@ -33,3 +33,5 @@ try{
  state.context.publish_shop=false;await act(()=>button('Hent siste status').click());assert(!button('Legg til vare manuelt'),'Revoked publishing capability removes editor');
  console.log('PASS shop React: manual item without catalog, decimal prices, private draft, review total, publish, accepted sale not duplicated, revoked rights');
 }finally{await act(()=>w.__dispose());dom.window.close();fs.rmSync(tmp,{recursive:true,force:true});}
+
+await import("./bolig-offer-free-text-react-check.mjs");

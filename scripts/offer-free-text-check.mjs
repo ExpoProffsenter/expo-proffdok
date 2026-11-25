@@ -3,7 +3,6 @@ import { arrangeFreeText, freeTextLines } from '../src/modules/sales/utils/offer
 import { buildOfferFormFromRequest, prepareOfferFormForSave, mergeOfferDraftIntoRequests, buildOfferSnapshot, recalculateAdministrationLines } from '../src/modules/sales/utils/salesOfferLogic.js';
 import { createOfferDraftContentSignature } from '../src/modules/sales/utils/salesOfferDraftSignature.js';
 import { getOfferTotal } from '../src/modules/sales/utils/salesUtils.js';
-import { shopPayload, shopDraftFrom } from '../src/modules/bolig/boligShopCore.js';
 let checks=0; const eq=(a,b,label)=>{assert.deepEqual(a,b,label);checks++;};
 const a={id:'a',description:'Arbeid A',mainPostId:'custom-a',mainPostTitle:'Arbeid',amount:'1000',quantity:'1',unit:'jobb'};
 const b={...a,id:'b',description:'Arbeid B',amount:'2000'};
@@ -27,8 +26,4 @@ eq(JSON.stringify(snapshot),serialized,'later draft edits never mutate published
 assert.notEqual(createOfferDraftContentSignature(form),createOfferDraftContentSignature({...form,lines:freeTextLines(lines,blocks.slice(1))}));checks++;
 eq(arrangeFreeText(lines.filter(l=>l.id!=='a')).filter(l=>l.freeTextBlock).length,3,'deleting an anchor never drops its text');
 eq(recalculateAdministrationLines([...lines,{id:'admin',mainPostId:'custom-a',lineType:'administration',adminMode:'percent',adminPercent:'10'}]).find(l=>l.id==='admin').amount,'300','percentage excludes free text');
-const shop=shopPayload({title:'Butikk',lines:[{name:'Vare',sku:'',room_name:'',unit:'stk',quantity:'1',price:'1250',installation:'0',image_url:''}],text_blocks:[{id:'t',title:'Info',text:'Før varen\nNeste linje',after:''}]});
-eq(shop.text_blocks[0].after,0,'shop serializes first position');
-eq(shop.lines[0].price_cents,125000,'shop prices unchanged');
-eq(shopDraftFrom({snapshot:{reason:'Butikk',shop_lines:[],text_blocks:shop.text_blocks}}).text_blocks,shop.text_blocks,'shop snapshot hydration keeps blocks');
 console.log(`PASS offer free text: ${checks} persistence, ordering, immutable version, draft signature and pricing checks`);

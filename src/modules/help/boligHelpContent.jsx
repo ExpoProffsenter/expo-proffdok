@@ -5,9 +5,6 @@ export { BOLIG_HELP_GROUPS } from "./boligHelpOriginalContent.jsx";
 // Preserve the 69 previously verified topics verbatim; append the four approved housing instructions.
 export const BOLIG_HELP_TOPICS = [
   ...ORIGINAL_TOPICS,
-  {id:"people-offer-free-text",group:"people",title:"Fri tekst mellom tilbudsposter",body:(
-    <p>Når du klargjør beboeraksept, en endringsordre eller et butikktillegg, velger du Ny fri tekst. Skriv overskrift og tekst, og velg Plassering før første eller etter en bestemt post. Kontroller teksten i kundens forslag før du lagrer eller deler. Den påvirker ikke prisen. Tidligere publiserte og aksepterte avtaler beholder teksten sin.</p>
-  )},
   {id:"structure-release-toolbar",group:"structure",title:"Byggvalg og verktøylinje",body:(
     <p>Velg et bygg for å sette byggnavn og adresser i fokus over fasaden. Boligknappene beholder lesbar størrelse. Byggvalg, søk, boligfilter og Fasade/Boligliste er samlet i verktøylinjen. På bred skjerm bruker verktøyene midten og boligstatistikken høyre side. På smal skjerm deles de i lesbare grupper. Før du velger en bolig, bruker fasaden hele bredden. De tre stegene i boligleveransen kan åpnes under oversikten. Små prosjekter har også direkte byggknapper.</p>
   )},

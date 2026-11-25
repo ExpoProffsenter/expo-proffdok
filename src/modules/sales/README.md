@@ -433,4 +433,4 @@ Visningsstatus følger eksisterende bruker-/firmascopet salesStorageKey, med sam
 
 Velg **Ny fri tekst**, skriv valgfri overskrift og tekst, og velg **Plassering** før første eller etter en bestemt post. Flere tekstblokker kan brukes. Teksten er prisnøytral. Lagre og kontroller kundevisningen før publisering. En ny kladd endrer ikke tidligere publisert eller akseptert tekst.
 
-Sales viser tekst mellom postene i kundevisning og i tilbuds-/aksept-/kontrakts-PDF. Boligprosjekter tilbyr dette ved klargjøring av beboeraksept, endringsordre og butikktillegg; fryst tekst følger den konkrete avtaleutgaven. Katalogens grunnpakke-/tilvalgskort beholder eksisterende avsnitt. Se `docs/architecture/OFFER_FREE_TEXT.md`.
+Sales viser tekst mellom postene i kundevisning og i tilbuds-/aksept-/kontrakts-PDF. Se `docs/architecture/OFFER_FREE_TEXT.md`.
