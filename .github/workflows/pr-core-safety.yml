@@ -354,6 +354,8 @@ jobs:
         browser: 'true'
         pdf: 'true'
     - name: Verify shared Boligprosjekter structure and access boundaries (browser)
+      env:
+        BOLIG_PRINT_ARTIFACT_DIR: ${{ runner.temp }}/bolig-work-order-print
       run: |-
         # PR 311 combines two independently reviewed layers. Keep the Bolig
         # comparison against the reviewed core while full PR QA targets main.
@@ -381,7 +383,7 @@ jobs:
         node scripts/bolig-completion-browser-check.mjs
         node scripts/bolig-handover-browser-check.mjs
         node scripts/bolig-followup-browser-check.mjs
-        BOLIG_PRINT_ARTIFACT_DIR="$RUNNER_TEMP/bolig-work-order-print" node scripts/bolig-commerce-browser-check.mjs
+        node scripts/bolig-commerce-browser-check.mjs
         node scripts/bolig-portal-browser-check.mjs
         node scripts/bolig-progress-browser-check.mjs
         node scripts/bolig-progress-planning-browser-check.mjs
