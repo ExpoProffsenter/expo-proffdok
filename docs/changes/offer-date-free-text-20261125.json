@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "title": "Tilbudsdato og prisnøytrale tekstblokker mellom tilbudsposter",
+  "change": "Vis publisert tilbudsdato i saksoversikten. Ny fri tekst gir egne blokker før, mellom og etter poster i våtromstilbud, generelle tilbud, beboeraksept/endringsordre og butikktillegg. Publiserte/aksepterte versjoner fryser teksten. Ingen e-post eller eksisterende kundedata endres.",
+  "verification": "Lokale beståtte kontroller hittil: critical/Sandbox build; 14 lagrings-/pris-/versjonskrav; 2069 Bolig PostgreSQL-krav og 7 datoprojeksjonskrav. 9 Sales- og 23 Bolig-React-krav og tre faktiske flersiders PDF-er består. Innlogget Sales-Preview er testet, og full CI på oppdelte PR-er sluttføres i docs/qa/OFFER_DATE_FREE_TEXT_20261125.md. Kritisk tilleggstest fant og rettet tekst som mistet varekobling ved sletting/omflytting i Bolig. Faktisk butikk-React og nye commerce/mobil-scenarier verifiserer dette. Ingen TEST OK eller produksjonssetting.",
+  "documentation": {
+    "help": {"required": true, "reason": "Ny knapp og valg av plassering krever konkret veiledning."},
+    "architecture": {"required": true, "reason": "Tilbudets lette datoprojeksjon og Bolig-avtalens fryste tekstblokker utvider datakontrakten."},
+    "setup": {"required": false, "reason": "Ingen nytt brukeroppsett, konfigurasjon eller utvikleravhengighet er nødvendig."},
+    "module": {"required": true, "reason": "Sales og Bolig får en eksplisitt kontrakt for prisnøytral kundetekst og historikk."}
+  }
+}

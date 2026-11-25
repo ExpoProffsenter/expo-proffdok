@@ -1,4 +1,5 @@
 import React from "react";
+import { OfferTextAt } from "./BoligOfferText.jsx";
 import {shopGoodsTotal} from "./boligShopCore.js";
 import { agreementMoney as money, goodsDiff } from "./boligCommerceCore.js";
 
@@ -6,11 +7,12 @@ const amount = g => g ? `${g.quantity} ${g.unit} · ${g.name}${g.sku ? ` · vare
 export default function BoligAgreementSummary({ document }) {
   const s = document.snapshot;
   if(s.source==='shop')return <section className="bolig-agreement-summary" aria-label="Butikktillegg til aksept"><h3>{s.reason}</h3><p>Dette kommer i tillegg til grunnpakken og tidligere avtaler.</p>
-    <ul className="bolig-agreement-goods">{s.shop_lines.map((g,i)=><li key={g.key||i}>
+    <OfferTextAt blocks={s.text_blocks} position={0}/>
+    <ul className="bolig-agreement-goods">{s.shop_lines.map((g,i)=><React.Fragment key={g.key||i}><li>
       {g.image_url&&<img className="bolig-shop-thumb" src={g.image_url} alt={g.name} loading="lazy" referrerPolicy="no-referrer"/>}
       <div><strong>{g.name}</strong><small>{g.quantity} {g.unit}{g.sku?` · varenr. ${g.sku}`:''}{g.room_name?` · ${g.room_name}`:''}</small>
       <p>Vare: {money(g.price_cents)} per {g.unit} · {money(shopGoodsTotal(g))}<br/>Montering: {money(g.installation_cents)} for varelinjen</p></div>
-    </li>)}</ul><div className="bolig-commerce-price"><span>Dette tillegget inkl. mva.</span><strong>{money(s.delta_cents)}</strong></div>
+    </li><OfferTextAt blocks={s.text_blocks} position={i+1} inList/></React.Fragment>)}</ul><div className="bolig-commerce-price"><span>Dette tillegget inkl. mva.</span><strong>{money(s.delta_cents)}</strong></div>
     <details><summary>Grunnlag som beholdes · {(s.base_goods||[]).length} varelinjer</summary><Goods goods={s.base_goods||[]}/></details>
     </section>;
   const rows = document.kind === "change" ? goodsDiff(s.before_goods, s.goods) : [];
@@ -28,13 +30,13 @@ export default function BoligAgreementSummary({ document }) {
         <div><span>Før</span><p>{amount(row.before)}</p></div>
         <div><span>Etter</span><p>{amount(row.after)}</p></div>
       </article>)}</div> : <p>Varene beholdes. Bare prisen endres.</p>}
-      <details><summary>Vis hele leveransen etter endringen · {s.goods.length} varelinjer</summary><Goods goods={s.goods}/></details>
-    </> : <details open><summary>Varer og valgte tilvalg · {s.goods.length} varelinjer</summary><Goods goods={s.goods}/></details>}
+      <details open={s.text_blocks?.length ? true : undefined}><summary>Vis hele leveransen etter endringen · {s.goods.length} varelinjer</summary><Goods goods={s.goods} blocks={s.text_blocks}/></details>
+    </> : <details open><summary>Varer og valgte tilvalg · {s.goods.length} varelinjer</summary><Goods goods={s.goods} blocks={s.text_blocks}/></details>}
   </section>;
 }
-function Goods({ goods }) {
-  return <ul className="bolig-agreement-goods">{goods.map(g => <li key={g.key}>
+function Goods({ goods, blocks = [] }) {
+  return <><OfferTextAt blocks={blocks} position={0}/><ul className="bolig-agreement-goods">{goods.map((g,i) => <React.Fragment key={g.key}><li>
     <div><strong>{g.name}</strong><small>{g.room_name || "Felles for boligen"}{g.sku ? ` · varenr. ${g.sku}` : ""}</small></div>
     <span>{g.quantity} {g.unit}</span>
-  </li>)}</ul>;
+  </li><OfferTextAt blocks={blocks} position={i+1} inList/></React.Fragment>)}</ul></>;
 }

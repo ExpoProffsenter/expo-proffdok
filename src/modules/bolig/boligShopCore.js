@@ -1,3 +1,4 @@
+import { cleanOfferText } from "./boligOfferTextCore.js";
 export function shopCents(value) {
   const text=String(value).trim().replace(',','.');
   if(!/^\d+(\.\d{1,2})?$/.test(text))throw Error('Skriv en pris med inntil to desimaler.');
@@ -7,7 +8,7 @@ export function shopCents(value) {
 }
 export function shopPayload(draft){
   if(!draft.title.trim()||!draft.lines.length)throw Error('Legg inn en tittel og minst én vare.');
-  return {title:draft.title.trim(),lines:draft.lines.map(line=>{
+  return {title:draft.title.trim(),text_blocks:cleanOfferText(draft.text_blocks || [], draft.lines.length),lines:draft.lines.map(line=>{
     const quantityText=String(line.quantity).trim().replace(',','.');
     if(!/^\d+(\.\d{1,3})?$/.test(quantityText))throw Error('Skriv antall med inntil tre desimaler.');
     const quantity=Number(quantityText);
@@ -20,7 +21,7 @@ export function shopPayload(draft){
 export const shopGoodsTotal=line=>Math.floor((Math.round(line.quantity*1000)*line.price_cents+500)/1000);
 export const shopTotal=payload=>payload.lines.reduce((sum,line)=>sum+shopGoodsTotal(line)+line.installation_cents,0);
 export const newShopLine=(item={})=>({key:crypto.randomUUID(),name:item.name||'',sku:item.sku||'',quantity:'1',unit:'stk',room_name:'',price:item.price??'',installation:'0',image_url:item.image_url||''});
-export function shopDraftFrom(document){return {title:document?.snapshot.reason||'Tillegg fra butikk',lines:(document?.snapshot.shop_lines||[]).map(g=>({...g,key:crypto.randomUUID(),quantity:String(g.quantity),price:String(g.price_cents/100),installation:String(g.installation_cents/100)}))};}
+export function shopDraftFrom(document){return {title:document?.snapshot.reason||'Tillegg fra butikk',text_blocks:document?.snapshot.text_blocks || [],lines:(document?.snapshot.shop_lines||[]).map(g=>({...g,key:crypto.randomUUID(),quantity:String(g.quantity),price:String(g.price_cents/100),installation:String(g.installation_cents/100)}))};}
 // Small raster thumbnails travel with the private agreement snapshot. No public
 // bucket or cross-company storage permission is needed to show the resident's image.
 export async function shopPhoto(file){
