@@ -58,6 +58,7 @@ try{
  await frame.getByRole('heading',{name:'Velg det som passer deg'}).waitFor();
  const previewCalls=await page.evaluate(()=>window.__calls.length);
  eq(await frame.getByRole('checkbox',{name:'Eik med montering'}).isEnabled(),true);
+ eq(await frame.getByRole('checkbox',{name:'Eik med montering'}).evaluate(n=>n.checked),true,'Preview seeds the same previously confirmed options as the resident');
  await frame.getByRole('checkbox',{name:'Eik med montering'}).check();
  await frame.getByRole('button',{name:'Se over valget',exact:true}).click();
  eq(await frame.getByRole('button',{name:'Bekreft bestilling',exact:true}).isVisible(),true);

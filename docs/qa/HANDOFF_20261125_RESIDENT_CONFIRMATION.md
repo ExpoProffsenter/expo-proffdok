@@ -12,14 +12,14 @@ Kenneth har gitt **TEST OK** og bekreftet at **begge testkvitteringer er mottatt
 
 - PR350: https://github.com/ExpoProffsenter/expo-proffdok/pull/350 (åpen, ready for review).
 - Branch fase45b-resident-direct-confirm-20261125. Hent fersk head fra GitHub; lokale commit-metadata kan avvike, full trestruktur er fasit.
-- Før knappetillegget: remote74ea3c647749265bd09152871804eec778500408, tre6c9f8af38ff1e9d3216723c88e79d30126eab969; alle10 jobber success i CI45674536738. READY dpl_B5YedTmYjb9Qz8Zaj3cfA2UHguup. Nyeste head/CI/deployment skal føres i PR, ikke utledes fra eldre tall her.
+- Før knappetillegget: remote74ea3c647749265bd09152871804eec778500408, tre6c9f8af38ff1e9d3216723c88e79d30126eab969; alle10 jobber success i CI45674536738. READY dpl_B5YedTmYjb9Qz8Zaj3cfA2UHguup. Faktisk Preview med knapper ble også kontrollert på c215d986 / READY dpl_EMznDThNmiS5ZqkJ4evEkKhLn9Jm. Siste tillegg forhåndsutfyller tidligere aksepterte tilvalg i gjenåpnet forhåndsvisning, samme som beboeren, uten lagring. Nyeste head/CI/deployment skal føres i PR, ikke utledes fra eldre tall her.
 - Fast Preview (bevar innlogging/host): https://expo-proffdok-git-fase45b-offer-date-free-text-1b69c3-ringside.vercel.app/?progressTest=safe . Sandbox-binding skal bekreftes. Ikke gi ny deploy-host som standard testlenke.
 - Production fortsatt main d57645caa33738e4f6f01ca4c22a6a53d02becf7, https://expo-proffdok.app, Supabase dqffxflaoyarbxyiyhop. Ingen Production-skriving i PR350 hittil.
 - Demo fortsatt178a6f4450f19e70a7ea15c50d36326fa97b1b44, https://expo-proffdok-git-demo-ringside.vercel.app, Supabase ppvircenkjizeiqdxphj. main→demo, aldri motsatt. Bevar overlays.
 
 ## Tester og funn
 
-Full PostgreSQL2156 PASS, direkte scenario72 PASS, tidligere direkte Chromium37 PASS. Ny avgrenset Chromium44 PASS: synlige/deaktiverte bekreftelses- og meldingsknapper, lokale valg/review, tvunget submit gir ingen RPC, ordinær kundebekreftelse og tidligere frozen-versjon beholdes. Ny full critical/build PASS og eksisterende portalChromium57 PASS. Siste CI registreres i PR ved slutten av denne runden. Ikke kall eldre CI en attest for nytt tre.
+Full PostgreSQL2156 PASS, direkte scenario72 PASS, tidligere direkte Chromium37 PASS. Ny avgrenset Chromium45 PASS: synlige/deaktiverte bekreftelses- og meldingsknapper, lokale valg/review, tvunget submit gir ingen RPC, ordinær kundebekreftelse og tidligere frozen-versjon beholdes. Ny full critical/build PASS og eksisterende portalChromium57 PASS. Siste CI registreres i PR ved slutten av denne runden. Ikke kall eldre CI en attest for nytt tre.
 
 Faktisk Sandbox-prøve er gjennomført med normal UI: to private opplastede produktbilder, ett tilvalg1200kr inkl.mva., navn/avkryssing og én bekreftelse. Samme bilder og låst versjon i beboerportal og Se som beboer. Opprinnelig frist ble simulert utløpt bare på QA-H0101; prosjektleder åpnet til03.12.2026kl12 og stengte igjen. Tidligere bekreftelse var gjeldende og tilvalg forhåndsutfylt. H0102 urørt. Intern overstyring av akseptert valg avvist av server. Ingen leverandørordre.
 

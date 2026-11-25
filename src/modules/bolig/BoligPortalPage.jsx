@@ -140,7 +140,14 @@ export default function BoligPortalPage({preview = false, previewData = null}) {
   };
   useEffect(() => {
     alive.current = true;
-    if (preview) { setData(previewData); setLoading(false); return () => {alive.current = false;}; }
+    if (preview) {
+      const confirmed = previewData?.confirmation;
+      if (previewData?.direct_confirmation && confirmed && !previewData.choice_locked) {
+        const ids = confirmed.snapshot.selected_offer_ids || [];
+        setDraft(previous => ({...previous, offer_ids:ids, offer_id:ids[0] || "", body:confirmed.snapshot.reason || "", name:confirmed.accepted_name || "", confirmed:false, menu_version:previewData.menu_version}));
+      }
+      setData(previewData); setLoading(false); return () => {alive.current = false;};
+    }
     load();
     const refresh = () => {
       if (document.visibilityState !== "hidden") load();

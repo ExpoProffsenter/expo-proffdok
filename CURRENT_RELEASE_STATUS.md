@@ -1,6 +1,6 @@
 # Pågående – direkte beboerbekreftelse 25.11.2026
 
-Miljømål BEGGE, PR350, branch fase45b-resident-direct-confirm-20261125. Kenneth har gitt TEST OK og bekreftet mottak av begge prøvekvitteringer. Godkjent kandidat74ea3c hadde alle10 CI-jobber grønne. Etterspurt avgrenset tillegg: Se som beboer viser sendeknappene deaktivert og tillater lokale valg/Se over valget uten lagring eller RPC. Ny Chromium44 PASS; siste CI/Preview må kontrolleres før autorisert Production og main→demo. Sandbox er installert og testutsending AV; Production er fortsatt d57645ca og demo178a6f44. Eksisterende Aamodthagen omfattes ved aktivering. Fortsett fra docs/qa/HANDOFF_20261125_RESIDENT_CONFIRMATION.md.
+Miljømål BEGGE, PR350, branch fase45b-resident-direct-confirm-20261125. Kenneth har gitt TEST OK og bekreftet mottak av begge prøvekvitteringer. Godkjent kandidat74ea3c hadde alle10 CI-jobber grønne. Etterspurt avgrenset tillegg: Se som beboer viser sendeknappene deaktivert og tillater lokale valg/Se over valget uten lagring eller RPC. Ny Chromium45 PASS; siste CI/Preview må kontrolleres før autorisert Production og main→demo. Sandbox er installert og testutsending AV; Production er fortsatt d57645ca og demo178a6f44. Eksisterende Aamodthagen omfattes ved aktivering. Fortsett fra docs/qa/HANDOFF_20261125_RESIDENT_CONFIRMATION.md.
 
 Gjeldende test- og utrullingsstatus: [QA](docs/qa/BOLIG_DIRECT_CONFIRMATION_20261125.md).
 
