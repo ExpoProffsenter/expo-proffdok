@@ -19,7 +19,6 @@
 .bolig-work-good p {margin:5px 0;}
 .bolig-work-text {white-space:pre-wrap;}
 .bolig-work-sheet footer {border-top:1px solid #b5c9d0;margin-top:16px;font-size:12px;}
-.bolig-work-page-identity {display:none;}
 @media screen and (max-width:600px){
  .bolig-work-sheet[data-columns="2"] .bolig-work-goods {grid-template-columns:minmax(0,1fr);}
  .bolig-work-good {gap:10px;padding:8px;}
@@ -29,7 +28,7 @@
 @media print {
  @page bolig-work-sheet {size:A4;margin:12mm;}
  .bolig-work-order-print {page:bolig-work-sheet;}
- body:has(>.bolig-work-order-print)> :not(.bolig-work-order-print):not(.bolig-work-page-identity){display:none!important;}
+ body:has(>.bolig-work-order-print)> :not(.bolig-work-order-print){display:none!important;}
  body:has(>.bolig-work-order-print),.bolig-work-order-print{position:static!important;inset:auto!important;display:block!important;overflow:visible!important;height:auto!important;max-height:none!important;width:auto!important;max-width:none!important;margin:0!important;padding:0!important;border:0!important;box-shadow:none!important;background:white!important;}
  .bolig-work-order-print::backdrop {display:none!important;}
  .bolig-work-order-print>header,.bolig-work-print-controls {display:none!important;}
@@ -55,5 +54,4 @@
  .bolig-work-sheet footer {margin-top:3mm;font-size:8pt;}
  .bolig-work-sheet footer h2 {font-size:9pt;}
  .bolig-work-sheet footer p {margin:1mm 0;}
- .bolig-work-page-identity {display:block;position:fixed;bottom:-8mm;left:0;right:0;font:8pt/1.2 Arial,sans-serif;border-top:1px solid #cadbe0;padding-top:1mm;}
 }

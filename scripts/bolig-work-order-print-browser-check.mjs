@@ -40,7 +40,7 @@ try{
  eq(compact.split('\f').filter(p=>p.trim()).length,1,'12 normal items with images, identity, notes and provenance fit one A4');
  for(let i=0;i<12;i++)eq(new RegExp('QA-'+i+'\\b').test(compact),true,'compact PDF retains item '+i);
  for(const marker of ['QA firma','Eksempelveien 10','FROZEN-TEXT','accepted-v2'])eq(compact.includes(marker),true,'compact PDF retains '+marker);
- eq(/Page size:\s+595\.\d+ x 841\.\d+ pts \(A4\)/.test(execFileSync('pdfinfo',[path.join(tmp,'compact.pdf')],{encoding:'utf8'})),true,'actual document uses A4');
+ eq(/Page size:[^\n]+\(A4\)/.test(execFileSync('pdfinfo',[path.join(tmp,'compact.pdf')],{encoding:'utf8'})),true,'actual document uses A4');
  eq(await dialog.locator('.bolig-work-good h3').first().evaluate(el=>parseFloat(getComputedStyle(el).fontSize)>=13.3),true,'item name stays at least 10pt');
  await page.emulateMedia({media:'screen'});await dialog.getByRole('combobox',{name:'Oppsett',exact:true}).selectOption('1');
  eq(await dialog.locator('.bolig-work-sheet').getAttribute('data-columns'),'1','manual larger-image layout overrides automatic columns');

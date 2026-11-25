@@ -1,9 +1,10 @@
 import React,{useEffect,useRef,useState} from 'react';
-import {createPortal} from 'react-dom';
 import Dialog from './BoligEditorDialog.jsx';
 import {workOrderRpc,workOrderGroups} from './boligWorkOrderClient.js';
 import {readBoligImage} from './boligImages.js';
 import './boligWorkOrderPrint.css';
+// Encode every code point as a CSS escape: identity text cannot become CSS.
+const marginText=v=>Array.from(String(v),c=>'\\'+c.codePointAt(0).toString(16)+' ').join('');
 const stamp=v=>v?new Date(v).toLocaleString('nb-NO',{timeZone:'Europe/Oslo',dateStyle:'short',timeStyle:'short'}):'';
 function PrintImage({value,name,report}){
  const [src,setSrc]=useState('');const timeout=useRef(null);
@@ -40,5 +41,8 @@ export default function WorkOrderPrint({context,root,unit}){
  <div><h3>{g.name}</h3><p>Varenr. {g.sku||'ikke registrert'}</p><strong>{new Intl.NumberFormat('nb-NO').format(g.quantity)} {g.unit}</strong></div></article>)}</div></section>)}
  <section className="bolig-work-notes"><h2>Merknader fra bestillingsgrunnlaget</h2><p>Tekstene gjelder den oppførte avtaleutgaven. Kontroller dem sammen med varelisten.</p>{data.notes.map((note,i)=><div key={i}><h3>{note.title}</h3>{note.text&&<p className="bolig-work-text">{note.text}</p>}{(note.blocks||[]).map(b=><div key={b.id}>{b.title&&<h4>{b.title}</h4>}<p className="bolig-work-text">{b.text}</p></div>)}</div>)}</section>
  <footer><h2>Dette arket bygger på</h2>{data.sources.map(s=><p key={s.id}>{s.title}{s.version?` · v${s.version}`:''} · {stamp(s.at)} · Ref. {s.id}</p>)}<p>Skrevet ut {stamp(new Date())}. Kontroller nyeste utgave ved endringer.</p></footer>
- </article>}</Dialog>{data&&createPortal(<div className="bolig-work-page-identity" aria-hidden="true">Bolig {data.identity.unit} · {data.identity.address} · {data.identity.project}</div>,document.body)}</>}</>;
+ </article>}{data&&<style media="print">{`@page bolig-work-sheet {
+ @bottom-left {content:"${marginText(`Bolig ${data.identity.unit} · ${data.identity.address} · ${data.identity.project}`)}";width:80%;font:8pt/1.2 Arial,sans-serif;text-align:left;vertical-align:middle;white-space:normal;}
+ @bottom-right {content:"Side " counter(page) " av " counter(pages);width:20%;font:8pt Arial,sans-serif;text-align:right;vertical-align:middle;}
+ }`}</style>}</Dialog></>}</>;
 }
