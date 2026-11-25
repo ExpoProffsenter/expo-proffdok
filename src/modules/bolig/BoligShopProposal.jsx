@@ -3,6 +3,7 @@ import {collaborationRpc} from './boligCollaborationClient.js';
 import {boligDraftKey,readBoligDraft,writeBoligDraft} from './boligClient.js';
 import {agreementMoney as money} from './boligCommerceCore.js';
 import {newShopLine,shopDraftFrom,shopPayload,shopPhoto,shopTotal} from './boligShopCore.js';
+import { repositionOfferText } from "./boligOfferTextCore.js";
 import { BoligOfferTextEditor } from './BoligOfferText.jsx';
 import Summary from './BoligAgreementSummary.jsx';
 import './boligCommerce.css';
@@ -16,7 +17,7 @@ export default function BoligShopProposal({context,root,unit,onSwitchBlocked}){
  const persist=value=>{if(!writeBoligDraft(key,value))throw Error('Kladden kunne ikke sikres lokalt. Behold siden åpen.');latest.current=value;};
  const load=async(n=epoch.current)=>{const next=await rpc();if(n!==epoch.current)return;setData(next);if(!latest.current){const doc=next.documents.find(d=>d.status==='published');setDraft(shopDraftFrom(doc));}else {setDraft(latest.current.draft);setPending(latest.current.pending||null);}};
  useEffect(()=>{const n=++epoch.current;latest.current=readBoligDraft(key,null);load(n).catch(e=>{if(n===epoch.current)setError(e.message);});return()=>{++epoch.current;};},[key]);
- const change=next=>{try{persist({draft:next,pending:null,basis:latest.current?.basis||data.basis});setDraft(next);setReview(null);setNotice('');setError('');}catch(e){setError(e.message);}};
+ const change=next=>{try{if(next.lines!==draft.lines)next={...next,text_blocks:repositionOfferText(next.text_blocks||[],draft.lines,next.lines)};persist({draft:next,pending:null,basis:latest.current?.basis||data.basis});setDraft(next);setReview(null);setNotice('');setError('');}catch(e){setError(e.message);}};
  const lineChange=(id,fields)=>change({...draft,lines:draft.lines.map(l=>l.key===id?{...l,...fields}:l)});
  const publish=async()=>{if(operating.current||uploading||(!pending&&!review))return;operating.current=true;setBusy(true);setError('');const n=epoch.current;
  try{const attempt=pending||{...review,request_id:crypto.randomUUID(),reviewed:true};persist({draft,pending:attempt,basis:attempt.basis});setPending(attempt);const next=await rpc('publish',attempt);if(n!==epoch.current)return;persist(null);setData(next);setDraft(shopDraftFrom(next.documents.find(d=>d.status==='published')));setPending(null);setReview(null);setNotice('Forslaget er publisert. Beboerportalen oppdateres automatisk innen 20 sekunder. Venter på beboerens aksept.');}

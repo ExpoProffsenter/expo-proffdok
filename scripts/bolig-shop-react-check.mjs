@@ -30,6 +30,21 @@ try{
  w.__unit='second';await act(()=>w.__render());w.__unit='unit';await act(()=>w.__render());assert(button('Kontroller samme publisering igjen'),'Uncertain result survives unit round trip');
  await act(()=>button('Kontroller samme publisering igjen').click());const sent=calls.filter(c=>c.p_action==='publish');assert.equal(sent.length,2);assert.deepEqual(sent[0],sent[1],'Retry uses same unit and request');assert(w.document.body.textContent.includes('innen 20 sekunder'));
  state.documents[0].status='accepted';state.basis='three';await act(()=>button('Hent siste status').click());assert.equal(w.document.querySelectorAll('.bolig-shop-line').length,0,'Accepted goods are not prefilled as a new sale');assert(!w.document.body.textContent.includes('Venter på beboerens aksept.'),'Stale pending notice cleared after acceptance');
+ // Critical text anchoring through the real shop form, local draft and review.
+ for(const name of ['A','B','C']){await act(()=>button('Legg til vare manuelt').click());const inputs=[...w.document.querySelectorAll('.bolig-shop-line')].at(-1).querySelectorAll('input');await act(()=>{Object.getOwnPropertyDescriptor(w.HTMLInputElement.prototype,'value').set.call(inputs[0],name);inputs[0].dispatchEvent(new w.Event('input',{bubbles:true}));});await act(()=>{Object.getOwnPropertyDescriptor(w.HTMLInputElement.prototype,'value').set.call(inputs[5],'100');inputs[5].dispatchEvent(new w.Event('input',{bubbles:true}));});}
+ await act(()=>button('+ Ny fri tekst').click());
+ const text=w.document.querySelector('.sales-free-text-block textarea'),placement=w.document.querySelector('.sales-free-text-block select');
+ await act(()=>{Object.getOwnPropertyDescriptor(w.HTMLTextAreaElement.prototype,'value').set.call(text,'Gjelder B');text.dispatchEvent(new w.Event('input',{bubbles:true}));});
+ await act(()=>{placement.value='2';placement.dispatchEvent(new w.Event('change',{bubbles:true}));});
+ await act(()=>button('Fjern vare 1').click());
+ assert.equal(w.document.querySelector('.sales-free-text-block select').value,'1','Deleting A keeps text after B in actual form');
+ w.__unit='second';await act(()=>w.__render());w.__unit='unit';await act(()=>w.__render());
+ assert.equal(w.document.querySelector('.sales-free-text-block select').value,'1','Rebased position survives apartment round trip');
+ await act(()=>button('Kontroller beboerens forslag').click());
+ const reviewText=[...w.document.querySelectorAll('.bolig-agreement-summary')].at(-1).textContent;
+ assert(reviewText.indexOf('Gjelder B')>reviewText.indexOf('B')&&reviewText.indexOf('Gjelder B')<reviewText.lastIndexOf('C'),'Review places text between B and C');
+ await act(()=>button('Fjern vare 1').click());
+ assert.equal(w.document.querySelector('.sales-free-text-block select').value,'','Deleted B leaves text before C, without silently attaching to C');
  state.context.publish_shop=false;await act(()=>button('Hent siste status').click());assert(!button('Legg til vare manuelt'),'Revoked publishing capability removes editor');
  console.log('PASS shop React: manual item without catalog, decimal prices, private draft, review total, publish, accepted sale not duplicated, revoked rights');
 }finally{await act(()=>w.__dispose());dom.window.close();fs.rmSync(tmp,{recursive:true,force:true});}

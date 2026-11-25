@@ -5,7 +5,7 @@ import { boligDraftKey, readBoligDraft, writeBoligDraft } from "./boligClient.js
 import { signedCents } from "./boligCustomizationClient.js";
 import { money } from "./boligCatalogClient.js";
 import { BoligOfferTextEditor } from "./BoligOfferText.jsx";
-import { cleanOfferText } from "./boligOfferTextCore.js";
+import { cleanOfferText, repositionOfferText } from "./boligOfferTextCore.js";
 import ContentEditor from "./BoligPackageContentEditor.jsx";
 import Dialog from "./BoligEditorDialog.jsx";
 import ResidentInvitation from "./BoligResidentInvitation.jsx";
@@ -56,7 +56,9 @@ export default function BoligCommerce({ context, root, unit }) {
   const updateForm = (field, value) => {
     try {
       const form = latest.current.form;
-      persist({ ...latest.current, form: { ...form, ...(typeof field === "function" ? field(form) : typeof field === "object" ? field : { [field]: value }) } });
+      const nextForm = { ...form, ...(typeof field === "function" ? field(form) : typeof field === "object" ? field : { [field]: value }) };
+      if (nextForm.lines !== form.lines) nextForm.text_blocks = repositionOfferText(nextForm.text_blocks || [], form.lines || [], nextForm.lines || []);
+      persist({ ...latest.current, form: nextForm });
     } catch (e) { setError(e.message); }
   };
   const run = async (action, payload, retry = false) => {

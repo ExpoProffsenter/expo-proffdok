@@ -4,6 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import {build} from 'vite';
 import react from '@vitejs/plugin-react';
+import {cleanOfferText,repositionOfferText} from '../src/modules/bolig/boligOfferTextCore.js';
 import {shopPayload,shopDraftFrom} from '../src/modules/bolig/boligShopCore.js';
 const {JSDOM}=await import(process.env.KSHMS_JSDOM_PATH||'jsdom');
 const root=process.cwd(),tmp=fs.mkdtempSync(path.join(os.tmpdir(),'bolig-text-react-'));
@@ -40,5 +41,14 @@ try{
  eq(payload.text_blocks[0].after,0,'shop serializes first position');
  eq(payload.lines[0].price_cents,125000,'shop prices unchanged');
  eq(shopDraftFrom({snapshot:{reason:'Butikk',shop_lines:[],text_blocks:payload.text_blocks}}).text_blocks,payload.text_blocks,'shop snapshot hydration keeps text');
+ const a={key:'a'},b={key:'b'},c={key:'c'};
+ const blocks=[{id:'anchor',title:'Info',text:'Etter B',after:2}];
+ eq(repositionOfferText(blocks,[a,b,c],[b,c])[0].after,1,'deleting earlier item preserves B anchor');
+ eq(repositionOfferText(blocks,[a,b,c],[c,a,b])[0].after,3,'moving B retains text after B');
+ eq(repositionOfferText(blocks,[a,b,c],[a,c])[0].after,1,'deleting B retains text at gap after A');
+ eq(repositionOfferText([{...blocks[0],after:1}],[a,b,c],[b,c])[0].after,0,'deleting first anchor keeps text before remaining goods');
+ eq(repositionOfferText(blocks,[a,b,c],[])[0].after,0,'removing all goods preserves text');
+ eq(blocks[0].after,2,'rebasing draft never mutates original snapshot');
+ eq(cleanOfferText(repositionOfferText(blocks,[a,b,c],[b,c]),2)[0].text,'Etter B','payload preserves full content after deleting earlier item');
  console.log('PASS bolig offer text React: '+checks+' editor, choice/change/shop ordering and persisted payload/price checks');
 }finally{dom.window.close();fs.rmSync(tmp,{recursive:true,force:true});}
