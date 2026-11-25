@@ -1,0 +1,47 @@
+# Aktuell status 25.11.2026
+
+Kenneth har gitt uttrykkelig TEST OK for leveranseoversikten. Produksjon og main→demo er autorisert etter grønn sluttkontroll. Historikken under beskriver tidligere kandidater og skal ikke kjøres som installasjonsplan.
+
+# Bestillingsark med bilder – 25.11.2026
+
+Miljømål BEGGE. Egen branch fase45b-bolig-confirmed-order-print-20261125 fra faktisk publisert main55ea4e5. Brukerens TEST OK gjaldt tilbudsdato/fritekst, som er publisert og synkronisert til demo. Denne nye funksjonen er ikke godkjent for produksjon.
+
+Scope: BoligOrderDraft, egen lesende RPC, separat utskriftskomponent/CSS, egne tester og hjelp. Ingen nye rettigheter, katalogendring, tilbudsendring, e-post, datatilbakefylling eller bestillingshandling. Utskriften samler grunnpakke/valgte tilvalg/aksepterte tillegg, ingen priser, med fryste bildereferanser og tydelig proveniens. Pending beboervalg kan skrives ut men merkes ikke akseptert. Eksterne bilder kan senere endres på verten; manglende bilder vises tydelig.
+
+Lokalt PostgreSQL2083 før ekstra grunnbildekrav PASS: base, akseptert butikktillegg, ingen dobbelttelling av håndtert ordre, utestengt nyere publisert forslag, bevart tilleggsbilde, ingen pris-/kontaktfelter, stabil basis, manager/anon/firma-sperrer. Egen faktisk Chromium-test produserer A4-PDF og kontrollerer innebygde bildeobjekter, alle varer, tekst, multipage, skjult intern app,360px, endret basis og tilbakekalt tilgang. Lokal Chromium-binær mangler; nettlesertesten må bekreftes i CI. Ingen fysisk skriver/iPhone/Safari-prøve.
+
+Sandbox-installasjon/Preview/CI registreres i PR før sluttvurdering. Produksjonsmigrasjon er ikke kjørt. Etter ny uttrykkelig TEST OK: bekreft main og produksjon, installer kun den manglende migrasjonen, merge, verifiser eksakt READY og kontrollert main→demo. Tilbakeføring: revert frontend, den isolerte lesende RPC-en kan bli stående uten datatap. Ingen kundedata skal slettes eller endres som del av dette.
+
+## Publisert sandbox og første CI
+
+PR349, første kandidatbbf4fda. Sandbox-migrasjonen er installert én gang som20261125140850, Production urørt. Lokal full critical/build og PostgreSQL2084krav PASS. Første CI45631049505 bestod build og PostgreSQL, men katalogens eksisterende React-harness manglet cssFileName etter ny CSS-import, og ny utskriftsharness forsøkte å løse react/jsx-runtime fra/tmp. Kun harness-pakking rettet, ingen assertions fjernet. Katalogtesten får eksplisitt CSS-filnavn, ny harness bruker etablert classic-JSX-oppsett. Ny full CI kreves.
+
+For å bevare eksisterende innlogging er den tidligere review-branchen fast-forwardet til samme nye kandidat som PR349. Fast sandboxadresse er fortsatt https://expo-proffdok-git-fase45b-offer-date-free-text-1b69c3-ringside.vercel.app/ . Den gamle PR347 er allerede merget; dette flytter ikke main. Ny egen branch/PR349 er fasit for utskriftsendringen.
+
+Eget syntetisk QA-prosjekt «QA – Bestillingsark med bilder25.11» ble opprettet i sandbox, root30e0f85a-6f42-4ab1-9259-6dea1d725e42, bolig8086785e-680f-4356-b99d-7111011b98af/H0101. Grunnpakke og ett tilvalg med tydelig syntetiske eksempelbilder er akseptert via testens egne funksjonskall, ingen reelle mottakere eller e-post. Ingen eksisterende avtaler endret. Testprosjekt beholdes for brukerens konkrete prøve.
+
+Innlogget hosted prøve påbbf4fda: Boligprosjekter → QA-prosjekt → H0101 → Bestilling og levering → Skriv ut bestilling med bilder. Riktig bolig/adresse,1pakke/2stk, begge fullstendig innlastede1200×800bilder, kundebekreftet status, kildeutgave og tekst; ingen priser. Visuell dialogkontroll PASS. Faktisk fysisk skriver og iPhone/Safari ikke prøvd. Utskriftsdialogens PDF/kutt/bildeobjekter krever fortsatt grønn faktisk Chromium-test.
+
+Andre CI45632047631: PostgreSQL, katalog-React og build bestod. Den nye nettleserharnessen viste ingen knapp: React-bundelen hadde ikke fått process.env.NODE_ENV innfelt. Lokal faktisk oppstart bekreftet «process is not defined» med gammel harness og PASS etter eksplisitt production-define, uten produktendring eller fjernede assertions. Runtime-/DOM-feildetaljer er lagt til for eventuell videre diagnose.
+
+Ekstra tilgangsgjerde i utskriftskomponenten: tidligere firmadata/boligdata skjules direkte i render når scope endres, i tillegg til opprydding i effekt og avbrudd av utdatert lese-/utskriftsforsøk. Egen hosted transaksjonstest oppdaterte bare QA-katalogens bilde midlertidig via offentlig katalogfunksjon: det bekreftede arkets basis og opprinnelige bilde forble identisk. Testen ble rullet tilbake, ingen varig katalogendring.
+
+CI45633583425 kom gjennom faktisk React-oppstart,24 innlastede bilder og360px-layout og genererte PDF, men stoppet på «spawnSync pdftotext ENOENT». Bolig-nettleserpakken får derfor eksisterende PDF-forutsetning pdf:true i felles oppsett, samme som øvrige PDF-pakker. Ingen kommando eller assertion fjernes; alle147opprinnelige kontroller beholdes. Printens A4-marg bruker navngitt @page bolig-work-sheet slik at andre utskrifter ikke får endret sideoppsett når modulens CSS er lastet.
+
+## Brukerens PDF og oppfølgingskrav
+
+Brukerens Microsoft Print to PDF manglet bolig/adresse. Rotårsak bevist i src/style.css: global print skjuler alle header med !important. Opprinnelig test importerte bare bolig.css og fanget derfor ikke faktisk app-integrasjon. Ny test inkluderer også hele style.css og starter med nedrullet dialog. Kun arkets header/seksjoner får avgrensede overstyringer. «Skriv ut leveranseoversikt» flyttes til egen del «Til håndverkeren i boligen», utenfor «Klargjør varebestilling». Ingen kundeportal-/pris-/backendendring.
+
+Automatisk to kolonner fra seks varer, valgfri én/to. Ny separat 12-varers prøve med realistiske navnelengder må passe én faktisk A4 med bilder, bolig/adresse, merknader og kilde. Opprinnelig 24-varers stressprøve med svært lange navn beholder flersidekrav, og alle varenummer og sideidentitet kontrolleres. Ingen tekst fjernes og ingen vilkårlig skalering. Syntetiske PDF-prøver bevares som CI-artifakter for visuell kontroll. Lokal Chrome lastet fra Googles Chrome for Testing, men oppstart ble blokkert av miljøets socket-begrensning; test må kjøres i CI. Fysisk Windows-skriver og Safari er fortsatt ikke kontrollert.
+
+CI45648693989 med validert bilde bekreftet alle24varenummer, men avviste sideidentiteten: fixed-element inni native dialog ble ikke gjentatt på alle sider. Rettet til egen body-portal utenfor dialogens topplag, med samme scope/livssyklus. Assertionen beholdes uendret. PDF-prøver lagres nå før assertions slik at også feilende layout kan inspiseres. Tidligere CI45647965194 stoppet først på ugyldig eksisterende auth-bathroom.jpg i harness; Pillow bekreftet at den ikke kunne dekodes. Appassetet er utenfor scope og urørt; harness bruker validert expo-logo.png.
+
+CI45650519912 sjekket korrekt mergef44e8c7a fra5a8570/main55ea4e5. Alle24varenummer var med og synlig førsteside-header ble bekreftet visuelt i artefakt15041315394 (3A4-sider). Sideidentiteten var fortsatt feil: body-fixed tekst ble plassert én gang øverst på side2 og overlappet varer. Derfor erstattes fixed/body-portal av navngitte @page-marginbokser med sikkert CSS-kodet identitet og sideantall. Uendret krav om identitet på hver PDF-side. Chrome145s A4-encoding var595.92×842.88pt og gjenkjent somA4 av pdfinfo; papirtesten kontrollerer A4-klassifisering fremfor én bestemt avrunding til841pt. Chrome på PC anbefales i hjelpen, Safari er ikke bekreftet.
+
+## Sluttkontroll etter TEST OK
+
+Chrome Headless Shell143 fra Googles offisielle Chrome for Testing kjører lokalt med samme Playwright-harness, uten Chromes ProcessSingleton-socket som tidligere var blokkert. Faktisk PDF-test av4dc86f gjenskapte manglende sidemerking. Rotårsak: page-navnet var bare satt på native dialog, som står utenfor normal sideflyt; @page-formatet og margboksene gjaldt derfor ikke selve dokumentsiden. Print-CSS setter nå navnet på body kun mens egen dialog finnes. Dette gjenoppretter både A4 og margtekst/sidenummer, og slippes igjen ved lukking.
+
+Kompakt oppsett bruker20mm bilder og1,5mm indre luft, med uendret minst10pt varenavn. Før justering havnet bare kildehenvisningen på side2 ved12normalvarer. Etter justering består65opprinnelige faktiske Chromium/PDF-krav:12varer/bilder/merknader/kilde på én faktiskA4;24svært lange varenavn på tre sider; alle varenummer, førsteheader, bolig/adresse på hver side, innebygde bilder, mobil360px, manuell/autokolonne, fersk basis og tilbakekalt tilgang. Genererte PDF-er er rasterisert og visuelt kontrollert, inkludert førsteside og side2. Sideantall og frigjøring av sideformat etter lukking får egne additive krav. Ingen eksisterende assertion eller guard er svekket.
+
+Denne avgrensede utskriftsrettingen fullfører godkjent A4-/sidemerking, uten endret brukerflyt, avtalebasis, priser eller tilgang. TEST OK beholdes. Full CI på sluttkandidaten og eksakte release-/demoSHA-er føres i PR349. Fysisk skriver og Safari er fortsatt ikke prøvd.

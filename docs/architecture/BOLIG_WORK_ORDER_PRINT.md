@@ -1,0 +1,15 @@
+# Prisfritt bestillingsark for bolig
+
+`bolig_work_order` er en ny lesende RPC med eksisterende package_choices-tilgang og ekstra krav om enabled manager. Offentlig wrapper er security invoker. Privat funksjon har tom search_path og eksplisitte execute-rettigheter. Anon, leser og annet firma avvises. Ingen tabeller, avtaler, roller eller mailtransport endres.
+
+En akseptert boligavtale er grunnlag. Varebilder berikes kun fra choice_versions med nøyaktig avtalt choice_revision og samsvarende key/navn/sku, aldri dagens katalog eller kladd. Aksepterte endringsordrer behandles kronologisk: before_goods-nøkler erstattes av goods, mens butikktillegg har egne nøkler. Håndtert leverandørordre legges ikke til en gang til. Ikke aksepterte forslag inngår ikke.
+
+Uten akseptert boligavtale brukes siste innsendte request fra aktiv kontaktbasis, med tydelig status «ikke en akseptert avtale». Dette er et separat, ufullført avtalestadium; det kalles ikke kundebekreftet bestilling. Ingen intern kladd brukes som reserve. Manglende grunnlag gir ingen utskrift.
+
+Returen hvitelister varer uten pris, kontakttelefon, e-post, signaturnavn eller lenketoken. Identitet viser bolig, adresse, bygg og prosjekt. Merknader følger kildeutgaven i eget avsnitt fordi en senere vareendring ikke gir grunnlag for å gjette nye tekstposisjoner. Fullstendig lesegrunnlag får en md5-basis for konfliktkontroll, ikke som sikkerhetsmekanisme. Samme RPC leses før window.print; endret grunnlag eller bortfalt tilgang stopper utskriften. Firma-/boligbytte lukker gammel visning.
+
+Native dialog renderes direkte under body. Print-CSS gjelder bare når denne dialogen finnes, skjuler øvrig app og lar A4-sider flyte uten fast høyde. Bilder lastes eager og kontrolleres ferdig; ekstern URL bruker HTTPS og no-referrer, private katalogbilder bruker eksisterende signering. Blokkerte/manglende bilder kan ikke skjules stille. Bruker velger skriver eller PDF i nettleserens vanlige utskriftsdialog. En URL er en fryst bildereferanse; eksternt endret/slettet bildefil kan ikke garanteres historisk.
+
+Utskriften ligger i egen del «Til håndverkeren i boligen», utenfor «Klargjør varebestilling». Det er en prisfri leveranseoversikt til utførelsen, ikke kundens bestillingsbekreftelse eller en leverandørbestilling. Kundens portal/avtale og priser endres ikke. Automatisk oppsett velger én kolonne for 0–5 varer, to fra seks. Brukeren kan overstyre. Skriftstørrelser og bilder har faste lesbare størrelser; lange navn/merknader øker antall sider uten klipping. Bolig/adresse/prosjekt gjentas i sidens bunn. Appens generelle print-regler overstyres bare inne i denne utskriften, slik at headeren ikke skjules og seksjonspadding ikke blåser opp varelisten.
+
+Boligidentitet og sidetall bruker Chrome/Chromiums @page-marginbokser på det navngitte arkformatet. Identitetstekst kodes som individuelle CSS-hexescapes før den settes som content; tekst fra prosjekt/bolig kan ikke bli CSS-regler. Ingen fixed-elementer brukes i varelisten eller utenfor dialogen. Chrome på PC er anbefalt for fulle sidefelt; Safari/fysisk skriver er ikke bekreftet. Se https://developer.chrome.com/blog/print-margins .

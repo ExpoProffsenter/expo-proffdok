@@ -352,7 +352,10 @@ jobs:
     - uses: ./.github/actions/core-safety-setup
       with:
         browser: 'true'
+        pdf: 'true'
     - name: Verify shared Boligprosjekter structure and access boundaries (browser)
+      env:
+        BOLIG_PRINT_ARTIFACT_DIR: ${{ runner.temp }}/bolig-work-order-print
       run: |-
         # PR 311 combines two independently reviewed layers. Keep the Bolig
         # comparison against the reviewed core while full PR QA targets main.
@@ -398,6 +401,14 @@ jobs:
         node scripts/bolig-partner-browser-check.mjs
         node scripts/bolig-partner-quality-browser-check.mjs
         node scripts/bolig-preparation-browser-check.mjs
+    - name: Keep synthetic handworker print samples
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: bolig-work-order-print
+        path: ${{ runner.temp }}/bolig-work-order-print/
+        if-no-files-found: ignore
+        retention-days: 7
   core-safety:
     name: Core safety + critical build
     needs:

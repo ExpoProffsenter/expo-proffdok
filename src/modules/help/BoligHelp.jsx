@@ -1,3 +1,4 @@
+import {BOLIG_WORK_ORDER_PRINT_HELP} from './BoligWorkOrderPrintHelp.jsx';
 import React, { useRef, useState } from 'react';
 import {ArrowLeft,ArrowRight,ChevronDown,Search} from 'lucide-react';
 import {BOLIG_NOTIFICATION_HELP} from './BoligNotificationHelp.jsx';
@@ -16,7 +17,7 @@ export function boligHelpText(node) {
 }
 const normalize=value=>value.toLocaleLowerCase('nb').normalize('NFKC');
 const notificationTopics=new Map(BOLIG_NOTIFICATION_HELP.map(topic=>[topic.id,topic]));
-const topics=[...BOLIG_HELP_TOPICS.map(topic=>notificationTopics.get(topic.id)||topic),...BOLIG_HOUSEHOLD_HELP,...BOLIG_PLACEMENT_HELP,...BOLIG_COLLABORATION_HELP,...BOLIG_OFFER_TEXT_HELP].map(topic=>({...topic,search:normalize(topic.title+' '+boligHelpText(topic.body))}));
+const topics=[...BOLIG_HELP_TOPICS.map(topic=>notificationTopics.get(topic.id)||topic),...BOLIG_HOUSEHOLD_HELP,...BOLIG_PLACEMENT_HELP,...BOLIG_COLLABORATION_HELP,...BOLIG_OFFER_TEXT_HELP, ...BOLIG_WORK_ORDER_PRINT_HELP].map(topic=>({...topic,search:normalize(topic.title+' '+boligHelpText(topic.body))}));
 
 export function BoligHelp({returnLabel}={}) {
   const [open,setOpen]=useState(false),[group,setGroup]=useState(''),[query,setQuery]=useState(''),[expanded,setExpanded]=useState('');

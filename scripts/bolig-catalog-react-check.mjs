@@ -94,7 +94,7 @@ try {
     build: {
       write: false,
       minify: false,
-      lib: { entry, formats: ["iife"], name: "CatalogProof" },
+      lib: { entry, formats: ["iife"], name: "CatalogProof", cssFileName: "catalog-proof" },
     },
   });
   const dom = new JSDOM('<div id="app"></div>', {
