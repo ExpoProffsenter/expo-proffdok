@@ -381,7 +381,7 @@ jobs:
         node scripts/bolig-completion-browser-check.mjs
         node scripts/bolig-handover-browser-check.mjs
         node scripts/bolig-followup-browser-check.mjs
-        node scripts/bolig-commerce-browser-check.mjs
+        BOLIG_PRINT_ARTIFACT_DIR="$RUNNER_TEMP/bolig-work-order-print" node scripts/bolig-commerce-browser-check.mjs
         node scripts/bolig-portal-browser-check.mjs
         node scripts/bolig-progress-browser-check.mjs
         node scripts/bolig-progress-planning-browser-check.mjs
@@ -399,6 +399,14 @@ jobs:
         node scripts/bolig-partner-browser-check.mjs
         node scripts/bolig-partner-quality-browser-check.mjs
         node scripts/bolig-preparation-browser-check.mjs
+    - name: Keep synthetic handworker print samples
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: bolig-work-order-print
+        path: ${{ runner.temp }}/bolig-work-order-print/
+        if-no-files-found: ignore
+        retention-days: 7
   core-safety:
     name: Core safety + critical build
     needs:
