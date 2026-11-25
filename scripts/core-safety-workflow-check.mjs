@@ -29,3 +29,8 @@ assert(setup.includes('npm ci --prefix scripts/qa') && setup.includes('playwrigh
 const qa=JSON.parse(fs.readFileSync('scripts/qa/package.json','utf8'));
 assert.deepEqual(qa.dependencies, {'@electric-sql/pglite':'0.5.8',jsdom:'26.1.0',jspdf:'2.5.1',playwright:'1.58.2'});
 console.log(`Core safety workflow: PASS (${baseline.commands.length} original direct invocations/variants + unchanged npm build)`);
+
+// The PR311 comparison is valid only at its frozen historical main. A reused
+// branch name on current main must run ordinary QA against its actual PR base.
+const frozenCondition='if [ "$QA_BASE_REF" = origin/main ] && [ "$QA_HEAD_REF" = fase45b-whole-app-qa-20261104 ] && [ "$(git rev-parse "$QA_BASE_REF")" = 34daef4c0526b93ddbd84c3bfd97fb0833d97caf ]; then';
+assert.equal(workflow.split(frozenCondition).length-1,2,'Both legacy Bolig comparisons are pinned to the frozen main');
