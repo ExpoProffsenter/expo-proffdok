@@ -1,0 +1,19 @@
+.bolig-direct-confirmation-panel {
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  gap:14px;
+  min-width:0;
+  max-width:100%;
+  padding:18px;
+  margin:16px 0;
+  border:1px solid #b9d2d7;
+  border-radius:12px;
+  background:#f4fafb;
+  box-sizing:border-box;
+}
+.bolig-direct-confirmation-panel :is(h3,p) {margin:0;overflow-wrap:anywhere;}
+.bolig-direct-confirmation-panel :is(form,label) {display:grid;grid-template-columns:minmax(0,1fr);gap:10px;min-width:0;}
+.bolig-direct-confirmation-panel :is(button,input,details) {max-width:100%;min-width:0;box-sizing:border-box;}
+.bolig-direct-confirmation-panel button {justify-self:start;white-space:normal;overflow-wrap:normal;}
+.bolig-direct-confirmation-panel input {width:100%;font-size:16px;min-height:44px;}
+.bolig-direct-confirmation-panel .bolig-choice-goods {min-width:0;}
