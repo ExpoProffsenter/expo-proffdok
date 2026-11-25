@@ -10,6 +10,7 @@
 // er fortsatt prinsippet; 39B.2C skiller bare ut store_text-avsnitt før core-validering.
 
 export * from "./salesOfferLogicCore.js";
+import { arrangeFreeText } from "./offerFreeText.js";
 
 import {
   hasPendingOfferDraftRecovery,
@@ -190,12 +191,12 @@ export function recalculateAdministrationLines(lines = []) {
   });
 
   let ordinaryIndex = 0;
-  return rawLines.map((line) => {
+  return arrangeFreeText(rawLines.map((line) => {
     if (isStoreSectionLine(line)) return normalizeStoreSectionLine(line);
     const normalized = recalculatedOrdinary[ordinaryIndex];
     ordinaryIndex += 1;
     return normalized || line;
-  });
+  }));
 }
 
 function normalizeOptionsWithQuantity(options = []) {

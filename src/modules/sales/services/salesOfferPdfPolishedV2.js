@@ -157,18 +157,8 @@ export async function createPublishedOfferPdfPolishedV2({ selectedRequest }) {
     y+=19;
   };
 
-  const storeSectionRow=(line)=>{
-    const title=getStoreSectionTitle(line);
-    const body=clean(line.storeTextBody||"");
-    const titleRows=pdf.splitTextToSize(title,W-18).slice(0,2);
-    const bodyRows=body?pdf.splitTextToSize(body,W-18).slice(0,2):[];
-    const h=Math.max(13,7+titleRows.length*4.2+bodyRows.length*3.6);
-    ensure(h+2);
-    pdf.setFillColor(...C.soft); pdf.setDrawColor(...C.line); pdf.roundedRect(P.l+2,y,W-2,h,2,2,"FD");
-    pdf.setFillColor(...C.teal); pdf.rect(P.l+2,y,2,h,"F");
-    let ty=y+6.5; font(10,"bold",C.ink); titleRows.forEach((row)=>{pdf.text(row,P.l+9,ty);ty+=4.2;});
-    if(bodyRows.length){font(7.6,"normal",C.muted);bodyRows.forEach((row)=>{pdf.text(row,P.l+9,ty);ty+=3.6;});}
-    y+=h+2;
+  const storeSectionRow = (line) => {
+    textCard(line.storeTextTitle || "Tilleggsinformasjon", line.storeTextBody || line.description || "");
   };
 
   const lineRow=(line,gi,li)=>{

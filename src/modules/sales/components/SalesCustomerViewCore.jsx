@@ -1,3 +1,5 @@
+import { isStoreSectionLine } from "../utils/salesOfferQuantityPresentation.js";
+import "./customerTextBlocks.css";
 import SalesCustomerOptionQuantity from "./SalesCustomerOptionQuantity.jsx";
 import SalesOfferGroup from "./SalesOfferGroup.jsx";
 import { offerVatPresentation } from "../utils/salesOfferVatPresentation.js";
@@ -461,6 +463,10 @@ export default function SalesCustomerView({
                         {group.lines.length ? (
                           <div className="sales-customer-lines">
                             {group.lines.map((line, lineIndex) => {
+                              if (isStoreSectionLine(line)) return <article key={line.id} className="sales-customer-free-text" aria-label="Tilbudstekst">
+                                {line.storeTextTitle && <h4>{line.storeTextTitle}</h4>}
+                                <p style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>{line.storeTextBody || (!line.storeTextTitle ? line.description : "")}</p>
+                              </article>;
                               const replacingOption = groupSelectedOptions.find(
                                 (option) =>
                                   isAlternativeOption(option) &&
@@ -477,7 +483,7 @@ export default function SalesCustomerView({
                                   }`}
                                 >
                                   <div className="sales-customer-line-number">
-                                    {groupNumber}.{lineIndex + 1}
+                                    {groupNumber}.{group.lines.slice(0, lineIndex + 1).filter(item => !isStoreSectionLine(item)).length}
                                   </div>
 
                                   <div className="sales-customer-line-body">

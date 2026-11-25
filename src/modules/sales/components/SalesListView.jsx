@@ -65,6 +65,7 @@ function formatShortDate(value) {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
+    timeZone: "Europe/Oslo",
   });
 }
 
@@ -736,6 +737,8 @@ export default function SalesListView({
 
               {filteredRequests.map((request) => {
                 const offerFollowUp = getOfferFollowUpInfo(request);
+                const offerDate = formatShortDate(request.offerPublishedAt || request.sentOfferAt);
+                const createdDate = formatShortDate(request.__createdAt || request.created);
                 const archived = isArchivedRequest(request);
                 const archiveBusy = archiveBusyId === request.id;
                 const opening = openBusyId === request.id;
@@ -785,6 +788,11 @@ export default function SalesListView({
                         </div>
                         <p className="sales-request-customer">
                           {[request.customer, request.address, request.id].filter(Boolean).join(" · ")}
+                        </p>
+
+                        <p className="sales-request-customer" style={{ marginTop: 5 }}>
+                          {offerDate ? `Tilbudsdato: ${offerDate}` : request.status === "Forespørsel" || request.status === "Befaring" ? "Tilbud ikke opprettet" : "Tilbudsdato: Ikke publisert"}
+                          {!offerDate && createdDate ? ` · Opprettet ${createdDate}` : ""}
                         </p>
 
                         {offerFollowUp ? (
