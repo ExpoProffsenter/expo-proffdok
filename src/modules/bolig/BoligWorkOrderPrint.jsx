@@ -15,16 +15,16 @@ function PrintImage({value,name,report}){
 }
 export default function WorkOrderPrint({context,root,unit}){
  const [open,setOpen]=useState(false),[data,setData]=useState(null),[error,setError]=useState(''),[busy,setBusy]=useState(false),[images,setImages]=useState({}),[allowMissing,setAllowMissing]=useState(false);
- const scope=`${context.user_id}/${context.company_id}/${root.id}/${unit.id}`,scopeRef=useRef(scope),epoch=useRef(0);scopeRef.current=scope;
+ const scope=`${context.user_id}/${context.company_id}/${root.id}/${unit.id}`,scopeRef=useRef(scope),epoch=useRef(0),loadedScope=useRef('');scopeRef.current=scope;
  useEffect(()=>{++epoch.current;setOpen(false);setData(null);setError('');return()=>{++epoch.current;};},[scope,context.enabled,context.role]);
  const load=async()=>{const n=++epoch.current;setOpen(true);setBusy(true);setData(null);setError('');setImages({});setAllowMissing(false);
- try{const next=await workOrderRpc(context,root.id,unit.id);if(n===epoch.current&&scopeRef.current===scope)setData(next);}catch(e){if(n===epoch.current)setError(e.message);}finally{if(n===epoch.current)setBusy(false);}};
+ try{const next=await workOrderRpc(context,root.id,unit.id);if(n===epoch.current&&scopeRef.current===scope){loadedScope.current=scope;setData(next);}}catch(e){if(n===epoch.current)setError(e.message);}finally{if(n===epoch.current)setBusy(false);}};
  const close=()=>{++epoch.current;setOpen(false);setData(null);setBusy(false);};
  const report=(key,status)=>setImages(old=>old[key]===status?old:{...old,[key]:status});
  const expected=data?.goods.filter(g=>g.image_url)||[],waiting=expected.some(g=>!images[g.key]||images[g.key]==='loading'),failed=expected.filter(g=>images[g.key]==='failed').length;
  const print=async()=>{const n=epoch.current;setBusy(true);setError('');try{const fresh=await workOrderRpc(context,root.id,unit.id);if(n!==epoch.current||scopeRef.current!==scope)return;if(fresh.basis!==data.basis)throw Error('Bestillingen er endret. Hent utskriften på nytt før du skriver ut.');window.print();}catch(e){if(n===epoch.current){if(e.code==='42501')setData(null);setError(e.message);}}finally{if(n===epoch.current)setBusy(false);}};
  if(context.role!=='manager'||!context.enabled)return null;
- return <><button type="button" onClick={load}>Skriv ut bestilling med bilder</button>{open&&<Dialog title="Bestilling til håndverker" busy={busy} onClose={close} className="bolig-work-order-print">
+ return <><button type="button" onClick={load}>Skriv ut bestilling med bilder</button>{open&&(!data||loadedScope.current===scope)&&<Dialog title="Bestilling til håndverker" busy={busy} onClose={close} className="bolig-work-order-print">
  <div className="bolig-work-print-controls"><p>Grunnpakke og valgte tilvalg fra beboerens lagrede grunnlag. Ingen priser. Velg skriver eller «Lagre som PDF» i utskriftsvinduet.</p>
  {busy&&<p role="status">Henter og kontrollerer bestillingen …</p>}{error&&<p role="alert">{error}</p>}
  {data&&<>{waiting&&<p role="status">Klargjør varebilder …</p>}{failed>0&&<label><input type="checkbox" checked={allowMissing} onChange={e=>setAllowMissing(e.target.checked)}/>{failed} bilde(r) kunne ikke hentes. Jeg vil skrive ut med tydelig markering av manglende bilder.</label>}
