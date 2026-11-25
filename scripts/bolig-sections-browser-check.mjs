@@ -17,7 +17,11 @@ import React from '${cwd}/node_modules/react/index.js';import {createRoot} from 
 const company='40000000-0000-4000-8000-000000000001',rid='40000000-0000-4000-8000-000000000002';
 const ctx={user_id:'qa',company_id:company,role:'manager',enabled:true};const root={id:rid,archived:false};
 window.__calls=[];window.__uploads=[];window.__fail=false;window.__hold=false;const files={};
-let state={context:ctx,root_id:rid,revision:1,packages:[],options:[],selection:null,history:[]};
+let state={context:ctx,root_id:rid,revision:1,packages:[],options:[],selection:null,history:[],distribution:{},distribution_units:[
+ {id:'a1',number:'24',block_id:'a',block_name:'Bygg A',group_id:'g1',group_name:'Stamme 1'},
+ {id:'a2',number:'25',block_id:'a',block_name:'Bygg A',group_id:'g2',group_name:'Stamme 2'},
+ {id:'b1',number:'26',block_id:'b',block_name:'Bygg B',group_id:'g2',group_name:'Stamme 2'}
+]};
 window.__client={supabaseUrl:'https://qa.supabase.co',storage:{from:bucket=>({
 upload:async(path,blob,opts)=>{window.__uploads.push({bucket,path,type:blob.type,size:blob.size,opts});if(window.__hold)await new Promise(r=>window.__release=r);if(window.__fail)return {error:{message:'denied'}};files[path]=URL.createObjectURL(blob);return {data:{path}};},
 getPublicUrl:path=>({data:{publicUrl:'https://qa.supabase.co/storage/v1/object/public/'+bucket+'/'+path}}),
@@ -192,6 +196,19 @@ try {
       fullPage: true,
     });
   }
+  const audience = () => page.getByRole("region", { name: "Gjelder for" });
+  await audience().getByLabel("Bygg eller blokk").selectOption("a");
+  await btn("Velg alle viste boliger").click();
+  eq(await audience().getByRole("status").textContent(), "2 av 3 boliger valgt");
+  await audience().getByLabel("Bolig 25", { exact: false }).uncheck();
+  await audience().getByLabel("Bygg eller blokk").selectOption("");
+  await audience().getByLabel("Stamme", { exact: true }).selectOption("g2");
+  await btn("Velg alle viste boliger").click();
+  await audience().getByLabel("Bolig 25", { exact: false }).uncheck();
+  await audience().getByText("Se alle valgte boliger").click();
+  eq(await audience().getByRole("listitem").allTextContents(), [
+    "Bygg A · Bolig 24 · Stamme 1", "Bygg B · Bolig 26 · Stamme 2",
+  ], "The entire audience is visible despite the current filter");
   await btn("Lagre grunnpakke").click();
   await form.waitFor({ state: "detached" });
   let saved = await page.evaluate(
@@ -244,7 +261,7 @@ try {
     .fill("2300,50");
   eq(
     await form
-      .getByRole("checkbox")
+      .getByRole("checkbox", { name: "Trekk fra grunnsummen for standardvaren" })
       .evaluate((e) => e.getBoundingClientRect().width <= 24),
     true,
     "Checkbox stays compact with global app CSS",
@@ -262,6 +279,12 @@ try {
       .inputValue(),
     "2300,50",
   );
+  await audience().getByLabel("Stamme", { exact: true }).selectOption("g2");
+  await btn("Velg alle viste boliger").click();
+  await audience().getByLabel("Bolig 26", { exact: false }).uncheck();
+  await page.keyboard.press("Escape");
+  await btn("Ny tilvalgspakke").click();
+  eq(await audience().getByRole("status").textContent(), "1 av 3 boliger valgt", "Closing preserves the selected units in the draft");
   await btn("Lagre tilvalgspakke").click();
   await form.waitFor({ state: "detached" });
   saved = await page.evaluate(
@@ -293,6 +316,10 @@ try {
     "STAG",
   );
   await page.keyboard.press("Escape");
+  eq(await page.evaluate(() => window.__calls.find((call) => call.args?.p_action === "package").args.p_payload.unit_ids),
+    ["a1", "b1"], "Package save sends the complete audience");
+  eq(await page.evaluate(() => window.__calls.find((call) => call.args?.p_action === "option").args.p_payload.unit_ids),
+    ["a2"], "Option save sends the remaining individual unit");
   eq(errors, [], "No runtime errors");
   console.log(
     "PASS package sections Chromium: " +
