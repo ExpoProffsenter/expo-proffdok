@@ -352,6 +352,7 @@ jobs:
     - uses: ./.github/actions/core-safety-setup
       with:
         browser: 'true'
+        pdf: 'true'
     - name: Verify shared Boligprosjekter structure and access boundaries (browser)
       run: |-
         # PR 311 combines two independently reviewed layers. Keep the Bolig
