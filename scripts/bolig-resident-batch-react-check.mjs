@@ -13,7 +13,7 @@ w.eval((Array.isArray(built)?built[0]:built).output.find(x=>x.type==='chunk').co
 const act=w.__act,button=text=>[...w.document.querySelectorAll('button')].find(b=>b.textContent.trim()===text),click=async text=>{assert(button(text),text);await act(()=>button(text).click());};
 const props={context,record:{root,units:[{choice_deadline:null}]}},checks=[];const check=(v,message)=>{assert(v,message);checks.push(message);};
 try{
- await act(()=>w.__render(props));await click('Beboerlenker og frister samlet');await click('Velg alle viste boliger');
+ await act(()=>w.__render(props));await click('Beboerlenker og frister samlet');await click('Velg alle bygg');
  const confirm=()=>[...w.document.querySelectorAll('input[type=checkbox]')].at(-1);
  await act(()=>confirm().click());check(confirm().checked,'explicit confirmation');
  await act(()=>w.dispatchEvent(new w.Event('focus')));check(confirm().checked,'same-snapshot refresh preserves confirmation and selection');
@@ -31,7 +31,7 @@ try{
  const mode=w.document.querySelector('select');
  await act(()=>{mode.value='time';mode.dispatchEvent(new w.Event('change',{bubbles:true}));});
  check(w.document.querySelector('input[type=time]').value==='12:00','project clock uses server noon default');
- check(!button('Velg alle viste boliger'),'clock change cannot be mistaken for filtered unit action');
+ check(!button('Velg alle viste boliger')&&!button('Velg alle bygg'),'clock change cannot be mistaken for a unit selection action');
  await act(()=>confirm().click());
  check(!button('Bekreft klokkeslett for hele prosjektet').disabled,'project clock saves without selecting any unit');
  await click('Bekreft klokkeslett for hele prosjektet');
@@ -41,8 +41,13 @@ try{
  await act(()=>w.dispatchEvent(new w.Event('focus')));
  check(!confirm().checked,'concurrent project clock change resets confirmation');
  // Large projects keep date entry before the independently scrollable unit list.
- data.units=Array.from({length:126},(_,i)=>({...data.units[0],id:'large-'+i,number:String(i+1),deadline:'2027-04-02',basis:'large-'+i}));
- await act(()=>w.dispatchEvent(new w.Event('focus')));await click('Sett bestillingsfrist');await click('Velg alle viste boliger');
+ data.units=Array.from({length:126},(_,i)=>({...data.units[0],id:'large-'+i,number:String(i+1),block_id:i%2===0?'a':'b',block_name:i%2===0?'Blokk A':'Blokk B',deadline:'2027-04-02',basis:'large-'+i}));
+ await act(()=>w.dispatchEvent(new w.Event('focus')));await click('Sett bestillingsfrist');
+ const blockFilter=w.document.querySelectorAll('select')[1];
+ const filterBy=async value=>act(()=>{blockFilter.value=value;blockFilter.dispatchEvent(new w.Event('change',{bubbles:true}));});
+ await filterBy('a');await click('Velg alle bygg');
+ check(w.document.body.textContent.includes('126 av 126 boliger valgt · 63 vises'),'project-wide selection includes homes outside the active building filter');
+ await filterBy('');
  const dateInput=w.document.querySelector('input[placeholder="dd.mm.åååå"]'),unitList=w.document.querySelector('.bolig-batch-unit-list');
  check(Boolean(dateInput.compareDocumentPosition(unitList)&w.Node.DOCUMENT_POSITION_FOLLOWING),'date input precedes the 126-unit list');
  check(unitList.textContent.includes('02.04.2027')&&!unitList.textContent.includes('2027-04-02'),'unit deadlines use Norwegian day.month.year');
