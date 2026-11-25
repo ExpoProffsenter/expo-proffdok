@@ -12,6 +12,7 @@ import CatalogForm from "./BoligDraftForm.jsx";
 import BoligEditorDialog from "./BoligEditorDialog.jsx";
 import BoligOrderDraft from "./BoligOrderDraft.jsx";
 import ProductCard from "./BoligProductCard.jsx";
+import BoligPackageAudience from "./BoligPackageAudience.jsx";
 import BoligPackageContentEditor from "./BoligPackageContentEditor.jsx";
 import BoligPackageContents, {
   OptionContents,
@@ -36,9 +37,11 @@ function PackageEditor({
   busy,
   save,
   onCancel,
+  audience,
 }) {
   const initial = {
     id: entry?.id || "",
+    unit_ids: audience?.selected || [],
     name: entry?.name || "",
     sections: entry?.sections || [],
     lines: entry?.lines.map((l) => ({
@@ -63,6 +66,7 @@ function PackageEditor({
           {
             id: v.id,
             name: v.name,
+            ...(audience ? { unit_ids: raw.unit_ids ?? audience.selected } : {}),
             sections: v.sections,
             lines: preparePackageLines(v, toCents),
           },
@@ -93,6 +97,13 @@ function PackageEditor({
               context={context}
               rootId={rootId}
             />
+            {audience && (
+              <BoligPackageAudience
+                units={audience.units}
+                value={raw.unit_ids ?? audience.selected}
+                onChange={(ids) => c("unit_ids", ids)}
+              />
+            )}
             <button type="button" onClick={onCancel}>
               Lukk pakkeredigering
             </button>
@@ -111,9 +122,11 @@ function OptionEditor({
   busy,
   save,
   onCancel,
+  audience,
 }) {
   const initial = {
     id: entry?.id || "",
+    unit_ids: audience?.selected || [],
     name: entry?.name || "",
     sections: entry?.sections || [],
     lines: entry ? optionLines(entry) : [newPackageLine()],
@@ -143,6 +156,7 @@ function OptionEditor({
           {
             id: v.id,
             name: v.name,
+            ...(audience ? { unit_ids: raw.unit_ids ?? audience.selected } : {}),
             sections: v.sections,
             lines: goods,
             sku: goods.length === 1 ? first.sku : "",
@@ -244,6 +258,13 @@ function OptionEditor({
               Ved alternativ erstattes hele standardvarelinjen. Eventuelt
               fratrekk vises når pakken velges på boligen.
             </p>
+            {audience && (
+              <BoligPackageAudience
+                units={audience.units}
+                value={raw.unit_ids ?? audience.selected}
+                onChange={(ids) => c("unit_ids", ids)}
+              />
+            )}
             <button type="button" onClick={onCancel}>
               Lukk tilvalgspakkeredigering
             </button>
@@ -518,6 +539,9 @@ export default function BoligCatalog({
     editPointer && (!editPointer.id || editingEntry)
       ? { kind: editPointer.kind, entry: editingEntry }
       : null;
+  const audience = Array.isArray(valid?.distribution_units)
+    ? { units: valid.distribution_units, selected: valid.distribution?.[editingEntry?.id] || [] }
+    : null;
   const canWrite =
     !!valid &&
     context.enabled &&
@@ -681,6 +705,9 @@ export default function BoligCatalog({
                       {entry.name}
                       {entry.archived ? " · skjult" : ""}
                     </h4>
+                    {valid.distribution && (
+                      <p>Gjelder for {valid.distribution[entry.id]?.length || 0} boliger</p>
+                    )}
                     {tab === "packages" ? (
                       <details className="bolig-package-card-content">
                         <summary>
@@ -793,6 +820,7 @@ export default function BoligCatalog({
                   rootId={root.id}
                   revision={valid.revision}
                   entry={editing.entry}
+                  audience={audience}
                   busy={busy || loading}
                   save={save}
                   onCancel={() => setEditing(null)}
@@ -804,6 +832,7 @@ export default function BoligCatalog({
                   rootId={root.id}
                   revision={valid.revision}
                   entry={editing.entry}
+                  audience={audience}
                   packages={valid.packages}
                   busy={busy || loading}
                   save={save}

@@ -87,7 +87,11 @@ function BatchDialog({context,root,onClose,onChanged}){
  {projectClock&&<><label>Felles klokkeslett (norsk tid)<input lang="nb-NO" type="time" value={clock} onChange={e=>change({deadline_time:e.target.value})}/></label><p>Gjelder alle {units.length} boliger, uansett bygg, filter eller utvalg. Datoene beholdes. Nå: {data.deadline_time||'slutten av dagen'} → {clock}. En tidligere tid kan stenge valg som er åpne nå.</p></>}
  {!projectClock&&<><div className="bolig-preparation-filters"><label>Bygg eller blokk<select value={block} onChange={e=>{setBlock(e.target.value);setConfirmed(false);}}><option value="">Alle bygg</option>{unique('block_id','block_name').map(([id,name])=><option key={id} value={id}>{name}</option>)}</select></label>
  <label>Stammegruppe<select value={group} onChange={e=>{setGroup(e.target.value);setConfirmed(false);}}><option value="">Alle stammer</option>{unique('group_id','group_name').map(([id,name])=><option key={id} value={id}>{name}</option>)}</select></label></div>
- <button type="button" onClick={()=>change({selected:[...new Set([...draft.selected,...shown.map(u=>u.id)])]})}>Velg alle viste boliger</button> <button type="button" onClick={()=>change({selected:[]})}>Tøm utvalget</button>
+ <div className="bolig-batch-actions">
+  <button type="button" className="bolig-batch-select-all" disabled={!units.length || selected.length === units.length} onClick={()=>change({selected:units.map(u=>u.id)})}>Velg alle bygg</button>
+  {(block||group)&&<button type="button" disabled={!shown.length} onClick={()=>change({selected:[...new Set([...draft.selected,...shown.map(u=>u.id)])]})}>Velg alle viste boliger</button>}
+  <button type="button" disabled={!selected.length} onClick={()=>change({selected:[]})}>Tøm utvalget</button>
+ </div>
  <p className="bolig-batch-selection-count" role="status">{selected.length} av {units.length} boliger valgt · {shown.length} vises</p><div className="bolig-batch-unit-list" role="group" aria-label="Velg boliger">{shown.map(u=><label key={u.id}><input type="checkbox" checked={draft.selected.includes(u.id)} onChange={e=>change({selected:e.target.checked?[...draft.selected,u.id]:draft.selected.filter(id=>id!==u.id)})}/>{u.block_name} · Bolig {u.number} · {u.group_name||'Uten stamme'} · Frist: {displayDate(u.deadline)}{u.portal_active?' · Har aktiv lenke':''}</label>)}</div></>}
 
  </fieldset>}
@@ -98,7 +102,7 @@ function BatchDialog({context,root,onClose,onChanged}){
  <ul>{audience.recipients.map(r=><li key={`${r.unit_id}/${r.email}`}>Bolig {r.number}: {r.name} · {r.email}</li>)}{audience.missing.map((r,i)=><li key={`missing-${i}`}>Bolig {r.number}: {r.name||'Mangler navn'} – mangler gyldig e-post</li>)}</ul>
  {!canPublish&&<p role="alert">Alle valgte boliger må ha navn og gyldig e-post på hovedkontakten før lenker kan klargjøres.</p>}
  {selected.some(u=>u.portal_active)&&<label><input disabled={locked} type="checkbox" checked={replace} onChange={e=>{setReplace(e.target.checked);setConfirmed(false);}}/>Erstatt eksisterende lenker for disse boligene. Gamle lenker slutter å virke.</label>}
- <p>Klargjøring deler boligens klargjorte valgmuligheter. Ingen avtaler aksepteres og ingen bestillinger opprettes.</p></>:<p>Etter fristen stoppes nye tilvalg. Meldinger og eksisterende avtaler beholdes. Gi en ny frist til utvalgte boliger for å åpne igjen.</p>}
+ <p>Klargjøring deler pakkene som gjelder for hver bolig, eller boligens manuelt klargjorte valgmuligheter. Ingen avtaler aksepteres og ingen bestillinger opprettes.</p></>:<p>Etter fristen stoppes nye tilvalg. Meldinger og eksisterende avtaler beholdes. Gi en ny frist til utvalgte boliger for å åpne igjen.</p>}
  </section>}
  {draft.prepared&&<section><h3>Mottakere og sendestatus</h3><p>Samme lenke deles bare med registrerte eiere på den aktuelle boligen.</p>
  <ul>{draft.attempts.map(a=><li key={a.id}>Bolig {a.number}: {a.name} · {a.email} — {a.status==='sent'?'Sending bekreftet':a.status==='pending'?'Uavklart – fortsett samme sending':'Klar'} <a href={portalUrl(a.token)} target="_blank" rel="noreferrer">Åpne boligportal</a></li>)}</ul>

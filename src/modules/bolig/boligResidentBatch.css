@@ -32,3 +32,15 @@
 .bolig-dialog.bolig-resident-batch .bolig-batch-deadline-fields label{display:block}
 .bolig-resident-batch .bolig-batch-deadline-fields input{display:block;width:100%;min-height:44px;font-size:16px;margin-top:6px}
 .bolig-resident-batch .bolig-batch-deadline-fields small{display:block;margin-top:6px;font-weight:400}
+
+.bolig-dialog.bolig-resident-batch .bolig-batch-actions .bolig-batch-select-all {
+  min-height: 44px;
+  background: #006f7d;
+  color: #fff;
+}
+
+.bolig-resident-batch .bolig-batch-actions .bolig-batch-select-all:disabled {
+  background: #e2eff1;
+  color: #284852;
+  border-color: #b8d3d9;
+}
