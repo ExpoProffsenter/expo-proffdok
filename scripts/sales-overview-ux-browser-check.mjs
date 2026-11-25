@@ -7,6 +7,7 @@ import {execFileSync} from 'node:child_process';
 import {build} from 'vite';
 import react from '@vitejs/plugin-react';
 await import('./sales-list-hydration-react-check.mjs');
+await import('./offer-free-text-react-check.mjs');
 const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
 const root=process.cwd(), temp=fs.mkdtempSync(path.join(os.tmpdir(),'sales-overview-ux-'));
 let n=0;const eq=(a,b,label)=>{assert.deepEqual(a,b,label);n++;};

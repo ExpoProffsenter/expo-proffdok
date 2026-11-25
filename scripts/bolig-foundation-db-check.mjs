@@ -1308,3 +1308,5 @@ try {
 } finally {
   await db.close();
 }
+
+await import("./offer-summary-date-db-check.mjs");

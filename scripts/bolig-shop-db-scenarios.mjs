@@ -3,6 +3,7 @@ export default async function({db,call,actor,eq,rejects,id,firm,other,manager,ou
  await db.exec('reset role');await db.exec(await fs.readFile('supabase/migrations/20261113235139_bolig_shop_proposals.sql','utf8'));
  await db.exec(await fs.readFile('supabase/migrations/20261114001335_bolig_shop_order_identity.sql','utf8'));
  await db.exec(await fs.readFile('supabase/migrations/20261114001703_bolig_shop_project_deadline.sql','utf8'));
+ await db.exec(await fs.readFile('supabase/migrations/20261125124713_bolig_offer_free_text.sql','utf8'));
  await actor(manager);const state=await call('create_plan',null,null,{request_id:id(99000),title:'QA butikktillegg',reference:'QA',buildings:[{name:'A',building_type:'multi',address:'QA',house_floors:1,entrances:[{address:'QA',counts:[2]}]}]});
  const root=state.root.id,unit=state.units[0].id,access=id(99001),token='99009'.padEnd(64,'a');
  const rpc=async(name,args)=>(await db.query(`select public.${name}(${args.map((_,i)=>'$'+(i+1)).join(',')}) v`,args)).rows[0].v;
@@ -13,6 +14,12 @@ export default async function({db,call,actor,eq,rejects,id,firm,other,manager,ou
  let cat=await rpc('bolig_catalog',[firm,root,'package',0,{name:'QA Base',lines:[{key:'base',name:'Grunnvare',sku:'QA',quantity:1,unit:'stk',credit_cents:0,image_url:'',product_url:''}]}]);
  let choices=await rpc('bolig_package_choices',[firm,root,unit,'get',null,{}]);choices=await rpc('bolig_package_choices',[firm,root,unit,'save',0,{scope_id:'common',package_id:cat.packages[0].id,option_ids:[],catalog_revision:choices.revision,rooms_revision:choices.rooms_revision}]);
  await db.exec('reset role');await db.query("update bolig_private.units set contact_name='QA Beboer',contact_email='resident@example.invalid' where id=$1",[unit]);await actor(manager);
+ const cstate=await rpc('bolig_commerce',[firm,root,unit,'get',{}]);
+ const commercialText=[{id:'intro',title:'Leveranse',text:'Før grunnvaren\nBehold linjeskift',after:0},{id:'outro',title:'',text:'Etter grunnvaren',after:1}];
+ const created=await rpc('bolig_commerce',[firm,root,unit,'create',{request_id:id(99101),kind:'choice',choice_revision:cstate.choice_revision,reason:'QA tekst i boligtilbud',text_blocks:commercialText}]);
+ eq(created.documents[0].snapshot.text_blocks,commercialText,'Choice agreement freezes before/after text');
+ eq(created.documents[0].snapshot.total_cents,cstate.selection.total_cents,'Choice text cannot change authoritative price');
+ await rejects(()=>db.query("select bolig_private.offer_text_blocks('[]',0)"),'42501');
  let portal=await rpc('bolig_resident_portal',[firm,root,unit,'publish',{revision:0,request_id:id(99005),reviewed:true,token}]);
  const shop=(action='get',payload={},c=firm,u=unit)=>rpc('bolig_shop_proposal',[c,root,u,action,payload]);
  await actor(outsider,other);let s=await shop();eq(s.context.role,'reader');eq(s.portal_ready,true);
@@ -20,8 +27,10 @@ export default async function({db,call,actor,eq,rejects,id,firm,other,manager,ou
  await actor(manager);permissions=await manage(permissions.revision,{...grant,request_id:id(99006),publish_shop:true});
  await actor(outsider,other);s=await shop();
  const lines=[{name:'Manuell vare uten katalog',sku:'MAN-123',quantity:2,unit:'stk',room_name:'Bad',price_cents:125050,installation_cents:75000,image_url:'data:image/jpeg;base64,/9j/AA=='}];
- const payload={request_id:id(99007),reviewed:true,title:'Ekstra utstyr og montering',basis:s.basis,lines};
- s=await shop('publish',payload);let d=s.documents[0];eq(d.snapshot.delta_cents,325100,'Server computes quantity x goods price plus installation per line');eq(d.snapshot.shop_lines[0].sku,'MAN-123');eq(d.snapshot.shop_lines[0].image_url,lines[0].image_url,'Resident photo retained without catalog access');
+ const text_blocks=[{id:'before',title:'Informasjon',text:'Før varen\nNy linje',after:0},{id:'after',title:'',text:'Etter varen',after:1}];
+ const payload={text_blocks,request_id:id(99007),reviewed:true,title:'Ekstra utstyr og montering',basis:s.basis,lines};
+ for(const bad of [null,{},[{...text_blocks[0],after:2}],[{...text_blocks[0],text:5}],[text_blocks[0],text_blocks[0]],[{...text_blocks[0],text:'x'.repeat(20001)}]])await rejects(()=>shop('publish',{...payload,text_blocks:bad}),'22023');
+ s=await shop('publish',payload);let d=s.documents[0];eq(d.snapshot.text_blocks,text_blocks,'Immutable shop snapshot keeps text order and paragraphs');eq(d.snapshot.delta_cents,325100,'Server computes quantity x goods price plus installation per line');eq(d.snapshot.shop_lines[0].sku,'MAN-123');eq(d.snapshot.shop_lines[0].image_url,lines[0].image_url,'Resident photo retained without catalog access');
  eq((await shop('publish',payload)).replayed,true,'Lost response retry is idempotent');
  await rejects(()=>shop('publish',{...payload,request_id:id(99008)}),'PT409');
  await rejects(()=>shop('publish',{...payload,request_id:id(99010),basis:s.basis,lines:[{...lines[0],price_cents:-1}]}),'22023');

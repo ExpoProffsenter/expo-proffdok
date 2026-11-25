@@ -14,6 +14,8 @@ function List({ items = [] }) {
 export function createHelp45BSection({ Section }) {
   return function Help45BSection({ isSystemAdmin = false, isCompanyAdmin = false }) {
     const workflow = [
+      "Tilbudsdato i oversikten er datoen for den publiserte tilbudsversjonen. Kladd uten publisert tilbud viser dette og sakens opprettelsesdato. Påminnelser endrer ikke tilbudsdatoen.",
+      "I våtromstilbud og generelle tilbud velger du Ny fri tekst. Skriv valgfri overskrift og tekst, og velg Plassering før første eller etter en bestemt post. Teksten vises uten pris hos kunden og i PDF. Lagre og kontroller Kundevisning før du publiserer. Teksten i et tidligere publisert eller akseptert tilbud beholdes.",
       "Startsiden samler Forespørsel og befaring, Tilbud, Varesøk og bestilling, Prosjekter, HR og HMS/KS og Sjekklister. Du ser bare snarveier til funksjoner du har tilgang til. Min side viser din egen arbeidsdag. Varsler og prosjektoppfølging beholdes under snarveiene.",
       "Verktøy og maler åpner et panel fra høyre med handlinger for arbeidsflaten. Lukk med krysset, Escape eller Tilbake til arbeidet. Utvid arbeidsflaten gir et bredere panel. Å åpne og lukke panelet lagrer eller endrer ikke arbeidet.",
       "I en salgssak ligger arbeidet til venstre og Kundens tilbud til høyre på PC. På mindre skjermer trykker du Kundevisning for å åpne lesefeltet. På PC kan du velge Utvid kundevisning. Tilbake til arbeidet eller Escape lukker det store panelet. Det du arbeider med blir stående.",
