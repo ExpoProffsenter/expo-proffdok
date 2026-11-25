@@ -1,3 +1,4 @@
+import WorkOrderPrint from "./BoligWorkOrderPrint.jsx";
 import React, { useEffect, useRef, useState } from "react";
 import { boligOrderRpc } from "./boligCatalogClient.js";
 import { rebaseOrderPositions } from "./boligPackageChoicesClient.js";
@@ -119,6 +120,7 @@ export default function BoligOrderDraft({
   return (
     <section className="bolig-order-draft" aria-label="Bestillingsutkast">
       <h4>Klargjør varebestilling</h4>
+      <WorkOrderPrint context={context} root={root} unit={unit}/>
       <p>
         Alle linjer er valgt første gang. Fjern varer som skal kjøpes et annet
         sted. Utvalget endrer bare dette bestillingsutkastet; boligvalget

@@ -324,3 +324,5 @@ try {
   console.log(`PASS Bolig commerce browser: ${checks} assertions; real handlers/adapters, preserved drafts, firm/role denials, one-action creation/publication, exact recovery of all three server steps, before/after, followup, mobile and lost-response acceptance. Visuals: ${tmp}`);
 } catch(e) { console.error('Browser QA state:',await debugPage?.locator('body').innerText());throw e;
 } finally { await browser?.close();if(server)await new Promise(r=>server.close(r));fs.rmSync(entry,{force:true});fs.rmSync(publicEntry,{force:true}); }
+
+await import("./bolig-work-order-print-browser-check.mjs");

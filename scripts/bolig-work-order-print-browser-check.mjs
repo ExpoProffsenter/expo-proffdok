@@ -1,0 +1,33 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';import os from 'node:os';import path from 'node:path';import http from 'node:http';import {execFileSync} from 'node:child_process';import {build} from 'vite';import react from '@vitejs/plugin-react';
+const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
+const root=process.cwd(),tmp=fs.mkdtempSync(path.join(os.tmpdir(),'bolig-print-qa-'));let browser,server;let checks=0;const eq=(a,b,m)=>{assert.deepEqual(a,b,m);checks++;};
+fs.writeFileSync(path.join(tmp,'entry.jsx'),`
+import React from '${root}/node_modules/react/index.js';import {createRoot} from '${root}/node_modules/react-dom/client.js';import Print from '${root}/src/modules/bolig/BoligWorkOrderPrint.jsx';import '${root}/src/modules/bolig/bolig.css';
+const app=createRoot(document.getElementById('app'));window.__calls=0;window.__prints=0;window.print=()=>window.__prints++;window.__denied=false;
+window.__state={context:{user_id:'user',company_id:'firm',role:'manager',enabled:true},root_id:'root',unit_id:'unit',basis:'frozen-one',confirmed:true,identity:{company:'QA firma',project:'QA prosjekt',block:'Bygg A',unit:'H0101',address:'Eksempelveien 10'},sources:[{id:'accepted-v2',title:'Godkjent boligvalg',version:2,at:'2026-11-20T12:00:00Z'}],notes:[{title:'Forbehold',text:'Registrert hos kunden.\\n\\nBehold avsnitt.',blocks:[{id:'t',text:'FROZEN-TEXT'}]}],goods:Array.from({length:24},(_,i)=>({key:String(i),name:i===0?'GRUNNPAKKE SERVANT':i===1?'VALGT TILVALG BATTERI':'Vare '+i+' LangtOrd'.repeat(15),sku:'QA-'+i,quantity:2,unit:'stk',room_name:'Bad',section_name:'Sanitær',image_url:'https://images.example.invalid/product.png'}))};
+window.__client={rpc:async()=>{window.__calls++;if(window.__denied)return {error:{message:'Tilgang tilbakekalt',code:'42501'}};return {data:structuredClone(window.__state)};}};
+window.__show=(company='firm')=>app.render(<><p>INTERNAL-PRIVATE-SHELL</p><Print context={{user_id:'user',company_id:company,role:'manager',enabled:true}} root={{id:'root'}} unit={{id:'unit'}}/></>);window.__show();
+`);
+try{
+ const result=await build({configFile:false,root,logLevel:'silent',plugins:[react(),{name:'print-client',enforce:'pre',resolveId(id){if(id.endsWith('appSupabaseClientRegistry.js'))return '\0print-client';},load(id){if(id==='\0print-client')return 'export const getAppSupabaseClient=()=>window.__client;';}}],build:{write:false,minify:false,lib:{entry:path.join(tmp,'entry.jsx'),formats:['iife'],name:'PrintQA',cssFileName:'print'}}});
+ const output=(Array.isArray(result)?result[0]:result).output,js=output.find(o=>o.type==='chunk').code,css=output.filter(o=>o.type==='asset'&&o.fileName.endsWith('.css')).map(o=>o.source).join('\n');
+ server=http.createServer((req,res)=>{res.setHeader('content-type','text/html;charset=utf-8');res.end('<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><style>'+css+'</style><div id="app"></div><script>'+js+'</script>');});await new Promise(r=>server.listen(0,'127.0.0.1',r));
+ browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_PATH||undefined,args:['--no-sandbox']});const page=await browser.newPage({viewport:{width:1280,height:900}});page.setDefaultTimeout(10000);
+ await page.route('https://images.example.invalid/**',route=>route.fulfill({contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+afoYAAAAASUVORK5CYII=','base64')}));
+ await page.goto('http://127.0.0.1:'+server.address().port);await page.getByRole('button',{name:'Skriv ut bestilling med bilder',exact:true}).click();
+ const dialog=page.getByRole('dialog',{name:'Bestilling til håndverker',exact:true});await dialog.getByRole('button',{name:'Skriv ut / lagre som PDF',exact:true}).waitFor();
+ await page.waitForFunction(()=>[...document.querySelectorAll('.bolig-work-image img')].length===24&&[...document.querySelectorAll('.bolig-work-image img')].every(i=>i.complete&&i.naturalWidth>0));
+ eq(await dialog.getByText('Kundebekreftet bestilling',{exact:true}).count(),1,'accepted source clearly labelled');eq(await dialog.locator('.bolig-work-good').count(),24,'full base and selections included');
+ await page.setViewportSize({width:360,height:800});eq(await dialog.evaluate(el=>el.scrollWidth<=el.clientWidth+1),true,'360px dialog has no horizontal overflow');eq(await dialog.locator('.bolig-work-good').first().evaluate(el=>el.scrollWidth<=el.clientWidth+1),true,'image and text fit mobile');
+ await page.emulateMedia({media:'print'});await page.pdf({path:path.join(tmp,'sheet.pdf'),format:'A4',printBackground:true});
+ const text=execFileSync('pdftotext',[path.join(tmp,'sheet.pdf'),'-'],{encoding:'utf8'});for(const marker of ['H0101','Eksempelveien 10','GRUNNPAKKE SERVANT','VALGT TILVALG BATTERI','FROZEN-TEXT','accepted-v2'])eq(text.includes(marker),true,'actual PDF '+marker);
+ eq(text.includes('INTERNAL-PRIVATE-SHELL'),false,'internal app stays off printed pages');eq(text.split('\f').length>2,true,'real multipage PDF');
+ eq(execFileSync('pdfimages',['-list',path.join(tmp,'sheet.pdf')],{encoding:'utf8'}).split('\n').filter(l=>/\s+image\s+/.test(l)).length>0,true,'actual image objects embedded in PDF');
+ await page.emulateMedia({media:'screen'});await dialog.getByRole('button',{name:'Skriv ut / lagre som PDF',exact:true}).click();eq(await page.evaluate(()=>window.__prints),1,'explicit print revalidates then opens printer');
+ await page.evaluate(()=>window.__state.basis='changed');await dialog.getByRole('button',{name:'Skriv ut / lagre som PDF',exact:true}).click();await dialog.getByRole('alert').waitFor();eq(await page.evaluate(()=>window.__prints),1,'changed confirmed basis blocks stale print');
+ await dialog.getByRole('button',{name:'Hent utskriften på nytt',exact:true}).click();await dialog.getByText('Kundebekreftet bestilling',{exact:true}).waitFor();
+ await page.evaluate(()=>window.__denied=true);await dialog.getByRole('button',{name:'Skriv ut / lagre som PDF',exact:true}).click();await dialog.getByRole('alert').waitFor();eq(await dialog.locator('.bolig-work-sheet').count(),0,'revoked access removes sheet');
+ await page.evaluate(()=>window.__show('other'));await page.getByRole('dialog').waitFor({state:'hidden'});eq(await page.getByRole('dialog').count(),0,'company switch closes private print sheet');
+ console.log('PASS confirmed work order print: '+checks+' actual Chromium/PDF assertions, image objects, frozen base+upgrade, mobile, multipage, stale basis and revoked access');
+}finally{await browser?.close();if(server)await new Promise(r=>server.close(r));fs.rmSync(tmp,{recursive:true,force:true});}
