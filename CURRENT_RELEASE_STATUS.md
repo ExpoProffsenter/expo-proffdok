@@ -1,3 +1,11 @@
+# Pågående – direkte beboerbekreftelse 25.11.2026
+
+Miljømål BEGGE, branch fase45b-resident-direct-confirm-20261125 fra main d57645ca. Beboer bekrefter grunnpakke/tilvalg én gang, med låst avtale, separate kvitteringer, gjenåpning per bolig og skrivebeskyttet kundevisning. Skal omfatte eksisterende Aamodthagen ved release. Sandbox-migrasjon og særskilt kvitteringsworker er installert med alle brytere AV. Preview/QA pågår; Production og demoens arbeidsflyt er ikke endret. Ny TEST OK og full Preview/QA kreves.
+
+Gjeldende test- og utrullingsstatus: [QA](docs/qa/BOLIG_DIRECT_CONFIRMATION_20261125.md).
+
+---
+
 # Gjeldende leveransestatus – 25.11.2026
 
 [PR349](https://github.com/ExpoProffsenter/expo-proffdok/pull/349) gjelder prisfri leveranseoversikt til håndverkeren i boligen, med bilder, bolig/adresse, automatisk én/to kolonner, sidemerking og bevarte merknader. Utskriften ligger i egen del «Til håndverkeren i boligen», utenfor varebestilling. Kundens prisvisning/bestillingsbekreftelse i beboerportalen beholdes. Kenneth har gitt TEST OK25.11.2026. PR349 er fasit for grønn sluttkontroll, publisert Production-SHA, kontrollert main→demo, databaseinstallasjon og tilbakeføring.

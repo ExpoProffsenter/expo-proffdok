@@ -1253,3 +1253,8 @@ Varesøk åpner et varekort med kundens priser før eksplisitt tillegg i bestill
 ### Samlet supportmodus – installasjonsrekkefølge
 
 PR322 + companion PR320 er en separat, ikke produksjonssatt leveranse. Før global Data API-hook registreres må også `20261112230911_app_support_public_request_passthrough.sql` være installert, slik at vanlige offentlige portaler beholder tilgang. Avstem faktiske remote-migrasjonsversjoner og aktiveringsstatus mot [QA-loggen](docs/qa/SUPPORT_APP_UX_20261111.md); ikke kjør gamle installasjoner på nytt. [Arkitektur og tilbakeføring](docs/architecture/APP_SUPPORT_SESSION.md) beskriver grenser og produksjonsrekkefølge.
+
+
+### Bolig – direkte beboerbekreftelse
+
+Oppsett og kontrollert aktivering av direkte pakkevalg, låst bestilling og separate beboer-/prosjektlederkvitteringer er beskrevet i [Bolig direct confirmation](docs/architecture/BOLIG_DIRECT_CONFIRMATION.md). Eksisterende prosjekter og lenker videreføres; migrasjon aktiverer ingen utsending alene.

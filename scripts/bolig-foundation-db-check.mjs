@@ -1022,6 +1022,8 @@ try {
   await staffScenarios({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider,system});
   const {default:combinedChoices}=await import("./bolig-portal-combinations-db-scenarios.mjs");
   await combinedChoices({db,call,actor,eq,rejects,id,firm,manager,outsider});
+  const {default:directConfirmation}=await import("./bolig-direct-confirm-db-scenarios.mjs");
+  await directConfirmation({db,call,actor,eq,rejects,id,firm,other,manager,reader,outsider});
   await db.exec(
     `reset role;update public.profiles set deactivated=true where id=${q(reader)}`,
   );

@@ -22,7 +22,7 @@ const sections = [
   ["messages", "Meldinger"],
 ];
 const sectionIcons = { choices: SlidersHorizontal, agreements: ClipboardCheck, documents: FileText, messages: MessageSquare };
-export default function BoligPortalPage() {
+export default function BoligPortalPage({preview = false, previewData = null}) {
   const token = useRef(window.location.hash.replace(/^#portal=/, "")),
     alive = useRef(false),
     epoch = useRef(0),
@@ -66,17 +66,18 @@ export default function BoligPortalPage() {
       throw Error("Nettleseren kunne ikke sikre kladden. Behold siden åpen.");
     }
   };
-  const update = (fields) => {
-    const next = { ...draft, ...fields };
+  const update = (fields, keepReview = false) => {
+    const next = { ...draft, ...fields, ...(("offer_id" in fields || "offer_ids" in fields || "body" in fields) ? {confirmed:false} : {}) };
     try {
       save(next);
       setDraft(next);
-      setReview(null);
+      if (!keepReview) setReview(null);
     } catch (e) {
       setError(e.message);
     }
   };
   const load = async () => {
+    if (preview) return;
     if (operating.current) return;
     const ticket = ++epoch.current;
     setRefreshing(true);
@@ -110,7 +111,15 @@ export default function BoligPortalPage() {
         setAgreement(null);setReview(null);setDraft(previous=>({...previous,confirmed:false}));
         setNotice('Avtalen er oppdatert. Åpne den nye utgaven og kontroller den før du svarer.');
       }
-      if(current.current && current.current.menu_version !== next.menu_version){setReview(null);setNotice("Valgmulighetene er oppdatert. Kontroller valgene på nytt.");}
+      if(next.direct_confirmation && next.confirmation && !next.choice_locked && !pending) {
+        let saved;try{saved=JSON.parse(sessionStorage.getItem(key.current)||'null');}catch{}
+        if(!saved?.pending && saved?.draft?.edit_revision!==next.changes_revision) {
+          const ids=next.confirmation.snapshot.selected_offer_ids||[];
+          const seeded={...draft,...saved?.draft,offer_ids:ids,offer_id:ids[0]||'',body:next.confirmation.snapshot.reason||'',name:next.confirmation.accepted_name||'',confirmed:false,menu_version:next.menu_version,edit_revision:next.changes_revision};
+          save(seeded,null);setDraft(seeded);
+        }
+      }
+      if(current.current && (current.current.menu_version !== next.menu_version || current.current.changes_revision !== next.changes_revision)){setReview(null);setNotice("Valgmulighetene er oppdatert. Kontroller valgene på nytt.");}
       setData(next);
       setError("");
     } catch (e) {
@@ -131,6 +140,7 @@ export default function BoligPortalPage() {
   };
   useEffect(() => {
     alive.current = true;
+    if (preview) { setData(previewData); setLoading(false); return () => {alive.current = false;}; }
     load();
     const refresh = () => {
       if (document.visibilityState !== "hidden") load();
@@ -148,9 +158,9 @@ export default function BoligPortalPage() {
       document.removeEventListener("visibilitychange", refresh);
       window.removeEventListener("hashchange", change);
     };
-  }, []);
+  }, [preview, previewData]);
   const run = async (action, payload, retry = false) => {
-    if (operating.current || (!retry && pending)) return;
+    if (preview || operating.current || (!retry && pending)) return;
     operating.current = true;
     ++epoch.current;
     setBusy(true);
@@ -185,7 +195,9 @@ export default function BoligPortalPage() {
       setReview(null);
       setAgreement(null);
       setNotice(
-        attempt.action === "request"
+        attempt.action === "confirm"
+          ? "Bestillingen er bekreftet og låst. Kvitteringen finner du under Mine valg og Avtaler."
+          : attempt.action === "request"
           ? "Valget er sendt til prosjektleder for gjennomgang."
           : attempt.action === "message"
             ? "Meldingen er registrert i portalen."
@@ -216,11 +228,14 @@ export default function BoligPortalPage() {
     waiting = data?.events.some(
       (e) => e.kind === "request" && e.status === "pending",
     );
-  const disabled = busy || !!pending;
+  const disabled = busy || !!pending || preview;
+  const direct = data?.direct_confirmation === true;
+  const locked = direct && data?.choice_locked;
+  const confirmedChoice = data?.confirmation;
   const choicesClosed = data?.choices_closed || !!(data?.choice_deadline_at ? Date.now() >= Date.parse(data.choice_deadline_at) : data?.choice_deadline && new Intl.DateTimeFormat("sv-SE", {timeZone:"Europe/Oslo",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date()) > data.choice_deadline);
   const overview = agreementOverview(data?.agreements);
   const unanswered = [overview.choice, ...overview.changes].filter(d => d?.status === "published").length;
-  const nextStep = unanswered ? {
+  const nextStep = direct && locked ? {title:"Bestillingen din er bekreftet",text:"Denne utgaven er lagret og låst. Kontakt prosjektleder hvis du ønsker å endre.",button:"Se bestillingen",tab:"choices"} : direct && data?.offers.length ? {title:confirmedChoice?"Åpent for endringer":"Velg grunnpakke og tilvalg",text:"Kontroller varer og pris, og bekreft bestillingen innen fristen.",button:"Se dine valg",tab:"choices"} : unanswered ? {
     title: "En avtale venter på svar",
     text: "Se innhold, pris og svarfrist før du svarer.",
     button: "Se avtaler som venter", tab: "agreements",
@@ -300,7 +315,7 @@ export default function BoligPortalPage() {
           <p>Kontakt prosjektleder hvis lenken er utløpt eller tilbakekalt.</p>
         </section>
       )}
-      {!busy && (
+      {!busy && !preview && (
         <button
           className="bolig-portal-refresh"
           aria-label="Hent siste status"
@@ -360,13 +375,21 @@ export default function BoligPortalPage() {
           </nav>
           {tab === "choices" && (
             <>
-              <section className="bolig-resident-card">
+              {direct && confirmedChoice && <section className="bolig-resident-card bolig-confirmed-order" aria-label="Bekreftet bestilling">
+                <h2>Din bekreftede bestilling · utgave {confirmedChoice.version}</h2><p><strong>{confirmedChoice.snapshot.identity.project} · bolig {confirmedChoice.snapshot.identity.unit}</strong><br/>{confirmedChoice.snapshot.identity.address}</p>
+                <p>{locked ? "Bestillingen er låst." : "Prosjektleder har åpnet for endringer. Denne bekreftelsen gjelder frem til du bekrefter på nytt."}</p>
+                <p>{confirmedChoice.accepted_name} · {portalStamp(confirmedChoice.accepted_at)}</p>
+                <PortalGoods goods={confirmedChoice.snapshot.goods}/><PortalPrices items={confirmedChoice.snapshot.price_details}/>
+                <p><strong>Pristillegg inkl. mva.: {money(confirmedChoice.snapshot.total_cents)}</strong><br/>Grunnpakken er inkludert i hovedleveransen.</p>
+                {confirmedChoice.snapshot.reason && <p>{confirmedChoice.snapshot.reason}</p>}
+                <p role="status">{data.confirmation_mail?.every(m=>m.status==='sent') && data.confirmation_mail.length > 0 ? "E-posttjenesten har bekreftet sending av kvitteringene." : data.confirmation_mail?.some(m=>m.status==='paused') ? "Bestillingen er lagret. E-postkvitteringer er pauset i dette miljøet." : "Bestillingen er lagret. E-postkvitteringer følges opp separat."}</p>
+                <button type="button" disabled={preview} onClick={()=>window.print()}>Skriv ut bestillingsbekreftelse</button>
+              </section>}
+              {!locked && <section className="bolig-resident-card">
                 <h2 tabIndex={-1} ref={choicesHeading} style={{scrollMarginTop:90}}>Velg det som passer deg</h2>
                 {data.choice_deadline && <p role="status"><strong>Bestillingsfrist: {displayDate(data.choice_deadline)} ({data.choice_deadline_time?`kl. ${data.choice_deadline_time}`:'til slutten av dagen'}, norsk tid).</strong> {choicesClosed ? "Fristen er utløpt. Kontakt prosjektleder for ny frist. Avtaler og dokumenter er fortsatt tilgjengelige." : "Send nye tilvalg før fristen."}</p>}
                 <p>
-                  Prosjektleder har klargjort disse valgmulighetene for boligen
-                  din. Send ønsket til gjennomgang. Du får en egen avtale å
-                  svare på.
+                  {direct ? "Velg grunnpakke og eventuelle tilvalg. Se gjennom varer og pris før du bekrefter bestillingen." : "Prosjektleder har klargjort disse valgmulighetene for boligen din. Send ønsket til gjennomgang. Du får en egen avtale å svare på."}
                 </p>
                 {!data.offers.length && (
                   <p>
@@ -374,16 +397,16 @@ export default function BoligPortalPage() {
                     fortsatt se avtaler og sende meldinger.
                   </p>
                 )}
-                {waiting && (
+                {waiting && !direct && (
                   <p className="bolig-portal-info">
                     Et valg venter på gjennomgang. {data.messaging_enabled === false ? "Kontakt prosjektleder hvis du ønsker å endre det. Kontaktinformasjon finner du under Meldinger." : "Send en melding hvis du ønsker å endre det."}
                   </p>
                 )}
-                <ChoiceCards data={data} draft={draft} disabled={disabled || waiting || choicesClosed} onChange={update}/>
-                {data.combine_base_id && !selected && <p role="alert">Et tidligere valgt tilvalg er ikke lenger tilgjengelig. <button disabled={disabled || waiting || choicesClosed} onClick={()=>update({offer_ids:[],menu_version:data.menu_version})}>Velg tilvalg på nytt</button></p>}
+                <ChoiceCards data={data} draft={draft} disabled={disabled || (!direct && waiting) || choicesClosed} onChange={update}/>
+                {data.combine_base_id && !selected && <p role="alert">Et tidligere valgt tilvalg er ikke lenger tilgjengelig. <button disabled={disabled || (!direct && waiting) || choicesClosed} onClick={()=>update({offer_ids:[],menu_version:data.menu_version})}>Velg tilvalg på nytt</button></p>}
                 {selected?.conflict && <p role="alert">{selected.conflict}</p>}
-                {data.combine_base_id && !waiting && selected && !selected.conflict && <div className="bolig-choice-total">Samlet pristillegg inkl. mva.: {money(selected.total_cents)}</div>}
-                {selected && !selected.conflict && !waiting && !choicesClosed && (
+                {data.combine_base_id && (direct || !waiting) && selected && !selected.conflict && <div className="bolig-choice-total">Samlet pristillegg inkl. mva.: {money(selected.total_cents)}</div>}
+                {selected && !selected.conflict && (direct || !waiting) && !choicesClosed && (
                   <form
                     onSubmit={(e) => {
                       e.preventDefault();
@@ -415,25 +438,27 @@ export default function BoligPortalPage() {
                       mva. {draft.body}
                     </p>
                     <p>
-                      Dette er et ønske til gjennomgang. Avtalen aksepteres
-                      separat.
+                      {direct ? "Når du bekrefter, lagres og låses denne utgaven. Prosjektleder får bestillingen, og dere får e-postkvittering. Grunnpakken er inkludert i hovedleveransen." : "Dette er et ønske til gjennomgang. Avtalen aksepteres separat."}
                     </p>
+                    {direct && <><label>Fullt navn<input autoComplete="name" minLength={2} maxLength={120} value={draft.name} disabled={disabled} onChange={e=>update({name:e.target.value},true)}/></label>
+                    <label className="bolig-resident-confirm"><input type="checkbox" checked={draft.confirmed} disabled={disabled} onChange={e=>update({confirmed:e.target.checked},true)}/><span>Jeg har gjennomgått varene og prisen og bekrefter bestillingen.</span></label></>}
                     <button
-                      disabled={disabled}
+                      disabled={disabled || (direct && (!draft.confirmed || draft.name.trim().length<2))}
                       onClick={() =>
-                        run("request", {
+                        run(direct ? "confirm" : "request", {
                           ...(data.combine_base_id ? {offer_ids:draft.offer_ids || []} : {offer_id: selected.id}),
                           menu_version: draft.menu_version ?? data.menu_version,
+                          ...(direct ? {changes_revision:data.changes_revision,name:draft.name,confirmed:draft.confirmed} : {}),
                           body: draft.body,
                         })
                       }
                     >
-                      Send valg til gjennomgang
+                      {direct ? "Bekreft bestilling" : "Send valg til gjennomgang"}
                     </button>
                   </section>
                 )}
-              </section>
-              <section className="bolig-resident-card">
+              </section>}
+              {(!direct || data.events.some(e=>e.kind==='request')) && <section className="bolig-resident-card">
                 <h2 tabIndex={-1} ref={requestsHeading} style={{scrollMarginTop:90}}>Dine innsendte valg</h2>
                 {data.events.filter((e) => e.kind === "request").length ===
                 0 ? (
@@ -454,7 +479,7 @@ export default function BoligPortalPage() {
                       </article>
                     ))
                 )}
-              </section>
+              </section>}
             </>
           )}
           {tab === "agreements" && (
@@ -493,7 +518,7 @@ export default function BoligPortalPage() {
                   <p>
                     {doc.accepted_name} · {portalStamp(doc.accepted_at)}
                   </p>
-                  <button onClick={() => window.print()}>
+                  <button disabled={preview} onClick={() => window.print()}>
                     Skriv ut kvittering
                   </button>
                 </section>

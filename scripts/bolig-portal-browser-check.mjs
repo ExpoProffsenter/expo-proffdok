@@ -426,3 +426,6 @@ try {
   await browser?.close();
   await new Promise((r) => (server ? server.close(r) : r()));
 }
+
+// Additive actual-browser coverage for direct confirmation and read-only preview.
+await import('./bolig-direct-confirm-browser-check.mjs');

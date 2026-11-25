@@ -1,3 +1,5 @@
+import Preview from "./BoligPortalPreview.jsx";
+import {PortalGoods,PortalPrices} from "./BoligPortalChoiceCards.jsx";
 import React, { useEffect, useRef, useState } from "react";
 import {
   portalManagerRpc,
@@ -26,6 +28,7 @@ const initial = {
   doc_title: "",
   doc_url: "",
   notes: {},
+  reopen_deadline: "",
   url: "",
   pending: null,
 };
@@ -45,6 +48,7 @@ export default function BoligPortalManager({
     [busy, setBusy] = useState(false),
     [loading, setLoading] = useState(true),
     [invite, setInvite] = useState(null),
+    [preview, setPreview] = useState(false),
     [reviewed, setReviewed] = useState(false),
     [mailBusy, setMailBusy] = useState(false);
   const latest = useRef(draft),
@@ -100,6 +104,7 @@ export default function BoligPortalManager({
     setData(null);
     setLoading(true);
     setInvite(null);
+    setPreview(false);
     const saved = readBoligDraft(key, initial);
     latest.current = saved;
     setDraft(saved);
@@ -183,7 +188,7 @@ export default function BoligPortalManager({
             : "Endringen er lagret.",
       );
       window.dispatchEvent(new Event(PORTAL_EVENT));
-      if (attempt.action === "apply") {
+      if (["apply","reopen","close_changes"].includes(attempt.action)) {
         window.dispatchEvent(new Event(COMMERCE_EVENT));
         window.dispatchEvent(new Event(PACKAGE_CHOICES_EVENT));
       }
@@ -253,7 +258,16 @@ export default function BoligPortalManager({
       {data && (
         <>
           {settings}
+          {preview && data.portal && <Preview state={data.portal} onClose={()=>setPreview(false)}/>}
           <div hidden={messagesOnly}>
+            {data.portal?.direct_confirmation && <section className="bolig-portal-manager-offer">
+              <h3>Beboerens bestilling</h3>
+              {writable && <button type="button" disabled={disabled} onClick={()=>setPreview(true)}>Se som beboer</button>}
+              {data.portal.confirmation ? <><p><strong>Bekreftet og {data.portal.choice_locked?'låst':'åpent for endringer'} · utgave {data.portal.confirmation.version}</strong></p><p>{data.portal.confirmation.accepted_name} · {portalStamp(data.portal.confirmation.accepted_at)} · {money(data.portal.confirmation.snapshot.total_cents)} inkl. mva.</p><details><summary>Se bekreftede varer og priser</summary><PortalGoods goods={data.portal.confirmation.snapshot.goods}/><PortalPrices items={data.portal.confirmation.snapshot.price_details}/></details>{data.portal.confirmation.snapshot.requires_supplier_followup&&<p role="alert">Beboeren har endret en bestilling med tidligere vareordre. Følg opp endringene hos leverandøren; opprinnelige ordre er beholdt.</p>}</> : <p>Beboeren velger og bekrefter selv. Ingen ekstra prosjektledergodkjenning er nødvendig.</p>}
+              {data.portal.confirmation_mail?.length>0 && <p>E-postkvitteringer: {data.portal.confirmation_mail.map(m=>(m.kind==='resident'?'Beboer':'Prosjektleder')+': '+({sent:'sending bekreftet',pending:'venter på sending',paused:'pauset i dette miljøet',suppressed:'ikke sendt – kontroller kontakt og tilgang'}[m.status]||'ukjent')).join(' · ')}</p>}
+              {data.portal.changes_until && <p>Endringsfrist: {portalStamp(data.portal.changes_until)}</p>}
+              {writable && <form onSubmit={e=>{e.preventDefault();run('reopen',{deadline:draft.reopen_deadline});}}><label>Ny frist for denne boligen<input type="date" required value={draft.reopen_deadline} disabled={disabled} onChange={e=>update({reopen_deadline:e.target.value})}/></label><p>Felles fristklokkeslett i prosjektet brukes. Tidligere bekreftelse gjelder til beboeren bekrefter på nytt. Andre boliger beholder sine frister.</p><button type="submit" disabled={disabled||!draft.reopen_deadline}>Åpne for endringer</button>{data.portal.changes_until && <button type="button" disabled={disabled} onClick={()=>run('close_changes')}>Steng for endringer</button>}</form>}
+            </section>}
             <div className="bolig-portal-manager-status">
               <strong>{data.contact.name || "Kontakt mangler"}</strong>
               <span>
@@ -477,7 +491,7 @@ export default function BoligPortalManager({
                       </ul>
                     </details>
                     {e.review_note && <p>{e.review_note}</p>}
-                    {e.status === "pending" && writable && (
+                    {e.status === "pending" && writable && !data.portal?.direct_confirmation && (
                       <>
                         <label>
                           Tilbakemelding til beboeren
