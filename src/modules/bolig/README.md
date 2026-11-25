@@ -104,3 +104,9 @@ Fra boligens arbeidsområde åpner du **Befaring**. Fyll ut dato, klokkeslett, a
 Åpne **Badskisse-maler i prosjektet** i befaringen. Gi den tegnede skissen et navn, for eksempel Bad type A, og velg **Lagre Badskisse som mal**. På en annen bolig i samme prosjekt velger du malen og **Bruk mal på boligen**. Dette kopierer bare skissegeometrien. Lagre befaringen på den nye boligen etter eventuelle justeringer. Hvis boligen allerede har en skisse, får du spørsmål før skissen i kladden erstattes.
 
 Når arbeidsfirmaet viser **Min profil / e-postvalg** i stedet for full Min side, ligger **Mine boligprosjekter** også der. Personlige prosjekttilganger kontrolleres av samme serverfunksjon.
+
+## Fri tekst i tilbud og avtaleforslag
+
+Velg **Ny fri tekst**, skriv valgfri overskrift og tekst, og velg **Plassering** før første eller etter en bestemt post. Flere tekstblokker kan brukes. Teksten er prisnøytral. Lagre og kontroller kundevisningen før publisering. En ny kladd endrer ikke tidligere publisert eller akseptert tekst.
+
+Sales viser tekst mellom postene i kundevisning og i tilbuds-/aksept-/kontrakts-PDF. Boligprosjekter tilbyr dette ved klargjøring av beboeraksept, endringsordre og butikktillegg; fryst tekst følger den konkrete avtaleutgaven. Katalogens grunnpakke-/tilvalgskort beholder eksisterende avsnitt. Se `docs/architecture/OFFER_FREE_TEXT.md`.

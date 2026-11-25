@@ -1,3 +1,4 @@
+import { isFreeText } from "../utils/offerFreeText.js";
 // Expo ProffDok – FASE 33B.5
 // Genererer endelig signert kontrakt-PDF direkte fra serverlåst sales_contracts-snapshot.
 // PDF-en inneholder kontrakten, begge signaturer og vedlegg med akseptert tilbud/aksept.
@@ -611,6 +612,7 @@ export async function createFinalSalesContractPdf(contract = {}) {
 
     for (let lineIndex = 0; lineIndex < group.lines.length; lineIndex += 1) {
       const line = group.lines[lineIndex];
+      if (isFreeText(line)) { textCard(line.storeTextTitle || "Tilleggsinformasjon", line.storeTextBody || line.description || ""); continue; }
       const description = clean(line.description) || "Tilbudspost";
       font(8.2, "normal", COLORS.text);
       const rows = pdf.splitTextToSize(description, 118);
@@ -620,7 +622,7 @@ export async function createFinalSalesContractPdf(contract = {}) {
       pdf.setDrawColor(...COLORS.line);
       pdf.roundedRect(PAGE.left + 3, y, WIDTH - 3, height, 2, 2, "FD");
       font(7.4, "bold", COLORS.tealDark);
-      pdf.text(`${groupIndex + 1}.${lineIndex + 1}`, PAGE.left + 7, y + 6.3);
+      pdf.text(`${groupIndex + 1}.${group.lines.slice(0, lineIndex + 1).filter(item => !isFreeText(item)).length}`, PAGE.left + 7, y + 6.3);
       font(8.2, "normal", COLORS.text);
       pdf.text(rows, PAGE.left + 21, y + 6.3);
       font(8.5, "bold", COLORS.ink);

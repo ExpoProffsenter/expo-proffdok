@@ -454,31 +454,7 @@ export async function createAcceptanceProofPdfPolished({
   };
 
   const storeSectionRow = (line) => {
-    const title = getStoreSectionTitle(line);
-    const body = clean(line.storeTextBody || "");
-    const titleRows = pdf.splitTextToSize(title, WIDTH - 18).slice(0, 2);
-    const bodyRows = body ? pdf.splitTextToSize(body, WIDTH - 18).slice(0, 2) : [];
-    const height = Math.max(13, 7 + titleRows.length * 4.2 + bodyRows.length * 3.6);
-    ensure(height + 2);
-    pdf.setFillColor(...COLORS.tealSoft);
-    pdf.setDrawColor(...COLORS.line);
-    pdf.roundedRect(PAGE.left + 2, y, WIDTH - 2, height, 2, 2, "FD");
-    pdf.setFillColor(...COLORS.teal);
-    pdf.rect(PAGE.left + 2, y, 2, height, "F");
-    let textY = y + 6.5;
-    font(10, "bold", COLORS.ink);
-    titleRows.forEach((row) => {
-      pdf.text(row, PAGE.left + 9, textY);
-      textY += 4.2;
-    });
-    if (bodyRows.length) {
-      font(7.6, "normal", COLORS.muted);
-      bodyRows.forEach((row) => {
-        pdf.text(row, PAGE.left + 9, textY);
-        textY += 3.6;
-      });
-    }
-    y += height + 2;
+    textCard(line.storeTextTitle || "Tilleggsinformasjon", line.storeTextBody || line.description || "");
   };
 
   const lineRow = (line, group, groupIndex, lineIndex) => {

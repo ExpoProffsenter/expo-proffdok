@@ -428,3 +428,9 @@ Forhåndsvis/Send/Rediger og Avbryt ligger fast i panelets footer. Forhåndsvis 
 Appens Core bekrefter at listen er klar først etter eksisterende kontroll av prosjekter/tilbudsstatus og installert liste. Summary-transportens ready alene er ikke tilstrekkelig. Tellere vises som ukjente under venting; tomtekst og0treff vises først etter bekreftet ferdiglasting. Feil er ikke en tom liste.
 
 Visningsstatus følger eksisterende bruker-/firmascopet salesStorageKey, med samme kansellering og remount som resten av Sales. Søk, valgt filter og retur beholdes. Frittstående listebruk beholder transportfallback. Ingen endring av editor/server-first, lokal kladd, priser, aksept eller backend.
+
+## Fri tekst i tilbud og avtaleforslag
+
+Velg **Ny fri tekst**, skriv valgfri overskrift og tekst, og velg **Plassering** før første eller etter en bestemt post. Flere tekstblokker kan brukes. Teksten er prisnøytral. Lagre og kontroller kundevisningen før publisering. En ny kladd endrer ikke tidligere publisert eller akseptert tekst.
+
+Sales viser tekst mellom postene i kundevisning og i tilbuds-/aksept-/kontrakts-PDF. Se `docs/architecture/OFFER_FREE_TEXT.md`.

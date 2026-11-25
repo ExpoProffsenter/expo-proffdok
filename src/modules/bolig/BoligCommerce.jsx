@@ -4,6 +4,8 @@ import { commerceRpc, commerceLabels, COMMERCE_EVENT, residentUrl, commerceAttem
 import { boligDraftKey, readBoligDraft, writeBoligDraft } from "./boligClient.js";
 import { signedCents } from "./boligCustomizationClient.js";
 import { money } from "./boligCatalogClient.js";
+import { BoligOfferTextEditor } from "./BoligOfferText.jsx";
+import { cleanOfferText, repositionOfferText } from "./boligOfferTextCore.js";
 import ContentEditor from "./BoligPackageContentEditor.jsx";
 import Dialog from "./BoligEditorDialog.jsx";
 import ResidentInvitation from "./BoligResidentInvitation.jsx";
@@ -54,7 +56,9 @@ export default function BoligCommerce({ context, root, unit }) {
   const updateForm = (field, value) => {
     try {
       const form = latest.current.form;
-      persist({ ...latest.current, form: { ...form, ...(typeof field === "function" ? field(form) : typeof field === "object" ? field : { [field]: value }) } });
+      const nextForm = { ...form, ...(typeof field === "function" ? field(form) : typeof field === "object" ? field : { [field]: value }) };
+      if (nextForm.lines !== form.lines) nextForm.text_blocks = repositionOfferText(nextForm.text_blocks || [], form.lines || [], nextForm.lines || []);
+      persist({ ...latest.current, form: nextForm });
     } catch (e) { setError(e.message); }
   };
   const run = async (action, payload, retry = false) => {
@@ -98,6 +102,7 @@ export default function BoligCommerce({ context, root, unit }) {
       persist({ ...latest.current, form: {
         kind, group_id: prior?.group_id || null, order_id: prior?.snapshot.order_id || "",
         choice_revision: data.choice_revision, delivery_revision: data.delivery_revision,
+        text_blocks: prior?.snapshot.text_blocks || [],
         reason: prior?.snapshot.reason || "", adjustment: prior ? String(prior.snapshot.delta_cents / 100) : "0",
         acceptance_deadline: acceptanceDate(),
         sections: [], lines: prior?.kind === "change" ? (prior.snapshot.fulfillment_goods || prior.snapshot.goods).map(g => ({ ...g, section_id: "" })) : [],
@@ -121,7 +126,7 @@ export default function BoligCommerce({ context, root, unit }) {
         key: g.key, name: g.name, sku: g.sku || "", quantity: Number(g.quantity), unit: g.unit,
         room_name: g.room_name || "", section_name: g.section_name || "",
       }));
-      preview = { kind: form.kind, snapshot: { reason: form.reason, goods,
+      preview = { kind: form.kind, snapshot: { reason: form.reason, text_blocks: cleanOfferText(form.text_blocks || [], goods.length), goods,
         before_goods: (order?.goods || []).map(g => ({ key:g.key,name:g.name,sku:g.sku||"",quantity:Number(g.quantity),unit:g.unit,room_name:g.room_name||"",section_name:g.section_name||"" })),
         order_number: order?.number, total_cents: data.selection?.total_cents, delta_cents: signedCents(form.adjustment),
       } };
@@ -152,7 +157,7 @@ export default function BoligCommerce({ context, root, unit }) {
         {form.kind === "choice" && form.choice_revision !== data.choice_revision && <p role="alert">Boligvalget er endret. Lukk kladden og klargjør fra siste lagrede boligvalg.</p>}
         {form.kind === "change" && form.delivery_revision !== data.delivery_revision && <p role="alert">Bestillinger eller mottak er endret. Hent siste grunnlag og se over kladden.</p>}
         <form onInvalidCapture={e => { let node = e.target.parentElement; while (node && node !== e.currentTarget) { if (node.tagName === "DETAILS") node.open = true; node = node.parentElement; } }} onSubmit={e => { e.preventDefault(); if (e.currentTarget.querySelector('[data-image-uploading="true"]')) { setError("Vent til bildet er lastet opp."); return; }
-          try { run(e.nativeEvent.submitter?.value === "link" ? "create_link" : "create", { ...form, delta_cents: signedCents(form.adjustment), lines: form.lines.map(g => ({ ...g, quantity: Number(g.quantity) })) }); } catch (err) { setError(err.message); } }}>
+          try { run(e.nativeEvent.submitter?.value === "link" ? "create_link" : "create", { ...form, text_blocks: cleanOfferText(form.text_blocks || [], (form.kind === "choice" ? data.selection?.goods || [] : form.lines).length), delta_cents: signedCents(form.adjustment), lines: form.lines.map(g => ({ ...g, quantity: Number(g.quantity) })) }); } catch (err) { setError(err.message); } }}>
           <fieldset disabled={disabled}>
             {form.kind === "change" && <>
               <label>Bestillingen som endres<select aria-label="Bestillingen som endres" required value={form.order_id} onChange={e => {
@@ -164,6 +169,7 @@ export default function BoligCommerce({ context, root, unit }) {
                 <small>Minusbeløp gir fratrekk. 0 beholder prisen.</small></label>
             </>}
             {form.kind === "choice" && <p>Lagret boligvalg v{form.choice_revision} · Tilvalg og tilpasninger: <strong>{money(data.selection?.total_cents)}</strong> inkl. mva.</p>}
+            <BoligOfferTextEditor blocks={form.text_blocks || []} goods={form.kind === "choice" ? data.selection?.goods || [] : form.lines} onChange={blocks => updateForm("text_blocks", blocks)}/>
             <label>Beskrivelse til beboeren<textarea required minLength={3} maxLength={2000} rows={4} value={form.reason} onChange={e => updateForm("reason", e.target.value)}/></label>
             <label>Svarfrist for beboeren<input type="date" required min={osloDate()} value={form.acceptance_deadline || ""} onChange={e => updateForm("acceptance_deadline", e.target.value)}/>
               <small>Fristen gjelder til slutten av dagen, norsk tid. Etter fristen må beboeren kontakte prosjektleder.</small></label>

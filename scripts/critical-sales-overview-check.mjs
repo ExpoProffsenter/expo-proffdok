@@ -129,3 +129,5 @@ if (fs.existsSync("src/modules/sales/salesOverviewSearchUx.js")) {
 }
 
 console.log("✅ Expo ProffDok Sales-oversikt / forespørselskø / supportmodus / navigation check OK");
+
+await import("./offer-free-text-check.mjs");

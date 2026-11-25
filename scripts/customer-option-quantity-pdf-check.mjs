@@ -35,3 +35,5 @@ try{
   }
   console.log('PASS real offer, acceptance and signed-contract PDFs: published opt-in/default, accepted 4 stk × 3000, selected 12000 and total 24500 incl VAT.');
 }finally{await browser?.close();fs.rmSync(temp,{recursive:true,force:true});}
+
+await import("./offer-free-text-pdf-check.mjs");

@@ -1,3 +1,5 @@
+import SalesFreeTextEditor from "./SalesFreeTextEditor.jsx";
+import { arrangeFreeText, isFreeText } from "../utils/offerFreeText.js";
 import { getOfferUnitPrice } from "../utils/salesUtils.js";
 // Expo ProffDok – FASE 39B.2C
 // Kompakt Butikktilbud-bygger: avsnitt -> hovedvare -> montering/opsjoner.
@@ -74,19 +76,19 @@ function cleanText(value) {
 }
 
 function isSectionLine(line = {}) {
-  return line?.lineType === SECTION_LINE_TYPE;
+  return line?.lineType === SECTION_LINE_TYPE && !isFreeText(line);
 }
 
 function isProductLine(line = {}) {
   return (
     line?.mainPostId === PRODUCT_POST.id &&
     !line?.__storeOfferMeta &&
-    !isSectionLine(line)
+    !isSectionLine(line) && !isFreeText(line)
   );
 }
 
 function isInstallationLine(line = {}) {
-  return line?.mainPostId === INSTALLATION_POST.id && !line?.__storeOfferMeta;
+  return line?.mainPostId === INSTALLATION_POST.id && !line?.__storeOfferMeta && !isFreeText(line);
 }
 
 function sectionDescription(section = {}) {
@@ -349,7 +351,7 @@ function composeLines({ products, installations, sections, metaLine, otherLines 
   installations.forEach((line) => result.push(line));
   otherLines.forEach((line) => result.push(line));
   if (metaLine) result.push(metaLine);
-  return result;
+  return arrangeFreeText(result);
 }
 
 function ProductIdentityFields({
@@ -2336,6 +2338,7 @@ export default function SalesStoreOfferBuilderGrouped(props) {
                 </div>
               </div>
 
+              <SalesFreeTextEditor lines={lines} onChange={next => updateOfferForm("lines", next)} />
               <div className="store-workspace">
                 {sectionsWithProducts.map(({ section, products }) => {
                   const roomOpen = openSections[section.id] !== false;

@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "title": "Tilbudsdato og fritekst i Sales-tilbud",
+  "change": "Sales-oversikten viser datoen for publisert tilbudsversjon. Ny fri tekst gir prisnøytrale blokker før, mellom og etter poster i våtromstilbud og generelle tilbud. Kundens visning og tre PDF-typer bevarer full tekst og historikk. Bolig leveres i separat avhengig PR.",
+  "verification": "Sales critical/build, 11 persistens/pris/versjonskrav, 9 faktiske React-krav, 7 datoprojeksjons-PostgreSQL-krav og tre faktiske flersiders PDF-er. Innlogget samlet Preview a6fa3c1 er kontrollert i sandbox, med samme Sales-kode. Full separat CI kjøres på denne kandidaten.",
+  "documentation": {
+    "help": {
+      "required": true,
+      "reason": "Ny knapp og valg av plassering krever konkret veiledning."
+    },
+    "architecture": {
+      "required": true,
+      "reason": "Lesende tilbudsdatoprojeksjon og prisnøytrale tekstlinjer utvider Sales-modulens kontrakt."
+    },
+    "setup": {
+      "required": false,
+      "reason": "Ingen nytt brukeroppsett, konfigurasjon eller utvikleravhengighet er nødvendig."
+    },
+    "module": {
+      "required": true,
+      "reason": "Sales og Bolig får en eksplisitt kontrakt for prisnøytral kundetekst og historikk."
+    }
+  }
+}

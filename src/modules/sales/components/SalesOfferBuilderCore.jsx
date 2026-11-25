@@ -26,6 +26,8 @@ import {
   hasOfferQuantityDetails,
 } from "../utils/salesUtils.js";
 import "./SalesOfferQuantity.css";
+import SalesFreeTextEditor from "./SalesFreeTextEditor.jsx";
+import { isFreeText } from "../utils/offerFreeText.js";
 import SalesOfferTextSection from "./SalesOfferTextSection.jsx";
 
 function hasLineContent(line) {
@@ -490,6 +492,8 @@ export default function SalesOfferBuilder({
                   et tillegg/oppgradering eller et alternativ som erstatter en konkret underpost.
                 </p>
 
+                <SalesFreeTextEditor lines={offerForm.lines} onChange={lines => updateOfferForm("lines", lines)} />
+
                 {activeMainPosts.length ? (
                   <div style={{ display: "grid", gap: 18, marginTop: 14 }}>
                     {activeMainPosts.map((mainPost) => {
@@ -497,7 +501,7 @@ export default function SalesOfferBuilder({
                         (line) => line.mainPostId === mainPost.id
                       );
                       const workLines = postLines.filter(
-                        (line) => line.lineType !== "administration"
+                        (line) => line.lineType !== "administration" && !isFreeText(line)
                       );
                       const administrationLines = postLines.filter(
                         (line) => line.lineType === "administration"

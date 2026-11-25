@@ -19,6 +19,7 @@ import '${root}/src/style.css';import '${root}/src/modules/bolig/bolig.css';impo
 const context={user_id:'qa',company_id:'firm',role:'manager',enabled:true};
 const goods=[{key:'common/basin',name:'Servant i eik – langt syntetisk varenavn',sku:'00123',quantity:2,unit:'stk',room_name:'Bad 1',section_name:''}];
 const snapshot={identity:{company:'QA Firma',project:'QA Solgløtt',unit:'H0101',block:'Demobygget',address:'Demogate 1'},reason:'QA – ekstra servant til boligen',goods,before_goods:[{...goods[0],quantity:1}],order_id:'order',order_number:'B-1',choice_revision:1,total_cents:125000,delta_cents:125000};
+window.__replaceGoods=next=>goods.splice(0,goods.length,...next);
 let docs=[],receipts=new Map();window.__calls=[];window.__foreign=false;window.__hold=false;window.__conflict=false;
 const state=()=>({context:{...context,role:window.__role||'manager',...(window.__foreign?{company_id:'foreign'}:{})},root_id:'root',unit_id:'unit',selection:{goods,total_cents:125000},choice_revision:1,delivery_revision:1,orders:[{id:'order',number:'B-1',status:'ordered',goods}],documents:structuredClone(docs)});
 const mailMock=residentMailMock(context);
@@ -296,6 +297,30 @@ try {
   eq(await invalid.evaluate(()=>window.__publicCalls.length),0,"incomplete token never reaches server");
   eq(errors,[],"no browser runtime errors");
   const draftCheck=await browser.newPage();await draftCheck.goto(url);await draftCheck.getByRole('button',{name:'Endringer og beboeraksept',exact:true}).click();await draftCheck.getByRole('button',{name:'Ny endringsordre',exact:true}).click();await draftCheck.getByLabel('Bestillingen som endres').selectOption('order');await draftCheck.getByLabel('Pristillegg / fratrekk inkl. mva.').fill('0');await draftCheck.getByLabel('Beskrivelse til beboeren').fill('QA fiktiv statuskontroll uten sending');await draftCheck.getByRole('button',{name:'Lagre utkast',exact:true}).click();await draftCheck.getByText('Se over varer og pris. Opprett beboerlenken når grunnlaget er klart. Endringsbestillingen kan lastes ned etter at beboeren har akseptert.',{exact:true}).waitFor();eq(await draftCheck.getByText(/Last ned endringsgrunnlaget og avklar/).count(),0,'draft never suggests unavailable fulfillment action');eq(await draftCheck.getByRole('button',{name:'Last ned endringsbestilling / kreditering',exact:true}).count(),0,'draft retains original no-download contract');await draftCheck.close();
+  const anchorCheck=await browser.newPage({viewport:{width:360,height:800}});
+  await anchorCheck.goto(url);
+  await anchorCheck.evaluate(()=>window.__replaceGoods(['A','B','C'].map(name=>({key:name,name,quantity:1,unit:'stk'}))));
+  await anchorCheck.getByRole('button',{name:'Endringer og beboeraksept',exact:true}).click();
+  await anchorCheck.getByRole('button',{name:'Ny endringsordre',exact:true}).click();
+  await anchorCheck.getByLabel('Bestillingen som endres').selectOption('order');
+  await anchorCheck.getByRole('button',{name:'+ Ny fri tekst',exact:true}).click();
+  await anchorCheck.getByLabel('Tekst',{exact:true}).fill('Forbehold for B.\n\n'+ 'LangtOrd'.repeat(40));
+  await anchorCheck.getByLabel('Plassering',{exact:true}).selectOption('2');
+  await anchorCheck.locator('summary').filter({hasText:'A · 1 stk'}).click();
+  await anchorCheck.getByRole('button',{name:'Fjern varelinje 1',exact:true}).click();
+  eq(await anchorCheck.getByLabel('Plassering',{exact:true}).inputValue(),'1','real commerce deletion keeps text after B');
+  const card=anchorCheck.getByRole('article',{name:'Tilbudstekst',exact:true});
+  eq(await card.innerText().then(t=>t.includes('LangtOrd'.repeat(40))),true,'long unbroken text stays complete');
+  eq(await card.evaluate(el=>el.scrollWidth<=el.clientWidth+1),true,'text fits 360px without horizontal scrolling');
+  eq(await anchorCheck.locator('.sales-free-text-block').evaluate(el=>el.scrollWidth<=el.clientWidth+1),true,'editor fits 360px');
+  await anchorCheck.getByRole('button',{name:'Lukk og behold kladden',exact:true}).click();
+  await anchorCheck.getByRole('button',{name:'Fortsett kladd',exact:true}).click();
+  eq(await anchorCheck.getByLabel('Plassering',{exact:true}).inputValue(),'1','reopening commerce draft retains B anchor');
+  await anchorCheck.locator('summary').filter({hasText:'B · 1 stk'}).click();
+  await anchorCheck.getByRole('button',{name:'Fjern varelinje 1',exact:true}).click();
+  eq(await anchorCheck.getByLabel('Plassering',{exact:true}).inputValue(),'','deleting anchor retains text before C');
+  eq(await card.innerText().then(t=>t.includes('Forbehold for B.')),true,'deleted post never drops text');
+  await anchorCheck.close();
   console.log(`PASS Bolig commerce browser: ${checks} assertions; real handlers/adapters, preserved drafts, firm/role denials, one-action creation/publication, exact recovery of all three server steps, before/after, followup, mobile and lost-response acceptance. Visuals: ${tmp}`);
 } catch(e) { console.error('Browser QA state:',await debugPage?.locator('body').innerText());throw e;
 } finally { await browser?.close();if(server)await new Promise(r=>server.close(r));fs.rmSync(entry,{force:true});fs.rmSync(publicEntry,{force:true}); }

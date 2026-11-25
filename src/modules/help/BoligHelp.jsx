@@ -3,6 +3,7 @@ import {ArrowLeft,ArrowRight,ChevronDown,Search} from 'lucide-react';
 import {BOLIG_NOTIFICATION_HELP} from './BoligNotificationHelp.jsx';
 import {BOLIG_HOUSEHOLD_HELP} from './BoligHouseholdHelp.jsx';
 import {BOLIG_PLACEMENT_HELP} from './BoligPlacementHelp.jsx';
+import {BOLIG_OFFER_TEXT_HELP} from './BoligOfferTextHelp.jsx';
 import {BOLIG_COLLABORATION_HELP} from './BoligCollaborationHelp.jsx';
 import BoligGuidePanel from './BoligGuidePanel.jsx';
 import {BOLIG_HELP_GROUPS,BOLIG_HELP_TOPICS} from './boligHelpContent.jsx';
@@ -15,7 +16,7 @@ export function boligHelpText(node) {
 }
 const normalize=value=>value.toLocaleLowerCase('nb').normalize('NFKC');
 const notificationTopics=new Map(BOLIG_NOTIFICATION_HELP.map(topic=>[topic.id,topic]));
-const topics=[...BOLIG_HELP_TOPICS.map(topic=>notificationTopics.get(topic.id)||topic),...BOLIG_HOUSEHOLD_HELP,...BOLIG_PLACEMENT_HELP,...BOLIG_COLLABORATION_HELP].map(topic=>({...topic,search:normalize(topic.title+' '+boligHelpText(topic.body))}));
+const topics=[...BOLIG_HELP_TOPICS.map(topic=>notificationTopics.get(topic.id)||topic),...BOLIG_HOUSEHOLD_HELP,...BOLIG_PLACEMENT_HELP,...BOLIG_COLLABORATION_HELP,...BOLIG_OFFER_TEXT_HELP].map(topic=>({...topic,search:normalize(topic.title+' '+boligHelpText(topic.body))}));
 
 export function BoligHelp({returnLabel}={}) {
   const [open,setOpen]=useState(false),[group,setGroup]=useState(''),[query,setQuery]=useState(''),[expanded,setExpanded]=useState('');
