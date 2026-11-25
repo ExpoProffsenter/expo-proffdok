@@ -26,6 +26,7 @@ try{
  const text=execFileSync('pdftotext',[path.join(tmp,'sheet.pdf'),'-'],{encoding:'utf8'});for(const marker of ['H0101','Eksempelveien 10','GRUNNPAKKE SERVANT','VALGT TILVALG BATTERI','FROZEN-TEXT','accepted-v2'])eq(text.includes(marker),true,'actual PDF '+marker);
  for(let i=0;i<24;i++)eq(new RegExp('QA-'+i+'\\b').test(text),true,'all 24 item references survive pagination: '+i);
  eq(text.split('\f').filter(p=>p.trim()).every(p=>p.includes('H0101')&&p.includes('Eksempelveien 10')),true,'identity repeats on every printed page');
+ const pages=text.split('\f').filter(p=>p.trim());pages.forEach((p,i)=>eq(new RegExp('Side\\s+'+(i+1)+'\\s+av\\s+'+pages.length).test(p),true,'actual page number '+(i+1)));
  eq(text.split('\f')[0].includes('QA firma'),true,'actual first-page header survives global app CSS and scrolled dialog');
  eq(text.includes('INTERNAL-PRIVATE-SHELL'),false,'internal app stays off printed pages');eq(text.split('\f').length>2,true,'real multipage PDF');
  eq(execFileSync('pdfimages',['-list',path.join(tmp,'sheet.pdf')],{encoding:'utf8'}).split('\n').filter(l=>/\s+image\s+/.test(l)).length>0,true,'actual image objects embedded in PDF');
@@ -51,5 +52,6 @@ try{
  await dialog.getByRole('button',{name:'Hent utskriften på nytt',exact:true}).click();await dialog.getByText('Kundebekreftet bestilling',{exact:true}).waitFor();
  await page.evaluate(()=>window.__denied=true);await dialog.getByRole('button',{name:'Skriv ut / lagre som PDF',exact:true}).click();await dialog.getByRole('alert').waitFor();eq(await dialog.locator('.bolig-work-sheet').count(),0,'revoked access removes sheet');
  await page.evaluate(()=>window.__show('other'));await page.getByRole('dialog').waitFor({state:'hidden'});eq(await page.getByRole('dialog').count(),0,'company switch closes private print sheet');
+ await page.emulateMedia({media:'print'});eq(await page.evaluate(()=>getComputedStyle(document.body).page),'auto','closing sheet releases named page setup for other app prints');
  console.log('PASS confirmed work order print: '+checks+' actual Chromium/PDF assertions, image objects, frozen base+upgrade, mobile, multipage, stale basis and revoked access');
 }catch(e){console.error('Print fixture state:',await debugPage?.locator('body').innerText());throw e;}finally{await browser?.close();if(server)await new Promise(r=>server.close(r));fs.rmSync(tmp,{recursive:true,force:true});}

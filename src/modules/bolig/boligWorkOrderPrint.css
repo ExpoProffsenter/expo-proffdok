@@ -27,7 +27,7 @@
 }
 @media print {
  @page bolig-work-sheet {size:A4;margin:12mm;}
- .bolig-work-order-print {page:bolig-work-sheet;}
+ body:has(>.bolig-work-order-print),.bolig-work-order-print {page:bolig-work-sheet;}
  body:has(>.bolig-work-order-print)> :not(.bolig-work-order-print){display:none!important;}
  body:has(>.bolig-work-order-print),.bolig-work-order-print{position:static!important;inset:auto!important;display:block!important;overflow:visible!important;height:auto!important;max-height:none!important;width:auto!important;max-width:none!important;margin:0!important;padding:0!important;border:0!important;box-shadow:none!important;background:white!important;}
  .bolig-work-order-print::backdrop {display:none!important;}
@@ -46,8 +46,9 @@
  .bolig-work-good {padding:2mm;gap:2mm;break-inside:avoid;page-break-inside:avoid;align-self:start;}
  .bolig-work-image {width:30mm;flex-basis:30mm;}
  .bolig-work-image img {width:30mm;height:26mm;}
- .bolig-work-sheet[data-columns="2"] .bolig-work-image {width:22mm;flex-basis:22mm;}
- .bolig-work-sheet[data-columns="2"] .bolig-work-image img {width:22mm;height:22mm;}
+ .bolig-work-sheet[data-columns="2"] .bolig-work-good {padding:1.5mm;}
+ .bolig-work-sheet[data-columns="2"] .bolig-work-image {width:20mm;flex-basis:20mm;}
+ .bolig-work-sheet[data-columns="2"] .bolig-work-image img {width:20mm;height:20mm;}
  .bolig-work-good p {margin:1mm 0;font-size:9pt;}
  .bolig-work-sheet .bolig-work-image-placeholder {font-size:9pt;}
  .bolig-work-notes p {margin:1mm 0 2mm;}

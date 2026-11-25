@@ -1,3 +1,7 @@
+# Aktuell status 25.11.2026
+
+Kenneth har gitt uttrykkelig TEST OK for leveranseoversikten. Produksjon og main→demo er autorisert etter grønn sluttkontroll. Historikken under beskriver tidligere kandidater og skal ikke kjøres som installasjonsplan.
+
 # Bestillingsark med bilder – 25.11.2026
 
 Miljømål BEGGE. Egen branch fase45b-bolig-confirmed-order-print-20261125 fra faktisk publisert main55ea4e5. Brukerens TEST OK gjaldt tilbudsdato/fritekst, som er publisert og synkronisert til demo. Denne nye funksjonen er ikke godkjent for produksjon.
@@ -33,3 +37,11 @@ Automatisk to kolonner fra seks varer, valgfri én/to. Ny separat 12-varers prø
 CI45648693989 med validert bilde bekreftet alle24varenummer, men avviste sideidentiteten: fixed-element inni native dialog ble ikke gjentatt på alle sider. Rettet til egen body-portal utenfor dialogens topplag, med samme scope/livssyklus. Assertionen beholdes uendret. PDF-prøver lagres nå før assertions slik at også feilende layout kan inspiseres. Tidligere CI45647965194 stoppet først på ugyldig eksisterende auth-bathroom.jpg i harness; Pillow bekreftet at den ikke kunne dekodes. Appassetet er utenfor scope og urørt; harness bruker validert expo-logo.png.
 
 CI45650519912 sjekket korrekt mergef44e8c7a fra5a8570/main55ea4e5. Alle24varenummer var med og synlig førsteside-header ble bekreftet visuelt i artefakt15041315394 (3A4-sider). Sideidentiteten var fortsatt feil: body-fixed tekst ble plassert én gang øverst på side2 og overlappet varer. Derfor erstattes fixed/body-portal av navngitte @page-marginbokser med sikkert CSS-kodet identitet og sideantall. Uendret krav om identitet på hver PDF-side. Chrome145s A4-encoding var595.92×842.88pt og gjenkjent somA4 av pdfinfo; papirtesten kontrollerer A4-klassifisering fremfor én bestemt avrunding til841pt. Chrome på PC anbefales i hjelpen, Safari er ikke bekreftet.
+
+## Sluttkontroll etter TEST OK
+
+Chrome Headless Shell143 fra Googles offisielle Chrome for Testing kjører lokalt med samme Playwright-harness, uten Chromes ProcessSingleton-socket som tidligere var blokkert. Faktisk PDF-test av4dc86f gjenskapte manglende sidemerking. Rotårsak: page-navnet var bare satt på native dialog, som står utenfor normal sideflyt; @page-formatet og margboksene gjaldt derfor ikke selve dokumentsiden. Print-CSS setter nå navnet på body kun mens egen dialog finnes. Dette gjenoppretter både A4 og margtekst/sidenummer, og slippes igjen ved lukking.
+
+Kompakt oppsett bruker20mm bilder og1,5mm indre luft, med uendret minst10pt varenavn. Før justering havnet bare kildehenvisningen på side2 ved12normalvarer. Etter justering består65opprinnelige faktiske Chromium/PDF-krav:12varer/bilder/merknader/kilde på én faktiskA4;24svært lange varenavn på tre sider; alle varenummer, førsteheader, bolig/adresse på hver side, innebygde bilder, mobil360px, manuell/autokolonne, fersk basis og tilbakekalt tilgang. Genererte PDF-er er rasterisert og visuelt kontrollert, inkludert førsteside og side2. Sideantall og frigjøring av sideformat etter lukking får egne additive krav. Ingen eksisterende assertion eller guard er svekket.
+
+Denne avgrensede utskriftsrettingen fullfører godkjent A4-/sidemerking, uten endret brukerflyt, avtalebasis, priser eller tilgang. TEST OK beholdes. Full CI på sluttkandidaten og eksakte release-/demoSHA-er føres i PR349. Fysisk skriver og Safari er fortsatt ikke prøvd.

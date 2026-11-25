@@ -1,9 +1,0 @@
-.sales-free-text-editor { margin: 16px 0; min-width: 0; }
-.sales-free-text-block { display: grid; gap: 8px; min-width: 0; margin: 12px 0; padding: 16px; border: 1px solid #bdd3d8; border-radius: 10px; background: #f7fbfc; }
-.sales-free-text-block input, .sales-free-text-block textarea, .sales-free-text-block select { box-sizing: border-box; width: 100%; min-width: 0; padding: 10px; border: 1px solid #b2c6cf; border-radius: 6px; font: inherit; color: #17313a; background: white; }
-.sales-free-text-block textarea { resize: vertical; }
-.sales-free-text-block button { justify-self: start; }
-.sales-customer-free-text { padding: 18px 20px; border-left: 3px solid #0a8995; border-radius: 6px; background: #f2f8fa; color: #17313a; overflow-wrap: anywhere; }
-.sales-customer-free-text h4 { margin: 0 0 8px; font-size: 1.05rem; }
-.sales-customer-free-text p { margin: 0; line-height: 1.6; }
-@media print { .sales-customer-free-text { break-inside: auto; } }

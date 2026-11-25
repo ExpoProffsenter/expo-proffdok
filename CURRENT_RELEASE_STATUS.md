@@ -1,4 +1,10 @@
-# Gjeldende leveransestatus – 14.11.2026
+# Gjeldende leveransestatus – 25.11.2026
+
+[PR349](https://github.com/ExpoProffsenter/expo-proffdok/pull/349) gjelder prisfri leveranseoversikt til håndverkeren i boligen, med bilder, bolig/adresse, automatisk én/to kolonner, sidemerking og bevarte merknader. Utskriften ligger i egen del «Til håndverkeren i boligen», utenfor varebestilling. Kundens prisvisning/bestillingsbekreftelse i beboerportalen beholdes. Kenneth har gitt TEST OK25.11.2026. PR349 er fasit for grønn sluttkontroll, publisert Production-SHA, kontrollert main→demo, databaseinstallasjon og tilbakeføring.
+
+Tilbudsdato og flyttbar «Ny fri tekst» er tidligere publisert gjennom PR347/348. Ingen rutine-e-post aktiveres og ingen reelle prøvebestillinger sendes av utskriftsarbeidet. Ny lesende bolig_work_order er eneste produksjonsmigrasjon i PR349 og skal bare installeres hvis funksjon/migrasjon fortsatt mangler. Tilbakeføring av utskriften: revert appendringen; den lesende funksjonen kan stå uten datatap.
+
+## Tidligere leveransestatus – 14.11.2026
 
 [PR338](https://github.com/ExpoProffsenter/expo-proffdok/pull/338) er merget som `2385a144d6628ea2f8db791f295b99766e1e9c5a`. «Rediger prosjektinfo» ligger ved prosjektnavnet og under Oppsett → Bygg og boliger. Skjemaet åpnes i dialog med bevart kladd. Kun prosjektleder på aktivt prosjekt kan redigere. Bolig uten valg viser «Grunnpakke og tilvalg er ikke klargjort» ved tomt pakkeoppsett, ellers «Boligvalg ikke startet». Lagrede valg, endret grunnlag og øvrige statuslag beholdes.
 
