@@ -1,4 +1,5 @@
 import React,{useEffect,useRef,useState} from 'react';
+import {createPortal} from 'react-dom';
 import Dialog from './BoligEditorDialog.jsx';
 import {workOrderRpc,workOrderGroups} from './boligWorkOrderClient.js';
 import {readBoligImage} from './boligImages.js';
@@ -25,7 +26,7 @@ export default function WorkOrderPrint({context,root,unit}){
  const columns=layout==='auto'?(data?.goods.length>=6?2:1):Number(layout);
  const print=async()=>{const n=epoch.current;setBusy(true);setError('');try{const fresh=await workOrderRpc(context,root.id,unit.id);if(n!==epoch.current||scopeRef.current!==scope)return;if(fresh.basis!==data.basis)throw Error('Bestillingen er endret. Hent utskriften på nytt før du skriver ut.');window.print();}catch(e){if(n===epoch.current){if(e.code==='42501')setData(null);setError(e.message);}}finally{if(n===epoch.current)setBusy(false);}};
  if(context.role!=='manager'||!context.enabled)return null;
- return <><section className="bolig-work-print-entry" aria-label="Til håndverkeren i boligen"><h4>Til håndverkeren i boligen</h4><p>Vis kundens grunnpakke og valgte tilvalg med bilder, uten priser. Dette er en leveranseoversikt. Kundens bekreftelse med priser finnes i beboerportalen.</p><button type="button" onClick={load}>Skriv ut leveranseoversikt</button></section>{open&&(!data||loadedScope.current===scope)&&<Dialog title="Leveranseoversikt til håndverker" busy={busy} onClose={close} className="bolig-work-order-print">
+ return <><section className="bolig-work-print-entry" aria-label="Til håndverkeren i boligen"><h4>Til håndverkeren i boligen</h4><p>Vis kundens grunnpakke og valgte tilvalg med bilder, uten priser. Dette er en leveranseoversikt. Kundens bekreftelse med priser finnes i beboerportalen.</p><button type="button" onClick={load}>Skriv ut leveranseoversikt</button></section>{open&&(!data||loadedScope.current===scope)&&<><Dialog title="Leveranseoversikt til håndverker" busy={busy} onClose={close} className="bolig-work-order-print">
  <div className="bolig-work-print-controls"><p>Grunnpakke og valgte tilvalg fra beboerens lagrede grunnlag. Ingen priser. Velg skriver eller «Lagre som PDF» i utskriftsvinduet.</p>
  {busy&&<p role="status">Henter og kontrollerer bestillingen …</p>}{error&&<p role="alert">{error}</p>}
  {data&&<><label className="bolig-work-layout">Oppsett<select value={layout} onChange={e=>setLayout(e.target.value)}><option value="auto">Automatisk etter antall varer</option><option value="1">Én kolonne – større bilder</option><option value="2">To kolonner – kompakt</option></select></label><p>{data.goods.length} varer · {columns===2?'To kolonner':'Én kolonne'}. Alle varer og merknader tas med. Flere sider brukes når det trengs for å bevare lesbarheten. Velg A4 i utskriftsvinduet.</p>{waiting&&<p role="status">Klargjør varebilder …</p>}{failed>0&&<label><input type="checkbox" checked={allowMissing} onChange={e=>setAllowMissing(e.target.checked)}/>{failed} bilde(r) kunne ikke hentes. Jeg vil skrive ut med tydelig markering av manglende bilder.</label>}
@@ -39,6 +40,5 @@ export default function WorkOrderPrint({context,root,unit}){
  <div><h3>{g.name}</h3><p>Varenr. {g.sku||'ikke registrert'}</p><strong>{new Intl.NumberFormat('nb-NO').format(g.quantity)} {g.unit}</strong></div></article>)}</div></section>)}
  <section className="bolig-work-notes"><h2>Merknader fra bestillingsgrunnlaget</h2><p>Tekstene gjelder den oppførte avtaleutgaven. Kontroller dem sammen med varelisten.</p>{data.notes.map((note,i)=><div key={i}><h3>{note.title}</h3>{note.text&&<p className="bolig-work-text">{note.text}</p>}{(note.blocks||[]).map(b=><div key={b.id}>{b.title&&<h4>{b.title}</h4>}<p className="bolig-work-text">{b.text}</p></div>)}</div>)}</section>
  <footer><h2>Dette arket bygger på</h2>{data.sources.map(s=><p key={s.id}>{s.title}{s.version?` · v${s.version}`:''} · {stamp(s.at)} · Ref. {s.id}</p>)}<p>Skrevet ut {stamp(new Date())}. Kontroller nyeste utgave ved endringer.</p></footer>
- <div className="bolig-work-page-identity">Bolig {data.identity.unit} · {data.identity.address} · {data.identity.project}</div>
- </article>}</Dialog>}</>;
+ </article>}</Dialog>{data&&createPortal(<div className="bolig-work-page-identity" aria-hidden="true">Bolig {data.identity.unit} · {data.identity.address} · {data.identity.project}</div>,document.body)}</>}</>;
 }

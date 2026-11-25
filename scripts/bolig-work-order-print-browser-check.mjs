@@ -22,26 +22,26 @@ try{
  await page.setViewportSize({width:360,height:800});eq(await dialog.evaluate(el=>el.scrollWidth<=el.clientWidth+1),true,'360px dialog has no horizontal overflow');eq(await dialog.locator('.bolig-work-good').first().evaluate(el=>el.scrollWidth<=el.clientWidth+1),true,'image and text fit mobile');
  await dialog.evaluate(el=>{el.scrollTop=el.scrollHeight;});
  await page.emulateMedia({media:'print'});await page.pdf({path:path.join(tmp,'sheet.pdf'),format:'A4',printBackground:true});
+ if(process.env.BOLIG_PRINT_ARTIFACT_DIR){fs.mkdirSync(process.env.BOLIG_PRINT_ARTIFACT_DIR,{recursive:true});fs.copyFileSync(path.join(tmp,'sheet.pdf'),path.join(process.env.BOLIG_PRINT_ARTIFACT_DIR,'long-list.pdf'));}
  const text=execFileSync('pdftotext',[path.join(tmp,'sheet.pdf'),'-'],{encoding:'utf8'});for(const marker of ['H0101','Eksempelveien 10','GRUNNPAKKE SERVANT','VALGT TILVALG BATTERI','FROZEN-TEXT','accepted-v2'])eq(text.includes(marker),true,'actual PDF '+marker);
  for(let i=0;i<24;i++)eq(new RegExp('QA-'+i+'\\b').test(text),true,'all 24 item references survive pagination: '+i);
  eq(text.split('\f').filter(p=>p.trim()).every(p=>p.includes('H0101')&&p.includes('Eksempelveien 10')),true,'identity repeats on every printed page');
  eq(text.split('\f')[0].includes('QA firma'),true,'actual first-page header survives global app CSS and scrolled dialog');
  eq(text.includes('INTERNAL-PRIVATE-SHELL'),false,'internal app stays off printed pages');eq(text.split('\f').length>2,true,'real multipage PDF');
  eq(execFileSync('pdfimages',['-list',path.join(tmp,'sheet.pdf')],{encoding:'utf8'}).split('\n').filter(l=>/\s+image\s+/.test(l)).length>0,true,'actual image objects embedded in PDF');
- if(process.env.BOLIG_PRINT_ARTIFACT_DIR){fs.mkdirSync(process.env.BOLIG_PRINT_ARTIFACT_DIR,{recursive:true});fs.copyFileSync(path.join(tmp,'sheet.pdf'),path.join(process.env.BOLIG_PRINT_ARTIFACT_DIR,'long-list.pdf'));}
  await page.emulateMedia({media:'screen'});
  eq(await dialog.locator('.bolig-work-sheet').getAttribute('data-columns'),'2','many items automatically use two columns');
  await page.evaluate(()=>{window.__original=structuredClone(window.__state.goods);window.__state.goods=window.__original.slice(0,12).map((g,i)=>({...g,name:'Servantmodell '+i}));});
  await dialog.getByRole('button',{name:'Hent utskriften på nytt',exact:true}).click();await dialog.locator('.bolig-work-good').nth(11).waitFor();
  await page.waitForFunction(()=>[...document.querySelectorAll('.bolig-work-image img')].length===12&&[...document.querySelectorAll('.bolig-work-image img')].every(i=>i.complete&&i.naturalWidth>0));
  await page.emulateMedia({media:'print'});await page.pdf({path:path.join(tmp,'compact.pdf'),preferCSSPageSize:true,printBackground:true});
+ if(process.env.BOLIG_PRINT_ARTIFACT_DIR){fs.copyFileSync(path.join(tmp,'compact.pdf'),path.join(process.env.BOLIG_PRINT_ARTIFACT_DIR,'compact-12.pdf'));execFileSync('pdftoppm',['-singlefile','-scale-to','1400','-png',path.join(tmp,'compact.pdf'),path.join(process.env.BOLIG_PRINT_ARTIFACT_DIR,'compact-12')]);}
  const compact=execFileSync('pdftotext',[path.join(tmp,'compact.pdf'),'-'],{encoding:'utf8'});
  eq(compact.split('\f').filter(p=>p.trim()).length,1,'12 normal items with images, identity, notes and provenance fit one A4');
  for(let i=0;i<12;i++)eq(new RegExp('QA-'+i+'\\b').test(compact),true,'compact PDF retains item '+i);
  for(const marker of ['QA firma','Eksempelveien 10','FROZEN-TEXT','accepted-v2'])eq(compact.includes(marker),true,'compact PDF retains '+marker);
  eq(/Page size:\s+595\.\d+ x 841\.\d+ pts \(A4\)/.test(execFileSync('pdfinfo',[path.join(tmp,'compact.pdf')],{encoding:'utf8'})),true,'actual document uses A4');
  eq(await dialog.locator('.bolig-work-good h3').first().evaluate(el=>parseFloat(getComputedStyle(el).fontSize)>=13.3),true,'item name stays at least 10pt');
- if(process.env.BOLIG_PRINT_ARTIFACT_DIR){fs.copyFileSync(path.join(tmp,'compact.pdf'),path.join(process.env.BOLIG_PRINT_ARTIFACT_DIR,'compact-12.pdf'));execFileSync('pdftoppm',['-singlefile','-scale-to','1400','-png',path.join(tmp,'compact.pdf'),path.join(process.env.BOLIG_PRINT_ARTIFACT_DIR,'compact-12')]);}
  await page.emulateMedia({media:'screen'});await dialog.getByRole('combobox',{name:'Oppsett',exact:true}).selectOption('1');
  eq(await dialog.locator('.bolig-work-sheet').getAttribute('data-columns'),'1','manual larger-image layout overrides automatic columns');
  await page.evaluate(()=>window.__state.goods=window.__original.slice(0,2));await dialog.getByRole('button',{name:'Hent utskriften på nytt',exact:true}).click();await dialog.locator('.bolig-work-good').nth(1).waitFor();
