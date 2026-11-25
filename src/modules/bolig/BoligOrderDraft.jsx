@@ -1,3 +1,4 @@
+import WorkOrderPrint from "./BoligWorkOrderPrint.jsx";
 import React, { useEffect, useRef, useState } from "react";
 import { boligOrderRpc } from "./boligCatalogClient.js";
 import { rebaseOrderPositions } from "./boligPackageChoicesClient.js";
@@ -117,6 +118,8 @@ export default function BoligOrderDraft({
         : state?.suggested_positions || positions,
   };
   return (
+    <>
+    <WorkOrderPrint context={context} root={root} unit={unit}/>
     <section className="bolig-order-draft" aria-label="Bestillingsutkast">
       <h4>Klargjør varebestilling</h4>
       <p>
@@ -232,5 +235,6 @@ export default function BoligOrderDraft({
         onContinueHandled={() => setContinueRevision(0)}
       />
     </section>
+    </>
   );
 }

@@ -11,7 +11,7 @@ export default async function({db,call,actor,eq,rejects,id,firm,other,manager,ou
  await partners('create',{id:access,request_id:id(99002),access_mode:'project',reviewed:true,name:'QA Butikk',email:'collaborator@example.invalid',organisation:'QA',kind:'ue',days:30,token:'99003'.padEnd(64,'d'),features:['progress'],order_ids:[],task_ids:[]});
  const grant={request_id:id(99004),reviewed:true,enabled:true,edit_choices:false,edit_catalog:false,publish_shop:false};
  const manage=(rev,payload)=>rpc('bolig_partner_commerce_access',[firm,root,access,'save',rev,payload]);let permissions=await manage(0,grant);
- let cat=await rpc('bolig_catalog',[firm,root,'package',0,{name:'QA Base',lines:[{key:'base',name:'Grunnvare',sku:'QA',quantity:1,unit:'stk',credit_cents:0,image_url:'',product_url:''}]}]);
+ let cat=await rpc('bolig_catalog',[firm,root,'package',0,{name:'QA Base',lines:[{key:'base',name:'Grunnvare',sku:'QA',quantity:1,unit:'stk',credit_cents:0,image_url:'https://frozen.example.invalid/base.jpg',product_url:''}]}]);
  let choices=await rpc('bolig_package_choices',[firm,root,unit,'get',null,{}]);choices=await rpc('bolig_package_choices',[firm,root,unit,'save',0,{scope_id:'common',package_id:cat.packages[0].id,option_ids:[],catalog_revision:choices.revision,rooms_revision:choices.rooms_revision}]);
  await db.exec('reset role');await db.query("update bolig_private.units set contact_name='QA Beboer',contact_email='resident@example.invalid' where id=$1",[unit]);await actor(manager);
  const cstate=await rpc('bolig_commerce',[firm,root,unit,'get',{}]);
@@ -49,6 +49,25 @@ export default async function({db,call,actor,eq,rejects,id,firm,other,manager,ou
  eq(applied.documents.find(x=>x.id===accepted.id).status,'handled','Manager confirms separate supplier order');eq(applied.orders.length,1,'Supplement has own receipt order');eq(applied.orders[0].goods[0].sku,'MAN-123');
  await db.exec('reset role');const orderIdentity=(await db.query("select snapshot->'identity' identity from bolig_private.purchase_orders where root_id=$1 and unit_id=$2",[root,unit])).rows[0].identity;eq(orderIdentity.number,state.units[0].number,'Shop order export retains apartment number');eq(orderIdentity.unit_id,unit);await actor(manager);
  const again=await rpc('bolig_commerce',[firm,root,unit,'apply',{request_id:id(99016),document_id:accepted.id,revision:accepted.revision,reviewed:true,note:'QA leverandør har bekreftet separat tilleggsbestilling.',reference:'QA-EXPO-1'}]);eq(again.orders.length,1,'No duplicate supplier order on retry');
+ // Read-only confirmed work sheet uses the accepted revision and its own pictures.
+ await db.exec('reset role');await db.exec(await fs.readFile('supabase/migrations/20261125140217_bolig_confirmed_work_order_print.sql','utf8'));await actor(manager);
+ await rejects(()=>rpc('bolig_work_order',[firm,root,unit]),'22023');
+ let baseDoc=created.documents[0];
+ let approvedBase=await rpc('bolig_commerce',[firm,root,unit,'approve',{request_id:id(99201),document_id:baseDoc.id,revision:baseDoc.revision}]);baseDoc=approvedBase.documents.find(x=>x.id===baseDoc.id);
+ await rpc('bolig_commerce',[firm,root,unit,'publish',{request_id:id(99202),document_id:baseDoc.id,revision:baseDoc.revision,token:'99203'.padEnd(64,'b'),acceptance_deadline:'2030-11-25'}]);
+ await db.exec("reset role;select set_config('qa.user','',false);set role anon");
+ await rpc('bolig_resident_decision',['99203'.padEnd(64,'b'),'accept',baseDoc.id,{name:'QA Beboer',confirmed:true,request_id:id(99204)}]);
+ await rejects(()=>rpc('bolig_work_order',[firm,root,unit]),'42501');await actor(outsider,other);await rejects(()=>rpc('bolig_work_order',[firm,root,unit]),'42501');await actor(manager);
+ const sheet=await rpc('bolig_work_order',[firm,root,unit]);
+ eq(sheet.goods.find(g=>g.sku==='QA').image_url,'https://frozen.example.invalid/base.jpg','Base picture comes from the accepted choice revision');
+ eq(sheet.confirmed,true,'Only accepted base is described as customer confirmed');eq(sheet.goods.some(g=>g.name==='Grunnvare'),true,'Base package included');
+ eq(sheet.goods.some(g=>g.sku==='MAN-123'),true,'Accepted shop supplement included once');eq(sheet.goods.filter(g=>g.sku==='MAN-123').length,1,'Applied shop order is not counted twice');
+ eq(sheet.goods.find(g=>g.sku==='MAN-123').image_url,lines[0].image_url,'Accepted supplement picture is preserved');
+ eq(sheet.goods.every(g=>!('price_cents' in g)&&!('credit_cents' in g)),true,'Artisan output contains no goods prices');
+ eq(sheet.identity.unit,state.units[0].number,'Correct apartment on print sheet');eq(sheet.sources.length,2,'Unaccepted newer shop proposal excluded');
+ eq(JSON.stringify(sheet).includes('resident@example.invalid'),false,'Customer contact email stays off wall sheet');
+ eq((await rpc('bolig_work_order',[firm,root,unit])).basis,sheet.basis,'Unchanged confirmed basis is stable');
+ await rejects(()=>rpc('bolig_work_order',[other,root,unit]),'42501');
  await db.exec('reset role');await db.query('update bolig_private.units set choice_deadline=current_date-1 where id=$1',[unit]);await actor(outsider,other);s=await shop();await rejects(()=>shop('publish',{...payload,request_id:id(99018),basis:s.basis}),'PT409');await actor(manager);
  await partners('revoke',{id:access,request_id:id(99017)});await actor(outsider,other);await rejects(()=>shop(),'42501');await rejects(()=>shop('publish',payload),'42501');
  await actor(manager);
