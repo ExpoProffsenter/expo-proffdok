@@ -36,7 +36,7 @@ export function residentLinkMail(snapshot, token) {
   ];
   const instructions = agreement
     ? "Se gjennom innholdet og prisene i avtalen før du svarer. Å åpne lenken er ingen aksept. Etter svarfristen må du kontakte prosjektleder. Lenken er personlig og skal ikke videresendes."
-    : "Her finner du prosjektets delte boligvalg, avtaler, dokumentlenker og meldinger. Valg sendes til gjennomgang. Avtaler må aksepteres separat. " + (snapshot.shared_household ? "De registrerte eierne deler denne boligportalen. Ikke del lenken med andre." : "Lenken er personlig og skal ikke videresendes.");
+    : "Her finner du prosjektets delte boligvalg, avtaler, dokumentlenker og meldinger. Kontroller grunnpakke, tilvalg og pris før du bekrefter bestillingen. Den bekreftede utgaven lagres og låses. " + (snapshot.shared_household ? "De registrerte eierne deler denne boligportalen. Ikke del lenken med andre." : "Lenken er personlig og skal ikke videresendes.");
   return brandedInvitationMail({
     snapshot,
     link,

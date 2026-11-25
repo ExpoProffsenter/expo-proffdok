@@ -1,11 +1,13 @@
 import React from "react";
 import { OfferTextAt } from "./BoligOfferText.jsx";
+import {PortalGoods,PortalPrices} from "./BoligPortalChoiceCards.jsx";
 import {shopGoodsTotal} from "./boligShopCore.js";
 import { agreementMoney as money, goodsDiff } from "./boligCommerceCore.js";
 
 const amount = g => g ? `${g.quantity} ${g.unit} · ${g.name}${g.sku ? ` · varenr. ${g.sku}` : ""}` : "Utgår";
 export default function BoligAgreementSummary({ document }) {
   const s = document.snapshot;
+  if(s.source==='resident')return <section className="bolig-agreement-summary" aria-label="Bekreftet bestilling"><h3>Bekreftet grunnpakke og tilvalg</h3><p>{s.reason}</p><PortalGoods goods={s.goods}/><PortalPrices items={s.price_details}/><div className="bolig-commerce-price"><span>Pristillegg inkl. mva.</span><strong>{money(s.total_cents)}</strong><small>Grunnpakken er inkludert i hovedleveransen.</small></div>{s.requires_supplier_followup&&<p>Endrede varer følges opp av prosjektleder.</p>}</section>;
   if(s.source==='shop')return <section className="bolig-agreement-summary" aria-label="Butikktillegg til aksept"><h3>{s.reason}</h3><p>Dette kommer i tillegg til grunnpakken og tidligere avtaler.</p>
     <OfferTextAt blocks={s.text_blocks} position={0}/>
     <ul className="bolig-agreement-goods">{s.shop_lines.map((g,i)=><React.Fragment key={g.key||i}><li>

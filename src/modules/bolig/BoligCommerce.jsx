@@ -144,7 +144,7 @@ export default function BoligCommerce({ context, root, unit }) {
       <button type="button" disabled={busy || loading} onClick={() => run(null, null, true)}>Prøv samme lagring igjen</button></div>}
     {data && <>
       {writable && !form && <div className="bolig-commerce-actions">
-        {overview.choice?.status !== "accepted" && <button type="button" disabled={disabled || !data.selection} onClick={() => start("choice", overview.choice)}><Plus size={17}/>Klargjør beboeraksept</button>}
+        {!data.resident_direct_confirmation && overview.choice?.status !== "accepted" && <button type="button" disabled={disabled || !data.selection} onClick={() => start("choice", overview.choice)}><Plus size={17}/>Klargjør beboeraksept</button>}
         <button type="button" disabled={disabled || !data.orders.length} onClick={() => start("change")}><Plus size={17}/>Ny endringsordre</button>
       </div>}
       {!data.selection && <p>Lagre boligens grunnpakke og tilvalgspakker før du klargjør beboeraksept.</p>}
@@ -182,9 +182,9 @@ export default function BoligCommerce({ context, root, unit }) {
         </form>
       </Dialog>}
       <h4>{overview.choice?.status === "expired" ? "Siste boligavtale · svarfrist utløpt" : "Gjeldende boligavtale"}</h4>
-      {overview.choice ? row(overview.choice) : <p>{data.documents.some(d => d.kind === "choice") ? "Ingen aktiv boligavtale. Tidligere utgaver finner du i Avtalehistorikk." : "Ingen boligavtale er klargjort ennå."}</p>}
+      {overview.choice ? row(overview.choice) : <p>{data.documents.some(d => d.kind === "choice") ? "Ingen aktiv boligavtale. Tidligere utgaver finner du i Avtalehistorikk." : data.resident_direct_confirmation ? "Beboeren velger og bekrefter bestillingen selv i beboerportalen. Ingen ekstra godkjenning er nødvendig." : "Ingen boligavtale er klargjort ennå."}</p>}
       {overview.choice?.status === "expired" && <p className="bolig-commerce-guidance">Svarfristen er utløpt. Beboeren må kontakte prosjektleder.{writable && " Åpne avtalen og velg «Lag ny utgave» hvis dere avtaler en ny frist."}</p>}
-      {overview.choice?.status === "accepted" && <p className="bolig-commerce-guidance">Boligvalget er akseptert. Samle videre vare- og prisendringer i en ny endringsordre.</p>}
+      {overview.choice?.status === "accepted" && <p className="bolig-commerce-guidance">{overview.choice.snapshot?.source === "resident" ? "Bestillingen er bekreftet og låst. Åpne beboerportalen for å tillate nye valg med en ny frist. Tidligere varebestillinger må følges opp separat." : "Boligvalget er akseptert. Samle videre vare- og prisendringer i en ny endringsordre."}</p>}
       <h4>Siste endringsgrunnlag · {overview.changes.length}</h4>
       <p>Gjør alle ønskede vareendringer i samme kladd. Gjennomgå samlet pris før du lager beboerlenken.</p>
       <div className="bolig-commerce-list">{overview.changes.map(row)}</div>

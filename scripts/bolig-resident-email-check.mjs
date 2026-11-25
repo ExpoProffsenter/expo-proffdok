@@ -205,7 +205,7 @@ for (const kind of ["reminder", "agreement"]) {
   );
   eq(
     variant.text.includes(
-      kind === "agreement" ? "ingen aksept" : "aksepteres separat",
+      kind === "agreement" ? "ingen aksept" : "bekrefter bestillingen",
     ),
     true,
   );
@@ -223,3 +223,6 @@ const identityMismatch = await handleResidentLinkEmail(request({expectedUserId:'
 eq(identityMismatch.status,403,'effective support/customer identity cannot send using administrator JWT');
 eq(sends.length,sendsBeforeIdentity,'identity mismatch never reaches provider');
 console.log('resident-mail identity: 2 extra assertions PASS');
+
+// Direct resident confirmation has its own transactional receipt transport.
+await import('./bolig-confirmation-email-check.mjs');

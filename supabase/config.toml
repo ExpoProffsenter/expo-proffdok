@@ -45,3 +45,7 @@ verify_jwt = false
 [functions.bolig-portal-images]
 # Valid resident capability and project-bound published image allowlist, checked twice.
 verify_jwt = false
+
+[functions.bolig-confirmation-email]
+# Server-only Vault token; only queued, resident-confirmed versions can be sent.
+verify_jwt = false

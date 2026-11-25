@@ -114,3 +114,12 @@ Sales viser tekst mellom postene i kundevisning og i tilbuds-/aksept-/kontrakts-
 ## Bestillingsark med bilder
 
 Boligens Bestilling og levering → Til håndverkeren i boligen → Skriv ut leveranseoversikt lager et prisfritt A4-ark med automatisk én/to kolonner etter vareantall fra den aksepterte boligavtalen og aksepterte endringer/butikktillegg. Bilder hentes fra samme låste pakkeutgave. Uten akseptert grunnavtale kan siste innsendte beboervalg vises, tydelig merket som ikke akseptert. Prosjektledertilgang kontrolleres på server ved åpning og rett før utskrift. Manglende bilder merkes. Funksjonen sender eller endrer ingen bestilling. Se docs/architecture/BOLIG_WORK_ORDER_PRINT.md.
+
+
+## Direkte bestillingsbekreftelse i beboerportalen
+
+Beboeren velger blant publiserte, fryste pakker og tilvalg, kontrollerer varer/pris og bekrefter én gang med navn og avkryssing. Det opprettes atomisk en ny `choice_versions`-utgave, en akseptert `commercial_documents`-utgave og to uavhengige e-postkvitteringer. Ingen prosjektledergodkjenning eller leverandørsending inngår. Bekreftet innhold vises låst i både prosjekt og portal, med bilder fra samme utgave.
+
+Prosjektleder bruker **Se som beboer** for skrivebeskyttet forhåndsvisning og **Åpne for endringer** med ny frist per bolig. Tidligere bekreftelse gjelder frem til ny bekreftelse. Eksisterende ordre overskrives aldri. Individuelle, aksepterte endringsavtaler krever ordinær endringsoppfølging; butikktillegg beholdes separat.
+
+Migrasjonen `20261125172116_bolig_resident_direct_confirmation.sql` er kompatibel med eksisterende prosjekter og lenker. Preview kan aktiveres bare på et syntetisk prosjekt med `roots.resident_confirmation_enabled`. Etter godkjent release aktiverer `confirmation_mail_settings.flow_enabled` samme flyt også i eksisterende Aamodthagen og nye prosjekter. Selve kvitteringsutsendingen har separat `enabled`, `enabled_since`, endpoint og valgfri `test_recipient`. Rutine-e-post/påminnelser endres ikke. Se `docs/architecture/BOLIG_DIRECT_CONFIRMATION.md` og `docs/qa/BOLIG_DIRECT_CONFIRMATION_20261125.md`. Eldre avsnitt om innsending til gjennomgang beskriver den beholdte overgangsflyten før aktivering; aktive portaler bruker direkte bekreftelse etter release.
