@@ -102,7 +102,7 @@ export function unitStatus(unit, status, layer) {
   if (status.catalog_changed)
     return { tone: "review", label: "Pakkeoppsett endret", icon: "review" };
   return status.choice_revision
-    ? { tone: "ready", label: "Lagrede / bekreftede boligvalg", icon: "check" }
+    ? { tone: "ready", label: "Boligvalg lagret", icon: "check" }
     : { tone: "empty", label: status.catalog_empty === true ? "Grunnpakke og tilvalg er ikke klargjort" : "Boligvalg ikke startet", icon: "empty" };
 }
 const icons = {
