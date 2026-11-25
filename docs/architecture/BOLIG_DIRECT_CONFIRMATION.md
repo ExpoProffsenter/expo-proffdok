@@ -16,7 +16,7 @@ Prosjektleder kan åpne den enkelte boligen til en ny dato skrevet som dd.mm.å�
 
 Har boligen en akseptert individuell endringsavtale utenfor katalogpakken, brukes den eksisterende endringsavtaleflyten. Slike spesialleveranser kan ikke erstattes automatisk med eldre katalogvarer/priser. Aksepterte butikktillegg er separate avtaler og beholdes. Dette er en kontroll av et annet avtalegrunnlag, ikke en ny prosjektledergodkjenning av ordinære pakkevalg.
 
-Se som beboer bruker samme PortalPage i et isolert iframe med samme CSS, autentisert prosjektlederlesing og skrivebeskyttede handlinger. Ingen kundekapasitet opprettes eller lagres for forhåndsvisningen. Firma-/boligbytte og bortfalt tilgang fjerner gammel visning. Den faktiske kundelenken kan fortsatt deles separat; den er ikke en skrivebeskyttet forhåndsvisning.
+Se som beboer bruker samme PortalPage i et isolert iframe med samme CSS, autentisert prosjektlederlesing og skrivebeskyttede handlinger. Lokale pakkevalg og Se over valget kan prøves uten lagring. Sendeknappene vises deaktivert, også meldingseksempelet når meldinger er avslått; da vises fortsatt forklaringen om avslåtte meldinger. Frist og allerede låst bestilling respekteres, så det vises ikke falske redigeringsmuligheter i en låst bolig. Ingen kundekapasitet opprettes eller lagres for forhåndsvisningen. Firma-/boligbytte og bortfalt tilgang fjerner gammel visning. Den faktiske kundelenken kan fortsatt deles separat; den er ikke en skrivebeskyttet forhåndsvisning.
 
 ## E-post
 

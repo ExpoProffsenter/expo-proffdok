@@ -70,3 +70,11 @@ Begge migrasjoner er installert i Sandbox: 20261125174314_bolig_resident_direct_
 Faktisk Sandbox-RPC-test av intern endring traff den forventede bekreftet/låst-sperren; undertransaksjonen ble rullet tilbake. Etter test: choice_revision3, én akseptert avtale, null leverandørordre, to sendte kvitteringer, changes_until=null, global flow AV og mail AV. Demo-preflight19+5 kontroller PASS uten seed/reset.
 
 CI45673142797 avdekket en utilsiktet omdøping av den eksisterende statusen for vanlige lagrede utkast. Teksten er gjenopprettet til Boligvalg lagret. Den nye bekreftet/låst-grenen er uendret. Begge berørte eksisterende regresjoner er kjørt lokalt og PASS: bolig-overview-react og bolig-overview-browser63 assertions. Ingen tester eller forventninger er svekket. Endelig head/CI registreres i PR350; ny TEST OK mangler fortsatt.
+
+## TEST OK og siste forhåndsvisningsjustering
+
+Kenneth har gitt uttrykkelig TEST OK for PR350 og bekreftet at begge testkvitteringer kom frem. Siste godkjente kandidat74ea3c647749265bd09152871804eec778500408 hadde alle10 CI-jobber success i45674536738 og READY Preview. Ingen produksjonssetting er utført ennå.
+
+Kenneth ba samtidig om synlige sendeknapper i Se som beboer. Den avgrensede justeringen lar prosjektleder prøve lokale valg og Se over valget; endelig bekreftelse og melding vises deaktivert. Ingen RPC, browserlagring, bestilling eller e-post skal skje fra forhåndsvisningen. Låste boliger beholder samme låste visning som beboeren. Ny Chromium-suite44 assertions PASS, inkludert synlige/deaktiverte sendeknapper og tvungen submit som ikke gir RPC; ordinær kunde bekrefter fortsatt normalt. Ingen SQL-/Edge-/utsendingsendring i dette tillegget. Ny CI må være grønn og eksakt Preview-kandidat kontrolleres før autorisert release. Dette er den konkret etterspurte visningsjusteringen; ingen ny funksjonsgodkjenning skal oppfinnes for uendret bekreftelsesflyt.
+
+Siste knappejustering: full npm run build (critical+build) PASS og eksisterende portalChromium57 PASS. Diff kontrollert uten endring i database, Edge eller faktisk kundeportalens sending. Scope-kommando ble først kalt med feil --base-argument; riktig CLI bruker posisjonell baseline. Ingen guard er endret.

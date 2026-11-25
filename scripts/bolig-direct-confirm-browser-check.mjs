@@ -53,6 +53,23 @@ try{
  await page.evaluate(()=>window.__show('manager'));await page.getByRole('heading',{name:'Beboerens bestilling',exact:true}).waitFor();eq(await page.locator('.bolig-direct-confirmation-panel').evaluate(n=>n.scrollWidth<=n.clientWidth+1),true,'Actual internal style stack: confirmation panel has no overflow');eq(await page.getByText('Innsendte valg går til gjennomgang',{exact:false}).count(),0,'Old double-check instruction is gone');eq(await page.evaluate(()=>window.__unitStatus({}, {resident_confirmed:true,resident_choice_locked:true,catalog_changed:true}, 'choice').label),'Bekreftet og låst');await page.getByRole('button',{name:'Se som beboer',exact:true}).click();const frame=page.frameLocator('iframe[title="Beboerens portal – skrivebeskyttet"]');await frame.getByRole('heading',{name:'Din bekreftede bestilling · utgave 1'}).waitFor();eq(await frame.getByRole('button',{name:'Skriv ut bestillingsbekreftelse'}).isDisabled(),true);eq(await frame.getByText('QA gate 7',{exact:true}).first().isVisible(),true);
  await frame.getByRole('button',{name:'Mine valg',exact:true}).click();const before=await page.evaluate(()=>window.__calls.length);await frame.getByRole('button',{name:'Avtaler',exact:true}).click();eq(await page.evaluate(()=>window.__calls.length),before,'Preview navigation performs no mutation');await page.screenshot({path:path.join(tmp,'manager-preview.png'),fullPage:true});
  await page.getByRole('button',{name:'Lukk se som beboer',exact:true}).click();await page.getByLabel('Ny frist for denne boligen').fill('31.02.2027');eq(await page.getByRole('button',{name:'Åpne for endringer',exact:true}).isDisabled(),true,'Invalid Norwegian calendar date cannot reopen');await page.getByLabel('Ny frist for denne boligen').fill('02.12.2027');await page.getByRole('button',{name:'Åpne for endringer',exact:true}).click();await page.getByText('Endringsfrist:',{exact:false}).waitFor();const reopen=await page.evaluate(()=>window.__calls.find(c=>c.p_action==='reopen'));eq(reopen.p_payload.deadline,'2027-12-02');eq(typeof reopen.p_payload.request_id,'string');
+ // Manager may explore local choices and review, while all sends remain disabled.
+ await page.getByRole('button',{name:'Se som beboer',exact:true}).click();
+ await frame.getByRole('heading',{name:'Velg det som passer deg'}).waitFor();
+ const previewCalls=await page.evaluate(()=>window.__calls.length);
+ eq(await frame.getByRole('checkbox',{name:'Eik med montering'}).isEnabled(),true);
+ await frame.getByRole('checkbox',{name:'Eik med montering'}).check();
+ await frame.getByRole('button',{name:'Se over valget',exact:true}).click();
+ eq(await frame.getByRole('button',{name:'Bekreft bestilling',exact:true}).isVisible(),true);
+ eq(await frame.getByRole('button',{name:'Bekreft bestilling',exact:true}).isDisabled(),true);
+ await frame.getByRole('button',{name:'Meldinger',exact:true}).click();
+ eq(await frame.getByRole('button',{name:'Send melding',exact:true}).isVisible(),true);
+ eq(await frame.getByRole('button',{name:'Send melding',exact:true}).isDisabled(),true);
+ // Even a forced DOM submit cannot bypass the preview guard.
+ await frame.locator('form').evaluate(f=>f.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true})));
+ eq(await page.evaluate(()=>window.__calls.length),previewCalls,'Exploring and forced preview submit perform no RPC');
+ eq(await page.evaluate(()=>window.__state.confirmation.version),1,'Preview preserves accepted version');
+ await page.getByRole('button',{name:'Lukk se som beboer',exact:true}).click();
  // Switching back to resident after reopen retains the old receipt and seeds previous options.
  await page.evaluate(()=>window.__show('public'));await page.getByRole('heading',{name:'Velg det som passer deg'}).waitFor();eq(await page.getByRole('checkbox',{name:'Eik med montering'}).isChecked(),true);eq(await page.getByRole('heading',{name:'Din bekreftede bestilling · utgave 1'}).isVisible(),true);eq(await page.getByText('Denne bekreftelsen gjelder frem til',{exact:false}).isVisible(),true);
  await page.evaluate(()=>{window.__deny=true;});await page.getByRole('button',{name:'Hent siste status',exact:true}).click();await page.getByRole('heading',{name:'Portalen kan ikke åpnes'}).waitFor();eq(await page.getByRole('heading',{name:'Din bekreftede bestilling · utgave 1'}).count(),0,'Revoked access removes frozen details');eq(errors,[]);

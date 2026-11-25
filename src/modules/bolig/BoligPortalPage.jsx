@@ -228,7 +228,8 @@ export default function BoligPortalPage({preview = false, previewData = null}) {
     waiting = data?.events.some(
       (e) => e.kind === "request" && e.status === "pending",
     );
-  const disabled = busy || !!pending || preview;
+  const localDisabled = busy || !!pending;
+  const disabled = localDisabled || preview;
   const direct = data?.direct_confirmation === true;
   const locked = direct && data?.choice_locked;
   const confirmedChoice = data?.confirmation;
@@ -402,8 +403,8 @@ export default function BoligPortalPage({preview = false, previewData = null}) {
                     Et valg venter på gjennomgang. {data.messaging_enabled === false ? "Kontakt prosjektleder hvis du ønsker å endre det. Kontaktinformasjon finner du under Meldinger." : "Send en melding hvis du ønsker å endre det."}
                   </p>
                 )}
-                <ChoiceCards data={data} draft={draft} disabled={disabled || (!direct && waiting) || choicesClosed} onChange={update}/>
-                {data.combine_base_id && !selected && <p role="alert">Et tidligere valgt tilvalg er ikke lenger tilgjengelig. <button disabled={disabled || (!direct && waiting) || choicesClosed} onClick={()=>update({offer_ids:[],menu_version:data.menu_version})}>Velg tilvalg på nytt</button></p>}
+                <ChoiceCards data={data} draft={draft} disabled={localDisabled || (!direct && waiting) || choicesClosed} onChange={update}/>
+                {data.combine_base_id && !selected && <p role="alert">Et tidligere valgt tilvalg er ikke lenger tilgjengelig. <button disabled={localDisabled || (!direct && waiting) || choicesClosed} onClick={()=>update({offer_ids:[],menu_version:data.menu_version})}>Velg tilvalg på nytt</button></p>}
                 {selected?.conflict && <p role="alert">{selected.conflict}</p>}
                 {data.combine_base_id && (direct || !waiting) && selected && !selected.conflict && <div className="bolig-choice-total">Samlet pristillegg inkl. mva.: {money(selected.total_cents)}</div>}
                 {selected && !selected.conflict && (direct || !waiting) && !choicesClosed && (
@@ -419,11 +420,11 @@ export default function BoligPortalPage({preview = false, previewData = null}) {
                       <textarea
                         maxLength={2000}
                         value={draft.body}
-                        disabled={disabled}
+                        disabled={localDisabled}
                         onChange={(e) => update({ body: e.target.value })}
                       />
                     </label>
-                    <button type="submit" disabled={disabled}>
+                    <button type="submit" disabled={localDisabled}>
                       Se over valget
                     </button>
                   </form>
@@ -662,7 +663,7 @@ export default function BoligPortalPage({preview = false, previewData = null}) {
                     </article>
                   ))}
               </div>
-              {data.messaging_enabled === false ? (
+              {data.messaging_enabled === false && (
                 <p className="bolig-portal-message">
                   Meldinger er slått av for din bolig. Kontakt prosjektleder
                   {data.manager_contact ? (
@@ -679,7 +680,8 @@ export default function BoligPortalPage({preview = false, previewData = null}) {
                   . Tidligere meldinger og informasjon om planlagt arbeid ligger
                   fortsatt her.
                 </p>
-              ) : (
+              )}
+              {(data.messaging_enabled !== false || preview) && (
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
