@@ -12,6 +12,7 @@ const KshmsExecutions = lazy(() => import('./KshmsExecutions.jsx'));
 const tools = [
   { key: 'sja', title: 'SJA – sikker jobbanalyse', explanation: 'Planlegg arbeidsoppgaven, vurder farer og avklar tiltak før dere starter. Ansvarlig prosjektleder signerer etter gjennomgang med deltakerne.', create: 'Opprett SJA', open: 'Åpne SJA', close: 'Lukk SJA-oversikten' },
   { key: 'ruh', title: 'RUH – rapport om uønsket hendelse', explanation: 'Meld skader, farlige forhold og nestenulykker. Velg ansvarlig og frist. Ansvarlig følger opp tiltakene og lukker etter egen kontroll.', create: 'Registrer RUH', open: 'Åpne RUH', close: 'Lukk RUH-oversikten' },
+  { key: 'deviations', title: 'Avvik meldt til avvikssentralen', explanation: 'Se avvik som er meldt direkte til avvikssentralen og knyttet til dette prosjektet.', open: 'Åpne avvik fra avvikssentralen', close: 'Lukk avvik fra avvikssentralen' },
   { key: 'round', title: 'Vernerunde / kontroll', explanation: 'Kontroller arbeidsstedet, dokumenter svar og avklar oppfølging. Valgt ansvarlig får et appvarsel og fullfører med egen bekreftelse.', create: 'Opprett vernerunde', open: 'Åpne vernerunder', close: 'Lukk vernerunde-oversikten' },
   { key: 'risk', title: 'Risikovurdering 5×5', explanation: 'Vurder sannsynlighet og konsekvens før og etter tiltak. Velg ansvarlig, dokumenter oppfølging og ta en uttrykkelig beslutning.', create: 'Opprett risikovurdering 5×5', open: 'Åpne risikovurderinger', close: 'Lukk risikovurderingsoversikten' },
 ];
@@ -52,12 +53,12 @@ function ProjectTools({ context, projectId, readOnly }) {
     <div className="ks-project-overview-actions"><button type="button" className="secondary" disabled={loading} onClick={refresh}>Oppdater dokumentoversikt</button>{loading&&<span role="status">Henter status …</span>}</div>
     {overviewError&&<p role="alert">{overviewError} {counts?'Sist bekreftede antall vises.':'Prøv Oppdater dokumentoversikt.'}</p>}
     {tools.map(tool => <div key={tool.key} className="ks-project-tool">
-      <h3><button type="button" className="ks-project-tool-toggle" disabled={accessDenied} aria-label={opened===tool.key?tool.close:tool.open} aria-expanded={opened===tool.key} aria-controls={`ks-project-${tool.key}`} onClick={()=>show(tool.key)}><span>{tool.title}<small>{counts?documentCountText(tool.key,counts[tool.key]):loading?'Henter antall …':'Antall ikke tilgjengelig'}</small></span><span aria-hidden="true">{opened===tool.key?'−':'+'}</span></button></h3>
+      <h3><button type="button" className="ks-project-tool-toggle" disabled={accessDenied} aria-label={opened===tool.key?tool.close:tool.open} aria-expanded={opened===tool.key} aria-controls={`ks-project-${tool.key}`} onClick={()=>show(tool.key)}><span>{tool.title}{tool.key!=='deviations'&&<small>{counts?documentCountText(tool.key,counts[tool.key]):loading?'Henter antall …':'Antall ikke tilgjengelig'}</small>}</span><span aria-hidden="true">{opened===tool.key?'−':'+'}</span></button></h3>
       <div id={`ks-project-${tool.key}`} hidden={opened!==tool.key} className="ks-project-tool-content">
         <p>{tool.explanation}</p>
-        <button type="button" disabled={readOnly||accessDenied} onClick={()=>show(tool.key,true)}>{tool.create}</button>
+        {tool.create&&<button type="button" disabled={readOnly||accessDenied} onClick={()=>show(tool.key,true)}>{tool.create}</button>}
         {visited[tool.key]&&<Suspense fallback={<p role="status">Henter prosjektets dokumenter …</p>}>
-          {tool.key==='sja'?<KshmsSja context={context} projectId={projectId} scopeReadOnly={readOnly} active={opened==='sja'} createRequest={requests.sja}/>:tool.key==='ruh'?<KshmsDeviations context={context} projectId={projectId} ruhOnly scopeReadOnly={readOnly} active={opened==='ruh'} request={requests.ruh}/>:<KshmsExecutions context={context} projectId={projectId} kind={tool.key} scopeReadOnly={readOnly} active={opened===tool.key} createRequest={requests[tool.key]}/>}
+          {tool.key==='sja'?<KshmsSja context={context} projectId={projectId} scopeReadOnly={readOnly} active={opened==='sja'} createRequest={requests.sja}/>:tool.key==='ruh'?<KshmsDeviations context={context} projectId={projectId} ruhOnly scopeReadOnly={readOnly} active={opened==='ruh'} request={requests.ruh}/>:tool.key==='deviations'?<KshmsDeviations context={context} projectId={projectId} scopeReadOnly={readOnly} active={opened==='deviations'}/>:<KshmsExecutions context={context} projectId={projectId} kind={tool.key} scopeReadOnly={readOnly} active={opened===tool.key} createRequest={requests[tool.key]}/>}
         </Suspense>}
       </div>
     </div>)}

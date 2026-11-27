@@ -18,7 +18,8 @@ window.IS_REACT_ACT_ENVIRONMENT = true; window.TextEncoder = TextEncoder; window
 window.MessageChannel = class { constructor() { this.port1 = { onmessage: null }; this.port2 = { postMessage: () => setImmediate(() => this.port1.onmessage?.()) }; } };
 window.confirm = () => { throw Error('Unexpected confirmation'); };
 const company = '11111111-1111-4111-8111-111111111111', user = '22222222-2222-4222-8222-222222222222', projectId = '33333333-3333-4333-8333-333333333333', otherProject = '44444444-4444-4444-8444-444444444444';
-const context = { company_id: company, user_id: user, enabled: true, manage: true, company_name: 'QA byggefirma' }, identity = { id: user, name: 'QA arbeidsleder' }, members = [{ id: user, identity }];
+const worker = 'eeeeeeee-1111-4111-8111-111111111111';
+const context = { company_id: company, user_id: user, enabled: true, manage: true, company_name: 'QA byggefirma' }, identity = { id: user, name: 'QA arbeidsleder' }, members = [{ id: user, identity, firmaadmin: true }, { id: worker, identity: {name:'QA medarbeider'} }];
 const projects = [{ id: projectId, name: 'QA mur og flis', address: 'QA arbeidssted' }, { id: otherProject, name: 'QA tømrerordre', address: '' }];
 const routines = [{ id: '55555555-5555-4555-8555-555555555555', routine_id: '66666666-6666-4666-8666-666666666666', reference_number: 12, number: 3, content: { title: 'Støv ved mur og flis', chapter: 'HMSK', procedure: 'QA godkjent arbeidsmetode' } }];
 const sjas = new Map(), cases = new Map(), receipts = new Map(), calls = [];
@@ -39,8 +40,8 @@ window.__rpc = async (name, args) => {
     const p = args.p_payload, row = { id: p.id, company_id: company, project_id: p.project_id || null, project_name: projects.find(row => row.id === p.project_id)?.name, content: sjaContent(p.content), revision: 1, status: 'draft', created_by: user };
     sjas.set(row.id, row); return { sja: row };
   }
-  if (name === 'kshms_project_ruh_state' || name === 'kshms_deviation_state') {
-    const available = [...cases.values()].filter(row => !args.p_project_id || row.project_id === args.p_project_id), visible = available.filter(row => args.p_status === 'closed' ? row.status === 'closed' : row.status !== 'closed');
+  if (name === 'kshms_project_ruh_state' || name === 'kshms_deviation_overview') {
+    const available = [...cases.values()].filter(row => (!args.p_project_id || row.project_id === args.p_project_id) && (args.p_view !== 'mine' || row.responsible_id === user) && (args.p_view !== 'project' || row.category !== 'ruh')), visible = available.filter(row => args.p_status === 'all' || (args.p_status === 'closed' ? row.status === 'closed' : row.status !== 'closed'));
     return { context: scoped, project: args.p_project_id ? { id: args.p_project_id, name: projects.find(row => row.id === args.p_project_id).name, locked: false } : null, members, cases: visible, counts: { open: available.filter(row => row.status !== 'closed').length, closed: available.filter(row => row.status === 'closed').length }, next: null };
   }
   if (name === 'kshms_deviation_files') return [];
@@ -89,6 +90,32 @@ await act(async () => window.__unmount());
 await render('module'); assert(button('Avvik/RUH')); assert(button('SJA')); await click(button('Avvik/RUH')); assert(button('Registrer avvik')); assert(button('Registrer RUH')); assert(doc.body.textContent.includes('RUH betyr rapport om uønsket hendelse'));
 assert(doc.querySelector('.ks-case-list').textContent.includes('frist 11.10.2026')); await click(button('Registrer RUH')); assert(doc.querySelector('[role="dialog"]')); assert.equal(field('Type avvik').value,'ruh'); await click(button('Behold kladd og lukk')); await click(button('SJA')); assert(button('Ny SJA'));
 // Email links select authorized reads in the real module, with no implicit signatures/acknowledgments.
+await act(async () => window.__unmount());
+const personalRequest = {companyId:company,userId:user,nonce:'test-min-side',view:'mine',source:{source_kind:'company'}};
+await render('module',{deviationRequest:personalRequest});
+assert(doc.querySelector('[role="dialog"]'), 'Min side must open the real editor directly');
+assert.equal(doc.querySelector('[role="dialog"] [data-job-project]').value,'');
+await write(doc.querySelector('[role="dialog"] [data-job-project]'), projectId);
+await write(field('Kort tittel'),'QA fra Min side'); await write(field('Hva skjedde / hva er feil?'),'Rett og dokumenter kontrollen');
+await click(button('Avklares av firmaadmin')); assert.equal(field('Ansvarlig for retting').value,user);
+await write(field('Ansvarlig for retting'),worker); await write(field('Frist'),'2026-11-28');
+await act(async()=>{window.dispatchEvent(new window.Event('focus'));doc.dispatchEvent(new window.Event('visibilitychange'));});
+assert.equal(field('Kort tittel').value,'QA fra Min side');
+await click(button('Lagre avvik for oppfølging'));
+const registered=[...cases.values()].find(row=>row.title==='QA fra Min side');
+assert(registered); assert.equal(registered.project_id,projectId); assert.equal(registered.responsible_id,worker);
+await click(doc.querySelector('[aria-label="Lukk avviksdialog"]'));
+assert(!doc.querySelector('.ks-case-list').textContent.includes(registered.title),'Mine avvik only shows assignments for this user');
+await click(button('Til avvikssentralen')); await click(button('Vis tilsynsoversikt')); assert(button('Dokumentuttrekk'));
+await click([...doc.querySelectorAll('.ks-case-list button')].find(b=>b.textContent.includes(registered.title)));
+assert(!doc.querySelector('[role="dialog"] button[type="submit"]'),'Inspection must read saved case without editing');
+assert(!doc.querySelector('[role="dialog"] input[type="file"]'));
+assert(doc.querySelector('.ks-case-history').textContent.includes('Registrert'));
+await click(doc.querySelector('[aria-label="Lukk avviksdialog"]'));
+await render('entry',{projectId}); await click(button('Åpne avvik fra avvikssentralen'));
+assert(doc.querySelector('.ks-case-list').textContent.includes(registered.title),'Project must show the same case');
+await click([...doc.querySelectorAll('.ks-case-list button')].find(b=>b.textContent.includes(registered.title)));
+assert.equal(calls.filter(call=>call.name==='kshms_deviation_detail').at(-1).args.p_id,registered.id);
 await act(async () => window.__unmount()); const linkedSja = [...sjas.values()][0];
 window.history.replaceState({}, '', `/?kshmsSja=${linkedSja.id}&kshmsCompany=${company}`); await render('module');
 assert.equal(doc.querySelector('[aria-label="Velg KS/HMS-visning"]').value, 'sja'); await click(button('Åpne SJA fra e-posten')); assert.equal(doc.querySelector('[data-sja-field="title"]').value, linkedSja.content.title); await click(button('Lukk'));

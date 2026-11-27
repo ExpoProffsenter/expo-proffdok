@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "title": "Avvik fra Min side og felles tilsynsoversikt",
+  "change": "Min side åpner registrering og oppfølging i samme KS/HMS-avvikssak. Medarbeider kan velge prosjekt, frist og ansvarlig for retting eller tildele avklaringen til en aktiv firmaadmin. Prosjektet viser også egne saker registrert direkte i sentralen. Firmaets avvikssentral tilbyr prosjekt-, dato- og statusfilter samt en lesevisning til tilsyn med inngang til eksisterende dokumentuttrekk.",
+  "verification": "Utvidet React-prøve dekker direkte åpning fra Min side, prosjektvalg, firmatilordning, ansvarlig, bevart kladd, samme avviks-ID i prosjektet og lesevisning ved tilsyn. Alle 11 nye PostgreSQL-kontroller i Sandbox besto. De dekker firmaskille, egne oppgaver, status-, dato- og prosjektfiltre og krav om forvaltningsrett ved tilsyn. Testdata ble rullet tilbake. Innlogget Preview og publisering avventes.",
+  "documentation": {
+    "help": {"required": true, "reason": "Arbeidsflyt og knappene for melder, ansvarlig og firmaadmin beskrives."},
+    "architecture": {"required": true, "reason": "Felles lesefunksjon for register og prosjekt gjenbruker eksisterende avvik og tilgang."},
+    "setup": {"required": false, "reason": "Ingen nye innstillinger. Ny lesefunksjon må være installert før appkandidaten prøves i målmiljøet."},
+    "module": {"required": false, "reason": "Arbeidsflyten beskrives i Hjelp. Lagringskontrakten for avvik er uendret."}
+  }
+}

@@ -23,22 +23,30 @@ function Snapshot({row}) {
  return <dl className="ks-case-snapshot"><dt>Tittel</dt><dd>{row.title}</dd><dt>Hendelse</dt><dd>{row.event}</dd><dt>Type</dt><dd>{DEVIATION_CATEGORY[row.category]}</dd>{row.project_id&&<><dt>Prosjekt</dt><dd>Koblet til firmaprosjekt</dd></>}{row.project_reference&&<><dt>Ekstern / egen referanse</dt><dd>{row.project_reference}</dd></>}{row.routines&&<><dt>Rutiner</dt><dd>{row.routines}</dd></>}<dt>Ansvarlig</dt><dd>{identityText(row.responsible_identity)}</dd><dt>Frist / status</dt><dd>{formatDeviationDate(row.due_on)} · {DEVIATION_STATUS[row.status]}</dd>{notes.map(([label,key])=>row[key]?<div key={key}><dt>{label}</dt><dd>{row[key]}</dd></div>:null)}{row.closed_at&&<><dt>Lagret lukking</dt><dd>{identityText(row.closed_identity)} · {when(row.closed_at)}</dd></>}</dl>;
 }
 
-export default function KshmsDeviations({context,request,projectId=null,ruhOnly=false,scopeReadOnly=false,active=true}) {
+export default function KshmsDeviations({context,request,projectId=null,ruhOnly=false,scopeReadOnly=false,active=true,onOpenExtract}) {
  const companyId=context.company_id,userId=context.user_id;
  const [overview,setOverview]=useState(null),[status,setStatus]=useState('open'),[query,setQuery]=useState(''),[search,setSearch]=useState('');
+ const [view,setView]=useState('register'),[filtersOpen,setFiltersOpen]=useState(false);
+ const [filterProject,setFilterProject]=useState(null),[from,setFrom]=useState(''),[to,setTo]=useState('');
+ const inspection=context.manage&&view==='inspection';
+ const readOnly=scopeReadOnly||inspection;
  const [detail,setDetail]=useState(null),[form,setForm]=useState(null),[revision,setRevision]=useState(0),[source,setSource]=useState(null),[requestId,setRequestId]=useState('');
  const [files,setFiles]=useState([]),[fileLinks,setFileLinks]=useState({}),[dirty,setDirty]=useState(false),[cached,setCached]=useState(()=>readDeviationDraft(window.localStorage,userId,companyId,projectId));
  const [busy,setBusy]=useState(false),[loading,setLoading]=useState(false),[caseLoading,setCaseLoading]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState(''),[conflict,setConflict]=useState(null);
  const [controlled,setControlled]=useState(false),[reason,setReason]=useState(''),[reopenResponsible,setReopenResponsible]=useState(''),[reopenDue,setReopenDue]=useState(''),[pendingFile,setPendingFile]=useState(false);
  const [closureAttempted,setClosureAttempted]=useState(false),closureFields=useRef({});
  const [registrationAttempted,setRegistrationAttempted]=useState(false),[registrationFocus,setRegistrationFocus]=useState(0),registrationSummary=useRef(null),registrationFields=useRef({});
- const choices=useKshmsJobChoices(context,Boolean(form));
+ const choices=useKshmsJobChoices(context,active&&(Boolean(form)||(!projectId&&(filtersOpen||inspection))));
  const closureIssues=deviationClosureIssues(form||{});
  const scope=useRef(null),listSerial=useRef(0),caseSerial=useRef(0),locked=useRef(false),handled=useRef(null),pendingUpload=useRef(null);
  const current=owner=>owner?.active&&scope.current===owner;
  const members=overview?.members||[],row=detail?.case;
- const editable=Boolean(form&&!scopeReadOnly&&(!projectId||Boolean(overview))&&!overview?.project?.locked&&(!row||row.status!=='closed'&&(context.manage||row.responsible_id===userId)));
+ const intakeAdmin=members.find(member=>member.firmaadmin);
+ const editable=Boolean(form&&!readOnly&&(!projectId||Boolean(overview))&&!overview?.project?.locked&&(!row||row.status!=='closed'&&(context.manage||row.responsible_id===userId)));
  const canClose=Boolean(editable&&row?.status!=='closed'&&row?.responsible_id===userId);
+ const filterKey=JSON.stringify([companyId,userId,projectId,view,inspection,status,query,filterProject,from,to]);
+ const [confirmedFilter,setConfirmedFilter]=useState(null);
+ const visibleOverview=confirmedFilter===filterKey?overview:null;
  const isRuh=form?.category==='ruh',registrationIssues=registrationAttempted&&isRuh?ruhRegistrationIssues(form,members):[];
  useEffect(()=>{if(registrationFocus)registrationSummary.current?.focus();},[registrationFocus]);
 
@@ -46,15 +54,20 @@ export default function KshmsDeviations({context,request,projectId=null,ruhOnly=
  const loadOverview=async(cursor=null)=>{
   const owner=scope.current,serial=++listSerial.current;if(!current(owner))return;
   setLoading(true);
-  try{const result=await kshmsRpc(projectId?'kshms_project_ruh_state':'kshms_deviation_state',{p_company_id:companyId,p_status:status,p_query:query,p_before:cursor?.before||null,p_before_id:cursor?.id||null,...(projectId?{p_project_id:projectId}:{})});
+  try{
+   const args={p_company_id:companyId,p_status:status,p_query:query,p_before:cursor?.before||null,p_before_id:cursor?.id||null};
+   const result=ruhOnly
+    ? await kshmsRpc('kshms_project_ruh_state',{...args,p_project_id:projectId})
+    : await kshmsRpc('kshms_deviation_overview',{...args,p_view:projectId?'project':inspection?'inspection':view==='mine'?'mine':'register',p_project_id:projectId||filterProject,p_from:from||null,p_to:to||null});
    if(!current(owner)||serial!==listSerial.current)return;
    if(result.context?.company_id!==companyId||result.context?.user_id!==userId||result.context?.enabled===false||projectId&&result.context.project_id!==projectId)throw new Error('Tilgangen til firmaet og prosjektet må kontrolleres på nytt.');
+   setConfirmedFilter(filterKey);
    setOverview(previous=>cursor&&previous?{...result,cases:[...new Map([...previous.cases,...result.cases].map(x=>[x.id,x])).values()]}:result);
   }catch(e){if(current(owner)&&serial===listSerial.current){if(e.code==='42501'){caseSerial.current++;setOverview(null);setDetail(null);setForm(null);setDirty(false);setConflict(null);setFiles([]);setFileLinks({});setCaseLoading(false);}setError(e.message);}}
   finally{if(current(owner)&&serial===listSerial.current)setLoading(false);}
  };
- useEffect(()=>{loadOverview();},[companyId,userId,projectId,status,query]);
- useEffect(()=>{const refresh=e=>{if(e.detail?.company_id===companyId)loadOverview();};window.addEventListener(DEVIATION_CHANGE_EVENT,refresh);return()=>window.removeEventListener(DEVIATION_CHANGE_EVENT,refresh);},[companyId,userId,status,query]);
+ useEffect(()=>{loadOverview();},[companyId,userId,projectId,status,query,view,inspection,filterProject,from,to]);
+ useEffect(()=>{const refresh=e=>{if(e.detail?.company_id===companyId)loadOverview();};window.addEventListener(DEVIATION_CHANGE_EVENT,refresh);return()=>window.removeEventListener(DEVIATION_CHANGE_EVENT,refresh);},[companyId,userId,projectId,status,query,view,inspection,filterProject,from,to]);
  useEffect(()=>{const warn=e=>{if(dirty){e.preventDefault();e.returnValue='';}};window.addEventListener('beforeunload',warn);return()=>window.removeEventListener('beforeunload',warn);},[dirty]);
  const keepDraft=(next,nextSource=source)=>{
   const draft={form:next,id:row?.id||null,revision,requestId,source:nextSource,projectId:row?.project_id||nextSource?.project_id||projectId};
@@ -70,11 +83,11 @@ export default function KshmsDeviations({context,request,projectId=null,ruhOnly=
  };
  const openCase=async(id,restore=null)=>{
   if(!leaveEditor())return;
-  const recovered=restore||(cached?.id===id?cached:null);
+  const recovered=inspection?null:restore||(cached?.id===id?cached:null);
   const owner=scope.current,serial=++caseSerial.current;setCaseLoading(true);setError('');setNotice('');setFiles([]);setFileLinks({});
   try{const result=await kshmsRpc('kshms_deviation_detail',{p_company_id:companyId,p_id:id});
    if(!current(owner)||serial!==caseSerial.current)return;
-   if(result.case?.company_id!==companyId||result.case.id!==id||projectId&&(result.case.project_id!==projectId||result.case.category!=='ruh'))throw new Error('Saken kunne ikke kontrolleres for dette firmaet og prosjektet.');
+   if(result.case?.company_id!==companyId||result.case.id!==id||projectId&&(result.case.project_id!==projectId||(ruhOnly?result.case.category!=='ruh':result.case.category==='ruh'||result.case.source_kind!=='company')))throw new Error('Saken kunne ikke kontrolleres for dette firmaet og prosjektet.');
    installDetail(result);
    if(recovered){setForm(recovered.form);setRevision(recovered.revision);setDirty(true);setNotice('Din ulagrede tekst er hentet tilbake.');if(result.case.revision!==recovered.revision)setConflict(result);}
    try{const items=await kshmsRpc('kshms_deviation_files',{p_company_id:companyId,p_id:id});if(current(owner)&&serial===caseSerial.current)setFiles(items);}catch{if(current(owner)&&serial===caseSerial.current)setError('Saken er åpnet, men vedleggene kunne ikke hentes. Trykk «Oppdater sak».');}
@@ -83,7 +96,7 @@ export default function KshmsDeviations({context,request,projectId=null,ruhOnly=
  };
  const newCase=(link=null,restore=null)=>{
   if(scopeReadOnly||overview?.project?.locked||!leaveEditor())return;
-  if(projectId)link={...link,project_id:projectId,source_kind:'company',category:'ruh'};
+  if(projectId)link={...link,project_id:projectId,source_kind:'company',category:ruhOnly?'ruh':link?.category||'hms'};
   setRegistrationAttempted(false);
   caseSerial.current++;setCaseLoading(false);setDetail(null);setFiles([]);setFileLinks({});setConflict(null);setError('');setNotice('');setControlled(false);setClosureAttempted(false);setSource(restore?.source||link);setRequestId(restore?.requestId||crypto.randomUUID());setRevision(0);
   setForm(restore?.form||deviationForm({title:link?.title||'',event:link?.event||'',category:link?.category||'hms',due_on:link?.due_on||'',immediate_action:link?.immediate_action||''}));setDirty(Boolean(restore));pendingUpload.current=null;setPendingFile(false);
@@ -91,8 +104,14 @@ export default function KshmsDeviations({context,request,projectId=null,ruhOnly=
  useEffect(()=>{
   if(!request||request.companyId!==companyId||request.userId!==userId||handled.current===request.nonce||locked.current)return;
   handled.current=request.nonce;
-  if(request.id)openCase(request.id);else if(request.source)newCase(request.source);
+  setView(request.view==='mine'?'mine':'register');setStatus('open');
+  setFilterProject(null);setFrom('');setTo('');setFiltersOpen(false);setQuery('');setSearch('');
+  if(request.id)openCase(request.id);else if(request.source)newCase(request.source,request.view==='mine'&&cached&&!cached.id?cached:null);
  },[request?.nonce,companyId,userId,busy]);
+ const switchView=next=>{
+  setView(next);setStatus(next==='inspection'?'all':'open');setOverview(null);setError('');
+  setQuery('');setSearch('');setFilterProject(null);setFrom('');setTo('');setFiltersOpen(false);
+ };
  const restoreDraft=()=>{if(cached?.id)openCase(cached.id,cached);else if(cached)newCase(null,cached);};
  const dismissEditor=()=>{if(locked.current)return;if(dirty)keepDraft(form);caseSerial.current++;setCaseLoading(false);setForm(null);setDetail(null);setDirty(false);setConflict(null);setFiles([]);setFileLinks({});};
  const focusClosureField=key=>{const field=closureFields.current[key];field?.focus({preventScroll:true});field?.scrollIntoView({block:'center',behavior:'smooth'});};
@@ -115,14 +134,14 @@ export default function KshmsDeviations({context,request,projectId=null,ruhOnly=
   finally{locked.current=false;if(current(owner))setBusy(false);}
  };
  const reopen=async()=>{
-  if(locked.current||reason.trim().length<10||!context.manage||!row)return;
+  if(locked.current||readOnly||reason.trim().length<10||!context.manage||!row)return;
   const owner=scope.current,serial=caseSerial.current;locked.current=true;setBusy(true);setError('');
   try{const result=await saveDeviation({rpc:kshmsRpc,companyId,userId,action:'reopen',payload:{id:row.id,revision:row.revision,reason,responsible_id:reopenResponsible,due_on:reopenDue},isCurrent:()=>current(owner)&&serial===caseSerial.current});
    if(result){installDetail(result);setNotice('Saken er gjenåpnet. Valgt ansvarlig får oppgaven.');publishDeviationChange(result.case);}
   }catch(e){if(current(owner))setError(e.message);}finally{locked.current=false;if(current(owner))setBusy(false);}
  };
  const uploadFile=async(file=null)=>{
-  if(locked.current||!row||row.status==='closed')return;
+  if(locked.current||readOnly||!row||row.status==='closed')return;
   const owner=scope.current,id=row.id,serial=caseSerial.current;locked.current=true;setBusy(true);setError('');
   try{
    let job=pendingUpload.current;
@@ -152,17 +171,44 @@ export default function KshmsDeviations({context,request,projectId=null,ruhOnly=
  };
 
  return <section aria-label="KS/HMS avvikssentral">
-  <div className="ks-card"><div className="ks-row"><h3>{projectId?'RUH for dette prosjektet':'Avvik og RUH'}</h3><div className="ks-actions">{!ruhOnly&&<button type="button" disabled={busy||caseLoading||scopeReadOnly} onClick={()=>newCase()}>Registrer avvik</button>}<button type="button" disabled={busy||caseLoading||scopeReadOnly||overview?.project?.locked||Boolean(projectId&&!overview)} onClick={()=>newCase({category:'ruh',source_kind:'company',project_id:projectId})}>Registrer RUH</button></div></div><p>Beskriv hendelsen, velg ansvarlig og sett frist. Ansvarlig dokumenterer tiltak og egen kontroll og lukker selv. Bare ansvarlig får det faste varselet. Private personalsaker og fortrolige varsler følger firmaets separate kanal.</p>
-   <p>RUH betyr rapport om uønsket hendelse. Meld skader, farlige forhold og nestenulykker, også når det gikk bra denne gangen.</p>
-   {!context.manage&&<p>Her ser du saker du har meldt eller fått ansvar for.</p>}
-   <div className="ks-actions"><button type="button" className={status==='open'?'active':'secondary'} aria-pressed={status==='open'} onClick={()=>setStatus('open')}>Åpne ({overview?.counts?.open??'…'})</button><button type="button" className={status==='closed'?'active':'secondary'} aria-pressed={status==='closed'} onClick={()=>setStatus('closed')}>Lukkede ({overview?.counts?.closed??'…'})</button><button type="button" className="secondary" disabled={loading} onClick={()=>loadOverview()}>Oppdater liste</button></div>
+  <div className="ks-card">
+   <div className="ks-row">
+    <h3>{projectId?(ruhOnly?'RUH for dette prosjektet':'Avvik fra avvikssentralen'):inspection?'Tilsynsoversikt':view==='mine'?'Mine avvik':'Avvikssentral'}</h3>
+    <div className="ks-actions">
+     {!readOnly&&!ruhOnly&&<button type="button" disabled={busy||caseLoading||overview?.project?.locked||Boolean(projectId&&!overview)} onClick={()=>newCase()}>Registrer avvik</button>}
+     {!readOnly&&(!projectId||ruhOnly)&&<button type="button" disabled={busy||caseLoading||overview?.project?.locked||Boolean(projectId&&!overview)} onClick={()=>newCase({category:'ruh',source_kind:'company',project_id:projectId})}>Registrer RUH</button>}
+     {!projectId&&view==='register'&&onOpenExtract&&<button type="button" className="secondary" onClick={()=>switchView('inspection')}>Vis tilsynsoversikt</button>}
+     {!projectId&&view!=='register'&&<button type="button" className="secondary" onClick={()=>switchView('register')}>Til avvikssentralen</button>}
+     {inspection&&onOpenExtract&&<button type="button" className="secondary" onClick={onOpenExtract}>Dokumentuttrekk</button>}
+    </div>
+   </div>
+   {inspection?<p>Velg hvilke saker du vil vise. Åpne en sak for å lese tiltak, kontroll og historikk.</p>:view==='mine'?<p>Her ser du avvik du har fått ansvar for.</p>:<>
+    <p>Velg hvem som skal følge opp, og sett en frist. Den ansvarlige dokumenterer rettingen og lukker saken etter egen kontroll.</p>
+    {!projectId&&<p>RUH betyr rapport om uønsket hendelse. Meld skader, farlige forhold og nestenulykker. Bruk firmaets kanal for private personalsaker og fortrolige varsler.</p>}
+    {!context.manage&&<p>Her ser du saker du har meldt eller fått ansvar for.</p>}
+   </>}
+   <div className="ks-actions">
+    <button type="button" className={status==='open'?'active':'secondary'} aria-pressed={status==='open'} onClick={()=>setStatus('open')}>Åpne ({visibleOverview?.counts?.open??'…'})</button>
+    <button type="button" className={status==='closed'?'active':'secondary'} aria-pressed={status==='closed'} onClick={()=>setStatus('closed')}>Lukkede ({visibleOverview?.counts?.closed??'…'})</button>
+    {!projectId&&<button type="button" className={status==='all'?'active':'secondary'} aria-pressed={status==='all'} onClick={()=>setStatus('all')}>Alle</button>}
+    <button type="button" className="secondary" disabled={loading} onClick={()=>loadOverview()}>Oppdater liste</button>
+   </div>
    <form className="ks-case-search" onSubmit={e=>{e.preventDefault();setQuery(search.trim());}}><Field label="Søk i tittel, hendelse eller ansvarlig" value={search} onChange={setSearch} maxLength={200}/><button type="submit">Søk</button>{query&&<button type="button" className="secondary" onClick={()=>{setSearch('');setQuery('');}}>Tøm søk</button>}</form>
+   {!projectId&&<details open={inspection||filtersOpen} onToggle={e=>{if(!inspection)setFiltersOpen(e.currentTarget.open);}} className="ks-followup-section">
+    <summary>Prosjekt og periode{filterProject||from||to?' · filter aktivt':''}</summary>
+    <ProjectChoice choices={choices} projectId={filterProject} onSelect={setFilterProject} companyOption="Alle prosjekter og firmaavvik" filter/>
+    <div className="ks-case-grid">
+     <Field label="Meldt fra og med" value={from} onChange={setFrom} type="date"/>
+     <Field label="Meldt til og med" value={to} onChange={setTo} type="date"/>
+    </div>
+    {(filterProject||from||to)&&<button type="button" className="secondary" onClick={()=>{setFilterProject(null);setFrom('');setTo('');}}>Nullstill filtre</button>}
+   </details>}
    {loading&&<p role="status">Henter saker …</p>}
-   <div className="ks-case-list">{overview?.cases.map(item=><button type="button" className="secondary ks-case-row" key={item.id} disabled={busy||caseLoading} onClick={()=>openCase(item.id)}><strong>{item.title}</strong><span>{DEVIATION_CATEGORY[item.category]} · {DEVIATION_STATUS[item.status]} · frist {formatDeviationDate(item.due_on)}</span><span>Ansvarlig: {identityText(item.responsible_identity)}</span></button>)}</div>
-   {overview&&!overview.cases.length&&!loading&&<p>{query?'Ingen saker passer søket.':status==='closed'?'Ingen lukkede saker å vise.':'Ingen åpne saker å vise.'}</p>}
-   {overview?.next&&<button type="button" className="secondary" disabled={loading} onClick={()=>loadOverview(overview.next)}>Vis flere saker</button>}
+   <div className="ks-case-list">{visibleOverview?.cases.map(item=><button type="button" className="secondary ks-case-row" key={item.id} disabled={busy||caseLoading} onClick={()=>openCase(item.id)}><strong>{item.title}</strong><span>{DEVIATION_CATEGORY[item.category]} · {DEVIATION_STATUS[item.status]} · frist {formatDeviationDate(item.due_on)}</span><span>{!projectId&&(item.project_name||(item.project_id?'Tilknyttet prosjekt':'Firmaavvik'))}{!projectId&&' · '}Ansvarlig {identityText(item.responsible_identity)}</span></button>)}</div>
+   {visibleOverview&&!visibleOverview.cases.length&&!loading&&<p>{query?'Ingen saker passer søket.':status==='closed'?'Ingen lukkede saker å vise.':status==='open'?'Ingen åpne saker å vise.':'Ingen saker passer filtrene.'}</p>}
+   {visibleOverview?.next&&<button type="button" className="secondary" disabled={loading} onClick={()=>loadOverview(visibleOverview.next)}>Vis flere saker</button>}
   </div>
-  {cached&&!dirty&&<div className="ks-card"><p>En ulagret avvikskladd er beholdt på denne enheten: «{cached.form.title||'Nytt avvik'}».</p><button type="button" className="secondary" disabled={busy||caseLoading} onClick={restoreDraft}>Hent avvikskladd</button><button type="button" className="secondary" disabled={busy} onClick={()=>{if(window.confirm('Slette den lokale avvikskladden?')){window.localStorage.removeItem(deviationDraftKey(userId,companyId,projectId));setCached(null);}}}>Slett lokal kladd</button></div>}
+  {cached&&!dirty&&!readOnly&&<div className="ks-card"><p>En ulagret avvikskladd er beholdt på denne enheten: «{cached.form.title||'Nytt avvik'}».</p><button type="button" className="secondary" disabled={busy||caseLoading} onClick={restoreDraft}>Hent avvikskladd</button><button type="button" className="secondary" disabled={busy} onClick={()=>{if(window.confirm('Slette den lokale avvikskladden?')){window.localStorage.removeItem(deviationDraftKey(userId,companyId,projectId));setCached(null);}}}>Slett lokal kladd</button></div>}
   {!form&&<>{error&&<p className="ks-error" role="alert">{error}</p>}{notice&&<p className="ks-notice" role="status">{notice}</p>}{caseLoading&&<p role="status">Henter sak …</p>}</>}
   {form&&active&&<DeviationEditorSurface modal title={row?row.title:isRuh?'Registrer RUH':'Registrer avvik'} onClose={dismissEditor} busy={busy||caseLoading}>
    {error&&<p className="ks-error" role="alert">{error}</p>}{notice&&<p className="ks-notice" role="status">{notice}</p>}{caseLoading&&<p role="status">Henter sak …</p>}
@@ -173,20 +219,20 @@ export default function KshmsDeviations({context,request,projectId=null,ruhOnly=
    {row&&!editable?<Snapshot row={row}/>:<form noValidate={isRuh} onSubmit={e=>{e.preventDefault();save('save');}}>
     <fieldset disabled={busy||caseLoading||!editable} className="ks-case-fields"><legend>Hendelse og ansvar</legend>
      {isRuh&&registrationIssues.length>0&&<div className="ks-closure-missing" role="alert" tabIndex={-1} ref={registrationSummary}><strong>Dette mangler før du kan registrere RUH</strong><ul>{registrationIssues.map(item=><li key={item.key}><button type="button" className="secondary" onClick={()=>registrationFields.current[item.key]?.focus()}>{item.label}</button></li>)}</ul></div>}
-     {isRuh&&<ProjectChoice choices={choices} projectId={row?.project_id||source?.project_id||null} projectName={overview?.project?.name} fixed={Boolean(row||projectId||source&&source.source_kind!=='company')} onSelect={selectProject}/>}
+     {(isRuh||!row)&&<ProjectChoice choices={choices} projectId={row?.project_id||source?.project_id||null} projectName={overview?.project?.name} fixed={Boolean(row||projectId||source&&source.source_kind!=='company')} onSelect={selectProject} companyOption={isRuh?undefined:'Firmaavvik'}/>}
      {isRuh&&<Field label="Ekstern ordre / egen referanse" value={form.project_reference} onChange={v=>change('project_reference',v)} hint="For eksternt oppdrag eller din egen referanse. Firmaprosjekt velges i listen over." maxLength={4000} suggestions={['Eksternt oppdrag: [ordrenummer / oppdragsgiver]']}/>}
      <Field label="Kort tittel" value={form.title} onChange={v=>change('title',v)} required maxLength={200} inputRef={node=>{registrationFields.current.title=node;}} hint={isRuh?RUH_HINTS.title:''} suggestions={isRuh?RUH_SUGGESTIONS.title:[]}/><Field label="Hva skjedde / hva er feil?" value={form.event} onChange={v=>change('event',v)} multiline required inputRef={node=>{registrationFields.current.event=node;}} hint={isRuh?RUH_HINTS.event:''} suggestions={isRuh?RUH_SUGGESTIONS.event:[]}/>
-     <div className="ks-case-grid"><label className="ks-field"><span>Type avvik</span><select disabled={ruhOnly} value={form.category} onChange={e=>change('category',e.target.value)}>{Object.entries(DEVIATION_CATEGORY).map(([key,label])=><option key={key} value={key}>{label}</option>)}</select></label>
-     <label className="ks-field"><span>Ansvarlig</span><select ref={node=>{registrationFields.current.responsible_id=node;}} required value={form.responsible_id} disabled={Boolean(row&&!context.manage)} onChange={e=>change('responsible_id',e.target.value)}><option value="">Velg medarbeider</option>{form.responsible_id&&!members.some(m=>m.id===form.responsible_id)&&<option value={form.responsible_id} disabled>{identityText(row?.responsible_identity)} – tilgang må avklares</option>}{members.map(member=><option key={member.id} value={member.id}>{identityText(member.identity)}</option>)}</select></label><Field label="Frist" value={form.due_on} onChange={v=>change('due_on',v)} type="date" required inputRef={node=>{registrationFields.current.due_on=node;}}/></div>
+     <div className="ks-case-grid"><label className="ks-field"><span>Type avvik</span><select disabled={ruhOnly} value={form.category} onChange={e=>change('category',e.target.value)}>{Object.entries(DEVIATION_CATEGORY).filter(([key])=>!projectId||ruhOnly||key!=='ruh').map(([key,label])=><option key={key} value={key}>{label}</option>)}</select></label>
+     <label className="ks-field"><span>{isRuh?'Ansvarlig':'Ansvarlig for retting'}</span><select ref={node=>{registrationFields.current.responsible_id=node;}} required value={form.responsible_id} disabled={Boolean(row&&!context.manage)} onChange={e=>change('responsible_id',e.target.value)}><option value="">Velg medarbeider</option>{form.responsible_id&&!members.some(m=>m.id===form.responsible_id)&&<option value={form.responsible_id} disabled>{identityText(row?.responsible_identity)} – tilgang må avklares</option>}{members.map(member=><option key={member.id} value={member.id}>{identityText(member.identity)}</option>)}</select>{!row&&intakeAdmin&&form.responsible_id!==intakeAdmin.id&&<button type="button" className="secondary" onClick={()=>change('responsible_id',intakeAdmin.id)}>Avklares av firmaadmin</button>}</label><Field label="Frist" value={form.due_on} onChange={v=>change('due_on',v)} type="date" required inputRef={node=>{registrationFields.current.due_on=node;}}/></div>
      <Field label="Strakstiltak / sikring nå" value={form.immediate_action} onChange={v=>change('immediate_action',v)} multiline hint={isRuh?RUH_HINTS.immediate_action:''} suggestions={isRuh?RUH_SUGGESTIONS.immediate_action:[]}/>
      {isRuh&&<><RoutineChoice choices={choices} onSelect={text=>change('routines',appendSjaSuggestion(form.routines,text))}/><Field label="Relevante rutiner" value={form.routines} onChange={v=>change('routines',v)} multiline maxLength={4000} hint="Valgfritt. Velg bedriftens rutiner over eller skriv annen relevant instruks."/></>}
      {row&&<><label className="ks-field"><span>Status under arbeid</span><select value={form.status} onChange={e=>change('status',e.target.value)}><option value="open">Åpent</option><option value="in_progress">Under behandling</option></select></label>{notes.filter(([,key])=>key!=='immediate_action').map(([label,key])=>{const requirement=DEVIATION_CLOSURE_REQUIREMENTS.find(item=>item.key===key);return <Field key={key} label={label} value={form[key]} onChange={v=>change(key,v)} multiline inputRef={element=>{closureFields.current[key]=element;}} suggestions={isRuh?RUH_SUGGESTIONS[key]||[]:[]} hint={[isRuh?RUH_HINTS[key]:'',requirement?'Kreves ved lukking. Kort tekst, for eksempel «OK», godtas.':''].filter(Boolean).join(' ')} error={closureAttempted?closureIssues.find(item=>item.key===key)?.message:''}/>;})}{row.source_kind==='project'&&<label className="ks-check"><input type="checkbox" checked={Boolean(form.include_in_report)} onChange={e=>change('include_in_report',e.target.checked)}/>Ta med i sluttrapport</label>}</>}
      <div className={!row?'deviation-dialog-footer':'ks-actions'}>{!row&&<button type="button" className="secondary" onClick={dismissEditor}>Behold kladd og lukk</button>}<button type="submit" className={row?'secondary':undefined}>{busy?'Lagrer …':row?'Lagre uten å lukke':isRuh?'Lagre RUH for oppfølging':'Lagre avvik for oppfølging'}</button></div>
     </fieldset>
    </form>}
-   {row?.status!=='closed'&&row&&<div className="ks-case-closure"><h4>Lukking etter egen kontroll</h4>{canClose?<><p>Fyll feltene merket «Kreves ved lukking», bekreft egen kontroll og trykk «Lagre og lukk avvik». Knappen lagrer også teksten.</p>{closureAttempted&&closureIssues.length>0&&<div className="ks-closure-missing" role="alert"><strong>Fyll inn før du lukker:</strong><ul>{closureIssues.map(item=><li key={item.key}><button type="button" className="secondary" onClick={()=>focusClosureField(item.key)}>{item.label}</button></li>)}</ul></div>}<label className="ks-check"><input type="checkbox" checked={controlled} disabled={busy||caseLoading} onChange={e=>setControlled(e.target.checked)}/>Jeg har gjennomført og dokumentert tiltakene og kontrollert at resultatet er i orden.</label><button type="button" disabled={busy||caseLoading||!controlled||pendingFile} onClick={()=>save('close')}>{busy?'Lagrer …':isRuh?'Lagre og lukk RUH':'Lagre og lukk avvik'}</button>{pendingFile&&<p>Fullfør vedlegget før du lukker.</p>}</>:<p>Valgt ansvarlig må dokumentere kontrollen og lukke selv. {context.manage?'Du kan endre ansvarlig hvis oppgaven skal overtas av en annen.':'Lesing av saken fjerner ikke ansvarligvarselet.'}</p>}</div>}
-   {row&&<section className="ks-case-files" aria-label="Vedlegg til avvik"><h4>Vedlegg ({files.length})</h4><p>Vedlegg kan åpnes av personer med tilgang til denne saken. PDF, bilder, Word og Excel, maks 10 MB per fil.</p><ul>{files.map(file=><li key={file.id}>{file.name} · {Math.ceil(file.size_bytes/1024)} KB <button type="button" className="secondary" onClick={()=>linkFile(file)}>Hent sikker lenke</button>{fileLinks[file.id]&&<a href={fileLinks[file.id]} target="_blank" rel="noreferrer">Åpne {file.name}</a>}</li>)}</ul>{row.status!=='closed'&&<label className="ks-field"><span>Legg til vedlegg</span><input type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,.docx,.xlsx" disabled={busy||caseLoading||pendingFile} onChange={e=>{const file=e.target.files?.[0];e.target.value='';if(file)uploadFile(file);}}/></label>}{pendingFile&&<button type="button" disabled={busy} onClick={()=>uploadFile()}>Fullfør vedlegg</button>}</section>}
-   {row?.status==='closed'&&context.manage&&<details><summary>Åpne saken igjen</summary><p>Forklar hvorfor og velg en ansvarlig som fortsatt har tilgang. Historikken fra tidligere lukking beholdes.</p><Field label="Grunn til gjenåpning (minst 10 tegn)" value={reason} onChange={setReason} multiline/><label className="ks-field"><span>Ansvarlig ved gjenåpning</span><select value={reopenResponsible} onChange={e=>setReopenResponsible(e.target.value)}>{!members.some(m=>m.id===reopenResponsible)&&<option value="">Velg aktiv medarbeider</option>}{members.map(m=><option key={m.id} value={m.id}>{identityText(m.identity)}</option>)}</select></label><Field label="Ny frist" value={reopenDue} onChange={setReopenDue} type="date"/><button type="button" disabled={busy||reason.trim().length<10||!members.some(m=>m.id===reopenResponsible)||!reopenDue} onClick={reopen}>Lagre gjenåpning</button></details>}
+   {!readOnly&&row?.status!=='closed'&&row&&<div className="ks-case-closure"><h4>Lukking etter egen kontroll</h4>{canClose?<><p>Fyll feltene merket «Kreves ved lukking», bekreft egen kontroll og trykk «Lagre og lukk avvik». Knappen lagrer også teksten.</p>{closureAttempted&&closureIssues.length>0&&<div className="ks-closure-missing" role="alert"><strong>Fyll inn før du lukker:</strong><ul>{closureIssues.map(item=><li key={item.key}><button type="button" className="secondary" onClick={()=>focusClosureField(item.key)}>{item.label}</button></li>)}</ul></div>}<label className="ks-check"><input type="checkbox" checked={controlled} disabled={busy||caseLoading} onChange={e=>setControlled(e.target.checked)}/>Jeg har gjennomført og dokumentert tiltakene og kontrollert at resultatet er i orden.</label><button type="button" disabled={busy||caseLoading||!controlled||pendingFile} onClick={()=>save('close')}>{busy?'Lagrer …':isRuh?'Lagre og lukk RUH':'Lagre og lukk avvik'}</button>{pendingFile&&<p>Fullfør vedlegget før du lukker.</p>}</>:<p>Valgt ansvarlig må dokumentere kontrollen og lukke selv. {context.manage?'Du kan endre ansvarlig hvis oppgaven skal overtas av en annen.':'Lesing av saken fjerner ikke ansvarligvarselet.'}</p>}</div>}
+   {row&&<section className="ks-case-files" aria-label="Vedlegg til avvik"><h4>Vedlegg ({files.length})</h4><p>Vedlegg kan åpnes av personer med tilgang til denne saken. PDF, bilder, Word og Excel, maks 10 MB per fil.</p><ul>{files.map(file=><li key={file.id}>{file.name} · {Math.ceil(file.size_bytes/1024)} KB <button type="button" className="secondary" onClick={()=>linkFile(file)}>Hent sikker lenke</button>{fileLinks[file.id]&&<a href={fileLinks[file.id]} target="_blank" rel="noreferrer">Åpne {file.name}</a>}</li>)}</ul>{!readOnly&&row.status!=='closed'&&(!row.project_id||!overview?.project?.locked)&&<label className="ks-field"><span>Legg til vedlegg</span><input type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,.docx,.xlsx" disabled={busy||caseLoading||pendingFile} onChange={e=>{const file=e.target.files?.[0];e.target.value='';if(file)uploadFile(file);}}/></label>}{pendingFile&&<button type="button" disabled={busy} onClick={()=>uploadFile()}>Fullfør vedlegg</button>}</section>}
+   {!readOnly&&row?.status==='closed'&&context.manage&&<details><summary>Åpne saken igjen</summary><p>Forklar hvorfor og velg en ansvarlig som fortsatt har tilgang. Historikken fra tidligere lukking beholdes.</p><Field label="Grunn til gjenåpning (minst 10 tegn)" value={reason} onChange={setReason} multiline/><label className="ks-field"><span>Ansvarlig ved gjenåpning</span><select value={reopenResponsible} onChange={e=>setReopenResponsible(e.target.value)}>{!members.some(m=>m.id===reopenResponsible)&&<option value="">Velg aktiv medarbeider</option>}{members.map(m=><option key={m.id} value={m.id}>{identityText(m.identity)}</option>)}</select></label><Field label="Ny frist" value={reopenDue} onChange={setReopenDue} type="date"/><button type="button" disabled={busy||reason.trim().length<10||!members.some(m=>m.id===reopenResponsible)||!reopenDue} onClick={reopen}>Lagre gjenåpning</button></details>}
    {detail&&<section className="ks-case-history" aria-label="Avvikshistorikk"><h4>Historikk</h4>{detail.events.map(event=><details key={event.id}><summary>{eventNames[event.action]||event.action} · {when(event.created_at)} · {identityText(event.actor_identity)}</summary>{event.action==='file'?<p>{event.snapshot.name} · {Math.ceil(event.snapshot.size_bytes/1024)} KB</p>:<Snapshot row={event.snapshot}/>}</details>)}{detail.next&&<button type="button" className="secondary" disabled={busy||caseLoading} onClick={olderEvents}>Vis eldre historikk</button>}</section>}
    {row&&<button type="button" className="secondary" disabled={busy||caseLoading} onClick={()=>openCase(row.id)}>Oppdater sak</button>}
    {conflict&&<article className="ks-card"><h3>Sist lagrede sak – sammenlign med kladden din</h3><Snapshot row={conflict.case}/><button type="button" className="secondary" disabled={busy} onClick={()=>{if(window.confirm('Erstatte teksten på skjermen med lagret sak? Den lokale kladden beholdes til neste lagring.'))installDetail(conflict);}}>Bruk lagret sak</button></article>}

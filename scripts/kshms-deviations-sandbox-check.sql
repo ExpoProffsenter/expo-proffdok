@@ -193,5 +193,44 @@ do $$ declare n int:=current_setting('kshms.test.deviation_checks')::int;actor t
  assert exists(select 1 from pg_proc p join pg_namespace s on s.oid=p.pronamespace where s.nspname='kshms_private' and p.proname='invoke_assignment_worker' and p.prosecdef and has_table_privilege(p.proowner,'net.http_request_queue','INSERT')),'Scheduled worker lost transport access';n:=n+1;
  perform set_config('kshms.test.deviation_checks',n::text,true);
 end $$;
+-- The register, project and personal list return the same saved case.
+set local role authenticated;
+do $$
+declare a uuid:=current_setting('kshms.test.company_a')::uuid;
+ b uuid:=current_setting('kshms.test.company_b')::uuid;
+ p uuid:=current_setting('kshms.test.project')::uuid;
+ admin_id uuid:=current_setting('kshms.test.admin')::uuid;
+ reader_id uuid:=current_setting('kshms.test.reader')::uuid;
+ other_id uuid:=current_setting('kshms.test.other')::uuid;
+ local_day date:=(now() at time zone 'Europe/Oslo')::date;
+ saved jsonb; listed jsonb;
+begin
+ perform set_config('request.jwt.claim.sub',admin_id::text,true);
+ saved:=public.kshms_deviation_command(a,'create',jsonb_build_object(
+  'request_id',gen_random_uuid(),'title','Sentral QA return','event','Avvik meldt direkte med prosjektkobling.',
+  'category','quality','responsible_id',reader_id,'due_on',local_day,'project_id',p,'source_kind','company'));
+ listed:=public.kshms_deviation_overview(a,'all','Sentral QA',p_project_id=>p,p_from=>local_day,p_to=>local_day,p_view=>'inspection');
+ assert listed->'cases'->0->>'id'=saved->>'id' and listed->'counts'->>'open'='1';
+ assert jsonb_array_length(public.kshms_deviation_overview(a,'all','Sentral QA',p_to=>local_day-1)->'cases')=0;
+ assert jsonb_array_length(public.kshms_deviation_overview(a,'closed','Sentral QA')->'cases')=0;
+ assert public.kshms_deviation_overview(a,'open','Sentral QA',p_project_id=>p,p_view=>'project')->'cases'->0->>'id'=saved->>'id';
+ assert exists(select 1 from jsonb_array_elements(listed->'members') m where m->>'id'=admin_id::text and (m->>'firmaadmin')::boolean);
+ assert jsonb_array_length(public.kshms_deviation_overview(a,'all','Sentral QA',p_view=>'mine')->'cases')=0;
+ perform set_config('request.jwt.claim.sub',reader_id::text,true);
+ assert public.kshms_deviation_overview(a,'open','Sentral QA',p_view=>'mine')->'cases'->0->>'id'=saved->>'id';
+ begin
+  perform public.kshms_deviation_overview(a,p_view=>'inspection');
+  raise exception 'Ordinary member reached inspection';
+ exception when insufficient_privilege then null; end;
+ perform set_config('request.jwt.claim.sub',other_id::text,true);
+ begin
+  perform public.kshms_deviation_overview(a);
+  raise exception 'Other firm reached register';
+ exception when insufficient_privilege then null; end;
+ assert jsonb_array_length(public.kshms_deviation_overview(b,'all','Sentral QA')->'cases')=0;
+ assert not has_function_privilege('anon','public.kshms_deviation_overview(uuid,text,text,timestamptz,uuid,uuid,date,date,text)','EXECUTE');
+ perform set_config('kshms.test.deviation_checks',(current_setting('kshms.test.deviation_checks')::int+11)::text,true);
+end $$;
+reset role;
 select current_setting('kshms.test.deviation_checks')::int as passed_checks,'No HTTP/email sent; all synthetic data rolled back' as result;
 rollback;

@@ -1,8 +1,8 @@
-# Pågående – pakker for flere boliger 25.11.2026
+# Pågående – avvikssentral og Min side 27.11.2026
 
-«Gjelder for» på grunnpakker og tilvalgspakker lar prosjektleder velge flere boliger fra bygg eller stamme. Samlet klargjøring gir hver bolig riktig standard og tilvalg. Miljømål BEGGE. Endringen går via Preview og eget TEST OK. Se [datakontrakten](docs/architecture/BOLIG_CATALOG_DISTRIBUTION.md).
+`fase45b-avvikssentral` legger til registrering og oppfølging fra Min side, prosjektvisning for direkte registrerte avvik og tilsynsoversikt. Miljømål BEGGE. Den additive lesemigrasjonen `20261127114637` er installert i Sandbox. De 11 nye SQL-kontrollene der besto med tilbakerulling av syntetiske saker. Produksjon og permanent demo avventer innlogget Preview-prøve og TEST OK.
 
-Siste produksjonsleveranse er [PR350](https://github.com/ExpoProffsenter/expo-proffdok/pull/350#issuecomment-7171719908) for direkte beboerbekreftelse, publisert på main `ac293231` og demo `1f7117a2`.
+Siste produksjonsleveranse er [PR351](https://github.com/ExpoProffsenter/expo-proffdok/pull/351) på main `ad7c66da`, med pakkefordeling for flere boliger og samlet klargjøring.
 
 ---
 

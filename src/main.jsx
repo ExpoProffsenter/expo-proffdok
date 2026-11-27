@@ -2224,12 +2224,12 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       setTimeout(() => scrollToMobileTabTarget(id), 320);
       return true;
     };
-    const openKshmsDeviation = async (id = null, source = null) => {
+    const openKshmsDeviation = async (id = null, source = null, view = null) => {
       if (!kshmsContext?.enabled) return false;
       const opened = await goToTab("kshms");
       if (!opened) return false;
       setOpenedKshmsScope(kshmsScopeKey);
-      setKshmsDeviationRequest({ id, source, companyId: kshmsContext.company_id, userId: kshmsContext.user_id, nonce: crypto.randomUUID() });
+      setKshmsDeviationRequest({ id, source, view, companyId: kshmsContext.company_id, userId: kshmsContext.user_id, nonce: crypto.randomUUID() });
       return true;
     };
     const linkKshmsDeviation = async (source) => {
@@ -6694,7 +6694,7 @@ ${appLink}`;
           canEdit: isCompanyAdminUser,
           loginEmail: authUser?.email || ""
         }),
-        tab === "innlogging" && (0, import_jsx_runtime.jsx)(React.Suspense, { fallback: "Henter profil …", children: (0, import_jsx_runtime.jsx)(PersonalPage, { context: !isProjectSupportReadOnly && !hasActiveProjectWorkspace ? personalContext : null, kshmsContext, hrContext, userId: authUser?.id, authUser: !isProjectSupportReadOnly && !hasActiveProjectWorkspace ? authUser : null, supabaseClient: supabase, onOpenHrSetup: () => goToTab("hr"), onOpenSupport: async (id) => { if (await goToTab("support")) setSupportRequest({id: id || null, nonce: Date.now()}); }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: isProjectSupportReadOnly ? "Prosjektets rapportopplysninger" : "Innlogging og brukerprofil", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
+        tab === "innlogging" && (0, import_jsx_runtime.jsx)(React.Suspense, { fallback: "Henter profil …", children: (0, import_jsx_runtime.jsx)(PersonalPage, { context: !isProjectSupportReadOnly && !hasActiveProjectWorkspace ? personalContext : null, kshmsContext, hrContext, userId: authUser?.id, authUser: !isProjectSupportReadOnly && !hasActiveProjectWorkspace ? authUser : null, supabaseClient: supabase, onOpenDeviation: openKshmsDeviation, onOpenHrSetup: () => goToTab("hr"), onOpenSupport: async (id) => { if (await goToTab("support")) setSupportRequest({id: id || null, nonce: Date.now()}); }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: isProjectSupportReadOnly ? "Prosjektets rapportopplysninger" : "Innlogging og brukerprofil", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
           isProjectSupportReadOnly ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { marginBottom: "14px", background: "#fff7ed", borderColor: "#fed7aa" }, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { style: { marginTop: 0 }, children: "Supportmodus – prosjektets rapportopplysninger" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginBottom: 0 }, children: `Du er logget inn som ${authenticatedFullName || authUser?.email || "systemadministrator"}${authenticatedFullName && authUser?.email ? ` (${authUser.email})` : ""}. Opplysningene nedenfor er lagret i prosjektet${supportProjectCompanyName ? ` hos ${supportProjectCompanyName}` : ""} og tilhører ikke din personlige profil.` })

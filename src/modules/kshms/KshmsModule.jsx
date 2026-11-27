@@ -286,7 +286,7 @@ export default function KshmsModule({context,deviationRequest,personalOnly=false
     <KshmsReviewReminder key={`${companyId}:${userId}`} context={data.context} settingsRevision={data.settings?.revision} busy={busy} onOpen={()=>{setWorkspaceView({scope:navigationScope,view:'detail'});openReview();}}/>
    </section>
    <div className="ks-daily-shortcuts">
-    <button type="button" className="secondary" onClick={()=>openWorkspace('deviations')}>Avvik og RUH <span aria-hidden="true">→</span></button>
+    <button type="button" className="secondary" onClick={()=>openWorkspace('deviations')}>Avvikssentral <span aria-hidden="true">→</span></button>
     {canManage&&<button type="button" className="secondary" onClick={()=>openWorkspace('checklists')}>Sjekklister <span aria-hidden="true">→</span></button>}
     <button type="button" className="secondary" onClick={()=>openWorkspace('personal')}>Min personalhåndbok <span aria-hidden="true">→</span></button>
     {canManage&&<button type="button" className="secondary" onClick={()=>openWorkspace('extract')}>Dokumentuttrekk <span aria-hidden="true">→</span></button>}
@@ -298,7 +298,7 @@ export default function KshmsModule({context,deviationRequest,personalOnly=false
   {canManage&&(screen==='extract'||extractOpened)&&<div hidden={screen!=='extract'}><KshmsInspectionExtract key={`extract:${companyId}:${userId}`} context={data.context} active={!workspaceOverview&&screen==='extract'}/></div>}
   <ExecutionSurfaces screen={screen} companyId={companyId} userId={userId} context={context} active={!workspaceOverview}/>
   {canManage&&(screen==='checklists'||checklistsOpened)&&<div hidden={screen!=='checklists'}><KshmsChecklistCentral key={`${companyId}:${userId}`} context={data.context} active={!workspaceOverview&&screen==='checklists'}/></div>}
-  {(screen==='deviations'||deviationsOpened)&&<div hidden={screen!=='deviations'}><KshmsDeviations context={context} request={deviationRequest} active={!workspaceOverview&&screen==='deviations'}/></div>}
+  {(screen==='deviations'||deviationsOpened)&&<div hidden={screen!=='deviations'}><KshmsDeviations context={context} request={deviationRequest} active={!workspaceOverview&&screen==='deviations'} onOpenExtract={canManage?()=>openWorkspace('extract'):undefined}/></div>}
   {(screen==='sja'||sjaOpened)&&<div hidden={screen!=='sja'}><KshmsSja key={`${companyId}:${userId}`} context={context} active={!workspaceOverview&&screen==='sja'}/></div>}
   {error&&!(screen==='handbook'&&publication)&&<p role="alert" className="ks-error">{error}</p>}{notice && <p role="status" className="ks-notice">{notice}</p>}
   {screen==='setup'&&canManage&&<>

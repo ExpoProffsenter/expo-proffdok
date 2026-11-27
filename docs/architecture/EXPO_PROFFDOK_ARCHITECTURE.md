@@ -1895,3 +1895,9 @@ Rapporthooken eier eksplisitt valg og frosset råsett fra eksisterende `project_
 ### Felles appmeny i prosjektarbeidsflaten (Design 036, Preview)
 
 Prosjektfaner (`projectTabs`) og globale funksjoner (`globalTabs`) er fortsatt separate. I ordinær prosjektvisning rendrer React en egen skjult, tilgangsfiltrert hovedmenykilde. Desktopadapteren viser samme hovedområder/Alle områder som i salg; den kopierer ikke gamle tilgangsvalg fra annen kontekst. Globalt valg delegeres til `leaveProjectWorkspace`, som beholder ulagret-kontrollen, opprinnelig opprydding og en ekstra kontroll av bruker/firma/prosjekt/fane etter venting. Systemadmin-support får ikke denne hovedmenykilden og beholder avgrenset supportretur. Prissøk bruker samme kontrollerte avslutning før sitt eksisterende tilgangskontrollerte arbeidsområde åpnes. På mobil ligger globale områder som egen gruppe i prosjektmenyen. Ingen ny lagrings- eller tilgangsmotor.
+
+### Avvikssentral og Min side
+
+Avvik registreres i `kshms_deviations` via den eksisterende avvikskommandoen. Min side henter egne tildelinger via `kshms_deviation_tasks` og åpner samme avvik med saks-ID. `kshms_deviation_overview` gir filtrerte sider for avvikssentral, Mine avvik, prosjekt og tilsyn. Funksjonen gjenbruker aktiv firmatilgang og eksisterende saksinnsyn. Tilsyn krever KS/HMS-forvaltningsrett, og prosjektvisningen kontrollerer også prosjekttilgangen. Prosjektvisningen viser direkte registrerte avvik. Sjekkpunktavvik, koblede prosjektavvik og RUH vises fortsatt fra sine innganger i prosjektet. Tilsynsoversikten leser lagrede saker, og Dokumentuttrekk har den eksisterende funksjonen for PDF og vedlegg.
+
+Installer den additive migrasjonen `20261127114637_kshms_deviation_overview.sql` i det verifiserte testmiljøet før innlogget Preview. Etter godkjenning installeres den før apppublisering i produksjon og før oppdatert demo. Ved tilbakeføring kan forrige frontend brukes med migrasjonen installert.
