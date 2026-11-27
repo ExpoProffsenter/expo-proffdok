@@ -15,11 +15,13 @@ try{
   const w=dom.window;w.IS_REACT_ACT_ENVIRONMENT=true;w.HTMLElement.prototype.scrollIntoView=function(){};
   w.MessageChannel=class{constructor(){this.port1={onmessage:null};this.port2={postMessage:()=>setImmediate(()=>this.port1.onmessage?.())};}};
   let account={id:'self',email:'self@example.invalid',user_metadata:{full_name:'QA Medarbeider',mobile:'12345678',other:'preserve'}},updates=[],pref=false,prefWrites=[],contactAvailable=false,contactRev=1,employeeRev=3,revoked=false,lateContact=null,lateList=null;
+  const openedDeviations=[];
   const employees=[{id:'e',user_id:'self',email:'self@example.invalid',leader_id:'leader',revision:3,readers:[]},{id:'shared',user_id:'other',email:'shared@example.invalid',leader_id:'leader',revision:1,readers:[]}];
   const context={company_id:'a',user_id:'self',enabled:true,available:true,administer:false};
   let contactData={address:'QA Gate',relative_name:'QA Pårørende',relative_phone:'87654321'};
   const contact=()=>({context,registered:true,available:contactAvailable,editable:true,employee:{id:'e',revision:employeeRev},revision:contactRev,data:contactAvailable?structuredClone(contactData):null});
   w.__client={auth:{getUser:async()=>({data:{user:structuredClone(account)}}),updateUser:async p=>{updates.push(structuredClone(p));account={...account,user_metadata:p.data};return {data:{user:structuredClone(account)}};}},rpc:async(name,args)=>{
+   if(name==='kshms_deviation_tasks')return {data:{company_id:args.p_company_id,user_id:'self',count:1,items:[{id:'qa-case-id',title:'QA avvik fra prosjekt',due_on:'2026-11-30'}]}};
    if(name==='kshms_progress_mine')return {data:{context,active_date:new Date().toISOString().slice(0,10),plans:[],next:null}};
    if(name==='get_my_marketing_email_preference')return {data:{email_opt_in:pref}};
    if(name==='set_my_marketing_email_preference'){pref=args.p_opt_in;prefWrites.push(pref);return {data:{email_opt_in:pref}};}
@@ -43,10 +45,15 @@ try{
   const write=async(label,value)=>act(async()=>{const i=input(label);Object.getOwnPropertyDescriptor(w.HTMLInputElement.prototype,'value').set.call(i,value);i.dispatchEvent(new w.Event('input',{bubbles:true}));});
   const submit=async text=>act(async()=>button(text).closest('form').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true})));
   const personal={...context,company_name:'QA Firma',personal_page:true,company_kshms:true,company_hr:true,hr_management:false};
-  const props=()=>({context:personal,kshmsContext:{...context},hrContext:context,userId:'self',authUser:structuredClone(account),supabaseClient:w.__client});
+  const props=()=>({onOpenDeviation:(...args)=>{openedDeviations.push(args);return true;},context:personal,kshmsContext:{...context},hrContext:context,userId:'self',authUser:structuredClone(account),supabaseClient:w.__client});
   await act(async()=>w.__render('page',{context:null,userId:undefined,authUser:null,supabaseClient:w.__client}));
   assert(!doc.querySelector('.personal-page'),'anonymous loading must not crash or expose Min side');
   await act(async()=>w.__render('page',props()));
+  await click('Meld avvik');
+  assert.equal(openedDeviations[0][0],null);assert.equal(openedDeviations[0][1].source_kind,'company');assert.equal(openedDeviations[0][2],'mine');
+  const task=doc.querySelector('.personal-deviation-list button');assert(task.textContent.includes('30.11.2026'));
+  await act(async()=>task.click());assert.equal(openedDeviations[1][0],'qa-case-id');assert.equal(openedDeviations[1][2],'mine');
+  console.log('Min side avviksinnganger PASS');
   // 03.6 reorganizes the cards into daily work and secondary tools; preserve native entries semantically.
   for(const selector of ['.personal-plans-card','.time-personal-card','.personal-card-handbook','.personal-card-hr','.personal-card-profile'])assert(doc.querySelector(selector),'native entry preserved: '+selector);
   assert(button('Mine planer'),'explicit plans navigation remains available');

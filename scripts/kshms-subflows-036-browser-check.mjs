@@ -99,6 +99,20 @@ try{
    if(closed){await panel().getByText('Åpne saken igjen',{exact:true}).click();await inspect('ruh-reopen-'+width);eq(await panel().getByRole('button',{name:'Lagre gjenåpning',exact:true}).isDisabled(),true,'reading never reopens a case');}
    await page.keyboard.press('Escape');await panel().waitFor({state:'hidden'});
   }
+  await render('ruh');
+  await page.getByRole('button',{name:'Vis tilsynsoversikt',exact:true}).click();
+  eq(await page.getByRole('heading',{name:'Tilsynsoversikt'}).isVisible(),true,'inspection entry '+width);
+  await page.getByLabel('Meldt fra og med',{exact:true}).fill('2026-10-01');
+  await page.waitForFunction(()=>window.qa.calls.some(call=>call.name==='kshms_deviation_overview'&&call.args.p_view==='inspection'&&call.args.p_from==='2026-10-01'));
+  await page.locator('.ks-case-row').click();await panel().waitFor();
+  await inspect('inspection-'+width);
+  eq(await panel().getByRole('button',{name:'Lagre uten å lukke',exact:true}).count(),0,'inspection case has no save action');
+  eq(await panel().locator('input[type="file"]').count(),0,'inspection case has no file upload');
+  await page.keyboard.press('Escape');await panel().waitFor({state:'hidden'});
+  await page.getByRole('button',{name:'Dokumentuttrekk',exact:true}).click();
+  eq(await page.evaluate(()=>window.qa.openedExtract),true,'opens the existing document export');
+  await page.evaluate(()=>{window.qa.openedExtract=false;});
+
  }
  eq((await page.evaluate(()=>window.qa.calls)).filter(c=>/command|notify|publish|upload|signed|close/.test(c.name)),[],'no commands in native design sweep');eq(await page.evaluate(()=>window.qa.unexpected),[],'every native read contract explicit');eq(outbound,[],'no external transport');eq(errors,[],'no browser errors');
  console.log(`PASS KS underflows 03.6: ${checks} assertions / ${seen.length} visited states and widths; actual RUH/SJA/round/risk, nested suggestions/checkpoints, saved/closed/history/reopen, original field DOM and focus, full late runtime CSS; synthetic reads only.`);
