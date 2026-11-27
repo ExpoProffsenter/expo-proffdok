@@ -60,7 +60,7 @@ try{
    await page.keyboard.press('Escape');await page.getByRole('dialog').waitFor({state:'hidden'});eq(await page.getByLabel('Søk etter medarbeider').inputValue(),'QA Medarbeider','search survives employee dialog');
    await page.getByRole('button',{name:'Alle HR-funksjoner',exact:true}).click();await page.getByRole('button',{name:'Åpne oppsett',exact:true}).click();const purpose=page.getByLabel('Formål med registeret',{exact:true});await purpose.fill('Behold dette usendte oppsettet');await page.setViewportSize({width:390,height:568});eq(await purpose.inputValue(),'Behold dette usendte oppsettet','setup draft survives responsive layout');
   }else{
-   const nav=page.getByRole('navigation',{name:'KS/HMS visning'});const names=await nav.getByRole('button').allTextContents();eq(names,['Daglig arbeid','Rutiner og håndbok','Avvik og RUH','Forvaltning'],'approved KS/HMS work phases');
+   const nav=page.getByRole('navigation',{name:'KS/HMS visning'});const names=await nav.getByRole('button').allTextContents();eq(names,['Daglig arbeid','Rutiner og håndbok','Avvikssentral','Forvaltning'],'approved KS/HMS work phases');
    await page.setViewportSize({width:390,height:568});
    const nativeIds=await page.getByRole('combobox',{name:'Velg KS/HMS-visning',exact:true}).locator('option').evaluateAll(nodes=>nodes.map(node=>node.value).filter(Boolean));
    eq(nativeIds,['deviations','sja','rounds','risk','progress','reading','personal','organization','handbook','checklists','followup','extract','setup'],'all thirteen authorized native destinations retained behind the work phases');

@@ -108,7 +108,7 @@ const editorBody=editorSource.slice(editorSource.indexOf('export default functio
 const slots=[],effects=[],queue=[],published=[];let slot=0,serverCase={...open},failClose=true,commands=0;
 const editorStorage={...storage,removeItem:k=>memory.delete(k)},editorWindow=new EventTarget();editorWindow.localStorage=editorStorage;editorWindow.confirm=()=>true;
 const editorRpc=async(name,args)=>{
- if(name==='kshms_deviation_state')return {context:{company_id:companyId,user_id:eli},members:[],cases:[serverCase],counts:{open:1,closed:0}};
+ if(name==='kshms_deviation_overview')return {context:{company_id:companyId,user_id:eli},members:[],cases:[serverCase],counts:{open:1,closed:0}};
  if(name==='kshms_deviation_detail')return {case:serverCase,events:[]};
  if(name==='kshms_deviation_files')return [];
  if(name==='kshms_deviation_command'){commands++;if(args.p_action==='close'&&failClose)throw new Error('Synthetic failed close');serverCase={...serverCase,...args.p_payload,revision:serverCase.revision+1};if(args.p_action==='close')serverCase={...serverCase,status:'closed',closed_by:eli,closed_at:closed.closed_at,closed_identity:closed.closed_identity,control_note:args.p_payload.control_note.trim()};return serverCase;}

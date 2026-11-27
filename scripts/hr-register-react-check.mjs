@@ -83,7 +83,7 @@ try{
   const ksDestinations=[...window.document.querySelectorAll('.pd-workspace-tool-action')];assert.equal(ksDestinations.length,13,'All original KS destinations remain in the contextual drawer');
   assert(ksDestinations.every(button=>button.querySelector('svg[aria-hidden=true]')),'All existing KS destinations keep a decorative icon without replacing the accessible label');
   const ksSelection=()=>window.document.querySelector('[aria-label="Velg KS/HMS-visning"]');
-  assert.equal(ksSelection().value,'handbook');await click('Avvik/RUH');assert.equal(ksSelection().value,'deviations');assert.equal(button('Avvik og RUH').getAttribute('aria-current'),'page');assert.equal(button('Rutiner og håndbok').hasAttribute('aria-current'),false);
+  assert.equal(ksSelection().value,'handbook');await click('Avvik/RUH');assert.equal(ksSelection().value,'deviations');assert.equal(button('Avvikssentral').getAttribute('aria-current'),'page');assert.equal(button('Rutiner og håndbok').hasAttribute('aria-current'),false);
   await act(async()=>window.__render('hr',{context}));
   assert.equal(window.document.querySelectorAll('.hr-workspace-card').length,6);assert(window.document.querySelector('.module-heading'));assert(button('Åpne samtalemaler').disabled);
   await click('Åpne sykefravær');assert(window.document.querySelector('.hr-sick-leave').open);assert.equal(window.document.activeElement,window.document.querySelector('.hr-sick-leave'));assert(button('Tilpass sykefraværsmal').disabled);
