@@ -93,3 +93,30 @@ body .personal-workspace036 .personal-secondary-links .personal-card{display:gri
 @media(max-width:600px){body .personal-page.personal-workspace036 .personal-heading h2{font-size:30px}.personal-workspace036 .personal-avatar{display:none}body .personal-workspace036 .personal-tabs{gap:2px 20px;margin-bottom:22px}.personal-workspace036 .personal-tabs svg{display:none}.personal-workspace036 :is(.personal-plan-sources,.personal-day-side,.personal-secondary-links){grid-template-columns:minmax(0,1fr)}body .personal-workspace036 .personal-day-grid .personal-card{padding:18px}.personal-workspace036 .personal-plan-source-heading{flex-wrap:wrap}.personal-workspace036 .personal-card h3{font-size:21px}.personal-workspace036 .personal-secondary-links .personal-card-icon{width:36px;height:36px}.personal-workspace036 .personal-daily-tasks{padding-top:18px}.personal-workspace036 .personal-section-heading>span{font-size:14px}.personal-workspace036 .pd-support-summary{padding:18px 0}.personal-workspace036 .personal-secondary-links button{grid-column:1/-1}}
 /* Late app mobile styles must retain the same readable action targets in every child. */
 @media screen{body:has([data-expo-app-shell="true"]) .personal-page.personal-workspace036 :is(button,summary){min-height:45px!important;min-width:45px!important;font-size:16px!important}}
+
+.personal-deviations .personal-section-heading {
+  align-items: center;
+  flex-wrap: wrap;
+  gap: .75rem;
+}
+.personal-deviations .personal-section-heading button,
+.personal-deviation-list button {
+  min-height: 44px;
+}
+.personal-deviation-list {
+  display: grid;
+  gap: .5rem;
+  list-style: none;
+  margin: .75rem 0;
+  padding: 0;
+}
+.personal-deviation-list button {
+  display: grid;
+  gap: .2rem;
+  text-align: left;
+  width: 100%;
+  overflow-wrap: anywhere;
+}
+.personal-deviation-list button span {
+  font-size: .875rem;
+}

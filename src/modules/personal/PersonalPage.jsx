@@ -4,6 +4,7 @@ import {personalRights} from './personalAccess.js';
 import AccountContact from './AccountContact.jsx';
 import PrivateContact from '../hr/PrivateContact.jsx';
 import HomeFollowups from '../home/HomeFollowups.jsx';
+import {DeviationTasks} from '../kshms/KshmsTasks.jsx';
 import './personal.css';
 import './personalWorkspace036.css';
 import SupportSummary from '../support/SupportSummary.jsx';
@@ -23,7 +24,7 @@ function TimeSurface({visible,children}){
  const [target,setTarget]=useState(null);
  return <div className="personal-time-surface" ref={setTarget} hidden={!visible}><DialogPortalTarget.Provider value={target}>{children}</DialogPortalTarget.Provider></div>;
 }
-export default function PersonalPage({context,kshmsContext,hrContext,userId,authUser,supabaseClient,onOpenHrSetup,onOpenSupport,children}){
+export default function PersonalPage({context,kshmsContext,hrContext,userId,authUser,supabaseClient,onOpenDeviation,onOpenHrSetup,onOpenSupport,children}){
  const rights=personalRights(context,kshmsContext,hrContext,userId);
  // Remember only navigation, never an access context or HR payload. Fresh rights still gate every module.
  const [navigation,setNavigation]=useState(null),[selection,setSelection]=useState({scope:null,screen:'overview',employeeId:null});
@@ -51,6 +52,10 @@ export default function PersonalPage({context,kshmsContext,hrContext,userId,auth
   <div className="personal-workday" data-personal-view={screen} hidden={!['overview','plans'].includes(screen)||pending}>
    <div className="personal-cards personal-day-grid">
     <div className="personal-day-main">
+     {screen==='overview'&&!pending&&rights.kshms&&onOpenDeviation&&<section className="personal-card personal-deviations" aria-label="Mine avvik">
+      <div className="personal-section-heading"><h3>Mine avvik</h3><button type="button" onClick={()=>onOpenDeviation(null,{source_kind:'company'},'mine')}>Meld avvik</button></div>
+      <DeviationTasks key={scope} context={kshmsContext} personal onOpen={id=>onOpenDeviation(id,null,'mine')}/>
+     </section>}
      {screen==='overview'&&nav?.enabled&&authUser?.id===userId&&<Suspense fallback={null}><BoligMyCollaborations key={'collaboration:'+nav.scope} userId={userId}/></Suspense>}
      {['overview','plans'].includes(screen)&&!pending&&rights.enabled&&<details className="personal-card personal-plans-card" aria-label="Mine aktive planer" open={plansOpen} onToggle={event=>setPlanDisclosure({scope,screen,open:event.currentTarget.open})}>
       <summary className="personal-plans-heading"><div className="personal-card-icon"><CalendarDays aria-hidden="true"/></div><div><span className="personal-card-eyebrow">DITT PLANLAGTE ARBEID</span><h3>Mine aktive planer</h3><span className="personal-plans-disclosure">{plansOpen?'Skjul planlistene':'Vis planlistene'}</span></div></summary>

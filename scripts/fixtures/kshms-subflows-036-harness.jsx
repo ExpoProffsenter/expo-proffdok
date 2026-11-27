@@ -22,7 +22,7 @@ const savedSja=()=>({...blankSja(),id:'95000000-0000-4000-8000-000000000001',com
 const savedExecution=()=>({...newExecution(window.qa.kind,user),id:'96000000-0000-4000-8000-000000000001',company_id:company,revision:1,status:'completed',title:'QA fullført kontroll',completed_at:'2026-10-30T11:00:00Z',completed_identity:members[0].identity});
 window.rpc=async(name,args)=>{
  window.qa.calls.push({name,args});
- if(name==='kshms_deviation_state')return {context,members,cases:[record(args.p_status==='closed'?'closed':'open')],counts:{open:1,closed:1},next:null};
+ if(name==='kshms_deviation_overview')return {context,members,cases:[record(args.p_status==='closed'?'closed':'open')],counts:{open:1,closed:1},next:null};
  if(name==='kshms_deviation_detail'){const row=record(window.qa.closed?'closed':'open');return {case:row,events:[{id:'event',action:'create',created_at:row.created_at,actor_identity:members[0].identity,snapshot:row}],next:null};}
  if(name==='kshms_deviation_files')return [];
  if(name==='kshms_job_choices')return {context,projects:[],routines:[],project_total:0};
@@ -32,5 +32,5 @@ window.rpc=async(name,args)=>{
  if(name==='kshms_execution_detail'){if(window.qa.holdExecution)await new Promise(resolve=>{window.qa.releaseExecution=()=>{window.qa.holdExecution=false;resolve();};});return {context,record:savedExecution(),links:[]};}
  window.qa.unexpected.push(name);throw Error('Unexpected transport: '+name);
 };
-function App(){const [view,setView]=useState({kind:'ruh',serial:0});window.qa.render=(kind,closed=false,saved=false)=>{window.qa.closed=closed;window.qa.kind=kind;window.qa.saved=saved;const serial=++window.qa.serial;setView({kind,serial});return serial;};window.qa.setActive=active=>setView(previous=>({...previous,active}));useLayoutEffect(()=>{window.qa.committed=view.serial;},[view]);return <div data-expo-app-shell="true"><main><div className="ks-workspace-036 ks-module" key={view.serial} hidden={view.active===false}>{view.kind==='ruh'?<Deviations context={context}/>:view.kind==='sja'?<Sja context={context} active={view.active!==false}/>:<Executions context={context} kind={view.kind} active={view.active!==false}/>}</div></main></div>;}
+function App(){const [view,setView]=useState({kind:'ruh',serial:0});window.qa.render=(kind,closed=false,saved=false)=>{window.qa.closed=closed;window.qa.kind=kind;window.qa.saved=saved;const serial=++window.qa.serial;setView({kind,serial});return serial;};window.qa.setActive=active=>setView(previous=>({...previous,active}));useLayoutEffect(()=>{window.qa.committed=view.serial;},[view]);return <div data-expo-app-shell="true"><main><div className="ks-workspace-036 ks-module" key={view.serial} hidden={view.active===false}>{view.kind==='ruh'?<Deviations context={context} onOpenExtract={()=>{window.qa.openedExtract=true;}}/>:view.kind==='sja'?<Sja context={context} active={view.active!==false}/>:<Executions context={context} kind={view.kind} active={view.active!==false}/>}</div></main></div>;}
 createRoot(document.getElementById('app')).render(<App/>);

@@ -17,7 +17,7 @@ export default function KshmsNavigation({screen,canManage,pendingCount,onNavigat
    {personalOnly?groups[0].items.map(([key,label])=><button type="button" key={key} className={screen===key?'active':''} aria-current={screen===key?'page':undefined} onClick={()=>onNavigate(key)}>{label}</button>):<>
     <button type="button" className={overview||isDaily?'active':''} aria-current={overview||isDaily?'page':undefined} onClick={onOverview}>Daglig arbeid</button>
     <button type="button" className={!overview&&['reading','personal','handbook'].includes(screen)?'active':''} aria-current={!overview&&['reading','personal','handbook'].includes(screen)?'page':undefined} onClick={()=>onNavigate(canManage?'handbook':'personal')}>Rutiner og håndbok</button>
-    <button type="button" className={!overview&&screen==='deviations'?'active':''} aria-current={!overview&&screen==='deviations'?'page':undefined} onClick={()=>onNavigate('deviations')}>Avvik og RUH</button>
+    <button type="button" className={!overview&&screen==='deviations'?'active':''} aria-current={!overview&&screen==='deviations'?'page':undefined} onClick={()=>onNavigate('deviations')}>Avvikssentral</button>
     {canManage&&<button type="button" className={!overview&&['setup','followup','checklists','extract'].includes(screen)?'active':''} aria-current={!overview&&['setup','followup','checklists','extract'].includes(screen)?'page':undefined} onClick={()=>onNavigate('followup')}>Forvaltning</button>}
    </>}
   </nav>

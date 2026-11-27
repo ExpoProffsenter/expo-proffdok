@@ -11,10 +11,10 @@ export default function KshmsTasks({context,onOpen,renderDeviationNotice,renderE
  return <><DeviationTasks context={context} onOpen={onOpen} renderNotice={renderDeviationNotice}/><KshmsExecutionTasks context={context} renderNotice={renderExecutionNotice}/></>;
 }
 
-function DeviationTasks({context,onOpen,renderNotice=node=>node}) {
+export function DeviationTasks({context,onOpen,personal=false,renderNotice=node=>node}) {
  const {company_id:companyId,user_id:userId}=context;
  const [tasks,setTasks]=useState(null),[error,setError]=useState(''),refreshRef=useRef(null);
- const [emailLink,setEmailLink]=useState(()=>readDeviationLink(window.location.search,companyId));
+ const [emailLink,setEmailLink]=useState(()=>personal?null:readDeviationLink(window.location.search,companyId));
  useEffect(()=>{
   let active=true,revision=0;
   const refresh=async()=>{const request=++revision;
@@ -30,7 +30,16 @@ function DeviationTasks({context,onOpen,renderNotice=node=>node}) {
   return()=>{active=false;revision++;window.clearInterval(timer);window.removeEventListener(DEVIATION_CHANGE_EVENT,changed);window.removeEventListener('focus',refresh);document.removeEventListener('visibilitychange',visible);refreshRef.current=null;};
  },[companyId,userId]);
  const open=async id=>{if(await onOpen(id))setEmailLink(null);};
- if(!tasks?.count&&!error&&!emailLink)return null;
+ if(!tasks?.count&&!error&&!emailLink&&!personal)return null;
+ if(personal)return <>
+  {error&&<p role="status">{error} <button type="button" className="secondary" onClick={()=>refreshRef.current?.()}>Prøv igjen</button></p>}
+  {!tasks&&!error&&<p role="status">Henter avvik …</p>}
+  {tasks?.count===0&&<p>Du har ingen åpne avvik å følge opp.</p>}
+  {tasks?.count>0&&<ul className="personal-deviation-list">{tasks.items.slice(0,4).map(row=><li key={row.id}>
+   <button type="button" className="secondary" onClick={()=>open(row.id)}><strong>{row.title}</strong><span>Frist {formatDeviationDate(row.due_on)}{deviationDeadlineLabel(row.deadline_status)&&` · ${deviationDeadlineLabel(row.deadline_status)}`}</span></button>
+  </li>)}</ul>}
+  {tasks?.count>4&&<button type="button" className="secondary" onClick={()=>open(null)}>Se alle mine avvik</button>}
+ </>;
  return renderNotice(<aside className="ks-task-banner" aria-label="Dine åpne KS/HMS-avvik">
   {tasks?.count>0&&<><div className="ks-task-heading"><strong>Du er ansvarlig for {tasks.count} {tasks.count===1?'åpent avvik':'åpne avvik'}</strong>{tasks.overdue>0&&<span> · {tasks.overdue} etter fristen</span>}{tasks.due_today>0&&<span> · {tasks.due_today} med frist i dag</span>}{tasks.due_soon>0&&<span> · {tasks.due_soon} med frist innen tre dager</span>}</div>
   <details className="ks-task-details"><summary aria-label={`Vis oppgaver (${tasks.count})`}><span className="ks-task-long-label">Vis oppgaver</span><span className="ks-task-short-label">Vis</span></summary><div className="ks-task-content"><p>Dokumenter tiltak og egen kontroll i KS/HMS. Varselet står til lukkingen er lagret.</p><ul>{tasks.items.map(row=><li key={row.id}><button type="button" className="secondary" onClick={()=>open(row.id)}>{row.title} · frist {formatDeviationDate(row.due_on)}{deviationDeadlineLabel(row.deadline_status)&&` · ${deviationDeadlineLabel(row.deadline_status)}`}</button></li>)}</ul>{tasks.count>tasks.items.length&&<button type="button" className="secondary" onClick={()=>open(null)}>Se alle i Avvikssentral</button>}</div></details>
